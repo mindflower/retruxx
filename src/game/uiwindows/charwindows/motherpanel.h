@@ -25,7 +25,7 @@ public:
     std::allocator<enum ChildPanelId>::allocator<enum ChildPanelId>();
     virtual class m3d::Object * Clone();
     static struct m3d::Class * __fastcall GetBaseClass();
-    `public: static class CStr __fastcall Tab2Str(enum Tab)'::`2'::_Tab2Str::~_Tab2Str();
+    `public: static CStr __fastcall Tab2Str(enum Tab)'::`2'::_Tab2Str::~_Tab2Str();
     bool IsInTownRoot() const ;
     virtual ~MotherPanel();
 protected:

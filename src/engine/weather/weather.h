@@ -1,72 +1,46 @@
 #pragma once
+#include <vector>
+#include <core/clazz.h>
+#include <core/ref_ptr.h>
+#include <core/stringm3d.h>
+#include <math/vector.h>
 
 namespace m3d
 {
-    class WeatherThunderstorm :  public WeatherInclement
+    class SgNode;
+
+    enum ColorItems
     {
-    public:
-        virtual void DefaultInitialize();
-        virtual int Update(float,int);
-        virtual Class * GetClass() const ;
-        virtual ~WeatherThunderstorm();
-        virtual int Render();
-        static Class * __fastcall GetBaseClass();
-        static Object * __fastcall CreateObject();
-        virtual int UpdateColors(ColorItems,ColorTypes);
-        virtual int WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
-        virtual int TurnOffEffects();
-        virtual int ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
-        virtual void SetUp();
-        virtual Object * Clone();
-    protected:
-        WeatherThunderstorm();
-        WeatherThunderstorm(class WeatherThunderstorm const &);
-    private:
-        int m_lastthunderTime;
-        int m_thunderTimeOut;
-        int m_thunderWorktime;
-        int m_curthunderTime;
-        bool m_thunderActive;
-        float m_thunderLerpValue;
-        std::vector<int> m_effectId;
-        int m_effectCount;
-        std::vector<CStr> m_effectNames;
-        int m_maxThunderDuty;
-        int m_minThunderDuty;
-        int m_minThunderPeriod;
-        int m_maxThunderPeriod;
+        CI_SKY = 0x0,
+        CI_FOG = 0x1,
+        CI_AMBIENT = 0x2,
+        CI_DIFFUSE = 0x3,
+        CI_SUN = 0x4,
+        CI_PLANT = 0x5,
+        CI_SPECULAR = 0x6,
+        CI_NUM_COLORITEMS = 0x7,
     };
-}
 
-namespace m3d
-{
-    class WeatherClear :  public Weather
+    enum ColorTypes
     {
-    public:
-        static Class * __fastcall GetBaseClass();
-        virtual Object * Clone();
-        virtual ~WeatherClear();
-        virtual Class * GetClass() const ;
-        static Object * __fastcall CreateObject();
-    protected:
-        WeatherClear(class WeatherClear const &);
-        WeatherClear();
-    private:
+        CT_SUNRISE = 0x0,
+        CT_DAY = 0x1,
+        CT_SUNSET = 0x2,
+        CT_NIGHT = 0x3,
+        CT_NUM_COLORTYPES = 0x4,
     };
-}
 
-namespace m3d
-{
+
     class WindInfo
     {
     public:
-        void Write(class ref_ptr<cmn::XmlNode>);
-        void Read(class ref_ptr<cmn::XmlNode>);
+        void Write(ref_ptr<cmn::XmlNode>);
+        void Read(ref_ptr<cmn::XmlNode>);
         WindInfo();
-        struct CVector const & GetCurWind() const ;
-        struct CVector const & GetDeltaVel() const ;
+        CVector const& GetCurWind() const;
+        CVector const& GetDeltaVel() const;
         void CalculateCurWind(float);
-    protected:
+
     private:
         float m_maxVel;
         float m_minVel;
@@ -77,25 +51,26 @@ namespace m3d
         CVector m_deltaValue;
         float m_DeltaVelChanged;
         float m_DeltaDirChanged;
-    };
-}
 
-namespace m3d
-{
-    class Weather :  public Object
+    };
+
+    class Weather : public Object
     {
     public:
-        class CStr const & GetWeatherName() const ;
+        static Class m_classWeather;
+
+    public:
+        CStr const & GetWeatherName() const ;
         bool GetShadowVisibility(unsigned int) const ;
         static Class * __fastcall GetBaseClass();
-        struct CVector const & CurrentColor(unsigned int) const ;
+        CVector const & CurrentColor(unsigned int) const ;
         virtual ~Weather();
         float GetWaveHBig() const ;
         char const * ColorTypeName(unsigned int) const ;
-        void ChangeCloudTexture(class CStr &);
+        void ChangeCloudTexture(CStr &);
         static Object * __fastcall CreateObject();
         virtual int UpdateColors(ColorItems,ColorTypes);
-        void SetWeatherName(class CStr const &);
+        void SetWeatherName(CStr const &);
         virtual int WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
         virtual int TurnOffEffects();
         virtual int WriteDetailToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
@@ -103,7 +78,7 @@ namespace m3d
         virtual int ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
         float GetWaterSpecularS() const ;
         float GetWaterSpecularM() const ;
-        class CStr const & GetLightmapTexName(unsigned int) const ;
+        CStr const & GetLightmapTexName(unsigned int) const ;
         virtual Object * Clone();
         virtual void SetUp();
         virtual int ReadDetailFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
@@ -115,14 +90,16 @@ namespace m3d
         char const * ColorItemName(unsigned int) const ;
         virtual Class * GetClass() const ;
         float GetWaveHSmall() const ;
-        class CStr const & GetCloudsTexName(unsigned int) const ;
+        CStr const & GetCloudsTexName(unsigned int) const ;
         virtual void Release();
         virtual int Render();
         float GetShadowTransparency(unsigned int) const ;
         float GetWaveSizeSmall() const ;
+
     protected:
-        Weather(class Weather const &);
+        Weather(Weather const &);
         Weather();
+
     private:
         CStr m_Name;
         CVector m_colorSets[7][4];
@@ -146,52 +123,111 @@ namespace m3d
         CStr m_lightmapTextureName[4];
         CStr m_cloudsTextureName[4];
     };
-}
 
-namespace m3d
-{
-    class WeatherInclement :  public Weather
+    class WeatherClear : public Weather
     {
     public:
-        virtual int ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
+        static Class m_classWeatherClear;
+
+    public:
+        static Class* __fastcall GetBaseClass();
+        virtual Object* Clone();
+        virtual ~WeatherClear();
+        virtual Class* GetClass() const;
+        static Object* __fastcall CreateObject();
+
+    protected:
+        WeatherClear(WeatherClear const&);
+        WeatherClear();
+    };
+
+    class WeatherInclement : public Weather
+    {
+    public:
+        static Class m_classWeatherInclement;
+
+    public:
+        virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual void SetUp();
         virtual void RecreateEffect();
-        virtual int WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
-        static Class * __fastcall GetBaseClass();
+        virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
+        static Class* __fastcall GetBaseClass();
         virtual ~WeatherInclement();
         virtual void DefaultInitialize();
-        virtual Class * GetClass() const ;
-        static Object * __fastcall CreateObject();
-        virtual Object * Clone();
+        virtual Class* GetClass() const;
+        static Object* __fastcall CreateObject();
+        virtual Object* Clone();
         virtual int Render();
         virtual int TurnOffEffects();
+
     protected:
-        WeatherInclement(class WeatherInclement const &);
+        WeatherInclement(WeatherInclement const&);
         WeatherInclement();
+
     private:
         CStr m_inclementNodeName;
         CStr m_soundNodeName;
         int m_weatherDensity;
         float m_weatherDist;
-        std::vector<SgNode *> m_weatherNodes;
+        std::vector<SgNode*> m_weatherNodes;
     };
-}
 
-namespace m3d
-{
-    class WeatherFoggy :  public Weather
+    class WeatherFoggy : public Weather
     {
     public:
-        virtual int ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
-        virtual int WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
+        static Class m_classWeatherFoggy;
+
+    public:
+        virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
+        virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual ~WeatherFoggy();
-        static Class * __fastcall GetBaseClass();
-        virtual Class * GetClass() const ;
-        static Object * __fastcall CreateObject();
-        virtual Object * Clone();
+        static Class* __fastcall GetBaseClass();
+        virtual Class* GetClass() const;
+        static Object* __fastcall CreateObject();
+        virtual Object* Clone();
+
     protected:
-        WeatherFoggy(class WeatherFoggy const &);
+        WeatherFoggy(WeatherFoggy const&);
         WeatherFoggy();
+    };
+
+    class WeatherThunderstorm : public WeatherInclement
+    {
+    public:
+        static Class m_classWeatherThunderstorm;
+
+    public:
+        virtual void DefaultInitialize();
+        virtual int Update(float, int);
+        virtual Class* GetClass() const;
+        virtual ~WeatherThunderstorm();
+        virtual int Render();
+        static Class* __fastcall GetBaseClass();
+        static Object* __fastcall CreateObject();
+        virtual int UpdateColors(ColorItems, ColorTypes);
+        virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
+        virtual int TurnOffEffects();
+        virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
+        virtual void SetUp();
+        virtual Object* Clone();
+
+    protected:
+        WeatherThunderstorm();
+        WeatherThunderstorm(WeatherThunderstorm const&);
+
     private:
+        int m_lastthunderTime;
+        int m_thunderTimeOut;
+        int m_thunderWorktime;
+        int m_curthunderTime;
+        bool m_thunderActive;
+        float m_thunderLerpValue;
+        std::vector<int> m_effectId;
+        int m_effectCount;
+        std::vector<CStr> m_effectNames;
+        int m_maxThunderDuty;
+        int m_minThunderDuty;
+        int m_minThunderPeriod;
+        int m_maxThunderPeriod;
     };
 }

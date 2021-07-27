@@ -10,11 +10,11 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     static class m3d::Object * __fastcall CreateObject();
     virtual struct BoundsBase<float> GeomToWndBounds(struct BoundsBase<int> const &);
-    void SetResourceName(class CStr const &);
+    void SetResourceName(CStr const &);
     virtual class m3d::Object * Clone();
     virtual ~GadgetWnd();
     virtual int GetResourceId() const ;
-    class CStr const & GetResourceName() const ;
+    CStr const & GetResourceName() const ;
 protected:
     virtual void UpdateItemValue();
     virtual void DrawItemIco(struct m3d::ui::DrawInfo const &);

@@ -130,5 +130,27 @@ namespace m3d
             void xyz(CVector const&);
             void uv0(float, float);
         };
+
+        struct VertexXYZNCT2
+        {
+            float x;
+            float y;
+            float z;
+            float nx;
+            float ny;
+            float nz;
+            unsigned int c;
+            float tu0;
+            float tv0;
+            float tu1;
+            float tv1;
+        };
+
+        struct VertexLandscape
+        {
+            float y;
+            __int16 xz;
+            __int16 uv;
+        };
     }
 }

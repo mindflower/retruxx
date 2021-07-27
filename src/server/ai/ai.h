@@ -13,8 +13,6 @@ namespace m3d
     class AIParam;
 }
 
-class CStr;
-
 namespace ai
 {
     class Obj;

@@ -31,8 +31,18 @@ namespace ai
     class DynamicScene;
     class Map;
 
+    enum StartupMode
+    {
+        LOCAL_GAME = 0x0,
+        SERVER_GAME = 0x1,
+        CLIENT_GAME = 0x2,
+    };
+
     class CServer :  public m3d::IConHandler
     {
+    public:
+        static CServer* pServer;
+
     public:
         void AddToCinematic(Obj *,bool);
         void AddToCinematic(int,bool);

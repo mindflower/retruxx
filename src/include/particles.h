@@ -70,7 +70,7 @@ namespace m3d
     {
     public:
         virtual int Update(ParticlesList *,float,float);
-        virtual cmn::XmlNode * Write(fs::FileStream &,cmn::XmlFile *,cmn::XmlNode *,class CStr);
+        virtual cmn::XmlNode * Write(fs::FileStream &,cmn::XmlFile *,cmn::XmlNode *,CStr);
         virtual void WriteToProtos(struct PSProps &,class std::vector<struct AttrProps,class std::allocator<struct AttrProps> > &);
         virtual int Read(fs::FileStream &,cmn::XmlFile *,cmn::XmlNode *);
         virtual int Render(struct CMatrix const *,ParticlesList *);
@@ -172,10 +172,10 @@ namespace m3d
     public:
         void SetPsVolume(int,float,float,enum ForceType,float);
         void SetPsVolume(enum CoordinatesSystemType);
-        static class ParticleSystem * __fastcall New(class CStr const &);
+        static class ParticleSystem * __fastcall New(CStr const &);
         virtual int Render(struct CMatrix const *,ParticlesList *);
         void SetScaleParts(float);
-        virtual cmn::XmlNode * Write(fs::FileStream &,cmn::XmlFile *,cmn::XmlNode *,class CStr);
+        virtual cmn::XmlNode * Write(fs::FileStream &,cmn::XmlFile *,cmn::XmlNode *,CStr);
         static class ParticleSystem * __fastcall Factory(struct PSProps const &,class std::vector<struct AttrProps,class std::allocator<struct AttrProps> > const &);
         static class ParticleSystem * __fastcall Factory(char const *);
         virtual void ReadFromProtos(struct PSProps const &,class std::vector<struct AttrProps,class std::allocator<struct AttrProps> > const &);
@@ -200,7 +200,7 @@ namespace m3d
         virtual int Read(fs::FileStream &,cmn::XmlFile *,cmn::XmlNode *);
         virtual float GetBoundRadius() const ;
         virtual ~ParticleSystem();
-        void SetTextureName(class CStr const &);
+        void SetTextureName(CStr const &);
         virtual void Reset(ParticlesList *);
         void AddParticles(ParticlesList *,class std::vector<struct CVector,class std::allocator<struct CVector> > const *);
         void AddParticle(ParticlesList *,struct CVector const *);
@@ -254,7 +254,7 @@ namespace m3d
     public:
         virtual ~ModelPS();
         virtual int Render(struct CMatrix const *,ParticlesList *);
-        virtual cmn::XmlNode * Write(fs::FileStream &,cmn::XmlFile *,cmn::XmlNode *,class CStr);
+        virtual cmn::XmlNode * Write(fs::FileStream &,cmn::XmlFile *,cmn::XmlNode *,CStr);
         virtual int Read(fs::FileStream &,cmn::XmlFile *,cmn::XmlNode *);
         virtual void WriteToProtos(struct PSProps &,class std::vector<struct AttrProps,class std::allocator<struct AttrProps> > &);
         virtual void ReadFromProtos(struct PSProps const &,class std::vector<struct AttrProps,class std::allocator<struct AttrProps> > const &);

@@ -29,13 +29,13 @@ protected:
     RechargeButton(class RechargeButton const &);
     RechargeButton();
     virtual int GetMaxUnitsToBuy() const ;
-    virtual class CStr GetServiceName() const ;
-    virtual class CStr const & GetStrIdTooltipBuyNotNeed() const ;
+    virtual CStr GetServiceName() const ;
+    virtual CStr const & GetStrIdTooltipBuyNotNeed() const ;
     virtual float GetPriceForOneUnit() const ;
-    virtual class CStr const & GetStrIdTooltipBuyUnavailable() const ;
-    virtual class CStr const & GetStrIdTooltipBuyPartial() const ;
-    virtual class CStr const & GetStrIdTooltipBuy() const ;
-    virtual class CStr const & GetStrIdTooltipBuyFull() const ;
+    virtual CStr const & GetStrIdTooltipBuyUnavailable() const ;
+    virtual CStr const & GetStrIdTooltipBuyPartial() const ;
+    virtual CStr const & GetStrIdTooltipBuy() const ;
+    virtual CStr const & GetStrIdTooltipBuyFull() const ;
     virtual class m3d::rend::TexHandle GetServiceIco() const ;
 private:
 };

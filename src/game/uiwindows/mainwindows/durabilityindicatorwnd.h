@@ -7,7 +7,7 @@ public:
     static class m3d::Object * __fastcall CreateObject();
     virtual int CreateFromPattern(class m3d::ui::Wnd *,bool);
     virtual class m3d::Object * Clone();
-    void SetType(enum Type,class CStr const &);
+    void SetType(enum Type,CStr const &);
     virtual struct m3d::Class * GetClass() const ;
     void SetVehicleId(int);
     virtual ~DurabilityIndicatorWnd();
@@ -18,7 +18,7 @@ protected:
     DurabilityIndicatorWnd(class DurabilityIndicatorWnd const &);
     virtual struct BoundsBase<float> GetRect() const ;
     class ai::Vehicle * GetVehicle() const ;
-    void SetDurTextures(class CStr const &,class CStr const &,class CStr const &,class CStr const &);
+    void SetDurTextures(CStr const &,CStr const &,CStr const &,CStr const &);
     virtual int OnPaint(struct m3d::ui::DrawInfo const &);
     virtual int GameDataUpdate(void *,int);
     virtual int UpdateOnVehiclePartChanged();

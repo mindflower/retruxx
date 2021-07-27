@@ -8,7 +8,7 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     void m3d::FadingInit();
     m3d::Fading~FadingMsgManager();
-    void m3d::FadingShowMessage(class CStr const &);
+    void m3d::FadingShowMessage(CStr const &);
     m3d::FadingFadingMsgManager();
     static struct m3d::Class * __fastcall GetBaseClass();
     class MsgInfo const * GetMsgInfo(int) const ;
@@ -19,7 +19,7 @@ protected:
     int AddMsg(class MsgInfo *,bool);
     MsgManager(class MsgManager const &);
     MsgManager();
-    int LoadFromXml(class CStr const &,bool);
+    int LoadFromXml(CStr const &,bool);
 private:
     m3d::FadingInit();
     std::map<int,MsgInfo *> m_globalMsgs;

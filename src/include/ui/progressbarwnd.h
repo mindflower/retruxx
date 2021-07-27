@@ -45,7 +45,7 @@ namespace m3d
             virtual Object* Clone();
             float GetCurValue() const;
             void SetBarTexture(rend::TexHandle);
-            void SetBarTexture(class CStr const&);
+            void SetBarTexture(CStr const&);
             enum TextStyle GetTextStyle() const;
             static Class* __fastcall GetBaseClass();
             enum Orientation GetOrientation() const;
@@ -62,7 +62,7 @@ namespace m3d
         protected:
             float GetSizeOfStepInPixel() const;
             int GetCurNumOfSteps() const;
-            virtual class CStr GetStringValue() const;
+            virtual CStr GetStringValue() const;
             virtual struct BoundsBase<float> GetBarRect() const;
             virtual int OnPaint(DrawInfo const&);
             bool IsInversed() const;

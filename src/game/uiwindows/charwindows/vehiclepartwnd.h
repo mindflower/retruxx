@@ -10,7 +10,7 @@ public:
     virtual int GetResourceId() const ;
     virtual void SetVehicleId(int);
     virtual struct m3d::Class * GetClass() const ;
-    virtual void SetPartName(class CStr const &);
+    virtual void SetPartName(CStr const &);
 protected:
     virtual bool NeedUpdateInfoWnd(class ItemInfoWnd *) const ;
     virtual void LaunchEventOnItemDeactivation() const ;

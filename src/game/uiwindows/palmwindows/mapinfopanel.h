@@ -23,7 +23,7 @@ protected:
     virtual int GameDataClear(bool);
     virtual int OnBeforeAddToWndStation();
     void ValidateMode();
-    class CStr GetObjFullName() const ;
+    CStr GetObjFullName() const ;
     int SetupForClansMode();
     int ShowClansModeControls(bool);
     int Setup();

@@ -3,11 +3,11 @@
 class MenuItem
 {
 public:
-    MenuItem(class CStr const &,unsigned int,enum ControlType);
+    MenuItem(CStr const &,unsigned int,enum ControlType);
     void AddChild(class MenuItem *);
     ~MenuItem();
-    class MenuItem * GetMenuItemViaName(class CStr const &);
-    class MenuItem const * GetMenuItemViaName(class CStr const &) const ;
+    class MenuItem * GetMenuItemViaName(CStr const &);
+    class MenuItem const * GetMenuItemViaName(CStr const &) const ;
 protected:
 private:
     CStr m_name;
@@ -23,13 +23,13 @@ class GameMenuWnd :  public m3d::ui::ModalWnd, MenuItem
 {
 public:
     static struct m3d::Class * __fastcall GetBaseClass();
-    class CStr GetCurrentLevelName() const ;
+    CStr GetCurrentLevelName() const ;
     virtual class m3d::Object * Clone();
-    class CStr GetCurrentRootLevelName() const ;
+    CStr GetCurrentRootLevelName() const ;
     virtual ~GameMenuWnd();
     static class m3d::Object * __fastcall CreateObject();
     virtual struct m3d::Class * GetClass() const ;
-    bool SetMenuLevel(class CStr const &,class CStr const &);
+    bool SetMenuLevel(CStr const &,CStr const &);
 protected:
     GameMenuWnd();
     GameMenuWnd(class GameMenuWnd const &);
@@ -37,7 +37,7 @@ protected:
     class MenuItem * CreateBlankSpaceMenuItem() const ;
     void RecalcLayout();
     virtual int OnKey(unsigned short,unsigned char,unsigned int);
-    class MenuItem * CreateTextLabelMenuItem(class CStr const &) const ;
+    class MenuItem * CreateTextLabelMenuItem(CStr const &) const ;
     virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
     virtual int OnBeforeAddToWndStation();
     virtual int OnActivate(bool);

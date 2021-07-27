@@ -4,16 +4,16 @@ class JournalWnd :  public ScreenWnd
 {
 public:
     void ShowAllInEncyclopaedia();
-    bool BookExists(class CStr const &) const ;
+    bool BookExists(CStr const &) const ;
     static class m3d::Object * __fastcall CreateObject();
     static struct m3d::Class * __fastcall GetBaseClass();
     virtual class m3d::Object * Clone();
-    int AddHistory(class CStr const &,class m3d::AIParam const &);
+    int AddHistory(CStr const &,class m3d::AIParam const &);
     virtual struct m3d::Class * GetClass() const ;
     int AddClanToEncyclopaedia(int);
     virtual ~JournalWnd();
-    int AddPrototypeToEncyclopaedia(class CStr const &);
-    int AddBook(class CStr const &,class CStr const &);
+    int AddPrototypeToEncyclopaedia(CStr const &);
+    int AddBook(CStr const &,CStr const &);
 protected:
     void PostCurrentTabMessage() const ;
     int UpdateButtonsState();

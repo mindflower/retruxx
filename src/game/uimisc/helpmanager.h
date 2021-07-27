@@ -4,21 +4,21 @@ class HelpManager :  public m3d::Object
 {
 public:
     std::pair<enum HelpId const ,int>::pair<enum HelpId const ,int><enum HelpId,int>(struct std::pair<enum HelpId,int> const &);
-    class CStr GetHelpMsgByHelpId(class CStr const &) const ;
-    static class CStr __fastcall Enumered2StrHelpId(enum HelpId);
-    void ShowHelp(class CStr const &,bool);
+    CStr GetHelpMsgByHelpId(CStr const &) const ;
+    static CStr __fastcall Enumered2StrHelpId(enum HelpId);
+    void ShowHelp(CStr const &,bool);
     std::allocator<enum HelpId>::allocator<enum HelpId>(class std::allocator<enum HelpId> const &);
     std::allocator<enum HelpId>::allocator<enum HelpId>();
     std::pair<enum HelpId,int>::pair<enum HelpId,int>(enum HelpId const &,int const &);
     static class m3d::Object * __fastcall CreateObject();
-    static enum HelpId __fastcall Str2EnumeredHelpId(class CStr const &);
+    static enum HelpId __fastcall Str2EnumeredHelpId(CStr const &);
     void Clear();
     virtual struct m3d::Class * GetClass() const ;
     void ResetAutoHelp();
     static struct m3d::Class * __fastcall GetBaseClass();
     void EnableAutoHelp(bool);
     virtual class m3d::Object * Clone();
-    class CStr GetHelpTitleByHelpId(class CStr const &) const ;
+    CStr GetHelpTitleByHelpId(CStr const &) const ;
     virtual ~HelpManager();
     bool IsAutoHelpEnabled() const ;
     int GameDataUpdate(void *,int);

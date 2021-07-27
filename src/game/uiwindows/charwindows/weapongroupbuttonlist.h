@@ -8,7 +8,7 @@ public:
     static class m3d::Object * __fastcall CreateObject();
     static struct m3d::Class * __fastcall GetBaseClass();
     virtual ~WeaponGroupButtonList();
-    int SetupForGunPart(class CStr const &,int);
+    int SetupForGunPart(CStr const &,int);
 protected:
     class ai::Vehicle const * GetVehicle() const ;
     int GetCurGroupId() const ;

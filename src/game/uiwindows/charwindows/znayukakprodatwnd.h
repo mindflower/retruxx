@@ -37,7 +37,7 @@ protected:
     int BuyVehicle();
     int SaveCurValues(int,struct CurValues &);
     int GetBasketId(enum Belong) const ;
-    int TransferVehicleParts(int,int,class CStr const &);
+    int TransferVehicleParts(int,int,CStr const &);
     int SaveMainObject(int,enum Belong,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > &);
     int CalcOneItemCost(int,class ai::Workshop const *,enum Belong) const ;
     int RestoreGadgetsState(int,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > const &);
@@ -65,14 +65,14 @@ protected:
     int GetCabinId(enum Belong) const ;
     void UpdatePlayerItemsCostWnd(int);
     void OnGadgetChanged(void *);
-    int ReplaceParentPart(class CStr const &);
+    int ReplaceParentPart(CStr const &);
     int RestoreBasketItemsState(int,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > const &);
-    int ClearFromVehicleParts(int,class CStr const &);
+    int ClearFromVehicleParts(int,CStr const &);
     virtual int OnAfterRemoveFromWndStation();
-    class std::vector<class CStr,class std::allocator<class CStr> > GetChildVehiclePartNamesByParentPart(int,class CStr const &) const ;
+    class std::vector<CStr,class std::allocator<CStr> > GetChildVehiclePartNamesByParentPart(int,CStr const &) const ;
     void UpdateTradeCostWnd(int);
     int RepairThing(int);
-    int RestoreVehiclePartsState(int,class CStr const &,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > const &);
+    int RestoreVehiclePartsState(int,CStr const &,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > const &);
     int CancelTradeState();
     int ClearFromGadgets(int);
     void Cancel();
@@ -90,7 +90,7 @@ protected:
     int MakeBottomPanel();
     int TransferCabinItems(int,int);
     virtual int GameDataSetup();
-    int SaveVehiclePartsState(int,class CStr const &,enum Belong,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > &);
+    int SaveVehiclePartsState(int,CStr const &,enum Belong,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > &);
     enum TradeType GetTradeTypeByObjectId(int) const ;
     int BuyBasket();
     int AddItem(struct ItemSaveInfo *,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > &);
@@ -131,12 +131,12 @@ namespace ZnayuKakProdatWnd
         class PointBase<int> GetRepositoryPos() const ;
         ~ItemSaveInfo();
         int GetObjId() const ;
-        int SetupAsVehiclePart(int,Belong,class CStr const &,class CStr const &);
+        int SetupAsVehiclePart(int,Belong,CStr const &,CStr const &);
         bool IsValid() const ;
         int SetupAsMainItem(int,Belong);
         void Invalidate();
         int SetupAsRepositoryItem(int,Belong,class PointBase<int> const &);
-        class CStr GetVehiclePartName() const ;
+        CStr GetVehiclePartName() const ;
     protected:
     private:
         ItemType m_itemType;

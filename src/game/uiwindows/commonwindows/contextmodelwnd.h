@@ -4,8 +4,8 @@ class ContextModelWnd :  public m3d::ui::Wnd
 {
 public:
     int Show2dImage(class m3d::rend::TexHandle);
-    int Show2dImage(class CStr const &);
-    int Show3dImage(class CStr const &,int);
+    int Show2dImage(CStr const &);
+    int Show3dImage(CStr const &,int);
     int GetObjId() const ;
     int ShowImageByPrototypeId(int);
     static class m3d::Object * __fastcall CreateObject();
@@ -23,7 +23,7 @@ protected:
     virtual int OnBeforeAddToWndStation();
     void ClearCurrentModelWnd();
     int ShowImageByObjId0(int,bool);
-    class ref_ptr<class m3d::ui::Wnd> CreateModelWnd(class CStr const &);
+    class ref_ptr<class m3d::ui::Wnd> CreateModelWnd(CStr const &);
     class ai::Obj * GetObjToShow() const ;
     int ShowImageByPrototypeId0(int,bool);
     int SetupForComplexObj(class ai::Obj const *);
@@ -31,7 +31,7 @@ protected:
     ContextModelWnd(class ContextModelWnd const &);
     ContextModelWnd();
     void DestroyObjToShow();
-    int SetupForModel(class CStr const &,int);
+    int SetupForModel(CStr const &,int);
     int SetCurrentModelWnd(class ref_ptr<class m3d::ui::ImageWnd>);
 private:
     ref_ptr<m3d::ui::ImageWnd> m_wndCurrentModel;

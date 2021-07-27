@@ -1,9 +1,9 @@
 #pragma once
+#include <core/stringm3d.h>
 #include <math/aabb.h>
 #include <renderer/i_renderer_vertex.h>
 
 class CMatrix;
-class CStr;
 
 namespace m3d
 {

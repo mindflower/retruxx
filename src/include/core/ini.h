@@ -3,7 +3,17 @@
 
 namespace m3d
 {
+    namespace fs
+    {
+        class IStream;
+    }
+}
+
+namespace m3d
+{
     //TODO: add static functions
+
+    cmn::XmlFile* ReadXmlFile(char const*, CStr*);
 
     namespace cmn
     {
@@ -14,7 +24,7 @@ namespace m3d
         private:
         };
 
-        class XmlFile : public IBase
+        class XmlAttrib : public IBase
         {
         public:
         protected:
@@ -35,15 +45,44 @@ namespace m3d
         class XmlNode : public IBase
         {
         public:
-        protected:
-        private:
+            virtual ~XmlNode() = default;
+            virtual bool HasChildOrAttribute() const = 0;
+            virtual bool AddBeforeChild(XmlNode const*, XmlNode*) = 0;
+            virtual char const* GetValue() const = 0;
+            virtual bool GetFirstAttribute(XmlAttrib*) const = 0;
+            virtual bool RemoveAttribute(char const*) = 0;
+            virtual bool IsEmpty() const = 0;
+            virtual bool GetPrevRelative(XmlNode*, char const*) const = 0;  //GetPrevSibling
+            virtual bool IsOfType(XmlNodeType) const = 0;
+            virtual bool AddAfterChild(XmlNode const*, XmlNode*) = 0;
+            virtual void SetValue(char const*) = 0;
+            virtual bool GetNextRelative(XmlNode*, char const*) const = 0;  //GetNextSibling
+            virtual bool GetParent(XmlNode*) const = 0;
+            virtual void GetAttributeMbcsSafe(char const*, char**, int*) const = 0;
+            virtual bool AddChild(XmlNode*) = 0;
+            virtual bool SetAttribute(char const*, char const*) = 0;
+            virtual bool RemoveChild(XmlNode*) = 0;
+            virtual XmlAttrib* CreateAttribute() const = 0;
+            virtual bool GetFirstNestling(XmlNode*, char const*) const = 0; //GetFirstChild
+            virtual char const* GetAttribute(char const*) const = 0;
+            virtual bool GetLastNestling(XmlNode*, char const*) const = 0;     //GetLastNestling
         };
 
-        class XmlAttrib : public IBase
+        class XmlFile : public IBase
         {
         public:
-        protected:
-        private:
+            virtual ~XmlFile() = default;
+            virtual bool AddBeforeChild(XmlNode const*, XmlNode*) = 0;
+            virtual void SetHeader(char const*, char const*, char const*) = 0;
+            virtual bool AddAfterChild(XmlNode const*, XmlNode*) = 0;
+            virtual int Write(fs::IStream&) = 0;
+            virtual void GetHeader(char**, char**, char**) = 0;
+            virtual bool AddChild(XmlNode*) = 0;
+            virtual bool RemoveChild(XmlNode*) = 0;
+            virtual bool GetFirstNestling(XmlNode*, char const*) const = 0;
+            virtual int Read(fs::IStream&) = 0;
+            virtual XmlNode* CreateNode(XmlNodeType, char const*) const = 0;
+            virtual bool GetLastNestling(XmlNode*, char const*) const = 0;
         };
     }
 }

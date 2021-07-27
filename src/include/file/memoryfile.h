@@ -4,8 +4,6 @@
 //TODO: windows.h
 #include <Windows.h>
 
-class CStr;
-
 namespace m3d
 {
     namespace fs

@@ -2,8 +2,6 @@
 #include <map>
 #include <unordered_map>
 
-class CStr;
-
 namespace m3d
 {
     template<class T>

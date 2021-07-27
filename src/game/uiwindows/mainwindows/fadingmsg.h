@@ -5,7 +5,7 @@ class FadingMsgItem :  public m3d::ui::Wnd
 public:
     static struct m3d::Class * __fastcall GetBaseClass();
     virtual class m3d::Object * Clone();
-    int SetupForMsg(class CStr const &,class PointBase<float> const &,float,enum FadingMsgList::MsgType);
+    int SetupForMsg(CStr const &,class PointBase<float> const &,float,enum FadingMsgList::MsgType);
     virtual ~FadingMsgItem();
     virtual struct m3d::Class * GetClass() const ;
     static class m3d::Object * __fastcall CreateObject();
@@ -25,9 +25,9 @@ class FadingMsgList :  public m3d::ui::Wnd
 {
 public:
     static struct m3d::Class * __fastcall GetBaseClass();
-    int AddMsgT(class CStr const &,class std::vector<class m3d::AIParam,class std::allocator<class m3d::AIParam> > const &);
-    int AddMsgByStrId(class CStr const &,class std::vector<class m3d::AIParam,class std::allocator<class m3d::AIParam> > const &);
-    int AddMsg(class CStr const &,class std::vector<class m3d::AIParam,class std::allocator<class m3d::AIParam> > const &);
+    int AddMsgT(CStr const &,class std::vector<class m3d::AIParam,class std::allocator<class m3d::AIParam> > const &);
+    int AddMsgByStrId(CStr const &,class std::vector<class m3d::AIParam,class std::allocator<class m3d::AIParam> > const &);
+    int AddMsg(CStr const &,class std::vector<class m3d::AIParam,class std::allocator<class m3d::AIParam> > const &);
     virtual class m3d::Object * Clone();
     virtual ~FadingMsgList();
     virtual struct m3d::Class * GetClass() const ;
@@ -39,7 +39,7 @@ protected:
     int AddEnumeredMsg(int,struct m3d::Event const *);
     void GetParamsForEnumeredMsg(int,struct m3d::Event const *,class std::vector<class m3d::AIParam,class std::allocator<class m3d::AIParam> > &) const ;
     void RecalcLayot();
-    class CStr MsgId2Name(int) const ;
+    CStr MsgId2Name(int) const ;
     int InsertMsg(class FadingMsgItem *);
     void OnFadingMessage(void *);
     FadingMsgList();

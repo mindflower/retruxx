@@ -1,8 +1,8 @@
 #pragma once
 #include <map>
 #include <vector>
+#include <core/stringm3d.h>
 
-class CStr;
 class CVector2;
 
 namespace ai

@@ -6,6 +6,7 @@
 #include <core/console/cvar.h>
 #include <engine/landscape/roads/roadmanager.h>
 #include <engine/weather/weathermanager.h>
+#include <engine/wheeltraces/wheeltraces.h>
 #include <renderer/i_renderer.h>
 #include <scene/scenegraph.h>
 
@@ -23,14 +24,45 @@ namespace m3d
     class Level;
     class CClient;
 
+    class IGeneratedTexture
+    {
+    };
+
+    class TexClouds : public IGeneratedTexture
+    {
+    private:
+        rend::TexHandle m_texBasicNoise[3];
+        rend::TexHandle m_texPrevBasicNoise[3];
+        rend::TexHandle m_texCurrentInterpolatedNoise[3];
+        rend::TexHandle m_texCurrentCompiledOctavesNoise;
+        rend::TexHandle m_texClouds;
+        float m_cloudSpeeds[3];
+        rend::VertexXYZWCT1 m_vertsCompositRects[3][6];
+        int m_elapsedTime[3];
+        int m_updateInterval[3];
+        int m_totalElapsedTime;
+        int m_density;
+        rend::VbHandle m_vb;
+        int m_vofs;
+    };
+
     class CWorld
     {
+    public:
+        class EffectsData
+        {
+        private:
+            bool onlyOne;
+            SgNode* effect;
+            std::vector<SgNode*> effects;
+        };
+
     public:
         bool GetShadowVisibilityFromWeather() const ;
         WeatherManager & GetWeatherManager();
         void Invalidate();
         WheelTraceMgr & GetWheelTracesMgr();
-        static void __fastcall Register();
+        static void Register();
         void Render();
         int RenderSky(Landscape::LandRenderMode);
         void New(CCamera &,int,float);
@@ -77,7 +109,6 @@ namespace m3d
         bool LoadWorld(CStr const &);
 
     private:
-        ReleasePrefabs();
         void LoadStaticObstacles();
 
     private:

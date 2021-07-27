@@ -3,16 +3,16 @@
 class SaveButton :  public m3d::ui::ButtonWnd
 {
 public:
-    int SetupForSave(class CStr const &);
+    int SetupForSave(CStr const &);
     virtual class m3d::Object * Clone();
-    int SetupForNewSave(class CStr const &,class CStr const &,class m3d::AIParam const &);
+    int SetupForNewSave(CStr const &,CStr const &,class m3d::AIParam const &);
     void Select(enum SelectType);
     static struct m3d::Class * __fastcall GetBaseClass();
-    class CStr const & GetLevelName() const ;
+    CStr const & GetLevelName() const ;
     static class m3d::Object * __fastcall CreateObject();
     virtual ~SaveButton();
-    class CStr const & GetSaveFolderName() const ;
-    class CStr const & GetSaveName() const ;
+    CStr const & GetSaveFolderName() const ;
+    CStr const & GetSaveName() const ;
     virtual struct m3d::Class * GetClass() const ;
     class m3d::AIParam const & GetGameTime() const ;
     struct _FILETIME const & GetSaveModifyTime() const ;
@@ -20,7 +20,7 @@ protected:
     static void __fastcall ClearPattern();
     SaveButton(class SaveButton const &);
     SaveButton();
-    class CStr LocalTime2Str(struct _FILETIME) const ;
+    CStr LocalTime2Str(struct _FILETIME) const ;
     int CreateFromPattern();
     static int __fastcall LoadPattern(class m3d::ui::Wnd *);
     int CreateChildren();
@@ -88,7 +88,7 @@ public:
     int FullUpdate();
     void SetListType(enum ListType);
 protected:
-    int GetSaveFoldersList(class std::vector<class CStr,class std::allocator<class CStr> > &) const ;
+    int GetSaveFoldersList(class std::vector<CStr,class std::allocator<CStr> > &) const ;
     SaveList();
     SaveList(class SaveList const &);
     virtual int CompareItem(int,int);

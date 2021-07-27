@@ -32,6 +32,9 @@ namespace m3d
     class GeomObject : public Object
     {
     public:
+        static Class m_classGeomObject;
+
+    public:
         void IncEnabledCellsCount();
         void SetBounds(PointBase<int> const&, PointBase<int> const&);
         virtual Object* Clone();
@@ -69,6 +72,9 @@ namespace m3d
     class GeomObjectLandscape :  public GeomObject
     {
     public:
+        static Class m_classGeomObjectLandscape;
+
+    public:
         virtual ~GeomObjectLandscape();
         virtual Class * GetClass() const ;
         virtual Object * Clone();
@@ -82,6 +88,9 @@ namespace m3d
 
     class GeomObjectStatics : public GeomObject
     {
+    public:
+        static Class m_classGeomObjectStatics;
+
     public:
         virtual Class* GetClass() const;
         virtual ~GeomObjectStatics();
@@ -97,6 +106,9 @@ namespace m3d
 
     class GeomObjectRoad : public GeomObject
     {
+    public:
+        static Class m_classGeomObjectRoad;
+
     public:
         virtual ~GeomObjectRoad();
         static Object* __fastcall CreateObject();
@@ -117,6 +129,9 @@ namespace m3d
     class GeomObjectWater : public GeomObject
     {
     public:
+        static Class m_classGeomObjectWater;
+
+    public:
         virtual ~GeomObjectWater();
         static Class* __fastcall GetBaseClass();
         static Object* __fastcall CreateObject();
@@ -130,6 +145,9 @@ namespace m3d
 
     class GeomObjectPassCell : public GeomObject
     {
+    public:
+        static Class m_classGeomObjectPassCell;
+
     public:
         static Object* __fastcall CreateObject();
         virtual Class* GetClass() const;

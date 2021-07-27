@@ -17,7 +17,7 @@ protected:
     HealthIndicatorWnd();
     HealthIndicatorWnd(class HealthIndicatorWnd const &);
     class ai::Vehicle * GetVehicle() const ;
-    void SetBarTextures(class CStr const &,class CStr const &,class CStr const &);
+    void SetBarTextures(CStr const &,CStr const &,CStr const &);
     virtual int UpdateOnNewFrame();
     virtual void UpdateValue();
     virtual void UpdateTooltip();

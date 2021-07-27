@@ -9,7 +9,7 @@ public:
     static struct m3d::Class * __fastcall GetBaseClass();
     virtual struct m3d::Class * GetClass() const ;
 protected:
-    class CStr GetSelectedProfileName() const ;
+    CStr GetSelectedProfileName() const ;
     ChangeProfileWnd();
     ChangeProfileWnd(class ChangeProfileWnd const &);
     virtual int GameDataSetup();

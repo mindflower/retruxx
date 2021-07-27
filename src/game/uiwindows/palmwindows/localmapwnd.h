@@ -3,9 +3,9 @@
 class LocalMapWnd :  public ScreenWnd
 {
 public:
-    int SetUpForLevel(class CStr const &);
+    int SetUpForLevel(CStr const &);
     virtual class m3d::Object * Clone();
-    class CStr GetCurrentLevelName() const ;
+    CStr GetCurrentLevelName() const ;
     static struct m3d::Class * __fastcall GetBaseClass();
     virtual struct m3d::Class * GetClass() const ;
     static bool __fastcall IsObjectInfoValidForPrices(class ObjectInfo *);
@@ -31,14 +31,14 @@ protected:
     class ObjectInfo * GetInfoForNearestVisibleObject() const ;
     void ShowInfo(class ObjectInfo *,bool);
     virtual int OnAfterAddToWndStation();
-    void GetBtnEnableObjectNamesTexNames(bool,class CStr &,class CStr &,class CStr &) const ;
-    void GetBtnAddTownToSavedListTexNames(bool,class CStr &,class CStr &,class CStr &) const ;
+    void GetBtnEnableObjectNamesTexNames(bool,CStr &,CStr &,CStr &) const ;
+    void GetBtnAddTownToSavedListTexNames(bool,CStr &,CStr &,CStr &) const ;
     bool CanUserLocationNavPointBeDeletedFromBtn() const ;
     void EnsureShowInfo();
     int RemoveSavedPricesForCurrentObjectInfo();
     void UpdateBtnNavPointState();
     bool IsObjectNamesEnabled() const ;
-    void GetBtnNavPointTexNames(bool,class CStr &,class CStr &,class CStr &) const ;
+    void GetBtnNavPointTexNames(bool,CStr &,CStr &,CStr &) const ;
     void OnObjectInfoChanged();
     void LaunchGlobalMap();
     int DeleteNavPoint(int,bool);

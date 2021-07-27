@@ -101,11 +101,11 @@ namespace ai
         };
 
     public:
-        Obj * GetEntityByObjName(class CStr const &);
+        Obj * GetEntityByObjName(CStr const &);
         void Purge();
         class iterator updatingEnd();
         virtual ~ObjContainer();
-        class CStr GetObjectFullName(class CStr const &) const ;
+        CStr GetObjectFullName(CStr const &) const ;
         void RelinkGeomsToCollisionCells();
         void AddObjToUpdate(Obj *);
         virtual class m3d::Object * Clone();
@@ -116,13 +116,13 @@ namespace ai
         bool IsSaveAllowed() const ;
         void PauseGameTime();
         void DeleteAll();
-        void PassToMap(class CStr const &,class CStr const &,int,bool);
+        void PassToMap(CStr const &,CStr const &,int,bool);
         float GetHeight(float,float) const ;
         static struct m3d::Class * __fastcall GetBaseClass();
         int GetPrototypeId(char const *) const ;
         void Dump();
         void SetGameTimeInt64(__int64);
-        int GetObjIdByObjName(class CStr const &);
+        int GetObjIdByObjName(CStr const &);
         float GetTolerance(int,int) const ;
         void SetGameTime(int,int,int,int,int);
         static class m3d::Object * __fastcall CreateObject();
@@ -131,17 +131,17 @@ namespace ai
         void UnlinkGeomsFromCollisionCells();
         void SetTolerance(int,int,float);
         bool AddWithOwnObjId(Obj *);
-        void SetObjName(int,class CStr const &);
+        void SetObjName(int,CStr const &);
         GameTime & getGameTime();
         class m3d::AIParam GetGameTime() const ;
         void AddObjToPostCollideList(Obj *);
-        void DumpPhysicInfo(class CStr const &) const ;
+        void DumpPhysicInfo(CStr const &) const ;
         __int64 GetGameTimeInt64() const ;
         unsigned int GetNumUpdatingObjects() const ;
         bool empty() const ;
         Obj * GetEntityByObjId(int);
         void DenyCreation();
-        void LoadObjectNamesFromXML(class CStr const &);
+        void LoadObjectNamesFromXML(CStr const &);
         class m3d::AIParam Get24HourTime() const ;
         int CreateEntityForLoad(int,char const *,int,int);
         void MessageBoxA(int,int,Obj *);

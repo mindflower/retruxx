@@ -3,7 +3,7 @@
 class MsgBox :  public m3d::ui::ModalWnd
 {
 public:
-    int CreateMsgBox(class CStr const &,class CStr const &,unsigned int);
+    int CreateMsgBox(CStr const &,CStr const &,unsigned int);
     virtual struct m3d::Class * GetClass() const ;
     virtual class m3d::Object * Clone();
     virtual ~MsgBox();

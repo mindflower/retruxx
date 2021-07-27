@@ -13,7 +13,7 @@ public:
     bool IsAutosized() const ;
     void SetRotationVelocity(float);
     static class m3d::Object * __fastcall CreateObject();
-    int SetModelByName(class CStr const &,unsigned int,unsigned int);
+    int SetModelByName(CStr const &,unsigned int,unsigned int);
     virtual int CreateFromPattern(class m3d::ui::Wnd *,bool);
     void SetRotationByHandVelocity(float);
     float GetRotationByHandVelocity() const ;

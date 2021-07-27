@@ -1,7 +1,17 @@
 #pragma once
+#include "weather.h"
 
 namespace m3d
 {
+    enum GlobalTimeParams
+    {
+        GTP_SUNRISE_TIME = 0x0,
+        GTP_DAY_TIME = 0x1,
+        GTP_SUNSET_TIME = 0x2,
+        GTP_NIGHT_TIME = 0x3,
+        GTP_NUM_PARAMS = 0x4,
+    };
+
     class WeatherManager
     {
     public:
@@ -29,15 +39,15 @@ namespace m3d
         int ReadFromXmlFile(char const *);
         WeatherManager();
         void DoneSky();
-        void AddWeather(class CStr const &,class CStr const &);
+        void AddWeather(CStr const &,CStr const &);
         unsigned int GetNumWeathers() const ;
         char const * GetGlobalTimeParamName(unsigned int) const ;
-        void SetActiveWeatherByName(class CStr const &);
-        void ChangeStarsTexture(class CStr &);
+        void SetActiveWeatherByName(CStr const &);
+        void ChangeStarsTexture(CStr &);
         Weather * GetWeather(unsigned int);
-        Weather * GetWeatherByName(class CStr const &);
+        Weather * GetWeatherByName(CStr const &);
         void SetOwner(CWorld *);
-    protected:
+
     private:
         std::vector<Weather *> m_weatherStorage;
         std::vector<Weather *> m_curWeatherStorage;

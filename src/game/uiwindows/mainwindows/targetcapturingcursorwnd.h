@@ -5,7 +5,7 @@ class TargetCapturingCursorWnd :  public TargetCursorWnd
 public:
     virtual struct m3d::Class * GetClass() const ;
     virtual ~TargetCapturingCursorWnd();
-    static class CStr const & __fastcall GetCaptureTexName();
+    static CStr const & __fastcall GetCaptureTexName();
     static float __fastcall GetCapturingTexAngle();
     static struct m3d::Class * __fastcall GetBaseClass();
     static class m3d::Object * __fastcall CreateObject();

@@ -75,7 +75,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -89,7 +89,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -101,12 +101,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -914,6 +914,7 @@
     <ClInclude Include="src\include\core\ref_count_helper.h" />
     <ClInclude Include="src\include\core\ref_ptr.h" />
     <ClInclude Include="src\include\core\scoped_ptr.h" />
+    <ClInclude Include="src\include\core\stackwalker.h" />
     <ClInclude Include="src\include\core\stringm3d.h" />
     <ClInclude Include="src\include\core\stringw.h" />
     <ClInclude Include="src\include\core\threadsync.h" />
@@ -930,6 +931,7 @@
     <ClInclude Include="src\include\file\packagedefs.h" />
     <ClInclude Include="src\include\file\rawfile.h" />
     <ClInclude Include="src\include\file\tagged.h" />
+    <ClInclude Include="src\include\flares.h" />
     <ClInclude Include="src\include\geomobject.h" />
     <ClInclude Include="src\include\graph\hungarianalgo.h" />
     <ClInclude Include="src\include\gsmodel.h" />
@@ -987,6 +989,18 @@
     <ClInclude Include="src\include\scene\nodes\sgnodestaticmodel.h" />
     <ClInclude Include="src\include\scene\scenegraph.h" />
     <ClInclude Include="src\include\scene\servers\dataserver.h" />
+    <ClInclude Include="src\include\scene\servers\serveranimatedmodel.h" />
+    <ClInclude Include="src\include\scene\servers\serveranimatedmodelrender.h" />
+    <ClInclude Include="src\include\scene\servers\serverdecals.h" />
+    <ClInclude Include="src\include\scene\servers\serverfactories.h" />
+    <ClInclude Include="src\include\scene\servers\serverlight.h" />
+    <ClInclude Include="src\include\scene\servers\serverlines.h" />
+    <ClInclude Include="src\include\scene\servers\servermusic.h" />
+    <ClInclude Include="src\include\scene\servers\serverparticles.h" />
+    <ClInclude Include="src\include\scene\servers\serverprojectors.h" />
+    <ClInclude Include="src\include\scene\servers\serversound.h" />
+    <ClInclude Include="src\include\scene\servers\serversprites.h" />
+    <ClInclude Include="src\include\scene\servers\serverstaticmodels.h" />
     <ClInclude Include="src\include\script\funcarg.h" />
     <ClInclude Include="src\include\script\funcstack.h" />
     <ClInclude Include="src\include\script\lua\lapi.h" />
@@ -1214,8 +1228,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\engine\scene\servers\serveranimatedmodel.inl" />
-    <None Include="src\include\landscape.inl" />
-    <None Include="src\include\skelmodel.inl" />
     <None Include="src\include\ui\uilistboxwnd.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

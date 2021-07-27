@@ -14,14 +14,14 @@ protected:
     virtual int OnBeforeAddToWndStation();
     WeaponSlotList();
     WeaponSlotList(class WeaponSlotList const &);
-    void GetGunPartNames(int,class std::vector<class CStr,class std::allocator<class CStr> > &) const ;
+    void GetGunPartNames(int,class std::vector<CStr,class std::allocator<CStr> > &) const ;
     virtual int GameDataClear(bool);
     virtual int OnAfterRemoveFromWndStation();
     void ClearItems();
-    int AddItem(class CStr const &);
+    int AddItem(CStr const &);
     void CreateItems();
     class ai::Vehicle const * GetVehicle() const ;
-    void SortGunPartNames(class std::vector<class CStr,class std::allocator<class CStr> > &,class ai::Vehicle const *) const ;
+    void SortGunPartNames(class std::vector<CStr,class std::allocator<CStr> > &,class ai::Vehicle const *) const ;
     virtual int GameDataSetup();
     void FullUpdate();
     virtual int GameDataUpdate(void *,int);

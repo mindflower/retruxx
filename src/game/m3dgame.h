@@ -61,7 +61,7 @@ public:
         Player();
         void SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
 
-    private:
+    public:
         CameraModes m_cameraMode;
         CVector m_gameLookAt;
         Quaternion m_lastobjQuat;

@@ -74,7 +74,7 @@ protected:
     void UpdateOnWeaponGroupChanged();
     class m3d::rend::TexHandle GetGroupTextureForWeaponBtn(class WeaponInfoWnd const *,int);
     int RecalcLayotInCharacteristicWnd();
-    int GetGroupByVehiclePartName(class CStr const &) const ;
+    int GetGroupByVehiclePartName(CStr const &) const ;
     virtual int OnBeforeAddToWndStation();
     int UpdateOnPlayerVehicleChanged();
     int AddItem(int,int);
@@ -97,7 +97,7 @@ class WeaponGroupChoiceDlg :  public m3d::ui::ModalWnd
 {
 public:
     virtual class m3d::Object * Clone();
-    static class CStr __fastcall CreateTooltipForWeaponGroup(int);
+    static CStr __fastcall CreateTooltipForWeaponGroup(int);
     static class m3d::Object * __fastcall CreateObject();
     static struct m3d::Class * __fastcall GetBaseClass();
     virtual ~WeaponGroupChoiceDlg();

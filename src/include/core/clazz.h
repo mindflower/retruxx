@@ -16,35 +16,36 @@ namespace m3d
     class RefCountedBase
     {
     public:
-        virtual ~RefCountedBase();
-
-        RefCountedBase();
+        virtual ~RefCountedBase() = default;
         int IncRef();
         int DecRef();
-        int GetRefCount();
+        int GetRefCount() const;
 
     private:
-        int m_refCount;
+        int m_refCount = 0;
     };
 
     class Object : public RefCountedBase
     {
     public:
+        static Class m_classObject;
+
+    public:
         static Class* GetBaseClass();
         static Object* CreateObject();
 
     public:
-        virtual int SetProperty(unsigned int, void*);
+        virtual ~Object() = default;
+        virtual int SetProperty(unsigned int propId, void* prop);
         virtual char const* GetClassNameA() const;
         virtual int GetPropertiesList(std::set<unsigned int>&) const;
         virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual int AddChild(Object*);
         virtual int IncWeakRef();
         virtual Object* Clone();
-        virtual int GetProperty(unsigned int, void*) const;
+        virtual int GetProperty(unsigned int propId, void* prop) const;
         virtual int ReadFromXmlNodeAfterAdd(cmn::XmlFile*, cmn::XmlNode*);
         virtual int DecWeakRef();
-        virtual ~Object();
         virtual Class* GetClass() const;
         virtual int RemoveChild(Object*);
         virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
@@ -60,15 +61,15 @@ namespace m3d
         bool IsKindOf(Class const*) const;
         bool IsKindOf(char const*) const;
         bool IsChildOf(Object const*) const;
-        Object* GetNextSibling() const;
+        Object* GetNextRelative() const;
         void SetName(CStr const&);
-        Object* GetFirstChild() const;
+        Object* GetFirstNestling() const;
         int RemoveAllChildren();
         Object* GetChildByName(CStr const&) const;
         void MoveChildToLastPosition(Object*);
         void MoveChildToFirstPosition(Object*);
         void SetPersistance(bool);
-        Object* GetLastChild() const;
+        Object* GetLastNestling() const;
         bool IsDirectChild(Object const*) const;
         int LinkChildAtHead(Object*);
 
@@ -79,22 +80,22 @@ namespace m3d
 
     private:
         CStr m_name;
-        bool m_persistant;
-        bool m_isChildDirty;
-        Object* m_parent;
-        Object* m_firstChild;
-        Object* m_lastChild;
-        Object* m_nextSibling;
-        Object* m_prevSibling;
-        int m_numChildren;
-        void* m_scriptHandle;
+        bool m_persistant = true;
+        bool m_isChildDirty = false;
+        Object* m_parent = nullptr;
+        Object* m_firstChild = nullptr;
+        Object* m_lastChild = nullptr;
+        Object* m_nextSibling = nullptr;
+        Object* m_prevSibling = nullptr;
+        int m_numChildren = 0;
+        void* m_scriptHandle = nullptr;
     };
 
     struct Class
     {
         const char* m_className;
         int m_classSize;
-         Object* (__fastcall* m_fnCreateObject)();
+        Object* (__fastcall* m_fnCreateObject)();
         Class* (__fastcall* m_fnGetBaseClass)();
         int m_index;
         ExportInfo* m_lExports;

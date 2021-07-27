@@ -87,6 +87,9 @@ namespace m3d
             void UnregisterWnd(Wnd*);
             int DispatchKey(Event const&);
 
+        protected:
+            PointBase<float> m_prevMouseCoord;
+
         private:
             Wnd* m_wndMouseOver;
             Wnd* m_wndMouseCapture;
@@ -100,7 +103,6 @@ namespace m3d
             Cursor* m_curDefault;
             Cursor m_currentCursor;
             bool m_bAnimationEnabled;
-            PointBase<float> m_prevMouseCoord;
             CStrHash<CStr> m_strings;
             CIntHash<int> m_allWindows;
             CIntHash<Wnd*> m_allWindowsById;

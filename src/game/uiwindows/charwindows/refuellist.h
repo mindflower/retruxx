@@ -11,15 +11,15 @@ public:
 protected:
     RefuelButton();
     RefuelButton(class RefuelButton const &);
-    virtual class CStr const & GetStrIdTooltipBuy() const ;
-    virtual class CStr const & GetStrIdTooltipBuyFull() const ;
-    virtual class CStr GetServiceName() const ;
+    virtual CStr const & GetStrIdTooltipBuy() const ;
+    virtual CStr const & GetStrIdTooltipBuyFull() const ;
+    virtual CStr GetServiceName() const ;
     virtual float GetPriceForOneUnit() const ;
     virtual class m3d::rend::TexHandle GetServiceIco() const ;
-    virtual class CStr const & GetStrIdTooltipBuyPartial() const ;
-    virtual class CStr const & GetStrIdTooltipBuyNotNeed() const ;
+    virtual CStr const & GetStrIdTooltipBuyPartial() const ;
+    virtual CStr const & GetStrIdTooltipBuyNotNeed() const ;
     virtual int GetMaxUnitsToBuy() const ;
-    virtual class CStr const & GetStrIdTooltipBuyUnavailable() const ;
+    virtual CStr const & GetStrIdTooltipBuyUnavailable() const ;
 private:
 };
 

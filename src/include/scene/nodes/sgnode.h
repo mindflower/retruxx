@@ -1,11 +1,11 @@
 #pragma once
-#include <math/aabb.h>
 #include <math/matrix.h>
 #include <math/point2d.h>
 #include <math/quaternion.h>
 #include <math/vector.h>
 #include <core/clazz.h>
 #include <core/stringm3d.h>
+#include <math/aabb.h>
 
 class Obb;
 
@@ -14,6 +14,20 @@ namespace m3d
     class GraphItemsForSgNode;
     class DataServer;
     class SceneGraph;
+
+    enum TransparencyType
+    {
+        TT_NONE = 0x0,
+        TT_VISIBILITY = 0x1,
+        TT_PERMANENT = 0x2,
+    };
+
+    struct TransparencyParams
+    {
+        float value;
+        float startDist;
+        float objectWidth;
+    };
 
     enum SgNodeRenderFlags
     {
@@ -92,7 +106,7 @@ namespace m3d
     protected:
         CMatrix MatrixFromFlags(SgNodeRenderFlags, void*) const;
         virtual void UpdateOwnBoundingBox();
-        void RitualInConstructor(enum Ritual);
+        void RitualInConstructor(Ritual);
         virtual ~SgNode();
         SgNode(SgNode const&);
         SgNode();

@@ -1,8 +1,7 @@
 #pragma once
 #include "filestream.h"
 #include <Windows.h>
-
-class CStr;
+#include <core/stringm3d.h>
 
 namespace m3d
 {

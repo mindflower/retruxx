@@ -31,7 +31,7 @@ namespace m3d
     {
     public:
         virtual void UnRegisterGlobal(char const*);
-        virtual void SysError(class CStr const&, class CStr const&);
+        virtual void SysError(CStr const&, CStr const&);
         virtual ScriptServer& GetScriptServer();
         virtual int __stdcall MessageBoxA(HWND, char const*, char const*, unsigned int);
         virtual EngineConfig& GetEngineCfg();
@@ -53,7 +53,7 @@ namespace m3d
         virtual Object* New(Class*);
         virtual Object* FindGlobal(char const*);
         virtual cmn::XmlFile* CreateXmlFile();
-        virtual class CStr GetClipboardData() const;
+        virtual CStr GetClipboardData() const;
         virtual int debugMemLastAllocSize() const;
         virtual void UnRegisterGlobalObject(Object const*);
         virtual void RemoveClass(Class*);
@@ -72,4 +72,8 @@ namespace m3d
         MemoryAllocationRoutines g_mar;
         Log* m_Log;
     };
+
+    extern Kernel* g_Kernel;
 }
+
+#define LOG(msg, level) //g_Kernel->GetLog().sourceLine() = __LINE__; g_Kernel->GetLog().setSourceFile(__FILE__); g_Kernel->GetLog().logTex(msg, level)

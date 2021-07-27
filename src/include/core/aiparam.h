@@ -2,6 +2,10 @@
 #include "stringm3d.h"
 #include <vector>
 
+class CVector;
+class CVector2;
+class Quaternion;
+
 namespace m3d
 {
     namespace cmn
@@ -54,7 +58,7 @@ namespace m3d
         std::vector<int> GetAsIdList() const;
         bool operator!=(AIParam const&);
         CVector2 GetAsRange() const;
-        class CStr GetAsStr() const;
+        CStr GetAsStr() const;
         CVector GetAsVector() const;
         void SaveToXML(cmn::XmlFile*, cmn::XmlNode*) const;
         std::vector<CStr> GetAsStringList() const;

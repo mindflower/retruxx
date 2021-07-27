@@ -5,6 +5,7 @@
 #include <core/containers.h>
 #include <core/debugcounter.h>
 #include <core/profilerstack.h>
+#include <core/stringm3d.h>
 #include <engine/console/console_internal.h>
 #include <math/camera.h>
 #include <renderer/i_renderer.h>
@@ -15,6 +16,7 @@
 
 namespace m3d
 {
+    class IGeneratedTexture;
     class mVideoPlayer;
     class AuxImpulseInfo;
     class SgNode;
@@ -29,10 +31,6 @@ namespace m3d
     class CameraController;
     class Cinematic;
     class IImpulse;
-
-    class IGeneratedTexture
-    {
-    };
 
     class Application :
         public IConHandler,
@@ -156,7 +154,7 @@ namespace m3d
         void WaitForAnykey();
         void SetFrameClearColor(unsigned int);
         int DrawTextAbs(float,float,unsigned int,CStr const &,unsigned int,int);
-        Application(char const *);
+        Application(char const *logName);
         void sysError(CStr const &,CStr const &);
         int FinishExclusiveMsgLoop();
         virtual void UnPause();
@@ -263,6 +261,12 @@ namespace m3d
         void enterFontRender();
         virtual unsigned long GetStyleForRenderWindow(bool) const ;
 
+        virtual int InitMedia() = 0;
+        virtual int NewFrame() = 0;
+
+    protected:
+        CCamera m_curCamera;
+
     private:
         CmdLine m_cmdLine;
         rend::IRenderer *m_renderer;
@@ -360,11 +364,12 @@ namespace m3d
         DetailSettings m_detailSettings;
         IImpulse *m_pImpulses;
         bool m_bDXCursorEnabled;
-        Application::MouseInfo m_mouseInfo;
+        MouseInfo m_mouseInfo;
         HWND m_renderWindow;
         IConHandler *m_soundConHandler;
         bool m_bGuiWasHiddenBeforeCinematic;
         Cinematic *m_cinematic;
-        CCamera m_curCamera;
     };
+
+    extern Application* g_pApp;
 }

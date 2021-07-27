@@ -1,10 +1,19 @@
 #pragma once
+#include <vector>
 #include <core/clazz.h>
+#include <math/vector.h>
+#include <renderer/i_renderer.h>
 
 namespace m3d
 {
+    class GeomObjectRoad;
+    class RoadManager;
+
     class RoadNode :  public Object
     {
+    public:
+        static Class m_classRoadNode;
+
     public:
         virtual int WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
         static Class * __fastcall GetBaseClass();
@@ -13,18 +22,19 @@ namespace m3d
         int GetSoilType();
         virtual int ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
         void SetOwner(RoadManager *);
-        struct CVector GetLinkPoint(float,float);
-        struct CVector GetPoint1();
-        struct CVector GetPoint2();
+        CVector GetLinkPoint(float,float);
+        CVector GetPoint1();
+        CVector GetPoint2();
         virtual Object * Clone();
-        struct CVector GetPoint3();
-        struct CVector GetPoint4();
+        CVector GetPoint3();
+        CVector GetPoint4();
         virtual Class * GetClass() const ;
         static Object * __fastcall CreateObject();
     protected:
-        RoadNode(class RoadNode const &);
+        RoadNode(RoadNode const &);
         RoadNode();
     private:
+
         CVector m_origin;
         int m_roadSetHandle;
         CStr m_roadSetName;

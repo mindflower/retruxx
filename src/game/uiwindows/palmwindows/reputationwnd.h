@@ -11,8 +11,8 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     virtual ~ReputationButton();
 protected:
-    class CStr BWTolerance2StrId2(enum help::BlackWightTolerance) const ;
-    static class CStr __fastcall BWTolerance2StrId1(enum help::BlackWightTolerance);
+    CStr BWTolerance2StrId2(enum help::BlackWightTolerance) const ;
+    static CStr __fastcall BWTolerance2StrId1(enum help::BlackWightTolerance);
     static void __fastcall ClearPattern();
     ReputationButton(class ReputationButton const &);
     ReputationButton();

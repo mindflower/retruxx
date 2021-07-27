@@ -4,7 +4,7 @@ class AutoScrollTextWnd :  public m3d::ui::Wnd
 {
 public:
     virtual int SetBackground(class m3d::rend::TexHandle);
-    virtual int SetBackground(class CStr const &);
+    virtual int SetBackground(CStr const &);
     void StartScroll(bool);
     virtual void SetBounds(struct BoundsBase<float> const &,bool);
     static class m3d::Object * __fastcall CreateObject();
@@ -16,13 +16,13 @@ public:
     virtual class m3d::Object * Clone();
     float GetScrollSpeed() const ;
     void SetWrapMode(enum m3d::TextWrapFlags);
-    virtual int SetText(class CStr const &);
-    virtual void SetDefaultFont(class CStr const &,float,enum m3d::ui::FontType,union m3d::ui::FontParams);
+    virtual int SetText(CStr const &);
+    virtual void SetDefaultFont(CStr const &,float,enum m3d::ui::FontType,union m3d::ui::FontParams);
     virtual void SetDefaultFont(int);
     virtual ~AutoScrollTextWnd();
     bool IsScrolling() const ;
     virtual void SetPaneFlags(int);
-    virtual void SetPane(class CStr const &);
+    virtual void SetPane(CStr const &);
     void SetScrollSpeed(float);
     static struct m3d::Class * __fastcall GetBaseClass();
 protected:

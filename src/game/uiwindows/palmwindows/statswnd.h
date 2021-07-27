@@ -4,7 +4,7 @@ class StatsList :  public m3d::ui::ListBoxWnd<StatsButton *>
 {
 public:
     static struct m3d::Class * __fastcall GetBaseClass();
-    int GetButtonIdByStatsName(class CStr const &) const ;
+    int GetButtonIdByStatsName(CStr const &) const ;
     virtual struct m3d::Class * GetClass() const ;
     static class m3d::Object * __fastcall CreateObject();
     void ClearStats();
@@ -12,7 +12,7 @@ public:
     void UpdateStats();
     virtual class m3d::Object * Clone();
     virtual ~StatsList();
-    int AddButtonByStatsName(class CStr const &);
+    int AddButtonByStatsName(CStr const &);
 protected:
     StatsList(class StatsList const &);
     StatsList();
@@ -55,13 +55,13 @@ private:
 class StatsButton :  public m3d::ui::ButtonWnd
 {
 public:
-    int SetUpForStats(class CStr const &,class PointBase<float> const &,float);
+    int SetUpForStats(CStr const &,class PointBase<float> const &,float);
     void ClearValue();
     static struct m3d::Class * __fastcall GetBaseClass();
     int UpdateValue();
     virtual class m3d::Object * Clone();
     void SetBounds(struct BoundsBase<float> const &,struct BoundsBase<float> const &);
-    class CStr const & GetStatsName() const ;
+    CStr const & GetStatsName() const ;
     struct BoundsBase<float> const & GetVirtualBounds() const ;
     static class m3d::Object * __fastcall CreateObject();
     virtual ~StatsButton();
@@ -70,8 +70,8 @@ protected:
     virtual void SetBounds(struct BoundsBase<float> const &,bool);
     StatsButton(class StatsButton const &);
     StatsButton();
-    virtual class CStr GetStatsFullName() const ;
-    class CStr GetHackedDefaultValueForStats(class CStr const &) const ;
+    virtual CStr GetStatsFullName() const ;
+    CStr GetHackedDefaultValueForStats(CStr const &) const ;
 private:
     CStr m_statsName;
     m3d::ui::Wnd *m_lblName;

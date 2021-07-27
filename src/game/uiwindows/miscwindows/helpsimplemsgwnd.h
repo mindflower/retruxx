@@ -3,7 +3,7 @@
 class HelpSimpleMsgWnd :  public HelpWnd
 {
 public:
-    void SetupForHelp(class CStr const &,bool);
+    void SetupForHelp(CStr const &,bool);
     virtual class m3d::Object * Clone();
     static struct m3d::Class * __fastcall GetBaseClass();
     static class m3d::Object * __fastcall CreateObject();

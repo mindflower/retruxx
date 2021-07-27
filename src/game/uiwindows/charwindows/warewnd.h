@@ -99,7 +99,7 @@ protected:
     void UpdateTooltip();
     class ai::Workshop * GetWorkshop() const ;
     void SetActive(bool);
-    class CStr GetFullNameForWare(int) const ;
+    CStr GetFullNameForWare(int) const ;
     void FullUpdate();
     class m3d::rend::TexHandle GetIcoForWare(int) const ;
     void UpdateAmount(bool);

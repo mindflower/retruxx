@@ -41,10 +41,10 @@ namespace m3d
         enum eFlags GetFlags() const;
         void Init(char const*, char const*, eType, eFlags);
         void SetHandler(IConHandler*);
-        void Set(char const*, bool);
-        void SetF(float, bool);
-        void SetB(bool, bool);
-        void SetI(int, bool);
+        void Set(char const*, bool = false);
+        void SetF(float, bool = false);
+        void SetB(bool, bool = false);
+        void SetI(int, bool = false);
         eType GetType() const;
 
     private:

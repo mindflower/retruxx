@@ -17,7 +17,6 @@ namespace m3d
 }
 
 class PostEffect;
-class CStr;
 
 class PostEffectManager : public m3d::IDeviceResetCallback
 {

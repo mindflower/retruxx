@@ -19,7 +19,7 @@ namespace m3d
         virtual float GetAnimationLength(int, int);
         int Load(CStr const&);
 
-    private:
+    public:
         //m3d::EngineConfig_vtbl* __vftable /*VFT*/;
         IConsole* m_console;
         HWND m_mainWnd;

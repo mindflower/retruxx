@@ -93,7 +93,7 @@ namespace m3d
                 AnimationInfo(AnimationInfo const&);
                 bool IsValid() const;
                 int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-                class CStr AnimationType2Str(AnimationType) const;
+                CStr AnimationType2Str(AnimationType) const;
                 bool CanAnimate() const;
                 int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
                 void SetupDefaultOnHide();

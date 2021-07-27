@@ -57,7 +57,7 @@ protected:
     GlobalMapWnd();
     GlobalMapWnd(class GlobalMapWnd const &);
     int CreateConnectionsWnd();
-    bool ConnectionExists(class CStr const &,class CStr const &) const ;
+    bool ConnectionExists(CStr const &,CStr const &) const ;
     virtual int GameDataSetup();
     virtual int OnAfterAddToWndStation();
     void ClearConnections();
@@ -90,10 +90,10 @@ class LevelIco :  public m3d::ui::ImageWnd
 public:
     virtual struct m3d::Class * GetClass() const ;
     virtual ~LevelIco();
-    int SetUpForLevel(class CStr const &);
+    int SetUpForLevel(CStr const &);
     static struct m3d::Class * __fastcall GetBaseClass();
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
-    class CStr const & GetLevelName() const ;
+    CStr const & GetLevelName() const ;
     static class m3d::Object * __fastcall CreateObject();
     virtual class m3d::Object * Clone();
 protected:

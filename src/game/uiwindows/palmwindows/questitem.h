@@ -19,7 +19,7 @@ protected:
     QuestItem(class QuestItem const &);
     int RemoveNavPoint(int);
     int AddNavPoint(enum NavPoint::NavPointType);
-    class CStr GetQuestDizById(enum help::QuestType,int) const ;
+    CStr GetQuestDizById(enum help::QuestType,int) const ;
     bool NeedNavPointBtnBeAdded(enum help::QuestType,int) const ;
     void UpdateQuestLabelWnd();
     void OnBtnNavPointClick(class m3d::ui::Wnd *,unsigned int,class m3d::AIParam const &);
@@ -67,7 +67,7 @@ public:
     struct BoundsBase<float> GetLastStringBounds() const ;
     virtual ~QuestLabel();
     virtual struct m3d::Class * GetClass() const ;
-    virtual int CreateQuestLabel(class CStr const &,class PointBase<float> const &,float,unsigned int);
+    virtual int CreateQuestLabel(CStr const &,class PointBase<float> const &,float,unsigned int);
     bool IsSelected() const ;
     void SetSelected(bool);
     void SetQuestStatus(enum help::UnifyQuestStatus);

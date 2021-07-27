@@ -4,29 +4,29 @@ class TownDlg :  public ChildPanel
 {
 public:
     virtual int GameDataLoad(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *);
-    struct ConditionalClosingInfo * GetConditionalClosingInfoForTown(class CStr const &,class CStr const &) const ;
+    struct ConditionalClosingInfo * GetConditionalClosingInfoForTown(CStr const &,CStr const &) const ;
     static class m3d::Object * __fastcall CreateObject();
     void FullUpdate();
     void ClearConditionalClosingInfo();
     virtual struct m3d::Class * GetClass() const ;
     virtual int OnAfterAddToWndStation();
     void OnEnterBar(int);
-    bool IsTownWithConditionalClosing(class CStr const &,class CStr const &) const ;
+    bool IsTownWithConditionalClosing(CStr const &,CStr const &) const ;
     virtual int OnBeforeAddToWndStation();
     virtual int GameDataClear(bool);
     virtual int GameDataSave(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *);
     void UpdateClanPicture();
-    void AddConditionalClosingInfo(class CStr const &,class CStr const &);
+    void AddConditionalClosingInfo(CStr const &,CStr const &);
     virtual int GameDataSetup();
     void OnLeaveBar();
     virtual int GameDataUpdate(void *,int);
     static struct m3d::Class * __fastcall GetBaseClass();
-    void SetConditionalClosingForTown(class CStr const &,class CStr const &,bool);
+    void SetConditionalClosingForTown(CStr const &,CStr const &,bool);
     int SetUpForTown(int);
     void ShowForTown(int);
     virtual class m3d::Object * Clone();
     class ai::Town * GetTown() const ;
-    void RemoveConditionalClosingInfo(class CStr const &,class CStr const &);
+    void RemoveConditionalClosingInfo(CStr const &,CStr const &);
     virtual ~TownDlg();
 protected:
     TownDlg();

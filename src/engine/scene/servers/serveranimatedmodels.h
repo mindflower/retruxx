@@ -28,7 +28,7 @@ namespace m3d
         virtual bool ReportServerInfo(char const *);
         virtual int Init();
         struct CVector GetBoundSizes(char const *);
-        int GetBoneMatrixByNameFromModelName(char const *,class CStr const &,struct CMatrix &,bool);
+        int GetBoneMatrixByNameFromModelName(char const *,CStr const &,struct CMatrix &,bool);
         virtual int SaveAllLoadedEntities(char const *);
         virtual int Release();
         AnimatedModelsServer();

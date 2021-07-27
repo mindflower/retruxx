@@ -8,10 +8,10 @@ public:
     virtual ~NavPointButton();
     static class m3d::Object * __fastcall CreateObject();
     static struct m3d::Class * __fastcall GetBaseClass();
-    virtual int Create(class CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int);
+    virtual int Create(CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int);
     int GetNavPointId() const ;
     enum NavPoint::NavPointType GetNavPointType() const ;
-    static class CStr __fastcall NavPointType2Str(enum NavPoint::NavPointType);
+    static CStr __fastcall NavPointType2Str(enum NavPoint::NavPointType);
     virtual struct m3d::Class * GetClass() const ;
 protected:
     NavPointButton();

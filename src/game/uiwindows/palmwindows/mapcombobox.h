@@ -5,7 +5,7 @@ class MapComboBox :  public m3d::ui::ComboBoxWnd
 public:
     int CreateFromPattern(class m3d::ui::Wnd const *,bool);
     static struct m3d::Class * __fastcall GetBaseClass();
-    class CStr GetSelectedMapName() const ;
+    CStr GetSelectedMapName() const ;
     virtual class m3d::Object * Clone();
     static class m3d::Object * __fastcall CreateObject();
     virtual struct m3d::Class * GetClass() const ;

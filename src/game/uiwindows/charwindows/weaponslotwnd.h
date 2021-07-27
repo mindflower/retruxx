@@ -6,7 +6,7 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     static class m3d::Object * __fastcall CreateObject();
     virtual class m3d::Object * Clone();
-    int SetupForGunPart(class CStr const &,int);
+    int SetupForGunPart(CStr const &,int);
     virtual ~WeaponSlotWnd();
     static struct m3d::Class * __fastcall GetBaseClass();
 protected:
@@ -27,7 +27,7 @@ protected:
     void UpdateGunIco(class ai::VehiclePart const *);
     WeaponSlotWnd(class WeaponSlotWnd const &);
     WeaponSlotWnd();
-    class m3d::rend::TexHandle GetIcoByGunPartName(class CStr const &,bool) const ;
+    class m3d::rend::TexHandle GetIcoByGunPartName(CStr const &,bool) const ;
     void ClearWeaponGroups();
 private:
     CStr m_gunPartName;

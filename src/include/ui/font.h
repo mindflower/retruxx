@@ -30,7 +30,7 @@ namespace m3d
             ~TCharDictionary();
             unsigned char GetTCharAtPos(int) const;
             CStr const& GetTChars() const;
-            int CreateFromXml(class CStr const&);
+            int CreateFromXml(CStr const&);
 
         private:
             void InitDefault();
@@ -100,30 +100,30 @@ namespace m3d
         public:
             int SaveToXml();
             int SaveToTga();
-            class CStr GetFileNameForReadableInfo() const;
+            CStr GetFileNameForReadableInfo() const;
             int CreateFromPrototype(Font*, float);
             FontType GetType() const;
             int Save();
-            class CStr GetBaseFileName() const;
+            CStr GetBaseFileName() const;
             float GetScale() const;
             int CreateFromXmlNode(cmn::XmlFile*, cmn::XmlNode const*);
-            int CreateFromTtf(class CStr const&, float, unsigned int, unsigned int);
-            class CStr CreateNameFull(class CStr const&, unsigned int, unsigned int) const;
+            int CreateFromTtf(CStr const&, float, unsigned int, unsigned int);
+            CStr CreateNameFull(CStr const&, unsigned int, unsigned int) const;
             class PointBase<float> CalcGlyphSz(unsigned char) const;
             unsigned int GetStyle() const;
             int SaveGrid();
-            class CStr GetFileNameForTexture(int) const;
+            CStr GetFileNameForTexture(int) const;
             class std::vector<rend::TexHandle> const& GetTextures() const;
             ~Font();
             void Clear();
             class PointBase<float> GetGlyphSz(unsigned char) const;
             TextureCoordinates GetTexCoord(unsigned char) const;
-            class CStr const& GetName() const;
+            CStr const& GetName() const;
             float CalcCharWidthAdvanced(unsigned char) const;
             class PointBase<int> GetTexSz() const;
             void PrecalcSymbolsSizes();
             Font();
-            class CStr GetFileNameForGrid(int) const;
+            CStr GetFileNameForGrid(int) const;
             float GetCharWidthAdvanced(unsigned char) const;
             FontABC GetAbcWidth(unsigned char) const;
 
@@ -156,7 +156,7 @@ namespace m3d
             int ValidateFontId(int&);
             int Init();
             void Clear();
-            int GetFontId(class CStr const&, float, FontType, union FontParams);
+            int GetFontId(CStr const&, float, FontType, union FontParams);
             ~FontManager();
             FontManager();
             int ReadFontsFromXml();
@@ -169,7 +169,7 @@ namespace m3d
 
         private:
             float GetScaledHeight(float) const;
-            int FindMatchFont(class CStr const&, float, bool, bool);
+            int FindMatchFont(CStr const&, float, bool, bool);
             std::vector<Font*> m_fonts;
         };
     }

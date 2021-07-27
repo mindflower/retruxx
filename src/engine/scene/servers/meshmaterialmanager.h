@@ -6,7 +6,7 @@ namespace m3d
     {
     public:
         ~MeshMaterialManager();
-        void Init(class CStr const &,class CStr const &);
+        void Init(CStr const &,CStr const &);
         MeshMaterialManager();
         void Release();
         DSurfaceMaterial & GetMaterial(SgNode &,AnimatedModel::Mesh &);

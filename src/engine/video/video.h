@@ -1,6 +1,8 @@
 #pragma once
-#include "renbase.h"
+#include <Streams.h>
 #include <Windows.h>
+
+class CMediaType;
 
 namespace m3d
 {

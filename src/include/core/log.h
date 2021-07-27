@@ -1,8 +1,5 @@
 #pragma once
 #include "threadsync.h"
-#include <string>
-
-class CStr;
 
 namespace m3d
 {

@@ -17,7 +17,7 @@ protected:
     BuildingButton(class BuildingButton const &);
 private:
     int CreateChildren();
-    class CStr GetNameForBuilding(class ai::Building const *) const ;
+    CStr GetNameForBuilding(class ai::Building const *) const ;
     static void __fastcall ClearPattern();
     int CreateFromPattern();
     class m3d::rend::TexHandle GetIcoForBuilding(class ai::Building const *) const ;

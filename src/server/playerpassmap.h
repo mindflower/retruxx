@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
-
-class CStr;
+#include <core/stringm3d.h>
 
 namespace ai
 {

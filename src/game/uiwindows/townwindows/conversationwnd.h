@@ -42,7 +42,7 @@ protected:
     ConversationWnd();
     ConversationWnd(class ConversationWnd const &);
     virtual int GameDataUpdate(void *,int);
-    int ExecuteScript(class CStr const &);
+    int ExecuteScript(CStr const &);
     int UpdateOnEndConversation();
     int UpdateOnSelectPlayerReply(class Reply const *);
     virtual int OnAfterRemoveFromWndStation();

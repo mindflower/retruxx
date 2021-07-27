@@ -38,7 +38,7 @@ namespace m3d
             void SetCurrentWorkDir(char const*);
 
         protected:
-            void DecryptFileName(char const*, class CStr&);
+            void DecryptFileName(char const*, CStr&);
             int InternalAddPackage(CStr const&);
 
         private:

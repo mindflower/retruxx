@@ -9,7 +9,7 @@ namespace m3d
         public:
             int GetMax() const;
             virtual Object* Clone();
-            virtual int Create(class CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
+            virtual int Create(CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
             virtual int Create(float, unsigned int);
             virtual ~SliderWnd();
             int GetMin() const;
@@ -38,7 +38,7 @@ namespace m3d
         {
         public:
             virtual Class* GetClass() const;
-            virtual int Create(class CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
+            virtual int Create(CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
             int Create(struct BoundsBase<float> const&, unsigned int, enum LineWndDirection);
             virtual ~LineWnd();
             virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
@@ -62,7 +62,7 @@ namespace m3d
         public:
             static Class* __fastcall GetBaseClass();
             int DoModal();
-            virtual int Create(class CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
+            virtual int Create(CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
             virtual int CanClose();
             int IsModal();
             virtual Class* GetClass() const;
@@ -93,7 +93,7 @@ namespace m3d
             void SetQuickEraseState(bool);
             virtual Object* Clone();
             int GetMaxCursorPos() const;
-            virtual int SetText(class CStr const&);
+            virtual int SetText(CStr const&);
             static Class* __fastcall GetBaseClass();
             int GetMinCursorPos() const;
             virtual ~EditWnd();
@@ -104,8 +104,8 @@ namespace m3d
             int DecrementCursorPosition();
             bool IsInQuickEraseState() const;
             int GetCursorPosition() const;
-            virtual int Create(class CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
-            class CStr GetVisibleText() const;
+            virtual int Create(CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
+            CStr GetVisibleText() const;
             void SetCursorColor(unsigned int);
             virtual Class* GetClass() const;
             unsigned int GetCursorColor() const;
@@ -126,7 +126,7 @@ namespace m3d
         class ImageWnd : public Wnd
         {
         public:
-            int SetImage(class CStr const&);
+            int SetImage(CStr const&);
             int SetImage(rend::TexHandle);
             virtual Class* GetClass() const;
             static Object* __fastcall CreateObject();
@@ -136,9 +136,9 @@ namespace m3d
             virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
             static Class* __fastcall GetBaseClass();
             virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-            virtual int CreateImageWnd(struct BoundsBase<float> const&, class CStr const&);
+            virtual int CreateImageWnd(struct BoundsBase<float> const&, CStr const&);
             virtual int CreateImageWnd(struct BoundsBase<float> const&, rend::TexHandle);
-            virtual int Create(class CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
+            virtual int Create(CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
             virtual int OnPaint(DrawInfo const&);
         protected:
             ImageWnd();
@@ -157,11 +157,11 @@ namespace m3d
             void SetCurPos(float);
             virtual void EnableWindow(bool);
             int Create(struct BoundsBase<float> const&, int);
-            virtual int Create(class CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
+            virtual int Create(CStr const&, unsigned int, struct BoundsBase<float> const&, unsigned int);
             virtual ~ScrollWnd();
             float GetMaxPos() const;
             static Object* __fastcall CreateObject();
-            virtual void SetScrollPane(class CStr const&);
+            virtual void SetScrollPane(CStr const&);
             static Class* __fastcall GetBaseClass();
             void SetScrollRect(float, float);
             virtual Class* GetClass() const;
@@ -205,12 +205,12 @@ namespace m3d
             virtual Object * Clone();
             rend::TexHandle GetTargetTexture() const ;
             virtual int ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
-            virtual int CreateSgNodeArrayWnd(class CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int,rend::TexHandle);
+            virtual int CreateSgNodeArrayWnd(CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int,rend::TexHandle);
             virtual int CreateSgNodeArrayWnd(rend::TexHandle,unsigned int,struct BoundsBase<float> const &,unsigned int,rend::TexHandle);
             int SetTargetTexture(rend::TexHandle);
         protected:
             virtual int CreateImageWnd(struct BoundsBase<float> const &,rend::TexHandle);
-            virtual int CreateImageWnd(struct BoundsBase<float> const &,class CStr const &);
+            virtual int CreateImageWnd(struct BoundsBase<float> const &,CStr const &);
             SgNodeArrayWnd();
             SgNodeArrayWnd(class SgNodeArrayWnd const &);
         private:
@@ -230,7 +230,7 @@ namespace m3d
             class Item
             {
             public:
-                Item(class CStr const&, int, class Item*, class Item*);
+                Item(CStr const&, int, class Item*, class Item*);
             protected:
             private:
                 Item* m_next;
@@ -322,16 +322,16 @@ namespace ui
             static Object * __fastcall CreateObject();
             void SetCheck(int);
             virtual ~CheckWnd();
-            class CStr const & GetCheckedPaneName() const ;
+            CStr const & GetCheckedPaneName() const ;
             virtual Object * Clone();
             int GetCheck() const ;
-            void SetUncheckedPane(class CStr const &);
+            void SetUncheckedPane(CStr const &);
             virtual int ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
-            class CStr const & GetUncheckedPaneName() const ;
-            void SetCheckedPane(class CStr const &);
+            CStr const & GetUncheckedPaneName() const ;
+            void SetCheckedPane(CStr const &);
             static Class * __fastcall GetBaseClass();
             virtual int WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
-            virtual int Create(class CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int);
+            virtual int Create(CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int);
         protected:
             virtual int OnMouseButton0(unsigned int,class PointBase<float> const &);
             virtual void DrawWndText(DrawInfo const &);
@@ -359,14 +359,14 @@ namespace ui
             virtual Class * GetClass() const ;
             float GetGlyphHeight();
             void AdjustBoundsToFit(float);
-            int SetGlyphTexture(class CStr const &,class CStr const &);
+            int SetGlyphTexture(CStr const &,CStr const &);
             void SetGlyphTexture(rend::TexHandle,rend::TexHandle);
             virtual ~GlyphButton();
             rend::TexHandle GetGlyphTexture() const ;
             rend::TexHandle GetGlyphTextureDisabled() const ;
             virtual int CreateGlyphButton(struct BoundsBase<float> const &,enum GlyphButtonType);
-            virtual int CreateGlyphButton(unsigned int,struct BoundsBase<float> const &,enum GlyphButtonType,class CStr const &,unsigned int,class CStr,class CStr);
-            virtual int CreateGlyphButton(unsigned int,struct BoundsBase<float> const &,enum GlyphButtonType,class CStr const &,unsigned int,rend::TexHandle,rend::TexHandle);
+            virtual int CreateGlyphButton(unsigned int,struct BoundsBase<float> const &,enum GlyphButtonType,CStr const &,unsigned int,CStr,CStr);
+            virtual int CreateGlyphButton(unsigned int,struct BoundsBase<float> const &,enum GlyphButtonType,CStr const &,unsigned int,rend::TexHandle,rend::TexHandle);
             static Object * __fastcall CreateObject();
             static Class * __fastcall GetBaseClass();
             virtual Object * Clone();
@@ -390,14 +390,14 @@ namespace ui
         class TextBoxWnd :  public FormattedStringsListBoxWnd
         {
         public:
-            virtual int SetText(class CStr const &);
+            virtual int SetText(CStr const &);
             static Class * __fastcall GetBaseClass();
-            virtual class CStr GetText() const ;
+            virtual CStr GetText() const ;
             virtual Object * Clone();
             static Object * __fastcall CreateObject();
             int SetVScrollToPos(unsigned int);
             virtual Class * GetClass() const ;
-            virtual int Create(class CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int);
+            virtual int Create(CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int);
             int Create(struct BoundsBase<float> const &,unsigned int,int);
             virtual ~TextBoxWnd();
         protected:
@@ -438,9 +438,9 @@ namespace ui
             struct CVector & Translation();
             static class PointBase<int> __fastcall GetFitTargetTextureSize(struct BoundsBase<float> const &);
             virtual int CreateModelWnd(rend::TexHandle,unsigned int,struct BoundsBase<float> const &,unsigned int,rend::TexHandle);
-            virtual int CreateModelWnd(class CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int,rend::TexHandle);
+            virtual int CreateModelWnd(CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int,rend::TexHandle);
         protected:
-            virtual int CreateImageWnd(struct BoundsBase<float> const &,class CStr const &);
+            virtual int CreateImageWnd(struct BoundsBase<float> const &,CStr const &);
             virtual int CreateImageWnd(struct BoundsBase<float> const &,rend::TexHandle);
             ModelWnd(class ModelWnd const &);
             ModelWnd();
@@ -470,7 +470,7 @@ namespace ui
             virtual Object * Clone();
             virtual int OnPaint(DrawInfo const &);
             virtual int CreateModelArrayWnd(rend::TexHandle,unsigned int,struct BoundsBase<float> const &,unsigned int,rend::TexHandle);
-            virtual int CreateModelArrayWnd(class CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int,rend::TexHandle);
+            virtual int CreateModelArrayWnd(CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int,rend::TexHandle);
             void ClearModels();
             virtual ~ModelArrayWnd();
             int GetSkinNum(int) const ;
@@ -486,7 +486,7 @@ namespace ui
             ModelArrayWnd();
             ModelArrayWnd(class ModelArrayWnd const &);
             virtual int CreateImageWnd(struct BoundsBase<float> const &,rend::TexHandle);
-            virtual int CreateImageWnd(struct BoundsBase<float> const &,class CStr const &);
+            virtual int CreateImageWnd(struct BoundsBase<float> const &,CStr const &);
         private:
             rend::TexHandle m_renderTexture;
             std::vector<AnimatedModel *> m_models;

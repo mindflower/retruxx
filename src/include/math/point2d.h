@@ -11,7 +11,7 @@ public:
     PointBase<T> const& operator=(PointBase<T> const&);
     PointBase<T> operator-() const;
 
-private:
+public:
     float x;
     float y;
 };

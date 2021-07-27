@@ -18,7 +18,7 @@ public:
 protected:
     void UpdateTex();
     void ClearInfo();
-    static class CStr __fastcall Mode2Str(enum Mode);
+    static CStr __fastcall Mode2Str(enum Mode);
     MotherPanelTabButton(class MotherPanelTabButton const &);
     MotherPanelTabButton();
     void UpdateTooltip();

@@ -5,6 +5,31 @@
 
 namespace m3d
 {
+    enum RenderNodeType
+    {
+        RNT_SIMPLE = 0x0,
+        RNT_FOR_SHADOW = 0x1,
+        RNT_FOR_PROJECTOR = 0x2,
+        RNT_FOR_POINTLIGHT = 0x3,
+        RNT_FOR_CONTOUR = 0x4,
+    };
+
+    class RenderNodeInfo
+    {
+    public:
+        RenderNodeInfo(RenderNodeInfo const&);
+        RenderNodeInfo(RenderNodeType);
+
+    private:
+        RenderNodeType rnt;
+        CMatrix projTansform;
+        CVector projOrg;
+        CVector projDir;
+        bool isCullInverted;
+        bool isPrimaryRender;
+        bool isUseImpostors;
+    };
+
     class DataServer
     {
     public:

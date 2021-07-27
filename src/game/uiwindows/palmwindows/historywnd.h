@@ -6,7 +6,7 @@ public:
     static struct m3d::Class * __fastcall GetBaseClass();
     static class m3d::Object * __fastcall CreateObject();
     virtual class m3d::Object * Clone();
-    int AddRecord(class CStr const &,class m3d::AIParam const &);
+    int AddRecord(CStr const &,class m3d::AIParam const &);
     virtual struct m3d::Class * GetClass() const ;
     virtual ~HistoryWnd();
 protected:

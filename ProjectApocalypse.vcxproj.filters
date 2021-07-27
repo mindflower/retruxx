@@ -861,28 +861,7 @@
     <ClCompile Include="src\engine\utilit.cpp">
       <Filter>engine</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\video\amfilter.cpp">
-      <Filter>engine\video</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\video\combase.cpp">
-      <Filter>engine\video</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\video\ctlutil.cpp">
-      <Filter>engine\video</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\video\mtype.cpp">
-      <Filter>engine\video</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\video\renbase.cpp">
-      <Filter>engine\video</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\video\video.cpp">
-      <Filter>engine\video</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\video\wxlist.cpp">
-      <Filter>engine\video</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\video\wxutil.cpp">
       <Filter>engine\video</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\weather\weather.cpp">
@@ -1929,6 +1908,27 @@
     <ClCompile Include="src\server\weaponfirer.cpp">
       <Filter>server</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\video\wxlist.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\wxutil.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\amfilter.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\combase.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\ctlutil.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\mtype.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\renbase.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">
@@ -2107,33 +2107,6 @@
     </ClInclude>
     <ClInclude Include="src\engine\tinyxml\tinyxml.h">
       <Filter>engine\tinyxml</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\video\amfilter.h">
-      <Filter>engine\video</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\video\combase.h">
-      <Filter>engine\video</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\video\ctlutil.h">
-      <Filter>engine\video</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\video\fourcc.h">
-      <Filter>engine\video</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\video\mtype.h">
-      <Filter>engine\video</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\video\reftime.h">
-      <Filter>engine\video</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\video\renbase.h">
-      <Filter>engine\video</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\video\wxlist.h">
-      <Filter>engine\video</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\video\wxutil.h">
-      <Filter>engine\video</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\weather\weather.h">
       <Filter>engine\weather</Filter>
@@ -3509,16 +3482,79 @@
     <ClInclude Include="src\include\ui\frame.h">
       <Filter>include\ui</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\core\stackwalker.h">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\serveranimatedmodel.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\serveranimatedmodelrender.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\serverdecals.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\serverfactories.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\serverlight.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\serverlines.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\servermusic.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\serverparticles.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\serverprojectors.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\serversound.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\serversprites.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scene\servers\serverstaticmodels.h">
+      <Filter>include\scene\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\flares.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\renbase.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\wxlist.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\wxutil.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\amfilter.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\combase.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\ctlutil.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\fourcc.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\mtype.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\reftime.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\engine\scene\servers\serveranimatedmodel.inl">
       <Filter>engine\scene\servers</Filter>
-    </None>
-    <None Include="src\include\landscape.inl">
-      <Filter>include</Filter>
-    </None>
-    <None Include="src\include\skelmodel.inl">
-      <Filter>include</Filter>
     </None>
     <None Include="src\include\ui\uilistboxwnd.h">
       <Filter>include\ui</Filter>

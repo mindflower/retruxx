@@ -59,7 +59,7 @@ public:
     virtual ~NavPointMarkWnd();
 protected:
     class m3d::rend::TexHandle GetNpIcoByType(enum NavPoint::NavPointType) const ;
-    class CStr GetTooltipForNp(int) const ;
+    CStr GetTooltipForNp(int) const ;
     NavPointMarkWnd();
     NavPointMarkWnd(class NavPointMarkWnd const &);
 private:

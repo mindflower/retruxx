@@ -42,7 +42,7 @@ public:
     static class m3d::Object * __fastcall CreateObject();
     virtual struct m3d::Class * GetClass() const ;
 protected:
-    class CStr GetNameForNpc(class ai::Npc const *) const ;
+    CStr GetNameForNpc(class ai::Npc const *) const ;
     static void __fastcall ClearPattern();
     virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
     static int __fastcall LoadPattern(class m3d::ui::Wnd *);
