@@ -42,12 +42,12 @@ namespace m3d
         static int CompareStr(void const*, void const*);
 
     public:
+        AIParam() = default;
+        AIParam(AIParam const& param);
         AIParam(CVector const&);
         AIParam(CVector2 const&);
         AIParam(std::vector<int> const&);
         AIParam(CStr const&);
-        AIParam();
-        AIParam(AIParam const&);
         AIParam(int const&);
         AIParam(float const&);
         ~AIParam();
@@ -85,17 +85,26 @@ namespace m3d
         void SetType(eAIParamType);
 
     protected:
-        void Copy(AIParam const&);
+        void Copy(AIParam const& param);
         void ConvertFromString(void*, eAIParamType) const;
         void Detach();
 
     private:
-        //$71B268629322DA98347F29F1B1F81A46 ___u0;
-        float y;
-        float z;
-        float w;
-        eAIParamType Type;
+        float y = 0;
+        float z = 0;
+        float w = 0;
+        eAIParamType Type = AIPARAM_UNDEFINE;
         //CStr* (__fastcall* NameFromNum)(CStr* result, const m3d::AIParam*, int);
         //int(__fastcall* NumFromName)(const m3d::AIParam*, CStr*);
+        //TODO: union initialization
+        union
+        {
+            int id = 0;
+            float x;
+            float Value;
+            std::vector<CStr>* m_NameList;
+            std::vector<int>* m_NumList;
+            CStr* m_Str;
+        };
     };
 }

@@ -17,7 +17,7 @@ namespace m3d
         virtual float GetAttackAnimationFrametime(int, int);
         EngineConfig();
         virtual float GetAnimationLength(int, int);
-        int Load(CStr const&);
+        int Load(CStr const& fname);
 
     public:
         //m3d::EngineConfig_vtbl* __vftable /*VFT*/;

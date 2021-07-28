@@ -1,12 +1,28 @@
 #pragma once
+#include <cassert>
 
 template<class T>
 class scoped_ptr
 {
 public:
-    T& operator*();
-    T* operator->();
+    scoped_ptr(T* ptr) :
+        m_ptr(ptr)
+    {
+        assert(nullptr != m_ptr);
+    }
+
+    T& operator*()
+    {
+        assert(nullptr != m_ptr);
+        return *m_ptr;
+    }
+
+    T* operator->()
+    {
+        assert(nullptr != m_ptr);
+        return m_ptr;
+    }
 
 private:
-    T* m_ptr;
+    T* m_ptr = nullptr;
 };

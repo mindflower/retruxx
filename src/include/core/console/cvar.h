@@ -26,34 +26,41 @@ namespace m3d
         };
 
     public:
-        CVar();
-        CVar(char const*, char const*, eType, eFlags);
-        ~CVar();
+        CVar() = default;
+        CVar(char const* name, char const* value, eType type, eFlags flags);
 
-        char const* GetDefault() const;
-        char const* GetName() const;
-        IConHandler* GetHandler();
-        char const* GetS() const;
-        float GetF() const;
-        unsigned int GetC() const;
+        void Init(char const* name, char const* value, eType type, eFlags flags);
+        void SetB(bool b, bool ignoreFlags = true);
+        void SetF(float f, bool ignoreFlags = true);
+        void SetI(int i, bool ignoreFlags = true);
+        void Set(char const* value, bool ignoreFlags = true);
+        void SetHandler(IConHandler* handler);
+
         bool GetB() const;
+        unsigned int GetC() const;
+        float GetF() const;
         int GetI() const;
-        enum eFlags GetFlags() const;
-        void Init(char const*, char const*, eType, eFlags);
-        void SetHandler(IConHandler*);
-        void Set(char const*, bool = false);
-        void SetF(float, bool = false);
-        void SetB(bool, bool = false);
-        void SetI(int, bool = false);
+        char const* GetDefault() const;
+        IConHandler* GetHandler() const;
+        char const* GetName() const;
+        char const* GetS() const;
         eType GetType() const;
+        eFlags GetFlags() const;
 
     private:
         CStr m_name;
-        eType m_type;
-        eFlags m_flags;
-        //$9B7D1A9EEEDF759822A9A331826DEE33 ___u3;
+        eType m_type = CVAR_UNDEFINED;
+        eFlags m_flags = CVAR_ARCHIVE;
         CStr m_s;
-        char* m_defaultValue;
-        IConHandler* m_handler;
+        CStr m_defaultValue;
+        IConHandler* m_handler = nullptr;
+        //TODO: union initialization 
+        union
+        {
+            int m_i = 0;
+            unsigned int m_color;
+            float m_f;
+            bool m_b;
+        };
     };
 }

@@ -1,6 +1,10 @@
 #pragma once
 #include <core/clazz.h>
 
+namespace m3d {
+    class AIParam;
+}
+
 class Profile : public m3d::Object
 {
 public:
@@ -10,12 +14,12 @@ public:
     static class m3d::Object * __fastcall CreateObject();
     void SetFolder(CStr const &);
     virtual class m3d::Object * Clone();
-    int GetParam(enum ProfileParam,class m3d::AIParam &) const ;
+    int GetParam(enum ProfileParam, m3d::AIParam &) const ;
     static struct m3d::Class * __fastcall GetBaseClass();
     void SetName(CStr const &);
     int SaveToXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
     bool IsValid() const ;
-    int SetParam(enum ProfileParam,class m3d::AIParam const &);
+    int SetParam(enum ProfileParam,AIParam const &);
     virtual ~Profile();
     CStr const & GetName() const ;
 protected:

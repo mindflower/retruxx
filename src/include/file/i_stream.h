@@ -14,11 +14,16 @@ namespace m3d
             };
 
         public:
-            IStream();
-            virtual ~IStream();
-
-        private:
-            //m3d::fs::IStream_vtbl* __vftable /*VFT*/;
+            virtual ~IStream() = default;
+            virtual unsigned int GetSize() = 0;
+            virtual FILETIME GetDate() = 0;
+            virtual IStream*  Clone() = 0;
+            virtual unsigned int ReadBytes(void*, unsigned int) = 0;
+            virtual unsigned int PeekBytes(void*, unsigned int) = 0;
+            virtual unsigned int WriteBytes(void const*, unsigned int) = 0;
+            virtual int Eof() = 0;
+            virtual int Error() = 0;
+            virtual int Flush() = 0;
         };
     }
 }

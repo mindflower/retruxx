@@ -1,4 +1,5 @@
 #pragma once
+#include "stringm3d.h"
 #include <iface.h>
 
 namespace m3d
@@ -12,8 +13,6 @@ namespace m3d
 namespace m3d
 {
     //TODO: add static functions
-
-    cmn::XmlFile* ReadXmlFile(char const*, CStr*);
 
     namespace cmn
     {
@@ -83,6 +82,9 @@ namespace m3d
             virtual int Read(fs::IStream&) = 0;
             virtual XmlNode* CreateNode(XmlNodeType, char const*) const = 0;
             virtual bool GetLastNestling(XmlNode*, char const*) const = 0;
+            virtual char const* GetError() = 0;
         };
     }
+
+    cmn::XmlFile* ReadXmlFile(char const* filename, CStr* errorStr);
 }

@@ -99,6 +99,8 @@ namespace m3d
         return nullptr;
     }
 
+    Class Object::m_classObject;
+
     int Object::AddChild(Object* node)
     {
         assert(node != nullptr);
@@ -192,17 +194,14 @@ namespace m3d
             }
             else
             {
-                auto newNode = file->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
-                newNode->IncRef();
+                ref_ptr newNode = file->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
                 for (node->GetFirstNestling(newNode, "Node"); !newNode->IsEmpty(); newNode->GetNextRelative(newNode, "Node"))
                 {
                     if (!ChildNodeFromXmlNode(file, newNode))
                     {
-                        newNode->DecRef();
                         return 0;
                     }
                 }
-                newNode->DecRef();
                 return 1;
             }
         }
@@ -224,16 +223,14 @@ namespace m3d
         }
         writeTo->SetAttribute("name", m_name.c_str());
         writeTo->SetAttribute("class", GetClassNameA());
-        for (auto* it = GetFirstNestling(); it != nullptr; it->GetNextRelative())
+        for (auto* it = GetFirstNestling(); it != nullptr; it = it->GetNextRelative())
         {
             //TODO: magic number
             it->GetProperty(4360, &writeTo);
             if (it->m_persistant && writeTo != reinterpret_cast<cmn::XmlNode*>(-1))
             {
-                auto node = file->CreateNode(cmn::XmlNodeType::XML_NODE_ELEMENT, "Node");
-                node->IncRef();
+                ref_ptr node = file->CreateNode(cmn::XmlNodeType::XML_NODE_ELEMENT, "Node");
                 it->WriteToXmlNode(file, node);
-                node->DecRef();
             }
         }
         return true;
@@ -489,14 +486,14 @@ namespace m3d
         auto const internalName = ext.substr(pos + 1);
 
         CStr error;
-        ref_ptr<cmn::XmlFile> xmlFile = ReadXmlFile(filename.c_str(), &error);
+        ref_ptr xmlFile = ReadXmlFile(filename.c_str(), &error);
         if (!xmlFile)
         {
             LOG("ChildNodeFromXmlFile: " + error, LOG_INFO);
             return nullptr;
         }
 
-        ref_ptr<cmn::XmlNode> xmlNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+        ref_ptr xmlNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
         xmlFile->GetFirstNestling(xmlNode, "Prefabs");
         if (xmlNode->IsEmpty())
         {

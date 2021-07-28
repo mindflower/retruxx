@@ -7,8 +7,8 @@ namespace m3d
     class CmdLine
     {
     public:
-        bool CheckParam(char const*) const;
-        unsigned int Init(char const*);
+        unsigned int Init(char const* cmdStr);
+        bool CheckParam(char const* param) const;
 
     private:
         CStr m_cmdLine;

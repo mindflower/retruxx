@@ -1929,6 +1929,18 @@
     <ClCompile Include="src\engine\video\renbase.cpp">
       <Filter>engine\video</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\core\ini.cpp">
+      <Filter>engine\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\console\cvar.cpp">
+      <Filter>engine\console</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\soundconhandler.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\console\cmdline.cpp">
+      <Filter>engine\console</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">

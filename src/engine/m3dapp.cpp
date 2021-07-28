@@ -53,7 +53,7 @@ namespace
 
 namespace m3d
 {
-    Application* g_pApp = nullptr;
+    Application* Application::g_pApp = nullptr;
 
     int Application::init(HINSTANCE hInstance, HICON hIcon, CStr const& configName, HWND forcedWnd, CStr const& cmdLine)
     {

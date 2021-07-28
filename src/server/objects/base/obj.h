@@ -203,12 +203,6 @@ namespace ai
             std::vector<int> m_objIds;
         };
 
-        class LessNoCaseCStr : public std::binary_function<CStr, CStr, bool>
-        {
-        public:
-            bool operator()(CStr const&, CStr const&) const;
-        };
-
         enum HierarchyType
         {
             HIERARCHY_CHILD = 0x0,

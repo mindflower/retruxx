@@ -29,22 +29,22 @@ namespace m3d
             void NotchCurTime() const;
 
         private:
-            unsigned int m_curTime;
-            unsigned int m_prevTime;
-            unsigned int m_curTimeUnscaled;
-            unsigned int m_frameStartTime;
-            unsigned int m_lastFrameTime;
-            unsigned int m_frameStartTimeUnscaled;
-            unsigned int m_lastFrameTimeUnscaled;
-            float m_fps;
-            unsigned int m_curFrame;
-            unsigned int m_fpsFrame;
-            unsigned int m_fpsTime;
-            long double m_frameStartTimeSec;
-            float m_timescale;
-            __int64 m_performanceCounterFrequency;
-            bool m_bIsNewFrame;
-            bool m_bJustActivated;
+            mutable unsigned int m_curTime = 0;
+            mutable unsigned int m_prevTime = 0;
+            mutable unsigned int m_curTimeUnscaled = 0;
+            unsigned int m_frameStartTime = 0;
+            unsigned int m_lastFrameTime = 0;
+            unsigned int m_frameStartTimeUnscaled = 0;
+            unsigned int m_lastFrameTimeUnscaled = 0;
+            float m_fps = 0.0;
+            unsigned int m_curFrame = 0;
+            unsigned int m_fpsFrame = 0;
+            unsigned int m_fpsTime = 0;
+            long double m_frameStartTimeSec = 0.0;
+            float m_timescale = 0.0;
+            __int64 m_performanceCounterFrequency = 0;
+            bool m_bIsNewFrame = false;
+            bool m_bJustActivated = false;
         };
     }
 }

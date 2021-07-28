@@ -1,18 +1,49 @@
 #pragma once
+#include <cassert>
 
 template<class T>
 class ref_ptr
 {
 public:
-    ref_ptr(T*);
-    ref_ptr();
-    ~ref_ptr();
+    ref_ptr(T* ptr) :
+        m_ptr(ptr)
+    {
+        if (m_ptr)
+        {
+            m_ptr->IncRef();
+        }
+    }
 
-    bool operator!() const;
-    operator T* ();
-    bool operator==(ref_ptr<T> const&) const;
-    T* operator->();
+    ~ref_ptr()
+    {
+        if (m_ptr)
+        {
+            m_ptr->DecRef();
+        }
+    }
+
+    bool operator!() const
+    {
+        return m_ptr == nullptr;
+    }
+
+    operator T*()
+    {
+        assert(nullptr != m_ptr);
+        return m_ptr;
+    }
+
+    bool operator==(ref_ptr<T> const& rhs) const
+    {
+        return m_ptr == rhs.m_ptr;
+    }
+
+    T* operator->()
+    {
+        assert(nullptr != m_ptr);
+        return m_ptr;
+    }
 
 private:
-    T* m_ptr;
+    T* m_ptr = nullptr;
 };

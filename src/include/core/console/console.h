@@ -8,15 +8,28 @@ namespace m3d
 
     class CConsoleParams
     {
+    public:
+        void Set(char const*);
+        char const* UnsafeStringToken(int, char) const;
+        ~CConsoleParams();
+        CConsoleParams& operator=(char const*);
+        int IntToken(int, char) const;
+        CConsoleParams(CConsoleParams const&);
+        CConsoleParams(char const*);
+        CConsoleParams(int);
+        int NumOfTokens(char) const;
+        char* StringToken(int, char*, int, char) const;
+        float FloatToken(int, char) const;
+
     private:
-        char* string;
-        int length;
-        int numTokens;
+        char* string = nullptr;
+        int length = 0;
+        int numTokens = 0;
     };
 
     struct CConsoleCommands
     {
-        char const* m_name;
+        char const* m_name = nullptr;
         int m_id = 0;
     };
 
@@ -32,33 +45,34 @@ namespace m3d
     {
     public:
         virtual Class* GetRtClass() const;
-        virtual ~IConsole();
-        static Class* __fastcall GetBaseClass();
+        static Class* GetBaseClass();
 
-        Class*  GetRtClass();
-        void RegisterCommand(char const*, int, IConHandler*);
-        void RegisterCVar(CVar&, IConHandler*);
-        void UnregisterCVar(CVar&);
-        void Init(int, int);
-        void Clear();
-        void CheckResize(int, int);
-        void PrintF(CStr const&);
-        void ForceRender();
-        void Render();
-        void NotifyMode(bool);
-        void setNumNotifyLines(int);
-        bool DumpToFile(char const*);
-        void ScrollUp(int);
-        void ScrollDown(int);
-        bool isActive();
-        bool Toggle();
-        void SetScreenSize(float);
-        int InputLine(CStr const&);
-        void executeCommand(CStr const&);
-        int Load(CStr const&);
-        int Save(CStr const&);
+    public:
+        virtual ~IConsole() = default;
+        virtual Class* GetRtClass() = 0;
+        virtual void RegisterCommand(char const*, int, IConHandler*) = 0;
+        virtual void RegisterCVar(CVar&, IConHandler*) = 0;
+        virtual void UnregisterCVar(CVar&) = 0;
+        virtual void Init(int, int) = 0;
+        virtual void Clear() = 0;
+        virtual void CheckResize(int, int) = 0;
+        virtual void PrintF(CStr const&) = 0;
+        virtual void ForceRender() = 0;
+        virtual void Render() = 0;
+        virtual void NotifyMode(bool) = 0;
+        virtual void setNumNotifyLines(int) = 0;
+        virtual bool DumpToFile(char const*) = 0;
+        virtual void ScrollUp(int) = 0;
+        virtual void ScrollDown(int) = 0;
+        virtual bool isActive() = 0;
+        virtual bool Toggle() = 0;
+        virtual void SetScreenSize(float) = 0;
+        virtual int InputLine(CStr const&) = 0;
+        virtual void executeCommand(CStr const&) = 0;
+        virtual int Load(CStr const&) = 0;
+        virtual int Save(CStr const&) = 0;
 
     protected:
-        IConsole();
+        IConsole() = default;
     };
 }

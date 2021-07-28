@@ -22,6 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{5E19117D-BF24-4375-A403-062EC6DA6EFC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -76,11 +77,13 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -90,6 +93,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -97,17 +101,26 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\benchmark.cpp" />
@@ -118,14 +131,17 @@
     <ClCompile Include="src\engine\clipper.cpp" />
     <ClCompile Include="src\engine\config.cpp" />
     <ClCompile Include="src\engine\configurations.cpp" />
+    <ClCompile Include="src\engine\console\cmdline.cpp" />
     <ClCompile Include="src\engine\console\cmdparams.cpp" />
     <ClCompile Include="src\engine\console\console.cpp" />
     <ClCompile Include="src\engine\console\console_commands.cpp" />
     <ClCompile Include="src\engine\console\console_render.cpp" />
     <ClCompile Include="src\engine\console\console_serialization.cpp" />
+    <ClCompile Include="src\engine\console\cvar.cpp" />
     <ClCompile Include="src\engine\core\aiparam.cpp" />
     <ClCompile Include="src\engine\core\clazz.cpp" />
     <ClCompile Include="src\engine\core\debugcounter.cpp" />
+    <ClCompile Include="src\engine\core\ini.cpp" />
     <ClCompile Include="src\engine\core\kernel.cpp" />
     <ClCompile Include="src\engine\core\log.cpp" />
     <ClCompile Include="src\engine\core\memoryman.cpp" />
@@ -294,6 +310,7 @@
     <ClCompile Include="src\engine\script\scriptserver.cpp" />
     <ClCompile Include="src\engine\serialization.cpp" />
     <ClCompile Include="src\engine\skelmodel.cpp" />
+    <ClCompile Include="src\engine\soundconhandler.cpp" />
     <ClCompile Include="src\engine\sprite.cpp" />
     <ClCompile Include="src\engine\texgen.cpp" />
     <ClCompile Include="src\engine\tinyxml\tinyxml.cpp" />

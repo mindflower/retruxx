@@ -6,8 +6,8 @@ namespace m3d
     class SoundConHandler :  public IConHandler
     {
     public:
-        virtual void HandleCommand(int,CConsoleParams const &);
-        virtual bool HandleCVar(CVar const *,CConsoleParams const &);
-        SoundConHandler();
+        virtual ~SoundConHandler() = default;
+        virtual void HandleCommand(int cmdId,CConsoleParams const& params);
+        virtual bool HandleCVar(CVar const* var,CConsoleParams const& params);
     };
 }

@@ -1,7 +1,9 @@
 #include <core/timer.h>
 
 //TODO: windows.h
+#include <config.h>
 #include <Windows.h>
+#include <core/kernel.h>
 
 namespace m3d
 {
@@ -31,6 +33,47 @@ namespace m3d
             return m_curTime;
         }
 
+        void Timer::NotchCurTime() const
+        {
+            unsigned int frameTime = 0;
+            if (g_Kernel->GetEngineCfg().m_timer_fixedtimestep.GetB())
+            {
+                if (m_bIsNewFrame)
+                {
+                    frameTime = m_prevTime + g_Kernel->GetEngineCfg().m_timer_timestepvalue.GetI();
+                }
+                else
+                {
+                    frameTime = m_prevTime;
+                }
+            }
+            else
+            {
+                LARGE_INTEGER counter;
+                if (m_performanceCounterFrequency == 0 || FALSE == ::QueryPerformanceCounter((&counter)))
+                {
+                    frameTime = ::timeGetTime();
+                }
+                else
+                {
+                    frameTime = 1000 * counter.QuadPart / m_performanceCounterFrequency;
+                }
+            }
+            auto deltaTime = frameTime - m_prevTime;
+            if (m_bJustActivated)
+            {
+                if (!g_Kernel->GetEngineCfg().m_timer_fixedtimestep.GetB())
+                {
+                    //TODO: magic number
+                    deltaTime = m_bIsNewFrame ? 0xA : 0;
+                }
+            }
+            m_curTimeUnscaled += deltaTime;
+            m_prevTime = frameTime;
+            //TODO: check correctness
+            m_curTime += deltaTime * m_timescale;
+        }
+
         unsigned int Timer::GetCurTimeUnscaled() const
         {
             NotchCurTime();
@@ -42,7 +85,7 @@ namespace m3d
             return m_timescale * m_fps;
         }
 
-        unsigned Timer::GetFrameStartTime() const
+        unsigned int Timer::GetFrameStartTime() const
         {
             return m_frameStartTime;
         }
@@ -52,17 +95,17 @@ namespace m3d
             return m_frameStartTimeSec;
         }
 
-        unsigned Timer::GetFrameStartTimeUnscaled() const
+        unsigned int Timer::GetFrameStartTimeUnscaled() const
         {
             return m_frameStartTimeUnscaled;
         }
 
-        unsigned Timer::GetLastFrameTime() const
+        unsigned int Timer::GetLastFrameTime() const
         {
             return m_lastFrameTime;
         }
 
-        unsigned Timer::GetLastFrameTimeUnscaled() const
+        unsigned int Timer::GetLastFrameTimeUnscaled() const
         {
             return m_lastFrameTimeUnscaled;
         }
@@ -95,12 +138,12 @@ namespace m3d
             m_timescale = timeScale;
         }
 
-        unsigned Timer::_GetCurTime() const
+        unsigned int Timer::_GetCurTime() const
         {
             return m_curTime;
         }
 
-        unsigned Timer::_GetCurTimeUnscaled() const
+        unsigned int Timer::_GetCurTimeUnscaled() const
         {
             return m_curTimeUnscaled;
         }

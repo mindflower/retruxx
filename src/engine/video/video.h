@@ -29,17 +29,16 @@ namespace m3d
     {
     public:
         ~mVideoPlayer();
-        int Stop();
-        int IsVideoPlaing();
-        int Update();
-        mVideoPlayer();
-        int Release();
-        int IsVideoLoaded();
         int Init();
-        int Play(char const*);
+        int Play(char const* filename);
+        int Stop();
+        int Update();
+        int Release();
+        int IsVideoPlaing();
+        int IsVideoLoaded();
 
     private:
-        HRESULT hr;
-        m3d::CTextureRenderer* m_texRend;
+        HRESULT hr = NULL;
+        CTextureRenderer* m_texRend = nullptr;
     };
 }

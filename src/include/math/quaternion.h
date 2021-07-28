@@ -1,6 +1,7 @@
 #pragma once
 
 class CMatrix;
+class CVector;
 
 class Quaternion
 {

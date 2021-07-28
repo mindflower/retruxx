@@ -7,15 +7,15 @@ namespace m3d
     class Profiler
     {
     public:
-        Profiler(char const*);
         Profiler();
+        Profiler(char const* name);
 
         void EndCountdown();
         double GetAverageTime() const;
         void EndFrame();
-        void SetAverageVal(unsigned int);
+        void SetAverageVal(unsigned int numFrames);
         void StartFrame();
-        void SetName(char const*);
+        void SetName(char const* name);
         char const* GetName() const;
         void StartCountdown();
 
@@ -25,21 +25,20 @@ namespace m3d
         //std::mem_fun_t<void, m3d::Profiler>::mem_fun_t<void, m3d::Profiler>(void (*)());
 
     private:
-        std::string m_name;
-        unsigned int m_curFrame;
-        unsigned int m_numFramesToRecalculate;
+        std::string m_name = "default";
+        unsigned int m_curFrame = 0;
+        unsigned int m_numFramesToRecalculate = 30;
         float m_performanceCounterFrequency;
-        __int64 m_totalClocks;
-        __int64 m_totalClocksPerFrame;
-        __int64 m_lastClocks;
-        __int64 m_totalClocksForRecalcFrames;
-        __int64 m_averageClocks;
+        __int64 m_totalClocks = 0;
+        __int64 m_totalClocksPerFrame = 0;
+        __int64 m_lastClocks = 0;
+        __int64 m_totalClocksForRecalcFrames = 0;
+        __int64 m_averageClocks = 0;
     };
 
     class ProfilerStack
     {
     public:
-        ProfilerStack();
         ~ProfilerStack();
 
         Profiler* GetProfiler(unsigned int);
@@ -51,7 +50,7 @@ namespace m3d
         void EndFrame();
 
     private:
-        std::vector<m3d::Profiler*> m_stack;
+        std::vector<Profiler*> m_stack;
     };
 
     class FrameProfilerPtr

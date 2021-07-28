@@ -74,9 +74,9 @@ namespace m3d
         int LinkChildAtHead(Object*);
 
     protected:
-        Object* ChildNodeFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         Object();
         Object(Object const&);
+        Object* ChildNodeFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
 
     private:
         CStr m_name;

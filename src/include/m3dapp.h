@@ -83,6 +83,9 @@ namespace m3d
         };
 
     public:
+        static Application* g_pApp;
+
+    public:
         DataServer & GetSoundServer();
         void texGenProcess(IGeneratedTexture *);
         int EnableDXCursor(bool);
@@ -264,13 +267,15 @@ namespace m3d
         virtual int InitMedia() = 0;
         virtual int NewFrame() = 0;
 
+    public:
+        snd::ISound* m_sound;
+
     protected:
         CCamera m_curCamera;
 
     private:
         CmdLine m_cmdLine;
         rend::IRenderer *m_renderer;
-        snd::ISound *m_sound;
         input::IInput *m_input;
         Log *m_log;
         CStr m_cfgName;
@@ -369,7 +374,5 @@ namespace m3d
         IConHandler *m_soundConHandler;
         bool m_bGuiWasHiddenBeforeCinematic;
         Cinematic *m_cinematic;
-    };
-
-    extern Application* g_pApp;
+    }; 
 }
