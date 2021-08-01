@@ -95,6 +95,17 @@ namespace m3d
         });
     }
 
+    FrameProfilerPtr::FrameProfilerPtr(Profiler* pCounter) :
+        m_counter(pCounter)
+    {
+        m_counter->StartCountdown();
+    }
+
+    FrameProfilerPtr::~FrameProfilerPtr()
+    {
+        m_counter->EndCountdown();
+    }
+
     unsigned int ProfilerStack::AddProfiler(char const* name, unsigned int averageVal)
     {
         //TODO: check correctness

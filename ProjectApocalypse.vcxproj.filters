@@ -1941,6 +1941,84 @@
     <ClCompile Include="src\engine\console\cmdline.cpp">
       <Filter>engine\console</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\video\amextra.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\amvideo.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\arithutil.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\cprop.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\ddmm.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\outputq.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\perflog.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\pstream.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\pullpin.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\refclock.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\schedule.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\seekpt.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\source.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\strmctl.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\sysclock.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\transfrm.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\transip.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\videoctl.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\vtrans.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\winctrl.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\winutil.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\video\wxdebug.cpp">
+      <Filter>engine\video</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\tinyxml\tinystr.cpp">
+      <Filter>engine\tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\tinyxml\tinyxmlerror.cpp">
+      <Filter>engine\tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\ode\sources\collision_trimesh_trimesh.cpp">
+      <Filter>engine\ode\sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\core\stringm3d.cpp">
+      <Filter>engine\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">
@@ -3562,6 +3640,132 @@
     </ClInclude>
     <ClInclude Include="src\engine\video\reftime.h">
       <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\amextra.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\cache.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\checkbmi.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\cprop.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\ddmm.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\dxmperf.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\measure.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\msgthrd.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\outputq.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\perflog.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\perfstruct.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\pstream.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\pullpin.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\refclock.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\schedule.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\seekpt.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\source.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\streams.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\strmctl.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\sysclock.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\transfrm.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\transip.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\videoctl.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\vtrans.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\winctrl.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\winutil.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\video\wxdebug.h">
+      <Filter>engine\video</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\tinyxml\tinystr.h">
+      <Filter>engine\tinyxml</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\slider.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\linewnd.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\wnd.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\edit.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\image.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\scroll.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\sgnodearraywnd.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\menu.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\listbox.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\button.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\glyphbutton.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\textbox.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\modelwnd.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ui\modelarraywnd.h">
+      <Filter>include\ui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

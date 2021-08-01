@@ -56,7 +56,7 @@ namespace m3d
     class FrameProfilerPtr
     {
     public:
-        FrameProfilerPtr(Profiler*);
+        FrameProfilerPtr(Profiler* pCounter);
         ~FrameProfilerPtr();
 
     private:

@@ -32,4 +32,19 @@ namespace m3d
         }
         return nullptr;
     }
+
+    int SafeStrAttrib(CStr& v, cmn::XmlNode const* node, char const* attrName)
+    {
+        if (node->IsEmpty())
+        {
+            return 0;
+        }
+        auto const* attr = node->GetAttribute(attrName);
+        if (attr == nullptr)
+        {
+            return 0;
+        }
+        v = attr;
+        return 1;
+    }
 }

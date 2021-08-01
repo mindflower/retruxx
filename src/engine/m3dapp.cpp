@@ -246,6 +246,80 @@ namespace m3d
         return 0;
     }
 
+    int Application::ImmediateMessage(int msg, int p0, int p1, int p2, int p3, CStr const& p4, AIParam const& p5)
+    {
+        Event ev;
+        ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime();
+        ev.m_eventType = msg;   //TODO: check this
+        ev.m_intEv[0] = p0;
+        ev.m_intEv[1] = p1;
+        ev.m_intEv[2] = p2;
+        ev.m_intEv[3] = p3;
+        ev.m_strEv = p4;
+        ev.m_aiParamEv = p5;
+        return HandleEvent(ev);
+    }
+
+    int Application::OneFrame()
+    {
+        if (M3dVideoPlayer->IsVideoPlaing())
+        {
+            m_enginePlayingVideo = true;
+            M3dVideoPlayer->Update();
+            return 1;
+        }
+
+        if (!m_waitForAnykey)
+        {
+            g_Kernel->GetTimer().NewFrame();
+            g_pApp->m_renderer->ResetStats();
+            if (g_Kernel->GetEngineCfg().m_snd_Enable.GetB() ||
+                g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+            {
+                auto const lastFrameTime = g_Kernel->GetTimer().GetLastFrameTime();
+                g_pApp->m_sound->Update(lastFrameTime);
+            }
+            FrameMove();
+            if (!m_waitForAnykey && m_isRenderingAllowed)
+            {
+                if (m_renderer->CanRender())
+                {
+                    auto* renderProfiler = m_profilerStack.GetProfiler(m_profiler_Render);
+                    FrameProfilerPtr renderProfilerPtr(renderProfiler);
+                    if (m_renderer->BeginScene())
+                    {
+                        //TODO: ClearViewport second arg
+                        if (m_renderer->IsFeatureSupported(rend::FEATURE_STENCIL))
+                        {
+                            m_renderer->ClearViewport(rend::M3DCLEAR_CZS, m_frameClearColor);
+                        }
+                        else
+                        {
+                            m_renderer->ClearViewport(rend::M3DCLEAR_CZ, m_frameClearColor);
+                        }
+                        //TODO: check this
+                        if (m_appNeedToRedraw)
+                        {
+                            Render(1);
+                            m_appNeedToRedraw = 0;
+                        }
+                        else
+                        {
+                            Render(0);
+                        }
+                        {
+                            auto* uiProfiler = m_profilerStack.GetProfiler(m_profiler_UiRender);
+                            FrameProfilerPtr uiProfilerPtr(uiProfiler);
+                            Repaint();
+                            FlushGfx(m_renderer);
+                        }
+                    }
+                   //TODO:... 
+                }
+            }
+        }
+    }
+
     int Application::run()
     {
         while (!m_breakLoop)
@@ -367,6 +441,82 @@ namespace m3d
         return 1;
     }
 
+    long Application::MsgProc(HWND hWnd, unsigned uMsg, unsigned wParam, long lParam)
+    {
+        if (uMsg <= 0x21)
+        {
+            if (uMsg < 0x20)
+            {
+                switch (uMsg)
+                {
+                case 2:
+                {
+                    ::PostQuitMessage(0);
+                    return 0;
+                }
+                case 6:
+                case 7:
+                {
+                    ::SetCursor(NULL);
+                    if (!m_bDXCursorEnabled)
+                    {
+                        return 1;
+                    }
+                    if (g_pApp->m_renderer != nullptr)
+                    {
+                        g_pApp->m_renderer->ShowDXCursor(true);
+                    }
+                    return 1;
+                }
+                case 0x10:
+                {
+                    ::DestroyWindow(hWnd);
+                    return 0;
+                }
+                case 0x1C:
+                {
+                    //TODO: check this
+                    ImmediateMessage(2, wParam, 0, 0, 0, {}, {});
+                    return 0;
+                }
+                }
+            }
+        }
+        if (uMsg != 512)
+        {
+            if (uMsg == 134)
+            {
+                ::SetCursor(NULL);
+                if (!m_bDXCursorEnabled)
+                {
+                    return 1;
+                }
+                if (g_pApp->m_renderer != nullptr)
+                {
+                    g_pApp->m_renderer->ShowDXCursor(true);
+                }
+                return 1;
+            }
+            if (uMsg == 274 && ((wParam & 0xFFF0) == 61760 || (wParam & 0xFFF0) == 61808))
+            {
+                return 0;
+            }
+            return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
+        }
+        if (!m_isAppActive || !m_bDXCursorEnabled)
+        {
+            return 0;
+        }
+
+        PointBase<int> const curMousePos(LOWORD(lParam), HIWORD(lParam));   //TODO: check this
+        m_mouseInfo.SetUpForCurPos(curMousePos);
+        if (m_bDXCursorEnabled && g_pApp->m_renderer != nullptr)
+        {
+            g_pApp->m_renderer->MoveDXCursor(LOWORD(lParam), HIWORD(lParam));
+        }
+        return 0;
+    }
+
     void Application::SetCodepage()
     {
         std::set<size_t> codePagesStrings;
@@ -414,6 +564,11 @@ namespace m3d
         return true;
     }
 
+    long Application::WndProc(HWND hWnd, unsigned uMsg, unsigned wParam, long lParam)
+    {
+        return g_pApp->MsgProc(hWnd, uMsg, wParam, lParam);
+    }
+
     void Application::doneRenderer()
     {
         if (m_renderer)
@@ -434,6 +589,11 @@ namespace m3d
         {
             config.m_console->RegisterCommand(command.m_name, command.m_id, this);
         }
+    }
+
+    __int64 Application::GetMeasuredCpuFrequency() const
+    {
+        return m_cpuSpeed;
     }
 
     int Application::createInput()
@@ -528,6 +688,10 @@ namespace m3d
         return false;
     }
 
+    void Application::doneSprite()
+    {
+    }
+
     int Application::createProcTexThread()
     {
         return 1;
@@ -587,6 +751,19 @@ namespace m3d
         return 1;
     }
 
+    void Application::MouseInfo::ResetDelta()
+    {
+        m_deltaDuringGameFrame.x = 0;
+        m_deltaDuringGameFrame.y = 0;
+    }
+
+    void Application::MouseInfo::SetUpForCurPos(PointBase<int> const& curPos)
+    {
+        m_deltaDuringGameFrame.x += curPos.x - m_lastPos.x;
+        m_deltaDuringGameFrame.y += curPos.y - m_lastPos.y;
+        m_lastPos = curPos;
+    }
+
     int Application::EnableDXCursor(bool bEnable)
     {
         m_bDXCursorEnabled = bEnable;
@@ -641,6 +818,31 @@ namespace m3d
     CameraController* Application::GetCameraController()
     {
         return m_cameraController;
+    }
+
+    void Application::EnqueueMessage(int msg, int param0, int param1, int p2, int p3, CStr const& param4, AIParam const& param5)
+    {
+        Event ev;
+        ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime() * 0.001;
+        ev.m_eventType = msg;
+        //TODO: check order
+        ev.m_intEv[0] = param0;
+        ev.m_intEv[1] = param1;
+        ev.m_intEv[2] = p2;
+        ev.m_intEv[3] = p3;
+        ev.m_strEv = param4;
+        ev.m_aiParamEv = param5;
+
+        auto idx = m_eventsQueueHead + 1;
+        if (idx >=5000)
+        {
+            idx = 0;
+        }
+        if (idx != m_eventsQueueTail)
+        {
+            m_eventsQueue[idx] = ev;
+            m_eventsQueueHead = idx;
+        }   
     }
 
     ProfilerStack& Application::GetProfilerStack()

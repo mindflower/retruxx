@@ -1,4 +1,5 @@
 #pragma once
+#include <core/stringm3d.h>
 
 class CVector;
 
@@ -64,40 +65,41 @@ namespace snd
     class ISound : public IBase
     {
     public:
-        bool Init(void(CStr const&), unsigned int, unsigned int, unsigned __int8, const char*);
-        int Update(long double);
-        void SetMaxVolume(int);
-        void SetMusicFadeTime(float);
-        unsigned __int8 GetChannelVolume(int);
-        bool SetChannelVolume(int, unsigned __int8, bool);
-        bool SetGroupVolume(int, unsigned __int8);
-        bool IsChannelPlaying(int);
-        bool IsMusicPlaying(int);
-        bool PauseGroup(int, bool);
-        bool PauseAllSounds(bool);
-        int PlayMusic(int, bool, bool);
-        int PlaySound2D(int, bool);
-        int PlaySound3D(int, const CVector*, const CVector*, bool);
-        bool SetChannelLoopMode(int, bool);
-        int GetChannelFrequency(int);
-        bool SetChannelFrequency(int, int);
-        bool SetPosition(int, const CVector*, const CVector*);
-        bool SetListenerPosition(const CVector*, const CVector*, const CVector*, const CVector*);
-        bool StopChannel(int);
-        bool StopGroup(int);
-        int StopAllSounds();
-        int MuteAllSounds();
-        int RestoreAllVolumes();
-        int AddSound(const char*, snd::UserSoundType, int, int, snd::SoundPriority);
-        bool DeleteIdTableSound(int);
-        bool DeleteAllSounds();
-        bool SetSoundPriority(int, snd::SoundPriority);
-        bool SetEndMusicCallback(int, void(__fastcall*)(int));
-        float GetCPUusage();
-        void GetMemUsage(unsigned int*, unsigned int*);
-        int GetSoundGroupId(int);
-        bool GetGroupMinDist(int, float*);
-        bool GetGroupMaxDist(int, float*);
-        void DumpSoundInfo();
+        virtual ~ISound() = default;
+        virtual bool Init(void(CStr const&), unsigned int, unsigned int, unsigned __int8, const char*) = 0;
+        virtual int Update(long double) = 0;
+        virtual void SetMaxVolume(int) = 0;
+        virtual void SetMusicFadeTime(float) = 0;
+        virtual unsigned __int8 GetChannelVolume(int) = 0;
+        virtual bool SetChannelVolume(int, unsigned __int8, bool) = 0;
+        virtual bool SetGroupVolume(int, unsigned __int8) = 0;
+        virtual bool IsChannelPlaying(int) = 0;
+        virtual bool IsMusicPlaying(int) = 0;
+        virtual bool PauseGroup(int, bool) = 0;
+        virtual bool PauseAllSounds(bool) = 0;
+        virtual int PlayMusic(int, bool, bool) = 0;
+        virtual int PlaySound2D(int, bool) = 0;
+        virtual int PlaySound3D(int, const CVector*, const CVector*, bool) = 0;
+        virtual bool SetChannelLoopMode(int, bool) = 0;
+        virtual int GetChannelFrequency(int) = 0;
+        virtual bool SetChannelFrequency(int, int) = 0;
+        virtual bool SetPosition(int, const CVector*, const CVector*) = 0;
+        virtual bool SetListenerPosition(const CVector*, const CVector*, const CVector*, const CVector*) = 0;
+        virtual bool StopChannel(int) = 0;
+        virtual bool StopGroup(int) = 0;
+        virtual int StopAllSounds() = 0;
+        virtual int MuteAllSounds() = 0;
+        virtual int RestoreAllVolumes() = 0;
+        virtual int AddSound(const char*, snd::UserSoundType, int, int, snd::SoundPriority) = 0;
+        virtual bool DeleteIdTableSound(int) = 0;
+        virtual bool DeleteAllSounds() = 0;
+        virtual bool SetSoundPriority(int, snd::SoundPriority) = 0;
+        virtual bool SetEndMusicCallback(int, void(__fastcall*)(int)) = 0;
+        virtual float GetCPUusage() = 0;
+        virtual void GetMemUsage(unsigned int*, unsigned int*) = 0;
+        virtual int GetSoundGroupId(int) = 0;
+        virtual bool GetGroupMinDist(int, float*) = 0;
+        virtual bool GetGroupMaxDist(int, float*) = 0;
+        virtual void DumpSoundInfo() = 0;
     };
 }

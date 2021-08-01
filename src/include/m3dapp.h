@@ -73,7 +73,7 @@ namespace m3d
         public:
             void ResetDelta();
             PointBase<int> const& GetDeltaDuringGameFrame() const;
-            void SetUpForCurPos(PointBase<int> const&);
+            void SetUpForCurPos(PointBase<int> const& curPos);
             MouseInfo();
             PointBase<int> const& GetLastPos() const;
 
@@ -266,17 +266,19 @@ namespace m3d
 
         virtual int InitMedia() = 0;
         virtual int NewFrame() = 0;
+        virtual int FrameMove() = 0;
+        virtual int Render(bool) = 0;
 
     public:
         snd::ISound* m_sound;
+        rend::IRenderer* m_renderer;
+        input::IInput* m_input;
 
     protected:
         CCamera m_curCamera;
 
     private:
         CmdLine m_cmdLine;
-        rend::IRenderer *m_renderer;
-        input::IInput *m_input;
         Log *m_log;
         CStr m_cfgName;
         unsigned int m_dwWindowStyle;

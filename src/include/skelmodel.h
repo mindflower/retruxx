@@ -1,7 +1,10 @@
 #pragma once
 #include <draftstructures.h>
+#include <map>
+#include <set>
 #include <math/aabb.h>
 #include <math/matrix.h>
+#include <math/quaternion.h>
 
 enum ActionType
 {
@@ -197,8 +200,13 @@ namespace m3d
         };
 
     public:
+        static void CreateTexFileMapping();
+
+    public:
+        static std::map<CStr, CStr> m_textureFiles;
+
+    public:
         DRAFT_HierGeom const * GetHierGeom(unsigned int) const ;
-        static void __fastcall CreateTexFileMapping();
         AnimatedModel();
         Mesh & GetMesh(unsigned int);
         Mesh const & GetMesh(unsigned int) const ;

@@ -16,13 +16,20 @@ namespace m3d
     class Event
     {
     public:
-        Event();
-
-    private:
-        long double m_timeStamp;
-        int m_eventType;
+        long double m_timeStamp = 0.0;
+        int m_eventType = 0;
         CStr m_strEv;
         AIParam m_aiParamEv;
-        //$D533278145F5EFDE7C11BA6D07B21BE6 ___u4;
+        //TODO: union
+        union
+        {
+            void* m_void[4] = {0};
+            IEventHandler* m_handle[4];
+            unsigned int m_uintEv[4];
+            int m_intEv[4];
+            unsigned __int16 m_ushortEv[8];
+            __int16 m_shortEv[8];
+            unsigned __int8 m_byteEv[16];
+        };
     };
 }

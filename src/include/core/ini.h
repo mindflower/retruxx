@@ -87,4 +87,5 @@ namespace m3d
     }
 
     cmn::XmlFile* ReadXmlFile(char const* filename, CStr* errorStr);
+    int SafeStrAttrib(CStr&, cmn::XmlNode const*, char const*);
 }

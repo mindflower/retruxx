@@ -3,6 +3,10 @@
 
 using CStr = std::string;
 
+void UnifyFileName0(CStr& fileName);
+CStr DirectoryFromFileName(CStr const& source);
+CStr NameFromFileName(CStr const& source);
+
 //TODO: add static functions
 //class CVector;
 //class CVector2;

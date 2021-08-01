@@ -79,7 +79,7 @@ namespace m3d
             void OnCloseComboBox(ComboBoxWnd*);
             void OnOpenComboBox(ComboBoxWnd*);
             void ForEachChild(Wnd*, void (Wnd::*)());
-            Wnd* ModalOverride(Wnd*);
+            Wnd* ModalOverride(Wnd* w);
             void RegisterWnd(Wnd*);
             static GfxServer* __fastcall getGfxServer();
             void RemoveCurrentTooltip();

@@ -4,14 +4,17 @@ template<class T>
 class PointBase
 {
 public:
-    PointBase(T, T);
-    PointBase(PointBase<T> const&);
-    PointBase();
+    PointBase() = default;
+
+    PointBase(T xx, T yy) :
+        x(xx),
+        y(yy)
+    {
+    }
     PointBase<T>& operator+=(PointBase<T> const&);
-    PointBase<T> const& operator=(PointBase<T> const&);
     PointBase<T> operator-() const;
 
 public:
-    float x;
-    float y;
+    T x{};
+    T y{};
 };

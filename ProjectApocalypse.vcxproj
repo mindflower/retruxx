@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{5E19117D-BF24-4375-A403-062EC6DA6EFC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -148,6 +148,7 @@
     <ClCompile Include="src\engine\core\profilerstack.cpp" />
     <ClCompile Include="src\engine\core\rtclass.cpp" />
     <ClCompile Include="src\engine\core\stackwalker.cpp" />
+    <ClCompile Include="src\engine\core\stringm3d.cpp" />
     <ClCompile Include="src\engine\core\timer.cpp" />
     <ClCompile Include="src\engine\decals.cpp" />
     <ClCompile Include="src\engine\draftmodel.cpp" />
@@ -193,6 +194,7 @@
     <ClCompile Include="src\engine\ode\sources\collision_trimesh_ccylinder.cpp" />
     <ClCompile Include="src\engine\ode\sources\collision_trimesh_ray.cpp" />
     <ClCompile Include="src\engine\ode\sources\collision_trimesh_sphere.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_trimesh_trimesh.cpp" />
     <ClCompile Include="src\engine\ode\sources\collision_util.cpp" />
     <ClCompile Include="src\engine\ode\sources\dcone.cpp" />
     <ClCompile Include="src\engine\ode\sources\dterrainy.cpp" />
@@ -313,7 +315,9 @@
     <ClCompile Include="src\engine\soundconhandler.cpp" />
     <ClCompile Include="src\engine\sprite.cpp" />
     <ClCompile Include="src\engine\texgen.cpp" />
+    <ClCompile Include="src\engine\tinyxml\tinystr.cpp" />
     <ClCompile Include="src\engine\tinyxml\tinyxml.cpp" />
+    <ClCompile Include="src\engine\tinyxml\tinyxmlerror.cpp" />
     <ClCompile Include="src\engine\tinyxml\tinyxmlparser.cpp" />
     <ClCompile Include="src\engine\tracelinemanager.cpp" />
     <ClCompile Include="src\engine\ui\button.cpp" />
@@ -344,12 +348,34 @@
     <ClCompile Include="src\engine\ui\wndbase.cpp" />
     <ClCompile Include="src\engine\ui\wndstation.cpp" />
     <ClCompile Include="src\engine\utilit.cpp" />
+    <ClCompile Include="src\engine\video\amextra.cpp" />
     <ClCompile Include="src\engine\video\amfilter.cpp" />
+    <ClCompile Include="src\engine\video\amvideo.cpp" />
+    <ClCompile Include="src\engine\video\arithutil.cpp" />
     <ClCompile Include="src\engine\video\combase.cpp" />
+    <ClCompile Include="src\engine\video\cprop.cpp" />
     <ClCompile Include="src\engine\video\ctlutil.cpp" />
+    <ClCompile Include="src\engine\video\ddmm.cpp" />
     <ClCompile Include="src\engine\video\mtype.cpp" />
+    <ClCompile Include="src\engine\video\outputq.cpp" />
+    <ClCompile Include="src\engine\video\perflog.cpp" />
+    <ClCompile Include="src\engine\video\pstream.cpp" />
+    <ClCompile Include="src\engine\video\pullpin.cpp" />
+    <ClCompile Include="src\engine\video\refclock.cpp" />
     <ClCompile Include="src\engine\video\renbase.cpp" />
+    <ClCompile Include="src\engine\video\schedule.cpp" />
+    <ClCompile Include="src\engine\video\seekpt.cpp" />
+    <ClCompile Include="src\engine\video\source.cpp" />
+    <ClCompile Include="src\engine\video\strmctl.cpp" />
+    <ClCompile Include="src\engine\video\sysclock.cpp" />
+    <ClCompile Include="src\engine\video\transfrm.cpp" />
+    <ClCompile Include="src\engine\video\transip.cpp" />
     <ClCompile Include="src\engine\video\video.cpp" />
+    <ClCompile Include="src\engine\video\videoctl.cpp" />
+    <ClCompile Include="src\engine\video\vtrans.cpp" />
+    <ClCompile Include="src\engine\video\winctrl.cpp" />
+    <ClCompile Include="src\engine\video\winutil.cpp" />
+    <ClCompile Include="src\engine\video\wxdebug.cpp" />
     <ClCompile Include="src\engine\video\wxlist.cpp" />
     <ClCompile Include="src\engine\video\wxutil.cpp" />
     <ClCompile Include="src\engine\weather\weather.cpp" />
@@ -760,15 +786,43 @@
     <ClInclude Include="src\engine\scene\servers\serversound.h" />
     <ClInclude Include="src\engine\scene\shadows\shadowcaster.h" />
     <ClInclude Include="src\engine\soundconhandler.h" />
+    <ClInclude Include="src\engine\tinyxml\tinystr.h" />
     <ClInclude Include="src\engine\tinyxml\tinyxml.h" />
+    <ClInclude Include="src\engine\video\amextra.h" />
     <ClInclude Include="src\engine\video\amfilter.h" />
+    <ClInclude Include="src\engine\video\cache.h" />
+    <ClInclude Include="src\engine\video\checkbmi.h" />
     <ClInclude Include="src\engine\video\combase.h" />
+    <ClInclude Include="src\engine\video\cprop.h" />
     <ClInclude Include="src\engine\video\ctlutil.h" />
+    <ClInclude Include="src\engine\video\ddmm.h" />
+    <ClInclude Include="src\engine\video\dxmperf.h" />
     <ClInclude Include="src\engine\video\fourcc.h" />
+    <ClInclude Include="src\engine\video\measure.h" />
+    <ClInclude Include="src\engine\video\msgthrd.h" />
     <ClInclude Include="src\engine\video\mtype.h" />
+    <ClInclude Include="src\engine\video\outputq.h" />
+    <ClInclude Include="src\engine\video\perflog.h" />
+    <ClInclude Include="src\engine\video\perfstruct.h" />
+    <ClInclude Include="src\engine\video\pstream.h" />
+    <ClInclude Include="src\engine\video\pullpin.h" />
+    <ClInclude Include="src\engine\video\refclock.h" />
     <ClInclude Include="src\engine\video\reftime.h" />
     <ClInclude Include="src\engine\video\renbase.h" />
+    <ClInclude Include="src\engine\video\schedule.h" />
+    <ClInclude Include="src\engine\video\seekpt.h" />
+    <ClInclude Include="src\engine\video\source.h" />
+    <ClInclude Include="src\engine\video\streams.h" />
+    <ClInclude Include="src\engine\video\strmctl.h" />
+    <ClInclude Include="src\engine\video\sysclock.h" />
+    <ClInclude Include="src\engine\video\transfrm.h" />
+    <ClInclude Include="src\engine\video\transip.h" />
     <ClInclude Include="src\engine\video\video.h" />
+    <ClInclude Include="src\engine\video\videoctl.h" />
+    <ClInclude Include="src\engine\video\vtrans.h" />
+    <ClInclude Include="src\engine\video\winctrl.h" />
+    <ClInclude Include="src\engine\video\winutil.h" />
+    <ClInclude Include="src\engine\video\wxdebug.h" />
     <ClInclude Include="src\engine\video\wxlist.h" />
     <ClInclude Include="src\engine\video\wxutil.h" />
     <ClInclude Include="src\engine\weather\weather.h" />
@@ -1045,17 +1099,31 @@
     <ClInclude Include="src\include\script\lua\lzio.h" />
     <ClInclude Include="src\include\script\scriptserver.h" />
     <ClInclude Include="src\include\skelmodel.h" />
+    <ClInclude Include="src\include\ui\button.h" />
     <ClInclude Include="src\include\ui\comboboxwnd.h" />
     <ClInclude Include="src\include\ui\cursor.h" />
+    <ClInclude Include="src\include\ui\edit.h" />
     <ClInclude Include="src\include\ui\font.h" />
     <ClInclude Include="src\include\ui\frame.h" />
+    <ClInclude Include="src\include\ui\glyphbutton.h" />
+    <ClInclude Include="src\include\ui\image.h" />
+    <ClInclude Include="src\include\ui\linewnd.h" />
+    <ClInclude Include="src\include\ui\listbox.h" />
+    <ClInclude Include="src\include\ui\menu.h" />
+    <ClInclude Include="src\include\ui\modelarraywnd.h" />
+    <ClInclude Include="src\include\ui\modelwnd.h" />
     <ClInclude Include="src\include\ui\msgbox.h" />
     <ClInclude Include="src\include\ui\progressbarwnd.h" />
+    <ClInclude Include="src\include\ui\scroll.h" />
+    <ClInclude Include="src\include\ui\sgnodearraywnd.h" />
+    <ClInclude Include="src\include\ui\slider.h" />
     <ClInclude Include="src\include\ui\tabwnd.h" />
+    <ClInclude Include="src\include\ui\textbox.h" />
     <ClInclude Include="src\include\ui\ui.h" />
     <ClInclude Include="src\include\ui\uicontrols.h" />
     <ClInclude Include="src\include\ui\uidialogs.h" />
     <ClInclude Include="src\include\ui\ui_srv.h" />
+    <ClInclude Include="src\include\ui\wnd.h" />
     <ClInclude Include="src\include\ui\wndstation.h" />
     <ClInclude Include="src\include\world.h" />
     <ClInclude Include="src\server\affix.h" />

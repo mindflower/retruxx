@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <math/vector.h>
+#include <math/quaternion.h>
 #include <renderer/i_renderer.h>
 
 namespace m3d
@@ -75,7 +76,7 @@ namespace m3d
     class DRAFT_Geom
     {
     private:
-        m3d::DRAFT_GeomType Type;
+        DRAFT_GeomType Type;
         CVector Translation;
         Quaternion Rotation;
         m3d::DRAFT_GeomSize Sizes;

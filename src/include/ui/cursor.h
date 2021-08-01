@@ -17,7 +17,7 @@ namespace m3d
             Cursor();
             Cursor(Cursor const&);
 
-        private:
+        public:
             rend::TexHandle m_tex;
             PointBase<float> m_sz;
             PointBase<float> m_spot;
