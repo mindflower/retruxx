@@ -1,83 +1,146 @@
 #pragma once
+#include <core/ref_ptr.h>
+#include <ui/wnd.h>
 
-namespace MotherPanel
+namespace ai
 {
+    class Building;
+    class Town;
+}
+
+class PlayerMoneyWnd;
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+        class ImageWnd;
+    }
+}
+
+class MotherPanelTabButton;
+class ChildPanel;
+
+class MotherPanel :  public m3d::ui::ModalWnd
+{
+public:
+    enum Tab
+    {
+        TAB_QUESTLOG = 0x0,
+        TAB_MAP = 0x1,
+        TAB_JOURNAL = 0x2,
+        TAB_INVENTORY_VS_SHOP = 0x3,
+        TAB_CHARACTERISTIC_VS_WORKSHOP = 0x4,
+        TAB_BAR = 0x5,
+        TAB_ADDITIONAL_BUILDING = 0x6,
+        TAB_NUM_TABS = 0x7,
+        TAB_INVALID = 0x7,
+    };
+
+    enum ChildPanelId
+    {
+        PANEL_LEFT = 0x0,
+        PANEL_RIGHT = 0x1,
+        PANEL_VIDEO = 0x2,
+        PANEL_TRADE_RIGHT = 0x3,
+        PANEL_TRADE_LEFT = 0x4,
+        PANEL_TRADE_COMMON = 0x5,
+        PANEL_FULLSCREEN = 0x6,
+        PANEL_TOWN = 0x7,
+        PANEL_PALM = 0x8,
+        PANEL_CONVERSATION = 0x9,
+        PANEL_INVALID = 0xA,
+    };
+
     class AuxSuspendedShow
     {
     public:
         void Reset();
         AuxSuspendedShow();
-    protected:
+
     private:
         std::vector<ChildPanelId> m_previousPanelsToRemain;
-        std::vector<std::pair<ChildPanelId,int>> m_suspendedPanels;
+        std::vector<std::pair<ChildPanelId, int>> m_suspendedPanels;
     };
-}
 
-class MotherPanel :  public m3d::ui::ModalWnd
-{
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_tabBtnName;
+        CStr m_wndDecorName;
+        CStr m_wndDecorBarName;
+        CStr m_wndDecorBgName;
+        CStr m_btnExitName;
+        CStr m_wndTopPanelName;
+        CStr m_pickUpSoundName;
+    };
+
+public:
+    static m3d::Class m_classMotherPanel;
+
 public:
     void LeaveTown(bool);
-    std::pair<enum ChildPanelId,int>::pair<enum ChildPanelId,int>(enum ChildPanelId const &,int const &);
-    virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
-    std::allocator<enum ChildPanelId>::allocator<enum ChildPanelId>(class std::allocator<enum ChildPanelId> const &);
-    std::allocator<enum ChildPanelId>::allocator<enum ChildPanelId>();
-    virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
-    `public: static CStr __fastcall Tab2Str(enum Tab)'::`2'::_Tab2Str::~_Tab2Str();
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Object * __fastcall CreateObject();
+    virtual m3d::Object * Clone();
+    static m3d::Class * __fastcall GetBaseClass();
     bool IsInTownRoot() const ;
     virtual ~MotherPanel();
+
 protected:
-    void UpdateTabButtonsOnEnterTown(class ai::Town const *);
+    void UpdateTabButtonsOnEnterTown(ai::Town const *);
     virtual int OnBeforeAddToWndStation();
-    void OnBtnExitClick(class m3d::ui::Wnd *,int);
-    void ClearPanels(class std::vector<enum ChildPanelId,class std::allocator<enum ChildPanelId> > const &);
+    void OnBtnExitClick(m3d::ui::Wnd *,int);
+    void ClearPanels(std::vector<ChildPanelId,std::allocator<ChildPanelId> > const &);
     void OnEscape();
-    virtual int RemoveChildForce(class m3d::Object *);
-    enum ChildPanelId GetCurrentPanelIdByGuiId(int) const ;
+    virtual int RemoveChildForce(m3d::Object *);
+    ChildPanelId GetCurrentPanelIdByGuiId(int) const ;
     void OnHidePanel(void *);
-    void ToggleTab(enum Tab);
-    void AdjustAnimationOnShowPanels(class std::vector<struct std::pair<enum ChildPanelId,int>,class std::allocator<struct std::pair<enum ChildPanelId,int> > > const &);
+    void ToggleTab(Tab);
+    void AdjustAnimationOnShowPanels(std::vector<std::pair<ChildPanelId,int>,std::allocator<std::pair<ChildPanelId,int> > > const &);
     void OnMap();
     void OnAdditionalBuilding();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int,m3d::AIParam const &);
     virtual int OnAfterRemoveFromWndStation();
     void OnShowPanel(void *);
-    int AddChildPanel(class ref_ptr<class ChildPanel>,enum ChildPanelId);
+    int AddChildPanel(ref_ptr<ChildPanel>,ChildPanelId);
     void OnShop();
     void OnPickUpAll();
     void OnLocalMap(void *);
     void OnLeaveTown(bool);
     bool PickUpItemsFromGround();
     void OnBuyVehicle();
-    void ShowPanels(class std::vector<struct std::pair<enum ChildPanelId,int>,class std::allocator<struct std::pair<enum ChildPanelId,int> > >,class std::vector<enum ChildPanelId,class std::allocator<enum ChildPanelId> > const &);
-    class ai::Building * GetBuildingForTab(enum Tab) const ;
-    virtual int RemoveChild(class m3d::Object *);
-    void ShowTabButton(enum Tab,bool);
+    void ShowPanels(std::vector<std::pair<ChildPanelId,int>,std::allocator<std::pair<ChildPanelId,int> > >,std::vector<ChildPanelId,std::allocator<ChildPanelId> > const &);
+    ai::Building * GetBuildingForTab(Tab) const ;
+    virtual int RemoveChild(m3d::Object *);
+    void ShowTabButton(Tab,bool);
     void OnFinishTrade();
     void OnEndWndAnimation();
     bool IsPanelPresent(int) const ;
     void OnJournal();
-    bool CanChildPanelBeLaunchedNow(enum ChildPanelId) const ;
-    enum Tab GetTabForBuilding(class ai::Building const *) const ;
-    void AdjustAnimationOnHidePanel(class m3d::ui::Wnd *);
+    bool CanChildPanelBeLaunchedNow(ChildPanelId) const ;
+    Tab GetTabForBuilding(ai::Building const *) const ;
+    void AdjustAnimationOnHidePanel(m3d::ui::Wnd *);
     void UpdateTabButtonsOnLeaveTown();
     void OnTalkWithNpc();
     void OnQuestLog();
     bool InTown() const ;
     void OnInventory();
-    int RemoveChildPanelById(enum ChildPanelId);
-    int GetGuiIdByCurrentPanelId(enum ChildPanelId) const ;
-    enum Tab ValidateLastTab() const ;
-    int RemoveChildPanel(class ref_ptr<class ChildPanel>);
+    int RemoveChildPanelById(ChildPanelId);
+    int GetGuiIdByCurrentPanelId(ChildPanelId) const ;
+    Tab ValidateLastTab() const ;
+    int RemoveChildPanel(ref_ptr<ChildPanel>);
     void OnGlobalMap();
     void OnCharacteristics();
-    class ai::Building const * GetOnlyBuilding() const ;
+    ai::Building const * GetOnlyBuilding() const ;
     void AdjustChildOrder();
     virtual int GameDataSetup();
     void OnTown();
-    MotherPanel(class MotherPanel const &);
+    MotherPanel(MotherPanel const &);
     MotherPanel();
     virtual int GameDataUpdate(void *,int);
     void Hide(bool,bool);
@@ -85,32 +148,24 @@ protected:
     void Show();
     virtual int OnKey(unsigned short,unsigned char,unsigned int);
     void OnStartTrade(void *);
-    void OnTabBtnClick(class m3d::ui::Wnd *,int);
+    void OnTabBtnClick(m3d::ui::Wnd *,int);
     int CreateHackedWorkshopVehicle();
     void OnWorkshop();
-    void SetCurTab(enum Tab,bool);
-    void OnEnterTown(class ai::Town const *);
+    void SetCurTab(Tab,bool);
+    void OnEnterTown(ai::Town const *);
     void OnBar();
-    void SelectTabButton(enum Tab);
+    void SelectTabButton(Tab);
     void AdjustDecor();
+
 private:
-    enum ChildPanelId * __fastcall std::_Copy_backward_opt<enum ChildPanelId *,enum ChildPanelId *>(enum ChildPanelId *,enum ChildPanelId *,enum ChildPanelId *,struct std::_Nonscalar_ptr_iterator_tag);
-    void __fastcall std::fill<enum ChildPanelId *,enum ChildPanelId>(enum ChildPanelId *,enum ChildPanelId *,enum ChildPanelId const &);
-    void __fastcall std::_Destroy<enum ChildPanelId>(enum ChildPanelId *);
-    enum ChildPanelId * __fastcall std::_Copy_opt<enum ChildPanelId *,enum ChildPanelId *>(enum ChildPanelId *,enum ChildPanelId *,enum ChildPanelId *,struct std::_Nonscalar_ptr_iterator_tag);
-    struct std::_Nonscalar_ptr_iterator_tag __fastcall std::_Ptr_cat<enum ChildPanelId *,enum ChildPanelId *>(enum ChildPanelId * &,enum ChildPanelId * &);
-    void __fastcall std::_Construct<enum ChildPanelId,enum ChildPanelId>(enum ChildPanelId *,enum ChildPanelId const &);
-    enum ChildPanelId * __fastcall std::_Allocate<enum ChildPanelId>(unsigned int,enum ChildPanelId *);
-    enum ChildPanelId * __fastcall std::copy<enum ChildPanelId *,enum ChildPanelId *>(enum ChildPanelId *,enum ChildPanelId *,enum ChildPanelId *);
-    enum ChildPanelId * __fastcall std::copy_backward<enum ChildPanelId *,enum ChildPanelId *>(enum ChildPanelId *,enum ChildPanelId *,enum ChildPanelId *);
-    std::map<enum MotherPanel::ChildPanelId,ref_ptr<ChildPanel>> m_panels;
-    MotherPanel::AuxSuspendedShow m_suspendedShow;
-    std::vector<enum MotherPanel::ChildPanelId> m_secondPanelLevel;
+    std::map<ChildPanelId,ref_ptr<ChildPanel>> m_panels;
+    AuxSuspendedShow m_suspendedShow;
+    std::vector<ChildPanelId> m_secondPanelLevel;
     int m_hackedWorkshopVehicleId;
     std::vector<MotherPanelTabButton *> m_tabButtons;
-    MotherPanel::Tab m_curTabId;
-    MotherPanel::Tab m_lastTabId;
-    MotherPanel::AuxInfo m_aif;
+    Tab m_curTabId;
+    Tab m_lastTabId;
+    AuxInfo m_aif;
     m3d::ui::Wnd *m_wndDecor;
     m3d::ui::ImageWnd *m_wndDecorBar;
     m3d::ui::ButtonWnd *m_btnExit;

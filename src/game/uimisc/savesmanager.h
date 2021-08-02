@@ -3,6 +3,39 @@
 class SavesManager :  public m3d::Object
 {
 public:
+    class ConstantSaveInfo
+    {
+    public:
+        ConstantSaveInfo();
+
+    private:
+        CStr m_saveFolderName;
+        CStr m_infoFileName;
+        CStr m_quickSavePrefix;
+        CStr m_autoSavePrefix;
+        CStr m_quickSaveNameStrId;
+        CStr m_autoSaveNameStrId;
+        CStr m_screenshotFileName;
+        CStr m_mapsDirName;
+        PointBase<int> m_screenshotSz;
+        int m_maxQuickSavesNum;
+        int m_maxAutoSavesNum;
+    };
+
+    class SaveInfo
+    {
+    public:
+        SaveInfo();
+
+    private:
+        CStr m_folderName;
+        CStr m_saveName;
+        m3d::AIParam m_gameTime;
+        CStr m_levelName;
+        _FILETIME m_saveModifyLocalTime;
+    };
+
+public:
     virtual ~SavesManager();
     int QuickLoad();
     CStr GetNewSaveDefaultName() const ;
@@ -11,10 +44,10 @@ public:
     CStr GetPathForTemporaryMaps() const ;
     CStr GetSaveFolderPathByFolderName(CStr const &) const ;
     int AutoSave(CStr const &);
-    static struct m3d::Class * __fastcall GetBaseClass();
-    class m3d::rend::TexHandle GetCurGameScreenshot() const ;
+    static m3d::Class * __fastcall GetBaseClass();
+    m3d::rend::TexHandle GetCurGameScreenshot() const ;
     CStr GetNewSaveFolderName() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static m3d::Object * __fastcall CreateObject();
     int LastLoad();
     int LoadGame(CStr const &);
     int GameDataUpdate(void *,int);
@@ -25,30 +58,31 @@ public:
     int SaveGame(CStr const &,CStr const &,bool);
     void Clear();
     virtual struct m3d::Class * GetClass() const ;
-    int GetSaveFolderNames(class std::vector<CStr,class std::allocator<CStr> > &) const ;
+    int GetSaveFolderNames(std::vector<CStr> &) const ;
     int DeleteSaveGame(CStr const &);
+
 protected:
     int LoadInfos();
     SavesManager();
-    SavesManager(class SavesManager const &);
+    SavesManager(SavesManager const &);
     void CheckAndHandleDelayedQuickSave(bool);
     CStr GetNewAutoSaveFolderName() const ;
     CStr GetNewQuickSaveFolderName() const ;
     int SaveScreenshot(CStr const &);
     void OnCurProfileChanged();
-    CStr GetFirstUsedSaveFolderName(class std::vector<CStr,class std::allocator<CStr> > const &) const ;
-    void GetSaveFoldersByPattern(CStr const &,class std::vector<CStr,class std::allocator<CStr> > &) const ;
-    CStr GetLastUsedSaveFolderName(class std::vector<CStr,class std::allocator<CStr> > const &) const ;
+    CStr GetFirstUsedSaveFolderName(std::vector<CStr> const &) const ;
+    void GetSaveFoldersByPattern(CStr const &,std::vector<CStr> &) const ;
+    CStr GetLastUsedSaveFolderName(std::vector<CStr> const &) const ;
     void OnNewFrameForce();
     CStr GetAutoSaveName(CStr const &,CStr const &) const ;
     CStr GetQuickSaveName(CStr const &) const ;
-    int AddSaveInfo(struct SaveInfo *);
+    int AddSaveInfo(SaveInfo *);
     struct _FILETIME GetSaveFileModifyTime(CStr const &) const ;
     int SaveInfos(CStr const &,CStr const &);
+
 private:
-    std::pair<CStr,SaveInfo *>::pair<CStr,SaveInfo *>(CStr const &,SaveInfo * const &);
-    SavesManager::ConstantSaveInfo m_constantSaveInfo;
-    std::map<CStr,SavesManager::SaveInfo *> m_saves;
+    ConstantSaveInfo m_constantSaveInfo;
+    std::map<CStr,SaveInfo *> m_saves;
     m3d::rend::TexHandle m_curGameScreenshot;
     bool m_bDelayedQuickSave;
     unsigned int m_delayedQuickSaveFrame;

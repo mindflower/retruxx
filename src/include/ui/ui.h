@@ -45,6 +45,7 @@ namespace m3d
 
         class Wnd : public Object
         {
+            friend class WndStation;
         public:
             enum DragMode
             {
@@ -276,8 +277,8 @@ namespace m3d
             PointBase<float> m_dragStartPt;
             PointBase<float> m_dragCurPt;
             CStr m_toolTipText;
-            int m_toolTipTimeOut;
             Wnd* m_toolTipWnd;
+            int m_toolTipTimeOut;
             ScrollWnd* m_scrollHWnd;
             ScrollWnd* m_scrollVWnd;
             int m_activationOrder;

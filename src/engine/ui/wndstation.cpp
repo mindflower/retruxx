@@ -1,7 +1,14 @@
 #include <cassert>
 #include <m3dapp.h>
 #include <ui/ui_srv.h>
+#include <ui/wnd.h>
 #include <ui/wndstation.h>
+
+char const STR_OK[] = "ok";
+char const STR_CANCEL[] = "cancel";
+char const STR_YES[] = "yes";
+char const STR_NO[] = "no";
+char const STR_ERROR[] = "error";
 
 namespace m3d
 {
@@ -122,6 +129,15 @@ namespace m3d
             return 1;
         }
 
+        void WndStation::CreateDefaultStrings()
+        {
+            m_strings.add(STR_OK, "Ok");
+            m_strings.add(STR_CANCEL, "Cancel");
+            m_strings.add(STR_YES, "Yes");
+            m_strings.add(STR_NO, "No");
+            m_strings.add(STR_ERROR, "Error");
+        }
+
         Wnd* WndStation::ModalOverride(Wnd* w)
         {
             if (m_wndModalStack.empty())
@@ -134,6 +150,41 @@ namespace m3d
                 return w;
             }
             return wnd;
+        }
+
+        void WndStation::RemoveCurrentTooltip()
+        {
+            if (m_wndForTooltip != nullptr)
+            {
+                if (m_wndForTooltip->m_toolTipWnd != nullptr)
+                {
+                    if (IsDirectChild(m_wndForTooltip->m_toolTipWnd))
+                    {
+                        GetStation()->RemoveChild(m_wndForTooltip->m_toolTipWnd);
+                    }
+                    delete m_wndForTooltip->m_toolTipWnd;
+                    m_wndForTooltip->m_toolTipWnd = nullptr;
+                    m_wndForTooltip->m_toolTipTimeOut = -1;
+                }
+                m_wndForTooltip = nullptr;
+            }
+        }
+
+        void WndStation::UpdateOnMouseInOut(Wnd* newWnd)
+        {
+            if (m_wndMouseOver != newWnd)
+            {
+                if (m_wndMouseOver != nullptr)
+                {
+                    m_wndMouseOver->OnMouseOut();
+                }
+                if (m_wndKbdCapture && m_wndKbdCapture != m_wndMouseOver && m_wndKbdCapture != newWnd && !m_wndKbdCapture->IsChildOf(newWnd))
+                {
+                    m_wndKbdCapture->OnMouseOut();
+                }
+                newWnd->OnMouseIn();
+                m_wndMouseOver = newWnd;
+            }
         }
     }
 }

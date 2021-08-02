@@ -180,7 +180,7 @@ protected:
 
 private:
     float getFov() const ;
-    virtual void setFov(float);
+    virtual void setFov(float value);
     void RegisterConsoleCommands();
     virtual int InitImpulses();
     void InitBackgroundTexture();

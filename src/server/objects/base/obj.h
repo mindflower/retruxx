@@ -196,9 +196,8 @@ namespace ai
     class Obj :  public m3d::Object
     {
     public:
-        class EventRecipientInfo
+        struct EventRecipientInfo
         {
-        private:
             eGameEvent m_eventId;
             std::vector<int> m_objIds;
         };
@@ -210,139 +209,150 @@ namespace ai
         };
 
     public:
+        static m3d::Class* GetBaseClass();
+        static void Registration();
+        static m3d::AIParam AIGetOwnerID(Obj* obj);
+        static m3d::AIParam AIGetParentID(Obj* obj);
+        static m3d::AIParam AIGetCmdParam1(Obj* obj);
+        static m3d::AIParam AIGetCmdParam2(Obj* obj);
+        static m3d::AIParam AIGetCmdParam3(Obj* obj);
+        static m3d::AIParam AIGetMessage1Param1(Obj* obj);
+        static m3d::AIParam AIGetMessage2Param1(Obj* obj);
+        static m3d::AIParam AIGetState1Param1(Obj* obj);
+        static m3d::AIParam AIGetState1Param2(Obj* obj);
+        static m3d::AIParam AIGetState1Param3(Obj* obj);
+        static m3d::AIParam AIGetState2Param1(Obj* obj);
+        static m3d::AIParam AIGetState2Param2(Obj* obj);
+        static m3d::AIParam AIGetState2Param3(Obj* obj);
+
+    protected:
+        static void RegisterProperty(char const* name, int id, eGObjPropertySaveStatus saveStatus);
+
+    protected:
+        static std::map<CStr, int> m_propertiesMap;
+        static std::map<int, eGObjPropertySaveStatus> m_propertiesSaveStatesMap;
+
+    public:
         virtual void RemoveComponent(Obj *);
-        void SetParentRepository(GeomRepository *);
-        float GetPriceCoeff(IPriceCoeffProvider const *) const ;
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        void CauseEvent(eGameEvent,float,m3d::AIParam,m3d::AIParam) const ;
-        void ApplyRandomAffixes(int);
+        virtual void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual void SetBelong(int);
-        virtual Obj * CloneObj();
-        static m3d::AIParam __fastcall AIGetMessage2Param1(Obj *);
-        virtual int OnEvent(Event const &);
-        virtual bool CanChildBeAdded(m3d::Class*) const ;
-        unsigned int GetFlags() const ;
-        virtual m3d::Class* GetRtClass() const ;
+        virtual Obj* CloneObj();
+        virtual int OnEvent(Event const&);
+        virtual bool CanChildBeAdded(m3d::Class*) const;
+        virtual m3d::Class* GetRtClass() const;
         virtual void PostCollide();
-        static m3d::AIParam __fastcall AIGetMessage1Param1(Obj *);
-        CStr GetFullDescriptionWithAffixes() const ;
-        bool bIsEnemyWith(Obj const *) const ;
         virtual void SetVisible();
-        CStr GetDebugDescription() const ;
-        virtual void RenderDebugInfo() const ;
+        virtual void RenderDebugInfo() const;
         virtual void TransferPhysicParamsToSceneGraphNode();
-        static m3d::AIParam __fastcall AIGetCmdParam3(Obj *);
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        static m3d::AIParam __fastcall AIGetCmdParam2(Obj *);
-        static m3d::AIParam __fastcall AIGetCmdParam1(Obj *);
-        void Subscribe(eGameEvent,int);
-        GeomRepository * GetParentRepository() const ;
-        virtual bool RemoveChild(Obj *);
-        virtual int RemoveChild(m3d::Object *);
-        void PostLoad();
-        bool bIsVisible() const ;
-        virtual bool ApplyModifier(Modifier const &);
-        bool bHasParent() const ;
-        bool IsAffixesApplied() const ;
-        int GetId() const ;
-        int TimeOutActivated() const ;
-        virtual void GetPropertiesIDs(std::set<int> &) const ;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual bool RemoveChild(Obj*);
+        virtual int RemoveChild(m3d::Object*);
+        virtual bool ApplyModifier(Modifier const&);
+        virtual void GetPropertiesIDs(std::set<int>&) const;
         virtual void SetInvisible();
-        int GetBelong() const ;
-        virtual void InflictDamage(DamageInfo const &);
-        void RemoveFromCinematic();
-        virtual void Update(float,unsigned int);
-        virtual void GetPropertiesNames(std::set<CStr> &) const ;
-        void SetTimeOut(float);
-        bool TimeOutFinished();
-        virtual AI * GetAIPtr();
-        int GetParentId() const ;
-        static m3d::AIParam __fastcall AIGetParentID(Obj *);
-        virtual CStr GetPropertyName(int) const ;
-        virtual PrototypeInfo const * GetPrototypeInfo() const ;
-        Obj(PrototypeInfo const &);
-        static m3d::AIParam __fastcall AIGetState2Param3(Obj *);
-        void SetAffixesApplied(bool);
-        static m3d::Class* __fastcall GetBaseClass();
+        virtual void InflictDamage(DamageInfo const&);
+        virtual void Update(float, unsigned int);
+        virtual void GetPropertiesNames(std::set<CStr>&) const;
         virtual void RelinkSceneGraphNode();
-        bool GetDeletedStatus() const ;
-        int GetPrototypeId() const ;
+        virtual AI* GetAIPtr();
+        virtual CStr GetPropertyName(int) const;
+        virtual PrototypeInfo const* GetPrototypeInfo() const;
         virtual void CreateChildren();
-        void LinkToParent(int,HierarchyType);
-        std::map<int,Obj *> & GetChildren();
-        virtual void ReceiveNodesToLink(std::list<m3d::SgNode *> &) const ;
-        void SetName(CStr const &);
-        virtual bool bIsEqualToPrototype() const ;
-        static m3d::AIParam __fastcall AIGetState2Param2(Obj *);
-        static m3d::AIParam __fastcall AIGetState1Param1(Obj *);
-        void UnlinkFromParent();
-        virtual void Dump() const ;
-        static m3d::AIParam __fastcall AIGetOwnerID(Obj *);
-        virtual unsigned int GetPrice(IPriceCoeffProvider const *) const ;
-        void SetParentInvalid();
-        void Unsubscribe(eGameEvent,int);
-        static m3d::AIParam __fastcall AIGetState2Param1(Obj *);
-        static m3d::AIParam __fastcall AIGetState1Param2(Obj *);
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        void SetNameFromScript(CStr const &);
-        virtual void AddChild(Obj *);
-        virtual int AddChild(m3d::Object *);
-        void AddModifier(Modifier const &);
-        void AddModifier(char const *,char const *);
-        virtual m3d::AIParam GetPropertyDefaultById(int) const ;
-        bool IsUpdating() const ;
-        bool GetPassedToAnotherMapStatus() const ;
-        static m3d::AIParam __fastcall AIGetState1Param3(Obj *);
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
-        virtual int GetProperty(unsigned int,void *) const ;
-        virtual m3d::AIParam GetProperty(char const *) const ;
-        virtual Obj * GetParent() const ;
+        virtual void ReceiveNodesToLink(std::list<m3d::SgNode*>&) const;
+        virtual bool bIsEqualToPrototype() const;
+        virtual void Dump() const;
+        virtual unsigned int GetPrice(IPriceCoeffProvider const*) const;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
+        virtual void AddChild(Obj*);
+        virtual int AddChild(m3d::Object*);
+        virtual m3d::AIParam GetPropertyDefaultById(int) const;
+        virtual bool SetPropertyById(int, m3d::AIParam const&);
+        virtual int GetProperty(unsigned int, void*) const;
+        virtual m3d::AIParam GetProperty(char const*) const;
+        virtual Obj* GetParent() const;
         virtual void Remove();
         virtual bool NeedCinematicUpdate();
-        void ValidateEventRecipientsList();
-        virtual m3d::AIParam GetPropertyDefault(char const *) const ;
-        virtual Obj * GetChild(int) const ;
+        virtual m3d::AIParam GetPropertyDefault(char const*) const;
+        virtual Obj* GetChild(int) const;
         virtual void ClearSavedStatus();
-        bool ApplyAffixByName(char const *);
-        void AddToCinematic();
-        void StopTimeOut();
         virtual void StackClose();
-        bool IsAlive() const ;
-        virtual unsigned int GetSchwarz() const ;
-        virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        static void __fastcall Registration();
-        void CreateVisualPart();
+        virtual unsigned int GetSchwarz() const;
+        virtual void SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
+        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const;
         virtual void StackOpen();
         virtual void SetPassedToAnotherMapStatus();
-        void Send(Obj *,char const *,char const *);
-        virtual m3d::AIParam GetPropertyById(int) const ;
-        virtual int SetProperty(unsigned int,void *);
-        bool SetProperty(char const *,m3d::AIParam const &);
-        virtual int GetPropertyId(char const *) const ;
+        virtual m3d::AIParam GetPropertyById(int) const;
+        virtual int SetProperty(unsigned int, void*);
+        virtual int GetPropertyId(char const*) const;
         virtual void StackLoop();
+
+        Obj(PrototypeInfo const&);
+        void SetParentRepository(GeomRepository* parentRepository);
+        float GetPriceCoeff(IPriceCoeffProvider const* priceCoeffProvider) const;
+        void CauseEvent(eGameEvent eventId, float timeOut, m3d::AIParam param1, m3d::AIParam param2) const;
+        CStr GetFullDescriptionWithAffixes() const;
+        bool bIsEnemyWith(Obj const *) const;
+        CStr GetDebugDescription() const;
+        void Subscribe(eGameEvent eventId, int objId);
+        GeomRepository* GetParentRepository() const;
+        void PostLoad();
+        bool TimeOutFinished();
+        void LinkToParent(int,HierarchyType);
+        void Unsubscribe(eGameEvent,int);
+        void AddModifier(Modifier const &);
+        void AddModifier(char const *,char const *);
+        void ValidateEventRecipientsList();
+        bool ApplyAffixByName(char const *);
+        bool IsAlive() const;
+        void CreateVisualPart();
+        void Send(Obj *,char const *,char const *);
         bool ApplyAffix(Affix const *);
+
+        //No need to impl
+        void ApplyRandomAffixes(int);
+        unsigned int GetFlags() const;
+        bool bIsVisible() const;
+        bool bHasParent() const;
+        bool IsAffixesApplied() const;
+        int GetId() const;
+        int TimeOutActivated() const;
+        int GetBelong() const;
+        void RemoveFromCinematic();
+        void SetTimeOut(float);
+        int GetParentId() const;
+        void SetAffixesApplied(bool);
+        bool GetDeletedStatus() const;
+        int GetPrototypeId() const;
+        std::map<int, Obj*>& GetChildren();
+        void SetName(CStr const&);
+        void UnlinkFromParent();
+        void SetParentInvalid();
+        void SetNameFromScript(CStr const&);
+        bool IsUpdating() const;
+        bool GetPassedToAnotherMapStatus() const;
+        void AddToCinematic();
+        void StopTimeOut();
+        bool SetProperty(char const*, m3d::AIParam const&);
 
     protected:
         virtual void _SetAllPropertiesToMax();
-        static void __fastcall RegisterProperty(char const *,int,eGObjPropertySaveStatus);
-        std::map<int,Obj *,std::less<int>,std::allocator<std::pair<int const ,Obj *> > > & getAllChildren();
+        std::map<int,Obj *> & getAllChildren();
         Obj();
-        bool _GetDeadStatus() const ;
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
-        int GetLastDamageSource() const ;
+        bool _GetDeadStatus() const;
+        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const;
+        int GetLastDamageSource() const;
         void _SetDeadStatus();
         virtual void _InternalPostLoad();
         void SetLastDamageSource(int);
         virtual void _InternalCreateVisualPart();
         virtual ~Obj();
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
+        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const;
 
     private:
         void OnSubscribe(Event const &);
         void _Init();
         void OnUnsubscribe(Event const &);
-        int _GetIndexByEventId(eGameEvent) const ;
+        int _GetIndexByEventId(eGameEvent) const;
 
     private:
         int m_objId;
@@ -368,6 +378,6 @@ namespace ai
         std::vector<int> m_appliedSuffixIds;
         bool m_bAffixesWasApplied;
         std::vector<Modifier> m_modifiers;
-        std::vector<Obj::EventRecipientInfo> m_eventRecipients;
+        std::vector<EventRecipientInfo> m_eventRecipients;
     };
 }

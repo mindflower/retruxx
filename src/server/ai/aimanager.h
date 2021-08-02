@@ -22,7 +22,7 @@ namespace ai
         void RegisterMatrix(CStr const &,DecisionMatrix *);
         void Dump();
         static m3d::Class* __fastcall GetBaseClass();
-        int RegisterFunc(CStr const &,m3d::AIParam (__fastcall*)(Obj *));
+        int RegisterFunc(CStr const &,m3d::AIParam(Obj *));
         void LogDump();
         int GetSchemeNum(CStr const &) const ;
         CStr GetMatrixName(int) const ;
@@ -42,11 +42,13 @@ namespace ai
     private:
         DecisionMatrix * ReadNewMatrix(char const *);
 
+    public:
+        float m_elapsedTime;
+
     private:
         std::vector<AIMatrix> m_Matrix;
         std::vector<AIFunc> m_Actions;
         std::vector<CStr> m_Schemes;
         unsigned int m_workTime;
-        float m_elapsedTime;
     };
 }

@@ -731,6 +731,7 @@
     <ClInclude Include="src\engine\console\console_internal.h" />
     <ClInclude Include="src\engine\core\memoryman.h" />
     <ClInclude Include="src\engine\graphinfo.h" />
+    <ClInclude Include="src\engine\impulses\gameimpulse.h" />
     <ClInclude Include="src\engine\landscape\roads\road.h" />
     <ClInclude Include="src\engine\landscape\roads\roadmanager.h" />
     <ClInclude Include="src\engine\ode\sources\array.h" />
@@ -965,6 +966,7 @@
     <ClInclude Include="src\game\uiwindows\townwindows\npcmodelwnd.h" />
     <ClInclude Include="src\game\uiwindows\townwindows\talkwithnpcdlg.h" />
     <ClInclude Include="src\game\uiwindows\townwindows\towndlg.h" />
+    <ClInclude Include="src\game\vivisectionblock.h" />
     <ClInclude Include="src\include\cameracontroller.h" />
     <ClInclude Include="src\include\cinematic.h" />
     <ClInclude Include="src\include\client.h" />

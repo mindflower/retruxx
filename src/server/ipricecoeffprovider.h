@@ -6,8 +6,6 @@ namespace ai
     {
     public:
         virtual ~IPriceCoeffProvider();
-
-    private:
-        //IPriceCoeffProvider_vtbl *__vftable /*VFT*/;
+        virtual float GetPriceCoeffForObj(Obj const*) const = 0;
     };
 }

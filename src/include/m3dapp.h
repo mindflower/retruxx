@@ -276,6 +276,7 @@ namespace m3d
 
     protected:
         CCamera m_curCamera;
+        IImpulse* m_pImpulses;
 
     private:
         CmdLine m_cmdLine;
@@ -369,7 +370,6 @@ namespace m3d
         mVideoPlayer *M3dVideoPlayer;
         bool m_bDoNotLoadMainmenuLevel;
         DetailSettings m_detailSettings;
-        IImpulse *m_pImpulses;
         bool m_bDXCursorEnabled;
         MouseInfo m_mouseInfo;
         HWND m_renderWindow;

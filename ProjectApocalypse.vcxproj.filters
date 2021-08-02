@@ -3767,6 +3767,12 @@
     <ClInclude Include="src\include\ui\modelarraywnd.h">
       <Filter>include\ui</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\impulses\gameimpulse.h">
+      <Filter>game\impulses</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\vivisectionblock.h">
+      <Filter>game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\engine\scene\servers\serveranimatedmodel.inl">

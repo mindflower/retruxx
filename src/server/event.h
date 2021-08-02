@@ -11,8 +11,9 @@ namespace ai
         void SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
         CStr Dump() const;
         Event(Event const&);
+        Event() = default;
 
-    private:
+    public:
         eGameEvent m_eventId;
         int m_recipientObjId;
         int m_senderObjId;

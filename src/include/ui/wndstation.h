@@ -83,7 +83,7 @@ namespace m3d
             void RegisterWnd(Wnd*);
             static GfxServer* __fastcall getGfxServer();
             void RemoveCurrentTooltip();
-            void UpdateOnMouseInOut(Wnd*);
+            void UpdateOnMouseInOut(Wnd* newWnd);
             void UnregisterWnd(Wnd*);
             int DispatchKey(Event const&);
 

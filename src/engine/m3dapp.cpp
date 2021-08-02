@@ -804,6 +804,11 @@ namespace m3d
         }
     }
 
+    bool Application::HandleCVar(CVar const*, CConsoleParams const&)
+    {
+        return false;
+    }
+
     unsigned long Application::GetStyleForRenderWindow(bool bFullScreen) const
     {
         //TODO: consts
