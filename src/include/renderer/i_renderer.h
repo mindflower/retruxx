@@ -813,7 +813,7 @@ namespace m3d
             virtual void SetErrorTexture(int);
             virtual void DisableTextureStages(int);
             virtual int ReferenceTexture(const m3d::rend::TexHandle*);
-            virtual int ReleaseTexture(m3d::rend::TexHandle*);
+            virtual int ReleaseTexture(m3d::rend::TexHandle&);
             virtual void SetTextureParameter(const m3d::rend::TexHandle*, m3d::rend::TexParam, unsigned int);
             virtual int GetTextureName(const m3d::rend::TexHandle*, CStr*);
             virtual int UploadTexImage(const m3d::rend::TexHandle*, unsigned int, unsigned int, unsigned __int8*, m3d::rend::TexDynFormat, int);

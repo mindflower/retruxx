@@ -1,10 +1,10 @@
 #pragma once
+#include "uimanager/truxxuimanager.h"
 #include <m3dapp.h>
 #include <core/console/cvar.h>
 #include <server/objects/base/objcontainer.h>
 #include <ui/msgbox.h>
 
-class ITruxxUiManager;
 class PostEffectManager;
 class ProfileManager;
 
@@ -19,16 +19,6 @@ namespace m3d
     class TownMusicManager;
     class AuxImpulseInfo;
 }
-
-enum GameState
-{
-    GS_ERROR = 0xFFFFFFFF,
-    GS_GAME = 0x0,
-    GS_CINEMATIC = 0x1,
-    GS_MAINMENU = 0x2,
-    GS_INITIALIZATION = 0x3,
-    GS_NUM_GAMESTATES = 0x4,
-};
 
 enum HackedMusicType
 {

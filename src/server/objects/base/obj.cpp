@@ -1,9 +1,11 @@
 #include "obj.h"
+#include "prototypeinfo.h"
 #include <algorithm>
 #include <core/aiparam.h>
 #include <core/kernel.h>
 #include <server/event.h>
 #include <server/ipricecoeffprovider.h>
+#include <server/modifier.h>
 #include <server/processmanager.h>
 #include <server/ai/ai.h>
 #include <server/ai/aimanager.h>
@@ -12,6 +14,9 @@ namespace ai
 {
     extern AIManager* theAIManager;
     extern ProcessManager* theProcessManager;
+
+    std::map<CStr, int> Obj::m_propertiesMap;
+    std::map<int, eGObjPropertySaveStatus> Obj::m_propertiesSaveStatesMap;
 
     m3d::Class* Obj::GetBaseClass()
     {
@@ -152,6 +157,16 @@ namespace ai
         }
     }
 
+    void Obj::RemoveComponent(Obj* component)
+    {
+    }
+
+    Obj::Obj(PrototypeInfo const& prototypeInfo) :
+        m_bIsUpdating(prototypeInfo.m_bIsUpdating),
+        m_prototypeId(prototypeInfo.m_prototypeId)
+    {
+    }
+
     void Obj::SetParentRepository(GeomRepository* parentRepository)
     {
         //TODO: check logic
@@ -207,10 +222,28 @@ namespace ai
             {
                 auto& eventRecipient = m_eventRecipients.at(idx);
                 //TODO: check this
-                if (std::none_of(cbegin(eventRecipient.m_objIds), cend(eventRecipient.m_objIds), objId))
+                if (std::find(cbegin(eventRecipient.m_objIds), cend(eventRecipient.m_objIds), objId) == cend(eventRecipient.m_objIds))
                 {
                     eventRecipient.m_objIds.push_back(objId);
                 }
+            }
+        }
+    }
+
+    void Obj::Unsubscribe(eGameEvent eventId, int objId)
+    {
+        //TODO: check correctness
+        if (auto const idx = _GetIndexByEventId(eventId); idx != -1)
+        {
+            auto& eventRecipient = m_eventRecipients.at(idx);
+            auto const it = std::find(cbegin(eventRecipient.m_objIds), cend(eventRecipient.m_objIds), objId);
+            if (it != cend(eventRecipient.m_objIds))
+            {
+                eventRecipient.m_objIds.erase(it);
+            }
+            if (eventRecipient.m_objIds.empty())
+            {
+                m_eventRecipients.erase(cbegin(m_eventRecipients) + idx);
             }
         }
     }
@@ -238,5 +271,92 @@ namespace ai
         }
         m_flags &= 0xFFFFFFFB;
         return true;
+    }
+
+    void Obj::LinkToParent(int newParentId, HierarchyType newHierarchyType)
+    {
+        auto* parent = GetParent();
+        if (parent != nullptr)
+        {
+            if (m_hierarchyType == HIERARCHY_COMPONENT)
+            {
+                parent->RemoveComponent(this);
+            }
+            else
+            {
+                parent->RemoveChild(this);
+            }
+        }
+        else
+        {
+            m_parentId = -1;
+        }
+        m_parentId = newParentId;
+        m_hierarchyType = newHierarchyType;
+        parent = GetParent();
+        if (parent != nullptr)
+        {
+            SetBelong(parent->GetBelong());
+        }
+    }
+
+    void Obj::AddModifier(Modifier const& modifier)
+    {
+        m_modifiers.push_back(modifier);
+    }
+
+    void Obj::AddModifier(char const* propertyName, char const* modification)
+    {
+        Modifier modifier;
+        modifier.m_PropertyName = propertyName;
+        toLower(modifier.m_PropertyName);
+        modifier.m_SenderID = -1;
+        modifier.ReadFromStr(modification);
+        m_modifiers.push_back(std::move(modifier));
+    }
+
+    bool Obj::IsAlive() const
+    {
+        return
+            (m_flags & 8) == 0 &&
+            (m_flags & 2) == 0 &&
+            GetParentRepository() == nullptr;
+    }
+
+    void Obj::CreateVisualPart()
+    {
+        if (m_bMustCreateVisualPart)
+        {
+            _InternalCreateVisualPart();
+            m_bMustCreateVisualPart = false;
+            m_bPassedToAnotherMap = false;
+        }
+    }
+
+    void Obj::Send(Obj* receiverObj, char const* propertyName, char const* modification)
+    {
+        if (receiverObj != nullptr)
+        {
+            Modifier modifier;
+            modifier.m_PropertyName = propertyName;
+            toLower(modifier.m_PropertyName);
+            modifier.m_SenderID = m_objId;
+            modifier.ReadFromStr(modification);
+            receiverObj->AddModifier(modifier);
+        }
+    }
+
+    int Obj::_GetIndexByEventId(eGameEvent eventId) const
+    {
+        //TODO: check correctness
+        auto const it = std::find_if(cbegin(m_eventRecipients), cend(m_eventRecipients), [eventId](auto const& info)
+        {
+            return eventId == info.m_eventId;
+        });
+        if (it != cend(m_eventRecipients))
+        {
+            return std::distance(cbegin(m_eventRecipients), it);
+        }
+        return -1;
     }
 }

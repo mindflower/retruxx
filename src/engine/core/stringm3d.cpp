@@ -10,10 +10,7 @@ void UnifyFileName0(CStr& fileName)
             c = '/';
         }
     }
-    if (!fileName.empty())
-    {
-        ::LCMapStringA(0x400, 0x100, fileName.data(), fileName.size(), fileName.data(), fileName.size());
-    }
+    toLower(fileName);
 }
 
 CStr DirectoryFromFileName(CStr const& source)
@@ -40,4 +37,12 @@ CStr NameFromFileName(CStr const& source)
         return result.substr(pos+1);
     }
     return result;
+}
+
+void toLower(CStr& str)
+{
+    if (!str.empty())
+    {
+        ::LCMapStringA(LOCALE_USER_DEFAULT, LCMAP_LOWERCASE, str.data(), str.size() + 1, str.data(), str.size() + 1);
+    }
 }

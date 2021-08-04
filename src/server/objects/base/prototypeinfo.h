@@ -30,10 +30,9 @@ namespace ai
         CStr const & GetParentPrototypeName() const ;
 
     protected:
-        virtual void _InternalCopyFrom(class PrototypeInfo const &);
+        virtual void _InternalCopyFrom(PrototypeInfo const&);
 
-    private:
-        //PrototypeInfo_vtbl *__vftable /*VFT*/;
+    public:
         CStr m_className;
         CStr m_prototypeName;
         int m_prototypeId;
@@ -42,8 +41,12 @@ namespace ai
         bool m_bVisibleInEncyclopedia;
         bool m_bApplyAffixes;
         unsigned int m_price;
+
+    protected:
         bool m_bIsAbstract;
         CStr m_parentPrototypeName;
+
+    private:
         m3d::Class *m_protoClassObject;
     };
 }

@@ -36,7 +36,7 @@ namespace ai
         void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         void ApplyEngineID(int *,int) const ;
 
-    private:
+    public:
         float m_timeOut;
         eModifierOperation m_Operation;
         int m_magicPrototypeId;

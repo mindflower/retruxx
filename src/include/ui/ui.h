@@ -236,7 +236,7 @@ namespace m3d
             virtual int OnObtainingFocus();
             virtual int OnLoosingFocus();
             virtual int OnMouseIn();
-            virtual int OnActivate(bool);
+            virtual int OnActivate(bool on);
             virtual int OnMouseClick(PointBase<float> const&);
             virtual void OnPaintOverChildren(DrawInfo const&);
             virtual int OnMouseButton2(unsigned int, PointBase<float> const&);

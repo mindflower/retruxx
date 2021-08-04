@@ -3773,6 +3773,21 @@
     <ClInclude Include="src\game\vivisectionblock.h">
       <Filter>game</Filter>
     </ClInclude>
+    <ClInclude Include="src\game\uimisc\objectsicons.h">
+      <Filter>game\uimisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\uimisc\guihelper.h">
+      <Filter>game\uimisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\uimisc\questinfo.h">
+      <Filter>game\uimisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\uimisc\objectcollection.h">
+      <Filter>game\uimisc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\uimisc\navpoint.h">
+      <Filter>game\uimisc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\engine\scene\servers\serveranimatedmodel.inl">

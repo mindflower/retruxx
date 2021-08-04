@@ -1,10 +1,16 @@
 #pragma once
+#include "gameuimanager.h"
 #include <iface.h>
 #include <vector>
 #include <core/ref_ptr.h>
 #include <ui/msgbox.h>
 
-namespace ai {
+class NavPointManager;
+class ObjectCollection;
+class QuestInfoManager;
+
+namespace ai
+{
     class Vehicle;
     class Town;
     class Workshop;
@@ -18,19 +24,38 @@ class WeaponGroupManager;
 class SavesManager;
 class HelpManager;
 
-namespace m3d {
-    namespace cmn {
+namespace m3d
+{
+    namespace cmn
+    {
         class XmlFile;
         class XmlNode;
     }
 
-    namespace ui {
+    namespace ui
+    {
         class Wnd;
+    }
+
+    namespace rend
+    {
+        class TexHandle;
     }
 
     class AuxImpulseInfo;
     class AIParam;
+    class Event;
 }
+
+enum GameState
+{
+    GS_ERROR = 0xFFFFFFFF,
+    GS_GAME = 0x0,
+    GS_CINEMATIC = 0x1,
+    GS_MAINMENU = 0x2,
+    GS_INITIALIZATION = 0x3,
+    GS_NUM_GAMESTATES = 0x4,
+};
 
 class ITruxxUiManager : public IBase
 {
@@ -54,11 +79,11 @@ public:
     int ShowWindow(int, bool, bool, bool, bool, int*);
     int SetEventsForWindow(int, const std::vector<int>*);
     m3d::rend::TexHandle  GetIcoByName(const CStr*, int);
-    CStr  GetPathToQuestInfoFileGlobal();
-    CStr  GetPathToDialogsFileGlobal();
-    CStr  GetPathToDynamicDialogsFileGlobal();
-    CStr  GetPathToLevelInfoFile();
-    CStr  GetPathToSplashes();
+    CStr GetPathToQuestInfoFileGlobal();
+    CStr GetPathToDialogsFileGlobal();
+    CStr GetPathToDynamicDialogsFileGlobal();
+    CStr GetPathToLevelInfoFile();
+    CStr GetPathToSplashes();
     QuestInfoManager*  GetQuestInfoManager();
     RepliesManager*  GetRepliesManager();
     const ObjectCollection*  GetObjectCollection();

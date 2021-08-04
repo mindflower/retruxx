@@ -20,7 +20,7 @@ namespace m3d
             RemoveAllChildren();
             GetGfxServer()->Done();
             delete m_curDefault;
-            Application::g_pApp->m_renderer->ReleaseTexture(&m_currentCursor.m_tex);   
+            Application::g_pApp->m_renderer->ReleaseTexture(m_currentCursor.m_tex);   
             delete GetGfxServer();
             return 1;
         }

@@ -233,7 +233,7 @@ namespace ai
         static std::map<int, eGObjPropertySaveStatus> m_propertiesSaveStatesMap;
 
     public:
-        virtual void RemoveComponent(Obj *);
+        virtual void RemoveComponent(Obj* component);
         virtual void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual void SetBelong(int);
         virtual Obj* CloneObj();
@@ -286,7 +286,7 @@ namespace ai
         virtual int GetPropertyId(char const*) const;
         virtual void StackLoop();
 
-        Obj(PrototypeInfo const&);
+        Obj(PrototypeInfo const& prototypeInfo);
         void SetParentRepository(GeomRepository* parentRepository);
         float GetPriceCoeff(IPriceCoeffProvider const* priceCoeffProvider) const;
         void CauseEvent(eGameEvent eventId, float timeOut, m3d::AIParam param1, m3d::AIParam param2) const;
@@ -294,19 +294,19 @@ namespace ai
         bool bIsEnemyWith(Obj const *) const;
         CStr GetDebugDescription() const;
         void Subscribe(eGameEvent eventId, int objId);
+        void Unsubscribe(eGameEvent eventId, int objId);
         GeomRepository* GetParentRepository() const;
         void PostLoad();
         bool TimeOutFinished();
-        void LinkToParent(int,HierarchyType);
-        void Unsubscribe(eGameEvent,int);
-        void AddModifier(Modifier const &);
-        void AddModifier(char const *,char const *);
+        void LinkToParent(int newParentId, HierarchyType newHierarchyType);
+        void AddModifier(Modifier const& modifier);
+        void AddModifier(char const* propertyName, char const* modification);
         void ValidateEventRecipientsList();
         bool ApplyAffixByName(char const *);
         bool IsAlive() const;
         void CreateVisualPart();
-        void Send(Obj *,char const *,char const *);
-        bool ApplyAffix(Affix const *);
+        void Send(Obj* receiverObj ,char const* propertyName, char const* modification);
+        bool ApplyAffix(Affix const*);
 
         //No need to impl
         void ApplyRandomAffixes(int);
@@ -352,7 +352,7 @@ namespace ai
         void OnSubscribe(Event const &);
         void _Init();
         void OnUnsubscribe(Event const &);
-        int _GetIndexByEventId(eGameEvent) const;
+        int _GetIndexByEventId(eGameEvent eventId) const;
 
     private:
         int m_objId;

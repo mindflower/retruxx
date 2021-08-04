@@ -85,11 +85,7 @@ int InitAllocCheck(eAllocCheckOutput eOutput, int bSetUnhandledExeptionFilter, u
     auto const dirName = DirectoryFromFileName(workDir);
     auto const fileName = NameFromFileName(s_szExceptionLogFileName);
     g_currentBinaryName = fileName;
-    if (!g_currentBinaryName.empty())
-    {
-        auto const size = g_currentBinaryName.size();
-        LCMapStringA(0x400, 0x100, g_currentBinaryName.data(), size + 1, g_currentBinaryName.data(), size + 1);
-    }
+    toLower(g_currentBinaryName);
 
     TCHAR szName[MAX_PATH + 1] = { 0 };
     unsigned counter = 0;

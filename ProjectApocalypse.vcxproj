@@ -837,9 +837,14 @@
     <ClInclude Include="src\game\profile.h" />
     <ClInclude Include="src\game\uimanager\gameuimanager.h" />
     <ClInclude Include="src\game\uimanager\truxxuimanager.h" />
+    <ClInclude Include="src\game\uimisc\guihelper.h" />
     <ClInclude Include="src\game\uimisc\helpmanager.h" />
     <ClInclude Include="src\game\uimisc\levelinfo.h" />
     <ClInclude Include="src\game\uimisc\msgmanager.h" />
+    <ClInclude Include="src\game\uimisc\navpoint.h" />
+    <ClInclude Include="src\game\uimisc\objectcollection.h" />
+    <ClInclude Include="src\game\uimisc\objectsicons.h" />
+    <ClInclude Include="src\game\uimisc\questinfo.h" />
     <ClInclude Include="src\game\uimisc\reply.h" />
     <ClInclude Include="src\game\uimisc\savesmanager.h" />
     <ClInclude Include="src\game\uimisc\stringparser.h" />

@@ -1,18 +1,33 @@
 #include "m3dgame.h"
+#include "profile.h"
 #include "vivisectionblock.h"
 #include "impulses/truxximpulses.h"
 #include "music/blockmusicmanager.h"
 #include "music/radioengine.h"
 #include "music/townmusicmanager.h"
 #include "uimanager/truxxuimanager.h"
+#include "uimisc/guihelper.h"
 #include "uimisc/savesmanager.h"
 #include "uiwindows/charwindows/motherpanel.h"
 #include <cameracontroller.h>
+#include <client.h>
+#include <config.h>
 #include <landscape.h>
 #include <world.h>
 #include <core/kernel.h>
+#include <posteffects/posteffectmanager.h>
+#include <server/server.h>
 
 extern Vivisector* g_Vivisector;
+namespace ai
+{
+    extern CServer* pServer;
+}
+
+namespace m3d
+{
+    extern CClient* pClient;
+}
 
 unsigned m_profiler_Client = 0;
 unsigned m_profiler_GetPackets = 0;
@@ -85,7 +100,7 @@ int CMiracle3d::DoneMedia()
     auto* g_pGame = dynamic_cast<CMiracle3d*>(g_pApp);
     auto* savesManager = g_pGame->m_pInterfaceManager->GetSavesManager();
     auto const pathToTempMaps = savesManager->GetPathForTemporaryMaps();
-    help::DeleteAllFilesInDirectory(pathToTempMaps);
+    help::DeleteAllFilesInDirectory(pathToTempMaps.c_str());
     if (m3d::pClient != nullptr)
     {
         ProcessAllEvents();
@@ -94,10 +109,35 @@ int CMiracle3d::DoneMedia()
         ai::pServer->Clear();
         ai::pServer->ClearOnce();
         m3d::pClient->Reset();
-        m3d::pClient
+        m3d::pClient->GetWorld().Release();
+        DiscardAllEvents();
+        g_pGame->m_pImpulses->ResetAllImpulses(true);
+        m_bRenderAsBackground = false;
+        m_bBackgroundTextureIsValid = false;
     }
+    m_gameInited = false;
+    delete m3d::pClient;
 
-    //TODO..
+    m3d::g_Kernel->GetEngineCfg().m_levFileName.Set("Empty");
+    if (m_pInterfaceManager->DecRef() <= 0)
+    {
+        m_pInterfaceManager = nullptr;
+    }
+    auto* profileManager = GetProfileManager();
+    auto* curProfile = profileManager->GetCurProfile();
+    profileManager->SaveProfile(curProfile);
+    //TODO: check this
+    delete profileManager;
+    delete m_radioEngine;
+    delete m_blockMusicManager;
+    delete m_townMusicManager;
+
+    g_pGame->m_renderer->UnregisterResetCallback(this);
+    delete m_postEffect;
+
+    g_pGame->m_renderer->ReleaseTexture(m_backgroundTexture);
+    LOG("--- Done Media: Ok ---", LOG_INFO);
+    return 1;
 
 }
 

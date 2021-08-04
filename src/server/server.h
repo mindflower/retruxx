@@ -1,11 +1,10 @@
 #pragma once
+#include <math/vector.h>
 #include "relationship.h"
 #include "objects/base/obj.h"
 #include "objects/base/objcontainer.h"
+#include <core/console/console.h>
 #include <queue>
-#include <vector>
-#include <core/console/cvar.h>
-#include <math/vector.h>
 
 namespace m3d
 {
@@ -22,6 +21,7 @@ namespace m3d
 
 namespace ai
 {
+    class ObjContainer;
     class ExternalPaths;
     class PrototypeInfo;
     class Obj;

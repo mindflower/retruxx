@@ -7,6 +7,8 @@ void UnifyFileName0(CStr& fileName);
 CStr DirectoryFromFileName(CStr const& source);
 CStr NameFromFileName(CStr const& source);
 
+void toLower(CStr& str);
+
 //TODO: add static functions
 //class CVector;
 //class CVector2;
