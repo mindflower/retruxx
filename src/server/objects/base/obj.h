@@ -339,14 +339,14 @@ namespace ai
         std::map<int,Obj *> & getAllChildren();
         Obj();
         bool _GetDeadStatus() const;
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const;
         int GetLastDamageSource() const;
         void _SetDeadStatus();
         virtual void _InternalPostLoad();
         void SetLastDamageSource(int);
         virtual void _InternalCreateVisualPart();
         virtual ~Obj();
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const;
 
     private:
         void OnSubscribe(Event const &);

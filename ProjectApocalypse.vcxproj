@@ -829,6 +829,7 @@
     <ClInclude Include="src\engine\weather\weather.h" />
     <ClInclude Include="src\engine\weather\weathermanager.h" />
     <ClInclude Include="src\engine\wheeltraces\wheeltraces.h" />
+    <ClInclude Include="src\game\globalscriptfuncs.h" />
     <ClInclude Include="src\game\impulses\truxximpulses.h" />
     <ClInclude Include="src\game\m3dgame.h" />
     <ClInclude Include="src\game\music\blockmusicmanager.h" />

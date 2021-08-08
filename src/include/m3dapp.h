@@ -273,10 +273,13 @@ namespace m3d
         snd::ISound* m_sound;
         rend::IRenderer* m_renderer;
         input::IInput* m_input;
+        IImpulse* m_pImpulses;
+        Cinematic* m_cinematic;
 
     protected:
         CCamera m_curCamera;
-        IImpulse* m_pImpulses;
+        bool m_enginePlayingVideo;
+        bool m_bDoNotLoadMainmenuLevel;
 
     private:
         CmdLine m_cmdLine;
@@ -362,19 +365,16 @@ namespace m3d
         bool m_bDrawGraph;
         bool m_waitForAnykey;
         bool m_waitNetworkServer;
-        bool m_enginePlayingVideo;
         bool m_isRenderingAllowed;
         bool m_isConsoleAllowed;
         bool m_bShowRenderStats;
         bool m_bShowDeviceMemStats;
         mVideoPlayer *M3dVideoPlayer;
-        bool m_bDoNotLoadMainmenuLevel;
         DetailSettings m_detailSettings;
         bool m_bDXCursorEnabled;
         MouseInfo m_mouseInfo;
         HWND m_renderWindow;
         IConHandler *m_soundConHandler;
         bool m_bGuiWasHiddenBeforeCinematic;
-        Cinematic *m_cinematic;
     }; 
 }

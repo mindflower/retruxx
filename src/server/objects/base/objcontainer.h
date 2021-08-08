@@ -81,8 +81,8 @@ namespace ai
             void _Inc();
             Obj const* operator*() const;
             Obj const* operator->() const;
-            bool operator==(class const_iterator const&) const;
-            bool operator!=(class const_iterator const&) const;
+            bool operator==(const_iterator const&) const;
+            bool operator!=(const_iterator const&) const;
             class const_iterator& operator++();
 
         private:
@@ -95,24 +95,24 @@ namespace ai
         public:
             iterator(std::vector<Node>*, int);
             Obj* operator->() const;
-            class iterator operator++(int);
-            class iterator& operator++();
+            iterator operator++(int);
+            iterator& operator++();
             Obj* operator*() const;
         };
 
     public:
         Obj * GetEntityByObjName(CStr const &);
         void Purge();
-        class iterator updatingEnd();
+        iterator updatingEnd();
         virtual ~ObjContainer();
         CStr GetObjectFullName(CStr const &) const ;
         void RelinkGeomsToCollisionCells();
         void AddObjToUpdate(Obj *);
-        virtual class m3d::Object * Clone();
+        virtual m3d::Object * Clone();
         void PermitCreation();
         int CreateNewObjectWithSuspendedPostLoad(int,char const *,int,int);
-        class iterator updatingBegin();
-        void LoadNodeStatesFromXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *);
+        iterator updatingBegin();
+        void LoadNodeStatesFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
         bool IsSaveAllowed() const ;
         void PauseGameTime();
         void DeleteAll();
@@ -156,8 +156,8 @@ namespace ai
         virtual struct m3d::Class * GetClass() const ;
         void SaveNodeStatesToXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
         void SaveToXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
-        class const_iterator end() const ;
-        class iterator end();
+        const_iterator end() const ;
+        iterator end();
         void LinkGeomsToCollisionCells();
         void RelinkSceneGraphNodes();
         void AddObjIdToRemove(int);

@@ -3788,6 +3788,9 @@
     <ClInclude Include="src\game\uimisc\navpoint.h">
       <Filter>game\uimisc</Filter>
     </ClInclude>
+    <ClInclude Include="src\game\globalscriptfuncs.h">
+      <Filter>game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\engine\scene\servers\serveranimatedmodel.inl">

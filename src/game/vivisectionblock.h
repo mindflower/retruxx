@@ -23,3 +23,5 @@ public:
 private:
     std::vector<TownPosInfo> m_test;
 };
+
+bool initVivisectionBlock();

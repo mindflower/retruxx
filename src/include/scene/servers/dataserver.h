@@ -92,6 +92,8 @@ namespace m3d
         virtual int GetItemProperty(int, int, void*);
         int GetNumItems() const;
 
+        virtual int AddItem(char const*, char const*) = 0;
+
     protected:
         void SetError(CStr const&);
         bool IsValid() const;

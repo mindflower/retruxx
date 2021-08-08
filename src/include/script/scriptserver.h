@@ -85,7 +85,7 @@ namespace m3d
         eScriptError executeScriptFile(char const*);
         eScriptError init();
         virtual Object* Clone();
-        eScriptError registerGlobalFunction(int(__fastcall*)(sArgStack&), char const*, char const*, char const*, char const*);
+        eScriptError registerGlobalFunction(int(*)(sArgStack&), char const* = "", char const* = "", char const* = "", char const* = "");
 
     protected:
         ScriptServer(ScriptServer const&);

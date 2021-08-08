@@ -1,5 +1,6 @@
 #include "obj.h"
 #include "prototypeinfo.h"
+#include "prototypemanager.h"
 #include <algorithm>
 #include <core/aiparam.h>
 #include <core/kernel.h>
@@ -14,6 +15,7 @@ namespace ai
 {
     extern AIManager* theAIManager;
     extern ProcessManager* theProcessManager;
+    extern PrototypeManager* thePrototypeManager;
 
     std::map<CStr, int> Obj::m_propertiesMap;
     std::map<int, eGObjPropertySaveStatus> Obj::m_propertiesSaveStatesMap;
@@ -343,6 +345,75 @@ namespace ai
             modifier.m_SenderID = m_objId;
             modifier.ReadFromStr(modification);
             receiverObj->AddModifier(modifier);
+        }
+    }
+
+    bool Obj::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
+    {
+        switch (propertyId)
+        {
+        case 0:
+        {
+            retVal = m_belong;
+            return true;
+        }
+        case 1:
+        {
+            retVal = thePrototypeManager->GetPrototypeName(m_prototypeId);
+            return true;
+        }
+        case 2:
+        {
+            retVal = m_prototypeId;
+            return true;
+        }
+        case 3:
+        {
+            retVal = GetName();
+            return true;
+        }
+        default:
+        {
+                LOG("Error: getting invalid property", LOG_ERR);
+                //TODO: add debug description
+                return false;
+        }
+        }
+    }
+
+    bool Obj::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
+    {
+        switch (propertyId)
+        {
+        case 0:
+        {
+            retVal = 1000;
+            return true;
+        }
+        case 1:
+        {
+            retVal =
+                m_prototypeId != -1 ?
+                thePrototypeManager->GetPrototypeName(m_prototypeId) :
+                m3d::AIParam{};
+            return true;
+        }
+        case 2:
+        {
+            retVal = -1;
+            return true;
+        }
+        case 3:
+        {
+            retVal = m3d::AIParam{};
+            return true;
+        }
+        default:
+        {
+            LOG("Error: getting invalid default property", LOG_ERR);
+            //TODO: add debug description
+            return false;
+        }
         }
     }
 

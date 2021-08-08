@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <unordered_map>
+#include <core/stringm3d.h>
 
 namespace m3d
 {

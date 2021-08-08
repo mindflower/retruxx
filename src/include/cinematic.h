@@ -162,6 +162,10 @@ namespace m3d
         Cinematic(Cinematic const &);
         Cinematic();
 
+    public:
+        CinematicState m_state;
+        CVar m_fadePeriod;
+
     private:
         CVector _GetPointToLookAt() const ;
         CameraPathState _GetPathState(float) const ;
@@ -172,10 +176,8 @@ namespace m3d
         bool _bIsFirstItemPlayingNow() const ;
         int m_playTime;
         int m_fadeStartTime;
-        CinematicState m_state;
         bool m_bWasSkipped;
         bool m_bWasSkippedInEnterFadeOut;
-        CVar m_fadePeriod;
         std::list<CinematicItem> m_cinematicItems;
         CinematicItem m_curItem;
         CStr m_folder;

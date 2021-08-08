@@ -59,6 +59,9 @@ enum ProfileParam
 class Profile : public m3d::Object
 {
 public:
+    static m3d::Class m_classProfile;
+
+public:
     int LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
     CStr const & GetFolder() const ;
     virtual m3d::Class* GetClass() const ;
@@ -90,6 +93,9 @@ private:
 
 class ProfileManager :  public m3d::Object
 {
+public:
+    static m3d::Class m_classProfileManager;
+
 public:
     Profile * GetCurProfile() const ;
     int SetCurProfile(CStr const &);

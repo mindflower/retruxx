@@ -1,3 +1,4 @@
+#include "globalscriptfuncs.h"
 #include "m3dgame.h"
 #include "profile.h"
 #include "vivisectionblock.h"
@@ -10,13 +11,17 @@
 #include "uimisc/savesmanager.h"
 #include "uiwindows/charwindows/motherpanel.h"
 #include <cameracontroller.h>
+#include <cinematic.h>
 #include <client.h>
 #include <config.h>
 #include <landscape.h>
 #include <world.h>
 #include <core/kernel.h>
+#include <core/timer.h>
 #include <posteffects/posteffectmanager.h>
 #include <server/server.h>
+#include <ctime>
+#include <scene/servers/dataserver.h>
 
 extern Vivisector* g_Vivisector;
 namespace ai
@@ -140,6 +145,83 @@ int CMiracle3d::DoneMedia()
     return 1;
 
 }
+
+int CMiracle3d::InitMedia()
+{
+    LOG("--- Init Media ---", LOG_INFO);
+    m_curGameMode.Set(GS_INITIALIZATION);
+    g_pApp->m_renderer->RegisterResetCallback(this);
+    m_postEffect = new PostEffectManager{};
+    if (!m_postEffect->Initialize())
+    {
+        SYS_ERROR("m_postEffect->Initialize()");
+    }
+    RegisterGlobalNatives();
+    //m3d::g_Kernel->GetTimer().GetCurTime();
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_maxDist, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_minDist, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_cameraSpeed, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_cameraHeight, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_collideCameraRadius, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_smoothCameraRadius, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_minAngle, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_maxAngle, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_fov, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_cinematic->m_fadePeriod, nullptr);
+    m3d::g_Kernel->AddClass(&Profile::m_classProfile);
+    m3d::g_Kernel->AddClass(&ProfileManager::m_classProfileManager);
+    GetBlockMusicManager()->InitOnce();
+
+    m_pInterfaceManager = new ITruxxUiManager{};
+    if (m_pInterfaceManager != nullptr)
+    {
+        m_pInterfaceManager->Init();
+        m_profileManager = dynamic_cast<ProfileManager*>(m3d::g_Kernel->New("ProfileManager"));
+        m_townMusicManager->Init();
+        m_radioEngine->Init();
+        g_pApp->m_pImpulses->LoadFromDefaults();
+        RegisterConsoleCommands();
+        initVivisectionBlock();
+        if (m3d::g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        {
+            g_pApp->m_sound->SetGroupVolume(1, m3d::g_Kernel->GetEngineCfg().m_snd_2dVolume.GetC());
+            g_pApp->m_sound->SetGroupVolume(2, m3d::g_Kernel->GetEngineCfg().m_snd_3dVolume.GetC());
+        }
+
+        std::srand(std::time(nullptr));
+        GetMusicServer().AddItem("file:", "mainmenu");
+        m_musicNames.resize(4);
+        m_musicNames[0] = "mainmenu";
+        m_bDoNotLoadMainmenuLevel = m3d::g_Kernel->GetEngineCfg().m_DoNotLoadMainmenuLevel.GetB();
+        CaptureMouse(this);
+        SetCursorShow(this);
+        InitBackgroundTexture();
+        OnFinishIntroVideoPlaying();
+        return 1;
+    }
+    LOG("Fail to create interface manager", LOG_INFO);
+    return 0;
+}
+
+//int CMiracle3d::FrameMove()
+//{
+//    if (!m_playingVideo || m_enginePlayingVideo)
+//    {
+//        auto* profiler = GetProfilerStack().GetProfiler(m_profiler_Client);
+//        profiler->StartCountdown();
+//        PlayHackedMusic(m_hackedMusicType, false);
+//        m3d::RadioEngine::GetInstance()->PlayNextSoundMessage();
+//        //TODO:...
+//        if (m3d::pClient != nullptr)
+//        {
+//            GetCameraController()->Update();
+//            if (m_cinematic->m_state != m3d::CINEMATIC_NOT_INITED)
+//            {
+//                auto wndTown = m_pInterfaceManager->GetWindow(4);
+//            }
+//        }
+//    }
+//}
 
 bool CMiracle3d::HandleCVar(m3d::CVar const* cvar, m3d::CConsoleParams const& params)
 {

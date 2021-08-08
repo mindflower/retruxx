@@ -4,6 +4,8 @@
 #include <math/point2d.h>
 #include <core/stringm3d.h>
 #include <math/bounds2d.h>
+#include <renderer/i_renderer.h>
+#include "font.h"
 
 namespace m3d
 {
@@ -138,7 +140,7 @@ namespace m3d
             virtual int OnAfterAddToWndStation();
             virtual int GameDataSetup();
             virtual void SetDefaultFont(int);
-            virtual void SetDefaultFont(CStr const&, float, FontType, union FontParams);
+            virtual void SetDefaultFont(CStr const&, float, FontType, FontParams);
             void SetGuiId(int);
             BoundsBase<float> ToParent(BoundsBase<float> const&) const;
             PointBase<float> ToParent(PointBase<float> const&) const;
@@ -242,7 +244,7 @@ namespace m3d
             virtual int OnMouseButton2(unsigned int, PointBase<float> const&);
             int CreateWnd(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int);
             virtual int OnMouseButton1(unsigned int, PointBase<float> const&);
-            virtual int OnMouseButton0(unsigned int, PointBase<float> const&);
+            virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at);
             Wnd();
             Wnd(Wnd const&);
             virtual int OnWndNotify(Wnd*, unsigned int, unsigned int, AIParam const&);
