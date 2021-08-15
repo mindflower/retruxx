@@ -111,6 +111,9 @@ namespace m3d
     private:
         void LoadStaticObstacles();
 
+    public:
+        Level* m_level;
+
     private:
         CVar m_lsInscatterCoeff;
         CVar m_lsOutscatterCoeff;
@@ -132,11 +135,10 @@ namespace m3d
         rend::TexHandle m_texSunGlow;
         TexClouds *m_texClouds;
         CClient *m_owner;
-        Level *m_level;
         CVector m_sunDir;
         float m_sunAzimuth;
         float m_sunAscention;
-        std::vector<CWorld::EffectsData> m_effectsFactory;
+        std::vector<EffectsData> m_effectsFactory;
         std::vector<CStr> fxNames;
         std::map<CStr,int> fxRemap;
         Profiler *m_profilerUpdateOde;

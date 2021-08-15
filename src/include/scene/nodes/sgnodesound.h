@@ -10,6 +10,9 @@ namespace m3d
         static Class* GetBaseClass();
 
     public:
+        static Class m_classSgSoundSourceNode;
+
+    public:
         virtual void CanBeFree();
         virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual DataServer* GetServer() const;

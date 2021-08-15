@@ -804,7 +804,7 @@ namespace m3d
             virtual TexHandle* AddDynamicTexture(m3d::rend::TexHandle* result, const char*, int, int, unsigned int);
             virtual TexHandle* AddRenderTargetTexture(m3d::rend::TexHandle* result, const char*, int, int);
             virtual TexHandle* GetBufferedTargetTexture(m3d::rend::TexHandle* result, int);
-            virtual TexHandle* GetFullFrameFrameBufferTexture(m3d::rend::TexHandle* result);
+            virtual TexHandle GetFullFrameFrameBufferTexture();
             virtual int ReloadTextures();
             virtual bool ReportTexturesInfo(const char*);
             virtual int SetTexture(int, const m3d::rend::TexHandle*, long double);
@@ -814,7 +814,7 @@ namespace m3d
             virtual void DisableTextureStages(int);
             virtual int ReferenceTexture(const m3d::rend::TexHandle*);
             virtual int ReleaseTexture(m3d::rend::TexHandle&);
-            virtual void SetTextureParameter(const m3d::rend::TexHandle*, m3d::rend::TexParam, unsigned int);
+            virtual void SetTextureParameter(m3d::rend::TexHandle const&, m3d::rend::TexParam, unsigned int);
             virtual int GetTextureName(const m3d::rend::TexHandle*, CStr*);
             virtual int UploadTexImage(const m3d::rend::TexHandle*, unsigned int, unsigned int, unsigned __int8*, m3d::rend::TexDynFormat, int);
             virtual void* LockTexture(const m3d::rend::TexHandle*, m3d::rend::TexDynFormat, int*, int);

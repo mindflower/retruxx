@@ -1,5 +1,6 @@
 #pragma once
 #include "component.h"
+#include "numeric.h"
 
 namespace ai
 {
@@ -7,15 +8,15 @@ namespace ai
     class NumericInRange :  public Component<T>
     {
     public:
-        Numeric const & value() const ;
-        Numeric & value();
+        Numeric<T> const & value() const ;
+        Numeric<T> & value();
         void setToMax();
-        Numeric & minValue();
-        Numeric const & minValue() const ;
+        Numeric<T> & minValue();
+        Numeric<T> const & minValue() const ;
         NumericInRange(T,T,T);
         void setToMin();
-        Numeric const & maxValue() const ;
-        Numeric & maxValue();
+        Numeric<T> const & maxValue() const ;
+        Numeric<T> & maxValue();
 
     private:
         //bool _OnBeforeMinValueApplyModifier(Modifier const &,float &);

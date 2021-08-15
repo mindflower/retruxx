@@ -275,9 +275,9 @@ namespace m3d
         input::IInput* m_input;
         IImpulse* m_pImpulses;
         Cinematic* m_cinematic;
+        CCamera m_curCamera;
 
     protected:
-        CCamera m_curCamera;
         bool m_enginePlayingVideo;
         bool m_bDoNotLoadMainmenuLevel;
 

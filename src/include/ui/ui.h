@@ -254,12 +254,12 @@ namespace m3d
             virtual void OnDisplayChanged();
             void StopAnimationMoveSound();
             Wnd* GetNextActivatableChild(Wnd*, int);
-            virtual int OnMouseDblClick(PointBase<float> const&, PointBase<float> const&);
+            virtual int OnMouseDblClick(PointBase<float> const& firstClickPt, PointBase<float> const& secondClickPt);
             virtual int OnMouseOut();
             virtual void OnNcPaint(DrawInfo const&, unsigned int);
-            virtual int OnPaint(DrawInfo const&);
-            virtual int OnKey(unsigned short, unsigned char, unsigned int);
-            virtual int OnMouseMove(PointBase<float> const&, PointBase<float> const&);
+            virtual int OnPaint(DrawInfo const& clipToIt);
+            virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state);
+            virtual int OnMouseMove(PointBase<float> const& pt, PointBase<float> const& deltas);
             int CallParentNotify(unsigned int, AIParam const&, bool);
 
         private:

@@ -4,6 +4,7 @@
 #include "wheel.h"
 #include "base/complexphysicobj.h"
 #include <deque>
+#include <skelmodel.h>
 #include <core/scoped_ptr.h>
 #include <server/damageinfo.h>
 #include <server/ai/ai.h>
@@ -18,6 +19,8 @@ struct dxJoint;
 
 namespace ai
 {
+    class Basket;
+    class VehicleRole;
     class VehicleRecollection;
     class Chassis;
     class GeomRepositoryItem;
@@ -251,7 +254,7 @@ namespace ai
         void SetMaxPower(float);
         bool GetStoppageMode() const ;
         void GetEnemiesInNeighborhood(float,std::vector<int,std::allocator<int> > &) const ;
-        VehicleRole * GetRole() const ;
+        VehicleRole* GetRole() const ;
         void SubscribeRadioManagerOnNearbyObjId(int) const ;
         int GetValidSlotIdForGadget(Gadget const *) const ;
         Wheel const * GetFirstExistingWheel() const ;

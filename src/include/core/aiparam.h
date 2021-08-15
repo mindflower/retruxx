@@ -50,6 +50,7 @@ namespace m3d
         AIParam(CStr const&);
         AIParam(int const&);
         AIParam(float const&);
+        AIParam(Quaternion const&);
         ~AIParam();
 
         int GetAsID() const;

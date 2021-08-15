@@ -129,7 +129,7 @@ public:
     int OnDebug(m3d::AuxImpulseInfo const &);
     void UnPauseSound();
     bool LoadMapFromConsole(m3d::CConsoleParams const &,bool);
-    int StartPlayingVideo(char const *,int (*)());
+    int StartPlayingVideo(char const *,int (CMiracle3d::*)());
     virtual ~CMiracle3d();
     float GetNormalTimeScale() const ;
     void SetNormalTimeScale(float);
@@ -168,6 +168,10 @@ protected:
     virtual int NewFrame();
     float GetMaxHigh(float,float);
 
+public:
+    ITruxxUiManager* m_pInterfaceManager;
+    Player m_player;
+
 private:
     float getFov() const ;
     virtual void setFov(float value);
@@ -178,7 +182,6 @@ private:
     int CreateInterfaceManager();
     void DrawBackground();
     void CaptureBackground();
-    Player m_player;
     CVector m_oldPositionValue;
     int m_elapsedtime;
     int m_numModals;
@@ -213,7 +216,6 @@ private:
     float m_minTimeScale;
     float m_normalTimeScale;
     bool m_gameInited;
-    ITruxxUiManager *m_pInterfaceManager;
     m3d::CVar m_cvSoundDebug;
     bool zoomInited;
     float m_Fov0;

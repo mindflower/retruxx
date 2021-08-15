@@ -34,6 +34,34 @@ namespace m3d
     extern CClient* pClient;
 }
 
+namespace
+{
+    m3d::CConsoleCommands conCommands[] = {
+    {"map", 0x1000},
+    {"music", 0x1001},
+    {"debug", 0x1002},
+    {"reload", 0x1003},
+    {"noclip", 0x1005},
+    {"goto", 0x1006},
+    {"saveWorld", 0x1007},
+    {"saveServers", 0x1008},
+    {"resetUnits", 0x1009},
+    {"cinematic", 0x1011},
+    {"setProfile", 0x1012},
+    {"netStartStats", 0x1013},
+    {"netPrintStats", 0x1014},
+    {"miniDump", 0x1015},
+    {"nextmap", 0x1016},
+    {"g_rebuildshores", 0x1017},
+    {"showPlayerStats", 0x1019},
+    {"g_postEffectReload", 0x1020},
+    {"g_postEffect", 0x1021},
+    {"g_postEffectSetParam", 0x1022},
+    {"g_postEffectKill", 0x1023},
+    {"dxCursor", 0x1024},
+    };
+}
+
 unsigned m_profiler_Client = 0;
 unsigned m_profiler_GetPackets = 0;
 unsigned m_profiler_ServerUpdate = 0;
@@ -228,9 +256,25 @@ bool CMiracle3d::HandleCVar(m3d::CVar const* cvar, m3d::CConsoleParams const& pa
     return Application::HandleCVar(cvar, params);
 }
 
+int CMiracle3d::NewFrame()
+{
+    //TODO: cehgck this
+    m_flyCamTurn.zero();
+    return 1;
+}
+
 void CMiracle3d::setFov(float value)
 {
     m_fov.SetF(value);
+}
+
+void CMiracle3d::RegisterConsoleCommands()
+{
+    auto& config = m3d::g_Kernel->GetEngineCfg();
+    for (auto const& command : conCommands)
+    {
+        config.m_console->RegisterCommand(command.m_name, command.m_id, this);
+    }
 }
 
 int CMiracle3d::InitImpulses()
@@ -248,4 +292,11 @@ int CMiracle3d::InitImpulses()
         LOG("Fail to init impulses", LOG_INFO); 
     }
     return res;
+}
+
+void CMiracle3d::InitBackgroundTexture()
+{
+    m_backgroundTexture = g_pApp->m_renderer->GetFullFrameFrameBufferTexture();
+    g_pApp->m_renderer->SetTextureParameter(m_backgroundTexture, m3d::rend::TM_WRAP_S, 3);
+    g_pApp->m_renderer->SetTextureParameter(m_backgroundTexture, m3d::rend::TM_WRAP_T, 3);
 }

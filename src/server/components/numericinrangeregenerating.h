@@ -8,7 +8,7 @@ namespace ai
     {
     public:
         NumericInRangeRegenerating(T,T,T,T);
-        Numeric & regeneration();
+        Numeric<T> & regeneration();
         void regenerate(float);
 
     private:
@@ -16,8 +16,8 @@ namespace ai
 
         private:
         //MemberFunctionOneArg<NumericInRangeRegenerating<float>,float,void>::MemberFunctionOneArg<NumericInRangeRegenerating<float>,float,void>(NumericInRangeRegenerating<float> &,void (*const)(float));
-        FuncPtrOneArgRef<T,bool> m_BeforeRegenerate;
-        FuncPtrOneArg<T,void> m_AfterRegenerationChange;
+        //FuncPtrOneArgRef<T,bool> m_BeforeRegenerate;
+        //FuncPtrOneArg<T,void> m_AfterRegenerationChange;
         Numeric<T> m_regeneration;
     };
 }

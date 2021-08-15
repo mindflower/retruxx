@@ -1,4 +1,5 @@
 #pragma once
+#include "component.h"
 
 namespace ai
 {
@@ -14,7 +15,7 @@ namespace ai
         void SetUnsafe(T);
 
     private:
-        FuncPtrTwoArgsRef<Modifier,T,bool> m_BeforeApplyModifier;
+        //FuncPtrTwoArgsRef<Modifier,T,bool> m_BeforeApplyModifier;
         T m_value;
     };
 }

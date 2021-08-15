@@ -21,7 +21,7 @@ public:
     virtual void LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
     virtual void SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
 
-private:
+public:
     //CAffineXForm_vtbl* __vftable /*VFT*/;
     CVector m_worldOrigin;
     float m_rotYaw;

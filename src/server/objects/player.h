@@ -6,6 +6,7 @@
 
 namespace ai
 {
+    class InfoCone;
     class IzvratRepository;
     class Vehicle;
     class RadioManager;

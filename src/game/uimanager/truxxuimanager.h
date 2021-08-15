@@ -97,10 +97,10 @@ public:
     bool IsModalEqualWndRunning();
     int GetDefaultFloatPrecision();
     bool IsGameModeValidForSmartCursor(GameState);
-    void AddFadingMsg(const CStr*, const std::vector<m3d::AIParam>*);
-    void AddFadingMsgByStrId(const CStr*, const std::vector<m3d::AIParam>*);
-    void AddImportantFadingMsg(const CStr*, const std::vector<m3d::AIParam>*);
-    void AddImportantFadingMsgByStrId(const CStr*, const std::vector<m3d::AIParam>*);
+    void AddFadingMsg(CStr const&, std::vector<m3d::AIParam>&);
+    void AddFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam>&);
+    void AddImportantFadingMsg(CStr const&, std::vector<m3d::AIParam> const&);
+    void AddImportantFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam>&);
     void StartSplashing(int);
     void ShowSplash(int, const CStr*);
     bool IsWindowVisible(int);

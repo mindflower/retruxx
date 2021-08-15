@@ -1,15 +1,95 @@
 #include "globalscriptfuncs.h"
 #include "m3dgame.h"
 #include "profile.h"
+#include "uimisc/questinfo.h"
 #include <cinematic.h>
+#include <config.h>
 #include <m3dapp.h>
 #include <core/kernel.h>
 #include <script/scriptserver.h>
 #include <server/objects/base/objcontainer.h>
+#include <client.h>
+#include <world.h>
+#include <core/timer.h>
+#include <file/fileserver.h>
+#include <scene/nodes/sgnodesound.h>
+#include <server/objects/player.h>
+#include <server/objects/vehicle.h>
+
+namespace m3d
+{
+    extern CClient* pClient;
+}
 
 namespace ai
 {
     extern ObjContainer* theObjects;
+    extern Player* thePlayer;
+}
+
+namespace
+{
+    int GetFadingMsgParams(m3d::sArgStack& scriptStack, CStr& msg, std::vector<m3d::AIParam>& params)
+    {
+        if (scriptStack.getNumInArgs() < 1)
+        {
+            LOG("GetFadingMsgParams error: at least one argument must be specified", LOG_INFO);
+            return -1;
+        }
+
+        auto* arg = scriptStack.popIn();
+        if  (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+        {
+            LOG("GetFadingMsgParams error: first argument must be of string type", LOG_INFO);
+            return -1;
+        }
+
+        msg = arg->GetS();
+        //TODO: check args count
+        while(scriptStack.getNumInArgs() > 0)
+        {
+            arg = scriptStack.popIn();
+            switch (arg->GetType())
+            {
+            case m3d::sArg::ARGTYPE_INT:
+            {
+                params.emplace_back(arg->GetI());
+                break;
+            }
+            case m3d::sArg::ARGTYPE_FLOAT:
+            {
+                params.emplace_back(arg->GetF());
+                break;
+            }
+            case m3d::sArg::ARGTYPE_BOOL:
+            {
+                params.emplace_back(arg->GetB() ? "true" : "false");
+                break;
+            }
+            case m3d::sArg::ARGTYPE_STRING:
+            {
+                params.emplace_back(arg->GetS());
+                break;
+            }
+            case m3d::sArg::ARGTYPE_VECTOR:
+            {
+                params.emplace_back(arg->GetV());
+                break;
+            }
+            case m3d::sArg::ARGTYPE_QUATERNION:
+            {
+                params.emplace_back(arg->GetQ());
+                break;
+            }
+            default:
+            {
+                LOG("GetFadingMsgParams error: invalid param type", LOG_INFO);
+                return -1;
+            }
+            }
+        }
+        return 1;
+    }
 }
 
 void RegisterGlobalNatives()
@@ -192,3 +272,571 @@ int n_DisableCinematicDebug(m3d::sArgStack& scriptStack)
     m3d::Application::g_pApp->m_cinematic->SetDebugMode(0);
     return 1;
 }
+
+int n_AddImportantFadingMsgByStrIdFormatted(m3d::sArgStack& scriptStack)
+{
+    CStr msgId;
+    std::vector<m3d::AIParam> params;
+    if (GetFadingMsgParams(scriptStack, msgId, params) == -1)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->m_pInterfaceManager->AddImportantFadingMsgByStrId(msgId, params);
+    return 1;
+}
+
+int n_AddFadingMsgByStrIdFormatted(m3d::sArgStack& scriptStack)
+{
+    CStr msgId;
+    std::vector<m3d::AIParam> params;
+    if (GetFadingMsgParams(scriptStack, msgId, params) == -1)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->m_pInterfaceManager->AddFadingMsgByStrId(msgId, params);
+    return 1;
+}
+
+int n_AddFadingMsgFormatted(m3d::sArgStack& scriptStack)
+{
+    CStr msg;
+    std::vector<m3d::AIParam> params;
+    if (GetFadingMsgParams(scriptStack, msg, params) == -1)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->m_pInterfaceManager->AddFadingMsg(msg, params);
+    return 1;
+}
+
+int n_GetProfileMotionBlur(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    if (profile == nullptr)
+    {
+        return -1;
+    }
+
+    m3d::AIParam param;
+    profile->GetParam(PP_MOTION_BLUR, param);
+    //TODO: check this
+    scriptStack.newOut()->SetB(param.GetAsStr() == "yes" ? true : false);
+    return 1;
+}
+
+int n_CinematicPathDump(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        m3d::g_Kernel->GetEngineCfg().m_console->PrintF("Usage: CinematicPathDump( <fileName> )\n");
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    auto const* filename = arg->GetS();
+    m3d::Application::g_pApp->m_cinematic->DumpCurrentPath(filename);
+    return 1;
+}
+
+int n_PlayVideo(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->StartPlayingVideo(arg->GetS(), &CMiracle3d::OnFinishVideoPlaying);
+    return 1;
+}
+
+int n_SetCameraAngle(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    m3d::Application::g_pApp->m_curCamera.m_rotYaw = arg->GetF() * 0.017453292;
+    return 1;
+}
+
+int n_UpdateWeather(m3d::sArgStack& scriptStack)
+{
+    if (m3d::pClient == nullptr)
+    {
+        return -11;
+    }
+    m3d::pClient->GetWorld().GetWeatherManager().UpdateDayTime();
+    return 1;
+}
+
+//int n_SetCinematicCinemaPanel(m3d::sArgStack& scriptStack)
+//{
+//    if (scriptStack.getNumInArgs() != 1)
+//    {
+//        return -1;
+//    }
+//
+//    auto const* arg = scriptStack.popIn();
+//    if (arg->GetType() != m3d::sArg::ARGTYPE_BOOL)
+//    {
+//        //TODO:...
+//    }
+//}
+
+int n_RemoveCurrentCinematicPoint(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    m3d::Application::g_pApp->m_cinematic->RemoveCurrentDebugPoint();
+    return 1;
+}
+
+int n_SetCameraBehindPlayerVehicle(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    if (pGame->m_player.m_cameraMode != CM_FOLLOWMODE)
+    {
+        return -1;
+    }
+    auto const* vehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer();
+    if (vehicle == nullptr)
+    {
+        return -1;
+    }
+    auto const playerDir = vehicle->GetDirection();
+    pGame->m_curCamera.m_rotYaw = atan2(-playerDir.x, playerDir.y);
+    return 1;
+}
+
+int n_DumpPhysicInfo(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    auto const* filename = arg->GetS();
+    ai::theObjects->DumpPhysicInfo(filename);
+    return 1;
+}
+
+int n_AddCurrentPointToCinematicPath(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    scriptStack.newOut()->SetV(m3d::Application::g_pApp->m_curCamera.m_worldOrigin);
+    Quaternion q;
+    q.fromYPR(m3d::Application::g_pApp->m_curCamera.m_rotYaw, m3d::Application::g_pApp->m_curCamera.m_rotPitch, m3d::Application::g_pApp->m_curCamera.m_rotRoll);
+    m3d::Application::g_pApp->m_cinematic->AddPointToCurrentPath(m3d::Application::g_pApp->m_curCamera.m_worldOrigin, q, 1.0, 1.0);
+    return 1;
+
+}
+
+int n_GetNormalTimescale(m3d::sArgStack& scriptStack)
+{
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto const timeScale = pGame->GetNormalTimeScale();
+    scriptStack.newOut()->SetF(timeScale);
+    return 1;
+}
+
+int n_StopPlayingCustomMusic(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->SetCurHackedMusicType(HACKMUSIC_GAME);
+    return 1;
+}
+
+int n_VTuneResume(m3d::sArgStack& scriptStack)
+{
+    return 2 * (scriptStack.getNumInArgs() == 0) - 1;
+}
+
+int n_DumpOpenFiles(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+
+    LOG("********** DUMPING OPEN FILES ********************", LOG_INFO);
+    std::vector<CStr> fileList;
+    m3d::g_Kernel->GetFileServer().GetOpenFilesList(fileList);
+    for (auto const& file : fileList)
+    {
+        LOG(file, LOG_INFO);
+    }
+    LOG("********** END DUMPING OPEN FILES ****************", LOG_INFO);
+    return 1;
+}
+
+int n_RemoveNode(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_OBJECT)
+    {
+        return -1;
+    }
+    auto* obj = arg->GetO();
+    if (!obj->IsKindOf(&m3d::SgNode::m_classSgNode))
+    {
+        return 0;
+    }
+    auto* sgNode = dynamic_cast<m3d::SgNode*>(obj);
+    sgNode->GetGraph()->RemoveNode(sgNode);
+    return 1;
+}
+
+int n_SetNormalTimescale(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->SetNormalTimeScale(arg->GetF());
+    return 1;
+}
+
+int n_SetCoordinateForQuest(m3d::sArgStack& scriptStack)
+{
+    auto const numInArgs = scriptStack.getNumInArgs();
+    if (numInArgs != 2 && numInArgs !=3)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    CStr const questName(arg->GetS());
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_VECTOR)
+    {
+        return -1;
+    }
+    CVector const pos(arg->GetV());
+
+    CStr levelName;
+    if (numInArgs == 3)
+    {
+        auto const* arg = scriptStack.popIn();
+        if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+        {
+            return -1;
+        }
+        levelName = arg->GetS();
+    }
+    else
+    {
+        levelName = help::GetCurrentLevelName();
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto* infoManager = pGame->m_pInterfaceManager->GetQuestInfoManager();
+    infoManager->SetCoordinateForQuest(questName, levelName, pos);
+    return 1;
+}
+
+int n_SetSpellBookCheated(m3d::sArgStack& scriptStack)
+{
+    return 1;
+}
+
+int n_MoveCurrentCinematicPointToCamera(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    scriptStack.newOut()->SetV(m3d::Application::g_pApp->m_curCamera.m_worldOrigin);
+    Quaternion q;
+    q.fromYPR(m3d::Application::g_pApp->m_curCamera.m_rotYaw, m3d::Application::g_pApp->m_curCamera.m_rotPitch, m3d::Application::g_pApp->m_curCamera.m_rotRoll);
+    m3d::Application::g_pApp->m_cinematic->MoveCurrentDebugPoint(m3d::Application::g_pApp->m_curCamera.m_worldOrigin, q, 1.0);
+    return 1;
+}
+
+int n_MinimapAddMark(m3d::sArgStack& scriptStack)
+{
+    auto const numOfArgs = scriptStack.getNumInArgs();
+    if (numOfArgs < 2 || numOfArgs > 4)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_VECTOR)
+    {
+        return -1;
+    }
+    //TODO: check this
+    arg->GetV();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    arg->GetF();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    arg->GetF();
+    return 1;
+}
+
+int n_UpdateCinematic(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    float value = 0.0;
+    if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        value = arg->GetF();
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+    {
+        value = static_cast<float>(arg->GetI());
+    }
+    m3d::Application::g_pApp->HandleCinematic(value);
+    return 1;
+}
+
+//int n_ChangeMode(m3d::sArgStack& scriptStack)
+//{
+//    if (scriptStack.getNumInArgs() != 1)
+//    {
+//        return -1;
+//    }
+//    auto* arg = scriptStack.popIn();
+//    auto const type = arg->GetType();
+//    if (type == m3d::sArg::ARGTYPE_VOID)
+//    {
+//        return -1;
+//    }
+//    //TODO:...
+//    switch (type)
+//    {
+//    case m3d::sArg::ARGTYPE_INT: [[fallthrough]];
+//    case m3d::sArg::ARGTYPE_FLOAT:
+//    {
+//        auto const val = arg->GetF();
+//        if (val < 0 || val >= 4)
+//        {
+//            return -1;
+//        }
+//        break;
+//    }
+//    case m3d::sArg::ARGTYPE_BOOL:
+//    {
+//        if (arg->GetB() == false)
+//        {
+//            SYS_ERROR("exprValue");
+//        }
+//        break;
+//    }
+//    default:
+//        break;
+//    }
+//
+//}
+
+int n_IsPlayingCampaign(m3d::sArgStack& scriptStack)
+{
+    return 1;
+}
+
+int n_GetMaxTimescale(m3d::sArgStack& scriptStack)
+{
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    scriptStack.newOut()->SetF(pGame->GetMaxTimeScale());
+    return 1;
+}
+
+int n_VTunePause(m3d::sArgStack& scriptStack)
+{
+    return 2 * (scriptStack.getNumInArgs() == 0) - 1;
+}
+
+int n_DumpSoundInfo(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    LOG("********** DUMPING SOUND INFO ********************", LOG_INFO);
+    if (m3d::Application::g_pApp->m_sound)
+    {
+        m3d::Application::g_pApp->m_sound->DumpSoundInfo();
+    }
+    LOG("Current sound nodes rendering: ", LOG_INFO);
+    m3d::pClient->GetWorld().GetGraph().DumpRenderingNodesInfoForClass(&m3d::SgSoundSourceNode::m_classSgSoundSourceNode);
+    LOG("********** END DUMPING SOUND INFO ****************", LOG_INFO);
+    return 1;
+}
+
+int n_MinimapDelMark(m3d::sArgStack& scriptStack)
+{
+    auto const numOfArgs = scriptStack.getNumInArgs();
+    if (numOfArgs == 0 || numOfArgs > 2)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    //TODO: check this
+    arg->GetF();
+    return 1;
+}
+
+int n_Assert(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    switch (auto const type = arg->GetType(); type)
+    {
+    case m3d::sArg::ARGTYPE_VOID:
+    {
+        SYS_ERROR("exprValue");
+        break;
+    }
+    case m3d::sArg::ARGTYPE_INT: [[fallthrough]];
+    case m3d::sArg::ARGTYPE_FLOAT:
+    {
+        if (arg->GetF() <= 0.000099999997)
+        {
+            SYS_ERROR("exprValue");
+        }
+        break;
+    }
+    case m3d::sArg::ARGTYPE_BOOL:
+    {
+        if (arg->GetB() == false)
+        {
+            SYS_ERROR("exprValue");
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    return 1;
+}
+
+int n_StartRendering(m3d::sArgStack& scriptStack)
+{
+    return 1;
+}
+
+int n_AddImportantFadingMsgFormatted(m3d::sArgStack& scriptStack)
+{
+    CStr msg;
+    std::vector<m3d::AIParam> params;
+    if (GetFadingMsgParams(scriptStack, msg, params) == -1)
+    {
+        return -1;
+    }
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->m_pInterfaceManager->AddImportantFadingMsg(msg, params);
+    return 1;
+}
+
+int n_GetGameSpeed(m3d::sArgStack& scriptStack)
+{
+    scriptStack.newOut()->SetF(m3d::g_Kernel->GetTimer().GetTimeScale());
+    return 1;
+}
+
+//int n_ResumeRadio(m3d::sArgStack& scriptStack)
+//{
+//    if (!ai::theObjects || !ai::thePlayer)
+//    {
+//        return -1;
+//    }
+//    auto const radioManagerId = ai::thePlayer->GetRadioManagerId();
+//    if (radioManagerId < 0)
+//    {
+//        return -1;
+//    }
+//    auto qwe = ai::theObjects->GetF
+//}
+
+int n_DumpSceneGraph(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    m3d::pClient->GetWorld().GetGraph().DumpToFile(arg->GetS());
+    return 1;
+}
+

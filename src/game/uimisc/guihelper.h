@@ -1,4 +1,5 @@
 #pragma once
+#include <core/stringm3d.h>
 
 namespace help
 {
@@ -11,4 +12,5 @@ namespace help
     };
 
     void DeleteAllFilesInDirectory(char const*);
+    CStr GetCurrentLevelName();
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 
 namespace ai
 {
@@ -9,7 +10,9 @@ namespace ai
         Component();
 
     private:
-        FuncPtrOneArg<T,void> m_AfterChange;
-        FuncPtrOneArgRef<T,bool> m_BeforeChange;
+        std::function<void(const T&)> m_AfterChange;
+        std::function<bool(const T&)> m_BeforeChange;
+        //FuncPtrOneArg<T,void> m_AfterChange;
+        //FuncPtrOneArgRef<T,bool> m_BeforeChange;
     };
 }

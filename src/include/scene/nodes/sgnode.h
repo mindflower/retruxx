@@ -53,6 +53,9 @@ namespace m3d
         static Class* GetBaseClass();
 
     public:
+        static Class m_classSgNode;
+
+    public:
         Obb GetObb() const;
         CVector const& GetOrigin() const;
         CMatrix const& GetCurrentMatrix() const;

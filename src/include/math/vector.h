@@ -22,7 +22,7 @@ public:
     CVector clampLength(float) const;
     float lengthSq() const;
 
-private:
+public:
     float x;
     float y;
     float z;

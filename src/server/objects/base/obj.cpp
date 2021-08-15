@@ -348,6 +348,10 @@ namespace ai
         }
     }
 
+    void Obj::_SetAllPropertiesToMax()
+    {
+    }
+
     bool Obj::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
         switch (propertyId)
@@ -379,6 +383,14 @@ namespace ai
                 return false;
         }
         }
+    }
+
+    void Obj::_InternalPostLoad()
+    {
+    }
+
+    void Obj::_InternalCreateVisualPart()
+    {
     }
 
     bool Obj::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const

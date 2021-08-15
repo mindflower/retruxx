@@ -1,4 +1,5 @@
 #pragma once
+#include "numeric.h"
 
 namespace ai
 {
@@ -7,10 +8,10 @@ namespace ai
     {
     public:
         NumericBoundedBelow(T,T);
-        Numeric const & value() const ;
-        Numeric & value();
+        Numeric<T> const & value() const ;
+        Numeric<T> & value();
         void setToMin();
-        Numeric & minValue();
+        Numeric<T> & minValue();
 
     private:
         void _OnAfterValueChange(T);
@@ -20,15 +21,15 @@ namespace ai
         bool _OnBeforeMinValueChange(T &);
         bool _OnBeforeValueApplyModifier(Modifier const &,T &);
         bool _OnBeforeMinValueApplyModifier(Modifier const &,T &);
-        MemberFunctionTwoArgsRef<NumericBoundedBelow<T>,Modifier,T,bool>::MemberFunctionTwoArgsRef<NumericBoundedBelow<T>,Modifier,T,bool>(NumericBoundedBelow<T> &,bool (*const)(Modifier const &,T &));
+        //MemberFunctionTwoArgsRef<NumericBoundedBelow<T>,Modifier,T,bool>::MemberFunctionTwoArgsRef<NumericBoundedBelow<T>,Modifier,T,bool>(NumericBoundedBelow<T> &,bool (*const)(Modifier const &,T &));
         void _OnAfterMinValueChange(T);
-        MemberFunctionOneArg<NumericBoundedBelow<T>,T,void>::MemberFunctionOneArg<NumericBoundedBelow<T>,T,void>(NumericBoundedBelow<T> &,void (*const)(T));
-        FuncPtrTwoArgsRef<Modifier,T,bool> m_BeforeValueApplyModifier;
-        FuncPtrTwoArgsRef<Modifier,T,bool> m_BeforeMinValueApplyModifier;
-        FuncPtrOneArgRef<T,bool> m_BeforeValueChange;
-        FuncPtrOneArgRef<T,bool> m_BeforeMinValueChange;
-        FuncPtrOneArg<T,void> m_AfterValueChange;
-        FuncPtrOneArg<T,void> m_AfterMinValueChange;
+        //MemberFunctionOneArg<NumericBoundedBelow<T>,T,void>::MemberFunctionOneArg<NumericBoundedBelow<T>,T,void>(NumericBoundedBelow<T> &,void (*const)(T));
+        //FuncPtrTwoArgsRef<Modifier,T,bool> m_BeforeValueApplyModifier;
+        //FuncPtrTwoArgsRef<Modifier,T,bool> m_BeforeMinValueApplyModifier;
+        //FuncPtrOneArgRef<T,bool> m_BeforeValueChange;
+        //FuncPtrOneArgRef<T,bool> m_BeforeMinValueChange;
+        //FuncPtrOneArg<T,void> m_AfterValueChange;
+        //FuncPtrOneArg<T,void> m_AfterMinValueChange;
         Numeric<T> m_value;
         Numeric<T> m_minValue;
     };
