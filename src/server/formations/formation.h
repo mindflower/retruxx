@@ -6,6 +6,6 @@ namespace ai
     class Formation : public Obj
     {
     public:
-        static m3d::Class m_classFormation;
+        static inline m3d::Class m_classFormation;
     };
 }

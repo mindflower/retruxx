@@ -40,6 +40,11 @@ namespace m3d
             return 1;
         }
 
+        Class* WndStation::GetRtClass() const
+        {
+            return &m_classWndStation;
+        }
+
         int WndStation::Repaint()
         {
             Application::g_pApp->m_renderer->PushZbState();

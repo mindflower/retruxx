@@ -1,5 +1,8 @@
 #pragma once
+#include <map>
+#include <vector>
 #include <core/clazz.h>
+#include <core/console/cvar.h>
 
 namespace m3d
 {
@@ -59,7 +62,7 @@ enum ProfileParam
 class Profile : public m3d::Object
 {
 public:
-    static m3d::Class m_classProfile;
+    static inline m3d::Class m_classProfile;
 
 public:
     int LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
@@ -94,7 +97,7 @@ private:
 class ProfileManager :  public m3d::Object
 {
 public:
-    static m3d::Class m_classProfileManager;
+    static inline m3d::Class m_classProfileManager;
 
 public:
     Profile * GetCurProfile() const ;

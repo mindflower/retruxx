@@ -60,6 +60,9 @@ public:
     };
 
 public:
+    static inline m3d::Class m_classCMiracle3d;
+
+public:
     virtual int OnChangeMode(m3d::AuxImpulseInfo const &);
     void SkipCinematicMessage();
     int OnGameDrag(m3d::AuxImpulseInfo const &);
@@ -139,7 +142,7 @@ public:
     bool LoadMap(CStr const &,bool,m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *,ai::ObjContainer::eSAVE_TYPES);
     int ValidateCameraAngles();
     virtual char const * GetCallbackName() const ;
-    virtual bool KillPostEffect(CStr const &);
+    virtual bool KillPostEffect(CStr const& effectName);
     virtual m3d::ui::Wnd * CaptureMouse(m3d::ui::Wnd *);
     int CollideCamera(CVector &,float &,CVector const &,CVector const &);
     int OnSkipCinematicMessage(m3d::AuxImpulseInfo const &);
@@ -147,8 +150,8 @@ public:
     m3d::BlockMusicManager * GetBlockMusicManager();
     bool IsRenderAsBackground() const ;
     virtual int GetCurGameMode();
-    virtual void SetMouseYAxisFlipped(bool);
-    virtual void SetMouseXAxisFlipped(bool);
+    virtual void SetMouseYAxisFlipped(bool bFlip);
+    virtual void SetMouseXAxisFlipped(bool bFlip);
     ProfileManager * GetProfileManager() const ;
 
 protected:
@@ -171,6 +174,7 @@ protected:
 public:
     ITruxxUiManager* m_pInterfaceManager;
     Player m_player;
+    CVector m_hitPoint;
 
 private:
     float getFov() const ;
@@ -186,7 +190,6 @@ private:
     int m_elapsedtime;
     int m_numModals;
     bool m_noclip;
-    CVector m_hitPoint;
     CVector m_flyCamTurn;
     CVector m_flyCamMove;
     float m_gameCameraRho;

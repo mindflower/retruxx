@@ -110,7 +110,7 @@ namespace m3d
         bool CheckCommandLineParam(char const *) const ;
         unsigned long GetLocale() const ;
         void DrawQuad(CVector *,unsigned int);
-        void PutSpriteRel(float,float,float,float,unsigned int);
+        void PutSpriteRel(float x1, float y1, float x2, float y2, unsigned int c);
         virtual void SaveToXml(cmn::XmlFile *,cmn::XmlNode *) const ;
         virtual ~Application();
         bool IsDXCursorEnabled() const ;

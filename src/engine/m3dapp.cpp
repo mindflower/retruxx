@@ -246,6 +246,11 @@ namespace m3d
         return 0;
     }
 
+    bool Application::IsMouseYAxisFlipped() const
+    {
+        return m_bMouseYAxisFlipped;
+    }
+
     int Application::ImmediateMessage(int msg, int p0, int p1, int p2, int p3, CStr const& p4, AIParam const& p5)
     {
         Event ev;
@@ -258,6 +263,11 @@ namespace m3d
         ev.m_strEv = p4;
         ev.m_aiParamEv = p5;
         return HandleEvent(ev);
+    }
+
+    bool Application::IsMouseXAxisFlipped() const
+    {
+        return m_bMouseXAxisFlipped;
     }
 
     int Application::OneFrame()
@@ -820,6 +830,11 @@ namespace m3d
         return m_counterStack;
     }
 
+    float Application::GetMouseSensitivity() const
+    {
+        return m_mouseSensitivity;
+    }
+
     CameraController* Application::GetCameraController()
     {
         return m_cameraController;
@@ -850,8 +865,35 @@ namespace m3d
         }   
     }
 
+    void Application::PutSpriteRel(float x1, float y1, float x2, float y2, unsigned c)
+    {
+        m_renderer->RelToAbs(x1, y1);
+        m_renderer->RelToAbs(x2, y2);
+        PutSpriteAbs(x1, y1, x2, y2, c);
+    }
+
+    bool Application::IsDXCursorEnabled() const
+    {
+        return m_bDXCursorEnabled;
+    }
+
     ProfilerStack& Application::GetProfilerStack()
     {
         return m_profilerStack;
+    }
+
+    DataServer& Application::GetMusicServer()
+    {
+        return *m_serverMusic;
+    }
+
+    int Application::GetMouseY() const
+    {
+        return m_mouseY;
+    }
+
+    int Application::GetMouseX() const
+    {
+        return m_mouseX;
     }
 }

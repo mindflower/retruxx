@@ -126,6 +126,10 @@ namespace m3d
             static GfxServer* GetGfxServer();
 
         public:
+            static inline WndStation* m_wndStation = nullptr;
+            static inline GfxServer* m_gfx = nullptr;
+
+        public:
             int GetUniqueId() const;
             bool IsVisible() const;
             virtual void ShowWindow(bool);
@@ -139,8 +143,8 @@ namespace m3d
             virtual int OnBeforeAddToWndStation();
             virtual int OnAfterAddToWndStation();
             virtual int GameDataSetup();
-            virtual void SetDefaultFont(int);
-            virtual void SetDefaultFont(CStr const&, float, FontType, FontParams);
+            virtual void SetDefaultFont(int uiFont);
+            virtual void SetDefaultFont(CStr const& name, float height, FontType type, FontParams params);
             void SetGuiId(int);
             BoundsBase<float> ToParent(BoundsBase<float> const&) const;
             PointBase<float> ToParent(PointBase<float> const&) const;
@@ -155,7 +159,7 @@ namespace m3d
             PointBase<float> GetOrigin() const;
             int StartAnimation(AnimationInfo const&, bool);
             unsigned int GetStyle() const;
-            virtual int GetCursor(Cursor&);
+            virtual int GetCursor(Cursor& cur);
             unsigned int GetColor() const;
             ScrollWnd* GetScrollVWnd();
             virtual CStr GetText() const;
@@ -207,13 +211,13 @@ namespace m3d
             AnimationInfo const& GetOnHideAnimation() const;
             virtual void SetClientEdges(std::vector<float> const&);
             virtual void SetClientEdges(float, float, float, float);
-            int IsPtInBounds(PointBase<float> const&) const;
+            bool IsPtInBounds(PointBase<float> const& pt) const;
             void AdjustToFitChildren();
             PointBase<float> const& GetBaseOrigin() const;
             void SetOnShowAnimation(AnimationInfo const&);
             virtual int GameDataClear(bool);
             TextWrapFlags GetWrapMode() const;
-            virtual int SetProperty(unsigned int, void*);
+            virtual int SetProperty(unsigned int propId, void* prop);
             bool Valid() const;
             virtual int RemoveChild(Object*);
             TextFormatFlags GetFormatMode() const;
@@ -240,14 +244,14 @@ namespace m3d
             virtual int OnMouseIn();
             virtual int OnActivate(bool on);
             virtual int OnMouseClick(PointBase<float> const&);
-            virtual void OnPaintOverChildren(DrawInfo const&);
+            virtual void OnPaintOverChildren(DrawInfo const& clipToIt);
             virtual int OnMouseButton2(unsigned int, PointBase<float> const&);
             int CreateWnd(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int);
             virtual int OnMouseButton1(unsigned int, PointBase<float> const&);
             virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at);
             Wnd();
             Wnd(Wnd const&);
-            virtual int OnWndNotify(Wnd*, unsigned int, unsigned int, AIParam const&);
+            virtual int OnWndNotify(Wnd* from, unsigned int idFrom, unsigned int message, AIParam const& data);
             PointBase<float> GetOriginPoint() const;
             void DrawNonClient(DrawInfo const&, unsigned int);
             virtual int OnMouseWheel(int, PointBase<float> const&);
@@ -260,12 +264,12 @@ namespace m3d
             virtual int OnPaint(DrawInfo const& clipToIt);
             virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state);
             virtual int OnMouseMove(PointBase<float> const& pt, PointBase<float> const& deltas);
-            int CallParentNotify(unsigned int, AIParam const&, bool);
+            int CallParentNotify(unsigned int msg, AIParam const& data, bool urgent);
 
         private:
             void Unregister();
             void Register();
-            void DoDragMove0(PointBase<float> const&);
+            void DoDragMove0(PointBase<float> const& pt);
             void DoDragMove(PointBase<float> const&);
             int DestroyWnd();
             void FinishDragMove(int, PointBase<float> const&);

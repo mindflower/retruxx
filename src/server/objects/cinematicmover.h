@@ -23,7 +23,7 @@ namespace ai
     class CinematicMover : public Obj
     {
     public:
-        static m3d::Class m_classCinematicMover;
+        static inline m3d::Class m_classCinematicMover;
 
     public:
         virtual m3d::Class* GetClass() const;

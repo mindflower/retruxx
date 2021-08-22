@@ -32,7 +32,7 @@ namespace m3d
     class GeomObject : public Object
     {
     public:
-        static Class m_classGeomObject;
+        static inline Class m_classGeomObject;
 
     public:
         void IncEnabledCellsCount();
@@ -72,7 +72,7 @@ namespace m3d
     class GeomObjectLandscape :  public GeomObject
     {
     public:
-        static Class m_classGeomObjectLandscape;
+        static inline Class m_classGeomObjectLandscape;
 
     public:
         virtual ~GeomObjectLandscape();
@@ -89,7 +89,7 @@ namespace m3d
     class GeomObjectStatics : public GeomObject
     {
     public:
-        static Class m_classGeomObjectStatics;
+        static inline Class m_classGeomObjectStatics;
 
     public:
         virtual Class* GetClass() const;
@@ -107,7 +107,7 @@ namespace m3d
     class GeomObjectRoad : public GeomObject
     {
     public:
-        static Class m_classGeomObjectRoad;
+        static inline Class m_classGeomObjectRoad;
 
     public:
         virtual ~GeomObjectRoad();
@@ -129,7 +129,7 @@ namespace m3d
     class GeomObjectWater : public GeomObject
     {
     public:
-        static Class m_classGeomObjectWater;
+        static inline Class m_classGeomObjectWater;
 
     public:
         virtual ~GeomObjectWater();
@@ -146,7 +146,7 @@ namespace m3d
     class GeomObjectPassCell : public GeomObject
     {
     public:
-        static Class m_classGeomObjectPassCell;
+        static inline Class m_classGeomObjectPassCell;
 
     public:
         static Object* __fastcall CreateObject();

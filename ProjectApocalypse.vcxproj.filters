@@ -2019,6 +2019,15 @@
     <ClCompile Include="src\engine\core\stringm3d.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\math\vector.cpp">
+      <Filter>engine\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\math\vector2.cpp">
+      <Filter>engine\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\math\vector4.cpp">
+      <Filter>engine\math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">

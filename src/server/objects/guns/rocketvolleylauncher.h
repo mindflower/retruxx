@@ -17,7 +17,7 @@ namespace ai
     class RocketVolleyLauncher : public RocketLauncher
     {
     public:
-        static m3d::Class m_classRocketVolleyLauncher;
+        static inline m3d::Class m_classRocketVolleyLauncher;
 
     public:
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;

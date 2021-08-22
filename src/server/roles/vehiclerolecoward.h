@@ -1,5 +1,6 @@
 #pragma once
 #include "vehiclerole.h"
+#include <math/vector.h>
 
 namespace ai
 {
@@ -17,7 +18,7 @@ namespace ai
     class VehicleRoleCoward : public VehicleRole
     {
     public:
-        static m3d::Class m_classVehicleRoleCoward;
+        static inline m3d::Class m_classVehicleRoleCoward;
 
     public:
         VehicleRoleCoward(VehicleRoleCowardPrototypeInfo const&);

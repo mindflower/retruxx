@@ -18,7 +18,7 @@ namespace ai
     class PlasmaBunchLauncher : public Gun
     {
     public:
-        static m3d::Class m_classPlasmaBunchLauncher;
+        static inline m3d::Class m_classPlasmaBunchLauncher;
 
     public:
         virtual m3d::Class* GetClass() const;

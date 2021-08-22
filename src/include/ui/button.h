@@ -13,7 +13,7 @@ namespace m3d
 			static Class* GetBaseClass();
 
 		public:
-			static Class m_classButtonWnd;
+			static inline Class m_classButtonWnd;
 
         public:
 			virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);

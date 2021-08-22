@@ -10,7 +10,7 @@ namespace m3d
         static Class* GetBaseClass();
 
     public:
-        static Class m_classSgSoundSourceNode;
+        static inline Class m_classSgSoundSourceNode;
 
     public:
         virtual void CanBeFree();

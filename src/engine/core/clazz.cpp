@@ -99,8 +99,6 @@ namespace m3d
         return nullptr;
     }
 
-    Class Object::m_classObject;
-
     int Object::AddChild(Object* node)
     {
         assert(node != nullptr);

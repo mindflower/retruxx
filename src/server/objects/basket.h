@@ -27,7 +27,7 @@ namespace ai
     class Basket : public VehiclePart
     {
     public:
-        static m3d::Class m_classBasket;
+        static inline m3d::Class m_classBasket;
 
     public:
         virtual m3d::Class* GetClass() const;

@@ -40,7 +40,7 @@ namespace m3d
         SgNode * CreateServerControlledNode(int);
         void Reset();
         virtual char const * GetCallbackName() const ;
-        CWorld & GetWorld();
+        CWorld& GetWorld();
         CClient();
         int Update(int,unsigned int);
         virtual void OnBeforeDeviceReset();

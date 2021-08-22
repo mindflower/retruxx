@@ -32,7 +32,7 @@ public:
     BoundsBase<T> Intersect(BoundsBase<T> const&) const;
     PointBase<T> TopRight() const;
 
-private:
+public:
     T x0;
     T y0;
     T width;

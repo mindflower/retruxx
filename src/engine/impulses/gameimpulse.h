@@ -18,7 +18,7 @@ namespace m3d
     class GameImpulse : public IImpulse, public Object
     {
     public:
-        static Class m_classGameImpulse;
+        static inline Class m_classGameImpulse;
 
     public:
         int LoadFromFile(CStr const&);

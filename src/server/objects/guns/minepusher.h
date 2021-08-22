@@ -13,7 +13,7 @@ namespace ai
     class MinePusher : public Gun
     {
     public:
-        static m3d::Class m_classMinePusher;
+        static inline m3d::Class m_classMinePusher;
 
     public:
         MinePusher(MinePusherPrototypeInfo const&);

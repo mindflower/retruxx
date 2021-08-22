@@ -21,7 +21,7 @@ namespace ai
     class VehicleRoleOppressor : public VehicleRole
     {
     public:
-        static m3d::Class m_classVehicleRoleOppressor;
+        static inline m3d::Class m_classVehicleRoleOppressor;
 
     public:
         VehicleRoleOppressor(VehicleRoleOppressorPrototypeInfo const&);

@@ -12,7 +12,7 @@ namespace m3d
     class RoadNode :  public Object
     {
     public:
-        static Class m_classRoadNode;
+        static inline Class m_classRoadNode;
 
     public:
         virtual int WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);

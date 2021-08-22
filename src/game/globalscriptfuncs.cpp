@@ -12,6 +12,7 @@
 #include <world.h>
 #include <core/timer.h>
 #include <file/fileserver.h>
+#include <impulses/i_impulses.h>
 #include <scene/nodes/sgnodesound.h>
 #include <server/objects/player.h>
 #include <server/objects/vehicle.h>
@@ -659,44 +660,10 @@ int n_UpdateCinematic(m3d::sArgStack& scriptStack)
     return 1;
 }
 
-//int n_ChangeMode(m3d::sArgStack& scriptStack)
-//{
-//    if (scriptStack.getNumInArgs() != 1)
-//    {
-//        return -1;
-//    }
-//    auto* arg = scriptStack.popIn();
-//    auto const type = arg->GetType();
-//    if (type == m3d::sArg::ARGTYPE_VOID)
-//    {
-//        return -1;
-//    }
-//    //TODO:...
-//    switch (type)
-//    {
-//    case m3d::sArg::ARGTYPE_INT: [[fallthrough]];
-//    case m3d::sArg::ARGTYPE_FLOAT:
-//    {
-//        auto const val = arg->GetF();
-//        if (val < 0 || val >= 4)
-//        {
-//            return -1;
-//        }
-//        break;
-//    }
-//    case m3d::sArg::ARGTYPE_BOOL:
-//    {
-//        if (arg->GetB() == false)
-//        {
-//            SYS_ERROR("exprValue");
-//        }
-//        break;
-//    }
-//    default:
-//        break;
-//    }
-//
-//}
+int n_ResetFogOfWarFC(m3d::sArgStack& scriptStack)
+{
+    return 1;
+}
 
 int n_IsPlayingCampaign(m3d::sArgStack& scriptStack)
 {
@@ -713,6 +680,84 @@ int n_GetMaxTimescale(m3d::sArgStack& scriptStack)
 int n_VTunePause(m3d::sArgStack& scriptStack)
 {
     return 2 * (scriptStack.getNumInArgs() == 0) - 1;
+}
+
+int n_GetCameraPos(m3d::sArgStack& scriptStack)
+{
+    scriptStack.newOut()->SetV(m3d::Application::g_pApp->m_curCamera.m_worldOrigin);
+
+    Quaternion q;
+    q.fromYPR(m3d::Application::g_pApp->m_curCamera.m_rotYaw, m3d::Application::g_pApp->m_curCamera.m_rotPitch, m3d::Application::g_pApp->m_curCamera.m_rotRoll);
+    scriptStack.newOut()->SetQ(q);
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    scriptStack.newOut()->SetV(pGame->m_hitPoint);
+    return 1;
+}
+
+int n_ChangeMode(m3d::sArgStack& scriptStack)
+{
+    //TODO: check and refactor this shit
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    auto const type = arg->GetType();
+    if (type == m3d::sArg::ARGTYPE_VOID)
+    {
+        return -1;
+    }
+
+    float value = 0.0;
+    switch (type)
+    {
+    case m3d::sArg::ARGTYPE_INT: [[fallthrough]];
+    case m3d::sArg::ARGTYPE_FLOAT:
+    {
+        value = arg->GetF();
+        if (value < 0 || value >= 4)
+        {
+            return -1;
+        }
+        break;
+    }
+    case m3d::sArg::ARGTYPE_STRING:
+    {
+        auto const stateName = arg->GetS();
+        if (stateName == CStr("GS_GAME"))
+        {
+            value = 0;
+        }
+        else if(stateName == CStr("GS_CINEMATIC"))
+        {
+            value = 1;
+        }
+        else
+        {
+            return -1;
+        }
+        break;
+    }
+    default:
+        return -1;
+    }
+    auto res = 0;
+    if (value == 0.0)
+    {
+        res = 3;
+    }
+    else if (value != 1)
+    {
+        return -1;
+    }
+    else
+    {
+        res = 2;
+    }
+    m3d::Application::g_pApp->OnChangeMode(m3d::AuxImpulseInfo(res, true, -1, 0, 0));
+    return 1;
+
 }
 
 int n_DumpSoundInfo(m3d::sArgStack& scriptStack)
@@ -745,6 +790,39 @@ int n_MinimapDelMark(m3d::sArgStack& scriptStack)
         return -1;
     }
     //TODO: check this
+    arg->GetF();
+    return 1;
+}
+
+int n_SetCameraPos(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() < 4 || scriptStack.getNumInArgs() > 5)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_VECTOR)
+    {
+        return -1;
+    }
+    arg->GetV();
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    arg->GetF();
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    arg->GetF();
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
     arg->GetF();
     return 1;
 }
@@ -786,6 +864,22 @@ int n_Assert(m3d::sArgStack& scriptStack)
     return 1;
 }
 
+int n_SetMaxTimescale(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->SetMaxTimeScale(arg->GetF());
+    return 1;
+}
+
 int n_StartRendering(m3d::sArgStack& scriptStack)
 {
     return 1;
@@ -808,6 +902,43 @@ int n_AddImportantFadingMsgFormatted(m3d::sArgStack& scriptStack)
 int n_GetGameSpeed(m3d::sArgStack& scriptStack)
 {
     scriptStack.newOut()->SetF(m3d::g_Kernel->GetTimer().GetTimeScale());
+    return 1;
+}
+
+int n_GetProfileBloom(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs())
+    {
+        return -1;
+    }
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    if (profile == nullptr)
+    {
+        return -1;
+    }
+
+    m3d::AIParam param;
+    profile->GetParam(PP_BLOOM, param);
+    auto const showMotionBlur = param.GetAsStr();
+    scriptStack.newOut()->SetB(showMotionBlur == "yes");
+    return 1;
+}
+
+int n_SetMinTimescale(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->SetMinTimeScale(arg->GetF());
     return 1;
 }
 
@@ -837,6 +968,87 @@ int n_DumpSceneGraph(m3d::sArgStack& scriptStack)
         return -1;
     }
     m3d::pClient->GetWorld().GetGraph().DumpToFile(arg->GetS());
+    return 1;
+}
+
+int n_EnableCinematicDebug(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        m3d::g_Kernel->GetEngineCfg().m_console->PrintF("Usage: EnableCinematicDebug( <pathName> )\n");
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+
+    CStr const pathName = arg->GetS();
+    if (m3d::Application::g_pApp->m_cinematic->Load("camera_paths.xml"))
+    {
+        if (m3d::Application::g_pApp->m_cinematic->SetPath(pathName.c_str()))
+        {
+            m3d::Application::g_pApp->m_cinematic->SetDebugMode(true);
+        }
+        else
+        {
+            m3d::g_Kernel->GetEngineCfg().m_console->PrintF("Path " + pathName + " not found\n");
+        }
+    }
+    else
+    {
+        m3d::g_Kernel->GetEngineCfg().m_console->PrintF("File camera_paths.xml not found\n");
+    }
+    return 1;
+}
+
+int n_SetGameSpeed(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() == m3d::sArg::ARGTYPE_VOID || arg->GetType() > m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    m3d::g_Kernel->GetTimer().SetTimeScale(arg->GetF());
+    return 1;
+}
+
+int n_GetMinTimescale(m3d::sArgStack& scriptStack)
+{
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    scriptStack.newOut()->SetF(pGame->GetMinTimeScale());
+    return 1;
+}
+
+int n_PlayCustomMusic(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING || !m3d::Application::g_pApp->StartPlayingMusic(arg->GetS(), true, false))
+    {
+        return -1;
+    }
+    //TODO: check this
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->SetCurHackedMusicType(HACKMUSIC_CUSTOM);
+    return 1;
+}
+
+int n_GetCameraZoom(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    scriptStack.newOut()->SetF(m3d::Application::g_pApp->getZoom());
     return 1;
 }
 

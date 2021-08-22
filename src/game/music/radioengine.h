@@ -28,7 +28,6 @@ namespace m3d
         ~RadioEngine();
         void PlayNextSoundMessage();
         static RadioEngine* __fastcall GetInstance();
-        RadioEngine();
         void PlaySoundMessage(int, int, CStr const&);
 
     private:

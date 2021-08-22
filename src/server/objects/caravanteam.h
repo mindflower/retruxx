@@ -1,6 +1,8 @@
 #pragma once
 #include "team.h"
 
+class CVector;
+
 namespace ai
 {
     class CaravanTeamPrototypeInfo : public TeamPrototypeInfo
@@ -23,7 +25,7 @@ namespace ai
     class CaravanTeam : public Team
     {
     public:
-        static m3d::Class m_classCaravanTeam;
+        static inline m3d::Class m_classCaravanTeam;
 
     public:
         void SetWaitingPlayerToMoveout();

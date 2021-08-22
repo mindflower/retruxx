@@ -856,7 +856,7 @@ namespace m3d
             virtual void LightEnable(int, int);
             virtual void LightSet(int, const m3d::rend::LightSource*);
             virtual void MaterialSet(const m3d::rend::Material*);
-            virtual void RelToAbs(float*, float*);
+            virtual void RelToAbs(float&, float&);
             virtual void AbsToRel(float&, float&);
             virtual m3d::rend::TexHandle* AddTextureFromBackBuffer(m3d::rend::TexHandle* result, int, int);
             virtual void ScreenShot(const char*, int, int);

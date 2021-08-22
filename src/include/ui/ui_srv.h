@@ -121,6 +121,9 @@ namespace m3d
             //std::pair<CStr, SoundInfo*>::pair<CStr, SoundInfo*>(CStr const&, SoundInfo* const&);
             //AddTabWndPaneIzvrat(DrawInfo const&, BoundsBase<float> const&, uint, TabButtonInfo const&, std::vector<BoundsBase<float>> const&, std::vector<rend::TexHandle> const&, int, int, CStr const&, PaneFlagBg);
 
+        public:
+            int m_hieroglyphicFontId;
+
         private:
             unsigned int m_colors[255];
             rend::TexHandle m_texTheme[14];
@@ -139,7 +142,6 @@ namespace m3d
             unsigned int m_fontSizes[4];
             unsigned int m_fontFlags[4];
             FontType m_fontTypes[4];
-            int m_hieroglyphicFontId;
             rend::TexHandle m_curFontTexture;
             int m_barWidth;
             int m_cornerSz;

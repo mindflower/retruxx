@@ -23,7 +23,7 @@ namespace ai
     class VehicleRolePendulum : public VehicleRole
     {
     public:
-        static m3d::Class m_classVehicleRolePendulum;
+        static inline m3d::Class m_classVehicleRolePendulum;
 
     public:
         VehicleRolePendulum(VehicleRolePendulumPrototypeInfo const&);

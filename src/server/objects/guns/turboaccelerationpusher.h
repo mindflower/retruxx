@@ -19,7 +19,7 @@ namespace ai
     class TurboAccelerationPusher : public Gun
     {
     public:
-        static m3d::Class m_classTurboAccelerationPusher;
+        static inline m3d::Class m_classTurboAccelerationPusher;
 
     public:
         TurboAccelerationPusher(TurboAccelerationPusherPrototypeInfo const&);

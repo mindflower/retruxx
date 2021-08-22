@@ -11,7 +11,23 @@ namespace m3d
     }
 
     class ExportInfo;
-    struct Class;
+    class Object;
+
+    struct Class
+    {
+        const char* m_className;
+        int m_classSize;
+        Object* (__fastcall* m_fnCreateObject)();
+        Class* (__fastcall* m_fnGetBaseClass)();
+        int m_index;
+        ExportInfo* m_lExports;
+        void* m_scriptHandle;
+
+    public:
+        bool IsKindOf(char const*) const;
+        bool IsKindOf(Class const*) const;
+        Object* NewInstance() const;
+    };
 
     class RefCountedBase
     {
@@ -28,7 +44,7 @@ namespace m3d
     class Object : public RefCountedBase
     {
     public:
-        static Class m_classObject;
+        static inline Class m_classObject;
 
     public:
         static Class* GetBaseClass();
@@ -89,21 +105,5 @@ namespace m3d
         Object* m_prevSibling = nullptr;
         int m_numChildren = 0;
         void* m_scriptHandle = nullptr;
-    };
-
-    struct Class
-    {
-        const char* m_className;
-        int m_classSize;
-        Object* (__fastcall* m_fnCreateObject)();
-        Class* (__fastcall* m_fnGetBaseClass)();
-        int m_index;
-        ExportInfo* m_lExports;
-        void* m_scriptHandle;
-
-    public:
-        bool IsKindOf(char const*) const;
-        bool IsKindOf(Class const*) const;
-        Object* NewInstance() const;
     };
 }

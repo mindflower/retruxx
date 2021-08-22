@@ -26,6 +26,9 @@ namespace m3d
         class WndStation : public Wnd
         {
         public:
+            static inline Class m_classWndStation;
+
+        public:
             int DispatchMouse(Event const&);
             bool IsWndAlive(Wnd const*, int) const;
             static Class* __fastcall GetBaseClass();

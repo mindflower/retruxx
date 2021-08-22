@@ -4,7 +4,7 @@
 class TruxxImpulse : public m3d::GameImpulse
 {
 public:
-    static m3d::Class m_classTruxxImpulse;
+    static inline m3d::Class m_classTruxxImpulse;
 
 public:
     virtual int HandleImpulse(m3d::AuxImpulseInfo const &, m3d::ui::Wnd *);

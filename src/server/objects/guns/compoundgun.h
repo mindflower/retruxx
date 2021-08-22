@@ -16,7 +16,7 @@ namespace ai
     class CompoundGun : public CompoundVehiclePart
     {
     public:
-        static m3d::Class m_classCompoundGun;
+        static inline m3d::Class m_classCompoundGun;
 
     public:
         virtual bool CanFire() const;

@@ -35,7 +35,7 @@ namespace ai
         };
 
     public:
-        static m3d::Class m_classBoss02Arm;
+        static inline m3d::Class m_classBoss02Arm;
 
     public:
         Boss02Arm(Boss02ArmPrototypeInfo const&);

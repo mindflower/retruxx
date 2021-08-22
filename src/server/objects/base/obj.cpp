@@ -1,4 +1,5 @@
 #include "obj.h"
+#include "objcontainer.h"
 #include "prototypeinfo.h"
 #include "prototypemanager.h"
 #include <algorithm>
@@ -13,6 +14,7 @@
 
 namespace ai
 {
+    extern ObjContainer* theObjects;
     extern AIManager* theAIManager;
     extern ProcessManager* theProcessManager;
     extern PrototypeManager* thePrototypeManager;
@@ -161,6 +163,79 @@ namespace ai
 
     void Obj::RemoveComponent(Obj* component)
     {
+    }
+
+    void Obj::SetBelong(int newBelong)
+    {
+        //TODO: check tis
+        m_belong = newBelong;
+        for (auto& [i, child] : m_allChildren)
+        {
+            child->SetBelong(newBelong);
+        }
+    }
+
+    int Obj::OnEvent(Event const& ev)
+    {
+        if (ev.m_eventId == GE_SUBSCRIBE)
+        {
+            OnSubscribe(ev);
+            return 1;
+        }
+        if (ev.m_eventId == GE_UNSUBSCRIBE)
+        {
+            OnUnsubscribe(ev);
+            return 1;
+        }
+        return 0;
+    }
+
+    bool Obj::CanChildBeAdded(m3d::Class* pClass) const
+    {
+        return false;
+    }
+
+    m3d::Class* Obj::GetRtClass() const
+    {
+        return &m_classObject;
+    }
+
+    void Obj::PostCollide()
+    {
+    }
+
+    void Obj::SetVisible()
+    {
+        auto* prototypeInfo = GetPrototypeInfo();
+        if (!prototypeInfo || prototypeInfo->m_bIsUpdating)
+        {
+            theObjects->AddObjToUpdate(this);
+        }
+        m_flags |= 1;
+    }
+
+    void Obj::RenderDebugInfo() const
+    {
+    }
+
+    void Obj::TransferPhysicParamsToSceneGraphNode()
+    {
+    }
+
+    void Obj::StackClose()
+    {
+        if (auto* aiPtr = GetAIPtr())
+        {
+            aiPtr->CommandStackClose();
+        }
+    }
+
+    void Obj::StackLoop()
+    {
+        if (auto* aiPtr = GetAIPtr())
+        {
+            aiPtr->PutCommand(17, {}, {}, {});
+        }
     }
 
     Obj::Obj(PrototypeInfo const& prototypeInfo) :

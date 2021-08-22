@@ -193,7 +193,7 @@ namespace ai
         SAVE_PROP_SPECIAL = 0x3,
     };
 
-    class Obj :  public m3d::Object
+    class Obj : public m3d::Object
     {
     public:
         struct EventRecipientInfo
@@ -235,10 +235,10 @@ namespace ai
     public:
         virtual void RemoveComponent(Obj* component);
         virtual void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual void SetBelong(int);
+        virtual void SetBelong(int newBelong);
         virtual Obj* CloneObj();
-        virtual int OnEvent(Event const&);
-        virtual bool CanChildBeAdded(m3d::Class*) const;
+        virtual int OnEvent(Event const& ev);
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const;
         virtual m3d::Class* GetRtClass() const;
         virtual void PostCollide();
         virtual void SetVisible();
@@ -247,7 +247,7 @@ namespace ai
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual bool RemoveChild(Obj*);
         virtual int RemoveChild(m3d::Object*);
-        virtual bool ApplyModifier(Modifier const&);
+        virtual bool ApplyModifier(Modifier const& modifier);
         virtual void GetPropertiesIDs(std::set<int>&) const;
         virtual void SetInvisible();
         virtual void InflictDamage(DamageInfo const&);

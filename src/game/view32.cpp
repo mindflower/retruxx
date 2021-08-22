@@ -67,6 +67,11 @@ unsigned m_profiler_GetPackets = 0;
 unsigned m_profiler_ServerUpdate = 0;
 unsigned m_profiler_ClientUpdate = 0;
 
+bool CMiracle3d::GetCursorShow0() const
+{
+    return Wnd::GetCursorShow();
+}
+
 CMiracle3d::CMiracle3d() :
     Application("ExMachina.log"),
     m_minDist("minDist", "120", m3d::CVar::CVAR_FLOAT, m3d::CVar::eFlags::CVAR_ARCHIVE),
@@ -96,6 +101,120 @@ CMiracle3d::CMiracle3d() :
     m_radioEngine = new m3d::RadioEngine{};
 
     m_oldPositionValue.one();
+}
+
+void CMiracle3d::Pause()
+{
+    if (!m_paused && m_curGameMode.Get() != GS_MAINMENU)
+    {
+        if (m3d::g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        {
+            PauseSound();
+        }
+        m_saveTimeScale = m3d::g_Kernel->GetTimer().GetTimeScale();
+        m3d::g_Kernel->GetTimer().SetTimeScale(0.0);
+        m_paused = true;
+    }
+}
+
+void CMiracle3d::UnPause()
+{
+    if (m_paused)
+    {
+        m3d::g_Kernel->GetTimer().SetTimeScale(m_saveTimeScale);
+        if (!m_userPaused)
+        {
+            UnPauseSound();
+        }
+        m_paused = 0;
+    }
+}
+
+int CMiracle3d::GetCurDifficultyLevel() const
+{
+    if (!m_profileManager)
+    {
+        return 0;
+    }
+    auto* profile = m_profileManager->GetCurProfile();
+    if (!profile)
+    {
+        return 0;
+    }
+    m3d::AIParam diffLevel;
+    profile->GetParam(PP_DIFFICULTY_LEVEL, diffLevel);
+    return diffLevel.GetAsID();
+}
+
+void CMiracle3d::UnPauseSound()
+{
+    if (m3d::g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+    {
+        g_pApp->m_sound->PauseGroup(2, false);
+    }
+}
+
+m3d::Class* CMiracle3d::GetClass() const
+{
+    return &m_classCMiracle3d;
+}
+
+void CMiracle3d::PauseSound()
+{
+    if (m3d::g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+    {
+        g_pApp->m_sound->PauseGroup(2, true);
+    }
+}
+
+char const* CMiracle3d::GetCallbackName() const
+{
+    return nullptr;
+}
+
+bool CMiracle3d::KillPostEffect(CStr const& effectName)
+{
+    return m_postEffect->KillEffect(effectName);
+}
+
+void CMiracle3d::ReloadPostEffects()
+{
+    if (!m_postEffect->Reload())
+    {
+        SYS_ERROR("m_postEffect->Reload()");
+    }
+}
+
+int CMiracle3d::GetCurGameMode()
+{
+    return m_curGameMode.Get();
+}
+
+void CMiracle3d::SetMouseYAxisFlipped(bool bFlip)
+{
+    Application::SetMouseYAxisFlipped(bFlip);
+    if (auto* profile = m_profileManager->GetCurProfile(); profile)
+    {
+        //TODO: check tis
+        m3d::AIParam const param(static_cast<int>(IsMouseYAxisFlipped()));
+        profile->SetParam(PP_MOUSE_YAXIS_FLIP, param);
+    }
+}
+
+void CMiracle3d::SetMouseXAxisFlipped(bool bFlip)
+{
+    Application::SetMouseXAxisFlipped(bFlip);
+    if (auto* profile = m_profileManager->GetCurProfile(); profile)
+    {
+        //TODO: check tis
+        m3d::AIParam const param(static_cast<int>(IsMouseXAxisFlipped()));
+        profile->SetParam(PP_MOUSE_XAXIS_FLIP, param);
+    }
+}
+
+ProfileManager* CMiracle3d::GetProfileManager() const
+{
+    return m_profileManager;
 }
 
 int CMiracle3d::AddChild(m3d::Object* node)
@@ -200,7 +319,7 @@ int CMiracle3d::InitMedia()
     m3d::g_Kernel->AddClass(&ProfileManager::m_classProfileManager);
     GetBlockMusicManager()->InitOnce();
 
-    m_pInterfaceManager = new ITruxxUiManager{};
+    m_pInterfaceManager = new TruxxUiManager{};
     if (m_pInterfaceManager != nullptr)
     {
         m_pInterfaceManager->Init();

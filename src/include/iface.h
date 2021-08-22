@@ -11,7 +11,7 @@ public:
     virtual void* QueryIface(const char*);
 
 protected:
-    virtual ~IBase();
+    virtual ~IBase() = default;
 
 private:
     //IBase_vtbl* __vftable /*VFT*/;
