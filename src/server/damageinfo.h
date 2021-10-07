@@ -1,6 +1,6 @@
 #pragma once
+#include <math/vector.h>
 #include <core/stringm3d.h>
-#include "math/vector.h"
 
 namespace ai
 {
@@ -18,7 +18,7 @@ namespace ai
     public:
         DamageInfo();
 
-    private:
+    public:
         int attackerId;
         int attackingAgentId;
         bool bDamageFriends;
@@ -26,9 +26,9 @@ namespace ai
         float damage;
         DamageType damageType;
         CStr damagedPartName;
-        CVector hitPos;
-        CVector hitDir;
-        CVector normal;
+        ::CVector hitPos;
+        ::CVector hitDir;
+        ::CVector normal;
         int decalId;
     };
 }

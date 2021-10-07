@@ -78,3 +78,4 @@ namespace m3d
 
 #define LOG(msg, level) //g_Kernel->GetLog().sourceLine() = __LINE__; g_Kernel->GetLog().setSourceFile(__FILE__); g_Kernel->GetLog().logTex(msg, level)
 #define SYS_ERROR(msg)
+#define M3D_ASSERT(cond)

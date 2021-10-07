@@ -248,14 +248,14 @@ namespace ai
         virtual bool RemoveChild(Obj*);
         virtual int RemoveChild(m3d::Object*);
         virtual bool ApplyModifier(Modifier const& modifier);
-        virtual void GetPropertiesIDs(std::set<int>&) const;
+        virtual void GetPropertiesIDs(std::set<int>& props) const;
         virtual void SetInvisible();
-        virtual void InflictDamage(DamageInfo const&);
-        virtual void Update(float, unsigned int);
-        virtual void GetPropertiesNames(std::set<CStr>&) const;
+        virtual void InflictDamage(DamageInfo const& damageInfo);
+        virtual void Update(float elapsedTime, unsigned int workTime);
+        virtual void GetPropertiesNames(std::set<CStr>& props) const;
         virtual void RelinkSceneGraphNode();
         virtual AI* GetAIPtr();
-        virtual CStr GetPropertyName(int) const;
+        virtual CStr GetPropertyName(int id) const;
         virtual PrototypeInfo const* GetPrototypeInfo() const;
         virtual void CreateChildren();
         virtual void ReceiveNodesToLink(std::list<m3d::SgNode*>&) const;
@@ -349,7 +349,7 @@ namespace ai
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const;
 
     private:
-        void OnSubscribe(Event const &);
+        void OnSubscribe(Event const& evn);
         void _Init();
         void OnUnsubscribe(Event const &);
         int _GetIndexByEventId(eGameEvent eventId) const;

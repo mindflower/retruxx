@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <core/aiparam.h>
 #include <core/kernel.h>
+#include <server/damageinfo.h>
 #include <server/event.h>
 #include <server/ipricecoeffprovider.h>
 #include <server/modifier.h>
@@ -220,6 +221,71 @@ namespace ai
 
     void Obj::TransferPhysicParamsToSceneGraphNode()
     {
+    }
+
+    void Obj::GetPropertiesIDs(std::set<int>& props) const
+    {
+        for (auto const& prop : m_propertiesMap)
+        {
+            props.insert(prop.second);
+        }
+    }
+
+    void Obj::SetInvisible()
+    {
+        theObjects->AddObjToNotUpdate(this);
+        m_flags &= 0xFFFFFFFE;
+    }
+
+    void Obj::InflictDamage(DamageInfo const& damageInfo)
+    {
+        m3d::AIParam const value(damageInfo.damage);
+        Modifier modToHealth;
+        modToHealth.Create("hp", MO_SUB, value);
+        modToHealth.m_SenderID = damageInfo.attackerId;
+        m_modifiers.push_back(modToHealth);
+        m_LastDamageSource = damageInfo.attackerId;
+    }
+
+    void Obj::Update(float elapsedTime, unsigned workTime)
+    {
+        for (auto const& modifier : m_modifiers)
+        {
+            ApplyModifier(modifier);
+        }
+        //TODO: check tis
+        m_modifiers.resize(0, {});
+    }
+
+    void Obj::GetPropertiesNames(std::set<CStr>& props) const
+    {
+        for (auto const& prop : m_propertiesMap)
+        {
+            props.insert(prop.first);
+        }
+    }
+
+    void Obj::RelinkSceneGraphNode()
+    {
+    }
+
+    AI* Obj::GetAIPtr()
+    {
+        return nullptr;
+    }
+
+    CStr Obj::GetPropertyName(int id) const
+    {
+        //TODO: check correctness
+        auto const it = std::find_if(cbegin(m_propertiesMap), cend(m_propertiesMap), [id](auto const& prop)
+        {
+            return prop.second == id;
+        });
+        if (it != cend(m_propertiesMap))
+        {
+            return it->first;
+        }
+        return {};
     }
 
     void Obj::StackClose()
@@ -502,6 +568,16 @@ namespace ai
             return false;
         }
         }
+    }
+
+    void Obj::OnSubscribe(Event const& evn)
+    {
+        if (evn.m_param1.GetType() != m3d::AIPARAM_ID)
+        {
+            SYS_ERROR("evn.m_param1.GetType() == m3d::AIPARAM_ID");
+        }
+
+        Subscribe(static_cast<eGameEvent>(evn.m_senderObjId), evn.m_param1.GetAsID());
     }
 
     int Obj::_GetIndexByEventId(eGameEvent eventId) const

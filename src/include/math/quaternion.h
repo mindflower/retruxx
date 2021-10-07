@@ -32,7 +32,7 @@ public:
     Quaternion& operator*=(float);
     void operator*=(Quaternion const&);
 
-private:
+public:
     float x;
     float y;
     float z;

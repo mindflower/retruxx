@@ -15,7 +15,7 @@ public:
     float randomValue() const;
     CVector2 normalize() const;
 
-private:
+public:
     float x;
     float y;
 };

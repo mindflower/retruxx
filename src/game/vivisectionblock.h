@@ -14,7 +14,6 @@ public:
 
 public:
     bool init();
-    Vivisector();
     virtual void HandleCommand(int, m3d::CConsoleParams const&);
     virtual bool HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&);
     virtual ~Vivisector();

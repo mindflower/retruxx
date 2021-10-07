@@ -44,20 +44,17 @@ namespace m3d
     public:
         AIParam() = default;
         AIParam(AIParam const& param);
-        AIParam(CVector const&);
-        AIParam(CVector2 const&);
-        AIParam(std::vector<int> const&);
-        AIParam(CStr const&);
-        AIParam(int const&);
-        AIParam(float const&);
-        AIParam(Quaternion const&);
+        AIParam(CVector const& pos);
+        AIParam(CVector2 const& range);
+        AIParam(std::vector<int> const& list);
+        AIParam(CStr const& str);
+        AIParam(int const& pid);
+        AIParam(float const& value);
+        AIParam(Quaternion const& pos);
         ~AIParam();
 
         int GetAsID() const;
-        bool operator==(AIParam const&);
-        bool operator<=(AIParam const&);
         std::vector<int> GetAsIdList() const;
-        bool operator!=(AIParam const&);
         CVector2 GetAsRange() const;
         CStr GetAsStr() const;
         CVector GetAsVector() const;
@@ -65,6 +62,9 @@ namespace m3d
         std::vector<CStr> GetAsStringList() const;
         void Clear();
         void ReadFromString(CStr const&);
+        bool operator==(AIParam const&);
+        bool operator<=(AIParam const&);
+        bool operator!=(AIParam const&);
         bool operator<(AIParam const&);
         AIParam& operator=(CVector2 const&);
         AIParam& operator=(CVector const&);
