@@ -14,6 +14,8 @@
 #include <file/fileserver.h>
 #include <impulses/i_impulses.h>
 #include <scene/nodes/sgnodesound.h>
+#include <server/relationship.h>
+#include <server/objects/infectionteam.h>
 #include <server/objects/player.h>
 #include <server/objects/vehicle.h>
 
@@ -26,6 +28,7 @@ namespace ai
 {
     extern ObjContainer* theObjects;
     extern Player* thePlayer;
+    extern Relationship* theRelationship;
 }
 
 namespace
@@ -90,6 +93,43 @@ namespace
             }
         }
         return 1;
+    }
+
+    m3d::SgNode* CreateNode(CStr const& modelName, CVector const& pos, Quaternion const& rot, int TTL, bool bInsertInRemoveIfFree, bool LinkToCells)
+    {
+        auto const modelId = m3d::g_Kernel->GetEngineCfg().GetModelIdByName(modelName);
+        auto* controlledNode = m3d::pClient->CreateServerControlledNode(modelId);
+        if (!controlledNode)
+        {
+            return nullptr;
+        }
+
+        if (TTL > 0)
+        {
+            controlledNode->GetGraph()->InsertInTtlList(controlledNode, m3d::g_Kernel->GetTimer().GetCurTime() + TTL);
+        }
+
+        m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(controlledNode);
+        if (LinkToCells)
+        {
+            m3d::pClient->GetWorld().GetLandscape().LinkNodeAndChildrenCollisionGeomsToCell(controlledNode);
+        }
+        //TODO: check this
+        controlledNode->SetProperty(8704, nullptr);
+
+        CVector scale;
+        scale.one();
+        controlledNode->SetScale(scale);
+        controlledNode->SetPersistance(false);
+        if (bInsertInRemoveIfFree)
+        {
+            controlledNode->GetGraph()->InsertInRemoveIfFree(controlledNode);
+        }
+        controlledNode->SetOriginAbs(pos);
+        controlledNode->SetRotation(rot);
+        controlledNode->UpdateXForm(true, false);
+        m3d::pClient->GetWorld().GetGraph().LinkNode(controlledNode);
+        return controlledNode;
     }
 }
 
@@ -167,22 +207,43 @@ void RegisterGlobalNatives()
     scriptServer.registerGlobalFunction(&n_DumpOpenFiles, "DumpOpenFiles", "void", "Dumps names of open files");
 }
 
-//int n_ShowHostileVehicles(m3d::sArgStack& scriptStack)
-//{
-//    if (scriptStack.getNumInArgs() != 1)
-//    {
-//        return -1;
-//    }
-//
-//    auto const* arg = scriptStack.popIn();
-//    auto const type = arg->GetType();
-//    if (type != m3d::sArg::ARGTYPE_BOOL && type != m3d::sArg::ARGTYPE_FLOAT && type != m3d::sArg::ARGTYPE_INT)
-//    {
-//        return -1;
-//    }
-//
-//    //TODO:...
-//}
+int n_ShowHostileVehicles(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    auto const type = arg->GetType();
+    if (type != m3d::sArg::ARGTYPE_BOOL && type != m3d::sArg::ARGTYPE_FLOAT && type != m3d::sArg::ARGTYPE_INT)
+    {
+        return -1;
+    }
+
+    //TODO: check correctness
+    for (auto* obj : *ai::theObjects)
+    {
+        if (!obj->IsKindOf(&ai::InfectionTeam::m_classInfectionTeam))
+        {
+            if (obj->IsKindOf(&ai::Vehicle::m_classVehicle) && ai::theRelationship->CheckTolerance(obj->GetBelong(), ai::thePlayer->GetBelong()) <= ai::RS_ENEMY)
+            {
+                auto* vehicle = dynamic_cast<ai::Vehicle*>(obj);
+                auto* team = vehicle->GetTeam();
+                if (team)
+                {
+                    team->SetTeamFrozen(!arg->GetB());
+                }
+            }
+        }
+        else
+        {
+            auto* team = dynamic_cast<ai::InfectionTeam*>(obj);
+            team->SetTeamFrozen(!arg->GetB());
+        }
+    }
+    return 1;
+}
 
 int n_SetProfileMotionBlur(m3d::sArgStack& scriptStack)
 {
@@ -395,19 +456,43 @@ int n_UpdateWeather(m3d::sArgStack& scriptStack)
     return 1;
 }
 
-//int n_SetCinematicCinemaPanel(m3d::sArgStack& scriptStack)
-//{
-//    if (scriptStack.getNumInArgs() != 1)
-//    {
-//        return -1;
-//    }
-//
-//    auto const* arg = scriptStack.popIn();
-//    if (arg->GetType() != m3d::sArg::ARGTYPE_BOOL)
-//    {
-//        //TODO:...
-//    }
-//}
+int n_SetCinematicCinemaPanel(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    bool res = false;
+    if (arg->GetType() == m3d::sArg::ARGTYPE_BOOL)
+    {
+        res = arg->GetB();
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+    {
+        res = arg->GetI() != 0;
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        res = arg->GetF() != 0.0;
+    }
+    else
+    {
+        return -1;
+    }
+    auto flags = m3d::Application::g_pApp->m_cinematic->GetFlags();
+    if (res)
+    {
+        flags &= 0xFB;
+    }
+    else
+    {
+        flags |= 4;
+    }
+    m3d::Application::g_pApp->m_cinematic->SetFlags(flags);
+    return 1;
+}
 
 int n_RemoveCurrentCinematicPoint(m3d::sArgStack& scriptStack)
 {
@@ -476,6 +561,66 @@ int n_GetNormalTimescale(m3d::sArgStack& scriptStack)
     auto const timeScale = pGame->GetNormalTimeScale();
     scriptStack.newOut()->SetF(timeScale);
     return 1;
+}
+
+int n_CreateNodeInsertedInRemove(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() < 4)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    CStr const modelName = arg->GetS();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_VECTOR)
+    {
+        return -1;
+    }
+    auto const pos = arg->GetV();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_QUATERNION)
+    {
+        return -1;
+    }
+    auto const rot = arg->GetQ();
+
+
+    bool bInsertInRemoveIfFree = false;
+    arg = scriptStack.popIn();
+    auto const type = arg->GetType();
+    if (type == m3d::sArg::ARGTYPE_INT)
+    {
+        bInsertInRemoveIfFree = arg->GetI();
+    }
+    else if (type == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        bInsertInRemoveIfFree = arg->GetF();
+    }
+    else if (type == m3d::sArg::ARGTYPE_BOOL)
+    {
+        bInsertInRemoveIfFree = arg->GetB();
+    }
+
+    LOG("Creating inserted in RemoveIfFree node from script", LOG_INFO);
+    auto node = CreateNode(modelName, pos, rot, -1, bInsertInRemoveIfFree, true);
+    if (scriptStack.getNumInArgs() > 4)
+    {
+        arg = scriptStack.popIn();
+        if (arg->GetType() == m3d::sArg::ARGTYPE_STRING)
+        {
+            node->SetName(arg->GetS());
+        }
+    }
+
+    scriptStack.newOut()->SetO(node);
+    return node != nullptr;
 }
 
 int n_StopPlayingCustomMusic(m3d::sArgStack& scriptStack)

@@ -31,6 +31,9 @@ namespace ai
     class InfectionTeam :  public Team
     {
     public:
+        static inline m3d::Class m_classInfectionTeam;
+
+    public:
         void SetCriticalDistAndTime(float,float);
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         InfectionTeam(InfectionTeamPrototypeInfo const &);

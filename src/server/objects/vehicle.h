@@ -136,6 +136,9 @@ namespace ai
         };
 
     public:
+        static inline m3d::Class m_classVehicle;
+
+    public:
         VehicleMoveStatus GetMoveStatus() const ;
         float GetCruisingSpeed() const ;
         void UnlimitMaxSpeed();

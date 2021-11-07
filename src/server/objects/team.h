@@ -2,12 +2,15 @@
 #include "base/obj.h"
 #include "base/prototypeinfo.h"
 #include <server/ai/ai.h>
+#include <server/formations/formation.h>
 
 namespace ai
 {
+    class TeamTactic;
     class PhysicObj;
     class Path;
     class Vehicle;
+    class CombatMastermind;
 
     class TeamPrototypeInfo : public PrototypeInfo
     {
