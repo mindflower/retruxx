@@ -21,6 +21,7 @@
 #include <posteffects/posteffectmanager.h>
 #include <server/server.h>
 #include <ctime>
+#include <stdexcept>
 #include <scene/servers/dataserver.h>
 
 extern Vivisector* g_Vivisector;
@@ -67,9 +68,429 @@ unsigned m_profiler_GetPackets = 0;
 unsigned m_profiler_ServerUpdate = 0;
 unsigned m_profiler_ClientUpdate = 0;
 
+int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::SkipCinematicMessage()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::OnGameDrag(m3d::AuxImpulseInfo const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+float CMiracle3d::GetMinTimeScale() const
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::OnFinishVideoPlaying()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::SetMinTimeScale(float)
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::LoadSavedGame(CStr const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::GetMouseHitPoint(CVector&, m3d::SgNode*&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::OnFinishIntroVideoPlaying()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::GameDone()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::OnFlyMouse(m3d::AuxImpulseInfo const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::GameInit()
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::GetCursorShow() const
+{
+    throw std::logic_error("Not implemented");
+}
+
 bool CMiracle3d::GetCursorShow0() const
 {
-    return Wnd::GetCursorShow();
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::SetCursorShow(bool)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::CinematicInit()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::PlayHackedMusic(HackedMusicType, bool)
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::CinematicFade()
+{
+    throw std::logic_error("Not implemented");
+}
+
+m3d::Class* CMiracle3d::GetBaseClass()
+{
+    throw std::logic_error("Not implemented");
+}
+
+m3d::TownMusicManager* CMiracle3d::GetTownMusicManager()
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::AddPostEffect(CStr const&, float)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::HandleCinematic(float)
+{
+    throw std::logic_error("Not implemented");
+}
+
+m3d::Object* CMiracle3d::CreateObject()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::OnChangeProfile()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::CleanMainMenuLevel()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::BeginModalDlg(bool)
+{
+    throw std::logic_error("Not implemented");
+}
+
+m3d::ui::MbRetCodes CMiracle3d::RunMsgBoxDlg(CStr const&, CStr const&, unsigned, bool)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::CleanLevel(bool, bool)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::OnGameZoom(m3d::AuxImpulseInfo const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::PutSplash(int, char const*)
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::bIsMousePointing() const
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::ClearSomeGameElementsBeforeModal()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::ChangeLanguage()
+{
+    throw std::logic_error("Not implemented");
+}
+
+float CMiracle3d::getZoom()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::CinematicClear()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::OnBeforeDeviceReset()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::CinematicInterrupt()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::setZoom(float)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::OnAfterDeviceReset()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::OnSkipCinematic(m3d::AuxImpulseInfo const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::RenderAsBackground(bool)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::UpdateCameraPosition(ai::PhysicObj*)
+{
+    throw std::logic_error("Not implemented");
+}
+
+float CMiracle3d::GetMaxTimeScale() const
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::SetMaxTimeScale(float)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::OnObtainingFocus()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::LoadLevel(CStr const&, CStr const&, bool, bool, bool, m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, ai::ObjContainer::eSAVE_TYPES)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::FullSystyemAndUserUnpause()
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::GetPostEffectParam(CStr const&, float&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::SetPostEffectParam(CStr const&, float)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::StartMainMenu()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::SetMouseSensitivity(float)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::UpdateCinematicCameraRotation()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::SetCurHackedMusicType(HackedMusicType)
+{
+    throw std::logic_error("Not implemented");
+}
+
+HackedMusicType CMiracle3d::GetCurHackedMusicType() const
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::ValidateCameraOrigin(bool)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::OnGameSwitchCamera(m3d::AuxImpulseInfo const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::OnGameMouse(m3d::AuxImpulseInfo const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::EndModalDlg()
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::CanLaunchIfaceWindow()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::LoadMainMenuLevel()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::OnDebug(m3d::AuxImpulseInfo const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::LoadMapFromConsole(m3d::CConsoleParams const&, bool)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::StartPlayingVideo(char const*, int(CMiracle3d::*)())
+{
+    throw std::logic_error("Not implemented");
+}
+
+CMiracle3d::~CMiracle3d()
+{
+    throw std::logic_error("Not implemented");
+}
+
+float CMiracle3d::GetNormalTimeScale() const
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::SetNormalTimeScale(float)
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::SaveGame(CStr const&, bool)
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::LoadMap(CStr const&, bool, m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, ai::ObjContainer::eSAVE_TYPES)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::ValidateCameraAngles()
+{
+    throw std::logic_error("Not implemented");
+}
+
+m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd*)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::CollideCamera(CVector&, float&, CVector const&, CVector const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::OnSkipCinematicMessage(m3d::AuxImpulseInfo const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+m3d::BlockMusicManager* CMiracle3d::GetBlockMusicManager()
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool CMiracle3d::IsRenderAsBackground() const
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::EmergencyRedrawAllObjs()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::Controls(double, double)
+{
+    throw std::logic_error("Not implemented");
+}
+
+float CMiracle3d::GetMeanHigh(float, float)
+{
+    throw std::logic_error("Not implemented");
+}
+
+float CMiracle3d::GetMaxHigh(float, float)
+{
+    throw std::logic_error("Not implemented");
+}
+
+float CMiracle3d::getFov() const
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::initZoom()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::CreateInterfaceManager()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::DrawBackground()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::CaptureBackground()
+{
+    throw std::logic_error("Not implemented");
 }
 
 CMiracle3d::CMiracle3d() :
@@ -217,6 +638,12 @@ ProfileManager* CMiracle3d::GetProfileManager() const
     return m_profileManager;
 }
 
+int CMiracle3d::OnEvent(m3d::Event const&)
+{
+    //TODO: ...
+    throw std::logic_error("Not implemented");
+}
+
 int CMiracle3d::AddChild(m3d::Object* node)
 {
     auto result = Wnd::AddChild(node);
@@ -232,6 +659,24 @@ int CMiracle3d::AddChild(m3d::Object* node)
     //*(&this->m_playingVideo + 1) = 1;
     //this->m_playingVideo = 0;
     return result;
+}
+
+int CMiracle3d::RemoveChildForce(m3d::Object* object)
+{
+    //TODO: ...
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::Render(bool)
+{
+    //TODO: ...
+    throw std::logic_error("Not implemented");
+}
+
+int CMiracle3d::RemoveChild(m3d::Object* object)
+{
+    //TODO: ...
+    throw std::logic_error("Not implemented");
 }
 
 int CMiracle3d::DoneMedia()
@@ -350,28 +795,37 @@ int CMiracle3d::InitMedia()
     return 0;
 }
 
-//int CMiracle3d::FrameMove()
-//{
-//    if (!m_playingVideo || m_enginePlayingVideo)
-//    {
-//        auto* profiler = GetProfilerStack().GetProfiler(m_profiler_Client);
-//        profiler->StartCountdown();
-//        PlayHackedMusic(m_hackedMusicType, false);
-//        m3d::RadioEngine::GetInstance()->PlayNextSoundMessage();
-//        //TODO:...
-//        if (m3d::pClient != nullptr)
-//        {
-//            GetCameraController()->Update();
-//            if (m_cinematic->m_state != m3d::CINEMATIC_NOT_INITED)
-//            {
-//                auto wndTown = m_pInterfaceManager->GetWindow(4);
-//            }
-//        }
-//    }
-//}
+int CMiracle3d::FrameMove()
+{
+    //TODO: ...
+    throw std::logic_error("Not implemented");
+    if (!m_playingVideo || m_enginePlayingVideo)
+    {
+        auto* profiler = GetProfilerStack().GetProfiler(m_profiler_Client);
+        profiler->StartCountdown();
+        PlayHackedMusic(m_hackedMusicType, false);
+        m3d::RadioEngine::GetInstance()->PlayNextSoundMessage();
+        //TODO:...
+        if (m3d::pClient != nullptr)
+        {
+            GetCameraController()->Update();
+            if (m_cinematic->m_state != m3d::CINEMATIC_NOT_INITED)
+            {
+                auto wndTown = m_pInterfaceManager->GetWindow(4);
+            }
+        }
+    }
+}
+
+void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
+{
+    //TODO: ...
+    throw std::logic_error("Not implemented");
+}
 
 bool CMiracle3d::HandleCVar(m3d::CVar const* cvar, m3d::CConsoleParams const& params)
 {
+    //TODO: check this
     return Application::HandleCVar(cvar, params);
 }
 

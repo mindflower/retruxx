@@ -9,6 +9,7 @@
 #include <script/scriptserver.h>
 #include <server/objects/base/objcontainer.h>
 #include <client.h>
+#include <stdexcept>
 #include <world.h>
 #include <core/timer.h>
 #include <file/fileserver.h>
@@ -639,6 +640,13 @@ int n_VTuneResume(m3d::sArgStack& scriptStack)
     return 2 * (scriptStack.getNumInArgs() == 0) - 1;
 }
 
+int n_CreateNodeTTLed(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO: ....
+    return 0;
+}
+
 int n_DumpOpenFiles(m3d::sArgStack& scriptStack)
 {
     if (scriptStack.getNumInArgs() != 0)
@@ -752,6 +760,13 @@ int n_MoveCurrentCinematicPointToCamera(m3d::sArgStack& scriptStack)
     return 1;
 }
 
+int n_PassToMap(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO: ...
+    return 0;
+}
+
 int n_MinimapAddMark(m3d::sArgStack& scriptStack)
 {
     auto const numOfArgs = scriptStack.getNumInArgs();
@@ -810,6 +825,13 @@ int n_ResetFogOfWarFC(m3d::sArgStack& scriptStack)
     return 1;
 }
 
+int n_SetWeather(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO: ...
+    return 0;
+}
+
 int n_IsPlayingCampaign(m3d::sArgStack& scriptStack)
 {
     return 1;
@@ -825,6 +847,20 @@ int n_GetMaxTimescale(m3d::sArgStack& scriptStack)
 int n_VTunePause(m3d::sArgStack& scriptStack)
 {
     return 2 * (scriptStack.getNumInArgs() == 0) - 1;
+}
+
+int n_SetCinematicPoint(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO: ...
+    return 0;
+}
+
+int n_CreateEffectInsertedInRemove(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO: ...
+    return 0;
 }
 
 int n_GetCameraPos(m3d::sArgStack& scriptStack)
@@ -1009,6 +1045,13 @@ int n_Assert(m3d::sArgStack& scriptStack)
     return 1;
 }
 
+int n_PauseRadio(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO: ...
+    return 0;
+}
+
 int n_SetMaxTimescale(m3d::sArgStack& scriptStack)
 {
     if (scriptStack.getNumInArgs() != 1)
@@ -1023,6 +1066,13 @@ int n_SetMaxTimescale(m3d::sArgStack& scriptStack)
     auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
     pGame->SetMaxTimeScale(arg->GetF());
     return 1;
+}
+
+int n_CreateEffectTTLed(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO: ...
+    return 0;
 }
 
 int n_StartRendering(m3d::sArgStack& scriptStack)
@@ -1087,19 +1137,19 @@ int n_SetMinTimescale(m3d::sArgStack& scriptStack)
     return 1;
 }
 
-//int n_ResumeRadio(m3d::sArgStack& scriptStack)
-//{
-//    if (!ai::theObjects || !ai::thePlayer)
-//    {
-//        return -1;
-//    }
-//    auto const radioManagerId = ai::thePlayer->GetRadioManagerId();
-//    if (radioManagerId < 0)
-//    {
-//        return -1;
-//    }
-//    auto qwe = ai::theObjects->GetF
-//}
+int n_InsertCurrentPointToCinematicPath(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO: ...
+    return 0;
+}
+
+int n_ResumeRadio(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO: ...
+    return 0;
+}
 
 int n_DumpSceneGraph(m3d::sArgStack& scriptStack)
 {
@@ -1114,6 +1164,13 @@ int n_DumpSceneGraph(m3d::sArgStack& scriptStack)
     }
     m3d::pClient->GetWorld().GetGraph().DumpToFile(arg->GetS());
     return 1;
+}
+
+int n_SetCameraZoom(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO: ...
+    return 0;
 }
 
 int n_EnableCinematicDebug(m3d::sArgStack& scriptStack)
@@ -1148,6 +1205,20 @@ int n_EnableCinematicDebug(m3d::sArgStack& scriptStack)
     return 1;
 }
 
+int n_ShowDeathMenu(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO:...
+    return 0;
+}
+
+int n_SetCinematicFadeParams(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO:...
+    return 0;
+}
+
 int n_SetGameSpeed(m3d::sArgStack& scriptStack)
 {
     if (scriptStack.getNumInArgs() != 1)
@@ -1163,11 +1234,38 @@ int n_SetGameSpeed(m3d::sArgStack& scriptStack)
     return 1;
 }
 
+int n_SetProfileBloom(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO: ...
+    return 0;
+}
+
 int n_GetMinTimescale(m3d::sArgStack& scriptStack)
 {
     auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
     scriptStack.newOut()->SetF(pGame->GetMinTimeScale());
     return 1;
+}
+
+int n_GetProfileMotionBlurAlpha(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO:...
+    return 0;
+}
+
+int n_GetNodeByName(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+    //TODO:...
+    return 0;
+}
+
+int n_SetCameraDirectionToObj(m3d::sArgStack& scriptStack)
+{
+    //TODO:..
+    return 0;
 }
 
 int n_PlayCustomMusic(m3d::sArgStack& scriptStack)

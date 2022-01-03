@@ -93,7 +93,7 @@ namespace m3d
                 ~AnimationInfo();
                 AnimationType Str2AnimationType(CStr const&) const;
                 void Invalidate();
-                AnimationInfo(AnimationInfo const&);
+                //AnimationInfo(AnimationInfo const&);
                 bool IsValid() const;
                 int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
                 CStr AnimationType2Str(AnimationType) const;

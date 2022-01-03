@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <core/aiparam.h>
 #include <core/kernel.h>
 #include <math/quaternion.h>
@@ -6,6 +7,16 @@
 
 namespace m3d
 {
+    int AIParam::CompareInt(void const*, void const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int AIParam::CompareStr(void const*, void const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     AIParam::AIParam(AIParam const& param)
     {
         if (this != &param)
@@ -87,6 +98,156 @@ namespace m3d
             return stoi(*m_Str);
         }
         return 0;
+    }
+
+    std::vector<int> AIParam::GetAsIdList() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CVector2 AIParam::GetAsRange() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CStr AIParam::GetAsStr() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CVector AIParam::GetAsVector() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void AIParam::SaveToXML(cmn::XmlFile*, cmn::XmlNode*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    std::vector<CStr> AIParam::GetAsStringList() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void AIParam::Clear()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void AIParam::ReadFromString(CStr const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool AIParam::operator==(AIParam const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool AIParam::operator<=(AIParam const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool AIParam::operator!=(AIParam const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool AIParam::operator<(AIParam const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AIParam& AIParam::operator=(CVector2 const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AIParam& AIParam::operator=(CVector const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AIParam& AIParam::operator=(CStr const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AIParam& AIParam::operator=(AIParam const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AIParam& AIParam::operator=(std::vector<CStr> const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AIParam& AIParam::operator=(float const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AIParam& AIParam::operator=(std::vector<int> const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AIParam& AIParam::operator=(unsigned const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AIParam& AIParam::operator=(Quaternion const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AIParam& AIParam::operator=(int const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool AIParam::operator>(AIParam const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void AIParam::Init()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void AIParam::LoadFromXML(cmn::XmlFile*, cmn::XmlNode const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    float AIParam::GetAsFloat() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Quaternion AIParam::GetAsQuaternion() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CStr AIParam::ToStr() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void AIParam::SetType(eAIParamType)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void AIParam::ConvertFromString(void*, eAIParamType) const
+    {
+        throw std::logic_error("Not implemented");
     }
 
     eAIParamType AIParam::GetType() const

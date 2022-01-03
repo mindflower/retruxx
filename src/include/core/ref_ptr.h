@@ -27,7 +27,7 @@ public:
         return m_ptr == nullptr;
     }
 
-    operator T*()
+    operator T*() const
     {
         assert(nullptr != m_ptr);
         return m_ptr;
@@ -38,7 +38,7 @@ public:
         return m_ptr == rhs.m_ptr;
     }
 
-    T* operator->()
+    T* operator->() const
     {
         assert(nullptr != m_ptr);
         return m_ptr;

@@ -5,6 +5,7 @@
 #include <intrin.h>
 #include <m3dapp.h>
 #include <skelmodel.h>
+#include <stdexcept>
 #include <core/kernel.h>
 #include <core/log.h>
 #include <core/stackwalker.h>
@@ -739,6 +740,12 @@ namespace m3d
         }
     }
 
+    int Application::HandleEvent(Event const&)
+    {
+        //TODO: ...
+        throw std::logic_error("Not implemented");
+    }
+
     void Application::doneProcTexThread()
     {
     }
@@ -756,9 +763,21 @@ namespace m3d
         }
     }
 
+    int Application::OnLoosingFocus()
+    {
+        //TODO: ...
+        throw std::logic_error("Not implemented");
+    }
+
     int Application::InitImpulses()
     {
         return 1;
+    }
+
+    void Application::DoneImpulses()
+    {
+        //TODO: ...
+        throw std::logic_error("Not implemented");
     }
 
     void Application::MouseInfo::ResetDelta()
@@ -817,6 +836,12 @@ namespace m3d
     bool Application::HandleCVar(CVar const*, CConsoleParams const&)
     {
         return false;
+    }
+
+    void Application::DiscardAllEvents()
+    {
+        //TODO: ...
+        throw std::logic_error("Not implemented");
     }
 
     unsigned long Application::GetStyleForRenderWindow(bool bFullScreen) const

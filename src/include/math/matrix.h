@@ -2,6 +2,8 @@
 
 class CPlane;
 class CVector4;
+class CVector;
+class Quaternion;
 
 class CMatrix
 {

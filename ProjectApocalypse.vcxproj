@@ -28,22 +28,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -272,6 +272,7 @@
     <ClCompile Include="src\engine\scene\servers\serveranimatedmodel.cpp" />
     <ClCompile Include="src\engine\scene\servers\serveranimatedmodelrender.cpp" />
     <ClCompile Include="src\engine\scene\servers\serverdecals.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serverfactories.cpp" />
     <ClCompile Include="src\engine\scene\servers\serverlight.cpp" />
     <ClCompile Include="src\engine\scene\servers\serverlines.cpp" />
     <ClCompile Include="src\engine\scene\servers\servermusic.cpp" />
@@ -283,6 +284,8 @@
     <ClCompile Include="src\engine\scene\shadows\shadowcaster.cpp" />
     <ClCompile Include="src\engine\scene\shadows\shadowmanager.cpp" />
     <ClCompile Include="src\engine\scene\traceline.cpp" />
+    <ClCompile Include="src\engine\script\funcarg.cpp" />
+    <ClCompile Include="src\engine\script\funcstack.cpp" />
     <ClCompile Include="src\engine\script\luaaiparam.cpp" />
     <ClCompile Include="src\engine\script\luaquaternion.cpp" />
     <ClCompile Include="src\engine\script\luavector.cpp" />
@@ -786,8 +789,6 @@
     <ClInclude Include="src\engine\opcode\opc_tritrioverlap.h" />
     <ClInclude Include="src\engine\opcode\opc_volumecollider.h" />
     <ClInclude Include="src\engine\scene\servers\meshmaterialmanager.h" />
-    <ClInclude Include="src\engine\scene\servers\serveranimatedmodels.h" />
-    <ClInclude Include="src\engine\scene\servers\serversound.h" />
     <ClInclude Include="src\engine\scene\shadows\shadowcaster.h" />
     <ClInclude Include="src\engine\soundconhandler.h" />
     <ClInclude Include="src\engine\tinyxml\tinystr.h" />
@@ -1323,7 +1324,6 @@
     <ClInclude Include="src\server\utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\engine\scene\servers\serveranimatedmodel.inl" />
     <None Include="src\include\ui\uilistboxwnd.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -2028,6 +2028,15 @@
     <ClCompile Include="src\engine\math\vector4.cpp">
       <Filter>engine\math</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\scene\servers\serverfactories.cpp">
+      <Filter>engine\scene\servers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\script\funcarg.cpp">
+      <Filter>engine\script</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\script\funcstack.cpp">
+      <Filter>engine\script</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">
@@ -2190,12 +2199,6 @@
       <Filter>engine\opcode</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\scene\servers\meshmaterialmanager.h">
-      <Filter>engine\scene\servers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\scene\servers\serveranimatedmodels.h">
-      <Filter>engine\scene\servers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\scene\servers\serversound.h">
       <Filter>engine\scene\servers</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\scene\shadows\shadowcaster.h">
@@ -3802,9 +3805,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\engine\scene\servers\serveranimatedmodel.inl">
-      <Filter>engine\scene\servers</Filter>
-    </None>
     <None Include="src\include\ui\uilistboxwnd.h">
       <Filter>include\ui</Filter>
     </None>

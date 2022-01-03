@@ -1,5 +1,6 @@
 #include <cassert>
 #include <m3dapp.h>
+#include <stdexcept>
 #include <ui/ui_srv.h>
 #include <ui/wnd.h>
 #include <ui/wndstation.h>
@@ -14,6 +15,236 @@ namespace m3d
 {
     namespace ui
     {
+        int WndStation::DispatchMouse(Event const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        bool WndStation::IsWndAlive(Wnd const*, int) const
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Class* WndStation::GetBaseClass()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Wnd* WndStation::CaptureFocus(Wnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        ModalWnd* WndStation::GetTopModal()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::DispatchPaint(Wnd*, BoundsBase<float> const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::CheckForMouseClick(Wnd*, bool, PointBase<float> const*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Wnd* WndStation::GetWndForMousePoint(Wnd*, PointBase<float> const&, bool)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::DoModal(ModalWnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::PulseKeyForWindow(Wnd*, unsigned short, unsigned char)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Wnd* WndStation::GetCapture() const
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Wnd* WndStation::GetWndMouseOver()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void WndStation::EnableAnimation(bool)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::Activate(Wnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::OnAddWnd(Wnd*, Wnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Wnd* WndStation::CaptureMouse(Wnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        CStr WndStation::GetStringByStringId0(CStr const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::GetStringByStringId(CStr&, CStr const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        bool WndStation::HasChildModalRunning()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::AddNotifyForWnd(Wnd*, Wnd*, unsigned, AIParam const&, bool)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::CheckForMouseDblClick(Wnd*, PointBase<float> const&, unsigned, PointBase<float>&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::GetDefaultCursor(Cursor&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::LoadStrings(CStr const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void WndStation::CloseAllModalWithCancelRet()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void WndStation::StopAllAnimations()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Wnd* WndStation::GetFocus() const
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::ProcessEvent(Event const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Wnd* WndStation::GetWndByUniqueId(int) const
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void WndStation::EndModal(ModalWnd*, unsigned)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Wnd* WndStation::GetActive() const
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        bool WndStation::IsModal(ModalWnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void WndStation::OnEndAnimation(Wnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        bool WndStation::IsAnimationEnabled() const
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        CStr WndStation::InitializeStringUsingIds(CStr const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        WndStation::~WndStation()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::OnRemoveWnd(Wnd*, Wnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        WndStation::WndStation()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::DispatchJoystick(Event const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void WndStation::OnCloseComboBox(ComboBoxWnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void WndStation::OnOpenComboBox(ComboBoxWnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void WndStation::ForEachChild(Wnd*, void(Wnd::*)())
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void WndStation::RegisterWnd(Wnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        GfxServer* WndStation::getGfxServer()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void WndStation::UnregisterWnd(Wnd*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int WndStation::DispatchKey(Event const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
         int WndStation::Done()
         {
             StopAllAnimations();

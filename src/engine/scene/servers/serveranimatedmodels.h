@@ -1,23 +1,26 @@
 #pragma once
-
-namespace AnimatedModelsServer
-{
-    namespace m3d
-    {
-        class SortModelStatPred
-        {
-        public:
-            bool operator()(ModelStat const &,ModelStat const &) const ;
-        protected:
-        private:
-        };
-    }
-}
+#include "meshmaterialmanager.h"
+#include <skelmodel.h>
+#include <scene/servers/dataserver.h>
 
 namespace m3d
 {
-    class AnimatedModelsServer :  public DataServer
+    class DbgCounter;
+    class Profiler;
+    class SgAnimatedModelNode;
+    class ShadowManager;
+
+    class AnimatedModelsServer : public DataServer
     {
+    public:
+        class SortModelStatPred
+        {
+        public:
+            //bool operator()(ModelStat const&, ModelStat const&) const;
+        protected:
+        private:
+        };
+
     public:
         virtual void PostLoad();
         virtual int AddItem(char const *,char const *);
@@ -44,16 +47,10 @@ namespace m3d
     protected:
         virtual void AddItemsList(class std::vector<DataServer::ServerItem,class std::allocator<DataServer::ServerItem> > &);
     private:
-        std::swap<ModelStat>(ModelStat &,ModelStat &);
-        std::_Allocate<ModelStat>(uint,ModelStat *);
+
         int RenderMesh(SgAnimatedModelNode *,AnimatedModel::Mesh &,rend::IEffect *);
         int RenderMesh(AnimInfo *,AnimatedModel::Mesh &,rend::IEffect *);
         void RenderModelForImpostor(AnimatedModel *,float,int,int);
-        std::_Ptr_cat<ModelStat *,ModelStat *>(ModelStat * &,ModelStat * &);
-        std::allocator<ModelStat>::allocator<ModelStat>();
-        std::allocator<ModelStat>::allocator<ModelStat>();
-        std::_Destroy<ModelStat>(ModelStat *);
-        std::_Construct<ModelStat,ModelStat>(ModelStat *,ModelStat const &);
         void UpdateGlobalRenderingParams();
         CVector m_colorAmbient;
         CVector m_colorDiffuse;

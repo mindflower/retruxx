@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <core/kernel.h>
 #include <core/stackwalker.h>
 #include <file/fileserver.h>
@@ -18,6 +19,7 @@ HMODULE g_hImagehlpDll = nullptr;
 
 LONG WINAPI CrashHandlerExceptionFilter(PEXCEPTION_POINTERS pe)
 {
+    throw std::logic_error("Not implemented");
     //TODO: ....
     //char tmp_1[0x400] = { 0 };
     //::GetCurrentDirectoryA(0x400, tmp_1);

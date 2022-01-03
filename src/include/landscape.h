@@ -30,6 +30,7 @@ namespace m3d
 
     class Landscape :  public SgNode, public IConHandler
     {
+        friend class CWorld;
     public:
         class TileInfo
         {

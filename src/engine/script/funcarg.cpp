@@ -1,84 +1,85 @@
+#include <script/funcarg.h>
+#include <math/vector.h>
 #include <stdexcept>
-#include <scene/servers/serversound.h>
 
 namespace m3d
 {
-    void Sound3DServer::UnregisterNode(m3d::SgNode*)
+    sArg::~sArg()
     {
         throw std::logic_error("Not implemented");
     }
 
-    int Sound3DServer::RemoveItem(int)
+    Quaternion sArg::GetQ() const
     {
         throw std::logic_error("Not implemented");
     }
 
-    Sound3DServer::~Sound3DServer()
+    char const* sArg::GetS() const
     {
         throw std::logic_error("Not implemented");
     }
 
-    int Sound3DServer::AddItem(char const*, char const*)
+    float sArg::GetF() const
     {
         throw std::logic_error("Not implemented");
     }
 
-    void Sound3DServer::PostLoad()
+    bool sArg::GetB() const
     {
         throw std::logic_error("Not implemented");
     }
 
-    int Sound3DServer::GetItemProperty(int, int, void*)
+    Object* sArg::GetO() const
     {
         throw std::logic_error("Not implemented");
     }
 
-    void Sound3DServer::RegisterNode(m3d::SgNode*)
+    int sArg::GetI() const
     {
         throw std::logic_error("Not implemented");
     }
 
-    int Sound3DServer::SaveAllLoadedEntities(char const*)
+    sArg::sArg()
     {
         throw std::logic_error("Not implemented");
     }
 
-    void Sound3DServer::RenderItem(int, void*)
+    CVector sArg::GetV() const
     {
         throw std::logic_error("Not implemented");
     }
 
-    int Sound3DServer::Release()
+    void sArg::SetV(CVector const&)
     {
         throw std::logic_error("Not implemented");
     }
 
-    void Sound3DServer::AddItemsList(std::vector<m3d::DataServer::ServerItem>&)
+    void sArg::SetS(char const*)
     {
         throw std::logic_error("Not implemented");
     }
 
-    void Sound3DServer::_AddItemFromXmlNode(m3d::cmn::XmlNode const*)
+    void sArg::SetQ(Quaternion const&)
     {
         throw std::logic_error("Not implemented");
     }
 
-    int Sound3DServer::_AddFakeItem()
+    void sArg::SetF(float)
     {
         throw std::logic_error("Not implemented");
     }
 
-    int Sound3DServer::_AddTripleItem(CStr, CStr, CStr, char const*, char const*)
+    void sArg::SetB(bool)
     {
         throw std::logic_error("Not implemented");
     }
 
-    int Sound3DServer::_AddItem(char const*, char const*, char const*)
+    void sArg::SetO(Object*)
     {
         throw std::logic_error("Not implemented");
     }
 
-    int Sound3DServer::_AddDoubleItem(CStr, CStr, char const*, char const*)
+    sArg::eArgType sArg::GetType() const
     {
         throw std::logic_error("Not implemented");
     }

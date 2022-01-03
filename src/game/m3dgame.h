@@ -186,6 +186,8 @@ private:
     int CreateInterfaceManager();
     void DrawBackground();
     void CaptureBackground();
+
+private:
     CVector m_oldPositionValue;
     int m_elapsedtime;
     int m_numModals;

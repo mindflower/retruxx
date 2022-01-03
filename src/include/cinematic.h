@@ -174,6 +174,8 @@ namespace m3d
         bool _TakeNextCinematicItem();
         void _PushCinematicItem();
         bool _bIsFirstItemPlayingNow() const ;
+
+    private:
         int m_playTime;
         int m_fadeStartTime;
         bool m_bWasSkipped;

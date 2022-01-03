@@ -3,6 +3,7 @@
 #include "prototypeinfo.h"
 #include "prototypemanager.h"
 #include <algorithm>
+#include <stdexcept>
 #include <core/aiparam.h>
 #include <core/kernel.h>
 #include <server/damageinfo.h>
@@ -47,6 +48,7 @@ namespace ai
         m_propertiesMap["PrototypeId"] = 2;
         m_propertiesMap["Name"] = 3;
     }
+
 
     m3d::AIParam Obj::AIGetParentID(Obj* obj)
     {

@@ -29,9 +29,9 @@ namespace m3d
         int GetI() const;
         sArg();
         CVector GetV() const;
-        void SetV(struct CVector const&);
+        void SetV(CVector const&);
         void SetS(char const*);
-        void SetQ(struct Quaternion const&);
+        void SetQ(Quaternion const&);
         void SetF(float);
         void SetB(bool);
         void SetO(Object*);

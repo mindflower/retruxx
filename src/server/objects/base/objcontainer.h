@@ -2,6 +2,8 @@
 #include "obj.h"
 #include <core/containers.h>
 
+class CVector;
+
 namespace ai
 {
     class ObjContainer;
@@ -118,14 +120,14 @@ namespace ai
         void DeleteAll();
         void PassToMap(CStr const &,CStr const &,int,bool);
         float GetHeight(float,float) const ;
-        static struct m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * __fastcall GetBaseClass();
         int GetPrototypeId(char const *) const ;
         void Dump();
         void SetGameTimeInt64(__int64);
         int GetObjIdByObjName(CStr const &);
         float GetTolerance(int,int) const ;
         void SetGameTime(int,int,int,int,int);
-        static class m3d::Object * __fastcall CreateObject();
+        static Object * __fastcall CreateObject();
         void TransferPhysicParamsToSceneGraph();
         void UnpauseGameTime();
         void UnlinkGeomsFromCollisionCells();
@@ -133,7 +135,7 @@ namespace ai
         bool AddWithOwnObjId(Obj *);
         void SetObjName(int,CStr const &);
         GameTime & getGameTime();
-        class m3d::AIParam GetGameTime() const ;
+        m3d::AIParam GetGameTime() const ;
         void AddObjToPostCollideList(Obj *);
         void DumpPhysicInfo(CStr const &) const ;
         __int64 GetGameTimeInt64() const ;
@@ -142,27 +144,27 @@ namespace ai
         Obj * GetEntityByObjId(int);
         void DenyCreation();
         void LoadObjectNamesFromXML(CStr const &);
-        class m3d::AIParam Get24HourTime() const ;
+        m3d::AIParam Get24HourTime() const ;
         int CreateEntityForLoad(int,char const *,int,int);
         void MessageBoxA(int,int,Obj *);
         void AllowSave(bool);
         float GetGameTimeDiff() const ;
-        class iterator begin();
-        class const_iterator begin() const ;
+        iterator begin();
+        const_iterator begin() const ;
         int GetNumRemovalsLastFrame() const ;
         void Update(float,unsigned int,bool);
         int CreateNewObject(int,char const *,int,int);
         void Clear(bool);
-        virtual struct m3d::Class * GetClass() const ;
-        void SaveNodeStatesToXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
-        void SaveToXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
+        virtual m3d::Class * GetClass() const ;
+        void SaveNodeStatesToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
+        void SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         const_iterator end() const ;
         iterator end();
         void LinkGeomsToCollisionCells();
         void RelinkSceneGraphNodes();
         void AddObjIdToRemove(int);
         unsigned int size() const ;
-        class m3d::AIParam GetObjList(char const *,struct CVector const &,float) const ;
+        m3d::AIParam GetObjList(char const *,CVector const &,float) const ;
         void IncTolerance(int,int,float);
         void AddObjToNotUpdate(Obj *);
         void PostCollide();
@@ -170,7 +172,7 @@ namespace ai
 
     protected:
         ObjContainer();
-        ObjContainer(class ObjContainer const &);
+        ObjContainer(ObjContainer const &);
 
     private:
         void _SetObjNotUpdating(int);
