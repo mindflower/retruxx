@@ -11,6 +11,56 @@ namespace m3d
 {
     namespace ui
     {
+        Wnd::AnimationInfo::~AnimationInfo()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Wnd::AnimationInfo::AnimationType Wnd::AnimationInfo::Str2AnimationType(CStr const&) const
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void Wnd::AnimationInfo::Invalidate()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        bool Wnd::AnimationInfo::IsValid() const
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int Wnd::AnimationInfo::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        CStr Wnd::AnimationInfo::AnimationType2Str(AnimationType) const
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        bool Wnd::AnimationInfo::CanAnimate() const
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int Wnd::AnimationInfo::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void Wnd::AnimationInfo::SetupDefaultOnHide()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void Wnd::AnimationInfo::SetupDefaultOnShow()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
         Class* Wnd::GetBaseClass()
         {
             throw std::logic_error("Not implemented");

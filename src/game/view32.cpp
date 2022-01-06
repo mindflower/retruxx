@@ -25,10 +25,6 @@
 #include <scene/servers/dataserver.h>
 
 extern Vivisector* g_Vivisector;
-namespace ai
-{
-    extern CServer* pServer;
-}
 
 namespace m3d
 {
@@ -67,6 +63,41 @@ unsigned m_profiler_Client = 0;
 unsigned m_profiler_GetPackets = 0;
 unsigned m_profiler_ServerUpdate = 0;
 unsigned m_profiler_ClientUpdate = 0;
+
+GameState CMiracle3d::CurGameMode::Get() const
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::CurGameMode::Set(GameState)
+{
+    throw std::logic_error("Not implemented");
+}
+
+CMiracle3d::CurGameMode::~CurGameMode()
+{
+    throw std::logic_error("Not implemented");
+}
+
+CMiracle3d::CurGameMode::CurGameMode()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::Player::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+{
+    throw std::logic_error("Not implemented");
+}
+
+CMiracle3d::Player::Player()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMiracle3d::Player::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+{
+    throw std::logic_error("Not implemented");
+}
 
 int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const&)
 {
@@ -703,8 +734,8 @@ int CMiracle3d::DoneMedia()
         ProcessAllEvents();
         g_pGame->m_pInterfaceManager->ShowWindow(166, false, false, false, false, nullptr);
         g_pGame->m_pInterfaceManager->LaunchEvent(86, GUI_EVENT_CUSTOM, nullptr);
-        ai::pServer->Clear();
-        ai::pServer->ClearOnce();
+        ai::CServer::pServer->Clear();
+        ai::CServer::pServer->ClearOnce();
         m3d::pClient->Reset();
         m3d::pClient->GetWorld().Release();
         DiscardAllEvents();

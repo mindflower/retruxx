@@ -56,6 +56,8 @@ namespace m3d
         float _CalcSplineSegmentLength(unsigned int, unsigned int) const;
         void _DeFix();
         void _Fix();
+
+    private:
         std::vector<CameraPathState> m_cameraPathStates;
         float m_fullLength;
         float m_fullTime;

@@ -1,5 +1,6 @@
 #pragma once
 #include "weather.h"
+#include <landscape.h>
 
 namespace m3d
 {

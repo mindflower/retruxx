@@ -492,7 +492,7 @@ namespace ai
         int m_pathNum;
         unsigned __int8 m_priority;
         bool m_bCustomControl;
-        Vehicle::CustomWeaponControlType m_customControlWeapons;
+        CustomWeaponControlType m_customControlWeapons;
         CVector m_customControlWeaponsTarget;
         int m_customControlWeaponsTargetObjId;
         std::map<int,bool> m_gunsPointed;

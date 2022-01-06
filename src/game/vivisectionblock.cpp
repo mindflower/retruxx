@@ -1,8 +1,34 @@
 #include "vivisectionblock.h"
 #include <config.h>
+#include <stdexcept>
 #include <core/kernel.h>
 
 Vivisector* g_Vivisector = nullptr;
+
+bool Vivisector::init()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void Vivisector::HandleCommand(int, m3d::CConsoleParams const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool Vivisector::HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+Vivisector::~Vivisector()
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool Vivisector::shutdown()
+{
+    throw std::logic_error("Not implemented");
+}
 
 bool initVivisectionBlock()
 {

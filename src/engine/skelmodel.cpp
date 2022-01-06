@@ -6,6 +6,8 @@
 
 namespace m3d
 {
+    std::map<CStr, CStr> AnimatedModel::m_textureFiles;
+
     void AnimatedModel::CreateTexFileMapping()
     {
         scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();

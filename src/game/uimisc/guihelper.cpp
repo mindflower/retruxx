@@ -10,6 +10,11 @@ namespace m3d
 
 namespace help
 {
+    void DeleteAllFilesInDirectory(char const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     CStr GetCurrentLevelName()
     {
          if (m3d::pClient != nullptr)

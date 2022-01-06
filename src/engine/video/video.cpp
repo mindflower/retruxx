@@ -3,6 +3,7 @@
 #include <m3dapp.h>
 #include <core/kernel.h>
 #include "Wmsdk.h"
+#include <stdexcept>
 
 namespace 
 {
@@ -31,20 +32,20 @@ namespace
         return hr;
     }
 
-    HRESULT AddKeyProvider(IGraphBuilder* graph)
-    {
-        CKeyProvider prov;
-        prov.AddRef();
-        IObjectWithSite* objectWithSite = nullptr;
-        auto hr = graph->QueryInterface(IID_IObjectWithSite, reinterpret_cast<LPVOID*>(&objectWithSite));
-        if (FAILED(hr))
-        {
-            return hr;
-        }
-        hr = objectWithSite->SetSite(&prov);
-        objectWithSite->Release();
-        return hr;
-    }
+    //HRESULT AddKeyProvider(IGraphBuilder* graph)
+    //{
+    //    CKeyProvider prov;
+    //    prov.AddRef();
+    //    IObjectWithSite* objectWithSite = nullptr;
+    //    auto hr = graph->QueryInterface(IID_IObjectWithSite, reinterpret_cast<LPVOID*>(&objectWithSite));
+    //    if (FAILED(hr))
+    //    {
+    //        return hr;
+    //    }
+    //    hr = objectWithSite->SetSite(&prov);
+    //    objectWithSite->Release();
+    //    return hr;
+    //}
 
     HRESULT RenderOutputPins(IGraphBuilder* pGB, IBaseFilter* pFilter)
     {
@@ -128,66 +129,66 @@ namespace
     }
 }
 
-CKeyProvider::CKeyProvider() : m_cRef(0)
-{
-}
-
-// IUnknown methods
-ULONG CKeyProvider::AddRef()
-{
-    return InterlockedIncrement(&m_cRef);
-}
-
-ULONG CKeyProvider::Release()
-{
-    ASSERT(m_cRef > 0);
-
-    ULONG lCount = InterlockedDecrement(&m_cRef);
-    if (m_cRef == 0)
-    {
-        delete this;
-        return (ULONG)0;
-    }
-    return (ULONG)lCount;
-}
-
-// We only support IUnknown and IServiceProvider.
-HRESULT CKeyProvider::QueryInterface(REFIID riid, void** ppv)
-{
-    if (!ppv) return E_POINTER;
-
-    if (riid == IID_IUnknown)
-    {
-        *ppv = (void*) static_cast<IUnknown*>(this);
-        AddRef();
-        return S_OK;
-    }
-    if (riid == IID_IServiceProvider)
-    {
-        *ppv = (void*) static_cast<IServiceProvider*>(this);
-        AddRef();
-        return S_OK;
-    }
-
-    return E_NOINTERFACE;
-}
-
-STDMETHODIMP CKeyProvider::QueryService(REFIID siid, REFIID riid, void** ppv)
-{
-    if (!ppv) return E_POINTER;
-
-    if (siid == __uuidof(IWMReader) && riid == IID_IUnknown)
-    {
-        IUnknown* punkCert;
-        HRESULT hr = WMCreateCertificate(&punkCert);
-        if (SUCCEEDED(hr))
-        {
-            *ppv = (void*)punkCert;
-        }
-        return hr;
-    }
-    return E_NOINTERFACE;
-}
+//CKeyProvider::CKeyProvider() : m_cRef(0)
+//{
+//}
+//
+//// IUnknown methods
+//ULONG CKeyProvider::AddRef()
+//{
+//    return InterlockedIncrement(&m_cRef);
+//}
+//
+//ULONG CKeyProvider::Release()
+//{
+//    ASSERT(m_cRef > 0);
+//
+//    ULONG lCount = InterlockedDecrement(&m_cRef);
+//    if (m_cRef == 0)
+//    {
+//        delete this;
+//        return (ULONG)0;
+//    }
+//    return (ULONG)lCount;
+//}
+//
+//// We only support IUnknown and IServiceProvider.
+//HRESULT CKeyProvider::QueryInterface(REFIID riid, void** ppv)
+//{
+//    if (!ppv) return E_POINTER;
+//
+//    if (riid == IID_IUnknown)
+//    {
+//        *ppv = (void*) static_cast<IUnknown*>(this);
+//        AddRef();
+//        return S_OK;
+//    }
+//    if (riid == IID_IServiceProvider)
+//    {
+//        *ppv = (void*) static_cast<IServiceProvider*>(this);
+//        AddRef();
+//        return S_OK;
+//    }
+//
+//    return E_NOINTERFACE;
+//}
+//
+//STDMETHODIMP CKeyProvider::QueryService(REFIID siid, REFIID riid, void** ppv)
+//{
+//    if (!ppv) return E_POINTER;
+//
+//    if (siid == __uuidof(IWMReader) && riid == IID_IUnknown)
+//    {
+//        IUnknown* punkCert;
+//        HRESULT hr = WMCreateCertificate(&punkCert);
+//        if (SUCCEEDED(hr))
+//        {
+//            *ppv = (void*)punkCert;
+//        }
+//        return hr;
+//    }
+//    return E_NOINTERFACE;
+//}
 
 namespace m3d
 {
@@ -197,6 +198,41 @@ namespace m3d
     }
 
     CTextureRenderer* g_pRenderer = nullptr;
+
+    long CTextureRenderer::SetMediaType(CMediaType const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    long CTextureRenderer::CheckMediaType(CMediaType const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CTextureRenderer::GetVideoDims(int&, int&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    long CTextureRenderer::DoRenderSample(IMediaSample*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CTextureRenderer::CTextureRenderer(IUnknown* pUnk, long* phr) : CBaseVideoRenderer(__uuidof(CLSID_TextureRenderer), NULL, pUnk, phr)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CTextureRenderer::~CTextureRenderer()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CTextureRenderer::GetTextureDims(int&, int&)
+    {
+        throw std::logic_error("Not implemented");
+    }
 
     mVideoPlayer::~mVideoPlayer()
     {
@@ -251,12 +287,12 @@ namespace m3d
                 LOG("Failed to add ASF reader filter to graph!  hr = " + std::to_string(hr), LOG_INFO);
                 return 0;
             }
-            hr = AddKeyProvider(g_pGB);
-            if (FAILED(hr))
-            {
-                LOG("Could not create the key provider!  hr = " + std::to_string(hr), LOG_INFO);
-                return 0;
-            }
+            //hr = AddKeyProvider(g_pGB);
+            //if (FAILED(hr))
+            //{
+            //    LOG("Could not create the key provider!  hr = " + std::to_string(hr), LOG_INFO);
+            //    return 0;
+            //}
             hr = g_pReader->QueryInterface(IID_IFileSourceFilter, reinterpret_cast<LPVOID*>(&g_pFileSource));
             if (FAILED(hr))
             {

@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{5E19117D-BF24-4375-A403-062EC6DA6EFC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,7 +72,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -89,7 +89,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -108,6 +108,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Winmm.lib;strmiids.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -117,6 +118,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Winmm.lib;strmiids.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -168,7 +170,6 @@
     <ClCompile Include="src\engine\impulses\bindexports.cpp" />
     <ClCompile Include="src\engine\impulses\gameimpulse.cpp" />
     <ClCompile Include="src\engine\impulses\keybindstation.cpp" />
-    <ClCompile Include="src\engine\ini.cpp" />
     <ClCompile Include="src\engine\landscapeoverlays.cpp" />
     <ClCompile Include="src\engine\landscape\geomobject.cpp" />
     <ClCompile Include="src\engine\landscape\landscape.cpp" />
@@ -182,6 +183,9 @@
     <ClCompile Include="src\engine\m3dapp.cpp" />
     <ClCompile Include="src\engine\m3dapp_console.cpp" />
     <ClCompile Include="src\engine\m3dfont.cpp" />
+    <ClCompile Include="src\engine\math\camera.cpp" />
+    <ClCompile Include="src\engine\math\matrix.cpp" />
+    <ClCompile Include="src\engine\math\plane.cpp" />
     <ClCompile Include="src\engine\math\quaternion.cpp" />
     <ClCompile Include="src\engine\math\vector.cpp" />
     <ClCompile Include="src\engine\math\vector2.cpp" />
@@ -203,6 +207,7 @@
     <ClCompile Include="src\engine\ode\sources\dterrainy.cpp" />
     <ClCompile Include="src\engine\ode\sources\dterrainz.cpp" />
     <ClCompile Include="src\engine\ode\sources\error.cpp" />
+    <ClCompile Include="src\engine\ode\sources\fastdot.c" />
     <ClCompile Include="src\engine\ode\sources\fastdot_cpp.cpp" />
     <ClCompile Include="src\engine\ode\sources\fastldlt.c" />
     <ClCompile Include="src\engine\ode\sources\fastlsolve.c" />
@@ -210,7 +215,7 @@
     <ClCompile Include="src\engine\ode\sources\joint.cpp" />
     <ClCompile Include="src\engine\ode\sources\lcp.cpp" />
     <ClCompile Include="src\engine\ode\sources\mass.cpp" />
-    <ClCompile Include="src\engine\ode\sources\matrix.cpp" />
+    <ClCompile Include="src\engine\ode\sources\matrix_ode.cpp" />
     <ClCompile Include="src\engine\ode\sources\memory.cpp" />
     <ClCompile Include="src\engine\ode\sources\misc.cpp" />
     <ClCompile Include="src\engine\ode\sources\obstack.cpp" />
@@ -305,6 +310,7 @@
     <ClCompile Include="src\engine\script\lua\src\llex.c" />
     <ClCompile Include="src\engine\script\lua\src\lmem.c" />
     <ClCompile Include="src\engine\script\lua\src\lobject.c" />
+    <ClCompile Include="src\engine\script\lua\src\lopcodes.c" />
     <ClCompile Include="src\engine\script\lua\src\lparser.c" />
     <ClCompile Include="src\engine\script\lua\src\lstate.c" />
     <ClCompile Include="src\engine\script\lua\src\lstring.c" />
@@ -399,6 +405,7 @@
     <ClCompile Include="src\game\music\radioengine.cpp" />
     <ClCompile Include="src\game\music\townmusicmanager.cpp" />
     <ClCompile Include="src\game\profile.cpp" />
+    <ClCompile Include="src\game\projectapocalypse.cpp" />
     <ClCompile Include="src\game\uimanager\gameuimanager.cpp" />
     <ClCompile Include="src\game\uimanager\truxxuimanager.cpp" />
     <ClCompile Include="src\game\uimanager\uiregistration.cpp" />

@@ -7,7 +7,10 @@ namespace ai
     class Component
     {
     public:
-        Component();
+        Component()
+        {
+            throw std::logic_error("Not implemented");
+        }
 
     private:
         std::function<void(const T&)> m_AfterChange;

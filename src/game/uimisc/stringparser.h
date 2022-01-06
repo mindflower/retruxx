@@ -1,5 +1,6 @@
 #pragma once
 #include <core/stringw.h>
+#include <vector>
 
 namespace ai
 {

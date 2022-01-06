@@ -1,8 +1,21 @@
 #pragma once
+#include <set>
+#include <vector>
 #include <core/stringm3d.h>
+#include <math/vector.h>
+#include <math/vector2.h>
+
+struct CClipper;
 
 namespace m3d
 {
+    namespace cmn
+    {
+        class XmlNode;
+        class XmlFile;
+    }
+
+    class Landscape;
     class AnimatedModel;
     class RoadNode;
 
@@ -106,10 +119,12 @@ namespace m3d
         void RecalcCoveredCells();
         void LinkToBorder(RoadNode *,unsigned int,int,struct CVector &);
         void LinkRoadNodes();
-        struct CVector2 FindLeftProjection(RoadNode *,float,float);
+        CVector2 FindLeftProjection(RoadNode *,float,float);
         bool GetAdjPoint(RoadNode *,unsigned int,int,struct CVector &);
         void FindFriends();
         void CalcNodeData(RoadNode *);
+
+    private:
         Landscape *m_owner;
         std::vector<RoadNode *> *m_coveredCells;
         RoadNode *m_roadRoot;

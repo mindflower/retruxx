@@ -1,4 +1,5 @@
 #include <cmath>
+#include <stdexcept>
 #include <math/vector2.h>
 
 namespace
@@ -10,6 +11,16 @@ CVector2::CVector2(float xx, float yy) :
     x(xx),
     y(yy)
 {
+}
+
+CVector2::CVector2()
+{
+    throw std::logic_error("Not implemented");
+}
+
+CVector2::CVector2(CVector2 const&)
+{
+    throw std::logic_error("Not implemented");
 }
 
 CVector2& CVector2::operator*=(float v)

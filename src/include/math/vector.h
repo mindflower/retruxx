@@ -14,8 +14,7 @@ public:
     float length() const;
     void normalizeInplace();
     void zero();
-    CVector();
-    CVector(CVector const&);
+    CVector() = default;
     CVector(float*);
     CVector(float, float, float);
     void one();
@@ -23,7 +22,7 @@ public:
     float lengthSq() const;
 
 public:
-    float x;
-    float y;
-    float z;
+    float x = 0;
+    float y = 0;
+    float z = 0;
 };

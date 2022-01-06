@@ -333,9 +333,6 @@
     <ClCompile Include="src\engine\impulses\keybindstation.cpp">
       <Filter>engine\impulses</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ini.cpp">
-      <Filter>engine</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\landscapeoverlays.cpp">
       <Filter>engine</Filter>
     </ClCompile>
@@ -447,7 +444,7 @@
     <ClCompile Include="src\engine\ode\sources\mass.cpp">
       <Filter>engine\ode\sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ode\sources\matrix.cpp">
+    <ClCompile Include="src\engine\ode\sources\matrix_ode.cpp">
       <Filter>engine\ode\sources</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\ode\sources\memory.cpp">
@@ -472,9 +469,6 @@
       <Filter>engine\ode\sources</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\ode\sources\step.cpp">
-      <Filter>engine\ode\sources</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\ode\sources\timer_ode.cpp">
       <Filter>engine\ode\sources</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\ode\sources\util.cpp">
@@ -2036,6 +2030,27 @@
     </ClCompile>
     <ClCompile Include="src\engine\script\funcstack.cpp">
       <Filter>engine\script</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\ode\sources\fastdot.c">
+      <Filter>engine\ode\sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\projectapocalypse.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\math\plane.cpp">
+      <Filter>engine\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\math\matrix.cpp">
+      <Filter>engine\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\ode\sources\timer_ode.cpp">
+      <Filter>engine\ode\sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\script\lua\src\lopcodes.c">
+      <Filter>engine\script\lua\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\math\camera.cpp">
+      <Filter>engine\math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

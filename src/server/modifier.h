@@ -26,8 +26,11 @@ namespace ai
         void Apply(CVector *,CVector) const ;
         Modifier & operator=(Modifier const &);
 
-        template<class T>
-        void ApplyInBuilt(T &,T) const ;
+        template <class T>
+        void ApplyInBuilt(T&, T) const
+        {
+            throw std::logic_error("Not implemented");
+        }
 
         void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         void ApplyModelNum(int *,int) const ;

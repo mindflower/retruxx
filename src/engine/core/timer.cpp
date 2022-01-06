@@ -2,6 +2,7 @@
 
 //TODO: windows.h
 #include <config.h>
+#include <stdexcept>
 #include <Windows.h>
 #include <core/kernel.h>
 
@@ -108,6 +109,11 @@ namespace m3d
         unsigned int Timer::GetLastFrameTimeUnscaled() const
         {
             return m_lastFrameTimeUnscaled;
+        }
+
+        void Timer::NewFrame()
+        {
+            throw std::logic_error("Not implemented");
         }
 
         float Timer::GetRawFPS() const

@@ -1,6 +1,7 @@
 #pragma once
 #include "base/obj.h"
 #include "base/prototypeinfo.h"
+#include <math/vector.h>
 #include <server/ai/ai.h>
 #include <server/formations/formation.h>
 

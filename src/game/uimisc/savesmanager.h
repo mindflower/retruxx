@@ -1,4 +1,9 @@
 #pragma once
+#include <map>
+#include <core/aiparam.h>
+#include <core/clazz.h>
+#include <math/point2d.h>
+#include <renderer/i_renderer.h>
 
 class SavesManager :  public m3d::Object
 {
@@ -40,7 +45,7 @@ public:
     int QuickLoad();
     CStr GetNewSaveDefaultName() const ;
     int MakeCurGameScreenshot();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
     CStr GetPathForTemporaryMaps() const ;
     CStr GetSaveFolderPathByFolderName(CStr const &) const ;
     int AutoSave(CStr const &);
@@ -52,12 +57,12 @@ public:
     int LoadGame(CStr const &);
     int GameDataUpdate(void *,int);
     int QuickSave();
-    struct SaveInfo const * GetSaveInfoByFolderName(CStr const &) const ;
+    SaveInfo const * GetSaveInfoByFolderName(CStr const &) const ;
     int Init();
-    struct ConstantSaveInfo const & GetConstatntSaveInfo() const ;
+    ConstantSaveInfo const & GetConstatntSaveInfo() const ;
     int SaveGame(CStr const &,CStr const &,bool);
     void Clear();
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     int GetSaveFolderNames(std::vector<CStr> &) const ;
     int DeleteSaveGame(CStr const &);
 

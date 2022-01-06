@@ -44,4 +44,58 @@ namespace ai
         //Numeric<float> m_minValue;
         //Numeric<float> m_maxValue;
     };
+
+    template <class T>
+    Numeric<T> const& NumericInRange<T>::value() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    template <class T>
+    Numeric<T>& NumericInRange<T>::value()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    template <class T>
+    void NumericInRange<T>::setToMax()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    template <class T>
+    Numeric<T>& NumericInRange<T>::minValue()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    template <class T>
+    Numeric<T> const& NumericInRange<T>::minValue() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    template <class T>
+    NumericInRange<T>::NumericInRange(T, T, T)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    template <class T>
+    void NumericInRange<T>::setToMin()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    template <class T>
+    Numeric<T> const& NumericInRange<T>::maxValue() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    template <class T>
+    Numeric<T>& NumericInRange<T>::maxValue()
+    {
+        throw std::logic_error("Not implemented");
+    }
 }

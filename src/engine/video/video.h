@@ -3,23 +3,24 @@
 #include <Windows.h>
 
 class CMediaType;
+struct __declspec(uuid("{71771540-2017-11cf-ae26-0020afd79767}")) CLSID_TextureRenderer;
 
-class CKeyProvider : public IServiceProvider
-{
-public:
-    // IUnknown interface
-    STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
-    STDMETHODIMP_(ULONG) AddRef();
-    STDMETHODIMP_(ULONG) Release();
-
-    CKeyProvider();
-
-    // IServiceProvider
-    STDMETHODIMP QueryService(REFIID siid, REFIID riid, void** ppv);
-
-private:
-    ULONG m_cRef;
-};
+//class CKeyProvider : public IServiceProvider
+//{
+//public:
+//    // IUnknown interface
+//    STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
+//    STDMETHODIMP_(ULONG) AddRef();
+//    STDMETHODIMP_(ULONG) Release();
+//
+//    CKeyProvider();
+//
+//    // IServiceProvider
+//    STDMETHODIMP QueryService(REFIID siid, REFIID riid, void** ppv);
+//
+//private:
+//    ULONG m_cRef;
+//};
 
 namespace m3d
 {

@@ -1,8 +1,11 @@
 #pragma once
 #include "DataServer.h"
+#include <renderer/i_renderer.h>
 
 namespace m3d
 {
+    class Profiler;
+
     class ProjectorsServer : public DataServer
     {
     public:
@@ -21,11 +24,11 @@ namespace m3d
         virtual void AddItemsList(std::vector<m3d::DataServer::ServerItem>&);
 
     private:
-        m3d::rend::TexHandle m_attenuationTex;
+        rend::TexHandle m_attenuationTex;
         CMatrix m_texBiasMat;
         CMatrix m_texProjMat;
         CMatrix m_texProjBiasMat;
         CMatrix m_attenMat;
-        m3d::Profiler* m_profiler;
+        Profiler* m_profiler;
     };
 }

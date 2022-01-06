@@ -6,9 +6,9 @@ class CVector;
 class IBase
 {
 public:
-    virtual int DecRef();
-    virtual int IncRef();
-    virtual void* QueryIface(const char*);
+    virtual int DecRef() = 0;
+    virtual int IncRef() = 0;
+    virtual void* QueryIface(const char*) = 0;
 
 protected:
     virtual ~IBase() = default;
@@ -21,8 +21,6 @@ namespace m3d
 {
     class IDeviceResetCallback
     {
-    public:
-        IDeviceResetCallback();
 
     private:
        // m3d::IDeviceResetCallback_vtbl* __vftable /*VFT*/;

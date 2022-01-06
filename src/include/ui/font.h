@@ -109,14 +109,14 @@ namespace m3d
             int CreateFromXmlNode(cmn::XmlFile*, cmn::XmlNode const*);
             int CreateFromTtf(CStr const&, float, unsigned int, unsigned int);
             CStr CreateNameFull(CStr const&, unsigned int, unsigned int) const;
-            class PointBase<float> CalcGlyphSz(unsigned char) const;
+            PointBase<float> CalcGlyphSz(unsigned char) const;
             unsigned int GetStyle() const;
             int SaveGrid();
             CStr GetFileNameForTexture(int) const;
-            class std::vector<rend::TexHandle> const& GetTextures() const;
+            std::vector<rend::TexHandle> const& GetTextures() const;
             ~Font();
             void Clear();
-            class PointBase<float> GetGlyphSz(unsigned char) const;
+            PointBase<float> GetGlyphSz(unsigned char) const;
             TextureCoordinates GetTexCoord(unsigned char) const;
             CStr const& GetName() const;
             float CalcCharWidthAdvanced(unsigned char) const;
@@ -170,6 +170,8 @@ namespace m3d
         private:
             float GetScaledHeight(float) const;
             int FindMatchFont(CStr const&, float, bool, bool);
+
+        private:
             std::vector<Font*> m_fonts;
         };
     }

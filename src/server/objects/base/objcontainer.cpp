@@ -6,6 +6,176 @@ namespace ai
 {
     ObjContainer* theObjects = nullptr;
 
+    long long GameTime::asInt64() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GameTime::operator+=(float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    m3d::AIParam GameTime::asAIParam() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    float GameTime::GameDiff(ObjContainer const*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GameTime::GameTime(int, int, int, int, int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GameTime::GameTime(long long)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GameTime::GameTime()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GameTime::setInt64(long long)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GameTime::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GameTime::setExpanded(int, int, int, int, int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    float GameTime::Diff() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    m3d::AIParam GameTime::asAIParam24Hour() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GameTime::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    ObjContainer::InnerContainer::InnerContainer()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void ObjContainer::InnerContainer::EraseNode(Node&, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int ObjContainer::InnerContainer::Add(Obj*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool ObjContainer::InnerContainer::AddWithOwnObjId(Obj*, int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool ObjContainer::InnerContainer::empty() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Obj* ObjContainer::InnerContainer::GetObjById(int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void ObjContainer::InnerContainer::Clear()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    unsigned ObjContainer::InnerContainer::size() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    ObjContainer::Node* ObjContainer::InnerContainer::_GetNodeById(int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    ObjContainer::const_iterator::const_iterator(std::vector<Node> const*, int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void ObjContainer::const_iterator::_Inc()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Obj const* ObjContainer::const_iterator::operator*() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Obj const* ObjContainer::const_iterator::operator->() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool ObjContainer::const_iterator::operator==(const_iterator const&) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool ObjContainer::const_iterator::operator!=(const_iterator const&) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    ObjContainer::const_iterator& ObjContainer::const_iterator::operator++()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    ObjContainer::iterator::iterator(std::vector<Node>* pRecords, int nodeId) : const_iterator(pRecords, nodeId)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Obj* ObjContainer::iterator::operator->() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    ObjContainer::iterator ObjContainer::iterator::operator++(int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    ObjContainer::iterator& ObjContainer::iterator::operator++()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Obj* ObjContainer::iterator::operator*() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     Obj* ObjContainer::GetEntityByObjName(CStr const&)
     {
         throw std::logic_error("Not implemented");

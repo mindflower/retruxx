@@ -72,7 +72,7 @@ namespace ai
         virtual void DumpPhysicInfo(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
 
     protected:
-        Geom(dxGeom * const,void (__fastcall*)(dxGeom *));
+        Geom(dxGeom* const geomId,void (__fastcall* movedCallback)(dxGeom *));
 
     private:
         //Geom_vtbl *__vftable /*VFT*/;

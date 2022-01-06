@@ -7,7 +7,7 @@ namespace m3d
     class IEventHandler
     {
     public:
-        virtual ~IEventHandler();
+        virtual ~IEventHandler() = default;
 
     private:
         //IEventHandler_vtbl *__vftable /*VFT*/;

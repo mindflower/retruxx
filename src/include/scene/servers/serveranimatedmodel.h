@@ -28,7 +28,7 @@ namespace m3d
         virtual void UnregisterNode(SgNode*);
         virtual bool ReportServerInfo(char const*);
         virtual int Init();
-        struct CVector GetBoundSizes(char const*);
+        CVector GetBoundSizes(char const*);
         int GetBoneMatrixByNameFromModelName(char const*, CStr const&, CMatrix&, bool);
         virtual int SaveAllLoadedEntities(char const*);
         virtual int Release();

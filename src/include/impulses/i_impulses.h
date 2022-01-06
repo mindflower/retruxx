@@ -1,7 +1,31 @@
 #pragma once
+#include <core/stringm3d.h>
+#include <vector>
+
+namespace ui
+{
+    class Wnd;
+}
 
 namespace m3d
 {
+    class Event;
+
+    class AuxImpulseInfo
+    {
+    public:
+        void UnpackXy(float*, float*, float*, float*) const;
+        AuxImpulseInfo(int, bool, int, unsigned int, unsigned int);
+        float UnpackWheel() const;
+
+    private:
+        int m_impId;
+        bool m_state;
+        int m_gameMode;
+        unsigned int m_info0;
+        unsigned int m_info1;
+    };
+
     class IImpulse
     {
     public:
@@ -34,20 +58,5 @@ namespace m3d
         virtual CStr  GetGameModeNameById(int) = 0;
         virtual std::vector<std::vector<int>>  GetKeysForImpulse(int, int) = 0;
         virtual int GetImpulseForKeys(std::vector<int>, int) = 0;
-    };
-
-    class AuxImpulseInfo
-    {
-    public:
-        void UnpackXy(float*, float*, float*, float*) const;
-        AuxImpulseInfo(int, bool, int, unsigned int, unsigned int);
-        float UnpackWheel() const;
-
-    private:
-        int m_impId;
-        bool m_state;
-        int m_gameMode;
-        unsigned int m_info0;
-        unsigned int m_info1;
     };
 }

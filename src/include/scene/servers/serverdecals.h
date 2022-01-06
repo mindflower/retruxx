@@ -3,6 +3,8 @@
 
 namespace m3d
 {
+    class Profiler;
+
     class DecalsServer : public DataServer
     {
     public:
@@ -18,9 +20,9 @@ namespace m3d
         virtual int GetItemProperty(int, int, void*);
 
     protected:
-        virtual void AddItemsList(std::vector<DataServer::ServerItem>&);
+        virtual void AddItemsList(std::vector<ServerItem>&);
 
     private:
-        m3d::Profiler* m_profiler;
+        Profiler* m_profiler;
     };
 }

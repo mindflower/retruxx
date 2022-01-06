@@ -39,6 +39,7 @@ namespace m3d
 
     class SgNode : public Object
     {
+        friend class SceneGraph;
     public:
         enum Ritual
         {

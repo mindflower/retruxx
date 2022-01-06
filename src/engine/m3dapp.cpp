@@ -23,8 +23,15 @@ namespace
         return TRUE;
     }
 
-    void logDeviceFunc(CStr const&);
-    void logSoundFunc(CStr const&);
+    void logDeviceFunc(CStr const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void logSoundFunc(CStr const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
 
     m3d::CConsoleCommands conCommands[] = {
         {"exit", 0},
@@ -325,7 +332,8 @@ namespace m3d
                             FlushGfx(m_renderer);
                         }
                     }
-                   //TODO:... 
+                   //TODO:...
+                    throw std::logic_error("Not implemented");
                 }
             }
         }
@@ -406,6 +414,7 @@ namespace m3d
         //m_input->NewFrame();
 
         //TODO:...
+        throw std::logic_error("Not implemented");
     }
 
     void Application::ProcessAllEvents()
@@ -448,7 +457,7 @@ namespace m3d
         LOG("Cpu: " + cpuInfo);
 
         //TODO: other info...
-
+        throw std::logic_error("Not implemented");
         return 1;
     }
 
@@ -551,6 +560,7 @@ namespace m3d
         //    }
         //}
         //TODO:...
+        throw std::logic_error("Not implemented");
     }
 
     int Application::createRenderer()
@@ -780,10 +790,55 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    void Application::DetailSettings::RestoreGameSettings()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::DetailSettings::SaveGameSettings()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::DetailSettings::SetMenuLevelSettings()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Application::DetailSettings::DetailSettings()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Application::LoadScreenInfo::~LoadScreenInfo()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Application::LoadScreenInfo::LoadScreenInfo()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     void Application::MouseInfo::ResetDelta()
     {
         m_deltaDuringGameFrame.x = 0;
         m_deltaDuringGameFrame.y = 0;
+    }
+
+    PointBase<int> const& Application::MouseInfo::GetDeltaDuringGameFrame() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Application::MouseInfo::MouseInfo()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    PointBase<int> const& Application::MouseInfo::GetLastPos() const
+    {
+        throw std::logic_error("Not implemented");
     }
 
     void Application::MouseInfo::SetUpForCurPos(PointBase<int> const& curPos)
@@ -791,6 +846,636 @@ namespace m3d
         m_deltaDuringGameFrame.x += curPos.x - m_lastPos.x;
         m_deltaDuringGameFrame.y += curPos.y - m_lastPos.y;
         m_lastPos = curPos;
+    }
+
+    DataServer& Application::GetSoundServer()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::texGenProcess(IGeneratedTexture*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::DrawTri(CVector*, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::ForbidRendering()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* Application::GetClass() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DataServer& Application::GetStaticModelsServer()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::DrawCross(CVector const&, float, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CStr const& Application::GetImageName() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::GetCurDifficultyLevel() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    char* Application::GetWindowTitle() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::MiniDump()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::DrawLogo()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    float Application::GetOnScreenSize(CVector const&, float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::HandleCinematic(float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PutSplashCallBack(int, void*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::AllowRendering()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::StartPlayingMusic(char const*, bool, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DataServer& Application::GetProjectorsServer()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::CheckCommandLineParam(char const*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    unsigned long Application::GetLocale() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::DrawQuad(CVector*, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::SaveToXml(cmn::XmlFile*, cmn::XmlNode*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Application::~Application()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::TexSoften(rend::TexHandle, rend::TexHandle, int, float, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::IsTextHieroglyphic(CStr const&) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CStr Application::GetNativeFuncDesc(char const*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::StopPlayingMusic()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::SetMouseSensitivity(float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    float Application::getZoom()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::LoadServers(CStr const&, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::SetPostEffectParam(CStr const&, float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::ChangeLanguage()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::DrawWireRect(CVector2 const&, CVector2 const&, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PostLoadServers()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::OnBeforeDeviceReset()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::FinishQuads()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::setZoom(float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PutSpriteRelRot(float, float, float, float, unsigned, float, float, float, float, float, float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::SetMouseXAxisFlipped(bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::SetMouseYAxisFlipped(bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::SetFlushQuadsShader(rend::IEffect*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::AppActive() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    rend::VertexXYZCT1* Application::RenderQuadXyzct1GetNextPtr()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::LoadFromXml(cmn::XmlFile*, cmn::XmlNode const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::SwitchDisplayModes(HWND__*, int, int, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::done()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::OnAfterDeviceReset()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::ReloadPostEffects()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::GetPostEffectParam(CStr const&, float&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::GetTextFit(CStr const&, PointBase<float>&, float, TextWrapFlags)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::StartExclusiveMsgLoop()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DataServer& Application::GetSpritesServer()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::panic()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::SaveServers(CStr const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::GetMouseHitPoint(CVector&, SgNode*&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::StartQuads(rend::VertexType)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::GetTextExtent(CStr const&, PointBase<float>&, int, BoundsBase<float>*, int*, int*, CStr*, CStr*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::DrawTextRelT(float, float, unsigned, CStr const&, unsigned, int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::FormatText(std::vector<ui::FormattedLine, std::allocator<ui::FormattedLine>>&, PointBase<float> const&, CStr const&, ui::DrawInfo const&, TextWrapFlags, TextFormatFlags)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::WaitForAnykey()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::SetFrameClearColor(unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::DrawTextAbs(float, float, unsigned, CStr const&, unsigned, int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Application::Application(char const* logName)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::sysError(CStr const&, CStr const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::FinishExclusiveMsgLoop()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::UnPause()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* Application::GetBaseClass()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PutSpriteAbsRot(float, float, float, float, unsigned, float, float, float, float, float, float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Profiler* Application::CreateProfiler(char const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PutSprite2Rel(float, float, float, float, float, float, float, float, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::SetKeyboardFocus(IEventHandler*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::OnChangeMode(AuxImpulseInfo const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::DrawWireRectRel(CVector2 const&, CVector2 const&, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DataServer& Application::GetLightsServer()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::SetFont(CStr const&, float, unsigned, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::SaveUsedOnlyServers(CStr const&, std::set<int, std::less<int>, std::allocator<int>>&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::Render3DText0(CVector const&, CStr const&, unsigned, float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    rend::VertexXYZWCT1* Application::RenderQuadXyzwct1GetNextPtr()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::AddPostEffect(CStr const&, float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::FindLastColorInStr(CStr const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PutSplashMainMenuLevelLoad(int, void*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::RenderQuadXyzwct1(float, float, float, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::DrawBoundingRadius(CVector const&, float, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::SetMouseXy(float, float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::GetCurGameMode()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::HeightmapToNormalmap(unsigned short*, unsigned*, int, int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::SetFontSelfMaking(CStr const&, float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PutSplash(int, char const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::DrawTextRel(float, float, unsigned, CStr const&, unsigned, int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    HWND Application::GetRenderWindow() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PutSprite2Abs(float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PutSprite2Abs(float, float, float, float, float, float, float, float, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    char const* Application::GetCallbackName() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    ui::MbRetCodes Application::RunMsgBoxDlg(CStr const&, CStr const&, unsigned, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::DrawTextAbsT(float, float, unsigned, CStr const&, unsigned, int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::SaveExportDescToFile(fs::FileStream&, bool) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::DrawLine(CVector2 const&, CVector2 const&, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::DrawLine(CVector const&, CVector const&, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::Pause()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CStr Application::GetClassDesc(Class*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::ClearViewportToBlack()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CStr const& Application::GetStartupFolder() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PutSpriteAbs(float, float, float, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PutSpriteAbs(float, float, float, float, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::PutSpriteAbs(float, float, float, float, float, float, float, float, unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DataServer& Application::GetAnimatedModelsServer()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::KillPostEffect(CStr const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DataServer& Application::GetDecalsServer()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::DrawTextRelClip(PointBase<float> const&, CStr const&, ui::DrawInfo const&, TextWrapFlags, TextFormatFlags)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DataServer& Application::GetParticlesServer()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::bIsMousePointing() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DbgCounter* Application::CreateCounter(char const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::texGenEnqueue(IGeneratedTexture*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::HandleCommand(int, CConsoleParams const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::RunBenchmark()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::ShowSystemCursor(bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    long long Application::GetCpuFrequency(unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::FlushQuads()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::CreateQuadsIb()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::EnqueueEvent(Event const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Application::GetEvent(Event&, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::finishFontRender()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::DrawStringRelClip(ui::FormattedLine const&, ui::DrawInfo const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    unsigned long Application::texGenThread(void*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Application::AdjustWindowForChange(HWND, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Application::enterFontRender()
+    {
+        throw std::logic_error("Not implemented");
     }
 
     int Application::EnableDXCursor(bool bEnable)

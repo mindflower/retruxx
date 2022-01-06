@@ -27,7 +27,7 @@ namespace ai
         int GetSchemeNum(CStr const &) const ;
         CStr GetMatrixName(int) const ;
         DecisionMatrix * GetDecisionMatrixPtr(int) const ;
-        static m3d::Object * __fastcall CreateObject();
+        static Object * __fastcall CreateObject();
         virtual m3d::Class* GetClass() const ;
         virtual ~AIManager();
         m3d::AIParam AIAction(int,Obj *);

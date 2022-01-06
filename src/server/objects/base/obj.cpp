@@ -49,6 +49,370 @@ namespace ai
         m_propertiesMap["Name"] = 3;
     }
 
+    m3d::AIParam Obj::AIGetOwnerID(Obj* obj)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Obj* Obj::CloneObj()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::RemoveChild(Obj*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Obj::RemoveChild(m3d::Object*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::ApplyModifier(Modifier const& modifier)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    PrototypeInfo const* Obj::GetPrototypeInfo() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::CreateChildren()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::ReceiveNodesToLink(std::list<m3d::SgNode*>&) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::bIsEqualToPrototype() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::Dump() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    unsigned Obj::GetPrice(IPriceCoeffProvider const*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::AddChild(Obj*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Obj::AddChild(m3d::Object*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    m3d::AIParam Obj::GetPropertyDefaultById(int) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::SetPropertyById(int, m3d::AIParam const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Obj::GetProperty(unsigned, void*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    m3d::AIParam Obj::GetProperty(char const*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Obj* Obj::GetParent() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::Remove()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::NeedCinematicUpdate()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    m3d::AIParam Obj::GetPropertyDefault(char const*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Obj* Obj::GetChild(int) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::ClearSavedStatus()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    unsigned Obj::GetSchwarz() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    eGObjPropertySaveStatus Obj::GetPropertySaveStatus(int) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::StackOpen()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::SetPassedToAnotherMapStatus()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    m3d::AIParam Obj::GetPropertyById(int) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Obj::SetProperty(unsigned, void*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Obj::GetPropertyId(char const*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CStr Obj::GetFullDescriptionWithAffixes() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::bIsEnemyWith(Obj const*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CStr Obj::GetDebugDescription() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::ValidateEventRecipientsList()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::ApplyAffixByName(char const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::ApplyAffix(Affix const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::ApplyRandomAffixes(int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    unsigned Obj::GetFlags() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::bIsVisible() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::bHasParent() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::IsAffixesApplied() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Obj::GetId() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Obj::TimeOutActivated() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Obj::GetBelong() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::RemoveFromCinematic()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::SetTimeOut(float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Obj::GetParentId() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::SetAffixesApplied(bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::GetDeletedStatus() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Obj::GetPrototypeId() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    std::map<int, Obj*>& Obj::GetChildren()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::SetName(CStr const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::UnlinkFromParent()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::SetParentInvalid()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::SetNameFromScript(CStr const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::IsUpdating() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::GetPassedToAnotherMapStatus() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::AddToCinematic()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::StopTimeOut()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::SetProperty(char const*, m3d::AIParam const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    std::map<int, Obj*>& Obj::getAllChildren()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Obj::Obj()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Obj::_GetDeadStatus() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Obj::GetLastDamageSource() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::_SetDeadStatus()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::SetLastDamageSource(int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Obj::~Obj()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::_Init()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Obj::OnUnsubscribe(Event const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
 
     m3d::AIParam Obj::AIGetParentID(Obj* obj)
     {

@@ -1,212 +1,219 @@
-#include "savesmanager.h"
 #include <stdexcept>
+#include <math/matrix.h>
+#include <math/vector.h>
+#include <math/vector4.h>
 
-SavesManager::ConstantSaveInfo::ConstantSaveInfo()
+CMatrix::CMatrix(CMatrix const&)
 {
     throw std::logic_error("Not implemented");
 }
 
-SavesManager::~SavesManager()
+CMatrix::CMatrix()
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::QuickLoad()
+CVector CMatrix::vecRot(CVector const&) const
 {
     throw std::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetNewSaveDefaultName() const
+CMatrix CMatrix::getInverseRotTranslate() const
 {
     throw std::logic_error("Not implemented");
 }
 
-m3d::Object* SavesManager::Clone()
+void CMatrix::zero()
 {
     throw std::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetPathForTemporaryMaps() const
+CMatrix CMatrix::getTransposed() const
 {
     throw std::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetSaveFolderPathByFolderName(CStr const&) const
+float CMatrix::GetScaleZ() const
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::AutoSave(CStr const&)
+CMatrix CMatrix::getInverseRot() const
 {
     throw std::logic_error("Not implemented");
 }
 
-m3d::Class* SavesManager::GetBaseClass()
+void CMatrix::FromInvBasis(CVector const&, CVector const&, CVector const&)
 {
     throw std::logic_error("Not implemented");
 }
 
-m3d::rend::TexHandle SavesManager::GetCurGameScreenshot() const
+void CMatrix::DecomposeScale(float&, float&, float&)
 {
     throw std::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetNewSaveFolderName() const
+float CMatrix::GetScaleX() const
 {
     throw std::logic_error("Not implemented");
 }
 
-m3d::Object* SavesManager::CreateObject()
+void CMatrix::shadow(CVector4 const&, CPlane const&)
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::LoadGame(CStr const&)
+void CMatrix::GetInvBasis(CVector&, CVector&, CVector&) const
 {
     throw std::logic_error("Not implemented");
 }
 
-SavesManager::SaveInfo const* SavesManager::GetSaveInfoByFolderName(CStr const&) const
+void CMatrix::composeSRT(CVector const&, CMatrix const&, CVector const&)
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::SaveGame(CStr const&, CStr const&, bool)
+void CMatrix::reflect(CPlane const&)
 {
     throw std::logic_error("Not implemented");
 }
 
-m3d::Class* SavesManager::GetClass() const
+void CMatrix::translation(CVector const&)
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::GetSaveFolderNames(std::vector<CStr>&) const
+void CMatrix::translation(float, float, float)
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::DeleteSaveGame(CStr const&)
+void CMatrix::getYPR(float&, float&, float&) const
 {
     throw std::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetNewAutoSaveFolderName() const
+void CMatrix::rotTranslate(Quaternion const&, CVector const&)
 {
     throw std::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetNewQuickSaveFolderName() const
+void CMatrix::GetNormalizedBasis(CVector&, CVector&, CVector&) const
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::SaveScreenshot(CStr const&)
+CVector CMatrix::vecMul(CVector const&) const
 {
     throw std::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetFirstUsedSaveFolderName(std::vector<CStr> const&) const
+CVector4 CMatrix::vecMul(CVector4 const&) const
 {
     throw std::logic_error("Not implemented");
 }
 
-void SavesManager::GetSaveFoldersByPattern(CStr const&, std::vector<CStr>&) const
+void CMatrix::GetBasis(CVector&, CVector&, CVector&) const
 {
     throw std::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetLastUsedSaveFolderName(std::vector<CStr> const&) const
+CVector CMatrix::getOrg() const
 {
     throw std::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetAutoSaveName(CStr const&, CStr const&) const
+CVector CMatrix::vecRotBack(CVector const&) const
 {
     throw std::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetQuickSaveName(CStr const&) const
+void CMatrix::FromBasis(CVector const&, CVector const&, CVector const&)
 {
     throw std::logic_error("Not implemented");
 }
 
-_FILETIME SavesManager::GetSaveFileModifyTime(CStr const&) const
+CMatrix CMatrix::getInverse() const
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::SaveInfos(CStr const&, CStr const&)
+void CMatrix::operator*=(CMatrix const&)
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::MakeCurGameScreenshot()
+CVector CMatrix::getOrgInv() const
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::LastLoad()
+void CMatrix::perspectiveFovLH(float, float, float, float)
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::GameDataUpdate(void*, int)
+void CMatrix::rotZ(float)
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::QuickSave()
+void CMatrix::rotY(float)
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::Init()
+void CMatrix::rotX(float)
 {
     throw std::logic_error("Not implemented");
 }
 
-SavesManager::ConstantSaveInfo const& SavesManager::GetConstatntSaveInfo() const
+void CMatrix::orthoLH(float, float, float, float)
 {
     throw std::logic_error("Not implemented");
 }
 
-void SavesManager::Clear()
+void CMatrix::rotYPR(float, float, float)
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::LoadInfos()
+float CMatrix::operator()(int, int) const
 {
     throw std::logic_error("Not implemented");
 }
 
-SavesManager::SavesManager()
+float& CMatrix::operator()(int, int)
 {
     throw std::logic_error("Not implemented");
 }
 
-SavesManager::SavesManager(SavesManager const&)
+void CMatrix::setOrg(CVector const&)
 {
     throw std::logic_error("Not implemented");
 }
 
-void SavesManager::CheckAndHandleDelayedQuickSave(bool)
+void CMatrix::scaling(float)
 {
     throw std::logic_error("Not implemented");
 }
 
-void SavesManager::OnCurProfileChanged()
+void CMatrix::scaling(float, float, float)
 {
     throw std::logic_error("Not implemented");
 }
 
-void SavesManager::OnNewFrameForce()
+void CMatrix::identity()
 {
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::AddSaveInfo(SaveInfo*)
+void CMatrix::lookAtLH(CVector const&, CVector const&, CVector const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void CMatrix::shear(float, float, float, float, float, float)
 {
     throw std::logic_error("Not implemented");
 }

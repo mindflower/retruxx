@@ -11,19 +11,19 @@ namespace ai
     class GameTime
     {
     public:
-        __int64 asInt64(void) const;
+        __int64 asInt64() const;
         void operator+=(float);
-        class m3d::AIParam asAIParam(void) const;
-        float GameDiff(class ai::ObjContainer const*) const;
+        m3d::AIParam asAIParam() const;
+        float GameDiff(ObjContainer const*) const;
         GameTime(int, int, int, int, int);
         GameTime(__int64);
         GameTime();
         void setInt64(__int64);
-        virtual void LoadFromXML(struct m3d::cmn::XmlFile*, struct m3d::cmn::XmlNode const*);
+        virtual void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         void setExpanded(int, int, int, int, int);
-        float Diff(void) const;
-        class m3d::AIParam asAIParam24Hour(void) const;
-        virtual void SaveToXML(struct m3d::cmn::XmlFile*, struct m3d::cmn::XmlNode*) const;
+        float Diff() const;
+        m3d::AIParam asAIParam24Hour() const;
+        virtual void SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
 
     private:
         //ai::GameTime_vtbl* __vftable /*VFT*/;
@@ -69,6 +69,8 @@ namespace ai
 
         private:
             Node* _GetNodeById(int);
+
+        private:
             std::vector<Node> m_records;
             std::vector<int> m_freePlaces;
             unsigned int m_size;

@@ -23,10 +23,12 @@ public:
     bool IsClassCollected(m3d::Class const*) const;
     void ClearObjects();
     int AddObject(ai::Obj*);
-protected:
+
 private:
     void ClearClasses();
     void InitClasses();
+
+private:
     std::map<m3d::Class const*, std::set<int>> m_objects;
     std::vector<m3d::Class const*> m_collectedClasses;
 };

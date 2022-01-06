@@ -1,8 +1,11 @@
 #pragma once
 #include "DataServer.h"
+#include <renderer/i_renderer.h>
 
 namespace m3d
 {
+    class Profiler;
+
     class StaticModelsServer : public DataServer
     {
     public:
@@ -25,8 +28,8 @@ namespace m3d
         int PrepareToRender();
 
     private:
-        m3d::rend::VbHandle m_vbArrayForAllModels[4];
-        m3d::rend::IbHandle m_ibArrayForAllModels[4];
+        rend::VbHandle m_vbArrayForAllModels[4];
+        rend::IbHandle m_ibArrayForAllModels[4];
         int m_numDrawIndices;
         int m_numDrawVerts;
         int m_curvbBank;
@@ -37,6 +40,6 @@ namespace m3d
         bool m_alreadyCached;
         std::vector<unsigned char*> m_shots;
         bool m_tessellate;
-        m3d::Profiler* m_profiler;
+        Profiler* m_profiler;
     };
 }

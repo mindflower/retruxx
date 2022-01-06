@@ -3,6 +3,121 @@
 
 namespace m3d
 {
+    void CameraPath::insert(int, CameraPathState const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    unsigned CameraPath::size() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::GetCameraForTime(float, CVector&, Quaternion&, float&) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool CameraPath::empty() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::CalcFlyTimes(unsigned, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::push_back(CameraPathState const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::MovePoint(int, CameraPathState const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::CalcFullLength(unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CameraPath::CameraPath()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    float CameraPath::GetFullLength() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::SaveToXmlRuntime(cmn::XmlFile*, cmn::XmlNode*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::LoadFromXml(cmn::XmlFile*, cmn::XmlNode const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::SetFullTime(float)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::InitByStates(std::vector<CameraPathState, std::allocator<CameraPathState>> const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::clear()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::RemovePoint(int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::LoadFromXmlRuntime(cmn::XmlFile*, cmn::XmlNode const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CameraPathState& CameraPath::operator[](unsigned)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CameraPathState const& CameraPath::operator[](unsigned) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    float CameraPath::GetFullTime() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    float CameraPath::_CalcSplineSegmentLength(unsigned, unsigned) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::_DeFix()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void CameraPath::_Fix()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     bool Cinematic::SkipCinematic()
     {
         throw std::logic_error("Not implemented");

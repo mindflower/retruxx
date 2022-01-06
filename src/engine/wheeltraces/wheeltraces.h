@@ -4,6 +4,8 @@
 #include <math/vector.h>
 #include <renderer/i_renderer.h>
 
+class Quaternion;
+
 namespace m3d
 {
     class Profiler;

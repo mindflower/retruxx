@@ -3,6 +3,8 @@
 
 namespace m3d
 {
+    class Profiler;
+
     class ParticlesServer : public DataServer
     {
     public:
@@ -31,7 +33,7 @@ namespace m3d
         virtual void AddItemsList(std::vector<m3d::DataServer::ServerItem>&);
 
     private:
-        m3d::Profiler* m_profiler;
-        m3d::Profiler* m_profilerUpdate;
+        Profiler* m_profiler;
+        Profiler* m_profilerUpdate;
     };
 }

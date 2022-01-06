@@ -118,8 +118,6 @@ namespace m3d
 
         private:
             void FlushWindow(Wnd*);
-            //std::pair<CStr, SoundInfo*>::pair<CStr, SoundInfo*>(CStr const&, SoundInfo* const&);
-            //AddTabWndPaneIzvrat(DrawInfo const&, BoundsBase<float> const&, uint, TabButtonInfo const&, std::vector<BoundsBase<float>> const&, std::vector<rend::TexHandle> const&, int, int, CStr const&, PaneFlagBg);
 
         public:
             int m_hieroglyphicFontId;

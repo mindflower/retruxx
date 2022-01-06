@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include <math/point2d.h>
+#include <renderer/i_renderer.h>
 
 struct CClipper;
 
@@ -71,12 +72,12 @@ namespace m3d
         class CellItems
         {
         public:
-            CellItems();
+            //CellItems();
 
         private:
             ObjectsContainer m_nodesLinkedDirect;
             std::set<Object*> m_nodesShadowingDirect;
-            bool m_bVisibleInCurrentFrame;
+            bool m_bVisibleInCurrentFrame = false;
         };
 
     public:

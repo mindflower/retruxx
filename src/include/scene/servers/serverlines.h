@@ -18,6 +18,6 @@ namespace m3d
         virtual int GetItemProperty(int, int, void*);
 
     protected:
-        virtual void AddItemsList(std::vector<DataServer::ServerItem>&);
+        virtual void AddItemsList(std::vector<ServerItem>&);
     };
 }
