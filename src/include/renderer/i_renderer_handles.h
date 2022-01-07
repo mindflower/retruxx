@@ -30,7 +30,7 @@ namespace m3d
             }
 
         private:
-            int m_handle;
+            int m_handle = -1;
         };
 
         template<class T>

@@ -71,7 +71,13 @@ namespace m3d
 
     ui::GfxServer::~GfxServer()
     {
-        throw std::logic_error("Not implemented");
+        if (m_created)
+        {
+            ReleaseSchema();
+            delete m_fontManager;
+            m_created = false;
+        }
+        //TODO: check additional
     }
 
     float ui::GfxServer::GetGlyphHeight()
@@ -141,7 +147,8 @@ namespace m3d
 
     ui::GfxServer::GfxServer()
     {
-        throw std::logic_error("Not implemented");
+        m_fontManager = new FontManager;
+        m_hieroglyphicFontId = -1;
     }
 
     int ui::GfxServer::PlayControlSound(CStr const&, bool*)

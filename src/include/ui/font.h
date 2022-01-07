@@ -158,7 +158,6 @@ namespace m3d
             void Clear();
             int GetFontId(CStr const&, float, FontType, union FontParams);
             ~FontManager();
-            FontManager();
             int ReadFontsFromXml();
             int GetNumFonts() const;
             void RearrangeFonts(int, int);

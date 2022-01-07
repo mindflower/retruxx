@@ -382,6 +382,7 @@ namespace m3d
 
         class TexHandle : public Handle<TexHandle>
         {
+            
         };
 
         class IbHandle : public Handle<IbHandle>

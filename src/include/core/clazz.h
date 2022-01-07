@@ -44,7 +44,7 @@ namespace m3d
     class Object : public RefCountedBase
     {
     public:
-        static inline Class m_classObject;
+        static inline Class m_classObject{"Object"};
 
     public:
         static Class* GetBaseClass();
@@ -94,6 +94,9 @@ namespace m3d
         Object(Object const&);
         Object* ChildNodeFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
 
+    public:
+        void* m_scriptHandle = nullptr;
+
     private:
         CStr m_name;
         bool m_persistant = true;
@@ -104,6 +107,5 @@ namespace m3d
         Object* m_nextSibling = nullptr;
         Object* m_prevSibling = nullptr;
         int m_numChildren = 0;
-        void* m_scriptHandle = nullptr;
     };
 }

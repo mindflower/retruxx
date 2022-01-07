@@ -1,3 +1,4 @@
+#include <m3dapp.h>
 #include <stdexcept>
 #include <ui/cursor.h>
 
@@ -27,12 +28,16 @@ namespace m3d
 
         Cursor::~Cursor()
         {
-            throw std::logic_error("Not implemented");
+            if (Application::g_pApp->m_renderer)
+            {
+                Application::g_pApp->m_renderer->ReleaseTexture(m_tex);
+            }
         }
 
-        Cursor::Cursor()
+        Cursor::Cursor() :
+            m_sz(0.0, 0.0),
+            m_spot(0.0, 0.0)
         {
-            throw std::logic_error("Not implemented");
         }
 
         Cursor::Cursor(Cursor const&)

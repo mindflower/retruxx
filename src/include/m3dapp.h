@@ -48,17 +48,16 @@ namespace m3d
             DetailSettings();
 
         private:
-            bool m_dsShadows;
-            float m_lsViewDistanceDivider;
-            int m_lsWaterMethod;
-            float m_NPatchLevel;
+            bool m_dsShadows = false;
+            float m_lsViewDistanceDivider = 0.0;
+            int m_lsWaterMethod = 0;
+            float m_NPatchLevel = 0.0;
         };
 
         class LoadScreenInfo
         {
         public:
             ~LoadScreenInfo();
-            LoadScreenInfo();
 
         private:
             CStr m_name;

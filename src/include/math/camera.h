@@ -24,9 +24,9 @@ public:
 public:
     //CAffineXForm_vtbl* __vftable /*VFT*/;
     CVector m_worldOrigin;
-    float m_rotYaw;
-    float m_rotPitch;
-    float m_rotRoll;
+    float m_rotYaw = 0.0;
+    float m_rotPitch = 0.0;
+    float m_rotRoll = 0.0;
 };
 
 enum CameraModes
@@ -47,10 +47,9 @@ public:
     void lookAt(CVector const&);
     virtual void LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
     virtual void SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-    CCamera();
     void setFov(float, float, float);
 
 private:
-    float m_fovX;
-    float m_fovY;
+    float m_fovX = 120.0;
+    float m_fovY = 90.0;
 };

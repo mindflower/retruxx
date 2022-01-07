@@ -29,6 +29,17 @@ namespace m3d
         void* oldMesh;
     };
 
+    class DecalData
+    {
+    public:
+    protected:
+    private:
+        CVector pos;
+        CVector normal;
+        CVector tangent;
+        GeometryInfo toPutOn;
+    };
+
     class GeomObject : public Object
     {
     public:

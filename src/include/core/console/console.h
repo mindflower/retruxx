@@ -48,11 +48,13 @@ namespace m3d
         static Class* GetBaseClass();
 
     public:
+        static inline Class m_classIConsole{ "IConsole" };
+
+    public:
         virtual ~IConsole() = default;
-        virtual Class* GetRtClass() = 0;
         virtual void RegisterCommand(char const*, int, IConHandler*) = 0;
-        virtual void RegisterCVar(CVar&, IConHandler*) = 0;
-        virtual void UnregisterCVar(CVar&) = 0;
+        virtual void RegisterCVar(CVar*, IConHandler*) = 0;
+        virtual void UnregisterCVar(CVar*) = 0;
         virtual void Init(int, int) = 0;
         virtual void Clear() = 0;
         virtual void CheckResize(int, int) = 0;
@@ -61,10 +63,10 @@ namespace m3d
         virtual void Render() = 0;
         virtual void NotifyMode(bool) = 0;
         virtual void setNumNotifyLines(int) = 0;
-        virtual bool DumpToFile(char const*) = 0;
+        virtual bool DumpToFile(char const*) const = 0;
         virtual void ScrollUp(int) = 0;
         virtual void ScrollDown(int) = 0;
-        virtual bool isActive() = 0;
+        virtual bool isActive() const = 0;
         virtual bool Toggle() = 0;
         virtual void SetScreenSize(float) = 0;
         virtual int InputLine(CStr const&) = 0;
@@ -75,4 +77,6 @@ namespace m3d
     protected:
         IConsole() = default;
     };
+
+    IConsole* ConsoleFactory();
 }

@@ -221,9 +221,9 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::SetStyle(unsigned)
+        void Wnd::SetStyle(unsigned style)
         {
-            throw std::logic_error("Not implemented");
+            m_style = style;
         }
 
         int Wnd::GameDataSave(cmn::XmlFile*, cmn::XmlNode*)
@@ -266,9 +266,18 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int Wnd::SetText(CStr const&)
+        int Wnd::SetText(CStr const& caption)
         {
-            throw std::logic_error("Not implemented");
+            m_caption = caption;
+            if (!Application::g_pApp->IsTextHieroglyphic(m_caption))
+            {
+                return 1;
+            }
+            if (g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+            {
+                m_defFont = m_gfx->m_hieroglyphicFontId;
+            }
+            return 1;
         }
 
         void Wnd::SetInt(unsigned)
@@ -326,9 +335,14 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::SetBounds(BoundsBase<float> const&, bool)
+        void Wnd::SetBounds(BoundsBase<float> const& rect, bool bUpdateBaseOrigin)
         {
-            throw std::logic_error("Not implemented");
+            m_bounds = rect;
+            if (bUpdateBaseOrigin)
+            {
+                m_baseOrigin.x = m_bounds.x0;
+                m_baseOrigin.y = m_bounds.y0;
+            }
         }
 
         void Wnd::Centralize()
@@ -351,9 +365,9 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::SetId(unsigned)
+        void Wnd::SetId(unsigned id)
         {
-            throw std::logic_error("Not implemented");
+            m_id = id;
         }
 
         void Wnd::StopAnimation(bool)
@@ -561,14 +575,24 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int Wnd::CreateWnd(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        int Wnd::CreateWnd(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
-            throw std::logic_error("Not implemented");
+            m_created = true;
+            SetText(m_wndStation->InitializeStringUsingIds(caption));
+            SetBounds(rc, true);
+            SetId(id);
+            if (style)
+            {
+                SetStyle(style);
+            }
+            Register();
+            return 1;
         }
 
-        Wnd::Wnd()
+        Wnd::Wnd() :
+            m_bounds(0.0, 0.0, 0.0, 0.0),
+            m_clientEdges(4, 0.0)
         {
-            throw std::logic_error("Not implemented");
         }
 
         Wnd::Wnd(Wnd const&)
@@ -603,7 +627,10 @@ namespace m3d
 
         void Wnd::Register()
         {
-            throw std::logic_error("Not implemented");
+            if (m_wndStation)
+            {
+                m_wndStation->RegisterWnd(this);
+            }
         }
 
         int Wnd::DestroyWnd()

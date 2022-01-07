@@ -1,12 +1,15 @@
 #pragma once
 #include <core/console/console.h>
 #include <script/scriptserver.h>
+#include <list>
 
 class ConsoleImp :
     public m3d::IConsole,
     public m3d::IConHandler
 {
 public:
+    friend m3d::IConsole* m3d::ConsoleFactory();
+
     enum eConsoleState
     {
         CONSOLE_ERROR = 0x0,
@@ -81,8 +84,7 @@ public:
     virtual void Clear();
 
 protected:
-    ConsoleImp();
-    ConsoleImp(ConsoleImp const &);
+    ConsoleImp() = default;
 
 private:
     void RegisterConsoleCommands();
@@ -99,18 +101,18 @@ private:
     void Print(char const *);
 
 private:
-    eConsoleState m_csCurState;
+    eConsoleState m_csCurState = eConsoleState::CONSOLE_ERROR;
     auxConsole m_con;
     int m_FontSizeX;
     int m_FontSizeY;
     float m_screensize;
-    bool m_bDrawNotify;
-    int m_nNumNotify;
-    char m_key_lines[32][256];
-    int m_key_linepos;
-    int m_line_len;
-    int m_edit_line;
-    int m_history_line;
+    bool m_bDrawNotify = false;
+    int m_nNumNotify = 5;
+    char m_key_lines[32][256] = {0};
+    int m_key_linepos = 0;
+    int m_line_len = 0;
+    int m_edit_line = 0;
+    int m_history_line = 0;
     std::list<auxConsoleCmd> m_lCmds;
     std::list<m3d::CVar *> m_lCVars;
     std::vector<CVarLoadedValue> m_loadedValues;

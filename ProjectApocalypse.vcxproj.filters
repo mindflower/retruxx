@@ -2052,6 +2052,9 @@
     <ClCompile Include="src\engine\math\camera.cpp">
       <Filter>engine\math</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\core\threadsync.cpp">
+      <Filter>engine\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">
@@ -3817,6 +3820,9 @@
     </ClInclude>
     <ClInclude Include="src\game\globalscriptfuncs.h">
       <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ode\odememory.h">
+      <Filter>include\ode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

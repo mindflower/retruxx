@@ -781,16 +781,16 @@ int CMiracle3d::InitMedia()
     }
     RegisterGlobalNatives();
     //m3d::g_Kernel->GetTimer().GetCurTime();
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_maxDist, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_minDist, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_cameraSpeed, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_cameraHeight, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_collideCameraRadius, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_smoothCameraRadius, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_minAngle, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_maxAngle, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_fov, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(m_cinematic->m_fadePeriod, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_maxDist, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_minDist, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cameraSpeed, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cameraHeight, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_collideCameraRadius, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_smoothCameraRadius, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_minAngle, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_maxAngle, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_fov, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cinematic->m_fadePeriod, nullptr);
     m3d::g_Kernel->AddClass(&Profile::m_classProfile);
     m3d::g_Kernel->AddClass(&ProfileManager::m_classProfileManager);
     GetBlockMusicManager()->InitOnce();

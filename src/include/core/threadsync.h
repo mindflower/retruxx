@@ -20,8 +20,15 @@ namespace m3d
     class AutoLock
     {
     public:
-        AutoLock(T&);
-        ~AutoLock();
+        AutoLock(T&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        ~AutoLock()
+        {
+            throw std::logic_error("Not implemented");
+        }
 
     private:
         T* m_lockObject;

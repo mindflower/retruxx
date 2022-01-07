@@ -151,6 +151,7 @@
     <ClCompile Include="src\engine\core\rtclass.cpp" />
     <ClCompile Include="src\engine\core\stackwalker.cpp" />
     <ClCompile Include="src\engine\core\stringm3d.cpp" />
+    <ClCompile Include="src\engine\core\threadsync.cpp" />
     <ClCompile Include="src\engine\core\timer.cpp" />
     <ClCompile Include="src\engine\decals.cpp" />
     <ClCompile Include="src\engine\draftmodel.cpp" />
@@ -1053,6 +1054,7 @@
     <ClInclude Include="src\include\ode\mass.h" />
     <ClInclude Include="src\include\ode\odecpp.h" />
     <ClInclude Include="src\include\ode\odemath.h" />
+    <ClInclude Include="src\include\ode\odememory.h" />
     <ClInclude Include="src\include\particles.h" />
     <ClInclude Include="src\include\poolmanager.h" />
     <ClInclude Include="src\include\posteffects\posteffect.h" />

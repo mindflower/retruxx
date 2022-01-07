@@ -6,6 +6,7 @@ namespace m3d
 {
     class DbgCounter
     {
+        friend class DbgCounterStack;
     public:
         enum eType
         {
@@ -29,6 +30,8 @@ namespace m3d
         DbgCounter();
         ~DbgCounter();
         void SetName(char const*);
+
+    private:
         eType m_curType;
         //$BF58EB516B86498BF460C2A91DB16C1D ___u1;
         std::string m_s;
@@ -53,8 +56,8 @@ namespace m3d
 
     private:
         std::vector<m3d::DbgCounter*> m_stack;
-        unsigned int m_numCounters;
+        unsigned int m_numCounters = 0;
         std::vector<std::string> m_stringStack;
-        unsigned int m_numStrings;
+        unsigned int m_numStrings = 0;
     };
 }

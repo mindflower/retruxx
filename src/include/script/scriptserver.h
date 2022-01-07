@@ -66,6 +66,9 @@ namespace m3d
         static int _getScriptObject(Object*);
 
     public:
+        static inline Class m_classScriptServer;
+
+    public:
         eScriptError reloadScript(char const*);
         eScriptError callScriptFunc(char const*, sArgStack&, int);
         eScriptError done();

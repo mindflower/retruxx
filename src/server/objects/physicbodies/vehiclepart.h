@@ -1,5 +1,6 @@
 #pragma once
 #include "physicbody.h"
+#include <geomobject.h>
 #include <server/components/numeric.h>
 #include <server/components/numericinrangeregenerating.h>
 
@@ -17,15 +18,15 @@ namespace ai
     class VehiclePartPrototypeInfo : public PhysicBodyPrototypeInfo
     {
     public:
-        struct CVector const& GetSize() const;
+        CVector const& GetSize() const;
         VehiclePartPrototypeInfo();
         virtual Obj* CreateTargetObject() const;
-        virtual void RefreshFromXml(struct m3d::cmn::XmlFile*, struct m3d::cmn::XmlNode const*);
+        virtual void RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual ~VehiclePartPrototypeInfo();
-        virtual bool LoadFromXML(struct m3d::cmn::XmlFile*, struct m3d::cmn::XmlNode const*);
+        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
 
     private:
-        void _InitModelMeshes(struct m3d::cmn::XmlFile*, struct m3d::cmn::XmlNode const*);
+        void _InitModelMeshes(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         int m_weaponPrototypeId;
         float m_durabilityCoeffsForDamageTypes[4];
         float m_durability;

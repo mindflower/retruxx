@@ -25,6 +25,7 @@ namespace m3d
 
         class WndStation : public Wnd
         {
+            friend class Wnd;
         public:
             static inline Class m_classWndStation;
 
@@ -94,18 +95,18 @@ namespace m3d
             PointBase<float> m_prevMouseCoord;
 
         private:
-            Wnd* m_wndMouseOver;
-            Wnd* m_wndMouseCapture;
-            Wnd* m_wndKbdCapture;
-            Wnd* m_wndActive;
-            Wnd* m_wndForTooltip;
-            Wnd* m_wndCandidateForDblClick;
-            ComboBoxWnd* m_wndOpenedComboBox;
+            Wnd* m_wndMouseOver = this;
+            Wnd* m_wndMouseCapture = nullptr;
+            Wnd* m_wndKbdCapture = this;
+            Wnd* m_wndActive = this;
+            Wnd* m_wndForTooltip = nullptr;
+            Wnd* m_wndCandidateForDblClick = nullptr;
+            ComboBoxWnd* m_wndOpenedComboBox = nullptr;
             std::vector<ModalWnd*> m_wndModalStack;
             unsigned int m_wndModalRetVal;
-            Cursor* m_curDefault;
+            Cursor* m_curDefault = nullptr;
             Cursor m_currentCursor;
-            bool m_bAnimationEnabled;
+            bool m_bAnimationEnabled = false;
             CStrHash<CStr> m_strings;
             CIntHash<int> m_allWindows;
             CIntHash<Wnd*> m_allWindowsById;

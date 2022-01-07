@@ -276,53 +276,53 @@ namespace m3d
             void StartDragMove(PointBase<float> const&);
 
         private:
-            int m_created;
-            DragMode m_dragMode;
+            int m_created = 0;
+            DragMode m_dragMode = DragMode::DRAG_NONE;
             PointBase<float> m_dragStartPtLocal;
             PointBase<float> m_dragCurPtLocal;
             PointBase<float> m_dragStartPt;
             PointBase<float> m_dragCurPt;
             CStr m_toolTipText;
-            Wnd* m_toolTipWnd;
-            int m_toolTipTimeOut;
-            ScrollWnd* m_scrollHWnd;
-            ScrollWnd* m_scrollVWnd;
-            int m_activationOrder;
+            Wnd* m_toolTipWnd = nullptr;
+            int m_toolTipTimeOut = -1;
+            ScrollWnd* m_scrollHWnd = nullptr;
+            ScrollWnd* m_scrollVWnd = nullptr;
+            int m_activationOrder = -1;
             CStr m_caption;
-            unsigned int m_style;
+            unsigned int m_style = 512;                     //TODO: magic number
             BoundsBase<float> m_bounds;
             std::vector<float> m_clientEdges;
-            unsigned int m_curClr;
-            unsigned int m_textColor;
-            unsigned int m_textColorDisabled;
-            CStr m_strTextColor;
-            CStr m_strTextColorDisabled;
-            bool m_gotFocus;
-            bool m_mouseOver;
-            unsigned int m_id;
+            unsigned int m_curClr = 0;
+            unsigned int m_textColor = -1;
+            unsigned int m_textColorDisabled = -8421505;    //TODO: magic number
+            CStr m_strTextColor = "@ffffffff";
+            CStr m_strTextColorDisabled = "@ff7f7f7f";
+            bool m_gotFocus = 0;
+            bool m_mouseOver = 0;
+            unsigned int m_id = 0;
             CStr m_bgTextureName;
             rend::TexHandle m_bgTexture;
-            CStr m_paneName;
-            int m_paneFlags;
-            PaneFlagBg m_bgFlags;
-            unsigned __int8 m_mouseDown;
-            bool m_showCursor;
+            CStr m_paneName = "defaultWnd";
+            int m_paneFlags = 7;                            //TODO: magic number
+            PaneFlagBg m_bgFlags = PaneFlagBg::PANE_FLAG_BG_OUT;
+            unsigned __int8 m_mouseDown = 0;
+            bool m_showCursor = true;
             unsigned int m_int;
             bool m_modalAttachedToStation;
-            TextWrapFlags m_textWrap;
-            TextFormatFlags m_textFormat;
-            int m_defFont;
-            int m_gameDataFlags;
-            CStr m_scrollPaneName;
-            int m_guiId;
-            int m_uniqueId;
+            TextWrapFlags m_textWrap = TextWrapFlags::TW_WORD_WRAP;
+            TextFormatFlags m_textFormat = TextFormatFlags::TF_LEFT;
+            int m_defFont = 0;
+            int m_gameDataFlags = 0;
+            CStr m_scrollPaneName = "Scroll1";
+            int m_guiId = -1;
+            int m_uniqueId = -1;
             AnimationInfo m_onShowAnimation;
             AnimationInfo m_onHideAnimation;
             AnimationInfo m_currentAnimation;
-            bool m_bSuspendedUnlink;
-            bool m_bSuspendedParentUnlink;
+            bool m_bSuspendedUnlink = false;
+            bool m_bSuspendedParentUnlink = false;
             PointBase<float> m_baseOrigin;
-            int m_animationSoundMoveChannelId;
+            int m_animationSoundMoveChannelId = -1;
         };
 
         class DrawInfo

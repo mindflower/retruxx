@@ -132,10 +132,10 @@ namespace m3d
             std::vector<Pane*> m_panesVector;
             std::vector<ScrollPane*> m_scrollPanes;
             std::map<CStr, rend::TexHandle> m_glyphButtonTextures;
-            bool m_created;
+            bool m_created = false;
             rend::TexHandle m_texBumpmap;
-            FontManager* m_fontManager;
-            Font* m_curFont;
+            FontManager* m_fontManager = nullptr;
+            Font* m_curFont = nullptr;
             CStr m_fontFaces[4];
             unsigned int m_fontSizes[4];
             unsigned int m_fontFlags[4];

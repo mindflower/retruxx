@@ -22,11 +22,10 @@ public:
     PointBase<T> BottomRight() const;
     T CenterY() const;
     PointBase<T> TopLeft() const;
-    ~BoundsBase();
     BoundsBase(int);
     BoundsBase(BoundsBase<T> const&);
     BoundsBase(T, T);
-    BoundsBase();
+    BoundsBase() = default;
     BoundsBase(T, T, T, T);
     BoundsBase(PointBase<T> const&, PointBase<T> const&);
     BoundsBase<T> Intersect(BoundsBase<T> const&) const;
@@ -148,12 +147,6 @@ PointBase<T> BoundsBase<T>::TopLeft() const
 }
 
 template <class T>
-BoundsBase<T>::~BoundsBase()
-{
-    throw std::logic_error("Not implemented");
-}
-
-template <class T>
 BoundsBase<T>::BoundsBase(int)
 {
     throw std::logic_error("Not implemented");
@@ -172,15 +165,12 @@ BoundsBase<T>::BoundsBase(T, T)
 }
 
 template <class T>
-BoundsBase<T>::BoundsBase()
+BoundsBase<T>::BoundsBase(T x, T y, T xx, T yy)
 {
-    throw std::logic_error("Not implemented");
-}
-
-template <class T>
-BoundsBase<T>::BoundsBase(T, T, T, T)
-{
-    throw std::logic_error("Not implemented");
+    x0 = x;
+    y0 = y;
+    width = xx - x;
+    height = yy - y;
 }
 
 template <class T>

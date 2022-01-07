@@ -63,14 +63,16 @@ namespace m3d
         int GetUniqueId();
         bool OpenLog(char const*);
 
-    private:
-        MemoryManager* m_memMan;
-        fs::FileServer* m_fileMan;
-        cmn::Timer* m_timer;
-        EngineConfig* m_engineConfig;
-        ScriptServer* m_scriptServer;
+    public:
         MemoryAllocationRoutines g_mar;
-        Log* m_Log;
+
+    private:
+        MemoryManager* m_memMan = nullptr;
+        fs::FileServer* m_fileMan = nullptr;
+        cmn::Timer* m_timer = nullptr;
+        EngineConfig* m_engineConfig = nullptr;
+        ScriptServer* m_scriptServer = nullptr;
+        Log* m_Log = nullptr;
     };
 
     extern Kernel* g_Kernel;

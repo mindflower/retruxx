@@ -3,6 +3,61 @@
 
 namespace m3d
 {
+    void DbgCounter::SetI(int)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DbgCounter::eType DbgCounter::GetType() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int DbgCounter::GetI() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool DbgCounter::GetB() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    float DbgCounter::GetF() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    char const* DbgCounter::GetS() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    char const* DbgCounter::GetName() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void DbgCounter::IncI()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DbgCounter::DbgCounter()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DbgCounter::~DbgCounter()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void DbgCounter::SetName(char const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     DbgCounter* DbgCounterStack::GetCounter(unsigned)
     {
         throw std::logic_error("Not implemented");
@@ -10,7 +65,7 @@ namespace m3d
 
     DbgCounterStack::~DbgCounterStack()
     {
-        throw std::logic_error("Not implemented");
+        Clear();
     }
 
     unsigned DbgCounterStack::AddCounter(char const*)
@@ -38,9 +93,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    DbgCounterStack::DbgCounterStack()
+    DbgCounterStack::DbgCounterStack() :
+        m_stringStack(32, "")
     {
-        throw std::logic_error("Not implemented");
     }
 
     unsigned DbgCounterStack::GetNumStrings() const
@@ -50,7 +105,12 @@ namespace m3d
 
     void DbgCounterStack::Clear()
     {
-        throw std::logic_error("Not implemented");
+        //TODO: check correctness
+        for (auto* counter : m_stack)
+        {
+            delete counter;
+        }
+        m_stack.clear();
     }
 
     unsigned DbgCounterStack::GetNumCounters() const

@@ -3,6 +3,21 @@
 
 namespace m3d
 {
+    struct auxChunkHeader
+    {
+        auxChunkHeader* m_nextChunk;
+        auxChunkHeader* m_prevChunk;
+        int m_bnum;
+        int m_bsize;
+    };
+
+    struct auxBlockHeader
+    {
+        auxBlockHeader* m_nextBlock;
+        int m_size;
+        int m_magic;
+    };
+
     class MemoryManager
     {
     public:
@@ -25,19 +40,18 @@ namespace m3d
         void FreeChunk(auxChunkHeader *);
 
     private:
-        operator new(uint);
-        auxChunkHeader *m_firstChunk;
-        auxChunkHeader *m_chunks;
-        auxBlockHeader *m_blocks[7];
+        auxChunkHeader* m_firstChunk;
+        auxChunkHeader* m_chunks = nullptr;
+        auxBlockHeader* m_blocks[7];
         int m_b_size[7];
         int m_b_num[7];
         CriticalSection m_cs;
-        unsigned int m_memAllocated;
-        unsigned int m_memUsed;
-        unsigned int m_numNewChunks;
-        unsigned int m_memNumAlloc;
-        unsigned int m_memNumAllocToBreakIn;
-        unsigned int m_memOverhead;
-        int m_lastUnsuccessfulAllocationSize;
+        unsigned int m_memAllocated = 0;
+        unsigned int m_memUsed = 0;
+        unsigned int m_numNewChunks = 0;
+        unsigned int m_memNumAlloc = 1;
+        unsigned int m_memNumAllocToBreakIn = 0;
+        unsigned int m_memOverhead = 0;
+        int m_lastUnsuccessfulAllocationSize = 0;
     };
 }

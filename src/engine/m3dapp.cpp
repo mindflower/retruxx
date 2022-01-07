@@ -797,7 +797,9 @@ namespace m3d
 
     void Application::DetailSettings::SaveGameSettings()
     {
-        throw std::logic_error("Not implemented");
+        m_dsShadows = g_Kernel->GetEngineCfg().m_dsShadows.GetB();
+        m_lsViewDistanceDivider = g_Kernel->GetEngineCfg().m_lsViewDistanceDivider.GetF();
+        m_NPatchLevel = g_Kernel->GetEngineCfg().m_NPatchLevel.GetF();
     }
 
     void Application::DetailSettings::SetMenuLevelSettings()
@@ -807,17 +809,15 @@ namespace m3d
 
     Application::DetailSettings::DetailSettings()
     {
-        throw std::logic_error("Not implemented");
+        SaveGameSettings();
     }
 
     Application::LoadScreenInfo::~LoadScreenInfo()
     {
-        throw std::logic_error("Not implemented");
-    }
-
-    Application::LoadScreenInfo::LoadScreenInfo()
-    {
-        throw std::logic_error("Not implemented");
+        if (m_picture.IsValid())
+        {
+            g_pApp->m_renderer->ReleaseTexture(m_picture);
+        }
     }
 
     void Application::MouseInfo::ResetDelta()
@@ -970,7 +970,7 @@ namespace m3d
 
     bool Application::IsTextHieroglyphic(CStr const&) const
     {
-        throw std::logic_error("Not implemented");
+        return false;
     }
 
     CStr Application::GetNativeFuncDesc(char const*) const

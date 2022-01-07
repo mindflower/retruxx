@@ -21,8 +21,8 @@ namespace m3d
 
     public:
         //m3d::EngineConfig_vtbl* __vftable /*VFT*/;
-        IConsole* m_console;
-        HWND m_mainWnd;
+        IConsole* m_console = nullptr;
+        HWND m_mainWnd = NULL;
         CVar m_r_d3dVersion;
         CVar m_r_height;
         CVar m_r_width;

@@ -173,12 +173,7 @@ namespace m3d
 
         FontManager::~FontManager()
         {
-            throw std::logic_error("Not implemented");
-        }
-
-        FontManager::FontManager()
-        {
-            throw std::logic_error("Not implemented");
+            Clear();
         }
 
         int FontManager::ReadFontsFromXml()

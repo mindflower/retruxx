@@ -11,6 +11,11 @@ char const STR_YES[] = "yes";
 char const STR_NO[] = "no";
 char const STR_ERROR[] = "error";
 
+namespace
+{
+    m3d::ui::GfxServer* gfxserver = nullptr;
+}
+
 namespace m3d
 {
     namespace ui
@@ -185,14 +190,27 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        CStr WndStation::InitializeStringUsingIds(CStr const&)
+        CStr WndStation::InitializeStringUsingIds(CStr const& src)
         {
-            throw std::logic_error("Not implemented");
+            if (!src.empty())
+            {
+                if (src.find('^') == CStr::npos)
+                {
+                    //TODO: check correctness
+                    return src;
+                }
+                throw std::logic_error("Not implemented");
+            }
+            else
+            {
+                //TODO: return value
+                return {};
+            }
         }
 
         WndStation::~WndStation()
         {
-            throw std::logic_error("Not implemented");
+            m_wndStation = nullptr;
         }
 
         int WndStation::OnRemoveWnd(Wnd*, Wnd*)
@@ -202,7 +220,18 @@ namespace m3d
 
         WndStation::WndStation()
         {
-            throw std::logic_error("Not implemented");
+            if (gfxserver == nullptr)
+            {
+                gfxserver = new GfxServer;
+            }
+            m_gfx = gfxserver;
+
+            BoundsBase<float> const rc(0.0, 0.0, 1024.0, 768.0);
+            CreateWnd("WndStation", 1, rc, 0);
+            m_curDefault = new Cursor;
+            m_uniqueId = 0;
+            m_prevMouseCoord.x = 100.0;
+            m_prevMouseCoord.y = 100.0;
         }
 
         int WndStation::DispatchJoystick(Event const&)
