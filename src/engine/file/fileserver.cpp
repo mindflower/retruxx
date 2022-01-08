@@ -8,7 +8,7 @@ namespace m3d
     {
         FileServer::~FileServer()
         {
-            throw std::logic_error("Not implemented");
+            Shutdown();
         }
 
         bool FileServer::FileExists(char const*)
@@ -17,11 +17,6 @@ namespace m3d
         }
 
         FileStream* FileServer::CreateFileStream()
-        {
-            throw std::logic_error("Not implemented");
-        }
-
-        FileServer::FileServer()
         {
             throw std::logic_error("Not implemented");
         }

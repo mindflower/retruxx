@@ -573,14 +573,15 @@ namespace m3d
         for (auto& color : m_markerColors)
         {
             auto const name = "markerColor" + std::to_string(i);
-            char sn[10] = { 0 };
+            char sn[32] = { 0 };
 
-            //TODO: check this!!!
+            //TODO: check and refactor this shit!!!
             auto colorComponents = reinterpret_cast<unsigned __int8*>(&markerColors[i]);
-            sprintf(sn, "%d %d %d %d", colorComponents[i+2], colorComponents[i + 1], colorComponents[i], colorComponents[i + 3]);
+            sprintf(sn, "%d %d %d %d", colorComponents[2], colorComponents[1], colorComponents[0], colorComponents[3]);
             color.Init(name.c_str(), sn, CVar::CVAR_COLOR, CVar::CVAR_ARCHIVE);
 
             m_console->RegisterCVar(&color, 0);
+            ++i;
         }
 
         m_console->RegisterCVar(&m_video[0], 0);
@@ -594,6 +595,7 @@ namespace m3d
             auto const name = "shaderMacro" + std::to_string(i);
             macro.Init(name.c_str(), "", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
             m_console->RegisterCVar(&macro, 0);
+            ++i;
         }
     }
 

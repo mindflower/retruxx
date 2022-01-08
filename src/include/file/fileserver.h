@@ -5,12 +5,12 @@
 #include <core/ref_ptr.h>
 #include <core/stringm3d.h>
 #include <core/threadsync.h>
+#include <file/package.h>
 
 namespace m3d
 {
     namespace fs
     {
-        class Package;
         class FileReader;
         class FileStream;
 
@@ -20,8 +20,7 @@ namespace m3d
             virtual ~FileServer();
             virtual bool FileExists(char const*);
             virtual FileStream* CreateFileStream();
-
-            FileServer();
+            
             int RemoveFile(char const*);
             void EnableMapping(bool);
             int Reinitialize(char const*);
@@ -43,8 +42,8 @@ namespace m3d
 
         private:
             //m3d::fs::FileServer_vtbl* __vftable /*VFT*/;
-            bool m_Initialized;
-            bool m_EnableMapping;
+            bool m_Initialized = false;
+            bool m_EnableMapping = false;
             CriticalSection m_cs;
             std::vector<ref_ptr<fs::Package>> m_Packages;
             std::set<CStr> m_Files;

@@ -1,6 +1,7 @@
 #include "core/console/console.h"
 #include "console_internal.h"
 #include <stdexcept>
+#include <core/console/cvar.h>
 
 namespace m3d
 {
@@ -185,9 +186,23 @@ void ConsoleImp::CheckResize(int, int)
     throw std::logic_error("Not implemented");
 }
 
-void ConsoleImp::RegisterCVar(m3d::CVar*, IConHandler*)
+void ConsoleImp::RegisterCVar(m3d::CVar* var, IConHandler* handler)
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check correctness
+    if (handler)
+    {
+        var->SetHandler(handler);
+    }
+    
+    for (auto& value : m_loadedValues)
+    {
+        if (value.m_name == var->GetName())
+        {
+            var->Set(value.m_stringValue.c_str(), true);
+            break;
+        }
+    }
+    m_lCVars.push_back(var);
 }
 
 void ConsoleImp::NotifyMode(bool)

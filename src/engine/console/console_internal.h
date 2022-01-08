@@ -47,7 +47,7 @@ public:
 
     class CVarLoadedValue
     {
-    private:
+    public:
         CStr m_name;
         CStr m_stringValue;
     };
