@@ -20,7 +20,7 @@ namespace ai
     class Bar : public Building
     {
     public:
-        static inline m3d::Class m_classBar;
+        RT_CLASS_DECLARE(Bar);
 
     public:
         bool bWithBarman() const;

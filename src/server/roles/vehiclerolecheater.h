@@ -19,7 +19,7 @@ namespace ai
     class VehicleRoleCheater : public VehicleRole
     {
     public:
-        static inline m3d::Class m_classVehicleRoleCheater;
+        RT_CLASS_DECLARE(VehicleRoleCheater);
 
     public:
         static m3d::Class* __fastcall GetBaseClass();

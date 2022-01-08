@@ -6,6 +6,6 @@ namespace ai
     class EngineOilLocation : public TemporaryLocation
     {
     public:
-        static inline m3d::Class m_classEngineOilLocation;
+        RT_CLASS_DECLARE(EngineOilLocation);
     };
 }

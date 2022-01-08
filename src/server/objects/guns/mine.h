@@ -6,6 +6,6 @@ namespace ai
     class Mine : public Rocket
     {
     public:
-        static inline m3d::Class m_classMine;
+        RT_CLASS_DECLARE(Mine);
     };
 }

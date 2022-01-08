@@ -31,7 +31,7 @@ namespace ai
     class InfectionTeam :  public Team
     {
     public:
-        static inline m3d::Class m_classInfectionTeam;
+        RT_CLASS_DECLARE(InfectionTeam);
 
     public:
         void SetCriticalDistAndTime(float,float);

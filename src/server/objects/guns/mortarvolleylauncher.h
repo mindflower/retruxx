@@ -13,7 +13,7 @@ namespace ai
     class MortarVolleyLauncher : public Mortar
     {
     public:
-        static inline m3d::Class m_classMortarVolleyLauncher;
+        RT_CLASS_DECLARE(MortarVolleyLauncher);
 
     public:
         static m3d::Class* __fastcall GetBaseClass();

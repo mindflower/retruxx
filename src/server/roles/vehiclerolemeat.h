@@ -20,7 +20,7 @@ namespace ai
     class VehicleRoleMeat : public VehicleRole
     {
     public:
-        static inline m3d::Class m_classVehicleRoleMeat;
+        RT_CLASS_DECLARE(VehicleRoleMeat);
 
     public:
         static m3d::Class* __fastcall GetBaseClass();

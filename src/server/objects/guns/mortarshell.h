@@ -23,7 +23,7 @@ namespace ai
     class MortarShell : public Shell
     {
     public:
-        static inline m3d::Class m_classMortarShell;
+        RT_CLASS_DECLARE(MortarShell);
 
     public:
         void SetInitialPosition(CVector const&);

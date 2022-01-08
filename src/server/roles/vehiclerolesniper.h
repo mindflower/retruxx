@@ -27,7 +27,7 @@ namespace ai
         };
 
     public:
-        static inline m3d::Class m_classVehicleRoleSniper;
+        RT_CLASS_DECLARE(VehicleRoleSniper);
 
     public:
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;

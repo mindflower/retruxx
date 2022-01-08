@@ -97,7 +97,7 @@ private:
 class ProfileManager :  public m3d::Object
 {
 public:
-    static inline m3d::Class m_classProfileManager;
+    RT_CLASS_DECLARE(ProfileManager);
 
 public:
     Profile * GetCurProfile() const ;

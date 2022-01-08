@@ -14,7 +14,7 @@ namespace ai
     class InfectionLair : public Settlement
     {
     public:
-        static inline m3d::Class m_classInfectionLair;
+        RT_CLASS_DECLARE(InfectionLair);
 
     public:
         static m3d::Class* __fastcall GetBaseClass();

@@ -15,7 +15,7 @@ namespace ai
     class Boss04Part : public VehiclePart
     {
     public:
-        static inline m3d::Class m_classBoss04Part;
+        RT_CLASS_DECLARE(Boss04Part);
 
     public:
         static m3d::Class* __fastcall GetBaseClass();

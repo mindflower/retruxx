@@ -25,7 +25,7 @@ namespace ai
     class CaravanTeam : public Team
     {
     public:
-        static inline m3d::Class m_classCaravanTeam;
+        RT_CLASS_DECLARE(CaravanTeam);
 
     public:
         void SetWaitingPlayerToMoveout();

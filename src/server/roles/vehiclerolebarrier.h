@@ -18,7 +18,7 @@ namespace ai
     class VehicleRoleBarrier : public VehicleRole
     {
     public:
-        static inline m3d::Class m_classVehicleRoleBarrier;
+        RT_CLASS_DECLARE(VehicleRoleBarrier);
 
     public:
         virtual m3d::Class* GetClass() const;

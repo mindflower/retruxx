@@ -12,7 +12,7 @@ namespace ai
     class VehicleSplinter : public DummyObject
     {
     public:
-        static inline m3d::Class m_classVehicleSplinter;
+        RT_CLASS_DECLARE(VehicleSplinter);
 
     public:
         VehicleSplinter(VehicleSplinterPrototypeInfo const&);

@@ -18,7 +18,7 @@ namespace ai
     class ThunderboltLauncher : public Gun
     {
     public:
-        static inline m3d::Class m_classThunderboltLauncher;
+        RT_CLASS_DECLARE(ThunderboltLauncher);
 
     public:
         virtual m3d::Class* GetClass() const;

@@ -80,7 +80,7 @@ public:
     };
 
 public:
-    static inline m3d::Class m_classMotherPanel;
+    RT_CLASS_DECLARE(MotherPanel);
 
 public:
     void LeaveTown(bool);

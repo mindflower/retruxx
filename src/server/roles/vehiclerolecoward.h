@@ -18,7 +18,7 @@ namespace ai
     class VehicleRoleCoward : public VehicleRole
     {
     public:
-        static inline m3d::Class m_classVehicleRoleCoward;
+        RT_CLASS_DECLARE(VehicleRoleCoward);
 
     public:
         VehicleRoleCoward(VehicleRoleCowardPrototypeInfo const&);

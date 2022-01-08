@@ -32,7 +32,7 @@ namespace ai
         };
 
     public:
-        static inline m3d::Class m_classNPCMotionController;
+        RT_CLASS_DECLARE(NPCMotionController);
 
     public:
         virtual int OnEvent(Event const&);

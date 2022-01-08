@@ -13,7 +13,7 @@ namespace ai
     class LocationPusher : public Gun
     {
     public:
-        static inline m3d::Class m_classLocationPusher;
+        RT_CLASS_DECLARE(LocationPusher);
 
     public:
         static m3d::Class* __fastcall GetBaseClass();

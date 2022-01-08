@@ -12,7 +12,7 @@ namespace ai
     class ParticleSplinter : public DummyObject
     {
     public:
-        static inline m3d::Class m_classParticleSplinter;
+        RT_CLASS_DECLARE(ParticleSplinter);
 
     public:
         static m3d::Class* __fastcall GetBaseClass();

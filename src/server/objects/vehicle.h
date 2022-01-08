@@ -136,7 +136,7 @@ namespace ai
         };
 
     public:
-        static inline m3d::Class m_classVehicle;
+        RT_CLASS_DECLARE(Vehicle);
 
     public:
         VehicleMoveStatus GetMoveStatus() const ;

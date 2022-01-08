@@ -32,6 +32,7 @@ namespace m3d
         SgSoundSourceNode();
         SgSoundSourceNode(SgSoundSourceNode const&);
         virtual void UpdateOwnBoundingBox();
+
     private:
         bool _OnSoundStopped();
         int _InternalRender();
