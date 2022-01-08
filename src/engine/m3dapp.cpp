@@ -1,8 +1,13 @@
 #include "soundconhandler.h"
 #include "video/video.h"
 #include <atomic>
+#include <cameracontroller.h>
+#include <cassert>
+#include <cinematic.h>
 #include <config.h>
 #include <intrin.h>
+#include <landscape.h>
+#include <level.h>
 #include <m3dapp.h>
 #include <skelmodel.h>
 #include <stdexcept>
@@ -10,9 +15,37 @@
 #include <core/log.h>
 #include <core/stackwalker.h>
 #include <core/timer.h>
+#include <scene/nodes/sgnodeanimatedmodel.h>
+#include <scene/nodes/sgnodedecals.h>
+#include <scene/nodes/sgnodegameunit.h>
+#include <scene/nodes/sgnodelines.h>
+#include <scene/nodes/sgnodeloadpoint.h>
+#include <scene/nodes/sgnodeparticles.h>
+#include <scene/nodes/sgnodepointlightsource.h>
+#include <scene/nodes/sgnodeprojector.h>
+#include <scene/nodes/sgnodesound.h>
+#include <scene/nodes/sgnodesprite.h>
+#include <scene/nodes/sgnodestaticmodel.h>
 #include <scene/servers/dataserver.h>
 #include <scene/servers/serverfactories.h>
 #include <server/server.h>
+#include <ui/button.h>
+#include <ui/comboboxwnd.h>
+#include <ui/edit.h>
+#include <ui/glyphbutton.h>
+#include <ui/image.h>
+#include <ui/linewnd.h>
+#include <ui/listbox.h>
+#include <ui/menu.h>
+#include <ui/modelarraywnd.h>
+#include <ui/modelwnd.h>
+#include <ui/progressbarwnd.h>
+#include <ui/scroll.h>
+#include <ui/sgnodearraywnd.h>
+#include <ui/slider.h>
+#include <ui/tabwnd.h>
+#include <ui/textbox.h>
+#include <ui/uidialogs.h>
 
 namespace
 {
@@ -65,7 +98,7 @@ namespace m3d
 
     int Application::init(HINSTANCE hInstance, HICON hIcon, CStr const& configName, HWND forcedWnd, CStr const& cmdLine)
     {
-        LOG("ProjectApocalypse - release version build v0.01", LOG_INFO);
+        M3D_LOG_INFO("ProjectApocalypse - release version build v0.01");
 
         m_cmdLine.Init(cmdLine.c_str());
         if (m_cmdLine.CheckParam("-console"))
@@ -92,7 +125,7 @@ namespace m3d
             }
             if (!m_renderer->Create(logDeviceFunc, g_Kernel))  //TODO: logFunc
             {
-                LOG("ERROR! Application::init -- cannot create device", LOG_ERR);
+                M3D_LOG_ERR("ERROR! Application::init -- cannot create device");
                 return false;
             }
             RegisterConsoleCommands();
@@ -131,7 +164,7 @@ namespace m3d
             ::GetClientRect(g_Kernel->GetEngineCfg().m_mainWnd, &m_rcWindowClient);
             if (m_rcWindowBounds.bottom == m_rcWindowBounds.top || m_rcWindowBounds.left == m_rcWindowBounds.right)
             {
-                LOG("WARNING! Application::init -- zero window rect, expanding", LOG_INFO);
+                M3D_LOG_INFO("WARNING! Application::init -- zero window rect, expanding");
                 ::SetWindowPos(g_Kernel->GetEngineCfg().m_mainWnd, 0, 0, 0, 800, 600, SWP_NOMOVE | SWP_NOZORDER);
                 ::GetWindowRect(g_Kernel->GetEngineCfg().m_mainWnd, &m_rcWindowBounds);
                 ::GetClientRect(g_Kernel->GetEngineCfg().m_mainWnd, &m_rcWindowClient);
@@ -168,11 +201,11 @@ namespace m3d
                 m_renderWindow = g_Kernel->GetEngineCfg().m_mainWnd;
                 if (forcedWnd)
                 {
-                    LOG("NOTE! Application::init -- input module was not inited deliberately", LOG_INFO);
+                    M3D_LOG_INFO("NOTE! Application::init -- input module was not inited deliberately");
                 }
                 else if (!createInput())
                 {
-                    LOG("ERROR! Application::init -- cannot initialize input", LOG_ERR);
+                    M3D_LOG_ERR("ERROR! Application::init -- cannot initialize input");
                     doneRenderer();
                     return 0;
                 }
@@ -215,7 +248,7 @@ namespace m3d
 
                 if (!InitImpulses())
                 {
-                    LOG("Error: fail to init impulses", LOG_ERR);
+                    M3D_LOG_ERR("Error: fail to init impulses");
                     //TODO: doneRenderer???
                     return 0;
                 }
@@ -234,7 +267,7 @@ namespace m3d
                     g_Kernel->GetEngineCfg().m_levFileName.Set("Empty", true);
 
                     auto const diffTime = g_Kernel->GetTimer().GetCurTime() - startTime;
-                    LOG("----------------------- Engine inited in: " + std::to_string(diffTime), LOG_INFO);
+                    M3D_LOG_INFO("----------------------- Engine inited in: " + std::to_string(diffTime));
                     return 1;
                 }
                 doneUi();
@@ -246,10 +279,10 @@ namespace m3d
                 return 0;
             }
             g_Kernel->MessageBox(NULL, TEXT("error"), TEXT("cannot initialize 3d"), MB_ICONHAND);
-            LOG("ERROR! Application::init -- cannot initialize 3d", LOG_ERR);
+            M3D_LOG_ERR("ERROR! Application::init -- cannot initialize 3d");
             return 0;
         }
-        LOG("ERROR! Application::init -- cannot open cfg: " + configName, LOG_ERR);
+        M3D_LOG_ERR("ERROR! Application::init -- cannot open cfg: " + configName);
         g_Kernel->MessageBox(NULL, TEXT("Error!!! Can't open config!!!"), TEXT("Critical error"), MB_ICONHAND);
         return 0;
     }
@@ -432,29 +465,28 @@ namespace m3d
 
     int Application::CheckAndLogPlatform()
     {
-        LOG("Path: " + m_startupFolder, LOG_INFO);
-        LOG("Exe: " + m_imageName, LOG_INFO);
+        M3D_LOG_INFO("Path: " + m_startupFolder);
+        M3D_LOG_INFO("Exe: " + m_imageName);
 
         OSVERSIONINFO osinfo;
         memset(&osinfo, 0, sizeof(OSVERSIONINFO));
         osinfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
         ::GetVersionEx(&osinfo);
-        LOG(
+        M3D_LOG_INFO(
             "Windows version: " +
             std::to_string(osinfo.dwMajorVersion) + '.' +
             std::to_string(osinfo.dwMinorVersion) + '.' +
-            std::to_string(osinfo.dwBuildNumber),
-            LOG_INFO
+            std::to_string(osinfo.dwBuildNumber)NFO
         );
 
         TCHAR computerName[MAX_COMPUTERNAME_LENGTH + 1] = { 0 };
         DWORD size = sizeof(computerName);
         ::GetComputerName(computerName, &size);
-        LOG("Computer name: " + computerName);
+        M3D_LOG_INFO("Computer name: " + computerName);
 
         char cpuInfo[16] = { 0 };
         __cpuid(reinterpret_cast<int*>(cpuInfo), 0x80000000);
-        LOG("Cpu: " + cpuInfo);
+        M3D_LOG_INFO("Cpu: " + cpuInfo);
 
         //TODO: other info...
         throw std::logic_error("Not implemented");
@@ -569,19 +601,19 @@ namespace m3d
         m_hRenderDll = ::LoadLibrary(inputDriverName.c_str());
         if (m_hRenderDll == NULL)
         {
-            LOG("ERROR! Application::CreateRenderer -- cannot locate renderer driver " + inputDriverName, LOG_ERR);
-            LOG("GetLastError() = " + std::to_string(::GetLastError()));
+            M3D_LOG_ERR("ERROR! Application::CreateRenderer -- cannot locate renderer driver " + inputDriverName);
+            M3D_LOG_ERR("GetLastError() = " + std::to_string(::GetLastError()));
             return 0;
         }
         auto createIRenderer = ::GetProcAddress(m_hRenderDll, "createIRenderer");
         if (createIRenderer == NULL)
         {
-            LOG("ERROR! Application::CreateRenderer -- cannot get factory", LOG_ERR);
+            M3D_LOG_ERR("ERROR! Application::CreateRenderer -- cannot get factory");
         }
 
         m_renderer = reinterpret_cast<rend::IRenderer*>(createIRenderer());
         m_renderer->IncRef();
-        LOG("NOTE! renderer is bind to " + inputDriverName, LOG_INFO);
+        M3D_LOG_INFO("NOTE! renderer is bind to " + inputDriverName);
         return true;
     }
 
@@ -623,19 +655,19 @@ namespace m3d
         m_hInputDll = ::LoadLibrary(inputDriverName.c_str());
         if (m_hInputDll == NULL)
         {
-            LOG("ERROR! Application::CreateInput -- cannot locate input driver " + inputDriverName, LOG_ERR);
-            LOG("GetLastError() = " + std::to_string(::GetLastError()));
+            M3D_LOG_ERR("ERROR! Application::CreateInput -- cannot locate input driver " + inputDriverName);
+            M3D_LOG_ERR("GetLastError() = " + std::to_string(::GetLastError()));
             return 0;
         }
         auto createIInput = ::GetProcAddress(m_hInputDll, "createIInput");
         if (createIInput == NULL)
         {
-            LOG("ERROR! Application::CreateInput -- cannot get factory", LOG_ERR);
+            M3D_LOG_ERR("ERROR! Application::CreateInput -- cannot get factory");
         }
 
         m_input = reinterpret_cast<input::IInput*>(createIInput());
         m_input->IncRef();
-        LOG("NOTE! input is bind to " + inputDriverName, LOG_INFO);
+        M3D_LOG_INFO("NOTE! input is bind to " + inputDriverName);
         return 1;
     }
 
@@ -651,8 +683,8 @@ namespace m3d
         m_hSoundDll = ::LoadLibrary(inputDriverName.c_str());
         if (m_hSoundDll == NULL)
         {
-            LOG("ERROR! m3dApplication::CreateSound -- cannot locate sound driver " + inputDriverName, LOG_ERR);
-            LOG("GetLastError() = " + std::to_string(::GetLastError()));
+            M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot locate sound driver " + inputDriverName);
+            M3D_LOG_ERR("GetLastError() = " + std::to_string(::GetLastError()));
             config.m_snd_Enable.SetB(false);
             config.m_mus_Enable.SetB(false);
             return 0;
@@ -660,7 +692,7 @@ namespace m3d
         auto createISound = ::GetProcAddress(m_hSoundDll, "createISound");
         if (createISound == NULL)
         {
-            LOG("ERROR! m3dApplication::CreateSound -- cannot get factory", LOG_ERR);
+            M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot get factory");
             config.m_snd_Enable.SetB(false);
             config.m_mus_Enable.SetB(false);
             return 0;
@@ -672,13 +704,13 @@ namespace m3d
             {
                 break;
             }
-            LOG("Warning: sound was not created after trial " + std::to_string(trial), LOG_INFO);
+            M3D_LOG_INFO("Warning: sound was not created after trial " + std::to_string(trial));
             ::Sleep(1000);
         }
         if (m_sound != nullptr)
         {
             m_sound->IncRef();
-            LOG("NOTE! sound is bind to " + inputDriverName, LOG_INFO);
+            M3D_LOG_INFO("NOTE! sound is bind to " + inputDriverName);
             auto isSoundInit = false;
             for (int trial = 0; trial < 3; ++trial)
             {
@@ -691,7 +723,7 @@ namespace m3d
                     isSoundInit = true;
                     break;
                 }
-                LOG("Warning: sound was not inited after trial " + std::to_string(trial), LOG_INFO);
+                M3D_LOG_INFO("Warning: sound was not inited after trial " + std::to_string(trial));
                 ::Sleep(1000);
             }
             if (isSoundInit)
@@ -827,11 +859,6 @@ namespace m3d
     }
 
     PointBase<int> const& Application::MouseInfo::GetDeltaDuringGameFrame() const
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    Application::MouseInfo::MouseInfo()
     {
         throw std::logic_error("Not implemented");
     }
@@ -1110,7 +1137,25 @@ namespace m3d
 
     void Application::panic()
     {
-        throw std::logic_error("Not implemented");
+        doneProcTexThread();
+        if (m_input)
+        {
+            m_input->DecRef();
+            m_input = nullptr;
+        }
+        if (m_hInputDll)
+        {
+            ::FreeLibrary(m_hInputDll);
+        }
+        if (m_renderer)
+        {
+            m_renderer->DecRef();
+            m_renderer = nullptr;
+        }
+        if (m_hRenderDll)
+        {
+            ::FreeLibrary(m_hRenderDll);
+        }
     }
 
     bool Application::SaveServers(CStr const&)
@@ -1160,12 +1205,82 @@ namespace m3d
 
     Application::Application(char const* logName)
     {
-        throw std::logic_error("Not implemented");
+        if (g_Kernel->OpenLog(logName))
+        {
+            M3D_LOG_INFO("Starting up...");
+            g_pApp = this;
+            m_focusKbdEntity = this;
+            m_strWindowTitle = "ProjectApocalypse - release version release build v0.01";
+
+            char buf[0x400] = { 0 };
+            ::GetCurrentDirectoryA(sizeof(buf), buf);
+            m_startupFolder = buf;
+            ::GetModuleFileNameA(GetModuleHandleA(NULL), buf, sizeof(buf));
+            m_imageName = buf;
+
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgNode));
+            g_Kernel->AddClass(&SgStaticModelNode::m_classSgStaticModelNode);
+            g_Kernel->AddClass(&SgAnimatedModelNode::m_classSgAnimatedModelNode);
+            g_Kernel->AddClass(&SgGameUnitNode::m_classSgGameUnitNode);
+            g_Kernel->AddClass(&SgSpriteNode::m_classSgSpriteNode);
+            g_Kernel->AddClass(&SgLinesNode::m_classSgLinesNode);
+            g_Kernel->AddClass(&SgParticlesNode::m_classSgParticlesNode);
+            g_Kernel->AddClass(&SgSoundSourceNode::m_classSgSoundSourceNode);
+            g_Kernel->AddClass(&SgLoadpointNode::m_classSgLoadpointNode);
+            g_Kernel->AddClass(&SgPointLightSourceNode::m_classSgPointLightSourceNode);
+            g_Kernel->AddClass(&SgProjectorNode::m_classSgProjectorNode);
+            g_Kernel->AddClass(&SgDecalsNode::m_classSgDecalsNode);
+            g_Kernel->AddClass(&SgParticlesOpaqueNode::m_classSgParticlesOpaqueNode);
+            g_Kernel->AddClass(&ui::Wnd::m_classWnd);
+            g_Kernel->AddClass(&ui::ImageWnd::m_classImageWnd);
+            g_Kernel->AddClass(&ui::EditWnd::m_classEditWnd);
+            g_Kernel->AddClass(&ui::SliderWnd::m_classSliderWnd);
+            g_Kernel->AddClass(&ui::ScrollWnd::m_classScrollWnd);
+            g_Kernel->AddClass(&ui::ButtonWnd::m_classButtonWnd);
+            g_Kernel->AddClass(&ui::GlyphButton::m_classGlyphButton);
+            g_Kernel->AddClass(&ui::CheckWnd::m_classCheckWnd);
+            g_Kernel->AddClass(&ui::ModalWnd::m_classModalWnd);
+            g_Kernel->AddClass(&ui::MenuWnd::m_classMenuWnd);
+            g_Kernel->AddClass(&ui::StringsListBoxWnd::m_classStringsListBoxWnd);
+            g_Kernel->AddClass(&ui::FormattedStringsListBoxWnd::m_classFormattedStringsListBoxWnd);
+            g_Kernel->AddClass(&ui::TextBoxWnd::m_classTextBoxWnd);
+            g_Kernel->AddClass(&ui::MsgBoxDlg::m_classMsgBoxDlg);
+            g_Kernel->AddClass(&ui::ArtDlg::m_classArtDlg);
+            g_Kernel->AddClass(&ui::LineWnd::m_classLineWnd);
+            g_Kernel->AddClass(&ui::TabWnd::m_classTabWnd);
+            g_Kernel->AddClass(&ui::ModelWnd::m_classModelWnd);
+            g_Kernel->AddClass(&ui::ModelArrayWnd::m_classModelArrayWnd);
+            g_Kernel->AddClass(&ui::SgNodeArrayWnd::m_classSgNodeArrayWnd);
+            g_Kernel->AddClass(&ui::ComboBoxWnd::m_classComboBoxWnd);
+            g_Kernel->AddClass(&Landscape::m_classLandscape);
+            g_Kernel->AddClass(&Level::m_classLevel);
+            g_Kernel->AddClass(&Cinematic::m_classCinematic);
+            g_Kernel->AddClass(&ui::ProgressBarWnd::m_classProgressBarWnd);
+
+            m_cpuSpeed = GetCpuFrequency(0x64);
+            m_profiler_OneFrame = m_profilerStack.AddProfiler("OneFrame", 30);
+            m_profiler_Render = m_profilerStack.AddProfiler("Render", 30);
+            m_profiler_UiRender = m_profilerStack.AddProfiler(" - UI Render", 30);
+
+            g_Kernel->GetScriptServer().registerGlobalFunction(n_GetComputerName, "GetComputerName", "const char*", "", "returns network name for the current computer");
+
+            m_cameraController = new CameraController;
+            m_cinematic = dynamic_cast<Cinematic*>(g_Kernel->New("Cinematic"));
+            throw std::logic_error("Not implemented");
+        }
+        else
+        {
+            MessageBoxA(NULL, "Error!!! Can't open log!!!", "Critical error", 16);
+        }
     }
 
-    void Application::sysError(CStr const&, CStr const&)
+    void Application::sysError(CStr const& whence, CStr const& assertion)
     {
-        throw std::logic_error("Not implemented");
+        panic();
+        auto const description = "Assertion failed at " + whence + "\nexpression^ " + assertion;
+        M3D_LOG_INFO(description);
+        //TODO: check this
+        DbgAssert(assertion.c_str(), whence.c_str(), 0);
     }
 
     int Application::FinishExclusiveMsgLoop()

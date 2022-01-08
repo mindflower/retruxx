@@ -885,9 +885,9 @@ namespace ai
         }
         default:
         {
-                LOG("Error: getting invalid property", LOG_ERR);
-                //TODO: add debug description
-                return false;
+            M3D_LOG_ERR("Error: getting invalid property");
+            //TODO: add debug description
+            return false;
         }
         }
     }
@@ -929,7 +929,7 @@ namespace ai
         }
         default:
         {
-            LOG("Error: getting invalid default property", LOG_ERR);
+            M3D_LOG_ERR("Error: getting invalid default property");
             //TODO: add debug description
             return false;
         }

@@ -41,7 +41,7 @@ int InitStackWalk()
     g_hImagehlpDll = ::LoadLibraryA("dbghelp.dll");
     if (g_hImagehlpDll == NULL)
     {
-        LOG("LoadLibrary( \"dbghelp.dll\" ): GetLastError = " + std::to_string(::GetLastError()), LOG_INFO);
+        M3D_LOG_INFO("LoadLibrary( \"dbghelp.dll\" ): GetLastError = " + std::to_string(::GetLastError()));
         g_bInitialized = 0;
         return 1;
     }
@@ -65,7 +65,7 @@ int InitStackWalk()
     //    ::InitializeCriticalSection(&g_csFileOpenClose);
     //    return 0;
     //}
-    LOG("GetProcAddress(): some required function not found.", LOG_INFO);
+    M3D_LOG_INFO("GetProcAddress(): some required function not found.");
     ::FreeLibrary(g_hImagehlpDll);
     g_bInitialized = 0;
     return 1;
@@ -73,6 +73,7 @@ int InitStackWalk()
 
 int InitAllocCheck(eAllocCheckOutput eOutput, int bSetUnhandledExeptionFilter, unsigned long ulShowStackAtAlloc)
 {
+    throw std::logic_error("Not implemented");
     auto const* workDir = m3d::g_Kernel->GetFileServer().GetCurrentWorkDir();
     TCHAR szModName[MAX_PATH + 1] = { 0 };
     if (::GetModuleFileName(NULL, szModName, MAX_PATH) != 0)
@@ -98,9 +99,9 @@ int InitAllocCheck(eAllocCheckOutput eOutput, int bSetUnhandledExeptionFilter, u
         sprintf_s(s_szGameLogFileName, "%s/exceptions/%s%04u_game.log", dirName.c_str(), fileName.c_str(), counter++);
     } while (GetFileAttributesA(szName) != -1);
     strncpy_s(s_szExceptionLogFileName, szName, MAX_PATH);
-    LOG(CStr("Stackwalker: log file name will be ") + s_szExceptionLogFileName, LOG_INFO);
-    LOG(CStr("Stackwalker: dump file name will be ") + s_szDumpFileName, LOG_INFO);
-    LOG(CStr("Stackwalker: game log file name will be ") + s_szGameLogFileName, LOG_INFO);
+    M3D_LOG_INFO(CStr("Stackwalker: log file name will be ") + s_szExceptionLogFileName);
+    M3D_LOG_INFO(CStr("Stackwalker: dump file name will be ") + s_szDumpFileName);
+    M3D_LOG_INFO(CStr("Stackwalker: game log file name will be ") + s_szGameLogFileName);
     if (bSetUnhandledExeptionFilter)
     {
         ::SetUnhandledExceptionFilter(CrashHandlerExceptionFilter);

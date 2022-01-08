@@ -3,6 +3,8 @@
 
 using CStr = std::string;
 
+
+void UnifyFileName(CStr& fileName);
 void UnifyFileName0(CStr& fileName);
 CStr DirectoryFromFileName(CStr const& source);
 CStr NameFromFileName(CStr const& source);

@@ -1,6 +1,7 @@
 #pragma once
 #include "stringm3d.h"
 #include <iface.h>
+#include <vector>
 
 namespace m3d
 {
@@ -88,4 +89,5 @@ namespace m3d
 
     cmn::XmlFile* ReadXmlFile(char const* filename, CStr* errorStr);
     int SafeStrAttrib(CStr&, cmn::XmlNode const*, char const*);
+    void Tokenize(CStr const*, std::vector<CStr>&, char const*);
 }

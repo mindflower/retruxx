@@ -1,11 +1,16 @@
 #pragma once
 #include "funcstack.h"
+extern "C"
+{
 #include "lua/lua.h"
+}
 #include <core/clazz.h>
 #include <map>
 
 namespace m3d
 {
+    class ScriptServer;
+
     enum eScriptError
     {
         SUCCESS = 0x0,
@@ -22,13 +27,16 @@ namespace m3d
     class Scriptlet
     {
     public:
+        static inline ScriptServer* g_scriptServer = nullptr;
+
+    public:
         eScriptError compile();
         ~Scriptlet();
         eScriptError loadFromFile(char const*);
         eScriptError execute(char const*, bool);
 
     private:
-        Scriptlet(void);
+        Scriptlet();
         bool m_bCompiled;
         unsigned int m_dataLen;
         char* m_data;
@@ -66,7 +74,10 @@ namespace m3d
         static int _getScriptObject(Object*);
 
     public:
-        static inline Class m_classScriptServer;
+        static Class m_classScriptServer;
+        static inline lua_State* L = nullptr;
+        static inline int m_metatable_ClassMethod = 0;
+        static inline int m_metatable_ClassNativeMethod = 0;
 
     public:
         eScriptError reloadScript(char const*);
@@ -91,13 +102,12 @@ namespace m3d
         eScriptError registerGlobalFunction(int(*)(sArgStack&), char const* = "", char const* = "", char const* = "", char const* = "");
 
     protected:
-        ScriptServer(ScriptServer const&);
-        ScriptServer();
+        ScriptServer() = default;
 
     private:
         std::map<CStr, Scriptlet*> m_scripts;
         std::map<CStr, auxFuncDesc> m_funcDescs;
         CStr m_lastScriptExecuted;
-        bool m_bInitialized;
+        bool m_bInitialized = false;
     };
 }

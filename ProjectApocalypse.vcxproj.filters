@@ -3824,6 +3824,12 @@
     <ClInclude Include="src\include\ode\odememory.h">
       <Filter>include\ode</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\script\luavector.h">
+      <Filter>include\script</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\script\luaquaternion.h">
+      <Filter>include\script</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

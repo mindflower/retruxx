@@ -54,7 +54,7 @@ namespace m3d
         static Class* GetBaseClass();
 
     public:
-        static inline Class m_classSgNode;
+        RT_CLASS_DECLARE(SgNode);
 
     public:
         Obb GetObb() const;

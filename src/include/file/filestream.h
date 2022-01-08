@@ -1,5 +1,6 @@
 #pragma once
 #include "i_stream.h"
+#include <core/stringm3d.h>
 
 namespace m3d
 {
@@ -15,8 +16,8 @@ namespace m3d
             virtual FileStream& operator<<(char const*) = 0;
             virtual int ReadLine(CStr&) = 0;
             virtual unsigned int FRead(void*, unsigned int, unsigned int) = 0;
-            virtual int FSeek(int, int) = 0;
-            virtual int FTell() = 0;
+            virtual int FSeek(long, int) = 0;
+            virtual long FTell() = 0;
             virtual int Close() = 0;
 
         protected:

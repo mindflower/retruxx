@@ -1,8 +1,58 @@
-#include <stdexcept>
 #include <script/scriptserver.h>
+#include <script/luaquaternion.h>
+#include <script/luavector.h>
+extern "C"
+{
+#include <lualib.h>
+#include <lauxlib.h>
+}
+#include <stdexcept>
+
+namespace
+{
+    int _getGlobalObject(lua_State *)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int _logMethod(lua_State *)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int _execLuaScript(lua_State *)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int _errorMethod(lua_State *)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int _callClassMethod(lua_State *)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int _callClassNativeMethod(lua_State *)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int _toString(lua_State *)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    lua_CFunction oldToString = nullptr;
+    m3d::ScriptServer* g_scriptServer = nullptr;
+}
 
 namespace m3d
 {
+    Class ScriptServer::m_classScriptServer {"ScriptServer", sizeof(ScriptServer), CreateObject, GetBaseClass};
+
     Class* ScriptServer::GetBaseClass()
     {
         throw std::logic_error("Not implemented");
@@ -10,7 +60,7 @@ namespace m3d
 
     Object* ScriptServer::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new ScriptServer;
     }
 
     int ScriptServer::_getScriptObject(Object*)
@@ -105,7 +155,52 @@ namespace m3d
 
     eScriptError ScriptServer::init()
     {
-        throw std::logic_error("Not implemented");
+        L = lua_open();
+        if (!L)
+        {
+            return OTHER_ERROR;
+        }
+        luaopen_base(L);
+        luaopen_string(L);
+        luaopen_math(L);
+        luaopen_io(L);
+        luaopen_table(L);
+        lua_pushstring(L, "GET_GLOBAL_OBJECT");
+        lua_pushcclosure(L, _getGlobalObject, 0);
+        lua_settable(L, -10001);
+        lua_pushstring(L, "LOG");
+        lua_pushcclosure(L, _logMethod, 0);
+        lua_settable(L, -10001);
+        lua_pushstring(L, "EXECUTE_SCRIPT");
+        lua_pushcclosure(L, _execLuaScript, 0);
+        lua_settable(L, -10001);
+        lua_pushstring(L, "_ALERT");
+        lua_pushcclosure(L, _errorMethod, 0);
+        lua_settable(L, -10001);
+        ext_initVector(L);
+        ext_initQuaternion(L);
+        lua_newtable(L);
+        lua_pushstring(L, "__call");
+        lua_pushcclosure(L, _callClassMethod, 0);
+        lua_settable(L, -3);
+        m_metatable_ClassMethod = luaL_ref(L, -10000);
+        lua_newtable(L);
+        lua_pushstring(L, "__call");
+        lua_pushcclosure(L, _callClassNativeMethod, 0);
+        lua_settable(L, -3);
+        m_metatable_ClassNativeMethod = luaL_ref(L, -10000);
+        lua_pushstring(L, "tostring");
+        lua_gettable(L, -10001);
+        oldToString = lua_tocfunction(L, -1);
+        lua_settop(L, -2);
+        lua_pushcclosure(L, _toString, 0);
+        lua_pushstring(L, "tostring");
+        lua_insert(L, -2);
+        lua_settable(L, -10001);
+        Scriptlet::g_scriptServer = this;
+        g_scriptServer = this;
+        m_bInitialized = true;
+        return SUCCESS;
     }
 
     Object* ScriptServer::Clone()
@@ -114,16 +209,6 @@ namespace m3d
     }
 
     eScriptError ScriptServer::registerGlobalFunction(int(*)(sArgStack&), char const*, char const*, char const*, char const*)
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    ScriptServer::ScriptServer(ScriptServer const&)
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    ScriptServer::ScriptServer()
     {
         throw std::logic_error("Not implemented");
     }

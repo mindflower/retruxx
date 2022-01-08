@@ -1,7 +1,25 @@
-#include <stdexcept>
+#include <ode/memory.h>
 #include <ode/odememory.h>
+#include <core/kernel.h>
 
-void __fastcall OdeSetMemoryHandlers()
+void* OdeMemoryAlloc(unsigned int Size)
 {
-    throw std::logic_error("Not implemented");
+    return m3d::g_Kernel->g_mar.AllocMem(Size, 0, 0);
+}
+
+void* OdeMemoryRealloc(void* Block, unsigned int OldSize, unsigned int NewSize)
+{
+    return m3d::g_Kernel->g_mar.ReallocMem(Block, NewSize, 0, 0);
+}
+
+void OdeMemoryFree(void* Block, unsigned int Size)
+{
+    m3d::g_Kernel->g_mar.FreeMem(Block, 0, 0);
+}
+
+void OdeSetMemoryHandlers()
+{
+    dSetAllocHandler(OdeMemoryAlloc);
+    dSetReallocHandler(OdeMemoryRealloc);
+    dSetFreeHandler(OdeMemoryFree);
 }

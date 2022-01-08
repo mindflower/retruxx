@@ -16,8 +16,8 @@ namespace m3d
 
         public:
             virtual ~IStream() = default;
-            virtual unsigned int GetSize() = 0;
-            virtual FILETIME GetDate() = 0;
+            virtual unsigned int GetSize() const = 0;
+            virtual FILETIME GetDate() const = 0;
             virtual IStream*  Clone() = 0;
             virtual unsigned int ReadBytes(void*, unsigned int) = 0;
             virtual unsigned int PeekBytes(void*, unsigned int) = 0;

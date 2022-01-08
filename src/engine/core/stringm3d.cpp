@@ -1,5 +1,18 @@
+#include <stdexcept>
 #include <core/stringm3d.h>
 #include <windows.h>
+
+void UnifyFileName(CStr& fileName)
+{
+    for (auto& c : fileName)
+    {
+        if (c == '/')
+        {
+            c = '\\';
+        }
+    }
+    toLower(fileName);
+}
 
 void UnifyFileName0(CStr& fileName)
 {

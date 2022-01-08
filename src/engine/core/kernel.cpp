@@ -2,6 +2,7 @@
 #include <atomic>
 #include <cassert>
 #include <config.h>
+#include <m3dapp.h>
 #include <map>
 #include <stdexcept>
 #include <core/kernel.h>
@@ -10,6 +11,7 @@
 #include <file/fileserver.h>
 #include <ode/odememory.h>
 #include <script/scriptserver.h>
+
 
 namespace
 {
@@ -43,9 +45,13 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Kernel::SysError(CStr const&, CStr const&)
+    void Kernel::SysError(CStr const& whence, CStr const& descr)
     {
-        throw std::logic_error("Not implemented");
+        if (Application::g_pApp)
+        {
+            Application::g_pApp->sysError(whence, descr);
+        }
+        ::MessageBox(0, (descr + ':' + whence).c_str(), TEXT("Error"), MB_ICONHAND);
     }
 
     ScriptServer& Kernel::GetScriptServer()
@@ -60,7 +66,7 @@ namespace m3d
 
     EngineConfig& Kernel::GetEngineCfg()
     {
-        throw std::logic_error("Not implemented");
+        return *m_engineConfig;
     }
 
     unsigned Kernel::debugMemUsed() const

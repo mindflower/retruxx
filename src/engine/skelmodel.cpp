@@ -34,12 +34,12 @@ namespace m3d
             }
             else
             {
-                LOG("Error: Can't read file: data/models/ModelTextures.xml", LOG_INFO);
+                M3D_LOG_INFO("Error: Can't read file: data/models/ModelTextures.xml");
             }
         }
         else
         {
-            LOG("Error: Can't open file: data/models/ModelTextures.xml", LOG_INFO);
+            M3D_LOG_INFO("Error: Can't open file: data/models/ModelTextures.xml");
         }
     }
 }

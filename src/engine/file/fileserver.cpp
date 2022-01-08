@@ -1,6 +1,9 @@
+#include <memory>
 #include <stdexcept>
+#include <core/ini.h>
 #include <file/fileserver.h>
 #include <file/package.h>
+#include <file/rawfile.h>
 
 namespace m3d
 {
@@ -66,9 +69,74 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int FileServer::Initialize(char const*)
+        int FileServer::Initialize(char const* dataSource)
         {
-            throw std::logic_error("Not implemented");
+            if (m_Initialized)
+            {
+                return - 1;
+            }
+
+            auto file = std::make_unique<RawFile>(dataSource, IStream::OPEN_READ, m_EnableMapping);
+            if (!file->IsOpen())
+            {
+                auto const res = file->Error();
+                return res;
+            } 
+
+            auto const size = file->GetSize();
+            std::vector<char> buffer(size + 1, 0);
+            if (!file->ReadBytes(buffer.data(), size))
+            {
+                return -1;
+            }
+            file.reset();
+
+            buffer[size] = '\0';
+            CStr const fileContent(buffer.data());
+            std::vector<CStr> tokens;
+            Tokenize(&fileContent, tokens, "\r\n");
+            if (!tokens.empty())
+            {
+                if (auto const& first = tokens.front(); first == "0")
+                {
+                    m_EnableMapping = false;
+                }
+                else if (first == "1")
+                {
+                    m_EnableMapping = true;
+                }
+                tokens.erase(tokens.begin());
+            }
+            for (auto& token : tokens)
+            {
+                auto attr = ::GetFileAttributesA(token.c_str());
+                if (attr == -1 || (attr & 0x10) == 0)
+                {
+                    auto const enableMapping = m_EnableMapping;
+                    std::vector<CStr> tokens2;
+                    Tokenize(&token, tokens, " \t");
+                    if (tokens2.size() > 1 && tokens2[1] == "M")
+                    {
+                        m_EnableMapping = true;
+                        token = tokens2.front();
+                    }
+                    if (token.rfind(".GDP") != CStr::npos)
+                    {
+                        InternalAddPackage(token);
+                    }
+                    else
+                    {
+                        AddFile(token.c_str());
+                    }
+                    m_EnableMapping = enableMapping;
+                }
+                else
+                {
+                    AddFolder(token.c_str(), "*.*", true);
+                }
+            }
+            m_Initialized = true;
+            return 0;
         }
 
         int FileServer::AddFolder(char const*, char const*, bool)
@@ -76,9 +144,14 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void FileServer::SetCurrentWorkDir(char const*)
+        void FileServer::SetCurrentWorkDir(char const* currentDirectory)
         {
-            throw std::logic_error("Not implemented");
+            m_CurrentWorkDir = currentDirectory;
+            UnifyFileName0(m_CurrentWorkDir);
+            if (m_CurrentWorkDir.back() != '/')
+            {
+                m_CurrentWorkDir += '/';
+            }
         }
 
         void FileServer::DecryptFileName(char const*, CStr&)

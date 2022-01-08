@@ -187,7 +187,7 @@ namespace m3d
             auto* child = m_parent->GetChildByName(m_name);
             if (child != nullptr && this != child)
             {
-                LOG("ReadFromXmlNode: name = " + m_name + " conflicts with another child", LOG_INFO);
+                M3D_LOG_INFO("ReadFromXmlNode: name = " + m_name + " conflicts with another child");
                 return 0;
             }
             else
@@ -215,7 +215,7 @@ namespace m3d
     {
         if (m_name.empty())
         {
-            LOG("Warning: node have no name, added default", LOG_INFO);
+            M3D_LOG_INFO("Warning: node have no name, added default");
             m_name = "Node";
             m_name += g_Kernel->GetUniqueId();
         }
@@ -296,7 +296,7 @@ namespace m3d
         {
             if (it->GetName() == name)
             {
-                LOG("ChildNodeFromXmlNode: node w/ same name already exists as a child: ", LOG_INFO);
+                M3D_LOG_INFO("ChildNodeFromXmlNode: node w/ same name already exists as a child: ",);
                 return nullptr;
             }
         }
@@ -319,7 +319,7 @@ namespace m3d
             res = g_Kernel->New(classAttr);
             if (res == nullptr)
             {
-                LOG("ChildNodeFromXmlNode: Cannot load node: name = " + classAttr, LOG_INFO);
+                M3D_LOG_INFO(CStr("ChildNodeFromXmlNode: Cannot load node: name = ") + classAttr);
                 return nullptr;
             }
             isNewObject = true;
@@ -341,7 +341,7 @@ namespace m3d
         {
             return res;
         }
-        LOG("ChildNodeFromXmlNode: Cannot load node: name = " + classAttr, LOG_INFO);
+        M3D_LOG_INFO(CStr("ChildNodeFromXmlNode: Cannot load node: name = ") + classAttr);
         return nullptr;
     }
 
@@ -476,7 +476,7 @@ namespace m3d
         auto const pos = ext.find(':');
         if (pos == CStr::npos)
         {
-            LOG("ChildNodeFromXmlFile: invalid 'extern' format : " + ext, LOG_INFO);
+            M3D_LOG_INFO("ChildNodeFromXmlFile: invalid 'extern' format : " + ext);
             return nullptr;
         }
 
@@ -487,7 +487,7 @@ namespace m3d
         ref_ptr xmlFile = ReadXmlFile(filename.c_str(), &error);
         if (!xmlFile)
         {
-            LOG("ChildNodeFromXmlFile: " + error, LOG_INFO);
+            M3D_LOG_INFO("ChildNodeFromXmlFile: " + error);
             return nullptr;
         }
 
@@ -495,7 +495,7 @@ namespace m3d
         xmlFile->GetFirstNestling(xmlNode, "Prefabs");
         if (xmlNode->IsEmpty())
         {
-            LOG("ChildNodeFromXmlFile: Prefabs node should be root node in " + ext, LOG_INFO);
+            M3D_LOG_INFO("ChildNodeFromXmlFile: Prefabs node should be root node in " + ext);
             return nullptr;
         }
         xmlNode->GetFirstNestling(xmlNode, "Node");
@@ -509,7 +509,7 @@ namespace m3d
         }
         if (xmlNode->IsEmpty())
         {
-            LOG("ChildNodeFromXmlFile: cannot find " + internalName, LOG_INFO);
+            M3D_LOG_INFO("ChildNodeFromXmlFile: cannot find " + internalName);
             return nullptr;
         }
         return ChildNodeFromXmlNode(xmlFile, xmlNode);

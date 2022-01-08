@@ -38,14 +38,14 @@ namespace
     {
         if (scriptStack.getNumInArgs() < 1)
         {
-            LOG("GetFadingMsgParams error: at least one argument must be specified", LOG_INFO);
+            M3D_LOG_INFO("GetFadingMsgParams error: at least one argument must be specified");
             return -1;
         }
 
         auto* arg = scriptStack.popIn();
         if  (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
         {
-            LOG("GetFadingMsgParams error: first argument must be of string type", LOG_INFO);
+            M3D_LOG_INFO("GetFadingMsgParams error: first argument must be of string type");
             return -1;
         }
 
@@ -88,7 +88,7 @@ namespace
             }
             default:
             {
-                LOG("GetFadingMsgParams error: invalid param type", LOG_INFO);
+                M3D_LOG_INFO("GetFadingMsgParams error: invalid param type");
                 return -1;
             }
             }
@@ -609,7 +609,7 @@ int n_CreateNodeInsertedInRemove(m3d::sArgStack& scriptStack)
         bInsertInRemoveIfFree = arg->GetB();
     }
 
-    LOG("Creating inserted in RemoveIfFree node from script", LOG_INFO);
+    M3D_LOG_INFO("Creating inserted in RemoveIfFree node from script");
     auto node = CreateNode(modelName, pos, rot, -1, bInsertInRemoveIfFree, true);
     if (scriptStack.getNumInArgs() > 4)
     {
@@ -654,14 +654,14 @@ int n_DumpOpenFiles(m3d::sArgStack& scriptStack)
         return -1;
     }
 
-    LOG("********** DUMPING OPEN FILES ********************", LOG_INFO);
+    M3D_LOG_INFO("********** DUMPING OPEN FILES ********************");
     std::vector<CStr> fileList;
     m3d::g_Kernel->GetFileServer().GetOpenFilesList(fileList);
     for (auto const& file : fileList)
     {
-        LOG(file, LOG_INFO);
+        M3D_LOG_INFO(file);
     }
-    LOG("********** END DUMPING OPEN FILES ****************", LOG_INFO);
+    M3D_LOG_INFO("********** END DUMPING OPEN FILES ****************");
     return 1;
 }
 
@@ -947,14 +947,14 @@ int n_DumpSoundInfo(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    LOG("********** DUMPING SOUND INFO ********************", LOG_INFO);
+    M3D_LOG_INFO("********** DUMPING SOUND INFO ********************");
     if (m3d::Application::g_pApp->m_sound)
     {
         m3d::Application::g_pApp->m_sound->DumpSoundInfo();
     }
-    LOG("Current sound nodes rendering: ", LOG_INFO);
+    M3D_LOG_INFO("Current sound nodes rendering: ");
     m3d::pClient->GetWorld().GetGraph().DumpRenderingNodesInfoForClass(&m3d::SgSoundSourceNode::m_classSgSoundSourceNode);
-    LOG("********** END DUMPING SOUND INFO ****************", LOG_INFO);
+    M3D_LOG_INFO("********** END DUMPING SOUND INFO ****************");
     return 1;
 }
 

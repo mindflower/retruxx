@@ -73,12 +73,11 @@ namespace m3d
             void ResetDelta();
             PointBase<int> const& GetDeltaDuringGameFrame() const;
             void SetUpForCurPos(PointBase<int> const& curPos);
-            MouseInfo();
             PointBase<int> const& GetLastPos() const;
 
         private:
-            PointBase<int> m_deltaDuringGameFrame;
-            PointBase<int> m_lastPos;
+            PointBase<int> m_deltaDuringGameFrame{0, 0};
+            PointBase<int> m_lastPos{ 0, 0 };
         };
 
     public:
@@ -269,54 +268,54 @@ namespace m3d
         virtual int Render(bool) = 0;
 
     public:
-        snd::ISound* m_sound;
-        rend::IRenderer* m_renderer;
+        snd::ISound* m_sound = nullptr;
+        rend::IRenderer* m_renderer = nullptr;
         input::IInput* m_input;
-        IImpulse* m_pImpulses;
-        Cinematic* m_cinematic;
+        IImpulse* m_pImpulses = nullptr;
+        Cinematic* m_cinematic = nullptr;
         CCamera m_curCamera;
 
     protected:
-        bool m_enginePlayingVideo;
+        bool m_enginePlayingVideo = false;
         bool m_bDoNotLoadMainmenuLevel;
 
     private:
         CmdLine m_cmdLine;
-        Log *m_log;
+        Log *m_log = nullptr;
         CStr m_cfgName;
         unsigned int m_dwWindowStyle;
         RECT m_rcWindowBounds;
         RECT m_rcWindowClient;
         CStr m_frameStats;
         unsigned int m_frameFillRate;
-        char *m_strWindowTitle;
+        char *m_strWindowTitle = nullptr;
         CStr m_startupFolder;
         CStr m_imageName;
-        int m_appNeedToRedraw;
-        int m_screenShotPending;
-        int m_screenShotPendingAlways;
+        int m_appNeedToRedraw = 0;
+        int m_screenShotPending = 0;
+        int m_screenShotPendingAlways = 0;
         void *m_procTexNewTextureNotifyEvent;
         void *m_procTexShutdownEvent;
         void *m_procTexThreadHandle;
         unsigned int m_procTexThreadId;
         Event m_eventsQueue[5000];
-        int m_eventsQueueHead;
-        int m_eventsQueueTail;
+        int m_eventsQueueHead = 0;
+        int m_eventsQueueTail = 0;
         IEventHandler *m_focusKbdEntity;
-        int m_mouseX;
-        int m_mouseY;
-        float m_mouseSensitivity;
-        bool m_bMouseYAxisFlipped;
-        bool m_bMouseXAxisFlipped;
+        int m_mouseX = 100;
+        int m_mouseY = 100;
+        float m_mouseSensitivity = 1.0;
+        bool m_bMouseYAxisFlipped = false;
+        bool m_bMouseXAxisFlipped = false;
         std::vector<IEventHandler *> m_allEventHandlers;
         HINSTANCE m_hInputDll;
         HINSTANCE m_hRenderDll;
         HINSTANCE m_hSoundDll;
-        bool m_breakLoop;
-        int m_isAppActive;
-        unsigned int m_prevBtnsMask;
-        int m_prevJoystickBtnsMask;
-        int m_prevJoystickAxisInclination[12];
+        bool m_breakLoop = false;
+        int m_isAppActive = 0;
+        unsigned int m_prevBtnsMask = 0;
+        int m_prevJoystickBtnsMask = 0;
+        int m_prevJoystickAxisInclination[12] = {0};
         rend::VertexXYZWCT1 m_pointsVertsWct1[4000];
         rend::VertexXYZCT1 m_pointsVertsCt1[4000];
         int m_numPointsVerts;
@@ -326,7 +325,7 @@ namespace m3d
         void *m_sourceVerts;
         int m_pointsVertsSz;
         unsigned int m_frameClearColor;
-        rend::IEffect *m_flushQuadsShader;
+        rend::IEffect *m_flushQuadsShader = nullptr;
         __int64 m_cpuSpeed;
         DataServer *m_serverStaticModels;
         DataServer *m_serverAnimatedModels;
@@ -358,22 +357,22 @@ namespace m3d
         unsigned int m_profiler_OneFrame;
         unsigned int m_profiler_Render;
         unsigned int m_profiler_UiRender;
-        bool m_bDrawStats;
-        bool m_bDrawMemoryStats;
-        bool m_bDrawCounters;
-        bool m_bDrawGraph;
-        bool m_waitForAnykey;
+        bool m_bDrawStats = false;
+        bool m_bDrawMemoryStats = false;
+        bool m_bDrawCounters = false;
+        bool m_bDrawGraph = false;
+        bool m_waitForAnykey = false;
         bool m_waitNetworkServer;
-        bool m_isRenderingAllowed;
-        bool m_isConsoleAllowed;
-        bool m_bShowRenderStats;
-        bool m_bShowDeviceMemStats;
-        mVideoPlayer *M3dVideoPlayer;
+        bool m_isRenderingAllowed = true;
+        bool m_isConsoleAllowed = false;
+        bool m_bShowRenderStats = false;
+        bool m_bShowDeviceMemStats = false;
+        mVideoPlayer *M3dVideoPlayer = nullptr;
         DetailSettings m_detailSettings;
-        bool m_bDXCursorEnabled;
+        bool m_bDXCursorEnabled = true;
         MouseInfo m_mouseInfo;
-        HWND m_renderWindow;
-        IConHandler *m_soundConHandler;
-        bool m_bGuiWasHiddenBeforeCinematic;
+        HWND m_renderWindow = NULL;
+        IConHandler *m_soundConHandler = nullptr;
+        bool m_bGuiWasHiddenBeforeCinematic = false;
     }; 
 }

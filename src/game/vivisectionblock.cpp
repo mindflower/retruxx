@@ -34,7 +34,7 @@ bool initVivisectionBlock()
 {
     if (g_Vivisector != nullptr)
     {
-        LOG("Vivisector is already initialized...", LOG_WARN);
+        M3D_LOG_WARN("Vivisector is already initialized...", LOG_WARN);
         return false;
     }
     auto* vivisector = new Vivisector{};

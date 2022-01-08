@@ -117,7 +117,7 @@ int ProfileManager::SaveProfile(Profile const* profile) const
     }
     else
     {
-        LOG("ProfileManager::SaveProfile error - invalid profile", LOG_ERROR);
+        M3D_LOG_ERR("ProfileManager::SaveProfile error - invalid profile");
         return 0;
     }
 }

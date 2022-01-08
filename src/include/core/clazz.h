@@ -2,6 +2,10 @@
 #include "stringm3d.h"
 #include <set>
 
+#define RT_CLASS_LOCAL(cl) &cl::m_class##cl
+#define RT_CLASS_DECLARE(cl) static Class m_class##cl
+#define RT_CLASS_DEFINE(cl) Class cl::m_class##cl {#cl, sizeof(cl), CreateObject, GetBaseClass}
+
 namespace m3d
 {
     namespace cmn
@@ -17,8 +21,8 @@ namespace m3d
     {
         const char* m_className;
         int m_classSize;
-        Object* (__fastcall* m_fnCreateObject)();
-        Class* (__fastcall* m_fnGetBaseClass)();
+        Object* (* m_fnCreateObject)();
+        Class* (* m_fnGetBaseClass)();
         int m_index;
         ExportInfo* m_lExports;
         void* m_scriptHandle;

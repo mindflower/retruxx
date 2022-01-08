@@ -47,17 +47,17 @@ namespace m3d
 
             RawFile();
             unsigned int PeekBytesInternal(void*, unsigned int);
-            int Open(char const*, enum m3d::fs::IStream::OpenFlags, bool);
+            int Open(char const*, OpenFlags, bool);
             unsigned int WriteBytesInternal(void const*, unsigned int);
             unsigned int ReadBytesInternal(void*, unsigned int);
 
         private:
-            void* m_hFile;
-            void* m_hMapping;
-            bool m_EnableMapping;
-            OpenFlags m_OpenMode;
-            unsigned __int8* m_Data;
-            unsigned __int8* m_CurrData;
+            HANDLE m_hFile = INVALID_HANDLE_VALUE;      //TODO: check this
+            HANDLE m_hMapping = INVALID_HANDLE_VALUE;   //TODO: check this
+            bool m_EnableMapping = false;
+            OpenFlags m_OpenMode = OPEN_READ;
+            void* m_Data = nullptr;
+            void* m_CurrData = nullptr;
         };
     }
 }

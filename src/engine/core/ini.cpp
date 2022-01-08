@@ -1,3 +1,5 @@
+#include <sstream>
+#include <stdexcept>
 #include <core/ini.h>
 #include <core/kernel.h>
 #include <core/scoped_ptr.h>
@@ -46,5 +48,21 @@ namespace m3d
         }
         v = attr;
         return 1;
+    }
+
+    void Tokenize(CStr const* str, std::vector<CStr>& tokens, char const* chars)
+    {
+        //TODO: check this
+        if (str && !str->empty())
+        {
+            tokens.clear();
+            size_t start;
+            size_t end = 0;
+            while ((start = str->find_first_not_of(chars, end)) != CStr::npos)
+            {
+                end = str->find(chars, start);
+                tokens.push_back(str->substr(start, end - start));
+            }
+        }
     }
 }

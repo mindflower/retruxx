@@ -712,7 +712,7 @@ int CMiracle3d::RemoveChild(m3d::Object* object)
 
 int CMiracle3d::DoneMedia()
 {
-    LOG("--- Done Media ---", LOG_INFO);
+    M3D_LOG_INFO("--- Done Media ---");
     if (g_pApp->m_sound != nullptr)
     {
         g_pApp->m_sound->StopAllSounds();
@@ -764,14 +764,14 @@ int CMiracle3d::DoneMedia()
     delete m_postEffect;
 
     g_pGame->m_renderer->ReleaseTexture(m_backgroundTexture);
-    LOG("--- Done Media: Ok ---", LOG_INFO);
+    M3D_LOG_INFO("--- Done Media: Ok ---");
     return 1;
 
 }
 
 int CMiracle3d::InitMedia()
 {
-    LOG("--- Init Media ---", LOG_INFO);
+    M3D_LOG_INFO("--- Init Media ---");
     m_curGameMode.Set(GS_INITIALIZATION);
     g_pApp->m_renderer->RegisterResetCallback(this);
     m_postEffect = new PostEffectManager{};
@@ -822,7 +822,7 @@ int CMiracle3d::InitMedia()
         OnFinishIntroVideoPlaying();
         return 1;
     }
-    LOG("Fail to create interface manager", LOG_INFO);
+    M3D_LOG_INFO("Fail to create interface manager");
     return 0;
 }
 
@@ -893,7 +893,7 @@ int CMiracle3d::InitImpulses()
     auto const res = m_pImpulses->Init();
     if (res == 0)
     {
-        LOG("Fail to init impulses", LOG_INFO); 
+        M3D_LOG_INFO("Fail to init impulses");
     }
     return res;
 }
