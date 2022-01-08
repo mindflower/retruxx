@@ -9,6 +9,9 @@ namespace m3d
         class StringsListBoxWnd : public ListBoxWnd<CStr>
         {
         public:
+            RT_CLASS_DECLARE(StringsListBoxWnd);
+
+        public:
             static Class* GetBaseClass();
             static Object* CreateObject();
 
@@ -28,6 +31,9 @@ namespace m3d
 
         class FormattedStringsListBoxWnd : public ListBoxWnd<FormattedLine>
         {
+        public:
+            RT_CLASS_DECLARE(FormattedStringsListBoxWnd);
+
         public:
             static Object* CreateObject();
             static Class* GetBaseClass();

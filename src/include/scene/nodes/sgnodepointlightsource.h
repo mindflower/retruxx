@@ -6,6 +6,9 @@ namespace m3d
     class SgPointLightSourceNode : public SgNode
     {
     public:
+        RT_CLASS_DECLARE(SgPointLightSourceNode);
+
+    public:
         static Class* GetBaseClass();
         static Object* CreateObject();
     public:

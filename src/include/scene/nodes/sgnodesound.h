@@ -6,11 +6,11 @@ namespace m3d
     class SgSoundSourceNode : public SgNode
     {
     public:
-        static Object* CreateObject();
-        static Class* GetBaseClass();
+        RT_CLASS_DECLARE(SgSoundSourceNode);
 
     public:
-        static inline Class m_classSgSoundSourceNode;
+        static Object* CreateObject();
+        static Class* GetBaseClass();
 
     public:
         virtual void CanBeFree();

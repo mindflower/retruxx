@@ -8,6 +8,9 @@ namespace m3d
         class ModalWnd : public Wnd
         {
         public:
+            RT_CLASS_DECLARE(ModalWnd);
+
+        public:
             static Class* GetBaseClass();
             static Object* CreateObject();
 

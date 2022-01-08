@@ -32,6 +32,9 @@ namespace m3d
     {
         friend class CWorld;
     public:
+        RT_CLASS_DECLARE(Landscape);
+
+    public:
         class TileInfo
         {
         public:

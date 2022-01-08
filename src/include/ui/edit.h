@@ -8,6 +8,9 @@ namespace m3d
         class EditWnd : public Wnd
         {
         public:
+            RT_CLASS_DECLARE(EditWnd);
+
+        public:
             static Class* __fastcall GetBaseClass();
             static Object* __fastcall CreateObject();
 

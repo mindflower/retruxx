@@ -8,6 +8,9 @@ namespace m3d
         class TextBoxWnd : public FormattedStringsListBoxWnd
         {
         public:
+            RT_CLASS_DECLARE(TextBoxWnd);
+
+        public:
             static Class* GetBaseClass();
             static Object* CreateObject();
 

@@ -8,6 +8,9 @@ namespace m3d
         class SliderWnd : public Wnd
         {
         public:
+            RT_CLASS_DECLARE(SliderWnd);
+
+        public:
             static Object* CreateObject();
             static Class* GetBaseClass();
 

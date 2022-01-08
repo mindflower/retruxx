@@ -7,6 +7,9 @@ namespace m3d
     class SgDecalsNode : public SgNode
     {
     public:
+        RT_CLASS_DECLARE(SgDecalsNode);
+
+    public:
         static Class* __fastcall GetBaseClass();
         static Object* __fastcall CreateObject();
 

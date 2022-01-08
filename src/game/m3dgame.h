@@ -60,7 +60,7 @@ public:
     };
 
 public:
-    static inline m3d::Class m_classCMiracle3d;
+    RT_CLASS_DECLARE(CMiracle3d);
 
 public:
     virtual int OnChangeMode(m3d::AuxImpulseInfo const &);

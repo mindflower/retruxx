@@ -5,31 +5,11 @@ namespace m3d
 {
     namespace ui
     {
-        class ArtDlg :  public MsgBoxDlg
-        {
-        public:
-            virtual Class * GetClass() const ;
-            virtual ~ArtDlg();
-            static Object * __fastcall CreateObject();
-            int CreateArtDlg(CStr const &,CStr const &,CStr const &,CStr const &,BoundsBase<float> const &,unsigned int,float);
-            virtual int OnInitModal();
-            virtual Object * Clone();
-            static Class * __fastcall GetBaseClass();
-
-        protected:
-            ArtDlg();
-            ArtDlg(ArtDlg const &);
-
-        private:
-            rend::TexHandle m_tex;
-            ImageWnd *m_image;
-            CStr m_soundFileName;
-            int m_soundTableId;
-            int m_soundChannelId;
-        };
-
         class MsgBoxDlg : public ModalWnd
         {
+        public:
+            RT_CLASS_DECLARE(MsgBoxDlg);
+
         public:
             virtual ~MsgBoxDlg();
             virtual Class* GetClass() const;
@@ -54,6 +34,32 @@ namespace m3d
             float m_width;
             Wnd* m_captionWnd;
             Wnd* m_msgWnd;
+        };
+
+        class ArtDlg :  public MsgBoxDlg
+        {
+        public:
+            RT_CLASS_DECLARE(ArtDlg);
+
+        public:
+            virtual Class * GetClass() const ;
+            virtual ~ArtDlg();
+            static Object * __fastcall CreateObject();
+            int CreateArtDlg(CStr const &,CStr const &,CStr const &,CStr const &,BoundsBase<float> const &,unsigned int,float);
+            virtual int OnInitModal();
+            virtual Object * Clone();
+            static Class * __fastcall GetBaseClass();
+
+        protected:
+            ArtDlg();
+            ArtDlg(ArtDlg const &);
+
+        private:
+            rend::TexHandle m_tex;
+            ImageWnd *m_image;
+            CStr m_soundFileName;
+            int m_soundTableId;
+            int m_soundChannelId;
         };
     }
 }

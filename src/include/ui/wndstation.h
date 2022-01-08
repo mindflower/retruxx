@@ -27,7 +27,7 @@ namespace m3d
         {
             friend class Wnd;
         public:
-            static inline Class m_classWndStation;
+            RT_CLASS_DECLARE(WndStation);
 
         public:
             int DispatchMouse(Event const&);

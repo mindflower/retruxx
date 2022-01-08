@@ -4,6 +4,7 @@
 class TruxxImpulse : public m3d::GameImpulse
 {
 public:
+    RT_CLASS_DECLARE(TruxxImpulse);
     static inline m3d::Class m_classTruxxImpulse;
 
 public:

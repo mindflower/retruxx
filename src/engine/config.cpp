@@ -39,7 +39,7 @@ namespace m3d
     EngineConfig::EngineConfig()
     {
         //TODO: check all this shit!!
-        g_Kernel->AddClass(&IConsole::m_classIConsole);
+        g_Kernel->AddClass(RT_CLASS_LOCAL(IConsole));
         m_console = ConsoleFactory();
         m_console->IncRef();
         g_Kernel->RegisterGlobal(m_console, "console");

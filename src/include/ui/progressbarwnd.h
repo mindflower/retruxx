@@ -9,6 +9,9 @@ namespace m3d
         class ProgressBarWnd : public Wnd
         {
         public:
+            RT_CLASS_DECLARE(ProgressBarWnd);
+
+        public:
             enum Orientation
             {
                 ORIENTATION_TOP_TO_BOTTOM = 0x0,

@@ -16,6 +16,9 @@ namespace m3d
         class ComboBoxWnd :  public Wnd
         {
         public:
+            RT_CLASS_DECLARE(ComboBoxWnd);
+
+        public:
             class AuxInfo
             {
             public:

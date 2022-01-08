@@ -14,6 +14,9 @@ namespace m3d
         class SgNodeArrayWnd : public ImageWnd
         {
         public:
+            RT_CLASS_DECLARE(SgNodeArrayWnd);
+
+        public:
             static Object* CreateObject();
             static Class* GetBaseClass();
 

@@ -1295,3 +1295,8 @@ int n_GetCameraZoom(m3d::sArgStack& scriptStack)
     return 1;
 }
 
+int n_GetComputerName(m3d::sArgStack& scriptStack)
+{
+    throw std::logic_error("Not implemented");
+}
+

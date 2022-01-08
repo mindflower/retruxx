@@ -15,6 +15,7 @@
 #include <core/log.h>
 #include <core/stackwalker.h>
 #include <core/timer.h>
+#include <game/globalscriptfuncs.h>
 #include <scene/nodes/sgnodeanimatedmodel.h>
 #include <scene/nodes/sgnodedecals.h>
 #include <scene/nodes/sgnodegameunit.h>
@@ -1218,44 +1219,45 @@ namespace m3d
             ::GetModuleFileNameA(GetModuleHandleA(NULL), buf, sizeof(buf));
             m_imageName = buf;
 
+            using namespace ui;
             g_Kernel->AddClass(RT_CLASS_LOCAL(SgNode));
-            g_Kernel->AddClass(&SgStaticModelNode::m_classSgStaticModelNode);
-            g_Kernel->AddClass(&SgAnimatedModelNode::m_classSgAnimatedModelNode);
-            g_Kernel->AddClass(&SgGameUnitNode::m_classSgGameUnitNode);
-            g_Kernel->AddClass(&SgSpriteNode::m_classSgSpriteNode);
-            g_Kernel->AddClass(&SgLinesNode::m_classSgLinesNode);
-            g_Kernel->AddClass(&SgParticlesNode::m_classSgParticlesNode);
-            g_Kernel->AddClass(&SgSoundSourceNode::m_classSgSoundSourceNode);
-            g_Kernel->AddClass(&SgLoadpointNode::m_classSgLoadpointNode);
-            g_Kernel->AddClass(&SgPointLightSourceNode::m_classSgPointLightSourceNode);
-            g_Kernel->AddClass(&SgProjectorNode::m_classSgProjectorNode);
-            g_Kernel->AddClass(&SgDecalsNode::m_classSgDecalsNode);
-            g_Kernel->AddClass(&SgParticlesOpaqueNode::m_classSgParticlesOpaqueNode);
-            g_Kernel->AddClass(&ui::Wnd::m_classWnd);
-            g_Kernel->AddClass(&ui::ImageWnd::m_classImageWnd);
-            g_Kernel->AddClass(&ui::EditWnd::m_classEditWnd);
-            g_Kernel->AddClass(&ui::SliderWnd::m_classSliderWnd);
-            g_Kernel->AddClass(&ui::ScrollWnd::m_classScrollWnd);
-            g_Kernel->AddClass(&ui::ButtonWnd::m_classButtonWnd);
-            g_Kernel->AddClass(&ui::GlyphButton::m_classGlyphButton);
-            g_Kernel->AddClass(&ui::CheckWnd::m_classCheckWnd);
-            g_Kernel->AddClass(&ui::ModalWnd::m_classModalWnd);
-            g_Kernel->AddClass(&ui::MenuWnd::m_classMenuWnd);
-            g_Kernel->AddClass(&ui::StringsListBoxWnd::m_classStringsListBoxWnd);
-            g_Kernel->AddClass(&ui::FormattedStringsListBoxWnd::m_classFormattedStringsListBoxWnd);
-            g_Kernel->AddClass(&ui::TextBoxWnd::m_classTextBoxWnd);
-            g_Kernel->AddClass(&ui::MsgBoxDlg::m_classMsgBoxDlg);
-            g_Kernel->AddClass(&ui::ArtDlg::m_classArtDlg);
-            g_Kernel->AddClass(&ui::LineWnd::m_classLineWnd);
-            g_Kernel->AddClass(&ui::TabWnd::m_classTabWnd);
-            g_Kernel->AddClass(&ui::ModelWnd::m_classModelWnd);
-            g_Kernel->AddClass(&ui::ModelArrayWnd::m_classModelArrayWnd);
-            g_Kernel->AddClass(&ui::SgNodeArrayWnd::m_classSgNodeArrayWnd);
-            g_Kernel->AddClass(&ui::ComboBoxWnd::m_classComboBoxWnd);
-            g_Kernel->AddClass(&Landscape::m_classLandscape);
-            g_Kernel->AddClass(&Level::m_classLevel);
-            g_Kernel->AddClass(&Cinematic::m_classCinematic);
-            g_Kernel->AddClass(&ui::ProgressBarWnd::m_classProgressBarWnd);
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgStaticModelNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgAnimatedModelNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgGameUnitNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgSpriteNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgLinesNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgParticlesNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgSoundSourceNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgLoadpointNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgPointLightSourceNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgProjectorNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgDecalsNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgParticlesOpaqueNode));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(Wnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(ImageWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(EditWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SliderWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(ScrollWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(ButtonWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(GlyphButton));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(CheckWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(ModalWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(MenuWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(StringsListBoxWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(FormattedStringsListBoxWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(TextBoxWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(MsgBoxDlg));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(ArtDlg));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(LineWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(TabWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(ModelWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(ModelArrayWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(SgNodeArrayWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(ComboBoxWnd));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(Landscape));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(Level));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(Cinematic));
+            g_Kernel->AddClass(RT_CLASS_LOCAL(ProgressBarWnd));
 
             m_cpuSpeed = GetCpuFrequency(0x64);
             m_profiler_OneFrame = m_profilerStack.AddProfiler("OneFrame", 30);
@@ -1266,7 +1268,6 @@ namespace m3d
 
             m_cameraController = new CameraController;
             m_cinematic = dynamic_cast<Cinematic*>(g_Kernel->New("Cinematic"));
-            throw std::logic_error("Not implemented");
         }
         else
         {

@@ -3,8 +3,8 @@
 #include <set>
 
 #define RT_CLASS_LOCAL(cl) &cl::m_class##cl
-#define RT_CLASS_DECLARE(cl) static Class m_class##cl
-#define RT_CLASS_DEFINE(cl) Class cl::m_class##cl {#cl, sizeof(cl), CreateObject, GetBaseClass}
+#define RT_CLASS_DECLARE(cl) static m3d::Class m_class##cl
+#define RT_CLASS_DEFINE(cl) m3d::Class cl::m_class##cl {#cl, sizeof(cl), CreateObject, GetBaseClass}
 
 namespace m3d
 {
@@ -48,7 +48,7 @@ namespace m3d
     class Object : public RefCountedBase
     {
     public:
-        static inline Class m_classObject{"Object"};
+        RT_CLASS_DECLARE(Object);
 
     public:
         static Class* GetBaseClass();

@@ -10,6 +10,9 @@ namespace m3d
         class ScrollWnd : public Wnd
         {
         public:
+            RT_CLASS_DECLARE(ScrollWnd);
+
+        public:
             static Object* CreateObject();
             static Class* GetBaseClass();
 

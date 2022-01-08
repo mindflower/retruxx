@@ -13,6 +13,9 @@ namespace m3d
     class SgAnimatedModelNode : public SgNode
     {
     public:
+        RT_CLASS_DECLARE(SgAnimatedModelNode);
+
+    public:
         static Class* GetBaseClass();
         static class Object* CreateObject();
 

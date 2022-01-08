@@ -16,6 +16,9 @@ namespace m3d
         class ModelArrayWnd : public ImageWnd
         {
         public:
+            RT_CLASS_DECLARE(ModelArrayWnd);
+
+        public:
             static Object* CreateObject();
             static Class* GetBaseClass();
 

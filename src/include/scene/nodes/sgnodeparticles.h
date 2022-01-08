@@ -6,6 +6,9 @@ namespace m3d
     class SgParticlesNode : public SgNode
     {
     public:
+        RT_CLASS_DECLARE(SgParticlesNode);
+
+    public:
         static Object* CreateObject();
         static Class* GetBaseClass();
 
@@ -38,6 +41,9 @@ namespace m3d
 
     class SgParticlesOpaqueNode : public SgParticlesNode
     {
+    public:
+        RT_CLASS_DECLARE(SgParticlesOpaqueNode);
+
     public:
         static Class* GetBaseClass();
         static Object* CreateObject();

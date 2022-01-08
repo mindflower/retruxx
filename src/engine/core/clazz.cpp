@@ -141,7 +141,7 @@ namespace m3d
 
     Class* Object::GetClass() const
     {
-        return &Object::m_classObject;
+        return RT_CLASS_LOCAL(Object);
     }
 
     char const* Object::GetClassNameA() const

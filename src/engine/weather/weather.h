@@ -57,7 +57,7 @@ namespace m3d
     class Weather : public Object
     {
     public:
-        static inline Class m_classWeather;
+        RT_CLASS_DECLARE(Weather);
 
     public:
         CStr const & GetWeatherName() const ;
@@ -127,7 +127,7 @@ namespace m3d
     class WeatherClear : public Weather
     {
     public:
-        static inline Class m_classWeatherClear;
+        RT_CLASS_DECLARE(WeatherClear);
 
     public:
         static Class* __fastcall GetBaseClass();
@@ -144,7 +144,7 @@ namespace m3d
     class WeatherInclement : public Weather
     {
     public:
-        static inline Class m_classWeatherInclement;
+        RT_CLASS_DECLARE(WeatherInclement);
 
     public:
         virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
@@ -175,7 +175,7 @@ namespace m3d
     class WeatherFoggy : public Weather
     {
     public:
-        static inline Class m_classWeatherFoggy;
+        RT_CLASS_DECLARE(WeatherFoggy);
 
     public:
         virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
@@ -194,7 +194,7 @@ namespace m3d
     class WeatherThunderstorm : public WeatherInclement
     {
     public:
-        static inline Class m_classWeatherThunderstorm;
+        RT_CLASS_DECLARE(WeatherThunderstorm);
 
     public:
         virtual void DefaultInitialize();

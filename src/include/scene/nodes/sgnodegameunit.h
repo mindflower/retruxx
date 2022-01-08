@@ -6,6 +6,9 @@ namespace m3d
     class SgGameUnitNode : public m3d::SgAnimatedModelNode
     {
     public:
+        RT_CLASS_DECLARE(SgGameUnitNode);
+
+    public:
         static Object* CreateObject();
         static Class* GetBaseClass();
 

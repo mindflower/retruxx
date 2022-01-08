@@ -62,7 +62,7 @@ enum ProfileParam
 class Profile : public m3d::Object
 {
 public:
-    static inline m3d::Class m_classProfile;
+    RT_CLASS_DECLARE(Profile);
 
 public:
     int LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);

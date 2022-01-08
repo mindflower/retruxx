@@ -6,6 +6,9 @@ namespace m3d
     class SgStaticModelNode : public SgNode
     {
     public:
+        RT_CLASS_DECLARE(SgStaticModelNode);
+
+    public:
         static Object* CreateObject();
         static Class* GetBaseClass();
 

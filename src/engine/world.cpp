@@ -242,10 +242,10 @@ namespace m3d
 
     void CWorld::Register()
     {
-        g_Kernel->AddClass(&Weather::m_classWeather);
-        g_Kernel->AddClass(&WeatherClear::m_classWeatherClear);
-        g_Kernel->AddClass(&WeatherInclement::m_classWeatherInclement);
-        g_Kernel->AddClass(&WeatherThunderstorm::m_classWeatherThunderstorm);
-        g_Kernel->AddClass(&WeatherFoggy::m_classWeatherFoggy);
+        g_Kernel->AddClass(RT_CLASS_LOCAL(Weather));
+        g_Kernel->AddClass(RT_CLASS_LOCAL(WeatherClear));
+        g_Kernel->AddClass(RT_CLASS_LOCAL(WeatherInclement));
+        g_Kernel->AddClass(RT_CLASS_LOCAL(WeatherThunderstorm));
+        g_Kernel->AddClass(RT_CLASS_LOCAL(WeatherFoggy));
     }
 }

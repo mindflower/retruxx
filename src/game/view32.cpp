@@ -682,7 +682,7 @@ int CMiracle3d::AddChild(m3d::Object* node)
     {
         return result;
     }
-    if (node->IsKindOf(&MotherPanel::m_classMotherPanel) == false)
+    if (node->IsKindOf(RT_CLASS_LOCAL(MotherPanel)) == false)
     {
         return result;
     }
@@ -791,8 +791,8 @@ int CMiracle3d::InitMedia()
     m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_maxAngle, nullptr);
     m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_fov, nullptr);
     m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cinematic->m_fadePeriod, nullptr);
-    m3d::g_Kernel->AddClass(&Profile::m_classProfile);
-    m3d::g_Kernel->AddClass(&ProfileManager::m_classProfileManager);
+    m3d::g_Kernel->AddClass(RT_CLASS_LOCAL(Profile));
+    m3d::g_Kernel->AddClass(RT_CLASS_LOCAL(ProfileManager));
     GetBlockMusicManager()->InitOnce();
 
     m_pInterfaceManager = new TruxxUiManager{};
@@ -884,7 +884,7 @@ void CMiracle3d::RegisterConsoleCommands()
 int CMiracle3d::InitImpulses()
 {
     m3d::g_Kernel->AddClass(&m3d::GameImpulse::m_classGameImpulse);
-    m3d::g_Kernel->AddClass(&TruxxImpulse::m_classTruxxImpulse);
+    m3d::g_Kernel->AddClass(RT_CLASS_LOCAL(TruxxImpulse));
     m_pImpulses = dynamic_cast<TruxxImpulse*>(m3d::g_Kernel->New("TruxxImpulse"));
     if (m_pImpulses == nullptr)
     {

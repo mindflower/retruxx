@@ -48,7 +48,7 @@ namespace m3d
         static Class* GetBaseClass();
 
     public:
-        static inline Class m_classIConsole{ "IConsole" };
+        RT_CLASS_DECLARE(IConsole);
 
     public:
         virtual ~IConsole() = default;

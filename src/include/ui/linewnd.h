@@ -14,6 +14,9 @@ namespace m3d
         class LineWnd : public Wnd
         {
         public:
+            RT_CLASS_DECLARE(LineWnd);
+
+        public:
             static Object* CreateObject();
             static Class* GetBaseClass();
 

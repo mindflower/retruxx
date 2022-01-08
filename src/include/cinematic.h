@@ -107,6 +107,9 @@ namespace m3d
     class Cinematic :  public Object
     {
     public:
+        RT_CLASS_DECLARE(Cinematic);
+
+    public:
         bool SkipCinematic();
         bool RenderDebugInfo() const ;
         bool bMustBeNextCinematic() const ;

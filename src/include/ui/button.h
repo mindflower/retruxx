@@ -9,11 +9,11 @@ namespace m3d
         class ButtonWnd : public Wnd
         {
         public:
+            RT_CLASS_DECLARE(ButtonWnd);
+
+        public:
 			static Object* CreateObject();
 			static Class* GetBaseClass();
-
-		public:
-			static inline Class m_classButtonWnd;
 
         public:
 			virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
@@ -56,6 +56,9 @@ namespace m3d
 
         class CheckWnd : public ButtonWnd
         {
+        public:
+            RT_CLASS_DECLARE(CheckWnd);
+
         public:
             static Object* CreateObject();
             static Class* GetBaseClass();

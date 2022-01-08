@@ -9,6 +9,9 @@ namespace m3d
         class MenuWnd : public ModalWnd
         {
         public:
+            RT_CLASS_DECLARE(MenuWnd);
+
+        public:
             class Item
             {
             public:

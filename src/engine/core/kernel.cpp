@@ -221,7 +221,7 @@ namespace m3d
         mm = m_memMan;
 
         m_classes = new std::map<CStr, m3d::Class*>;
-        AddClass(&Object::m_classObject);
+        AddClass(RT_CLASS_LOCAL(Object));
 
         m_lGlobals = new std::map<CStr, m3d::Object*>;
 
@@ -236,7 +236,7 @@ namespace m3d
         }
         m_timer = new cmn::Timer;
 
-        AddClass(&ScriptServer::m_classScriptServer);
+        AddClass(RT_CLASS_LOCAL(ScriptServer));
         auto scriptServer = dynamic_cast<ScriptServer*>(ScriptServer::m_classScriptServer.NewInstance());
         if (scriptServer)
         {

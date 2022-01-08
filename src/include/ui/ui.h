@@ -49,6 +49,9 @@ namespace m3d
         {
             friend class WndStation;
         public:
+            RT_CLASS_DECLARE(Wnd);
+
+        public:
             enum DragMode
             {
                 DRAG_NONE = 0x0,

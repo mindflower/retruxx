@@ -8,6 +8,9 @@ namespace m3d
     class Level : public Object
     {
     public:
+        RT_CLASS_DECLARE(Level);
+
+    public:
         static Class * __fastcall GetBaseClass();
         char const * GetLevelName() const ;
         int GetLandSize() const ;

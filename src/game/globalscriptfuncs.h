@@ -76,3 +76,5 @@ int n_GetNodeByName(m3d::sArgStack& scriptStack);
 int n_SetCameraDirectionToObj(m3d::sArgStack& scriptStack);
 int n_PlayCustomMusic(m3d::sArgStack& scriptStack);
 int n_GetCameraZoom(m3d::sArgStack& scriptStack);
+
+int n_GetComputerName(m3d::sArgStack& scriptStack);

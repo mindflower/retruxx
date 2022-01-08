@@ -6,6 +6,9 @@ namespace m3d
     class SgLoadpointNode : public SgNode
     {
     public:
+        RT_CLASS_DECLARE(SgLoadpointNode);
+
+    public:
         static Class* GetBaseClass();
         static Object* CreateObject();
 

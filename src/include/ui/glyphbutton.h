@@ -8,6 +8,9 @@ namespace m3d
         class GlyphButton : public ButtonWnd
         {
         public:
+            RT_CLASS_DECLARE(GlyphButton);
+
+        public:
             enum GlyphButtonType
             {
                 GBTYPE_OK = 0x0,
