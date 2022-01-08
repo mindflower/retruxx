@@ -27,7 +27,7 @@ namespace ai
         virtual void AddChild(Obj *);
         void FillFromGroundRepository(GeomRepository *,bool);
         Chest(ChestPrototypeInfo const &);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         virtual void Update(float,unsigned int);
         GeomRepository * GetRepository();
@@ -39,7 +39,7 @@ namespace ai
 
     private:
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     private:
         GeomRepository *m_repository;

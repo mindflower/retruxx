@@ -80,14 +80,11 @@ public:
     };
 
 public:
-    RT_CLASS_DECLARE(MotherPanel);
-
-public:
     void LeaveTown(bool);
     virtual m3d::Class * GetClass() const ;
-    static m3d::Object * __fastcall CreateObject();
+    static m3d::Object * CreateObject();
     virtual m3d::Object * Clone();
-    static m3d::Class * __fastcall GetBaseClass();
+    static m3d::Class * GetBaseClass();
     bool IsInTownRoot() const ;
     virtual ~MotherPanel();
 
@@ -156,6 +153,9 @@ protected:
     void OnBar();
     void SelectTabButton(Tab);
     void AdjustDecor();
+
+public:
+    RT_CLASS_DECLARE(MotherPanel);
 
 private:
     std::map<ChildPanelId,ref_ptr<ChildPanel>> m_panels;

@@ -7,8 +7,8 @@ public:
     void SetType(enum Type);
     virtual class m3d::Object * Clone();
     virtual int CreateFromPattern(class m3d::ui::Wnd *,bool);
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     void SetVehicleId(int);
     virtual struct m3d::Class * GetClass() const ;
 protected:

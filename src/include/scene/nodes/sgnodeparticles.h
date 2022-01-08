@@ -6,9 +6,6 @@ namespace m3d
     class SgParticlesNode : public SgNode
     {
     public:
-        RT_CLASS_DECLARE(SgParticlesNode);
-
-    public:
         static Object* CreateObject();
         static Class* GetBaseClass();
 
@@ -33,6 +30,9 @@ namespace m3d
         SgParticlesNode();
         virtual void UpdateOwnBoundingBox();
 
+    public:
+        RT_CLASS_DECLARE(SgParticlesNode);
+
     private:
         int m_lastTimeUpdated;
         int m_numMesh;
@@ -41,9 +41,6 @@ namespace m3d
 
     class SgParticlesOpaqueNode : public SgParticlesNode
     {
-    public:
-        RT_CLASS_DECLARE(SgParticlesOpaqueNode);
-
     public:
         static Class* GetBaseClass();
         static Object* CreateObject();
@@ -56,6 +53,8 @@ namespace m3d
     protected:
         SgParticlesOpaqueNode(SgParticlesOpaqueNode const&);
         SgParticlesOpaqueNode();
-    private:
+
+    public:
+        RT_CLASS_DECLARE(SgParticlesOpaqueNode);
     };
 }

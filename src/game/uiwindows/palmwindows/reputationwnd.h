@@ -4,9 +4,9 @@ class ReputationButton :  public m3d::ui::ButtonWnd
 {
 public:
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int GetClanBelong() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int SetUpForClan(int);
     virtual struct m3d::Class * GetClass() const ;
     virtual ~ReputationButton();
@@ -35,8 +35,8 @@ class ReputationWnd :  public ScreenWnd
 public:
     virtual class m3d::Object * Clone();
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     virtual ~ReputationWnd();
 protected:
     ReputationWnd(class ReputationWnd const &);
@@ -61,8 +61,8 @@ public:
     virtual class m3d::Object * Clone();
     virtual ~ReputationList();
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
 protected:
     ReputationList();
     ReputationList(class ReputationList const &);

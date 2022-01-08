@@ -57,18 +57,15 @@ namespace m3d
     class Weather : public Object
     {
     public:
-        RT_CLASS_DECLARE(Weather);
-
-    public:
         CStr const & GetWeatherName() const ;
         bool GetShadowVisibility(unsigned int) const ;
-        static Class * __fastcall GetBaseClass();
+        static Class * GetBaseClass();
         CVector const & CurrentColor(unsigned int) const ;
         virtual ~Weather();
         float GetWaveHBig() const ;
         char const * ColorTypeName(unsigned int) const ;
         void ChangeCloudTexture(CStr &);
-        static Object * __fastcall CreateObject();
+        static Object * CreateObject();
         virtual int UpdateColors(ColorItems,ColorTypes);
         void SetWeatherName(CStr const &);
         virtual int WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
@@ -100,6 +97,9 @@ namespace m3d
         Weather(Weather const &);
         Weather();
 
+    public:
+        RT_CLASS_DECLARE(Weather);
+
     private:
         CStr m_Name;
         CVector m_colorSets[7][4];
@@ -127,35 +127,32 @@ namespace m3d
     class WeatherClear : public Weather
     {
     public:
-        RT_CLASS_DECLARE(WeatherClear);
-
-    public:
-        static Class* __fastcall GetBaseClass();
+        static Class* GetBaseClass();
         virtual Object* Clone();
         virtual ~WeatherClear();
         virtual Class* GetClass() const;
-        static Object* __fastcall CreateObject();
+        static Object* CreateObject();
 
     protected:
         WeatherClear(WeatherClear const&);
         WeatherClear();
+
+    public:
+        RT_CLASS_DECLARE(WeatherClear);
     };
 
     class WeatherInclement : public Weather
     {
     public:
-        RT_CLASS_DECLARE(WeatherInclement);
-
-    public:
         virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual void SetUp();
         virtual void RecreateEffect();
         virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-        static Class* __fastcall GetBaseClass();
+        static Class* GetBaseClass();
         virtual ~WeatherInclement();
         virtual void DefaultInitialize();
         virtual Class* GetClass() const;
-        static Object* __fastcall CreateObject();
+        static Object* CreateObject();
         virtual Object* Clone();
         virtual int Render();
         virtual int TurnOffEffects();
@@ -163,6 +160,9 @@ namespace m3d
     protected:
         WeatherInclement(WeatherInclement const&);
         WeatherInclement();
+
+    public:
+        RT_CLASS_DECLARE(WeatherInclement);
 
     private:
         CStr m_inclementNodeName;
@@ -175,35 +175,32 @@ namespace m3d
     class WeatherFoggy : public Weather
     {
     public:
-        RT_CLASS_DECLARE(WeatherFoggy);
-
-    public:
         virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual ~WeatherFoggy();
-        static Class* __fastcall GetBaseClass();
+        static Class* GetBaseClass();
         virtual Class* GetClass() const;
-        static Object* __fastcall CreateObject();
+        static Object* CreateObject();
         virtual Object* Clone();
 
     protected:
         WeatherFoggy(WeatherFoggy const&);
         WeatherFoggy();
+
+    public:
+        RT_CLASS_DECLARE(WeatherFoggy);
     };
 
     class WeatherThunderstorm : public WeatherInclement
     {
-    public:
-        RT_CLASS_DECLARE(WeatherThunderstorm);
-
     public:
         virtual void DefaultInitialize();
         virtual int Update(float, int);
         virtual Class* GetClass() const;
         virtual ~WeatherThunderstorm();
         virtual int Render();
-        static Class* __fastcall GetBaseClass();
-        static Object* __fastcall CreateObject();
+        static Class* GetBaseClass();
+        static Object* CreateObject();
         virtual int UpdateColors(ColorItems, ColorTypes);
         virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual int TurnOffEffects();
@@ -214,6 +211,9 @@ namespace m3d
     protected:
         WeatherThunderstorm();
         WeatherThunderstorm(WeatherThunderstorm const&);
+
+    public:
+        RT_CLASS_DECLARE(WeatherThunderstorm);
 
     private:
         int m_lastthunderTime;

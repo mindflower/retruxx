@@ -54,7 +54,7 @@ namespace ai
     public:
         bool LoadFromXmlFile(CStr const&);
         bool SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         void FailQuestIfTaken(char const*);
         virtual m3d::Class* GetClass() const;
         void CompleteQuestIfTaken(char const*);
@@ -72,7 +72,7 @@ namespace ai
         bool CanQuestBeGiven(char const*) const;
         void CompleteQuest(char const*);
         virtual ~QuestStateManager();
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         void OnQuestTaken(int);
         bool IsQuestFailed(char const*) const;
 

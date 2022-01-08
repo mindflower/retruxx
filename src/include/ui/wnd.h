@@ -8,9 +8,6 @@ namespace m3d
         class ModalWnd : public Wnd
         {
         public:
-            RT_CLASS_DECLARE(ModalWnd);
-
-        public:
             static Class* GetBaseClass();
             static Object* CreateObject();
 
@@ -34,6 +31,9 @@ namespace m3d
             virtual int OnWndNotify(Wnd*, unsigned int, unsigned int, AIParam const&);
             ModalWnd(ModalWnd const&);
             ModalWnd();
+
+        public:
+            RT_CLASS_DECLARE(ModalWnd);
 
         private:
             Wnd* m_curControl;

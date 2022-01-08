@@ -7,9 +7,9 @@ public:
     virtual class m3d::Object * Clone();
     int SetupForNewSave(CStr const &,CStr const &,class m3d::AIParam const &);
     void Select(enum SelectType);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     CStr const & GetLevelName() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual ~SaveButton();
     CStr const & GetSaveFolderName() const ;
     CStr const & GetSaveName() const ;
@@ -38,10 +38,10 @@ class LSWnd :  public m3d::ui::ModalWnd
 {
 public:
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual class m3d::Object * Clone();
     virtual ~LSWnd();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
 protected:
     virtual void OnCurProfileChanged();
     virtual void OnEnter();
@@ -76,9 +76,9 @@ class SaveList :  public m3d::ui::ListBoxWnd<SaveButton *>
 public:
     virtual ~SaveList();
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     enum SortDir GetCurSortDir() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int SortSaves(enum SortArg,enum SortDir);
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
     virtual void SetCurSel(int);

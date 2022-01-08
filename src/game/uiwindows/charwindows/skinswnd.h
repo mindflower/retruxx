@@ -6,8 +6,8 @@ public:
     int SetupForVehicle(int);
     virtual ~SkinsWnd();
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
 protected:
     SkinsWnd(class SkinsWnd const &);

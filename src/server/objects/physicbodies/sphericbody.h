@@ -19,14 +19,14 @@ namespace ai
     {
     public:
         virtual m3d::Object * Clone();
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void SetMass(float);
         SphericBody(std::vector<CollisionInfo,std::allocator<CollisionInfo> > const &,float);
         SphericBody(SphericBodyPrototypeInfo const &);
         float GetRadius() const ;
         virtual ~SphericBody();
         virtual m3d::Class * GetClass() const ;
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     protected:
         SphericBody();

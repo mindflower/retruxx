@@ -17,9 +17,9 @@ namespace ai
     {
     public:
         virtual void SetMass(float);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Class * GetClass() const ;
         RayBody(RayBodyPrototypeInfo const &);
         RayBody(float);

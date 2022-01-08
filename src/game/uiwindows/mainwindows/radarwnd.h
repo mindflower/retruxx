@@ -79,7 +79,7 @@ public:
     void GetIcoForObject(class ai::Obj const *,class m3d::rend::TexHandle &,class PointBase<float> &) const ;
     void GetIcoForTurret(class ai::StaticAutoGun const *,class m3d::rend::TexHandle &,class PointBase<float> &) const ;
     int UpdateOnNewFrame();
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int UpdateTurretsOnNewFrame();
     void ClearVehicleItems();
     void SetScanRadius(float);
@@ -92,7 +92,7 @@ public:
     float GetScanRadius() const ;
     void DrawVehicles(struct m3d::ui::DrawInfo const &) const ;
     int UpdateVehiclesOnNewFrame();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
 protected:
     RadarWnd();
     RadarWnd(class RadarWnd const &);

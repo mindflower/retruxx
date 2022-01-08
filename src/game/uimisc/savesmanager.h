@@ -49,10 +49,10 @@ public:
     CStr GetPathForTemporaryMaps() const ;
     CStr GetSaveFolderPathByFolderName(CStr const &) const ;
     int AutoSave(CStr const &);
-    static m3d::Class * __fastcall GetBaseClass();
+    static m3d::Class * GetBaseClass();
     m3d::rend::TexHandle GetCurGameScreenshot() const ;
     CStr GetNewSaveFolderName() const ;
-    static m3d::Object * __fastcall CreateObject();
+    static m3d::Object * CreateObject();
     int LastLoad();
     int LoadGame(CStr const &);
     int GameDataUpdate(void *,int);

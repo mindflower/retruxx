@@ -27,12 +27,9 @@ namespace m3d
         {
             friend class Wnd;
         public:
-            RT_CLASS_DECLARE(WndStation);
-
-        public:
             int DispatchMouse(Event const&);
             bool IsWndAlive(Wnd const*, int) const;
-            static Class* __fastcall GetBaseClass();
+            static Class* GetBaseClass();
             Wnd* CaptureFocus(Wnd*);
             int Done();
             ModalWnd* GetTopModal();
@@ -90,6 +87,9 @@ namespace m3d
             void UpdateOnMouseInOut(Wnd* newWnd);
             void UnregisterWnd(Wnd*);
             int DispatchKey(Event const&);
+
+        public:
+            RT_CLASS_DECLARE(WndStation);
 
         protected:
             PointBase<float> m_prevMouseCoord;

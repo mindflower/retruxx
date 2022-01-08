@@ -40,7 +40,7 @@ namespace ai
         virtual bool CanChildBeAdded(m3d::Class *) const ;
         virtual int GetPropertyId(char const *) const ;
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void RenderDebugInfo() const ;
         virtual void Remove();
         static CStr __fastcall GetLevelNameFromPassageAddress(CStr const &);
@@ -76,7 +76,7 @@ namespace ai
     private:
         void _OnGameStart(Event const &);
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         bool _MustCheckObject(Obj const *) const ;
         void _CheckIncomingOutgoingObjects(std::set<ref_ptr<Obstacle>,std::less<ref_ptr<Obstacle> >,std::allocator<ref_ptr<Obstacle> > > &);
 

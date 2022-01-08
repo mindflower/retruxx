@@ -6,9 +6,6 @@ namespace m3d
     class SgSoundSourceNode : public SgNode
     {
     public:
-        RT_CLASS_DECLARE(SgSoundSourceNode);
-
-    public:
         static Object* CreateObject();
         static Class* GetBaseClass();
 
@@ -36,6 +33,11 @@ namespace m3d
     private:
         bool _OnSoundStopped();
         int _InternalRender();
+
+    public:
+        RT_CLASS_DECLARE(SgSoundSourceNode);
+
+    private:
         unsigned int m_props[6];
         int m_currentSoundNum;
         int m_framesPassed;

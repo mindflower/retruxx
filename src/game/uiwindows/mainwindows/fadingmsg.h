@@ -3,12 +3,12 @@
 class FadingMsgItem :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     int SetupForMsg(CStr const &,class PointBase<float> const &,float,enum FadingMsgList::MsgType);
     virtual ~FadingMsgItem();
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
 protected:
     void Update();
     void StartFade();
@@ -24,14 +24,14 @@ private:
 class FadingMsgList :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int AddMsgT(CStr const &,class std::vector<class m3d::AIParam,class std::allocator<class m3d::AIParam> > const &);
     int AddMsgByStrId(CStr const &,class std::vector<class m3d::AIParam,class std::allocator<class m3d::AIParam> > const &);
     int AddMsg(CStr const &,class std::vector<class m3d::AIParam,class std::allocator<class m3d::AIParam> > const &);
     virtual class m3d::Object * Clone();
     virtual ~FadingMsgList();
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
 protected:
     void OnNewFrame();
     int PushBack(class FadingMsgItem *);

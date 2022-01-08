@@ -31,7 +31,7 @@ namespace ai
         virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
         static void __fastcall Registration();
         Barricade(BarricadePrototypeInfo const &);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual bool SetPropertyById(int,m3d::AIParam const &);
 
     protected:
@@ -41,7 +41,7 @@ namespace ai
         virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
 
     private:

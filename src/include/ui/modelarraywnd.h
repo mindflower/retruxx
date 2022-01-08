@@ -16,9 +16,6 @@ namespace m3d
         class ModelArrayWnd : public ImageWnd
         {
         public:
-            RT_CLASS_DECLARE(ModelArrayWnd);
-
-        public:
             static Object* CreateObject();
             static Class* GetBaseClass();
 
@@ -44,6 +41,9 @@ namespace m3d
             ModelArrayWnd(ModelArrayWnd const&);
             virtual int CreateImageWnd(BoundsBase<float> const&, rend::TexHandle);
             virtual int CreateImageWnd(BoundsBase<float> const&, CStr const&);
+
+        public:
+            RT_CLASS_DECLARE(ModelArrayWnd);
 
         private:
             rend::TexHandle m_renderTexture;

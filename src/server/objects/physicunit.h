@@ -52,7 +52,7 @@ namespace ai
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         virtual PhysicUnitPrototypeInfo const * GetPrototypeInfo() const ;
         bool AddWalkPathByName(char const *);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         void SetInitVelocities(bool);
         virtual void Update(float,unsigned int);
         virtual void SetDirection(CVector const &);
@@ -67,7 +67,7 @@ namespace ai
     private:
         void _SetWalkState(WalkState);
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     private:
         States m_State;

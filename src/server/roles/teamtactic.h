@@ -18,14 +18,14 @@ namespace ai
     class TeamTactic
     {
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         TeamTactic(TeamTacticPrototypeInfo const&);
         virtual TeamTacticPrototypeInfo const* GetPrototypeInfo() const;
         virtual m3d::Class* GetClass() const;
     protected:
         virtual ~TeamTactic();
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
     };
 
@@ -54,7 +54,7 @@ namespace ai
         virtual void AssignAgainstTeam(Team*, Team const*);
         virtual float FitAgainstVehicle(Team const*, Vehicle const*);
         void GetRolePrototypeIdsEx(int, std::vector<int, std::allocator<int> >&) const;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual float FitAgainstTeam(Team const*, Team const*);
         virtual float FitAgainstObj(Team const*, Obj const*);
 
@@ -62,7 +62,7 @@ namespace ai
         virtual ~TeamTacticWithRoles();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         std::vector<int, std::allocator<int> > const& GetRolePrototypeIds() const;
         virtual m3d::Object* Clone();
     };

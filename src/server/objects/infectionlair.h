@@ -14,10 +14,7 @@ namespace ai
     class InfectionLair : public Settlement
     {
     public:
-        RT_CLASS_DECLARE(InfectionLair);
-
-    public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const;
         virtual InfectionLairPrototypeInfo const* GetPrototypeInfo() const;
         InfectionLair(InfectionLairPrototypeInfo const&);
@@ -26,7 +23,10 @@ namespace ai
         virtual ~InfectionLair();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(InfectionLair);
     };
 }

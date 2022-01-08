@@ -80,7 +80,7 @@ namespace ai
         float GetObjResourceCoeff(Obj const *) const ;
         std::vector<Building *> const & GetAllBuildings() const ;
         bool IsRuined() const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void CreateChildren();
         std::vector<Building *> GetBuildingByType(BuildingType) const ;
         virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
@@ -119,7 +119,7 @@ namespace ai
         void _OnPlayerVehicleHorn(Event const &);
         virtual m3d::Object * Clone();
         Team * _GetDefendingTeam();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         void _OnObjectEntersLocation(Event const &);
         void _InitializeWorkshops();
         void _OnTargetReached(Event const &);

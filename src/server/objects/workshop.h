@@ -41,7 +41,7 @@ namespace ai
         void ApplyAffixGeneratorToRepository(WorkshopRepositoryType,int,unsigned int,int);
         virtual void Remove();
         float GetRepairPriceForOneUnit(Obj const *) const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         unsigned int GetObjectRepairPrice(Obj const *) const ;
         Workshop(WorkshopPrototypeInfo const &);
         void AddArticle(Article const &) const ;
@@ -78,7 +78,7 @@ namespace ai
         virtual ~Workshop();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         void _GetArticles(std::vector<Article> &) const ;
         virtual m3d::Object * Clone();
         bool _ArticleExists(int) const ;

@@ -9,7 +9,7 @@ namespace ai
         void SetDirection(CVector const &);
         float GetLength() const ;
         CVector GetDirection() const ;
-        static class Ray * __fastcall CreateObject(dxSpace *,float,void (__fastcall*)(dxGeom *));
+        static class Ray * CreateObject(dxSpace *,float,void (__fastcall*)(dxGeom *));
         void SetLength(float);
 
     private:

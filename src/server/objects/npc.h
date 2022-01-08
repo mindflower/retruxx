@@ -40,7 +40,7 @@ namespace ai
         virtual bool SetPropertyById(int,m3d::AIParam const &);
         void SetHelloReplyNames(std::vector<CStr,std::allocator<CStr> > const &);
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         CStr const & GetModelName() const ;
         virtual int GetPropertyId(char const *) const ;
         bool HasNotTakenDynamicQuests() const ;
@@ -59,7 +59,7 @@ namespace ai
         virtual void _InternalPostLoad();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
 
     private:

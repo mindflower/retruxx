@@ -30,7 +30,7 @@ namespace ai
         void SetInitialVelocity(CVector const &);
         Rocket(RocketPrototypeInfo const &);
         virtual void Update(float,unsigned int);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         void CreateBlastWave() const ;
         virtual void Remove();
         void setWithAngleLimit(bool);
@@ -43,7 +43,7 @@ namespace ai
 
     private:
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     private:
         int m_targetObjId;

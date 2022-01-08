@@ -22,12 +22,12 @@ private:
 class GameMenuWnd :  public m3d::ui::ModalWnd, MenuItem
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     CStr GetCurrentLevelName() const ;
     virtual class m3d::Object * Clone();
     CStr GetCurrentRootLevelName() const ;
     virtual ~GameMenuWnd();
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     bool SetMenuLevel(CStr const &,CStr const &);
 protected:

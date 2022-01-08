@@ -16,13 +16,10 @@ namespace ai
     class CompoundGun : public CompoundVehiclePart
     {
     public:
-        RT_CLASS_DECLARE(CompoundGun);
-
-    public:
         virtual bool CanFire() const;
         virtual unsigned int GetPrice(IPriceCoeffProvider const*) const;
         void SetProperTargetId(int, int);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         void SetChargeState(Gun::ChargeState);
         bool IsDurabilityEnoughForFiring() const;
         DamageType GetDamageType() const;
@@ -59,6 +56,9 @@ namespace ai
 
     private:
         virtual m3d::Object* Clone();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
+
+    public:
+        RT_CLASS_DECLARE(CompoundGun);
     };
 }

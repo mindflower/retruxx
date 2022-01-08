@@ -19,11 +19,8 @@ namespace ai
     class TurboAccelerationPusher : public Gun
     {
     public:
-        RT_CLASS_DECLARE(TurboAccelerationPusher);
-
-    public:
         TurboAccelerationPusher(TurboAccelerationPusherPrototypeInfo const&);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const;
         virtual TurboAccelerationPusherPrototypeInfo const* GetPrototypeInfo() const;
 
@@ -34,6 +31,9 @@ namespace ai
     private:
         virtual m3d::Object* Clone();
         virtual bool isLookAtPoint(CVector const&, float) const;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
+
+    public:
+        RT_CLASS_DECLARE(TurboAccelerationPusher);
     };
 }

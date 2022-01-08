@@ -48,9 +48,6 @@ namespace m3d
         static Class* GetBaseClass();
 
     public:
-        RT_CLASS_DECLARE(IConsole);
-
-    public:
         virtual ~IConsole() = default;
         virtual void RegisterCommand(char const*, int, IConHandler*) = 0;
         virtual void RegisterCVar(CVar*, IConHandler*) = 0;
@@ -76,6 +73,9 @@ namespace m3d
 
     protected:
         IConsole() = default;
+
+    public:
+        RT_CLASS_DECLARE(IConsole);
     };
 
     IConsole* ConsoleFactory();

@@ -161,7 +161,7 @@ namespace m3d
         virtual void UnPause();
         int ImmediateMessage(int,int,int,int,int,CStr const &,AIParam const &);
         virtual bool IsMouseXAxisFlipped() const ;
-        static Class * __fastcall GetBaseClass();
+        static Class * GetBaseClass();
         int OneFrame();
         void PutSpriteAbsRot(float,float,float,float,unsigned int,float,float,float,float,float,float);
         Profiler * CreateProfiler(char const *);

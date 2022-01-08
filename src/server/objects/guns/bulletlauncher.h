@@ -39,7 +39,7 @@ namespace ai
         virtual int GetPropertyId(char const*) const;
         virtual void GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr> >&) const;
         static float __fastcall GroupingAngle2Accuracy(float);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         float GetGroupingAngleClamped() const;
 
     protected:
@@ -51,7 +51,7 @@ namespace ai
 
     private:
         virtual m3d::Object* Clone();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     private:
         unsigned int m_numBulletsInShot;

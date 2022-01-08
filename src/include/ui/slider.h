@@ -8,9 +8,6 @@ namespace m3d
         class SliderWnd : public Wnd
         {
         public:
-            RT_CLASS_DECLARE(SliderWnd);
-
-        public:
             static Object* CreateObject();
             static Class* GetBaseClass();
 
@@ -33,6 +30,9 @@ namespace m3d
             virtual int OnMouseButton0(unsigned int, PointBase<float> const&);
             SliderWnd();
             SliderWnd(SliderWnd const&);
+
+        public:
+            RT_CLASS_DECLARE(SliderWnd);
 
         private:
             int m_min;

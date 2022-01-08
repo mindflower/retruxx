@@ -136,9 +136,6 @@ namespace ai
         };
 
     public:
-        RT_CLASS_DECLARE(Vehicle);
-
-    public:
         VehicleMoveStatus GetMoveStatus() const ;
         float GetCruisingSpeed() const ;
         void UnlimitMaxSpeed();
@@ -182,7 +179,7 @@ namespace ai
         virtual void CreateChildren();
         void SetCustomControlEnabled(bool);
         float GetMaxFiringRangeAI() const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         float GetMaxFuel() const ;
         bool getImmortalMode() const ;
         float GetHealth() const ;
@@ -415,7 +412,7 @@ namespace ai
         CVector _GetLastPathPoint() const ;
         float _GetAngleTo(CVector const &) const ;
         void _AdjustWheel(WheelRuntimeInfo &);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         void _CheckForNearbyChests() const ;
         void _AdjustTrailer();
         void _UpdateSeenObjAndWeapons(float);
@@ -423,6 +420,9 @@ namespace ai
         CVector _GetEtalonWheelAVel() const ;
         void _DropChests();
         void _EvaluateToDead();
+
+    public:
+        RT_CLASS_DECLARE(Vehicle);
 
     private:
         std::vector<WheelRuntimeInfo> m_wheels;

@@ -62,9 +62,9 @@ public:
     virtual int Save(CStr const &);
     virtual bool isActive() const ;
     virtual void RegisterCommand(char const *,int,m3d::IConHandler *);
-    static m3d::Object * __fastcall CreateObject();
+    static m3d::Object * CreateObject();
     virtual void executeCommand(CStr const &);
-    static m3d::Class * __fastcall GetBaseClass();
+    static m3d::Class * GetBaseClass();
     virtual void ScrollDown(int);
     virtual void Init(int,int);
     virtual int Load(CStr const &);

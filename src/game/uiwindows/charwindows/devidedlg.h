@@ -4,7 +4,7 @@ class DevideDlg :  public m3d::ui::ModalWnd
 {
 public:
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual int GameDataSetup();
     void UpdateLabels();
     virtual class m3d::Object * Clone();
@@ -12,7 +12,7 @@ public:
     int GetDragAmount();
     int GetOriginalAmount();
     virtual ~DevideDlg();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void SetAmount(int);
 protected:
     DevideDlg(class DevideDlg const &);

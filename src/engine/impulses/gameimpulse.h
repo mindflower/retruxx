@@ -18,9 +18,6 @@ namespace m3d
     class GameImpulse : public IImpulse, public Object
     {
     public:
-        RT_CLASS_DECLARE(GameImpulse);
-
-    public:
         int LoadFromFile(CStr const&);
         virtual int DecRef();
         virtual void ResetImpulseWithoutNotification(int);
@@ -48,7 +45,7 @@ namespace m3d
         virtual int BindKey3(CStr const&, CStr const&, CStr const&, CStr const&, CStr const&);
         CStr GetFormattedScriptErrorDesc(eScriptError) const;
         virtual int UnbindKey3(CStr const&, CStr const&, CStr const&, CStr const&, CStr const&);
-        static Class* __fastcall GetBaseClass();
+        static Class* GetBaseClass();
         virtual int LoadFromDefaults();
         virtual int UnbindKey2(CStr const&, CStr const&, CStr const&, CStr const&);
         virtual void UnbindAll();
@@ -62,6 +59,10 @@ namespace m3d
 
     protected:
         GameImpulse();
+
+
+    public:
+        RT_CLASS_DECLARE(GameImpulse);
 
     private:
         int m_refCount;

@@ -23,14 +23,11 @@ namespace ai
     class CinematicMover : public Obj
     {
     public:
-        RT_CLASS_DECLARE(CinematicMover);
-
-    public:
         virtual m3d::Class* GetClass() const;
         CinematicMover(CinematicMoverPrototypeInfo const&);
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
         void SetObjAndPath(int, CStr const&, float);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual void Update(float, unsigned int);
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual CinematicMoverPrototypeInfo const* GetPrototypeInfo() const;
@@ -40,8 +37,13 @@ namespace ai
 
     private:
         PhysicObj* _GetControlledObj() const;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(CinematicMover);
+
+    private:
         CStr m_flyPathName;
         m3d::CameraPath* m_currentFlyPath;
         float m_currentFlyTime;

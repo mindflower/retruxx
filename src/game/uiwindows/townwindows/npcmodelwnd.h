@@ -3,11 +3,11 @@
 class NpcModelWnd :  public ItemModelWnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     int GetNpcId() const ;
     class ai::Npc * GetNpc() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual ~NpcModelWnd();
     int SetUpForNpc(int);
     virtual struct m3d::Class * GetClass() const ;

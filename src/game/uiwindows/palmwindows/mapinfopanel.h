@@ -8,11 +8,11 @@ public:
     int SetUpForMode(enum LocalMapWnd::Mode);
     virtual struct m3d::Class * GetClass() const ;
     virtual ~MapInfoPanel();
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int SavePrices() const ;
     int CreateFromPattern(class m3d::ui::Wnd const *,bool);
     enum LocalMapWnd::Mode GetCurrentMode() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
 protected:
     void UpdateModeButtonsState();

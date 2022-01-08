@@ -6,9 +6,6 @@ namespace m3d
     class SgSpriteNode : public SgNode
     {
     public:
-        RT_CLASS_DECLARE(SgSpriteNode);
-
-    public:
         static Object* CreateObject();
         static Class* GetBaseClass();
 
@@ -28,6 +25,9 @@ namespace m3d
         virtual void UpdateOwnBoundingBox();
         SgSpriteNode();
         SgSpriteNode(SgSpriteNode const&);
+
+    public:
+        RT_CLASS_DECLARE(SgSpriteNode);
 
     private:
         unsigned int m_props[6];

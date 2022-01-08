@@ -49,9 +49,6 @@ namespace m3d
         {
             friend class WndStation;
         public:
-            RT_CLASS_DECLARE(Wnd);
-
-        public:
             enum DragMode
             {
                 DRAG_NONE = 0x0,
@@ -277,6 +274,9 @@ namespace m3d
             int DestroyWnd();
             void FinishDragMove(int, PointBase<float> const&);
             void StartDragMove(PointBase<float> const&);
+
+        public:
+            RT_CLASS_DECLARE(Wnd);
 
         private:
             int m_created = 0;

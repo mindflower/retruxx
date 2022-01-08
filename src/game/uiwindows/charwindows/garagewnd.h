@@ -3,7 +3,7 @@
 class GarageWnd :  public ChildPanel
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int SetupForWorkshop(int);
     bool IsListOpen() const ;
     class ai::Workshop * GetWorkshop() const ;
@@ -11,7 +11,7 @@ public:
     virtual class m3d::Object * Clone();
     int GetWorkshopId() const ;
     virtual ~GarageWnd();
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
 protected:
     void OnNewFrame();

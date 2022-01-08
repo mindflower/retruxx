@@ -4,10 +4,10 @@ class GroundWnd :  public ChildPanel
 {
 public:
     virtual void SetVehicleId(int);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void PickUpAll();
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual class m3d::Object * Clone();
     virtual ~GroundWnd();
 protected:

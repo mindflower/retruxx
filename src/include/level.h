@@ -8,13 +8,10 @@ namespace m3d
     class Level : public Object
     {
     public:
-        RT_CLASS_DECLARE(Level);
-
-    public:
-        static Class * __fastcall GetBaseClass();
+        static Class * GetBaseClass();
         char const * GetLevelName() const ;
         int GetLandSize() const ;
-        static Object * __fastcall CreateObject();
+        static Object * CreateObject();
         int Save(CStr const &,CCamera const &);
         virtual ~Level();
         virtual Object * Clone();
@@ -26,6 +23,9 @@ namespace m3d
     protected:
         Level(Level const &);
         Level();
+
+    public:
+        RT_CLASS_DECLARE(Level);
 
     private:
         CStr m_weatherDetailName;

@@ -3,7 +3,7 @@
 class MainGameInterfaceWnd :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int GetBossId() const ;
     static struct m3d::Class * __fastcall HelpInGetBaseClass();
     void CheckAndShowTargetInfoWnd(bool);

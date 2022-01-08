@@ -4,7 +4,7 @@ class ZnayuKakProdatWnd :  public ChildPanel
 {
 public:
     int GetWorkshopItemsCostToBuy() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     enum Belong GetItemBelong(int) const ;
     int GetPlayerItemsCostToSell() const ;
     class ai::Vehicle * GetWorkshopVehicle() const ;
@@ -14,7 +14,7 @@ public:
     int GetItemCost(int) const ;
     virtual ~ZnayuKakProdatWnd();
     int GetCurTradeCost() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
 protected:
     int ClearCabinFromItems(int);

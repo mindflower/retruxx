@@ -10,8 +10,8 @@ public:
     int SetupForNpc(int);
     int Show(int);
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
 protected:
     bool IsValid() const ;
     bool IsTownDlgShowingNow() const ;

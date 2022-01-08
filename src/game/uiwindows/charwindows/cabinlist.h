@@ -3,9 +3,9 @@
 class CabinButton :  public CBButton
 {
 public:
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     virtual ~CabinButton();
 protected:
@@ -23,10 +23,10 @@ class CabinList :  public CBList
 {
 public:
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual class m3d::Object * Clone();
     virtual ~CabinList();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
 protected:
     CabinList(class CabinList const &);
     CabinList();

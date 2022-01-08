@@ -4,8 +4,8 @@ class CounterWnd :  public m3d::ui::Wnd
 {
 public:
     virtual struct m3d::Class * GetClass() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     bool NeedShow() const ;
     virtual ~CounterWnd();
     virtual class m3d::Object * Clone();

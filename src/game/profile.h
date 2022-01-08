@@ -62,17 +62,14 @@ enum ProfileParam
 class Profile : public m3d::Object
 {
 public:
-    RT_CLASS_DECLARE(Profile);
-
-public:
     int LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
     CStr const & GetFolder() const ;
     virtual m3d::Class* GetClass() const ;
-    static m3d::Object * __fastcall CreateObject();
+    static m3d::Object * CreateObject();
     void SetFolder(CStr const &);
     virtual m3d::Object * Clone();
     int GetParam(ProfileParam, m3d::AIParam &) const ;
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     void SetName(CStr const &);
     int SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
     bool IsValid() const ;
@@ -88,6 +85,9 @@ protected:
     ProfileParam ParamName2Id(CStr const &) const ;
     CStr ParamId2Name(ProfileParam) const ;
 
+public:
+    RT_CLASS_DECLARE(Profile);
+
 private:
     CStr m_name;
     CStr m_folder;
@@ -96,9 +96,6 @@ private:
 
 class ProfileManager :  public m3d::Object
 {
-public:
-    RT_CLASS_DECLARE(ProfileManager);
-
 public:
     Profile * GetCurProfile() const ;
     int SetCurProfile(CStr const &);
@@ -109,9 +106,9 @@ public:
     int Done();
     int Init();
     Profile const * CreateNewProfile(CStr const &);
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     virtual ~ProfileManager();
-    static m3d::Object * __fastcall CreateObject();
+    static m3d::Object * CreateObject();
     int SaveProfile(Profile const *) const ;
     int LoadProfiles();
     Profile * GetProfileByName(CStr const &) const ;
@@ -128,6 +125,9 @@ protected:
     CStr GetProfileFolderName(CStr const &) const ;
     CStr GetProfileFilePath(CStr const &) const ;
     Profile* _GetProfileByName(CStr const &) const ;
+
+public:
+    RT_CLASS_DECLARE(ProfileManager);
 
 protected:
     CStr m_curProfileName;

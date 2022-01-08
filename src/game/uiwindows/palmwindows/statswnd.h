@@ -3,10 +3,10 @@
 class StatsList :  public m3d::ui::ListBoxWnd<StatsButton *>
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int GetButtonIdByStatsName(CStr const &) const ;
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     void ClearStats();
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
     void UpdateStats();
@@ -30,8 +30,8 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     virtual class m3d::Object * Clone();
     virtual ~StatsWnd();
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
 protected:
     StatsWnd(class StatsWnd const &);
     StatsWnd();
@@ -57,13 +57,13 @@ class StatsButton :  public m3d::ui::ButtonWnd
 public:
     int SetUpForStats(CStr const &,class PointBase<float> const &,float);
     void ClearValue();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int UpdateValue();
     virtual class m3d::Object * Clone();
     void SetBounds(struct BoundsBase<float> const &,struct BoundsBase<float> const &);
     CStr const & GetStatsName() const ;
     struct BoundsBase<float> const & GetVirtualBounds() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual ~StatsButton();
     virtual struct m3d::Class * GetClass() const ;
 protected:

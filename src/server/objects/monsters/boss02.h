@@ -56,7 +56,7 @@ namespace ai
         virtual int OnEvent(Event const&);
         void SetJustMovedContainerToBlock();
         virtual void Update(float, unsigned int);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual Boss02PrototypeInfo const* GetPrototypeInfo() const;
         virtual bool RemoveChild(Obj*);
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
@@ -77,7 +77,7 @@ namespace ai
         void _PlaceContainerToInitialPosition();
         VehiclePart* _GetPlatform();
         void _OnBossCriticalLoadsExploded(Event const&);
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         void _SetMovePosition(CVector const&);
         virtual m3d::Object* Clone();
         Boss02Arm* _GetArm();

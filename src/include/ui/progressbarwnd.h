@@ -9,9 +9,6 @@ namespace m3d
         class ProgressBarWnd : public Wnd
         {
         public:
-            RT_CLASS_DECLARE(ProgressBarWnd);
-
-        public:
             enum Orientation
             {
                 ORIENTATION_TOP_TO_BOTTOM = 0x0,
@@ -50,12 +47,12 @@ namespace m3d
             void SetBarTexture(rend::TexHandle);
             void SetBarTexture(CStr const&);
             enum TextStyle GetTextStyle() const;
-            static Class* __fastcall GetBaseClass();
+            static Class* GetBaseClass();
             enum Orientation GetOrientation() const;
             void SetNumOfSteps(int);
             virtual Class* GetClass() const;
             enum TextureStyle GetTextureStyle() const;
-            static Object* __fastcall CreateObject();
+            static Object* CreateObject();
             float GetMinValue() const;
             virtual ~ProgressBarWnd();
             void SetTextureStyle(enum TextureStyle);
@@ -75,7 +72,10 @@ namespace m3d
             float GetValueInPixel() const;
             ProgressBarWnd(ProgressBarWnd const&);
             ProgressBarWnd();
-            virtual struct BoundsBase<float> GetMaxBarRect() const;
+            virtual BoundsBase<float> GetMaxBarRect() const;
+
+        public:
+            RT_CLASS_DECLARE(ProgressBarWnd);
 
         private:
             float m_curValue;

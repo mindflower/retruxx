@@ -16,14 +16,14 @@ namespace ai
     public:
         virtual struct m3d::Class* GetClass(void) const;
         virtual class ai::SmokeScreenLocationPrototypeInfo const* GetPrototypeInfo(void) const;
-        static struct m3d::Class* __fastcall GetBaseClass(void);
+        static struct m3d::Class* GetBaseClass(void);
         SmokeScreenLocation(class ai::SmokeScreenLocationPrototypeInfo const&);
     protected:
         virtual void OnObjectOut(class ai::Obj*);
         virtual ~SmokeScreenLocation(void);
         virtual void OnObjectIn(class ai::Obj*);
     private:
-        static class m3d::Object* __fastcall CreateObject(void);
+        static class m3d::Object* CreateObject(void);
         virtual class m3d::Object* Clone(void);
     };
 }

@@ -30,7 +30,7 @@ namespace ai
     public:
         Ware(WarePrototypeInfo const &);
         virtual bool ApplyModifier(Modifier const &);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual unsigned int GetPrice(IPriceCoeffProvider const *) const ;
         virtual int GetPropertyId(char const *) const ;
         virtual bool CanChildBeAdded(m3d::Class *) const ;
@@ -52,7 +52,7 @@ namespace ai
         static void __fastcall RegisterProperty(char const *,int,eGObjPropertySaveStatus);
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
         unsigned int m_maxItems;
         NumericInRange<float> m_durability;

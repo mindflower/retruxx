@@ -5,7 +5,7 @@ class TownDlg :  public ChildPanel
 public:
     virtual int GameDataLoad(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *);
     struct ConditionalClosingInfo * GetConditionalClosingInfoForTown(CStr const &,CStr const &) const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     void FullUpdate();
     void ClearConditionalClosingInfo();
     virtual struct m3d::Class * GetClass() const ;
@@ -20,7 +20,7 @@ public:
     virtual int GameDataSetup();
     void OnLeaveBar();
     virtual int GameDataUpdate(void *,int);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void SetConditionalClosingForTown(CStr const &,CStr const &,bool);
     int SetUpForTown(int);
     void ShowForTown(int);

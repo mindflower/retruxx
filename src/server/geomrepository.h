@@ -55,10 +55,10 @@ namespace ai
         bool AddThing(GeomRepositoryItem const &,int);
         unsigned int GetNumItems() const ;
         unsigned int GiveUpThingFromSlotUnsafe(unsigned int,unsigned int);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         int GiveUpThingByResourceId(int,int);
         int GetFirstSlotByResourceId(int) const ;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         bool AddItems(char const *,int);
         bool AddItems(int,int);
         int GetFirstNonCompleteSlot(GeomRepositoryItem const &) const ;

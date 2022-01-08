@@ -14,9 +14,6 @@ namespace m3d
         class SgNodeArrayWnd : public ImageWnd
         {
         public:
-            RT_CLASS_DECLARE(SgNodeArrayWnd);
-
-        public:
             static Object* CreateObject();
             static Class* GetBaseClass();
 
@@ -42,6 +39,9 @@ namespace m3d
             virtual int CreateImageWnd(BoundsBase<float> const&, CStr const&);
             SgNodeArrayWnd();
             SgNodeArrayWnd(SgNodeArrayWnd const&);
+
+        public:
+            RT_CLASS_DECLARE(SgNodeArrayWnd);
 
         private:
             rend::TexHandle m_renderTexture;

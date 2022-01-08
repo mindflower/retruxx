@@ -58,13 +58,13 @@ namespace ai
         CStr const & GetShellStaticsEffectName(unsigned short) const ;
         CStr const & GetSoilEffectName(unsigned int,unsigned short,bool) const ;
         void RenderDebugInfo();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         CStr const & GetBoVehicleEffectName(unsigned short) const ;
         void CollideScene(float);
         CStr const & GetShellVehicleEffectName(unsigned short) const ;
         void CreateBoShellEffectNames();
         CStr const & GetVehicleSoilEffectName(unsigned short) const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         CStr const & GetDecalName(int);
         static void __fastcall ClearOnce();
         int GetNumNearCallbacksLastFrame();

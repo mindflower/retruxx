@@ -4,9 +4,9 @@ class QuestItemList :  public m3d::ui::ListBoxWnd<QuestItem *>
 {
 public:
     int FullUpdate();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual int CreateQuestItemList(enum ListType,struct BoundsBase<float> const &,unsigned int,unsigned int);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     int CreateFromPattern(class m3d::ui::Wnd const *,bool);
     int SetupForParentQuest(int);

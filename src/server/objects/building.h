@@ -37,7 +37,7 @@ namespace ai
         virtual bool RemoveChild(Obj *);
         BuildingType GetBuildingType() const ;
         virtual void Remove();
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         static BuildingType __fastcall GetBuildingTypeByName(CStr const &);
         virtual bool CanChildBeAdded(m3d::Class *) const ;
         std::vector<Npc *> const & GetNpcs() const ;
@@ -49,7 +49,7 @@ namespace ai
         virtual ~Building();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
 
     private:

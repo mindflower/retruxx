@@ -12,11 +12,8 @@ namespace ai
     class VehicleSplinter : public DummyObject
     {
     public:
-        RT_CLASS_DECLARE(VehicleSplinter);
-
-    public:
         VehicleSplinter(VehicleSplinterPrototypeInfo const&);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual VehicleSplinterPrototypeInfo const* GetPrototypeInfo() const;
         virtual m3d::Class* GetClass() const;
 
@@ -25,6 +22,9 @@ namespace ai
 
     private:
         virtual m3d::Object* Clone();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
+
+    public:
+        RT_CLASS_DECLARE(VehicleSplinter);
     };
 }

@@ -4,7 +4,7 @@ class QuestItem :  public m3d::ui::Wnd
 {
 public:
     void UpdateOnQuestNavPointChangedChildIncluded();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int FullUpdate();
     int GetQuestId() const ;
     virtual class m3d::Object * Clone();
@@ -12,7 +12,7 @@ public:
     enum help::QuestType GetQuestType() const ;
     virtual ~QuestItem();
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     void SetSelected(bool);
 protected:
     QuestItem();
@@ -45,8 +45,8 @@ public:
     enum help::UnifyQuestStatus GetQuestStatus() const ;
     void SetSelected(bool);
     virtual ~QuestStatusBtn();
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     virtual class m3d::Object * Clone();
 protected:
     QuestStatusBtn(class QuestStatusBtn const &);
@@ -72,8 +72,8 @@ public:
     void SetSelected(bool);
     void SetQuestStatus(enum help::UnifyQuestStatus);
     enum help::UnifyQuestStatus GetQuestStatus() const ;
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
 protected:
     QuestLabel(class QuestLabel const &);

@@ -7,11 +7,8 @@ namespace m3d
     class SgDecalsNode : public SgNode
     {
     public:
-        RT_CLASS_DECLARE(SgDecalsNode);
-
-    public:
-        static Class* __fastcall GetBaseClass();
-        static Object* __fastcall CreateObject();
+        static Class* GetBaseClass();
+        static Object* CreateObject();
 
     public:
         virtual int GetProperty(unsigned int, void*) const;
@@ -29,6 +26,9 @@ namespace m3d
         SgDecalsNode(SgDecalsNode const&);
         SgDecalsNode();
         virtual void UpdateOwnBoundingBox();
+
+    public:
+        RT_CLASS_DECLARE(SgDecalsNode);
 
     private:
         DecalsList m_decals;

@@ -7,9 +7,9 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     virtual ~FuelIndicatorWnd();
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
 protected:
     FuelIndicatorWnd(class FuelIndicatorWnd const &);
     FuelIndicatorWnd();

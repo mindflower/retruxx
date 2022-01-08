@@ -18,13 +18,10 @@ namespace ai
     class VehicleRoleBarrier : public VehicleRole
     {
     public:
-        RT_CLASS_DECLARE(VehicleRoleBarrier);
-
-    public:
         virtual m3d::Class* GetClass() const;
         VehicleRoleBarrier(VehicleRoleBarrierPrototypeInfo const&);
         virtual void setTargetVehicle(Vehicle const*);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual bool UpdateVehicle(float, Vehicle*);
         virtual void setTargetTeam(Team const*);
         virtual void setTargetObj(Obj const*);
@@ -34,8 +31,11 @@ namespace ai
         virtual ~VehicleRoleBarrier();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         CVector getBarrierPosition(Vehicle*);
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(VehicleRoleBarrier);
     };
 }

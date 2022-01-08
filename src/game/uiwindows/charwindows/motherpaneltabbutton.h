@@ -9,12 +9,12 @@ public:
     bool IsSelected() const ;
     virtual class m3d::Object * Clone();
     enum Mode GetMode() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual ~MotherPanelTabButton();
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
     int SetupForTab(enum MotherPanel::Tab);
     void SetMode(enum Mode);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
 protected:
     void UpdateTex();
     void ClearInfo();

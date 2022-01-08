@@ -5,9 +5,9 @@ class CBCharacteristicsWnd :  public CharacteristicsWnd
 public:
     virtual class m3d::Object * Clone();
     virtual ~CBCharacteristicsWnd();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void SetupForCB(int);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
 protected:
     CBCharacteristicsWnd();

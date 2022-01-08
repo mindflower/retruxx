@@ -4,7 +4,7 @@ class OptionTabButton :  public m3d::ui::ButtonWnd
 {
 public:
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     enum OptionsWnd::Tab GetTabId() const ;
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
     void Select(bool);
@@ -12,7 +12,7 @@ public:
     virtual class m3d::Object * Clone();
     virtual ~OptionTabButton();
     bool IsSelected() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
 protected:
     OptionTabButton(class OptionTabButton const &);
     OptionTabButton();
@@ -26,8 +26,8 @@ class GameOptionsWnd :  public m3d::ui::Wnd
 {
 public:
     virtual ~GameOptionsWnd();
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     virtual class m3d::Object * Clone();
     virtual struct m3d::Class * GetClass() const ;
 protected:

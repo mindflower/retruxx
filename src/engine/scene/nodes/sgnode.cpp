@@ -4,8 +4,6 @@
 
 namespace m3d
 {
-    RT_CLASS_DEFINE(SgNode);
-
     Object* SgNode::CreateObject()
     {
         throw std::logic_error("Not implemented");

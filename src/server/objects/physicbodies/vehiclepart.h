@@ -146,7 +146,7 @@ namespace ai
         virtual void SaveRuntimeValues(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
         virtual void Remove();
         virtual bool SetPropertyById(int,class m3d::AIParam const &);
-        static struct m3d::Class * __fastcall GetBaseClass();
+        static struct m3d::Class * GetBaseClass();
         float GetRepairPriceForOneUnit() const ;
         virtual unsigned int GetPrice(IPriceCoeffProvider const *) const ;
         struct CVector const & GetLastHitPos() const ;
@@ -170,7 +170,7 @@ namespace ai
 
     private:
         //MemberFunctionOneArg<VehiclePart,float,void>::MemberFunctionOneArg<VehiclePart,float,void>(VehiclePart &,void (*const)(float));
-        static class m3d::Object * __fastcall CreateObject();
+        static class m3d::Object * CreateObject();
         void SaveDecalsRuntime(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
         void _CalcMeshToBreak(struct BreakModelData &);
         void _AddDecal(struct CVector const &,struct CVector const &,struct CVector const &,unsigned int,int);

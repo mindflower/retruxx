@@ -9,9 +9,6 @@ namespace m3d
         class ImageWnd : public Wnd
         {
         public:
-            RT_CLASS_DECLARE(ImageWnd);
-
-        public:
             static Object* CreateObject();
             static Class* GetBaseClass();
 
@@ -32,6 +29,9 @@ namespace m3d
         protected:
             ImageWnd();
             ImageWnd(ImageWnd const&);
+
+        public:
+            RT_CLASS_DECLARE(ImageWnd);
 
         private:
             CStr m_textureName;

@@ -20,10 +20,7 @@ namespace ai
     class VehicleRoleMeat : public VehicleRole
     {
     public:
-        RT_CLASS_DECLARE(VehicleRoleMeat);
-
-    public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         VehicleRoleMeat(VehicleRoleMeatPrototypeInfo const&);
         virtual void setTargetTeam(Team const*);
         virtual void setTargetVehicle(Vehicle const*);
@@ -39,7 +36,12 @@ namespace ai
         virtual m3d::Object* Clone();
         void _CreateChaseTacticsIfNeeded(Vehicle*);
         ChaseMotionTactics* CreateChaseMotionTactic(Vehicle const*) const;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
+
+    public:
+        RT_CLASS_DECLARE(VehicleRoleMeat);
+
+    private:
         ChaseMotionTactics* m_chaseTactics;
         int m_chaseTargetId;
         bool m_needCreateChaseTactics;

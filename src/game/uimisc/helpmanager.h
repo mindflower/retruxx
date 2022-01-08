@@ -10,12 +10,12 @@ public:
     std::allocator<enum HelpId>::allocator<enum HelpId>(class std::allocator<enum HelpId> const &);
     std::allocator<enum HelpId>::allocator<enum HelpId>();
     std::pair<enum HelpId,int>::pair<enum HelpId,int>(enum HelpId const &,int const &);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     static enum HelpId __fastcall Str2EnumeredHelpId(CStr const &);
     void Clear();
     virtual struct m3d::Class * GetClass() const ;
     void ResetAutoHelp();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void EnableAutoHelp(bool);
     virtual class m3d::Object * Clone();
     CStr GetHelpTitleByHelpId(CStr const &) const ;

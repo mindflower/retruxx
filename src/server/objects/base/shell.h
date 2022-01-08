@@ -19,7 +19,7 @@ namespace ai
         Gun * GetGun() const ;
         GunPrototypeInfo const * GetGunPrototypeInfo() const ;
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         int GetGunObjId() const ;
         virtual m3d::Class * GetClass() const ;
         int GetEmittedObjId() const ;
@@ -33,7 +33,7 @@ namespace ai
         virtual ~Shell();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
 
     private:

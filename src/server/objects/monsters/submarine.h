@@ -53,7 +53,7 @@ namespace ai
         void InitPosition();
         void StartMotionToPort();
         virtual bool SetPropertyById(int,m3d::AIParam const &);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
 
     protected:
         static void __fastcall RegisterProperty(char const *,int,eGObjPropertySaveStatus);
@@ -65,7 +65,7 @@ namespace ai
         void _OnSkipCinematic(Event const &);
         void _UpdatePositionOnMove(float);
         void _SetSubmarineState(eSubmarineState);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
         void _WatchPlatformRotation();
         void _FillCameraStates(std::vector<m3d::CameraPathState,std::allocator<m3d::CameraPathState> > &,CVector const &) const ;

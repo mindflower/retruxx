@@ -25,9 +25,6 @@ namespace ai
     class CaravanTeam : public Team
     {
     public:
-        RT_CLASS_DECLARE(CaravanTeam);
-
-    public:
         void SetWaitingPlayerToMoveout();
         virtual CaravanTeamPrototypeInfo const* GetPrototypeInfo() const;
         virtual m3d::Class* GetClass() const;
@@ -37,7 +34,7 @@ namespace ai
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual void SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
         void GenerateAndPlace(CVector const&);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual void Remove();
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
 
@@ -47,16 +44,19 @@ namespace ai
         virtual void _DoUnderAttack(int);
         virtual void _DoPosUnreachable();
         virtual ~CaravanTeam();
-    private:
 
+    private:
         void _RemoveChildrenWhenPlayerIsFarEnough();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         std::vector<int, std::allocator<int> > _GenerateWithVehicleGenerator(int, CVector const&);
         bool _HasAvailableGuards() const;
         void _RemoveUnlessChildrenExist();
         void _OnEnemyDestroyed(Event const&);
         void _EnsureGuardsAreInSeparateTeam();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(CaravanTeam);
 
     private:
         int m_guardTeamId;

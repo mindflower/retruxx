@@ -23,7 +23,7 @@ namespace ai
     public:
         virtual bool SetPropertyById(int,m3d::AIParam const &);
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         Chassis(ChassisPrototypeInfo const &);
         NumericInRangeRegenerating<float> const & Health() const ;
         NumericInRangeRegenerating<float> & Health();
@@ -49,7 +49,7 @@ namespace ai
         virtual m3d::Object * Clone();
         bool _OnHealthValueBeforeApplyModifier(Modifier const &,float &);
         //MemberFunctionTwoArgsRef<Chassis,Modifier,float,bool>::MemberFunctionTwoArgsRef<Chassis,Modifier,float,bool>(Chassis &,bool (*const)(Modifier const &,float &));
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     private:
         NumericInRangeRegenerating<float> m_health;

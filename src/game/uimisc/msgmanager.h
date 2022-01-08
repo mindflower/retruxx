@@ -10,9 +10,9 @@ public:
     m3d::Fading~FadingMsgManager();
     void m3d::FadingShowMessage(CStr const &);
     m3d::FadingFadingMsgManager();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     class MsgInfo const * GetMsgInfo(int) const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual ~MsgManager();
     virtual class m3d::Object * Clone();
 protected:

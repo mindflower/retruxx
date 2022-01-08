@@ -4,13 +4,13 @@ class DurabilityIndicatorInMainInterfaceWnd :  public m3d::ui::ImageWnd
 {
 public:
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual int CreateFromPattern(class m3d::ui::Wnd *,bool);
     void SetType(enum Type,CStr const &);
     virtual class m3d::Object * Clone();
     void SetVehicleId(int);
     virtual ~DurabilityIndicatorInMainInterfaceWnd();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
 protected:
     unsigned int GetColorByValue(float,float) const ;
     virtual int GameDataUpdate(void *,int);

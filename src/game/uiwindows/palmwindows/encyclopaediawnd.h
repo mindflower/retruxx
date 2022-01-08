@@ -11,8 +11,8 @@ public:
     class std::vector<int,class std::allocator<int> > const * GetPrototypesForTheme(enum Theme) const ;
     int AddPrototype(int);
     virtual ~EncyclopaediaWnd();
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     bool IsPrototypeVisible(int) const ;
     virtual class m3d::Object * Clone();
 protected:
@@ -79,8 +79,8 @@ class SubjectButton :  public CheckButton
 {
 public:
     int SetUp(CStr const &,class PointBase<float> const &,float,enum EncyclopaediaWnd::Theme,int);
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     virtual ~SubjectButton();
     virtual class m3d::Object * Clone();
@@ -97,10 +97,10 @@ private:
 class SubjectList :  public CheckList
 {
 public:
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int Update();
     virtual struct m3d::Class * GetClass() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     CStr GetCurSubjectName() const ;
     virtual ~SubjectList();

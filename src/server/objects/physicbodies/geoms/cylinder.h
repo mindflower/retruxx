@@ -8,7 +8,7 @@ namespace ai
     public:
         float GetRadius();
         float GetLength();
-        static Cylinder * __fastcall CreateObject(dxSpace *,float,float,void (__fastcall*)(dxGeom *));
+        static Cylinder * CreateObject(dxSpace *,float,float,void (__fastcall*)(dxGeom *));
 
     private:
         Cylinder(dxGeom * const,void (__fastcall*)(dxGeom *));

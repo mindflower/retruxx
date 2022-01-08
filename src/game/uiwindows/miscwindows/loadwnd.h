@@ -4,9 +4,9 @@ class LoadWnd :  public LSWnd
 {
 public:
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual ~LoadWnd();
 protected:
     virtual int GameDataUpdate(void *,int);

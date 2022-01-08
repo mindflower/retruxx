@@ -63,7 +63,7 @@ namespace ai
         void SetJointAnchor(CVector const &);
         BlastWave * CreateBlastWave() const ;
         CVector GetBounds();
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         unsigned short GetEffectType();
         virtual void AddChild(Obj *);
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
@@ -82,7 +82,7 @@ namespace ai
         virtual ~BreakableObject();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
         int m_destroyable;
         float m_criticalHitEnergy;

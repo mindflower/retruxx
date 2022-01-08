@@ -12,9 +12,9 @@ namespace ai
         virtual ~IzvratRepository();
         virtual int CanAddThingToPlace(GeomRepositoryItem const &,PointBase<int> const &,int *) const ;
         virtual m3d::Object * Clone();
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual bool AddThingToPlace(GeomRepositoryItem &,PointBase<int> const &);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual bool SetGeomSize(PointBase<int> const &);
         BoundsBase<int> ToMaxSzRelative(BoundsBase<int>) const ;
         PointBase<int> ToMaxSzRelative(PointBase<int>) const ;

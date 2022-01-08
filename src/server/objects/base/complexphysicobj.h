@@ -10,7 +10,7 @@ namespace ai
     {
     public:
         virtual m3d::Class* GetClass() const;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         int GetPartResourceId() const;
         unsigned int GetNumLps() const;
         void GetPartNames(std::vector<CStr, std::allocator<CStr> >&) const;
@@ -20,7 +20,7 @@ namespace ai
         virtual m3d::Object* Clone();
         ComplexPhysicObjPartDescription* GetParent() const;
         virtual ~ComplexPhysicObjPartDescription();
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
 
     protected:
         ComplexPhysicObjPartDescription();
@@ -75,7 +75,7 @@ namespace ai
         virtual void SetPartByName(CStr const&, VehiclePart*, bool);
         virtual void Remove();
         ComplexPhysicObj(ComplexPhysicObjPrototypeInfo const&);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         void PutContour();
         virtual bool IsVisible();
         virtual void SetSkin(int);
@@ -140,7 +140,7 @@ namespace ai
         virtual void _Construct(bool);
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
         void _CreateSplinterFromSgNode(VehiclePart*, int, CVector const&, float, m3d::SgNode*, CollisionInfo const*);
         void _TearOffPart(VehiclePart*, float);

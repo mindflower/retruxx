@@ -9,7 +9,7 @@ namespace ai
         Geom * GetGeom();
         virtual ~GeomTransform();
         void SetGeom(Geom *);
-        static class GeomTransform * __fastcall CreateObject(dxSpace *,void (__fastcall*)(dxGeom *));
+        static class GeomTransform * CreateObject(dxSpace *,void (__fastcall*)(dxGeom *));
 
     private:
         GeomTransform(dxGeom * const,void (__fastcall*)(dxGeom *));

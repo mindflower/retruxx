@@ -6,9 +6,6 @@ namespace m3d
     class SgLinesNode : public SgNode
     {
     public:
-        RT_CLASS_DECLARE(SgLinesNode);
-
-    public:
         static Class*  GetBaseClass();
         static Object*  CreateObject();
 
@@ -26,6 +23,9 @@ namespace m3d
         SgLinesNode(SgLinesNode const&);
         SgLinesNode();
         virtual void UpdateOwnBoundingBox();
+
+    public:
+        RT_CLASS_DECLARE(SgLinesNode);
 
     private:
         unsigned int m_props[2];

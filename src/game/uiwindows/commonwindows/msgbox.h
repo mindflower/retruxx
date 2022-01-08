@@ -7,8 +7,8 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     virtual class m3d::Object * Clone();
     virtual ~MsgBox();
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
 protected:
     void SetIdioticEmbossesBounds(class PointBase<float> const &);
     MsgBox(class MsgBox const &);

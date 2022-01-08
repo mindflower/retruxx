@@ -66,7 +66,7 @@ namespace ai
         void Disable(bool);
         virtual void PostCollide();
         virtual void Update(float,unsigned int);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         void ReattachExternalJoint(int);
 
     protected:
@@ -79,7 +79,7 @@ namespace ai
 
     private:
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     private:
         dxSpace *m_MembersSpace;

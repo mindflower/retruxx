@@ -8,7 +8,7 @@ namespace ai
     class TriMesh :  public Geom
     {
     public:
-        static TriMesh * __fastcall CreateObject(dxSpace *,void const *,int,int const *,int,void (__fastcall*)(dxGeom *),int);
+        static TriMesh * CreateObject(dxSpace *,void const *,int,int const *,int,void (__fastcall*)(dxGeom *),int);
         virtual ~TriMesh();
 
     private:

@@ -8,8 +8,8 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     class ai::Building * GetBuilding() const ;
     virtual class m3d::Object * Clone();
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     int GetIdx() const ;
     void SetIdx(int);
 protected:
@@ -35,10 +35,10 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     virtual ~BuildingList();
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void SetUpForTown(class ai::Town *);
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
 protected:
     void RecalcLayot();
     BuildingList(class BuildingList const &);

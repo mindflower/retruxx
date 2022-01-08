@@ -12,11 +12,8 @@ namespace m3d
     class RoadNode :  public Object
     {
     public:
-        RT_CLASS_DECLARE(RoadNode);
-
-    public:
         virtual int WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
-        static Class * __fastcall GetBaseClass();
+        static Class * GetBaseClass();
         virtual int ReadFromXmlNodeAfterAdd(cmn::XmlFile *,cmn::XmlNode *);
         virtual ~RoadNode();
         int GetSoilType();
@@ -29,12 +26,15 @@ namespace m3d
         CVector GetPoint3();
         CVector GetPoint4();
         virtual Class * GetClass() const ;
-        static Object * __fastcall CreateObject();
+        static Object * CreateObject();
     protected:
         RoadNode(RoadNode const &);
         RoadNode();
-    private:
 
+    public:
+        RT_CLASS_DECLARE(RoadNode);
+
+    private:
         CVector m_origin;
         int m_roadSetHandle;
         CStr m_roadSetName;

@@ -18,12 +18,9 @@ namespace ai
     class ThunderboltLauncher : public Gun
     {
     public:
-        RT_CLASS_DECLARE(ThunderboltLauncher);
-
-    public:
         virtual m3d::Class* GetClass() const;
         virtual ThunderboltLauncherPrototypeInfo const* GetPrototypeInfo() const;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual bool CanFire() const;
         ThunderboltLauncher(ThunderboltLauncherPrototypeInfo const&);
 
@@ -32,8 +29,11 @@ namespace ai
         virtual ~ThunderboltLauncher();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(ThunderboltLauncher);
 
     private:
         std::vector<int> m_enemies;

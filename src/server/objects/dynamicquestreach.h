@@ -23,7 +23,7 @@ namespace ai
         virtual int OnEvent(Event const &);
         virtual DynamicQuestManager::QuestType GetQuestType() const ;
         virtual void Update(float,unsigned int);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         DynamicQuestReach(DynamicQuestReachPrototypeInfo const &);
 
     protected:
@@ -32,7 +32,7 @@ namespace ai
         virtual ~DynamicQuestReach();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
         void _OnObjectEntersLocation(Event const &);
     };

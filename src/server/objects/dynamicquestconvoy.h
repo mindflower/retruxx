@@ -27,7 +27,7 @@ namespace ai
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         virtual DynamicQuestConvoyPrototypeInfo const * GetPrototypeInfo() const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void Update(float,unsigned int);
         virtual int OnEvent(Event const &);
 
@@ -44,7 +44,7 @@ namespace ai
         void _OnTargetReached(Event const &);
         void _OnObjectEntersLocation(Event const &);
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     private:
         int m_caravanId;

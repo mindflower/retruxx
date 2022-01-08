@@ -35,14 +35,11 @@ namespace ai
         };
 
     public:
-        RT_CLASS_DECLARE(Boss02Arm);
-
-    public:
         Boss02Arm(Boss02ArmPrototypeInfo const&);
         virtual void Update(float, unsigned int);
         void BeginMovingContainerToBlock(int);
         void StopAttack();
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         void SetToDeadPose();
         void BeginDie();
@@ -58,12 +55,16 @@ namespace ai
     protected:
         virtual void _InternalCreateVisualPart();
         virtual ~Boss02Arm();
+
     private:
         void _SetCustomState(CustomState);
         void _SetEffectsDisabled();
         void _SetCustomNodeAction(int, bool);
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(Boss02Arm);
 
     private:
         CustomState m_customState;

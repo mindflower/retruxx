@@ -4,9 +4,9 @@ class SaveSellList :  public m3d::ui::Wnd
 {
 public:
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void ShowAtBegin();
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int CreateFromPattern(class m3d::ui::Wnd const *,bool);
     void GetSavedObjectInfos(class std::vector<class ObjectInfo *,class std::allocator<class ObjectInfo *> > &) const ;
     virtual ~SaveSellList();
@@ -50,9 +50,9 @@ public:
     virtual ~SaveSellButton();
     virtual class m3d::Object * Clone();
     int SetUp(class ObjectInfo *,float,int);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void Select(bool);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     bool IsSelected() const ;
     virtual struct m3d::Class * GetClass() const ;
     class ObjectInfo * GetObjectInfo() const ;

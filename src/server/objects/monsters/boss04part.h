@@ -15,10 +15,7 @@ namespace ai
     class Boss04Part : public VehiclePart
     {
     public:
-        RT_CLASS_DECLARE(Boss04Part);
-
-    public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         Boss04Part(Boss04PartPrototypeInfo const&);
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual Boss04PartPrototypeInfo const* GetPrototypeInfo() const;
@@ -32,8 +29,13 @@ namespace ai
         virtual void _OnDurabilityValueAfterChange(float);
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(Boss04Part);
+
+    private:
         bool m_bIsDamageable;
     };
 }

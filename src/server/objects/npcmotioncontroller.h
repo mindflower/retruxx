@@ -2,6 +2,7 @@
 #include "base/obj.h"
 #include "base/prototypeinfo.h"
 #include <math/vector.h>
+#include <math/vector2.h>
 
 namespace ai
 {
@@ -32,9 +33,6 @@ namespace ai
         };
 
     public:
-        RT_CLASS_DECLARE(NPCMotionController);
-
-    public:
         virtual int OnEvent(Event const&);
         void setVehicleUnderControl(Vehicle*);
         void setVehicleUnderControl(m3d::Object*);
@@ -44,7 +42,7 @@ namespace ai
         virtual m3d::Class* GetClass() const;
         Vehicle* getVehicleUnderControl() const;
         virtual NPCMotionControllerPrototypeInfo const* GetPrototypeInfo() const;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
         virtual void SetPassedToAnotherMapStatus();
         NPCMotionController(NPCMotionControllerPrototypeInfo const&);
@@ -53,11 +51,14 @@ namespace ai
         virtual ~NPCMotionController();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         CVector2 getCurrentVehiclePosition() const;
         void _OnObjectDie(Event const&);
         virtual m3d::Object* Clone();
         void setDesiredVehiclePosition(CVector2 const&);
+
+    public:
+        RT_CLASS_DECLARE(NPCMotionController);
 
    private:
         int m_vehicleUnderControlId;

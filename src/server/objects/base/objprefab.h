@@ -48,14 +48,14 @@ namespace ai
         virtual void SetPositionSelf(CVector const&);
         virtual void SetRotation(Quaternion const&);
         virtual void AddChild(ai::Obj*);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
 
     protected:
         virtual void _InternalPostLoad();
         virtual ~ObjPrefab();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         void AddTeam();
         void AddVehicleChild(Vehicle*);
         virtual m3d::Object* Clone();

@@ -11,8 +11,8 @@ namespace ai
     class IntIntRatioStatistic :  public Statistic
     {
     public:
-        static m3d::Class * __fastcall GetBaseClass();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Class * GetBaseClass();
+        static m3d::Object * CreateObject();
         void IncreaseDenominator(int);
         virtual ~IntIntRatioStatistic();
         virtual m3d::Object * Clone();

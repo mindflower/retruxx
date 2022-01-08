@@ -3,7 +3,7 @@
 class CinemaPanel :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     void AddMessage(int,float);
     unsigned int GetTimeToTheEndOfMsg();
@@ -11,7 +11,7 @@ public:
     void OnHide();
     void SkipMessage();
     void ClearMessages();
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual ~CinemaPanel();
     virtual struct m3d::Class * GetClass() const ;
     void Clear();

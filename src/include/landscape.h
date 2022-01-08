@@ -32,9 +32,6 @@ namespace m3d
     {
         friend class CWorld;
     public:
-        RT_CLASS_DECLARE(Landscape);
-
-    public:
         class TileInfo
         {
         public:
@@ -324,7 +321,7 @@ namespace m3d
         float GetScaleForTile() const ;
         void SwitchDrawMode();
         void RemoveCollisionTris(int);
-        static Object * __fastcall CreateObject();
+        static Object * CreateObject();
         void getMinMaxHeightForBox(float *,float);
         static void __fastcall SetGameRenderMode();
         void CollectGrassCell(int,int,unsigned int &,GrassInstance * *,int *);
@@ -333,7 +330,7 @@ namespace m3d
         void DrawWaterLayer();
         void CreateHelperStructures();
         void drawSpriteOverlayed2Projected(float,float,float,float,unsigned int,bool,CClipper const &);
-        static Class * __fastcall GetBaseClass();
+        static Class * GetBaseClass();
         void PostServersLoad();
         void RemoveGrassTile(int,int);
         void DrawCells(std::vector<unsigned int> const &,unsigned int);
@@ -383,6 +380,7 @@ namespace m3d
         void ManageLandScapeCollisionTriMeshes();
         void LinkPassMapCellToCollisionCell(PointBase<int> const &);
         void ReBuildShoresVb();
+
     protected:
         int LoadTiles(CStr const &);
         bool traceLineThruCellLs(float &,int,int,CVector const &,CVector const &,bool);
@@ -397,11 +395,17 @@ namespace m3d
         int IsBackfaced(int,int,rend::Cull);
         void FreeTiles();
         void BuildUVSet();
+
     private:
         VisibilityMode GetCurVisMode() const ;
         void SetCurVisMode(VisibilityMode);
         void DrawNonTransformGeom(dxGeom *);
         void RenderRoads();
+
+    public:
+        RT_CLASS_DECLARE(Landscape);
+
+    private:
         Landscape::CollisionCellItem **m_oCollisionitems;
         GeomObject *m_terrainObject;
         int m_maxLOD;

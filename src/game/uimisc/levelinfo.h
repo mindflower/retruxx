@@ -18,12 +18,12 @@ public:
     int AddVisibilityRectForLevel(CStr const &,float,float,float,float);
     class LevelInfo * GetLevelInfoById(int) const ;
     int SaveObjectInfoForObject(class ai::Obj const *);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     void ClearVisibilityMapForLevel(CStr const &);
     class VisibilityMap * GetVisibilityMapForLevel(CStr const &) const ;
     bool IsObjectCharted(class ai::Obj const *) const ;
     class VisibilityMap * AddVisibilityMapForLevel(CStr const &);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void ClearNonPersistantPriceInfoForLevel(CStr const &);
     void ClearOnce();
     int LoadFromXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode const *);

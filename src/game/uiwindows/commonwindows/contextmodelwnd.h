@@ -8,10 +8,10 @@ public:
     int Show3dImage(CStr const &,int);
     int GetObjId() const ;
     int ShowImageByPrototypeId(int);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     int ShowImageByObjId(int);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int GetPrototypeId() const ;
     virtual class m3d::Object * Clone();
     int HideImage();

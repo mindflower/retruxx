@@ -27,7 +27,7 @@ class ConversationWnd :  public m3d::ui::Wnd
 public:
     virtual class m3d::Object * Clone();
     class ai::DynamicQuest * GetCurrentDynamicQuest();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
     int ShowDynamicQuestsMenu();
     virtual int GameDataClear(bool);
@@ -36,7 +36,7 @@ public:
     void StartConversation(int);
     virtual struct m3d::Class * GetClass() const ;
     virtual ~ConversationWnd();
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     void EndConversation();
 protected:
     ConversationWnd();

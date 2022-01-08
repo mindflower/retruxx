@@ -13,10 +13,7 @@ namespace ai
     class MortarVolleyLauncher : public Mortar
     {
     public:
-        RT_CLASS_DECLARE(MortarVolleyLauncher);
-
-    public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         MortarVolleyLauncher(MortarVolleyLauncherPrototypeInfo const&);
         virtual MortarVolleyLauncherPrototypeInfo const* GetPrototypeInfo() const;
         virtual m3d::Class* GetClass() const;
@@ -26,7 +23,10 @@ namespace ai
         virtual ~MortarVolleyLauncher();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(MortarVolleyLauncher);
     };
 }

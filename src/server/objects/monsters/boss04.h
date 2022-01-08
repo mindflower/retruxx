@@ -62,7 +62,7 @@ namespace ai
         float GetHealth() const ;
         virtual void AddChild(Obj *);
         virtual void Update(float,unsigned int);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual int OnEvent(Event const &);
         virtual void SetPosition(CVector const &);
         virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
@@ -79,7 +79,7 @@ namespace ai
         void _SpawnDrone();
         void _SetState(Boss04State);
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         void _CreateStations(bool);
 
     private:

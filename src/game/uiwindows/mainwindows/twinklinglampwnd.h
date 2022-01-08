@@ -6,9 +6,9 @@ public:
     void SetValue(float,float);
     virtual class m3d::Object * Clone();
     void SetTwinklePeriod(unsigned int);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     void SetThreshold(float);
     virtual ~TwinklingLampWnd();
     virtual struct m3d::Class * GetClass() const ;

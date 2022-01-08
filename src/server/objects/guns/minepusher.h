@@ -13,13 +13,10 @@ namespace ai
     class MinePusher : public Gun
     {
     public:
-        RT_CLASS_DECLARE(MinePusher);
-
-    public:
         MinePusher(MinePusherPrototypeInfo const&);
         virtual m3d::Class* GetClass() const;
         virtual MinePusherPrototypeInfo const* GetPrototypeInfo() const;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
 
     protected:
         virtual ~MinePusher();
@@ -28,6 +25,9 @@ namespace ai
     private:
         virtual bool isLookAtPoint(CVector const&, float) const;
         virtual m3d::Object* Clone();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
+
+    public:
+        RT_CLASS_DECLARE(MinePusher);
     };
 }

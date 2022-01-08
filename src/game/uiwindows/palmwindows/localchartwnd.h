@@ -4,9 +4,9 @@ class LocalChartWnd :  public m3d::ui::ImageWnd
 {
 public:
     void EnableObjectNames(bool);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int SetUpForMap(CStr const &);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     void SelectMapMarkIcoForObjectInfo(class ObjectInfo const *);
     virtual struct m3d::Class * GetClass() const ;
     bool IsObjectNamesEnabled() const ;

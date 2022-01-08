@@ -75,7 +75,7 @@ namespace ai
         Gadget(GadgetPrototypeInfo const &);
         bool ApplyToVehicle(Vehicle *,bool) const ;
         virtual bool SetPropertyById(int,m3d::AIParam const &);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         bool ApplyToVp(VehiclePart *,bool) const ;
         virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
         virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
@@ -92,7 +92,7 @@ namespace ai
 
     private:
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     private:
         int m_slotNum;

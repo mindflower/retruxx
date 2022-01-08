@@ -29,7 +29,7 @@ namespace ai
         GeomObj(GeomObjPrototypeInfo const &);
         virtual m3d::Class * GetClass() const ;
         virtual void TransferToSpace(dxSpace *);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         virtual void DisableGeometry(bool);
         virtual void LinkGeomsToCollisionCells();
@@ -44,7 +44,7 @@ namespace ai
         virtual ~GeomObj();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
 
     private:

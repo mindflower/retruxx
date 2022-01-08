@@ -59,7 +59,7 @@ namespace ai
         virtual void SetPassedToAnotherMapStatus();
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         virtual void UnlinkGeomsFromCollisionCells();
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         float GetRadius() const ;
 
     protected:
@@ -67,7 +67,7 @@ namespace ai
         virtual ~Wheel();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
         dxJoint *m_jointID;
         int m_driven;

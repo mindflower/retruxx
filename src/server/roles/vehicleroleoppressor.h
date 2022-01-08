@@ -1,5 +1,6 @@
 #pragma once
 #include "vehiclerole.h"
+#include <math/vector.h>
 #include <math/vector2.h>
 
 namespace ai
@@ -21,12 +22,9 @@ namespace ai
     class VehicleRoleOppressor : public VehicleRole
     {
     public:
-        RT_CLASS_DECLARE(VehicleRoleOppressor);
-
-    public:
         VehicleRoleOppressor(VehicleRoleOppressorPrototypeInfo const&);
         virtual void setTargetVehicle(Vehicle const*);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual bool UpdateVehicle(float, Vehicle*);
         virtual void setTargetObj(Obj const*);
         virtual void setTargetTeam(Team const*);
@@ -37,8 +35,11 @@ namespace ai
         virtual ~VehicleRoleOppressor();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
         CVector getOppressorPosition(Vehicle*);
+
+    public:
+        RT_CLASS_DECLARE(VehicleRoleOppressor);
     };
 }

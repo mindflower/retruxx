@@ -3,8 +3,8 @@
 #include <set>
 
 #define RT_CLASS_LOCAL(cl) &cl::m_class##cl
-#define RT_CLASS_DECLARE(cl) static m3d::Class m_class##cl
-#define RT_CLASS_DEFINE(cl) m3d::Class cl::m_class##cl {#cl, sizeof(cl), CreateObject, GetBaseClass}
+#define RT_CLASS_DECLARE(cl) static inline m3d::Class m_class##cl {#cl, 0, CreateObject, GetBaseClass}
+//#define RT_CLASS_DEFINE(cl) m3d::Class cl::m_class##cl {#cl, sizeof(cl), CreateObject, GetBaseClass}
 
 namespace m3d
 {
@@ -47,9 +47,6 @@ namespace m3d
 
     class Object : public RefCountedBase
     {
-    public:
-        RT_CLASS_DECLARE(Object);
-
     public:
         static Class* GetBaseClass();
         static Object* CreateObject();
@@ -97,6 +94,9 @@ namespace m3d
         Object();
         Object(Object const&);
         Object* ChildNodeFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
+
+    public:
+        RT_CLASS_DECLARE(Object);
 
     public:
         void* m_scriptHandle = nullptr;

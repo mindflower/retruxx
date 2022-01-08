@@ -18,20 +18,20 @@ namespace ai
     class PlasmaBunchLauncher : public Gun
     {
     public:
-        RT_CLASS_DECLARE(PlasmaBunchLauncher);
-
-    public:
         virtual m3d::Class* GetClass() const;
         virtual PlasmaBunchLauncherPrototypeInfo const* GetPrototypeInfo() const;
         PlasmaBunchLauncher(PlasmaBunchLauncherPrototypeInfo const&);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
 
     protected:
         virtual void _LaunchShells();
         virtual ~PlasmaBunchLauncher();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(PlasmaBunchLauncher);
     };
 }

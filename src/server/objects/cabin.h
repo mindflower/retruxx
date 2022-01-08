@@ -41,7 +41,7 @@ namespace ai
         float GetControl() const ;
         void SetMaxTorque(float);
         virtual CabinPrototypeInfo const * GetPrototypeInfo() const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual bool SetPropertyById(int,m3d::AIParam const &);
         virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
         static void __fastcall Registration();
@@ -55,7 +55,7 @@ namespace ai
 
     private:
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     private:
         float m_maxPower;

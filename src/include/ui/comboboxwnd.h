@@ -16,9 +16,6 @@ namespace m3d
         class ComboBoxWnd :  public Wnd
         {
         public:
-            RT_CLASS_DECLARE(ComboBoxWnd);
-
-        public:
             class AuxInfo
             {
             public:
@@ -75,20 +72,20 @@ namespace m3d
             virtual void SetDefaultFont(int);
             virtual int RemoveItem(int);
             virtual struct BoundsBase<float> GetListMaxBounds() const ;
-            static Object * __fastcall CreateObject();
+            static Object * CreateObject();
             virtual void SetDrawFlags(unsigned int);
             virtual int InsertItem(CStr const &,int);
             virtual void SetScrollPane(CStr const &);
-            static Class * __fastcall GetBaseClass();
+            static Class * GetBaseClass();
             virtual int ItemFromPoint(class PointBase<float> const &);
             virtual int RemoveAllItems();
             bool IsOpen() const ;
 
         protected:
-            ComboBoxWnd(class ComboBoxWnd const &);
+            ComboBoxWnd(ComboBoxWnd const &);
             ComboBoxWnd();
             void UpdateToggleButtonPane();
-            virtual void SetState(enum State,bool);
+            virtual void SetState(State,bool);
             virtual void RecalcLayot();
             virtual void SelectItem();
             virtual void ToggleState();
@@ -98,6 +95,9 @@ namespace m3d
             virtual int OnMouseButton0(unsigned int,class PointBase<float> const &);
             virtual int OnAfterRemoveFromWndStation();
             virtual int OnAfterAddToWndStation();
+
+        public:
+            RT_CLASS_DECLARE(ComboBoxWnd);
 
         private:
             StringsListBoxWnd *m_wndStringList;

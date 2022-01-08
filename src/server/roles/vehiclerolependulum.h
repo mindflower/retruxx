@@ -1,5 +1,6 @@
 #pragma once
 #include "vehiclerole.h"
+#include <math/vector.h>
 #include <math/vector2.h>
 
 namespace ai
@@ -23,16 +24,13 @@ namespace ai
     class VehicleRolePendulum : public VehicleRole
     {
     public:
-        RT_CLASS_DECLARE(VehicleRolePendulum);
-
-    public:
         VehicleRolePendulum(VehicleRolePendulumPrototypeInfo const&);
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual VehicleRolePendulumPrototypeInfo const* GetPrototypeInfo() const;
         virtual m3d::Class* GetClass() const;
         virtual void setTargetObj(Obj const*);
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual void setTargetVehicle(Vehicle const*);
         virtual void setTargetTeam(Team const*);
         virtual bool UpdateVehicle(float, Vehicle*);
@@ -42,8 +40,13 @@ namespace ai
 
     private:
         CVector getPendulumPosition(Vehicle*, float);
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(VehicleRolePendulum);
+
+    private:
         CVector2 m_Direction;
         float m_angle;
     };

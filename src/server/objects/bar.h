@@ -20,9 +20,6 @@ namespace ai
     class Bar : public Building
     {
     public:
-        RT_CLASS_DECLARE(Bar);
-
-    public:
         bool bWithBarman() const;
         virtual bool CanChildBeAdded(m3d::Class*) const;
         Bar(BarPrototypeInfo const&);
@@ -30,7 +27,7 @@ namespace ai
         virtual void Update(float, unsigned int);
         virtual m3d::Class* GetClass() const;
         virtual BarPrototypeInfo const* GetPrototypeInfo() const;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual void CreateChildren();
         virtual void AddChild(Obj*);
 
@@ -39,8 +36,11 @@ namespace ai
 
     private:
         void CreateBarman();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(Bar);
 
     private:
         int m_barmanId;

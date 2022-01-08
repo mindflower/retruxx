@@ -42,7 +42,7 @@ namespace ai
         using AttackState = Vehicle::VehicleAttackStatus;
 
     public:
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         BossMetalArm(BossMetalArmPrototypeInfo const &);
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         virtual bool CanChildBeAdded(m3d::Class *) const ;
@@ -63,7 +63,7 @@ namespace ai
     private:
         void _TurnToDir(CVector const &,float);
         int _GetCurAnimationFrame() const ;
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
         void _SetAttackState(AttackState);
         void _PlaceLoadOnLoadpoint();

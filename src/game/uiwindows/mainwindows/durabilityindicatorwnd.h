@@ -3,8 +3,8 @@
 class DurabilityIndicatorWnd :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     virtual int CreateFromPattern(class m3d::ui::Wnd *,bool);
     virtual class m3d::Object * Clone();
     void SetType(enum Type,CStr const &);

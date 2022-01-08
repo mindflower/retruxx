@@ -3,10 +3,10 @@
 class VideoWnd :  public ChildPanel
 {
 public:
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int ShowModelByPrototypeId(int,class ref_ptr<class m3d::ui::Wnd>);
     int GetPrototypeId() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     int HideModel(class ref_ptr<class m3d::ui::Wnd>);
     virtual struct m3d::Class * GetClass() const ;

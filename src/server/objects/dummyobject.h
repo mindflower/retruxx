@@ -24,7 +24,7 @@ namespace ai
         virtual int GetPropertyId(char const *) const ;
         void SetModelName(char const *);
         virtual bool SetPropertyById(int,m3d::AIParam const &);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual m3d::Class * GetClass() const ;
         virtual CStr GetPropertyName(int) const ;
         virtual DummyObjectPrototypeInfo const * GetPrototypeInfo() const ;
@@ -43,7 +43,7 @@ namespace ai
 
     private:
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     private:
         CStr m_modelName;

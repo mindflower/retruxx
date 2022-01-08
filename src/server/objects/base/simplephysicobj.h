@@ -49,7 +49,7 @@ namespace ai
         virtual bool SetPropertyById(int,m3d::AIParam const &);
         virtual void Remove();
         virtual void ReceiveNodesToLink(std::list<m3d::SgNode *,std::allocator<m3d::SgNode *> > &) const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void RelinkSceneGraphNode();
         virtual void SetDeadTimer(int,bool);
         virtual void TransferToSpace(dxSpace *);
@@ -94,7 +94,7 @@ namespace ai
 
     private:
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         SimplePhysicBody *m_physicBody;
         std::vector<CollisionInfo> m_collisionInfos;
         float m_scale;

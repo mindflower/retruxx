@@ -17,10 +17,10 @@ public:
     class Reply * GetReplyByName(CStr const &) const ;
     virtual class m3d::Object * Clone();
     class std::vector<class Reply *,class std::allocator<class Reply *> > GetAllFitReplies(class std::vector<CStr,class std::allocator<CStr> > const &,enum Reply::Role,class ai::Npc *);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     class Reply * GetRandomFitReply(class std::vector<CStr,class std::allocator<CStr> > const &,enum Reply::Role,class ai::Npc *);
     class Reply * GetNextNpcReply(class Reply const *,class ai::Npc *);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     class Reply * GetFirstNpcReply(class ai::Npc *);
 protected:
     RepliesManager(class RepliesManager const &);

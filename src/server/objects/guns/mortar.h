@@ -37,7 +37,7 @@ namespace ai
         static CVector __fastcall GetMortarShellPosition(CVector const&, CVector const&, float);
         virtual bool isLookAtPoint(CVector const&, float) const;
         virtual MortarPrototypeInfo const* GetPrototypeInfo() const;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
 
     protected:
         virtual ~Mortar();
@@ -50,6 +50,6 @@ namespace ai
         float targetFunction2(CVector const&, CVector const&, float, float, float, float) const;
         float targetFunction(CVector const&, CVector const&, float, float, float) const;
         CVector GetMortarDirection(CVector const&, CVector const&, CVector const&, float) const;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
     };
 }

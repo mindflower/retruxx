@@ -6,9 +6,6 @@ namespace m3d
     class SgStaticModelNode : public SgNode
     {
     public:
-        RT_CLASS_DECLARE(SgStaticModelNode);
-
-    public:
         static Object* CreateObject();
         static Class* GetBaseClass();
 
@@ -26,5 +23,8 @@ namespace m3d
         SgStaticModelNode(SgStaticModelNode const&);
         virtual ~SgStaticModelNode();
         virtual void UpdateOwnBoundingBox();
+
+    public:
+        RT_CLASS_DECLARE(SgStaticModelNode);
     };
 }

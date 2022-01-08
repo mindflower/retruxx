@@ -49,7 +49,7 @@ namespace ai
         virtual bool CanChildBeAdded(m3d::Class*) const;
         virtual void SetRotationSelf(Quaternion const&);
         CVector GetCaravanArrivePos() const;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual int OnEvent(Event const&);
         virtual void SetPosition(CVector const&);
         Team* GetTeamByType(CStr const&);
@@ -74,7 +74,7 @@ namespace ai
         virtual ~Settlement();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         void FillingFeedBackParam();
         virtual m3d::Object* Clone();
 

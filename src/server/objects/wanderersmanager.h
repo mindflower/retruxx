@@ -68,7 +68,7 @@ namespace ai
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual bool CanChildBeAdded(m3d::Class*) const;
         virtual ai::WanderersManagerPrototypeInfo const* GetPrototypeInfo() const;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
 
     protected:
         virtual void _InternalPostLoad();
@@ -95,7 +95,7 @@ namespace ai
         void _LoadWayPointsFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         void _OnObjectEntersLocation(ai::Event const&);
         unsigned int _GetWanderersCount() const;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         void _SaveWanderersStatesToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
         void _LoadWanderersStatesFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         void _SetStatePrecisePath(WandererState&, int, int);

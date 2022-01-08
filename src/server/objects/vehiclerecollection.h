@@ -41,7 +41,7 @@ namespace ai
         virtual m3d::Class* GetClass() const;
         VehicleRecollection(ai::VehicleRecollectionPrototypeInfo const&);
         CVector GetRecollectionPosition(float) const;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         Vehicle* GetVehicle() const;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
         void SetVehicle(Vehicle const*);
@@ -51,7 +51,7 @@ namespace ai
         virtual void _InternalCreateVisualPart();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
 
     private:

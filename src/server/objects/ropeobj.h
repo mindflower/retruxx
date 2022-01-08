@@ -48,7 +48,7 @@ namespace ai
         virtual m3d::Class * GetClass() const ;
         virtual RopeObjPrototypeInfo const * GetPrototypeInfo() const ;
         virtual CVector GetGeometricCenter() const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         m3d::SgNode * GetTiedSgNodeNearPos(CVector const &,bool) const ;
         RopeObj(RopeObjPrototypeInfo const &);
         virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
@@ -58,7 +58,7 @@ namespace ai
         virtual ~RopeObj();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
 
     private:

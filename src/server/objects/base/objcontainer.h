@@ -122,14 +122,14 @@ namespace ai
         void DeleteAll();
         void PassToMap(CStr const &,CStr const &,int,bool);
         float GetHeight(float,float) const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         int GetPrototypeId(char const *) const ;
         void Dump();
         void SetGameTimeInt64(__int64);
         int GetObjIdByObjName(CStr const &);
         float GetTolerance(int,int) const ;
         void SetGameTime(int,int,int,int,int);
-        static Object * __fastcall CreateObject();
+        static Object * CreateObject();
         void TransferPhysicParamsToSceneGraph();
         void UnpauseGameTime();
         void UnlinkGeomsFromCollisionCells();

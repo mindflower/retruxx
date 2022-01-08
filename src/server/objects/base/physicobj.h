@@ -47,7 +47,7 @@ namespace ai
         Quaternion GetPostRotation() const ;
         dxSpace * GetSpaceId() const ;
         virtual void SetSkin(int);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual void UnlinkGeomsFromCollisionCells();
         bool CanPhysicsBeEnabled() const ;
         virtual float GetMass() const ;
@@ -163,7 +163,7 @@ namespace ai
 
     private:
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         static void __fastcall _CommonBodyChangeEnabledStateCallback(dxBody *);
 
     private:

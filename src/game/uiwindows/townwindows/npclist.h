@@ -4,14 +4,14 @@ class NpcList :  public m3d::ui::ListBoxWnd<NpcButton *>
 {
 public:
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     class ai::Bar * GetBar() const ;
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
     virtual int GameDataClear(bool);
     int SetUpForBar(int);
     virtual class m3d::Object * Clone();
     virtual ~NpcList();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
 protected:
     virtual int OnAfterAddToWndStation();
     virtual int MeasureItem(int,struct BoundsBase<float> &) const ;
@@ -34,12 +34,12 @@ private:
 class NpcButton :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     class ai::Npc * GetNpc() const ;
     virtual class m3d::Object * Clone();
     virtual ~NpcButton();
     int SetUpForNpc(class ai::Npc const *);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
 protected:
     CStr GetNameForNpc(class ai::Npc const *) const ;

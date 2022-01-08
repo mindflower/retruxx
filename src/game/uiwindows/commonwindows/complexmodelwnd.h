@@ -3,7 +3,7 @@
 class ComplexModelWnd :  public m3d::ui::SgNodeArrayWnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void SetDefaultRotationAngleX(float);
     virtual class m3d::Object * Clone();
     float GetDefaultRotationAngleX() const ;
@@ -14,7 +14,7 @@ public:
     void AllowRotate(bool);
     float GetRotationVelocity() const ;
     class ai::Obj * GetObj() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     bool IsAllowedRotate() const ;
     float GetRotationByHandVelocity() const ;
     void SetRotationVelocity(float);

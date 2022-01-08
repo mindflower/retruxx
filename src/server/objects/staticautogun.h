@@ -48,7 +48,7 @@ namespace ai
         virtual void Update(float,unsigned int);
         StaticAutoGun(StaticAutoGunPrototypeInfo const &);
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         float GetMaxFiringRangeAI() const ;
         virtual void AddChild(Obj *);
         virtual bool SetPropertyById(int,m3d::AIParam const &);
@@ -62,7 +62,7 @@ namespace ai
         virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         bool _OnHealthValueBeforeApplyModifier(Modifier const &,float &);
         //MemberFunctionOneArg<StaticAutoGun,float,void>::MemberFunctionOneArg<StaticAutoGun,float,void>(StaticAutoGun &,void (*const)(float));
         void _OnHealthValueAfterChange(float);

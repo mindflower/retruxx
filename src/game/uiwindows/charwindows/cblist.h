@@ -3,10 +3,10 @@
 class CBButton :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int GetCBId() const ;
     int SetupForCB(int);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual ~CBButton();
     int GetPrice() const ;
     virtual class m3d::Object * Clone();

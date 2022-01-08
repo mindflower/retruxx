@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         CVector GetSize() const ;
-        static Box * __fastcall CreateObject(dxSpace *,CVector const &,void (__fastcall*)(dxGeom *));
+        static Box * CreateObject(dxSpace *,CVector const &,void (__fastcall*)(dxGeom *));
         void SetSize(CVector const &);
 
     private:

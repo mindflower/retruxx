@@ -33,7 +33,7 @@ namespace ai
         virtual m3d::Class* GetClass() const;
         virtual class TemporaryLocationPrototypeInfo const* GetPrototypeInfo() const;
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual void Update(float, unsigned int);
 
     protected:
@@ -41,7 +41,7 @@ namespace ai
 
     private:
         virtual class m3d::Object* Clone();
-        static class m3d::Object* __fastcall CreateObject();
+        static class m3d::Object* CreateObject();
         virtual void OnActivate();
 
     private:

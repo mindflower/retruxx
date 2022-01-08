@@ -23,7 +23,7 @@ namespace ai
         VagabondTeam(VagabondTeamPrototypeInfo const &);
         virtual VagabondTeamPrototypeInfo const * GetPrototypeInfo() const ;
         void GenerateAndPlace(CVector const &);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         virtual m3d::Class * GetClass() const ;
@@ -33,7 +33,7 @@ namespace ai
 
     private:
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual void _DoNoticeEnemy(int);
 
     private:

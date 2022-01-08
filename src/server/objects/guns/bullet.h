@@ -32,14 +32,14 @@ namespace ai
         virtual CVector GetDirection() const ;
         virtual void Update(float,unsigned int);
         virtual void TransferPhysicParamsToSceneGraphNode();
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual BulletPrototypeInfo const * GetPrototypeInfo() const ;
 
     protected:
         virtual ~Bullet();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
         unsigned __int16 m_explosionType;
         int m_framesToLive;

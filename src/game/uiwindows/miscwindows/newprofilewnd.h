@@ -5,8 +5,8 @@ class NewProfileWnd :  public m3d::ui::ModalWnd
 public:
     virtual class m3d::Object * Clone();
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     virtual ~NewProfileWnd();
 protected:
     virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);

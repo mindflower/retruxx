@@ -27,19 +27,19 @@ namespace ai
     class Basket : public VehiclePart
     {
     public:
-        RT_CLASS_DECLARE(Basket);
-
-    public:
         virtual m3d::Class* GetClass() const;
         Basket(BasketPrototypeInfo const&);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual BasketPrototypeInfo const* GetPrototypeInfo() const;
 
     protected:
         virtual ~Basket();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_DECLARE(Basket);
     };
 }

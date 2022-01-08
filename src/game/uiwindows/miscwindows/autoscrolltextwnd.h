@@ -7,7 +7,7 @@ public:
     virtual int SetBackground(CStr const &);
     void StartScroll(bool);
     virtual void SetBounds(struct BoundsBase<float> const &,bool);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
     virtual void SetClientEdges(class std::vector<float,class std::allocator<float> > const &);
@@ -24,7 +24,7 @@ public:
     virtual void SetPaneFlags(int);
     virtual void SetPane(CStr const &);
     void SetScrollSpeed(float);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
 protected:
     virtual void DrawWndText(struct m3d::ui::DrawInfo const &);
     bool NeedScroll() const ;

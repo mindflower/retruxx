@@ -8,9 +8,6 @@ namespace m3d
         class TextBoxWnd : public FormattedStringsListBoxWnd
         {
         public:
-            RT_CLASS_DECLARE(TextBoxWnd);
-
-        public:
             static Class* GetBaseClass();
             static Object* CreateObject();
 
@@ -29,6 +26,9 @@ namespace m3d
             virtual int OnPaint(DrawInfo const&);
             TextBoxWnd(TextBoxWnd const&);
             TextBoxWnd();
+
+        public:
+            RT_CLASS_DECLARE(TextBoxWnd);
         };
     }
 }

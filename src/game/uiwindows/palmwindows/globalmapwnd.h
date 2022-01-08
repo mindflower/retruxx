@@ -4,9 +4,9 @@ class LevelConnectionsWnd :  public m3d::ui::Wnd
 {
 public:
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     void SetDrawInfo(class std::vector<struct ConnectionDrawInfo,class std::allocator<struct ConnectionDrawInfo> > const &);
     virtual ~LevelConnectionsWnd();
 protected:
@@ -48,8 +48,8 @@ class GlobalMapWnd :  public ScreenWnd
 {
 public:
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     virtual ~GlobalMapWnd();
     virtual struct m3d::Class * GetClass() const ;
 protected:
@@ -91,10 +91,10 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     virtual ~LevelIco();
     int SetUpForLevel(CStr const &);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
     CStr const & GetLevelName() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual class m3d::Object * Clone();
 protected:
     void OnStartLevel();

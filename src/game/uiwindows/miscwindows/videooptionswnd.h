@@ -3,10 +3,10 @@
 class VideoOptionsWnd :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int ApplyChanges(bool);
     virtual class m3d::Object * Clone();
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     virtual ~VideoOptionsWnd();
     std::allocator<enum GraphicQuality>::allocator<enum GraphicQuality>(class std::allocator<enum GraphicQuality> const &);

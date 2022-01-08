@@ -29,9 +29,9 @@ class DecisionMatrix :  public m3d::Object
         virtual m3d::Object * Clone();
         unsigned int GetSignalNum(CStr const &) const ;
         unsigned int UnsafeFirstDecision(unsigned int,unsigned int) const ;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         void Dump() const ;
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         void Create(int,int);
         void LogDump() const ;
         void SetDefaultState(char const *);

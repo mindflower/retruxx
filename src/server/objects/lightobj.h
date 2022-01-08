@@ -21,7 +21,7 @@ namespace ai
         virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
         virtual bool SetPropertyById(int,m3d::AIParam const &);
         virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual LightObjPrototypeInfo const * GetPrototypeInfo() const ;
         virtual CStr GetPropertyName(int) const ;
         virtual int GetPropertyId(char const *) const ;
@@ -32,7 +32,7 @@ namespace ai
         virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
     };
 }

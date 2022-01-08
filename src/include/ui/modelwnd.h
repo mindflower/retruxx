@@ -9,9 +9,6 @@ namespace m3d
         class ModelWnd : public ImageWnd
         {
         public:
-            RT_CLASS_DECLARE(ModelWnd);
-
-        public:
             static Class* GetBaseClass();
             static Object* CreateObject();
             static rend::TexHandle CreateTextureAsRenderTarget(PointBase<int> const&);
@@ -42,6 +39,9 @@ namespace m3d
             virtual int CreateImageWnd(BoundsBase<float> const&, rend::TexHandle);
             ModelWnd(ModelWnd const&);
             ModelWnd();
+
+        public:
+            RT_CLASS_DECLARE(ModelWnd);
 
         private:
             rend::TexHandle m_renderTexture;

@@ -28,7 +28,7 @@ namespace ai
         void DisableRadio();
         RadioManager(RadioManagerPrototypeInfo const &);
         virtual m3d::Class * GetClass() const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual RadioManagerPrototypeInfo const * GetPrototypeInfo() const ;
         void EnableRadio();
 
@@ -42,7 +42,7 @@ namespace ai
         void _OnUnderAttack(Event const &);
         void ReadyMessage(RM_ENUM,int,CStr const &);
         void _OnSomeoneAtSight(Event const &);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         void _OnPartBroken(Event const &);
         virtual m3d::Object * Clone();
 

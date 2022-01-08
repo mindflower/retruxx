@@ -14,9 +14,6 @@ namespace m3d
         class LineWnd : public Wnd
         {
         public:
-            RT_CLASS_DECLARE(LineWnd);
-
-        public:
             static Object* CreateObject();
             static Class* GetBaseClass();
 
@@ -36,6 +33,9 @@ namespace m3d
             virtual int OnPaint(DrawInfo const&);
             LineWnd(LineWnd const&);
             LineWnd();
+
+        public:
+            RT_CLASS_DECLARE(LineWnd);
 
         private:
             LineWndDirection m_direction;

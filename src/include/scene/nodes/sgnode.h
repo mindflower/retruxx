@@ -54,9 +54,6 @@ namespace m3d
         static Class* GetBaseClass();
 
     public:
-        RT_CLASS_DECLARE(SgNode);
-
-    public:
         Obb GetObb() const;
         CVector const& GetOrigin() const;
         CMatrix const& GetCurrentMatrix() const;
@@ -116,6 +113,9 @@ namespace m3d
         SgNode();
         void RitualInDestructor();
         void InternalInit();
+
+    public:
+        RT_CLASS_DECLARE(SgNode);
 
     private:
         int m_nextThinkTime;

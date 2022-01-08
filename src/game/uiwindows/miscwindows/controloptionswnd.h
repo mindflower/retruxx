@@ -3,10 +3,10 @@
 class ControlOptionsWnd :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int ApplyChanges(bool);
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual ~ControlOptionsWnd();
     virtual class m3d::Object * Clone();
 protected:

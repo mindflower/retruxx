@@ -26,7 +26,7 @@ namespace ai
         virtual float FitAgainstVehicle(Vehicle const*, Vehicle const*);
         virtual void setTargetTeam(Team const*);
         virtual void setTargetVehicle(Vehicle const*);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
         virtual float FitAgainstTeam(Vehicle const*, Team const*, Vehicle**);
         virtual float FitAgainstObj(Vehicle const*, Obj const*);
@@ -46,7 +46,7 @@ namespace ai
 
     private:
         virtual m3d::Object* Clone();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     private:
         int m_TargetVehicleId;

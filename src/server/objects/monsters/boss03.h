@@ -91,7 +91,7 @@ namespace ai
         void StartMoving(CVector const &,CVector const &);
         virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
         virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void Update(float,unsigned int);
         virtual bool ApplyModifier(Modifier const &);
         void NoticePlayer();
@@ -132,7 +132,7 @@ namespace ai
         void _UpdateSwinging(float);
         bool _ProceedSettingHorizontalDirection(float,CVector const &);
         static CStr const & __fastcall _DroneSpawningStatusToStr(DroneSpawningStatus);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
         static CStr const & __fastcall _LiveStatusToStr(LiveStatus);
         void _SetPathTrackingStatus(PathTrackingStatus);

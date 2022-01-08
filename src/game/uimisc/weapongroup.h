@@ -16,8 +16,8 @@ public:
     int LoadFromXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode const *);
     static int __fastcall GetWeaponGroupsMaxCount();
     static int __fastcall GetDefaultWeaponGroupIdForWeapon(CStr const &);
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     int AddWeaponGroup(class WeaponGroup *);
     void ReloadAllWeapon();
     void OnPlayerVehicleChanged();
@@ -52,10 +52,10 @@ public:
     bool IsValid() const ;
     int SaveToXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
     bool CanFire() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     static enum Impulse __fastcall GetImpulseByGroupId(int);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int AddWeapon(CStr const &);
     void Clear();
     int GetGroupId() const ;

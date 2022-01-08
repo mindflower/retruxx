@@ -4,8 +4,8 @@ class RefuelButton :  public AdvancedButton
 {
 public:
     virtual class m3d::Object * Clone();
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     virtual ~RefuelButton();
     virtual struct m3d::Class * GetClass() const ;
 protected:
@@ -29,8 +29,8 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     virtual class m3d::Object * Clone();
     virtual ~RefuelList();
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
 protected:
     virtual class AdvancedButton * NewItem() const ;
     RefuelList(class RefuelList const &);

@@ -60,9 +60,6 @@ public:
     };
 
 public:
-    RT_CLASS_DECLARE(CMiracle3d);
-
-public:
     virtual int OnChangeMode(m3d::AuxImpulseInfo const &);
     void SkipCinematicMessage();
     int OnGameDrag(m3d::AuxImpulseInfo const &);
@@ -81,12 +78,12 @@ public:
     int CinematicInit();
     void PlayHackedMusic(HackedMusicType,bool);
     bool CinematicFade();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     CMiracle3d();
     m3d::TownMusicManager * GetTownMusicManager();
     virtual bool AddPostEffect(CStr const &,float);
     virtual int HandleCinematic(float);
-    static m3d::Object * __fastcall CreateObject();
+    static m3d::Object * CreateObject();
     void OnChangeProfile();
     void CleanMainMenuLevel();
     void BeginModalDlg(bool);
@@ -170,6 +167,9 @@ protected:
     virtual bool HandleCVar(m3d::CVar const *,m3d::CConsoleParams const &);
     virtual int NewFrame();
     float GetMaxHigh(float,float);
+
+public:
+    RT_CLASS_DECLARE(CMiracle3d);
 
 public:
     ITruxxUiManager* m_pInterfaceManager;

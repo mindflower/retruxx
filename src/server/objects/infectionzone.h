@@ -38,7 +38,7 @@ namespace ai
         void AddPolygonPoint(float,float,unsigned int);
         virtual void SetBelong(int);
         void SetPolygonPoint(float,float,unsigned int);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         void DeletePolygonPoint(unsigned int);
         bool IsPlayerInside();
         virtual bool SetPropertyById(int,m3d::AIParam const &);
@@ -75,7 +75,7 @@ namespace ai
         Vehicle const * _GetPlayerVehicle() const ;
         unsigned int _GetEnemiesSchwarz() const ;
         void _WatchPlayerInside();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         InfectionLair * _GetInfectionLair();
         virtual m3d::Object * Clone();
         void _GetGoodRandomDropOutPoints(std::vector<CVector,std::allocator<CVector> > &) const ;

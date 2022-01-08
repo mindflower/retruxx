@@ -41,7 +41,7 @@ namespace ai
 
     public:
         void Deactivate();
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         int GetTriggeredObjectAmount() const ;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         void DelEvent(char const *);
@@ -95,7 +95,7 @@ namespace ai
         static CStr __fastcall _EmbedTriggerBody(CStr const &,CStr const &);
         void _SaveTriggerRuntimesToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         void _OnCinematicFly(Event const &);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         void _OnTimePeriod(Event const &);
         void _OnDefaultEvent(Event const &);
         void _OnCinemaMessage(Event const &);

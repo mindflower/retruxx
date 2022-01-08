@@ -6,8 +6,8 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     virtual ~InventoryWnd();
     virtual void SetVehicleId(int);
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     void SetTradeVehicleId(int,enum ZnayuKakProdatWnd::TradeType);
     virtual class m3d::Object * Clone();
 protected:

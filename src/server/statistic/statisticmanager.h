@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         virtual m3d::Class * GetRtClass() const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         bool GetGlobalFlag() const ;
         virtual void LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         void SetGlobalFlag(bool);

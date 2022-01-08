@@ -138,7 +138,7 @@ namespace ai
         void SetChargeState(int);
         void SetChargeState(ChargeState);
         void SetHorizontalStopAngles(float, float);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
 
     protected:
         virtual void DoRecoil();
@@ -161,7 +161,7 @@ namespace ai
     private:
         void _CreateBarrelNode();
         void _OnCinematic(Event const&);
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         void _GetCurrentOffsetAngles(float&, float&) const;
         CMatrix _CalcMatrixForNextShot() const;
         void BeginReCharge();

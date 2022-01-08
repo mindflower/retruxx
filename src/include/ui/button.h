@@ -9,9 +9,6 @@ namespace m3d
         class ButtonWnd : public Wnd
         {
         public:
-            RT_CLASS_DECLARE(ButtonWnd);
-
-        public:
 			static Object* CreateObject();
 			static Class* GetBaseClass();
 
@@ -44,6 +41,9 @@ namespace m3d
 			ButtonWnd();
 			virtual int OnObtainingFocus();
 
+        public:
+            RT_CLASS_DECLARE(ButtonWnd);
+
         private:
             int m_isImaged;
             int m_isInside;
@@ -56,9 +56,6 @@ namespace m3d
 
         class CheckWnd : public ButtonWnd
         {
-        public:
-            RT_CLASS_DECLARE(CheckWnd);
-
         public:
             static Object* CreateObject();
             static Class* GetBaseClass();
@@ -83,7 +80,10 @@ namespace m3d
             BoundsBase<float> GetIcoBounds() const;
             virtual void OnNcPaint(DrawInfo const&, unsigned int);
             CheckWnd();
-            CheckWnd(class CheckWnd const&);
+            CheckWnd(CheckWnd const&);
+
+        public:
+            RT_CLASS_DECLARE(CheckWnd);
 
         private:
             int m_isChecked;

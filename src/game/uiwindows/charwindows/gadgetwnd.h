@@ -4,11 +4,11 @@ class GadgetWnd :  public ItemWnd
 {
 public:
     int GetSlotId() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void SetSlotId(int);
     virtual int CreateFromPattern(class m3d::ui::Wnd const *,bool);
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct BoundsBase<float> GeomToWndBounds(struct BoundsBase<int> const &);
     void SetResourceName(CStr const &);
     virtual class m3d::Object * Clone();

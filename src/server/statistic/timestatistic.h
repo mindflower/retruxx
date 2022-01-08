@@ -13,9 +13,9 @@ namespace ai
     public:
         virtual CStr GetValue() const ;
         virtual m3d::AIParam GetValueAsAIParam() const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void Zero();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Class * GetClass() const ;
         virtual void SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         virtual ~TimeStatistic();

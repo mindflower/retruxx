@@ -14,7 +14,7 @@ namespace ai
     {
     public:
         AnimatedComplexPhysicObj(AnimatedComplexPhysicObjPrototypeInfo const&);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual AnimatedComplexPhysicObjPrototypeInfo const* GetPrototypeInfo() const;
         virtual void Update(float, unsigned int);
         virtual m3d::Class* GetClass() const;
@@ -23,7 +23,7 @@ namespace ai
         virtual ~AnimatedComplexPhysicObj();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
     };
 }

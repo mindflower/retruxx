@@ -51,7 +51,7 @@ namespace ai
         virtual void GetGeoms(std::vector<Geom *,std::allocator<Geom *> > &) const ;
         static m3d::SgNode * __fastcall CreateNode(CStr const &,int,CVector const &,PhysicBody *,bool);
         PhysicBody(PhysicBodyPrototypeInfo const &);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void TransferPhysicParamsToSceneGraphNode();
         void _ClearGeoms();
         CVector GetDirection() const ;

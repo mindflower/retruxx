@@ -107,9 +107,6 @@ namespace m3d
     class Cinematic :  public Object
     {
     public:
-        RT_CLASS_DECLARE(Cinematic);
-
-    public:
         bool SkipCinematic();
         bool RenderDebugInfo() const ;
         bool bMustBeNextCinematic() const ;
@@ -138,12 +135,12 @@ namespace m3d
         CStr GetNextFlyPathName() const ;
         void AddPointToCurrentPath(CVector const &,Quaternion const &,float,float);
         void Play(float);
-        static Class * __fastcall GetBaseClass();
+        static Class * GetBaseClass();
         void Stop();
         void RemoveCurrentDebugPoint();
         void FlyAround(float,float,float,float,CVector const &,char const *);
         float GetTimeToTheEnd() const ;
-        static Object * __fastcall CreateObject();
+        static Object * CreateObject();
         void SetFromPos(CVector const &,Quaternion const &);
         void SetRelativeRotations(bool);
         void SetWaitWhenStop(bool);
@@ -166,6 +163,9 @@ namespace m3d
     protected:
         Cinematic(Cinematic const &);
         Cinematic();
+
+    public:
+        RT_CLASS_DECLARE(Cinematic);
 
     public:
         CinematicState m_state;

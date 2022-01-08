@@ -8,11 +8,8 @@ namespace m3d
         class EditWnd : public Wnd
         {
         public:
-            RT_CLASS_DECLARE(EditWnd);
-
-        public:
-            static Class* __fastcall GetBaseClass();
-            static Object* __fastcall CreateObject();
+            static Class* GetBaseClass();
+            static Object* CreateObject();
 
         public:
             int IncrementCursorPosition();
@@ -43,6 +40,9 @@ namespace m3d
             EditWnd(EditWnd const&);
             virtual int OnPaint(DrawInfo const&);
             virtual int OnKey(unsigned short, unsigned char, unsigned int);
+
+        public:
+            RT_CLASS_DECLARE(EditWnd);
 
         private:
             bool m_bQuickEraseState;

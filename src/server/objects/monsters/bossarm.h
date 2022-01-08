@@ -49,7 +49,7 @@ namespace ai
         virtual bool CanChildBeAdded(m3d::Class *) const ;
         virtual int OnEvent(Event const &);
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
 
     protected:
         void _PlaceLoadOnLoadpoint(float);
@@ -61,7 +61,7 @@ namespace ai
         CVector const & _GetCurLoadVelocity() const ;
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
         void _OnObjectDie(Event const &);
         int m_loadObjId;

@@ -37,7 +37,7 @@ namespace ai
         float GetMaxHealth() const ;
         virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
         static void __fastcall Registration();
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         float GetHealth() const ;
         virtual bool SetPropertyById(int,m3d::AIParam const &);
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
@@ -48,7 +48,7 @@ namespace ai
         virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         void _RecalcFlyPath();
         void _UpdateLookAtPlayer();
         virtual m3d::Object * Clone();

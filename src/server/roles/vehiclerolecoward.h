@@ -18,11 +18,8 @@ namespace ai
     class VehicleRoleCoward : public VehicleRole
     {
     public:
-        RT_CLASS_DECLARE(VehicleRoleCoward);
-
-    public:
         VehicleRoleCoward(VehicleRoleCowardPrototypeInfo const&);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual void setTargetVehicle(Vehicle const*);
         virtual void setTargetTeam(Team const*);
         virtual VehicleRoleCowardPrototypeInfo const* GetPrototypeInfo() const;
@@ -36,6 +33,9 @@ namespace ai
     private:
         CVector getCowardPosition(Vehicle*);
         virtual m3d::Object* Clone();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
+
+    public:
+        RT_CLASS_DECLARE(VehicleRoleCoward);
     };
 }

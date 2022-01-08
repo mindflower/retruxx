@@ -23,16 +23,13 @@ namespace ai
     class MortarShell : public Shell
     {
     public:
-        RT_CLASS_DECLARE(MortarShell);
-
-    public:
         void SetInitialPosition(CVector const&);
         CVector GetInitialVelocity() const;
         CVector GetInitialPosition() const;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
         void SetInitialVelocity(CVector const&);
         void CreateBlastWave() const;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual MortarShellPrototypeInfo const* GetPrototypeInfo() const;
         virtual m3d::Class* GetClass() const;
         virtual void Update(float, unsigned int);
@@ -44,7 +41,10 @@ namespace ai
 
     private:
         virtual m3d::Object* Clone();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
+
+    public:
+        RT_CLASS_DECLARE(MortarShell);
 
     private:
         NumericInRangeRegenerating<float> m_lifeTime;

@@ -5,9 +5,9 @@ class PlayerVehicleWnd :  public VehicleWnd
 public:
     virtual struct m3d::Class * GetClass() const ;
     virtual ~PlayerVehicleWnd();
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
 protected:
     void UpdateTabButtonsState();
     PlayerVehicleWnd();

@@ -4,9 +4,9 @@ class MapSellList :  public m3d::ui::ListBoxWnd<MapSellItem *>
 {
 public:
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int CreateFromPattern(class m3d::ui::Wnd const *,bool);
     virtual ~MapSellList();
     int SetUpForObject(class ObjectInfo *);
@@ -32,11 +32,11 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     int GetWarePrototypeId() const ;
     int SetUp(int,int,int,class PointBase<float> const &,float,bool);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int GetBuyPrice() const ;
     virtual class m3d::Object * Clone();
     int GetSellPrice() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual ~MapSellItem();
 protected:
     MapSellItem(class MapSellItem const &);

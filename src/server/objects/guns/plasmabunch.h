@@ -26,7 +26,7 @@ namespace ai
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         PlasmaBunch(PlasmaBunchPrototypeInfo const &);
         virtual void Remove();
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         void SetVelocity(float);
         virtual void RenderDebugInfo() const ;
         virtual void TransferPhysicParamsToSceneGraphNode();
@@ -40,7 +40,7 @@ namespace ai
 
     private:
         virtual m3d::Object * Clone();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     private:
         NumericInRangeRegenerating<float> m_velocity;

@@ -6,9 +6,6 @@ namespace m3d
     class SgProjectorNode : public SgNode
     {
     public:
-        RT_CLASS_DECLARE(SgProjectorNode);
-
-    public:
         static Class* GetBaseClass();
         static Object* CreateObject();
 
@@ -26,6 +23,10 @@ namespace m3d
         virtual void UpdateOwnBoundingBox();
         SgProjectorNode(SgProjectorNode const&);
         SgProjectorNode();
+
+    public:
+        RT_CLASS_DECLARE(SgProjectorNode);
+
     private:
         unsigned int m_props[2];
     };

@@ -43,18 +43,15 @@ namespace m3d
     class GeomObject : public Object
     {
     public:
-        RT_CLASS_DECLARE(GeomObject);
-
-    public:
         void IncEnabledCellsCount();
         void SetBounds(PointBase<int> const&, PointBase<int> const&);
         virtual Object* Clone();
         PointBase<int> const& GetEndCell();
         PointBase<int> const& GetStartCell();
-        static Class* __fastcall GetBaseClass();
+        static Class* GetBaseClass();
         virtual ~GeomObject();
         virtual Class* GetClass() const;
-        static Object* __fastcall CreateObject();
+        static Object* CreateObject();
         void SetGeom(dxGeom*);
         void SetEnabled(bool);
         void DecEnabledCellsCount();
@@ -65,6 +62,9 @@ namespace m3d
     protected:
         GeomObject();
         GeomObject(GeomObject const&);
+
+    public:
+        RT_CLASS_DECLARE(GeomObject);
 
     private:
         CVector m_translation;
@@ -83,55 +83,54 @@ namespace m3d
     class GeomObjectLandscape :  public GeomObject
     {
     public:
-        RT_CLASS_DECLARE(GeomObjectLandscape);
-
-    public:
         virtual ~GeomObjectLandscape();
         virtual Class * GetClass() const ;
         virtual Object * Clone();
-        static Object * __fastcall CreateObject();
-        static Class * __fastcall GetBaseClass();
+        static Object * CreateObject();
+        static Class * GetBaseClass();
 
     protected:
         GeomObjectLandscape();
         GeomObjectLandscape(GeomObjectLandscape const &);
+
+    public:
+        RT_CLASS_DECLARE(GeomObjectLandscape);
     };
 
     class GeomObjectStatics : public GeomObject
     {
     public:
-        RT_CLASS_DECLARE(GeomObjectStatics);
-
-    public:
         virtual Class* GetClass() const;
         virtual ~GeomObjectStatics();
-        static Class* __fastcall GetBaseClass();
-        static Object* __fastcall CreateObject();
+        static Class* GetBaseClass();
+        static Object* CreateObject();
         virtual Object* Clone();
 
     protected:
         GeomObjectStatics();
         GeomObjectStatics(GeomObjectStatics const&);
 
+    public:
+        RT_CLASS_DECLARE(GeomObjectStatics);
     };
 
     class GeomObjectRoad : public GeomObject
     {
     public:
-        RT_CLASS_DECLARE(GeomObjectRoad);
-
-    public:
         virtual ~GeomObjectRoad();
-        static Object* __fastcall CreateObject();
+        static Object* CreateObject();
         void SetRoadNode(RoadNode*);
         virtual Class* GetClass() const;
         RoadNode* GetRoadNode() const;
-        static Class* __fastcall GetBaseClass();
+        static Class* GetBaseClass();
         virtual Object* Clone();
 
     protected:
         GeomObjectRoad(GeomObjectRoad const&);
         GeomObjectRoad();
+
+    public:
+        RT_CLASS_DECLARE(GeomObjectRoad);
 
     private:
         RoadNode* m_roadNode;
@@ -140,34 +139,34 @@ namespace m3d
     class GeomObjectWater : public GeomObject
     {
     public:
-        RT_CLASS_DECLARE(GeomObjectWater);
-
-    public:
         virtual ~GeomObjectWater();
-        static Class* __fastcall GetBaseClass();
-        static Object* __fastcall CreateObject();
+        static Class* GetBaseClass();
+        static Object* CreateObject();
         virtual Object* Clone();
         virtual Class* GetClass() const;
 
     protected:
         GeomObjectWater();
         GeomObjectWater(GeomObjectWater const&);
+
+    public:
+        RT_CLASS_DECLARE(GeomObjectWater);
     };
 
     class GeomObjectPassCell : public GeomObject
     {
     public:
-        RT_CLASS_DECLARE(GeomObjectPassCell);
-
-    public:
-        static Object* __fastcall CreateObject();
+        static Object* CreateObject();
         virtual Class* GetClass() const;
-        static Class* __fastcall GetBaseClass();
+        static Class* GetBaseClass();
         virtual Object* Clone();
         virtual ~GeomObjectPassCell();
 
     protected:
         GeomObjectPassCell(GeomObjectPassCell const&);
         GeomObjectPassCell();
+
+    public:
+        RT_CLASS_DECLARE(GeomObjectPassCell);
     };
 }

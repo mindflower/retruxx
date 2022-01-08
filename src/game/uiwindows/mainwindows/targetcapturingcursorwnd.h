@@ -7,8 +7,8 @@ public:
     virtual ~TargetCapturingCursorWnd();
     static CStr const & __fastcall GetCaptureTexName();
     static float __fastcall GetCapturingTexAngle();
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     static class PointBase<float> const & __fastcall GetCaptureTexSmallSz();
     virtual class m3d::Object * Clone();
 protected:

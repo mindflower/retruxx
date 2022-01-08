@@ -83,7 +83,7 @@ namespace ai
         virtual int GetPropertyId(char const *) const ;
         virtual void CreateChildren();
         Formation * GetFormation() const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         static m3d::AIParam __fastcall TeamAIOnAttackOrder(Obj *);
         virtual void Remove();
         static m3d::AIParam __fastcall TeamAIOnStartDefend(Obj *);
@@ -121,7 +121,7 @@ namespace ai
         CVector _GetAggregatedPos() const ;
         void _AdjustRoles(int);
         void _OnNoticeEnemy(Event const &);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
 
     private:
         bool m_bRemoveWhenChildrenDead;

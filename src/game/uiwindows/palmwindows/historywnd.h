@@ -3,8 +3,8 @@
 class HistoryWnd :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     virtual class m3d::Object * Clone();
     int AddRecord(CStr const &,class m3d::AIParam const &);
     virtual struct m3d::Class * GetClass() const ;

@@ -5,8 +5,8 @@ class WeaponGroupButtonList :  public m3d::ui::Wnd
 public:
     virtual class m3d::Object * Clone();
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     virtual ~WeaponGroupButtonList();
     int SetupForGunPart(CStr const &,int);
 protected:
@@ -38,7 +38,7 @@ private:
 class WeaponGroupButton :  public m3d::ui::ButtonWnd
 {
 public:
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     virtual class m3d::Object * Clone();
     int GetGroupId() const ;
@@ -46,7 +46,7 @@ public:
     virtual ~WeaponGroupButton();
     int SetupForGroup(int);
     enum State GetState() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
 protected:
     void UpdateTextures();
     WeaponGroupButton();

@@ -15,7 +15,7 @@ namespace ai
     public:
         SimplePhysicBody(ai::SimplePhysicBodyPrototypeInfo const&);
         virtual ~SimplePhysicBody();
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetRtClass() const;
 
     protected:

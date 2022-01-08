@@ -1,5 +1,6 @@
 #pragma once
 #include "vehiclerole.h"
+#include <math/vector.h>
 
 namespace ai
 {
@@ -19,10 +20,7 @@ namespace ai
     class VehicleRoleCheater : public VehicleRole
     {
     public:
-        RT_CLASS_DECLARE(VehicleRoleCheater);
-
-    public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual void setTargetVehicle(Vehicle const*);
         VehicleRoleCheater(VehicleRoleCheaterPrototypeInfo const&);
         virtual bool UpdateVehicle(float, Vehicle*);
@@ -36,10 +34,15 @@ namespace ai
 
     private:
         ChaseMotionTactics* CreateChaseMotionTactic(Vehicle const*) const;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         CVector _EvaluateChasePointToMove(float);
         virtual m3d::Object* Clone();
         void _CreateChaseTacticsIfNeeded(Vehicle*);
+
+    public:
+        RT_CLASS_DECLARE(VehicleRoleCheater);
+
+    private:
         ChaseMotionTactics* m_chaseTactics;
         int m_chaseTargetId;
         bool m_needCreateChaseTactics;

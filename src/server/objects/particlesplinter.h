@@ -12,10 +12,7 @@ namespace ai
     class ParticleSplinter : public DummyObject
     {
     public:
-        RT_CLASS_DECLARE(ParticleSplinter);
-
-    public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         ParticleSplinter(ParticleSplinterPrototypeInfo const&);
         virtual ParticleSplinterPrototypeInfo const* GetPrototypeInfo() const;
         virtual m3d::Class* GetClass() const;
@@ -25,8 +22,11 @@ namespace ai
         virtual ~ParticleSplinter();
 
     private:
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
         virtual m3d::Object* Clone();
         void CheckDisablePhysics();
+
+    public:
+        RT_CLASS_DECLARE(ParticleSplinter);
     };
 }

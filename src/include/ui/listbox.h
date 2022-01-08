@@ -9,9 +9,6 @@ namespace m3d
         class StringsListBoxWnd : public ListBoxWnd<CStr>
         {
         public:
-            RT_CLASS_DECLARE(StringsListBoxWnd);
-
-        public:
             static Class* GetBaseClass();
             static Object* CreateObject();
 
@@ -27,13 +24,13 @@ namespace m3d
             StringsListBoxWnd();
             StringsListBoxWnd(StringsListBoxWnd const&);
             virtual int CompareItem(int, int);
+
+        public:
+            RT_CLASS_DECLARE(StringsListBoxWnd);
         };
 
         class FormattedStringsListBoxWnd : public ListBoxWnd<FormattedLine>
         {
-        public:
-            RT_CLASS_DECLARE(FormattedStringsListBoxWnd);
-
         public:
             static Object* CreateObject();
             static Class* GetBaseClass();
@@ -52,6 +49,9 @@ namespace m3d
             virtual int RenderItem(int, PointBase<float> const&, DrawInfo const&);
             FormattedStringsListBoxWnd();
             FormattedStringsListBoxWnd(FormattedStringsListBoxWnd const&);
+
+        public:
+            RT_CLASS_DECLARE(FormattedStringsListBoxWnd);
         };
     }
 }

@@ -21,7 +21,7 @@ namespace ai
 
     public:
         void SetTargetClasses(std::set<m3d::Class *> const &);
-        static SphereForIntersection * __fastcall CreateObject(float,SpherePurpose,Obstacle *);
+        static SphereForIntersection * CreateObject(float,SpherePurpose,Obstacle *);
         virtual ~SphereForIntersection();
         Obstacle * GetOwner() const ;
 

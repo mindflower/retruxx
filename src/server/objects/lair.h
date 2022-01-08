@@ -33,7 +33,7 @@ namespace ai
         virtual LairPrototypeInfo const * GetPrototypeInfo() const ;
         virtual CStr GetPropertyName(int) const ;
         virtual void CreateChildren();
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
         virtual bool SetPropertyById(int,m3d::AIParam const &);
         virtual int OnEvent(Event const &);
@@ -54,7 +54,7 @@ namespace ai
     private:
         virtual m3d::Object * Clone();
         void _OnObjectEntersLocation(Event const &);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         Team * _GetDefendingTeam();
         Team * _GetAttackingTeam();
 

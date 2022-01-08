@@ -23,10 +23,10 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     virtual struct BoundsBase<float> GeomToWndBounds(struct BoundsBase<int> const &);
     int BuyWare(int);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int SetupForWorkshop(int);
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     `public: int CreateFromPattern(class m3d::ui::Wnd *,bool)'::`54'::__unnamed::~__unnamed();
     virtual ~WareWnd();
 protected:
@@ -71,9 +71,9 @@ private:
 class WareItem :  public m3d::ui::ButtonWnd
 {
 public:
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     bool IsMarkedByPrototype() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     virtual ~WareItem();
     int SetUp(int,int,int);
@@ -129,9 +129,9 @@ public:
     void ReactOnMouseClick(bool);
     virtual class m3d::Object * Clone();
     void MarkItemByPrototypeId(int);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void SetItemToTwinkle(int);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
     int BuyWare(int);
     void OnNewFrame();

@@ -16,11 +16,11 @@ namespace IzvratRepositoryWnd
 class IzvratRepositoryWnd :  public RepositoryWnd
 {
 public:
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     struct BoundsBase<float> GetMaxRepositoryBounds() const ;
     virtual int SetIzvratRepository(class ai::IzvratRepository *,enum RepositoryWnd::RepositoryType);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     class ai::IzvratRepository * GetIzvratRepository() const ;
     virtual ~IzvratRepositoryWnd();
     virtual class m3d::Object * Clone();

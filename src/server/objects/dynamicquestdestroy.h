@@ -19,7 +19,7 @@ namespace ai
     public:
         DynamicQuestDestroy(DynamicQuestDestroyPrototypeInfo const &);
         static void __fastcall LoadNamesForTargetsFromXml(m3d::cmn::XmlNode const *);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual m3d::Class * GetClass() const ;
         static bool __fastcall FreeNameForTargetExists();
         virtual DynamicQuestDestroyPrototypeInfo const * GetPrototypeInfo() const ;
@@ -37,6 +37,6 @@ namespace ai
     private:
         virtual m3d::Object * Clone();
         void _OnObjectDie(Event const &);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
     };
 }

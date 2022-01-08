@@ -6,8 +6,8 @@ public:
     virtual struct m3d::Class * GetClass() const ;
     virtual void SetVehicleId(int);
     int GetVehicleId() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     class ai::Vehicle * GetVehicle() const ;
     virtual ~ChildPanel();
     virtual class m3d::Object * Clone();

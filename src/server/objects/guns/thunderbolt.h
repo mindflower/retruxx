@@ -75,7 +75,7 @@ namespace ai
         void setTargets(std::vector<CVector, std::allocator<CVector> > const&);
         int getSourceId() const;
         Thunderbolt(ThunderboltPrototypeInfo const&);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         std::vector<int, std::allocator<int> > getTargets() const;
         void setSourceId(int, bool);
         virtual void Remove();
@@ -96,7 +96,7 @@ namespace ai
         void calcThunderboltSegments();
         virtual m3d::Object* Clone();
         void Render();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     private:
         NumericInRangeRegenerating<float> m_lifeTime;

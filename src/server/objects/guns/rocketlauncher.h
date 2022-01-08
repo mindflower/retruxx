@@ -20,7 +20,7 @@ namespace ai
     public:
         virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
         RocketLauncher(RocketLauncherPrototypeInfo const &);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual RocketLauncherPrototypeInfo const * GetPrototypeInfo() const ;
         virtual bool isLookAtPoint(CVector const &,float) const ;
         virtual bool SetPropertyById(int,m3d::AIParam const &);
@@ -39,7 +39,7 @@ namespace ai
         virtual ~RocketLauncher();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
     };
 }

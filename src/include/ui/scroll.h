@@ -10,9 +10,6 @@ namespace m3d
         class ScrollWnd : public Wnd
         {
         public:
-            RT_CLASS_DECLARE(ScrollWnd);
-
-        public:
             static Object* CreateObject();
             static Class* GetBaseClass();
 
@@ -41,6 +38,9 @@ namespace m3d
             BoundsBase<float> GetThumbRect() const;
             BoundsBase<float> GetBodyRect() const;
             virtual int OnMouseButton0(unsigned int, PointBase<float> const&);
+
+        public:
+            RT_CLASS_DECLARE(ScrollWnd);
 
         private:
             int m_vertical;

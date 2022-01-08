@@ -19,13 +19,13 @@ public:
     void SetMaxBounds(struct BoundsBase<float> const &);
     virtual int CreateFromPattern(class m3d::ui::Wnd const *,bool);
     class PointBase<float> GetCellSize() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     virtual int IzvratSetIzvratRepository(class ai::IzvratRepository *,enum RepositoryType);
     int GetItemDrawStyleByResourceId(int) const ;
     enum RepositoryType GetRepositoryType() const ;
     virtual int CanAddDragItem(bool);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     struct BoundsBase<int> WndToGeomBounds(struct BoundsBase<float> const &);
     static struct m3d::Class * __fastcall IzvratGetBaseClass();
     class ai::IzvratRepository * IzvratGetIzvratRepository() const ;

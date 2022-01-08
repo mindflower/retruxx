@@ -31,14 +31,11 @@ namespace ai
     class InfectionTeam :  public Team
     {
     public:
-        RT_CLASS_DECLARE(InfectionTeam);
-
-    public:
         void SetCriticalDistAndTime(float,float);
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         InfectionTeam(InfectionTeamPrototypeInfo const &);
         void SetBlindDistAndTime(float,float);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         void Generate(std::vector<CVector,std::allocator<CVector> > const &,unsigned int);
         virtual m3d::Class * GetClass() const ;
         virtual InfectionTeamPrototypeInfo const * GetPrototypeInfo() const ;
@@ -50,8 +47,11 @@ namespace ai
         virtual void _TeamUpdate(float,unsigned int);
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
+
+    public:
+        RT_CLASS_DECLARE(InfectionTeam);
 
     private:
         bool m_bGenerated;

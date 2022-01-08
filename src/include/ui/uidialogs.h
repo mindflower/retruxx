@@ -8,15 +8,12 @@ namespace m3d
         class MsgBoxDlg : public ModalWnd
         {
         public:
-            RT_CLASS_DECLARE(MsgBoxDlg);
-
-        public:
             virtual ~MsgBoxDlg();
             virtual Class* GetClass() const;
             virtual Object* Clone();
             int CreateMsgBoxDlg(CStr const&, CStr const&, BoundsBase<float> const&, unsigned int, float);
-            static Object* __fastcall CreateObject();
-            static Class* __fastcall GetBaseClass();
+            static Object* CreateObject();
+            static Class* GetBaseClass();
 
         protected:
             MsgBoxDlg(MsgBoxDlg const&);
@@ -24,6 +21,9 @@ namespace m3d
             virtual int CloseModal(int);
             virtual int OnInitModal();
             virtual int OnWndNotify(Wnd*, unsigned int, unsigned int, AIParam const&);
+
+        public:
+            RT_CLASS_DECLARE(MsgBoxDlg);
 
         private:
             GlyphButton* m_buttons[3];
@@ -39,20 +39,20 @@ namespace m3d
         class ArtDlg :  public MsgBoxDlg
         {
         public:
-            RT_CLASS_DECLARE(ArtDlg);
-
-        public:
             virtual Class * GetClass() const ;
             virtual ~ArtDlg();
-            static Object * __fastcall CreateObject();
+            static Object * CreateObject();
             int CreateArtDlg(CStr const &,CStr const &,CStr const &,CStr const &,BoundsBase<float> const &,unsigned int,float);
             virtual int OnInitModal();
             virtual Object * Clone();
-            static Class * __fastcall GetBaseClass();
+            static Class * GetBaseClass();
 
         protected:
             ArtDlg();
             ArtDlg(ArtDlg const &);
+
+        public:
+            RT_CLASS_DECLARE(ArtDlg);
 
         private:
             rend::TexHandle m_tex;

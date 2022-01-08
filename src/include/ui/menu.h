@@ -9,9 +9,6 @@ namespace m3d
         class MenuWnd : public ModalWnd
         {
         public:
-            RT_CLASS_DECLARE(MenuWnd);
-
-        public:
             class Item
             {
             public:
@@ -49,6 +46,9 @@ namespace m3d
             MenuWnd(MenuWnd const&);
             MenuWnd();
             int StorePathToItem(std::list<Item*>&, Item*, Item*);
+
+        public:
+            RT_CLASS_DECLARE(MenuWnd);
 
         private:
             bool m_isHoldDown;

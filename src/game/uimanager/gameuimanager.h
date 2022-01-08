@@ -45,7 +45,7 @@ public:
     virtual m3d::Class* IcoGetClass() const;
     static m3d::Object* __fastcall WindowCreateObject();
     static m3d::Class* __fastcall IcoGetBaseClass();
-    static m3d::Object* __fastcall CreateObject();
+    static m3d::Object* CreateObject();
     static m3d::Class* __fastcall WindowGetBaseClass();
     virtual int WindowLoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
     virtual bool WindowIsValid() const;
@@ -67,8 +67,8 @@ class WindowResourceInfo :  public ResourceInfo
 public:
     virtual m3d::Class* GetClass() const ;
     virtual ~WindowResourceInfo();
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual int LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
     virtual bool IsValid() const ;
     virtual m3d::Object* Clone();
@@ -87,9 +87,9 @@ class IcoResourceInfo :  public ResourceInfo
 {
 public:
     virtual int LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-    static m3d::Object * __fastcall CreateObject();
+    static m3d::Object * CreateObject();
     virtual m3d::Class* GetClass() const ;
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     virtual ~IcoResourceInfo();
     virtual m3d::Object * Clone();
     virtual bool IsValid() const ;

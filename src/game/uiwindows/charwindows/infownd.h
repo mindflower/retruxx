@@ -4,7 +4,7 @@ class InfoWnd :  public m3d::ui::Wnd
 {
 public:
     class InfoItem * GetItemById(int);
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     static class m3d::Object * __fastcall ItemCreateObject();
     static class m3d::Object * __fastcall TargetCreateObject();
     virtual struct m3d::Class * TargetGetClass() const ;

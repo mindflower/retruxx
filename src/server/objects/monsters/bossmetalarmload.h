@@ -33,7 +33,7 @@ namespace ai
 
     public:
         virtual bool ApplyModifier(Modifier const &);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         void SetCollisionMode(CollisionMode);
         BossMetalArmLoad(BossMetalArmLoadPrototypeInfo const &);
         virtual BossMetalArmLoadPrototypeInfo const * GetPrototypeInfo() const ;
@@ -47,7 +47,7 @@ namespace ai
         virtual ~BossMetalArmLoad();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         void _OnAfterHealthValueChange(float);
         virtual m3d::Object * Clone();
         //MemberFunctionOneArg<BossMetalArmLoad,float,void>::MemberFunctionOneArg<BossMetalArmLoad,float,void>(BossMetalArmLoad &,void (*const)(float));

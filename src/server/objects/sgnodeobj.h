@@ -29,7 +29,7 @@ namespace ai
         virtual bool SetPropertyById(int,m3d::AIParam const &);
         void SetSgNode(CStr const &);
         void SetSgNode();
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         Quaternion GetRotation() const ;
         virtual int GetPropertyId(char const *) const ;
         virtual SgNodeObjPrototypeInfo const * GetPrototypeInfo() const ;
@@ -51,7 +51,7 @@ namespace ai
         virtual ~SgNodeObj();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
 
     private:

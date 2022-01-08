@@ -5,9 +5,9 @@ class SpeedometerWnd :  public m3d::ui::Wnd
 public:
     virtual struct m3d::Class * GetClass() const ;
     virtual class m3d::Object * Clone();
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual ~SpeedometerWnd();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
 protected:
     void UpdateSpeedNumberColor(enum MotionDir);
     SpeedometerWnd(class SpeedometerWnd const &);

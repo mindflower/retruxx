@@ -83,9 +83,6 @@ namespace m3d
         class TabWnd : public Wnd
         {
         public:
-            RT_CLASS_DECLARE(TabWnd);
-
-        public:
             enum SelectionType
             {
                 BY_PROGRAM = 0x0,
@@ -138,6 +135,10 @@ namespace m3d
             TabWnd();
             TabWnd(TabWnd const&);
             float _GetTopEdgeDiff() const;
+
+        public:
+            RT_CLASS_DECLARE(TabWnd);
+
         private:
             std::vector<TabItem*> m_items;
             std::vector<GlyphButton*> m_buttons;

@@ -13,9 +13,6 @@ namespace m3d
     class SgAnimatedModelNode : public SgNode
     {
     public:
-        RT_CLASS_DECLARE(SgAnimatedModelNode);
-
-    public:
         static Class* GetBaseClass();
         static class Object* CreateObject();
 
@@ -38,6 +35,9 @@ namespace m3d
         virtual void UpdateOwnBoundingBox();
         SgAnimatedModelNode();
         SgAnimatedModelNode(SgAnimatedModelNode const&);
+
+    public:
+        RT_CLASS_DECLARE(SgAnimatedModelNode);
 
     private:
         ActionType m_action;

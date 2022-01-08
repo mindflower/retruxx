@@ -5,9 +5,9 @@ class WeaponInfoWnd :  public m3d::ui::Wnd
 public:
     int GetGroupId() const ;
     class ai::Obj const * GetGun() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual ~WeaponInfoWnd();
     int SetupForGun(int,int,enum WeaponInfoList::Type);
     virtual class m3d::Object * Clone();
@@ -49,8 +49,8 @@ private:
 class WeaponInfoList :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     int CreateFromPattern(class m3d::ui::Wnd *,bool);
     virtual class m3d::Object * Clone();
     virtual struct m3d::Class * GetClass() const ;
@@ -98,8 +98,8 @@ class WeaponGroupChoiceDlg :  public m3d::ui::ModalWnd
 public:
     virtual class m3d::Object * Clone();
     static CStr __fastcall CreateTooltipForWeaponGroup(int);
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     virtual ~WeaponGroupChoiceDlg();
     virtual struct m3d::Class * GetClass() const ;
 protected:

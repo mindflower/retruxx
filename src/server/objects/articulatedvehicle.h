@@ -41,7 +41,7 @@ namespace ai
         virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
         virtual void SetRotationSelf(Quaternion const &);
         virtual void Update(float,unsigned int);
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
 
     protected:
         virtual void _InternalPostLoad();
@@ -54,7 +54,7 @@ namespace ai
         CStr _GetTrailerName() const ;
         virtual m3d::Object * Clone();
         void _AdjustTrailerPosition();
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         Vehicle * _GetTrailer() const ;
 
     private:

@@ -3,9 +3,9 @@
 class BindKeysWnd :  public m3d::ui::Wnd
 {
 public:
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     virtual ~BindKeysWnd();
     int ApplyChanges(bool);

@@ -41,7 +41,7 @@ namespace ai
         };
 
     public:
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         int GetMoney() const ;
         void ChangeVehicleByExisting(int,bool);
         virtual void Update(float,unsigned int);
@@ -105,7 +105,7 @@ namespace ai
 
     private:
         void _OnDynamicQuestForgotten(Event const &);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         void _OnDynamicQuestFailed(Event const &);
         void _OnUnderAttack(Event const &);
         virtual m3d::Object * Clone();

@@ -3,10 +3,10 @@
 class QuestDizWnd :  public m3d::ui::Wnd
 {
 public:
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     int CreateFromPattern(class m3d::ui::Wnd const *,bool);
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int SetupForQuest(enum help::QuestType,int);
     virtual ~QuestDizWnd();
     virtual class m3d::Object * Clone();

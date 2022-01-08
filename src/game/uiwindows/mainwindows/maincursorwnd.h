@@ -4,8 +4,8 @@ class MainCursorWnd :  public SmartCursorWnd
 {
 public:
     bool NeedShow() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     virtual ~MainCursorWnd();
     virtual class m3d::Object * Clone();

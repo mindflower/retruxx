@@ -62,7 +62,7 @@ namespace ai
         int GetHirerObjId() const ;
         void Take();
         virtual void PassToAnotherMap();
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
         virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         int GetReward() const ;
@@ -93,7 +93,7 @@ namespace ai
     private:
         virtual m3d::Object * Clone();
         void _OnObjectEntersLocation(Event const &);
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         void _OnObjectDie(Event const &);
         void _OnRelationChanged(Event const &);
         int m_reward;

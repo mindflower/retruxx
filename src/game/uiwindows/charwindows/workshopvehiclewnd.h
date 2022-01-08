@@ -5,9 +5,9 @@ class WorkshopVehicleWnd :  public VehicleWnd
 public:
     class ai::Workshop * GetWorkshop() const ;
     virtual ~WorkshopVehicleWnd();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     int GetWorkshopId() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     virtual void OnRestoreStyles();
     int SetupForWorkshop(int);
     virtual struct m3d::Class * GetClass() const ;

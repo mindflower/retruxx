@@ -23,7 +23,7 @@ namespace ai
         virtual DynamicQuestPeacePrototypeInfo const * GetPrototypeInfo() const ;
         virtual int OnEvent(Event const &);
         virtual DynamicQuestManager::QuestType GetQuestType() const ;
-        static m3d::Class * __fastcall GetBaseClass();
+        static m3d::Class * GetBaseClass();
         virtual void PassToAnotherMap();
 
     protected:
@@ -34,7 +34,7 @@ namespace ai
         virtual ~DynamicQuestPeace();
 
     private:
-        static m3d::Object * __fastcall CreateObject();
+        static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
     };
 }

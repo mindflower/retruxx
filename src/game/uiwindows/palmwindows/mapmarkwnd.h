@@ -4,8 +4,8 @@ class MapMarkIcoWnd :  public MapMarkWnd
 {
 public:
     int SetUp(class ObjectInfo *,class PointBase<float> const &);
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     void Select(bool);
     virtual ~MapMarkIcoWnd();
@@ -28,13 +28,13 @@ class PlayerMarkWnd :  public m3d::ui::ImageWnd
 {
 public:
     int CreatePlayerMarkWnd();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     void SetImageCoords(class PointBase<float> const &);
     virtual class m3d::Object * Clone();
     void SetImageAngle(float);
     virtual ~PlayerMarkWnd();
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     void SetImageSize(class PointBase<float> const &);
 protected:
     virtual int OnPaint(struct m3d::ui::DrawInfo const &);
@@ -52,10 +52,10 @@ class NavPointMarkWnd :  public m3d::ui::ImageWnd
 public:
     virtual int CreateNavPointMarkWnd(class PointBase<float> const &,int);
     virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * __fastcall CreateObject();
+    static class m3d::Object * CreateObject();
     int GetNavPointId() const ;
     virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static struct m3d::Class * GetBaseClass();
     virtual ~NavPointMarkWnd();
 protected:
     class m3d::rend::TexHandle GetNpIcoByType(enum NavPoint::NavPointType) const ;
@@ -71,8 +71,8 @@ class MapMarkNameWnd :  public MapMarkWnd
 public:
     virtual ~MapMarkNameWnd();
     virtual struct m3d::Class * GetClass() const ;
-    static struct m3d::Class * __fastcall GetBaseClass();
-    static class m3d::Object * __fastcall CreateObject();
+    static struct m3d::Class * GetBaseClass();
+    static class m3d::Object * CreateObject();
     virtual class m3d::Object * Clone();
     int SetUp(class ObjectInfo *,struct BoundsBase<float> const &,struct BoundsBase<float> const &);
 protected:
@@ -84,8 +84,8 @@ private:
 class MapMarkWnd :  public m3d::ui::Wnd
 {
 public:
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     virtual ~MapMarkWnd();
     virtual struct m3d::Class * GetClass() const ;

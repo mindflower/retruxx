@@ -5,8 +5,8 @@ class JournalWnd :  public ScreenWnd
 public:
     void ShowAllInEncyclopaedia();
     bool BookExists(CStr const &) const ;
-    static class m3d::Object * __fastcall CreateObject();
-    static struct m3d::Class * __fastcall GetBaseClass();
+    static class m3d::Object * CreateObject();
+    static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     int AddHistory(CStr const &,class m3d::AIParam const &);
     virtual struct m3d::Class * GetClass() const ;
