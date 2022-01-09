@@ -170,7 +170,7 @@ int ConsoleImp::Load(CStr const& fname)
     if (ref_ptr xmlFile = m3d::ReadXmlFile(fname.c_str(), &err))
     {
         ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        xmlFile->GetFirstNestling(node, "config");
+        xmlFile->GetFirstChild_(node, "config");
         if (node->IsEmpty())
         {
             M3D_LOG_INFO("Config::cannot find 'config' node");
@@ -178,12 +178,11 @@ int ConsoleImp::Load(CStr const& fname)
         }
         
         ref_ptr attrib = node->CreateAttribute();
-        for (node->GetFirstAttribute(attrib); !attrib->IsEmpty(); attrib->GetNextNestling(attrib))
+        for (node->GetFirstAttribute(attrib); !attrib->IsEmpty(); attrib->GetNextSibling_(attrib))
         {
             CVarLoadedValue val;
             val.m_name = attrib->GetName();
             val.m_stringValue = attrib->GetValue();
-
 
             //TODO: check this
             auto itVars = std::find_if(m_lCVars.begin(), m_lCVars.end(), [&val](const auto* elem)

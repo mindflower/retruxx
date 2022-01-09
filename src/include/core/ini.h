@@ -27,7 +27,7 @@ namespace m3d
         class XmlAttrib : public IBase
         {
         public:
-            virtual bool GetNextNestling(XmlAttrib*) = 0;
+            virtual bool GetNextSibling_(XmlAttrib*) = 0;
             virtual bool IsEmpty() = 0;
             virtual ~XmlAttrib() = default;
             virtual char const* GetValue() = 0;
@@ -55,20 +55,20 @@ namespace m3d
             virtual bool GetFirstAttribute(XmlAttrib*) const = 0;
             virtual bool RemoveAttribute(char const*) = 0;
             virtual bool IsEmpty() const = 0;
-            virtual bool GetPrevRelative(XmlNode*, char const*) const = 0;  //GetPrevSibling
+            virtual bool GetPrevSibling_(XmlNode*, char const*) const = 0;  //GetPrevSibling
             virtual bool IsOfType(XmlNodeType) const = 0;
             virtual bool AddAfterChild(XmlNode const*, XmlNode*) = 0;
             virtual void SetValue(char const*) = 0;
-            virtual bool GetNextRelative(XmlNode*, char const*) const = 0;  //GetNextSibling
+            virtual bool GetNextSibling_(XmlNode*, char const*) const = 0;  //GetNextSibling
             virtual bool GetParent(XmlNode*) const = 0;
             virtual void GetAttributeMbcsSafe(char const*, char**, int*) const = 0;
             virtual bool AddChild(XmlNode*) = 0;
             virtual bool SetAttribute(char const*, char const*) = 0;
             virtual bool RemoveChild(XmlNode*) = 0;
             virtual XmlAttrib* CreateAttribute() const = 0;
-            virtual bool GetFirstNestling(XmlNode*, char const*) const = 0; //GetFirstChild
+            virtual bool GetFirstChild_(XmlNode*, char const*) const = 0; //GetFirstChild
             virtual char const* GetAttribute(char const*) const = 0;
-            virtual bool GetLastNestling(XmlNode*, char const*) const = 0;     //GetLastNestling
+            virtual bool GetLastChild_(XmlNode*, char const*) const = 0;     //GetLastChild
         };
 
         class XmlFile : public IBase
@@ -82,10 +82,10 @@ namespace m3d
             virtual void GetHeader(char**, char**, char**) = 0;
             virtual bool AddChild(XmlNode*) = 0;
             virtual bool RemoveChild(XmlNode*) = 0;
-            virtual bool GetFirstNestling(XmlNode*, char const*) const = 0;
+            virtual bool GetFirstChild_(XmlNode*, char const*) const = 0;
             virtual int Read(fs::IStream&) = 0;
             virtual XmlNode* CreateNode(XmlNodeType, char const*) const = 0;
-            virtual bool GetLastNestling(XmlNode*, char const*) const = 0;
+            virtual bool GetLastChild_(XmlNode*, char const*) const = 0;
             virtual char const* GetError() = 0;
         };
     }

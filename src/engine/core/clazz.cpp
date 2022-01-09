@@ -193,7 +193,7 @@ namespace m3d
             else
             {
                 ref_ptr newNode = file->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
-                for (node->GetFirstNestling(newNode, "Node"); !newNode->IsEmpty(); newNode->GetNextRelative(newNode, "Node"))
+                for (node->GetFirstChild_(newNode, "Node"); !newNode->IsEmpty(); newNode->GetNextSibling_(newNode, "Node"))
                 {
                     if (!ChildNodeFromXmlNode(file, newNode))
                     {
@@ -492,20 +492,20 @@ namespace m3d
         }
 
         ref_ptr xmlNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-        xmlFile->GetFirstNestling(xmlNode, "Prefabs");
+        xmlFile->GetFirstChild_(xmlNode, "Prefabs");
         if (xmlNode->IsEmpty())
         {
             M3D_LOG_INFO("ChildNodeFromXmlFile: Prefabs node should be root node in " + ext);
             return nullptr;
         }
-        xmlNode->GetFirstNestling(xmlNode, "Node");
+        xmlNode->GetFirstChild_(xmlNode, "Node");
         while (!xmlNode->IsEmpty())
         {
             if (xmlNode->GetAttribute("name") == internalName)
             {
                 break;
             }
-            xmlNode->GetNextRelative(xmlNode, "Node");
+            xmlNode->GetNextSibling_(xmlNode, "Node");
         }
         if (xmlNode->IsEmpty())
         {
