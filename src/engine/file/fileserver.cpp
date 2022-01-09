@@ -47,11 +47,22 @@ namespace m3d
 
         CriticalSection& FileServer::GetCriticalSecton()
         {
-            throw std::logic_error("Not implemented");
+            return m_cs;
         }
 
-        int FileServer::OpenFileStream(FileReader*, char const*, IStream::OpenFlags)
+        int FileServer::OpenFileStream(FileReader* reader, char const* filename, IStream::OpenFlags flags)
         {
+            if (filename[1] == ':' && (filename[2] == '/' || filename[2] == '\\'))
+            {
+                CStr filenameUnified;
+                UnifyFileName(filenameUnified);
+                delete reader->InternalObject;
+                reader->InternalObject = new RawFile(filenameUnified.c_str(), flags, m_EnableMapping);
+                return reader->InternalObject->IsOpen();
+            }
+            CStr fullFilename;
+            DecryptFileName(filename, fullFilename);
+
             throw std::logic_error("Not implemented");
         }
 

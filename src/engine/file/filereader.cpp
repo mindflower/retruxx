@@ -1,5 +1,7 @@
 #include <stdexcept>
+#include <core/kernel.h>
 #include <file/filereader.h>
+#include <file/fileserver.h>
 
 namespace m3d
 {
@@ -20,9 +22,10 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int FileReader::Open(char const*, OpenFlags)
+        int FileReader::Open(char const* fileName, OpenFlags openMode)
         {
-            throw std::logic_error("Not implemented");
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            return g_Kernel->GetFileServer().OpenFileStream(this, fileName, openMode);
         }
 
         unsigned FileReader::PeekBytes(void*, unsigned)

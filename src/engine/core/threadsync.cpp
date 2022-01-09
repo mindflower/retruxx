@@ -15,11 +15,11 @@ namespace m3d
 
     void CriticalSection::Lock()
     {
-        throw std::logic_error("Not implemented");
+        ::EnterCriticalSection(&m_cs);
     }
 
     void CriticalSection::Unlock()
     {
-        throw std::logic_error("Not implemented");
+        ::LeaveCriticalSection(&m_cs);
     }
 }

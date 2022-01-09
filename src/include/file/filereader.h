@@ -10,6 +10,7 @@ namespace m3d
     {
         class FileReader : public FileStream
         {
+            friend class FileServer;
         public:
             virtual IStream* Clone();
             virtual int ReadLine(CStr&);
@@ -37,7 +38,7 @@ namespace m3d
             virtual unsigned int GetSize() const;
             virtual int Error();
 
-        private:
+        protected:
             FileStream* InternalObject = nullptr;
         };
     }
