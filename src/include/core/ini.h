@@ -27,8 +27,11 @@ namespace m3d
         class XmlAttrib : public IBase
         {
         public:
-        protected:
-        private:
+            virtual bool GetNextNestling(XmlAttrib*) = 0;
+            virtual bool IsEmpty() = 0;
+            virtual ~XmlAttrib() = default;
+            virtual char const* GetValue() = 0;
+            virtual char const* GetName() = 0;
         };
 
         enum XmlNodeType

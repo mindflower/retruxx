@@ -1,6 +1,7 @@
 #include <memory>
 #include <stdexcept>
 #include <core/ini.h>
+#include <file/filereader.h>
 #include <file/fileserver.h>
 #include <file/package.h>
 #include <file/rawfile.h>
@@ -21,7 +22,7 @@ namespace m3d
 
         FileStream* FileServer::CreateFileStream()
         {
-            throw std::logic_error("Not implemented");
+            return new FileReader;
         }
 
         int FileServer::RemoveFile(char const*)

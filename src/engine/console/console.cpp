@@ -2,6 +2,7 @@
 #include "console_internal.h"
 #include <stdexcept>
 #include <core/ini.h>
+#include <core/kernel.h>
 #include <core/ref_ptr.h>
 #include <core/console/cvar.h>
 
@@ -169,9 +170,44 @@ int ConsoleImp::Load(CStr const& fname)
     if (ref_ptr xmlFile = m3d::ReadXmlFile(fname.c_str(), &err))
     {
         ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        auto child = xmlFile->GetFirstNestling()
+        xmlFile->GetFirstNestling(node, "config");
+        if (node->IsEmpty())
+        {
+            M3D_LOG_INFO("Config::cannot find 'config' node");
+            return 0;
+        }
+        
+        ref_ptr attrib = node->CreateAttribute();
+        for (node->GetFirstAttribute(attrib); !attrib->IsEmpty(); attrib->GetNextNestling(attrib))
+        {
+            CVarLoadedValue val;
+            val.m_name = attrib->GetName();
+            val.m_stringValue = attrib->GetValue();
+
+
+            //TODO: check this
+            auto itVars = std::find_if(m_lCVars.begin(), m_lCVars.end(), [&val](const auto* elem)
+            {
+                return elem->GetName() == val.m_name;
+            });
+            if (itVars != m_lCVars.end())
+            {
+                (*itVars)->Set(val.m_stringValue.c_str(), true);
+            }
+
+            auto const itLoaded = std::find_if(m_loadedValues.cbegin(), m_loadedValues.cend(), [&val](const auto& elem)
+            {
+                return elem.m_name == val.m_name;
+            });
+            if (itLoaded == m_loadedValues.cend())
+            {
+                m_loadedValues.push_back(std::move(val));
+            }
+        }
+        return 1;
     }
-    throw std::logic_error("Not implemented");
+    M3D_LOG_INFO("Console:: cannot load " + fname);
+    return 0;
 }
 
 void ConsoleImp::SetScreenSize(float)
