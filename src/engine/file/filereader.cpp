@@ -87,7 +87,7 @@ namespace m3d
 
         FileReader::~FileReader()
         {
-            throw std::logic_error("Not implemented");
+            delete InternalObject;
         }
 
         FileStream& FileReader::operator>>(CStr&)
@@ -126,11 +126,6 @@ namespace m3d
         }
 
         int FileReader::Error()
-        {
-            throw std::logic_error("Not implemented");
-        }
-
-        FileReader::FileReader()
         {
             throw std::logic_error("Not implemented");
         }

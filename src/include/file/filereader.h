@@ -36,10 +36,9 @@ namespace m3d
             virtual unsigned int FRead(void*, unsigned int, unsigned int);
             virtual unsigned int GetSize() const;
             virtual int Error();
-            FileReader();
 
         private:
-            FileStream* InternalObject;
+            FileStream* InternalObject = nullptr;
         };
     }
 }
