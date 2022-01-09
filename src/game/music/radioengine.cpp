@@ -10,7 +10,10 @@ namespace m3d
 
     RadioEngine::~RadioEngine()
     {
-        throw std::logic_error("Not implemented");
+        if (m_instance == this)
+        {
+            m_instance = 0;
+        }
     }
 
     void RadioEngine::PlayNextSoundMessage()

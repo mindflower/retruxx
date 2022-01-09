@@ -490,7 +490,7 @@ namespace m3d
         M3D_LOG_INFO("Cpu: " + cpuInfo);
 
         //TODO: other info...
-        throw std::logic_error("Not implemented");
+        //throw std::logic_error("Not implemented");
         return 1;
     }
 

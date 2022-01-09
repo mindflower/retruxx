@@ -18,23 +18,21 @@ namespace m3d
 
     public:
         void SetMusicType(BlockMusicType);
-        ~BlockMusicManager();
         bool IsMusicBlockNameValid(CStr const&) const;
         void Reset();
-        BlockMusicManager();
         void Init();
         void InitOnce();
         int PlayCurrentMusic();
 
     private:
-        static void __fastcall _MusicEndCallback(int);
+        static void _MusicEndCallback(int);
 
     private:
         std::vector<std::vector<CStr>> m_blocks;
-        int m_curBlockNum;
-        BlockMusicType m_curMusicType;
+        int m_curBlockNum = 0;
+        BlockMusicType m_curMusicType = NUM_MUSIC_TYPES;
         std::map<CStr, int> m_blockNamesToIds;
-        bool m_bMustPlayNewMusic;
-        int m_curChannelId;
+        bool m_bMustPlayNewMusic = 0;
+        int m_curChannelId = -1;
     };
 }

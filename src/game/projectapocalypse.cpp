@@ -38,7 +38,7 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance,
         {
             CMiracle3d app;
             //TODO:: load icon from resources
-            auto hIcon = ::LoadIcon(hInstance, TEXT("icon.ico"));
+            auto hIcon = ::LoadIcon(NULL, IDI_WINLOGO);
             auto result = 0;
             if (app.init(hInstance, hIcon, "data\\config.cfg", NULL, lpCmdLine))
             {

@@ -17,6 +17,23 @@ int g_bInitialized = 0;
 
 HMODULE g_hImagehlpDll = nullptr;
 
+RTL_CRITICAL_SECTION g_csFileOpenClose;
+
+
+//using SymCleanupType = int(*)(void*);
+//using SymFunctionTableAccessType = void* (*)(void*, unsigned long);
+//using SymGetLineFromAddrType = int(*)(void*, unsigned long, unsigned long*, struct _IMAGEHLP_LINE*);
+//using SymGetModuleBaseType = unsigned long(*)(void*, unsigned long);
+//using SymGetModuleInfoType = ;
+//using SymGetOptionsType = ;
+//using SymGetSymFromAddrType = ;
+//using SymInitializeType = ;
+//using SymSetOptionsType = ;
+//using StackWalkType = ;
+//using UnDecorateSymbolNameType = ;
+//using SymLoadModuleType = ;
+//using MiniDumpWriteDumpType = ;
+
 LONG WINAPI CrashHandlerExceptionFilter(PEXCEPTION_POINTERS pe)
 {
     throw std::logic_error("Not implemented");
@@ -46,6 +63,11 @@ int InitStackWalk()
         return 1;
     }
     //TODO:...
+    {
+        g_bInitialized = 1;
+        ::InitializeCriticalSection(&g_csFileOpenClose);
+        return 0;
+    }
     //pSC = GetProcAddress(g_hImagehlpDll, "SymCleanup");
     //pSFTA = GetProcAddress(g_hImagehlpDll, "SymFunctionTableAccess");
     //pSGLFA = GetProcAddress(g_hImagehlpDll, "SymGetLineFromAddr");
@@ -65,15 +87,16 @@ int InitStackWalk()
     //    ::InitializeCriticalSection(&g_csFileOpenClose);
     //    return 0;
     //}
-    M3D_LOG_INFO("GetProcAddress(): some required function not found.");
-    ::FreeLibrary(g_hImagehlpDll);
-    g_bInitialized = 0;
-    return 1;
+    //M3D_LOG_INFO("GetProcAddress(): some required function not found.");
+    //::FreeLibrary(g_hImagehlpDll);
+    //g_bInitialized = 0;
+    //return 1;
 }
 
 int InitAllocCheck(eAllocCheckOutput eOutput, int bSetUnhandledExeptionFilter, unsigned long ulShowStackAtAlloc)
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check correctness
+    //throw std::logic_error("Not implemented");
     auto const* workDir = m3d::g_Kernel->GetFileServer().GetCurrentWorkDir();
     TCHAR szModName[MAX_PATH + 1] = { 0 };
     if (::GetModuleFileName(NULL, szModName, MAX_PATH) != 0)
@@ -114,5 +137,4 @@ int InitAllocCheck(eAllocCheckOutput eOutput, int bSetUnhandledExeptionFilter, u
     g_pszAllocLogName = strdup(szModName);
     g_CallstackOutputType = eOutput;
     return InitStackWalk();
-    //TODO::
 }

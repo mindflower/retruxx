@@ -533,9 +533,9 @@ CMiracle3d::CMiracle3d() :
     m_profiler_ServerUpdate = GetProfilerStack().AddProfiler(" - ServerUpdate", 30);
     m_profiler_ClientUpdate = GetProfilerStack().AddProfiler(" - ClientUpdate", 30);
 
-    m_blockMusicManager = new m3d::BlockMusicManager{};
-    m_townMusicManager = new m3d::TownMusicManager{};
-    m_radioEngine = new m3d::RadioEngine{};
+    m_blockMusicManager = new m3d::BlockMusicManager;
+    m_townMusicManager = new m3d::TownMusicManager;
+    m_radioEngine = new m3d::RadioEngine;
 
     m_oldPositionValue.one();
 }

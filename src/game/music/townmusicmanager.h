@@ -9,14 +9,12 @@ namespace m3d
         void Activate();
         int LaunchAmbientWorkshop();
         void StopAmbient();
-        TownMusicManager();
         void Init();
         int LaunchAmbientShop();
-        ~TownMusicManager();
 
     private:
         std::vector<int> m_ambientShopSounds;
         std::vector<int> m_ambientWorkshopSounds;
-        int m_curAmbientChannelId;
+        int m_curAmbientChannelId = -1;
     };
 }

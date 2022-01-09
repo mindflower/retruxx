@@ -18,22 +18,12 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    TownMusicManager::TownMusicManager()
-    {
-        throw std::logic_error("Not implemented");
-    }
-
     void TownMusicManager::Init()
     {
         throw std::logic_error("Not implemented");
     }
 
     int TownMusicManager::LaunchAmbientShop()
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    TownMusicManager::~TownMusicManager()
     {
         throw std::logic_error("Not implemented");
     }

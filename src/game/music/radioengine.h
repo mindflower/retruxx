@@ -24,10 +24,13 @@ namespace m3d
         };
 
     public:
+        static inline RadioEngine* m_instance = nullptr;
+
+    public:
         void Init();
         ~RadioEngine();
         void PlayNextSoundMessage();
-        static RadioEngine* __fastcall GetInstance();
+        static RadioEngine* GetInstance();
         void PlaySoundMessage(int, int, CStr const&);
 
     private:
@@ -37,7 +40,7 @@ namespace m3d
         std::map<int, int> m_lastTime;
         std::deque<RadioSoundItem> m_soundDeque;
         std::map<CStr, SCurId> m_correctIds;
-        int m_curChannelId;
+        int m_curChannelId = -1;
         CStr m_curTextToShow;
     };
 }

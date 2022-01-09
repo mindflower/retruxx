@@ -76,7 +76,7 @@ namespace m3d
 
     cmn::Timer& Kernel::GetTimer()
     {
-        throw std::logic_error("Not implemented");
+        return *m_timer;
     }
 
     Class* Kernel::FindClass(char const* className)
@@ -124,7 +124,7 @@ namespace m3d
 
     fs::FileServer& Kernel::GetFileServer()
     {
-        throw std::logic_error("Not implemented");
+        return *m_fileMan;
     }
 
     cmn::IniFile* Kernel::CreateIniFile()

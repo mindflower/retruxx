@@ -1,6 +1,8 @@
 #include "core/console/console.h"
 #include "console_internal.h"
 #include <stdexcept>
+#include <core/ini.h>
+#include <core/ref_ptr.h>
 #include <core/console/cvar.h>
 
 namespace m3d
@@ -161,8 +163,14 @@ void ConsoleImp::Init(int, int)
     throw std::logic_error("Not implemented");
 }
 
-int ConsoleImp::Load(CStr const&)
+int ConsoleImp::Load(CStr const& fname)
 {
+    CStr err;
+    if (ref_ptr xmlFile = m3d::ReadXmlFile(fname.c_str(), &err))
+    {
+        ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+        auto child = xmlFile->GetFirstNestling()
+    }
     throw std::logic_error("Not implemented");
 }
 
