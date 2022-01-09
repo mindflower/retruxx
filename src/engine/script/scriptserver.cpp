@@ -45,6 +45,11 @@ namespace
         throw std::logic_error("Not implemented");
     }
 
+    int _callNativeGlobalFunction(lua_State *)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     lua_CFunction oldToString = nullptr;
     m3d::ScriptServer* g_scriptServer = nullptr;
 }
@@ -205,11 +210,42 @@ namespace m3d
 
     Object* ScriptServer::Clone()
     {
-        throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");   
     }
 
-    eScriptError ScriptServer::registerGlobalFunction(int(*)(sArgStack&), char const*, char const*, char const*, char const*)
+    eScriptError ScriptServer::registerGlobalFunction(int(*NativeGlobalFunc)(sArgStack&), char const* name, char const* returnValue, char const* params, char const* shortDesc)
     {
-        throw std::logic_error("Not implemented");
+        if (!m_bInitialized)
+        {
+            return NOT_INITIALIZED;
+        }
+        if (!NativeGlobalFunc)
+        {
+            return OTHER_ERROR;
+        }
+        auto const it = m_funcDescs.find(name);
+        if (it != m_funcDescs.cend())
+        { 
+            return ALREADY_REGISTERED;
+        }
+
+        auto data = (int(**)(sArgStack&))lua_newuserdata(L, sizeof(NativeGlobalFunc));
+        *data = NativeGlobalFunc;
+        lua_newtable(L);
+        lua_pushstring(L, "__call");
+        lua_pushcclosure(L, _callNativeGlobalFunction, 0);
+        lua_settable(L, -3);
+        lua_setmetatable(L, -2);
+        lua_pushstring(L, name);
+        lua_insert(L, -2);
+        lua_settable(L, -10001);
+
+        auxFuncDesc desc;
+        desc.returnValue = returnValue;
+        desc.params = params;
+        desc.shortDesc = shortDesc;
+        m_funcDescs.emplace(name, std::move(desc));
+
+        return SUCCESS;
     }
 }

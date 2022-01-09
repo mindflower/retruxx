@@ -21,7 +21,6 @@ namespace m3d
     class Log
     {
     public:
-        Log();
         ~Log();
 
         void logTex(CStr const&, eLogFlags);
@@ -44,15 +43,15 @@ namespace m3d
         CStr const& headerString(eLogFlags) const;
 
     private:
-        bool m_logStarted;
+        bool m_logStarted = false;
         std::string m_fileName;
-        unsigned int m_sourceLine;
+        unsigned int m_sourceLine = 0;
         std::string m_sourceFile;
-        unsigned int m_logMask;
-        int m_indentCount;
-        int m_indentChars;
-        bool m_lineCharsFlag;
-        bool m_flushImmediately;
+        unsigned int m_logMask = -1;
+        int m_indentCount = 0;
+        int m_indentChars = 4;
+        bool m_lineCharsFlag = false;
+        bool m_flushImmediately = true;
         CriticalSection m_cs;
     };
 }

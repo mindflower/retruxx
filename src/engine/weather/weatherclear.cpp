@@ -1,39 +1,39 @@
-#include <cameracontroller.h>
+#include "weather.h"
 #include <stdexcept>
 
 namespace m3d
 {
-    void CameraController::AttachCamera(CCamera* camera)
-    {
-        m_camera = camera;
-    }
-
-    void CameraController::EnableShaking()
+    Class* WeatherClear::GetBaseClass()
     {
         throw std::logic_error("Not implemented");
     }
 
-    void CameraController::Update()
+    Object* WeatherClear::Clone()
     {
         throw std::logic_error("Not implemented");
     }
 
-    float CameraController::GetShakingRolling() const
+    WeatherClear::~WeatherClear()
     {
         throw std::logic_error("Not implemented");
     }
 
-    void CameraController::DisableShaking()
+    Class* WeatherClear::GetClass() const
     {
         throw std::logic_error("Not implemented");
     }
 
-    CVector const& CameraController::GetShakingTranslation() const
+    Object* WeatherClear::CreateObject()
     {
         throw std::logic_error("Not implemented");
     }
 
-    void CameraController::DoTouch(CVector const&, float, float)
+    WeatherClear::WeatherClear(WeatherClear const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    WeatherClear::WeatherClear()
     {
         throw std::logic_error("Not implemented");
     }

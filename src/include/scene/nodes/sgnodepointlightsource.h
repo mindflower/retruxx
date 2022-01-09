@@ -8,6 +8,7 @@ namespace m3d
     public:
         static Class* GetBaseClass();
         static Object* CreateObject();
+
     public:
         virtual Object* Clone();
         virtual DataServer* GetServer() const;

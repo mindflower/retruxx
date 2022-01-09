@@ -1,24 +1,31 @@
 #pragma once
 
+namespace ai
+{
+    class Vehicle;
+}
+
 class ChildPanel :  public m3d::ui::Wnd
 {
 public:
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     virtual void SetVehicleId(int);
     int GetVehicleId() const ;
-    static struct m3d::Class * GetBaseClass();
-    static class m3d::Object * CreateObject();
-    class ai::Vehicle * GetVehicle() const ;
+    static m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+    ai::Vehicle * GetVehicle() const ;
     virtual ~ChildPanel();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
     virtual void OnRestoreStyles();
+
 protected:
     ChildPanel();
-    ChildPanel(class ChildPanel const &);
+    ChildPanel(ChildPanel const &);
     virtual int GameDataClear(bool);
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int,m3d::AIParam const &);
     virtual int GameDataUpdate(void *,int);
     virtual void OnExit();
+
 private:
     int m_vehicleId;
 };

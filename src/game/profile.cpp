@@ -108,6 +108,121 @@ Profile* ProfileManager::GetCurProfile() const
     return _GetProfileByName(m_curProfileName);
 }
 
+int ProfileManager::SetCurProfile(CStr const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+CStr ProfileManager::GetDefaultProfileName() const
+{
+    throw std::logic_error("Not implemented");
+}
+
+m3d::Class* ProfileManager::GetClass() const
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ProfileManager::DeleteProfile(CStr const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+std::vector<CStr> ProfileManager::GetProfilesNames() const
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ProfileManager::Done()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ProfileManager::Init()
+{
+    throw std::logic_error("Not implemented");
+}
+
+Profile const* ProfileManager::CreateNewProfile(CStr const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+m3d::Class* ProfileManager::GetBaseClass()
+{
+    throw std::logic_error("Not implemented");
+}
+
+ProfileManager::~ProfileManager()
+{
+    throw std::logic_error("Not implemented");
+}
+
+m3d::Object* ProfileManager::CreateObject()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ProfileManager::LoadProfiles()
+{
+    throw std::logic_error("Not implemented");
+}
+
+Profile* ProfileManager::GetProfileByName(CStr const&) const
+{
+    throw std::logic_error("Not implemented");
+}
+
+m3d::Object* ProfileManager::Clone()
+{
+    throw std::logic_error("Not implemented");
+}
+
+void ProfileManager::Clear()
+{
+    throw std::logic_error("Not implemented");
+}
+
+CStr ProfileManager::GetProfileOwnFolderName(CStr const&) const
+{
+    throw std::logic_error("Not implemented");
+}
+
+Profile const* ProfileManager::CreateDefaultProfile()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ProfileManager::AddProfile(Profile*)
+{
+    throw std::logic_error("Not implemented");
+}
+
+ProfileManager::ProfileManager(ProfileManager const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+ProfileManager::ProfileManager()
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ProfileManager::GetProfileFiles(std::vector<CStr, std::allocator<CStr>>&) const
+{
+    throw std::logic_error("Not implemented");
+}
+
+CStr ProfileManager::GetProfileFolderName(CStr const&) const
+{
+    throw std::logic_error("Not implemented");
+}
+
+CStr ProfileManager::GetProfileFilePath(CStr const&) const
+{
+    throw std::logic_error("Not implemented");
+}
+
 int ProfileManager::SaveProfile(Profile const* profile) const
 {
     if (profile && profile->IsValid())

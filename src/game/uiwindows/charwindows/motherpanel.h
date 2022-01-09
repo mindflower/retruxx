@@ -1,6 +1,7 @@
 #pragma once
 #include <core/ref_ptr.h>
 #include <ui/wnd.h>
+#include <map>
 
 namespace ai
 {

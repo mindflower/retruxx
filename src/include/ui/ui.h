@@ -1,10 +1,10 @@
 #pragma once
 #include <vector>
-#include <core/clazz.h>
 #include <math/point2d.h>
 #include <core/stringm3d.h>
 #include <math/bounds2d.h>
 #include <renderer/i_renderer.h>
+#include <core/clazz.h>
 #include "font.h"
 
 namespace m3d

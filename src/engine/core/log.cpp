@@ -1,16 +1,12 @@
+#include <fstream>
 #include <stdexcept>
 #include <core/log.h>
 
 namespace m3d
 {
-    Log::Log()
-    {
-        throw std::logic_error("Not implemented");
-    }
-
     Log::~Log()
     {
-        throw std::logic_error("Not implemented");
+        endLog();
     }
 
     void Log::logTex(CStr const&, eLogFlags)
@@ -83,9 +79,39 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    bool Log::startLog(char const*, bool)
+    bool Log::startLog(char const* fileName, bool flush)
     {
-        throw std::logic_error("Not implemented");
+        if (m_logStarted)
+        {
+            return true;
+        }
+        m_flushImmediately = flush;
+
+        char buf[0x400] = { 0 };
+        ::GetCurrentDirectoryA(sizeof(buf), buf);
+        CStr logFile(buf);
+        logFile += '\\';
+        logFile += fileName;
+        UnifyFileName(logFile);
+        std::ofstream logStream(logFile);
+        if (logStream)
+        {
+            auto const timestamp = time(NULL);
+            CStr timeStr = asctime(localtime(&timestamp));
+            timeStr.erase(timeStr.size() - 1);
+            logStream <<
+                "---------------------------------------------- Log begins on " <<
+                timeStr <<
+                " ----------------------------------------------" <<
+                std::endl;
+            if (m_flushImmediately)
+            {
+                logStream.flush();
+            }
+            m_logStarted = true;
+            return 1;
+        }
+        return 0;
     }
 
     CStr const& Log::headerString(eLogFlags) const

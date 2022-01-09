@@ -1544,9 +1544,17 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    //TODO: return MHZ?
     long long Application::GetCpuFrequency(unsigned)
     {
-        throw std::logic_error("Not implemented");
+        int cpuInfo[4] = {0};
+        __cpuid(cpuInfo, 0);
+        if (cpuInfo[0] >= 0x16)
+        {
+            __cpuid(cpuInfo, 0x16);
+            return cpuInfo[0];
+        }
+        return 0;
     }
 
     void Application::FlushQuads()

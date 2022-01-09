@@ -1,5 +1,275 @@
 #include <geomobject.h>
+#include <stdexcept>
 
 namespace m3d
 {
+    void GeomObject::IncEnabledCellsCount()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GeomObject::SetBounds(PointBase<int> const&, PointBase<int> const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObject::Clone()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    PointBase<int> const& GeomObject::GetEndCell()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    PointBase<int> const& GeomObject::GetStartCell()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObject::GetBaseClass()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObject::~GeomObject()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObject::GetClass() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObject::CreateObject()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GeomObject::SetGeom(dxGeom*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GeomObject::SetEnabled(bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GeomObject::DecEnabledCellsCount()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GeomObject::Release()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    dxGeom* GeomObject::GetGeom() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GeomObject::SetMayBeEnabled(bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObject::GeomObject()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObject::GeomObject(GeomObject const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectLandscape::~GeomObjectLandscape()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObjectLandscape::GetClass() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObjectLandscape::Clone()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObjectLandscape::CreateObject()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObjectLandscape::GetBaseClass()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectLandscape::GeomObjectLandscape()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectLandscape::GeomObjectLandscape(GeomObjectLandscape const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObjectStatics::GetClass() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectStatics::~GeomObjectStatics()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObjectStatics::GetBaseClass()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObjectStatics::CreateObject()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObjectStatics::Clone()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectStatics::GeomObjectStatics()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectStatics::GeomObjectStatics(GeomObjectStatics const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectRoad::~GeomObjectRoad()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObjectRoad::CreateObject()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void GeomObjectRoad::SetRoadNode(RoadNode*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObjectRoad::GetClass() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    RoadNode* GeomObjectRoad::GetRoadNode() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObjectRoad::GetBaseClass()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObjectRoad::Clone()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectRoad::GeomObjectRoad(GeomObjectRoad const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectRoad::GeomObjectRoad()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectWater::~GeomObjectWater()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObjectWater::GetBaseClass()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObjectWater::CreateObject()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObjectWater::Clone()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObjectWater::GetClass() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectWater::GeomObjectWater()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectWater::GeomObjectWater(GeomObjectWater const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObjectPassCell::CreateObject()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObjectPassCell::GetClass() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Class* GeomObjectPassCell::GetBaseClass()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Object* GeomObjectPassCell::Clone()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectPassCell::~GeomObjectPassCell()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectPassCell::GeomObjectPassCell(GeomObjectPassCell const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    GeomObjectPassCell::GeomObjectPassCell()
+    {
+        throw std::logic_error("Not implemented");
+    }
 }

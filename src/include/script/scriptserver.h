@@ -62,7 +62,7 @@ namespace m3d
     public:
         class auxFuncDesc
         {
-        private:
+        public:
             CStr returnValue;
             CStr params;
             CStr shortDesc;

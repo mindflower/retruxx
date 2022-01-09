@@ -6,6 +6,7 @@
 #include <math/vector2.h>
 #include <ui/ui.h>
 #include <ui/wndstation.h>
+#include <ui/wnd.h>
 
 namespace m3d
 {
@@ -912,6 +913,101 @@ namespace m3d
         void Wnd::DoDragMove(PointBase<float> const&)
         {
             //TODO: ...
+            throw std::logic_error("Not implemented");
+        }
+
+        Class* ModalWnd::GetBaseClass()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Object* ModalWnd::CreateObject()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int ModalWnd::DoModal()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int ModalWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int ModalWnd::CanClose()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int ModalWnd::IsModal()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Class* ModalWnd::GetClass() const
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Wnd* ModalWnd::GetDlgItem(unsigned)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        Object* ModalWnd::Clone()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        ModalWnd::~ModalWnd()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int ModalWnd::OnInitDlgItem(Wnd*, unsigned)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        void ModalWnd::OnCloseModal(int)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int ModalWnd::OnInitModal()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int ModalWnd::OnPaint(DrawInfo const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int ModalWnd::CloseModal(int)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int ModalWnd::OnKey(unsigned short, unsigned char, unsigned)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int ModalWnd::OnWndNotify(Wnd*, unsigned, unsigned, AIParam const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        ModalWnd::ModalWnd(ModalWnd const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        ModalWnd::ModalWnd()
+        {
             throw std::logic_error("Not implemented");
         }
     }

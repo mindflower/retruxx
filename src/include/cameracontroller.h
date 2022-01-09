@@ -12,22 +12,21 @@ namespace m3d
         void EnableShaking();
         void Update();
         float GetShakingRolling() const ;
-        CameraController();
         void DisableShaking();
         CVector const & GetShakingTranslation() const ;
         void DoTouch(CVector const &,float,float);
 
     private:
-        float m_minShakingRange;
+        float m_minShakingRange = 50.0;
         float m_maxRollingAmplitude;
-        float m_shakePower;
+        float m_shakePower = 1.0;
         int m_duration;
-        bool m_shakingAllowed;
-        CCamera *m_camera;
-        int m_lastShakeTimeStamp;
+        bool m_shakingAllowed = true;
+        CCamera *m_camera = nullptr;
+        int m_lastShakeTimeStamp = 0;
         CVector m_originPos;
         float m_originRadius;
-        CVector m_translation;
-        float m_rolling;
+        CVector m_translation{0.0, 0.0, 0.0};
+        float m_rolling = 0.0;
     };
 }

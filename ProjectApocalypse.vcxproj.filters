@@ -2055,6 +2055,9 @@
     <ClCompile Include="src\engine\core\threadsync.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\weather\weatherclear.cpp">
+      <Filter>engine\weather</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">

@@ -3,6 +3,17 @@
 class PlayerMoneyWnd :  public m3d::ui::Wnd
 {
 public:
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+    protected:
+    private:
+        CStr m_wndValueName;
+        CStr m_strIdMoney;
+    };
+
+public:
     virtual struct m3d::Class * GetClass() const ;
     static class m3d::Object * CreateObject();
     static struct m3d::Class * GetBaseClass();
@@ -11,7 +22,7 @@ public:
 protected:
     void OnStartLevel();
     PlayerMoneyWnd();
-    PlayerMoneyWnd(class PlayerMoneyWnd const &);
+    PlayerMoneyWnd(PlayerMoneyWnd const &);
     void UpdateValue();
     virtual int GameDataSetup();
     virtual int GameDataUpdate(void *,int);

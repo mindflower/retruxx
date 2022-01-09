@@ -38,14 +38,12 @@ Quaternion::Quaternion(CMatrix const&)
     throw std::logic_error("Not implemented");
 }
 
-Quaternion::Quaternion(float, float, float, float)
+Quaternion::Quaternion(float qx, float qy, float qz, float qw) :
+    x(qx),
+    y(qy),
+    z(qz),
+    w(qw)
 {
-    throw std::logic_error("Not implemented");
-}
-
-Quaternion::Quaternion()
-{
-    throw std::logic_error("Not implemented");
 }
 
 CMatrix Quaternion::ToMatrix() const

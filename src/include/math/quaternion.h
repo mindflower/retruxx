@@ -14,7 +14,7 @@ public:
     Quaternion operator+(Quaternion const&) const;
     Quaternion(CMatrix const&);
     Quaternion(float, float, float, float);
-    Quaternion();
+    Quaternion() = default;
     CMatrix ToMatrix() const;
     Quaternion getConjugated() const;
     void Zero();

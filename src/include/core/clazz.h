@@ -19,13 +19,13 @@ namespace m3d
 
     struct Class
     {
-        const char* m_className;
-        int m_classSize;
-        Object* (* m_fnCreateObject)();
-        Class* (* m_fnGetBaseClass)();
-        int m_index;
-        ExportInfo* m_lExports;
-        void* m_scriptHandle;
+        const char* m_className = nullptr;
+        int m_classSize =0 ;
+        Object* (* m_fnCreateObject)() = nullptr;
+        Class* (* m_fnGetBaseClass)() = nullptr;
+        int m_index = 0;
+        ExportInfo* m_lExports = nullptr;
+        void* m_scriptHandle = nullptr;
 
     public:
         bool IsKindOf(char const*) const;

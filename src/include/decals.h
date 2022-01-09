@@ -61,7 +61,7 @@ namespace m3d
     class DecalsList
     {
     public:
-        static void __fastcall ReleaseShaders();
+        static void ReleaseShaders();
         ~DecalsList();
         unsigned int GetNumDecals();
         void RecalcDecalsForMesh(GeometryInfo const &);
@@ -69,7 +69,7 @@ namespace m3d
         DecalInfo const & GetDecal(int);
         void Render(rend::TexHandle);
         void AddDecal(DecalSource const &,GeometryInfo const &);
-        static void __fastcall LoadShaders();
+        static void LoadShaders();
 
     private:
         short GetMatrixId(CMatrix *);

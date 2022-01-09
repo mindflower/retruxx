@@ -11,6 +11,7 @@ namespace m3d
 {
     namespace ui
     {
+        class ButtonWnd;
         class StringsListBoxWnd;
 
         class ComboBoxWnd :  public Wnd

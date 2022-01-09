@@ -60,7 +60,6 @@ namespace m3d
     protected:
         GameImpulse();
 
-
     public:
         RT_CLASS_DECLARE(GameImpulse);
 

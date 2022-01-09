@@ -43,11 +43,6 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    CameraPath::CameraPath()
-    {
-        throw std::logic_error("Not implemented");
-    }
-
     float CameraPath::GetFullLength() const
     {
         throw std::logic_error("Not implemented");
@@ -285,7 +280,7 @@ namespace m3d
 
     Object* Cinematic::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new Cinematic;
     }
 
     void Cinematic::SetFromPos(CVector const&, Quaternion const&)
@@ -378,13 +373,8 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    Cinematic::Cinematic(Cinematic const&)
+    Cinematic::Cinematic() :
+        m_fadePeriod("cinematicFadePeriod", "1", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE)
     {
-        throw std::logic_error("Not implemented");
-    }
-
-    Cinematic::Cinematic()
-    {
-        throw std::logic_error("Not implemented");
     }
 }

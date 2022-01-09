@@ -396,6 +396,7 @@
     <ClCompile Include="src\engine\video\wxlist.cpp" />
     <ClCompile Include="src\engine\video\wxutil.cpp" />
     <ClCompile Include="src\engine\weather\weather.cpp" />
+    <ClCompile Include="src\engine\weather\weatherclear.cpp" />
     <ClCompile Include="src\engine\weather\weatherfoggy.cpp" />
     <ClCompile Include="src\engine\weather\weatherinclement.cpp" />
     <ClCompile Include="src\engine\weather\weathermanager.cpp" />

@@ -56,7 +56,7 @@ namespace m3d
 
     ScriptServer& Kernel::GetScriptServer()
     {
-        throw std::logic_error("Not implemented");
+        return *m_scriptServer;
     }
 
     int Kernel::MessageBoxA(HWND, char const*, char const*, unsigned)
@@ -163,14 +163,19 @@ namespace m3d
         return (*m_lGlobals)[name] = object;
     }
 
-    Object* Kernel::New(char const*)
+    Object* Kernel::New(char const* className)
     {
-        throw std::logic_error("Not implemented");
+        if (auto* cls = FindClass(className))
+        {
+            return New(cls);
+        }
+        M3D_LOG_INFO("Kernel::New -- class " + CStr(className) + " is not registered ");
+        return nullptr;
     }
 
-    Object* Kernel::New(Class*)
+    Object* Kernel::New(Class* cls)
     {
-        throw std::logic_error("Not implemented");
+        return cls->NewInstance();
     }
 
     Object* Kernel::FindGlobal(char const*)
@@ -249,9 +254,11 @@ namespace m3d
         OdeSetMemoryHandlers();
     }
 
-    bool Kernel::OpenLog(char const*)
+    bool Kernel::OpenLog(char const* logFileName)
     {
-        throw std::logic_error("Not implemented");
+        assert(m_Log == nullptr);
+        m_Log = new Log;
+        return m_Log->startLog(logFileName, true);
     }
 
     int Kernel::GetUniqueId()

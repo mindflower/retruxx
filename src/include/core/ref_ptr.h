@@ -5,6 +5,8 @@ template<class T>
 class ref_ptr
 {
 public:
+    ref_ptr() = default;
+
     ref_ptr(T* ptr) :
         m_ptr(ptr)
     {

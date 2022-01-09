@@ -74,22 +74,7 @@ void CMiracle3d::CurGameMode::Set(GameState)
     throw std::logic_error("Not implemented");
 }
 
-CMiracle3d::CurGameMode::~CurGameMode()
-{
-    throw std::logic_error("Not implemented");
-}
-
-CMiracle3d::CurGameMode::CurGameMode()
-{
-    throw std::logic_error("Not implemented");
-}
-
 void CMiracle3d::Player::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
-{
-    throw std::logic_error("Not implemented");
-}
-
-CMiracle3d::Player::Player()
 {
     throw std::logic_error("Not implemented");
 }

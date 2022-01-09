@@ -37,25 +37,22 @@ public:
     public:
         GameState Get() const;
         void Set(GameState);
-        ~CurGameMode();
-        CurGameMode();
 
     private:
-        GameState m_mode;
+        GameState m_mode = GS_GAME;
 
     };
     class Player
     {
     public:
         void LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        Player();
         void SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
 
     public:
-        CameraModes m_cameraMode;
+        CameraModes m_cameraMode = CM_FOLLOWMODE;
         CVector m_gameLookAt;
-        Quaternion m_lastobjQuat;
-        int m_elapsedtime;
+        Quaternion m_lastobjQuat{0.0, 0.0, 0.0, 1.0};
+        int m_elapsedtime = 0;
         float m_desiredDistance;
     };
 

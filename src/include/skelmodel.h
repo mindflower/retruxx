@@ -313,9 +313,6 @@ namespace m3d
 
     class Configuration
     {
-    public:
-        Configuration();
-
     private:
         unsigned int m_num;
         std::vector<AnimatedModel::Mesh*> m_meshes;

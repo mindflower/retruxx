@@ -39,7 +39,6 @@ namespace m3d
         void push_back(CameraPathState const&);
         void MovePoint(int, CameraPathState const&);
         void CalcFullLength(unsigned int);
-        CameraPath();
         float GetFullLength() const;
         void SaveToXmlRuntime(cmn::XmlFile*, cmn::XmlNode*) const;
         void LoadFromXml(cmn::XmlFile*, cmn::XmlNode const*);
@@ -59,8 +58,8 @@ namespace m3d
 
     private:
         std::vector<CameraPathState> m_cameraPathStates;
-        float m_fullLength;
-        float m_fullTime;
+        float m_fullLength = 0.0;
+        float m_fullTime = 1.0;
     };
 
     enum CinematicState
@@ -84,24 +83,24 @@ namespace m3d
     class CinematicItem
     {
     private:
-        int m_flags;
-        bool m_bLookTo;
-        int m_idToLookAt;
-        CVector m_pointToLookAt;
-        int m_baseId;
-        bool m_bRelativeRotations;
-        bool m_bRelativePoints;
-        m3d::CinematicType m_playType;
-        bool m_bWaitWhenStop;
+        int m_flags = 0;
+        bool m_bLookTo = false;
+        int m_idToLookAt = -1;
+        CVector m_pointToLookAt{0.0, 0.0, 0.0};
+        int m_baseId = -1;
+        bool m_bRelativeRotations = false;
+        bool m_bRelativePoints = false;
+        m3d::CinematicType m_playType = CINEMATIC_OFF;
+        bool m_bWaitWhenStop = false;
         m3d::CameraPath m_cameraPath;
         CStr m_cameraPathName;
-        float m_finalPhi;
-        float m_finalTheta;
-        float m_finalRadius;
-        float m_startPhi;
-        float m_startTheta;
-        float m_startRadius;
-        bool m_bLerpFromPreviousItem;
+        float m_finalPhi = 0.0;
+        float m_finalTheta = 0.0;
+        float m_finalRadius = 0.0;
+        float m_startPhi = 0.0;
+        float m_startTheta = 0.0;
+        float m_startRadius = 0.0;
+        bool m_bLerpFromPreviousItem = false;
     };
 
     class Cinematic :  public Object
@@ -161,14 +160,13 @@ namespace m3d
         void MoveCurrentDebugPoint(CVector const &,Quaternion const &,float);
 
     protected:
-        Cinematic(Cinematic const &);
         Cinematic();
 
     public:
         RT_CLASS_DECLARE(Cinematic);
 
     public:
-        CinematicState m_state;
+        CinematicState m_state = CINEMATIC_NOT_INITED;
         CVar m_fadePeriod;
 
     private:
@@ -181,17 +179,17 @@ namespace m3d
         bool _bIsFirstItemPlayingNow() const ;
 
     private:
-        int m_playTime;
-        int m_fadeStartTime;
-        bool m_bWasSkipped;
-        bool m_bWasSkippedInEnterFadeOut;
+        int m_playTime = 0;
+        int m_fadeStartTime = 0;
+        bool m_bWasSkipped = false;
+        bool m_bWasSkippedInEnterFadeOut = false;
         std::list<CinematicItem> m_cinematicItems;
         CinematicItem m_curItem;
         CStr m_folder;
-        float m_curTime;
+        float m_curTime = 0.0;
         std::map<CStr,CameraPath> m_paths;
-        bool m_bDebugMode;
-        int m_curDebugPointNum;
-        unsigned int m_numConsecutiveItemPlayingNow;
+        bool m_bDebugMode = false;
+        int m_curDebugPointNum = -1;
+        unsigned int m_numConsecutiveItemPlayingNow = 0;
     };
 }

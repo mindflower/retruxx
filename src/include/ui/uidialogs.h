@@ -1,10 +1,13 @@
 #pragma once
-#include "uicontrols.h"
+#include "wnd.h"
 
 namespace m3d
 {
     namespace ui
     {
+        class ImageWnd;
+        class GlyphButton;
+
         class MsgBoxDlg : public ModalWnd
         {
         public:
