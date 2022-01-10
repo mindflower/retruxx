@@ -35,7 +35,7 @@ namespace m3d
         void * Malloc(int,char const *,int);
         void turnAggressiveDebugMode(bool);
         static void __fastcall operator delete(void *);
-        static void * __fastcall operator new(unsigned int);
+        static void * __fastcall operator new(size_t);
         void DumpMemoryFootprint(bool) const ;
         void FreeChunk(auxChunkHeader *);
 

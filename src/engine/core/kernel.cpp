@@ -185,7 +185,7 @@ namespace m3d
 
     cmn::XmlFile* Kernel::CreateXmlFile()
     {
-        throw std::logic_error("Not implemented");
+        return new XmlFileImpl;
     }
 
     CStr Kernel::GetClipboardData() const

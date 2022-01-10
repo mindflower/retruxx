@@ -3,6 +3,7 @@
 #include <core/ini.h>
 #include <file/filereader.h>
 #include <file/fileserver.h>
+#include <file/memoryfile.h>
 #include <file/package.h>
 #include <file/rawfile.h>
 
@@ -52,6 +53,7 @@ namespace m3d
 
         int FileServer::OpenFileStream(FileReader* reader, char const* filename, IStream::OpenFlags flags)
         {
+            //TODO: check this
             if (filename[1] == ':' && (filename[2] == '/' || filename[2] == '\\'))
             {
                 CStr filenameUnified;
@@ -63,7 +65,30 @@ namespace m3d
             CStr fullFilename;
             DecryptFileName(filename, fullFilename);
 
-            throw std::logic_error("Not implemented");
+            if (flags == IStream::OPEN_READ)
+            {
+                for (auto const& package : m_Packages)
+                {
+                    if (package->HaveFile(fullFilename.c_str()))
+                    {
+                        delete reader->InternalObject;
+                        reader->InternalObject = new MemoryFile(fullFilename.c_str(), package);
+                        return 1;
+                    }
+                }
+            }
+            auto const it = m_Files.find(fullFilename);
+            if (it == m_Files.cend())
+            {
+                m_Files.insert(fullFilename);
+            }
+            delete reader->InternalObject;
+            reader->InternalObject = new RawFile(fullFilename.c_str(), flags, m_EnableMapping);
+            if (!reader->InternalObject->IsOpen())
+            {
+                return 0;
+            }
+            return 1;
         }
 
         int FileServer::AddPackage(char const*)
@@ -166,9 +191,15 @@ namespace m3d
             }
         }
 
-        void FileServer::DecryptFileName(char const*, CStr&)
+        void FileServer::DecryptFileName(char const* fileName, CStr& decryptedFileName)
         {
-            throw std::logic_error("Not implemented");
+            if (fileName[0] == ':')
+            {
+                CStr const temp(fileName + 1);
+                decryptedFileName = m_CurrentWorkDir + temp;
+            }
+            decryptedFileName = fileName;
+            UnifyFileName0(decryptedFileName);
         }
 
         int FileServer::InternalAddPackage(CStr const&)

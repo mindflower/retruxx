@@ -41,17 +41,16 @@ namespace m3d
             virtual MemoryFile* Copy();
 
             MemoryFile(char const*, Package*);
-            MemoryFile(MemoryFile const&);
 
         protected:
-            MemoryFile();
+            MemoryFile() = default;
             int Open(char const*, Package*);
 
         private:
-            Package* m_Package;
-            unsigned int m_FileID;
-            unsigned __int8* m_Data;
-            unsigned __int8* m_CurrData;
+            Package* m_Package = nullptr;
+            unsigned int m_FileID = 0;
+            void* m_Data = nullptr;
+            void* m_CurrData = nullptr;
         };
     }
 }

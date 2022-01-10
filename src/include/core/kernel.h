@@ -27,52 +27,67 @@ namespace m3d
         void(__fastcall* FreeMem)(void*, const char*, int);
     };
 
+    //IMPORTANT: fields and member order is strict!
     class Kernel
     {
-    public:
-        virtual void UnRegisterGlobal(char const*);
-        virtual void SysError(CStr const&, CStr const&);
-        virtual ScriptServer& GetScriptServer();
-        virtual int __stdcall MessageBoxA(HWND, char const*, char const*, unsigned int);
-        virtual EngineConfig& GetEngineCfg();
-        virtual unsigned int debugMemUsed() const;
-        virtual cmn::Timer& GetTimer();
-        virtual Class* FindClass(char const*);
-        virtual ~Kernel();
-        virtual void DumpMem(char const*);
-        virtual unsigned int debugMemAllocated() const;
-        virtual void AddClass(Class*);
-        virtual fs::FileServer& GetFileServer();
-        virtual cmn::IniFile* CreateIniFile();
-        virtual unsigned int debugMemOverhead() const;
-        virtual void SetClipboardData(char const*) const;
-        virtual void __cdecl KernelLog(char const*, ...);
-        virtual void TurnAggressiveMemoryDebugMode(bool);
-        virtual Object* RegisterGlobal(Object*, char const*);
-        virtual Object* New(char const*);
-        virtual Object* New(Class*);
-        virtual Object* FindGlobal(char const*);
-        virtual cmn::XmlFile* CreateXmlFile();
-        virtual CStr GetClipboardData() const;
-        virtual int debugMemLastAllocSize() const;
-        virtual void UnRegisterGlobalObject(Object const*);
-        virtual void RemoveClass(Class*);
-        virtual void GetListOfClasses(Class**&, unsigned int&);
-
-        Kernel();
-        int GetUniqueId();
-        bool OpenLog(char const*);
-
-    public:
-        MemoryAllocationRoutines g_mar;
-
     private:
         MemoryManager* m_memMan = nullptr;
         fs::FileServer* m_fileMan = nullptr;
         cmn::Timer* m_timer = nullptr;
         EngineConfig* m_engineConfig = nullptr;
         ScriptServer* m_scriptServer = nullptr;
+
+    public:
+        virtual ~Kernel();
+
+    public:
+        MemoryAllocationRoutines g_mar;
+
+    public:
+        int GetUniqueId();
+        virtual void AddClass(Class*);
+        virtual void RemoveClass(Class*);
+        virtual Class* FindClass(char const*);
+        virtual void GetListOfClasses(Class**&, unsigned int&);
+        virtual Object* New(Class*);
+        virtual Object* New(char const*);
+        virtual Object* RegisterGlobal(Object*, char const*);
+        virtual Object* FindGlobal(char const*);
+        virtual void UnRegisterGlobal(char const*);
+        virtual void UnRegisterGlobalObject(Object const*);
+        virtual void DumpMem(char const*);
+        virtual void TurnAggressiveMemoryDebugMode(bool);
+        virtual unsigned int debugMemUsed() const;
+        virtual unsigned int debugMemAllocated() const;
+        virtual unsigned int debugMemOverhead() const;
+        virtual int debugMemLastAllocSize() const;
+        virtual void SysError(CStr const&, CStr const&);
+        virtual cmn::IniFile* CreateIniFile();
+        virtual cmn::XmlFile* CreateXmlFile();
+        virtual cmn::Timer& GetTimer();
+        virtual fs::FileServer& GetFileServer();
+        virtual ScriptServer& GetScriptServer();
+        virtual EngineConfig& GetEngineCfg();
+        virtual CStr GetClipboardData() const;
+        virtual void SetClipboardData(char const*) const;
+        bool OpenLog(char const*);
+        virtual void KernelLog(char const*, ...);
+        virtual int MessageBoxA(HWND, char const*, char const*, unsigned int);
+
+    public:
         Log* m_Log = nullptr;
+
+        class auxLogFlow
+        {
+            const char* m_str;
+        };
+
+        class auxLogBlock
+        {
+            const char* m_str;
+        };
+
+        Kernel();
     };
 
     extern Kernel* g_Kernel;

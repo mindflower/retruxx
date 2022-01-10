@@ -19,7 +19,12 @@ namespace m3d
 
         int FileReader::Close()
         {
-            throw std::logic_error("Not implemented");
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->Close();
+            }
+            return -1;
         }
 
         int FileReader::Open(char const* fileName, OpenFlags openMode)
@@ -48,12 +53,17 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        unsigned FileReader::ReadBytes(void*, unsigned)
+        unsigned FileReader::ReadBytes(void* dst, unsigned numBytes)
         {
-            throw std::logic_error("Not implemented");
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->ReadBytes(dst, numBytes);
+            }
+            return 0;
         }
 
-        unsigned FileReader::WriteBytes(void const*, unsigned)
+        unsigned FileReader::WriteBytes(void const* dst, unsigned numBytes)
         {
             throw std::logic_error("Not implemented");
         }
@@ -125,7 +135,12 @@ namespace m3d
 
         unsigned FileReader::GetSize() const
         {
-            throw std::logic_error("Not implemented");
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->GetSize();
+            }
+            return 0;
         }
 
         int FileReader::Error()

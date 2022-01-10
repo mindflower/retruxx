@@ -55,7 +55,7 @@ namespace m3d
         virtual ~Object() = default;
         virtual int SetProperty(unsigned int propId, void* prop);
         virtual char const* GetClassNameA() const;
-        virtual int GetPropertiesList(std::set<unsigned int>&) const;
+        virtual int GetPropertiesList(std::set<size_t>&) const;
         virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual int AddChild(Object*);
         virtual int IncWeakRef();

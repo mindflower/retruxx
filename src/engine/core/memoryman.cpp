@@ -76,7 +76,7 @@ namespace m3d
         free(d);
     }
 
-    void* MemoryManager::operator new(unsigned sz)
+    void* MemoryManager::operator new(size_t sz)
     {
         return malloc(sz);
     }

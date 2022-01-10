@@ -194,11 +194,15 @@ int ConsoleImp::Load(CStr const& fname)
                 (*itVars)->Set(val.m_stringValue.c_str(), true);
             }
 
-            auto const itLoaded = std::find_if(m_loadedValues.cbegin(), m_loadedValues.cend(), [&val](const auto& elem)
+            auto itLoaded = std::find_if(m_loadedValues.begin(), m_loadedValues.end(), [&val](const auto& elem)
             {
                 return elem.m_name == val.m_name;
             });
-            if (itLoaded == m_loadedValues.cend())
+            if (itLoaded != m_loadedValues.end())
+            {
+                *itLoaded = std::move(val);
+            }
+            else
             {
                 m_loadedValues.push_back(std::move(val));
             }

@@ -51,6 +51,7 @@
 namespace
 {
     std::set<size_t>* codePagesStringsPtr;
+
     BOOL CALLBACK EnumCodePagesProc(LPTSTR lpCodePageString)
     {
         codePagesStringsPtr->insert(std::atoi(lpCodePageString));
@@ -91,6 +92,8 @@ namespace
         {"r_ibInfo", 21},
         {"s_modelsInfo", 22},
     };
+
+    using CreateIRendererType = int (*)(m3d::Kernel*);
 }
 
 namespace m3d
@@ -572,53 +575,56 @@ namespace m3d
 
     void Application::SetCodepage()
     {
+        //TODO: check this
         std::set<size_t> codePagesStrings;
+        codePagesStringsPtr = &codePagesStrings;
         ::EnumSystemCodePages(EnumCodePagesProc, CP_INSTALLED);
-        auto const* codePageName = g_Kernel->GetEngineCfg().m_ui_codePageName.GetS();
+        CStr const codePageName = g_Kernel->GetEngineCfg().m_ui_codePageName.GetS();
         UINT codePage = 0;
-        //if (codePageName == CStr("CP_UTF8"))
-        //{
-        //    codePage = CP_UTF8;
-        //}
-        //else if (auto const offset = codePageName.find("windows-"); offset != CStr::npos)
-        //{
-        //    codePage = std::atoi(codePageName.substr(offset).c_str());
-        //}
-        //if (::GetCPInfoEx(codePage, 0, &g_pApp->m_codePage) == FALSE)
-        //{
-        //    //TODO: handle this
-        //    if (::GetCPInfoEx(0, 0, &g_pApp->m_codePage) == FALSE)
-        //    {
-        //        //TODO: handle this
-        //    }
-        //}
-        //TODO:...
-        throw std::logic_error("Not implemented");
-    }
+        if (codePageName == CStr("CP_UTF8"))
+        {
+            codePage = CP_UTF8;
+        }
+        else if (auto const offset = codePageName.find("windows-"); offset != CStr::npos)
+        {
+            codePage = std::atoi(codePageName.substr(strlen("windows-")).c_str());
+        }
+        if (::GetCPInfoEx(codePage, 0, &g_pApp->m_codePage) == FALSE)
+        {
+            M3D_LOG_INFO("SetCodepage -- code page is not supported : " + codePageName + " forcing ANSI, some chars will be not available");
+            //TODO: handle this
+            if (::GetCPInfoEx(0, 0, &g_pApp->m_codePage) == FALSE)
+            {
+                SYS_ERROR("GetCPInfoEx ANSI failed");
+            }
+        }
+        M3D_LOG_INFO(CStr("SetCodepage -- using codepage ") + g_pApp->m_codePage.CodePageName);
+     }
 
     int Application::createRenderer()
     {
         CStr inputDriverName("dxrender9.dll");
         m_hRenderDll = ::LoadLibrary(inputDriverName.c_str());
+        const auto ee = ::GetLastError();
         if (m_hRenderDll == NULL)
         {
             M3D_LOG_ERR("ERROR! Application::CreateRenderer -- cannot locate renderer driver " + inputDriverName);
             M3D_LOG_ERR("GetLastError() = " + std::to_string(::GetLastError()));
             return 0;
         }
-        auto createIRenderer = ::GetProcAddress(m_hRenderDll, "createIRenderer");
+        auto createIRenderer = reinterpret_cast<CreateIRendererType>(::GetProcAddress(m_hRenderDll, "createIRenderer"));
         if (createIRenderer == NULL)
         {
             M3D_LOG_ERR("ERROR! Application::CreateRenderer -- cannot get factory");
         }
 
-        m_renderer = reinterpret_cast<rend::IRenderer*>(createIRenderer());
+        m_renderer = reinterpret_cast<rend::IRenderer*>(createIRenderer(g_Kernel));
         m_renderer->IncRef();
         M3D_LOG_INFO("NOTE! renderer is bind to " + inputDriverName);
         return true;
     }
 
-    long Application::WndProc(HWND hWnd, unsigned uMsg, unsigned wParam, long lParam)
+    LRESULT CALLBACK Application::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         return g_pApp->MsgProc(hWnd, uMsg, wParam, lParam);
     }

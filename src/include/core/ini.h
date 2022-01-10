@@ -2,6 +2,7 @@
 #include "stringm3d.h"
 #include <iface.h>
 #include <vector>
+#include <engine/tinyxml/tinyxml.h>
 
 namespace m3d
 {
@@ -94,3 +95,97 @@ namespace m3d
     int SafeStrAttrib(CStr&, cmn::XmlNode const*, char const*);
     void Tokenize(CStr const*, std::vector<CStr>&, char const*);
 }
+
+class XmlFileImpl :
+    public TiXmlDocument,
+    public m3d::cmn::XmlFile
+{
+public:
+    virtual bool AddBeforeChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*);
+    virtual void SetHeader(char const*, char const*, char const*);
+    virtual bool AddAfterChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*);
+    virtual int Write(m3d::fs::IStream&);
+    virtual void GetHeader(char**, char**, char**);
+    virtual bool AddChild(m3d::cmn::XmlNode*);
+    virtual bool RemoveChild(m3d::cmn::XmlNode*);
+    virtual char const* GetError();
+    virtual bool GetFirstChild_(m3d::cmn::XmlNode*, char const*) const;
+    virtual ~XmlFileImpl();
+    virtual int Read(m3d::fs::IStream&);
+    virtual m3d::cmn::XmlNode* CreateNode(m3d::cmn::XmlNodeType, char const*) const;
+    virtual bool GetLastChild_(m3d::cmn::XmlNode*, char const*) const;
+
+private:
+    virtual int IncRef();
+    virtual void* QueryIface(char const*);
+    virtual int DecRef();
+    TiXmlNode* GetDeclarationNode();
+
+private:
+    int m_refCount = 0;
+    IBase* m_parent = nullptr;
+};
+
+class XmlNodeImpl : public m3d::cmn::XmlNode
+{
+public:
+    virtual bool HasChildOrAttribute() const;
+    virtual bool AddBeforeChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*);
+    virtual char const* GetValue() const;
+    virtual bool GetFirstAttribute(m3d::cmn::XmlAttrib*) const;
+    virtual bool RemoveAttribute(char const*);
+    virtual bool IsEmpty() const;
+    XmlNodeImpl(m3d::cmn::XmlNodeType, char const*);
+    XmlNodeImpl(TiXmlNode*);
+    virtual bool GetPrevSibling_(m3d::cmn::XmlNode*, char const*) const;
+    virtual bool IsOfType(m3d::cmn::XmlNodeType) const;
+    virtual bool AddAfterChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*);
+    virtual void SetValue(char const*);
+    virtual bool GetNextSibling_(m3d::cmn::XmlNode*, char const*) const;
+    virtual bool GetParent(m3d::cmn::XmlNode*) const;
+    virtual void GetAttributeMbcsSafe(char const*, char**, int*) const;
+    virtual bool AddChild(m3d::cmn::XmlNode*);
+    virtual bool SetAttribute(char const*, char const*);
+    virtual bool RemoveChild(m3d::cmn::XmlNode*);
+    virtual m3d::cmn::XmlAttrib* CreateAttribute() const;
+    virtual bool GetFirstChild_(m3d::cmn::XmlNode*, char const*) const;
+    virtual ~XmlNodeImpl();
+    virtual char const* GetAttribute(char const*) const;
+    virtual bool GetLastChild_(m3d::cmn::XmlNode*, char const*) const;
+
+private:
+    virtual int IncRef();
+    XmlNodeImpl();
+    virtual void* QueryIface(char const*);
+    virtual int DecRef();
+
+private:
+    int m_refCount = 0;
+    IBase* m_parent = nullptr;
+    TiXmlNode* m_node = nullptr;
+    bool m_nodeOwned = false;
+};
+
+class XmlAttribImpl : public m3d::cmn::XmlAttrib
+{
+public:
+    virtual bool GetNextSibling_(m3d::cmn::XmlAttrib*);
+    virtual bool IsEmpty();
+    virtual ~XmlAttribImpl();
+    XmlAttribImpl() = default;
+    XmlAttribImpl(TiXmlAttribute*);
+    virtual char const* GetValue();
+    virtual char const* GetName();
+
+private:
+    virtual int IncRef();
+    virtual int DecRef();
+    virtual void* QueryIface(char const*);
+
+private:
+    int m_refCount = 0;
+    IBase* m_parent = nullptr;
+    TiXmlAttribute* m_attrib = nullptr;
+    bool m_attribOwned = false;
+};
+

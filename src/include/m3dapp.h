@@ -237,7 +237,7 @@ namespace m3d
         void FlushQuads();
         void CreateQuadsIb();
         int createRenderer();
-        static long __stdcall WndProc(HWND,unsigned int,unsigned int,long);
+        static LRESULT CALLBACK WndProc(HWND, UINT,WPARAM,LPARAM);
         void doneRenderer();
         void doneUi();
         void RegisterConsoleCommands();
