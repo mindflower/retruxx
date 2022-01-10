@@ -614,7 +614,7 @@ namespace m3d
         class IRenderer : public IBase
         {
         public:
-            virtual int Create(void(CStr const&), m3d::Kernel*);
+            virtual int Create(void __fastcall(CStr const&), m3d::Kernel*);
             virtual int CreateDevice();
             virtual int SwitchDisplayModes(HWND, int, int, int);
             virtual int Reset();

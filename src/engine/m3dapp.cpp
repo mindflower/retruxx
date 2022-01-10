@@ -58,9 +58,9 @@ namespace
         return TRUE;
     }
 
-    void logDeviceFunc(CStr const&)
+    void __fastcall logDeviceFunc(CStr const& str)
     {
-        throw std::logic_error("Not implemented");
+        M3D_LOG_INFO(str);
     }
 
     void logSoundFunc(CStr const&)
@@ -789,10 +789,11 @@ namespace m3d
         }
     }
 
-    int Application::HandleEvent(Event const&)
+    int Application::HandleEvent(Event const& ev)
     {
         //TODO: ...
-        throw std::logic_error("Not implemented");
+        return 1;
+        //throw std::logic_error("Not implemented");
     }
 
     void Application::doneProcTexThread()

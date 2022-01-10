@@ -175,9 +175,15 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    AIParam& AIParam::operator=(AIParam const&)
+    AIParam& AIParam::operator=(AIParam const& pparam)
     {
-        throw std::logic_error("Not implemented");
+        if (&pparam == this)
+        {
+            return *this;
+        }
+        Detach();
+        Copy(pparam);
+        return *this;
     }
 
     AIParam& AIParam::operator=(std::vector<CStr> const&)

@@ -79,20 +79,13 @@ namespace m3d
     }
 }
 
-ConsoleImp::auxConsoleCmd::auxConsoleCmd(char const*, int, IConHandler*)
+ConsoleImp::auxConsoleCmd::auxConsoleCmd(char const* rname, int rid, IConHandler* rhandler) :
+    name(rname),
+    id(rid),
+    handler(rhandler)
 {
-    throw std::logic_error("Not implemented");
 }
 
-ConsoleImp::auxConsoleCmd::auxConsoleCmd(auxConsoleCmd const&)
-{
-    throw std::logic_error("Not implemented");
-}
-
-ConsoleImp::auxConsoleCmd::~auxConsoleCmd()
-{
-    throw std::logic_error("Not implemented");
-}
 
 void ConsoleImp::Render()
 {
@@ -134,9 +127,9 @@ bool ConsoleImp::isActive() const
     throw std::logic_error("Not implemented");
 }
 
-void ConsoleImp::RegisterCommand(char const*, int, m3d::IConHandler*)
+void ConsoleImp::RegisterCommand(char const* cmdname, int id, m3d::IConHandler* handler)
 {
-    throw std::logic_error("Not implemented");
+    m_lCmds.emplace_back(cmdname, id, handler);
 }
 
 m3d::Object* ConsoleImp::CreateObject()

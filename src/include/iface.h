@@ -5,13 +5,13 @@ class CVector;
 
 class IBase
 {
+protected:
+    virtual ~IBase() = default;
+
 public:
     virtual int DecRef() = 0;
     virtual int IncRef() = 0;
     virtual void* QueryIface(const char*) = 0;
-
-protected:
-    virtual ~IBase() = default;
 
 private:
     //IBase_vtbl* __vftable /*VFT*/;

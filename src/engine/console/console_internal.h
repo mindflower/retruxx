@@ -36,12 +36,10 @@ public:
     {
     public:
         auxConsoleCmd(char const*, int, IConHandler*);
-        auxConsoleCmd(auxConsoleCmd const&);
-        ~auxConsoleCmd();
 
     private:
         int id;
-        char* name;
+        CStr name;
         IConHandler* handler;
     };
 
