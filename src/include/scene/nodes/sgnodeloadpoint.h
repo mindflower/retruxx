@@ -20,6 +20,6 @@ namespace m3d
         SgLoadpointNode();
 
     public:
-        RT_CLASS_DECLARE(SgLoadpointNode);
+        RT_CLASS_INLINE_DECLARE(SgLoadpointNode);
     };
 }

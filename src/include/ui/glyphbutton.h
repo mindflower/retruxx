@@ -42,7 +42,7 @@ namespace m3d
             GlyphButton();
 
         public:
-            RT_CLASS_DECLARE(GlyphButton);
+            RT_CLASS_INLINE_DECLARE(GlyphButton);
 
         private:
             rend::TexHandle m_glyphTexture;

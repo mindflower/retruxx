@@ -42,7 +42,7 @@ namespace m3d
 			virtual int OnObtainingFocus();
 
         public:
-            RT_CLASS_DECLARE(ButtonWnd);
+            RT_CLASS_INLINE_DECLARE(ButtonWnd);
 
         private:
             int m_isImaged;
@@ -83,7 +83,7 @@ namespace m3d
             CheckWnd(CheckWnd const&);
 
         public:
-            RT_CLASS_DECLARE(CheckWnd);
+            RT_CLASS_INLINE_DECLARE(CheckWnd);
 
         private:
             int m_isChecked;

@@ -6,22 +6,23 @@ namespace m3d
 {
     class IConsole;
 
+    //IMPORTANT: fields and members order is strict
     class EngineConfig
     {
     public:
-        virtual CStr GetNameByModelId(int);
-        virtual float GetHeight(float, float);
-        int Save(CStr const&);
-        virtual int GetModelIdByName(CStr const&);
-        virtual ~EngineConfig();
-        virtual float GetAttackAnimationFrametime(int, int);
-        EngineConfig();
-        virtual float GetAnimationLength(int, int);
-        int Load(CStr const& fname);
+        IConsole* m_console = nullptr;
 
     public:
-        //m3d::EngineConfig_vtbl* __vftable /*VFT*/;
-        IConsole* m_console = nullptr;
+        EngineConfig();
+        virtual ~EngineConfig();
+        virtual int GetModelIdByName(CStr const&);
+        virtual CStr GetNameByModelId(int);
+        virtual float GetHeight(float, float);
+        virtual float GetAnimationLength(int, int);
+        virtual float GetAttackAnimationFrametime(int, int);
+        int Load(CStr const& fname);
+        int Save(CStr const&);
+
         HWND m_mainWnd = NULL;
         CVar m_r_d3dVersion;
         CVar m_r_height;

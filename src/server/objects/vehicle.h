@@ -422,7 +422,7 @@ namespace ai
         void _EvaluateToDead();
 
     public:
-        RT_CLASS_DECLARE(Vehicle);
+        RT_CLASS_INLINE_DECLARE(Vehicle);
 
     private:
         std::vector<WheelRuntimeInfo> m_wheels;

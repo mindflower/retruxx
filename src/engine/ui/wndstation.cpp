@@ -312,7 +312,7 @@ namespace m3d
             Application::g_pApp->m_renderer->PushLighting();
             if (m_wndMouseCapture == nullptr)
             {
-                for (auto* it = GetFirstNestling(); it != nullptr; it = it->GetNextRelative())
+                for (auto* it = GetFirstChild_(); it != nullptr; it = it->GetNextSibling_())
                 {
                     auto* wnd = reinterpret_cast<Wnd*>(it);
                     if ((wnd->GetStyle() & 0x200) != 0 && wnd->IsPtInBounds(m_prevMouseCoord))

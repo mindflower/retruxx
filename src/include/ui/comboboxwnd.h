@@ -98,7 +98,7 @@ namespace m3d
             virtual int OnAfterAddToWndStation();
 
         public:
-            RT_CLASS_DECLARE(ComboBoxWnd);
+            RT_CLASS_INLINE_DECLARE(ComboBoxWnd);
 
         private:
             StringsListBoxWnd *m_wndStringList;

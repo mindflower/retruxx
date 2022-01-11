@@ -44,7 +44,7 @@ namespace ai
         virtual m3d::Object* Clone();
 
     public:
-        RT_CLASS_DECLARE(VehicleRolePendulum);
+        RT_CLASS_INLINE_DECLARE(VehicleRolePendulum);
 
     private:
         CVector2 m_Direction;

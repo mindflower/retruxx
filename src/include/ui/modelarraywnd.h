@@ -43,7 +43,7 @@ namespace m3d
             virtual int CreateImageWnd(BoundsBase<float> const&, CStr const&);
 
         public:
-            RT_CLASS_DECLARE(ModelArrayWnd);
+            RT_CLASS_INLINE_DECLARE(ModelArrayWnd);
 
         private:
             rend::TexHandle m_renderTexture;

@@ -75,7 +75,7 @@ namespace m3d
             virtual BoundsBase<float> GetMaxBarRect() const;
 
         public:
-            RT_CLASS_DECLARE(ProgressBarWnd);
+            RT_CLASS_INLINE_DECLARE(ProgressBarWnd);
 
         private:
             float m_curValue;

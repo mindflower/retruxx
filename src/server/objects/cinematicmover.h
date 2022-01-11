@@ -41,7 +41,7 @@ namespace ai
         virtual m3d::Object* Clone();
 
     public:
-        RT_CLASS_DECLARE(CinematicMover);
+        RT_CLASS_INLINE_DECLARE(CinematicMover);
 
     private:
         CStr m_flyPathName;

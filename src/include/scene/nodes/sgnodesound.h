@@ -35,7 +35,7 @@ namespace m3d
         int _InternalRender();
 
     public:
-        RT_CLASS_DECLARE(SgSoundSourceNode);
+        RT_CLASS_INLINE_DECLARE(SgSoundSourceNode);
 
     private:
         unsigned int m_props[6];

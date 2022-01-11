@@ -61,7 +61,8 @@ namespace
     void __fastcall logDeviceFunc(CStr const& str)
     {
         M3D_LOG_INFO(str);
-        bool asd = true;
+        if (str.findsubstr("Rt dep") != CStr::npos)
+            bool asd = true;
     }
 
     void logSoundFunc(CStr const&)

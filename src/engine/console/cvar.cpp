@@ -1,5 +1,6 @@
 #include <core/console/cvar.h>
 #include <cstdio>
+#include <stdexcept>
 
 namespace
 {
@@ -32,9 +33,23 @@ namespace
 
 namespace m3d
 {
+    CVar::CVar(CVar const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CVar::CVar()
+    {
+    }
+
     CVar::CVar(char const* name, char const* value, eType type, eFlags flags)
     {
         Init(name, value, type, flags);
+    }
+
+    CVar::~CVar()
+    {
+        delete[] m_defaultValue;
     }
 
     void CVar::Init(char const* name, char const* value, eType type, eFlags flags)
@@ -49,6 +64,13 @@ namespace m3d
     {
         char buffer[1] = { 0 };
         sprintf_s(buffer, "%d", b);
+        Set(buffer, ignoreFlags);
+    }
+
+    void CVar::SetC(unsigned int i, bool ignoreFlags)
+    {
+        char buffer[32] = { 0 };
+        sprintf_s(buffer, "%d", i);
         Set(buffer, ignoreFlags);
     }
 
@@ -117,9 +139,11 @@ namespace m3d
             }
             }
         }
-        if (m_defaultValue.empty())
+        if (!m_defaultValue)
         {
-            m_defaultValue = m_s;
+            m_s = value;
+            m_defaultValue = new char[m_s.length() + 1];
+            strcpy(m_defaultValue, m_s.c_str());
         }
     }
 
@@ -150,7 +174,12 @@ namespace m3d
 
     char const* CVar::GetDefault() const
     {
-        return m_defaultValue.c_str();
+        return m_defaultValue;
+    }
+
+    void CVar::ResetToDefault()
+    {
+        throw std::logic_error("Not implemented");
     }
 
     IConHandler* CVar::GetHandler() const
@@ -161,6 +190,11 @@ namespace m3d
     char const* CVar::GetName() const
     {
         return m_name.c_str();
+    }
+
+    bool CVar::operator==(CVar const& rhs) const
+    {
+        throw std::logic_error("Not implemented");
     }
 
     CVar::eFlags CVar::GetFlags() const

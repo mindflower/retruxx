@@ -137,7 +137,7 @@ namespace m3d
             float _GetTopEdgeDiff() const;
 
         public:
-            RT_CLASS_DECLARE(TabWnd);
+            RT_CLASS_INLINE_DECLARE(TabWnd);
 
         private:
             std::vector<TabItem*> m_items;

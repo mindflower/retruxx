@@ -37,7 +37,7 @@ namespace m3d
         SgAnimatedModelNode(SgAnimatedModelNode const&);
 
     public:
-        RT_CLASS_DECLARE(SgAnimatedModelNode);
+        RT_CLASS_INLINE_DECLARE(SgAnimatedModelNode);
 
     private:
         ActionType m_action;

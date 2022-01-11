@@ -58,7 +58,7 @@ namespace ai
         void setDesiredVehiclePosition(CVector2 const&);
 
     public:
-        RT_CLASS_DECLARE(NPCMotionController);
+        RT_CLASS_INLINE_DECLARE(NPCMotionController);
 
    private:
         int m_vehicleUnderControlId;

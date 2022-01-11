@@ -28,6 +28,6 @@ namespace ai
         virtual bool isLookAtPoint(CVector const&, float) const;
 
     public:
-        RT_CLASS_DECLARE(LocationPusher);
+        RT_CLASS_INLINE_DECLARE(LocationPusher);
     };
 }

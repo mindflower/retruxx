@@ -33,7 +33,7 @@ namespace ai
         virtual m3d::Object* Clone();
 
     public:
-        RT_CLASS_DECLARE(Boss04Part);
+        RT_CLASS_INLINE_DECLARE(Boss04Part);
 
     private:
         bool m_bIsDamageable;

@@ -19,6 +19,6 @@ namespace m3d
         SgGameUnitNode();
 
     public:
-        RT_CLASS_DECLARE(SgGameUnitNode);
+        RT_CLASS_INLINE_DECLARE(SgGameUnitNode);
     };
 }

@@ -40,7 +40,7 @@ namespace m3d
             virtual int OnMouseButton0(unsigned int, PointBase<float> const&);
 
         public:
-            RT_CLASS_DECLARE(ScrollWnd);
+            RT_CLASS_INLINE_DECLARE(ScrollWnd);
 
         private:
             int m_vertical;

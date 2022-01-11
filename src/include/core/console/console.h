@@ -33,10 +33,14 @@ namespace m3d
         int m_id = 0;
     };
 
+    //IMPORTANT: fields and members order is strict
     class IConHandler
     {
-    private:
-        //m3d::IConHandler_vtbl* __vftable /*VFT*/;
+    public:
+        virtual void HandleCommand(int, class m3d::CConsoleParams const&) = 0;
+        virtual bool HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&) = 0;
+        IConHandler(IConHandler const&);
+        IConHandler();
     };
 
     class IConsole :
@@ -44,11 +48,14 @@ namespace m3d
         public IEventHandler
     {
     public:
-        virtual Class* GetRtClass() const;
+        IConsole(IConsole const&);
+        IConsole();
+        virtual ~IConsole() = default;
         static Class* GetBaseClass();
+        virtual Class* GetRtClass() const;
+        RT_CLASS_DECLARE(IConsole);
 
     public:
-        virtual ~IConsole() = default;
         virtual void RegisterCommand(char const*, int, IConHandler*) = 0;
         virtual void RegisterCVar(CVar*, IConHandler*) = 0;
         virtual void UnregisterCVar(CVar*) = 0;
@@ -70,12 +77,6 @@ namespace m3d
         virtual void executeCommand(CStr const&) = 0;
         virtual int Load(CStr const&) = 0;
         virtual int Save(CStr const&) = 0;
-
-    protected:
-        IConsole() = default;
-
-    public:
-        RT_CLASS_DECLARE(IConsole);
     };
 
     IConsole* ConsoleFactory();

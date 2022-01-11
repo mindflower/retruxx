@@ -166,7 +166,7 @@ protected:
     float GetMaxHigh(float,float);
 
 public:
-    RT_CLASS_DECLARE(CMiracle3d);
+    RT_CLASS_INLINE_DECLARE(CMiracle3d);
 
 public:
     ITruxxUiManager* m_pInterfaceManager;

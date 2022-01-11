@@ -27,7 +27,7 @@ namespace m3d
         SgSpriteNode(SgSpriteNode const&);
 
     public:
-        RT_CLASS_DECLARE(SgSpriteNode);
+        RT_CLASS_INLINE_DECLARE(SgSpriteNode);
 
     private:
         unsigned int m_props[6];

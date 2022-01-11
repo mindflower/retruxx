@@ -31,7 +31,7 @@ namespace m3d
             ImageWnd(ImageWnd const&);
 
         public:
-            RT_CLASS_DECLARE(ImageWnd);
+            RT_CLASS_INLINE_DECLARE(ImageWnd);
 
         private:
             CStr m_textureName;

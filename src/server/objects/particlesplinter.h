@@ -27,6 +27,6 @@ namespace ai
         void CheckDisablePhysics();
 
     public:
-        RT_CLASS_DECLARE(ParticleSplinter);
+        RT_CLASS_INLINE_DECLARE(ParticleSplinter);
     };
 }

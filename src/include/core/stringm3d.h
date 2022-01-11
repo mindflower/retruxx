@@ -100,4 +100,5 @@ public:
 bool operator==(CStr const& lhs, CStr const& rhs);
 bool operator!=(CStr const& lhs, CStr const& rhs);
 bool operator<(CStr const& lhs, CStr const& rhs);
+bool operator>(CStr const& lhs, CStr const& rhs);
 CStr operator+(CStr lhs, CStr const& rhs);

@@ -59,9 +59,9 @@ namespace m3d
         return *m_scriptServer;
     }
 
-    int Kernel::MessageBoxA(HWND, char const*, char const*, unsigned)
+    int Kernel::MessageBoxA(HWND hWnd, char const* pszText, char const* pszCaption, unsigned uType)
     {
-        throw std::logic_error("Not implemented");
+        return ::MessageBoxA(hWnd, pszText, pszCaption, uType);
     }
 
     EngineConfig& Kernel::GetEngineCfg()

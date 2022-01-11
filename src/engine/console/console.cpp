@@ -63,6 +63,26 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    IConHandler::IConHandler(IConHandler const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    IConHandler::IConHandler()
+    {
+    }
+
+    RT_CLASS_DEFINE(IConsole);
+
+    IConsole::IConsole(IConsole const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    IConsole::IConsole()
+    {
+    }
+
     Class* IConsole::GetRtClass() const
     {
         throw std::logic_error("Not implemented");

@@ -32,7 +32,7 @@ namespace m3d
             SliderWnd(SliderWnd const&);
 
         public:
-            RT_CLASS_DECLARE(SliderWnd);
+            RT_CLASS_INLINE_DECLARE(SliderWnd);
 
         private:
             int m_min;

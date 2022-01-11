@@ -1,4 +1,5 @@
 #include <cassert>
+#include <stdexcept>
 #include <core/clazz.h>
 #include <core/kernel.h>
 #include <core/log.h>
@@ -16,7 +17,7 @@ namespace m3d
         auto const result = --m_refCount;
         if (result <=0)
         {
-            delete this;
+            RefCountedBase::~RefCountedBase();
         }
         return result;
     }
@@ -30,6 +31,8 @@ namespace m3d
     {
         return nullptr;
     }
+
+    RT_CLASS_DEFINE(Object);
 
     Object* Object::CreateObject()
     {
@@ -46,7 +49,7 @@ namespace m3d
         m_persistant(clazz.m_persistant),
         m_isChildDirty(clazz.m_isChildDirty)
     {
-        for (auto* it = GetFirstNestling(); it; it = it->GetNextRelative())
+        for (auto* it = GetFirstChild_(); it; it = it->GetNextSibling_())
         {
             AddChild(it->Clone());
         }
@@ -97,6 +100,10 @@ namespace m3d
         //TODO: replace to macro
         g_Kernel->SysError("m_fnCreateObject", "here");
         return nullptr;
+    }
+
+    RefCountedBase::RefCountedBase()
+    {
     }
 
     int Object::AddChild(Object* node)
@@ -221,7 +228,7 @@ namespace m3d
         }
         writeTo->SetAttribute("name", m_name.c_str());
         writeTo->SetAttribute("class", GetClassNameA());
-        for (auto* it = GetFirstNestling(); it != nullptr; it = it->GetNextRelative())
+        for (auto* it = GetFirstChild_(); it != nullptr; it = it->GetNextSibling_())
         {
             //TODO: magic number
             it->GetProperty(4360, &writeTo);
@@ -234,12 +241,12 @@ namespace m3d
         return true;
     }
 
-    Object* Object::GetFirstNestling() const
+    Object* Object::GetFirstChild_() const
     {
         return m_firstChild;
     }
 
-    Object* Object::GetLastNestling() const
+    Object* Object::GetLastChild_() const
     {
         return m_lastChild;
     }
@@ -261,9 +268,19 @@ namespace m3d
         return nullptr;
     }
 
-    Object* Object::GetNextRelative() const
+    Object* Object::GetNextSibling_() const
     {
         return m_nextSibling;
+    }
+
+    Object* Object::GetPrevSibling_() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int Object::GetNumChildren() const
+    {
+        throw std::logic_error("Not implemented");
     }
 
     Object* Object::GetParent() const
@@ -292,7 +309,7 @@ namespace m3d
     Object* Object::ChildNodeFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
     {
         CStr const name(xmlNode->GetAttribute("name"));
-        for (auto* it = GetFirstNestling(); it; it = GetNextRelative())
+        for (auto* it = GetFirstChild_(); it; it = GetNextSibling_())
         {
             if (it->GetName() == name)
             {
@@ -528,6 +545,11 @@ namespace m3d
     void Object::SetPersistance(bool per)
     {
         m_persistant = per;
+    }
+
+    bool Object::GetPersistance() const
+    {
+        throw std::logic_error("Not implemented");
     }
 
     bool Object::IsChildOf(Object const* wnd) const

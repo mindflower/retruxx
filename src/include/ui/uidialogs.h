@@ -26,7 +26,7 @@ namespace m3d
             virtual int OnWndNotify(Wnd*, unsigned int, unsigned int, AIParam const&);
 
         public:
-            RT_CLASS_DECLARE(MsgBoxDlg);
+            RT_CLASS_INLINE_DECLARE(MsgBoxDlg);
 
         private:
             GlyphButton* m_buttons[3];
@@ -55,7 +55,7 @@ namespace m3d
             ArtDlg(ArtDlg const &);
 
         public:
-            RT_CLASS_DECLARE(ArtDlg);
+            RT_CLASS_INLINE_DECLARE(ArtDlg);
 
         private:
             rend::TexHandle m_tex;

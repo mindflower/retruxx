@@ -48,7 +48,7 @@ namespace m3d
             int StorePathToItem(std::list<Item*>&, Item*, Item*);
 
         public:
-            RT_CLASS_DECLARE(MenuWnd);
+            RT_CLASS_INLINE_DECLARE(MenuWnd);
 
         private:
             bool m_isHoldDown;

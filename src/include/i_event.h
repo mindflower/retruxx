@@ -4,13 +4,14 @@
 
 namespace m3d
 {
+    class Event;
+
+    //IMPORTANT: fields and member order is strict!
     class IEventHandler
     {
     public:
         virtual ~IEventHandler() = default;
-
-    private:
-        //IEventHandler_vtbl *__vftable /*VFT*/;
+        virtual int HandleEvent(m3d::Event const&) = 0;
     };
 
     class Event
@@ -31,5 +32,8 @@ namespace m3d
             __int16 m_shortEv[8];
             unsigned __int8 m_byteEv[16];
         };
+        Event(Event const&);
+        Event();
+        ~Event();
     };
 }

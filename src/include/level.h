@@ -25,7 +25,7 @@ namespace m3d
         Level();
 
     public:
-        RT_CLASS_DECLARE(Level);
+        RT_CLASS_INLINE_DECLARE(Level);
 
     private:
         CStr m_weatherDetailName;

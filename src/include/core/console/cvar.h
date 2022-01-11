@@ -5,6 +5,7 @@ namespace m3d
 {
     class IConHandler;
 
+    //IMPORTANT: fields and members order is strict
     class CVar
     {
     public:
@@ -26,35 +27,40 @@ namespace m3d
         };
 
     public:
-        CVar() = default;
+        CVar(CVar const&);
         CVar(char const* name, char const* value, eType type, eFlags flags);
+        CVar();
+        ~CVar();
 
         void Init(char const* name, char const* value, eType type, eFlags flags);
-        void SetB(bool b, bool ignoreFlags = true);
-        void SetF(float f, bool ignoreFlags = true);
-        void SetI(int i, bool ignoreFlags = true);
-        void Set(char const* value, bool ignoreFlags = true);
-        void SetHandler(IConHandler* handler);
-
-        bool GetB() const;
-        unsigned int GetC() const;
-        float GetF() const;
         int GetI() const;
-        char const* GetDefault() const;
-        IConHandler* GetHandler() const;
-        char const* GetName() const;
+        float GetF() const;
+        bool GetB() const;
         char const* GetS() const;
+        unsigned int GetC() const;
+
+
+        void Set(char const* value, bool ignoreFlags = true);
+        void SetI(int, bool ignoreFlags = true);
+        void SetF(float f, bool ignoreFlags = true);
+        void SetB(bool b, bool ignoreFlags = true);
+        void SetC(unsigned int, bool ignoreFlags = true);
+
         eType GetType() const;
         eFlags GetFlags() const;
+        char const* GetDefault() const;
+        void ResetToDefault();
+
+        void SetHandler(IConHandler* handler);
+        IConHandler* GetHandler() const;
+        char const* GetName() const;
+
+        bool operator==(CVar const& rhs) const;
 
     private:
         CStr m_name;
         eType m_type = CVAR_UNDEFINED;
         eFlags m_flags = CVAR_ARCHIVE;
-        CStr m_s;
-        CStr m_defaultValue;
-        IConHandler* m_handler = nullptr;
-        //TODO: union initialization 
         union
         {
             int m_i = 0;
@@ -62,5 +68,8 @@ namespace m3d
             float m_f;
             bool m_b;
         };
+        CStr m_s;
+        char* m_defaultValue = nullptr;
+        IConHandler* m_handler = nullptr;
     };
 }

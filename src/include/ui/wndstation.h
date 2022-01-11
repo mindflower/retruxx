@@ -89,7 +89,7 @@ namespace m3d
             int DispatchKey(Event const&);
 
         public:
-            RT_CLASS_DECLARE(WndStation);
+            RT_CLASS_INLINE_DECLARE(WndStation);
 
         protected:
             PointBase<float> m_prevMouseCoord;

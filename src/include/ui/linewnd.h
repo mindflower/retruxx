@@ -35,7 +35,7 @@ namespace m3d
             LineWnd();
 
         public:
-            RT_CLASS_DECLARE(LineWnd);
+            RT_CLASS_INLINE_DECLARE(LineWnd);
 
         private:
             LineWndDirection m_direction;

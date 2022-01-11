@@ -276,7 +276,7 @@ namespace m3d
             void StartDragMove(PointBase<float> const&);
 
         public:
-            RT_CLASS_DECLARE(Wnd);
+            RT_CLASS_INLINE_DECLARE(Wnd);
 
         private:
             int m_created = 0;

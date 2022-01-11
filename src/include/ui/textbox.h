@@ -28,7 +28,7 @@ namespace m3d
             TextBoxWnd();
 
         public:
-            RT_CLASS_DECLARE(TextBoxWnd);
+            RT_CLASS_INLINE_DECLARE(TextBoxWnd);
         };
     }
 }

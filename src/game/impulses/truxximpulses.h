@@ -21,5 +21,5 @@ protected:
     TruxxImpulse(TruxxImpulse const &);
 
 public:
-    RT_CLASS_DECLARE(TruxxImpulse);
+    RT_CLASS_INLINE_DECLARE(TruxxImpulse);
 };

@@ -272,9 +272,22 @@ bool XmlNodeImpl::GetPrevSibling_(m3d::cmn::XmlNode* writeTo, char const* wantVa
     return sibling != nullptr;
 }
 
-bool XmlNodeImpl::IsOfType(m3d::cmn::XmlNodeType) const
+bool XmlNodeImpl::IsOfType(m3d::cmn::XmlNodeType castTo) const
 {
-    throw std::logic_error("Not implemented");
+    if (m_node == nullptr)
+    {
+        return m_node != nullptr;
+    }
+    switch (castTo)
+    {
+    case m3d::cmn::XML_NODE_DOCUMENT: return m_node->Type() == TiXmlNode::DOCUMENT;
+    case m3d::cmn::XML_NODE_ELEMENT: return m_node->Type() == TiXmlNode::ELEMENT;
+    case m3d::cmn::XML_NODE_COMMENT: return m_node->Type() == TiXmlNode::COMMENT;
+    case m3d::cmn::XML_NODE_UNKNOWN: return m_node->Type() == TiXmlNode::UNKNOWN;
+    case m3d::cmn::XML_NODE_TEXT: return m_node->Type() == TiXmlNode::TEXT;
+    case m3d::cmn::XML_NODE_DECLARATION: return m_node->Type() == TiXmlNode::DECLARATION;
+    default: return m_node != nullptr;
+    }
 }
 
 bool XmlNodeImpl::AddAfterChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*)
@@ -287,9 +300,12 @@ void XmlNodeImpl::SetValue(char const*)
     throw std::logic_error("Not implemented");
 }
 
-bool XmlNodeImpl::GetNextSibling_(m3d::cmn::XmlNode*, char const*) const
+bool XmlNodeImpl::GetNextSibling_(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
 {
-    throw std::logic_error("Not implemented");
+    auto sibling = wantValue ? m_node->NextSibling(wantValue) : m_node->NextSibling();
+    auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
+    *writeToCasted = XmlNodeImpl(sibling);
+    return sibling != nullptr;
 }
 
 bool XmlNodeImpl::GetParent(m3d::cmn::XmlNode*) const
@@ -345,7 +361,8 @@ char const* XmlNodeImpl::GetAttribute(char const* name) const
         return nullptr;
     }
     auto element = dynamic_cast<TiXmlElement*>(m_node);
-    return element->Attribute(name)->c_str();
+    auto attr = element->Attribute(name);
+    return attr ? attr->c_str() : nullptr;
 }
 
 bool XmlNodeImpl::GetLastChild_(m3d::cmn::XmlNode*, char const*) const

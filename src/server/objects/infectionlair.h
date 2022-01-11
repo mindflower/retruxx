@@ -27,6 +27,6 @@ namespace ai
         virtual m3d::Object* Clone();
 
     public:
-        RT_CLASS_DECLARE(InfectionLair);
+        RT_CLASS_INLINE_DECLARE(InfectionLair);
     };
 }

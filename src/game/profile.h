@@ -86,7 +86,7 @@ protected:
     CStr ParamId2Name(ProfileParam) const ;
 
 public:
-    RT_CLASS_DECLARE(Profile);
+    RT_CLASS_INLINE_DECLARE(Profile);
 
 private:
     CStr m_name;
@@ -127,7 +127,7 @@ protected:
     Profile* _GetProfileByName(CStr const &) const ;
 
 public:
-    RT_CLASS_DECLARE(ProfileManager);
+    RT_CLASS_INLINE_DECLARE(ProfileManager);
 
 protected:
     CStr m_curProfileName;

@@ -3,8 +3,9 @@
 #include <set>
 
 #define RT_CLASS_LOCAL(cl) &cl::m_class##cl
-#define RT_CLASS_DECLARE(cl) static inline m3d::Class m_class##cl {#cl, 0, CreateObject, GetBaseClass}
-//#define RT_CLASS_DEFINE(cl) m3d::Class cl::m_class##cl {#cl, sizeof(cl), CreateObject, GetBaseClass}
+#define RT_CLASS_DECLARE(cl) static m3d::Class m_class##cl
+#define RT_CLASS_DEFINE(cl) m3d::Class cl::m_class##cl {#cl, sizeof(cl), CreateObject, GetBaseClass}
+#define RT_CLASS_INLINE_DECLARE(cl) static inline m3d::Class m_class##cl {#cl, 0, CreateObject, GetBaseClass}
 
 namespace m3d
 {
@@ -17,6 +18,7 @@ namespace m3d
     class ExportInfo;
     class Object;
 
+    //IMPORTANT: fields and members order is strict
     struct Class
     {
         const char* m_className = nullptr;
@@ -33,9 +35,11 @@ namespace m3d
         Object* NewInstance() const;
     };
 
+    //IMPORTANT: fields and members order is strict
     class RefCountedBase
     {
     public:
+        RefCountedBase();
         virtual ~RefCountedBase() = default;
         int IncRef();
         int DecRef();
@@ -45,71 +49,80 @@ namespace m3d
         int m_refCount = 0;
     };
 
+    //IMPORTANT: fields and members order is strict c
     class Object : public RefCountedBase
     {
     public:
-        static Class* GetBaseClass();
-        static Object* CreateObject();
-
-    public:
-        virtual ~Object() = default;
-        virtual int SetProperty(unsigned int propId, void* prop);
-        virtual char const* GetClassNameA() const;
-        virtual int GetPropertiesList(std::set<size_t>&) const;
-        virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-        virtual int AddChild(Object*);
-        virtual int IncWeakRef();
         virtual Object* Clone();
-        virtual int GetProperty(unsigned int propId, void* prop) const;
+        virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual int ReadFromXmlNodeAfterAdd(cmn::XmlFile*, cmn::XmlNode*);
-        virtual int DecWeakRef();
-        virtual Class* GetClass() const;
-        virtual int RemoveChild(Object*);
         virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-        virtual int GetWeakRefCount();
-
-        void SetChildDirty(bool);
-        int LinkChildAtTail(Object*);
-        char const* GetName() const;
-        Object* ChildNodeFromXmlFile(char const*);
-        bool GetChildDirty() const;
-        int UnlinkChild(Object*);
-        Object* GetParent() const;
-        bool IsKindOf(Class const*) const;
-        bool IsKindOf(char const*) const;
-        bool IsChildOf(Object const*) const;
-        Object* GetNextRelative() const;
-        void SetName(CStr const&);
-        Object* GetFirstNestling() const;
-        int RemoveAllChildren();
-        Object* GetChildByName(CStr const&) const;
-        void MoveChildToLastPosition(Object*);
-        void MoveChildToFirstPosition(Object*);
         void SetPersistance(bool);
-        Object* GetLastNestling() const;
+        bool GetPersistance() const;
+        virtual int SetProperty(unsigned int propId, void* prop);
+        virtual int GetProperty(unsigned int propId, void* prop) const;
+        virtual int GetPropertiesList(std::set<size_t>&) const;
+        Object* GetParent() const;
+        Object* GetFirstChild_() const;
+        Object* GetLastChild_() const;
+        Object* GetNextSibling_() const;
+        Object* GetPrevSibling_() const;
+        int GetNumChildren() const;
+        Object* GetChildByName(CStr const&) const;
         bool IsDirectChild(Object const*) const;
+        bool IsChildOf(Object const*) const;
+        virtual int AddChild(Object*);
         int LinkChildAtHead(Object*);
+        int LinkChildAtTail(Object*);
+        int UnlinkChild(Object*);
+        virtual int RemoveChild(Object*);
+        int RemoveAllChildren();
+        void MoveChildToFirstPosition(Object*);
+        void MoveChildToLastPosition(Object*);
+        char const* GetName() const;
+        void SetName(CStr const&);
+        void SetChildDirty(bool);
+        bool GetChildDirty() const;
 
     protected:
-        Object();
-        Object(Object const&);
-        Object* ChildNodeFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-
-    public:
-        RT_CLASS_DECLARE(Object);
-
-    public:
-        void* m_scriptHandle = nullptr;
-
-    private:
         CStr m_name;
         bool m_persistant = true;
         bool m_isChildDirty = false;
+
+    private:
         Object* m_parent = nullptr;
         Object* m_firstChild = nullptr;
         Object* m_lastChild = nullptr;
         Object* m_nextSibling = nullptr;
         Object* m_prevSibling = nullptr;
         int m_numChildren = 0;
+
+    protected:
+        Object* ChildNodeFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
+
+    public:
+        Object* ChildNodeFromXmlFile(char const*);
+        virtual int IncWeakRef();
+        virtual int DecWeakRef();
+        virtual int GetWeakRefCount();
+
+    public:
+        void* m_scriptHandle = nullptr;
+        RT_CLASS_DECLARE(Object);
+
+    public:
+        virtual Class* GetClass() const;
+        virtual char const* GetClassNameA() const;
+        bool IsKindOf(char const*) const;
+        bool IsKindOf(Class const*) const;
+        static Class* GetBaseClass();
+        static Object* CreateObject();
+
+    protected:
+        Object(Object const&);
+        Object();
+
+    public:
+        virtual ~Object() = default;
     };
 }

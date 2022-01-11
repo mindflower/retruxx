@@ -838,6 +838,7 @@ const int TiXmlAttribute::IntValue() const
 
 
 const double  TiXmlAttribute::DoubleValue() const
+
 {
 	double v;
 	std::istringstream string( value );

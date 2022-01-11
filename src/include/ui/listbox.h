@@ -26,7 +26,7 @@ namespace m3d
             virtual int CompareItem(int, int);
 
         public:
-            RT_CLASS_DECLARE(StringsListBoxWnd);
+            RT_CLASS_INLINE_DECLARE(StringsListBoxWnd);
         };
 
         class FormattedStringsListBoxWnd : public ListBoxWnd<FormattedLine>
@@ -51,7 +51,7 @@ namespace m3d
             FormattedStringsListBoxWnd(FormattedStringsListBoxWnd const&);
 
         public:
-            RT_CLASS_DECLARE(FormattedStringsListBoxWnd);
+            RT_CLASS_INLINE_DECLARE(FormattedStringsListBoxWnd);
         };
     }
 }

@@ -42,7 +42,7 @@ namespace m3d
             virtual int OnKey(unsigned short, unsigned char, unsigned int);
 
         public:
-            RT_CLASS_DECLARE(EditWnd);
+            RT_CLASS_INLINE_DECLARE(EditWnd);
 
         private:
             bool m_bQuickEraseState;

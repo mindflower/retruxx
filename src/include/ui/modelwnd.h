@@ -41,7 +41,7 @@ namespace m3d
             ModelWnd();
 
         public:
-            RT_CLASS_DECLARE(ModelWnd);
+            RT_CLASS_INLINE_DECLARE(ModelWnd);
 
         private:
             rend::TexHandle m_renderTexture;

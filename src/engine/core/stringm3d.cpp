@@ -217,6 +217,8 @@ CStr2::CStr2(CStr2 const& s)
 
 CStr2::CStr2()
 {
+    realloc(1);
+    m_charPtr[0] = '\0';
 }
 
 CStr2::~CStr2()
@@ -377,8 +379,8 @@ CStr& CStr2::operator=(CStr const& rhs)
     }
     else
     {
-        delete[] m_charPtr;
-        m_allocSz = 0;
+        realloc(1);
+        m_charPtr[0] = '\0';
     }
     return *this;
 }
@@ -398,6 +400,10 @@ bool operator<(CStr const& lhs, CStr const& rhs)
     return std::string_view(lhs.c_str()) < std::string_view(rhs.c_str());
 }
 
+bool operator>(CStr const& lhs, CStr const& rhs)
+{
+    return std::string_view(lhs.c_str()) > std::string_view(rhs.c_str());
+}
 
 CStr operator+(CStr lhs, CStr const& rhs)
 {
