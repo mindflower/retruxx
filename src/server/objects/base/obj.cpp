@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <core/aiparam.h>
 #include <core/kernel.h>
+#include <core/log.h>
 #include <server/damageinfo.h>
 #include <server/event.h>
 #include <server/ipricecoeffprovider.h>

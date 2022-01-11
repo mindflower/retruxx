@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <core/ini.h>
 #include <core/kernel.h>
+#include <core/log.h>
 #include <core/ref_ptr.h>
 #include <core/console/cvar.h>
 

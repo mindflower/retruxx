@@ -358,7 +358,7 @@ namespace m3d
         {
             return res;
         }
-        M3D_LOG_INFO(CStr("ChildNodeFromXmlNode: Cannot load node: name = ") + classAttr);
+        M3D_LOG_INFO(CStr("ChildNodeFromXmlNode: Cannot load node: name = ") + name);
         return nullptr;
     }
 

@@ -22,6 +22,7 @@
 #include <server/server.h>
 #include <ctime>
 #include <stdexcept>
+#include <core/log.h>
 #include <scene/servers/dataserver.h>
 
 extern Vivisector* g_Vivisector;

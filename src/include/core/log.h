@@ -2,6 +2,11 @@
 #include "stringm3d.h"
 #include "threadsync.h"
 #include <string>
+#include "kernel.h"
+
+#define M3D_LOG_INFO(msg) m3d::g_Kernel->m_Log->sourceLine() = __LINE__; m3d::g_Kernel->m_Log->setSourceFile(__FILE__); m3d::g_Kernel->m_Log->logTex(msg, m3d::LOG_INFO)
+#define M3D_LOG_ERR(msg) m3d::g_Kernel->m_Log->sourceLine() = __LINE__; m3d::g_Kernel->m_Log->setSourceFile(__FILE__); m3d::g_Kernel->m_Log->logTex(msg, m3d::LOG_ERR)
+#define M3D_LOG_WARN(msg) m3d::g_Kernel->m_Log->sourceLine() = __LINE__; m3d::g_Kernel->m_Log->setSourceFile(__FILE__); m3d::g_Kernel->m_Log->logTex(msg, m3d::LOG_WARN)
 
 namespace m3d
 {
@@ -22,26 +27,24 @@ namespace m3d
     class Log
     {
     public:
+        Log();
         ~Log();
-
-        void logTex(CStr const&, eLogFlags);
-        char const* getSourceFile() const;
-        unsigned int& logMask();
-        void setSourceFile(char const*);
-        bool logStarted() const;
+        bool startLog(char const*, bool);
         bool endLog();
-        bool const& lineCharsFlag() const;
-        bool& lineCharsFlag();
-        void logRaw(char const*);
-        void logHex(char const*, unsigned int, eLogFlags);
+        bool logStarted() const;
         unsigned int& sourceLine();
         unsigned int const& sourceLine() const;
+        char const* getSourceFile() const;
+        void setSourceFile(char const*);
+        unsigned int& logMask();
+        unsigned int const& logMask() const;
+        bool& lineCharsFlag();
+        bool const& lineCharsFlag() const;
+        void logTex(CStr const&, eLogFlags);
+        void logRaw(char const*);
+        void logHex(char const*, unsigned int, eLogFlags);
         void indent(CStr const&, eLogFlags);
         void undent(CStr const&, eLogFlags);
-        bool startLog(char const*, bool);
-
-    private:
-        CStr const& headerString(eLogFlags) const;
 
     private:
         bool m_logStarted = false;
@@ -53,6 +56,11 @@ namespace m3d
         int m_indentChars = 4;
         bool m_lineCharsFlag = false;
         bool m_flushImmediately = true;
-        CriticalSection m_cs;
+
+    private:
+        CStr const& headerString(eLogFlags) const;
+
+    private:
+        mutable CriticalSection m_cs;
     };
 }

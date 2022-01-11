@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <core/kernel.h>
 #include <core/aiparam.h>
+#include <core/log.h>
 
 int Profile::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {

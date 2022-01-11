@@ -572,7 +572,7 @@ namespace m3d
         int i = 0;
         for (auto& color : m_markerColors)
         {
-            auto const name = "markerColor" + std::to_string(i);
+            auto const name = "markerColor" + CStr(i);
             char sn[32] = { 0 };
 
             //TODO: check and refactor this shit!!!
@@ -592,7 +592,7 @@ namespace m3d
         i = 0;
         for (auto& macro : m_r_shadersMacros)
         {
-            auto const name = "shaderMacro" + std::to_string(i);
+            auto const name = "shaderMacro" + CStr(i);
             macro.Init(name.c_str(), "", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
             m_console->RegisterCVar(&macro, 0);
             ++i;

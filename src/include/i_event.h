@@ -1,4 +1,5 @@
 #pragma once
+#include <stdexcept>
 #include <core/aiparam.h>
 #include <core/stringm3d.h>
 
@@ -14,6 +15,7 @@ namespace m3d
         virtual int HandleEvent(m3d::Event const&) = 0;
     };
 
+    //IMPORTANT: fields and member order is strict!
     class Event
     {
     public:
@@ -32,8 +34,8 @@ namespace m3d
             __int16 m_shortEv[8];
             unsigned __int8 m_byteEv[16];
         };
-        Event(Event const&);
-        Event();
-        ~Event();
+        Event(Event const&) { throw std::logic_error("Not implemented"); }
+        Event() {}
+        ~Event() {}
     };
 }

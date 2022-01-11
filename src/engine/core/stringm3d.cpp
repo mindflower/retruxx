@@ -163,9 +163,12 @@ CStr2::CStr2(long long)
     throw std::logic_error("Not implemented");
 }
 
-CStr2::CStr2(unsigned long)
+CStr2::CStr2(unsigned long v)
 {
-    throw std::logic_error("Not implemented");
+    char buf[136] = { 0 };
+    sprintf(buf, "%lu", v);
+    realloc(strlen(buf) + 1);
+    strcpy(m_charPtr, buf);
 }
 
 CStr2::CStr2(unsigned)

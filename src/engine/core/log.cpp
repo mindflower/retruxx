@@ -1,22 +1,48 @@
 #include <fstream>
+#include <sstream>
 #include <stdexcept>
 #include <core/log.h>
 
 namespace m3d
 {
+    Log::Log()
+    {
+    }
+
+    unsigned const& Log::logMask() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     Log::~Log()
     {
         endLog();
     }
 
-    void Log::logTex(CStr const&, eLogFlags)
+    void Log::logTex(CStr const& s, eLogFlags logFlags)
     {
-        throw std::logic_error("Not implemented");
+        AutoLock guard(m_cs);
+        if (m_logStarted)
+        {
+            if ((logFlags & m_logMask) != 0)
+            {
+                std::ofstream file(m_fileName, std::ios_base::app);
+                if (file)
+                {
+                    auto const header = headerString(logFlags);
+                    file << header.c_str() << s.c_str() << std::endl;
+                    if (m_flushImmediately)
+                    {
+                        file.flush();
+                    }
+                }
+            }
+        }
     }
 
     char const* Log::getSourceFile() const
     {
-        throw std::logic_error("Not implemented");
+        return m_fileName.c_str();
     }
 
     unsigned& Log::logMask()
@@ -24,9 +50,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Log::setSourceFile(char const*)
+    void Log::setSourceFile(char const* file)
     {
-        throw std::logic_error("Not implemented");
+        m_sourceFile = file;
     }
 
     bool Log::logStarted() const
@@ -61,12 +87,12 @@ namespace m3d
 
     unsigned& Log::sourceLine()
     {
-        throw std::logic_error("Not implemented");
+        return m_sourceLine;
     }
 
     unsigned const& Log::sourceLine() const
     {
-        throw std::logic_error("Not implemented");
+        return m_sourceLine;
     }
 
     void Log::indent(CStr const&, eLogFlags)
@@ -93,7 +119,8 @@ namespace m3d
         logFile += "\\";
         logFile += fileName;
         UnifyFileName(logFile);
-        std::ofstream logStream(logFile.c_str());
+        m_fileName = logFile.c_str();
+        std::ofstream logStream(m_fileName);
         if (logStream)
         {
             auto const timestamp = time(NULL);
@@ -109,13 +136,48 @@ namespace m3d
                 logStream.flush();
             }
             m_logStarted = true;
-            return 1;
+            return true;
         }
-        return 0;
+        return false;
     }
 
-    CStr const& Log::headerString(eLogFlags) const
+    CStr const& Log::headerString(eLogFlags logFlags) const
     {
-        throw std::logic_error("Not implemented");
+        AutoLock guard(m_cs);
+        std::stringstream ss;
+        switch (logFlags)
+        {
+        case LOG_ALL: ss << "A "; break;
+        case LOG_INDENT: ss << "> "; break;
+        case LOG_UNDENT: ss << "< "; break;
+        case LOG_FLOW: ss << "F "; break;
+        case LOG_DATA: ss << "D "; break;
+        case LOG_INFO: ss << "I "; break;
+        case LOG_WARN: ss << "W "; break;
+        case LOG_ERR: ss << "E "; break;
+        case LOG_CRIT: ss << "! "; break;
+        default: ss << "  "; break;
+        }
+        auto pos = m_sourceFile.rfind('\\');
+        if (pos == std::string::npos)
+        {
+            pos = 0;
+        }
+        else
+        {
+            pos += 1;
+        }
+        char temp[1024] = { 0 };
+        sprintf(temp, "%20s[%04d]", m_sourceFile.substr(pos).c_str(), m_sourceLine);
+        ss << temp;
+
+        auto const curTime = time(NULL);
+        auto const localTime = localtime(&curTime);
+        sprintf(temp, "%02d/%02d %02d:%02d:%02d ", localTime->tm_mday, localTime->tm_mon + 1, localTime->tm_hour, localTime->tm_min, localTime->tm_sec);
+        ss << temp;
+
+        static thread_local CStr header;
+        header = ss.str().c_str();
+        return header;
     }
 }

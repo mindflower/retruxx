@@ -2,6 +2,7 @@
 #include <config.h>
 #include <stdexcept>
 #include <core/kernel.h>
+#include <core/log.h>
 
 Vivisector* g_Vivisector = nullptr;
 
@@ -34,7 +35,7 @@ bool initVivisectionBlock()
 {
     if (g_Vivisector != nullptr)
     {
-        M3D_LOG_WARN("Vivisector is already initialized...", LOG_WARN);
+        M3D_LOG_WARN("Vivisector is already initialized...");
         return false;
     }
     auto* vivisector = new Vivisector{};

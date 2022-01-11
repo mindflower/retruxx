@@ -11,6 +11,7 @@
 #include <client.h>
 #include <stdexcept>
 #include <world.h>
+#include <core/log.h>
 #include <core/timer.h>
 #include <file/fileserver.h>
 #include <impulses/i_impulses.h>

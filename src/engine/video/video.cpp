@@ -4,6 +4,7 @@
 #include <core/kernel.h>
 #include "Wmsdk.h"
 #include <stdexcept>
+#include <core/log.h>
 
 namespace 
 {
@@ -27,7 +28,7 @@ namespace
         );
         if (FAILED(hr))
         {
-            M3D_LOG_INFO("CreateFilter: Failed to create filter!  hr = " + std::to_string(hr));
+            M3D_LOG_INFO("CreateFilter: Failed to create filter!  hr = " + CStr(hr));
         }
         return hr;
     }
@@ -80,7 +81,7 @@ namespace
                         hr = pGB->Render(pPin);
                         if (FAILED(hr))
                         {
-                            M3D_LOG_INFO("FAILED(hr=" + std::to_string(hr) + ") in pGB->Render");
+                            M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in pGB->Render");
                         }
                     }
                 }
@@ -93,7 +94,7 @@ namespace
         }
         else
         { 
-            M3D_LOG_INFO("FAILED(hr=" + std::to_string(hr) + ") in EnumPins");
+            M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in EnumPins");
         }
 
         // Release pin enumerator
@@ -272,19 +273,19 @@ namespace m3d
             hr = g_pGB->AddFilter(g_pRenderer, L"TEXTURERENDERER");
             if (FAILED(hr))
             {
-                M3D_LOG_INFO("Could not add renderer filter to graph! hr = " + std::to_string(hr));
+                M3D_LOG_INFO("Could not add renderer filter to graph! hr = " + CStr(hr));
                 return 0;
             }
             hr = CreateFilter(CLSID_WMAsfReader, &g_pReader);
             if (FAILED(hr))
             {
-                M3D_LOG_INFO("Failed to create WMAsfReader filter!  hr = " + std::to_string(hr));
+                M3D_LOG_INFO("Failed to create WMAsfReader filter!  hr = " + CStr(hr));
                 return 0;
             }
             hr = g_pGB->AddFilter(g_pReader, L"ASF Reader");
             if (FAILED(hr))
             {
-                M3D_LOG_INFO("Failed to add ASF reader filter to graph!  hr = " + std::to_string(hr));
+                M3D_LOG_INFO("Failed to add ASF reader filter to graph!  hr = " + CStr(hr));
                 return 0;
             }
             //hr = AddKeyProvider(g_pGB);
@@ -296,7 +297,7 @@ namespace m3d
             hr = g_pReader->QueryInterface(IID_IFileSourceFilter, reinterpret_cast<LPVOID*>(&g_pFileSource));
             if (FAILED(hr))
             {
-                M3D_LOG_INFO("FAILED(hr=" + std::to_string(hr) + ") in g_pReader->QueryInterface( IID_IFileSourceFilter, (void**)&g_pFileSource )");
+                M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in g_pReader->QueryInterface( IID_IFileSourceFilter, (void**)&g_pFileSource )");
                 return 0;
             }
             wchar_t wFileName[MAX_PATH + 1] = { 0 };
@@ -311,26 +312,26 @@ namespace m3d
             hr = RenderOutputPins(g_pGB, g_pReader);
             if (FAILED(hr))
             {
-                M3D_LOG_INFO("FAILED(hr=" + std::to_string(hr) + ") in RenderOutputPins( g_pGB, g_pReader )");
+                M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in RenderOutputPins( g_pGB, g_pReader )");
                 return 0;    
             }
             g_pReader->Release();
             hr = g_pGB->QueryInterface(IID_IMediaControl, reinterpret_cast<LPVOID*>(&g_pMC));
             if (FAILED(hr))
             {
-                M3D_LOG_INFO("FAILED(hr=" + std::to_string(hr) + ") in g_pGB->QueryInterface( IID_IMediaControl, (void**)&g_pMC)");
+                M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in g_pGB->QueryInterface( IID_IMediaControl, (void**)&g_pMC)");
                 return 0;
             }
             hr = g_pGB->QueryInterface(IID_IMediaEventEx, reinterpret_cast<LPVOID*>(&g_pME));
             if (FAILED(hr))
             {
-                M3D_LOG_INFO("FAILED(hr=" + std::to_string(hr) + ") in g_pGB->QueryInterface( IID_IMediaEventEx, (void**)&g_pME)");
+                M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in g_pGB->QueryInterface( IID_IMediaEventEx, (void**)&g_pME)");
                 return 0;
             }
             hr = g_pGB->QueryInterface(IID_IMediaPosition, reinterpret_cast<LPVOID*>(&g_pMP));
             if (FAILED(hr))
             {
-                M3D_LOG_INFO("FAILED(hr=" + std::to_string(hr) + ") in g_pGB->QueryInterface( IID_IMediaPosition, (void**)&g_pMP)");
+                M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in g_pGB->QueryInterface( IID_IMediaPosition, (void**)&g_pMP)");
                 return 0;
             }
             g_Event1 = ::CreateEventA(0, 0, 0, 0);
@@ -353,10 +354,10 @@ namespace m3d
                 m_texRend = g_pRenderer;
                 return 1;
             }
-            M3D_LOG_INFO("Could not run the DirectShow graph! hr = " + std::to_string(hr));
+            M3D_LOG_INFO("Could not run the DirectShow graph! hr = " + CStr(hr));
             return 0;
         }
-        M3D_LOG_INFO("Could not create texture renderer object! hr = " + std::to_string(hr));
+        M3D_LOG_INFO("Could not create texture renderer object! hr = " + CStr(hr));
         return 0;
     }
 
@@ -368,7 +369,7 @@ namespace m3d
             Release();
             return 1;
         }
-        M3D_LOG_INFO("FAILED(hr=" + std::to_string(hr) + ") in g_pMC->Stop()");
+        M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in g_pMC->Stop()");
         return 0;
     }
 

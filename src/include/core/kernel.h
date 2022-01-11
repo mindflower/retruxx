@@ -93,8 +93,5 @@ namespace m3d
     extern Kernel* g_Kernel;
 }
 
-#define M3D_LOG_INFO(msg) //g_Kernel->GetLog().sourceLine() = __LINE__; g_Kernel->GetLog().setSourceFile(__FILE__); g_Kernel->GetLog().logTex(msg, LOG_INFO)
-#define M3D_LOG_ERR(msg) //g_Kernel->GetLog().sourceLine() = __LINE__; g_Kernel->GetLog().setSourceFile(__FILE__); g_Kernel->GetLog().logTex(msg, LOG_ERR)
-#define M3D_LOG_WARN(msg) //g_Kernel->GetLog().sourceLine() = __LINE__; g_Kernel->GetLog().setSourceFile(__FILE__); g_Kernel->GetLog().logTex(msg, LOG_WARN)
 #define SYS_ERROR(msg)
 #define M3D_ASSERT(cond)

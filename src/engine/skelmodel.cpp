@@ -1,5 +1,6 @@
 #include <skelmodel.h>
 #include <core/kernel.h>
+#include <core/log.h>
 #include <core/scoped_ptr.h>
 #include <file/fileserver.h>
 #include <file/filestream.h>

@@ -60,9 +60,7 @@ namespace
 
     void __fastcall logDeviceFunc(CStr const& str)
     {
-        M3D_LOG_INFO(str);
-        if (str.findsubstr("Rt dep") != CStr::npos)
-            bool asd = true;
+        M3D_LOG_INFO("d3d: " + str);
     }
 
     void logSoundFunc(CStr const&)
@@ -273,7 +271,7 @@ namespace m3d
                     g_Kernel->GetEngineCfg().m_levFileName.Set("Empty", true);
 
                     auto const diffTime = g_Kernel->GetTimer().GetCurTime() - startTime;
-                    M3D_LOG_INFO("----------------------- Engine inited in: " + std::to_string(diffTime));
+                    M3D_LOG_INFO("----------------------- Engine inited in: " + CStr(diffTime));
                     return 1;
                 }
                 doneUi();
@@ -480,19 +478,18 @@ namespace m3d
         ::GetVersionEx(&osinfo);
         M3D_LOG_INFO(
             "Windows version: " +
-            std::to_string(osinfo.dwMajorVersion) + '.' +
-            std::to_string(osinfo.dwMinorVersion) + '.' +
-            std::to_string(osinfo.dwBuildNumber)NFO
+            CStr(osinfo.dwMajorVersion) + "." +
+            CStr(osinfo.dwMinorVersion) + "." +
+            CStr(osinfo.dwBuildNumber)
         );
 
         TCHAR computerName[MAX_COMPUTERNAME_LENGTH + 1] = { 0 };
         DWORD size = sizeof(computerName);
         ::GetComputerName(computerName, &size);
-        M3D_LOG_INFO("Computer name: " + computerName);
+        M3D_LOG_INFO("Computer name: " + CStr(computerName));
 
         char cpuInfo[16] = { 0 };
         __cpuid(reinterpret_cast<int*>(cpuInfo), 0x80000000);
-        M3D_LOG_INFO("Cpu: " + cpuInfo);
 
         //TODO: other info...
         //throw std::logic_error("Not implemented");
@@ -611,7 +608,7 @@ namespace m3d
         if (m_hRenderDll == NULL)
         {
             M3D_LOG_ERR("ERROR! Application::CreateRenderer -- cannot locate renderer driver " + inputDriverName);
-            M3D_LOG_ERR("GetLastError() = " + std::to_string(::GetLastError()));
+            M3D_LOG_ERR("GetLastError() = " + CStr(::GetLastError()));
             return 0;
         }
         auto createIRenderer = reinterpret_cast<CreateIRendererType>(::GetProcAddress(m_hRenderDll, "createIRenderer"));
@@ -665,7 +662,7 @@ namespace m3d
         if (m_hInputDll == NULL)
         {
             M3D_LOG_ERR("ERROR! Application::CreateInput -- cannot locate input driver " + inputDriverName);
-            M3D_LOG_ERR("GetLastError() = " + std::to_string(::GetLastError()));
+            M3D_LOG_ERR("GetLastError() = " + CStr(::GetLastError()));
             return 0;
         }
         auto createIInput = ::GetProcAddress(m_hInputDll, "createIInput");
@@ -693,7 +690,7 @@ namespace m3d
         if (m_hSoundDll == NULL)
         {
             M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot locate sound driver " + inputDriverName);
-            M3D_LOG_ERR("GetLastError() = " + std::to_string(::GetLastError()));
+            M3D_LOG_ERR("GetLastError() = " + CStr(::GetLastError()));
             config.m_snd_Enable.SetB(false);
             config.m_mus_Enable.SetB(false);
             return 0;
@@ -713,7 +710,7 @@ namespace m3d
             {
                 break;
             }
-            M3D_LOG_INFO("Warning: sound was not created after trial " + std::to_string(trial));
+            M3D_LOG_INFO("Warning: sound was not created after trial " + CStr(trial));
             ::Sleep(1000);
         }
         if (m_sound != nullptr)
@@ -732,7 +729,7 @@ namespace m3d
                     isSoundInit = true;
                     break;
                 }
-                M3D_LOG_INFO("Warning: sound was not inited after trial " + std::to_string(trial));
+                M3D_LOG_INFO("Warning: sound was not inited after trial " + CStr(trial));
                 ::Sleep(1000);
             }
             if (isSoundInit)

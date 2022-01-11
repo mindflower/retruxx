@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <core/kernel.h>
+#include <core/log.h>
 #include <core/stackwalker.h>
 #include <file/fileserver.h>
 
@@ -58,7 +59,7 @@ int InitStackWalk()
     g_hImagehlpDll = ::LoadLibraryA("dbghelp.dll");
     if (g_hImagehlpDll == NULL)
     {
-        M3D_LOG_INFO("LoadLibrary( \"dbghelp.dll\" ): GetLastError = " + std::to_string(::GetLastError()));
+        M3D_LOG_INFO("LoadLibrary( \"dbghelp.dll\" ): GetLastError = " + CStr(::GetLastError()));
         g_bInitialized = 0;
         return 1;
     }
