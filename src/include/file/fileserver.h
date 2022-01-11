@@ -14,34 +14,35 @@ namespace m3d
         class FileReader;
         class FileStream;
 
+        //IMPORTANT: fields and members order is strict
         class FileServer
         {
         public:
+            FileServer();
             virtual ~FileServer();
-            virtual bool FileExists(char const*);
-            virtual FileStream* CreateFileStream();
-            
-            int RemoveFile(char const*);
-            void EnableMapping(bool);
-            int Reinitialize(char const*);
             int Shutdown();
-            CriticalSection& GetCriticalSecton();
-            int OpenFileStream(FileReader*, char const*, IStream::OpenFlags);
+            int Initialize(char const*);
+            int Reinitialize(char const*);
+            int AddFolder(char const*, char const*, bool);
+            int RemoveFolder(char const*);
             int AddPackage(char const*);
             int AddFile(char const*);
-            char const* GetCurrentWorkDir() const;
-            int RemoveFolder(char const*);
-            int Initialize(char const*);
-            void GetOpenFilesList(std::vector<CStr>&) const;
-            int AddFolder(char const*, char const*, bool);
+            int RemoveFile(char const*);
+            void EnableMapping(bool);
             void SetCurrentWorkDir(char const*);
+            char const* GetCurrentWorkDir() const;
+            virtual FileStream* CreateFileStream();
+            int OpenFileStream(FileReader*, char const*, IStream::OpenFlags);
+            virtual bool FileExists(char const*);
+            void GetOpenFilesList(std::vector<CStr>&) const;
+            CriticalSection& GetCriticalSecton();
 
         protected:
             void DecryptFileName(char const*, CStr&);
             int InternalAddPackage(CStr const&);
+            int EnumDataFolderFiles(char const*);
 
-        private:
-            //m3d::fs::FileServer_vtbl* __vftable /*VFT*/;
+        protected:
             bool m_Initialized = false;
             bool m_EnableMapping = false;
             CriticalSection m_cs;

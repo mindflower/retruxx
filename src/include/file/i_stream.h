@@ -5,6 +5,7 @@ namespace m3d
 {
     namespace fs
     {
+        //IMPORTANT: fields and members order is strict
         class IStream
         {
         public:

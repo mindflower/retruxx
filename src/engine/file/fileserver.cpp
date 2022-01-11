@@ -11,14 +11,40 @@ namespace m3d
 {
     namespace fs
     {
+        FileServer::FileServer()
+        {
+        }
+
         FileServer::~FileServer()
         {
             Shutdown();
         }
 
-        bool FileServer::FileExists(char const*)
+        bool FileServer::FileExists(char const* filename)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this
+            if (filename[1] == ':' && (filename[2] == '/' || filename[2] == '\\'))
+            {
+                CStr filenameUnified;
+                UnifyFileName(filenameUnified);
+                return ::GetFileAttributesA(filenameUnified.c_str()) != INVALID_FILE_ATTRIBUTES;
+            }
+            CStr fullFilename;
+            DecryptFileName(filename, fullFilename);
+            
+            auto const it = m_Files.find(fullFilename);
+            if (it != m_Files.cend())
+            {
+                return true;
+            }
+            for (auto const& package : m_Packages)
+            {
+                if (package->HaveFile(fullFilename.c_str()))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         FileStream* FileServer::CreateFileStream()
@@ -77,17 +103,13 @@ namespace m3d
                     }
                 }
             }
-            auto const it = m_Files.find(fullFilename);
-            if (it == m_Files.cend())
-            {
-                m_Files.insert(fullFilename);
-            }
             delete reader->InternalObject;
             reader->InternalObject = new RawFile(fullFilename.c_str(), flags, m_EnableMapping);
             if (!reader->InternalObject->IsOpen())
             {
                 return 0;
             }
+            m_Files.insert(fullFilename);
             return 1;
         }
 
@@ -205,6 +227,11 @@ namespace m3d
         }
 
         int FileServer::InternalAddPackage(CStr const&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        int FileServer::EnumDataFolderFiles(char const*)
         {
             throw std::logic_error("Not implemented");
         }

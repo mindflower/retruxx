@@ -2001,9 +2001,6 @@
     <ClCompile Include="src\engine\video\wxdebug.cpp">
       <Filter>engine\video</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\tinyxml\tinystr.cpp">
-      <Filter>engine\tinyxml</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\tinyxml\tinyxmlerror.cpp">
       <Filter>engine\tinyxml</Filter>
     </ClCompile>
@@ -3754,9 +3751,6 @@
     </ClInclude>
     <ClInclude Include="src\engine\video\wxdebug.h">
       <Filter>engine\video</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\tinyxml\tinystr.h">
-      <Filter>engine\tinyxml</Filter>
     </ClInclude>
     <ClInclude Include="src\include\ui\slider.h">
       <Filter>include\ui</Filter>

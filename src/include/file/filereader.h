@@ -8,38 +8,41 @@ namespace m3d
 {
     namespace fs
     {
+        //IMPORTANT: fields and members order is strict
         class FileReader : public FileStream
         {
             friend class FileServer;
-        public:
-            virtual IStream* Clone();
-            virtual int ReadLine(CStr&);
-            virtual int Close();
-            virtual int Open(char const*, OpenFlags);
-            virtual unsigned int PeekBytes(void*, unsigned int);
-            virtual int Flush();
-            virtual int FSeek(long, int);
-            virtual long FTell();
-            virtual unsigned int ReadBytes(void*, unsigned int);
-            virtual unsigned int WriteBytes(void const*, unsigned int);
-            virtual FILETIME GetDate() const;
-            virtual bool IsOpen();
-            virtual FileStream& operator<<(char const*);
-            virtual FileStream& operator<<(float);
-            virtual FileStream& operator<<(unsigned int);
-            virtual FileStream& operator<<(int);
-            virtual ~FileReader();
-            virtual FileStream& operator>>(CStr&);
-            virtual FileStream& operator>>(float&);
-            virtual FileStream& operator>>(int&);
-            virtual FileStream& operator>>(unsigned int&);
-            virtual int Eof();
-            virtual unsigned int FRead(void*, unsigned int, unsigned int);
-            virtual unsigned int GetSize() const;
-            virtual int Error();
 
         protected:
             FileStream* InternalObject = nullptr;
+
+        public:
+            FileReader();
+            virtual int Open(char const*, OpenFlags);
+            virtual int Close();
+            virtual ~FileReader();
+            virtual IStream* Clone();
+            virtual bool IsOpen();
+            virtual unsigned int GetSize() const;
+            virtual FILETIME GetDate() const;
+            virtual unsigned int ReadBytes(void*, unsigned int);
+            virtual unsigned int WriteBytes(void const*, unsigned int);
+            virtual unsigned int PeekBytes(void*, unsigned int);
+            virtual int Eof();
+            virtual int Error();
+            virtual int Flush();
+            virtual FileStream& operator>>(float&);
+            virtual FileStream& operator>>(unsigned int&);
+            virtual FileStream& operator>>(int&);
+            virtual FileStream& operator>>(CStr&);
+            virtual FileStream& operator<<(float);
+            virtual FileStream& operator<<(unsigned int);
+            virtual FileStream& operator<<(int);
+            virtual FileStream& operator<<(char const*);
+            virtual int ReadLine(CStr&);
+            virtual unsigned int FRead(void*, unsigned int, unsigned int);
+            virtual int FSeek(long, int);
+            virtual long FTell();
         };
     }
 }

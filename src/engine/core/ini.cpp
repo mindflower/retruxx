@@ -107,7 +107,7 @@ char const* XmlFileImpl::GetError()
 {
     if (Error())
     {
-        return ErrorDesc();
+        return ErrorDesc().c_str();
     }
     return nullptr;
 }
@@ -116,7 +116,7 @@ bool XmlFileImpl::GetFirstChild_(m3d::cmn::XmlNode* writeTo, char const* wantVal
 {
     auto child = wantValue ? FirstChild(wantValue) : FirstChild();
     auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
-    *writeToCasted = XmlNodeImpl(const_cast<TiXmlNode*>(child));
+    *writeToCasted = XmlNodeImpl(child);
     return child != nullptr;
 }
 
@@ -158,6 +158,10 @@ void* XmlFileImpl::QueryIface(char const*)
     throw std::logic_error("Not implemented");
 }
 
+XmlFileImpl::XmlFileImpl()
+{
+}
+
 int XmlFileImpl::DecRef()
 {
     --m_refCount;
@@ -183,9 +187,11 @@ bool XmlNodeImpl::HasChildOrAttribute() const
     throw std::logic_error("Not implemented");
 }
 
-bool XmlNodeImpl::AddBeforeChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*)
+bool XmlNodeImpl::AddBeforeChild(m3d::cmn::XmlNode const* addBefore, m3d::cmn::XmlNode* child)
 {
-    throw std::logic_error("Not implemented");
+    auto addBeforeCasted = dynamic_cast<XmlNodeImpl const*>(addBefore);
+    auto childCasted = dynamic_cast<XmlNodeImpl*>(child);
+    return m_node->LinkBeforeChild(addBeforeCasted->m_node, childCasted->m_node) != 0;
 }
 
 char const* XmlNodeImpl::GetValue() const
@@ -200,7 +206,7 @@ bool XmlNodeImpl::GetFirstAttribute(m3d::cmn::XmlAttrib* writeTo) const
         auto element = dynamic_cast<TiXmlElement*>(m_node);
         auto writeToCasted = dynamic_cast<XmlAttribImpl*>(writeTo);
         auto attr = element->FirstAttribute();
-        *writeToCasted = XmlAttribImpl(attr);
+        writeToCasted->m_attrib = attr;
         return attr != nullptr;
     }
     return false;
@@ -258,9 +264,12 @@ XmlNodeImpl::XmlNodeImpl(TiXmlNode* fromNode) :
 {
 }
 
-bool XmlNodeImpl::GetPrevSibling_(m3d::cmn::XmlNode*, char const*) const
+bool XmlNodeImpl::GetPrevSibling_(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
 {
-    throw std::logic_error("Not implemented");
+    auto sibling = wantValue ? m_node->PreviousSibling(wantValue) : m_node->PreviousSibling();
+    auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
+    *writeToCasted = XmlNodeImpl(sibling);
+    return sibling != nullptr;
 }
 
 bool XmlNodeImpl::IsOfType(m3d::cmn::XmlNodeType) const
@@ -313,9 +322,12 @@ m3d::cmn::XmlAttrib* XmlNodeImpl::CreateAttribute() const
     return new XmlAttribImpl;
 }
 
-bool XmlNodeImpl::GetFirstChild_(m3d::cmn::XmlNode*, char const*) const
+bool XmlNodeImpl::GetFirstChild_(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
 {
-    throw std::logic_error("Not implemented");
+    auto child = wantValue ? m_node->FirstChild(wantValue) : m_node->FirstChild();
+    auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
+    *writeToCasted = XmlNodeImpl(child);
+    return child != nullptr;
 }
 
 XmlNodeImpl::~XmlNodeImpl()
@@ -326,9 +338,14 @@ XmlNodeImpl::~XmlNodeImpl()
     }
 }
 
-char const* XmlNodeImpl::GetAttribute(char const*) const
+char const* XmlNodeImpl::GetAttribute(char const* name) const
 {
-    throw std::logic_error("Not implemented");
+    if (!IsOfType(m3d::cmn::XML_NODE_ELEMENT))
+    {
+        return nullptr;
+    }
+    auto element = dynamic_cast<TiXmlElement*>(m_node);
+    return element->Attribute(name)->c_str();
 }
 
 bool XmlNodeImpl::GetLastChild_(m3d::cmn::XmlNode*, char const*) const
@@ -355,6 +372,11 @@ void* XmlNodeImpl::QueryIface(char const*)
     throw std::logic_error("Not implemented");
 }
 
+XmlNodeImpl::XmlNodeImpl(XmlNodeImpl const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
 int XmlNodeImpl::DecRef()
 {
     --m_refCount;
@@ -374,7 +396,7 @@ bool XmlAttribImpl::GetNextSibling_(m3d::cmn::XmlAttrib* writeTo)
 {
     auto writeToCasted = dynamic_cast<XmlAttribImpl*>(writeTo);
     auto attr = m_attrib->Next();
-    *writeToCasted = XmlAttribImpl(attr);
+    writeToCasted->m_attrib = attr;
     return attr != nullptr;
 }
 
@@ -391,19 +413,23 @@ XmlAttribImpl::~XmlAttribImpl()
     }
 }
 
-XmlAttribImpl::XmlAttribImpl(TiXmlAttribute* attr) :
-    m_attrib(attr)
+XmlAttribImpl::XmlAttribImpl(XmlAttribImpl const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+XmlAttribImpl::XmlAttribImpl()
 {
 }
 
 char const* XmlAttribImpl::GetValue()
 {
-    return m_attrib->Value();
+    return m_attrib->Value().c_str();
 }
 
 char const* XmlAttribImpl::GetName()
 {
-    return m_attrib->Name();
+    return m_attrib->Name().c_str();
 }
 
 int XmlAttribImpl::IncRef()

@@ -7,6 +7,10 @@ namespace m3d
 {
     namespace fs
     {
+        FileReader::FileReader()
+        {
+        }
+
         IStream* FileReader::Clone()
         {
             throw std::logic_error("Not implemented");
@@ -83,9 +87,14 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        FileStream& FileReader::operator<<(float)
+        FileStream& FileReader::operator<<(float k)
         {
-            throw std::logic_error("Not implemented");
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                InternalObject->operator<<(k);
+            }
+            return *this;
         }
 
         FileStream& FileReader::operator<<(unsigned)
