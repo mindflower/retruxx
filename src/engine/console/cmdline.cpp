@@ -6,18 +6,18 @@ namespace m3d
     {
         //TODO: check correctness
         m_cmdLine = cmdStr;
-        for (size_t i = 0; i < m_cmdLine.size(); ++i)
+        for (size_t i = 0; i < m_cmdLine.length(); ++i)
         {
             CStr param;
             auto const first = m_cmdLine[i];
             if (first > 32 && first < 127)
             {
-                for (size_t j = i; j < m_cmdLine.size(); ++j)
+                for (size_t j = i; j < m_cmdLine.length(); ++j)
                 {
                     auto const second = m_cmdLine[j];
                     if (second > 32 && second < 127)
                     {
-                        param += second;
+                        param += CStr(second);
                     }
                     else
                     {

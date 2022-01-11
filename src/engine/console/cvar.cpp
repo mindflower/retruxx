@@ -1,4 +1,5 @@
 #include <core/console/cvar.h>
+#include <cstdio>
 
 namespace
 {

@@ -1,29 +1,30 @@
+#include <cassert>
 #include <stdexcept>
 #include <core/stringm3d.h>
 #include <windows.h>
 
 void UnifyFileName(CStr& fileName)
 {
-    for (auto& c : fileName)
+    for (size_t i = 0; i < fileName.length(); ++i)
     {
-        if (c == '/')
+        if (fileName[i] == '/')
         {
-            c = '\\';
+            fileName[i] = '\\';
         }
     }
-    toLower(fileName);
+    fileName.toLower();
 }
 
 void UnifyFileName0(CStr& fileName)
 {
-    for (auto& c : fileName)
+    for (size_t i = 0; i < fileName.length(); ++i)
     {
-        if (c == '\\')
+        if (fileName[i] == '\\')
         {
-            c = '/';
+            fileName[i] = '/';
         }
     }
-    toLower(fileName);
+    fileName.toLower();
 }
 
 CStr DirectoryFromFileName(CStr const& source)
@@ -52,14 +53,6 @@ CStr NameFromFileName(CStr const& source)
     return result;
 }
 
-void toLower(CStr& str)
-{
-    if (!str.empty())
-    {
-        ::LCMapStringA(LOCALE_USER_DEFAULT, LCMAP_LOWERCASE, str.data(), str.size() + 1, str.data(), str.size() + 1);
-    }
-}
-
 CStr2::ZeroCharHolder::ZeroCharHolder() :
     m_zeroChar(0)
 {
@@ -78,17 +71,61 @@ void CStr2::cleanup()
 
 void CStr2::realloc(int sz)
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check this
+    auto size = 32 * ((sz + 31) / 32);
+    if (size > m_allocSz || m_charPtr == nullptr)
+    {
+        delete[] m_charPtr;
+        m_charPtr = new char[size];
+        m_allocSz = size;
+        m_charPtr[0] = '\0';
+    }
+    else
+    {
+        m_charPtr[0] = '\0';
+    }
 }
 
-int CStr2::my_strcmp(char const*, char const*)
+int CStr2::my_strcmp(char const* lhs, char const* rhs)
 {
-    throw std::logic_error("Not implemented");
+    auto result = 0;
+    if (lhs)
+    {
+        if (rhs)
+        {
+            result = strcmp(lhs, rhs);
+        }
+        else
+        {
+            result = *lhs != 0;
+        }
+    }
+    else if (rhs)
+    {
+        result = -(*rhs != 0);
+    }
+    return result;
 }
 
-int CStr2::my_stricmp(char const*, char const*)
+int CStr2::my_stricmp(char const* lhs, char const* rhs)
 {
-    throw std::logic_error("Not implemented");
+    auto result = 0;
+    if (lhs)
+    {
+        if (rhs)
+        {
+            result = stricmp(lhs, rhs);
+        }
+        else
+        {
+            result = *lhs != 0;
+        }
+    }
+    else if (rhs)
+    {
+        result = -(*rhs != 0);
+    }
+    return result;
 }
 
 CStr2::CStr2(Quaternion const&)
@@ -136,9 +173,12 @@ CStr2::CStr2(unsigned)
     throw std::logic_error("Not implemented");
 }
 
-CStr2::CStr2(int)
+CStr2::CStr2(int v)
 {
-    throw std::logic_error("Not implemented");
+    char buf[136] = { 0 };
+    sprintf(buf, "%d", v);
+    realloc(strlen(buf) + 1);
+    strcpy(m_charPtr, buf);
 }
 
 CStr2::CStr2(unsigned char)
@@ -151,9 +191,14 @@ CStr2::CStr2(char const*, int)
     throw std::logic_error("Not implemented");
 }
 
-CStr2::CStr2(char const*)
+CStr2::CStr2(char const* str)
 {
-    throw std::logic_error("Not implemented");
+    if (str)
+    {
+        auto const len = strlen(str);
+        realloc(len + 1);
+        strcpy(m_charPtr, str);
+    }
 }
 
 CStr2::CStr2(char, int)
@@ -161,29 +206,36 @@ CStr2::CStr2(char, int)
     throw std::logic_error("Not implemented");
 }
 
-CStr2::CStr2(CStr2 const&)
+CStr2::CStr2(CStr2 const& s)
 {
-    throw std::logic_error("Not implemented");
+    if (s.length() > 0)
+    {
+        realloc(s.length() + 1);
+        strcpy(m_charPtr, s.c_str());
+    }
 }
 
 CStr2::CStr2()
 {
-    throw std::logic_error("Not implemented");
 }
 
 CStr2::~CStr2()
 {
-    throw std::logic_error("Not implemented");
+    delete[] m_charPtr;
 }
 
 int CStr2::length() const
 {
-    throw std::logic_error("Not implemented");
+    if (m_charPtr)
+    {
+        return strlen(m_charPtr);
+    }
+    return 0;
 }
 
 bool CStr2::empty() const
 {
-    throw std::logic_error("Not implemented");
+    return length() == 0;
 }
 
 void CStr2::erase()
@@ -191,24 +243,30 @@ void CStr2::erase()
     throw std::logic_error("Not implemented");
 }
 
-char& CStr2::operator[](int)
+char& CStr2::operator[](int i)
 {
-    throw std::logic_error("Not implemented");
+    return m_charPtr[i];
 }
 
-char const& CStr2::operator[](int) const
+char const& CStr2::operator[](int i) const
 {
-    throw std::logic_error("Not implemented");
+    return m_charPtr[i];
 }
 
-char const* CStr2::c_str() const
+const char* CStr2::c_str() const
 {
-    throw std::logic_error("Not implemented");
+    return m_charPtr;
 }
 
-CStr& CStr2::operator+=(CStr const&)
+CStr& CStr2::operator+=(CStr const& a)
 {
-    throw std::logic_error("Not implemented");
+    auto const newSize = length() + a.length() + 1;
+    char* newCharPtr = new char[newSize];
+    strcpy(newCharPtr, c_str());
+    strcat(newCharPtr, a.c_str());
+    delete[] m_charPtr;
+    m_charPtr = newCharPtr;
+    return *this;
 }
 
 char* CStr2::getHashCode()
@@ -216,9 +274,16 @@ char* CStr2::getHashCode()
     throw std::logic_error("Not implemented");
 }
 
-void CStr2::toLower(unsigned long)
+void CStr2::toLower(unsigned long locale)
 {
-    throw std::logic_error("Not implemented");
+    if (locale == -1)
+    {
+        locale = LOCALE_USER_DEFAULT;
+    }
+    if (!empty())
+    {
+        ::LCMapStringA(locale, LCMAP_LOWERCASE, m_charPtr, length() + 1, m_charPtr, length() + 1);
+    }
 }
 
 void CStr2::toUpper(unsigned long)
@@ -241,24 +306,37 @@ int CStr2::findOneOf(char const*, int) const
     throw std::logic_error("Not implemented");
 }
 
-int CStr2::find(char, int) const
+int CStr2::find(char c, int startIdx) const
 {
-    throw std::logic_error("Not implemented");
+    assert(m_charPtr);
+    std::string_view const view(m_charPtr);
+    return view.find(c, startIdx);
 }
 
-int CStr2::rfind(char) const
+int CStr2::rfind(char c) const
 {
-    throw std::logic_error("Not implemented");
+    assert(m_charPtr);
+    std::string_view const view(m_charPtr);
+    return view.rfind(c);
 }
 
-CStr2 CStr2::substr(int, int) const
+CStr2 CStr2::substr(int pos, int endpos) const
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check this
+    assert(m_charPtr);
+    std::string_view const view(m_charPtr);
+    if (endpos == npos)
+    {
+        return view.substr(pos).data();
+    }
+    return view.substr(pos, endpos - pos).data();
 }
 
-int CStr2::findsubstr(char const*, int) const
+int CStr2::findsubstr(char const* substr, int offset) const
 {
-    throw std::logic_error("Not implemented");
+    assert(m_charPtr);
+    std::string_view const view(m_charPtr);
+    return view.find(substr, offset);
 }
 
 int CStr2::del(int, int)
@@ -285,3 +363,46 @@ int CStr2::Read(m3d::fs::IStream&)
 {
     throw std::logic_error("Not implemented");
 }
+
+CStr& CStr2::operator=(CStr const& rhs)
+{
+    if (this == &rhs)
+    {
+        return *this;
+    }
+    if (rhs.length() > 0)
+    {
+        realloc(rhs.length() + 1);
+        strcpy(m_charPtr, rhs.c_str());
+    }
+    else
+    {
+        delete[] m_charPtr;
+        m_allocSz = 0;
+    }
+    return *this;
+}
+
+bool operator==(CStr const& lhs, CStr const& rhs)
+{
+    return std::string_view(lhs.c_str()) == std::string_view(rhs.c_str());
+}
+
+bool operator!=(CStr const& lhs, CStr const& rhs)
+{
+    return std::string_view(lhs.c_str()) != std::string_view(rhs.c_str());
+}
+
+bool operator<(CStr const& lhs, CStr const& rhs)
+{
+    return std::string_view(lhs.c_str()) < std::string_view(rhs.c_str());
+}
+
+
+CStr operator+(CStr lhs, CStr const& rhs)
+{
+    lhs += rhs;
+    return lhs;
+}
+
+

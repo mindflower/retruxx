@@ -51,7 +51,7 @@ namespace m3d
         {
             Application::g_pApp->sysError(whence, descr);
         }
-        ::MessageBox(0, (descr + ':' + whence).c_str(), TEXT("Error"), MB_ICONHAND);
+        ::MessageBox(0, (descr + ":" + whence).c_str(), TEXT("Error"), MB_ICONHAND);
     }
 
     ScriptServer& Kernel::GetScriptServer()

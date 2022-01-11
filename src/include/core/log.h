@@ -1,6 +1,7 @@
 #pragma once
 #include "stringm3d.h"
 #include "threadsync.h"
+#include <string>
 
 namespace m3d
 {

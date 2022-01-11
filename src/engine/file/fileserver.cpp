@@ -157,7 +157,8 @@ namespace m3d
                         m_EnableMapping = true;
                         token = tokens2.front();
                     }
-                    if (token.rfind(".GDP") != CStr::npos)
+                    std::string_view view(token.c_str());
+                    if (view.rfind(".GDP") != CStr::npos)
                     {
                         InternalAddPackage(token);
                     }
@@ -185,9 +186,10 @@ namespace m3d
         {
             m_CurrentWorkDir = currentDirectory;
             UnifyFileName0(m_CurrentWorkDir);
-            if (m_CurrentWorkDir.back() != '/')
+            //TODO: check this
+            if (m_CurrentWorkDir[m_CurrentWorkDir.length()] != '/')
             {
-                m_CurrentWorkDir += '/';
+                m_CurrentWorkDir += "/";
             }
         }
 

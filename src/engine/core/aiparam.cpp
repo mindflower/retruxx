@@ -95,7 +95,7 @@ namespace m3d
         }
         if (m_Str && !m_Str->empty())
         {
-            return stoi(*m_Str);
+            return atoi(m_Str->c_str());
         }
         return 0;
     }

@@ -37,7 +37,7 @@ namespace m3d
     }
 
     Object::Object() :
-        m_name("Object" + std::to_string(g_Kernel->GetUniqueId()))
+        m_name("Object" + CStr(g_Kernel->GetUniqueId()))
     {
     }
 
@@ -217,7 +217,7 @@ namespace m3d
         {
             M3D_LOG_INFO("Warning: node have no name, added default");
             m_name = "Node";
-            m_name += g_Kernel->GetUniqueId();
+            m_name += CStr(g_Kernel->GetUniqueId());
         }
         writeTo->SetAttribute("name", m_name.c_str());
         writeTo->SetAttribute("class", GetClassNameA());

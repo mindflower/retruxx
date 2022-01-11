@@ -61,6 +61,7 @@ namespace
     void __fastcall logDeviceFunc(CStr const& str)
     {
         M3D_LOG_INFO(str);
+        bool asd = true;
     }
 
     void logSoundFunc(CStr const&)
@@ -585,7 +586,7 @@ namespace m3d
         {
             codePage = CP_UTF8;
         }
-        else if (auto const offset = codePageName.find("windows-"); offset != CStr::npos)
+        else if (auto const offset = codePageName.findsubstr("windows-"); offset != CStr::npos)
         {
             codePage = std::atoi(codePageName.substr(strlen("windows-")).c_str());
         }

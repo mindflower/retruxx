@@ -1,17 +1,14 @@
 #pragma once
-#include <string>
 #include <math/quaternion.h>
 #include <math/vector2.h>
 
-using CStr = std::string;
-
+class CStr2;
+using CStr = CStr2;
 
 void UnifyFileName(CStr& fileName);
 void UnifyFileName0(CStr& fileName);
 CStr DirectoryFromFileName(CStr const& source);
 CStr NameFromFileName(CStr const& source);
-
-void toLower(CStr& str);
 
 namespace m3d
 {
@@ -27,7 +24,7 @@ class CStr2
 public:
     class ZeroCharHolder
     {
-        char m_zeroChar;
+        char m_zeroChar = 0;
 
     public:
         ZeroCharHolder();
@@ -36,9 +33,10 @@ public:
     };
 
 public:
-    char* m_charPtr;
-    int m_allocSz;
+    char* m_charPtr = nullptr;
+    int m_allocSz = 0;
     ZeroCharHolder ZERO;
+    static constexpr auto npos{ -1 };
 
 private:
     void cleanup();
@@ -49,20 +47,20 @@ public:
     static int my_stricmp(char const*, char const*);
 
 public:
-    CStr2(Quaternion const&);
-    CStr2(CVector2 const&);
-    CStr2(CVector const&);
-    CStr2(double);
-    CStr2(float);
-    CStr2(unsigned long long);
-    CStr2(long long);
-    CStr2(unsigned long);
-    CStr2(unsigned int);
-    CStr2(int);
-    CStr2(unsigned char);
-    CStr2(char const*, int);
+    explicit CStr2(Quaternion const&);
+    explicit CStr2(CVector2 const&);
+    explicit CStr2(CVector const&);
+    explicit CStr2(double);
+    explicit CStr2(float);
+    explicit CStr2(unsigned long long);
+    explicit CStr2(long long);
+    explicit CStr2(unsigned long);
+    explicit CStr2(unsigned int);
+    explicit CStr2(int);
+    explicit CStr2(unsigned char);
+    explicit CStr2(char const*, int);
     CStr2(char const*);
-    CStr2(char, int);
+    explicit CStr2(char, int);
     CStr2(CStr2 const&);
     CStr2();
 
@@ -75,27 +73,31 @@ public:
     char& operator[](int);
     char const& operator[](int) const;
 
-    char const* c_str() const;
-    CStr& operator+=(CStr const&);
+    const char* c_str() const;
+    CStr2& operator+=(CStr2 const&);
     char* getHashCode();            //TODO: what the heck
-    void toLower(unsigned long);
+    void toLower(unsigned long locale = -1);
     void toUpper(unsigned long);
     void FirstCharToLower(unsigned long);
     void FirstCharToUpper(unsigned long);
     int findOneOf(char const*, int) const;
-    int find(char, int) const;
+    int find(char c, int startIdx = 0) const;
     int rfind(char) const;
-    CStr2 substr(int, int) const;
-    int findsubstr(char const*, int) const;
+    CStr2 substr(int pos, int endpos = npos) const;
+    int findsubstr(char const*, int offset = 0) const;
     int del(int, int);
     int format(char const*, ...);
     static CStr2 format_(char const*, ...);
     int Write(m3d::fs::IStream&);
     int Read(m3d::fs::IStream&);
 
-    //CStr2& operator=(CStr2 const&);
+    CStr& operator=(CStr const& rhs);
     //bool operator==(CStr2 const&) const;
     //CStr2& operator+(CStr2 const&);
     //CStr2& operator+(int);
 };
 
+bool operator==(CStr const& lhs, CStr const& rhs);
+bool operator!=(CStr const& lhs, CStr const& rhs);
+bool operator<(CStr const& lhs, CStr const& rhs);
+CStr operator+(CStr lhs, CStr const& rhs);

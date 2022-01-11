@@ -818,7 +818,7 @@ namespace ai
     {
         Modifier modifier;
         modifier.m_PropertyName = propertyName;
-        toLower(modifier.m_PropertyName);
+        modifier.m_PropertyName.toLower();
         modifier.m_SenderID = -1;
         modifier.ReadFromStr(modification);
         m_modifiers.push_back(std::move(modifier));
@@ -848,7 +848,7 @@ namespace ai
         {
             Modifier modifier;
             modifier.m_PropertyName = propertyName;
-            toLower(modifier.m_PropertyName);
+            modifier.m_PropertyName.toLower();
             modifier.m_SenderID = m_objId;
             modifier.ReadFromStr(modification);
             receiverObj->AddModifier(modifier);

@@ -90,18 +90,18 @@ namespace m3d
         char buf[0x400] = { 0 };
         ::GetCurrentDirectoryA(sizeof(buf), buf);
         CStr logFile(buf);
-        logFile += '\\';
+        logFile += "\\";
         logFile += fileName;
         UnifyFileName(logFile);
-        std::ofstream logStream(logFile);
+        std::ofstream logStream(logFile.c_str());
         if (logStream)
         {
             auto const timestamp = time(NULL);
             CStr timeStr = asctime(localtime(&timestamp));
-            timeStr.erase(timeStr.size() - 1);
+            timeStr[timeStr.length() - 1] = '\0';
             logStream <<
                 "---------------------------------------------- Log begins on " <<
-                timeStr <<
+                timeStr.c_str() <<
                 " ----------------------------------------------" <<
                 std::endl;
             if (m_flushImmediately)
