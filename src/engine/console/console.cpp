@@ -118,6 +118,15 @@ int ConsoleImp::InputLine(CStr const&)
     throw std::logic_error("Not implemented");
 }
 
+ConsoleImp::ConsoleImp()
+{
+}
+
+ConsoleImp::ConsoleImp(ConsoleImp const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
 ConsoleImp::~ConsoleImp()
 {
     throw std::logic_error("Not implemented");

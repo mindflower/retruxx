@@ -139,8 +139,13 @@ namespace m3d
             {
                 WNDCLASS wndClass = {};
                 wndClass.lpfnWndProc = &Application::WndProc;
+                wndClass.cbClsExtra = 0;
+                wndClass.cbWndExtra = 0;
                 wndClass.hInstance = hInstance; //TODO: not sure about hInstance
                 wndClass.hIcon = hIcon;
+                wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+                wndClass.hbrBackground = 0;
+                wndClass.lpszMenuName = 0;
                 wndClass.lpszClassName = TEXT("Miracle3d");
                 ::RegisterClass(&wndClass);
 
@@ -155,8 +160,8 @@ namespace m3d
                     windowStyle,
                     CW_USEDEFAULT,
                     CW_USEDEFAULT,
+                    rc.right - rc.left,
                     rc.bottom - rc.top,
-                    rc.left - rc.right,
                     NULL,
                     NULL,
                     hInstance,
