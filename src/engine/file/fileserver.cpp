@@ -180,7 +180,7 @@ namespace m3d
                         token = tokens2.front();
                     }
                     std::string_view view(token.c_str());
-                    if (view.rfind(".GDP") != CStr::npos)
+                    if (view.rfind(".GDP") != CStr_npos)
                     {
                         InternalAddPackage(token);
                     }

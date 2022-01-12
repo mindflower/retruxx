@@ -55,8 +55,6 @@ namespace m3d
         IConHandler* GetHandler() const;
         char const* GetName() const;
 
-        bool operator==(CVar const& rhs) const;
-
     private:
         CStr m_name;
         eType m_type = CVAR_UNDEFINED;
@@ -71,5 +69,7 @@ namespace m3d
         CStr m_s;
         char* m_defaultValue = nullptr;
         IConHandler* m_handler = nullptr;
+
+        bool operator==(CVar const& rhs) const;
     };
 }

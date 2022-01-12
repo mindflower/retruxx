@@ -491,7 +491,7 @@ namespace m3d
     {
         CStr const ext(extStr);
         auto const pos = ext.find(':');
-        if (pos == CStr::npos)
+        if (pos == CStr_npos)
         {
             M3D_LOG_INFO("ChildNodeFromXmlFile: invalid 'extern' format : " + ext);
             return nullptr;

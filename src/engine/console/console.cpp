@@ -214,11 +214,11 @@ int ConsoleImp::Load(CStr const& fname)
             });
             if (itLoaded != m_loadedValues.end())
             {
-                *itLoaded = std::move(val);
+                *itLoaded = val;
             }
             else
             {
-                m_loadedValues.push_back(std::move(val));
+                m_loadedValues.push_back(val);
             }
         }
         return 1;

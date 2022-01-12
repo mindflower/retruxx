@@ -194,7 +194,7 @@ namespace m3d
         {
             if (!src.empty())
             {
-                if (src.find('^') == CStr::npos)
+                if (src.find('^') == CStr_npos)
                 {
                     //TODO: check correctness
                     return src;

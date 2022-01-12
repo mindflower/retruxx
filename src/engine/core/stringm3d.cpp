@@ -32,7 +32,7 @@ CStr DirectoryFromFileName(CStr const& source)
     auto result = source;
     UnifyFileName0(result);
     auto pos = result.rfind('/');
-    if (pos != CStr::npos)
+    if (pos != CStr_npos)
     {
         //TODO: check this
         return result.substr(0, pos);
@@ -45,7 +45,7 @@ CStr NameFromFileName(CStr const& source)
     auto result = source;
     UnifyFileName0(result);
     auto pos = result.rfind('/');
-    if (pos != CStr::npos)
+    if (pos != CStr_npos)
     {
         //TODO: check this
         return result.substr(pos+1);
@@ -66,6 +66,7 @@ CStr2::ZeroCharHolder::operator char*()
 void CStr2::cleanup()
 {
     delete[] m_charPtr;
+    m_charPtr = nullptr;
     m_allocSz = 0;
 }
 
@@ -202,6 +203,11 @@ CStr2::CStr2(char const* str)
         realloc(len + 1);
         strcpy(m_charPtr, str);
     }
+    else
+    {
+        realloc(1);
+        m_charPtr[0] = '\0';
+    }
 }
 
 CStr2::CStr2(char, int)
@@ -211,10 +217,19 @@ CStr2::CStr2(char, int)
 
 CStr2::CStr2(CStr2 const& s)
 {
+    if (this == &s)
+    {
+        return;
+    }
     if (s.length() > 0)
     {
         realloc(s.length() + 1);
         strcpy(m_charPtr, s.c_str());
+    }
+    else
+    {
+        realloc(1);
+        m_charPtr[0] = '\0';
     }
 }
 
@@ -227,6 +242,7 @@ CStr2::CStr2()
 CStr2::~CStr2()
 {
     delete[] m_charPtr;
+    m_charPtr = nullptr;
 }
 
 int CStr2::length() const
@@ -330,7 +346,7 @@ CStr2 CStr2::substr(int pos, int endpos) const
     //TODO: check this
     assert(m_charPtr);
     std::string_view const view(m_charPtr);
-    if (endpos == npos)
+    if (endpos == CStr_npos)
     {
         return view.substr(pos).data();
     }
@@ -413,5 +429,6 @@ CStr operator+(CStr lhs, CStr const& rhs)
     lhs += rhs;
     return lhs;
 }
+
 
 

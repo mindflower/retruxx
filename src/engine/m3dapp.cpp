@@ -584,7 +584,7 @@ namespace m3d
         {
             codePage = CP_UTF8;
         }
-        else if (auto const offset = codePageName.findsubstr("windows-"); offset != CStr::npos)
+        else if (auto const offset = codePageName.findsubstr("windows-"); offset != CStr_npos)
         {
             codePage = std::atoi(codePageName.substr(strlen("windows-")).c_str());
         }

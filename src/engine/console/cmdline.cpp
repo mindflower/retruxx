@@ -26,7 +26,7 @@ namespace m3d
                     }
                 }
             }
-            m_params.push_back(std::move(param));
+            m_params.push_back(param);
         }
         return m_params.size();
     }

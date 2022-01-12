@@ -30,7 +30,7 @@ namespace m3d
                     CStr path;
                     SafeStrAttrib(name, fileNode, "name");
                     SafeStrAttrib(path, fileNode, "path");
-                    m_textureFiles.emplace(std::move(name), std::move(path));
+                    m_textureFiles.emplace(name, path);
                 }
             }
             else

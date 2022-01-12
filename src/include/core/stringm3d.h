@@ -18,6 +18,7 @@ namespace m3d
     }
 }
 
+constexpr auto CStr_npos{-1};
 //string class with restricted fields for dlls
 class CStr2
 {
@@ -36,7 +37,7 @@ public:
     char* m_charPtr = nullptr;
     int m_allocSz = 0;
     ZeroCharHolder ZERO;
-    static constexpr auto npos{ -1 };
+    //static constexpr auto npos{ -1 };
 
 private:
     void cleanup();
@@ -83,7 +84,7 @@ public:
     int findOneOf(char const*, int) const;
     int find(char c, int startIdx = 0) const;
     int rfind(char) const;
-    CStr2 substr(int pos, int endpos = npos) const;
+    CStr2 substr(int pos, int endpos = CStr_npos) const;
     int findsubstr(char const*, int offset = 0) const;
     int del(int, int);
     int format(char const*, ...);

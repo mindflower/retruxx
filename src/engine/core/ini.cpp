@@ -59,7 +59,7 @@ namespace m3d
             size_t start;
             size_t end = 0;
             std::string_view view(str->c_str());
-            while ((start = view.find_first_not_of(chars, end)) != CStr::npos)
+            while ((start = view.find_first_not_of(chars, end)) != CStr_npos)
             {
                 end = view.find(chars, start);
                 tokens.push_back(str->substr(start, end - start));

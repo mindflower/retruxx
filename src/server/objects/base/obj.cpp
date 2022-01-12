@@ -726,7 +726,7 @@ namespace ai
             if (auto const idx = _GetIndexByEventId(eventId); idx == -1)
             {
                 EventRecipientInfo info{eventId, {objId}};
-                m_eventRecipients.push_back(std::move(info));
+                m_eventRecipients.push_back(info);
             }
             else
             {
@@ -822,7 +822,7 @@ namespace ai
         modifier.m_PropertyName.toLower();
         modifier.m_SenderID = -1;
         modifier.ReadFromStr(modification);
-        m_modifiers.push_back(std::move(modifier));
+        m_modifiers.push_back(modifier);
     }
 
     bool Obj::IsAlive() const

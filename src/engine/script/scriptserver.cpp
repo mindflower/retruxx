@@ -241,10 +241,10 @@ namespace m3d
         lua_settable(L, -10001);
 
         auxFuncDesc desc;
-        desc.returnValue = returnValue;
+        desc.returnValue = CStr(returnValue);
         desc.params = params;
         desc.shortDesc = shortDesc;
-        m_funcDescs.emplace(name, std::move(desc));
+        m_funcDescs.emplace(name, desc);
 
         return SUCCESS;
     }
