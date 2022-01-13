@@ -21,8 +21,17 @@ namespace m3d
         class IniFile : public IBase
         {
         public:
-        protected:
-        private:
+            virtual ~IniFile() = default;
+            virtual int Read(m3d::fs::IStream&) = 0;
+            virtual int Write(m3d::fs::IStream&) = 0;
+            virtual char const* GetError() = 0;
+            virtual char const* GetString(CStr const&, CStr const&) = 0;
+            virtual int GetInteger(CStr const&, CStr const&) = 0;
+            virtual unsigned int GetHex(CStr const&, CStr const&) = 0;
+            virtual float GetFloat(CStr const&, CStr const&) = 0;
+            virtual void SetString(CStr const&, CStr const&, CStr const&) = 0;
+            virtual void SetInteger(CStr const&, CStr const&, int) = 0;
+            virtual void SetFloat(CStr const&, CStr const&, float) = 0;
         };
 
         //IMPORTANT: fields and members order is strict
@@ -140,6 +149,36 @@ public:
 private:
     TiXmlNode* GetDeclarationNode();
 
+};
+
+class IniFileImpl : public m3d::cmn::IniFile
+{
+public:
+    IniFileImpl();
+    virtual int Write(m3d::fs::IStream&);
+    virtual char const* GetError();
+    virtual unsigned int GetHex(CStr const&, CStr const&);
+    virtual void SetString(CStr const&, CStr const&, CStr const&);
+    virtual int GetInteger(CStr const&, CStr const&);
+    virtual float GetFloat(CStr const&, CStr const&);
+    virtual ~IniFileImpl();
+    virtual char const* GetString(CStr const&, CStr const&);
+    virtual int Read(m3d::fs::IStream&);
+    virtual void SetInteger(CStr const&, CStr const&, int);
+    virtual void SetFloat(CStr const&, CStr const&, float);
+
+private:
+    virtual int IncRef();
+    bool FindSection(m3d::cmn::XmlNode*, CStr const&);
+    bool AddKey(m3d::cmn::XmlNode*, CStr const&, CStr const&, CStr const&);
+    virtual int DecRef();
+    virtual void* QueryIface(char const*);
+    bool FindKey(m3d::cmn::XmlNode*, CStr const&, CStr const&);
+
+private:
+    int m_refCount = 0;
+    IBase* m_parent = 0;
+    m3d::cmn::XmlFile* m_file = nullptr;
 };
 
 //IMPORTANT: fields and members order is strict

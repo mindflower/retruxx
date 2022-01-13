@@ -129,7 +129,7 @@ namespace m3d
 
     cmn::IniFile* Kernel::CreateIniFile()
     {
-        throw std::logic_error("Not implemented");
+        return new IniFileImpl;
     }
 
     unsigned Kernel::debugMemOverhead() const

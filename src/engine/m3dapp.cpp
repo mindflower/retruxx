@@ -63,9 +63,9 @@ namespace
         M3D_LOG_INFO("d3d: " + str);
     }
 
-    void logSoundFunc(CStr const&)
+    void __fastcall logSoundFunc(CStr const& str)
     {
-        throw std::logic_error("Not implemented");
+        M3D_LOG_INFO("snd: " + str);
     }
 
     m3d::CConsoleCommands conCommands[] = {
@@ -93,7 +93,9 @@ namespace
         {"s_modelsInfo", 22},
     };
 
-    using CreateIRendererType = int (*)(m3d::Kernel*);
+    using CreateIRendererType = m3d::rend::IRenderer* (*)(m3d::Kernel*);
+    using CreateIInputType = m3d::input::IInput* (*)(m3d::Kernel*);
+    using CreateISoundType = snd::ISound* (*)(m3d::Kernel*);
 }
 
 namespace m3d
@@ -622,7 +624,7 @@ namespace m3d
             M3D_LOG_ERR("ERROR! Application::CreateRenderer -- cannot get factory");
         }
 
-        m_renderer = reinterpret_cast<rend::IRenderer*>(createIRenderer(g_Kernel));
+        m_renderer = createIRenderer(g_Kernel);
         m_renderer->IncRef();
         M3D_LOG_INFO("NOTE! renderer is bind to " + inputDriverName);
         return true;
@@ -670,13 +672,13 @@ namespace m3d
             M3D_LOG_ERR("GetLastError() = " + CStr(::GetLastError()));
             return 0;
         }
-        auto createIInput = ::GetProcAddress(m_hInputDll, "createIInput");
+        auto createIInput = reinterpret_cast<CreateIInputType>(::GetProcAddress(m_hInputDll, "createIInput"));
         if (createIInput == NULL)
         {
             M3D_LOG_ERR("ERROR! Application::CreateInput -- cannot get factory");
         }
 
-        m_input = reinterpret_cast<input::IInput*>(createIInput());
+        m_input = createIInput(g_Kernel);
         m_input->IncRef();
         M3D_LOG_INFO("NOTE! input is bind to " + inputDriverName);
         return 1;
@@ -700,7 +702,7 @@ namespace m3d
             config.m_mus_Enable.SetB(false);
             return 0;
         }
-        auto createISound = ::GetProcAddress(m_hSoundDll, "createISound");
+        auto createISound = reinterpret_cast<CreateISoundType>(::GetProcAddress(m_hSoundDll, "createISound"));
         if (createISound == NULL)
         {
             M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot get factory");
@@ -710,7 +712,7 @@ namespace m3d
         }
         for (int trial = 0; trial < 3; ++trial)
         {
-            m_sound = reinterpret_cast<snd::ISound*>(createISound());
+            m_sound = createISound(g_Kernel);
             if (m_sound != nullptr)
             {
                 break;

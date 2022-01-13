@@ -180,7 +180,9 @@ namespace m3d
 
         FILETIME RawFile::GetDate() const
         {
-            throw std::logic_error("Not implemented");
+            BY_HANDLE_FILE_INFORMATION info{};
+            ::GetFileInformationByHandle(m_hFile, &info);
+            return info.ftLastWriteTime;
         }
 
         unsigned RawFile::GetPosition()

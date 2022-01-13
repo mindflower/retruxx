@@ -11,6 +11,11 @@ public:
         assert(nullptr != m_ptr);
     }
 
+    ~scoped_ptr()
+    {
+        delete m_ptr;
+    }
+
     T& operator*()
     {
         assert(nullptr != m_ptr);

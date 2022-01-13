@@ -74,7 +74,12 @@ namespace m3d
 
         FILETIME FileReader::GetDate() const
         {
-            throw std::logic_error("Not implemented");
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->GetDate();
+            }
+            return FILETIME{};
         }
 
         bool FileReader::IsOpen()

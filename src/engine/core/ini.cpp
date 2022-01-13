@@ -182,6 +182,172 @@ TiXmlNode* XmlFileImpl::GetDeclarationNode()
     throw std::logic_error("Not implemented");
 }
 
+IniFileImpl::IniFileImpl() : m_file(m3d::g_Kernel->CreateXmlFile())
+{
+}
+
+int IniFileImpl::Write(m3d::fs::IStream&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+char const* IniFileImpl::GetError()
+{
+    throw std::logic_error("Not implemented");
+}
+
+unsigned IniFileImpl::GetHex(CStr const&, CStr const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void IniFileImpl::SetString(CStr const&, CStr const&, CStr const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int IniFileImpl::GetInteger(CStr const&, CStr const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+float IniFileImpl::GetFloat(CStr const& section, CStr const& key)
+{
+    return strtof(GetString(section, key), nullptr);
+}
+
+IniFileImpl::~IniFileImpl()
+{
+    if (m_file)
+    {
+        m_file->DecRef();
+    }
+}
+
+char const* IniFileImpl::GetString(CStr const& section, CStr const& key)
+{
+    ref_ptr node = m_file->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    FindKey(node, section, key);
+    if (node->IsEmpty())
+    {
+        return "";
+    }
+    return node->GetValue();
+
+}
+
+int IniFileImpl::Read(m3d::fs::IStream& in)
+{
+    return m_file->Read(in);
+}
+
+void IniFileImpl::SetInteger(CStr const&, CStr const&, int)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void IniFileImpl::SetFloat(CStr const&, CStr const&, float)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int IniFileImpl::IncRef()
+{
+    if (m_parent)
+    {
+        m_parent->IncRef();
+    }
+    return ++m_refCount;
+}
+
+bool IniFileImpl::FindSection(m3d::cmn::XmlNode* writeTo, CStr const& section)
+{
+    ref_ptr node = m_file->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    if (m_file->GetFirstChild_(node, "Ini"))
+    {
+        node->GetFirstChild_(writeTo, "Section");
+        while (!writeTo->IsEmpty())
+        {
+            if (writeTo->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
+            {
+                auto attr = writeTo->GetAttribute("name");
+                if (attr)
+                {
+                    if (section == attr)
+                    {
+                        break;
+                    }
+                }
+            }
+            writeTo->GetNextSibling_(writeTo, "Section");
+        }
+    }
+    return !writeTo->IsEmpty();
+}
+
+bool IniFileImpl::AddKey(m3d::cmn::XmlNode*, CStr const&, CStr const&, CStr const&)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int IniFileImpl::DecRef()
+{
+    --m_refCount;
+    auto const ret = m_refCount;
+    if (m_parent)
+    {
+        m_parent->DecRef();
+    }
+    if (m_refCount <= 0)
+    {
+        IniFileImpl::~IniFileImpl();
+    }
+    return ret;
+}
+
+void* IniFileImpl::QueryIface(char const*)
+{
+    throw std::logic_error("Not implemented");
+}
+
+bool IniFileImpl::FindKey(m3d::cmn::XmlNode* writeTo, CStr const& section, CStr const& key)
+{
+    if (!FindSection(writeTo, section))
+    {
+        return false;
+    }
+    writeTo->GetFirstChild_(writeTo, "Key");
+    while (!writeTo->IsEmpty())
+    {
+        if (writeTo->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
+        {
+            auto attr = writeTo->GetAttribute("name");
+            if (attr)
+            {
+                if (attr == key)
+                {
+                    break;
+                }
+            }
+        }
+        writeTo->GetNextSibling_(writeTo, "Key");
+    }
+    if (writeTo->IsEmpty())
+    {
+        return false;
+    }
+    writeTo->GetFirstChild_(writeTo, nullptr);
+    while (!writeTo->IsEmpty())
+    {
+        if (writeTo->IsOfType(m3d::cmn::XML_NODE_TEXT))
+        {
+            break;
+        }
+        writeTo->GetNextSibling_(writeTo, nullptr);
+    }
+    return !writeTo->IsEmpty();
+}
+
 bool XmlNodeImpl::HasChildOrAttribute() const
 {
     throw std::logic_error("Not implemented");
@@ -196,7 +362,7 @@ bool XmlNodeImpl::AddBeforeChild(m3d::cmn::XmlNode const* addBefore, m3d::cmn::X
 
 char const* XmlNodeImpl::GetValue() const
 {
-    throw std::logic_error("Not implemented");
+    return m_node->Value().c_str();
 }
 
 bool XmlNodeImpl::GetFirstAttribute(m3d::cmn::XmlAttrib* writeTo) const

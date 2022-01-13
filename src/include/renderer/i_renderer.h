@@ -854,10 +854,10 @@ namespace m3d
             virtual float GetMaxPointSize() = 0;
             virtual float GetMaxNPatchTessellationLevel() = 0;
             virtual int GetMaxVertexShaderConst() = 0;
-            virtual TexHandle* AddTexture(m3d::rend::TexHandle* result, const CStr*, unsigned int) = 0;
-            virtual TexHandle* AddDynamicTexture(m3d::rend::TexHandle* result, const char*, int, int, unsigned int) = 0;
-            virtual TexHandle* AddRenderTargetTexture(m3d::rend::TexHandle* result, const char*, int, int) = 0;
-            virtual TexHandle* GetBufferedTargetTexture(m3d::rend::TexHandle* result, int) = 0;
+            virtual TexHandle AddTexture(CStr const&, unsigned int) = 0;
+            virtual TexHandle AddDynamicTexture(const char*, int, int, unsigned int) = 0;
+            virtual TexHandle AddRenderTargetTexture(const char*, int, int) = 0;
+            virtual TexHandle GetBufferedTargetTexture(int) = 0;
             virtual TexHandle GetFullFrameFrameBufferTexture() = 0;
             virtual int ReloadTextures() = 0;
             virtual bool ReportTexturesInfo(const char*) = 0;
@@ -918,7 +918,7 @@ namespace m3d
             virtual void RelToAbs(float&, float&) = 0;
             virtual void AbsToRel(float&, float&) = 0;
             virtual unsigned int AddTextureFromBackBuffer(m3d::rend::TexHandle result) = 0;
-            virtual m3d::rend::TexHandle* AddTextureFromBackBuffer(m3d::rend::TexHandle* result, int, int) = 0;
+            virtual m3d::rend::TexHandle AddTextureFromBackBuffer(int, int) = 0;
             virtual void ScreenShot(const char*, int, int) = 0;
             virtual int SaveTextureToTgaFile(m3d::rend::TexHandle, const char*) = 0;
             virtual char* GetCurBppStr(int*) = 0;

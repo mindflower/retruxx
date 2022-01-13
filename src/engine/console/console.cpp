@@ -281,7 +281,39 @@ void ConsoleImp::ScrollUp(int)
 
 void ConsoleImp::CheckResize(int newWidth, int newHeight)
 {
-    throw std::logic_error("Not implemented");
+    m_con.width = newWidth;
+    m_con.height = newHeight;
+    auto newLineWidth = newWidth / m_FontSizeX - 2;
+    if (newLineWidth != m_con.linewidth)
+    {
+        if (newLineWidth >=1)
+        {
+            auto lineWidth = m_con.linewidth;
+            auto totalLines = m_con.totallines;
+            m_con.linewidth = newLineWidth;
+            m_con.totallines = sizeof(m_con.text) / m_con.linewidth;
+            //TODO: console text reorder
+            //if(m_con.totallines < totalLines)
+            //{
+            //    totalLines = m_con.totallines;
+            //}
+            //if (m_con.linewidth < lineWidth)
+            //{
+            //    lineWidth = m_con.linewidth;
+            //}
+            //char buffer[sizeof(m_con.text)] = { 0 };
+            //memcpy(buffer, m_con.text, sizeof(m_con.text));
+            //memset(m_con.text, 0x20, sizeof(m_con.text));
+        }
+        else
+        {
+            m_con.linewidth = 38;
+            m_con.totallines = 1724;
+            memset(m_con.text, 0x20, sizeof(m_con.text));
+        }
+        m_con.current = m_con.totallines - 1;
+        m_con.display = m_con.totallines - 1;
+    }
 }
 
 void ConsoleImp::RegisterCVar(m3d::CVar* var, IConHandler* handler)
