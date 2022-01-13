@@ -7,6 +7,19 @@
 #include <core/ref_ptr.h>
 #include <core/console/cvar.h>
 
+namespace
+{
+    m3d::CConsoleCommands conCommands[] = {
+        {"conClear" , 0},
+        {"conDump" , 1},
+        {"conCVarList" , 2},
+        {"conCmdList" , 3},
+        {"conDebug" , 4},
+        {"conExec" , 5},
+        {"conScript" , 6},
+    };
+}
+
 namespace m3d
 {
     void CConsoleParams::Set(char const*)
@@ -182,9 +195,24 @@ void ConsoleImp::ScrollDown(int)
     throw std::logic_error("Not implemented");
 }
 
-void ConsoleImp::Init(int, int)
+void ConsoleImp::Init(int width, int height)
 {
-    throw std::logic_error("Not implemented");
+    RegisterConsoleCommands();
+    m_con.width = width;
+    m_con.text[0] = 0;
+    m_con.current = 0;
+    m_con.x = 0;
+    m_con.display = 0;
+    m_con.totallines = 0;
+    m_con.vislines = 0;
+    m_con.linewidth = -1;
+    m_con.height = height;
+    m_FontSizeX = 10;
+    m_FontSizeY = 14;
+    m_screensize = 0.5;
+    CheckResize(width, height);
+    m_csCurState = CONSOLE_CLOSED;
+
 }
 
 int ConsoleImp::Load(CStr const& fname)
@@ -251,7 +279,7 @@ void ConsoleImp::ScrollUp(int)
     throw std::logic_error("Not implemented");
 }
 
-void ConsoleImp::CheckResize(int, int)
+void ConsoleImp::CheckResize(int newWidth, int newHeight)
 {
     throw std::logic_error("Not implemented");
 }
@@ -322,7 +350,10 @@ void ConsoleImp::Clear()
 
 void ConsoleImp::RegisterConsoleCommands()
 {
-    throw std::logic_error("Not implemented");
+    for (auto const& command : conCommands)
+    {
+        RegisterCommand(command.m_name, command.m_id, this);
+    }
 }
 
 void ConsoleImp::executeCmdFile(char const*)

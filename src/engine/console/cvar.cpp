@@ -96,29 +96,59 @@ namespace m3d
             {
             case CVAR_INT:
             {
-                if (sscanf_s(value, "%d", &m_i) == 0)
+                if (sscanf_s(value, "%d", &m_i))
+                {
+                    m_s = value;
+                }
+                else
                 {
                     m_i = 0;
+                    m_s = "\" \"";
                 }
                 break;
             }
             case CVAR_FLOAT:
             {
-                if (sscanf_s(value, "%f", &m_f) == 0)
+                if (sscanf_s(value, "%f", &m_f))
+                {
+                    m_s = value;
+                }
+                else
                 {
                     m_f = 0.0;
+                    m_s = "\" \"";
                 }
                 break;
             }
             case CVAR_BOOL:
             {
-                if (sscanf_s(value, "%d", &m_i) == 0)
+                if (sscanf_s(value, "%d", &m_i))
                 {
-                    m_b = false;
+                    m_b = m_i > 0;
+                    if (m_b)
+                    {
+                        m_s = "true";
+                    }
+                    else
+                    {
+                        m_s = "false";
+                    }
                 }
                 else
                 {
-                    m_b = m_i > 0;
+                    m_b =
+                        !stricmp(value, "yes") ||
+                        !stricmp(value, "yeah") ||
+                        !stricmp(value, "yep") ||
+                        !stricmp(value, "true");
+                    if (m_b)
+                    {
+                        m_s = "true";
+                    }
+                    else
+                    {
+                        m_s = "false";
+                    }
                 }
                 break;
             }
@@ -127,13 +157,15 @@ namespace m3d
                 m_color = strToColor(value, 0xFFFFFFFF);
                 break;
             }
-            case CVAR_UNDEFINED:
-            {
-                m_type = CVAR_STRING;
-                [[fallthrough]];
-            }
             case CVAR_STRING:
             {
+                m_type = CVAR_STRING;
+                m_s = value;
+                break;
+            }
+            default:
+            {
+                m_type = CVAR_STRING;
                 m_s = value;
                 break;
             }

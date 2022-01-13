@@ -61,15 +61,15 @@ private:
 public:
     struct auxConsole
     {
-        char text[65536];
-        int current;
-        int x;
-        int display;
-        int linewidth;
-        int totallines;
-        int vislines;
-        int width;
-        int height;
+        char text[65536] = {0};
+        int current = 0;
+        int x = 0;
+        int display = 0;
+        int linewidth = -1;
+        int totallines = 0;
+        int vislines = 0;
+        int width = 0;
+        int height = 0;
     };
 
 private:
@@ -88,9 +88,9 @@ public:
     };
 
 private:
-    int m_FontSizeX;
-    int m_FontSizeY;
-    float m_screensize;
+    int m_FontSizeX = 0;
+    int m_FontSizeY = 0;
+    float m_screensize = 0.0;
     bool m_bDrawNotify = false;
     int m_nNumNotify = 5;
 
