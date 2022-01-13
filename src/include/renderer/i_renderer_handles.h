@@ -26,7 +26,7 @@ namespace m3d
             
             bool IsValid() const
             {
-                throw std::logic_error("Not implemented");
+                return m_handle >= 0;
             }
             
             bool operator==(Handle<T> const&) const

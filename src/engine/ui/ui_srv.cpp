@@ -1,4 +1,8 @@
+#include <m3dapp.h>
 #include <stdexcept>
+#include <core/ini.h>
+#include <core/log.h>
+#include <core/ref_ptr.h>
 #include <ui/ui_srv.h>
 #include <ui/frame.h>
 
@@ -115,8 +119,127 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int ui::GfxServer::SetSchema(CStr const&)
+    int ui::GfxServer::SetSchema(CStr const& name)
     {
+        if (name.empty())
+        {
+            return 0;
+        }
+        CStr err;
+        ref_ptr xmlFile = ReadXmlFile(name.c_str(), &err);
+        if (!xmlFile)
+        {
+            M3D_LOG_INFO("SetSchema: " + err);
+            return 0;
+        }
+        ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+        xmlFile->GetFirstChild_(node, "resource");
+        if (node->IsEmpty())
+        {
+            M3D_LOG_INFO("GfxServer:: Create cannot find resources in " + name);
+            return 0;
+        }
+        node->GetFirstChild_(node, "schema");
+        if (node->IsEmpty())
+        {
+            M3D_LOG_INFO("GfxServer:: Create cannot find schema in " + name);
+            return 0;
+        }
+
+        CStr sliderBody = node->GetAttribute("sliderBody");
+        if (!sliderBody.empty())
+        {
+            m_texTheme[8] = Application::g_pApp->m_renderer->AddTexture(sliderBody, 4);
+        }
+        if (m_texTheme[8].IsValid())
+        {
+            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[8], rend::TM_WRAP_S, 1);
+            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[8], rend::TM_WRAP_T, 1);
+        }
+        CStr sliderThumb = node->GetAttribute("sliderThumb");
+        if (!sliderThumb.empty())
+        {
+            m_texTheme[9] = Application::g_pApp->m_renderer->AddTexture(sliderThumb, 4);
+        }
+        if (m_texTheme[9].IsValid())
+        {
+            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[9], rend::TM_WRAP_S, 3);
+            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[9], rend::TM_WRAP_T, 3);
+        }
+        CStr sliderLeft = node->GetAttribute("sliderLeft");
+        if (!sliderLeft.empty())
+        {
+            m_texTheme[10] = Application::g_pApp->m_renderer->AddTexture(sliderLeft, 4);
+        }
+        if (m_texTheme[10].IsValid())
+        {
+            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[10], rend::TM_WRAP_S, 3);
+            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[10], rend::TM_WRAP_T, 3);
+        }
+        CStr sliderRight = node->GetAttribute("sliderRight");
+        if (!sliderRight.empty())
+        {
+            m_texTheme[11] = Application::g_pApp->m_renderer->AddTexture(sliderRight, 4);
+        }
+        if (m_texTheme[11].IsValid())
+        {
+            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[11], rend::TM_WRAP_S, 3);
+            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[11], rend::TM_WRAP_T, 3);
+        }
+
+        m_colors[0] = -1870626688;
+        m_colors[1] = -1863257872;
+        m_colors[2] = -1868521312;
+        m_colors[3] = -2139062144;
+        m_colors[4] = -8421505;
+        m_colors[5] = -1;
+
+        struct
+        {
+            const char* str = nullptr;
+            unsigned int id = 0;
+        } colors[6];
+        colors[0].str = "clrDefault";
+        colors[0].id = 0;
+        colors[1].str = "clrSelected";
+        colors[1].id = 1;
+        colors[2].str = "clrMouseover";
+        colors[2].id = 2;
+        colors[3].str = "clrWndDisable";
+        colors[3].id = 3;
+        colors[4].str = "clrTextDisable";
+        colors[4].id = 4;
+        colors[5].str = "clrTextDefault";
+        colors[5].id = 5;
+        for (auto& color : colors)
+        {
+            unsigned clr = 0;
+            SafeClrAttrib(clr, node, color.str);
+            if (color.id < 0xFF)
+            {
+                m_colors[color.id] = clr;
+            }
+        }
+        if (!m3d::SafeIntAttrib(m_cornerSz, node, "cornerSize"))
+        {
+            m_cornerSz = 32;
+        }
+        if (!m3d::SafeIntAttrib(m_btnWidth, node, "btnWidth"))
+        {
+            m_btnWidth = 50;
+        }
+        if (!m3d::SafeIntAttrib(m_btnHeight, node, "btnHeight"))
+        {
+            m_btnHeight = 140;
+        }
+        if (!m3d::SafeIntAttrib(m_sliderHeight, node, "sliderHeight"))
+        {
+            m_sliderHeight = 32;
+        }
+        if (!m3d::SafeFloatAttrib(m_sliderNotchWidthRatio, node, "sliderNotchWidthRatio"))
+        {
+            m_sliderNotchWidthRatio = 0.75;
+        }
         throw std::logic_error("Not implemented");
     }
 

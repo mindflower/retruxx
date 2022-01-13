@@ -50,6 +50,42 @@ namespace m3d
         return 1;
     }
 
+    bool SafeClrAttrib(unsigned& clr, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        CStr str;
+        if (SafeStrAttrib(str, node, attrib) && !str.empty())
+        {
+            std::istringstream iss(str.c_str());
+            iss >> clr;
+            return true;;
+        }
+        return false;
+    }
+
+    bool SafeIntAttrib(int& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        CStr str;
+        if (SafeStrAttrib(str, node, attrib) && !str.empty())
+        {
+            std::istringstream iss(str.c_str());
+            iss >> v;
+            return true;
+        }
+        return false;
+    }
+
+    bool SafeFloatAttrib(float& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        CStr str;
+        if (SafeStrAttrib(str, node, attrib) && !str.empty())
+        {
+            std::istringstream iss(str.c_str());
+            iss >> v;
+            return true;
+        }
+        return false;
+    }
+
     void Tokenize(CStr const* str, std::vector<CStr>& tokens, char const* chars)
     {
         //TODO: check this

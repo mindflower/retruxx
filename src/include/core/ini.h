@@ -113,6 +113,9 @@ namespace m3d
 
     cmn::XmlFile* ReadXmlFile(char const* filename, CStr* errorStr);
     int SafeStrAttrib(CStr&, cmn::XmlNode const*, char const*);
+    bool SafeClrAttrib(unsigned int&, m3d::cmn::XmlNode const*, char const*);
+    bool SafeIntAttrib(int&, m3d::cmn::XmlNode const*, char const*);
+    bool SafeFloatAttrib(float&, m3d::cmn::XmlNode const*, char const*);
     void Tokenize(CStr const*, std::vector<CStr>&, char const*);
 }
 
