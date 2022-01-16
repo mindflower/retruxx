@@ -866,7 +866,7 @@ namespace m3d
             virtual void SetBlackTexture(int) = 0;
             virtual void SetErrorTexture(int) = 0;
             virtual void DisableTextureStages(int) = 0;
-            virtual int ReferenceTexture(const m3d::rend::TexHandle*) = 0;
+            virtual int ReferenceTexture(m3d::rend::TexHandle const&) = 0;
             virtual int ReleaseTexture(m3d::rend::TexHandle&) = 0;
             virtual void SetTextureParameter(m3d::rend::TexHandle const&, m3d::rend::TexParam, unsigned int) = 0;
             virtual int GetTextureName(const m3d::rend::TexHandle*, CStr*) = 0;

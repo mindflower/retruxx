@@ -105,9 +105,47 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int Font::CreateFromPrototype(Font*, float)
+        int Font::CreateFromPrototype(Font* prototype, float heightUnscaled)
         {
-            throw std::logic_error("Not implemented");
+            if (!prototype || heightUnscaled <= 0.0)
+            {
+                return 0;
+            }
+            if (prototype->m_nameShort.empty() || prototype->m_nameFull.empty() || prototype->m_heightUnscaled <= 0.0)
+            {
+                return 0;
+            }
+            Clear();
+            m_nameShort = prototype->m_nameShort;
+            m_nameFull = prototype->m_nameFull;
+            m_heightUnscaled = heightUnscaled;
+            auto vieport = Application::g_pApp->m_renderer->GetViewport();
+            m_heightScaled = (vieport.m_width * heightUnscaled) * 0.0009765625;
+            m_scaleTex = (prototype->m_scaleTex / prototype->m_heightScaled) * m_heightScaled;
+            m_textures = prototype->m_textures;
+            for (auto& tex : m_textures)
+            {
+                if (tex.IsValid())
+                {
+                    Application::g_pApp->m_renderer->ReferenceTexture(tex);
+                }
+            }
+            for (int i = 0; i<FontManager::GetTCharDictionary().GetNumOfTChars(); ++i)
+            {
+                auto idx = FontManager::GetTCharDictionary().GetTCharAtPos(i);
+                delete m_symbols[idx];
+                m_symbols[idx] = nullptr;
+                if (prototype->m_symbols[idx])
+                {
+                    m_symbols[idx] = new SymbolInfo;
+                    *m_symbols[idx] = *prototype->m_symbols[idx];
+                    m_symbols[idx]->m_abc.m_A = (m_heightScaled / prototype->m_heightScaled) * prototype->m_symbols[idx]->m_abc.m_A;
+                    m_symbols[idx]->m_abc.m_B = (m_heightScaled / prototype->m_heightScaled) * prototype->m_symbols[idx]->m_abc.m_B;
+                    m_symbols[idx]->m_abc.m_C = (m_heightScaled / prototype->m_heightScaled) * prototype->m_symbols[idx]->m_abc.m_C;
+                }
+            }
+            PrecalcSymbolsSizes();
+            return 1;
         }
 
         FontType Font::GetType() const
@@ -228,8 +266,99 @@ namespace m3d
             return 1;
         }
 
-        int Font::CreateFromTtf(CStr const&, float, unsigned, unsigned)
+        int Font::CreateFromTtf(CStr const& name, float heightUnscaled, unsigned style,  unsigned charset)
         {
+            //TODO: implement this!!!!!!!!!!!
+            return 0;
+            //Clear();
+            //m_type = FONT_TYPE_WINDOWS;
+            //m_style = style;
+            //auto viewport = Application::g_pApp->m_renderer->GetViewport();
+            //m_nameShort = name;
+            //m_nameFull = CreateNameFull(name, style, FontManager::GetCodePageByCharset(charset));
+            //auto y = (viewport.m_width * heightUnscaled) * 0.0009765625;
+            //PointBase<int> texSz;
+            //if (FontManager::NeedCharSetWChars(charset))
+            //{
+            //    texSz.x = 512;
+            //    texSz.y = 512;
+            //}
+            //else if (y <= 19.0)
+            //{
+            //    if (y <= 13.0)
+            //    {
+            //        texSz.x = 256;
+            //        if (y <= 8.0)
+            //        {
+            //            texSz.y = 128;
+            //        }
+            //        else
+            //        {
+            //            texSz.y = 256;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        texSz.x = 512;
+            //        texSz.y = 256;
+            //    }
+            //}
+            //else
+            //{
+            //    texSz.y = 512;
+            //    texSz.x = 512;
+            //}
+            //m_heightScaled = y;
+            //m_heightUnscaled = heightUnscaled;
+            //m_scaleTex = 1.0;
+            //auto hDc = ::CreateCompatibleDC(NULL);
+            //::SetMapMode(hDc, 1);
+            ////TODO: check this
+            //auto height = static_cast<int>((::GetDeviceCaps(hDc, 90)* y) * 0.013888889);
+            //auto hFont = CreateFontA(
+            //    height,
+            //    0,
+            //    0,
+            //    0,
+            //    (style & 1) != 0 ? 700 : 400,
+            //    (style >> 1) & 1,
+            //    0,
+            //    0,
+            //    charset,
+            //    0,
+            //    0,
+            //    0,
+            //    2,
+            //    name.c_str()
+            //);
+            //if (hFont)
+            //{
+            //    ::SelectObject(hDc, hFont);
+            //    ::SetTextColor(hDc, 0xFFFFFF);
+            //    ::SetBkColor(hDc, 0);
+            //    BITMAPINFO bitmapInfo{};
+            //    bitmapInfo.bmiHeader.biSize = 40;
+            //    bitmapInfo.bmiHeader.biWidth = texSz.x;
+            //    bitmapInfo.bmiHeader.biHeight = -texSz.y;
+            //    bitmapInfo.bmiHeader.biPlanes = 1;
+            //    bitmapInfo.bmiHeader.biBitCount = 24;
+            //
+            //    unsigned x = 0;
+            //    for (int i = 0; i < FontManager::GetTCharDictionary().GetNumOfTChars(); ++i)
+            //    {
+            //        unsigned bits = 0;
+            //        auto hBmp = ::CreateDIBSection(hDc, &bitmapInfo, 0, (void**)&bits, NULL, 0);
+            //        ::SelectObject(hDc, hBmp);
+            //
+            //        SIZE ssize{};
+            //        ::GetTextExtentPoint32A(hDc, FontManager::GetTCharDictionary().GetTChars().c_str() + i, 1, &ssize);
+            //
+            //        ABC abc{};
+            //        ::GetCharABCWidthsA(hDc, FontManager::GetTCharDictionary().GetTCharAtPos(i), FontManager::GetTCharDictionary().GetTCharAtPos(i), &abc);
+            //
+            //        auto width = abc.abcA + abc.abcB + 2;
+            //    }
+            //}
             throw std::logic_error("Not implemented");
         }
 
@@ -279,7 +408,11 @@ namespace m3d
 
         Font::~Font()
         {
-            throw std::logic_error("Not implemented");
+            Clear();
+            for (auto sym: m_symbols)
+            {
+                delete sym;
+            }
         }
 
         void Font::Clear()
@@ -486,11 +619,28 @@ namespace m3d
 
         void FontManager::RearrangeFonts(int id1, int id2)
         {
-            if (id1>=0)
+            //TODO: check this
+            if (id1>=0 && id1<m_fonts.size() && id1 !=id2)
             {
-                
+                if (id1 <=id2)
+                {
+                    do
+                    {
+                        auto font = new Font;
+                        font->CreateFromPrototype(m_fonts[id1], m_fonts[id1]->m_heightUnscaled);
+                        m_fonts.push_back(font);
+                    } while (m_fonts.size() <= id2);
+                    auto temp = m_fonts.back();
+                    m_fonts.back() = m_fonts[id2];
+                    m_fonts[id2] = temp;
+                }
+                else
+                {
+                    auto temp = m_fonts[id1];
+                    m_fonts[id1] = m_fonts[id2];
+                    m_fonts[id2] = temp;
+                }
             }
-            throw std::logic_error("Not implemented");
         }
 
         TCharDictionary const& FontManager::GetTCharDictionary()
@@ -503,14 +653,24 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        Font* FontManager::GetFontById(int) const
+        Font* FontManager::GetFontById(int id) const
         {
-            throw std::logic_error("Not implemented");
+            if (id >=0 && m_fonts.size() > id)
+            {
+                return m_fonts[id];
+            }
+            return 0;
         }
 
-        unsigned FontManager::GetCharsetByCodePage(unsigned)
+        unsigned FontManager::GetCharsetByCodePage(unsigned codePage)
         {
-            throw std::logic_error("Not implemented");
+            CHARSETINFO info{};
+            if (::TranslateCharsetInfo((DWORD*)codePage, &info, 2))
+            {
+                return info.ciCharset;
+            }
+            M3D_LOG_INFO("FontManager::GetCharsetByCodePage error: cannot find charset for code page " + CStr(codePage));
+            return 1;
         }
 
         float FontManager::GetScaledHeight(float) const

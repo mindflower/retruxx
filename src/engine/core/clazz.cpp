@@ -313,7 +313,7 @@ namespace m3d
         {
             if (it->GetName() == name)
             {
-                M3D_LOG_INFO("ChildNodeFromXmlNode: node w/ same name already exists as a child: ",);
+                M3D_LOG_INFO("ChildNodeFromXmlNode: node w/ same name already exists as a child: ");
                 return nullptr;
             }
         }

@@ -1,3 +1,4 @@
+#include <config.h>
 #include <m3dapp.h>
 #include <stdexcept>
 #include <core/ini.h>
@@ -55,7 +56,114 @@ namespace m3d
 
     int ui::GfxServer::ReadFrames()
     {
-        throw std::logic_error("Not implemented");
+        CStr err;
+        CStr filename = g_Kernel->GetEngineCfg().m_ui_pathToFrames.GetS();
+        ref_ptr file = ReadXmlFile(filename.c_str(), &err);
+        if (file)
+        {
+            ref_ptr nodeThemes = file->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+            file->GetFirstChild_(nodeThemes, "Themes");
+            if (nodeThemes->IsEmpty())
+            {
+                M3D_LOG_INFO("cannot parse " + filename);
+                return 0;
+            }
+
+            ref_ptr node = file->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+            nodeThemes->GetFirstChild_(node, "Frames");
+            if (node->IsEmpty())
+            {
+                M3D_LOG_INFO("cannot parse " + filename);
+                return 0;
+            }
+            node->GetFirstChild_(node, "Item");
+            while(node->IsEmpty())
+            {
+                auto frame = new Frame;
+                if (frame->ReadFromXmlNode(node))
+                {
+                    m_frames.push_back(frame);
+                }
+                node->GetNextSibling_(node, "Item");
+            }
+
+            nodeThemes->GetFirstChild_(node, "Backgrounds");
+            if (node->IsEmpty())
+            {
+                M3D_LOG_INFO("cannot parse " + filename);
+                return 0;
+            }
+            node->GetFirstChild_(node, "Item");
+            while (node->IsEmpty())
+            {
+                auto background = new BackGround;
+                if (background->ReadFromXmlNode(node))
+                {
+                    m_backgrounds.push_back(background);
+                }
+                node->GetNextSibling_(node, "Item");
+            }
+
+            nodeThemes->GetFirstChild_(node, "Panes");
+            if (node->IsEmpty())
+            {
+                M3D_LOG_INFO("cannot parse " + filename);
+                return 0;
+            }
+            node->GetFirstChild_(node, "Item");
+            while (node->IsEmpty())
+            {
+                auto pane = new Pane;
+                if (pane->ReadFromXmlNode(node, m_backgrounds, m_frames))
+                {
+                    m_panes.add(pane->m_name, pane);
+                    m_panesVector.push_back(pane);
+                }
+                node->GetNextSibling_(node, "Item");
+            }
+
+            nodeThemes->GetFirstChild_(node, "Scrolls");
+            if (node->IsEmpty())
+            {
+                M3D_LOG_INFO("cannot parse " + filename);
+                return 0;
+            }
+            node->GetFirstChild_(node, "Item");
+            while (node->IsEmpty())
+            {
+                auto scroll = new ScrollPane;
+                if (scroll->ReadFromXmlNode(node))
+                {
+                    m_scrollPanes.push_back(scroll);
+                }
+                node->GetNextSibling_(node, "Item");
+            }
+
+            nodeThemes->GetFirstChild_(node, "GlyphButtons");
+            if (node->IsEmpty())
+            {
+                M3D_LOG_INFO("cannot parse " + filename);
+                return 0;
+            }
+            node->GetFirstChild_(node, "Item");
+            while (node->IsEmpty())
+            {
+                CStr buttonName = node->GetAttribute("name");
+                CStr buttonFile = node->GetAttribute("file");
+                if (!buttonName.empty())
+                {
+                    m_glyphButtonTextures[buttonName] = Application::g_pApp->m_renderer->AddTexture(buttonFile, 4);
+                    if (m_glyphButtonTextures[buttonName].IsValid())
+                    {
+                        Application::g_pApp->m_renderer->ReferenceTexture(m_glyphButtonTextures[buttonName]);
+                    }
+                }
+                node->GetNextSibling_(node, "Item");
+            }
+            return 1;
+        }
+        M3D_LOG_INFO("cannot parse " + filename + " err: " + err);
+        return 0;
     }
 
     ui::Font* ui::GfxServer::GetCurFont() const

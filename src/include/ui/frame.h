@@ -55,7 +55,7 @@ namespace m3d
             Pane();
             int ReadFromXmlNode(cmn::XmlNode*, std::vector<BackGround*> const&, std::vector<Frame*> const&);
 
-        private:
+        public:
             CStr m_name;
             Frame* m_frame[4];
             BackGround* m_bg[4];
