@@ -210,9 +210,19 @@ CStr2::CStr2(char const* str)
     }
 }
 
-CStr2::CStr2(char, int)
+CStr2::CStr2(char c, int repeat)
 {
-    throw std::logic_error("Not implemented");
+    if (repeat > 0)
+    {
+        realloc(repeat + 1);
+        memset(m_charPtr, c, repeat);
+        m_charPtr[repeat] = '\0';
+    }
+    else
+    {
+        realloc(1);
+        m_charPtr[0] = '\0';
+    }
 }
 
 CStr2::CStr2(CStr2 const& s)
@@ -287,6 +297,7 @@ CStr& CStr2::operator+=(CStr const& a)
     strcat(newCharPtr, a.c_str());
     delete[] m_charPtr;
     m_charPtr = newCharPtr;
+    m_allocSz = newSize;
     return *this;
 }
 
@@ -331,14 +342,16 @@ int CStr2::find(char c, int startIdx) const
 {
     assert(m_charPtr);
     std::string_view const view(m_charPtr);
-    return view.find(c, startIdx);
+    auto const res = view.find(c, startIdx);
+    return res == std::string_view::npos ? CStr_npos : static_cast<int>(res);
 }
 
 int CStr2::rfind(char c) const
 {
     assert(m_charPtr);
     std::string_view const view(m_charPtr);
-    return view.rfind(c);
+    auto const res = view.rfind(c);
+    return res == std::string_view::npos ? CStr_npos : static_cast<int>(res);
 }
 
 CStr2 CStr2::substr(int pos, int endpos) const

@@ -275,6 +275,9 @@ namespace m3d
         Cinematic* m_cinematic = nullptr;
         CCamera m_curCamera;
 
+
+        _cpinfoexA m_codePage;
+
     protected:
         bool m_enginePlayingVideo = false;
         bool m_bDoNotLoadMainmenuLevel;
@@ -337,7 +340,6 @@ namespace m3d
         DataServer *m_serverLines;
         DataServer *m_serverProjectors;
         DataServer *m_serverDecals;
-        _cpinfoexA m_codePage;
         _cpinfoexA m_unicodeCodePage;
         rend::TexHandle m_texSplash;
         rend::TexHandle m_texSplash1;

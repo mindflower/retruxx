@@ -240,7 +240,110 @@ namespace m3d
         {
             m_sliderNotchWidthRatio = 0.75;
         }
-        throw std::logic_error("Not implemented");
+
+        char const* fontFaces[] = { "titleFontFace", "wndFontFace", "tooltipFontFace", "miscFontFace"};
+        for (size_t i =0; i<4;++i)
+        {
+            if (!SafeStrAttrib(m_fontFaces[i], node, fontFaces[i]))
+            {
+                m_fontFaces[i] = "Arial";
+            }
+        }
+        char const* fontSizes[] = { "titleFontSize", "wndFontSize", "tooltipFontSize", "miscFontSize" };
+        for (size_t i = 0; i < 4; ++i)
+        {
+            if (!SafeUintAttrib(m_fontSizes[i], node, fontSizes[i]))
+            {
+                m_fontSizes[i] = 12;
+            }
+        }
+        char const* fontFlags[] = { "titleFontFlag", "wndFontFlag", "tooltipFontFlag", "miscFontFlag" };
+        CStr flag;
+        for (size_t i = 0; i < 4; ++i)
+        {
+            //TODO: check tis
+            if (!SafeStrAttrib(flag, node, fontFlags[i]))
+            {
+                m_fontFlags[i] = 0;
+            }
+            if (flag == "normal")
+            {
+                m_fontFlags[i] = 0;
+            }
+            else if (flag == "bold")
+            {
+                m_fontFlags[i] = 1;
+            }
+            else if (flag == "italic")
+            {
+                m_fontFlags[i] = 3;
+            }
+        }
+        char const* fontTypes[] = { "titleFontType", "wndFontType", "tooltipFontType", "miscFontType" };
+        for (size_t i = 0; i < 4; ++i)
+        {
+            if (!SafeEnumAttrib(m_fontTypes[i], node, fontTypes[i]))
+            {
+                m_fontTypes[i] = FONT_TYPE_WINDOWS;
+            }
+        }
+
+        m_fontManager->Init();
+        CStr font;
+        for (size_t i = 0; i < 4; ++i)
+        {
+            //TODO: chcek this!!!
+            FontParams params;
+            if(m_fontTypes[i] == FONT_TYPE_SELFMAKING)
+            {
+                params.ttfParams.style = 1;
+                params.ttfParams.codePage = 0;
+            }
+            else
+            {
+                params.ttfParams.style = m_fontFlags[i];
+                params.ttfParams.codePage = Application::g_pApp->m_codePage.CodePage;
+            }
+            auto id = m_fontManager->GetFontId(m_fontFaces[i], m_fontSizes[i], m_fontTypes[i], params);
+            if (id != i)
+            {
+                m_fontManager->RearrangeFonts(id, i);
+            }
+        }
+
+        m_curFont = m_fontManager->GetFontById(0);
+        m_hieroglyphicFontId = -1;
+        auto frames = ReadFrames();
+        if (Application::g_pApp->m_sound)
+        {
+            ref_ptr newNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+            node->GetFirstChild_(newNode, nullptr);
+            if (!newNode->IsEmpty())
+            {
+                LoadSoundsFromXml(xmlFile, newNode);
+            }
+        }
+        if (!m3d::SafeFloatAttrib(m_glyphHeight, node, "glyphHeight"))
+        {
+            m_glyphHeight = 15.0;
+        }
+        if (!m3d::SafeFloatAttrib(m_tabButtonMinWidth, node, "tabBtnMinWidth"))
+        {
+            m_tabButtonMinWidth = 10.0;
+        }
+        if (!m3d::SafeFloatAttrib(m_tabButtonMaxWidth, node, "tabBtnMaxWidth"))
+        {
+            m_tabButtonMaxWidth = 50.0;
+        }
+        if (!m3d::SafeFloatAttrib(m_tabButtonHeight, node, "tabBtnHeight"))
+        {
+            m_tabButtonHeight = 30.0;
+        }
+        if (!m3d::SafeFloatAttrib(m_tabButtonSpace, node, "tabBtnSpace"))
+        {
+            m_tabButtonSpace = 5.0;
+        }
+        return 1;
     }
 
     void ui::GfxServer::AddButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned, bool)

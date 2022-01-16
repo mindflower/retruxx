@@ -3,6 +3,7 @@
 #include <iface.h>
 #include <vector>
 #include <engine/tinyxml/tinyxml.h>
+#include <sstream>
 
 namespace m3d
 {
@@ -115,7 +116,24 @@ namespace m3d
     int SafeStrAttrib(CStr&, cmn::XmlNode const*, char const*);
     bool SafeClrAttrib(unsigned int&, m3d::cmn::XmlNode const*, char const*);
     bool SafeIntAttrib(int&, m3d::cmn::XmlNode const*, char const*);
+    bool SafeUintAttrib(unsigned&, m3d::cmn::XmlNode const*, char const*);
     bool SafeFloatAttrib(float&, m3d::cmn::XmlNode const*, char const*);
+
+    template<class T>
+    bool SafeEnumAttrib(T& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        CStr str;
+        if (SafeStrAttrib(str, node, attrib) && !str.empty())
+        {
+            int temp = 0;
+            std::istringstream iss(str.c_str());
+            iss >> temp;
+            v = static_cast<T>(temp);
+            return true;
+        }
+        return false;
+    }
+
     void Tokenize(CStr const*, std::vector<CStr>&, char const*);
 }
 

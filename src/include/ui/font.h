@@ -34,6 +34,8 @@ namespace m3d
 
         private:
             void InitDefault();
+
+        private:
             CStr m_tChars;
             CStr m_charSetName;
             CStr m_codePageName;
@@ -56,6 +58,11 @@ namespace m3d
         union FontParams
         {
             FontMatch match;
+            struct
+            {
+                unsigned int style;
+                unsigned int codePage;
+            } ttfParams;
             //$7A16E786D20B30359EF3D15CD24517DA ttfParams;
         };
 
@@ -68,33 +75,33 @@ namespace m3d
             public:
                 FontABC();
 
-            private:
-                float m_A;
-                float m_B;
-                float m_C;
+            public:
+                float m_A = 0.0;
+                float m_B = 0.0;
+                float m_C = 0.0;
             };
 
             class TextureCoordinates
             {
             public:
                 TextureCoordinates();
-            protected:
-            private:
-                int m_texId;
-                float m_coordinates[4];
+
+            public:
+                int m_texId = -1;
+                float m_coordinates[4] = {0};
             };
 
             class SymbolInfo
             {
             public:
                 SymbolInfo();
-            protected:
-            private:
-                char m_symbol;
+
+            public:
+                char m_symbol = 0;
                 FontABC m_abc;
                 TextureCoordinates m_tcs;
-                PointBase<float> m_precalcedGlyphSz;
-                float m_precalcedABCWidth;
+                PointBase<float> m_precalcedGlyphSz{0.0, 0.0};
+                float m_precalcedABCWidth = 0.0;
             };
 
         public:
@@ -128,23 +135,13 @@ namespace m3d
             FontABC GetAbcWidth(unsigned char) const;
 
         private:
-            //std::_Uninit_copy<SymbolInfo*, SymbolInfo*>(SymbolInfo**, SymbolInfo**, SymbolInfo**, std::allocator<SymbolInfo*>&, std::_Scalar_ptr_iterator_tag);
-            //std::fill<SymbolInfo**, SymbolInfo*>(SymbolInfo**, SymbolInfo**, SymbolInfo* const&);
-            //std::allocator<SymbolInfo*>::allocator<SymbolInfo*>();
-            //std::allocator<SymbolInfo*>::allocator<SymbolInfo*>();
-            //std::copy_backward<SymbolInfo**, SymbolInfo**>(SymbolInfo**, SymbolInfo**, SymbolInfo**);
-            //std::_Allocate<SymbolInfo*>(uint, SymbolInfo**);
-            //std::_Ptr_cat<SymbolInfo>(SymbolInfo**, SymbolInfo**);
-            //std::_Copy_backward_opt<SymbolInfo**, SymbolInfo**>(SymbolInfo**, SymbolInfo**, SymbolInfo**, std::_Scalar_ptr_iterator_tag);
-            //std::copy<SymbolInfo**, SymbolInfo**>(SymbolInfo**, SymbolInfo**, SymbolInfo**);
-            //std::_Copy_opt<SymbolInfo**, SymbolInfo**>(SymbolInfo**, SymbolInfo**, SymbolInfo**, std::_Scalar_ptr_iterator_tag);
             CStr m_nameShort;
             CStr m_nameFull;
-            float m_heightScaled;
-            float m_heightUnscaled;
-            float m_scaleTex;
-            FontType m_type;
-            unsigned int m_style;
+            float m_heightScaled = 0.0;
+            float m_heightUnscaled = 0.0;
+            float m_scaleTex = 0.0;
+            FontType m_type = FONT_TYPE_SELFMAKING;
+            unsigned int m_style = 0;
             std::vector<rend::TexHandle> m_textures;
             std::vector<SymbolInfo*> m_symbols;
         };
@@ -161,16 +158,17 @@ namespace m3d
             int ReadFontsFromXml();
             int GetNumFonts() const;
             void RearrangeFonts(int, int);
-            static TCharDictionary const& __fastcall GetTCharDictionary();
-            static unsigned int __fastcall GetCodePageByCharset(unsigned int);
+            static TCharDictionary const& GetTCharDictionary();
+            static unsigned int GetCodePageByCharset(unsigned int);
             Font* GetFontById(int) const;
-            static unsigned int __fastcall GetCharsetByCodePage(unsigned int);
+            static unsigned int GetCharsetByCodePage(unsigned int);
 
         private:
             float GetScaledHeight(float) const;
             int FindMatchFont(CStr const&, float, bool, bool);
 
         private:
+            static TCharDictionary m_tCharDictionary;
             std::vector<Font*> m_fonts;
         };
     }

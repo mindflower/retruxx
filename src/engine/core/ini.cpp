@@ -1,4 +1,3 @@
-#include <sstream>
 #include <stdexcept>
 #include <core/ini.h>
 #include <core/kernel.h>
@@ -55,14 +54,25 @@ namespace m3d
         CStr str;
         if (SafeStrAttrib(str, node, attrib) && !str.empty())
         {
-            std::istringstream iss(str.c_str());
-            iss >> clr;
+            clr = std::stoul(str.c_str(), nullptr, 16);;
             return true;;
         }
         return false;
     }
 
     bool SafeIntAttrib(int& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        CStr str;
+        if (SafeStrAttrib(str, node, attrib) && !str.empty())
+        {
+            std::istringstream iss(str.c_str());
+            iss >> v;
+            return true;
+        }
+        return false;
+    }
+
+    bool SafeUintAttrib(unsigned& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
         CStr str;
         if (SafeStrAttrib(str, node, attrib) && !str.empty())
