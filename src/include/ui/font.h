@@ -134,7 +134,7 @@ namespace m3d
             float GetCharWidthAdvanced(unsigned char) const;
             FontABC GetAbcWidth(unsigned char) const;
 
-        private:
+        public:
             CStr m_nameShort;
             CStr m_nameFull;
             float m_heightScaled = 0.0;

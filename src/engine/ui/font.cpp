@@ -48,9 +48,13 @@ namespace m3d
         {
         }
 
-        unsigned char TCharDictionary::GetTCharAtPos(int) const
+        unsigned char TCharDictionary::GetTCharAtPos(int pos) const
         {
-            throw std::logic_error("Not implemented");
+            if (pos < 0 || pos >=m_tChars.length())
+            {
+                return 0;
+            }
+            return m_tChars[pos];
         }
 
         CStr const& TCharDictionary::GetTChars() const
@@ -216,7 +220,7 @@ namespace m3d
                 delete m_symbols[symbolIdx];
                 m_symbols[symbolIdx] = symbolInfo;
 
-                node->GetNextSibling_(node, nullptr);
+                node->GetNextSibling_(node, "Symbol");
             }
             m_type = FONT_TYPE_SELFMAKING;
             m_scaleTex = 1.0;
@@ -236,12 +240,21 @@ namespace m3d
                 return m_nameShort;
             }
             //TODO: check this
-            return name + CStr(style) + CStr(codePage);
+            return name +"_" + CStr(style) + "_" + CStr(codePage);
         }
 
-        PointBase<float> Font::CalcGlyphSz(unsigned char) const
+        PointBase<float> Font::CalcGlyphSz(unsigned char c) const
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this
+            if (m_symbols[c])
+            {
+                PointBase<float> res;
+                auto texSize = GetTexSz();
+                res.x = ((m_symbols[c]->m_tcs.m_coordinates[2] - m_symbols[c]->m_tcs.m_coordinates[0]) * texSize.x) * m_scaleTex;
+                res.y = ((m_symbols[c]->m_tcs.m_coordinates[3] - m_symbols[c]->m_tcs.m_coordinates[1]) * texSize.y) * m_scaleTex;
+                return res;
+            }
+            return { 0.0, 0.0 };
         }
 
         unsigned Font::GetStyle() const
@@ -313,12 +326,27 @@ namespace m3d
 
         PointBase<int> Font::GetTexSz() const
         {
-            throw std::logic_error("Not implemented");
+            if (!m_textures.empty())
+            {
+                PointBase<int> res;
+                Application::g_pApp->m_renderer->GetDims(m_textures.front(), res.x, res.y);
+                return res;
+            }
+            return { 0, 0 };
         }
 
         void Font::PrecalcSymbolsSizes()
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this
+            for (int i = 0; i< FontManager::GetTCharDictionary().GetNumOfTChars(); ++i)
+            {
+                auto sym = FontManager::GetTCharDictionary().GetTCharAtPos(i);
+                if (m_symbols[sym])
+                {
+                    m_symbols[sym]->m_precalcedGlyphSz = CalcGlyphSz(sym);
+                    m_symbols[sym]->m_precalcedABCWidth = m_symbols[sym]->m_abc.m_A + m_symbols[sym]->m_abc.m_B + m_symbols[sym]->m_abc.m_C;
+                }
+            }
         }
 
         Font::Font()
@@ -363,9 +391,52 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int FontManager::GetFontId(CStr const&, float, FontType, FontParams)
+        int FontManager::GetFontId(CStr const& name, float heightUnscaled, FontType type, FontParams params)
         {
-            throw std::logic_error("Not implemented");
+            if (name.empty() || heightUnscaled <= 0.0)
+            {
+                return -1;
+            }
+            CStr nameToFind;
+            if (type == FONT_TYPE_SELFMAKING)
+            {
+                nameToFind = name;
+            }
+            else
+            {
+                nameToFind = name + "_" + CStr(params.ttfParams.style) + "_" + CStr(params.ttfParams.codePage);
+            }
+            auto matchFont = FindMatchFont(nameToFind, heightUnscaled, true, true);
+            if (matchFont == -1)
+            {
+                if (type == FONT_TYPE_SELFMAKING && params.ttfParams.style)
+                {
+                    matchFont = FindMatchFont(name, heightUnscaled, true, false);
+                    if (matchFont == -1)
+                    {
+                        matchFont = FindMatchFont(name, heightUnscaled, false, false);
+                    }
+                }
+                else
+                {
+                    auto charset = GetCharsetByCodePage(params.ttfParams.codePage);
+                    if (charset == 1 && params.ttfParams.codePage)
+                    {
+                        return -1;
+                    }
+                    auto font = new Font;
+                    if (font->CreateFromTtf(name, heightUnscaled, params.ttfParams.style, params.ttfParams.codePage))
+                    {
+                        m_fonts.push_back(font);
+                        matchFont = m_fonts.size() - 1;
+                    }
+                    else
+                    {
+                        delete font;
+                    }
+                }
+            }
+            return matchFont;
         }
 
         FontManager::~FontManager()
@@ -399,6 +470,7 @@ namespace m3d
                     {
                         delete font;
                     }
+                    itemNode->GetNextSibling_(itemNode, "Item");
                 }
                 M3D_LOG_INFO("FontManager: fonts are loaded successfully");
                 return 1;
@@ -412,8 +484,12 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void FontManager::RearrangeFonts(int, int)
+        void FontManager::RearrangeFonts(int id1, int id2)
         {
+            if (id1>=0)
+            {
+                
+            }
             throw std::logic_error("Not implemented");
         }
 
@@ -442,9 +518,49 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int FontManager::FindMatchFont(CStr const&, float, bool, bool)
+        int FontManager::FindMatchFont(CStr const& name, float heightUnscaled, bool strictName, bool strictHeight)
         {
-            throw std::logic_error("Not implemented");
+            if (name.empty() || heightUnscaled <= 0.0)
+            {
+                return -1;
+            }
+            auto fontId = -1;
+            Font* font = nullptr;
+            auto viewport = Application::g_pApp->m_renderer->GetViewport();
+            //TODO: check this and recreate logic with foundProtoEqualUSize
+            auto heightScaled = (viewport.m_width * heightUnscaled) * 0.0009765625;
+            for (int i = 0; i<m_fonts.size();++i)
+            {
+                if (!m_fonts[i] || m_fonts[i]->m_nameFull != name && strictName)
+                {
+                    continue;
+                }
+                auto heightThreshold = fabs(m_fonts[i]->m_heightScaled - heightScaled);
+                if (heightThreshold > 0.001 && strictHeight)
+                {
+                    continue;
+                }
+                if (heightThreshold > 0.001)
+                {
+                    font = m_fonts[i];
+                }
+                else
+                {
+                    return i;
+                }
+            }
+            if (!font)
+            {
+                return fontId;
+            }
+            auto newFont = new Font;
+            if (newFont->CreateFromPrototype(font, heightUnscaled))
+            {
+                m_fonts.push_back(newFont);
+                return m_fonts.size() - 1;
+            }
+            delete newFont;
+            return fontId;
         }
     }
 }

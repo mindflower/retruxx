@@ -389,7 +389,7 @@ namespace m3d
         Application::g_pApp->m_renderer->SetTexture(0, rend::g_pTexture, -1.0);
 
         int tH = 0, tW = 0;
-        Application::g_pApp->m_renderer->GetDims(rend::g_pTexture, &tW, &tH);
+        Application::g_pApp->m_renderer->GetDims(*rend::g_pTexture, tW, tH);
         int sH = 0, sW = 0;
         m_texRend->GetVideoDims(sW, sH);
         Application::g_pApp->PutSprite2Rel(0.0, 0.0, 0.0, 0.0, 1024.0, 768.0, sW / tW, sH / tW, static_cast<unsigned>(-1));

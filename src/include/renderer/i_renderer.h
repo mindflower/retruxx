@@ -875,7 +875,7 @@ namespace m3d
             virtual void UnlockTexture(const m3d::rend::TexHandle*) = 0;
             virtual int DownloadTexImageRgba8888(unsigned int*, const m3d::rend::TexHandle*) = 0;
             virtual int DownloadTexImageRgba8888(unsigned int*, const m3d::rend::TexHandle*, int, int) = 0;
-            virtual void GetDims(const m3d::rend::TexHandle*, int*, int*) = 0;
+            virtual void GetDims(m3d::rend::TexHandle const&, int&, int&) = 0;
             virtual void TexCopy(const m3d::rend::TexHandle*, const m3d::rend::TexHandle*) = 0;
             virtual void RepaintAllTexturesMips() = 0;
             virtual void DrawFullScreenQuad(m3d::rend::IEffect*) = 0;
