@@ -9,6 +9,7 @@ void UnifyFileName(CStr& fileName);
 void UnifyFileName0(CStr& fileName);
 CStr DirectoryFromFileName(CStr const& source);
 CStr NameFromFileName(CStr const& source);
+CVector2 strToVec2(CStr const&);
 
 namespace m3d
 {

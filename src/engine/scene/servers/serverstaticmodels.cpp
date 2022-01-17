@@ -1,3 +1,4 @@
+#include <m3dapp.h>
 #include <scene/servers/serverstaticmodels.h>
 
 namespace m3d
@@ -39,7 +40,15 @@ namespace m3d
 
     StaticModelsServer::StaticModelsServer()
     {
-        throw std::logic_error("Not implemented");
+        auto idx = Application::g_pApp->GetProfilerStack().AddProfiler("static", 0x1E);
+        if (idx < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        {
+            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+        }
+        else
+        {
+            m_profiler = 0;
+        }
     }
 
     int StaticModelsServer::Init()

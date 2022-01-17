@@ -85,7 +85,6 @@ namespace m3d
 
     DataServer::DataServer()
     {
-        throw std::logic_error("Not implemented");
     }
 
     int DataServer::SetItemProperty(int, int, void*)

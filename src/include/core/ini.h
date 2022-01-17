@@ -118,6 +118,8 @@ namespace m3d
     bool SafeIntAttrib(int&, m3d::cmn::XmlNode const*, char const*);
     bool SafeUintAttrib(unsigned&, m3d::cmn::XmlNode const*, char const*);
     bool SafeFloatAttrib(float&, m3d::cmn::XmlNode const*, char const*);
+    bool SafeBoolAttrib(bool&, m3d::cmn::XmlNode const*, char const*);
+    bool SafeVector2Attrib(CVector2&, m3d::cmn::XmlNode const*, char const*);
 
     template<class T>
     bool SafeEnumAttrib(T& v, m3d::cmn::XmlNode const* node, char const* attrib)

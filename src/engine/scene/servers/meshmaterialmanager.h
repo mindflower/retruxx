@@ -17,7 +17,7 @@ namespace m3d
         DSurfaceMaterial& GetMaterial(SgNode &,AnimatedModel::Mesh &);
 
     private:
-        AnimatedModel *m_pLogos;
+        AnimatedModel *m_pLogos = nullptr;
         std::map<int,int> m_mapBelongToLogo;
     };
 }

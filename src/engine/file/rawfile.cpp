@@ -1,13 +1,127 @@
 #include <stdexcept>
+#include <core/log.h>
 #include <file/rawfile.h>
 
 namespace m3d
 {
     namespace fs
     {
-        int RawFile::FSeek(long, int)
+        int RawFile::FSeek(long offset, int origin)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check and refactor
+            if (m_hFile == INVALID_HANDLE_VALUE)
+            {
+                return -1;
+            }
+            if (!m_Data)
+            {
+                DWORD moveMethod = 0;
+                if (origin)
+                {
+                    if (origin == 1)
+                    {
+                        moveMethod = 1;
+                        if (offset <= 0)
+                        {
+                            if (-offset > FTell())
+                            {
+                                offset = 0;
+                                moveMethod = 0;
+                            }
+                        }
+                        else if (offset + FTell() > m_FileSize)
+                        {
+                            offset = 0;
+                            moveMethod = 2;
+                        }
+                    }
+                    else
+                    {
+                        if (origin != 2)
+                        {
+                            return -1;
+                        }
+                        moveMethod = 2;
+                        if (offset <= 0)
+                        {
+                            if (-offset > m_FileSize)
+                            {
+                                offset = 0;
+                                moveMethod = 0;
+                            }
+                        }
+                        else
+                        {
+                            offset = 0;
+                        }
+                    }
+                }
+                else
+                {
+                    moveMethod = 0;
+                    if (offset > m_FileSize)
+                    {
+                        offset = m_FileSize;
+                    }
+                }
+                if (::SetFilePointer(m_hFile, offset, 0, moveMethod) != -1)
+                {
+                    return 0;
+                }
+                M3D_LOG_ERR("Error: could not set file pointer, fileSize = " + CStr(m_FileSize));
+                return -1;
+            }
+            if (!origin)
+            {
+                if (offset < 0)
+                {
+                    offset = 0;
+                }
+                if (offset > m_FileSize)
+                {
+                    offset = m_FileSize;
+                    m_lastError = 38;
+                }
+                m_CurrData = static_cast<char*>(m_Data) + offset;
+                return 0;
+            }
+            if (origin != 1)
+            {
+                if (origin != 2)
+                {
+                    return -1;
+                }
+                if (offset > 0)
+                {
+                    offset = 0;
+                    m_lastError = 38;
+                }
+                if (-offset < m_FileSize)
+                {
+                    m_CurrData = static_cast<char*>(m_Data) + m_FileSize + offset;
+                    return 0;
+                }
+                m_CurrData = m_Data;
+                return 0;
+            }
+            if (offset <= 0)
+            {
+                if (-offset <= static_cast<char*>(m_CurrData) - m_Data)
+                {
+                    m_CurrData = static_cast<char*>(m_CurrData) + offset;
+                    return 0;
+                }
+                m_CurrData = m_Data;
+                return 0;
+            }
+            if (offset < static_cast<char*>(m_Data) + m_FileSize - m_CurrData)
+            {
+                m_CurrData = static_cast<char*>(m_CurrData) + offset;
+                return 0;
+            }
+            m_CurrData = static_cast<char*>(m_Data) + m_FileSize;
+            m_lastError = 38;
+            return 0;
         }
 
         int RawFile::ReadLine(CStr&)
@@ -187,12 +301,26 @@ namespace m3d
 
         unsigned RawFile::GetPosition()
         {
-            throw std::logic_error("Not implemented");
+            if (m_hFile == INVALID_HANDLE_VALUE)
+            {
+                return 0;
+            }
+            if (m_Data)
+            {
+                return static_cast<char*>(m_CurrData) - m_Data;
+            }
+            DWORD res = ::SetFilePointer(m_hFile, 0, 0, 1);
+            if (res != -1)
+            {
+                return res;
+            }
+            M3D_LOG_ERR("Error: could not set file pointer, fileSize = " + CStr(m_FileSize));
+            return res;
         }
 
         long RawFile::FTell()
         {
-            throw std::logic_error("Not implemented");
+            return GetPosition();
         }
 
         unsigned RawFile::PeekBytes(void*, unsigned)

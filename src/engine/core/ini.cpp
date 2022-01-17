@@ -36,6 +36,7 @@ namespace m3d
 
     int SafeStrAttrib(CStr& v, cmn::XmlNode const* node, char const* attrName)
     {
+        v = "";
         if (node->IsEmpty())
         {
             return 0;
@@ -51,6 +52,7 @@ namespace m3d
 
     bool SafeClrAttrib(unsigned& clr, m3d::cmn::XmlNode const* node, char const* attrib)
     {
+        clr = 0;
         CStr str;
         if (SafeStrAttrib(str, node, attrib) && !str.empty())
         {
@@ -62,6 +64,7 @@ namespace m3d
 
     bool SafeIntAttrib(int& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
+        v = 0;
         CStr str;
         if (SafeStrAttrib(str, node, attrib) && !str.empty())
         {
@@ -74,6 +77,7 @@ namespace m3d
 
     bool SafeUintAttrib(unsigned& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
+        v = 0;
         CStr str;
         if (SafeStrAttrib(str, node, attrib) && !str.empty())
         {
@@ -86,6 +90,7 @@ namespace m3d
 
     bool SafeFloatAttrib(float& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
+        v = 0;
         CStr str;
         if (SafeStrAttrib(str, node, attrib) && !str.empty())
         {
@@ -94,6 +99,54 @@ namespace m3d
             return true;
         }
         return false;
+    }
+
+    bool SafeBoolAttrib(bool& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        v = false;
+        if (node->IsEmpty())
+        {
+            return 0;
+        }
+        auto attrValue = node->GetAttribute(attrib);
+        if (!attrValue)
+        {
+            return 0;
+        }
+        auto trueVal =
+            !stricmp(attrValue, "yes") ||
+            !stricmp(attrValue, "yeah") ||
+            !stricmp(attrValue, "yep") ||
+            !stricmp(attrValue, "1") ||
+            !stricmp(attrValue, "true");
+        auto falseVal =
+            !stricmp(attrValue, "false") ||
+            !stricmp(attrValue, "0") ||
+            !stricmp(attrValue, "no") ||
+            !stricmp(attrValue, "nope") ||
+            !stricmp(attrValue, "none");
+        if (!trueVal && !falseVal)
+        {
+            return 0;
+        }
+        v = trueVal;
+        return 1;
+    }
+
+    bool SafeVector2Attrib(CVector2& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        v = {};
+        if (node->IsEmpty())
+        {
+            return 0;
+        }
+        auto val = node->GetAttribute(attrib);
+        if (!val)
+        {
+            return 0;
+        }
+        v = strToVec2(val);
+        return 1;
     }
 
     void Tokenize(CStr const* str, std::vector<CStr>& tokens, char const* chars)

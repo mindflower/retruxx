@@ -47,14 +47,24 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int FileReader::FSeek(long, int)
+        int FileReader::FSeek(long offset, int origin)
         {
-            throw std::logic_error("Not implemented");
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->FSeek(offset, origin);
+            }
+            return -1;
         }
 
         long FileReader::FTell()
         {
-            throw std::logic_error("Not implemented");
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->FTell();
+            }
+            return -1;
         }
 
         unsigned FileReader::ReadBytes(void* dst, unsigned numBytes)

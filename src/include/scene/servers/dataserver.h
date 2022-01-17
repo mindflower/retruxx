@@ -100,13 +100,12 @@ namespace m3d
         int ParseProto(char const*, Proto*, int*);
 
     private:
-        //m3d::DataServer_vtbl* __vftable /*VFT*/;
-        void* m_fnLoadCallbackData;
-        void(__fastcall* m_fnLoadCallback)(int, void*);
+        void* m_fnLoadCallbackData = nullptr;
+        void(__fastcall* m_fnLoadCallback)(int, void*) = nullptr;
         std::vector<Model> m_models;
         std::map<CStr, int> m_shRemap;
         std::vector<ServerItem> m_itemslist;
         CStr m_lastError;
-        bool m_valid;
+        bool m_valid = false;
     };
 }

@@ -9,6 +9,10 @@
 
 namespace m3d
 {
+    ui::GfxServer::SoundInfo::SoundInfo()
+    {
+    }
+
     int ui::GfxServer::GetSliderHeight()
     {
         throw std::logic_error("Not implemented");
@@ -77,12 +81,16 @@ namespace m3d
                 return 0;
             }
             node->GetFirstChild_(node, "Item");
-            while(node->IsEmpty())
+            while(!node->IsEmpty())
             {
                 auto frame = new Frame;
                 if (frame->ReadFromXmlNode(node))
                 {
                     m_frames.push_back(frame);
+                }
+                else
+                {
+                    delete frame;
                 }
                 node->GetNextSibling_(node, "Item");
             }
@@ -94,12 +102,16 @@ namespace m3d
                 return 0;
             }
             node->GetFirstChild_(node, "Item");
-            while (node->IsEmpty())
+            while (!node->IsEmpty())
             {
                 auto background = new BackGround;
                 if (background->ReadFromXmlNode(node))
                 {
                     m_backgrounds.push_back(background);
+                }
+                else
+                {
+                    delete background;
                 }
                 node->GetNextSibling_(node, "Item");
             }
@@ -111,13 +123,17 @@ namespace m3d
                 return 0;
             }
             node->GetFirstChild_(node, "Item");
-            while (node->IsEmpty())
+            while (!node->IsEmpty())
             {
                 auto pane = new Pane;
                 if (pane->ReadFromXmlNode(node, m_backgrounds, m_frames))
                 {
                     m_panes.add(pane->m_name, pane);
                     m_panesVector.push_back(pane);
+                }
+                else
+                {
+                    delete pane;
                 }
                 node->GetNextSibling_(node, "Item");
             }
@@ -129,12 +145,16 @@ namespace m3d
                 return 0;
             }
             node->GetFirstChild_(node, "Item");
-            while (node->IsEmpty())
+            while (!node->IsEmpty())
             {
                 auto scroll = new ScrollPane;
                 if (scroll->ReadFromXmlNode(node))
                 {
                     m_scrollPanes.push_back(scroll);
+                }
+                else
+                {
+                    delete scroll;
                 }
                 node->GetNextSibling_(node, "Item");
             }
@@ -146,7 +166,7 @@ namespace m3d
                 return 0;
             }
             node->GetFirstChild_(node, "Item");
-            while (node->IsEmpty())
+            while (!node->IsEmpty())
             {
                 CStr buttonName = node->GetAttribute("name");
                 CStr buttonFile = node->GetAttribute("file");
@@ -545,9 +565,49 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int ui::GfxServer::LoadSoundsFromXml(cmn::XmlFile*, cmn::XmlNode const*)
+    int ui::GfxServer::LoadSoundsFromXml(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        if (!xmlFile || !xmlNode)
+        {
+            return 0;
+        }
+        ClearSounds();
+        ref_ptr soundNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+        CStr soundName;
+        CStr fileName;
+        for (xmlNode->GetFirstChild_(soundNode, "SoundInfo"); !soundNode->IsEmpty(); soundNode->GetNextSibling_(soundNode, "SoundInfo"))
+        {
+            SafeStrAttrib(soundName, soundNode, "Name");
+            if (soundName.empty())
+            {
+                M3D_LOG_WARN("GfxServer::LoadSoundsFromXml error - empty sound mame");
+                continue;
+            }
+            if (m_controlSoundInfos.find(soundName) != cend(m_controlSoundInfos))
+            {
+                M3D_LOG_WARN("GfxServer::LoadSoundsFromXml error - sound with name " + soundName + " already exists. Second sound would be ignored");
+                continue;
+            }
+            SafeStrAttrib(fileName, soundNode, "File");
+            if (fileName.empty())
+            {
+                M3D_LOG_WARN("GfxServer::LoadSoundsFromXml error - sound file name is empty for sound " + soundName);
+                continue;
+            }
+            auto const id = Application::g_pApp->m_sound->AddSound(fileName.c_str(), snd::SND_TYPE_2DSOUND, 1, 4, snd::SND_PRIORITY_HIGH);
+            if (id == -1)
+            {
+                M3D_LOG_WARN("GfxServer::LoadSoundsFromXml error - cannot load sound from file " + soundName);
+                continue;
+            }
+            auto soundInfo = new SoundInfo;
+            soundInfo->m_soundName = soundName;
+            soundInfo->m_soundFile = fileName;
+            SafeBoolAttrib(soundInfo->m_bSoundLooped, soundNode, "Looped");
+            soundInfo->m_soundTableId = id;
+            m_controlSoundInfos[soundName] = soundInfo;
+        }
+        return 1;
     }
 
     void ui::GfxServer::ReleaseSchema()
@@ -557,7 +617,15 @@ namespace m3d
 
     void ui::GfxServer::ClearSounds()
     {
-        throw std::logic_error("Not implemented");
+        for (auto&[name, sound] : m_controlSoundInfos)
+        {
+            if (Application::g_pApp->m_sound && sound)
+            {
+                Application::g_pApp->m_sound->DeleteIdTableSound(sound->m_soundTableId);
+            }
+            delete sound;
+        }
+        m_controlSoundInfos.clear();
     }
 
     void ui::GfxServer::AddFlatAxialQuad(DrawInfo const&, BoundsBase<float> const&, unsigned, float, float, float, float)

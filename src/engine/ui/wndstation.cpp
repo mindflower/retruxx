@@ -1,6 +1,9 @@
 #include <cassert>
 #include <m3dapp.h>
 #include <stdexcept>
+#include <core/ini.h>
+#include <core/log.h>
+#include <core/ref_ptr.h>
 #include <ui/ui_srv.h>
 #include <ui/wnd.h>
 #include <ui/wndstation.h>
@@ -130,9 +133,33 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int WndStation::LoadStrings(CStr const&)
+        int WndStation::LoadStrings(CStr const& stringsName)
         {
-            throw std::logic_error("Not implemented");
+            if (stringsName.empty())
+            {
+                return 1;
+            }
+            CStr err;
+            ref_ptr xmlFile = ReadXmlFile(stringsName.c_str(), &err);
+            if (!xmlFile)
+            {
+                M3D_LOG_INFO("WndStation::LoadStrings " + err);
+                return 0;
+            }
+            ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+            xmlFile->GetFirstChild_(node, "resource");
+            if (!node->IsEmpty())
+            {
+                for (node->GetFirstChild_(node, "string"); !node->IsEmpty(); node->GetNextSibling_(node, "string"))
+                {
+                    auto id = node->GetAttribute("id");
+                    auto value = node->GetAttribute("value");
+                    m_strings.add(id, value);
+                }
+                return 1;
+            }
+            M3D_LOG_INFO("WndStation:: Create cannot find resources in " + stringsName);
+            return 0;
         }
 
         void WndStation::CloseAllModalWithCancelRet()

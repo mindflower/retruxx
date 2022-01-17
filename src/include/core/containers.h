@@ -15,9 +15,9 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void add(CStr const&, T)
+        void add(CStr const& key, T value)
         {
-            throw std::logic_error("Not implemented");
+            m_hash[key] = value;
         }
 
         

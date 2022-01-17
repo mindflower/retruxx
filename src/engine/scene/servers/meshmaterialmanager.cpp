@@ -14,7 +14,6 @@ namespace m3d
 
     MeshMaterialManager::MeshMaterialManager()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void MeshMaterialManager::Release()

@@ -108,8 +108,12 @@ namespace snd
 
     class ISound : public IBase
     {
-    public:
+    protected:
         virtual ~ISound() = default;
+    public:
+        virtual int DecRef() = 0;
+        virtual int IncRef() = 0;
+        virtual void* QueryIface(const char*) = 0;
         virtual bool Init(void __fastcall(CStr const&), unsigned int, unsigned int, unsigned __int8, const char*) = 0;
         virtual int Update(long double) = 0;
         virtual void SetMaxVolume(int) = 0;
@@ -135,6 +139,7 @@ namespace snd
         virtual int MuteAllSounds() = 0;
         virtual int RestoreAllVolumes() = 0;
         virtual int AddSound(const char*, snd::UserSoundType, int, int, snd::SoundPriority) = 0;
+        virtual int AddSound(const char*, snd::UserSoundType, const char*, int, snd::SoundPriority) = 0;
         virtual bool DeleteIdTableSound(int) = 0;
         virtual bool DeleteAllSounds() = 0;
         virtual bool SetSoundPriority(int, snd::SoundPriority) = 0;
@@ -145,5 +150,7 @@ namespace snd
         virtual bool GetGroupMinDist(int, float*) = 0;
         virtual bool GetGroupMaxDist(int, float*) = 0;
         virtual void DumpSoundInfo() = 0;
+        ISound(ISound const&) {}
+        ISound() {}
     };
 }

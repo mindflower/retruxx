@@ -30,16 +30,16 @@ namespace m3d
     private:
         rend::VbHandle m_vbArrayForAllModels[4];
         rend::IbHandle m_ibArrayForAllModels[4];
-        int m_numDrawIndices;
-        int m_numDrawVerts;
-        int m_curvbBank;
-        int m_curibBank;
-        int m_numvbBanks;
-        int m_numibBanks;
-        bool m_preparedToRender;
-        bool m_alreadyCached;
+        int m_numDrawIndices = 0;
+        int m_numDrawVerts = 0;
+        int m_curvbBank = 0;
+        int m_curibBank = 0;
+        int m_numvbBanks = 0;
+        int m_numibBanks = 0;
+        bool m_preparedToRender = true;
+        bool m_alreadyCached = false;
         std::vector<unsigned char*> m_shots;
-        bool m_tessellate;
+        bool m_tessellate = true;
         Profiler* m_profiler;
     };
 }

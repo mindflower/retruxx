@@ -59,11 +59,11 @@ namespace m3d
             public:
                 SoundInfo();
 
-            private:
+            public:
                 CStr m_soundName;
                 CStr m_soundFile;
-                int m_soundTableId;
-                bool m_bSoundLooped;
+                int m_soundTableId = -1;
+                bool m_bSoundLooped = false;
             };
 
         public:

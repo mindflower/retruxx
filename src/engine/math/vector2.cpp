@@ -15,12 +15,12 @@ CVector2::CVector2(float xx, float yy) :
 
 CVector2::CVector2()
 {
-    throw std::logic_error("Not implemented");
 }
 
-CVector2::CVector2(CVector2 const&)
+CVector2::CVector2(CVector2 const& rhs) :
+    x(rhs.x),
+    y(rhs.y)
 {
-    throw std::logic_error("Not implemented");
 }
 
 CVector2& CVector2::operator*=(float v)

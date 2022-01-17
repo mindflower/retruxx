@@ -23,14 +23,14 @@ namespace m3d
             Frame();
             int ReadFromXmlNode(cmn::XmlNode*);
 
-        private:
+        public:
             CStr m_name;
             rend::TexHandle m_textures[12];
-            int m_barRepeat;
-            int m_barTexWidth;
-            int m_barUsedWidth;
-            int m_cornerSize;
-            int m_cornerRoundSize;
+            int m_barRepeat = 0;
+            int m_barTexWidth = 0;
+            int m_barUsedWidth = 0;
+            int m_cornerSize = 0;
+            int m_cornerRoundSize = 0;
         };
 
         class BackGround
@@ -40,10 +40,10 @@ namespace m3d
             int ReadFromXmlNode(cmn::XmlNode*);
             BackGround();
 
-        private:
+        public:
             CStr m_name;
-            int m_repeatU;
-            int m_repeatV;
+            int m_repeatU = 0;
+            int m_repeatV = 0;
             rend::TexHandle m_texture;
         };
 
@@ -57,9 +57,9 @@ namespace m3d
 
         public:
             CStr m_name;
-            Frame* m_frame[4];
-            BackGround* m_bg[4];
-            bool m_bInnerBg;
+            Frame* m_frame[4] = {0};
+            BackGround* m_bg[4] = {0};
+            bool m_bInnerBg = false;
         };
 
         class ScrollPane
@@ -70,16 +70,16 @@ namespace m3d
             ~ScrollPane();
             ScrollPane();
 
-        private:
+        public:
             CStr m_name;
             rend::TexHandle m_thumbTex;
-            CStr m_barPaneName;
-            CStr m_prevButtonPaneName;
-            CStr m_nextButtonPaneName;
-            float m_barWidth;
-            PointBase<float> m_thumbSize;
-            PointBase<float> m_btnSize;
-            float m_space;
+            CStr m_barPaneName = "PaneScrollBarDefault";
+            CStr m_prevButtonPaneName = "PaneScrollBtnPrevDefault";
+            CStr m_nextButtonPaneName = "PaneScrollBtnNextDefault";
+            float m_barWidth = 20.0;
+            PointBase<float> m_thumbSize{20.0, 20.0};
+            PointBase<float> m_btnSize{20.0, 20.0};
+            float m_space = 0.0;
         };
     }
 }

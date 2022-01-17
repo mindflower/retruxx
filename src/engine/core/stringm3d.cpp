@@ -53,6 +53,16 @@ CStr NameFromFileName(CStr const& source)
     return result;
 }
 
+CVector2 strToVec2(CStr const& str)
+{
+    CVector2 res;
+    if (!str.empty())
+    {
+        sscanf(str.c_str(), "%f %f", &res.x, &res.y);
+    }
+    return res;
+}
+
 CStr2::ZeroCharHolder::ZeroCharHolder() :
     m_zeroChar(0)
 {
