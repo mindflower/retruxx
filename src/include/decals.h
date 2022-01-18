@@ -85,5 +85,10 @@ namespace m3d
         rend::VbPoolField m_VbPoolField;
         std::vector<CMatrix *> m_transforms;
         std::vector<CMatrix> m_invBindtransforms;
+
+    private:
+        static rend::IHlslShader* m_decalsVs;
+        static rend::IHlslShader* m_decalsPs;
+        static CMatrix m_identityMatrix;
     };
 }

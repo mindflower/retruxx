@@ -2,6 +2,7 @@
 #include <psprops.h>
 #include <core/ref_ptr.h>
 #include <core/stringm3d.h>
+#include <math/vector.h>
 
 class CMatrix;
 
@@ -64,6 +65,28 @@ namespace m3d
         void SetForce(float,float,float);
         void SetEmitter(TimeMode,float,float,float);
         void GetEmitter(TimeMode &,float &,float &,float &) const ;
+    };
+
+    class Emitter
+    {
+    public:
+        void ReadFromXmlNode(ref_ptr<m3d::cmn::XmlNode>&);
+        void WriteToXmlNode(ref_ptr<m3d::cmn::XmlNode>&);
+        void Set(float, float, float, float, float, float, float);
+        void LocalStop(m3d::Particle*, float);
+        unsigned int Emit(double, float);
+        bool IsWork(float);
+
+    private:
+        float m_emitAtPeriod;
+        WorkTime m_wtime;
+        unsigned int m_maxParticles;
+        float m_ttlMin;
+        float m_ttlMax;
+        float m_resettime;
+        bool m_localStop;
+        float m_stopTime;
+        float m_start;
     };
 }
 

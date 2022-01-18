@@ -261,6 +261,7 @@
     <ClCompile Include="src\engine\posteffects\posteffectmanager.cpp" />
     <ClCompile Include="src\engine\posteffects\posteffectmodel.cpp" />
     <ClCompile Include="src\engine\prefabs.cpp" />
+    <ClCompile Include="src\engine\psprops.cpp" />
     <ClCompile Include="src\engine\ps_attractors.cpp" />
     <ClCompile Include="src\engine\ps_serialization.cpp" />
     <ClCompile Include="src\engine\renderhelpers.cpp" />
@@ -1127,6 +1128,7 @@
     <ClInclude Include="src\include\script\lua\lzio.h" />
     <ClInclude Include="src\include\script\scriptserver.h" />
     <ClInclude Include="src\include\skelmodel.h" />
+    <ClInclude Include="src\include\tracelinemanager.h" />
     <ClInclude Include="src\include\ui\button.h" />
     <ClInclude Include="src\include\ui\comboboxwnd.h" />
     <ClInclude Include="src\include\ui\cursor.h" />

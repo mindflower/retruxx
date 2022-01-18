@@ -23,6 +23,6 @@ namespace m3d
         virtual void AddItemsList(std::vector<ServerItem>&);
 
     private:
-        Profiler* m_profiler;
+        Profiler* m_profiler = nullptr;
     };
 }

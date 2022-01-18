@@ -10,7 +10,6 @@ CMatrix::CMatrix(CMatrix const&)
 
 CMatrix::CMatrix()
 {
-    throw std::logic_error("Not implemented");
 }
 
 CVector CMatrix::vecRot(CVector const&) const

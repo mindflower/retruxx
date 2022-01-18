@@ -54,7 +54,7 @@ namespace m3d
         LoadSkins();
 
     private:
-        bool loadAllSkins;
+        bool loadAllSkins = true;
         std::set<int> loadSkins;
     };
 
@@ -286,26 +286,26 @@ namespace m3d
 
     private:
         static int __cdecl sortBonesFunc(void const *,void const *);
-        CMatrix *m_initialBoneInvMatrices;
+        CMatrix *m_initialBoneInvMatrices = nullptr;
         ModelInfo m_header;
         std::string m_Name;
         std::string m_PathToFile;
-        bool m_composite;
-        bool m_passable;
-        Bone *m_boneInitialPos;
+        bool m_composite = false;
+        bool m_passable = false;
+        Bone *m_boneInitialPos = nullptr;
         CMatrix m_Dummy;
-        Mesh *m_meshes;
-        unsigned int m_numMeshes;
-        bool m_bVerification;
-        Animation *m_animations;
-        __int16 m_animRemap[32];
+        Mesh *m_meshes = nullptr;
+        unsigned int m_numMeshes = 0;
+        bool m_bVerification = false;
+        Animation *m_animations = nullptr;
+        __int16 m_animRemap[32] = {0};
         DCollisionData m_Collision;
         std::vector<DRAFT_Geom> m_Geoms;
         std::vector<DRAFT_HierGeom> m_HierGeoms;
         std::map<unsigned int,DRAFT_BoneBounds> m_BonesBounds;
         std::vector<std::vector<DSurfaceMaterial>> m_Skins;
         LoadSkins m_loadSkins;
-        bool m_hasCubemap;
+        bool m_hasCubemap = false;
         std::vector<MeshesGroup> m_MhGroups;
         unsigned int m_cfgSize;
         Aabb m_box;

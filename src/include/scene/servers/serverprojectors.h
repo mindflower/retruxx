@@ -29,6 +29,6 @@ namespace m3d
         CMatrix m_texProjMat;
         CMatrix m_texProjBiasMat;
         CMatrix m_attenMat;
-        Profiler* m_profiler;
+        Profiler* m_profiler = nullptr;
     };
 }

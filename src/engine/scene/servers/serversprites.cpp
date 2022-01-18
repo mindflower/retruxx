@@ -1,3 +1,4 @@
+#include <m3dapp.h>
 #include <stdexcept>
 #include <scene/servers/serversprites.h>
 
@@ -45,7 +46,11 @@ namespace m3d
 
     SpritesServer::SpritesServer()
     {
-        throw std::logic_error("Not implemented");
+        auto id = Application::g_pApp->GetProfilerStack().AddProfiler("sprites", 0x1E);
+        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        {
+            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+        }
     }
 
     int SpritesServer::Init()

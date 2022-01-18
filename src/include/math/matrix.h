@@ -53,6 +53,28 @@ public:
     void lookAtLH(CVector const&, CVector const&, CVector const&);
     void shear(float, float, float, float, float, float);
 
-private:
-    //$1B3C71F1CD740A568635C239F882810D ___u0;
+public:
+    union
+    {
+        struct
+        {
+            float _11;
+            float _12;
+            float _13;
+            float _14;
+            float _21;
+            float _22;
+            float _23;
+            float _24;
+            float _31;
+            float _32;
+            float _33;
+            float _34;
+            float _41;
+            float _42;
+            float _43;
+            float _44;
+        };
+        float m[4][4];
+    };
 };

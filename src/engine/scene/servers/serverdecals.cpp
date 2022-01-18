@@ -1,3 +1,5 @@
+#include <decals.h>
+#include <m3dapp.h>
 #include <stdexcept>
 #include <scene/servers/serverdecals.h>
 
@@ -45,7 +47,12 @@ namespace m3d
 
     DecalsServer::DecalsServer()
     {
-        throw std::logic_error("Not implemented");
+        auto id = Application::g_pApp->GetProfilerStack().AddProfiler("decals", 0x1E);
+        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        {
+            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+        }
+        DecalsList::LoadShaders();
     }
 
     int DecalsServer::GetItemProperty(int, int, void*)

@@ -112,7 +112,7 @@ namespace m3d
         auto* profiler = new Profiler(name);
         profiler->SetAverageVal(averageVal);
         m_stack.push_back(profiler);
-        return m_stack.size();
+        return m_stack.size() - 1;
     }
 
     void ProfilerStack::Clear()

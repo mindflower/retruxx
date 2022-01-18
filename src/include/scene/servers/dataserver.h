@@ -99,7 +99,7 @@ namespace m3d
         bool IsValid() const;
         int ParseProto(char const*, Proto*, int*);
 
-    private:
+    protected:
         void* m_fnLoadCallbackData = nullptr;
         void(__fastcall* m_fnLoadCallback)(int, void*) = nullptr;
         std::vector<Model> m_models;

@@ -2055,6 +2055,9 @@
     <ClCompile Include="src\engine\weather\weatherclear.cpp">
       <Filter>engine\weather</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\psprops.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">
@@ -3826,6 +3829,9 @@
     </ClInclude>
     <ClInclude Include="src\include\script\luaquaternion.h">
       <Filter>include\script</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\tracelinemanager.h">
+      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

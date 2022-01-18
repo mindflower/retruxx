@@ -1,3 +1,6 @@
+#include <config.h>
+#include <m3dapp.h>
+#include <core/kernel.h>
 #include <scene/servers/serveranimatedmodel.h>
 
 namespace m3d
@@ -39,7 +42,24 @@ namespace m3d
 
     int AnimatedModelsServer::Init()
     {
-        throw std::logic_error("Not implemented");
+        auto const logoFileName = g_Kernel->GetEngineCfg().m_loadFromGAM.GetB() ?
+            "data\\models\\Logos\\Logos.gam" : "data\\models\\Logos\\Logos.sam";
+        m_MeshMaterialManager.Init(logoFileName, g_Kernel->GetEngineCfg().m_pathToBelongsToLogos.GetS());
+
+        m_impostorVs = Application::g_pApp->m_renderer->NewHlslShader("data/shaders/impostorTest_vs11.vs", "ImpostorVS", rend::IHlslShader::VS_1_1);
+        if (!m_impostorVs)
+        {
+            return 0;
+        }
+
+        m_impostorPs = Application::g_pApp->m_renderer->NewHlslShader("data/shaders/impostorTest_ps11.ps", "ImpostorPS", rend::IHlslShader::VS_1_1);
+        if (!m_impostorPs)
+        {
+            return 0;
+        }
+
+        m_valid = true;
+        return 1;
     }
 
     CVector AnimatedModelsServer::GetBoundSizes(char const*)
@@ -64,7 +84,23 @@ namespace m3d
 
     AnimatedModelsServer::AnimatedModelsServer()
     {
-        throw std::logic_error("Not implemented");
+        auto idx = Application::g_pApp->GetProfilerStack().AddProfiler("animated", 0x1E);
+        if (idx < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        {
+            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+        }
+        idx = Application::g_pApp->m_counterStack.AddCounter("nodes");
+        if (idx < Application::g_pApp->m_counterStack.GetNumCounters())
+        {
+            m_countNodes = Application::g_pApp->m_counterStack.GetCounter(idx);
+            m_countNodes->SetI(0);
+        }
+        idx = Application::g_pApp->m_counterStack.AddCounter("meshes");
+        if (idx < Application::g_pApp->m_counterStack.GetNumCounters())
+        {
+            m_countMeshes = Application::g_pApp->m_counterStack.GetCounter(idx);
+            m_countMeshes->SetI(0);
+        }
     }
 
     int AnimatedModelsServer::SetItemProperty(int, int, void*)

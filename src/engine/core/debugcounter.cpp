@@ -1,11 +1,13 @@
 #include <stdexcept>
 #include <core/debugcounter.h>
+#include <core/stringm3d.h>
 
 namespace m3d
 {
-    void DbgCounter::SetI(int)
+    void DbgCounter::SetI(int i)
     {
-        throw std::logic_error("Not implemented");
+        m_curType - DBG_COUNTER_INT;
+        m_i = i;
     }
 
     DbgCounter::eType DbgCounter::GetType() const
@@ -35,7 +37,7 @@ namespace m3d
 
     char const* DbgCounter::GetName() const
     {
-        throw std::logic_error("Not implemented");
+        return m_name.c_str();
     }
 
     void DbgCounter::IncI()
@@ -45,7 +47,6 @@ namespace m3d
 
     DbgCounter::DbgCounter()
     {
-        throw std::logic_error("Not implemented");
     }
 
     DbgCounter::~DbgCounter()
@@ -53,14 +54,18 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void DbgCounter::SetName(char const*)
+    void DbgCounter::SetName(char const* name)
     {
-        throw std::logic_error("Not implemented");
+        m_name = name;
     }
 
-    DbgCounter* DbgCounterStack::GetCounter(unsigned)
+    DbgCounter* DbgCounterStack::GetCounter(unsigned id)
     {
-        throw std::logic_error("Not implemented");
+        if (id >= m_stack.size())
+        {
+            return 0;
+        }
+        return m_stack.at(id);
     }
 
     DbgCounterStack::~DbgCounterStack()
@@ -68,9 +73,22 @@ namespace m3d
         Clear();
     }
 
-    unsigned DbgCounterStack::AddCounter(char const*)
+    unsigned DbgCounterStack::AddCounter(char const* name)
     {
-        throw std::logic_error("Not implemented");
+        //TODO: check this
+        std::string_view nameView(name);
+        for (unsigned i =0; i<m_stack.size(); ++i)
+        {
+            if (nameView == m_stack[i]->GetName())
+            {
+                return i;
+            }
+        }
+        auto counter = new DbgCounter;
+        counter->SetName(name);
+        m_stack.push_back(counter);
+        m_numCounters++;
+        return m_stack.size() - 1;
     }
 
     void DbgCounterStack::ClearStringStack()
@@ -115,7 +133,7 @@ namespace m3d
 
     unsigned DbgCounterStack::GetNumCounters() const
     {
-        throw std::logic_error("Not implemented");
+        return m_stack.size();
     }
 
     void DbgCounterStack::DrawStringThisFrame(char const*)

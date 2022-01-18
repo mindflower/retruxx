@@ -1,3 +1,5 @@
+#include <m3dapp.h>
+#include <particles.h>
 #include <stdexcept>
 #include <scene/servers/serverparticles.h>
 
@@ -30,7 +32,24 @@ namespace m3d
 
     ParticlesServer::ParticlesServer()
     {
-        throw std::logic_error("Not implemented");
+        auto id = Application::g_pApp->GetProfilerStack().AddProfiler("particles", 0x1E);
+        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        {
+            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+        }
+        id = Application::g_pApp->GetProfilerStack().AddProfiler("particles update", 0x1E);
+        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        {
+            m_profilerUpdate = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+        }
+        QuadPS::CreateIb();
+        SpritePS::CreateIb();
+        GlowQuadPS::CreateIb();
+        PolyPS::CreateIb();
+        Poly1PS::CreateIb();
+        RainPS::CreateIb();
+        StripAllPS::CreateIb();
+        StripOnePS::CreateIb();
     }
 
     void ParticlesServer::MoveParticles(m3d::SgNode*, std::vector<CVector> const*)

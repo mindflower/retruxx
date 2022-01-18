@@ -33,7 +33,7 @@ namespace m3d
         virtual void AddItemsList(std::vector<m3d::DataServer::ServerItem>&);
 
     private:
-        Profiler* m_profiler;
-        Profiler* m_profilerUpdate;
+        Profiler* m_profiler = nullptr;
+        Profiler* m_profilerUpdate = nullptr;
     };
 }

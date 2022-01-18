@@ -32,8 +32,13 @@ namespace m3d
         void SetName(char const*);
 
     private:
-        eType m_curType;
-        //$BF58EB516B86498BF460C2A91DB16C1D ___u1;
+        eType m_curType = DBG_COUNTER_STRING;
+        union
+        {
+            int m_i = 0;
+            float m_f;
+            bool m_b;
+        };
         std::string m_s;
         std::string m_name;
     };

@@ -53,7 +53,8 @@ namespace m3d
 
     int StaticModelsServer::Init()
     {
-        throw std::logic_error("Not implemented");
+        m_valid = true;
+        return 1;
     }
 
     StaticModelsServer::~StaticModelsServer()

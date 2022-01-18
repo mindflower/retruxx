@@ -59,15 +59,15 @@ namespace m3d
         CVector m_fogTerm;
         CVector m_treeBendTerm;
         CVector m_colorSpecular;
-        bool m_tessellate;
-        bool m_alreadyCached;
+        bool m_tessellate = true;
+        bool m_alreadyCached = false;
         m3d::MeshMaterialManager m_MeshMaterialManager;
-        m3d::ShadowManager* m_ShadowMan;
-        int m_numShadowingNodes;
-        m3d::SgNode* m_shadowingNodes[100];
-        m3d::Profiler* m_profiler;
-        m3d::DbgCounter* m_countNodes;
-        m3d::DbgCounter* m_countMeshes;
+        m3d::ShadowManager* m_ShadowMan = nullptr;
+        int m_numShadowingNodes = 0;
+        m3d::SgNode* m_shadowingNodes[100] = {0};
+        m3d::Profiler* m_profiler = nullptr;
+        m3d::DbgCounter* m_countNodes = nullptr;
+        m3d::DbgCounter* m_countMeshes = nullptr;
         bool m_globalFxParamAmbientNotActuated;
         bool m_globalFxParamDiffuseNotActuated;
         bool m_globalFxParamPlantAmbientNotActuated;
@@ -75,7 +75,7 @@ namespace m3d
         bool m_globalFxParamFrameStartTimeNotActuated;
         bool m_globalFxParamTreeBendTermNotActuated;
         bool m_globalFxParamSpecularNotActuated;
-        m3d::rend::IHlslShader* m_impostorVs;
-        m3d::rend::IHlslShader* m_impostorPs;
+        m3d::rend::IHlslShader* m_impostorVs = nullptr;
+        m3d::rend::IHlslShader* m_impostorPs = nullptr;
     };
 }

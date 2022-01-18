@@ -274,6 +274,7 @@ namespace m3d
         IImpulse* m_pImpulses = nullptr;
         Cinematic* m_cinematic = nullptr;
         CCamera m_curCamera;
+        DbgCounterStack m_counterStack;
 
 
         _cpinfoexA m_codePage;
@@ -355,7 +356,6 @@ namespace m3d
         int m_timeFromLevelLoaded;
         CIntHash<int> m_belongToIdxHash;
         ProfilerStack m_profilerStack;
-        DbgCounterStack m_counterStack;
         unsigned int m_profiler_OneFrame;
         unsigned int m_profiler_Render;
         unsigned int m_profiler_UiRender;

@@ -16,6 +16,14 @@ namespace m3d
     class Kernel;
 }
 
+struct nFloat4
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
 namespace m3d
 {
     namespace rend
@@ -411,13 +419,17 @@ namespace m3d
         {
         public:
             unsigned int GetOffset() const;
+            unsigned int GetSize() const;
             IbHandle GetIbHandle() const;
 
         private:
-            unsigned int Offset;
-            unsigned int Size;
-            unsigned int RealOffset;
+            unsigned int Offset = 0;
+            unsigned int Size = 0;
+            unsigned int RealOffset = 0;
             IbHandle Ib;
+
+        public:
+            IbPoolField(){}
         };
 
         enum LightType
@@ -496,9 +508,17 @@ namespace m3d
 
         class IRenderResource
         {
-        private:
-            //m3d::rend::IRenderResource_vtbl* __vftable /*VFT*/;
+        public:
+            virtual int AddRef() = 0;
+            virtual int Release() = 0;
+            virtual int GetRefCount() = 0;
+            virtual bool IsValid() = 0;
+
+        protected:
             int m_refCount;
+
+        public:
+            virtual ~IRenderResource() = default;
         };
 
         class IQuery : public IRenderResource
@@ -543,6 +563,31 @@ namespace m3d
                 PS_2_a = 0x7,
                 PS_3_0 = 0x8,
             };
+
+            using ParameterHandle = unsigned;
+
+        public:
+            static const ParameterHandle INVALID_PARAM;
+
+        public:
+            virtual unsigned int GetNumberOfParams() = 0;
+            virtual unsigned int GetParamHandleByName(const char*) = 0;
+            virtual void SetInt(unsigned int, int) = 0;
+            virtual void SetFloat(unsigned int, float) = 0;
+            virtual void SetVector4(unsigned int, const CVector4*) = 0;
+            virtual void SetVector3(unsigned int, const CVector*) = 0;
+            virtual void SetFloat4(unsigned int, const nFloat4*) = 0;
+            virtual void SetMatrix(unsigned int, const CMatrix*) = 0;
+            virtual void SetIntArray(unsigned int, const int*, int) = 0;
+            virtual void SetFloatArray(unsigned int, const float*, int) = 0;
+            virtual void SetFloat4Array(unsigned int, const nFloat4*, int) = 0;
+            virtual void SetVector4Array(unsigned int, const CVector4*, int) = 0;
+            virtual void SetMatrixArray(unsigned int, const CMatrix*, int) = 0;
+            virtual void SetMatrixPointerArray(unsigned int, const CMatrix**, int) = 0;
+            virtual void Apply() = 0;
+            virtual ~IHlslShader() = default;
+            IHlslShader(IHlslShader const&){}
+            IHlslShader(){}
         };
 
         class IAsmShader : public IRenderResource
@@ -888,10 +933,10 @@ namespace m3d
             virtual void UnlockIb(const m3d::rend::IbHandle*) = 0;
             virtual int ReleaseIb(m3d::rend::IbHandle*) = 0;
             virtual int ReferenceIb(const m3d::rend::IbHandle*) = 0;
-            virtual m3d::rend::IbPoolField* AddIbPoolField(m3d::rend::IbPoolField* result, unsigned int) = 0;
+            virtual m3d::rend::IbPoolField AddIbPoolField(unsigned int) = 0;
             virtual void ReleaseIbPoolField(m3d::rend::IbPoolField*) = 0;
-            virtual void* LockIbPoolField(const m3d::rend::IbPoolField*) = 0;
-            virtual void UnlockIbPoolField(const m3d::rend::IbPoolField*) = 0;
+            virtual void* LockIbPoolField(m3d::rend::IbPoolField const&) = 0;
+            virtual void UnlockIbPoolField(m3d::rend::IbPoolField const&) = 0;
             virtual bool ReportIbsInfo(const char*) = 0;
             virtual m3d::rend::VbHandle* AddVb(m3d::rend::VbHandle* result, m3d::rend::VertexType, int, const CStr*, unsigned int) = 0;
             virtual void SetToStream0(const m3d::rend::VbPoolField*) = 0;

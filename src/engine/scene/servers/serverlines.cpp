@@ -35,7 +35,6 @@ namespace m3d
 
     LinesServer::LinesServer()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void LinesServer::RenderItem(int, void*)
