@@ -16,12 +16,12 @@ namespace ai
     class IntersectionManager
     {
     public:
-        static bool __fastcall SpheresIntersect(CVector const&, float, CVector, float);
-        static bool __fastcall IsSphereValid(Sphere const*, std::set<m3d::Class*> const&, bool);
-        static void __fastcall Registration();
-        static void __fastcall AddLookingSphere(SphereForIntersection*);
-        static void __fastcall ClearCounters();
-        static void __fastcall RemoveLookingSphere(SphereForIntersection*);
+        static bool SpheresIntersect(CVector const&, float, CVector, float);
+        static bool IsSphereValid(Sphere const*, std::set<m3d::Class*> const&, bool);
+        static void Registration();
+        static void AddLookingSphere(SphereForIntersection*);
+        static void ClearCounters();
+        static void RemoveLookingSphere(SphereForIntersection*);
 
     private:
         //GetIntersectedObjectsByKindOf(std::set<ref_ptr<Obstacle>>&, Sphere const*, std::set<m3d::Class*> const&, bool);

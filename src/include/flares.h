@@ -1,4 +1,5 @@
 #pragma once
+#include <renderer/i_renderer.h>
 
 class CVector;
 
@@ -15,6 +16,8 @@ namespace m3d
     };
     class CFlare
     {
+        static rend::TexHandle m_tex[6];
+        static rend::TexHandle m_texSunGlow;
     public:
         ~CFlare();
         static int __fastcall Init();

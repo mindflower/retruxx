@@ -2,13 +2,13 @@
 #include <core/stringm3d.h>
 #include <vector>
 
-namespace ui
-{
-    class Wnd;
-}
-
 namespace m3d
 {
+    namespace ui
+    {
+        class Wnd;
+    }
+
     class Event;
 
     class AuxImpulseInfo
@@ -30,12 +30,12 @@ namespace m3d
     {
     public:
         virtual ~IImpulse() = default;
-        virtual int BindKey1(const CStr*, const CStr*, const CStr*) = 0;
-        virtual int BindKey2(const CStr*, const CStr*, const CStr*, const CStr*) = 0;
-        virtual int BindKey3(const CStr*, const CStr*, const CStr*, const CStr*, const CStr*) = 0;
-        virtual int UnbindKey1(const CStr*, const CStr*, const CStr*) = 0;
-        virtual int UnbindKey2(const CStr*, const CStr*, const CStr*, const CStr*) = 0;
-        virtual int UnbindKey3(const CStr*, const CStr*, const CStr*, const CStr*, const CStr*) = 0;
+        virtual int BindKey1(CStr const&, CStr const&, CStr const&) = 0;
+        virtual int BindKey2(CStr const&, CStr const&, CStr const&, CStr const&) = 0;
+        virtual int BindKey3(CStr const&, CStr const&, CStr const&, CStr const&, CStr const&) = 0;
+        virtual int UnbindKey1(CStr const&, CStr const&, CStr const&) = 0;
+        virtual int UnbindKey2(CStr const&, CStr const&, CStr const&, CStr const&) = 0;
+        virtual int UnbindKey3(CStr const&, CStr const&, CStr const&, CStr const&, CStr const&) = 0;
         virtual void UnbindAll() = 0;
         virtual int Init() = 0;
         virtual int Done() = 0;
@@ -43,20 +43,20 @@ namespace m3d
         virtual int LoadFromProfile() = 0;
         virtual int SaveToDefaults() = 0;
         virtual int SaveToProfile() = 0;
-        virtual int SetImpulseState(const AuxImpulseInfo*, ui::Wnd*) = 0;
+        virtual int SetImpulseState(AuxImpulseInfo const&, ui::Wnd*) = 0;
         virtual bool GetImpulseState(int) = 0;
         virtual bool GetImpulseStateAndReset(int) = 0;
         virtual void ResetImpulseWithoutNotification(int) = 0;
         virtual void ResetAllImpulses(bool) = 0;
-        virtual void RaiseOneTimeImpulse(const AuxImpulseInfo*) = 0;
-        virtual int HandleKeyboardMouseEvent(const Event*, ui::Wnd*) = 0;
-        virtual int GetKeyIdByName(const CStr*) = 0;
-        virtual CStr  GetKeyNameById(int) = 0;
-        virtual int GetImpulseIdByName(const CStr*) = 0;
-        virtual CStr  GetImpulseNameById(int) = 0;
-        virtual int GetGameModeIdByName(const CStr*) = 0;
-        virtual CStr  GetGameModeNameById(int) = 0;
-        virtual std::vector<std::vector<int>>  GetKeysForImpulse(int, int) = 0;
+        virtual void RaiseOneTimeImpulse(AuxImpulseInfo const&) = 0;
+        virtual int HandleKeyboardMouseEvent(Event const&, ui::Wnd*) = 0;
+        virtual int GetKeyIdByName(CStr const&) = 0;
+        virtual CStr GetKeyNameById(int) = 0;
+        virtual int GetImpulseIdByName(CStr const&) = 0;
+        virtual CStr GetImpulseNameById(int) = 0;
+        virtual int GetGameModeIdByName(CStr const&) = 0;
+        virtual CStr GetGameModeNameById(int) = 0;
+        virtual std::vector<std::vector<int>> GetKeysForImpulse(int, int) = 0;
         virtual int GetImpulseForKeys(std::vector<int>, int) = 0;
     };
 }

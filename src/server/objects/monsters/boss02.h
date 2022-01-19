@@ -85,6 +85,9 @@ namespace ai
         void _SetToDeadPose();
         void _OnBossArmActionFinished(Event const&);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Boss02);
+
     private:
         std::vector<Boss02PrototypeInfo::StateInfo> m_stateInfos;
         int m_numState;

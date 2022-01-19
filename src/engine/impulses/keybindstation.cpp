@@ -5,7 +5,6 @@ namespace m3d
 {
     KeysSet::KeysSet()
     {
-        throw std::logic_error("Not implemented");
     }
 
     KeysSet::KeysSet(KeysSet const&)

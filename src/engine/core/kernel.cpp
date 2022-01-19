@@ -40,9 +40,9 @@ namespace m3d
     Kernel* g_Kernel = nullptr;
     Kernel kernelObject;
 
-    void Kernel::UnRegisterGlobal(char const*)
+    void Kernel::UnRegisterGlobal(char const* name)
     {
-        throw std::logic_error("Not implemented");
+        m_lGlobals->erase(name);
     }
 
     void Kernel::SysError(CStr const& whence, CStr const& descr)

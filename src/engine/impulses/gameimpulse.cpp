@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <impulses/i_impulses.h>
 #include "gameimpulse.h"
+#include <core/log.h>
 
 namespace m3d
 {
@@ -51,7 +52,16 @@ namespace m3d
 
     int GameImpulse::Init()
     {
-        throw std::logic_error("Not implemented");
+        if (m_isInited)
+        {
+            M3D_LOG_INFO("Key bindings: fail to init because already is inited");
+            return 0;
+        }
+        g_Kernel->UnRegisterGlobal("IMPULSES");
+        g_Kernel->RegisterGlobal(this, "IMPULSES");
+        m_isInited = true;
+        M3D_LOG_INFO("Key bindings: were inited successfully");
+        return 1;
     }
 
     int GameImpulse::SaveToDefaults()
@@ -211,6 +221,5 @@ namespace m3d
 
     GameImpulse::GameImpulse()
     {
-        throw std::logic_error("Not implemented");
     }
 }

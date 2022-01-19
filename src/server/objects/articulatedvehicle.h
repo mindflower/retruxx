@@ -57,6 +57,9 @@ namespace ai
         static m3d::Object * CreateObject();
         Vehicle * _GetTrailer() const ;
 
+    public:
+        RT_CLASS_INLINE_DECLARE(ArticulatedVehicle);
+
     private:
         int m_trailerObjId;
         dxJoint *m_trailerJoint;

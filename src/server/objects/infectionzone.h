@@ -80,6 +80,9 @@ namespace ai
         virtual m3d::Object * Clone();
         void _GetGoodRandomDropOutPoints(std::vector<CVector,std::allocator<CVector> > &) const ;
 
+    public:
+        RT_CLASS_INLINE_DECLARE(InfectionZone);
+
     private:
         geom2d::Polygon2<float> m_infectionPolygon;
         std::vector<geom2d::Point2<float>> m_dropOutPoints;

@@ -36,6 +36,9 @@ namespace ai
         static m3d::Object * CreateObject();
         virtual void _DoNoticeEnemy(int);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(VagabondTeam);
+
     private:
         int m_vehiclesGeneratorPrototypeId;
     };

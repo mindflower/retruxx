@@ -53,6 +53,9 @@ namespace ai
         //MemberFunctionOneArg<BossMetalArmLoad,float,void>::MemberFunctionOneArg<BossMetalArmLoad,float,void>(BossMetalArmLoad &,void (*const)(float));
         void _CreateBlastWave();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(BossMetalArmLoad);
+
     private:
         CollisionMode m_collisionMode;
         NumericInRange<float> m_health;

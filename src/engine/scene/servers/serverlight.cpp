@@ -1,3 +1,4 @@
+#include <flares.h>
 #include <m3dapp.h>
 #include <stdexcept>
 #include <scene/servers/serverlight.h>
@@ -11,7 +12,9 @@ namespace m3d
 
     int LightsServer::Init()
     {
-        throw std::logic_error("Not implemented");
+        m_valid = true;
+        CFlare::Init();
+        return 1;
     }
 
     int LightsServer::Release()

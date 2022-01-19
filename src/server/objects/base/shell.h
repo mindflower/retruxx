@@ -32,9 +32,12 @@ namespace ai
     protected:
         virtual ~Shell();
 
-    private:
+    protected:
         static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(Shell);
 
     private:
         int m_gunObjId;

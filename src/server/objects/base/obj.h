@@ -354,6 +354,9 @@ namespace ai
         void OnUnsubscribe(Event const &);
         int _GetIndexByEventId(eGameEvent eventId) const;
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Obj);
+
     private:
         int m_objId;
         int m_updatingObjId;

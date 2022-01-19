@@ -117,6 +117,11 @@ namespace ai
 
     private:
         void _OnDynamicQuestComplete(Event const &);
+
+    public:
+        RT_CLASS_INLINE_DECLARE(Player);
+
+    private:
         NumericBoundedBelow<int> m_money;
         //_BYTE gapC0[120];
         int m_vehicleObjId;

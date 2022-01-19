@@ -90,6 +90,9 @@ namespace ai
         bool _BuyRealObject(Obj const *);
         unsigned int _GetRealObjectSellPrice(Obj const *) const ;
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Workshop);
+
     private:
         std::map<WorkshopRepositoryType,GeomRepository *> m_repositories;
         std::map<int,Article> m_articles;

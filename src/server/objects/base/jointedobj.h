@@ -81,6 +81,9 @@ namespace ai
         virtual m3d::Object * Clone();
         static m3d::Object * CreateObject();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(JointedObj);
+
     private:
         dxSpace *m_MembersSpace;
         std::vector<GeomObj *> m_Members;

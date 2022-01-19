@@ -54,6 +54,9 @@ namespace ai
         static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(SgNodeObj);
+
     private:
         m3d::SgNode *m_node;
         CStr m_modelName;

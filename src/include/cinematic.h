@@ -163,7 +163,7 @@ namespace m3d
         Cinematic();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Cinematic);
+        RT_CLASS_DECLARE(Cinematic);
 
     public:
         CinematicState m_state = CINEMATIC_NOT_INITED;

@@ -28,6 +28,9 @@ namespace ai
         IntIntRatioStatistic();
         IntIntRatioStatistic(IntIntRatioStatistic const &);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(IntIntRatioStatistic);
+
     private:
         int m_numerator;
         int m_denominator;

@@ -95,6 +95,11 @@ namespace ai
     private:
         virtual m3d::Object * Clone();
         static m3d::Object * CreateObject();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(SimplePhysicObj);
+
+    private:
         SimplePhysicBody *m_physicBody;
         std::vector<CollisionInfo> m_collisionInfos;
         float m_scale;

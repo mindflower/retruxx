@@ -31,7 +31,11 @@ namespace ai
     protected:
         SphericBody();
         SphericBody(SphericBody const &);
+
     private:
         Sphere const * _Sphere() const ;
+
+    public:
+        RT_CLASS_INLINE_DECLARE(SphericBody);
     };
 }

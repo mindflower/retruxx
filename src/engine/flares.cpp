@@ -1,8 +1,13 @@
 #include <flares.h>
+#include <m3dapp.h>
 #include <stdexcept>
+#include <core/stringm3d.h>
 
 namespace m3d
 {
+    rend::TexHandle CFlare::m_tex[6];
+    rend::TexHandle CFlare::m_texSunGlow;
+
     CFlare::~CFlare()
     {
         throw std::logic_error("Not implemented");
@@ -10,7 +15,13 @@ namespace m3d
 
     int CFlare::Init()
     {
-        throw std::logic_error("Not implemented");
+        for (unsigned i = 0; i<6;++i)
+        {
+            auto fileName = "data\\fx\\flare" + CStr(i) + ".bmp";
+            m_tex[i] = Application::g_pApp->m_renderer->AddTexture(fileName, 2);
+        }
+        m_texSunGlow = Application::g_pApp->m_renderer->AddTexture("data\\fx\\flare0.bmp", 2);
+        return 1;
     }
 
     void CFlare::Release()

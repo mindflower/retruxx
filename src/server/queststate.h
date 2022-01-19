@@ -88,6 +88,11 @@ namespace ai
         QuestState* _GetQuestStateById(int) const;
         QuestState* _GetQuestStateByName(char const*) const;
         void _Clear();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(QuestStateManager);
+
+    private:
         std::vector<QuestState*> m_questStates;
         unsigned int m_UpdateCount;
     };

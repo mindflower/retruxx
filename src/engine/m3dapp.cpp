@@ -246,7 +246,7 @@ namespace m3d
                 if (g_Kernel->GetEngineCfg().m_hasServers.GetB())
                 {
                     m_serverStaticModels->Init();
-                    m_serverAnimatedModels->Init();
+                    //m_serverAnimatedModels->Init();
                     m_serverLights->Init();
                     m_serverSprites->Init();
                     m_serverLines->Init();

@@ -27,6 +27,9 @@ namespace ai
         FloatStatistic(FloatStatistic const &);
         FloatStatistic();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(FloatStatistic);
+
     private:
         float m_value;
     };

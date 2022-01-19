@@ -71,6 +71,9 @@ namespace ai
         void _FillCameraStates(std::vector<m3d::CameraPathState,std::allocator<m3d::CameraPathState> > &,CVector const &) const ;
         void _OnTargetReached(Event const &);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Submarine);
+
     private:
         eSubmarineState m_state;
         CVector m_placePosition;

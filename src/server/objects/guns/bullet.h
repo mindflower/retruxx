@@ -38,6 +38,9 @@ namespace ai
     protected:
         virtual ~Bullet();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Bullet);
+
     private:
         static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();

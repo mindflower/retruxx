@@ -123,6 +123,9 @@ namespace ai
         void _OnNoticeEnemy(Event const &);
         static m3d::Object * CreateObject();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Team);
+
     private:
         bool m_bRemoveWhenChildrenDead;
         bool m_bUseStandardUpdatingBehavior;

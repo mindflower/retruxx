@@ -28,6 +28,9 @@ namespace ai
         FavoriteStringStatistic();
         FavoriteStringStatistic(FavoriteStringStatistic const &);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(FavoriteStringStatistic);
+
     private:
         std::map<CStr,unsigned int> m_counters;
     };

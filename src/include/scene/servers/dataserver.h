@@ -57,12 +57,12 @@ namespace m3d
         public:
             Model(void*, char const*, char const*, char const*);
 
-        private:
-            void* m_ptr;
+        public:
+            void* m_ptr = nullptr;
             CStr m_name;
             CStr m_fileName;
             CStr m_originalFileName;
-            unsigned int m_additionalData[16];
+            unsigned int m_additionalData[16] = {0};
         };
 
     public:

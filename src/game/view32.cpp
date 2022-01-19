@@ -869,8 +869,9 @@ void CMiracle3d::RegisterConsoleCommands()
 
 int CMiracle3d::InitImpulses()
 {
-    m3d::g_Kernel->AddClass(&m3d::GameImpulse::m_classGameImpulse);
-    m3d::g_Kernel->AddClass(RT_CLASS_LOCAL(TruxxImpulse));
+    using namespace m3d;
+    g_Kernel->AddClass(RT_CLASS_LOCAL(GameImpulse));
+    g_Kernel->AddClass(RT_CLASS_LOCAL(TruxxImpulse));
     m_pImpulses = dynamic_cast<TruxxImpulse*>(m3d::g_Kernel->New("TruxxImpulse"));
     if (m_pImpulses == nullptr)
     {

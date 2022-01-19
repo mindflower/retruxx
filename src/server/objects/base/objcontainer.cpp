@@ -4,6 +4,8 @@
 
 namespace ai
 {
+    RT_CLASS_DEFINE(ObjContainer);
+
     ObjContainer* theObjects = nullptr;
 
     long long GameTime::asInt64() const
@@ -298,7 +300,7 @@ namespace ai
 
     m3d::Object* ObjContainer::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new ObjContainer;
     }
 
     void ObjContainer::TransferPhysicParamsToSceneGraph()
@@ -537,6 +539,11 @@ namespace ai
     }
 
     void ObjContainer::_DeleteObj(Obj*&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void SetObjects(ObjContainer*)
     {
         throw std::logic_error("Not implemented");
     }

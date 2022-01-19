@@ -5,7 +5,7 @@
 #define RT_CLASS_LOCAL(cl) &cl::m_class##cl
 #define RT_CLASS_DECLARE(cl) static m3d::Class m_class##cl
 #define RT_CLASS_DEFINE(cl) m3d::Class cl::m_class##cl {#cl, sizeof(cl), CreateObject, GetBaseClass}
-#define RT_CLASS_INLINE_DECLARE(cl) static inline m3d::Class m_class##cl {#cl, 0, CreateObject, GetBaseClass}
+#define RT_CLASS_INLINE_DECLARE(cl) static inline m3d::Class m_class##cl {#cl}
 
 namespace m3d
 {

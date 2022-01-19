@@ -166,6 +166,9 @@ namespace ai
         static m3d::Object * CreateObject();
         static void __fastcall _CommonBodyChangeEnabledStateCallback(dxBody *);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(PhysicObj);
+
     private:
         int m_postActionFlags;
         Quaternion m_postRotation;

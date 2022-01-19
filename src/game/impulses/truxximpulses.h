@@ -4,11 +4,11 @@
 class TruxxImpulse : public m3d::GameImpulse
 {
 public:
-    virtual int HandleImpulse(m3d::AuxImpulseInfo const &, m3d::ui::Wnd *);
-    virtual int GetImpulseIdByName(CStr const &);
-    virtual int GetGameModeIdByName(CStr const &);
+    virtual int GetImpulseIdByName(CStr const&);
+    virtual int GetGameModeIdByName(CStr const&);
     virtual CStr GetImpulseNameById(int);
     virtual CStr GetGameModeNameById(int);
+    virtual int HandleImpulse(m3d::AuxImpulseInfo const &, m3d::ui::Wnd *);
     virtual m3d::Class * GetClass() const ;
     virtual Object * Clone();
     virtual ~TruxxImpulse();
@@ -21,5 +21,5 @@ protected:
     TruxxImpulse(TruxxImpulse const &);
 
 public:
-    RT_CLASS_INLINE_DECLARE(TruxxImpulse);
+    RT_CLASS_DECLARE(TruxxImpulse);
 };

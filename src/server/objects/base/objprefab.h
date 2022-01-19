@@ -59,6 +59,11 @@ namespace ai
         void AddTeam();
         void AddVehicleChild(Vehicle*);
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(ObjPrefab);
+
+    private:
         std::set<PhysicObj*> m_physicObjs;
         std::set<Obj*> m_otherChildren;
         Team* m_team;

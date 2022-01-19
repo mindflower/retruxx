@@ -69,6 +69,9 @@ class DecisionMatrix :  public m3d::Object
         DecisionMatrixElement & _GetElement(int,int);
         static void __fastcall _LogUnexpectedToken(CStr const &);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(DecisionMatrix);
+
 private:
         std::vector<AIParamRef> m_tmpParamRefList;
         std::vector<AIState> m_States;

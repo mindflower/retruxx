@@ -57,6 +57,9 @@ namespace ai
         virtual m3d::Object * Clone();
         static m3d::Object * CreateObject();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Cabin);
+
     private:
         float m_maxPower;
         float m_maxTorque;

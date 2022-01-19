@@ -138,6 +138,9 @@ namespace ai
         void _SetPathTrackingStatus(PathTrackingStatus);
         float CalcKeyPartsMaxDurability() const ;
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Boss03);
+
     private:
         NumericInRange<float> m_health;
         CVector m_linearVelocity;

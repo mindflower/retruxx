@@ -1,5 +1,109 @@
 #include "server.h"
+#include "dynamicscene.h"
+#include "geomrepository.h"
+#include "intersectionmanager.h"
+#include "izvratrepository.h"
+#include "queststate.h"
+#include "static2dpath.h"
+#include "ai/aimanager.h"
+#include "objects/articulatedvehicle.h"
+#include "objects/bar.h"
+#include "objects/barricade.h"
+#include "objects/basket.h"
+#include "objects/blastwave.h"
+#include "objects/breakableobject.h"
+#include "objects/cabin.h"
+#include "objects/caravanteam.h"
+#include "objects/chassis.h"
+#include "objects/cinematicmover.h"
+#include "objects/dummyobject.h"
+#include "objects/dynamicquestconvoy.h"
+#include "objects/dynamicquestdestroy.h"
+#include "objects/dynamicquesthunt.h"
+#include "objects/dynamicquestpeace.h"
+#include "objects/dynamicquestreach.h"
+#include "objects/gadget.h"
+#include "objects/infectionlair.h"
+#include "objects/infectionteam.h"
+#include "objects/infectionzone.h"
+#include "objects/lair.h"
+#include "objects/lightobj.h"
+#include "objects/npc.h"
+#include "objects/npcmotioncontroller.h"
+#include "objects/particlesplinter.h"
+#include "objects/physicunit.h"
+#include "objects/player.h"
+#include "objects/settlement.h"
+#include "objects/sgnodeobj.h"
+#include "objects/staticautogun.h"
+#include "objects/town.h"
+#include "objects/trigger.h"
+#include "objects/vagabondteam.h"
+#include "objects/vehiclerecollection.h"
+#include "objects/vehiclesplinter.h"
+#include "objects/ware.h"
+#include "objects/wheel.h"
+#include "objects/workshop.h"
+#include "objects/base/animatedcomplexphysicobj.h"
+#include "objects/base/complexphysicobj.h"
+#include "objects/base/compositeobj.h"
+#include "objects/base/geomobj.h"
+#include "objects/base/jointedobj.h"
+#include "objects/base/objprefab.h"
+#include "objects/base/physicobj.h"
+#include "objects/base/shell.h"
+#include "objects/base/simplephysicobj.h"
+#include "objects/guns/bullet.h"
+#include "objects/guns/bulletlauncher.h"
+#include "objects/guns/compoundgun.h"
+#include "objects/guns/engineoillocation.h"
+#include "objects/guns/gun.h"
+#include "objects/guns/locationpusher.h"
+#include "objects/guns/mine.h"
+#include "objects/guns/minepusher.h"
+#include "objects/guns/mortar.h"
+#include "objects/guns/mortarshell.h"
+#include "objects/guns/mortarvolleylauncher.h"
+#include "objects/guns/plasmabunch.h"
+#include "objects/guns/plasmabunchlauncher.h"
+#include "objects/guns/rocket.h"
+#include "objects/guns/rocketlauncher.h"
+#include "objects/guns/rocketvolleylauncher.h"
+#include "objects/guns/thunderboltlauncher.h"
+#include "objects/guns/turboaccelerationpusher.h"
+#include "objects/monsters/boss02.h"
+#include "objects/monsters/boss02arm.h"
+#include "objects/monsters/boss03.h"
+#include "objects/monsters/boss03part.h"
+#include "objects/monsters/boss04.h"
+#include "objects/monsters/boss04drone.h"
+#include "objects/monsters/boss04part.h"
+#include "objects/monsters/boss04station.h"
+#include "objects/monsters/boss04stationpart.h"
+#include "objects/monsters/bossmetalarm.h"
+#include "objects/monsters/bossmetalarmload.h"
+#include "objects/monsters/submarine.h"
+#include "objects/physicbodies/boxybody.h"
+#include "objects/physicbodies/compoundvehiclepart.h"
+#include "objects/physicbodies/physicbody.h"
+#include "objects/physicbodies/sphericbody.h"
+#include "roles/teamtactic.h"
+#include "roles/vehiclerolebarrier.h"
+#include "roles/vehiclerolecheater.h"
+#include "roles/vehiclerolecoward.h"
+#include "roles/vehiclerolemeat.h"
+#include "roles/vehicleroleoppressor.h"
+#include "roles/vehiclerolependulum.h"
+#include "roles/vehiclerolesniper.h"
+#include "statistic/favoritestringstatistic.h"
+#include "statistic/floatstatistic.h"
+#include "statistic/intintratiostatistic.h"
+#include "statistic/intstatistic.h"
+#include "statistic/timestatistic.h"
+#include <config.h>
+#include <m3dapp.h>
 #include <stdexcept>
+#include <core/kernel.h>
 
 namespace ai
 {
@@ -87,7 +191,119 @@ namespace ai
 
     void CServer::Register()
     {
-        throw std::logic_error("Not implemented");
+        m3d::g_Kernel->AddClass(&Obj::m_classObj);
+        m3d::g_Kernel->AddClass(&Trigger::m_classTrigger);
+        m3d::g_Kernel->AddClass(&ObjContainer::m_classObjContainer);
+        m3d::g_Kernel->AddClass(&TimeStatistic::m_classTimeStatistic);
+        m3d::g_Kernel->AddClass(&IntStatistic::m_classIntStatistic);
+        m3d::g_Kernel->AddClass(&FloatStatistic::m_classFloatStatistic);
+        m3d::g_Kernel->AddClass(&FavoriteStringStatistic::m_classFavoriteStringStatistic);
+        m3d::g_Kernel->AddClass(&IntIntRatioStatistic::m_classIntIntRatioStatistic);
+        m3d::g_Kernel->AddClass(&Player::m_classPlayer);
+        m3d::g_Kernel->AddClass(&PhysicObj::m_classPhysicObj);
+        m3d::g_Kernel->AddClass(&SimplePhysicObj::m_classSimplePhysicObj);
+        m3d::g_Kernel->AddClass(&BreakableObject::m_classBreakableObject);
+        m3d::g_Kernel->AddClass(&DummyObject::m_classDummyObject);
+        m3d::g_Kernel->AddClass(&VehicleSplinter::m_classVehicleSplinter);
+        m3d::g_Kernel->AddClass(&ParticleSplinter::m_classParticleSplinter);
+        m3d::g_Kernel->AddClass(&ComplexPhysicObj::m_classComplexPhysicObj);
+        m3d::g_Kernel->AddClass(&ComplexPhysicObjPartDescription::m_classComplexPhysicObjPartDescription);
+        m3d::g_Kernel->AddClass(&AnimatedComplexPhysicObj::m_classAnimatedComplexPhysicObj);
+        m3d::g_Kernel->AddClass(&PhysicBody::m_classPhysicBody);
+        m3d::g_Kernel->AddClass(&SimplePhysicBody::m_classSimplePhysicBody);
+        m3d::g_Kernel->AddClass(&SphericBody::m_classSphericBody);
+        m3d::g_Kernel->AddClass(&BoxyBody::m_classBoxyBody);
+        m3d::g_Kernel->AddClass(&VehiclePart::m_classVehiclePart);
+        m3d::g_Kernel->AddClass(&CompoundVehiclePart::m_classCompoundVehiclePart);
+        m3d::g_Kernel->AddClass(&Wheel::m_classWheel);
+        m3d::g_Kernel->AddClass(&Vehicle::m_classVehicle);
+        m3d::g_Kernel->AddClass(&ArticulatedVehicle::m_classArticulatedVehicle);
+        m3d::g_Kernel->AddClass(&Gun::m_classGun);
+        m3d::g_Kernel->AddClass(&Shell::m_classShell);
+        m3d::g_Kernel->AddClass(&CompoundGun::m_classCompoundGun);
+        m3d::g_Kernel->AddClass(&Bullet::m_classBullet);
+        m3d::g_Kernel->AddClass(&BulletLauncher::m_classBulletLauncher);
+        m3d::g_Kernel->AddClass(&Rocket::m_classRocket);
+        m3d::g_Kernel->AddClass(&RocketLauncher::m_classRocketLauncher);
+        m3d::g_Kernel->AddClass(&RocketVolleyLauncher::m_classRocketVolleyLauncher);
+        m3d::g_Kernel->AddClass(&PlasmaBunch::m_classPlasmaBunch);
+        m3d::g_Kernel->AddClass(&PlasmaBunchLauncher::m_classPlasmaBunchLauncher);
+        m3d::g_Kernel->AddClass(&MortarShell::m_classMortarShell);
+        m3d::g_Kernel->AddClass(&Mortar::m_classMortar);
+        m3d::g_Kernel->AddClass(&MortarVolleyLauncher::m_classMortarVolleyLauncher);
+        m3d::g_Kernel->AddClass(&ThunderboltLauncher::m_classThunderboltLauncher);
+        m3d::g_Kernel->AddClass(&Mine::m_classMine);
+        m3d::g_Kernel->AddClass(&MinePusher::m_classMinePusher);
+        m3d::g_Kernel->AddClass(&LocationPusher::m_classLocationPusher);
+        m3d::g_Kernel->AddClass(&EngineOilLocation::m_classEngineOilLocation);
+        m3d::g_Kernel->AddClass(&TurboAccelerationPusher::m_classTurboAccelerationPusher);
+        m3d::g_Kernel->AddClass(&ObjPrefab::m_classObjPrefab);
+        m3d::g_Kernel->AddClass(&Barricade::m_classBarricade);
+        m3d::g_Kernel->AddClass(&Chassis::m_classChassis);
+        m3d::g_Kernel->AddClass(&Cabin::m_classCabin);
+        m3d::g_Kernel->AddClass(&Basket::m_classBasket);
+        m3d::g_Kernel->AddClass(&InfectionZone::m_classInfectionZone);
+        m3d::g_Kernel->AddClass(&InfectionTeam::m_classInfectionTeam);
+        m3d::g_Kernel->AddClass(&InfectionLair::m_classInfectionLair);
+        m3d::g_Kernel->AddClass(&Location::m_classLocation);
+        m3d::g_Kernel->AddClass(&StaticAutoGun::m_classStaticAutoGun);
+        m3d::g_Kernel->AddClass(&Settlement::m_classSettlement);
+        m3d::g_Kernel->AddClass(&Town::m_classTown);
+        m3d::g_Kernel->AddClass(&Building::m_classBuilding);
+        m3d::g_Kernel->AddClass(&Workshop::m_classWorkshop);
+        m3d::g_Kernel->AddClass(&Bar::m_classBar);
+        m3d::g_Kernel->AddClass(&Npc::m_classNpc);
+        m3d::g_Kernel->AddClass(&Lair::m_classLair);
+        m3d::g_Kernel->AddClass(&Team::m_classTeam);
+        m3d::g_Kernel->AddClass(&CaravanTeam::m_classCaravanTeam);
+        m3d::g_Kernel->AddClass(&VagabondTeam::m_classVagabondTeam);
+        m3d::g_Kernel->AddClass(&SgNodeObj::m_classSgNodeObj);
+        m3d::g_Kernel->AddClass(&LightObj::m_classLightObj);
+        m3d::g_Kernel->AddClass(&DynamicQuest::m_classDynamicQuest);
+        m3d::g_Kernel->AddClass(&DynamicQuestDestroy::m_classDynamicQuestDestroy);
+        m3d::g_Kernel->AddClass(&DynamicQuestReach::m_classDynamicQuestReach);
+        m3d::g_Kernel->AddClass(&DynamicQuestConvoy::m_classDynamicQuestConvoy);
+        m3d::g_Kernel->AddClass(&DynamicQuestPeace::m_classDynamicQuestPeace);
+        m3d::g_Kernel->AddClass(&DynamicQuestHunt::m_classDynamicQuestHunt);
+        m3d::g_Kernel->AddClass(&DynamicScene::m_classDynamicScene);
+        m3d::g_Kernel->AddClass(&AIManager::m_classAIManager);
+        m3d::g_Kernel->AddClass(&DecisionMatrix::m_classDecisionMatrix);
+        m3d::g_Kernel->AddClass(&QuestStateManager::m_classQuestStateManager);
+        m3d::g_Kernel->AddClass(&GeomObj::m_classGeomObj);
+        m3d::g_Kernel->AddClass(&JointedObj::m_classJointedObj);
+        m3d::g_Kernel->AddClass(&CompositeObj::m_classCompositeObj);
+        m3d::g_Kernel->AddClass(&PhysicUnit::m_classPhysicUnit);
+        m3d::g_Kernel->AddClass(&GeomRepository::m_classGeomRepository);
+        m3d::g_Kernel->AddClass(&IzvratRepository::m_classIzvratRepository);
+        m3d::g_Kernel->AddClass(&Ware::m_classWare);
+        m3d::g_Kernel->AddClass(&BlastWave::m_classBlastWave);
+        m3d::g_Kernel->AddClass(&BossMetalArm::m_classBossMetalArm);
+        m3d::g_Kernel->AddClass(&BossMetalArmLoad::m_classBossMetalArmLoad);
+        m3d::g_Kernel->AddClass(&Boss02::m_classBoss02);
+        m3d::g_Kernel->AddClass(&Boss02Arm::m_classBoss02Arm);
+        m3d::g_Kernel->AddClass(&Boss03::m_classBoss03);
+        m3d::g_Kernel->AddClass(&Boss03Part::m_classBoss03Part);
+        m3d::g_Kernel->AddClass(&Boss04::m_classBoss04);
+        m3d::g_Kernel->AddClass(&Boss04Part::m_classBoss04Part);
+        m3d::g_Kernel->AddClass(&Boss04Station::m_classBoss04Station);
+        m3d::g_Kernel->AddClass(&Boss04StationPart::m_classBoss04StationPart);
+        m3d::g_Kernel->AddClass(&Boss04Drone::m_classBoss04Drone);
+        m3d::g_Kernel->AddClass(&Submarine::m_classSubmarine);
+        m3d::g_Kernel->AddClass(&VehicleRecollection::m_classVehicleRecollection);
+        m3d::g_Kernel->AddClass(&TeamTacticWithRoles::m_classTeamTacticWithRoles);
+        m3d::g_Kernel->AddClass(&VehicleRoleMeat::m_classVehicleRoleMeat);
+        m3d::g_Kernel->AddClass(&VehicleRoleSniper::m_classVehicleRoleSniper);
+        m3d::g_Kernel->AddClass(&VehicleRoleOppressor::m_classVehicleRoleOppressor);
+        m3d::g_Kernel->AddClass(&VehicleRoleBarrier::m_classVehicleRoleBarrier);
+        m3d::g_Kernel->AddClass(&VehicleRolePendulum::m_classVehicleRolePendulum);
+        m3d::g_Kernel->AddClass(&VehicleRoleCoward::m_classVehicleRoleCoward);
+        m3d::g_Kernel->AddClass(&VehicleRoleCheater::m_classVehicleRoleCheater);
+        m3d::g_Kernel->AddClass(&NPCMotionController::m_classNPCMotionController);
+        m3d::g_Kernel->AddClass(&CinematicMover::m_classCinematicMover);
+        m3d::g_Kernel->AddClass(&Static2DPath::m_classStatic2DPath);
+        m3d::g_Kernel->AddClass(&Gadget::m_classGadget);
+        m3d::g_Kernel->AddClass(&Formation::m_classFormation);
+        IntersectionManager::Registration();
     }
 
     float CServer::GetLevelSize() const
@@ -112,7 +328,57 @@ namespace ai
 
     CServer::CServer()
     {
-        throw std::logic_error("Not implemented");
+        assert(m3d::g_Kernel);
+        m_lastElapsedTimes.resize(0x14, 0.0);
+        m_pObjects = dynamic_cast<ObjContainer*>(m3d::g_Kernel->New("ObjContainer"));
+        m3d::g_Kernel->UnRegisterGlobal("g_ObjContainer");
+        m3d::g_Kernel->RegisterGlobal(m_pObjects, "g_ObjContainer");
+        SetObjects(m_pObjects);
+
+        auto idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI physic step", 0x1E);
+        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        {
+            m_profilerTmpForServer = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+        }
+
+        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI collisions", 0x1E);
+        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        {
+            m_collideProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+        }
+
+        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI bullets update", 0x1E);
+        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        {
+            m_bulletProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+        }
+
+        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI blast waves update", 0x1E);
+        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        {
+            m_blastWaveProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+        }
+
+        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI vehicles update", 0x1E);
+        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        {
+            m_pathFindingProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+        }
+
+        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI total objects update", 0x1E);
+        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        {
+            m_objectsUpdateProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+        }
+
+        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI full update", 0x1E);
+        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        {
+            m_serverUpdateProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+        }
+
+        m3d::g_Kernel->GetEngineCfg().m_console->RegisterCommand("ai_switch_player_physics", 0, this);
+        LoadGlobalPropertiesFromXML(m3d::g_Kernel->GetEngineCfg().m_pathToGlobProps.GetS());
     }
 
     void CServer::LoadTriggersFromXML(CStr const&)

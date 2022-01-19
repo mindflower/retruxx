@@ -80,6 +80,9 @@ namespace ai
         bool _MustCheckObject(Obj const *) const ;
         void _CheckIncomingOutgoingObjects(std::set<ref_ptr<Obstacle>,std::less<ref_ptr<Obstacle> >,std::allocator<ref_ptr<Obstacle> > > &);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Location);
+
     private:
         std::set<int> m_idsWasInside;
         NumericInRangeRegenerating<float> m_timeForNextCheck;

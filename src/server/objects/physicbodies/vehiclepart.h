@@ -168,7 +168,7 @@ namespace ai
         virtual bool _GetPropertyDefaultInternal(int,class m3d::AIParam &) const ;
         virtual ~VehiclePart();
 
-    private:
+    protected:
         //MemberFunctionOneArg<VehiclePart,float,void>::MemberFunctionOneArg<VehiclePart,float,void>(VehiclePart &,void (*const)(float));
         static class m3d::Object * CreateObject();
         void SaveDecalsRuntime(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
@@ -178,6 +178,9 @@ namespace ai
         //MemberFunctionTwoArgsRef<VehiclePart,Modifier,float,bool>::MemberFunctionTwoArgsRef<VehiclePart,Modifier,float,bool>(VehiclePart &,bool (*const)(Modifier const &,float &));
         void _RecalcDecals(unsigned int,unsigned int);
         void LoadDecalsRuntime(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode const *);
+
+    public:
+        RT_CLASS_INLINE_DECLARE(VehiclePart);
 
     private:
         m3d::SgNode *m_SplashEffect;

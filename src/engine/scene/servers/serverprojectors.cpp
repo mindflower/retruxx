@@ -25,7 +25,8 @@ namespace m3d
 
     int ProjectorsServer::Init()
     {
-        throw std::logic_error("Not implemented");
+        m_valid = true;
+        return 1;
     }
 
     ProjectorsServer::ProjectorsServer()

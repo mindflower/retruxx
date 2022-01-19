@@ -114,6 +114,7 @@ namespace ai
         virtual void DisableGeometry();
         virtual void RelinkToSpace(dxSpace *);
         int GetOwnerId() const ;
+
     protected:
         int _GetCurAnimationFrame() const ;
         void _SetScenegraphNode(CVector const &,Quaternion const &);
@@ -124,6 +125,9 @@ namespace ai
     private:
         void _ApplyCurrentModelName();
         void _DeleteNode();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(PhysicBody);
 
     private:
         CStr m_modelname;

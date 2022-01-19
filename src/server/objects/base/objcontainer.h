@@ -183,6 +183,9 @@ namespace ai
         void _SetObjUpdating(int);
         void _DeleteObj(Obj * &);
 
+    public:
+        RT_CLASS_DECLARE(ObjContainer);
+
     private:
         InnerContainer m_allObjects;
         InnerContainer m_updatingObjects;
@@ -202,4 +205,6 @@ namespace ai
         bool m_inUpdate;
         bool m_bSaveAllowed;
     };
+
+    void SetObjects(ObjContainer*);
 }

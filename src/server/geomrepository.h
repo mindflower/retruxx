@@ -84,6 +84,9 @@ namespace ai
         bool _bItemInBounds(GeomRepositoryItem const &) const ;
         bool _AppendRepository(GeomRepository *,Chest *);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(GeomRepository);
+
     private:
         bool m_Changed;
         PointBase<int> m_geomSize;

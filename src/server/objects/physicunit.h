@@ -21,7 +21,11 @@ namespace ai
     class PhysicUnit : public SimplePhysicObj
     {
     public:
-        using States = DurabilityIndicatorWnd::Color;
+        enum States
+        {
+            LIVE = 0,
+            DEAD = 1,
+        };
 
         enum WalkState
         {
@@ -68,6 +72,9 @@ namespace ai
         void _SetWalkState(WalkState);
         virtual m3d::Object * Clone();
         static m3d::Object * CreateObject();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(PhysicUnit);
 
     private:
         States m_State;

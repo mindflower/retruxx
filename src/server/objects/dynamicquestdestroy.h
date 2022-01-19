@@ -1,5 +1,6 @@
 #pragma once
 #include "dynamicquest.h"
+#include <server/dynamicquestmanager.h>
 
 namespace ai
 {
@@ -38,5 +39,8 @@ namespace ai
         virtual m3d::Object * Clone();
         void _OnObjectDie(Event const &);
         static m3d::Object * CreateObject();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(DynamicQuestDestroy);
     };
 }

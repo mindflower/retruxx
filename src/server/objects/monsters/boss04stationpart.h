@@ -55,6 +55,9 @@ namespace ai
         virtual m3d::Object * Clone();
         void _UpdateMeshGroupsHealth();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Boss04StationPart);
+
     private:
         std::vector<MeshGroupInfo> m_meshGroupInfos;
         std::vector<MeshGroupInfo> m_prevMeshGroupInfos;

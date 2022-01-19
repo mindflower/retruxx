@@ -96,6 +96,9 @@ namespace ai
         void _RecalcWheelEffectNames();
         void _AddSoilEffectNameForWheelTypeName(CStr const &);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(DynamicScene);
+
     private:
         std::vector<SoilProps> m_soilProps;
         std::vector<std::vector<unsigned short>> m_soilPropsIdx;

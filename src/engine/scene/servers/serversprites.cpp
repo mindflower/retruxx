@@ -55,7 +55,8 @@ namespace m3d
 
     int SpritesServer::Init()
     {
-        throw std::logic_error("Not implemented");
+        m_valid = true;
+        return 1;
     }
 
     void SpritesServer::AddItemsList(std::vector<m3d::DataServer::ServerItem>&)

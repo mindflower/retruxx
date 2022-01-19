@@ -1,6 +1,8 @@
 #include "truxximpulses.h"
 #include <stdexcept>
 
+RT_CLASS_DEFINE(TruxxImpulse);
+
 int TruxxImpulse::HandleImpulse(m3d::AuxImpulseInfo const&, m3d::ui::Wnd*)
 {
     throw std::logic_error("Not implemented");
@@ -43,7 +45,7 @@ TruxxImpulse::~TruxxImpulse()
 
 m3d::Object* TruxxImpulse::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new TruxxImpulse;
 }
 
 m3d::Class* TruxxImpulse::GetBaseClass()
@@ -58,7 +60,6 @@ CStr TruxxImpulse::GetProfileFolder()
 
 TruxxImpulse::TruxxImpulse()
 {
-    throw std::logic_error("Not implemented");
 }
 
 TruxxImpulse::TruxxImpulse(TruxxImpulse const&)

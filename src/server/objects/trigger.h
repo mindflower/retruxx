@@ -101,6 +101,9 @@ namespace ai
         void _OnCinemaMessage(Event const &);
         void _LoadEventsFromMapXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Trigger);
+
     private:
         std::map<CStr,m3d::AIParam> m_variables;
         eTriggerState m_state;

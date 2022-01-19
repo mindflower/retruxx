@@ -172,6 +172,9 @@ namespace ai
         virtual m3d::Object* Clone();
 
     public:
+        RT_CLASS_INLINE_DECLARE(Gun);
+
+    public:
         float m_leftStopAngle;
         float m_rightStopAngle;
         float m_lowStopAngle;

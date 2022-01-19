@@ -22,7 +22,8 @@ namespace m3d
 
     int DecalsServer::Init()
     {
-        throw std::logic_error("Not implemented");
+        m_valid = true;
+        return 1;
     }
 
     int DecalsServer::SaveAllLoadedEntities(char const*)

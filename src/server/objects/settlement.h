@@ -1,4 +1,5 @@
 #pragma once
+#include "location.h"
 #include "base/simplephysicobj.h"
 #include <server/components/numericinrange.h>
 
@@ -6,7 +7,6 @@ namespace ai
 {
     class Vehicle;
     class Team;
-    class Location;
     class StaticAutoGun;
 
     class SettlementPrototypeInfo : public SimplePhysicObjPrototypeInfo
@@ -77,6 +77,9 @@ namespace ai
         static m3d::Object* CreateObject();
         void FillingFeedBackParam();
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(Settlement);
 
     private:
         std::set<StaticAutoGun*> m_staticAutoGuns;

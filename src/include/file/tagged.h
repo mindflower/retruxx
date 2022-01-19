@@ -1,5 +1,5 @@
 #pragma once
-#include <script/scriptserver.h>
+#include <windows.h>
 #include <vector>
 
 namespace m3d
@@ -17,7 +17,19 @@ namespace m3d
         class auxTaggedFile
         {
         public:
-            using eError = eScriptError;
+            enum eError
+            {
+                SUCCESS = 0,
+                NOT_INITIALIZED = 1,
+                FILE_NOT_FOUND = 2,
+                BAD_FORMAT = 3,
+                BAD_NUM_CHUNKS = 4,
+                BAD_CHUNK_CRC = 5,
+                TAG_NOT_FOUND = 6,
+                TAG_EXISTS = 7,
+                COMMON_ERROR = 100,
+                UNKNOWN_ERROR = 200,
+            };
 
             enum eOpenFlag
             {
@@ -29,6 +41,12 @@ namespace m3d
                 CREATE_IGNORE_CRC = 0x5,
             };
 
+            struct mTaggedHeader
+            {
+                char cSignature[7];
+                unsigned int numChunks;
+            };
+
             struct mChunkData
             {
                 bool is_copy;
@@ -36,9 +54,8 @@ namespace m3d
                 void* data;
             };
 
-            class mChunk
+            struct mChunk
             {
-            private:
                 auxChunkInfo chunk_header;
                 std::vector<mChunkData> chunk_data;
             };
@@ -65,13 +82,13 @@ namespace m3d
 
         private:
             std::vector<mChunk> m_lAllChunks;
-            bool m_bOpened;
+            bool m_bOpened = false;
             eOpenFlag m_openflag;
-            void* m_hFile;
-            void* m_hFileMapping;
-            unsigned __int8* m_pFileData;
-            char* m_format_name;
-            unsigned int m_format_version;
+            HANDLE m_hFile = nullptr;
+            HANDLE m_hFileMapping = nullptr;
+            void* m_pFileData = nullptr;
+            char* m_format_name = nullptr;
+            unsigned int m_format_version = 0;
         };
     }
 }

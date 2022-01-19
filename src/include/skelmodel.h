@@ -88,8 +88,9 @@ namespace m3d
         {
         public:
             Bone(Bone const&);
+            Bone();
 
-        private:
+        public:
             char m_boneName[40];
             int m_ownIdx;
             int m_parentIdx;

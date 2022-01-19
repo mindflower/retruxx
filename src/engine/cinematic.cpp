@@ -113,6 +113,8 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    RT_CLASS_DEFINE(Cinematic);
+
     bool Cinematic::SkipCinematic()
     {
         throw std::logic_error("Not implemented");

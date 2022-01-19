@@ -65,5 +65,8 @@ namespace ai
         static m3d::Object* CreateObject();
         std::vector<int, std::allocator<int> > const& GetRolePrototypeIds() const;
         virtual m3d::Object* Clone();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(TeamTacticWithRoles);
     };
 }

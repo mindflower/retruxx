@@ -36,6 +36,9 @@ namespace ai
             unsigned int index;
         };
 
+    public:
+        RT_CLASS_INLINE_DECLARE(CompoundVehiclePart);
+
     private:
         std::map<CStr,TVehiclePart> m_vehicleParts;
     };

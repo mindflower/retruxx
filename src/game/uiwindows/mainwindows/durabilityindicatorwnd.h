@@ -1,7 +1,16 @@
 #pragma once
+#include <ui/ui.h>
 
 class DurabilityIndicatorWnd :  public m3d::ui::Wnd
 {
+public:
+    enum Type
+    {
+        TYPE_IN_MAIN_INTERFACE = 0,
+        TYPE_IN_CHARACTERISTIC_WND = 1,
+        TYPE_IN_FIGNYA_WND = 2,
+        TYPE_NUM_TYPES = 3,
+    };
 public:
     static struct m3d::Class * GetBaseClass();
     static class m3d::Object * CreateObject();
@@ -26,6 +35,10 @@ protected:
     class ai::VehiclePart * GetVehiclePart() const ;
     void UpdateVehiclePartImage();
     virtual void UpdateValue(bool);
+
+public:
+    RT_CLASS_INLINE_DECLARE(DurabilityIndicatorWnd);
+
 private:
     int m_vehiclePartId;
     int m_vehicleId;

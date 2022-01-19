@@ -35,6 +35,9 @@ namespace ai
         void MarkCellPieceByValueExcluding(int,BoundsBase<int> const &,int);
         bool IsValueAnItemId(int) const ;
 
+    public:
+        RT_CLASS_INLINE_DECLARE(IzvratRepository);
+
     private:
         PointBase<int> m_maxGeomSize;
         std::vector<int> m_cells;

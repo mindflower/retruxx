@@ -51,5 +51,8 @@ namespace ai
         float targetFunction(CVector const&, CVector const&, float, float, float) const;
         CVector GetMortarDirection(CVector const&, CVector const&, CVector const&, float) const;
         static m3d::Object* CreateObject();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(Mortar);
     };
 }

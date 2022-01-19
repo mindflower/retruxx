@@ -53,6 +53,9 @@ namespace ai
         virtual m3d::Object* Clone();
         static m3d::Object* CreateObject();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(BulletLauncher);
+
     private:
         unsigned int m_numBulletsInShot;
         float m_groupingAngle;

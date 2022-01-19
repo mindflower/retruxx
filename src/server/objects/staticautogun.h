@@ -68,6 +68,9 @@ namespace ai
         void _OnHealthValueAfterChange(float);
         virtual m3d::Object * Clone();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(StaticAutoGun);
+
     private:
         //MemberFunctionTwoArgsRef<StaticAutoGun,Modifier,float,bool>::MemberFunctionTwoArgsRef<StaticAutoGun,Modifier,float,bool>(StaticAutoGun &,bool (*const)(Modifier const &,float &));
         NumericInRange<float> m_health;

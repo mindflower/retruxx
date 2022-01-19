@@ -96,6 +96,11 @@ namespace ai
         static m3d::Object * CreateObject();
         void _OnObjectDie(Event const &);
         void _OnRelationChanged(Event const &);
+
+    public:
+        RT_CLASS_INLINE_DECLARE(DynamicQuest);
+
+    private:
         int m_reward;
         GameTime m_takeGameTime;
         FadingMsgId m_fadingMsgIdOnComplete;

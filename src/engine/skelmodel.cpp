@@ -4,6 +4,7 @@
 #include <core/scoped_ptr.h>
 #include <file/fileserver.h>
 #include <file/filestream.h>
+#include <file/tagged.h>
 
 namespace m3d
 {
@@ -11,6 +12,16 @@ namespace m3d
 
     LoadSkins::LoadSkins()
     {
+    }
+
+    AnimatedModel::Bone::Bone(Bone const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AnimatedModel::Bone::Bone()
+    {
+        throw std::logic_error("Not implemented");
     }
 
     void AnimatedModel::CreateTexFileMapping()
@@ -87,8 +98,61 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    bool AnimatedModel::LoadGAM(CStr const&, bool)
+    bool AnimatedModel::LoadGAM(CStr const& fileName, bool bForceNextAnimation)
     {
+        if (m_bVerification)
+        {
+            M3D_LOG_ERR("LoadGAM does work not for verification of models!!!");
+            return false;
+        }
+        m_Name = NameFromFileName(fileName).c_str();
+        m_PathToFile = DirectoryFromFileName(fileName).c_str();
+
+        fs::auxTaggedFile taggedFile;
+        if (taggedFile.Open(fileName.c_str(), fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC))
+        {
+            M3D_LOG_ERR("AnimatedModel::LoadGAM -- cannot open file " + fileName);
+            return false;
+        }
+        char* formatTitle = nullptr;
+        taggedFile.getFormatTitle(&formatTitle);
+        if (strcmp(formatTitle, "IVR"))
+        {
+            M3D_LOG_ERR("Wrong file format!!!");
+            return false;
+        }
+        unsigned formatVersion = 0;
+        taggedFile.getFormatVersion(formatVersion);
+        if (formatVersion <= 1)
+        {  
+            void* data = nullptr;
+            taggedFile.getChunkData(1, &data);
+            auto* shorts = static_cast<unsigned short*>(data);
+            m_header.m_numTriMeshes = shorts[0];
+            m_header.m_numSkinMeshes = shorts[1];
+            m_header.m_numStaticMeshes = shorts[2];
+            m_header.m_numAnimations = shorts[3];
+            unsigned numMaterials = shorts[4];
+            m_header.m_numNodes = shorts[5];
+            m_cfgSize = static_cast<unsigned*>(data)[3];
+
+            taggedFile.getChunkData(2, &data);
+            m_boneInitialPos = new Bone[m_header.m_numNodes];
+            m_initialBoneInvMatrices = new CMatrix[m_header.m_numNodes];
+            if (m_header.m_numNodes > 0)
+            {
+                for (unsigned i = 0; i < m_header.m_numNodes; ++i)
+                {
+                    auto charData = static_cast<char*>(data);
+                    strcpy(m_boneInitialPos[i].m_boneName, charData);
+                    m_boneInitialPos[i].m_ownIdx = i;
+                    m_boneInitialPos[i].m_parentIdx = *((int*)charData + 10);
+                    m_boneInitialPos[i].m_translation0 = *(CVector*)(charData + 44);
+                    m_boneInitialPos[i].m_quaternion0 = *(Quaternion*)(charData + 56);
+                    
+                }
+            }
+        }
         throw std::logic_error("Not implemented");
     }
 

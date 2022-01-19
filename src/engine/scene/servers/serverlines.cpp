@@ -25,7 +25,12 @@ namespace m3d
 
     int LinesServer::Init()
     {
-        throw std::logic_error("Not implemented");
+        m_valid = true;
+        m_models.emplace_back(nullptr, nullptr, nullptr, "LSI_CIRCLE");
+        m_models.emplace_back(nullptr, nullptr, nullptr, "LSI_SIGHT");
+        m_models.emplace_back(nullptr, nullptr, nullptr, "LSI_FLOWER");
+        m_models.emplace_back(nullptr, nullptr, nullptr, "LSI_ARROW");
+        return 1;
     }
 
     int LinesServer::Release()

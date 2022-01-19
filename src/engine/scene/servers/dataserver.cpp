@@ -3,6 +3,14 @@
 
 namespace m3d
 {
+    DataServer::Model::Model(void* p, char const* fileName, char const* originalFileName, char const* id) :
+        m_ptr(p),
+        m_fileName(fileName),
+        m_originalFileName(originalFileName),
+        m_name(id)
+    {
+    }
+
     int DataServer::GetItemByName(char const*, bool) const
     {
         throw std::logic_error("Not implemented");
@@ -65,7 +73,8 @@ namespace m3d
 
     int DataServer::Init()
     {
-        throw std::logic_error("Not implemented");
+        m_valid = true;
+        return 1;
     }
 
     void DataServer::Restore()

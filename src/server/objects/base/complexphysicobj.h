@@ -26,6 +26,9 @@ namespace ai
         ComplexPhysicObjPartDescription();
         ComplexPhysicObjPartDescription(ComplexPhysicObjPartDescription const&);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(ComplexPhysicObjPartDescription);
+
     private:
         int m_partResourceId;
         std::vector<CStr> m_lpNames;
@@ -144,6 +147,9 @@ namespace ai
         virtual m3d::Object* Clone();
         void _CreateSplinterFromSgNode(VehiclePart*, int, CVector const&, float, m3d::SgNode*, CollisionInfo const*);
         void _TearOffPart(VehiclePart*, float);
+
+    public:
+        RT_CLASS_INLINE_DECLARE(ComplexPhysicObj);
 
     private:
         std::map<CStr, VehiclePart*> m_vehicleParts;

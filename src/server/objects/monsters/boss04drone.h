@@ -53,6 +53,9 @@ namespace ai
         void _UpdateLookAtPlayer();
         virtual m3d::Object * Clone();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Boss04Drone);
+
     private:
         CStr m_flyPathName;
         m3d::CameraPath *m_currentFlyPath;

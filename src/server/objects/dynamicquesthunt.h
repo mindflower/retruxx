@@ -43,6 +43,9 @@ namespace ai
         virtual m3d::Object * Clone();
         static m3d::Object * CreateObject();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(DynamicQuestHunt);
+
     private:
         int m_fragsAtStart;
         float m_timePassed;

@@ -51,6 +51,9 @@ namespace ai
         //MemberFunctionTwoArgsRef<Chassis,Modifier,float,bool>::MemberFunctionTwoArgsRef<Chassis,Modifier,float,bool>(Chassis &,bool (*const)(Modifier const &,float &));
         static m3d::Object * CreateObject();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Chassis);
+
     private:
         NumericInRangeRegenerating<float> m_health;
         NumericInRangeRegenerating<float> m_fuel;

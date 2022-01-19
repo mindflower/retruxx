@@ -82,6 +82,9 @@ namespace ai
         static m3d::Object * CreateObject();
         void _CreateStations(bool);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Boss04);
+
     private:
         std::vector<Boss04Station *> m_stations;
         std::vector<Boss04Drone *> m_drones;

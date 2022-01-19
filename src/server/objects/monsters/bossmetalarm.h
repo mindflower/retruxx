@@ -69,6 +69,9 @@ namespace ai
         void _PlaceLoadOnLoadpoint();
         void _OnObjectDie(Event const &);
 
+    public:
+        RT_CLASS_INLINE_DECLARE(BossMetalArm);
+
     private:
         int m_loadObjId;
         const float m_turningSpeed;

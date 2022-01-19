@@ -1,6 +1,8 @@
 #pragma once
 #include "building.h"
 #include "settlement.h"
+#include <math/camera.h>
+#include <server/cinematicpath.h>
 #include <server/components/numericboundedbelow.h>
 
 class RandomCoeffWithDispersion;
@@ -131,6 +133,9 @@ namespace ai
         void _OnObjectLeavesLocation(Event const &);
         void _SynchronizeGatesState();
         DynamicQuest * _GenerateDynamicQuest();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(Town);
 
     private:
         bool m_shouldInitializeWorkshops;

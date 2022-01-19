@@ -39,7 +39,7 @@ namespace ai
     protected:
         virtual ~TemporaryLocation();
 
-    private:
+    protected:
         virtual class m3d::Object* Clone();
         static class m3d::Object* CreateObject();
         virtual void OnActivate();

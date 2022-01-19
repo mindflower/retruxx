@@ -371,12 +371,12 @@ CStr2 CStr2::substr(int pos, int endpos) const
 {
     //TODO: check this
     assert(m_charPtr);
-    std::string_view const view(m_charPtr);
+    std::string const str(m_charPtr);
     if (endpos == CStr_npos)
     {
-        return view.substr(pos).data();
+        return str.substr(pos).c_str();
     }
-    return view.substr(pos, endpos - pos).data();
+    return str.substr(pos, endpos - pos).c_str();
 }
 
 int CStr2::findsubstr(char const* substr, int offset) const

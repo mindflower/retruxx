@@ -62,6 +62,9 @@ namespace ai
         static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Npc);
+
     private:
         NpcType m_npcType;
         CStr m_ModelName;

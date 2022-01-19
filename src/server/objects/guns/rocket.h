@@ -41,9 +41,12 @@ namespace ai
     protected:
         virtual ~Rocket();
 
-    private:
+    protected:
         virtual m3d::Object * Clone();
         static m3d::Object * CreateObject();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(Rocket);
 
     private:
         int m_targetObjId;

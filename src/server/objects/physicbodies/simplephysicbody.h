@@ -20,5 +20,8 @@ namespace ai
 
     protected:
         SimplePhysicBody();
+
+    public:
+        RT_CLASS_INLINE_DECLARE(SimplePhysicBody);
     };
 }

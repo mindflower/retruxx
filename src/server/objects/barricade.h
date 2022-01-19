@@ -44,6 +44,9 @@ namespace ai
         static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
 
+    public:
+        RT_CLASS_INLINE_DECLARE(Barricade);
+
     private:
         NumericInRange<float> m_probability;
     };
