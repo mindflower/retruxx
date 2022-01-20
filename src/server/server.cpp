@@ -48,6 +48,7 @@
 #include "objects/base/complexphysicobj.h"
 #include "objects/base/compositeobj.h"
 #include "objects/base/geomobj.h"
+#include "objects/base/globalproperties.h"
 #include "objects/base/jointedobj.h"
 #include "objects/base/objprefab.h"
 #include "objects/base/physicobj.h"
@@ -104,6 +105,9 @@
 #include <m3dapp.h>
 #include <stdexcept>
 #include <core/kernel.h>
+#include <core/log.h>
+#include <file/fileserver.h>
+#include <file/filestream.h>
 
 namespace ai
 {
@@ -476,9 +480,24 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void CServer::LoadGlobalPropertiesFromXML(CStr const&)
+    void CServer::LoadGlobalPropertiesFromXML(CStr const& fileName)
     {
-        throw std::logic_error("Not implemented");
+        scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+        if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
+        {
+            M3D_LOG_ERR("Error: cannot open " + fileName);
+            return;
+        }
+        ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+        if (xmlFile->Read(*stream))
+        {
+            stream->Close();
+            ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+            xmlFile->GetFirstChild_(node, "Properties");
+            theGlobProp.LoadFromXML(xmlFile, node);
+            return;
+        }
+        M3D_LOG_ERR("Error: cannot parse " + fileName);\
     }
 
     AffixManager* CServer::GetAffixManager() const

@@ -95,3 +95,4 @@ namespace m3d
 
 #define SYS_ERROR(msg)
 #define M3D_ASSERT(cond)
+#define M3D_CRITICAL_ERROR(msg)

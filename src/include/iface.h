@@ -23,9 +23,10 @@ namespace m3d
 
     class IDeviceResetCallback
     {
-
-    private:
-       // m3d::IDeviceResetCallback_vtbl* __vftable /*VFT*/;
+    public:
+        virtual char const* GetCallbackName() const = 0;
+        virtual void OnBeforeDeviceReset() = 0;
+        virtual void OnAfterDeviceReset() = 0;
     };
 
     namespace input

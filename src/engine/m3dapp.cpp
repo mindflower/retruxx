@@ -1621,8 +1621,7 @@ namespace m3d
         if (m_bDXCursorEnabled)
         {
             auto const& cursor = GetCurrentCursor();
-            //TODO: check this
-            //g_pApp->m_renderer->SetupDXCursor(&cursor, cursor.m_spot.x, cursor.m_spot.y, 0);
+            g_pApp->m_renderer->SetupDXCursor(cursor.m_tex, cursor.m_spot.x, cursor.m_spot.y, 0);
             while (::ShowCursor(TRUE) < 0);
         }
         else

@@ -40,7 +40,6 @@ namespace ai
 
     GameTime::GameTime()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void GameTime::setInt64(long long)
@@ -53,9 +52,12 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void GameTime::setExpanded(int, int, int, int, int)
+    void GameTime::setExpanded(int hour, int minute, int day, int month, int year)
     {
-        throw std::logic_error("Not implemented");
+        //TODO: check this
+        __int64 res = 60000 * (minute + 60 * (hour + 24 * (day + 31 * (month + 12 * year) - 32)));
+        m_milliSeconds = res;
+        m_milliSeconds0 = res;
     }
 
     float GameTime::Diff() const
@@ -73,9 +75,19 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
+    ObjContainer::Node::Node()
+    {
+    }
+
     ObjContainer::InnerContainer::InnerContainer()
     {
-        throw std::logic_error("Not implemented");
+        m_records.resize(0x4000, {});
+        m_freePlaces.reserve(0x4000);
+        for (int i = m_records.size() - 1; i!=0; --i)
+        {
+            m_records[i].m_id = i;
+            m_freePlaces.push_back(i);
+        }
     }
 
     void ObjContainer::InnerContainer::EraseNode(Node&, bool)
@@ -510,7 +522,12 @@ namespace ai
 
     ObjContainer::ObjContainer()
     {
-        throw std::logic_error("Not implemented");
+        m_GameTime.setExpanded(8, 0, 14, 9, 1211);
+        m_objIdsToUpdate.reserve(0x3E8);
+        m_objIdsToNotUpdate.reserve(0x3E8);
+        m_objectsToPostCollide.reserve(0x3E8);
+        m_objIdsToRelinkSceneGraphNode.reserve(0x3E8);
+        m_objIdsToRemove.reserve(0x3E8);
     }
 
     ObjContainer::ObjContainer(ObjContainer const&)
@@ -543,8 +560,8 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void SetObjects(ObjContainer*)
+    void SetObjects(ObjContainer* objects)
     {
-        throw std::logic_error("Not implemented");
+        theObjects = objects;
     }
 }

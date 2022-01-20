@@ -27,8 +27,8 @@ namespace ai
 
     private:
         //ai::GameTime_vtbl* __vftable /*VFT*/;
-        __int64 m_milliSeconds;
-        __int64 m_milliSeconds0;
+        __int64 m_milliSeconds = 0;
+        __int64 m_milliSeconds0 = 0;
     };
 
     class ObjContainer :  public m3d::Object
@@ -46,13 +46,13 @@ namespace ai
         public:
             Node();
 
-        private:
-            int m_id;
-            int m_prevId;
-            int m_nextId;
-            Obj* m_value;
-            bool m_isValid;
-            int m_totalObjects;
+        public:
+            int m_id = -1;
+            int m_prevId = -1;
+            int m_nextId = -1;
+            Obj* m_value = nullptr;
+            bool m_isValid = false;
+            int m_totalObjects = 0;
         };
 
         class InnerContainer
@@ -73,9 +73,9 @@ namespace ai
         private:
             std::vector<Node> m_records;
             std::vector<int> m_freePlaces;
-            unsigned int m_size;
-            int m_firstNodeId;
-            int m_lastNodeId;
+            unsigned int m_size = 0;
+            int m_firstNodeId = -1;
+            int m_lastNodeId = -1;
         };
 
         class const_iterator// : public std::_Bidit<Node, int, Node const*, Node const&>
@@ -190,20 +190,20 @@ namespace ai
         InnerContainer m_allObjects;
         InnerContainer m_updatingObjects;
         std::map<CStr,int> m_nameToIdMap;
-        eSAVE_TYPES m_SaveType;
+        eSAVE_TYPES m_SaveType = SAVE_LEVEL;
         m3d::CStrHash<CStr> m_ObjectFullNames;
         GameTime m_GameTime;
-        bool m_GameTimePaused;
-        unsigned int m_denyCreationCount;
+        bool m_GameTimePaused = false;
+        unsigned int m_denyCreationCount = 0;
         int m_numRemovalsLastFrame;
         std::vector<int> m_objIdsToUpdate;
         std::vector<int> m_objIdsToNotUpdate;
         std::vector<Obj *> m_objectsToPostCollide;
         std::vector<int> m_objIdsToRelinkSceneGraphNode;
         std::vector<int> m_objIdsToRemove;
-        bool m_inPurge;
-        bool m_inUpdate;
-        bool m_bSaveAllowed;
+        bool m_inPurge = false;
+        bool m_inUpdate = false;
+        bool m_bSaveAllowed = true;
     };
 
     void SetObjects(ObjContainer*);

@@ -36,7 +36,6 @@ namespace m3d
 
     int SafeStrAttrib(CStr& v, cmn::XmlNode const* node, char const* attrName)
     {
-        v = "";
         if (node->IsEmpty())
         {
             return 0;
@@ -52,7 +51,6 @@ namespace m3d
 
     bool SafeClrAttrib(unsigned& clr, m3d::cmn::XmlNode const* node, char const* attrib)
     {
-        clr = 0;
         CStr str;
         if (SafeStrAttrib(str, node, attrib) && !str.empty())
         {
@@ -64,7 +62,6 @@ namespace m3d
 
     bool SafeIntAttrib(int& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
-        v = 0;
         CStr str;
         if (SafeStrAttrib(str, node, attrib) && !str.empty())
         {
@@ -77,7 +74,6 @@ namespace m3d
 
     bool SafeUintAttrib(unsigned& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
-        v = 0;
         CStr str;
         if (SafeStrAttrib(str, node, attrib) && !str.empty())
         {
@@ -90,7 +86,6 @@ namespace m3d
 
     bool SafeFloatAttrib(float& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
-        v = 0;
         CStr str;
         if (SafeStrAttrib(str, node, attrib) && !str.empty())
         {
@@ -103,7 +98,6 @@ namespace m3d
 
     bool SafeBoolAttrib(bool& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
-        v = false;
         if (node->IsEmpty())
         {
             return 0;
@@ -135,7 +129,6 @@ namespace m3d
 
     bool SafeVector2Attrib(CVector2& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
-        v = {};
         if (node->IsEmpty())
         {
             return 0;

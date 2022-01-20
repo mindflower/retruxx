@@ -33,4 +33,19 @@ namespace ai
             }
         }
     }
+
+    void StrToIntVector(CStr const& str, std::vector<int>& intVector)
+    {
+        //TODO: check this
+        intVector.clear();
+        if (!str.empty())
+        {
+            std::istringstream ss(str.c_str());
+            std::string s;
+            while (getline(ss, s, ' '))
+            {
+                intVector.push_back(atoi(s.c_str()));
+            }
+        }
+    }
 }

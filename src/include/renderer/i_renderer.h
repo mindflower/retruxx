@@ -998,7 +998,7 @@ namespace m3d
             virtual int DrawPrimitiveEffect(m3d::rend::PrimType, m3d::rend::IEffect*, unsigned int, unsigned int) = 0;
             virtual int DrawIndexedPrimitiveShader(m3d::rend::PrimType, unsigned int, unsigned int, unsigned int, unsigned int) = 0;
             virtual int DrawPrimitiveShader(m3d::rend::PrimType, unsigned int, unsigned int) = 0;
-            virtual int SetupDXCursor(const m3d::rend::TexHandle*, int, int, int) = 0;
+            virtual int SetupDXCursor(m3d::rend::TexHandle const&, int, int, int) = 0;
             virtual void MoveDXCursor(int, int) = 0;
             virtual void ShowDXCursor(bool) = 0;
             virtual int UpdateDXCursorFrame() = 0;

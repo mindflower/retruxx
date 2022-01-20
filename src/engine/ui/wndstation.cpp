@@ -383,7 +383,7 @@ namespace m3d
                     else
                     {
                         //TODO: check this
-                        Application::g_pApp->m_renderer->SetupDXCursor(&m_currentCursor.m_tex, m_currentCursor.m_spot.x, m_currentCursor.m_spot.y, 0);
+                        Application::g_pApp->m_renderer->SetupDXCursor(m_currentCursor.m_tex, m_currentCursor.m_spot.x, m_currentCursor.m_spot.y, 0);
                     }
                     Application::g_pApp->m_renderer->ShowDXCursor(true);
                 }

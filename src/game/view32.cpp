@@ -70,9 +70,10 @@ GameState CMiracle3d::CurGameMode::Get() const
     throw std::logic_error("Not implemented");
 }
 
-void CMiracle3d::CurGameMode::Set(GameState)
+void CMiracle3d::CurGameMode::Set(GameState mode)
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check this
+    g_pApp->ImmediateMessage(65683, mode, m_mode, 0, 0, {}, {});
 }
 
 void CMiracle3d::Player::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

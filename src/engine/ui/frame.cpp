@@ -53,6 +53,7 @@ namespace m3d
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[0], rend::TM_WRAP_S, 3);
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[0], rend::TM_WRAP_T, wrapParam);
             }
+            texName = "";
             SafeStrAttrib(texName, node, "bar_t");
             if (!texName.empty())
             {
@@ -60,6 +61,7 @@ namespace m3d
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[1], rend::TM_WRAP_S, wrapParam);
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[1], rend::TM_WRAP_T, 3);
             }
+            texName = "";
             SafeStrAttrib(texName, node, "bar_r");
             if (!texName.empty())
             {
@@ -67,6 +69,7 @@ namespace m3d
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[2], rend::TM_WRAP_S, 3);
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[2], rend::TM_WRAP_T, wrapParam);
             }
+            texName = "";
             SafeStrAttrib(texName, node, "bar_b");
             if (!texName.empty())
             {
@@ -74,6 +77,7 @@ namespace m3d
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[3], rend::TM_WRAP_S, wrapParam);
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[3], rend::TM_WRAP_T, 3);
             }
+            texName = "";
             SafeStrAttrib(texName, node, "corner_tl");
             if (!texName.empty())
             {
@@ -81,6 +85,7 @@ namespace m3d
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[4], rend::TM_WRAP_S, 3);
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[4], rend::TM_WRAP_T, 3);
             }
+            texName = "";
             SafeStrAttrib(texName, node, "corner_tr");
             if (!texName.empty())
             {
@@ -88,6 +93,7 @@ namespace m3d
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[5], rend::TM_WRAP_S, 3);
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[5], rend::TM_WRAP_T, 3);
             }
+            texName = "";
             SafeStrAttrib(texName, node, "corner_bl");
             if (!texName.empty())
             {
@@ -95,6 +101,7 @@ namespace m3d
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[6], rend::TM_WRAP_S, 3);
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[6], rend::TM_WRAP_T, 3);
             }
+            texName = "";
             SafeStrAttrib(texName, node, "corner_br");
             if (!texName.empty())
             {
@@ -102,6 +109,7 @@ namespace m3d
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[7], rend::TM_WRAP_S, 3);
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[7], rend::TM_WRAP_T, 3);
             }
+            texName = "";
             SafeStrAttrib(texName, node, "tabbtn_corner_tl");
             if (!texName.empty())
             {
@@ -109,6 +117,7 @@ namespace m3d
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[8], rend::TM_WRAP_S, 3);
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[8], rend::TM_WRAP_T, 3);
             }
+            texName = "";
             SafeStrAttrib(texName, node, "tabbtn_corner_tr");
             if (!texName.empty())
             {
@@ -116,6 +125,7 @@ namespace m3d
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[9], rend::TM_WRAP_S, 3);
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[9], rend::TM_WRAP_T, 3);
             }
+            texName = "";
             SafeStrAttrib(texName, node, "tabbtn_corner_bl");
             if (!texName.empty())
             {
@@ -123,6 +133,7 @@ namespace m3d
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[10], rend::TM_WRAP_S, 3);
                 Application::g_pApp->m_renderer->SetTextureParameter(m_textures[10], rend::TM_WRAP_T, 3);
             }
+            texName = "";
             SafeStrAttrib(texName, node, "tabbtn_corner_br");
             if (!texName.empty())
             {
@@ -183,10 +194,10 @@ namespace m3d
             {
                 return 0;
             }
-            CStr texName;
             const char* frameIds[4] = { "frameOut", "frameDown", "frameOver", "frameDisable" };
             for (size_t i =0; i<4; ++i)
             {
+                CStr texName;
                 SafeStrAttrib(texName, node, frameIds[i]);
                 auto it = std::find_if(cbegin(gfxFrames), cend(gfxFrames), [&texName](auto* frame)
                 {
@@ -201,6 +212,7 @@ namespace m3d
             const char* bgIds[4] = { "bgOut", "bgDown", "bgOver", "bgDisable" };
             for (size_t i = 0; i < 4; ++i)
             {
+                CStr texName;
                 SafeStrAttrib(texName, node, bgIds[i]);
                 auto it = std::find_if(cbegin(gfxBgs), cend(gfxBgs), [&texName](auto* frame)
                 {
