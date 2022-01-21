@@ -23,7 +23,7 @@ class PostEffectManager : public m3d::IDeviceResetCallback
 public:
     class Sequence
     {
-    private:
+    public:
         std::vector<PostEffectModel*> m_list;
         bool m_loop;
         bool m_inUse;

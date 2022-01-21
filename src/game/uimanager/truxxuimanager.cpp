@@ -2,6 +2,15 @@
 #include <stdexcept>
 #include <renderer/i_renderer.h>
 #include <core/ini.h>
+#include <core/kernel.h>
+#include <game/uimisc/helpmanager.h>
+#include <game/uimisc/levelinfo.h>
+#include <game/uimisc/msgmanager.h>
+#include <game/uimisc/navpoint.h>
+#include <game/uimisc/questinfo.h>
+#include <game/uimisc/reply.h>
+#include <game/uimisc/savesmanager.h>
+#include <game/uimisc/weapongroup.h>
 #include <ui/wnd.h>
 
 CStr TruxxUiManager::GetPathToDialogsFileGlobal() const
@@ -61,7 +70,8 @@ int TruxxUiManager::HandleImpulse(m3d::AuxImpulseInfo const&, m3d::ui::Wnd*)
 
 TruxxUiManager::TruxxUiManager()
 {
-    throw std::logic_error("Not implemented");
+    m_minDynamicId = 173;
+    m_nextDynamicId = GUI_ValidateDynamicId(173);
 }
 
 bool TruxxUiManager::IsHiddenByUser() const
@@ -86,6 +96,51 @@ int TruxxUiManager::Load(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
 
 int TruxxUiManager::Init()
 {
+    auto res = GUI_Init(true) & 1;
+    m_questInfoManager = new QuestInfoManager;
+    if (!m_questInfoManager)
+    {
+        res = 0;
+    }
+    m_repliesManager = dynamic_cast<RepliesManager*>(m3d::g_Kernel->New("RepliesManager"));
+    if (!m_repliesManager)
+    {
+        res = 0;
+    }
+    m_levelInfoManager = dynamic_cast<LevelInfoManager*>(m3d::g_Kernel->New("LevelInfoManager"));
+    if (m_levelInfoManager)
+    {
+        m_levelInfoManager->Init();
+    }
+    else
+    {
+        res = 0;
+    }
+    m_navPointManager = dynamic_cast<NavPointManager*>(m3d::g_Kernel->New("NavPointManager"));
+    if (!m_navPointManager)
+    {
+        res = 0;
+    }
+    m_weaponGroupManager = dynamic_cast<WeaponGroupManager*>(m3d::g_Kernel->New("WeaponGroupManager"));
+    if (!m_weaponGroupManager)
+    {
+        res = 0;
+    }
+    m_savesManager = dynamic_cast<SavesManager*>(m3d::g_Kernel->New("SavesManager"));
+    if (!m_savesManager)
+    {
+        res = 0;
+    }
+    m_msgManager = dynamic_cast<MsgManager*>(m3d::g_Kernel->New("MsgManager"));
+    if (!m_msgManager)
+    {
+        res = 0;
+    }
+    m_helpManager = dynamic_cast<HelpManager*>(m3d::g_Kernel->New("HelpManager"));
+    if (!m_helpManager)
+    {
+        res = 0;
+    }
     throw std::logic_error("Not implemented");
 }
 

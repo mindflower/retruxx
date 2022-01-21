@@ -151,10 +151,9 @@ protected:
     virtual int GUI_WriteToXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>);
     virtual int GUI_ShowWindow(int, bool, bool, bool, int*);
     virtual int GUI_AddWindowById(ref_ptr<m3d::ui::Wnd>, int, bool, bool);
-private:
     int GUI_ValidateDynamicId(int);
 
-private:
+protected:
     std::map<int, int> m_packToEvent;
     std::map<int, int> m_impulseToEvent;
     std::map<int, int> m_eventToEvent;
@@ -165,14 +164,14 @@ private:
     std::vector<ResourceInfo*> m_resourceInfoStrings;
     std::vector<ResourceInfo*> m_resourceInfoIcons;
     bool m_bFirstLevelResourcesLoaded;
-    ObjectsIcons* m_icons;
-    bool m_isInited;
-    bool m_oneTimeStuffIsInited;
+    ObjectsIcons* m_icons = nullptr;
+    bool m_isInited = false;
+    bool m_oneTimeStuffIsInited = false;
     std::map<int, ref_ptr<m3d::ui::Wnd>> m_windows;
     std::set<int> m_onScreenWindows;
     std::map<int, std::set<int>> m_eventMap;
-    bool m_isHidden;
-    int m_nextDynamicId;
-    int m_minDynamicId;
-    bool m_isEventMapValide;
+    bool m_isHidden = true;
+    int m_nextDynamicId = 0;
+    int m_minDynamicId = 0;
+    bool m_isEventMapValide = true;
 };

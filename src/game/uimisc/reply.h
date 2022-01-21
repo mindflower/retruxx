@@ -1,30 +1,72 @@
 #pragma once
 
+namespace ai
+{
+    class Npc;
+}
+
+class Reply
+{
+public:
+    enum Role
+    {
+        ROLE_PLAYER = 0x0,
+        ROLE_NPC = 0x1,
+        ROLE_INVALID = 0x2,
+    };
+public:
+    int LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+    CStr const& GetScriptResult() const;
+    Role GetRole() const;
+    Reply();
+    std::vector<CStr> const& GetNextReplies() const;
+    void SetScriptResult(CStr const&);
+    void SetRole(Role);
+    void SetScriptCondition(CStr const&);
+    CStr const& GetText() const;
+    void SetName(CStr const&);
+    CStr const& GetScriptCondition() const;
+    ~Reply();
+    void SetNextDialogs(std::vector<CStr> const&);
+    void SetText(CStr);
+    CStr const& GetName() const;
+
+private:
+    CStr m_name;
+    CStr m_text;
+    Role m_role;
+    CStr m_scriptCondition;
+    CStr m_scriptResult;
+    std::vector<CStr> m_nextReplies;
+};
+
 class RepliesManager :  public m3d::Object
 {
 public:
     void SetConditionValue(int);
     int Init();
-    class Reply * GetFirstFitReply(class std::vector<CStr,class std::allocator<CStr> > const &,enum Reply::Role,class ai::Npc *);
-    virtual struct m3d::Class * GetClass() const ;
+    Reply * GetFirstFitReply(std::vector<CStr> const &, Reply::Role,ai::Npc *);
+    virtual m3d::Class * GetClass() const ;
     virtual ~RepliesManager();
-    class std::vector<class Reply *,class std::allocator<class Reply *> > GetNextPlayerReplies(class Reply const *,class ai::Npc *);
-    class std::vector<CStr,class std::allocator<CStr> > GetAllHelloReplyNamesForDynamicNpc();
+    std::vector<Reply *> GetNextPlayerReplies(Reply const *,ai::Npc *);
+    std::vector<CStr> GetAllHelloReplyNamesForDynamicNpc();
     void Clear();
-    class Reply * GetPlayerRequestForDynamicQuest(class ai::Npc *,class ai::DynamicQuest const *);
-    int ExecuteScript(CStr const &,class ai::Npc *) const ;
+    Reply * GetPlayerRequestForDynamicQuest(ai::Npc *,ai::DynamicQuest const *);
+    int ExecuteScript(CStr const &,ai::Npc *) const ;
     int LoadFromXml(CStr const &);
-    class Reply * GetReplyByName(CStr const &) const ;
-    virtual class m3d::Object * Clone();
-    class std::vector<class Reply *,class std::allocator<class Reply *> > GetAllFitReplies(class std::vector<CStr,class std::allocator<CStr> > const &,enum Reply::Role,class ai::Npc *);
-    static class m3d::Object * CreateObject();
-    class Reply * GetRandomFitReply(class std::vector<CStr,class std::allocator<CStr> > const &,enum Reply::Role,class ai::Npc *);
-    class Reply * GetNextNpcReply(class Reply const *,class ai::Npc *);
-    static struct m3d::Class * GetBaseClass();
-    class Reply * GetFirstNpcReply(class ai::Npc *);
+    Reply * GetReplyByName(CStr const &) const ;
+    virtual m3d::Object * Clone();
+    std::vector<Reply *> GetAllFitReplies(std::vector<CStr> const &,Reply::Role,ai::Npc *);
+    static m3d::Object * CreateObject();
+    Reply * GetRandomFitReply(std::vector<CStr,std::allocator<CStr> > const &,Reply::Role,ai::Npc *);
+    Reply * GetNextNpcReply(Reply const *,ai::Npc *);
+    static m3d::Class * GetBaseClass();
+    Reply * GetFirstNpcReply(ai::Npc *);
+
 protected:
-    RepliesManager(class RepliesManager const &);
+    RepliesManager(RepliesManager const &);
     RepliesManager();
+
 private:
     std::map<CStr,Reply *> m_replies;
     bool m_isInited;

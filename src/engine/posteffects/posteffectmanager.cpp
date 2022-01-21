@@ -1,9 +1,11 @@
+#include <config.h>
 #include <m3dapp.h>
 #include <stdexcept>
 #include <core/ini.h>
 #include <core/log.h>
 #include <core/ref_ptr.h>
 #include <posteffects/posteffectmanager.h>
+#include <posteffects/posteffectmodel.h>
 
 char const* PostEffectManager::GetCallbackName() const
 {
@@ -17,7 +19,41 @@ void PostEffectManager::OnBeforeDeviceReset()
 
 void PostEffectManager::OnAfterDeviceReset()
 {
-    throw std::logic_error("Not implemented");
+    m_ScreenWidth[0] = m3d::g_Kernel->GetEngineCfg().m_r_width.GetI();
+    m_ScreenHeight[0] = m3d::g_Kernel->GetEngineCfg().m_r_height.GetI();
+    auto width = m_ScreenWidth[0];
+    auto height = m_ScreenHeight[0];
+    if (m3d::g_Kernel->GetEngineCfg().m_g_postEffectBloom.GetI() == 1)
+    {
+        width /= 4;
+        height /= 4;
+    }
+    else
+    {
+        width /= 2;
+        height /= 2;
+    }
+
+    g_texRtCopy = m3d::Application::g_pApp->m_renderer->GetFullFrameFrameBufferTexture();
+    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_texRtCopy, m3d::rend::TM_WRAP_S, 3);
+    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_texRtCopy, m3d::rend::TM_WRAP_T, 3);
+    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_texRtCopy, m3d::rend::TM_TEX_FILTER, 1);
+
+    if (g_tex1.IsValid())
+    {
+        m3d::Application::g_pApp->m_renderer->ReleaseTexture(g_tex1);
+    }
+    g_tex1 = m3d::Application::g_pApp->m_renderer->AddDynamicTexture("$tex1", width, height, 0);
+    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_tex1, m3d::rend::TM_WRAP_S, 3);
+    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_tex1, m3d::rend::TM_WRAP_T, 3);
+
+    if (g_tex2.IsValid())
+    {
+        m3d::Application::g_pApp->m_renderer->ReleaseTexture(g_tex2);
+    }
+    g_tex2 = m3d::Application::g_pApp->m_renderer->AddDynamicTexture("$tex2", width, height, 0);
+    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_tex2, m3d::rend::TM_WRAP_S, 3);
+    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_tex2, m3d::rend::TM_WRAP_T, 3);
 }
 
 PostEffectManager::~PostEffectManager()
@@ -169,7 +205,7 @@ bool PostEffectManager::Initialize()
         return true;
     }
     M3D_LOG_INFO("PostEffectManager:: cannot load  data\\PostEffects.xml, err: " + err);
-    return false
+    return false;
 }
 
 bool PostEffectManager::SetParam(CStr const&, float)
@@ -197,14 +233,88 @@ void PostEffectManager::Destroy()
     throw std::logic_error("Not implemented");
 }
 
-void PostEffectManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+void PostEffectManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 {
-    throw std::logic_error("Not implemented");
+    ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    
+    for (xmlNode->GetFirstChild_(node, "Model"); !node->IsEmpty(); node->GetNextSibling_(node, "Model"))
+    {
+        auto postEffectModel = new PostEffectModel(&m_varList);
+        postEffectModel->LoadFromXml(xmlFile, node);
+        m_models.push_back(postEffectModel);
+    }
+
+    for (xmlNode->GetFirstChild_(node, "Sequence"); !node->IsEmpty(); node->GetNextSibling_(node, "Sequence"))
+    {
+        Sequence sequence;
+        m3d::SafeBoolAttrib(sequence.m_loop, node, "Loop");
+        ref_ptr tmp = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+        for (node->GetFirstChild_(tmp, "Unit"); !tmp->IsEmpty(); node->GetNextSibling_(tmp, "Unit"))
+        {
+            CStr tmpName;
+            m3d::SafeStrAttrib(tmpName, tmp, "Name");
+            auto itor = std::find_if(cbegin(m_models), cend(m_models), [&tmpName](auto const* model)
+            {
+                return model->m_name == tmpName;
+            });
+            M3D_ASSERT(itor != cend(m_models));
+            sequence.m_list.push_back(*itor);
+        }
+        sequence.m_inUse = false;
+        CStr tmpName;
+        m3d::SafeStrAttrib(tmpName, tmp, "Name");
+        m_sequence[tmpName] = sequence;
+    }
 }
 
 void PostEffectManager::InitShaders()
 {
-    throw std::logic_error("Not implemented");
+    if (m3d::g_Kernel->GetEngineCfg().m_r_allowPS20.GetB() &&
+        m3d::Application::g_pApp->m_renderer->IsFeatureSupported(m3d::rend::FEATURE_PS_2_0))
+    {
+        g_DownsampleVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_downsample_vs20.vs", "VS_Downsample", m3d::rend::IHlslShader::VS_2_0);
+        M3D_ASSERT(g_DownsampleVs);
+        g_DownsamplePs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_downsample_ps20.ps", "PS_Downsample", m3d::rend::IHlslShader::PS_2_0);
+        M3D_ASSERT(g_DownsamplePs);
+        g_BlurVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_blur_vs20.vs", "VS_Blur", m3d::rend::IHlslShader::VS_2_0);
+        M3D_ASSERT(g_BlurVs);
+        g_BlurPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_blur_ps20.ps", "PS_Blur7", m3d::rend::IHlslShader::PS_2_0);
+        M3D_ASSERT(g_BlurPs);
+        g_FinalCompVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_composite_vs20.vs", "VS_Quad", m3d::rend::IHlslShader::VS_2_0);
+        M3D_ASSERT(g_FinalCompVs);
+        g_FinalCompPsAsm = m3d::Application::g_pApp->m_renderer->NewAsmShader("data/shaders/post_composite_ps20.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+        M3D_ASSERT(g_FinalCompPsAsm);
+    }
+    else
+    {
+        g_DownsampleVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_downsample_vs11.vs", "VS_Downsample", m3d::rend::IHlslShader::VS_1_1);
+        M3D_ASSERT(g_DownsampleVs);
+        g_DownsamplePs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_downsample_ps11.ps", "PS_Downsample", m3d::rend::IHlslShader::PS_1_1);
+        M3D_ASSERT(g_DownsamplePs);
+        g_BlurVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_blur_vs11.vs", "VS_Blur", m3d::rend::IHlslShader::VS_1_1);
+        M3D_ASSERT(g_BlurVs);
+        g_BlurPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_blur_ps11.ps", "PS_Blur7", m3d::rend::IHlslShader::PS_1_1);
+        M3D_ASSERT(g_BlurPs);
+        g_FinalCompVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_composite_vs11.vs", "VS_Quad", m3d::rend::IHlslShader::VS_1_1);
+        M3D_ASSERT(g_FinalCompVs);
+        g_FinalCompPsAsm = m3d::Application::g_pApp->m_renderer->NewAsmShader("data/shaders/post_composite_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+        M3D_ASSERT(g_FinalCompPsAsm);
+    }
+    g_FilmVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_film_vs11.vs", "VS_Film", m3d::rend::IHlslShader::VS_1_1);
+    M3D_ASSERT(g_FilmVs);
+    if (m3d::Application::g_pApp->m_renderer->IsFeatureSupported(m3d::rend::FEATURE_NON_POW2_CONDITIONAL))
+    {
+        g_FilmPsAsm = m3d::Application::g_pApp->m_renderer->NewAsmShader("data/shaders/post_film_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+    }
+    else
+    {
+        g_FilmPsAsm = m3d::Application::g_pApp->m_renderer->NewAsmShader("data/shaders/post_film_ps11sp.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+    }
+    M3D_ASSERT(g_FilmPsAsm);
+    g_BlackNWhiteVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_bw_ps11.vs", "VS_Quad", m3d::rend::IHlslShader::VS_1_1);
+    M3D_ASSERT(g_BlackNWhiteVs);
+    g_BlackNWhitePs = m3d::Application::g_pApp->m_renderer->NewAsmShader("data/shaders/post_bw_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+    M3D_ASSERT(g_BlackNWhitePs);
 }
 
 bool PostEffectManager::Reload()

@@ -28,6 +28,9 @@ namespace m3d
         static void _MusicEndCallback(int);
 
     private:
+        static inline BlockMusicManager* m_instance = nullptr;
+
+    private:
         std::vector<std::vector<CStr>> m_blocks;
         int m_curBlockNum = 0;
         BlockMusicType m_curMusicType = NUM_MUSIC_TYPES;

@@ -1,5 +1,7 @@
 #include "objectcollection.h"
 #include <stdexcept>
+#include <core/kernel.h>
+#include <core/stringm3d.h>
 
 ObjectCollection::~ObjectCollection()
 {
@@ -18,7 +20,7 @@ std::set<int> const* ObjectCollection::GetObjectsByClass(m3d::Class const*) cons
 
 ObjectCollection::ObjectCollection()
 {
-    throw std::logic_error("Not implemented");
+    InitClasses();
 }
 
 bool ObjectCollection::IsClassCollected(m3d::Class const*) const
@@ -43,5 +45,13 @@ void ObjectCollection::ClearClasses()
 
 void ObjectCollection::InitClasses()
 {
-    throw std::logic_error("Not implemented");
+    m_collectedClasses.clear();
+    CStr collectedClassNames[] = { "Vehicle", "DynamicQuest", "Town", "Lair", "Location", "StaticAutoGun" };
+    for (auto const& className : collectedClassNames)
+    {
+        if (auto* cls = m3d::g_Kernel->FindClass(className.c_str()))
+        {
+            m_collectedClasses.push_back(cls);
+        }
+    }
 }

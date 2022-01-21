@@ -60,7 +60,6 @@ int GameUiManager::GUI_CreateWindow(int, CStr const&, bool, CStr const&)
 
 GameUiManager::GameUiManager()
 {
-    throw std::logic_error("Not implemented");
 }
 
 bool GameUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd*) const
@@ -228,7 +227,19 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd>, int, bool, bool)
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_ValidateDynamicId(int)
+int GameUiManager::GUI_ValidateDynamicId(int id)
 {
-    throw std::logic_error("Not implemented");
+    if (m_windows.find(id) == end(m_windows))
+    {
+        return id;
+    }
+    auto maxId = id;
+    for (auto const& window : m_windows)
+    {
+        if (window.first > maxId)
+        {
+            maxId = window.first;
+        }
+    }
+    return maxId + 1;
 }

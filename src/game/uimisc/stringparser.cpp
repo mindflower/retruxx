@@ -43,7 +43,6 @@ CStr FormatParam::GetAsString() const
 
 StringParser::StringParser()
 {
-    throw std::logic_error("Not implemented");
 }
 
 StringParser::~StringParser()

@@ -5,23 +5,20 @@ class MsgManager :  public m3d::Object
 public:
     int ShowMsgBox(int,bool);
     void Clear(bool);
-    virtual struct m3d::Class * GetClass() const ;
-    void m3d::FadingInit();
-    m3d::Fading~FadingMsgManager();
-    void m3d::FadingShowMessage(CStr const &);
-    m3d::FadingFadingMsgManager();
-    static struct m3d::Class * GetBaseClass();
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Class * GetBaseClass();
     class MsgInfo const * GetMsgInfo(int) const ;
-    static class m3d::Object * CreateObject();
+    static m3d::Object * CreateObject();
     virtual ~MsgManager();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
+
 protected:
-    int AddMsg(class MsgInfo *,bool);
-    MsgManager(class MsgManager const &);
+    int AddMsg(MsgInfo *,bool);
+    MsgManager(MsgManager const &);
     MsgManager();
     int LoadFromXml(CStr const &,bool);
+
 private:
-    m3d::FadingInit();
     std::map<int,MsgInfo *> m_globalMsgs;
     std::map<int,MsgInfo *> m_levelMsgs;
 };

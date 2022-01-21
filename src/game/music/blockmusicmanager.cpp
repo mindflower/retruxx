@@ -1,5 +1,14 @@
 #include "blockmusicmanager.h"
+#include <config.h>
 #include <stdexcept>
+#include <core/kernel.h>
+#include <core/log.h>
+#include <core/ref_ptr.h>
+
+namespace
+{
+    const unsigned NUM_MUSIC_TYPES = 3;
+}
 
 namespace m3d
 {
@@ -25,7 +34,56 @@ namespace m3d
 
     void BlockMusicManager::InitOnce()
     {
-        throw std::logic_error("Not implemented");
+        m_instance = this;
+        m_blocks.clear();
+        m_blockNamesToIds.clear();
+        m_curBlockNum = -1;
+        if (g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        {
+            CStr err;
+            CStr fileName = g_Kernel->GetEngineCfg().m_snd_pathToMusicBlocks.GetS();
+            ref_ptr xmlFile = ReadXmlFile(fileName.c_str(), &err);
+            if (xmlFile)
+            {
+                ref_ptr musicBlocksNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+                xmlFile->GetFirstChild_(musicBlocksNode, "MusicBlocks");
+
+                ref_ptr blockNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+                for (musicBlocksNode->GetFirstChild_(blockNode, "Block"); !blockNode->IsEmpty(); blockNode->GetNextSibling_(blockNode, "Block"))
+                {
+                    std::vector<CStr> block;
+                    const char* musicNames[3] = { "driving", "alarm", "battle" };
+                    for (auto musicName : musicNames)
+                    {
+                        block.push_back(blockNode->GetAttribute(musicName));
+                    }
+                    M3D_ASSERT(block.size() == NUM_MUSIC_TYPES);
+
+                    CStr blockName;
+                    SafeStrAttrib(blockName, blockNode, "name");
+                    if (blockName.empty())
+                    {
+                        SYS_ERROR("!\"Error: empty music block name\"");
+                    }
+                    auto it = m_blockNamesToIds.find(blockName);
+                    if (it != end(m_blockNamesToIds))
+                    {
+                        M3D_CRITICAL_ERROR("duplicate music block name: " + blockName);
+                    }
+
+                    m_blockNamesToIds[blockName] = m_blocks.size();
+                    m_blocks.push_back(block);
+                }
+                if (!m_blocks.empty())
+                {
+                    m_curBlockNum = 0;
+                }
+            }
+            else
+            {
+                M3D_LOG_ERR("Error: No BlockMusicManager file: " + fileName + " err: " + err);
+            }
+        }
     }
 
     int BlockMusicManager::PlayCurrentMusic()

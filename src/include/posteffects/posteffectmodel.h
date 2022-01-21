@@ -37,7 +37,7 @@ public:
 
     class EffectUnit
     {
-    private:
+    public:
         float* m_var;
         float m_initVal;
         float m_params[4];
@@ -53,13 +53,13 @@ public:
     ~PostEffectModel();
     CStr& LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
 
-private:
+public:
     CStr m_name;
-    std::map<CStr, float*>* m_varList;
+    std::map<CStr, float*>* m_varList = nullptr;
     std::vector<ExitCondition> m_conditionList;
     std::vector<EffectUnit> m_effectUnits;
     std::vector<int> m_dynamicUnits;
-    bool m_allInstant;
+    bool m_allInstant = false;
     CONDITION_UNITE m_conditionUnite;
-    float* m_pVarVal;
+    float* m_pVarVal = nullptr;
 };

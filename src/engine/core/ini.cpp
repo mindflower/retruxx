@@ -285,7 +285,7 @@ int IniFileImpl::Write(m3d::fs::IStream&)
 
 char const* IniFileImpl::GetError()
 {
-    throw std::logic_error("Not implemented");
+    return m_file->GetError();
 }
 
 unsigned IniFileImpl::GetHex(CStr const&, CStr const&)
@@ -298,9 +298,9 @@ void IniFileImpl::SetString(CStr const&, CStr const&, CStr const&)
     throw std::logic_error("Not implemented");
 }
 
-int IniFileImpl::GetInteger(CStr const&, CStr const&)
+int IniFileImpl::GetInteger(CStr const& section, CStr const& key)
 {
-    throw std::logic_error("Not implemented");
+    return atoi(GetString(section, key));
 }
 
 float IniFileImpl::GetFloat(CStr const& section, CStr const& key)

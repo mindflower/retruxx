@@ -458,7 +458,7 @@ int CMiracle3d::OnSkipCinematicMessage(m3d::AuxImpulseInfo const&)
 
 m3d::BlockMusicManager* CMiracle3d::GetBlockMusicManager()
 {
-    throw std::logic_error("Not implemented");
+    return m_blockMusicManager;
 }
 
 bool CMiracle3d::IsRenderAsBackground() const

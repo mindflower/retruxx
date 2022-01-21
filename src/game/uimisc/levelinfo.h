@@ -1,40 +1,53 @@
 #pragma once
+#include <map>
+#include <vector>
+#include <core/clazz.h>
+#include <core/console/cvar.h>
+#include <math/vector.h>
+
+namespace ai
+{
+    class Obj;
+}
+
+class ObjectInfo;
+class VisibilityMap;
 
 class LevelInfoManager :  public m3d::Object
 {
 public:
     void ClearBeforeNewLevel();
-    void GetVisitedLevelNames(class std::vector<CStr,class std::allocator<CStr> > &) const ;
+    void GetVisitedLevelNames(std::vector<CStr> &) const ;
     void ClearLevelObjects();
-    void GetAllLevelNames(class std::vector<CStr,class std::allocator<CStr> > &) const ;
-    int AddVisibilityCircleForLevel(CStr const &,struct CVector const &,float);
+    void GetAllLevelNames(std::vector<CStr> &) const ;
+    int AddVisibilityCircleForLevel(CStr const &,CVector const &,float);
     void OnTownRuined(void *);
     void UpdateKnownLevels();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
     void UpdateLevelImages();
     void UpdateObjectInfoForCurrentLevel();
     void UpdateObjectPositions();
     void OnEndLevel();
     int AddVisibilityRectForLevel(CStr const &,float,float,float,float);
     class LevelInfo * GetLevelInfoById(int) const ;
-    int SaveObjectInfoForObject(class ai::Obj const *);
-    static class m3d::Object * CreateObject();
+    int SaveObjectInfoForObject(ai::Obj const *);
+    static m3d::Object * CreateObject();
     void ClearVisibilityMapForLevel(CStr const &);
-    class VisibilityMap * GetVisibilityMapForLevel(CStr const &) const ;
-    bool IsObjectCharted(class ai::Obj const *) const ;
-    class VisibilityMap * AddVisibilityMapForLevel(CStr const &);
-    static struct m3d::Class * GetBaseClass();
+    VisibilityMap * GetVisibilityMapForLevel(CStr const &) const ;
+    bool IsObjectCharted(ai::Obj const *) const ;
+    VisibilityMap * AddVisibilityMapForLevel(CStr const &);
+    static m3d::Class * GetBaseClass();
     void ClearNonPersistantPriceInfoForLevel(CStr const &);
     void ClearOnce();
-    int LoadFromXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode const *);
+    int LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
     void ClearObjectIds(CStr const &);
     bool IsLevelKnown(CStr const &) const ;
     int Init();
     int GetVisibilityRadius() const ;
     void OnNewFrame();
     int AddVisitedLevel(CStr const &);
-    class std::map<CStr,class ObjectInfo *,struct std::less<CStr>,class std::allocator<struct std::pair<CStr const ,class ObjectInfo *> > > const * GetObjectsForLevel(CStr const &) const ;
-    class std::map<CStr,class ObjectInfo *,struct std::less<CStr>,class std::allocator<struct std::pair<CStr const ,class ObjectInfo *> > > * GetObjectsForLevel(CStr const &);
+    std::map<CStr,ObjectInfo *> const * GetObjectsForLevel(CStr const &) const ;
+    std::map<CStr,ObjectInfo *> * GetObjectsForLevel(CStr const &);
     int LoadLevelSizes();
     void ClearBeforeContinuousLevel();
     void ClearVisitedLevels();
@@ -43,26 +56,28 @@ public:
     int GameDataUpdate(void *,int);
     int LoadLevelInfoFromXml(CStr const &);
     void OnStartLevel();
-    class LevelInfo * GetLevelInfoByName(CStr const &);
-    class LevelInfo const * GetLevelInfoByName(CStr const &) const ;
-    int AddObjectInfo(class ObjectInfo *);
+    LevelInfo * GetLevelInfoByName(CStr const &);
+    LevelInfo const * GetLevelInfoByName(CStr const &) const ;
+    int AddObjectInfo(ObjectInfo *);
     void OnLocationStateChanged(void *);
     int LoadLevelSizeFromXml(CStr const &);
     class ObjectInfo * GetObjectInfo(CStr const &,CStr const &) const ;
     int AddKnownLevel(CStr const &);
     int GetLevelInfoId(CStr const &) const ;
     void ClearKnownLevels();
-    void GetKnownLevelNames(class std::vector<CStr,class std::allocator<CStr> > &) const ;
+    void GetKnownLevelNames(std::vector<CStr> &) const ;
     CStr GetLevelInfoName(int) const ;
-    int SaveToXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
+    int SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
     void UpdateVisibilityMaps();
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     float GetLevelSize(CStr const &) const ;
     void ClearVisibilityMaps();
     bool IsLevelVisited(CStr const &) const ;
+
 protected:
     LevelInfoManager();
-    LevelInfoManager(class LevelInfoManager const &);
+    LevelInfoManager(LevelInfoManager const &);
+
 private:
     std::map<int,LevelInfo *> m_levels;
     int m_nextLevelInfoId;
@@ -82,27 +97,27 @@ public:
     int SavePrices();
     int GetId() const ;
     int GetBelong() const ;
-    int SaveToXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
+    int SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
     void SetSavedPricesPersistant(bool);
     CStr const * GetPassageAddress() const ;
     int GetPrototypeId() const ;
     bool IsTown() const ;
-    int LoadFromXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode const *);
+    int LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
     bool IsLocation() const ;
     ~ObjectInfo();
     CStr const & GetLevelName() const ;
     CStr const & GetName() const ;
     int AddSavedPriceByPrototypeId(int,int,int);
-    class std::map<int,struct CVector2,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct CVector2> > > const * GetSavedPrices() const ;
+    std::map<int,CVector2> const * GetSavedPrices() const ;
     CStr const & GetPrototypeName() const ;
-    struct CVector const & GetPosition() const ;
+    CVector const & GetPosition() const ;
     bool IsActive() const ;
     bool IsRuined() const ;
     void DeleteSavedPrices();
     CStr const & GetFullName() const ;
-protected:
+
 private:
-    struct m3d::Class const * GetObjectClass() const ;
+    m3d::Class const * GetObjectClass() const ;
     CStr m_name;
     CStr m_fullName;
     CStr m_prototypeName;
