@@ -51,7 +51,7 @@ public:
         HELP_ID_INVALID = 0x29,
     };
 
-    class HelpManager::AuxInfo
+    class AuxInfo
     {
     public:
         AuxInfo();
@@ -92,6 +92,9 @@ protected:
     bool IsHelpIdValidForCurrentInterfaceState(HelpId) const ;
     bool WasHelpShown(HelpId) const ;
     void OnHelpEvent(void *);
+
+public:
+    RT_CLASS_DECLARE(HelpManager);
 
 private:
     std::map<HelpId,int> m_predefinedHelpWindows;

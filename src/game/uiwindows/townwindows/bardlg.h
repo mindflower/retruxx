@@ -1,28 +1,50 @@
 #pragma once
 
+namespace ai
+{
+    class Bar;
+}
+
+class NpcList;
+
 class BarDlg :  public ChildPanel
 {
 public:
-    virtual class m3d::Object * Clone();
-    class ai::Bar * GetBar() const ;
-    static class m3d::Object * CreateObject();
-    static struct m3d::Class * GetBaseClass();
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_lstNPCsPatternName;
+    };
+
+public:
+    virtual m3d::Object * Clone();
+    ai::Bar * GetBar() const ;
+    static m3d::Object * CreateObject();
+    static m3d::Class * GetBaseClass();
     int SetUpForBar(int);
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     virtual ~BarDlg();
+
 protected:
-    BarDlg(class BarDlg const &);
+    BarDlg(BarDlg const &);
     BarDlg();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int,m3d::AIParam const &);
     void FullUpdate();
     virtual int GameDataSetup();
     virtual int GameDataClear(bool);
     virtual int OnAfterRemoveFromWndStation();
-    int OnBeginConversation(class ai::Npc *);
+    int OnBeginConversation(ai::Npc *);
     virtual int OnAfterAddToWndStation();
     virtual int OnBeforeAddToWndStation();
+
+public:
+    RT_CLASS_INLINE_DECLARE(BarDlg);
+
 private:
-    BarDlg::AuxInfo m_aif;
+    AuxInfo m_aif;
     NpcList *m_lstNPCs;
     int m_barId;
 };

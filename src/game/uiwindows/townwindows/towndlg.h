@@ -1,7 +1,27 @@
 #pragma once
+#include <list>
 
 class TownDlg :  public ChildPanel
 {
+public:
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_lblTownNameName;
+        CStr m_lstBuildingsName;
+        CStr m_wndClanPictureName;
+    };
+
+    class ConditionalClosingInfo
+    {
+    private:
+        CStr m_townName;
+        CStr m_levelName;
+    };
+
 public:
     virtual int GameDataLoad(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *);
     struct ConditionalClosingInfo * GetConditionalClosingInfoForTown(CStr const &,CStr const &) const ;
@@ -28,12 +48,15 @@ public:
     class ai::Town * GetTown() const ;
     void RemoveConditionalClosingInfo(CStr const &,CStr const &);
     virtual ~TownDlg();
+
 protected:
     TownDlg();
-    TownDlg(class TownDlg const &);
+    TownDlg(TownDlg const &);
+
+public:
+    RT_CLASS_INLINE_DECLARE(TownDlg);
+
 private:
-    std::allocator<ConditionalClosingInfo *>::allocator<ConditionalClosingInfo *>();
-    std::allocator<ConditionalClosingInfo *>::allocator<ConditionalClosingInfo *>();
     TownDlg::AuxInfo m_aif;
     m3d::ui::Wnd *m_lblTownName;
     int m_townId;

@@ -85,6 +85,9 @@ protected:
     virtual int StartDrag();
     virtual int OnMouseMove(PointBase<float> const&, PointBase<float> const&);
 
+public:
+    RT_CLASS_INLINE_DECLARE(DragDropItemsWnd);
+
 private:
     DragStyle m_dragStyle;
 };

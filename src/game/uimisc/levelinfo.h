@@ -4,6 +4,7 @@
 #include <core/clazz.h>
 #include <core/console/cvar.h>
 #include <math/vector.h>
+#include <renderer/i_renderer.h>
 
 namespace ai
 {
@@ -12,6 +13,43 @@ namespace ai
 
 class ObjectInfo;
 class VisibilityMap;
+
+class LevelInfo
+{
+public:
+    CStr const& GetName() const;
+    CStr const& GetFullName() const;
+    m3d::rend::TexHandle GetImage0() const;
+    m3d::rend::TexHandle GetImage1() const;
+    std::vector<m3d::rend::TexHandle> GetSplashes();
+    CStr const& GetFile() const;
+    LevelInfo();
+    CStr const& GetDiz0() const;
+    ~LevelInfo();
+    CStr const& GetDiz1() const;
+    CVector const& GetNorth() const;
+    int LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+    CStr GetRandomMusicBlock() const;
+
+private:
+    int LoadBigImage();
+
+private:
+    CStr m_name;
+    CStr m_fullName;
+    CStr m_file;
+    CStr m_diz0;
+    CStr m_diz1;
+    CStr m_imageFile0;
+    CStr m_imageFile1;
+    std::vector<CStr> m_splasheNames;
+    std::vector<CStr> m_musicBlockNames;
+    m3d::rend::TexHandle m_image0;
+    m3d::rend::TexHandle m_image1;
+    std::map<CStr, m3d::rend::TexHandle> m_splashes;
+    CVector m_north;
+};
+
 
 class LevelInfoManager :  public m3d::Object
 {
@@ -77,6 +115,9 @@ public:
 protected:
     LevelInfoManager();
     LevelInfoManager(LevelInfoManager const &);
+
+public:
+    RT_CLASS_DECLARE(LevelInfoManager);
 
 private:
     std::map<int,LevelInfo *> m_levels;

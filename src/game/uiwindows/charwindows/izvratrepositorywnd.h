@@ -1,4 +1,6 @@
 #pragma once
+#include "repositorywnd.h"
+#include <server/izvratrepository.h>
 
 class IzvratRepositoryWnd :  public RepositoryWnd
 {
@@ -6,33 +8,38 @@ public:
     class FrameSegment
     {
     public:
-        FrameSegment(struct FrameSegment const&);
-    protected:
+        FrameSegment(FrameSegment const&);
+
     private:
         int m_frameTexId;
         BoundsBase<float> m_rect;
     };
 
 public:
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
-    struct BoundsBase<float> GetMaxRepositoryBounds() const ;
-    virtual int SetIzvratRepository(class ai::IzvratRepository *,enum RepositoryWnd::RepositoryType);
-    static struct m3d::Class * GetBaseClass();
-    class ai::IzvratRepository * GetIzvratRepository() const ;
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+    BoundsBase<float> GetMaxRepositoryBounds() const ;
+    virtual int SetIzvratRepository(ai::IzvratRepository *,RepositoryType);
+    static m3d::Class * GetBaseClass();
+    ai::IzvratRepository * GetIzvratRepository() const ;
     virtual ~IzvratRepositoryWnd();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
+
 protected:
     virtual int CreateScrollWnd();
-    void CalculateSegmentsBounds(class std::map<int,int,struct std::less<int>,class std::allocator<struct std::pair<int const ,int> > > const &,class std::vector<struct FrameSegment,class std::allocator<struct FrameSegment> > &);
-    virtual void DrawGrid(struct m3d::ui::DrawInfo const &);
+    void CalculateSegmentsBounds(std::map<int,int> const &,std::vector<FrameSegment> &);
+    virtual void DrawGrid(m3d::ui::DrawInfo const &);
     void CalculateFrame();
-    void FindPerimeter(class std::map<int,int,struct std::less<int>,class std::allocator<struct std::pair<int const ,int> > > &) const ;
-    virtual void DrawFrame(struct m3d::ui::DrawInfo const &);
-    virtual int SetRepository(class ai::GeomRepository *,enum RepositoryWnd::RepositoryType);
-    IzvratRepositoryWnd(class IzvratRepositoryWnd const &);
+    void FindPerimeter(std::map<int,int> &) const ;
+    virtual void DrawFrame(m3d::ui::DrawInfo const &);
+    virtual int SetRepository(ai::GeomRepository *,RepositoryType);
+    IzvratRepositoryWnd(IzvratRepositoryWnd const &);
     IzvratRepositoryWnd();
-    virtual void DrawBunch(struct m3d::ui::DrawInfo const &);
+    virtual void DrawBunch(m3d::ui::DrawInfo const &);
+
+public:
+    RT_CLASS_INLINE_DECLARE(IzvratRepositoryWnd);
+
 private:
-    std::vector<IzvratRepositoryWnd::FrameSegment> m_frameSegments;
+    std::vector<FrameSegment> m_frameSegments;
 };

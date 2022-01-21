@@ -1,7 +1,11 @@
 #pragma once
+#include <map>
+#include <vector>
+#include <core/clazz.h>
 
 namespace ai
 {
+    class DynamicQuest;
     class Npc;
 }
 
@@ -66,6 +70,9 @@ public:
 protected:
     RepliesManager(RepliesManager const &);
     RepliesManager();
+
+public:
+    RT_CLASS_DECLARE(RepliesManager);
 
 private:
     std::map<CStr,Reply *> m_replies;

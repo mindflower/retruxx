@@ -1,4 +1,6 @@
 #pragma once
+#include <map>
+#include <core/clazz.h>
 
 class WeaponGroupManager :  public m3d::Object
 {
@@ -6,7 +8,7 @@ public:
     int DeleteWeaponGroup(int);
     void ClearSavedGroups();
     int ValidateWeaponGroups();
-    void GetAllWeapons(class std::set<CStr,struct std::less<CStr>,class std::allocator<CStr> > &) const ;
+    void GetAllWeapons(std::set<CStr> &) const ;
     void SaveWeaponGroups();
     virtual class m3d::Object * Clone();
     class WeaponGroup * GetWeaponGroupById(int) const ;
@@ -38,6 +40,10 @@ public:
 protected:
     WeaponGroupManager(class WeaponGroupManager const &);
     WeaponGroupManager();
+
+public:
+    RT_CLASS_DECLARE(WeaponGroupManager);
+
 private:
     std::map<int,WeaponGroup *> m_weaponGroups;
     std::map<int,WeaponGroup *> m_savedWeaponGroups;

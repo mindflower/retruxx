@@ -3,6 +3,16 @@
 class ZnayuKakProdatWnd :  public ChildPanel
 {
 public:
+    enum TradeType
+    {
+        TRADETYPE_VEHICLE = 0x0,
+        TRADETYPE_CABIN = 0x1,
+        TRADETYPE_BASKET = 0x2,
+        TRADETYPE_NUM_TRADETYPES = 0x3,
+        TRADETYPE_INVALID = 0x3,
+    };
+
+public:
     class ItemSaveInfo
     {
     public:

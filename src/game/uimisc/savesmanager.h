@@ -85,6 +85,9 @@ protected:
     struct _FILETIME GetSaveFileModifyTime(CStr const &) const ;
     int SaveInfos(CStr const &,CStr const &);
 
+public:
+    RT_CLASS_DECLARE(SavesManager);
+
 private:
     ConstantSaveInfo m_constantSaveInfo;
     std::map<CStr,SaveInfo *> m_saves;

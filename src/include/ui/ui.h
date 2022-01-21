@@ -45,6 +45,24 @@ namespace m3d
         class GfxServer;
         class ScrollWnd;
 
+        enum Edges
+        {
+            LEFT = 0x0,
+            TOP = 0x1,
+            RIGHT = 0x2,
+            BOTTOM = 0x3,
+        };
+
+        enum MbFlags
+        {
+            MBX_OK = 0x1,
+            MBX_YES_NO = 0x2,
+            MBX_YES_NO_CANCEL = 0x3,
+            MBX_BUTTON_FLAGS = 0x3,
+            MBX_CENTRALIZED = 0x8,
+            MBX_SOUNDLOOP = 0x10,
+        };
+
         class Wnd : public Object
         {
             friend class WndStation;

@@ -1,5 +1,10 @@
 #pragma once
 
+namespace ai
+{
+    class StaticAutoGun;
+}
+
 class RadarWnd :  public m3d::ui::Wnd
 {
 public:
@@ -19,6 +24,59 @@ public:
         NavPoint::NavPointType m_navPointType;
         ElectronicDigitalWnd* m_wndDigital;
         int m_navPointId;
+    };
+
+    class RadarItem
+    {
+    public:
+        class PointBase<float> const& GetCoords(void) const;
+        RadarItem(class m3d::rend::TexHandle, class PointBase<float> const&, class PointBase<float> const&, float);
+        class PointBase<float> const& GetSize(void) const;
+        void Draw(struct m3d::ui::DrawInfo const&) const;
+        void SetCoords(class PointBase<float> const&);
+        void SetSize(class PointBase<float> const&);
+        void SetAngle(float);
+        void SetTexture(class m3d::rend::TexHandle);
+        float GetAngle(void) const;
+        ~RadarItem(void);
+        struct BoundsBase<float> GetBounds(void) const;
+        class m3d::rend::TexHandle GetTexture(void) const;
+    protected:
+    private:
+        m3d::rend::TexHandle m_texture;
+        PointBase<float> m_coords;
+        float m_angle;
+        PointBase<float> m_size;
+    };
+
+    class AuxInfo
+    {
+    public:
+        AuxInfo(void);
+    protected:
+    private:
+        CStr m_icoNames[24];
+        PointBase<float> m_icoSizeVehicleSmall;
+        PointBase<float> m_icoSizeVehicleLarge;
+        PointBase<float> m_icoSizeTurretSmall;
+        PointBase<float> m_icoSizeTurretLarge;
+        PointBase<float> m_icoSizeMainQuestFar;
+        PointBase<float> m_icoSizeMainQuestNear;
+        PointBase<float> m_icoSizeUserQuestFar;
+        PointBase<float> m_icoSizeUserQuestNear;
+        PointBase<float> m_icoSizeUserLocationFar;
+        PointBase<float> m_icoSizeUserLocationNear;
+        PointBase<float> m_icoSizeWorldside;
+        PointBase<float> m_rotationCenter;
+        float m_innerRadius;
+        float m_outerRadius;
+        CStr m_cameraSightTexName;
+        PointBase<float> m_cameraSightSz;
+        CStr m_playerVehicleTexName;
+        PointBase<float> m_playerVehicleSz;
+        CStr m_highlightTexName;
+        BoundsBase<float> m_highlightB;
+        CStr m_wndsDistancesNames[3];
     };
 
 public:
@@ -94,6 +152,10 @@ public:
 protected:
     RadarWnd();
     RadarWnd(class RadarWnd const &);
+
+public:
+    RT_CLASS_INLINE_DECLARE(RadarWnd);
+
 private:
     m3d::CVar m_cvDefaultRadarScanRadius;
     std::map<int,std::vector<RadarWnd::RadarItem *>> m_vehicleItems;

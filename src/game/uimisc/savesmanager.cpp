@@ -1,6 +1,8 @@
 #include "savesmanager.h"
 #include <stdexcept>
 
+RT_CLASS_DEFINE(SavesManager);
+
 SavesManager::ConstantSaveInfo::ConstantSaveInfo()
 {
     throw std::logic_error("Not implemented");

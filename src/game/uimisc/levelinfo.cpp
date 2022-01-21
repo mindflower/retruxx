@@ -1,6 +1,8 @@
 #include "levelinfo.h"
 #include <stdexcept>
 
+RT_CLASS_DEFINE(LevelInfoManager);
+
 void LevelInfoManager::ClearBeforeNewLevel()
 {
     throw std::logic_error("Not implemented");

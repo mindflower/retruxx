@@ -1,22 +1,50 @@
 #pragma once
+#include <ui/wnd.h>
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+        class SliderWnd;
+    }
+}
 
 class DevideDlg :  public m3d::ui::ModalWnd
 {
 public:
-    virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * CreateObject();
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_lblOriginalAmountName;
+        CStr m_lblDragAmountName;
+        CStr m_sliderName;
+        CStr m_btnPlusName;
+        CStr m_btnMinusName;
+    };
+
+public:
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
     virtual int GameDataSetup();
     void UpdateLabels();
-    virtual class m3d::Object * Clone();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    virtual m3d::Object * Clone();
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int,m3d::AIParam const &);
     int GetDragAmount();
     int GetOriginalAmount();
     virtual ~DevideDlg();
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     void SetAmount(int);
 protected:
-    DevideDlg(class DevideDlg const &);
+    DevideDlg(DevideDlg const &);
     DevideDlg();
+
+public:
+    RT_CLASS_INLINE_DECLARE(DevideDlg);
+
 private:
     int m_maxAmount;
     m3d::ui::Wnd *m_lblOriginalAmount;
@@ -24,6 +52,6 @@ private:
     m3d::ui::SliderWnd *m_slider;
     m3d::ui::ButtonWnd *m_btnPlus;
     m3d::ui::ButtonWnd *m_btnMinus;
-    DevideDlg::AuxInfo m_aif;
+    AuxInfo m_aif;
     bool m_isInited;
 };

@@ -886,6 +886,7 @@
     <ClInclude Include="src\game\uiwindows\charwindows\infownd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\inventorywnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\iteminfownd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\itemwnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\izvratrepositorywnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\motherpanel.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\motherpaneltabbutton.h" />
