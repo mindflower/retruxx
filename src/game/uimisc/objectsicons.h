@@ -26,6 +26,8 @@ public:
 
 private:
     int AddIcon(CStr const&, Icon*, bool);
+
+private:
     std::map<CStr, Icon*> m_globalIcons;
     std::map<CStr, Icon*> m_levelIcons;
     CStr m_levelName;

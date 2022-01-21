@@ -1,7 +1,18 @@
 #pragma once
+#include <ui/image.h>
 
 class LevelConnectionsWnd :  public m3d::ui::Wnd
 {
+public:
+    class ConnectionDrawInfo
+    {
+    public:
+        ConnectionDrawInfo(struct ConnectionDrawInfo const&);
+    protected:
+    private:
+        PointBase<float> m_pt0;
+        PointBase<float> m_pt1;
+    };
 public:
     virtual class m3d::Object * Clone();
     static struct m3d::Class * GetBaseClass();
@@ -15,34 +26,10 @@ protected:
     LevelConnectionsWnd();
     LevelConnectionsWnd(class LevelConnectionsWnd const &);
 private:
-    std::copy<ConnectionDrawInfo *,ConnectionDrawInfo *>(ConnectionDrawInfo *,ConnectionDrawInfo *,ConnectionDrawInfo *);
-    std::_Copy_backward_opt<ConnectionDrawInfo *,ConnectionDrawInfo *>(ConnectionDrawInfo *,ConnectionDrawInfo *,ConnectionDrawInfo *,std::_Nonscalar_ptr_iterator_tag);
-    std::allocator<ConnectionDrawInfo>::allocator<ConnectionDrawInfo>();
-    std::allocator<ConnectionDrawInfo>::allocator<ConnectionDrawInfo>();
-    std::copy_backward<ConnectionDrawInfo *,ConnectionDrawInfo *>(ConnectionDrawInfo *,ConnectionDrawInfo *,ConnectionDrawInfo *);
-    std::_Construct<ConnectionDrawInfo,ConnectionDrawInfo>(ConnectionDrawInfo *,ConnectionDrawInfo const &);
-    std::fill<ConnectionDrawInfo *,ConnectionDrawInfo>(ConnectionDrawInfo *,ConnectionDrawInfo *,ConnectionDrawInfo const &);
-    std::_Destroy<ConnectionDrawInfo>(ConnectionDrawInfo *);
-    std::_Allocate<ConnectionDrawInfo>(uint,ConnectionDrawInfo *);
-    std::_Ptr_cat<ConnectionDrawInfo *,ConnectionDrawInfo *>(ConnectionDrawInfo * &,ConnectionDrawInfo * &);
-    std::_Copy_opt<ConnectionDrawInfo *,ConnectionDrawInfo *>(ConnectionDrawInfo *,ConnectionDrawInfo *,ConnectionDrawInfo *,std::_Nonscalar_ptr_iterator_tag);
     std::vector<LevelConnectionsWnd::ConnectionDrawInfo> m_connectionDrawInfo;
     LevelConnectionsWnd::AuxInfo m_aif;
     m3d::rend::TexHandle m_connectionTex;
 };
-
-namespace LevelConnectionsWnd
-{
-    class ConnectionDrawInfo
-    {
-    public:
-        ConnectionDrawInfo(struct ConnectionDrawInfo const &);
-    protected:
-    private:
-        PointBase<float> m_pt0;
-        PointBase<float> m_pt1;
-    };
-}
 
 class GlobalMapWnd :  public ScreenWnd
 {
@@ -70,15 +57,6 @@ protected:
     void OnStartLevel();
     void OnLocationStateChanged();
 private:
-    std::_Construct<Connection,Connection>(Connection *,Connection const &);
-    std::_Copy_backward_opt<Connection *,Connection *>(Connection *,Connection *,Connection *,std::_Nonscalar_ptr_iterator_tag);
-    std::allocator<Connection>::allocator<Connection>();
-    std::allocator<Connection>::allocator<Connection>();
-    std::copy_backward<Connection *,Connection *>(Connection *,Connection *,Connection *);
-    std::_Destroy<Connection>(Connection *);
-    std::fill<Connection *,Connection>(Connection *,Connection *,Connection const &);
-    std::_Allocate<Connection>(uint,Connection *);
-    std::_Ptr_cat<Connection *,Connection *>(Connection * &,Connection * &);
     std::map<CStr,ref_ptr<LevelIco>> m_levelIcons;
     std::vector<GlobalMapWnd::Connection> m_connections;
     GlobalMapWnd::AuxInfo m_aif;

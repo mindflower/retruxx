@@ -1,28 +1,26 @@
 #pragma once
 
-namespace RadarWnd
+class RadarWnd :  public m3d::ui::Wnd
 {
+public:
     class NpDistance
     {
     public:
         ~NpDistance();
-        int GetNavPointId() const ;
-        NpDistance(class ElectronicDigitalWnd *,enum NavPoint::NavPointType);
+        int GetNavPointId() const;
+        NpDistance(class ElectronicDigitalWnd*, enum NavPoint::NavPointType);
         int SetNavPointId(int);
         int SetDistance(float);
-        enum NavPoint::NavPointType GetNavPointType() const ;
+        enum NavPoint::NavPointType GetNavPointType() const;
     protected:
     private:
         void Show(bool);
-        bool IsValid() const ;
+        bool IsValid() const;
         NavPoint::NavPointType m_navPointType;
-        ElectronicDigitalWnd *m_wndDigital;
+        ElectronicDigitalWnd* m_wndDigital;
         int m_navPointId;
     };
-}
 
-class RadarWnd :  public m3d::ui::Wnd
-{
 public:
     int UpdateWorldsidesOnNewFrame();
     void ClearTurretItems();
@@ -97,32 +95,6 @@ protected:
     RadarWnd();
     RadarWnd(class RadarWnd const &);
 private:
-    std::_Allocate<RadarItem *>(uint,RadarItem * *);
-    ClearRadarItemMap(std::map<int,std::vector<RadarItem *>> &);
-    std::fill<RadarItem * *,RadarItem *>(RadarItem * *,RadarItem * *,RadarItem * const &);
-    std::fill<NpDistance *,NpDistance>(NpDistance *,NpDistance *,NpDistance const &);
-    AddObject(int,std::map<int,std::vector<RadarItem *>> &);
-    std::_Construct<RadarItem *,RadarItem *>(RadarItem * *,RadarItem * const &);
-    std::_Ptr_cat<NpDistance *,NpDistance *>(NpDistance * &,NpDistance * &);
-    RemoveObject(int,std::map<int,std::vector<RadarItem *>> &);
-    std::allocator<RadarItem *>::allocator<RadarItem *>();
-    std::allocator<RadarItem *>::allocator<RadarItem *>();
-    std::copy_backward<RadarItem * *,RadarItem * *>(RadarItem * *,RadarItem * *,RadarItem * *);
-    std::_Copy_backward_opt<NpDistance *,NpDistance *>(NpDistance *,NpDistance *,NpDistance *,std::_Nonscalar_ptr_iterator_tag);
-    std::_Copy_backward_opt<RadarItem * *,RadarItem * *>(RadarItem * *,RadarItem * *,RadarItem * *,std::_Scalar_ptr_iterator_tag);
-    std::_Destroy<RadarItem *>(RadarItem * *);
-    std::_Uninit_copy<RadarItem *,RadarItem *>(RadarItem * *,RadarItem * *,RadarItem * *,std::allocator<RadarItem *> &,std::_Scalar_ptr_iterator_tag);
-    std::_Construct<NpDistance,NpDistance>(NpDistance *,NpDistance const &);
-    std::_Allocate<NpDistance>(uint,NpDistance *);
-    std::_Ptr_cat<RadarItem>(RadarItem * *,RadarItem * *);
-    RemoveItem(std::map<int,std::vector<RadarItem *>> &,int);
-    UpdateObject(int,std::map<int,std::vector<RadarItem *>> const &);
-    std::allocator<NpDistance>::allocator<NpDistance>();
-    std::allocator<NpDistance>::allocator<NpDistance>();
-    std::_Destroy<NpDistance>(NpDistance *);
-    UpdateObjectsOnNewFrame(std::map<int,std::vector<RadarItem *>> &,m3d::Class const *);
-    DrawItems(m3d::ui::DrawInfo const &,std::map<int,std::vector<RadarItem *>> const &);
-    std::copy_backward<NpDistance *,NpDistance *>(NpDistance *,NpDistance *,NpDistance *);
     m3d::CVar m_cvDefaultRadarScanRadius;
     std::map<int,std::vector<RadarWnd::RadarItem *>> m_vehicleItems;
     std::map<int,std::vector<RadarWnd::RadarItem *>> m_turretItems;

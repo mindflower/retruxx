@@ -1,7 +1,11 @@
 #include "gameuimanager.h"
+#include <config.h>
 #include <stdexcept>
 #include <ui/wnd.h>
 #include <core/ini.h>
+#include <core/log.h>
+#include <core/console/console.h>
+#include <game/uimisc/objectsicons.h>
 
 int GameUiManager::GUI_SetNextDynamicId(int)
 {
@@ -97,9 +101,62 @@ int GameUiManager::GUI_LoadResources(ResourceInfo::ResourceLoadType)
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_Init(bool)
+int GameUiManager::GUI_Init(bool reloadResources)
 {
-    throw std::logic_error("Not implemented");
+    M3D_LOG_INFO("Interface: is initializing...");
+    if (!m_icons)
+    {
+        m_icons = new ObjectsIcons;
+    }
+    auto res = 0;
+    if (!m_oneTimeStuffIsInited || reloadResources)
+    {
+        if (m_isInited)
+        {
+            GUI_Done();
+        }
+        if (!m_oneTimeStuffIsInited)
+        {
+            GUI_RegisterEvents();
+            GUI_RegisterCVars();
+            GUI_RegisterClasses();
+            if (!GUI_LoadResourceInfos())
+            {
+                res = 0;
+            }
+            if (!GUI_LoadResources(ResourceInfo::LOADTYPE_AT_APP_START))
+            {
+                res = 0;
+            }
+            if (!GUI_BindWindowsToEvents())
+            {
+                res = 0;
+            }
+            m_oneTimeStuffIsInited = true;
+            m_bFirstLevelResourcesLoaded = true;
+        }
+    }
+    else
+    {
+        if (m_isInited)
+        {
+            GUI_Clear(false);
+        }
+        for (auto& window : m_windows)
+        {
+            window.second->GameDataSetup();
+        }
+    }
+    m_isInited = true;
+    if (res)
+    {
+        M3D_LOG_INFO("Interface: is inited successfully");
+    }
+    else
+    {
+        M3D_LOG_INFO("Interface: is inited with errors");
+    }
+    return res;
 }
 
 int GameUiManager::GUI_RemoveWindow(ref_ptr<m3d::ui::Wnd>)
@@ -164,7 +221,13 @@ GameUiManager::~GameUiManager()
 
 void GameUiManager::GUI_RegisterCVars()
 {
-    throw std::logic_error("Not implemented");
+    m_cvPathToUiWindows.Init("pathToUiWindows", "data\\if\\dialogs\\UiWindows.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE);
+    m_cvPathToUiStrings.Init("pathToUiStrings", "data\\if\\strings\\UiStrings.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE);
+    m_cvPathToUiIcons.Init("pathToUiIcons", "data\\if\\ico\\UiIcons.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE);
+
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToUiWindows, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToUiStrings, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToUiIcons, nullptr);
 }
 
 int GameUiManager::GUI_LoadWindowFromResourceInfo(WindowResourceInfo const*)

@@ -1,29 +1,36 @@
 #pragma once
+#include <ui/button.h>
 
-namespace ConversationWnd
+namespace m3d
 {
-    class PlayerReplyButton :  public m3d::ui::ButtonWnd
+    namespace ui
+    {
+        class TextBoxWnd;
+    }
+}
+
+class ConversationWnd :  public m3d::ui::Wnd
+{
+public:
+    class PlayerReplyButton : public m3d::ui::ButtonWnd
     {
     public:
-        class Reply const * GetReply() const ;
-        class ai::DynamicQuest * GetDynamicQuest();
-        int GetIdx() const ;
+        class Reply const* GetReply() const;
+        class ai::DynamicQuest* GetDynamicQuest();
+        int GetIdx() const;
         virtual ~PlayerReplyButton();
-        PlayerReplyButton(class PointBase<float> const &,float,int,class m3d::ui::Wnd *);
-        void SetUpForReply(class Reply const *,class ai::DynamicQuest *);
+        PlayerReplyButton(class PointBase<float> const&, float, int, class m3d::ui::Wnd*);
+        void SetUpForReply(class Reply const*, class ai::DynamicQuest*);
     protected:
     private:
         void RecalcHeight();
         virtual int OnMouseOut();
         virtual int OnMouseIn();
         int m_idx;
-        const Reply *m_reply;
-        ai::DynamicQuest *m_dQuest;
+        const Reply* m_reply;
+        ai::DynamicQuest* m_dQuest;
     };
-}
 
-class ConversationWnd :  public m3d::ui::Wnd
-{
 public:
     virtual class m3d::Object * Clone();
     class ai::DynamicQuest * GetCurrentDynamicQuest();
@@ -51,8 +58,6 @@ protected:
     int UpdateOnSetNpcReply(class Reply const *);
     bool NeedConversationExit() const ;
 private:
-    m3d::ui::ListBoxWnd<PlayerReplyButton *>::~ListBoxWnd<PlayerReplyButton *>();
-    m3d::ui::ListBoxWnd<PlayerReplyButton *>::ListBoxWnd<PlayerReplyButton *>();
     ConversationWnd::AuxInfo m_aif;
     m3d::ui::TextBoxWnd *m_txtNpcReply;
     ConversationWnd::PlayerRepliesListBoxWnd *m_lstPlayerReplies;

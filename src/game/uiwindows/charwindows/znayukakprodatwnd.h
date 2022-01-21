@@ -3,6 +3,34 @@
 class ZnayuKakProdatWnd :  public ChildPanel
 {
 public:
+    class ItemSaveInfo
+    {
+    public:
+        int SetupAsGadget(int, Belong, int);
+        int GetGadgetSlotId() const;
+        Belong GetBelong() const;
+        ItemType GetItemType() const;
+        ItemSaveInfo();
+        class PointBase<int> GetRepositoryPos() const;
+        ~ItemSaveInfo();
+        int GetObjId() const;
+        int SetupAsVehiclePart(int, Belong, CStr const&, CStr const&);
+        bool IsValid() const;
+        int SetupAsMainItem(int, Belong);
+        void Invalidate();
+        int SetupAsRepositoryItem(int, Belong, class PointBase<int> const&);
+        CStr GetVehiclePartName() const;
+    protected:
+    private:
+        ItemType m_itemType;
+        int m_gadgetSlotId;
+        CStr m_vehiclePartName;
+        PointBase<int> m_repositoryPos;
+        int m_objId;
+        Belong m_belong;
+    };
+
+public:
     int GetWorkshopItemsCostToBuy() const ;
     static struct m3d::Class * GetBaseClass();
     enum Belong GetItemBelong(int) const ;
@@ -97,7 +125,6 @@ protected:
     int SaveRepositoryItemsState(int,enum Belong,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > &);
     int CalcItemsCostByBelong(enum Belong) const ;
 private:
-    std::pair<int,ItemSaveInfo *>::pair<int,ItemSaveInfo *>(int const &,ItemSaveInfo * const &);
     ZnayuKakProdatWnd::AuxInfo m_aif;
     m3d::ui::Wnd *m_wndTradeCost;
     m3d::ui::Wnd *m_wndPlayerItemsCost;
@@ -117,33 +144,3 @@ private:
     ZnayuKakProdatWnd::CurValues m_playerCurValues;
     ZnayuKakProdatWnd::CurValues m_workshopCurValues;
 };
-
-namespace ZnayuKakProdatWnd
-{
-    class ItemSaveInfo
-    {
-    public:
-        int SetupAsGadget(int,Belong,int);
-        int GetGadgetSlotId() const ;
-        Belong GetBelong() const ;
-        ItemType GetItemType() const ;
-        ItemSaveInfo();
-        class PointBase<int> GetRepositoryPos() const ;
-        ~ItemSaveInfo();
-        int GetObjId() const ;
-        int SetupAsVehiclePart(int,Belong,CStr const &,CStr const &);
-        bool IsValid() const ;
-        int SetupAsMainItem(int,Belong);
-        void Invalidate();
-        int SetupAsRepositoryItem(int,Belong,class PointBase<int> const &);
-        CStr GetVehiclePartName() const ;
-    protected:
-    private:
-        ItemType m_itemType;
-        int m_gadgetSlotId;
-        CStr m_vehiclePartName;
-        PointBase<int> m_repositoryPos;
-        int m_objId;
-        Belong m_belong;
-    };
-}

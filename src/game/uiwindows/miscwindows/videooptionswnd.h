@@ -3,14 +3,27 @@
 class VideoOptionsWnd :  public m3d::ui::Wnd
 {
 public:
+    class ShadowSettings
+    {
+    public:
+        bool operator==(struct ShadowSettings const&) const;
+        ShadowSettings(int, int, float, float);
+    protected:
+    private:
+        int shadowTexSize;
+        int detShadowTexSize;
+        float shadowBlurCoeff;
+        float detailRadius;
+    };
+
+public:
     static struct m3d::Class * GetBaseClass();
     int ApplyChanges(bool);
     virtual class m3d::Object * Clone();
     static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
     virtual ~VideoOptionsWnd();
-    std::allocator<enum GraphicQuality>::allocator<enum GraphicQuality>(class std::allocator<enum GraphicQuality> const &);
-    std::allocator<enum GraphicQuality>::allocator<enum GraphicQuality>();
+
 protected:
     int WaterQualityEnum2Val(enum WaterQuality) const ;
     void OnCbBlumChange(class m3d::AIParam const &);
@@ -114,7 +127,6 @@ protected:
     void ApplyGraphicQuality();
     int GetDefaultWaterQualityForGraphicQuality(enum GraphicQuality) const ;
 private:
-    CreateObject();
     m3d::ui::ComboBoxWnd *m_cbResolution;
     m3d::ui::SliderWnd *m_sliderGamma;
     m3d::ui::ComboBoxWnd *m_cbGraphicQuality;
@@ -142,19 +154,3 @@ private:
     int m_cbAntialiasingBlocked;
     int m_cbWaterQualityBlocked;
 };
-
-namespace VideoOptionsWnd
-{
-    class ShadowSettings
-    {
-    public:
-        bool operator==(struct ShadowSettings const &) const ;
-        ShadowSettings(int,int,float,float);
-    protected:
-    private:
-        int shadowTexSize;
-        int detShadowTexSize;
-        float shadowBlurCoeff;
-        float detailRadius;
-    };
-}

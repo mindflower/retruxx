@@ -1,20 +1,18 @@
 #pragma once
 
-namespace IzvratRepositoryWnd
+class IzvratRepositoryWnd :  public RepositoryWnd
 {
+public:
     class FrameSegment
     {
     public:
-        FrameSegment(struct FrameSegment const &);
+        FrameSegment(struct FrameSegment const&);
     protected:
     private:
         int m_frameTexId;
         BoundsBase<float> m_rect;
     };
-}
 
-class IzvratRepositoryWnd :  public RepositoryWnd
-{
 public:
     static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
@@ -36,16 +34,5 @@ protected:
     IzvratRepositoryWnd();
     virtual void DrawBunch(struct m3d::ui::DrawInfo const &);
 private:
-    std::fill<FrameSegment *,FrameSegment>(FrameSegment *,FrameSegment *,FrameSegment const &);
-    std::_Ptr_cat<FrameSegment *,FrameSegment *>(FrameSegment * &,FrameSegment * &);
-    SetRepository(ai::GeomRepository *,RepositoryWnd::RepositoryType);
-    std::_Allocate<FrameSegment>(uint,FrameSegment *);
-    std::_Destroy<FrameSegment>(FrameSegment *);
-    std::copy_backward<FrameSegment *,FrameSegment *>(FrameSegment *,FrameSegment *,FrameSegment *);
-    std::_Copy_backward_opt<FrameSegment *,FrameSegment *>(FrameSegment *,FrameSegment *,FrameSegment *,std::_Nonscalar_ptr_iterator_tag);
-    std::_Construct<FrameSegment,FrameSegment>(FrameSegment *,FrameSegment const &);
-    std::allocator<FrameSegment>::allocator<FrameSegment>();
-    std::allocator<FrameSegment>::allocator<FrameSegment>();
-    std::swap<FrameSegment>(FrameSegment &,FrameSegment &);
     std::vector<IzvratRepositoryWnd::FrameSegment> m_frameSegments;
 };

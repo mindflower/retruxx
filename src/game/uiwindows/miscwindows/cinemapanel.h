@@ -3,6 +3,17 @@
 class CinemaPanel :  public m3d::ui::Wnd
 {
 public:
+    class MessageTimeInfo
+    {
+    public:
+        MessageTimeInfo(int, float);
+    protected:
+    private:
+        int m_msgId;
+        float m_delay;
+    };
+
+public:
     static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();
     void AddMessage(int,float);
@@ -45,15 +56,6 @@ protected:
     int StopSound();
     void SetPanelType(enum PanelType);
 private:
-    std::_Ptr_cat<MessageTimeInfo>(MessageTimeInfo * *,MessageTimeInfo * *);
-    std::_Destroy<MessageTimeInfo>(MessageTimeInfo *);
-    std::_Uninit_copy<MessageTimeInfo *,MessageTimeInfo *>(MessageTimeInfo * *,MessageTimeInfo * *,MessageTimeInfo * *,std::allocator<MessageTimeInfo *> &,std::_Scalar_ptr_iterator_tag);
-    std::_Allocate<MessageTimeInfo *>(uint,MessageTimeInfo * *);
-    std::_Allocate<MessageTimeInfo>(uint,MessageTimeInfo *);
-    std::allocator<MessageTimeInfo>::allocator<MessageTimeInfo>();
-    std::allocator<MessageTimeInfo>::allocator<MessageTimeInfo>();
-    std::_Construct<MessageTimeInfo,MessageTimeInfo>(MessageTimeInfo *,MessageTimeInfo const &);
-    std::_Destroy<MessageTimeInfo *>(MessageTimeInfo * *);
     std::deque<CinemaPanel::MessageTimeInfo> m_msgInfos;
     CinemaPanel::AuxInfo m_aif;
     int m_soundTableId;
@@ -74,16 +76,3 @@ private:
     m3d::ui::ImageWnd *m_wndScrollImageDownOverlay;
     AutoScrollTextWnd *m_wndScrollText;
 };
-
-namespace CinemaPanel
-{
-    class MessageTimeInfo
-    {
-    public:
-        MessageTimeInfo(int,float);
-    protected:
-    private:
-        int m_msgId;
-        float m_delay;
-    };
-}

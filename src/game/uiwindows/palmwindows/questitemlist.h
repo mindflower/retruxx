@@ -1,4 +1,5 @@
 #pragma once
+#include <ui/uilistboxwnd.h>
 
 class QuestItemList :  public m3d::ui::ListBoxWnd<QuestItem *>
 {

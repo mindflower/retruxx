@@ -152,6 +152,8 @@ protected:
     virtual int GUI_ShowWindow(int, bool, bool, bool, int*);
     virtual int GUI_AddWindowById(ref_ptr<m3d::ui::Wnd>, int, bool, bool);
     int GUI_ValidateDynamicId(int);
+    virtual void GUI_RegisterClasses() = 0;
+    virtual int GUI_BindWindowsToEvents() = 0;
 
 protected:
     std::map<int, int> m_packToEvent;
