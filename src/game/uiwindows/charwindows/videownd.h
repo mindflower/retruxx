@@ -1,31 +1,59 @@
 #pragma once
+#include "childpanel.h"
+#include <core/ref_ptr.h>
+
+class ContextModelWnd;
 
 class VideoWnd :  public ChildPanel
 {
 public:
-    static class m3d::Object * CreateObject();
-    int ShowModelByPrototypeId(int,class ref_ptr<class m3d::ui::Wnd>);
+    enum BgMode
+    {
+        BGMODE_BUYVEHICLE = 0x0,
+        BGMODE_WORKSHOP = 0x1,
+        BGMODE_SHOP = 0x2,
+        BGMODE_GROUND = 0x3,
+        BGMODE_NUM_BGMODES = 0x4,
+        BGMODE_INVALID = 0x4,
+    };
+
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndModelName;
+    };
+
+public:
+    static m3d::Object * CreateObject();
+    int ShowModelByPrototypeId(int, ref_ptr<m3d::ui::Wnd>);
     int GetPrototypeId() const ;
-    static struct m3d::Class * GetBaseClass();
-    virtual class m3d::Object * Clone();
-    int HideModel(class ref_ptr<class m3d::ui::Wnd>);
-    virtual struct m3d::Class * GetClass() const ;
+    static m3d::Class * GetBaseClass();
+    virtual m3d::Object * Clone();
+    int HideModel(ref_ptr<m3d::ui::Wnd>);
+    virtual m3d::Class * GetClass() const ;
     int GetObjId() const ;
-    int ShowModelByObjId(int,class ref_ptr<class m3d::ui::Wnd>);
-    class ref_ptr<class m3d::ui::Wnd> GetSrcWindow() const ;
+    int ShowModelByObjId(int, ref_ptr<m3d::ui::Wnd>);
+    ref_ptr<m3d::ui::Wnd> GetSrcWindow() const ;
     virtual ~VideoWnd();
 protected:
     virtual int GameDataSetup();
     VideoWnd();
-    VideoWnd(class VideoWnd const &);
+    VideoWnd(VideoWnd const &);
     bool IsDisabled() const ;
-    void ShowBgModel(enum BgMode);
+    void ShowBgModel(BgMode);
     void OnNewFrame();
     virtual int GameDataClear(bool);
     void UpdateBgMode();
-    void UpdateBgModel(enum BgMode);
+    void UpdateBgModel(BgMode);
     virtual int GameDataUpdate(void *,int);
-    enum BgMode DetectBgMode() const ;
+    BgMode DetectBgMode() const ;
+
+public:
+    RT_CLASS_DECLARE(VideoWnd);
+
 private:
     ContextModelWnd *m_wndModel;
     VideoWnd::AuxInfo m_aif;

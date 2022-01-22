@@ -1,24 +1,65 @@
 #pragma once
+#include "localmapwnd.h"
+#include <ui/ui.h>
+
+class MapSellList;
+
+namespace m3d
+{
+    namespace ui
+    {
+        class TextBoxWnd;
+        class ImageWnd;
+        class LineWnd;
+    }
+}
 
 class MapInfoPanel :  public m3d::ui::Wnd
 {
 public:
-    int SetUpForObject(class ObjectInfo *,bool);
-    class ObjectInfo * GetObjectInfo() const ;
-    int SetUpForMode(enum LocalMapWnd::Mode);
-    virtual struct m3d::Class * GetClass() const ;
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_lblObjectNameName;
+        CStr m_lblSellName;
+        CStr m_lblBuyName;
+        CStr m_lnHorz0Name;
+        CStr m_lnHorz1Name;
+        CStr m_lnVert0Name;
+        CStr m_lnVert1Name;
+        CStr m_txtObjectDizName;
+        CStr m_wndSellListName;
+        CStr m_btnModeTradeName;
+        CStr m_btnModeClansName;
+        CStr m_wndEmbossBtnModeTradeName;
+        CStr m_wndEmbossBtnModeClansName;
+        CStr m_wndFrameName;
+        CStr m_modeBtnPaneNameUnselected;
+        CStr m_modeBtnPaneNameSelected;
+        CStr m_strIdRuined;
+    };
+
+public:
+    int SetUpForObject(ObjectInfo *,bool);
+    ObjectInfo * GetObjectInfo() const ;
+    int SetUpForMode(LocalMapWnd::Mode);
+    virtual m3d::Class * GetClass() const ;
     virtual ~MapInfoPanel();
-    static class m3d::Object * CreateObject();
+    static m3d::Object * CreateObject();
     int SavePrices() const ;
-    int CreateFromPattern(class m3d::ui::Wnd const *,bool);
-    enum LocalMapWnd::Mode GetCurrentMode() const ;
-    static struct m3d::Class * GetBaseClass();
-    virtual class m3d::Object * Clone();
+    int CreateFromPattern(m3d::ui::Wnd const *,bool);
+    LocalMapWnd::Mode GetCurrentMode() const ;
+    static m3d::Class * GetBaseClass();
+    virtual m3d::Object * Clone();
+
 protected:
     void UpdateModeButtonsState();
     MapInfoPanel();
-    MapInfoPanel(class MapInfoPanel const &);
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    MapInfoPanel(MapInfoPanel const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
     int Clear();
     virtual int GameDataClear(bool);
     virtual int OnBeforeAddToWndStation();
@@ -29,6 +70,10 @@ protected:
     int Setup();
     int ShowTradeModeControls(bool);
     int SetupForTradeMode();
+
+public:
+    RT_CLASS_DECLARE(MapInfoPanel);
+
 private:
     m3d::ui::Wnd *m_lblObjectName;
     m3d::ui::TextBoxWnd *m_txtObjectDiz;

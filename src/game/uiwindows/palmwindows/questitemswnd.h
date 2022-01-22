@@ -1,13 +1,39 @@
 #pragma once
+#include <ui/ui.h>
+
+class CheckList;
+
+namespace m3d
+{
+    namespace ui
+    {
+        class TextBoxWnd;
+    }
+}
+
+class ContextModelWnd;
 
 class QuestItemsWnd :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * GetBaseClass();
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndPictureName;
+        CStr m_wndDizName;
+        CStr m_wndItemsListName;
+    };
+
+public:
+    static m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
     virtual ~QuestItemsWnd();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
+
 protected:
     void ClearItems();
     void CreateItems();
@@ -17,11 +43,15 @@ protected:
     void OnQuestItemsChanged();
     virtual int GameDataUpdate(void *,int);
     virtual int GameDataClear(bool);
-    QuestItemsWnd(class QuestItemsWnd const &);
+    QuestItemsWnd(QuestItemsWnd const &);
     QuestItemsWnd();
-    void OnItemsListSelChanged(class m3d::AIParam const &);
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    void OnItemsListSelChanged(m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
     virtual int OnBeforeAddToWndStation();
+
+public:
+    RT_CLASS_DECLARE(QuestItemsWnd);
+
 private:
     QuestItemsWnd::AuxInfo m_aif;
     ContextModelWnd *m_wndPicture;

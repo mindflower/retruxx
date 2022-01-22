@@ -1,16 +1,23 @@
 #pragma once
+#include <game/uiwindows/commonwindows/itemmodelwnd.h>
+
+namespace ai
+{
+    class Npc;
+}
 
 class NpcModelWnd :  public ItemModelWnd
 {
 public:
-    static struct m3d::Class * GetBaseClass();
-    virtual class m3d::Object * Clone();
+    static m3d::Class * GetBaseClass();
+    virtual m3d::Object * Clone();
     int GetNpcId() const ;
-    class ai::Npc * GetNpc() const ;
-    static class m3d::Object * CreateObject();
+    ai::Npc * GetNpc() const ;
+    static m3d::Object * CreateObject();
     virtual ~NpcModelWnd();
     int SetUpForNpc(int);
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
+
 protected:
     virtual int GameDataClear(bool);
     void RandomizeAnimationFrame();
@@ -20,7 +27,11 @@ protected:
     virtual int OnNewFrame();
     void UpdateAnimation();
     NpcModelWnd();
-    NpcModelWnd(class NpcModelWnd const &);
+    NpcModelWnd(NpcModelWnd const &);
+
+public:
+    RT_CLASS_DECLARE(NpcModelWnd);
+
 private:
     int m_npcId;
 };

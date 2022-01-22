@@ -1,27 +1,49 @@
 #pragma once
+#include <ui/button.h>
+
+namespace ai
+{
+    class Building;
+    class Town;
+}
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ImageWnd;
+    }
+}
 
 class BuildingButton :  public m3d::ui::ButtonWnd
 {
 public:
-    int SetUpForBuilding(class ai::Building const *);
+    int SetUpForBuilding(ai::Building const *);
     virtual ~BuildingButton();
-    virtual struct m3d::Class * GetClass() const ;
-    class ai::Building * GetBuilding() const ;
-    virtual class m3d::Object * Clone();
-    static class m3d::Object * CreateObject();
-    static struct m3d::Class * GetBaseClass();
+    virtual m3d::Class * GetClass() const ;
+    ai::Building * GetBuilding() const ;
+    virtual m3d::Object * Clone();
+    static m3d::Object * CreateObject();
+    static m3d::Class * GetBaseClass();
     int GetIdx() const ;
     void SetIdx(int);
+
 protected:
     BuildingButton();
-    BuildingButton(class BuildingButton const &);
+    BuildingButton(BuildingButton const &);
+
 private:
     int CreateChildren();
-    CStr GetNameForBuilding(class ai::Building const *) const ;
+    CStr GetNameForBuilding(ai::Building const *) const ;
     static void __fastcall ClearPattern();
     int CreateFromPattern();
-    class m3d::rend::TexHandle GetIcoForBuilding(class ai::Building const *) const ;
-    static int __fastcall LoadPattern(class m3d::ui::Wnd *);
+    m3d::rend::TexHandle GetIcoForBuilding(ai::Building const *) const ;
+    static int __fastcall LoadPattern(m3d::ui::Wnd *);
+
+public:
+    RT_CLASS_DECLARE(BuildingButton);
+
+private:
     int m_buildingId;
     m3d::ui::ImageWnd *m_wndBuildingIco;
     m3d::ui::Wnd *m_lblBuildingName;
@@ -31,27 +53,42 @@ private:
 class BuildingList :  public m3d::ui::Wnd
 {
 public:
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        float m_spaceY;
+    };
+
+public:
     virtual int GameDataClear(bool);
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     virtual ~BuildingList();
-    virtual class m3d::Object * Clone();
-    static struct m3d::Class * GetBaseClass();
-    void SetUpForTown(class ai::Town *);
-    int CreateFromPattern(class m3d::ui::Wnd *,bool);
-    static class m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
+    static m3d::Class * GetBaseClass();
+    void SetUpForTown(ai::Town *);
+    int CreateFromPattern(m3d::ui::Wnd *,bool);
+    static m3d::Object * CreateObject();
+
 protected:
     void RecalcLayot();
-    BuildingList(class BuildingList const &);
+    BuildingList(BuildingList const &);
     BuildingList();
     int CreateItems();
     void FullUpdate();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
-    class ai::Town const * GetTown() const ;
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
+    ai::Town const * GetTown() const ;
     void ClearItems();
     virtual int OnAfterRemoveFromWndStation();
-    int AddButton(class BuildingButton *);
-    void PlaceButton(class BuildingButton *);
+    int AddButton(BuildingButton *);
+    void PlaceButton(BuildingButton *);
     virtual int OnBeforeAddToWndStation();
+
+public:
+    RT_CLASS_DECLARE(BuildingList);
+
 private:
     std::vector<BuildingButton *> m_buttons;
     int m_townId;

@@ -1,32 +1,56 @@
 #pragma once
+#include <core/ref_ptr.h>
+#include <game/uimisc/guihelper.h>
+#include <game/uimisc/navpoint.h>
+#include <ui/ui.h>
+
+class NavPointButton;
+class QuestItemList;
 
 class QuestDizWnd :  public m3d::ui::Wnd
 {
 public:
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
-    int CreateFromPattern(class m3d::ui::Wnd const *,bool);
-    static struct m3d::Class * GetBaseClass();
-    int SetupForQuest(enum help::QuestType,int);
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        float m_spaceX;
+        float m_spaceY;
+        PointBase<float> m_btnNavPointSz;
+    };
+
+public:
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+    int CreateFromPattern(m3d::ui::Wnd const *,bool);
+    static m3d::Class * GetBaseClass();
+    int SetupForQuest(help::QuestType,int);
     virtual ~QuestDizWnd();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
+
 protected:
     void OnNavPointDeleted(void *);
-    int SetupNavPointBtn(enum help::QuestType,int);
+    int SetupNavPointBtn(help::QuestType,int);
     int RemoveNavPoint(int);
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
     int SetupDataPlaceWnd(class QuestInfo const *);
     void OnNavPointAdded(void *);
-    int SetupChildQuestList(enum help::QuestType,int);
+    int SetupChildQuestList(help::QuestType,int);
     virtual int GameDataClear(bool);
-    int SetupDizWnd(class QuestInfo const *);
+    int SetupDizWnd(QuestInfo const *);
     void OnNavPoint(void *);
     virtual int GameDataUpdate(void *,int);
-    int AddNavPoint(enum NavPoint::NavPointType);
-    void OnBtnNavPointClick(class m3d::ui::Wnd *,unsigned int,class m3d::AIParam const &);
-    QuestDizWnd(class QuestDizWnd const &);
+    int AddNavPoint(NavPoint::NavPointType);
+    void OnBtnNavPointClick(m3d::ui::Wnd *,unsigned int, m3d::AIParam const &);
+    QuestDizWnd(QuestDizWnd const &);
     QuestDizWnd();
-    bool NeedNavPointBtnBeAdded(enum help::QuestType,int) const ;
+    bool NeedNavPointBtnBeAdded(help::QuestType,int) const ;
+
+public:
+    RT_CLASS_DECLARE(QuestDizWnd);
+
 private:
     NavPointButton *m_btnNavPoint;
     m3d::ui::Wnd *m_wndQuestDiz;

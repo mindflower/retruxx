@@ -1,52 +1,67 @@
 #pragma once
+#include <math/aabb.h>
+#include <ui/sgnodearraywnd.h>
+
+namespace ai
+{
+    class Obj;
+    class Vehicle;
+    class CompoundGun;
+    class Gun;
+}
 
 class ComplexModelWnd :  public m3d::ui::SgNodeArrayWnd
 {
 public:
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     void SetDefaultRotationAngleX(float);
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
     float GetDefaultRotationAngleX() const ;
-    int CreateFromPattern(class m3d::ui::Wnd *,bool);
+    int CreateFromPattern(m3d::ui::Wnd *,bool);
     bool IsAllowedRotateByHandX() const ;
     bool IsAllowedRotateByHandY() const ;
     void SetRotationByHandVelocity(float);
     void AllowRotate(bool);
     float GetRotationVelocity() const ;
-    class ai::Obj * GetObj() const ;
-    static class m3d::Object * CreateObject();
+    ai::Obj * GetObj() const ;
+    static m3d::Object * CreateObject();
     bool IsAllowedRotate() const ;
     float GetRotationByHandVelocity() const ;
     void SetRotationVelocity(float);
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     void AllowRotateByHandY(bool);
     void AllowRotateByHandX(bool);
     void SetObjId(int);
     virtual ~ComplexModelWnd();
+
 protected:
     void SetRotationByHandMode(bool);
     ComplexModelWnd();
-    ComplexModelWnd(class ComplexModelWnd const &);
-    void EmbraceCompoundGunAabb(class Aabb &,class ai::CompoundGun const *) const ;
+    ComplexModelWnd(ComplexModelWnd const &);
+    void EmbraceCompoundGunAabb(Aabb &, ai::CompoundGun const *) const ;
     void UpdateCamera();
-    void AddOneNode(class m3d::SgNode *,struct CMatrix const &,bool,bool);
-    void AddOneNode(class m3d::SgNode *,struct CMatrix const &,struct Quaternion const &,bool);
-    virtual int OnMouseMove(class PointBase<float> const &,class PointBase<float> const &);
-    void SetupForVehicle(class ai::Vehicle *);
+    void AddOneNode(m3d::SgNode *, CMatrix const &,bool,bool);
+    void AddOneNode(m3d::SgNode *, CMatrix const &, Quaternion const &,bool);
+    virtual int OnMouseMove(PointBase<float> const &, PointBase<float> const &);
+    void SetupForVehicle(ai::Vehicle *);
     void UpdateRotationAngle();
-    void SetupForCompoundGun(class ai::CompoundGun *);
+    void SetupForCompoundGun(ai::CompoundGun *);
     virtual int GameDataClear(bool);
-    virtual int OnMouseButton0(unsigned int,class PointBase<float> const &);
+    virtual int OnMouseButton0(unsigned int, PointBase<float> const &);
     virtual int GameDataUpdate(void *,int);
     int UpdateOnVehiclePartChanged();
     virtual int OnAfterRemoveFromWndStation();
     bool IsDisabled() const ;
-    void SetupForGun(class ai::Gun *);
+    void SetupForGun(ai::Gun *);
     virtual int OnBeforeAddToWndStation();
-    struct CVector getGunSize(class ai::Gun *);
+    CVector getGunSize(ai::Gun *);
     int UpdateOnNewFrame();
     void SetupModel();
-    void EmbraceGunAabb(class Aabb &,class ai::Gun const *) const ;
+    void EmbraceGunAabb(Aabb &, ai::Gun const *) const ;
+
+public:
+    RT_CLASS_DECLARE(ComplexModelWnd);
+
 private:
     int m_objId;
     PointBase<float> m_rotationAngle;

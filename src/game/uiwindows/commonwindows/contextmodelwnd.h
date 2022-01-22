@@ -1,38 +1,71 @@
 #pragma once
+#include <core/ref_ptr.h>
+#include <ui/ui.h>
+
+namespace ai
+{
+    class Obj;
+}
+
+class ComplexModelWnd;
+class ItemModelWnd;
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ImageWnd;
+    }
+}
 
 class ContextModelWnd :  public m3d::ui::Wnd
 {
 public:
-    int Show2dImage(class m3d::rend::TexHandle);
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndModelName;
+    };
+
+public:
+    int Show2dImage(m3d::rend::TexHandle);
     int Show2dImage(CStr const &);
     int Show3dImage(CStr const &,int);
     int GetObjId() const ;
     int ShowImageByPrototypeId(int);
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
     int ShowImageByObjId(int);
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     int GetPrototypeId() const ;
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
     int HideImage();
     virtual int GameDataClear(bool);
     virtual ~ContextModelWnd();
-    int CreateFromPattern(class m3d::ui::Wnd *,bool);
+    int CreateFromPattern(m3d::ui::Wnd *,bool);
+
 protected:
     virtual int OnAfterRemoveFromWndStation();
     virtual int OnBeforeAddToWndStation();
     void ClearCurrentModelWnd();
     int ShowImageByObjId0(int,bool);
-    class ref_ptr<class m3d::ui::Wnd> CreateModelWnd(CStr const &);
-    class ai::Obj * GetObjToShow() const ;
+    ref_ptr<m3d::ui::Wnd> CreateModelWnd(CStr const &);
+    ai::Obj * GetObjToShow() const ;
     int ShowImageByPrototypeId0(int,bool);
-    int SetupForComplexObj(class ai::Obj const *);
+    int SetupForComplexObj(ai::Obj const *);
     int CreateObjToShow(int);
-    ContextModelWnd(class ContextModelWnd const &);
+    ContextModelWnd(ContextModelWnd const &);
     ContextModelWnd();
     void DestroyObjToShow();
     int SetupForModel(CStr const &,int);
-    int SetCurrentModelWnd(class ref_ptr<class m3d::ui::ImageWnd>);
+    int SetCurrentModelWnd(ref_ptr<m3d::ui::ImageWnd>);
+
+public:
+    RT_CLASS_DECLARE(ContextModelWnd);
+
 private:
     ref_ptr<m3d::ui::ImageWnd> m_wndCurrentModel;
     ref_ptr<m3d::ui::ImageWnd> m_wnd2dModel;

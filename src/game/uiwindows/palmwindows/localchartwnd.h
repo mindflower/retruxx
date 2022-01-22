@@ -1,59 +1,85 @@
 #pragma once
+#include <ui/image.h>
+
+class PlayerMarkWnd;
 
 class LocalChartWnd :  public m3d::ui::ImageWnd
 {
 public:
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_cellBgTexName;
+        CStr m_cellLineTexName;
+        float m_cellLineThickW;
+        float m_cellLineThinW;
+        unsigned int m_nameColor;
+        unsigned int m_nameShadowColor;
+        float m_nameSpaceX;
+        float m_nameSpaceY;
+        CStr m_namePane;
+    };
+
+public:
     void EnableObjectNames(bool);
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     int SetUpForMap(CStr const &);
-    static class m3d::Object * CreateObject();
+    static m3d::Object * CreateObject();
     void SelectMapMarkIcoForObjectInfo(class ObjectInfo const *);
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     bool IsObjectNamesEnabled() const ;
-    int CreateFromPattern(class m3d::ui::Wnd const *,bool);
+    int CreateFromPattern(m3d::ui::Wnd const *,bool);
     virtual ~LocalChartWnd();
-    struct CVector WndPtToWorldPos(class PointBase<float> const &,CStr const &) const ;
-    virtual class m3d::Object * Clone();
+    CVector WndPtToWorldPos(PointBase<float> const &,CStr const &) const ;
+    virtual m3d::Object * Clone();
+
 protected:
     int UpdateMapBg();
     int FullUpdate();
     void ClearMapMarkIcons();
     void OnAddNavPoint(void *);
-    struct BoundsBase<float> GetCellWndBounds(CStr const &,int) const ;
+    BoundsBase<float> GetCellWndBounds(CStr const &,int) const ;
     int UpdateMapMarkIcons();
     int DeleteNavPointMark(int);
-    bool IsObjectToBeShown(class ObjectInfo const *) const ;
-    void DrawCells(struct m3d::ui::DrawInfo const &) const ;
-    virtual int OnPaint(struct m3d::ui::DrawInfo const &);
+    bool IsObjectToBeShown(ObjectInfo const *) const ;
+    void DrawCells(m3d::ui::DrawInfo const &) const ;
+    virtual int OnPaint(m3d::ui::DrawInfo const &);
     void UpdateMapMarkNamesVisibility();
-    struct BoundsBase<float> GetChartRect() const ;
+    BoundsBase<float> GetChartRect() const ;
     int AddNavPointMark(int);
-    virtual int AddChild(class m3d::Object *);
+    virtual int AddChild(m3d::Object *);
     void AdjustChildrenOrder();
     void ClearMapMarkNames();
     int UpdateMapMarks();
-    class PointBase<float> WorldPosToWndPt(struct CVector const &,CStr const &) const ;
+    PointBase<float> WorldPosToWndPt(CVector const &,CStr const &) const ;
     virtual int GameDataUpdate(void *,int);
     virtual int GameDataClear(bool);
     class NavPointMarkWnd * GetNavPointMarkByNavPointId(int) const ;
     void OnCurProfileChanged();
-    virtual int OnMouseButton0(unsigned int,class PointBase<float> const &);
-    virtual int OnMouseButton1(unsigned int,class PointBase<float> const &);
+    virtual int OnMouseButton0(unsigned int, PointBase<float> const &);
+    virtual int OnMouseButton1(unsigned int, PointBase<float> const &);
     int UpdatePlayerMark();
-    void DrawVisibilityMap(struct m3d::ui::DrawInfo const &) const ;
+    void DrawVisibilityMap(m3d::ui::DrawInfo const &) const ;
     int UpdateMapMarkNames();
     void ClearNavPointMarks();
     LocalChartWnd();
-    LocalChartWnd(class LocalChartWnd const &);
+    LocalChartWnd(LocalChartWnd const &);
     void ClearMapMarks();
-    bool HandleMouseClickOnMapMark(class PointBase<float> const &,class std::vector<class MapMarkWnd *,class std::allocator<class MapMarkWnd *> > const &);
+    bool HandleMouseClickOnMapMark(PointBase<float> const &, std::vector<class MapMarkWnd *, std::allocator<MapMarkWnd *> > const &);
     int GetGridSizeForLevel(CStr const &) const ;
     int UpdateNavPointMarks();
-    class ObjectInfo const * GetCurrentObjectInfo() const ;
-    struct CVector GetNorth(CStr const &) const ;
+    ObjectInfo const * GetCurrentObjectInfo() const ;
+    CVector GetNorth(CStr const &) const ;
     void OnDeleteNavPoint(void *);
-    bool IsObjectOnKnownZone(class ObjectInfo const *) const ;
+    bool IsObjectOnKnownZone(ObjectInfo const *) const ;
     virtual int OnBeforeAddToWndStation();
+
+public:
+    RT_CLASS_DECLARE(LocalChartWnd);
+
 private:
     std::vector<MapMarkWnd *> m_mapMarkIcons;
     std::vector<MapMarkWnd *> m_mapMarkNames;

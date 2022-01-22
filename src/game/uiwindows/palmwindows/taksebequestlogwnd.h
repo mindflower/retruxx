@@ -1,22 +1,68 @@
 #pragma once
+#include "screenwnd.h"
+#include <core/ref_ptr.h>
+#include <game/uimisc/guihelper.h>
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+    }
+}
+
+class QuestItemsWnd;
+class QuestDizWnd;
+class QuestItemList;
+class MapComboBox;
 
 class TakSebeQuestLogWnd :  public ScreenWnd
 {
 public:
+    class TsqlAuxInfo
+    {
+    public:
+        TsqlAuxInfo();
+
+    private:
+        CStr m_cbMapsName;
+        CStr m_lstQuestsName;
+        CStr m_wndQuestDizName;
+        CStr m_btnFilterName;
+        CStr m_btnShowQuestItemsName;
+        CStr m_icoIdFilterShowAll_out;
+        CStr m_icoIdFilterShowAll_in;
+        CStr m_icoIdFilterShowAll_down;
+        CStr m_icoIdFilterShowNoncompleted_out;
+        CStr m_icoIdFilterShowNoncompleted_in;
+        CStr m_icoIdFilterShowNoncompleted_down;
+        CStr m_strIdFilterShowAll;
+        CStr m_strIdFilterShowNoncompleted;
+        CStr m_strIdShowQuestItems;
+        CStr m_strIdShowQuests;
+        CStr m_strIdQuestItems;
+        CStr m_strIdQuests;
+        CStr m_wndLstQuestsFrameName;
+        CStr m_wndEmbossCbMapsName;
+        CStr m_wndEmbossBtnFilterName;
+    };
+
+public:
     virtual ~TakSebeQuestLogWnd();
-    static struct m3d::Class * GetBaseClass();
-    static class m3d::Object * CreateObject();
-    virtual class m3d::Object * Clone();
-    virtual struct m3d::Class * GetClass() const ;
-    bool CanQuestBeShown(enum help::QuestType,int) const ;
+    static m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
+    virtual m3d::Class * GetClass() const ;
+    bool CanQuestBeShown(help::QuestType,int) const ;
+
 protected:
     virtual int GameDataSetup();
     bool IsInQuestItemMode();
     void UpdateFilterButtonTooltip();
     void UpdateFilterButtonState();
-    TakSebeQuestLogWnd(class TakSebeQuestLogWnd const &);
+    TakSebeQuestLogWnd(TakSebeQuestLogWnd const &);
     TakSebeQuestLogWnd();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
     void ShowQuestItemsWnd(bool);
     void OnCurProfileParamChanged(void *);
     void OnCurProfileChanged();
@@ -30,9 +76,9 @@ protected:
     int SetFilter(long);
     short GetCompleteFilterPart(long) const ;
     int SetCompleteFilterPart(short);
-    bool IsCompleteStatusFit(enum help::QuestType,int,short) const ;
+    bool IsCompleteStatusFit(help::QuestType,int,short) const ;
     virtual int OnBeforeAddToWndStation();
-    bool IsMapFit(enum help::QuestType,int,short) const ;
+    bool IsMapFit(help::QuestType,int,short) const ;
     int ShowNoncompleted();
     int ChangeMap();
     int MakeFilterFromParts(short,short);
@@ -41,6 +87,10 @@ protected:
     short GetMapFilterPart(long) const ;
     int SetMapFilterPart(short);
     int OnChangeSelectedQuest();
+
+public:
+    RT_CLASS_DECLARE(TakSebeQuestLogWnd);
+
 private:
     TakSebeQuestLogWnd::TsqlAuxInfo m_tsqlAif;
     ref_ptr<MapComboBox> m_cbMaps;

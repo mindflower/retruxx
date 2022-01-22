@@ -9,18 +9,19 @@ public:
     class AuxInfo
     {
     public:
-        AuxInfo(void);
-    protected:
+        AuxInfo();
+
     private:
         CStr m_wndInventoryName;
     };
 
 public:
-    virtual class m3d::Object * Clone();
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
-    static struct m3d::Class * GetBaseClass();
+    virtual m3d::Object * Clone();
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Class * GetBaseClass();
     virtual ~BasketWnd();
+
 protected:
     void SetupInventory();
     virtual int OnAfterRemoveFromWndStation();
@@ -30,9 +31,13 @@ protected:
     virtual int GameDataSetup();
     virtual int GameDataUpdate(void *,int);
     BasketWnd();
-    BasketWnd(class BasketWnd const &);
-    virtual enum InventoryWnd::VehicleType GetVehicleTypeByGuiId(int) const ;
+    BasketWnd(BasketWnd const &);
+    virtual InventoryWnd::VehicleType GetVehicleTypeByGuiId(int) const ;
     void UpdateOnSaleTabChanged(void *);
+
+public:
+    RT_CLASS_DECLARE(BasketWnd);
+
 private:
     BasketWnd::AuxInfo m_aif;
     ref_ptr<IzvratRepositoryWnd> m_wndInventory;

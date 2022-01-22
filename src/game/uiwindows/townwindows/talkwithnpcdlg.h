@@ -1,39 +1,78 @@
 #pragma once
+#include <core/ref_ptr.h>
+#include <game/uiwindows/charwindows/childpanel.h>
+
+namespace ai
+{
+    class Npc;
+    class Bar;
+}
+
+class PlayerMoneyWnd;
+class NpcModelWnd;
+class ConversationWnd;
 
 class TalkWithNpcDlg :  public ChildPanel
 {
 public:
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndConversationName;
+        CStr m_wndNpcImageName;
+        CStr m_wndTopPanelName;
+        CStr m_wndBottomPanelName;
+        CStr m_lblNpcNameName;
+    };
+
+    enum ShowType
+    {
+        SHOWTYPE_IN_TOWN = 0x0,
+        SHOWTYPE_IN_BAR = 0x1,
+        SHOWTYPE_IN_FIELD = 0x2,
+        SHOWTYPE_UNDEFINED = 0x3,
+    };
+
+public:
     virtual ~TalkWithNpcDlg();
-    class ai::Npc * GetNpc() const ;
+    ai::Npc * GetNpc() const ;
     void Hide(bool);
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     int SetupForNpc(int);
     int Show(int);
-    virtual class m3d::Object * Clone();
-    static struct m3d::Class * GetBaseClass();
-    static class m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
+    static m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+
 protected:
     bool IsValid() const ;
     bool IsTownDlgShowingNow() const ;
     int GetNpcToTalkWithFromLocation(int) const ;
     void OnBarNpc(void *);
     TalkWithNpcDlg();
-    TalkWithNpcDlg(class TalkWithNpcDlg const &);
+    TalkWithNpcDlg(TalkWithNpcDlg const &);
     virtual int OnActivate(bool);
     virtual int GameDataClear(bool);
     void FillPanels();
     virtual int OnAfterAddToWndStation();
-    class ref_ptr<class TownDlg> GetTownDlg() const ;
+    ref_ptr<class TownDlg> GetTownDlg() const ;
     bool IsBarDlgShowingNow() const ;
     virtual int GameDataUpdate(void *,int);
-    class ref_ptr<class BarDlg> GetBarDlg() const ;
+    ref_ptr<class BarDlg> GetBarDlg() const ;
     virtual void OnExit();
     void OnLocationNpc(void *);
-    class m3d::rend::TexHandle GetNpcBg(int) const ;
+    m3d::rend::TexHandle GetNpcBg(int) const ;
     virtual int GameDataSetup();
     void UpdateOnStartConversation();
-    class ai::Bar const * GetBar() const ;
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    ai::Bar const * GetBar() const ;
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
+
+public:
+    RT_CLASS_DECLARE(TalkWithNpcDlg);
+
 private:
     ref_ptr<ConversationWnd> m_wndConversation;
     ref_ptr<NpcModelWnd> m_wndNpcImage;

@@ -1,47 +1,53 @@
 #pragma once
+#include <ui/modelwnd.h>
 
 class ItemModelWnd :  public m3d::ui::ModelWnd
 {
 public:
     bool IsAllowedRotateByHandX() const ;
     bool IsAllowedRotateByHandY() const ;
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
     void AllowRotate(bool);
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     float GetRotationVelocity() const ;
     virtual ~ItemModelWnd();
     bool IsAutosized() const ;
     void SetRotationVelocity(float);
-    static class m3d::Object * CreateObject();
+    static m3d::Object * CreateObject();
     int SetModelByName(CStr const &,unsigned int,unsigned int);
-    virtual int CreateFromPattern(class m3d::ui::Wnd *,bool);
+    virtual int CreateFromPattern(m3d::ui::Wnd *,bool);
     void SetRotationByHandVelocity(float);
     float GetRotationByHandVelocity() const ;
     void AllowRotateByHandX(bool);
-    struct CVector const & GetDefaultTranslation() const ;
+    CVector const & GetDefaultTranslation() const ;
     void SetAutosized(bool);
     void AllowRotateByHandY(bool);
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     void SetDefaultRotationAngleX(float);
-    void SetDefaultTranslation(struct CVector const &);
+    void SetDefaultTranslation(CVector const &);
     bool IsAllowedRotate() const ;
     float GetDefaultRotationAngleX() const ;
+
 protected:
     virtual int OnAfterRemoveFromWndStation();
     virtual void UpdateCamera();
     bool IsDisabled() const ;
-    ItemModelWnd(class ItemModelWnd const &);
+    ItemModelWnd(ItemModelWnd const &);
     ItemModelWnd();
-    virtual int OnMouseButton0(unsigned int,class PointBase<float> const &);
+    virtual int OnMouseButton0(unsigned int, PointBase<float> const &);
     virtual bool IsValid() const ;
     void SetRotationByHandMode(bool);
-    void CalcAutosizeTranslation(struct CVector &) const ;
+    void CalcAutosizeTranslation(CVector &) const ;
     virtual int OnBeforeAddToWndStation();
     virtual int GameDataUpdate(void *,int);
     virtual int GameDataClear(bool);
-    virtual int OnMouseMove(class PointBase<float> const &,class PointBase<float> const &);
+    virtual int OnMouseMove(PointBase<float> const &, PointBase<float> const &);
     virtual int OnNewFrame();
     virtual void UpdateRotationAngle();
+
+public:
+    RT_CLASS_DECLARE(ItemModelWnd);
+
 private:
     PointBase<float> m_rotationAngle;
     float m_rotationVelocity;

@@ -1,31 +1,45 @@
 #pragma once
+#include <game/uimisc/guihelper.h>
+#include <game/uimisc/navpoint.h>
+#include <ui/button.h>
+#include <ui/textbox.h>
+#include <ui/ui.h>
+
+class NavPointButton;
+class QuestLabel;
+class QuestStatusBtn;
 
 class QuestItem :  public m3d::ui::Wnd
 {
 public:
     void UpdateOnQuestNavPointChangedChildIncluded();
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     int FullUpdate();
     int GetQuestId() const ;
-    virtual class m3d::Object * Clone();
-    int CreateQuestItem(class PointBase<float>,float,enum help::QuestType,int,int);
-    enum help::QuestType GetQuestType() const ;
+    virtual m3d::Object * Clone();
+    int CreateQuestItem(PointBase<float>,float, help::QuestType,int,int);
+    help::QuestType GetQuestType() const ;
     virtual ~QuestItem();
-    virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
     void SetSelected(bool);
+
 protected:
     QuestItem();
-    QuestItem(class QuestItem const &);
+    QuestItem(QuestItem const &);
     int RemoveNavPoint(int);
-    int AddNavPoint(enum NavPoint::NavPointType);
-    CStr GetQuestDizById(enum help::QuestType,int) const ;
-    bool NeedNavPointBtnBeAdded(enum help::QuestType,int) const ;
+    int AddNavPoint(NavPoint::NavPointType);
+    CStr GetQuestDizById(help::QuestType,int) const ;
+    bool NeedNavPointBtnBeAdded(help::QuestType,int) const ;
     void UpdateQuestLabelWnd();
-    void OnBtnNavPointClick(class m3d::ui::Wnd *,unsigned int,class m3d::AIParam const &);
+    void OnBtnNavPointClick(m3d::ui::Wnd *,unsigned int, m3d::AIParam const &);
     void UpdateQuestStatusBtn();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
-    int SetupNavPointBtn(enum help::QuestType,int);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
+    int SetupNavPointBtn(help::QuestType,int);
+
+public:
+    RT_CLASS_DECLARE(QuestItem);
+
 private:
     int m_questId;
     help::QuestType m_questType;
@@ -37,23 +51,28 @@ private:
 class QuestStatusBtn :  public m3d::ui::ButtonWnd
 {
 public:
-    virtual struct m3d::Class * GetClass() const ;
-    virtual int CreateQuestStatusBtn(class PointBase<float> const &,unsigned int);
-    void SetNavPointType(enum NavPoint::NavPointType);
+    virtual m3d::Class * GetClass() const ;
+    virtual int CreateQuestStatusBtn(PointBase<float> const &,unsigned int);
+    void SetNavPointType(NavPoint::NavPointType);
     bool IsSelected() const ;
-    void SetQuestStatus(enum help::UnifyQuestStatus);
-    enum help::UnifyQuestStatus GetQuestStatus() const ;
+    void SetQuestStatus(help::UnifyQuestStatus);
+    help::UnifyQuestStatus GetQuestStatus() const ;
     void SetSelected(bool);
     virtual ~QuestStatusBtn();
-    static struct m3d::Class * GetBaseClass();
-    static class m3d::Object * CreateObject();
-    virtual class m3d::Object * Clone();
+    static m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
+
 protected:
-    QuestStatusBtn(class QuestStatusBtn const &);
+    QuestStatusBtn(QuestStatusBtn const &);
     QuestStatusBtn();
-    virtual void OnNcPaint(struct m3d::ui::DrawInfo const &,unsigned int);
+    virtual void OnNcPaint(m3d::ui::DrawInfo const &,unsigned int);
     void UpdateNpTexture();
     void UpdateIcon();
+
+public:
+    RT_CLASS_DECLARE(QuestStatusBtn);
+
 private:
     bool m_isSelected;
     help::UnifyQuestStatus m_questStatus;
@@ -61,25 +80,30 @@ private:
     m3d::rend::TexHandle m_npTex;
 };
 
-class QuestLabel :  public m3d::ui::TextBoxWnd
+class QuestLabel : public m3d::ui::TextBoxWnd
 {
 public:
-    struct BoundsBase<float> GetLastStringBounds() const ;
+    BoundsBase<float> GetLastStringBounds() const ;
     virtual ~QuestLabel();
-    virtual struct m3d::Class * GetClass() const ;
-    virtual int CreateQuestLabel(CStr const &,class PointBase<float> const &,float,unsigned int);
+    virtual m3d::Class * GetClass() const ;
+    virtual int CreateQuestLabel(CStr const &, PointBase<float> const &,float,unsigned int);
     bool IsSelected() const ;
     void SetSelected(bool);
-    void SetQuestStatus(enum help::UnifyQuestStatus);
-    enum help::UnifyQuestStatus GetQuestStatus() const ;
-    static class m3d::Object * CreateObject();
-    static struct m3d::Class * GetBaseClass();
-    virtual class m3d::Object * Clone();
+    void SetQuestStatus(help::UnifyQuestStatus);
+    help::UnifyQuestStatus GetQuestStatus() const ;
+    static m3d::Object * CreateObject();
+    static m3d::Class * GetBaseClass();
+    virtual m3d::Object * Clone();
+
 protected:
-    QuestLabel(class QuestLabel const &);
+    QuestLabel(QuestLabel const &);
     QuestLabel();
     void UpdateTextColor();
-    virtual int OnPaint(struct m3d::ui::DrawInfo const &);
+    virtual int OnPaint(m3d::ui::DrawInfo const &);
+
+public:
+    RT_CLASS_DECLARE(QuestLabel);
+
 private:
     bool m_isSelected;
     help::UnifyQuestStatus m_questStatus;
