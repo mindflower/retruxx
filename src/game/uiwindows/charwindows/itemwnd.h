@@ -23,7 +23,7 @@ public:
     virtual int CreateFromPattern(m3d::ui::Wnd const*, bool);
     virtual m3d::Object* RepositoryClone();
     int GetDrawStyle() const;
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     void SetDrawStyle(int);
     virtual ~ItemWnd();
     ai::Obj* GetItem() const;
@@ -89,7 +89,7 @@ protected:
     virtual int OnBeforeAddToWndStation();
 
 public:
-    RT_CLASS_INLINE_DECLARE(ItemWnd);
+    RT_CLASS_DECLARE(ItemWnd);
 
 private:
     int m_vehicleId;

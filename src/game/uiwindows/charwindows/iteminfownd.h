@@ -1,18 +1,29 @@
 #pragma once
+#include "infownd.h"
+#include <core/ref_ptr.h>
+#include <server/geomrepositoryitem.h>
 
 class ItemInfoWnd :  public InfoWnd
 {
 public:
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
-    struct ai::GeomRepositoryItem const & GetItem() const ;
-    void SetUpForRepositoryItem(struct ai::GeomRepositoryItem const &,class ref_ptr<class m3d::ui::Wnd>);
-    void SetUpForObject(int,class ref_ptr<class m3d::ui::Wnd>);
-    class ref_ptr<class m3d::ui::Wnd> GetSrcWnd() const ;
+    enum InfoType
+    {
+        INFOTYPE_REPOSITORY_ITEM = 0x0,
+        INFOTYPE_OBJECT = 0x1,
+    };
+
+public:
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+    ai::GeomRepositoryItem const & GetItem() const ;
+    void SetUpForRepositoryItem(ai::GeomRepositoryItem const &,ref_ptr<m3d::ui::Wnd>);
+    void SetUpForObject(int,ref_ptr<m3d::ui::Wnd>);
+    ref_ptr<m3d::ui::Wnd> GetSrcWnd() const ;
     virtual ~ItemInfoWnd();
-    static struct m3d::Class * GetBaseClass();
-    class ai::Obj const * GetObjectA() const ;
-    virtual class m3d::Object * Clone();
+    static m3d::Class * GetBaseClass();
+    ai::Obj const * GetObjectA() const ;
+    virtual m3d::Object * Clone();
+
 protected:
     int Update(bool);
     int ShowInfoForCabin(bool);
@@ -24,7 +35,7 @@ protected:
     int ShowInfoForGun(bool);
     int ShowInfoForBasket(bool);
     ItemInfoWnd();
-    ItemInfoWnd(class ItemInfoWnd const &);
+    ItemInfoWnd(ItemInfoWnd const &);
     int ShowInfoBase(bool);
     virtual int GameDataClear(bool);
     virtual int GameDataUpdate(void *,int);
@@ -32,6 +43,10 @@ protected:
     int ShowInfoForGadget(bool);
     int GetResourceId() const ;
     bool NeedShowPrice() const ;
+
+public:
+    RT_CLASS_DECLARE(ItemInfoWnd);
+
 private:
     ItemInfoWnd::InfoType m_infoType;
     ai::GeomRepositoryItem m_repositoryItem;

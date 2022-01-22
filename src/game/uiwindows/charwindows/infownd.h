@@ -1,150 +1,59 @@
 #pragma once
+#include <ui/ui.h>
 
 class InfoWnd :  public m3d::ui::Wnd
 {
 public:
-    class InfoItem * GetItemById(int);
-    static class m3d::Object * CreateObject();
-    static class m3d::Object * __fastcall ItemCreateObject();
-    static class m3d::Object * __fastcall TargetCreateObject();
-    virtual struct m3d::Class * TargetGetClass() const ;
-    virtual class m3d::Object * DamageClone();
-    static bool __fastcall TargetIsObjClassValidForInfo(struct m3d::Class const *);
-    int WeaponGetGroupId() const ;
-    virtual struct m3d::Class * ItemGetClass() const ;
-    class ai::Obj const * WeaponGetGun() const ;
-    struct ai::GeomRepositoryItem const & ItemGetItem() const ;
-    void ItemSetUpForRepositoryItem(struct ai::GeomRepositoryItem const &,class ref_ptr<class m3d::ui::Wnd>);
-    virtual class m3d::Object * TargetClone();
-    virtual struct m3d::Class * DamageGetClass() const ;
+    class InfoItem
+    {
+    public:
+        ~InfoItem();
+        void Draw(m3d::ui::DrawInfo const&, BoundsBase<float> const&) const;
+        void SetFlags(int);
+        int GetFlags() const;
+        void SetString(CStr);
+        int GetId() const;
+        void SetIco(m3d::rend::TexHandle);
+        void SetIcoSize(PointBase<float> const&);
+        CStr const& GetString() const;
+        InfoItem(InfoWnd::InfoItem const&);
+        InfoItem(int, CStr const&, m3d::rend::TexHandle, PointBase<float>);
+        InfoWnd::InfoItem& operator=( InfoWnd::InfoItem const&);
+        m3d::rend::TexHandle GetIco() const;
+        PointBase<float> const& GetIcoSize() const;
+        PointBase<float> GetDrawSize() const;
+
+    private:
+        void CalculateStringSize(void);
+        void SetId(int);
+
+    private:
+        CStr m_string;
+        PointBase<float> m_icoSize;
+        m3d::rend::TexHandle m_ico;
+        int m_flags;
+        PointBase<float> m_auxStringSize;
+        int m_id;
+    };
+
+public:
+    InfoItem * GetItemById(int);
+    static m3d::Object * CreateObject();
     int AddItemById(int,class InfoItem const &);
-    static class m3d::Object * __fastcall DamageCreateObject();
-    int TargetGetTargetObjId() const ;
-    void ItemSetUpForObject(int,class ref_ptr<class m3d::ui::Wnd>);
-    static class m3d::Object * __fastcall WeaponCreateObject();
-    virtual struct m3d::Class * WeaponGetClass() const ;
-    bool TargetNeedShow() const ;
-    static struct m3d::Class * __fastcall DamageGetBaseClass();
-    static struct m3d::Class * __fastcall WeaponGetBaseClass();
     virtual ~InfoWnd();
-    virtual Weapon~WeaponInfoWnd();
-    virtual Target~TargetInfoWnd();
-    virtual Damage~DamageInfoWnd();
-    int WeaponSetupForGun(int,int,enum WeaponInfoList::Type);
-    virtual class m3d::Object * WeaponClone();
-    class ref_ptr<class m3d::ui::Wnd> ItemGetSrcWnd() const ;
-    virtual Item~ItemInfoWnd();
-    static struct m3d::Class * __fastcall ItemGetBaseClass();
-    virtual class m3d::Object * Clone();
-    static struct m3d::Class * __fastcall TargetGetBaseClass();
-    class ai::Obj const * ItemGetObjectA() const ;
+    virtual m3d::Object * Clone();
     void SetNumberOfColumns(int);
-    virtual class m3d::Object * ItemClone();
+
 protected:
-    void TargetUpdateName();
-    int ItemUpdate(bool);
-    void TargetUpdateControlsOnNewFrame();
-    virtual int TargetOnBeforeRemoveFromWndStation();
-    virtual int TargetGameDataSetup();
-    int ItemShowInfoForCabin(bool);
-    virtual int TargetGameDataUpdate(void *,int);
-    TargetTargetInfoWnd();
-    TargetTargetInfoWnd(class TargetInfoWnd const &);
-    WeaponWeaponInfoWnd();
-    WeaponWeaponInfoWnd(class WeaponInfoWnd const &);
-    void TargetStopFade();
-    int ItemShowInfoForVehiclePart(bool);
-    int ItemShowPropertyInfo(enum ItemProperty,bool);
     InfoWnd();
-    InfoWnd(class InfoWnd const &);
-    void TargetSetTargetObj(int);
-    int ItemShowInfoForGoods(bool);
-    int ItemShowInfoForGold(bool);
-    void TargetUpdateToleranceColor();
-    int DamageUpdateOnPlayerVehicleChanged();
-    bool ItemNeedShowChargeSize() const ;
-    class m3d::rend::TexHandle WeaponGetIco() const ;
-    int WeaponGetAmmo() const ;
-    int ItemShowInfoForGun(bool);
-    void TargetUpdateDurability();
-    int ItemShowInfoForBasket(bool);
-    virtual int DamageGameDataUpdate(void *,int);
-    virtual int DamageGameDataSetup();
-    void TargetUpdateOnChangeTargetObj(int,int);
-    ItemItemInfoWnd();
-    ItemItemInfoWnd(class ItemInfoWnd const &);
-    void WeaponUpdateAmmo();
-    int ItemShowInfoBase(bool);
-    virtual int TargetOnAfterRemoveFromWndStation();
-    virtual int TargetOnBeforeAddToWndStation();
-    void TargetStartFade();
-    class ai::Obj const * TargetGetTargetObj() const ;
-    void TargetOnNewFrameForce();
-    void WeaponUpdateCanShotBg();
-    unsigned char TargetCalcAlpha() const ;
-    void WeaponUpdateOnNewFrame();
-    bool TargetNeedUpdate() const ;
-    virtual int ItemGameDataClear(bool);
-    DamageDamageInfoWnd();
-    DamageDamageInfoWnd(class DamageInfoWnd const &);
-    int WeaponCreateFromPattern(enum WeaponInfoList::Type);
+    InfoWnd(InfoWnd const &);
     virtual int GameDataClear(bool);
-    void TargetUpdateResistance();
-    void TargetCheckAndShow();
-    class m3d::rend::TexHandle WeaponGetBarTexture(bool) const ;
-    virtual int ItemGameDataUpdate(void *,int);
-    virtual int WeaponGameDataUpdate(void *,int);
-    bool ItemIsValid() const ;
-    bool TargetIsFading() const ;
-    void TargetProcessFade();
-    int ItemShowInfoForGadget(bool);
-    virtual int WeaponGameDataClear(bool);
-    enum ai::DamageType WeaponGetWeaponTypeForGun(class ai::Obj const *) const ;
-    void WeaponUpdateCharge();
-    static void __fastcall WeaponClearPattern(enum WeaponInfoList::Type);
-    void TargetRestoreFromFade();
-    virtual int OnPaint(struct m3d::ui::DrawInfo const &);
-    static int __fastcall WeaponLoadPattern(class m3d::ui::Wnd *,enum WeaponInfoList::Type);
-    void TargetSetAlpha(unsigned char);
-    void WeaponUpdateIco();
-    bool WeaponIsGunReady() const ;
-    void TargetUpdateHealth();
-    void TargetUpdateDistance();
-    int WeaponCreateChildren(enum WeaponInfoList::Type);
-    int ItemGetResourceId() const ;
-    void TargetUpdateTargetObj();
-    bool ItemNeedShowPrice() const ;
+    virtual int OnPaint(m3d::ui::DrawInfo const &);
+
+public:
+    RT_CLASS_DECLARE(InfoWnd);
+
 private:
-    std::fill<InfoItem *,InfoItem>(InfoItem *,InfoItem *,InfoItem const &);
-    std::_Construct<RowInfo,RowInfo>(RowInfo *,RowInfo const &);
-    std::_Copy_backward_opt<RowInfo *,RowInfo *>(RowInfo *,RowInfo *,RowInfo *,std::_Nonscalar_ptr_iterator_tag);
-    TargetGetClass();
-    std::_Allocate<InfoItem>(uint,InfoItem *);
-    std::_Copy_backward_opt<ColumnInfo *,ColumnInfo *>(ColumnInfo *,ColumnInfo *,ColumnInfo *,std::_Nonscalar_ptr_iterator_tag);
-    std::_Ptr_cat<InfoItem *,InfoItem *>(InfoItem * &,InfoItem * &);
-    std::allocator<ColumnInfo>::allocator<ColumnInfo>();
-    std::allocator<ColumnInfo>::allocator<ColumnInfo>();
-    WeaponGetBaseClass();
-    std::copy_backward<ColumnInfo *,ColumnInfo *>(ColumnInfo *,ColumnInfo *,ColumnInfo *);
-    std::_Destroy<ColumnInfo>(ColumnInfo *);
-    std::copy_backward<InfoItem *,InfoItem *>(InfoItem *,InfoItem *,InfoItem *);
-    std::_Allocate<RowInfo>(uint,RowInfo *);
-    std::copy_backward<RowInfo *,RowInfo *>(RowInfo *,RowInfo *,RowInfo *);
-    std::allocator<RowInfo>::allocator<RowInfo>();
-    std::allocator<RowInfo>::allocator<RowInfo>();
-    std::_Construct<ColumnInfo,ColumnInfo>(ColumnInfo *,ColumnInfo const &);
-    std::_Copy_backward_opt<InfoItem *,InfoItem *>(InfoItem *,InfoItem *,InfoItem *,std::_Nonscalar_ptr_iterator_tag);
-    std::_Destroy<RowInfo>(RowInfo *);
-    std::_Destroy<InfoItem>(InfoItem *);
-    std::_Construct<InfoItem,InfoItem>(InfoItem *,InfoItem const &);
-    std::fill<RowInfo *,RowInfo>(RowInfo *,RowInfo *,RowInfo const &);
-    std::fill<ColumnInfo *,ColumnInfo>(ColumnInfo *,ColumnInfo *,ColumnInfo const &);
-    RecalcLayot(m3d::ui::DrawInfo const &,m3d::ui::DrawInfo &,std::vector<RowInfo> &,std::vector<ColumnInfo> &,std::map<int,PointBase<int>> &);
-    std::allocator<InfoItem>::allocator<InfoItem>();
-    std::allocator<InfoItem>::allocator<InfoItem>();
-    std::_Ptr_cat<RowInfo *,RowInfo *>(RowInfo * &,RowInfo * &);
-    std::_Ptr_cat<ColumnInfo *,ColumnInfo *>(ColumnInfo * &,ColumnInfo * &);
-    std::_Allocate<ColumnInfo>(uint,ColumnInfo *);
     std::vector<InfoWnd::InfoItem> m_items;
     int m_numberOfColumns;
 };

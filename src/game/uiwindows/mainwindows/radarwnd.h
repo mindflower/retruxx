@@ -1,7 +1,14 @@
 #pragma once
+#include <core/console/cvar.h>
+#include <game/uimisc/navpoint.h>
+#include <ui/ui.h>
+
+class ElectronicDigitalWnd;
 
 namespace ai
 {
+    class Obj;
+    class Vehicle;
     class StaticAutoGun;
 }
 
@@ -13,11 +20,11 @@ public:
     public:
         ~NpDistance();
         int GetNavPointId() const;
-        NpDistance(class ElectronicDigitalWnd*, enum NavPoint::NavPointType);
+        NpDistance(ElectronicDigitalWnd*, NavPoint::NavPointType);
         int SetNavPointId(int);
         int SetDistance(float);
-        enum NavPoint::NavPointType GetNavPointType() const;
-    protected:
+        NavPoint::NavPointType GetNavPointType() const;
+
     private:
         void Show(bool);
         bool IsValid() const;
@@ -29,19 +36,19 @@ public:
     class RadarItem
     {
     public:
-        class PointBase<float> const& GetCoords(void) const;
-        RadarItem(class m3d::rend::TexHandle, class PointBase<float> const&, class PointBase<float> const&, float);
-        class PointBase<float> const& GetSize(void) const;
-        void Draw(struct m3d::ui::DrawInfo const&) const;
-        void SetCoords(class PointBase<float> const&);
-        void SetSize(class PointBase<float> const&);
+        PointBase<float> const& GetCoords() const;
+        RadarItem(m3d::rend::TexHandle, PointBase<float> const&, PointBase<float> const&, float);
+        PointBase<float> const& GetSize() const;
+        void Draw(m3d::ui::DrawInfo const&) const;
+        void SetCoords(PointBase<float> const&);
+        void SetSize(PointBase<float> const&);
         void SetAngle(float);
-        void SetTexture(class m3d::rend::TexHandle);
-        float GetAngle(void) const;
-        ~RadarItem(void);
-        struct BoundsBase<float> GetBounds(void) const;
-        class m3d::rend::TexHandle GetTexture(void) const;
-    protected:
+        void SetTexture(m3d::rend::TexHandle);
+        float GetAngle() const;
+        ~RadarItem();
+        BoundsBase<float> GetBounds() const;
+        m3d::rend::TexHandle GetTexture() const;
+
     private:
         m3d::rend::TexHandle m_texture;
         PointBase<float> m_coords;
@@ -52,8 +59,8 @@ public:
     class AuxInfo
     {
     public:
-        AuxInfo(void);
-    protected:
+        AuxInfo();
+
     private:
         CStr m_icoNames[24];
         PointBase<float> m_icoSizeVehicleSmall;
@@ -79,39 +86,53 @@ public:
         CStr m_wndsDistancesNames[3];
     };
 
+    enum Worldside
+    {
+        WORLDSIDE_NORD = 0x0,
+        WORLDSIDE_SOUTH = 0x1,
+        WORLDSIDE_NUM_WORLDSIDES = 0x2,
+    };
+
+    enum ItemType
+    {
+        ITEMTYPE_OBJECT = 0,
+        ITEMTYPE_NAVPOINT = 1,
+        ITEMTYPE_WORLDSIDE = 2,
+    };
+
 public:
     int UpdateWorldsidesOnNewFrame();
     void ClearTurretItems();
-    float GetIcoRotationAngle(class PointBase<float> const &) const ;
+    float GetIcoRotationAngle(PointBase<float> const &) const ;
     int UpdateNavPointsOnNewFrame();
-    int UpdateWorldside(enum Worldside);
-    void DrawCameraSight(struct m3d::ui::DrawInfo const &) const ;
-    int AddWorldside(enum Worldside);
-    void DrawBg(struct m3d::ui::DrawInfo const &);
+    int UpdateWorldside(Worldside);
+    void DrawCameraSight(m3d::ui::DrawInfo const &) const ;
+    int AddWorldside(Worldside);
+    void DrawBg(m3d::ui::DrawInfo const &);
     void ClearWorldsideItems();
-    void DrawNavPoints(struct m3d::ui::DrawInfo const &) const ;
-    void DrawPlayerVehicle(struct m3d::ui::DrawInfo const &) const ;
+    void DrawNavPoints(m3d::ui::DrawInfo const &) const ;
+    void DrawPlayerVehicle(m3d::ui::DrawInfo const &) const ;
     virtual int GameDataClear(bool);
     void AllowVehicles(bool);
     void CreateWorldSides();
     void SetTest(int);
     int RemoveNavPoint(int);
-    struct CVector FixCoord(struct CVector const &) const ;
-    void DrawWorldsides(struct m3d::ui::DrawInfo const &) const ;
+    CVector FixCoord(CVector const &) const ;
+    void DrawWorldsides(m3d::ui::DrawInfo const &) const ;
     virtual int GameDataUpdate(void *,int);
-    int UpdateDistance(enum NavPoint::NavPointType);
+    int UpdateDistance(NavPoint::NavPointType);
     void ClearNavPointItems();
-    class PointBase<float> WorldToRadarCoords(struct CVector const &,enum ItemType) const ;
-    void GetIcoForVehicle(class ai::Vehicle const *,class m3d::rend::TexHandle &,class PointBase<float> &) const ;
+    PointBase<float> WorldToRadarCoords(CVector const &,ItemType) const ;
+    void GetIcoForVehicle(ai::Vehicle const *,m3d::rend::TexHandle &,PointBase<float> &) const ;
     void OnStartLevel();
     int OnDeleteNavPoint(void *);
-    virtual int GameDataLoad(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *);
+    virtual int GameDataLoad(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
     int RemoveTurret(int);
     int RemoveVehicle(int);
     void AllowDistances(bool);
-    void GetIcoForNavPoint(enum NavPoint::NavPointType,struct CVector const &,class m3d::rend::TexHandle &,class PointBase<float> &) const ;
+    void GetIcoForNavPoint(NavPoint::NavPointType,CVector const &,m3d::rend::TexHandle &,PointBase<float> &) const ;
     int AddTurret(int);
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     int AddVehicle(int);
     int AddNavPoint(int);
     void AllowTurrets(bool);
@@ -120,41 +141,42 @@ public:
     void AllowNavPoints(bool);
     int UpdateNavPoint(int);
     float CalculateDistanceToNavPoint(int) const ;
-    class m3d::rend::TexHandle GetIcoForWorldside(enum Worldside) const ;
-    virtual class m3d::Object * Clone();
-    virtual int GameDataSave(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *);
+    m3d::rend::TexHandle GetIcoForWorldside(enum Worldside) const ;
+    virtual m3d::Object * Clone();
+    virtual int GameDataSave(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
     void Reset();
     virtual ~RadarWnd();
     int AddDistance(int);
     float GetDefaultScanRadius() const ;
-    bool IsPositionOutsideScanRadius(struct CVector const &) const ;
-    virtual void OnPaintOverChildren(struct m3d::ui::DrawInfo const &);
-    int RemoveWorldside(enum Worldside);
+    bool IsPositionOutsideScanRadius(CVector const &) const ;
+    virtual void OnPaintOverChildren(m3d::ui::DrawInfo const &);
+    int RemoveWorldside(Worldside);
     int OnAddNavPoint(void *);
     int UpdateDistancesOnNewFrame();
-    void GetIcoForObject(class ai::Obj const *,class m3d::rend::TexHandle &,class PointBase<float> &) const ;
-    void GetIcoForTurret(class ai::StaticAutoGun const *,class m3d::rend::TexHandle &,class PointBase<float> &) const ;
+    void GetIcoForObject(ai::Obj const *,m3d::rend::TexHandle &,PointBase<float> &) const ;
+    void GetIcoForTurret(ai::StaticAutoGun const *,m3d::rend::TexHandle &,PointBase<float> &) const ;
     int UpdateOnNewFrame();
-    static class m3d::Object * CreateObject();
+    static m3d::Object * CreateObject();
     int UpdateTurretsOnNewFrame();
     void ClearVehicleItems();
     void SetScanRadius(float);
     virtual int GameDataSetup();
-    struct CVector GetWorldsideCoords(enum Worldside) const ;
+    CVector GetWorldsideCoords(Worldside) const ;
     int UpdateTurret(int);
     int UpdateVehicle(int);
-    void DrawHighlight(struct m3d::ui::DrawInfo const &) const ;
-    void DrawTurrets(struct m3d::ui::DrawInfo const &) const ;
+    void DrawHighlight(m3d::ui::DrawInfo const &) const ;
+    void DrawTurrets(m3d::ui::DrawInfo const &) const ;
     float GetScanRadius() const ;
-    void DrawVehicles(struct m3d::ui::DrawInfo const &) const ;
+    void DrawVehicles(m3d::ui::DrawInfo const &) const ;
     int UpdateVehiclesOnNewFrame();
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
+
 protected:
     RadarWnd();
-    RadarWnd(class RadarWnd const &);
+    RadarWnd(RadarWnd const &);
 
 public:
-    RT_CLASS_INLINE_DECLARE(RadarWnd);
+    RT_CLASS_DECLARE(RadarWnd);
 
 private:
     m3d::CVar m_cvDefaultRadarScanRadius;

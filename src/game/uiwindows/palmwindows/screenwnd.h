@@ -1,17 +1,21 @@
 #pragma once
+#include <game/uiwindows/charwindows/childpanel.h>
 
-class ScreenWnd :  public ChildPanel
+class ScreenWnd : public ChildPanel
 {
 public:
-    virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * CreateObject();
-    virtual class m3d::Object * Clone();
-    static struct m3d::Class * GetBaseClass();
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
+    static m3d::Class * GetBaseClass();
     virtual ~ScreenWnd();
+
 protected:
     ScreenWnd();
-    ScreenWnd(class ScreenWnd const &);
+    ScreenWnd(ScreenWnd const &);
     virtual int GameDataSetup();
-    virtual int AddChild(class m3d::Object *);
-private:
+    virtual int AddChild(m3d::Object *);
+
+public:
+    RT_CLASS_DECLARE(ScreenWnd);
 };

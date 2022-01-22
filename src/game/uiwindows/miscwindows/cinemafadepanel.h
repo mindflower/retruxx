@@ -1,20 +1,35 @@
 #pragma once
+#include <ui/ui.h>
 
-class CinemaFadePanel :  public m3d::ui::Wnd
+class CinemaFadePanel : public m3d::ui::Wnd
 {
 public:
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
+    enum FadeState
+    {
+        FS_FADING_UP = 0x0,
+        FS_FADING_DOWN = 0x1,
+        FS_IS_WHITE = 0x2,
+        FS_IS_BLACK = 0x3,
+    };
+
+public:
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
     void AttachToScreenCinematicRelated();
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     virtual ~CinemaFadePanel();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
+
 protected:
     void StartFadeCinematicUnrelated(float,int);
     float GetAlpha();
-    virtual int OnPaint(struct m3d::ui::DrawInfo const &);
+    virtual int OnPaint(m3d::ui::DrawInfo const &);
     CinemaFadePanel();
-    CinemaFadePanel(class CinemaFadePanel const &);
+    CinemaFadePanel(CinemaFadePanel const &);
+
+public:
+    RT_CLASS_DECLARE(CinemaFadePanel);
+
 private:
     bool m_isCinematicRelated;
     float m_fadePeriod;

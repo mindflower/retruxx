@@ -156,7 +156,7 @@ protected:
     void AdjustDecor();
 
 public:
-    RT_CLASS_INLINE_DECLARE(MotherPanel);
+    RT_CLASS_DECLARE(MotherPanel);
 
 private:
     std::map<ChildPanelId,ref_ptr<ChildPanel>> m_panels;

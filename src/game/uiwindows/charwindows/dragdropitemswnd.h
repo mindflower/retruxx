@@ -58,7 +58,7 @@ public:
     };
 
 public:
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetRtClass() const;
     virtual ~DragDropItemsWnd();
     virtual void Enable(bool);
@@ -86,7 +86,7 @@ protected:
     virtual int OnMouseMove(PointBase<float> const&, PointBase<float> const&);
 
 public:
-    RT_CLASS_INLINE_DECLARE(DragDropItemsWnd);
+    RT_CLASS_DECLARE(DragDropItemsWnd);
 
 private:
     DragStyle m_dragStyle;

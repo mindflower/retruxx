@@ -1,5 +1,6 @@
 #pragma once
 #include "dragdropitemswnd.h"
+#include <map>
 
 enum SlotState
 {
@@ -91,7 +92,7 @@ protected:
     void OnSlotIn(int);
     GeomSlot * GetSlotByItemObjId(int) const ;
     int ShowVideo(int);
-    void UpdateCellBunchWhileNoDrag(class PointBase<float> const &);
+    void UpdateCellBunchWhileNoDrag(PointBase<float> const &);
     void UpdateScrollWnd();
     virtual void SetSlotCompatibleWithVehicle(int,bool);
     void ScrollSlots();
@@ -145,7 +146,7 @@ protected:
     virtual int OnMouseWheel(int,PointBase<float> const &);
 
 public:
-    RT_CLASS_INLINE_DECLARE(RepositoryWnd);
+    RT_CLASS_DECLARE(RepositoryWnd);
 
 private:
     bool m_isInited;

@@ -1,7 +1,21 @@
 #pragma once
 #include <list>
+#include <game/uiwindows/charwindows/childpanel.h>
 
-class TownDlg :  public ChildPanel
+namespace ai
+{
+    class Town;
+}
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ImageWnd;
+    }
+}
+
+class TownDlg : public ChildPanel
 {
 public:
     class AuxInfo
@@ -23,29 +37,29 @@ public:
     };
 
 public:
-    virtual int GameDataLoad(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *);
-    struct ConditionalClosingInfo * GetConditionalClosingInfoForTown(CStr const &,CStr const &) const ;
-    static class m3d::Object * CreateObject();
+    virtual int GameDataLoad(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
+    ConditionalClosingInfo * GetConditionalClosingInfoForTown(CStr const &,CStr const &) const ;
+    static m3d::Object * CreateObject();
     void FullUpdate();
     void ClearConditionalClosingInfo();
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     virtual int OnAfterAddToWndStation();
     void OnEnterBar(int);
     bool IsTownWithConditionalClosing(CStr const &,CStr const &) const ;
     virtual int OnBeforeAddToWndStation();
     virtual int GameDataClear(bool);
-    virtual int GameDataSave(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *);
+    virtual int GameDataSave(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
     void UpdateClanPicture();
     void AddConditionalClosingInfo(CStr const &,CStr const &);
     virtual int GameDataSetup();
     void OnLeaveBar();
     virtual int GameDataUpdate(void *,int);
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     void SetConditionalClosingForTown(CStr const &,CStr const &,bool);
     int SetUpForTown(int);
     void ShowForTown(int);
-    virtual class m3d::Object * Clone();
-    class ai::Town * GetTown() const ;
+    virtual m3d::Object * Clone();
+    ai::Town * GetTown() const ;
     void RemoveConditionalClosingInfo(CStr const &,CStr const &);
     virtual ~TownDlg();
 
@@ -54,7 +68,7 @@ protected:
     TownDlg(TownDlg const &);
 
 public:
-    RT_CLASS_INLINE_DECLARE(TownDlg);
+    RT_CLASS_DECLARE(TownDlg);
 
 private:
     TownDlg::AuxInfo m_aif;

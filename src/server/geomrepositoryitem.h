@@ -47,6 +47,8 @@ namespace ai
         void _Init(int,int);
         void _Init(int);
         void _Init();
+
+    private:
         int m_resourceId;
         int m_objId;
         unsigned int m_amount;

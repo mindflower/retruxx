@@ -1,31 +1,68 @@
 #pragma once
+#include "childpanel.h"
+#include <core/ref_ptr.h>
 
-class GroundWnd :  public ChildPanel
+namespace ai
+{
+    class GeomRepository;
+}
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ImageWnd;
+        class ButtonWnd;
+    }
+}
+
+class RepositoryWnd;
+
+class GroundWnd : public ChildPanel
 {
 public:
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndPictureName;
+        CStr m_wndRepositoryName;
+        CStr m_btnPickUpAllName;
+        CStr m_wndGroundPictureName;
+        CStr m_groundPictureTexName;
+    };
+
+public:
     virtual void SetVehicleId(int);
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     void PickUpAll();
-    virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * CreateObject();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
     virtual ~GroundWnd();
+
 protected:
     virtual int OnAfterAddToWndStation();
     void SetupRepository();
     void OnRepositoryChanged(void *);
     void OnStartLevel();
-    class ai::GeomRepository * GetGroundRepository() const ;
+    ai::GeomRepository * GetGroundRepository() const ;
     virtual int GameDataClear(bool);
     GroundWnd();
-    GroundWnd(class GroundWnd const &);
+    GroundWnd(GroundWnd const &);
     void UpdatePickupButtonState();
     virtual int GameDataUpdate(void *,int);
     virtual int GameDataSetup();
     virtual int OnAfterRemoveFromWndStation();
     virtual int OnBeforeAddToWndStation();
     void UpdateGroundPicture();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int,m3d::AIParam const &);
+
+public:
+    RT_CLASS_DECLARE(GroundWnd);
+
 private:
     GroundWnd::AuxInfo m_aif;
     ref_ptr<RepositoryWnd> m_wndRepository;

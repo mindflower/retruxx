@@ -10,7 +10,7 @@ namespace m3d
     }
 }
 
-class DevideDlg :  public m3d::ui::ModalWnd
+class DevideDlg : public m3d::ui::ModalWnd
 {
 public:
     class AuxInfo
@@ -38,12 +38,13 @@ public:
     virtual ~DevideDlg();
     static m3d::Class * GetBaseClass();
     void SetAmount(int);
+
 protected:
     DevideDlg(DevideDlg const &);
     DevideDlg();
 
 public:
-    RT_CLASS_INLINE_DECLARE(DevideDlg);
+    RT_CLASS_DECLARE(DevideDlg);
 
 private:
     int m_maxAmount;

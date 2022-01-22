@@ -1,5 +1,15 @@
 #pragma once
 #include <ui/button.h>
+#include <ui/ui.h>
+#include <ui/uilistboxwnd.h>
+
+namespace ai
+{
+    class Npc;
+    class DynamicQuest;
+}
+
+class Reply;
 
 namespace m3d
 {
@@ -9,7 +19,7 @@ namespace m3d
     }
 }
 
-class ConversationWnd :  public m3d::ui::Wnd
+class ConversationWnd : public m3d::ui::Wnd
 {
 public:
     class PlayerReplyButton : public m3d::ui::ButtonWnd
@@ -86,8 +96,8 @@ public:
     virtual ~ConversationWnd();
     static m3d::Object * CreateObject();
     void EndConversation();
-protected:
 
+protected:
     ConversationWnd();
     ConversationWnd(ConversationWnd const &);
     virtual int GameDataUpdate(void *,int);
@@ -101,7 +111,7 @@ protected:
     bool NeedConversationExit() const ;
 
 public:
-    RT_CLASS_INLINE_DECLARE(ConversationWnd);
+    RT_CLASS_DECLARE(ConversationWnd);
 
 private:
     AuxInfo m_aif;

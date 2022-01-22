@@ -38,7 +38,7 @@ protected:
     virtual void DrawBunch(m3d::ui::DrawInfo const &);
 
 public:
-    RT_CLASS_INLINE_DECLARE(IzvratRepositoryWnd);
+    RT_CLASS_DECLARE(IzvratRepositoryWnd);
 
 private:
     std::vector<FrameSegment> m_frameSegments;

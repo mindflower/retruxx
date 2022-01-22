@@ -877,6 +877,7 @@
     <ClInclude Include="src\game\uiwindows\charwindows\cabinwnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\cbcharacteristicswnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\cblist.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\cbwnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\childpanel.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\devidedlg.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\dragdropitemswnd.h" />
@@ -897,6 +898,7 @@
     <ClInclude Include="src\game\uiwindows\charwindows\repairlist.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\repositoryitemwnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\repositorywnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\salewnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\shopwnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\skinswnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\vehiclecharacteristicswnd.h" />

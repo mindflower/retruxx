@@ -1,4 +1,19 @@
 #pragma once
+#include "childpanel.h"
+#include <map>
+
+namespace ai
+{
+    class Workshop;
+}
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+    }
+}
 
 class ZnayuKakProdatWnd :  public ChildPanel
 {
@@ -10,6 +25,56 @@ public:
         TRADETYPE_BASKET = 0x2,
         TRADETYPE_NUM_TRADETYPES = 0x3,
         TRADETYPE_INVALID = 0x3,
+    };
+
+    enum ItemType
+    {
+        ITEMTYPE_GADGET = 0x0,
+        ITEMTYPE_VEHICLE_PART_CABIN = 0x1,
+        ITEMTYPE_VEHICLE_PART_BASKET = 0x2,
+        ITEMTYPE_REPOSITORY_ITEM = 0x3,
+        ITEMTYPE_MAIN_ITEM = 0x4,
+        ITEMTYPE_INVALID = 0x5,
+    };
+
+    enum Belong
+    {
+        BELONG_PLAYER = 0x0,
+        BELONG_WORKSHOP = 0x1,
+        BELONG_INVALID = 0x2,
+    };
+
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndTradeCostName;
+        CStr m_wndPlayerItemsCostName;
+        CStr m_wndWorkshopItemsCostName;
+        CStr m_wndBottomPanelName;
+        CStr m_btnTransferItemsFromPlayerToWorkshopName;
+        CStr m_btnTransferItemsFromWorkshopToPlayerName;
+        CStr m_strIdLeftItemsInCabin;
+        CStr m_strIdLeftItemsInBasket;
+        CStr m_strIdLeftItemsInVehicle;
+        CStr m_strIdTooltipTransferItemsFromPlayerToWorkshop[3];
+        CStr m_strIdTooltipTransferItemsFromWorkshopToPlayer[3];
+    };
+
+    class CurValues
+    {
+    public:
+        void Clear();
+        CurValues();
+
+    private:
+        float m_hp;
+        float m_fuel;
+        std::map<CStr, float> m_durability;
+        std::map<CStr, int> m_shellsInCurCharge;
+        std::map<CStr, int> m_shellsInPool;
     };
 
 public:
@@ -30,7 +95,6 @@ public:
         void Invalidate();
         int SetupAsRepositoryItem(int, Belong, class PointBase<int> const&);
         CStr GetVehiclePartName() const;
-    protected:
     private:
         ItemType m_itemType;
         int m_gadgetSlotId;
@@ -54,6 +118,7 @@ public:
     int GetCurTradeCost() const ;
     static class m3d::Object * CreateObject();
     virtual struct m3d::Class * GetClass() const ;
+
 protected:
     int ClearCabinFromItems(int);
     int SaveGadgetsState(int,enum Belong,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > &);
@@ -133,6 +198,7 @@ protected:
     int BuyBasket();
     int AddItem(struct ItemSaveInfo *,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > &);
     int SaveRepositoryItemsState(int,enum Belong,class std::map<int,struct ItemSaveInfo *,struct std::less<int>,class std::allocator<struct std::pair<int const ,struct ItemSaveInfo *> > > &);
+
     int CalcItemsCostByBelong(enum Belong) const ;
 private:
     ZnayuKakProdatWnd::AuxInfo m_aif;

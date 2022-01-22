@@ -1,27 +1,47 @@
 #pragma once
+#include <ui/ui.h>
 
 class MainMenuUI :  public m3d::ui::Wnd
 {
 public:
-    virtual struct m3d::Class * GetClass() const ;
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndVersionName;
+        CStr m_wndProfileName;
+        CStr m_strIdProfileDontChosen;
+        CStr m_strIdProfile;
+        unsigned int m_colorProfileName;
+    };
+
+public:
+    virtual m3d::Class * GetClass() const ;
     virtual ~MainMenuUI();
-    static class m3d::Object * CreateObject();
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+    static m3d::Class * GetBaseClass();
     void OnFinishVideoPlaying();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
+
 protected:
     virtual int OnBeforeAddToWndStation();
     MainMenuUI();
-    MainMenuUI(class MainMenuUI const &);
+    MainMenuUI(MainMenuUI const &);
     void OnNewGame();
     virtual int OnAfterRemoveFromWndStation();
     virtual int OnKey(unsigned short,unsigned char,unsigned int);
     virtual int GameDataSetup();
     void OnStartVideoPlaying();
     void QuitToWindows();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int,m3d::AIParam const &);
     void OnCurProfileChanged();
     virtual int GameDataUpdate(void *,int);
+
+public:
+    RT_CLASS_DECLARE(MainMenuUI);
+
 private:
     m3d::ui::Wnd *m_wndVersion;
     m3d::ui::Wnd *m_wndProfile;

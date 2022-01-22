@@ -1,4 +1,5 @@
 #pragma once
+#include <ui/ui.h>
 
 class PlayerMoneyWnd :  public m3d::ui::Wnd
 {
@@ -7,18 +8,19 @@ public:
     {
     public:
         AuxInfo();
-    protected:
+
     private:
         CStr m_wndValueName;
         CStr m_strIdMoney;
     };
 
 public:
-    virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * CreateObject();
-    static struct m3d::Class * GetBaseClass();
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
+    static m3d::Class * GetBaseClass();
     virtual ~PlayerMoneyWnd();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
+
 protected:
     void OnStartLevel();
     PlayerMoneyWnd();
@@ -27,6 +29,10 @@ protected:
     virtual int GameDataSetup();
     virtual int GameDataUpdate(void *,int);
     void OnPlayerMoneyChanged();
+
+public:
+    RT_CLASS_DECLARE(PlayerMoneyWnd);
+
 private:
     m3d::ui::Wnd *m_wndValue;
     PlayerMoneyWnd::AuxInfo m_aif;

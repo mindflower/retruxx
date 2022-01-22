@@ -1,6 +1,10 @@
 #pragma once
 #include "znayukakprodatwnd.h"
+#include <core/ref_ptr.h>
 #include <math/bounds2d.h>
+
+class BasketWnd;
+class CabinWnd;
 
 class InventoryWnd :  public ChildPanel
 {
@@ -58,7 +62,7 @@ protected:
     void AddCBWindows();
 
 public:
-    RT_CLASS_INLINE_DECLARE(InventoryWnd);
+    RT_CLASS_DECLARE(InventoryWnd);
 
 private:
     InventoryWnd::AuxInfo m_aif;

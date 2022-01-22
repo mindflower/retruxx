@@ -35,7 +35,7 @@ protected:
     virtual void SetupInfoWnd(ItemInfoWnd *);
 
 public:
-    RT_CLASS_INLINE_DECLARE(VehiclePartWnd);
+    RT_CLASS_DECLARE(VehiclePartWnd);
 
 private:
     CStr m_partName;

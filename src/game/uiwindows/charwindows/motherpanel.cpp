@@ -2,6 +2,8 @@
 #include "playermoneywnd.h"
 #include "childpanel.h"
 
+RT_CLASS_DEFINE(MotherPanel);
+
 void MotherPanel::AuxSuspendedShow::Reset()
 {
     throw std::logic_error("Not implemented");

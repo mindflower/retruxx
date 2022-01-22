@@ -14,8 +14,156 @@
 #include <game/uimisc/reply.h>
 #include <game/uimisc/savesmanager.h>
 #include <game/uimisc/weapongroup.h>
+#include <game/uiwindows/charwindows/cabinwnd.h>
+#include <game/uiwindows/charwindows/devidedlg.h>
+#include <game/uiwindows/charwindows/gadgetwnd.h>
+#include <game/uiwindows/charwindows/groundwnd.h>
+#include <game/uiwindows/charwindows/infownd.h>
+#include <game/uiwindows/charwindows/iteminfownd.h>
+#include <game/uiwindows/charwindows/izvratrepositorywnd.h>
+#include <game/uiwindows/charwindows/motherpanel.h>
+#include <game/uiwindows/charwindows/playermoneywnd.h>
+#include <game/uiwindows/charwindows/repositorywnd.h>
+#include <game/uiwindows/charwindows/salewnd.h>
+#include <game/uiwindows/charwindows/shopwnd.h>
+#include <game/uiwindows/charwindows/vehiclepartwnd.h>
+#include <game/uiwindows/mainwindows/damageinfownd.h>
+#include <game/uiwindows/mainwindows/durabilityindicatorinmaininterfacewnd.h>
+#include <game/uiwindows/mainwindows/durabilityindicatorwnd.h>
+#include <game/uiwindows/mainwindows/fuelindicatorinmaininterfacewnd.h>
+#include <game/uiwindows/mainwindows/fuelindicatorwnd.h>
+#include <game/uiwindows/mainwindows/healthindicatorinmaininterfacewnd.h>
+#include <game/uiwindows/mainwindows/healthindicatorwnd.h>
+#include <game/uiwindows/mainwindows/radarwnd.h>
+#include <game/uiwindows/mainwindows/speedometerwnd.h>
+#include <game/uiwindows/mainwindows/weaponinfolist.h>
+#include <game/uiwindows/miscwindows/bindkeyswnd.h>
+#include <game/uiwindows/miscwindows/cinemafadepanel.h>
+#include <game/uiwindows/miscwindows/cinemapanel.h>
 #include <game/uiwindows/miscwindows/gamemenu.h>
+#include <game/uiwindows/miscwindows/mainmenu.h>
+#include <game/uiwindows/palmwindows/bookswnd.h>
+#include <game/uiwindows/palmwindows/encyclopaediawnd.h>
+#include <game/uiwindows/palmwindows/historywnd.h>
+#include <game/uiwindows/palmwindows/journalwnd.h>
+#include <game/uiwindows/townwindows/bardlg.h>
+#include <game/uiwindows/townwindows/conversationwnd.h>
+#include <game/uiwindows/townwindows/towndlg.h>
 #include <ui/wnd.h>
+
+namespace
+{
+    struct _Str2GuiId
+    {
+        CStr m_strId;
+        int m_intId;
+    };
+
+    _Str2GuiId l_str2GuiId[] = {
+        {"IW_DLG_BINDKEYS", 0},
+        {"IW_WND_PLAYER_INVENTORY", 64},
+        {"IW_WND_WORKSHOP_INVENTORY", 65},
+        {"IW_DLG_DEVIDE", 1},
+        {"IW_DLG_BAR", 2},
+        {"IW_DLG_ADDITIONAL_BUILDING", 3},
+        {"IW_DLG_TOWN", 4},
+        {"IW_DLG_PALMBOARD", 5},
+        {"IW_WND_WORKSHOP", 67},
+        {"IW_DLG_ADMINISTRATION", 6},
+        {"IW_WND_SHOP", 66},
+        {"IW_WND_RADAR", 17},
+        {"IW_WND_CINEMA_PANEL", 18},
+        {"IW_WND_CINEMA_FADE_PANEL", 19},
+        {"IW_WND_DAMAGEINFO", 26},
+        {"IW_WND_DAMAGEINFO_IN_CHARACTERISTIC_WND_LEFT", 27},
+        {"IW_WND_DAMAGEINFO_IN_CHARACTERISTIC_WND_RIGHT", 28},
+        {"IW_WND_WEAPON_INFO_LIST", 38},
+        {"IW_WND_WEAPON_INFO_LIST_IN_FIGNYA_WND", 42},
+        {"IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_LEFT", 39},
+        {"IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_RIGHT", 40},
+        {"IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_WORKSHOP", 41},
+        {"IW_WND_GROUND", 63},
+        {"IW_DLG_MOTHER_PANEL", 7},
+        {"IW_WND_CHARACTERISTICS_LEFT", 68},
+        {"IW_WND_CHARACTERISTICS_RIGHT", 69},
+        {"IW_WND_PLAYER_MONEY", 70},
+        {"IW_WND_PLAYER_MONEY_IN_NPC_DIALOG", 71},
+        {"IW_WND_MAINMENU", 72},
+        {"IW_WND_BUY_VEHICLE", 73},
+        {"IW_WND_VIDEO", 77},
+        {"IW_WND_QUESTLOG", 15},
+        {"IW_WND_LOCAL_MAP", 82},
+        {"IW_WND_GLOBAL_MAP", 84},
+        {"IW_DLG_TALK_WITH_NPC", 88},
+        {"IW_DLG_WEAPON_GROUP_CHOICE", 89},
+        {"IW_WND_PLAYER_CABIN", 90},
+        {"IW_WND_PLAYER_BASKET", 92},
+        {"IW_WND_WORKSHOP_CABIN", 91},
+        {"IW_WND_WORKSHOP_BASKET", 93},
+        {"IW_WND_ZNAYU_KAK_PRODAT", 94},
+        {"IW_WND_JOURNAL", 16},
+        {"IW_WND_HISTORY", 95},
+        {"IW_WND_BOOKS", 96},
+        {"IW_WND_ENCYCLOPAEDIA", 97},
+        {"IW_WND_PLAYER", 104},
+        {"IW_WND_STATS", 105},
+        {"IW_WND_REPUTATION", 106},
+        {"IW_WND_PERKS", 107},
+        {"IW_WND_SPLASH", 108},
+        {"IW_WND_NEW_PROFILE", 109},
+        {"IW_WND_NEW_PROFILE_ALONE", 110},
+        {"IW_WND_CHANGE_PROFILE", 111},
+        {"IW_WND_LOAD", 112},
+        {"IW_WND_SAVE", 113},
+        {"IW_WND_FIGNYA_V_CENTRE", 114},
+        {"IW_WND_FIGNYA_V_CENTRE_INACTIVE", 115},
+        {"IW_WND_TARGET_INFO_IN_MAIN_INTERFACE", 116},
+        {"IW_WND_TARGET_INFO_IN_FIGNYA_WND", 117},
+        {"IW_WND_CURSOR_MAIN", 118},
+        {"IW_WND_CURSOR_TARGET_CAPTURING", 119},
+        {"IW_WND_CURSOR_TARGET_CAPTURED", 120},
+        {"IW_WND_CURSOR_TARGET_INFO", 121},
+        {"IW_WND_VEHICLE_INFO_PANEL", 124},
+        {"IW_WND_SPEEDOMETER", 30},
+        {"IW_WND_FADING_MSG_LIST", 125},
+        {"IW_WND_IMPORTANT_FADING_MSG_LIST", 126},
+        {"IW_WND_GARAGE", 127},
+        {"IW_WND_REFUEL_LIST", 128},
+        {"IW_WND_REPAIR_LIST", 129},
+        {"IW_WND_RECHARGE_LIST", 130},
+        {"IW_WND_CABIN_BUTTON_PATTERN", 131},
+        {"IW_WND_BASKET_BUTTON_PATTERN", 132},
+        {"IW_WND_CABIN_LIST", 133},
+        {"IW_WND_BASKET_LIST", 134},
+        {"IW_WND_SKINS", 144},
+        {"IW_WND_IGROKA_MOCHAT", 145},
+        {"IW_WND_QUEST_ITEMS", 146},
+        {"IW_WND_COUNTER", 147},
+        {"IW_WND_OPTIONS", 148},
+        {"IW_WND_OPTIONS_VIDEO", 149},
+        {"IW_WND_OPTIONS_SOUND", 150},
+        {"IW_WND_OPTIONS_CONTROL", 151},
+        {"IW_WND_OPTIONS_GAME", 152},
+        {"IW_WND_MAIN_GAME_INTERFACE", 155},
+        {"IW_WND_PLAYER_VEHICLE_CHARACTERISTICS_LEFT", 156},
+        {"IW_WND_PLAYER_VEHICLE_CHARACTERISTICS_RIGHT", 157},
+        {"IW_WND_WORKSHOP_VEHICLE_CHARACTERISTICS", 158},
+        {"IW_WND_PLAYER_CABIN_CHARACTERISTICS_LEFT", 159},
+        {"IW_WND_PLAYER_CABIN_CHARACTERISTICS_RIGHT", 160},
+        {"IW_WND_WORKSHOP_CABIN_CHARACTERISTICS", 161},
+        {"IW_WND_PLAYER_BASKET_CHARACTERISTICS_LEFT", 162},
+        {"IW_WND_PLAYER_BASKET_CHARACTERISTICS_RIGHT", 163},
+        {"IW_WND_WORKSHOP_BASKET_CHARACTERISTICS", 164},
+        {"IW_WND_DEMO_SPLASH", 167},
+        {"IW_WND_CREDITS", 165},
+        {"IW_WND_FADE_PANEL_BEFORE_NEXT_MAP", 166},
+        {"IW_WND_HELP_SIMPLE_MSG", 168},
+        {"IW_WND_HELP_MAIN_GAME_INTERFACE", 169},
+        {"IW_WND_MSG_BOX", 170},
+        {"IW_WND_BOSS_INDICATOR", 171},
+        {"IW_WND_REQUEST_DIFFICULTY_LEVEL", 172},
+    };
+}
 
 CStr TruxxUiManager::GetPathToDialogsFileGlobal() const
 {
@@ -239,9 +387,16 @@ bool TruxxUiManager::IsGameModeValidForSmartCursor(GameState) const
     throw std::logic_error("Not implemented");
 }
 
-int TruxxUiManager::Str2WndGuiId(CStr const&) const
+int TruxxUiManager::Str2WndGuiId(CStr const& strId) const
 {
-    throw std::logic_error("Not implemented");
+    for (auto const& str2GuiId : l_str2GuiId)
+    {
+        if (str2GuiId.m_strId == strId)
+        {
+            return str2GuiId.m_intId;
+        }
+    }
+    return -1;
 }
 
 ai::Vehicle* TruxxUiManager::GetVehicleSellingInWorkshop() const
@@ -562,49 +717,49 @@ void TruxxUiManager::GUI_RegisterEvents()
 
 void TruxxUiManager::GUI_RegisterClasses()
 {
-    //m3d::g_Kernel->AddClass(&BindKeysWnd::m_classBindKeysWnd);
-    //m3d::g_Kernel->AddClass(&RepositoryWnd::m_classRepositoryWnd);
-    //m3d::g_Kernel->AddClass(&IzvratRepositoryWnd::m_classIzvratRepositoryWnd);
-    //m3d::g_Kernel->AddClass(&InventoryWnd::m_classInventoryWnd);
-    //m3d::g_Kernel->AddClass(&DragDropItemsWnd::m_classDragDropItemsWnd);
-    //m3d::g_Kernel->AddClass(&VehiclePartWnd::m_classVehiclePartWnd);
-    //m3d::g_Kernel->AddClass(&DevideDlg::m_classDevideDlg);
-    //m3d::g_Kernel->AddClass(&BarDlg::m_classBarDlg);
-    //m3d::g_Kernel->AddClass(&ConversationWnd::m_classConversationWnd);
-    //m3d::g_Kernel->AddClass(&TownDlg::m_classTownDlg);
-    //m3d::g_Kernel->AddClass(&RadarWnd::m_classRadarWnd);
-    //m3d::g_Kernel->AddClass(&CinemaPanel::m_classCinemaPanel);
-    //m3d::g_Kernel->AddClass(&CinemaFadePanel::m_classCinemaFadePanel);
-    //m3d::g_Kernel->AddClass(&DamageInfoWnd::m_classDamageInfoWnd);
-    //m3d::g_Kernel->AddClass(&HealthIndicatorWnd::m_classHealthIndicatorWnd);
-    //m3d::g_Kernel->AddClass(&HealthIndicatorInMainInterfaceWnd::m_classHealthIndicatorInMainInterfaceWnd);
-    //m3d::g_Kernel->AddClass(&DurabilityIndicatorWnd::m_classDurabilityIndicatorWnd);
-    //m3d::g_Kernel->AddClass(&DurabilityIndicatorInMainInterfaceWnd::m_classDurabilityIndicatorInMainInterfaceWnd);
-    //m3d::g_Kernel->AddClass(&JournalWnd::m_classJournalWnd);
-    //m3d::g_Kernel->AddClass(&HistoryWnd::m_classHistoryWnd);
-    //m3d::g_Kernel->AddClass(&BooksWnd::m_classBooksWnd);
-    //m3d::g_Kernel->AddClass(&EncyclopaediaWnd::m_classEncyclopaediaWnd);
-    //m3d::g_Kernel->AddClass(&SubjectButton::m_classSubjectButton);
-    //m3d::g_Kernel->AddClass(&SubjectList::m_classSubjectList);
-    //m3d::g_Kernel->AddClass(&CheckList::m_classCheckList);
-    //m3d::g_Kernel->AddClass(&CheckButton::m_classCheckButton);
-    //m3d::g_Kernel->AddClass(&InfoWnd::m_classInfoWnd);
-    //m3d::g_Kernel->AddClass(&ItemInfoWnd::m_classItemInfoWnd);
+    m3d::g_Kernel->AddClass(&BindKeysWnd::m_classBindKeysWnd);
+    m3d::g_Kernel->AddClass(&RepositoryWnd::m_classRepositoryWnd);
+    m3d::g_Kernel->AddClass(&IzvratRepositoryWnd::m_classIzvratRepositoryWnd);
+    m3d::g_Kernel->AddClass(&InventoryWnd::m_classInventoryWnd);
+    m3d::g_Kernel->AddClass(&DragDropItemsWnd::m_classDragDropItemsWnd);
+    m3d::g_Kernel->AddClass(&VehiclePartWnd::m_classVehiclePartWnd);
+    m3d::g_Kernel->AddClass(&DevideDlg::m_classDevideDlg);
+    m3d::g_Kernel->AddClass(&BarDlg::m_classBarDlg);
+    m3d::g_Kernel->AddClass(&ConversationWnd::m_classConversationWnd);
+    m3d::g_Kernel->AddClass(&TownDlg::m_classTownDlg);
+    m3d::g_Kernel->AddClass(&RadarWnd::m_classRadarWnd);
+    m3d::g_Kernel->AddClass(&CinemaPanel::m_classCinemaPanel);
+    m3d::g_Kernel->AddClass(&CinemaFadePanel::m_classCinemaFadePanel);
+    m3d::g_Kernel->AddClass(&DamageInfoWnd::m_classDamageInfoWnd);
+    m3d::g_Kernel->AddClass(&HealthIndicatorWnd::m_classHealthIndicatorWnd);
+    m3d::g_Kernel->AddClass(&HealthIndicatorInMainInterfaceWnd::m_classHealthIndicatorInMainInterfaceWnd);
+    m3d::g_Kernel->AddClass(&DurabilityIndicatorWnd::m_classDurabilityIndicatorWnd);
+    m3d::g_Kernel->AddClass(&DurabilityIndicatorInMainInterfaceWnd::m_classDurabilityIndicatorInMainInterfaceWnd);
+    m3d::g_Kernel->AddClass(&JournalWnd::m_classJournalWnd);
+    m3d::g_Kernel->AddClass(&HistoryWnd::m_classHistoryWnd);
+    m3d::g_Kernel->AddClass(&BooksWnd::m_classBooksWnd);
+    m3d::g_Kernel->AddClass(&EncyclopaediaWnd::m_classEncyclopaediaWnd);
+    m3d::g_Kernel->AddClass(&SubjectButton::m_classSubjectButton);
+    m3d::g_Kernel->AddClass(&SubjectList::m_classSubjectList);
+    m3d::g_Kernel->AddClass(&CheckList::m_classCheckList);
+    m3d::g_Kernel->AddClass(&CheckButton::m_classCheckButton);
+    m3d::g_Kernel->AddClass(&InfoWnd::m_classInfoWnd);
+    m3d::g_Kernel->AddClass(&ItemInfoWnd::m_classItemInfoWnd);
     m3d::g_Kernel->AddClass(&RepliesManager::m_classRepliesManager);
-    //m3d::g_Kernel->AddClass(&FuelIndicatorWnd::m_classFuelIndicatorWnd);
-    //m3d::g_Kernel->AddClass(&FuelIndicatorInMainInterfaceWnd::m_classFuelIndicatorInMainInterfaceWnd);
-    //m3d::g_Kernel->AddClass(&SpeedometerWnd::m_classSpeedometerWnd);
-    //m3d::g_Kernel->AddClass(&WeaponInfoWnd::m_classWeaponInfoWnd);
-    //m3d::g_Kernel->AddClass(&WeaponInfoList::m_classWeaponInfoList);
-    //m3d::g_Kernel->AddClass(&ItemWnd::m_classItemWnd);
-    //m3d::g_Kernel->AddClass(&GadgetWnd::m_classGadgetWnd);
-    //m3d::g_Kernel->AddClass(&MotherPanel::m_classMotherPanel);
-    //m3d::g_Kernel->AddClass(&ChildPanel::m_classChildPanel);
-    //m3d::g_Kernel->AddClass(&GroundWnd::m_classGroundWnd);
-    //m3d::g_Kernel->AddClass(&SaleWnd::m_classSaleWnd);
-    //m3d::g_Kernel->AddClass(&ShopWnd::m_classShopWnd);
-    //m3d::g_Kernel->AddClass(&PlayerMoneyWnd::m_classPlayerMoneyWnd);
-    //m3d::g_Kernel->AddClass(&MainMenuUI::m_classMainMenuUI);
+    m3d::g_Kernel->AddClass(&FuelIndicatorWnd::m_classFuelIndicatorWnd);
+    m3d::g_Kernel->AddClass(&FuelIndicatorInMainInterfaceWnd::m_classFuelIndicatorInMainInterfaceWnd);
+    m3d::g_Kernel->AddClass(&SpeedometerWnd::m_classSpeedometerWnd);
+    m3d::g_Kernel->AddClass(&WeaponInfoWnd::m_classWeaponInfoWnd);
+    m3d::g_Kernel->AddClass(&WeaponInfoList::m_classWeaponInfoList);
+    m3d::g_Kernel->AddClass(&ItemWnd::m_classItemWnd);
+    m3d::g_Kernel->AddClass(&GadgetWnd::m_classGadgetWnd);
+    m3d::g_Kernel->AddClass(&MotherPanel::m_classMotherPanel);
+    m3d::g_Kernel->AddClass(&ChildPanel::m_classChildPanel);
+    m3d::g_Kernel->AddClass(&GroundWnd::m_classGroundWnd);
+    m3d::g_Kernel->AddClass(&SaleWnd::m_classSaleWnd);
+    m3d::g_Kernel->AddClass(&ShopWnd::m_classShopWnd);
+    m3d::g_Kernel->AddClass(&PlayerMoneyWnd::m_classPlayerMoneyWnd);
+    m3d::g_Kernel->AddClass(&MainMenuUI::m_classMainMenuUI);
     //m3d::g_Kernel->AddClass(&RepositoryItemWnd::m_classRepositoryItemWnd);
     //m3d::g_Kernel->AddClass(&ComplexModelWnd::m_classComplexModelWnd);
     //m3d::g_Kernel->AddClass(&VideoWnd::m_classVideoWnd);
@@ -633,7 +788,7 @@ void TruxxUiManager::GUI_RegisterClasses()
     //m3d::g_Kernel->AddClass(&NavPointMarkWnd::m_classNavPointMarkWnd);
     //m3d::g_Kernel->AddClass(&WeaponGroupChoiceDlg::m_classWeaponGroupChoiceDlg);
     //m3d::g_Kernel->AddClass(&CBWnd::m_classCBWnd);
-    //m3d::g_Kernel->AddClass(&CabinWnd::m_classCabinWnd);
+    m3d::g_Kernel->AddClass(&CabinWnd::m_classCabinWnd);
     //m3d::g_Kernel->AddClass(&BasketWnd::m_classBasketWnd);
     //m3d::g_Kernel->AddClass(&ZnayuKakProdatWnd::m_classZnayuKakProdatWnd);
     //m3d::g_Kernel->AddClass(&BuildingButton::m_classBuildingButton);
@@ -725,9 +880,9 @@ void TruxxUiManager::GUI_RegisterClasses()
     m3d::g_Kernel->AddClass(&HelpManager::m_classHelpManager);
     //m3d::g_Kernel->AddClass(&HelpWnd::m_classHelpWnd);
     //m3d::g_Kernel->AddClass(&HelpSimpleMsgWnd::m_classHelpSimpleMsgWnd);
-    //m3d::g_Kernel->AddClass(&ResourceInfo::m_classResourceInfo);
-    //m3d::g_Kernel->AddClass(&WindowResourceInfo::m_classWindowResourceInfo);
-    //m3d::g_Kernel->AddClass(&IcoResourceInfo::m_classIcoResourceInfo);
+    m3d::g_Kernel->AddClass(&ResourceInfo::m_classResourceInfo);
+    m3d::g_Kernel->AddClass(&WindowResourceInfo::m_classWindowResourceInfo);
+    m3d::g_Kernel->AddClass(&IcoResourceInfo::m_classIcoResourceInfo);
     //m3d::g_Kernel->AddClass(&AutoScrollTextWnd::m_classAutoScrollTextWnd);
     //m3d::g_Kernel->AddClass(&HelpInMainGameInterfaceWnd::m_classHelpInMainGameInterfaceWnd);
     //m3d::g_Kernel->AddClass(&MsgBox::m_classMsgBox);

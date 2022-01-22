@@ -1,4 +1,5 @@
 #pragma once
+#include <ui/ui.h>
 
 namespace ai
 {
@@ -25,6 +26,9 @@ protected:
     virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int,m3d::AIParam const &);
     virtual int GameDataUpdate(void *,int);
     virtual void OnExit();
+
+public:
+    RT_CLASS_DECLARE(ChildPanel);
 
 private:
     int m_vehicleId;

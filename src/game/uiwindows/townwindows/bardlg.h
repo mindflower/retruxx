@@ -1,13 +1,15 @@
 #pragma once
+#include <game/uiwindows/charwindows/childpanel.h>
 
 namespace ai
 {
+    class Npc;
     class Bar;
 }
 
 class NpcList;
 
-class BarDlg :  public ChildPanel
+class BarDlg : public ChildPanel
 {
 public:
     class AuxInfo
@@ -41,7 +43,7 @@ protected:
     virtual int OnBeforeAddToWndStation();
 
 public:
-    RT_CLASS_INLINE_DECLARE(BarDlg);
+    RT_CLASS_DECLARE(BarDlg);
 
 private:
     AuxInfo m_aif;

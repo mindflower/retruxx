@@ -1,4 +1,19 @@
 #pragma once
+#include <deque>
+#include <game/uimisc/msgmanager.h>
+#include <ui/ui.h>
+
+class AutoScrollTextWnd;
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ImageWnd;
+    }
+}
+
+class ItemModelWnd;
 
 class CinemaPanel :  public m3d::ui::Wnd
 {
@@ -13,48 +28,78 @@ public:
         float m_delay;
     };
 
+    enum PanelType
+    {
+        PANELTYPE_NORMAL = 0x0,
+        PANELTYPE_SCROLL = 0x1,
+        PANELTYPE_NUM_PANEL_TYPES = 0x2,
+    };
+
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndPortraitName;
+        CStr m_wndPortraitOverlayName;
+        CStr m_wndTextName;
+        CStr m_wndUpPanelName;
+        CStr m_wndDownPanelName;
+        CStr m_wndScrollImageName;
+        CStr m_wndScrollImageUpOverlayName;
+        CStr m_wndScrollImageDownOverlayName;
+        CStr m_wndScrollTextName;
+    };
+
+
 public:
-    static struct m3d::Class * GetBaseClass();
-    virtual class m3d::Object * Clone();
+    static m3d::Class * GetBaseClass();
+    virtual m3d::Object * Clone();
     void AddMessage(int,float);
     unsigned int GetTimeToTheEndOfMsg();
     bool MessageQueueIsEmpty() const ;
     void OnHide();
     void SkipMessage();
     void ClearMessages();
-    static class m3d::Object * CreateObject();
+    static m3d::Object * CreateObject();
     virtual ~CinemaPanel();
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     void Clear();
+
 protected:
     void ClearNormal();
-    virtual int OnPaint(struct m3d::ui::DrawInfo const &);
+    virtual int OnPaint(m3d::ui::DrawInfo const &);
     void SetPanelTypeForMsg(int);
     int _SetMsg(int);
-    void SetupPortrait(class MsgInfo const *);
+    void SetupPortrait(MsgInfo const *);
     void ClearBase();
     void HideAllControls();
-    void GetControlsByPanelType(enum PanelType,class std::vector<class m3d::ui::Wnd *,class std::allocator<class m3d::ui::Wnd *> > &,bool) const ;
-    void SetupTextScroll(class MsgInfo const *);
+    void GetControlsByPanelType(PanelType,std::vector<m3d::ui::Wnd *> &,bool) const ;
+    void SetupTextScroll(MsgInfo const *);
     virtual int GameDataClear(bool);
-    void GetAllControls(class std::vector<class m3d::ui::Wnd *,class std::allocator<class m3d::ui::Wnd *> > &) const ;
-    void SetupSound(class MsgInfo const *);
+    void GetAllControls(std::vector<m3d::ui::Wnd *> &) const ;
+    void SetupSound(MsgInfo const *);
     void DeleteAllControls();
     virtual int GameDataSetup();
-    void SetupTextNormal(class MsgInfo const *);
-    CinemaPanel(class CinemaPanel const &);
+    void SetupTextNormal(MsgInfo const *);
+    CinemaPanel(CinemaPanel const &);
     CinemaPanel();
-    void InitControlsForMsgScroll(class MsgInfo const *);
-    void InitControlsForMsgNormal(class MsgInfo const *);
+    void InitControlsForMsgScroll(MsgInfo const *);
+    void InitControlsForMsgNormal(MsgInfo const *);
     void UpdateAnimation();
-    void SetupTime(class MsgInfo const *);
-    void ShowControlsForPanelType(enum PanelType);
+    void SetupTime(MsgInfo const *);
+    void ShowControlsForPanelType(PanelType);
     void ClearScroll();
-    enum PanelType GetPanelTypeByMsgType(enum MsgInfo::MsgType) const ;
-    void InitControlsForMsgBase(class MsgInfo const *);
-    void SetupImagesScroll(class MsgInfo const *);
+    enum PanelType GetPanelTypeByMsgType(MsgInfo::MsgType) const ;
+    void InitControlsForMsgBase(MsgInfo const *);
+    void SetupImagesScroll(MsgInfo const *);
     int StopSound();
-    void SetPanelType(enum PanelType);
+    void SetPanelType(PanelType);
+
+public:
+    RT_CLASS_DECLARE(CinemaPanel);
+
 private:
     std::deque<CinemaPanel::MessageTimeInfo> m_msgInfos;
     CinemaPanel::AuxInfo m_aif;

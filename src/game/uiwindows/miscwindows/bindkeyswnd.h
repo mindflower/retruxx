@@ -209,7 +209,7 @@ protected:
     void CancelBindings();
 
 public:
-    RT_CLASS_INLINE_DECLARE(BindKeysWnd);
+    RT_CLASS_DECLARE(BindKeysWnd);
 
 private:
     AuxInfo m_aif;

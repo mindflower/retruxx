@@ -36,30 +36,24 @@ public:
     };
 
 public:
-    virtual m3d::Class* WindowGetClass() const;
     virtual m3d::Class* GetClass() const;
-    static ResourceLoadType __fastcall Str2ResourceLoadType(CStr const&);
-    virtual int IcoLoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-    static m3d::Object* __fastcall IcoCreateObject();
-    virtual ~ResourceInfo();
-    virtual m3d::Class* IcoGetClass() const;
-    static m3d::Object* __fastcall WindowCreateObject();
-    static m3d::Class* __fastcall IcoGetBaseClass();
     static m3d::Object* CreateObject();
-    static m3d::Class* __fastcall WindowGetBaseClass();
-    virtual int WindowLoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-    virtual bool WindowIsValid() const;
-    virtual m3d::Object* IcoClone();
-    virtual m3d::Object* WindowClone();
-    virtual bool IcoIsValid() const;
+    static m3d::Class* GetBaseClass();
+    static ResourceLoadType __fastcall Str2ResourceLoadType(CStr const&);
+    virtual int LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+    virtual bool IsValid() const;
+    virtual ~ResourceInfo();
 
 protected:
     ResourceInfo();
     ResourceInfo(ResourceInfo const&);
 
-private:
+public:
+    RT_CLASS_DECLARE(ResourceInfo);
+
+public:
     CStr m_fileName;
-    ResourceLoadType m_loadType;
+    ResourceLoadType m_loadType = LOADTYPE_AT_FIRST_LEVEL_START;
 };
 
 class WindowResourceInfo :  public ResourceInfo
@@ -77,10 +71,13 @@ protected:
     WindowResourceInfo(WindowResourceInfo const &);
     WindowResourceInfo();
 
+public:
+    RT_CLASS_DECLARE(WindowResourceInfo);
+
 private:
-    int m_wndGuiId;
+    int m_wndGuiId = -1;
     CStr m_className;
-    bool m_bShowImmediate;
+    bool m_bShowImmediate = false;
 };
 
 class IcoResourceInfo :  public ResourceInfo
@@ -97,6 +94,9 @@ public:
 protected:
     IcoResourceInfo(IcoResourceInfo const &);
     IcoResourceInfo();
+
+public:
+    RT_CLASS_DECLARE(IcoResourceInfo);
 
 private:
     CStr m_levelName;
@@ -140,7 +140,7 @@ protected:
     virtual ~GameUiManager();
     virtual void GUI_RegisterCVars();
     int GUI_LoadWindowFromResourceInfo(WindowResourceInfo const*);
-    void GUI_ClearResourceInfos(std::vector<ResourceInfo*, std::allocator<ResourceInfo*> >&);
+    void GUI_ClearResourceInfos(std::vector<ResourceInfo*>&);
     virtual int GUI_HideWindow(int, bool, int*, bool);
     virtual int GUI_Done();
     void GUI_ClearAllResourceInfos();

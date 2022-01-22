@@ -1,7 +1,20 @@
 #pragma once
+#include "cbwnd.h"
+
+class IzvratRepositoryWnd;
 
 class BasketWnd :  public CBWnd
 {
+public:
+    class AuxInfo
+    {
+    public:
+        AuxInfo(void);
+    protected:
+    private:
+        CStr m_wndInventoryName;
+    };
+
 public:
     virtual class m3d::Object * Clone();
     static class m3d::Object * CreateObject();
