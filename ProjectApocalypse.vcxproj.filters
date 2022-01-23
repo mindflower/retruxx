@@ -3848,6 +3848,9 @@
     <ClInclude Include="src\game\uiwindows\charwindows\characteristicswnd.h">
       <Filter>game\uiwindows\charwindows</Filter>
     </ClInclude>
+    <ClInclude Include="src\game\uiwindows\mainwindows\targetcursorwnd.h">
+      <Filter>game\uiwindows\mainwindows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

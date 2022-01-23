@@ -1,67 +1,84 @@
 #pragma once
+#include <core/ref_ptr.h>
+#include <ui/button.h>
+#include <ui/wnd.h>
+
+class OptionTabButton;
+
+class OptionsWnd : public m3d::ui::ModalWnd
+{
+public:
+    enum Tab
+    {
+        TAB_VIDEO = 0,
+        TAB_SOUND = 1,
+        TAB_CONTROL = 2,
+        TAB_GAME = 3,
+        TAB_NUM_TABS = 4,
+        TAB_INVALID = TAB_NUM_TABS,
+    };
+
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_tabButtonNames[4];
+    };
+
+public:
+    virtual m3d::Class* GetClass(void) const;
+    static m3d::Class* GetBaseClass(void);
+    
+protected:
+    virtual int OnBeforeAddToWndStation(void);
+    OptionsWnd(void);
+    OptionsWnd(OptionsWnd const&);
+    void UpdateTabButtonsStates(void);
+    int SetCurTab(Tab);
+    void SelectTabButton(Tab);
+    int ApplyTabChanges(Tab);
+    virtual int OnAfterRemoveFromWndStation(void);
+    int ShowOptionWindowForTab(Tab);
+    virtual int OnWndNotify(m3d::ui::Wnd*, unsigned int, unsigned int, m3d::AIParam const&);
+    int GetOptionWindowGuiIdByTabId(Tab) const;
+    virtual int CanClose(void);
+
+public:
+    RT_CLASS_DECLARE(OptionsWnd);
+
+private:
+    OptionsWnd::Tab m_curTabId;
+    OptionsWnd::Tab m_lastTabId;
+    std::vector<OptionTabButton*> m_tabButtons;
+    std::vector<ref_ptr<m3d::ui::Wnd>> m_optionWindows;
+    OptionsWnd::AuxInfo m_aif;
+};
 
 class OptionTabButton :  public m3d::ui::ButtonWnd
 {
 public:
-    virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * CreateObject();
-    enum OptionsWnd::Tab GetTabId() const ;
-    int CreateFromPattern(class m3d::ui::Wnd *,bool);
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
+    OptionsWnd::Tab GetTabId() const ;
+    int CreateFromPattern(m3d::ui::Wnd *,bool);
     void Select(bool);
-    int SetupForTab(enum OptionsWnd::Tab);
-    virtual class m3d::Object * Clone();
+    int SetupForTab(OptionsWnd::Tab);
+    virtual m3d::Object * Clone();
     virtual ~OptionTabButton();
     bool IsSelected() const ;
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
+
 protected:
-    OptionTabButton(class OptionTabButton const &);
+    OptionTabButton(OptionTabButton const &);
     OptionTabButton();
     void UpdatePane();
+
+public:
+    RT_CLASS_DECLARE(OptionTabButton);
+
 private:
     bool m_bSelected;
     OptionsWnd::Tab m_tabId;
-};
-
-class GameOptionsWnd :  public m3d::ui::Wnd
-{
-public:
-    virtual ~GameOptionsWnd();
-    static struct m3d::Class * GetBaseClass();
-    static class m3d::Object * CreateObject();
-    virtual class m3d::Object * Clone();
-    virtual struct m3d::Class * GetClass() const ;
-protected:
-    void InitNumRepliesControls();
-    void ApplyNumReplies();
-    void UpdateControls();
-    GameOptionsWnd();
-    GameOptionsWnd(class GameOptionsWnd const &);
-    void InitAutoHelpControls();
-    void OnSliderNumRepliesChange(class m3d::AIParam const &);
-    void OnCheckAutoHelpClick(class m3d::AIParam const &);
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
-    void UpdateNumRepliesControls();
-    void ApplyGameDifficulty();
-    void UpdateNumRepliesPrevNextButtonsState();
-    void OnBtnNumRepliesNextClick(class m3d::AIParam const &);
-    void OnCbGameDifficultyChange(class m3d::AIParam const &);
-    void OnBtnNumRepliesPrevClick(class m3d::AIParam const &);
-    void InitGameDifficultyControls();
-    virtual int GameDataSetup();
-    void UpdateAutoHelpControls();
-    virtual int OnBeforeAddToWndStation();
-    void UpdateGameDifficultyControls();
-    void ApplyAutoHelp();
-    void InitControls();
-private:
-    Clone();
-    GameDataSetup();
-    m3d::ui::CheckWnd *m_checkAutoHelp;
-    m3d::ui::SliderWnd *m_sliderNumReplies;
-    m3d::ui::ButtonWnd *m_btnNumRepliesPrev;
-    m3d::ui::ButtonWnd *m_btnNumRepliesNext;
-    m3d::ui::ComboBoxWnd *m_cbGameDifficulty;
-    int m_sliderNumRepliesBlocked;
-    int m_cbGameDifficultyBlocked;
-    GameOptionsWnd::AuxInfo m_aif;
 };

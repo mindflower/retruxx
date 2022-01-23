@@ -1,40 +1,68 @@
 #pragma once
+#include <core/ref_ptr.h>
+#include <server/relationship.h>
+#include <ui/ui.h>
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ImageWnd;
+    }
+}
+
+class BossIndicatorWnd;
+class SpeedometerWnd;
+class IgrokaMochatWnd;
+class MainCursorWnd;
+class TargetInfoWnd;
+class CounterWnd;
+class FadingMsgList;
+class WeaponInfoList;
+class DamageInfoWnd;
+class RadarWnd;
+
+namespace ai
+{
+    class Obj;
+}
 
 class MainGameInterfaceWnd :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * GetBaseClass();
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndNearbyChestsIcoName;
+        CStr m_wndNearbyTownIcoName;
+    };
+
+public:
+    static m3d::Class * GetBaseClass();
     int GetBossId() const ;
-    static struct m3d::Class * __fastcall HelpInGetBaseClass();
     void CheckAndShowTargetInfoWnd(bool);
-    static class m3d::Object * __fastcall HelpInCreateObject();
-    virtual class m3d::Object * Clone();
-    virtual class m3d::Object * HelpInClone();
-    class ai::Obj const * GetBoss() const ;
-    virtual struct m3d::Class * HelpInGetClass() const ;
+    virtual m3d::Object * Clone();
+    ai::Obj const * GetBoss() const ;
     void CheckAndShowCounterWnd();
-    virtual HelpIn~HelpInMainGameInterfaceWnd();
     void CheckAndShowMainCursorWnd();
     int SetupForBoss(int);
     virtual ~MainGameInterfaceWnd();
+
 protected:
     MainGameInterfaceWnd();
-    MainGameInterfaceWnd(class MainGameInterfaceWnd const &);
-    virtual int HelpInGameDataSetup();
+    MainGameInterfaceWnd(MainGameInterfaceWnd const &);
     void CheckAndShowNearbyTownIco();
     virtual int GameDataSetup();
-    HelpInHelpInMainGameInterfaceWnd(class HelpInMainGameInterfaceWnd const &);
-    HelpInHelpInMainGameInterfaceWnd();
     virtual int OnBeforeAddToWndStation();
     void CheckAndShowNearbyChestsIco();
-    virtual int HelpInOnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
     void OnBossModeChanged();
     virtual int OnAfterRemoveFromWndStation();
-    void HelpInHideHelp();
-    virtual int GameDataSave(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *);
+    virtual int GameDataSave(m3d::cmn::XmlFile *, m3d::cmn::XmlNode *);
     void OnTownRuined(void *);
     void UpdateInfoContour();
-    void HelpInShowHelp(enum HelpManager::HelpId);
     void HideContour(int);
     void ShowContour(int,unsigned int,float);
     void UpdateContours();
@@ -46,11 +74,9 @@ protected:
     int GetCapturedObjId() const ;
     void ClearContours();
     void CheckAndShowBossIndicator();
-    virtual int HelpInOnBeforeAddToWndStation();
-    virtual int GameDataLoad(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *);
+    virtual int GameDataLoad(m3d::cmn::XmlFile *, m3d::cmn::XmlNode *);
     virtual int GameDataUpdate(void *,int);
     virtual int OnBeforeRemoveFromWndStation();
-    enum HelpManager::HelpId HelpInGetHelpIdByCtrlId(int) const ;
     void UpdateBossMode();
     virtual int GameDataClear(bool);
     void UpdateCapturedContour();
@@ -59,9 +85,11 @@ protected:
     void ClearInfoContour();
     bool IsInBossMode() const ;
     void OnNewFrame();
+
+public:
+    RT_CLASS_DECLARE(MainGameInterfaceWnd);
+
 private:
-    HelpInCreateObject();
-    HelpInGetClass();
     ref_ptr<RadarWnd> m_wndRadar;
     ref_ptr<DamageInfoWnd> m_wndDamageInfo;
     ref_ptr<WeaponInfoList> m_wndWeaponInfoList;

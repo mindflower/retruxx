@@ -1,28 +1,36 @@
 #pragma once
+#include <game/uimisc/guihelper.h>
+#include <game/uimisc/navpoint.h>
+#include <ui/button.h>
 
 class NavPointButton :  public m3d::ui::ButtonWnd
 {
 public:
-    int SetupForQuest(enum help::QuestType,int);
-    virtual class m3d::Object * Clone();
+    int SetupForQuest(help::QuestType,int);
+    virtual m3d::Object * Clone();
     virtual ~NavPointButton();
-    static class m3d::Object * CreateObject();
-    static struct m3d::Class * GetBaseClass();
-    virtual int Create(CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int);
+    static m3d::Object * CreateObject();
+    static m3d::Class * GetBaseClass();
+    virtual int Create(CStr const &,unsigned int, BoundsBase<float> const &,unsigned int);
     int GetNavPointId() const ;
-    enum NavPoint::NavPointType GetNavPointType() const ;
-    static CStr __fastcall NavPointType2Str(enum NavPoint::NavPointType);
-    virtual struct m3d::Class * GetClass() const ;
+    NavPoint::NavPointType GetNavPointType() const ;
+    static CStr __fastcall NavPointType2Str(NavPoint::NavPointType);
+    virtual m3d::Class * GetClass() const ;
+
 protected:
     NavPointButton();
-    NavPointButton(class NavPointButton const &);
+    NavPointButton(NavPointButton const &);
     void FullUpdate();
-    class NavPoint const * GetNavPoint() const ;
+    NavPoint const * GetNavPoint() const ;
     void UpdateNpTexture();
-    enum NavPoint::NavPointType GetNavPointTypeByQuest(enum help::QuestType,int) const ;
+    NavPoint::NavPointType GetNavPointTypeByQuest(help::QuestType,int) const ;
     virtual int GameDataClear(bool);
-    virtual void OnNcPaint(struct m3d::ui::DrawInfo const &,unsigned int);
+    virtual void OnNcPaint(m3d::ui::DrawInfo const &,unsigned int);
     void UpdateTooltip();
+
+public:
+    RT_CLASS_DECLARE(NavPointButton);
+
 private:
     int m_npId;
     NavPoint::NavPointType m_npType;

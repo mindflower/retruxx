@@ -1,32 +1,60 @@
 #pragma once
+#include <ui/wnd.h>
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+        class LineWnd;
+    }
+}
 
 class MsgBox :  public m3d::ui::ModalWnd
 {
 public:
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndTitleName;
+        CStr m_wndMsgName;
+        CStr m_wndUpLineName;
+        CStr m_wndDownLineName;
+        CStr m_buttonName;
+        CStr m_idioticEmbossName;
+        CStr m_wndFrameName;
+        CStr m_wndBgName;
+    };
+
+public:
     int CreateMsgBox(CStr const &,CStr const &,unsigned int);
-    virtual struct m3d::Class * GetClass() const ;
-    virtual class m3d::Object * Clone();
+    virtual m3d::Class * GetClass() const ;
+    virtual m3d::Object * Clone();
     virtual ~MsgBox();
-    static struct m3d::Class * GetBaseClass();
-    static class m3d::Object * CreateObject();
+    static m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+
 protected:
-    void SetIdioticEmbossesBounds(class PointBase<float> const &);
-    MsgBox(class MsgBox const &);
+    void SetIdioticEmbossesBounds(PointBase<float> const &);
+    MsgBox(MsgBox const &);
     MsgBox();
     void AddTitle();
-    void SetMsgBounds(class PointBase<float> const &);
+    void SetMsgBounds(PointBase<float> const &);
     void AddMsg();
     void AddLines();
     void SetDownLineBounds();
-    class PointBase<float> CalcSummaryButtonsSize() const ;
+    PointBase<float> CalcSummaryButtonsSize() const ;
     void Clear();
-    class PointBase<float> CalcTitleSize() const ;
-    class PointBase<float> CalcSummaryIdioticEmbossesSize() const ;
+    PointBase<float> CalcTitleSize() const ;
+    PointBase<float> CalcSummaryIdioticEmbossesSize() const ;
     void SetUpLineBounds();
     void AddMiscFignya();
-    void SetTitleBounds(class PointBase<float> const &);
+    void SetTitleBounds(PointBase<float> const &);
     virtual int CloseModal(int);
-    class PointBase<float> CalcMsgSize() const ;
+    PointBase<float> CalcMsgSize() const ;
     void ClearPattern();
     void RecalcLayot();
     void CenterOnScreen();
@@ -35,9 +63,13 @@ protected:
     void AddButtonsAndIdioticEmbosses();
     void CalcSelfHeight();
     int LoadPattern();
-    void SetButtonsBounds(class PointBase<float> const &);
+    void SetButtonsBounds(PointBase<float> const &);
     virtual int GameDataSetup();
     int CreateFromPattern();
+
+public:
+    RT_CLASS_DECLARE(MsgBox);
+
 private:
     m3d::ui::Wnd *m_wndTitle;
     m3d::ui::Wnd *m_wndMsg;

@@ -1,4 +1,13 @@
 #pragma once
+#include <ui/wnd.h>
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+    }
+}
 
 class DemoSplashWnd : public m3d::ui::ModalWnd
 {

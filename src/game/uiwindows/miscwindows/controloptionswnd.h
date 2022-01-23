@@ -1,17 +1,46 @@
 #pragma once
+#include <core/ref_ptr.h>
+#include <ui/ui.h>
+
+class BindKeysWnd;
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+        class CheckWnd;
+        class SliderWnd;
+    }
+}
 
 class ControlOptionsWnd :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * GetBaseClass();
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_sliderMouseSensitivityName;
+        CStr m_btnMouseSensitivityPrevName;
+        CStr m_btnMouseSensitivityNextName;
+        CStr m_checkMouseFlipYName;
+        CStr m_checkMouseFlipXName;
+    };
+
+public:
+    static m3d::Class * GetBaseClass();
     int ApplyChanges(bool);
-    virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
     virtual ~ControlOptionsWnd();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
+
 protected:
-    void OnCheckMouseFlipYClick(class m3d::AIParam const &);
-    void OnCheckMouseFlipXClick(class m3d::AIParam const &);
+    void OnCheckMouseFlipYClick(m3d::AIParam const &);
+    void OnCheckMouseFlipXClick(m3d::AIParam const &);
     void UpdateControls();
     void UpdateMouseFlipYControls();
     void InitMouseSensitivityControls();
@@ -20,18 +49,22 @@ protected:
     void ApplyMouseFlipX();
     void InitMouseFlipXControls();
     void InitMouseFlipYControls();
-    ControlOptionsWnd(class ControlOptionsWnd const &);
+    ControlOptionsWnd(ControlOptionsWnd const &);
     ControlOptionsWnd();
-    void OnBtnMouseSensitivityNextClick(class m3d::AIParam const &);
+    void OnBtnMouseSensitivityNextClick(m3d::AIParam const &);
     virtual int GameDataSetup();
-    void OnBtnMouseSensitivityPrevClick(class m3d::AIParam const &);
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    void OnBtnMouseSensitivityPrevClick(m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
     void UpdateMouseSensitivityControls();
     virtual int OnBeforeAddToWndStation();
     void ApplyMouseSensitivity();
     void UpdateMouseSensitivityPrevNextButtonsState();
     void InitControls();
-    void OnSliderMouseSensitivityChange(class m3d::AIParam const &);
+    void OnSliderMouseSensitivityChange(m3d::AIParam const &);
+
+public:
+    RT_CLASS_DECLARE(ControlOptionsWnd);
+
 private:
     m3d::ui::SliderWnd *m_sliderMouseSensitivity;
     m3d::ui::ButtonWnd *m_btnMouseSensitivityPrev;

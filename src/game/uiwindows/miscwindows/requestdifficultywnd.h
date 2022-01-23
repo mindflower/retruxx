@@ -1,15 +1,35 @@
 #pragma once
+#include <ui/wnd.h>
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ComboBoxWnd;
+    }
+}
 
 class RequestDifficultyWnd :  public m3d::ui::ModalWnd
 {
 public:
-    virtual struct m3d::Class * GetClass() const ;
-    virtual class m3d::Object * Clone();
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_cbDifficultyLevelsName;
+    };
+
+public:
+    virtual m3d::Class * GetClass() const ;
+    virtual m3d::Object * Clone();
     virtual ~RequestDifficultyWnd();
-    static class m3d::Object * CreateObject();
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+    static m3d::Class * GetBaseClass();
+
 protected:
-    RequestDifficultyWnd(class RequestDifficultyWnd const &);
+    RequestDifficultyWnd(RequestDifficultyWnd const &);
     RequestDifficultyWnd();
     void FillDifficultyLevelsList();
     virtual int OnKey(unsigned short,unsigned char,unsigned int);
@@ -18,6 +38,10 @@ protected:
     void ApplyDifficultyLevel();
     virtual int OnBeforeAddToWndStation();
     virtual int GameDataSetup();
+
+public:
+    RT_CLASS_DECLARE(RequestDifficultyWnd);
+
 private:
     m3d::ui::ComboBoxWnd *m_cbDifficultyLevels;
     RequestDifficultyWnd::AuxInfo m_aif;

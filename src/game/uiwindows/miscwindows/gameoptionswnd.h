@@ -1,29 +1,56 @@
 #pragma once
+#include <ui/ui.h>
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ComboBoxWnd;
+        class SliderWnd;
+        class ButtonWnd;
+        class CheckWnd;
+    }
+}
 
 class GameOptionsWnd :  public m3d::ui::Wnd
 {
 public:
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_checkAutoHelpName;
+        CStr m_sliderNumRepliesName;
+        CStr m_btnNumRepliesPrevName;
+        CStr m_btnNumRepliesNextName;
+        CStr m_cbGameDifficultyName;
+    };
+
+public:
     virtual ~GameOptionsWnd();
-    static struct m3d::Class * GetBaseClass();
-    static class m3d::Object * CreateObject();
-    virtual class m3d::Object * Clone();
-    virtual struct m3d::Class * GetClass() const ;
+    static m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
+    virtual m3d::Class * GetClass() const ;
+
 protected:
     void InitNumRepliesControls();
     void ApplyNumReplies();
     void UpdateControls();
     GameOptionsWnd();
-    GameOptionsWnd(class GameOptionsWnd const &);
+    GameOptionsWnd(GameOptionsWnd const &);
     void InitAutoHelpControls();
-    void OnSliderNumRepliesChange(class m3d::AIParam const &);
-    void OnCheckAutoHelpClick(class m3d::AIParam const &);
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    void OnSliderNumRepliesChange(m3d::AIParam const &);
+    void OnCheckAutoHelpClick(m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
     void UpdateNumRepliesControls();
     void ApplyGameDifficulty();
     void UpdateNumRepliesPrevNextButtonsState();
-    void OnBtnNumRepliesNextClick(class m3d::AIParam const &);
-    void OnCbGameDifficultyChange(class m3d::AIParam const &);
-    void OnBtnNumRepliesPrevClick(class m3d::AIParam const &);
+    void OnBtnNumRepliesNextClick(m3d::AIParam const &);
+    void OnCbGameDifficultyChange(m3d::AIParam const &);
+    void OnBtnNumRepliesPrevClick(m3d::AIParam const &);
     void InitGameDifficultyControls();
     virtual int GameDataSetup();
     void UpdateAutoHelpControls();
@@ -31,9 +58,11 @@ protected:
     void UpdateGameDifficultyControls();
     void ApplyAutoHelp();
     void InitControls();
+
+public:
+    RT_CLASS_DECLARE(GameOptionsWnd);
+
 private:
-    Clone();
-    GameDataSetup();
     m3d::ui::CheckWnd *m_checkAutoHelp;
     m3d::ui::SliderWnd *m_sliderNumReplies;
     m3d::ui::ButtonWnd *m_btnNumRepliesPrev;

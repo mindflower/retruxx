@@ -1,19 +1,73 @@
 #pragma once
+#include <core/console/cvar.h>
+#include <ui/wnd.h>
+
+class ItemModelWnd;
 
 class CreditsWnd :  public m3d::ui::ModalWnd
 {
 public:
+    class PageInfo
+    {
+    public:
+        PageInfo();
+
+    private:
+        CStr m_text;
+        float m_fontSize;
+        CStr m_modelName;
+        unsigned int m_modelSkin;
+        unsigned int m_modelCfg;
+        float m_showTime;
+    };
+
+    class Pointer
+    {
+    public:
+        Pointer();
+        void Update(float, float, bool);
+        void Draw(m3d::ui::DrawInfo const&);
+        ~Pointer();
+
+    private:
+        void Clear(void);
+        void Init(void);
+
+    private:
+        float m_minAngle;
+        float m_maxAngle;
+        float m_curAngle;
+        PointBase<float> m_texSz;
+        PointBase<float> m_rotationCenter;
+        PointBase<float> m_rotationScreenCenter;
+        CStr m_texId;
+        m3d::rend::TexHandle m_texture;
+    };
+
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndTextName;
+        CStr m_wndPortraitName;
+        CStr m_texIdBg;
+    };
+
+public:
     virtual ~CreditsWnd();
-    virtual struct m3d::Class * GetClass() const ;
-    virtual class m3d::Object * Clone();
-    static struct m3d::Class * GetBaseClass();
-    static class m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+    virtual m3d::Object * Clone();
+    static m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+
 protected:
     virtual int OnAfterRemoveFromWndStation();
     void StartShowingPages();
     void UpdateStartTime();
     CreditsWnd();
-    CreditsWnd(class CreditsWnd const &);
+    CreditsWnd(CreditsWnd const &);
     void UpdateBg();
     virtual int OnKey(unsigned short,unsigned char,unsigned int);
     void UpdatePortrait();
@@ -35,7 +89,7 @@ protected:
     void ClearPages();
     void UpdatePointer();
     void PlayMusic();
-    virtual int OnPaint(struct m3d::ui::DrawInfo const &);
+    virtual int OnPaint(m3d::ui::DrawInfo const &);
     virtual int GameDataUpdate(void *,int);
     void StopMusic();
     void Reset();
@@ -46,15 +100,11 @@ protected:
     void CheckAndShowNextPage();
     void PlayAmbientSound();
     void StopAmbientSound();
+
+public:
+    RT_CLASS_DECLARE(CreditsWnd);
+
 private:
-    std::_Copy_backward_opt<PageInfo * *,PageInfo * *>(PageInfo * *,PageInfo * *,PageInfo * *,std::_Scalar_ptr_iterator_tag);
-    std::_Ptr_cat<PageInfo>(PageInfo * *,PageInfo * *);
-    std::copy_backward<PageInfo * *,PageInfo * *>(PageInfo * *,PageInfo * *,PageInfo * *);
-    std::fill<PageInfo * *,PageInfo *>(PageInfo * *,PageInfo * *,PageInfo * const &);
-    std::_Allocate<PageInfo *>(uint,PageInfo * *);
-    std::_Uninit_copy<PageInfo *,PageInfo *>(PageInfo * *,PageInfo * *,PageInfo * *,std::allocator<PageInfo *> &,std::_Scalar_ptr_iterator_tag);
-    std::allocator<PageInfo *>::allocator<PageInfo *>();
-    std::allocator<PageInfo *>::allocator<PageInfo *>();
     m3d::ui::Wnd *m_wndText;
     ItemModelWnd *m_wndPortrait;
     m3d::rend::TexHandle m_texBgShow;

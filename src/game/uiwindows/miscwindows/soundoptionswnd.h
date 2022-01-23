@@ -1,42 +1,75 @@
 #pragma once
+#include <ui/ui.h>
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+        class SliderWnd;
+    }
+}
 
 class SoundOptionsWnd :  public m3d::ui::Wnd
 {
 public:
-    virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * CreateObject();
-    virtual class m3d::Object * Clone();
-    static struct m3d::Class * GetBaseClass();
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_sliderMusicVolumeName;
+        CStr m_sliderEffectsVolumeName;
+        CStr m_sliderSpeakVolumeName;
+        CStr m_btnMusicVolumePrevName;
+        CStr m_btnMusicVolumeNextName;
+        CStr m_btnEffectsVolumePrevName;
+        CStr m_btnEffectsVolumeNextName;
+        CStr m_btnSpeakVolumePrevName;
+        CStr m_btnSpeakVolumeNextName;
+    };
+
+public:
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
+    static m3d::Class * GetBaseClass();
     virtual ~SoundOptionsWnd();
+
 protected:
     virtual int OnBeforeAddToWndStation();
     void InitControls();
     void InitEffectsVolumeControls();
     void ApplyEffectsVolume();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
-    void OnBtnMusicVolumeNextClick(class m3d::AIParam const &);
-    void OnBtnMusicVolumePrevClick(class m3d::AIParam const &);
-    void OnBtnEffectsVolumePrevClick(class m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
+    void OnBtnMusicVolumeNextClick(m3d::AIParam const &);
+    void OnBtnMusicVolumePrevClick(m3d::AIParam const &);
+    void OnBtnEffectsVolumePrevClick(m3d::AIParam const &);
     void ApplySpeakVolume();
     void UpdateControls();
-    void OnBtnEffectsVolumeNextClick(class m3d::AIParam const &);
+    void OnBtnEffectsVolumeNextClick(m3d::AIParam const &);
     void UpdateMusicVolumeControls();
     void UpdateMusicVolumePrevNextButtonsState();
-    void OnSliderSpeakVolumeChange(class m3d::AIParam const &);
+    void OnSliderSpeakVolumeChange(m3d::AIParam const &);
     void UpdateSpeakVolumeControls();
-    void OnSliderMusicVolumeChange(class m3d::AIParam const &);
+    void OnSliderMusicVolumeChange(m3d::AIParam const &);
     void UpdateSpeakVolumePrevNextButtonsState();
     void ApplyMusicVolume();
-    void OnBtnSpeakVolumePrevClick(class m3d::AIParam const &);
-    void OnBtnSpeakVolumeNextClick(class m3d::AIParam const &);
+    void OnBtnSpeakVolumePrevClick(m3d::AIParam const &);
+    void OnBtnSpeakVolumeNextClick(m3d::AIParam const &);
     void UpdateEffectsVolumePrevNextButtonsState();
     void InitMusicVolumeControls();
-    void OnSliderEffectsVolumeChange(class m3d::AIParam const &);
+    void OnSliderEffectsVolumeChange(m3d::AIParam const &);
     void InitSpeakVolumeControls();
     virtual int GameDataSetup();
-    SoundOptionsWnd(class SoundOptionsWnd const &);
+    SoundOptionsWnd(SoundOptionsWnd const &);
     SoundOptionsWnd();
     void UpdateEffectsVolumeControls();
+
+public:
+    RT_CLASS_DECLARE(SoundOptionsWnd);
+
 private:
     m3d::ui::SliderWnd *m_sliderMusicVolume;
     m3d::ui::SliderWnd *m_sliderEffectsVolume;

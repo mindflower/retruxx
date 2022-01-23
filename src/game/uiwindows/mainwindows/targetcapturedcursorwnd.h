@@ -1,16 +1,18 @@
 #pragma once
+#include "targetcursorwnd.h"
 
 class TargetCapturedCursorWnd :  public TargetCursorWnd
 {
 public:
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
-    static struct m3d::Class * GetBaseClass();
-    virtual class m3d::Object * Clone();
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Class * GetBaseClass();
+    virtual m3d::Object * Clone();
     virtual ~TargetCapturedCursorWnd();
+
 protected:
     virtual void OnNewFrame();
-    TargetCapturedCursorWnd(class TargetCapturedCursorWnd const &);
+    TargetCapturedCursorWnd(TargetCapturedCursorWnd const &);
     TargetCapturedCursorWnd();
     bool bVisible() const ;
     virtual int GetTargetObjId() const ;
@@ -18,6 +20,10 @@ protected:
     void UpdateCaptureTex();
     virtual void Show(bool);
     virtual int GameDataSetup();
+
+public:
+    RT_CLASS_DECLARE(TargetCapturedCursorWnd);
+
 private:
     m3d::rend::TexHandle m_texCapture;
     float m_texAngle;

@@ -33,6 +33,7 @@
 #include <game/uiwindows/charwindows/iteminfownd.h>
 #include <game/uiwindows/charwindows/izvratrepositorywnd.h>
 #include <game/uiwindows/charwindows/motherpanel.h>
+#include <game/uiwindows/charwindows/motherpaneltabbutton.h>
 #include <game/uiwindows/charwindows/playermoneywnd.h>
 #include <game/uiwindows/charwindows/playervehiclewnd.h>
 #include <game/uiwindows/charwindows/rechargelist.h>
@@ -55,32 +56,55 @@
 #include <game/uiwindows/commonwindows/complexmodelwnd.h>
 #include <game/uiwindows/commonwindows/contextmodelwnd.h>
 #include <game/uiwindows/commonwindows/itemmodelwnd.h>
+#include <game/uiwindows/commonwindows/msgbox.h>
+#include <game/uiwindows/mainwindows/bossindicatorwnd.h>
+#include <game/uiwindows/mainwindows/counterwnd.h>
 #include <game/uiwindows/mainwindows/damageinfownd.h>
 #include <game/uiwindows/mainwindows/durabilityindicatorinmaininterfacewnd.h>
 #include <game/uiwindows/mainwindows/durabilityindicatorwnd.h>
+#include <game/uiwindows/mainwindows/electronicdigitalwnd.h>
 #include <game/uiwindows/mainwindows/fadingmsg.h>
 #include <game/uiwindows/mainwindows/fuelindicatorinmaininterfacewnd.h>
 #include <game/uiwindows/mainwindows/fuelindicatorwnd.h>
 #include <game/uiwindows/mainwindows/healthindicatorinmaininterfacewnd.h>
 #include <game/uiwindows/mainwindows/healthindicatorwnd.h>
 #include <game/uiwindows/mainwindows/igrokamochatwnd.h>
+#include <game/uiwindows/mainwindows/maincursorwnd.h>
+#include <game/uiwindows/mainwindows/maingameinterfacewnd.h>
 #include <game/uiwindows/mainwindows/radarwnd.h>
 #include <game/uiwindows/mainwindows/smartcursorwnd.h>
 #include <game/uiwindows/mainwindows/speedometerwnd.h>
+#include <game/uiwindows/mainwindows/targetcapturedcursorwnd.h>
+#include <game/uiwindows/mainwindows/targetcapturingcursorwnd.h>
+#include <game/uiwindows/mainwindows/targetcursorwnd.h>
 #include <game/uiwindows/mainwindows/targetinfownd.h>
+#include <game/uiwindows/mainwindows/twinklinglampwnd.h>
 #include <game/uiwindows/mainwindows/vehicleinfopanel.h>
 #include <game/uiwindows/mainwindows/weaponinfolist.h>
+#include <game/uiwindows/miscwindows/autoscrolltextwnd.h>
 #include <game/uiwindows/miscwindows/bindkeyswnd.h>
 #include <game/uiwindows/miscwindows/changeprofilewnd.h>
 #include <game/uiwindows/miscwindows/cinemafadepanel.h>
 #include <game/uiwindows/miscwindows/cinemapanel.h>
+#include <game/uiwindows/miscwindows/controloptionswnd.h>
+#include <game/uiwindows/miscwindows/creditswnd.h>
+#include <game/uiwindows/miscwindows/demosplashwnd.h>
+#include <game/uiwindows/miscwindows/fadepanelbeforenextmap.h>
 #include <game/uiwindows/miscwindows/gamemenu.h>
+#include <game/uiwindows/miscwindows/gameoptionswnd.h>
+#include <game/uiwindows/miscwindows/helpinmaingameinterfacewnd.h>
+#include <game/uiwindows/miscwindows/helpsimplemsgwnd.h>
+#include <game/uiwindows/miscwindows/helpwnd.h>
 #include <game/uiwindows/miscwindows/loadwnd.h>
 #include <game/uiwindows/miscwindows/lswnd.h>
 #include <game/uiwindows/miscwindows/mainmenu.h>
 #include <game/uiwindows/miscwindows/newprofilewnd.h>
+#include <game/uiwindows/miscwindows/optionswnd.h>
+#include <game/uiwindows/miscwindows/requestdifficultywnd.h>
 #include <game/uiwindows/miscwindows/savewnd.h>
+#include <game/uiwindows/miscwindows/soundoptionswnd.h>
 #include <game/uiwindows/miscwindows/splashwnd.h>
+#include <game/uiwindows/miscwindows/videooptionswnd.h>
 #include <game/uiwindows/palmwindows/bookswnd.h>
 #include <game/uiwindows/palmwindows/encyclopaediawnd.h>
 #include <game/uiwindows/palmwindows/globalmapwnd.h>
@@ -92,6 +116,7 @@
 #include <game/uiwindows/palmwindows/mapinfopanel.h>
 #include <game/uiwindows/palmwindows/mapmarkwnd.h>
 #include <game/uiwindows/palmwindows/mapselllist.h>
+#include <game/uiwindows/palmwindows/navpointbutton.h>
 #include <game/uiwindows/palmwindows/questdizwnd.h>
 #include <game/uiwindows/palmwindows/questitem.h>
 #include <game/uiwindows/palmwindows/questitemlist.h>
@@ -903,25 +928,25 @@ void TruxxUiManager::GUI_RegisterClasses()
     m3d::g_Kernel->AddClass(&WareWnd::m_classWareWnd);
     m3d::g_Kernel->AddClass(&WareList::m_classWareList);
     m3d::g_Kernel->AddClass(&WareItem::m_classWareItem);
-    //m3d::g_Kernel->AddClass(&MotherPanelTabButton::m_classMotherPanelTabButton);
-    //m3d::g_Kernel->AddClass(&MainCursorWnd::m_classMainCursorWnd);
-    //m3d::g_Kernel->AddClass(&TargetCursorWnd::m_classTargetCursorWnd);
-    //m3d::g_Kernel->AddClass(&TargetCapturingCursorWnd::m_classTargetCapturingCursorWnd);
-    //m3d::g_Kernel->AddClass(&TargetCapturedCursorWnd::m_classTargetCapturedCursorWnd);
-    //m3d::g_Kernel->AddClass(&CounterWnd::m_classCounterWnd);
-    //m3d::g_Kernel->AddClass(&OptionsWnd::m_classOptionsWnd);
-    //m3d::g_Kernel->AddClass(&OptionTabButton::m_classOptionTabButton);
-    //m3d::g_Kernel->AddClass(&VideoOptionsWnd::m_classVideoOptionsWnd);
-    //m3d::g_Kernel->AddClass(&SoundOptionsWnd::m_classSoundOptionsWnd);
-    //m3d::g_Kernel->AddClass(&GameOptionsWnd::m_classGameOptionsWnd);`
-    //m3d::g_Kernel->AddClass(&ControlOptionsWnd::m_classControlOptionsWnd);
-    //m3d::g_Kernel->AddClass(&NavPointButton::m_classNavPointButton);
+    m3d::g_Kernel->AddClass(&MotherPanelTabButton::m_classMotherPanelTabButton);
+    m3d::g_Kernel->AddClass(&MainCursorWnd::m_classMainCursorWnd);
+    m3d::g_Kernel->AddClass(&TargetCursorWnd::m_classTargetCursorWnd);
+    m3d::g_Kernel->AddClass(&TargetCapturingCursorWnd::m_classTargetCapturingCursorWnd);
+    m3d::g_Kernel->AddClass(&TargetCapturedCursorWnd::m_classTargetCapturedCursorWnd);
+    m3d::g_Kernel->AddClass(&CounterWnd::m_classCounterWnd);
+    m3d::g_Kernel->AddClass(&OptionsWnd::m_classOptionsWnd);
+    m3d::g_Kernel->AddClass(&OptionTabButton::m_classOptionTabButton);
+    m3d::g_Kernel->AddClass(&VideoOptionsWnd::m_classVideoOptionsWnd);
+    m3d::g_Kernel->AddClass(&SoundOptionsWnd::m_classSoundOptionsWnd);
+    m3d::g_Kernel->AddClass(&GameOptionsWnd::m_classGameOptionsWnd);
+    m3d::g_Kernel->AddClass(&ControlOptionsWnd::m_classControlOptionsWnd);
+    m3d::g_Kernel->AddClass(&NavPointButton::m_classNavPointButton);
     m3d::g_Kernel->AddClass(&WeaponGroupManager::m_classWeaponGroupManager);
     m3d::g_Kernel->AddClass(&WeaponGroup::m_classWeaponGroup);
-    //m3d::g_Kernel->AddClass(&GameMenuWnd::m_classGameMenuWnd);
-    //m3d::g_Kernel->AddClass(&MainGameInterfaceWnd::m_classMainGameInterfaceWnd);
-    //m3d::g_Kernel->AddClass(&ElectronicDigitalWnd::m_classElectronicDigitalWnd);
-    //m3d::g_Kernel->AddClass(&TwinklingLampWnd::m_classTwinklingLampWnd);
+    m3d::g_Kernel->AddClass(&GameMenuWnd::m_classGameMenuWnd);
+    m3d::g_Kernel->AddClass(&MainGameInterfaceWnd::m_classMainGameInterfaceWnd);
+    m3d::g_Kernel->AddClass(&ElectronicDigitalWnd::m_classElectronicDigitalWnd);
+    m3d::g_Kernel->AddClass(&TwinklingLampWnd::m_classTwinklingLampWnd);
     m3d::g_Kernel->AddClass(&CharacteristicsWnd::m_classCharacteristicsWnd);
     m3d::g_Kernel->AddClass(&CBCharacteristicsWnd::m_classCBCharacteristicsWnd);
     m3d::g_Kernel->AddClass(&CabinCharacteristicsWnd::m_classCabinCharacteristicsWnd);
@@ -931,21 +956,21 @@ void TruxxUiManager::GUI_RegisterClasses()
     m3d::g_Kernel->AddClass(&WeaponSlotList::m_classWeaponSlotList);
     m3d::g_Kernel->AddClass(&WeaponGroupButton::m_classWeaponGroupButton);
     m3d::g_Kernel->AddClass(&WeaponGroupButtonList::m_classWeaponGroupButtonList);
-    //m3d::g_Kernel->AddClass(&DemoSplashWnd::m_classDemoSplashWnd);
-    //m3d::g_Kernel->AddClass(&CreditsWnd::m_classCreditsWnd);
-    //m3d::g_Kernel->AddClass(&FadePanelBeforeNextMap::m_classFadePanelBeforeNextMap);
-    //m3d::g_Kernel->AddClass(&LevelConnectionsWnd::m_classLevelConnectionsWnd);
+    m3d::g_Kernel->AddClass(&DemoSplashWnd::m_classDemoSplashWnd);
+    m3d::g_Kernel->AddClass(&CreditsWnd::m_classCreditsWnd);
+    m3d::g_Kernel->AddClass(&FadePanelBeforeNextMap::m_classFadePanelBeforeNextMap);
+    m3d::g_Kernel->AddClass(&LevelConnectionsWnd::m_classLevelConnectionsWnd);
     m3d::g_Kernel->AddClass(&HelpManager::m_classHelpManager);
-    //m3d::g_Kernel->AddClass(&HelpWnd::m_classHelpWnd);
-    //m3d::g_Kernel->AddClass(&HelpSimpleMsgWnd::m_classHelpSimpleMsgWnd);
+    m3d::g_Kernel->AddClass(&HelpWnd::m_classHelpWnd);
+    m3d::g_Kernel->AddClass(&HelpSimpleMsgWnd::m_classHelpSimpleMsgWnd);
     m3d::g_Kernel->AddClass(&ResourceInfo::m_classResourceInfo);
     m3d::g_Kernel->AddClass(&WindowResourceInfo::m_classWindowResourceInfo);
     m3d::g_Kernel->AddClass(&IcoResourceInfo::m_classIcoResourceInfo);
-    //m3d::g_Kernel->AddClass(&AutoScrollTextWnd::m_classAutoScrollTextWnd);
-    //m3d::g_Kernel->AddClass(&HelpInMainGameInterfaceWnd::m_classHelpInMainGameInterfaceWnd);
-    //m3d::g_Kernel->AddClass(&MsgBox::m_classMsgBox);
-    //m3d::g_Kernel->AddClass(&BossIndicatorWnd::m_classBossIndicatorWnd);
-    //m3d::g_Kernel->AddClass(&RequestDifficultyWnd::m_classRequestDifficultyWnd);
+    m3d::g_Kernel->AddClass(&AutoScrollTextWnd::m_classAutoScrollTextWnd);
+    m3d::g_Kernel->AddClass(&HelpInMainGameInterfaceWnd::m_classHelpInMainGameInterfaceWnd);
+    m3d::g_Kernel->AddClass(&MsgBox::m_classMsgBox);
+    m3d::g_Kernel->AddClass(&BossIndicatorWnd::m_classBossIndicatorWnd);
+    m3d::g_Kernel->AddClass(&RequestDifficultyWnd::m_classRequestDifficultyWnd);
 }
 
 void TruxxUiManager::OnChangeGameMenuMode()

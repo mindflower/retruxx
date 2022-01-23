@@ -936,6 +936,7 @@
     <ClInclude Include="src\game\uiwindows\mainwindows\speedometerwnd.h" />
     <ClInclude Include="src\game\uiwindows\mainwindows\targetcapturedcursorwnd.h" />
     <ClInclude Include="src\game\uiwindows\mainwindows\targetcapturingcursorwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\targetcursorwnd.h" />
     <ClInclude Include="src\game\uiwindows\mainwindows\targetinfocursorwnd.h" />
     <ClInclude Include="src\game\uiwindows\mainwindows\targetinfownd.h" />
     <ClInclude Include="src\game\uiwindows\mainwindows\twinklinglampwnd.h" />

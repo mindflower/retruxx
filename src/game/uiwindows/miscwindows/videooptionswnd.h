@@ -1,4 +1,16 @@
 #pragma once
+#include <ui/msgbox.h>
+#include <ui/ui.h>
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+        class SliderWnd;
+        class ComboBoxWnd;
+    }
+}
 
 class VideoOptionsWnd :  public m3d::ui::Wnd
 {
@@ -6,9 +18,9 @@ public:
     class ShadowSettings
     {
     public:
-        bool operator==(struct ShadowSettings const&) const;
+        bool operator==(ShadowSettings const&) const;
         ShadowSettings(int, int, float, float);
-    protected:
+
     private:
         int shadowTexSize;
         int detShadowTexSize;
@@ -16,116 +28,219 @@ public:
         float detailRadius;
     };
 
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_cbResolutionName;
+        CStr m_sliderGammaName;
+        CStr m_cbGraphicQualityName;
+        CStr m_sliderFarDistanceName;
+        CStr m_cbGrassName;
+        CStr m_cbShadowsName;
+        CStr m_cbWaterQualityName;
+        CStr m_cbAntialiasingName;
+        CStr m_cbFiltrationName;
+        CStr m_cbBlumName;
+        CStr m_btnGammaNextName;
+        CStr m_btnGammaPrevName;
+        CStr m_btnFarDistancePrevName;
+        CStr m_btnFarDistanceNextName;
+    };
+
+    enum Antialiasing
+    {
+        ANTIALIASING_NONE = 0x0,
+        ANTIALIASING_X2 = 0x1,
+        ANTIALIASING_X4 = 0x2,
+        ANTIALIASING_X8 = 0x3,
+        ANTIALIASING_X16 = 0x4,
+        ANTIALIASING_NUM_ANTIALIASINGS = 0x5,
+        ANTIALIASING_INVALID = 0x5,
+    };
+
+    enum Filtration
+    {
+        FILTRATION_BILINEAR = 0x0,
+        FILTRATION_TRILINEAR = 0x1,
+        FILTRATION_ANISOTROP = 0x2,
+        FILTRATION_NUM_FILTRATIONS = 0x3,
+        FILTRATION_INVALID = 0x3,
+    };
+
+    enum WaterQuality
+    {
+        WATER_QUALITY_LOW = 0x0,
+        WATER_QUALITY_MEDIUM = 0x1,
+        WATER_QUALITY_HIGH = 0x2,
+        WATER_QUALITY_NUM_WATER_QUALITIES = 0x3,
+        WATER_QUALITY_INVALID = 0x3,
+    };
+
+    enum GrassDistance
+    {
+        GRASS_DISTANCE_NONE = 0x0,
+        GRASS_QUALITY_NEAR = 0x1,
+        GRASS_QUALITY_FAR = 0x2,
+        GRASS_DISTANCE_NUM_GRASS_DISTANCES = 0x3,
+        GRASS_DISTANCE_INVALID = 0x3,
+    };
+
+    enum GraphicQuality
+    {
+        GRAPHIC_QUALITY_LOW = 0x0,
+        GRAPHIC_QUALITY_MEDIUM = 0x1,
+        GRAPHIC_QUALITY_MAX = 0x2,
+        GRAPHIC_QUALITY_CUSTOM = 0x3,
+        GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES = 0x4,
+        GRAPHIC_QUALITY_INVALID = 0x4,
+    };
+
+    enum BlumQuality
+    {
+        BLUM_QUALITY_NONE = 0x0,
+        BLUM_QUALITY_LOW = 0x1,
+        BLUM_QUALITY_HIGH = 0x2,
+        BLUM_QUALITY_NUM_BLUM_QUALITIES = 0x3,
+        BLUM_QUALITY_INVALID = 0x3,
+    };
+
+    enum ShadowsQuality
+    {
+        SHADOWS_QUALITY_NONE = 0x0,
+        SHADOWS_QUALITY_LOW = 0x1,
+        SHADOWS_QUALITY_HIGH = 0x2,
+        SHADOWS_QUALITY_NUM_SHADOWS_QUALITIES = 0x3,
+        SHADOWS_QUALITY_INVALID = 0x3,
+    };
+
+    enum Resolution
+    {
+        RESOLUTION_800x600 = 0x0,
+        RESOLUTION_1024x768 = 0x1,
+        RESOLUTION_1152x864 = 0x2,
+        RESOLUTION_1280x960 = 0x3,
+        RESOLUTION_1600x1200 = 0x4,
+        RESOLUTION_NUM_RESOLUTIONS = 0x5,
+        RESOLUTION_INVALID = 0x5,
+    };
+
 public:
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     int ApplyChanges(bool);
-    virtual class m3d::Object * Clone();
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Object * Clone();
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
     virtual ~VideoOptionsWnd();
 
 protected:
-    int WaterQualityEnum2Val(enum WaterQuality) const ;
-    void OnCbBlumChange(class m3d::AIParam const &);
-    enum ShadowsQuality GetCurrentShadowQuality() const ;
-    void UpdateAntialiasingControls(enum GraphicQuality);
-    struct ShadowSettings const & GetShadowSettings(enum GraphicQuality) const ;
-    CStr GraphicQuality2Str(enum GraphicQuality) const ;
+    int WaterQualityEnum2Val(WaterQuality) const ;
+    void OnCbBlumChange(m3d::AIParam const &);
+    ShadowsQuality GetCurrentShadowQuality() const ;
+    void UpdateAntialiasingControls(GraphicQuality);
+    ShadowSettings const & GetShadowSettings(GraphicQuality) const ;
+    CStr GraphicQuality2Str(GraphicQuality) const ;
     void ApplyGamma();
     int GetWaterShaderVersionByWaterQualityVal(int) const ;
-    int GetDefaultAntialiasingForGraphicQuality(enum GraphicQuality) const ;
+    int GetDefaultAntialiasingForGraphicQuality(GraphicQuality) const ;
     void InitFarDistanceControls();
-    int BlumQualityEnum2Val(enum BlumQuality) const ;
+    int BlumQualityEnum2Val(BlumQuality) const ;
     int GetCurrentBlum() const ;
-    CStr BlumQuality2Str(enum BlumQuality) const ;
-    CStr Antialiasing2Str(enum Antialiasing) const ;
+    CStr BlumQuality2Str(BlumQuality) const ;
+    CStr Antialiasing2Str(Antialiasing) const ;
     virtual int GameDataSetup();
-    CStr ShadowsQuality2Str(enum ShadowsQuality) const ;
-    enum m3d::ui::MbRetCodes RunChangeWarningDlg();
-    void UpdateShadowsControls(enum GraphicQuality);
-    void UpdateFiltrationControls(enum GraphicQuality);
+    CStr ShadowsQuality2Str(ShadowsQuality) const ;
+    m3d::ui::MbRetCodes RunChangeWarningDlg();
+    void UpdateShadowsControls(GraphicQuality);
+    void UpdateFiltrationControls(GraphicQuality);
     void InitBlumControls();
-    void OnCbResolutionChange(class m3d::AIParam const &);
+    void OnCbResolutionChange(m3d::AIParam const &);
     void SetChanged(bool);
     void InitShadowsControls();
     int GetCurrentAntialiasing() const ;
-    void OnCbShadowsChange(class m3d::AIParam const &);
+    void OnCbShadowsChange(m3d::AIParam const &);
     void InitAntialiasingControls();
     void InitGrassControls();
-    void OnBtnGammaNextClick(class m3d::AIParam const &);
-    enum Filtration FiltrationVal2Enum(int) const ;
+    void OnBtnGammaNextClick(m3d::AIParam const &);
+    Filtration FiltrationVal2Enum(int) const ;
     void OnGraphicQualityDependendControlChanged();
     void ApplyFiltration();
     void UpdateGammaControls();
     void UpdateResolutionControls();
-    void OnSliderFarDistanceChange(class m3d::AIParam const &);
-    void OnCbFiltrationChange(class m3d::AIParam const &);
-    enum Antialiasing AntialiasingVal2Enum(int) const ;
+    void OnSliderFarDistanceChange(m3d::AIParam const &);
+    void OnCbFiltrationChange(m3d::AIParam const &);
+    Antialiasing AntialiasingVal2Enum(int) const ;
     int GetCurrentFiltration() const ;
-    enum Resolution ScreenWH2Resolution(class PointBase<int> const &) const ;
-    float GetDefaultGrassForGraphicQuality(enum GraphicQuality) const ;
-    void OnBtnFarDistancePrevClick(class m3d::AIParam const &);
-    int FiltrationEnum2Val(enum Filtration) const ;
-    void OnSliderGammaChange(class m3d::AIParam const &);
+    Resolution ScreenWH2Resolution(PointBase<int> const &) const ;
+    float GetDefaultGrassForGraphicQuality(GraphicQuality) const ;
+    void OnBtnFarDistancePrevClick(m3d::AIParam const &);
+    int FiltrationEnum2Val(Filtration) const ;
+    void OnSliderGammaChange(m3d::AIParam const &);
     void UpdateGammaPrevNextButtonsState();
-    enum GraphicQuality DetectCurrentGraphicQuality() const ;
-    int GetDefaultBlumForGraphicQuality(enum GraphicQuality) const ;
-    void UpdateFarDistanceControls(enum GraphicQuality);
+    GraphicQuality DetectCurrentGraphicQuality() const ;
+    int GetDefaultBlumForGraphicQuality(GraphicQuality) const ;
+    void UpdateFarDistanceControls(GraphicQuality);
     void InitGraphicQualityControls();
     void ApplyResolution();
-    void UpdateGraphicQualityDependendControls(enum GraphicQuality);
-    void OnBtnGammaPrevClick(class m3d::AIParam const &);
-    void OnCbAntialiasingChange(class m3d::AIParam const &);
+    void UpdateGraphicQualityDependendControls(GraphicQuality);
+    void OnBtnGammaPrevClick(m3d::AIParam const &);
+    void OnCbAntialiasingChange(m3d::AIParam const &);
     void UpdateFarDistancePrevNextButtonsState();
     float GetCurrentFarDistance() const ;
-    void UpdateBlumControls(enum GraphicQuality);
-    void OnBtnFarDistanceNextClick(class m3d::AIParam const &);
-    class PointBase<int> Resolution2ScreenWH(enum Resolution) const ;
+    void UpdateBlumControls(GraphicQuality);
+    void OnBtnFarDistanceNextClick(m3d::AIParam const &);
+    PointBase<int> Resolution2ScreenWH(Resolution) const ;
     void ApplyWaterQuality();
     void ValidateWaterQualityVal(int &) const ;
-    struct ShadowSettings GetCurrentShadowSettings() const ;
-    float GetDefaultFarDistanceForGraphicQuality(enum GraphicQuality) const ;
-    void UpdateGrassControls(enum GraphicQuality);
+    ShadowSettings GetCurrentShadowSettings() const ;
+    float GetDefaultFarDistanceForGraphicQuality(GraphicQuality) const ;
+    void UpdateGrassControls(GraphicQuality);
     void InitGammaControls();
     void ApplyFarDistance();
-    int GetDefaultFiltrationForGraphicQuality(enum GraphicQuality) const ;
+    int GetDefaultFiltrationForGraphicQuality(GraphicQuality) const ;
     void UpdateControls();
-    void OnCbWaterQualityChange(class m3d::AIParam const &);
+    void OnCbWaterQualityChange(m3d::AIParam const &);
     int GetCurrentWaterQuality() const ;
-    CStr ScreenWH2Str(class PointBase<int> const &) const ;
+    CStr ScreenWH2Str(PointBase<int> const &) const ;
     float GetCurrentGrass() const ;
     void UpdateGraphicQualityControls();
-    CStr Filtration2Str(enum Filtration) const ;
-    void SetDefaultParamsForGraphicQuality(enum GraphicQuality);
+    CStr Filtration2Str(Filtration) const ;
+    void SetDefaultParamsForGraphicQuality(GraphicQuality);
     void InitWaterQualityControls();
-    enum BlumQuality BlumQualityVal2Enum(int) const ;
+    BlumQuality BlumQualityVal2Enum(int) const ;
     void InitResolutionControls();
     void ApplyAntialiasing();
-    enum WaterQuality WaterQualityVal2Enum(int) const ;
-    void OnBtnApplyClick(class m3d::AIParam const &);
+    WaterQuality WaterQualityVal2Enum(int) const ;
+    void OnBtnApplyClick(m3d::AIParam const &);
     void ApplyBlum();
-    CStr WaterQuality2Str(enum WaterQuality) const ;
+    CStr WaterQuality2Str(WaterQuality) const ;
     bool IsChanged() const ;
     void ApplyGrass();
-    enum GrassDistance GrassDistanceVal2Enum(float) const ;
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    GrassDistance GrassDistanceVal2Enum(float) const ;
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
     void InitFiltrationControls();
-    bool IsWaterQualitySupported(enum WaterQuality);
-    float GrassDistanceEnum2Val(enum GrassDistance) const ;
+    bool IsWaterQualitySupported(WaterQuality);
+    float GrassDistanceEnum2Val(GrassDistance) const ;
     void ApplyShadows();
-    CStr GrassDistance2Str(enum GrassDistance) const ;
+    CStr GrassDistance2Str(GrassDistance) const ;
     virtual int OnAfterRemoveFromWndStation();
     void InitControls();
-    int AntialiasingEnum2Val(enum Antialiasing) const ;
-    void OnCbGraphicQualityChange(class m3d::AIParam const &);
+    int AntialiasingEnum2Val(Antialiasing) const ;
+    void OnCbGraphicQualityChange(m3d::AIParam const &);
     int GetWaterQualityValByWaterShaderVersion(int) const ;
     virtual int OnBeforeAddToWndStation();
-    void OnCbGrassChange(class m3d::AIParam const &);
+    void OnCbGrassChange(m3d::AIParam const &);
     VideoOptionsWnd();
-    VideoOptionsWnd(class VideoOptionsWnd const &);
-    void UpdateWaterQualityControls(enum GraphicQuality);
+    VideoOptionsWnd(VideoOptionsWnd const &);
+    void UpdateWaterQualityControls(GraphicQuality);
     void ApplyGraphicQuality();
-    int GetDefaultWaterQualityForGraphicQuality(enum GraphicQuality) const ;
+    int GetDefaultWaterQualityForGraphicQuality(GraphicQuality) const ;
+
+public:
+    RT_CLASS_DECLARE(VideoOptionsWnd);
+
 private:
     m3d::ui::ComboBoxWnd *m_cbResolution;
     m3d::ui::SliderWnd *m_sliderGamma;
