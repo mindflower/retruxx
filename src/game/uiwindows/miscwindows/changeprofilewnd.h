@@ -1,17 +1,43 @@
 #pragma once
+#include <ui/wnd.h>
 
-class ChangeProfileWnd :  public m3d::ui::ModalWnd
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+        class StringsListBoxWnd;
+    }
+}
+
+class ChangeProfileWnd : public m3d::ui::ModalWnd
 {
 public:
-    virtual class m3d::Object * Clone();
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndProfileListName;
+        CStr m_btnChoseName;
+        CStr m_btnDeleteName;
+        CStr m_lblCurProfileName;
+        CStr m_strIdCurProfile;
+        unsigned int m_curProfileNameColor;
+    };
+
+public:
+    virtual m3d::Object * Clone();
     virtual ~ChangeProfileWnd();
-    static class m3d::Object * CreateObject();
-    static struct m3d::Class * GetBaseClass();
-    virtual struct m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
+    static m3d::Class * GetBaseClass();
+    virtual m3d::Class * GetClass() const ;
+
 protected:
     CStr GetSelectedProfileName() const ;
     ChangeProfileWnd();
-    ChangeProfileWnd(class ChangeProfileWnd const &);
+    ChangeProfileWnd(ChangeProfileWnd const &);
     virtual int GameDataSetup();
     virtual int OnBeforeAddToWndStation();
     void OnChangeProfileSelection();
@@ -25,7 +51,11 @@ protected:
     void Clear();
     int CreateProfile();
     void FullUpdate();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
+
+public:
+    RT_CLASS_DECLARE(ChangeProfileWnd);
+
 private:
     m3d::ui::StringsListBoxWnd *m_wndProfileList;
     m3d::ui::ButtonWnd *m_btnChose;

@@ -1,32 +1,37 @@
 #pragma once
+#include "advancedlist.h"
 
 class RechargeList :  public AdvancedList
 {
 public:
-    static struct m3d::Class * GetBaseClass();
-    static class m3d::Object * CreateObject();
-    virtual class m3d::Object * Clone();
-    virtual struct m3d::Class * GetClass() const ;
+    static m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
+    virtual m3d::Class * GetClass() const ;
     virtual ~RechargeList();
+
 protected:
     RechargeList();
-    RechargeList(class RechargeList const &);
-    virtual class AdvancedButton * NewItem() const ;
-    virtual class std::vector<int,class std::allocator<int> > GetObjIds() const ;
-    virtual void BuyService(class AdvancedButton const *);
-private:
+    RechargeList(RechargeList const &);
+    virtual AdvancedButton * NewItem() const ;
+    virtual std::vector<int, std::allocator<int> > GetObjIds() const ;
+    virtual void BuyService(AdvancedButton const *);
+
+public:
+    RT_CLASS_DECLARE(RechargeList);
 };
 
 class RechargeButton :  public AdvancedButton
 {
 public:
-    static struct m3d::Class * GetBaseClass();
-    static class m3d::Object * CreateObject();
-    virtual class m3d::Object * Clone();
-    virtual struct m3d::Class * GetClass() const ;
+    static m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
+    virtual m3d::Class * GetClass() const ;
     virtual ~RechargeButton();
+
 protected:
-    RechargeButton(class RechargeButton const &);
+    RechargeButton(RechargeButton const &);
     RechargeButton();
     virtual int GetMaxUnitsToBuy() const ;
     virtual CStr GetServiceName() const ;
@@ -36,6 +41,8 @@ protected:
     virtual CStr const & GetStrIdTooltipBuyPartial() const ;
     virtual CStr const & GetStrIdTooltipBuy() const ;
     virtual CStr const & GetStrIdTooltipBuyFull() const ;
-    virtual class m3d::rend::TexHandle GetServiceIco() const ;
-private:
+    virtual m3d::rend::TexHandle GetServiceIco() const ;
+
+public:
+    RT_CLASS_DECLARE(RechargeButton);
 };

@@ -1,34 +1,57 @@
 #pragma once
+#include <core/ref_ptr.h>
+#include <ui/ui.h>
+
+namespace ai
+{
+    class Vehicle;
+    class VehiclePart;
+}
+
+class WeaponGroupButtonList;
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ImageWnd;
+    }
+}
 
 class WeaponSlotWnd :  public m3d::ui::Wnd
 {
 public:
-    virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * CreateObject();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
     int SetupForGunPart(CStr const &,int);
     virtual ~WeaponSlotWnd();
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
+
 protected:
     virtual int GameDataUpdate(void *,int);
     bool IsSetForGunPart() const ;
     virtual int CreateFromPattern();
     bool NeedShowWeaponGroups() const ;
     void UpdateActiveState();
-    void UpdateGunName(class ai::VehiclePart const *);
+    void UpdateGunName(ai::VehiclePart const *);
     void OnVehiclePartChanged(void *);
     virtual int CreateChildren();
-    void UpdateGunPartIco(class ai::VehiclePart const *);
+    void UpdateGunPartIco(ai::VehiclePart const *);
     void UpdateOnGunChanged();
-    class ai::Vehicle const * GetVehicle() const ;
-    static int __fastcall LoadPattern(class m3d::ui::Wnd *);
+    ai::Vehicle const * GetVehicle() const ;
+    static int __fastcall LoadPattern(m3d::ui::Wnd *);
     void UpdateOnGunPartChanged();
-    class ai::VehiclePart const * GetGun() const ;
-    void UpdateGunIco(class ai::VehiclePart const *);
-    WeaponSlotWnd(class WeaponSlotWnd const &);
+    ai::VehiclePart const * GetGun() const ;
+    void UpdateGunIco(ai::VehiclePart const *);
+    WeaponSlotWnd(WeaponSlotWnd const &);
     WeaponSlotWnd();
-    class m3d::rend::TexHandle GetIcoByGunPartName(CStr const &,bool) const ;
+    m3d::rend::TexHandle GetIcoByGunPartName(CStr const &,bool) const ;
     void ClearWeaponGroups();
+
+public:
+    RT_CLASS_DECLARE(WeaponSlotWnd);
+
 private:
     CStr m_gunPartName;
     int m_vehicleId;

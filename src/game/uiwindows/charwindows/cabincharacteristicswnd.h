@@ -1,24 +1,46 @@
 #pragma once
+#include "cbcharacteristicswnd.h"
+
+namespace ai
+{
+    class Cabin;
+}
 
 class CabinCharacteristicsWnd :  public CBCharacteristicsWnd
 {
 public:
+    class CabinAuxInfo
+    {
+    public:
+        CabinAuxInfo();
+
+    private:
+        CStr m_wndMaxSpeedValName;
+        CStr m_wndTorqueValName;
+        CStr m_wndControlValName;
+    };
+
+public:
     void SetupForCabin(int);
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
-    virtual class m3d::Object * Clone();
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+    virtual m3d::Object * Clone();
+    static m3d::Class * GetBaseClass();
     virtual ~CabinCharacteristicsWnd();
+
 protected:
     void SetupForCB(int);
-    class ai::Cabin const * GetCabin() const ;
+    ai::Cabin const * GetCabin() const ;
     CabinCharacteristicsWnd();
-    CabinCharacteristicsWnd(class CabinCharacteristicsWnd const &);
+    CabinCharacteristicsWnd(CabinCharacteristicsWnd const &);
     virtual void ClearCharacteristics();
     virtual void UpdateCharacteristics();
     virtual int GameDataSetup();
+
+public:
+    RT_CLASS_DECLARE(CabinCharacteristicsWnd);
+
 private:
-    GetBaseClass();
     m3d::ui::Wnd *m_wndMaxSpeedVal;
     m3d::ui::Wnd *m_wndTorqueVal;
     m3d::ui::Wnd *m_wndControlVal;

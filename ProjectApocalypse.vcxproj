@@ -868,6 +868,7 @@
     <ClInclude Include="src\game\uimisc\savesmanager.h" />
     <ClInclude Include="src\game\uimisc\stringparser.h" />
     <ClInclude Include="src\game\uimisc\weapongroup.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\advancedlist.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\basketcharacteristicswnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\basketlist.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\basketwnd.h" />
@@ -878,6 +879,7 @@
     <ClInclude Include="src\game\uiwindows\charwindows\cbcharacteristicswnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\cblist.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\cbwnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\characteristicswnd.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\childpanel.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\devidedlg.h" />
     <ClInclude Include="src\game\uiwindows\charwindows\dragdropitemswnd.h" />

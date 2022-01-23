@@ -1,28 +1,62 @@
 #pragma once
+#include "characteristicswnd.h"
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ImageWnd;
+    }
+}
+
+namespace ai
+{
+    class VehiclePart;
+}
 
 class CBCharacteristicsWnd :  public CharacteristicsWnd
 {
 public:
-    virtual class m3d::Object * Clone();
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndPiercingValName;
+        CStr m_wndBlastValName;
+        CStr m_wndEnergyValName;
+        CStr m_wndMaxDurabilityValName;
+        CStr m_wndWeightValName;
+        CStr m_wndCBImageName;
+        CStr m_wndCBNameName;
+    };
+
+public:
+    virtual m3d::Object * Clone();
     virtual ~CBCharacteristicsWnd();
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     void SetupForCB(int);
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+
 protected:
     CBCharacteristicsWnd();
-    CBCharacteristicsWnd(class CBCharacteristicsWnd const &);
+    CBCharacteristicsWnd(CBCharacteristicsWnd const &);
     void UpdateOnCBChanged();
     virtual void ClearCharacteristics();
     void UpdateCBName();
     virtual int GameDataSetup();
     virtual void UpdateCharacteristics();
-    class ai::VehiclePart const * GetCB() const ;
+    ai::VehiclePart const * GetCB() const ;
     virtual int GameDataClear(bool);
     void UpdateCBImage();
     virtual void SetupForVehicle(int);
+
+public:
+    RT_CLASS_DECLARE(CBCharacteristicsWnd);
+
 private:
-    SetupForVehicle(int);
     m3d::ui::Wnd *m_wndPiercingVal;
     m3d::ui::Wnd *m_wndBlastVal;
     m3d::ui::Wnd *m_wndEnergyVal;

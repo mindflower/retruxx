@@ -1,51 +1,84 @@
 #pragma once
+#include "childpanel.h"
+#include <core/ref_ptr.h>
 
-class WorkshopVehicleWnd :  public VehicleWnd
+namespace ai
+{
+    class GeomRepository;
+    class Workshop;
+}
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+    }
+}
+
+class SkinSwitcher;
+class WeaponSlotList;
+class BasketCharacteristicsWnd;
+class CabinCharacteristicsWnd;
+class VehicleCharacteristicsWnd;
+class ComplexModelWnd;
+
+class VehicleWnd : public ChildPanel
 {
 public:
-    class ai::Workshop * GetWorkshop() const ;
-    virtual ~WorkshopVehicleWnd();
-    static struct m3d::Class * GetBaseClass();
-    int GetWorkshopId() const ;
-    static class m3d::Object * CreateObject();
-    virtual void OnRestoreStyles();
-    int SetupForWorkshop(int);
-    virtual struct m3d::Class * GetClass() const ;
-    virtual class m3d::Object * Clone();
-protected:
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
-    virtual int GameDataSetup();
-    WorkshopVehicleWnd(class WorkshopVehicleWnd const &);
-    WorkshopVehicleWnd();
-    void LaunchNewVehicleInventoryWnd();
-    void FullUpdate();
-    int GetNextObjId(int) const ;
-    void OnFinishTrade(void *);
-    void OnRepositoryChanged();
-    void UpdateNextPrevButtonsStates();
-    void AddInfoToEncyclopaedia();
-    int MakeVehiclesList();
-    int GetPrevObjId(int) const ;
-    virtual int OnAfterAddToWndStation();
-    virtual int OnBeforeAddToWndStation();
-    void ShowNextVehicle();
-    void Hide();
-    virtual int GameDataUpdate(void *,int);
+    enum VehicleType
+    {
+        VEHICLE_NORMAL = 0x0,
+        VEHICLE_HACKED = 0x1,
+    };
+
+    enum TabId
+    {
+        TAB_ID_VEHICLE_CHARACTERISTICS = 0x0,
+        TAB_ID_CB_CHARACTERISTICS = 0x1,
+        TAB_ID_WEAPON_GROUPS = 0x2,
+        TAB_ID_NUM_TAB_IDS = 0x3,
+    };
+
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndTruckPictureName;
+        CStr m_lblNameName;
+        CStr m_redColor;
+        CStr m_greenColor;
+        CStr m_wndCBCharacteristicsName;
+    };
+
+public:
     virtual void SetVehicleId(int);
-    void ShowPrevVehicle();
-    virtual int GameDataClear(bool);
-    class ai::GeomRepository * GetWorkshopRepository() const ;
+    virtual ~VehicleWnd(void);
+
+protected:
+    VehicleWnd(VehicleWnd const&);
+    VehicleWnd(void);
+    void UpdateVehicleName(void);
+    virtual void OnVehiclePartChanged(void*);
+    virtual void ShowTab(TabId);
+    virtual void OnCharacteristicTabSelChanged(void*);
+
+public:
+    RT_CLASS_DECLARE(VehicleWnd);
+
 private:
-    GameDataUpdate(void *,int);
-    Clone();
-    WorkshopVehicleWnd::WAuxInfo m_waif;
-    m3d::ui::ButtonWnd *m_btnPrev;
-    m3d::ui::ButtonWnd *m_btnNext;
-    int m_workshopId;
-    std::vector<int> m_vehicleObjIdList;
-    m3d::ui::ButtonWnd *m_btnSkinNext;
-    m3d::ui::ButtonWnd *m_btnSkinPrev;
-    int m_curSkin;
-    SkinSwitcher *m_skinSwitcher;
-    m3d::ui::Wnd *m_wndPrice;
+    VehicleWnd::AuxInfo m_aif;
+    ref_ptr<ComplexModelWnd> m_wndVehicleModel;
+    m3d::ui::Wnd* m_lblName;
+    ref_ptr<m3d::ui::Wnd> m_wndCBCharacteristics;
+    ref_ptr<VehicleCharacteristicsWnd> m_wndVehicleCharacteristics;
+    ref_ptr<CabinCharacteristicsWnd> m_wndCabinCharacteristics;
+    ref_ptr<BasketCharacteristicsWnd> m_wndBasketCharacteristics;
+    ref_ptr<WeaponSlotList> m_wndWeaponGroups;
+    VehicleWnd::VehicleType m_vehicleType;
+    ref_ptr<m3d::ui::Wnd> m_tabItems[3];
+    VehicleWnd::TabId m_curTab;
 };
+

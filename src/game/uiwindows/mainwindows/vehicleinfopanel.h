@@ -1,19 +1,39 @@
 #pragma once
+#include <core/ref_ptr.h>
+#include <ui/ui.h>
+
+class SpeedometerWnd;
+class FuelIndicatorWnd;
 
 class VehicleInfoPanel :  public m3d::ui::Wnd
 {
 public:
-    static struct m3d::Class * GetBaseClass();
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndFuelName;
+    };
+
+public:
+    static m3d::Class * GetBaseClass();
     virtual ~VehicleInfoPanel();
-    static class m3d::Object * CreateObject();
-    virtual class m3d::Object * Clone();
-    virtual struct m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
+    virtual m3d::Object * Clone();
+    virtual m3d::Class * GetClass() const ;
+
 protected:
-    VehicleInfoPanel(class VehicleInfoPanel const &);
+    VehicleInfoPanel(VehicleInfoPanel const &);
     VehicleInfoPanel();
     virtual int GameDataSetup();
     void OnPlayerVehicleChanged();
     virtual int GameDataUpdate(void *,int);
+
+public:
+    RT_CLASS_DECLARE(VehicleInfoPanel);
+
 private:
     ref_ptr<FuelIndicatorWnd> m_wndFuel;
     ref_ptr<SpeedometerWnd> m_wndSpeedometer;

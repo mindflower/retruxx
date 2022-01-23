@@ -14,40 +14,73 @@
 #include <game/uimisc/reply.h>
 #include <game/uimisc/savesmanager.h>
 #include <game/uimisc/weapongroup.h>
+#include <game/uiwindows/charwindows/advancedlist.h>
+#include <game/uiwindows/charwindows/basketcharacteristicswnd.h>
+#include <game/uiwindows/charwindows/basketlist.h>
 #include <game/uiwindows/charwindows/basketwnd.h>
+#include <game/uiwindows/charwindows/buyserviceslider.h>
+#include <game/uiwindows/charwindows/cabincharacteristicswnd.h>
+#include <game/uiwindows/charwindows/cabinlist.h>
 #include <game/uiwindows/charwindows/cabinwnd.h>
+#include <game/uiwindows/charwindows/cbcharacteristicswnd.h>
+#include <game/uiwindows/charwindows/cblist.h>
+#include <game/uiwindows/charwindows/characteristicswnd.h>
 #include <game/uiwindows/charwindows/devidedlg.h>
 #include <game/uiwindows/charwindows/gadgetwnd.h>
+#include <game/uiwindows/charwindows/garagewnd.h>
 #include <game/uiwindows/charwindows/groundwnd.h>
 #include <game/uiwindows/charwindows/infownd.h>
 #include <game/uiwindows/charwindows/iteminfownd.h>
 #include <game/uiwindows/charwindows/izvratrepositorywnd.h>
 #include <game/uiwindows/charwindows/motherpanel.h>
 #include <game/uiwindows/charwindows/playermoneywnd.h>
+#include <game/uiwindows/charwindows/playervehiclewnd.h>
+#include <game/uiwindows/charwindows/rechargelist.h>
+#include <game/uiwindows/charwindows/refuellist.h>
+#include <game/uiwindows/charwindows/repairlist.h>
 #include <game/uiwindows/charwindows/repositoryitemwnd.h>
 #include <game/uiwindows/charwindows/repositorywnd.h>
 #include <game/uiwindows/charwindows/salewnd.h>
 #include <game/uiwindows/charwindows/shopwnd.h>
+#include <game/uiwindows/charwindows/skinswnd.h>
+#include <game/uiwindows/charwindows/vehiclecharacteristicswnd.h>
 #include <game/uiwindows/charwindows/vehiclepartwnd.h>
+#include <game/uiwindows/charwindows/vehiclewnd.h>
 #include <game/uiwindows/charwindows/videownd.h>
+#include <game/uiwindows/charwindows/warewnd.h>
+#include <game/uiwindows/charwindows/weapongroupbuttonlist.h>
+#include <game/uiwindows/charwindows/weaponslotlist.h>
+#include <game/uiwindows/charwindows/weaponslotwnd.h>
+#include <game/uiwindows/charwindows/workshopvehiclewnd.h>
 #include <game/uiwindows/commonwindows/complexmodelwnd.h>
 #include <game/uiwindows/commonwindows/contextmodelwnd.h>
 #include <game/uiwindows/commonwindows/itemmodelwnd.h>
 #include <game/uiwindows/mainwindows/damageinfownd.h>
 #include <game/uiwindows/mainwindows/durabilityindicatorinmaininterfacewnd.h>
 #include <game/uiwindows/mainwindows/durabilityindicatorwnd.h>
+#include <game/uiwindows/mainwindows/fadingmsg.h>
 #include <game/uiwindows/mainwindows/fuelindicatorinmaininterfacewnd.h>
 #include <game/uiwindows/mainwindows/fuelindicatorwnd.h>
 #include <game/uiwindows/mainwindows/healthindicatorinmaininterfacewnd.h>
 #include <game/uiwindows/mainwindows/healthindicatorwnd.h>
+#include <game/uiwindows/mainwindows/igrokamochatwnd.h>
 #include <game/uiwindows/mainwindows/radarwnd.h>
+#include <game/uiwindows/mainwindows/smartcursorwnd.h>
 #include <game/uiwindows/mainwindows/speedometerwnd.h>
+#include <game/uiwindows/mainwindows/targetinfownd.h>
+#include <game/uiwindows/mainwindows/vehicleinfopanel.h>
 #include <game/uiwindows/mainwindows/weaponinfolist.h>
 #include <game/uiwindows/miscwindows/bindkeyswnd.h>
+#include <game/uiwindows/miscwindows/changeprofilewnd.h>
 #include <game/uiwindows/miscwindows/cinemafadepanel.h>
 #include <game/uiwindows/miscwindows/cinemapanel.h>
 #include <game/uiwindows/miscwindows/gamemenu.h>
+#include <game/uiwindows/miscwindows/loadwnd.h>
+#include <game/uiwindows/miscwindows/lswnd.h>
 #include <game/uiwindows/miscwindows/mainmenu.h>
+#include <game/uiwindows/miscwindows/newprofilewnd.h>
+#include <game/uiwindows/miscwindows/savewnd.h>
+#include <game/uiwindows/miscwindows/splashwnd.h>
 #include <game/uiwindows/palmwindows/bookswnd.h>
 #include <game/uiwindows/palmwindows/encyclopaediawnd.h>
 #include <game/uiwindows/palmwindows/globalmapwnd.h>
@@ -62,6 +95,8 @@
 #include <game/uiwindows/palmwindows/questdizwnd.h>
 #include <game/uiwindows/palmwindows/questitem.h>
 #include <game/uiwindows/palmwindows/questitemlist.h>
+#include <game/uiwindows/palmwindows/questitemswnd.h>
+#include <game/uiwindows/palmwindows/reputationwnd.h>
 #include <game/uiwindows/palmwindows/saveselllist.h>
 #include <game/uiwindows/palmwindows/statswnd.h>
 #include <game/uiwindows/palmwindows/taksebequestlogwnd.h>
@@ -825,49 +860,49 @@ void TruxxUiManager::GUI_RegisterClasses()
     m3d::g_Kernel->AddClass(&StatsWnd::m_classStatsWnd);
     m3d::g_Kernel->AddClass(&StatsButton::m_classStatsButton);
     m3d::g_Kernel->AddClass(&StatsList::m_classStatsList);
-    //m3d::g_Kernel->AddClass(&ReputationWnd::m_classReputationWnd);
-    //m3d::g_Kernel->AddClass(&ReputationButton::m_classReputationButton);
-    //m3d::g_Kernel->AddClass(&ReputationList::m_classReputationList);
-    //m3d::g_Kernel->AddClass(&SplashWnd::m_classSplashWnd);
-    //m3d::g_Kernel->AddClass(&NewProfileWnd::m_classNewProfileWnd);
-    //m3d::g_Kernel->AddClass(&ChangeProfileWnd::m_classChangeProfileWnd);
-    //m3d::g_Kernel->AddClass(&LSWnd::m_classLSWnd);
-    //m3d::g_Kernel->AddClass(&SaveButton::m_classSaveButton);
-    //m3d::g_Kernel->AddClass(&SaveList::m_classSaveList);
-    //m3d::g_Kernel->AddClass(&SaveWnd::m_classSaveWnd);
-    //m3d::g_Kernel->AddClass(&LoadWnd::m_classLoadWnd);
+    m3d::g_Kernel->AddClass(&ReputationWnd::m_classReputationWnd);
+    m3d::g_Kernel->AddClass(&ReputationButton::m_classReputationButton);
+    m3d::g_Kernel->AddClass(&ReputationList::m_classReputationList);
+    m3d::g_Kernel->AddClass(&SplashWnd::m_classSplashWnd);
+    m3d::g_Kernel->AddClass(&NewProfileWnd::m_classNewProfileWnd);
+    m3d::g_Kernel->AddClass(&ChangeProfileWnd::m_classChangeProfileWnd);
+    m3d::g_Kernel->AddClass(&LSWnd::m_classLSWnd);
+    m3d::g_Kernel->AddClass(&SaveButton::m_classSaveButton);
+    m3d::g_Kernel->AddClass(&SaveList::m_classSaveList);
+    m3d::g_Kernel->AddClass(&SaveWnd::m_classSaveWnd);
+    m3d::g_Kernel->AddClass(&LoadWnd::m_classLoadWnd);
     m3d::g_Kernel->AddClass(&SavesManager::m_classSavesManager);
-    //m3d::g_Kernel->AddClass(&TargetInfoWnd::m_classTargetInfoWnd);
-    //m3d::g_Kernel->AddClass(&SmartCursorWnd::m_classSmartCursorWnd);
-    //m3d::g_Kernel->AddClass(&VehicleInfoPanel::m_classVehicleInfoPanel);
-    //m3d::g_Kernel->AddClass(&FadingMsgList::m_classFadingMsgList);
-    //m3d::g_Kernel->AddClass(&FadingMsgItem::m_classFadingMsgItem);
+    m3d::g_Kernel->AddClass(&TargetInfoWnd::m_classTargetInfoWnd);
+    m3d::g_Kernel->AddClass(&SmartCursorWnd::m_classSmartCursorWnd);
+    m3d::g_Kernel->AddClass(&VehicleInfoPanel::m_classVehicleInfoPanel);
+    m3d::g_Kernel->AddClass(&FadingMsgList::m_classFadingMsgList);
+    m3d::g_Kernel->AddClass(&FadingMsgItem::m_classFadingMsgItem);
     m3d::g_Kernel->AddClass(&MsgManager::m_classMsgManager);
-    //m3d::g_Kernel->AddClass(&GarageWnd::m_classGarageWnd);
-    //m3d::g_Kernel->AddClass(&AdvancedButton::m_classAdvancedButton);
-    //m3d::g_Kernel->AddClass(&AdvancedList::m_classAdvancedList);
-    //m3d::g_Kernel->AddClass(&RefuelButton::m_classRefuelButton);
-    //m3d::g_Kernel->AddClass(&RefuelList::m_classRefuelList);
-    //m3d::g_Kernel->AddClass(&RepairButton::m_classRepairButton);
-    //m3d::g_Kernel->AddClass(&RepairList::m_classRepairList);
-    //m3d::g_Kernel->AddClass(&RechargeButton::m_classRechargeButton);
-    //m3d::g_Kernel->AddClass(&RechargeList::m_classRechargeList);
-    //m3d::g_Kernel->AddClass(&BuyServiceSlider::m_classBuyServiceSlider);
-    //m3d::g_Kernel->AddClass(&CBButton::m_classCBButton);
-    //m3d::g_Kernel->AddClass(&CBList::m_classCBList);
-    //m3d::g_Kernel->AddClass(&CabinButton::m_classCabinButton);
-    //m3d::g_Kernel->AddClass(&CabinList::m_classCabinList);
-    //m3d::g_Kernel->AddClass(&BasketButton::m_classBasketButton);
-    //m3d::g_Kernel->AddClass(&BasketList::m_classBasketList);
-    //m3d::g_Kernel->AddClass(&VehicleWnd::m_classVehicleWnd);
-    //m3d::g_Kernel->AddClass(&PlayerVehicleWnd::m_classPlayerVehicleWnd);
-    //m3d::g_Kernel->AddClass(&WorkshopVehicleWnd::m_classWorkshopVehicleWnd);
-    //m3d::g_Kernel->AddClass(&SkinsWnd::m_classSkinsWnd);
-    //m3d::g_Kernel->AddClass(&IgrokaMochatWnd::m_classIgrokaMochatWnd);
-    //m3d::g_Kernel->AddClass(&QuestItemsWnd::m_classQuestItemsWnd);
-    //m3d::g_Kernel->AddClass(&WareWnd::m_classWareWnd);
-    //m3d::g_Kernel->AddClass(&WareList::m_classWareList);
-    //m3d::g_Kernel->AddClass(&WareItem::m_classWareItem);
+    m3d::g_Kernel->AddClass(&GarageWnd::m_classGarageWnd);
+    m3d::g_Kernel->AddClass(&AdvancedButton::m_classAdvancedButton);
+    m3d::g_Kernel->AddClass(&AdvancedList::m_classAdvancedList);
+    m3d::g_Kernel->AddClass(&RefuelButton::m_classRefuelButton);
+    m3d::g_Kernel->AddClass(&RefuelList::m_classRefuelList);
+    m3d::g_Kernel->AddClass(&RepairButton::m_classRepairButton);
+    m3d::g_Kernel->AddClass(&RepairList::m_classRepairList);
+    m3d::g_Kernel->AddClass(&RechargeButton::m_classRechargeButton);
+    m3d::g_Kernel->AddClass(&RechargeList::m_classRechargeList);
+    m3d::g_Kernel->AddClass(&BuyServiceSlider::m_classBuyServiceSlider);
+    m3d::g_Kernel->AddClass(&CBButton::m_classCBButton);
+    m3d::g_Kernel->AddClass(&CBList::m_classCBList);
+    m3d::g_Kernel->AddClass(&CabinButton::m_classCabinButton);
+    m3d::g_Kernel->AddClass(&CabinList::m_classCabinList);
+    m3d::g_Kernel->AddClass(&BasketButton::m_classBasketButton);
+    m3d::g_Kernel->AddClass(&BasketList::m_classBasketList);
+    m3d::g_Kernel->AddClass(&VehicleWnd::m_classVehicleWnd);
+    m3d::g_Kernel->AddClass(&PlayerVehicleWnd::m_classPlayerVehicleWnd);
+    m3d::g_Kernel->AddClass(&WorkshopVehicleWnd::m_classWorkshopVehicleWnd);
+    m3d::g_Kernel->AddClass(&SkinsWnd::m_classSkinsWnd);
+    m3d::g_Kernel->AddClass(&IgrokaMochatWnd::m_classIgrokaMochatWnd);
+    m3d::g_Kernel->AddClass(&QuestItemsWnd::m_classQuestItemsWnd);
+    m3d::g_Kernel->AddClass(&WareWnd::m_classWareWnd);
+    m3d::g_Kernel->AddClass(&WareList::m_classWareList);
+    m3d::g_Kernel->AddClass(&WareItem::m_classWareItem);
     //m3d::g_Kernel->AddClass(&MotherPanelTabButton::m_classMotherPanelTabButton);
     //m3d::g_Kernel->AddClass(&MainCursorWnd::m_classMainCursorWnd);
     //m3d::g_Kernel->AddClass(&TargetCursorWnd::m_classTargetCursorWnd);
@@ -878,24 +913,24 @@ void TruxxUiManager::GUI_RegisterClasses()
     //m3d::g_Kernel->AddClass(&OptionTabButton::m_classOptionTabButton);
     //m3d::g_Kernel->AddClass(&VideoOptionsWnd::m_classVideoOptionsWnd);
     //m3d::g_Kernel->AddClass(&SoundOptionsWnd::m_classSoundOptionsWnd);
-    //m3d::g_Kernel->AddClass(&GameOptionsWnd::m_classGameOptionsWnd);
+    //m3d::g_Kernel->AddClass(&GameOptionsWnd::m_classGameOptionsWnd);`
     //m3d::g_Kernel->AddClass(&ControlOptionsWnd::m_classControlOptionsWnd);
     //m3d::g_Kernel->AddClass(&NavPointButton::m_classNavPointButton);
     m3d::g_Kernel->AddClass(&WeaponGroupManager::m_classWeaponGroupManager);
-    //m3d::g_Kernel->AddClass(&WeaponGroup::m_classWeaponGroup);
+    m3d::g_Kernel->AddClass(&WeaponGroup::m_classWeaponGroup);
     //m3d::g_Kernel->AddClass(&GameMenuWnd::m_classGameMenuWnd);
     //m3d::g_Kernel->AddClass(&MainGameInterfaceWnd::m_classMainGameInterfaceWnd);
     //m3d::g_Kernel->AddClass(&ElectronicDigitalWnd::m_classElectronicDigitalWnd);
     //m3d::g_Kernel->AddClass(&TwinklingLampWnd::m_classTwinklingLampWnd);
-    //m3d::g_Kernel->AddClass(&CharacteristicsWnd::m_classCharacteristicsWnd);
-    //m3d::g_Kernel->AddClass(&CBCharacteristicsWnd::m_classCBCharacteristicsWnd);
-    //m3d::g_Kernel->AddClass(&CabinCharacteristicsWnd::m_classCabinCharacteristicsWnd);
-    //m3d::g_Kernel->AddClass(&BasketCharacteristicsWnd::m_classBasketCharacteristicsWnd);
-    //m3d::g_Kernel->AddClass(&VehicleCharacteristicsWnd::m_classVehicleCharacteristicsWnd);
-    //m3d::g_Kernel->AddClass(&WeaponSlotWnd::m_classWeaponSlotWnd);
-    //m3d::g_Kernel->AddClass(&WeaponSlotList::m_classWeaponSlotList);
-    //m3d::g_Kernel->AddClass(&WeaponGroupButton::m_classWeaponGroupButton);
-    //m3d::g_Kernel->AddClass(&WeaponGroupButtonList::m_classWeaponGroupButtonList);
+    m3d::g_Kernel->AddClass(&CharacteristicsWnd::m_classCharacteristicsWnd);
+    m3d::g_Kernel->AddClass(&CBCharacteristicsWnd::m_classCBCharacteristicsWnd);
+    m3d::g_Kernel->AddClass(&CabinCharacteristicsWnd::m_classCabinCharacteristicsWnd);
+    m3d::g_Kernel->AddClass(&BasketCharacteristicsWnd::m_classBasketCharacteristicsWnd);
+    m3d::g_Kernel->AddClass(&VehicleCharacteristicsWnd::m_classVehicleCharacteristicsWnd);
+    m3d::g_Kernel->AddClass(&WeaponSlotWnd::m_classWeaponSlotWnd);
+    m3d::g_Kernel->AddClass(&WeaponSlotList::m_classWeaponSlotList);
+    m3d::g_Kernel->AddClass(&WeaponGroupButton::m_classWeaponGroupButton);
+    m3d::g_Kernel->AddClass(&WeaponGroupButtonList::m_classWeaponGroupButtonList);
     //m3d::g_Kernel->AddClass(&DemoSplashWnd::m_classDemoSplashWnd);
     //m3d::g_Kernel->AddClass(&CreditsWnd::m_classCreditsWnd);
     //m3d::g_Kernel->AddClass(&FadePanelBeforeNextMap::m_classFadePanelBeforeNextMap);

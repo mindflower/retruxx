@@ -1,19 +1,45 @@
 #pragma once
+#include "characteristicswnd.h"
 
 class VehicleCharacteristicsWnd :  public CharacteristicsWnd
 {
 public:
-    virtual class m3d::Object * Clone();
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
-    static struct m3d::Class * GetBaseClass();
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_wndMaxHealthValName;
+        CStr m_wndMaxFuelValName;
+        CStr m_wndPiercingValName;
+        CStr m_wndBlastValName;
+        CStr m_wndEnergyValName;
+        CStr m_wndMaxDurabilityValName;
+        CStr m_wndBasketCapacityValName;
+        CStr m_wndMaxSpeedValName;
+        CStr m_wndTorqueValName;
+        CStr m_wndWeightValName;
+        CStr m_wndControlValName;
+    };
+
+public:
+    virtual m3d::Object * Clone();
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+    static m3d::Class * GetBaseClass();
     virtual ~VehicleCharacteristicsWnd();
+
 protected:
     virtual void UpdateCharacteristics();
     virtual int GameDataSetup();
     virtual void ClearCharacteristics();
     VehicleCharacteristicsWnd();
-    VehicleCharacteristicsWnd(class VehicleCharacteristicsWnd const &);
+    VehicleCharacteristicsWnd(VehicleCharacteristicsWnd const &);
+
+public:
+    RT_CLASS_DECLARE(VehicleCharacteristicsWnd);
+
 private:
     m3d::ui::Wnd *m_wndMaxHealthVal;
     m3d::ui::Wnd *m_wndMaxFuelVal;

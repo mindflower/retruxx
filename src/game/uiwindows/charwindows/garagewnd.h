@@ -1,23 +1,43 @@
 #pragma once
+#include "childpanel.h"
+#include <core/ref_ptr.h>
+#include <game/uimisc/guihelper.h>
+#include <server/objects/workshop.h>
+
+class RechargeList;
+class RepairList;
+class RefuelList;
+class SkinsWnd;
+class BasketList;
+class CabinList;
+
+namespace m3d
+{
+    namespace ui
+    {
+        class ButtonWnd;
+    }
+}
 
 class GarageWnd :  public ChildPanel
 {
 public:
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class * GetBaseClass();
     int SetupForWorkshop(int);
     bool IsListOpen() const ;
-    class ai::Workshop * GetWorkshop() const ;
-    static enum help::Color __fastcall GetValueColor(int,int);
-    virtual class m3d::Object * Clone();
+    ai::Workshop * GetWorkshop() const ;
+    static help::Color __fastcall GetValueColor(int,int);
+    virtual m3d::Object * Clone();
     int GetWorkshopId() const ;
     virtual ~GarageWnd();
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
+    static m3d::Object * CreateObject();
+    virtual m3d::Class * GetClass() const ;
+
 protected:
     void OnNewFrame();
     void OnRepairList();
     void UpdateAllPricePrevValues();
-    unsigned int EnumColor2Color(enum help::Color) const ;
+    unsigned int EnumColor2Color(help::Color) const ;
     int GetUnitsToRecharge() const ;
     void OnCabins();
     void Refuel(int);
@@ -32,11 +52,11 @@ protected:
     void OnBaskets();
     void MaxRecharge();
     void OnSkin();
-    void OpenList(class ref_ptr<class m3d::ui::Wnd>,class m3d::ui::ButtonWnd *,class m3d::ui::ButtonWnd *,enum ai::eGameEvent);
+    void OpenList(ref_ptr<m3d::ui::Wnd>, m3d::ui::ButtonWnd *, m3d::ui::ButtonWnd *, ai::eGameEvent);
     void OnRechargeList();
     void OnFinishTrade(void *);
-    void UpdateServiceActiveState(class std::vector<class m3d::ui::Wnd *,class std::allocator<class m3d::ui::Wnd *> > const &,bool,class ref_ptr<class m3d::ui::Wnd>);
-    class ai::GeomRepository * GetWorkshopRepositoryByType(enum ai::WorkshopRepositoryType) const ;
+    void UpdateServiceActiveState(std::vector<m3d::ui::Wnd *, std::allocator<m3d::ui::Wnd *> > const &,bool, ref_ptr<m3d::ui::Wnd>);
+    ai::GeomRepository * GetWorkshopRepositoryByType(ai::WorkshopRepositoryType) const ;
     void UpdateRechargeAllTooltip();
     void GetPossibleRepair(int &,int &) const ;
     void OnRechargeAll();
@@ -47,10 +67,10 @@ protected:
     float GetHealthPriceForOneUnit() const ;
     void MaxRepair();
     void UpdateSkinActiveState();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
     void OnRefuelList();
     virtual int OnBeforeAddToWndStation();
-    GarageWnd(class GarageWnd const &);
+    GarageWnd(GarageWnd const &);
     GarageWnd();
     virtual int OnAfterRemoveFromWndStation();
     int GetShellPrice(int) const ;
@@ -69,7 +89,7 @@ protected:
     int GetUnitsToRefuel() const ;
     void UpdateBasketsActiveState();
     int GetFuelPriceForOneUnit() const ;
-    void UpdateServiceSelectState(class std::vector<class m3d::ui::Wnd *,class std::allocator<class m3d::ui::Wnd *> > const &,bool);
+    void UpdateServiceSelectState(std::vector<m3d::ui::Wnd *, std::allocator<m3d::ui::Wnd *> > const &,bool);
     void UpdateRechargeAllPriceControls(bool);
     virtual int GameDataSetup();
     virtual int GameDataUpdate(void *,int);
@@ -77,6 +97,10 @@ protected:
     void OnNewVehicle();
     void UpdateRechargeActiveState();
     void UpdateAllPriceValues();
+
+public:
+    RT_CLASS_DECLARE(GarageWnd);
+
 private:
     m3d::ui::ButtonWnd *m_btnCabins;
     m3d::ui::ButtonWnd *m_btnBaskets;

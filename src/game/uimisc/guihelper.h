@@ -20,6 +20,37 @@ namespace help
         QUESTSTATUS_INVALID = 0x3,
     };
 
+    enum BlackWightTolerance
+    {
+        BW_TOLERANCE_ENEMY = 0x0,
+        BW_TOLERANCE_FRIEND = 0x1,
+        BW_TOLERANCE_NUM_BW_TOLERANCES = 0x2,
+        BW_TOLERANCE_INVALID = 0x2,
+    };
+
+    enum Color
+    {
+        COLOR_RED = 0x0,
+        COLOR_GREEN = 0x1,
+        COLOR_YELLOW = 0x2,
+        COLOR_WHITE = 0x3,
+    };
+
+    enum _ActionType
+    {
+        _AT_STAND = 0x0,
+        _AT_MOVE = 0x1,
+        _AT_NUMTYPES = 0x2,
+    };
+
+    enum ColorTrhreshold
+    {
+        THRESHOLD_DEAD = 0x0,
+        THRESHOLD_RED = 0x21,
+        THRESHOLD_YELLOW = 0x42,
+        THRESHOLD_GREEN = 0x64,
+    };
+
     void DeleteAllFilesInDirectory(char const*);
     CStr GetCurrentLevelName();
 }

@@ -10,17 +10,17 @@ public:
     int ValidateWeaponGroups();
     void GetAllWeapons(std::set<CStr> &) const ;
     void SaveWeaponGroups();
-    virtual class m3d::Object * Clone();
+    virtual m3d::Object * Clone();
     class WeaponGroup * GetWeaponGroupById(int) const ;
     void KeepFire();
     int GameDataUpdate(void *,int);
-    class WeaponGroup * CreateWeaponGroup(int);
-    int LoadFromXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode const *);
+    WeaponGroup * CreateWeaponGroup(int);
+    int LoadFromXml(m3d::cmn::XmlFile *, m3d::cmn::XmlNode const *);
     static int __fastcall GetWeaponGroupsMaxCount();
     static int __fastcall GetDefaultWeaponGroupIdForWeapon(CStr const &);
-    static class m3d::Object * CreateObject();
-    static struct m3d::Class * GetBaseClass();
-    int AddWeaponGroup(class WeaponGroup *);
+    static m3d::Object * CreateObject();
+    static m3d::Class * GetBaseClass();
+    int AddWeaponGroup(WeaponGroup *);
     void ReloadAllWeapon();
     void OnPlayerVehicleChanged();
     int Init();
@@ -30,15 +30,15 @@ public:
     void RestoreWeaponGroups();
     virtual ~WeaponGroupManager();
     void OnVehiclePartChanged(void *);
-    int SaveToXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
+    int SaveToXml(m3d::cmn::XmlFile *, m3d::cmn::XmlNode *) const ;
     void ClearGroups();
     int RemoveWeaponFromWeaponGroup(int);
     int RemoveWeaponFromWeaponGroup(CStr const &);
-    virtual struct m3d::Class * GetClass() const ;
+    virtual m3d::Class * GetClass() const ;
     int GetWeaponGroupIdForWeapon(CStr const &) const ;
     void Clear();
 protected:
-    WeaponGroupManager(class WeaponGroupManager const &);
+    WeaponGroupManager(WeaponGroupManager const &);
     WeaponGroupManager();
 
 public:
@@ -56,28 +56,33 @@ public:
     bool IsEmpty() const ;
     void ClearWeapons();
     bool IsValid() const ;
-    int SaveToXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode *) const ;
+    int SaveToXml(m3d::cmn::XmlFile *, m3d::cmn::XmlNode *) const ;
     bool CanFire() const ;
-    static struct m3d::Class * GetBaseClass();
-    virtual class m3d::Object * Clone();
+    static m3d::Class * GetBaseClass();
+    virtual m3d::Object * Clone();
     static enum Impulse __fastcall GetImpulseByGroupId(int);
-    static class m3d::Object * CreateObject();
+    static m3d::Object * CreateObject();
     int AddWeapon(CStr const &);
     void Clear();
     int GetGroupId() const ;
-    virtual struct m3d::Class * GetClass() const ;
-    enum Impulse GetImpulseId() const ;
+    virtual m3d::Class * GetClass() const ;
+    Impulse GetImpulseId() const ;
     void KeepFire();
     int RemoveWeapon(CStr const &);
-    int LoadFromXml(struct m3d::cmn::XmlFile *,struct m3d::cmn::XmlNode const *);
+    int LoadFromXml(m3d::cmn::XmlFile *, m3d::cmn::XmlNode const *);
     bool IncludesWeapon(CStr const &) const ;
-    class WeaponGroup & operator=(class WeaponGroup const &);
+    WeaponGroup & operator=(WeaponGroup const &);
     void SetGroupId(int);
     virtual ~WeaponGroup();
-    class std::set<CStr,struct std::less<CStr>,class std::allocator<CStr> > const & GetWeapons() const ;
+    std::set<CStr, std::less<CStr>, std::allocator<CStr> > const & GetWeapons() const ;
+
 protected:
     WeaponGroup();
-    WeaponGroup(class WeaponGroup const &);
+    WeaponGroup(WeaponGroup const &);
+
+public:
+    RT_CLASS_DECLARE(WeaponGroup);
+
 private:
     int m_groupId;
     Impulse m_impulseId;

@@ -1,22 +1,36 @@
 #pragma once
 
-class DemoSplashWnd :  public m3d::ui::ModalWnd
+class DemoSplashWnd : public m3d::ui::ModalWnd
 {
 public:
-    virtual struct m3d::Class * GetClass() const ;
-    static class m3d::Object * CreateObject();
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_btnTargemName;
+    };
+
+public:
+    virtual m3d::Class* GetClass() const;
+    static m3d::Object* CreateObject();
     virtual int GameDataSetup();
-    virtual int OnWndNotify(class m3d::ui::Wnd *,unsigned int,unsigned int,class m3d::AIParam const &);
-    virtual class m3d::Object * Clone();
+    virtual int OnWndNotify(m3d::ui::Wnd*, unsigned int, unsigned int, m3d::AIParam const&);
+    virtual m3d::Object* Clone();
     virtual ~DemoSplashWnd();
-    static struct m3d::Class * GetBaseClass();
+    static m3d::Class* GetBaseClass();
+
 protected:
     DemoSplashWnd();
-    DemoSplashWnd(class DemoSplashWnd const &);
+    DemoSplashWnd(DemoSplashWnd const&);
     virtual int OnActivate(bool);
-    virtual int OnPaint(struct m3d::ui::DrawInfo const &);
+    virtual int OnPaint(m3d::ui::DrawInfo const&);
+
+public:
+    RT_CLASS_DECLARE(DemoSplashWnd);
+
 private:
-    Clone();
     DemoSplashWnd::AuxInfo m_aif;
-    m3d::ui::ButtonWnd *m_btnTargem;
+    m3d::ui::ButtonWnd* m_btnTargem;
 };
