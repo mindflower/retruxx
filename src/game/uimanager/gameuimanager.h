@@ -74,7 +74,7 @@ protected:
 public:
     RT_CLASS_DECLARE(WindowResourceInfo);
 
-private:
+public:
     int m_wndGuiId = -1;
     CStr m_className;
     bool m_bShowImmediate = false;
@@ -98,7 +98,7 @@ protected:
 public:
     RT_CLASS_DECLARE(IcoResourceInfo);
 
-private:
+public:
     CStr m_levelName;
 };
 

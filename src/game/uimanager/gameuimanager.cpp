@@ -1,13 +1,21 @@
 #include "gameuimanager.h"
+#include <client.h>
 #include <config.h>
+#include <level.h>
 #include <m3dapp.h>
 #include <stdexcept>
+#include <world.h>
 #include <ui/wnd.h>
 #include <core/ini.h>
 #include <core/log.h>
 #include <core/console/console.h>
 #include <game/m3dgame.h>
 #include <game/uimisc/objectsicons.h>
+
+namespace m3d
+{
+    extern CClient* pClient;
+}
 
 namespace
 {
@@ -93,7 +101,7 @@ RT_CLASS_DEFINE(WindowResourceInfo);
 
 m3d::Class* WindowResourceInfo::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(WindowResourceInfo);
 }
 
 WindowResourceInfo::~WindowResourceInfo()
@@ -157,7 +165,7 @@ m3d::Object* IcoResourceInfo::CreateObject()
 
 m3d::Class* IcoResourceInfo::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(IcoResourceInfo);
 }
 
 m3d::Class* IcoResourceInfo::GetBaseClass()
@@ -220,14 +228,70 @@ int GameUiManager::GUI_LoadResourceInfos()
     return res;
 }
 
-int GameUiManager::GUI_LoadIconsResources(ResourceInfo::ResourceLoadType)
+int GameUiManager::GUI_LoadIconsResources(ResourceInfo::ResourceLoadType loadType)
 {
-    throw std::logic_error("Not implemented");
+    if (loadType == ResourceInfo::LOADTYPE_NUM_LOAD_TYPES)
+    {
+        return 0;
+    }
+    std::vector<ResourceInfo*> resourceInfos;
+    if (loadType==ResourceInfo::LOADTYPE_AT_LEVEL_START)
+    {
+        CStr levelName;
+        if (m3d::pClient && m3d::pClient->GetWorld().m_level != nullptr)
+        {
+            levelName = m3d::pClient->GetWorld().m_level->GetLevelName();
+        }
+        GUI_GetIconsResourceInfoByLevel(levelName, resourceInfos);
+    }
+    else
+    {
+        GUI_GetResourceInfosByLoadType(loadType, m_resourceInfoIcons, resourceInfos);
+    }
+    auto res = 0;
+    for (auto* info : resourceInfos)
+    {
+        if (info->IsKindOf(RT_CLASS_LOCAL(IcoResourceInfo)))
+        {
+            res &= GUI_LoadIconsFromResourceInfo(dynamic_cast<IcoResourceInfo*>(info));
+        }
+        else
+        {
+            res = 0;
+        }
+    }
+    if (!res)
+    {
+        M3D_LOG_ERR("Interface: icons were loaded from resources with errors");
+    }
+    return res;
 }
 
-int GameUiManager::GUI_LoadWindowsResources(ResourceInfo::ResourceLoadType)
+int GameUiManager::GUI_LoadWindowsResources(ResourceInfo::ResourceLoadType loadType)
 {
-    throw std::logic_error("Not implemented");
+    if (loadType == ResourceInfo::LOADTYPE_NUM_LOAD_TYPES)
+    {
+        return 0;
+    }
+    std::vector<ResourceInfo*> resourceInfos;
+    GUI_GetResourceInfosByLoadType(loadType, m_resourceInfoWindows, resourceInfos);
+    auto res = 0;
+    for (auto info : resourceInfos)
+    {
+        if (info && info->IsKindOf(RT_CLASS_LOCAL(WindowResourceInfo)))
+        {
+            res &= GUI_LoadWindowFromResourceInfo(dynamic_cast<WindowResourceInfo*>(info));
+        }
+        else
+        {
+            res = 0;
+        }
+    }
+    if (!res)
+    {
+        M3D_LOG_ERR("Interface: windows were loaded from resources with errors");
+    }
+    return res;
 }
 
 int GameUiManager::GUI_SetMinDynamicId(int)
@@ -320,8 +384,33 @@ int GameUiManager::GUI_Save(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNod
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_CreateWindow(int, CStr const&, bool, CStr const&)
+int GameUiManager::GUI_CreateWindow(int wndId, CStr const& className, bool needShow, CStr const& fileName)
 {
+    if (wndId >= m_minDynamicId)
+    {
+        M3D_LOG_INFO("Interface: fail to create window " + CStr(wndId) + " - invalid id");
+        return 0;
+    }
+    if (className.empty())
+    {
+        M3D_LOG_INFO("Interface: fail to create window - invalid class type");
+        return 0;
+    }
+    if (GUI_GetWindow(wndId))
+    {
+        M3D_LOG_INFO("Interface: fail to create window " + CStr(wndId) + " - a window with specified Id already exists");
+        return 0;
+    }
+    auto wnd = dynamic_cast<m3d::ui::Wnd*>(m3d::g_Kernel->New(className.c_str()));
+    if (!wnd)
+    {
+        M3D_LOG_INFO("Interface: fail to create window " + className);
+        return 0;
+    }
+    if (fileName.empty() || m3d::ui::LoadExistingDialog(wnd, fileName))
+    {
+        
+    }
     throw std::logic_error("Not implemented");
 }
 
@@ -334,9 +423,18 @@ bool GameUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd*) const
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_LoadStringsFromResourceInfo(ResourceInfo const*)
+int GameUiManager::GUI_LoadStringsFromResourceInfo(ResourceInfo const* info)
 {
-    throw std::logic_error("Not implemented");
+    if (!info)
+    {
+        return 0;
+    }
+    auto const res = m3d::Application::g_pApp->LoadStrings(info->m_fileName);
+    if (!res)
+    {
+        M3D_LOG_INFO("Interface: error load strings from file " + info->m_fileName);
+    }
+    return res;
 }
 
 WindowResourceInfo* GameUiManager::GUI_GetResourceInfoByWndGuiId(int) const
@@ -391,7 +489,7 @@ int GameUiManager::GUI_Init(bool reloadResources)
             {
                 res = 0;
             }
-            if (!GUI_LoadResources(ResourceInfo::LOADTYPE_AT_APP_START))
+             if (!GUI_LoadResources(ResourceInfo::LOADTYPE_AT_APP_START))
             {
                 res = 0;
             }
@@ -519,9 +617,18 @@ void GameUiManager::GUI_RegisterCVars()
     m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToUiIcons, nullptr);
 }
 
-int GameUiManager::GUI_LoadWindowFromResourceInfo(WindowResourceInfo const*)
+int GameUiManager::GUI_LoadWindowFromResourceInfo(WindowResourceInfo const* info)
 {
-    throw std::logic_error("Not implemented");
+    if (!info)
+    {
+        return 0;
+    }
+    auto res = GUI_CreateWindow(info->m_wndGuiId, info->m_className, info->m_bShowImmediate, info->m_fileName);
+    if (!res)
+    {
+        M3D_LOG_INFO("Interface: error create window from file " + info->m_fileName);
+    }
+    return res;
 }
 
 void GameUiManager::GUI_ClearResourceInfos(std::vector<ResourceInfo*>& resourceInfos)
@@ -551,9 +658,14 @@ void GameUiManager::GUI_ClearAllResourceInfos()
     GUI_ClearResourceInfos(m_resourceInfoIcons);
 }
 
-ref_ptr<m3d::ui::Wnd> GameUiManager::GUI_GetWindow(int) const
+ref_ptr<m3d::ui::Wnd> GameUiManager::GUI_GetWindow(int wndId) const
 {
-    throw std::logic_error("Not implemented");
+    auto it = m_windows.find(wndId);
+    if (it != end(m_windows))
+    {
+        return it->second;
+    }
+    return {};
 }
 
 bool GameUiManager::GUI_IsCurrentLevelMainMenuLevel() const
@@ -561,9 +673,19 @@ bool GameUiManager::GUI_IsCurrentLevelMainMenuLevel() const
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_LoadIconsFromResourceInfo(IcoResourceInfo const*)
+int GameUiManager::GUI_LoadIconsFromResourceInfo(IcoResourceInfo const* info)
 {
-    throw std::logic_error("Not implemented");
+    if (!info)
+    {
+        return 0;
+    }
+    auto res = m_icons->Load(info->m_fileName, info->m_levelName.empty());
+    if (!res)
+    {
+        return res;
+    }
+    M3D_LOG_INFO("Interface: error load icons from file " + info->m_fileName);
+    return res;
 }
 
 bool GameUiManager::GUI_IsHidden() const

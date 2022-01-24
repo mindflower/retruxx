@@ -43,9 +43,14 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    unsigned ui::GfxServer::GetColor(unsigned) const
+    unsigned ui::GfxServer::GetColor(unsigned c) const
     {
-        throw std::logic_error("Not implemented");
+        auto res = c;
+        if ((c & 0xFF000000) == 0 && c < 0xFF)
+        {
+            res = m_colors[c];
+        }
+        return res;
     }
 
     void ui::GfxServer::AddLineFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned, int)

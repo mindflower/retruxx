@@ -355,5 +355,9 @@ namespace m3d
             BoundsBase<float> m_clientRect;
             BoundsBase<float> m_clientClippedRect;
         };
+
+        int LoadExistingDialog(Wnd*, CStr const&);
+        BoundsBase<float> strToBounds(CStr const&);
+        PointBase<float> strToPoint(CStr const&);
     }
 }

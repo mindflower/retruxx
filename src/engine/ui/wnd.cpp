@@ -3,7 +3,10 @@
 #include <stdexcept>
 #include <core/aiparam.h>
 #include <core/kernel.h>
+#include <core/log.h>
+#include <core/ref_ptr.h>
 #include <math/vector2.h>
+#include <server/utils.h>
 #include <ui/ui.h>
 #include <ui/wndstation.h>
 #include <ui/wnd.h>
@@ -142,14 +145,22 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::SetTextColorDisabled(unsigned)
+        void Wnd::SetTextColorDisabled(unsigned textColor)
         {
-            throw std::logic_error("Not implemented");
+            m_textColorDisabled = textColor;
+            char tmp[128] = { 0 };
+            auto clr = GetGfxServer()->GetColor(textColor);
+            sprintf(tmp, "%08x", clr);
+            m_strTextColorDisabled = CStr("@") + tmp;
         }
 
-        void Wnd::SetTextColor(unsigned)
+        void Wnd::SetTextColor(unsigned textColor)
         {
-            throw std::logic_error("Not implemented");
+            m_textColor = textColor;
+            char tmp[128] = { 0 };
+            auto clr = GetGfxServer()->GetColor(textColor);
+            sprintf(tmp, "%08x", clr);
+            m_strTextColor = CStr("@") + tmp;
         }
 
         int Wnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -212,9 +223,86 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int Wnd::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int Wnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
         {
-            throw std::logic_error("Not implemented");
+            m_bounds = strToBounds(xmlNode->GetAttribute("org"));
+            CStr strBaseOrigin = xmlNode->GetAttribute("baseOrigin");
+            if (!strBaseOrigin.empty())
+            {
+                m_baseOrigin = strToPoint(strBaseOrigin);
+            }
+            else
+            {
+                m_baseOrigin.x = m_bounds.x0;
+                m_baseOrigin.y = m_bounds.y0;
+            }
+            SafeUintAttrib(m_style, xmlNode, "style");
+            SafeIntAttrib(m_activationOrder, xmlNode, "order");
+            SafeUintAttrib(m_id, xmlNode, "id");
+
+            CStr caption;
+            CStr tip;
+            SafeStrAttrib(caption, xmlNode, "caption");
+            SafeStrAttrib(tip, xmlNode, "tip");
+            SetText(GetStation()->InitializeStringUsingIds(caption));
+            m_toolTipText = GetStation()->InitializeStringUsingIds(tip);
+            SafeStrAttrib(m_bgTextureName, xmlNode, "backimage");
+            SafeStrAttrib(m_paneName, xmlNode, "paneName");
+            SafeIntAttrib(m_paneFlags, xmlNode, "paneFlags");
+            SafeEnumAttrib(m_textWrap, xmlNode, "wrap");
+            SafeEnumAttrib(m_textFormat, xmlNode, "format");
+            SafeIntAttrib(m_defFont, xmlNode, "font");
+
+            std::vector<float> vecClientEdges;
+            CStr strClientEdges;
+            SafeStrAttrib(strClientEdges, xmlNode, "clientEdges");
+            ai::StrToFloatVector(strClientEdges, vecClientEdges);
+            if (vecClientEdges.size() == 4)
+            {
+                SetClientEdges(vecClientEdges[0], vecClientEdges[1], vecClientEdges[2], vecClientEdges[3]);
+            }
+
+            SafeStrAttrib(m_scrollPaneName, xmlNode, "scrollPaneName");
+            SafeClrAttrib(m_curClr, xmlNode, "wndColor");
+
+            auto textColor = GetGfxServer()->GetColor(0);
+            SafeClrAttrib(textColor, xmlNode, "textColor");
+            SetTextColor(textColor);
+            textColor = GetGfxServer()->GetColor(4);
+            SafeClrAttrib(textColor, xmlNode, "textColorDisabled");
+            SetTextColorDisabled(textColor);
+
+            Create(m_caption, m_style, m_bounds, m_id);
+
+            //TODO: check this
+            if (!m_bgTextureName.empty())
+            {
+                SetBackground(m_bgTextureName);
+            }
+
+            ref_ptr animationsNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+            xmlNode->GetFirstChild_(animationsNode, "Animations");
+            if (!animationsNode->IsEmpty())
+            {
+                ref_ptr onShowAnimationNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+                animationsNode->GetFirstChild_(onShowAnimationNode, "AnimationOnShow");
+                if (!onShowAnimationNode->IsEmpty())
+                {
+                    AnimationInfo animationInfo;
+                    animationInfo.ReadFromXmlNode(xmlFile, onShowAnimationNode);
+                    SetOnShowAnimation(animationInfo);
+                }
+
+                ref_ptr onHideAnimationNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+                animationsNode->GetFirstChild_(onHideAnimationNode, "AnimationOnHide");
+                if (!onHideAnimationNode->IsEmpty())
+                {
+                    AnimationInfo animationInfo;
+                    animationInfo.ReadFromXmlNode(xmlFile, onHideAnimationNode);
+                    SetOnHideAnimation(animationInfo);
+                }
+            }
+            return Object::ReadFromXmlNode(xmlFile, xmlNode);
         }
 
         unsigned Wnd::GetInt() const
@@ -316,9 +404,9 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int Wnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        int Wnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
-            throw std::logic_error("Not implemented");
+            return CreateWnd(caption, style, rc, id);
         }
 
         void Wnd::SetPaneFlags(int)
@@ -446,14 +534,17 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::SetClientEdges(std::vector<float> const&)
+        void Wnd::SetClientEdges(std::vector<float> const& edges)
         {
-            throw std::logic_error("Not implemented");
+            m_clientEdges = edges;
         }
 
-        void Wnd::SetClientEdges(float, float, float, float)
+        void Wnd::SetClientEdges(float left, float top, float right, float bottom)
         {
-            throw std::logic_error("Not implemented");
+            m_clientEdges[0] = left;
+            m_clientEdges[1] = top;
+            m_clientEdges[2] = right;
+            m_clientEdges[3] = bottom;
         }
 
         void Wnd::AdjustToFitChildren()
@@ -647,6 +738,50 @@ namespace m3d
         void Wnd::StartDragMove(PointBase<float> const&)
         {
             throw std::logic_error("Not implemented");
+        }
+
+        int LoadExistingDialog(Wnd* destWnd, CStr const& name)
+        {
+            CStr err;
+            ref_ptr xmlFile = ReadXmlFile(name.c_str(), &err);
+            if (xmlFile)
+            {
+                ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+                xmlFile->GetFirstChild_(node, "Prefabs");
+                node->GetFirstChild_(node, "Node");
+                auto attr = node->GetAttribute("class");
+                if (attr)
+                {
+                    if (!destWnd->IsKindOf(attr))
+                    {
+                        M3D_LOG_INFO("LoadExistingDialog (" + name + "): warning! classes mismatches, existing: " + CStr(attr));
+                    }
+                    destWnd->ReadFromXmlNode(xmlFile, node);
+                }
+                return 1;
+            }
+            M3D_LOG_INFO("LoadDialog: " + err);
+            return 0;
+        }
+
+        BoundsBase<float> strToBounds(CStr const& s)
+        {
+            BoundsBase<float> res{0.0, 0.0, 0.0, 0.0};
+            if (!s.empty())
+            {
+                sscanf(s.c_str(), "%f %f %f %f", &res.x0, &res.y0, &res.width, &res.height);
+            }
+            return res;
+        }
+
+        PointBase<float> strToPoint(CStr const& s)
+        {
+            PointBase<float> res{ 0.0, 0.0 };
+            if (!s.empty())
+            {
+                sscanf(s.c_str(), "%f %f", &res.x, &res.y);
+            }
+            return res;
         }
 
         GfxServer* Wnd::GetGfxServer()

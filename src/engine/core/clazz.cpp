@@ -197,20 +197,16 @@ namespace m3d
                 M3D_LOG_INFO("ReadFromXmlNode: name = " + m_name + " conflicts with another child");
                 return 0;
             }
-            else
+        }
+        ref_ptr newNode = file->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
+        for (node->GetFirstChild_(newNode, "Node"); !newNode->IsEmpty(); newNode->GetNextSibling_(newNode, "Node"))
+        {
+            if (!ChildNodeFromXmlNode(file, newNode))
             {
-                ref_ptr newNode = file->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
-                for (node->GetFirstChild_(newNode, "Node"); !newNode->IsEmpty(); newNode->GetNextSibling_(newNode, "Node"))
-                {
-                    if (!ChildNodeFromXmlNode(file, newNode))
-                    {
-                        return 0;
-                    }
-                }
-                return 1;
+                return 0;
             }
         }
-        return 0;
+        return 1;
     }
 
     int Object::ReadFromXmlNodeAfterAdd(cmn::XmlFile* file, cmn::XmlNode* mode)

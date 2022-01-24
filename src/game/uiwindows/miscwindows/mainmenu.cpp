@@ -4,12 +4,11 @@ RT_CLASS_DEFINE(MainMenuUI);
 
 MainMenuUI::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
 }
 
 m3d::Class* MainMenuUI::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(MainMenuUI);
 }
 
 MainMenuUI::~MainMenuUI()
@@ -19,12 +18,12 @@ MainMenuUI::~MainMenuUI()
 
 m3d::Object* MainMenuUI::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new MainMenuUI;
 }
 
 m3d::Class* MainMenuUI::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 void MainMenuUI::OnFinishVideoPlaying()
@@ -44,7 +43,6 @@ int MainMenuUI::OnBeforeAddToWndStation()
 
 MainMenuUI::MainMenuUI()
 {
-    throw std::logic_error("Not implemented");
 }
 
 MainMenuUI::MainMenuUI(MainMenuUI const&)

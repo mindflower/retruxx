@@ -153,9 +153,12 @@ BoundsBase<T>::BoundsBase(int)
 }
 
 template <class T>
-BoundsBase<T>::BoundsBase(BoundsBase<T> const&)
+BoundsBase<T>::BoundsBase(BoundsBase<T> const& rhs) :
+    x0(rhs.x0),
+    y0(rhs.y0),
+    width(rhs.width),
+    height(rhs.height)
 {
-    throw std::logic_error("Not implemented");
 }
 
 template <class T>

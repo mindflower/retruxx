@@ -24,6 +24,11 @@ public:
         }
     }
 
+    operator bool()
+    {
+        return m_ptr != nullptr;
+    }
+
     bool operator!() const
     {
         return m_ptr == nullptr;

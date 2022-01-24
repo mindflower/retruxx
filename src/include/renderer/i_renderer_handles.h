@@ -21,7 +21,7 @@ namespace m3d
 
             void SetInvalid()
             {
-                throw std::logic_error("Not implemented");
+                m_handle = -1;
             }
             
             bool IsValid() const

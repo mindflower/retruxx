@@ -10,11 +10,11 @@ public:
         AuxInfo();
 
     private:
-        CStr m_wndVersionName;
-        CStr m_wndProfileName;
-        CStr m_strIdProfileDontChosen;
-        CStr m_strIdProfile;
-        unsigned int m_colorProfileName;
+        CStr m_wndVersionName = "wndVersion";
+        CStr m_wndProfileName = "wndProfile";
+        CStr m_strIdProfileDontChosen = "ProfileDontChosen";
+        CStr m_strIdProfile = "Profile";
+        unsigned int m_colorProfileName = 0xFFE5CA9D;
     };
 
 public:
@@ -43,7 +43,7 @@ public:
     RT_CLASS_DECLARE(MainMenuUI);
 
 private:
-    m3d::ui::Wnd *m_wndVersion;
-    m3d::ui::Wnd *m_wndProfile;
+    m3d::ui::Wnd *m_wndVersion = nullptr;
+    m3d::ui::Wnd *m_wndProfile = nullptr;
     MainMenuUI::AuxInfo m_aif;
 };
