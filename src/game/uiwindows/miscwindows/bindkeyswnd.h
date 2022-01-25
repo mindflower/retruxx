@@ -185,8 +185,8 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_lstBindingsName;
+    public:
+        CStr m_lstBindingsName = "lstBindings";
     };
 
 public:
@@ -213,8 +213,8 @@ public:
 
 private:
     AuxInfo m_aif;
-    bool m_isInited;
-    bool m_isDirty;
-    BindKeysList *m_lstBindings;
-    bool m_bChanged;
+    bool m_isInited = false;
+    bool m_isDirty = false;
+    BindKeysList *m_lstBindings = false;
+    bool m_bChanged = false;
 };

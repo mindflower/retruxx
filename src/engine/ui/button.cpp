@@ -1,17 +1,21 @@
+#include <m3dapp.h>
+#include <core/ini.h>
 #include <ui/button.h>
 
 namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_DEFINE(ButtonWnd);
+
         Object* ButtonWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            return new ButtonWnd;
         }
 
         Class* ButtonWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Wnd);
         }
 
         int ButtonWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -26,7 +30,7 @@ namespace m3d
 
         Class* ButtonWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(ButtonWnd);
         }
 
         void ButtonWnd::SetRegular()
@@ -59,9 +63,62 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ButtonWnd::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int ButtonWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
         {
-            throw std::logic_error("Not implemented");
+            auto res = Wnd::ReadFromXmlNode(xmlFile, xmlNode);
+            if (!res)
+            {
+                return res;
+            }
+            m_isImaged = 0;
+            SafeIntAttrib(m_isImaged, xmlNode, "btnIsImaged");
+            if (m_isImaged)
+            {
+                CStr image;
+                SafeStrAttrib(image, xmlNode, "btnImage");
+                if (!image.empty())
+                {
+                    m_image = Application::g_pApp->m_renderer->AddTexture(image, 4);
+                }
+
+                CStr imageDown;
+                SafeStrAttrib(imageDown, xmlNode, "btnImageDown");
+                if (!imageDown.empty())
+                {
+                    m_imageMouseDown = Application::g_pApp->m_renderer->AddTexture(imageDown, 4);
+                }
+
+                CStr imageIn;
+                SafeStrAttrib(imageIn, xmlNode, "btnImageIn");
+                if (!imageIn.empty())
+                {
+                    m_imageMouseIn = Application::g_pApp->m_renderer->AddTexture(imageIn, 4);
+                }
+
+                CStr imageDis;
+                SafeStrAttrib(imageDis, xmlNode, "btnImageDisabled");
+                if (!imageDis.empty())
+                {
+                    m_imageDisabled = Application::g_pApp->m_renderer->AddTexture(imageDis, 4);
+                }
+
+                if (!m_imageMouseDown.IsValid())
+                {
+                    m_imageMouseDown = m_image;
+                    Application::g_pApp->m_renderer->ReferenceTexture(m_image);
+                }
+                if (!m_imageMouseIn.IsValid())
+                {
+                    m_imageMouseIn = m_image;
+                    Application::g_pApp->m_renderer->ReferenceTexture(m_image);
+                }
+                if (!m_imageDisabled.IsValid())
+                {
+                    m_imageDisabled = m_image;
+                    Application::g_pApp->m_renderer->ReferenceTexture(m_image);
+                }
+            }
+            return 1;
         }
 
         rend::TexHandle ButtonWnd::GetImageDisabled() const
@@ -79,9 +136,15 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ButtonWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        int ButtonWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
-            throw std::logic_error("Not implemented");
+            auto const res = Wnd::Create(caption, style, rc, id);
+            if (!res)
+            {
+                return res;
+            }
+            m_style |= 4;
+            return 1;
         }
 
         int ButtonWnd::OnMouseOut()
@@ -131,7 +194,11 @@ namespace m3d
 
         ButtonWnd::ButtonWnd()
         {
-            throw std::logic_error("Not implemented");
+            m_style = 278016;
+            m_textWrap = TW_NOWRAP;
+            m_textFormat = TF_CENTER;
+            m_paneName = "defaultBtn";
+            m_paneFlags = 7;
         }
 
         int ButtonWnd::OnObtainingFocus()

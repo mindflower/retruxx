@@ -19,22 +19,21 @@ BindKeysWnd::BindKeysList::AuxInfo::AuxInfo()
 
 BindKeysWnd::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
 }
 
 m3d::Object* BindKeysWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new BindKeysWnd;
 }
 
 m3d::Class* BindKeysWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(BindKeysWnd);
 }
 
 m3d::Class* BindKeysWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Object* BindKeysWnd::Clone()
@@ -79,7 +78,6 @@ BindKeysWnd::BindKeysWnd(BindKeysWnd const&)
 
 BindKeysWnd::BindKeysWnd()
 {
-    throw std::logic_error("Not implemented");
 }
 
 int BindKeysWnd::GameDataUpdate(void*, int)

@@ -42,16 +42,16 @@ namespace m3d
 			virtual int OnObtainingFocus();
 
         public:
-            RT_CLASS_INLINE_DECLARE(ButtonWnd);
+            RT_CLASS_DECLARE(ButtonWnd);
 
         private:
-            int m_isImaged;
-            int m_isInside;
+            int m_isImaged = 0;
+            int m_isInside = 0;
             rend::TexHandle m_image;
             rend::TexHandle m_imageMouseIn;
             rend::TexHandle m_imageMouseDown;
             rend::TexHandle m_imageDisabled;
-            bool m_isSounded;
+            bool m_isSounded = true;
         };
 
         class CheckWnd : public ButtonWnd

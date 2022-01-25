@@ -1,4 +1,6 @@
 #include "mainmenu.h"
+#include <m3dapp.h>
+#include <core/log.h>
 
 RT_CLASS_DEFINE(MainMenuUI);
 
@@ -67,7 +69,36 @@ int MainMenuUI::OnKey(unsigned short, unsigned char, unsigned)
 
 int MainMenuUI::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 2) != 0)
+    {
+        return 1;
+    }
+    auto res = 1;
+    auto version = GetChildByName(m_aif.m_wndVersionName);
+    if (version && version->IsKindOf(RT_CLASS_LOCAL(Wnd)))
+    {
+        m_wndVersion = dynamic_cast<Wnd*>(version);
+    }
+    else
+    {
+        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndVersionName + " is not found or incorrect type");
+        res = 0;
+    }
+    auto profile = GetChildByName(m_aif.m_wndProfileName);
+    if (!profile || !IsKindOf(RT_CLASS_LOCAL(Wnd)))
+    {
+        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndProfileName + " is not found or incorrect type");
+        return 1;
+    }
+    m_wndProfile = dynamic_cast<Wnd*>(profile);
+    if (!res)
+    {
+        return 1;
+    }
+    auto title = m3d::Application::g_pApp->GetWindowTitle();
+    m_wndVersion->SetText(title);
+    m_gameDataFlags |= 1;
+    return 1;
 }
 
 void MainMenuUI::OnStartVideoPlaying()

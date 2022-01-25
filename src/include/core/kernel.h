@@ -93,6 +93,6 @@ namespace m3d
     extern Kernel* g_Kernel;
 }
 
-#define SYS_ERROR(msg)
-#define M3D_ASSERT(cond)
-#define M3D_CRITICAL_ERROR(msg)
+#define SYS_ERROR(msg)              m3d::g_Kernel->SysError((__FILE__ ":") + CStr(__LINE__), (msg))
+#define M3D_ASSERT(cond)            if (!(cond)) SYS_ERROR(#cond)
+#define M3D_CRITICAL_ERROR(msg)     M3D_LOG_ERR(CStr("Error: ") + (msg)); SYS_ERROR("!\"Critical error, see log\"");

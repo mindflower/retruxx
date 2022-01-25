@@ -68,6 +68,11 @@ namespace
         M3D_LOG_INFO("snd: " + str);
     }
 
+    void __fastcall logInputFunc(CStr const& str)
+    {
+        M3D_LOG_INFO("input: " + str);
+    }
+
     m3d::CConsoleCommands conCommands[] = {
         {"exit", 0},
         {"benchmark", 1},
@@ -681,6 +686,7 @@ namespace m3d
         m_input = createIInput(g_Kernel);
         m_input->IncRef();
         M3D_LOG_INFO("NOTE! input is bind to " + inputDriverName);
+        m_input->Init(g_Kernel, logInputFunc);
         return 1;
     }
 
@@ -936,7 +942,7 @@ namespace m3d
 
     char* Application::GetWindowTitle() const
     {
-        throw std::logic_error("Not implemented");
+        return m_strWindowTitle;
     }
 
     void Application::MiniDump()
@@ -1290,11 +1296,12 @@ namespace m3d
 
     void Application::sysError(CStr const& whence, CStr const& assertion)
     {
-        panic();
-        auto const description = "Assertion failed at " + whence + "\nexpression^ " + assertion;
+
+        throw std::logic_error("Not implemented");
+        auto const description = "Assertion failed at " + whence + "\nexpression: " + assertion;
         M3D_LOG_INFO(description);
         //TODO: check this
-        DbgAssert(assertion.c_str(), whence.c_str(), 0);
+        panic();
     }
 
     int Application::FinishExclusiveMsgLoop()

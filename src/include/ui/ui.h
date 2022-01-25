@@ -66,6 +66,7 @@ namespace m3d
         class Wnd : public Object
         {
             friend class WndStation;
+            friend class GameUiManager;
         public:
             enum DragMode
             {
@@ -120,7 +121,7 @@ namespace m3d
                 void SetupDefaultOnHide();
                 void SetupDefaultOnShow();
 
-            private:
+            public:
                 bool m_bEnabled;
                 bool m_bImmediate;
                 PointBase<float> m_startPt;
@@ -294,7 +295,7 @@ namespace m3d
             void StartDragMove(PointBase<float> const&);
 
         public:
-            RT_CLASS_INLINE_DECLARE(Wnd);
+            RT_CLASS_DECLARE(Wnd);
 
         private:
             int m_created = 0;
@@ -303,6 +304,8 @@ namespace m3d
             PointBase<float> m_dragCurPtLocal;
             PointBase<float> m_dragStartPt;
             PointBase<float> m_dragCurPt;
+
+        protected:
             CStr m_toolTipText;
             Wnd* m_toolTipWnd = nullptr;
             int m_toolTipTimeOut = -1;

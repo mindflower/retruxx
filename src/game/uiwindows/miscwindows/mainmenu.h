@@ -9,7 +9,7 @@ public:
     public:
         AuxInfo();
 
-    private:
+    public:
         CStr m_wndVersionName = "wndVersion";
         CStr m_wndProfileName = "wndProfile";
         CStr m_strIdProfileDontChosen = "ProfileDontChosen";

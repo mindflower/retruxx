@@ -93,13 +93,8 @@ namespace m3d
 
     Object* Class::NewInstance() const
     {
-        if (m_fnCreateObject != nullptr)
-        {
-            return m_fnCreateObject();
-        }
-        //TODO: replace to macro
-        g_Kernel->SysError("m_fnCreateObject", "here");
-        return nullptr;
+        M3D_ASSERT(m_fnCreateObject);
+        return m_fnCreateObject();
     }
 
     RefCountedBase::RefCountedBase()
@@ -188,7 +183,7 @@ namespace m3d
 
     int Object::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
     {
-        CStr nameAttr(node->GetAttribute("name"));
+        m_name = node->GetAttribute("name");
         if (m_parent != nullptr)
         {
             auto* child = m_parent->GetChildByName(m_name);

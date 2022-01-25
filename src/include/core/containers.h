@@ -21,9 +21,15 @@ namespace m3d
         }
 
         
-        bool get(CStr const&, T&) const
+        bool get(CStr const& key, T& v) const
         {
-            throw std::logic_error("Not implemented");
+            auto it = m_hash.find(key);
+            if (it != end(m_hash))
+            {
+                v = it->second;
+                return true;
+            }
+            return false;
         }
 
         void clear()
@@ -54,9 +60,9 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void addValueByKey(unsigned int, T const&)
+        void addValueByKey(unsigned int key, T const& val)
         {
-            throw std::logic_error("Not implemented");
+            m_hash.emplace(key, val);
         }
 
         bool getValueByKey(unsigned int, T&) const

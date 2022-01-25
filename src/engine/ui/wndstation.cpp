@@ -95,7 +95,7 @@ namespace m3d
 
         int WndStation::OnAddWnd(Wnd*, Wnd*)
         {
-            throw std::logic_error("Not implemented");
+            return 1;
         }
 
         Wnd* WndStation::CaptureMouse(Wnd*)
@@ -108,9 +108,14 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int WndStation::GetStringByStringId(CStr&, CStr const&)
+        int WndStation::GetStringByStringId(CStr& dest, CStr const& id)
         {
-            throw std::logic_error("Not implemented");
+            if (!m_strings.get(id, dest))
+            {
+                dest = "MISSING!";
+                return 0;
+            }
+            return 1;
         }
 
         bool WndStation::HasChildModalRunning()
@@ -221,18 +226,28 @@ namespace m3d
         {
             if (!src.empty())
             {
-                if (src.find('^') == CStr_npos)
+                CStr newStr = src;
+                auto startPos = 0;
+                while(true)
                 {
-                    //TODO: check correctness
-                    return src;
+                    auto const pos1 = newStr.find('^');
+                    if (pos1 == CStr_npos)
+                    {
+                        break;
+                    }
+                    auto const pos2 = newStr.find('^', pos1 + 1);
+                    if (pos2 == CStr_npos)
+                    {
+                        break;
+                    }
+                    CStr replacedSubstr;
+                    GetStringByStringId(replacedSubstr, newStr.substr(pos1 + 1, pos2));
+                    newStr = newStr.substr(startPos, pos1) + replacedSubstr + newStr.substr(pos2 + 1);
+                    startPos = pos2 + 1;
                 }
-                throw std::logic_error("Not implemented");
+                return newStr;
             }
-            else
-            {
-                //TODO: return value
-                return {};
-            }
+            return src;
         }
 
         WndStation::~WndStation()
@@ -247,6 +262,7 @@ namespace m3d
 
         WndStation::WndStation()
         {
+            m_wndStation = this;
             if (gfxserver == nullptr)
             {
                 gfxserver = new GfxServer;
@@ -281,9 +297,18 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void WndStation::RegisterWnd(Wnd*)
+        void WndStation::RegisterWnd(Wnd* w)
         {
-            throw std::logic_error("Not implemented");
+            if (w)
+            {
+                if (w->m_uniqueId == -1)
+                {
+                    w->m_uniqueId = m_nextUniqueId;
+                    m_allWindows.addValueByKey(reinterpret_cast<unsigned>(w), m_nextUniqueId);
+                    m_allWindowsById.addValueByKey(m_nextUniqueId, w);
+                    ++m_nextUniqueId;
+                }
+            }
         }
 
         GfxServer* WndStation::getGfxServer()

@@ -15,6 +15,8 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_DEFINE(Wnd);
+
         Wnd::AnimationInfo::~AnimationInfo()
         {
             throw std::logic_error("Not implemented");
@@ -72,7 +74,7 @@ namespace m3d
 
         Object* Wnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            return new Wnd;
         }
 
         int Wnd::GetUniqueId() const
@@ -122,12 +124,31 @@ namespace m3d
 
         int Wnd::OnBeforeAddToWndStation()
         {
-            throw std::logic_error("Not implemented");
+            auto res = 1;
+            for (auto wnd = dynamic_cast<Wnd*>(GetFirstChild_()); wnd; wnd = dynamic_cast<Wnd*>(wnd->GetNextSibling_()))
+            {
+                assert(wnd->IsKindOf(RT_CLASS_LOCAL(Wnd)));
+                res &= wnd->OnBeforeAddToWndStation();
+            }
+            return res;
         }
 
         int Wnd::OnAfterAddToWndStation()
         {
-            throw std::logic_error("Not implemented");
+            auto res = 1;
+            for (auto wnd = dynamic_cast<Wnd*>(GetFirstChild_()); wnd; wnd = dynamic_cast<Wnd*>(wnd->GetNextSibling_()))
+            {
+                assert(wnd->IsKindOf(RT_CLASS_LOCAL(Wnd)));
+                res &= wnd->OnAfterAddToWndStation();
+            }
+            if (IsAnimatingNow() && m_currentAnimation.m_purpose == AnimationInfo::PURPOSE_SHOW
+                || !m_wndStation->IsAnimationEnabled() || !m_onShowAnimation.CanAnimate())
+            {
+                return res;
+            }
+            auto isAnim = IsAnimatingNow();
+            StartAnimation(m_onShowAnimation, isAnim);
+            return res;
         }
 
         void Wnd::SetGuiId(int)
@@ -335,9 +356,22 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int Wnd::SetBackground(CStr const&)
+        int Wnd::SetBackground(CStr const& bgTextureName)
         {
-            throw std::logic_error("Not implemented");
+            m_bgTextureName = bgTextureName;
+            if (m_bgTexture.IsValid())
+            {
+                Application::g_pApp->m_renderer->ReleaseTexture(m_bgTexture);
+            }
+            if (!m_bgTextureName.empty())
+            {
+                m_bgTexture = Application::g_pApp->m_renderer->AddTexture(m_bgTextureName, 4);
+            }
+            else
+            {
+                m_bgTexture.SetInvalid();
+            }
+            return m_bgTexture.IsValid();
         }
 
         int Wnd::GetGameDataFlags()
@@ -384,9 +418,44 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int Wnd::AddChild(Object*)
+        int Wnd::AddChild(Object* w)
         {
-            throw std::logic_error("Not implemented");
+            if (!w->IsKindOf(RT_CLASS_LOCAL(Wnd)))
+            {
+                return 0;
+            }
+            auto wnd = reinterpret_cast<Wnd*>(w);
+            if (wnd->m_bSuspendedUnlink)
+            {
+                wnd->m_bSuspendedUnlink = false;
+                std::vector<Object*> stack;
+                stack.push_back(w);
+                throw std::logic_error("Not implemented");
+            }
+            else
+            {
+                auto res = 0;
+                if (this == m_wndStation || IsChildOf(m_wndStation))
+                {
+                    res = 1;
+                    if (!(wnd->OnBeforeAddToWndStation() & 1))
+                    {
+                        return 0;
+                    }
+                }
+                else
+                {
+                    res = 0;
+                }
+                Object::AddChild(w);
+                m_wndStation->OnAddWnd(this, wnd);
+                if (res)
+                {
+                    wnd->OnAfterAddToWndStation();
+                    return 1;
+                }
+            }
+            return 1;
         }
 
         bool Wnd::IsEnabled() const
@@ -441,7 +510,7 @@ namespace m3d
 
         Class* Wnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Wnd);
         }
 
         Wnd::AnimationInfo const& Wnd::GetCurrentAnimation() const

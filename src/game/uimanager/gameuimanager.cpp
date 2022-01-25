@@ -248,7 +248,7 @@ int GameUiManager::GUI_LoadIconsResources(ResourceInfo::ResourceLoadType loadTyp
     {
         GUI_GetResourceInfosByLoadType(loadType, m_resourceInfoIcons, resourceInfos);
     }
-    auto res = 0;
+    auto res = 1;
     for (auto* info : resourceInfos)
     {
         if (info->IsKindOf(RT_CLASS_LOCAL(IcoResourceInfo)))
@@ -409,9 +409,18 @@ int GameUiManager::GUI_CreateWindow(int wndId, CStr const& className, bool needS
     }
     if (fileName.empty() || m3d::ui::LoadExistingDialog(wnd, fileName))
     {
-        
+        m_windows.emplace(wndId, wnd);
+        wnd->m_guiId = wndId;
+        auto res = wnd->GameDataSetup() & 1;
+        wnd->m_gameDataFlags |= 0xA;
+        if (needShow)
+        {
+            GUI_ShowWindow(wndId, false, false, false, nullptr);
+        }
+        return res;
     }
-    throw std::logic_error("Not implemented");
+    M3D_LOG_INFO("Interface: fail to load window " + className + " from file " + fileName);
+    return 0;
 }
 
 GameUiManager::GameUiManager()
@@ -682,9 +691,8 @@ int GameUiManager::GUI_LoadIconsFromResourceInfo(IcoResourceInfo const* info)
     auto res = m_icons->Load(info->m_fileName, info->m_levelName.empty());
     if (!res)
     {
-        return res;
+        M3D_LOG_INFO("Interface: error load icons from file " + info->m_fileName);
     }
-    M3D_LOG_INFO("Interface: error load icons from file " + info->m_fileName);
     return res;
 }
 

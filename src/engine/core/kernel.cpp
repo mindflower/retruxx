@@ -6,8 +6,8 @@
 #include <map>
 #include <stdexcept>
 #include <core/kernel.h>
-#include <core/log.h>
 #include <core/timer.h>
+#include <core/log.h>
 #include <file/fileserver.h>
 #include <ode/odememory.h>
 #include <script/scriptserver.h>

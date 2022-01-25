@@ -270,7 +270,7 @@ namespace m3d
     public:
         snd::ISound* m_sound = nullptr;
         rend::IRenderer* m_renderer = nullptr;
-        input::IInput* m_input;
+        input::IInput* m_input = nullptr;
         IImpulse* m_pImpulses = nullptr;
         Cinematic* m_cinematic = nullptr;
         CCamera m_curCamera;

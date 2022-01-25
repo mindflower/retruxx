@@ -63,7 +63,10 @@ namespace m3d
         {
         public:
             ~IInput() = default;
-            virtual int Init(m3d::Kernel*, void(__fastcall*)(const CStr*)) = 0;
+            virtual int DecRef() = 0;
+            virtual int IncRef() = 0;
+            virtual void* QueryIface(const char*) = 0;
+            virtual int Init(m3d::Kernel*, void(__fastcall*)(CStr const&)) = 0;
             virtual void NewFrame() = 0;
             virtual void SetAutorepeatTime(int) = 0;
             virtual void ClearBuffer() = 0;
