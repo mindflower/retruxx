@@ -377,7 +377,7 @@ namespace m3d
         {
             if (m_lastChild == node)
             {
-                m_prevSibling->m_nextSibling = nullptr;
+                m_lastChild->m_prevSibling->m_nextSibling = nullptr;
                 m_lastChild = m_lastChild->m_prevSibling;
             }
             else

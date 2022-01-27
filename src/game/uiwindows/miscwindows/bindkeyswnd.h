@@ -154,10 +154,10 @@ public:
         public:
             AuxInfo();
 
-        private:
-            CStr m_strBindReserved;
-            CStr m_strBindExists;
-            CStr m_strOnlyBindExists;
+        public:
+            CStr m_strBindReserved = "BINDKEYS_MSG_RESERVED";
+            CStr m_strBindExists = "BINDKEYS_MSG_EXISTS";
+            CStr m_strOnlyBindExists = "BINDKEYS_MSG_EXISTS_ONLY";
         };
 
     public:

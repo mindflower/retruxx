@@ -1,17 +1,22 @@
+#include <ui/button.h>
+#include <ui/frame.h>
 #include <ui/scroll.h>
+#include <ui/ui_srv.h>
 
 namespace m3d
 {
 	namespace ui
 	{
+        RT_CLASS_DEFINE(ScrollWnd);
+
         Object* ScrollWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            return new ScrollWnd;
         }
 
         Class* ScrollWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Wnd);
         }
 
         Object* ScrollWnd::Clone()
@@ -34,9 +39,24 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ScrollWnd::Create(BoundsBase<float> const&, int)
+        int ScrollWnd::Create(BoundsBase<float> const& rect, int vertical)
         {
-            throw std::logic_error("Not implemented");
+            if (CreateWnd({}, m_style, rect, 0) == 0)
+            {
+                return 0;
+            }
+            m_vertical = vertical;
+
+            m_btn0 = new ButtonWnd;
+            BoundsBase<float> btnRect{0.0, 0.0, 0.0, 0.0};
+            m_btn0->Create({}, 0, btnRect, 256);
+            AddChild(m_btn0);
+
+            m_btn1 = new ButtonWnd;
+            m_btn1->Create({}, 0, btnRect, 0x101);
+            AddChild(m_btn1);
+            SetScrollPane(m_scrollPaneName);
+            return 1;
         }
 
         int ScrollWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
@@ -54,9 +74,24 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ScrollWnd::SetScrollPane(CStr const&)
+        void ScrollWnd::SetScrollPane(CStr const& scrollPaneName)
         {
-            throw std::logic_error("Not implemented");
+            Wnd::SetScrollPane(scrollPaneName);
+            if (m_vertical)
+            {
+                if (auto pane = GetGfxServer()->GetScrollPane(m_scrollPaneName))
+                {
+                    if (m_btn0)
+                    {
+                        m_btn0->SetPane(pane->m_prevButtonPaneName);
+                    }
+                    if (m_btn1)
+                    {
+                        m_btn1->SetPane(pane->m_nextButtonPaneName);
+                    }
+                    RecalcLayot();
+                }
+            }
         }
 
         void ScrollWnd::SetScrollRect(float, float)
@@ -66,12 +101,18 @@ namespace m3d
 
         Class* ScrollWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(ScrollWnd);
         }
 
-        void ScrollWnd::SetBounds(BoundsBase<float> const&, bool)
+        void ScrollWnd::SetBounds(BoundsBase<float> const& rect, bool bUpdateBaseOrigin)
         {
-            throw std::logic_error("Not implemented");
+            m_bounds = rect;
+            if (bUpdateBaseOrigin)
+            {
+                m_baseOrigin.x = m_bounds.x0;
+                m_baseOrigin.y = m_bounds.y0;
+            }
+            RecalcLayot();
         }
 
         void ScrollWnd::ShowWindow(bool)
@@ -86,7 +127,41 @@ namespace m3d
 
         void ScrollWnd::RecalcLayot()
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this
+            if (m_vertical)
+            {
+                auto pane = GetGfxServer()->GetScrollPane(m_scrollPaneName);
+                if (pane)
+                {
+                    auto btn1Y1 = pane->GetWidth();
+                    float v4 = (btn1Y1 - pane->m_btnSize.x) * 0.5;
+                    auto v5 = m_bounds.height - pane->m_btnSize.y;
+                    auto v6 = m_bounds.height;
+                    auto v7 = pane->m_btnSize.x + v4;
+                    auto btnX0 = v4;
+                    auto btnX1 = v7;
+                    if (m_btn0)
+                    {
+                        BoundsBase<float> bounds;
+                        bounds.x0 = v4;
+                        bounds.y0 = 0.0;
+                        bounds.width = v7 - v4;
+                        bounds.height = pane->m_btnSize.y;
+                        m_btn0->SetBounds(bounds, true);
+                        v7 = btnX1;
+                        v4 = btnX0;
+                    }
+                    if (m_btn1)
+                    {
+                        BoundsBase<float> bounds;
+                        bounds.x0 = v4;
+                        bounds.y0 = v5;
+                        bounds.width = v7 - v4;
+                        bounds.height = v6 - v5;
+                        m_btn1->SetBounds(bounds, true);
+                    }
+                }
+            }
         }
 
         int ScrollWnd::OnMouseMove(PointBase<float> const&, PointBase<float> const&)
@@ -96,7 +171,8 @@ namespace m3d
 
         ScrollWnd::ScrollWnd()
         {
-            throw std::logic_error("Not implemented");
+            m_persistant = false;
+            m_style = 0x140260;
         }
 
         ScrollWnd::ScrollWnd(ScrollWnd const&)

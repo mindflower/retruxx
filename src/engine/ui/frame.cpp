@@ -230,7 +230,16 @@ namespace m3d
 
         float ScrollPane::GetWidth() const
         {
-            throw std::logic_error("Not implemented");
+            auto res= m_btnSize.x;
+            if (m_btnSize.x <= m_thumbSize.x)
+            {
+                res = m_thumbSize.x;
+            }
+            if (res <= m_barWidth)
+            {
+                res = m_barWidth;
+            }
+            return res;
         }
 
         int ScrollPane::ReadFromXmlNode(m3d::cmn::XmlNode* node)

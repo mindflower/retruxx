@@ -196,9 +196,23 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    ui::ScrollPane* ui::GfxServer::GetScrollPane(CStr const&)
+    ui::ScrollPane* ui::GfxServer::GetScrollPane(CStr const& paneName)
     {
-        throw std::logic_error("Not implemented");
+        for (auto pane : m_scrollPanes)
+        {
+            if (pane->m_name == paneName)
+            {
+                return pane;
+            }
+        }
+        for (auto pane : m_scrollPanes)
+        {
+            if (pane->m_name == "Scroll1")
+            {
+                return pane;
+            }
+        }
+        return nullptr;
     }
 
     float ui::GfxServer::GetSliderNotchWidthRatio()
@@ -242,9 +256,11 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    ui::Pane* ui::GfxServer::GetPane(CStr const&)
+    ui::Pane* ui::GfxServer::GetPane(CStr const& paneName)
     {
-        throw std::logic_error("Not implemented");
+        Pane* pane = nullptr;
+        m_panes.get(paneName, pane);
+        return pane;
     }
 
     int ui::GfxServer::GetCornerSz() const

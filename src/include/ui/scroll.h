@@ -40,17 +40,17 @@ namespace m3d
             virtual int OnMouseButton0(unsigned int, PointBase<float> const&);
 
         public:
-            RT_CLASS_INLINE_DECLARE(ScrollWnd);
+            RT_CLASS_DECLARE(ScrollWnd);
 
         private:
-            int m_vertical;
+            int m_vertical = 0;
             bool m_tracking;
-            float m_maxPos;
+            float m_maxPos = 0;
             float m_curPos;
-            float m_thumbSz;
-            float m_hitPosInThumb;
-            ButtonWnd* m_btn0;
-            ButtonWnd* m_btn1;
+            float m_thumbSz = 0.0;
+            float m_hitPosInThumb = 0.0;
+            ButtonWnd* m_btn0 = nullptr;
+            ButtonWnd* m_btn1 = nullptr;
         };
     }
 }

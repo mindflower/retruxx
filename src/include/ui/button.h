@@ -8,6 +8,7 @@ namespace m3d
     {
         class ButtonWnd : public Wnd
         {
+            friend class ScrollWnd;
         public:
 			static Object* CreateObject();
 			static Class* GetBaseClass();

@@ -7,6 +7,8 @@
 #include <core/ref_ptr.h>
 #include <math/vector2.h>
 #include <server/utils.h>
+#include <ui/frame.h>
+#include <ui/scroll.h>
 #include <ui/ui.h>
 #include <ui/wndstation.h>
 #include <ui/wnd.h>
@@ -94,12 +96,23 @@ namespace m3d
 
         unsigned Wnd::GetTextColor() const
         {
-            throw std::logic_error("Not implemented");
+            return m_textColor;
         }
 
-        void Wnd::SetScrollPane(CStr const&)
+        void Wnd::SetScrollPane(CStr const& scrollPaneName)
         {
-            throw std::logic_error("Not implemented");
+            if (!scrollPaneName.empty())
+            {
+                m_scrollPaneName = scrollPaneName;
+            }
+            if (m_scrollVWnd)
+            {
+                m_scrollVWnd->SetScrollPane(m_scrollPaneName);
+            }
+            if (m_scrollHWnd)
+            {
+                m_scrollHWnd->SetScrollPane(m_scrollPaneName);
+            }
         }
 
         void Wnd::SetCursorShow(bool)
@@ -114,12 +127,12 @@ namespace m3d
 
         int Wnd::GetDefaultFont() const
         {
-            throw std::logic_error("Not implemented");
+            return m_defFont;
         }
 
         unsigned Wnd::GetTextColorDisabled() const
         {
-            throw std::logic_error("Not implemented");
+            return m_textColorDisabled;
         }
 
         int Wnd::OnBeforeAddToWndStation()
@@ -206,7 +219,7 @@ namespace m3d
 
         rend::TexHandle Wnd::GetBackground() const
         {
-            throw std::logic_error("Not implemented");
+            return m_bgTexture;
         }
 
         void Wnd::SetGameDataFlags(int)
@@ -226,7 +239,7 @@ namespace m3d
 
         unsigned Wnd::GetColor() const
         {
-            throw std::logic_error("Not implemented");
+            return m_curClr;
         }
 
         ScrollWnd* Wnd::GetScrollVWnd()
@@ -236,12 +249,15 @@ namespace m3d
 
         CStr Wnd::GetText() const
         {
-            throw std::logic_error("Not implemented");
+            return m_caption;
         }
 
-        void Wnd::SetPane(CStr const&)
+        void Wnd::SetPane(CStr const& name)
         {
-            throw std::logic_error("Not implemented");
+            if (!name.empty())
+            {
+                m_paneName = name;
+            }
         }
 
         int Wnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
@@ -351,9 +367,20 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int Wnd::SetBackground(rend::TexHandle)
+        int Wnd::SetBackground(rend::TexHandle bgTex)
         {
-            throw std::logic_error("Not implemented");
+            m_bgTextureName = "";
+            if (m_bgTexture.IsValid())
+            {
+                Application::g_pApp->m_renderer->ReleaseTexture(m_bgTexture);
+            }
+            m_bgTexture = bgTex;
+            if (!m_bgTexture.IsValid())
+            {
+                return 0;
+            }
+            Application::g_pApp->m_renderer->ReferenceTexture(m_bgTexture);
+            return 1;
         }
 
         int Wnd::SetBackground(CStr const& bgTextureName)
@@ -384,9 +411,9 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::SetColor(unsigned)
+        void Wnd::SetColor(unsigned color)
         {
-            throw std::logic_error("Not implemented");
+            m_curClr = color;
         }
 
         int Wnd::SetText(CStr const& caption)
@@ -470,7 +497,7 @@ namespace m3d
 
         unsigned Wnd::GetId() const
         {
-            throw std::logic_error("Not implemented");
+            return m_id;
         }
 
         int Wnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -478,14 +505,14 @@ namespace m3d
             return CreateWnd(caption, style, rc, id);
         }
 
-        void Wnd::SetPaneFlags(int)
+        void Wnd::SetPaneFlags(int flags)
         {
-            throw std::logic_error("Not implemented");
+            m_paneFlags = flags;
         }
 
         CStr const& Wnd::GetScrollPaneName() const
         {
-            throw std::logic_error("Not implemented");
+            return m_scrollPaneName;
         }
 
         void Wnd::SetOnShowAnimationImmediate(bool)
@@ -550,7 +577,7 @@ namespace m3d
 
         int Wnd::GetPaneFlags() const
         {
-            throw std::logic_error("Not implemented");
+            return m_paneFlags;
         }
 
         void Wnd::SetOnHideAnimationImmediate(bool)
@@ -570,12 +597,12 @@ namespace m3d
 
         BoundsBase<float> Wnd::GetBounds() const
         {
-            throw std::logic_error("Not implemented");
+            return m_bounds;
         }
 
         CStr Wnd::GetPaneName() const
         {
-            throw std::logic_error("Not implemented");
+            return m_paneName;
         }
 
         int Wnd::GameDataUpdate(void*, int)
@@ -585,7 +612,29 @@ namespace m3d
 
         BoundsBase<float> Wnd::GetClientBounds() const
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check and refactor
+            auto barWidth = GetFrameWidth();
+            auto v4 = m_clientEdges[0] + (float)(0.0 - (float)(0.0 - barWidth));
+            auto v5 = m_clientEdges[1] + (float)(0.0 - (float)(0.0 - barWidth));
+            auto v6 = (float)((float)((float)(0.0 - barWidth) * 2.0) + m_bounds.width) - (float)(m_clientEdges[0] + m_clientEdges[2]);
+            auto v7 = (float)((float)((float)(0.0 - barWidth) * 2.0) + m_bounds.height) - (float)(m_clientEdges[1] + m_clientEdges[3]);
+            if (v6 < 0.0)
+            {
+                v4 = (float)(this->m_bounds.width * 0.5) + this->m_bounds.x0;
+                v6 = 0.0;
+            }
+            if (v7 < 0.0)
+            {
+                v5 = (float)(this->m_bounds.height * 0.5) + this->m_bounds.y0;
+                v7 = 0.0;
+            }
+            
+            BoundsBase<float> res{0.0, 0.0, 0.0, 0.0};
+            res.x0 = v4;
+            res.y0 = v5;
+            res.width = v6;
+            res.height = v7;
+            return res;
         }
 
         int Wnd::OnBeforeRemoveFromWndStation()
@@ -593,14 +642,14 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::SetFormatMode(TextFormatFlags)
+        void Wnd::SetFormatMode(TextFormatFlags format)
         {
-            throw std::logic_error("Not implemented");
+            m_textFormat = format;
         }
 
         Wnd::AnimationInfo const& Wnd::GetOnHideAnimation() const
         {
-            throw std::logic_error("Not implemented");
+            return m_onHideAnimation;
         }
 
         void Wnd::SetClientEdges(std::vector<float> const& edges)
@@ -626,9 +675,10 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::SetOnShowAnimation(AnimationInfo const&)
+        void Wnd::SetOnShowAnimation(AnimationInfo const& info)
         {
-            throw std::logic_error("Not implemented");
+            m_onShowAnimation = info;
+            m_onShowAnimation.m_purpose = AnimationInfo::PURPOSE_SHOW;
         }
 
         int Wnd::GameDataClear(bool)
@@ -638,7 +688,7 @@ namespace m3d
 
         TextWrapFlags Wnd::GetWrapMode() const
         {
-            throw std::logic_error("Not implemented");
+            return m_textWrap;
         }
 
         bool Wnd::Valid() const
@@ -653,12 +703,24 @@ namespace m3d
 
         TextFormatFlags Wnd::GetFormatMode() const
         {
-            throw std::logic_error("Not implemented");
+            return m_textFormat;
         }
 
         float Wnd::GetFrameWidth() const
         {
-            throw std::logic_error("Not implemented");
+            auto pane = GetGfxServer()->GetPane(m_paneName);
+            if (pane)
+            {
+                auto frame = pane->m_frame[0];
+                if ((m_style & 0x40) == 0
+                    && (m_paneFlags & 2) != 0
+                    && !m_bgTexture.IsValid()
+                    && frame)
+                {
+                    return frame->m_barUsedWidth;
+                }
+            }
+            return 0.0;
         }
 
         bool Wnd::IsAnimatingNow() const
@@ -671,29 +733,42 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::SetWrapMode(TextWrapFlags)
+        void Wnd::SetWrapMode(TextWrapFlags wrap)
         {
-            throw std::logic_error("Not implemented");
+            m_textWrap = wrap;
         }
 
         Wnd::AnimationInfo const& Wnd::GetOnShowAnimation() const
         {
-            throw std::logic_error("Not implemented");
+            return m_onShowAnimation;
         }
 
-        int Wnd::GetProperty(unsigned, void*) const
+        int Wnd::GetProperty(unsigned propId, void* prop) const
         {
-            throw std::logic_error("Not implemented");
+            if (Object::GetProperty(propId, prop))
+            {
+                return 1;
+            }
+            if (propId != 0x4000)
+            {
+                return 0;
+            }
+            if (prop)
+            {
+                *static_cast<CStr*>(prop) = m_toolTipText;
+            }
+            return 1;
         }
 
         std::vector<float> const& Wnd::GetClientEdges() const
         {
-            throw std::logic_error("Not implemented");
+            return m_clientEdges;
         }
 
-        void Wnd::SetOnHideAnimation(AnimationInfo const&)
+        void Wnd::SetOnHideAnimation(AnimationInfo const& info)
         {
-            throw std::logic_error("Not implemented");
+            m_onHideAnimation = info;
+            m_onHideAnimation.m_purpose = AnimationInfo::PURPOSE_HIDE;
         }
 
         void Wnd::SetBaseOrigin(PointBase<float> const&)
@@ -933,7 +1008,7 @@ namespace m3d
                 return 0;
             }
             //TODO: check this
-            m_toolTipText = static_cast<char*>(prop);
+            m_toolTipText = *static_cast<CStr*>(prop);
             return 1;
         }
 

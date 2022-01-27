@@ -4,14 +4,17 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_DEFINE(StringsListBoxWnd);
+        RT_CLASS_DEFINE(FormattedStringsListBoxWnd);
+
         Class* StringsListBoxWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Wnd);
         }
 
         Object* StringsListBoxWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            return new StringsListBoxWnd;
         }
 
         Object* StringsListBoxWnd::Clone()
@@ -26,7 +29,7 @@ namespace m3d
 
         Class* StringsListBoxWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(StringsListBoxWnd);
         }
 
         int StringsListBoxWnd::RenderItem(int, PointBase<float> const&, DrawInfo const&)
@@ -46,7 +49,11 @@ namespace m3d
 
         StringsListBoxWnd::StringsListBoxWnd()
         {
-            throw std::logic_error("Not implemented");
+            m_drawFlags = 0;
+            m_curSel = -1;
+            m_clientEdges[2] = 2.0;
+            m_defFont = 1;
+
         }
 
         StringsListBoxWnd::StringsListBoxWnd(StringsListBoxWnd const&)
