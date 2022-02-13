@@ -33,21 +33,21 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_cbResolutionName;
-        CStr m_sliderGammaName;
-        CStr m_cbGraphicQualityName;
-        CStr m_sliderFarDistanceName;
-        CStr m_cbGrassName;
-        CStr m_cbShadowsName;
-        CStr m_cbWaterQualityName;
-        CStr m_cbAntialiasingName;
-        CStr m_cbFiltrationName;
-        CStr m_cbBlumName;
-        CStr m_btnGammaNextName;
-        CStr m_btnGammaPrevName;
-        CStr m_btnFarDistancePrevName;
-        CStr m_btnFarDistanceNextName;
+    public:
+        CStr m_cbResolutionName = "cbResolution";
+        CStr m_sliderGammaName = "sliderGamma";
+        CStr m_cbGraphicQualityName = "cbGraphicQuality";
+        CStr m_sliderFarDistanceName = "sliderFarDistance";
+        CStr m_cbGrassName = "cbGrass";
+        CStr m_cbShadowsName = "cbShadows";
+        CStr m_cbWaterQualityName = "cbWaterQuality";
+        CStr m_cbAntialiasingName = "cbAntialiasing";
+        CStr m_cbFiltrationName = "cbFiltration";
+        CStr m_cbBlumName = "cbBlum";
+        CStr m_btnGammaNextName = "btnGammaPrev";
+        CStr m_btnGammaPrevName = "btnGammaNext";
+        CStr m_btnFarDistancePrevName = "btnFarDistancePrev";
+        CStr m_btnFarDistanceNextName = "btnFarDistanceNext";
     };
 
     enum Antialiasing
@@ -242,30 +242,30 @@ public:
     RT_CLASS_DECLARE(VideoOptionsWnd);
 
 private:
-    m3d::ui::ComboBoxWnd *m_cbResolution;
-    m3d::ui::SliderWnd *m_sliderGamma;
-    m3d::ui::ComboBoxWnd *m_cbGraphicQuality;
-    m3d::ui::SliderWnd *m_sliderFarDistance;
-    m3d::ui::ComboBoxWnd *m_cbGrass;
-    m3d::ui::ComboBoxWnd *m_cbShadows;
-    m3d::ui::ComboBoxWnd *m_cbWaterQuality;
-    m3d::ui::ComboBoxWnd *m_cbAntialiasing;
-    m3d::ui::ComboBoxWnd *m_cbFiltration;
-    m3d::ui::ComboBoxWnd *m_cbBlum;
-    m3d::ui::ButtonWnd *m_btnGammaPrev;
-    m3d::ui::ButtonWnd *m_btnGammaNext;
-    m3d::ui::ButtonWnd *m_btnFarDistancePrev;
-    m3d::ui::ButtonWnd *m_btnFarDistanceNext;
+    m3d::ui::ComboBoxWnd* m_cbResolution = nullptr;
+    m3d::ui::SliderWnd *m_sliderGamma = nullptr;
+    m3d::ui::ComboBoxWnd *m_cbGraphicQuality = nullptr;
+    m3d::ui::SliderWnd *m_sliderFarDistance = nullptr;
+    m3d::ui::ComboBoxWnd *m_cbGrass = nullptr;
+    m3d::ui::ComboBoxWnd *m_cbShadows = nullptr;
+    m3d::ui::ComboBoxWnd *m_cbWaterQuality = nullptr;
+    m3d::ui::ComboBoxWnd *m_cbAntialiasing = nullptr;
+    m3d::ui::ComboBoxWnd *m_cbFiltration = nullptr;
+    m3d::ui::ComboBoxWnd *m_cbBlum = nullptr;
+    m3d::ui::ButtonWnd *m_btnGammaPrev = nullptr;
+    m3d::ui::ButtonWnd *m_btnGammaNext = nullptr;
+    m3d::ui::ButtonWnd *m_btnFarDistancePrev = nullptr;
+    m3d::ui::ButtonWnd *m_btnFarDistanceNext = nullptr;
     VideoOptionsWnd::AuxInfo m_aif;
-    bool m_bVideoOptionsChanged;
-    int m_cbResolutionBlocked;
-    int m_sliderGammaBlocked;
-    int m_cbGraphicQualityBlocked;
-    int m_sliderFarDistanceBlocked;
-    int m_cbGrassBlocked;
-    int m_cbShadowsBlocked;
-    int m_cbBlumBlocked;
-    int m_cbFiltrationBlocked;
-    int m_cbAntialiasingBlocked;
-    int m_cbWaterQualityBlocked;
+    bool m_bVideoOptionsChanged = false;
+    int m_cbResolutionBlocked = 0;
+    int m_sliderGammaBlocked = 0;
+    int m_cbGraphicQualityBlocked = 0;
+    int m_sliderFarDistanceBlocked = 0;
+    int m_cbGrassBlocked = 0;
+    int m_cbShadowsBlocked = 0;
+    int m_cbBlumBlocked = 0;
+    int m_cbFiltrationBlocked = 0;
+    int m_cbAntialiasingBlocked = 0;
+    int m_cbWaterQualityBlocked = 0;
 };

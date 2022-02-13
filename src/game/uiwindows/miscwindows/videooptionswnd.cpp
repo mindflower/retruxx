@@ -14,12 +14,11 @@ VideoOptionsWnd::ShadowSettings::ShadowSettings(int, int, float, float)
 
 VideoOptionsWnd::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
 }
 
 m3d::Class* VideoOptionsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int VideoOptionsWnd::ApplyChanges(bool)
@@ -34,12 +33,12 @@ m3d::Object* VideoOptionsWnd::Clone()
 
 m3d::Object* VideoOptionsWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new VideoOptionsWnd;
 }
 
 m3d::Class* VideoOptionsWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(VideoOptionsWnd);
 }
 
 VideoOptionsWnd::~VideoOptionsWnd()
@@ -529,7 +528,6 @@ void VideoOptionsWnd::OnCbGrassChange(m3d::AIParam const&)
 
 VideoOptionsWnd::VideoOptionsWnd()
 {
-    throw std::logic_error("Not implemented");
 }
 
 VideoOptionsWnd::VideoOptionsWnd(VideoOptionsWnd const&)

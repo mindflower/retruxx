@@ -1,17 +1,21 @@
+#include <core/ini.h>
 #include <ui/edit.h>
+#include <ui/ui_srv.h>
 
 namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_DEFINE(EditWnd);
+
         Class* EditWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Wnd);
         }
 
         Object* EditWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            return new EditWnd;
         }
 
         int EditWnd::IncrementCursorPosition()
@@ -19,9 +23,17 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int EditWnd::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int EditWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
         {
-            throw std::logic_error("Not implemented");
+            auto res = Wnd::ReadFromXmlNode(xmlFile, xmlNode);
+            if (!res)
+            {
+                return res;
+            }
+            unsigned clr = 1;
+            SafeClrAttrib(clr, xmlNode, "cursorColor");
+            SetCursorColor(clr);
+            return 1;
         }
 
         void EditWnd::DeleteSymbol(int)
@@ -41,12 +53,15 @@ namespace m3d
 
         int EditWnd::GetMaxCursorPos() const
         {
-            throw std::logic_error("Not implemented");
+            return GetVisibleText().length();
         }
 
-        int EditWnd::SetText(CStr const&)
+        int EditWnd::SetText(CStr const& caption)
         {
-            throw std::logic_error("Not implemented");
+            auto res = Wnd::SetText(caption);
+            auto visibleText = GetVisibleText();
+            m_cursorPosition = visibleText.length();
+            return res;
         }
 
         int EditWnd::GetMinCursorPos() const
@@ -89,24 +104,38 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int EditWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        int EditWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
-            throw std::logic_error("Not implemented");
+            auto res = Wnd::Create(caption, style, rc, id);
+            if (!res)
+            {
+                return res;
+            }
+            m_style |= 4;
+            m_cursorPosition = GetMaxCursorPos();
+            return 1;
         }
 
         CStr EditWnd::GetVisibleText() const
         {
+            //TODO: implement this
+            auto len = m_caption.length();
+            CStr serviceSymbols = "|@$#&";
+            return m_caption;
             throw std::logic_error("Not implemented");
         }
 
-        void EditWnd::SetCursorColor(unsigned)
+        void EditWnd::SetCursorColor(unsigned color)
         {
-            throw std::logic_error("Not implemented");
+            m_cursorColor = color;
+            char tmp[128] = { 0 };
+            sprintf(tmp , "%08x", GetGfxServer()->GetColor(color));
+            m_strCursorColor = CStr("@") + tmp;
         }
 
         Class* EditWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(EditWnd);
         }
 
         unsigned EditWnd::GetCursorColor() const
@@ -126,7 +155,10 @@ namespace m3d
 
         EditWnd::EditWnd()
         {
-            throw std::logic_error("Not implemented");
+            m_style = 276992;
+            m_paneName = "wnd3";
+            m_paneFlags = 7;
+            SetCursorColor(1);
         }
 
         EditWnd::EditWnd(EditWnd const&)

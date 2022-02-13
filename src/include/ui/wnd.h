@@ -33,10 +33,10 @@ namespace m3d
             ModalWnd();
 
         public:
-            RT_CLASS_INLINE_DECLARE(ModalWnd);
+            RT_CLASS_DECLARE(ModalWnd);
 
         private:
-            Wnd* m_curControl;
+            Wnd* m_curControl = nullptr;
         };
     }
 }

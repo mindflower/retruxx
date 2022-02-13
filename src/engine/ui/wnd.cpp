@@ -71,7 +71,7 @@ namespace m3d
 
         Class* Wnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Object);
         }
 
         Object* Wnd::CreateObject()
@@ -209,7 +209,14 @@ namespace m3d
 
         int Wnd::OnAfterRemoveFromWndStation()
         {
-            throw std::logic_error("Not implemented");
+            auto res = 1;
+            for (auto child = GetFirstChild_(); child; child = child->GetNextSibling_())
+            {
+                assert(child->IsKindOf(RT_CLASS_LOCAL(Wnd)));
+                res &= dynamic_cast<Wnd*>(child)->OnAfterRemoveFromWndStation();
+            }
+            StopAnimationMoveSound();
+            return res;
         }
 
         Wnd::~Wnd()
@@ -693,12 +700,45 @@ namespace m3d
 
         bool Wnd::Valid() const
         {
-            throw std::logic_error("Not implemented");
+            return m_created == 1;
         }
 
-        int Wnd::RemoveChild(Object*)
+        int Wnd::RemoveChild(Object* w)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this
+            auto wnd = dynamic_cast<Wnd*>(w);
+            if (this != GetStation() && !wnd->IsChildOf(GetStation()))
+            {
+                wnd->m_bSuspendedUnlink = false;
+                wnd->m_bSuspendedParentUnlink = false;
+                //TODO: recreate vector logic (idk for what)
+                //std::vector<Object*> stack;
+                //stack.push_back(wnd);
+                GetStation()->OnRemoveWnd(this, wnd);
+                UnlinkChild(wnd);
+                if (wnd)
+                {
+                    wnd->OnAfterRemoveFromWndStation();
+                }
+                return 1;
+            }
+            if ((wnd->OnBeforeRemoveFromWndStation() & 1) != 0)
+            {
+                wnd->m_bSuspendedUnlink = false;
+                wnd->m_bSuspendedParentUnlink = false;
+                //TODO: recreate vector logic (idk for what)
+                //std::vector<Object*> stack;
+                //stack.push_back(wnd);
+                GetStation()->OnRemoveWnd(this, wnd);
+                UnlinkChild(wnd);
+                if (wnd)
+                {
+                    wnd->OnAfterRemoveFromWndStation();
+                }
+                return 1;
+            }
+            wnd->m_bSuspendedUnlink = true;
+            return 0;
         }
 
         TextFormatFlags Wnd::GetFormatMode() const
@@ -848,7 +888,11 @@ namespace m3d
 
         void Wnd::StopAnimationMoveSound()
         {
-            throw std::logic_error("Not implemented");
+            if (m_animationSoundMoveChannelId != -1 && Application::g_pApp->m_sound)
+            {
+                Application::g_pApp->m_sound->StopChannel(m_animationSoundMoveChannelId);
+                m_animationSoundMoveChannelId = -1;
+            }
         }
 
         void Wnd::OnNcPaint(DrawInfo const&, unsigned)
@@ -1195,14 +1239,16 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
+        RT_CLASS_DEFINE(ModalWnd);
+
         Class* ModalWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Wnd);
         }
 
         Object* ModalWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            return new ModalWnd;
         }
 
         int ModalWnd::DoModal()
@@ -1210,9 +1256,9 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ModalWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        int ModalWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
-            throw std::logic_error("Not implemented");
+            return Wnd::Create(caption, style, rc, id) != 0;
         }
 
         int ModalWnd::CanClose()
@@ -1227,7 +1273,7 @@ namespace m3d
 
         Class* ModalWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(ModalWnd);
         }
 
         Wnd* ModalWnd::GetDlgItem(unsigned)
@@ -1287,7 +1333,7 @@ namespace m3d
 
         ModalWnd::ModalWnd()
         {
-            throw std::logic_error("Not implemented");
+            m_style |= 0x40;
         }
     }
 }

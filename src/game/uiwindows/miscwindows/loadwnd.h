@@ -9,8 +9,8 @@ public:
     public:
         LAuxInfo();
 
-    private:
-        CStr m_btnLoadName;
+    public:
+        CStr m_btnLoadName = "btnLoad";
     };
 
 public:
@@ -34,6 +34,6 @@ public:
     RT_CLASS_DECLARE(LoadWnd);
 
 private:
-    m3d::ui::ButtonWnd *m_btnLoad;
+    m3d::ui::ButtonWnd *m_btnLoad = nullptr;
     LoadWnd::LAuxInfo m_laif;
 };

@@ -119,15 +119,15 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_wndSaveListName;
-        CStr m_wndScreenshotName;
-        CStr m_wndInfoName;
-        CStr m_btnSortByNameName;
-        CStr m_btnSortByTimeName;
-        CStr m_wndSortByNameArrowName;
-        CStr m_wndSortByTimeArrowName;
-        CStr m_texIdSortArrow;
+    public:
+        CStr m_wndSaveListName = "wndSaveList";
+        CStr m_wndScreenshotName = "wndScreenshot";
+        CStr m_wndInfoName = "wndInfo";
+        CStr m_btnSortByNameName = "btnSortName";
+        CStr m_btnSortByTimeName = "btnSortTime";
+        CStr m_wndSortByNameArrowName = "wndSortNameArrow";
+        CStr m_wndSortByTimeArrowName = "wndSortTimeArrow";
+        CStr m_texIdSortArrow = "SortArrow";
     };
 
 public:
@@ -161,11 +161,11 @@ public:
 
 private:
     LSWnd::AuxInfo m_aif;
-    m3d::ui::ImageWnd *m_wndScreenshot;
-    m3d::ui::Wnd *m_wndInfo;
-    SaveList *m_wndSaveList;
-    m3d::ui::ButtonWnd *m_btnSortByName;
-    m3d::ui::ButtonWnd *m_btnSortByTime;
-    m3d::ui::ImageWnd *m_wndSortByNameArrow;
-    m3d::ui::ImageWnd *m_wndSortByTimeArrow;
+    m3d::ui::ImageWnd *m_wndScreenshot = nullptr;
+    m3d::ui::Wnd *m_wndInfo = nullptr;
+    SaveList *m_wndSaveList = nullptr;
+    m3d::ui::ButtonWnd *m_btnSortByName = nullptr;
+    m3d::ui::ButtonWnd *m_btnSortByTime = nullptr;
+    m3d::ui::ImageWnd *m_wndSortByNameArrow = nullptr;
+    m3d::ui::ImageWnd *m_wndSortByTimeArrow = nullptr;
 };

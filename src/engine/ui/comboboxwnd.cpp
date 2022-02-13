@@ -1,12 +1,15 @@
+#include <core/ini.h>
 #include <ui/comboboxwnd.h>
+#include <ui/listbox.h>
 
 namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_DEFINE(ComboBoxWnd);
+
         ComboBoxWnd::AuxInfo::AuxInfo()
         {
-            throw std::logic_error("Not implemented");
         }
 
         int ComboBoxWnd::GetCurSel() const
@@ -89,8 +92,14 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ComboBoxWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        int ComboBoxWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
+            auto res = Create(style, rc, id, 0, 0.0, 0.0);
+            if (res)
+            {
+                SetText(caption);
+            }
+            return res;
             throw std::logic_error("Not implemented");
         }
 
@@ -119,9 +128,13 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ComboBoxWnd::SetText(CStr const&)
+        int ComboBoxWnd::SetText(CStr const& text)
         {
-            throw std::logic_error("Not implemented");
+            if (m_wndSelText)
+            {
+                return m_wndSelText->SetText(text);
+            }
+            return 0;
         }
 
         Object* ComboBoxWnd::Clone()
@@ -134,9 +147,30 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ComboBoxWnd::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int ComboBoxWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
         {
-            throw std::logic_error("Not implemented");
+            auto res = Wnd::ReadFromXmlNode(xmlFile, xmlNode);
+            if (!res)
+            {
+                return res;
+            }
+            auto state = STATE_CLOSE;
+            SafeEnumAttrib(state, xmlNode, "state");
+            SetState(state, true);
+
+            auto comboStyle = m_comboStyle;
+            SafeUintAttrib(comboStyle, xmlNode, "comboStyle");
+            SetComboStyle(comboStyle);
+
+            auto maxListH = m_maxListH;
+            SafeFloatAttrib(maxListH, xmlNode, "maxListHeight");
+            SetListMaxHeight(maxListH);
+
+            auto selTextFixedHeight = m_selTextFixedH;
+            SafeFloatAttrib(selTextFixedHeight, xmlNode, "selTextFixedHeight");
+            SetSelTextFixedHeight(selTextFixedHeight);
+            UpdateToggleButtonPane();
+            return 1;
         }
 
         void ComboBoxWnd::SetPane(CStr const&)
@@ -169,9 +203,14 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ComboBoxWnd::SetTextColor(unsigned)
+        void ComboBoxWnd::SetTextColor(unsigned color)
         {
-            throw std::logic_error("Not implemented");
+            Wnd::SetTextColor(color);
+            if (Valid())
+            {
+                m_wndStringList->SetTextColor(color);
+                m_wndSelText->SetTextColor(color);
+            }
         }
 
         unsigned ComboBoxWnd::GetDrawFlags() const
@@ -184,9 +223,14 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ComboBoxWnd::SetTextColorDisabled(unsigned)
+        void ComboBoxWnd::SetTextColorDisabled(unsigned color)
         {
-            throw std::logic_error("Not implemented");
+            Wnd::SetTextColorDisabled(color);
+            if (Valid())
+            {
+                m_wndStringList->SetTextColorDisabled(color);
+                m_wndSelText->SetTextColorDisabled(color);
+            }
         }
 
         void ComboBoxWnd::SetDefaultFont(CStr const&, float, FontType, FontParams)
@@ -211,7 +255,7 @@ namespace m3d
 
         Object* ComboBoxWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            return new ComboBoxWnd;
         }
 
         void ComboBoxWnd::SetDrawFlags(unsigned)
@@ -231,7 +275,7 @@ namespace m3d
 
         Class* ComboBoxWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Wnd);
         }
 
         int ComboBoxWnd::ItemFromPoint(PointBase<float> const&)
@@ -256,7 +300,7 @@ namespace m3d
 
         ComboBoxWnd::ComboBoxWnd()
         {
-            throw std::logic_error("Not implemented");
+            m_defFont = 1;
         }
 
         void ComboBoxWnd::UpdateToggleButtonPane()

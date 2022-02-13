@@ -4,6 +4,7 @@
 #include <core/ini.h>
 #include <core/log.h>
 #include <core/ref_ptr.h>
+#include <ui/comboboxwnd.h>
 #include <ui/ui_srv.h>
 #include <ui/wnd.h>
 #include <ui/wndstation.h>
@@ -255,9 +256,71 @@ namespace m3d
             m_wndStation = nullptr;
         }
 
-        int WndStation::OnRemoveWnd(Wnd*, Wnd*)
+        int WndStation::OnRemoveWnd(Wnd* parent, Wnd* wnd)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this
+            if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+            {
+                auto modalWnd = dynamic_cast<ModalWnd*>(wnd);
+                M3D_ASSERT(!IsModal(modalWnd));
+            }
+            if (wnd == m_wndActive || m_wndActive->IsChildOf(wnd))
+            {
+                if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+                {
+                    if (!m_wndModalStack.empty())
+                    {
+                        Activate(m_wndModalStack.back());
+                    }
+                    else
+                    {
+                        Activate(nullptr);
+                    }
+                }
+                else
+                {
+                    Activate(parent);
+                }
+            }
+            if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+            {
+                Application::g_pApp->EnqueueMessage(41, reinterpret_cast<int>(wnd), 0, 0, 0, {}, {});
+            }
+            if (m_wndKbdCapture && (wnd == m_wndKbdCapture || m_wndKbdCapture->IsChildOf(wnd)))
+            {
+                if (m_wndKbdCapture)
+                {
+                    m_wndKbdCapture->OnLoosingFocus();
+                }
+                m_wndKbdCapture = this;
+                m_wndKbdCapture->OnObtainingFocus();
+            }
+            if (m_wndMouseCapture && (wnd == m_wndMouseCapture || m_wndMouseCapture->IsChildOf(wnd)))
+            {
+                CaptureMouse(nullptr);
+            }
+            if (m_wndMouseOver == wnd || m_wndMouseOver->IsChildOf(wnd))
+            {
+                m_wndMouseOver->OnMouseOut();
+                m_wndMouseOver = parent;
+            }
+            if (m_wndForTooltip && (wnd == m_wndForTooltip || m_wndForTooltip->IsChildOf(wnd)))
+            {
+                RemoveCurrentTooltip();
+            }
+            if (m_wndCandidateForDblClick && (wnd == m_wndCandidateForDblClick || m_wndCandidateForDblClick->IsChildOf(wnd)))
+            {
+                m_wndCandidateForDblClick = nullptr;
+            }
+            if (!wnd->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)) || wnd != m_wndOpenedComboBox)
+            {
+                return 1;
+            }
+            if (wnd)
+            {
+                m_wndOpenedComboBox = nullptr;
+            }
+            return 1;
         }
 
         WndStation::WndStation()

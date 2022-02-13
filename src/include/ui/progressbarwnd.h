@@ -63,7 +63,7 @@ namespace m3d
             float GetSizeOfStepInPixel() const;
             int GetCurNumOfSteps() const;
             virtual CStr GetStringValue() const;
-            virtual struct BoundsBase<float> GetBarRect() const;
+            virtual BoundsBase<float> GetBarRect() const;
             virtual int OnPaint(DrawInfo const&);
             bool IsInversed() const;
             void CalcTexCoordinates(float&, float&, float&, float&) const;
@@ -75,18 +75,18 @@ namespace m3d
             virtual BoundsBase<float> GetMaxBarRect() const;
 
         public:
-            RT_CLASS_INLINE_DECLARE(ProgressBarWnd);
+            RT_CLASS_DECLARE(ProgressBarWnd);
 
         private:
-            float m_curValue;
-            float m_minValue;
-            float m_maxValue;
+            float m_curValue = 0.0;
+            float m_minValue = 0.0;
+            float m_maxValue = 0.0;
             unsigned int m_barColor;
             rend::TexHandle m_barTexture;
-            Orientation m_orientation;
-            TextStyle m_textStyle;
-            TextureStyle m_textureStyle;
-            int m_numOfSteps;
+            Orientation m_orientation = ORIENTATION_LEFT_TO_RIGHT;
+            TextStyle m_textStyle = TEXT_NONE;
+            TextureStyle m_textureStyle =TEXTURE_STRETCH;
+            int m_numOfSteps = 1;
         };
     }
 }

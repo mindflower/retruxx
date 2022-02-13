@@ -1,10 +1,10 @@
 #include "loadwnd.h"
+#include <core/log.h>
 
 RT_CLASS_DEFINE(LoadWnd);
 
 LoadWnd::LAuxInfo::LAuxInfo()
 {
-    throw std::logic_error("Not implemented");
 }
 
 m3d::Object* LoadWnd::Clone()
@@ -14,17 +14,17 @@ m3d::Object* LoadWnd::Clone()
 
 m3d::Class* LoadWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(LSWnd);
 }
 
 m3d::Class* LoadWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(LoadWnd);
 }
 
 m3d::Object* LoadWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new LoadWnd;
 }
 
 LoadWnd::~LoadWnd()
@@ -39,7 +39,30 @@ int LoadWnd::GameDataUpdate(void*, int)
 
 int LoadWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    using namespace m3d::ui;
+    if (!LSWnd::GameDataSetup())
+    {
+        return 0;
+    }
+    if ((m_gameDataFlags & 2) == 0)
+    {
+        auto btnLoadName = dynamic_cast<ButtonWnd*>(GetChildByName(m_laif.m_btnLoadName));
+        if (btnLoadName && btnLoadName->IsKindOf(RT_CLASS_LOCAL(ButtonWnd)))
+        {
+            m_btnLoad = btnLoadName;
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_laif.m_btnLoadName + " is not found or incorrect type");
+            m_gameDataFlags &= 0xFFFFFFFE;
+        }
+    }
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        return 1;
+    }
+    M3D_LOG_INFO("LoadWnd: error - fail to init because of a bad resource");
+    return 0;
 }
 
 void LoadWnd::OnEnter()
@@ -54,7 +77,6 @@ LoadWnd::LoadWnd(LoadWnd const&)
 
 LoadWnd::LoadWnd()
 {
-    throw std::logic_error("Not implemented");
 }
 
 void LoadWnd::OnSaveSelectionChange()

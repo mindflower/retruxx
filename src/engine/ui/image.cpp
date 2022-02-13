@@ -1,17 +1,21 @@
+#include <m3dapp.h>
+#include <core/ini.h>
 #include <ui/image.h>
 
 namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_DEFINE(ImageWnd);
+
         Object* ImageWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            return new ImageWnd;
         }
 
         Class* ImageWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Wnd);
         }
 
         int ImageWnd::SetImage(CStr const&)
@@ -26,7 +30,7 @@ namespace m3d
 
         Class* ImageWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(ImageWnd);
         }
 
         ImageWnd::~ImageWnd()
@@ -44,9 +48,21 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ImageWnd::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int ImageWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
         {
-            throw std::logic_error("Not implemented");
+            auto res = Wnd::ReadFromXmlNode(xmlFile, xmlNode);
+            if (!res)
+            {
+                return res;
+            }
+            SafeStrAttrib(m_textureName, xmlNode, "image");
+            if (!m_textureName.empty())
+            {
+                m_texture = Application::g_pApp->m_renderer->AddTexture(m_textureName, 4);
+                Application::g_pApp->m_renderer->SetTextureParameter(m_texture, rend::TM_WRAP_S, 3);
+                Application::g_pApp->m_renderer->SetTextureParameter(m_texture, rend::TM_WRAP_T, 3);
+            }
+            return 1;
         }
 
         int ImageWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -64,9 +80,9 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ImageWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        int ImageWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
-            throw std::logic_error("Not implemented");
+            return Wnd::Create(caption, style, rc, id);
         }
 
         int ImageWnd::OnPaint(DrawInfo const&)
@@ -76,7 +92,7 @@ namespace m3d
 
         ImageWnd::ImageWnd()
         {
-            throw std::logic_error("Not implemented");
+            m_paneFlags = 0;
         }
 
         ImageWnd::ImageWnd(ImageWnd const&)

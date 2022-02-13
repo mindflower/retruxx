@@ -31,12 +31,12 @@ namespace m3d
             ImageWnd(ImageWnd const&);
 
         public:
-            RT_CLASS_INLINE_DECLARE(ImageWnd);
+            RT_CLASS_DECLARE(ImageWnd);
 
         private:
             CStr m_textureName;
             rend::TexHandle m_texture;
-            bool m_bDrawPane;
+            bool m_bDrawPane = false;
         };
     }
 }

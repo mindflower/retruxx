@@ -31,10 +31,10 @@ public:
     RT_CLASS_DECLARE(CinemaFadePanel);
 
 private:
-    bool m_isCinematicRelated;
-    float m_fadePeriod;
-    int m_fadeStart;
-    float m_curAlpha;
-    CinemaFadePanel::FadeState m_state;
-    bool m_isFading;
+    bool m_isCinematicRelated = true;
+    float m_fadePeriod = 0;
+    int m_fadeStart = -1;
+    float m_curAlpha = 255.0;
+    FadeState m_state = FS_IS_WHITE;
+    bool m_isFading = false;
 };

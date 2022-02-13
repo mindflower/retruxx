@@ -18,13 +18,13 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_wndProfileListName;
-        CStr m_btnChoseName;
-        CStr m_btnDeleteName;
-        CStr m_lblCurProfileName;
-        CStr m_strIdCurProfile;
-        unsigned int m_curProfileNameColor;
+    public:
+        CStr m_wndProfileListName = "wndProfileList";
+        CStr m_btnChoseName = "btnChose";
+        CStr m_btnDeleteName = "btnDelete";
+        CStr m_lblCurProfileName = "lblCurProfileName";
+        CStr m_strIdCurProfile = "CurProfile";
+        unsigned int m_curProfileNameColor = 0xFF904040;
     };
 
 public:
@@ -57,9 +57,9 @@ public:
     RT_CLASS_DECLARE(ChangeProfileWnd);
 
 private:
-    m3d::ui::StringsListBoxWnd *m_wndProfileList;
-    m3d::ui::ButtonWnd *m_btnChose;
-    m3d::ui::ButtonWnd *m_btnDelete;
-    m3d::ui::Wnd *m_lblCurProfile;
+    m3d::ui::StringsListBoxWnd *m_wndProfileList = nullptr;
+    m3d::ui::ButtonWnd *m_btnChose = nullptr;
+    m3d::ui::ButtonWnd *m_btnDelete = nullptr;
+    m3d::ui::Wnd *m_lblCurProfile = nullptr;
     ChangeProfileWnd::AuxInfo m_aif;
 };

@@ -64,7 +64,7 @@ namespace m3d
         auto* clazz = this;
         while (CStr(clazz->m_className) != className)
         {
-            clazz = m_fnGetBaseClass();
+            clazz = clazz->m_fnGetBaseClass();
             if (clazz == nullptr)
             {
                 return false;
@@ -82,7 +82,7 @@ namespace m3d
         auto* thisClazz = this;
         while (thisClazz != clazz)
         {
-            thisClazz = m_fnGetBaseClass();
+            thisClazz = thisClazz->m_fnGetBaseClass();
             if (thisClazz == nullptr)
             {
                 return false;

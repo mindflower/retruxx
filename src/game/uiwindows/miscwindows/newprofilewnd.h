@@ -18,9 +18,9 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_editNameName;
-        CStr m_btnCancelName;
+    public:
+        CStr m_editNameName = "editName";
+        CStr m_btnCancelName = "btnCancel";
     };
 
 public:
@@ -44,7 +44,7 @@ public:
     RT_CLASS_DECLARE(NewProfileWnd);
 
 private:
-    m3d::ui::EditWnd *m_editName;
-    m3d::ui::ButtonWnd *m_btnCancel;
-    NewProfileWnd::AuxInfo m_aif;
+    m3d::ui::EditWnd *m_editName = nullptr;
+    m3d::ui::ButtonWnd *m_btnCancel = nullptr;
+    AuxInfo m_aif;
 };

@@ -1,15 +1,17 @@
 #include "cinemafadepanel.h"
+#include <cinematic.h>
+#include <m3dapp.h>
 
 RT_CLASS_DEFINE(CinemaFadePanel);
 
 m3d::Object* CinemaFadePanel::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new CinemaFadePanel;
 }
 
 m3d::Class* CinemaFadePanel::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CinemaFadePanel);
 }
 
 void CinemaFadePanel::AttachToScreenCinematicRelated()
@@ -19,7 +21,7 @@ void CinemaFadePanel::AttachToScreenCinematicRelated()
 
 m3d::Class* CinemaFadePanel::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 CinemaFadePanel::~CinemaFadePanel()
@@ -49,7 +51,12 @@ int CinemaFadePanel::OnPaint(m3d::ui::DrawInfo const&)
 
 CinemaFadePanel::CinemaFadePanel()
 {
-    throw std::logic_error("Not implemented");
+    BoundsBase<float> rc{0.0, 0.0, 0.0, 0.0};
+    rc.width = 1024.0;
+    rc.height = 768.0;
+    CreateWnd("", 0x300, rc, 0);
+    m_showCursor = false;
+    m_fadePeriod = m3d::Application::g_pApp->m_cinematic->m_fadePeriod.GetF();
 }
 
 CinemaFadePanel::CinemaFadePanel(CinemaFadePanel const&)

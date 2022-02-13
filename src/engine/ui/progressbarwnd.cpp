@@ -1,9 +1,15 @@
+#include <m3dapp.h>
+#include <core/ini.h>
+#include <core/log.h>
 #include <ui/progressbarwnd.h>
+#include <ui/ui_srv.h>
 
 namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_DEFINE(ProgressBarWnd);
+
         unsigned ProgressBarWnd::GetBarColor() const
         {
             throw std::logic_error("Not implemented");
@@ -14,9 +20,17 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ProgressBarWnd::SetCurValue(float)
+        void ProgressBarWnd::SetCurValue(float curValue)
         {
-            throw std::logic_error("Not implemented");
+            m_curValue = curValue;
+            if (m_minValue > m_curValue)
+            {
+                m_curValue = m_minValue;
+            }
+            if (m_curValue > m_maxValue)
+            {
+                m_curValue = m_maxValue;
+            }
         }
 
         rend::TexHandle ProgressBarWnd::GetBarTexture() const
@@ -34,9 +48,46 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ProgressBarWnd::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int ProgressBarWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
         {
-            throw std::logic_error("Not implemented");
+            auto res = Wnd::ReadFromXmlNode(xmlFile, xmlNode);
+            if (!res)
+            {
+                return res;
+            }
+            SafeClrAttrib(m_barColor, xmlNode, "barColor");
+            int numOfSteps = 0;
+            SafeIntAttrib(numOfSteps, xmlNode, "numOfSteps");
+            SetNumOfSteps(numOfSteps);
+            m_orientation = ORIENTATION_LEFT_TO_RIGHT;
+            SafeEnumAttrib(m_orientation, xmlNode, "orientation");
+            CStr barTexture;
+            SafeStrAttrib(barTexture, xmlNode, "barTexture");
+            if (!barTexture.empty())
+            {
+                SetBarTexture(barTexture);
+            }
+            int textStyle = m_textStyle;
+            SafeIntAttrib(textStyle, xmlNode, "textStyle");
+            if (textStyle < 0 || textStyle > 2)
+            {
+                M3D_LOG_INFO("ProgressBarWnd::ReadFromXmlNode warning - invalid text style " + CStr(textStyle));
+            }
+            else
+            {
+                m_textStyle = static_cast<TextStyle>(textStyle);
+            }
+            int textureStyle = m_textureStyle;
+            SafeIntAttrib(textureStyle, xmlNode, "textureStyle");
+            if (textureStyle < 0 || textureStyle > 1)
+            {
+                M3D_LOG_INFO("ProgressBarWnd::ReadFromXmlNode warning - invalid texture style " + CStr(textureStyle));
+            }
+            else
+            {
+                m_textureStyle = static_cast<TextureStyle>(textureStyle);
+            }
+            return 1;
         }
 
         int ProgressBarWnd::GetNumOfSteps() const
@@ -49,9 +100,17 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ProgressBarWnd::SetMaxValue(float)
+        void ProgressBarWnd::SetMaxValue(float maxValue)
         {
-            throw std::logic_error("Not implemented");
+            m_maxValue = maxValue;
+            if (m_minValue > m_curValue)
+            {
+                m_curValue = m_minValue;
+            }
+            if (m_curValue > m_maxValue)
+            {
+                m_curValue = m_maxValue;
+            }
         }
 
         Object* ProgressBarWnd::Clone()
@@ -64,14 +123,26 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ProgressBarWnd::SetBarTexture(rend::TexHandle)
+        void ProgressBarWnd::SetBarTexture(rend::TexHandle barTexture)
         {
-            throw std::logic_error("Not implemented");
+            Application::g_pApp->m_renderer->ReleaseTexture(m_barTexture);
+            m_barTexture = barTexture;
+            if (barTexture.IsValid())
+            {
+                Application::g_pApp->m_renderer->ReferenceTexture(m_barTexture);
+                Application::g_pApp->m_renderer->SetTextureParameter(m_barTexture, rend::TM_WRAP_S, 1);
+                Application::g_pApp->m_renderer->SetTextureParameter(m_barTexture, rend::TM_WRAP_T, 1);
+            }
         }
 
-        void ProgressBarWnd::SetBarTexture(CStr const&)
+        void ProgressBarWnd::SetBarTexture(CStr const& fileName)
         {
-            throw std::logic_error("Not implemented");
+            if (!fileName.empty())
+            {
+                auto tex = Application::g_pApp->m_renderer->AddTexture(fileName, 4);
+                SetBarTexture(tex);
+                Application::g_pApp->m_renderer->ReleaseTexture(tex);
+            }
         }
 
         ProgressBarWnd::TextStyle ProgressBarWnd::GetTextStyle() const
@@ -81,7 +152,7 @@ namespace m3d
 
         Class* ProgressBarWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Wnd);
         }
 
         ProgressBarWnd::Orientation ProgressBarWnd::GetOrientation() const
@@ -89,14 +160,18 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ProgressBarWnd::SetNumOfSteps(int)
+        void ProgressBarWnd::SetNumOfSteps(int numOfSteps)
         {
-            throw std::logic_error("Not implemented");
+            m_numOfSteps = numOfSteps;
+            if (m_numOfSteps < 1)
+            {
+                m_numOfSteps = 1;
+            }
         }
 
         Class* ProgressBarWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(ProgressBarWnd);
         }
 
         ProgressBarWnd::TextureStyle ProgressBarWnd::GetTextureStyle() const
@@ -106,7 +181,7 @@ namespace m3d
 
         Object* ProgressBarWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            return new ProgressBarWnd;
         }
 
         float ProgressBarWnd::GetMinValue() const
@@ -129,9 +204,17 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ProgressBarWnd::SetMinValue(float)
+        void ProgressBarWnd::SetMinValue(float minValue)
         {
-            throw std::logic_error("Not implemented");
+            m_minValue = minValue;
+            if (minValue > m_curValue)
+            {
+                m_curValue = minValue;
+            }
+            if (m_curValue > m_maxValue)
+            {
+                m_curValue = m_maxValue;
+            }
         }
 
         float ProgressBarWnd::GetSizeOfStepInPixel() const
@@ -191,7 +274,7 @@ namespace m3d
 
         ProgressBarWnd::ProgressBarWnd()
         {
-            throw std::logic_error("Not implemented");
+            m_barColor = GetGfxServer()->GetColor(1);
         }
 
         BoundsBase<float> ProgressBarWnd::GetMaxBarRect() const

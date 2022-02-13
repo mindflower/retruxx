@@ -22,8 +22,8 @@ namespace m3d
             public:
                 AuxInfo();
 
-            private:
-                float m_space;
+            public:
+                float m_space = 2.0;
             };
 
             enum State
@@ -98,19 +98,19 @@ namespace m3d
             virtual int OnAfterAddToWndStation();
 
         public:
-            RT_CLASS_INLINE_DECLARE(ComboBoxWnd);
+            RT_CLASS_DECLARE(ComboBoxWnd);
 
         private:
-            StringsListBoxWnd *m_wndStringList;
-            ButtonWnd *m_btnToggle;
-            Wnd *m_wndSelText;
+            StringsListBoxWnd *m_wndStringList = nullptr;
+            ButtonWnd *m_btnToggle = nullptr;
+            Wnd *m_wndSelText = nullptr;
             AuxInfo m_aif;
-            State m_state;
-            float m_maxListH;
-            float m_selTextFixedH;
-            unsigned int m_comboStyle;
-            CStr m_toggleButtonOpenPaneName;
-            CStr m_toggleButtonClosePaneName;
+            State m_state = STATE_CLOSE;
+            float m_maxListH = 100.0;
+            float m_selTextFixedH = 35.0;
+            unsigned int m_comboStyle = 0;
+            CStr m_toggleButtonOpenPaneName = "PaneComboToggleBtnOpenDefault";
+            CStr m_toggleButtonClosePaneName = "PaneComboToggleBtnCloseDefault";
         };
     }
 }

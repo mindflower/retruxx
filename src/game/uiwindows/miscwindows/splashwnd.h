@@ -20,10 +20,10 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_progressBarName;
-        CStr m_wndImageName;
-        CStr m_lblTextName;
+    public:
+        CStr m_progressBarName = "progressBar";
+        CStr m_wndImageName = "wndImage";
+        CStr m_lblTextName = "lblText";
     };
 
 public:
@@ -45,11 +45,11 @@ public:
     RT_CLASS_DECLARE(SplashWnd);
 
 private:
-    m3d::ui::ProgressBarWnd* m_progressBar;
-    m3d::ui::ImageWnd* m_wndImage;
-    m3d::ui::Wnd* m_lblText;
+    m3d::ui::ProgressBarWnd* m_progressBar = nullptr;
+    m3d::ui::ImageWnd* m_wndImage = nullptr;
+    m3d::ui::Wnd* m_lblText = 0;
     SplashWnd::AuxInfo m_aif;
-    int m_curSplash;
-    int m_numSplashes;
+    int m_curSplash = -1;
+    int m_numSplashes = 11;
     CStr m_text;
 };
