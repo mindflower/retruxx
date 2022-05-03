@@ -78,7 +78,10 @@ namespace m3d
             //GetCurSel();
             //OnMouseDblClick(PointBase<float> const &,PointBase<float> const &);
             //SetPane(CStr const &);  //Type??
-            //SetDrawFlags(unsigned int);
+            void SetDrawFlags(unsigned int flags)
+            {
+                m_drawFlags = flags;
+            }
             //SetScrollPane(T const &);
             //GetItemData(int);
             //WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);

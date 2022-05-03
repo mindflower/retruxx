@@ -284,7 +284,10 @@ bool CStr2::empty() const
 
 void CStr2::erase()
 {
-    throw std::logic_error("Not implemented");
+    if (m_charPtr)
+    {
+        m_charPtr[0] = '\0';
+    }
 }
 
 char& CStr2::operator[](int i)

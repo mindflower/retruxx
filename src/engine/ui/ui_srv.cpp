@@ -28,9 +28,25 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    PointBase<float> ui::GfxServer::MeasureText(CStr const&, int, TextWrapFlags, float)
+    PointBase<float> ui::GfxServer::MeasureText(CStr const& text, int uiFont, TextWrapFlags tw, float maxWidth)
     {
-        throw std::logic_error("Not implemented");
+        PointBase<float> result;
+        if (m_fontManager->ValidateFontId(uiFont))
+        {
+            if (auto font = m_fontManager->GetFontById(uiFont))
+            {
+                m_curFont = font;
+            }
+        }
+        if (tw != TW_NOWRAP)
+        {
+            Application::g_pApp->GetTextFit(text, result, maxWidth, tw);
+        }
+        else
+        {
+            Application::g_pApp->GetTextExtent(text, result, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+        }
+        return result;
     }
 
     float ui::GfxServer::GetTabButtonHeight() const

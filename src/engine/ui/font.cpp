@@ -502,16 +502,42 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        TCharDictionary FontManager::m_tCharDictionary;
-
         bool FontManager::NeedCharSetWChars(unsigned)
         {
             throw std::logic_error("Not implemented");
         }
 
-        int FontManager::ValidateFontId(int&)
+        int FontManager::ValidateFontId(int& id)
         {
-            throw std::logic_error("Not implemented");
+            if (id < 0 || id >= m_fonts.size())
+            {
+                return 0;
+            }
+            auto viewport = Application::g_pApp->m_renderer->GetViewport();
+            //TODO: float strict comparison
+            if (viewport.m_width * m_fonts[id]->m_heightUnscaled * 0.0009765625 == m_fonts[id]->m_heightScaled)
+            {
+                return 1;
+            }
+
+            FontParams params;
+            //TODO: check this
+            if (m_fonts[id]->m_type == FONT_TYPE_SELFMAKING)
+            {
+                params.ttfParams.codePage = 0;
+                params.ttfParams.style = 1;
+            }
+            else
+            {
+                params.ttfParams.codePage = Application::g_pApp->m_codePage.CodePage;
+                params.ttfParams.style = m_fonts[id]->m_style;
+            }
+            auto resId = GetFontId(m_fonts[id]->m_nameShort, m_fonts[id]->m_heightUnscaled, m_fonts[id]->m_type, params);
+            if (resId == -1)
+            {
+                return 0;
+            }
+            return 1;
         }
 
         int FontManager::Init()

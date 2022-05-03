@@ -168,7 +168,7 @@ namespace m3d
             int FindMatchFont(CStr const&, float, bool, bool);
 
         private:
-            static TCharDictionary m_tCharDictionary;
+            static inline TCharDictionary m_tCharDictionary;
             std::vector<Font*> m_fonts;
         };
     }

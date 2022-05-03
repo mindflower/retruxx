@@ -1193,14 +1193,93 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int Application::GetTextExtent(CStr const&, PointBase<float>&, int, BoundsBase<float>*, int*, int*, CStr*, CStr*)
+    int Application::GetTextExtent(CStr const& str, PointBase<float>& size, int fid, BoundsBase<float>* csz, int* minc, int* maxc, CStr* leftInvisibleSubstr, CStr* rightInvisibleSubstr)
     {
+        if (leftInvisibleSubstr)
+        {
+            leftInvisibleSubstr->erase();
+        }
+        if (rightInvisibleSubstr)
+        {
+            rightInvisibleSubstr->erase();
+        }
+        if (str.empty())
+        {
+            size.x = 0;
+            size.y = 0;
+            return 0;
+        }
+
+        auto fnt = fid == -1 ? GetGfxServer()->GetCurFont() : GetGfxServer()->GetFontById(fid);
+        if (!fnt)
+        {
+            return 0;
+        }
+
+        bool flag1 = false;
+        bool flag2 = false;
+        float width = 0.0;
+        for (int i = 0; i < str.length(); ++i)
+        {
+            if (str[i] > ' ')
+            {
+                switch (str[i])
+                {
+                case '#':
+                    if (!flag1)
+                    {
+                        flag1 = true;
+                        continue;
+                    }
+                    break;
+                case '&':
+                    if (!flag1)
+                    {
+                        flag2 = true;
+                        continue;
+                    }
+                    break;
+                case '|':
+                    if (!flag1)
+                    {
+                        if (!flag2)
+                        {
+                            continue;
+                        }
+                        flag2 = false;
+                    }
+                    break;
+                case '@':
+                    if (!flag1)
+                    {
+                        i += 8;
+                        continue;
+                    }
+                    break;
+                default:
+                    if (str[i] == '$' && !flag1)
+                    {
+                        continue;
+                    }
+                    break;
+                }
+
+                flag1 = false;
+                if (str[i] && maxc /* && (float)(v14 / (float)(v11->m_heightScaled / v11->m_heightUnscaled)) > (float)(v16->width + v16->x0) */)
+                {
+                    //TODO: recreate this logic
+                    throw std::logic_error("Not implemented");
+                }
+                width = fnt->GetCharWidthAdvanced(str[i]) + width;
+
+            }
+        }
         throw std::logic_error("Not implemented");
     }
 
     int Application::DrawTextRelT(float, float, unsigned, CStr const&, unsigned, int)
     {
-        throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented"); 
     }
 
     int Application::FormatText(std::vector<ui::FormattedLine, std::allocator<ui::FormattedLine>>&, PointBase<float> const&, CStr const&, ui::DrawInfo const&, TextWrapFlags, TextFormatFlags)
