@@ -111,14 +111,16 @@ namespace m3d
             //Create(T const &, unsigned int,BoundsBase<float> const &, unsigned int);
             //SetCurSel(int);
             //ScrollSelection(bool);
-            //GetDrawFlags();
+            unsigned GetDrawFlags()
+            {
+                return m_drawFlags;
+            }
             //RecalcLayout();
             //ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
             //OnMouseWheel(int,PointBase<float> const &);
             //SetItemData(int,int);
             ~ListBoxWnd()
             {
-                throw std::logic_error("Not implemented");
             }
             ListBoxWnd()
             {

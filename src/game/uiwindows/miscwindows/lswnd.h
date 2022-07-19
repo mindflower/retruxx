@@ -14,6 +14,23 @@ namespace m3d
 
 class SaveButton :  public m3d::ui::ButtonWnd
 {
+    friend class SaveList;
+public:
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+    public:
+        CStr m_wndPatternName = "SaveButton";
+        CStr m_wndSaveNameName = "wndSaveName";
+        CStr m_wndTimeName = "wndTime";
+        m3d::ui::ButtonWnd* m_wndPattern = nullptr;
+        m3d::ui::Wnd* m_wndPatternSaveName = nullptr;
+        m3d::ui::Wnd* m_wndPatternTime = nullptr;
+        unsigned int m_selectColor = 0x80FF0000;
+    };
+
 public:
     int SetupForSave(CStr const &);
     virtual m3d::Object * Clone();
@@ -40,6 +57,9 @@ protected:
 
 public:
     RT_CLASS_DECLARE(SaveButton);
+
+protected:
+    static AuxInfo m_aif;
 
 private:
     m3d::ui::Wnd *m_wndSaveName;

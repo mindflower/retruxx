@@ -209,7 +209,7 @@ namespace m3d
 
     ui::Font* ui::GfxServer::GetCurFont() const
     {
-        throw std::logic_error("Not implemented");
+        return m_curFont;
     }
 
     ui::ScrollPane* ui::GfxServer::GetScrollPane(CStr const& paneName)
@@ -233,7 +233,7 @@ namespace m3d
 
     float ui::GfxServer::GetSliderNotchWidthRatio()
     {
-        throw std::logic_error("Not implemented");
+        return m_sliderNotchWidthRatio;
     }
 
     ui::GfxServer::~GfxServer()

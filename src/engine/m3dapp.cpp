@@ -1195,6 +1195,7 @@ namespace m3d
 
     int Application::GetTextExtent(CStr const& str, PointBase<float>& size, int fid, BoundsBase<float>* csz, int* minc, int* maxc, CStr* leftInvisibleSubstr, CStr* rightInvisibleSubstr)
     {
+        //TODO: recreate this
         if (leftInvisibleSubstr)
         {
             leftInvisibleSubstr->erase();
@@ -1209,6 +1210,12 @@ namespace m3d
             size.y = 0;
             return 0;
         }
+
+        //temp!
+        size.x = 0;
+        size.y = 0;
+        return 0;
+        //
 
         auto fnt = fid == -1 ? GetGfxServer()->GetCurFont() : GetGfxServer()->GetFontById(fid);
         if (!fnt)
@@ -1268,6 +1275,12 @@ namespace m3d
                 if (str[i] && maxc /* && (float)(v14 / (float)(v11->m_heightScaled / v11->m_heightUnscaled)) > (float)(v16->width + v16->x0) */)
                 {
                     //TODO: recreate this logic
+                    *maxc = i;
+                    if (rightInvisibleSubstr != nullptr)
+                    {
+                        (*rightInvisibleSubstr) += CStr(str[i]);
+                    }
+                    
                     throw std::logic_error("Not implemented");
                 }
                 width = fnt->GetCharWidthAdvanced(str[i]) + width;

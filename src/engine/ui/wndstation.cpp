@@ -379,9 +379,21 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void WndStation::UnregisterWnd(Wnd*)
+        void WndStation::UnregisterWnd(Wnd* w)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this and refactor
+            m3d::ui::Wnd* v2; // esi
+
+            v2 = w;
+            if (w)
+            {
+                if (w->m_uniqueId != -1)
+                {
+                    m_allWindowsById.removeByKey(w->m_uniqueId);
+                    m_allWindows.removeByKey(reinterpret_cast<unsigned>(w));
+                    v2->m_uniqueId = -1;
+                }
+            }
         }
 
         int WndStation::DispatchKey(Event const&)

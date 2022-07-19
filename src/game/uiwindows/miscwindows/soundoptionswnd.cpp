@@ -14,7 +14,7 @@ m3d::Class* SoundOptionsWnd::GetClass() const
 
 m3d::Object* SoundOptionsWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new SoundOptionsWnd;
 }
 
 m3d::Object* SoundOptionsWnd::Clone()

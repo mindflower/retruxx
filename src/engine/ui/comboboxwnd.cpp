@@ -3,6 +3,8 @@
 #include <ui/comboboxwnd.h>
 #include <ui/listbox.h>
 
+#include "m3dapp.h"
+
 namespace m3d
 {
     namespace ui
@@ -11,6 +13,7 @@ namespace m3d
 
         ComboBoxWnd::AuxInfo::AuxInfo()
         {
+
         }
 
         int ComboBoxWnd::GetCurSel() const
@@ -70,12 +73,13 @@ namespace m3d
 
         Class* ComboBoxWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(ComboBoxWnd);
         }
 
-        void ComboBoxWnd::SetComboStyle(unsigned)
+        void ComboBoxWnd::SetComboStyle(unsigned comboStyle)
         {
-            throw std::logic_error("Not implemented");
+            m_comboStyle = comboStyle;
+            RecalcLayot();
         }
 
         ComboBoxWnd::~ComboBoxWnd()
@@ -96,9 +100,14 @@ namespace m3d
             }
         }
 
-        void ComboBoxWnd::SetSelTextFixedHeight(float)
+        void ComboBoxWnd::SetSelTextFixedHeight(float height)
         {
-            throw std::logic_error("Not implemented");
+            m_selTextFixedH = height;
+            //TODO: check this
+            if ((m_comboStyle & 4) != 0)
+            {
+                RecalcLayot();
+            }
         }
 
         int ComboBoxWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -195,14 +204,20 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ComboBoxWnd::SetListMaxHeight(float)
+        void ComboBoxWnd::SetListMaxHeight(float listMaxH)
         {
-            throw std::logic_error("Not implemented");
+            m_maxListH = listMaxH;
+            RecalcLayot();
         }
 
-        void ComboBoxWnd::SetColor(unsigned)
+        void ComboBoxWnd::SetColor(unsigned Color)
         {
-            throw std::logic_error("Not implemented");
+            m_curClr = Color;
+            if (Valid())
+            {
+                m_wndStringList->SetColor(Color);
+                m_wndSelText->SetColor(Color);
+            }
         }
 
         int ComboBoxWnd::SetText(CStr const& text)
@@ -250,9 +265,18 @@ namespace m3d
             return 1;
         }
 
-        void ComboBoxWnd::SetPane(CStr const&)
+        void ComboBoxWnd::SetPane(CStr const& paneName)
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                if (!paneName.empty())
+                {
+                    m_paneName = paneName;
+                }
+                m_wndSelText->SetPane(paneName);
+                m_wndStringList->SetPane(paneName);
+                RecalcLayot();
+            }
         }
 
         CStr ComboBoxWnd::GetText() const
@@ -272,7 +296,12 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetSelTextBounds() const
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                return m_wndSelText->GetBounds();
+            }
+            //TODO: check this
+            return {};
         }
 
         BoundsBase<float> ComboBoxWnd::GetFullMaxBounds() const
@@ -315,9 +344,15 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ComboBoxWnd::SetDefaultFont(int)
+        void ComboBoxWnd::SetDefaultFont(int uiFont)
         {
-            throw std::logic_error("Not implemented");
+            Wnd::SetDefaultFont(uiFont);
+            if (Valid())
+            {
+                m_wndStringList->SetDefaultFont(uiFont);
+                m_wndSelText->SetDefaultFont(uiFont);
+                RecalcLayot();
+            }
         }
 
         int ComboBoxWnd::RemoveItem(int)
@@ -345,9 +380,13 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ComboBoxWnd::SetScrollPane(CStr const&)
+        void ComboBoxWnd::SetScrollPane(CStr const& scrollPaneName)
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                m_scrollPaneName = scrollPaneName;
+                m_wndStringList->SetScrollPane(scrollPaneName);
+            }
         }
 
         Class* ComboBoxWnd::GetBaseClass()
@@ -382,12 +421,24 @@ namespace m3d
 
         void ComboBoxWnd::UpdateToggleButtonPane()
         {
-            throw std::logic_error("Not implemented");
+            if (m_btnToggle)
+            {
+                //TODO: check this
+                m_btnToggle->SetPane(m_state != STATE_OPEN ? m_toggleButtonOpenPaneName : m_toggleButtonClosePaneName);
+            }
         }
 
-        void ComboBoxWnd::SetState(State, bool)
+        void ComboBoxWnd::SetState(State state, bool bForceUpdate)
         {
-            throw std::logic_error("Not implemented");
+            m_state = state;
+            if (m_state != state || bForceUpdate)
+            {
+                RecalcListBounds();
+                RecalcSelfBounds();
+                UpdateToggleButtonPane();
+                //TODO: check this!!!!
+                Application::g_pApp->EnqueueMessage((m_state != STATE_OPEN) + 47, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+            }
         }
 
         void ComboBoxWnd::RecalcLayot()
@@ -453,7 +504,12 @@ namespace m3d
 
         void ComboBoxWnd::RecalcSelfBounds()
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                auto const bounds = m_wndStringList->GetBounds();
+                auto const selTextBounds = GetSelTextBounds();
+                m_bounds.height = selTextBounds.height + bounds.height;
+            }
         }
 
         int ComboBoxWnd::OnWndNotify(Wnd*, unsigned, unsigned, AIParam const&)
@@ -463,7 +519,22 @@ namespace m3d
 
         void ComboBoxWnd::RecalcListBounds()
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this
+            if (Valid())
+            {
+                if (m_state)
+                {
+                    if (m_state == STATE_OPEN)
+                    {
+                        m_wndStringList->SetBounds(GetListBounds(), true);
+                    }
+                }
+                else
+                {
+                    //TODO; check this
+                    m_wndStringList->SetBounds(BoundsBase<float>{0.0, 0.0, 0.0, 0.0}, true);
+                }
+            }
         }
 
         int ComboBoxWnd::OnMouseButton0(unsigned, PointBase<float> const&)

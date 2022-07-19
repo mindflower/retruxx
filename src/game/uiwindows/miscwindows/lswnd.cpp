@@ -5,6 +5,13 @@
 
 RT_CLASS_DEFINE(SaveButton);
 
+SaveButton::AuxInfo::AuxInfo()
+{
+
+}
+
+SaveButton::AuxInfo SaveButton::m_aif;
+
 int SaveButton::SetupForSave(CStr const&)
 {
     throw std::logic_error("Not implemented");
@@ -72,7 +79,21 @@ _FILETIME const& SaveButton::GetSaveModifyTime() const
 
 void SaveButton::ClearPattern()
 {
-    throw std::logic_error("Not implemented");
+    if (SaveButton::m_aif.m_wndPattern)
+    {
+        delete SaveButton::m_aif.m_wndPattern;
+        SaveButton::m_aif.m_wndPattern = nullptr;
+    }
+    if (SaveButton::m_aif.m_wndPatternSaveName)
+    {
+        delete SaveButton::m_aif.m_wndPatternSaveName;
+        SaveButton::m_aif.m_wndPatternSaveName = nullptr;
+    }
+    if (SaveButton::m_aif.m_wndPatternTime)
+    {
+        delete SaveButton::m_aif.m_wndPatternTime;
+        SaveButton::m_aif.m_wndPatternTime = nullptr;
+    }
 }
 
 SaveButton::SaveButton(SaveButton const&)
@@ -95,9 +116,65 @@ int SaveButton::CreateFromPattern()
     throw std::logic_error("Not implemented");
 }
 
-int SaveButton::LoadPattern(m3d::ui::Wnd*)
+int SaveButton::LoadPattern(m3d::ui::Wnd* pattern)
 {
-    throw std::logic_error("Not implemented");
+    if (m_aif.m_wndPattern)
+    {
+        return 1;
+    }
+    ClearPattern();
+    auto res = 1;
+    if (pattern)
+    {
+        auto child = pattern->GetChildByName(m_aif.m_wndPatternName);
+        if (child && child->IsKindOf(RT_CLASS_LOCAL(ButtonWnd)))
+        {
+            m_aif.m_wndPattern = dynamic_cast<ButtonWnd*>(child);
+            pattern->RemoveChild(child);
+            child = pattern->GetChildByName(m_aif.m_wndSaveNameName);
+            if (child && child->IsKindOf(RT_CLASS_LOCAL(Wnd)))
+            {
+                m_aif.m_wndPatternSaveName = dynamic_cast<Wnd*>(child);;
+                pattern->RemoveChild(child);
+                SaveButton::m_aif.m_wndPatternSaveName->m_bounds.y0 = SaveButton::m_aif.m_wndPatternSaveName->m_bounds.y0 - SaveButton::m_aif.m_wndPattern->m_bounds.y0;
+                SaveButton::m_aif.m_wndPatternSaveName->m_bounds.x0 = SaveButton::m_aif.m_wndPatternSaveName->m_bounds.x0 - SaveButton::m_aif.m_wndPattern->m_bounds.x0;
+            }
+            else
+            {
+                M3D_LOG_INFO("GET_CHILD_PATTERN error - cannot find child wnd " + m_aif.m_wndSaveNameName);
+                res = 0;
+            }
+
+            child = pattern->Object::GetChildByName(SaveButton::m_aif.m_wndTimeName);
+            if (child && child->IsKindOf(RT_CLASS_LOCAL(Wnd)))
+            {
+                SaveButton::m_aif.m_wndPatternTime = dynamic_cast<Wnd*>(child);
+                pattern->RemoveChild(child);
+                SaveButton::m_aif.m_wndPatternTime->m_bounds.y0 = SaveButton::m_aif.m_wndPatternTime->m_bounds.y0 - SaveButton::m_aif.m_wndPattern->m_bounds.y0;
+                SaveButton::m_aif.m_wndPatternTime->m_bounds.x0 = SaveButton::m_aif.m_wndPatternTime->m_bounds.x0
+                    - SaveButton::m_aif.m_wndPattern->m_bounds.x0;
+            }
+            else
+            {
+                M3D_LOG_INFO("GET_CHILD_PATTERN error - cannot find child wnd " + m_aif.m_wndTimeName);
+                res = 0;
+            }
+            SaveButton::m_aif.m_wndPattern->m_bounds.x0 = 0.0;
+            SaveButton::m_aif.m_wndPattern->m_bounds.y0 = 0.0;
+        }
+        else
+        {
+
+            M3D_LOG_INFO("SaveButton::LoadPattern - error to create - invalid pattern wnd");
+            res = 0;
+        }
+    }
+    else
+    {
+        M3D_LOG_INFO("SaveButton::LoadPattern - error to create - invalid pattern wnd");
+        res = 0;
+    }
+    return res;
 }
 
 int SaveButton::CreateChildren()
@@ -119,7 +196,7 @@ m3d::Object* SaveList::Clone()
 
 m3d::Class* SaveList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 SaveList::SortDir SaveList::GetCurSortDir() const
@@ -129,7 +206,7 @@ SaveList::SortDir SaveList::GetCurSortDir() const
 
 m3d::Object* SaveList::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new SaveList;
 }
 
 int SaveList::SortSaves(SortArg, SortDir)
@@ -137,9 +214,53 @@ int SaveList::SortSaves(SortArg, SortDir)
     throw std::logic_error("Not implemented");
 }
 
-int SaveList::CreateFromPattern(m3d::ui::Wnd*, bool)
+int SaveList::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
-    throw std::logic_error("Not implemented");
+    using namespace m3d::ui;
+    if (patternWnd && patternWnd->IsKindOf(RT_CLASS_LOCAL(StringsListBoxWnd)))
+    {
+        auto pattern = dynamic_cast<StringsListBoxWnd*>(patternWnd);
+        if (!ListBoxWnd::Create(pattern->GetBounds(), pattern->GetStyle(), pattern->GetId()))
+        {
+            M3D_LOG_INFO("SaveList::CreateFromPattern error - cannot create window");
+            return 0;
+        }
+        SetScrollPane(pattern->GetScrollPaneName());
+        SetDrawFlags(pattern->GetDrawFlags());
+        SetPane(pattern->GetPaneName());
+        SetPaneFlags(pattern->GetPaneFlags());
+        
+        auto parent = pattern->GetParent();
+        if (!parent || !parent->IsKindOf(RT_CLASS_LOCAL(Wnd)))
+        {
+            M3D_LOG_INFO("SaveList::CreateFromPattern error - null parent for paternWnd");
+            return 0;
+        }
+        parent->AddChild(this);
+        parent->MoveChildToFirstPosition(this);
+        if (!SaveButton::LoadPattern(dynamic_cast<Wnd*>(parent)))
+        {
+            M3D_LOG_INFO("SaveList::CreateFromPattern error - cannot load pattern for SaveButton");
+            return 0;
+        }
+        auto clientWidth = GetClientBounds().width;
+        auto patternWidth = SaveButton::m_aif.m_wndPattern->GetBounds().width;
+        auto bounds = GetBounds();
+        bounds.width = bounds.width - (clientWidth - patternWidth);
+        SetBounds(bounds, true);
+        if (deleteSrc)
+        {
+            parent->RemoveChild(patternWnd);
+            delete patternWnd;
+        }
+        m_gameDataFlags |= 1u;
+        return 1;
+    }
+    else
+    {
+        M3D_LOG_INFO("SaveList::CreateFromPattern error - invalid patternWnd");
+        return 0;
+    }
 }
 
 void SaveList::SetCurSel(int)
@@ -159,7 +280,7 @@ SaveList::SortArg SaveList::GetCurSortArg() const
 
 m3d::Class* SaveList::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(SaveList);
 }
 
 int SaveList::FullUpdate()
@@ -179,7 +300,13 @@ int SaveList::GetSaveFoldersList(std::vector<CStr, std::allocator<CStr>>&) const
 
 SaveList::SaveList()
 {
-    throw std::logic_error("Not implemented");
+    m_drawFlags = 0;
+    //TODO: check this
+    m_clientEdges[2] = 2.0;
+    m_curSel = -1;
+    m_curSortArg = ARG_TIME;
+    m_curSortDir = DIR_DECREASE;
+    m_listType = TYPE_LOAD;
 }
 
 SaveList::SaveList(SaveList const&)
@@ -346,11 +473,11 @@ int LSWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndSortByNameArrowName + " is not found or incorrect type");
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndSortByTimeArrowName + " is not found or incorrect type");
             res = 0;
         }
 
-        auto wndSaveList = dynamic_cast<StringsListBoxWnd*>(GetChildByName(m_aif.m_wndSortByTimeArrowName));
+        auto wndSaveList = dynamic_cast<StringsListBoxWnd*>(GetChildByName(m_aif.m_wndSaveListName));
         if (wndSaveList && wndSaveList->IsKindOf(RT_CLASS_LOCAL(StringsListBoxWnd)))
         {
             m_wndSaveList = dynamic_cast<SaveList*>(m3d::g_Kernel->New("SaveList"));

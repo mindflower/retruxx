@@ -50,9 +50,9 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void removeByKey(unsigned int)
+        void removeByKey(unsigned int key)
         {
-            throw std::logic_error("Not implemented");
+            m_hash.erase(key);
         }
 
         void clear()

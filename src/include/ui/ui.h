@@ -305,6 +305,9 @@ namespace m3d
             PointBase<float> m_dragStartPt;
             PointBase<float> m_dragCurPt;
 
+        public:
+            BoundsBase<float> m_bounds;
+
         protected:
             CStr m_toolTipText;
             Wnd* m_toolTipWnd = nullptr;
@@ -314,7 +317,6 @@ namespace m3d
             int m_activationOrder = -1;
             CStr m_caption;
             unsigned int m_style = 512;                     //TODO: magic number
-            BoundsBase<float> m_bounds;
             std::vector<float> m_clientEdges;
             unsigned int m_curClr = 0;
             unsigned int m_textColor = -1;

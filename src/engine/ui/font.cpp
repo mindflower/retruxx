@@ -492,9 +492,13 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        float Font::GetCharWidthAdvanced(unsigned char) const
+        float Font::GetCharWidthAdvanced(unsigned char c) const
         {
-            throw std::logic_error("Not implemented");
+            if (m_symbols.size() > c && m_symbols[c])
+            {
+                return m_symbols[c]->m_precalcedABCWidth;
+            }
+            return 0.0;
         }
 
         Font::FontABC Font::GetAbcWidth(unsigned char) const

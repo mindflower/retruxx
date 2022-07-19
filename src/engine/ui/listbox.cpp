@@ -24,7 +24,6 @@ namespace m3d
 
         StringsListBoxWnd::~StringsListBoxWnd()
         {
-            throw std::logic_error("Not implemented");
         }
 
         Class* StringsListBoxWnd::GetClass() const

@@ -1,4 +1,8 @@
 #include "videooptionswnd.h"
+#include "ui/comboboxwnd.h"
+#include "ui/slider.h"
+#include "ui/button.h"
+#include <core/log.h>
 
 RT_CLASS_DEFINE(VideoOptionsWnd);
 
@@ -118,7 +122,176 @@ CStr VideoOptionsWnd::Antialiasing2Str(Antialiasing) const
 
 int VideoOptionsWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    using namespace m3d::ui;
+    bool res = true;
+    if ((m_gameDataFlags & 2) == 0)
+    {
+        auto resolution = GetChildByName(m_aif.m_cbResolutionName);
+        if (resolution && resolution->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)))
+        {
+            m_cbResolution = dynamic_cast<ComboBoxWnd*>(resolution);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbResolutionName + " is not found or incorrect type");
+        }
+
+        auto gamma = GetChildByName(m_aif.m_sliderGammaName);
+        if (gamma && gamma->IsKindOf(RT_CLASS_LOCAL(SliderWnd)))
+        {
+            m_sliderGamma = dynamic_cast<SliderWnd*>(gamma);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_sliderGammaName + " is not found or incorrect type");
+        }
+
+        auto graphic = GetChildByName(m_aif.m_cbGraphicQualityName);
+        if (graphic && graphic->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)))
+        {
+            m_cbGraphicQuality = dynamic_cast<ComboBoxWnd*>(graphic);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbGraphicQualityName + " is not found or incorrect type");
+        }
+
+        auto distance = GetChildByName(m_aif.m_sliderFarDistanceName);
+        if (distance && distance->IsKindOf(RT_CLASS_LOCAL(SliderWnd)))
+        {
+            m_sliderFarDistance = dynamic_cast<SliderWnd*>(distance);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_sliderFarDistanceName + " is not found or incorrect type");
+        }
+
+        auto grass = GetChildByName(m_aif.m_cbGrassName);
+        if (grass && grass->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)))
+        {
+            m_cbGrass = dynamic_cast<ComboBoxWnd*>(grass);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbGrassName + " is not found or incorrect type");
+        }
+
+        auto shadows = GetChildByName(m_aif.m_cbShadowsName);
+        if (shadows && shadows->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)))
+        {
+            m_cbShadows = dynamic_cast<ComboBoxWnd*>(shadows);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbShadowsName + " is not found or incorrect type");
+        }
+
+        auto water = GetChildByName(m_aif.m_cbWaterQualityName);
+        if (water && water->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)))
+        {
+            m_cbWaterQuality = dynamic_cast<ComboBoxWnd*>(water);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbWaterQualityName + " is not found or incorrect type");
+        }
+
+        auto antialiasing = GetChildByName(m_aif.m_cbAntialiasingName);
+        if (antialiasing && antialiasing->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)))
+        {
+            m_cbAntialiasing = dynamic_cast<ComboBoxWnd*>(antialiasing);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbAntialiasingName + " is not found or incorrect type");
+        }
+
+        auto filtration = GetChildByName(m_aif.m_cbFiltrationName);
+        if (filtration && filtration->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)))
+        {
+            m_cbFiltration = dynamic_cast<ComboBoxWnd*>(filtration);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbFiltrationName + " is not found or incorrect type");
+        }
+
+        auto blum = GetChildByName(m_aif.m_cbBlumName);
+        if (blum && blum->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)))
+        {
+            m_cbBlum = dynamic_cast<ComboBoxWnd*>(blum);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbBlumName + " is not found or incorrect type");
+        }
+
+        auto gammaPrev = GetChildByName(m_aif.m_btnGammaPrevName);
+        if (gammaPrev && gammaPrev->IsKindOf(RT_CLASS_LOCAL(ButtonWnd)))
+        {
+            m_btnGammaPrev = dynamic_cast<ButtonWnd*>(gammaPrev);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnGammaPrevName + " is not found or incorrect type");
+        }
+
+        auto gammaNext = GetChildByName(m_aif.m_btnGammaNextName);
+        if (gammaNext && gammaNext->IsKindOf(RT_CLASS_LOCAL(ButtonWnd)))
+        {
+            m_btnGammaNext = dynamic_cast<ButtonWnd*>(gammaNext);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnGammaNextName + " is not found or incorrect type");
+        }
+
+        auto distancePrev = GetChildByName(m_aif.m_btnFarDistancePrevName);
+        if (distancePrev && distancePrev->IsKindOf(RT_CLASS_LOCAL(ButtonWnd)))
+        {
+            m_btnFarDistancePrev = dynamic_cast<ButtonWnd*>(distancePrev);
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnFarDistancePrevName + " is not found or incorrect type");
+        }
+
+        auto distanceNext = GetChildByName(m_aif.m_btnFarDistanceNextName);
+        if (distanceNext && distanceNext->IsKindOf(RT_CLASS_LOCAL(ButtonWnd)))
+        {
+            m_btnFarDistanceNext = dynamic_cast<ButtonWnd*>(distanceNext);
+            if (res)
+            {
+                m_gameDataFlags |= 1u;
+                InitControls();
+            }
+        }
+        else
+        {
+            res = false;
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnFarDistanceNextName + " is not found or incorrect type");
+        }
+    }
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        return 1;
+    }
+
+    M3D_LOG_INFO("VideoOptionsWnd: error - fail to init because of a bad resource");
+    return 0;
 }
 
 CStr VideoOptionsWnd::ShadowsQuality2Str(ShadowsQuality) const
@@ -498,7 +671,24 @@ int VideoOptionsWnd::OnAfterRemoveFromWndStation()
 
 void VideoOptionsWnd::InitControls()
 {
-    throw std::logic_error("Not implemented");
+    InitResolutionControls();
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderGamma->SetMinMax(0, 100);
+        UpdateGammaPrevNextButtonsState();
+    }
+    InitGraphicQualityControls();
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderFarDistance->SetMinMax(0, 100);
+        UpdateFarDistancePrevNextButtonsState();
+    }
+    InitGrassControls();
+    InitShadowsControls();
+    InitWaterQualityControls();
+    InitAntialiasingControls();
+    InitFiltrationControls();
+    InitBlumControls();
 }
 
 int VideoOptionsWnd::AntialiasingEnum2Val(Antialiasing) const

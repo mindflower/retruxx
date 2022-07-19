@@ -21,7 +21,6 @@ namespace m3d
 
         Wnd::AnimationInfo::~AnimationInfo()
         {
-            throw std::logic_error("Not implemented");
         }
 
         Wnd::AnimationInfo::AnimationType Wnd::AnimationInfo::Str2AnimationType(CStr const&) const
@@ -221,7 +220,7 @@ namespace m3d
 
         Wnd::~Wnd()
         {
-            throw std::logic_error("Not implemented");
+            DestroyWnd();
         }
 
         rend::TexHandle Wnd::GetBackground() const
@@ -811,9 +810,9 @@ namespace m3d
             m_onHideAnimation.m_purpose = AnimationInfo::PURPOSE_HIDE;
         }
 
-        void Wnd::SetBaseOrigin(PointBase<float> const&)
+        void Wnd::SetBaseOrigin(PointBase<float> const& baseOrigin)
         {
-            throw std::logic_error("Not implemented");
+            m_baseOrigin = baseOrigin;
         }
 
         void Wnd::RemoveTooltip()
@@ -915,7 +914,20 @@ namespace m3d
 
         int Wnd::DestroyWnd()
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this and refactor
+            auto v2 = GetParent();
+            if (v2)
+                v2->RemoveChild(this);
+            RemoveAllChildren();
+            if (this->m_toolTipWnd)
+                RemoveTooltip();
+            if (this->m_bgTexture.IsValid())
+                m3d::Application::g_pApp->m_renderer->ReleaseTexture(this->m_bgTexture);
+            StopAnimationMoveSound();
+            if (m3d::ui::Wnd::m_wndStation)
+                m_wndStation->UnregisterWnd(this);
+            this->m_created = 0;
+            return 1;
         }
 
         void Wnd::FinishDragMove(int, PointBase<float> const&)
