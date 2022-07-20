@@ -17,8 +17,8 @@ namespace m3d
             {
             public:
             protected:
-            private:
-                CStr m_item;
+            public:
+                T m_item;
                 int m_data;
                 BoundsBase<float> m_rect;
                 int m_rectValid;
@@ -67,7 +67,17 @@ namespace m3d
             //RemoveAllItems();
             //OnKey(unsigned short,unsigned char, unsigned int);
             //OnMouseButton0(uint,PointBase<float> const &);
-            //AddItem(T const &);
+            int AddItem(T const& item)
+            {
+                Item ii;
+                ii.m_item = item;
+                ii.m_data = 0;
+                ii.m_rectValid = 0;
+                m_items.push_back(ii);
+                int res = m_items.size() - 1;
+                RecalcLayout();
+                return res;
+            }
             //GetScrollWidth();
             //Scroll(bool);
             //GetClientBounds();
@@ -115,10 +125,69 @@ namespace m3d
             {
                 return m_drawFlags;
             }
-            //RecalcLayout();
+
+            void RecalcLayout()
+            {
+                float orgY = 0.0;
+                float maxX = 0.0;
+                int i = 0;
+                for (auto& item : m_items)
+                {
+	                if (!item.m_rectValid)
+	                {
+                        MeasureItem(i, item.m_rect);
+                        item.m_origin.y = orgY;
+                        item.m_origin.x = 0.0;
+                        item.m_rectValid = 1;
+	                }
+                    orgY = item.m_rect.height + orgY;
+                    //TODO: check this
+                    maxX = max(maxX, item.m_rect.width);
+                }
+                if (m_scrollVWnd)
+                {
+                    m_scrollVWnd->SetScrollRect(maxX, orgY);
+                    auto bounds = m_scrollVWnd->GetBounds();
+                    bool show = (bounds.height + 0.001) < maxX;
+                    if ((m_drawFlags & 2) != 0)
+                    {
+                        m_scrollVWnd->ShowWindow(show);
+                    }
+                    else
+                    {
+                        m_scrollVWnd->EnableWindow(show);
+                    }
+                }
+                if (m_scrollHWnd)
+                {
+                    m_scrollHWnd->SetScrollRect(maxX, orgY);
+                    auto bounds = m_scrollVWnd->GetBounds();
+                    //TODO: check this!!!!!!!!!!
+                    bool show = (bounds.width + 0.001) < orgY;
+                    if ((m_drawFlags & 2) != 0)
+                    {
+                        m_scrollVWnd->ShowWindow(show);
+                    }
+                    else
+                    {
+                        m_scrollVWnd->EnableWindow(show);
+                    }
+                }
+            }
+
+            virtual int MeasureItem(int, BoundsBase<float>&) const
+            {
+                throw std::logic_error("Not implemented");
+            }
+
             //ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
             //OnMouseWheel(int,PointBase<float> const &);
-            //SetItemData(int,int);
+            void SetItemData(int idx,int data)
+            {
+                m_items[idx].m_data = data;
+                m_items[idx].m_rectValid = 0;
+            }
+
             ~ListBoxWnd()
             {
             }

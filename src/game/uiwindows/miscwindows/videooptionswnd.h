@@ -241,6 +241,11 @@ protected:
 public:
     RT_CLASS_DECLARE(VideoOptionsWnd);
 
+protected:
+    static PointBase<int> m_screenWH[5];
+    static int m_waterQualities[3];
+    static int m_antialiasings[5];
+
 private:
     m3d::ui::ComboBoxWnd* m_cbResolution = nullptr;
     m3d::ui::SliderWnd *m_sliderGamma = nullptr;

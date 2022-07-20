@@ -104,9 +104,11 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        CStr WndStation::GetStringByStringId0(CStr const&)
+        CStr WndStation::GetStringByStringId0(CStr const& id)
         {
-            throw std::logic_error("Not implemented");
+            CStr result;
+            GetStringByStringId(result, id);
+            return result;
         }
 
         int WndStation::GetStringByStringId(CStr& dest, CStr const& id)
@@ -124,9 +126,17 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int WndStation::AddNotifyForWnd(Wnd*, Wnd*, unsigned, AIParam const&, bool)
+        int WndStation::AddNotifyForWnd(Wnd* from, Wnd* to, unsigned msg, AIParam const& data, bool urgent)
         {
-            throw std::logic_error("Not implemented");
+            if (urgent)
+            {
+                Application::g_pApp->ImmediateMessage(40, reinterpret_cast<int>(from), reinterpret_cast<int>(to), msg, 0, {}, data);
+            }
+            else
+            {
+                Application::g_pApp->EnqueueMessage(40, reinterpret_cast<int>(from), reinterpret_cast<int>(to), msg, 0, {}, data);
+            }
+            return 1;
         }
 
         int WndStation::CheckForMouseDblClick(Wnd*, PointBase<float> const&, unsigned, PointBase<float>&)

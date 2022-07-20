@@ -36,9 +36,15 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int StringsListBoxWnd::MeasureItem(int, BoundsBase<float>&) const
+        int StringsListBoxWnd::MeasureItem(int itemIdx, BoundsBase<float>& bounds) const
         {
-            throw std::logic_error("Not implemented");
+            auto point = GetGfxServer()->MeasureText(m_items[itemIdx].m_item, m_defFont, TW_NOWRAP, 10000.0);
+            //TODO: check this!!!
+            bounds.x0 = 0.0;
+            bounds.y0 = 0.0;
+            bounds.width = point.y;
+            bounds.height = point.x;
+            return 1;
         }
 
         int StringsListBoxWnd::DeleteItem(int)

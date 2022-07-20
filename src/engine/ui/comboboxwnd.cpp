@@ -36,9 +36,12 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ComboBoxWnd::SetItemData(int, int)
+        void ComboBoxWnd::SetItemData(int idx, int data)
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                m_wndStringList->SetItemData(idx, data);
+            }
         }
 
         unsigned ComboBoxWnd::GetComboStyle() const
@@ -234,9 +237,13 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ComboBoxWnd::AddItem(CStr const&)
+        int ComboBoxWnd::AddItem(CStr const& item)
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                return m_wndStringList->AddItem(item);
+            }
+            return -1;
         }
 
         int ComboBoxWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)

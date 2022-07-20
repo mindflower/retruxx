@@ -94,9 +94,47 @@ namespace m3d
             }
         }
 
-        void ScrollWnd::SetScrollRect(float, float)
+        void ScrollWnd::SetScrollRect(float szX, float szY)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this!! and refactor
+            float v4; // xmm1_4
+            float v6; // xmm0_4
+            m3d::ui::ScrollPane* v7; // eax
+            char v8[16]; // [esp+4h] [ebp-10h] BYREF
+
+            if (this->m_vertical)
+            {
+                v4 = GetBounds().height;
+            }
+            else
+            {
+                v4 = GetBounds().width;
+                szY = szX;
+            }
+            if (v4 < szY)
+            {
+                v6 = szY - v4;
+                if (v6 != m_maxPos)
+                    this->m_maxPos = v6;
+            }
+            else
+            {
+                v6 = 0.0;
+                this->m_curPos = 0.0;
+            }
+            this->m_maxPos = v6;
+            v7 = GetGfxServer()->GetScrollPane(m_scrollPaneName);
+            if (v7)
+            {
+                if (this->m_vertical)
+                    this->m_thumbSz = v7->m_thumbSize.y;
+                else
+                    this->m_thumbSz = v7->m_thumbSize.x;
+            }
+            else
+            {
+                this->m_thumbSz = 30.0;
+            }
         }
 
         Class* ScrollWnd::GetClass() const
@@ -115,9 +153,16 @@ namespace m3d
             RecalcLayot();
         }
 
-        void ScrollWnd::ShowWindow(bool)
+        void ScrollWnd::ShowWindow(bool bShow)
         {
-            throw std::logic_error("Not implemented");
+            if (bShow)
+                this->m_style |= 2u;
+            else
+                this->m_style &= 0xFDu;
+            if (m_btn0)
+                m_btn0->ShowWindow(bShow);
+            if (m_btn1)
+                m_btn1->ShowWindow(bShow);
         }
 
         int ScrollWnd::OnPaint(DrawInfo const&)

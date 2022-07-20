@@ -19,15 +19,15 @@ public:
         AuxInfo();
 
     private:
-        CStr m_sliderMusicVolumeName;
-        CStr m_sliderEffectsVolumeName;
-        CStr m_sliderSpeakVolumeName;
-        CStr m_btnMusicVolumePrevName;
-        CStr m_btnMusicVolumeNextName;
-        CStr m_btnEffectsVolumePrevName;
-        CStr m_btnEffectsVolumeNextName;
-        CStr m_btnSpeakVolumePrevName;
-        CStr m_btnSpeakVolumeNextName;
+        CStr m_sliderMusicVolumeName = "sliderMusicVolume";
+        CStr m_sliderEffectsVolumeName = "sliderEffectsVolume";
+        CStr m_sliderSpeakVolumeName = "sliderSpeakVolume";
+        CStr m_btnMusicVolumePrevName = "btnMusicVolumePrev";
+        CStr m_btnMusicVolumeNextName = "btnMusicVolumeNext";
+        CStr m_btnEffectsVolumePrevName = "btnEffectsVolumePrev";
+        CStr m_btnEffectsVolumeNextName = "btnEffectsVolumeNext";
+        CStr m_btnSpeakVolumePrevName = "btnSpeakVolumePrev";
+        CStr m_btnSpeakVolumeNextName = "btnSpeakVolumeNext";
     };
 
 public:
@@ -71,17 +71,17 @@ public:
     RT_CLASS_DECLARE(SoundOptionsWnd);
 
 private:
-    m3d::ui::SliderWnd *m_sliderMusicVolume;
-    m3d::ui::SliderWnd *m_sliderEffectsVolume;
-    m3d::ui::SliderWnd *m_sliderSpeakVolume;
-    m3d::ui::ButtonWnd *m_btnMusicVolumePrev;
-    m3d::ui::ButtonWnd *m_btnMusicVolumeNext;
-    m3d::ui::ButtonWnd *m_btnEffectsVolumePrev;
-    m3d::ui::ButtonWnd *m_btnEffectsVolumeNext;
-    m3d::ui::ButtonWnd *m_btnSpeakVolumePrev;
-    m3d::ui::ButtonWnd *m_btnSpeakVolumeNext;
-    int m_sliderMusicVolumeBlocked;
-    int m_sliderEffectsVolumeBlocked;
-    int m_sliderSpeakVolumeBlocked;
+    m3d::ui::SliderWnd *m_sliderMusicVolume = nullptr;
+    m3d::ui::SliderWnd *m_sliderEffectsVolume = nullptr;
+    m3d::ui::SliderWnd *m_sliderSpeakVolume = nullptr;
+    m3d::ui::ButtonWnd *m_btnMusicVolumePrev = nullptr;
+    m3d::ui::ButtonWnd *m_btnMusicVolumeNext = nullptr;
+    m3d::ui::ButtonWnd *m_btnEffectsVolumePrev = nullptr;
+    m3d::ui::ButtonWnd *m_btnEffectsVolumeNext = nullptr;
+    m3d::ui::ButtonWnd *m_btnSpeakVolumePrev = nullptr;
+    m3d::ui::ButtonWnd *m_btnSpeakVolumeNext = nullptr;
+    int m_sliderMusicVolumeBlocked = 0;
+    int m_sliderEffectsVolumeBlocked = 0;
+    int m_sliderSpeakVolumeBlocked = 0;
     SoundOptionsWnd::AuxInfo m_aif;
 };

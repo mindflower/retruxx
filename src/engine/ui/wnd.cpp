@@ -88,9 +88,12 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::ShowWindow(bool)
+        void Wnd::ShowWindow(bool show)
         {
-            throw std::logic_error("Not implemented");
+            if (show)
+                this->m_style |= 2u;
+            else
+                this->m_style &= 0xFDu;
         }
 
         unsigned Wnd::GetTextColor() const
@@ -441,9 +444,12 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::EnableWindow(bool)
+        void Wnd::EnableWindow(bool bEnable)
         {
-            throw std::logic_error("Not implemented");
+            if (bEnable)
+                this->m_style &= 0xFFFFFFFD;
+            else
+                this->m_style |= 2u;
         }
 
         void Wnd::EnableOnShowAnimation(bool)

@@ -20,7 +20,7 @@ namespace m3d
 
         int SliderWnd::GetMax() const
         {
-            throw std::logic_error("Not implemented");
+            return m_max;
         }
 
         Object* SliderWnd::Clone()
@@ -58,7 +58,7 @@ namespace m3d
 
         int SliderWnd::GetMin() const
         {
-            throw std::logic_error("Not implemented");
+            return m_min;
         }
 
         Class* SliderWnd::GetClass() const
@@ -72,22 +72,22 @@ namespace m3d
             int v3; // eax
             int v4; // esi
 
-            v3 = m_cur;
+            v3 = this->m_cur;
             v4 = max;
             if (max < min)
                 v4 = min;
-            if (m_cur < min)
-                m_cur = min;
-            m_min = min;
+            if (v3 < min)
+                v3 = min;
+            this->m_min = min;
             if (v3 > v4)
                 v3 = v4;
-            m_max = v4;
+            this->m_max = v4;
             SetNotch(v3);
         }
 
         int SliderWnd::GetNotch() const
         {
-            throw std::logic_error("Not implemented");
+            return m_cur;
         }
 
         void SliderWnd::SetNotch(int n)

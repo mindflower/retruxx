@@ -4,12 +4,11 @@ RT_CLASS_DEFINE(SoundOptionsWnd);
 
 SoundOptionsWnd::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
 }
 
 m3d::Class* SoundOptionsWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(SoundOptionsWnd);
 }
 
 m3d::Object* SoundOptionsWnd::CreateObject()
@@ -24,7 +23,7 @@ m3d::Object* SoundOptionsWnd::Clone()
 
 m3d::Class* SoundOptionsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 SoundOptionsWnd::~SoundOptionsWnd()
@@ -164,7 +163,6 @@ SoundOptionsWnd::SoundOptionsWnd(SoundOptionsWnd const&)
 
 SoundOptionsWnd::SoundOptionsWnd()
 {
-    throw std::logic_error("Not implemented");
 }
 
 void SoundOptionsWnd::UpdateEffectsVolumeControls()
