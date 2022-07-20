@@ -84,10 +84,10 @@ namespace m3d
             CheckWnd(CheckWnd const&);
 
         public:
-            RT_CLASS_INLINE_DECLARE(CheckWnd);
+            RT_CLASS_DECLARE(CheckWnd);
 
         private:
-            int m_isChecked;
+            int m_isChecked = 0;
             CStr m_checkedPaneName;
             CStr m_uncheckedPaneName;
         };

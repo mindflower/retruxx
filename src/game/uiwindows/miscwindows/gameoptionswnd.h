@@ -20,12 +20,12 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_checkAutoHelpName;
-        CStr m_sliderNumRepliesName;
-        CStr m_btnNumRepliesPrevName;
-        CStr m_btnNumRepliesNextName;
-        CStr m_cbGameDifficultyName;
+    public:
+        CStr m_checkAutoHelpName = "checkAutoHelp";
+        CStr m_sliderNumRepliesName = "sliderNumReplies";
+        CStr m_btnNumRepliesPrevName = "btnNumRepliesPrev";
+        CStr m_btnNumRepliesNextName = "btnNumRepliesNext";
+        CStr m_cbGameDifficultyName = "cbGameDifficulty";
     };
 
 public:
@@ -63,12 +63,12 @@ public:
     RT_CLASS_DECLARE(GameOptionsWnd);
 
 private:
-    m3d::ui::CheckWnd *m_checkAutoHelp;
-    m3d::ui::SliderWnd *m_sliderNumReplies;
-    m3d::ui::ButtonWnd *m_btnNumRepliesPrev;
-    m3d::ui::ButtonWnd *m_btnNumRepliesNext;
-    m3d::ui::ComboBoxWnd *m_cbGameDifficulty;
-    int m_sliderNumRepliesBlocked;
-    int m_cbGameDifficultyBlocked;
+    m3d::ui::CheckWnd *m_checkAutoHelp = nullptr;
+    m3d::ui::SliderWnd *m_sliderNumReplies = nullptr;
+    m3d::ui::ButtonWnd *m_btnNumRepliesPrev = nullptr;
+    m3d::ui::ButtonWnd *m_btnNumRepliesNext = nullptr;
+    m3d::ui::ComboBoxWnd *m_cbGameDifficulty = nullptr;
+    int m_sliderNumRepliesBlocked = 0;
+    int m_cbGameDifficultyBlocked = 0;
     GameOptionsWnd::AuxInfo m_aif;
 };

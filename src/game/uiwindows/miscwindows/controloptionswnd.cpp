@@ -1,16 +1,20 @@
 #include "controloptionswnd.h"
 #include "bindkeyswnd.h"
+#include "config.h"
+#include "m3dapp.h"
+#include "core/log.h"
+#include "game/m3dgame.h"
+#include "ui/slider.h"
 
 RT_CLASS_DEFINE(ControlOptionsWnd);
 
 ControlOptionsWnd::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
 }
 
 m3d::Class* ControlOptionsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int ControlOptionsWnd::ApplyChanges(bool)
@@ -20,12 +24,12 @@ int ControlOptionsWnd::ApplyChanges(bool)
 
 m3d::Class* ControlOptionsWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ControlOptionsWnd);
 }
 
 m3d::Object* ControlOptionsWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new ControlOptionsWnd;
 }
 
 ControlOptionsWnd::~ControlOptionsWnd()
@@ -60,7 +64,13 @@ void ControlOptionsWnd::UpdateMouseFlipYControls()
 
 void ControlOptionsWnd::InitMouseSensitivityControls()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto mouseMaxSense = m3d::g_Kernel->GetEngineCfg().m_mouseMaxSensitivity.GetF();
+        auto mouseMinSense = m3d::g_Kernel->GetEngineCfg().m_mouseMinSensitivity.GetF();
+        m_sliderMouseSensitivity->SetMinMax(mouseMinSense*100.0, mouseMaxSense*100.0);
+        UpdateMouseSensitivityPrevNextButtonsState();
+    }
 }
 
 void ControlOptionsWnd::UpdateMouseFlipXControls()
@@ -95,7 +105,6 @@ ControlOptionsWnd::ControlOptionsWnd(ControlOptionsWnd const&)
 
 ControlOptionsWnd::ControlOptionsWnd()
 {
-    throw std::logic_error("Not implemented");
 }
 
 void ControlOptionsWnd::OnBtnMouseSensitivityNextClick(m3d::AIParam const&)
@@ -105,7 +114,86 @@ void ControlOptionsWnd::OnBtnMouseSensitivityNextClick(m3d::AIParam const&)
 
 int ControlOptionsWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    using namespace m3d::ui;
+    int res = 1;
+    if ((m_gameDataFlags & 2) == 0)
+    {
+        auto sense = GetChildByName(m_aif.m_sliderMouseSensitivityName);
+        if (sense && sense->IsKindOf(RT_CLASS_LOCAL(SliderWnd)))
+        {
+            m_sliderMouseSensitivity = dynamic_cast<SliderWnd*>(sense);
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_sliderMouseSensitivityName + " is not found or incorrect type");
+            res = 0;
+        }
+
+        auto sensePrev = GetChildByName(m_aif.m_btnMouseSensitivityPrevName);
+        if (sensePrev && sensePrev->IsKindOf(RT_CLASS_LOCAL(ButtonWnd)))
+        {
+            m_btnMouseSensitivityPrev = dynamic_cast<ButtonWnd*>(sensePrev);
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnMouseSensitivityPrevName + " is not found or incorrect type");
+            res = 0;
+        }
+
+        auto senseNext = GetChildByName(m_aif.m_btnMouseSensitivityNextName);
+        if (senseNext && senseNext->IsKindOf(RT_CLASS_LOCAL(ButtonWnd)))
+        {
+            m_btnMouseSensitivityNext = dynamic_cast<ButtonWnd*>(senseNext);
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnMouseSensitivityNextName + " is not found or incorrect type");
+            res = 0;
+        }
+
+        auto flipY = GetChildByName(m_aif.m_checkMouseFlipYName);
+        if (flipY && flipY->IsKindOf(RT_CLASS_LOCAL(CheckWnd)))
+        {
+            m_checkMouseFlipY = dynamic_cast<CheckWnd*>(flipY);
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_checkMouseFlipYName + " is not found or incorrect type");
+            res = 0;
+        }
+
+        auto flipX = GetChildByName(m_aif.m_checkMouseFlipXName);
+        if (flipX && flipX->IsKindOf(RT_CLASS_LOCAL(CheckWnd)))
+        {
+            m_checkMouseFlipX = dynamic_cast<CheckWnd*>(flipX);
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_checkMouseFlipXName + " is not found or incorrect type");
+            res = 0;
+        }
+
+        auto wndKeyBindings = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp)->m_pInterfaceManager->GetWindow(0);
+        if (wndKeyBindings)
+        {
+	        if (wndKeyBindings->IsKindOf(RT_CLASS_LOCAL(BindKeysWnd)))
+	        {
+                //TODO: check this!!!!!!!!!q
+                wndKeyBindings->IncRef();
+                m_wndKeyBindings = dynamic_cast<BindKeysWnd*>(&*wndKeyBindings);
+                AddChild(m_wndKeyBindings);
+                if (res)
+                {
+                    m_gameDataFlags |= 1u;
+                    InitMouseSensitivityControls();
+                }
+	        }
+        }
+    }
+    if ((this->m_gameDataFlags & 1) != 0)
+        return 1;
+	M3D_LOG_INFO("ControlOptionsWnd: error - fail to init because of a bad resource");
+    return 0;
 }
 
 void ControlOptionsWnd::OnBtnMouseSensitivityPrevClick(m3d::AIParam const&)
@@ -135,7 +223,12 @@ void ControlOptionsWnd::ApplyMouseSensitivity()
 
 void ControlOptionsWnd::UpdateMouseSensitivityPrevNextButtonsState()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto notch = m_sliderMouseSensitivity->GetNotch();
+        m_btnMouseSensitivityPrev->EnableWindow(notch > m_sliderMouseSensitivity->GetMin());
+        m_btnMouseSensitivityNext->EnableWindow(notch < m_sliderMouseSensitivity->GetMax());
+    }
 }
 
 void ControlOptionsWnd::InitControls()

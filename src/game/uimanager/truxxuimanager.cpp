@@ -134,6 +134,8 @@
 #include <game/uiwindows/townwindows/towndlg.h>
 #include <ui/wnd.h>
 
+#include "game/uimisc/objectsicons.h"
+
 namespace
 {
     struct _Str2GuiId
@@ -258,9 +260,9 @@ QuestInfoManager* TruxxUiManager::GetQuestInfoManager() const
     throw std::logic_error("Not implemented");
 }
 
-ref_ptr<m3d::ui::Wnd> TruxxUiManager::GetWindow(int) const
+ref_ptr<m3d::ui::Wnd> TruxxUiManager::GetWindow(int wndId) const
 {
-    throw std::logic_error("Not implemented");
+    return GUI_GetWindow(wndId);
 }
 
 int TruxxUiManager::GetDefaultFloatPrecision() const
@@ -410,9 +412,9 @@ CStr TruxxUiManager::GetPathToLevelInfoFile() const
     throw std::logic_error("Not implemented");
 }
 
-m3d::rend::TexHandle TruxxUiManager::GetIcoByName(CStr const&, int)
+m3d::rend::TexHandle TruxxUiManager::GetIcoByName(CStr const& name, int mode)
 {
-    throw std::logic_error("Not implemented");
+    return m_icons->GetIcoByName(name, mode);
 }
 
 int TruxxUiManager::ShowWindow(int, bool, bool, bool, bool, int*)

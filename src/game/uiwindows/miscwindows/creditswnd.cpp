@@ -1,5 +1,7 @@
 #include "creditswnd.h"
 
+#include "game/m3dgame.h"
+
 RT_CLASS_DEFINE(CreditsWnd);
 
 CreditsWnd::PageInfo::PageInfo()
@@ -9,7 +11,9 @@ CreditsWnd::PageInfo::PageInfo()
 
 CreditsWnd::Pointer::Pointer()
 {
-    throw std::logic_error("Not implemented");
+    auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    m_texture = app->m_pInterfaceManager->GetIcoByName(m_texId, 0);
+    app->m_renderer->ReferenceTexture(m_texture);
 }
 
 void CreditsWnd::Pointer::Update(float, float, bool)
@@ -49,7 +53,7 @@ CreditsWnd::~CreditsWnd()
 
 m3d::Class* CreditsWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CreditsWnd);
 }
 
 m3d::Object* CreditsWnd::Clone()
@@ -59,12 +63,12 @@ m3d::Object* CreditsWnd::Clone()
 
 m3d::Class* CreditsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ModalWnd);
 }
 
 m3d::Object* CreditsWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new CreditsWnd;
 }
 
 int CreditsWnd::OnAfterRemoveFromWndStation()

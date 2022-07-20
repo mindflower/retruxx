@@ -34,13 +34,13 @@ public:
         void Init(void);
 
     private:
-        float m_minAngle;
-        float m_maxAngle;
-        float m_curAngle;
-        PointBase<float> m_texSz;
-        PointBase<float> m_rotationCenter;
-        PointBase<float> m_rotationScreenCenter;
-        CStr m_texId;
+        float m_minAngle = -0.78539819;
+        float m_maxAngle = 0.78539819;
+        float m_curAngle = -0.78539819;
+        PointBase<float> m_texSz {32.0, 256.0};
+        PointBase<float> m_rotationCenter{ 16.0, 129.0 };
+        PointBase<float> m_rotationScreenCenter{ 186.0, 290.0 };
+        CStr m_texId = "CreditsPointer";
         m3d::rend::TexHandle m_texture;
     };
 

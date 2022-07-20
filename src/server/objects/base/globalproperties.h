@@ -35,7 +35,7 @@ namespace ai
         CoeffsForDifficultyLevel const& GetCoeffsForCurrentDifficultyLevel() const;
         void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
 
-    private:
+    public:
         PointBase<int> m_izvratRepositoryMaxSize{13, 13};
         PointBase<int> m_groundRepositorySize{14, 300};
         CStr m_pathToRelationship;

@@ -18,7 +18,7 @@ public:
     public:
         AuxInfo();
 
-    private:
+    public:
         CStr m_sliderMusicVolumeName = "sliderMusicVolume";
         CStr m_sliderEffectsVolumeName = "sliderEffectsVolume";
         CStr m_sliderSpeakVolumeName = "sliderSpeakVolume";

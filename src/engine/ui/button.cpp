@@ -206,24 +206,27 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
+        RT_CLASS_DEFINE(CheckWnd);
+
         Object* CheckWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            return new CheckWnd;
         }
 
         Class* CheckWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(ButtonWnd);
         }
 
         Class* CheckWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(CheckWnd);
         }
 
-        void CheckWnd::SetCheck(int)
+        void CheckWnd::SetCheck(int chk)
         {
-            throw std::logic_error("Not implemented");
+            this->m_isChecked = chk;
+            this->m_paneName = chk ? m_checkedPaneName : m_uncheckedPaneName;
         }
 
         CheckWnd::~CheckWnd()
@@ -251,9 +254,29 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int CheckWnd::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int CheckWnd::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this and refactor
+            int result; // eax
+            int v5; // ebx
+            const char* v6; // eax
+
+            result = ButtonWnd::ReadFromXmlNode(file, node);
+            if (result)
+            {
+                m3d::SafeStrAttrib(this->m_checkedPaneName, node, "checkedPaneName");
+                m3d::SafeStrAttrib(this->m_uncheckedPaneName, node, "uncheckedPaneName");
+                v5 = 0;
+                if (!node->IsEmpty())
+                {
+                    v6 = node->GetAttribute("isChecked");
+                    if (v6)
+                        v5 = atoi(v6);
+                }
+                SetCheck(v5);
+                result = 1;
+            }
+            return result;
         }
 
         CStr const& CheckWnd::GetUncheckedPaneName() const
@@ -271,9 +294,21 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int CheckWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        int CheckWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this and refactor
+            unsigned int v6; // eax
+
+            if (!CreateWnd(caption, style, rc, id))
+                return 0;
+            this->m_style |= 4u;
+            v6 = this->m_style;
+            v6 &= 0xFBu;
+            this->m_textWrap = TW_WORD_WRAP;
+            this->m_isChecked = 0;
+            this->m_style = v6;
+            this->m_paneName = this->m_uncheckedPaneName;
+            return 1;
         }
 
         int CheckWnd::OnMouseButton0(unsigned, PointBase<float> const&)
@@ -298,7 +333,6 @@ namespace m3d
 
         CheckWnd::CheckWnd()
         {
-            throw std::logic_error("Not implemented");
         }
 
         CheckWnd::CheckWnd(CheckWnd const&)

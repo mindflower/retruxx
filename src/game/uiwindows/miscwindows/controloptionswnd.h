@@ -22,12 +22,12 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_sliderMouseSensitivityName;
-        CStr m_btnMouseSensitivityPrevName;
-        CStr m_btnMouseSensitivityNextName;
-        CStr m_checkMouseFlipYName;
-        CStr m_checkMouseFlipXName;
+    public:
+        CStr m_sliderMouseSensitivityName = "sliderMouseSensitivity";
+        CStr m_btnMouseSensitivityPrevName = "btnMouseSensitivityPrev";
+        CStr m_btnMouseSensitivityNextName = "btnMouseSensitivityNext";
+        CStr m_checkMouseFlipYName = "checkMouseFlipY";
+        CStr m_checkMouseFlipXName = "checkMouseFlipX";
     };
 
 public:
@@ -66,12 +66,12 @@ public:
     RT_CLASS_DECLARE(ControlOptionsWnd);
 
 private:
-    m3d::ui::SliderWnd *m_sliderMouseSensitivity;
-    m3d::ui::ButtonWnd *m_btnMouseSensitivityPrev;
-    m3d::ui::ButtonWnd *m_btnMouseSensitivityNext;
-    m3d::ui::CheckWnd *m_checkMouseFlipY;
-    m3d::ui::CheckWnd *m_checkMouseFlipX;
-    int m_sliderMouseSensitivityBlocked;
+    m3d::ui::SliderWnd *m_sliderMouseSensitivity = nullptr;
+    m3d::ui::ButtonWnd *m_btnMouseSensitivityPrev = nullptr;
+	m3d::ui::ButtonWnd *m_btnMouseSensitivityNext = nullptr;
+    m3d::ui::CheckWnd *m_checkMouseFlipY = nullptr;
+    m3d::ui::CheckWnd *m_checkMouseFlipX = nullptr;
+    int m_sliderMouseSensitivityBlocked = 0;
     ControlOptionsWnd::AuxInfo m_aif;
     ref_ptr<BindKeysWnd> m_wndKeyBindings;
 };
