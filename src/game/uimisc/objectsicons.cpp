@@ -28,9 +28,13 @@ int ObjectsIcons::Icon::SetIco(int idx, CStr const& fileName)
     return m_ico[idx].IsValid();
 }
 
-m3d::rend::TexHandle ObjectsIcons::Icon::GetIco(int) const
+m3d::rend::TexHandle ObjectsIcons::Icon::GetIco(int mode) const
 {
-    throw std::logic_error("Not implemented");
+    if (mode < 0 || mode >=2)
+    {
+        return {};
+    }
+    return m_ico[mode];
 }
 
 ObjectsIcons::Icon::~Icon()
@@ -47,9 +51,14 @@ void ObjectsIcons::Clear(bool)
     throw std::logic_error("Not implemented");
 }
 
-m3d::rend::TexHandle ObjectsIcons::GetIcoByName(CStr const&, int) const
+m3d::rend::TexHandle ObjectsIcons::GetIcoByName(CStr const& name, int mode) const
 {
-    throw std::logic_error("Not implemented");
+    auto const icon = m_levelIcons.find(name);
+    if (icon != m_levelIcons.end() && icon->second)
+    {
+        return icon->second->GetIco(mode);
+    }
+    return {};
 }
 
 ObjectsIcons::~ObjectsIcons()

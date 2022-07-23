@@ -49,10 +49,10 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_wndTextName;
-        CStr m_wndPortraitName;
-        CStr m_texIdBg;
+    public:
+        CStr m_wndTextName = "wndText";
+        CStr m_wndPortraitName = "wndPortrait";
+        CStr m_texIdBg = "CreditsBg";
     };
 
 public:
@@ -105,23 +105,23 @@ public:
     RT_CLASS_DECLARE(CreditsWnd);
 
 private:
-    m3d::ui::Wnd *m_wndText;
-    ItemModelWnd *m_wndPortrait;
+    m3d::ui::Wnd *m_wndText = nullptr;
+    ItemModelWnd *m_wndPortrait = nullptr;
     m3d::rend::TexHandle m_texBgShow;
     m3d::rend::TexHandle m_texBgBreak;
-    float m_breakTime;
-    int m_showSoundTableId;
-    int m_breakSoundTableId;
-    int m_ambientSoundTableId;
-    int m_musicTableId;
-    int m_switchSoundChannelId;
-    int m_ambientSoundChannelId;
-    int m_musicChannelId;
+    float m_breakTime = 0.5;
+    int m_showSoundTableId = -1;
+    int m_breakSoundTableId = -1;
+    int m_ambientSoundTableId = -1;
+    int m_musicTableId = -1;
+    int m_switchSoundChannelId = -1;
+    int m_ambientSoundChannelId = -1;
+    int m_musicChannelId = -1;
     std::vector<CreditsWnd::PageInfo *> m_pageInfos;
-    int m_curPageId;
-    bool m_bInBreak;
+    int m_curPageId = -1;
+    bool m_bInBreak = 0;
     CreditsWnd::Pointer m_pointer;
-    float m_startTime;
+    float m_startTime = 0.0;
     m3d::CVar m_cvPathToPageInfo;
     CreditsWnd::AuxInfo m_aif;
 };

@@ -49,14 +49,14 @@ public:
     RT_CLASS_DECLARE(ItemModelWnd);
 
 private:
-    PointBase<float> m_rotationAngle;
-    float m_rotationVelocity;
-    float m_rotationByHandVelocity;
-    bool m_bAllowRotate;
-    bool m_bAllowRotateByHandX;
-    bool m_bAllowRotateByHandY;
+    PointBase<float> m_rotationAngle{-0.52359879, 0.0};
+    float m_rotationVelocity = 0.17453294;
+    float m_rotationByHandVelocity = 0.017453292;
+    bool m_bAllowRotate = true;
+    bool m_bAllowRotateByHandX = true;
+    bool m_bAllowRotateByHandY = true;
     bool m_bInRotationByHandMode;
-    float m_defaultRotationAngleX;
-    bool m_bAutosized;
-    CVector m_defaultTranslation;
+    float m_defaultRotationAngleX = -0.52359879;
+    bool m_bAutosized = true;
+    CVector m_defaultTranslation{0.0, 0.0, 0.0};
 };

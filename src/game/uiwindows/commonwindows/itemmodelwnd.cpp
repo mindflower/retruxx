@@ -24,7 +24,7 @@ void ItemModelWnd::AllowRotate(bool)
 
 m3d::Class* ItemModelWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ModelWnd);
 }
 
 float ItemModelWnd::GetRotationVelocity() const
@@ -49,7 +49,7 @@ void ItemModelWnd::SetRotationVelocity(float)
 
 m3d::Object* ItemModelWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new ItemModelWnd;
 }
 
 int ItemModelWnd::SetModelByName(CStr const&, unsigned, unsigned)
@@ -94,7 +94,7 @@ void ItemModelWnd::AllowRotateByHandY(bool)
 
 m3d::Class* ItemModelWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ItemModelWnd);
 }
 
 void ItemModelWnd::SetDefaultRotationAngleX(float)
@@ -139,7 +139,6 @@ ItemModelWnd::ItemModelWnd(ItemModelWnd const&)
 
 ItemModelWnd::ItemModelWnd()
 {
-    throw std::logic_error("Not implemented");
 }
 
 int ItemModelWnd::OnMouseButton0(unsigned, PointBase<float> const&)

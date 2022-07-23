@@ -1,6 +1,11 @@
 #include "creditswnd.h"
 
+#include "config.h"
+#include "core/kernel.h"
+#include "core/log.h"
 #include "game/m3dgame.h"
+#include "ui/modelwnd.h"
+#include "game/uiwindows/commonwindows/itemmodelwnd.h"
 
 RT_CLASS_DEFINE(CreditsWnd);
 
@@ -43,7 +48,7 @@ void CreditsWnd::Pointer::Init()
 
 CreditsWnd::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
+
 }
 
 CreditsWnd::~CreditsWnd()
@@ -88,7 +93,10 @@ void CreditsWnd::UpdateStartTime()
 
 CreditsWnd::CreditsWnd()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check this
+    m_cvPathToPageInfo.Set("pathToCredits");
+    m_cvPathToPageInfo.Set("data\\if\\dialogs\\credits.xml");
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToPageInfo, nullptr);
 }
 
 CreditsWnd::CreditsWnd(CreditsWnd const&)
@@ -233,7 +241,59 @@ void CreditsWnd::OnNewFrame()
 
 int CreditsWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    using namespace m3d::ui;
+    int res = 1;
+    if ((m_gameDataFlags & 2) == 0)
+    {
+        auto text = GetChildByName(m_aif.m_wndTextName);
+        if (text && text->IsKindOf(RT_CLASS_LOCAL(Wnd)))
+        {
+            m_wndText = dynamic_cast<Wnd*>(text);
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndTextName + " is not found or incorrect type");
+            res = 0;
+        }
+
+        auto portrait = GetChildByName(m_aif.m_wndPortraitName);
+        if (portrait && portrait->IsKindOf(RT_CLASS_LOCAL(ModelWnd)))
+        {
+            auto portraitWnd = dynamic_cast<ModelWnd*>(portrait);
+            m_wndPortrait = dynamic_cast<ItemModelWnd*>(m3d::g_Kernel->New("ItemModelWnd"));
+            if (m_wndPortrait)
+            {
+                if (!m_wndPortrait->CreateFromPattern(portraitWnd, true))
+                {
+                    M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndPortraitName + " from pattern class");
+                    res = 0;
+                }
+            }
+            else
+            {
+                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndPortraitName + " - cannot find rtti class ItemModelWnd");
+                res = 0;
+            }
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndPortraitName + " is not found or incorrect type");
+            res = 0;
+        }
+        LoadPageInfo();
+        auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+        m_texBgShow = app->m_pInterfaceManager->GetIcoByName(m_aif.m_texIdBg, 0);
+        app->m_renderer->ReferenceTexture(m_texBgShow);
+        SetCursorShow(false);
+        if (res)
+        {
+            m_gameDataFlags |= 1u;
+        }
+        if ((m_gameDataFlags & 1) != 0)
+            return 1;
+        M3D_LOG_INFO("CreditsWnd: error - fail to init because of a bad resource");
+        return 0;
+    }
 }
 
 bool CreditsWnd::NeedExit() const

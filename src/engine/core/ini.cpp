@@ -5,6 +5,8 @@
 #include <file/fileserver.h>
 #include <file/filestream.h>
 
+#include "math/vector.h"
+
 namespace m3d
 {
     cmn::XmlFile* ReadXmlFile(char const* filename, CStr* errorStr)
@@ -139,6 +141,36 @@ namespace m3d
             return 0;
         }
         v = strToVec2(val);
+        return 1;
+    }
+
+    bool SafeVectorAttrib(CVector& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        if (node->IsEmpty())
+        {
+            return 0;
+        }
+        auto val = node->GetAttribute(attrib);
+        if (!val)
+        {
+            return 0;
+        }
+        v = strToVec(val);
+        return 1;
+    }
+
+    bool SafeQuaternionAttrib(Quaternion& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        if (node->IsEmpty())
+        {
+            return 0;
+        }
+        auto val = node->GetAttribute(attrib);
+        if (!val)
+        {
+            return 0;
+        }
+        v = strToQuat(val);
         return 1;
     }
 

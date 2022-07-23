@@ -3,6 +3,8 @@
 #include <core/stringm3d.h>
 #include <windows.h>
 
+#include "math/vector.h"
+
 void UnifyFileName(CStr& fileName)
 {
     for (size_t i = 0; i < fileName.length(); ++i)
@@ -59,6 +61,26 @@ CVector2 strToVec2(CStr const& str)
     if (!str.empty())
     {
         sscanf(str.c_str(), "%f %f", &res.x, &res.y);
+    }
+    return res;
+}
+
+CVector strToVec(CStr const& str)
+{
+    CVector res;
+    if (!str.empty())
+    {
+        sscanf(str.c_str(), "%f %f %f", &res.x, &res.y, &res.z);
+    }
+    return res;
+}
+
+Quaternion strToQuat(CStr const& str)
+{
+    Quaternion res;
+    if (!str.empty())
+    {
+        sscanf(str.c_str(), "%f %f %f %f", &res.x, &res.y, &res.z, &res.w);
     }
     return res;
 }

@@ -41,17 +41,17 @@ namespace m3d
             ModelWnd();
 
         public:
-            RT_CLASS_INLINE_DECLARE(ModelWnd);
+            RT_CLASS_DECLARE(ModelWnd);
 
         private:
             rend::TexHandle m_renderTexture;
-            AnimatedModel* m_Model;
-            AnimInfo* m_Animation;
+            AnimatedModel* m_Model = nullptr;
+            AnimInfo* m_Animation = nullptr;
             Configuration m_cfg;
-            unsigned int m_SkinNum;
-            CVector m_Scale;
-            CVector m_Translation;
-            Quaternion m_Rotation;
+            unsigned int m_SkinNum = 0;
+            CVector m_Scale{1.0, 1.0, 1.0};
+            CVector m_Translation{0.0, 0.0, 0.0};
+            Quaternion m_Rotation{0.0, 0.0, 0.0, 1.0};
             unsigned int m_LastTimeCalled;
         };
     }
