@@ -1,15 +1,17 @@
 #include "requestdifficultywnd.h"
 
+#include "core/log.h"
+#include "ui/comboboxwnd.h"
+
 RT_CLASS_DEFINE(RequestDifficultyWnd);
 
 RequestDifficultyWnd::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
 }
 
 m3d::Class* RequestDifficultyWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(RequestDifficultyWnd);
 }
 
 m3d::Object* RequestDifficultyWnd::Clone()
@@ -24,12 +26,12 @@ RequestDifficultyWnd::~RequestDifficultyWnd()
 
 m3d::Object* RequestDifficultyWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new RequestDifficultyWnd;
 }
 
 m3d::Class* RequestDifficultyWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ModalWnd);
 }
 
 RequestDifficultyWnd::RequestDifficultyWnd(RequestDifficultyWnd const&)
@@ -39,7 +41,6 @@ RequestDifficultyWnd::RequestDifficultyWnd(RequestDifficultyWnd const&)
 
 RequestDifficultyWnd::RequestDifficultyWnd()
 {
-    throw std::logic_error("Not implemented");
 }
 
 void RequestDifficultyWnd::FillDifficultyLevelsList()
@@ -74,5 +75,23 @@ int RequestDifficultyWnd::OnBeforeAddToWndStation()
 
 int RequestDifficultyWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    using namespace m3d::ui;
+    if ((m_gameDataFlags & 2) == 0)
+    {
+        auto diff = GetChildByName(m_aif.m_cbDifficultyLevelsName);
+        if (diff && diff->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)))
+        {
+            this->m_gameDataFlags |= 1u;
+            m_cbDifficultyLevels = dynamic_cast<ComboBoxWnd*>(diff);
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbDifficultyLevelsName + " is not found or incorrect type");
+        }
+    }
+    if ((m_gameDataFlags & 1) != 0)
+        return 1;
+
+    M3D_LOG_INFO("RequestDifficultyWnd: error - fail to init because of a bad resource");
+    return 0;
 }

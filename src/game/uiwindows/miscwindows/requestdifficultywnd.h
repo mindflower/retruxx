@@ -17,8 +17,8 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_cbDifficultyLevelsName;
+    public:
+        CStr m_cbDifficultyLevelsName = "cbDifficultyLevels";
     };
 
 public:
@@ -43,6 +43,6 @@ public:
     RT_CLASS_DECLARE(RequestDifficultyWnd);
 
 private:
-    m3d::ui::ComboBoxWnd *m_cbDifficultyLevels;
+    m3d::ui::ComboBoxWnd *m_cbDifficultyLevels = nullptr;
     RequestDifficultyWnd::AuxInfo m_aif;
 };

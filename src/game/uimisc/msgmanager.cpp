@@ -29,7 +29,7 @@ MsgInfo const* MsgManager::GetMsgInfo(int) const
 
 m3d::Object* MsgManager::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new MsgManager;
 }
 
 MsgManager::~MsgManager()
@@ -54,7 +54,6 @@ MsgManager::MsgManager(MsgManager const&)
 
 MsgManager::MsgManager()
 {
-    throw std::logic_error("Not implemented");
 }
 
 int MsgManager::LoadFromXml(CStr const&, bool)

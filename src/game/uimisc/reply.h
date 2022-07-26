@@ -76,6 +76,6 @@ public:
 
 private:
     std::map<CStr,Reply *> m_replies;
-    bool m_isInited;
+    bool m_isInited = false;
     int m_lastScriptConditionValue;
 };

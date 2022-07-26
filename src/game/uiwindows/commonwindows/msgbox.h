@@ -18,15 +18,15 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_wndTitleName;
-        CStr m_wndMsgName;
-        CStr m_wndUpLineName;
-        CStr m_wndDownLineName;
-        CStr m_buttonName;
-        CStr m_idioticEmbossName;
-        CStr m_wndFrameName;
-        CStr m_wndBgName;
+    public:
+        CStr m_wndTitleName = "wndTitle";
+        CStr m_wndMsgName = "wndMsg";
+        CStr m_wndUpLineName = "wndUpLine";
+        CStr m_wndDownLineName = "wndDownLine";
+        CStr m_buttonName = "button_";
+        CStr m_idioticEmbossName = "buttonEmboss_";
+        CStr m_wndFrameName = "wndFrame";
+        CStr m_wndBgName = "wndBg";
     };
 
 public:
@@ -69,17 +69,19 @@ protected:
 
 public:
     RT_CLASS_DECLARE(MsgBox);
+    static int m_ref;
+    static Wnd* m_pattern;
 
 private:
-    m3d::ui::Wnd *m_wndTitle;
-    m3d::ui::Wnd *m_wndMsg;
-    m3d::ui::LineWnd *m_wndUpLine;
-    m3d::ui::LineWnd *m_wndDownLine;
-    m3d::ui::ButtonWnd *m_buttons[3];
-    m3d::ui::Wnd *m_idioticEmbosses[3];
-    m3d::ui::Wnd *m_wndFrame;
-    m3d::ui::Wnd *m_wndBg;
-    unsigned int m_msgBoxFlags;
+    m3d::ui::Wnd *m_wndTitle = nullptr;
+    m3d::ui::Wnd *m_wndMsg = nullptr;
+    m3d::ui::LineWnd *m_wndUpLine = nullptr;
+    m3d::ui::LineWnd *m_wndDownLine = nullptr;
+    m3d::ui::ButtonWnd *m_buttons[3] = {nullptr};
+    m3d::ui::Wnd *m_idioticEmbosses[3] = {nullptr};
+    m3d::ui::Wnd *m_wndFrame = nullptr;
+    m3d::ui::Wnd *m_wndBg = nullptr;
+    unsigned int m_msgBoxFlags = 0;
     CStr m_msg;
     CStr m_title;
     MsgBox::AuxInfo m_aif;

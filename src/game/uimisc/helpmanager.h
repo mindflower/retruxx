@@ -56,8 +56,8 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_strTitleSuffix;
+    public:
+        CStr m_strTitleSuffix = "_title";
     };
 
 public:

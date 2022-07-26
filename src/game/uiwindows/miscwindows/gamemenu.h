@@ -16,7 +16,7 @@ class MenuItem
 {
 public:
     MenuItem(CStr const &,unsigned int,ControlType);
-    void AddChild(class MenuItem *);
+    void AddChild(MenuItem *);
     ~MenuItem();
     MenuItem * GetMenuItemViaName(CStr const &);
     MenuItem const * GetMenuItemViaName(CStr const &) const ;
@@ -61,8 +61,10 @@ protected:
 public:
     RT_CLASS_DECLARE(GameMenuWnd);
     static inline CStr ROOT_LEVEL_NAME = "main";
+    static inline CStr SAVE_GAME_MENUITEM_NAME = "SaveGame";
+    static inline CStr DEATH_LEVEL_NAME = "DeathMenu";
 
 private:
-    MenuItem *m_curItem;
-    MenuItem *m_minItem;
+    MenuItem *m_curItem = nullptr;
+    MenuItem *m_minItem = nullptr;
 };

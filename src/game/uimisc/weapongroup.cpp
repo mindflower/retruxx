@@ -70,12 +70,12 @@ int WeaponGroupManager::GetDefaultWeaponGroupIdForWeapon(CStr const&)
 
 m3d::Object* WeaponGroupManager::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new WeaponGroupManager;
 }
 
 m3d::Class* WeaponGroupManager::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Object);
 }
 
 int WeaponGroupManager::AddWeaponGroup(WeaponGroup*)
@@ -150,7 +150,7 @@ int WeaponGroupManager::RemoveWeaponFromWeaponGroup(CStr const&)
 
 m3d::Class* WeaponGroupManager::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(WeaponGroupManager);
 }
 
 int WeaponGroupManager::GetWeaponGroupIdForWeapon(CStr const&) const
@@ -170,7 +170,6 @@ WeaponGroupManager::WeaponGroupManager(WeaponGroupManager const&)
 
 WeaponGroupManager::WeaponGroupManager()
 {
-    throw std::logic_error("Not implemented");
 }
 
 RT_CLASS_DEFINE(WeaponGroup);

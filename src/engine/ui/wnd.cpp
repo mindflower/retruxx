@@ -117,9 +117,9 @@ namespace m3d
             }
         }
 
-        void Wnd::SetCursorShow(bool)
+        void Wnd::SetCursorShow(bool state)
         {
-            throw std::logic_error("Not implemented");
+            m_showCursor = state;
         }
 
         int Wnd::GetGuiId() const
@@ -597,14 +597,32 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        PointBase<float> Wnd::ToScreen(PointBase<float> const&) const
+        PointBase<float> Wnd::ToScreen(PointBase<float> const& pt) const
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this!!!
+            PointBase<float> res;
+            for (auto obj = this; obj; obj = dynamic_cast<const Wnd*>(obj->GetParent()))
+            {
+                res.x += obj->m_bounds.x0;
+                res.y += obj->m_bounds.y0;
+            }
+            return res;
         }
 
-        BoundsBase<float> Wnd::ToScreen(BoundsBase<float> const&) const
+        BoundsBase<float> Wnd::ToScreen(BoundsBase<float> const& b) const
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this!
+            PointBase<float> pt;
+            pt.x = b.x0;
+            pt.y = b.y0;
+            auto tl = ToScreen(pt);
+
+            BoundsBase<float> result;
+            result.x0 = tl.x;
+            result.y0 = tl.y;
+            result.width = (b.width + tl.x) - tl.x;
+            result.height = (b.height + tl.y) - tl.y;
+            return result;
         }
 
         BoundsBase<float> Wnd::GetBounds() const

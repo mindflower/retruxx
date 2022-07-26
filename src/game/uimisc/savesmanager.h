@@ -13,18 +13,18 @@ public:
     public:
         ConstantSaveInfo();
 
-    private:
-        CStr m_saveFolderName;
-        CStr m_infoFileName;
-        CStr m_quickSavePrefix;
-        CStr m_autoSavePrefix;
-        CStr m_quickSaveNameStrId;
-        CStr m_autoSaveNameStrId;
-        CStr m_screenshotFileName;
-        CStr m_mapsDirName;
-        PointBase<int> m_screenshotSz;
-        int m_maxQuickSavesNum;
-        int m_maxAutoSavesNum;
+    public:
+        CStr m_saveFolderName = "saves";
+        CStr m_infoFileName = "SaveInfo.xml";
+        CStr m_quickSavePrefix = "quick_";
+        CStr m_autoSavePrefix = "auto_";
+        CStr m_quickSaveNameStrId = "QuickSave";
+        CStr m_autoSaveNameStrId = "AutoSave";
+        CStr m_screenshotFileName = "screenshot.tga";
+        CStr m_mapsDirName = "maps";
+        PointBase<int> m_screenshotSz{256, 128};
+        int m_maxQuickSavesNum = 5;
+        int m_maxAutoSavesNum = 1;
     };
 
     class SaveInfo
@@ -92,6 +92,6 @@ private:
     ConstantSaveInfo m_constantSaveInfo;
     std::map<CStr,SaveInfo *> m_saves;
     m3d::rend::TexHandle m_curGameScreenshot;
-    bool m_bDelayedQuickSave;
-    unsigned int m_delayedQuickSaveFrame;
+    bool m_bDelayedQuickSave = false;
+    unsigned int m_delayedQuickSaveFrame = 0;
 };

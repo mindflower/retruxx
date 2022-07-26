@@ -1,6 +1,14 @@
 #pragma once
 #include <core/stringm3d.h>
 
+namespace m3d
+{
+	namespace ui
+	{
+		class Wnd;
+	}
+}
+
 namespace help
 {
     enum QuestType
@@ -53,4 +61,5 @@ namespace help
 
     void DeleteAllFilesInDirectory(char const*);
     CStr GetCurrentLevelName();
+    int CloneWndWithChildren(m3d::ui::Wnd const*, m3d::ui::Wnd*);
 }

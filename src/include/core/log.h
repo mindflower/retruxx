@@ -7,6 +7,7 @@
 #define M3D_LOG_INFO(msg) m3d::g_Kernel->m_Log->sourceLine() = __LINE__; m3d::g_Kernel->m_Log->setSourceFile(__FILE__); m3d::g_Kernel->m_Log->logTex(msg, m3d::LOG_INFO)
 #define M3D_LOG_ERR(msg) m3d::g_Kernel->m_Log->sourceLine() = __LINE__; m3d::g_Kernel->m_Log->setSourceFile(__FILE__); m3d::g_Kernel->m_Log->logTex(msg, m3d::LOG_ERR)
 #define M3D_LOG_WARN(msg) m3d::g_Kernel->m_Log->sourceLine() = __LINE__; m3d::g_Kernel->m_Log->setSourceFile(__FILE__); m3d::g_Kernel->m_Log->logTex(msg, m3d::LOG_WARN)
+#define M3D_LOG_DATA(msg) m3d::g_Kernel->m_Log->sourceLine() = __LINE__; m3d::g_Kernel->m_Log->setSourceFile(__FILE__); m3d::g_Kernel->m_Log->logTex(msg, m3d::LOG_DATA)
 
 namespace m3d
 {

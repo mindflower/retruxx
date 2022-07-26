@@ -3851,6 +3851,9 @@
     <ClInclude Include="src\game\uiwindows\mainwindows\targetcursorwnd.h">
       <Filter>game\uiwindows\mainwindows</Filter>
     </ClInclude>
+    <ClInclude Include="src\game\uimisc\visibilitymap.h">
+      <Filter>game\uimisc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

@@ -20,7 +20,7 @@ Reply* RepliesManager::GetFirstFitReply(std::vector<CStr> const&, Reply::Role, a
 
 m3d::Class* RepliesManager::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(RepliesManager);
 }
 
 RepliesManager::~RepliesManager()
@@ -75,7 +75,7 @@ std::vector<Reply*> RepliesManager::GetAllFitReplies(std::vector<CStr> const&, R
 
 m3d::Object* RepliesManager::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new RepliesManager;
 }
 
 Reply* RepliesManager::GetRandomFitReply(std::vector<CStr, std::allocator<CStr>> const&, Reply::Role, ai::Npc*)
@@ -90,7 +90,7 @@ Reply* RepliesManager::GetNextNpcReply(Reply const*, ai::Npc*)
 
 m3d::Class* RepliesManager::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Object);
 }
 
 Reply* RepliesManager::GetFirstNpcReply(ai::Npc*)
@@ -105,5 +105,4 @@ RepliesManager::RepliesManager(RepliesManager const&)
 
 RepliesManager::RepliesManager()
 {
-    throw std::logic_error("Not implemented");
 }

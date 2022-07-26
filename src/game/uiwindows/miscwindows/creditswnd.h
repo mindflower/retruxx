@@ -12,13 +12,13 @@ public:
     public:
         PageInfo();
 
-    private:
+    public:
         CStr m_text;
-        float m_fontSize;
+        float m_fontSize = 12.0;
         CStr m_modelName;
-        unsigned int m_modelSkin;
-        unsigned int m_modelCfg;
-        float m_showTime;
+        unsigned int m_modelSkin = 0;
+        unsigned int m_modelCfg = 0;
+        float m_showTime = 3.0;
     };
 
     class Pointer

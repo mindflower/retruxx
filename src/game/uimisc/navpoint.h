@@ -90,5 +90,5 @@ private:
 
 private:
     std::map<int, NavPoint*> m_navPoints;
-    int m_nextNavPointId;
+    int m_nextNavPointId = 0;
 };

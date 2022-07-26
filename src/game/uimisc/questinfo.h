@@ -124,7 +124,7 @@ private:
     int RemoveQuestInfoForDynamicQuest(int);
 
 private:
-    bool m_isInited;
+    bool m_isInited = false;
     std::map<CStr, QuestInfo*> m_questInfos;
     std::map<int, QuestInfo*> m_dynamicQuestInfos;
 };

@@ -3,6 +3,9 @@
 #include "config.h"
 #include "core/kernel.h"
 #include "core/log.h"
+#include "core/scoped_ptr.h"
+#include "file/fileserver.h"
+#include "file/filestream.h"
 #include "game/m3dgame.h"
 #include "ui/modelwnd.h"
 #include "game/uiwindows/commonwindows/itemmodelwnd.h"
@@ -11,7 +14,6 @@ RT_CLASS_DEFINE(CreditsWnd);
 
 CreditsWnd::PageInfo::PageInfo()
 {
-    throw std::logic_error("Not implemented");
 }
 
 CreditsWnd::Pointer::Pointer()
@@ -176,7 +178,96 @@ void CreditsWnd::StopSound(int)
 
 void CreditsWnd::LoadPageInfo()
 {
-    throw std::logic_error("Not implemented");
+    ClearPages();
+    scoped_ptr fileStream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    if (fileStream->Open(m_cvPathToPageInfo.GetS(), m3d::fs::IStream::OPEN_READ))
+    {
+        ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+        if (xmlFile->Read(*fileStream))
+        {
+            fileStream->Close();
+            ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+            xmlFile->GetFirstChild_(node, "Credits");
+            if (node->IsEmpty())
+            {
+                M3D_LOG_DATA("CreditsWnd::LoadPageInfo error - cannot find root node \"Credits\"");
+                return;
+            }
+            m3d::SafeFloatAttrib(m_breakTime, node, "breakTime");
+            if (m3d::g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+            {
+                CStr breakSoundFileName;
+                CStr showSoundFileName;
+                CStr ambientSoundFileName;
+                CStr musicFile;
+                m3d::SafeStrAttrib(breakSoundFileName, node, "breakSoundFile");
+                m3d::SafeStrAttrib(showSoundFileName, node, "showSoundFile");
+                m3d::SafeStrAttrib(ambientSoundFileName, node, "ambientSoundFile");
+                m3d::SafeStrAttrib(musicFile, node, "musicFile");
+                m_breakSoundTableId = m3d::Application::g_pApp->m_sound->AddSound(
+                    breakSoundFileName.c_str(),
+                    snd::SND_TYPE_2DSOUND,
+                    1,
+                    1,
+                    snd::SND_PRIORITY_EXTRAHIGH
+                );
+                m_showSoundTableId = m3d::Application::g_pApp->m_sound->AddSound(
+                    showSoundFileName.c_str(),
+                    snd::SND_TYPE_2DSOUND,
+                    1,
+                    1,
+                    snd::SND_PRIORITY_EXTRAHIGH
+                );
+                m_ambientSoundTableId = m3d::Application::g_pApp->m_sound->AddSound(
+                    ambientSoundFileName.c_str(),
+                    snd::SND_TYPE_2DSOUND,
+                    1,
+                    1,
+                    snd::SND_PRIORITY_EXTRAHIGH
+                );
+                m_musicTableId = m3d::Application::g_pApp->m_sound->AddSound(
+                    musicFile.c_str(),
+                    snd::SND_TYPE_MUSIC,
+                    0,
+                    1,
+                    snd::SND_PRIORITY_EXTRAHIGH
+                );
+            }
+            ref_ptr pagesNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+            node->GetFirstChild_(pagesNode, "Pages");
+            if (pagesNode->IsEmpty())
+            {
+                M3D_LOG_DATA("CreditsWnd::LoadPageInfo warning - no pages was specified");
+            }
+            else
+            {
+                ref_ptr pageNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+                for (pagesNode->GetFirstChild_(pageNode, "Page"); !pageNode->IsEmpty(); pageNode->GetNextSibling_(pageNode, "Page"))
+                {
+                    auto info = new PageInfo;
+                    m3d::SafeStrAttrib(info->m_text, pageNode, "text");
+                    m3d::SafeStrAttrib(info->m_modelName, pageNode, "modelName");
+                    m3d::SafeUintAttrib(info->m_modelSkin, pageNode, "modelSkin");
+                    m3d::SafeUintAttrib(info->m_modelCfg, pageNode, "modelCfg");
+                    m3d::SafeFloatAttrib(info->m_showTime, pageNode, "showTime");
+                    m3d::SafeFloatAttrib(info->m_fontSize, pageNode, "fontSize");
+                    m_pageInfos.push_back(info);
+                }
+                if (m_pageInfos.empty())
+                {
+                    M3D_LOG_DATA("CreditsWnd::LoadPageInfo warning - no pages was specified");
+                }
+            }
+        }
+        else
+        {
+            M3D_LOG_DATA("CreditsWnd::LoadPageInfo error - cannot parse " + CStr(xmlFile->GetError()));
+        }
+    }
+    else
+    {
+        M3D_LOG_DATA("CreditsWnd::LoadPageInfo error - can't open file " + CStr(m_cvPathToPageInfo.GetS()) + " for read.");
+    }
 }
 
 int CreditsWnd::OnBeforeAddToWndStation()
@@ -196,7 +287,11 @@ void CreditsWnd::UpdateControls()
 
 void CreditsWnd::ClearPages()
 {
-    throw std::logic_error("Not implemented");
+    for (auto* page : m_pageInfos)
+    {
+        delete page;
+    }
+    m_pageInfos.clear();
 }
 
 void CreditsWnd::UpdatePointer()

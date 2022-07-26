@@ -299,9 +299,14 @@ int GameUiManager::GUI_SetMinDynamicId(int)
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_SetEventsForWindow(int, std::vector<int, std::allocator<int>> const&)
+int GameUiManager::GUI_SetEventsForWindow(int wndId, std::vector<int> const& events)
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check this
+    for (auto const ev : events)
+    {
+        m_eventMap[ev].insert(wndId);
+    }
+    return 1;
 }
 
 int GameUiManager::GUI_UpdateWindowsOnEvent(int, m3d::ui::Wnd*, void*)
@@ -711,8 +716,21 @@ int GameUiManager::GUI_ShowWindow(int, bool, bool, bool, int*)
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd>, int, bool, bool)
+int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool isPersistent, bool needShow)
 {
+    if (!w)
+    {
+        return 0;
+    }
+    if (wndId < 0 || wndId>= m_minDynamicId)
+    {
+        return 0;
+    }
+    auto it = m_windows.find(wndId);
+    if (it == m_windows.end())
+    {
+	    
+    }
     throw std::logic_error("Not implemented");
 }
 

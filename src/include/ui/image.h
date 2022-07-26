@@ -33,7 +33,7 @@ namespace m3d
         public:
             RT_CLASS_DECLARE(ImageWnd);
 
-        private:
+        protected:
             CStr m_textureName;
             rend::TexHandle m_texture;
             bool m_bDrawPane = false;

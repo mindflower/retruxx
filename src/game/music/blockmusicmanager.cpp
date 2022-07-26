@@ -17,9 +17,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    bool BlockMusicManager::IsMusicBlockNameValid(CStr const&) const
+    bool BlockMusicManager::IsMusicBlockNameValid(CStr const& musicBlockName) const
     {
-        throw std::logic_error("Not implemented");
+        return m_blockNamesToIds.find(musicBlockName) != m_blockNamesToIds.cend();
     }
 
     void BlockMusicManager::Reset()

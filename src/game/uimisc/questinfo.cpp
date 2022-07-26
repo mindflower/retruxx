@@ -8,7 +8,6 @@ int QuestInfoManager::SaveModifiedQuestInfosToXml(m3d::cmn::XmlFile*, m3d::cmn::
 
 QuestInfoManager::QuestInfoManager()
 {
-    throw std::logic_error("Not implemented");
 }
 
 QuestInfo const* QuestInfoManager::GetQuestInfoByQuestInfoName(CStr const&) const

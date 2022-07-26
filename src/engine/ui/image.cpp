@@ -23,9 +23,15 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ImageWnd::SetImage(rend::TexHandle)
+        int ImageWnd::SetImage(rend::TexHandle tex)
         {
-            throw std::logic_error("Not implemented");
+            if (m_texture.IsValid())
+            {
+                m3d::Application::g_pApp->m_renderer->ReleaseTexture(m_texture);
+            }
+            m_texture = tex;
+            m3d::Application::g_pApp->m_renderer->ReferenceTexture(m_texture);
+            return m_texture.IsValid();
         }
 
         Class* ImageWnd::GetClass() const
@@ -35,12 +41,15 @@ namespace m3d
 
         ImageWnd::~ImageWnd()
         {
-            throw std::logic_error("Not implemented");
+            if (m_texture.IsValid())
+            {
+                m3d::Application::g_pApp->m_renderer->ReleaseTexture(m_texture);
+            }
         }
 
         rend::TexHandle ImageWnd::GetImage() const
         {
-            throw std::logic_error("Not implemented");
+            return m_texture;
         }
 
         Object* ImageWnd::Clone()

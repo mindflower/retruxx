@@ -47,7 +47,7 @@ private:
     m3d::rend::TexHandle m_image0;
     m3d::rend::TexHandle m_image1;
     std::map<CStr, m3d::rend::TexHandle> m_splashes;
-    CVector m_north;
+    CVector m_north{0.0, 0.0, -1.0};
 };
 
 
@@ -121,7 +121,7 @@ public:
 
 private:
     std::map<int,LevelInfo *> m_levels;
-    int m_nextLevelInfoId;
+    int m_nextLevelInfoId = 0;
     std::map<CStr,float> m_levelSizes;
     std::map<CStr,std::map<CStr,ObjectInfo *>> m_levelObjects;
     std::map<CStr,VisibilityMap *> m_visibilityMaps;
@@ -159,6 +159,8 @@ public:
 
 private:
     m3d::Class const * GetObjectClass() const ;
+
+private:
     CStr m_name;
     CStr m_fullName;
     CStr m_prototypeName;

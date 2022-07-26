@@ -43,7 +43,6 @@ bool NavPointManager::CanNavPointOfTypeBeAdded(CStr const&, NavPoint::NavPointTy
 
 NavPointManager::NavPointManager()
 {
-    throw std::logic_error("Not implemented");
 }
 
 NavPoint const* NavPointManager::GetNavPointById(int) const

@@ -373,38 +373,68 @@ namespace m3d
 
     int Object::UnlinkChild(Object* node)
     {
-        if (m_firstChild != node)
+        //TODO: check this and refactor!!!!!!!!!!!
+        m3d::Object* v2; // edx
+        int result; // eax
+        m3d::Object* v4; // edx
+
+        v2 = this->m_firstChild;
+        if (v2 != node)
         {
-            if (m_lastChild == node)
+            v4 = this->m_lastChild;
+            if (v4 == node)
             {
-                m_lastChild->m_prevSibling->m_nextSibling = nullptr;
-                m_lastChild = m_lastChild->m_prevSibling;
+                v4->m_prevSibling->m_nextSibling = 0;
+                this->m_lastChild = this->m_lastChild->m_prevSibling;
             }
             else
             {
                 node->m_nextSibling->m_prevSibling = node->m_prevSibling;
                 node->m_prevSibling->m_nextSibling = node->m_nextSibling;
             }
-            node->m_parent = nullptr;
-            node->m_nextSibling = nullptr;
-            node->m_prevSibling = nullptr;
-            return --m_numChildren;
+            node->m_parent = 0;
+            node->m_nextSibling = 0;
+            node->m_prevSibling = 0;
+            result = --this->m_numChildren;
+            return result;
         }
-        if (m_lastChild == node)
+        if (this->m_lastChild == node)
         {
-            m_firstChild = nullptr;
-            m_lastChild = nullptr;
-            node->m_parent = nullptr;
-            node->m_nextSibling = nullptr;
-            node->m_prevSibling = nullptr;
-            return --m_numChildren;
+            this->m_firstChild = 0;
+            this->m_lastChild = 0;
+            node->m_parent = 0;
+            node->m_nextSibling = 0;
+            node->m_prevSibling = 0;
+            return --this->m_numChildren;
         }
-        m_nextSibling->m_prevSibling = nullptr;
-        m_firstChild = m_firstChild->m_nextSibling;
-        node->m_parent = nullptr;
-        node->m_nextSibling = nullptr;
-        node->m_prevSibling = nullptr;
-        return --m_numChildren;
+        if (v2 == node)
+        {
+            v2->m_nextSibling->m_prevSibling = 0;
+            this->m_firstChild = this->m_firstChild->m_nextSibling;
+            node->m_parent = 0;
+            node->m_nextSibling = 0;
+            node->m_prevSibling = 0;
+            result = --this->m_numChildren;
+        }
+        else
+        {
+            v4 = this->m_lastChild;
+            if (v4 == node)
+            {
+                v4->m_prevSibling->m_nextSibling = 0;
+                this->m_lastChild = this->m_lastChild->m_prevSibling;
+            }
+            else
+            {
+                node->m_nextSibling->m_prevSibling = node->m_prevSibling;
+                node->m_prevSibling->m_nextSibling = node->m_nextSibling;
+            }
+            node->m_parent = 0;
+            node->m_nextSibling = 0;
+            node->m_prevSibling = 0;
+            result = --this->m_numChildren;
+        }
+        return result;
     }
 
     void Object::MoveChildToFirstPosition(Object* wnd)

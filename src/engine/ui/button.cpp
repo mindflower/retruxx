@@ -35,7 +35,7 @@ namespace m3d
 
         void ButtonWnd::SetRegular()
         {
-            throw std::logic_error("Not implemented");
+            m_isImaged = 0;
         }
 
         int ButtonWnd::SetImaged(rend::TexHandle, rend::TexHandle, rend::TexHandle, rend::TexHandle)
@@ -55,7 +55,7 @@ namespace m3d
 
         bool ButtonWnd::IsImaged() const
         {
-            throw std::logic_error("Not implemented");
+            return m_isImaged != 0;
         }
 
         ButtonWnd::~ButtonWnd()

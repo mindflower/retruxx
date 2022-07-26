@@ -105,12 +105,12 @@ namespace m3d
 
         CVector& ModelWnd::Scale()
         {
-            throw std::logic_error("Not implemented");
+            return m_Scale;
         }
 
         rend::TexHandle ModelWnd::GetTargetTexture() const
         {
-            throw std::logic_error("Not implemented");
+            return m_renderTexture;
         }
 
         int ModelWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -125,7 +125,7 @@ namespace m3d
 
         Quaternion& ModelWnd::Rotation()
         {
-            throw std::logic_error("Not implemented");
+            return m_Rotation;
         }
 
         Class* ModelWnd::GetClass() const
@@ -140,7 +140,8 @@ namespace m3d
 
         ModelWnd::~ModelWnd()
         {
-            throw std::logic_error("Not implemented");
+            delete m_Animation;
+            m3d::Application::g_pApp->m_renderer->ReleaseTexture(m_renderTexture);
         }
 
         void ModelWnd::SetCfgNum(unsigned)
@@ -165,12 +166,35 @@ namespace m3d
 
         CVector& ModelWnd::Translation()
         {
-            throw std::logic_error("Not implemented");
+            return m_Translation;
         }
 
-        int ModelWnd::CreateModelWnd(rend::TexHandle, unsigned, BoundsBase<float> const&, unsigned, rend::TexHandle)
+        int ModelWnd::CreateModelWnd(rend::TexHandle imageTex, unsigned style, BoundsBase<float> const& rc, unsigned id , rend::TexHandle targetTex)
         {
-            throw std::logic_error("Not implemented");
+            if (!style)
+            {
+                style = 832;
+            }
+            if (Wnd::Create({}, style, rc, id) == 0)
+            {
+                return 0;
+            }
+            m_texture = imageTex;
+            m3d::Application::g_pApp->m_renderer->ReferenceTexture(m_texture);
+            if (m_texture.IsValid())
+            {
+                m_renderTexture = targetTex;
+                m3d::Application::g_pApp->m_renderer->ReferenceTexture(m_renderTexture);
+            }
+            else
+            {
+                m_renderTexture = m3d::Application::g_pApp->m_renderer->GetBufferedTargetTexture(GetFitTargetTextureSize(GetBounds()).x);
+                if ((style & 0x80000000) != 0)
+                {
+                    return 0;
+                }
+            }
+            return 1;
         }
 
         int ModelWnd::CreateModelWnd(CStr const&, unsigned, BoundsBase<float> const&, unsigned, rend::TexHandle)

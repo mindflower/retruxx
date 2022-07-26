@@ -490,4 +490,111 @@ namespace m3d
     {
         throw std::logic_error("Not implemented");
     }
+
+    bool AnimInfo::IsAnimation(ActionType)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    void AnimInfo::CreateCopyMesh(int&, void**&, int*&, unsigned short**&, int*&, bool*&, CMatrix**&,
+	    std::vector<rend::VertexType, std::allocator<rend::VertexType>>&,
+	    std::vector<unsigned, std::allocator<unsigned>>&, int*)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    void AnimInfo::SetEmpty()
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    void AnimInfo::InterpolateBones(int)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    int AnimInfo::SetAnimationIdx(int)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    AnimatedModel::Mesh const& AnimInfo::GetMesh(unsigned) const
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    void AnimInfo::CreateFor(AnimatedModel*)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    void AnimInfo::SetBoneCurMatrix(unsigned, CMatrix const&)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    CMatrix const& AnimInfo::GetCurrentLoadpointMatrix(int) const
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    int AnimInfo::SetCurFrame(float)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    void AnimInfo::Release()
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    AnimatedModel::Animation const* AnimInfo::GetCurAnimation() const
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    int AnimInfo::GetStickToLastFrame() const
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    void AnimInfo::RemoveCopyMesh(void**&, int*&, unsigned short**&, int*&, CMatrix**&)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    bool AnimInfo::IsEmpty()
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    int& AnimInfo::CurAnimFrame()
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    AnimInfo::~AnimInfo()
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    AnimInfo::AnimInfo()
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    int AnimInfo::SetAnimation(ActionType)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    void AnimInfo::MoveFrame(unsigned)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    BoneAnim& AnimInfo::GetBoneAnim(unsigned)
+    {
+	    throw std::logic_error("Not implemented");
+    }
 }

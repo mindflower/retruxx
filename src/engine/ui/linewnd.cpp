@@ -86,9 +86,9 @@ namespace m3d
             return 1;
         }
 
-        void LineWnd::SetPaneFlags(int)
+        void LineWnd::SetPaneFlags(int flags)
         {
-            throw std::logic_error("Not implemented");
+            m_paneFlags = 1;
         }
 
         void LineWnd::OnNcPaint(DrawInfo const&, unsigned)

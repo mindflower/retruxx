@@ -5,7 +5,6 @@ RT_CLASS_DEFINE(SavesManager);
 
 SavesManager::ConstantSaveInfo::ConstantSaveInfo()
 {
-    throw std::logic_error("Not implemented");
 }
 
 SavesManager::~SavesManager()
@@ -60,7 +59,7 @@ CStr SavesManager::GetNewSaveFolderName() const
 
 m3d::Object* SavesManager::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new SavesManager;
 }
 
 int SavesManager::LoadGame(CStr const&)
@@ -185,7 +184,6 @@ int SavesManager::LoadInfos()
 
 SavesManager::SavesManager()
 {
-    throw std::logic_error("Not implemented");
 }
 
 SavesManager::SavesManager(SavesManager const&)

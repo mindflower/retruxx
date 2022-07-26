@@ -5,7 +5,6 @@ RT_CLASS_DEFINE(HelpManager);
 
 HelpManager::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
 }
 
 CStr HelpManager::GetHelpMsgByHelpId(CStr const&) const
@@ -25,7 +24,7 @@ void HelpManager::ShowHelp(CStr const&, bool)
 
 m3d::Object* HelpManager::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new HelpManager;
 }
 
 HelpManager::HelpId HelpManager::Str2EnumeredHelpId(CStr const&)
@@ -85,7 +84,7 @@ int HelpManager::GameDataUpdate(void*, int)
 
 HelpManager::HelpManager()
 {
-    throw std::logic_error("Not implemented");
+    m_predefinedHelpWindows.emplace(HELP_ID_MAIN_GAME_INTERFACE, 169);
 }
 
 HelpManager::HelpManager(HelpManager const&)

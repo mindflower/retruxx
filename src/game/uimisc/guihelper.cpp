@@ -3,6 +3,11 @@
 #include <level.h>
 #include <world.h>
 
+#include "core/kernel.h"
+#include "ui/ui.h"
+#include "ui/button.h"
+#include "ui/image.h"
+
 namespace m3d
 {
     extern CClient* pClient;
@@ -25,5 +30,96 @@ namespace help
              }
          }
          return {};
+    }
+
+    int CloneWndWithChildren(m3d::ui::Wnd const* srcWnd, m3d::ui::Wnd* dstWnd)
+    {
+        using namespace m3d::ui;
+        if (srcWnd && dstWnd && !dstWnd->Valid())
+        {
+	        if (dstWnd->Create(srcWnd->GetText(), srcWnd->GetStyle(), srcWnd->GetBounds(), srcWnd->GetId()) != 0)
+	        {
+                dstWnd->SetStyle(srcWnd->GetStyle());
+                dstWnd->SetText(srcWnd->GetText());
+                dstWnd->SetId(srcWnd->GetId());
+                dstWnd->SetName(srcWnd->GetName());
+                dstWnd->SetBounds(srcWnd->GetBounds(), true);
+                dstWnd->SetDefaultFont(srcWnd->GetDefaultFont());
+                dstWnd->SetWrapMode(srcWnd->GetWrapMode());
+                dstWnd->SetFormatMode(srcWnd->GetFormatMode());
+                dstWnd->SetColor(srcWnd->GetColor());
+                dstWnd->SetTextColor(srcWnd->GetTextColor());
+                dstWnd->SetTextColorDisabled(srcWnd->GetTextColorDisabled());
+                dstWnd->SetClientEdges(srcWnd->GetClientEdges());
+                dstWnd->SetPane(srcWnd->GetPaneName());
+                dstWnd->SetPaneFlags(srcWnd->GetPaneFlags());
+                dstWnd->SetScrollPane(srcWnd->GetScrollPaneName());
+                dstWnd->SetBackground(srcWnd->GetBackground());
+
+                CStr tooltip;
+                srcWnd->GetProperty(0x4000, &tooltip);
+                dstWnd->SetProperty(0x4000, &tooltip);
+
+                dstWnd->SetOnShowAnimation(srcWnd->GetOnShowAnimation());
+                dstWnd->SetOnHideAnimation(srcWnd->GetOnHideAnimation());
+
+                auto child = srcWnd->GetFirstChild_();
+                for (child = srcWnd->GetFirstChild_(); child && child->IsKindOf(RT_CLASS_LOCAL(Wnd)); child = child->GetNextSibling_())
+                {
+                    auto childWnd = dynamic_cast<Wnd*>(child);
+                    auto newObjClass = child->GetClass();
+                    auto newObj = m3d::g_Kernel->New(newObjClass);
+                    auto newWnd = dynamic_cast<Wnd*>(newObj);
+                    if (!newObj || newWnd->Create(childWnd->GetText(), childWnd->GetStyle(), childWnd->GetBounds(), childWnd->GetId()) == 0)
+                    {
+                        break;
+                    }
+                    newWnd->SetStyle(childWnd->GetStyle());
+                    newWnd->SetText(childWnd->GetText());
+                    newWnd->SetId(childWnd->GetId());
+                    newWnd->SetName(childWnd->GetName());
+                    newWnd->SetBounds(childWnd->GetBounds(), true);
+                    newWnd->SetDefaultFont(childWnd->GetDefaultFont());
+                    newWnd->SetWrapMode(childWnd->GetWrapMode());
+                    newWnd->SetFormatMode(childWnd->GetFormatMode());
+                    newWnd->SetColor(childWnd->GetColor());
+                    newWnd->SetTextColor(childWnd->GetTextColor());
+                    newWnd->SetTextColorDisabled(childWnd->GetTextColorDisabled());
+                    newWnd->SetClientEdges(childWnd->GetClientEdges());
+                    newWnd->SetPane(childWnd->GetPaneName());
+                    newWnd->SetPaneFlags(childWnd->GetPaneFlags());
+                    newWnd->SetScrollPane(childWnd->GetScrollPaneName());
+                    newWnd->SetBackground(childWnd->GetBackground());
+
+                    childWnd->GetProperty(0x4000, &tooltip);
+                    newWnd->SetProperty(0x4000, &tooltip);
+
+                    newWnd->SetOnShowAnimation(childWnd->GetOnShowAnimation());
+                    newWnd->SetOnHideAnimation(childWnd->GetOnHideAnimation());
+                    if (newObjClass == RT_CLASS_LOCAL(ButtonWnd))
+                    {
+                        auto childButton = dynamic_cast<ButtonWnd*>(child);
+                        auto newObjButton = dynamic_cast<ButtonWnd*>(newObj);
+                        if (childButton->IsImaged())
+                        {
+                            newObjButton->SetImaged(childButton->GetImageRegular(), childButton->GetImageDown(), childButton->GetImageIn(), childButton->GetImageDisabled());
+                        }
+                        else
+                        {
+                            childButton->SetRegular();
+                        }
+                    }
+                    else if (newObjClass == RT_CLASS_LOCAL(ImageWnd))
+                    {
+                        auto childImage = dynamic_cast<ImageWnd*>(child);
+                        auto newObjImage = dynamic_cast<ImageWnd*>(newObj);
+                        newObjImage->SetImage(childImage->GetImage());
+                    }
+                    dstWnd->AddChild(newObj);
+                }
+                return 1;
+	        }
+        }
+        return 0;
     }
 }
