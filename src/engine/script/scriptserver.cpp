@@ -1,6 +1,9 @@
 #include <script/scriptserver.h>
 #include <script/luaquaternion.h>
 #include <script/luavector.h>
+
+#include "core/log.h"
+
 extern "C"
 {
 #include <lualib.h>
@@ -52,11 +55,36 @@ namespace
 
     lua_CFunction oldToString = nullptr;
     m3d::ScriptServer* g_scriptServer = nullptr;
+    m3d::auxScriptErrorDesc errDesc;
 }
 
 namespace m3d
 {
     Class ScriptServer::m_classScriptServer {"ScriptServer", sizeof(ScriptServer), CreateObject, GetBaseClass};
+
+    eScriptError Scriptlet::compile()
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    Scriptlet::~Scriptlet()
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    eScriptError Scriptlet::loadFromFile(char const*)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    eScriptError Scriptlet::execute(char const*, bool)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    Scriptlet::Scriptlet()
+    {
+    }
 
     Class* ScriptServer::GetBaseClass()
     {
@@ -153,9 +181,35 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    eScriptError ScriptServer::executeScriptFile(char const*)
+    eScriptError ScriptServer::executeScriptFile(char const* fileName)
     {
-        throw std::logic_error("Not implemented");
+        if (!m_bInitialized)
+        {
+            return NOT_INITIALIZED;
+        }
+        CStr unifiedFileName = fileName;
+        UnifyFileName(unifiedFileName);
+        m_lastScriptExecuted = unifiedFileName;
+        errDesc.sourceString = m_lastScriptExecuted;
+        auto it = m_scripts.find(unifiedFileName);
+        if (it == m_scripts.end())
+        {
+            Scriptlet scriptlet;
+            auto res = scriptlet.loadFromFile(unifiedFileName.c_str());
+            if (res == SUCCESS)
+            {
+                res = scriptlet.execute(unifiedFileName.c_str(), true);
+	            if (res)
+	            {
+                    M3D_LOG_ERR(getFormatedScriptErrorDesc(res));
+	            }
+            }
+            return res;
+        }
+        else
+        {
+            return it->second->execute(unifiedFileName.c_str(), true);
+        }
     }
 
     eScriptError ScriptServer::init()

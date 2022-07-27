@@ -26,6 +26,7 @@ namespace m3d
 
     class Scriptlet
     {
+        friend class ScriptServer;
     public:
         static inline ScriptServer* g_scriptServer = nullptr;
 
@@ -37,17 +38,17 @@ namespace m3d
 
     private:
         Scriptlet();
-        bool m_bCompiled;
+        bool m_bCompiled = false;
         unsigned int m_dataLen;
-        char* m_data;
-        unsigned __int8* m_compiledData;
+        char* m_data = nullptr;
+        unsigned __int8* m_compiledData = nullptr;
         unsigned int m_compiledDataLen;
-        bool m_bLoaded;
+        bool m_bLoaded = false;
     };
 
     class auxScriptErrorDesc
     {
-    private:
+    public:
         CStr descriptionString;
         CStr sourceString;
         int lineNumber;

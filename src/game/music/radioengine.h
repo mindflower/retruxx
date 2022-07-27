@@ -18,7 +18,7 @@ namespace m3d
 
         class SCurId
         {
-        private:
+        public:
             std::vector<int> ids;
             int probability;
         };

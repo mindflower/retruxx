@@ -4,6 +4,7 @@
 #include <core/log.h>
 
 #include "config.h"
+#include "m3dapp.h"
 
 namespace m3d
 {
@@ -24,7 +25,34 @@ namespace m3d
 
     int GameImpulse::LoadFromFile(CStr const& bindFile)
     {
-        throw std::logic_error("Not implemented");
+        int res = 0;
+        if (m_isInited)
+        {
+            res = 1;
+            m_bSuppressEvent = true;
+	        if (m_isBinded)
+	        {
+                UnbindAll();
+	        }
+            auto err = g_Kernel->GetScriptServer().executeScriptFile(bindFile.c_str());
+            if (err)
+            {
+                M3D_LOG_ERR("Key bindings: loading error - " + GetFormattedScriptErrorDesc(err));
+                res = 0;
+            }
+            else
+            {
+                Application::g_pApp->EnqueueMessage(46, -1, 0, 0, 0, {}, {});
+                M3D_LOG_INFO("Key bindings: were loaded successfully from file " + bindFile);
+            }
+            m_bSuppressEvent = false;
+        }
+        else
+        {
+            M3D_LOG_INFO("Key bindings: error loading from file cause is not inited");
+            res = 0;
+        }
+        return res;
     }
 
     int GameImpulse::DecRef()
