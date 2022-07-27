@@ -127,7 +127,7 @@ protected:
     Profile* _GetProfileByName(CStr const &) const ;
 
 public:
-    RT_CLASS_INLINE_DECLARE(ProfileManager);
+    RT_CLASS_DECLARE(ProfileManager);
 
 protected:
     CStr m_curProfileName;

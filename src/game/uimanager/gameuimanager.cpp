@@ -275,7 +275,7 @@ int GameUiManager::GUI_LoadWindowsResources(ResourceInfo::ResourceLoadType loadT
     }
     std::vector<ResourceInfo*> resourceInfos;
     GUI_GetResourceInfosByLoadType(loadType, m_resourceInfoWindows, resourceInfos);
-    auto res = 0;
+    auto res = 1;
     for (auto info : resourceInfos)
     {
         if (info && info->IsKindOf(RT_CLASS_LOCAL(WindowResourceInfo)))
@@ -487,7 +487,7 @@ int GameUiManager::GUI_Init(bool reloadResources)
     {
         m_icons = new ObjectsIcons;
     }
-    auto res = 0;
+    auto res = 1;
     if (!m_oneTimeStuffIsInited || reloadResources)
     {
         if (m_isInited)
@@ -711,9 +711,70 @@ int GameUiManager::GUI_WriteToXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_ShowWindow(int, bool, bool, bool, int*)
+int GameUiManager::GUI_ShowWindow(int wndId, bool forceShow, bool forceModal, bool pause, int* modalRetVal)
 {
-    throw std::logic_error("Not implemented");
+    using namespace m3d::ui;
+    int res = 1;
+    if (modalRetVal)
+    {
+        *modalRetVal = -1;
+    }
+    auto wnd = GUI_GetWindow(wndId);
+    if (!wnd)
+    {
+        return 0;
+    }
+    if (wnd->GetParent())
+    {
+        return 0;
+    }
+    if (!m_isHidden || forceShow)
+    {
+	    if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+	    {
+            auto modalWnd = dynamic_cast<ModalWnd*>(&*wnd);
+		    if (!modalWnd->GetStation()->IsModal(modalWnd))
+		    {
+			    if (GUI_BeginModalDlg(pause, forceModal))
+			    {
+				    if (m_onScreenWindows.find(wndId) == m_onScreenWindows.end())
+				    {
+                        m_onScreenWindows.emplace(wndId);
+				    }
+                    auto modalRes = modalWnd->GetStation()->DoModal(modalWnd);
+                    if (modalRetVal)
+                    {
+                        *modalRetVal = modalRes;
+                    }
+			    }
+                else
+                {
+                    res = 0;
+                }
+		    }
+	    }
+        else
+        {
+	        if (!wnd->GetParent())
+	        {
+                //TODP: check this
+                m3d::Application::g_pApp->AddChild(wnd);
+	        }
+            if (GUI_IsWndModalEqual(wnd))
+            {
+                GUI_BeginModalDlg(pause, forceModal);
+            }
+        }
+    }
+    else
+    {
+        res = 0;
+    }
+    if (!wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)) && m_onScreenWindows.find(wndId) == m_onScreenWindows.end())
+    {
+        m_onScreenWindows.emplace(wndId);
+    }
+    return res;
 }
 
 int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool isPersistent, bool needShow)
@@ -729,8 +790,38 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool is
     auto it = m_windows.find(wndId);
     if (it == m_windows.end())
     {
-	    
+	    if (isPersistent)
+	    {
+            w->m_gameDataFlags |= 8;
+	    }
+        else
+        {
+            w->m_gameDataFlags & 0xFFFFFFF7;
+        }
+        m_windows.emplace(wndId, w);
+        //TODO: check this
+        w->m_guiId = wndId;
     }
+    else
+    {
+	    if (&it->second != &w)
+	    {
+            return 0;
+	    }
+        if (isPersistent)
+        {
+            w->m_gameDataFlags |= 8;
+        }
+        else
+        {
+            w->m_gameDataFlags & 0xFFFFFFF7;
+        }
+    }
+    if (needShow)
+    {
+        GUI_ShowWindow(wndId, false, false, false, nullptr);
+    }
+    return 1;
     throw std::logic_error("Not implemented");
 }
 

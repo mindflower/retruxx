@@ -290,9 +290,9 @@ int TruxxUiManager::AddWindow(ref_ptr<m3d::ui::Wnd> w, int& wndId, bool isPersis
     return GUI_AddWindowById(w, wndId, isPersistent, needShow);
 }
 
-int TruxxUiManager::AddWindowById(ref_ptr<m3d::ui::Wnd>, int, bool, bool)
+int TruxxUiManager::AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool isPersistent, bool needShow)
 {
-    throw std::logic_error("Not implemented");
+    return GUI_AddWindowById(w, wndId, isPersistent, needShow);
 }
 
 CStr TruxxUiManager::GetPathToQuestInfoFileGlobal() const
@@ -384,11 +384,11 @@ int TruxxUiManager::Init()
         res = AddWindowById(gameMenuWnd, 154, true, false) & res;
         if (res)
         {
-            M3D_LOG_ERR("TruxxUiManager: was inited with errors");
+            M3D_LOG_INFO("TruxxUiManager: was inited successfully");
             return res;
         }
     }
-    M3D_LOG_INFO("TruxxUiManager: was inited successfully");
+    M3D_LOG_ERR("TruxxUiManager: was inited with errors");
     return res;
 }
 

@@ -4,6 +4,9 @@
 #include <core/aiparam.h>
 #include <core/log.h>
 
+#include "config.h"
+#include "core/console/console.h"
+
 int Profile::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
     throw std::logic_error("Not implemented");
@@ -104,6 +107,8 @@ CStr Profile::ParamId2Name(ProfileParam) const
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_DEFINE(ProfileManager);
+
 Profile* ProfileManager::GetCurProfile() const
 {
     return _GetProfileByName(m_curProfileName);
@@ -161,7 +166,7 @@ ProfileManager::~ProfileManager()
 
 m3d::Object* ProfileManager::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    return new ProfileManager;
 }
 
 int ProfileManager::LoadProfiles()
@@ -204,9 +209,12 @@ ProfileManager::ProfileManager(ProfileManager const&)
     throw std::logic_error("Not implemented");
 }
 
-ProfileManager::ProfileManager()
+ProfileManager::ProfileManager() :
+	m_cvPathToProfiles("pathToProfiles", "data\\profiles", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE),
+	m_cvProfileFileName("profileFileName", "profile.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE)
 {
-    throw std::logic_error("Not implemented");
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToProfiles, nullptr);
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvProfileFileName, nullptr);
 }
 
 int ProfileManager::GetProfileFiles(std::vector<CStr, std::allocator<CStr>>&) const

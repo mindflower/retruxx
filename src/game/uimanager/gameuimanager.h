@@ -154,6 +154,7 @@ protected:
     int GUI_ValidateDynamicId(int);
     virtual void GUI_RegisterClasses() = 0;
     virtual int GUI_BindWindowsToEvents() = 0;
+    virtual int GUI_BeginModalDlg(bool, bool) = 0;
 
 protected:
     std::map<int, int> m_packToEvent;

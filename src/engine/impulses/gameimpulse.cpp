@@ -3,6 +3,8 @@
 #include "gameimpulse.h"
 #include <core/log.h>
 
+#include "config.h"
+
 namespace m3d
 {
     void AuxImpulseInfo::UnpackXy(float*, float*, float*, float*) const
@@ -20,7 +22,7 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int GameImpulse::LoadFromFile(CStr const&)
+    int GameImpulse::LoadFromFile(CStr const& bindFile)
     {
         throw std::logic_error("Not implemented");
     }
@@ -171,7 +173,17 @@ namespace m3d
 
     int GameImpulse::LoadFromDefaults()
     {
-        throw std::logic_error("Not implemented");
+        if (m_isInited)
+        {
+            auto res = LoadFromFile(g_Kernel->GetEngineCfg().m_pathToDefaultKeyBindings.GetS());
+	        if (res)
+	        {
+                M3D_LOG_INFO("Key bindings: were bind from defaults");
+	        }
+            return res;
+        }
+        M3D_LOG_INFO("Key bindings: error load from defaults cause impulses were not inited");
+        return 0;
     }
 
     int GameImpulse::UnbindKey2(CStr const&, CStr const&, CStr const&, CStr const&)
