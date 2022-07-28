@@ -22,6 +22,8 @@ namespace
 
 namespace m3d
 {
+    RT_CLASS_DEFINE(IConsole);
+
     void CConsoleParams::Set(char const*)
     {
         throw std::logic_error("Not implemented");
@@ -85,8 +87,6 @@ namespace m3d
     IConHandler::IConHandler()
     {
     }
-
-    RT_CLASS_DEFINE(IConsole);
 
     IConsole::IConsole(IConsole const&)
     {

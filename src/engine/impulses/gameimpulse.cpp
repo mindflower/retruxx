@@ -23,6 +23,8 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    RT_CLASS_DEFINE(GameImpulse);
+
     int GameImpulse::LoadFromFile(CStr const& bindFile)
     {
         int res = 0;
@@ -196,7 +198,7 @@ namespace m3d
 
     Class* GameImpulse::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     int GameImpulse::LoadFromDefaults()

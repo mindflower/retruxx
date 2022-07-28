@@ -30,7 +30,7 @@ CStr TruxxImpulse::GetGameModeNameById(int)
 
 m3d::Class* TruxxImpulse::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(TruxxImpulse);
 }
 
 m3d::Object* TruxxImpulse::Clone()
@@ -50,7 +50,7 @@ m3d::Object* TruxxImpulse::CreateObject()
 
 m3d::Class* TruxxImpulse::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(GameImpulse);
 }
 
 CStr TruxxImpulse::GetProfileFolder()

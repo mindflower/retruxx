@@ -3,6 +3,9 @@
 #include <script/luavector.h>
 
 #include "core/log.h"
+#include "core/scoped_ptr.h"
+#include "file/fileserver.h"
+#include "file/filestream.h"
 
 extern "C"
 {
@@ -13,9 +16,19 @@ extern "C"
 
 namespace
 {
-    int _getGlobalObject(lua_State *)
+    int _getGlobalObject(lua_State * L)
     {
-        throw std::logic_error("Not implemented");
+        auto glob = lua_tostring(L, 1);
+        auto obj = m3d::g_Kernel->FindGlobal(glob);
+        if (obj)
+        {
+            auto scriptObj = m3d::ScriptServer::_getScriptObject(obj);
+            lua_rawgeti(L, -10000, scriptObj);
+            return 1;
+        }
+        M3D_LOG_WARN("Script side: cound not find global " + CStr(glob));
+        lua_pushnil(L);
+        return 1;
     }
 
     int _logMethod(lua_State *)
@@ -53,6 +66,84 @@ namespace
         throw std::logic_error("Not implemented");
     }
 
+    void _addExports(m3d::Class* pClass)
+    {
+        //TODO: check this and refactor!!!
+        lua_State* v1; // esi
+        m3d::Class* v3; // eax
+        m3d::ExportInfo* v4; // edi
+        m3d::ExportInfo* v5; // ebx
+        m3d::eExportType v6; // eax
+        int v7; // edx
+
+        v1 = m3d::ScriptServer::L;
+        if (pClass)
+        {
+            v3 = pClass->m_fnGetBaseClass();
+            _addExports(v3);
+        	v4 = pClass->m_lExports;
+            if (v4)
+            {
+                if (v4->name)
+                {
+                    v5 = v4;
+                    while (1)
+                    {
+                        lua_pushstring(v1, v4->name);
+                        v6 = v4->type;
+                        if (v6 == m3d::METHOD)
+                            break;
+                        if (v6 == m3d::NATIVE_METHOD)
+                        {
+                            auto newData = reinterpret_cast<void**>(lua_newuserdata(v1, 4u));
+                            *newData = v4->addr1;
+                            v7 = m3d::ScriptServer::m_metatable_ClassNativeMethod;
+                        LABEL_9:
+                            lua_rawgeti(v1, -10000, v7);
+                            lua_setmetatable(v1, -2);
+                        }
+                        lua_settable(v1, -3);
+                        v4 = ++v5;
+                        if (!v5->name)
+                            return;
+                    }
+                    auto data = reinterpret_cast<void**>(lua_newuserdata(v1, 4u));
+                    *data = v4->addr1;
+                    v7 = m3d::ScriptServer::m_metatable_ClassMethod;
+                    goto LABEL_9;
+                }
+            }
+            else
+            {
+                //TODO: need for adding new exports
+                DebugBreak();
+            }
+        }
+    }
+
+    void _buildExportMap(m3d::Class* pClass)
+    {
+        int n; // eax
+
+        lua_newtable(m3d::ScriptServer::L);
+        n = luaL_ref(m3d::ScriptServer::L, -10000);
+        pClass->m_scriptHandle = reinterpret_cast<void*>(n);
+        lua_rawgeti(m3d::ScriptServer::L, -10000, n);
+        lua_pushstring(m3d::ScriptServer::L, "internalTag");
+        lua_pushnumber(m3d::ScriptServer::L, 1002.0);
+        lua_settable(m3d::ScriptServer::L, -3);
+        _addExports(pClass);
+    	lua_settop(m3d::ScriptServer::L, -2);
+    }
+
+    int _indexObject(lua_State* L)
+    {
+        lua_rawgeti(L, 1, 1);
+        lua_insert(L, -2);
+        lua_gettable(L, -2);
+        return 1;
+    }
+
     lua_CFunction oldToString = nullptr;
     m3d::ScriptServer* g_scriptServer = nullptr;
     m3d::auxScriptErrorDesc errDesc;
@@ -72,14 +163,46 @@ namespace m3d
 	    throw std::logic_error("Not implemented");
     }
 
-    eScriptError Scriptlet::loadFromFile(char const*)
+    eScriptError Scriptlet::loadFromFile(char const* fileName)
     {
-	    throw std::logic_error("Not implemented");
+        delete[] m_data;
+        m_data = nullptr;
+        m_bLoaded = false;
+        scoped_ptr stream = g_Kernel->GetFileServer().CreateFileStream();
+        if (stream->Open(fileName, fs::IStream::OPEN_READ))
+        {
+            m_dataLen = stream->GetSize();
+            m_data = new char[m_dataLen];
+            if (stream->ReadBytes(m_data, m_dataLen))
+            {
+                stream->Close();
+                m_bLoaded = true;
+                return SUCCESS;
+            }
+            else
+            {
+                M3D_LOG_INFO("Could not read script file " + CStr(fileName));
+                return FILE_NOT_FOUND;
+            }
+        }
+        else
+        {
+            M3D_LOG_INFO("Could not open script file " + CStr(fileName));
+            return FILE_NOT_FOUND;
+        }
     }
 
-    eScriptError Scriptlet::execute(char const*, bool)
+    eScriptError Scriptlet::execute(char const* nameAs, bool bGlobalEnv)
     {
-	    throw std::logic_error("Not implemented");
+        if (!m_bLoaded)
+        {
+            return OTHER_ERROR;
+        }
+        if (m_bCompiled)
+        {
+            return g_scriptServer->executeBuffer(m_compiledData, m_compiledDataLen, nameAs);
+        }
+        g_scriptServer->executeBuffer(m_data, m_dataLen, nameAs);
     }
 
     Scriptlet::Scriptlet()
@@ -96,9 +219,30 @@ namespace m3d
         return new ScriptServer;
     }
 
-    int ScriptServer::_getScriptObject(Object*)
+    int ScriptServer::_getScriptObject(Object* pObj)
     {
-        throw std::logic_error("Not implemented");
+        if (!pObj->m_scriptHandle)
+        {
+            lua_newtable(L);
+            lua_pushlightuserdata(L, pObj);
+            lua_rawseti(L, -2, 0);
+            auto cls  = pObj->GetClass();
+            if (!cls->m_scriptHandle)
+            {
+                _buildExportMap(cls);
+            }
+        	lua_rawgeti(L, -10000, reinterpret_cast<int>(cls->m_scriptHandle));
+            lua_type(L, -1);
+            lua_type(L, -2);
+            lua_rawseti(L, -2, 1);
+            lua_newtable(L);
+            lua_pushstring(L, "__index");
+            lua_pushcclosure(L, _indexObject, 0);
+        	lua_settable(L, -3);
+            lua_setmetatable(L, -2);
+            pObj->m_scriptHandle = reinterpret_cast<void*>(luaL_ref(L, -10000));
+        }
+        return reinterpret_cast<int>(pObj->m_scriptHandle);
     }
 
     eScriptError ScriptServer::reloadScript(char const*)
@@ -136,9 +280,31 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    eScriptError ScriptServer::executeBuffer(void*, unsigned, char const*)
+    eScriptError ScriptServer::executeBuffer(void* buf, unsigned bufSize, char const* bufName)
     {
-        throw std::logic_error("Not implemented");
+        if (!m_bInitialized)
+        {
+            return NOT_INITIALIZED;
+        }
+        if (bufName)
+        {
+            m_lastScriptExecuted = bufName;
+            UnifyFileName(m_lastScriptExecuted);
+            errDesc.sourceString = m_lastScriptExecuted;
+        }
+        switch(lua_dobuffer(L, static_cast<const char*>(buf), bufSize, m_lastScriptExecuted.c_str()))
+        {
+        case 0:
+            return  SUCCESS;
+        case 1:
+            return  RUNTIME_ERROR;
+        case 3:
+            return  SYNTAX_ERROR;
+        case 4:
+            return  MEMORY_ERROR;
+        default:
+            return OTHER_ERROR;
+        }
     }
 
     ScriptServer::~ScriptServer()

@@ -178,9 +178,14 @@ namespace m3d
         return cls->NewInstance();
     }
 
-    Object* Kernel::FindGlobal(char const*)
+    Object* Kernel::FindGlobal(char const* name)
     {
-        throw std::logic_error("Not implemented");
+        auto it = m_lGlobals->find(name);
+        if (it != m_lGlobals->end())
+        {
+            return it->second;
+        }
+        return nullptr;
     }
 
     cmn::XmlFile* Kernel::CreateXmlFile()

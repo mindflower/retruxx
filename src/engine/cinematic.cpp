@@ -1,6 +1,134 @@
 #include <cinematic.h>
 #include <stdexcept>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, StartCinematic)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, Play)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, PlayFromPoint)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, Stop)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, InPlay)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetPath)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetPathFromPos)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, LoadDefaults)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetAim)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetAimToID)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetRelativePoints)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetRelativeRotations)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetBaseToId)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetLookTo)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetWaitWhenStop)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetLerpFromPreviousItem)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetFolder)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, GetFolder)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, Load)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, FlyAround)
+{
+    throw std::logic_error("Not implemented");
+}
+
+namespace m3d
+{
+    RT_CLASS_EXPORTS_BEGIN(Cinematic)
+        RT_CLASS_EXPORT(Cinematic, METHOD, StartCinematic, "void", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, Play, "void", "float playTime", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, PlayFromPoint, "void", "float playTime, int PointNumber", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, Stop, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, InPlay, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, SetPath, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, SetPathFromPos, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, LoadDefaults, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, SetAim, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, SetAimToID, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, SetRelativePoints, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, SetRelativeRotations, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, SetBaseToId, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, SetLookTo, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, SetWaitWhenStop, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, SetLerpFromPreviousItem, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, SetFolder, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, GetFolder, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, Load, "", "", "")
+        RT_CLASS_EXPORT(Cinematic, METHOD, FlyAround, "", "", "")
+	RT_CLASS_EXPORTS_END;
+
+    RT_CLASS_DEFINE(Cinematic);
+}
+
 namespace m3d
 {
     void CameraPath::insert(int, CameraPathState const&)
@@ -112,8 +240,6 @@ namespace m3d
     {
         throw std::logic_error("Not implemented");
     }
-
-    RT_CLASS_DEFINE(Cinematic);
 
     bool Cinematic::SkipCinematic()
     {

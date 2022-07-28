@@ -56,7 +56,7 @@ namespace m3d
         GameImpulse();
 
     public:
-        RT_CLASS_INLINE_DECLARE(GameImpulse);
+        RT_CLASS_DECLARE(GameImpulse);
 
     private:
         int m_refCount;

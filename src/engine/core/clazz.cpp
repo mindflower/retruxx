@@ -5,6 +5,52 @@
 #include <core/log.h>
 #include <core/ref_ptr.h>
 
+#undef GetClassName
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Object, GetName)
+{
+    auto obj = context->asObject(0, "Object");
+    context->pushString(obj->GetName());
+    return 1;
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Object, GetRefCount)
+{
+    auto obj = context->asObject(0, "Object");
+    context->pushInt(obj->GetRefCount());
+    return 1;
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Object, GetClassName)
+{
+    auto obj = context->asObject(0, "Object");
+    context->pushString(obj->GetClassNameA());
+    return 1;
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Object, IsKindOf)
+{
+    auto obj = context->asObject(0, "Object");
+    auto clsName = context->asString(1);
+    auto cls = obj->GetClass();
+    auto res = cls->IsKindOf(clsName);
+    context->pushBool(res);
+    return 1;
+}
+
+namespace m3d
+{
+    RT_CLASS_EXPORTS_BEGIN(Object)
+        RT_CLASS_EXPORT(Object, METHOD, GetName, "const char*", "", "")
+        RT_CLASS_EXPORT(Object, METHOD, GetRefCount, "int", "", "return the number of references held against this instance")
+        RT_CLASS_EXPORT(Object, METHOD, GetClassName, "void", "", "get object's class name")
+        RT_CLASS_EXPORT(Object, METHOD, IsKindOf, "bool", "const char*", "finds out if objects is of given class")
+	RT_CLASS_EXPORTS_END;
+
+
+    RT_CLASS_DEFINE(Object);
+}
+
 namespace m3d
 {
     int RefCountedBase::IncRef()
@@ -31,8 +77,6 @@ namespace m3d
     {
         return nullptr;
     }
-
-    RT_CLASS_DEFINE(Object);
 
     Object* Object::CreateObject()
     {

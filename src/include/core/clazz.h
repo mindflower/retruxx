@@ -4,8 +4,13 @@
 
 #define RT_CLASS_LOCAL(cl) &cl::m_class##cl
 #define RT_CLASS_DECLARE(cl) static m3d::Class m_class##cl
-#define RT_CLASS_DEFINE(cl) m3d::Class cl::m_class##cl {#cl, sizeof(cl), CreateObject, GetBaseClass}
+#define RT_CLASS_DEFINE(cl) m3d::Class cl::m_class##cl {#cl, sizeof(cl), CreateObject, GetBaseClass, -1, _exports_##cl}
 #define RT_CLASS_INLINE_DECLARE(cl) static inline m3d::Class m_class##cl {#cl}
+
+#define RT_CLASS_EXPORTS_BEGIN(cl) m3d::ExportInfo _exports_##cl[] {
+#define RT_CLASS_EXPORTS_END m3d::ExportInfo{}}
+#define RT_CLASS_EXPORT(cl, type, funcName, retVal, params, desc) m3d::ExportInfo{#funcName, type, _export_##cl##_##funcName, nullptr, retVal, params, desc},
+#define RT_CLASS_EXPORT_METHOD_DEFINE(cl, funcName) int _export_##cl##_##funcName##(m3d::Context* context)
 
 namespace m3d
 {
@@ -15,8 +20,31 @@ namespace m3d
         class XmlFile;
     }
 
-    class ExportInfo;
+    struct ExportInfo;
     class Object;
+    class AIParam;
+
+    class Context
+    {
+    public:
+        virtual void pushObject(Object*) = 0;
+        virtual void pushAIParam(AIParam const&) = 0;
+        virtual int asInt(int) = 0;
+        virtual bool asBool(int) = 0;
+        virtual Object* asObject(int, char const*) = 0;
+        virtual int countArgs() = 0;
+        virtual float asFloat(int) = 0;
+        virtual AIParam& asAIParam(int) = 0;
+        virtual void pushBool(bool) = 0;
+        virtual char const* asString(int) = 0;
+        virtual void pushQuaternion(Quaternion const&) = 0;
+        virtual void pushInt(int) = 0;
+        virtual void pushFloat(float) = 0;
+        virtual Quaternion& asQuaternion(int) = 0;
+        virtual void pushString(char const*) = 0;
+        virtual CVector& asVector(int) = 0;
+        virtual void pushVector(CVector const&) = 0;
+    };
 
     //IMPORTANT: fields and members order is strict
     struct Class
@@ -125,4 +153,22 @@ namespace m3d
     public:
         virtual ~Object() = default;
     };
+
+    enum eExportType
+    {
+        METHOD = 0x0,
+        NATIVE_METHOD = 0x1,
+    };
+
+    struct ExportInfo
+    {
+        const char* name = nullptr;
+        eExportType type = METHOD;
+        void* addr1 = nullptr;
+        void* addr2 = nullptr;
+        const char* returns = nullptr;
+        const char* params = nullptr;
+        const char* desc = nullptr;
+    };
+
 }
