@@ -1,5 +1,7 @@
 #include "twinklinglampwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(TwinklingLampWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TwinklingLampWnd);
 
 void TwinklingLampWnd::SetValue(float, float)

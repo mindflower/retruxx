@@ -6,6 +6,9 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(ButtonWnd)
+    	RT_CLASS_EXPORTS_END;
+
         RT_CLASS_DEFINE(ButtonWnd);
 
         Object* ButtonWnd::CreateObject()
@@ -205,6 +208,9 @@ namespace m3d
         {
             throw std::logic_error("Not implemented");
         }
+
+        RT_CLASS_EXPORTS_BEGIN(CheckWnd)
+    	RT_CLASS_EXPORTS_END;
 
         RT_CLASS_DEFINE(CheckWnd);
 

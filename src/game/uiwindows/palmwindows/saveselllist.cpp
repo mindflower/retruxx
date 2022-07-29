@@ -1,5 +1,7 @@
 #include "saveselllist.h"
 
+RT_CLASS_EXPORTS_BEGIN(SaveSellButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SaveSellButton);
 
 SaveSellButton::~SaveSellButton()
@@ -57,6 +59,8 @@ SaveSellButton::SaveSellButton(SaveSellButton const&)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(SaveSellList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SaveSellList);
 
 SaveSellList::AuxInfo::AuxInfo()

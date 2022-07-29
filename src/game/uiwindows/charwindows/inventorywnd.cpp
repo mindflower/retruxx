@@ -2,6 +2,8 @@
 #include "basketwnd.h"
 #include "cabinwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(InventoryWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(InventoryWnd);
 
 InventoryWnd::AuxInfo::AuxInfo()

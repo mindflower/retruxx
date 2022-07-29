@@ -2,6 +2,8 @@
 #include "m3dapp.h"
 #include "core/log.h"
 
+RT_CLASS_EXPORTS_BEGIN(GameMenuWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(GameMenuWnd);
 
 MenuItem::MenuItem(CStr const& name, unsigned id, ControlType ct)

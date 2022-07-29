@@ -1,5 +1,7 @@
 #include "npcmodelwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(NpcModelWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(NpcModelWnd);
 
 m3d::Class* NpcModelWnd::GetBaseClass()

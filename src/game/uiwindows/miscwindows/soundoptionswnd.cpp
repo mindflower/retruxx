@@ -4,6 +4,8 @@
 #include "ui/button.h"
 #include "ui/slider.h"
 
+RT_CLASS_EXPORTS_BEGIN(SoundOptionsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SoundOptionsWnd);
 
 SoundOptionsWnd::AuxInfo::AuxInfo()

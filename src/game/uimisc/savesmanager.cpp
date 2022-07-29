@@ -1,6 +1,14 @@
 #include "savesmanager.h"
 #include <stdexcept>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(SavesManager, AutoSave)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(SavesManager)
+	RT_CLASS_EXPORT(SavesManager, m3d::METHOD, AutoSave, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SavesManager);
 
 SavesManager::ConstantSaveInfo::ConstantSaveInfo()

@@ -3,6 +3,8 @@
 #include <ui/button.h>
 #include <ui/listbox.h>
 
+RT_CLASS_EXPORTS_BEGIN(ChangeProfileWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ChangeProfileWnd);
 
 ChangeProfileWnd::AuxInfo::AuxInfo()

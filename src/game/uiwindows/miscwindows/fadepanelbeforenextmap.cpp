@@ -1,5 +1,7 @@
 #include "fadepanelbeforenextmap.h"
 
+RT_CLASS_EXPORTS_BEGIN(FadePanelBeforeNextMap)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(FadePanelBeforeNextMap);
 
 m3d::Class* FadePanelBeforeNextMap::GetClass() const

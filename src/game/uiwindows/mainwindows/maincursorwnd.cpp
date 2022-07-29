@@ -1,5 +1,7 @@
 #include "maincursorwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(MainCursorWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MainCursorWnd);
 
 MainCursorWnd::AuxInfo::AuxInfo()

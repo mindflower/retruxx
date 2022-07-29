@@ -1,5 +1,19 @@
 #include "cinemapanel.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(CinemaPanel, AddMessage)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(CinemaPanel, ClearMessages)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(CinemaPanel)
+    RT_CLASS_EXPORT(CinemaPanel, m3d::METHOD, AddMessage, "", "", "")
+    RT_CLASS_EXPORT(CinemaPanel, m3d::METHOD, ClearMessages, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CinemaPanel);
 
 CinemaPanel::MessageTimeInfo::MessageTimeInfo(int, float)

@@ -1,5 +1,7 @@
 #include "historywnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(HistoryWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(HistoryWnd);
 
 HistoryWnd::AuxInfo::AuxInfo()

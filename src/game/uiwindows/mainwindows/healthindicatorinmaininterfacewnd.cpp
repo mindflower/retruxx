@@ -1,5 +1,7 @@
 #include "healthindicatorinmaininterfacewnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(HealthIndicatorInMainInterfaceWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(HealthIndicatorInMainInterfaceWnd);
 
 m3d::Object* HealthIndicatorInMainInterfaceWnd::Clone()

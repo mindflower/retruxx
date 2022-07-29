@@ -1,5 +1,7 @@
 #include "weaponinfolist.h"
 
+RT_CLASS_EXPORTS_BEGIN(WeaponInfoList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WeaponInfoList);
 
 WeaponInfoList::AuxInfo::AuxInfo()
@@ -167,6 +169,8 @@ int WeaponInfoList::GameDataClear(bool)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(WeaponInfoWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WeaponInfoWnd);
 
 int WeaponInfoWnd::GetGroupId() const
@@ -299,6 +303,8 @@ int WeaponInfoWnd::CreateChildren(WeaponInfoList::Type)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(WeaponGroupChoiceDlg)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WeaponGroupChoiceDlg);
 
 WeaponGroupChoiceDlg::AuxInfo::AuxInfo()

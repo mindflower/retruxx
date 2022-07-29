@@ -1,5 +1,7 @@
 #include "speedometerwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(SpeedometerWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SpeedometerWnd);
 
 m3d::rend::TexHandle SpeedometerWnd::ArrowPointer::GetTexture() const

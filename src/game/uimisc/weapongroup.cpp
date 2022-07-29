@@ -1,7 +1,25 @@
 #include "weapongroup.h"
 #include <stdexcept>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(WeaponGroupManager, SaveWeaponGroups)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(WeaponGroupManager, RestoreWeaponGroups)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(WeaponGroupManager)
+    RT_CLASS_EXPORT(WeaponGroupManager, m3d::METHOD, SaveWeaponGroups, "", "", "")
+    RT_CLASS_EXPORT(WeaponGroupManager, m3d::METHOD, RestoreWeaponGroups, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WeaponGroupManager);
+
+RT_CLASS_EXPORTS_BEGIN(WeaponGroup)
+RT_CLASS_EXPORTS_END;
+RT_CLASS_DEFINE(WeaponGroup);
 
 int WeaponGroupManager::DeleteWeaponGroup(int)
 {
@@ -171,8 +189,6 @@ WeaponGroupManager::WeaponGroupManager(WeaponGroupManager const&)
 WeaponGroupManager::WeaponGroupManager()
 {
 }
-
-RT_CLASS_DEFINE(WeaponGroup);
 
 void WeaponGroup::Reload()
 {

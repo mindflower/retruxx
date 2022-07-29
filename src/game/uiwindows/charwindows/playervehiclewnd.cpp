@@ -1,6 +1,8 @@
 #include "playervehiclewnd.h"
 #include <game/uiwindows/mainwindows/damageinfownd.h>
 
+RT_CLASS_EXPORTS_BEGIN(PlayerVehicleWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(PlayerVehicleWnd);
 
 PlayerVehicleWnd::PAuxInfo::PAuxInfo()

@@ -1,5 +1,7 @@
 #include "gadgetwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(GadgetWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(GadgetWnd);
 
 int GadgetWnd::GetSlotId() const

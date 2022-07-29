@@ -1,5 +1,6 @@
 #include <config.h>
 #include <m3dapp.h>
+#include <core/clazz.h>
 #include <stdexcept>
 #include <core/aiparam.h>
 #include <core/kernel.h>
@@ -17,6 +18,8 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(Wnd)
+    	RT_CLASS_EXPORTS_END;
         RT_CLASS_DEFINE(Wnd);
 
         Wnd::AnimationInfo::~AnimationInfo()
@@ -1275,6 +1278,8 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
+        RT_CLASS_EXPORTS_BEGIN(ModalWnd)
+    	RT_CLASS_EXPORTS_END;
         RT_CLASS_DEFINE(ModalWnd);
 
         Class* ModalWnd::GetBaseClass()

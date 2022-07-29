@@ -3,6 +3,8 @@
 #include <ui/button.h>
 #include <ui/edit.h>
 
+RT_CLASS_EXPORTS_BEGIN(NewProfileWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(NewProfileWnd);
 
 NewProfileWnd::AuxInfo::AuxInfo()

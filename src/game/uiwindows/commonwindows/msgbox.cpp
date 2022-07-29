@@ -1,12 +1,14 @@
 #include "msgbox.h"
-
 #include "core/log.h"
 #include "game/uimisc/guihelper.h"
 #include "ui/button.h"
 #include "ui/linewnd.h"
 #include "ui/ui_srv.h"
 
+RT_CLASS_EXPORTS_BEGIN(MsgBox)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MsgBox);
+
 int MsgBox::m_ref = 0;
 m3d::ui::Wnd* MsgBox::m_pattern = nullptr;
 

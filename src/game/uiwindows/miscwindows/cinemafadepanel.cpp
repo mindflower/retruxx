@@ -2,6 +2,8 @@
 #include <cinematic.h>
 #include <m3dapp.h>
 
+RT_CLASS_EXPORTS_BEGIN(CinemaFadePanel)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CinemaFadePanel);
 
 m3d::Object* CinemaFadePanel::CreateObject()

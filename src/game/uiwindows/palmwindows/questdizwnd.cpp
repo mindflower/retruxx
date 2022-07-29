@@ -1,6 +1,8 @@
 #include "questdizwnd.h"
 #include "questitemlist.h"
 
+RT_CLASS_EXPORTS_BEGIN(QuestDizWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(QuestDizWnd);
 
 QuestDizWnd::AuxInfo::AuxInfo()

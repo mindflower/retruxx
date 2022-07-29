@@ -1,5 +1,25 @@
 #include "conversationwnd.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(ConversationWnd, EndConversation)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ConversationWnd, GetCurrentDynamicQuest)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ConversationWnd, ShowDynamicQuestsMenu)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(ConversationWnd)
+	RT_CLASS_EXPORT(ConversationWnd, m3d::METHOD, EndConversation, "", "", "")
+	RT_CLASS_EXPORT(ConversationWnd, m3d::METHOD, GetCurrentDynamicQuest, "", "", "")
+	RT_CLASS_EXPORT(ConversationWnd, m3d::METHOD, ShowDynamicQuestsMenu, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ConversationWnd);
 
 Reply const* ConversationWnd::PlayerReplyButton::GetReply() const

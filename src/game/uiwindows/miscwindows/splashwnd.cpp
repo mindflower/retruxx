@@ -3,6 +3,8 @@
 #include <ui/image.h>
 #include <ui/progressbarwnd.h>
 
+RT_CLASS_EXPORTS_BEGIN(SplashWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SplashWnd);
 
 SplashWnd::AuxInfo::AuxInfo()

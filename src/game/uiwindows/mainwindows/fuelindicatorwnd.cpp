@@ -1,5 +1,7 @@
 #include "fuelindicatorwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(FuelIndicatorWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(FuelIndicatorWnd);
 
 FuelIndicatorWnd::AuxInfo::AuxInfo()

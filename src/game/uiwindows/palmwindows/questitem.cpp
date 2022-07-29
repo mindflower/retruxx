@@ -1,5 +1,7 @@
 #include "questitem.h"
 
+RT_CLASS_EXPORTS_BEGIN(QuestItem)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(QuestItem);
 
 void QuestItem::UpdateOnQuestNavPointChangedChildIncluded()
@@ -112,6 +114,8 @@ int QuestItem::SetupNavPointBtn(help::QuestType, int)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(QuestStatusBtn)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(QuestStatusBtn);
 
 m3d::Class* QuestStatusBtn::GetClass() const
@@ -194,6 +198,8 @@ void QuestStatusBtn::UpdateIcon()
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(QuestLabel)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(QuestLabel);
 
 BoundsBase<float> QuestLabel::GetLastStringBounds() const

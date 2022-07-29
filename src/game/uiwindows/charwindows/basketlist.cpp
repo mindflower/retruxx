@@ -1,6 +1,11 @@
 #include "basketlist.h"
 
+RT_CLASS_EXPORTS_BEGIN(BasketButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(BasketButton);
+
+RT_CLASS_EXPORTS_BEGIN(BasketList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(BasketList);
 
 m3d::Class* BasketList::GetClass() const

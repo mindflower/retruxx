@@ -8,6 +8,8 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(ModelWnd)
+    	RT_CLASS_EXPORTS_END;
         RT_CLASS_DEFINE(ModelWnd);
 
         Class* ModelWnd::GetBaseClass()

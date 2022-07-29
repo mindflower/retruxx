@@ -1,5 +1,7 @@
 #include "motherpaneltabbutton.h"
 
+RT_CLASS_EXPORTS_BEGIN(MotherPanelTabButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MotherPanelTabButton);
 
 m3d::rend::TexHandle MotherPanelTabButton::PerModeInfo::GetUnselTex() const

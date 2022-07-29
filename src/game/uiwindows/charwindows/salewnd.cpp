@@ -1,5 +1,7 @@
 #include "salewnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(SaleWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SaleWnd);
 
 m3d::Class* SaleWnd::GetRtClass() const

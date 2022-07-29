@@ -1,5 +1,7 @@
 #include "fadingmsg.h"
 
+RT_CLASS_EXPORTS_BEGIN(FadingMsgList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(FadingMsgList);
 
 FadingMsgList::AuxInfo::AuxInfo()
@@ -127,6 +129,8 @@ int FadingMsgList::GameDataClear(bool)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(FadingMsgItem)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(FadingMsgItem);
 
 m3d::Class* FadingMsgItem::GetBaseClass()

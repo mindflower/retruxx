@@ -1,5 +1,7 @@
 #include "bossindicatorwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(BossIndicatorWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(BossIndicatorWnd);
 
 BossIndicatorWnd::AuxInfo::AuxInfo()

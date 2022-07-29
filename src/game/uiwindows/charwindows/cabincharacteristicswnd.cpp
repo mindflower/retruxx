@@ -1,5 +1,7 @@
 #include "cabincharacteristicswnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(CabinCharacteristicsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CabinCharacteristicsWnd);
 
 CabinCharacteristicsWnd::CabinAuxInfo::CabinAuxInfo()

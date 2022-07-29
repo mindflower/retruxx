@@ -1,5 +1,7 @@
 #include "navpointbutton.h"
 
+RT_CLASS_EXPORTS_BEGIN(NavPointButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(NavPointButton);
 
 int NavPointButton::SetupForQuest(help::QuestType, int)

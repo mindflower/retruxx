@@ -6,8 +6,79 @@
 #include "config.h"
 #include "m3dapp.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey3)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey2)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey1)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindKey3)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindKey2)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindKey1)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindAll)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, LoadFromDefaults)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, SaveToDefaults)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, LoadFromProfile)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, SaveToProfile)
+{
+    throw std::logic_error("Not implemented");
+}
+
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(GameImpulse)
+        RT_CLASS_EXPORT(GameImpulse, METHOD, BindKey3, "", "", "")
+        RT_CLASS_EXPORT(GameImpulse, METHOD, BindKey2, "", "", "")
+        RT_CLASS_EXPORT(GameImpulse, METHOD, BindKey1, "", "", "")
+        RT_CLASS_EXPORT(GameImpulse, METHOD, UnbindKey3, "", "", "")
+        RT_CLASS_EXPORT(GameImpulse, METHOD, UnbindKey2, "", "", "")
+        RT_CLASS_EXPORT(GameImpulse, METHOD, UnbindKey1, "", "", "")
+        RT_CLASS_EXPORT(GameImpulse, METHOD, UnbindAll, "", "", "")
+        RT_CLASS_EXPORT(GameImpulse, METHOD, LoadFromDefaults, "", "", "")
+        RT_CLASS_EXPORT(GameImpulse, METHOD, SaveToDefaults, "", "", "")
+        RT_CLASS_EXPORT(GameImpulse, METHOD, LoadFromProfile, "", "", "")
+        RT_CLASS_EXPORT(GameImpulse, METHOD, SaveToProfile, "", "", "")
+	RT_CLASS_EXPORTS_END;
+
+    RT_CLASS_DEFINE(GameImpulse);
+
     void AuxImpulseInfo::UnpackXy(float*, float*, float*, float*) const
     {
         throw std::logic_error("Not implemented");
@@ -22,8 +93,6 @@ namespace m3d
     {
         throw std::logic_error("Not implemented");
     }
-
-    RT_CLASS_DEFINE(GameImpulse);
 
     int GameImpulse::LoadFromFile(CStr const& bindFile)
     {

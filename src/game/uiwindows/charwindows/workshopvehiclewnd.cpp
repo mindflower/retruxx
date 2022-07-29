@@ -1,5 +1,7 @@
 #include "workshopvehiclewnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(WorkshopVehicleWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WorkshopVehicleWnd);
 
 WorkshopVehicleWnd::WAuxInfo::WAuxInfo()

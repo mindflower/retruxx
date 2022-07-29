@@ -9,6 +9,9 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(ComboBoxWnd)
+    	RT_CLASS_EXPORTS_END;
+
         RT_CLASS_DEFINE(ComboBoxWnd);
 
         ComboBoxWnd::AuxInfo::AuxInfo()

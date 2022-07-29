@@ -3,6 +3,8 @@
 #include "core/log.h"
 #include "ui/comboboxwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(RequestDifficultyWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(RequestDifficultyWnd);
 
 RequestDifficultyWnd::AuxInfo::AuxInfo()

@@ -20,8 +20,47 @@ namespace
     };
 }
 
+RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, Clear)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, PrintF)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, InputLine)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, executeCommand)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, Toggle)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, SetScreenSize)
+{
+    throw std::logic_error("Not implemented");
+}
+
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(IConsole)
+        RT_CLASS_EXPORT(IConsole, METHOD, Clear, "", "", "")
+        RT_CLASS_EXPORT(IConsole, METHOD, PrintF, "", "", "")
+        RT_CLASS_EXPORT(IConsole, METHOD, InputLine, "", "", "")
+        RT_CLASS_EXPORT(IConsole, METHOD, executeCommand, "", "", "")
+        RT_CLASS_EXPORT(IConsole, METHOD, Toggle, "", "", "")
+        RT_CLASS_EXPORT(IConsole, METHOD, SetScreenSize, "", "", "")
+	RT_CLASS_EXPORTS_END;
+
     RT_CLASS_DEFINE(IConsole);
 
     void CConsoleParams::Set(char const*)

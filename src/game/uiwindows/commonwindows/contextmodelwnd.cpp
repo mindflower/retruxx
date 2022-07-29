@@ -2,6 +2,8 @@
 #include "complexmodelwnd.h"
 #include "itemmodelwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(ContextModelWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ContextModelWnd);
 
 ContextModelWnd::AuxInfo::AuxInfo()

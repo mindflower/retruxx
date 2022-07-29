@@ -2,6 +2,8 @@
 #include "speedometerwnd.h"
 #include "fuelindicatorwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(VehicleInfoPanel)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(VehicleInfoPanel);
 
 VehicleInfoPanel::AuxInfo::AuxInfo()

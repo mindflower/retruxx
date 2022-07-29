@@ -1,5 +1,13 @@
 #include "msgmanager.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(MsgManager, ShowMsgBox)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(MsgManager)
+	RT_CLASS_EXPORT(MsgManager, m3d::METHOD, ShowMsgBox, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MsgManager);
 
 int MsgManager::ShowMsgBox(int, bool)

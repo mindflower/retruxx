@@ -1,5 +1,7 @@
 #include "itemwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(ItemWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ItemWnd);
 
 ItemWnd::AuxInfo::AuxInfo()

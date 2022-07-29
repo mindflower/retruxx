@@ -1,5 +1,7 @@
 #include "characteristicswnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(CharacteristicsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CharacteristicsWnd);
 
 CharacteristicsWnd::CAuxInfo::CAuxInfo()

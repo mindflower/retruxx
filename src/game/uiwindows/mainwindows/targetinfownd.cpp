@@ -1,5 +1,7 @@
 #include "targetinfownd.h"
 
+RT_CLASS_EXPORTS_BEGIN(TargetInfoWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TargetInfoWnd);
 
 TargetInfoWnd::AuxInfo::AuxInfo()

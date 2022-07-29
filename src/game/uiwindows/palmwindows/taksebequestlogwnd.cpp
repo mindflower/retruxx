@@ -4,6 +4,8 @@
 #include "questitemlist.h"
 #include "mapcombobox.h"
 
+RT_CLASS_EXPORTS_BEGIN(TakSebeQuestLogWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TakSebeQuestLogWnd);
 
 TakSebeQuestLogWnd::TsqlAuxInfo::TsqlAuxInfo()

@@ -1,5 +1,7 @@
 #include "electronicdigitalwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(ElectronicDigitalWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ElectronicDigitalWnd);
 
 void ElectronicDigitalWnd::Digital::SetSymbol(ElectronicDigitalWnd::Symbol, bool)

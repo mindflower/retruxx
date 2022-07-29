@@ -1,5 +1,7 @@
 #include "repositoryitemwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(RepositoryItemWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(RepositoryItemWnd);
 
 m3d::Object* RepositoryItemWnd::Clone()

@@ -1,5 +1,7 @@
 #include "dragdropitemswnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(DragDropItemsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(DragDropItemsWnd);
 
 ItemAcceptInfo::ItemAcceptInfo(ItemAcceptInfo const&)

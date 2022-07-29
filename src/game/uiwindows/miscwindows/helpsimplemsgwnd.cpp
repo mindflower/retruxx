@@ -1,5 +1,7 @@
 #include "helpsimplemsgwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(HelpSimpleMsgWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(HelpSimpleMsgWnd);
 
 void HelpSimpleMsgWnd::SetupForHelp(CStr const&, bool)

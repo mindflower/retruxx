@@ -1,6 +1,8 @@
 #include "npclist.h"
 #include "npcmodelwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(NpcButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(NpcButton);
 
 m3d::Class* NpcButton::GetBaseClass()
@@ -78,6 +80,8 @@ int NpcButton::CreateFromPattern()
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(NpcList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(NpcList);
 
 NpcList::AuxInfo::AuxInfo()

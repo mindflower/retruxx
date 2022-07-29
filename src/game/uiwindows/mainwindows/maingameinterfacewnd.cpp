@@ -10,6 +10,14 @@
 #include "speedometerwnd.h"
 #include "bossindicatorwnd.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(MainGameInterfaceWnd, SetupForBoss)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(MainGameInterfaceWnd)
+	RT_CLASS_EXPORT(MainGameInterfaceWnd, m3d::METHOD, SetupForBoss, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MainGameInterfaceWnd);
 
 MainGameInterfaceWnd::AuxInfo::AuxInfo()

@@ -1,6 +1,8 @@
 #include "truxximpulses.h"
 #include <stdexcept>
 
+RT_CLASS_EXPORTS_BEGIN(TruxxImpulse)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TruxxImpulse);
 
 int TruxxImpulse::HandleImpulse(m3d::AuxImpulseInfo const&, m3d::ui::Wnd*)

@@ -1,5 +1,7 @@
 #include "znayukakprodatwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(ZnayuKakProdatWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ZnayuKakProdatWnd);
 
 ZnayuKakProdatWnd::AuxInfo::AuxInfo()

@@ -1,5 +1,7 @@
 #include "targetcapturedcursorwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(TargetCapturedCursorWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TargetCapturedCursorWnd);
 
 m3d::Object* TargetCapturedCursorWnd::CreateObject()

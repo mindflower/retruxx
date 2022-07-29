@@ -1,6 +1,8 @@
 #include "weaponslotlist.h"
 #include "weaponslotwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(WeaponSlotList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WeaponSlotList);
 
 WeaponSlotList::AuxInfo::AuxInfo()

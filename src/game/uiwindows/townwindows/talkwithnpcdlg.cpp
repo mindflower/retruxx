@@ -3,6 +3,20 @@
 #include "npcmodelwnd.h"
 #include "conversationwnd.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(TalkWithNpcDlg, Show)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(TalkWithNpcDlg, Hide)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(TalkWithNpcDlg)
+	RT_CLASS_EXPORT(TalkWithNpcDlg, m3d::METHOD, Show, "", "", "")
+	RT_CLASS_EXPORT(TalkWithNpcDlg, m3d::METHOD, Hide, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TalkWithNpcDlg);
 
 TalkWithNpcDlg::AuxInfo::AuxInfo()

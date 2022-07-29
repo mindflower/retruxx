@@ -1,5 +1,7 @@
 #include "buyserviceslider.h"
 
+RT_CLASS_EXPORTS_BEGIN(BuyServiceSlider)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(BuyServiceSlider);
 
 void BuyServiceSlider::SetNotch(int)

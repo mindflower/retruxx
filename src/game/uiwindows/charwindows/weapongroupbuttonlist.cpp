@@ -1,6 +1,11 @@
 #include "weapongroupbuttonlist.h"
 
+RT_CLASS_EXPORTS_BEGIN(WeaponGroupButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WeaponGroupButton);
+
+RT_CLASS_EXPORTS_BEGIN(WeaponGroupButtonList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WeaponGroupButtonList);
 
 WeaponGroupButton::AuxInfo::AuxInfo()

@@ -1,5 +1,7 @@
 #include "childpanel.h"
 
+RT_CLASS_EXPORTS_BEGIN(ChildPanel)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ChildPanel);
 
 m3d::Class* ChildPanel::GetClass() const

@@ -1,5 +1,7 @@
 #include "counterwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(CounterWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CounterWnd);
 
 CounterWnd::AuxInfo::AuxInfo()

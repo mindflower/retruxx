@@ -7,6 +7,8 @@
 #include "basketlist.h"
 #include "cabinlist.h"
 
+RT_CLASS_EXPORTS_BEGIN(GarageWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(GarageWnd);
 
 m3d::Class* GarageWnd::GetBaseClass()

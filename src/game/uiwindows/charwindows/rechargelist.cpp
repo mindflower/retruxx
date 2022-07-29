@@ -1,6 +1,11 @@
 #include "rechargelist.h"
 
+RT_CLASS_EXPORTS_BEGIN(RechargeList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(RechargeList);
+
+RT_CLASS_EXPORTS_BEGIN(RechargeButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(RechargeButton);
 
 m3d::Class* RechargeList::GetBaseClass()

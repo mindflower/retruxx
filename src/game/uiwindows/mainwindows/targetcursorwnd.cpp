@@ -1,5 +1,7 @@
 #include "targetcursorwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(TargetCursorWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TargetCursorWnd);
 
 m3d::Class* TargetCursorWnd::GetRtClass() const

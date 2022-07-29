@@ -1,5 +1,7 @@
 #include "complexmodelwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(ComplexModelWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ComplexModelWnd);
 
 m3d::Class* ComplexModelWnd::GetBaseClass()

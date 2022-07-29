@@ -33,6 +33,8 @@ namespace
     };
 }
 
+RT_CLASS_EXPORTS_BEGIN(ResourceInfo)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ResourceInfo);
 
 m3d::Class* ResourceInfo::GetClass() const
@@ -97,6 +99,8 @@ ResourceInfo::ResourceInfo(ResourceInfo const&)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(WindowResourceInfo)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WindowResourceInfo);
 
 m3d::Class* WindowResourceInfo::GetClass() const
@@ -150,6 +154,8 @@ WindowResourceInfo::WindowResourceInfo()
 {
 }
 
+RT_CLASS_EXPORTS_BEGIN(IcoResourceInfo)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(IcoResourceInfo);
 
 int IcoResourceInfo::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

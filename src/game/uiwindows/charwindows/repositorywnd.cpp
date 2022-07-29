@@ -1,5 +1,7 @@
 #include "repositorywnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(RepositoryWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(RepositoryWnd);
 
 RepositoryWnd::CellBunch::~CellBunch()

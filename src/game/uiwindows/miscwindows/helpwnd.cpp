@@ -1,5 +1,7 @@
 #include "helpwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(HelpWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(HelpWnd);
 
 HelpWnd::AuxInfo::AuxInfo()

@@ -1,5 +1,7 @@
 #include "vehiclepartwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(VehiclePartWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(VehiclePartWnd);
 
 VehiclePartWnd::~VehiclePartWnd()

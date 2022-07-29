@@ -1,5 +1,7 @@
 #include "healthindicatorwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(HealthIndicatorWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(HealthIndicatorWnd);
 
 HealthIndicatorWnd::~HealthIndicatorWnd()

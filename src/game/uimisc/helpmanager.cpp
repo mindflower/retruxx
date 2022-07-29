@@ -1,6 +1,32 @@
 #include "helpmanager.h"
 #include <stdexcept>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(HelpManager, ShowHelp)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(HelpManager, EnableAutoHelp)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(HelpManager, IsAutoHelpEnabled)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(HelpManager, ResetAutoHelp)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(HelpManager)
+	RT_CLASS_EXPORT(HelpManager, m3d::METHOD, ShowHelp, "", "", "")
+    RT_CLASS_EXPORT(HelpManager, m3d::METHOD, EnableAutoHelp, "", "", "")
+    RT_CLASS_EXPORT(HelpManager, m3d::METHOD, IsAutoHelpEnabled, "", "", "")
+    RT_CLASS_EXPORT(HelpManager, m3d::METHOD, ResetAutoHelp, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(HelpManager);
 
 HelpManager::AuxInfo::AuxInfo()

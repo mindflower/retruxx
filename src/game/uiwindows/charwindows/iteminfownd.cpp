@@ -1,5 +1,7 @@
 #include "iteminfownd.h"
 
+RT_CLASS_EXPORTS_BEGIN(ItemInfoWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ItemInfoWnd);
 
 m3d::Object* ItemInfoWnd::CreateObject()

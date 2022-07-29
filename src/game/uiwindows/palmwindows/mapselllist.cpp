@@ -1,5 +1,7 @@
 #include "mapselllist.h"
 
+RT_CLASS_EXPORTS_BEGIN(MapSellItem)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MapSellItem);
 
 MapSellItem::AuxInfo::AuxInfo()
@@ -62,6 +64,8 @@ MapSellItem::MapSellItem()
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(MapSellList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MapSellList);
 
 m3d::Class* MapSellList::GetClass() const

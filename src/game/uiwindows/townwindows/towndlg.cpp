@@ -1,5 +1,19 @@
 #include "towndlg.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(TownDlg, SetConditionalClosingForTown)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(TownDlg, IsTownWithConditionalClosing)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(TownDlg)
+	RT_CLASS_EXPORT(TownDlg, m3d::METHOD, SetConditionalClosingForTown, "", "", "")
+	RT_CLASS_EXPORT(TownDlg, m3d::METHOD, IsTownWithConditionalClosing, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TownDlg);
 
 TownDlg::AuxInfo::AuxInfo()

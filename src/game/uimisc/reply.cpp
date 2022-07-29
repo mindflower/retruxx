@@ -1,6 +1,20 @@
 #include "reply.h"
 #include <stdexcept>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(RepliesManager, SetConditionValue)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(RepliesManager, Init)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(RepliesManager)
+RT_CLASS_EXPORT(RepliesManager, m3d::METHOD, SetConditionValue, "", "", "")
+RT_CLASS_EXPORT(RepliesManager, m3d::METHOD, Init, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(RepliesManager);
 
 void RepliesManager::SetConditionValue(int)

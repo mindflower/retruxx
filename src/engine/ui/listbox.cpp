@@ -1,10 +1,18 @@
 #include <ui/listbox.h>
+#include <core/clazz.h>
 
 namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(StringsListBoxWnd)
+    	RT_CLASS_EXPORTS_END;
+
         RT_CLASS_DEFINE(StringsListBoxWnd);
+
+        RT_CLASS_EXPORTS_BEGIN(FormattedStringsListBoxWnd)
+    	RT_CLASS_EXPORTS_END;
+
         RT_CLASS_DEFINE(FormattedStringsListBoxWnd);
 
         Class* StringsListBoxWnd::GetBaseClass()

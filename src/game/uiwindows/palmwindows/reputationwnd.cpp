@@ -1,5 +1,7 @@
 #include "reputationwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(ReputationButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ReputationButton);
 
 m3d::Object* ReputationButton::Clone()
@@ -127,6 +129,8 @@ Slot AuxRPanel::GetEmptySlotId() const
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(ReputationList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ReputationList);
 
 ReputationList::AuxInfo::AuxInfo()
@@ -219,6 +223,8 @@ void ReputationList::ClearClans()
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(ReputationWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ReputationWnd);
 
 ReputationWnd::AuxInfo::AuxInfo()

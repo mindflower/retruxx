@@ -107,6 +107,8 @@ CStr Profile::ParamId2Name(ProfileParam) const
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(ProfileManager)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ProfileManager);
 
 Profile* ProfileManager::GetCurProfile() const

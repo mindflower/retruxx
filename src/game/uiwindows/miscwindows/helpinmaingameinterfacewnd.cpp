@@ -1,5 +1,7 @@
 #include "helpinmaingameinterfacewnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(HelpInMainGameInterfaceWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(HelpInMainGameInterfaceWnd);
 
 m3d::Class* HelpInMainGameInterfaceWnd::GetBaseClass()

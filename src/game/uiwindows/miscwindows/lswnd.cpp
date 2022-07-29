@@ -3,6 +3,8 @@
 #include <ui/image.h>
 #include <ui/listbox.h>
 
+RT_CLASS_EXPORTS_BEGIN(SaveButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SaveButton);
 
 SaveButton::AuxInfo::AuxInfo()
@@ -182,6 +184,8 @@ int SaveButton::CreateChildren()
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(SaveList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SaveList);
 
 SaveList::~SaveList()
@@ -359,6 +363,8 @@ int SaveList::DeleteItem(int)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(LSWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(LSWnd);
 
 LSWnd::AuxInfo::AuxInfo()

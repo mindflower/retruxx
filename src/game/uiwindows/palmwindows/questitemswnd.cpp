@@ -1,5 +1,7 @@
 #include "questitemswnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(QuestItemsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(QuestItemsWnd);
 
 QuestItemsWnd::AuxInfo::AuxInfo()

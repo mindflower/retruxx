@@ -1,6 +1,8 @@
 #include "weaponslotwnd.h"
 #include "weapongroupbuttonlist.h"
 
+RT_CLASS_EXPORTS_BEGIN(WeaponSlotWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WeaponSlotWnd);
 
 m3d::Class* WeaponSlotWnd::GetClass() const

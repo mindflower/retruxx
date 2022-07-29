@@ -1,5 +1,43 @@
 #include "journalwnd.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, AddHistory)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, AddBook)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, BookExists)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, AddPrototypeToEncyclopaedia)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, AddClanToEncyclopaedia)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, ShowAllInEncyclopaedia)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(JournalWnd)
+    RT_CLASS_EXPORT(JournalWnd, m3d::METHOD, AddHistory, "", "", "")
+    RT_CLASS_EXPORT(JournalWnd, m3d::METHOD, AddBook, "", "", "")
+    RT_CLASS_EXPORT(JournalWnd, m3d::METHOD, BookExists, "", "", "")
+    RT_CLASS_EXPORT(JournalWnd, m3d::METHOD, AddPrototypeToEncyclopaedia, "", "", "")
+    RT_CLASS_EXPORT(JournalWnd, m3d::METHOD, AddClanToEncyclopaedia, "", "", "")
+    RT_CLASS_EXPORT(JournalWnd, m3d::METHOD, ShowAllInEncyclopaedia, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(JournalWnd);
 
 JournalWnd::AuxInfo::AuxInfo()

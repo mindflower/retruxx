@@ -1,5 +1,7 @@
 #include "igrokamochatwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(IgrokaMochatWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(IgrokaMochatWnd);
 
 IgrokaMochatWnd::AuxInfo::AuxInfo()

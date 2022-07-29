@@ -1,6 +1,11 @@
 #include "optionswnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(OptionTabButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(OptionTabButton);
+
+RT_CLASS_EXPORTS_BEGIN(OptionsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(OptionsWnd);
 
 OptionsWnd::AuxInfo::AuxInfo()

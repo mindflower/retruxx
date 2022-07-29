@@ -10,6 +10,8 @@
 #include "ui/modelwnd.h"
 #include "game/uiwindows/commonwindows/itemmodelwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(CreditsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CreditsWnd);
 
 CreditsWnd::PageInfo::PageInfo()

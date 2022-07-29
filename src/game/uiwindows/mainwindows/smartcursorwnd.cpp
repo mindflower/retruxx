@@ -1,5 +1,7 @@
 #include "smartcursorwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(SmartCursorWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SmartCursorWnd);
 
 SmartCursorWnd::AuxDrawInfo::AuxDrawInfo()

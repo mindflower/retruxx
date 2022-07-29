@@ -1,5 +1,7 @@
 #include "devidedlg.h"
 
+RT_CLASS_EXPORTS_BEGIN(DevideDlg)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(DevideDlg);
 
 DevideDlg::AuxInfo::AuxInfo()

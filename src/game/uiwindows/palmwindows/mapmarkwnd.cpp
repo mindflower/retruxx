@@ -1,5 +1,7 @@
 #include "mapmarkwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(MapMarkWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MapMarkWnd);
 
 m3d::Object* MapMarkWnd::CreateObject()
@@ -52,6 +54,8 @@ int MapMarkWnd::SetUpForObjectInfo(ObjectInfo*)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(MapMarkIcoWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MapMarkIcoWnd);
 
 int MapMarkIcoWnd::SetUp(ObjectInfo*, PointBase<float> const&)
@@ -129,6 +133,8 @@ void MapMarkIcoWnd::UpdateTooltip()
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(PlayerMarkWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(PlayerMarkWnd);
 
 PlayerMarkWnd::AuxInfo::AuxInfo()
@@ -196,6 +202,8 @@ PlayerMarkWnd::PlayerMarkWnd(PlayerMarkWnd const&)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(NavPointMarkWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(NavPointMarkWnd);
 
 int NavPointMarkWnd::CreateNavPointMarkWnd(PointBase<float> const&, int)
@@ -253,6 +261,8 @@ NavPointMarkWnd::NavPointMarkWnd(NavPointMarkWnd const&)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(MapMarkNameWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MapMarkNameWnd);
 
 MapMarkNameWnd::~MapMarkNameWnd()

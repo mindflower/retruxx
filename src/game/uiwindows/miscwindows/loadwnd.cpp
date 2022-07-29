@@ -1,6 +1,8 @@
 #include "loadwnd.h"
 #include <core/log.h>
 
+RT_CLASS_EXPORTS_BEGIN(LoadWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(LoadWnd);
 
 LoadWnd::LAuxInfo::LAuxInfo()

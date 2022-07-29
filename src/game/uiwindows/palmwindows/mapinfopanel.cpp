@@ -1,5 +1,7 @@
 #include "mapinfopanel.h"
 
+RT_CLASS_EXPORTS_BEGIN(MapInfoPanel)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MapInfoPanel);
 
 MapInfoPanel::AuxInfo::AuxInfo()

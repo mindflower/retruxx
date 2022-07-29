@@ -1,5 +1,7 @@
 #include "encyclopaediawnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(EncyclopaediaWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(EncyclopaediaWnd);
 
 EncyclopaediaWnd::AuxInfo::AuxInfo()
@@ -277,6 +279,8 @@ void EncyclopaediaWnd::OnPlayerVehicleChanged()
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(SubjectButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SubjectButton);
 
 int SubjectButton::SetUp(CStr const&, PointBase<float> const&, float, EncyclopaediaWnd::Theme, int)
@@ -329,6 +333,8 @@ CStr SubjectButton::CalcFullName() const
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(SubjectList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SubjectList);
 
 m3d::Object* SubjectList::CreateObject()

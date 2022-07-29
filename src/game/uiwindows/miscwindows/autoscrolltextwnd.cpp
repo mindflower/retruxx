@@ -1,5 +1,7 @@
 #include "autoscrolltextwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(AutoScrollTextWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(AutoScrollTextWnd);
 
 int AutoScrollTextWnd::SetBackground(m3d::rend::TexHandle)

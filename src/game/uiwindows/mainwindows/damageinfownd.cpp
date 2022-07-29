@@ -3,6 +3,8 @@
 #include "durabilityindicatorinmaininterfacewnd.h"
 #include "healthindicatorinmaininterfacewnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(DamageInfoWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(DamageInfoWnd);
 
 DamageInfoWnd::AuxInfo::AuxInfo()

@@ -1,7 +1,12 @@
 #include "cblist.h"
 #include "repositoryitemwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(CBButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CBButton);
+
+RT_CLASS_EXPORTS_BEGIN(CBList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CBList);
 
 m3d::Class* CBButton::GetBaseClass()

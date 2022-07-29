@@ -1,5 +1,43 @@
 #include "radarwnd.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, AllowNavPoints)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, AllowVehicles)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, AllowTurrets)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, AllowDistances)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, SetScanRadius)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, SetTest)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(RadarWnd)
+    RT_CLASS_EXPORT(RadarWnd, m3d::METHOD, AllowNavPoints, "", "", "")
+    RT_CLASS_EXPORT(RadarWnd, m3d::METHOD, AllowVehicles, "", "", "")
+    RT_CLASS_EXPORT(RadarWnd, m3d::METHOD, AllowTurrets, "", "", "")
+    RT_CLASS_EXPORT(RadarWnd, m3d::METHOD, AllowDistances, "", "", "")
+    RT_CLASS_EXPORT(RadarWnd, m3d::METHOD, SetScanRadius, "", "", "")
+    RT_CLASS_EXPORT(RadarWnd, m3d::METHOD, SetTest, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(RadarWnd);
 
 RadarWnd::NpDistance::~NpDistance()

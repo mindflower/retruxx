@@ -1,5 +1,7 @@
 #include "questitemlist.h"
 
+RT_CLASS_EXPORTS_BEGIN(QuestItemList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(QuestItemList);
 
 int QuestItemList::FullUpdate()

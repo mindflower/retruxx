@@ -1,6 +1,8 @@
 #include "statswnd.h"
 #include <game/uiwindows/commonwindows/itemmodelwnd.h>
 
+RT_CLASS_EXPORTS_BEGIN(StatsButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(StatsButton);
 
 int StatsButton::SetUpForStats(CStr const&, PointBase<float> const&, float)
@@ -83,6 +85,8 @@ CStr StatsButton::GetHackedDefaultValueForStats(CStr const&) const
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(StatsList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(StatsList);
 
 m3d::Class* StatsList::GetBaseClass()
@@ -170,6 +174,8 @@ int StatsList::DeleteItem(int)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(StatsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(StatsWnd);
 
 StatsWnd::AuxInfo::AuxInfo()

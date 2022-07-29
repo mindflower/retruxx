@@ -13,6 +13,44 @@
 #include "game/uimisc/visibilitymap.h"
 #include "server/utils.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, AddKnownLevel)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, AddVisibilityCircleForLevel)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, AddVisibilityRectForLevel)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, IsLevelKnown)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, IsLevelVisited)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, ClearVisibilityMapForLevel)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(LevelInfoManager)
+    RT_CLASS_EXPORT(LevelInfoManager, m3d::METHOD, AddKnownLevel, "", "", "")
+    RT_CLASS_EXPORT(LevelInfoManager, m3d::METHOD, AddVisibilityCircleForLevel, "", "", "")
+    RT_CLASS_EXPORT(LevelInfoManager, m3d::METHOD, AddVisibilityRectForLevel, "", "", "")
+    RT_CLASS_EXPORT(LevelInfoManager, m3d::METHOD, IsLevelKnown, "", "", "")
+    RT_CLASS_EXPORT(LevelInfoManager, m3d::METHOD, IsLevelVisited, "", "", "")
+    RT_CLASS_EXPORT(LevelInfoManager, m3d::METHOD, ClearVisibilityMapForLevel, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(LevelInfoManager);
 
 CStr const& LevelInfo::GetName() const

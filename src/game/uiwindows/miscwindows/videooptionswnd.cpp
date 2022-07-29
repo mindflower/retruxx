@@ -6,6 +6,8 @@
 
 #include "m3dapp.h"
 
+RT_CLASS_EXPORTS_BEGIN(VideoOptionsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(VideoOptionsWnd);
 
 PointBase<int> VideoOptionsWnd::m_screenWH[5] = {

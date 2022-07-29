@@ -1,6 +1,11 @@
 #include "repairlist.h"
 
+RT_CLASS_EXPORTS_BEGIN(RepairButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(RepairButton);
+
+RT_CLASS_EXPORTS_BEGIN(RepairList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(RepairList);
 
 m3d::Class* RepairButton::GetClass() const

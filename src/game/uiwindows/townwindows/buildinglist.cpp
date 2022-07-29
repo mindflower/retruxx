@@ -1,5 +1,7 @@
 #include "buildinglist.h"
 
+RT_CLASS_EXPORTS_BEGIN(BuildingButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(BuildingButton);
 
 int BuildingButton::SetUpForBuilding(ai::Building const*)
@@ -87,6 +89,8 @@ int BuildingButton::LoadPattern(m3d::ui::Wnd*)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(BuildingList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(BuildingList);
 
 BuildingList::AuxInfo::AuxInfo()

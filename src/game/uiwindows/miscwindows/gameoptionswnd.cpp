@@ -7,6 +7,8 @@
 #include "ui/comboboxwnd.h"
 #include "ui/slider.h"
 
+RT_CLASS_EXPORTS_BEGIN(GameOptionsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(GameOptionsWnd);
 
 GameOptionsWnd::AuxInfo::AuxInfo()

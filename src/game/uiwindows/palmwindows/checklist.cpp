@@ -1,5 +1,7 @@
 #include "checklist.h"
 
+RT_CLASS_EXPORTS_BEGIN(CheckList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CheckList);
 
 int CheckList::SelectButtonByName(CStr const&)
@@ -82,6 +84,8 @@ int CheckList::CompareItem(int, int)
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(CheckButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CheckButton);
 
 m3d::Class* CheckButton::GetClass() const

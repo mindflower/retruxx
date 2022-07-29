@@ -1,5 +1,7 @@
 #include "cbcharacteristicswnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(CBCharacteristicsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CBCharacteristicsWnd);
 
 CBCharacteristicsWnd::AuxInfo::AuxInfo()

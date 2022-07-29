@@ -1,5 +1,7 @@
 #include "basketcharacteristicswnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(BasketCharacteristicsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(BasketCharacteristicsWnd);
 
 BasketCharacteristicsWnd::BasketAuxInfo::BasketAuxInfo()

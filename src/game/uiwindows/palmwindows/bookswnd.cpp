@@ -1,5 +1,7 @@
 #include "bookswnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(BooksWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(BooksWnd);
 
 BooksWnd::AuxInfo::AuxInfo()

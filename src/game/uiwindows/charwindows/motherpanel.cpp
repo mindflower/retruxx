@@ -2,6 +2,14 @@
 #include "playermoneywnd.h"
 #include "childpanel.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(MotherPanel, LeaveTown)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORTS_BEGIN(MotherPanel)
+	RT_CLASS_EXPORT(MotherPanel, m3d::METHOD, LeaveTown, "", "", "")
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MotherPanel);
 
 void MotherPanel::AuxSuspendedShow::Reset()

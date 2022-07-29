@@ -1,5 +1,7 @@
 #include "durabilityindicatorwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(DurabilityIndicatorWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(DurabilityIndicatorWnd);
 
 m3d::Class* DurabilityIndicatorWnd::GetBaseClass()

@@ -2,6 +2,8 @@
 #include <core/log.h>
 #include <ui/listbox.h>
 
+RT_CLASS_EXPORTS_BEGIN(BindKeysWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(BindKeysWnd);
 
 BindKeysWnd::KeySetButton::AuxInfo::AuxInfo()

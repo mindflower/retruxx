@@ -1,6 +1,8 @@
 #include "cbwnd.h"
 #include "vehiclepartwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(CBWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CBWnd);
 
 CBWnd::CBAuxInfo::CBAuxInfo()

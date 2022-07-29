@@ -1,5 +1,7 @@
 #include "videownd.h"
 
+RT_CLASS_EXPORTS_BEGIN(VideoWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(VideoWnd);
 
 VideoWnd::AuxInfo::AuxInfo()

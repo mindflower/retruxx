@@ -1,6 +1,11 @@
 #include "cabinlist.h"
 
+RT_CLASS_EXPORTS_BEGIN(CabinButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CabinButton);
+
+RT_CLASS_EXPORTS_BEGIN(CabinList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CabinList);
 
 m3d::Object* CabinButton::CreateObject()

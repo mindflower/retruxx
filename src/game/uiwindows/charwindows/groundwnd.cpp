@@ -1,6 +1,8 @@
 #include "groundwnd.h"
 #include "repositorywnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(GroundWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(GroundWnd);
 
 GroundWnd::AuxInfo::AuxInfo()

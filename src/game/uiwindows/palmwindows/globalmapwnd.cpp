@@ -1,5 +1,7 @@
 #include "globalmapwnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(LevelConnectionsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(LevelConnectionsWnd);
 
 LevelConnectionsWnd::ConnectionDrawInfo::ConnectionDrawInfo(ConnectionDrawInfo const&)
@@ -62,7 +64,8 @@ LevelConnectionsWnd::LevelConnectionsWnd(LevelConnectionsWnd const&)
     throw std::logic_error("Not implemented");
 }
 
-
+RT_CLASS_EXPORTS_BEGIN(GlobalMapWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(GlobalMapWnd);
 
 GlobalMapWnd::AuxInfo::AuxInfo()
@@ -175,6 +178,8 @@ void GlobalMapWnd::OnLocationStateChanged()
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(LevelIco)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(LevelIco);
 
 m3d::Class* LevelIco::GetClass() const

@@ -1,6 +1,8 @@
 #include "basketwnd.h"
 #include "izvratrepositorywnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(BasketWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(BasketWnd);
 
 BasketWnd::AuxInfo::AuxInfo()

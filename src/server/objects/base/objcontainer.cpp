@@ -2,8 +2,124 @@
 #include <core/aiparam.h>
 #include <stdexcept>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, CreateNewObject)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetEntityByObjId)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, size)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetEntityByObjName)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetPrototypeId)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, MessageBox)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, SetTolerance)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetTolerance)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, IncTolerance)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, SetGameTime)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetGameTime)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, Get24HourTime)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, PauseGameTime)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, UnpauseGameTime)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetHeight)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, Dump)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, DumpPhysicInfo)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, AllowSave)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, IsSaveAllowed)
+{
+    throw std::logic_error("Not implemented");
+}
+
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(ObjContainer)
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, CreateNewObject, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetEntityByObjId, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, size, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetEntityByObjName, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetPrototypeId, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, MessageBox, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, SetTolerance, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetTolerance, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, IncTolerance, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, SetGameTime, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetGameTime, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, Get24HourTime, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, PauseGameTime, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, UnpauseGameTime, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetHeight, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, Dump, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, DumpPhysicInfo, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, AllowSave, "", "", "")
+        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, IsSaveAllowed, "", "", "")
+	RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(ObjContainer);
 
     ObjContainer* theObjects = nullptr;

@@ -7,6 +7,9 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(LineWnd)
+    	RT_CLASS_EXPORTS_END;
+
         RT_CLASS_DEFINE(LineWnd);
 
         Object* LineWnd::CreateObject()

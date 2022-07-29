@@ -4,6 +4,8 @@
 #include "localchartwnd.h"
 #include "mapcombobox.h"
 
+RT_CLASS_EXPORTS_BEGIN(LocalMapWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(LocalMapWnd);
 
 LocalMapWnd::AuxInfo::AuxInfo()

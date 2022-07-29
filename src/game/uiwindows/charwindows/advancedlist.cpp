@@ -1,5 +1,7 @@
 #include "advancedlist.h"
 
+RT_CLASS_EXPORTS_BEGIN(AdvancedButton)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(AdvancedButton);
 
 int AdvancedButton::GetObjId() const
@@ -212,6 +214,8 @@ void AdvancedButton::RecalcLayot()
     throw std::logic_error("Not implemented");
 }
 
+RT_CLASS_EXPORTS_BEGIN(AdvancedList)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(AdvancedList);
 
 AdvancedList::AuxInfo::AuxInfo()

@@ -6,6 +6,8 @@
 #include "vehiclecharacteristicswnd.h"
 #include <game/uiwindows/commonwindows/complexmodelwnd.h>
 
+RT_CLASS_EXPORTS_BEGIN(VehicleWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(VehicleWnd);
 
 VehicleWnd::AuxInfo::AuxInfo()

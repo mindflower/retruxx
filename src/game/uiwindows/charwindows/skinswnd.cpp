@@ -1,5 +1,7 @@
 #include "skinswnd.h"
 
+RT_CLASS_EXPORTS_BEGIN(SkinsWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SkinsWnd);
 
 int SkinSwitcher::ApplySkin(int, ai::Vehicle*)

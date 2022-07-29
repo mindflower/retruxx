@@ -1,5 +1,7 @@
 #include "infownd.h"
 
+RT_CLASS_EXPORTS_BEGIN(InfoWnd)
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(InfoWnd);
 
 InfoWnd::InfoItem::~InfoItem()
