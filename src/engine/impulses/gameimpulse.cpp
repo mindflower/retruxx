@@ -18,7 +18,13 @@ RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey2)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey1)
 {
-    throw std::logic_error("Not implemented");
+    auto gameImpulse = dynamic_cast<m3d::GameImpulse*>(context->asObject(0, "GameImpulse"));
+    auto gameMode = context->asString(1);
+    auto key1 = context->asString(2);
+    auto imp = context->asString(3);
+    auto res = gameImpulse->BindKey1(gameMode, key1, imp);
+    context->pushInt(res);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindKey3)
@@ -38,7 +44,9 @@ RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindKey1)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindAll)
 {
-    throw std::logic_error("Not implemented");
+    auto gameImpulse = dynamic_cast<m3d::GameImpulse*>(context->asObject(0, "GameImpulse"));
+	gameImpulse->UnbindAll();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, LoadFromDefaults)
@@ -210,9 +218,17 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int GameImpulse::BindKey1(CStr const&, CStr const&, CStr const&)
+    int GameImpulse::BindKey1(CStr const& strGameMode, CStr const& strKey1, CStr const& strImp)
     {
-        throw std::logic_error("Not implemented");
+        if (m_isInited)
+        {
+            return BindKey3(strGameMode, strKey1, {}, {}, strImp);
+        }
+        else
+        {
+            M3D_LOG_INFO("Key bindings: error bind key cause impulses were not inited");
+            return 0;
+        }
     }
 
     int GameImpulse::IncRef()
@@ -250,9 +266,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int GameImpulse::BindKey3(CStr const&, CStr const&, CStr const&, CStr const&, CStr const&)
+    int GameImpulse::BindKey3(CStr const& strGameMode, CStr const& strKey1, CStr const& strKey2, CStr const& strKey3, CStr const& strImp)
     {
-        throw std::logic_error("Not implemented");
+        return HandleBinding(1, strGameMode, strKey1, strKey2, strKey3, strImp);
     }
 
     CStr GameImpulse::GetFormattedScriptErrorDesc(eScriptError) const
@@ -292,7 +308,23 @@ namespace m3d
 
     void GameImpulse::UnbindAll()
     {
-        throw std::logic_error("Not implemented");
+        if (m_isInited)
+        {
+	        for (auto& bind : m_bindings)
+	        {
+                bind.second.UnbindAll();
+	        }
+            m_bindings.clear();
+            m_impulseStates.clear();
+            m_impulseResetAfterRead.clear();
+            m_curKeys.clear();
+            m_isBinded = false;
+            if (!m_bSuppressEvent)
+            {
+                m3d::Application::g_pApp->EnqueueMessage(46, -1, 0, 0, 0, {}, {});
+            }
+            M3D_LOG_INFO("Key bindings: unbind all is done");
+        }
     }
 
     int GameImpulse::GetKeyIdByName(CStr const&)

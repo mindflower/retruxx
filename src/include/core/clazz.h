@@ -27,6 +27,7 @@ namespace m3d
     class Context
     {
     public:
+        virtual ~Context() = default;
         virtual void pushObject(Object*) = 0;
         virtual void pushAIParam(AIParam const&) = 0;
         virtual int asInt(int) = 0;

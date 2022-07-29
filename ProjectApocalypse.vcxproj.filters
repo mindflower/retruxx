@@ -3854,6 +3854,9 @@
     <ClInclude Include="src\game\uimisc\visibilitymap.h">
       <Filter>game\uimisc</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\script\scriptcontext.h">
+      <Filter>include\script</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

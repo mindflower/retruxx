@@ -1133,6 +1133,7 @@
     <ClInclude Include="src\include\script\lua\lundump.h" />
     <ClInclude Include="src\include\script\lua\lvm.h" />
     <ClInclude Include="src\include\script\lua\lzio.h" />
+    <ClInclude Include="src\include\script\scriptcontext.h" />
     <ClInclude Include="src\include\script\scriptserver.h" />
     <ClInclude Include="src\include\skelmodel.h" />
     <ClInclude Include="src\include\tracelinemanager.h" />

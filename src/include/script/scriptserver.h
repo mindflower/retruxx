@@ -7,6 +7,18 @@ extern "C"
 #include <core/clazz.h>
 #include <map>
 
+enum ext_InternalTags
+{
+    tag_Unknown = 0x0,
+    tag_luaAIParam = 0x3E8,
+    tag_luaVector = 0x3E9,
+    tag_instance = 0x3EA,
+    tag_luaQuaternion = 0x3EB,
+};
+
+ext_InternalTags ext_getTag(lua_State*, int);
+bool ext_checkTag(lua_State*, int, ext_InternalTags);
+
 namespace m3d
 {
     class ScriptServer;

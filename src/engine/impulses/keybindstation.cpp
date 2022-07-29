@@ -19,7 +19,7 @@ namespace m3d
 
     void KeysSet::clear()
     {
-        throw std::logic_error("Not implemented");
+        m_set.clear();
     }
 
     unsigned KeysSet::size() const
@@ -64,7 +64,7 @@ namespace m3d
 
     void KeyBindStation::UnbindAll()
     {
-        throw std::logic_error("Not implemented");
+        m_bindings.clear();
     }
 
     void KeyBindStation::UnbindImpulseFromKeyset(int, KeysSet const&)

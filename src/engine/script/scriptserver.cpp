@@ -6,6 +6,7 @@
 #include "core/scoped_ptr.h"
 #include "file/fileserver.h"
 #include "file/filestream.h"
+#include "script/scriptcontext.h"
 
 extern "C"
 {
@@ -46,9 +47,16 @@ namespace
         throw std::logic_error("Not implemented");
     }
 
-    int _callClassMethod(lua_State *)
+    int _callClassMethod(lua_State *L)
     {
-        throw std::logic_error("Not implemented");
+        m3d::LuaContext ctx;
+        ctx.L = L;
+        ctx.m_stackStart = 2;
+        ctx.m_numInputs = lua_gettop(L) - 1;
+        ctx.m_numOutputs = 0;
+        auto func = reinterpret_cast<int(**)(m3d::Context*)>(lua_touserdata(L, 1));
+        (*func)(&ctx);
+        return ctx.m_numOutputs;
     }
 
     int _callClassNativeMethod(lua_State *)
@@ -112,11 +120,6 @@ namespace
                     v7 = m3d::ScriptServer::m_metatable_ClassMethod;
                     goto LABEL_9;
                 }
-            }
-            else
-            {
-                //TODO: need for adding new exports
-                DebugBreak();
             }
         }
     }
@@ -468,4 +471,39 @@ namespace m3d
 
         return SUCCESS;
     }
+}
+
+ext_InternalTags ext_getTag(lua_State* L, int pos)
+{
+    //TODO: check this and refactor
+    int v4; // eax
+    int v5; // eax
+    int v7; // edx
+    ext_InternalTags v8; // edi
+
+    v4 = lua_type(L, pos) - 2;
+    if (v4)
+    {
+        v5 = v4 - 3;
+        if (v5)
+        {
+            if (v5 != 2)
+                return tag_Unknown;
+        }
+    }
+    lua_pushstring(L, "internalTag");
+    v7 = pos - 1;
+    if (pos >= 0)
+        v7 = pos;
+    lua_gettable(L, v7);
+    v8 = tag_Unknown;
+    if (lua_isnumber(L, -1))
+        v8 = static_cast<ext_InternalTags>(lua_tonumber(L, -1));
+    lua_settop(L, -2);
+    return v8;
+}
+
+bool ext_checkTag(lua_State* L, int pos, ext_InternalTags tag)
+{
+    return ext_getTag(L, pos) == tag;
 }
