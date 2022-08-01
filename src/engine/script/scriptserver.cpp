@@ -163,7 +163,7 @@ namespace m3d
 
     Scriptlet::~Scriptlet()
     {
-	    throw std::logic_error("Not implemented");
+        delete[] m_data;
     }
 
     eScriptError Scriptlet::loadFromFile(char const* fileName)

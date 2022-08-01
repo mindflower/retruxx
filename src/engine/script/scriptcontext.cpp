@@ -5,6 +5,10 @@
 #include "core/log.h"
 #include "script/scriptserver.h"
 
+extern "C"{
+#include "lauxlib.h"
+}
+
 namespace m3d
 {
 	void LuaContext::pushObject(Object*)
@@ -82,9 +86,18 @@ namespace m3d
 		throw std::logic_error("Not implemented");
 	}
 
-	char const* LuaContext::asString(int)
+	char const* LuaContext::asString(int i)
 	{
-		throw std::logic_error("Not implemented");
+		int v3; // esi
+
+		if (i < 0)
+		{
+			lua_pushstring(this->L, "not enough arguments");
+			lua_error(this->L);
+		}
+		v3 = i + this->m_stackStart;
+		luaL_checktype(this->L, v3, 4);
+		return lua_tostring(this->L, v3);
 	}
 
 	void LuaContext::pushQuaternion(Quaternion const&)
@@ -92,9 +105,10 @@ namespace m3d
 		throw std::logic_error("Not implemented");
 	}
 
-	void LuaContext::pushInt(int)
+	void LuaContext::pushInt(int x)
 	{
-		throw std::logic_error("Not implemented");
+		lua_pushnumber(L, x);
+		++m_numOutputs;
 	}
 
 	void LuaContext::pushFloat(float)

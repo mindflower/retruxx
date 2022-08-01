@@ -8,7 +8,6 @@ namespace m3d
     {
     public:
         KeysSet();
-        KeysSet(KeysSet const&);
         KeysSet(int);
 
         void clear();
@@ -25,6 +24,8 @@ namespace m3d
         std::set<int>::reverse_iterator rbegin() const;
         std::set<int>::reverse_iterator rend() const;
 
+        friend bool operator==(const KeysSet& lhd, const KeysSet& rhd);
+
     private:
         std::set<int> m_set;
     };
@@ -34,7 +35,7 @@ namespace m3d
     public:
         class BindKey
         {
-        private:
+        public:
             std::vector<m3d::KeysSet> m_keys;
             int m_impulse;
         };
@@ -55,8 +56,8 @@ namespace m3d
 
     private:
         std::vector<BindKey> m_bindings;
-        KeysSet* m_ks;
+        KeysSet* m_ks = nullptr;
         std::vector<BindKey>::iterator m_lastIndex;
-        int m_longestComboLen;
+        int m_longestComboLen = 0;
     };
 }
