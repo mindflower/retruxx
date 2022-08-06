@@ -1,5 +1,6 @@
 #include "soundoptionswnd.h"
 
+#include "m3dapp.h"
 #include "core/log.h"
 #include "ui/button.h"
 #include "ui/slider.h"
@@ -71,9 +72,78 @@ void SoundOptionsWnd::ApplyEffectsVolume()
     throw std::logic_error("Not implemented");
 }
 
-int SoundOptionsWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
+int SoundOptionsWnd::OnWndNotify(m3d::ui::Wnd *from, unsigned id, unsigned msg, m3d::AIParam const& data)
 {
-    throw std::logic_error("Not implemented");
+    if ((this->m_style & 0x100000) != 0)
+        m3d::ui::Wnd::ReflectChildNotifyToParent(from, id, msg, data);
+    switch (id)
+    {
+    case 0x27D8u:
+    {
+        if (msg != 5)
+            return 0;
+        SoundOptionsWnd::OnSliderMusicVolumeChange(data);
+        return 1;
+    }
+    case 0x27D9u:
+	    {
+		    if (msg != 1)
+		    	return 0;
+    		SoundOptionsWnd::OnBtnMusicVolumePrevClick(data);
+            return 1;
+	    }
+    case 0x27DAu:
+	    {
+		    if (msg != 1)
+		    	return 0;
+    		SoundOptionsWnd::OnBtnMusicVolumeNextClick(data);
+            return 1;
+	    }
+    case 0x27DBu:
+	    {
+		    if (msg != 5)
+		    	return 0;
+    		SoundOptionsWnd::OnSliderEffectsVolumeChange(data);
+            return 1;
+	    }
+    case 0x27DCu:
+	    {
+		    if (msg != 1)
+		    	return 0;
+    		SoundOptionsWnd::OnBtnEffectsVolumePrevClick(data);
+            return 1;
+	    }
+    case 0x27DDu:
+	    {
+		    if (msg != 1)
+		    	return 0;
+    		SoundOptionsWnd::OnBtnEffectsVolumeNextClick(data);
+            return 1;
+	    }
+    case 0x27DEu:
+	    {
+		    if (msg != 5)
+		    	return 0;
+    		SoundOptionsWnd::OnSliderSpeakVolumeChange(data);
+            return 1;
+	    }
+    case 0x27DFu:
+	    {
+		    if (msg != 1)
+		    	return 0;
+    		SoundOptionsWnd::OnBtnSpeakVolumePrevClick(data);
+            return 1;
+	    }
+    case 0x27E0u:
+	    {
+		    if (msg != 1)
+		    	return 0;
+    		SoundOptionsWnd::OnBtnSpeakVolumeNextClick(data);
+            return 1;
+	    }
+    default:
+        return 0;
+    }
 }
 
 void SoundOptionsWnd::OnBtnMusicVolumeNextClick(m3d::AIParam const&)
@@ -123,7 +193,13 @@ void SoundOptionsWnd::UpdateMusicVolumePrevNextButtonsState()
 
 void SoundOptionsWnd::OnSliderSpeakVolumeChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    UpdateSpeakVolumePrevNextButtonsState();
+    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderSpeakVolumeBlocked)
+    {
+        ApplySpeakVolume();
+    }
+    if (m_sliderSpeakVolumeBlocked > 0)
+        m_sliderSpeakVolumeBlocked = m_sliderSpeakVolumeBlocked - 1;
 }
 
 void SoundOptionsWnd::UpdateSpeakVolumeControls()
@@ -133,7 +209,13 @@ void SoundOptionsWnd::UpdateSpeakVolumeControls()
 
 void SoundOptionsWnd::OnSliderMusicVolumeChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    UpdateMusicVolumePrevNextButtonsState();
+    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderMusicVolumeBlocked)
+    {
+        ApplyMusicVolume();
+    }
+    if (m_sliderMusicVolumeBlocked > 0)
+        m_sliderMusicVolumeBlocked = m_sliderMusicVolumeBlocked - 1;
 }
 
 void SoundOptionsWnd::UpdateSpeakVolumePrevNextButtonsState()
@@ -178,7 +260,13 @@ void SoundOptionsWnd::InitMusicVolumeControls()
 
 void SoundOptionsWnd::OnSliderEffectsVolumeChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    UpdateEffectsVolumePrevNextButtonsState();
+    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderEffectsVolumeBlocked)
+    {
+        ApplyEffectsVolume();
+    }
+    if (m_sliderEffectsVolumeBlocked > 0)
+        m_sliderEffectsVolumeBlocked = m_sliderEffectsVolumeBlocked - 1;
 }
 
 void SoundOptionsWnd::InitSpeakVolumeControls()

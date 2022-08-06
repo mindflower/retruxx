@@ -113,7 +113,50 @@ namespace m3d
 
         void Timer::NewFrame()
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this and refactor
+            bool v2; // zf
+            double v3; // st7
+            unsigned int v4; // edx
+            unsigned int v5; // eax
+            unsigned int v6; // ecx
+            unsigned int v7; // edx
+            unsigned int v8; // ecx
+
+            this->m_bIsNewFrame = 1;
+            m3d::cmn::Timer::NotchCurTime();
+            v2 = !this->m_bJustActivated;
+            this->m_bIsNewFrame = 0;
+            if (v2)
+            {
+                v4 = this->m_curTimeUnscaled - this->m_frameStartTimeUnscaled;
+                this->m_lastFrameTime = this->m_curTime - this->m_frameStartTime;
+                this->m_lastFrameTimeUnscaled = v4;
+            }
+            else
+            {
+                v3 = this->m_timescale;
+                this->m_lastFrameTimeUnscaled = 10;
+                this->m_lastFrameTime = (v3 * 10.0);
+            }
+            v5 = this->m_curTime;
+            ++this->m_fpsFrame;
+            ++this->m_curFrame;
+            v6 = this->m_curTimeUnscaled;
+            v7 = this->m_fpsFrame;
+            this->m_bJustActivated = 0;
+            this->m_frameStartTime = v5;
+            this->m_frameStartTimeUnscaled = v6;
+            v2 = this->m_fpsTime == 0;
+            this->m_frameStartTimeSec = v5 * 0.001;
+            if (v2)
+                this->m_fpsTime = v5;
+            v8 = v5 - this->m_fpsTime;
+            if (v8 > 0x3E8)
+            {
+                this->m_fpsTime = v5;
+                this->m_fpsFrame = 0;
+                this->m_fps = v7 * 1000.0 / v8;
+            }
         }
 
         float Timer::GetRawFPS() const

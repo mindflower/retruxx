@@ -71,7 +71,13 @@ void GameOptionsWnd::InitAutoHelpControls()
 
 void GameOptionsWnd::OnSliderNumRepliesChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    UpdateNumRepliesPrevNextButtonsState();
+    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderNumRepliesBlocked)
+    {
+        ApplyNumReplies();
+    }
+    if (m_sliderNumRepliesBlocked > 0)
+        m_sliderNumRepliesBlocked = m_sliderNumRepliesBlocked - 1;
 }
 
 void GameOptionsWnd::OnCheckAutoHelpClick(m3d::AIParam const&)
@@ -79,9 +85,50 @@ void GameOptionsWnd::OnCheckAutoHelpClick(m3d::AIParam const&)
     throw std::logic_error("Not implemented");
 }
 
-int GameOptionsWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
+int GameOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
 {
-    throw std::logic_error("Not implemented");
+    if ((this->m_style & 0x100000) != 0)
+        m3d::ui::Wnd::ReflectChildNotifyToParent(from, id, msg, data);
+    switch (id)
+    {
+    case 0x283Du:
+	    {
+			if (msg != 5)
+				return 0;
+    		GameOptionsWnd::OnSliderNumRepliesChange(data);
+            return 1;
+	    }
+    case 0x283Eu:
+	    {
+		    if (msg != 1)
+                return 0;
+    		GameOptionsWnd::OnBtnNumRepliesPrevClick(data);
+            return 1;
+	    }
+    case 0x283Fu:
+	    {
+		    if (msg != 1)
+                return 0;
+    		GameOptionsWnd::OnBtnNumRepliesNextClick(data);
+            return 1;
+	    }
+    case 0x2840u:
+	    {
+		    if (msg != 1)
+                return 0;
+    		GameOptionsWnd::ApplyAutoHelp();
+            return 1;
+	    }
+    case 0x2841u:
+	    {
+		    if (msg != 5)
+                return 0;
+    		GameOptionsWnd::OnCbGameDifficultyChange(data);
+            return 1;
+	    }
+    default:
+        return 0;
+    }
 }
 
 void GameOptionsWnd::UpdateNumRepliesControls()

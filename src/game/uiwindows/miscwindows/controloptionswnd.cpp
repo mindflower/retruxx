@@ -203,9 +203,50 @@ void ControlOptionsWnd::OnBtnMouseSensitivityPrevClick(m3d::AIParam const&)
     throw std::logic_error("Not implemented");
 }
 
-int ControlOptionsWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
+int ControlOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
 {
-    throw std::logic_error("Not implemented");
+    if ((this->m_style & 0x100000) != 0)
+        m3d::ui::Wnd::ReflectChildNotifyToParent(from, id, msg, data);
+    switch (id)
+    {
+    case 0x28A0u:
+	    {
+		    if (msg != 5)
+                return 0;
+    		ControlOptionsWnd::OnSliderMouseSensitivityChange(data);
+            return 1;
+	    }
+    case 0x28A1u:
+	    {
+		    if (msg != 1)
+                return 0;
+    		ControlOptionsWnd::OnBtnMouseSensitivityPrevClick(data);
+            return 1;
+	    }
+    case 0x28A2u:
+	    {
+		    if (msg != 1)
+                return 0;
+    		ControlOptionsWnd::OnBtnMouseSensitivityNextClick(data);
+            return 1;
+	    }
+    case 0x28A3u:
+	    {
+		    if (msg != 1)
+                return 0;
+    		ControlOptionsWnd::OnCheckMouseFlipYClick(data);
+            return 1;
+	    }
+    case 0x28A4u:
+	    {
+		    if (msg != 1)
+                return 0;
+    		ControlOptionsWnd::OnCheckMouseFlipXClick(data);
+            return 1;
+	    }
+    default:
+        return 0;
+    }
 }
 
 void ControlOptionsWnd::UpdateMouseSensitivityControls()
@@ -240,5 +281,11 @@ void ControlOptionsWnd::InitControls()
 
 void ControlOptionsWnd::OnSliderMouseSensitivityChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    UpdateMouseSensitivityPrevNextButtonsState();
+    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderMouseSensitivityBlocked)
+    {
+        ApplyMouseSensitivity();
+    }
+    if (m_sliderMouseSensitivityBlocked > 0)
+        m_sliderMouseSensitivityBlocked = m_sliderMouseSensitivityBlocked - 1;
 }

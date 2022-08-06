@@ -483,7 +483,14 @@ void VideoOptionsWnd::UpdateResolutionControls()
 
 void VideoOptionsWnd::OnSliderFarDistanceChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    UpdateFarDistancePrevNextButtonsState();
+    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderFarDistanceBlocked)
+    {
+        m_bVideoOptionsChanged = true;
+        OnGraphicQualityDependendControlChanged();
+    }
+    if (m_sliderFarDistanceBlocked > 0)
+        m_sliderFarDistanceBlocked = m_sliderFarDistanceBlocked - 1;
 }
 
 void VideoOptionsWnd::OnCbFiltrationChange(m3d::AIParam const&)
@@ -523,7 +530,11 @@ int VideoOptionsWnd::FiltrationEnum2Val(Filtration) const
 
 void VideoOptionsWnd::OnSliderGammaChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+	UpdateGammaPrevNextButtonsState();
+    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderGammaBlocked)
+        ApplyGamma();
+    if (m_sliderGammaBlocked > 0)
+        m_sliderGammaBlocked = m_sliderGammaBlocked - 1;
 }
 
 void VideoOptionsWnd::UpdateGammaPrevNextButtonsState()
@@ -823,8 +834,122 @@ VideoOptionsWnd::GrassDistance VideoOptionsWnd::GrassDistanceVal2Enum(float) con
     throw std::logic_error("Not implemented");
 }
 
-int VideoOptionsWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
+int VideoOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
 {
+    if ((this->m_style & 0x100000) != 0)
+    {
+        ReflectChildNotifyToParent(from, id, msg, data);
+    }
+    switch (id)
+    {
+    case 0x2774u:
+    {
+        if (msg != 5)
+            return 0;
+        OnCbResolutionChange(data);
+        return 1;
+    }
+    case 0x2775u:
+    {
+        if (msg != 5)
+            return 0;
+        VideoOptionsWnd::OnSliderGammaChange(data);
+        return 1;
+    }
+    case 0x2776u:
+    {
+        if (msg != 5)
+            return 0;
+        VideoOptionsWnd::OnCbGraphicQualityChange(data);
+        return 1;
+    }
+    case 0x2777u:
+    {
+        if (msg != 5)
+            return 0;
+        VideoOptionsWnd::OnSliderFarDistanceChange(data);
+        return 1;
+    }
+    case 0x2778u:
+    {
+        if (msg != 5)
+            return 0;
+        VideoOptionsWnd::OnCbGrassChange(data);
+        return 1;
+    }
+    case 0x2779u:
+    {
+        if (msg != 5)
+            return 0;
+        VideoOptionsWnd::OnCbShadowsChange(data);
+        return 1;
+    }
+    case 0x277Au:
+    {
+        if (msg != 5)
+            return 0;
+        VideoOptionsWnd::OnCbWaterQualityChange(data);
+        return 1;
+    }
+    case 0x277Cu:
+    {
+        if (msg != 5)
+            return 0;
+        VideoOptionsWnd::OnCbAntialiasingChange(data);
+        return 1;
+    }
+    case 0x277Du:
+    {
+        if (msg != 5)
+            return 0;
+        VideoOptionsWnd::OnCbFiltrationChange(data);
+        return 1;
+    }
+    case 0x277Eu:
+    {
+        if (msg != 5)
+            return 0;
+        VideoOptionsWnd::OnCbBlumChange(data);
+        return 1;
+    }
+    case 0x277Fu:
+    {
+        if (msg != 1)
+            return 0;
+        VideoOptionsWnd::OnBtnApplyClick(data);
+        return 1;
+    }
+    case 0x2781u:
+    {
+        if (msg != 1)
+            return 0;
+        VideoOptionsWnd::OnBtnGammaPrevClick(data);
+        return 1;
+    }
+    case 0x2782u:
+    {
+        if (msg != 1)
+            return 0;
+        VideoOptionsWnd::OnBtnGammaNextClick(data);
+        return 1;
+    }
+    case 0x2783u:
+    {
+        if (msg != 1)
+            return 0;
+        VideoOptionsWnd::OnBtnFarDistancePrevClick(data);
+        return 1;
+    }
+    case 0x2784u:
+    {
+        if (msg != 1)
+            return 0;
+        VideoOptionsWnd::OnBtnFarDistanceNextClick(data);
+        return 1;
+    }
+    default:
+        return 0;
+    }
     throw std::logic_error("Not implemented");
 }
 
