@@ -27,7 +27,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, Clear)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, PrintF)
 {
-    throw std::logic_error("Not implemented");
+    auto console = dynamic_cast<m3d::IConsole*>(context->asObject(0, "IConsole"));
+    auto msg = context->asString(1);
+    console->PrintF(msg);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, InputLine)
@@ -63,19 +66,39 @@ namespace m3d
 
     RT_CLASS_DEFINE(IConsole);
 
-    void CConsoleParams::Set(char const*)
+    void CConsoleParams::Set(char const* buf)
     {
-        throw std::logic_error("Not implemented");
+        //TODO: check this and refactor
+        int v3; // edi
+        char* v4; // edx
+        const char* v5; // ecx
+        char v6; // al
+
+        v3 = strlen(buf) + 1;
+        if (v3 > this->length)
+        {
+            delete[] string;
+            this->length = v3;
+            this->string = new char[length];
+        }
+        v4 = this->string;
+        v5 = buf;
+        do
+        {
+            v6 = *v5;
+            *v4++ = *v5++;
+        } while (v6);
+        this->numTokens = 0;
     }
 
-    char const* CConsoleParams::UnsafeStringToken(int, char) const
+    char const* CConsoleParams::UnsafeStringToken(int num, char delim) const
     {
-        throw std::logic_error("Not implemented");
+        return StringToken(num, szParmBuffer, 1024, delim);
     }
 
     CConsoleParams::~CConsoleParams()
     {
-        throw std::logic_error("Not implemented");
+        delete[] string;
     }
 
     CConsoleParams& CConsoleParams::operator=(char const*)
@@ -93,9 +116,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    CConsoleParams::CConsoleParams(char const*)
+    CConsoleParams::CConsoleParams(char const* buf)
     {
-        throw std::logic_error("Not implemented");
+        Set(buf);
     }
 
     CConsoleParams::CConsoleParams(int)
@@ -103,14 +126,107 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int CConsoleParams::NumOfTokens(char) const
+    int CConsoleParams::NumOfTokens(char delim) const
     {
-        throw std::logic_error("Not implemented");
+        //TODO: check this and refactor
+        int result; // eax
+        char* v3; // esi
+        char v4; // dl
+        char v5; // bl
+        int v6; // edi
+        char i; // al
+
+        result = this->numTokens;
+        if (result)
+            return result;
+        v3 = this->string;
+        v4 = *this->string;
+        v5 = 1;
+        v6 = 1;
+        for (i = 1; v4; ++v3)
+        {
+            if (v4 == delim)
+            {
+                if (!i)
+                    v5 = 0;
+            }
+            else
+            {
+                i = 0;
+                if (!v5)
+                {
+                    ++v6;
+                    v5 = 1;
+                }
+            }
+            v4 = v3[1];
+        }
+        this->numTokens = v6;
+        return v6;
     }
 
-    char* CConsoleParams::StringToken(int, char*, int, char) const
+    char* CConsoleParams::StringToken(int num, char* outString, int stringlen, char delim) const
     {
-        throw std::logic_error("Not implemented");
+        char* v5; // edx
+        char v6; // cl
+        char* v7; // esi
+        char v8; // al
+        int v9; // edi
+        char v10; // bl
+        char* result; // eax
+        char i; // cl
+
+        v5 = this->string;
+        v6 = *this->string;
+        v7 = outString;
+        v8 = 0;
+        v9 = 0;
+        if (v6)
+        {
+            v10 = delim;
+            while (1)
+            {
+                if (v6 == delim)
+                {
+                    v8 = 0;
+                }
+                else if (!v8)
+                {
+                    if (v9 == num)
+                    {
+                        if (*v5 == 34)
+                        {
+                            v10 = 34;
+                            ++v5;
+                        }
+                        for (i = *v5; *v5; ++v7)
+                        {
+                            auto temp = reinterpret_cast<int>(&v7[1 - reinterpret_cast<int>(outString)]);
+                            if (reinterpret_cast<int>(&v7[1 - reinterpret_cast<int>(outString)]) >= stringlen)
+                                break;
+                            if (i == v10)
+                                break;
+                            ++v5;
+                            *v7 = i;
+                            i = *v5;
+                        }
+                        break;
+                    }
+                    ++v9;
+                    v8 = 1;
+                }
+                v6 = *++v5;
+                if (!v6)
+                {
+                    result = outString;
+                    *outString = 0;
+                    return result;
+                }
+            }
+        }
+        result = outString;
+        *v7 = 0;
+        return result;
     }
 
     float CConsoleParams::FloatToken(int, char) const
@@ -143,7 +259,7 @@ namespace m3d
 
     Class* IConsole::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     IConsole* ConsoleFactory()
@@ -151,6 +267,10 @@ namespace m3d
         return new ConsoleImp;
     }
 }
+
+RT_CLASS_EXPORTS_BEGIN(ConsoleImp)
+RT_CLASS_EXPORTS_END;
+RT_CLASS_DEFINE(ConsoleImp);
 
 ConsoleImp::auxConsoleCmd::auxConsoleCmd(char const* rname, int rid, IConHandler* rhandler) :
     name(rname),
@@ -219,14 +339,79 @@ m3d::Object* ConsoleImp::CreateObject()
     throw std::logic_error("Not implemented");
 }
 
-void ConsoleImp::executeCommand(CStr const&)
+void ConsoleImp::executeCommand(CStr const& command)
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check this!!!!!!!!1
+    m3d::CConsoleParams params(command.c_str() + 1);
+    auto cmdName = params.UnsafeStringToken(0, 32);
+
+    bool found = false;
+    for (auto& cmd : m_lCmds)
+    {
+	    if (cmd.name == cmdName)
+	    {
+            found = true;
+            cmd.handler->HandleCommand(cmd.id, params);
+            break;
+	    }
+    }
+
+    if (!found)
+    {
+        for (auto cvar : m_lCVars)
+        {
+            CStr name = cvar->GetName();
+            if (name == cmdName)
+            {
+                found = true;
+                if ((cvar->GetFlags() & 2) != 0)
+                {
+                    PrintF(name + " is a read-only variable\n");
+                }
+                else
+                {
+                    if (!cvar->GetHandler() || cvar->GetHandler()->HandleCVar(cvar, params))
+                    {
+                        auto numOfTokens = params.NumOfTokens(' ');
+                        if (numOfTokens > 1)
+                        {
+                            auto token = params.UnsafeStringToken(1, ' ');
+                            auto type = cvar->GetType();
+                            if (type == m3d::CVar::CVAR_STRING || type == m3d::CVar::CVAR_COLOR)
+                            {
+                                CStr newstr = token;
+                                for (int i = 2; i < numOfTokens; ++i)
+                                {
+                                    token = params.UnsafeStringToken(i, ' ');
+                                    newstr += " ";
+                                    newstr += token;
+                                }
+                                if ((cvar->GetFlags() & 2) == 0)
+                                {
+                                    cvar->Set(newstr.c_str(), true);
+                                }
+                            }
+                            else if ((cvar->GetFlags() & 2) == 0)
+                            {
+                                cvar->Set(token, true);
+                            }
+                            PrintF(name + " changed to \"" + CStr(token) + "\"\n");
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+    if (!found)
+    {
+        PrintF("No command or variable found\n");
+    }
 }
 
 m3d::Class* ConsoleImp::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(IConsole);
 }
 
 void ConsoleImp::ScrollDown(int)
@@ -308,9 +493,10 @@ void ConsoleImp::SetScreenSize(float)
     throw std::logic_error("Not implemented");
 }
 
-void ConsoleImp::PrintF(CStr const&)
+void ConsoleImp::PrintF(CStr const& s)
 {
-    throw std::logic_error("Not implemented");
+    if (m_csCurState)
+        Print(s.c_str());
 }
 
 void ConsoleImp::ScrollUp(int)
@@ -396,7 +582,7 @@ bool ConsoleImp::DumpToFile(char const*) const
 
 m3d::Class* ConsoleImp::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ConsoleImp);
 }
 
 void ConsoleImp::ProcessInputChar(unsigned short)
@@ -467,9 +653,56 @@ void ConsoleImp::CompleteScriptCommand()
     throw std::logic_error("Not implemented");
 }
 
-void ConsoleImp::HandleCommand(int, m3d::CConsoleParams const&)
+void ConsoleImp::HandleCommand(int cmdId, m3d::CConsoleParams const& params)
 {
-    throw std::logic_error("Not implemented");
+    switch(cmdId)
+    {
+    case 0:
+	    {
+            Clear();
+            break;
+	    }
+    case 1:
+	    {
+		    if (params.NumOfTokens(' ') == 2)
+		    {
+                auto file = params.UnsafeStringToken(1, ' ');
+                if (DumpToFile(file))
+                {
+                    PrintF("Dumped console text to file " + CStr(file) + "\n");
+                }
+                else
+                {
+                    PrintF("Failed write file " + CStr(file) + "\n");
+                }
+		    }
+            else
+            {
+                PrintF("Usage: /conDump <file_name>\n");
+            }
+            break;
+	    }
+    case 6:
+	    {
+		    if (params.NumOfTokens(' ') == 2)
+		    {
+                auto file = params.UnsafeStringToken(1, ' ');
+                if (auto res = m3d::g_Kernel->GetScriptServer().executeScriptFile(file))
+                {
+                    PrintF(getFormatedScriptErrorDesc(res) + "\n");
+                }
+		    }
+            else
+            {
+                PrintF("Usage: /conScript <filename>\n");
+            }
+            break;
+	    }
+    default:
+	    {
+			throw std::logic_error("Not implemented");
+	    }
+    }
 }
 
 bool ConsoleImp::HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&)
@@ -477,7 +710,104 @@ bool ConsoleImp::HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&)
     throw std::logic_error("Not implemented");
 }
 
-void ConsoleImp::Print(char const*)
+void ConsoleImp::Print(char const* txt)
 {
-    throw std::logic_error("Not implemented");
+    static int cr = 0;
+    if (txt)
+    {
+        CStr str;
+        if (txt[0] == '\t')
+        {
+            str = "    ";
+        }
+        auto text = new char[strlen(txt) + 1];
+        strcpy(text, txt);
+        auto token = strtok(text, "\t");
+        if (token)
+        {
+	        while(1)
+	        {
+                str += token;
+                token = strtok(nullptr, "\t");
+                if (!token)
+                {
+                    break;
+                }
+                str += "    ";
+	        }
+        }
+
+        delete[] text;
+
+        //TODO: check this and refactor!!!
+        char* v5; // ecx
+        char v6; // bl
+        char* v7; // ebp
+        int v8; // ecx
+        int v9; // eax
+        int v10; // eax
+        int v11; // edx
+        int v12; // eax
+        CStr v13; // [esp+Ch] [ebp-24h] BYREF
+
+        v5 = str.m_charPtr;
+        v6 = *str.m_charPtr;
+        v7 = str.m_charPtr;
+        if (*str.m_charPtr)
+        {
+            while (1)
+            {
+                v8 = this->m_con.linewidth;
+                v9 = 0;
+                if (v8 > 0)
+                {
+                    do
+                    {
+                        if (v7[v9] <= 32)
+                            break;
+                        ++v9;
+                    } while (v9 < this->m_con.linewidth);
+                }
+                if (v9 != v8 && v9 + this->m_con.x > v8)
+                    this->m_con.x = 0;
+                ++v7;
+                if (cr)
+                {
+                    --this->m_con.current;
+                    cr = 0;
+                }
+                if (!this->m_con.x)
+                {
+                    v10 = this->m_con.current;
+                    this->m_con.x = 0;
+                    v11 = this->m_con.display;
+                    if (v11 == v10)
+                        this->m_con.display = v11 + 1;
+                    v12 = v10 + 1;
+                    this->m_con.current = v12;
+                    memset(&this->m_con.text[v8 * (v12 % this->m_con.totallines)], 0x20u, v8);
+                }
+                if (v6 != 10)
+                {
+                    if (v6 != 13)
+                    {
+                        this->m_con.text[this->m_con.x + this->m_con.linewidth * (this->m_con.current % this->m_con.totallines)] = v6;
+                        if (++this->m_con.x >= this->m_con.linewidth)
+                            this->m_con.x = 0;
+                        goto LABEL_32;
+                    }
+                    cr = 1;
+                }
+                this->m_con.x = 0;
+            LABEL_32:
+                v6 = *v7;
+                if (!*v7)
+                {
+                    v5 = str.m_charPtr;
+                    break;
+                }
+            }
+        }
+
+    }
 }

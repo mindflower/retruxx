@@ -11,9 +11,28 @@ namespace m3d
     {
     }
 
-    int DataServer::GetItemByName(char const*, bool) const
+    int DataServer::GetItemByName(char const* id, bool viaMap) const
     {
-        throw std::logic_error("Not implemented");
+        if (!id)
+        {
+            return -1;
+        }
+        if (viaMap)
+        {
+            throw std::logic_error("Not implemented");
+        }
+        else
+        {
+            
+	        for (int i = 0; i<m_models.size(); ++i)
+	        {
+		        if (!CStr::my_stricmp(id, m_models[i].m_name.c_str()))
+		        {
+                    return i;
+		        }
+	        }
+        }
+        return -1;
     }
 
     int DataServer::RenderShadowVolumesSet(SgNode**, unsigned)
@@ -146,8 +165,24 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int DataServer::ParseProto(char const*, Proto*, int*)
+    int DataServer::ParseProto(char const* in, Proto* protocol, int* paramsPos)
     {
-        throw std::logic_error("Not implemented");
+        auto pos = strchr(in, ':');
+        if (strlen(in) >= 3 && pos != 0)
+        {
+            *paramsPos = pos - in + 1;
+            if (!strncmp(in, "new", 3))
+            {
+                *protocol = PROTO_NEW;
+                return 1;
+            }
+            if (!strncmp(in, "file", 4))
+            {
+                *protocol = PROTO_FILE;
+                return 1;
+            }
+        }
+        m_lastError = "No protocol found";
+        return 0;
     }
 }

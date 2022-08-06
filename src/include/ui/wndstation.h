@@ -4,6 +4,11 @@
 #include <core/containers.h>
 #include <math/bounds2d.h>
 
+namespace ai
+{
+	class Event;
+}
+
 namespace m3d
 {
     namespace rend
@@ -58,6 +63,7 @@ namespace m3d
             virtual Class* GetRtClass() const;
             void StopAllAnimations();
             Wnd* GetFocus() const;
+            virtual int OnEvent(Event const&) = 0;
             int ProcessEvent(Event const&);
             Wnd* GetWndByUniqueId(int) const;
             void EndModal(ModalWnd*, unsigned int);
@@ -91,12 +97,13 @@ namespace m3d
         public:
             RT_CLASS_INLINE_DECLARE(WndStation);
 
+            Wnd* m_wndMouseCapture = nullptr;
+
         protected:
             PointBase<float> m_prevMouseCoord;
 
         private:
             Wnd* m_wndMouseOver = this;
-            Wnd* m_wndMouseCapture = nullptr;
             Wnd* m_wndKbdCapture = this;
             Wnd* m_wndActive = this;
             Wnd* m_wndForTooltip = nullptr;

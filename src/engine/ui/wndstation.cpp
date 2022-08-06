@@ -29,9 +29,22 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        bool WndStation::IsWndAlive(Wnd const*, int) const
+        bool WndStation::IsWndAlive(Wnd const* w, int uniqueId) const
         {
-            throw std::logic_error("Not implemented");
+            if (!w)
+            {
+                return false;
+            }
+            int res = 0;
+            if (!m_allWindows.getValueByKey(reinterpret_cast<int>(w), res))
+            {
+                return false;
+            }
+            if (uniqueId == -1)
+            {
+                return true;
+            }
+            return res == uniqueId;
         }
 
         Class* WndStation::GetBaseClass()
@@ -198,9 +211,115 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int WndStation::ProcessEvent(Event const&)
+        int WndStation::ProcessEvent(Event const& ev)
         {
-            throw std::logic_error("Not implemented");
+            int v3; // ebx
+            m3d::ui::ModalWnd* v6; // ebx
+            m3d::ui::Wnd* v7; // ebp
+            m3d::ui::Wnd* v8; // ebp
+            m3d::ui::WndStation* v9; // eax
+            m3d::ui::WndStation* v10; // eax
+            m3d::ui::Wnd* v11; // [esp-4h] [ebp-34h]
+            void* msg; // [esp+10h] [ebp-20h]
+            m3d::ui::Wnd* eventa; // [esp+34h] [ebp+4h]
+
+
+            AIParam data = ev.m_aiParamEv;
+
+            v3 = 0;
+            switch (ev.m_eventType)
+            {
+            case 4:
+                ForEachChild(this, &Wnd::OnDisplayChanged);
+                goto LABEL_3;
+            case 5:
+            case 6:
+                goto $L118755;
+            case 7:
+            case 8:
+                v3 = DispatchKey(ev);
+                break;
+            case 9:
+            case 0xA:
+            case 0xB:
+            case 0xC:
+            case 0xF:
+                v3 = DispatchMouse(ev);
+                break;
+            case 0x10:
+            case 0x11:
+            case 0x12:
+            case 0x13:
+            case 0x14:
+            case 0x15:
+            case 0x16:
+            case 0x17:
+            case 0x18:
+            case 0x19:
+                v3 = DispatchJoystick(ev);
+                break;
+            case 0x27:
+                v6 = reinterpret_cast<ModalWnd*>(ev.m_void[0]);
+                if (v6->CanClose())
+                    EndModal(v6, ev.m_uintEv[1]);
+            $L118755:
+                v3 = 1;
+                break;
+            case 0x28:
+                v7 = reinterpret_cast<Wnd*>(ev.m_void[0]);
+                eventa = reinterpret_cast<Wnd*>(ev.m_void[1]);
+                if (m3d::ui::WndStation::IsWndAlive(v7, -1) && m3d::ui::WndStation::IsWndAlive(eventa, -1))
+                {
+                    eventa->OnWndNotify( v7, v7->m_id, ev.m_uintEv[2], data);
+                    v3 = 1;
+                }
+                break;
+            case 0x29:
+            case 0x2E:
+                goto $L118771;
+            case 0x2A:
+                m3d::ui::WndStation::OnEndAnimation(reinterpret_cast<Wnd*>(ev.m_void[0]));
+            $L118771:
+                v3 = this->OnEvent(ev);
+                break;
+            case 0x2B:
+                v3 = 0;
+                m3d::ui::WndStation::StopAllAnimations();
+                break;
+            case 0x2C:
+                m3d::ui::WndStation::RemoveCurrentTooltip();
+                v8 = reinterpret_cast<Wnd*>(ev.m_void[0]);
+                if (m3d::ui::WndStation::IsWndAlive(v8, -1))
+                {
+                    this->m_wndForTooltip = v8;
+                    if (v8->m_toolTipWnd)
+                    {
+                        GetStation()->AddChild(this->m_wndForTooltip->m_toolTipWnd);
+                        v11 = this->m_wndForTooltip->m_toolTipWnd;
+                        GetStation()->MoveChildToFirstPosition(v11);
+                    }
+                }
+                break;
+            case 0x2D:
+                m3d::ui::WndStation::RemoveCurrentTooltip();
+                break;
+            case 0x2F:
+                v3 = 1;
+                m3d::ui::WndStation::OnOpenComboBox(reinterpret_cast<ComboBoxWnd*>(ev.m_void[0]));
+                break;
+            case 0x30:
+                v3 = 1;
+                m3d::ui::WndStation::OnCloseComboBox(reinterpret_cast<ComboBoxWnd*>(ev.m_void[0]));
+                break;
+            default:
+            LABEL_3:
+                v3 = 0;
+                break;
+                }
+                if (ev.m_eventType >= 0x10000)
+                    this->OnEvent(ev);
+                return v3;
+
         }
 
         Wnd* WndStation::GetWndByUniqueId(int) const
@@ -355,9 +474,15 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void WndStation::OnCloseComboBox(ComboBoxWnd*)
+        void WndStation::OnCloseComboBox(ComboBoxWnd* combo)
         {
-            throw std::logic_error("Not implemented");
+            if (combo)
+            {
+	            if (m_wndOpenedComboBox == combo)
+	            {
+                    m_wndOpenedComboBox = nullptr;
+	            }
+            }
         }
 
         void WndStation::OnOpenComboBox(ComboBoxWnd*)

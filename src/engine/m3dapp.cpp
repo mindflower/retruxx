@@ -424,28 +424,26 @@ namespace m3d
     int Application::processWinMessages()
     {
         //TODO: wmquitmsg - static atomic or what?
-        static std::atomic_bool wmQuitMsg = false;
+        static bool wmQuitMsg = false;
         m_mouseInfo.ResetDelta();
         MSG msg;
-        if (::PeekMessage(&msg, NULL, 0, 0, 0) != FALSE)
+        if (!PeekMessage(&msg, 0, 0, 0, 1))
         {
             return !wmQuitMsg;
         }
-        while (msg.message != WM_QUIT)
+        while (msg.message != 18)
         {
-            if (!m_isAppActive && ::GetMessage(&msg, NULL, 0, 0) != FALSE)
+            if (!m_isAppActive && GetMessage(&msg, 0, 0, 0))
             {
-                while (m_isAppActive)
+                do
                 {
-                    ::DispatchMessage(&msg);
-                    if (::GetMessage(&msg, NULL, 0, 0) == FALSE)
-                    {
+                    if (m_isAppActive)
                         break;
-                    }
-                }
+                    DispatchMessageA(&msg);
+                } while (GetMessageA(&msg, 0, 0, 0));
             }
-            ::DispatchMessage(&msg);
-            if (::PeekMessage(&msg, NULL, 0, 0, 0) != FALSE)
+            DispatchMessage(&msg);
+            if (!PeekMessage(&msg, 0, 0, 0, 1))
             {
                 return !wmQuitMsg;
             }
@@ -456,14 +454,178 @@ namespace m3d
 
     int Application::FillEngineMessages()
     {
-        if (m_input == nullptr)
+        if (m_input)
+        {
+            NewFrame();
+        }
+        if (!m_input)
         {
             return 1;
         }
-        //m_input->NewFrame();
+        unsigned short key = 0;
+        unsigned char param2 = 0;
+        bool param3 = false;
+        long double time = 0.0;
 
-        //TODO:...
-        throw std::logic_error("Not implemented");
+        if (m_input->GetLastKbdEvent(&key, &param2, &param3, &time, true))
+        {
+	        do
+	        {
+                throw std::logic_error("Not implemented");
+            } while (m_input->GetLastKbdEvent(&key, &param2, &param3, &time, true));
+        }
+        auto deltaX = 0;
+        auto deltaY = 0;
+        if (m_bDXCursorEnabled)
+        {
+            m_mouseX = m_mouseInfo.GetLastPos().x;
+            m_mouseY = m_mouseInfo.GetLastPos().y;
+            deltaX = m_mouseInfo.GetDeltaDuringGameFrame().x;
+            deltaY = m_mouseInfo.GetDeltaDuringGameFrame().y;
+        }
+        else
+        {
+            deltaX = m_input->GetMouseX();
+            deltaY = m_input->GetMouseY();
+            if (!deltaX && !deltaY)
+            {
+            LABEL_35:
+                m3d::EventType joystickBtnEvents[10];
+                joystickBtnEvents[0] = EV_MOUSE_LBTN;
+                joystickBtnEvents[1] = EV_MOUSE_RBTN;
+                joystickBtnEvents[2] = EV_MOUSE_MBTN;
+                int gamepadBtnMask = 0;
+                int bits = 0;
+                for (int i =0; ; bits = i)
+                {
+                    auto btnsMask = 1 << bits;
+                    auto mouseB = m_input->GetMouseB(bits);
+                    auto prevBtnMask = m_prevBtnsMask;
+                    auto mask = mouseB != 0 ? btnsMask : 0;
+                	gamepadBtnMask |= mask;
+                    if (mask != (btnsMask & prevBtnMask))
+                    {
+                        m3d::Event ev;
+                        ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime() * 0.001;
+                        ev.m_eventType = joystickBtnEvents[i];
+                        ev.m_ushortEv[0] = m_mouseX;
+                        ev.m_ushortEv[1] = m_mouseY;
+                        ev.m_ushortEv[2] = mask != 0;
+
+                        auto head = m_eventsQueueHead + 1;
+                        if (head >= 0x1388)
+                        {
+                            head = 0;
+                        }
+                        if (m_eventsQueueTail != head)
+                        {
+                            m_eventsQueue[m_eventsQueueHead] = ev;
+                            m_eventsQueueHead = head;
+                        }
+                    }
+                    if (++i >= 3)
+                        break;
+                }
+                m_prevBtnsMask = gamepadBtnMask;
+                if (auto mouseZ = m_input->GetMouseZ())
+                {
+                    m3d::Event ev;
+                    ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime() * 0.001;
+                    ev.m_ushortEv[1] = m_mouseY;
+                    ev.m_ushortEv[0] = m_mouseX;
+                    ev.m_eventType = 15;
+
+                    auto head = m_eventsQueueHead + 1;
+                    if (head >= 0x1388)
+                    {
+                        head = 0;
+                    }
+                    ev.m_ushortEv[2] = mouseZ / 120;
+                    if (m_eventsQueueTail !=head)
+                    {
+                        m_eventsQueue[m_eventsQueueHead] = ev;
+                        m_eventsQueueHead = head;
+                    }
+                }
+                auto joyB = m_input->GetParam(input::DP_JOY_B);
+                gamepadBtnMask = joyB;
+                if (joyB != m_prevJoystickBtnsMask)
+                {
+                    joystickBtnEvents[0] = EV_JOYSTICK_BTN0;
+                    joystickBtnEvents[1] = EV_JOYSTICK_BTN1;
+                    joystickBtnEvents[2] = EV_JOYSTICK_BTN2;
+                    joystickBtnEvents[3] = EV_JOYSTICK_BTN3;
+                    joystickBtnEvents[4] = EV_JOYSTICK_BTN4;
+                    joystickBtnEvents[5] = EV_JOYSTICK_BTN5;
+                    joystickBtnEvents[6] = EV_JOYSTICK_BTN6;
+                    joystickBtnEvents[7] = EV_JOYSTICK_BTN7;
+                    joystickBtnEvents[8] = EV_JOYSTICK_BTN8;
+                    joystickBtnEvents[9] = EV_JOYSTICK_BTN9;
+                    for (int j = 0; j < 0xA; ++j)
+                    {
+                        auto btnsMask = joyB & (1 << j);
+                        if (btnsMask !=((1 <<j) & m_prevJoystickBtnsMask))
+                        {
+                            m3d::Event ev;
+                            ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime() * 0.001;
+                            ev.m_eventType = joystickBtnEvents[j];
+                            ev.m_ushortEv[2] = btnsMask != 0;
+
+
+                            auto head = m_eventsQueueHead + 1;
+                            if (head >= 0x1388)
+                            {
+                                head = 0;
+                            }
+                            if (m_eventsQueueTail != head)
+                            {
+                                m_eventsQueue[m_eventsQueueHead] = ev;
+                                m_eventsQueueHead = head;
+                            }
+                        }
+                        joyB = gamepadBtnMask;
+                    }
+                }
+                m_prevJoystickBtnsMask = gamepadBtnMask;
+                return 1;
+            }
+            m_mouseX += deltaX;
+            m_mouseY += deltaY;
+            auto viewport = m_renderer->GetViewport();
+            if (m_mouseX < viewport.m_x0)
+            {
+                m_mouseX = viewport.m_x0;
+            }
+            if (this->m_mouseX > viewport.m_width + viewport.m_x0 - 1)
+                this->m_mouseX = viewport.m_width + viewport.m_x0 - 1;
+            if (this->m_mouseY < viewport.m_y0)
+                this->m_mouseY = viewport.m_y0;
+            if (this->m_mouseY > viewport.m_height + viewport.m_y0 - 1)
+                this->m_mouseY = viewport.m_height + viewport.m_y0 - 1;
+        }
+        if (deltaX || deltaY)
+        {
+            m3d::Event ev;
+            ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime() * 0.001;
+            ev.m_ushortEv[2] = deltaX;
+            ev.m_ushortEv[0] = m_mouseX;
+            ev.m_ushortEv[1] = m_mouseY;
+            ev.m_eventType = 9;
+            ev.m_ushortEv[3] = deltaY;
+
+            auto head = m_eventsQueueHead + 1;
+            if (head >= 0x1388)
+            {
+                head = 0;
+            }
+            if (m_eventsQueueTail != head)
+            {
+                m_eventsQueue[m_eventsQueueHead] = ev;
+                m_eventsQueueHead = head;
+            }
+        }
+        goto LABEL_35;
+        return 1;
     }
 
     void Application::ProcessAllEvents()
@@ -510,77 +672,67 @@ namespace m3d
 
     long Application::MsgProc(HWND hWnd, unsigned uMsg, unsigned wParam, long lParam)
     {
+        //TODO: check this and refactor
+        int result; // eax
+        PointBase<int> curMousePos; // [esp+8h] [ebp-30h] BYREF
+        CStr param4; // [esp+10h] [ebp-28h] BYREF
+
         if (uMsg <= 0x21)
         {
             if (uMsg < 0x20)
             {
                 switch (uMsg)
                 {
-                case 2:
-                {
-                    ::PostQuitMessage(0);
-                    return 0;
-                }
-                case 6:
-                case 7:
-                {
-                    ::SetCursor(NULL);
-                    if (!m_bDXCursorEnabled)
-                    {
-                        return 1;
-                    }
-                    if (g_pApp->m_renderer != nullptr)
-                    {
-                        g_pApp->m_renderer->ShowDXCursor(true);
-                    }
-                    return 1;
-                }
-                case 0x10:
-                {
-                    ::DestroyWindow(hWnd);
-                    return 0;
-                }
-                case 0x1C:
-                {
-                    //TODO: check this
+                case 2u:
+                    PostQuitMessage(0);
+                    result = 0;
+                    break;
+                case 6u:
+                case 7u:
+                    goto $L141541;
+                case 0x10u:
+                    DestroyWindow(hWnd);
+                    result = 0;
+                    break;
+                case 0x1Cu:
                     ImmediateMessage(2, wParam, 0, 0, 0, {}, {});
-                    return 0;
+                    result = 0;
+                    break;
+                default:
+                    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
                 }
-                }
+                return result;
             }
+        $L141541:
+            SetCursor(0);
+            if (this->m_bDXCursorEnabled)
+            {
+                if (m3d::Application::g_pApp->m_renderer)
+                    m3d::Application::g_pApp->m_renderer->ShowDXCursor(1);
+            }
+            return 1;
+        }
+        if (uMsg > 0x200)
+        {
+            if (uMsg == 536)
+                return 1112363332;
+            return DefWindowProcA(hWnd, uMsg, wParam, lParam);
         }
         if (uMsg != 512)
         {
             if (uMsg == 134)
-            {
-                ::SetCursor(NULL);
-                if (!m_bDXCursorEnabled)
-                {
-                    return 1;
-                }
-                if (g_pApp->m_renderer != nullptr)
-                {
-                    g_pApp->m_renderer->ShowDXCursor(true);
-                }
-                return 1;
-            }
+                goto $L141541;
             if (uMsg == 274 && ((wParam & 0xFFF0) == 61760 || (wParam & 0xFFF0) == 61808))
-            {
                 return 0;
-            }
-            return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
+            return DefWindowProcA(hWnd, uMsg, wParam, lParam);
         }
-        if (!m_isAppActive || !m_bDXCursorEnabled)
-        {
+        if (!this->m_isAppActive || !this->m_bDXCursorEnabled)
             return 0;
-        }
-
-        PointBase<int> const curMousePos(LOWORD(lParam), HIWORD(lParam));   //TODO: check this
+        curMousePos.x = lParam;
+        curMousePos.y = HIWORD(lParam);
         m_mouseInfo.SetUpForCurPos(curMousePos);
-        if (m_bDXCursorEnabled && g_pApp->m_renderer != nullptr)
-        {
-            g_pApp->m_renderer->MoveDXCursor(LOWORD(lParam), HIWORD(lParam));
-        }
+        if (this->m_bDXCursorEnabled && m3d::Application::g_pApp->m_renderer)
+            m3d::Application::g_pApp->m_renderer->MoveDXCursor(lParam, HIWORD(lParam));
         return 0;
     }
 
@@ -804,8 +956,66 @@ namespace m3d
     int Application::HandleEvent(Event const& ev)
     {
         //TODO: ...
+        switch (ev.m_eventType)
+        {
+        case 1:
+	        {
+                PostMessageA(g_Kernel->GetEngineCfg().m_mainWnd, 0x10, 0, 0);
+                return 1;
+	        }
+        case 2:
+	        {
+                //TODO: check this
+                m_isAppActive = ev.m_intEv[0];
+                if (m_sound)
+                    m_sound->PauseAllSounds(m_isAppActive);
+                if (m_renderer)
+                    m_renderer->SetActiveState(m_isAppActive);
+                g_Kernel->GetTimer().SetActiveState(m_isAppActive);
+                if (m_isAppActive)
+                {
+	                if (g_Kernel->GetEngineCfg().m_clipCursorWithinRenderWnd.GetB())
+	                {
+                        CaptureAndClipSystemCursor(true);
+	                }
+                    //TODO: check this
+                    ShowSystemCursor(m_bDXCursorEnabled);
+                    if (g_pApp->m_sound)
+                    {
+                        g_pApp->m_sound->PauseAllSounds(false);
+                    }
+                    return 1;
+                }
+                break;
+	        }
+        case 3:
+	        {
+                //TODO: check this
+                SwitchDisplayModes(g_Kernel->GetEngineCfg().m_mainWnd, ev.m_intEv[0], ev.m_intEv[1], ev.m_intEv[2] != 0);
+                return 1;
+	        }
+        case 4:
+            throw std::logic_error("Not implemented");
+        case 7:
+            throw std::logic_error("Not implemented");
+        case 8:
+            throw std::logic_error("Not implemented");
+        case 0xA:
+            throw std::logic_error("Not implemented");
+        case 0xB:
+            throw std::logic_error("Not implemented");
+        case 0xC:
+            throw std::logic_error("Not implemented");
+        default:
+        {
+            if (ev.m_eventType != 15)
+            {
+                return ProcessEvent(ev);
+            }
+            throw std::logic_error("Not implemented");
+        }
+        }
         return 1;
-        //throw std::logic_error("Not implemented");
     }
 
     void Application::doneProcTexThread()
@@ -1578,7 +1788,26 @@ namespace m3d
 
     void Application::ClearViewportToBlack()
     {
-        throw std::logic_error("Not implemented");
+        //TODO: check this and refactor 
+        int v2; // edi
+        int v3; // esi
+
+        auto& config = g_Kernel->GetEngineCfg();
+        if (IsWindow(config.m_mainWnd))
+        {
+            v2 = m3d::Application::g_pApp->m_renderer->InScene();
+            v3 = 0;
+            if (v2 || (v3 = m3d::Application::g_pApp->m_renderer->BeginScene()) != 0)
+            {
+                m3d::Application::g_pApp->m_renderer->ClearViewport(rend::M3DCLEAR_CZ, -16777216u);
+                if (!v2)
+                {
+                    if (v3)
+                        m3d::Application::g_pApp->m_renderer->EndScene();
+                }
+            }
+            m3d::Application::g_pApp->m_renderer->PresentScene();
+        }
     }
 
     CStr const& Application::GetStartupFolder() const
@@ -1651,9 +1880,16 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Application::ShowSystemCursor(bool)
+    void Application::ShowSystemCursor(bool bShow)
     {
-        throw std::logic_error("Not implemented");
+        if (bShow)
+        {
+            while (ShowCursor(1) < 0);
+        }
+        else
+        {
+            while (ShowCursor(0) >= 0);
+        }
     }
 
     //TODO: return MHZ?

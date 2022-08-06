@@ -25,6 +25,9 @@
 #include <core/log.h>
 #include <scene/servers/dataserver.h>
 
+#include "video.h"
+#include "server/passagedata.h"
+
 extern Vivisector* g_Vivisector;
 
 namespace m3d
@@ -58,6 +61,8 @@ namespace
     {"g_postEffectKill", 0x1023},
     {"dxCursor", 0x1024},
     };
+
+    int videoNum = 0;
 }
 
 unsigned m_profiler_Client = 0;
@@ -67,12 +72,13 @@ unsigned m_profiler_ClientUpdate = 0;
 
 GameState CMiracle3d::CurGameMode::Get() const
 {
-    throw std::logic_error("Not implemented");
+    return m_mode;
 }
 
 void CMiracle3d::CurGameMode::Set(GameState mode)
 {
     //TODO: check this
+    m_mode = mode;
     g_pApp->ImmediateMessage(65683, mode, m_mode, 0, 0, {}, {});
 }
 
@@ -128,7 +134,17 @@ bool CMiracle3d::GetMouseHitPoint(CVector&, m3d::SgNode*&)
 
 int CMiracle3d::OnFinishIntroVideoPlaying()
 {
-    throw std::logic_error("Not implemented");
+    if (m3d::g_Kernel->GetEngineCfg().m_autoPlayVideo.GetB() && videoNum >= 0 && videoNum < 4)
+    {
+        auto videoFile = m3d::g_Kernel->GetEngineCfg().m_video[videoNum].GetS();
+        ++videoNum;
+        StartPlayingVideo(videoFile, &CMiracle3d::OnFinishIntroVideoPlaying);
+    }
+    else
+    {
+        StartMainMenu();
+    }
+    return 1;
 }
 
 int CMiracle3d::GameDone()
@@ -156,9 +172,15 @@ bool CMiracle3d::GetCursorShow0() const
     throw std::logic_error("Not implemented");
 }
 
-void CMiracle3d::SetCursorShow(bool)
+void CMiracle3d::SetCursorShow(bool state)
 {
-    throw std::logic_error("Not implemented");
+    auto app = dynamic_cast<CMiracle3d*>(g_pApp);
+    m_showCursor = state;
+    //TODO: check this
+    if (app->m_pInterfaceManager->IsGameModeValidForSmartCursor(m_curGameMode.Get()))
+    {
+        ImmediateMessage(65682, state, 0, 0, 0, {}, {});
+    }
 }
 
 int CMiracle3d::CinematicInit()
@@ -406,9 +428,41 @@ bool CMiracle3d::LoadMapFromConsole(m3d::CConsoleParams const&, bool)
     throw std::logic_error("Not implemented");
 }
 
-int CMiracle3d::StartPlayingVideo(char const*, int(CMiracle3d::*)())
+int CMiracle3d::StartPlayingVideo(char const* videoFile, int(CMiracle3d::* onFinishCallback)())
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check this!!!
+    CStr file = videoFile;
+    if (g_pApp->m_sound && !file.empty())
+    {
+        g_pApp->m_sound->PauseAllSounds(true);
+    }
+
+    int res = 0;
+
+    if (M3dVideoPlayer->IsVideoPlaing())
+    {
+        M3D_LOG_INFO("Warning: video is already playing");
+        res = 1;
+    }
+    else
+    {
+        //TODO; check this
+        g_pApp->ClearViewportToBlack();
+        if (file.empty() || M3dVideoPlayer->Play(videoFile))
+        {
+        	res = 0;
+            m_playingVideo = true;
+            m_onFinishVideoPlaying = onFinishCallback;
+            return res;
+        }
+        M3D_LOG_INFO("Error: couldn't load video '" + file);
+        res = 2;
+    }
+    if (onFinishCallback)
+    {
+        (this->*onFinishCallback)();
+    }
+    return res;
 }
 
 CMiracle3d::~CMiracle3d()
@@ -441,9 +495,31 @@ int CMiracle3d::ValidateCameraAngles()
     throw std::logic_error("Not implemented");
 }
 
-m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd*)
+m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
 {
-    throw std::logic_error("Not implemented");
+    auto app = dynamic_cast<CMiracle3d*>(g_pApp);
+    if (wnd || app->m_pInterfaceManager->IsModalEqualWndRunning())
+    {
+        m_wndMouseCapture = wnd;
+    }
+    else
+    {
+        float x = 512.0;
+        float y = 384.0;
+        app->m_renderer->RelToAbs(x, y);
+        app->SetMouseXy(x, y);
+        //TODO: check this!!!!1
+        m_wndMouseCapture = this;
+    }
+    if (m_wndMouseCapture || !m3d::g_Kernel->GetEngineCfg().m_r_dxcursor.GetB())
+    {
+        EnableDXCursor(false);
+    }
+    else
+    {
+        EnableDXCursor(true);
+    }
+    return m_wndMouseCapture;
 }
 
 int CMiracle3d::CollideCamera(CVector&, float&, CVector const&, CVector const&)
@@ -656,10 +732,81 @@ ProfileManager* CMiracle3d::GetProfileManager() const
     return m_profileManager;
 }
 
-int CMiracle3d::OnEvent(m3d::Event const&)
+int CMiracle3d::OnEvent(m3d::Event const& ev)
 {
-    //TODO: ...
-    throw std::logic_error("Not implemented");
+    //TODO: check this and refactor
+    auto app = dynamic_cast<CMiracle3d*>(g_pApp);
+    switch (ev.m_eventType)
+    {
+    case 7:
+    case 8:
+    case 9:
+    case 0xA:
+    case 0xB:
+    case 0xC:
+    case 0xF:
+    case 0x26:
+        goto LABEL_5;
+    default:
+    {
+        if (app->m_pInterfaceManager)
+        {
+            auto res = app->m_pInterfaceManager->HandleAppEvent(ev);
+            if (res)
+            {
+                return res;
+            }
+        }
+    LABEL_5:
+        if (ev.m_eventType > 66550)
+        {
+            auto evNum = ev.m_eventType - 66555;
+            if (evNum)
+            {
+                if (evNum == 5)
+                {
+                    //TODO: check this
+                    m_radioEngine->PlaySoundMessage(ev.m_intEv[0], ev.m_intEv[1], ev.m_strEv);
+                    return 0;
+                }
+            }
+            else
+            {
+                //TODO: check this
+                m_blockMusicManager->SetMusicType(static_cast<m3d::BlockMusicManager::BlockMusicType>(ev.m_intEv[0]));
+            }
+        }
+        else if (ev.m_eventType == 66550)
+        {
+            M3D_LOG_INFO("MessageBox called");
+            return 0;
+        }
+        else
+        {
+            auto evNum = ev.m_eventType - 65650;
+            if (!evNum)
+            {
+                //TODO: check this
+                app->m_pInterfaceManager->ShowWindow(154, false, false, false, false, nullptr);
+                m3d::AuxImpulseInfo info(1, true, -1, 0, 0);
+                OnChangeMode(info);
+                return 0;
+            }
+            auto enNum2 = evNum - 28;
+            if (!enNum2)
+            {
+                app->OnChangeProfile();
+                return 0;
+            }
+            if (enNum2 == 871)
+            {
+                m3d::g_Kernel->GetEngineCfg().m_console->executeCommand("/nextmap " + ai::thePassageData->m_mapName);
+                return 0;
+            }
+        }
+    }
+        return 0;
+    }
 }
 
 int CMiracle3d::AddChild(m3d::Object* node)
@@ -849,7 +996,7 @@ bool CMiracle3d::HandleCVar(m3d::CVar const* cvar, m3d::CConsoleParams const& pa
 
 int CMiracle3d::NewFrame()
 {
-    //TODO: cehgck this
+    //TODO: chgck this
     m_flyCamTurn.zero();
     return 1;
 }

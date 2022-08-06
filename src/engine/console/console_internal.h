@@ -20,7 +20,6 @@ public:
     static m3d::Object* CreateObject();
     static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const;
-    RT_CLASS_DECLARE(ConsoleImp);
     virtual void RegisterCommand(char const*, int, m3d::IConHandler*);
     virtual void RegisterCVar(m3d::CVar*, IConHandler*);
     virtual void UnregisterCVar(m3d::CVar*);
@@ -45,6 +44,9 @@ public:
     virtual int Load(CStr const&);
     virtual int Save(CStr const&);
     virtual void executeCommand(CStr const&);
+
+public:
+    RT_CLASS_DECLARE(ConsoleImp);
 
     enum eConsoleState
     {
@@ -81,7 +83,7 @@ public:
     public:
         auxConsoleCmd(char const*, int, IConHandler*);
 
-    private:
+    public:
         int id;
         CStr name;
         IConHandler* handler;

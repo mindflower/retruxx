@@ -37,9 +37,11 @@ namespace
         throw std::logic_error("Not implemented");
     }
 
-    int _execLuaScript(lua_State *)
+    int _execLuaScript(lua_State * L)
     {
-        throw std::logic_error("Not implemented");
+        luaL_checktype(L, 1, 4);
+        auto file = lua_tostring(L, 1);
+        return m3d::Scriptlet::g_scriptServer->executeScriptFile(file);
     }
 
     int _errorMethod(lua_State *)
@@ -214,7 +216,7 @@ namespace m3d
 
     Class* ScriptServer::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     Object* ScriptServer::CreateObject()
@@ -337,7 +339,7 @@ namespace m3d
 
     Class* ScriptServer::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(ScriptServer);
     }
 
     char const* ScriptServer::getErrorDescString(eScriptError) const

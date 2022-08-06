@@ -467,9 +467,54 @@ bool GameUiManager::GUI_IsModalEqualWndRunning() const
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_ProcessEvent(GuiEventType, int, void*, m3d::ui::Wnd*)
+int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void* data, m3d::ui::Wnd* forceWnd)
 {
-    throw std::logic_error("Not implemented");
+    auto id = -1;
+	switch (eventType)
+	{
+	case GUI_EVENT_FROM_APPEVENT:
+    {
+        auto it = m_eventToEvent.find(appEventId);
+        if (it != m_eventToEvent.end())
+        {
+            id = it->second;
+        }
+        break;
+    }
+    case GUI_EVENT_FROM_IMPULSE:
+    {
+        auto it = m_impulseToEvent.find(appEventId);
+        if (it != m_impulseToEvent.end())
+        {
+            id = it->second;
+        }
+        break;
+    }
+    case GUI_EVENT_FROM_PACKET:
+    {
+        auto it = m_packToEvent.find(appEventId);
+        if (it != m_packToEvent.end())
+        {
+            id = it->second;
+        }
+        break;
+    }
+    case GUI_EVENT_CUSTOM:
+    {
+        id = appEventId;
+        break;
+    }
+	default:
+        return 0;
+	}
+    if (id !=-1)
+    {
+	    if (!GUI_HandleEvent(id, forceWnd, data))
+	    {
+            GUI_UpdateWindowsOnEvent(id, forceWnd, data);
+	    }
+    }
+    return 0;
 }
 
 void GameUiManager::GUI_GetIconsResourceInfoByLevel(CStr const&, std::vector<ResourceInfo*, std::allocator<ResourceInfo*>>&) const

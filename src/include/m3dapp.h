@@ -273,6 +273,7 @@ namespace m3d
         input::IInput* m_input = nullptr;
         IImpulse* m_pImpulses = nullptr;
         Cinematic* m_cinematic = nullptr;
+        mVideoPlayer* M3dVideoPlayer = nullptr;
         CCamera m_curCamera;
         DbgCounterStack m_counterStack;
 
@@ -369,7 +370,6 @@ namespace m3d
         bool m_isConsoleAllowed = false;
         bool m_bShowRenderStats = false;
         bool m_bShowDeviceMemStats = false;
-        mVideoPlayer *M3dVideoPlayer = nullptr;
         DetailSettings m_detailSettings;
         bool m_bDXCursorEnabled = true;
         MouseInfo m_mouseInfo;

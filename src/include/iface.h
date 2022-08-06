@@ -61,8 +61,10 @@ namespace m3d
 
         class IInput : public IBase
         {
-        public:
+        protected:
             ~IInput() = default;
+
+        public:
             virtual int DecRef() = 0;
             virtual int IncRef() = 0;
             virtual void* QueryIface(const char*) = 0;

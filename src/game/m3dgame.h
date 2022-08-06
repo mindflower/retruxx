@@ -169,7 +169,7 @@ public:
     RT_CLASS_INLINE_DECLARE(CMiracle3d);
 
 public:
-    ITruxxUiManager* m_pInterfaceManager;
+    ITruxxUiManager* m_pInterfaceManager = nullptr;
     Player m_player;
     CVector m_hitPoint;
 
@@ -204,7 +204,7 @@ private:
     m3d::BlockMusicManager *m_blockMusicManager;
     m3d::TownMusicManager *m_townMusicManager;
     m3d::RadioEngine *m_radioEngine;
-    //int (__thiscall *m_onFinishVideoPlaying)(CMiracle3d *this);
+    int (CMiracle3d::* m_onFinishVideoPlaying)();
     m3d::CVar m_minDist;
     m3d::CVar m_maxDist;
     m3d::CVar m_cameraHeight;

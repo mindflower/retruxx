@@ -65,9 +65,15 @@ namespace m3d
             m_hash.emplace(key, val);
         }
 
-        bool getValueByKey(unsigned int, T&) const
+        bool getValueByKey(unsigned int key, T& v) const
         {
-            throw std::logic_error("Not implemented");
+            auto it = m_hash.find(key);
+            if (it == m_hash.end())
+            {
+                return false;
+            }
+            v = it->second;
+            return true;
         }
 
     private:

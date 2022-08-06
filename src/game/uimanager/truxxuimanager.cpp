@@ -467,9 +467,10 @@ void TruxxUiManager::AddFadingMsg(CStr const&, std::vector<m3d::AIParam, std::al
     throw std::logic_error("Not implemented");
 }
 
-bool TruxxUiManager::IsGameModeValidForSmartCursor(GameState) const
+bool TruxxUiManager::IsGameModeValidForSmartCursor(GameState mode) const
 {
-    throw std::logic_error("Not implemented");
+    static const std::set<GameState> modes { GS_GAME, GS_CINEMATIC };
+    return modes.find(mode) != modes.end();
 }
 
 int TruxxUiManager::Str2WndGuiId(CStr const& strId) const
@@ -574,9 +575,9 @@ void TruxxUiManager::StartSplashing(int) const
     throw std::logic_error("Not implemented");
 }
 
-int TruxxUiManager::HandleAppEvent(m3d::Event const&)
+int TruxxUiManager::HandleAppEvent(m3d::Event const& appEvent)
 {
-    throw std::logic_error("Not implemented");
+    return GUI_ProcessEvent(GUI_EVENT_FROM_APPEVENT, appEvent.m_eventType, &const_cast<m3d::Event&>(appEvent), nullptr);
 }
 
 void TruxxUiManager::OnLeaveTown(bool)

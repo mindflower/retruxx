@@ -22,9 +22,10 @@ namespace m3d
         float FloatToken(int, char) const;
 
     private:
+        static inline char szParmBuffer[1024] = {0};
         char* string = nullptr;
         int length = 0;
-        int numTokens = 0;
+        mutable int numTokens = 0;
     };
 
     struct CConsoleCommands
