@@ -5,11 +5,70 @@
 #include <core/log.h>
 
 #include "config.h"
+#include "m3dapp.h"
+#include "m3dgame.h"
+#include "core/scoped_ptr.h"
 #include "core/console/console.h"
+#include "file/fileserver.h"
+#include "file/filestream.h"
 
-int Profile::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+int Profile::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 {
-    throw std::logic_error("Not implemented");
+    if (xmlFile && xmlNode)
+    {
+        Clear();
+        SetParamsDefault();
+        m3d::SafeStrAttrib(m_name, xmlNode, "Name");
+        if (!m_name.empty())
+        {
+            int paramRes = 1;
+            ref_ptr paramsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+            xmlNode->GetFirstChild_(paramsNode, "Params");
+            if (!paramsNode->IsEmpty())
+            {
+                ref_ptr paramNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+                for (paramsNode->GetFirstChild_(paramNode, "Param"); !paramNode->IsEmpty();paramNode->GetNextSibling_(paramNode, "Param"))
+                {
+                    CStr idStr;
+                    m3d::SafeStrAttrib(idStr, paramNode, "Id");
+                    auto id = ParamName2Id(idStr);
+                    if (id < PP_SAVE_SORT_ARG || id >= PP_INVALID)
+                    {
+                        M3D_LOG_INFO("Profile::LoadFromXml warning - invalid profile param id " + idStr);
+                        paramRes = 0;
+                    }
+                    else
+                    {
+                        ref_ptr valueNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+                        paramNode->GetFirstChild_(valueNode, "Value");
+                        if (valueNode->IsEmpty())
+                        {
+                            M3D_LOG_INFO("Profile::LoadFromXml warning - invalid value node for param " + idStr);
+                            paramRes = 0;
+                        }
+                        else
+                        {
+                            m3d::AIParam param;
+                            param.LoadFromXML(xmlFile, valueNode);
+                            SetParam(id, param);
+                        }
+                    }
+                }
+                if (!paramRes)
+                {
+                    M3D_LOG_INFO("Profile::LoadFromXml warning - profile params were loaded with errors");
+                }
+            }
+            return 1;
+        }
+        else
+        {
+            M3D_LOG_INFO("Profile::LoadFromXml error - empty name");
+            return 0;
+        }
+    }
+	M3D_LOG_INFO("Profile::LoadFromXml error - invalid xmlFile or xmlNode");
+	return 0;
 }
 
 CStr const& Profile::GetFolder() const
@@ -148,6 +207,25 @@ int ProfileManager::Done()
 
 int ProfileManager::Init()
 {
+    Clear();
+    auto res = LoadProfiles();
+    if (!m_profiles.empty())
+    {
+        CStr lastProfileName = m3d::g_Kernel->GetEngineCfg().m_profile.GetS();
+        auto profile = _GetProfileByName(lastProfileName);
+        if (!profile)
+        {
+            M3D_LOG_INFO("ProfileManager::Init warning - last used profile \"" + lastProfileName + "\" does not exist");
+            res = 0;
+            profile = m_profiles.front();
+        }
+        SetCurProfile(profile->GetName());
+        return res;
+    }
+    auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    app->m_pInterfaceManager->ShowWindow(110, true, true, true, true, nullptr);
+    return 1;
+
     throw std::logic_error("Not implemented");
 }
 
@@ -173,7 +251,64 @@ m3d::Object* ProfileManager::CreateObject()
 
 int ProfileManager::LoadProfiles()
 {
-    throw std::logic_error("Not implemented");
+    Clear();
+    std::vector<CStr> files;
+    if (!GetProfileFiles(files))
+    {
+
+        M3D_LOG_INFO("ProfileManager::LoadProfiles error - cannot load profile files");
+        return 0;
+    }
+    for (auto& file : files)
+    {
+        scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+        if (stream->Open(file.c_str(), m3d::fs::IStream::OPEN_READ))
+        {
+            ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+            if (xmlFile->Read(*stream))
+            {
+                stream->Close();
+                ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+                xmlFile->GetFirstChild_(node, "Profile");
+                if (!node->IsEmpty())
+                {
+                    auto profile = dynamic_cast<Profile*>(m3d::g_Kernel->New("Profile"));
+                    if (profile)
+                    {
+	                    if (profile->LoadFromXml(xmlFile, node))
+	                    {
+                            profile->SetFolder(DirectoryFromFileName(file));
+                            if (!AddProfile(profile))
+                            {
+                                M3D_LOG_INFO("ProfileManager::LoadProfiles - cannot add profile " + profile->GetName());
+                            }
+	                    }
+                        else
+                        {
+                            M3D_LOG_INFO("ProfileManager::LoadProfiles - error by loading profile");
+                        }
+                    }
+                    else
+                    {
+                        M3D_LOG_INFO("ProfileManager::LoadProfiles error - cannot instantiate profile object");
+                    }
+                }
+                else
+                {
+                    M3D_LOG_INFO("ProfileManager::LoadProfiles - error by loading profile");
+                }
+            }
+            else
+            {
+                M3D_LOG_INFO("ProfileManager::LoadProfiles error - cannot parse " + file);
+            }
+        }
+        else
+        {
+            M3D_LOG_INFO("ProfileManager::LoadProfiles error - can't open file " + file + " for read.");
+        }
+    }
+    return 1;
 }
 
 Profile* ProfileManager::GetProfileByName(CStr const&) const
@@ -188,7 +323,13 @@ m3d::Object* ProfileManager::Clone()
 
 void ProfileManager::Clear()
 {
-    throw std::logic_error("Not implemented");
+    for (auto profile : m_profiles)
+    {
+        //TODO: check this
+        delete profile;
+    }
+    m_profiles.clear();
+    m_curProfileName = "";
 }
 
 CStr ProfileManager::GetProfileOwnFolderName(CStr const&) const
@@ -219,8 +360,19 @@ ProfileManager::ProfileManager() :
     m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvProfileFileName, nullptr);
 }
 
-int ProfileManager::GetProfileFiles(std::vector<CStr, std::allocator<CStr>>&) const
+int ProfileManager::GetProfileFiles(std::vector<CStr, std::allocator<CStr>>& files) const
 {
+    CStr pathToProfiles = m_cvPathToProfiles.GetS();
+    auto attr = GetFileAttributesA(pathToProfiles.c_str());
+
+    auto v4 = attr != -1 && (attr & 0x10) != 0;
+    auto v15 = !v4;
+    if (v15)
+    {
+        M3D_LOG_INFO("ProfileManager::GetProfileFiles warning - profile folder is not found");
+        return 0;
+    }
+
     throw std::logic_error("Not implemented");
 }
 

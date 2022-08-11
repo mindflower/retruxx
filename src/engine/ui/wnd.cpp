@@ -1095,10 +1095,42 @@ namespace m3d
             return 1;
         }
 
-        int Wnd::OnTick(int, int)
+        int Wnd::OnTick(int curTime, int deltaTime)
         {
-            //TODO: ...
-            throw std::logic_error("Not implemented");
+            if ((m_style & 0x20000) != 0)
+            {
+                GetStation()->CheckForMouseClick(this, false, nullptr);
+            }
+            if (!m_toolTipText.empty())
+            {
+	            if (m_toolTipTimeOut > 0)
+	            {
+                    m_toolTipTimeOut = m_toolTipTimeOut - deltaTime;
+                    if (m_toolTipTimeOut < 0)
+                    {
+                        m_toolTipTimeOut = 0;
+                    }
+	            }
+                if (m_toolTipWnd)
+                {
+	                if (!m_toolTipTimeOut)
+	                {
+                        Application::g_pApp->EnqueueMessage(45, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+                        m_toolTipTimeOut = -1;
+	                }
+                }
+                else if (!m_toolTipTimeOut)
+                {
+                    m_toolTipWnd = CreateTooltipWnd();
+                    Application::g_pApp->EnqueueMessage(44, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+                    m_toolTipTimeOut = 3000;
+                }
+            }
+            if (m_currentAnimation.m_animationType != AnimationInfo::ANIMATIONTYPE_INVALID && m_currentAnimation.m_bEnabled)
+            {
+                ProcessAnimation(curTime, deltaTime);
+            }
+            return 1;
         }
 
         int Wnd::ReflectChildNotifyToParent(Wnd*, unsigned, unsigned, AIParam const&)

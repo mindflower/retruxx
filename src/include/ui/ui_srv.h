@@ -53,6 +53,7 @@ namespace m3d
 
         class GfxServer
         {
+            friend class WndStation;
         public:
             class SoundInfo
             {

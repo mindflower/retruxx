@@ -164,7 +164,12 @@ int CMiracle3d::GameInit()
 
 bool CMiracle3d::GetCursorShow() const
 {
-    throw std::logic_error("Not implemented");
+    auto app = dynamic_cast<CMiracle3d*>(g_pApp);
+    if (app->m_pInterfaceManager->IsGameModeValidForSmartCursor(m_curGameMode.Get()))
+    {
+        return false;
+    }
+    return m_showCursor;
 }
 
 bool CMiracle3d::GetCursorShow0() const
@@ -355,6 +360,16 @@ bool CMiracle3d::SetPostEffectParam(CStr const&, float)
 
 void CMiracle3d::StartMainMenu()
 {
+    if (m_profileManager)
+    {
+        m_profileManager->Init();
+        m3d::AuxImpulseInfo info(1, true, -1, 0, 0);
+        OnChangeMode(info);
+    }
+    else
+    {
+        M3D_LOG_INFO("CMiracle3d::InitMedia error - cannot instantiate ProfileManager object");
+    }
     throw std::logic_error("Not implemented");
 }
 
@@ -828,13 +843,20 @@ int CMiracle3d::AddChild(m3d::Object* node)
 
 int CMiracle3d::RemoveChildForce(m3d::Object* object)
 {
-    //TODO: ...
     throw std::logic_error("Not implemented");
 }
 
-int CMiracle3d::Render(bool)
+int CMiracle3d::Render(bool needToRedrawAllObjs)
 {
-    //TODO: ...
+    if (m_playingVideo)
+    {
+        return 1;
+    }
+    if (m_curGameMode.Get() == GS_MAINMENU && m_bDoNotLoadMainmenuLevel)
+    {
+        g_pApp->m_renderer->ClearViewport(m3d::rend::M3DCLEAR_CZ, 0xFF000000);
+        return 1;
+    }
     throw std::logic_error("Not implemented");
 }
 
@@ -950,8 +972,8 @@ int CMiracle3d::InitMedia()
         m_musicNames.resize(4);
         m_musicNames[0] = "mainmenu";
         m_bDoNotLoadMainmenuLevel = m3d::g_Kernel->GetEngineCfg().m_DoNotLoadMainmenuLevel.GetB();
-        CaptureMouse(this);
-        SetCursorShow(this);
+        CaptureMouse(nullptr);
+        SetCursorShow(false);
         InitBackgroundTexture();
         OnFinishIntroVideoPlaying();
         return 1;
@@ -962,16 +984,17 @@ int CMiracle3d::InitMedia()
 
 int CMiracle3d::FrameMove()
 {
-    //TODO: ...
-    throw std::logic_error("Not implemented");
     if (!m_playingVideo || m_enginePlayingVideo)
     {
+        throw std::logic_error("Not implemented");
         auto* profiler = GetProfilerStack().GetProfiler(m_profiler_Client);
         profiler->StartCountdown();
         PlayHackedMusic(m_hackedMusicType, false);
         m3d::RadioEngine::GetInstance()->PlayNextSoundMessage();
-        //TODO:...
-        if (m3d::pClient != nullptr)
+        auto startTime = m3d::g_Kernel->GetTimer().GetFrameStartTime();
+        auto lastTime= m3d::g_Kernel->GetTimer().GetLastFrameTime();
+        auto dT = lastTime * 0.001;
+        if (m3d::pClient)
         {
             GetCameraController()->Update();
             if (m_cinematic->m_state != m3d::CINEMATIC_NOT_INITED)
@@ -980,6 +1003,16 @@ int CMiracle3d::FrameMove()
             }
         }
     }
+    else
+    {
+        m_playingVideo = false;
+        if (m_onFinishVideoPlaying)
+        {
+            (this->*m_onFinishVideoPlaying)();
+            return 1;
+        }
+    }
+    return 1;
 }
 
 void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)

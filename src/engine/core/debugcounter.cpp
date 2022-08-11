@@ -93,7 +93,7 @@ namespace m3d
 
     void DbgCounterStack::ClearStringStack()
     {
-        throw std::logic_error("Not implemented");
+        m_numStrings = 0;
     }
 
     DbgCounter* DbgCounterStack::GetCounterByName(char const*)

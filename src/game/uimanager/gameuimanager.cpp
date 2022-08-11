@@ -464,7 +464,19 @@ WindowResourceInfo* GameUiManager::GUI_GetResourceInfoByWndGuiId(int) const
 
 bool GameUiManager::GUI_IsModalEqualWndRunning() const
 {
-    throw std::logic_error("Not implemented");
+    if (m3d::Application::g_pApp->HasChildModalRunning())
+    {
+        return true;
+    }
+    for (auto id : m_onScreenWindows)
+    {
+        auto wnd = GUI_GetWindow(id);
+        if (wnd && GUI_IsWndModalEqual(wnd))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void* data, m3d::ui::Wnd* forceWnd)

@@ -29,14 +29,14 @@ namespace m3d
                 return m_handle >= 0;
             }
             
-            bool operator==(Handle<T> const&) const
+            bool operator==(Handle<T> const& a) const
             {
-                throw std::logic_error("Not implemented");
+                return m_handle == a.m_handle;
             }
 
-            bool operator!=(Handle<T> const&) const
+            bool operator!=(Handle<T> const& a) const
             {
-                throw std::logic_error("Not implemented");
+                return m_handle != a.m_handle;
             }
             
             //Handle<T>& operator=(Handle<T> const&)

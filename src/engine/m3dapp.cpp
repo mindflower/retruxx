@@ -336,6 +336,7 @@ namespace m3d
             return 1;
         }
 
+        m_enginePlayingVideo = false;
         if (!m_waitForAnykey)
         {
             g_Kernel->GetTimer().NewFrame();
@@ -343,13 +344,14 @@ namespace m3d
             if (g_Kernel->GetEngineCfg().m_snd_Enable.GetB() ||
                 g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
             {
-                auto const lastFrameTime = g_Kernel->GetTimer().GetLastFrameTime();
+                auto const lastFrameTime = g_Kernel->GetTimer().GetLastFrameTime() * 0.001;
                 g_pApp->m_sound->Update(lastFrameTime);
             }
             FrameMove();
             if (!m_waitForAnykey && m_isRenderingAllowed)
             {
-                if (m_renderer->CanRender())
+                auto rend = m_renderer->CanRender();
+                if (rend)
                 {
                     auto* renderProfiler = m_profilerStack.GetProfiler(m_profiler_Render);
                     FrameProfilerPtr renderProfilerPtr(renderProfiler);
@@ -365,27 +367,70 @@ namespace m3d
                             m_renderer->ClearViewport(rend::M3DCLEAR_CZ, m_frameClearColor);
                         }
                         //TODO: check this
-                        if (m_appNeedToRedraw)
+                        if (rend == 2 ||m_appNeedToRedraw)
                         {
-                            Render(1);
+                            Render(true);
                             m_appNeedToRedraw = 0;
                         }
                         else
                         {
-                            Render(0);
+                            Render(false);
                         }
+                        auto* uiProfiler = m_profilerStack.GetProfiler(m_profiler_UiRender);
+                        FrameProfilerPtr uiProfilerPtr(uiProfiler);
+                        Repaint();
+                        FlushGfx(m_renderer);
+                        //TODO: theck this
+                        g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
+                        if (m_bDrawGraph)
                         {
-                            auto* uiProfiler = m_profilerStack.GetProfiler(m_profiler_UiRender);
-                            FrameProfilerPtr uiProfilerPtr(uiProfiler);
-                            Repaint();
-                            FlushGfx(m_renderer);
+                            throw std::logic_error("Not implemented");
                         }
+                        if (m_bDrawMemoryStats)
+                        {
+                            throw std::logic_error("Not implemented");
+                        }
+                        if (m_bDrawStats)
+                        {
+                            throw std::logic_error("Not implemented");
+                        }
+                        if (m_bDrawCounters)
+                        {
+                            throw std::logic_error("Not implemented");
+                        }
+                        g_pApp->m_renderer->PopZbState();
+                        m_counterStack.ClearStringStack();
+                        if (g_Kernel->GetEngineCfg().m_console)
+                        {
+                            g_Kernel->GetEngineCfg().m_console->Render();
+                        }
+                        g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
+                        if (m_bShowDeviceMemStats)
+                        {
+                            throw std::logic_error("Not implemented");
+                        }
+                        if (m_bShowRenderStats)
+                        {
+                            throw std::logic_error("Not implemented");
+                        }
+                        if (g_Kernel->GetEngineCfg().m_g_showEffectsStats.GetB())
+                        {
+                            g_pApp->m_renderer->ShowStats();
+                        }
+                        g_pApp->m_renderer->PopZbState();
+                        m_renderer->EndScene();
                     }
-                   //TODO:...
-                    throw std::logic_error("Not implemented");
+                    if (m_screenShotPending)
+                    {
+                        throw std::logic_error("Not implemented");
+                    }
+                    m_renderer->PresentScene();
                 }
+                //TODO: add strings
+                CStr fps = " fps [";
             }
         }
+        return 1;
     }
 
     int Application::run()
@@ -1701,9 +1746,17 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Application::SetMouseXy(float, float)
+    void Application::SetMouseXy(float absX, float absY)
     {
-        throw std::logic_error("Not implemented");
+        if (m_bDXCursorEnabled)
+        {
+            g_pApp->m_renderer->MoveDXCursor(absX, absY);
+        }
+        else
+        {
+            m_mouseX = absX;
+            m_mouseY = absY;
+        }
     }
 
     int Application::GetCurGameMode()
@@ -1736,9 +1789,66 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Application::PutSprite2Abs(float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, unsigned)
+    void Application::PutSprite2Abs(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float tu1, float tv1, float tu2, float tv2, float tu3, float tv3, float tu4, float tv4, float zval, unsigned c)
     {
-        throw std::logic_error("Not implemented");
+        //TODO: check this and refactor!!!
+        int smth = 0;
+        auto mem = static_cast<float*>(g_pApp->m_renderer->LockVbStreaming(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1), 4, &smth, nullptr));
+
+
+        float v26; // xmm0_4
+        unsigned int v27; // ecx
+        float v28; // xmm2_4
+        float v29; // xmm0_4
+        float v30; // xmm2_4
+        float v31; // xmm2_4
+        float v32; // xmm2_4
+        float v33; // xmm0_4
+        float v34; // xmm2_4
+        float v35; // xmm0_4
+        v26 = x1;
+        v27 = c;
+    	mem[5] = tu1;
+        mem[6] = tv1;
+        v28 = x2;
+        mem[0] = v26;
+        mem[1] = y1;
+        v29 = zval;
+        mem[2] = zval;
+        mem[3] = 0.1;
+        mem[4] = v27;
+        mem[7] = v28;
+        mem[8] = y2;
+        mem[12] = tu2;
+        mem[13] = tv2;
+        v30 = x3;
+        mem[9] = zval;
+        mem[10] = 0.1;
+        mem[11] = v27;
+        mem[14] = v30;
+        mem[15] = y3;
+        mem[19] = tu3;
+        v31 = tv3;
+        mem[16] = v29;
+        mem[20] = v31;
+        v32 = x4;
+        mem[17] = 0.1;
+        mem[18] = v27;
+        mem[23] = v29;
+        v33 = tu4;
+        mem[21] = v32;
+        v34 = y4;
+        mem[26] = v33;
+        v35 = tv4;
+        mem[22] = v34;
+        mem[24] = 0.1;
+        mem[25] = v27;
+        mem[27] = v35;
+
+        g_pApp->m_renderer->UnlockVb(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1));
+        g_pApp->m_renderer->SetToStream0(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1));
+        auto res = g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLESTRIP, 0, 2);
+        bool df = true;
     }
 
     void Application::PutSprite2Abs(float, float, float, float, float, float, float, float, unsigned)
@@ -1820,9 +1930,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Application::PutSpriteAbs(float, float, float, float, unsigned)
+    void Application::PutSpriteAbs(float x1, float y1, float x2, float y2, unsigned c)
     {
-        throw std::logic_error("Not implemented");
+        PutSprite2Abs(x1, y2, x1, y1, x2, y2, x2, y1, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, c);
     }
 
     void Application::PutSpriteAbs(float, float, float, float, float, float, float, float, unsigned)

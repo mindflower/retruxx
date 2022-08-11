@@ -51,9 +51,21 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        Cursor& Cursor::operator=(Cursor const&)
+        Cursor& Cursor::operator=(Cursor const& c)
         {
-            throw std::logic_error("Not implemented");
+            if (this == &c)
+            {
+                return *this;
+            }
+            m_sz = c.m_sz;
+            m_spot = c.m_spot;
+            if (m_tex != c.m_tex)
+            {
+                Application::g_pApp->m_renderer->ReleaseTexture(m_tex);
+                m_tex = c.m_tex;
+                Application::g_pApp->m_renderer->ReferenceTexture(m_tex);
+            }
+            return *this;
         }
 
         Cursor::~Cursor()
@@ -70,9 +82,9 @@ namespace m3d
         {
         }
 
-        Cursor::Cursor(Cursor const&)
+        Cursor::Cursor(Cursor const& c)
         {
-            throw std::logic_error("Not implemented");
+            operator=(c);
         }
     }
 }

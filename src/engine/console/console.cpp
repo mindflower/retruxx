@@ -7,6 +7,8 @@
 #include <core/ref_ptr.h>
 #include <core/console/cvar.h>
 
+#include "m3dapp.h"
+
 namespace
 {
     m3d::CConsoleCommands conCommands[] = {
@@ -18,6 +20,11 @@ namespace
         {"conExec" , 5},
         {"conScript" , 6},
     };
+
+    void Gfx_PrintFixed(float,float,int,char const *,unsigned int,unsigned int)
+    {
+	    
+    }
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, Clear)
@@ -282,7 +289,20 @@ ConsoleImp::auxConsoleCmd::auxConsoleCmd(char const* rname, int rid, IConHandler
 
 void ConsoleImp::Render()
 {
-    throw std::logic_error("Not implemented");
+    if (m_csCurState)
+    {
+        if (m_csCurState == CONSOLE_CLOSED)
+        {
+            if (m_bDrawNotify)
+            {
+                RenderNotify();
+            }
+        }
+        else
+        {
+            throw std::logic_error("Not implemented");
+        }
+    }
 }
 
 int ConsoleImp::InputLine(CStr const&)
@@ -645,6 +665,41 @@ CStr ConsoleImp::getFormatedScriptErrorDesc(m3d::eScriptError) const
 
 void ConsoleImp::RenderNotify()
 {
+    throw std::logic_error("Not implemented");
+    auto v2 = this->m_FontSizeY * this->m_nNumNotify;
+    auto v3 = this->m_con.height;
+    auto v4 = (v3 * this->m_screensize);
+
+    if (v4 > v2)
+        v4 = v2;
+    if (v4 > 0)
+    {
+        if (v4 > v3)
+            v4 = v3;
+        m3d::Application::g_pApp->m_renderer->PushZbState(m3d::rend::ZB_DISABLE);
+        m3d::Application::g_pApp->m_renderer->PushFog(false);
+        m3d::Application::g_pApp->SetFont("Impact", 9.0, 0, m3d::Application::g_pApp->m_codePage.CodePage);
+        m_con.vislines = v4;
+        auto v6 = m_con.display;
+        for (int i = 0; i < v4 / m_FontSizeY; ++i)
+        {
+	        if (v6 < 0)
+	        {
+                break;
+	        }
+            auto v7 = m_con.totallines;
+            if (m_con.current - v6 >= v7)
+            {
+                break;
+            }
+            //TODO: add Gfx_PrintFixed
+            Gfx_PrintFixed(3.0, v4, m_FontSizeX, &m_con.text[this->m_con.linewidth * (v6 % v7)], 0xFFA0A0A0, m_con.linewidth);
+            v4 -= m_FontSizeY;
+            --v6;
+        }
+        m3d::Application::g_pApp->m_renderer->PopZbState();
+        m3d::Application::g_pApp->m_renderer->PopFog();
+    }
     throw std::logic_error("Not implemented");
 }
 

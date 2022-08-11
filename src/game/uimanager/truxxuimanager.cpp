@@ -394,7 +394,7 @@ int TruxxUiManager::Init()
 
 bool TruxxUiManager::IsModalEqualWndRunning() const
 {
-    throw std::logic_error("Not implemented");
+    return GUI_IsModalEqualWndRunning();
 }
 
 LevelInfoManager* TruxxUiManager::GetLevelInfoManager() const

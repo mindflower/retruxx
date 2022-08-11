@@ -183,9 +183,46 @@ BoundsBase<T>::BoundsBase(PointBase<T> const&, PointBase<T> const&)
 }
 
 template <class T>
-BoundsBase<T> BoundsBase<T>::Intersect(BoundsBase<T> const&) const
+BoundsBase<T> BoundsBase<T>::Intersect(BoundsBase<T> const& b) const
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check this and refactor
+    float v3; // xmm2_4
+    float v4; // xmm1_4
+    float v5; // xmm4_4
+    float v6; // xmm0_4
+    float v7; // xmm3_4
+    float v8; // xmm2_4
+    BoundsBase<float> result; // eax
+
+    v3 = b.width + b.x0;
+    if (this->x0 > v3
+        || (v4 = this->width + this->x0, b.x0 > v4)
+        || (v5 = b.height + b.y0, this->y0 > v5)
+        || (v6 = this->height + this->y0, b.y0 > v6))
+    {
+        result.x0 = 0.0;
+        result.y0 = 0.0;
+        result.width = 0.0;
+        result.height = 0.0;
+    }
+    else
+    {
+        v7 = this->x0;
+        if (this->x0 <= b.x0)
+            v7 = b.x0;
+        if (v3 <= v4)
+            v4 = b.width + b.x0;
+        v8 = this->y0;
+        if (v8 <= b.y0)
+            v8 = b.y0;
+        if (v5 <= v6)
+            v6 = b.height + b.y0;
+        result.x0 = v7;
+        result.y0 = v8;
+        result.width = v4 - v7;
+        result.height = v6 - v8;
+    }
+    return result;
 }
 
 template <class T>

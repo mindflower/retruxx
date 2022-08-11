@@ -122,21 +122,21 @@ namespace m3d
                 void SetupDefaultOnShow();
 
             public:
-                bool m_bEnabled;
-                bool m_bImmediate;
-                PointBase<float> m_startPt;
-                PointBase<float> m_endPt;
-                AnimationType m_animationType;
-                float m_startSpeed;
-                float m_acceleration;
-                float m_curSpeed;
-                unsigned int m_delayTime;
-                unsigned int m_startTime;
-                Purpose m_purpose;
+                bool m_bEnabled = true;
+                bool m_bImmediate = false;
+                PointBase<float> m_startPt{0.0, 0.0};
+                PointBase<float> m_endPt{ 0.0, 0.0 };
+                AnimationType m_animationType = ANIMATIONTYPE_INVALID;
+                float m_startSpeed = 0.0;
+                float m_acceleration = 0.0;
+                float m_curSpeed = 0.0;
+                unsigned int m_delayTime = 0;
+                unsigned int m_startTime = 0;
+                Purpose m_purpose = PURPOSE_UNKNOWN;
                 CStr m_soundMoveName;
                 CStr m_soundStopName;
-                bool m_bSoundMoveEnabled;
-                bool m_bSoundStopEnabled;
+                bool m_bSoundMoveEnabled = false;
+                bool m_bSoundStopEnabled = false;
             };
 
         public:
@@ -353,7 +353,7 @@ namespace m3d
 
         class DrawInfo
         {
-        private:
+        public:
             Wnd* m_wndDest;
             BoundsBase<float> m_originalRect;
             BoundsBase<float> m_clippedRect;
