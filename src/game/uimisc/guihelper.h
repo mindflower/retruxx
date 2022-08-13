@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <core/stringm3d.h>
 
 namespace m3d
@@ -62,4 +63,5 @@ namespace help
     void DeleteAllFilesInDirectory(char const*);
     CStr GetCurrentLevelName();
     int CloneWndWithChildren(m3d::ui::Wnd const*, m3d::ui::Wnd*);
+    int GetWindowsSubDirs(CStr const&, std::vector<CStr>&, CStr const&);
 }

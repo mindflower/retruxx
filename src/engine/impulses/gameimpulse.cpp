@@ -287,9 +287,13 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    AuxImpulseInfo::AuxImpulseInfo(int, bool, int, unsigned, unsigned)
+    AuxImpulseInfo::AuxImpulseInfo(int impId, bool state, int gameMode, unsigned i0, unsigned i1)
     {
-        throw std::logic_error("Not implemented");
+        m_impId = impId;
+        m_state = state;
+        m_gameMode = gameMode;
+        m_info0 = i0;
+        m_info1 = i1;
     }
 
     float AuxImpulseInfo::UnpackWheel() const

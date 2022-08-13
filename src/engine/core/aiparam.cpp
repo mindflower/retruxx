@@ -112,7 +112,57 @@ namespace m3d
 
     CStr AIParam::GetAsStr() const
     {
-        throw std::logic_error("Not implemented");
+        switch(Type)
+        {
+        case AIPARAM_UNDEFINE:
+        {
+            return {};
+	    }
+        case AIPARAM_VECTOR:
+        {
+            CStr res;
+            res.format("%.3f %.3f %.3f", this->x, this->y, this->z);
+            return res;
+        }
+        case AIPARAM_QUATERNION:
+        {
+            CStr res;
+            res.format("%.3f %.3f %.3f %.3f", this->x, this->y, this->z, this->w);
+            return res;
+        }
+        case AIPARAM_ID:
+        {
+            CStr res;
+            res.format("%ld", this->id);
+            return res;
+        }
+        case AIPARAM_FLOAT:
+        {
+            CStr res;
+            res.format("%.3f", this->x);
+            return res;
+        }
+        case AIPARAM_STRING:
+        {
+            return *m_Str;
+        }
+        case AIPARAM_ID_LIST:
+        {
+            throw std::logic_error("Not implemented");
+        }
+        case AIPARAM_STRING_LIST:
+        {
+            throw std::logic_error("Not implemented");
+        }
+        case AIPARAM_RANGE:
+        {
+            CStr res;
+            res.format("%.3f %.3f ", this->x, this->z);
+            return res;
+        }
+        default:
+        	return {};
+        }
     }
 
     CVector AIParam::GetAsVector() const
@@ -170,9 +220,15 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    AIParam& AIParam::operator=(CStr const&)
+    AIParam& AIParam::operator=(CStr const& str)
     {
-        throw std::logic_error("Not implemented");
+        Detach();
+        id = 0;
+        w = 0;
+        y = 0;
+        m_Str = new CStr(str);
+        Type = AIPARAM_STRING;
+        return *this;
     }
 
     AIParam& AIParam::operator=(AIParam const& pparam)
@@ -191,9 +247,15 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    AIParam& AIParam::operator=(float const&)
+    AIParam& AIParam::operator=(float const& f)
     {
-        throw std::logic_error("Not implemented");
+        Detach();
+        z = 0;
+        y = 0;
+        w = 0;
+        x = f;
+        Type = AIPARAM_FLOAT;
+        return *this;
     }
 
     AIParam& AIParam::operator=(std::vector<int> const&)
@@ -211,9 +273,15 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    AIParam& AIParam::operator=(int const&)
+    AIParam& AIParam::operator=(int const& i)
     {
-        throw std::logic_error("Not implemented");
+        Detach();
+        y = 0;
+        z = 0;
+        w = 0;
+        Type = AIPARAM_ID;
+        id = i;
+        return *this;
     }
 
     bool AIParam::operator>(AIParam const&)
@@ -226,14 +294,88 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void AIParam::LoadFromXML(cmn::XmlFile*, cmn::XmlNode const*)
+    void AIParam::LoadFromXML(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        //TODO: check this
+        Detach();
+        CStr valueAttr = xmlNode->GetAttribute("GAIParam_Value");
+        operator=(valueAttr);
+        CStr type = xmlNode->GetAttribute("GAIParam_Type");
+        if (type == "AIPARAM_UNDEFINE")
+        {
+            SetType(AIPARAM_UNDEFINE);
+        }
+        else if (type == "AIPARAM_VECTOR")
+        {
+            SetType(AIPARAM_VECTOR);
+        }
+        else if (type == "AIPARAM_QUATERNION")
+        {
+            SetType(AIPARAM_QUATERNION);
+        }
+        else if (type == "AIPARAM_ID")
+        {
+            SetType(AIPARAM_ID);
+        }
+        else if (type == "AIPARAM_FLOAT")
+        {
+            SetType(AIPARAM_FLOAT);
+        }
+        else if (type == "AIPARAM_STRING")
+        {
+            SetType(AIPARAM_STRING);
+        }
+        else if (type == "AIPARAM_ID_LIST")
+        {
+            SetType(AIPARAM_ID_LIST);
+        }
+        else if (type == "AIPARAM_STRING_LIST")
+        {
+            SetType(AIPARAM_STRING_LIST);
+        }
+        else if (type == "AIPARAM_RANGE")
+        {
+            SetType(AIPARAM_RANGE);
+        }
     }
 
     float AIParam::GetAsFloat() const
     {
-        throw std::logic_error("Not implemented");
+        double result; // st7
+        float v2; // xmm1_4
+        float* v3; // ebx
+        float* v4; // edi
+        float* v5; // esi
+        const char** v6; // ecx
+        float v7; // [esp+4h] [ebp-8h] BYREF
+        float v8; // [esp+8h] [ebp-4h] BYREF
+
+        switch (Type)
+        {
+        case AIPARAM_ID:
+            return id;
+        case AIPARAM_STRING:
+            if (!m_Str && m_Str->empty())
+                return atof(m_Str->c_str());
+            return 0;
+        case AIPARAM_RANGE:
+            //TODO: check this!!!
+            v2 = this->y;
+            v7 = this->id;
+            v8 = v2;
+            v3 = &v8;
+            if (*&v7 <= v2)
+                v3 = &v7;
+            v4 = &v8;
+            if (v2 <= *&v7)
+                v4 = &v7;
+            v5 = &v8;
+            if (*&v7 <= v2)
+                v5 = &v7;
+            return rand() * (*v4 - *v5) * 0.000030518509 + *v3;
+        default:
+            return x;
+        }
     }
 
     Quaternion AIParam::GetAsQuaternion() const
@@ -246,9 +388,41 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void AIParam::SetType(eAIParamType)
+    void AIParam::SetType(eAIParamType ParamType)
     {
-        throw std::logic_error("Not implemented");
+        switch (ParamType)
+        {
+        case AIPARAM_UNDEFINE:
+            Detach();
+            Type = AIPARAM_UNDEFINE;
+            break;
+        case AIPARAM_VECTOR:
+            operator=(GetAsVector());
+            break;
+        case AIPARAM_QUATERNION:
+            operator=(GetAsQuaternion());
+            break;
+        case AIPARAM_ID:
+            operator=(GetAsID());
+            break;
+        case AIPARAM_FLOAT:
+            operator=(GetAsFloat());
+            break;
+        case AIPARAM_STRING:
+            operator=(GetAsStr());
+            break;
+        case AIPARAM_ID_LIST:
+            operator=(GetAsIdList());
+            break;
+        case AIPARAM_STRING_LIST:
+            operator=(GetAsStringList());
+            break;
+        case AIPARAM_RANGE:
+            operator=(GetAsVector());
+            break;
+        default:
+            return;
+        }
     }
 
     void AIParam::ConvertFromString(void*, eAIParamType) const
@@ -267,7 +441,7 @@ namespace m3d
         if (&param != this)
         {
             id = 0;
-            switch (Type)
+            switch (param.GetType())
             {
             case AIPARAM_STRING:
             {

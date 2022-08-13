@@ -4,6 +4,8 @@
 #include <world.h>
 
 #include "core/kernel.h"
+#include "core/log.h"
+#include "file/fileenum.h"
 #include "ui/ui.h"
 #include "ui/button.h"
 #include "ui/image.h"
@@ -120,6 +122,37 @@ namespace help
                 return 1;
 	        }
         }
+        return 0;
+    }
+
+    int GetWindowsSubDirs(CStr const& parentDirPath, std::vector<CStr>& subDirs, CStr const& pattern)
+    {
+        subDirs.clear();
+        auto attr = GetFileAttributesA(parentDirPath.c_str());
+        if (attr != -1 && (attr & 0x10) != 0)
+        {
+            _finddata_t data;
+            m3d::fs::CFileEnum fileEnum;
+            if (!fileEnum.StartEnumeration(parentDirPath.c_str(), pattern.c_str(), &data))
+            {
+                return 1;
+            }
+
+            do
+            {
+	            if ((data.attrib & 0x10) != 0)
+	            {
+                    CStr dirName = data.name;
+                    if (!dirName.empty() && dirName == "." || dirName == "..")
+                    {
+                        continue;
+                    }
+                    subDirs.push_back(dirName);
+	            }
+            } while (fileEnum.GetNextFile(&data));
+            return 1;
+        }
+        M3D_LOG_INFO("GetWindowsSubDirs error - dir \"" + parentDirPath + "\" does not exist");
         return 0;
     }
 }

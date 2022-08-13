@@ -3857,6 +3857,9 @@
     <ClInclude Include="src\include\script\scriptcontext.h">
       <Filter>include\script</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\file\fileenum.h">
+      <Filter>include\file</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

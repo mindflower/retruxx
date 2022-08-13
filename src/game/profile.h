@@ -86,7 +86,7 @@ protected:
     CStr ParamId2Name(ProfileParam) const ;
 
 public:
-    RT_CLASS_INLINE_DECLARE(Profile);
+    RT_CLASS_DECLARE(Profile);
 
 private:
     CStr m_name;

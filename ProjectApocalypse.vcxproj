@@ -1026,6 +1026,7 @@
     <ClInclude Include="src\include\decals.h" />
     <ClInclude Include="src\include\draftstructures.h" />
     <ClInclude Include="src\include\dummy.h" />
+    <ClInclude Include="src\include\file\fileenum.h" />
     <ClInclude Include="src\include\file\filereader.h" />
     <ClInclude Include="src\include\file\fileserver.h" />
     <ClInclude Include="src\include\file\filestream.h" />

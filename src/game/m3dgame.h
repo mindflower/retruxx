@@ -204,7 +204,7 @@ private:
     m3d::BlockMusicManager *m_blockMusicManager;
     m3d::TownMusicManager *m_townMusicManager;
     m3d::RadioEngine *m_radioEngine;
-    int (CMiracle3d::* m_onFinishVideoPlaying)();
+    int (CMiracle3d::* m_onFinishVideoPlaying)() = nullptr;
     m3d::CVar m_minDist;
     m3d::CVar m_maxDist;
     m3d::CVar m_cameraHeight;
