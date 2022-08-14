@@ -6,6 +6,7 @@
 #include "core/kernel.h"
 #include "core/log.h"
 #include "file/fileenum.h"
+#include "file/fileserver.h"
 #include "ui/ui.h"
 #include "ui/button.h"
 #include "ui/image.h"
@@ -17,9 +18,32 @@ namespace m3d
 
 namespace help
 {
-    void DeleteAllFilesInDirectory(char const*)
+    void DeleteAllFilesInDirectory(char const* dir)
     {
-        throw std::logic_error("Not implemented");
+        auto fileMask = dir + CStr("\\*.*");
+        WIN32_FIND_DATAA data;
+        auto file = FindFirstFileA(fileMask.c_str(), &data);
+        if (file = INVALID_HANDLE_VALUE)
+        {
+            FindClose(INVALID_HANDLE_VALUE);
+            return;
+        }
+        CStr strDir(dir);
+        assert(strDir.length() > 0);
+        strDir += "\\";
+        do
+        {
+            auto fileName = data.cFileName;
+	        if (fileName != "." && fileName != "..")
+	        {
+                auto fullName = strDir + fileName;
+                auto attr = GetFileAttributesA(fullName.c_str());
+                SetFileAttributesA(fullName.c_str(), attr & 0xFA);
+                DeleteFileA(fullName.c_str());
+                m3d::g_Kernel->GetFileServer().RemoveFile(fullName.c_str());
+	        }
+        } while (FindNextFileA(file, &data));
+        FindClose(file);
     }
 
     CStr GetCurrentLevelName()
@@ -154,5 +178,18 @@ namespace help
         }
         M3D_LOG_INFO("GetWindowsSubDirs error - dir \"" + parentDirPath + "\" does not exist");
         return 0;
+    }
+
+    int CreateWindowsDir(CStr const&)
+    {
+	    throw std::logic_error("Not implemented");
+    }
+
+    CStr GetMapNameFromFileName(CStr const& fileName)
+    {
+        auto name = NameFromFileName(fileName);
+        auto pos = name.find('.');
+        auto res = name.substr(0, pos);
+        return res;
     }
 }

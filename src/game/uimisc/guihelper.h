@@ -64,4 +64,6 @@ namespace help
     CStr GetCurrentLevelName();
     int CloneWndWithChildren(m3d::ui::Wnd const*, m3d::ui::Wnd*);
     int GetWindowsSubDirs(CStr const&, std::vector<CStr>&, CStr const&);
+    int CreateWindowsDir(CStr const&);
+    CStr GetMapNameFromFileName(CStr const&);
 }

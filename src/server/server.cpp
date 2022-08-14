@@ -111,7 +111,7 @@
 
 namespace ai
 {
-    CServer* CServer::pServer = nullptr;
+    CServer* pServer = nullptr;
 
     void CServer::AddToCinematic(Obj*, bool)
     {

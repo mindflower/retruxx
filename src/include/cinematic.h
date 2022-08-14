@@ -82,7 +82,7 @@ namespace m3d
     };
     class CinematicItem
     {
-    private:
+    public:
         int m_flags = 0;
         bool m_bLookTo = false;
         int m_idToLookAt = -1;

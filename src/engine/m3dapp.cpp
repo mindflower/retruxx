@@ -103,6 +103,11 @@ namespace
     using CreateISoundType = snd::ISound* (*)(m3d::Kernel*);
 }
 
+namespace ai
+{
+    extern CServer* pServer;
+}
+
 namespace m3d
 {
     Application* Application::g_pApp = nullptr;
@@ -270,7 +275,7 @@ namespace m3d
                 }
 
                 ai::CServer::Register();
-                ai::CServer::pServer = new ai::CServer{};
+                ai::pServer = new ai::CServer{};
 
                 EnableDXCursor(g_Kernel->GetEngineCfg().m_r_dxcursor.GetB());
                 if (g_Kernel->GetEngineCfg().m_clipCursorWithinRenderWnd.GetB())
@@ -1227,7 +1232,7 @@ namespace m3d
 
     void Application::AllowRendering()
     {
-        throw std::logic_error("Not implemented");
+        m_isRenderingAllowed = 1;
     }
 
     bool Application::StartPlayingMusic(char const*, bool, bool)
@@ -1282,7 +1287,10 @@ namespace m3d
 
     void Application::StopPlayingMusic()
     {
-        throw std::logic_error("Not implemented");
+        if (g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        {
+            g_pApp->m_sound->StopGroup(0);
+        }
     }
 
     void Application::SetMouseSensitivity(float)

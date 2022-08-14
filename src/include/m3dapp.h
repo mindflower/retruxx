@@ -276,6 +276,7 @@ namespace m3d
         mVideoPlayer* M3dVideoPlayer = nullptr;
         CCamera m_curCamera;
         DbgCounterStack m_counterStack;
+        bool m_bGuiWasHiddenBeforeCinematic = false;
 
 
         _cpinfoexA m_codePage;
@@ -283,6 +284,16 @@ namespace m3d
     protected:
         bool m_enginePlayingVideo = false;
         bool m_bDoNotLoadMainmenuLevel;
+        DataServer* m_serverStaticModels;
+        DataServer* m_serverAnimatedModels;
+        DataServer* m_serverLights;
+        DataServer* m_serverSprites;
+        DataServer* m_serverParticles;
+        DataServer* m_serverSound;
+        DataServer* m_serverMusic;
+        DataServer* m_serverLines;
+        DataServer* m_serverProjectors;
+        DataServer* m_serverDecals;
 
     private:
         CmdLine m_cmdLine;
@@ -332,16 +343,6 @@ namespace m3d
         unsigned int m_frameClearColor;
         rend::IEffect *m_flushQuadsShader = nullptr;
         __int64 m_cpuSpeed;
-        DataServer *m_serverStaticModels;
-        DataServer *m_serverAnimatedModels;
-        DataServer *m_serverLights;
-        DataServer *m_serverSprites;
-        DataServer *m_serverParticles;
-        DataServer *m_serverSound;
-        DataServer *m_serverMusic;
-        DataServer *m_serverLines;
-        DataServer *m_serverProjectors;
-        DataServer *m_serverDecals;
         _cpinfoexA m_unicodeCodePage;
         rend::TexHandle m_texSplash;
         rend::TexHandle m_texSplash1;
@@ -375,6 +376,5 @@ namespace m3d
         MouseInfo m_mouseInfo;
         HWND m_renderWindow = NULL;
         IConHandler *m_soundConHandler = nullptr;
-        bool m_bGuiWasHiddenBeforeCinematic = false;
     }; 
 }

@@ -1,6 +1,12 @@
 #include "savesmanager.h"
 #include <stdexcept>
 
+#include "guihelper.h"
+#include "m3dapp.h"
+#include "core/log.h"
+#include "game/m3dgame.h"
+#include "game/profile.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(SavesManager, AutoSave)
 {
     throw std::logic_error("Not implemented");
@@ -37,7 +43,19 @@ m3d::Object* SavesManager::Clone()
 
 CStr SavesManager::GetPathForTemporaryMaps() const
 {
-    throw std::logic_error("Not implemented");
+    auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto profile = app->GetProfileManager()->GetCurProfile();
+    if (profile)
+    {
+        auto path = profile->GetFolder() + "\\__temp_maps\\";
+        auto attr = GetFileAttributesA(path.c_str());
+        if (attr != -1 && (attr & 0x10) != 0 || help::CreateWindowsDir(path))
+        {
+            return path;
+        }
+    	M3D_LOG_INFO("SavesManager::GetPathForTemporaryMaps error - cannot create folder " + path);
+    }
+    return {};
 }
 
 CStr SavesManager::GetSaveFolderPathByFolderName(CStr const&) const

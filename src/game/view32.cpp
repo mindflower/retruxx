@@ -25,14 +25,28 @@
 #include <core/log.h>
 #include <scene/servers/dataserver.h>
 
+#include "level.h"
 #include "video.h"
+#include "core/scoped_ptr.h"
+#include "file/fileserver.h"
+#include "file/filestream.h"
+#include "server/dynamicscene.h"
 #include "server/passagedata.h"
+#include "server/objects/vehicle.h"
+#include "uimisc/questinfo.h"
+#include "uiwindows/miscwindows/cinemapanel.h"
 
 extern Vivisector* g_Vivisector;
 
 namespace m3d
 {
     extern CClient* pClient;
+}
+
+namespace ai
+{
+    extern CServer* pServer;
+    extern DynamicScene* gDynamicScene;
 }
 
 namespace
@@ -63,6 +77,21 @@ namespace
     };
 
     int videoNum = 0;
+
+    CinemaPanel* GetCinemaPanel()
+    {
+        auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+        auto wnd = app->m_pInterfaceManager->GetWindow(18);
+        if (!wnd)
+        {
+            return nullptr;
+        }
+        if (!wnd->IsKindOf(RT_CLASS_LOCAL(CinemaPanel)))
+        {
+            return nullptr;
+        }
+        return dynamic_cast<CinemaPanel*>(&*wnd);
+    }
 }
 
 unsigned m_profiler_Client = 0;
@@ -92,8 +121,71 @@ void CMiracle3d::Player::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     throw std::logic_error("Not implemented");
 }
 
-int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const&)
+int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
 {
+    if (!impInfo.m_state)
+    {
+        return 1;
+    }
+    if (m_curGameMode.Get() == GS_CINEMATIC && impInfo.m_impId != 2)
+    {
+	    if (m_cinematic->m_state != 5 && m_cinematic->m_state != 3 && m_cinematic->m_state != 4)
+	    {
+            CinematicInterrupt();
+            HandleCinematic(0.0);
+            return 1;
+	    }
+    }
+    if (m_curGameMode.Get() != GS_MAINMENU && impInfo.m_impId == 1)
+    {
+        auto app = dynamic_cast<CMiracle3d*>(g_pApp);
+        StopPlayingMusic();
+        if (m_gameInited)
+        {
+            ClearViewportToBlack();
+            CinematicClear();
+            auto savesManager = app->m_pInterfaceManager->GetSavesManager();
+            auto tempMaps = savesManager->GetPathForTemporaryMaps();
+            help::DeleteAllFilesInDirectory(tempMaps.c_str());
+            if (m3d::pClient)
+            {
+                ProcessAllEvents();
+                app->m_pInterfaceManager->ShowWindow(166, false, false, false, false, nullptr);
+                app->m_pInterfaceManager->LaunchEvent(86, GUI_EVENT_CUSTOM, nullptr);
+                ai::pServer->Clear();
+                ai::pServer->ClearOnce();
+                m3d::pClient->Reset();
+                m3d::pClient->GetWorld().Release();
+                DiscardAllEvents();
+                app->m_pImpulses->ResetAllImpulses(true);
+                m_bRenderAsBackground = false;
+                m_bBackgroundTextureIsValid = false;
+            }
+        }
+        m_curGameMode.Set(GS_MAINMENU);
+        //TODO: check this (1.0)
+        m3d::g_Kernel->GetTimer().SetTimeScale(1.0);
+        m_saveTimeScale = m3d::g_Kernel->GetTimer().GetTimeScale();
+        AllowRendering();
+        if (!LoadMainMenuLevel())
+        {
+            GameDone();
+        }
+        app->m_pInterfaceManager->Show(false, true);
+        app->m_pInterfaceManager->ShowWindow(72, true, true, false, false, nullptr);
+        SetCursorShow(true);
+        CaptureMouse(nullptr);
+        if (!m_bDoNotLoadMainmenuLevel)
+        {
+            app->m_pInterfaceManager->ShowWindow(19, 1, 1, false, false, nullptr);
+            auto wnd = app->m_pInterfaceManager->GetWindow(19);
+            if (IsDirectChild(wnd))
+            {
+                MoveChildToFirstPosition(wnd);
+            }
+        }
+        return 1;
+    }
     throw std::logic_error("Not implemented");
 }
 
@@ -285,7 +377,25 @@ float CMiracle3d::getZoom()
 
 int CMiracle3d::CinematicClear()
 {
-    throw std::logic_error("Not implemented");
+    if (m_cinematic->m_state != m3d::CINEMATIC_NOT_INITED)
+    {
+        m_cinematic->Stop();
+        if (auto panel = GetCinemaPanel())
+        {
+            panel->OnHide();
+        }
+        auto app = dynamic_cast<CMiracle3d*>(g_pApp);
+        app->m_pInterfaceManager->ShowWindow(19, false, false, false, false, nullptr);
+        app->m_pInterfaceManager->Show(!m_bGuiWasHiddenBeforeCinematic, true);
+        GetStation()->SetCursorShow(true);
+        m3d::g_Kernel->GetEngineCfg().m_FogOfWar.SetI(1);
+        if ((m_cinematic->GetCurItem().m_flags & 2) != 0)
+        {
+            ai::pServer->PostPlayerEvent(ai::GE_END_CINEMATIC);
+        }
+        m_cinematic->LoadDefaults();
+    }
+    return 1;
 }
 
 void CMiracle3d::OnBeforeDeviceReset()
@@ -338,9 +448,76 @@ int CMiracle3d::OnObtainingFocus()
     throw std::logic_error("Not implemented");
 }
 
-int CMiracle3d::LoadLevel(CStr const&, CStr const&, bool, bool, bool, m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, ai::ObjContainer::eSAVE_TYPES)
+int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServers, bool bQuiet, bool bContinuousMap, m3d::cmn::XmlFile* dynamicSceneXmlFile, m3d::cmn::XmlNode const* dynamicSceneXmlNode, ai::ObjContainer::eSAVE_TYPES saveType)
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check continiousMap and LoadServers!!!!
+    if (!m_gameInited)
+    {
+        return 0;
+    }
+    M3D_LOG_INFO("-- Loading Level: " + name + " --");
+    if (!LoadServers)
+    {
+        ai::pServer->InitOnce();
+    }
+    //TODO: check this
+    if (bQuiet && !m3d::pClient->GetWorld().Load(name, m_curCamera, bQuiet))
+    {
+	    M3D_LOG_INFO("Level file " + name + " not found");
+        EnqueueMessage(1, 0, 0, 0, 0, {}, {});
+        return 0;
+    }
+    m_blockMusicManager->Init();
+    auto app = dynamic_cast<CMiracle3d*>(g_pApp);
+    if (!bContinuousMap)
+    {
+        app->m_serverAnimatedModels->GenerateImpostorsIfNeeded();
+    }
+    M3D_LOG_INFO("Load Server begin...");
+    auto levelFullPath = m3d::pClient->GetWorld().m_level->GetFullPathNameA({});
+    m_cinematic->SetFolder(levelFullPath.c_str());
+    app->m_pInterfaceManager->LaunchEvent(84, GUI_EVENT_CUSTOM, nullptr);
+    if (LoadServers)
+    {
+        auto xmlName = help::GetMapNameFromFileName(name);
+        auto tempMapsPath = app->m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps();
+        auto mapXmlPath = tempMapsPath + xmlName += ".xml";
+        auto attr = GetFileAttributesA(mapXmlPath.c_str());
+        if (attr == -1 || (attr & 0x10) != 0)
+        {
+            ai::pServer->Load(ai::LOCAL_GAME, dynamicSceneXmlFile, dynamicSceneXmlNode, bContinuousMap, saveType);
+        }
+        else
+        {
+            ai::pServer->LoadVisitedMap(mapXmlPath, bContinuousMap);
+        }
+    }
+    else
+    {
+        ai::pServer->Load(ai::LOCAL_GAME, dynamicSceneXmlFile, dynamicSceneXmlNode, false, saveType);
+    }
+    M3D_LOG_INFO("Load Server end");
+    if (!LoadServers)
+    {
+        app->m_pInterfaceManager->GetQuestInfoManager()->Init();
+    }
+    app->m_pInterfaceManager->LaunchEvent(85, GUI_EVENT_CUSTOM, nullptr);
+    if (auto vehicle = ai::gDynamicScene->GetVehicleControlledByPlayer())
+    {
+        m_curCamera.m_worldOrigin = vehicle->GetPosition();
+    }
+    m_blockMusicManager->Reset();
+    m3d::g_Kernel->GetTimer().SetActiveState(1);
+    if (app->AppActive())
+    {
+        if (m3d::g_Kernel->GetEngineCfg().m_clipCursorWithinRenderWnd.GetB())
+        {
+            CaptureAndClipSystemCursor(true);
+        }
+    }
+    m_bRenderAsBackground = false;
+    m_bBackgroundTextureIsValid = false;
+    return 1;
 }
 
 void CMiracle3d::FullSystyemAndUserUnpause()
@@ -430,7 +607,37 @@ bool CMiracle3d::CanLaunchIfaceWindow()
 
 int CMiracle3d::LoadMainMenuLevel()
 {
-    throw std::logic_error("Not implemented");
+    if (m_bDoNotLoadMainmenuLevel)
+    {
+        return 0;
+    }
+    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    CStr mapName = m3d::g_Kernel->GetEngineCfg().m_mainMenuLevelName.GetS();
+    if (stream->Open(mapName.c_str(), m3d::fs::IStream::OPEN_READ))
+    {
+        stream->Close();
+        if (!m_gameInited && !GameInit())
+        {
+            M3D_LOG_INFO("Failed to GameInit() when loading main menu level...");
+            m_bDoNotLoadMainmenuLevel = true;
+            return 0;
+        }
+        auto app = dynamic_cast<CMiracle3d*>(g_pApp);
+        app->m_pInterfaceManager->StartSplashing(11);
+        //TODO: check this
+        auto res = LoadLevel(mapName, {}, false, true, false, nullptr, nullptr, ai::ObjContainer::SAVE_LEVEL);
+        if (res == 0)
+        {
+            M3D_LOG_INFO("Could not load main menu level...");
+            m_bDoNotLoadMainmenuLevel = true;
+            return 0;
+        }
+        m3d::g_Kernel->GetEngineCfg().m_levFileName.Set(mapName.c_str());
+        return 1;
+    }
+    M3D_LOG_INFO("Could not find main menu level...");
+    m_bDoNotLoadMainmenuLevel = true;
+    return 0;
 }
 
 int CMiracle3d::OnDebug(m3d::AuxImpulseInfo const&)
@@ -890,8 +1097,8 @@ int CMiracle3d::DoneMedia()
         ProcessAllEvents();
         g_pGame->m_pInterfaceManager->ShowWindow(166, false, false, false, false, nullptr);
         g_pGame->m_pInterfaceManager->LaunchEvent(86, GUI_EVENT_CUSTOM, nullptr);
-        ai::CServer::pServer->Clear();
-        ai::CServer::pServer->ClearOnce();
+        ai::pServer->Clear();
+        ai::pServer->ClearOnce();
         m3d::pClient->Reset();
         m3d::pClient->GetWorld().Release();
         DiscardAllEvents();

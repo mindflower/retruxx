@@ -134,6 +134,7 @@
 #include <game/uiwindows/townwindows/towndlg.h>
 #include <ui/wnd.h>
 
+#include "game/m3dgame.h"
 #include "game/uimisc/objectsicons.h"
 
 namespace
@@ -557,7 +558,7 @@ int TruxxUiManager::LaunchEvent(int, GuiEventType, void*)
 
 SavesManager* TruxxUiManager::GetSavesManager() const
 {
-    throw std::logic_error("Not implemented");
+    return m_savesManager;
 }
 
 ai::Town* TruxxUiManager::GetCurrentTown() const
@@ -570,9 +571,18 @@ int TruxxUiManager::Save(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
     throw std::logic_error("Not implemented");
 }
 
-void TruxxUiManager::StartSplashing(int) const
+void TruxxUiManager::StartSplashing(int numSplashes) const
 {
-    throw std::logic_error("Not implemented");
+    auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+	auto wnd = app->m_pInterfaceManager->GetWindow(108);
+    if (wnd)
+    {
+	    if (wnd->IsKindOf(RT_CLASS_LOCAL(SplashWnd)))
+	    {
+            auto splashWnd = dynamic_cast<SplashWnd*>(&*wnd);
+            splashWnd->StartSplashing(11);
+	    }
+    }
 }
 
 int TruxxUiManager::HandleAppEvent(m3d::Event const& appEvent)

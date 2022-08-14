@@ -41,9 +41,6 @@ namespace ai
     class CServer :  public m3d::IConHandler
     {
     public:
-        static CServer* pServer;
-
-    public:
         void AddToCinematic(Obj *,bool);
         void AddToCinematic(int,bool);
         void SetPause(bool);

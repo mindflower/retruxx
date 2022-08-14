@@ -134,7 +134,7 @@ int Profile::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xm
 
 CStr const& Profile::GetFolder() const
 {
-    throw std::logic_error("Not implemented");
+    return m_folder;
 }
 
 m3d::Class* Profile::GetClass() const
@@ -404,8 +404,6 @@ int ProfileManager::Init()
     auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
     app->m_pInterfaceManager->ShowWindow(110, true, true, true, true, nullptr);
     return 1;
-
-    throw std::logic_error("Not implemented");
 }
 
 Profile const* ProfileManager::CreateNewProfile(CStr const&)

@@ -18,7 +18,7 @@ namespace m3d
         AuxImpulseInfo(int, bool, int, unsigned int, unsigned int);
         float UnpackWheel() const;
 
-    private:
+    public:
         int m_impId;
         bool m_state;
         int m_gameMode;

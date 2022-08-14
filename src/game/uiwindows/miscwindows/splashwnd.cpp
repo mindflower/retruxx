@@ -31,9 +31,17 @@ SplashWnd::~SplashWnd()
     throw std::logic_error("Not implemented");
 }
 
-void SplashWnd::StartSplashing(int)
+void SplashWnd::StartSplashing(int numSplashes)
 {
-    throw std::logic_error("Not implemented");
+    m_curSplash = -1;
+    m_numSplashes = numSplashes;
+    if ((this->m_gameDataFlags & 1) != 0)
+    {
+        m_wndImage->SetImage(m3d::rend::TexHandle{});
+        m_progressBar->SetCurValue(0.0);
+    }
+    m_lblText = {};
+    M3D_LOG_INFO("Start splashing " + CStr(m_numSplashes));
 }
 
 m3d::Class* SplashWnd::GetBaseClass()
