@@ -132,4 +132,6 @@ namespace ai
         m3d::Profiler *m_blastWaveProfiler = nullptr;
         std::queue<int> m_consoleCommandsToPostProcess;
     };
+
+    void SetDynamicScene(DynamicScene*);
 }

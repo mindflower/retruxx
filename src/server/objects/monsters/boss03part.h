@@ -15,7 +15,7 @@ namespace ai
     class Boss03Part :  public VehiclePart
     {
     public:
-        static int __fastcall CollideBoss03PartAndVehiclePart(Boss03Part *,VehiclePart *,dContact *,unsigned int &,bool);
+        static int CollideBoss03PartAndVehiclePart(Boss03Part *,VehiclePart *,dContact *,unsigned int &,bool);
         virtual Boss03PartPrototypeInfo const * GetPrototypeInfo() const ;
         Boss03Part(Boss03PartPrototypeInfo const &);
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);

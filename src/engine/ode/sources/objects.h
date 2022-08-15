@@ -107,6 +107,12 @@ struct dxBody : public dObject {
   int adis_stepsleft;		// steps left to be idle
 };
 
+struct dxDamping
+{
+	dReal m_linearDamping;
+	dReal m_angularDamping;
+};
+
 
 struct dxWorld : public dBase {
   dxBody *firstbody;		// body linked list
@@ -117,6 +123,8 @@ struct dxWorld : public dBase {
   dReal global_cfm;		// global costraint force mixing parameter
   dxAutoDisable adis;		// auto-disable parameters
   int adis_flag;		// auto-disable flag for new bodies
+  int m_dampingFlag;		// auto-disable flag for new bodies
+  dxDamping m_damping;
   dxQuickStepParameters qs;
   dxContactParameters contactp;
 };

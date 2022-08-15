@@ -107,4 +107,9 @@ namespace ai
     {
         throw std::logic_error("Not implemented");
     }
+
+    void SetAIManager(AIManager*)
+    {
+	    throw std::logic_error("Not implemented");
+    }
 }

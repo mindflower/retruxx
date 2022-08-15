@@ -1178,7 +1178,14 @@
     <ClInclude Include="src\server\ai\aistate.h" />
     <ClInclude Include="src\server\ai\decisionmatrix.h" />
     <ClInclude Include="src\server\cinematicpath.h" />
+    <ClInclude Include="src\server\colliders\breakableobjectcolliders.h" />
+    <ClInclude Include="src\server\colliders\bulletcolliders.h" />
     <ClInclude Include="src\server\colliders\colliderkrnl.h" />
+    <ClInclude Include="src\server\colliders\defaultcollider.h" />
+    <ClInclude Include="src\server\colliders\physicunitcolliders.h" />
+    <ClInclude Include="src\server\colliders\vehiclecolliders.h" />
+    <ClInclude Include="src\server\colliders\vehiclesplintercolliders.h" />
+    <ClInclude Include="src\server\colliders\wheelasphaltcollider.h" />
     <ClInclude Include="src\server\components\component.h" />
     <ClInclude Include="src\server\components\functions\basefunction.h" />
     <ClInclude Include="src\server\components\functions\memberfunctiononearg.h" />

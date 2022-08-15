@@ -54,4 +54,6 @@ namespace ai
         std::vector<CStr> m_Schemes;
         unsigned int m_workTime;
     };
+
+    void SetAIManager(AIManager*);
 }

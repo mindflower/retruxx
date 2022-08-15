@@ -3860,6 +3860,27 @@
     <ClInclude Include="src\include\file\fileenum.h">
       <Filter>include\file</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\colliders\defaultcollider.h">
+      <Filter>server\colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\server\colliders\vehiclecolliders.h">
+      <Filter>server\colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\server\colliders\vehiclesplintercolliders.h">
+      <Filter>server\colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\server\colliders\breakableobjectcolliders.h">
+      <Filter>server\colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\server\colliders\wheelasphaltcollider.h">
+      <Filter>server\colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\server\colliders\bulletcolliders.h">
+      <Filter>server\colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\server\colliders\physicunitcolliders.h">
+      <Filter>server\colliders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

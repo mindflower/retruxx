@@ -1,4 +1,10 @@
 #include "server.h"
+#include "affix.h"
+#include "quest.h"
+#include "resourcemanager.h"
+#include "tracelinemanager.h"
+#include "objects/vehiclesgenerator.h"
+#include "objects/base/prototypemanager.h"
 #include "dynamicscene.h"
 #include "geomrepository.h"
 #include "intersectionmanager.h"
@@ -111,6 +117,10 @@
 
 namespace ai
 {
+    extern ResourceManager* theResourceManager;
+    extern PrototypeManager* thePrototypeManager;
+    extern Relationship* theRelationship;
+
     CServer* pServer = nullptr;
 
     void CServer::AddToCinematic(Obj*, bool)
@@ -467,7 +477,30 @@ namespace ai
 
     void CServer::InitOnce()
     {
-        throw std::logic_error("Not implemented");
+        LoadGlobalPropertiesFromXML(m3d::g_Kernel->GetEngineCfg().m_pathToGlobProps.GetS());
+        theResourceManager = new ResourceManager;
+        theResourceManager->Init();
+        m_pAffixManager = new AffixManager;
+        DynamicScene::InitOnce();
+        m_pDynamicScene = dynamic_cast<DynamicScene*>(m3d::g_Kernel->New("DynamicScene"));
+        m_pDynamicScene->IncRef();
+        SetDynamicScene(m_pDynamicScene);
+        m3d::TraceLineManager::InitTraceLineRay(true);
+        m_pDynamicScene->InitClashDecalId();
+        theQuestManager = new QuestManager;
+        theQuestManager->LoadFromXmlFile(ai::theGlobProp.m_pathToQuests.c_str());
+        theQuestStateManager = dynamic_cast<QuestStateManager*>(m3d::g_Kernel->New("QuestStateManager"));
+        m3d::g_Kernel->UnRegisterGlobal("g_QuestStateManager");
+        m3d::g_Kernel->RegisterGlobal(theQuestStateManager, "g_QuestStateManager");
+        theStatisticManager = new StatisticManager;
+        pAIManager = dynamic_cast<AIManager*>(m3d::g_Kernel->New("AIManager"));
+        pAIManager->IncRef();
+        SetAIManager(pAIManager);
+        m3d::g_Kernel->UnRegisterGlobal("g_AIManager");
+        m3d::g_Kernel->RegisterGlobal(pAIManager, "g_AIManager");
+        thePrototypeManager = new PrototypeManager;
+        theRelationship = new Relationship;
+        theVehiclesGeneratorInfoCache = new VehiclesGeneratorInfoCache;
     }
 
     eTolerance CServer::CheckTolerance(int, int)
@@ -563,5 +596,10 @@ namespace ai
     void CServer::_SetLevel(m3d::Level*)
     {
         throw std::logic_error("Not implemented");
+    }
+
+    void SetDynamicScene(DynamicScene*)
+    {
+	    throw std::logic_error("Not implemented");
     }
 }

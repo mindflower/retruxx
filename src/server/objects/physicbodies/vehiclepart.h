@@ -14,6 +14,7 @@ namespace ai
     class CompoundVehiclePart;
     class Box;
     class TriMesh;
+    enum DamageType;
 
     class VehiclePartPrototypeInfo : public PhysicBodyPrototypeInfo
     {

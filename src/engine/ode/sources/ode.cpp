@@ -1349,6 +1349,19 @@ void dWorldSetAutoDisableFlag (dWorldID w, int do_auto_disable)
 	w->adis_flag = (do_auto_disable != 0);
 }
 
+void dWorldSetDampingFlag(dWorldID w, int do_damping)
+{
+    dAASSERT(w);
+    w->m_dampingFlag = do_damping;
+}
+
+void dWorldSetDampingParameters(dWorldID w, dReal linearDamping, dReal angularDamping)
+{
+    dAASSERT(w);
+    w->m_damping.m_linearDamping = linearDamping;
+    w->m_damping.m_angularDamping = angularDamping;
+}
+
 
 void dWorldSetQuickStepNumIterations (dWorldID w, int num)
 {

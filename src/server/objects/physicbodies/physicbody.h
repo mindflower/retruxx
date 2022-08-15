@@ -12,6 +12,8 @@ namespace m3d
     class AnimatedModel;
 }
 
+enum ActionType;
+
 namespace ai
 {
     class GeomTransform;

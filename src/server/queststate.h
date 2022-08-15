@@ -96,4 +96,6 @@ namespace ai
         std::vector<QuestState*> m_questStates;
         unsigned int m_UpdateCount;
     };
+
+    inline QuestStateManager* theQuestStateManager = nullptr;
 }

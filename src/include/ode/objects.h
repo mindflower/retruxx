@@ -79,6 +79,8 @@ dReal dWorldGetAutoDisableTime (dWorldID);
 void  dWorldSetAutoDisableTime (dWorldID, dReal time);
 int   dWorldGetAutoDisableFlag (dWorldID);
 void  dWorldSetAutoDisableFlag (dWorldID, int do_auto_disable);
+void  dWorldSetDampingFlag(dWorldID w, int do_damping);
+void  dWorldSetDampingParameters(dWorldID w, dReal linearDamping, dReal angularDamping);
 
 dReal dBodyGetAutoDisableLinearThreshold (dBodyID);
 void  dBodySetAutoDisableLinearThreshold (dBodyID, dReal linear_threshold);

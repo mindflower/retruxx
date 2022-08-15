@@ -37,7 +37,7 @@ namespace ai
         void SetCollisionMode(CollisionMode);
         BossMetalArmLoad(BossMetalArmLoadPrototypeInfo const &);
         virtual BossMetalArmLoadPrototypeInfo const * GetPrototypeInfo() const ;
-        static int __fastcall CollideBossMetalArmLoadWithObject(m3d::Object *,m3d::Object *,dContact *,unsigned int &,bool);
+        static int CollideBossMetalArmLoadWithObject(m3d::Object *,m3d::Object *,dContact *,unsigned int &,bool);
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         virtual m3d::Class * GetClass() const ;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;

@@ -115,4 +115,6 @@ namespace ai
         std::vector<Quest*> m_quests;
         std::vector<std::set<int>> m_mutexes;
     };
+
+    inline QuestManager* theQuestManager = nullptr;
 }

@@ -64,4 +64,6 @@ namespace ai
         std::vector<WareInfo> m_wareInfos;
         std::map<CStr,std::vector<VehiclePartInfo>> m_gunInfos;
     };
+
+    inline VehiclesGeneratorInfoCache* theVehiclesGeneratorInfoCache = nullptr;
 }

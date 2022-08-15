@@ -42,10 +42,10 @@ namespace ai
         void PostLoad();
         Affix(AffixGroup*);
         bool LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        class AffixGroup const* GetAffixGroup() const;
+        AffixGroup const* GetAffixGroup() const;
         int GetId() const;
         CStr const& GetName() const;
-        enum AffixType GetAffixType() const;
+        AffixType GetAffixType() const;
         CStr GetLocalizedName(unsigned int) const;
 
     private:

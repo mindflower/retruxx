@@ -24,7 +24,7 @@ namespace ai
     {
     public:
         virtual void Update(float,unsigned int);
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
+        virtual void GetPropertiesNames(std::set<CStr> &) const ;
         static m3d::Class * GetBaseClass();
         virtual bool SetPropertyById(int,m3d::AIParam const &);
         float GetBlastRadius() const ;
@@ -45,7 +45,7 @@ namespace ai
         void SetRocketId(int);
         float GetDampingCoefficeient(float) const ;
         virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        static int __fastcall CollideBlastWaveAndPhysicObj(BlastWave *,Obj *,dContact *,unsigned int &,bool);
+        static int CollideBlastWaveAndPhysicObj(BlastWave *,Obj *,dContact *,unsigned int &,bool);
         BlastWave(BlastWavePrototypeInfo const &);
 
     protected:

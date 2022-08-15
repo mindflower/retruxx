@@ -47,7 +47,7 @@ namespace ai
         CStr const & GetBoEffectTypeName(unsigned short);
         virtual m3d::Object * Clone();
         void LinkNodesFromBodyToSceneGraph(Obj *);
-        static int __fastcall ProcessShellAndBody(Shell *,PhysicBody *,dContact *,unsigned int &,bool);
+        static int ProcessShellAndBody(Shell *,PhysicBody *,dContact *,unsigned int &,bool);
         void InitClashDecalId();
         void ReadSoilProps(char const *);
         CStr const & GetShellWaterEffectName(unsigned short) const ;
@@ -70,7 +70,7 @@ namespace ai
         int GetNumNearCallbacksLastFrame();
         int AddDecalName(CStr const &);
         int GetClashDecalId();
-        static void __fastcall InitOnce();
+        static void InitOnce();
         virtual ~DynamicScene();
         unsigned int GetWheelTypeByName(CStr const &);
         CStr const & GetBoShellEffectName(unsigned short,unsigned short);
@@ -97,7 +97,7 @@ namespace ai
         void _AddSoilEffectNameForWheelTypeName(CStr const &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(DynamicScene);
+        RT_CLASS_DECLARE(DynamicScene);
 
     private:
         std::vector<SoilProps> m_soilProps;
@@ -117,8 +117,8 @@ namespace ai
         std::vector<CStr> m_BoVehicleEffectNames;
         std::vector<std::vector<CStr>> m_BoShellEffectNames;
         std::vector<CStr> m_decalsNames;
-        int m_clashDecalId;
-        float m_physicTimeAccumulator;
+        int m_clashDecalId = -1;
+        float m_physicTimeAccumulator = 0.0;
         std::deque<int> m_timefilterValues;
     };
 }
