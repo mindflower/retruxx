@@ -1,8 +1,163 @@
 #include "complexphysicobj.h"
 #include <stdexcept>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, SetPartByName)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, SetNewPart)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, TakeOffPart)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, GetPartByName)
+{
+    throw std::logic_error("Not implemented");
+}
+
+
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(ComplexPhysicObj)
+        RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, CanPartBeAttached, "", "", "")
+        RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, SetPartByName, "", "", "")
+        RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, SetNewPart, "", "", "")
+        RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, TakeOffPart, "", "", "")
+        RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, GetPartByName, "", "", "")
+	RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(ComplexPhysicObj);
+
+	m3d::Class* ComplexPhysicObjPartDescription::GetClass() const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	m3d::Object* ComplexPhysicObjPartDescription::CreateObject()
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	int ComplexPhysicObjPartDescription::GetPartResourceId() const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	unsigned ComplexPhysicObjPartDescription::GetNumLps() const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	void ComplexPhysicObjPartDescription::GetPartNames(std::vector<CStr, std::allocator<CStr>>&) const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	void ComplexPhysicObjPartDescription::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	ComplexPhysicObjPartDescription const* ComplexPhysicObjPartDescription::GetChildByNameDeep(CStr const&) const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	CStr const& ComplexPhysicObjPartDescription::GetLpName(unsigned) const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	m3d::Object* ComplexPhysicObjPartDescription::Clone()
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	ComplexPhysicObjPartDescription* ComplexPhysicObjPartDescription::GetParent() const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	ComplexPhysicObjPartDescription::~ComplexPhysicObjPartDescription()
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	m3d::Class* ComplexPhysicObjPartDescription::GetBaseClass()
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	ComplexPhysicObjPartDescription::ComplexPhysicObjPartDescription()
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	ComplexPhysicObjPartDescription::ComplexPhysicObjPartDescription(ComplexPhysicObjPartDescription const&)
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	ComplexPhysicObjPrototypeInfo::MassShapes ComplexPhysicObjPrototypeInfo::GetMassShape() const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	ComplexPhysicObjPartDescription const* ComplexPhysicObjPrototypeInfo::GetPartDescriptionByName(CStr const&) const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	Obj* ComplexPhysicObjPrototypeInfo::CreateRandomTargetObject() const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	bool ComplexPhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	void ComplexPhysicObjPrototypeInfo::GetPartNames(std::vector<CStr, std::allocator<CStr>>&) const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	ComplexPhysicObjPrototypeInfo::~ComplexPhysicObjPrototypeInfo()
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	std::vector<CStr, std::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	ComplexPhysicObjPrototypeInfo::ComplexPhysicObjPrototypeInfo()
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	unsigned ComplexPhysicObjPrototypeInfo::GetBasePrice() const
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	void ComplexPhysicObjPrototypeInfo::PostLoad()
+	{
+		throw std::logic_error("Not implemented");
+	}
+
     void ComplexPhysicObj::UnlinkGeomsFromCollisionCells()
     {
         throw std::logic_error("Not implemented");
@@ -55,7 +210,7 @@ namespace ai
 
     m3d::Class* ComplexPhysicObj::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(PhysicObj);
     }
 
     void ComplexPhysicObj::PutContour()

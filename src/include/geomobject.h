@@ -150,7 +150,7 @@ namespace m3d
         GeomObjectWater(GeomObjectWater const&);
 
     public:
-        RT_CLASS_INLINE_DECLARE(GeomObjectWater);
+        RT_CLASS_DECLARE(GeomObjectWater);
     };
 
     class GeomObjectPassCell : public GeomObject

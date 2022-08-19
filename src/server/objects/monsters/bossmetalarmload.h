@@ -58,6 +58,6 @@ namespace ai
 
     private:
         CollisionMode m_collisionMode;
-        NumericInRange<float> m_health;
+        //NumericInRange<float> m_health;
     };
 }

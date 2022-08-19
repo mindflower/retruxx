@@ -4,9 +4,25 @@
 #include <server/ai/aifunc.h>
 #include <server/ai/aimatrix.h>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(AIManager, CreateNewDecisionMatrix)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(AIManager, LoadMatrix)
+{
+    throw std::logic_error("Not implemented");
+}
+
 namespace ai
 {
     AIManager* theAIManager = nullptr;
+
+    RT_CLASS_EXPORTS_BEGIN(AIManager)
+		RT_CLASS_EXPORT(AIManager, m3d::METHOD, CreateNewDecisionMatrix, "", "", "")
+        RT_CLASS_EXPORT(AIManager, m3d::METHOD, LoadMatrix, "", "", "")
+	RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(AIManager);
 
     DecisionMatrix* AIManager::LoadMatrix(char const*)
     {
@@ -30,7 +46,7 @@ namespace ai
 
     m3d::Class* AIManager::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     int AIManager::RegisterFunc(CStr const&, m3d::AIParam(Obj*))

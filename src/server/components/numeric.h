@@ -1,6 +1,6 @@
 #pragma once
 #include "component.h"
-
+#include "server/modifier.h"
 namespace ai
 {
     template<class T>

@@ -5,6 +5,16 @@
 
 namespace ai
 {
+	PhysicObjPrototypeInfo::PhysicObjPrototypeInfo()
+	{
+		throw std::logic_error("Not implemented");
+	}
+
+	bool PhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	{
+		throw std::logic_error("Not implemented");
+	}
+
     void PhysicObj::SetDirections(CVector const&, CVector const&)
     {
         throw std::logic_error("Not implemented");

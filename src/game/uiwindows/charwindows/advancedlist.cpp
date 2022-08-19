@@ -31,7 +31,7 @@ AdvancedButton::~AdvancedButton()
 
 m3d::Class* AdvancedButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int AdvancedButton::GetPrice() const
@@ -235,7 +235,7 @@ m3d::Class* AdvancedList::GetRtClass() const
 
 m3d::Class* AdvancedList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int AdvancedList::SetupForWorkshop(int)

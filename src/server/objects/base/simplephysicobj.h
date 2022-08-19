@@ -3,8 +3,8 @@
 
 namespace ai
 {
-    class CollisionInfo;
-    class SimplePhysicBody;
+	class CollisionInfo;
+	class SimplePhysicBody;
 
     class SimplePhysicObjPrototypeInfo : public PhysicObjPrototypeInfo
     {

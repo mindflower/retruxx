@@ -149,7 +149,7 @@ namespace ai
         void _TearOffPart(VehiclePart*, float);
 
     public:
-        RT_CLASS_INLINE_DECLARE(ComplexPhysicObj);
+        RT_CLASS_DECLARE(ComplexPhysicObj);
 
     private:
         std::map<CStr, VehiclePart*> m_vehicleParts;

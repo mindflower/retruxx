@@ -1,12 +1,11 @@
 #pragma once
+#include "ode/contact.h"
 
 namespace m3d
 {
 	struct Class;
 	class Object;
 }
-
-struct dContact;
 
 namespace ai
 {
@@ -15,8 +14,8 @@ namespace ai
     public:
         ColliderEntry(int (*)(m3d::Object *,m3d::Object *,dContact *,unsigned int &,bool),int);
 
-    private:
-        int (__fastcall *fn)(m3d::Object *, m3d::Object *, dContact *, unsigned int *, bool);
+    public:
+        int (*fn)(m3d::Object *, m3d::Object *, dContact *, unsigned int &, bool);
         int reverse;
     };
 

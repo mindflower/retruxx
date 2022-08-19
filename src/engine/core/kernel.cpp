@@ -213,9 +213,16 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Kernel::GetListOfClasses(Class**&, unsigned&)
+    void Kernel::GetListOfClasses(Class**& classList, unsigned& numOfClasses)
     {
-        throw std::logic_error("Not implemented");
+        numOfClasses = m_classes->size();
+        classList = new Class*[numOfClasses];
+        size_t idx = 0;
+        for (auto const& cls : *m_classes)
+        {
+            classList[idx] = cls.second;
+            ++idx;
+        }
     }
 
     Kernel::Kernel()

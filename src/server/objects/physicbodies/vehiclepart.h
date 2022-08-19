@@ -187,8 +187,8 @@ namespace ai
         m3d::SgNode *m_SplashEffect;
         bool m_MakeSplash;
         std::map<int,m3d::SgNode *> m_decals;
-        Numeric<float> m_price;
-        NumericInRangeRegenerating<float> m_durability;
+        //Numeric<float> m_price;
+        //NumericInRangeRegenerating<float> m_durability;
         CStr m_partName;
         float m_durabilityCoeffsForDamageTypes[4];
         CStr m_blowEffectName;

@@ -43,7 +43,7 @@ namespace ai
         DecisionMatrix * ReadNewMatrix(char const *);
 
     public:
-        RT_CLASS_INLINE_DECLARE(AIManager);
+        RT_CLASS_DECLARE(AIManager);
 
     public:
         float m_elapsedTime;
