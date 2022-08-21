@@ -3,8 +3,96 @@
 #include <core/aiparam.h>
 #include <server/obstacle.h>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetPosition)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetPosition)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetRotation)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetRotation)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetDirection)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetDirection)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetLinearVelocity)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetLinearVelocity)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetAngularVelocity)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetAngularVelocity)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetUpdatingByODE)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetSkin)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetSkin)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, IsVisible)
+{
+    throw std::logic_error("Not implemented");
+}
+
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(PhysicObj)
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetPosition, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetPosition, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetRotation, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetRotation, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetDirection, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetDirection, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetLinearVelocity, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetLinearVelocity, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetAngularVelocity, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetAngularVelocity, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetUpdatingByODE, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetSkin, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetSkin, "", "", "")
+        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, IsVisible, "", "", "")
+        RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(PhysicObj);
+
 	PhysicObjPrototypeInfo::PhysicObjPrototypeInfo()
 	{
 		throw std::logic_error("Not implemented");
@@ -77,7 +165,7 @@ namespace ai
 
     m3d::Class* PhysicObj::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     void PhysicObj::UnlinkGeomsFromCollisionCells()

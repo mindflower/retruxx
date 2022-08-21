@@ -129,7 +129,7 @@ namespace ai
         void _DeleteNode();
 
     public:
-        RT_CLASS_INLINE_DECLARE(PhysicBody);
+        RT_CLASS_DECLARE(PhysicBody);
 
     private:
         CStr m_modelname;

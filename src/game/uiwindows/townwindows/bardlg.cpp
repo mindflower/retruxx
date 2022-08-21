@@ -26,7 +26,7 @@ m3d::Object* BarDlg::CreateObject()
 
 m3d::Class* BarDlg::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ChildPanel);
 }
 
 int BarDlg::SetUpForBar(int)

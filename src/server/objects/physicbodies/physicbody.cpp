@@ -7,6 +7,10 @@
 
 namespace ai
 {
+	RT_CLASS_EXPORTS_BEGIN(PhysicBody)
+	RT_CLASS_EXPORTS_END;
+	RT_CLASS_DEFINE(PhysicBody);
+
 	void PhysicBodyPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
 		throw std::logic_error("Not implemented");
@@ -99,7 +103,7 @@ namespace ai
 
 	m3d::Class* PhysicBody::GetBaseClass()
 	{
-		throw std::logic_error("Not implemented");
+		return RT_CLASS_LOCAL(Obj);
 	}
 
 	void PhysicBody::TransferPhysicParamsToSceneGraphNode()

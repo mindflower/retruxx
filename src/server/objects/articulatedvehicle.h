@@ -58,7 +58,7 @@ namespace ai
         Vehicle * _GetTrailer() const ;
 
     public:
-        RT_CLASS_INLINE_DECLARE(ArticulatedVehicle);
+        RT_CLASS_DECLARE(ArticulatedVehicle);
 
     private:
         int m_trailerObjId;

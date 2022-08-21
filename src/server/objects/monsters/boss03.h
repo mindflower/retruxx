@@ -139,10 +139,10 @@ namespace ai
         float CalcKeyPartsMaxDurability() const ;
 
     public:
-        RT_CLASS_INLINE_DECLARE(Boss03);
+        RT_CLASS_DECLARE(Boss03);
 
     private:
-        NumericInRange<float> m_health;
+        //NumericInRange<float> m_health;
         CVector m_linearVelocity;
         CVector m_relAngularVelocity;
         std::vector<CVector> m_pointsForDrones;

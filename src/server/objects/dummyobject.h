@@ -46,7 +46,7 @@ namespace ai
         static m3d::Object * CreateObject();
 
     public:
-        RT_CLASS_INLINE_DECLARE(DummyObject);
+        RT_CLASS_DECLARE(DummyObject);
 
     private:
         CStr m_modelName;

@@ -11,7 +11,7 @@ RT_CLASS_DEFINE(CBList);
 
 m3d::Class* CBButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int CBButton::GetCBId() const
@@ -111,7 +111,7 @@ m3d::Class* CBList::GetRtClass() const
 
 m3d::Class* CBList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int CBList::SetupForWorkshop(int)

@@ -58,7 +58,7 @@ namespace ai
         virtual m3d::Object * Clone();
 
     public:
-        RT_CLASS_INLINE_DECLARE(BlastWave);
+        RT_CLASS_DECLARE(BlastWave);
 
     private:
         float m_WaveForceIntensity;

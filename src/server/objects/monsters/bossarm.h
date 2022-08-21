@@ -53,19 +53,22 @@ namespace ai
 
     protected:
         void _PlaceLoadOnLoadpoint(float);
-        void _SetAttackState(enum AttackState);
-        enum AttackState _GetAttackState() const ;
+        void _SetAttackState(AttackState);
+        AttackState _GetAttackState() const ;
         void _SetLoadPrototypeIds(std::vector<int,std::allocator<int> > const &);
         virtual ~BossArm();
         void _TurnToDir(CVector const &,float);
         CVector const & _GetCurLoadVelocity() const ;
+
+    public:
+        RT_CLASS_DECLARE(BossArm);
 
     private:
         static m3d::Object * CreateObject();
         virtual m3d::Object * Clone();
         void _OnObjectDie(Event const &);
         int m_loadObjId;
-        const float m_turningSpeed;
+        //const float m_turningSpeed;
         AttackState m_attackState;
         CVector m_dirForCharging;
         int m_curAttackAction;

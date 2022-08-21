@@ -4,6 +4,10 @@
 
 namespace ai
 {
+	RT_CLASS_EXPORTS_BEGIN(Boss03Part)
+	RT_CLASS_EXPORTS_END;
+	RT_CLASS_DEFINE(Boss03Part);
+
 	Obj* Boss03PartPrototypeInfo::CreateTargetObject() const
 	{
 		throw std::logic_error("Not implemented");
@@ -41,7 +45,7 @@ namespace ai
 
 	m3d::Class* Boss03Part::GetBaseClass()
 	{
-		throw std::logic_error("Not implemented");
+		return RT_CLASS_LOCAL(VehiclePart);
 	}
 
 	m3d::Class* Boss03Part::GetClass() const

@@ -47,7 +47,7 @@ namespace ai
         virtual m3d::Object * Clone();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Boss04Station);
+        RT_CLASS_DECLARE(Boss04Station);
 
     private:
         bool m_bDestroyed;

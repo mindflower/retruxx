@@ -16,7 +16,7 @@ m3d::Object* BasketCharacteristicsWnd::CreateObject()
 
 m3d::Class* BasketCharacteristicsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CBCharacteristicsWnd);
 }
 
 m3d::Object* BasketCharacteristicsWnd::Clone()

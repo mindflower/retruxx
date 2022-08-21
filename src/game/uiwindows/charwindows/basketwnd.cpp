@@ -27,7 +27,7 @@ m3d::Class* BasketWnd::GetClass() const
 
 m3d::Class* BasketWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CBWnd);
 }
 
 BasketWnd::~BasketWnd()

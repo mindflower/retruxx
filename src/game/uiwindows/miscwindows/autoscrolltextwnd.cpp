@@ -111,7 +111,7 @@ void AutoScrollTextWnd::SetScrollSpeed(float)
 
 m3d::Class* AutoScrollTextWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 void AutoScrollTextWnd::DrawWndText(m3d::ui::DrawInfo const&)

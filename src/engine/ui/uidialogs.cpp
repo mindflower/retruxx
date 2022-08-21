@@ -4,6 +4,14 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(ArtDlg)
+    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_DEFINE(ArtDlg);
+
+        RT_CLASS_EXPORTS_BEGIN(MsgBoxDlg)
+    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_DEFINE(MsgBoxDlg);
+
         MsgBoxDlg::~MsgBoxDlg()
         {
             throw std::logic_error("Not implemented");
@@ -31,7 +39,7 @@ namespace m3d
 
         Class* MsgBoxDlg::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(ModalWnd);
         }
 
         MsgBoxDlg::MsgBoxDlg(MsgBoxDlg const&)
@@ -91,7 +99,7 @@ namespace m3d
 
         Class* ArtDlg::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(MsgBoxDlg);
         }
 
         ArtDlg::ArtDlg()

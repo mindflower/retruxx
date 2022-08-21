@@ -4,6 +4,10 @@
 
 namespace ai
 {
+	RT_CLASS_EXPORTS_BEGIN(BossMetalArmLoad)
+	RT_CLASS_EXPORTS_END;
+	RT_CLASS_DEFINE(BossMetalArmLoad);
+
 	BossMetalArmLoadPrototypeInfo::BossMetalArmLoadPrototypeInfo()
 	{
 		throw std::logic_error("Not implemented");
@@ -31,7 +35,7 @@ namespace ai
 
 	m3d::Class* BossMetalArmLoad::GetBaseClass()
 	{
-		throw std::logic_error("Not implemented");
+		return RT_CLASS_LOCAL(DummyObject);
 	}
 
 	void BossMetalArmLoad::SetCollisionMode(CollisionMode)

@@ -21,7 +21,7 @@ CBCharacteristicsWnd::~CBCharacteristicsWnd()
 
 m3d::Class* CBCharacteristicsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CharacteristicsWnd);
 }
 
 void CBCharacteristicsWnd::SetupForCB(int)

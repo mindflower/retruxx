@@ -54,7 +54,7 @@ namespace ai
         void _CreateBlastWave();
 
     public:
-        RT_CLASS_INLINE_DECLARE(BossMetalArmLoad);
+        RT_CLASS_DECLARE(BossMetalArmLoad);
 
     private:
         CollisionMode m_collisionMode;

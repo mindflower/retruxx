@@ -64,7 +64,7 @@ namespace ai
         virtual m3d::Object* Clone();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Boss02Arm);
+        RT_CLASS_DECLARE(Boss02Arm);
 
     private:
         CustomState m_customState;

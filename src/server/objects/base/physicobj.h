@@ -167,7 +167,7 @@ namespace ai
         static void __fastcall _CommonBodyChangeEnabledStateCallback(dxBody *);
 
     public:
-        RT_CLASS_INLINE_DECLARE(PhysicObj);
+        RT_CLASS_DECLARE(PhysicObj);
 
     private:
         int m_postActionFlags;

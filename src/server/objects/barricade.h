@@ -45,9 +45,9 @@ namespace ai
         virtual m3d::Object * Clone();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Barricade);
+        RT_CLASS_DECLARE(Barricade);
 
     private:
-        NumericInRange<float> m_probability;
+        //NumericInRange<float> m_probability;
     };
 }

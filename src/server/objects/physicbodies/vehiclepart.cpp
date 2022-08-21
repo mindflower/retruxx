@@ -4,6 +4,10 @@
 
 namespace ai
 {
+	RT_CLASS_EXPORTS_BEGIN(VehiclePart)
+	RT_CLASS_EXPORTS_END;
+	RT_CLASS_DEFINE(VehiclePart);
+
 	CVector const& VehiclePartPrototypeInfo::GetSize() const
 	{
 		throw std::logic_error("Not implemented");
@@ -186,7 +190,7 @@ namespace ai
 
 	m3d::Class* VehiclePart::GetBaseClass()
 	{
-		throw std::logic_error("Not implemented");
+		return RT_CLASS_LOCAL(PhysicBody);
 	}
 
 	float VehiclePart::GetRepairPriceForOneUnit() const

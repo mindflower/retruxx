@@ -34,7 +34,7 @@ namespace ai
         static m3d::Object * CreateObject();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Boss03Part);
+        RT_CLASS_DECLARE(Boss03Part);
 
     private:
         bool m_bIsDamageable;

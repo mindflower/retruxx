@@ -15,6 +15,106 @@
 #include <server/ai/ai.h>
 #include <server/ai/aimanager.h>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, Remove)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, IsAlive)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetChild)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, AddChild)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, AddModifier)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, Send)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetParent)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetBelong)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, StackOpen)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, StackClose)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, StackLoop)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetProperty)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetPropertyId)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetPropertyById)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, SetProperty)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, SetPropertyById)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, ApplyAffixByName)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, SetBelong)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, SetNameFromScript)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetSchwarz)
+{
+    throw std::logic_error("Not implemented");
+}
+
 namespace ai
 {
     extern ObjContainer* theObjects;
@@ -24,6 +124,31 @@ namespace ai
 
     std::map<CStr, int> Obj::m_propertiesMap;
     std::map<int, eGObjPropertySaveStatus> Obj::m_propertiesSaveStatesMap;
+
+    RT_CLASS_EXPORTS_BEGIN(Obj)
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, Remove, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, IsAlive, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetChild, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, AddChild, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, AddModifier, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, Send, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetParent, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetBelong, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, StackOpen, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, StackClose, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, StackLoop, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetProperty, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetPropertyId, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetPropertyById, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, SetProperty, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, SetPropertyById, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, ApplyAffixByName, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, SetBelong, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, SetNameFromScript, "", "", "")
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetSchwarz, "", "", "")
+	RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(Obj);
+
 
     m3d::Class* Obj::GetBaseClass()
     {

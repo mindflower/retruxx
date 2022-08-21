@@ -70,11 +70,11 @@ namespace ai
         void _OnObjectDie(Event const &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(BossMetalArm);
+        RT_CLASS_DECLARE(BossMetalArm);
 
     private:
         int m_loadObjId;
-        const float m_turningSpeed;
+        //const float m_turningSpeed;
         AttackState m_attackState;
         CVector m_dirForCharging;
         int m_curAttackAction;

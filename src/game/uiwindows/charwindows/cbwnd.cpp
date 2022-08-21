@@ -27,7 +27,7 @@ void CBWnd::SetVehicleId(int)
 
 m3d::Class* CBWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ChildPanel);
 }
 
 CBWnd::~CBWnd()

@@ -3,8 +3,30 @@
 #include "server/objects/physicbodies/physichelpers.h"
 #include <stdexcept>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetMass)
+{
+	throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetNodeAction)
+{
+	throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetNextForAnimation)
+{
+	throw std::logic_error("Not implemented");
+}
+
 namespace ai
 {
+	RT_CLASS_EXPORTS_BEGIN(SimplePhysicObj)
+		RT_CLASS_EXPORT(SimplePhysicObj, m3d::METHOD, SetMass, "", "", "")
+		RT_CLASS_EXPORT(SimplePhysicObj, m3d::METHOD, SetNodeAction, "", "", "")
+		RT_CLASS_EXPORT(SimplePhysicObj, m3d::METHOD, SetNextForAnimation, "", "", "")
+	RT_CLASS_EXPORTS_END;
+	RT_CLASS_DEFINE(SimplePhysicObj);
+
 	SimplePhysicObjPrototypeInfo::~SimplePhysicObjPrototypeInfo()
 	{
 		throw std::logic_error("Not implemented");
@@ -127,7 +149,7 @@ namespace ai
 
 	m3d::Class* SimplePhysicObj::GetBaseClass()
 	{
-		throw std::logic_error("Not implemented");
+		return RT_CLASS_LOCAL(PhysicObj);
 	}
 
 	void SimplePhysicObj::RelinkSceneGraphNode()

@@ -422,7 +422,7 @@ namespace ai
         void _EvaluateToDead();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Vehicle);
+        RT_CLASS_DECLARE(Vehicle);
 
     private:
         std::vector<WheelRuntimeInfo> m_wheels;
@@ -476,8 +476,8 @@ namespace ai
         bool m_bAllowPickUpMessage;
         int m_pastNumNearbyChests;
         int m_currentNumNearbyChests;
-        scoped_ptr<Box> m_lookBox;
-        scoped_ptr<Box> m_targetBox;
+        //scoped_ptr<Box> m_lookBox;
+        //scoped_ptr<Box> m_targetBox;
         std::set<m3d::Class *> m_targetClasses;
         CVector m_externalDestination;
         int m_numOfDrivenWheels;
@@ -521,7 +521,7 @@ namespace ai
         int m_recollectionId;
         VehicleUpdater *m_ownUpdater;
         int m_roleId;
-        NumericInRangeRegenerating<float> m_timeOutForNextIntersectionWithWorld;
+        //NumericInRangeRegenerating<float> m_timeOutForNextIntersectionWithWorld;
         int m_numWheelsTouchingGround;
         bool m_bHidden;
         int m_lockedObjId;

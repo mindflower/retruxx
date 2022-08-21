@@ -86,7 +86,7 @@ namespace ai
         void _OnBossArmActionFinished(Event const&);
 
     public:
-        RT_CLASS_INLINE_DECLARE(Boss02);
+        RT_CLASS_DECLARE(Boss02);
 
     private:
         std::vector<Boss02PrototypeInfo::StateInfo> m_stateInfos;

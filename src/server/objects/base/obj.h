@@ -355,7 +355,7 @@ namespace ai
         int _GetIndexByEventId(eGameEvent eventId) const;
 
     public:
-        RT_CLASS_INLINE_DECLARE(Obj);
+        RT_CLASS_DECLARE(Obj);
 
     private:
         int m_objId;

@@ -56,7 +56,7 @@ namespace ai
         void _UpdateMeshGroupsHealth();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Boss04StationPart);
+        RT_CLASS_DECLARE(Boss04StationPart);
 
     private:
         std::vector<MeshGroupInfo> m_meshGroupInfos;

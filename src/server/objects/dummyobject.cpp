@@ -2,8 +2,18 @@
 
 #include <stdexcept>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(DummyObject, SetModelName)
+{
+	throw std::logic_error("Not implemented");
+}
+
 namespace ai
 {
+	RT_CLASS_EXPORTS_BEGIN(DummyObject)
+		RT_CLASS_EXPORT(DummyObject, m3d::METHOD, SetModelName, "", "", "")
+	RT_CLASS_EXPORTS_END;
+	RT_CLASS_DEFINE(DummyObject);
+
 	DummyObjectPrototypeInfo::DummyObjectPrototypeInfo()
 	{
 		throw std::logic_error("Not implemented");
@@ -46,7 +56,7 @@ namespace ai
 
 	m3d::Class* DummyObject::GetBaseClass()
 	{
-		throw std::logic_error("Not implemented");
+		return RT_CLASS_LOCAL(SimplePhysicObj);
 	}
 
 	m3d::Class* DummyObject::GetClass() const

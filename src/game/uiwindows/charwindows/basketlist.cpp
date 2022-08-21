@@ -30,7 +30,7 @@ m3d::Object* BasketList::CreateObject()
 
 m3d::Class* BasketList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CBList);
 }
 
 int BasketList::GetCBResourceId() const
@@ -70,7 +70,7 @@ m3d::Object* BasketButton::CreateObject()
 
 m3d::Class* BasketButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CBButton);
 }
 
 m3d::Class* BasketButton::GetClass() const

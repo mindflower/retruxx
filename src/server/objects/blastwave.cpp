@@ -4,6 +4,10 @@
 
 namespace ai
 {
+	RT_CLASS_EXPORTS_BEGIN(BlastWave)
+	RT_CLASS_EXPORTS_END;
+	RT_CLASS_DEFINE(BlastWave);
+
 	bool BlastWavePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
 		throw std::logic_error("Not implemented");
@@ -36,7 +40,7 @@ namespace ai
 
 	m3d::Class* BlastWave::GetBaseClass()
 	{
-		throw std::logic_error("Not implemented");
+		return RT_CLASS_LOCAL(SimplePhysicObj);
 	}
 
 	bool BlastWave::SetPropertyById(int, m3d::AIParam const&)

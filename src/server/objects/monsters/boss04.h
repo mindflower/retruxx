@@ -83,7 +83,7 @@ namespace ai
         void _CreateStations(bool);
 
     public:
-        RT_CLASS_INLINE_DECLARE(Boss04);
+        RT_CLASS_DECLARE(Boss04);
 
     private:
         std::vector<Boss04Station *> m_stations;
