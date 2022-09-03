@@ -3,6 +3,10 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(WeatherClear)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(WeatherClear);
+
     Class* WeatherClear::GetBaseClass()
     {
         throw std::logic_error("Not implemented");

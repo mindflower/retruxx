@@ -25,6 +25,6 @@ namespace m3d
         virtual void UpdateOwnBoundingBox();
 
     public:
-        RT_CLASS_INLINE_DECLARE(SgStaticModelNode);
+        RT_CLASS_DECLARE(SgStaticModelNode);
     };
 }

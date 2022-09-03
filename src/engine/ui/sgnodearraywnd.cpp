@@ -5,6 +5,10 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(SgNodeArrayWnd)
+        RT_CLASS_EXPORTS_END;
+        RT_CLASS_DEFINE(SgNodeArrayWnd);
+
         Object* SgNodeArrayWnd::CreateObject()
         {
             throw std::logic_error("Not implemented");
@@ -12,7 +16,7 @@ namespace m3d
 
         Class* SgNodeArrayWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(ImageWnd);
         }
 
         int SgNodeArrayWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)

@@ -383,7 +383,7 @@ namespace m3d
 
     Class* Cinematic::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     void Cinematic::Stop()

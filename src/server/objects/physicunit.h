@@ -74,7 +74,7 @@ namespace ai
         static m3d::Object * CreateObject();
 
     public:
-        RT_CLASS_INLINE_DECLARE(PhysicUnit);
+        RT_CLASS_DECLARE(PhysicUnit);
 
     private:
         States m_State;

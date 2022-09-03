@@ -2,7 +2,27 @@
 #include <stdexcept>
 
 namespace m3d
-{   
+{
+    RT_CLASS_EXPORTS_BEGIN(GeomObject)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(GeomObject);
+
+    RT_CLASS_EXPORTS_BEGIN(GeomObjectLandscape)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(GeomObjectLandscape);
+
+    RT_CLASS_EXPORTS_BEGIN(GeomObjectStatics)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(GeomObjectStatics);
+
+    RT_CLASS_EXPORTS_BEGIN(GeomObjectRoad)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(GeomObjectRoad);
+
+    RT_CLASS_EXPORTS_BEGIN(GeomObjectPassCell)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(GeomObjectPassCell);
+
     RT_CLASS_EXPORTS_BEGIN(GeomObjectWater)
 	RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(GeomObjectWater);

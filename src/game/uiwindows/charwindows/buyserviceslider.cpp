@@ -41,7 +41,7 @@ m3d::Object* BuyServiceSlider::Clone()
 
 m3d::Class* BuyServiceSlider::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(SliderWnd);
 }
 
 m3d::Object* BuyServiceSlider::CreateObject()

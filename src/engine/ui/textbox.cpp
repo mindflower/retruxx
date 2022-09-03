@@ -4,6 +4,10 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(TextBoxWnd)
+        RT_CLASS_EXPORTS_END;
+        RT_CLASS_DEFINE(TextBoxWnd);
+
         Class* TextBoxWnd::GetBaseClass()
         {
             throw std::logic_error("Not implemented");

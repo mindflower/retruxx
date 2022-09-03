@@ -25,7 +25,7 @@ namespace m3d
         virtual void UpdateOwnBoundingBox();
 
     public:
-        RT_CLASS_INLINE_DECLARE(SgLinesNode);
+        RT_CLASS_DECLARE(SgLinesNode);
 
     private:
         unsigned int m_props[2];

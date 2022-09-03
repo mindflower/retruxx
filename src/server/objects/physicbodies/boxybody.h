@@ -25,6 +25,6 @@ namespace ai
         Box const * _Box() const ;
 
     public:
-        RT_CLASS_INLINE_DECLARE(BoxyBody);
+        RT_CLASS_DECLARE(BoxyBody);
     };
 }

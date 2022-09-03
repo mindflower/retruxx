@@ -2,8 +2,18 @@
 #include <scene/nodes/sgnode.h>
 #include <math/obb.h>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(SgNode, GetOrigin)
+{
+    throw std::logic_error("Not implemented");
+}
+
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(SgNode)
+        RT_CLASS_EXPORT(SgNode, m3d::METHOD, GetOrigin, "", "", "")
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(SgNode);
+
     Object* SgNode::CreateObject()
     {
         throw std::logic_error("Not implemented");
@@ -11,7 +21,7 @@ namespace m3d
 
     Class* SgNode::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     Obb SgNode::GetObb() const

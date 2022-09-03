@@ -119,7 +119,7 @@ namespace ai
         void _OnDynamicQuestComplete(Event const &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(Player);
+        RT_CLASS_DECLARE(Player);
 
     private:
         NumericBoundedBelow<int> m_money;

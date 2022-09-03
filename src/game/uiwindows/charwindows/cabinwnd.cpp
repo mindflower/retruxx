@@ -22,7 +22,7 @@ m3d::Object* CabinWnd::CreateObject()
 
 m3d::Class* CabinWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CBWnd);
 }
 
 CabinWnd::~CabinWnd()

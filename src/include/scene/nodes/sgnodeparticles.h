@@ -31,7 +31,7 @@ namespace m3d
         virtual void UpdateOwnBoundingBox();
 
     public:
-        RT_CLASS_INLINE_DECLARE(SgParticlesNode);
+        RT_CLASS_DECLARE(SgParticlesNode);
 
     private:
         int m_lastTimeUpdated;
@@ -55,6 +55,6 @@ namespace m3d
         SgParticlesOpaqueNode();
 
     public:
-        RT_CLASS_INLINE_DECLARE(SgParticlesOpaqueNode);
+        RT_CLASS_DECLARE(SgParticlesOpaqueNode);
     };
 }

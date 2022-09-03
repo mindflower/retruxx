@@ -54,7 +54,7 @@ namespace ai
         static m3d::Object* CreateObject();
 
     public:
-        RT_CLASS_INLINE_DECLARE(BulletLauncher);
+        RT_CLASS_DECLARE(BulletLauncher);
 
     private:
         unsigned int m_numBulletsInShot;

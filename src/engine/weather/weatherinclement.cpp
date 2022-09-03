@@ -3,6 +3,10 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(WeatherInclement)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(WeatherInclement);
+
     int WeatherInclement::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
         throw std::logic_error("Not implemented");

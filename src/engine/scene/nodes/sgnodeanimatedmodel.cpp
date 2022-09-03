@@ -2,6 +2,10 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(SgAnimatedModelNode)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(SgAnimatedModelNode);
+
     Class* SgAnimatedModelNode::GetBaseClass()
     {
         throw std::logic_error("Not implemented");

@@ -39,7 +39,7 @@ namespace ai
         virtual ~Bullet();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Bullet);
+        RT_CLASS_DECLARE(Bullet);
 
     private:
         static m3d::Object * CreateObject();

@@ -20,7 +20,7 @@ m3d::Class* CabinButton::GetClass() const
 
 m3d::Class* CabinButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CBButton);
 }
 
 m3d::Object* CabinButton::Clone()
@@ -75,7 +75,7 @@ CabinList::~CabinList()
 
 m3d::Class* CabinList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CBList);
 }
 
 CabinList::CabinList(CabinList const&)

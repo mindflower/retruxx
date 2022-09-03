@@ -403,7 +403,7 @@ namespace m3d
         void RenderRoads();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Landscape);
+        RT_CLASS_DECLARE(Landscape);
 
     private:
         Landscape::CollisionCellItem **m_oCollisionitems;

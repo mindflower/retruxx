@@ -3,6 +3,14 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(SgParticlesNode)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(SgParticlesNode);
+
+    RT_CLASS_EXPORTS_BEGIN(SgParticlesOpaqueNode)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(SgParticlesOpaqueNode);
+
     Object* SgParticlesNode::CreateObject()
     {
         throw std::logic_error("Not implemented");

@@ -3,6 +3,10 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(SgSoundSourceNode)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(SgSoundSourceNode);
+
     Object* SgSoundSourceNode::CreateObject()
     {
         throw std::logic_error("Not implemented");

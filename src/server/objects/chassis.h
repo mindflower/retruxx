@@ -52,10 +52,10 @@ namespace ai
         static m3d::Object * CreateObject();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Chassis);
+        RT_CLASS_DECLARE(Chassis);
 
     private:
-        NumericInRangeRegenerating<float> m_health;
-        NumericInRangeRegenerating<float> m_fuel;
+        //NumericInRangeRegenerating<float> m_health;
+        //NumericInRangeRegenerating<float> m_fuel;
     };
 }

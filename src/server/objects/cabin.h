@@ -58,7 +58,7 @@ namespace ai
         static m3d::Object * CreateObject();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Cabin);
+        RT_CLASS_DECLARE(Cabin);
 
     private:
         float m_maxPower;

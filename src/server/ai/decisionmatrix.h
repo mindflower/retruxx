@@ -70,7 +70,7 @@ class DecisionMatrix :  public m3d::Object
         static void __fastcall _LogUnexpectedToken(CStr const &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(DecisionMatrix);
+        RT_CLASS_DECLARE(DecisionMatrix);
 
 private:
         std::vector<AIParamRef> m_tmpParamRefList;

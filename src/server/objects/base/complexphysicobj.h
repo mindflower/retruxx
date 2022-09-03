@@ -27,7 +27,7 @@ namespace ai
         ComplexPhysicObjPartDescription(ComplexPhysicObjPartDescription const&);
 
     public:
-        RT_CLASS_INLINE_DECLARE(ComplexPhysicObjPartDescription);
+        RT_CLASS_DECLARE(ComplexPhysicObjPartDescription);
 
     private:
         int m_partResourceId;

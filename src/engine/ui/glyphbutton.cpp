@@ -4,6 +4,10 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(GlyphButton)
+        RT_CLASS_EXPORTS_END;
+        RT_CLASS_DEFINE(GlyphButton);
+
         Object* GlyphButton::CreateObject()
         {
             throw std::logic_error("Not implemented");

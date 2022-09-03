@@ -64,7 +64,7 @@ namespace m3d
         GeomObject(GeomObject const&);
 
     public:
-        RT_CLASS_INLINE_DECLARE(GeomObject);
+        RT_CLASS_DECLARE(GeomObject);
 
     private:
         CVector m_translation;
@@ -94,7 +94,7 @@ namespace m3d
         GeomObjectLandscape(GeomObjectLandscape const &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(GeomObjectLandscape);
+        RT_CLASS_DECLARE(GeomObjectLandscape);
     };
 
     class GeomObjectStatics : public GeomObject
@@ -111,7 +111,7 @@ namespace m3d
         GeomObjectStatics(GeomObjectStatics const&);
 
     public:
-        RT_CLASS_INLINE_DECLARE(GeomObjectStatics);
+        RT_CLASS_DECLARE(GeomObjectStatics);
     };
 
     class GeomObjectRoad : public GeomObject
@@ -130,7 +130,7 @@ namespace m3d
         GeomObjectRoad();
 
     public:
-        RT_CLASS_INLINE_DECLARE(GeomObjectRoad);
+        RT_CLASS_DECLARE(GeomObjectRoad);
 
     private:
         RoadNode* m_roadNode;
@@ -167,6 +167,6 @@ namespace m3d
         GeomObjectPassCell();
 
     public:
-        RT_CLASS_INLINE_DECLARE(GeomObjectPassCell);
+        RT_CLASS_DECLARE(GeomObjectPassCell);
     };
 }

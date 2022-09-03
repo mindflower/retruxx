@@ -25,7 +25,7 @@ namespace m3d
         virtual void UpdateOwnBoundingBox();
 
     public:
-        RT_CLASS_INLINE_DECLARE(SgPointLightSourceNode);
+        RT_CLASS_DECLARE(SgPointLightSourceNode);
 
     private:
         unsigned int m_props[3];

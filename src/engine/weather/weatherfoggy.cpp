@@ -3,6 +3,10 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(WeatherFoggy)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(WeatherFoggy);
+
     int WeatherFoggy::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
         throw std::logic_error("Not implemented");

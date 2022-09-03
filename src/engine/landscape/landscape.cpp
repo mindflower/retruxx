@@ -6,6 +6,10 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(Landscape)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(Landscape);
+
     void Landscape::LinkObstacleToCells(ai::Obstacle*)
     {
         throw std::logic_error("Not implemented");

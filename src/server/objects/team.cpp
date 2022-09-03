@@ -4,8 +4,97 @@
 #include <server/ai/aimessage.h>
 #include <server/ai/aipassagestate.h>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(Team, SetDestination)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Team, AdjustBehaviour)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Team, HoldFire)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Team, GetNumVehicles)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Team, GetVehicle)
+{
+    throw std::logic_error("Not implemented");
+}
+
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(Team)
+        RT_CLASS_EXPORT(Team, m3d::METHOD, SetDestination, "", "", "")
+        RT_CLASS_EXPORT(Team, m3d::METHOD, AdjustBehaviour, "", "", "")
+        RT_CLASS_EXPORT(Team, m3d::METHOD, HoldFire, "", "", "")
+        RT_CLASS_EXPORT(Team, m3d::METHOD, GetNumVehicles, "", "", "")
+        RT_CLASS_EXPORT(Team, m3d::METHOD, GetVehicle, "", "", "")
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(Team);
+
+    void TeamPrototypeInfo::PostLoad()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    ai::Obj* TeamPrototypeInfo::CreateTargetObject() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool TeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    float TeamPrototypeInfo::GetFormationDistBetweenVehicles() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    TeamPrototypeInfo::TeamPrototypeInfo()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool TeamPrototypeInfo::GetOverridesDistBetweenVehicles() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    std::map<int, CVector> const& Team::GetSteeringForceMap() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Team::SetDestination(CVector const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CVector Team::_GetAggregatedTargetsPos() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Team::_GetTargetsPositions(std::vector<CVector>&) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CVector Team::_GetAggregatedPos() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     bool Team::SetPropertyById(int, m3d::AIParam const&)
     {
         throw std::logic_error("Not implemented");
@@ -243,7 +332,7 @@ namespace ai
 
     m3d::Class* Team::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     m3d::AIParam Team::TeamAIOnAttackOrder(Obj*)

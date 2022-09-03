@@ -99,6 +99,10 @@ unsigned m_profiler_GetPackets = 0;
 unsigned m_profiler_ServerUpdate = 0;
 unsigned m_profiler_ClientUpdate = 0;
 
+RT_CLASS_EXPORTS_BEGIN(CMiracle3d)
+RT_CLASS_EXPORTS_END;
+RT_CLASS_DEFINE(CMiracle3d);
+
 GameState CMiracle3d::CurGameMode::Get() const
 {
     return m_mode;

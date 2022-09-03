@@ -5,6 +5,10 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(ModelArrayWnd)
+        RT_CLASS_EXPORTS_END;
+        RT_CLASS_DEFINE(ModelArrayWnd);
+
         Object* ModelArrayWnd::CreateObject()
         {
             throw std::logic_error("Not implemented");

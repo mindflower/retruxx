@@ -3,6 +3,10 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(SgStaticModelNode)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(SgStaticModelNode);
+
     Object* SgStaticModelNode::CreateObject()
     {
         throw std::logic_error("Not implemented");

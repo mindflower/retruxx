@@ -2,6 +2,10 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(SgGameUnitNode)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(SgGameUnitNode);
+
     Object* SgGameUnitNode::CreateObject()
     {
         throw std::logic_error("Not implemented");

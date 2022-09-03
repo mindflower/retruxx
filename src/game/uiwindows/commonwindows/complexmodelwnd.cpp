@@ -6,7 +6,7 @@ RT_CLASS_DEFINE(ComplexModelWnd);
 
 m3d::Class* ComplexModelWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(SgNodeArrayWnd);
 }
 
 void ComplexModelWnd::SetDefaultRotationAngleX(float)

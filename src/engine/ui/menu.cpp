@@ -4,6 +4,10 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(MenuWnd)
+        RT_CLASS_EXPORTS_END;
+        RT_CLASS_DEFINE(MenuWnd);
+
         Object* MenuWnd::CreateObject()
         {
             throw std::logic_error("Not implemented");

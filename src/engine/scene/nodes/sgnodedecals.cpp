@@ -2,6 +2,10 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(SgDecalsNode)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(SgDecalsNode);
+
     Class* SgDecalsNode::GetBaseClass()
     {
         throw std::logic_error("Not implemented");

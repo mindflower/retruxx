@@ -98,7 +98,7 @@ namespace m3d
         Weather();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Weather);
+        RT_CLASS_DECLARE(Weather);
 
     private:
         CStr m_Name;
@@ -138,7 +138,7 @@ namespace m3d
         WeatherClear();
 
     public:
-        RT_CLASS_INLINE_DECLARE(WeatherClear);
+        RT_CLASS_DECLARE(WeatherClear);
     };
 
     class WeatherInclement : public Weather
@@ -162,7 +162,7 @@ namespace m3d
         WeatherInclement();
 
     public:
-        RT_CLASS_INLINE_DECLARE(WeatherInclement);
+        RT_CLASS_DECLARE(WeatherInclement);
 
     private:
         CStr m_inclementNodeName;
@@ -188,7 +188,7 @@ namespace m3d
         WeatherFoggy();
 
     public:
-        RT_CLASS_INLINE_DECLARE(WeatherFoggy);
+        RT_CLASS_DECLARE(WeatherFoggy);
     };
 
     class WeatherThunderstorm : public WeatherInclement
@@ -213,7 +213,7 @@ namespace m3d
         WeatherThunderstorm(WeatherThunderstorm const&);
 
     public:
-        RT_CLASS_INLINE_DECLARE(WeatherThunderstorm);
+        RT_CLASS_DECLARE(WeatherThunderstorm);
 
     private:
         int m_lastthunderTime;

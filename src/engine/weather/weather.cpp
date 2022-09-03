@@ -4,6 +4,10 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(Weather)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(Weather);
+
     void WindInfo::Write(ref_ptr<cmn::XmlNode>)
     {
         throw std::logic_error("Not implemented");

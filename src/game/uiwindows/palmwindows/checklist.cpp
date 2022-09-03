@@ -46,7 +46,7 @@ CheckList::~CheckList()
 
 m3d::Class* CheckList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int CheckList::RenderItem(int, PointBase<float> const&, m3d::ui::DrawInfo const&)
@@ -115,7 +115,7 @@ m3d::Object* CheckButton::Clone()
 
 m3d::Class* CheckButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 void CheckButton::Select(bool)

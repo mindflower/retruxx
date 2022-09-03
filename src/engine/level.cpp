@@ -1,8 +1,24 @@
 #include <level.h>
 #include <stdexcept>
 
+RT_CLASS_EXPORT_METHOD_DEFINE(Level, GetLandSize)
+{
+    throw std::logic_error("Not implemented");
+}
+
+RT_CLASS_EXPORT_METHOD_DEFINE(Level, GetLevelName)
+{
+    throw std::logic_error("Not implemented");
+}
+
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(Level)
+        RT_CLASS_EXPORT(Level, m3d::METHOD, GetLandSize, "", "", "")
+        RT_CLASS_EXPORT(Level, m3d::METHOD, GetLevelName, "", "", "")
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(Level);
+
     Class* Level::GetBaseClass()
     {
         throw std::logic_error("Not implemented");

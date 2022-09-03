@@ -25,7 +25,7 @@ namespace m3d
         SgProjectorNode();
 
     public:
-        RT_CLASS_INLINE_DECLARE(SgProjectorNode);
+        RT_CLASS_DECLARE(SgProjectorNode);
 
     private:
         unsigned int m_props[2];

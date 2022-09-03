@@ -41,7 +41,7 @@ namespace m3d
             SgNodeArrayWnd(SgNodeArrayWnd const&);
 
         public:
-            RT_CLASS_INLINE_DECLARE(SgNodeArrayWnd);
+            RT_CLASS_DECLARE(SgNodeArrayWnd);
 
         private:
             rend::TexHandle m_renderTexture;

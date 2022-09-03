@@ -4,6 +4,10 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(TabWnd)
+        RT_CLASS_EXPORTS_END;
+        RT_CLASS_DEFINE(TabWnd);
+
         TabButtonInfo::TabButtonInfo()
         {
             throw std::logic_error("Not implemented");

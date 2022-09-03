@@ -115,7 +115,7 @@ namespace m3d
         void InternalInit();
 
     public:
-        RT_CLASS_INLINE_DECLARE(SgNode);
+        RT_CLASS_DECLARE(SgNode);
 
     private:
         int m_nextThinkTime;

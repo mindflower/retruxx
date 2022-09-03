@@ -26,6 +26,10 @@ namespace m3d
 {
     namespace ui
     {
+        RT_CLASS_EXPORTS_BEGIN(WndStation)
+        RT_CLASS_EXPORTS_END;
+        RT_CLASS_DEFINE(WndStation);
+
         int WndStation::DispatchMouse(Event const&)
         {
             throw std::logic_error("Not implemented");

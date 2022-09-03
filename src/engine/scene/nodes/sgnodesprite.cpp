@@ -3,6 +3,10 @@
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(SgSpriteNode)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(SgSpriteNode);
+
     Object* SgSpriteNode::CreateObject()
     {
         throw std::logic_error("Not implemented");

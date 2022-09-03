@@ -6,6 +6,6 @@ namespace ai
     class Formation : public Obj
     {
     public:
-        RT_CLASS_INLINE_DECLARE(Formation);
+        RT_CLASS_DECLARE(Formation);
     };
 }

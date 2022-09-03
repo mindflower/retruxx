@@ -135,7 +135,7 @@ namespace ai
         DynamicQuest * _GenerateDynamicQuest();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Town);
+        RT_CLASS_DECLARE(Town);
 
     private:
         bool m_shouldInitializeWorkshops;

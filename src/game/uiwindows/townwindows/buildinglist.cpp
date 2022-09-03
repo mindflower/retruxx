@@ -36,7 +36,7 @@ m3d::Object* BuildingButton::CreateObject()
 
 m3d::Class* BuildingButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 int BuildingButton::GetIdx() const
@@ -120,7 +120,7 @@ m3d::Object* BuildingList::Clone()
 
 m3d::Class* BuildingList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 void BuildingList::SetUpForTown(ai::Town*)

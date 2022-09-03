@@ -32,7 +32,7 @@ namespace m3d
         RoadNode();
 
     public:
-        RT_CLASS_INLINE_DECLARE(RoadNode);
+        RT_CLASS_DECLARE(RoadNode);
 
     private:
         CVector m_origin;

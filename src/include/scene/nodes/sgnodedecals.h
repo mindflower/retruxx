@@ -28,7 +28,7 @@ namespace m3d
         virtual void UpdateOwnBoundingBox();
 
     public:
-        RT_CLASS_INLINE_DECLARE(SgDecalsNode);
+        RT_CLASS_DECLARE(SgDecalsNode);
 
     private:
         DecalsList m_decals;

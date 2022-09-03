@@ -3,6 +3,10 @@
 
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(InfectionTeam)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(InfectionTeam);
+
     void InfectionTeam::SetCriticalDistAndTime(float, float)
     {
         throw std::logic_error("Not implemented");

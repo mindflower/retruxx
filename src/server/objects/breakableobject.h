@@ -58,7 +58,7 @@ namespace ai
         virtual void SetPosition(CVector const &);
         void DoTouch();
         virtual m3d::Class * GetClass() const ;
-        enum STATES GetState();
+        STATES GetState();
         unsigned short GetDestroyEffectType();
         void SetJointAnchor(CVector const &);
         BlastWave * CreateBlastWave() const ;
@@ -86,7 +86,7 @@ namespace ai
         virtual m3d::Object * Clone();
 
     public:
-        RT_CLASS_INLINE_DECLARE(BreakableObject);
+        RT_CLASS_DECLARE(BreakableObject);
 
     private:
         int m_destroyable;

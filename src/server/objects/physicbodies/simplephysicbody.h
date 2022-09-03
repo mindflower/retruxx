@@ -22,6 +22,6 @@ namespace ai
         SimplePhysicBody();
 
     public:
-        RT_CLASS_INLINE_DECLARE(SimplePhysicBody);
+        RT_CLASS_DECLARE(SimplePhysicBody);
     };
 }
