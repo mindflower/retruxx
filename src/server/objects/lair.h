@@ -59,10 +59,10 @@ namespace ai
         Team * _GetAttackingTeam();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Lair);
+        RT_CLASS_DECLARE(Lair);
 
     private:
-        NumericInRangeRegenerating<float> m_reproductTime;
+        //NumericInRangeRegenerating<float> m_reproductTime;
         int m_maxAttackers;
         int m_maxDefenders;
         LairState m_state;

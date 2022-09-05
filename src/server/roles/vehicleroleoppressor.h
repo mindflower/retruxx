@@ -40,6 +40,6 @@ namespace ai
         CVector getOppressorPosition(Vehicle*);
 
     public:
-        RT_CLASS_INLINE_DECLARE(VehicleRoleOppressor);
+        RT_CLASS_DECLARE(VehicleRoleOppressor);
     };
 }

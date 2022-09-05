@@ -73,8 +73,8 @@ namespace ai
 
     private:
         //MemberFunctionTwoArgsRef<StaticAutoGun,Modifier,float,bool>::MemberFunctionTwoArgsRef<StaticAutoGun,Modifier,float,bool>(StaticAutoGun &,bool (*const)(Modifier const &,float &));
-        NumericInRange<float> m_health;
-        NumericInRangeRegenerating<float> m_timeForNextCheck;
+        //NumericInRange<float> m_health;
+        //NumericInRangeRegenerating<float> m_timeForNextCheck;
         CStr m_destroyedModelName;
         std::set<m3d::Class *> m_targetClasses;
         int m_currentEnemyId;

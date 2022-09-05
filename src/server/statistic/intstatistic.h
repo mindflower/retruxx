@@ -28,7 +28,7 @@ namespace ai
         IntStatistic(IntStatistic const &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(IntStatistic);
+        RT_CLASS_DECLARE(IntStatistic);
 
     private:
         int m_value;

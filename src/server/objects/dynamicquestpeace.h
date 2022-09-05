@@ -1,5 +1,6 @@
 #pragma once
 #include "dynamicquest.h"
+#include "server/dynamicquestmanager.h"
 
 namespace ai
 {
@@ -38,6 +39,6 @@ namespace ai
         virtual m3d::Object * Clone();
 
     public:
-        RT_CLASS_INLINE_DECLARE(DynamicQuestPeace);
+        RT_CLASS_DECLARE(DynamicQuestPeace);
     };
 }

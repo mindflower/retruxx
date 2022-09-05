@@ -91,11 +91,11 @@ namespace ai
         unsigned int _GetRealObjectSellPrice(Obj const *) const ;
 
     public:
-        RT_CLASS_INLINE_DECLARE(Workshop);
+        RT_CLASS_DECLARE(Workshop);
 
     private:
         std::map<WorkshopRepositoryType,GeomRepository *> m_repositories;
-        std::map<int,Article> m_articles;
+       // std::map<int,Article> m_articles;
         WorkshopPriceCoeffProvider *m_priceCoeffProvider;
         std::vector<int> m_originalObjectsInRepository;
     };

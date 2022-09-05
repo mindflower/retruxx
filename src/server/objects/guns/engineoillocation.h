@@ -6,6 +6,6 @@ namespace ai
     class EngineOilLocation : public TemporaryLocation
     {
     public:
-        RT_CLASS_INLINE_DECLARE(EngineOilLocation);
+        RT_CLASS_DECLARE(EngineOilLocation);
     };
 }

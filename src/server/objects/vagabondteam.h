@@ -37,7 +37,7 @@ namespace ai
         virtual void _DoNoticeEnemy(int);
 
     public:
-        RT_CLASS_INLINE_DECLARE(VagabondTeam);
+        RT_CLASS_DECLARE(VagabondTeam);
 
     private:
         int m_vehiclesGeneratorPrototypeId;

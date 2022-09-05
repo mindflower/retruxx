@@ -81,11 +81,11 @@ namespace ai
         void _CheckIncomingOutgoingObjects(std::set<ref_ptr<Obstacle>,std::less<ref_ptr<Obstacle> >,std::allocator<ref_ptr<Obstacle> > > &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(Location);
+        RT_CLASS_DECLARE(Location);
 
     private:
         std::set<int> m_idsWasInside;
-        NumericInRangeRegenerating<float> m_timeForNextCheck;
+        //NumericInRangeRegenerating<float> m_timeForNextCheck;
         std::set<m3d::Class *> m_targetClasses;
         bool m_bIsActive;
         float m_lookingTimeOut;

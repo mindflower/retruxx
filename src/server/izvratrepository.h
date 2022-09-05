@@ -36,7 +36,7 @@ namespace ai
         bool IsValueAnItemId(int) const ;
 
     public:
-        RT_CLASS_INLINE_DECLARE(IzvratRepository);
+        RT_CLASS_DECLARE(IzvratRepository);
 
     private:
         PointBase<int> m_maxGeomSize;

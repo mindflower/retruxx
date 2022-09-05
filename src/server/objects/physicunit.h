@@ -90,8 +90,8 @@ namespace ai
         unsigned int m_curWayPointNum;
         CVector m_prevWayPoint;
         WalkState m_walkState;
-        NumericInRangeRegenerating<float> m_standTtl;
-        NumericInRangeRegenerating<float> m_walkTtl;
+        //NumericInRangeRegenerating<float> m_standTtl;
+        //NumericInRangeRegenerating<float> m_walkTtl;
         bool m_bMustChangePath;
         bool m_bMustWalk;
         std::vector<CVector> m_dummyPath;

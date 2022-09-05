@@ -15,9 +15,6 @@ namespace ai
     public:
         class auxEventInfo
         {
-        public:
-            auxEventInfo(auxEventInfo const&);
-
         private:
             eGameEvent m_eventId;
             CStr m_objName;
@@ -102,7 +99,7 @@ namespace ai
         void _LoadEventsFromMapXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
 
     public:
-        RT_CLASS_INLINE_DECLARE(Trigger);
+        RT_CLASS_DECLARE(Trigger);
 
     private:
         std::map<CStr,m3d::AIParam> m_variables;

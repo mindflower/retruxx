@@ -133,7 +133,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    StaticAutoGun::StaticAutoGun(StaticAutoGunPrototypeInfo const&)
+    StaticAutoGun::StaticAutoGun(StaticAutoGunPrototypeInfo const& prototype) : ComplexPhysicObj(prototype)
     {
         throw std::logic_error("Not implemented");
     }

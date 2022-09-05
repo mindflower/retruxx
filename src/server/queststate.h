@@ -90,7 +90,7 @@ namespace ai
         void _Clear();
 
     public:
-        RT_CLASS_INLINE_DECLARE(QuestStateManager);
+        RT_CLASS_DECLARE(QuestStateManager);
 
     private:
         std::vector<QuestState*> m_questStates;

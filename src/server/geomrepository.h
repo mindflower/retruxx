@@ -85,7 +85,7 @@ namespace ai
         bool _AppendRepository(GeomRepository *,Chest *);
 
     public:
-        RT_CLASS_INLINE_DECLARE(GeomRepository);
+        RT_CLASS_DECLARE(GeomRepository);
 
     private:
         bool m_Changed;

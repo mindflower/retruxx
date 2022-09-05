@@ -40,7 +40,7 @@ namespace ai
         void _CreateChaseTacticsIfNeeded(Vehicle*);
 
     public:
-        RT_CLASS_INLINE_DECLARE(VehicleRoleCheater);
+        RT_CLASS_DECLARE(VehicleRoleCheater);
 
     private:
         ChaseMotionTactics* m_chaseTactics;

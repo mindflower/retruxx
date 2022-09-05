@@ -36,6 +36,6 @@ namespace ai
         Sphere const * _Sphere() const ;
 
     public:
-        RT_CLASS_INLINE_DECLARE(SphericBody);
+        RT_CLASS_DECLARE(SphericBody);
     };
 }

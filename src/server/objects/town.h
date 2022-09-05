@@ -40,7 +40,7 @@ namespace ai
         unsigned int m_CabinsAndBasketsAffixesCount;
         unsigned int m_numCollisionLayersBelowVehicle;
         std::vector<ai::Article> m_Articles;
-        std::map<int, RandomCoeffWithDispersion> m_resourceIdToRandomCoeffMap;
+        //std::map<int, RandomCoeffWithDispersion> m_resourceIdToRandomCoeffMap;
         CStr m_gunGeneratorPrototypeName;
         CStr m_gunAffixGeneratorPrototypeName;
         CStr m_cabinsAndBasketsAffixGeneratorPrototypeName;
@@ -144,7 +144,7 @@ namespace ai
         std::set<m3d::Class *> m_targetClasses;
         GateState m_gateState;
         m3d::SgNode *m_gateNode;
-        NumericBoundedBelow<float> m_gateTime;
+        //NumericBoundedBelow<float> m_gateTime;
         int m_maxDefenders;
         CinematicPath m_entryPath;
         CinematicPath m_exitPath;

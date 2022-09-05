@@ -1,5 +1,7 @@
 #include "decisionmatrix.h"
-
+#include "aisignal.h"
+#include "aistate.h"
+#include "aiparamref.h"
 #include <stdexcept>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddSignal)

@@ -82,7 +82,7 @@ namespace ai
         static m3d::Object * CreateObject();
 
     public:
-        RT_CLASS_INLINE_DECLARE(JointedObj);
+        RT_CLASS_DECLARE(JointedObj);
 
     private:
         dxSpace *m_MembersSpace;
@@ -112,8 +112,4 @@ namespace ai
         bool m_asRope;
         std::map<int,SplineBones> m_splineNeighbours;
     };
-}
-
-namespace ai
-{
 }

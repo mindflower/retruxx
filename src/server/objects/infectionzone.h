@@ -81,7 +81,7 @@ namespace ai
         void _GetGoodRandomDropOutPoints(std::vector<CVector,std::allocator<CVector> > &) const ;
 
     public:
-        RT_CLASS_INLINE_DECLARE(InfectionZone);
+        RT_CLASS_DECLARE(InfectionZone);
 
     private:
         geom2d::Polygon2<float> m_infectionPolygon;

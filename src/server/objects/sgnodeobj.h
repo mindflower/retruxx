@@ -55,7 +55,7 @@ namespace ai
         virtual m3d::Object * Clone();
 
     public:
-        RT_CLASS_INLINE_DECLARE(SgNodeObj);
+        RT_CLASS_DECLARE(SgNodeObj);
 
     private:
         m3d::SgNode *m_node;

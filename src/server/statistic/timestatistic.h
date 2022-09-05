@@ -28,7 +28,7 @@ namespace ai
         TimeStatistic();
 
     public:
-        RT_CLASS_INLINE_DECLARE(TimeStatistic);
+        RT_CLASS_DECLARE(TimeStatistic);
 
     private:
         __int64 m_milliseconds;

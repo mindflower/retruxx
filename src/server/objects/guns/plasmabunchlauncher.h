@@ -32,6 +32,6 @@ namespace ai
         virtual m3d::Object* Clone();
 
     public:
-        RT_CLASS_INLINE_DECLARE(PlasmaBunchLauncher);
+        RT_CLASS_DECLARE(PlasmaBunchLauncher);
     };
 }

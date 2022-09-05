@@ -44,10 +44,10 @@ namespace ai
         static m3d::Object* CreateObject();
 
     public:
-        RT_CLASS_INLINE_DECLARE(MortarShell);
+        RT_CLASS_DECLARE(MortarShell);
 
     private:
-        NumericInRangeRegenerating<float> m_lifeTime;
+        //NumericInRangeRegenerating<float> m_lifeTime;
         CVector m_initialVelocity;
         CVector m_initialPosition;
     };

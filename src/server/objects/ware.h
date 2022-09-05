@@ -56,10 +56,10 @@ namespace ai
         virtual m3d::Object * Clone();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Ware);
+        RT_CLASS_DECLARE(Ware);
 
     private:
         unsigned int m_maxItems;
-        NumericInRange<float> m_durability;
+        //NumericInRange<float> m_durability;
     };
 }

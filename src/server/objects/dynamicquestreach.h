@@ -1,5 +1,6 @@
 #pragma once
 #include "dynamicquest.h"
+#include "server/dynamicquestmanager.h"
 
 namespace ai
 {
@@ -37,6 +38,6 @@ namespace ai
         void _OnObjectEntersLocation(Event const &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(DynamicQuestReach);
+        RT_CLASS_DECLARE(DynamicQuestReach);
     };
 }

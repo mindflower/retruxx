@@ -1,5 +1,5 @@
 #include "town.h"
-
+#include "article.h"
 #include <stdexcept>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Town, SpawnCaravanToLocation)
@@ -98,7 +98,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    Town::Town(TownPrototypeInfo const&)
+    Town::Town(TownPrototypeInfo const& prototype) : Settlement(prototype)
     {
         throw std::logic_error("Not implemented");
     }

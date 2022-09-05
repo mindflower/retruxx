@@ -48,7 +48,7 @@ namespace ai
         static m3d::Object * CreateObject();
 
     public:
-        RT_CLASS_INLINE_DECLARE(DynamicQuestConvoy);
+        RT_CLASS_DECLARE(DynamicQuestConvoy);
 
     private:
         int m_caravanId;

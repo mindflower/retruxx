@@ -29,7 +29,7 @@ namespace ai
         IntIntRatioStatistic(IntIntRatioStatistic const &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(IntIntRatioStatistic);
+        RT_CLASS_DECLARE(IntIntRatioStatistic);
 
     private:
         int m_numerator;

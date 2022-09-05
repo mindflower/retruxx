@@ -25,7 +25,7 @@ namespace ai
         Static2DPath(Static2DPath const &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(Static2DPath);
+        RT_CLASS_DECLARE(Static2DPath);
 
     private:
         std::vector<PointBase<float>> m_Points;

@@ -98,7 +98,7 @@ namespace ai
         void _OnRelationChanged(Event const &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(DynamicQuest);
+        RT_CLASS_DECLARE(DynamicQuest);
 
     private:
         int m_reward;

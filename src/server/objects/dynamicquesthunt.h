@@ -1,5 +1,6 @@
 #pragma once
 #include "dynamicquest.h"
+#include "server/dynamicquestmanager.h"
 
 namespace ai
 {
@@ -44,7 +45,7 @@ namespace ai
         static m3d::Object * CreateObject();
 
     public:
-        RT_CLASS_INLINE_DECLARE(DynamicQuestHunt);
+        RT_CLASS_DECLARE(DynamicQuestHunt);
 
     private:
         int m_fragsAtStart;

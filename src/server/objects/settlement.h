@@ -79,13 +79,13 @@ namespace ai
         virtual m3d::Object* Clone();
 
     public:
-        RT_CLASS_INLINE_DECLARE(Settlement);
+        RT_CLASS_DECLARE(Settlement);
 
     private:
         std::set<StaticAutoGun*> m_staticAutoGuns;
         std::set<Location*> m_locations;
         std::vector<Team*> m_caravans;
         std::map<CStr, Team*> m_teams;
-        NumericInRange<int> m_population;
+        //NumericInRange<int> m_population;
     };
 }

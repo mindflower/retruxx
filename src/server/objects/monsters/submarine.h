@@ -1,6 +1,8 @@
 #pragma once
 #include <server/objects/dummyobject.h>
 
+#include "server/cinematicpath.h"
+
 namespace m3d
 {
     class CameraPathState;
@@ -72,7 +74,7 @@ namespace ai
         void _OnTargetReached(Event const &);
 
     public:
-        RT_CLASS_INLINE_DECLARE(Submarine);
+        RT_CLASS_DECLARE(Submarine);
 
     private:
         eSubmarineState m_state;

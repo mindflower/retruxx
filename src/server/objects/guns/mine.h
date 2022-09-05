@@ -6,6 +6,6 @@ namespace ai
     class Mine : public Rocket
     {
     public:
-        RT_CLASS_INLINE_DECLARE(Mine);
+        RT_CLASS_DECLARE(Mine);
     };
 }

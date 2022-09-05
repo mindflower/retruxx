@@ -52,7 +52,7 @@ namespace ai
         bool PositionIsBad(Vehicle const*, CVector const&);
 
     public:
-        RT_CLASS_INLINE_DECLARE(VehicleRoleSniper);
+        RT_CLASS_DECLARE(VehicleRoleSniper);
 
     private:
         SniperState m_SniperState;
