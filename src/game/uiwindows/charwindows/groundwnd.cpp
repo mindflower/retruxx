@@ -17,7 +17,7 @@ void GroundWnd::SetVehicleId(int)
 
 m3d::Class* GroundWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ChildPanel);
 }
 
 void GroundWnd::PickUpAll()

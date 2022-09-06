@@ -6,7 +6,7 @@ RT_CLASS_DEFINE(DurabilityIndicatorWnd);
 
 m3d::Class* DurabilityIndicatorWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Object* DurabilityIndicatorWnd::CreateObject()

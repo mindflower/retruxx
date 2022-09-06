@@ -80,7 +80,7 @@ namespace ai
 
     m3d::Class* CompositeObj::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     void CompositeObj::RenderDebugInfo() const

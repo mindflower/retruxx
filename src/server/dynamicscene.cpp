@@ -177,7 +177,7 @@ namespace ai
 
 	m3d::Class* DynamicScene::GetBaseClass()
 	{
-		throw std::logic_error("Not implemented");
+		return RT_CLASS_LOCAL(Object);
 	}
 
 	CStr const& DynamicScene::GetDecalName(int)

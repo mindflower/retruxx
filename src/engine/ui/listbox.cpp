@@ -86,7 +86,7 @@ namespace m3d
 
         Class* FormattedStringsListBoxWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Wnd);
         }
 
         FormattedStringsListBoxWnd::~FormattedStringsListBoxWnd()

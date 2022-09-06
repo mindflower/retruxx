@@ -11,7 +11,7 @@ FadingMsgList::AuxInfo::AuxInfo()
 
 m3d::Class* FadingMsgList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int FadingMsgList::AddMsgT(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&)
@@ -135,7 +135,7 @@ RT_CLASS_DEFINE(FadingMsgItem);
 
 m3d::Class* FadingMsgItem::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Object* FadingMsgItem::Clone()

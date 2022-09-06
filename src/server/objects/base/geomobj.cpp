@@ -95,7 +95,7 @@ namespace ai
 
     m3d::Class* GeomObj::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(PhysicObj);
     }
 
     void GeomObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const

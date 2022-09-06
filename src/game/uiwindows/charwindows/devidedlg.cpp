@@ -56,7 +56,7 @@ DevideDlg::~DevideDlg()
 
 m3d::Class* DevideDlg::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ModalWnd);
 }
 
 void DevideDlg::SetAmount(int)

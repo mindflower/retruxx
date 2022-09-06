@@ -31,7 +31,7 @@ m3d::Class* HealthIndicatorInMainInterfaceWnd::GetClass() const
 
 m3d::Class* HealthIndicatorInMainInterfaceWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 HealthIndicatorInMainInterfaceWnd::~HealthIndicatorInMainInterfaceWnd()

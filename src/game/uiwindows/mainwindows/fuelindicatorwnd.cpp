@@ -31,7 +31,7 @@ m3d::Object* FuelIndicatorWnd::Clone()
 
 m3d::Class* FuelIndicatorWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int FuelIndicatorWnd::CreateFromPattern(m3d::ui::Wnd*, bool)

@@ -48,7 +48,7 @@ namespace ai
 
     m3d::Class* DynamicQuestPeace::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(DynamicQuest);
     }
 
     void DynamicQuestPeace::PassToAnotherMap()

@@ -4,6 +4,50 @@
 
 namespace ai
 {
+	RT_CLASS_EXPORTS_BEGIN(Statistic)
+    RT_CLASS_EXPORTS_END;
+	RT_CLASS_DEFINE(Statistic);
+
+    m3d::Class* Statistic::GetRtClass() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    m3d::Class* Statistic::GetBaseClass()
+    {
+		return RT_CLASS_LOCAL(Object);
+    }
+
+    bool Statistic::GetGlobalFlag() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Statistic::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Statistic::SetGlobalFlag(bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Statistic::~Statistic()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Statistic::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Statistic::Statistic()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
 	StatisticManager::StatisticManager()
 	{
 		throw std::logic_error("Not implemented");

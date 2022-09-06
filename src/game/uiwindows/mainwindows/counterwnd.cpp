@@ -16,7 +16,7 @@ m3d::Class* CounterWnd::GetClass() const
 
 m3d::Class* CounterWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Object* CounterWnd::CreateObject()

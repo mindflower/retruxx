@@ -80,7 +80,7 @@ m3d::Object* GlobalMapWnd::Clone()
 
 m3d::Class* GlobalMapWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ScreenWnd);
 }
 
 m3d::Object* GlobalMapWnd::CreateObject()

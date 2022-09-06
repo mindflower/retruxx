@@ -122,7 +122,7 @@ namespace ai
         RT_CLASS_DECLARE(Player);
 
     private:
-        NumericBoundedBelow<int> m_money;
+        //NumericBoundedBelow<int> m_money;
         //_BYTE gapC0[120];
         int m_vehicleObjId;
         RadioManager *m_radioManager;
@@ -132,7 +132,7 @@ namespace ai
         float m_timeInfoObjTimeout;
         PlayerFightState m_playerFightState;
         PlayerFightState m_prevPlayerFightState;
-        NumericInRangeRegenerating<float> m_timeOfNoBattle;
+        //NumericInRangeRegenerating<float> m_timeOfNoBattle;
         CStr m_lastSaveDir;
         CStr m_modelName;
         unsigned int m_skinNumber;

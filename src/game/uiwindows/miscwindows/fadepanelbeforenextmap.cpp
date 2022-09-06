@@ -21,7 +21,7 @@ m3d::Object* FadePanelBeforeNextMap::CreateObject()
 
 m3d::Class* FadePanelBeforeNextMap::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Object* FadePanelBeforeNextMap::Clone()

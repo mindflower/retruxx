@@ -54,7 +54,7 @@ namespace m3d
 
     Class* GeomObject::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     GeomObject::~GeomObject()
@@ -134,7 +134,7 @@ namespace m3d
 
     Class* GeomObjectLandscape::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(GeomObject);
     }
 
     GeomObjectLandscape::GeomObjectLandscape()
@@ -159,7 +159,7 @@ namespace m3d
 
     Class* GeomObjectStatics::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(GeomObject);
     }
 
     Object* GeomObjectStatics::CreateObject()
@@ -209,7 +209,7 @@ namespace m3d
 
     Class* GeomObjectRoad::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(GeomObject);
     }
 
     Object* GeomObjectRoad::Clone()
@@ -234,7 +234,7 @@ namespace m3d
 
     Class* GeomObjectWater::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(GeomObject);
     }
 
     Object* GeomObjectWater::CreateObject()
@@ -274,7 +274,7 @@ namespace m3d
 
     Class* GeomObjectPassCell::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(GeomObject);
     }
 
     Object* GeomObjectPassCell::Clone()

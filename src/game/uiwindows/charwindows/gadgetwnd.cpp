@@ -11,7 +11,7 @@ int GadgetWnd::GetSlotId() const
 
 m3d::Class* GadgetWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ItemWnd);
 }
 
 void GadgetWnd::SetSlotId(int)

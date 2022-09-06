@@ -15,7 +15,7 @@ namespace m3d
 
         Class* GlyphButton::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(ButtonWnd);
         }
 
         void GlyphButton::SetGlyphHeight(float)

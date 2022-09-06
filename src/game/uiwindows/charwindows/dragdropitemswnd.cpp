@@ -66,7 +66,7 @@ int DragSlot::OnMouseMove(PointBase<float> const&, PointBase<float> const&)
 
 m3d::Class* DragDropItemsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Class* DragDropItemsWnd::GetRtClass() const

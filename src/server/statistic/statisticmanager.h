@@ -16,6 +16,9 @@ namespace ai
         virtual ~Statistic();
         virtual void SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
 
+    public:
+        RT_CLASS_DECLARE(Statistic);
+
     protected:
         Statistic();
 

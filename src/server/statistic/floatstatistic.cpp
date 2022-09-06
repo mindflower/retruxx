@@ -42,7 +42,7 @@ namespace ai
 
     m3d::Class* FloatStatistic::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Statistic);
     }
 
     m3d::AIParam FloatStatistic::GetValueAsAIParam() const

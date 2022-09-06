@@ -53,7 +53,7 @@ int ContextModelWnd::ShowImageByObjId(int)
 
 m3d::Class* ContextModelWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int ContextModelWnd::GetPrototypeId() const

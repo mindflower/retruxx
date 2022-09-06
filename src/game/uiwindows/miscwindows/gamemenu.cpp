@@ -43,7 +43,7 @@ MenuItem const* MenuItem::GetMenuItemViaName(CStr const&) const
 
 m3d::Class* GameMenuWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ModalWnd);
 }
 
 CStr GameMenuWnd::GetCurrentLevelName() const

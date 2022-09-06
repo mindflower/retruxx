@@ -85,7 +85,7 @@ namespace ai
 
     m3d::Class* DynamicQuest::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     eGObjPropertySaveStatus DynamicQuest::GetPropertySaveStatus(int) const

@@ -33,7 +33,7 @@ namespace ai
 
     m3d::Class* DynamicQuestDestroy::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(DynamicQuest);
     }
 
     m3d::Class* DynamicQuestDestroy::GetClass() const

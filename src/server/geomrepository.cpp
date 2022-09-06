@@ -232,7 +232,7 @@ namespace ai
 
     m3d::Class* GeomRepository::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     bool GeomRepository::AddItems(char const*, int)

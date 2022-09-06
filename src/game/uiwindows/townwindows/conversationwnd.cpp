@@ -139,7 +139,7 @@ ai::DynamicQuest* ConversationWnd::GetCurrentDynamicQuest()
 
 m3d::Class* ConversationWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int ConversationWnd::CreateFromPattern(m3d::ui::Wnd*, bool)

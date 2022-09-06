@@ -48,7 +48,7 @@ namespace ai
 
     m3d::Class* DynamicQuestReach::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(DynamicQuest);
     }
 
     DynamicQuestReach::DynamicQuestReach(DynamicQuestReachPrototypeInfo const& prototype) : DynamicQuest(prototype)

@@ -56,7 +56,7 @@ m3d::Object* ElectronicDigitalWnd::Clone()
 
 m3d::Class* ElectronicDigitalWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 ElectronicDigitalWnd::~ElectronicDigitalWnd()

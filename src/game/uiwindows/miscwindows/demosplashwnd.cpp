@@ -41,7 +41,7 @@ DemoSplashWnd::~DemoSplashWnd()
 
 m3d::Class* DemoSplashWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ModalWnd);
 }
 
 DemoSplashWnd::DemoSplashWnd()

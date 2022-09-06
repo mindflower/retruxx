@@ -5,7 +5,7 @@ namespace ai
     class IPriceCoeffProvider
     {
     public:
-        virtual ~IPriceCoeffProvider();
+        virtual ~IPriceCoeffProvider() = default;
         virtual float GetPriceCoeffForObj(Obj const*) const = 0;
     };
 }

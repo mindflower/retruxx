@@ -21,7 +21,7 @@ m3d::Object* ScreenWnd::Clone()
 
 m3d::Class* ScreenWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ChildPanel);
 }
 
 ScreenWnd::~ScreenWnd()

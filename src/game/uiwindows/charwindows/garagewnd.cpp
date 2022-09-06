@@ -13,7 +13,7 @@ RT_CLASS_DEFINE(GarageWnd);
 
 m3d::Class* GarageWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ChildPanel);
 }
 
 int GarageWnd::SetupForWorkshop(int)

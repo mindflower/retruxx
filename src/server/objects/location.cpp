@@ -70,7 +70,7 @@ namespace ai
 
     m3d::Class* Location::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SimplePhysicObj);
     }
 
     void Location::RenderDebugInfo() const

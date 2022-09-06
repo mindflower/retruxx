@@ -101,7 +101,7 @@ namespace ai
 
     m3d::Class* Gadget::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     bool Gadget::ApplyToVp(VehiclePart*, bool) const

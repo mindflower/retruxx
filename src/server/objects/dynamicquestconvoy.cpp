@@ -58,7 +58,7 @@ namespace ai
 
     m3d::Class* DynamicQuestConvoy::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(DynamicQuest);
     }
 
     void DynamicQuestConvoy::Update(float, unsigned)

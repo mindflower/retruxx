@@ -29,7 +29,7 @@ m3d::Object* DamageInfoWnd::CreateObject()
 
 m3d::Class* DamageInfoWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 DamageInfoWnd::~DamageInfoWnd()

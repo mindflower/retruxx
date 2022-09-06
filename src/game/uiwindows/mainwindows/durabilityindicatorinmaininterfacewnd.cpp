@@ -41,7 +41,7 @@ DurabilityIndicatorInMainInterfaceWnd::~DurabilityIndicatorInMainInterfaceWnd()
 
 m3d::Class* DurabilityIndicatorInMainInterfaceWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ImageWnd);
 }
 
 unsigned DurabilityIndicatorInMainInterfaceWnd::GetColorByValue(float, float) const

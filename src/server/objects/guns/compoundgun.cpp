@@ -35,7 +35,7 @@ namespace ai
 
     m3d::Class* CompoundGun::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(CompoundVehiclePart);
     }
 
     void CompoundGun::SetChargeState(Gun::ChargeState)

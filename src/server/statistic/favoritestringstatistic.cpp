@@ -12,7 +12,7 @@ namespace ai
 
     m3d::Class* FavoriteStringStatistic::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Statistic);
     }
 
     m3d::Object* FavoriteStringStatistic::Clone()

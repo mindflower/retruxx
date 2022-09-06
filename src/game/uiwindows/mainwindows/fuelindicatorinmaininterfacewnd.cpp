@@ -21,7 +21,7 @@ m3d::Class* FuelIndicatorInMainInterfaceWnd::GetClass() const
 
 m3d::Class* FuelIndicatorInMainInterfaceWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Object* FuelIndicatorInMainInterfaceWnd::Clone()

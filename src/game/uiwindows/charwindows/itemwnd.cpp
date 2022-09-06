@@ -36,7 +36,7 @@ int ItemWnd::GetDrawStyle() const
 
 m3d::Class* ItemWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(DragDropItemsWnd);
 }
 
 void ItemWnd::SetDrawStyle(int)
