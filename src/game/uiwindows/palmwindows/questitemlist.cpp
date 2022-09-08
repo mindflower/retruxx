@@ -11,7 +11,7 @@ int QuestItemList::FullUpdate()
 
 m3d::Class* QuestItemList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int QuestItemList::CreateQuestItemList(ListType, BoundsBase<float> const&, unsigned, unsigned)

@@ -21,7 +21,7 @@ m3d::Object* VehiclePartWnd::CreateObject()
 
 m3d::Class* VehiclePartWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ItemWnd);
 }
 
 int VehiclePartWnd::GetResourceId() const

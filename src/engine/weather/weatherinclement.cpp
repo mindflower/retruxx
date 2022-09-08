@@ -29,7 +29,7 @@ namespace m3d
 
     Class* WeatherInclement::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Weather);
     }
 
     WeatherInclement::~WeatherInclement()

@@ -46,7 +46,7 @@ TargetInfoWnd::~TargetInfoWnd()
 
 m3d::Class* TargetInfoWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 void TargetInfoWnd::UpdateName()

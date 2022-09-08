@@ -487,7 +487,7 @@ int RadarWnd::UpdateVehiclesOnNewFrame()
 
 m3d::Class* RadarWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 RadarWnd::RadarWnd()

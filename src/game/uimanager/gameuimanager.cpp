@@ -49,7 +49,7 @@ m3d::Object* ResourceInfo::CreateObject()
 
 m3d::Class* ResourceInfo::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Object);
 }
 
 ResourceInfo::ResourceLoadType ResourceInfo::Str2ResourceLoadType(CStr const& str)

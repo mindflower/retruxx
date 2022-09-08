@@ -50,7 +50,7 @@ namespace m3d
 
     Class* Weather::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     CVector const& Weather::CurrentColor(unsigned) const

@@ -36,7 +36,7 @@ void SaveButton::Select(SelectType)
 
 m3d::Class* SaveButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 CStr const& SaveButton::GetLevelName() const

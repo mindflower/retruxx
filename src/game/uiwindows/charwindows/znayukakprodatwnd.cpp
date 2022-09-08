@@ -96,7 +96,7 @@ int ZnayuKakProdatWnd::GetWorkshopItemsCostToBuy() const
 
 m3d::Class* ZnayuKakProdatWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ChildPanel);
 }
 
 ZnayuKakProdatWnd::Belong ZnayuKakProdatWnd::GetItemBelong(int) const

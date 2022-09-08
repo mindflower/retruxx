@@ -11,7 +11,7 @@ m3d::Class* TargetCursorWnd::GetRtClass() const
 
 m3d::Class* TargetCursorWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(SmartCursorWnd);
 }
 
 TargetCursorWnd::~TargetCursorWnd()

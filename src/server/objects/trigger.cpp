@@ -123,7 +123,7 @@ namespace ai
 
     m3d::Class* Trigger::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     int Trigger::GetTriggeredObjectAmount() const

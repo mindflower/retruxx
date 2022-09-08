@@ -27,7 +27,7 @@ int QuestDizWnd::CreateFromPattern(m3d::ui::Wnd const*, bool)
 
 m3d::Class* QuestDizWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int QuestDizWnd::SetupForQuest(help::QuestType, int)

@@ -36,7 +36,7 @@ m3d::Object* SmartCursorWnd::CreateObject()
 
 m3d::Class* SmartCursorWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 SmartCursorWnd::~SmartCursorWnd()

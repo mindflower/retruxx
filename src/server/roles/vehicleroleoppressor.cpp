@@ -50,7 +50,7 @@ namespace ai
 
     m3d::Class* VehicleRoleOppressor::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(VehicleRole);
     }
 
     bool VehicleRoleOppressor::UpdateVehicle(float, Vehicle*)

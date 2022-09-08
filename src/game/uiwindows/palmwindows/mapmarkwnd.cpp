@@ -11,7 +11,7 @@ m3d::Object* MapMarkWnd::CreateObject()
 
 m3d::Class* MapMarkWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Object* MapMarkWnd::Clone()
@@ -65,7 +65,7 @@ int MapMarkIcoWnd::SetUp(ObjectInfo*, PointBase<float> const&)
 
 m3d::Class* MapMarkIcoWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(MapMarkWnd);
 }
 
 m3d::Object* MapMarkIcoWnd::CreateObject()
@@ -149,7 +149,7 @@ int PlayerMarkWnd::CreatePlayerMarkWnd()
 
 m3d::Class* PlayerMarkWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ImageWnd);
 }
 
 void PlayerMarkWnd::SetImageCoords(PointBase<float> const&)
@@ -233,7 +233,7 @@ m3d::Object* NavPointMarkWnd::Clone()
 
 m3d::Class* NavPointMarkWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ImageWnd);
 }
 
 NavPointMarkWnd::~NavPointMarkWnd()
@@ -277,7 +277,7 @@ m3d::Class* MapMarkNameWnd::GetClass() const
 
 m3d::Class* MapMarkNameWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(MapMarkWnd);
 }
 
 m3d::Object* MapMarkNameWnd::CreateObject()

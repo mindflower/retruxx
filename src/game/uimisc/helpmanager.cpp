@@ -75,7 +75,7 @@ void HelpManager::ResetAutoHelp()
 
 m3d::Class* HelpManager::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Object);
 }
 
 void HelpManager::EnableAutoHelp(bool)

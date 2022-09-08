@@ -56,7 +56,7 @@ SpeedometerWnd::~SpeedometerWnd()
 
 m3d::Class* SpeedometerWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 void SpeedometerWnd::UpdateSpeedNumberColor(MotionDir)

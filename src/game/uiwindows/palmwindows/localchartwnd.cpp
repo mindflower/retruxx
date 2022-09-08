@@ -16,7 +16,7 @@ void LocalChartWnd::EnableObjectNames(bool)
 
 m3d::Class* LocalChartWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ImageWnd);
 }
 
 int LocalChartWnd::SetUpForMap(CStr const&)

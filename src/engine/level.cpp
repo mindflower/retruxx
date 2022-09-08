@@ -21,7 +21,7 @@ namespace m3d
 
     Class* Level::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     char const* Level::GetLevelName() const

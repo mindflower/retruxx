@@ -21,7 +21,7 @@ namespace ai
 
     m3d::Class* LocationPusher::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Gun);
     }
 
     LocationPusher::LocationPusher(LocationPusherPrototypeInfo const& prototype) : Gun(prototype)

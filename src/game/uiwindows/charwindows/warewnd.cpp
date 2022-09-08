@@ -24,7 +24,7 @@ bool WareItem::IsMarkedByPrototype() const
 
 m3d::Class* WareItem::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 m3d::Object* WareItem::Clone()
@@ -214,7 +214,7 @@ void WareList::MarkItemByPrototypeId(int)
 
 m3d::Class* WareList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 void WareList::SetItemToTwinkle(int)
@@ -389,7 +389,7 @@ m3d::Object* WareWnd::Clone()
 
 m3d::Class* WareWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(DragDropItemsWnd);
 }
 
 int WareWnd::CreateFromPattern(m3d::ui::Wnd*, bool)

@@ -164,7 +164,7 @@ int Profile::GetParam(ProfileParam, m3d::AIParam&) const
 
 m3d::Class* Profile::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Object);
 }
 
 void Profile::SetName(CStr const&)
@@ -413,7 +413,7 @@ Profile const* ProfileManager::CreateNewProfile(CStr const&)
 
 m3d::Class* ProfileManager::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Object);
 }
 
 ProfileManager::~ProfileManager()

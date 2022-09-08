@@ -26,7 +26,7 @@ int VideoWnd::GetPrototypeId() const
 
 m3d::Class* VideoWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ChildPanel);
 }
 
 m3d::Object* VideoWnd::Clone()

@@ -20,7 +20,7 @@ m3d::Class* OptionsWnd::GetClass() const
 
 m3d::Class* OptionsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ModalWnd);
 }
 
 int OptionsWnd::OnBeforeAddToWndStation()
@@ -130,7 +130,7 @@ bool OptionTabButton::IsSelected() const
 
 m3d::Class* OptionTabButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 OptionTabButton::OptionTabButton(OptionTabButton const&)

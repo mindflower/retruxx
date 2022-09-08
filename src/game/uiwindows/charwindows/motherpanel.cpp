@@ -49,7 +49,7 @@ m3d::Object* MotherPanel::Clone()
 
 m3d::Class* MotherPanel::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ModalWnd);
 }
 
 bool MotherPanel::IsInTownRoot() const

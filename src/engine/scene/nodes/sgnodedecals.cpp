@@ -8,7 +8,7 @@ namespace m3d
 
     Class* SgDecalsNode::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgNode);
     }
 
     Object* SgDecalsNode::CreateObject()

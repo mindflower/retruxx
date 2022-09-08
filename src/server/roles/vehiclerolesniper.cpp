@@ -70,7 +70,7 @@ namespace ai
 
     m3d::Class* VehicleRoleSniper::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(VehicleRole);
     }
 
     void VehicleRoleSniper::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

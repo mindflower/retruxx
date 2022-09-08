@@ -40,7 +40,7 @@ namespace ai
 
     m3d::Class* VehicleRoleCheater::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(VehicleRole);
     }
 
     void VehicleRoleCheater::setTargetVehicle(Vehicle const*)

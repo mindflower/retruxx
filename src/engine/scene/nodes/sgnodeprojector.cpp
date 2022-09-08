@@ -9,7 +9,7 @@ namespace m3d
 
     Class* SgProjectorNode::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgNode);
     }
 
     Object* SgProjectorNode::CreateObject()

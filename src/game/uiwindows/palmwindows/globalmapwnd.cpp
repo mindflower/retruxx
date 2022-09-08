@@ -21,7 +21,7 @@ m3d::Object* LevelConnectionsWnd::Clone()
 
 m3d::Class* LevelConnectionsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Class* LevelConnectionsWnd::GetClass() const
@@ -199,7 +199,7 @@ int LevelIco::SetUpForLevel(CStr const&)
 
 m3d::Class* LevelIco::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ImageWnd);
 }
 
 int LevelIco::CreateFromPattern(m3d::ui::Wnd*, bool)

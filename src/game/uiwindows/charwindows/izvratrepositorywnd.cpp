@@ -31,7 +31,7 @@ int IzvratRepositoryWnd::SetIzvratRepository(ai::IzvratRepository*, RepositoryTy
 
 m3d::Class* IzvratRepositoryWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(RepositoryWnd);
 }
 
 ai::IzvratRepository* IzvratRepositoryWnd::GetIzvratRepository() const

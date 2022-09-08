@@ -26,7 +26,7 @@ namespace ai
 
     m3d::Class* SphericBody::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SimplePhysicBody);
     }
 
     void SphericBody::SetMass(float)

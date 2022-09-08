@@ -11,7 +11,7 @@ WeaponInfoList::AuxInfo::AuxInfo()
 
 m3d::Class* WeaponInfoList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Object* WeaponInfoList::CreateObject()
@@ -195,7 +195,7 @@ m3d::Class* WeaponInfoWnd::GetClass() const
 
 m3d::Class* WeaponInfoWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 WeaponInfoWnd::~WeaponInfoWnd()
@@ -329,7 +329,7 @@ m3d::Object* WeaponGroupChoiceDlg::CreateObject()
 
 m3d::Class* WeaponGroupChoiceDlg::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ModalWnd);
 }
 
 WeaponGroupChoiceDlg::~WeaponGroupChoiceDlg()

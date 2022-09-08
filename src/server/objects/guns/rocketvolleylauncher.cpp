@@ -56,7 +56,7 @@ namespace ai
 
     m3d::Class* RocketVolleyLauncher::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(RocketLauncher);
     }
 
     void RocketVolleyLauncher::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

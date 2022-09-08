@@ -4,6 +4,10 @@
 
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(TeamTactic)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(TeamTactic);
+
     RT_CLASS_EXPORTS_BEGIN(TeamTacticWithRoles)
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(TeamTacticWithRoles);
@@ -25,7 +29,7 @@ namespace ai
 
     m3d::Class* TeamTactic::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     TeamTactic::TeamTactic(TeamTacticPrototypeInfo const&)
@@ -125,7 +129,7 @@ namespace ai
 
     m3d::Class* TeamTacticWithRoles::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(TeamTactic);
     }
 
     float TeamTacticWithRoles::FitAgainstTeam(Team const*, Team const*)

@@ -11,6 +11,6 @@ namespace ai
         void SetSize(CVector const &);
 
     private:
-        Box(dxGeom * const,void (__fastcall*)(dxGeom *));
+        Box(dxGeom * const,void (*)(dxGeom *));
     };
 }

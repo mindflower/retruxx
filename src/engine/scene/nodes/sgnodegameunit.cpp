@@ -13,7 +13,7 @@ namespace m3d
 
     Class* SgGameUnitNode::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgAnimatedModelNode);
     }
 
     Class* SgGameUnitNode::GetClass() const

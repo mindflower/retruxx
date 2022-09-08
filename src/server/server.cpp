@@ -120,6 +120,7 @@ namespace ai
     extern ResourceManager* theResourceManager;
     extern PrototypeManager* thePrototypeManager;
     extern Relationship* theRelationship;
+    extern DynamicScene* gDynamicScene;
 
     CServer* pServer = nullptr;
 
@@ -598,8 +599,8 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void SetDynamicScene(DynamicScene*)
+    void SetDynamicScene(DynamicScene* DS)
     {
-	    throw std::logic_error("Not implemented");
+        gDynamicScene = DS;
     }
 }

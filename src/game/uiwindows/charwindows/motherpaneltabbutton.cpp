@@ -56,7 +56,7 @@ MotherPanelTabButton::Mode MotherPanelTabButton::GetMode() const
 
 m3d::Class* MotherPanelTabButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 MotherPanelTabButton::~MotherPanelTabButton()

@@ -11,7 +11,7 @@ m3d::Object* ReputationButton::Clone()
 
 m3d::Class* ReputationButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 int ReputationButton::GetClanBelong() const
@@ -180,7 +180,7 @@ m3d::Object* ReputationList::CreateObject()
 
 m3d::Class* ReputationList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 ReputationList::ReputationList()
@@ -249,7 +249,7 @@ m3d::Object* ReputationWnd::CreateObject()
 
 m3d::Class* ReputationWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ScreenWnd);
 }
 
 ReputationWnd::~ReputationWnd()

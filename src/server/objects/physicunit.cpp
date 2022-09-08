@@ -140,7 +140,7 @@ namespace ai
 
     m3d::Class* PhysicUnit::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SimplePhysicObj);
     }
 
     void PhysicUnit::SetInitVelocities(bool)

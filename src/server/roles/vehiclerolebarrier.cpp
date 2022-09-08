@@ -55,7 +55,7 @@ namespace ai
 
     m3d::Class* VehicleRoleBarrier::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(VehicleRole);
     }
 
     bool VehicleRoleBarrier::UpdateVehicle(float, Vehicle*)

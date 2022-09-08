@@ -39,6 +39,9 @@ namespace ai
         Obj* getTargetObj() const;
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
 
+    public:
+        RT_CLASS_DECLARE(VehicleRole);
+
     protected:
         virtual void _LookAndFireToEnemy(Vehicle*, float);
         virtual Vehicle* getBestOpponentFromTeam(Vehicle const*, Team const*);

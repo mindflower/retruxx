@@ -7,7 +7,7 @@ RT_CLASS_DEFINE(NpcButton);
 
 m3d::Class* NpcButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 ai::Npc* NpcButton::GetNpc() const
@@ -131,7 +131,7 @@ NpcList::~NpcList()
 
 m3d::Class* NpcList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int NpcList::OnAfterAddToWndStation()

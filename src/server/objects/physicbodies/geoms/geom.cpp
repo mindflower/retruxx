@@ -3,12 +3,16 @@
 #include <math/aabb.h>
 #include <math/quaternion.h>
 #include <math/vector.h>
+#include <ode/collision.h>
 
 namespace ai
 {
     Geom::CellAabb::CellAabb()
     {
-        throw std::logic_error("Not implemented");
+        this->x0 = 0;
+        this->z0 = 0;
+        this->x1 = -1;
+        this->z1 = -1;
     }
 
     Quaternion Geom::GetRotation() const
@@ -136,8 +140,15 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    Geom::Geom(dxGeom* const geomId, void(__fastcall * movedCallback)(dxGeom*))
+    Geom::Geom(dxGeom* const geomId, void(* movedCallback)(dxGeom*))
     {
-        throw std::logic_error("Not implemented");
+        m_geomId = geomId;
+        m_curAabb.x0 = 0;
+        m_curAabb.z0 = 0;
+        m_curAabb.x1 = -1;
+        m_curAabb.z1 = -1;
+        dGeomSetMovedCallback(geomId, movedCallback);
+        dGeomSetCategoryBits(geomId, 0xFFFFu);
+        dGeomSetCollideBits(geomId, 0xFFFFu);
     }
 }

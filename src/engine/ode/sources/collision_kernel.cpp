@@ -240,6 +240,7 @@ dxGeom::dxGeom (dSpaceID _space, int is_placeable)
 
   // put this geom in a space if required
   if (_space) dSpaceAdd (_space,this);
+  m_movedCallback = 0;
 }
 
 
@@ -477,6 +478,13 @@ void dGeomSetCollideBits (dxGeom *g, unsigned long bits)
   dAASSERT (g);
   CHECK_NOT_LOCKED (g->parent_space);
   g->collide_bits = bits;
+}
+
+
+void dGeomSetMovedCallback(dGeomID g, void (*callback)(dGeomID))
+{
+    dAASSERT(g);
+    g->m_movedCallback = callback;
 }
 
 

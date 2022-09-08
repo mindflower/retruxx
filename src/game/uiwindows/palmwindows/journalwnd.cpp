@@ -62,7 +62,7 @@ m3d::Object* JournalWnd::CreateObject()
 
 m3d::Class* JournalWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ScreenWnd);
 }
 
 m3d::Object* JournalWnd::Clone()

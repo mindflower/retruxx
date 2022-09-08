@@ -37,7 +37,7 @@ namespace ai
 
     m3d::Class* IntStatistic::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Statistic);
     }
 
     m3d::AIParam IntStatistic::GetValueAsAIParam() const

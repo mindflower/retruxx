@@ -32,7 +32,7 @@ m3d::Object* PlayerVehicleWnd::Clone()
 
 m3d::Class* PlayerVehicleWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(VehicleWnd);
 }
 
 void PlayerVehicleWnd::UpdateTabButtonsState()

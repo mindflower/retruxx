@@ -290,7 +290,7 @@ int SubjectButton::SetUp(CStr const&, PointBase<float> const&, float, Encyclopae
 
 m3d::Class* SubjectButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CheckButton);
 }
 
 m3d::Object* SubjectButton::CreateObject()
@@ -354,7 +354,7 @@ m3d::Class* SubjectList::GetClass() const
 
 m3d::Class* SubjectList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CheckList);
 }
 
 m3d::Object* SubjectList::Clone()

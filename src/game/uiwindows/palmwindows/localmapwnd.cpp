@@ -30,7 +30,7 @@ CStr LocalMapWnd::GetCurrentLevelName() const
 
 m3d::Class* LocalMapWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ScreenWnd);
 }
 
 m3d::Class* LocalMapWnd::GetClass() const

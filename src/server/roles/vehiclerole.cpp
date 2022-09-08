@@ -4,6 +4,10 @@
 
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(VehicleRole)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(VehicleRole);
+
     bool VehicleRolePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
         throw std::logic_error("Not implemented");
@@ -46,7 +50,7 @@ namespace ai
 
     m3d::Class* VehicleRole::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     void VehicleRole::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const

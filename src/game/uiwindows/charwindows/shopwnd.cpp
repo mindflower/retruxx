@@ -6,7 +6,7 @@ RT_CLASS_DEFINE(ShopWnd);
 
 m3d::Class* ShopWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(SaleWnd);
 }
 
 m3d::Object* ShopWnd::Clone()

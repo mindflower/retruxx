@@ -14,7 +14,7 @@ namespace m3d
 
     Class* SgSoundSourceNode::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgNode);
     }
 
     void SgSoundSourceNode::CanBeFree()

@@ -100,6 +100,7 @@ struct dxGeom : public dBase {
   dxSpace *parent_space;// the space this geom is contained in, 0 if none
   dReal aabb[6];	// cached AABB for this space
   unsigned long category_bits,collide_bits;
+  void (*m_movedCallback)(dGeomID);
 
   dxGeom (dSpaceID _space, int is_placeable);
   virtual ~dxGeom();

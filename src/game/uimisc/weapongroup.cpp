@@ -222,7 +222,7 @@ bool WeaponGroup::CanFire() const
 
 m3d::Class* WeaponGroup::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Object);
 }
 
 m3d::Object* WeaponGroup::Clone()

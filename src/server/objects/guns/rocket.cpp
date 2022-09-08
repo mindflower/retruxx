@@ -60,7 +60,7 @@ namespace ai
 
     m3d::Class* Rocket::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Shell);
     }
 
     void Rocket::CreateBlastWave() const

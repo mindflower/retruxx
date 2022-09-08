@@ -30,7 +30,7 @@ m3d::Object* RepairButton::CreateObject()
 
 m3d::Class* RepairButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(AdvancedButton);
 }
 
 m3d::rend::TexHandle RepairButton::GetServiceIco() const
@@ -100,7 +100,7 @@ m3d::Object* RepairList::CreateObject()
 
 m3d::Class* RepairList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(AdvancedList);
 }
 
 RepairList::~RepairList()

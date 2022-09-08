@@ -15,7 +15,7 @@ namespace m3d
 
         Class* MenuWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(ModalWnd);
         }
 
         Class* MenuWnd::GetClass() const

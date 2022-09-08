@@ -120,7 +120,7 @@ namespace ai
 
     m3d::Class* JointedObj::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     void JointedObj::ReattachExternalJoint(int)

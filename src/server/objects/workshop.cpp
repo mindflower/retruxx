@@ -67,7 +67,7 @@ namespace ai
 
     m3d::Class* Workshop::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Building);
     }
 
     unsigned Workshop::GetObjectRepairPrice(Obj const*) const

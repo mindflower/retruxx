@@ -51,6 +51,7 @@ dSpaceID dGeomGetSpace (dGeomID);
 int dGeomGetClass (dGeomID);
 void dGeomSetCategoryBits (dGeomID, unsigned long bits);
 void dGeomSetCollideBits (dGeomID, unsigned long bits);
+void dGeomSetMovedCallback(dGeomID, void (*callback)(dGeomID));
 unsigned long dGeomGetCategoryBits (dGeomID);
 unsigned long dGeomGetCollideBits (dGeomID);
 void dGeomEnable (dGeomID);

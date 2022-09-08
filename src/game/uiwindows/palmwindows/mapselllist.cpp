@@ -46,7 +46,7 @@ int MapSellItem::GetSellPrice() const
 
 m3d::Class* MapSellItem::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 MapSellItem::~MapSellItem()
@@ -85,7 +85,7 @@ m3d::Object* MapSellList::Clone()
 
 m3d::Class* MapSellList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int MapSellList::CreateFromPattern(m3d::ui::Wnd const*, bool)

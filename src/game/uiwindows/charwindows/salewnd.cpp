@@ -11,7 +11,7 @@ m3d::Class* SaleWnd::GetRtClass() const
 
 m3d::Class* SaleWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ChildPanel);
 }
 
 std::vector<int> SaleWnd::GetResourceIdsForTabItem(WorkshopTabType)

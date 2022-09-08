@@ -41,7 +41,7 @@ namespace ai
 
     m3d::Class* RocketLauncher::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Gun);
     }
 
     RocketLauncherPrototypeInfo const* RocketLauncher::GetPrototypeInfo() const

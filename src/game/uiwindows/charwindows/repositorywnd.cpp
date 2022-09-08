@@ -131,7 +131,7 @@ int RepositoryWnd::CanAddDragItem(bool)
 
 m3d::Class* RepositoryWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(DragDropItemsWnd);
 }
 
 BoundsBase<int> RepositoryWnd::WndToGeomBounds(BoundsBase<float> const&)

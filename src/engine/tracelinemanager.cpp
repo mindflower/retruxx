@@ -1,6 +1,8 @@
 #include <stdexcept>
 #include <tracelinemanager.h>
 
+#include "server/objects/physicbodies/geoms/ray.h"
+
 namespace m3d
 {
     TraceLineManager::~TraceLineManager()
@@ -23,8 +25,16 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void TraceLineManager::InitTraceLineRay(bool)
+    void TraceLineManager::InitTraceLineRay(bool create)
     {
-        throw std::logic_error("Not implemented");
+        if (create)
+        {
+            if (!m_traceLineRay)
+                m_traceLineRay = ai::Ray::CreateObject(0, 0.0, 0);
+        }
+        else if (m_traceLineRay)
+        {
+            delete m_traceLineRay;
+        }
     }
 }

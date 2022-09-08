@@ -61,7 +61,7 @@ m3d::Object* TalkWithNpcDlg::Clone()
 
 m3d::Class* TalkWithNpcDlg::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ChildPanel);
 }
 
 m3d::Object* TalkWithNpcDlg::CreateObject()

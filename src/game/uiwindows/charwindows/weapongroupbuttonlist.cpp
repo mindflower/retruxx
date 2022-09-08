@@ -55,7 +55,7 @@ WeaponGroupButton::State WeaponGroupButton::GetState() const
 
 m3d::Class* WeaponGroupButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 void WeaponGroupButton::UpdateTextures()
@@ -95,7 +95,7 @@ m3d::Object* WeaponGroupButtonList::CreateObject()
 
 m3d::Class* WeaponGroupButtonList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 WeaponGroupButtonList::~WeaponGroupButtonList()

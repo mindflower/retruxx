@@ -40,7 +40,7 @@ namespace ai
 
     m3d::Class* VehicleRoleMeat::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(VehicleRole);
     }
 
     VehicleRoleMeat::VehicleRoleMeat(VehicleRoleMeatPrototypeInfo const& prototype) : VehicleRole(prototype)

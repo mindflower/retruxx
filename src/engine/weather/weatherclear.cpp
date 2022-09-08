@@ -9,7 +9,7 @@ namespace m3d
 
     Class* WeatherClear::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Weather);
     }
 
     Object* WeatherClear::Clone()

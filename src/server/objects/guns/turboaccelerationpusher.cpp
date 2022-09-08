@@ -31,7 +31,7 @@ namespace ai
 
     m3d::Class* TurboAccelerationPusher::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Gun);
     }
 
     m3d::Class* TurboAccelerationPusher::GetClass() const

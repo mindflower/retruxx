@@ -29,7 +29,7 @@ namespace ai
 
     m3d::Class* InfectionTeam::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Team);
     }
 
     void InfectionTeam::Generate(std::vector<CVector, std::allocator<CVector>> const&, unsigned)

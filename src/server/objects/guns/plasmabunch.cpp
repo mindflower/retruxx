@@ -46,7 +46,7 @@ namespace ai
 
     m3d::Class* PlasmaBunch::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Shell);
     }
 
     void PlasmaBunch::SetVelocity(float)

@@ -85,7 +85,7 @@ namespace ai
 
     m3d::Class* VehicleRecollection::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     Vehicle* VehicleRecollection::GetVehicle() const

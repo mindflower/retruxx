@@ -6,7 +6,7 @@ RT_CLASS_DEFINE(HelpInMainGameInterfaceWnd);
 
 m3d::Class* HelpInMainGameInterfaceWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(HelpWnd);
 }
 
 m3d::Object* HelpInMainGameInterfaceWnd::CreateObject()

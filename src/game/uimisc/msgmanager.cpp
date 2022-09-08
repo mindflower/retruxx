@@ -27,7 +27,7 @@ m3d::Class* MsgManager::GetClass() const
 
 m3d::Class* MsgManager::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Object);
 }
 
 MsgInfo const* MsgManager::GetMsgInfo(int) const

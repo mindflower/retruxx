@@ -70,7 +70,7 @@ int SavesManager::AutoSave(CStr const&)
 
 m3d::Class* SavesManager::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Object);
 }
 
 m3d::rend::TexHandle SavesManager::GetCurGameScreenshot() const

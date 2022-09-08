@@ -14,7 +14,7 @@ namespace m3d
 
     Class* SgStaticModelNode::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgNode);
     }
 
     Class* SgStaticModelNode::GetClass() const

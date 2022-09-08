@@ -19,7 +19,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    Box::Box(dxGeom* const geomId, void(__fastcall * movedCallback)(dxGeom*)) :
+    Box::Box(dxGeom* const geomId, void(* movedCallback)(dxGeom*)) :
         Geom(geomId, movedCallback)
     {
         throw std::logic_error("Not implemented");

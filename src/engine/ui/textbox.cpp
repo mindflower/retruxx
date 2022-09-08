@@ -10,7 +10,7 @@ namespace m3d
 
         Class* TextBoxWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(FormattedStringsListBoxWnd);
         }
 
         Object* TextBoxWnd::CreateObject()

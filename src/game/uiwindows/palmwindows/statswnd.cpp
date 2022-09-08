@@ -17,7 +17,7 @@ void StatsButton::ClearValue()
 
 m3d::Class* StatsButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 int StatsButton::UpdateValue()
@@ -91,7 +91,7 @@ RT_CLASS_DEFINE(StatsList);
 
 m3d::Class* StatsList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int StatsList::GetButtonIdByStatsName(CStr const&) const
@@ -205,7 +205,7 @@ m3d::Object* StatsWnd::CreateObject()
 
 m3d::Class* StatsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ScreenWnd);
 }
 
 StatsWnd::StatsWnd(StatsWnd const&)

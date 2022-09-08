@@ -11,7 +11,7 @@ int MapComboBox::CreateFromPattern(m3d::ui::Wnd const*, bool)
 
 m3d::Class* MapComboBox::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ComboBoxWnd);
 }
 
 CStr MapComboBox::GetSelectedMapName() const

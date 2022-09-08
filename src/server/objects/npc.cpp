@@ -134,7 +134,7 @@ namespace ai
 
     m3d::Class* Npc::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     CStr const& Npc::GetModelName() const

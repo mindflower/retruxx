@@ -13,7 +13,7 @@ VehicleInfoPanel::AuxInfo::AuxInfo()
 
 m3d::Class* VehicleInfoPanel::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 VehicleInfoPanel::~VehicleInfoPanel()

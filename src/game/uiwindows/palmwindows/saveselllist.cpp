@@ -21,7 +21,7 @@ int SaveSellButton::SetUp(ObjectInfo*, float, int)
 
 m3d::Class* SaveSellButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 void SaveSellButton::Select(bool)
@@ -75,7 +75,7 @@ m3d::Object* SaveSellList::Clone()
 
 m3d::Class* SaveSellList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 void SaveSellList::ShowAtBegin()

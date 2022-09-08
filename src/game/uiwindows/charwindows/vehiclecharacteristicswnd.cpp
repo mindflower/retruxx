@@ -26,7 +26,7 @@ m3d::Class* VehicleCharacteristicsWnd::GetClass() const
 
 m3d::Class* VehicleCharacteristicsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(CharacteristicsWnd);
 }
 
 VehicleCharacteristicsWnd::~VehicleCharacteristicsWnd()

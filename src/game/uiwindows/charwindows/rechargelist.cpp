@@ -10,7 +10,7 @@ RT_CLASS_DEFINE(RechargeButton);
 
 m3d::Class* RechargeList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(AdvancedList);
 }
 
 m3d::Object* RechargeList::CreateObject()
@@ -60,7 +60,7 @@ void RechargeList::BuyService(AdvancedButton const*)
 
 m3d::Class* RechargeButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(AdvancedButton);
 }
 
 m3d::Object* RechargeButton::CreateObject()

@@ -27,7 +27,7 @@ MainGameInterfaceWnd::AuxInfo::AuxInfo()
 
 m3d::Class* MainGameInterfaceWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int MainGameInterfaceWnd::GetBossId() const

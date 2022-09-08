@@ -16,7 +16,7 @@ bool MainCursorWnd::NeedShow() const
 
 m3d::Class* MainCursorWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(SmartCursorWnd);
 }
 
 m3d::Object* MainCursorWnd::CreateObject()

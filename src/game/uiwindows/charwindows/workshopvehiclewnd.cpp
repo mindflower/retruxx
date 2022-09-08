@@ -21,7 +21,7 @@ WorkshopVehicleWnd::~WorkshopVehicleWnd()
 
 m3d::Class* WorkshopVehicleWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(VehicleWnd);
 }
 
 int WorkshopVehicleWnd::GetWorkshopId() const

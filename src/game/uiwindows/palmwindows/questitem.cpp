@@ -11,7 +11,7 @@ void QuestItem::UpdateOnQuestNavPointChangedChildIncluded()
 
 m3d::Class* QuestItem::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 int QuestItem::FullUpdate()
@@ -160,7 +160,7 @@ QuestStatusBtn::~QuestStatusBtn()
 
 m3d::Class* QuestStatusBtn::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 m3d::Object* QuestStatusBtn::CreateObject()
@@ -249,7 +249,7 @@ m3d::Object* QuestLabel::CreateObject()
 
 m3d::Class* QuestLabel::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(TextBoxWnd);
 }
 
 m3d::Object* QuestLabel::Clone()

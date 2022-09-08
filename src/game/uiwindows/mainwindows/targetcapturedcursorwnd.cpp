@@ -16,7 +16,7 @@ m3d::Class* TargetCapturedCursorWnd::GetClass() const
 
 m3d::Class* TargetCapturedCursorWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(TargetCursorWnd);
 }
 
 m3d::Object* TargetCapturedCursorWnd::Clone()

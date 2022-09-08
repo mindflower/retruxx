@@ -108,7 +108,7 @@ int TownDlg::GameDataUpdate(void*, int)
 
 m3d::Class* TownDlg::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ChildPanel);
 }
 
 void TownDlg::SetConditionalClosingForTown(CStr const&, CStr const&, bool)

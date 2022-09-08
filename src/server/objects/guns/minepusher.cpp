@@ -36,7 +36,7 @@ namespace ai
 
     m3d::Class* MinePusher::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Gun);
     }
 
     MinePusher::~MinePusher()

@@ -33,7 +33,7 @@ void InventoryWnd::SetVehicleId(int)
 
 m3d::Class* InventoryWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ChildPanel);
 }
 
 m3d::Object* InventoryWnd::CreateObject()

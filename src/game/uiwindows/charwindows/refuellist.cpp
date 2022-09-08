@@ -20,7 +20,7 @@ m3d::Object* RefuelButton::CreateObject()
 
 m3d::Class* RefuelButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(AdvancedButton);
 }
 
 RefuelButton::~RefuelButton()
@@ -110,7 +110,7 @@ m3d::Object* RefuelList::CreateObject()
 
 m3d::Class* RefuelList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(AdvancedList);
 }
 
 AdvancedButton* RefuelList::NewItem() const

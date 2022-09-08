@@ -26,7 +26,7 @@ void RepositoryItemWnd::SetUpForRepositoryItem(ai::GeomRepositoryItem const&)
 
 m3d::Class* RepositoryItemWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ItemWnd);
 }
 
 RepositoryItemWnd::~RepositoryItemWnd()

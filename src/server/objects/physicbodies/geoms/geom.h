@@ -37,7 +37,7 @@ namespace ai
         public:
             CellAabb();
 
-        private:
+        public:
             int x0;
             int z0;
             int x1;
@@ -72,7 +72,7 @@ namespace ai
         virtual void DumpPhysicInfo(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
 
     protected:
-        Geom(dxGeom* const geomId,void (__fastcall* movedCallback)(dxGeom *));
+        Geom(dxGeom* const geomId,void (* movedCallback)(dxGeom *));
 
     private:
         //Geom_vtbl *__vftable /*VFT*/;

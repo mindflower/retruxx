@@ -50,7 +50,7 @@ namespace ai
 
     m3d::Class* Static2DPath::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     m3d::Object* Static2DPath::Clone()

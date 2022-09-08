@@ -50,7 +50,7 @@ namespace ai
 
     m3d::Class* VagabondTeam::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Team);
     }
 
     void VagabondTeam::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

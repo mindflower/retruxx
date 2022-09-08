@@ -116,7 +116,7 @@ m3d::Object* SkinsWnd::CreateObject()
 
 m3d::Class* SkinsWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Object* SkinsWnd::Clone()

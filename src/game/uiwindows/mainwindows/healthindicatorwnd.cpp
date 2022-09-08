@@ -31,7 +31,7 @@ m3d::Object* HealthIndicatorWnd::CreateObject()
 
 m3d::Class* HealthIndicatorWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ProgressBarWnd);
 }
 
 void HealthIndicatorWnd::SetVehicleId(int)

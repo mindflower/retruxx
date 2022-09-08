@@ -145,7 +145,7 @@ namespace ai
 
     m3d::Class* StaticAutoGun::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(ComplexPhysicObj);
     }
 
     float StaticAutoGun::GetMaxFiringRangeAI() const

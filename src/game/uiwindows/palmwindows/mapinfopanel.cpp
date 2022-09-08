@@ -56,7 +56,7 @@ LocalMapWnd::Mode MapInfoPanel::GetCurrentMode() const
 
 m3d::Class* MapInfoPanel::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Object* MapInfoPanel::Clone()

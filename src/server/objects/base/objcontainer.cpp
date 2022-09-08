@@ -393,7 +393,7 @@ namespace ai
 
     m3d::Class* ObjContainer::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Object);
     }
 
     int ObjContainer::GetPrototypeId(char const*) const

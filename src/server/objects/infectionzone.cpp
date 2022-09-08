@@ -83,7 +83,7 @@ namespace ai
 
     m3d::Class* InfectionZone::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     void InfectionZone::DeletePolygonPoint(unsigned)

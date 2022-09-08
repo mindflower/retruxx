@@ -45,7 +45,7 @@ namespace ai
 
     m3d::Class* VehicleRoleCoward::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(VehicleRole);
     }
 
     void VehicleRoleCoward::setTargetVehicle(Vehicle const*)

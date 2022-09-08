@@ -41,7 +41,7 @@ ItemInfoWnd::~ItemInfoWnd()
 
 m3d::Class* ItemInfoWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(InfoWnd);
 }
 
 ai::Obj const* ItemInfoWnd::GetObjectA() const

@@ -46,7 +46,7 @@ namespace ai
 
     m3d::Class* PlasmaBunchLauncher::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Gun);
     }
 
     void PlasmaBunchLauncher::_LaunchShells()

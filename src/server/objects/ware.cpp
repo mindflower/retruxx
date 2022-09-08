@@ -55,7 +55,7 @@ namespace ai
 
     m3d::Class* Ware::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     unsigned Ware::GetPrice(IPriceCoeffProvider const*) const

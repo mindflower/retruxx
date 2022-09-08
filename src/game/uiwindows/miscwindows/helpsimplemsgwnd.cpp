@@ -16,7 +16,7 @@ m3d::Object* HelpSimpleMsgWnd::Clone()
 
 m3d::Class* HelpSimpleMsgWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(HelpWnd);
 }
 
 m3d::Object* HelpSimpleMsgWnd::CreateObject()

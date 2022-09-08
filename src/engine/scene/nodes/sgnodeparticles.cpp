@@ -18,7 +18,7 @@ namespace m3d
 
     Class* SgParticlesNode::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgNode);
     }
 
     int SgParticlesNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -108,7 +108,7 @@ namespace m3d
 
     Class* SgParticlesOpaqueNode::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgParticlesNode);
     }
 
     Object* SgParticlesOpaqueNode::CreateObject()

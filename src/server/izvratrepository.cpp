@@ -35,7 +35,7 @@ namespace ai
 
     m3d::Class* IzvratRepository::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(GeomRepository);
     }
 
     bool IzvratRepository::AddThingToPlace(GeomRepositoryItem&, PointBase<int> const&)

@@ -26,7 +26,7 @@ m3d::Object* SaveWnd::Clone()
 
 m3d::Class* SaveWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(LSWnd);
 }
 
 SaveWnd::~SaveWnd()

@@ -472,7 +472,7 @@ namespace m3d
 
     Class* Landscape::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgNode);
     }
 
     void Landscape::PostServersLoad()

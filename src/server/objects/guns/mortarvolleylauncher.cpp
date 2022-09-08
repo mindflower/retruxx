@@ -20,7 +20,7 @@ namespace ai
 
     m3d::Class* MortarVolleyLauncher::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Mortar);
     }
 
     MortarVolleyLauncher::MortarVolleyLauncher(MortarVolleyLauncherPrototypeInfo const& prototype) : Mortar(prototype)

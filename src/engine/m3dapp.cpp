@@ -1671,7 +1671,7 @@ namespace m3d
 
     Class* Application::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(WndStation);
     }
 
     void Application::PutSpriteAbsRot(float, float, float, float, unsigned, float, float, float, float, float, float)

@@ -26,7 +26,7 @@ m3d::Object* NavPointButton::CreateObject()
 
 m3d::Class* NavPointButton::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ButtonWnd);
 }
 
 int NavPointButton::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)

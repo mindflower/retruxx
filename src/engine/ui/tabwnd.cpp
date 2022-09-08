@@ -80,7 +80,7 @@ namespace m3d
 
         Class* TabWnd::GetBaseClass()
         {
-            throw std::logic_error("Not implemented");
+            return RT_CLASS_LOCAL(Wnd);
         }
 
         void TabWnd::SetClientEdges(std::vector<float, std::allocator<float>> const&)

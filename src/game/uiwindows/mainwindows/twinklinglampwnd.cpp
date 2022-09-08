@@ -21,7 +21,7 @@ void TwinklingLampWnd::SetTwinklePeriod(unsigned)
 
 m3d::Class* TwinklingLampWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ImageWnd);
 }
 
 int TwinklingLampWnd::CreateFromPattern(m3d::ui::Wnd*, bool)

@@ -46,7 +46,8 @@ spaces
 void dGeomMoved (dxGeom *geom)
 {
   dAASSERT (geom);
-  
+
+  dxGeom* origGeom = geom;
   // from the bottom of the space heirarchy up, process all clean geoms
   // turning them into dirty geoms.
   dxSpace *parent = geom->parent_space;
@@ -66,6 +67,8 @@ void dGeomMoved (dxGeom *geom)
     CHECK_NOT_LOCKED (geom->parent_space);
     geom = geom->parent_space;
   }
+  if (origGeom->m_movedCallback)
+      origGeom->m_movedCallback(origGeom);
 }
 
 #define GEOM_ENABLED(g) ((g)->gflags & GEOM_ENABLED)

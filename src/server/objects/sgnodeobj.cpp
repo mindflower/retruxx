@@ -112,7 +112,7 @@ namespace ai
 
     m3d::Class* SgNodeObj::GetBaseClass()
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Obj);
     }
 
     Quaternion SgNodeObj::GetRotation() const

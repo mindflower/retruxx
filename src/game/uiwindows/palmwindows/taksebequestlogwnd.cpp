@@ -20,7 +20,7 @@ TakSebeQuestLogWnd::~TakSebeQuestLogWnd()
 
 m3d::Class* TakSebeQuestLogWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ScreenWnd);
 }
 
 m3d::Object* TakSebeQuestLogWnd::CreateObject()

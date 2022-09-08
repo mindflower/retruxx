@@ -27,7 +27,7 @@ int WeaponSlotList::SetupForVehicle(int)
 
 m3d::Class* WeaponSlotList::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Object* WeaponSlotList::CreateObject()

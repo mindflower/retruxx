@@ -21,7 +21,7 @@ m3d::Class* HelpWnd::GetClass() const
 
 m3d::Class* HelpWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ModalWnd);
 }
 
 m3d::Object* HelpWnd::Clone()

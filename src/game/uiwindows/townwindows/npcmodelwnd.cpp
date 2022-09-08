@@ -6,7 +6,7 @@ RT_CLASS_DEFINE(NpcModelWnd);
 
 m3d::Class* NpcModelWnd::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    return RT_CLASS_LOCAL(ItemModelWnd);
 }
 
 m3d::Object* NpcModelWnd::Clone()

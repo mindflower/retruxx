@@ -15,13 +15,17 @@ namespace ai
         virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
     };
 
-    class TeamTactic
+    class TeamTactic : public Obj
     {
     public:
         static m3d::Class* GetBaseClass();
         TeamTactic(TeamTacticPrototypeInfo const&);
         virtual TeamTacticPrototypeInfo const* GetPrototypeInfo() const;
         virtual m3d::Class* GetClass() const;
+
+    public:
+        RT_CLASS_DECLARE(TeamTactic);
+
     protected:
         virtual ~TeamTactic();
     private:

@@ -4,6 +4,7 @@ class CVector;
 
 namespace ai
 {
+    class Ray;
     class ObjIdExceptionalTraceLineCallback;
 }
 
@@ -19,6 +20,9 @@ namespace m3d
         void SetTransparentBody(m3d::SgNode*);
         TraceLineManager(unsigned int);
         static void InitTraceLineRay(bool);
+
+    public:
+        static inline ai::Ray* m_traceLineRay = nullptr;
 
     private:
         unsigned int m_LastTimeUpdated;
