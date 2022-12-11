@@ -23,7 +23,7 @@ namespace
 
     void Gfx_PrintFixed(float,float,int,char const *,unsigned int,unsigned int)
     {
-	    
+        throw std::logic_error("Not implemented");
     }
 }
 

@@ -74,6 +74,18 @@ namespace m3d
         return false;
     }
 
+    bool SafeInt64Attrib(long long& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        CStr str;
+        if (SafeStrAttrib(str, node, attrib) && !str.empty())
+        {
+            std::istringstream iss(str.c_str());
+            iss >> v;
+            return true;
+        }
+        return false;
+    }
+
     bool SafeUintAttrib(unsigned& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
         CStr str;
@@ -172,6 +184,21 @@ namespace m3d
         }
         v = strToQuat(val);
         return 1;
+    }
+
+    void Tokenize(CStr const& str, std::vector<CStr>& tokens, char const* chars)
+    {
+        if (!str.empty())
+        {
+            tokens.clear();
+            auto temp = new char[str.length() + 1];
+            strncpy(temp, str.c_str(), str.length() +1);
+            for (auto i = strtok(temp, chars); i; i = strtok(nullptr, chars))
+            {
+                tokens.emplace_back(i);
+            }
+            delete[] temp;
+        }
     }
 
     void Tokenize(CStr const* str, std::vector<CStr>& tokens, char const* chars)

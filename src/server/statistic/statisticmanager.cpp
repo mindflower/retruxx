@@ -50,7 +50,6 @@ namespace ai
 
 	StatisticManager::StatisticManager()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	CStr StatisticManager::GetAllStatisticsDescription() const

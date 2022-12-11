@@ -97,7 +97,7 @@ namespace ai
 
 	void DynamicScene::InitClashDecalId()
 	{
-		throw std::logic_error("Not implemented");
+		m_clashDecalId = AddDecalName("DC_CLASH");
 	}
 
 	void DynamicScene::ReadSoilProps(char const*)
@@ -195,9 +195,17 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	int DynamicScene::AddDecalName(CStr const&)
+	int DynamicScene::AddDecalName(CStr const& name)
 	{
-		throw std::logic_error("Not implemented");
+		for (int i = 0; i < m_decalsNames.size(); ++i)
+		{
+		    if (m_decalsNames[i] == name)
+		    {
+				return i;
+		    }
+		}
+		m_decalsNames.push_back(name);
+		return m_decalsNames.size() - 1;
 	}
 
 	int DynamicScene::GetClashDecalId()

@@ -116,12 +116,14 @@ namespace m3d
     int SafeStrAttrib(CStr&, cmn::XmlNode const*, char const*);
     bool SafeClrAttrib(unsigned int&, m3d::cmn::XmlNode const*, char const*);
     bool SafeIntAttrib(int&, m3d::cmn::XmlNode const*, char const*);
+    bool SafeInt64Attrib(__int64&, m3d::cmn::XmlNode const*, char const*);
     bool SafeUintAttrib(unsigned&, m3d::cmn::XmlNode const*, char const*);
     bool SafeFloatAttrib(float&, m3d::cmn::XmlNode const*, char const*);
     bool SafeBoolAttrib(bool&, m3d::cmn::XmlNode const*, char const*);
     bool SafeVector2Attrib(CVector2&, m3d::cmn::XmlNode const*, char const*);
     bool SafeVectorAttrib(CVector&, m3d::cmn::XmlNode const*, char const*);
     bool SafeQuaternionAttrib(Quaternion&, m3d::cmn::XmlNode const*, char const*);
+    void Tokenize(CStr const&, std::vector<CStr>&, char const*);
 
     template<class T>
     bool SafeEnumAttrib(T& v, m3d::cmn::XmlNode const* node, char const* attrib)

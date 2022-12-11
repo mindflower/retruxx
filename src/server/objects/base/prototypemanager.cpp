@@ -6,7 +6,6 @@ namespace ai
 
     PrototypeManager::PrototypeManager()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void PrototypeManager::Clear()

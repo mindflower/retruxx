@@ -43,7 +43,7 @@ namespace ai
         public:
             ConditionToGive(ConditionOperator, ConditionType);
 
-        private:
+        public:
             ConditionOperator m_operator;
             ConditionType m_type;
         };
@@ -70,14 +70,14 @@ namespace ai
         bool bCheckAllSubQuests() const ;
         std::vector<int> const & GetSubsequentQuestIds() const ;
 
-    private:
+    public:
         //Quest_vtbl *__vftable /*VFT*/;
-        int m_questId;
-        int m_parentQuestId;
-        bool m_bSubscribeAutomatic;
+        int m_questId = -1;
+        int m_parentQuestId = -1;
+        bool m_bSubscribeAutomatic = false;
         std::vector<int> m_subQuestIds;
-        SubQuestCondition m_subQuestCondition;
-        bool m_bCheckAllSubQuests;
+        SubQuestCondition m_subQuestCondition = SUBQUEST_AND;
+        bool m_bCheckAllSubQuests = false;
         std::vector<int> m_subsequentQuestIds;
         std::vector<int> m_precedingQuestIds;
         ConditionToGive m_conditionToGive;
@@ -89,7 +89,7 @@ namespace ai
         CStr m_funcOnFail;
         CStr m_funcOnTake;
         CStr m_funcOnCanBeGiven;
-        __int64 m_TimeForComplete;
+        __int64 m_TimeForComplete = -1;
         std::vector<CStr> m_ActionLevels;
     };
 
@@ -110,7 +110,7 @@ namespace ai
     protected:
         void _Clear();
 
-    private:
+    public:
         //QuestManager_vtbl* __vftable /*VFT*/;
         std::vector<Quest*> m_quests;
         std::vector<std::set<int>> m_mutexes;

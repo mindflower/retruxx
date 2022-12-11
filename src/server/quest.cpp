@@ -2,11 +2,80 @@
 
 #include <stdexcept>
 
+#include "utils.h"
+#include "core/ini.h"
+#include "core/log.h"
+#include "core/ref_ptr.h"
+
 namespace ai
 {
-	Quest::ConditionToGive::ConditionToGive(ConditionOperator, ConditionType)
+	namespace
 	{
-		throw std::logic_error("Not implemented");
+		Quest::SubQuestCondition Str2SubQuestCondition(const CStr& str)
+		{
+			if (str == "and")
+			{
+				return Quest::SUBQUEST_AND;
+			}
+			if (str == "or")
+			{
+				return Quest::SUBQUEST_OR;
+			}
+			if (str == "xor")
+			{
+				return Quest::SUBQUEST_XOR;
+			}
+			M3D_LOG_INFO("Error: undefined quest type: " + str);
+			return Quest::SUBQUEST_AND;
+		}
+
+		void Str2ConditionToGive(const CStr& str, Quest::ConditionToGive& condition)
+		{
+			if (str.empty())
+			{
+				condition.m_operator = Quest::ConditionToGive::PRECEDERS_AND;
+				condition.m_type = Quest::ConditionToGive::PRECEDERS_COMPLETE;
+				return;
+			}
+			const CStr op = str.substr(0, 3);
+			if (op == "all")
+			{
+				condition.m_operator = Quest::ConditionToGive::PRECEDERS_AND;
+			}
+			else if (op == "any")
+			{
+				condition.m_operator = Quest::ConditionToGive::PRECEDERS_OR;
+			}
+			else
+			{
+				M3D_LOG_INFO("Error loading quests: incorrect condition: " + str);
+				condition.m_operator = Quest::ConditionToGive::PRECEDERS_AND;
+			}
+			const CStr typ = str.substr(4);
+			if (typ == "complete")
+			{
+				condition.m_type = Quest::ConditionToGive::PRECEDERS_COMPLETE;
+			}
+			else if (typ == "failed")
+			{
+				condition.m_type = Quest::ConditionToGive::PRECEDERS_FAILED;
+			}
+			else if (typ == "taken")
+			{
+				condition.m_type = Quest::ConditionToGive::PRECEDERS_TAKEN;
+			}
+			else
+			{
+				M3D_LOG_INFO("Error loading quests: incorrect condition: " + str);
+				condition.m_type = Quest::ConditionToGive::PRECEDERS_COMPLETE;
+			}
+		}
+	}
+
+	Quest::ConditionToGive::ConditionToGive(ConditionOperator op, ConditionType typ) :
+	    m_operator(op),
+	    m_type(typ)
+	{
 	}
 
 	std::vector<int> const& Quest::GetPrecedingQuestIds() const
@@ -21,12 +90,12 @@ namespace ai
 
 	int Quest::GetId() const
 	{
-		throw std::logic_error("Not implemented");
+		return m_questId;
 	}
 
 	CStr const& Quest::GetName() const
 	{
-		throw std::logic_error("Not implemented");
+		return m_name;
 	}
 
 	std::vector<CStr, std::allocator<CStr>> const& Quest::getActionLevels() const
@@ -42,7 +111,6 @@ namespace ai
 	Quest::Quest() :
 		m_conditionToGive(ConditionToGive::PRECEDERS_AND, ConditionToGive::PRECEDERS_COMPLETE)
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	std::vector<int, std::allocator<int>> const& Quest::GetSubQuestIds() const
@@ -52,7 +120,42 @@ namespace ai
 
 	void Quest::PostLoad()
 	{
-		throw std::logic_error("Not implemented");
+		//TODO: check this
+		m_parentQuestId = theQuestManager->GetQuestIdByName(m_parentQuestName);
+		for (auto const& subQuestName : m_subQuestNames)
+		{
+			auto questId = -1;
+		    for (auto const quest : theQuestManager->m_quests)
+		    {
+		        if (quest->GetName() == subQuestName)
+		        {
+					questId = quest->GetId();
+					break;
+		        }
+		    }
+			m_subQuestIds.push_back(questId);
+		}
+		for (auto const& precName : m_precedingQuestNames)
+		{
+			auto questId = -1;
+			for (auto const quest : theQuestManager->m_quests)
+			{
+				if (quest->GetName() == precName)
+				{
+					questId = quest->GetId();
+					break;
+				}
+			}
+			if (questId == -1)
+			{
+				M3D_LOG_ERR("Error: quest '" + precName + "' does not exist");
+			}
+			else
+			{
+				m_precedingQuestIds.push_back(questId);
+				theQuestManager->GetQuestById(questId)->m_subsequentQuestIds.push_back(m_questId);
+			}
+		}
 	}
 
 	int Quest::GetParentId() const
@@ -95,9 +198,61 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	bool Quest::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	bool Quest::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		throw std::logic_error("Not implemented");
+		m3d::SafeStrAttrib(m_name, xmlNode, "Name");
+		m3d::SafeBoolAttrib(m_bSubscribeAutomatic, xmlNode, "Automatic");
+		CStr subCond;
+		m3d::SafeStrAttrib(subCond, xmlNode, "SubQuestsCondition");
+		if (!subCond.empty())
+		{
+			m_subQuestCondition = Str2SubQuestCondition(subCond);
+		}
+		m3d::SafeBoolAttrib(m_bCheckAllSubQuests, xmlNode, "CheckAll");
+
+		m_subQuestIds.clear();
+		m_subsequentQuestIds.clear();
+		m_precedingQuestIds.clear();
+		m_subQuestNames.clear();
+		m_precedingQuestNames.clear();
+
+		CStr cond;
+		m3d::SafeStrAttrib(cond, xmlNode, "ConditionToGive");
+		Str2ConditionToGive(cond, m_conditionToGive);
+
+		CStr precQuests;
+		m3d::SafeStrAttrib(precQuests, xmlNode, "PrecedingQuests");
+		ai::StrToStringVector(precQuests, m_precedingQuestNames);
+
+		m3d::SafeStrAttrib(m_funcOnComplete, xmlNode, "OnComplete");
+		m3d::SafeStrAttrib(m_funcOnFail, xmlNode, "OnFail");
+		m3d::SafeStrAttrib(m_funcOnTake, xmlNode, "OnTake");
+		m3d::SafeStrAttrib(m_funcOnCanBeGiven, xmlNode, "OnCanBeGiven");
+		m3d::SafeInt64Attrib(m_TimeForComplete, xmlNode, "TimeForComplete");
+
+		CStr levels;
+		m3d::SafeStrAttrib(levels, xmlNode, "Levels");
+		m3d::Tokenize(levels, m_ActionLevels, "(), ;\t");
+		ref_ptr questNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+		xmlNode->GetFirstChild_(questNode, "quest");
+		while(!questNode->IsEmpty())
+		{
+		    if (subCond.empty())
+		    {
+				M3D_LOG_ERR("Error loading quest: the quest '" + m_name + "' has children but there is no quest condition");
+		    }
+			auto quest = new Quest;
+			if (!quest->LoadFromXml(xmlFile, questNode))
+			{
+				M3D_LOG_ERR("Error: couldn't load quest from XML File. The quest is child of quest '" + m_name + "'");
+				return false;
+			}
+			m_subQuestNames.push_back(quest->GetName());
+			quest->m_parentQuestName = m_name;
+			theQuestManager->AddQuest(quest);
+			questNode->GetNextSibling_(questNode, "quest");
+		}
+		return true;
 	}
 
 	bool Quest::bCheckAllSubQuests() const
@@ -122,7 +277,6 @@ namespace ai
 
 	QuestManager::QuestManager()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	void QuestManager::StrToQuestIdVector(CStr const&, std::vector<int, std::allocator<int>>&)
@@ -135,9 +289,16 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	int QuestManager::GetQuestIdByName(CStr const&) const
+	int QuestManager::GetQuestIdByName(CStr const& questName) const
 	{
-		throw std::logic_error("Not implemented");
+		for (auto const quest : m_quests)
+		{
+		    if (quest->GetName() == questName)
+		    {
+				return quest->GetId();
+		    }
+		}
+		return -1;
 	}
 
 	std::set<int> const* QuestManager::GetMutexByQuestId(int) const
@@ -145,23 +306,109 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	bool QuestManager::LoadFromXmlFile(char const*)
+	bool QuestManager::LoadFromXmlFile(char const* filename)
 	{
-		throw std::logic_error("Not implemented");
+		//TODO: check this
+		_Clear();
+		CStr err;
+		ref_ptr xmlFile = m3d::ReadXmlFile(filename, &err);
+		if (xmlFile)
+		{
+			ref_ptr questsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+			xmlFile->GetFirstChild_(questsNode, "quests");
+			if (questsNode->IsEmpty())
+			{
+				M3D_LOG_INFO("QuestManager::LoadFromXmlFile error - cannot find root node \"quests\"");
+				return 0;
+			}
+			ref_ptr questNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+			for (questsNode->GetFirstChild_(questNode, "quest"); !questNode->IsEmpty(); questNode->GetNextSibling_(questNode, "quest"))
+			{
+				auto quest = new Quest;
+				if (!quest->LoadFromXml(xmlFile, questNode))
+				{
+					M3D_LOG_INFO("Error: couldn't load quest from XML file. The quest is root quest.");
+					return false;
+				}
+				AddQuest(quest);
+			}  
+			for (auto* quest : m_quests)
+			{
+				quest->PostLoad();
+			}
+
+			ref_ptr mutuallyExclusivesNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+			questsNode->GetFirstChild_(mutuallyExclusivesNode, "MutuallyExclusives");
+			if (!mutuallyExclusivesNode->IsEmpty())
+			{
+				ref_ptr mutexNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+				for (mutuallyExclusivesNode->GetFirstChild_(mutexNode, "mutex"); !mutexNode->IsEmpty(); mutexNode->GetNextSibling_(mutexNode, "mutex"))
+				{
+					CStr questsNameAttr;
+					m3d::SafeStrAttrib(questsNameAttr, mutexNode, "quests");
+					std::vector<CStr> questsNameVec;
+					StrToStringVector(questsNameAttr, questsNameVec);
+					std::set<int> newMtx;
+					for (auto const& name : questsNameVec)
+					{
+						int questNameId = -1;
+					    for (auto const quest : m_quests)
+					    {
+					        if (quest->GetName() == name)
+					        {
+								questNameId = quest->GetId();
+								break;
+					        }
+					    }
+						if (questNameId == -1)
+						{
+							M3D_LOG_INFO("Warning: Loading QuestManager: invalid quest name '" + name + CStr("'"));
+						}
+						else
+						{
+							for (auto const& mtx : m_mutexes)
+							{
+							    if (mtx.find(questNameId) != mtx.end())
+							    {
+							        M3D_LOG_INFO("Warning: Loading QuestManager: quest name " + name + " exists in multiple mutexes");
+							    }
+							}
+							newMtx.insert(questNameId);
+						}
+					}
+					m_mutexes.push_back(newMtx);
+				}
+				return true;
+			}
+			return false;
+		}
+	    M3D_LOG_INFO("No file: " + CStr(filename));
+	    return false;
 	}
 
-	Quest* QuestManager::GetQuestById(int) const
+	Quest* QuestManager::GetQuestById(int questId) const
 	{
-		throw std::logic_error("Not implemented");
+		if (questId < 0 || m_quests.size() < questId)
+		{
+			return nullptr;
+		}
+		return m_quests[questId];
 	}
 
-	int QuestManager::AddQuest(Quest*)
+	int QuestManager::AddQuest(Quest* quest)
 	{
-		throw std::logic_error("Not implemented");
+		m_quests.push_back(quest);
+		quest->m_questId = m_quests.size() - 1;
+		return quest->m_questId;
 	}
 
 	void QuestManager::_Clear()
 	{
-		throw std::logic_error("Not implemented");
+		for (auto quest : m_quests)
+		{
+			delete quest;
+		}
+		m_quests.clear();
+		m_mutexes.clear();
 	}
 }

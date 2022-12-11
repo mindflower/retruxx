@@ -180,7 +180,7 @@ namespace ai
 
     m3d::Object* QuestStateManager::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new QuestStateManager;
     }
 
     void QuestStateManager::FailQuestIfTaken(char const*)
@@ -285,7 +285,6 @@ namespace ai
 
     QuestStateManager::QuestStateManager()
     {
-        throw std::logic_error("Not implemented");
     }
 
     QuestStateManager::QuestStateManager(QuestStateManager const&)

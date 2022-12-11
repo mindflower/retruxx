@@ -46,6 +46,6 @@ namespace ai
         m3d::CStrHash<unsigned int> m_prototypeFullNamesLocalizedForms;
         m3d::CStrHash<int> m_prototypeNamesToIds;
         std::vector<PrototypeInfo *> m_prototypes;
-        int m_loadingLock;
+        int m_loadingLock = 0;
     };
 }

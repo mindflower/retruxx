@@ -76,7 +76,7 @@ namespace ai
 
     m3d::Object* AIManager::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new AIManager;
     }
 
     m3d::Class* AIManager::GetClass() const
@@ -109,9 +109,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    AIManager::AIManager()
+    AIManager::AIManager() :
+        m_Schemes{"S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15"}
     {
-        throw std::logic_error("Not implemented");
     }
 
     AIManager::AIManager(AIManager const&)
@@ -124,8 +124,8 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void SetAIManager(AIManager*)
+    void SetAIManager(AIManager* pAIManager)
     {
-	    throw std::logic_error("Not implemented");
+        theAIManager = pAIManager;
     }
 }
