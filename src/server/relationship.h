@@ -29,9 +29,9 @@ namespace ai
         class auxToleranceInfo
         {
         public:
-            auxToleranceInfo(auxToleranceInfo const&);
+            auxToleranceInfo(ai::eTolerance tolerance, CStr name);
 
-        private:
+        public:
             eTolerance m_tolerance;
             CStr m_name;
         };
@@ -65,11 +65,11 @@ namespace ai
         void _SaveFormat0(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
 
     private:
-        int m_MinID;
-        int m_MaxID;
-        eTolerance m_defaultTolerance;
+        int m_MinID = 0;
+        int m_MaxID = -1;
+        eTolerance m_defaultTolerance = RS_ENEMY;
         std::vector<auxToleranceInfo> m_toleranceList;
-        float* m_pTolerance;
-        float* m_pDefaultTolerance;
+        float* m_pTolerance = nullptr;
+        float* m_pDefaultTolerance = nullptr;
     };
 }

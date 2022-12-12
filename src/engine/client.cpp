@@ -1,6 +1,9 @@
 #include <client.h>
 #include <stdexcept>
 
+#include "m3dapp.h"
+#include "world.h"
+
 namespace m3d
 {
     CClient* pClient = nullptr;
@@ -27,7 +30,8 @@ namespace m3d
 
     CClient::CClient()
     {
-        throw std::logic_error("Not implemented");
+        m3d::Application::g_pApp->m_renderer->RegisterResetCallback(
+            this);
     }
 
     int CClient::Update(int, unsigned)
@@ -42,7 +46,10 @@ namespace m3d
 
     int CClient::Init()
     {
-        throw std::logic_error("Not implemented");
+        m_world = new CWorld;
+        m_world->SetOwner(this);
+        PredictInit();
+        return 1;
     }
 
     void CClient::OnAfterDeviceReset()
@@ -57,7 +64,6 @@ namespace m3d
 
     void CClient::PredictInit()
     {
-        throw std::logic_error("Not implemented");
     }
 
     bool CClient::HandleCVar(CVar const*, CConsoleParams const&)

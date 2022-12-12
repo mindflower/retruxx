@@ -59,7 +59,7 @@ namespace ai
         void _InitializeVehicleParts();
 
     private:
-        bool m_bInited;
+        bool m_bInited = false;
         std::map<CStr,VehicleGroupInfo> m_vehicleGroupInfos;
         std::vector<WareInfo> m_wareInfos;
         std::map<CStr,std::vector<VehiclePartInfo>> m_gunInfos;

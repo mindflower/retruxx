@@ -2,6 +2,10 @@
 #include <scene/nodes/sgnode.h>
 #include <math/obb.h>
 
+#include "config.h"
+#include "core/kernel.h"
+#include "core/console/cvar.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNode, GetOrigin)
 {
     throw std::logic_error("Not implemented");
@@ -296,7 +300,63 @@ namespace m3d
 
     SgNode::SgNode()
     {
-        throw std::logic_error("Not implemented");
+        memset(&this->m_ownXForm, 0, sizeof(this->m_ownXForm));
+        this->m_ownXForm._44 = 1.0;
+        this->m_ownXForm._33 = 1.0;
+        this->m_ownXForm._22 = 1.0;
+        this->m_ownXForm._11 = 1.0;
+        memset(&this->m_currentXForm, 0, sizeof(this->m_currentXForm));
+        this->m_currentXForm._44 = 1.0;
+        this->m_currentXForm._33 = 1.0;
+        this->m_currentXForm._22 = 1.0;
+        this->m_currentXForm._11 = 1.0;
+        *&this->m_origin.y = 0i64;
+        this->m_origin.x = 0.0;
+        this->m_scaling.z = 1.0;
+        this->m_scaling.y = 1.0;
+        this->m_scaling.x = 1.0;
+        this->m_rotation.x = 0.0;
+        this->m_rotation.y = 0.0;
+        this->m_rotation.z = 0.0;
+        this->m_rotation.w = 1.0;
+        this->m_boundingRadius = 0.0;
+        this->m_isXFormDirty = 0;
+        this->m_isOwnBoundingBoxDirty = 1;
+        this->m_isChildDirty = 0;
+        this->m_ttl = 0;
+        this->m_srvId = -1;
+        this->m_removeImmediateAfterParent = 1;
+        this->m_initedWithRitual = RITUAL_NONE;
+        this->m_nextThinkTime = 1;
+        this->m_prevThinkTime = 1;
+        *&this->m_originWorldAbsForSphere.y = 0i64;
+        this->m_originWorldAbsForSphere.x = 0.0;
+        this->m_isContoured = 0;
+        this->m_transparencyType = TT_NONE;
+        this->m_frameTransparent = -1;
+        this->m_isRemoveIfFree = 0;
+        this->m_isInRemoveIfFree = 0;
+        this->m_contourColor = m3d::g_Kernel->GetEngineCfg().m_g_contourColor.GetC();
+        this->m_contourWidth = m3d::g_Kernel->GetEngineCfg().m_g_contourWidth.GetF();
+        this->m_frameVisible = 0;
+        this->m_frameVisible2 = 0;
+        this->m_predictIdx = 0;
+        this->m_isRootNode = 0;
+        this->m_forGraph = 0;
+        this->m_isWaitingForRender = 0;
+        this->m_initedWithRitual = RITUAL_NONE;
+        this->m_onScreenSize = 0.0;
+        this->m_properties[0] = 0;
+        this->m_properties[1] = 0;
+        this->m_properties[2] = 0;
+        this->m_props[8] = 1;
+        this->m_props[2] = 0;
+        this->m_props[4] = 0;
+        this->m_props[6] = 0;
+        this->m_props[5] = 0;
+        this->m_props[7] = 0;
+        this->m_props[9] = 0;
+        this->m_props[1] = 1000;
     }
 
     void SgNode::RitualInDestructor()

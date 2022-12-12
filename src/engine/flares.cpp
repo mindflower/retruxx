@@ -31,7 +31,9 @@ namespace m3d
 
     CFlare::CFlare()
     {
-        throw std::logic_error("Not implemented");
+        this->m_percentageVisible = 0.0;
+        this->m_event = 0;
+        this->m_glowOnScreen = 0;
     }
 
     int CFlare::Render(FlareMode, CVector const&, float, float)

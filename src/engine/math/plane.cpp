@@ -8,7 +8,6 @@ void CPlane::buildplane(CPlane*, CVector*)
 
 CPlane::CPlane()
 {
-    throw std::logic_error("Not implemented");
 }
 
 CPlane::CPlane(CPlane const&)

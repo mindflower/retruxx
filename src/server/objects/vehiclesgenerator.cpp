@@ -11,7 +11,6 @@ namespace ai
 
 	VehiclesGeneratorInfoCache::VehiclesGeneratorInfoCache()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	std::map<CStr, VehiclesGeneratorInfoCache::VehicleGroupInfo> const& VehiclesGeneratorInfoCache::

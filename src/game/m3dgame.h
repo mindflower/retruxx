@@ -38,7 +38,7 @@ public:
         GameState Get() const;
         void Set(GameState);
 
-    private:
+    public:
         GameState m_mode = GS_GAME;
 
     };

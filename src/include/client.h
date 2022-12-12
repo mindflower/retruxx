@@ -39,13 +39,13 @@ namespace m3d
         virtual ~CClient();
         SgNode * CreateServerControlledNode(int);
         void Reset();
-        virtual char const * GetCallbackName() const ;
         CWorld& GetWorld();
         CClient();
         int Update(int,unsigned int);
+        virtual char const* GetCallbackName() const;
         virtual void OnBeforeDeviceReset();
-        int Init();
         virtual void OnAfterDeviceReset();
+        int Init();
         int RecieveData(struct CSimpleNetPacket const *,class ai::CServer *);
 
     private:
@@ -59,7 +59,7 @@ namespace m3d
         void PredictRemoveNode(SgNode *);
 
     private:
-        CWorld *m_world;
+        CWorld *m_world = nullptr;
         std::vector<PredictInfo> m_predictData;
         std::vector<int> m_predictLastEmptySlots;
     };

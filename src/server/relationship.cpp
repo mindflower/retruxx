@@ -5,6 +5,12 @@ namespace ai
 {
     Relationship* theRelationship = nullptr;
 
+    Relationship::auxToleranceInfo::auxToleranceInfo(ai::eTolerance tolerance, CStr name) :
+        m_tolerance(tolerance),
+        m_name(name)
+    {
+    }
+
     void Relationship::LoadDefaultFromXmlFile(char const*)
     {
         throw std::logic_error("Not implemented");
@@ -25,9 +31,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    Relationship::Relationship()
+    Relationship::Relationship() :
+        m_toleranceList{{RS_ENEMY, "enemy"}, {RS_NEUTRAL, "neutral"}, {RS_ALLY, "ally"}, {RS_OWN, "own"}}
     {
-        throw std::logic_error("Not implemented");
     }
 
     eTolerance Relationship::GetToleranceByName(CStr const&) const

@@ -255,7 +255,10 @@ int CMiracle3d::OnFlyMouse(m3d::AuxImpulseInfo const&)
 
 int CMiracle3d::GameInit()
 {
-    throw std::logic_error("Not implemented");
+    m3d::pClient = new m3d::CClient;
+    m3d::pClient->Init();
+    m_gameInited = true;
+    return 1;
 }
 
 bool CMiracle3d::GetCursorShow() const
@@ -825,9 +828,23 @@ CMiracle3d::CMiracle3d() :
     m_minAngle("minAngle", "0.2", m3d::CVar::eType::CVAR_FLOAT, m3d::CVar::eFlags::CVAR_ARCHIVE),
     m_fov("fov", "90", m3d::CVar::eType::CVAR_FLOAT, m3d::CVar::eFlags::CVAR_ARCHIVE)
 {
+    m_curGameMode.m_mode = GS_GAME;
+    m_maxTimeScale = 2.0;
+    m_normalTimeScale = 1.0;
+    m_minTimeScale = 0.0;
+    m_player.m_cameraMode = CM_FOLLOWMODE;
+    m_gameSlideAuto.x = 0.0;
+    m_gameSlideAuto.y = 0.0;
+    m_gameSlideAuto.z = 0.0;
+    m_gameCameraRho = 25.0;
+
     GetCameraController()->AttachCamera(&m_curCamera);
 
     m_player.m_desiredDistance = 25.0f;
+
+    memset(m_srvKeys, 0, sizeof(m_srvKeys));
+    m_noclip = false;
+    m_gameInited = false;
 
     m3d::Landscape::Register();
     m3d::CWorld::Register();
@@ -837,9 +854,25 @@ CMiracle3d::CMiracle3d() :
     m_profiler_ServerUpdate = GetProfilerStack().AddProfiler(" - ServerUpdate", 30);
     m_profiler_ClientUpdate = GetProfilerStack().AddProfiler(" - ClientUpdate", 30);
 
+    m_paused = 0;
+    m_userPaused = 0;
+    m_oldPositionValue.z = 1.0;
+    m_oldPositionValue.y = 1.0;
+    m_oldPositionValue.x = 1.0;
+    m_pInterfaceManager = 0;
+    zoomInited = 0;
+    m_playingVideo = 0;
+    m_onFinishVideoPlaying = 0;
+    m_profileManager = 0;
+
     m_blockMusicManager = new m3d::BlockMusicManager;
     m_townMusicManager = new m3d::TownMusicManager;
     m_radioEngine = new m3d::RadioEngine;
+
+    m_bMustStartNewMusic = 0;
+    m_bBackgroundTextureIsValid = 0;
+    m_bRenderAsBackground = 0;
+    m_hackedMusicType = HACKMUSIC_LAST;
 
     m_oldPositionValue.one();
 }

@@ -45,9 +45,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void CWorld::SetOwner(CClient*)
+    void CWorld::SetOwner(CClient* client)
     {
-        throw std::logic_error("Not implemented");
+        m_owner = client;
     }
 
     RoadManager& CWorld::GetRoadManager()
