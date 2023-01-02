@@ -191,7 +191,7 @@ namespace m3d
         std::set<SgNode*> m_RemoveIfFreeList;
         std::set<SgNode*> m_contourList;
         std::set<SgNode*> m_updateXFormList;
-        CellItems m_cellItems[4096];
+        CellItems m_cellItems[4096] = {};
         bool m_easyRelink;
         bool m_cellsPrepared;
         SgNode m_rootNode;

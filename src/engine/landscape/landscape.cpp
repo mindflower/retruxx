@@ -4,6 +4,10 @@
 #include <stdexcept>
 #include <core/kernel.h>
 
+#include "config.h"
+#include "m3dapp.h"
+#include "math/vector4.h"
+
 namespace m3d
 {
     RT_CLASS_EXPORTS_BEGIN(Landscape)
@@ -735,9 +739,100 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    Landscape::Landscape()
+    int CreateIndices(unsigned short*, int, unsigned short, unsigned short)
     {
         throw std::logic_error("Not implemented");
+    }
+
+    struct VertexWaterTest
+    {
+        __int16 x;
+        __int16 y;
+        __int16 z;
+        __int16 w;
+    };
+
+    Landscape::Landscape() :
+        m_lockVis("lockVis", "0", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE)
+    {
+        //this->m_numGrassModels = 0;
+        //this->m_grassArray = 0;
+        //this->m_heightMap = 0;
+        //this->m_cliffHeightMap = 0;
+        //this->m_waterMap = 0;
+        //this->m_normalMap = 0;
+        //this->m_vnormal = 0;
+        //this->m_colormap = 0;
+        //this->m_texSetsmap = 0;
+        //this->m_remappedIndices = 0;
+        //this->m_oCollisionitems = 0;
+        //this->m_terrainObject = 0;
+        //this->m_owner = 0;
+        //this->m_cellParams = 0;
+        //this->m_drawedCellParams = 0;
+        //this->m_lastState = RT_LIGHTPASS;
+        //this->m_tiles = 0;
+        //m_landUVVb = m3d::Application::g_pApp->m_renderer->AddVb(rend::VERTEX_STREAM_UV_S1, 0xFFFF, "LandUV", 0);
+        //m_landVb = m3d::Application::g_pApp->m_renderer->AddVb(rend::VERTEX_XYZNCT2, 1600, "LandEditor", 512);
+        ////TODO: m_dummyVB =
+        //for (auto& query : m_waterQueries)
+        //{
+        //    query = m3d::Application::g_pApp->m_renderer->NewQuery(rend::IQuery::QUERY_OCCLUSION);
+        //}
+        //this->m_isWaterVisible = 0;
+        //this->m_currWaterQuery = 0;
+        //this->m_drawtextured = 1;
+        //this->m_passedCells = 0;
+        //this->m_CurAlphaSet = 0;
+        //this->m_loadAllTextures = 0;
+        //m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_lockVis, 0);
+        //this->m_maxLOD = 0;
+        //int szindex = 4;
+        //int i = 1;
+        //do
+        //{
+        //    auto curIb = Application::g_pApp->m_renderer->AddIb(((szindex + 1) * (szindex + 1)) << 9, false);
+        //    auto ptr = Application::g_pApp->m_renderer->LockIb(curIb, 384 * szindex * szindex, 0, 0);
+        //    auto indices = CreateIndices(static_cast<unsigned short*>(ptr), szindex, 4, i);
+        //    m_lsNumIndices.push_back(indices);
+        //    Application::g_pApp->m_renderer->UnlockIb(curIb);
+        //    m_landIbConst.push_back(curIb);
+        //    i *= 2;
+        //    ++m_maxLOD;
+        //    szindex >>= 1;
+        //} while (szindex);
+        //m_maxWaterCellPerPass = m3d::Application::g_pApp->m_renderer->GetMaxVertexShaderConst();
+        //m_waterVb = Application::g_pApp->m_renderer->AddVb(rend::VERTEX_WATERTEST, 81 * m_maxWaterCellPerPass, "Water", 0);
+        //
+        ////TODO: check this
+        //auto waterVbPtr = static_cast<VertexWaterTest*>(Application::g_pApp->m_renderer->LockVb(this->m_waterVb, 0, 0, 0));
+        //VertexWaterTest vertexWaterTest;
+        //for (int j = 0; j < this->m_maxWaterCellPerPass; ++j)
+        //{
+        //    vertexWaterTest.z = j;
+        //    auto v28 = *&vertexWaterTest.z;
+        //    for (int k = 0; k <= 8u; ++k)
+        //    {
+        //        auto v30 = 0;
+        //        vertexWaterTest.y = k;
+        //        do
+        //        {
+        //            vertexWaterTest.x = v30;
+        //            *&waterVbPtr->x = *&vertexWaterTest.x;
+        //            *&waterVbPtr->z = v28;
+        //            ++v30;
+        //            ++waterVbPtr;
+        //        } while (v30 <= 8u);
+        //    }
+        //}
+        //m3d::Application::g_pApp->m_renderer->UnlockVb(this->m_waterVb);
+        //waterTileInfo = new CVector4[m_maxWaterCellPerPass];
+        //i = 0;
+        //do
+        //{
+        //    m_waterIb
+        //} while ();
+            //TODO: IMPORTANT! IMPLEMENT LANDSCAPE
     }
 
     void Landscape::BuildCells0(rend::VertexLandscape*, TIVChunk&, int&, std::vector<unsigned> const&, RenderTypes, std::vector<int, std::allocator<int>>&)

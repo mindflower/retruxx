@@ -653,6 +653,27 @@ namespace m3d
                 bool isPS20;
                 bool useAlpha;
             };
+
+        public:
+            virtual unsigned int GetNumTechniques() = 0;
+            virtual const m3d::rend::IEffect::TechniqueDesc*  GetTechniqueDesc(unsigned int) = 0;
+            virtual void SetCurTechnique(unsigned int) = 0;
+            virtual unsigned int GetCurTechnique() = 0;
+            virtual void SetDefaultTechnique(bool) = 0;
+            virtual bool IsParameterUsed(m3d::rend::IEffect::Parameter) = 0;
+            virtual void SetInt(m3d::rend::IEffect::Parameter, int) = 0;
+            virtual void SetFloat(m3d::rend::IEffect::Parameter, float) = 0;
+            virtual void SetVector4(m3d::rend::IEffect::Parameter, const CVector4*) = 0;
+            virtual void SetVector3(m3d::rend::IEffect::Parameter, const CVector*) = 0;
+            virtual void SetFloat4(m3d::rend::IEffect::Parameter, const nFloat4*) = 0;
+            virtual void SetMatrix(m3d::rend::IEffect::Parameter, const CMatrix*) = 0;
+            virtual void SetTexture(m3d::rend::IEffect::Parameter, m3d::rend::TexHandle*) = 0;
+            virtual void SetIntArray(m3d::rend::IEffect::Parameter, const int*, int) = 0;
+            virtual void SetFloatArray(m3d::rend::IEffect::Parameter, const float*, int) = 0;
+            virtual void SetFloat4Array(m3d::rend::IEffect::Parameter, const nFloat4*, int) = 0;
+            virtual void SetVector4Array(m3d::rend::IEffect::Parameter, const CVector4*, int) = 0;
+            virtual void SetMatrixArray(m3d::rend::IEffect::Parameter, const CMatrix*, int) = 0;
+            virtual void SetMatrixPointerArray(m3d::rend::IEffect::Parameter, const CMatrix**, int) = 0;
         };
 
         //IMPORTANT: fields and member order is strict!
@@ -925,12 +946,12 @@ namespace m3d
             virtual void RepaintAllTexturesMips() = 0;
             virtual void DrawFullScreenQuad(m3d::rend::IEffect*) = 0;
             virtual void DrawFullScreenQuad() = 0;
-            virtual m3d::rend::IbHandle* AddIb(m3d::rend::IbHandle* result, int, bool) = 0;
+            virtual m3d::rend::IbHandle AddIb(int, bool) = 0;
             virtual void SetIndices(const m3d::rend::IbPoolField*, int) = 0;
             virtual void SetIndices(const m3d::rend::IbHandle*, int) = 0;
-            virtual void* LockIb(const m3d::rend::IbHandle*, int, int, unsigned int) = 0;
+            virtual void* LockIb(const m3d::rend::IbHandle&, int, int, unsigned int) = 0;
             virtual void* LockIbStreaming(const m3d::rend::IbHandle*, int, int*, int*) = 0;
-            virtual void UnlockIb(const m3d::rend::IbHandle*) = 0;
+            virtual void UnlockIb(const m3d::rend::IbHandle&) = 0;
             virtual int ReleaseIb(m3d::rend::IbHandle*) = 0;
             virtual int ReferenceIb(const m3d::rend::IbHandle*) = 0;
             virtual m3d::rend::IbPoolField AddIbPoolField(unsigned int) = 0;
@@ -938,12 +959,12 @@ namespace m3d
             virtual void* LockIbPoolField(m3d::rend::IbPoolField const&) = 0;
             virtual void UnlockIbPoolField(m3d::rend::IbPoolField const&) = 0;
             virtual bool ReportIbsInfo(const char*) = 0;
-            virtual m3d::rend::VbHandle* AddVb(m3d::rend::VbHandle* result, m3d::rend::VertexType, int, const CStr*, unsigned int) = 0;
+            virtual m3d::rend::VbHandle AddVb(m3d::rend::VertexType, int, CStr const&, unsigned int) = 0;
             virtual void SetToStream0(const m3d::rend::VbPoolField*) = 0;
             virtual void SetToStream0(const m3d::rend::VbHandle&) = 0;
             virtual void SetToStream(int, const m3d::rend::VbPoolField*) = 0;
             virtual void SetToStream(int, const m3d::rend::VbHandle*) = 0;
-            virtual void* LockVb(const m3d::rend::VbHandle*, int, int, unsigned int) = 0;
+            virtual void* LockVb(const m3d::rend::VbHandle&, int, int, unsigned int) = 0;
             virtual void* LockVbStreaming(const m3d::rend::VbHandle&, int, int*, int*) = 0;
             virtual void UnlockVb(const m3d::rend::VbHandle&) = 0;
             virtual int ReferenceVb(const m3d::rend::VbHandle*) = 0;
