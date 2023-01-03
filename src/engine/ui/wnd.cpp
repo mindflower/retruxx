@@ -847,9 +847,12 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::DrawWndText(DrawInfo const&)
+        void Wnd::DrawWndText(DrawInfo const& di)
         {
-            throw std::logic_error("Not implemented");
+            if (!m_caption.empty())
+            {
+                throw std::logic_error("Not implemented");
+            }
         }
 
         int Wnd::ProcessAnimation(int, int)
@@ -921,9 +924,74 @@ namespace m3d
             }
         }
 
-        void Wnd::OnNcPaint(DrawInfo const&, unsigned)
+        void Wnd::OnNcPaint(DrawInfo const& di, unsigned clr)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this and refactor
+            BoundsBase<float> v4; // eax
+            float v5; // xmm1_4
+            float v6; // xmm3_4
+            m3d::ui::Wnd* v7; // ecx
+            BoundsBase<float> v8; // eax
+            BoundsBase<float> v9; // eax
+            float v10; // xmm0_4
+            float v11; // xmm1_4
+            int v12; // eax
+            int v13[2]; // [esp+8h] [ebp-94h] BYREF
+            float v14; // [esp+10h] [ebp-8Ch]
+            float v15; // [esp+14h] [ebp-88h]
+            BoundsBase<float> b; // [esp+18h] [ebp-84h] BYREF
+            BoundsBase<float> rect; // [esp+28h] [ebp-74h] BYREF
+            BoundsBase<float> bb; // [esp+38h] [ebp-64h] BYREF
+            char v19[16]; // [esp+48h] [ebp-54h] BYREF
+
+            if ((this->m_style & 0x8000) != 0)
+            {
+                v4 = this->GetBounds();
+                v5 = v4.width;
+                v6 = v4.height;
+                rect.x0 = v5;
+                rect.width = (v5 + 15.0) - v5;
+                rect.y0 = 15.0;
+                rect.height = (v6 + 15.0) - 15.0;
+                bb.x0 = 15.0;
+                bb.y0 = v6;
+                bb.width = v5 - 15.0;
+                bb.height = (v6 + 15.0) - v6;
+
+
+                m3d::ui::DrawInfo new_di(di);
+                v7 = dynamic_cast<Wnd*>(this->GetParent());
+                if (v7)
+                {
+                    v8 = v7->GetBounds();
+                    v13[0] = 0;
+                    v13[1] = 0;
+                    v14 = v8.width;
+                    v15 = v8.height;
+                    new_di.m_clippedRect.x0 = 0.0;
+                    new_di.m_clippedRect.y0 = 0.0;
+                    new_di.m_clippedRect.width = v14;
+                    new_di.m_clippedRect.height = v15;
+                }
+                GetGfxServer()->AddFlatAxialQuad(new_di, rect, 0x80000000);
+                GetGfxServer()->AddFlatAxialQuad(new_di, bb, 0x80000000);
+            }
+            v9 = this->GetBounds();
+            v10 = v9.height;
+            v11 = v9.width;
+            b.x0 = 0.0;
+            b.y0 = 0.0;
+            b.width = v11;
+            b.height = v10;
+            if (!m_bgTexture.IsValid())
+                GetGfxServer()->AddFlatAxialPane0(di,
+                    b,
+                    clr,
+                    this->m_paneFlags,
+                    this->m_paneName,
+                    this->m_bgFlags);
+            else
+                GetGfxServer()->AddImagedRect(di, b, clr, m_bgTexture);
         }
 
         void Wnd::Unregister()
@@ -1248,9 +1316,20 @@ namespace m3d
             return 1;
         }
 
-        int Wnd::OnPaint(DrawInfo const& clipToIt)
+        int Wnd::OnPaint(DrawInfo const& di)
         {
-            return 0;
+            auto v3 = this->m_style;
+            if ((v3 & 0x40) == 0)
+            {
+                auto v4 = 0;
+                if ((v3 & 2) != 0 || (v3 & 0x80000) != 0)
+                    v4 = 3;
+                else
+                    v4 = this->m_curClr;
+                this->OnNcPaint(di, v4);
+            }
+            this->DrawWndText(di);
+            return 1;
         }
 
         int Wnd::OnKey(unsigned short key, unsigned char scanCode, unsigned state)

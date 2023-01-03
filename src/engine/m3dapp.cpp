@@ -1684,9 +1684,11 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Application::PutSprite2Rel(float, float, float, float, float, float, float, float, unsigned)
+    void Application::PutSprite2Rel(float x1, float y1, float tu1, float tv1, float x2, float y2, float tu2, float tv2, unsigned c)
     {
-        throw std::logic_error("Not implemented");
+        this->m_renderer->RelToAbs(x1, y1);
+        this->m_renderer->RelToAbs( x2, y2);
+        m3d::Application::PutSprite2Abs(x1, y1, tu1, tv1, x2, y2, tu2, tv2, c);
     }
 
     void Application::SetKeyboardFocus(IEventHandler*)
@@ -1859,9 +1861,9 @@ namespace m3d
         bool df = true;
     }
 
-    void Application::PutSprite2Abs(float, float, float, float, float, float, float, float, unsigned)
+    void Application::PutSprite2Abs(float x1, float y1, float tu1, float tv1, float x2, float y2, float tu2, float tv2, unsigned int c)
     {
-        throw std::logic_error("Not implemented");
+        PutSprite2Abs(x1, y2, x1, y1, x2, y2, x2, y1, tu1, tv2, tu1, tv1, tu2, tv2, tu2, tv1, 0.0, c);
     }
 
     char const* Application::GetCallbackName() const

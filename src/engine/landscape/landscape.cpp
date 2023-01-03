@@ -109,9 +109,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Landscape::setOwner(CWorld*)
+    void Landscape::setOwner(CWorld* world)
     {
-        throw std::logic_error("Not implemented");
+        m_owner = world;
     }
 
     Class* Landscape::GetClass() const

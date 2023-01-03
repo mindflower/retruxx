@@ -261,7 +261,8 @@ namespace m3d
         M3D_ASSERT(m_contourShader);
         this->m_contourShader->SetDefaultTechnique(true);
         this->m_rootNode.m_isRootNode = 1;
-        this->m_rootNode.UpdateXForm(0, 1);
+        //TODO: important! UpdateXForm
+        //this->m_rootNode.UpdateXForm(0, 1);
         memset(this->m_enableMap, 0, sizeof(this->m_enableMap));
         this->m_enableVisSpaceMask = 1;
         //TODO: add this fields
@@ -360,9 +361,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void SceneGraph::SetOwner(CWorld*)
+    void SceneGraph::SetOwner(CWorld* world)
     {
-        throw std::logic_error("Not implemented");
+        m_owner = world;
     }
 
     SceneGraph::~SceneGraph()

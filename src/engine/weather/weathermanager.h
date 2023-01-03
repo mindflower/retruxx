@@ -52,16 +52,16 @@ namespace m3d
     private:
         std::vector<Weather *> m_weatherStorage;
         std::vector<Weather *> m_curWeatherStorage;
-        Weather *m_currentWeather;
-        float m_cloudsOffset;
+        Weather *m_currentWeather = nullptr;
+        float m_cloudsOffset = 0.0;
         rend::TexHandle m_starsTexture;
         CStr m_StarsTextureName;
         rend::TexHandle m_cloudTextureHandle;
         GlobalTimeParams m_curDayTime;
         float m_globalTimeParams[4];
-        bool m_bEdit;
+        bool m_bEdit = false;
         rend::VbHandle m_vbSky;
         rend::IbHandle m_ibSky;
-        CWorld *m_owner;
+        CWorld *m_owner = nullptr;
     };
 }

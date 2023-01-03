@@ -55,7 +55,7 @@ RT_CLASS_DEFINE(LevelInfoManager);
 
 CStr const& LevelInfo::GetName() const
 {
-	throw std::logic_error("Not implemented");
+    return m_name;
 }
 
 CStr const& LevelInfo::GetFullName() const
@@ -75,7 +75,22 @@ m3d::rend::TexHandle LevelInfo::GetImage1() const
 
 std::vector<m3d::rend::TexHandle> LevelInfo::GetSplashes()
 {
-	throw std::logic_error("Not implemented");
+    std::vector<m3d::rend::TexHandle> result;
+    for (auto const& splashName : m_splasheNames)
+    {
+        auto const it = m_splashes.find(splashName);
+        if (it == m_splashes.cend())
+        {
+            auto splash = m3d::Application::g_pApp->m_renderer->AddTexture(splashName, 4u);
+            m_splashes.emplace(splashName, splash);
+            result.push_back(splash);
+        }
+        else
+        {
+            result.push_back(it->second);
+        }
+    }
+    return result;
 }
 
 CStr const& LevelInfo::GetFile() const
@@ -448,9 +463,15 @@ void LevelInfoManager::OnStartLevel()
     throw std::logic_error("Not implemented");
 }
 
-LevelInfo* LevelInfoManager::GetLevelInfoByName(CStr const&)
+LevelInfo* LevelInfoManager::GetLevelInfoByName(CStr const& levelName)
 {
-    throw std::logic_error("Not implemented");
+    auto id = GetLevelInfoId(levelName);
+    auto it = m_levels.find(id);
+    if (it != m_levels.end())
+    {
+        return it->second;
+    }
+    return nullptr;
 }
 
 LevelInfo const* LevelInfoManager::GetLevelInfoByName(CStr const&) const
@@ -502,9 +523,16 @@ int LevelInfoManager::AddKnownLevel(CStr const&)
     throw std::logic_error("Not implemented");
 }
 
-int LevelInfoManager::GetLevelInfoId(CStr const&) const
+int LevelInfoManager::GetLevelInfoId(CStr const& name) const
 {
-    throw std::logic_error("Not implemented");
+    for (auto&[ id, info ] : m_levels)
+    {
+        if (info->GetName() == name)
+        {
+            return id;
+        }
+    }
+    return -1;
 }
 
 void LevelInfoManager::ClearKnownLevels()

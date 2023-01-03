@@ -516,8 +516,10 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void ui::GfxServer::AddFlatAxialPane0(DrawInfo const&, BoundsBase<float> const&, unsigned, int, CStr const&, PaneFlagBg)
+    void ui::GfxServer::AddFlatAxialPane0(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, int drawFlags, CStr const& paneName, PaneFlagBg bgFlags)
     {
+        Pane* pane = nullptr;
+        m_panes.get(paneName, pane);
         throw std::logic_error("Not implemented");
     }
 
@@ -526,9 +528,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void ui::GfxServer::AddImagedRect(DrawInfo const&, BoundsBase<float> const&, unsigned, rend::TexHandle)
+    void ui::GfxServer::AddImagedRect(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, rend::TexHandle tex)
     {
-        throw std::logic_error("Not implemented");
+        AddImagedRectGeneral(di, rect, clr, tex, 0.0, 0.0, 1.0, 1.0);
     }
 
     rend::TexHandle ui::GfxServer::GetGlyph(CStr const&)
@@ -582,9 +584,30 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void ui::GfxServer::AddImagedRectGeneral(DrawInfo const&, BoundsBase<float> const&, unsigned, rend::TexHandle, float, float, float, float)
+    void ui::GfxServer::AddImagedRectGeneral(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, rend::TexHandle tex, float u0, float v0, float u1, float v1)
     {
-        throw std::logic_error("Not implemented");
+        m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+        m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+        m3d::Application::g_pApp->m_renderer->PushBlend();
+        m3d::Application::g_pApp->m_renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+        m3d::Application::g_pApp->m_renderer->PushZbState();
+        m3d::Application::g_pApp->m_renderer->SetTexture(0, &tex, -1.0);
+        auto sx = 0;
+        auto sy = 0;
+        m3d::Application::g_pApp->m_renderer->GetDims( tex, sx, sy);
+        PointBase<float> s;
+        if (u1 >= 0.0)
+            s.x = u1;
+        else
+            s.x = 0.0 - (u1 / sx);
+        if (v1 >= 0.0)
+            s.y = v1;
+        else
+            s.y = 0.0 - (v1 / sy);
+        AddFlatAxialQuad(di, rect, clr, u0, v0, s.x, s.y);
+        m3d::Application::g_pApp->m_renderer->PopBlend();
+        m3d::Application::g_pApp->m_renderer->PopZbState();
+        m3d::Application::g_pApp->m_renderer->SetAlphaTest(0);
     }
 
     void ui::GfxServer::ClearFonts()
@@ -665,14 +688,88 @@ namespace m3d
         m_controlSoundInfos.clear();
     }
 
-    void ui::GfxServer::AddFlatAxialQuad(DrawInfo const&, BoundsBase<float> const&, unsigned, float, float, float, float)
+    void ui::GfxServer::AddFlatAxialQuad(DrawInfo const& di, BoundsBase<float> const& rc, unsigned clr, float tu0, float tv0, float tu1, float tv1)
     {
-        throw std::logic_error("Not implemented");
+        //TODO: check this and recator
+        auto v8 = rc.width;
+        auto v9 = rc.height;
+        auto actual_4 = di.m_originalRect.y0 + rc.y0;
+        auto v10 = di.m_originalRect.x0 + rc.x0;
+        auto v11 = di.m_clippedRect.x0;
+        auto v12 = v8 + v10;
+        auto actual_8 = v8;
+        auto actual_12 = v9;
+        auto v13 = di.m_clippedRect.width + v11;
+        auto v14 = v9 + actual_4;
+
+        auto v15 = 0.0;
+        auto clipped_4 = 0.0;
+        auto v17 = 0.0;
+        auto clipped_12 = 0.0;
+        if (v11 > (v8 + v10)
+            || v10 > v13
+            || di.m_clippedRect.y0 > (v9 + actual_4)
+            || actual_4 > (di.m_clippedRect.height + di.m_clippedRect.y0))
+        {
+            v15 = 0.0;
+            clipped_4 = 0.0;
+            v17 = 0.0;
+            clipped_12 = 0.0;
+        }
+        else
+        {
+            v15 = di.m_clippedRect.x0;
+            if (v15 <= v10)
+                v15 = di.m_originalRect.x0 + rc.x0;
+            if (v12 <= v13)
+                v13 = v8 + v10;
+            auto v16 = di.m_originalRect.y0 + rc.y0;
+            if (di.m_clippedRect.y0 > actual_4)
+                v16 = di.m_clippedRect.y0;
+            if (v14 > (di.m_clippedRect.height + di.m_clippedRect.y0))
+                v14 = di.m_clippedRect.height + di.m_clippedRect.y0;
+            clipped_4 = v16;
+            v17 = v13 - v15;
+            clipped_12 = v14 - v16;
+        }
+        if ((v12 - v10) != 0.0 || (actual_4 - (actual_12 + actual_4)) != 0.0)
+        {
+            auto v18 = tu0;
+            auto v19 = tv1;
+            auto u0 = tu0;
+            auto tu0a = tv0;
+            auto tu2 = tu1;
+            auto u1 = tv1;
+            if (v15 > v10)
+            {
+                v19 = tv1;
+                u0 = (((tu1 - v18) / actual_8) * (v15 - v10)) + v18;
+            }
+            auto v20 = v17 + v15;
+            if (v12 > v20)
+                tu2 = (((v18 - tu1) / actual_8) * (v12 - v20)) + tu1;
+            if (clipped_4 > actual_4)
+                tu0a = (((v19 - tv0) / actual_12) * (clipped_4 - actual_4)) + tv0;
+            if ((actual_12 + actual_4) > (clipped_12 + clipped_4))
+                u1 = (((tv0 - v19) / actual_12) * ((actual_12 + actual_4) - (clipped_12 + clipped_4))) + v19;
+            auto v21 = clr;
+            if ((clr & 0xFF000000) == 0 && clr < 0xFF)
+                v21 = this->m_colors[clr];
+            m3d::Application::g_pApp->PutSprite2Rel(
+                v15,
+                clipped_4,
+                u0,
+                tu0a,
+                v20,
+                clipped_12 + clipped_4,
+                tu2,
+                u1,
+                v21);
+        }
     }
 
-    void ui::GfxServer::FlushWindow(Wnd*)
+    void ui::GfxServer::FlushWindow(Wnd* wnd)
     {
-        throw std::logic_error("Not implemented");
     }
 
     int ui::GfxServer::Create()

@@ -32,6 +32,7 @@ namespace m3d
             {
                 m3d::Application::g_pApp->m_renderer->ReleaseTexture(m_texture);
             }
+            m_textureName = {};
             m_texture = tex;
             m3d::Application::g_pApp->m_renderer->ReferenceTexture(m_texture);
             return m_texture.IsValid();
@@ -97,9 +98,24 @@ namespace m3d
             return Wnd::Create(caption, style, rc, id);
         }
 
-        int ImageWnd::OnPaint(DrawInfo const&)
+        int ImageWnd::OnPaint(DrawInfo const& di)
         {
-            throw std::logic_error("Not implemented");
+            auto bounds = GetClientBounds();
+            GetGfxServer()->AddImagedRect(di, bounds, m_curClr, m_texture);
+            if (m_paneFlags)
+            {
+                auto color = m_curClr;
+                if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+                    color = 3;
+                auto v5 = this->GetBounds();
+                BoundsBase<float> rect;
+                rect.x0 = 0.0;
+                rect.y0 = 0.0;
+                rect.width = v5.width;
+                rect.height = v5.height;
+                GetGfxServer()->AddFlatAxialPane0(di, rect, color, m_paneFlags, this->m_paneName, m_bgFlags);
+            }
+            return 1;
         }
 
         ImageWnd::ImageWnd()

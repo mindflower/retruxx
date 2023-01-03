@@ -239,9 +239,34 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ProgressBarWnd::OnPaint(DrawInfo const&)
+        int ProgressBarWnd::OnPaint(DrawInfo const& di)
         {
-            throw std::logic_error("Not implemented");
+            m_caption = {};
+            auto res = Wnd::OnPaint(di);
+            if (res)
+            {
+                auto barRect = GetBarRect();
+                if (m_barTexture.IsValid())
+                {
+                    float u0 = 0.0;
+                    float v0 = 0.0;
+                    float u1 = 1.0;
+                    float v1 = 1.0;
+                    CalcTexCoordinates(u0, v0, u1, v1);
+                    GetGfxServer()->AddImagedRectGeneral(di, barRect, m_curClr, m_barTexture, u0, v0, u1, v1);
+                }
+                else
+                {
+                    GetGfxServer()->AddFlatAxialQuad(di, barRect, m_barColor);
+                }
+                if (m_textStyle)
+                {
+                    SetText(GetStringValue());
+                    DrawWndText(di);
+                }
+                return 1;
+            }
+            return res;
         }
 
         bool ProgressBarWnd::IsInversed() const

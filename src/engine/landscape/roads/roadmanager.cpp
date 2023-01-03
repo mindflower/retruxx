@@ -28,6 +28,21 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    void RoadManager::RebuildSomeNodes(std::set<RoadNode*>, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void RoadManager::SetOwner(Landscape* landscape)
+    {
+        m_owner = landscape;
+    }
+
+    int RoadManager::RenderRoads(std::vector<unsigned>&, RenderRoadType, RoadTestCallBack const*, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     void RoadManager::GetRoadMinMaxZByHandle(int, int, float&, float&)
     {
         throw std::logic_error("Not implemented");
@@ -35,7 +50,6 @@ namespace m3d
 
     RoadManager::RoadManager()
     {
-        throw std::logic_error("Not implemented");
     }
 
     int RoadManager::WriteRoadsToXmlFile(char const*)

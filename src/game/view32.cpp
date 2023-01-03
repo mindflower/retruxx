@@ -357,9 +357,9 @@ int CMiracle3d::OnGameZoom(m3d::AuxImpulseInfo const&)
     throw std::logic_error("Not implemented");
 }
 
-void CMiracle3d::PutSplash(int, char const*)
+void CMiracle3d::PutSplash(int proc, char const* text)
 {
-    throw std::logic_error("Not implemented");
+    m_pInterfaceManager->ShowSplash(proc, text);
 }
 
 bool CMiracle3d::bIsMousePointing() const
@@ -463,12 +463,12 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
         return 0;
     }
     M3D_LOG_INFO("-- Loading Level: " + name + " --");
-    if (!LoadServers)
+    if (LoadServers)
     {
         ai::pServer->InitOnce();
     }
     //TODO: check this
-    if (bQuiet && !m3d::pClient->GetWorld().Load(name, m_curCamera, bQuiet))
+    if (!bQuiet && !m3d::pClient->GetWorld().Load(name, m_curCamera, bQuiet))
     {
 	    M3D_LOG_INFO("Level file " + name + " not found");
         EnqueueMessage(1, 0, 0, 0, 0, {}, {});
@@ -632,7 +632,7 @@ int CMiracle3d::LoadMainMenuLevel()
         auto app = dynamic_cast<CMiracle3d*>(g_pApp);
         app->m_pInterfaceManager->StartSplashing(11);
         //TODO: check this
-        auto res = LoadLevel(mapName, {}, false, true, false, nullptr, nullptr, ai::ObjContainer::SAVE_LEVEL);
+        auto res = LoadLevel(mapName, {}, true, false, false, nullptr, nullptr, ai::ObjContainer::SAVE_LEVEL);
         if (res == 0)
         {
             M3D_LOG_INFO("Could not load main menu level...");

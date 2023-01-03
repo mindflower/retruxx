@@ -400,7 +400,7 @@ bool TruxxUiManager::IsModalEqualWndRunning() const
 
 LevelInfoManager* TruxxUiManager::GetLevelInfoManager() const
 {
-    throw std::logic_error("Not implemented");
+    return m_levelInfoManager;
 }
 
 void TruxxUiManager::OnEnterTown(int)
@@ -423,8 +423,18 @@ int TruxxUiManager::ShowWindow(int, bool, bool, bool, bool, int*)
     throw std::logic_error("Not implemented");
 }
 
-void TruxxUiManager::ShowSplash(int, CStr const&) const
+void TruxxUiManager::ShowSplash(int processStatus, CStr const& text) const
 {
+    auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    ref_ptr wndSplash = app->m_pInterfaceManager->GetWindow(108);
+    if (wndSplash)
+    {
+        if (wndSplash->IsKindOf(RT_CLASS_LOCAL(SplashWnd)))
+        {
+            auto wndCasted = dynamic_cast<SplashWnd*>(&*wndSplash);
+            wndCasted->ShowSplash(processStatus, text);
+        }
+    }
     throw std::logic_error("Not implemented");
 }
 

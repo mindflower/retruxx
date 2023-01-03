@@ -3,6 +3,12 @@
 #include <world.h>
 #include <core/kernel.h>
 
+#include "config.h"
+#include "level.h"
+#include "m3dapp.h"
+#include "core/log.h"
+#include "core/timer.h"
+
 namespace m3d
 {
     bool CWorld::GetShadowVisibilityFromWeather() const
@@ -60,8 +66,17 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int CWorld::Load(CStr const&, CCamera&, bool)
+    int CWorld::Load(CStr const& levelname, CCamera& cam, bool bQuiet)
     {
+        auto timeStart = g_Kernel->GetTimer().GetCurTime();
+        M3D_LOG_INFO("----------------------- World Loading");
+        g_Kernel->GetEngineCfg().m_levFileName.Set(levelname.c_str(), true);
+        if (this->m_level->Load(levelname, cam, bQuiet) == 0)
+        {
+            M3D_LOG_INFO("Level file " + levelname + " not found");
+            return 0;
+        }
+
         throw std::logic_error("Not implemented");
     }
 
@@ -75,9 +90,42 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    CWorld::CWorld()
+    CWorld::CWorld() :
+        m_lsInscatterCoeff("lsIC", "50", CVar::CVAR_INT, CVar::CVAR_ARCHIVE),
+        m_lsOutscatterCoeff("lsOC", "50", CVar::CVAR_INT, CVar::CVAR_ARCHIVE),
+        m_skyInscatterCoeff("skyIC", "50", CVar::CVAR_INT, CVar::CVAR_ARCHIVE),
+        m_skyOutscatterCoeff("skyOC", "50", CVar::CVAR_INT, CVar::CVAR_ARCHIVE),
+        m_sunColorR("sunColorR", "100", CVar::CVAR_INT, CVar::CVAR_ARCHIVE),
+        m_sunColorG("sunColorG", "40", CVar::CVAR_INT, CVar::CVAR_ARCHIVE),
+        m_sunColorB("sunColorB", "10", CVar::CVAR_INT, CVar::CVAR_ARCHIVE),
+        m_fogStart("lsFogStart", "70", CVar::CVAR_INT, CVar::CVAR_ARCHIVE)
     {
-        throw std::logic_error("Not implemented");
+        this->m_sceneGraph.SetOwner(this);
+        this->m_landscape.setOwner(this);
+        this->m_weatherManager.SetOwner(this);
+        this->m_roadManager.SetOwner(&m_landscape);
+        this->m_sunAzimuth = 45.0;
+        this->m_lastId = 0;
+        this->m_level = dynamic_cast<Level*>(m3d::g_Kernel->New("Level"));
+        m3d::g_Kernel->UnRegisterGlobal("CurrentLevel");
+        m3d::g_Kernel->RegisterGlobal(this->m_level, "CurrentLevel");
+        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_lsInscatterCoeff, 0);
+        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_lsOutscatterCoeff, 0);
+        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_skyInscatterCoeff, 0);
+        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_skyOutscatterCoeff, 0);
+        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_sunColorR, 0);
+        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_sunColorG, 0);
+        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_sunColorB, 0);
+        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_fogStart, 0);
+        this->m_profilerUpdateOde = Application::g_pApp->GetProfilerStack().GetProfiler(Application::g_pApp->GetProfilerStack().AddProfiler("AI other update", 0x1Eu));
+        this->m_borderWallGeoms[0] = 0;
+        this->m_borderWallGeoms[1] = 0;
+        this->m_borderWallGeoms[2] = 0;
+        this->m_borderWallGeoms[3] = 0;
+        this->m_borderWallGeoms[4] = 0;
+        this->m_borderWallGeoms[5] = 0;
+        this->m_texClouds = 0;
+        this->m_isWeatherActual = 1;
     }
 
     void CWorld::UpdateSun()

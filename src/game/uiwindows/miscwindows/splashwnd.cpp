@@ -3,8 +3,14 @@
 #include <ui/image.h>
 #include <ui/progressbarwnd.h>
 
+#include "config.h"
+#include "m3dapp.h"
+#include "game/m3dgame.h"
+#include "game/uimisc/guihelper.h"
+#include "game/uimisc/levelinfo.h"
+
 RT_CLASS_EXPORTS_BEGIN(SplashWnd)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SplashWnd);
 
 SplashWnd::AuxInfo::AuxInfo()
@@ -21,8 +27,50 @@ m3d::Object* SplashWnd::CreateObject()
     return new SplashWnd;
 }
 
-void SplashWnd::ShowSplash(int, CStr const&)
+void SplashWnd::ShowSplash(int processStatus, CStr const& text)
 {
+    if ((this->m_gameDataFlags & 1) != 0 && this->m_numSplashes > 0)
+    {
+        if (CStr::my_strcmp(text.c_str(), m_text.c_str()))
+        {
+            CStr res;
+            if (!m3d::Application::g_pApp->m_bDoNotLoadMainmenuLevel && 
+                !strcmp(m3d::g_Kernel->GetEngineCfg().m_levFileName.GetS(), m3d::g_Kernel->GetEngineCfg().m_mainMenuLevelName.GetS()))
+            {
+                res = m3d::Application::g_pApp->GetStringByStringId0("MainMenuLoading");
+            }
+            else
+            {
+                res = text;
+            }
+            m_text = res;
+            m_lblText->SetText(res);
+            m_curSplash++;
+            if (this->m_curSplash >= this->m_numSplashes)
+                this->m_curSplash = this->m_numSplashes;
+
+        }
+        auto v8 = (this->m_curSplash * 100.0) + processStatus;
+        auto v9 = this->m_numSplashes;
+        this->m_progressBar->SetCurValue(v8 / v9);
+        auto image = m_wndImage->GetImage();
+        if (!image.IsValid())
+        {
+            auto splashes = GetLevelSplashes(help::GetCurrentLevelName());
+            auto randImage = GetRandomImage(splashes);
+            m_wndImage->SetImage(randImage);
+        }
+        m3d::Application::g_pApp->m_renderer->BeginScene();
+        m3d::Application::g_pApp->m_renderer->ClearViewport(m3d::rend::M3DCLEAR_C, 0);
+        m3d::Application::g_pApp->m_renderer->PushZbState();
+
+        GetStation()->DispatchPaint(this, { 1024.0, 768.0 });
+
+        m3d::Application::g_pApp->m_renderer->PopZbState();
+        m3d::Application::g_pApp->m_renderer->EndScene();
+        m3d::Application::g_pApp->m_renderer->PresentScene();
+
+    }
     throw std::logic_error("Not implemented");
 }
 
@@ -40,7 +88,7 @@ void SplashWnd::StartSplashing(int numSplashes)
         m_wndImage->SetImage(m3d::rend::TexHandle{});
         m_progressBar->SetCurValue(0.0);
     }
-    m_lblText = {};
+    m_lblText->SetText({});
     M3D_LOG_INFO("Start splashing " + CStr(m_numSplashes));
 }
 
@@ -102,9 +150,16 @@ int SplashWnd::GameDataSetup()
     return 0;
 }
 
-std::vector<m3d::rend::TexHandle, std::allocator<m3d::rend::TexHandle>> SplashWnd::GetLevelSplashes(CStr const&) const
+std::vector<m3d::rend::TexHandle> SplashWnd::GetLevelSplashes(CStr const& levelName) const
 {
-    throw std::logic_error("Not implemented");
+    auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto infoManager = app->m_pInterfaceManager->GetLevelInfoManager();
+    auto levelInfo = infoManager->GetLevelInfoByName(levelName);
+    if (levelInfo)
+    {
+        return levelInfo->GetSplashes();
+    }
+    return {};
 }
 
 SplashWnd::SplashWnd()
@@ -116,7 +171,16 @@ SplashWnd::SplashWnd(SplashWnd const&)
     throw std::logic_error("Not implemented");
 }
 
-m3d::rend::TexHandle SplashWnd::GetRandomImage(std::vector<m3d::rend::TexHandle, std::allocator<m3d::rend::TexHandle>> const&) const
+m3d::rend::TexHandle SplashWnd::GetRandomImage(std::vector<m3d::rend::TexHandle> const& images) const
 {
-    throw std::logic_error("Not implemented");
+    if ((this->m_gameDataFlags & 1) != 0 && !images.empty())
+    {
+        auto randI = rand() % images.size();
+        if (images[randI].IsValid() && m_wndImage->GetImage() == images[randI] && images.size() > 1)
+        {
+            return GetRandomImage(images);
+        }
+        return images[randI];
+    }
+    return {};
 }

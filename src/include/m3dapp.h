@@ -277,13 +277,13 @@ namespace m3d
         CCamera m_curCamera;
         DbgCounterStack m_counterStack;
         bool m_bGuiWasHiddenBeforeCinematic = false;
+        bool m_bDoNotLoadMainmenuLevel;
 
 
         _cpinfoexA m_codePage;
 
     protected:
         bool m_enginePlayingVideo = false;
-        bool m_bDoNotLoadMainmenuLevel;
         DataServer* m_serverStaticModels;
         DataServer* m_serverAnimatedModels;
         DataServer* m_serverLights;

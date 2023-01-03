@@ -88,6 +88,16 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    int WeatherManager::RenderWeather(Landscape::LandRenderMode)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void WeatherManager::SetOwner(CWorld* world)
+    {
+        m_owner = world;
+    }
+
     int WeatherManager::SaveWeatherStateToXMLNode(cmn::XmlFile*, cmn::XmlNode*)
     {
         throw std::logic_error("Not implemented");
@@ -110,7 +120,6 @@ namespace m3d
 
     WeatherManager::WeatherManager()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void WeatherManager::DoneSky()

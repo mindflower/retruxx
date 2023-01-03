@@ -125,9 +125,9 @@ namespace m3d
         void CalcNodeData(RoadNode *);
 
     private:
-        Landscape *m_owner;
+        Landscape *m_owner = nullptr;
         std::vector<RoadNode *> *m_coveredCells;
-        RoadNode *m_roadRoot;
+        RoadNode *m_roadRoot = nullptr;
         std::vector<RoadSet *> m_roadSets;
     };
 }
