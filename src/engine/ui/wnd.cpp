@@ -849,9 +849,10 @@ namespace m3d
 
         void Wnd::DrawWndText(DrawInfo const& di)
         {
+            //TODO: implement Wnd::DrawWndText
             if (!m_caption.empty())
             {
-                throw std::logic_error("Not implemented");
+                //throw std::logic_error("Not implemented");
             }
         }
 

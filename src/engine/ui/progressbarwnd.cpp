@@ -236,7 +236,28 @@ namespace m3d
 
         BoundsBase<float> ProgressBarWnd::GetBarRect() const
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check and refactor this
+            auto maxBar = this->GetMaxBarRect();
+            auto valueInPixel = GetValueInPixel();
+            auto v4 = m_orientation == ORIENTATION_LEFT_TO_RIGHT || m_orientation == ORIENTATION_RIGHT_TO_LEFT;
+            auto v5 = m_orientation == ORIENTATION_RIGHT_TO_LEFT || m_orientation == ORIENTATION_BOTTOM_TO_TOP;
+
+            float* v6 = nullptr;
+            float* v7 = nullptr;
+            if (v4)
+            {
+                v6 = &maxBar.x0;
+                v7 = &maxBar.width;
+            }
+            else
+            {
+                v6 = &maxBar.y0;
+                v7 = &maxBar.height;
+            }
+            if (v5)
+                *v6 = *v7 - valueInPixel;
+            *v7 = valueInPixel;
+            return maxBar;
         }
 
         int ProgressBarWnd::OnPaint(DrawInfo const& di)
@@ -274,9 +295,90 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ProgressBarWnd::CalcTexCoordinates(float&, float&, float&, float&) const
+        void ProgressBarWnd::CalcTexCoordinates(float& u0, float& v0, float& u1, float& v1) const
         {
-            throw std::logic_error("Not implemented");
+            //TODO: implement ProgressBarWnd::CalcTexCoordinates
+            u0 = 0.0;
+            v0 = 0.0;
+            u1 = 1.0;
+            v1 = 1.0;
+            //auto curNumOfSteps = 0;
+            //if (this->m_minValue == this->m_maxValue)
+            //{
+            //    curNumOfSteps = 0;
+            //}
+            //else
+            //{
+            //    auto value = (this->m_curValue - this->m_minValue) / ((this->m_maxValue - this->m_minValue) / this->m_numOfSteps);
+            //    if (value > 0.001)
+            //    {
+            //        throw std::logic_error("Not implemented");
+            //    }
+            //    else
+            //    {
+            //        curNumOfSteps = 0;
+            //    }
+            //}
+            //auto barRect = GetBarRect();
+            //float* left = nullptr;
+            //float* right = nullptr;
+            //auto horizontal = m_orientation == ORIENTATION_LEFT_TO_RIGHT || m_orientation == ORIENTATION_RIGHT_TO_LEFT;
+            //auto vert = false;
+            //if (m_orientation == ORIENTATION_RIGHT_TO_LEFT || m_orientation == ORIENTATION_BOTTOM_TO_TOP)
+            //    vert = true;
+            //if (horizontal)
+            //{
+            //    left = &u0;
+            //    right = &u1;
+            //
+            //}
+            //else
+            //{
+            //    left = &v0;
+            //    right = &v1;
+            //}
+            //auto x = 0;
+            //auto y = 0;
+            //m3d::Application::g_pApp->m_renderer->GetDims(this->m_barTexture, x, y);
+            //auto texDim = x;
+            //if (!horizontal)
+            //    texDim = y;
+            //float perc = 0.0;
+            //if (m_textureStyle == TEXTURE_CLAMP)
+            //{
+            //    float cur = 0.0;
+            //    float max = 0.0;
+            //    if (m_numOfSteps <= 1)
+            //    {
+            //        cur = this->m_curValue - this->m_minValue;
+            //        max = this->m_maxValue - this->m_minValue;
+            //    }
+            //    else
+            //    {
+            //        cur = curNumOfSteps;
+            //        max = m_numOfSteps;
+            //    }
+            //    perc = cur / max;
+            //}
+            //else
+            //{
+            //    throw std::logic_error("Not implemented");
+            //    if (this->m_textureStyle != TEXTURE_REPEAT)
+            //        //goto LABEL_30;
+            //    if (m_numOfSteps <= 1)
+            //    {
+            //        //perc = *v21 / texDim;
+            //        //goto LABEL_30;
+            //    }
+            //    perc = curNumOfSteps;
+            //}
+            //u1 = perc;
+            //if (vert)
+            //{
+            //    throw std::logic_error("Not implemented");
+            //    //*v31 = 1.0 - perc;
+            //    //*v20 = 1.0;
+            //}
         }
 
         float ProgressBarWnd::GetMaxValueInPixel() const
@@ -291,7 +393,40 @@ namespace m3d
 
         float ProgressBarWnd::GetValueInPixel() const
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check and refactor this
+            m3d::ui::ProgressBarWnd* v1; // ecx
+            double result; // st7
+            float v3; // xmm1_4
+            float v4; // xmm0_4
+            m3d::ui::ProgressBarWnd::Orientation v5; // eax
+            float value; // [esp+4h] [ebp-28h]
+            float v7; // [esp+8h] [ebp-24h]
+            char v8[16]; // [esp+Ch] [ebp-20h] BYREF
+            char v9[16]; // [esp+1Ch] [ebp-10h] BYREF
+
+            if (this->m_numOfSteps <= 1)
+            {
+                v3 = 0.0;
+                value = 0.0;
+                if (this->m_minValue != this->m_maxValue)
+                {
+                    v4 = (this->m_curValue - this->m_minValue) / (this->m_maxValue - this->m_minValue);
+                    value = v4;
+                    if (v4 < 0.0 || (v3 = 1.0, v4 > 1.0))
+                        value = v3;
+                }
+                v5 = this->m_orientation;
+                if (v5 == ORIENTATION_LEFT_TO_RIGHT || v5 == ORIENTATION_RIGHT_TO_LEFT)
+                    result = this->GetMaxBarRect().width * value;
+                else
+                    result = this->GetMaxBarRect().height * value;
+            }
+            else
+            {
+                v7 = m3d::ui::ProgressBarWnd::GetCurNumOfSteps();
+                result = m3d::ui::ProgressBarWnd::GetSizeOfStepInPixel() * v7;
+            }
+            return result;
         }
 
         ProgressBarWnd::ProgressBarWnd(ProgressBarWnd const&)
@@ -306,7 +441,7 @@ namespace m3d
 
         BoundsBase<float> ProgressBarWnd::GetMaxBarRect() const
         {
-            throw std::logic_error("Not implemented");
+            return GetClientBounds();
         }
     }
 }

@@ -520,7 +520,76 @@ namespace m3d
     {
         Pane* pane = nullptr;
         m_panes.get(paneName, pane);
-        throw std::logic_error("Not implemented");
+        if (!pane)
+        {
+            m_panes.get("defaultWnd", pane);
+        }
+        if (pane)
+        {
+            m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+            m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+            m3d::Application::g_pApp->m_renderer->PushBlend();
+            m3d::Application::g_pApp->m_renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+            m3d::Application::g_pApp->m_renderer->PushZbState();
+            auto frame = pane->m_frame[bgFlags];
+            auto cornerSize = 0;
+            if (frame)
+            {
+                cornerSize = frame->m_cornerSize;
+            }
+            else
+            {
+                if (pane->m_frame[0])
+                {
+                    cornerSize = pane->m_frame[0]->m_cornerSize;
+                }
+            }
+            int drawComplexCorners = 0;
+            if (rect.width > cornerSize && rect.height > cornerSize && (drawFlags & 4) != 0)
+            {
+                drawComplexCorners = 1;
+            }
+            else
+            {
+                drawComplexCorners = 0;
+                cornerSize = 0;
+            }
+            if ((drawFlags & 1) != 0)
+            {
+                throw std::logic_error("Not implemented");
+                rend::TexHandle texture;
+                if (pane->m_bg[bgFlags] && pane->m_bg[bgFlags]->m_texture.IsValid())
+                {
+                    texture = pane->m_bg[bgFlags]->m_texture;
+                }
+                if (!texture.IsValid() && pane->m_bg[0])
+                {
+                    texture = pane->m_bg[0]->m_texture;
+                }
+                if (texture.IsValid())
+                {
+                    int sx = 0;
+                    int sy = 0;
+                    m3d::Application::g_pApp->m_renderer->GetDims(texture, sx, sy);
+                }
+            }
+
+            if (pane->m_frame[bgFlags] || pane->m_frame[0])
+            {
+                if ((drawFlags & 2) != 0)
+                {
+                    throw std::logic_error("Not implemented");
+                }
+                if (drawComplexCorners)
+                {
+                    throw std::logic_error("Not implemented");
+                }
+            }
+
+            m3d::Application::g_pApp->m_renderer->PopBlend();
+            m3d::Application::g_pApp->m_renderer->PopZbState();
+            m3d::Application::g_pApp->m_renderer->SetAlphaTest(0);
+        }
     }
 
     void ui::GfxServer::AddText(DrawInfo const&, PointBase<float> const&, CStr const&, int, TextWrapFlags, TextFormatFlags)
