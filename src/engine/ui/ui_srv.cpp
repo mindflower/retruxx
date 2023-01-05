@@ -528,9 +528,9 @@ namespace m3d
         {
             m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
             m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
-            m3d::Application::g_pApp->m_renderer->PushBlend();
+            m3d::Application::g_pApp->m_renderer->PushBlend(rend::BM_ALPHA);
             m3d::Application::g_pApp->m_renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
-            m3d::Application::g_pApp->m_renderer->PushZbState();
+            m3d::Application::g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
             auto frame = pane->m_frame[bgFlags];
             auto cornerSize = 0;
             if (frame)
@@ -657,10 +657,10 @@ namespace m3d
     {
         m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
         m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
-        m3d::Application::g_pApp->m_renderer->PushBlend();
+        m3d::Application::g_pApp->m_renderer->PushBlend(rend::BM_ALPHA);
         m3d::Application::g_pApp->m_renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
-        m3d::Application::g_pApp->m_renderer->PushZbState();
-        m3d::Application::g_pApp->m_renderer->SetTexture(0, &tex, -1.0);
+        m3d::Application::g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
+        m3d::Application::g_pApp->m_renderer->SetTexture(0, tex, -1.0);
         auto sx = 0;
         auto sy = 0;
         m3d::Application::g_pApp->m_renderer->GetDims( tex, sx, sy);

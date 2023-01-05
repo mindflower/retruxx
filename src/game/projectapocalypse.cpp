@@ -2,17 +2,19 @@
 
 namespace
 {
-    HANDLE g_SentinelMutex = NULL;
+    HANDLE g_SentinelMutex = nullptr;
 }
 
-HINSTANCE g_hInst;
-DWORD g_amPlatform;		// VER_PLATFORM_WIN32_WINDOWS etc... (from GetVersionEx)
-OSVERSIONINFO g_osInfo;
+HINSTANCE g_hInst = nullptr;
+DWORD g_amPlatform = 0;
+OSVERSIONINFO g_osInfo = {};
 
-int APIENTRY WinMain(_In_ HINSTANCE hInstance,
+int APIENTRY WinMain(
+    _In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPSTR    lpCmdLine,
-    _In_ int       nCmdShow)
+    _In_ LPSTR lpCmdLine,
+    _In_ int nCmdShow
+)
 {
     try
     {
@@ -28,19 +30,18 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance,
             g_amPlatform = g_osInfo.dwPlatformId;
         }
 
-        g_SentinelMutex = ::CreateMutex(0, 1, TEXT("TargemExMachina_SentinelMutex"));
+        g_SentinelMutex = ::CreateMutex(nullptr, 1, TEXT("TargemExMachina_SentinelMutex"));
         if (::GetLastError() == ERROR_ALREADY_EXISTS)
         {
-            g_SentinelMutex = NULL;
+            g_SentinelMutex = nullptr;
         }
 
-        if (g_SentinelMutex != NULL)
+        if (g_SentinelMutex != nullptr)
         {
-            CMiracle3d app;
             //TODO:: load icon from resources
-            auto hIcon = ::LoadIcon(NULL, IDI_WINLOGO);
+            auto const hIcon = ::LoadIcon(nullptr, IDI_WINLOGO);
             auto result = 0;
-            if (app.init(hInstance, hIcon, "data\\config.cfg", NULL, lpCmdLine))
+            if (CMiracle3d app; app.init(hInstance, hIcon, "data\\config.cfg", nullptr, lpCmdLine))
             {
                 result = app.run();
                 app.done();
@@ -48,15 +49,12 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance,
             ::ReleaseMutex(g_SentinelMutex);
             return result;
         }
-        else
-        {
-            ::MessageBox(0, TEXT("Another instance already exists!"), TEXT("Error"), MB_ICONHAND);
-            return 0;
-        }
+        ::MessageBox(nullptr, TEXT("Another instance already exists!"), TEXT("Error"), MB_ICONHAND);
+        return 0;
     }
     catch (const std::exception& ex)
     {
-        ::MessageBox(0, ex.what(), TEXT("Error"), MB_ICONHAND);
+        ::MessageBox(nullptr, ex.what(), TEXT("Error"), MB_ICONHAND);
         return 0;
     }
 }

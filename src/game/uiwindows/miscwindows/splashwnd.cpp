@@ -29,49 +29,45 @@ m3d::Object* SplashWnd::CreateObject()
 
 void SplashWnd::ShowSplash(int processStatus, CStr const& text)
 {
-    if ((this->m_gameDataFlags & 1) != 0 && this->m_numSplashes > 0)
+    if ((m_gameDataFlags & 1) != 0 && m_numSplashes > 0)
     {
         if (CStr::my_strcmp(text.c_str(), m_text.c_str()))
         {
-            CStr res;
-            if (!m3d::Application::g_pApp->m_bDoNotLoadMainmenuLevel && 
-                !strcmp(m3d::g_Kernel->GetEngineCfg().m_levFileName.GetS(), m3d::g_Kernel->GetEngineCfg().m_mainMenuLevelName.GetS()))
+            if (!M3D_APP->m_bDoNotLoadMainmenuLevel && 
+                !strcmp(M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(), M3D_KERNEL->GetEngineCfg().m_mainMenuLevelName.GetS()))
             {
-                res = m3d::Application::g_pApp->GetStringByStringId0("MainMenuLoading");
+                m_text = M3D_APP->GetStringByStringId0("MainMenuLoading");
             }
             else
             {
-                res = text;
+                m_text = text;
             }
-            m_text = res;
-            m_lblText->SetText(res);
+            m_lblText->SetText(m_text);
             m_curSplash++;
-            if (this->m_curSplash >= this->m_numSplashes)
-                this->m_curSplash = this->m_numSplashes;
+            if (m_curSplash >= m_numSplashes)
+            {
+                m_curSplash = m_numSplashes;
+            }
 
         }
-        auto v8 = (this->m_curSplash * 100.0) + processStatus;
-        auto v9 = this->m_numSplashes;
-        this->m_progressBar->SetCurValue(v8 / v9);
-        auto image = m_wndImage->GetImage();
+        m_progressBar->SetCurValue(m_curSplash * 100.0 + processStatus / m_numSplashes);
+        auto const image = m_wndImage->GetImage();
         if (!image.IsValid())
         {
-            auto splashes = GetLevelSplashes(help::GetCurrentLevelName());
-            auto randImage = GetRandomImage(splashes);
+            auto const randImage = GetRandomImage(GetLevelSplashes(help::GetCurrentLevelName()));
             m_wndImage->SetImage(randImage);
         }
-        m3d::Application::g_pApp->m_renderer->BeginScene();
-        m3d::Application::g_pApp->m_renderer->ClearViewport(m3d::rend::M3DCLEAR_C, 0);
-        m3d::Application::g_pApp->m_renderer->PushZbState();
-
+        M3D_APP->m_renderer->BeginScene();
+        M3D_APP->m_renderer->ClearViewport(m3d::rend::M3DCLEAR_C, 0);
+        M3D_APP->m_renderer->PushZbState(m3d::rend::ZB_DISABLE);
+        
+        
         GetStation()->DispatchPaint(this, { 1024.0, 768.0 });
-
-        m3d::Application::g_pApp->m_renderer->PopZbState();
-        m3d::Application::g_pApp->m_renderer->EndScene();
-        m3d::Application::g_pApp->m_renderer->PresentScene();
-
+        
+        M3D_APP->m_renderer->PopZbState();
+        M3D_APP->m_renderer->EndScene();
+        M3D_APP->m_renderer->PresentScene();
     }
-    throw std::logic_error("Not implemented");
 }
 
 SplashWnd::~SplashWnd()

@@ -229,3 +229,6 @@ private:
     bool m_bRenderAsBackground;
     m3d::rend::TexHandle m_backgroundTexture;
 };
+
+#undef M3D_APP
+#define M3D_APP ((CMiracle3d*)CMiracle3d::g_pApp)

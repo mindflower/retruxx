@@ -78,16 +78,21 @@ std::vector<m3d::rend::TexHandle> LevelInfo::GetSplashes()
     std::vector<m3d::rend::TexHandle> result;
     for (auto const& splashName : m_splasheNames)
     {
-        auto const it = m_splashes.find(splashName);
-        if (it == m_splashes.cend())
+        if (auto const it = m_splashes.find(splashName); it == m_splashes.cend())
         {
             auto splash = m3d::Application::g_pApp->m_renderer->AddTexture(splashName, 4u);
-            m_splashes.emplace(splashName, splash);
-            result.push_back(splash);
+            if (splash.IsValid())
+            {
+                m_splashes.emplace(splashName, splash);
+                result.push_back(splash);
+            }
         }
         else
         {
-            result.push_back(it->second);
+            if (it->second.IsValid())
+            {
+                result.push_back(it->second);
+            }
         }
     }
     return result;

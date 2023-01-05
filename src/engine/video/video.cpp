@@ -381,12 +381,12 @@ namespace m3d
         }
         Application::g_pApp->m_renderer->BeginScene();
         Application::g_pApp->m_renderer->ClearViewport(rend::M3DCLEAR_CZ, 0);   //TODO ClearViewport second arg
-        Application::g_pApp->m_renderer->PushBlend();
-        Application::g_pApp->m_renderer->PushZbState();
-        Application::g_pApp->m_renderer->PushLighting();
+        Application::g_pApp->m_renderer->PushBlend(rend::BM_NONE);
+        Application::g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
+        Application::g_pApp->m_renderer->PushLighting(false);
         Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
         Application::g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_NONE);
-        Application::g_pApp->m_renderer->SetTexture(0, rend::g_pTexture, -1.0);
+        Application::g_pApp->m_renderer->SetTexture(0, *rend::g_pTexture, -1.0);
 
         int tH = 0, tW = 0;
         Application::g_pApp->m_renderer->GetDims(*rend::g_pTexture, tW, tH);

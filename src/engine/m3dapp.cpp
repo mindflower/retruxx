@@ -1802,63 +1802,43 @@ namespace m3d
     void Application::PutSprite2Abs(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float tu1, float tv1, float tu2, float tv2, float tu3, float tv3, float tu4, float tv4, float zval, unsigned c)
     {
         //TODO: check this and refactor!!!
-        int smth = 0;
-        auto mem = static_cast<float*>(g_pApp->m_renderer->LockVbStreaming(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1), 4, &smth, nullptr));
+        int vofs = 0;
+        auto vbs = g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1);
+        auto mem = static_cast<float*>(g_pApp->m_renderer->LockVbStreaming(vbs, rend::VERTEX_XYZWCT1, vofs, nullptr));
 
-
-        float v26; // xmm0_4
-        unsigned int v27; // ecx
-        float v28; // xmm2_4
-        float v29; // xmm0_4
-        float v30; // xmm2_4
-        float v31; // xmm2_4
-        float v32; // xmm2_4
-        float v33; // xmm0_4
-        float v34; // xmm2_4
-        float v35; // xmm0_4
-        v26 = x1;
-        v27 = c;
-    	mem[5] = tu1;
+        auto* memInt = reinterpret_cast<unsigned*>(mem);
+        mem[5] = tu1;
         mem[6] = tv1;
-        v28 = x2;
-        mem[0] = v26;
+        mem[0] = x1;
         mem[1] = y1;
-        v29 = zval;
         mem[2] = zval;
         mem[3] = 0.1;
-        mem[4] = v27;
-        mem[7] = v28;
+        memInt[4] = c;
+        mem[7] = x2;
         mem[8] = y2;
         mem[12] = tu2;
         mem[13] = tv2;
-        v30 = x3;
         mem[9] = zval;
         mem[10] = 0.1;
-        mem[11] = v27;
-        mem[14] = v30;
+        memInt[11] = c;
+        mem[14] = x3;
         mem[15] = y3;
         mem[19] = tu3;
-        v31 = tv3;
-        mem[16] = v29;
-        mem[20] = v31;
-        v32 = x4;
+        mem[16] = zval;
+        mem[20] = tv3;
         mem[17] = 0.1;
-        mem[18] = v27;
-        mem[23] = v29;
-        v33 = tu4;
-        mem[21] = v32;
-        v34 = y4;
-        mem[26] = v33;
-        v35 = tv4;
-        mem[22] = v34;
+        memInt[18] = c;
+        mem[23] = zval;
+        mem[21] = x4;
+        mem[26] = tu4;
+        mem[22] = y4;
         mem[24] = 0.1;
-        mem[25] = v27;
-        mem[27] = v35;
+        memInt[25] = c;
+        mem[27] = tv4;
 
-        g_pApp->m_renderer->UnlockVb(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1));
-        g_pApp->m_renderer->SetToStream0(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1));
-        auto res = g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLESTRIP, 0, 2);
-        bool df = true;
+        g_pApp->m_renderer->UnlockVb(vbs);
+        g_pApp->m_renderer->SetToStream0(vbs);
+        g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLESTRIP, vofs, 2);
     }
 
     void Application::PutSprite2Abs(float x1, float y1, float tu1, float tv1, float x2, float y2, float tu2, float tv2, unsigned int c)

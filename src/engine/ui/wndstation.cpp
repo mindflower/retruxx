@@ -71,36 +71,29 @@ namespace m3d
         int WndStation::DispatchPaint(Wnd* curWnd, BoundsBase<float> const& clipTo)
         {
             auto childBounds = clipTo;
-            DrawInfo info;
-            OnTick(g_Kernel->GetTimer().GetCurTimeUnscaled(), g_Kernel->GetTimer().GetLastFrameTimeUnscaled());
-            if (((curWnd->m_bounds.width + curWnd->m_bounds.x0) - curWnd->m_bounds.x0) != 0.0
-                || (curWnd->m_bounds.y0 - (curWnd->m_bounds.height + curWnd->m_bounds.y0)) != 0.0)
+            DrawInfo info{};
+            OnTick(M3D_KERNEL->GetTimer().GetCurTimeUnscaled(), M3D_KERNEL->GetTimer().GetLastFrameTimeUnscaled());
+            if (curWnd->m_bounds.width + curWnd->m_bounds.x0 - curWnd->m_bounds.x0 != 0.0 ||
+                curWnd->m_bounds.y0 - (curWnd->m_bounds.height + curWnd->m_bounds.y0) != 0.0)
             {
                 if ((curWnd->m_style & 1) == 0 && (curWnd->m_style & 0x200) != 0)
                 {
-
-                    BoundsBase<float> drawReserved;
+                    BoundsBase<float> drawReserved{};
                     drawReserved.x0 = 0.0;
                     drawReserved.y0 = 0.0;
                     drawReserved.width = curWnd->m_bounds.width;
                     drawReserved.height = curWnd->m_bounds.height;
                     info.m_originalRect = curWnd->ToScreen(drawReserved);
-                    info.m_clientClippedRect = clipTo.Intersect(info.m_originalRect);
+                    info.m_clippedRect = clipTo.Intersect(info.m_originalRect);
                     info.m_clientRect = curWnd->GetClientBounds();
                     info.m_clientClippedRect = clipTo.Intersect(info.m_clientRect);
-                    if (((info.m_clippedRect.width + info.m_clippedRect.x0) - info.m_clippedRect.x0) != 0.0
-                        || (info.m_clippedRect.y0 - (info.m_clippedRect.height + info.m_clippedRect.y0)) != 0.0)
+                    if (info.m_clippedRect.width + info.m_clippedRect.x0 - info.m_clippedRect.x0 != 0.0
+                        || info.m_clippedRect.y0 - (info.m_clippedRect.height + info.m_clippedRect.y0) != 0.0)
                     {
-                        Application::g_pApp->m_renderer->SetWhiteTexture(0);
-                        Application::g_pApp->m_renderer->SetStageState(
-                            0,
-                            rend::BM_COLOR,
-                            rend::TS_MODULATE);
-                        m3d::Application::g_pApp->m_renderer->SetStageState(
-                            0,
-                            rend::BM_ALPHA,
-                            rend::TS_MODULATE);
-                        m3d::Application::g_pApp->m_renderer->DisableTextureStages(1);
+                        M3D_APP->m_renderer->SetWhiteTexture(0);
+                        M3D_APP->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+                        M3D_APP->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+                        M3D_APP->m_renderer->DisableTextureStages(1);
                         info.m_wndDest = curWnd;
                         curWnd->OnPaint(info);
                         GetGfxServer()->FlushWindow(curWnd);
@@ -108,24 +101,33 @@ namespace m3d
                     childBounds = info.m_clippedRect;
                 }
             }
+
+            //TODO: check child order
+            std::vector<Wnd*> wnds;
             for (auto child = curWnd->GetFirstChild_(); child; child = child->GetNextSibling_())
             {
-                //TODO: check this!!!
-                auto wnd = dynamic_cast<Wnd*>(child);
+                if (auto const wnd = dynamic_cast<Wnd*>(child))
+                {
+                    wnds.insert(wnds.begin(), wnd);
+                }
+            }
+            for (auto const& wnd : wnds)
+            {
                 DispatchPaint(wnd, childBounds);
             }
-            if (((curWnd->m_bounds.width + curWnd->m_bounds.x0) - curWnd->m_bounds.x0) != 0.0
-                || (curWnd->m_bounds.y0 - (curWnd->m_bounds.height + curWnd->m_bounds.y0)) != 0.0)
+
+            if (curWnd->m_bounds.width + curWnd->m_bounds.x0 - curWnd->m_bounds.x0 != 0.0 ||
+                curWnd->m_bounds.y0 - (curWnd->m_bounds.height + curWnd->m_bounds.y0) != 0.0)
             {
-                if ((curWnd->m_style & 1) == 0
-                    && (curWnd->m_style & 0x200) != 0
-                    && (((info.m_clippedRect.width + info.m_clippedRect.x0) - info.m_clippedRect.x0) != 0.0
-                        || (info.m_clippedRect.y0 - (info.m_clippedRect.height + info.m_clippedRect.y0)) != 0.0))
+                if ((curWnd->m_style & 1) == 0 &&
+                    (curWnd->m_style & 0x200) != 0 &&
+                    (info.m_clippedRect.width + info.m_clippedRect.x0 - info.m_clippedRect.x0 != 0.0 ||
+                        info.m_clippedRect.y0 - (info.m_clippedRect.height + info.m_clippedRect.y0) != 0.0))
                 {
-                    Application::g_pApp->m_renderer->SetWhiteTexture(0);
-                    Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
-                    Application::g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
-                    Application::g_pApp->m_renderer->DisableTextureStages(1);
+                    M3D_APP->m_renderer->SetWhiteTexture(0);
+                    M3D_APP->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+                    M3D_APP->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+                    M3D_APP->m_renderer->DisableTextureStages(1);
                     curWnd->OnPaintOverChildren(info);
                 }
             }
@@ -695,7 +697,7 @@ namespace m3d
                     Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
                     Application::g_pApp->m_renderer->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
                     Application::g_pApp->m_renderer->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
-                    Application::g_pApp->m_renderer->SetTexture(0, &m_currentCursor.m_tex, -1.0);   //TODO: check this
+                    Application::g_pApp->m_renderer->SetTexture(0, m_currentCursor.m_tex, -1.0);   //TODO: check this
                     auto mouseX = static_cast<float>(Application::g_pApp->GetMouseX());
                     auto mouseY = static_cast<float>(Application::g_pApp->GetMouseY());
                     Application::g_pApp->m_renderer->AbsToRel(mouseX, mouseY);

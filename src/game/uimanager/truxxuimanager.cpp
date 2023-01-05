@@ -435,7 +435,6 @@ void TruxxUiManager::ShowSplash(int processStatus, CStr const& text) const
             wndCasted->ShowSplash(processStatus, text);
         }
     }
-    throw std::logic_error("Not implemented");
 }
 
 int TruxxUiManager::Show(bool, bool)

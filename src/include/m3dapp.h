@@ -378,3 +378,5 @@ namespace m3d
         IConHandler *m_soundConHandler = nullptr;
     }; 
 }
+
+#define M3D_APP m3d::Application::g_pApp

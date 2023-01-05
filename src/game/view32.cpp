@@ -228,11 +228,12 @@ bool CMiracle3d::GetMouseHitPoint(CVector&, m3d::SgNode*&)
     throw std::logic_error("Not implemented");
 }
 
+//Verified: CMiracle3d::OnFinishIntroVideoPlaying
 int CMiracle3d::OnFinishIntroVideoPlaying()
 {
-    if (m3d::g_Kernel->GetEngineCfg().m_autoPlayVideo.GetB() && videoNum >= 0 && videoNum < 4)
+    if (M3D_KERNEL->GetEngineCfg().m_autoPlayVideo.GetB() && videoNum >= 0 && videoNum < 4)
     {
-        auto videoFile = m3d::g_Kernel->GetEngineCfg().m_video[videoNum].GetS();
+        auto const videoFile = M3D_KERNEL->GetEngineCfg().m_video[videoNum].GetS();
         ++videoNum;
         StartPlayingVideo(videoFile, &CMiracle3d::OnFinishIntroVideoPlaying);
     }
@@ -542,19 +543,18 @@ bool CMiracle3d::SetPostEffectParam(CStr const&, float)
     throw std::logic_error("Not implemented");
 }
 
+//Verified: CMiracle3d::StartMainMenu
 void CMiracle3d::StartMainMenu()
 {
     if (m_profileManager)
     {
         m_profileManager->Init();
-        m3d::AuxImpulseInfo info(1, true, -1, 0, 0);
-        OnChangeMode(info);
+        OnChangeMode(m3d::AuxImpulseInfo{ 1, true, -1, 0, 0 });
     }
     else
     {
         M3D_LOG_INFO("CMiracle3d::InitMedia error - cannot instantiate ProfileManager object");
     }
-    throw std::logic_error("Not implemented");
 }
 
 void CMiracle3d::SetMouseSensitivity(float)

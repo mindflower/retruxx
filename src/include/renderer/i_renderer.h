@@ -927,7 +927,7 @@ namespace m3d
             virtual TexHandle GetFullFrameFrameBufferTexture() = 0;
             virtual int ReloadTextures() = 0;
             virtual bool ReportTexturesInfo(const char*) = 0;
-            virtual int SetTexture(int, const m3d::rend::TexHandle*, long double) = 0;
+            virtual int SetTexture(int, const m3d::rend::TexHandle&, long double) = 0;
             virtual void SetWhiteTexture(int) = 0;
             virtual void SetBlackTexture(int) = 0;
             virtual void SetErrorTexture(int) = 0;
@@ -960,12 +960,12 @@ namespace m3d
             virtual void UnlockIbPoolField(m3d::rend::IbPoolField const&) = 0;
             virtual bool ReportIbsInfo(const char*) = 0;
             virtual m3d::rend::VbHandle AddVb(m3d::rend::VertexType, int, CStr const&, unsigned int) = 0;
-            virtual void SetToStream0(const m3d::rend::VbPoolField*) = 0;
             virtual void SetToStream0(const m3d::rend::VbHandle&) = 0;
+            virtual void SetToStream0(const m3d::rend::VbPoolField*) = 0;
             virtual void SetToStream(int, const m3d::rend::VbPoolField*) = 0;
             virtual void SetToStream(int, const m3d::rend::VbHandle*) = 0;
             virtual void* LockVb(const m3d::rend::VbHandle&, int, int, unsigned int) = 0;
-            virtual void* LockVbStreaming(const m3d::rend::VbHandle&, int, int*, int*) = 0;
+            virtual void* LockVbStreaming(const m3d::rend::VbHandle&, int, int&, int*) = 0;
             virtual void UnlockVb(const m3d::rend::VbHandle&) = 0;
             virtual int ReferenceVb(const m3d::rend::VbHandle*) = 0;
             virtual int ReleaseVb(m3d::rend::VbHandle*) = 0;

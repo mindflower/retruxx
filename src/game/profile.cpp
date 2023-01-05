@@ -390,7 +390,7 @@ int ProfileManager::Init()
     auto res = LoadProfiles();
     if (!m_profiles.empty())
     {
-        CStr lastProfileName = m3d::g_Kernel->GetEngineCfg().m_profile.GetS();
+        CStr const lastProfileName = M3D_KERNEL->GetEngineCfg().m_profile.GetS();
         auto profile = _GetProfileByName(lastProfileName);
         if (!profile)
         {
@@ -401,8 +401,7 @@ int ProfileManager::Init()
         SetCurProfile(profile->GetName());
         return res;
     }
-    auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    app->m_pInterfaceManager->ShowWindow(110, true, true, true, true, nullptr);
+    M3D_APP->m_pInterfaceManager->ShowWindow(110, true, true, true, true, nullptr);
     return 1;
 }
 
@@ -498,15 +497,15 @@ m3d::Object* ProfileManager::Clone()
     throw std::logic_error("Not implemented");
 }
 
+//Verified: ProfileManager::Clear
 void ProfileManager::Clear()
 {
-    for (auto profile : m_profiles)
+    for (auto const& profile : m_profiles)
     {
-        //TODO: check this
         delete profile;
     }
     m_profiles.clear();
-    m_curProfileName = "";
+    m_curProfileName = {};
 }
 
 CStr ProfileManager::GetProfileOwnFolderName(CStr const&) const
