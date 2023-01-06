@@ -115,12 +115,38 @@
 #include <file/fileserver.h>
 #include <file/filestream.h>
 
+#include "externalpaths.h"
+#include "level.h"
+#include "map.h"
+#include "playerpassmap.h"
+#include "processmanager.h"
+#include "world.h"
+#include "core/timer.h"
+
 namespace ai
 {
     extern ResourceManager* theResourceManager;
     extern PrototypeManager* thePrototypeManager;
     extern Relationship* theRelationship;
     extern DynamicScene* gDynamicScene;
+    extern Player* thePlayer;
+    extern ProcessManager* theProcessManager;
+    extern AIManager* theAIManager;
+
+    int n_AddToCinematic(m3d::sArgStack& scriptStack)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int n_EndCinematic(m3d::sArgStack& scriptStack)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int n_CreateObjectByClassName(m3d::sArgStack& scriptStack)
+    {
+        throw std::logic_error("Not implemented");
+    }
 
     CServer* pServer = nullptr;
 
@@ -544,8 +570,102 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void CServer::Init(m3d::CWorld*)
+    void CServer::Init(m3d::CWorld* world)
     {
+        m_InCinematic = false;
+        m_LastUpdateTime = M3D_KERNEL->GetTimer().GetCurTime() * 0.001;
+        m_pWorld = world;
+        _SetLevel(world->m_level);
+        m_pObjects->AllowSave(true);
+        thePlayer = nullptr;
+        m_pExternalPaths = new ExternalPaths;
+        m_pPlayerPassMap = new PlayerPassMap;
+        M3D_KERNEL->GetEngineCfg().m_console->executeCommand("/conScript data\\scripts\\server.lua");
+        theProcessManager = new ProcessManager;
+        theAIManager->RegisterMatrix("void", nullptr);
+        ai::Obj::Registration();
+        ai::Trigger::Registration();
+        ai::DynamicQuest::Registration();
+        ai::PhysicObj::Registration();
+        ai::SimplePhysicObj::Registration();
+        ai::PhysicBody::Registration();
+        ai::Player::Registration();
+        ai::PhysicUnit::Registration();
+        ai::Vehicle::Registration();
+        ai::Chassis::Registration();
+        ai::Team::Registration();
+        ai::Team::Registration();
+        ai::Team::Registration();
+        ai::Npc::Registration();
+        ai::Location::Registration();
+        ai::SgNodeObj::Registration();
+        ai::LightObj::Registration();
+        ai::Gadget::Registration();
+        ai::VehiclePart::Registration();
+        ai::Cabin::Registration();
+        ai::VehiclePart::Registration();
+        ai::Gun::Registration();
+        ai::BulletLauncher::Registration();
+        ai::VehiclePart::Registration();
+        ai::Ware::Registration();
+        ai::SimplePhysicObj::Registration();
+        ai::Barricade::Registration();
+        ai::Settlement::Registration();
+        ai::Town::Registration();
+        ai::Lair::Registration();
+        ai::InfectionZone::Registration();
+        ai::Team::Registration();
+        ai::Settlement::Registration();
+        ai::SimplePhysicObj::Registration();
+        ai::DummyObject::Registration();
+        ai::Gun::Registration();
+        ai::Obj::Registration();
+        ai::Obj::Registration();
+        ai::Obj::Registration();
+        ai::Obj::Registration();
+        ai::Obj::Registration();
+        ai::Obj::Registration();
+        ai::Obj::Registration();
+        ai::Boss03::Registration();
+        ai::Boss04::Registration();
+        ai::VehiclePart::Registration();
+        ai::Boss04Station::Registration();
+        ai::Boss04StationPart::Registration();
+        ai::Boss04Drone::Registration();
+        ai::Submarine::Registration();
+        ai::Obj::Registration();
+
+        auto& scriptServer = M3D_KERNEL->GetScriptServer();
+        scriptServer.registerGlobalFunction(
+            n_AddToCinematic,
+            "AddToCinematic",
+            "void",
+            "Object, [bool WithChildren]",
+            "adds object to update list for cinematic state.");
+        scriptServer.registerGlobalFunction(
+            n_EndCinematic,
+            "EndCinematic",
+            "void",
+            "void",
+            "Revert Server to normal update mode");
+        scriptServer.registerGlobalFunction(
+            n_CreateObjectByClassName,
+            "CreateObjectByClassName",
+            "Object*",
+            "const char* className",
+            "Creates Object");
+
+        pGlobalMap = new Map;
+        pGlobalMap->Create(
+            m_level->m_passMapCellSize,
+            m_level->m_passMapCellSize,
+            pServer->m_level->land_size * 128.0,
+            pServer->m_level->land_size * 128.0,
+            nullptr
+        );
+        pGlobalMap->Clear();
+        Map::SetGlobalMap(pGlobalMap);
+        pGlobalMap->LoadFromRawFile(m_level->GetFullPathNameA(m_level->m_passMapName).c_str());
         throw std::logic_error("Not implemented");
     }
 
@@ -594,9 +714,16 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void CServer::_SetLevel(m3d::Level*)
+    void CServer::_SetLevel(m3d::Level* newLevel)
     {
-        throw std::logic_error("Not implemented");
+        if (m_level)
+        {
+            M3D_LOG_ERR("Error: attempt to assign level info twice");
+        }
+        else
+        {
+            m_level = newLevel;
+        }
     }
 
     void SetDynamicScene(DynamicScene* DS)

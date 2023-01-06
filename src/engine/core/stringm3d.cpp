@@ -481,5 +481,28 @@ CStr operator+(CStr lhs, CStr const& rhs)
     return lhs;
 }
 
-
+unsigned int strToColor(CStr const& str, unsigned def)
+{
+    if (!str.empty())
+    {
+        int colorArr[4] = { 0 };
+        if (sscanf_s(str.c_str(), "%d %d %d %d", &colorArr[0], &colorArr[1], &colorArr[2], &colorArr[3]) == 4)
+        {
+            for (auto& elem : colorArr)
+            {
+                if (elem > 255)
+                {
+                    elem = 255;
+                }
+                if (elem < 0)
+                {
+                    elem = 0;
+                }
+            }
+            unsigned int result = colorArr[2] | ((colorArr[1] | ((colorArr[0] | (colorArr[3] << 8)) << 8)) << 8);
+            return result;
+        }
+    }
+    return def;
+}
 

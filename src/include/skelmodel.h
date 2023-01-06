@@ -204,7 +204,9 @@ namespace m3d
         static void CreateTexFileMapping();
 
     public:
-        static std::map<CStr, CStr> m_textureFiles;
+        static inline std::map<CStr, CStr> m_textureFiles;
+        static inline CStr m_cubemapTexPath;
+        static inline CStr m_cubemapTexName;
 
     public:
         DRAFT_HierGeom const * GetHierGeom(unsigned int) const ;

@@ -8,6 +8,12 @@
 #include "m3dapp.h"
 #include "core/log.h"
 #include "core/timer.h"
+#include "server/server.h"
+
+namespace ai
+{
+    extern CServer* pServer;
+}
 
 namespace m3d
 {
@@ -68,14 +74,15 @@ namespace m3d
 
     int CWorld::Load(CStr const& levelname, CCamera& cam, bool bQuiet)
     {
-        auto timeStart = g_Kernel->GetTimer().GetCurTime();
+        auto timeStart = M3D_KERNEL->GetTimer().GetCurTime();
         M3D_LOG_INFO("----------------------- World Loading");
-        g_Kernel->GetEngineCfg().m_levFileName.Set(levelname.c_str(), true);
-        if (this->m_level->Load(levelname, cam, bQuiet) == 0)
+        M3D_KERNEL->GetEngineCfg().m_levFileName.Set(levelname.c_str(), true);
+        if (m_level->Load(levelname, cam, bQuiet) == 0)
         {
             M3D_LOG_INFO("Level file " + levelname + " not found");
             return 0;
         }
+        ai::pServer->Init(this);
 
         throw std::logic_error("Not implemented");
     }

@@ -526,9 +526,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ObjContainer::AllowSave(bool)
+    void ObjContainer::AllowSave(bool allow)
     {
-        throw std::logic_error("Not implemented");
+        m_bSaveAllowed = allow;
     }
 
     float ObjContainer::GetGameTimeDiff() const
@@ -568,7 +568,7 @@ namespace ai
 
     m3d::Class* ObjContainer::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(ObjContainer);
     }
 
     void ObjContainer::SaveNodeStatesToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const

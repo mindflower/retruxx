@@ -8,8 +8,6 @@
 
 namespace m3d
 {
-    std::map<CStr, CStr> AnimatedModel::m_textureFiles;
-
     LoadSkins::LoadSkins()
     {
     }
@@ -416,9 +414,11 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void AnimatedModel::SetCubeMapTexName(CStr const&)
+    void AnimatedModel::SetCubeMapTexName(CStr const& texName)
     {
-        throw std::logic_error("Not implemented");
+        m_cubemapTexPath = texName;
+        UnifyFileName(m_cubemapTexPath);
+        m_cubemapTexName = NameFromFileName(m_cubemapTexPath);
     }
 
     void AnimatedModel::LoadSkin(unsigned)

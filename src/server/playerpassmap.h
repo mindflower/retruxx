@@ -19,6 +19,6 @@ namespace ai
 
     private:
         std::vector<unsigned int> m_container;
-        unsigned int m_sideSize;
+        unsigned int m_sideSize = 0;
     };
 }

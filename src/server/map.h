@@ -90,8 +90,8 @@ namespace ai
     private:
         CVector2 m_cellSize;
         CVector2 m_size;
-        MapIndex m_lastIndex;
-        MapIndex m_CurPos;
+        //MapIndex m_lastIndex;
+        //MapIndex m_CurPos;
         std::vector<DirSet> m_DirSet;
         Map *m_pParentMap;
         unsigned __int8 *pField;

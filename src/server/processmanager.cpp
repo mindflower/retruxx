@@ -19,7 +19,7 @@ namespace ai
 
     ProcessManager::ProcessManager()
     {
-        throw std::logic_error("Not implemented");
+        _RegisterEvents();
     }
 
     CStr const& ProcessManager::GetEventName(eGameEvent) const

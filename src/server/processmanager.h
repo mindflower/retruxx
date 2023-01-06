@@ -38,7 +38,7 @@ namespace ai
     private:
         std::vector<auxEventInfo> m_eventInfo;
         std::list<Event> m_eventQueue;
-        int m_numProcessedEvents;
-        int m_eventDebugNum;
+        int m_numProcessedEvents = 0;
+        int m_eventDebugNum = 0;
     };
 }

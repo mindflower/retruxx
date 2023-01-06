@@ -190,7 +190,7 @@ namespace ai
 
     m3d::Class* QuestStateManager::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(QuestStateManager);
     }
 
     void QuestStateManager::CompleteQuestIfTaken(char const*)

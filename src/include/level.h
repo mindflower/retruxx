@@ -27,6 +27,11 @@ namespace m3d
     public:
         RT_CLASS_DECLARE(Level);
 
+    public:
+        int m_passMapCellSize;
+        int land_size;
+        CStr m_passMapName;
+
     private:
         CStr m_weatherDetailName;
         CStr m_weatherType;
@@ -55,12 +60,9 @@ namespace m3d
         CStr m_ObjectFullNames;
         CStr m_serversname;
         CStr m_staticServers;
-        CStr m_passMapName;
-        int m_passMapCellSize;
         CStr m_TriggersName;
         CStr m_cinemaTriggersName;
         CStr m_dialogStrings;
-        int land_size;
         float m_minSafex;
         float m_minSafey;
         float m_maxSafex;
