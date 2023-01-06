@@ -131,6 +131,8 @@ namespace ai
     public:
         RT_CLASS_DECLARE(PhysicBody);
 
+        static inline m3d::DbgCounter* m_countNodeRelinks = nullptr;
+
     private:
         CStr m_modelname;
         dMass m_mass;

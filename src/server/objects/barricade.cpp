@@ -70,7 +70,7 @@ namespace ai
 
 	void Barricade::Registration()
 	{
-		throw std::logic_error("Not implemented");
+		m_propertiesMap["Probability"] = 67;
 	}
 
 	Barricade::Barricade(BarricadePrototypeInfo const& prototype) : ObjPrefab(prototype)

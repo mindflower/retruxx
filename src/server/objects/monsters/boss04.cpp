@@ -71,7 +71,6 @@ namespace ai
 
 	void Boss04::Registration()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	void Boss04::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>&) const

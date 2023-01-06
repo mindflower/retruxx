@@ -6,6 +6,8 @@
 #include <server/ai/aipassagestate.h>
 #include <server/obstacle.h>
 
+#include "server/ai/aimanager.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
 	throw std::logic_error("Not implemented");
@@ -347,6 +349,8 @@ namespace ai
 		RT_CLASS_EXPORT(Vehicle, m3d::METHOD, ResetForcedMaxTorque, "", "", "")
 	RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Vehicle);
+
+	extern AIManager* theAIManager;
 
 	VehiclePrototypeInfo::WheelInfo::WheelInfo(CStr, Wheel::WheelSteering)
 	{
@@ -731,7 +735,12 @@ namespace ai
 
 	void Vehicle::Registration()
 	{
-		throw std::logic_error("Not implemented");
+		theAIManager->RegisterFunc("VehicleAIOnDefend", &Vehicle::VehicleAIOnDefend);
+		theAIManager->RegisterFunc("VehicleAIOnAttack", &Vehicle::VehicleAIOnAttack);
+		theAIManager->RegisterFunc("VehicleAIOnMove", &Vehicle::VehicleAIOnMove);
+		theAIManager->RegisterFunc("VehicleAIOnDead", &Vehicle::VehicleAIOnDead);
+		m_propertiesMap["DriftCoeff"] = 12;
+		m_propertiesMap["GadgetAntiMissileRadius"] = 13;
 	}
 
 	eGObjPropertySaveStatus Vehicle::GetPropertySaveStatus(int) const

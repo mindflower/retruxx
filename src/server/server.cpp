@@ -594,8 +594,6 @@ namespace ai
         ai::Vehicle::Registration();
         ai::Chassis::Registration();
         ai::Team::Registration();
-        ai::Team::Registration();
-        ai::Team::Registration();
         ai::Npc::Registration();
         ai::Location::Registration();
         ai::SgNodeObj::Registration();
@@ -619,12 +617,6 @@ namespace ai
         ai::SimplePhysicObj::Registration();
         ai::DummyObject::Registration();
         ai::Gun::Registration();
-        ai::Obj::Registration();
-        ai::Obj::Registration();
-        ai::Obj::Registration();
-        ai::Obj::Registration();
-        ai::Obj::Registration();
-        ai::Obj::Registration();
         ai::Obj::Registration();
         ai::Boss03::Registration();
         ai::Boss04::Registration();
@@ -666,7 +658,6 @@ namespace ai
         pGlobalMap->Clear();
         Map::SetGlobalMap(pGlobalMap);
         pGlobalMap->LoadFromRawFile(m_level->GetFullPathNameA(m_level->m_passMapName).c_str());
-        throw std::logic_error("Not implemented");
     }
 
     void CServer::PutGameData()

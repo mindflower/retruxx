@@ -65,7 +65,10 @@ namespace ai
 
     void Chassis::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["Health"] = 26;
+        m_propertiesMap["MaxHealth"] = 27;
+        m_propertiesMap["Fuel"] = 9;
+        m_propertiesMap["MaxFuel"] = 10;
     }
 
     NumericInRangeRegenerating<float> const& Chassis::Fuel() const

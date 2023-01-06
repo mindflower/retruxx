@@ -22,7 +22,7 @@ namespace ai
         void RegisterMatrix(CStr const &,DecisionMatrix *);
         void Dump();
         static m3d::Class* GetBaseClass();
-        int RegisterFunc(CStr const &,m3d::AIParam(Obj *));
+        int RegisterFunc(CStr const &, m3d::AIParam(*)(Obj*));
         void LogDump();
         int GetSchemeNum(CStr const &) const ;
         CStr GetMatrixName(int) const ;

@@ -155,7 +155,14 @@ namespace ai
 
     void DynamicQuest::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["PrototypeId"] = 2;
+        m_propertiesSaveStatesMap[2] = SAVE_PROP_NEVER;
+        m_propertiesMap["Belong"] = 0;
+        m_propertiesSaveStatesMap[0] = SAVE_PROP_NEVER;
+        m_propertiesMap["targetName"] = 57;
+        m_propertiesMap["hirerName"] = 58;
+        m_propertiesMap["status"] = 59;
+        m_propertiesMap["reward"] = 60;
     }
 
     DynamicQuest::QuestStatus DynamicQuest::GetQuestStatus() const

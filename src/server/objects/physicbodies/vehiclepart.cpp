@@ -215,7 +215,9 @@ namespace ai
 
 	void VehiclePart::Registration()
 	{
-		throw std::logic_error("Not implemented");
+		m_propertiesMap["Durability"] = 19;
+		m_propertiesMap["MaxDurability"] = 20;
+		m_propertiesMap["Price"] = 21;
 	}
 
 	eGObjPropertySaveStatus VehiclePart::GetPropertySaveStatus(int) const

@@ -296,7 +296,10 @@ namespace ai
 
     void Player::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["Money"] = 11;
+        m_propertiesMap["ModelName"] = 44;
+        m_propertiesMap["skin"] = 45;
+        m_propertiesMap["cfg"] = 46;
     }
 
     void Player::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>&) const

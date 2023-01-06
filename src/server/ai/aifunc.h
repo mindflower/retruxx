@@ -13,14 +13,15 @@ namespace ai
     class AIFunc
     {
     public:
-        void Set(CStr const &,m3d::AIParam (__fastcall*)(Obj *));
+        void Set(CStr const &,m3d::AIParam (*)(Obj *));
+        AIFunc(CStr const&, m3d::AIParam(*)(Obj*));
         AIFunc(AIFunc const &);
         AIFunc();
         CStr const & GetName() const ;
         m3d::AIParam Action(Obj *);
 
     private:
-        m3d::AIParam *(__fastcall *m_funcAction)(m3d::AIParam *result, Obj *);
+        m3d::AIParam (*m_funcAction)(Obj *);
         CStr m_name;
         int m_CallNum;
         float m_MaxTime;

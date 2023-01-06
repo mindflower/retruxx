@@ -87,7 +87,7 @@ namespace ai
 
     void BulletLauncher::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["Accuracy"] = 31;
     }
 
     BulletLauncherPrototypeInfo const* BulletLauncher::GetPrototypeInfo() const

@@ -65,7 +65,7 @@ namespace ai
 
     void PhysicUnit::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["PathsNames"] = 77;
     }
 
     void PhysicUnit::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>&) const

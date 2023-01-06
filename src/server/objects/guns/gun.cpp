@@ -298,7 +298,12 @@ namespace ai
 
     void Gun::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["Damage"] = 28;
+        m_propertiesMap["FiringRate"] = 29;
+        m_propertiesMap["FiringRange"] = 30;
+        m_propertiesMap["ChargeSize"] = 34;
+        m_propertiesMap["ReChargingTime"] = 35;
+        m_propertiesMap["ShellsInPool"] = 36;
     }
 
     void Gun::SetPassedToAnotherMapStatus()

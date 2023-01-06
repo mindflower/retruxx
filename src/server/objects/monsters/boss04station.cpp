@@ -55,7 +55,6 @@ namespace ai
 
 	void Boss04Station::Registration()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	bool Boss04Station::bDestroyed() const

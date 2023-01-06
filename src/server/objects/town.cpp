@@ -260,7 +260,8 @@ namespace ai
 
     void Town::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["MaxDefenders"] = 64;
+        m_propertiesMap["OpenGateToPlayer"] = 65;
     }
 
     m3d::Class* Town::GetClass() const

@@ -186,7 +186,7 @@ namespace ai
         bool AddThing(GeomRepositoryItem const &,bool);
         void EnableSounds(bool);
         virtual void TransferToSpace(dxSpace *);
-        static m3d::AIParam __fastcall VehicleAIOnAttack(Obj *);
+        static m3d::AIParam VehicleAIOnAttack(Obj *);
         void SetCanBeDistractedFromMoving(bool);
         int GetCustomControlWeaponsTargetObj() const ;
         int GetToBeLockedObjId() const ;
@@ -239,7 +239,7 @@ namespace ai
         void HealWheels();
         void setImmortalMode(bool);
         bool bIsBraking() const ;
-        static m3d::AIParam __fastcall VehicleAIOnMove(Obj *);
+        static m3d::AIParam VehicleAIOnMove(Obj *);
         bool IsHealthZero() const ;
         void FireFromWeaponAI(bool,float,Obj *);
         bool AddGadget(Gadget *);
@@ -287,7 +287,7 @@ namespace ai
         float GetFullDurabilityCoeffForDamageType(DamageType) const ;
         virtual Obj * CloneObj();
         int CheckSkin(int);
-        static m3d::AIParam __fastcall VehicleAIOnDefend(Obj *);
+        static m3d::AIParam VehicleAIOnDefend(Obj *);
         float GetEngineRpm() const ;
         virtual void SetBelong(int);
         Team * GetTeam() const ;
@@ -335,7 +335,7 @@ namespace ai
         IzvratRepository * GetRepository();
         virtual bool RemoveChild(Obj *);
         void SetBrake(float);
-        static m3d::AIParam __fastcall VehicleAIOnDead(Obj *);
+        static m3d::AIParam VehicleAIOnDead(Obj *);
         void SetMaxSpeed(float);
         bool HasAmountOfItemsInRepository(char const *,int) const ;
         virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;

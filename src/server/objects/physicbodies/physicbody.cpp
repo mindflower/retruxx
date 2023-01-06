@@ -3,6 +3,7 @@
 #include "server/objects/physicbodies/physichelpers.h"
 #include <stdexcept>
 
+#include "game/m3dgame.h"
 #include "math/vector.h"
 
 namespace ai
@@ -288,7 +289,8 @@ namespace ai
 
 	void PhysicBody::Registration()
 	{
-		throw std::logic_error("Not implemented");
+		m_countNodeRelinks = M3D_APP->GetDbgCounterStack().GetCounter(M3D_APP->GetDbgCounterStack().AddCounter("node relinks in server"));
+		m_countNodeRelinks->SetI(0);
 	}
 
 	int PhysicBody::GetNodeRealAnimAction() const

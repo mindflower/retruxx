@@ -131,7 +131,7 @@ namespace ai
 
     void Gadget::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["SlotNum"] = 41;
     }
 
     void Gadget::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>&) const

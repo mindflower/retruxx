@@ -140,7 +140,12 @@ namespace ai
 
     void Location::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["Radius"] = 49;
+        m_propertiesMap["Active"] = 53;
+        m_propertiesMap["LookingTimeOut"] = 52;
+        m_propertiesMap["PassageAddress"] = 54;
+        m_propertiesMap["ExitLocation"] = 55;
+        m_propertiesMap["PassageActive"] = 56;
     }
 
     void Location::SetLocationType(LocationType)

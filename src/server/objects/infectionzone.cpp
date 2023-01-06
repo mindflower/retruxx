@@ -43,7 +43,11 @@ namespace ai
 
     void InfectionZone::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["MinDistToPlayer"] = 70;
+        m_propertiesMap["CriticalTeamDist"] = 71;
+        m_propertiesMap["CriticalTeamTime"] = 72;
+        m_propertiesMap["InfectionTeamPrototypeName"] = 73;
+        m_propertiesMap["DropOutTimeOut"] = 74;
     }
 
     void InfectionZone::DeleteDropOutPoint(unsigned)

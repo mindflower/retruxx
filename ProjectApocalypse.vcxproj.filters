@@ -2058,6 +2058,9 @@
     <ClCompile Include="src\engine\psprops.cpp">
       <Filter>engine</Filter>
     </ClCompile>
+    <ClCompile Include="src\server\ai\aimatrix.cpp">
+      <Filter>server\ai</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">

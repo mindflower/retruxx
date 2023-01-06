@@ -84,7 +84,8 @@ namespace ai
 
 	void SimplePhysicObj::Registration()
 	{
-		throw std::logic_error("Not implemented");
+		m_propertiesMap["Mass"] = 6;
+		m_propertiesMap["NodeScale"] = 7;
 	}
 
 	void SimplePhysicObj::SetPassedToAnotherMapStatus()

@@ -9,6 +9,7 @@ namespace ai
     {
     public:
         AIMatrix(AIMatrix const &);
+        AIMatrix(CStr const&, DecisionMatrix*);
         CStr const & GetName() const ;
         DecisionMatrix * GetPtr() const ;
         void Set(CStr const &,DecisionMatrix *);

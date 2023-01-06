@@ -10,7 +10,7 @@ namespace ai
     public:
         class auxEventInfo
         {
-        private:
+        public:
             eGameEvent m_eventId;
             CStr m_eventName;
         };

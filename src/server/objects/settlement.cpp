@@ -35,7 +35,6 @@ namespace ai
 
     void Settlement::Registration()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void Settlement::Remove()

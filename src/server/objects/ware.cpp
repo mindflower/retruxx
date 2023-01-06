@@ -105,7 +105,7 @@ namespace ai
 
     void Ware::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["Durability"] = 19;
     }
 
     void Ware::GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>&) const

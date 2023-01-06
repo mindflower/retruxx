@@ -80,7 +80,8 @@ namespace ai
 
     void Lair::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["MaxAttackers"] = 66;
+        m_propertiesMap["MaxDefenders"] = 64;
     }
 
     void Lair::GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>&) const

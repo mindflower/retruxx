@@ -29,14 +29,28 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    int AIManager::GetMatrixNum(CStr const&) const
+    int AIManager::GetMatrixNum(CStr const& name) const
     {
-        throw std::logic_error("Not implemented");
+        for (int i = 0; i < m_Matrix.size(); ++i)
+        {
+            if (m_Matrix[i].GetName() == name)
+            {
+                return i;
+            }
+        }
+        return 0xFFFF;
     }
 
-    void AIManager::RegisterMatrix(CStr const&, DecisionMatrix*)
+    void AIManager::RegisterMatrix(CStr const& name, DecisionMatrix* pDM)
     {
-        throw std::logic_error("Not implemented");
+        if (auto const matrixNum = GetMatrixNum(name); matrixNum == 0xFFFF)
+        {
+            m_Matrix.emplace_back(name, pDM);
+        }
+        else
+        {
+            m_Matrix[matrixNum].Set(name, pDM);
+        }
     }
 
     void AIManager::Dump()
@@ -49,9 +63,16 @@ namespace ai
         return RT_CLASS_LOCAL(Object);
     }
 
-    int AIManager::RegisterFunc(CStr const&, m3d::AIParam(Obj*))
+    int AIManager::RegisterFunc(CStr const& name, m3d::AIParam(*funcAction)(Obj*))
     {
-        throw std::logic_error("Not implemented");
+        auto const num = GetFuncNum(name);
+        if (num == 0xFFFF)
+        {
+            m_Actions.emplace_back(name, funcAction);
+            return m_Actions.size() - 1;
+        }
+        m_Actions[num].Set(name, funcAction);
+        return num;
     }
 
     void AIManager::LogDump()
@@ -94,9 +115,16 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    int AIManager::GetFuncNum(CStr const&) const
+    int AIManager::GetFuncNum(CStr const& name) const
     {
-        throw std::logic_error("Not implemented");
+        for (int i = 0; i < m_Actions.size(); ++i)
+        {
+            if (m_Actions[i].GetName() == name)
+            {
+                return i;
+            }
+        }
+        return 0xFFFF;
     }
 
     m3d::Object* AIManager::Clone()

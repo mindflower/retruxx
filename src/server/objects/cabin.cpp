@@ -120,7 +120,10 @@ namespace ai
 
     void Cabin::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["MaxTorque"] = 22;
+        m_propertiesMap["MaxSpeed"] = 23;
+        m_propertiesMap["FuelConsumption"] = 24;
+        m_propertiesMap["Control"] = 25;
     }
 
     int Cabin::GetMaxGadgets(CStr const&) const

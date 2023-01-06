@@ -111,7 +111,7 @@ namespace ai
         void AddForceAtRelPos(CVector const &,CVector const &);
         void AddImpulseAtPos(CVector const &,CVector const &);
         virtual void SetInvisible();
-        static m3d::AIParam __fastcall AIGetCurPos(Obj *);
+        static m3d::AIParam AIGetCurPos(Obj *);
         CVector GetPositionAtRelPoint(CVector) const ;
         virtual void SetPosition(CVector const &);
         PhysicObj(PhysicObjPrototypeInfo const &);
@@ -165,6 +165,8 @@ namespace ai
         virtual m3d::Object * Clone();
         static m3d::Object * CreateObject();
         static void __fastcall _CommonBodyChangeEnabledStateCallback(dxBody *);
+
+        static inline m3d::DbgCounter* m_countRelinksToCollisionCells = nullptr;
 
     public:
         RT_CLASS_DECLARE(PhysicObj);

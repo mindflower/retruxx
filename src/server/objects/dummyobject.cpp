@@ -31,7 +31,7 @@ namespace ai
 
 	void DummyObject::Registration()
 	{
-		throw std::logic_error("Not implemented");
+		m_propertiesMap["ModelName"] = 44;
 	}
 
 	eGObjPropertySaveStatus DummyObject::GetPropertySaveStatus(int) const

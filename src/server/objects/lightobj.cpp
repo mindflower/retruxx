@@ -35,7 +35,6 @@ namespace ai
 
     void LightObj::Registration()
     {
-        throw std::logic_error("Not implemented");
     }
 
     LightObj::LightObj(LightObjPrototypeInfo const& prototype) : SgNodeObj(prototype)

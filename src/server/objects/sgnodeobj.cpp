@@ -92,7 +92,10 @@ namespace ai
 
     void SgNodeObj::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["Pos"] = 4;
+        m_propertiesMap["Rot"] = 5;
+        m_propertiesMap["ModelFile"] = 44;
+        m_propertiesMap["NodeScale"] = 7;
     }
 
     bool SgNodeObj::SetPropertyById(int, m3d::AIParam const&)

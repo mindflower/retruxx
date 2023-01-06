@@ -4,6 +4,8 @@
 #include <server/ai/aimessage.h>
 #include <server/ai/aipassagestate.h>
 
+#include "server/ai/aimanager.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, SetDestination)
 {
     throw std::logic_error("Not implemented");
@@ -39,6 +41,8 @@ namespace ai
         RT_CLASS_EXPORT(Team, m3d::METHOD, GetVehicle, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Team);
+
+    extern AIManager* theAIManager;
 
     void TeamPrototypeInfo::PostLoad()
     {
@@ -177,7 +181,25 @@ namespace ai
 
     void Team::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap["RemoveWhenChildrenDead"] = 14;
+        m_propertiesMap["TeamTacticPrototype"] = 15;
+        m_propertiesMap["TeamTacticShouldBeAssigned"] = 16;
+        theAIManager->RegisterFunc("TeamAIGetCurPos", &Team::TeamAIGetCurPos);
+        theAIManager->RegisterFunc("TeamAIGetCurAngle", &Team::TeamAIGetCurAngle);
+        theAIManager->RegisterFunc("TeamAIOnAttack", &Team::TeamAIOnAttack);
+        theAIManager->RegisterFunc("TeamAIOnStartAttack", &Team::TeamAIOnStartAttack);
+        theAIManager->RegisterFunc("TeamAIOnAttackOrder", &Team::TeamAIOnAttackOrder);
+        theAIManager->RegisterFunc("TeamAIOnDefend", &Team::TeamAIOnDefend);
+        theAIManager->RegisterFunc("TeamAIOnEnemyDestroyed", &Team::TeamAIOnEnemyDestroyed);
+        theAIManager->RegisterFunc("TeamAIOnIdle", &Team::TeamAIOnIdle);
+        theAIManager->RegisterFunc("TeamAIOnMove", &Team::TeamAIOnMove);
+        theAIManager->RegisterFunc("TeamAIOnStartSearch", &Team::TeamAIOnStartSearch);
+        theAIManager->RegisterFunc("TeamAIOnPathFind", &Team::TeamAIOnPathFind);
+        theAIManager->RegisterFunc("TeamAIOnMoveAlongPath", &Team::TeamAIOnMoveAlongPath);
+        theAIManager->RegisterFunc("TeamAIOnStartDefend", &Team::TeamAIOnStartDefend);
+        theAIManager->RegisterFunc("TeamAIOnTargetReached", &Team::TeamAIOnTargetReached);
+        theAIManager->RegisterFunc("TeamAIOnTargetUnreachable", &Team::TeamAIOnTargetUnreachable);
+        theAIManager->RegisterFunc("TeamAIOnMoveFinished", &Team::TeamAIOnMoveFinished);
     }
 
     void Team::SetTeamTactic(TeamTactic*)

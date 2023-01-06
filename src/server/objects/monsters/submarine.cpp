@@ -20,6 +20,12 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Submarine);
 
+    namespace
+    {
+        const char* STR_PLACE_POSITION = "PlacePosition";
+        const char* STR_PORT_POSITION = "PortPosition";
+    }
+
     void SubmarinePrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
         throw std::logic_error("Not implemented");
@@ -102,7 +108,8 @@ namespace ai
 
     void Submarine::Registration()
     {
-        throw std::logic_error("Not implemented");
+        m_propertiesMap[STR_PLACE_POSITION] = 75;
+        m_propertiesMap[STR_PORT_POSITION] = 76;
     }
 
     void Submarine::Update(float, unsigned)

@@ -80,7 +80,6 @@ namespace ai
 
 	void Boss04StationPart::Registration()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	void Boss04StationPart::Update(float, unsigned)

@@ -3,6 +3,9 @@
 #include <core/aiparam.h>
 #include <server/obstacle.h>
 
+#include "game/m3dgame.h"
+#include "server/ai/aimanager.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetPosition)
 {
     throw std::logic_error("Not implemented");
@@ -92,6 +95,13 @@ namespace ai
         RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, IsVisible, "", "", "")
         RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(PhysicObj);
+
+    namespace
+    {
+        std::set<m3d::Class*> standardTargetClasses;
+    }
+
+    extern AIManager* theAIManager;
 
 	PhysicObjPrototypeInfo::PhysicObjPrototypeInfo()
 	{
@@ -225,7 +235,13 @@ namespace ai
 
     void PhysicObj::Registration()
     {
-        throw std::logic_error("Not implemented");
+        standardTargetClasses.insert(RT_CLASS_LOCAL(PhysicObj));
+        theAIManager->RegisterFunc("AIGetCurPos", &PhysicObj::AIGetCurPos);
+        m_propertiesMap["Pos"] = 4;
+        m_propertiesMap["Rot"] = 5;
+        m_propertiesMap["Skin"] = 45;
+        m_countRelinksToCollisionCells = M3D_APP->GetDbgCounterStack().GetCounter(M3D_APP->GetDbgCounterStack().AddCounter("relinks to collision cells"));
+        m_countRelinksToCollisionCells->SetI(0);
     }
 
     void PhysicObj::AddImpulseAtRelPos(CVector const&, CVector const&)

@@ -68,7 +68,6 @@ namespace ai
 
 	void Boss03::Registration()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	Boss03::Boss03(Boss03PrototypeInfo const& prototype) : AnimatedComplexPhysicObj(prototype)

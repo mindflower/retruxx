@@ -106,7 +106,6 @@ namespace ai
 
 	void Boss04Drone::Registration()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	m3d::Class* Boss04Drone::GetBaseClass()

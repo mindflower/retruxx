@@ -37,16 +37,16 @@ namespace ai
     public:
         virtual bool SetPropertyById(int,m3d::AIParam const &);
         void AttackNow(int);
-        static m3d::AIParam __fastcall TeamAIOnMoveFinished(Obj *);
-        static m3d::AIParam __fastcall TeamAIOnStartSearch(Obj *);
-        static m3d::AIParam __fastcall TeamAIOnAttack(Obj *);
+        static m3d::AIParam TeamAIOnMoveFinished(Obj *);
+        static m3d::AIParam TeamAIOnStartSearch(Obj *);
+        static m3d::AIParam TeamAIOnAttack(Obj *);
         virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
         Team(TeamPrototypeInfo const &);
         virtual bool RemoveChild(Obj *);
         virtual bool bIsEqualToPrototype() const ;
-        static m3d::AIParam __fastcall TeamAIOnIdle(Obj *);
-        static m3d::AIParam __fastcall TeamAIOnStartAttack(Obj *);
+        static m3d::AIParam TeamAIOnIdle(Obj *);
+        static m3d::AIParam TeamAIOnStartAttack(Obj *);
         virtual m3d::Class * GetClass() const ;
         std::vector<Vehicle *> const & GetVehicles() const ;
         void SetTeamFrozen(bool);
@@ -56,11 +56,11 @@ namespace ai
         virtual void Update(float,unsigned int);
         virtual void GetPropertiesNames(std::set<CStr> &) const ;
         std::map<int,CVector> const & GetSteeringForceMap() const ;
-        static m3d::AIParam __fastcall TeamAIOnEnemyDestroyed(Obj *);
-        static m3d::AIParam __fastcall TeamAIGetCurAngle(Obj *);
+        static m3d::AIParam TeamAIOnEnemyDestroyed(Obj *);
+        static m3d::AIParam TeamAIGetCurAngle(Obj *);
         virtual int OnEvent(Event const &);
         void HoldFire(int);
-        static m3d::AIParam __fastcall TeamAIOnTargetReached(Obj *);
+        static m3d::AIParam TeamAIOnTargetReached(Obj *);
         virtual void GetPropertiesIDs(std::set<int> &) const ;
         virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         unsigned int GetNumVehicles() const ;
@@ -71,12 +71,12 @@ namespace ai
         float GetDistToPhysicObj(PhysicObj const *) const ;
         virtual TeamPrototypeInfo const * GetPrototypeInfo() const ;
         virtual CStr GetPropertyName(int) const ;
-        static m3d::AIParam __fastcall TeamAIOnMoveAlongPath(Obj *);
-        static m3d::AIParam __fastcall TeamAIOnDefend(Obj *);
-        static m3d::AIParam __fastcall TeamAIGetCurPos(Obj *);
-        static m3d::AIParam __fastcall TeamAIOnTargetUnreachable(Obj *);
+        static m3d::AIParam TeamAIOnMoveAlongPath(Obj *);
+        static m3d::AIParam TeamAIOnDefend(Obj *);
+        static m3d::AIParam TeamAIGetCurPos(Obj *);
+        static m3d::AIParam TeamAIOnTargetUnreachable(Obj *);
         void SetRemoveWhenChilrenDead(bool);
-        static m3d::AIParam __fastcall TeamAIOnPathFind(Obj *);
+        static m3d::AIParam TeamAIOnPathFind(Obj *);
         virtual void AddChild(Obj *);
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         virtual bool CanChildBeAdded(m3d::Class *) const ;
@@ -84,13 +84,13 @@ namespace ai
         virtual void CreateChildren();
         Formation * GetFormation() const ;
         static m3d::Class * GetBaseClass();
-        static m3d::AIParam __fastcall TeamAIOnAttackOrder(Obj *);
+        static m3d::AIParam TeamAIOnAttackOrder(Obj *);
         virtual void Remove();
-        static m3d::AIParam __fastcall TeamAIOnStartDefend(Obj *);
+        static m3d::AIParam TeamAIOnStartDefend(Obj *);
         void SetDestination(CVector const &);
         virtual void RenderDebugInfo() const ;
         void Stop();
-        static m3d::AIParam __fastcall TeamAIOnMove(Obj *);
+        static m3d::AIParam TeamAIOnMove(Obj *);
         virtual void SetPassedToAnotherMapStatus();
 
     protected:
