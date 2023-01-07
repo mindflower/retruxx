@@ -28,7 +28,10 @@ void MenuItem::AddChild(MenuItem* item)
 
 MenuItem::~MenuItem()
 {
-    throw std::logic_error("Not implemented");
+    for (auto const& child : m_children)
+    {
+        delete child;
+    }
 }
 
 MenuItem* MenuItem::GetMenuItemViaName(CStr const&)
@@ -63,7 +66,6 @@ CStr GameMenuWnd::GetCurrentRootLevelName() const
 
 GameMenuWnd::~GameMenuWnd()
 {
-    throw std::logic_error("Not implemented");
 }
 
 m3d::Object* GameMenuWnd::CreateObject()

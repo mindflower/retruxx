@@ -1441,7 +1441,10 @@ namespace m3d
 
         ModalWnd::~ModalWnd()
         {
-            throw std::logic_error("Not implemented");
+            if (GetStation()->IsModal(this))
+            {
+                GetStation()->EndModal(this, 0);
+            }
         }
 
         int ModalWnd::OnInitDlgItem(Wnd*, unsigned)

@@ -16,6 +16,15 @@ public:
         }
     }
 
+    ref_ptr(ref_ptr<T> const& rhs) :
+        m_ptr(rhs.m_ptr)
+    {
+        if (m_ptr)
+        {
+            m_ptr->IncRef();
+        }
+    }
+
     ~ref_ptr()
     {
         if (m_ptr)

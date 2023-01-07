@@ -63,7 +63,7 @@ namespace m3d
         auto const result = --m_refCount;
         if (result <=0)
         {
-            RefCountedBase::~RefCountedBase();
+            delete this;
         }
         return result;
     }

@@ -68,7 +68,6 @@ namespace m3d
 
         ScrollWnd::~ScrollWnd()
         {
-            throw std::logic_error("Not implemented");
         }
 
         float ScrollWnd::GetMaxPos() const

@@ -63,7 +63,7 @@ namespace m3d
 
         ButtonWnd::~ButtonWnd()
         {
-            throw std::logic_error("Not implemented");
+            ReleaseTextures();
         }
 
         int ButtonWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
@@ -172,7 +172,10 @@ namespace m3d
 
         void ButtonWnd::ReleaseTextures()
         {
-            throw std::logic_error("Not implemented");
+            M3D_APP->m_renderer->ReleaseTexture(m_image);
+            M3D_APP->m_renderer->ReleaseTexture(m_imageMouseIn);
+            M3D_APP->m_renderer->ReleaseTexture(m_imageMouseDown);
+            M3D_APP->m_renderer->ReleaseTexture(m_imageDisabled);
         }
 
         void ButtonWnd::OnNcPaint(DrawInfo const&, unsigned)

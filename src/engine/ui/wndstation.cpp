@@ -405,9 +405,16 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        bool WndStation::IsModal(ModalWnd*)
+        bool WndStation::IsModal(ModalWnd* wnd)
         {
-            throw std::logic_error("Not implemented");
+            for (auto const& elem : m_wndModalStack)
+            {
+                if (wnd == elem)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         void WndStation::OnEndAnimation(Wnd*)

@@ -14,7 +14,7 @@ namespace m3d
         scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
         if (fileStream->Open(filename, fs::IStream::OPEN_READ))
         {
-            //TODO: ref_ptr?
+
             auto* xmlFile = g_Kernel->CreateXmlFile();
             xmlFile->Read(*fileStream);
             fileStream->Close();
@@ -323,7 +323,7 @@ int XmlFileImpl::DecRef()
     }
     if (m_refCount <= 0)
     {
-        XmlFileImpl::~XmlFileImpl();
+        delete this;
     }
     return ret;
 }
@@ -451,7 +451,7 @@ int IniFileImpl::DecRef()
     }
     if (m_refCount <= 0)
     {
-        IniFileImpl::~IniFileImpl();
+        delete this;
     }
     return ret;
 }
@@ -721,7 +721,7 @@ int XmlNodeImpl::DecRef()
     }
     if (m_refCount <= 0)
     {
-        XmlNodeImpl::~XmlNodeImpl();
+        delete this;
     }
     return ret;
 }
@@ -785,7 +785,7 @@ int XmlAttribImpl::DecRef()
     }
     if (m_refCount <= 0)
     {
-        XmlAttribImpl::~XmlAttribImpl();
+        delete this;
     }
     return ret;
 }
