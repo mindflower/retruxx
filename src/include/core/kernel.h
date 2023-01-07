@@ -79,6 +79,9 @@ namespace m3d
 
         class auxLogFlow
         {
+        public:
+            auxLogFlow(const char*);
+            ~auxLogFlow();
             const char* m_str;
         };
 

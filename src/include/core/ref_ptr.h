@@ -51,6 +51,24 @@ public:
         return m_ptr;
     }
 
+    ref_ptr<T>& operator=(ref_ptr<T> const& rhs)
+    {
+        if (this == &rhs)
+        {
+            return *this;
+        }
+        if (m_ptr)
+        {
+            m_ptr->DecRef();
+        }
+        if (rhs.m_ptr)
+        {
+            rhs.m_ptr->IncRef();
+        }
+        m_ptr = rhs.m_ptr;
+        return *this;
+    }
+
 private:
     T* m_ptr = nullptr;
 };

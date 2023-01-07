@@ -5,7 +5,10 @@
 #include <core/kernel.h>
 
 #include "config.h"
+#include "level.h"
 #include "m3dapp.h"
+#include "world.h"
+#include "core/log.h"
 #include "math/vector4.h"
 
 namespace m3d
@@ -241,6 +244,57 @@ namespace m3d
 
     int Landscape::Load()
     {
+        M3D_LOG_FLOW();
+        m_mapSize = 16 * m_owner->m_level->land_size;
+        auto const fileName = m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_beachsetsName);
+        CStr error;
+        ref_ptr xmlFile = ReadXmlFile(fileName.c_str(), &error);
+        if (!xmlFile)
+        {
+            xmlFile = ReadXmlFile("data\\Beachsets.xml", &error);
+        }
+        if (xmlFile)
+        {
+            ref_ptr beachsets = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+            ref_ptr wave = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+            xmlFile->GetFirstChild_(beachsets, "Beachsets");
+            for (beachsets->GetFirstChild_(wave, "Wave"); !wave->IsEmpty(); wave->GetNextSibling_(wave, "Wave"))
+            {
+                WaveSets ws;
+                SafeFloatAttrib(ws.m_tcomp, wave, "tcomp");
+                if (ws.m_tcomp < 0.0)
+                {
+                    SafeFloatAttrib(ws.m_tlevel, wave, "tlevel");
+                    SafeFloatAttrib(ws.m_tamplitude, wave, "tamplitude");
+                    SafeFloatAttrib(ws.m_tphase, wave, "tphase");
+                    SafeFloatAttrib(ws.m_tfreq, wave, "tfreq");
+                }
+                SafeFloatAttrib(ws.m_scomp, wave, "scomp");
+                if (ws.m_scomp < 0.0)
+                {
+                    SafeFloatAttrib(ws.m_slevel, wave, "slevel");
+                    SafeFloatAttrib(ws.m_samplitude, wave, "samplitude");
+                    SafeFloatAttrib(ws.m_sphase, wave, "sphase");
+                    SafeFloatAttrib(ws.m_sfreq, wave, "sfreq");
+                }
+                CStr tex;
+                SafeStrAttrib(tex, wave, "texture");
+                auto texHandle = M3D_APP->m_renderer->AddTexture(tex, 2);
+                if (texHandle.IsValid())
+                {
+                    M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_WRAP_S, 3u);
+                    M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_WRAP_T, 3u);
+                    M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_MIP_LOD_BIAS, M3D_KERNEL->GetEngineCfg().m_g_shoresMipBias.GetF());
+                    ws.m_texHandle = texHandle;
+                }
+                m_waves.push_back(ws);
+            }
+        }
+        else
+        {
+            M3D_LOG_INFO("Error:No Beachset.xml file");
+        }
+
         throw std::logic_error("Not implemented");
     }
 

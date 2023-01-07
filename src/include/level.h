@@ -31,8 +31,6 @@ namespace m3d
         int m_passMapCellSize;
         int land_size;
         CStr m_passMapName;
-
-    private:
         CStr m_weatherDetailName;
         CStr m_weatherType;
         int m_currentDayTime;

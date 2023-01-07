@@ -65,9 +65,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    CStr Level::GetFullPathNameA(CStr const&)
+    CStr Level::GetFullPathNameA(CStr const& name)
     {
-        throw std::logic_error("Not implemented");
+        return m_levelPath + "\\" + name;
     }
 
     int Level::New(CCamera&, int)

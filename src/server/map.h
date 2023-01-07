@@ -35,7 +35,7 @@ namespace ai
     public:
         MapIndex(int, int);
 
-    private:
+    public:
         int x;
         int y;
     };
@@ -87,13 +87,16 @@ namespace ai
         bool IsCircleBlocked(CVector2 const &,float,unsigned char);
         void DecLineTo(CVector2 const &,unsigned char);
 
+    public:
+        static inline Map* theGlobalMap = nullptr;
+
     private:
         CVector2 m_cellSize;
         CVector2 m_size;
-        //MapIndex m_lastIndex;
-        //MapIndex m_CurPos;
+        MapIndex m_lastIndex;
+        MapIndex m_CurPos;
         std::vector<DirSet> m_DirSet;
         Map *m_pParentMap;
-        unsigned __int8 *pField;
+        unsigned __int8 *pField = nullptr;
     };
 }

@@ -181,7 +181,6 @@ int ControlOptionsWnd::GameDataSetup()
 	        if (wndKeyBindings->IsKindOf(RT_CLASS_LOCAL(BindKeysWnd)))
 	        {
                 //TODO: check this!!!!!!!!!q
-                wndKeyBindings->IncRef();
                 m_wndKeyBindings = dynamic_cast<BindKeysWnd*>(&*wndKeyBindings);
                 AddChild(m_wndKeyBindings);
                 if (res)

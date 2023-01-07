@@ -64,6 +64,17 @@ namespace m3d
         return ::MessageBoxA(hWnd, pszText, pszCaption, uType);
     }
 
+    Kernel::auxLogFlow::auxLogFlow(const char* functionName) :
+        m_str(functionName)
+    {
+        M3D_KERNEL->m_Log->indent("Enter function: " + CStr(functionName), LOG_FLOW);
+    }
+
+    Kernel::auxLogFlow::~auxLogFlow()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     EngineConfig& Kernel::GetEngineCfg()
     {
         return *m_engineConfig;

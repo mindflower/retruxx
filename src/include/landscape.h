@@ -66,19 +66,19 @@ namespace m3d
         class WaveSets
         {
         public:
-            WaveSets(WaveSets const&);
+            //WaveSets(WaveSets const&);
 
-        private:
-            float m_tcomp;
-            float m_tlevel;
-            float m_tamplitude;
-            float m_tphase;
-            float m_tfreq;
-            float m_scomp;
-            float m_slevel;
-            float m_samplitude;
-            float m_sphase;
-            float m_sfreq;
+        public:
+            float m_tcomp = -1.0;
+            float m_tlevel = 0.1;
+            float m_tamplitude = 0.25;
+            float m_tphase = 0.0;
+            float m_tfreq = 0.2;
+            float m_scomp = -1.0;
+            float m_slevel = 2.0;
+            float m_samplitude = 0.89999998;
+            float m_sphase = 0.15000001;
+            float m_sfreq = 0.2;
             rend::TexHandle m_texHandle;
         };
 

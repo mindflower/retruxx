@@ -1,6 +1,8 @@
 #include "weathermanager.h"
 #include <stdexcept>
 
+#include "game/m3dgame.h"
+
 namespace m3d
 {
     int WeatherManager::DeleteWeather(unsigned)
@@ -10,7 +12,34 @@ namespace m3d
 
     int WeatherManager::CreateSky()
     {
-        throw std::logic_error("Not implemented");
+        m_vbSky = M3D_APP->m_renderer->AddVb(rend::VERTEX_XYZCT2, 400, "Sky", 0);
+        m_ibSky = M3D_APP->m_renderer->AddIb(2166, false);
+        auto mem = static_cast<WORD*>(M3D_APP->m_renderer->LockIb(m_ibSky, 0, 0, 0));
+        //TODO: check this and refactor
+        auto v3 = 0;
+        auto v7 = 19;
+        do
+        {
+            auto v4 = v3 + 21;
+            auto v5 = 19;
+            do
+            {
+                *mem = v3;
+                mem[1] = v4;
+                mem[3] = v3;
+                mem[5] = v4;
+                mem[2] = v4 - 20 + 19;
+                mem[4] = v4 - 20;
+                mem += 6;
+                ++v3;
+                ++v4;
+                --v5;
+            } while (v5);
+            ++v3;
+            --v7;
+        } while (v7);
+        M3D_APP->m_renderer->UnlockIb(m_ibSky);
+        return 1;
     }
 
     int WeatherManager::WriteToXmlFile(char const*)

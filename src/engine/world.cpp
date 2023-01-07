@@ -83,6 +83,16 @@ namespace m3d
             return 0;
         }
         ai::pServer->Init(this);
+        m_weatherManager.CreateSky();
+
+        auto const landscapeStart = M3D_KERNEL->GetTimer().GetCurTime();
+        if (!m_landscape.Load())
+        {
+            return 0;
+        }
+        auto const landscapeEnd = M3D_KERNEL->GetTimer().GetCurTime();
+        M3D_LOG_INFO("----------------------- Landscape loaded in: " + CStr(landscapeEnd - landscapeStart));
+
 
         throw std::logic_error("Not implemented");
     }
