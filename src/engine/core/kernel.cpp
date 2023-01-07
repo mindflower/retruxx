@@ -72,7 +72,7 @@ namespace m3d
 
     Kernel::auxLogFlow::~auxLogFlow()
     {
-        throw std::logic_error("Not implemented");
+        M3D_KERNEL->m_Log->undent("Exit function: " + CStr(m_str), LOG_FLOW);
     }
 
     EngineConfig& Kernel::GetEngineCfg()

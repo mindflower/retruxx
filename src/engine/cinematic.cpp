@@ -451,9 +451,17 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Cinematic::SetFolder(char const*)
+    void Cinematic::SetFolder(char const* folder)
     {
-        throw std::logic_error("Not implemented");
+        m_folder = folder;
+        UnifyFileName(m_folder);
+        if (!m_folder.empty())
+        {
+            if (m_folder[m_folder.length() -1] != '/')
+            {
+                m_folder+= "/";
+            }
+        }
     }
 
     char const* Cinematic::GetFolder() const

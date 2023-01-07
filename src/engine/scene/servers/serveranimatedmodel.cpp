@@ -130,7 +130,9 @@ namespace m3d
 
     int AnimatedModelsServer::GenerateImpostorsIfNeeded()
     {
-        throw std::logic_error("Not implemented");
+        //TODO: implement AnimatedModelsServer::GenerateImpostorsIfNeeded
+        //throw std::logic_error("Not implemented");
+        return 0;
     }
 
     int AnimatedModelsServer::GetItemProperty(int, int, void*)

@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <windows.h>
 #include <scene/servers/dataserver.h>
 
 namespace m3d
@@ -19,19 +20,25 @@ namespace m3d
         }
         if (viaMap)
         {
-            throw std::logic_error("Not implemented");
+            CStr name = id;
+            if (!name.empty())
+            {
+                ::LCMapStringA(0x400u, 0x100u, name.c_str(), name.length() + 1, name.m_charPtr, name.length() + 1);
+            }
+            auto const it = m_shRemap.find(name);
+            if (it != m_shRemap.cend())
+            {
+                return it->second;
+            }
+            return -1;
         }
-        else
-        {
-            
-	        for (int i = 0; i<m_models.size(); ++i)
-	        {
-		        if (!CStr::my_stricmp(id, m_models[i].m_name.c_str()))
-		        {
-                    return i;
-		        }
-	        }
-        }
+	    for (int i = 0; i<m_models.size(); ++i)
+	    {
+		    if (!CStr::my_stricmp(id, m_models[i].m_name.c_str()))
+		    {
+                return i;
+		    }
+	    }
         return -1;
     }
 

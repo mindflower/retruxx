@@ -560,9 +560,9 @@ int TruxxUiManager::Update()
     throw std::logic_error("Not implemented");
 }
 
-int TruxxUiManager::LaunchEvent(int, GuiEventType, void*)
+int TruxxUiManager::LaunchEvent(int eventId, GuiEventType type, void* data)
 {
-    throw std::logic_error("Not implemented");
+    return GUI_ProcessEvent(type, eventId, data, nullptr);
 }
 
 SavesManager* TruxxUiManager::GetSavesManager() const
@@ -651,7 +651,35 @@ void TruxxUiManager::OnGameModeChanged(void*)
 
 void TruxxUiManager::OnBeforeStartLevel()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check and refactor this
+    bool bOldFirstLevelResourcesLoaded = m_bFirstLevelResourcesLoaded;
+    if (!m_bFirstLevelResourcesLoaded && !GUI_IsCurrentLevelMainMenuLevel())
+    {
+        throw std::logic_error("Not implemented");
+    }
+    auto res = 1;
+    if (GUI_IsCurrentLevelMainMenuLevel())
+    {
+        goto LABEL_18;
+    }
+    if (!m_bFirstLevelResourcesLoaded)
+    {
+        res = GUI_LoadResources(ResourceInfo::LOADTYPE_AT_FIRST_LEVEL_START) & 1;
+        m_bFirstLevelResourcesLoaded = true;
+    }
+    if ((GUI_LoadResources(ResourceInfo::LOADTYPE_AT_LEVEL_START) & res) != 0)
+    {
+    LABEL_18:
+        M3D_LOG_INFO("Interface: is loaded successfully");
+    }
+    else
+    {
+        M3D_LOG_INFO("Interface: is loaded with errors");
+    }
+    if (!bOldFirstLevelResourcesLoaded && m_bFirstLevelResourcesLoaded)
+    {
+        GUI_RegisterScriptGlobals();
+    }
 }
 
 void TruxxUiManager::GUI_EndModalDlg()
@@ -1062,9 +1090,26 @@ bool TruxxUiManager::GUI_NeedUpdateWndOnEvent(ref_ptr<m3d::ui::Wnd>, int, void*)
     throw std::logic_error("Not implemented");
 }
 
-int TruxxUiManager::GUI_HandleEvent(int, m3d::ui::Wnd*, void*)
+int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void* data)
 {
-    throw std::logic_error("Not implemented");
+    if (GameUiManager::GUI_HandleEvent(guiEventId, forceWnd, data))
+    {
+        return 1;
+    }
+    if (forceWnd && guiEventId != 16)
+    {
+        return 0;
+    }
+    switch (guiEventId)
+    {
+    case 84:
+    {
+        OnBeforeStartLevel();
+        return 0;
+    }
+    default:
+        throw std::logic_error("Not implemented");
+    }
 }
 
 void* TruxxUiManager::QueryIface(char const*)

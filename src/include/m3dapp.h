@@ -282,7 +282,7 @@ namespace m3d
 
         _cpinfoexA m_codePage;
 
-    protected:
+    //protected:
         bool m_enginePlayingVideo = false;
         DataServer* m_serverStaticModels;
         DataServer* m_serverAnimatedModels;

@@ -5,6 +5,9 @@
 #include <core/log.h>
 #include <core/ref_ptr.h>
 
+#include "game/m3dgame.h"
+#include "scene/servers/DataServer.h"
+
 namespace
 {
     const unsigned NUM_MUSIC_TYPES = 3;
@@ -29,7 +32,14 @@ namespace m3d
 
     void BlockMusicManager::Init()
     {
-        throw std::logic_error("Not implemented");
+        for (auto const& block : m_blocks)
+        {
+            auto item = M3D_APP->m_serverMusic->GetItemByName(block.front().c_str(), true);
+            if (item != -1)
+            {
+                M3D_APP->m_serverMusic->SetItemProperty(item, 9856, &BlockMusicManager::_MusicEndCallback);
+            }
+        }
     }
 
     void BlockMusicManager::InitOnce()

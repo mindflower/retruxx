@@ -9,6 +9,9 @@
 #include "m3dapp.h"
 #include "world.h"
 #include "core/log.h"
+#include "core/scoped_ptr.h"
+#include "file/fileserver.h"
+#include "file/filestream.h"
 #include "math/vector4.h"
 
 namespace m3d
@@ -244,6 +247,7 @@ namespace m3d
 
     int Landscape::Load()
     {
+        //TODO: implement Landscape::Load
         M3D_LOG_FLOW();
         m_mapSize = 16 * m_owner->m_level->land_size;
         auto const fileName = m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_beachsetsName);
@@ -295,7 +299,74 @@ namespace m3d
             M3D_LOG_INFO("Error:No Beachset.xml file");
         }
 
-        throw std::logic_error("Not implemented");
+        //delete[] m_colormap;
+        ////TODO: check size
+        //m_colormap = new unsigned[(m_mapSize + 1) * (m_mapSize + 1)];
+        //
+        //delete[] m_texSetsmap;
+        //m_texSetsmap = new std::set[m_owner->m_level->land_size * m_owner->m_level->land_size];
+        //
+        //
+        //if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        //    stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName).c_str(), fs::IStream::OPEN_READ))
+        //{
+        //    //TODO: check this!!!!
+        //    auto const streamSize = stream->GetSize();
+        //    auto* data = new unsigned[streamSize / sizeof(unsigned)];
+        //    stream->ReadBytes(data, streamSize);
+        //    for (int i = 0; i < m_mapSize; ++i)
+        //    {
+        //        for (int j = 0; j < m_mapSize; ++j)
+        //        {
+        //            m_colormap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
+        //        }
+        //    }
+        //    delete[] data;
+        //}
+        //else
+        //{
+        //    M3D_LOG_INFO("Cannot read colormap: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName) + "using default values");
+        //    for (int i = 0; i < (this->m_mapSize + 1) * (this->m_mapSize + 1); ++i)
+        //        this->m_colormap[i] = -8421505;
+        //}
+        //
+        //delete[] m_heightMap;
+        //m_heightMap = new float[(m_mapSize + 1) * (m_mapSize + 1)];
+        //
+        //delete[] m_cliffHeightMap;
+        //m_cliffHeightMap = new unsigned char[(m_mapSize + 1) * (m_mapSize + 1)];
+        //
+        //if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        //    stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName).c_str(), fs::IStream::OPEN_READ))
+        //{
+        //    auto const streamSize = stream->GetSize();
+        //    if (streamSize == 2 * this->m_mapSize * this->m_mapSize)
+        //    {
+        //        //TODO: check this
+        //        auto* data = new unsigned[streamSize / sizeof(float)];
+        //        stream->ReadBytes(data, streamSize);
+        //        for (int i = 0; i < m_mapSize; ++i)
+        //        {
+        //            for (int j = 0; j < m_mapSize; ++j)
+        //            {
+        //                m_heightMap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
+        //            }
+        //        }
+        //        delete[] data;
+        //    }
+        //    else
+        //    {
+        //        throw std::logic_error("Not implemented");
+        //    }
+        //}
+        //else
+        //{
+        //    M3D_LOG_INFO("Cannot read heightfield: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName));
+        //    return 0;
+        //}
+        //
+        //throw std::logic_error("Not implemented");
+        return 1;
     }
 
     void Landscape::RenderGrass(unsigned, GrassInstance**, int*, RenderGrassType)
@@ -535,7 +606,8 @@ namespace m3d
 
     void Landscape::PostServersLoad()
     {
-        throw std::logic_error("Not implemented");
+        CreateHelperStructures();
+        ConstructCollisionData();
     }
 
     void Landscape::RemoveGrassTile(int, int)

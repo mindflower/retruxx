@@ -673,8 +673,12 @@ int GameUiManager::GUI_AddWindow(ref_ptr<m3d::ui::Wnd>, int&, bool, bool)
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_HandleEvent(int, m3d::ui::Wnd*, void*)
+int GameUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void* data)
 {
+    if (guiEventId)
+    {
+        return 0;
+    }
     throw std::logic_error("Not implemented");
 }
 
@@ -747,7 +751,7 @@ ref_ptr<m3d::ui::Wnd> GameUiManager::GUI_GetWindow(int wndId) const
 
 bool GameUiManager::GUI_IsCurrentLevelMainMenuLevel() const
 {
-    throw std::logic_error("Not implemented");
+    return CStr(M3D_KERNEL->GetEngineCfg().m_mainMenuLevelName.GetS()) == M3D_KERNEL->GetEngineCfg().m_levFileName.GetS();
 }
 
 int GameUiManager::GUI_LoadIconsFromResourceInfo(IcoResourceInfo const* info)
