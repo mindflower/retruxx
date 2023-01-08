@@ -202,7 +202,8 @@ namespace ai
 
     void CServer::Load(StartupMode, m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, bool, ObjContainer::eSAVE_TYPES)
     {
-        throw std::logic_error("Not implemented");
+        //TODO: implement  CServer::Load
+        //throw std::logic_error("Not implemented");
     }
 
     bool CServer::GetPause() const

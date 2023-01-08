@@ -315,8 +315,20 @@ int GameUiManager::GUI_SetEventsForWindow(int wndId, std::vector<int> const& eve
     return 1;
 }
 
-int GameUiManager::GUI_UpdateWindowsOnEvent(int, m3d::ui::Wnd*, void*)
+int GameUiManager::GUI_UpdateWindowsOnEvent(int eventId, m3d::ui::Wnd* forceWnd, void* data)
 {
+    static int entries = 0;
+    if (entries++ == 0)
+    {
+        m_isEventMapValide = true;
+    }
+    bool valid = m_isEventMapValide;
+    auto const it = m_eventMap.find(eventId);
+    if (it == m_eventMap.cend())
+    {
+        --entries;
+        return 0;
+    }
     throw std::logic_error("Not implemented");
 }
 

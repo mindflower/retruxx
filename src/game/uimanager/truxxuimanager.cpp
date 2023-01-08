@@ -1107,6 +1107,12 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         OnBeforeStartLevel();
         return 0;
     }
+    case 85:
+    {
+        m_levelInfoManager->GameDataUpdate(data, guiEventId);
+        m_questInfoManager->GameDataUpdate(data, guiEventId);
+        OnStartLevel(data);
+    }
     default:
         throw std::logic_error("Not implemented");
     }
