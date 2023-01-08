@@ -61,6 +61,11 @@ namespace m3d
     extern CClient* pClient;
 }
 
+namespace ai
+{
+    extern ObjContainer* theObjects;
+}
+
 CStr const& LevelInfo::GetName() const
 {
     return m_name;
@@ -196,7 +201,16 @@ CStr LevelInfo::GetRandomMusicBlock() const
 
 int LevelInfo::LoadBigImage()
 {
-	throw std::logic_error("Not implemented");
+    if (m_imageFile0.empty() || m_image0.IsValid())
+    {
+        return 1;
+    }
+    m_image0 = M3D_APP->m_renderer->AddTexture(m_imageFile0, 4);
+    if (!m_image0.IsValid())
+    {
+        return 0;
+    }
+    return 1;
 }
 
 void LevelInfoManager::ClearBeforeNewLevel()
@@ -207,9 +221,13 @@ void LevelInfoManager::ClearBeforeNewLevel()
     m_visitedLevels.clear();
 }
 
-void LevelInfoManager::GetVisitedLevelNames(std::vector<CStr>&) const
+void LevelInfoManager::GetVisitedLevelNames(std::vector<CStr>& visitedLevelNames) const
 {
-    throw std::logic_error("Not implemented");
+    visitedLevelNames.clear();
+    for (auto const& level : m_visitedLevels)
+    {
+        visitedLevelNames.push_back(level);
+    }
 }
 
 void LevelInfoManager::ClearLevelObjects()
@@ -249,7 +267,8 @@ void LevelInfoManager::OnTownRuined(void*)
 
 void LevelInfoManager::UpdateKnownLevels()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement LevelInfoManager::UpdateKnownLevels
+    //throw std::logic_error("Not implemented");
 }
 
 m3d::Object* LevelInfoManager::Clone()
@@ -259,12 +278,30 @@ m3d::Object* LevelInfoManager::Clone()
 
 void LevelInfoManager::UpdateLevelImages()
 {
-    throw std::logic_error("Not implemented");
+    std::vector<CStr> visitedLevelNames;
+    GetVisitedLevelNames(visitedLevelNames);
+    //TODO: check this!!
+    for (auto const& level : m_levels)
+    {
+        if (level.second)
+        {
+            auto const it = std::find(visitedLevelNames.cbegin(), visitedLevelNames.cend(), level.second->GetName());
+            if (it != visitedLevelNames.cend())
+            {
+                level.second->LoadBigImage();
+            }
+        }
+    }
 }
 
 void LevelInfoManager::UpdateObjectInfoForCurrentLevel()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement LevelInfoManager::UpdateObjectInfoForCurrentLevel
+    //for (auto it = ai::theObjects->begin(); it != ai::theObjects->end(); ++it)
+    //{
+    //    bool tasd = true;
+    //}
+    //throw std::logic_error("Not implemented");
 }
 
 void LevelInfoManager::UpdateObjectPositions()
@@ -391,7 +428,7 @@ int LevelInfoManager::Init()
 
 int LevelInfoManager::GetVisibilityRadius() const
 {
-    throw std::logic_error("Not implemented");
+    return m_cvVisibilityRadius.GetI();
 }
 
 void LevelInfoManager::OnNewFrame()

@@ -15,6 +15,7 @@ class CVector;
 
 class QuestInfo
 {
+    friend class QuestInfoManager;
 public:
     class AuxLevelInfo
     {

@@ -258,7 +258,7 @@ CStr TruxxUiManager::GetPathToDialogsFileGlobal() const
 
 QuestInfoManager* TruxxUiManager::GetQuestInfoManager() const
 {
-    throw std::logic_error("Not implemented");
+    return m_questInfoManager;
 }
 
 ref_ptr<m3d::ui::Wnd> TruxxUiManager::GetWindow(int wndId) const
@@ -1055,9 +1055,17 @@ int TruxxUiManager::GUI_WriteToXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn:
     throw std::logic_error("Not implemented");
 }
 
-void TruxxUiManager::OnStartLevel(void*)
+void TruxxUiManager::OnStartLevel(void* data)
 {
-    throw std::logic_error("Not implemented");
+    m_msgManager->Init(false);
+    if (*static_cast<int*>(data) != 2)
+    {
+        GUI_Init(false);
+        if (M3D_APP->GetCurGameMode() != 1)
+        {
+            Show(true, true);
+        }
+    }
 }
 
 void TruxxUiManager::OnEndLevel(bool)
@@ -1112,6 +1120,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         m_levelInfoManager->GameDataUpdate(data, guiEventId);
         m_questInfoManager->GameDataUpdate(data, guiEventId);
         OnStartLevel(data);
+        return 0;
     }
     default:
         throw std::logic_error("Not implemented");

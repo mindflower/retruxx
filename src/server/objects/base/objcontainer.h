@@ -87,7 +87,7 @@ namespace ai
             Obj const* operator->() const;
             bool operator==(const_iterator const&) const;
             bool operator!=(const_iterator const&) const;
-            class const_iterator& operator++();
+            const_iterator& operator++();
 
         private:
             int m_nodeId;

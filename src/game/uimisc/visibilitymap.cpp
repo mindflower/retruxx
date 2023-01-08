@@ -99,7 +99,7 @@ int VisibilityMap::CreateEmptyBg()
 		return 0;
 	}
 	auto levelInfoManager = M3D_APP->m_pInterfaceManager->GetLevelInfoManager();
-	auto const size = levelInfoManager->GetLevelSize(m_levelName) * 0.0625;
+	int const size = levelInfoManager->GetLevelSize(m_levelName) * 0.0625;
 	if (size == 0.0)
 	{
 		return 0;
@@ -210,7 +210,23 @@ void VisibilityMap::Clear()
 
 int VisibilityMap::CreateCircle()
 {
-	throw std::logic_error("Not implemented");
+	delete[] m_circleBits;
+	int const size = 2 * M3D_APP->m_pInterfaceManager->GetLevelInfoManager()->GetVisibilityRadius() * 0.0625;
+	m_circleSize = {size, size};
+	m_circleBits = new unsigned char[size * size];
+	auto data = new unsigned[4 * size * size];
+	//TODO: check this
+	if (M3D_APP->m_renderer->DownloadTexImageRgba8888(data, m_circlePatternTex))
+	{
+	    for (int i = 0; i < size * size; ++i)
+	    {
+			m_circleBits[i] = data[i];
+	    }
+		delete[] data;
+		return 1;
+	}
+	delete[] data;
+	return 0;
 }
 
 bool VisibilityMap::IsValid() const

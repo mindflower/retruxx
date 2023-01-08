@@ -16,6 +16,7 @@ class VisibilityMap;
 
 class LevelInfo
 {
+    friend class LevelInfoManager;
 public:
     CStr const& GetName() const;
     CStr const& GetFullName() const;

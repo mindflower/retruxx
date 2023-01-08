@@ -458,7 +458,7 @@ int CMiracle3d::OnObtainingFocus()
 
 int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServers, bool bQuiet, bool bContinuousMap, m3d::cmn::XmlFile* dynamicSceneXmlFile, m3d::cmn::XmlNode const* dynamicSceneXmlNode, ai::ObjContainer::eSAVE_TYPES saveType)
 {
-    //TODO: check continiousMap and LoadServers!!!!
+    //TODO: check bQuiet, continiousMap and LoadServers!!!!
     if (!m_gameInited)
     {
         return 0;
@@ -477,7 +477,7 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
     }
     m_blockMusicManager->Init();
     auto app = dynamic_cast<CMiracle3d*>(g_pApp);
-    if (!bContinuousMap)
+    if (LoadServers)
     {
         app->m_serverAnimatedModels->GenerateImpostorsIfNeeded();
     }
@@ -485,7 +485,7 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
     auto levelFullPath = m3d::pClient->GetWorld().m_level->GetFullPathNameA({});
     m_cinematic->SetFolder(levelFullPath.c_str());
     app->m_pInterfaceManager->LaunchEvent(84, GUI_EVENT_CUSTOM, nullptr);
-    if (LoadServers)
+    if (bContinuousMap)
     {
         auto xmlName = help::GetMapNameFromFileName(name);
         auto tempMapsPath = app->m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps();
@@ -505,11 +505,13 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
         ai::pServer->Load(ai::LOCAL_GAME, dynamicSceneXmlFile, dynamicSceneXmlNode, false, saveType);
     }
     M3D_LOG_INFO("Load Server end");
-    if (!LoadServers)
+    if (!bContinuousMap)
     {
         app->m_pInterfaceManager->GetQuestInfoManager()->Init();
     }
-    app->m_pInterfaceManager->LaunchEvent(85, GUI_EVENT_CUSTOM, nullptr);
+    //TODO: check this!!!
+    int data = M3D_APP->GetCurGameMode();
+    app->m_pInterfaceManager->LaunchEvent(85, GUI_EVENT_CUSTOM, &data);
     if (auto vehicle = ai::gDynamicScene->GetVehicleControlledByPlayer())
     {
         m_curCamera.m_worldOrigin = vehicle->GetPosition();
