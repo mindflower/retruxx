@@ -2,6 +2,8 @@
 #include <core/ini.h>
 #include <ui/button.h>
 
+#include "ui/frame.h"
+
 namespace m3d
 {
     namespace ui
@@ -136,7 +138,11 @@ namespace m3d
 
         float ButtonWnd::GetFrameWidth() const
         {
-            throw std::logic_error("Not implemented");
+            if (m_isImaged)
+            {
+                return 0.0;
+            }
+            return Wnd::GetFrameWidth();
         }
 
         int ButtonWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -178,14 +184,90 @@ namespace m3d
             M3D_APP->m_renderer->ReleaseTexture(m_imageDisabled);
         }
 
-        void ButtonWnd::OnNcPaint(DrawInfo const&, unsigned)
+        void ButtonWnd::OnNcPaint(DrawInfo const& di, unsigned clr)
         {
-            throw std::logic_error("Not implemented");
+            if (m_isImaged)
+            {
+                rend::TexHandle tex;
+                if ((this->m_style & 2) != 0)
+                {
+                    tex = this->m_imageDisabled;
+                }
+                else if ((this->m_mouseDown & 1) != 0)
+                {
+                    tex = this->m_imageMouseDown;
+                }
+                else if (this->m_isInside)
+                {
+                    tex = this->m_imageMouseIn;
+                }
+                else
+                {
+                    tex = this->m_image;
+                }
+                auto rect = this->GetBounds();
+                rect.x0 = 0.0;
+                rect.y0 = 0.0;
+                GetGfxServer()->AddImagedRect(di, rect, clr, tex);
+            }
+            else
+            {
+                throw std::logic_error("Not implemented");
+            }
         }
 
-        int ButtonWnd::OnPaint(DrawInfo const&)
+        int ButtonWnd::OnPaint(DrawInfo const& di)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check and refactor this
+            if ((m_style & 0x40) == 0)
+            {
+                auto clr = m_curClr;
+                if ((clr & 2) == 0 && (clr & 0x80000) == 0)
+                {
+                    DrawNonClient(di, clr);
+                    DrawWndText(di);
+                    return 1;
+                }
+                if (m_isImaged)
+                {
+                    if (m_imageDisabled.IsValid())
+                    {
+                        if (m_image == m_imageDisabled)
+                        {
+                            clr = 3;
+                        }
+                        DrawNonClient(di, clr);
+                        DrawWndText(di);
+                        return 1;
+                    }
+                }
+                else
+                {
+                    auto pane = GetGfxServer()->GetPane(m_paneName);
+                    if (pane)
+                    {
+                        if (pane->m_frame[3])
+                        {
+                            DrawNonClient(di, clr);
+                            DrawWndText(di);
+                            return 1;
+                        }
+                        if (pane->m_bg[3] == 0)
+                        {
+                            clr = 3;
+                        }
+                        DrawNonClient(di, clr);
+                        DrawWndText(di);
+                        return 1;
+                    }
+                }
+                clr = 3;
+                DrawNonClient(di, clr);
+                DrawWndText(di);
+                return 1;
+            }
+            DrawWndText(di);
+            return 1;
         }
 
         int ButtonWnd::OnMouseButton0(unsigned, PointBase<float> const&)

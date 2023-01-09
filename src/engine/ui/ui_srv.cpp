@@ -518,6 +518,8 @@ namespace m3d
 
     void ui::GfxServer::AddFlatAxialPane0(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, int drawFlags, CStr const& paneName, PaneFlagBg bgFlags)
     {
+        //TODO: implement GfxServer::AddFlatAxialPane0
+        return;
         Pane* pane = nullptr;
         m_panes.get(paneName, pane);
         if (!pane)
@@ -526,11 +528,11 @@ namespace m3d
         }
         if (pane)
         {
-            m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
-            m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
-            m3d::Application::g_pApp->m_renderer->PushBlend(rend::BM_ALPHA);
-            m3d::Application::g_pApp->m_renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
-            m3d::Application::g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
+            M3D_APP->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+            M3D_APP->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+            M3D_APP->m_renderer->PushBlend(rend::BM_ALPHA);
+            M3D_APP->m_renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+            M3D_APP->m_renderer->PushZbState(rend::ZB_DISABLE);
             auto frame = pane->m_frame[bgFlags];
             auto cornerSize = 0;
             if (frame)
@@ -556,7 +558,6 @@ namespace m3d
             }
             if ((drawFlags & 1) != 0)
             {
-                throw std::logic_error("Not implemented");
                 rend::TexHandle texture;
                 if (pane->m_bg[bgFlags] && pane->m_bg[bgFlags]->m_texture.IsValid())
                 {
@@ -570,7 +571,13 @@ namespace m3d
                 {
                     int sx = 0;
                     int sy = 0;
-                    m3d::Application::g_pApp->m_renderer->GetDims(texture, sx, sy);
+                    //M3D_APP->m_renderer->GetDims(texture, sx, sy);
+                    //M3D_APP->m_renderer->AbsToRel(sx, sy);
+                    //
+                    //DrawInfo info{};
+                    //
+                    //M3D_APP->m_renderer->SetTexture(0, texture, -1.0);
+                    //AddFlatAxialQuad();
                 }
             }
 

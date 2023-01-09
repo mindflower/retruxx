@@ -42,7 +42,8 @@ m3d::Object* MainMenuUI::Clone()
 
 int MainMenuUI::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    GetStation()->CaptureFocus(this);
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 MainMenuUI::MainMenuUI()

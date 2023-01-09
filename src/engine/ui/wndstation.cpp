@@ -58,9 +58,24 @@ namespace m3d
             return RT_CLASS_LOCAL(Wnd);
         }
 
-        Wnd* WndStation::CaptureFocus(Wnd*)
+        Wnd* WndStation::CaptureFocus(Wnd* wnd)
         {
-            throw std::logic_error("Not implemented");
+            auto const oldCapture = m_wndKbdCapture;
+            if (oldCapture)
+            {
+                oldCapture->OnLoosingFocus();
+            }
+            if (wnd)
+            {
+                m_wndKbdCapture = wnd;
+                wnd->OnObtainingFocus();
+            }
+            else
+            {
+                m_wndKbdCapture = this;
+                OnObtainingFocus();
+            }
+            return oldCapture;
         }
 
         ModalWnd* WndStation::GetTopModal()
@@ -424,7 +439,7 @@ namespace m3d
 
         bool WndStation::IsAnimationEnabled() const
         {
-            throw std::logic_error("Not implemented");
+            return m_bAnimationEnabled;
         }
 
         CStr WndStation::InitializeStringUsingIds(CStr const& src)

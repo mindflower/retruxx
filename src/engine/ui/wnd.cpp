@@ -791,7 +791,9 @@ namespace m3d
 
         bool Wnd::IsAnimatingNow() const
         {
-            throw std::logic_error("Not implemented");
+            return IsChildOf(GetStation()) &&
+                m_currentAnimation.m_animationType != AnimationInfo::ANIMATIONTYPE_INVALID &&
+                m_currentAnimation.m_bEnabled;
         }
 
         int Wnd::GetPropertiesList(std::set<unsigned>&) const
@@ -873,7 +875,8 @@ namespace m3d
 
         int Wnd::OnObtainingFocus()
         {
-            throw std::logic_error("Not implemented");
+            m_gotFocus = true;
+            return 1;
         }
 
         int Wnd::OnLoosingFocus()
@@ -911,9 +914,9 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void Wnd::DrawNonClient(DrawInfo const&, unsigned)
+        void Wnd::DrawNonClient(DrawInfo const& di, unsigned clr)
         {
-            throw std::logic_error("Not implemented");
+            OnNcPaint(di, clr);
         }
 
         void Wnd::StopAnimationMoveSound()

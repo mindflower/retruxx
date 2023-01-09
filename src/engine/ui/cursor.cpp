@@ -46,9 +46,13 @@ namespace m3d
             return 0;
         }
 
-        bool Cursor::operator==(Cursor const&)
+        bool Cursor::operator==(Cursor const& c)
         {
-            throw std::logic_error("Not implemented");
+            return this->m_tex == c.m_tex
+                && this->m_spot.x == c.m_spot.x
+                && this->m_spot.y == c.m_spot.y
+                && this->m_sz.x == c.m_sz.x
+                && this->m_sz.y == c.m_sz.y;
         }
 
         Cursor& Cursor::operator=(Cursor const& c)

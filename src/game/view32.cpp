@@ -111,8 +111,9 @@ GameState CMiracle3d::CurGameMode::Get() const
 void CMiracle3d::CurGameMode::Set(GameState mode)
 {
     //TODO: check this
+    auto oldMode = m_mode;
     m_mode = mode;
-    g_pApp->ImmediateMessage(65683, mode, m_mode, 0, 0, {}, {});
+    g_pApp->ImmediateMessage(65683, mode, oldMode, 0, 0, {}, {});
 }
 
 void CMiracle3d::Player::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -246,7 +247,10 @@ int CMiracle3d::OnFinishIntroVideoPlaying()
 
 int CMiracle3d::GameDone()
 {
-    throw std::logic_error("Not implemented");
+    m_gameInited = false;
+    delete m3d::pClient;
+    M3D_KERNEL->GetEngineCfg().m_levFileName.Set("Empty", true);
+    return 1;
 }
 
 int CMiracle3d::OnFlyMouse(m3d::AuxImpulseInfo const&)
@@ -742,7 +746,7 @@ m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
         //TODO: check this!!!!1
         m_wndMouseCapture = this;
     }
-    if (m_wndMouseCapture || !m3d::g_Kernel->GetEngineCfg().m_r_dxcursor.GetB())
+    if (m_wndMouseCapture != this || !m3d::g_Kernel->GetEngineCfg().m_r_dxcursor.GetB())
     {
         EnableDXCursor(false);
     }
@@ -1103,6 +1107,7 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
         g_pApp->m_renderer->ClearViewport(m3d::rend::M3DCLEAR_CZ, 0xFF000000);
         return 1;
     }
+
     throw std::logic_error("Not implemented");
 }
 
@@ -1230,8 +1235,10 @@ int CMiracle3d::InitMedia()
 
 int CMiracle3d::FrameMove()
 {
+    //TODO: implement CMiracle3d::FrameMove
     if (!m_playingVideo || m_enginePlayingVideo)
     {
+        return 1;
         throw std::logic_error("Not implemented");
         auto* profiler = GetProfilerStack().GetProfiler(m_profiler_Client);
         profiler->StartCountdown();

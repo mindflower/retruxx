@@ -18,6 +18,7 @@
 #include "objects/dummyobject.h"
 #include "objects/particlesplinter.h"
 #include "objects/physicunit.h"
+#include "objects/player.h"
 #include "objects/staticautogun.h"
 #include "objects/town.h"
 #include "objects/vehiclesplinter.h"
@@ -39,6 +40,9 @@ namespace ai
 	dxSpace* gIntersectionSpace = nullptr;
 	dxSpace* gSpaceForAllPhysicParticles = nullptr;
 	dxWorld* gGlobalWorld = nullptr;
+
+
+	extern Player* thePlayer;
 
 	namespace
 	{
@@ -286,7 +290,11 @@ namespace ai
 
 	Vehicle* DynamicScene::GetVehicleControlledByPlayer() const
 	{
-		throw std::logic_error("Not implemented");
+		if (thePlayer)
+		{
+			return thePlayer->GetVehicle();
+		}
+		return nullptr;
 	}
 
 	CStr const& DynamicScene::GetRoadEffectName(unsigned, bool) const

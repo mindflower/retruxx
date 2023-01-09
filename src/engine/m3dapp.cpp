@@ -48,6 +48,8 @@
 #include <ui/textbox.h>
 #include <ui/uidialogs.h>
 
+#include "impulses/i_impulses.h"
+
 namespace
 {
     std::set<size_t>* codePagesStringsPtr;
@@ -517,12 +519,30 @@ namespace m3d
         bool param3 = false;
         long double time = 0.0;
 
-        if (m_input->GetLastKbdEvent(&key, &param2, &param3, &time, true))
+        if (m_input->GetLastKbdEvent(key, param2, param3, time, true))
         {
 	        do
 	        {
-                throw std::logic_error("Not implemented");
-            } while (m_input->GetLastKbdEvent(&key, &param2, &param3, &time, true));
+                Event ev;
+                ev.m_timeStamp = time;
+                ev.m_ushortEv[0] = key;
+                if (!key && param2 == 0x9C)
+                {
+                    throw std::logic_error("Not implemented");
+                }
+                ev.m_byteEv[3] = param2;
+                auto oldHead = m_eventsQueueHead;
+                auto head = m_eventsQueueHead + 1;
+                if (head >= 0x1388)
+                {
+                    m_eventsQueueHead = 0;
+                }
+                if (m_eventsQueueTail != head)
+                {
+                    m_eventsQueue[oldHead] = ev;
+                    m_eventsQueueHead = head;
+                }
+            } while (m_input->GetLastKbdEvent(key, param2, param3, time, true));
         }
         auto deltaX = 0;
         auto deltaY = 0;
@@ -657,11 +677,11 @@ namespace m3d
         {
             m3d::Event ev;
             ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime() * 0.001;
-            ev.m_ushortEv[2] = deltaX;
             ev.m_ushortEv[0] = m_mouseX;
             ev.m_ushortEv[1] = m_mouseY;
-            ev.m_eventType = 9;
+            ev.m_ushortEv[2] = deltaX;
             ev.m_ushortEv[3] = deltaY;
+            ev.m_eventType = 9;
 
             auto head = m_eventsQueueHead + 1;
             if (head >= 0x1388)
@@ -778,11 +798,11 @@ namespace m3d
         }
         if (!this->m_isAppActive || !this->m_bDXCursorEnabled)
             return 0;
-        curMousePos.x = lParam;
+        curMousePos.x = LOWORD(lParam);
         curMousePos.y = HIWORD(lParam);
         m_mouseInfo.SetUpForCurPos(curMousePos);
         if (this->m_bDXCursorEnabled && m3d::Application::g_pApp->m_renderer)
-            m3d::Application::g_pApp->m_renderer->MoveDXCursor(lParam, HIWORD(lParam));
+            m3d::Application::g_pApp->m_renderer->MoveDXCursor(LOWORD(lParam), HIWORD(lParam));
         return 0;
     }
 
@@ -1005,64 +1025,85 @@ namespace m3d
 
     int Application::HandleEvent(Event const& ev)
     {
-        //TODO: ...
+        //TODO: imlement Application::HandleEvent
         switch (ev.m_eventType)
         {
         case 1:
-	        {
-                PostMessageA(g_Kernel->GetEngineCfg().m_mainWnd, 0x10, 0, 0);
-                return 1;
-	        }
+	    {
+            ::PostMessageA(g_Kernel->GetEngineCfg().m_mainWnd, 0x10, 0, 0);
+            return 1;
+	    }
         case 2:
-	        {
+	    {
+            //TODO: check this
+            m_isAppActive = ev.m_intEv[0];
+            if (m_sound)
+            {
+                m_sound->PauseAllSounds(m_isAppActive);
+            }
+            if (m_renderer)
+            {
+                m_renderer->SetActiveState(m_isAppActive);
+            }
+            g_Kernel->GetTimer().SetActiveState(m_isAppActive);
+            if (m_isAppActive)
+            {
+	            if (g_Kernel->GetEngineCfg().m_clipCursorWithinRenderWnd.GetB())
+	            {
+                    CaptureAndClipSystemCursor(true);
+	            }
                 //TODO: check this
-                m_isAppActive = ev.m_intEv[0];
-                if (m_sound)
-                    m_sound->PauseAllSounds(m_isAppActive);
-                if (m_renderer)
-                    m_renderer->SetActiveState(m_isAppActive);
-                g_Kernel->GetTimer().SetActiveState(m_isAppActive);
-                if (m_isAppActive)
+                ShowSystemCursor(m_bDXCursorEnabled);
+                if (g_pApp->m_sound)
                 {
-	                if (g_Kernel->GetEngineCfg().m_clipCursorWithinRenderWnd.GetB())
-	                {
-                        CaptureAndClipSystemCursor(true);
-	                }
-                    //TODO: check this
-                    ShowSystemCursor(m_bDXCursorEnabled);
-                    if (g_pApp->m_sound)
-                    {
-                        g_pApp->m_sound->PauseAllSounds(false);
-                    }
+                    g_pApp->m_sound->PauseAllSounds(false);
                     return 1;
                 }
-                break;
-	        }
+            }
+            else
+            {
+                ReleaseCapture();
+                ClipCursor(nullptr);
+                while (ShowCursor(1) < 0);
+                g_pApp->m_sound->PauseAllSounds(true);
+            }
+            return 1;
+	    }
         case 3:
-	        {
-                //TODO: check this
-                SwitchDisplayModes(g_Kernel->GetEngineCfg().m_mainWnd, ev.m_intEv[0], ev.m_intEv[1], ev.m_intEv[2] != 0);
-                return 1;
-	        }
+	    {
+            //TODO: check this
+            SwitchDisplayModes(g_Kernel->GetEngineCfg().m_mainWnd, ev.m_intEv[0], ev.m_intEv[1], ev.m_intEv[2] != 0);
+            return 1;
+	    }
         case 4:
+        {
             throw std::logic_error("Not implemented");
+        }
         case 7:
             throw std::logic_error("Not implemented");
         case 8:
             throw std::logic_error("Not implemented");
         case 0xA:
-            throw std::logic_error("Not implemented");
         case 0xB:
-            throw std::logic_error("Not implemented");
         case 0xC:
-            throw std::logic_error("Not implemented");
+        {
+            if (!m_waitForAnykey)
+            {
+                break;
+            }
+            m_timeFromLevelLoaded = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+            M3D_KERNEL->GetTimer().SetActiveState(1);
+            m_waitForAnykey = false;
+            return 1;
+        }
         default:
         {
-            if (ev.m_eventType != 15)
-            {
-                return ProcessEvent(ev);
-            }
-            throw std::logic_error("Not implemented");
+            return 1;
+            //if (ev.m_eventType != 15)
+            //{
+            //    return ProcessEvent(ev);
+            //}
+            //throw std::logic_error("Not implemented");
         }
         }
         return 1;
@@ -1087,8 +1128,14 @@ namespace m3d
 
     int Application::OnLoosingFocus()
     {
-        //TODO: ...
-        throw std::logic_error("Not implemented");
+        if (m_pImpulses)
+        {
+            m_pImpulses->ResetAllImpulses(false);
+        }
+        m_gotFocus = false;
+        //TODO: check this
+        m_mouseDown = 0;
+        return 1;
     }
 
     int Application::InitImpulses()
@@ -1140,12 +1187,12 @@ namespace m3d
 
     PointBase<int> const& Application::MouseInfo::GetDeltaDuringGameFrame() const
     {
-        throw std::logic_error("Not implemented");
+        return m_deltaDuringGameFrame;
     }
 
     PointBase<int> const& Application::MouseInfo::GetLastPos() const
     {
-        throw std::logic_error("Not implemented");
+        return m_lastPos;
     }
 
     void Application::MouseInfo::SetUpForCurPos(PointBase<int> const& curPos)
@@ -1365,7 +1412,7 @@ namespace m3d
 
     int Application::AppActive() const
     {
-        throw std::logic_error("Not implemented");
+        return m_isAppActive;
     }
 
     rend::VertexXYZCT1* Application::RenderQuadXyzct1GetNextPtr()
