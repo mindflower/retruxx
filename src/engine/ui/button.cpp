@@ -158,7 +158,8 @@ namespace m3d
 
         int ButtonWnd::OnMouseOut()
         {
-            throw std::logic_error("Not implemented");
+            m_isInside = 0;
+            return Wnd::OnMouseOut();
         }
 
         int ButtonWnd::OnLoosingFocus()
@@ -168,7 +169,8 @@ namespace m3d
 
         int ButtonWnd::OnMouseIn()
         {
-            throw std::logic_error("Not implemented");
+            m_isInside = 1;
+            return Wnd::OnMouseIn();
         }
 
         ButtonWnd::ButtonWnd(ButtonWnd const&)

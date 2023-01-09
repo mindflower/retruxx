@@ -2,8 +2,10 @@
 #include <core/log.h>
 #include <ui/listbox.h>
 
+#include "m3dapp.h"
+
 RT_CLASS_EXPORTS_BEGIN(BindKeysWnd)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(BindKeysWnd);
 
 BindKeysWnd::KeySetButton::AuxInfo::AuxInfo()
@@ -302,8 +304,15 @@ BindKeysWnd::BindKeysWnd()
 {
 }
 
-int BindKeysWnd::GameDataUpdate(void*, int)
+int BindKeysWnd::GameDataUpdate(void* data, int dataType)
 {
+    if (dataType != 17)
+        return 1;
+    if (!IsChildOf(M3D_APP))
+    {
+        m_isDirty = 1;
+        return 1;
+    }
     throw std::logic_error("Not implemented");
 }
 

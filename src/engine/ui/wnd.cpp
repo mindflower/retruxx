@@ -209,7 +209,7 @@ namespace m3d
 
         bool Wnd::GetCursorShow() const
         {
-            throw std::logic_error("Not implemented");
+            return m_showCursor;
         }
 
         int Wnd::OnAfterRemoveFromWndStation()
@@ -846,7 +846,16 @@ namespace m3d
 
         void Wnd::RemoveTooltip()
         {
-            throw std::logic_error("Not implemented");
+            if (m_toolTipWnd && this == GetStation()->m_wndForTooltip)
+            {
+                if (GetStation()->IsDirectChild(m_toolTipWnd))
+                {
+                    GetStation()->RemoveChild(m_toolTipWnd);
+                }
+                delete m_toolTipWnd;
+                GetStation()->m_wndForTooltip = nullptr;
+            }
+            m_toolTipTimeOut = -1;
         }
 
         void Wnd::DrawWndText(DrawInfo const& di)
@@ -1213,8 +1222,20 @@ namespace m3d
 
         int Wnd::OnMouseIn()
         {
-            //TODO: ...
-            throw std::logic_error("Not implemented");
+            m_mouseOver = true;
+            if (!m_toolTipText.empty() && GetParent())
+            {
+                m_toolTipTimeOut = 500;
+            }
+            if ((m_style & 0x40000) == 0)
+                return 1;
+
+            auto wnd = dynamic_cast<Wnd*>(GetParent());
+            if (wnd)
+            {
+                GetStation()->AddNotifyForWnd(this, wnd, 7, {}, (m_style & 0x400000) != 0);
+            }
+            return 1;
         }
 
         int Wnd::OnActivate(bool on)

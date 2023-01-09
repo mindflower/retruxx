@@ -3,8 +3,10 @@
 #include <ui/button.h>
 #include <ui/listbox.h>
 
+#include "game/m3dgame.h"
+
 RT_CLASS_EXPORTS_BEGIN(ChangeProfileWnd)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ChangeProfileWnd);
 
 ChangeProfileWnd::AuxInfo::AuxInfo()
@@ -136,9 +138,28 @@ void ChangeProfileWnd::OnProfilesListChanged()
     throw std::logic_error("Not implemented");
 }
 
-int ChangeProfileWnd::GameDataUpdate(void*, int)
+int ChangeProfileWnd::GameDataUpdate(void* data, int dataType)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (dataType == 40)
+    {
+        if (IsChildOf(M3D_APP))
+        {
+            OnCurProfileChanged();
+        }
+    }
+    else if (dataType == 41)
+    {
+        if (IsChildOf(M3D_APP))
+        {
+            OnProfilesListChanged();
+            return 1;
+        }
+    }
+    return 1;
 }
 
 int ChangeProfileWnd::ChoseProfile()

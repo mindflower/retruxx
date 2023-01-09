@@ -136,6 +136,7 @@
 
 #include "game/m3dgame.h"
 #include "game/uimisc/objectsicons.h"
+#include "impulses/i_impulses.h"
 
 namespace
 {
@@ -626,7 +627,7 @@ int TruxxUiManager::RemoveWindow(int)
 bool TruxxUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd* w) const
 {
     using namespace m3d::ui;
-    if (w && w->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+    if (w && (w->IsKindOf(RT_CLASS_LOCAL(ModalWnd)) || w->IsKindOf(RT_CLASS_LOCAL(MainMenuUI))))
     {
         return true;
     }
@@ -1110,9 +1111,21 @@ int TruxxUiManager::DecRef()
     throw std::logic_error("Not implemented");
 }
 
-bool TruxxUiManager::GUI_NeedUpdateWndOnEvent(ref_ptr<m3d::ui::Wnd>, int, void*)
+bool TruxxUiManager::GUI_NeedUpdateWndOnEvent(ref_ptr<m3d::ui::Wnd> wnd, int eventId, void* data)
 {
-    throw std::logic_error("Not implemented");
+    if (!wnd || eventId == -1)
+    {
+        return false;
+    }
+    auto res = true;
+    if (eventId == 89)
+    {
+        if (!wnd->IsChildOf(M3D_APP))
+        {
+            res = false;
+        }
+    }
+    return res;
 }
 
 int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void* data)
@@ -1127,6 +1140,11 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     }
     switch (guiEventId)
     {
+    case 17:
+    case 41:
+    {
+        return 0;
+    }
     case 48:
     {
         OnGameModeChanged(data);
@@ -1432,9 +1450,23 @@ void TruxxUiManager::SetGameMenuMode(bool)
     throw std::logic_error("Not implemented");
 }
 
-int TruxxUiManager::GUI_BeginModalDlg(bool, bool)
+int TruxxUiManager::GUI_BeginModalDlg(bool forcePause, bool forceModal)
 {
-    throw std::logic_error("Not implemented");
+    if (!forceModal)
+    {
+        if (M3D_APP->HasChildModalRunning() || GetLevelInfoManager())
+            return 0;
+    }
+    auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(72);
+    if (!wnd || !wnd->IsChildOf(M3D_APP))
+    {
+        if (forcePause)
+            M3D_APP->Pause();
+    }
+    M3D_APP->m_pImpulses->ResetAllImpulses(false);
+    M3D_APP->m_gameSlideAuto.x = 0.0;
+    M3D_APP->m_gameSlideAuto.y = 0.0;
+    return 1;
 }
 
 int TruxxUiManager::GUI_RegisterScriptGlobals()

@@ -732,8 +732,10 @@ int CMiracle3d::ValidateCameraAngles()
 
 m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
 {
-    auto app = dynamic_cast<CMiracle3d*>(g_pApp);
-    if (wnd || app->m_pInterfaceManager->IsModalEqualWndRunning())
+    //TODO: check isModal!!!!!!!!!!!!
+    auto const oldCapture = m_wndMouseCapture;
+    auto const isModal = M3D_APP->m_pInterfaceManager->IsModalEqualWndRunning();
+    if (wnd || isModal)
     {
         m_wndMouseCapture = wnd;
     }
@@ -741,12 +743,12 @@ m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
     {
         float x = 512.0;
         float y = 384.0;
-        app->m_renderer->RelToAbs(x, y);
-        app->SetMouseXy(x, y);
+        M3D_APP->m_renderer->RelToAbs(x, y);
+        M3D_APP->SetMouseXy(x, y);
         //TODO: check this!!!!1
-        m_wndMouseCapture = this;
+        m_wndMouseCapture = nullptr;
     }
-    if (m_wndMouseCapture != this || !m3d::g_Kernel->GetEngineCfg().m_r_dxcursor.GetB())
+    if (!isModal && (m_wndMouseCapture == nullptr || !m3d::g_Kernel->GetEngineCfg().m_r_dxcursor.GetB()))
     {
         EnableDXCursor(false);
     }
@@ -754,7 +756,7 @@ m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
     {
         EnableDXCursor(true);
     }
-    return m_wndMouseCapture;
+    return oldCapture;
 }
 
 int CMiracle3d::CollideCamera(CVector&, float&, CVector const&, CVector const&)

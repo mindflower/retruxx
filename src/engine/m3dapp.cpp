@@ -1077,7 +1077,10 @@ namespace m3d
 	    }
         case 4:
         {
-            throw std::logic_error("Not implemented");
+            auto viewport = m_renderer->GetViewport();
+            M3D_KERNEL->GetEngineCfg().m_console->CheckResize(viewport.m_width, viewport.m_height);
+            m_appNeedToRedraw = true;
+            break;
         }
         case 7:
             throw std::logic_error("Not implemented");
@@ -1098,14 +1101,49 @@ namespace m3d
         }
         default:
         {
+            break;
+        }
+        }
+        if ((ev.m_eventType == 7 || ev.m_eventType == 8) && m_focusKbdEntity != nullptr)
+        {
+            return m_focusKbdEntity->HandleEvent(ev) != 0;
+        }
+        //TODO: check this
+        if (ev.m_eventType != 15)
+        {
+            if (M3D_KERNEL->GetEngineCfg().m_console == m_focusKbdEntity)
+            {
+                return M3D_KERNEL->GetEngineCfg().m_console->HandleEvent(ev) != 0;
+            }
+            return ProcessEvent(ev);
+        }
+        if (M3D_KERNEL->GetEngineCfg().m_console->isActive())
+        {
+            if (M3D_APP)
+            {
+                SetKeyboardFocus(M3D_APP);
+                return 1;
+            }
+        }
+        else
+        {
+            if (!m_isConsoleAllowed)
+            {
+                return 1;
+            }
+            if (M3D_KERNEL->GetEngineCfg().m_console)
+            {
+                SetKeyboardFocus(M3D_KERNEL->GetEngineCfg().m_console);
+                return 1;
+            }
+        }
+        static bool bCtrlShiftActive = false;
+        if (bCtrlShiftActive)
+        {
             return 1;
-            //if (ev.m_eventType != 15)
-            //{
-            //    return ProcessEvent(ev);
-            //}
-            //throw std::logic_error("Not implemented");
         }
-        }
+        bCtrlShiftActive = true;
+        ChangeLanguage();
         return 1;
     }
 
