@@ -281,9 +281,31 @@ namespace m3d
             return res;
         }
 
-        int WndStation::DoModal(ModalWnd*)
+        int WndStation::DoModal(ModalWnd* wnd)
         {
-            throw std::logic_error("Not implemented");
+            m_wndModalStack.push_back(wnd);
+            CaptureMouse(nullptr);
+            wnd->m_modalAttachedToStation = !wnd->GetParent() || this == wnd->GetParent() && wnd->m_bSuspendedUnlink;
+            if (wnd->m_modalAttachedToStation)
+            {
+                AddChild(wnd);
+            }
+            wnd->OnInitModal();
+            Activate(wnd);
+            M3D_APP->StartExclusiveMsgLoop();
+            if (m_wndModalStack.empty())
+            {
+                return m_wndModalRetVal;
+            }
+            for (auto const& modal : m_wndModalStack)
+            {
+                if (modal == wnd)
+                {
+                    EndModal(wnd, 1);
+                    break;
+                }
+            }
+            return m_wndModalRetVal;
         }
 
         int WndStation::PulseKeyForWindow(Wnd*, unsigned short, unsigned char)
@@ -306,9 +328,42 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int WndStation::Activate(Wnd*)
+        int WndStation::Activate(Wnd* wnd)
         {
-            throw std::logic_error("Not implemented");
+            auto wndToActive = wnd;
+            if (!wndToActive)
+            {
+                wndToActive = this;
+            }
+            if (wnd == m_wndActive)
+            {
+                return 0;
+            }
+            m_wndActive->OnActivate(false);
+            if ((m_wndActive->GetStyle() & 0x1000) != 0)
+            {
+                if (m_wndKbdCapture)
+                {
+                    m_wndKbdCapture->OnLoosingFocus();
+                }
+                m_wndKbdCapture = this;
+                OnObtainingFocus();
+            }
+            m_wndActive = wndToActive;
+            m_wndActive->OnActivate(true);
+            if ((m_wndActive->GetStyle() & 0x1000) != 0)
+            {
+                CaptureFocus(m_wndActive);
+            }
+            for (Object* obj = wndToActive; obj; obj = obj->GetParent())
+            {
+                auto parent = obj->GetParent();
+                if (parent)
+                {
+                    parent->MoveChildToFirstPosition(obj);
+                }
+            }
+            return 1;
         }
 
         int WndStation::OnAddWnd(Wnd*, Wnd*)
@@ -473,7 +528,7 @@ namespace m3d
             case 0x28:
                 v7 = reinterpret_cast<Wnd*>(ev.m_void[0]);
                 eventa = reinterpret_cast<Wnd*>(ev.m_void[1]);
-                if (m3d::ui::WndStation::IsWndAlive(v7, -1) && m3d::ui::WndStation::IsWndAlive(eventa, -1))
+                if (IsWndAlive(v7, -1) && IsWndAlive(eventa, -1))
                 {
                     eventa->OnWndNotify( v7, v7->m_id, ev.m_uintEv[2], data);
                     v3 = 1;

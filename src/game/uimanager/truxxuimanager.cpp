@@ -1145,6 +1145,11 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     {
         return 0;
     }
+    case 40:
+    {
+        m_savesManager->GameDataUpdate(data, guiEventId);
+        return 0;
+    }
     case 48:
     {
         OnGameModeChanged(data);

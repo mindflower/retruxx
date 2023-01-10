@@ -61,7 +61,7 @@ void WeaponGroupManager::KeepFire()
     throw std::logic_error("Not implemented");
 }
 
-int WeaponGroupManager::GameDataUpdate(void*, int)
+int WeaponGroupManager::GameDataUpdate(void* data, int dataType)
 {
     throw std::logic_error("Not implemented");
 }

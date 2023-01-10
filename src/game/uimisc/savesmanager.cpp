@@ -178,8 +178,16 @@ int SavesManager::LastLoad()
     throw std::logic_error("Not implemented");
 }
 
-int SavesManager::GameDataUpdate(void*, int)
+int SavesManager::GameDataUpdate(void* data, int dataType)
 {
+    switch (dataType)
+    {
+    case 40:
+    {
+        LoadInfos();
+        return 1;
+    }
+    }
     throw std::logic_error("Not implemented");
 }
 
@@ -205,7 +213,9 @@ void SavesManager::Clear()
 
 int SavesManager::LoadInfos()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement SavesManager::LoadInfos
+    return 1;
+    //throw std::logic_error("Not implemented");
 }
 
 SavesManager::SavesManager()

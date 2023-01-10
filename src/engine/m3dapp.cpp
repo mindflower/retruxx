@@ -700,15 +700,23 @@ namespace m3d
 
     void Application::ProcessAllEvents()
     {
-        while (!m_breakLoop && m_eventsQueueTail != m_eventsQueueHead)
+        do
         {
-            auto const ev = m_eventsQueue[m_eventsQueueTail++];
-            if (m_eventsQueueTail >= sizeof(m_eventsQueue) / sizeof(Event))
+            auto tail = m_eventsQueueTail;
+            if (tail == m_eventsQueueHead)
             {
-                m_eventsQueueTail = 0;
+                break;
             }
+            auto const ev = m_eventsQueue[tail];
+            auto newTail = m_eventsQueueTail + 1;
+            if (newTail >= 0x1388)
+            {
+                newTail = 0;
+            }
+            m_eventsQueueTail = newTail;
             HandleEvent(ev);
-        }
+            
+        } while (!m_breakLoop);
     }
 
     int Application::CheckAndLogPlatform()
@@ -1495,7 +1503,10 @@ namespace m3d
 
     int Application::StartExclusiveMsgLoop()
     {
-        throw std::logic_error("Not implemented");
+        m_breakLoop = false;
+        auto res = run();
+        m_breakLoop = false;
+        return res;
     }
 
     DataServer& Application::GetSpritesServer()
@@ -2219,15 +2230,16 @@ namespace m3d
         ev.m_strEv = param4;
         ev.m_aiParamEv = param5;
 
-        auto idx = m_eventsQueueHead + 1;
-        if (idx >=5000)
+        auto head = m_eventsQueueHead;
+        auto newHead = head + 1;
+        if (newHead >=5000)
         {
-            idx = 0;
+            newHead = 0;
         }
-        if (idx != m_eventsQueueTail)
+        if (newHead != m_eventsQueueTail)
         {
-            m_eventsQueue[idx] = ev;
-            m_eventsQueueHead = idx;
+            m_eventsQueue[head] = ev;
+            m_eventsQueueHead = newHead;
         }   
     }
 

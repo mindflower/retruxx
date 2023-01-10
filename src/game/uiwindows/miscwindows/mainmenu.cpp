@@ -1,9 +1,11 @@
 #include "mainmenu.h"
-#include <m3dapp.h>
+#include <game/m3dgame.h>
 #include <core/log.h>
 
+#include "config.h"
+
 RT_CLASS_EXPORTS_BEGIN(MainMenuUI)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MainMenuUI);
 
 MainMenuUI::AuxInfo::AuxInfo()
@@ -114,17 +116,67 @@ void MainMenuUI::QuitToWindows()
     throw std::logic_error("Not implemented");
 }
 
-int MainMenuUI::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
+int MainMenuUI::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_style & 0x100000) != 0)
+        ReflectChildNotifyToParent(from, id, msg, data);
+    if (msg != 1)
+        return 0;
+    switch(id)
+    {
+    case 0x92824u:
+    {
+        QuitToWindows();
+        return 1;
+    }
+    case 0x92825u:
+    {
+        OnNewGame();
+        return 1;
+    }
+    case 0x92826u:
+    {
+        M3D_APP->EnqueueMessage(65645, 0, 0, 0, 0, {}, {});
+        return 1;
+    }
+    case 0x92827u:
+    {
+        M3D_APP->m_pInterfaceManager->ShowWindow(148, true, true, true, false, nullptr);
+        return 1;
+    }
+    case 0x92828u:
+    {
+        OnStartVideoPlaying();
+        M3D_APP->StartPlayingVideo(M3D_KERNEL->GetEngineCfg().m_intro.GetS(), &CMiracle3d::OnFinishVideoPlaying);
+        return 1;
+    }
+    case 0x92829u:
+    {
+        M3D_APP->m_pInterfaceManager->ShowWindow(165, true, true, true, false, nullptr);
+        return 1;
+    }
+    case 0x9282Au:
+    {
+        M3D_APP->m_pInterfaceManager->ShowWindow(111, true, true, true, false, nullptr);
+        return 1;
+    }
+    default:
+        break;
+    }
+    return 0;
 }
 
 void MainMenuUI::OnCurProfileChanged()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement MainMenuUI::OnCurProfileChanged
+    //throw std::logic_error("Not implemented");
 }
 
-int MainMenuUI::GameDataUpdate(void*, int)
+int MainMenuUI::GameDataUpdate(void* data, int dataType)
 {
-    throw std::logic_error("Not implemented");
+    if ((this->m_gameDataFlags & 1) == 0)
+        return 0;
+    if (dataType == 40)
+        OnCurProfileChanged();
+    return 1;
 }

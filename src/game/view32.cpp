@@ -334,7 +334,8 @@ m3d::Object* CMiracle3d::CreateObject()
 
 void CMiracle3d::OnChangeProfile()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement CMiracle3d::OnChangeProfile
+    //throw std::logic_error("Not implemented");
 }
 
 void CMiracle3d::CleanMainMenuLevel()

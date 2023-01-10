@@ -518,8 +518,7 @@ namespace m3d
 
     void ui::GfxServer::AddFlatAxialPane0(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, int drawFlags, CStr const& paneName, PaneFlagBg bgFlags)
     {
-        //TODO: implement GfxServer::AddFlatAxialPane0
-        return;
+        //TODO: check and refactor all this shit!!!
         Pane* pane = nullptr;
         m_panes.get(paneName, pane);
         if (!pane)
@@ -559,40 +558,228 @@ namespace m3d
             if ((drawFlags & 1) != 0)
             {
                 rend::TexHandle texture;
+                auto flag = bgFlags;
                 if (pane->m_bg[bgFlags] && pane->m_bg[bgFlags]->m_texture.IsValid())
                 {
                     texture = pane->m_bg[bgFlags]->m_texture;
                 }
-                if (!texture.IsValid() && pane->m_bg[0])
+                else
                 {
-                    texture = pane->m_bg[0]->m_texture;
+                    flag = PANE_FLAG_BG_OUT;
+                }
+                if (!texture.IsValid() && pane->m_bg[PANE_FLAG_BG_OUT])
+                {
+                    texture = pane->m_bg[PANE_FLAG_BG_OUT]->m_texture;
                 }
                 if (texture.IsValid())
                 {
+                    //TODO: check this!!!!!!!!!
                     int sx = 0;
                     int sy = 0;
-                    //M3D_APP->m_renderer->GetDims(texture, sx, sy);
-                    //M3D_APP->m_renderer->AbsToRel(sx, sy);
-                    //
-                    //DrawInfo info{};
-                    //
-                    //M3D_APP->m_renderer->SetTexture(0, texture, -1.0);
-                    //AddFlatAxialQuad();
+                    M3D_APP->m_renderer->GetDims(texture, sx, sy);
+                    float fsx = sx;
+                    float fsy = sy;
+                    M3D_APP->m_renderer->AbsToRel(fsx, fsy);
+
+                    auto tu1 = 1.0;
+                    auto tv1 = 1.0;
+                    if (pane->m_bg[flag]->m_repeatU)
+                    {
+                        tu1 = rect.width / fsx;
+                    }
+                    if (pane->m_bg[flag]->m_repeatV)
+                    {
+                        tv1 = rect.height / fsy;
+                    }
+                    auto bgRect = rect;
+                    if (pane->m_bInnerBg && (drawFlags & 6) != 0)
+                    {
+                        auto barTexWidth = 0.0;
+                        if (pane->m_frame[flag])
+                        {
+                            barTexWidth = pane->m_frame[flag]->m_barTexWidth;
+                        }
+                        bgRect.x0 = rect.x0 - (0.0 - barTexWidth);
+                        bgRect.y0 = rect.y0 - (0.0 - barTexWidth);
+                        bgRect.width = ((0.0 - barTexWidth) * 2.0) + rect.width;
+                        bgRect.height = ((0.0 - barTexWidth) * 2.0) + rect.height;
+                    }
+                    M3D_APP->m_renderer->SetTexture(0, texture, -1.0);
+                    AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, tu1, tv1);
                 }
             }
 
-            if (pane->m_frame[bgFlags] || pane->m_frame[0])
+            if (pane->m_frame[bgFlags] || pane->m_frame[PANE_FLAG_BG_OUT])
             {
+                auto flag = bgFlags;
+                if (!pane->m_frame[bgFlags])
+                {
+                    flag = PANE_FLAG_BG_OUT;
+                }
                 if ((drawFlags & 2) != 0)
                 {
-                    throw std::logic_error("Not implemented");
+                    if (pane->m_frame[flag]->m_textures[0].IsValid())
+                    {
+                        auto bgRect = rect;
+                        bgRect.x0 = rect.x0;
+                        bgRect.width = (bgRect.x0 + pane->m_frame[flag]->m_barTexWidth) - bgRect.x0;
+                        bgRect.y0 = rect.y0 + cornerSize;
+                        bgRect.height = (rect.y0 + rect.height - cornerSize) - bgRect.y0;
+
+                        auto tv1 = rect.height;
+                        auto scale = rect.height;
+                        if (pane->m_frame[flag]->m_barRepeat)
+                        {
+                            throw std::logic_error("Not implemented");
+                            int sx = 0;
+                            int sy = 0;
+                            M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
+                            float fsx = sx;
+                            float fsy = sy;
+                            M3D_APP->m_renderer->AbsToRel(fsx, fsy);
+                            scale = fsy;
+                        }
+                        M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[0], -1.0);
+                        AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
+
+
+                        bgRect.x0 = rect.x0 + rect.width - cornerSize;
+                        bgRect.height = (rect.y0 + rect.height - cornerSize) - (rect.y0 + cornerSize);
+                        bgRect.y0 = rect.y0 + cornerSize;
+                        bgRect.width = cornerSize;
+                        if (pane->m_frame[flag]->m_textures[2].IsValid())
+                        {
+                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[2], -1.0);
+
+                            if (pane->m_frame[flag]->m_barRepeat)
+                            {
+                                throw std::logic_error("Not implemented");
+                            }
+                            AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
+                        }
+                        else
+                        {
+                            throw std::logic_error("Not implemented");
+                            AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
+                        }
+                    }
+
+                    if (pane->m_frame[flag]->m_textures[1].IsValid())
+                    {
+                        auto bgRect = rect;
+                        bgRect.x0 = rect.x0 + cornerSize;
+                        bgRect.width = (rect.x0 + rect.width) - cornerSize - bgRect.x0;
+                        bgRect.height = cornerSize;
+                        bgRect.y0 = rect.y0;
+
+                        auto tv0 = rect.width;
+                        auto scale = rect.width;
+                        if (pane->m_frame[flag]->m_barRepeat)
+                        {
+                            throw std::logic_error("Not implemented");
+                            int sx = 0;
+                            int sy = 0;
+                            M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
+                            float fsx = sx;
+                            float fsy = sy;
+                            M3D_APP->m_renderer->AbsToRel(fsx, fsy);
+                            scale = fsy;
+                        }
+                        M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[1], -1.0);
+                        AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, tv0 / scale, 1.0);
+
+
+                        bgRect.x0 = rect.x0 + cornerSize;
+                        bgRect.height = cornerSize;
+                        bgRect.y0 = rect.height + rect.y0 - cornerSize;
+                        bgRect.width = (rect.x0 + rect.width - cornerSize) - bgRect.x0;
+                        if (pane->m_frame[flag]->m_textures[3].IsValid())
+                        {
+                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[3], -1.0);
+
+                            if (pane->m_frame[flag]->m_barRepeat)
+                            {
+                                throw std::logic_error("Not implemented");
+                            }
+                            AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, tv0 / scale, 1.0);
+                        }
+                        else
+                        {
+                            throw std::logic_error("Not implemented");
+                            AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv0 / scale);
+                        }
+                    }
                 }
                 if (drawComplexCorners)
                 {
-                    throw std::logic_error("Not implemented");
+                    if (pane->m_frame[flag]->m_textures[4].IsValid())
+                    {
+                        //TODO: check this!!
+                        M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[4], -1.0);
+                        auto bgRect = rect;
+                        bgRect.width = cornerSize;
+                        bgRect.height = cornerSize;
+                        AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, 1.0);
+                        float tu0 = 0.0;
+                        float tv0 = 0.0;
+                        float tu1 = 0.0;
+                        float tv1 = 0.0;
+                        if (!pane->m_frame[flag]->m_textures[7].IsValid())
+                        {
+                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[4], -1.0);
+                            tu0 = 1.0;
+                            tv0 = 1.0;
+                        }
+                        else
+                        {
+                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[7], -1.0);
+                            tu1 = 1.0;
+                            tv1 = 1.0;
+                        }
+                        bgRect.x0 = rect.x0 + rect.width - cornerSize;
+                        bgRect.y0 = rect.y0 + rect.height - cornerSize;
+                        AddFlatAxialQuad(di, bgRect, clr, tu0, tv0, tu1, tv1);
+
+                        tu0 = 0.0;
+                        tv0 = 0.0;
+                        tu1 = 0.0;
+                        tv1 = 0.0;
+                        if (!pane->m_frame[flag]->m_textures[6].IsValid())
+                        {
+                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[4], -1.0);
+                            tv0 = 1.0;
+                        }
+                        else
+                        {
+                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[6], -1.0);
+                            tv1 = 1.0;
+                        }
+
+                        bgRect.x0 = rect.x0;
+                        bgRect.y0 = rect.y0 + rect.height - cornerSize;
+                        bgRect.width = cornerSize;
+                        bgRect.height = cornerSize;
+                        AddFlatAxialQuad(di, bgRect, clr, 0.0, tv0, 1.0, tv1);
+
+                        if (!pane->m_frame[flag]->m_textures[5].IsValid())
+                        {
+                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[6], -1.0);
+                            tu0 = 1.0;
+                        }
+                        else
+                        {
+                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[5], -1.0);
+                            tu1 = 1.0;
+                        }
+
+                        bgRect.x0 = rect.x0 + rect.width - cornerSize;
+                        bgRect.y0 = rect.y0;
+                        bgRect.width = cornerSize;
+                        bgRect.height = cornerSize;
+                        AddFlatAxialQuad(di, bgRect, clr, tu0, 0.0, tu1, 1.0);
+                    }
                 }
             }
-
             m3d::Application::g_pApp->m_renderer->PopBlend();
             m3d::Application::g_pApp->m_renderer->PopZbState();
             m3d::Application::g_pApp->m_renderer->SetAlphaTest(0);
@@ -620,9 +807,24 @@ namespace m3d
         m_hieroglyphicFontId = -1;
     }
 
-    int ui::GfxServer::PlayControlSound(CStr const&, bool*)
+    int ui::GfxServer::PlayControlSound(CStr const& soundName, bool* pbLooped)
     {
-        throw std::logic_error("Not implemented");
+        if (!M3D_APP->m_sound || !M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        {
+            return -1;
+        }
+        auto const it = m_controlSoundInfos.find(soundName);
+        if (it == m_controlSoundInfos.cend())
+        {
+            return -1;
+        }
+        auto const info = it->second;
+        if (info == nullptr || info->m_soundTableId == -1)
+        {
+            return -1;
+        }
+        bool looped = pbLooped ? *pbLooped : info->m_bSoundLooped;
+        return M3D_APP->m_sound->PlaySound2D(info->m_soundTableId, looped);
     }
 
     int ui::GfxServer::GetBtnHeight()

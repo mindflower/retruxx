@@ -2,6 +2,8 @@
 #include <core/ini.h>
 #include <ui/button.h>
 
+#include "config.h"
+#include "core/kernel.h"
 #include "ui/frame.h"
 
 namespace m3d
@@ -191,30 +193,46 @@ namespace m3d
             if (m_isImaged)
             {
                 rend::TexHandle tex;
-                if ((this->m_style & 2) != 0)
+                if ((m_style & 2) != 0)
                 {
-                    tex = this->m_imageDisabled;
+                    tex = m_imageDisabled;
                 }
-                else if ((this->m_mouseDown & 1) != 0)
+                else if ((m_mouseDown & 1) != 0)
                 {
-                    tex = this->m_imageMouseDown;
+                    tex = m_imageMouseDown;
                 }
-                else if (this->m_isInside)
+                else if (m_isInside)
                 {
-                    tex = this->m_imageMouseIn;
+                    tex = m_imageMouseIn;
                 }
                 else
                 {
-                    tex = this->m_image;
+                    tex = m_image;
                 }
-                auto rect = this->GetBounds();
+                auto rect = GetBounds();
                 rect.x0 = 0.0;
                 rect.y0 = 0.0;
                 GetGfxServer()->AddImagedRect(di, rect, clr, tex);
             }
             else
             {
-                throw std::logic_error("Not implemented");
+                auto color = 0;
+                if ((m_style & 2) != 0)
+                {
+                    color = 3;
+                }
+                else if ((m_mouseDown & 1) != 0)
+                {
+                    color = 1;
+                }
+                else
+                {
+                    color = m_isInside != 0 ? 2 : 0;
+                }
+                auto rect = GetBounds();
+                rect.x0 = 0.0;
+                rect.y0 = 0.0;
+                GetGfxServer()->AddFlatAxialPane0(di, rect, color, m_paneFlags, m_paneName, m_bgFlags);
             }
         }
 
@@ -272,9 +290,18 @@ namespace m3d
             return 1;
         }
 
-        int ButtonWnd::OnMouseButton0(unsigned, PointBase<float> const&)
+        int ButtonWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
-            throw std::logic_error("Not implemented");
+            if (!state || !m_isSounded)
+            {
+                return Wnd::OnMouseButton0(state, at);
+            }
+            if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+            {
+                return Wnd::OnMouseButton0(state, at);
+            }
+            GetGfxServer()->PlayControlSound("CONTROL_SOUND_BUTTON_CLICK_DEFAULT", nullptr);
+            return Wnd::OnMouseButton0(state, at);
         }
 
         int ButtonWnd::OnKey(unsigned short, unsigned char, unsigned)

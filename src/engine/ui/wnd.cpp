@@ -1277,8 +1277,65 @@ namespace m3d
 
         int Wnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
-            //TODO: ...
-            throw std::logic_error("Not implemented");
+            //TODO: check and refactor this
+            if ((m_style & 0x40000) != 0)
+            {
+                if ((m_style & 0x20000) != 0)
+                {
+                    if (!state)
+                    {
+                    LABEL_6:
+                        m_mouseDown &= 0xFEu;
+                        goto LABEL_7;
+                    }
+                }
+                else if (!state)
+                {
+                    if ((m_mouseDown &1) != 0)
+                    {
+                        AIParam const param{CVector2{at.x, at.y}};
+                        CallParentNotify(1u, param, false);
+                    }
+                    goto LABEL_6;
+                }
+                m_mouseDown |= 1u;
+            }
+        LABEL_7:
+            auto parentWnd = dynamic_cast<Wnd*>(GetParent());
+            if ((m_style & 0x20) != 0 && parentWnd)
+            {
+                auto const att = ToParent(at);
+                parentWnd->OnMouseButton0(state, att);
+            }
+            auto const bounds = GetBounds();
+            if (at.x < 0.0 || bounds.width <= at.x || at.y < 0.0 || bounds.height <= at.y)
+            {
+                return 0;
+            }
+            if ((m_style & 8) != 0)
+            {
+                if (!state || m_dragMode)
+                {
+                    if (m_dragMode == DRAG_MOVE)
+                    {
+                        DoDragMove(at);
+                        GetStation()->CaptureMouse(nullptr);
+                        m_bounds.x0 = m_dragCurPt.x;
+                        m_bounds.y0 = m_dragCurPt.y;
+                        m_dragMode = DRAG_NONE;
+                    }
+                }
+                else
+                {
+                    StartDragMove(at);
+                }
+            }
+            if ((m_style & 0x2000) != 0)
+            {
+                GetStation()->Activate(this);
+            }
+            RemoveTooltip();
+            return 1;
         }
 
         int Wnd::OnWndNotify(Wnd* from, unsigned idFrom, unsigned message, AIParam const& data)
@@ -1483,12 +1540,25 @@ namespace m3d
 
         int ModalWnd::OnInitModal()
         {
-            throw std::logic_error("Not implemented");
+            return 1;
         }
 
-        int ModalWnd::OnPaint(DrawInfo const&)
+        int ModalWnd::OnPaint(DrawInfo const& clipToIt)
         {
-            throw std::logic_error("Not implemented");
+            if ((m_style & 0x40) == 0)
+            {
+                auto color = m_curClr;
+                if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+                {
+                    color = 3;
+                }
+                OnNcPaint(clipToIt, color);
+            }
+            DrawWndText(clipToIt);
+            //TODO: check this
+            //if (this->m_curControl)
+            //    this->m_curControl->GetBounds(this->m_curControl, &rc);
+            return 1;
         }
 
         int ModalWnd::CloseModal(int)
@@ -1501,9 +1571,25 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ModalWnd::OnWndNotify(Wnd*, unsigned, unsigned, AIParam const&)
+        int ModalWnd::OnWndNotify(Wnd* from, unsigned idFrom, unsigned msg, AIParam const& data)
         {
-            throw std::logic_error("Not implemented");
+            if ((m_style & 0x100000) != 0)
+            {
+                auto wnd = dynamic_cast<Wnd*>(GetParent());
+                if (wnd)
+                {
+                    wnd->OnWndNotify(from, idFrom, msg, data);
+                }
+            }
+            if (msg != 1 || !idFrom || idFrom > 3)
+            {
+                return 0;
+            }
+            if (GetStation()->IsModal(this))
+            {
+                CloseModal(idFrom);
+            }
+            return 1;
         }
 
         ModalWnd::ModalWnd(ModalWnd const&)
