@@ -413,7 +413,7 @@
     <ClCompile Include="src\game\music\radioengine.cpp" />
     <ClCompile Include="src\game\music\townmusicmanager.cpp" />
     <ClCompile Include="src\game\profile.cpp" />
-    <ClCompile Include="src\game\projectapocalypse.cpp" />
+    <ClCompile Include="src\game\retruxx.cpp" />
     <ClCompile Include="src\game\uimanager\gameuimanager.cpp" />
     <ClCompile Include="src\game\uimanager\truxxuimanager.cpp" />
     <ClCompile Include="src\game\uimanager\uiregistration.cpp" />

@@ -116,7 +116,7 @@ namespace m3d
 
     int Application::init(HINSTANCE hInstance, HICON hIcon, CStr const& configName, HWND forcedWnd, CStr const& cmdLine)
     {
-        M3D_LOG_INFO("ProjectApocalypse - release version build v0.01");
+        M3D_LOG_INFO(m_strWindowTitle);
 
         m_cmdLine.Init(cmdLine.c_str());
         if (m_cmdLine.CheckParam("-console"))
@@ -1681,7 +1681,7 @@ namespace m3d
             M3D_LOG_INFO("Starting up...");
             g_pApp = this;
             m_focusKbdEntity = this;
-            m_strWindowTitle = "ProjectApocalypse - release version release build v0.01";
+            m_strWindowTitle = "retruxx - release version build v0.01";
 
             char buf[0x400] = { 0 };
             ::GetCurrentDirectoryA(sizeof(buf), buf);
