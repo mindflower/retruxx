@@ -179,9 +179,18 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        PointBase<float> Wnd::ToParent(PointBase<float> const&) const
+        PointBase<float> Wnd::ToParent(PointBase<float> const& pt) const
         {
-            throw std::logic_error("Not implemented");
+            auto res = ToScreen(pt);
+            auto parentWnd = dynamic_cast<Wnd*>(GetParent());
+            if (parentWnd)
+            {
+                auto parentToScreenRes = parentWnd->ToScreen(PointBase<float>{0.0, 0.0});
+                res.x = res.x - parentToScreenRes.x;
+                res.y = res.y - parentToScreenRes.y;
+                return res;
+            }
+            return res;
         }
 
         void Wnd::SetTextColorDisabled(unsigned textColor)

@@ -479,7 +479,44 @@ void VideoOptionsWnd::UpdateGammaControls()
 
 void VideoOptionsWnd::UpdateResolutionControls()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check this
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto const height = M3D_KERNEL->GetEngineCfg().m_r_height.GetI();
+        auto const width = M3D_KERNEL->GetEngineCfg().m_r_width.GetI();
+        int i = 0;
+        for (; i < RESOLUTION_NUM_RESOLUTIONS; ++i)
+        {
+            if (m_screenWH[i].x == width && m_screenWH[i].y == height)
+            {
+                break;
+            }
+        }
+        ++m_cbResolutionBlocked;
+        m_cbResolution->SetCurSel(-1);
+        if (i == RESOLUTION_NUM_RESOLUTIONS)
+        {
+            ++m_cbResolutionBlocked;
+            m_cbResolution->SetCurSel(-1);
+            m_cbResolution->SetText(ScreenWH2Str({width, height}));
+        }
+        else
+        {
+            auto const count = m_cbResolution->GetCount();
+            if (count > 0)
+            {
+                for (int j = 0; j < count;++j)
+                {
+                    if (m_cbResolution->GetItemData(j) == i)
+                    {
+                        ++m_cbResolutionBlocked;
+                        m_cbResolution->SetCurSel(j);
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void VideoOptionsWnd::OnSliderFarDistanceChange(m3d::AIParam const&)
@@ -1055,7 +1092,8 @@ int VideoOptionsWnd::GetWaterQualityValByWaterShaderVersion(int) const
 
 int VideoOptionsWnd::OnBeforeAddToWndStation()
 {
-    UpdateControls();
+    //TODO: implement VideoOptionsWnd::OnBeforeAddToWndStation
+    //UpdateControls();
     return Wnd::OnBeforeAddToWndStation();
 }
 

@@ -119,7 +119,10 @@ namespace m3d
             //OnPaint(DrawInfo const &);
             //Create(T const &, unsigned int,BoundsBase<float> const &, unsigned int);
             //Create(T const &, unsigned int,BoundsBase<float> const &, unsigned int);
-            //SetCurSel(int);
+            virtual void SetCurSel(int)
+            {
+                throw std::logic_error("Not implemented");
+            }
             //ScrollSelection(bool);
             unsigned GetDrawFlags()
             {

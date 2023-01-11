@@ -111,9 +111,10 @@ namespace m3d
             }
         }
 
-        int SliderWnd::OnPaint(DrawInfo const&)
+        int SliderWnd::OnPaint(DrawInfo const& di)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: implement SliderWnd::OnPaint
+            return 1;
         }
 
         int SliderWnd::OnMouseMove(PointBase<float> const&, PointBase<float> const&)

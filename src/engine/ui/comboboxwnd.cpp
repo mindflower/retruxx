@@ -34,9 +34,12 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ComboBoxWnd::SetCurSel(int)
+        void ComboBoxWnd::SetCurSel(int idx)
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                m_wndStringList->SetCurSel(idx);
+            }
         }
 
         void ComboBoxWnd::SetItemData(int idx, int data)
@@ -559,7 +562,13 @@ namespace m3d
 
         int ComboBoxWnd::OnAfterAddToWndStation()
         {
-            throw std::logic_error("Not implemented");
+            auto res = Wnd::OnAfterAddToWndStation();
+            if (m_state != STATE_OPEN)
+            {
+                return res;
+            }
+            M3D_APP->EnqueueMessage(47, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+            return res;
         }
     }    
 }
