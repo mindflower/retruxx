@@ -23,9 +23,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    rend::TexHandle ui::GfxServer::GetTexture(ThemeTexture)
+    rend::TexHandle ui::GfxServer::GetTexture(ThemeTexture tex)
     {
-        throw std::logic_error("Not implemented");
+        return m_texTheme[tex];
     }
 
     PointBase<float> ui::GfxServer::MeasureText(CStr const& text, int uiFont, TextWrapFlags tw, float maxWidth)

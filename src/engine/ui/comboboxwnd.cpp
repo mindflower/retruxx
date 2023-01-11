@@ -57,7 +57,7 @@ namespace m3d
 
         void ComboBoxWnd::Close()
         {
-            throw std::logic_error("Not implemented");
+            SetState(STATE_CLOSE, false);
         }
 
         BoundsBase<float> ComboBoxWnd::GetFullBounds() const
@@ -557,7 +557,9 @@ namespace m3d
 
         int ComboBoxWnd::OnAfterRemoveFromWndStation()
         {
-            throw std::logic_error("Not implemented");
+            auto res = Wnd::OnAfterAddToWndStation();
+            Close();
+            return res;
         }
 
         int ComboBoxWnd::OnAfterAddToWndStation()

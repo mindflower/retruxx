@@ -1498,7 +1498,9 @@ namespace m3d
 
     int Application::GetTextFit(CStr const&, PointBase<float>&, float, TextWrapFlags)
     {
-        throw std::logic_error("Not implemented");
+        //TODO: implement Application::GetTextFit
+        return 1;
+        //throw std::logic_error("Not implemented");
     }
 
     int Application::StartExclusiveMsgLoop()
@@ -1757,7 +1759,8 @@ namespace m3d
 
     int Application::FinishExclusiveMsgLoop()
     {
-        throw std::logic_error("Not implemented");
+        m_breakLoop = true;
+        return 1;
     }
 
     void Application::UnPause()

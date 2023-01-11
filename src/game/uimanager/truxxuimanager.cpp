@@ -530,9 +530,25 @@ void TruxxUiManager::AddImportantFadingMsgByStrId(CStr const&, std::vector<m3d::
     throw std::logic_error("Not implemented");
 }
 
-m3d::ui::MbRetCodes TruxxUiManager::RunMsgBoxDlg(CStr const&, CStr const&, unsigned, bool)
+m3d::ui::MbRetCodes TruxxUiManager::RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned flags, bool bPause)
 {
-    throw std::logic_error("Not implemented");
+    ref_ptr box = dynamic_cast<MsgBox*>(M3D_KERNEL->New("MsgBox"));
+    if (!box)
+    {
+        return m3d::ui::MBX_RET_CANCEL;
+    }
+    if (!box->CreateMsgBox(caption, message, flags))
+    {
+        return m3d::ui::MBX_RET_CANCEL;
+    }
+    int guiId = -1;
+    AddWindow(&*box, guiId, false, false);
+
+    int retVal = m3d::ui::MBX_RET_CANCEL;;
+    ShowWindow(guiId, true, true, true, bPause, &retVal);
+    RemoveWindow(guiId);
+    GUI_EndModalDlg();
+    return static_cast<m3d::ui::MbRetCodes>(retVal);
 }
 
 bool TruxxUiManager::IsInSaleMode() const
@@ -702,7 +718,10 @@ void TruxxUiManager::OnBeforeStartLevel()
 
 void TruxxUiManager::GUI_EndModalDlg()
 {
-    throw std::logic_error("Not implemented");
+    if (!IsModalEqualWndRunning() || M3D_APP->GetCurGameMode() == 1)
+    {
+        M3D_APP->UnPause();
+    }
 }
 
 int TruxxUiManager::GUI_BindWindowsToEvents()
@@ -1142,6 +1161,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     {
     case 17:
     case 41:
+    case 44:
     {
         return 0;
     }

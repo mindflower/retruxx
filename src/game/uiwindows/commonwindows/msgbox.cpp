@@ -4,9 +4,10 @@
 #include "ui/button.h"
 #include "ui/linewnd.h"
 #include "ui/ui_srv.h"
+#include "ui/wndstation.h"
 
 RT_CLASS_EXPORTS_BEGIN(MsgBox)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MsgBox);
 
 int MsgBox::m_ref = 0;
@@ -16,9 +17,21 @@ MsgBox::AuxInfo::AuxInfo()
 {
 }
 
-int MsgBox::CreateMsgBox(CStr const&, CStr const&, unsigned)
+int MsgBox::CreateMsgBox(CStr const& caption, CStr const& message, unsigned flags)
 {
-    throw std::logic_error("Not implemented");
+    if (Valid()
+        || (m_gameDataFlags & 1) != 0
+        || !m_pattern
+        || !help::CloneWndWithChildren(m_pattern, this)
+        || !GameDataSetup())
+    {
+        return 0;
+    }
+    m_msgBoxFlags = flags;
+    m_msg = message;
+    m_title = caption;
+    RecalcLayot();
+    return 1;
 }
 
 m3d::Class* MsgBox::GetClass() const
@@ -514,7 +527,27 @@ void MsgBox::AddButtonsAndIdioticEmbosses()
 	    switch (m_msgBoxFlags & 3)
 	    {
 	    case 1: throw std::logic_error("Not implemented");
-        case 2: throw std::logic_error("Not implemented");
+        case 2:
+        {
+            if (m_buttons[0] && !m_buttons[0]->GetParent())
+            {
+                AddChild(m_buttons[0]);
+            }
+            if (m_buttons[1] && !m_buttons[1]->GetParent())
+            {
+                AddChild(m_buttons[1]);
+            }
+            if (m_idioticEmbosses[0] && !m_idioticEmbosses[0]->GetParent())
+            {
+                AddChild(m_idioticEmbosses[0]);
+            }
+            if (m_idioticEmbosses[1] && !m_idioticEmbosses[1]->GetParent())
+            {
+                AddChild(m_idioticEmbosses[1]);
+            }
+            m_buttons[0]->SetText(GetStation()->InitializeStringUsingIds("^yes^"));
+            break;
+        }
 	    case 3: throw std::logic_error("Not implemented");
         default: return;
 	    }

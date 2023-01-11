@@ -1050,7 +1050,9 @@ CStr VideoOptionsWnd::GrassDistance2Str(GrassDistance grassDistance) const
 
 int VideoOptionsWnd::OnAfterRemoveFromWndStation()
 {
-    throw std::logic_error("Not implemented");
+    auto result = Wnd::OnAfterRemoveFromWndStation();
+    m_bVideoOptionsChanged = false;
+    return result;
 }
 
 void VideoOptionsWnd::InitControls()

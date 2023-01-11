@@ -681,7 +681,34 @@ namespace m3d
 
         int Wnd::OnBeforeRemoveFromWndStation()
         {
-            throw std::logic_error("Not implemented");
+            auto res = 1;
+            for (auto child = GetFirstChild_(); child; child = child->GetNextSibling_())
+            {
+                M3D_ASSERT(child->IsKindOf(RT_CLASS_LOCAL(Wnd)));
+                auto wnd = dynamic_cast<Wnd*>(child);
+                res &= wnd->OnBeforeAddToWndStation();
+            }
+            if (m_bSuspendedUnlink)
+            {
+                if (res)
+                {
+                    return !IsAnimatingNow();
+                }
+                return 0;
+            }
+            if (IsAnimatingNow() && m_currentAnimation.m_purpose == AnimationInfo::PURPOSE_HIDE)
+            {
+                return 0;
+            }
+            if (m_bSuspendedParentUnlink
+                || !GetStation()->IsAnimationEnabled()
+                || !m_onHideAnimation.CanAnimate())
+            {
+                return res;
+            }
+            if (!res)
+                return 0;
+            return StartAnimation(this->m_onHideAnimation, IsAnimatingNow()) == 0;
         }
 
         void Wnd::SetFormatMode(TextFormatFlags format)
@@ -1544,7 +1571,6 @@ namespace m3d
 
         void ModalWnd::OnCloseModal(int)
         {
-            throw std::logic_error("Not implemented");
         }
 
         int ModalWnd::OnInitModal()

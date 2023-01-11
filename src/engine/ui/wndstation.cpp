@@ -587,9 +587,25 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void WndStation::EndModal(ModalWnd*, unsigned)
+        void WndStation::EndModal(ModalWnd* wnd, unsigned toRet)
         {
-            throw std::logic_error("Not implemented");
+            if (!m_wndModalStack.empty() && m_wndModalStack[m_wndModalStack.size() - 1])
+            {
+                auto& wndFromStack = m_wndModalStack[m_wndModalStack.size() - 1];
+                if (wnd == wndFromStack)
+                {
+                    wndFromStack->OnCloseModal(toRet);
+                    m_wndModalStack.pop_back();
+                    m_wndModalRetVal = toRet;
+                    CaptureMouse(nullptr);
+                    RemoveCurrentTooltip();
+                    if (m_modalAttachedToStation)
+                    {
+                        RemoveChild(wndFromStack);
+                    }
+                    M3D_APP->FinishExclusiveMsgLoop();
+                }
+            }
         }
 
         Wnd* WndStation::GetActive() const

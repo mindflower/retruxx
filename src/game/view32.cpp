@@ -348,9 +348,9 @@ void CMiracle3d::BeginModalDlg(bool)
     throw std::logic_error("Not implemented");
 }
 
-m3d::ui::MbRetCodes CMiracle3d::RunMsgBoxDlg(CStr const&, CStr const&, unsigned, bool)
+m3d::ui::MbRetCodes CMiracle3d::RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned flags, bool bPause)
 {
-    throw std::logic_error("Not implemented");
+    return M3D_APP->m_pInterfaceManager->RunMsgBoxDlg(caption, message, flags, bPause);
 }
 
 int CMiracle3d::CleanLevel(bool, bool)
@@ -1114,10 +1114,18 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
     throw std::logic_error("Not implemented");
 }
 
-int CMiracle3d::RemoveChild(m3d::Object* object)
+int CMiracle3d::RemoveChild(m3d::Object* node)
 {
-    //TODO: ...
-    throw std::logic_error("Not implemented");
+    auto result = Wnd::RemoveChild(node);
+    if (!result || !node)
+        return result;
+    if (!node->IsKindOf(RT_CLASS_LOCAL(MotherPanel)))
+        return result;
+
+    //TODO: check this
+    //*(&this->m_playingVideo + 1) = 0;
+    this->m_playingVideo = false;
+    return result;
 }
 
 int CMiracle3d::DoneMedia()

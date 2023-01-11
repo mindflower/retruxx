@@ -1,8 +1,10 @@
 #include "optionswnd.h"
 
+#include "gamemenu.h"
 #include "core/kernel.h"
 #include "core/log.h"
 #include "game/m3dgame.h"
+#include "game/uiwindows/charwindows/motherpanel.h"
 
 RT_CLASS_EXPORTS_BEGIN(OptionTabButton)
     RT_CLASS_EXPORTS_END;
@@ -162,14 +164,27 @@ void OptionsWnd::SelectTabButton(Tab tabId)
     }
 }
 
-int OptionsWnd::ApplyTabChanges(Tab)
+int OptionsWnd::ApplyTabChanges(Tab tab)
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement OptionsWnd::ApplyTabChanges
+    //throw std::logic_error("Not implemented");
+    return 1;
 }
 
 int OptionsWnd::OnAfterRemoveFromWndStation()
 {
-    throw std::logic_error("Not implemented");
+    auto res = Wnd::OnAfterRemoveFromWndStation();
+    if (m_curTabId != TAB_NUM_TABS && ShowOptionWindowForTab(TAB_NUM_TABS))
+    {
+        m_curTabId = TAB_NUM_TABS;
+        SelectTabButton(TAB_NUM_TABS);
+    }
+    if (M3D_APP->GetCurGameMode())
+    {
+        return res;
+    }
+    M3D_APP->EnqueueMessage(65656, 0, 0, 0, 0, GameMenuWnd::ROOT_LEVEL_NAME, {});
+    return res;
 }
 
 int OptionsWnd::ShowOptionWindowForTab(Tab tabId)
@@ -240,7 +255,18 @@ int OptionsWnd::GetOptionWindowGuiIdByTabId(Tab) const
 
 int OptionsWnd::CanClose()
 {
-    throw std::logic_error("Not implemented");
+    if (m_curTabId == TAB_NUM_TABS)
+    {
+        return 1;
+    }
+    auto result = ShowOptionWindowForTab(TAB_NUM_TABS);
+    if (!result)
+    {
+        return result;
+    }
+    m_curTabId = TAB_NUM_TABS;
+    SelectTabButton(TAB_NUM_TABS);
+    return 1;
 }
 
 OptionTabButton::AuxInfo::AuxInfo()

@@ -768,7 +768,20 @@ int GameUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void*
     {
         return 0;
     }
-    throw std::logic_error("Not implemented");
+    if (data)
+    {
+        auto ev = static_cast<m3d::Event*>(data);
+        for (auto const& window : m_windows)
+        {
+            if (ev->m_void[0] == window.second)
+            {
+                m_onScreenWindows.erase(window.first);
+                GUI_EndModalDlg();
+                break;
+            }
+        }
+    }
+    return 1;
 }
 
 GameUiManager::~GameUiManager()
@@ -810,9 +823,55 @@ void GameUiManager::GUI_ClearResourceInfos(std::vector<ResourceInfo*>& resourceI
     resourceInfos.clear();
 }
 
-int GameUiManager::GUI_HideWindow(int, bool, int*, bool)
+int GameUiManager::GUI_HideWindow(int wndId, bool canBeShownAgain, int* modalRetVal, bool bForceRemove)
 {
-    throw std::logic_error("Not implemented");
+    using namespace m3d::ui;
+    auto wnd = GUI_GetWindow(wndId);
+    if (!wnd)
+    {
+        return 0;
+    }
+    auto wndParent = wnd->GetParent();
+    if (wndParent && wndParent != M3D_APP)
+    {
+        return 0;
+    }
+    if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+    {
+        auto modalWnd = dynamic_cast<ModalWnd*>(&*wnd);
+        if (wnd->GetStation()->IsModal(modalWnd))
+        {
+            auto retVal = 0;
+            if (modalRetVal)
+            {
+                retVal = *modalRetVal;
+            }
+            M3D_APP->EnqueueMessage(39, reinterpret_cast<int>(modalWnd), retVal, 0, 0, {}, {});
+        }
+    }
+    else
+    {
+        if (wnd->GetStation()->IsDirectChild(wnd))
+        {
+            if (bForceRemove)
+            {
+                wnd->GetStation()->RemoveChildForce(wnd);
+            }
+            else
+            {
+                wnd->GetStation()->RemoveChild(wnd);
+            }
+            if (GUI_IsWndModalEqual(wnd))
+            {
+                GUI_EndModalDlg();
+            }
+        }
+    }
+    if (!canBeShownAgain || wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+    {
+        m_onScreenWindows.erase(wndId);
+    }
+    return 1;
 }
 
 int GameUiManager::GUI_Done()

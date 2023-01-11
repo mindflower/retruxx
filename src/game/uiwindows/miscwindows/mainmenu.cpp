@@ -108,12 +108,26 @@ int MainMenuUI::GameDataSetup()
 
 void MainMenuUI::OnStartVideoPlaying()
 {
-    throw std::logic_error("Not implemented");
+    if (IsChildOf(M3D_APP))
+    {
+        M3D_APP->CaptureMouse(this);
+        if (M3D_APP->IsDXCursorEnabled())
+        {
+            M3D_APP->m_renderer->ShowDXCursor(false);
+        }
+    }
 }
 
 void MainMenuUI::QuitToWindows()
 {
-    throw std::logic_error("Not implemented");
+    if (!M3D_APP->RunMsgBoxDlg("", M3D_APP->GetStringByStringId0("quitGame"), 2u, false))
+    {
+        M3D_APP->m_pInterfaceManager->ShowWindow(m_guiId, false, false, false, false, nullptr);
+        M3D_APP->ClearViewportToBlack();
+        M3D_APP->m_pInterfaceManager->ShowWindow(167, true, true, true, true, nullptr);
+        M3D_APP->EnqueueMessage(1, 0, 0, 0, 0, {}, {});
+    }
+
 }
 
 int MainMenuUI::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)

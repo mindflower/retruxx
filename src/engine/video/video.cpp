@@ -191,6 +191,8 @@ namespace
 //    return E_NOINTERFACE;
 //}
 
+unsigned int g_Tex = 0;
+
 namespace m3d
 {
     namespace rend
@@ -205,9 +207,16 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    long CTextureRenderer::CheckMediaType(CMediaType const*)
+    long CTextureRenderer::CheckMediaType(CMediaType const* pmt)
     {
-        throw std::logic_error("Not implemented");
+        auto result = 0;
+        if (!pmt)
+            return 0x80004003;
+        if (memcmp(&pmt->formattype, &FORMAT_VideoInfo, 0x10u))
+            return 0x80070057;
+        if (memcmp(pmt, &MEDIATYPE_Video, 0x10u) || memcmp(&pmt->subtype, &MEDIASUBTYPE_RGB32, 0x10u))
+            result = 0x8004022A;
+        return result;
     }
 
     void CTextureRenderer::GetVideoDims(int&, int&)
@@ -222,7 +231,12 @@ namespace m3d
 
     CTextureRenderer::CTextureRenderer(IUnknown* pUnk, long* phr) : CBaseVideoRenderer(__uuidof(CLSID_TextureRenderer), NULL, pUnk, phr)
     {
-        throw std::logic_error("Not implemented");
+        m_bUseDynamicTextures = false;
+        g_Tex = 0;
+        if (phr)
+        {
+            *phr = 0;
+        }
     }
 
     CTextureRenderer::~CTextureRenderer()

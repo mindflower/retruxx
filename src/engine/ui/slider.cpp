@@ -2,6 +2,8 @@
 #include <ui/ui_srv.h>
 #include <core/aiparam.h>
 
+#include "m3dapp.h"
+
 namespace m3d
 {
     namespace ui
@@ -113,7 +115,47 @@ namespace m3d
 
         int SliderWnd::OnPaint(DrawInfo const& di)
         {
-            //TODO: implement SliderWnd::OnPaint
+            auto const leftTex = GetGfxServer()->GetTexture(TEX_SLIDER_LEFT);
+            auto w = 0;
+            auto h = 0;
+            M3D_APP->m_renderer->GetDims(leftTex, w, h);
+            float sideW = w;
+            float sideH = h;
+            M3D_APP->m_renderer->AbsToRel(sideW, sideH);
+            auto const bounds = GetBounds();
+
+            BoundsBase<float> rect;
+            rect.x0 = 0.0;
+            rect.y0 = 0.0;
+            rect.height = bounds.height;
+            rect.width = sideW;
+            unsigned clr = m_curClr;
+            if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+                clr = 3;
+            GetGfxServer()->AddImagedRect(di, rect, clr, leftTex);
+
+            rect.x0 = bounds.width - sideW;
+            rect.y0 = 0.0;
+            rect.height = bounds.height;
+            rect.width = sideW;
+            auto const rightTex = GetGfxServer()->GetTexture(TEX_SLIDER_RIGHT);
+            GetGfxServer()->AddImagedRect(di, rect, clr, rightTex);
+
+            rect.x0 = sideW;
+            rect.y0 = 0.0;
+            rect.height = bounds.height;
+            rect.width = bounds.width - (sideW * 2.0);
+            auto const bodyTex = GetGfxServer()->GetTexture(TEX_SLIDER_BODY);
+            GetGfxServer()->AddImagedRectGeneral(di, rect, clr, bodyTex, 0.0, 0.0, rect.width / bounds.width, 1.0);
+
+            //TODO: check this
+            rect.x0 = (((bounds.width - m_notchWidth) * ((m_cur - m_min) / (m_max - m_min))) + (m_notchWidth * 0.5)) - (this->m_notchWidth * 0.5);
+            rect.y0 = 0.0;
+            rect.height = bounds.height;
+            rect.width = m_notchWidth;
+            auto const thumbTex = GetGfxServer()->GetTexture(TEX_SLIDER_THUMB);
+            GetGfxServer()->AddImagedRect(di, rect, clr, thumbTex);
+
             return 1;
         }
 
