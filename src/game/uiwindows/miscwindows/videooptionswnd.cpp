@@ -4,6 +4,7 @@
 #include "ui/button.h"
 #include <core/log.h>
 
+#include "config.h"
 #include "m3dapp.h"
 
 RT_CLASS_EXPORTS_BEGIN(VideoOptionsWnd)
@@ -687,7 +688,20 @@ int VideoOptionsWnd::GetDefaultFiltrationForGraphicQuality(GraphicQuality) const
 
 void VideoOptionsWnd::UpdateControls()
 {
-    throw std::logic_error("Not implemented");
+    UpdateResolutionControls();
+    UpdateGammaControls();
+    UpdateGraphicQualityControls();
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ++m_sliderFarDistanceBlocked;
+        m_sliderFarDistance->SetNotch(M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF() * 100.0);
+    }
+    UpdateGrassControls(GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES);
+    UpdateShadowsControls(GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES);
+    UpdateWaterQualityControls(GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES);
+    UpdateAntialiasingControls(GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES);
+    UpdateFiltrationControls(GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES);
+    UpdateBlumControls(GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES);
 }
 
 void VideoOptionsWnd::OnCbWaterQualityChange(m3d::AIParam const&)
@@ -1041,7 +1055,8 @@ int VideoOptionsWnd::GetWaterQualityValByWaterShaderVersion(int) const
 
 int VideoOptionsWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    UpdateControls();
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 void VideoOptionsWnd::OnCbGrassChange(m3d::AIParam const&)
