@@ -1,8 +1,10 @@
 #include "loadwnd.h"
 #include <core/log.h>
 
+#include "game/m3dgame.h"
+
 RT_CLASS_EXPORTS_BEGIN(LoadWnd)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(LoadWnd);
 
 LoadWnd::LAuxInfo::LAuxInfo()
@@ -34,9 +36,25 @@ LoadWnd::~LoadWnd()
     throw std::logic_error("Not implemented");
 }
 
-int LoadWnd::GameDataUpdate(void*, int)
+int LoadWnd::GameDataUpdate(void* data, int dataType)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (dataType != 44)
+    {
+        return LSWnd::GameDataUpdate(data, dataType);
+    }
+    if (!IsChildOf(M3D_APP))
+    {
+        M3D_APP->m_pInterfaceManager->ShowWindow(m_guiId, true, true, true, true, nullptr);
+    }
+    else
+    {
+        M3D_APP->m_pInterfaceManager->ShowWindow(m_guiId, false, false, false, false, nullptr);
+    }
+    return 1;
 }
 
 int LoadWnd::GameDataSetup()
@@ -86,9 +104,35 @@ void LoadWnd::OnSaveSelectionChange()
     throw std::logic_error("Not implemented");
 }
 
-int LoadWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
+int LoadWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
 {
-    throw std::logic_error("Not implemented");
+    if (LSWnd::OnWndNotify(from, id, msg, data))
+    {
+        return 1;
+    }
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    auto res = false;
+    if (id == 400002)
+    {
+        res = msg == 4;
+    }
+    else
+    {
+        if (id != 400100)
+        {
+            return 0;
+        }
+        res = msg == 1;
+    }
+    if (!res)
+    {
+        return 0;
+    }
+    OnLoad();
+    return 1;
 }
 
 void LoadWnd::OnLoad()

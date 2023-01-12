@@ -3,8 +3,10 @@
 #include <ui/image.h>
 #include <ui/listbox.h>
 
+#include "game/m3dgame.h"
+
 RT_CLASS_EXPORTS_BEGIN(SaveButton)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SaveButton);
 
 SaveButton::AuxInfo::AuxInfo()
@@ -325,7 +327,8 @@ int SaveList::CompareItem(int, int)
 
 int SaveList::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    CreateItems();
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 int SaveList::AddButton(SaveButton*)
@@ -345,7 +348,9 @@ int SaveList::MeasureItem(int, BoundsBase<float>&) const
 
 int SaveList::CreateItems()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement SaveList::CreateItems
+    return 1;
+    //throw std::logic_error("Not implemented");
 }
 
 void SaveList::SortSaves0(SortArg, SortDir, std::vector<SaveButton*, std::allocator<SaveButton*>>&)
@@ -538,9 +543,56 @@ void LSWnd::OnCurProfileParamChanged(void*)
     throw std::logic_error("Not implemented");
 }
 
-int LSWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
+int LSWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
 {
-    throw std::logic_error("Not implemented");
+    if (ModalWnd::OnWndNotify(from, id, msg, data))
+    {
+        return 1;
+    }
+    switch (id)
+    {
+    case 0x61A80u:
+    {
+        if (msg != 1)
+        {
+            return 0;
+        }
+        OnSortByArg(SaveList::ARG_NAME);
+        return 1;
+    }
+    case 0x61A81u:
+    {
+        if (msg != 1)
+        {
+            return 0;
+        }
+        OnSortByArg(SaveList::ARG_TIME);
+        return 1;
+    }
+    case 0x61A82u:
+    {
+        if (msg != 5)
+        {
+            return 0;
+        }
+        OnSaveSelectionChange();
+        return 1;
+    }
+    case 0x61A83u:
+    {
+        if (msg != 1)
+        {
+            return 0;
+        }
+        int data = 3;
+        M3D_APP->m_pInterfaceManager->ShowWindow(m_guiId, false, false, false, false, &data);
+        LaunchGameMenu();
+        return 1;
+    }
+    default:
+        break;
+    }
+    return 0;
 }
 
 void LSWnd::UpdateSortButtonStates()
@@ -580,5 +632,8 @@ void LSWnd::ClearControls()
 
 void LSWnd::LaunchGameMenu()
 {
-    throw std::logic_error("Not implemented");
+    if (!M3D_APP->GetCurGameMode())
+    {
+        M3D_APP->EnqueueMessage(65656, 0, 0, 0, 0, {}, {});
+    }
 }
