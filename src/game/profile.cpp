@@ -157,9 +157,21 @@ m3d::Object* Profile::Clone()
     throw std::logic_error("Not implemented");
 }
 
-int Profile::GetParam(ProfileParam, m3d::AIParam&) const
+int Profile::GetParam(ProfileParam paramId, m3d::AIParam& param) const
 {
-    throw std::logic_error("Not implemented");
+    if (paramId >= PP_NUM_PROFILE_PARAMS)
+    {
+        M3D_LOG_INFO("Profile::GetParam error - invalid param");
+        return 0;
+    }
+    auto const it = m_params.find(paramId);
+    if (it != m_params.cend())
+    {
+        param = it->second;
+        return 1;
+    }
+    M3D_LOG_INFO("Profile::GetParam error - param " + CStr(paramId) + " not found");
+    return 0;
 }
 
 m3d::Class* Profile::GetBaseClass()

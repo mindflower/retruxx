@@ -11,25 +11,20 @@ RT_CLASS_EXPORTS_BEGIN(VideoOptionsWnd)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(VideoOptionsWnd);
 
-PointBase<int> VideoOptionsWnd::m_screenWH[5] = {
-	{800, 600},
-    {1024, 768},
-    {1152, 864},
-    {1280, 960},
-    {1600, 1200},
-};
-
-int VideoOptionsWnd::m_waterQualities[3] = { 1,2,3 };
-int VideoOptionsWnd::m_antialiasings[5] = { 0,2,4, 8, 16 };
-
-bool VideoOptionsWnd::ShadowSettings::operator==(ShadowSettings const&) const
+bool VideoOptionsWnd::ShadowSettings::operator==(ShadowSettings const& shs) const
 {
-    throw std::logic_error("Not implemented");
+    return this->shadowTexSize == shs.shadowTexSize
+        && this->detShadowTexSize == shs.detShadowTexSize
+        && fabs(this->shadowBlurCoeff - shs.shadowBlurCoeff) <= 0.0000099999997
+        && fabs(this->detailRadius - shs.detailRadius) <= 0.1;
 }
 
-VideoOptionsWnd::ShadowSettings::ShadowSettings(int, int, float, float)
+VideoOptionsWnd::ShadowSettings::ShadowSettings(int texSize, int detTexSize, float blurCoeff, float radius) :
+    shadowTexSize(texSize),
+    detShadowTexSize(detTexSize),
+    shadowBlurCoeff(blurCoeff),
+    detailRadius(radius)
 {
-    throw std::logic_error("Not implemented");
 }
 
 VideoOptionsWnd::AuxInfo::AuxInfo()
@@ -73,17 +68,77 @@ int VideoOptionsWnd::WaterQualityEnum2Val(WaterQuality) const
 
 void VideoOptionsWnd::OnCbBlumChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if (IsChildOf(M3D_APP) && !m_cbBlumBlocked)
+    {
+        m_bVideoOptionsChanged = true;
+        OnGraphicQualityDependendControlChanged();
+    }
+    auto blocked = m_cbBlumBlocked;
+    if (blocked > 0)
+        m_cbBlumBlocked = blocked - 1;
 }
 
 VideoOptionsWnd::ShadowsQuality VideoOptionsWnd::GetCurrentShadowQuality() const
 {
-    throw std::logic_error("Not implemented");
+    if (!M3D_KERNEL->GetEngineCfg().m_dsShadows.GetB())
+    {
+        return SHADOWS_QUALITY_NONE;
+    }
+    auto const settings = GetCurrentShadowSettings();
+    int result = SHADOWS_QUALITY_NONE;
+    for (auto const& shadowSetting : m_shadowSettings)
+    {
+        if (settings == shadowSetting)
+        {
+            return static_cast<ShadowsQuality>(result);
+        }
+        ++result;
+    }
+    return SHADOWS_QUALITY_NUM_SHADOWS_QUALITIES;
 }
 
-void VideoOptionsWnd::UpdateAntialiasingControls(GraphicQuality)
+void VideoOptionsWnd::UpdateAntialiasingControls(GraphicQuality graphicQuality)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (graphicQuality != GRAPHIC_QUALITY_CUSTOM)
+        {
+            int antialiasing = 0;
+            if (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+            {
+                antialiasing = M3D_KERNEL->GetEngineCfg().m_r_multiSamplesNum.GetI();
+            }
+            else
+            {
+                throw std::logic_error("Not implemented");
+            }
+            ++m_cbAntialiasingBlocked;
+            m_cbAntialiasing->SetCurSel(-1);
+            int i = 0;
+            for (; i < 3; ++i)
+            {
+                if (m_antialiasings[i] == antialiasing)
+                {
+                    for (int j = 0; j < m_cbAntialiasing->GetCount(); ++j)
+                    {
+                        if (m_cbAntialiasing->GetItemData(j) == i)
+                        {
+                            ++m_cbAntialiasingBlocked;
+                            m_cbAntialiasing->SetCurSel(j);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            if (i >= 3)
+            {
+                if (graphicQuality != GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+                    return;
+                m_cbAntialiasing->SetText(M3D_APP->GetStringByStringId0("CustomQuality"));
+            }
+        }
+    }
 }
 
 VideoOptionsWnd::ShadowSettings const& VideoOptionsWnd::GetShadowSettings(GraphicQuality) const
@@ -359,14 +414,102 @@ m3d::ui::MbRetCodes VideoOptionsWnd::RunChangeWarningDlg()
     throw std::logic_error("Not implemented");
 }
 
-void VideoOptionsWnd::UpdateShadowsControls(GraphicQuality)
+void VideoOptionsWnd::UpdateShadowsControls(GraphicQuality graphicQuality)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto shadowQuality = SHADOWS_QUALITY_NUM_SHADOWS_QUALITIES;
+        switch (graphicQuality)
+        {
+        case GRAPHIC_QUALITY_LOW:
+        {
+            shadowQuality = SHADOWS_QUALITY_NONE;
+            break;
+        }
+        case GRAPHIC_QUALITY_MEDIUM:
+        {
+            shadowQuality = SHADOWS_QUALITY_LOW;
+            break;
+        }
+        case GRAPHIC_QUALITY_MAX:
+        {
+            shadowQuality = SHADOWS_QUALITY_HIGH;
+            break;
+        }
+        case GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES:
+        {
+            shadowQuality = GetCurrentShadowQuality();
+            break;
+        }
+        default:
+            return;
+        }
+
+        ++m_cbShadowsBlocked;
+        m_cbShadows->SetCurSel(-1);
+        int i = 0;
+        if (shadowQuality != SHADOWS_QUALITY_NUM_SHADOWS_QUALITIES)
+        {
+            for (int i = 0; i < m_cbShadows->GetCount(); ++i)
+            {
+                if (m_cbShadows->GetItemData(i) == shadowQuality)
+                {
+                    ++m_cbShadowsBlocked;
+                    m_cbShadows->SetCurSel(i);
+                    break;
+                }
+            }
+            return;
+        }
+        if (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+        {
+            m_cbShadows->SetText(M3D_APP->GetStringByStringId0("CustomQuality"));
+        }
+    }
 }
 
-void VideoOptionsWnd::UpdateFiltrationControls(GraphicQuality)
+void VideoOptionsWnd::UpdateFiltrationControls(GraphicQuality graphicQuality)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (graphicQuality != GRAPHIC_QUALITY_CUSTOM)
+        {
+            int filter = 0.0;
+            if (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+            {
+                filter = M3D_KERNEL->GetEngineCfg().m_g_texturesFilter.GetI();
+            }
+            else
+            {
+                throw std::logic_error("Not implemented");
+            }
+            ++m_cbFiltrationBlocked;
+            m_cbFiltration->SetCurSel(-1);
+            int i = 0;
+            for (; i < 3; ++i)
+            {
+                if (m_filtrations[i] == filter)
+                {
+                    for (int j = 0; j < m_cbFiltration->GetCount(); ++j)
+                    {
+                        if (m_cbFiltration->GetItemData(j) == i)
+                        {
+                            ++m_cbFiltrationBlocked;
+                            m_cbFiltration->SetCurSel(j);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            if (i >= 3)
+            {
+                if (graphicQuality != GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+                    return;
+                m_cbFiltration->SetText(M3D_APP->GetStringByStringId0("CustomFiltration"));
+            }
+        }
+    }
 }
 
 void VideoOptionsWnd::InitBlumControls()
@@ -386,7 +529,15 @@ void VideoOptionsWnd::InitBlumControls()
 
 void VideoOptionsWnd::OnCbResolutionChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if (IsChildOf(M3D_APP) && !m_cbResolutionBlocked)
+    {
+        m_bVideoOptionsChanged = true;
+    }
+    auto blocked = m_cbResolutionBlocked;
+    if (blocked > 0)
+    {
+        m_cbResolutionBlocked = blocked - 1;
+    }
 }
 
 void VideoOptionsWnd::SetChanged(bool)
@@ -416,7 +567,14 @@ int VideoOptionsWnd::GetCurrentAntialiasing() const
 
 void VideoOptionsWnd::OnCbShadowsChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if (IsChildOf(M3D_APP) && !m_cbShadowsBlocked)
+    {
+        m_bVideoOptionsChanged = true;
+        OnGraphicQualityDependendControlChanged();
+    }
+    auto blocked = m_cbShadowsBlocked;
+    if (blocked > 0)
+        m_cbShadowsBlocked = blocked - 1;
 }
 
 void VideoOptionsWnd::InitAntialiasingControls()
@@ -474,7 +632,11 @@ void VideoOptionsWnd::ApplyFiltration()
 
 void VideoOptionsWnd::UpdateGammaControls()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ++m_sliderGammaBlocked;
+        m_sliderGamma->SetNotch(M3D_KERNEL->GetEngineCfg().m_gammaGamma.GetF() * 100.0);
+    }
 }
 
 void VideoOptionsWnd::UpdateResolutionControls()
@@ -533,7 +695,14 @@ void VideoOptionsWnd::OnSliderFarDistanceChange(m3d::AIParam const&)
 
 void VideoOptionsWnd::OnCbFiltrationChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if (IsChildOf(M3D_APP) && !m_cbFiltrationBlocked)
+    {
+        m_bVideoOptionsChanged = true;
+        OnGraphicQualityDependendControlChanged();
+    }
+    auto blocked = m_cbFiltrationBlocked;
+    if (blocked > 0)
+        m_cbFiltrationBlocked = blocked - 1;
 }
 
 VideoOptionsWnd::Antialiasing VideoOptionsWnd::AntialiasingVal2Enum(int) const
@@ -587,7 +756,9 @@ void VideoOptionsWnd::UpdateGammaPrevNextButtonsState()
 
 VideoOptionsWnd::GraphicQuality VideoOptionsWnd::DetectCurrentGraphicQuality() const
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement VideoOptionsWnd::DetectCurrentGraphicQuality
+    //throw std::logic_error("Not implemented");
+    return GRAPHIC_QUALITY_CUSTOM;
 }
 
 int VideoOptionsWnd::GetDefaultBlumForGraphicQuality(GraphicQuality) const
@@ -632,7 +803,14 @@ void VideoOptionsWnd::OnBtnGammaPrevClick(m3d::AIParam const&)
 
 void VideoOptionsWnd::OnCbAntialiasingChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if (IsChildOf(M3D_APP) && !m_cbAntialiasingBlocked)
+    {
+        m_bVideoOptionsChanged = true;
+        OnGraphicQualityDependendControlChanged();
+    }
+    auto blocked = m_cbAntialiasingBlocked;
+    if (blocked > 0)
+        m_cbAntialiasingBlocked = blocked - 1;
 }
 
 void VideoOptionsWnd::UpdateFarDistancePrevNextButtonsState()
@@ -650,9 +828,48 @@ float VideoOptionsWnd::GetCurrentFarDistance() const
     throw std::logic_error("Not implemented");
 }
 
-void VideoOptionsWnd::UpdateBlumControls(GraphicQuality)
+void VideoOptionsWnd::UpdateBlumControls(GraphicQuality graphicQuality)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (graphicQuality != GRAPHIC_QUALITY_CUSTOM)
+        {
+            int blum = 0;
+            if (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+            {
+                blum = M3D_KERNEL->GetEngineCfg().m_g_postEffectBloom.GetI();
+            }
+            else
+            {
+                throw std::logic_error("Not implemented");
+            }
+            ++m_cbBlumBlocked;
+            m_cbBlum->SetCurSel(-1);
+            int i = 0;
+            for (; i < 3; ++i)
+            {
+                if (m_blumQualities[i] == blum)
+                {
+                    for (int j = 0; j < m_cbBlum->GetCount(); ++j)
+                    {
+                        if (m_cbBlum->GetItemData(j) == i)
+                        {
+                            ++m_cbBlumBlocked;
+                            m_cbBlum->SetCurSel(j);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            if (i >= 3)
+            {
+                if (graphicQuality != GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+                    return;
+                m_cbBlum->SetText(M3D_APP->GetStringByStringId0("CustomQuality"));
+            }
+        }
+    }
 }
 
 void VideoOptionsWnd::OnBtnFarDistanceNextClick(m3d::AIParam const&)
@@ -695,7 +912,12 @@ void VideoOptionsWnd::ValidateWaterQualityVal(int& waterQualityVal) const
 
 VideoOptionsWnd::ShadowSettings VideoOptionsWnd::GetCurrentShadowSettings() const
 {
-    throw std::logic_error("Not implemented");
+    return ShadowSettings{
+        M3D_KERNEL->GetEngineCfg().m_lgtShadowTexSz.GetI(),
+        M3D_KERNEL->GetEngineCfg().m_detShadowTexSz.GetI(),
+        M3D_KERNEL->GetEngineCfg().m_g_shadowBlurCoeff.GetF(),
+        M3D_KERNEL->GetEngineCfg().m_g_shadowDetailRadius.GetF()
+    };
 }
 
 float VideoOptionsWnd::GetDefaultFarDistanceForGraphicQuality(GraphicQuality) const
@@ -703,9 +925,48 @@ float VideoOptionsWnd::GetDefaultFarDistanceForGraphicQuality(GraphicQuality) co
     throw std::logic_error("Not implemented");
 }
 
-void VideoOptionsWnd::UpdateGrassControls(GraphicQuality)
+void VideoOptionsWnd::UpdateGrassControls(GraphicQuality graphicQuality)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (graphicQuality != GRAPHIC_QUALITY_CUSTOM)
+        {
+            float drawDist = 0.0;
+            if (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+            {
+                drawDist = M3D_KERNEL->GetEngineCfg().m_g_grassDrawDist.GetF();
+            }
+            else
+            {
+                throw std::logic_error("Not implemented");
+            }
+            ++m_cbGrassBlocked;
+            m_cbGrass->SetCurSel(-1);
+            int i = 0;
+            for (; i < 3; ++i)
+            {
+                if (m_grassDistances[i] == drawDist)
+                {
+                    for (int j = 0; j < m_cbGrass->GetCount(); ++j)
+                    {
+                        if (m_cbGrass->GetItemData(j) == i)
+                        {
+                            ++m_cbGrassBlocked;
+                            m_cbGrass->SetCurSel(j);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            if (i >=3)
+            {
+                if (graphicQuality != GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+                    return;
+                m_cbGrass->SetText(M3D_APP->GetStringByStringId0("CustomQuality"));
+            }
+        }
+    }
 }
 
 void VideoOptionsWnd::InitGammaControls()
@@ -743,7 +1004,14 @@ void VideoOptionsWnd::UpdateControls()
 
 void VideoOptionsWnd::OnCbWaterQualityChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if (IsChildOf(M3D_APP) && !m_cbWaterQualityBlocked)
+    {
+        m_bVideoOptionsChanged = true;
+        OnGraphicQualityDependendControlChanged();
+    }
+    auto blocked = m_cbWaterQualityBlocked;
+    if (blocked > 0)
+        m_cbWaterQualityBlocked = blocked - 1;
 }
 
 int VideoOptionsWnd::GetCurrentWaterQuality() const
@@ -763,7 +1031,25 @@ float VideoOptionsWnd::GetCurrentGrass() const
 
 void VideoOptionsWnd::UpdateGraphicQualityControls()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto curQuality = DetectCurrentGraphicQuality();
+        if (curQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+        {
+            curQuality = GRAPHIC_QUALITY_CUSTOM;
+        }
+        ++m_cbGraphicQualityBlocked;
+        m_cbGraphicQuality->SetCurSel(-1);
+        for (int i = 0; i < m_cbGraphicQuality->GetCount(); ++i)
+        {
+            if (m_cbGraphicQuality->GetItemData(i) == curQuality)
+            {
+                ++m_cbGraphicQualityBlocked;
+                m_cbGraphicQuality->SetCurSel(i);
+                break;
+            }
+        }
+    }
 }
 
 CStr VideoOptionsWnd::Filtration2Str(Filtration filtration) const
@@ -1084,7 +1370,33 @@ int VideoOptionsWnd::AntialiasingEnum2Val(Antialiasing) const
 
 void VideoOptionsWnd::OnCbGraphicQualityChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (!IsChildOf(M3D_APP) || m_cbGraphicQualityBlocked)
+        {
+            auto blocked = m_cbGraphicQualityBlocked;
+            if (blocked > 0)
+            {
+                m_cbGraphicQualityBlocked = blocked - 1;
+            }
+        }
+        else
+        {
+            auto const sel = m_cbGraphicQuality->GetCurSel();
+            if (sel != -1)
+            {
+                auto data = m_cbGraphicQuality->GetItemData(sel);
+                if (data >= 0 && data < 4)
+                {
+                    SetDefaultParamsForGraphicQuality(static_cast<GraphicQuality>(data));
+                    if (data != 3)
+                    {
+                        m_bVideoOptionsChanged = true;
+                    }
+                }
+            }
+        }
+    }
 }
 
 int VideoOptionsWnd::GetWaterQualityValByWaterShaderVersion(int) const
@@ -1094,14 +1406,20 @@ int VideoOptionsWnd::GetWaterQualityValByWaterShaderVersion(int) const
 
 int VideoOptionsWnd::OnBeforeAddToWndStation()
 {
-    //TODO: implement VideoOptionsWnd::OnBeforeAddToWndStation
-    //UpdateControls();
+    UpdateControls();
     return Wnd::OnBeforeAddToWndStation();
 }
 
 void VideoOptionsWnd::OnCbGrassChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if (IsChildOf(M3D_APP) && !m_cbGrassBlocked)
+    {
+        m_bVideoOptionsChanged = true;
+        OnGraphicQualityDependendControlChanged();
+    }
+    auto blocked = m_cbGrassBlocked;
+    if (blocked > 0)
+        m_cbGrassBlocked = blocked - 1;
 }
 
 VideoOptionsWnd::VideoOptionsWnd()
@@ -1113,9 +1431,48 @@ VideoOptionsWnd::VideoOptionsWnd(VideoOptionsWnd const&)
     throw std::logic_error("Not implemented");
 }
 
-void VideoOptionsWnd::UpdateWaterQualityControls(GraphicQuality)
+void VideoOptionsWnd::UpdateWaterQualityControls(GraphicQuality graphicQuality)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (graphicQuality != GRAPHIC_QUALITY_CUSTOM)
+        {
+            int waterQuality = 0;
+            if (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+            {
+                waterQuality = M3D_KERNEL->GetEngineCfg().m_r_waterQuality.GetI();
+            }
+            else
+            {
+                throw std::logic_error("Not implemented");
+            }
+            ++m_cbWaterQualityBlocked;
+            m_cbWaterQuality->SetCurSel(-1);
+            int i = 0;
+            for (; i < 3; ++i)
+            {
+                if (m_waterQualities[i] == waterQuality)
+                {
+                    for (int j = 0; j < m_cbWaterQuality->GetCount(); ++j)
+                    {
+                        if (m_cbWaterQuality->GetItemData(j) == i)
+                        {
+                            ++m_cbWaterQualityBlocked;
+                            m_cbWaterQuality->SetCurSel(j);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            if (i >= 3)
+            {
+                if (graphicQuality != GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
+                    return;
+                m_cbWaterQuality->SetText(M3D_APP->GetStringByStringId0("CustomQuality"));
+            }
+        }
+    }
 }
 
 void VideoOptionsWnd::ApplyGraphicQuality()

@@ -28,12 +28,27 @@ namespace m3d
 
         float ScrollWnd::GetCurPos() const
         {
-            throw std::logic_error("Not implemented");
+            return m_curPos * m_maxPos;
         }
 
-        void ScrollWnd::SetCurPos(float)
+        void ScrollWnd::SetCurPos(float p)
         {
-            throw std::logic_error("Not implemented");
+            if (m_maxPos <= 0.001)
+            {
+                m_curPos = 0.0;
+            }
+            else
+            {
+                m_curPos = p / m_maxPos;
+            }
+            if (m_curPos < 0.0)
+            {
+                m_curPos = 0.0;
+            }
+            else if (m_curPos > 1.0)
+            {
+                m_curPos = 1.0;
+            }
         }
 
         void ScrollWnd::EnableWindow(bool)

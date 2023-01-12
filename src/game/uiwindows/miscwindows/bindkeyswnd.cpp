@@ -100,7 +100,9 @@ BindKeysWnd::BindKeysItem::BindKeysItem(float)
 
 int BindKeysWnd::BindKeysList::CreateItems()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement BindKeysWnd::BindKeysList::CreateItems
+    //throw std::logic_error("Not implemented");
+    return 1;
 }
 
 int BindKeysWnd::BindKeysList::MeasureItem(int, BoundsBase<float>&) const
@@ -110,7 +112,9 @@ int BindKeysWnd::BindKeysList::MeasureItem(int, BoundsBase<float>&) const
 
 int BindKeysWnd::BindKeysList::Rebind(Impulse)
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement BindKeysWnd::BindKeysList::Rebind
+    //throw std::logic_error("Not implemented");
+    return 1;
 }
 
 int BindKeysWnd::BindKeysList::RenderItem(int, PointBase<float> const&, m3d::ui::DrawInfo const&)
@@ -197,7 +201,10 @@ int BindKeysWnd::BindKeysList::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3
 
 int BindKeysWnd::BindKeysList::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    if (m_items.empty() || !(m_items.size() / 36))
+        CreateItems();
+    GetStation()->CaptureFocus(this);
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 BindKeysWnd::BindKeysList::~BindKeysList()
@@ -255,7 +262,10 @@ int BindKeysWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam con
 
 int BindKeysWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    this->m_bChanged = false;
+    if (m_isInited && this->m_isDirty)
+        m_lstBindings->Rebind(IM_ERROR);
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 void BindKeysWnd::LoadDefaultBindings()

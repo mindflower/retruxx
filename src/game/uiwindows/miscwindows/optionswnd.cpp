@@ -147,9 +147,18 @@ void OptionsWnd::UpdateTabButtonsStates()
     throw std::logic_error("Not implemented");
 }
 
-int OptionsWnd::SetCurTab(Tab)
+int OptionsWnd::SetCurTab(Tab tabId)
 {
-    throw std::logic_error("Not implemented");
+    if (tabId == this->m_curTabId)
+        return 1;
+    auto result = ShowOptionWindowForTab(tabId);
+    if (!result)
+        return result;
+    m_curTabId = tabId;
+    if (tabId != TAB_NUM_TABS)
+        this->m_lastTabId = tabId;
+    SelectTabButton(tabId);
+    return 1;
 }
 
 void OptionsWnd::SelectTabButton(Tab tabId)
@@ -285,7 +294,7 @@ m3d::Object* OptionTabButton::CreateObject()
 
 OptionsWnd::Tab OptionTabButton::GetTabId() const
 {
-    throw std::logic_error("Not implemented");
+    return m_tabId;
 }
 
 int OptionTabButton::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)

@@ -40,7 +40,9 @@ SoundOptionsWnd::~SoundOptionsWnd()
 
 int SoundOptionsWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement SoundOptionsWnd::OnBeforeAddToWndStation
+    //SoundOptionsWnd::UpdateControls(this);
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 void SoundOptionsWnd::InitControls()

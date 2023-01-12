@@ -315,7 +315,7 @@ namespace m3d
 
         Wnd* WndStation::GetCapture() const
         {
-            throw std::logic_error("Not implemented");
+            return m_wndMouseCapture;
         }
 
         Wnd* WndStation::GetWndMouseOver()

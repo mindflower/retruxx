@@ -159,9 +159,27 @@ namespace m3d
             return 1;
         }
 
-        int SliderWnd::OnMouseMove(PointBase<float> const&, PointBase<float> const&)
+        int SliderWnd::OnMouseMove(PointBase<float> const& at, PointBase<float> const& deltas)
         {
-            throw std::logic_error("Not implemented");
+            if (this != GetStation()->GetCapture())
+            {
+                m_tracking = false;
+            }
+            if (!m_tracking)
+            {
+                return 1;
+            }
+            auto cur = (at.x - (m_notchWidth * 0.5)) / (GetBounds().width - m_notchWidth);
+            if (cur < 0.0)
+            {
+                cur = 0.0;
+            }
+            else if (cur > 1.0)
+            {
+                cur = 1.0;
+            }
+            SetNotch(m_min + ((m_max - m_min) * cur));
+            return 1;
         }
 
         BoundsBase<float> SliderWnd::GetBodyRect() const
@@ -169,9 +187,12 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int SliderWnd::OnMouseButton0(unsigned, PointBase<float> const&)
+        int SliderWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
-            throw std::logic_error("Not implemented");
+            m_tracking = state != 0;
+            GetStation()->CaptureMouse(state != 0 ? this : nullptr);
+            OnMouseMove(at, { 0.0, 0.0 });
+            return 1;
         }
 
         SliderWnd::SliderWnd()

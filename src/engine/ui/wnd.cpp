@@ -926,7 +926,9 @@ namespace m3d
 
         int Wnd::OnLoosingFocus()
         {
-            throw std::logic_error("Not implemented");
+            this->m_gotFocus = 0;
+            this->m_mouseDown = 0;
+            return 1;
         }
 
         int Wnd::CreateWnd(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -956,7 +958,16 @@ namespace m3d
 
         PointBase<float> Wnd::GetOriginPoint() const
         {
-            throw std::logic_error("Not implemented");
+            PointBase<float> res{0.0, 0.0};
+            if (m_scrollVWnd)
+            {
+                res.y = m_scrollVWnd->GetCurPos();
+            }
+            if (m_scrollHWnd)
+            {
+                res.x = m_scrollHWnd->GetCurPos();
+            }
+            return res;
         }
 
         void Wnd::DrawNonClient(DrawInfo const& di, unsigned clr)

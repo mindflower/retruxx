@@ -89,7 +89,7 @@ namespace m3d
         {
             return x;
         }
-        if (GetType() != AIPARAM_VECTOR)
+        if (GetType() != AIPARAM_STRING)
         {
             return id;
         }

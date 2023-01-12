@@ -5,6 +5,8 @@
 #include "ui_srv.h"
 #include <core/kernel.h>
 
+#include "core/aiparam.h"
+
 namespace m3d
 {
     namespace ui
@@ -59,7 +61,10 @@ namespace m3d
             //ItemFromPoint(PointBase<float> const &);
             //GetTopVisibleItemId();
             //GetItemBounds(int);
-            //GetItem(int);
+            T GetItem(int idx) const
+            {
+                return m_items[idx].m_item;
+            }
             //ScrollList(bool);
             //SetClientEdges(float,float,float,float);
             //SetClientEdges(float,float,float,float);
@@ -85,7 +90,10 @@ namespace m3d
             //GetBottomVisibleItemId();
             //InsertItem(T const &,int);
             //RemoveItem(int);
-            //GetCurSel();
+            int GetCurSel() const
+            {
+                return m_curSel;
+            }
             //OnMouseDblClick(PointBase<float> const &,PointBase<float> const &);
             //SetPane(CStr const &);  //Type??
             void SetDrawFlags(unsigned int flags)
@@ -93,7 +101,10 @@ namespace m3d
                 m_drawFlags = flags;
             }
             //SetScrollPane(T const &);
-            //GetItemData(int);
+            int GetItemData(int idx) const
+            {
+                return m_items[idx].m_data;
+            }
             //WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
             //SetPaneFlags(int);
             void RecalcNcLayout()
@@ -115,13 +126,58 @@ namespace m3d
                     m_scrollVWnd->SetBounds(res, true);
                 }
             }
-            //GetCount();
+
+            int GetCount() const
+            {
+                return m_items.size();
+            }
             //OnPaint(DrawInfo const &);
             //Create(T const &, unsigned int,BoundsBase<float> const &, unsigned int);
             //Create(T const &, unsigned int,BoundsBase<float> const &, unsigned int);
-            virtual void SetCurSel(int)
+            virtual void SetCurSel(int i)
             {
-                throw std::logic_error("Not implemented");
+                if (i >= -1)
+                {
+                    auto const itemsSize = static_cast<int>(m_items.size());
+                    if (i < itemsSize)
+                    {
+                        auto const oldSel = m_curSel;
+                        if ((m_style & 0x40000) != 0)
+                        {
+                            AIParam const param{CVector2{static_cast<float>(oldSel), static_cast<float>(i)}};
+                            CallParentNotify(6u, param, true);
+                        }
+                        m_curSel = i;
+                        if (i == -1)
+                        {
+                            if (m_scrollVWnd)
+                            {
+                                m_scrollVWnd->SetCurPos(0.0);
+                            }
+                        }
+                        else
+                        {
+                            //TODO: check this and refactor
+                            auto pt = GetOriginPoint();
+                            auto bounds = GetClientBounds();
+                            auto v8 = m_items[i].m_rect.y0 + m_items[i].m_origin.y;
+                            auto v10 = m_items[i].m_rect.height;
+                            auto v11 = v8 + (0.0 - pt.y);
+                            auto v12 = bounds.height * 0.5;
+                            auto v13 = (bounds.height - v12) * 0.5;
+                            if (v13 > (v10 + v11) || v11 > (v13 + v12))
+                            {
+                                if (m_scrollVWnd)
+                                    m_scrollVWnd->SetCurPos(m_items[i].m_origin.y - v12);
+                            }
+                        }
+                        if ((m_style & 0x40000) != 0)
+                        {
+                            AIParam const param{CVector2{static_cast<float>(oldSel), static_cast<float>(m_curSel)}};
+                            CallParentNotify(5u, param, false);
+                        }
+                    }
+                }
             }
             //ScrollSelection(bool);
             unsigned GetDrawFlags()
