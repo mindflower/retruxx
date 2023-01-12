@@ -51,7 +51,6 @@ namespace m3d
 
     DbgCounter::~DbgCounter()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void DbgCounter::SetName(char const* name)

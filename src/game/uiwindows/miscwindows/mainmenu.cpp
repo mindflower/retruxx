@@ -64,7 +64,9 @@ void MainMenuUI::OnNewGame()
 
 int MainMenuUI::OnAfterRemoveFromWndStation()
 {
-    throw std::logic_error("Not implemented");
+    auto const res = Wnd::OnAfterRemoveFromWndStation();
+    GetStation()->CaptureFocus(nullptr);
+    return res;
 }
 
 int MainMenuUI::OnKey(unsigned short, unsigned char, unsigned)
@@ -120,7 +122,7 @@ void MainMenuUI::OnStartVideoPlaying()
 
 void MainMenuUI::QuitToWindows()
 {
-    if (!M3D_APP->RunMsgBoxDlg("", M3D_APP->GetStringByStringId0("quitGame"), 2u, false))
+    if (M3D_APP->RunMsgBoxDlg("", M3D_APP->GetStringByStringId0("quitGame"), 2u, false) == m3d::ui::MBX_RET_OK)
     {
         M3D_APP->m_pInterfaceManager->ShowWindow(m_guiId, false, false, false, false, nullptr);
         M3D_APP->ClearViewportToBlack();

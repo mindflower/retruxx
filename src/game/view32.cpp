@@ -458,7 +458,16 @@ void CMiracle3d::SetMaxTimeScale(float)
 
 int CMiracle3d::OnObtainingFocus()
 {
-    throw std::logic_error("Not implemented");
+    if (M3D_APP->m_pInterfaceManager->IsWindowVisible(72))
+    {
+        auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(72);
+        CaptureFocus(wnd);
+    }
+    else
+    {
+        m_gotFocus = true;
+    }
+    return 1;
 }
 
 int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServers, bool bQuiet, bool bContinuousMap, m3d::cmn::XmlFile* dynamicSceneXmlFile, m3d::cmn::XmlNode const* dynamicSceneXmlNode, ai::ObjContainer::eSAVE_TYPES saveType)
@@ -703,7 +712,7 @@ int CMiracle3d::StartPlayingVideo(char const* videoFile, int(CMiracle3d::* onFin
 
 CMiracle3d::~CMiracle3d()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement CMiracle3d::~CMiracle3d
 }
 
 float CMiracle3d::GetNormalTimeScale() const

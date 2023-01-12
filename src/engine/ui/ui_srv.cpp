@@ -9,6 +9,10 @@
 
 namespace m3d
 {
+    ui::FormattedLine::FormattedLine()
+    {
+    }
+
     ui::GfxServer::SoundInfo::SoundInfo()
     {
     }
@@ -786,9 +790,18 @@ namespace m3d
         }
     }
 
-    void ui::GfxServer::AddText(DrawInfo const&, PointBase<float> const&, CStr const&, int, TextWrapFlags, TextFormatFlags)
+    void ui::GfxServer::AddText(DrawInfo const& di, PointBase<float> const& at, CStr const& text, int uiFont, TextWrapFlags tw, TextFormatFlags tf)
     {
-        throw std::logic_error("Not implemented");
+        if (m_fontManager->ValidateFontId(uiFont))
+        {
+            auto const font = m_fontManager->GetFontById(uiFont);
+            if (font)
+                m_curFont = font;
+        }
+        PointBase<float> point;
+        point.x = at.x + di.m_clientRect.x0;
+        point.y = at.y + di.m_clientRect.y0;
+        M3D_APP->DrawTextRelClip(point, text, di, tw, tf);
     }
 
     void ui::GfxServer::AddImagedRect(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, rend::TexHandle tex)

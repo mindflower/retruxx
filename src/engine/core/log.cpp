@@ -62,7 +62,30 @@ namespace m3d
 
     bool Log::endLog()
     {
-        throw std::logic_error("Not implemented");
+        AutoLock guard(m_cs);
+        if (!m_logStarted)
+        {
+            return true;
+        }
+
+        std::ofstream logStream(m_fileName, std::ios_base::app);
+        if (logStream)
+        {
+            auto const timestamp = time(NULL);
+            CStr timeStr = asctime(localtime(&timestamp));
+            timeStr[timeStr.length() - 1] = '\0';
+            logStream <<
+                "----------------------------------------------- Log ends on " <<
+                timeStr.c_str() <<
+                " ----------------------------------------------" <<
+                std::endl;
+            if (m_flushImmediately)
+            {
+                logStream.flush();
+            }
+        }
+        m_logStarted = false;
+        return true;
     }
 
     bool const& Log::lineCharsFlag() const
@@ -140,6 +163,7 @@ namespace m3d
 
     bool Log::startLog(char const* fileName, bool flush)
     {
+        AutoLock guard(m_cs);
         if (m_logStarted)
         {
             return true;

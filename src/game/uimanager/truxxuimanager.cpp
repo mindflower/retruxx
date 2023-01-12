@@ -289,7 +289,7 @@ bool TruxxUiManager::IsHidden() const
 
 int TruxxUiManager::AddWindow(ref_ptr<m3d::ui::Wnd> w, int& wndId, bool isPersistent, bool needShow)
 {
-    return GUI_AddWindowById(w, wndId, isPersistent, needShow);
+    return GUI_AddWindow(w, wndId, isPersistent, needShow);
 }
 
 int TruxxUiManager::AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool isPersistent, bool needShow)
@@ -556,9 +556,18 @@ bool TruxxUiManager::IsInSaleMode() const
     throw std::logic_error("Not implemented");
 }
 
-bool TruxxUiManager::IsWindowVisible(int) const
+bool TruxxUiManager::IsWindowVisible(int wndGuiId) const
 {
-    throw std::logic_error("Not implemented");
+    auto wnd = GetWindow(wndGuiId);
+    if (!wnd)
+    {
+        return false;
+    }
+    if (wnd->IsChildOf(M3D_APP))
+    {
+        return true;
+    }
+    return false;
 }
 
 int TruxxUiManager::SetEventsForWindow(int, std::vector<int, std::allocator<int>> const&)
@@ -635,9 +644,9 @@ HelpManager* TruxxUiManager::GetHelpManager() const
     throw std::logic_error("Not implemented");
 }
 
-int TruxxUiManager::RemoveWindow(int)
+int TruxxUiManager::RemoveWindow(int wndId)
 {
-    throw std::logic_error("Not implemented");
+    return GUI_RemoveWindow(wndId);
 }
 
 bool TruxxUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd* w) const

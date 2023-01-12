@@ -12,7 +12,6 @@ namespace m3d
     public:
         ~CStrHash()
         {
-            throw std::logic_error("Not implemented");
         }
 
         void add(CStr const& key, T value)
@@ -47,7 +46,6 @@ namespace m3d
     public:
         ~CIntHash()
         {
-            throw std::logic_error("Not implemented");
         }
 
         void removeByKey(unsigned int key)

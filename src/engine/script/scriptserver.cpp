@@ -262,7 +262,18 @@ namespace m3d
 
     eScriptError ScriptServer::done()
     {
-        throw std::logic_error("Not implemented");
+        for (auto& script : m_scripts)
+        {
+            delete script.second;
+        }
+        m_scripts.clear();
+        if (L)
+        {
+            lua_close(L);
+            L = nullptr;
+        }
+        m_bInitialized = false;
+        return SUCCESS;
     }
 
     char const* ScriptServer::getNameOfLastScript() const
@@ -314,7 +325,6 @@ namespace m3d
 
     ScriptServer::~ScriptServer()
     {
-        throw std::logic_error("Not implemented");
     }
 
     lua_State* ScriptServer::getGlobalEnvironment()

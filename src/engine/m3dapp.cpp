@@ -1360,7 +1360,7 @@ namespace m3d
 
     Application::~Application()
     {
-        throw std::logic_error("Not implemented");
+        //TODO: implement Application::~Application
     }
 
     void Application::TexSoften(rend::TexHandle, rend::TexHandle, int, float, unsigned)
@@ -1478,7 +1478,7 @@ namespace m3d
 
     void Application::done()
     {
-        throw std::logic_error("Not implemented");
+        //TODO: implement Application::done
     }
 
     void Application::OnAfterDeviceReset()
@@ -1549,9 +1549,21 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Application::StartQuads(rend::VertexType)
+    void Application::StartQuads(rend::VertexType vt)
     {
-        throw std::logic_error("Not implemented");
+        m_numPointsVerts = 0;
+        if (vt == rend::VERTEX_XYZWCT1)
+        {
+            m_pointsVertsVb = M3D_APP->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1);
+            m_pointsVertsSz = 28;
+            m_sourceVerts = m_pointsVertsWct1;
+        }
+        else if (vt == rend::VERTEX_XYZCT1)
+        {
+            m_pointsVertsVb = M3D_APP->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1);
+            m_pointsVertsSz = 24;
+            m_sourceVerts = m_pointsVertsCt1;
+        }
     }
 
     int Application::GetTextExtent(CStr const& str, PointBase<float>& size, int fid, BoundsBase<float>* csz, int* minc, int* maxc, CStr* leftInvisibleSubstr, CStr* rightInvisibleSubstr)
@@ -2044,9 +2056,37 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int Application::DrawTextRelClip(PointBase<float> const&, CStr const&, ui::DrawInfo const&, TextWrapFlags, TextFormatFlags)
+    int Application::DrawTextRelClip(PointBase<float> const& at , CStr const& str, ui::DrawInfo const& di, TextWrapFlags wrapFlag, TextFormatFlags formatFlag)
     {
-        throw std::logic_error("Not implemented");
+        enterFontRender();
+        StartQuads(rend::VERTEX_XYZWCT1);
+        if (wrapFlag)
+        {
+            std::vector<m3d::ui::FormattedLine> linesOfText;
+            FormatText(linesOfText, at, str, di, wrapFlag, formatFlag);
+            if (formatFlag == TF_FULL && !linesOfText.empty())
+            {
+                linesOfText.back().m_format = TF_LEFT;
+            }
+            for (auto const& line : linesOfText)
+            {
+                DrawStringRelClip(line, di);
+            }
+        }
+        else
+        {
+            ui::FormattedLine line;
+            line.m_origin.x = at.x;
+            line.m_origin.y = at.y;
+            line.m_color = -1;
+            line.m_text = str;
+            line.m_format = formatFlag;
+            line.m_isHieroglyphic = false;
+            DrawStringRelClip(line, di);
+        }
+        FinishQuads();
+        finishFontRender();
+        return 1;
     }
 
     DataServer& Application::GetParticlesServer()
@@ -2146,7 +2186,17 @@ namespace m3d
 
     void Application::enterFontRender()
     {
-        throw std::logic_error("Not implemented");
+        if (GetGfxServer()->GetCurFont())
+        {
+            M3D_APP->m_renderer->SetTexture(0, GetGfxServer()->m_curFontTexture, -1.0);
+            M3D_APP->m_renderer->PushBlend(rend::BM_ALPHA);
+            M3D_APP->m_renderer->SetAlphaTest(1);
+            M3D_APP->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+            M3D_APP->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+            M3D_APP->m_renderer->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+            M3D_APP->m_renderer->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+            M3D_APP->m_renderer->PushCull(rend::M3DCULL_CCW);
+        }
     }
 
     int Application::EnableDXCursor(bool bEnable)

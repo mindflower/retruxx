@@ -700,8 +700,8 @@ namespace m3d
             virtual void PushZbState(m3d::rend::ZbState) = 0;
             virtual void PopZbState() = 0;
             virtual void SetZbState(m3d::rend::ZbState, bool) = 0;
-            virtual void PushCull(m3d::rend::Cull) = 0;
             virtual void PushCull() = 0;
+            virtual void PushCull(m3d::rend::Cull) = 0;
             virtual void PopCull() = 0;
             virtual void SetCull(m3d::rend::Cull, bool) = 0;
             virtual void PushZFunc(m3d::rend::CmpFunc) = 0;

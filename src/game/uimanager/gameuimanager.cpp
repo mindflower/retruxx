@@ -657,9 +657,21 @@ int GameUiManager::GUI_RemoveWindow(ref_ptr<m3d::ui::Wnd>)
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_RemoveWindow(int)
+int GameUiManager::GUI_RemoveWindow(int wndId)
 {
-    throw std::logic_error("Not implemented");
+    auto const wndIt = m_windows.find(wndId);
+    if (wndIt == m_windows.cend())
+    {
+        return 0;
+    }
+    GUI_HideWindow(wndId, false, nullptr, false);
+    wndIt->second->SetGuiId(-1);
+    m_windows.erase(wndIt);
+    for (auto& ev : m_eventMap)
+    {
+        ev.second.erase(wndId);
+    }
+    return 1;
 }
 
 void GameUiManager::GUI_UnregisterCVars()
@@ -757,9 +769,30 @@ int GameUiManager::GUI_Clear(bool)
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_AddWindow(ref_ptr<m3d::ui::Wnd>, int&, bool, bool)
+int GameUiManager::GUI_AddWindow(ref_ptr<m3d::ui::Wnd> w, int& wndId, bool isPersistent, bool needShow)
 {
-    throw std::logic_error("Not implemented");
+    wndId = -1;
+    if (!w)
+    {
+        return 0;
+    }
+    wndId = m_nextDynamicId;
+    if (isPersistent)
+    {
+        w->m_gameDataFlags |= 8;
+    }
+    else
+    {
+        w->m_gameDataFlags &= 0xF7;
+    }
+    m_windows.emplace(wndId, w);
+    ++m_nextDynamicId;
+    w->m_guiId = wndId;
+    if (needShow)
+    {
+        GUI_ShowWindow(wndId, false, false, false, nullptr);
+    }
+    return 1;
 }
 
 int GameUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void* data)
@@ -1037,7 +1070,6 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool is
         GUI_ShowWindow(wndId, false, false, false, nullptr);
     }
     return 1;
-    throw std::logic_error("Not implemented");
 }
 
 int GameUiManager::GUI_ValidateDynamicId(int id)

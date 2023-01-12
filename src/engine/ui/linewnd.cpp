@@ -59,7 +59,6 @@ namespace m3d
 
         LineWnd::~LineWnd()
         {
-            throw std::logic_error("Not implemented");
         }
 
         int LineWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
