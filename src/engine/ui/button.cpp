@@ -216,23 +216,23 @@ namespace m3d
             }
             else
             {
-                auto color = 0;
+                PaneFlagBg bgFlag = PANE_FLAG_BG_OUT;
                 if ((m_style & 2) != 0)
                 {
-                    color = 3;
+                    bgFlag = PANE_FLAG_BG_DISABLE;
                 }
                 else if ((m_mouseDown & 1) != 0)
                 {
-                    color = 1;
+                    bgFlag = PANE_FLAG_BG_DOWN;
                 }
                 else
                 {
-                    color = m_isInside != 0 ? 2 : 0;
+                    bgFlag = m_isInside != 0 ? PANE_FLAG_BG_OVER : PANE_FLAG_BG_OUT;
                 }
                 auto rect = GetBounds();
                 rect.x0 = 0.0;
                 rect.y0 = 0.0;
-                GetGfxServer()->AddFlatAxialPane0(di, rect, color, m_paneFlags, m_paneName, m_bgFlags);
+                GetGfxServer()->AddFlatAxialPane0(di, rect, clr, m_paneFlags, m_paneName, bgFlag);
             }
         }
 
@@ -242,7 +242,7 @@ namespace m3d
             if ((m_style & 0x40) == 0)
             {
                 auto clr = m_curClr;
-                if ((clr & 2) == 0 && (clr & 0x80000) == 0)
+                if ((m_style & 2) == 0 && (m_style & 0x80000) == 0)
                 {
                     DrawNonClient(di, clr);
                     DrawWndText(di);
@@ -345,8 +345,8 @@ namespace m3d
 
         void CheckWnd::SetCheck(int chk)
         {
-            this->m_isChecked = chk;
-            this->m_paneName = chk ? m_checkedPaneName : m_uncheckedPaneName;
+            m_isChecked = chk;
+            m_paneName = chk ? m_checkedPaneName : m_uncheckedPaneName;
         }
 
         CheckWnd::~CheckWnd()
@@ -366,7 +366,7 @@ namespace m3d
 
         int CheckWnd::GetCheck() const
         {
-            throw std::logic_error("Not implemented");
+            return m_isChecked;
         }
 
         void CheckWnd::SetUncheckedPane(CStr const&)
@@ -376,27 +376,21 @@ namespace m3d
 
         int CheckWnd::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
         {
-            //TODO: check this and refactor
-            int result; // eax
-            int v5; // ebx
-            const char* v6; // eax
-
-            result = ButtonWnd::ReadFromXmlNode(file, node);
-            if (result)
+            if (ButtonWnd::ReadFromXmlNode(file, node))
             {
-                m3d::SafeStrAttrib(this->m_checkedPaneName, node, "checkedPaneName");
-                m3d::SafeStrAttrib(this->m_uncheckedPaneName, node, "uncheckedPaneName");
-                v5 = 0;
+                m3d::SafeStrAttrib(m_checkedPaneName, node, "checkedPaneName");
+                m3d::SafeStrAttrib(m_checkedPaneName, node, "uncheckedPaneName");
+                auto isChecked = 0;
                 if (!node->IsEmpty())
                 {
-                    v6 = node->GetAttribute("isChecked");
-                    if (v6)
-                        v5 = atoi(v6);
+                    auto isCheckedAttr = node->GetAttribute("isChecked");
+                    if (isCheckedAttr)
+                        isChecked = atoi(isCheckedAttr);
                 }
-                SetCheck(v5);
-                result = 1;
+                SetCheck(isChecked);
+                return 1;
             }
-            return result;
+            return 0;
         }
 
         CStr const& CheckWnd::GetUncheckedPaneName() const
@@ -416,29 +410,32 @@ namespace m3d
 
         int CheckWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
-            //TODO: check this and refactor
-            unsigned int v6; // eax
-
-            if (!CreateWnd(caption, style, rc, id))
+            if (!Wnd::CreateWnd(caption, style, rc, id))
+            {
                 return 0;
-            this->m_style |= 4u;
-            v6 = this->m_style;
-            v6 &= 0xFBu;
-            this->m_textWrap = TW_WORD_WRAP;
-            this->m_isChecked = 0;
-            this->m_style = v6;
-            this->m_paneName = this->m_uncheckedPaneName;
+            }
+            m_style |= 0x00040000;
+            m_textWrap = TW_WORD_WRAP;
+            m_isChecked = 0;
+            m_style &= 0xFBFFFFFF;
+            m_paneName = m_uncheckedPaneName;
             return 1;
         }
 
-        int CheckWnd::OnMouseButton0(unsigned, PointBase<float> const&)
+        int CheckWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
-            throw std::logic_error("Not implemented");
+            if (!state)
+            {
+                return ButtonWnd::OnMouseButton0(state, at);
+            }
+            SetCheck(m_isChecked == 0);
+            return ButtonWnd::OnMouseButton0(state, at);
         }
 
-        void CheckWnd::DrawWndText(DrawInfo const&)
+        void CheckWnd::DrawWndText(DrawInfo const& di)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: implement CheckWnd::DrawWndText
+            //throw std::logic_error("Not implemented");
         }
 
         BoundsBase<float> CheckWnd::GetIcoBounds() const
@@ -446,13 +443,20 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void CheckWnd::OnNcPaint(DrawInfo const&, unsigned)
+        void CheckWnd::OnNcPaint(DrawInfo const& di, unsigned clr)
         {
-            throw std::logic_error("Not implemented");
+            auto const origBounds = GetBounds();
+            auto fakeBounds = origBounds;
+            fakeBounds.width = origBounds.height;
+            SetBounds(fakeBounds, true);
+            ButtonWnd::OnNcPaint(di, clr);
+            SetBounds(origBounds, true);
         }
 
         CheckWnd::CheckWnd()
         {
+            m_paneFlags = 1;
+            m_textFormat = TF_LEFT;
         }
 
         CheckWnd::CheckWnd(CheckWnd const&)

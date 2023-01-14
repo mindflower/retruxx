@@ -3,6 +3,7 @@
 #include "game/m3dgame.h"
 #include "core/log.h"
 #include "game/profile.h"
+#include "game/uimisc/helpmanager.h"
 #include "server/objects/base/globalproperties.h"
 #include "ui/button.h"
 #include "ui/comboboxwnd.h"
@@ -48,7 +49,15 @@ void GameOptionsWnd::InitNumRepliesControls()
 
 void GameOptionsWnd::ApplyNumReplies()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto profile = M3D_APP->GetProfileManager()->GetCurProfile();
+        if (profile)
+        {
+            m3d::AIParam const param{static_cast<float>(m_sliderNumReplies->GetNotch() * 0.0099999998)};
+            profile->SetParam(PP_NUM_RADIO_REPLIES_COEFF, param);
+        }
+    }
 }
 
 void GameOptionsWnd::UpdateControls()
@@ -166,7 +175,10 @@ void GameOptionsWnd::UpdateNumRepliesPrevNextButtonsState()
 
 void GameOptionsWnd::OnBtnNumRepliesNextClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderNumReplies->SetNotch(m_sliderNumReplies->GetNotch() + 1);
+    }
 }
 
 void GameOptionsWnd::OnCbGameDifficultyChange(m3d::AIParam const&)
@@ -180,7 +192,10 @@ void GameOptionsWnd::OnCbGameDifficultyChange(m3d::AIParam const&)
 
 void GameOptionsWnd::OnBtnNumRepliesPrevClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderNumReplies->SetNotch(m_sliderNumReplies->GetNotch() - 1);
+    }
 }
 
 void GameOptionsWnd::InitGameDifficultyControls()
@@ -325,7 +340,15 @@ void GameOptionsWnd::UpdateGameDifficultyControls()
 
 void GameOptionsWnd::ApplyAutoHelp()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto const enableAutoHelp = m_checkAutoHelp->GetCheck() != 0;
+        M3D_APP->m_pInterfaceManager->GetHelpManager()->EnableAutoHelp(enableAutoHelp);
+        if (enableAutoHelp)
+        {
+            M3D_APP->m_pInterfaceManager->GetHelpManager()->ResetAutoHelp();
+        }
+    }
 }
 
 void GameOptionsWnd::InitControls()

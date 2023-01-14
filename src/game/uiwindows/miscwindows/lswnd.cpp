@@ -4,6 +4,7 @@
 #include <ui/listbox.h>
 
 #include "game/m3dgame.h"
+#include "game/profile.h"
 
 RT_CLASS_EXPORTS_BEGIN(SaveButton)
     RT_CLASS_EXPORTS_END;
@@ -524,9 +525,25 @@ int LSWnd::GameDataSetup()
     return 0;
 }
 
-int LSWnd::GameDataUpdate(void*, int)
+int LSWnd::GameDataUpdate(void* data, int dataType)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    switch (dataType)
+    {
+    case 40:
+        OnCurProfileChanged();
+        break;
+    case 42:
+        OnCurProfileParamChanged(data);
+        return 1;
+    case 47:
+        OnScreenshotRelease(data);
+        return 1;
+    }
+    return 1;
 }
 
 LSWnd::LSWnd()
@@ -538,9 +555,28 @@ LSWnd::LSWnd(LSWnd const&)
     throw std::logic_error("Not implemented");
 }
 
-void LSWnd::OnCurProfileParamChanged(void*)
+void LSWnd::OnCurProfileParamChanged(void* data)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0 && data)
+    {
+        auto const ev = static_cast<m3d::Event*>(data);
+        if (!ev->m_void[0] || ev->m_uintEv[0] == 1)
+        {
+            if (auto const profile = M3D_APP->GetProfileManager()->GetCurProfile())
+            {
+                m3d::AIParam sortArgParam;
+                m3d::AIParam sortDirParam;
+                if (profile->GetParam(PP_SAVE_SORT_ARG, sortArgParam) &&
+                    profile->GetParam(PP_SAVE_SORT_DIR, sortDirParam))
+                {
+                    auto const sortArg = static_cast<SaveList::SortArg>(sortArgParam.GetAsID());
+                    auto const sortDir = static_cast<SaveList::SortDir>(sortDirParam.GetAsID());
+                    m_wndSaveList->SortSaves(sortArg, sortDir);
+                    UpdateSortButtonStates();
+                }
+            }
+        }
+    }
 }
 
 int LSWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)

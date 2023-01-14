@@ -163,7 +163,16 @@ CStr VideoOptionsWnd::GraphicQuality2Str(GraphicQuality graphicQuality) const
 
 void VideoOptionsWnd::ApplyGamma()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto const gamma = m_sliderGamma->GetNotch() * 0.0099999998;
+        M3D_KERNEL->GetEngineCfg().m_gammaGamma.SetF(gamma, true);
+        M3D_APP->m_renderer->SetGamma(
+            M3D_KERNEL->GetEngineCfg().m_gammaGamma.GetF(),
+            M3D_KERNEL->GetEngineCfg().m_gammaBrightness.GetF(),
+            M3D_KERNEL->GetEngineCfg().m_gammaContrast.GetF()
+        );
+    }
 }
 
 int VideoOptionsWnd::GetWaterShaderVersionByWaterQualityVal(int) const
@@ -612,7 +621,10 @@ void VideoOptionsWnd::InitGrassControls()
 
 void VideoOptionsWnd::OnBtnGammaNextClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderGamma->SetNotch(m_sliderGamma->GetNotch() + 1);
+    }
 }
 
 VideoOptionsWnd::Filtration VideoOptionsWnd::FiltrationVal2Enum(int) const
@@ -622,7 +634,18 @@ VideoOptionsWnd::Filtration VideoOptionsWnd::FiltrationVal2Enum(int) const
 
 void VideoOptionsWnd::OnGraphicQualityDependendControlChanged()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        for (int i = 0; i < m_cbGraphicQuality->GetCount(); ++i)
+        {
+            if (m_cbGraphicQuality->GetItemData(i) == 3)
+            {
+                ++m_cbGraphicQualityBlocked;
+                m_cbGraphicQuality->SetCurSel(i);
+                break;
+            }
+        }
+    }
 }
 
 void VideoOptionsWnd::ApplyFiltration()
@@ -727,7 +750,10 @@ float VideoOptionsWnd::GetDefaultGrassForGraphicQuality(GraphicQuality) const
 
 void VideoOptionsWnd::OnBtnFarDistancePrevClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderFarDistance->SetNotch(m_sliderFarDistance->GetNotch() - 1);
+    }
 }
 
 int VideoOptionsWnd::FiltrationEnum2Val(Filtration) const
@@ -798,7 +824,10 @@ void VideoOptionsWnd::UpdateGraphicQualityDependendControls(GraphicQuality)
 
 void VideoOptionsWnd::OnBtnGammaPrevClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderGamma->SetNotch(m_sliderGamma->GetNotch() - 1);
+    }
 }
 
 void VideoOptionsWnd::OnCbAntialiasingChange(m3d::AIParam const&)
@@ -874,7 +903,10 @@ void VideoOptionsWnd::UpdateBlumControls(GraphicQuality graphicQuality)
 
 void VideoOptionsWnd::OnBtnFarDistanceNextClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderFarDistance->SetNotch(m_sliderFarDistance->GetNotch() + 1);
+    }
 }
 
 PointBase<int> VideoOptionsWnd::Resolution2ScreenWH(Resolution) const

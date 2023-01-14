@@ -356,12 +356,12 @@ namespace m3d
             Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[11], rend::TM_WRAP_T, 3);
         }
 
-        m_colors[0] = -1870626688;
-        m_colors[1] = -1863257872;
-        m_colors[2] = -1868521312;
-        m_colors[3] = -2139062144;
-        m_colors[4] = -8421505;
-        m_colors[5] = -1;
+        m_colors[0] = 0x90808080;
+        m_colors[1] = 0x90F0F0F0;
+        m_colors[2] = 0x90A0A0A0;
+        m_colors[3] = 0x80808080;
+        m_colors[4] = 0xFF7F7F7F;
+        m_colors[5] = 0xFFFFFFFF;
 
         struct
         {

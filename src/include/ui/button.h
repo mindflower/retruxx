@@ -88,8 +88,8 @@ namespace m3d
 
         private:
             int m_isChecked = 0;
-            CStr m_checkedPaneName;
-            CStr m_uncheckedPaneName;
+            CStr m_checkedPaneName = "defaultCheckChecked";
+            CStr m_uncheckedPaneName = "defaultCheckUnchecked";
         };
     }
 }

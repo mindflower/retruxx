@@ -18,8 +18,6 @@ namespace m3d
             class Item
             {
             public:
-            protected:
-            public:
                 T m_item;
                 int m_data;
                 BoundsBase<float> m_rect;
@@ -69,7 +67,14 @@ namespace m3d
             //SetClientEdges(float,float,float,float);
             //SetClientEdges(float,float,float,float);
             //SetBounds(BoundsBase<float> const &,bool);
-            //RemoveAllItems();
+            int RemoveAllItems()
+            {
+                while (!m_items.empty())
+                {
+                    RemoveItem(m_items.size() - 1);
+                }
+                return 1;
+            }
             //OnKey(unsigned short,unsigned char, unsigned int);
             //OnMouseButton0(uint,PointBase<float> const &);
             int AddItem(T const& item)
@@ -89,7 +94,26 @@ namespace m3d
             //SetItem(int,T const &);
             //GetBottomVisibleItemId();
             //InsertItem(T const &,int);
-            //RemoveItem(int);
+            int RemoveItem(int idx)
+            {
+                DeleteItem(idx);
+                m_items.erase(m_items.begin() + idx);
+                auto newIdx = idx;
+                if (idx >= m_items.size())
+                {
+                    newIdx = idx - 1;
+                    SetCurSel(newIdx);
+                }
+                for (int i = newIdx; i < m_items.size(); ++i)
+                {
+                    m_items[i].m_rectValid = 0;
+                }
+                RecalcLayout();
+                return 1;
+            }
+
+            virtual int DeleteItem(int) = 0;
+
             int GetCurSel() const
             {
                 return m_curSel;

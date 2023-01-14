@@ -115,7 +115,14 @@ int ChangeProfileWnd::GameDataSetup()
 
 int ChangeProfileWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return Wnd::OnBeforeAddToWndStation();
+    }
+    Clear();
+    OnProfilesListChanged();
+    OnCurProfileChanged();
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 void ChangeProfileWnd::OnChangeProfileSelection()
@@ -179,7 +186,11 @@ int ChangeProfileWnd::DeleteProfile()
 
 void ChangeProfileWnd::Clear()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndProfileList->RemoveAllItems();
+        m_lblCurProfile->SetText(M3D_APP->GetStringByStringId0(m_aif.m_strIdCurProfile));
+    }
 }
 
 int ChangeProfileWnd::CreateProfile()

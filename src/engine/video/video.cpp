@@ -192,19 +192,29 @@ namespace
 //}
 
 unsigned int g_Tex = 0;
+m3d::rend::TexHandle g_pTexture;
 
 namespace m3d
 {
-    namespace rend
-    {
-        TexHandle* g_pTexture = nullptr;
-    }
-
     CTextureRenderer* g_pRenderer = nullptr;
 
-    long CTextureRenderer::SetMediaType(CMediaType const*)
+    long CTextureRenderer::SetMediaType(CMediaType const* pmt)
     {
-        throw std::logic_error("Not implemented");
+        m_lVidWidth = pmt->pbFormat[13];
+        m_lVidHeight = pmt->pbFormat[14];
+        auto v4 = 2;
+        auto v5 = 2;
+        for (m_lVidPitch = 4 * m_lVidWidth; v5 < m_lVidWidth; v5 *= 2);
+        if (m_lVidHeight > 2)
+        {
+            do
+                v4 *= 2;
+            while (v4 < m_lVidHeight);
+        }
+        g_pTexture = M3D_APP->m_renderer->AddDynamicTexture("$TexMedia", v5, v4, 5);
+        M3D_APP->m_renderer->SetTextureParameter(g_pTexture, rend::TM_WRAP_S, 3);
+        M3D_APP->m_renderer->SetTextureParameter(g_pTexture, rend::TM_WRAP_T, 3);
+        return 0;
     }
 
     long CTextureRenderer::CheckMediaType(CMediaType const* pmt)
@@ -224,9 +234,28 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    long CTextureRenderer::DoRenderSample(IMediaSample*)
+    long CTextureRenderer::DoRenderSample(IMediaSample* pSample)
     {
+        if (::WaitForSingleObject(g_Event2, 0x1E))
+        {
+            return 0;
+        }
+
+        unsigned char* pBmpBuffer;
+        pSample->GetPointer(&pBmpBuffer);
+
+        int xsize = 0;
+        int ysize = 0;
+        M3D_APP->m_renderer->GetDims(g_pTexture, xsize, ysize);
+
+        int retaddr = 0;
+        auto texLock = static_cast<char*>(M3D_APP->m_renderer->LockTexture(g_pTexture, rend::TM_DTF_RGBA8888_VIDEOFRAME, &retaddr, 0));
         throw std::logic_error("Not implemented");
+
+
+        M3D_APP->m_renderer->UnlockTexture(g_pTexture);
+        SetEvent(g_Event1);
+        return 0;
     }
 
     CTextureRenderer::CTextureRenderer(IUnknown* pUnk, long* phr) : CBaseVideoRenderer(__uuidof(CLSID_TextureRenderer), NULL, pUnk, phr)
@@ -400,10 +429,10 @@ namespace m3d
         Application::g_pApp->m_renderer->PushLighting(false);
         Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
         Application::g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_NONE);
-        Application::g_pApp->m_renderer->SetTexture(0, *rend::g_pTexture, -1.0);
+        Application::g_pApp->m_renderer->SetTexture(0, g_pTexture, -1.0);
 
         int tH = 0, tW = 0;
-        Application::g_pApp->m_renderer->GetDims(*rend::g_pTexture, tW, tH);
+        Application::g_pApp->m_renderer->GetDims(g_pTexture, tW, tH);
         int sH = 0, sW = 0;
         m_texRend->GetVideoDims(sW, sH);
         Application::g_pApp->PutSprite2Rel(0.0, 0.0, 0.0, 0.0, 1024.0, 768.0, sW / tW, sH / tW, static_cast<unsigned>(-1));

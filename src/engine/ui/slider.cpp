@@ -149,7 +149,7 @@ namespace m3d
             GetGfxServer()->AddImagedRectGeneral(di, rect, clr, bodyTex, 0.0, 0.0, rect.width / bounds.width, 1.0);
 
             //TODO: check this
-            rect.x0 = (((bounds.width - m_notchWidth) * ((m_cur - m_min) / (m_max - m_min))) + (m_notchWidth * 0.5)) - (this->m_notchWidth * 0.5);
+            rect.x0 = (bounds.width - m_notchWidth) * (static_cast<float>(m_cur - m_min) / (m_max - m_min));
             rect.y0 = 0.0;
             rect.height = bounds.height;
             rect.width = m_notchWidth;

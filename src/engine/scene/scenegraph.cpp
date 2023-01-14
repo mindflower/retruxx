@@ -262,7 +262,7 @@ namespace m3d
         this->m_contourShader->SetDefaultTechnique(true);
         this->m_rootNode.m_isRootNode = 1;
         //TODO: important! UpdateXForm
-        //this->m_rootNode.UpdateXForm(0, 1);
+        this->m_rootNode.UpdateXForm(false , true);
         memset(this->m_enableMap, 0, sizeof(this->m_enableMap));
         this->m_enableVisSpaceMask = 1;
         //TODO: add this fields

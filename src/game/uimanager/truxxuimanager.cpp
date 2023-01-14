@@ -641,7 +641,7 @@ void TruxxUiManager::AddImportantFadingMsg(CStr const&, std::vector<m3d::AIParam
 
 HelpManager* TruxxUiManager::GetHelpManager() const
 {
-    throw std::logic_error("Not implemented");
+    return m_helpManager;
 }
 
 int TruxxUiManager::RemoveWindow(int wndId)
@@ -1170,6 +1170,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     {
     case 17:
     case 41:
+    case 42:
     case 44:
     {
         return 0;

@@ -258,7 +258,7 @@ namespace m3d
                 if (g_Kernel->GetEngineCfg().m_hasServers.GetB())
                 {
                     m_serverStaticModels->Init();
-                    //m_serverAnimatedModels->Init();
+                    m_serverAnimatedModels->Init();
                     m_serverLights->Init();
                     m_serverSprites->Init();
                     m_serverLines->Init();
@@ -1668,8 +1668,9 @@ namespace m3d
         throw std::logic_error("Not implemented"); 
     }
 
-    int Application::FormatText(std::vector<ui::FormattedLine, std::allocator<ui::FormattedLine>>&, PointBase<float> const&, CStr const&, ui::DrawInfo const&, TextWrapFlags, TextFormatFlags)
+    int Application::FormatText(std::vector<ui::FormattedLine>& linesOfText, PointBase<float> const& at, CStr const& textIn, ui::DrawInfo const& di, TextWrapFlags wrapFlags, TextFormatFlags formatFlags)
     {
+
         throw std::logic_error("Not implemented");
     }
 
@@ -2060,6 +2061,7 @@ namespace m3d
     {
         enterFontRender();
         StartQuads(rend::VERTEX_XYZWCT1);
+        //TODO: implement Application::DrawTextRelClip
         if (wrapFlag)
         {
             std::vector<m3d::ui::FormattedLine> linesOfText;
@@ -2169,8 +2171,60 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int Application::DrawStringRelClip(ui::FormattedLine const&, ui::DrawInfo const&)
+    int Application::DrawStringRelClip(ui::FormattedLine const& fl, ui::DrawInfo const& di)
     {
+        if (fl.m_isHieroglyphic && M3D_KERNEL->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+        {
+            GetGfxServer()->SetFont(GetGfxServer()->m_hieroglyphicFontId);
+        }
+        auto curFont = GetGfxServer()->GetCurFont();
+        if (curFont == nullptr)
+        {
+            return 0;
+        }
+        auto text = fl.m_text;
+        auto const textSize = text.length();
+        auto firstSpacePos = -1;
+        auto lastSpacePos = textSize;
+        if (fl.m_format == TF_FULL)
+        {
+            auto v15 = 0;
+            if (text[0] == '@')
+            {
+                v15 = 9;
+            }
+            if (v15 < textSize)
+            {
+                firstSpacePos = text.find(' ', v15);
+            }
+            lastSpacePos = text.rfind(' ');
+            text = text.substr(0, lastSpacePos);
+        }
+        PointBase<float> sz;
+        GetTextExtent(text, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+        BoundsBase<float> absClient;
+        switch(fl.m_format)
+        {
+        case TF_CENTER:
+        {
+            absClient.x0 = fl.m_origin.x - (sz.x * 0.5);
+            absClient.y0 = fl.m_origin.y;
+            absClient.width = ((sz.x * 0.5) + fl.m_origin.x) - fl.m_origin.x;
+            absClient.height = sz.y;
+            break;
+        }
+        case TF_LEFT:
+        {
+            absClient.x0 = fl.m_origin.x;
+            absClient.y0 = fl.m_origin.y;
+            absClient.width = sz.x;
+            absClient.height = sz.y;
+            break;
+        }
+        default:
+            throw std::logic_error("Not implemented");
+        }
+
         throw std::logic_error("Not implemented");
     }
 

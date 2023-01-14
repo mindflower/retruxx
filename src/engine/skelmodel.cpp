@@ -98,6 +98,8 @@ namespace m3d
 
     bool AnimatedModel::LoadGAM(CStr const& fileName, bool bForceNextAnimation)
     {
+        //TODO: implement AnimatedModel::LoadGAM
+        return true;
         if (m_bVerification)
         {
             M3D_LOG_ERR("LoadGAM does work not for verification of models!!!");

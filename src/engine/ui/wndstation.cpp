@@ -11,6 +11,7 @@
 
 #include "core/timer.h"
 #include "impulses/i_impulses.h"
+#include "ui/button.h"
 
 char const STR_OK[] = "ok";
 char const STR_CANCEL[] = "cancel";
