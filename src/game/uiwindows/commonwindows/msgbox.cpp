@@ -74,10 +74,9 @@ m3d::Object* MsgBox::CreateObject()
 
 void MsgBox::SetIdioticEmbossesBounds(PointBase<float> const&)
 {
-    //TODO: implment MsgBox::SetIdioticEmbossesBounds
     if ((m_gameDataFlags & 1) != 0 && (m_msgBoxFlags & 3) != 0)
     {
-		//throw std::logic_error("Not implemented");
+		throw std::logic_error("Not implemented");
 	}
 }
 
@@ -221,11 +220,10 @@ void MsgBox::AddLines()
 
 void MsgBox::SetDownLineBounds()
 {
-    //TODO: implement MsgBox::SetDownLineBounds
     if ((m_gameDataFlags & 1) != 0 && IsDirectChild(m_wndDownLine))
     {
         //auto patternChild = m_pattern->GetChildByName(m_aif.m_wndDownLineName);
-
+        throw std::logic_error("Not implemented");
     }
 }
 
@@ -572,10 +570,9 @@ int MsgBox::LoadPattern()
 
 void MsgBox::SetButtonsBounds(PointBase<float> const& buttonsSza)
 {
-    //TODO: implement MsgBox::SetButtonsBounds
     if ((m_gameDataFlags & 1) != 0 && (m_msgBoxFlags & 3) != 0)
     {
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 }
 

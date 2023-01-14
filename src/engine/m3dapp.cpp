@@ -1498,9 +1498,7 @@ namespace m3d
 
     int Application::GetTextFit(CStr const&, PointBase<float>&, float, TextWrapFlags)
     {
-        //TODO: implement Application::GetTextFit
-        return 1;
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     int Application::StartExclusiveMsgLoop()
@@ -1568,7 +1566,7 @@ namespace m3d
 
     int Application::GetTextExtent(CStr const& str, PointBase<float>& size, int fid, BoundsBase<float>* csz, int* minc, int* maxc, CStr* leftInvisibleSubstr, CStr* rightInvisibleSubstr)
     {
-        //TODO: recreate this
+        //TODO: check this shit!!!!
         if (leftInvisibleSubstr)
         {
             leftInvisibleSubstr->erase();
@@ -1584,12 +1582,6 @@ namespace m3d
             return 0;
         }
 
-        //temp!
-        size.x = 0;
-        size.y = 0;
-        return 0;
-        //
-
         auto fnt = fid == -1 ? GetGfxServer()->GetCurFont() : GetGfxServer()->GetFontById(fid);
         if (!fnt)
         {
@@ -1599,7 +1591,10 @@ namespace m3d
         bool flag1 = false;
         bool flag2 = false;
         float width = 0.0;
-        for (int i = 0; i < str.length(); ++i)
+        float height = 0.0;
+        auto numChars = 0;
+        auto len = str.length();
+        for (int i = 0; i < len; ++i)
         {
             if (str[i] > ' ')
             {
@@ -1645,22 +1640,50 @@ namespace m3d
                 }
 
                 flag1 = false;
-                if (str[i] && maxc /* && (float)(v14 / (float)(v11->m_heightScaled / v11->m_heightUnscaled)) > (float)(v16->width + v16->x0) */)
+                if (csz && maxc && (width / (fnt->m_heightScaled / fnt->m_heightUnscaled)) > (csz->width + csz->x0))
                 {
-                    //TODO: recreate this logic
                     *maxc = i;
                     if (rightInvisibleSubstr != nullptr)
                     {
                         (*rightInvisibleSubstr) += CStr(str[i]);
                     }
-                    
-                    throw std::logic_error("Not implemented");
+                    break;
                 }
                 width = fnt->GetCharWidthAdvanced(str[i]) + width;
-
+                auto heiTemp = fnt->GetGlyphSz(str[i]).y;
+                if (heiTemp > height)
+                {
+                    height = heiTemp;
+                }
+                if (csz && minc && csz->x0 > (width / (fnt->m_heightScaled / fnt->m_heightUnscaled)))
+                {
+                    *minc = i;
+                    if (leftInvisibleSubstr != nullptr)
+                    {
+                        (*leftInvisibleSubstr) += CStr(str[i]);
+                    }
+                    break;
+                }
+                ++numChars;
+            }
+            else
+            {
+                flag1 = false;
             }
         }
-        throw std::logic_error("Not implemented");
+        if (len <= 0 || !numChars)
+        {
+            auto glyphY = 0.0;
+            if (fnt->m_symbols['A'])
+            {
+                glyphY = fnt->m_symbols['A']->m_precalcedGlyphSz.y;
+            }
+            if (glyphY > height)
+                height = glyphY;
+        }
+        size.x = width / (fnt->m_heightScaled / fnt->m_heightUnscaled);
+        size.y = height / (fnt->m_heightScaled / fnt->m_heightUnscaled);
+        return numChars;
     }
 
     int Application::DrawTextRelT(float, float, unsigned, CStr const&, unsigned, int)
@@ -2061,7 +2084,6 @@ namespace m3d
     {
         enterFontRender();
         StartQuads(rend::VERTEX_XYZWCT1);
-        //TODO: implement Application::DrawTextRelClip
         if (wrapFlag)
         {
             std::vector<m3d::ui::FormattedLine> linesOfText;

@@ -526,9 +526,13 @@ namespace m3d
             }
         }
 
-        PointBase<float> Font::GetGlyphSz(unsigned char) const
+        PointBase<float> Font::GetGlyphSz(unsigned char c) const
         {
-            throw std::logic_error("Not implemented");
+            if (auto const sym = m_symbols[c])
+            {
+                return {sym->m_precalcedGlyphSz.x, sym->m_precalcedGlyphSz.y};
+            }
+            return {0.0, 0.0};
         }
 
         Font::TextureCoordinates Font::GetTexCoord(unsigned char) const

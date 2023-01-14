@@ -434,8 +434,7 @@ namespace m3d
 
         void CheckWnd::DrawWndText(DrawInfo const& di)
         {
-            //TODO: implement CheckWnd::DrawWndText
-            //throw std::logic_error("Not implemented");
+            throw std::logic_error("Not implemented");
         }
 
         BoundsBase<float> CheckWnd::GetIcoBounds() const

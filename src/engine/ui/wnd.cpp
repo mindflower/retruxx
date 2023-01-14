@@ -967,8 +967,7 @@ namespace m3d
                     origin.y = (di.m_clientRect.height - measureText.y) * 0.5;
                 else
                     origin.y = 0.0;
-                //TODO: implement this
-                //GetGfxServer()->AddText(di, origin, textColor + m_caption, m_defFont, m_textWrap, m_textFormat);
+                GetGfxServer()->AddText(di, origin, textColor + m_caption, m_defFont, m_textWrap, m_textFormat);
             }
         }
 
