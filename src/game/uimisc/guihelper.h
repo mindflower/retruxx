@@ -66,4 +66,5 @@ namespace help
     int GetWindowsSubDirs(CStr const&, std::vector<CStr>&, CStr const&);
     int CreateWindowsDir(CStr const&);
     CStr GetMapNameFromFileName(CStr const&);
+    CStr Color2Str(unsigned);
 }

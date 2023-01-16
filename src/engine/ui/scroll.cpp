@@ -51,9 +51,16 @@ namespace m3d
             }
         }
 
-        void ScrollWnd::EnableWindow(bool)
+        void ScrollWnd::EnableWindow(bool bEnable)
         {
-            throw std::logic_error("Not implemented");
+            if (bEnable)
+                m_style &= 0xFFFFFFFD;
+            else
+                m_style |= 2u;
+            if (m_btn0)
+                m_btn0->EnableWindow(bEnable);
+            if (m_btn1)
+                m_btn1->EnableWindow(bEnable);
         }
 
         int ScrollWnd::Create(BoundsBase<float> const& rect, int vertical)
@@ -181,9 +188,53 @@ namespace m3d
                 m_btn1->ShowWindow(bShow);
         }
 
-        int ScrollWnd::OnPaint(DrawInfo const&)
+        int ScrollWnd::OnPaint(DrawInfo const& di)
         {
-            throw std::logic_error("Not implemented");
+            auto pane = GetGfxServer()->GetScrollPane(m_scrollPaneName);
+            if (!pane)
+            {
+                return 0;
+            }
+            auto bodyRect = GetBodyRect();
+            bodyRect.y0 -= pane->m_space;
+            bodyRect.height += pane->m_space * 2.0;
+
+            unsigned clr = 0;
+            PaneFlagBg bgFlag = PANE_FLAG_BG_OUT;
+            if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+            {
+                auto barPane = GetGfxServer()->GetPane(pane->m_barPaneName);
+                if (barPane && (barPane->m_frame[3] || barPane->m_bg[3]))
+                {
+                    clr = this->m_curClr;
+                    bgFlag = PANE_FLAG_BG_DISABLE;
+                }
+                else
+                {
+                    clr = 3;
+                    bgFlag = PANE_FLAG_BG_OUT;
+                }
+            }
+            GetGfxServer()->AddFlatAxialPane0(di, bodyRect, clr, 7, pane->m_barPaneName, bgFlag);
+
+            auto const thumbRect = GetThumbRect();
+            if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+            {
+                return 1;
+            }
+            if (m_vertical)
+            {
+                if (thumbRect.height > bodyRect.height)
+                {
+                    return 1;
+                }
+                GetGfxServer()->AddImagedRectGeneral(di, thumbRect, clr, pane->m_thumbTex, 0.0, 0.0, 1.0, 1.0);
+            }
+            if (thumbRect.width <= bodyRect.width)
+            {
+                GetGfxServer()->AddImagedRectGeneral(di, thumbRect, clr, pane->m_thumbTex, 0.0, 0.0, 1.0, 1.0);
+            }
+            return 1;
         }
 
         void ScrollWnd::RecalcLayot()
@@ -248,12 +299,52 @@ namespace m3d
 
         BoundsBase<float> ScrollWnd::GetThumbRect() const
         {
-            throw std::logic_error("Not implemented");
+            auto pane = GetGfxServer()->GetScrollPane(m_scrollPaneName);
+            if (pane)
+            {
+                auto bounds = GetBodyRect();
+                if (m_vertical)
+                {
+                    bounds.y0 = ((bounds.height - m_thumbSz) * m_curPos) + bounds.y0;
+                    bounds.height = m_thumbSz;
+                    bounds.x0 = (pane->GetWidth() - pane->m_thumbSize.x) * 0.5;
+                    bounds.width = pane->m_thumbSize.x;
+                }
+                else
+                {
+                    bounds.x0 = ((bounds.width - m_thumbSz) * m_curPos) + bounds.x0;
+                    bounds.width = m_thumbSz;
+                    bounds.y0 = (pane->GetWidth() - pane->m_thumbSize.y) * 0.5;
+                    bounds.height = pane->m_thumbSize.y;
+                }
+                return bounds;
+            }
+            return { 0.0, 0.0 };
         }
 
         BoundsBase<float> ScrollWnd::GetBodyRect() const
         {
-            throw std::logic_error("Not implemented");
+            auto pane = GetGfxServer()->GetScrollPane(m_scrollPaneName);
+            if (pane)
+            {
+                auto bounds = GetBounds();
+                if (m_vertical)
+                {
+                    bounds.y0 = pane->m_btnSize.y;
+                    bounds.height -= (bounds.y0 * 2.0);
+                    bounds.x0 = (pane->GetWidth() - pane->m_barWidth) * 0.5;
+                    bounds.width = pane->m_barWidth;
+                }
+                else
+                {
+                    bounds.x0 = pane->m_btnSize.x;
+                    bounds.width -= (bounds.x0 * 2.0);
+                    bounds.y0 = (pane->GetWidth() - pane->m_barWidth) * 0.5;
+                    bounds.height = pane->m_barWidth;
+                }
+                return bounds;
+            }
+            return {0.0, 0.0};
         }
 
         int ScrollWnd::OnMouseButton0(unsigned, PointBase<float> const&)

@@ -899,75 +899,75 @@ namespace m3d
             //TODO: implement Wnd::DrawWndText
             if (!m_caption.empty())
             {
-                auto textColor = m_strTextColor;
-                if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
-                {
-                    textColor = m_strTextColorDisabled;
-                }
-                auto measureText = GetGfxServer()->MeasureText(m_caption, m_defFont, m_textWrap, di.m_clientRect.width);
-                auto origin = measureText;
-                switch (m_textFormat)
-                {
-                case TF_CENTER:
-                {
-                    origin.x = di.m_clientRect.width*0.5;
-                    if (origin.x < 0.0)
-                    {
-                        origin.x = 0.0;
-                    }
-                    if (origin.x > di.m_clientRect.width)
-                    {
-                        origin.x = di.m_clientRect.width;
-                    }
-                    break;
-                }
-                case TF_LEFT:
-                case TF_FULL:
-                {
-                    if ((m_style & 0x400) != 0)
-                    {
-                        origin.x = (di.m_clientRect.width - measureText.x) * 0.5;
-                        if (origin.x < 0.0)
-                        {
-                            origin.x = 0.0;
-                        }
-                        if (origin.x > di.m_clientRect.width)
-                        {
-                            origin.x = di.m_clientRect.width;
-                        }
-                        break;
-                    }
-                    origin.x = 0.0;
-                    break;
-                }
-                case TF_RIGHT:
-                {
-                    if ((m_style & 0x400) != 0)
-                    {
-                        origin.x = (di.m_clientRect.width + measureText.x) * 0.5;
-                        if (origin.x < 0.0)
-                        {
-                            origin.x = 0.0;
-                        }
-                        if (origin.x > di.m_clientRect.width)
-                        {
-                            origin.x = di.m_clientRect.width;
-                        }
-                    }
-                    else
-                    {
-                        origin.x = di.m_clientRect.width;
-                    }
-                    break;
-                }
-                default:
-                    break;
-                }
-                if ((m_style & 0x800) != 0)
-                    origin.y = (di.m_clientRect.height - measureText.y) * 0.5;
-                else
-                    origin.y = 0.0;
-                GetGfxServer()->AddText(di, origin, textColor + m_caption, m_defFont, m_textWrap, m_textFormat);
+                //auto textColor = m_strTextColor;
+                //if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+                //{
+                //    textColor = m_strTextColorDisabled;
+                //}
+                //auto measureText = GetGfxServer()->MeasureText(m_caption, m_defFont, m_textWrap, di.m_clientRect.width);
+                //auto origin = measureText;
+                //switch (m_textFormat)
+                //{
+                //case TF_CENTER:
+                //{
+                //    origin.x = di.m_clientRect.width*0.5;
+                //    if (origin.x < 0.0)
+                //    {
+                //        origin.x = 0.0;
+                //    }
+                //    if (origin.x > di.m_clientRect.width)
+                //    {
+                //        origin.x = di.m_clientRect.width;
+                //    }
+                //    break;
+                //}
+                //case TF_LEFT:
+                //case TF_FULL:
+                //{
+                //    if ((m_style & 0x400) != 0)
+                //    {
+                //        origin.x = (di.m_clientRect.width - measureText.x) * 0.5;
+                //        if (origin.x < 0.0)
+                //        {
+                //            origin.x = 0.0;
+                //        }
+                //        if (origin.x > di.m_clientRect.width)
+                //        {
+                //            origin.x = di.m_clientRect.width;
+                //        }
+                //        break;
+                //    }
+                //    origin.x = 0.0;
+                //    break;
+                //}
+                //case TF_RIGHT:
+                //{
+                //    if ((m_style & 0x400) != 0)
+                //    {
+                //        origin.x = (di.m_clientRect.width + measureText.x) * 0.5;
+                //        if (origin.x < 0.0)
+                //        {
+                //            origin.x = 0.0;
+                //        }
+                //        if (origin.x > di.m_clientRect.width)
+                //        {
+                //            origin.x = di.m_clientRect.width;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        origin.x = di.m_clientRect.width;
+                //    }
+                //    break;
+                //}
+                //default:
+                //    break;
+                //}
+                //if ((m_style & 0x800) != 0)
+                //    origin.y = (di.m_clientRect.height - measureText.y) * 0.5;
+                //else
+                //    origin.y = 0.0;
+                //GetGfxServer()->AddText(di, origin, textColor + m_caption, m_defFont, m_textWrap, m_textFormat);
             }
         }
 
@@ -1472,10 +1472,43 @@ namespace m3d
         {
         }
 
-        Wnd* Wnd::GetNextActivatableChild(Wnd*, int)
+        Wnd* Wnd::GetNextActivatableChild(Wnd* first, int back)
         {
-            //TODO: ...
-            throw std::logic_error("Not implemented");
+            //TODO: check this and refactor
+            auto result = (Wnd*)GetFirstChild_();
+            auto v4 = 0;
+            auto v5 = result;
+            for (auto maxOrder = 0; v5; v5 = (Wnd*)v5->GetNextSibling_())
+            {
+                if ((v5->m_style & 0x2000) != 0)
+                {
+                    auto v6 = &v5->m_activationOrder;
+                    if (v4 >= v5->m_activationOrder)
+                        v6 = &maxOrder;
+                    v4 = *v6;
+                    maxOrder = *v6;
+                }
+            }
+            auto v7 = 0;
+            if (first)
+            {
+                v7 = first->m_activationOrder + 2 * (back != 1) - 1;
+                if (v7 < 0)
+                {
+                    v7 = v4;
+                    goto LABEL_13;
+                }
+            }
+            if (v7 > v4)
+                v7 = 0;
+        LABEL_13:
+            while (result)
+            {
+                if ((result->m_style & 0x2000) != 0 && result->m_activationOrder == v7)
+                    break;
+                result = (Wnd*)result->GetNextSibling_();
+            }
+            return result;
         }
 
         int Wnd::OnMouseDblClick(PointBase<float> const& firstClickPt, PointBase<float> const& secondClickPt)

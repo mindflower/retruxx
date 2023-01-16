@@ -388,7 +388,13 @@ int ProfileManager::DeleteProfile(CStr const&)
 
 std::vector<CStr> ProfileManager::GetProfilesNames() const
 {
-    throw std::logic_error("Not implemented");
+    std::vector<CStr> res;
+    res.reserve(m_profiles.size());
+    for (auto const& profile : m_profiles)
+    {
+        res.push_back(profile->GetName());
+    }
+    return res;
 }
 
 int ProfileManager::Done()

@@ -434,6 +434,8 @@ namespace m3d
 
         void CheckWnd::DrawWndText(DrawInfo const& di)
         {
+            //TODO: implement CheckWnd::DrawWndText
+            return;
             throw std::logic_error("Not implemented");
         }
 
