@@ -240,7 +240,9 @@ namespace m3d
 
     int SgNode::UpdateXForm(bool, bool)
     {
-        throw std::logic_error("Not implemented");
+        //TODO: implement SgNode::UpdateXForm
+        return 1;
+        //throw std::logic_error("Not implemented");
     }
 
     bool SgNode::VisCellBoundsChanged() const

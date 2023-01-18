@@ -155,6 +155,8 @@ protected:
     virtual void GUI_RegisterClasses() = 0;
     virtual int GUI_BindWindowsToEvents() = 0;
     virtual int GUI_BeginModalDlg(bool, bool) = 0;
+    virtual bool GUI_NeedUpdateWndOnEvent(ref_ptr<m3d::ui::Wnd>, int, void*) = 0;
+    virtual void GUI_EndModalDlg() = 0;
 
 protected:
     std::map<int, int> m_packToEvent;

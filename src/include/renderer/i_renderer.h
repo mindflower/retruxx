@@ -700,8 +700,8 @@ namespace m3d
             virtual void PushZbState(m3d::rend::ZbState) = 0;
             virtual void PopZbState() = 0;
             virtual void SetZbState(m3d::rend::ZbState, bool) = 0;
-            virtual void PushCull(m3d::rend::Cull) = 0;
             virtual void PushCull() = 0;
+            virtual void PushCull(m3d::rend::Cull) = 0;
             virtual void PopCull() = 0;
             virtual void SetCull(m3d::rend::Cull, bool) = 0;
             virtual void PushZFunc(m3d::rend::CmpFunc) = 0;
@@ -936,11 +936,11 @@ namespace m3d
             virtual int ReleaseTexture(m3d::rend::TexHandle&) = 0;
             virtual void SetTextureParameter(m3d::rend::TexHandle const&, m3d::rend::TexParam, unsigned int) = 0;
             virtual int GetTextureName(const m3d::rend::TexHandle*, CStr*) = 0;
-            virtual int UploadTexImage(const m3d::rend::TexHandle*, unsigned int, unsigned int, unsigned __int8*, m3d::rend::TexDynFormat, int) = 0;
-            virtual void* LockTexture(const m3d::rend::TexHandle*, m3d::rend::TexDynFormat, int*, int) = 0;
-            virtual void UnlockTexture(const m3d::rend::TexHandle*) = 0;
-            virtual int DownloadTexImageRgba8888(unsigned int*, const m3d::rend::TexHandle*) = 0;
+            virtual int UploadTexImage(const m3d::rend::TexHandle&, unsigned int, unsigned int, unsigned __int8*, m3d::rend::TexDynFormat, int) = 0;
+            virtual void* LockTexture(const m3d::rend::TexHandle&, m3d::rend::TexDynFormat, int*, int) = 0;
+            virtual void UnlockTexture(const m3d::rend::TexHandle&) = 0;
             virtual int DownloadTexImageRgba8888(unsigned int*, const m3d::rend::TexHandle*, int, int) = 0;
+            virtual int DownloadTexImageRgba8888(unsigned int*, const m3d::rend::TexHandle&) = 0;
             virtual void GetDims(m3d::rend::TexHandle const&, int&, int&) = 0;
             virtual void TexCopy(const m3d::rend::TexHandle*, const m3d::rend::TexHandle*) = 0;
             virtual void RepaintAllTexturesMips() = 0;

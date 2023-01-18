@@ -69,7 +69,10 @@ namespace m3d
 
         int FileServer::Shutdown()
         {
-            throw std::logic_error("Not implemented");
+            m_Packages.clear();
+            m_Files.clear();
+            m_Initialized = false;
+            return 1;
         }
 
         CriticalSection& FileServer::GetCriticalSecton()

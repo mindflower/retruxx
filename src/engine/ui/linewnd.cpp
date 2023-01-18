@@ -59,7 +59,6 @@ namespace m3d
 
         LineWnd::~LineWnd()
         {
-            throw std::logic_error("Not implemented");
         }
 
         int LineWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -94,14 +93,45 @@ namespace m3d
             m_paneFlags = 1;
         }
 
-        void LineWnd::OnNcPaint(DrawInfo const&, unsigned)
+        void LineWnd::OnNcPaint(DrawInfo const& di, unsigned clr)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this
+            auto pane = GetGfxServer()->GetPane(m_paneName);
+            float width = 0.0;
+            if (pane && pane->m_frame[0])
+            {
+                width = pane->m_frame[0]->m_barTexWidth;
+            }
+            if (m_direction)
+            {
+                if (m_bounds.width != width)
+                {
+                    m_bounds.width = width;
+                }
+            }
+            else
+            {
+                m_bounds.height = width;
+            }
+            BoundsBase<float> rect;
+            rect.x0 = 0.0;
+            rect.y0 = 0.0;
+            rect.width = GetBounds().width;
+            rect.height = GetBounds().height;
+            GetGfxServer()->AddFlatAxialPane0(di, rect, clr, m_paneFlags, m_paneName, m_bgFlags);
         }
 
-        int LineWnd::OnPaint(DrawInfo const&)
+        int LineWnd::OnPaint(DrawInfo const& di)
         {
-            throw std::logic_error("Not implemented");
+            if ((m_style & 0x40) != 0)
+                return 1;
+            if ((m_style & 2) == 0 && (m_style & 0x80000) == 0)
+            {
+                DrawNonClient(di, m_curClr);
+                return 1;
+            }
+            DrawNonClient(di, 3u);
+            return 1;
         }
 
         LineWnd::LineWnd(LineWnd const&)

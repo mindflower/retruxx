@@ -172,6 +172,7 @@ public:
     ITruxxUiManager* m_pInterfaceManager = nullptr;
     Player m_player;
     CVector m_hitPoint;
+    CVector m_gameSlideAuto;
 
 private:
     float getFov() const ;
@@ -192,7 +193,6 @@ private:
     CVector m_flyCamTurn;
     CVector m_flyCamMove;
     float m_gameCameraRho;
-    CVector m_gameSlideAuto;
     bool m_srvKeys[10];
     bool m_paused;
     float m_saveTimeScale;

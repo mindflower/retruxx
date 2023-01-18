@@ -67,6 +67,7 @@ namespace m3d
         {
             friend class WndStation;
             friend class GameUiManager;
+            friend class ModalWnd;
         public:
             enum DragMode
             {

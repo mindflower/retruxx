@@ -315,9 +315,57 @@ int GameUiManager::GUI_SetEventsForWindow(int wndId, std::vector<int> const& eve
     return 1;
 }
 
-int GameUiManager::GUI_UpdateWindowsOnEvent(int, m3d::ui::Wnd*, void*)
+int GameUiManager::GUI_UpdateWindowsOnEvent(int eventId, m3d::ui::Wnd* forceWnd, void* data)
 {
-    throw std::logic_error("Not implemented");
+    static int entries = 0;
+    if (entries++ == 0)
+    {
+        m_isEventMapValide = true;
+    }
+    bool valid = m_isEventMapValide;
+    auto const evIt = m_eventMap.find(eventId);
+    if (evIt == m_eventMap.cend())
+    {
+        --entries;
+        return 0;
+    }
+    auto res = 1;
+    for (auto const& ev : evIt->second)
+    {
+        auto const it = m_windows.find(ev);
+        if (it != m_windows.cend())
+        {
+            auto wnd = it->second;
+            if (!forceWnd || forceWnd == wnd)
+            {
+                if (GUI_NeedUpdateWndOnEvent(wnd, eventId, data))
+                {
+                    if (!wnd->GameDataUpdate(data, eventId))
+                    {
+                        res = 0;
+                    }
+                    if (valid && !m_isEventMapValide)
+                    {
+                        --entries;
+                        return res;
+                    }
+                }
+                if (forceWnd)
+                {
+                    --entries;
+                    return res;
+                }
+            }
+            --entries;
+            return res;
+        }
+        else
+        {
+            res = 0;
+        }
+    }
+    --entries;
+    return res;
 }
 
 int GameUiManager::GUI_LoadResourceInfosFromFile(CStr const& fileName, std::vector<ResourceInfo*>& resourceInfos, CStr const& className)
@@ -484,14 +532,15 @@ int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void
     auto id = -1;
 	switch (eventType)
 	{
-	case GUI_EVENT_FROM_APPEVENT:
+    case GUI_EVENT_FROM_PACKET:
     {
-        auto it = m_eventToEvent.find(appEventId);
-        if (it != m_eventToEvent.end())
+        auto it = m_packToEvent.find(appEventId);
+        if (it != m_packToEvent.end())
         {
             id = it->second;
+            break;
         }
-        break;
+        return 0;
     }
     case GUI_EVENT_FROM_IMPULSE:
     {
@@ -499,17 +548,19 @@ int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void
         if (it != m_impulseToEvent.end())
         {
             id = it->second;
+            break;
         }
-        break;
+        return 0;
     }
-    case GUI_EVENT_FROM_PACKET:
+	case GUI_EVENT_FROM_APPEVENT:
     {
-        auto it = m_packToEvent.find(appEventId);
-        if (it != m_packToEvent.end())
+        auto it = m_eventToEvent.find(appEventId);
+        if (it != m_eventToEvent.end())
         {
             id = it->second;
+            break;
         }
-        break;
+        return 0;
     }
     case GUI_EVENT_CUSTOM:
     {
@@ -606,9 +657,21 @@ int GameUiManager::GUI_RemoveWindow(ref_ptr<m3d::ui::Wnd>)
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_RemoveWindow(int)
+int GameUiManager::GUI_RemoveWindow(int wndId)
 {
-    throw std::logic_error("Not implemented");
+    auto const wndIt = m_windows.find(wndId);
+    if (wndIt == m_windows.cend())
+    {
+        return 0;
+    }
+    GUI_HideWindow(wndId, false, nullptr, false);
+    wndIt->second->SetGuiId(-1);
+    m_windows.erase(wndIt);
+    for (auto& ev : m_eventMap)
+    {
+        ev.second.erase(wndId);
+    }
+    return 1;
 }
 
 void GameUiManager::GUI_UnregisterCVars()
@@ -653,9 +716,47 @@ int GameUiManager::GUI_LoadStringsResources(ResourceInfo::ResourceLoadType loadT
     return res;
 }
 
-int GameUiManager::GUI_ShowInterface(bool, bool)
+int GameUiManager::GUI_ShowInterface(bool needShow, bool enableAnimation)
 {
-    throw std::logic_error("Not implemented");
+    auto res = 1;
+    if (!needShow)
+    {
+        if (m_isHidden)
+        {
+            return 1;
+        }
+        m_isHidden = true;
+        for (auto const& window : m_onScreenWindows)
+        {
+            if (GUI_HideWindow(window, true, nullptr, true) == -1)
+            {
+                res = 0;
+            }
+        }
+        M3D_APP->SetCursorShow(false);
+    }
+    else
+    {
+        if (!m_isHidden)
+        {
+            return 1;
+        }
+        m_isHidden = false;
+        for (auto const& window : m_onScreenWindows)
+        {
+            if (GUI_ShowWindow(window, false, false, false, nullptr) == -1)
+            {
+                res = 0;
+            }
+        }
+        M3D_APP->SetCursorShow(true);
+    }
+    if (enableAnimation)
+    {
+        return res;
+    }
+    M3D_APP->ImmediateMessage(43, 0, 0, 0, 0, {}, {});
+    return res;
 }
 
 int GameUiManager::GUI_Load(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
@@ -668,14 +769,52 @@ int GameUiManager::GUI_Clear(bool)
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_AddWindow(ref_ptr<m3d::ui::Wnd>, int&, bool, bool)
+int GameUiManager::GUI_AddWindow(ref_ptr<m3d::ui::Wnd> w, int& wndId, bool isPersistent, bool needShow)
 {
-    throw std::logic_error("Not implemented");
+    wndId = -1;
+    if (!w)
+    {
+        return 0;
+    }
+    wndId = m_nextDynamicId;
+    if (isPersistent)
+    {
+        w->m_gameDataFlags |= 8;
+    }
+    else
+    {
+        w->m_gameDataFlags &= 0xF7;
+    }
+    m_windows.emplace(wndId, w);
+    ++m_nextDynamicId;
+    w->m_guiId = wndId;
+    if (needShow)
+    {
+        GUI_ShowWindow(wndId, false, false, false, nullptr);
+    }
+    return 1;
 }
 
-int GameUiManager::GUI_HandleEvent(int, m3d::ui::Wnd*, void*)
+int GameUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void* data)
 {
-    throw std::logic_error("Not implemented");
+    if (guiEventId)
+    {
+        return 0;
+    }
+    if (data)
+    {
+        auto ev = static_cast<m3d::Event*>(data);
+        for (auto const& window : m_windows)
+        {
+            if (ev->m_void[0] == window.second)
+            {
+                m_onScreenWindows.erase(window.first);
+                GUI_EndModalDlg();
+                break;
+            }
+        }
+    }
+    return 1;
 }
 
 GameUiManager::~GameUiManager()
@@ -717,9 +856,55 @@ void GameUiManager::GUI_ClearResourceInfos(std::vector<ResourceInfo*>& resourceI
     resourceInfos.clear();
 }
 
-int GameUiManager::GUI_HideWindow(int, bool, int*, bool)
+int GameUiManager::GUI_HideWindow(int wndId, bool canBeShownAgain, int* modalRetVal, bool bForceRemove)
 {
-    throw std::logic_error("Not implemented");
+    using namespace m3d::ui;
+    auto wnd = GUI_GetWindow(wndId);
+    if (!wnd)
+    {
+        return 0;
+    }
+    auto wndParent = wnd->GetParent();
+    if (wndParent && wndParent != M3D_APP)
+    {
+        return 0;
+    }
+    if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+    {
+        auto modalWnd = dynamic_cast<ModalWnd*>(&*wnd);
+        if (wnd->GetStation()->IsModal(modalWnd))
+        {
+            auto retVal = 0;
+            if (modalRetVal)
+            {
+                retVal = *modalRetVal;
+            }
+            M3D_APP->EnqueueMessage(39, reinterpret_cast<int>(modalWnd), retVal, 0, 0, {}, {});
+        }
+    }
+    else
+    {
+        if (wnd->GetStation()->IsDirectChild(wnd))
+        {
+            if (bForceRemove)
+            {
+                wnd->GetStation()->RemoveChildForce(wnd);
+            }
+            else
+            {
+                wnd->GetStation()->RemoveChild(wnd);
+            }
+            if (GUI_IsWndModalEqual(wnd))
+            {
+                GUI_EndModalDlg();
+            }
+        }
+    }
+    if (!canBeShownAgain || wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+    {
+        m_onScreenWindows.erase(wndId);
+    }
+    return 1;
 }
 
 int GameUiManager::GUI_Done()
@@ -747,7 +932,7 @@ ref_ptr<m3d::ui::Wnd> GameUiManager::GUI_GetWindow(int wndId) const
 
 bool GameUiManager::GUI_IsCurrentLevelMainMenuLevel() const
 {
-    throw std::logic_error("Not implemented");
+    return CStr(M3D_KERNEL->GetEngineCfg().m_mainMenuLevelName.GetS()) == M3D_KERNEL->GetEngineCfg().m_levFileName.GetS();
 }
 
 int GameUiManager::GUI_LoadIconsFromResourceInfo(IcoResourceInfo const* info)
@@ -885,7 +1070,6 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool is
         GUI_ShowWindow(wndId, false, false, false, nullptr);
     }
     return 1;
-    throw std::logic_error("Not implemented");
 }
 
 int GameUiManager::GUI_ValidateDynamicId(int id)

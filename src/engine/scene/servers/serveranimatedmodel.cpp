@@ -52,7 +52,7 @@ namespace m3d
             return 0;
         }
 
-        m_impostorPs = Application::g_pApp->m_renderer->NewHlslShader("data/shaders/impostorTest_ps11.ps", "ImpostorPS", rend::IHlslShader::VS_1_1);
+        m_impostorPs = Application::g_pApp->m_renderer->NewHlslShader("data/shaders/impostorTest_ps11.ps", "ImpostorPS", rend::IHlslShader::PS_1_1);
         if (!m_impostorPs)
         {
             return 0;
@@ -130,7 +130,9 @@ namespace m3d
 
     int AnimatedModelsServer::GenerateImpostorsIfNeeded()
     {
-        throw std::logic_error("Not implemented");
+        //TODO: implement AnimatedModelsServer::GenerateImpostorsIfNeeded
+        //throw std::logic_error("Not implemented");
+        return 0;
     }
 
     int AnimatedModelsServer::GetItemProperty(int, int, void*)

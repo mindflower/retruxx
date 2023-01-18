@@ -43,12 +43,12 @@ namespace m3d
             FormattedLine();
             FormattedLine(FormattedLine const&);
 
-        private:
-            unsigned int m_color;
+        public:
+            unsigned int m_color = 0;
             CStr m_text;
-            PointBase<float> m_origin;
-            m3d::TextFormatFlags m_format;
-            bool m_isHieroglyphic;
+            PointBase<float> m_origin = {0.0, 0.0};
+            m3d::TextFormatFlags m_format = TF_LEFT;
+            bool m_isHieroglyphic = false;
         };
 
         class GfxServer
@@ -122,6 +122,7 @@ namespace m3d
 
         public:
             int m_hieroglyphicFontId;
+            rend::TexHandle m_curFontTexture;
 
         private:
             unsigned int m_colors[255];
@@ -141,7 +142,6 @@ namespace m3d
             unsigned int m_fontSizes[4];
             unsigned int m_fontFlags[4];
             FontType m_fontTypes[4];
-            rend::TexHandle m_curFontTexture;
             int m_barWidth;
             int m_cornerSz;
             int m_lineWidth;

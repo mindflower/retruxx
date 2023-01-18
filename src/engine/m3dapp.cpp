@@ -48,6 +48,8 @@
 #include <ui/textbox.h>
 #include <ui/uidialogs.h>
 
+#include "impulses/i_impulses.h"
+
 namespace
 {
     std::set<size_t>* codePagesStringsPtr;
@@ -114,7 +116,7 @@ namespace m3d
 
     int Application::init(HINSTANCE hInstance, HICON hIcon, CStr const& configName, HWND forcedWnd, CStr const& cmdLine)
     {
-        M3D_LOG_INFO("ProjectApocalypse - release version build v0.01");
+        M3D_LOG_INFO(m_strWindowTitle);
 
         m_cmdLine.Init(cmdLine.c_str());
         if (m_cmdLine.CheckParam("-console"))
@@ -256,7 +258,7 @@ namespace m3d
                 if (g_Kernel->GetEngineCfg().m_hasServers.GetB())
                 {
                     m_serverStaticModels->Init();
-                    //m_serverAnimatedModels->Init();
+                    m_serverAnimatedModels->Init();
                     m_serverLights->Init();
                     m_serverSprites->Init();
                     m_serverLines->Init();
@@ -517,12 +519,30 @@ namespace m3d
         bool param3 = false;
         long double time = 0.0;
 
-        if (m_input->GetLastKbdEvent(&key, &param2, &param3, &time, true))
+        if (m_input->GetLastKbdEvent(key, param2, param3, time, true))
         {
 	        do
 	        {
-                throw std::logic_error("Not implemented");
-            } while (m_input->GetLastKbdEvent(&key, &param2, &param3, &time, true));
+                Event ev;
+                ev.m_timeStamp = time;
+                ev.m_ushortEv[0] = key;
+                if (!key && param2 == 0x9C)
+                {
+                    throw std::logic_error("Not implemented");
+                }
+                ev.m_byteEv[3] = param2;
+                auto oldHead = m_eventsQueueHead;
+                auto head = m_eventsQueueHead + 1;
+                if (head >= 0x1388)
+                {
+                    m_eventsQueueHead = 0;
+                }
+                if (m_eventsQueueTail != head)
+                {
+                    m_eventsQueue[oldHead] = ev;
+                    m_eventsQueueHead = head;
+                }
+            } while (m_input->GetLastKbdEvent(key, param2, param3, time, true));
         }
         auto deltaX = 0;
         auto deltaY = 0;
@@ -657,11 +677,11 @@ namespace m3d
         {
             m3d::Event ev;
             ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime() * 0.001;
-            ev.m_ushortEv[2] = deltaX;
             ev.m_ushortEv[0] = m_mouseX;
             ev.m_ushortEv[1] = m_mouseY;
-            ev.m_eventType = 9;
+            ev.m_ushortEv[2] = deltaX;
             ev.m_ushortEv[3] = deltaY;
+            ev.m_eventType = 9;
 
             auto head = m_eventsQueueHead + 1;
             if (head >= 0x1388)
@@ -680,15 +700,23 @@ namespace m3d
 
     void Application::ProcessAllEvents()
     {
-        while (!m_breakLoop && m_eventsQueueTail != m_eventsQueueHead)
+        do
         {
-            auto const ev = m_eventsQueue[m_eventsQueueTail++];
-            if (m_eventsQueueTail >= sizeof(m_eventsQueue) / sizeof(Event))
+            auto tail = m_eventsQueueTail;
+            if (tail == m_eventsQueueHead)
             {
-                m_eventsQueueTail = 0;
+                break;
             }
+            auto const ev = m_eventsQueue[tail];
+            auto newTail = m_eventsQueueTail + 1;
+            if (newTail >= 0x1388)
+            {
+                newTail = 0;
+            }
+            m_eventsQueueTail = newTail;
             HandleEvent(ev);
-        }
+            
+        } while (!m_breakLoop);
     }
 
     int Application::CheckAndLogPlatform()
@@ -778,11 +806,11 @@ namespace m3d
         }
         if (!this->m_isAppActive || !this->m_bDXCursorEnabled)
             return 0;
-        curMousePos.x = lParam;
+        curMousePos.x = LOWORD(lParam);
         curMousePos.y = HIWORD(lParam);
         m_mouseInfo.SetUpForCurPos(curMousePos);
         if (this->m_bDXCursorEnabled && m3d::Application::g_pApp->m_renderer)
-            m3d::Application::g_pApp->m_renderer->MoveDXCursor(lParam, HIWORD(lParam));
+            m3d::Application::g_pApp->m_renderer->MoveDXCursor(LOWORD(lParam), HIWORD(lParam));
         return 0;
     }
 
@@ -1005,66 +1033,125 @@ namespace m3d
 
     int Application::HandleEvent(Event const& ev)
     {
-        //TODO: ...
+        //TODO: imlement Application::HandleEvent
         switch (ev.m_eventType)
         {
         case 1:
-	        {
-                PostMessageA(g_Kernel->GetEngineCfg().m_mainWnd, 0x10, 0, 0);
-                return 1;
-	        }
+	    {
+            ::PostMessageA(g_Kernel->GetEngineCfg().m_mainWnd, 0x10, 0, 0);
+            return 1;
+	    }
         case 2:
-	        {
+	    {
+            //TODO: check this
+            m_isAppActive = ev.m_intEv[0];
+            if (m_sound)
+            {
+                m_sound->PauseAllSounds(m_isAppActive);
+            }
+            if (m_renderer)
+            {
+                m_renderer->SetActiveState(m_isAppActive);
+            }
+            g_Kernel->GetTimer().SetActiveState(m_isAppActive);
+            if (m_isAppActive)
+            {
+	            if (g_Kernel->GetEngineCfg().m_clipCursorWithinRenderWnd.GetB())
+	            {
+                    CaptureAndClipSystemCursor(true);
+	            }
                 //TODO: check this
-                m_isAppActive = ev.m_intEv[0];
-                if (m_sound)
-                    m_sound->PauseAllSounds(m_isAppActive);
-                if (m_renderer)
-                    m_renderer->SetActiveState(m_isAppActive);
-                g_Kernel->GetTimer().SetActiveState(m_isAppActive);
-                if (m_isAppActive)
+                ShowSystemCursor(m_bDXCursorEnabled);
+                if (g_pApp->m_sound)
                 {
-	                if (g_Kernel->GetEngineCfg().m_clipCursorWithinRenderWnd.GetB())
-	                {
-                        CaptureAndClipSystemCursor(true);
-	                }
-                    //TODO: check this
-                    ShowSystemCursor(m_bDXCursorEnabled);
-                    if (g_pApp->m_sound)
-                    {
-                        g_pApp->m_sound->PauseAllSounds(false);
-                    }
+                    g_pApp->m_sound->PauseAllSounds(false);
                     return 1;
                 }
-                break;
-	        }
+            }
+            else
+            {
+                ReleaseCapture();
+                ClipCursor(nullptr);
+                while (ShowCursor(1) < 0);
+                g_pApp->m_sound->PauseAllSounds(true);
+            }
+            return 1;
+	    }
         case 3:
-	        {
-                //TODO: check this
-                SwitchDisplayModes(g_Kernel->GetEngineCfg().m_mainWnd, ev.m_intEv[0], ev.m_intEv[1], ev.m_intEv[2] != 0);
-                return 1;
-	        }
+	    {
+            //TODO: check this
+            SwitchDisplayModes(g_Kernel->GetEngineCfg().m_mainWnd, ev.m_intEv[0], ev.m_intEv[1], ev.m_intEv[2] != 0);
+            return 1;
+	    }
         case 4:
-            throw std::logic_error("Not implemented");
+        {
+            auto viewport = m_renderer->GetViewport();
+            M3D_KERNEL->GetEngineCfg().m_console->CheckResize(viewport.m_width, viewport.m_height);
+            m_appNeedToRedraw = true;
+            break;
+        }
         case 7:
             throw std::logic_error("Not implemented");
         case 8:
             throw std::logic_error("Not implemented");
         case 0xA:
-            throw std::logic_error("Not implemented");
         case 0xB:
-            throw std::logic_error("Not implemented");
         case 0xC:
-            throw std::logic_error("Not implemented");
+        {
+            if (!m_waitForAnykey)
+            {
+                break;
+            }
+            m_timeFromLevelLoaded = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+            M3D_KERNEL->GetTimer().SetActiveState(1);
+            m_waitForAnykey = false;
+            return 1;
+        }
         default:
         {
-            if (ev.m_eventType != 15)
+            break;
+        }
+        }
+        if ((ev.m_eventType == 7 || ev.m_eventType == 8) && m_focusKbdEntity != nullptr)
+        {
+            return m_focusKbdEntity->HandleEvent(ev) != 0;
+        }
+        //TODO: check this
+        if (ev.m_eventType != 15)
+        {
+            if (M3D_KERNEL->GetEngineCfg().m_console == m_focusKbdEntity)
             {
-                return ProcessEvent(ev);
+                return M3D_KERNEL->GetEngineCfg().m_console->HandleEvent(ev) != 0;
             }
-            throw std::logic_error("Not implemented");
+            return ProcessEvent(ev);
         }
+        if (M3D_KERNEL->GetEngineCfg().m_console->isActive())
+        {
+            if (M3D_APP)
+            {
+                SetKeyboardFocus(M3D_APP);
+                return 1;
+            }
         }
+        else
+        {
+            if (!m_isConsoleAllowed)
+            {
+                return 1;
+            }
+            if (M3D_KERNEL->GetEngineCfg().m_console)
+            {
+                SetKeyboardFocus(M3D_KERNEL->GetEngineCfg().m_console);
+                return 1;
+            }
+        }
+        static bool bCtrlShiftActive = false;
+        if (bCtrlShiftActive)
+        {
+            return 1;
+        }
+        bCtrlShiftActive = true;
+        ChangeLanguage();
         return 1;
     }
 
@@ -1087,8 +1174,14 @@ namespace m3d
 
     int Application::OnLoosingFocus()
     {
-        //TODO: ...
-        throw std::logic_error("Not implemented");
+        if (m_pImpulses)
+        {
+            m_pImpulses->ResetAllImpulses(false);
+        }
+        m_gotFocus = false;
+        //TODO: check this
+        m_mouseDown = 0;
+        return 1;
     }
 
     int Application::InitImpulses()
@@ -1140,12 +1233,12 @@ namespace m3d
 
     PointBase<int> const& Application::MouseInfo::GetDeltaDuringGameFrame() const
     {
-        throw std::logic_error("Not implemented");
+        return m_deltaDuringGameFrame;
     }
 
     PointBase<int> const& Application::MouseInfo::GetLastPos() const
     {
-        throw std::logic_error("Not implemented");
+        return m_lastPos;
     }
 
     void Application::MouseInfo::SetUpForCurPos(PointBase<int> const& curPos)
@@ -1267,7 +1360,7 @@ namespace m3d
 
     Application::~Application()
     {
-        throw std::logic_error("Not implemented");
+        //TODO: implement Application::~Application
     }
 
     void Application::TexSoften(rend::TexHandle, rend::TexHandle, int, float, unsigned)
@@ -1365,7 +1458,7 @@ namespace m3d
 
     int Application::AppActive() const
     {
-        throw std::logic_error("Not implemented");
+        return m_isAppActive;
     }
 
     rend::VertexXYZCT1* Application::RenderQuadXyzct1GetNextPtr()
@@ -1385,7 +1478,7 @@ namespace m3d
 
     void Application::done()
     {
-        throw std::logic_error("Not implemented");
+        //TODO: implement Application::done
     }
 
     void Application::OnAfterDeviceReset()
@@ -1410,7 +1503,10 @@ namespace m3d
 
     int Application::StartExclusiveMsgLoop()
     {
-        throw std::logic_error("Not implemented");
+        m_breakLoop = false;
+        auto res = run();
+        m_breakLoop = false;
+        return res;
     }
 
     DataServer& Application::GetSpritesServer()
@@ -1451,14 +1547,26 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Application::StartQuads(rend::VertexType)
+    void Application::StartQuads(rend::VertexType vt)
     {
-        throw std::logic_error("Not implemented");
+        m_numPointsVerts = 0;
+        if (vt == rend::VERTEX_XYZWCT1)
+        {
+            m_pointsVertsVb = M3D_APP->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1);
+            m_pointsVertsSz = 28;
+            m_sourceVerts = m_pointsVertsWct1;
+        }
+        else if (vt == rend::VERTEX_XYZCT1)
+        {
+            m_pointsVertsVb = M3D_APP->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1);
+            m_pointsVertsSz = 24;
+            m_sourceVerts = m_pointsVertsCt1;
+        }
     }
 
     int Application::GetTextExtent(CStr const& str, PointBase<float>& size, int fid, BoundsBase<float>* csz, int* minc, int* maxc, CStr* leftInvisibleSubstr, CStr* rightInvisibleSubstr)
     {
-        //TODO: recreate this
+        //TODO: check this shit!!!!
         if (leftInvisibleSubstr)
         {
             leftInvisibleSubstr->erase();
@@ -1474,12 +1582,6 @@ namespace m3d
             return 0;
         }
 
-        //temp!
-        size.x = 0;
-        size.y = 0;
-        return 0;
-        //
-
         auto fnt = fid == -1 ? GetGfxServer()->GetCurFont() : GetGfxServer()->GetFontById(fid);
         if (!fnt)
         {
@@ -1489,7 +1591,10 @@ namespace m3d
         bool flag1 = false;
         bool flag2 = false;
         float width = 0.0;
-        for (int i = 0; i < str.length(); ++i)
+        float height = 0.0;
+        auto numChars = 0;
+        auto len = str.length();
+        for (int i = 0; i < len; ++i)
         {
             if (str[i] > ' ')
             {
@@ -1535,22 +1640,50 @@ namespace m3d
                 }
 
                 flag1 = false;
-                if (str[i] && maxc /* && (float)(v14 / (float)(v11->m_heightScaled / v11->m_heightUnscaled)) > (float)(v16->width + v16->x0) */)
+                if (csz && maxc && (width / (fnt->m_heightScaled / fnt->m_heightUnscaled)) > (csz->width + csz->x0))
                 {
-                    //TODO: recreate this logic
                     *maxc = i;
                     if (rightInvisibleSubstr != nullptr)
                     {
                         (*rightInvisibleSubstr) += CStr(str[i]);
                     }
-                    
-                    throw std::logic_error("Not implemented");
+                    break;
                 }
                 width = fnt->GetCharWidthAdvanced(str[i]) + width;
-
+                auto heiTemp = fnt->GetGlyphSz(str[i]).y;
+                if (heiTemp > height)
+                {
+                    height = heiTemp;
+                }
+                if (csz && minc && csz->x0 > (width / (fnt->m_heightScaled / fnt->m_heightUnscaled)))
+                {
+                    *minc = i;
+                    if (leftInvisibleSubstr != nullptr)
+                    {
+                        (*leftInvisibleSubstr) += CStr(str[i]);
+                    }
+                    break;
+                }
+                ++numChars;
+            }
+            else
+            {
+                flag1 = false;
             }
         }
-        throw std::logic_error("Not implemented");
+        if (len <= 0 || !numChars)
+        {
+            auto glyphY = 0.0;
+            if (fnt->m_symbols['A'])
+            {
+                glyphY = fnt->m_symbols['A']->m_precalcedGlyphSz.y;
+            }
+            if (glyphY > height)
+                height = glyphY;
+        }
+        size.x = width / (fnt->m_heightScaled / fnt->m_heightUnscaled);
+        size.y = height / (fnt->m_heightScaled / fnt->m_heightUnscaled);
+        return numChars;
     }
 
     int Application::DrawTextRelT(float, float, unsigned, CStr const&, unsigned, int)
@@ -1558,8 +1691,9 @@ namespace m3d
         throw std::logic_error("Not implemented"); 
     }
 
-    int Application::FormatText(std::vector<ui::FormattedLine, std::allocator<ui::FormattedLine>>&, PointBase<float> const&, CStr const&, ui::DrawInfo const&, TextWrapFlags, TextFormatFlags)
+    int Application::FormatText(std::vector<ui::FormattedLine>& linesOfText, PointBase<float> const& at, CStr const& textIn, ui::DrawInfo const& di, TextWrapFlags wrapFlags, TextFormatFlags formatFlags)
     {
+
         throw std::logic_error("Not implemented");
     }
 
@@ -1585,7 +1719,7 @@ namespace m3d
             M3D_LOG_INFO("Starting up...");
             g_pApp = this;
             m_focusKbdEntity = this;
-            m_strWindowTitle = "ProjectApocalypse - release version release build v0.01";
+            m_strWindowTitle = "retruxx - release version build v0.01";
 
             char buf[0x400] = { 0 };
             ::GetCurrentDirectoryA(sizeof(buf), buf);
@@ -1661,7 +1795,8 @@ namespace m3d
 
     int Application::FinishExclusiveMsgLoop()
     {
-        throw std::logic_error("Not implemented");
+        m_breakLoop = true;
+        return 1;
     }
 
     void Application::UnPause()
@@ -1945,9 +2080,37 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int Application::DrawTextRelClip(PointBase<float> const&, CStr const&, ui::DrawInfo const&, TextWrapFlags, TextFormatFlags)
+    int Application::DrawTextRelClip(PointBase<float> const& at , CStr const& str, ui::DrawInfo const& di, TextWrapFlags wrapFlag, TextFormatFlags formatFlag)
     {
-        throw std::logic_error("Not implemented");
+        enterFontRender();
+        StartQuads(rend::VERTEX_XYZWCT1);
+        if (wrapFlag)
+        {
+            std::vector<m3d::ui::FormattedLine> linesOfText;
+            FormatText(linesOfText, at, str, di, wrapFlag, formatFlag);
+            if (formatFlag == TF_FULL && !linesOfText.empty())
+            {
+                linesOfText.back().m_format = TF_LEFT;
+            }
+            for (auto const& line : linesOfText)
+            {
+                DrawStringRelClip(line, di);
+            }
+        }
+        else
+        {
+            ui::FormattedLine line;
+            line.m_origin.x = at.x;
+            line.m_origin.y = at.y;
+            line.m_color = -1;
+            line.m_text = str;
+            line.m_format = formatFlag;
+            line.m_isHieroglyphic = false;
+            DrawStringRelClip(line, di);
+        }
+        FinishQuads();
+        finishFontRender();
+        return 1;
     }
 
     DataServer& Application::GetParticlesServer()
@@ -2030,8 +2193,60 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int Application::DrawStringRelClip(ui::FormattedLine const&, ui::DrawInfo const&)
+    int Application::DrawStringRelClip(ui::FormattedLine const& fl, ui::DrawInfo const& di)
     {
+        if (fl.m_isHieroglyphic && M3D_KERNEL->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+        {
+            GetGfxServer()->SetFont(GetGfxServer()->m_hieroglyphicFontId);
+        }
+        auto curFont = GetGfxServer()->GetCurFont();
+        if (curFont == nullptr)
+        {
+            return 0;
+        }
+        auto text = fl.m_text;
+        auto const textSize = text.length();
+        auto firstSpacePos = -1;
+        auto lastSpacePos = textSize;
+        if (fl.m_format == TF_FULL)
+        {
+            auto v15 = 0;
+            if (text[0] == '@')
+            {
+                v15 = 9;
+            }
+            if (v15 < textSize)
+            {
+                firstSpacePos = text.find(' ', v15);
+            }
+            lastSpacePos = text.rfind(' ');
+            text = text.substr(0, lastSpacePos);
+        }
+        PointBase<float> sz;
+        GetTextExtent(text, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+        BoundsBase<float> absClient;
+        switch(fl.m_format)
+        {
+        case TF_CENTER:
+        {
+            absClient.x0 = fl.m_origin.x - (sz.x * 0.5);
+            absClient.y0 = fl.m_origin.y;
+            absClient.width = ((sz.x * 0.5) + fl.m_origin.x) - fl.m_origin.x;
+            absClient.height = sz.y;
+            break;
+        }
+        case TF_LEFT:
+        {
+            absClient.x0 = fl.m_origin.x;
+            absClient.y0 = fl.m_origin.y;
+            absClient.width = sz.x;
+            absClient.height = sz.y;
+            break;
+        }
+        default:
+            throw std::logic_error("Not implemented");
+        }
+
         throw std::logic_error("Not implemented");
     }
 
@@ -2047,7 +2262,17 @@ namespace m3d
 
     void Application::enterFontRender()
     {
-        throw std::logic_error("Not implemented");
+        if (GetGfxServer()->GetCurFont())
+        {
+            M3D_APP->m_renderer->SetTexture(0, GetGfxServer()->m_curFontTexture, -1.0);
+            M3D_APP->m_renderer->PushBlend(rend::BM_ALPHA);
+            M3D_APP->m_renderer->SetAlphaTest(1);
+            M3D_APP->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+            M3D_APP->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+            M3D_APP->m_renderer->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+            M3D_APP->m_renderer->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+            M3D_APP->m_renderer->PushCull(rend::M3DCULL_CCW);
+        }
     }
 
     int Application::EnableDXCursor(bool bEnable)
@@ -2134,15 +2359,16 @@ namespace m3d
         ev.m_strEv = param4;
         ev.m_aiParamEv = param5;
 
-        auto idx = m_eventsQueueHead + 1;
-        if (idx >=5000)
+        auto head = m_eventsQueueHead;
+        auto newHead = head + 1;
+        if (newHead >=5000)
         {
-            idx = 0;
+            newHead = 0;
         }
-        if (idx != m_eventsQueueTail)
+        if (newHead != m_eventsQueueTail)
         {
-            m_eventsQueue[idx] = ev;
-            m_eventsQueueHead = idx;
+            m_eventsQueue[head] = ev;
+            m_eventsQueueHead = newHead;
         }   
     }
 

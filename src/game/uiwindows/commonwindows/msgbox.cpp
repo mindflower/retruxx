@@ -4,9 +4,10 @@
 #include "ui/button.h"
 #include "ui/linewnd.h"
 #include "ui/ui_srv.h"
+#include "ui/wndstation.h"
 
 RT_CLASS_EXPORTS_BEGIN(MsgBox)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MsgBox);
 
 int MsgBox::m_ref = 0;
@@ -16,9 +17,21 @@ MsgBox::AuxInfo::AuxInfo()
 {
 }
 
-int MsgBox::CreateMsgBox(CStr const&, CStr const&, unsigned)
+int MsgBox::CreateMsgBox(CStr const& caption, CStr const& message, unsigned flags)
 {
-    throw std::logic_error("Not implemented");
+    if (Valid()
+        || (m_gameDataFlags & 1) != 0
+        || !m_pattern
+        || !help::CloneWndWithChildren(m_pattern, this)
+        || !GameDataSetup())
+    {
+        return 0;
+    }
+    m_msgBoxFlags = flags;
+    m_msg = message;
+    m_title = caption;
+    RecalcLayot();
+    return 1;
 }
 
 m3d::Class* MsgBox::GetClass() const
@@ -33,7 +46,20 @@ m3d::Object* MsgBox::Clone()
 
 MsgBox::~MsgBox()
 {
-    throw std::logic_error("Not implemented");
+    delete m_wndTitle;
+    delete m_wndMsg;
+    delete m_wndUpLine;
+    delete m_wndFrame;
+    delete m_wndBg;
+    for (auto& emboss : m_idioticEmbosses)
+    {
+        delete emboss;
+    }
+    if (m_ref == 1)
+    {
+        delete m_pattern;
+    }
+    --m_ref;
 }
 
 m3d::Class* MsgBox::GetBaseClass()
@@ -194,59 +220,10 @@ void MsgBox::AddLines()
 
 void MsgBox::SetDownLineBounds()
 {
-    //TODO: check this and refactor!!!!!!!!!!
-    m3d::ui::Wnd* v4; // eax
-    float v5; // xmm1_4
-    m3d::ui::Wnd* v6; // ecx
-    float v7; // xmm3_4
-    m3d::ui::Wnd* v8; // ebx
-    m3d::ui::Wnd* v9; // edi
-    m3d::ui::Wnd* v10; // ebx
-    float v11; // xmm0_4
-    char* v12; // eax
-    m3d::ui::Wnd* v13; // ebx
-    m3d::ui::Wnd* v14; // edi
-    BoundsBase<float> v15; // eax
-    m3d::ui::LineWnd* v16; // ecx
-    BoundsBase<float> lineB; // [esp+18h] [ebp-40h] BYREF
-    BoundsBase<float> titleB; // [esp+28h] [ebp-30h] BYREF
-    float v19; // [esp+3Ch] [ebp-1Ch]
-    BoundsBase<float> v20; // [esp+40h] [ebp-18h] BYREF
-    char v21[8]; // [esp+50h] [ebp-8h] BYREF
-
     if ((m_gameDataFlags & 1) != 0 && IsDirectChild(m_wndDownLine))
     {
-        v4 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndDownLineName));
-        lineB.y0 = v4->GetBounds().x0;
-        v5 = m_wndDownLine->GetBounds().height;
-        v6 = m_wndMsg;
-        v7 = m_bounds.width;
-        lineB.height = 0.0;
-        titleB.x0 = v7 - (lineB.y0 * 2.0);
-        titleB.y0 = v5;
-        lineB.width = lineB.y0;
-        if (m3d::Object::IsDirectChild(v6))
-        {
-            titleB = m_wndMsg->GetBounds();
-            v8 = MsgBox::m_pattern;
-            v9 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndDownLineName));
-            v10 = dynamic_cast<Wnd*>(v8->GetChildByName(m_aif.m_wndMsgName));
-            v11 = v9->GetBounds().y0;
-        }
-        else
-        {
-            m3d::Object::IsDirectChild(m_wndTitle);
-            m3d::Object::IsDirectChild(m_wndUpLine);
-            titleB = m_wndTitle->GetBounds();
-            v13 = MsgBox::m_pattern;
-            v14 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndUpLineName));
-            v10 = dynamic_cast<Wnd*>(v13->GetChildByName(m_aif.m_wndTitleName));
-            v11 = v14->GetBounds().y0;
-        }
-        v15 = v10->GetBounds();
-        v16 = m_wndDownLine;
-        lineB.height = ((v11 - (v15.height + v15.y0)) + v19) + titleB.height;
-        v16->SetBounds(lineB, 1);
+        //auto patternChild = m_pattern->GetChildByName(m_aif.m_wndDownLineName);
+        throw std::logic_error("Not implemented");
     }
 }
 
@@ -390,9 +367,19 @@ void MsgBox::SetTitleBounds(PointBase<float> const& titleSz)
     }
 }
 
-int MsgBox::CloseModal(int)
+int MsgBox::CloseModal(int ret)
 {
-    throw std::logic_error("Not implemented");
+    if (ret != 3)
+        return ModalWnd::CloseModal(ret);
+    if ((m_msgBoxFlags & 3) == 1)
+    {
+        ret = 1;
+    }
+    else if ((m_msgBoxFlags & 3) == 2)
+    {
+        return ModalWnd::CloseModal(2);
+    }
+    return ModalWnd::CloseModal(ret);
 }
 
 PointBase<float> MsgBox::CalcMsgSize() const
@@ -514,7 +501,27 @@ void MsgBox::AddButtonsAndIdioticEmbosses()
 	    switch (m_msgBoxFlags & 3)
 	    {
 	    case 1: throw std::logic_error("Not implemented");
-        case 2: throw std::logic_error("Not implemented");
+        case 2:
+        {
+            if (m_buttons[0] && !m_buttons[0]->GetParent())
+            {
+                AddChild(m_buttons[0]);
+            }
+            if (m_buttons[1] && !m_buttons[1]->GetParent())
+            {
+                AddChild(m_buttons[1]);
+            }
+            if (m_idioticEmbosses[0] && !m_idioticEmbosses[0]->GetParent())
+            {
+                AddChild(m_idioticEmbosses[0]);
+            }
+            if (m_idioticEmbosses[1] && !m_idioticEmbosses[1]->GetParent())
+            {
+                AddChild(m_idioticEmbosses[1]);
+            }
+            m_buttons[0]->SetText(GetStation()->InitializeStringUsingIds("^yes^"));
+            break;
+        }
 	    case 3: throw std::logic_error("Not implemented");
         default: return;
 	    }
@@ -565,7 +572,6 @@ void MsgBox::SetButtonsBounds(PointBase<float> const& buttonsSza)
 {
     if ((m_gameDataFlags & 1) != 0 && (m_msgBoxFlags & 3) != 0)
     {
-
         throw std::logic_error("Not implemented");
     }
 }

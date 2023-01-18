@@ -23,19 +23,22 @@ public:
     public:
         AuxInfo();
 
-    private:
-        CStr m_tabButtonNames[4];
+    public:
+        CStr m_tabButtonNames[4] = { "tabBtnVideo" , "tabBtnSound", "tabBtnControl", "tabBtnGame"};
     };
 
 public:
-    virtual m3d::Class* GetClass(void) const;
-    static m3d::Class* GetBaseClass(void);
+    virtual m3d::Class* GetClass() const;
+    virtual int GameDataSetup();
+
+    static m3d::Class* GetBaseClass();
+    static m3d::Object* CreateObject();
     
 protected:
-    virtual int OnBeforeAddToWndStation(void);
-    OptionsWnd(void);
+    virtual int OnBeforeAddToWndStation();
+    OptionsWnd();
     OptionsWnd(OptionsWnd const&);
-    void UpdateTabButtonsStates(void);
+    void UpdateTabButtonsStates();
     int SetCurTab(Tab);
     void SelectTabButton(Tab);
     int ApplyTabChanges(Tab);
@@ -43,14 +46,14 @@ protected:
     int ShowOptionWindowForTab(Tab);
     virtual int OnWndNotify(m3d::ui::Wnd*, unsigned int, unsigned int, m3d::AIParam const&);
     int GetOptionWindowGuiIdByTabId(Tab) const;
-    virtual int CanClose(void);
+    virtual int CanClose();
 
 public:
     RT_CLASS_DECLARE(OptionsWnd);
 
 private:
-    OptionsWnd::Tab m_curTabId;
-    OptionsWnd::Tab m_lastTabId;
+    OptionsWnd::Tab m_curTabId = TAB_NUM_TABS;
+    OptionsWnd::Tab m_lastTabId = TAB_NUM_TABS;
     std::vector<OptionTabButton*> m_tabButtons;
     std::vector<ref_ptr<m3d::ui::Wnd>> m_optionWindows;
     OptionsWnd::AuxInfo m_aif;
@@ -58,6 +61,18 @@ private:
 
 class OptionTabButton :  public m3d::ui::ButtonWnd
 {
+public:
+    class AuxInfo
+    {
+    public:
+        AuxInfo();
+
+        CStr m_paneNameSel = "PaneBtnOptionsSel";
+        CStr m_paneNameUnsel = "PaneBtnOptionsUnsel";
+    };
+public:
+    static inline AuxInfo m_aif;
+
 public:
     virtual m3d::Class * GetClass() const ;
     static m3d::Object * CreateObject();
@@ -79,6 +94,6 @@ public:
     RT_CLASS_DECLARE(OptionTabButton);
 
 private:
-    bool m_bSelected;
-    OptionsWnd::Tab m_tabId;
+    bool m_bSelected = false;
+    OptionsWnd::Tab m_tabId = OptionsWnd::TAB_NUM_TABS;
 };

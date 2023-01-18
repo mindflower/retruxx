@@ -89,7 +89,7 @@ namespace m3d
         {
             return x;
         }
-        if (GetType() != AIPARAM_VECTOR)
+        if (GetType() != AIPARAM_STRING)
         {
             return id;
         }
@@ -355,7 +355,7 @@ namespace m3d
         case AIPARAM_ID:
             return id;
         case AIPARAM_STRING:
-            if (!m_Str && m_Str->empty())
+            if (m_Str && !m_Str->empty())
                 return atof(m_Str->c_str());
             return 0;
         case AIPARAM_RANGE:

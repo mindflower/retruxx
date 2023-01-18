@@ -169,9 +169,9 @@ namespace m3d
             return res;
         }
 
-        void Wnd::SetGuiId(int)
+        void Wnd::SetGuiId(int guiId)
         {
-            throw std::logic_error("Not implemented");
+            m_guiId = guiId;
         }
 
         BoundsBase<float> Wnd::ToParent(BoundsBase<float> const&) const
@@ -179,9 +179,18 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        PointBase<float> Wnd::ToParent(PointBase<float> const&) const
+        PointBase<float> Wnd::ToParent(PointBase<float> const& pt) const
         {
-            throw std::logic_error("Not implemented");
+            auto res = ToScreen(pt);
+            auto parentWnd = dynamic_cast<Wnd*>(GetParent());
+            if (parentWnd)
+            {
+                auto parentToScreenRes = parentWnd->ToScreen(PointBase<float>{0.0, 0.0});
+                res.x = res.x - parentToScreenRes.x;
+                res.y = res.y - parentToScreenRes.y;
+                return res;
+            }
+            return res;
         }
 
         void Wnd::SetTextColorDisabled(unsigned textColor)
@@ -209,7 +218,7 @@ namespace m3d
 
         bool Wnd::GetCursorShow() const
         {
-            throw std::logic_error("Not implemented");
+            return m_showCursor;
         }
 
         int Wnd::OnAfterRemoveFromWndStation()
@@ -672,7 +681,34 @@ namespace m3d
 
         int Wnd::OnBeforeRemoveFromWndStation()
         {
-            throw std::logic_error("Not implemented");
+            auto res = 1;
+            for (auto child = GetFirstChild_(); child; child = child->GetNextSibling_())
+            {
+                M3D_ASSERT(child->IsKindOf(RT_CLASS_LOCAL(Wnd)));
+                auto wnd = dynamic_cast<Wnd*>(child);
+                res &= wnd->OnBeforeAddToWndStation();
+            }
+            if (m_bSuspendedUnlink)
+            {
+                if (res)
+                {
+                    return !IsAnimatingNow();
+                }
+                return 0;
+            }
+            if (IsAnimatingNow() && m_currentAnimation.m_purpose == AnimationInfo::PURPOSE_HIDE)
+            {
+                return 0;
+            }
+            if (m_bSuspendedParentUnlink
+                || !GetStation()->IsAnimationEnabled()
+                || !m_onHideAnimation.CanAnimate())
+            {
+                return res;
+            }
+            if (!res)
+                return 0;
+            return StartAnimation(this->m_onHideAnimation, IsAnimatingNow()) == 0;
         }
 
         void Wnd::SetFormatMode(TextFormatFlags format)
@@ -791,7 +827,9 @@ namespace m3d
 
         bool Wnd::IsAnimatingNow() const
         {
-            throw std::logic_error("Not implemented");
+            return IsChildOf(GetStation()) &&
+                m_currentAnimation.m_animationType != AnimationInfo::ANIMATIONTYPE_INVALID &&
+                m_currentAnimation.m_bEnabled;
         }
 
         int Wnd::GetPropertiesList(std::set<unsigned>&) const
@@ -844,7 +882,16 @@ namespace m3d
 
         void Wnd::RemoveTooltip()
         {
-            throw std::logic_error("Not implemented");
+            if (m_toolTipWnd && this == GetStation()->m_wndForTooltip)
+            {
+                if (GetStation()->IsDirectChild(m_toolTipWnd))
+                {
+                    GetStation()->RemoveChild(m_toolTipWnd);
+                }
+                delete m_toolTipWnd;
+                GetStation()->m_wndForTooltip = nullptr;
+            }
+            m_toolTipTimeOut = -1;
         }
 
         void Wnd::DrawWndText(DrawInfo const& di)
@@ -852,7 +899,75 @@ namespace m3d
             //TODO: implement Wnd::DrawWndText
             if (!m_caption.empty())
             {
-                //throw std::logic_error("Not implemented");
+                //auto textColor = m_strTextColor;
+                //if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+                //{
+                //    textColor = m_strTextColorDisabled;
+                //}
+                //auto measureText = GetGfxServer()->MeasureText(m_caption, m_defFont, m_textWrap, di.m_clientRect.width);
+                //auto origin = measureText;
+                //switch (m_textFormat)
+                //{
+                //case TF_CENTER:
+                //{
+                //    origin.x = di.m_clientRect.width*0.5;
+                //    if (origin.x < 0.0)
+                //    {
+                //        origin.x = 0.0;
+                //    }
+                //    if (origin.x > di.m_clientRect.width)
+                //    {
+                //        origin.x = di.m_clientRect.width;
+                //    }
+                //    break;
+                //}
+                //case TF_LEFT:
+                //case TF_FULL:
+                //{
+                //    if ((m_style & 0x400) != 0)
+                //    {
+                //        origin.x = (di.m_clientRect.width - measureText.x) * 0.5;
+                //        if (origin.x < 0.0)
+                //        {
+                //            origin.x = 0.0;
+                //        }
+                //        if (origin.x > di.m_clientRect.width)
+                //        {
+                //            origin.x = di.m_clientRect.width;
+                //        }
+                //        break;
+                //    }
+                //    origin.x = 0.0;
+                //    break;
+                //}
+                //case TF_RIGHT:
+                //{
+                //    if ((m_style & 0x400) != 0)
+                //    {
+                //        origin.x = (di.m_clientRect.width + measureText.x) * 0.5;
+                //        if (origin.x < 0.0)
+                //        {
+                //            origin.x = 0.0;
+                //        }
+                //        if (origin.x > di.m_clientRect.width)
+                //        {
+                //            origin.x = di.m_clientRect.width;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        origin.x = di.m_clientRect.width;
+                //    }
+                //    break;
+                //}
+                //default:
+                //    break;
+                //}
+                //if ((m_style & 0x800) != 0)
+                //    origin.y = (di.m_clientRect.height - measureText.y) * 0.5;
+                //else
+                //    origin.y = 0.0;
+                //GetGfxServer()->AddText(di, origin, textColor + m_caption, m_defFont, m_textWrap, m_textFormat);
             }
         }
 
@@ -873,12 +988,15 @@ namespace m3d
 
         int Wnd::OnObtainingFocus()
         {
-            throw std::logic_error("Not implemented");
+            m_gotFocus = true;
+            return 1;
         }
 
         int Wnd::OnLoosingFocus()
         {
-            throw std::logic_error("Not implemented");
+            this->m_gotFocus = 0;
+            this->m_mouseDown = 0;
+            return 1;
         }
 
         int Wnd::CreateWnd(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -908,12 +1026,21 @@ namespace m3d
 
         PointBase<float> Wnd::GetOriginPoint() const
         {
-            throw std::logic_error("Not implemented");
+            PointBase<float> res{0.0, 0.0};
+            if (m_scrollVWnd)
+            {
+                res.y = m_scrollVWnd->GetCurPos();
+            }
+            if (m_scrollHWnd)
+            {
+                res.x = m_scrollHWnd->GetCurPos();
+            }
+            return res;
         }
 
-        void Wnd::DrawNonClient(DrawInfo const&, unsigned)
+        void Wnd::DrawNonClient(DrawInfo const& di, unsigned clr)
         {
-            throw std::logic_error("Not implemented");
+            OnNcPaint(di, clr);
         }
 
         void Wnd::StopAnimationMoveSound()
@@ -1210,8 +1337,20 @@ namespace m3d
 
         int Wnd::OnMouseIn()
         {
-            //TODO: ...
-            throw std::logic_error("Not implemented");
+            m_mouseOver = true;
+            if (!m_toolTipText.empty() && GetParent())
+            {
+                m_toolTipTimeOut = 500;
+            }
+            if ((m_style & 0x40000) == 0)
+                return 1;
+
+            auto wnd = dynamic_cast<Wnd*>(GetParent());
+            if (wnd)
+            {
+                GetStation()->AddNotifyForWnd(this, wnd, 7, {}, (m_style & 0x400000) != 0);
+            }
+            return 1;
         }
 
         int Wnd::OnActivate(bool on)
@@ -1253,8 +1392,65 @@ namespace m3d
 
         int Wnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
-            //TODO: ...
-            throw std::logic_error("Not implemented");
+            //TODO: check and refactor this
+            if ((m_style & 0x40000) != 0)
+            {
+                if ((m_style & 0x20000) != 0)
+                {
+                    if (!state)
+                    {
+                    LABEL_6:
+                        m_mouseDown &= 0xFEu;
+                        goto LABEL_7;
+                    }
+                }
+                else if (!state)
+                {
+                    if ((m_mouseDown &1) != 0)
+                    {
+                        AIParam const param{CVector2{at.x, at.y}};
+                        CallParentNotify(1u, param, false);
+                    }
+                    goto LABEL_6;
+                }
+                m_mouseDown |= 1u;
+            }
+        LABEL_7:
+            auto parentWnd = dynamic_cast<Wnd*>(GetParent());
+            if ((m_style & 0x20) != 0 && parentWnd)
+            {
+                auto const att = ToParent(at);
+                parentWnd->OnMouseButton0(state, att);
+            }
+            auto const bounds = GetBounds();
+            if (at.x < 0.0 || bounds.width <= at.x || at.y < 0.0 || bounds.height <= at.y)
+            {
+                return 0;
+            }
+            if ((m_style & 8) != 0)
+            {
+                if (!state || m_dragMode)
+                {
+                    if (m_dragMode == DRAG_MOVE)
+                    {
+                        DoDragMove(at);
+                        GetStation()->CaptureMouse(nullptr);
+                        m_bounds.x0 = m_dragCurPt.x;
+                        m_bounds.y0 = m_dragCurPt.y;
+                        m_dragMode = DRAG_NONE;
+                    }
+                }
+                else
+                {
+                    StartDragMove(at);
+                }
+            }
+            if ((m_style & 0x2000) != 0)
+            {
+                GetStation()->Activate(this);
+            }
+            RemoveTooltip();
+            return 1;
         }
 
         int Wnd::OnWndNotify(Wnd* from, unsigned idFrom, unsigned message, AIParam const& data)
@@ -1276,10 +1472,43 @@ namespace m3d
         {
         }
 
-        Wnd* Wnd::GetNextActivatableChild(Wnd*, int)
+        Wnd* Wnd::GetNextActivatableChild(Wnd* first, int back)
         {
-            //TODO: ...
-            throw std::logic_error("Not implemented");
+            //TODO: check this and refactor
+            auto result = (Wnd*)GetFirstChild_();
+            auto v4 = 0;
+            auto v5 = result;
+            for (auto maxOrder = 0; v5; v5 = (Wnd*)v5->GetNextSibling_())
+            {
+                if ((v5->m_style & 0x2000) != 0)
+                {
+                    auto v6 = &v5->m_activationOrder;
+                    if (v4 >= v5->m_activationOrder)
+                        v6 = &maxOrder;
+                    v4 = *v6;
+                    maxOrder = *v6;
+                }
+            }
+            auto v7 = 0;
+            if (first)
+            {
+                v7 = first->m_activationOrder + 2 * (back != 1) - 1;
+                if (v7 < 0)
+                {
+                    v7 = v4;
+                    goto LABEL_13;
+                }
+            }
+            if (v7 > v4)
+                v7 = 0;
+        LABEL_13:
+            while (result)
+            {
+                if ((result->m_style & 0x2000) != 0 && result->m_activationOrder == v7)
+                    break;
+                result = (Wnd*)result->GetNextSibling_();
+            }
+            return result;
         }
 
         int Wnd::OnMouseDblClick(PointBase<float> const& firstClickPt, PointBase<float> const& secondClickPt)
@@ -1416,7 +1645,7 @@ namespace m3d
 
         int ModalWnd::CanClose()
         {
-            throw std::logic_error("Not implemented");
+            return 1;
         }
 
         int ModalWnd::IsModal()
@@ -1454,22 +1683,35 @@ namespace m3d
 
         void ModalWnd::OnCloseModal(int)
         {
-            throw std::logic_error("Not implemented");
         }
 
         int ModalWnd::OnInitModal()
         {
-            throw std::logic_error("Not implemented");
+            return 1;
         }
 
-        int ModalWnd::OnPaint(DrawInfo const&)
+        int ModalWnd::OnPaint(DrawInfo const& clipToIt)
         {
-            throw std::logic_error("Not implemented");
+            if ((m_style & 0x40) == 0)
+            {
+                auto color = m_curClr;
+                if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+                {
+                    color = 3;
+                }
+                OnNcPaint(clipToIt, color);
+            }
+            DrawWndText(clipToIt);
+            //TODO: check this
+            //if (this->m_curControl)
+            //    this->m_curControl->GetBounds(this->m_curControl, &rc);
+            return 1;
         }
 
-        int ModalWnd::CloseModal(int)
+        int ModalWnd::CloseModal(int val)
         {
-            throw std::logic_error("Not implemented");
+            M3D_APP->EnqueueMessage(39, reinterpret_cast<int>(this), val, 0, 0, {}, {});
+            return 1;
         }
 
         int ModalWnd::OnKey(unsigned short, unsigned char, unsigned)
@@ -1477,9 +1719,25 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int ModalWnd::OnWndNotify(Wnd*, unsigned, unsigned, AIParam const&)
+        int ModalWnd::OnWndNotify(Wnd* from, unsigned idFrom, unsigned msg, AIParam const& data)
         {
-            throw std::logic_error("Not implemented");
+            if ((m_style & 0x100000) != 0)
+            {
+                auto wnd = dynamic_cast<Wnd*>(GetParent());
+                if (wnd)
+                {
+                    wnd->OnWndNotify(from, idFrom, msg, data);
+                }
+            }
+            if (msg != 1 || !idFrom || idFrom > 3)
+            {
+                return 0;
+            }
+            if (GetStation()->IsModal(this))
+            {
+                CloseModal(idFrom);
+            }
+            return 1;
         }
 
         ModalWnd::ModalWnd(ModalWnd const&)

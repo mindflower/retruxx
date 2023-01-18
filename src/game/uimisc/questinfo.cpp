@@ -1,6 +1,9 @@
 #include "questinfo.h"
 #include <stdexcept>
 
+#include "game/m3dgame.h"
+#include "server/quest.h"
+
 int QuestInfoManager::SaveModifiedQuestInfosToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
     throw std::logic_error("Not implemented");
@@ -42,7 +45,16 @@ QuestInfoManager::~QuestInfoManager()
 
 int QuestInfoManager::Init()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement QuestInfoManager::Init
+    //if (m_isInited)
+    //{
+    //    ClearQuestInfos();
+    //    ClearDynamicQuestInfos();
+    //    m_isInited = false;
+    //}
+    //M3D_APP->m_pInterfaceManager->GetPathToDialogsFileGlobal()
+    //throw std::logic_error("Not implemented");
+    return 1;
 }
 
 int QuestInfoManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -55,9 +67,37 @@ bool QuestInfoManager::IsQuestDynamic(CStr const&)
     throw std::logic_error("Not implemented");
 }
 
-int QuestInfoManager::GameDataUpdate(void*, int)
+int QuestInfoManager::GameDataUpdate(void* data, int dataType)
 {
-    throw std::logic_error("Not implemented");
+    switch (dataType)
+    {
+    case 67:
+    {
+        OnDynamicQuestStateChanged(data);
+        return 1;
+    }
+    case 85:
+    {
+        OnStartLevel();
+        return 1;
+    }
+    case 86:
+    {
+        ClearQuestInfos();
+        ClearDynamicQuestInfos();
+        m_isInited = false;
+        return 1;
+    }
+    case 87:
+    {
+        ClearDynamicQuestInfos();
+        return 1;
+    }
+    default:
+    {
+        return 1;
+    }
+    }
 }
 
 QuestInfo const* QuestInfoManager::GetQuestInfoForDynamicQuest(int)
@@ -87,7 +127,17 @@ QuestInfo* QuestInfoManager::CreateQuestInfoForDynamicQuest(int) const
 
 void QuestInfoManager::OnStartLevel()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check this
+    for (auto& info : m_questInfos)
+    {
+        if (info.second)
+        {
+            if (info.second->m_questType == help::QUESTTYPE_STATIC)
+            {
+                info.second->m_questId = ai::theQuestManager->GetQuestIdByName(info.second->m_questInfoName);
+            }
+        }
+    }
 }
 
 void QuestInfoManager::OnDynamicQuestStateChanged(void*)

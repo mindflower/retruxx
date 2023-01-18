@@ -72,7 +72,7 @@ namespace m3d
             virtual void NewFrame() = 0;
             virtual void SetAutorepeatTime(int) = 0;
             virtual void ClearBuffer() = 0;
-            virtual bool GetLastKbdEvent(unsigned __int16*, unsigned __int8*, bool*, long double*, bool) =0;
+            virtual bool GetLastKbdEvent(unsigned __int16&, unsigned __int8&, bool&, long double&, bool) =0;
             virtual int GetMouseX() = 0;
             virtual int GetMouseY() = 0;
             virtual int GetMouseZ() = 0;

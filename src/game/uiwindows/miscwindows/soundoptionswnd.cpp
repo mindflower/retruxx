@@ -1,5 +1,6 @@
 #include "soundoptionswnd.h"
 
+#include "config.h"
 #include "m3dapp.h"
 #include "core/log.h"
 #include "ui/button.h"
@@ -40,7 +41,8 @@ SoundOptionsWnd::~SoundOptionsWnd()
 
 int SoundOptionsWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    UpdateControls();
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 void SoundOptionsWnd::InitControls()
@@ -69,78 +71,104 @@ void SoundOptionsWnd::InitEffectsVolumeControls()
 
 void SoundOptionsWnd::ApplyEffectsVolume()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto const volume = m_sliderEffectsVolume->GetNotch();
+        M3D_KERNEL->GetEngineCfg().m_snd_3dVolume .SetI(volume);
+        if (M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
+        {
+            M3D_APP->m_sound->SetGroupVolume(2, volume);
+        }
+    }
 }
 
 int SoundOptionsWnd::OnWndNotify(m3d::ui::Wnd *from, unsigned id, unsigned msg, m3d::AIParam const& data)
 {
-    if ((this->m_style & 0x100000) != 0)
-        m3d::ui::Wnd::ReflectChildNotifyToParent(from, id, msg, data);
+    if ((m_style & 0x100000) != 0)
+    {
+        ReflectChildNotifyToParent(from, id, msg, data);
+    }
     switch (id)
     {
     case 0x27D8u:
     {
         if (msg != 5)
             return 0;
-        SoundOptionsWnd::OnSliderMusicVolumeChange(data);
+        OnSliderMusicVolumeChange(data);
         return 1;
     }
     case 0x27D9u:
-	    {
-		    if (msg != 1)
-		    	return 0;
-    		SoundOptionsWnd::OnBtnMusicVolumePrevClick(data);
-            return 1;
-	    }
+	{
+        if (msg != 1)
+        {
+            return 0;
+        }
+        OnBtnMusicVolumePrevClick(data);
+        return 1;
+	}
     case 0x27DAu:
-	    {
-		    if (msg != 1)
-		    	return 0;
-    		SoundOptionsWnd::OnBtnMusicVolumeNextClick(data);
-            return 1;
-	    }
+    {
+        if (msg != 1)
+        {
+            return 0;
+        }
+    	OnBtnMusicVolumeNextClick(data);
+        return 1;
+    }
     case 0x27DBu:
-	    {
-		    if (msg != 5)
-		    	return 0;
-    		SoundOptionsWnd::OnSliderEffectsVolumeChange(data);
-            return 1;
-	    }
+    {
+        if (msg != 5)
+        {
+            return 0;
+        }
+        OnSliderEffectsVolumeChange(data);
+        return 1;
+    }
     case 0x27DCu:
-	    {
-		    if (msg != 1)
-		    	return 0;
-    		SoundOptionsWnd::OnBtnEffectsVolumePrevClick(data);
-            return 1;
-	    }
+    {
+        if (msg != 1)
+        {
+            return 0;
+        }
+        OnBtnEffectsVolumePrevClick(data);
+        return 1;
+    }
     case 0x27DDu:
-	    {
-		    if (msg != 1)
-		    	return 0;
-    		SoundOptionsWnd::OnBtnEffectsVolumeNextClick(data);
-            return 1;
-	    }
+    {
+        if (msg != 1)
+        {
+            return 0;
+        }
+        OnBtnEffectsVolumeNextClick(data);
+        return 1;
+    }
     case 0x27DEu:
-	    {
-		    if (msg != 5)
-		    	return 0;
-    		SoundOptionsWnd::OnSliderSpeakVolumeChange(data);
-            return 1;
-	    }
+    {
+        if (msg != 5)
+        {
+            return 0;
+        }
+        OnSliderSpeakVolumeChange(data);
+        return 1;
+    }
     case 0x27DFu:
-	    {
-		    if (msg != 1)
-		    	return 0;
-    		SoundOptionsWnd::OnBtnSpeakVolumePrevClick(data);
-            return 1;
-	    }
+    {
+        if (msg != 1)
+        {
+            return 0;
+        }
+        OnBtnSpeakVolumePrevClick(data);
+        return 1;
+    }
     case 0x27E0u:
-	    {
-		    if (msg != 1)
-		    	return 0;
-    		SoundOptionsWnd::OnBtnSpeakVolumeNextClick(data);
-            return 1;
-	    }
+    {
+        if (msg != 1)
+        {
+            return 0;
+        }
+        OnBtnSpeakVolumeNextClick(data);
+        return 1;
+    }
     default:
         return 0;
     }
@@ -148,32 +176,60 @@ int SoundOptionsWnd::OnWndNotify(m3d::ui::Wnd *from, unsigned id, unsigned msg, 
 
 void SoundOptionsWnd::OnBtnMusicVolumeNextClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderMusicVolume->SetNotch(m_sliderMusicVolume->GetNotch() + 1);
+    }
 }
 
 void SoundOptionsWnd::OnBtnMusicVolumePrevClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderMusicVolume->SetNotch(m_sliderMusicVolume->GetNotch() - 1);
+    }
 }
 
 void SoundOptionsWnd::OnBtnEffectsVolumePrevClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderEffectsVolume->SetNotch(m_sliderEffectsVolume->GetNotch() - 1);
+    }
 }
 
 void SoundOptionsWnd::ApplySpeakVolume()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto const volume = m_sliderSpeakVolume->GetNotch();
+        M3D_KERNEL->GetEngineCfg().m_snd_2dVolume.SetI(volume);
+        if (M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
+        {
+            M3D_APP->m_sound->SetGroupVolume(1, volume);
+        }
+    }
 }
 
 void SoundOptionsWnd::UpdateControls()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ++m_sliderMusicVolumeBlocked;
+        ++m_sliderSpeakVolumeBlocked;
+        ++m_sliderEffectsVolumeBlocked;
+        m_sliderMusicVolume->SetNotch(M3D_KERNEL->GetEngineCfg().m_mus_Volume.GetI());
+        m_sliderSpeakVolume->SetNotch(M3D_KERNEL->GetEngineCfg().m_snd_2dVolume.GetI());
+        m_sliderEffectsVolume->SetNotch(M3D_KERNEL->GetEngineCfg().m_snd_3dVolume.GetI());
+    }
 }
 
 void SoundOptionsWnd::OnBtnEffectsVolumeNextClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderEffectsVolume->SetNotch(m_sliderEffectsVolume->GetNotch() + 1);
+    }
 }
 
 void SoundOptionsWnd::UpdateMusicVolumeControls()
@@ -185,7 +241,7 @@ void SoundOptionsWnd::UpdateMusicVolumePrevNextButtonsState()
 {
     if ((m_gameDataFlags & 1) != 0)
     {
-        auto notch = m_sliderMusicVolume->GetNotch();
+        auto const notch = m_sliderMusicVolume->GetNotch();
         m_btnMusicVolumePrev->EnableWindow(notch > m_sliderMusicVolume->GetMin());
         m_btnMusicVolumeNext->EnableWindow(notch < m_sliderMusicVolume->GetMax());
     }
@@ -194,12 +250,14 @@ void SoundOptionsWnd::UpdateMusicVolumePrevNextButtonsState()
 void SoundOptionsWnd::OnSliderSpeakVolumeChange(m3d::AIParam const&)
 {
     UpdateSpeakVolumePrevNextButtonsState();
-    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderSpeakVolumeBlocked)
+    if (IsChildOf(M3D_APP) && !m_sliderSpeakVolumeBlocked)
     {
         ApplySpeakVolume();
     }
     if (m_sliderSpeakVolumeBlocked > 0)
+    {
         m_sliderSpeakVolumeBlocked = m_sliderSpeakVolumeBlocked - 1;
+    }
 }
 
 void SoundOptionsWnd::UpdateSpeakVolumeControls()
@@ -210,19 +268,21 @@ void SoundOptionsWnd::UpdateSpeakVolumeControls()
 void SoundOptionsWnd::OnSliderMusicVolumeChange(m3d::AIParam const&)
 {
     UpdateMusicVolumePrevNextButtonsState();
-    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderMusicVolumeBlocked)
+    if (IsChildOf(M3D_APP) && !m_sliderMusicVolumeBlocked)
     {
         ApplyMusicVolume();
     }
     if (m_sliderMusicVolumeBlocked > 0)
+    {
         m_sliderMusicVolumeBlocked = m_sliderMusicVolumeBlocked - 1;
+    }
 }
 
 void SoundOptionsWnd::UpdateSpeakVolumePrevNextButtonsState()
 {
     if ((m_gameDataFlags & 1) != 0)
     {
-        auto notch = m_sliderSpeakVolume->GetNotch();
+        auto const notch = m_sliderSpeakVolume->GetNotch();
         m_btnSpeakVolumePrev->EnableWindow(notch > m_sliderSpeakVolume->GetMin());
         m_btnSpeakVolumeNext->EnableWindow(notch < m_sliderSpeakVolume->GetMax());
     }
@@ -230,24 +290,39 @@ void SoundOptionsWnd::UpdateSpeakVolumePrevNextButtonsState()
 
 void SoundOptionsWnd::ApplyMusicVolume()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto const volume = m_sliderMusicVolume->GetNotch();
+        M3D_KERNEL->GetEngineCfg().m_mus_Volume.SetI(volume);
+        if (M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
+        {
+            M3D_APP->m_sound->SetGroupVolume(0, volume);
+            M3D_APP->m_sound->SetMaxVolume(volume);
+        }
+    }
 }
 
 void SoundOptionsWnd::OnBtnSpeakVolumePrevClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderSpeakVolume->SetNotch(m_sliderSpeakVolume->GetNotch() - 1);
+    }
 }
 
 void SoundOptionsWnd::OnBtnSpeakVolumeNextClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderSpeakVolume->SetNotch(m_sliderSpeakVolume->GetNotch() + 1);
+    }
 }
 
 void SoundOptionsWnd::UpdateEffectsVolumePrevNextButtonsState()
 {
     if ((m_gameDataFlags & 1) != 0)
     {
-        auto notch = m_sliderEffectsVolume->GetNotch();
+        auto const notch = m_sliderEffectsVolume->GetNotch();
         m_btnEffectsVolumePrev->EnableWindow(notch > m_sliderEffectsVolume->GetMin());
         m_btnEffectsVolumeNext->EnableWindow(notch < m_sliderEffectsVolume->GetMax());
     }
@@ -261,12 +336,14 @@ void SoundOptionsWnd::InitMusicVolumeControls()
 void SoundOptionsWnd::OnSliderEffectsVolumeChange(m3d::AIParam const&)
 {
     UpdateEffectsVolumePrevNextButtonsState();
-    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderEffectsVolumeBlocked)
+    if (IsChildOf(M3D_APP) && !m_sliderEffectsVolumeBlocked)
     {
         ApplyEffectsVolume();
     }
     if (m_sliderEffectsVolumeBlocked > 0)
+    {
         m_sliderEffectsVolumeBlocked = m_sliderEffectsVolumeBlocked - 1;
+    }
 }
 
 void SoundOptionsWnd::InitSpeakVolumeControls()

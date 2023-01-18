@@ -268,98 +268,187 @@ namespace m3d
 
         int Font::CreateFromTtf(CStr const& name, float heightUnscaled, unsigned style,  unsigned charset)
         {
-            //TODO: implement this!!!!!!!!!!!
+            Clear();
+            m_type = FONT_TYPE_WINDOWS;
+            m_style = style;
+            auto viewport = M3D_APP->m_renderer->GetViewport();
+            m_nameShort = name;
+            m_nameFull = CreateNameFull(name, style, FontManager::GetCodePageByCharset(charset));
+            auto y = (viewport.m_width * heightUnscaled) * 0.0009765625;
+            PointBase<int> texSz;
+            if (FontManager::NeedCharSetWChars(charset))
+            {
+                texSz.x = 512;
+                texSz.y = 512;
+            }
+            else if (y <= 19.0)
+            {
+                if (y <= 13.0)
+                {
+                    texSz.x = 256;
+                    if (y <= 8.0)
+                    {
+                        texSz.y = 128;
+                    }
+                    else
+                    {
+                        texSz.y = 256;
+                    }
+                }
+                else
+                {
+                    texSz.x = 512;
+                    texSz.y = 256;
+                }
+            }
+            else
+            {
+                texSz.y = 512;
+                texSz.x = 512;
+            }
+            m_heightScaled = y;
+            m_heightUnscaled = heightUnscaled;
+            m_scaleTex = 1.0;
+            auto hDc = ::CreateCompatibleDC(NULL);
+            ::SetMapMode(hDc, 1);
+            //TODO: check this
+            auto height = static_cast<int>((::GetDeviceCaps(hDc, 90)* y) * 0.013888889);
+            auto hFont = CreateFontA(
+                height,
+                0,
+                0,
+                0,
+                (style & 1) != 0 ? 700 : 400,
+                (style >> 1) & 1,
+                0,
+                0,
+                charset,
+                0,
+                0,
+                0,
+                2,
+                name.c_str()
+            );
+            if (hFont)
+            {
+                ::SelectObject(hDc, hFont);
+                ::SetTextColor(hDc, 0xFFFFFF);
+                ::SetBkColor(hDc, 0);
+                BITMAPINFO bmi{};
+                bmi.bmiHeader.biSize = 40;
+                bmi.bmiHeader.biWidth = texSz.x;
+                bmi.bmiHeader.biHeight = -texSz.y;
+                bmi.bmiHeader.biPlanes = 1;
+                bmi.bmiHeader.biBitCount = 24;
+                auto const dictSize = FontManager::GetTCharDictionary().GetNumOfTChars();
+                //unsigned x = 0;
+                unsigned texId = 0;
+
+                auto iszx = 1.0 / texSz.x;
+                auto iszy = 1.0 / texSz.y;
+                auto texSzXy = texSz.x * texSz.y;
+                for (int i = 0; i < dictSize;)
+                {
+                    unsigned maxHgtInLine = 0;
+                    unsigned extWidth = 0;
+                    unsigned ya = 0;
+                    unsigned* bits = nullptr;
+                    auto hBmp = ::CreateDIBSection(hDc, &bmi, 0, (void**)&bits, NULL, 0);
+                    ::SelectObject(hDc, hBmp);
+
+                    do
+                    {
+                        auto const sym = FontManager::GetTCharDictionary().GetTCharAtPos(i);
+                        SIZE szz{};
+                        ::GetTextExtentPoint32A(hDc, FontManager::GetTCharDictionary().GetTChars().c_str() + i, 1, &szz);
+                        ++szz.cy;
+
+                        ABC abc{};
+                        ::GetCharABCWidthsA(hDc, sym, sym, &abc);
+                        auto width = abc.abcA + abc.abcB + 2;
+                        if (maxHgtInLine < szz.cy)
+                        {
+                            maxHgtInLine = szz.cy;
+                        }
+                        if (width + extWidth + 1 > texSz.x)
+                        {
+                            ya += maxHgtInLine + 1;
+                            if (ya+maxHgtInLine > texSz.y)
+                            {
+                                break;
+                            }
+                            extWidth = 0;
+                            maxHgtInLine = 0;
+                        }
+                        auto xa = extWidth;
+                        if (abc.abcA < 0)
+                        {
+                            xa = extWidth - abc.abcA;
+                        }
+                        ::ExtTextOutA(
+                            hDc,
+                            xa,
+                            ya,
+                            2u,
+                            nullptr,
+                            FontManager::GetTCharDictionary().GetTChars().c_str() + i,
+                            1u,
+                            nullptr
+                        );
+                        
+                        auto const symbolInfo = new SymbolInfo;
+                        symbolInfo->m_symbol = sym;
+                        symbolInfo->m_tcs.m_texId = texId;
+                        symbolInfo->m_tcs.m_coordinates[0] = extWidth * iszx;
+                        auto const allWidth = extWidth + width;
+                        symbolInfo->m_tcs.m_coordinates[1] = ya * iszy;
+                        symbolInfo->m_tcs.m_coordinates[2] = allWidth * iszx;
+                        extWidth = allWidth + 1;
+                        symbolInfo->m_tcs.m_coordinates[3] = (ya + szz.cy) * iszy;
+                        symbolInfo->m_abc.m_A = abc.abcA;
+                        symbolInfo->m_abc.m_B = width - 2.0;
+                        symbolInfo->m_abc.m_C = abc.abcC;
+
+                        delete m_symbols[sym];
+                        m_symbols[sym] = symbolInfo;
+                        ++i;
+                    } while (i < dictSize);
+                    //TODO: check this and refactor
+                    auto mem = new unsigned char[4 * texSzXy];
+                    auto v30 = texSzXy;
+                    auto v32 = bits;
+                    auto yb = mem;
+                    if (v30 > 0)
+                    {
+                        auto v33 = mem + 2;
+                        do
+                        {
+                            char v34 = *v32;
+                            v33[1] = *v32;
+                            *v33 = v34;
+                            *(v33 - 1) = v34;
+                            *(v33 - 2) = v34;
+                            v32 = (unsigned int*)((char*)v32 + 3);
+                            v33 += 4;
+                            --v30;
+                        } while (v30);
+                    }
+                    auto dynTex = M3D_APP->m_renderer->AddDynamicTexture("$FontTex", texSz.x, texSz.y, 4);
+                    m_textures.push_back(dynTex);
+                    M3D_APP->m_renderer->SetTextureParameter(dynTex, rend::TM_TEX_FILTER, 1);
+                    M3D_APP->m_renderer->UploadTexImage(dynTex, texSz.x, texSz.y, yb, rend::TM_DTF_RGBA8888, 0);
+                    delete[] yb;
+                    ::DeleteObject(hBmp);
+                    ++texId;
+                }
+                ::SelectObject(hDc, 0);
+                ::DeleteObject(hFont);
+                ::DeleteDC(hDc);
+                PrecalcSymbolsSizes();
+                return 1;
+            }
+            M3D_LOG_INFO("cannot create font: " + name);
             return 0;
-            //Clear();
-            //m_type = FONT_TYPE_WINDOWS;
-            //m_style = style;
-            //auto viewport = Application::g_pApp->m_renderer->GetViewport();
-            //m_nameShort = name;
-            //m_nameFull = CreateNameFull(name, style, FontManager::GetCodePageByCharset(charset));
-            //auto y = (viewport.m_width * heightUnscaled) * 0.0009765625;
-            //PointBase<int> texSz;
-            //if (FontManager::NeedCharSetWChars(charset))
-            //{
-            //    texSz.x = 512;
-            //    texSz.y = 512;
-            //}
-            //else if (y <= 19.0)
-            //{
-            //    if (y <= 13.0)
-            //    {
-            //        texSz.x = 256;
-            //        if (y <= 8.0)
-            //        {
-            //            texSz.y = 128;
-            //        }
-            //        else
-            //        {
-            //            texSz.y = 256;
-            //        }
-            //    }
-            //    else
-            //    {
-            //        texSz.x = 512;
-            //        texSz.y = 256;
-            //    }
-            //}
-            //else
-            //{
-            //    texSz.y = 512;
-            //    texSz.x = 512;
-            //}
-            //m_heightScaled = y;
-            //m_heightUnscaled = heightUnscaled;
-            //m_scaleTex = 1.0;
-            //auto hDc = ::CreateCompatibleDC(NULL);
-            //::SetMapMode(hDc, 1);
-            ////TODO: check this
-            //auto height = static_cast<int>((::GetDeviceCaps(hDc, 90)* y) * 0.013888889);
-            //auto hFont = CreateFontA(
-            //    height,
-            //    0,
-            //    0,
-            //    0,
-            //    (style & 1) != 0 ? 700 : 400,
-            //    (style >> 1) & 1,
-            //    0,
-            //    0,
-            //    charset,
-            //    0,
-            //    0,
-            //    0,
-            //    2,
-            //    name.c_str()
-            //);
-            //if (hFont)
-            //{
-            //    ::SelectObject(hDc, hFont);
-            //    ::SetTextColor(hDc, 0xFFFFFF);
-            //    ::SetBkColor(hDc, 0);
-            //    BITMAPINFO bitmapInfo{};
-            //    bitmapInfo.bmiHeader.biSize = 40;
-            //    bitmapInfo.bmiHeader.biWidth = texSz.x;
-            //    bitmapInfo.bmiHeader.biHeight = -texSz.y;
-            //    bitmapInfo.bmiHeader.biPlanes = 1;
-            //    bitmapInfo.bmiHeader.biBitCount = 24;
-            //
-            //    unsigned x = 0;
-            //    for (int i = 0; i < FontManager::GetTCharDictionary().GetNumOfTChars(); ++i)
-            //    {
-            //        unsigned bits = 0;
-            //        auto hBmp = ::CreateDIBSection(hDc, &bitmapInfo, 0, (void**)&bits, NULL, 0);
-            //        ::SelectObject(hDc, hBmp);
-            //
-            //        SIZE ssize{};
-            //        ::GetTextExtentPoint32A(hDc, FontManager::GetTCharDictionary().GetTChars().c_str() + i, 1, &ssize);
-            //
-            //        ABC abc{};
-            //        ::GetCharABCWidthsA(hDc, FontManager::GetTCharDictionary().GetTCharAtPos(i), FontManager::GetTCharDictionary().GetTCharAtPos(i), &abc);
-            //
-            //        auto width = abc.abcA + abc.abcB + 2;
-            //    }
-            //}
-            throw std::logic_error("Not implemented");
         }
 
         CStr Font::CreateNameFull(CStr const& name, unsigned style, unsigned codePage) const
@@ -437,9 +526,13 @@ namespace m3d
             }
         }
 
-        PointBase<float> Font::GetGlyphSz(unsigned char) const
+        PointBase<float> Font::GetGlyphSz(unsigned char c) const
         {
-            throw std::logic_error("Not implemented");
+            if (auto const sym = m_symbols[c])
+            {
+                return {sym->m_precalcedGlyphSz.x, sym->m_precalcedGlyphSz.y};
+            }
+            return {0.0, 0.0};
         }
 
         Font::TextureCoordinates Font::GetTexCoord(unsigned char) const
@@ -506,9 +599,20 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        bool FontManager::NeedCharSetWChars(unsigned)
+        bool FontManager::NeedCharSetWChars(unsigned charSet)
         {
-            throw std::logic_error("Not implemented");
+            switch (charSet)
+            {
+            case 2u:
+            case 0x81u:
+            case 0x86u:
+            case 0x88u:
+            case 0xA3u:
+                return true;
+            default:
+                break;
+            }
+            return false;
         }
 
         int FontManager::ValidateFontId(int& id)
@@ -588,7 +692,7 @@ namespace m3d
                         return -1;
                     }
                     auto font = new Font;
-                    if (font->CreateFromTtf(name, heightUnscaled, params.ttfParams.style, params.ttfParams.codePage))
+                    if (font->CreateFromTtf(name, heightUnscaled, params.ttfParams.style, charset))
                     {
                         m_fonts.push_back(font);
                         matchFont = m_fonts.size() - 1;
@@ -678,9 +782,15 @@ namespace m3d
             return m_tCharDictionary;
         }
 
-        unsigned FontManager::GetCodePageByCharset(unsigned)
+        unsigned FontManager::GetCodePageByCharset(unsigned charset)
         {
-            throw std::logic_error("Not implemented");
+            CHARSETINFO charsetInfo{};
+            if (::TranslateCharsetInfo(reinterpret_cast<DWORD*>(charset), &charsetInfo, TCI_SRCCHARSET))
+            {
+                return charsetInfo.ciACP;
+            }
+            M3D_LOG_INFO("FontManager::GetCharsetByCodePage error: cannot find code page for charset " + CStr(charset));
+            return 0;
         }
 
         Font* FontManager::GetFontById(int id) const

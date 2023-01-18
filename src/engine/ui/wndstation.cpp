@@ -10,6 +10,8 @@
 #include <ui/wndstation.h>
 
 #include "core/timer.h"
+#include "impulses/i_impulses.h"
+#include "ui/button.h"
 
 char const STR_OK[] = "ok";
 char const STR_CANCEL[] = "cancel";
@@ -30,9 +32,105 @@ namespace m3d
         RT_CLASS_EXPORTS_END;
         RT_CLASS_DEFINE(WndStation);
 
-        int WndStation::DispatchMouse(Event const&)
+        int WndStation::DispatchMouse(Event const& ev)
         {
-            throw std::logic_error("Not implemented");
+            float x = ev.m_shortEv[0];
+            float y = ev.m_shortEv[1];
+            float x1 = ev.m_shortEv[2];
+            float y1 = ev.m_shortEv[3];
+            M3D_APP->m_renderer->AbsToRel(x, y);
+            M3D_APP->m_renderer->AbsToRel(x1, y1);
+            m_prevMouseCoord.x = x;
+            m_prevMouseCoord.y = y;
+            PointBase<float> sxy{x, y};
+            PointBase<float> sxy1{x1, y1};
+            auto captureWnd = m_wndMouseCapture;
+            if (!captureWnd)
+            {
+                for (auto* it = GetFirstChild_(); it != nullptr; it = it->GetNextSibling_())
+                {
+                    auto* wnd = reinterpret_cast<Wnd*>(it);
+                    if ((wnd->GetStyle() & 0x200) != 0 && wnd->IsPtInBounds(m_prevMouseCoord))
+                    {
+                        captureWnd = GetWndForMousePoint(wnd, m_prevMouseCoord, false);
+                        if (captureWnd != nullptr)
+                        {
+                            break;
+                        }
+                    }
+                }
+                //TODO: check correctness
+                if (captureWnd == nullptr)
+                {
+                    captureWnd = (GetStyle() & 0x102) == 0 ? this : nullptr;
+                }
+            }
+            auto* wnd = ModalOverride(captureWnd);
+            float xx = 0.0;
+            float yy = 0.0;
+            for (auto* parent = wnd; parent; parent = dynamic_cast<Wnd*>(parent->GetParent()))
+            {
+                auto const bounds = parent->GetBounds();
+                xx += bounds.x0;
+                yy += bounds.y0;
+            }
+            PointBase<float> lc;
+            lc.x = sxy.x - xx;
+            lc.y = sxy.y - yy;
+            UpdateOnMouseInOut(wnd);
+            auto handled = 0;
+            auto state = ev.m_shortEv[2];
+            PointBase<float> firstClickLc{ 0.0, 0.0 };
+            switch (ev.m_eventType)
+            {
+            case 9:
+            {
+                handled = wnd->OnMouseMove(lc, sxy1);
+                if (wnd!=this)
+                {
+                    Event newEv = ev;
+                    newEv.m_eventType = 38;
+                    OnEvent(newEv);
+                }
+                break;
+            }
+            case 10:
+            {
+                handled = wnd->OnMouseButton0(state, lc);
+                if ((wnd->GetStyle() & 0x20000) != 0)
+                {
+                    if (CheckForMouseDblClick(wnd, lc, state, firstClickLc))
+                    {
+                        handled |= wnd->OnMouseDblClick(firstClickLc, lc);
+                        if (wnd == this)
+                        {
+                            Event newEv = ev;
+                            newEv.m_eventType = 13;
+                            OnEvent(newEv);
+                        }
+                    }
+                }
+                break;
+            }
+            default:
+                throw std::logic_error("Not implemented");
+            }
+            if (ev.m_eventType == 10 || ev.m_eventType == 11 || ev.m_eventType == 12)
+            {
+                if (state)
+                {
+                    if (m_wndOpenedComboBox)
+                    {
+                        throw std::logic_error("Not implemented");
+                    }
+                }
+            }
+            if (wnd == this)
+            {
+                handled = OnEvent(ev);
+            }
+            M3D_APP->m_pImpulses->HandleKeyboardMouseEvent(ev, wnd);
+            return handled;
         }
 
         bool WndStation::IsWndAlive(Wnd const* w, int uniqueId) const
@@ -58,9 +156,24 @@ namespace m3d
             return RT_CLASS_LOCAL(Wnd);
         }
 
-        Wnd* WndStation::CaptureFocus(Wnd*)
+        Wnd* WndStation::CaptureFocus(Wnd* wnd)
         {
-            throw std::logic_error("Not implemented");
+            auto const oldCapture = m_wndKbdCapture;
+            if (oldCapture)
+            {
+                oldCapture->OnLoosingFocus();
+            }
+            if (wnd)
+            {
+                m_wndKbdCapture = wnd;
+                wnd->OnObtainingFocus();
+            }
+            else
+            {
+                m_wndKbdCapture = this;
+                OnObtainingFocus();
+            }
+            return oldCapture;
         }
 
         ModalWnd* WndStation::GetTopModal()
@@ -139,14 +252,61 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        Wnd* WndStation::GetWndForMousePoint(Wnd*, PointBase<float> const&, bool)
+        Wnd* WndStation::GetWndForMousePoint(Wnd* curWnd, PointBase<float> const& pt, bool affectAll)
         {
-            throw std::logic_error("Not implemented");
+            //TODO: check this
+            auto res = curWnd;
+            if (curWnd)
+            {
+                for (auto obj = curWnd->GetFirstChild_(); obj; obj = obj->GetNextSibling_())
+                {
+                    auto wnd = (Wnd*)(obj);
+                    if ((wnd->GetStyle() & 0x200) != 0 || affectAll)
+                    {
+                        if (wnd->IsPtInBounds(pt))
+                        {
+                            res = GetWndForMousePoint(wnd, pt, affectAll);
+                            if (res)
+                            {
+                                return res;
+                            }
+                        }
+                    }
+                }
+                res = curWnd;
+            }
+            if (!affectAll && (res->GetStyle() & 0x102) != 0)
+            {
+                return nullptr;
+            }
+            return res;
         }
 
-        int WndStation::DoModal(ModalWnd*)
+        int WndStation::DoModal(ModalWnd* wnd)
         {
-            throw std::logic_error("Not implemented");
+            m_wndModalStack.push_back(wnd);
+            CaptureMouse(nullptr);
+            wnd->m_modalAttachedToStation = !wnd->GetParent() || this == wnd->GetParent() && wnd->m_bSuspendedUnlink;
+            if (wnd->m_modalAttachedToStation)
+            {
+                AddChild(wnd);
+            }
+            wnd->OnInitModal();
+            Activate(wnd);
+            M3D_APP->StartExclusiveMsgLoop();
+            if (m_wndModalStack.empty())
+            {
+                return m_wndModalRetVal;
+            }
+            for (auto const& modal : m_wndModalStack)
+            {
+                if (modal == wnd)
+                {
+                    EndModal(wnd, 1);
+                    break;
+                }
+            }
+            return m_wndModalRetVal;
         }
 
         int WndStation::PulseKeyForWindow(Wnd*, unsigned short, unsigned char)
@@ -156,7 +316,7 @@ namespace m3d
 
         Wnd* WndStation::GetCapture() const
         {
-            throw std::logic_error("Not implemented");
+            return m_wndMouseCapture;
         }
 
         Wnd* WndStation::GetWndMouseOver()
@@ -169,9 +329,42 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int WndStation::Activate(Wnd*)
+        int WndStation::Activate(Wnd* wnd)
         {
-            throw std::logic_error("Not implemented");
+            auto wndToActive = wnd;
+            if (!wndToActive)
+            {
+                wndToActive = this;
+            }
+            if (wnd == m_wndActive)
+            {
+                return 0;
+            }
+            m_wndActive->OnActivate(false);
+            if ((m_wndActive->GetStyle() & 0x1000) != 0)
+            {
+                if (m_wndKbdCapture)
+                {
+                    m_wndKbdCapture->OnLoosingFocus();
+                }
+                m_wndKbdCapture = this;
+                OnObtainingFocus();
+            }
+            m_wndActive = wndToActive;
+            m_wndActive->OnActivate(true);
+            if ((m_wndActive->GetStyle() & 0x1000) != 0)
+            {
+                CaptureFocus(m_wndActive);
+            }
+            for (Object* obj = wndToActive; obj; obj = obj->GetParent())
+            {
+                auto parent = obj->GetParent();
+                if (parent)
+                {
+                    parent->MoveChildToFirstPosition(obj);
+                }
+            }
+            return 1;
         }
 
         int WndStation::OnAddWnd(Wnd*, Wnd*)
@@ -336,7 +529,7 @@ namespace m3d
             case 0x28:
                 v7 = reinterpret_cast<Wnd*>(ev.m_void[0]);
                 eventa = reinterpret_cast<Wnd*>(ev.m_void[1]);
-                if (m3d::ui::WndStation::IsWndAlive(v7, -1) && m3d::ui::WndStation::IsWndAlive(eventa, -1))
+                if (IsWndAlive(v7, -1) && IsWndAlive(eventa, -1))
                 {
                     eventa->OnWndNotify( v7, v7->m_id, ev.m_uintEv[2], data);
                     v3 = 1;
@@ -395,9 +588,25 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void WndStation::EndModal(ModalWnd*, unsigned)
+        void WndStation::EndModal(ModalWnd* wnd, unsigned toRet)
         {
-            throw std::logic_error("Not implemented");
+            if (!m_wndModalStack.empty() && m_wndModalStack[m_wndModalStack.size() - 1])
+            {
+                auto& wndFromStack = m_wndModalStack[m_wndModalStack.size() - 1];
+                if (wnd == wndFromStack)
+                {
+                    wndFromStack->OnCloseModal(toRet);
+                    m_wndModalStack.pop_back();
+                    m_wndModalRetVal = toRet;
+                    CaptureMouse(nullptr);
+                    RemoveCurrentTooltip();
+                    if (m_modalAttachedToStation)
+                    {
+                        RemoveChild(wndFromStack);
+                    }
+                    M3D_APP->FinishExclusiveMsgLoop();
+                }
+            }
         }
 
         Wnd* WndStation::GetActive() const
@@ -424,7 +633,7 @@ namespace m3d
 
         bool WndStation::IsAnimationEnabled() const
         {
-            throw std::logic_error("Not implemented");
+            return m_bAnimationEnabled;
         }
 
         CStr WndStation::InitializeStringUsingIds(CStr const& src)
@@ -648,27 +857,28 @@ namespace m3d
             Application::g_pApp->m_renderer->PushLighting(false);
             Application::g_pApp->m_renderer->PushBlend(rend::BM_NONE);
             DispatchPaint(this, m_bounds);
-            if (!m_wndMouseCapture)
+            auto captureWnd = m_wndMouseCapture;
+            if (!captureWnd)
             {
                 for (auto* it = GetFirstChild_(); it != nullptr; it = it->GetNextSibling_())
                 {
                     auto* wnd = reinterpret_cast<Wnd*>(it);
                     if ((wnd->GetStyle() & 0x200) != 0 && wnd->IsPtInBounds(m_prevMouseCoord))
                     {
-                        m_wndMouseCapture = GetWndForMousePoint(wnd, m_prevMouseCoord, false);
-                        if (m_wndMouseCapture != nullptr)
+                        captureWnd = GetWndForMousePoint(wnd, m_prevMouseCoord, false);
+                        if (captureWnd != nullptr)
                         {
                             break;
                         }
                     }
                 }
                 //TODO: check correctness
-                if (m_wndMouseCapture == nullptr)
+                if (captureWnd == nullptr)
                 {
-                    m_wndMouseCapture = (GetStyle() & 0x102) == 0 ? this : nullptr;
+                    captureWnd = (GetStyle() & 0x102) == 0 ? this : nullptr;
                 }
             }
-            auto* wnd = ModalOverride(m_wndMouseCapture);
+            auto* wnd = ModalOverride(captureWnd);
             if (wnd != nullptr)
             {
                 UpdateOnMouseInOut(wnd);

@@ -21,12 +21,20 @@ namespace m3d
 
         int ComboBoxWnd::GetCurSel() const
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                return m_wndStringList->GetCurSel();
+            }
+            return -1;
         }
 
-        int ComboBoxWnd::GetItemData(int) const
+        int ComboBoxWnd::GetItemData(int idx) const
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                return m_wndStringList->GetItemData(idx);
+            }
+            return -1;
         }
 
         BoundsBase<float> ComboBoxWnd::GetListBounds() const
@@ -34,9 +42,12 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        void ComboBoxWnd::SetCurSel(int)
+        void ComboBoxWnd::SetCurSel(int idx)
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                m_wndStringList->SetCurSel(idx);
+            }
         }
 
         void ComboBoxWnd::SetItemData(int idx, int data)
@@ -54,7 +65,7 @@ namespace m3d
 
         void ComboBoxWnd::Close()
         {
-            throw std::logic_error("Not implemented");
+            SetState(STATE_CLOSE, false);
         }
 
         BoundsBase<float> ComboBoxWnd::GetFullBounds() const
@@ -64,12 +75,16 @@ namespace m3d
 
         void ComboBoxWnd::Open()
         {
-            throw std::logic_error("Not implemented");
+            SetState(STATE_OPEN, false);
         }
 
         int ComboBoxWnd::GetCount() const
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                return m_wndStringList->GetCount();
+            }
+            return 0;
         }
 
         float ComboBoxWnd::GetSelTextFixedHeight() const
@@ -440,8 +455,9 @@ namespace m3d
 
         void ComboBoxWnd::SetState(State state, bool bForceUpdate)
         {
+            auto const oldState = m_state;
             m_state = state;
-            if (m_state != state || bForceUpdate)
+            if (oldState != state || bForceUpdate)
             {
                 RecalcListBounds();
                 RecalcSelfBounds();
@@ -504,12 +520,21 @@ namespace m3d
 
         void ComboBoxWnd::SelectItem()
         {
-            throw std::logic_error("Not implemented");
+            if (Valid())
+            {
+                auto const curSel = m_wndStringList->GetCurSel();
+                m_wndSelText->SetText(curSel != -1 ? m_wndStringList->GetItem(curSel) : CStr{});
+                CallParentNotify(5, {}, false);
+                Close();
+            }
         }
 
         void ComboBoxWnd::ToggleState()
         {
-            throw std::logic_error("Not implemented");
+            if (this->m_state == STATE_OPEN)
+                this->Close();
+            else
+                this->Open();
         }
 
         void ComboBoxWnd::RecalcSelfBounds()
@@ -522,9 +547,29 @@ namespace m3d
             }
         }
 
-        int ComboBoxWnd::OnWndNotify(Wnd*, unsigned, unsigned, AIParam const&)
+        int ComboBoxWnd::OnWndNotify(Wnd* from, unsigned idFrom, unsigned message, AIParam const& data)
         {
-            throw std::logic_error("Not implemented");
+            if (!Valid())
+            {
+                return 0;
+            }
+            if ((m_style & 0x100000) != 0)
+            {
+                ReflectChildNotifyToParent(from, idFrom, message, data);
+            }
+            if (idFrom == 5)
+            {
+                if (message == 1 && (m_comboStyle & 1) == 0)
+                {
+                    ToggleState();
+                }
+            }
+            else if (idFrom == 6 && message == 5)
+            {
+                SelectItem();
+                return 1;
+            }
+            return 1;;
         }
 
         void ComboBoxWnd::RecalcListBounds()
@@ -547,19 +592,35 @@ namespace m3d
             }
         }
 
-        int ComboBoxWnd::OnMouseButton0(unsigned, PointBase<float> const&)
+        int ComboBoxWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
-            throw std::logic_error("Not implemented");
+            auto result = Wnd::OnMouseButton0(state, at);
+            if (!result)
+                return result;
+            if ((this->m_comboStyle & 1) != 0)
+            {
+                if (state)
+                    this->ToggleState();
+            }
+            return 1;
         }
 
         int ComboBoxWnd::OnAfterRemoveFromWndStation()
         {
-            throw std::logic_error("Not implemented");
+            auto res = Wnd::OnAfterAddToWndStation();
+            Close();
+            return res;
         }
 
         int ComboBoxWnd::OnAfterAddToWndStation()
         {
-            throw std::logic_error("Not implemented");
+            auto res = Wnd::OnAfterAddToWndStation();
+            if (m_state != STATE_OPEN)
+            {
+                return res;
+            }
+            M3D_APP->EnqueueMessage(47, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+            return res;
         }
     }    
 }

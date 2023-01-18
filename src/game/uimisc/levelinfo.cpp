@@ -1,7 +1,10 @@
 #include "levelinfo.h"
 #include <stdexcept>
 
+#include "client.h"
 #include "config.h"
+#include "level.h"
+#include "world.h"
 #include "core/kernel.h"
 #include "core/console/console.h"
 #include "game/m3dgame.h"
@@ -52,6 +55,16 @@ RT_CLASS_EXPORTS_BEGIN(LevelInfoManager)
     RT_CLASS_EXPORT(LevelInfoManager, m3d::METHOD, ClearVisibilityMapForLevel, "", "", "")
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(LevelInfoManager);
+
+namespace m3d
+{
+    extern CClient* pClient;
+}
+
+namespace ai
+{
+    extern ObjContainer* theObjects;
+}
 
 CStr const& LevelInfo::GetName() const
 {
@@ -188,7 +201,16 @@ CStr LevelInfo::GetRandomMusicBlock() const
 
 int LevelInfo::LoadBigImage()
 {
-	throw std::logic_error("Not implemented");
+    if (m_imageFile0.empty() || m_image0.IsValid())
+    {
+        return 1;
+    }
+    m_image0 = M3D_APP->m_renderer->AddTexture(m_imageFile0, 4);
+    if (!m_image0.IsValid())
+    {
+        return 0;
+    }
+    return 1;
 }
 
 void LevelInfoManager::ClearBeforeNewLevel()
@@ -199,9 +221,13 @@ void LevelInfoManager::ClearBeforeNewLevel()
     m_visitedLevels.clear();
 }
 
-void LevelInfoManager::GetVisitedLevelNames(std::vector<CStr>&) const
+void LevelInfoManager::GetVisitedLevelNames(std::vector<CStr>& visitedLevelNames) const
 {
-    throw std::logic_error("Not implemented");
+    visitedLevelNames.clear();
+    for (auto const& level : m_visitedLevels)
+    {
+        visitedLevelNames.push_back(level);
+    }
 }
 
 void LevelInfoManager::ClearLevelObjects()
@@ -217,9 +243,16 @@ void LevelInfoManager::ClearLevelObjects()
     m_levelObjects.clear();
 }
 
-void LevelInfoManager::GetAllLevelNames(std::vector<CStr>&) const
+void LevelInfoManager::GetAllLevelNames(std::vector<CStr>& allLevelNames) const
 {
-    throw std::logic_error("Not implemented");
+    allLevelNames.clear();
+    for (auto const& level : m_levels)
+    {
+        if (level.second)
+        {
+            allLevelNames.push_back(level.second->GetName());
+        }
+    }
 }
 
 int LevelInfoManager::AddVisibilityCircleForLevel(CStr const&, CVector const&, float)
@@ -234,7 +267,8 @@ void LevelInfoManager::OnTownRuined(void*)
 
 void LevelInfoManager::UpdateKnownLevels()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement LevelInfoManager::UpdateKnownLevels
+    //throw std::logic_error("Not implemented");
 }
 
 m3d::Object* LevelInfoManager::Clone()
@@ -244,12 +278,30 @@ m3d::Object* LevelInfoManager::Clone()
 
 void LevelInfoManager::UpdateLevelImages()
 {
-    throw std::logic_error("Not implemented");
+    std::vector<CStr> visitedLevelNames;
+    GetVisitedLevelNames(visitedLevelNames);
+    //TODO: check this!!
+    for (auto const& level : m_levels)
+    {
+        if (level.second)
+        {
+            auto const it = std::find(visitedLevelNames.cbegin(), visitedLevelNames.cend(), level.second->GetName());
+            if (it != visitedLevelNames.cend())
+            {
+                level.second->LoadBigImage();
+            }
+        }
+    }
 }
 
 void LevelInfoManager::UpdateObjectInfoForCurrentLevel()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement LevelInfoManager::UpdateObjectInfoForCurrentLevel
+    //for (auto it = ai::theObjects->begin(); it != ai::theObjects->end(); ++it)
+    //{
+    //    bool tasd = true;
+    //}
+    //throw std::logic_error("Not implemented");
 }
 
 void LevelInfoManager::UpdateObjectPositions()
@@ -297,9 +349,25 @@ bool LevelInfoManager::IsObjectCharted(ai::Obj const*) const
     throw std::logic_error("Not implemented");
 }
 
-VisibilityMap* LevelInfoManager::AddVisibilityMapForLevel(CStr const&)
+VisibilityMap* LevelInfoManager::AddVisibilityMapForLevel(CStr const& levelName)
 {
-    throw std::logic_error("Not implemented");
+    if (levelName.empty())
+    {
+        return nullptr;
+    }
+    auto const it = m_visibilityMaps.find(levelName);
+    if (it != m_visibilityMaps.cend())
+    {
+        return it->second;
+    }
+    auto visMap = new VisibilityMap;
+    if (!visMap->SetUpForLevel(levelName))
+    {
+        delete visMap;
+        return nullptr;
+    }
+    m_visibilityMaps.emplace(levelName, visMap);
+    return visMap;
 }
 
 m3d::Class* LevelInfoManager::GetBaseClass()
@@ -360,7 +428,7 @@ int LevelInfoManager::Init()
 
 int LevelInfoManager::GetVisibilityRadius() const
 {
-    throw std::logic_error("Not implemented");
+    return m_cvVisibilityRadius.GetI();
 }
 
 void LevelInfoManager::OnNewFrame()
@@ -368,9 +436,17 @@ void LevelInfoManager::OnNewFrame()
     throw std::logic_error("Not implemented");
 }
 
-int LevelInfoManager::AddVisitedLevel(CStr const&)
+int LevelInfoManager::AddVisitedLevel(CStr const& levelName)
 {
-    throw std::logic_error("Not implemented");
+    std::vector<CStr> levelNames;
+    GetAllLevelNames(levelNames);
+    if (std::find(levelNames.cbegin(), levelNames.cend(), levelName) == levelNames.cend())
+    {
+        M3D_LOG_INFO("LevelInfoManager::AddVisitedLevel error - level with name '" + levelName + "' does not exist");
+        return 0;
+    }
+    m_visitedLevels.insert(levelName);
+    return 1;
 }
 
 std::map<CStr, ObjectInfo*> const* LevelInfoManager::GetObjectsForLevel(CStr const&) const
@@ -414,9 +490,40 @@ void LevelInfoManager::OnEndLevelBeforeContinuousLevel()
     throw std::logic_error("Not implemented");
 }
 
-int LevelInfoManager::GameDataUpdate(void*, int)
+int LevelInfoManager::GameDataUpdate(void* data, int dataType)
 {
-    throw std::logic_error("Not implemented");
+    int result = 0;
+    switch (dataType - 71)
+    {
+    case 0u:
+        OnLocationStateChanged(data);
+        result = 1;
+        break;
+    case 7u:
+        OnTownRuined( data);
+        result = 1;
+        break;
+    case 0xEu:
+        OnStartLevel();
+        result = 1;
+        break;
+    case 0xFu:
+        ClearBeforeNewLevel();
+        result = 1;
+        break;
+    case 0x10u:
+        ClearBeforeContinuousLevel();
+        result = 1;
+        break;
+    case 0x13u:
+        UpdateVisibilityMaps();
+        result = 1;
+        break;
+    default:
+        result = 1;
+        break;
+    }
+    return result;
 }
 
 int LevelInfoManager::LoadLevelInfoFromXml(CStr const& fileName)
@@ -465,7 +572,16 @@ int LevelInfoManager::LoadLevelInfoFromXml(CStr const& fileName)
 
 void LevelInfoManager::OnStartLevel()
 {
-    throw std::logic_error("Not implemented");
+    CStr curLevel;
+    if (m3d::pClient && m3d::pClient->GetWorld().m_level)
+    {
+        curLevel = m3d::pClient->GetWorld().m_level->GetLevelName();
+    }
+    AddVisitedLevel(curLevel);
+    AddVisibilityMapForLevel(curLevel);
+    UpdateLevelImages();
+    UpdateObjectInfoForCurrentLevel();
+    UpdateKnownLevels();
 }
 
 LevelInfo* LevelInfoManager::GetLevelInfoByName(CStr const& levelName)
@@ -570,9 +686,14 @@ m3d::Class* LevelInfoManager::GetClass() const
     return RT_CLASS_LOCAL(LevelInfoManager);
 }
 
-float LevelInfoManager::GetLevelSize(CStr const&) const
+float LevelInfoManager::GetLevelSize(CStr const& levelName) const
 {
-    throw std::logic_error("Not implemented");
+    auto const it = m_levelSizes.find(levelName);
+    if (it != m_levelSizes.cend())
+    {
+        return it->second;
+    }
+    return 0.0;
 }
 
 void LevelInfoManager::ClearVisibilityMaps()

@@ -74,6 +74,7 @@ namespace m3d
 
     int CWorld::Load(CStr const& levelname, CCamera& cam, bool bQuiet)
     {
+        //TODO: implement CWorld::Load
         auto timeStart = M3D_KERNEL->GetTimer().GetCurTime();
         M3D_LOG_INFO("----------------------- World Loading");
         M3D_KERNEL->GetEngineCfg().m_levFileName.Set(levelname.c_str(), true);
@@ -93,7 +94,21 @@ namespace m3d
         auto const landscapeEnd = M3D_KERNEL->GetTimer().GetCurTime();
         M3D_LOG_INFO("----------------------- Landscape loaded in: " + CStr(landscapeEnd - landscapeStart));
 
-
+        //bool res = false;
+        //if (m_level->m_serversname.empty() || !M3D_APP->LoadServers(m_level->m_serversname, bQuiet))
+        //{
+        //    res = M3D_APP->LoadServers("data\\models\\servers.xml", bQuiet);
+        //}
+        //if (m_level->m_staticServers.empty() || !M3D_APP->LoadServers(m_level->m_staticServers, bQuiet))
+        //{
+        //    res |= M3D_APP->LoadServers("data\\models\\commonservers.xml", bQuiet);
+        //}
+        //m_landscape.PostServersLoad();
+        //if (!res)
+        //{
+        //    return 0;
+        //}
+        return 1;
         throw std::logic_error("Not implemented");
     }
 

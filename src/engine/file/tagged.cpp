@@ -196,7 +196,7 @@ namespace m3d
                 }
                 m_format_name = new char[strlen(formatName) + 1];
                 strcpy(m_format_name, formatName);
-                m_format_name[size] = '\0';
+                m_format_name[strlen(formatName)] = '\0';
                 if (getChunkDataCopy(0xF002, &m_format_version) == SUCCESS)
                 {
                     return SUCCESS;

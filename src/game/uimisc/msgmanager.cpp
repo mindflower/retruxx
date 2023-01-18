@@ -15,6 +15,15 @@ int MsgManager::ShowMsgBox(int, bool)
     throw std::logic_error("Not implemented");
 }
 
+int MsgManager::Init(bool bGlobal)
+{
+    //TODO: implement MsgManager::Init
+    //Clear(bGlobal);
+    //
+    //throw std::logic_error("Not implemented");
+    return 1;
+}
+
 void MsgManager::Clear(bool)
 {
     throw std::logic_error("Not implemented");

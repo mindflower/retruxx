@@ -2031,7 +2031,7 @@
     <ClCompile Include="src\engine\ode\sources\fastdot.c">
       <Filter>engine\ode\sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\projectapocalypse.cpp">
+    <ClCompile Include="src\game\retruxx.cpp">
       <Filter>game</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\math\plane.cpp">

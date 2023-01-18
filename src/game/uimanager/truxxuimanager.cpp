@@ -136,6 +136,7 @@
 
 #include "game/m3dgame.h"
 #include "game/uimisc/objectsicons.h"
+#include "impulses/i_impulses.h"
 
 namespace
 {
@@ -258,7 +259,7 @@ CStr TruxxUiManager::GetPathToDialogsFileGlobal() const
 
 QuestInfoManager* TruxxUiManager::GetQuestInfoManager() const
 {
-    throw std::logic_error("Not implemented");
+    return m_questInfoManager;
 }
 
 ref_ptr<m3d::ui::Wnd> TruxxUiManager::GetWindow(int wndId) const
@@ -288,7 +289,7 @@ bool TruxxUiManager::IsHidden() const
 
 int TruxxUiManager::AddWindow(ref_ptr<m3d::ui::Wnd> w, int& wndId, bool isPersistent, bool needShow)
 {
-    return GUI_AddWindowById(w, wndId, isPersistent, needShow);
+    return GUI_AddWindow(w, wndId, isPersistent, needShow);
 }
 
 int TruxxUiManager::AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool isPersistent, bool needShow)
@@ -418,9 +419,13 @@ m3d::rend::TexHandle TruxxUiManager::GetIcoByName(CStr const& name, int mode)
     return m_icons->GetIcoByName(name, mode);
 }
 
-int TruxxUiManager::ShowWindow(int, bool, bool, bool, bool, int*)
+int TruxxUiManager::ShowWindow(int wndId, bool needShow, bool forceShow, bool forceModal, bool pause, int* modalRetVal)
 {
-    throw std::logic_error("Not implemented");
+    if (needShow)
+    {
+        return GameUiManager::GUI_ShowWindow(wndId, forceShow, forceModal, pause, modalRetVal);
+    }
+    return GameUiManager::GUI_HideWindow(wndId, false, modalRetVal, false);
 }
 
 void TruxxUiManager::ShowSplash(int processStatus, CStr const& text) const
@@ -437,9 +442,9 @@ void TruxxUiManager::ShowSplash(int processStatus, CStr const& text) const
     }
 }
 
-int TruxxUiManager::Show(bool, bool)
+int TruxxUiManager::Show(bool needShow, bool enabeleAnimation)
 {
-    throw std::logic_error("Not implemented");
+    return GUI_ShowInterface(needShow, enabeleAnimation);
 }
 
 int TruxxUiManager::CreateAndAddWindow(int)
@@ -525,9 +530,25 @@ void TruxxUiManager::AddImportantFadingMsgByStrId(CStr const&, std::vector<m3d::
     throw std::logic_error("Not implemented");
 }
 
-m3d::ui::MbRetCodes TruxxUiManager::RunMsgBoxDlg(CStr const&, CStr const&, unsigned, bool)
+m3d::ui::MbRetCodes TruxxUiManager::RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned flags, bool bPause)
 {
-    throw std::logic_error("Not implemented");
+    ref_ptr box = dynamic_cast<MsgBox*>(M3D_KERNEL->New("MsgBox"));
+    if (!box)
+    {
+        return m3d::ui::MBX_RET_CANCEL;
+    }
+    if (!box->CreateMsgBox(caption, message, flags))
+    {
+        return m3d::ui::MBX_RET_CANCEL;
+    }
+    int guiId = -1;
+    AddWindow(&*box, guiId, false, false);
+
+    int retVal = m3d::ui::MBX_RET_CANCEL;;
+    ShowWindow(guiId, true, true, true, bPause, &retVal);
+    RemoveWindow(guiId);
+    GUI_EndModalDlg();
+    return static_cast<m3d::ui::MbRetCodes>(retVal);
 }
 
 bool TruxxUiManager::IsInSaleMode() const
@@ -535,9 +556,18 @@ bool TruxxUiManager::IsInSaleMode() const
     throw std::logic_error("Not implemented");
 }
 
-bool TruxxUiManager::IsWindowVisible(int) const
+bool TruxxUiManager::IsWindowVisible(int wndGuiId) const
 {
-    throw std::logic_error("Not implemented");
+    auto wnd = GetWindow(wndGuiId);
+    if (!wnd)
+    {
+        return false;
+    }
+    if (wnd->IsChildOf(M3D_APP))
+    {
+        return true;
+    }
+    return false;
 }
 
 int TruxxUiManager::SetEventsForWindow(int, std::vector<int, std::allocator<int>> const&)
@@ -560,9 +590,9 @@ int TruxxUiManager::Update()
     throw std::logic_error("Not implemented");
 }
 
-int TruxxUiManager::LaunchEvent(int, GuiEventType, void*)
+int TruxxUiManager::LaunchEvent(int eventId, GuiEventType type, void* data)
 {
-    throw std::logic_error("Not implemented");
+    return GUI_ProcessEvent(type, eventId, data, nullptr);
 }
 
 SavesManager* TruxxUiManager::GetSavesManager() const
@@ -611,17 +641,22 @@ void TruxxUiManager::AddImportantFadingMsg(CStr const&, std::vector<m3d::AIParam
 
 HelpManager* TruxxUiManager::GetHelpManager() const
 {
-    throw std::logic_error("Not implemented");
+    return m_helpManager;
 }
 
-int TruxxUiManager::RemoveWindow(int)
+int TruxxUiManager::RemoveWindow(int wndId)
 {
-    throw std::logic_error("Not implemented");
+    return GUI_RemoveWindow(wndId);
 }
 
-bool TruxxUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd*) const
+bool TruxxUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd* w) const
 {
-    throw std::logic_error("Not implemented");
+    using namespace m3d::ui;
+    if (w && (w->IsKindOf(RT_CLASS_LOCAL(ModalWnd)) || w->IsKindOf(RT_CLASS_LOCAL(MainMenuUI))))
+    {
+        return true;
+    }
+    return false;
 }
 
 int TruxxUiManager::GUI_ReadFromXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
@@ -644,19 +679,58 @@ void TruxxUiManager::ShowGameMenu(CStr const&)
     throw std::logic_error("Not implemented");
 }
 
-void TruxxUiManager::OnGameModeChanged(void*)
+void TruxxUiManager::OnGameModeChanged(void* data)
 {
-    throw std::logic_error("Not implemented");
+    if (data)
+    {
+        auto ev = static_cast<m3d::Event*>(data);
+        M3D_LOG_INFO("Game mode changed. Old mode = " + CStr(ev->m_intEv[1]) + ", new mode = " + CStr(ev->m_intEv[0]));
+        if (ev->m_intEv[0] == 0 && ev->m_intEv[1] == 1 && m_bIsPlayerDead)
+        {
+            M3D_APP->EnqueueMessage(65656, 0, 0, 0, 0, GameMenuWnd::DEATH_LEVEL_NAME, {});
+        }
+    }
 }
 
 void TruxxUiManager::OnBeforeStartLevel()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check and refactor this
+    bool bOldFirstLevelResourcesLoaded = m_bFirstLevelResourcesLoaded;
+    if (!m_bFirstLevelResourcesLoaded && !GUI_IsCurrentLevelMainMenuLevel())
+    {
+        throw std::logic_error("Not implemented");
+    }
+    auto res = 1;
+    if (GUI_IsCurrentLevelMainMenuLevel())
+    {
+        goto LABEL_18;
+    }
+    if (!m_bFirstLevelResourcesLoaded)
+    {
+        res = GUI_LoadResources(ResourceInfo::LOADTYPE_AT_FIRST_LEVEL_START) & 1;
+        m_bFirstLevelResourcesLoaded = true;
+    }
+    if ((GUI_LoadResources(ResourceInfo::LOADTYPE_AT_LEVEL_START) & res) != 0)
+    {
+    LABEL_18:
+        M3D_LOG_INFO("Interface: is loaded successfully");
+    }
+    else
+    {
+        M3D_LOG_INFO("Interface: is loaded with errors");
+    }
+    if (!bOldFirstLevelResourcesLoaded && m_bFirstLevelResourcesLoaded)
+    {
+        GUI_RegisterScriptGlobals();
+    }
 }
 
 void TruxxUiManager::GUI_EndModalDlg()
 {
-    throw std::logic_error("Not implemented");
+    if (!IsModalEqualWndRunning() || M3D_APP->GetCurGameMode() == 1)
+    {
+        M3D_APP->UnPause();
+    }
 }
 
 int TruxxUiManager::GUI_BindWindowsToEvents()
@@ -1027,9 +1101,17 @@ int TruxxUiManager::GUI_WriteToXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn:
     throw std::logic_error("Not implemented");
 }
 
-void TruxxUiManager::OnStartLevel(void*)
+void TruxxUiManager::OnStartLevel(void* data)
 {
-    throw std::logic_error("Not implemented");
+    m_msgManager->Init(false);
+    if (*static_cast<int*>(data) != 2)
+    {
+        GUI_Init(false);
+        if (M3D_APP->GetCurGameMode() != 1)
+        {
+            Show(true, true);
+        }
+    }
 }
 
 void TruxxUiManager::OnEndLevel(bool)
@@ -1057,14 +1139,67 @@ int TruxxUiManager::DecRef()
     throw std::logic_error("Not implemented");
 }
 
-bool TruxxUiManager::GUI_NeedUpdateWndOnEvent(ref_ptr<m3d::ui::Wnd>, int, void*)
+bool TruxxUiManager::GUI_NeedUpdateWndOnEvent(ref_ptr<m3d::ui::Wnd> wnd, int eventId, void* data)
 {
-    throw std::logic_error("Not implemented");
+    if (!wnd || eventId == -1)
+    {
+        return false;
+    }
+    auto res = true;
+    if (eventId == 89)
+    {
+        if (!wnd->IsChildOf(M3D_APP))
+        {
+            res = false;
+        }
+    }
+    return res;
 }
 
-int TruxxUiManager::GUI_HandleEvent(int, m3d::ui::Wnd*, void*)
+int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void* data)
 {
-    throw std::logic_error("Not implemented");
+    if (GameUiManager::GUI_HandleEvent(guiEventId, forceWnd, data))
+    {
+        return 1;
+    }
+    if (forceWnd && guiEventId != 16)
+    {
+        return 0;
+    }
+    switch (guiEventId)
+    {
+    case 17:
+    case 41:
+    case 42:
+    case 44:
+    {
+        return 0;
+    }
+    case 40:
+    {
+        m_savesManager->GameDataUpdate(data, guiEventId);
+        return 0;
+    }
+    case 48:
+    {
+        OnGameModeChanged(data);
+        return 0;
+    }
+    case 84:
+    {
+        OnBeforeStartLevel();
+        return 0;
+    }
+    case 85:
+    {
+        m_levelInfoManager->GameDataUpdate(data, guiEventId);
+        m_questInfoManager->GameDataUpdate(data, guiEventId);
+        OnStartLevel(data);
+        return 0;
+    }
+    default:
+        throw std::logic_error("Not implemented");
+    }
 }
 
 void* TruxxUiManager::QueryIface(char const*)
@@ -1075,7 +1210,7 @@ void* TruxxUiManager::QueryIface(char const*)
 void TruxxUiManager::GUI_RegisterEvents()
 {
     //TODO: check this
-    m_impulseToEvent[41] = 0;
+    m_eventToEvent[41] = 0;
     m_impulseToEvent[42] = 2;
     m_impulseToEvent[43] = 3;
     m_impulseToEvent[44] = 4;
@@ -1091,73 +1226,73 @@ void TruxxUiManager::GUI_RegisterEvents()
     m_impulseToEvent[55] = 14;
     m_impulseToEvent[0] = 15;
     m_impulseToEvent[50] = 16;
-    m_impulseToEvent[46] = 17;
-    m_impulseToEvent[42] = 18;
-    m_impulseToEvent[65653] = 19;
-    m_impulseToEvent[65657] = 20;
-    m_impulseToEvent[65658] = 21;
-    m_impulseToEvent[65659] = 22;
-    m_impulseToEvent[65660] = 23;
-    m_impulseToEvent[65661] = 24;
-    m_impulseToEvent[65663] = 25;
-    m_impulseToEvent[65665] = 26;
-    m_impulseToEvent[65664] = 27;
-    m_impulseToEvent[65666] = 28;
-    m_impulseToEvent[65667] = 29;
-    m_impulseToEvent[65668] = 30;
-    m_impulseToEvent[65669] = 31;
-    m_impulseToEvent[65670] = 32;
-    m_impulseToEvent[65671] = 33;
-    m_impulseToEvent[65672] = 34;
-    m_impulseToEvent[65673] = 35;
-    m_impulseToEvent[65674] = 36;
-    m_impulseToEvent[65675] = 37;
-    m_impulseToEvent[65676] = 38;
-    m_impulseToEvent[65677] = 39;
-    m_impulseToEvent[65678] = 40;
-    m_impulseToEvent[65679] = 41;
-    m_impulseToEvent[65680] = 42;
-    m_impulseToEvent[65644] = 43;
-    m_impulseToEvent[65645] = 44;
-    m_impulseToEvent[65684] = 45;
-    m_impulseToEvent[65681] = 46;
-    m_impulseToEvent[65682] = 47;
-    m_impulseToEvent[65683] = 48;
-    m_impulseToEvent[65656] = 49;
-    m_impulseToEvent[65685] = 50;
-    m_impulseToEvent[65686] = 51;
-    m_impulseToEvent[65687] = 52;
-    m_impulseToEvent[65688] = 53;
-    m_impulseToEvent[65689] = 54;
-    m_impulseToEvent[65690] = 55;
-    m_impulseToEvent[65691] = 56;
-    m_impulseToEvent[66540] = 57;
-    m_impulseToEvent[66537] = 58;
-    m_impulseToEvent[66538] = 59;
-    m_impulseToEvent[66539] = 60;
-    m_impulseToEvent[66541] = 61;
-    m_impulseToEvent[66542] = 62;
-    m_impulseToEvent[66543] = 63;
-    m_impulseToEvent[66544] = 64;
-    m_impulseToEvent[66545] = 65;
-    m_impulseToEvent[66546] = 66;
-    m_impulseToEvent[66547] = 67;
-    m_impulseToEvent[66548] = 68;
-    m_impulseToEvent[66551] = 69;
-    m_impulseToEvent[66554] = 70;
-    m_impulseToEvent[66556] = 71;
-    m_impulseToEvent[66557] = 72;
-    m_impulseToEvent[66558] = 73;
-    m_impulseToEvent[66553] = 74;
-    m_impulseToEvent[66559] = 75;
-    m_impulseToEvent[66561] = 76;
-    m_impulseToEvent[66562] = 77;
-    m_impulseToEvent[66565] = 78;
-    m_impulseToEvent[66563] = 79;
-    m_impulseToEvent[66564] = 80;
-    m_impulseToEvent[66566] = 81;
-    m_impulseToEvent[66567] = 82;
-    m_impulseToEvent[66568] = 83;
+    m_eventToEvent[46] = 17;
+    m_eventToEvent[42] = 18;
+    m_eventToEvent[65653] = 19;
+    m_eventToEvent[65657] = 20;
+    m_eventToEvent[65658] = 21;
+    m_eventToEvent[65659] = 22;
+    m_eventToEvent[65660] = 23;
+    m_eventToEvent[65661] = 24;
+    m_eventToEvent[65663] = 25;
+    m_eventToEvent[65665] = 26;
+    m_eventToEvent[65664] = 27;
+    m_eventToEvent[65666] = 28;
+    m_eventToEvent[65667] = 29;
+    m_eventToEvent[65668] = 30;
+    m_eventToEvent[65669] = 31;
+    m_eventToEvent[65670] = 32;
+    m_eventToEvent[65671] = 33;
+    m_eventToEvent[65672] = 34;
+    m_eventToEvent[65673] = 35;
+    m_eventToEvent[65674] = 36;
+    m_eventToEvent[65675] = 37;
+    m_eventToEvent[65676] = 38;
+    m_eventToEvent[65677] = 39;
+    m_eventToEvent[65678] = 40;
+    m_eventToEvent[65679] = 41;
+    m_eventToEvent[65680] = 42;
+    m_eventToEvent[65644] = 43;
+    m_eventToEvent[65645] = 44;
+    m_eventToEvent[65684] = 45;
+    m_eventToEvent[65681] = 46;
+    m_eventToEvent[65682] = 47;
+    m_eventToEvent[65683] = 48;
+    m_eventToEvent[65656] = 49;
+    m_eventToEvent[65685] = 50;
+    m_eventToEvent[65686] = 51;
+    m_eventToEvent[65687] = 52;
+    m_eventToEvent[65688] = 53;
+    m_eventToEvent[65689] = 54;
+    m_eventToEvent[65690] = 55;
+    m_eventToEvent[65691] = 56;
+    m_eventToEvent[66540] = 57;
+    m_eventToEvent[66537] = 58;
+    m_eventToEvent[66538] = 59;
+    m_eventToEvent[66539] = 60;
+    m_eventToEvent[66541] = 61;
+    m_eventToEvent[66542] = 62;
+    m_eventToEvent[66543] = 63;
+    m_eventToEvent[66544] = 64;
+    m_eventToEvent[66545] = 65;
+    m_eventToEvent[66546] = 66;
+    m_eventToEvent[66547] = 67;
+    m_eventToEvent[66548] = 68;
+    m_eventToEvent[66551] = 69;
+    m_eventToEvent[66554] = 70;
+    m_eventToEvent[66556] = 71;
+    m_eventToEvent[66557] = 72;
+    m_eventToEvent[66558] = 73;
+    m_eventToEvent[66553] = 74;
+    m_eventToEvent[66559] = 75;
+    m_eventToEvent[66561] = 76;
+    m_eventToEvent[66562] = 77;
+    m_eventToEvent[66565] = 78;
+    m_eventToEvent[66563] = 79;
+    m_eventToEvent[66564] = 80;
+    m_eventToEvent[66566] = 81;
+    m_eventToEvent[66567] = 82;
+    m_eventToEvent[66568] = 83;
 }
 
 void TruxxUiManager::GUI_RegisterClasses()
@@ -1350,9 +1485,23 @@ void TruxxUiManager::SetGameMenuMode(bool)
     throw std::logic_error("Not implemented");
 }
 
-int TruxxUiManager::GUI_BeginModalDlg(bool, bool)
+int TruxxUiManager::GUI_BeginModalDlg(bool forcePause, bool forceModal)
 {
-    throw std::logic_error("Not implemented");
+    if (!forceModal)
+    {
+        if (M3D_APP->HasChildModalRunning() || GetLevelInfoManager())
+            return 0;
+    }
+    auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(72);
+    if (!wnd || !wnd->IsChildOf(M3D_APP))
+    {
+        if (forcePause)
+            M3D_APP->Pause();
+    }
+    M3D_APP->m_pImpulses->ResetAllImpulses(false);
+    M3D_APP->m_gameSlideAuto.x = 0.0;
+    M3D_APP->m_gameSlideAuto.y = 0.0;
+    return 1;
 }
 
 int TruxxUiManager::GUI_RegisterScriptGlobals()

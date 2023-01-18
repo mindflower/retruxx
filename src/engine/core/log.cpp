@@ -62,7 +62,30 @@ namespace m3d
 
     bool Log::endLog()
     {
-        throw std::logic_error("Not implemented");
+        AutoLock guard(m_cs);
+        if (!m_logStarted)
+        {
+            return true;
+        }
+
+        std::ofstream logStream(m_fileName, std::ios_base::app);
+        if (logStream)
+        {
+            auto const timestamp = time(NULL);
+            CStr timeStr = asctime(localtime(&timestamp));
+            timeStr[timeStr.length() - 1] = '\0';
+            logStream <<
+                "----------------------------------------------- Log ends on " <<
+                timeStr.c_str() <<
+                " ----------------------------------------------" <<
+                std::endl;
+            if (m_flushImmediately)
+            {
+                logStream.flush();
+            }
+        }
+        m_logStarted = false;
+        return true;
     }
 
     bool const& Log::lineCharsFlag() const
@@ -114,13 +137,33 @@ namespace m3d
         }
     }
 
-    void Log::undent(CStr const&, eLogFlags)
+    void Log::undent(CStr const& s, eLogFlags logBits)
     {
-        throw std::logic_error("Not implemented");
+        AutoLock guard(m_cs);
+        if (m_logStarted && (logBits & m_logMask) != 0)
+        {
+            m_indentCount -= m_indentChars;
+            if (m_indentCount < 0)
+            {
+                m_indentCount = 0;
+            }
+            std::ofstream logStream(m_fileName, std::ios_base::app);
+            if (logStream)
+            {
+                auto const header = headerString(logBits);
+                logStream << header.c_str() << " +- " << s.c_str() << std::endl;
+                m_indentCount += m_indentChars;
+                if (m_flushImmediately)
+                {
+                    logStream.flush();
+                }
+            }
+        }
     }
 
     bool Log::startLog(char const* fileName, bool flush)
     {
+        AutoLock guard(m_cs);
         if (m_logStarted)
         {
             return true;

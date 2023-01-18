@@ -111,8 +111,9 @@ GameState CMiracle3d::CurGameMode::Get() const
 void CMiracle3d::CurGameMode::Set(GameState mode)
 {
     //TODO: check this
+    auto oldMode = m_mode;
     m_mode = mode;
-    g_pApp->ImmediateMessage(65683, mode, m_mode, 0, 0, {}, {});
+    g_pApp->ImmediateMessage(65683, mode, oldMode, 0, 0, {}, {});
 }
 
 void CMiracle3d::Player::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -246,7 +247,10 @@ int CMiracle3d::OnFinishIntroVideoPlaying()
 
 int CMiracle3d::GameDone()
 {
-    throw std::logic_error("Not implemented");
+    m_gameInited = false;
+    delete m3d::pClient;
+    M3D_KERNEL->GetEngineCfg().m_levFileName.Set("Empty", true);
+    return 1;
 }
 
 int CMiracle3d::OnFlyMouse(m3d::AuxImpulseInfo const&)
@@ -330,7 +334,8 @@ m3d::Object* CMiracle3d::CreateObject()
 
 void CMiracle3d::OnChangeProfile()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement CMiracle3d::OnChangeProfile
+    //throw std::logic_error("Not implemented");
 }
 
 void CMiracle3d::CleanMainMenuLevel()
@@ -343,9 +348,9 @@ void CMiracle3d::BeginModalDlg(bool)
     throw std::logic_error("Not implemented");
 }
 
-m3d::ui::MbRetCodes CMiracle3d::RunMsgBoxDlg(CStr const&, CStr const&, unsigned, bool)
+m3d::ui::MbRetCodes CMiracle3d::RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned flags, bool bPause)
 {
-    throw std::logic_error("Not implemented");
+    return M3D_APP->m_pInterfaceManager->RunMsgBoxDlg(caption, message, flags, bPause);
 }
 
 int CMiracle3d::CleanLevel(bool, bool)
@@ -453,12 +458,21 @@ void CMiracle3d::SetMaxTimeScale(float)
 
 int CMiracle3d::OnObtainingFocus()
 {
-    throw std::logic_error("Not implemented");
+    if (M3D_APP->m_pInterfaceManager->IsWindowVisible(72))
+    {
+        auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(72);
+        CaptureFocus(wnd);
+    }
+    else
+    {
+        m_gotFocus = true;
+    }
+    return 1;
 }
 
 int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServers, bool bQuiet, bool bContinuousMap, m3d::cmn::XmlFile* dynamicSceneXmlFile, m3d::cmn::XmlNode const* dynamicSceneXmlNode, ai::ObjContainer::eSAVE_TYPES saveType)
 {
-    //TODO: check continiousMap and LoadServers!!!!
+    //TODO: check bQuiet, continiousMap and LoadServers!!!!
     if (!m_gameInited)
     {
         return 0;
@@ -477,7 +491,7 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
     }
     m_blockMusicManager->Init();
     auto app = dynamic_cast<CMiracle3d*>(g_pApp);
-    if (!bContinuousMap)
+    if (LoadServers)
     {
         app->m_serverAnimatedModels->GenerateImpostorsIfNeeded();
     }
@@ -485,7 +499,7 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
     auto levelFullPath = m3d::pClient->GetWorld().m_level->GetFullPathNameA({});
     m_cinematic->SetFolder(levelFullPath.c_str());
     app->m_pInterfaceManager->LaunchEvent(84, GUI_EVENT_CUSTOM, nullptr);
-    if (LoadServers)
+    if (bContinuousMap)
     {
         auto xmlName = help::GetMapNameFromFileName(name);
         auto tempMapsPath = app->m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps();
@@ -505,11 +519,13 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
         ai::pServer->Load(ai::LOCAL_GAME, dynamicSceneXmlFile, dynamicSceneXmlNode, false, saveType);
     }
     M3D_LOG_INFO("Load Server end");
-    if (!LoadServers)
+    if (!bContinuousMap)
     {
         app->m_pInterfaceManager->GetQuestInfoManager()->Init();
     }
-    app->m_pInterfaceManager->LaunchEvent(85, GUI_EVENT_CUSTOM, nullptr);
+    //TODO: check this!!!
+    int data = M3D_APP->GetCurGameMode();
+    app->m_pInterfaceManager->LaunchEvent(85, GUI_EVENT_CUSTOM, &data);
     if (auto vehicle = ai::gDynamicScene->GetVehicleControlledByPlayer())
     {
         m_curCamera.m_worldOrigin = vehicle->GetPosition();
@@ -696,7 +712,7 @@ int CMiracle3d::StartPlayingVideo(char const* videoFile, int(CMiracle3d::* onFin
 
 CMiracle3d::~CMiracle3d()
 {
-    throw std::logic_error("Not implemented");
+    //TODO: implement CMiracle3d::~CMiracle3d
 }
 
 float CMiracle3d::GetNormalTimeScale() const
@@ -726,8 +742,10 @@ int CMiracle3d::ValidateCameraAngles()
 
 m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
 {
-    auto app = dynamic_cast<CMiracle3d*>(g_pApp);
-    if (wnd || app->m_pInterfaceManager->IsModalEqualWndRunning())
+    //TODO: check isModal!!!!!!!!!!!!
+    auto const oldCapture = m_wndMouseCapture;
+    auto const isModal = M3D_APP->m_pInterfaceManager->IsModalEqualWndRunning();
+    if (wnd || isModal)
     {
         m_wndMouseCapture = wnd;
     }
@@ -735,12 +753,12 @@ m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
     {
         float x = 512.0;
         float y = 384.0;
-        app->m_renderer->RelToAbs(x, y);
-        app->SetMouseXy(x, y);
+        M3D_APP->m_renderer->RelToAbs(x, y);
+        M3D_APP->SetMouseXy(x, y);
         //TODO: check this!!!!1
-        m_wndMouseCapture = this;
+        m_wndMouseCapture = nullptr;
     }
-    if (m_wndMouseCapture || !m3d::g_Kernel->GetEngineCfg().m_r_dxcursor.GetB())
+    if (!isModal && (m_wndMouseCapture == nullptr || !m3d::g_Kernel->GetEngineCfg().m_r_dxcursor.GetB()))
     {
         EnableDXCursor(false);
     }
@@ -748,7 +766,7 @@ m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
     {
         EnableDXCursor(true);
     }
-    return m_wndMouseCapture;
+    return oldCapture;
 }
 
 int CMiracle3d::CollideCamera(CVector&, float&, CVector const&, CVector const&)
@@ -1101,13 +1119,22 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
         g_pApp->m_renderer->ClearViewport(m3d::rend::M3DCLEAR_CZ, 0xFF000000);
         return 1;
     }
+
     throw std::logic_error("Not implemented");
 }
 
-int CMiracle3d::RemoveChild(m3d::Object* object)
+int CMiracle3d::RemoveChild(m3d::Object* node)
 {
-    //TODO: ...
-    throw std::logic_error("Not implemented");
+    auto result = Wnd::RemoveChild(node);
+    if (!result || !node)
+        return result;
+    if (!node->IsKindOf(RT_CLASS_LOCAL(MotherPanel)))
+        return result;
+
+    //TODO: check this
+    //*(&this->m_playingVideo + 1) = 0;
+    this->m_playingVideo = false;
+    return result;
 }
 
 int CMiracle3d::DoneMedia()
@@ -1228,8 +1255,10 @@ int CMiracle3d::InitMedia()
 
 int CMiracle3d::FrameMove()
 {
+    //TODO: implement CMiracle3d::FrameMove
     if (!m_playingVideo || m_enginePlayingVideo)
     {
+        return 1;
         throw std::logic_error("Not implemented");
         auto* profiler = GetProfilerStack().GetProfiler(m_profiler_Client);
         profiler->StartCountdown();

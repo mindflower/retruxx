@@ -1,7 +1,9 @@
 #include "gameoptionswnd.h"
 
-#include "m3dapp.h"
+#include "game/m3dgame.h"
 #include "core/log.h"
+#include "game/profile.h"
+#include "game/uimisc/helpmanager.h"
 #include "server/objects/base/globalproperties.h"
 #include "ui/button.h"
 #include "ui/comboboxwnd.h"
@@ -47,7 +49,15 @@ void GameOptionsWnd::InitNumRepliesControls()
 
 void GameOptionsWnd::ApplyNumReplies()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto profile = M3D_APP->GetProfileManager()->GetCurProfile();
+        if (profile)
+        {
+            m3d::AIParam const param{static_cast<float>(m_sliderNumReplies->GetNotch() * 0.0099999998)};
+            profile->SetParam(PP_NUM_RADIO_REPLIES_COEFF, param);
+        }
+    }
 }
 
 void GameOptionsWnd::UpdateControls()
@@ -133,7 +143,19 @@ int GameOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m
 
 void GameOptionsWnd::UpdateNumRepliesControls()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto profile = M3D_APP->GetProfileManager()->GetCurProfile();
+        if (profile)
+        {
+            m3d::AIParam param;
+            if (profile->GetParam(PP_NUM_RADIO_REPLIES_COEFF, param))
+            {
+                ++m_sliderNumRepliesBlocked;
+                m_sliderNumReplies->SetNotch(param.GetAsFloat());
+            }
+        }
+    }
 }
 
 void GameOptionsWnd::ApplyGameDifficulty()
@@ -153,17 +175,27 @@ void GameOptionsWnd::UpdateNumRepliesPrevNextButtonsState()
 
 void GameOptionsWnd::OnBtnNumRepliesNextClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderNumReplies->SetNotch(m_sliderNumReplies->GetNotch() + 1);
+    }
 }
 
 void GameOptionsWnd::OnCbGameDifficultyChange(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if (IsChildOf(M3D_APP) && !m_cbGameDifficultyBlocked)
+        ApplyGameDifficulty();
+    auto blocked = m_cbGameDifficultyBlocked;
+    if (blocked > 0)
+        m_cbGameDifficultyBlocked = blocked - 1;
 }
 
 void GameOptionsWnd::OnBtnNumRepliesPrevClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderNumReplies->SetNotch(m_sliderNumReplies->GetNotch() - 1);
+    }
 }
 
 void GameOptionsWnd::InitGameDifficultyControls()
@@ -261,22 +293,62 @@ int GameOptionsWnd::GameDataSetup()
 
 void GameOptionsWnd::UpdateAutoHelpControls()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto profile = M3D_APP->GetProfileManager()->GetCurProfile();
+        if (profile)
+        {
+            m3d::AIParam param;
+            if (profile->GetParam(PP_AUTOHELP_ENABLED, param))
+            {
+                m_checkAutoHelp->SetCheck(param.GetAsID());
+            }
+        }
+    }
 }
 
 int GameOptionsWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    UpdateAutoHelpControls();
+    UpdateNumRepliesControls();
+    UpdateGameDifficultyControls();
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 void GameOptionsWnd::UpdateGameDifficultyControls()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto const level = M3D_APP->GetCurDifficultyLevel();
+        ++m_cbGameDifficultyBlocked;
+        m_cbGameDifficulty->SetCurSel(-1);
+        for (int i = 0; i < m_cbGameDifficulty->GetCount(); ++i)
+        {
+            if (m_cbGameDifficulty->GetItemData(i) == level)
+            {
+                ++m_cbGameDifficultyBlocked;
+                m_cbGameDifficulty->SetCurSel(i);
+                break;
+            }
+        }
+        if (m_cbGameDifficulty->GetCurSel() == -1)
+        {
+            m_cbGameDifficulty->SetText("unknown level: " + CStr(level));
+        }
+    }
 }
 
 void GameOptionsWnd::ApplyAutoHelp()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto const enableAutoHelp = m_checkAutoHelp->GetCheck() != 0;
+        M3D_APP->m_pInterfaceManager->GetHelpManager()->EnableAutoHelp(enableAutoHelp);
+        if (enableAutoHelp)
+        {
+            M3D_APP->m_pInterfaceManager->GetHelpManager()->ResetAutoHelp();
+        }
+    }
 }
 
 void GameOptionsWnd::InitControls()

@@ -67,6 +67,7 @@ class MsgManager :  public m3d::Object
 {
 public:
     int ShowMsgBox(int,bool);
+    int Init(bool);
     void Clear(bool);
     virtual m3d::Class * GetClass() const ;
     static m3d::Class * GetBaseClass();

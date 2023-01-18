@@ -19,7 +19,7 @@ public:
     {
     public:
         bool operator==(ShadowSettings const&) const;
-        ShadowSettings(int, int, float, float);
+        ShadowSettings(int texSize, int detTexSize, float blurCoeff, float radius);
 
     private:
         int shadowTexSize;
@@ -242,9 +242,23 @@ public:
     RT_CLASS_DECLARE(VideoOptionsWnd);
 
 protected:
-    static PointBase<int> m_screenWH[5];
-    static int m_waterQualities[3];
-    static int m_antialiasings[5];
+    static inline float m_grassDistances[3] = { 0.0, 100.0, 200.0 };
+    static inline int m_waterQualities[3] = { 1, 2, 3 };
+    static inline int m_filtrations[3] = { 4, 5, 3 };
+    static inline int m_blumQualities[3] = { 0, 1, 2 };
+    static inline ShadowSettings m_shadowSettings[3] = {
+        {0, 0, 0.0, 0.0},
+        {0x100, 0x200, 15.0, 35.0},
+        {0x200, 0x400, 8.0, 35.0},
+    };
+    static inline PointBase<int> m_screenWH[5] = {
+        {800, 600},
+        {1024, 768},
+        {1152, 864},
+        {1280, 960},
+        {1600, 1200},
+    };
+    static inline int m_antialiasings[5] = { 0, 2, 4, 8, 16 };
 
 private:
     m3d::ui::ComboBoxWnd* m_cbResolution = nullptr;

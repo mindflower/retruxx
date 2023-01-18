@@ -10,6 +10,7 @@
 #include "ui/ui.h"
 #include "ui/button.h"
 #include "ui/image.h"
+#include "ui/ui_srv.h"
 
 namespace m3d
 {
@@ -191,5 +192,13 @@ namespace help
         auto pos = name.find('.');
         auto res = name.substr(0, pos);
         return res;
+    }
+
+    CStr Color2Str(unsigned colorId)
+    {
+        auto const clr = m3d::ui::Wnd::GetGfxServer()->GetColor(colorId);
+        std::ostringstream ss;
+        ss << std::hex << clr;
+        return CStr("@") + ss.str().c_str();
     }
 }

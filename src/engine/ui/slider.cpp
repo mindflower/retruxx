@@ -2,6 +2,8 @@
 #include <ui/ui_srv.h>
 #include <core/aiparam.h>
 
+#include "m3dapp.h"
+
 namespace m3d
 {
     namespace ui
@@ -111,14 +113,73 @@ namespace m3d
             }
         }
 
-        int SliderWnd::OnPaint(DrawInfo const&)
+        int SliderWnd::OnPaint(DrawInfo const& di)
         {
-            throw std::logic_error("Not implemented");
+            auto const leftTex = GetGfxServer()->GetTexture(TEX_SLIDER_LEFT);
+            auto w = 0;
+            auto h = 0;
+            M3D_APP->m_renderer->GetDims(leftTex, w, h);
+            float sideW = w;
+            float sideH = h;
+            M3D_APP->m_renderer->AbsToRel(sideW, sideH);
+            auto const bounds = GetBounds();
+
+            BoundsBase<float> rect;
+            rect.x0 = 0.0;
+            rect.y0 = 0.0;
+            rect.height = bounds.height;
+            rect.width = sideW;
+            unsigned clr = m_curClr;
+            if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+                clr = 3;
+            GetGfxServer()->AddImagedRect(di, rect, clr, leftTex);
+
+            rect.x0 = bounds.width - sideW;
+            rect.y0 = 0.0;
+            rect.height = bounds.height;
+            rect.width = sideW;
+            auto const rightTex = GetGfxServer()->GetTexture(TEX_SLIDER_RIGHT);
+            GetGfxServer()->AddImagedRect(di, rect, clr, rightTex);
+
+            rect.x0 = sideW;
+            rect.y0 = 0.0;
+            rect.height = bounds.height;
+            rect.width = bounds.width - (sideW * 2.0);
+            auto const bodyTex = GetGfxServer()->GetTexture(TEX_SLIDER_BODY);
+            GetGfxServer()->AddImagedRectGeneral(di, rect, clr, bodyTex, 0.0, 0.0, rect.width / bounds.width, 1.0);
+
+            //TODO: check this
+            rect.x0 = (bounds.width - m_notchWidth) * (static_cast<float>(m_cur - m_min) / (m_max - m_min));
+            rect.y0 = 0.0;
+            rect.height = bounds.height;
+            rect.width = m_notchWidth;
+            auto const thumbTex = GetGfxServer()->GetTexture(TEX_SLIDER_THUMB);
+            GetGfxServer()->AddImagedRect(di, rect, clr, thumbTex);
+
+            return 1;
         }
 
-        int SliderWnd::OnMouseMove(PointBase<float> const&, PointBase<float> const&)
+        int SliderWnd::OnMouseMove(PointBase<float> const& at, PointBase<float> const& deltas)
         {
-            throw std::logic_error("Not implemented");
+            if (this != GetStation()->GetCapture())
+            {
+                m_tracking = false;
+            }
+            if (!m_tracking)
+            {
+                return 1;
+            }
+            auto cur = (at.x - (m_notchWidth * 0.5)) / (GetBounds().width - m_notchWidth);
+            if (cur < 0.0)
+            {
+                cur = 0.0;
+            }
+            else if (cur > 1.0)
+            {
+                cur = 1.0;
+            }
+            SetNotch(m_min + ((m_max - m_min) * cur));
+            return 1;
         }
 
         BoundsBase<float> SliderWnd::GetBodyRect() const
@@ -126,9 +187,12 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        int SliderWnd::OnMouseButton0(unsigned, PointBase<float> const&)
+        int SliderWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
-            throw std::logic_error("Not implemented");
+            m_tracking = state != 0;
+            GetStation()->CaptureMouse(state != 0 ? this : nullptr);
+            OnMouseMove(at, { 0.0, 0.0 });
+            return 1;
         }
 
         SliderWnd::SliderWnd()

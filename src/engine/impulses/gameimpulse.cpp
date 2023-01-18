@@ -382,9 +382,19 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void GameImpulse::ResetAllImpulses(bool)
+    void GameImpulse::ResetAllImpulses(bool bClearPressedKeys)
     {
-        throw std::logic_error("Not implemented");
+        if (m_isInited)
+        {
+            for (auto const& state : m_impulseStates)
+            {
+                m_impulseResetAfterRead[state.first] = false;
+            }
+            if (bClearPressedKeys)
+            {
+                m_curKeys.clear();
+            }
+        }
     }
 
     int GameImpulse::SetImpulsesStateBySet(KeysSet, bool, int, ui::Wnd*)
@@ -446,8 +456,10 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int GameImpulse::HandleKeyboardMouseEvent(Event const&, ui::Wnd*)
+    int GameImpulse::HandleKeyboardMouseEvent(Event const& ev, ui::Wnd* causeWnd)
     {
+        //TODO: implement GameImpulse::HandleKeyboardMouseEvent
+        return  1;
         throw std::logic_error("Not implemented");
     }
 

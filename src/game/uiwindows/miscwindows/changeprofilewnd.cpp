@@ -3,8 +3,12 @@
 #include <ui/button.h>
 #include <ui/listbox.h>
 
+#include "game/m3dgame.h"
+#include "game/profile.h"
+#include "game/uimisc/guihelper.h"
+
 RT_CLASS_EXPORTS_BEGIN(ChangeProfileWnd)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ChangeProfileWnd);
 
 ChangeProfileWnd::AuxInfo::AuxInfo()
@@ -38,7 +42,15 @@ m3d::Class* ChangeProfileWnd::GetClass() const
 
 CStr ChangeProfileWnd::GetSelectedProfileName() const
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto const curSel = m_wndProfileList->GetCurSel();
+        if (curSel != -1)
+        {
+            return m_wndProfileList->GetItem(curSel);
+        }
+    }
+    return {};
 }
 
 ChangeProfileWnd::ChangeProfileWnd()
@@ -113,12 +125,31 @@ int ChangeProfileWnd::GameDataSetup()
 
 int ChangeProfileWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return Wnd::OnBeforeAddToWndStation();
+    }
+    Clear();
+    OnProfilesListChanged();
+    OnCurProfileChanged();
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 void ChangeProfileWnd::OnChangeProfileSelection()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (!GetSelectedProfileName().empty())
+        {
+            m_btnChose->EnableWindow(true);
+            m_btnDelete->EnableWindow(true);
+        }
+        else
+        {
+            m_btnChose->EnableWindow(false);
+            m_btnDelete->EnableWindow(false);
+        }
+    }
 }
 
 int ChangeProfileWnd::OnKey(unsigned short, unsigned char, unsigned)
@@ -133,12 +164,40 @@ int ChangeProfileWnd::ChoseProfileAndExit()
 
 void ChangeProfileWnd::OnProfilesListChanged()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndProfileList->RemoveAllItems();
+        auto const names = M3D_APP->GetProfileManager()->GetProfilesNames();
+        for (auto const& name : names)
+        {
+            m_wndProfileList->AddItem(name);
+        }
+        m_wndProfileList->SetCurSel(0);
+    }
 }
 
-int ChangeProfileWnd::GameDataUpdate(void*, int)
+int ChangeProfileWnd::GameDataUpdate(void* data, int dataType)
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (dataType == 40)
+    {
+        if (IsChildOf(M3D_APP))
+        {
+            OnCurProfileChanged();
+        }
+    }
+    else if (dataType == 41)
+    {
+        if (IsChildOf(M3D_APP))
+        {
+            OnProfilesListChanged();
+            return 1;
+        }
+    }
+    return 1;
 }
 
 int ChangeProfileWnd::ChoseProfile()
@@ -148,7 +207,19 @@ int ChangeProfileWnd::ChoseProfile()
 
 void ChangeProfileWnd::OnCurProfileChanged()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (auto const profile = M3D_APP->GetProfileManager()->GetCurProfile())
+        {
+            auto const text = M3D_APP->GetStringByStringId0(m_aif.m_strIdCurProfile) + ": " +
+                help::Color2Str(m_aif.m_curProfileNameColor) + profile->GetName();
+            m_lblCurProfile->SetText(text);
+        }
+        else
+        {
+            m_lblCurProfile->SetText(M3D_APP->GetStringByStringId0(m_aif.m_strIdCurProfile));
+        }
+    }
 }
 
 int ChangeProfileWnd::DeleteProfile()
@@ -158,7 +229,11 @@ int ChangeProfileWnd::DeleteProfile()
 
 void ChangeProfileWnd::Clear()
 {
-    throw std::logic_error("Not implemented");
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndProfileList->RemoveAllItems();
+        m_lblCurProfile->SetText(M3D_APP->GetStringByStringId0(m_aif.m_strIdCurProfile));
+    }
 }
 
 int ChangeProfileWnd::CreateProfile()
@@ -171,7 +246,41 @@ void ChangeProfileWnd::FullUpdate()
     throw std::logic_error("Not implemented");
 }
 
-int ChangeProfileWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
+int ChangeProfileWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
 {
-    throw std::logic_error("Not implemented");
+    if (ModalWnd::OnWndNotify(from, id, msg, data))
+        return 1;
+    if ((m_gameDataFlags & 1) == 0)
+        return 0;
+    switch (id)
+    {
+    case 0x493E0u:
+        if (msg != 1)
+            return 0;
+        ChoseProfileAndExit();
+        return 1;
+    case 0x493E1u:
+        if (msg != 1)
+            return 0;
+        DeleteProfile();
+        return 1;
+    case 0x493E2u:
+        if (msg != 1)
+            return 0;
+        CreateProfile();
+        return 1;
+    case 0x493E3u:
+        if (msg == 4)
+        {
+            ChoseProfileAndExit();
+            return 1;
+        }
+        if (msg != 5)
+            return 0;
+        OnChangeProfileSelection();
+        break;
+    default:
+        return 0;
+    }
+    return 1;
 }
