@@ -20,7 +20,7 @@ namespace m3d
 
     float CameraController::GetShakingRolling() const
     {
-        throw std::logic_error("Not implemented");
+        return m_rolling;
     }
 
     void CameraController::DisableShaking()
@@ -30,7 +30,7 @@ namespace m3d
 
     CVector const& CameraController::GetShakingTranslation() const
     {
-        throw std::logic_error("Not implemented");
+        return m_translation;
     }
 
     void CameraController::DoTouch(CVector const&, float, float)

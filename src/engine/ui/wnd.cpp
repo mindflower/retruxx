@@ -1145,7 +1145,7 @@ namespace m3d
             if (this->m_toolTipWnd)
                 RemoveTooltip();
             if (this->m_bgTexture.IsValid())
-                m3d::Application::g_pApp->m_renderer->ReleaseTexture(this->m_bgTexture);
+                M3D_RENDERER->ReleaseTexture(this->m_bgTexture);
             StopAnimationMoveSound();
             if (m3d::ui::Wnd::m_wndStation)
                 m_wndStation->UnregisterWnd(this);

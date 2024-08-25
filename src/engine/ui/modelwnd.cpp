@@ -88,8 +88,8 @@ namespace m3d
                 m3d::SafeVectorAttrib(m_Scale, node, "ModelScale");
 
                 //TODO: check this!!!!!Q
-                m_renderTexture = m3d::Application::g_pApp->m_renderer->GetBufferedTargetTexture(GetFitTargetTextureSize(m_bounds).x);
-                m3d::Application::g_pApp->m_renderer->ReferenceTexture(m_renderTexture);
+                m_renderTexture = M3D_RENDERER->GetBufferedTargetTexture(GetFitTargetTextureSize(m_bounds).x);
+                M3D_RENDERER->ReferenceTexture(m_renderTexture);
                 result = 1;
             }
             return result;
@@ -143,7 +143,7 @@ namespace m3d
         ModelWnd::~ModelWnd()
         {
             delete m_Animation;
-            m3d::Application::g_pApp->m_renderer->ReleaseTexture(m_renderTexture);
+            M3D_RENDERER->ReleaseTexture(m_renderTexture);
         }
 
         void ModelWnd::SetCfgNum(unsigned)
@@ -182,15 +182,15 @@ namespace m3d
                 return 0;
             }
             m_texture = imageTex;
-            m3d::Application::g_pApp->m_renderer->ReferenceTexture(m_texture);
+            M3D_RENDERER->ReferenceTexture(m_texture);
             if (m_texture.IsValid())
             {
                 m_renderTexture = targetTex;
-                m3d::Application::g_pApp->m_renderer->ReferenceTexture(m_renderTexture);
+                M3D_RENDERER->ReferenceTexture(m_renderTexture);
             }
             else
             {
-                m_renderTexture = m3d::Application::g_pApp->m_renderer->GetBufferedTargetTexture(GetFitTargetTextureSize(GetBounds()).x);
+                m_renderTexture = M3D_RENDERER->GetBufferedTargetTexture(GetFitTargetTextureSize(GetBounds()).x);
                 if ((style & 0x80000000) != 0)
                 {
                     return 0;

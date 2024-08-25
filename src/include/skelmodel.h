@@ -92,7 +92,7 @@ namespace m3d
 
         public:
             char m_boneName[40];
-            int m_ownIdx;
+            int m_ownIdx = -1;
             int m_parentIdx;
             CVector m_translation0;
             Quaternion m_quaternion0;
@@ -123,7 +123,7 @@ namespace m3d
             ~Animation();
             Animation();
 
-        private:
+        public:
             __int16 m_numNodes;
             __int16 m_numFrames;
             __int16 m_fps;
@@ -160,7 +160,7 @@ namespace m3d
             Mesh();
             DSurfaceMaterial& GetMaterial(unsigned int) const;
 
-        private:
+        public:
             char m_meshName[40];
             int m_meshType;
             int m_numNode;

@@ -87,7 +87,7 @@ namespace m3d
         public:
             CellParams();
 
-        private:
+        public:
             float m_h0;
             float m_h1;
             bool m_iswatercell;

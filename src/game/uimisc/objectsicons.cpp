@@ -16,10 +16,10 @@ int ObjectsIcons::Icon::SetIco(int idx, CStr const& fileName)
     {
         return 0;
     }
-    m3d::Application::g_pApp->m_renderer->ReleaseTexture(m_ico[idx]);
+    M3D_RENDERER->ReleaseTexture(m_ico[idx]);
     if (!fileName.empty())
     {
-        m_ico[idx] = m3d::Application::g_pApp->m_renderer->AddTexture(fileName, 4);
+        m_ico[idx] = M3D_RENDERER->AddTexture(fileName, 4);
     }
     else
     {

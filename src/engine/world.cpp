@@ -8,11 +8,13 @@
 #include "m3dapp.h"
 #include "core/log.h"
 #include "core/timer.h"
+#include "server/dynamicscene.h"
 #include "server/server.h"
 
 namespace ai
 {
     extern CServer* pServer;
+    extern DynamicScene* gDynamicScene;
 }
 
 namespace m3d
@@ -39,7 +41,9 @@ namespace m3d
 
     void CWorld::Render()
     {
-        throw std::logic_error("Not implemented");
+        m_landscape.UpdateVis(true);
+        m_landscape.Render();
+        ai::gDynamicScene->RenderDebugInfo();
     }
 
     int CWorld::RenderSky(Landscape::LandRenderMode)
@@ -54,7 +58,7 @@ namespace m3d
 
     SceneGraph& CWorld::GetGraph()
     {
-        throw std::logic_error("Not implemented");
+        return m_sceneGraph;
     }
 
     void CWorld::SetOwner(CClient* client)
@@ -94,20 +98,20 @@ namespace m3d
         auto const landscapeEnd = M3D_KERNEL->GetTimer().GetCurTime();
         M3D_LOG_INFO("----------------------- Landscape loaded in: " + CStr(landscapeEnd - landscapeStart));
 
-        //bool res = false;
-        //if (m_level->m_serversname.empty() || !M3D_APP->LoadServers(m_level->m_serversname, bQuiet))
-        //{
-        //    res = M3D_APP->LoadServers("data\\models\\servers.xml", bQuiet);
-        //}
-        //if (m_level->m_staticServers.empty() || !M3D_APP->LoadServers(m_level->m_staticServers, bQuiet))
-        //{
-        //    res |= M3D_APP->LoadServers("data\\models\\commonservers.xml", bQuiet);
-        //}
-        //m_landscape.PostServersLoad();
-        //if (!res)
-        //{
-        //    return 0;
-        //}
+        bool res = true;
+        if (m_level->m_serversname.empty() || !M3D_APP->LoadServers(m_level->m_serversname, bQuiet))
+        {
+            res = M3D_APP->LoadServers("data\\models\\servers.xml", bQuiet);
+        }
+        if (m_level->m_staticServers.empty() || !M3D_APP->LoadServers(m_level->m_staticServers, bQuiet))
+        {
+            res |= M3D_APP->LoadServers("data\\models\\commonservers.xml", bQuiet);
+        }
+        m_landscape.PostServersLoad();
+        if (!res)
+        {
+            return 0;
+        }
         return 1;
         throw std::logic_error("Not implemented");
     }
@@ -272,7 +276,7 @@ namespace m3d
 
     Landscape& CWorld::GetLandscape()
     {
-        throw std::logic_error("Not implemented");
+        return m_landscape;
     }
 
     void CWorld::ProcessCollisionStuff()

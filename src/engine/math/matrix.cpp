@@ -3,9 +3,9 @@
 #include <math/vector.h>
 #include <math/vector4.h>
 
-CMatrix::CMatrix(CMatrix const&)
+CMatrix::CMatrix(CMatrix const& vv)
 {
-    throw std::logic_error("Not implemented");
+    *this = vv;
 }
 
 CMatrix::CMatrix()
@@ -87,9 +87,40 @@ void CMatrix::translation(float, float, float)
     throw std::logic_error("Not implemented");
 }
 
-void CMatrix::getYPR(float&, float&, float&) const
+void CMatrix::getYPR(float& y, float& p, float& r) const
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check this and refactor
+    long double v4; // st7
+    float v5; // xmm1_4
+    float v6; // xmm0_4
+    long double v7; // st7
+    float thetaX; // [esp+4h] [ebp-8h]
+    float thetaXa; // [esp+4h] [ebp-8h]
+    float thetaZ; // [esp+8h] [ebp-4h]
+
+    v4 = asin(this->_23);
+    thetaX = v4;
+    v5 = thetaX;
+    if (v4 >= 1.5707964)
+    {
+        v7 = atan2(this->_12, this->_11);
+        goto LABEL_6;
+    }
+    if (thetaX <= -1.5707964)
+    {
+        v7 = -atan2(this->_12, this->_11);
+    LABEL_6:
+        v6 = 0.0;
+        thetaXa = v7;
+        goto LABEL_7;
+    }
+    thetaXa = atan2(-this->_13, this->_33);
+    thetaZ = atan2(-this->_21, this->_22);
+    v6 = thetaZ;
+LABEL_7:
+    y = thetaXa;
+    p = v5;
+    r = v6;
 }
 
 void CMatrix::rotTranslate(Quaternion const&, CVector const&)
@@ -172,9 +203,122 @@ void CMatrix::orthoLH(float, float, float, float)
     throw std::logic_error("Not implemented");
 }
 
-void CMatrix::rotYPR(float, float, float)
+void CMatrix::rotYPR(float y, float p, float r)
 {
-    throw std::logic_error("Not implemented");
+    //TODO: check and refactor this
+    float v5; // [esp+0h] [ebp-118h]
+    float v6; // [esp+4h] [ebp-114h]
+    CMatrix matPitch; // [esp+8h] [ebp-110h] BYREF
+    float v8; // [esp+48h] [ebp-D0h]
+    float v9; // [esp+4Ch] [ebp-CCh]
+    float v10; // [esp+50h] [ebp-C8h]
+    CMatrix matRoll; // [esp+54h] [ebp-C4h] BYREF
+    CMatrix vv; // [esp+94h] [ebp-84h] BYREF
+    float v13; // [esp+D4h] [ebp-44h]
+    CMatrix matYaw; // [esp+D8h] [ebp-40h] BYREF
+
+    memset(&matYaw, 0, sizeof(matYaw));
+    memset(&matPitch, 0, sizeof(matPitch));
+    memset(&matRoll, 0, sizeof(matRoll));
+    v8 = sin(y);
+    v10 = cos(y);
+    matYaw._13 = -v8;
+    vv._11 = (float)((float)((float)(matPitch._41 * matYaw._14) + (float)(matPitch._21 * matYaw._12))
+        + (float)(matPitch._31 * matYaw._13))
+        + v10;
+    v6 = sin(p);
+    v9 = cos(p);
+    vv._12 = (float)((float)((float)(matPitch._12 * v10) + (float)(matYaw._12 * v9)) + (float)(matPitch._42 * matYaw._14))
+        + (float)((float)(0.0 - v6) * matYaw._13);
+    v5 = sin(r);
+    v13 = cos(r);
+    matRoll._21 = -v5;
+    vv._13 = matPitch._13 * v10 + matYaw._12 * v6 + matYaw._13 * v9 + matPitch._43 * matYaw._14;
+    vv._14 = (float)((float)((float)(matPitch._14 * v10) + (float)(matPitch._24 * matYaw._12))
+        + (float)(matPitch._34 * matYaw._13))
+        + matYaw._14;
+    vv._21 = (float)((float)((float)(matYaw._24 * matPitch._41) + (float)(matYaw._23 * matPitch._31)) + matYaw._21)
+        + matPitch._21;
+    vv._22 = (float)((float)((float)(matYaw._24 * matPitch._42) + (float)(matYaw._21 * matPitch._12))
+        + (float)(matYaw._23 * (float)(0.0 - v6)))
+        + v9;
+    vv._24 = (float)((float)((float)(matYaw._23 * matPitch._34) + (float)(matYaw._21 * matPitch._14)) + matYaw._24)
+        + matPitch._24;
+    vv._23 = (float)((float)((float)(matYaw._23 * v9) + (float)(matYaw._24 * matPitch._43))
+        + (float)(matYaw._21 * matPitch._13))
+        + v6;
+    vv._31 = (float)((float)((float)(matPitch._31 * v10) + (float)(matYaw._34 * matPitch._41))
+        + (float)(matYaw._32 * matPitch._21))
+        + v8;
+    vv._32 = (float)((float)((float)(matYaw._32 * v9) + (float)(matPitch._12 * v8)) + (float)((float)(0.0 - v6) * v10))
+        + (float)(matYaw._34 * matPitch._42);
+    vv._33 = (float)((float)((float)(matYaw._32 * v6) + (float)(matPitch._13 * v8)) + (float)(matYaw._34 * matPitch._43))
+        + (float)(v9 * v10);
+    vv._41 = (float)((float)((float)(matYaw._43 * matPitch._31) + (float)(matYaw._42 * matPitch._21)) + matYaw._41)
+        + matPitch._41;
+    vv._34 = (float)((float)((float)(matPitch._34 * v10) + (float)(matPitch._14 * v8)) + (float)(matYaw._32 * matPitch._24))
+        + matYaw._34;
+    vv._42 = (float)((float)((float)(matYaw._42 * v9) + (float)(matYaw._41 * matPitch._12))
+        + (float)(matYaw._43 * (float)(0.0 - v6)))
+        + matPitch._42;
+    vv._43 = (float)((float)((float)(matYaw._43 * v9) + (float)(matYaw._42 * v6)) + (float)(matYaw._41 * matPitch._13))
+        + matPitch._43;
+    vv._44 = (float)((float)((float)(matYaw._43 * matPitch._34) + (float)(matYaw._42 * matPitch._24))
+        + (float)(matYaw._41 * matPitch._14))
+        + 1.0;
+
+    matPitch = vv;
+    vv._11 = (float)((float)((float)(matPitch._11 * v13) + (float)(matRoll._41 * matPitch._14))
+        + (float)(matRoll._31 * matPitch._13))
+        + (float)(matPitch._12 * matRoll._21);
+    vv._12 = (float)((float)((float)(matPitch._12 * v13) + (float)(matPitch._11 * v5))
+        + (float)(matRoll._42 * matPitch._14))
+        + (float)(matRoll._32 * matPitch._13);
+    vv._13 = (float)((float)((float)(matRoll._13 * matPitch._11) + (float)(matRoll._43 * matPitch._14))
+        + (float)(matRoll._23 * matPitch._12))
+        + matPitch._13;
+    vv._14 = (float)((float)((float)(matRoll._14 * matPitch._11) + (float)(matRoll._34 * matPitch._13))
+        + (float)(matRoll._24 * matPitch._12))
+        + matPitch._14;
+    vv._21 = (float)((float)((float)(matPitch._21 * v13) + (float)(matPitch._24 * matRoll._41))
+        + (float)(matPitch._23 * matRoll._31))
+        + (float)(matPitch._22 * matRoll._21);
+    vv._22 = (float)((float)((float)(matPitch._22 * v13) + (float)(matPitch._21 * v5))
+        + (float)(matPitch._24 * matRoll._42))
+        + (float)(matPitch._23 * matRoll._32);
+    vv._23 = (float)((float)((float)(matPitch._24 * matRoll._43) + (float)(matPitch._22 * matRoll._23))
+        + (float)(matPitch._21 * matRoll._13))
+        + matPitch._23;
+    vv._24 = (float)((float)((float)(matPitch._23 * matRoll._34) + (float)(matPitch._22 * matRoll._24))
+        + (float)(matPitch._21 * matRoll._14))
+        + matPitch._24;
+    vv._31 = (float)((float)((float)(matPitch._31 * v13) + (float)(matPitch._34 * matRoll._41))
+        + (float)(matPitch._33 * matRoll._31))
+        + (float)(matPitch._32 * matRoll._21);
+    vv._32 = (float)((float)((float)(matPitch._32 * v13) + (float)(matPitch._31 * v5))
+        + (float)(matPitch._34 * matRoll._42))
+        + (float)(matPitch._33 * matRoll._32);
+    vv._34 = (float)((float)((float)(matPitch._33 * matRoll._34) + (float)(matPitch._32 * matRoll._24))
+        + (float)(matPitch._31 * matRoll._14))
+        + matPitch._34;
+    vv._33 = (float)((float)((float)(matPitch._34 * matRoll._43) + (float)(matPitch._32 * matRoll._23))
+        + (float)(matPitch._31 * matRoll._13))
+        + matPitch._33;
+    vv._42 = (float)((float)((float)(matPitch._42 * v13) + (float)(matPitch._41 * v5))
+        + (float)(matPitch._44 * matRoll._42))
+        + (float)(matPitch._43 * matRoll._32);
+    vv._41 = (float)((float)((float)(matPitch._41 * v13) + (float)(matPitch._44 * matRoll._41))
+        + (float)(matPitch._43 * matRoll._31))
+        + (float)(matPitch._42 * matRoll._21);
+    vv._43 = (float)((float)((float)(matPitch._44 * matRoll._43) + (float)(matPitch._42 * matRoll._23))
+        + (float)(matPitch._41 * matRoll._13))
+        + matPitch._43;
+    vv._44 = (float)((float)((float)(matPitch._43 * matRoll._34) + (float)(matPitch._42 * matRoll._24))
+        + (float)(matPitch._41 * matRoll._14))
+        + matPitch._44;
+
+    matYaw = vv;
+    memcpy(this, &matYaw, sizeof(CMatrix));
 }
 
 float CMatrix::operator()(int, int) const

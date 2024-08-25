@@ -93,7 +93,7 @@ std::vector<m3d::rend::TexHandle> LevelInfo::GetSplashes()
     {
         if (auto const it = m_splashes.find(splashName); it == m_splashes.cend())
         {
-            auto splash = m3d::Application::g_pApp->m_renderer->AddTexture(splashName, 4u);
+            auto splash = M3D_RENDERER->AddTexture(splashName, 4u);
             if (splash.IsValid())
             {
                 m_splashes.emplace(splashName, splash);
@@ -268,7 +268,8 @@ void LevelInfoManager::OnTownRuined(void*)
 void LevelInfoManager::UpdateKnownLevels()
 {
     //TODO: implement LevelInfoManager::UpdateKnownLevels
-    //throw std::logic_error("Not implemented");
+    return;
+    throw std::logic_error("Not implemented");
 }
 
 m3d::Object* LevelInfoManager::Clone()
@@ -297,10 +298,11 @@ void LevelInfoManager::UpdateLevelImages()
 void LevelInfoManager::UpdateObjectInfoForCurrentLevel()
 {
     //TODO: implement LevelInfoManager::UpdateObjectInfoForCurrentLevel
-    //for (auto it = ai::theObjects->begin(); it != ai::theObjects->end(); ++it)
-    //{
-    //    bool tasd = true;
-    //}
+    return;
+    for (auto it = ai::theObjects->begin(); it != ai::theObjects->end(); ++it)
+    {
+        bool tasd = true;
+    }
     //throw std::logic_error("Not implemented");
 }
 

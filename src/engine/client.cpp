@@ -30,7 +30,7 @@ namespace m3d
 
     CClient::CClient()
     {
-        m3d::Application::g_pApp->m_renderer->RegisterResetCallback(
+        M3D_RENDERER->RegisterResetCallback(
             this);
     }
 

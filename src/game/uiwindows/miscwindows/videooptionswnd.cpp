@@ -592,7 +592,7 @@ void VideoOptionsWnd::InitAntialiasingControls()
     {
         for (int i = 0; i < 5; ++i)
         {
-            if (m3d::Application::g_pApp->m_renderer->IsMultiSamplingSupported(m_antialiasings[i]))
+            if (M3D_RENDERER->IsMultiSamplingSupported(m_antialiasings[i]))
             {
                 auto idx = m_cbAntialiasing->AddItem(Antialiasing2Str(static_cast<Antialiasing>(i)));
                 if (idx != -1)
@@ -927,14 +927,14 @@ void VideoOptionsWnd::ValidateWaterQualityVal(int& waterQualityVal) const
     }
     else if (waterQualityVal == 2)
     {
-	    if (m3d::Application::g_pApp->m_renderer->IsFeatureSupported(m3d::rend::FEATURE_PS_1_4))
+	    if (M3D_RENDERER->IsFeatureSupported(m3d::rend::FEATURE_PS_1_4))
 	    {
             return;
 	    }
     }
     else if (waterQualityVal == 3)
     {
-        if (m3d::Application::g_pApp->m_renderer->IsFeatureSupported(m3d::rend::FEATURE_PS_2_0))
+        if (M3D_RENDERER->IsFeatureSupported(m3d::rend::FEATURE_PS_2_0))
         {
             return;
         }

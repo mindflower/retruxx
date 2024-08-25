@@ -46,15 +46,15 @@ QuestInfoManager::~QuestInfoManager()
 int QuestInfoManager::Init()
 {
     //TODO: implement QuestInfoManager::Init
-    //if (m_isInited)
-    //{
-    //    ClearQuestInfos();
-    //    ClearDynamicQuestInfos();
-    //    m_isInited = false;
-    //}
+    if (m_isInited)
+    {
+        ClearQuestInfos();
+        ClearDynamicQuestInfos();
+        m_isInited = false;
+    }
     //M3D_APP->m_pInterfaceManager->GetPathToDialogsFileGlobal()
-    //throw std::logic_error("Not implemented");
     return 1;
+    throw std::logic_error("Not implemented");
 }
 
 int QuestInfoManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

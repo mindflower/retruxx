@@ -34,26 +34,26 @@ void PostEffectManager::OnAfterDeviceReset()
         height /= 2;
     }
 
-    g_texRtCopy = m3d::Application::g_pApp->m_renderer->GetFullFrameFrameBufferTexture();
-    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_texRtCopy, m3d::rend::TM_WRAP_S, 3);
-    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_texRtCopy, m3d::rend::TM_WRAP_T, 3);
-    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_texRtCopy, m3d::rend::TM_TEX_FILTER, 1);
+    g_texRtCopy = M3D_RENDERER->GetFullFrameFrameBufferTexture();
+    M3D_RENDERER->SetTextureParameter(g_texRtCopy, m3d::rend::TM_WRAP_S, 3);
+    M3D_RENDERER->SetTextureParameter(g_texRtCopy, m3d::rend::TM_WRAP_T, 3);
+    M3D_RENDERER->SetTextureParameter(g_texRtCopy, m3d::rend::TM_TEX_FILTER, 1);
 
     if (g_tex1.IsValid())
     {
-        m3d::Application::g_pApp->m_renderer->ReleaseTexture(g_tex1);
+        M3D_RENDERER->ReleaseTexture(g_tex1);
     }
-    g_tex1 = m3d::Application::g_pApp->m_renderer->AddDynamicTexture("$tex1", width, height, 0);
-    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_tex1, m3d::rend::TM_WRAP_S, 3);
-    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_tex1, m3d::rend::TM_WRAP_T, 3);
+    g_tex1 = M3D_RENDERER->AddDynamicTexture("$tex1", width, height, 0);
+    M3D_RENDERER->SetTextureParameter(g_tex1, m3d::rend::TM_WRAP_S, 3);
+    M3D_RENDERER->SetTextureParameter(g_tex1, m3d::rend::TM_WRAP_T, 3);
 
     if (g_tex2.IsValid())
     {
-        m3d::Application::g_pApp->m_renderer->ReleaseTexture(g_tex2);
+        M3D_RENDERER->ReleaseTexture(g_tex2);
     }
-    g_tex2 = m3d::Application::g_pApp->m_renderer->AddDynamicTexture("$tex2", width, height, 0);
-    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_tex2, m3d::rend::TM_WRAP_S, 3);
-    m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_tex2, m3d::rend::TM_WRAP_T, 3);
+    g_tex2 = M3D_RENDERER->AddDynamicTexture("$tex2", width, height, 0);
+    M3D_RENDERER->SetTextureParameter(g_tex2, m3d::rend::TM_WRAP_S, 3);
+    M3D_RENDERER->SetTextureParameter(g_tex2, m3d::rend::TM_WRAP_T, 3);
 }
 
 PostEffectManager::~PostEffectManager()
@@ -77,7 +77,7 @@ void PostEffectManager::UnregisterEffect(PostEffect*)
 
 bool PostEffectManager::Initialize()
 {
-    m3d::Application::g_pApp->m_renderer->RegisterResetCallback(this);
+    M3D_RENDERER->RegisterResetCallback(this);
     m_varList["Sepia"] = m_Sepia;
     m_Sepia[0] = 0.0;
     m_Sepia[1] = 0.0;
@@ -188,18 +188,18 @@ bool PostEffectManager::Initialize()
         LoadFromXml(xmlFile, node);
         OnAfterDeviceReset();
 
-        g_filmTex1 = m3d::Application::g_pApp->m_renderer->AddTexture("data\\textures\\OldFilm\\Frame.dds", 0);
-        m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_filmTex1, m3d::rend::TM_WRAP_S, 3);
-        m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_filmTex1, m3d::rend::TM_WRAP_T, 3);
+        g_filmTex1 = M3D_RENDERER->AddTexture("data\\textures\\OldFilm\\Frame.dds", 0);
+        M3D_RENDERER->SetTextureParameter(g_filmTex1, m3d::rend::TM_WRAP_S, 3);
+        M3D_RENDERER->SetTextureParameter(g_filmTex1, m3d::rend::TM_WRAP_T, 3);
 
-        g_filmShift = m3d::Application::g_pApp->m_renderer->AddTexture("data\\textures\\OldFilm\\Shift.bmp", 0);
-        m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_filmShift, m3d::rend::TM_TEX_FILTER, 1);
-        m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_filmShift, m3d::rend::TM_WRAP_S, 3);
-        m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_filmShift, m3d::rend::TM_WRAP_T, 3);
+        g_filmShift = M3D_RENDERER->AddTexture("data\\textures\\OldFilm\\Shift.bmp", 0);
+        M3D_RENDERER->SetTextureParameter(g_filmShift, m3d::rend::TM_TEX_FILTER, 1);
+        M3D_RENDERER->SetTextureParameter(g_filmShift, m3d::rend::TM_WRAP_S, 3);
+        M3D_RENDERER->SetTextureParameter(g_filmShift, m3d::rend::TM_WRAP_T, 3);
 
-        g_filmScrach1 = m3d::Application::g_pApp->m_renderer->AddTexture("data\\textures\\OldFilm\\Scrach_dsdt.shader", 0);
-        m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_filmScrach1, m3d::rend::TM_WRAP_S, 1);
-        m3d::Application::g_pApp->m_renderer->SetTextureParameter(g_filmScrach1, m3d::rend::TM_WRAP_T, 1);
+        g_filmScrach1 = M3D_RENDERER->AddTexture("data\\textures\\OldFilm\\Scrach_dsdt.shader", 0);
+        M3D_RENDERER->SetTextureParameter(g_filmScrach1, m3d::rend::TM_WRAP_S, 1);
+        M3D_RENDERER->SetTextureParameter(g_filmScrach1, m3d::rend::TM_WRAP_T, 1);
 
         InitShaders();
         return true;
@@ -270,50 +270,50 @@ void PostEffectManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNod
 void PostEffectManager::InitShaders()
 {
     if (m3d::g_Kernel->GetEngineCfg().m_r_allowPS20.GetB() &&
-        m3d::Application::g_pApp->m_renderer->IsFeatureSupported(m3d::rend::FEATURE_PS_2_0))
+        M3D_RENDERER->IsFeatureSupported(m3d::rend::FEATURE_PS_2_0))
     {
-        g_DownsampleVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_downsample_vs20.vs", "VS_Downsample", m3d::rend::IHlslShader::VS_2_0);
+        g_DownsampleVs = M3D_RENDERER->NewHlslShader("data/shaders/post_downsample_vs20.vs", "VS_Downsample", m3d::rend::IHlslShader::VS_2_0);
         M3D_ASSERT(g_DownsampleVs);
-        g_DownsamplePs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_downsample_ps20.ps", "PS_Downsample", m3d::rend::IHlslShader::PS_2_0);
+        g_DownsamplePs = M3D_RENDERER->NewHlslShader("data/shaders/post_downsample_ps20.ps", "PS_Downsample", m3d::rend::IHlslShader::PS_2_0);
         M3D_ASSERT(g_DownsamplePs);
-        g_BlurVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_blur_vs20.vs", "VS_Blur", m3d::rend::IHlslShader::VS_2_0);
+        g_BlurVs = M3D_RENDERER->NewHlslShader("data/shaders/post_blur_vs20.vs", "VS_Blur", m3d::rend::IHlslShader::VS_2_0);
         M3D_ASSERT(g_BlurVs);
-        g_BlurPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_blur_ps20.ps", "PS_Blur7", m3d::rend::IHlslShader::PS_2_0);
+        g_BlurPs = M3D_RENDERER->NewHlslShader("data/shaders/post_blur_ps20.ps", "PS_Blur7", m3d::rend::IHlslShader::PS_2_0);
         M3D_ASSERT(g_BlurPs);
-        g_FinalCompVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_composite_vs20.vs", "VS_Quad", m3d::rend::IHlslShader::VS_2_0);
+        g_FinalCompVs = M3D_RENDERER->NewHlslShader("data/shaders/post_composite_vs20.vs", "VS_Quad", m3d::rend::IHlslShader::VS_2_0);
         M3D_ASSERT(g_FinalCompVs);
-        g_FinalCompPsAsm = m3d::Application::g_pApp->m_renderer->NewAsmShader("data/shaders/post_composite_ps20.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+        g_FinalCompPsAsm = M3D_RENDERER->NewAsmShader("data/shaders/post_composite_ps20.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
         M3D_ASSERT(g_FinalCompPsAsm);
     }
     else
     {
-        g_DownsampleVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_downsample_vs11.vs", "VS_Downsample", m3d::rend::IHlslShader::VS_1_1);
+        g_DownsampleVs = M3D_RENDERER->NewHlslShader("data/shaders/post_downsample_vs11.vs", "VS_Downsample", m3d::rend::IHlslShader::VS_1_1);
         M3D_ASSERT(g_DownsampleVs);
-        g_DownsamplePs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_downsample_ps11.ps", "PS_Downsample", m3d::rend::IHlslShader::PS_1_1);
+        g_DownsamplePs = M3D_RENDERER->NewHlslShader("data/shaders/post_downsample_ps11.ps", "PS_Downsample", m3d::rend::IHlslShader::PS_1_1);
         M3D_ASSERT(g_DownsamplePs);
-        g_BlurVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_blur_vs11.vs", "VS_Blur", m3d::rend::IHlslShader::VS_1_1);
+        g_BlurVs = M3D_RENDERER->NewHlslShader("data/shaders/post_blur_vs11.vs", "VS_Blur", m3d::rend::IHlslShader::VS_1_1);
         M3D_ASSERT(g_BlurVs);
-        g_BlurPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_blur_ps11.ps", "PS_Blur7", m3d::rend::IHlslShader::PS_1_1);
+        g_BlurPs = M3D_RENDERER->NewHlslShader("data/shaders/post_blur_ps11.ps", "PS_Blur7", m3d::rend::IHlslShader::PS_1_1);
         M3D_ASSERT(g_BlurPs);
-        g_FinalCompVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_composite_vs11.vs", "VS_Quad", m3d::rend::IHlslShader::VS_1_1);
+        g_FinalCompVs = M3D_RENDERER->NewHlslShader("data/shaders/post_composite_vs11.vs", "VS_Quad", m3d::rend::IHlslShader::VS_1_1);
         M3D_ASSERT(g_FinalCompVs);
-        g_FinalCompPsAsm = m3d::Application::g_pApp->m_renderer->NewAsmShader("data/shaders/post_composite_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+        g_FinalCompPsAsm = M3D_RENDERER->NewAsmShader("data/shaders/post_composite_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
         M3D_ASSERT(g_FinalCompPsAsm);
     }
-    g_FilmVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_film_vs11.vs", "VS_Film", m3d::rend::IHlslShader::VS_1_1);
+    g_FilmVs = M3D_RENDERER->NewHlslShader("data/shaders/post_film_vs11.vs", "VS_Film", m3d::rend::IHlslShader::VS_1_1);
     M3D_ASSERT(g_FilmVs);
-    if (m3d::Application::g_pApp->m_renderer->IsFeatureSupported(m3d::rend::FEATURE_NON_POW2_CONDITIONAL))
+    if (M3D_RENDERER->IsFeatureSupported(m3d::rend::FEATURE_NON_POW2_CONDITIONAL))
     {
-        g_FilmPsAsm = m3d::Application::g_pApp->m_renderer->NewAsmShader("data/shaders/post_film_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+        g_FilmPsAsm = M3D_RENDERER->NewAsmShader("data/shaders/post_film_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
     }
     else
     {
-        g_FilmPsAsm = m3d::Application::g_pApp->m_renderer->NewAsmShader("data/shaders/post_film_ps11sp.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+        g_FilmPsAsm = M3D_RENDERER->NewAsmShader("data/shaders/post_film_ps11sp.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
     }
     M3D_ASSERT(g_FilmPsAsm);
-    g_BlackNWhiteVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/post_bw_ps11.vs", "VS_Quad", m3d::rend::IHlslShader::VS_1_1);
+    g_BlackNWhiteVs = M3D_RENDERER->NewHlslShader("data/shaders/post_bw_ps11.vs", "VS_Quad", m3d::rend::IHlslShader::VS_1_1);
     M3D_ASSERT(g_BlackNWhiteVs);
-    g_BlackNWhitePs = m3d::Application::g_pApp->m_renderer->NewAsmShader("data/shaders/post_bw_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+    g_BlackNWhitePs = M3D_RENDERER->NewAsmShader("data/shaders/post_bw_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
     M3D_ASSERT(g_BlackNWhitePs);
 }
 

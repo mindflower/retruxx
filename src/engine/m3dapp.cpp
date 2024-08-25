@@ -785,8 +785,8 @@ namespace m3d
             SetCursor(0);
             if (this->m_bDXCursorEnabled)
             {
-                if (m3d::Application::g_pApp->m_renderer)
-                    m3d::Application::g_pApp->m_renderer->ShowDXCursor(1);
+                if (M3D_RENDERER)
+                    M3D_RENDERER->ShowDXCursor(1);
             }
             return 1;
         }
@@ -809,8 +809,8 @@ namespace m3d
         curMousePos.x = LOWORD(lParam);
         curMousePos.y = HIWORD(lParam);
         m_mouseInfo.SetUpForCurPos(curMousePos);
-        if (this->m_bDXCursorEnabled && m3d::Application::g_pApp->m_renderer)
-            m3d::Application::g_pApp->m_renderer->MoveDXCursor(LOWORD(lParam), HIWORD(lParam));
+        if (this->m_bDXCursorEnabled && M3D_RENDERER)
+            M3D_RENDERER->MoveDXCursor(LOWORD(lParam), HIWORD(lParam));
         return 0;
     }
 
@@ -1398,6 +1398,8 @@ namespace m3d
 
     bool Application::LoadServers(CStr const&, bool)
     {
+        //TODO: implement Application::LoadServers
+        return true;
         throw std::logic_error("Not implemented");
     }
 
@@ -2030,18 +2032,18 @@ namespace m3d
         auto& config = g_Kernel->GetEngineCfg();
         if (IsWindow(config.m_mainWnd))
         {
-            v2 = m3d::Application::g_pApp->m_renderer->InScene();
+            v2 = M3D_RENDERER->InScene();
             v3 = 0;
-            if (v2 || (v3 = m3d::Application::g_pApp->m_renderer->BeginScene()) != 0)
+            if (v2 || (v3 = M3D_RENDERER->BeginScene()) != 0)
             {
-                m3d::Application::g_pApp->m_renderer->ClearViewport(rend::M3DCLEAR_CZ, -16777216u);
+                M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, -16777216u);
                 if (!v2)
                 {
                     if (v3)
-                        m3d::Application::g_pApp->m_renderer->EndScene();
+                        M3D_RENDERER->EndScene();
                 }
             }
-            m3d::Application::g_pApp->m_renderer->PresentScene();
+            M3D_RENDERER->PresentScene();
         }
     }
 

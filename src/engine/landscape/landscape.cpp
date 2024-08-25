@@ -112,6 +112,8 @@ namespace m3d
 
     int Landscape::ConstructCollisionData()
     {
+        //TODO: implement Landscape::ConstructCollisionData
+        return 1;
         throw std::logic_error("Not implemented");
     }
 
@@ -299,73 +301,75 @@ namespace m3d
             M3D_LOG_INFO("Error:No Beachset.xml file");
         }
 
-        //delete[] m_colormap;
-        ////TODO: check size
-        //m_colormap = new unsigned[(m_mapSize + 1) * (m_mapSize + 1)];
-        //
-        //delete[] m_texSetsmap;
-        //m_texSetsmap = new std::set[m_owner->m_level->land_size * m_owner->m_level->land_size];
-        //
-        //
-        //if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
-        //    stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName).c_str(), fs::IStream::OPEN_READ))
-        //{
-        //    //TODO: check this!!!!
-        //    auto const streamSize = stream->GetSize();
-        //    auto* data = new unsigned[streamSize / sizeof(unsigned)];
-        //    stream->ReadBytes(data, streamSize);
-        //    for (int i = 0; i < m_mapSize; ++i)
-        //    {
-        //        for (int j = 0; j < m_mapSize; ++j)
-        //        {
-        //            m_colormap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
-        //        }
-        //    }
-        //    delete[] data;
-        //}
-        //else
-        //{
-        //    M3D_LOG_INFO("Cannot read colormap: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName) + "using default values");
-        //    for (int i = 0; i < (this->m_mapSize + 1) * (this->m_mapSize + 1); ++i)
-        //        this->m_colormap[i] = -8421505;
-        //}
-        //
-        //delete[] m_heightMap;
-        //m_heightMap = new float[(m_mapSize + 1) * (m_mapSize + 1)];
-        //
-        //delete[] m_cliffHeightMap;
-        //m_cliffHeightMap = new unsigned char[(m_mapSize + 1) * (m_mapSize + 1)];
-        //
-        //if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
-        //    stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName).c_str(), fs::IStream::OPEN_READ))
-        //{
-        //    auto const streamSize = stream->GetSize();
-        //    if (streamSize == 2 * this->m_mapSize * this->m_mapSize)
-        //    {
-        //        //TODO: check this
-        //        auto* data = new unsigned[streamSize / sizeof(float)];
-        //        stream->ReadBytes(data, streamSize);
-        //        for (int i = 0; i < m_mapSize; ++i)
-        //        {
-        //            for (int j = 0; j < m_mapSize; ++j)
-        //            {
-        //                m_heightMap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
-        //            }
-        //        }
-        //        delete[] data;
-        //    }
-        //    else
-        //    {
-        //        throw std::logic_error("Not implemented");
-        //    }
-        //}
-        //else
-        //{
-        //    M3D_LOG_INFO("Cannot read heightfield: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName));
-        //    return 0;
-        //}
-        //
-        //throw std::logic_error("Not implemented");
+        delete[] m_colormap;
+        //TODO: check size
+        m_colormap = new unsigned[(m_mapSize + 1) * (m_mapSize + 1)];
+        
+        delete[] m_texSetsmap;
+        m_texSetsmap = new std::set<unsigned>[m_owner->m_level->land_size * m_owner->m_level->land_size];
+        
+        
+        if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+            stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName).c_str(), fs::IStream::OPEN_READ))
+        {
+            //TODO: check this!!!!
+            auto const streamSize = stream->GetSize();
+            auto* data = new unsigned[streamSize / sizeof(unsigned)];
+            stream->ReadBytes(data, streamSize);
+            for (int i = 0; i < m_mapSize; ++i)
+            {
+                for (int j = 0; j < m_mapSize; ++j)
+                {
+                    m_colormap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
+                }
+            }
+            delete[] data;
+        }
+        else
+        {
+            M3D_LOG_INFO("Cannot read colormap: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName) + "using default values");
+            for (int i = 0; i < (this->m_mapSize + 1) * (this->m_mapSize + 1); ++i)
+                this->m_colormap[i] = -8421505;
+        }
+        
+        delete[] m_heightMap;
+        m_heightMap = new float[(m_mapSize + 1) * (m_mapSize + 1)];
+        
+        delete[] m_cliffHeightMap;
+        m_cliffHeightMap = new unsigned char[(m_mapSize + 1) * (m_mapSize + 1)];
+
+        return 1;
+        
+        if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+            stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName).c_str(), fs::IStream::OPEN_READ))
+        {
+            auto const streamSize = stream->GetSize();
+            if (streamSize == 2 * this->m_mapSize * this->m_mapSize)
+            {
+                //TODO: check this
+                auto* data = new unsigned[streamSize / sizeof(float)];
+                stream->ReadBytes(data, streamSize);
+                for (int i = 0; i < m_mapSize; ++i)
+                {
+                    for (int j = 0; j < m_mapSize; ++j)
+                    {
+                        m_heightMap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
+                    }
+                }
+                delete[] data;
+            }
+            else
+            {
+                throw std::logic_error("Not implemented");
+            }
+        }
+        else
+        {
+            M3D_LOG_INFO("Cannot read heightfield: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName));
+            return 0;
+        }
+        
+        throw std::logic_error("Not implemented");
         return 1;
     }
 
@@ -514,9 +518,27 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Landscape::UpdateVis(bool)
+    void Landscape::UpdateVis(bool vp)
     {
-        throw std::logic_error("Not implemented");
+        //m_profilerUpdateVis->StartCountdown();
+        if (!m_lockVis.GetB())
+        {
+            m_dirtyReflection = vp;
+            m_frustumCull.CreateScreenFrustums(m_drawRadius * 128.0, 1.0, 1.0, 0.78539819);
+            m_owner->GetGraph().UpdateVis(true, m_frustumCull, true);
+            m_owner->GetGraph().EnableVisibleCells(m_frustumCull, 1u);
+            m_owner->GetRoadManager().UpdateVis();
+            m_numWaterCells = 0;
+            if (M3D_KERNEL->GetEngineCfg().m_g_drawWater.GetB())
+            {
+                throw std::logic_error("Not implemented");
+            }
+            if (m_numWaterCells)
+            {
+                throw std::logic_error("Not implemented");
+            }
+        }
+        //m_profilerUpdateVis->EndCountdown();
     }
 
     Landscape::CollisionCellItem* Landscape::GetCollisionCellItem(int, int) const
@@ -559,9 +581,57 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Landscape::getMinMaxHeightForBox(float*, float)
+    void Landscape::getMinMaxHeightForBox(float* box, float buldgeY)
     {
-        throw std::logic_error("Not implemented");
+        //TODO: check and refactor this
+        float VISCELL_EDGE_LENGTH_0 = 128.0;
+        auto v3 = VISCELL_EDGE_LENGTH_0;
+        auto v5 = static_cast<unsigned>(*box * (1.0 / VISCELL_EDGE_LENGTH_0));
+        auto v6 = (box[3] * (1.0 / VISCELL_EDGE_LENGTH_0));
+        auto v7 = static_cast<unsigned>(box[2] * (1.0 / VISCELL_EDGE_LENGTH_0));
+        auto v8 = box[5] * (1.0 / VISCELL_EDGE_LENGTH_0);
+        box[1] = -999999.0;
+        auto v9 = v8;
+        auto x1 = v6;
+        auto z0 = v7;
+        auto boxa = v8;
+        for (box[4] = -999999.0; v5 < v6; ++v5)
+        {
+            if (v7 < v9)
+            {
+                do
+                {
+                    auto v10 = this->m_cellParams;
+                    auto v11 = v10[v5 + v7 * this->m_owner->m_level->land_size].m_h0;
+                    auto v12 = v10[v5 + v7 * this->m_owner->m_level->land_size].m_h1;
+                    if (box[1] > v11)
+                        box[1] = v11;
+                    if (v11 > box[4])
+                        box[4] = v11;
+                    if (box[1] > v12)
+                        box[1] = v12;
+                    if (v12 > box[4])
+                        box[4] = v12;
+                    auto v13 = this->m_owner->m_level->land_size;
+                    if (v5 >= 0 || v7 >= 0 || v5 < v13 || v7 < v13)
+                    {
+                        auto v14 = this->m_cellParams;
+                        if (v14[v5 + v7 * v13].m_iswatercell)
+                        {
+                            auto v15 = v14[v5 + v7 * v13].m_maxwater;
+                            if (v15 > box[4])
+                                box[4] = v15;
+                        }
+                    }
+                    v9 = boxa;
+                    ++v7;
+                } while (v7 < boxa);
+                v6 = x1;
+                v7 = z0;
+            }
+        }
+        box[4] = (box[4] + v3) + buldgeY;
+        //throw std::logic_error("Not implemented");
     }
 
     void Landscape::SetGameRenderMode()
@@ -591,6 +661,8 @@ namespace m3d
 
     void Landscape::CreateHelperStructures()
     {
+        //TODO: implement Landscape::CreateHelperStructures
+        return;
         throw std::logic_error("Not implemented");
     }
 
@@ -881,84 +953,131 @@ namespace m3d
     Landscape::Landscape() :
         m_lockVis("lockVis", "0", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE)
     {
-        //this->m_numGrassModels = 0;
-        //this->m_grassArray = 0;
-        //this->m_heightMap = 0;
-        //this->m_cliffHeightMap = 0;
-        //this->m_waterMap = 0;
-        //this->m_normalMap = 0;
-        //this->m_vnormal = 0;
-        //this->m_colormap = 0;
-        //this->m_texSetsmap = 0;
-        //this->m_remappedIndices = 0;
-        //this->m_oCollisionitems = 0;
-        //this->m_terrainObject = 0;
-        //this->m_owner = 0;
-        //this->m_cellParams = 0;
-        //this->m_drawedCellParams = 0;
-        //this->m_lastState = RT_LIGHTPASS;
-        //this->m_tiles = 0;
-        //m_landUVVb = m3d::Application::g_pApp->m_renderer->AddVb(rend::VERTEX_STREAM_UV_S1, 0xFFFF, "LandUV", 0);
-        //m_landVb = m3d::Application::g_pApp->m_renderer->AddVb(rend::VERTEX_XYZNCT2, 1600, "LandEditor", 512);
-        ////TODO: m_dummyVB =
-        //for (auto& query : m_waterQueries)
-        //{
-        //    query = m3d::Application::g_pApp->m_renderer->NewQuery(rend::IQuery::QUERY_OCCLUSION);
-        //}
-        //this->m_isWaterVisible = 0;
-        //this->m_currWaterQuery = 0;
-        //this->m_drawtextured = 1;
-        //this->m_passedCells = 0;
-        //this->m_CurAlphaSet = 0;
-        //this->m_loadAllTextures = 0;
-        //m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_lockVis, 0);
-        //this->m_maxLOD = 0;
-        //int szindex = 4;
-        //int i = 1;
-        //do
-        //{
-        //    auto curIb = Application::g_pApp->m_renderer->AddIb(((szindex + 1) * (szindex + 1)) << 9, false);
-        //    auto ptr = Application::g_pApp->m_renderer->LockIb(curIb, 384 * szindex * szindex, 0, 0);
-        //    auto indices = CreateIndices(static_cast<unsigned short*>(ptr), szindex, 4, i);
-        //    m_lsNumIndices.push_back(indices);
-        //    Application::g_pApp->m_renderer->UnlockIb(curIb);
-        //    m_landIbConst.push_back(curIb);
-        //    i *= 2;
-        //    ++m_maxLOD;
-        //    szindex >>= 1;
-        //} while (szindex);
-        //m_maxWaterCellPerPass = m3d::Application::g_pApp->m_renderer->GetMaxVertexShaderConst();
-        //m_waterVb = Application::g_pApp->m_renderer->AddVb(rend::VERTEX_WATERTEST, 81 * m_maxWaterCellPerPass, "Water", 0);
-        //
-        ////TODO: check this
-        //auto waterVbPtr = static_cast<VertexWaterTest*>(Application::g_pApp->m_renderer->LockVb(this->m_waterVb, 0, 0, 0));
-        //VertexWaterTest vertexWaterTest;
-        //for (int j = 0; j < this->m_maxWaterCellPerPass; ++j)
-        //{
-        //    vertexWaterTest.z = j;
-        //    auto v28 = *&vertexWaterTest.z;
-        //    for (int k = 0; k <= 8u; ++k)
-        //    {
-        //        auto v30 = 0;
-        //        vertexWaterTest.y = k;
-        //        do
-        //        {
-        //            vertexWaterTest.x = v30;
-        //            *&waterVbPtr->x = *&vertexWaterTest.x;
-        //            *&waterVbPtr->z = v28;
-        //            ++v30;
-        //            ++waterVbPtr;
-        //        } while (v30 <= 8u);
-        //    }
-        //}
-        //m3d::Application::g_pApp->m_renderer->UnlockVb(this->m_waterVb);
-        //waterTileInfo = new CVector4[m_maxWaterCellPerPass];
-        //i = 0;
-        //do
-        //{
-        //    m_waterIb
-        //} while ();
-            //TODO: IMPORTANT! IMPLEMENT LANDSCAPE
+        this->m_numGrassModels = 0;
+        this->m_grassArray = 0;
+        this->m_heightMap = 0;
+        this->m_cliffHeightMap = 0;
+        this->m_waterMap = 0;
+        this->m_normalMap = 0;
+        this->m_vnormal = 0;
+        this->m_colormap = 0;
+        this->m_texSetsmap = 0;
+        this->m_remappedIndices = 0;
+        this->m_oCollisionitems = 0;
+        this->m_terrainObject = 0;
+        this->m_owner = 0;
+        this->m_cellParams = 0;
+        this->m_drawedCellParams = 0;
+        this->m_lastState = RT_LIGHTPASS;
+        this->m_tiles = 0;
+        m_landUVVb = M3D_RENDERER->AddVb(rend::VERTEX_STREAM_UV_S1, 0xFFFF, "LandUV", 0);
+        m_landVb = M3D_RENDERER->AddVb(rend::VERTEX_XYZNCT2, 1600, "LandEditor", 512);
+        for (auto& waterCellToDraw : waterCellsToDraw)
+        {
+            waterCellToDraw.reserve(0x64);
+        }
+        //m_dummyVB =
+        for (auto& query : m_waterQueries)
+        {
+            query = M3D_RENDERER->NewQuery(rend::IQuery::QUERY_OCCLUSION);
+        }
+        this->m_isWaterVisible = 0;
+        this->m_currWaterQuery = 0;
+        this->m_drawtextured = 1;
+        this->m_passedCells = 0;
+        this->m_CurAlphaSet = 0;
+        this->m_loadAllTextures = 0;
+        m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_lockVis, 0);
+        this->m_maxLOD = 0;
+        int szindex = 4;
+        int i = 1;
+        do
+        {
+            auto curIb = M3D_RENDERER->AddIb(((szindex + 1) * (szindex + 1)) << 9, false);
+            auto ptr = M3D_RENDERER->LockIb(curIb, 384 * szindex * szindex, 0, 0);
+            auto indices = CreateIndices(static_cast<unsigned short*>(ptr), szindex, 4, i);
+            m_lsNumIndices.push_back(indices);
+            M3D_RENDERER->UnlockIb(curIb);
+            m_landIbConst.push_back(curIb);
+            i *= 2;
+            ++m_maxLOD;
+            szindex >>= 1;
+        } while (szindex);
+        m_maxWaterCellPerPass = M3D_RENDERER->GetMaxVertexShaderConst();
+        m_waterVb = M3D_RENDERER->AddVb(rend::VERTEX_WATERTEST, 81 * m_maxWaterCellPerPass, "Water", 0);
+        
+        //TODO: check this
+        auto waterVbPtr = static_cast<VertexWaterTest*>(M3D_RENDERER->LockVb(this->m_waterVb, 0, 0, 0));
+        VertexWaterTest vertexWaterTest;
+        for (int j = 0; j < this->m_maxWaterCellPerPass; ++j)
+        {
+            vertexWaterTest.z = j;
+            auto v28 = *&vertexWaterTest.z;
+            for (int k = 0; k <= 8u; ++k)
+            {
+                auto v30 = 0;
+                vertexWaterTest.y = k;
+                do
+                {
+                    vertexWaterTest.x = v30;
+                    *&waterVbPtr->x = *&vertexWaterTest.x;
+                    *&waterVbPtr->z = v28;
+                    ++v30;
+                    ++waterVbPtr;
+                } while (v30 <= 8u);
+            }
+        }
+        M3D_RENDERER->UnlockVb(this->m_waterVb);
+        waterTileInfo = new CVector4[m_maxWaterCellPerPass];
+        i = 0;
+        for (int i = 0; i < 4; ++i)
+        {
+            auto v32 = (1 << i);
+            auto v35 = 16 * (8 / v32 + 2) / (unsigned)v32 * this->m_maxWaterCellPerPass;
+            m_waterIb[i] = M3D_RENDERER->AddIb(v35, false);
+            auto waterIbPtr = (WORD*)M3D_RENDERER->LockIb(m_waterIb[i], v35, 0, 0);
+            //TODO: refactor this shit
+            auto n = 0;
+            auto v39 = 0;
+            auto v40 = this->m_maxWaterCellPerPass <= 0;
+            auto v43 = 0;
+            if (!v40)
+            {
+                do
+                {
+                    auto v192 = 0;
+                    do
+                    {
+                        auto v41 = 0;
+                        do
+                        {
+                            auto v42 = v39 + 9 * i;
+                            *waterIbPtr = v39;
+                            waterIbPtr[1] = v42;
+                            if (v41 == 8)
+                                v39 = v42 - 8;
+                            else
+                                v39 += i;
+                            v41 += v32;
+                            waterIbPtr += 2;
+                        } while (v41 <= 8);
+                        *waterIbPtr = v39 + 8;
+                        auto v43 = v32 + v192;
+                        waterIbPtr[1] = v39;
+                        waterIbPtr += 2;
+                        v192 = v43;
+                    } while (v43 < 8);
+                    v39 += 9;
+                    auto v44 = n + 1;
+                    *(waterIbPtr - 1) = v39;
+                    v40 = v44 < this->m_maxWaterCellPerPass;
+                    n = v44;
+                } while (v40);
+            }
+            M3D_RENDERER->UnlockIb(m_waterIb[i]);
+        }
+
+        throw std::logic_error("Not implemented");
     }
 
     void Landscape::BuildCells0(rend::VertexLandscape*, TIVChunk&, int&, std::vector<unsigned> const&, RenderTypes, std::vector<int, std::allocator<int>>&)

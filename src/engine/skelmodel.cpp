@@ -6,6 +6,8 @@
 #include <file/filestream.h>
 #include <file/tagged.h>
 
+#include "game/m3dgame.h"
+
 namespace m3d
 {
     LoadSkins::LoadSkins()
@@ -18,6 +20,35 @@ namespace m3d
     }
 
     AnimatedModel::Bone::Bone()
+    {
+    }
+
+    AnimatedModel::Animation::~Animation()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AnimatedModel::Animation::Animation()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void AnimatedModel::Mesh::ComputeShadowsRelatedStuff()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AnimatedModel::Mesh::~Mesh()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    AnimatedModel::Mesh::Mesh()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    DSurfaceMaterial& AnimatedModel::Mesh::GetMaterial(unsigned) const
     {
         throw std::logic_error("Not implemented");
     }
@@ -139,19 +170,197 @@ namespace m3d
             taggedFile.getChunkData(2, &data);
             m_boneInitialPos = new Bone[m_header.m_numNodes];
             m_initialBoneInvMatrices = new CMatrix[m_header.m_numNodes];
-            if (m_header.m_numNodes > 0)
+            for (unsigned i = 0; i < m_header.m_numNodes; ++i)
             {
-                for (unsigned i = 0; i < m_header.m_numNodes; ++i)
+                auto charData = static_cast<char*>(data);
+                strcpy(m_boneInitialPos[i].m_boneName, charData);
+                m_boneInitialPos[i].m_ownIdx = i;
+                m_boneInitialPos[i].m_parentIdx = *((int*)charData + 10);
+                m_boneInitialPos[i].m_translation0 = *(CVector*)(charData + 44);
+                m_boneInitialPos[i].m_quaternion0 = *(Quaternion*)(charData + 56);
+
+                auto invMat = (float*)(charData + 76);
+                for (unsigned j = 0; j < 4; ++j)
                 {
-                    auto charData = static_cast<char*>(data);
-                    strcpy(m_boneInitialPos[i].m_boneName, charData);
-                    m_boneInitialPos[i].m_ownIdx = i;
-                    m_boneInitialPos[i].m_parentIdx = *((int*)charData + 10);
-                    m_boneInitialPos[i].m_translation0 = *(CVector*)(charData + 44);
-                    m_boneInitialPos[i].m_quaternion0 = *(Quaternion*)(charData + 56);
-                    
+                    m_initialBoneInvMatrices[i].m[j][0] = *(invMat - 1);
+                    m_initialBoneInvMatrices[i].m[j][1] = *(invMat);
+                    m_initialBoneInvMatrices[i].m[j][2] = *(invMat + 1);
+                    m_initialBoneInvMatrices[i].m[j][3] = *(invMat + 2);
+                    invMat += 4;
                 }
+                charData += 136;
             }
+
+            taggedFile.getChunkData(4, &data);
+            m_numMeshes = m_header.m_numStaticMeshes + m_header.m_numTriMeshes + m_header.m_numSkinMeshes;
+            m_meshes = new Mesh[m_numMeshes];
+            auto charData = static_cast<char*>(data);
+            for (unsigned i = 0; i < m_numMeshes; ++i)
+            {
+                strcpy(m_meshes[i].m_meshName, charData);
+                m_meshes[i].meshId = i;
+                m_meshes[i].m_meshType = *((int*)charData + 10);
+                m_meshes[i].m_numNode = *((int*)charData + 11);
+                m_meshes[i].groupId = *((int*)charData + 12);
+                m_meshes[i].m_MaterialNumber = *((int*)charData + 13);
+                m_meshes[i].m_VertexTypeSize = *((int*)charData + 14);
+                m_meshes[i].m_VertexType = (rend::VertexType)*((int*)charData + 15);
+                m_meshes[i].m_numVertices = *((int*)charData + 16);
+                m_meshes[i].m_numFaces = *((int*)charData + 17);
+                m_meshes[i].m_pModelSkins = &m_Skins;
+                charData += 72;
+
+                //TODO: check this
+                m_meshes[i].m_verts = new unsigned char[m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize];
+                memcpy(m_meshes[i].m_verts, charData, m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize);
+                charData += m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize;
+                if (m_meshes[i].m_meshType == 4)
+                {
+                    m_meshes[i].m_VbPoolField = M3D_APP->m_renderer->AddVbPoolField(m_meshes[i].m_VertexType, m_meshes[i].m_numVertices);
+                    memcpy(
+                        M3D_APP->m_renderer->LockVbPoolField(m_meshes[i].m_VbPoolField),
+                        m_meshes[i].m_verts,
+                        m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize
+                    );
+                    M3D_APP->m_renderer->UnlockVbPoolField(m_meshes[i].m_VbPoolField);
+                }
+                if (m_meshes[i].m_meshType == 1)
+                {
+                    m_meshes[i].m_VbPoolField = M3D_APP->m_renderer->AddVbPoolField(m_meshes[i].m_VertexType, m_meshes[i].m_numVertices);
+                    memcpy(
+                        M3D_APP->m_renderer->LockVbPoolField(m_meshes[i].m_VbPoolField),
+                        charData,
+                        m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize
+                    );
+                    M3D_APP->m_renderer->UnlockVbPoolField(m_meshes[i].m_VbPoolField);
+                    charData += m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize;
+                }
+                if (m_meshes[i].m_meshType == 1)
+                {
+                    throw std::logic_error("Not implemented");
+                }
+                m_meshes[i].m_tris = new  unsigned short[3 * m_meshes[i].m_numFaces];
+                memcpy(m_meshes[i].m_tris, data, 2 * 3 * m_meshes[i].m_numFaces);
+                charData += 2 * 3 * m_meshes[i].m_numFaces;
+                m_meshes[i].m_numDrawIndices = 3 * m_meshes[i].m_numFaces;
+                m_meshes[i].m_drawIndices = m_meshes[i].m_tris;
+                m_meshes[i].m_numDrawVerts = m_meshes[i].m_numVertices;
+                m_meshes[i].m_IbPoolField = M3D_APP->m_renderer->AddIbPoolField(m_meshes[i].m_numDrawIndices);
+                memcpy(
+                    M3D_APP->m_renderer->LockIbPoolField(m_meshes[i].m_IbPoolField),
+                    m_meshes[i].m_drawIndices,
+                    m_meshes[i].m_numDrawIndices * 2
+                );
+                M3D_APP->m_renderer->UnlockIbPoolField(m_meshes[i].m_IbPoolField);
+                //TODO: check this
+                charData += 188;
+            }
+            m_box.m_box[0] = *(float*)charData;
+            m_box.m_box[1] = *(float*)charData + 1;
+            m_box.m_box[2] = *(float*)charData + 2;
+            m_box.m_box[3] = *(float*)charData + 3;
+            m_box.m_box[4] = *(float*)charData + 4;
+            m_box.m_box[5] = *(float*)charData + 5;
+
+            taggedFile.getChunkData(8, &data);
+            charData = static_cast<char*>(data);
+            m_animations = new Animation[m_header.m_numAnimations];
+            for (unsigned i = 0; i < m_header.m_numAnimations; ++i)
+            {
+                m_animations[i].m_fps = *(short*)(charData + 27);
+                m_animations[i].m_numFrames = *(short*)(charData + 25);
+                m_animations[i].m_nextAnimation = *(short*)(charData + 29);
+                m_animations[i].m_numChanges = *(short*)(charData + 31);
+                m_animations[i].m_action = (ActionType)*(int*)(charData + 35);
+                m_animations[i].m_numNodes = *(int*)(charData + 33);
+                strcpy(m_animations[i].m_name, charData);
+                charData += 39;
+
+                m_animations[i].m_hierChanges = new HierarchyChange[m_animations[i].m_numChanges];
+                auto hierData = charData + 6;
+                for (unsigned j = 0; j < m_animations[i].m_numChanges; ++j)
+                {
+                    m_animations[i].m_hierChanges[j].ownIdx = *((short*)hierData - 1);
+                    m_animations[i].m_hierChanges[j].newParentIdx = *(short*)hierData;
+                    m_animations[i].m_hierChanges[j].changeType = (DRAFT_Change)*(int*)(hierData - 6);
+                    hierData += 8;
+                }
+                charData += 8 * m_animations[i].m_numChanges;
+
+                auto const nodesPositions = m_animations[i].m_numNodes * m_animations[i].m_numNodes;
+                auto nodesData = static_cast<char*>(data) + 36;
+                m_animations[i].m_nodesPositions = new AnimationTransform[nodesPositions];
+                auto nodesIdx = 0;
+                for (int j = 0; j < nodesPositions; j+=4)
+                {
+                    m_animations[i].m_nodesPositions[j].idx = *((short*)nodesData - 18);
+                    m_animations[i].m_nodesPositions[j].tx = *(float*)(nodesData - 34);
+                    m_animations[i].m_nodesPositions[j].ty = *(float*)(nodesData - 30);
+                    m_animations[i].m_nodesPositions[j].tz = *(float*)(nodesData - 26);
+                    m_animations[i].m_nodesPositions[j].qx = *(float*)(nodesData - 22);
+                    m_animations[i].m_nodesPositions[j].qy = *(float*)(nodesData - 18);
+                    m_animations[i].m_nodesPositions[j].qz = *(float*)(nodesData - 14);
+                    m_animations[i].m_nodesPositions[j].qw = *(float*)(nodesData - 10);
+                    m_animations[i].m_nodesPositions[j + 1].idx = *((short*)nodesData - 3);
+                    m_animations[i].m_nodesPositions[j + 1].tx = *((float*)nodesData - 1);
+                    m_animations[i].m_nodesPositions[j + 1].ty = *(float*)nodesData;
+                    m_animations[i].m_nodesPositions[j + 1].tz = *((float*)nodesData + 1);
+                    m_animations[i].m_nodesPositions[j + 1].qx = *((float*)nodesData + 2);
+                    m_animations[i].m_nodesPositions[j + 1].qy = *((float*)nodesData + 3);
+                    m_animations[i].m_nodesPositions[j + 1].qz = *((float*)nodesData + 4);
+                    m_animations[i].m_nodesPositions[j + 1].qw = *((float*)nodesData + 5);
+                    m_animations[i].m_nodesPositions[j+2].idx = *((short*)nodesData + 12);
+                    m_animations[i].m_nodesPositions[j+2].tx = *(float*)(nodesData + 26);
+                    m_animations[i].m_nodesPositions[j+2].ty = *(float*)(nodesData + 30);
+                    m_animations[i].m_nodesPositions[j+2].tz = *(float*)(nodesData + 34);
+                    m_animations[i].m_nodesPositions[j+2].qx = *(float*)(nodesData + 38);
+                    m_animations[i].m_nodesPositions[j+2].qy = *(float*)(nodesData + 42);
+                    m_animations[i].m_nodesPositions[j+2].qz = *(float*)(nodesData + 46);
+                    m_animations[i].m_nodesPositions[j+2].qw = *(float*)(nodesData + 50);
+                    m_animations[i].m_nodesPositions[j+3].idx = *((short*)nodesData + 27);
+                    m_animations[i].m_nodesPositions[j+3].tx = *((float*)nodesData + 14);
+                    m_animations[i].m_nodesPositions[j+3].ty = *((float*)nodesData + 15);
+                    m_animations[i].m_nodesPositions[j+3].tz = *((float*)nodesData + 16);
+                    m_animations[i].m_nodesPositions[j+3].qx = *((float*)nodesData + 17);
+                    m_animations[i].m_nodesPositions[j+3].qy = *((float*)nodesData + 18);
+                    m_animations[i].m_nodesPositions[j+3].qz = *((float*)nodesData + 19);
+                    m_animations[i].m_nodesPositions[j+3].qw = *((float*)nodesData + 20);
+                    nodesData += 120;
+                    nodesIdx += 4;
+                }
+                if (nodesIdx < nodesPositions)
+                {
+                    auto nodesDataInt = (unsigned int*)((char*)data + 30 * nodesIdx + 6);
+                    for (int j = nodesPositions - nodesIdx; j >= 0; --j)
+                    {
+                        m_animations[i].m_nodesPositions[j].idx = *((short*)nodesDataInt - 3);
+                        m_animations[i].m_nodesPositions[j].tx = *(float*)(nodesDataInt - 1);
+                        m_animations[i].m_nodesPositions[j].ty = *(float*)nodesDataInt;
+                        m_animations[i].m_nodesPositions[j].tz = (float)nodesDataInt[1];
+                        m_animations[i].m_nodesPositions[j].qx = (float)nodesDataInt[2];
+                        m_animations[i].m_nodesPositions[j].qy = (float)nodesDataInt[3];
+                        m_animations[i].m_nodesPositions[j].qz = (float)nodesDataInt[4];
+                        m_animations[i].m_nodesPositions[j].qw = *((float*)nodesDataInt + 5);;
+                        nodesDataInt = (unsigned*)((char*)nodesDataInt + 30);
+                    }
+                }
+                data = (char*)data + (30 * nodesPositions);
+                //data = &data[30 * nodesPositions];
+            }
+            for (auto& remap : m_animRemap)
+            {
+                throw std::logic_error("Not implemented");
+            }
+            for (unsigned i = 0; i < m_header.m_numAnimations; ++i)
+            {
+                throw std::logic_error("Not implemented");
+            }
+
+            taggedFile.getChunkData(0xFu, &data);
+            m_Skins.resize(*(int*)data);
+            data = (char*)data + 4;
+
+
         }
         throw std::logic_error("Not implemented");
     }

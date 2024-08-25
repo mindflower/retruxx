@@ -785,9 +785,9 @@ namespace m3d
                     }
                 }
             }
-            m3d::Application::g_pApp->m_renderer->PopBlend();
-            m3d::Application::g_pApp->m_renderer->PopZbState();
-            m3d::Application::g_pApp->m_renderer->SetAlphaTest(0);
+            M3D_RENDERER->PopBlend();
+            M3D_RENDERER->PopZbState();
+            M3D_RENDERER->SetAlphaTest(0);
         }
     }
 
@@ -878,15 +878,15 @@ namespace m3d
 
     void ui::GfxServer::AddImagedRectGeneral(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, rend::TexHandle tex, float u0, float v0, float u1, float v1)
     {
-        m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
-        m3d::Application::g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
-        m3d::Application::g_pApp->m_renderer->PushBlend(rend::BM_ALPHA);
-        m3d::Application::g_pApp->m_renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
-        m3d::Application::g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
-        m3d::Application::g_pApp->m_renderer->SetTexture(0, tex, -1.0);
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+        M3D_RENDERER->PushBlend(rend::BM_ALPHA);
+        M3D_RENDERER->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+        M3D_RENDERER->PushZbState(rend::ZB_DISABLE);
+        M3D_RENDERER->SetTexture(0, tex, -1.0);
         auto sx = 0;
         auto sy = 0;
-        m3d::Application::g_pApp->m_renderer->GetDims( tex, sx, sy);
+        M3D_RENDERER->GetDims( tex, sx, sy);
         PointBase<float> s;
         if (u1 >= 0.0)
             s.x = u1;
@@ -897,9 +897,9 @@ namespace m3d
         else
             s.y = 0.0 - (v1 / sy);
         AddFlatAxialQuad(di, rect, clr, u0, v0, s.x, s.y);
-        m3d::Application::g_pApp->m_renderer->PopBlend();
-        m3d::Application::g_pApp->m_renderer->PopZbState();
-        m3d::Application::g_pApp->m_renderer->SetAlphaTest(0);
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->SetAlphaTest(0);
     }
 
     void ui::GfxServer::ClearFonts()

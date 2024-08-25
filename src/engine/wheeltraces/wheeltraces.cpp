@@ -52,18 +52,18 @@ namespace m3d
     {
         //TODO: check this
         m_skidStrips = new SkidStrip;
-        this->m_vb = m3d::Application::g_pApp->m_renderer->AddVb(
+        this->m_vb = M3D_RENDERER->AddVb(
             rend::VERTEX_XYZCT1,
             0x10000,
             "WheelTrace",
             0);
-        this->m_ib = m3d::Application::g_pApp->m_renderer->AddIb(130, 0);
+        this->m_ib = M3D_RENDERER->AddIb(130, 0);
         //TODO: check this
-        auto ibPtr = static_cast<WORD*>(m3d::Application::g_pApp->m_renderer->LockIb(this->m_ib, 0, 0, 0));
+        auto ibPtr = static_cast<WORD*>(M3D_RENDERER->LockIb(this->m_ib, 0, 0, 0));
         for (int i = 0; i < 130; ++i)
             ibPtr[i] = i;
-        m3d::Application::g_pApp->m_renderer->UnlockIb(this->m_ib);
-        this->m_shader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/wheeltrace.fx", true);
+        M3D_RENDERER->UnlockIb(this->m_ib);
+        this->m_shader = M3D_RENDERER->NewEffect("data/shaders/wheeltrace.fx", true);
         M3D_ASSERT(m_shader);
         this->m_shader->SetDefaultTechnique(true);
         m_profiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(m3d::Application::g_pApp->GetProfilerStack().AddProfiler("wheeltraces", 0x1Eu));

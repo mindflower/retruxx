@@ -74,7 +74,7 @@ namespace m3d
         public:
             //CellItems();
 
-        private:
+        public:
             ObjectsContainer m_nodesLinkedDirect;
             std::set<Object*> m_nodesShadowingDirect;
             bool m_bVisibleInCurrentFrame = false;

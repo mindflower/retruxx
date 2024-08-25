@@ -339,7 +339,7 @@ namespace m3d
             //}
             //auto x = 0;
             //auto y = 0;
-            //m3d::Application::g_pApp->m_renderer->GetDims(this->m_barTexture, x, y);
+            //M3D_RENDERER->GetDims(this->m_barTexture, x, y);
             //auto texDim = x;
             //if (!horizontal)
             //    texDim = y;

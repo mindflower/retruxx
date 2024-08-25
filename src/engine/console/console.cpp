@@ -676,8 +676,8 @@ void ConsoleImp::RenderNotify()
     {
         if (v4 > v3)
             v4 = v3;
-        m3d::Application::g_pApp->m_renderer->PushZbState(m3d::rend::ZB_DISABLE);
-        m3d::Application::g_pApp->m_renderer->PushFog(false);
+        M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
+        M3D_RENDERER->PushFog(false);
         m3d::Application::g_pApp->SetFont("Impact", 9.0, 0, m3d::Application::g_pApp->m_codePage.CodePage);
         m_con.vislines = v4;
         auto v6 = m_con.display;
@@ -697,8 +697,8 @@ void ConsoleImp::RenderNotify()
             v4 -= m_FontSizeY;
             --v6;
         }
-        m3d::Application::g_pApp->m_renderer->PopZbState();
-        m3d::Application::g_pApp->m_renderer->PopFog();
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopFog();
     }
     throw std::logic_error("Not implemented");
 }

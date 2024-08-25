@@ -30,11 +30,11 @@ namespace m3d
         {
             if (m_texture.IsValid())
             {
-                m3d::Application::g_pApp->m_renderer->ReleaseTexture(m_texture);
+                M3D_RENDERER->ReleaseTexture(m_texture);
             }
             m_textureName = {};
             m_texture = tex;
-            m3d::Application::g_pApp->m_renderer->ReferenceTexture(m_texture);
+            M3D_RENDERER->ReferenceTexture(m_texture);
             return m_texture.IsValid();
         }
 
@@ -47,7 +47,7 @@ namespace m3d
         {
             if (m_texture.IsValid())
             {
-                m3d::Application::g_pApp->m_renderer->ReleaseTexture(m_texture);
+                M3D_RENDERER->ReleaseTexture(m_texture);
             }
         }
 

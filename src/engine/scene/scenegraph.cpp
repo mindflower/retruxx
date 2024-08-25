@@ -4,6 +4,13 @@
 #include "config.h"
 #include "m3dapp.h"
 #include "core/kernel.h"
+#include "world.h"
+#include "level.h"
+
+namespace
+{
+    float const VISCELL_EDGE_LENGTH_6 = 128.0;
+}
 
 namespace m3d
 {
@@ -29,7 +36,55 @@ namespace m3d
 
     void SceneGraph::SortedCellsPrepare()
     {
-        throw std::logic_error("Not implemented");
+        m_cellsPrepared = true;
+        memset(m_sortedCellsX, 0xFF, sizeof(m_sortedCellsX));
+        auto const org = M3D_RENDERER->MatGetOrgInv();
+
+        auto const curX = (1.0 / VISCELL_EDGE_LENGTH_6) * org.x;
+        auto const curZ = (1.0 / VISCELL_EDGE_LENGTH_6) * org.z;
+        int SortedCellsTops[256] = { 0 };
+        const auto sds = 50176 / sizeof(m_cellItems[0]);
+        //TODO: check this and refactor
+        auto ls = m_owner->m_level->GetLandSize();
+        auto x = 0;
+        if (ls > 0)
+        {
+            auto v3 = curX;
+            auto v10 = curX;
+            auto cellItem = m_cellItems;
+            while (true)
+            {
+                auto v4 = curZ;
+                auto tempCellItem = cellItem;
+                auto v6 = 0;
+                auto v16 = v3 * v3;
+                do
+                {
+                    tempCellItem->m_bVisibleInCurrentFrame = false;
+                    auto v7 = static_cast<unsigned>(floor(sqrt((v4 * v4) + v16)));
+                    if (v7 <= 0x64)
+                    {
+                        auto idx = SortedCellsTops[v7] + v7 * (6 * v7 + 2);
+                        //TODO: check this!!!!
+                        //SceneGraph* v9 = (char*)this + idx;
+                        m_sortedCellsX[idx] = x;
+                        m_sortedCellsY[idx] = v6;
+                        SortedCellsTops[v7] = SortedCellsTops[v7] + 1;
+                    }
+                    ++v6;
+                    tempCellItem += 64;
+                    --v4;
+                } while (v6 < ls);
+                --v10;
+                ++cellItem;
+                if (++x >= ls)
+                {
+                    break;
+                }
+                v3 = v10;
+            }
+        }
+      // throw std::logic_error("Not implemented");
     }
 
     void SceneGraph::UnlinkAndDeleteAll()
@@ -193,71 +248,71 @@ namespace m3d
         this->m_bIsInUnlinkAndDeleteAll = 0;
         this->m_bIsPurgingRemoveIfFree = 0;
         this->m_easyRelink = 0;
-        this->m_roadProjectorShader = m3d::Application::g_pApp->m_renderer->NewEffect( "data/shaders/roadProjector.fx", true);
+        this->m_roadProjectorShader = M3D_RENDERER->NewEffect( "data/shaders/roadProjector.fx", true);
         M3D_ASSERT(m_roadProjectorShader);
         this->m_roadProjectorShader->SetDefaultTechnique(true);
-        this->m_lsProjectorShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/lsProjector.fx", true);
+        this->m_lsProjectorShader = M3D_RENDERER->NewEffect("data/shaders/lsProjector.fx", true);
         M3D_ASSERT(m_lsProjectorShader);
         this->m_lsProjectorShader->SetDefaultTechnique(true);
-        this->m_objProjectorShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/objectProjector.fx", true);
+        this->m_objProjectorShader = M3D_RENDERER->NewEffect("data/shaders/objectProjector.fx", true);
         M3D_ASSERT(m_objProjectorShader);
         this->m_objProjectorShader->SetDefaultTechnique(true);
-        this->m_treeProjectorShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/treeProjector.fx", true);
+        this->m_treeProjectorShader = M3D_RENDERER->NewEffect("data/shaders/treeProjector.fx", true);
         M3D_ASSERT(m_treeProjectorShader);
         this->m_treeProjectorShader->SetDefaultTechnique(true);
-        this->m_lsLightShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/lsLight.fx", true);
+        this->m_lsLightShader = M3D_RENDERER->NewEffect("data/shaders/lsLight.fx", true);
         M3D_ASSERT(m_lsLightShader);
         this->m_lsLightShader->SetDefaultTechnique(true);
-        this->m_roadLightShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/roadLight.fx", true);
+        this->m_roadLightShader = M3D_RENDERER->NewEffect("data/shaders/roadLight.fx", true);
         M3D_ASSERT(m_roadLightShader);
         this->m_roadLightShader->SetDefaultTechnique(true);
-        this->m_objectLightShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/objectlight.fx", true);
+        this->m_objectLightShader = M3D_RENDERER->NewEffect("data/shaders/objectlight.fx", true);
         M3D_ASSERT(m_objectLightShader);
         this->m_objectLightShader->SetDefaultTechnique(true);
-        this->m_treeLightShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/treeLight.fx", true);
+        this->m_treeLightShader = M3D_RENDERER->NewEffect("data/shaders/treeLight.fx", true);
         M3D_ASSERT(m_treeLightShader);
         this->m_treeLightShader->SetDefaultTechnique(true);
-        this->m_roadSpriteShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/roadSprite.fx", true);
+        this->m_roadSpriteShader = M3D_RENDERER->NewEffect("data/shaders/roadSprite.fx", true);
         M3D_ASSERT(m_roadSpriteShader);
         this->m_roadSpriteShader->SetDefaultTechnique(true);
-        this->m_texShadow = m3d::Application::g_pApp->m_renderer->AddDynamicTexture(
+        this->m_texShadow = M3D_RENDERER->AddDynamicTexture(
             "$TexShadow",
             g_Kernel->GetEngineCfg().m_lgtShadowTexSz.GetI(),
             g_Kernel->GetEngineCfg().m_lgtShadowTexSz.GetI(), 6);
-        this->m_detTexShadow = m3d::Application::g_pApp->m_renderer->AddDynamicTexture(
+        this->m_detTexShadow = M3D_RENDERER->AddDynamicTexture(
             "$DetTexShadow",
             g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
             g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(), 6);
-        this->m_texBlurShadow = m3d::Application::g_pApp->m_renderer->AddDynamicTexture(
+        this->m_texBlurShadow = M3D_RENDERER->AddDynamicTexture(
             "$TexBlurShadow",
             g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
             g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(), 6);
-        m3d::Application::g_pApp->m_renderer->SetTextureParameter(
+        M3D_RENDERER->SetTextureParameter(
             this->m_texBlurShadow,
             rend::TM_TEX_FILTER, 5u);
-        this->m_lsShadowShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/lsShadows.fx", true);
+        this->m_lsShadowShader = M3D_RENDERER->NewEffect("data/shaders/lsShadows.fx", true);
         M3D_ASSERT(m_lsShadowShader);
         this->m_lsShadowShader->SetDefaultTechnique(true);
-        this->m_roadShadowShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/roadShadows.fx", true);
+        this->m_roadShadowShader = M3D_RENDERER->NewEffect("data/shaders/roadShadows.fx", true);
         M3D_ASSERT(m_roadShadowShader);
         this->m_roadShadowShader->SetDefaultTechnique(true);
-        this->m_lsDetailShadowShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/lsDetailedShadows.fx", true);
+        this->m_lsDetailShadowShader = M3D_RENDERER->NewEffect("data/shaders/lsDetailedShadows.fx", true);
         M3D_ASSERT(m_lsDetailShadowShader);
         this->m_lsDetailShadowShader->SetDefaultTechnique(true);
-        this->m_roadDetailShadowShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/roadDetailedShadows.fx", true);
+        this->m_roadDetailShadowShader = M3D_RENDERER->NewEffect("data/shaders/roadDetailedShadows.fx", true);
         M3D_ASSERT(m_roadDetailShadowShader);
         this->m_roadDetailShadowShader->SetDefaultTechnique(true);
-        this->m_shadowShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/shadow.fx", true);
+        this->m_shadowShader = M3D_RENDERER->NewEffect("data/shaders/shadow.fx", true);
         M3D_ASSERT(m_shadowShader);
         this->m_shadowShader->SetDefaultTechnique(true);
-        this->m_blurShadowShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/blurShadow.fx", true);
+        this->m_blurShadowShader = M3D_RENDERER->NewEffect("data/shaders/blurShadow.fx", true);
         M3D_ASSERT(m_blurShadowShader);
         this->m_blurShadowShader->SetDefaultTechnique(true);
-        this->m_grassShadowVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/grassShadows.vs", "GrassVS", rend::IHlslShader::VS_1_1);
+        this->m_grassShadowVs = M3D_RENDERER->NewHlslShader("data/shaders/grassShadows.vs", "GrassVS", rend::IHlslShader::VS_1_1);
         M3D_ASSERT(m_grassShadowVs);
-        this->m_grassShadowPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/grassShadows.ps", "GrassPS", rend::IHlslShader::PS_1_1);
+        this->m_grassShadowPs = M3D_RENDERER->NewHlslShader("data/shaders/grassShadows.ps", "GrassPS", rend::IHlslShader::PS_1_1);
         M3D_ASSERT(m_grassShadowPs);
-        this->m_contourShader = m3d::Application::g_pApp->m_renderer->NewEffect("data/shaders/contour.fx", true);
+        this->m_contourShader = M3D_RENDERER->NewEffect("data/shaders/contour.fx", true);
         M3D_ASSERT(m_contourShader);
         this->m_contourShader->SetDefaultTechnique(true);
         this->m_rootNode.m_isRootNode = 1;
@@ -280,9 +335,17 @@ namespace m3d
         this->m_cellsPrepared = 0;
     }
 
-    void SceneGraph::UpdateVis(bool, CClipper const&, bool)
+    void SceneGraph::UpdateVis(bool newFrame, CClipper const& frusta, bool primary)
     {
-        throw std::logic_error("Not implemented");
+        if (newFrame)
+        {
+            SortedCellsPrepare();
+            memset(m_enableMap, 0, sizeof(m_enableMap));
+        }
+        else
+        {
+            throw std::logic_error("Not implemented");
+        }
     }
 
     void SceneGraph::DeleteFromContourList(SgNode*)
@@ -330,9 +393,19 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void SceneGraph::EnableVisibleCells(CClipper&, unsigned)
+    void SceneGraph::EnableVisibleCells(CClipper& frusta, unsigned or)
     {
-        throw std::logic_error("Not implemented");
+        float v5 = m_owner->m_level->GetLandSize() * VISCELL_EDGE_LENGTH_6;
+        //TODO: check this
+        float box[6];
+        box[2] = 0.0;
+        box[5] = v5;
+        box[0] = 0.0;
+        box[3] = v5;
+        m_owner->GetLandscape().getMinMaxHeightForBox(box, 0.0);
+        frusta.enableAll();
+        enableVisibleCells_r(frusta, box, or );
+        //throw std::logic_error("Not implemented");
     }
 
     void SceneGraph::RemoveNode(SgNode*&)

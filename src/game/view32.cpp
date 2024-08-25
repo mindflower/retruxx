@@ -1119,6 +1119,98 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
         g_pApp->m_renderer->ClearViewport(m3d::rend::M3DCLEAR_CZ, 0xFF000000);
         return 1;
     }
+    auto const viewport = m_renderer->GetViewport();
+    auto const fov = m_fov.GetF();
+    m_curCamera.setFov(fov, viewport.m_width, viewport.m_height);
+    CMatrix v102;
+    v102.rotYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
+    CMatrix v103;
+    memset(&v103, 0, sizeof(v103));
+
+    auto const rolling = GetCameraController()->GetShakingRolling();
+    auto const v97 = sin(rolling);
+    auto const v98 = cos(rolling);
+
+    CMatrix vv;
+    vv._11 = (float)((float)((float)(v103._41 * v102._14) + (float)(v103._31 * v102._13))
+        + (float)(v102._12 * (float)(0.0 - v97)))
+        + (float)(v102._11 * v98);
+    vv._12 = v103._42 * v102._14 + v103._32 * v102._13 + v102._12 * v98 + v102._11 * v97;
+    vv._13 = (float)((float)((float)(v103._43 * v102._14) + (float)(v103._23 * v102._12)) + (float)(v103._13 * v102._11))
+        + v102._13;
+    vv._14 = (float)((float)((float)(v103._34 * v102._13) + (float)(v103._24 * v102._12)) + (float)(v103._14 * v102._11))
+        + v102._14;
+    vv._21 = (float)((float)((float)(v102._24 * v103._41) + (float)(v102._23 * v103._31))
+        + (float)(v102._22 * (float)(0.0 - v97)))
+        + (float)(v102._21 * v98);
+    vv._22 = v102._24 * v103._42 + v102._23 * v103._32 + v102._22 * v98 + v102._21 * v97;
+    vv._23 = (float)((float)((float)(v102._24 * v103._43) + (float)(v102._22 * v103._23)) + (float)(v102._21 * v103._13))
+        + v102._23;
+    vv._24 = (float)((float)((float)(v102._23 * v103._34) + (float)(v102._22 * v103._24)) + (float)(v102._21 * v103._14))
+        + v102._24;
+    vv._31 = (float)((float)((float)(v103._41 * v102._34) + (float)(v103._31 * v102._33))
+        + (float)((float)(0.0 - v97) * v102._32))
+        + (float)(v98 * v102._31);
+    vv._32 = (float)((float)((float)(v103._42 * v102._34) + (float)(v103._32 * v102._33)) + (float)(v98 * v102._32))
+        + (float)(v97 * v102._31);
+    vv._33 = (float)((float)((float)(v103._43 * v102._34) + (float)(v103._23 * v102._32)) + (float)(v103._13 * v102._31))
+        + v102._33;
+    vv._34 = (float)((float)((float)(v103._24 * v102._32) + (float)(v103._14 * v102._31)) + (float)(v103._34 * v102._33))
+        + v102._34;
+    vv._41 = (float)((float)((float)(v103._31 * v102._43) + (float)((float)(0.0 - v97) * v102._42))
+        + (float)(v98 * v102._41))
+        + (float)(v103._41 * v102._44);
+    vv._42 = (float)((float)((float)(v98 * v102._42) + (float)(v97 * v102._41)) + (float)(v103._42 * v102._44))
+        + (float)(v103._32 * v102._43);
+    vv._43 = (float)((float)((float)(v103._43 * v102._44) + (float)(v103._23 * v102._42)) + (float)(v103._13 * v102._41))
+        + v102._43;
+    vv._44 = (float)((float)((float)(v103._34 * v102._43) + (float)(v103._24 * v102._42)) + (float)(v103._14 * v102._41))
+        + v102._44;
+    vv.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
+
+    auto const shakingTranslation = GetCameraController()->GetShakingTranslation();
+    m_curCamera.m_worldOrigin.x = shakingTranslation.x + m_curCamera.m_worldOrigin.x;
+    m_curCamera.m_worldOrigin.y = shakingTranslation.y + m_curCamera.m_worldOrigin.y;
+    m_curCamera.m_worldOrigin.z = shakingTranslation.z + m_curCamera.m_worldOrigin.z;
+
+    CMatrix viewMatrix;
+    CAffineXForm form;
+    form.createViewMatrix(viewMatrix);
+    m_renderer->MatSet(viewMatrix);
+    m_renderer->SetViewMatrix(viewMatrix);
+
+    CMatrix projMatrix;
+    m_curCamera.createProjectionMatrix(projMatrix, 1.0);
+    m_renderer->MatSetProj(projMatrix);
+
+    //m_curCamera.m_worldOrigin.x = v89;
+    //m_curCamera.m_worldOrigin.y = v24;
+    //m_curCamera.m_worldOrigin.z = v25;
+    //vv.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
+    if (m_gameInited)
+    {
+        if (m_bRenderAsBackground)
+        {
+            if (m_bBackgroundTextureIsValid)
+            {
+                DrawBackground();
+            }
+            else
+            {
+                m3d::pClient->GetWorld().Render();
+                CaptureBackground();
+                m_bBackgroundTextureIsValid = true;
+            }
+        }
+        else
+        {
+            m_renderer->PushMultiSample(M3D_KERNEL->GetEngineCfg().m_g_antiAliasing.GetB());
+            m3d::pClient->GetWorld().Render();
+            m_renderer->PopMultiSample();
+        }
+    }
+    m_renderer->SetFog(false, false);
+    m_postEffect->Render(m_bBackgroundTextureIsValid);
 
     throw std::logic_error("Not implemented");
 }
@@ -1133,7 +1225,7 @@ int CMiracle3d::RemoveChild(m3d::Object* node)
 
     //TODO: check this
     //*(&this->m_playingVideo + 1) = 0;
-    this->m_playingVideo = false;
+    //this->m_playingVideo = false;
     return result;
 }
 

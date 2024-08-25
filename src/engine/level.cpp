@@ -42,7 +42,7 @@ namespace m3d
 
     int Level::GetLandSize() const
     {
-        throw std::logic_error("Not implemented");
+        return land_size;
     }
 
     Object* Level::CreateObject()
