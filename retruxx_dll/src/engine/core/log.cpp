@@ -2,6 +2,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <core/log.h>
+#include "thirdparty/injecttools.h"
 
 namespace m3d
 {
@@ -19,6 +20,7 @@ namespace m3d
         endLog();
     }
 
+    RETRUXX_DLL_INJECT_FUNCTION(0x00613590, Log::logTex)
     void Log::logTex(CStr const& s, eLogFlags logFlags)
     {
         AutoLock guard(m_cs);
@@ -161,6 +163,7 @@ namespace m3d
         }
     }
 
+    RETRUXX_DLL_INJECT_FUNCTION(0x00612CA0, Log::startLog)
     bool Log::startLog(char const* fileName, bool flush)
     {
         AutoLock guard(m_cs);
@@ -184,7 +187,7 @@ namespace m3d
             CStr timeStr = asctime(localtime(&timestamp));
             timeStr[timeStr.length() - 1] = '\0';
             logStream <<
-                "---------------------------------------------- Log begins on " <<
+                "---------------------------------------------- Retruxx log begins on " <<
                 timeStr.c_str() <<
                 " ----------------------------------------------" <<
                 std::endl;

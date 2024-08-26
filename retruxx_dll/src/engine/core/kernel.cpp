@@ -11,6 +11,7 @@
 #include <file/fileserver.h>
 #include <ode/odememory.h>
 #include <script/scriptserver.h>
+#include "thirdparty/injecttools.h"
 
 
 namespace
@@ -277,6 +278,8 @@ namespace m3d
         OdeSetMemoryHandlers();
     }
 
+
+    RETRUXX_DLL_INJECT_FUNCTION(0x005894B0, Kernel::OpenLog)
     bool Kernel::OpenLog(char const* logFileName)
     {
         assert(m_Log == nullptr);
