@@ -31,6 +31,9 @@ namespace m3d
     public:
         Log();
         ~Log();
+        void ctor();
+        void dtor();
+
         bool startLog(char const*, bool);
         bool endLog();
         bool logStarted() const;
@@ -59,7 +62,7 @@ namespace m3d
         bool m_lineCharsFlag = false;
         bool m_flushImmediately = true;
 
-    private:
+    public:
         CStr const& headerString(eLogFlags) const;
 
     private:

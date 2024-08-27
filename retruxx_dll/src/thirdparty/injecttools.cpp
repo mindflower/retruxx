@@ -10,14 +10,8 @@ namespace
 
 namespace inject
 {
-    void init()
-    {
-        MessageBox(NULL, "Inject init", "ProjectApocalypse", MB_OK);
-    }
-
     bool injectFunctionCall(uint32_t address, uint32_t newFunctionAddress)
     {
-        MessageBox(NULL, "Func inject", "ProjectApocalypse", MB_OK);
         const auto currentProcess = ::GetCurrentProcess();
         ::WriteProcessMemory(
             currentProcess,

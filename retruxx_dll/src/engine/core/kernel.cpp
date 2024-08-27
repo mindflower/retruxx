@@ -279,7 +279,7 @@ namespace m3d
     }
 
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x005894B0, Kernel::OpenLog)
+    //RETRUXX_DLL_INJECT_FUNCTION(0x005894B0, Kernel::OpenLog)
     bool Kernel::OpenLog(char const* logFileName)
     {
         assert(m_Log == nullptr);
