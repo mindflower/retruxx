@@ -23,7 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\retruxx_lib\retruxx_lib.vcxproj">
-      <Project>{0b24acf1-d933-475a-9606-f0676b271041}</Project>
+      <Project>{1153caa6-28f2-49a9-850e-3d73092ed007}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">

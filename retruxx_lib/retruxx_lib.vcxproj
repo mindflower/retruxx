@@ -1,0 +1,1387 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug_RetruxxDLL|Win32">
+      <Configuration>Debug_RetruxxDLL</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug_Retruxx|Win32">
+      <Configuration>Debug_Retruxx</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_RetruxxDLL|Win32">
+      <Configuration>Release_RetruxxDLL</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_Retruxx|Win32">
+      <Configuration>Release_Retruxx</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{1153CAA6-28F2-49A9-850E-3D73092ED007}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Retruxx|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_RetruxxDLL|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_RetruxxDLL|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Retruxx|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Retruxx|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_RetruxxDLL|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_RetruxxDLL|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_Retruxx|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Retruxx|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_RetruxxDLL|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_RetruxxDLL|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Retruxx|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Retruxx|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>Winmm.lib;strmiids.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_RetruxxDLL|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;RETRUXX_DLL;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>Winmm.lib;strmiids.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_RetruxxDLL|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;RETRUXX_DLL;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>Winmm.lib;strmiids.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Retruxx|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>Winmm.lib;strmiids.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\engine\benchmark.cpp" />
+    <ClCompile Include="src\engine\cameracontroller.cpp" />
+    <ClCompile Include="src\engine\cinematic.cpp" />
+    <ClCompile Include="src\engine\client.cpp" />
+    <ClCompile Include="src\engine\clientpredict.cpp" />
+    <ClCompile Include="src\engine\clipper.cpp" />
+    <ClCompile Include="src\engine\config.cpp" />
+    <ClCompile Include="src\engine\configurations.cpp" />
+    <ClCompile Include="src\engine\console\cmdline.cpp" />
+    <ClCompile Include="src\engine\console\cmdparams.cpp" />
+    <ClCompile Include="src\engine\console\console.cpp" />
+    <ClCompile Include="src\engine\console\console_commands.cpp" />
+    <ClCompile Include="src\engine\console\console_render.cpp" />
+    <ClCompile Include="src\engine\console\console_serialization.cpp" />
+    <ClCompile Include="src\engine\console\cvar.cpp" />
+    <ClCompile Include="src\engine\core\aiparam.cpp" />
+    <ClCompile Include="src\engine\core\clazz.cpp" />
+    <ClCompile Include="src\engine\core\debugcounter.cpp" />
+    <ClCompile Include="src\engine\core\ini.cpp" />
+    <ClCompile Include="src\engine\core\kernel.cpp" />
+    <ClCompile Include="src\engine\core\log.cpp" />
+    <ClCompile Include="src\engine\core\memoryman.cpp" />
+    <ClCompile Include="src\engine\core\profilerstack.cpp" />
+    <ClCompile Include="src\engine\core\rtclass.cpp" />
+    <ClCompile Include="src\engine\core\stackwalker.cpp" />
+    <ClCompile Include="src\engine\core\stringm3d.cpp" />
+    <ClCompile Include="src\engine\core\threadsync.cpp" />
+    <ClCompile Include="src\engine\core\timer.cpp" />
+    <ClCompile Include="src\engine\decals.cpp" />
+    <ClCompile Include="src\engine\draftmodel.cpp" />
+    <ClCompile Include="src\engine\exportdesc.cpp" />
+    <ClCompile Include="src\engine\file\fileenum.cpp" />
+    <ClCompile Include="src\engine\file\filereader.cpp" />
+    <ClCompile Include="src\engine\file\fileserver.cpp" />
+    <ClCompile Include="src\engine\file\memoryfile.cpp" />
+    <ClCompile Include="src\engine\file\package.cpp" />
+    <ClCompile Include="src\engine\file\rawfile.cpp" />
+    <ClCompile Include="src\engine\file\tagged.cpp" />
+    <ClCompile Include="src\engine\flares.cpp" />
+    <ClCompile Include="src\engine\fontformat.cpp" />
+    <ClCompile Include="src\engine\gamparser.cpp" />
+    <ClCompile Include="src\engine\graph\hungarianalgo.cpp" />
+    <ClCompile Include="src\engine\gsmodel.cpp" />
+    <ClCompile Include="src\engine\impulses\bindexports.cpp" />
+    <ClCompile Include="src\engine\impulses\gameimpulse.cpp" />
+    <ClCompile Include="src\engine\impulses\keybindstation.cpp" />
+    <ClCompile Include="src\engine\landscapeoverlays.cpp" />
+    <ClCompile Include="src\engine\landscape\geomobject.cpp" />
+    <ClCompile Include="src\engine\landscape\landscape.cpp" />
+    <ClCompile Include="src\engine\landscape\landscapecollision.cpp" />
+    <ClCompile Include="src\engine\landscape\landscapegrass.cpp" />
+    <ClCompile Include="src\engine\landscape\landscaperender.cpp" />
+    <ClCompile Include="src\engine\landscape\landscapewater.cpp" />
+    <ClCompile Include="src\engine\landscape\roads\roadmanager.cpp" />
+    <ClCompile Include="src\engine\landscape\roads\roads.cpp" />
+    <ClCompile Include="src\engine\level.cpp" />
+    <ClCompile Include="src\engine\m3dapp.cpp" />
+    <ClCompile Include="src\engine\m3dapp_console.cpp" />
+    <ClCompile Include="src\engine\m3dfont.cpp" />
+    <ClCompile Include="src\engine\math\camera.cpp" />
+    <ClCompile Include="src\engine\math\matrix.cpp" />
+    <ClCompile Include="src\engine\math\plane.cpp" />
+    <ClCompile Include="src\engine\math\quaternion.cpp" />
+    <ClCompile Include="src\engine\math\vector.cpp" />
+    <ClCompile Include="src\engine\math\vector2.cpp" />
+    <ClCompile Include="src\engine\math\vector4.cpp" />
+    <ClCompile Include="src\engine\ode\odememory.cpp" />
+    <ClCompile Include="src\engine\ode\sources\array.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_kernel.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_space.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_std.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_transform.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_trimesh.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_trimesh_box.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_trimesh_ccylinder.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_trimesh_ray.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_trimesh_sphere.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_trimesh_trimesh.cpp" />
+    <ClCompile Include="src\engine\ode\sources\collision_util.cpp" />
+    <ClCompile Include="src\engine\ode\sources\dcone.cpp" />
+    <ClCompile Include="src\engine\ode\sources\dterrainy.cpp" />
+    <ClCompile Include="src\engine\ode\sources\dterrainz.cpp" />
+    <ClCompile Include="src\engine\ode\sources\error.cpp" />
+    <ClCompile Include="src\engine\ode\sources\fastdot.c" />
+    <ClCompile Include="src\engine\ode\sources\fastdot_cpp.cpp" />
+    <ClCompile Include="src\engine\ode\sources\fastldlt.c" />
+    <ClCompile Include="src\engine\ode\sources\fastlsolve.c" />
+    <ClCompile Include="src\engine\ode\sources\fastltsolve.c" />
+    <ClCompile Include="src\engine\ode\sources\joint.cpp" />
+    <ClCompile Include="src\engine\ode\sources\lcp.cpp" />
+    <ClCompile Include="src\engine\ode\sources\mass.cpp" />
+    <ClCompile Include="src\engine\ode\sources\matrix_ode.cpp" />
+    <ClCompile Include="src\engine\ode\sources\memory.cpp" />
+    <ClCompile Include="src\engine\ode\sources\misc.cpp" />
+    <ClCompile Include="src\engine\ode\sources\obstack.cpp" />
+    <ClCompile Include="src\engine\ode\sources\ode.cpp" />
+    <ClCompile Include="src\engine\ode\sources\odemath.cpp" />
+    <ClCompile Include="src\engine\ode\sources\quickstep.cpp" />
+    <ClCompile Include="src\engine\ode\sources\rotation.cpp" />
+    <ClCompile Include="src\engine\ode\sources\step.cpp" />
+    <ClCompile Include="src\engine\ode\sources\timer_ode.cpp" />
+    <ClCompile Include="src\engine\ode\sources\util.cpp" />
+    <ClCompile Include="src\engine\opcode\ice\iceaabb.cpp" />
+    <ClCompile Include="src\engine\opcode\ice\icecontainer.cpp" />
+    <ClCompile Include="src\engine\opcode\ice\icehpoint.cpp" />
+    <ClCompile Include="src\engine\opcode\ice\icematrix3x3.cpp" />
+    <ClCompile Include="src\engine\opcode\ice\icematrix4x4.cpp" />
+    <ClCompile Include="src\engine\opcode\ice\iceobb.cpp" />
+    <ClCompile Include="src\engine\opcode\ice\icepoint.cpp" />
+    <ClCompile Include="src\engine\opcode\ice\icerandom.cpp" />
+    <ClCompile Include="src\engine\opcode\ice\icesegment.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_aabbtree.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_basemodel.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_collider.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_lsscollider.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_meshinterface.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_model.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_obbcollider.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_optimizedtree.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_planescollider.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_raycollider.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_spherecollider.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_treebuilders.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_treecollider.cpp" />
+    <ClCompile Include="src\engine\opcode\opc_volumecollider.cpp" />
+    <ClCompile Include="src\engine\particles.cpp" />
+    <ClCompile Include="src\engine\posteffects\posteffect.cpp" />
+    <ClCompile Include="src\engine\posteffects\posteffectmanager.cpp" />
+    <ClCompile Include="src\engine\posteffects\posteffectmodel.cpp" />
+    <ClCompile Include="src\engine\prefabs.cpp" />
+    <ClCompile Include="src\engine\psprops.cpp" />
+    <ClCompile Include="src\engine\ps_attractors.cpp" />
+    <ClCompile Include="src\engine\ps_serialization.cpp" />
+    <ClCompile Include="src\engine\renderhelpers.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnode.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnodeanimatedmodel.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnodedecals.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnodegameunit.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnodelines.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnodeloadpoint.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnodeparticles.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnodepointlightsource.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnodeprojector.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnodesound.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnodesprite.cpp" />
+    <ClCompile Include="src\engine\scene\nodes\sgnodestaticmodel.cpp" />
+    <ClCompile Include="src\engine\scene\scenegraph.cpp" />
+    <ClCompile Include="src\engine\scene\scenelights.cpp" />
+    <ClCompile Include="src\engine\scene\sceneshadows.cpp" />
+    <ClCompile Include="src\engine\scene\servers\dataserver.cpp" />
+    <ClCompile Include="src\engine\scene\servers\meshmaterialmanager.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serveranimatedmodel.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serveranimatedmodelrender.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serverdecals.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serverfactories.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serverlight.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serverlines.cpp" />
+    <ClCompile Include="src\engine\scene\servers\servermusic.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serverparticles.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serverprojectors.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serversound.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serversprites.cpp" />
+    <ClCompile Include="src\engine\scene\servers\serverstaticmodels.cpp" />
+    <ClCompile Include="src\engine\scene\shadows\shadowcaster.cpp" />
+    <ClCompile Include="src\engine\scene\shadows\shadowmanager.cpp" />
+    <ClCompile Include="src\engine\scene\traceline.cpp" />
+    <ClCompile Include="src\engine\script\funcarg.cpp" />
+    <ClCompile Include="src\engine\script\funcstack.cpp" />
+    <ClCompile Include="src\engine\script\luaaiparam.cpp" />
+    <ClCompile Include="src\engine\script\luaquaternion.cpp" />
+    <ClCompile Include="src\engine\script\luavector.cpp" />
+    <ClCompile Include="src\engine\script\lua\src\lapi.c" />
+    <ClCompile Include="src\engine\script\lua\src\lcode.c" />
+    <ClCompile Include="src\engine\script\lua\src\ldebug.c" />
+    <ClCompile Include="src\engine\script\lua\src\ldo.c" />
+    <ClCompile Include="src\engine\script\lua\src\ldump.c" />
+    <ClCompile Include="src\engine\script\lua\src\lfunc.c" />
+    <ClCompile Include="src\engine\script\lua\src\lgc.c" />
+    <ClCompile Include="src\engine\script\lua\src\lib\lauxlib.c" />
+    <ClCompile Include="src\engine\script\lua\src\lib\lbaselib.c" />
+    <ClCompile Include="src\engine\script\lua\src\lib\liolib.c" />
+    <ClCompile Include="src\engine\script\lua\src\lib\lmathlib.c" />
+    <ClCompile Include="src\engine\script\lua\src\lib\lstrlib.c" />
+    <ClCompile Include="src\engine\script\lua\src\lib\ltablib.c" />
+    <ClCompile Include="src\engine\script\lua\src\llex.c" />
+    <ClCompile Include="src\engine\script\lua\src\lmem.c" />
+    <ClCompile Include="src\engine\script\lua\src\lobject.c" />
+    <ClCompile Include="src\engine\script\lua\src\lopcodes.c" />
+    <ClCompile Include="src\engine\script\lua\src\lparser.c" />
+    <ClCompile Include="src\engine\script\lua\src\lstate.c" />
+    <ClCompile Include="src\engine\script\lua\src\lstring.c" />
+    <ClCompile Include="src\engine\script\lua\src\ltable.c" />
+    <ClCompile Include="src\engine\script\lua\src\ltm.c" />
+    <ClCompile Include="src\engine\script\lua\src\lundump.c" />
+    <ClCompile Include="src\engine\script\lua\src\lvm.c" />
+    <ClCompile Include="src\engine\script\lua\src\lzio.c" />
+    <ClCompile Include="src\engine\script\scriptcontext.cpp" />
+    <ClCompile Include="src\engine\script\scriptlet.cpp" />
+    <ClCompile Include="src\engine\script\scriptserver.cpp" />
+    <ClCompile Include="src\engine\serialization.cpp" />
+    <ClCompile Include="src\engine\skelmodel.cpp" />
+    <ClCompile Include="src\engine\soundconhandler.cpp" />
+    <ClCompile Include="src\engine\sprite.cpp" />
+    <ClCompile Include="src\engine\texgen.cpp" />
+    <ClCompile Include="src\engine\tinyxml\tinyxml.cpp" />
+    <ClCompile Include="src\engine\tinyxml\tinyxmlerror.cpp" />
+    <ClCompile Include="src\engine\tinyxml\tinyxmlparser.cpp" />
+    <ClCompile Include="src\engine\tracelinemanager.cpp" />
+    <ClCompile Include="src\engine\ui\button.cpp" />
+    <ClCompile Include="src\engine\ui\comboboxwnd.cpp" />
+    <ClCompile Include="src\engine\ui\cursor.cpp" />
+    <ClCompile Include="src\engine\ui\edit.cpp" />
+    <ClCompile Include="src\engine\ui\font.cpp" />
+    <ClCompile Include="src\engine\ui\frame.cpp" />
+    <ClCompile Include="src\engine\ui\glyphbutton.cpp" />
+    <ClCompile Include="src\engine\ui\image.cpp" />
+    <ClCompile Include="src\engine\ui\linewnd.cpp" />
+    <ClCompile Include="src\engine\ui\listbox.cpp" />
+    <ClCompile Include="src\engine\ui\menu.cpp" />
+    <ClCompile Include="src\engine\ui\modelarraywnd.cpp" />
+    <ClCompile Include="src\engine\ui\modelwnd.cpp" />
+    <ClCompile Include="src\engine\ui\msgbox.cpp" />
+    <ClCompile Include="src\engine\ui\progressbarwnd.cpp" />
+    <ClCompile Include="src\engine\ui\scroll.cpp" />
+    <ClCompile Include="src\engine\ui\sgnodearraywnd.cpp" />
+    <ClCompile Include="src\engine\ui\slider.cpp" />
+    <ClCompile Include="src\engine\ui\tabwnd.cpp" />
+    <ClCompile Include="src\engine\ui\textbox.cpp" />
+    <ClCompile Include="src\engine\ui\uidialogs.cpp" />
+    <ClCompile Include="src\engine\ui\uiserialization.cpp" />
+    <ClCompile Include="src\engine\ui\uistrings.cpp" />
+    <ClCompile Include="src\engine\ui\ui_srv.cpp" />
+    <ClCompile Include="src\engine\ui\wnd.cpp" />
+    <ClCompile Include="src\engine\ui\wndbase.cpp" />
+    <ClCompile Include="src\engine\ui\wndstation.cpp" />
+    <ClCompile Include="src\engine\utilit.cpp" />
+    <ClCompile Include="src\engine\video\amextra.cpp" />
+    <ClCompile Include="src\engine\video\amfilter.cpp" />
+    <ClCompile Include="src\engine\video\amvideo.cpp" />
+    <ClCompile Include="src\engine\video\arithutil.cpp" />
+    <ClCompile Include="src\engine\video\combase.cpp" />
+    <ClCompile Include="src\engine\video\cprop.cpp" />
+    <ClCompile Include="src\engine\video\ctlutil.cpp" />
+    <ClCompile Include="src\engine\video\ddmm.cpp" />
+    <ClCompile Include="src\engine\video\mtype.cpp" />
+    <ClCompile Include="src\engine\video\outputq.cpp" />
+    <ClCompile Include="src\engine\video\perflog.cpp" />
+    <ClCompile Include="src\engine\video\pstream.cpp" />
+    <ClCompile Include="src\engine\video\pullpin.cpp" />
+    <ClCompile Include="src\engine\video\refclock.cpp" />
+    <ClCompile Include="src\engine\video\renbase.cpp" />
+    <ClCompile Include="src\engine\video\schedule.cpp" />
+    <ClCompile Include="src\engine\video\seekpt.cpp" />
+    <ClCompile Include="src\engine\video\source.cpp" />
+    <ClCompile Include="src\engine\video\strmctl.cpp" />
+    <ClCompile Include="src\engine\video\sysclock.cpp" />
+    <ClCompile Include="src\engine\video\transfrm.cpp" />
+    <ClCompile Include="src\engine\video\transip.cpp" />
+    <ClCompile Include="src\engine\video\video.cpp" />
+    <ClCompile Include="src\engine\video\videoctl.cpp" />
+    <ClCompile Include="src\engine\video\vtrans.cpp" />
+    <ClCompile Include="src\engine\video\winctrl.cpp" />
+    <ClCompile Include="src\engine\video\winutil.cpp" />
+    <ClCompile Include="src\engine\video\wxdebug.cpp" />
+    <ClCompile Include="src\engine\video\wxlist.cpp" />
+    <ClCompile Include="src\engine\video\wxutil.cpp" />
+    <ClCompile Include="src\engine\weather\weather.cpp" />
+    <ClCompile Include="src\engine\weather\weatherclear.cpp" />
+    <ClCompile Include="src\engine\weather\weatherfoggy.cpp" />
+    <ClCompile Include="src\engine\weather\weatherinclement.cpp" />
+    <ClCompile Include="src\engine\weather\weathermanager.cpp" />
+    <ClCompile Include="src\engine\weather\weatherthunderstorm.cpp" />
+    <ClCompile Include="src\engine\wheeltraces\wheeltraces.cpp" />
+    <ClCompile Include="src\engine\world.cpp" />
+    <ClCompile Include="src\game\game.cpp" />
+    <ClCompile Include="src\game\game_initdone.cpp" />
+    <ClCompile Include="src\game\globalscriptfuncs.cpp" />
+    <ClCompile Include="src\game\impulses\truxximpulses.cpp" />
+    <ClCompile Include="src\game\music\blockmusicmanager.cpp" />
+    <ClCompile Include="src\game\music\radioengine.cpp" />
+    <ClCompile Include="src\game\music\townmusicmanager.cpp" />
+    <ClCompile Include="src\game\profile.cpp" />
+    <ClCompile Include="src\game\uimanager\gameuimanager.cpp" />
+    <ClCompile Include="src\game\uimanager\truxxuimanager.cpp" />
+    <ClCompile Include="src\game\uimanager\uiregistration.cpp" />
+    <ClCompile Include="src\game\uimisc\fadingmsgmanager.cpp" />
+    <ClCompile Include="src\game\uimisc\guihelper.cpp" />
+    <ClCompile Include="src\game\uimisc\helpmanager.cpp" />
+    <ClCompile Include="src\game\uimisc\levelinfo.cpp" />
+    <ClCompile Include="src\game\uimisc\msgmanager.cpp" />
+    <ClCompile Include="src\game\uimisc\navpoint.cpp" />
+    <ClCompile Include="src\game\uimisc\objectcollection.cpp" />
+    <ClCompile Include="src\game\uimisc\objectsicons.cpp" />
+    <ClCompile Include="src\game\uimisc\questinfo.cpp" />
+    <ClCompile Include="src\game\uimisc\reply.cpp" />
+    <ClCompile Include="src\game\uimisc\savesmanager.cpp" />
+    <ClCompile Include="src\game\uimisc\skinswitcher.cpp" />
+    <ClCompile Include="src\game\uimisc\stringparser.cpp" />
+    <ClCompile Include="src\game\uimisc\visibilitymap.cpp" />
+    <ClCompile Include="src\game\uimisc\weapongroup.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\advancedlist.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\basketcharacteristicswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\basketlist.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\basketwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\buyserviceslider.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\cabincharacteristicswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\cabinlist.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\cabinwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\cbcharacteristicswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\cblist.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\cbwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\characteristicswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\childpanel.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\devidedlg.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\dragdropitemswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\gadgetwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\garagewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\groundwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\infownd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\inventorywnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\iteminfownd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\itemwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\izvratrepositorywnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\motherpanel.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\motherpaneltabbutton.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\playermoneywnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\playervehiclewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\rechargelist.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\refuellist.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\repairlist.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\repositoryitemwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\repositorywnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\salewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\shopwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\skinswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\vehiclecharacteristicswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\vehiclepartwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\vehiclewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\videownd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\warewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\weapongroupbuttonlist.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\weaponslotlist.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\weaponslotwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\workshopvehiclewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\charwindows\znayukakprodatwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\commonwindows\complexmodelwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\commonwindows\contextmodelwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\commonwindows\itemmodelwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\commonwindows\msgbox.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\bossindicatorwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\counterwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\damageinfownd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\durabilityindicatorinmaininterfacewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\durabilityindicatorwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\electronicdigitalwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\fadingmsg.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\fuelindicatorinmaininterfacewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\fuelindicatorwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\healthindicatorinmaininterfacewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\healthindicatorwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\igrokamochatwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\maincursorwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\maingameinterfacewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\radarwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\smartcursorwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\speedometerwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\targetcapturedcursorwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\targetcapturingcursorwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\targetcursorwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\targetinfocursorwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\targetinfownd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\twinklinglampwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\vehicleinfopanel.cpp" />
+    <ClCompile Include="src\game\uiwindows\mainwindows\weaponinfolist.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\autoscrolltextwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\bindkeyswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\changeprofilewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\cinemafadepanel.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\cinemapanel.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\controloptionswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\creditswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\demosplashwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\fadepanelbeforenextmap.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\gamemenu.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\gameoptionswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\helpinmaingameinterfacewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\helpsimplemsgwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\helpwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\loadwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\lswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\mainmenu.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\newprofilewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\optionswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\requestdifficultywnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\savewnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\soundoptionswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\splashwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\miscwindows\videooptionswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\bookswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\checklist.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\encyclopaediawnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\globalmapwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\historywnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\journalwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\localchartwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\localmapwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\mapcombobox.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\mapinfopanel.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\mapmarkwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\mapselllist.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\navpointbutton.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\pagedlist.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\questdizwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\questitem.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\questitemlist.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\questitemswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\reputationwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\saveselllist.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\screenwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\statswnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\palmwindows\taksebequestlogwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\townwindows\bardlg.cpp" />
+    <ClCompile Include="src\game\uiwindows\townwindows\buildinglist.cpp" />
+    <ClCompile Include="src\game\uiwindows\townwindows\conversationwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\townwindows\npclist.cpp" />
+    <ClCompile Include="src\game\uiwindows\townwindows\npcmodelwnd.cpp" />
+    <ClCompile Include="src\game\uiwindows\townwindows\talkwithnpcdlg.cpp" />
+    <ClCompile Include="src\game\uiwindows\townwindows\towndlg.cpp" />
+    <ClCompile Include="src\game\view32.cpp" />
+    <ClCompile Include="src\game\view32_cinematic.cpp" />
+    <ClCompile Include="src\game\view32_console.cpp" />
+    <ClCompile Include="src\game\view32_loadsave.cpp" />
+    <ClCompile Include="src\game\view32_video.cpp" />
+    <ClCompile Include="src\game\vivisectionblock.cpp" />
+    <ClCompile Include="src\server\affix.cpp" />
+    <ClCompile Include="src\server\ai\ai.cpp" />
+    <ClCompile Include="src\server\ai\aifunc.cpp" />
+    <ClCompile Include="src\server\ai\aimanager.cpp" />
+    <ClCompile Include="src\server\ai\aimatrix.cpp" />
+    <ClCompile Include="src\server\ai\aipassagecommand.cpp" />
+    <ClCompile Include="src\server\ai\aisignal.cpp" />
+    <ClCompile Include="src\server\ai\aistate.cpp" />
+    <ClCompile Include="src\server\ai\decisionmatrix.cpp" />
+    <ClCompile Include="src\server\cinematicpath.cpp" />
+    <ClCompile Include="src\server\colliders\breakableobjectcolliders.cpp" />
+    <ClCompile Include="src\server\colliders\bulletcolliders.cpp" />
+    <ClCompile Include="src\server\colliders\colliderkrnl.cpp" />
+    <ClCompile Include="src\server\colliders\defaultcollider.cpp" />
+    <ClCompile Include="src\server\colliders\physicunitcolliders.cpp" />
+    <ClCompile Include="src\server\colliders\vehiclecolliders.cpp" />
+    <ClCompile Include="src\server\colliders\vehiclesplintercolliders.cpp" />
+    <ClCompile Include="src\server\colliders\wheelasphaltcollider.cpp" />
+    <ClCompile Include="src\server\dynamicquestmanager.cpp" />
+    <ClCompile Include="src\server\dynamicscene.cpp" />
+    <ClCompile Include="src\server\event.cpp" />
+    <ClCompile Include="src\server\externalpaths.cpp" />
+    <ClCompile Include="src\server\formations\formation.cpp" />
+    <ClCompile Include="src\server\geomrepository.cpp" />
+    <ClCompile Include="src\server\geomrepositoryitem.cpp" />
+    <ClCompile Include="src\server\infocone.cpp" />
+    <ClCompile Include="src\server\intersectionmanager.cpp" />
+    <ClCompile Include="src\server\izvratrepository.cpp" />
+    <ClCompile Include="src\server\map.cpp" />
+    <ClCompile Include="src\server\modifier.cpp" />
+    <ClCompile Include="src\server\objects\affixgenerator.cpp" />
+    <ClCompile Include="src\server\objects\article.cpp" />
+    <ClCompile Include="src\server\objects\articulatedvehicle.cpp" />
+    <ClCompile Include="src\server\objects\bar.cpp" />
+    <ClCompile Include="src\server\objects\barricade.cpp" />
+    <ClCompile Include="src\server\objects\base\animatedcomplexphysicobj.cpp" />
+    <ClCompile Include="src\server\objects\base\complexphysicobj.cpp" />
+    <ClCompile Include="src\server\objects\base\compositeobj.cpp" />
+    <ClCompile Include="src\server\objects\base\geomobj.cpp" />
+    <ClCompile Include="src\server\objects\base\globalproperties.cpp" />
+    <ClCompile Include="src\server\objects\base\jointedobj.cpp" />
+    <ClCompile Include="src\server\objects\base\obj.cpp" />
+    <ClCompile Include="src\server\objects\base\objcontainer.cpp" />
+    <ClCompile Include="src\server\objects\base\objprefab.cpp" />
+    <ClCompile Include="src\server\objects\base\physicobj.cpp" />
+    <ClCompile Include="src\server\objects\base\prototypeinfo.cpp" />
+    <ClCompile Include="src\server\objects\base\prototypemanager.cpp" />
+    <ClCompile Include="src\server\objects\base\shell.cpp" />
+    <ClCompile Include="src\server\objects\base\simplephysicobj.cpp" />
+    <ClCompile Include="src\server\objects\basket.cpp" />
+    <ClCompile Include="src\server\objects\blastwave.cpp" />
+    <ClCompile Include="src\server\objects\breakableobject.cpp" />
+    <ClCompile Include="src\server\objects\building.cpp" />
+    <ClCompile Include="src\server\objects\cabin.cpp" />
+    <ClCompile Include="src\server\objects\caravanteam.cpp" />
+    <ClCompile Include="src\server\objects\chassis.cpp" />
+    <ClCompile Include="src\server\objects\chest.cpp" />
+    <ClCompile Include="src\server\objects\cinematicmover.cpp" />
+    <ClCompile Include="src\server\objects\dummyobject.cpp" />
+    <ClCompile Include="src\server\objects\dynamicquest.cpp" />
+    <ClCompile Include="src\server\objects\dynamicquestconvoy.cpp" />
+    <ClCompile Include="src\server\objects\dynamicquestdestroy.cpp" />
+    <ClCompile Include="src\server\objects\dynamicquesthunt.cpp" />
+    <ClCompile Include="src\server\objects\dynamicquestpeace.cpp" />
+    <ClCompile Include="src\server\objects\dynamicquestreach.cpp" />
+    <ClCompile Include="src\server\objects\gadget.cpp" />
+    <ClCompile Include="src\server\objects\guns\bullet.cpp" />
+    <ClCompile Include="src\server\objects\guns\bulletlauncher.cpp" />
+    <ClCompile Include="src\server\objects\guns\compoundgun.cpp" />
+    <ClCompile Include="src\server\objects\guns\engineoillocation.cpp" />
+    <ClCompile Include="src\server\objects\guns\gun.cpp" />
+    <ClCompile Include="src\server\objects\guns\locationpusher.cpp" />
+    <ClCompile Include="src\server\objects\guns\mine.cpp" />
+    <ClCompile Include="src\server\objects\guns\minepusher.cpp" />
+    <ClCompile Include="src\server\objects\guns\mortar.cpp" />
+    <ClCompile Include="src\server\objects\guns\mortarshell.cpp" />
+    <ClCompile Include="src\server\objects\guns\mortarvolleylauncher.cpp" />
+    <ClCompile Include="src\server\objects\guns\naillocation.cpp" />
+    <ClCompile Include="src\server\objects\guns\plasmabunch.cpp" />
+    <ClCompile Include="src\server\objects\guns\plasmabunchlauncher.cpp" />
+    <ClCompile Include="src\server\objects\guns\rocket.cpp" />
+    <ClCompile Include="src\server\objects\guns\rocketlauncher.cpp" />
+    <ClCompile Include="src\server\objects\guns\rocketvolleylauncher.cpp" />
+    <ClCompile Include="src\server\objects\guns\smokescreenlocation.cpp" />
+    <ClCompile Include="src\server\objects\guns\thunderbolt.cpp" />
+    <ClCompile Include="src\server\objects\guns\thunderboltlauncher.cpp" />
+    <ClCompile Include="src\server\objects\guns\turboaccelerationpusher.cpp" />
+    <ClCompile Include="src\server\objects\infectionlair.cpp" />
+    <ClCompile Include="src\server\objects\infectionteam.cpp" />
+    <ClCompile Include="src\server\objects\infectionzone.cpp" />
+    <ClCompile Include="src\server\objects\lair.cpp" />
+    <ClCompile Include="src\server\objects\lightobj.cpp" />
+    <ClCompile Include="src\server\objects\location.cpp" />
+    <ClCompile Include="src\server\objects\monsters\boss02.cpp" />
+    <ClCompile Include="src\server\objects\monsters\boss02arm.cpp" />
+    <ClCompile Include="src\server\objects\monsters\boss03.cpp" />
+    <ClCompile Include="src\server\objects\monsters\boss03part.cpp" />
+    <ClCompile Include="src\server\objects\monsters\boss04.cpp" />
+    <ClCompile Include="src\server\objects\monsters\boss04drone.cpp" />
+    <ClCompile Include="src\server\objects\monsters\boss04part.cpp" />
+    <ClCompile Include="src\server\objects\monsters\boss04station.cpp" />
+    <ClCompile Include="src\server\objects\monsters\boss04stationpart.cpp" />
+    <ClCompile Include="src\server\objects\monsters\bossarm.cpp" />
+    <ClCompile Include="src\server\objects\monsters\bossesencrypted.cpp" />
+    <ClCompile Include="src\server\objects\monsters\bossmetalarm.cpp" />
+    <ClCompile Include="src\server\objects\monsters\bossmetalarmload.cpp" />
+    <ClCompile Include="src\server\objects\monsters\submarine.cpp" />
+    <ClCompile Include="src\server\objects\npc.cpp" />
+    <ClCompile Include="src\server\objects\npcmotioncontroller.cpp" />
+    <ClCompile Include="src\server\objects\particlesplinter.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\boxybody.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\compoundvehiclepart.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\genericbody.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\geoms\box.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\geoms\cylinder.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\geoms\geom.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\geoms\geomtransform.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\geoms\ray.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\geoms\sphere.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\geoms\sphereforintersection.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\geoms\trimesh.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\physicbody.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\physichelpers.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\raybody.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\simplephysicbody.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\sphericbody.cpp" />
+    <ClCompile Include="src\server\objects\physicbodies\vehiclepart.cpp" />
+    <ClCompile Include="src\server\objects\physicunit.cpp" />
+    <ClCompile Include="src\server\objects\player.cpp" />
+    <ClCompile Include="src\server\objects\radiomanager.cpp" />
+    <ClCompile Include="src\server\objects\repositoryobjectsgenerator.cpp" />
+    <ClCompile Include="src\server\objects\ropeobj.cpp" />
+    <ClCompile Include="src\server\objects\settlement.cpp" />
+    <ClCompile Include="src\server\objects\sgnodeobj.cpp" />
+    <ClCompile Include="src\server\objects\staticautogun.cpp" />
+    <ClCompile Include="src\server\objects\team.cpp" />
+    <ClCompile Include="src\server\objects\temporarylocation.cpp" />
+    <ClCompile Include="src\server\objects\town.cpp" />
+    <ClCompile Include="src\server\objects\trigger.cpp" />
+    <ClCompile Include="src\server\objects\vagabondteam.cpp" />
+    <ClCompile Include="src\server\objects\vehicle.cpp" />
+    <ClCompile Include="src\server\objects\vehiclerecollection.cpp" />
+    <ClCompile Include="src\server\objects\vehiclesgenerator.cpp" />
+    <ClCompile Include="src\server\objects\vehiclesplinter.cpp" />
+    <ClCompile Include="src\server\objects\vehicleupdater.cpp" />
+    <ClCompile Include="src\server\objects\wanderersgenerator.cpp" />
+    <ClCompile Include="src\server\objects\wanderersmanager.cpp" />
+    <ClCompile Include="src\server\objects\ware.cpp" />
+    <ClCompile Include="src\server\objects\wheel.cpp" />
+    <ClCompile Include="src\server\objects\workshop.cpp" />
+    <ClCompile Include="src\server\obstacle.cpp" />
+    <ClCompile Include="src\server\passagedata.cpp" />
+    <ClCompile Include="src\server\path.cpp" />
+    <ClCompile Include="src\server\playerpassmap.cpp" />
+    <ClCompile Include="src\server\processmanager.cpp" />
+    <ClCompile Include="src\server\quest.cpp" />
+    <ClCompile Include="src\server\queststate.cpp" />
+    <ClCompile Include="src\server\relationship.cpp" />
+    <ClCompile Include="src\server\resourcemanager.cpp" />
+    <ClCompile Include="src\server\roles\chasemotiontactics.cpp" />
+    <ClCompile Include="src\server\roles\combatmastermind.cpp" />
+    <ClCompile Include="src\server\roles\teamrolemanager.cpp" />
+    <ClCompile Include="src\server\roles\teamtactic.cpp" />
+    <ClCompile Include="src\server\roles\teamtacticmanager.cpp" />
+    <ClCompile Include="src\server\roles\vehiclerole.cpp" />
+    <ClCompile Include="src\server\roles\vehiclerolebarrier.cpp" />
+    <ClCompile Include="src\server\roles\vehiclerolecheater.cpp" />
+    <ClCompile Include="src\server\roles\vehiclerolecoward.cpp" />
+    <ClCompile Include="src\server\roles\vehiclerolemeat.cpp" />
+    <ClCompile Include="src\server\roles\vehicleroleoppressor.cpp" />
+    <ClCompile Include="src\server\roles\vehiclerolependulum.cpp" />
+    <ClCompile Include="src\server\roles\vehiclerolesniper.cpp" />
+    <ClCompile Include="src\server\server.cpp" />
+    <ClCompile Include="src\server\static2dpath.cpp" />
+    <ClCompile Include="src\server\statistic\favoritestringstatistic.cpp" />
+    <ClCompile Include="src\server\statistic\floatstatistic.cpp" />
+    <ClCompile Include="src\server\statistic\intintratiostatistic.cpp" />
+    <ClCompile Include="src\server\statistic\intstatistic.cpp" />
+    <ClCompile Include="src\server\statistic\statisticmanager.cpp" />
+    <ClCompile Include="src\server\statistic\timestatistic.cpp" />
+    <ClCompile Include="src\server\utils.cpp" />
+    <ClCompile Include="src\server\weaponfirer.cpp" />
+    <ClCompile Include="src\thirdparty\injecttools.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\engine\console\console_internal.h" />
+    <ClInclude Include="src\engine\core\memoryman.h" />
+    <ClInclude Include="src\engine\graphinfo.h" />
+    <ClInclude Include="src\engine\impulses\gameimpulse.h" />
+    <ClInclude Include="src\engine\landscape\roads\road.h" />
+    <ClInclude Include="src\engine\landscape\roads\roadmanager.h" />
+    <ClInclude Include="src\engine\ode\sources\array.h" />
+    <ClInclude Include="src\engine\ode\sources\collision_kernel.h" />
+    <ClInclude Include="src\engine\ode\sources\collision_space_internal.h" />
+    <ClInclude Include="src\engine\ode\sources\collision_trimesh_internal.h" />
+    <ClInclude Include="src\engine\ode\sources\joint.h" />
+    <ClInclude Include="src\engine\ode\sources\objects.h" />
+    <ClInclude Include="src\engine\opcode\ice\iceaabb.h" />
+    <ClInclude Include="src\engine\opcode\ice\iceboundingsphere.h" />
+    <ClInclude Include="src\engine\opcode\ice\icecontainer.h" />
+    <ClInclude Include="src\engine\opcode\ice\icefpu.h" />
+    <ClInclude Include="src\engine\opcode\ice\icehpoint.h" />
+    <ClInclude Include="src\engine\opcode\ice\iceindexedtriangle.h" />
+    <ClInclude Include="src\engine\opcode\ice\icelss.h" />
+    <ClInclude Include="src\engine\opcode\ice\icematrix3x3.h" />
+    <ClInclude Include="src\engine\opcode\ice\icematrix4x4.h" />
+    <ClInclude Include="src\engine\opcode\ice\icememorymacros.h" />
+    <ClInclude Include="src\engine\opcode\ice\iceobb.h" />
+    <ClInclude Include="src\engine\opcode\ice\iceplane.h" />
+    <ClInclude Include="src\engine\opcode\ice\icepoint.h" />
+    <ClInclude Include="src\engine\opcode\ice\icerandom.h" />
+    <ClInclude Include="src\engine\opcode\ice\iceray.h" />
+    <ClInclude Include="src\engine\opcode\ice\icesegment.h" />
+    <ClInclude Include="src\engine\opcode\opc_aabbtree.h" />
+    <ClInclude Include="src\engine\opcode\opc_basemodel.h" />
+    <ClInclude Include="src\engine\opcode\opc_boxboxoverlap.h" />
+    <ClInclude Include="src\engine\opcode\opc_collider.h" />
+    <ClInclude Include="src\engine\opcode\opc_common.h" />
+    <ClInclude Include="src\engine\opcode\opc_hybridmodel.h" />
+    <ClInclude Include="src\engine\opcode\opc_lssaabboverlap.h" />
+    <ClInclude Include="src\engine\opcode\opc_lsscollider.h" />
+    <ClInclude Include="src\engine\opcode\opc_lsstrioverlap.h" />
+    <ClInclude Include="src\engine\opcode\opc_meshinterface.h" />
+    <ClInclude Include="src\engine\opcode\opc_obbcollider.h" />
+    <ClInclude Include="src\engine\opcode\opc_optimizedtree.h" />
+    <ClInclude Include="src\engine\opcode\opc_planesaabboverlap.h" />
+    <ClInclude Include="src\engine\opcode\opc_planescollider.h" />
+    <ClInclude Include="src\engine\opcode\opc_planestrioverlap.h" />
+    <ClInclude Include="src\engine\opcode\opc_rayaabboverlap.h" />
+    <ClInclude Include="src\engine\opcode\opc_raycollider.h" />
+    <ClInclude Include="src\engine\opcode\opc_raytrioverlap.h" />
+    <ClInclude Include="src\engine\opcode\opc_sphereaabboverlap.h" />
+    <ClInclude Include="src\engine\opcode\opc_spherecollider.h" />
+    <ClInclude Include="src\engine\opcode\opc_spheretrioverlap.h" />
+    <ClInclude Include="src\engine\opcode\opc_treebuilders.h" />
+    <ClInclude Include="src\engine\opcode\opc_treecollider.h" />
+    <ClInclude Include="src\engine\opcode\opc_triboxoverlap.h" />
+    <ClInclude Include="src\engine\opcode\opc_tritrioverlap.h" />
+    <ClInclude Include="src\engine\opcode\opc_volumecollider.h" />
+    <ClInclude Include="src\engine\scene\servers\meshmaterialmanager.h" />
+    <ClInclude Include="src\engine\scene\shadows\shadowcaster.h" />
+    <ClInclude Include="src\engine\soundconhandler.h" />
+    <ClInclude Include="src\engine\tinyxml\tinyxml.h" />
+    <ClInclude Include="src\engine\video\amextra.h" />
+    <ClInclude Include="src\engine\video\amfilter.h" />
+    <ClInclude Include="src\engine\video\cache.h" />
+    <ClInclude Include="src\engine\video\checkbmi.h" />
+    <ClInclude Include="src\engine\video\combase.h" />
+    <ClInclude Include="src\engine\video\cprop.h" />
+    <ClInclude Include="src\engine\video\ctlutil.h" />
+    <ClInclude Include="src\engine\video\ddmm.h" />
+    <ClInclude Include="src\engine\video\dxmperf.h" />
+    <ClInclude Include="src\engine\video\fourcc.h" />
+    <ClInclude Include="src\engine\video\measure.h" />
+    <ClInclude Include="src\engine\video\msgthrd.h" />
+    <ClInclude Include="src\engine\video\mtype.h" />
+    <ClInclude Include="src\engine\video\outputq.h" />
+    <ClInclude Include="src\engine\video\perflog.h" />
+    <ClInclude Include="src\engine\video\perfstruct.h" />
+    <ClInclude Include="src\engine\video\pstream.h" />
+    <ClInclude Include="src\engine\video\pullpin.h" />
+    <ClInclude Include="src\engine\video\refclock.h" />
+    <ClInclude Include="src\engine\video\reftime.h" />
+    <ClInclude Include="src\engine\video\renbase.h" />
+    <ClInclude Include="src\engine\video\schedule.h" />
+    <ClInclude Include="src\engine\video\seekpt.h" />
+    <ClInclude Include="src\engine\video\source.h" />
+    <ClInclude Include="src\engine\video\streams.h" />
+    <ClInclude Include="src\engine\video\strmctl.h" />
+    <ClInclude Include="src\engine\video\sysclock.h" />
+    <ClInclude Include="src\engine\video\transfrm.h" />
+    <ClInclude Include="src\engine\video\transip.h" />
+    <ClInclude Include="src\engine\video\video.h" />
+    <ClInclude Include="src\engine\video\videoctl.h" />
+    <ClInclude Include="src\engine\video\vtrans.h" />
+    <ClInclude Include="src\engine\video\winctrl.h" />
+    <ClInclude Include="src\engine\video\winutil.h" />
+    <ClInclude Include="src\engine\video\wxdebug.h" />
+    <ClInclude Include="src\engine\video\wxlist.h" />
+    <ClInclude Include="src\engine\video\wxutil.h" />
+    <ClInclude Include="src\engine\weather\weather.h" />
+    <ClInclude Include="src\engine\weather\weathermanager.h" />
+    <ClInclude Include="src\engine\wheeltraces\wheeltraces.h" />
+    <ClInclude Include="src\game\globalscriptfuncs.h" />
+    <ClInclude Include="src\game\impulses\truxximpulses.h" />
+    <ClInclude Include="src\game\m3dgame.h" />
+    <ClInclude Include="src\game\music\blockmusicmanager.h" />
+    <ClInclude Include="src\game\music\radioengine.h" />
+    <ClInclude Include="src\game\music\townmusicmanager.h" />
+    <ClInclude Include="src\game\profile.h" />
+    <ClInclude Include="src\game\uimanager\gameuimanager.h" />
+    <ClInclude Include="src\game\uimanager\truxxuimanager.h" />
+    <ClInclude Include="src\game\uimisc\guihelper.h" />
+    <ClInclude Include="src\game\uimisc\helpmanager.h" />
+    <ClInclude Include="src\game\uimisc\levelinfo.h" />
+    <ClInclude Include="src\game\uimisc\msgmanager.h" />
+    <ClInclude Include="src\game\uimisc\navpoint.h" />
+    <ClInclude Include="src\game\uimisc\objectcollection.h" />
+    <ClInclude Include="src\game\uimisc\objectsicons.h" />
+    <ClInclude Include="src\game\uimisc\questinfo.h" />
+    <ClInclude Include="src\game\uimisc\reply.h" />
+    <ClInclude Include="src\game\uimisc\savesmanager.h" />
+    <ClInclude Include="src\game\uimisc\stringparser.h" />
+    <ClInclude Include="src\game\uimisc\visibilitymap.h" />
+    <ClInclude Include="src\game\uimisc\weapongroup.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\advancedlist.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\basketcharacteristicswnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\basketlist.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\basketwnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\buyserviceslider.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\cabincharacteristicswnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\cabinlist.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\cabinwnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\cbcharacteristicswnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\cblist.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\cbwnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\characteristicswnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\childpanel.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\devidedlg.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\dragdropitemswnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\gadgetwnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\garagewnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\groundwnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\infownd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\inventorywnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\iteminfownd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\itemwnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\izvratrepositorywnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\motherpanel.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\motherpaneltabbutton.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\playermoneywnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\playervehiclewnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\rechargelist.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\refuellist.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\repairlist.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\repositoryitemwnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\repositorywnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\salewnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\shopwnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\skinswnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\vehiclecharacteristicswnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\vehiclepartwnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\vehiclewnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\videownd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\warewnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\weapongroupbuttonlist.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\weaponslotlist.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\weaponslotwnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\workshopvehiclewnd.h" />
+    <ClInclude Include="src\game\uiwindows\charwindows\znayukakprodatwnd.h" />
+    <ClInclude Include="src\game\uiwindows\commonwindows\complexmodelwnd.h" />
+    <ClInclude Include="src\game\uiwindows\commonwindows\contextmodelwnd.h" />
+    <ClInclude Include="src\game\uiwindows\commonwindows\itemmodelwnd.h" />
+    <ClInclude Include="src\game\uiwindows\commonwindows\msgbox.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\bossindicatorwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\counterwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\damageinfownd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\durabilityindicatorinmaininterfacewnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\durabilityindicatorwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\electronicdigitalwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\fadingmsg.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\fuelindicatorinmaininterfacewnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\fuelindicatorwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\healthindicatorinmaininterfacewnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\healthindicatorwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\igrokamochatwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\maincursorwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\maingameinterfacewnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\radarwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\smartcursorwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\speedometerwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\targetcapturedcursorwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\targetcapturingcursorwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\targetcursorwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\targetinfocursorwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\targetinfownd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\twinklinglampwnd.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\vehicleinfopanel.h" />
+    <ClInclude Include="src\game\uiwindows\mainwindows\weaponinfolist.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\autoscrolltextwnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\bindkeyswnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\changeprofilewnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\cinemafadepanel.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\cinemapanel.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\controloptionswnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\creditswnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\demosplashwnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\fadepanelbeforenextmap.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\gamemenu.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\gameoptionswnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\helpinmaingameinterfacewnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\helpsimplemsgwnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\helpwnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\loadwnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\lswnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\mainmenu.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\newprofilewnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\optionswnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\requestdifficultywnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\savewnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\soundoptionswnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\splashwnd.h" />
+    <ClInclude Include="src\game\uiwindows\miscwindows\videooptionswnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\bookswnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\checklist.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\encyclopaediawnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\globalmapwnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\historywnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\journalwnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\localchartwnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\localmapwnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\mapcombobox.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\mapinfopanel.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\mapmarkwnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\mapselllist.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\navpointbutton.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\pagedlist.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\questdizwnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\questitem.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\questitemlist.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\questitemswnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\reputationwnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\saveselllist.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\screenwnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\statswnd.h" />
+    <ClInclude Include="src\game\uiwindows\palmwindows\taksebequestlogwnd.h" />
+    <ClInclude Include="src\game\uiwindows\townwindows\bardlg.h" />
+    <ClInclude Include="src\game\uiwindows\townwindows\buildinglist.h" />
+    <ClInclude Include="src\game\uiwindows\townwindows\conversationwnd.h" />
+    <ClInclude Include="src\game\uiwindows\townwindows\npclist.h" />
+    <ClInclude Include="src\game\uiwindows\townwindows\npcmodelwnd.h" />
+    <ClInclude Include="src\game\uiwindows\townwindows\talkwithnpcdlg.h" />
+    <ClInclude Include="src\game\uiwindows\townwindows\towndlg.h" />
+    <ClInclude Include="src\game\vivisectionblock.h" />
+    <ClInclude Include="src\include\cameracontroller.h" />
+    <ClInclude Include="src\include\cinematic.h" />
+    <ClInclude Include="src\include\client.h" />
+    <ClInclude Include="src\include\clipper.h" />
+    <ClInclude Include="src\include\config.h" />
+    <ClInclude Include="src\include\core\aiparam.h" />
+    <ClInclude Include="src\include\core\clazz.h" />
+    <ClInclude Include="src\include\core\cmdline.h" />
+    <ClInclude Include="src\include\core\console\console.h" />
+    <ClInclude Include="src\include\core\console\cvar.h" />
+    <ClInclude Include="src\include\core\containers.h" />
+    <ClInclude Include="src\include\core\core.h" />
+    <ClInclude Include="src\include\core\debugcounter.h" />
+    <ClInclude Include="src\include\core\ini.h" />
+    <ClInclude Include="src\include\core\kernel.h" />
+    <ClInclude Include="src\include\core\log.h" />
+    <ClInclude Include="src\include\core\profilerstack.h" />
+    <ClInclude Include="src\include\core\ref_count_helper.h" />
+    <ClInclude Include="src\include\core\ref_ptr.h" />
+    <ClInclude Include="src\include\core\scoped_ptr.h" />
+    <ClInclude Include="src\include\core\stackwalker.h" />
+    <ClInclude Include="src\include\core\stringm3d.h" />
+    <ClInclude Include="src\include\core\stringw.h" />
+    <ClInclude Include="src\include\core\threadsync.h" />
+    <ClInclude Include="src\include\core\timer.h" />
+    <ClInclude Include="src\include\decals.h" />
+    <ClInclude Include="src\include\draftstructures.h" />
+    <ClInclude Include="src\include\dummy.h" />
+    <ClInclude Include="src\include\file\fileenum.h" />
+    <ClInclude Include="src\include\file\filereader.h" />
+    <ClInclude Include="src\include\file\fileserver.h" />
+    <ClInclude Include="src\include\file\filestream.h" />
+    <ClInclude Include="src\include\file\i_stream.h" />
+    <ClInclude Include="src\include\file\memoryfile.h" />
+    <ClInclude Include="src\include\file\package.h" />
+    <ClInclude Include="src\include\file\packagedefs.h" />
+    <ClInclude Include="src\include\file\rawfile.h" />
+    <ClInclude Include="src\include\file\tagged.h" />
+    <ClInclude Include="src\include\flares.h" />
+    <ClInclude Include="src\include\geomobject.h" />
+    <ClInclude Include="src\include\graph\hungarianalgo.h" />
+    <ClInclude Include="src\include\gsmodel.h" />
+    <ClInclude Include="src\include\iface.h" />
+    <ClInclude Include="src\include\impulses\i_impulses.h" />
+    <ClInclude Include="src\include\impulses\keybindstation.h" />
+    <ClInclude Include="src\include\i_event.h" />
+    <ClInclude Include="src\include\landscape.h" />
+    <ClInclude Include="src\include\level.h" />
+    <ClInclude Include="src\include\m3dapp.h" />
+    <ClInclude Include="src\include\math\aabb.h" />
+    <ClInclude Include="src\include\math\bounds2d.h" />
+    <ClInclude Include="src\include\math\camera.h" />
+    <ClInclude Include="src\include\math\coremath.h" />
+    <ClInclude Include="src\include\math\geom1d.h" />
+    <ClInclude Include="src\include\math\geom2d.h" />
+    <ClInclude Include="src\include\math\line.h" />
+    <ClInclude Include="src\include\math\matrix.h" />
+    <ClInclude Include="src\include\math\obb.h" />
+    <ClInclude Include="src\include\math\plane.h" />
+    <ClInclude Include="src\include\math\point2d.h" />
+    <ClInclude Include="src\include\math\quaternion.h" />
+    <ClInclude Include="src\include\math\random.h" />
+    <ClInclude Include="src\include\math\segment.h" />
+    <ClInclude Include="src\include\math\vector.h" />
+    <ClInclude Include="src\include\math\vector2.h" />
+    <ClInclude Include="src\include\math\vector4.h" />
+    <ClInclude Include="src\include\ode\contact.h" />
+    <ClInclude Include="src\include\ode\mass.h" />
+    <ClInclude Include="src\include\ode\odecpp.h" />
+    <ClInclude Include="src\include\ode\odemath.h" />
+    <ClInclude Include="src\include\ode\odememory.h" />
+    <ClInclude Include="src\include\particles.h" />
+    <ClInclude Include="src\include\poolmanager.h" />
+    <ClInclude Include="src\include\posteffects\posteffect.h" />
+    <ClInclude Include="src\include\posteffects\posteffectmanager.h" />
+    <ClInclude Include="src\include\posteffects\posteffectmodel.h" />
+    <ClInclude Include="src\include\psprops.h" />
+    <ClInclude Include="src\include\ps_attractors.h" />
+    <ClInclude Include="src\include\renderer\i_renderer.h" />
+    <ClInclude Include="src\include\renderer\i_renderer_colors.h" />
+    <ClInclude Include="src\include\renderer\i_renderer_handles.h" />
+    <ClInclude Include="src\include\renderer\i_renderer_query.h" />
+    <ClInclude Include="src\include\renderer\i_renderer_vertex.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnode.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnodeanimatedmodel.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnodedecals.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnodegameunit.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnodelines.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnodeloadpoint.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnodeparticles.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnodepointlightsource.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnodeprojector.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnodesound.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnodesprite.h" />
+    <ClInclude Include="src\include\scene\nodes\sgnodestaticmodel.h" />
+    <ClInclude Include="src\include\scene\scenegraph.h" />
+    <ClInclude Include="src\include\scene\servers\dataserver.h" />
+    <ClInclude Include="src\include\scene\servers\serveranimatedmodel.h" />
+    <ClInclude Include="src\include\scene\servers\serveranimatedmodelrender.h" />
+    <ClInclude Include="src\include\scene\servers\serverdecals.h" />
+    <ClInclude Include="src\include\scene\servers\serverfactories.h" />
+    <ClInclude Include="src\include\scene\servers\serverlight.h" />
+    <ClInclude Include="src\include\scene\servers\serverlines.h" />
+    <ClInclude Include="src\include\scene\servers\servermusic.h" />
+    <ClInclude Include="src\include\scene\servers\serverparticles.h" />
+    <ClInclude Include="src\include\scene\servers\serverprojectors.h" />
+    <ClInclude Include="src\include\scene\servers\serversound.h" />
+    <ClInclude Include="src\include\scene\servers\serversprites.h" />
+    <ClInclude Include="src\include\scene\servers\serverstaticmodels.h" />
+    <ClInclude Include="src\include\script\funcarg.h" />
+    <ClInclude Include="src\include\script\funcstack.h" />
+    <ClInclude Include="src\include\script\luaquaternion.h" />
+    <ClInclude Include="src\include\script\luavector.h" />
+    <ClInclude Include="src\include\script\lua\lapi.h" />
+    <ClInclude Include="src\include\script\lua\lauxlib.h" />
+    <ClInclude Include="src\include\script\lua\lcode.h" />
+    <ClInclude Include="src\include\script\lua\ldebug.h" />
+    <ClInclude Include="src\include\script\lua\ldo.h" />
+    <ClInclude Include="src\include\script\lua\lfunc.h" />
+    <ClInclude Include="src\include\script\lua\lgc.h" />
+    <ClInclude Include="src\include\script\lua\llex.h" />
+    <ClInclude Include="src\include\script\lua\llimits.h" />
+    <ClInclude Include="src\include\script\lua\lmem.h" />
+    <ClInclude Include="src\include\script\lua\lobject.h" />
+    <ClInclude Include="src\include\script\lua\lopcodes.h" />
+    <ClInclude Include="src\include\script\lua\lparser.h" />
+    <ClInclude Include="src\include\script\lua\lstate.h" />
+    <ClInclude Include="src\include\script\lua\lstring.h" />
+    <ClInclude Include="src\include\script\lua\ltable.h" />
+    <ClInclude Include="src\include\script\lua\ltests.h" />
+    <ClInclude Include="src\include\script\lua\ltm.h" />
+    <ClInclude Include="src\include\script\lua\lua.h" />
+    <ClInclude Include="src\include\script\lua\lualib.h" />
+    <ClInclude Include="src\include\script\lua\lundump.h" />
+    <ClInclude Include="src\include\script\lua\lvm.h" />
+    <ClInclude Include="src\include\script\lua\lzio.h" />
+    <ClInclude Include="src\include\script\scriptcontext.h" />
+    <ClInclude Include="src\include\script\scriptserver.h" />
+    <ClInclude Include="src\include\skelmodel.h" />
+    <ClInclude Include="src\include\tracelinemanager.h" />
+    <ClInclude Include="src\include\ui\button.h" />
+    <ClInclude Include="src\include\ui\comboboxwnd.h" />
+    <ClInclude Include="src\include\ui\cursor.h" />
+    <ClInclude Include="src\include\ui\edit.h" />
+    <ClInclude Include="src\include\ui\font.h" />
+    <ClInclude Include="src\include\ui\frame.h" />
+    <ClInclude Include="src\include\ui\glyphbutton.h" />
+    <ClInclude Include="src\include\ui\image.h" />
+    <ClInclude Include="src\include\ui\linewnd.h" />
+    <ClInclude Include="src\include\ui\listbox.h" />
+    <ClInclude Include="src\include\ui\menu.h" />
+    <ClInclude Include="src\include\ui\modelarraywnd.h" />
+    <ClInclude Include="src\include\ui\modelwnd.h" />
+    <ClInclude Include="src\include\ui\msgbox.h" />
+    <ClInclude Include="src\include\ui\progressbarwnd.h" />
+    <ClInclude Include="src\include\ui\scroll.h" />
+    <ClInclude Include="src\include\ui\sgnodearraywnd.h" />
+    <ClInclude Include="src\include\ui\slider.h" />
+    <ClInclude Include="src\include\ui\tabwnd.h" />
+    <ClInclude Include="src\include\ui\textbox.h" />
+    <ClInclude Include="src\include\ui\ui.h" />
+    <ClInclude Include="src\include\ui\uicontrols.h" />
+    <ClInclude Include="src\include\ui\uidialogs.h" />
+    <ClInclude Include="src\include\ui\ui_srv.h" />
+    <ClInclude Include="src\include\ui\wnd.h" />
+    <ClInclude Include="src\include\ui\wndstation.h" />
+    <ClInclude Include="src\include\world.h" />
+    <ClInclude Include="src\server\affix.h" />
+    <ClInclude Include="src\server\ai\ai.h" />
+    <ClInclude Include="src\server\ai\aifunc.h" />
+    <ClInclude Include="src\server\ai\aimanager.h" />
+    <ClInclude Include="src\server\ai\aimatrix.h" />
+    <ClInclude Include="src\server\ai\aimessage.h" />
+    <ClInclude Include="src\server\ai\aiparamref.h" />
+    <ClInclude Include="src\server\ai\aipassagecommand.h" />
+    <ClInclude Include="src\server\ai\aipassagestate.h" />
+    <ClInclude Include="src\server\ai\aisignal.h" />
+    <ClInclude Include="src\server\ai\aistate.h" />
+    <ClInclude Include="src\server\ai\decisionmatrix.h" />
+    <ClInclude Include="src\server\cinematicpath.h" />
+    <ClInclude Include="src\server\colliders\breakableobjectcolliders.h" />
+    <ClInclude Include="src\server\colliders\bulletcolliders.h" />
+    <ClInclude Include="src\server\colliders\colliderkrnl.h" />
+    <ClInclude Include="src\server\colliders\defaultcollider.h" />
+    <ClInclude Include="src\server\colliders\physicunitcolliders.h" />
+    <ClInclude Include="src\server\colliders\vehiclecolliders.h" />
+    <ClInclude Include="src\server\colliders\vehiclesplintercolliders.h" />
+    <ClInclude Include="src\server\colliders\wheelasphaltcollider.h" />
+    <ClInclude Include="src\server\components\component.h" />
+    <ClInclude Include="src\server\components\functions\basefunction.h" />
+    <ClInclude Include="src\server\components\functions\memberfunctiononearg.h" />
+    <ClInclude Include="src\server\components\functions\memberfunctiononeargref.h" />
+    <ClInclude Include="src\server\components\functions\memberfunctionstwoargsref.h" />
+    <ClInclude Include="src\server\components\numeric.h" />
+    <ClInclude Include="src\server\components\numericboundedbelow.h" />
+    <ClInclude Include="src\server\components\numericinrange.h" />
+    <ClInclude Include="src\server\components\numericinrangeregenerating.h" />
+    <ClInclude Include="src\server\damageinfo.h" />
+    <ClInclude Include="src\server\dynamicquestmanager.h" />
+    <ClInclude Include="src\server\dynamicscene.h" />
+    <ClInclude Include="src\server\event.h" />
+    <ClInclude Include="src\server\externalpaths.h" />
+    <ClInclude Include="src\server\formations\formation.h" />
+    <ClInclude Include="src\server\geomrepository.h" />
+    <ClInclude Include="src\server\geomrepositoryitem.h" />
+    <ClInclude Include="src\server\infocone.h" />
+    <ClInclude Include="src\server\intersectionmanager.h" />
+    <ClInclude Include="src\server\ipricecoeffprovider.h" />
+    <ClInclude Include="src\server\izvratrepository.h" />
+    <ClInclude Include="src\server\map.h" />
+    <ClInclude Include="src\server\modifier.h" />
+    <ClInclude Include="src\server\objects\article.h" />
+    <ClInclude Include="src\server\objects\articulatedvehicle.h" />
+    <ClInclude Include="src\server\objects\bar.h" />
+    <ClInclude Include="src\server\objects\barricade.h" />
+    <ClInclude Include="src\server\objects\base\animatedcomplexphysicobj.h" />
+    <ClInclude Include="src\server\objects\base\complexphysicobj.h" />
+    <ClInclude Include="src\server\objects\base\compositeobj.h" />
+    <ClInclude Include="src\server\objects\base\geomobj.h" />
+    <ClInclude Include="src\server\objects\base\globalproperties.h" />
+    <ClInclude Include="src\server\objects\base\jointedobj.h" />
+    <ClInclude Include="src\server\objects\base\obj.h" />
+    <ClInclude Include="src\server\objects\base\objcontainer.h" />
+    <ClInclude Include="src\server\objects\base\objprefab.h" />
+    <ClInclude Include="src\server\objects\base\physicobj.h" />
+    <ClInclude Include="src\server\objects\base\prototypeinfo.h" />
+    <ClInclude Include="src\server\objects\base\prototypemanager.h" />
+    <ClInclude Include="src\server\objects\base\shell.h" />
+    <ClInclude Include="src\server\objects\base\simplephysicobj.h" />
+    <ClInclude Include="src\server\objects\basket.h" />
+    <ClInclude Include="src\server\objects\blastwave.h" />
+    <ClInclude Include="src\server\objects\breakableobject.h" />
+    <ClInclude Include="src\server\objects\building.h" />
+    <ClInclude Include="src\server\objects\cabin.h" />
+    <ClInclude Include="src\server\objects\caravanteam.h" />
+    <ClInclude Include="src\server\objects\chassis.h" />
+    <ClInclude Include="src\server\objects\chest.h" />
+    <ClInclude Include="src\server\objects\cinematicmover.h" />
+    <ClInclude Include="src\server\objects\dummyobject.h" />
+    <ClInclude Include="src\server\objects\dynamicquest.h" />
+    <ClInclude Include="src\server\objects\dynamicquestconvoy.h" />
+    <ClInclude Include="src\server\objects\dynamicquestdestroy.h" />
+    <ClInclude Include="src\server\objects\dynamicquesthunt.h" />
+    <ClInclude Include="src\server\objects\dynamicquestpeace.h" />
+    <ClInclude Include="src\server\objects\dynamicquestreach.h" />
+    <ClInclude Include="src\server\objects\gadget.h" />
+    <ClInclude Include="src\server\objects\guns\bullet.h" />
+    <ClInclude Include="src\server\objects\guns\bulletlauncher.h" />
+    <ClInclude Include="src\server\objects\guns\compoundgun.h" />
+    <ClInclude Include="src\server\objects\guns\engineoillocation.h" />
+    <ClInclude Include="src\server\objects\guns\gun.h" />
+    <ClInclude Include="src\server\objects\guns\locationpusher.h" />
+    <ClInclude Include="src\server\objects\guns\mine.h" />
+    <ClInclude Include="src\server\objects\guns\minepusher.h" />
+    <ClInclude Include="src\server\objects\guns\mortar.h" />
+    <ClInclude Include="src\server\objects\guns\mortarshell.h" />
+    <ClInclude Include="src\server\objects\guns\mortarvolleylauncher.h" />
+    <ClInclude Include="src\server\objects\guns\naillocation.h" />
+    <ClInclude Include="src\server\objects\guns\plasmabunch.h" />
+    <ClInclude Include="src\server\objects\guns\plasmabunchlauncher.h" />
+    <ClInclude Include="src\server\objects\guns\rocket.h" />
+    <ClInclude Include="src\server\objects\guns\rocketlauncher.h" />
+    <ClInclude Include="src\server\objects\guns\rocketvolleylauncher.h" />
+    <ClInclude Include="src\server\objects\guns\smokescreenlocation.h" />
+    <ClInclude Include="src\server\objects\guns\thunderbolt.h" />
+    <ClInclude Include="src\server\objects\guns\thunderboltlauncher.h" />
+    <ClInclude Include="src\server\objects\guns\turboaccelerationpusher.h" />
+    <ClInclude Include="src\server\objects\infectionlair.h" />
+    <ClInclude Include="src\server\objects\infectionteam.h" />
+    <ClInclude Include="src\server\objects\infectionzone.h" />
+    <ClInclude Include="src\server\objects\lair.h" />
+    <ClInclude Include="src\server\objects\lightobj.h" />
+    <ClInclude Include="src\server\objects\location.h" />
+    <ClInclude Include="src\server\objects\monsters\boss02.h" />
+    <ClInclude Include="src\server\objects\monsters\boss02arm.h" />
+    <ClInclude Include="src\server\objects\monsters\boss03.h" />
+    <ClInclude Include="src\server\objects\monsters\boss03part.h" />
+    <ClInclude Include="src\server\objects\monsters\boss04.h" />
+    <ClInclude Include="src\server\objects\monsters\boss04drone.h" />
+    <ClInclude Include="src\server\objects\monsters\boss04part.h" />
+    <ClInclude Include="src\server\objects\monsters\boss04station.h" />
+    <ClInclude Include="src\server\objects\monsters\boss04stationpart.h" />
+    <ClInclude Include="src\server\objects\monsters\bossarm.h" />
+    <ClInclude Include="src\server\objects\monsters\bossmetalarm.h" />
+    <ClInclude Include="src\server\objects\monsters\bossmetalarmload.h" />
+    <ClInclude Include="src\server\objects\monsters\submarine.h" />
+    <ClInclude Include="src\server\objects\npc.h" />
+    <ClInclude Include="src\server\objects\npcmotioncontroller.h" />
+    <ClInclude Include="src\server\objects\particlesplinter.h" />
+    <ClInclude Include="src\server\objects\partnames.h" />
+    <ClInclude Include="src\server\objects\physicbodies\boxybody.h" />
+    <ClInclude Include="src\server\objects\physicbodies\compoundvehiclepart.h" />
+    <ClInclude Include="src\server\objects\physicbodies\genericbody.h" />
+    <ClInclude Include="src\server\objects\physicbodies\geoms\box.h" />
+    <ClInclude Include="src\server\objects\physicbodies\geoms\cylinder.h" />
+    <ClInclude Include="src\server\objects\physicbodies\geoms\geom.h" />
+    <ClInclude Include="src\server\objects\physicbodies\geoms\geomtransform.h" />
+    <ClInclude Include="src\server\objects\physicbodies\geoms\ray.h" />
+    <ClInclude Include="src\server\objects\physicbodies\geoms\sphere.h" />
+    <ClInclude Include="src\server\objects\physicbodies\geoms\sphereforintersection.h" />
+    <ClInclude Include="src\server\objects\physicbodies\geoms\trimesh.h" />
+    <ClInclude Include="src\server\objects\physicbodies\physicbody.h" />
+    <ClInclude Include="src\server\objects\physicbodies\physichelpers.h" />
+    <ClInclude Include="src\server\objects\physicbodies\raybody.h" />
+    <ClInclude Include="src\server\objects\physicbodies\simplephysicbody.h" />
+    <ClInclude Include="src\server\objects\physicbodies\sphericbody.h" />
+    <ClInclude Include="src\server\objects\physicbodies\vehiclepart.h" />
+    <ClInclude Include="src\server\objects\physicunit.h" />
+    <ClInclude Include="src\server\objects\player.h" />
+    <ClInclude Include="src\server\objects\radiomanager.h" />
+    <ClInclude Include="src\server\objects\repositoryobjectsgenerator.h" />
+    <ClInclude Include="src\server\objects\ropeobj.h" />
+    <ClInclude Include="src\server\objects\settlement.h" />
+    <ClInclude Include="src\server\objects\sgnodeobj.h" />
+    <ClInclude Include="src\server\objects\staticautogun.h" />
+    <ClInclude Include="src\server\objects\team.h" />
+    <ClInclude Include="src\server\objects\temporarylocation.h" />
+    <ClInclude Include="src\server\objects\town.h" />
+    <ClInclude Include="src\server\objects\trigger.h" />
+    <ClInclude Include="src\server\objects\vagabondteam.h" />
+    <ClInclude Include="src\server\objects\vehicle.h" />
+    <ClInclude Include="src\server\objects\vehiclerecollection.h" />
+    <ClInclude Include="src\server\objects\vehiclesgenerator.h" />
+    <ClInclude Include="src\server\objects\vehiclesplinter.h" />
+    <ClInclude Include="src\server\objects\vehicleupdater.h" />
+    <ClInclude Include="src\server\objects\wanderersgenerator.h" />
+    <ClInclude Include="src\server\objects\wanderersmanager.h" />
+    <ClInclude Include="src\server\objects\ware.h" />
+    <ClInclude Include="src\server\objects\wheel.h" />
+    <ClInclude Include="src\server\objects\workshop.h" />
+    <ClInclude Include="src\server\obstacle.h" />
+    <ClInclude Include="src\server\passagedata.h" />
+    <ClInclude Include="src\server\path.h" />
+    <ClInclude Include="src\server\playerpassmap.h" />
+    <ClInclude Include="src\server\processmanager.h" />
+    <ClInclude Include="src\server\quest.h" />
+    <ClInclude Include="src\server\queststate.h" />
+    <ClInclude Include="src\server\relationship.h" />
+    <ClInclude Include="src\server\resourcemanager.h" />
+    <ClInclude Include="src\server\roles\chasemotiontactics.h" />
+    <ClInclude Include="src\server\roles\teamtactic.h" />
+    <ClInclude Include="src\server\roles\vehiclerole.h" />
+    <ClInclude Include="src\server\roles\vehiclerolebarrier.h" />
+    <ClInclude Include="src\server\roles\vehiclerolecheater.h" />
+    <ClInclude Include="src\server\roles\vehiclerolecoward.h" />
+    <ClInclude Include="src\server\roles\vehiclerolemeat.h" />
+    <ClInclude Include="src\server\roles\vehicleroleoppressor.h" />
+    <ClInclude Include="src\server\roles\vehiclerolependulum.h" />
+    <ClInclude Include="src\server\roles\vehiclerolesniper.h" />
+    <ClInclude Include="src\server\server.h" />
+    <ClInclude Include="src\server\static2dpath.h" />
+    <ClInclude Include="src\server\statistic\favoritestringstatistic.h" />
+    <ClInclude Include="src\server\statistic\floatstatistic.h" />
+    <ClInclude Include="src\server\statistic\intintratiostatistic.h" />
+    <ClInclude Include="src\server\statistic\intstatistic.h" />
+    <ClInclude Include="src\server\statistic\statisticmanager.h" />
+    <ClInclude Include="src\server\statistic\timestatistic.h" />
+    <ClInclude Include="src\server\utils.h" />
+    <ClInclude Include="src\thirdparty\injecttools.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\include\ui\uilistboxwnd.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
