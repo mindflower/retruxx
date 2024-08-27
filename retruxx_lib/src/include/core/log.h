@@ -54,8 +54,10 @@ namespace m3d
     private:
         bool m_logStarted = false;
         std::string m_fileName;
+        uint8_t _offset1[4];
         unsigned int m_sourceLine = 0;
         std::string m_sourceFile;
+        uint8_t _offset2[4];
         unsigned int m_logMask = -1;
         int m_indentCount = 0;
         int m_indentChars = 4;

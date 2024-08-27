@@ -6,11 +6,11 @@ DWORD	  g_amPlatform;		// VER_PLATFORM_WIN32_WINDOWS etc... (from GetVersionEx)
 OSVERSIONINFO g_osInfo;
 
 BOOL APIENTRY DllMain(HMODULE hModule,
-                      DWORD reasonForCall,
+                      DWORD dwReasonForCall,
                       LPVOID
 )
 {
-    switch (reasonForCall)
+    switch (dwReasonForCall)
     {
     case DLL_PROCESS_ATTACH:
         MessageBox(NULL, "Dll injected!", "retruxx", MB_OK);

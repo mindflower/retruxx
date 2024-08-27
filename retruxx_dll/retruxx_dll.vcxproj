@@ -96,6 +96,7 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\retruxx_lib\src\engine\video;..\retruxx_lib\src\include\script\lua;..\retruxx_lib\src\engine\opcode;..\retruxx_lib\src\include;..\retruxx_lib\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -114,6 +115,7 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\retruxx_lib\src\engine\video;..\retruxx_lib\src\include\script\lua;..\retruxx_lib\src\engine\opcode;..\retruxx_lib\src\include;..\retruxx_lib\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -131,6 +133,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>..\retruxx_lib\src\engine\video;..\retruxx_lib\src\include\script\lua;..\retruxx_lib\src\engine\opcode;..\retruxx_lib\src\include;..\retruxx_lib\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -150,6 +153,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>..\retruxx_lib\src\engine\video;..\retruxx_lib\src\include\script\lua;..\retruxx_lib\src\engine\opcode;..\retruxx_lib\src\include;..\retruxx_lib\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
