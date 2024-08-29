@@ -23,11 +23,11 @@ namespace ai
         public:
             ReollectionItem(ReollectionItem const&);
             ReollectionItem(CVector const&, float);
-            virtual void SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-            virtual void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
 
-        private:
-            //ReollectionItem_vtbl* __vftable /*VFT*/;
+            virtual void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+            virtual void SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
+
+        public:
             CVector pos;
             float time;
         };

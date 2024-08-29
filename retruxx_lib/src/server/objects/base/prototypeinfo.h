@@ -17,15 +17,16 @@ namespace ai
     class PrototypeInfo
     {
     public:
+        virtual ~PrototypeInfo();
+        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual void PostLoad();
+        virtual void RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual unsigned int GetBasePrice() const ;
+
         PrototypeInfo();
         bool bIsAbstract() const ;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         void CopyFrom(class PrototypeInfo const &);
-        virtual void RefreshFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         CStr GetDebugDescription() const ;
-        virtual ~PrototypeInfo();
         bool IsPrototypeOf(m3d::Class const *) const ;
         CStr const & GetParentPrototypeName() const ;
 

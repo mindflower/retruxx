@@ -209,6 +209,79 @@ namespace ai
         };
 
     public:
+        virtual m3d::Class* GetRtClass() const;
+        virtual int OnEvent(Event const& ev);
+        virtual AI* GetAIPtr();
+        virtual bool NeedCinematicUpdate();
+        virtual PrototypeInfo const* GetPrototypeInfo() const;
+        virtual void SetPassedToAnotherMapStatus();
+        virtual void Remove();
+        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const;
+        virtual void GetPropertiesNames(std::set<CStr>& props) const;
+        virtual void GetPropertiesIDs(std::set<int>& props) const;
+
+        //TODO: check GetProperty order
+        virtual int GetProperty(unsigned int, void*) const;
+        virtual m3d::AIParam GetProperty(char const*) const;
+
+
+        virtual m3d::AIParam GetPropertyDefault(char const*) const;
+        virtual m3d::AIParam GetPropertyDefaultById(int) const;
+        virtual m3d::AIParam GetPropertyById(int) const;
+        virtual int GetPropertyId(char const*) const;
+        virtual CStr GetPropertyName(int id) const;
+
+        virtual int SetProperty(unsigned int, void*);
+
+        virtual bool SetPropertyById(int, m3d::AIParam const&);
+        virtual void Update(float elapsedTime, unsigned int workTime);
+        virtual void PostCollide();
+        virtual bool ApplyModifier(Modifier const& modifier);
+        virtual void InflictDamage(DamageInfo const& damageInfo);
+        virtual Obj* GetChild(int) const;
+
+        //TODO: check add child order
+        virtual void AddChild(Obj*);
+        virtual int AddChild(m3d::Object*);
+
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const;
+
+        //TODO: check remove child order
+        virtual bool RemoveChild(Obj*);
+        virtual int RemoveChild(m3d::Object*);
+
+        virtual void RemoveComponent(Obj* component);
+        virtual void CreateChildren();
+        virtual void Dump() const;
+        virtual void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual void SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
+        virtual bool bIsEqualToPrototype() const;
+        virtual void SetBelong(int newBelong);
+        virtual Obj* GetParent() const;
+        virtual void SetVisible();
+        virtual void SetInvisible();
+        virtual void StackOpen();
+        virtual void StackClose();
+        virtual void StackLoop();
+        virtual void TransferPhysicParamsToSceneGraphNode();
+        virtual void RelinkSceneGraphNode();
+        virtual void RenderDebugInfo() const;
+        virtual void ReceiveNodesToLink(std::list<m3d::SgNode*>&) const;
+        virtual unsigned int GetPrice(IPriceCoeffProvider const*) const;
+        virtual unsigned int GetSchwarz() const;
+        virtual Obj* CloneObj();
+        virtual void ClearSavedStatus();
+
+    protected:
+        virtual void _InternalPostLoad();
+        virtual void _InternalCreateVisualPart();
+        virtual void _SetAllPropertiesToMax();
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const;
+
+    public:
         static m3d::Class* GetBaseClass();
         static void Registration();
         static m3d::AIParam AIGetOwnerID(Obj* obj);
@@ -233,58 +306,6 @@ namespace ai
         static std::map<int, eGObjPropertySaveStatus> m_propertiesSaveStatesMap;
 
     public:
-        virtual void RemoveComponent(Obj* component);
-        virtual void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual void SetBelong(int newBelong);
-        virtual Obj* CloneObj();
-        virtual int OnEvent(Event const& ev);
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const;
-        virtual m3d::Class* GetRtClass() const;
-        virtual void PostCollide();
-        virtual void SetVisible();
-        virtual void RenderDebugInfo() const;
-        virtual void TransferPhysicParamsToSceneGraphNode();
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual bool RemoveChild(Obj*);
-        virtual int RemoveChild(m3d::Object*);
-        virtual bool ApplyModifier(Modifier const& modifier);
-        virtual void GetPropertiesIDs(std::set<int>& props) const;
-        virtual void SetInvisible();
-        virtual void InflictDamage(DamageInfo const& damageInfo);
-        virtual void Update(float elapsedTime, unsigned int workTime);
-        virtual void GetPropertiesNames(std::set<CStr>& props) const;
-        virtual void RelinkSceneGraphNode();
-        virtual AI* GetAIPtr();
-        virtual CStr GetPropertyName(int id) const;
-        virtual PrototypeInfo const* GetPrototypeInfo() const;
-        virtual void CreateChildren();
-        virtual void ReceiveNodesToLink(std::list<m3d::SgNode*>&) const;
-        virtual bool bIsEqualToPrototype() const;
-        virtual void Dump() const;
-        virtual unsigned int GetPrice(IPriceCoeffProvider const*) const;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-        virtual void AddChild(Obj*);
-        virtual int AddChild(m3d::Object*);
-        virtual m3d::AIParam GetPropertyDefaultById(int) const;
-        virtual bool SetPropertyById(int, m3d::AIParam const&);
-        virtual int GetProperty(unsigned int, void*) const;
-        virtual m3d::AIParam GetProperty(char const*) const;
-        virtual Obj* GetParent() const;
-        virtual void Remove();
-        virtual bool NeedCinematicUpdate();
-        virtual m3d::AIParam GetPropertyDefault(char const*) const;
-        virtual Obj* GetChild(int) const;
-        virtual void ClearSavedStatus();
-        virtual void StackClose();
-        virtual unsigned int GetSchwarz() const;
-        virtual void SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const;
-        virtual void StackOpen();
-        virtual void SetPassedToAnotherMapStatus();
-        virtual m3d::AIParam GetPropertyById(int) const;
-        virtual int SetProperty(unsigned int, void*);
-        virtual int GetPropertyId(char const*) const;
-        virtual void StackLoop();
 
         Obj(PrototypeInfo const& prototypeInfo);
         void SetParentRepository(GeomRepository* parentRepository);
@@ -335,18 +356,13 @@ namespace ai
         bool SetProperty(char const*, m3d::AIParam const&);
 
     protected:
-        virtual void _SetAllPropertiesToMax();
         std::map<int,Obj *> & getAllChildren();
-        Obj();
+        Obj(); 
+        virtual ~Obj();
         bool _GetDeadStatus() const;
-        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const;
         int GetLastDamageSource() const;
         void _SetDeadStatus();
-        virtual void _InternalPostLoad();
         void SetLastDamageSource(int);
-        virtual void _InternalCreateVisualPart();
-        virtual ~Obj();
-        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const;
 
     private:
         void OnSubscribe(Event const& evn);

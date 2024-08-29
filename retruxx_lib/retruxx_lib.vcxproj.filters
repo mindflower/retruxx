@@ -3890,6 +3890,9 @@
     <ClInclude Include="src\thirdparty\injecttools.h">
       <Filter>thirdparty</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\weaponfirer.h">
+      <Filter>server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

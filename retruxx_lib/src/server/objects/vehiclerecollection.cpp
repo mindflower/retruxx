@@ -1,11 +1,14 @@
 #include "vehiclerecollection.h"
-
+#include "base/objcontainer.h"
 #include <stdexcept>
+#include <algorithm>
+#include "base/globalproperties.h"
+#include "vehicle.h"
 
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(VehicleRecollection)
-    RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(VehicleRecollection);
 
     ai::Obj* VehicleRecollectionPrototypeInfo::CreateTargetObject() const
@@ -55,6 +58,37 @@ namespace ai
 
     void VehicleRecollection::Update(float, unsigned)
     {
+        //const auto timeDiff = GetObjects()->GetGameTimeDiff();
+        //const auto mult = GetGlobProp().m_gameTimeMult * 3.0;
+        //
+        //
+        //if (!m_recollectionItems.empty() && m_recollectionItems.back().time > timeDiff + mult)
+        //{
+        //    m_recollectionItems.clear();
+        //}
+        //
+        //bool addNew = true;
+        //if (!m_recollectionItems.empty())
+        //{
+        //    const auto& lastItem = m_recollectionItems.back();
+        //    if (timeDiff - mult <= lastItem.time && lastItem.time >= timeDiff + mult)
+        //    {
+        //        addNew = false;
+        //    }
+        //}
+        //
+        //
+        //if (addNew)
+        //{
+        //    if (auto* vehicle = dynamic_cast<Vehicle*>(GetObjects()->GetEntityByObjId(m_vehicleId)))
+        //    {
+        //        m_recollectionItems.push_back(ReollectionItem{ vehicle->GetPosition(), timeDiff });
+        //    }
+        //    else
+        //    {
+        //        Remove();
+        //    }
+        //}
         throw std::logic_error("Not implemented");
     }
 
@@ -78,7 +112,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    CVector VehicleRecollection::GetRecollectionPosition(float) const
+    CVector VehicleRecollection::GetRecollectionPosition(float time) const
     {
         throw std::logic_error("Not implemented");
     }

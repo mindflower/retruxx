@@ -89,6 +89,7 @@
       <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <CallingConvention>FastCall</CallingConvention>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -107,6 +108,7 @@
       <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <CallingConvention>FastCall</CallingConvention>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -124,6 +126,7 @@
       <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <CallingConvention>FastCall</CallingConvention>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -143,6 +146,7 @@
       <AdditionalIncludeDirectories>src\engine\video;src\include\script\lua;src\engine\opcode;src\include;src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <CallingConvention>FastCall</CallingConvention>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -1380,6 +1384,7 @@
     <ClInclude Include="src\server\statistic\statisticmanager.h" />
     <ClInclude Include="src\server\statistic\timestatistic.h" />
     <ClInclude Include="src\server\utils.h" />
+    <ClInclude Include="src\server\weaponfirer.h" />
     <ClInclude Include="src\thirdparty\injecttools.h" />
   </ItemGroup>
   <ItemGroup>

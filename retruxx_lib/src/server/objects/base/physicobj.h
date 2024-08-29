@@ -21,6 +21,8 @@ namespace ai
     class SphereForIntersection;
     class Obstacle;
 
+    CVector getPhysicObjOrPhysicBodyGeometricCenter(ai::Obj const*);
+
     class PhysicObjPrototypeInfo : public ai::PrototypeInfo
     {
     public:
@@ -35,7 +37,16 @@ namespace ai
     class PhysicObj :  public Obj
     {
     public:
-        virtual void SetDirections(CVector const &,CVector const &);
+        virtual float GetMass() const;
+        virtual void SetPosition(CVector const&);
+        virtual void SetRotation(Quaternion const&);
+        virtual CVector GetDirection() const;
+        virtual void SetDirection(CVector const&);
+        virtual void SetDirections(CVector const&, CVector const&);
+        virtual CVector GetGeometricCenter() const;
+        virtual void SetPostEnablePhysics();
+
+    public:
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         bool GetBodyEnabledBit() const ;
         Quaternion GetRotation() const ;
@@ -50,7 +61,6 @@ namespace ai
         static m3d::Class* GetBaseClass();
         virtual void UnlinkGeomsFromCollisionCells();
         bool CanPhysicsBeEnabled() const ;
-        virtual float GetMass() const ;
         void DisablePhysicsAndGeometry();
         virtual bool SetPropertyById(int,m3d::AIParam const &);
         virtual void SetPostEnablePhysicsIfPossible();
@@ -62,7 +72,6 @@ namespace ai
         static void __fastcall Registration();
         void AddImpulseAtRelPos(CVector const &,CVector const &);
         void TransferToNewSpace();
-        virtual void SetRotation(Quaternion const &);
         bool CanCreateCollisionEffect() const ;
         virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
         void AddImpulse(CVector const &);
@@ -74,13 +83,11 @@ namespace ai
         void SetTorque(CVector const &);
         unsigned int GetSkin() const ;
         void EnablePhysicsIfPossible();
-        virtual CVector GetGeometricCenter() const ;
         virtual void SetPassedToAnotherMapStatus();
         void SetCollisionEffectCreated();
         virtual void DisableGeometry(bool);
         virtual void EnableGeometry(bool);
         float GetIntersectionRadius() const ;
-        virtual void SetPostEnablePhysics();
         dBody * GetBody();
         dBody const * GetBody() const ;
         virtual void Update(float,unsigned int);
@@ -102,7 +109,6 @@ namespace ai
         void AddRelTorque(CVector const &);
         virtual void SetPostDisablePhysics();
         virtual void Remove();
-        virtual void SetDirection(CVector const &);
         virtual Geom::CellAabb GetCollisionCellAabb() const ;
         virtual void RenderObstacleDebugInfo() const ;
         bool bIsStatic() const ;
@@ -113,7 +119,6 @@ namespace ai
         virtual void SetInvisible();
         static m3d::AIParam AIGetCurPos(Obj *);
         CVector GetPositionAtRelPoint(CVector) const ;
-        virtual void SetPosition(CVector const &);
         PhysicObj(PhysicObjPrototypeInfo const &);
         bool bIsBodyDisabledGeomEnabled() const ;
         virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
@@ -124,7 +129,6 @@ namespace ai
         CVector GetAngularVelocity() const ;
         virtual void RelinkGeomsToCollisionCells();
         void AddRelativeRotation(Quaternion const &);
-        virtual CVector GetDirection() const ;
         bool GetGeomEnabledBit() const ;
         virtual void LinkGeomsToCollisionCells();
         virtual CStr GetPropertyName(int) const ;

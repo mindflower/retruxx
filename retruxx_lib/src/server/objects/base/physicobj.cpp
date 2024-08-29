@@ -6,6 +6,8 @@
 #include "game/m3dgame.h"
 #include "server/ai/aimanager.h"
 
+#include "thirdparty/injecttools.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetPosition)
 {
     throw std::logic_error("Not implemented");
@@ -394,6 +396,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005FC410, PhysicObj::GetPosition)
     CVector PhysicObj::GetPosition() const
     {
         throw std::logic_error("Not implemented");
@@ -747,5 +750,12 @@ namespace ai
     void PhysicObj::_CommonBodyChangeEnabledStateCallback(dxBody*)
     {
         throw std::logic_error("Not implemented");
+    }
+
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005FB1E0, getPhysicObjOrPhysicBodyGeometricCenter)
+    CVector getPhysicObjOrPhysicBodyGeometricCenter(ai::Obj const*)
+    {
+        throw std::logic_error("Not implemented");
+        return CVector();
     }
 }

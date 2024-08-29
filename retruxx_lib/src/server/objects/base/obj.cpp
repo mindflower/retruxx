@@ -14,6 +14,7 @@
 #include <server/processmanager.h>
 #include <server/ai/ai.h>
 #include <server/ai/aimanager.h>
+#include "thirdparty/injecttools.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, Remove)
 {
@@ -380,6 +381,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00602610, Obj::GetFlags)
     unsigned Obj::GetFlags() const
     {
         throw std::logic_error("Not implemented");
@@ -883,6 +885,7 @@ namespace ai
         }
     }
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006894A0, Obj::GetParentRepository)
     GeomRepository* Obj::GetParentRepository() const
     {
         return m_parentRepository;

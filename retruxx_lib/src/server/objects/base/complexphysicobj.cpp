@@ -1,5 +1,6 @@
 #include "complexphysicobj.h"
 #include <stdexcept>
+#include "thirdparty/injecttools.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
 {
@@ -432,6 +433,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006BCC10, ComplexPhysicObj::GetSmoothTargetPointForObj)
     CVector ComplexPhysicObj::GetSmoothTargetPointForObj(Obj const*, float)
     {
         throw std::logic_error("Not implemented");
