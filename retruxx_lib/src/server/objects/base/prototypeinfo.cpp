@@ -16,7 +16,6 @@ namespace ai
 
 	PrototypeInfo::PrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	bool PrototypeInfo::bIsAbstract() const
@@ -46,7 +45,6 @@ namespace ai
 
 	PrototypeInfo::~PrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	bool PrototypeInfo::IsPrototypeOf(m3d::Class const*) const

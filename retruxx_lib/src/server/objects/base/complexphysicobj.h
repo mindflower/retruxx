@@ -55,7 +55,7 @@ namespace ai
         virtual unsigned int GetBasePrice() const ;
         virtual void PostLoad();
 
-    private:
+    public:
         std::map<CStr,int> m_partPrototypeIds;
         CVector m_massSize;
         CVector m_massTranslation;
@@ -129,8 +129,8 @@ namespace ai
 
     protected:
         void _DestroyHierarchy();
-        virtual void _LinkBodyToGeoms();
         virtual void _UnlinkBodyFromGeoms();
+        virtual void _LinkBodyToGeoms();
         void _SetCorrectBoundSphereRadius();
         virtual void _RemoveContour();
         virtual void _InternalCreateVisualPart();

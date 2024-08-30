@@ -504,7 +504,7 @@ namespace ai
 
     Obj::Obj()
     {
-        throw std::logic_error("Not implemented");
+        //throw std::logic_error("Not implemented");
     }
 
     bool Obj::_GetDeadStatus() const
@@ -529,7 +529,6 @@ namespace ai
 
     Obj::~Obj()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void Obj::_Init()

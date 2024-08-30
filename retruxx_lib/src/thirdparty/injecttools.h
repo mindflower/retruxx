@@ -1,7 +1,8 @@
 #ifdef RETRUXX_DLL
 
-#include <cstdint>
+#include "functionscrapper.h"
 #include <windows.h>
+#include <cstdint>
 
 
 namespace inject
@@ -28,12 +29,17 @@ namespace inject
 
 #define RETRUXX_DLL_INJECT_FUNCTION(address, function) namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(address, inject::cast<uint32_t>(&function)); }
 #define RETRUXX_DLL_INJECT_FUNCTION_TYPED(address, function, type) namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(address, inject::cast<uint32_t>(static_cast<type>(&function))); }
+#define RETRUXX_DLL_INJECT_VIRTUAL_FUNCTION(address, function) namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(address, inject::cast<uint32_t>(inject::FunctionScrapper::addressOfVirtual(&function))); }
 #define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(address, function) namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(inject::cast<uint32_t>(&function), address); }
+#define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(address, function, type) namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(inject::cast<uint32_t>(static_cast<type>(&function)), address); }
+#define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_VIRTUAL_FUNCTION(address, function) namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(inject::cast<uint32_t>(inject::FunctionScrapper::addressOfVirtual(&function)), address); }
 
 #else //RETRUXX_DLL
 
 #define RETRUXX_DLL_INJECT_FUNCTION(address, funcName)
 #define RETRUXX_DLL_INJECT_FUNCTION_TYPED(address, function, type)
+#define RETRUXX_DLL_INJECT_VIRTUAL_FUNCTION(address, function)
 #define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(address, function)
+#define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_VIRTUAL_FUNCTION(address, function)
 
 #endif //RETRUXX_DLL

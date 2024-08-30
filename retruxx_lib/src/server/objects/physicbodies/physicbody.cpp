@@ -5,6 +5,7 @@
 
 #include "game/m3dgame.h"
 #include "math/vector.h"
+#include "thirdparty/injecttools.h"
 
 namespace ai
 {
@@ -27,7 +28,12 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::SetEffectActions(std::vector<ActionType>&)
+    PhysicBody::PhysicBody(PhysicBody const&)
+    {
+    }
+
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x0061D180, PhysicBody::SetEffectActions)
+    void PhysicBody::SetEffectActions(std::vector<ActionType>&)
 	{
 		throw std::logic_error("Not implemented");
 	}

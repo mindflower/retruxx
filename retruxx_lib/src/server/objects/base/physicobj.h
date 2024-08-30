@@ -29,7 +29,7 @@ namespace ai
         PhysicObjPrototypeInfo();
         virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
 
-    private:
+    public:
         float m_intersectionRadius;
         float m_lookRadius;
     };
@@ -45,12 +45,19 @@ namespace ai
         virtual void SetDirections(CVector const&, CVector const&);
         virtual CVector GetGeometricCenter() const;
         virtual void SetPostEnablePhysics();
+        virtual void SetPostEnablePhysicsIfPossible();
+        virtual void SetPostDisablePhysics();
+        virtual void SetPostDisablePhysicsWithAutoEnable();
+        virtual void SetPostRotation(Quaternion const&);
+        virtual void SetPostPosition(CVector const&);
+        virtual void SetPositionSelf(CVector const&);
+        virtual void SetRotationSelf(Quaternion const&);
+        virtual CVector GetLinearVelocity() const;
 
     public:
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
         bool GetBodyEnabledBit() const ;
         Quaternion GetRotation() const ;
-        virtual void SetPostDisablePhysicsWithAutoEnable();
         CVector GetMassCenter() const ;
         bool bIsUpdatingByODE() const ;
         void RelinkToSpace(dxSpace *);
@@ -63,7 +70,6 @@ namespace ai
         bool CanPhysicsBeEnabled() const ;
         void DisablePhysicsAndGeometry();
         virtual bool SetPropertyById(int,m3d::AIParam const &);
-        virtual void SetPostEnablePhysicsIfPossible();
         CVector GetMassCenterPosition() const ;
         virtual void TransferToSpace(dxSpace *);
         virtual void SetVisible();
@@ -75,8 +81,6 @@ namespace ai
         bool CanCreateCollisionEffect() const ;
         virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
         void AddImpulse(CVector const &);
-        virtual void SetPositionSelf(CVector const &);
-        virtual void SetPostRotation(Quaternion const &);
         virtual void DumpPhysicInfo(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         void SetAutoDisabling(bool,float,float,int);
         void IncEnabledCellsCount();
@@ -107,7 +111,6 @@ namespace ai
         int GetPhysicState() const ;
         virtual void RenderDebugInfo() const ;
         void AddRelTorque(CVector const &);
-        virtual void SetPostDisablePhysics();
         virtual void Remove();
         virtual Geom::CellAabb GetCollisionCellAabb() const ;
         virtual void RenderObstacleDebugInfo() const ;
@@ -123,8 +126,6 @@ namespace ai
         bool bIsBodyDisabledGeomEnabled() const ;
         virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
         void DisablePhysicsWithAutoEnable();
-        virtual void SetRotationSelf(Quaternion const &);
-        virtual void SetPostPosition(CVector const &);
         virtual m3d::Class* GetClass() const ;
         CVector GetAngularVelocity() const ;
         virtual void RelinkGeomsToCollisionCells();
@@ -136,7 +137,6 @@ namespace ai
         void ZeroEnabledCellsCount();
         void SetCorrectEnabledCellsCounter();
         virtual PhysicObjPrototypeInfo const * GetPrototypeInfo() const ;
-        virtual CVector GetLinearVelocity() const ;
         static m3d::DbgCounter * __fastcall GetRelinksToCollisionCounter();
         virtual int GetPropertyId(char const *) const ;
 

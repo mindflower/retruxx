@@ -38,18 +38,29 @@ namespace ai
     class PhysicBody :  public Obj
     {
     public:
+        virtual void RelinkToSpace(dxSpace*);
+        virtual void DisableGeometry();
+        virtual void EnableGeometry();
+        virtual float GetMass() const;
+        virtual void LinkGeomToCollisionCells();
+        virtual void UnlinkGeomFromCollisionCells();
+        virtual void RelinkGeomToCollisionCells();
+        virtual Geom::CellAabb GetCollisionCellAabb() const;
+        virtual void SetNodeAction(int, bool);
+        virtual void SetNextForAnimation(int, int);
+        virtual void SetNodeAnimAction(int, bool);
+
+    public:
+        PhysicBody(PhysicBody const&);
         void SetEffectActions(std::vector<ActionType> &);
         void SetModelName(CStr const &);
         void SetModelNameUnsafe(CStr const &);
         int GetNodeAnimAction() const ;
-        virtual void SetNodeAnimAction(int,bool);
-        virtual void SetNextForAnimation(int,int);
         void ChangePhysicBodyByCollisionInfo(std::vector<CollisionInfo> const &);
         void SetSgNode(m3d::SgNode *);
         CVector GetPosition() const ;
         void SetPosition(CVector const &);
         void UpdateGeomsByCollisionInfo(std::vector<CollisionInfo> const &);
-        virtual void SetNodeAction(int,bool);
         virtual void GetGeoms(std::vector<Geom *,std::allocator<Geom *> > &) const ;
         static m3d::SgNode * __fastcall CreateNode(CStr const &,int,CVector const &,PhysicBody *,bool);
         PhysicBody(PhysicBodyPrototypeInfo const &);
@@ -71,7 +82,6 @@ namespace ai
         virtual void SetNodeEffectAction(int);
         virtual void DumpPhysicInfo(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         int GetNodeEffectAction() const ;
-        virtual void LinkGeomToCollisionCells();
         std::vector<CollisionInfo,std::allocator<CollisionInfo> > const & GetCollisionInfo() const ;
         void SetNodeAbsolutePosition(CVector const &);
         CVector GetNodeAbsolutePosition() const ;
@@ -86,7 +96,6 @@ namespace ai
         virtual void SetPassedToAnotherMapStatus();
         virtual void ApplyCurrentModelCollision();
         CVector GetNodeAbsoluteDirection() const ;
-        virtual Geom::CellAabb GetCollisionCellAabb() const ;
         void SetNodeAbsoluteDirection(CVector const &);
         virtual m3d::Class * GetRtClass() const ;
         void SetOwnerBodyToGeoms();
@@ -98,7 +107,6 @@ namespace ai
         int GetNodeRealAction() const ;
         bool bNeedToRelinkNode() const ;
         virtual void SetVisible();
-        virtual void EnableGeometry();
         virtual void SetOwner(PhysicObj *);
         PhysicObj * GetOwner() const ;
         virtual void SetInvisible();
@@ -108,13 +116,8 @@ namespace ai
         virtual bool CanChildBeAdded(m3d::Class *) const ;
         CVector GetNodeRelativeDirection() const ;
         virtual m3d::AnimatedModel * GetModel() const ;
-        virtual float GetMass() const ;
         CVector GetNodeRelativePosition() const ;
         void SetNodeRelativePosition(CVector const &);
-        virtual void UnlinkGeomFromCollisionCells();
-        virtual void RelinkGeomToCollisionCells();
-        virtual void DisableGeometry();
-        virtual void RelinkToSpace(dxSpace *);
         int GetOwnerId() const ;
 
     protected:

@@ -14,6 +14,8 @@
 #include <ui/wndstation.h>
 #include <ui/wnd.h>
 
+#include "thirdparty/injecttools.h"
+
 namespace m3d
 {
     namespace ui
@@ -456,6 +458,7 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
+        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_VIRTUAL_FUNCTION(0x0041C2C0, Wnd::EnableWindow)
         void Wnd::EnableWindow(bool bEnable)
         {
             if (bEnable)
@@ -1021,7 +1024,7 @@ namespace m3d
 
         Wnd::Wnd(Wnd const&)
         {
-            throw std::logic_error("Not implemented");
+            //throw std::logic_error("Not implemented");
         }
 
         PointBase<float> Wnd::GetOriginPoint() const
@@ -1258,7 +1261,11 @@ namespace m3d
 
         WndStation* Wnd::GetStation() const
         {
+#ifdef RETRUXX_DLL
+            return inject::cast<WndStation*>(0x00A0A2D4);
+#else
             return m_wndStation;
+#endif
         }
 
         bool Wnd::IsPtInBounds(PointBase<float> const& pt) const
@@ -1390,6 +1397,7 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
+        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_VIRTUAL_FUNCTION(0x006781D0, Wnd::OnMouseButton0)
         int Wnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
             //TODO: check and refactor this

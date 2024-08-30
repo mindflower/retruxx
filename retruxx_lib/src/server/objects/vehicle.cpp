@@ -5,6 +5,8 @@
 #include <server/ai/aimessage.h>
 #include <server/ai/aipassagestate.h>
 #include <server/obstacle.h>
+#include "server/objects/basket.h"
+#include "server/objects/cabin.h"
 
 #include "server/ai/aimanager.h"
 #include "thirdparty/injecttools.h"
@@ -380,7 +382,6 @@ namespace ai
 
 	VehiclePrototypeInfo::~VehiclePrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	ai::Obj* VehiclePrototypeInfo::CreateTargetObject() const
@@ -1138,9 +1139,27 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetThrottle(float, bool)
+    RETRUXX_DLL_INJECT_FUNCTION(0x005D1210, Vehicle::SetThrottle)
+	void Vehicle::SetThrottle(float throttle, bool autoBrake)
 	{
-		throw std::logic_error("Not implemented");
+        if (fabs(throttle) <= 1.1)
+        {
+#ifdef RETRUXX_DLL
+            *inject::cast<float*>((char*)this + 0x22C) = throttle; // this->m_throttle = throttle;
+            *inject::cast<float*>((char*)this + 0x230) = 0.0;      // this->m_brake = 0.0;
+            *inject::cast<bool*>((char*)this + 0x248) = autoBrake;     // this->m_bAutoBrake = false;
+            if (fabs(throttle) > 0.001)
+                *inject::cast<bool*>((char*)this + 0x249) = false; // this->m_bHandBrake = 0;
+#else
+
+            this->m_throttle = throttle;
+            this->m_brake = 0.0;
+            this->m_bAutoBrake = false;
+            if (fabs(throttle) > 0.001)
+                this->m_bHandBrake = 0;
+#endif // RETRUXX_DLL
+        }
+		//throw std::logic_error("Not implemented");
 	}
 
 	float Vehicle::GetBrake() const
@@ -1208,11 +1227,13 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA60, Vehicle::GetCabin, Cabin const* (Vehicle::*)()const)
 	Cabin const* Vehicle::GetCabin() const
 	{
 		throw std::logic_error("Not implemented");
 	}
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CB9D0, Vehicle::GetCabin, Cabin* (Vehicle::*)())
 	Cabin* Vehicle::GetCabin()
 	{
 		throw std::logic_error("Not implemented");
@@ -1485,11 +1506,13 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA00, Vehicle::GetBasket, Basket* (Vehicle::*)())
 	Basket* Vehicle::GetBasket()
 	{
 		throw std::logic_error("Not implemented");
 	}
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA90, Vehicle::GetBasket, Basket const*(Vehicle::*)()const)
 	Basket const* Vehicle::GetBasket() const
 	{
 		throw std::logic_error("Not implemented");
@@ -1577,7 +1600,6 @@ namespace ai
 
 	Vehicle::~Vehicle()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	void Vehicle::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
@@ -1656,9 +1678,138 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::_KeepThrottle(bool)
+    RETRUXX_DLL_INJECT_FUNCTION(0x005DAAE0, Vehicle::_KeepThrottle)
+	void Vehicle::_KeepThrottle(bool applyActions)
 	{
-		throw std::logic_error("Not implemented");
+#ifdef RETRUXX_DLL
+        auto& throttle = *inject::cast<decltype(m_throttle)*>((char*)this + 0x22C);
+        auto& bHandBrake = *inject::cast<decltype(m_bHandBrake)*>((char*)this + 0x249);
+        auto& brake = *inject::cast<decltype(m_brake)*>((char*)this + 0x230);
+        auto& engineRpm = *inject::cast<decltype(m_engineRpm)*>((char*)this + 0x238);
+        auto& realThrottle = *inject::cast<decltype(m_realThrottle)*>((char*)this + 0x234);
+        auto& effectActions = *inject::cast<decltype(m_effectActions)*>((char*)this + 0x354);
+#else
+        auto& throttle = m_throttle;
+        auto& bHandBrake = m_bHandBrake;
+        auto& brake = m_brake;
+        auto& engineRpm = m_engineRpm;
+        auto& realThrottle = m_realThrottle;
+        auto& effectActions = m_effectActions;
+#endif // RETRUXX_DLL
+
+        //auto const wheelRpm = fabs(this->m_averageWheelAVel) * 9.5492964;
+        auto const velocity = GetLinearVelocity();
+        //auto const direction = GetDirection();
+        //if (m_bAutoBrake)
+        //{
+        //
+        //}
+
+
+        if (throttle <= 0.000001
+            && throttle >= -0.000001
+            && sqrt(velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) < 0.5)
+        {
+            bHandBrake = 1;
+        }
+        if (bHandBrake)
+        {
+            throttle = 0.0;
+            brake = 1.0;
+        }
+
+        auto state = 1;
+        if (engineRpm <= 0.000001)
+        {
+            if (engineRpm >= -0.000001)
+                state = 0;
+            else
+                state = -1;
+        }
+
+       
+        realThrottle = throttle - ((state * brake) * 10.0);
+
+        if (applyActions)
+        {
+            if (brake <= (GetPrototypeInfo()->m_selfBrakingCoeff + 0.000099999997))
+            {
+                auto const flags = GetFlags();
+                if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository())
+                {
+                    auto& effect = effectActions.front();
+                    if (effect != AT_MOVE1)
+                    {
+                        effect = AT_MOVE1;
+
+                        auto* basket = GetBasket();
+                        if (basket)
+                        {
+                            basket->SetEffectActions(effectActions);
+                            basket->SetNodeAnimAction(AT_MOVE1, true);
+                        }
+
+                        auto* cabin = GetCabin();
+                        if (cabin)
+                        {
+                            cabin->SetEffectActions(effectActions);
+                            cabin->SetNodeAnimAction(AT_MOVE1, true);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                auto const flags = GetFlags();
+                if ((velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) > 1.0)
+                {
+                    if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository())
+                    {
+                        auto& effect = m_effectActions.front();
+                        if (effect != AT_MOVE2)
+                        {
+                            effect = AT_MOVE2;
+
+                            auto* basket = GetBasket();
+                            if (basket)
+                            {
+                                basket->SetEffectActions(effectActions);
+                                basket->SetNodeAnimAction(AT_MOVE2, true);
+                            }
+
+                            auto* cabin = GetCabin();
+                            if (cabin)
+                            {
+                                cabin->SetEffectActions(effectActions);
+                                cabin->SetNodeAnimAction(AT_MOVE2, true);
+                            }
+                        }
+                    }
+                }
+                else if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository())
+                {
+                    auto& effect = effectActions.front();
+                    if (effect != AT_STAND1)
+                    {
+                        effect = AT_STAND1;
+
+                        auto* basket = GetBasket();
+                        if (basket)
+                        {
+                            basket->SetEffectActions(effectActions);
+                            basket->SetNodeAnimAction(AT_STAND1, true);
+                        }
+
+                        auto* cabin = GetCabin();
+                        if (cabin)
+                        {
+                            cabin->SetEffectActions(effectActions);
+                            cabin->SetNodeAnimAction(AT_STAND1, true);
+                        }
+                    }
+                }
+            }
+        }
 	}
 
 	void Vehicle::_CreateBlastWave()
@@ -1826,6 +1977,10 @@ namespace ai
 	{
 		throw std::logic_error("Not implemented");
 	}
+
+    Vehicle::Vehicle(Vehicle const& veh) : ComplexPhysicObj({})
+    {
+    }
 
     Vehicle::VehicleMoveStatus Vehicle::GetMoveStatus() const
     {

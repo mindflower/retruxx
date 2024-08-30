@@ -140,7 +140,6 @@ namespace ai
 
 	ComplexPhysicObjPrototypeInfo::~ComplexPhysicObjPrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	std::vector<CStr, std::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
@@ -150,7 +149,6 @@ namespace ai
 
 	ComplexPhysicObjPrototypeInfo::ComplexPhysicObjPrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	unsigned ComplexPhysicObjPrototypeInfo::GetBasePrice() const
@@ -210,7 +208,7 @@ namespace ai
 
     ComplexPhysicObj::ComplexPhysicObj(ComplexPhysicObjPrototypeInfo const& prototypeInfo) : PhysicObj(prototypeInfo)
     {
-        throw std::logic_error("Not implemented");
+        //throw std::logic_error("Not implemented");
     }
 
     m3d::Class* ComplexPhysicObj::GetBaseClass()
@@ -501,7 +499,6 @@ namespace ai
 
     ComplexPhysicObj::~ComplexPhysicObj()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void ComplexPhysicObj::_PutContour()

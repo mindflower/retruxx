@@ -41,7 +41,7 @@ namespace ai
             WheelInfo(CStr, Wheel::WheelSteering);
             void PostLoad();
 
-        private:
+        public:
             int m_wheelPrototypeId;
             Wheel::WheelSteering m_steering;
             CStr m_wheelPrototypeName;
@@ -57,7 +57,7 @@ namespace ai
     protected:
         virtual void _InternalCopyFrom(PrototypeInfo const&);
 
-    private:
+    public:
         std::vector<WheelInfo> m_wheelInfos;
         float m_diffRatio;
         float m_maxEngineRpm;
@@ -136,6 +136,10 @@ namespace ai
         };
 
     public:
+
+
+    public:
+        Vehicle(Vehicle const&);
         VehicleMoveStatus GetMoveStatus() const ;
         float GetCruisingSpeed() const ;
         void UnlimitMaxSpeed();
@@ -358,6 +362,7 @@ namespace ai
         virtual void EnableGeometry(bool);
 
     protected:
+        virtual void _KeepSteer(float);
         virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
         virtual void _PutContour();
         virtual void _InternalCreateVisualPart();
@@ -365,13 +370,12 @@ namespace ai
         virtual void _InternalPostLoad();
         virtual float _CalcMassForBody() const ;
         virtual void _RemoveContour();
-        virtual void _KeepSteer(float);
         virtual void _UpdateOwnPhysics(float);
         virtual AI * GetAIPtr();
         virtual ~Vehicle();
         static void __fastcall RegisterProperty(char const *,int,eGObjPropertySaveStatus);
 
-    private:
+    public:
         float _GetTimeOutForNextIntersectionWithWorld() const ;
         void _ApplyStabilizingForces();
         void _UpdateAlarmStatus();

@@ -29,7 +29,7 @@ namespace m3d
 			virtual float GetFrameWidth() const;
 			virtual int Create(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int);
 
-        protected:
+        public:
 			virtual int OnMouseOut();
 			virtual int OnLoosingFocus();
 			virtual int OnMouseIn();
@@ -75,7 +75,7 @@ namespace m3d
             virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
             virtual int Create(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int);
 
-        protected:
+        public:
             virtual int OnMouseButton0(unsigned int, PointBase<float> const&);
             virtual void DrawWndText(DrawInfo const&);
             BoundsBase<float> GetIcoBounds() const;

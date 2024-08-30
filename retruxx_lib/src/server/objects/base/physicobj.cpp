@@ -107,7 +107,6 @@ namespace ai
 
 	PhysicObjPrototypeInfo::PhysicObjPrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	bool PhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -519,7 +518,7 @@ namespace ai
 
     PhysicObj::PhysicObj(PhysicObjPrototypeInfo const&) : m_intersectionObstacle(nullptr)
     {
-        throw std::logic_error("Not implemented");
+        //throw std::logic_error("Not implemented");
     }
 
     bool PhysicObj::bIsBodyDisabledGeomEnabled() const
@@ -704,7 +703,6 @@ namespace ai
 
     PhysicObj::~PhysicObj()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void PhysicObj::_InternalPostLoad()

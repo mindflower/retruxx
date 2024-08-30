@@ -6,6 +6,9 @@
 #include "core/kernel.h"
 #include "ui/frame.h"
 
+#include "thirdparty/injecttools.h"
+#include <thread>
+
 namespace m3d
 {
     namespace ui
@@ -177,7 +180,7 @@ namespace m3d
 
         ButtonWnd::ButtonWnd(ButtonWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            //throw std::logic_error("Not implemented");
         }
 
         void ButtonWnd::ReleaseTextures()
@@ -290,8 +293,14 @@ namespace m3d
             return 1;
         }
 
+        //RETRUXX_DLL_INJECT_VIRTUAL_FUNCTION(0x006B1670, ButtonWnd::OnMouseButton0)
         int ButtonWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
+            //PointBase<float> firstClick;
+            //if (GetStation()->CheckForMouseDblClick(GetStation(), at, state, firstClick))
+            //{
+            //    return 0;
+            //}
             if (!state || !m_isSounded)
             {
                 return Wnd::OnMouseButton0(state, at);

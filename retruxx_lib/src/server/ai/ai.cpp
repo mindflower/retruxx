@@ -43,7 +43,7 @@ namespace ai
 
     AI::AI()
     {
-        throw std::logic_error("Not implemented");
+        //throw std::logic_error("Not implemented");
     }
 
     int AI::GetCurState1Num()

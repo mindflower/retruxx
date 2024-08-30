@@ -3893,6 +3893,9 @@
     <ClInclude Include="src\server\weaponfirer.h">
       <Filter>server</Filter>
     </ClInclude>
+    <ClInclude Include="src\thirdparty\functionscrapper.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">
