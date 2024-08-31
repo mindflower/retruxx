@@ -364,10 +364,7 @@ namespace ai
         public:
             /* 0x0000 */ CVector normal;
             /* 0x000c */ CVector origin;
-            static FlatLine CreateOrthogonal(const CVector&, const CVector&)
-            {
-                throw std::logic_error("Not implemented");
-            }
+            static FlatLine* CreateOrthogonal(FlatLine*, const CVector&, const CVector&);
 
             bool IsPointInFront(const CVector&)
             {
@@ -380,6 +377,13 @@ namespace ai
             }
         }; /* size: 0x0018 */
 
+
+        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D5680, FlatLine::CreateOrthogonal)
+        FlatLine* FlatLine::CreateOrthogonal(FlatLine* ,const CVector&, const CVector&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
         struct DrivingValues
         {
             /* 0x0000 */ FlatLine checkLine;
@@ -389,11 +393,60 @@ namespace ai
         }; /* size: 0x0024 */
 
 
-        void CalcDrivingValues(Vehicle const&, CVector const&, CVector const&, bool, DrivingValues&)
+        float GetAngleBetween(CVector const&, CVector const&, CVector const&)
         {
             throw std::logic_error("Not implemented");
         }
-        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D57A0, CalcDrivingValues);
+        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D07A0, GetAngleBetween)
+
+        void CalcDrivingValues(Vehicle const& vehicle, CVector const& point, CVector const& nextPoint, bool bPrecisely, DrivingValues& dv)
+        {           
+            auto pos = vehicle.GetPosition();
+            
+            dv.nextAngle = GetAngleBetween(pos, point, nextPoint);
+            dv.checkLine = *FlatLine::CreateOrthogonal(&dv.checkLine, point, nextPoint);
+            auto absAngle = fabs(dv.nextAngle);
+            if (absAngle < 0.0)
+            {
+                absAngle = 0.0;
+            }
+            if (absAngle > 2.5132742)
+            {
+                absAngle = 2.5132742;
+            }
+
+            auto const vehicleSize = vehicle.GetSize();
+
+            auto const v13 = dv.checkLine.normal.z * vehicleSize.x;
+            auto const v14 = (dv.checkLine.normal.y * vehicleSize.x) * 0.2;
+            auto const v15 = dv.checkLine.origin.x - ((dv.checkLine.normal.x * vehicleSize.x) * 0.2);
+            dv.checkLine.origin.y = dv.checkLine.origin.y - v14;
+            dv.checkLine.origin.z = dv.checkLine.origin.z - (v13 * 0.2);
+            dv.checkLine.origin.x = v15;
+            dv.checkCircleRadius = (2.2 - (absAngle * 0.7957747)) * vehicleSize.x;
+
+            auto const nextPointb = sqrt(
+                vehicleSize.z * vehicleSize.z
+                + vehicleSize.y * vehicleSize.y
+                + vehicleSize.x * vehicleSize.x)
+                * 0.5;
+
+            if (nextPointb > dv.checkCircleRadius)
+                dv.checkCircleRadius = nextPointb;
+            if (dv.checkCircleRadius > 1.0e30)
+                dv.checkCircleRadius = 1.0e30;
+
+            // bots logic fix
+            //if (!bPrecisely)
+            {
+                dv.checkCircleRadius = dv.checkCircleRadius * 3.0;
+            }
+   
+            auto const velocity = vehicle.GetLinearVelocity();
+            auto const scalVelocity = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+            dv.brakingCircleRadius = fabs(dv.nextAngle) * (scalVelocity * log2(scalVelocity) * 0.05);
+        }
+        RETRUXX_DLL_INJECT_FUNCTION(0x005D57A0, CalcDrivingValues);
     }
 
 	extern AIManager* theAIManager;
@@ -1173,7 +1226,8 @@ namespace ai
 
             //M3D_APP->DrawLine(pos, curPoint, 0xFF00FFFF);
 
-            DebugCircle(curPoint, (scal * scal * 0.03) + smth, 0xFFFF0000);
+            DebugCircle(curPoint, scal + 500/smth, 0xFFFF0000);
+            DebugCircle(curPoint, dv.checkCircleRadius, 0xFFFFFF00);
 
 
         }
@@ -1411,6 +1465,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005CC1C0, Vehicle::GetSize)
 	CVector Vehicle::GetSize() const
 	{
 		throw std::logic_error("Not implemented");
@@ -1778,8 +1833,6 @@ namespace ai
     RETRUXX_DLL_INJECT_FUNCTION(0x005DAAE0, Vehicle::_KeepThrottle)
 	void Vehicle::_KeepThrottle(bool applyActions)
 	{
-
-        //RenderDebugInfo();
 #ifdef RETRUXX_DLL
         auto& throttle = *inject::cast<decltype(m_throttle)*>((char*)this + 0x22C);
         auto& bHandBrake = *inject::cast<decltype(m_bHandBrake)*>((char*)this + 0x249);
@@ -1823,16 +1876,15 @@ namespace ai
 
                 auto const distanceToPoint = sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
                 auto const scalVelocity = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
-                auto const multiplier = 0.03;
+                auto const offsetBase = 500;
 
                 DrivingValues dv;
                 CalcDrivingValues(*this, curPoint, nextPoint, true, dv);
-                if ((scalVelocity * scalVelocity * multiplier) + distanceToPoint < dv.brakingCircleRadius)
+                if (offsetBase / scalVelocity + distanceToPoint < dv.brakingCircleRadius)
                 {
                     auto const steeringForce = _CalcSteeringForceToPathPoint(curPoint, nextPoint);
                     auto const scalSteeringForce = sqrt(steeringForce.x * steeringForce.x + steeringForce.y * steeringForce.y + steeringForce.z * steeringForce.z);
 
-                    throttle = 0.0;
                     brake = 1 - pow(((scalSteeringForce * 0.5) + 0.5), 2);
                 }
             }
