@@ -1,3 +1,4 @@
+#pragma once
 #ifdef RETRUXX_DLL
 
 #include <cstdlib>
@@ -165,7 +166,7 @@ namespace inject
          */
         template <typename R, typename T, typename ...Ps>
         static intptr_t addressOfVirtual(R(T::* func)(Ps...)const) {
-            static_assert(std::is_copy_constructible<T>::value, "must be copy constructable");
+            //static_assert(std::is_copy_constructible<T>::value, "must be copy constructable");
             //MessageBox(NULL, __func__, "retruxx", MB_OK);
             auto ptr = reinterpret_cast<T*>(operator new(sizeof(T)));
             auto ins = new T(*ptr);

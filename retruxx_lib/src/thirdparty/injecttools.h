@@ -1,3 +1,4 @@
+#pragma once
 #ifdef RETRUXX_DLL
 
 #include "functionscrapper.h"
@@ -40,6 +41,7 @@ namespace inject
 #define RETRUXX_DLL_INJECT_FUNCTION_TYPED(address, function, type)
 #define RETRUXX_DLL_INJECT_VIRTUAL_FUNCTION(address, function)
 #define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(address, function)
+#define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(address, function, type)
 #define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_VIRTUAL_FUNCTION(address, function)
 
 #endif //RETRUXX_DLL

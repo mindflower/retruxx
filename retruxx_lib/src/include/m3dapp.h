@@ -13,6 +13,7 @@
 #include <ui/msgbox.h>
 #include <ui/ui_srv.h>
 #include <ui/wndstation.h>
+#include "thirdparty/injecttools.h"
 
 namespace m3d
 {
@@ -379,5 +380,9 @@ namespace m3d
     }; 
 }
 
+#ifdef RETRUXX_DLL
+#define M3D_APP (*inject::cast<m3d::Application**>(0x00A0A55C))
+#else
 #define M3D_APP m3d::Application::g_pApp
+#endif
 #define M3D_RENDERER m3d::Application::g_pApp->m_renderer

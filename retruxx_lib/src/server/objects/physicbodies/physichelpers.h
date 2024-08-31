@@ -26,4 +26,6 @@ namespace ai
         ref_ptr<ref_count_helper<std::vector<int>>> m_trimeshIndices;
         unsigned int m_numTrimeshIndices;
     };
+
+    int RoughSign(float);
 }

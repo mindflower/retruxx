@@ -2008,6 +2008,7 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x007B0010, Application::DrawLine, void(Application::*)(CVector const&, CVector const&, unsigned))
     void Application::DrawLine(CVector const&, CVector const&, unsigned)
     {
         throw std::logic_error("Not implemented");

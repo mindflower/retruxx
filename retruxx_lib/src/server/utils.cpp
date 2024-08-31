@@ -1,6 +1,8 @@
 #include "utils.h"
+#include "path.h"
 #include <sstream>
 #include <stdexcept>
+#include "thirdparty/injecttools.h"
 
 namespace ai
 {
@@ -47,5 +49,16 @@ namespace ai
                 intVector.push_back(atoi(s.c_str()));
             }
         }
+    }
+
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006A9D60, GetPathItem)
+    bool GetPathItem(Path const*, unsigned int, CVector&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006AAB20, DebugCircle)
+    void DebugCircle(CVector const&, float, unsigned int)
+    {
     }
 }

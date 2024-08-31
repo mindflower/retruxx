@@ -7,9 +7,13 @@
 #include <server/obstacle.h>
 #include "server/objects/basket.h"
 #include "server/objects/cabin.h"
+#include "server/utils.h"
+#include <server/objects/physicbodies/physichelpers.h>
 
 #include "server/ai/aimanager.h"
-#include "thirdparty/injecttools.h"
+#include "include/m3dapp.h"
+#include "include/core/kernel.h"
+#include "include/config.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
@@ -352,6 +356,45 @@ namespace ai
 		RT_CLASS_EXPORT(Vehicle, m3d::METHOD, ResetForcedMaxTorque, "", "", "")
 	RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Vehicle);
+
+    namespace
+    {
+        class FlatLine
+        {
+        public:
+            /* 0x0000 */ CVector normal;
+            /* 0x000c */ CVector origin;
+            static FlatLine CreateOrthogonal(const CVector&, const CVector&)
+            {
+                throw std::logic_error("Not implemented");
+            }
+
+            bool IsPointInFront(const CVector&)
+            {
+                throw std::logic_error("Not implemented");
+            }
+
+            void RenderDebugInfo(unsigned int)
+            {
+                throw std::logic_error("Not implemented");
+            }
+        }; /* size: 0x0018 */
+
+        struct DrivingValues
+        {
+            /* 0x0000 */ FlatLine checkLine;
+            /* 0x0018 */ float checkCircleRadius;
+            /* 0x001c */ float nextAngle;
+            /* 0x0020 */ float brakingCircleRadius;
+        }; /* size: 0x0024 */
+
+
+        void CalcDrivingValues(Vehicle const&, CVector const&, CVector const&, bool, DrivingValues&)
+        {
+            throw std::logic_error("Not implemented");
+        }
+        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D57A0, CalcDrivingValues);
+    }
 
 	extern AIManager* theAIManager;
 
@@ -1079,9 +1122,62 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
+    RETRUXX_DLL_INJECT_VIRTUAL_FUNCTION(0x005EAEE0, Vehicle::RenderDebugInfo)
 	void Vehicle::RenderDebugInfo() const
 	{
-		throw std::logic_error("Not implemented");
+#ifdef RETRUXX_DLL
+        auto& throttle = *inject::cast<decltype(m_throttle)*>((char*)this + 0x22C);
+        auto& bHandBrake = *inject::cast<decltype(m_bHandBrake)*>((char*)this + 0x249);
+        auto& brake = *inject::cast<decltype(m_brake)*>((char*)this + 0x230);
+        auto& engineRpm = *inject::cast<decltype(m_engineRpm)*>((char*)this + 0x238);
+        auto& realThrottle = *inject::cast<decltype(m_realThrottle)*>((char*)this + 0x234);
+        auto& effectActions = *inject::cast<decltype(m_effectActions)*>((char*)this + 0x354);
+        auto& pPath = *inject::cast<decltype(m_pPath)*>((char*)this + 0x300);
+        auto& pathNum = *inject::cast<decltype(m_pathNum)*>((char*)this + 0x304);
+        auto& averageWheelAVel = *inject::cast<decltype(m_averageWheelAVel)*>((char*)this + 0x244);
+        auto& bAutoBrake = *inject::cast<decltype(m_bAutoBrake)*>((char*)this + 0x248);
+#else
+        auto& throttle = m_throttle;
+        auto& bHandBrake = m_bHandBrake;
+        auto& brake = m_brake;
+        auto& engineRpm = m_engineRpm;
+        auto& realThrottle = m_realThrottle;
+        auto& effectActions = m_effectActions;
+        auto& pPath = m_pPath;
+        auto& pathNum = m_pathNum;
+        auto& averageWheelAVel = m_averageWheelAVel;
+        auto& bAutoBrake = m_bAutoBrake;
+#endif // RETRUXX_DLL
+
+        CVector curPoint;
+        if (GetPathItem(pPath, pathNum, curPoint))
+        {
+            auto const nextPoint = _GetNextPathPoint();
+
+            DrivingValues dv;
+            CalcDrivingValues(*this, curPoint, nextPoint, true, dv);
+
+            DebugCircle(curPoint, dv.brakingCircleRadius, 0xFF00FF00);
+            auto curPoint1 = curPoint;
+
+            auto pos = GetPosition();
+            //pos.y += 10;
+            curPoint1.y = M3D_KERNEL->GetEngineCfg().GetHeight(curPoint1.x, curPoint1.z);
+            pos.x = curPoint1.x - pos.x;
+            pos.y = curPoint1.y - pos.y;
+            pos.z = curPoint1.z - pos.z;
+            auto scal = sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
+
+            auto velocity = GetLinearVelocity();
+            auto smth = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+
+            //M3D_APP->DrawLine(pos, curPoint, 0xFF00FFFF);
+
+            DebugCircle(curPoint, (scal * scal * 0.03) + smth, 0xFFFF0000);
+
+
+        }
+		//throw std::logic_error("Not implemented");
 	}
 
 	void Vehicle::SetVisible()
@@ -1673,6 +1769,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005CCF40, Vehicle::_GetNextPathPoint)
 	CVector Vehicle::_GetNextPathPoint() const
 	{
 		throw std::logic_error("Not implemented");
@@ -1681,6 +1778,8 @@ namespace ai
     RETRUXX_DLL_INJECT_FUNCTION(0x005DAAE0, Vehicle::_KeepThrottle)
 	void Vehicle::_KeepThrottle(bool applyActions)
 	{
+
+        //RenderDebugInfo();
 #ifdef RETRUXX_DLL
         auto& throttle = *inject::cast<decltype(m_throttle)*>((char*)this + 0x22C);
         auto& bHandBrake = *inject::cast<decltype(m_bHandBrake)*>((char*)this + 0x249);
@@ -1688,6 +1787,10 @@ namespace ai
         auto& engineRpm = *inject::cast<decltype(m_engineRpm)*>((char*)this + 0x238);
         auto& realThrottle = *inject::cast<decltype(m_realThrottle)*>((char*)this + 0x234);
         auto& effectActions = *inject::cast<decltype(m_effectActions)*>((char*)this + 0x354);
+        auto& pPath = *inject::cast<decltype(m_pPath)*>((char*)this + 0x300);
+        auto& pathNum = *inject::cast<decltype(m_pathNum)*>((char*)this + 0x304);
+        auto& averageWheelAVel = *inject::cast<decltype(m_averageWheelAVel)*>((char*)this + 0x244);
+        auto& bAutoBrake = *inject::cast<decltype(m_bAutoBrake)*>((char*)this + 0x248);
 #else
         auto& throttle = m_throttle;
         auto& bHandBrake = m_bHandBrake;
@@ -1695,16 +1798,45 @@ namespace ai
         auto& engineRpm = m_engineRpm;
         auto& realThrottle = m_realThrottle;
         auto& effectActions = m_effectActions;
+        auto& pPath = m_pPath;
+        auto& pathNum = m_pathNum;
+        auto& averageWheelAVel = m_averageWheelAVel;
+        auto& bAutoBrake = m_bAutoBrake;
 #endif // RETRUXX_DLL
 
-        //auto const wheelRpm = fabs(this->m_averageWheelAVel) * 9.5492964;
+        auto const wheelRpm = fabs(averageWheelAVel) * 9.5492964;
         auto const velocity = GetLinearVelocity();
-        //auto const direction = GetDirection();
-        //if (m_bAutoBrake)
-        //{
-        //
-        //}
+        if (m_bAutoBrake) 
+        {
+            CVector curPoint;
+            if (GetPathItem(pPath, pathNum, curPoint))
+            {
+                auto const nextPoint = _GetNextPathPoint();
 
+                auto tempPoint = curPoint;
+                tempPoint.y = M3D_KERNEL->GetEngineCfg().GetHeight(tempPoint.x, tempPoint.z);
+
+                auto pos = GetPosition();
+                pos.x = tempPoint.x - pos.x;
+                pos.y = tempPoint.y - pos.y;
+                pos.z = tempPoint.z - pos.z;
+
+                auto const distanceToPoint = sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
+                auto const scalVelocity = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+                auto const multiplier = 0.03;
+
+                DrivingValues dv;
+                CalcDrivingValues(*this, curPoint, nextPoint, true, dv);
+                if ((scalVelocity * scalVelocity * multiplier) + distanceToPoint < dv.brakingCircleRadius)
+                {
+                    auto const steeringForce = _CalcSteeringForceToPathPoint(curPoint, nextPoint);
+                    auto const scalSteeringForce = sqrt(steeringForce.x * steeringForce.x + steeringForce.y * steeringForce.y + steeringForce.z * steeringForce.z);
+
+                    throttle = 0.0;
+                    brake = 1 - pow(((scalSteeringForce * 0.5) + 0.5), 2);
+                }
+            }
+        }
 
         if (throttle <= 0.000001
             && throttle >= -0.000001
@@ -1717,97 +1849,49 @@ namespace ai
             throttle = 0.0;
             brake = 1.0;
         }
+    
+        realThrottle = throttle - ((RoughSign(engineRpm) * brake) * 10.0);
 
-        auto state = 1;
-        if (engineRpm <= 0.000001)
+        const auto doApplyActions = [&](const ActionType& type)
         {
-            if (engineRpm >= -0.000001)
-                state = 0;
-            else
-                state = -1;
-        }
+            auto const flags = GetFlags();
+            if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository())
+            {
+                auto& effect = effectActions.front();
+                if (effect != type)
+                {
+                    effect = type;
 
-       
-        realThrottle = throttle - ((state * brake) * 10.0);
+                    auto* basket = GetBasket();
+                    if (basket)
+                    {
+                        basket->SetEffectActions(effectActions);
+                        basket->SetNodeAnimAction(type, true);
+                    }
+
+                    auto* cabin = GetCabin();
+                    if (cabin)
+                    {
+                        cabin->SetEffectActions(effectActions);
+                        cabin->SetNodeAnimAction(type, true);
+                    }
+                }
+            }
+        };
 
         if (applyActions)
         {
             if (brake <= (GetPrototypeInfo()->m_selfBrakingCoeff + 0.000099999997))
             {
-                auto const flags = GetFlags();
-                if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository())
-                {
-                    auto& effect = effectActions.front();
-                    if (effect != AT_MOVE1)
-                    {
-                        effect = AT_MOVE1;
-
-                        auto* basket = GetBasket();
-                        if (basket)
-                        {
-                            basket->SetEffectActions(effectActions);
-                            basket->SetNodeAnimAction(AT_MOVE1, true);
-                        }
-
-                        auto* cabin = GetCabin();
-                        if (cabin)
-                        {
-                            cabin->SetEffectActions(effectActions);
-                            cabin->SetNodeAnimAction(AT_MOVE1, true);
-                        }
-                    }
-                }
+                doApplyActions(AT_MOVE1);
+            }
+            else if ((velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) > 1.0)
+            {
+                doApplyActions(AT_MOVE2);
             }
             else
             {
-                auto const flags = GetFlags();
-                if ((velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) > 1.0)
-                {
-                    if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository())
-                    {
-                        auto& effect = m_effectActions.front();
-                        if (effect != AT_MOVE2)
-                        {
-                            effect = AT_MOVE2;
-
-                            auto* basket = GetBasket();
-                            if (basket)
-                            {
-                                basket->SetEffectActions(effectActions);
-                                basket->SetNodeAnimAction(AT_MOVE2, true);
-                            }
-
-                            auto* cabin = GetCabin();
-                            if (cabin)
-                            {
-                                cabin->SetEffectActions(effectActions);
-                                cabin->SetNodeAnimAction(AT_MOVE2, true);
-                            }
-                        }
-                    }
-                }
-                else if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository())
-                {
-                    auto& effect = effectActions.front();
-                    if (effect != AT_STAND1)
-                    {
-                        effect = AT_STAND1;
-
-                        auto* basket = GetBasket();
-                        if (basket)
-                        {
-                            basket->SetEffectActions(effectActions);
-                            basket->SetNodeAnimAction(AT_STAND1, true);
-                        }
-
-                        auto* cabin = GetCabin();
-                        if (cabin)
-                        {
-                            cabin->SetEffectActions(effectActions);
-                            cabin->SetNodeAnimAction(AT_STAND1, true);
-                        }
-                    }
-                }
+                doApplyActions(AT_STAND1);
             }
         }
 	}
@@ -1878,6 +1962,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D62E0, Vehicle::_CalcSteeringForceToPathPoint)
 	CVector Vehicle::_CalcSteeringForceToPathPoint(CVector const&, CVector const&) const
 	{
 		throw std::logic_error("Not implemented");
