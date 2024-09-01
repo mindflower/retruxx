@@ -416,7 +416,6 @@ namespace ai
             }
 
             auto const vehicleSize = vehicle.GetSize();
-
             auto const v13 = dv.checkLine.normal.z * vehicleSize.x;
             auto const v14 = (dv.checkLine.normal.y * vehicleSize.x) * 0.2;
             auto const v15 = dv.checkLine.origin.x - ((dv.checkLine.normal.x * vehicleSize.x) * 0.2);
@@ -432,9 +431,13 @@ namespace ai
                 * 0.5;
 
             if (nextPointb > dv.checkCircleRadius)
+            {
                 dv.checkCircleRadius = nextPointb;
+            }
             if (dv.checkCircleRadius > 1.0e30)
+            {
                 dv.checkCircleRadius = 1.0e30;
+            }
 
             // bots logic fix
             //if (!bPrecisely)
@@ -444,7 +447,7 @@ namespace ai
    
             auto const velocity = vehicle.GetLinearVelocity();
             auto const scalVelocity = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
-            dv.brakingCircleRadius = fabs(dv.nextAngle) * (scalVelocity * log2(scalVelocity) * 0.05);
+            dv.brakingCircleRadius = fabs(dv.nextAngle) * (scalVelocity * log2(scalVelocity) * 0.04);
         }
         RETRUXX_DLL_INJECT_FUNCTION(0x005D57A0, CalcDrivingValues);
     }
@@ -1862,10 +1865,17 @@ namespace ai
         if (m_bAutoBrake) 
         {
             CVector curPoint;
-            if (GetPathItem(pPath, pathNum, curPoint))
+            auto const direction = GetDirection();
+            auto const directionState = RoughSign(engineRpm);
+            auto const isWrongWay =
+                (direction.z * velocity.z + direction.y * velocity.y + direction.x * velocity.x) < -0.1 &&
+                RoughSign(throttle) == 0;
+            if (isWrongWay)
             {
-                auto const nextPoint = _GetNextPathPoint();
-
+                brake = 1.0;
+            }
+            else if (GetPathItem(pPath, pathNum, curPoint))
+            {
                 auto tempPoint = curPoint;
                 tempPoint.y = M3D_KERNEL->GetEngineCfg().GetHeight(tempPoint.x, tempPoint.z);
 
@@ -1874,6 +1884,7 @@ namespace ai
                 pos.y = tempPoint.y - pos.y;
                 pos.z = tempPoint.z - pos.z;
 
+                auto const nextPoint = _GetNextPathPoint();
                 auto const distanceToPoint = sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
                 auto const scalVelocity = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
                 auto const offsetBase = 500;
@@ -1884,15 +1895,13 @@ namespace ai
                 {
                     auto const steeringForce = _CalcSteeringForceToPathPoint(curPoint, nextPoint);
                     auto const scalSteeringForce = sqrt(steeringForce.x * steeringForce.x + steeringForce.y * steeringForce.y + steeringForce.z * steeringForce.z);
-
                     brake = 1 - pow(((scalSteeringForce * 0.5) + 0.5), 2);
                 }
             }
         }
 
-        if (throttle <= 0.000001
-            && throttle >= -0.000001
-            && sqrt(velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) < 0.5)
+        if (RoughSign(throttle) == 0 &&
+            sqrt(velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) < 0.5)
         {
             bHandBrake = 1;
         }
