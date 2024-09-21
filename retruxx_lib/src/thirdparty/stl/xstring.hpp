@@ -1,12 +1,10 @@
 // xstring internal header (from <string>)
 #pragma once
-#ifndef _XSTRING_
-#define _XSTRING_
-#include <xmemory>
+#include "xmemory.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
   #pragma warning(disable:4251)
 
@@ -303,8 +301,8 @@ public:
 			}
 		};
 
-	typedef std::reverse_iterator<iterator> reverse_iterator;
-	typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+	typedef oldstd::reverse_iterator<iterator> reverse_iterator;
+	typedef oldstd::reverse_iterator<const_iterator> const_reverse_iterator;
 
 	basic_string()
 		: _Mybase()
@@ -1574,12 +1572,11 @@ template class _CRTIMP2 basic_string<wchar_t, char_traits<wchar_t>,
 
 
  #endif /* _DLL_CPPLIB */
-_STD_END
+_OLDSTD_END
  #pragma warning(default: 4251)
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _XSTRING */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

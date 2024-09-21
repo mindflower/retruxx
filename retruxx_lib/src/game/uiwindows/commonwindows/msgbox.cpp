@@ -406,9 +406,9 @@ void MsgBox::RecalcLayot()
 {
     if ((m_gameDataFlags & 1) != 0)
     {
-	    for (auto child = GetFirstChild_(); child;)
+	    for (auto child = GetFirstChild(); child;)
 	    {
-            auto next = child->GetNextSibling_();
+            auto next = child->GetNextSibling();
             RemoveChild(child);
             child = next;
 	    }
@@ -458,7 +458,7 @@ void MsgBox::HackedExpandToScreen()
         result.width = m_bounds.width;
         result.height = m_bounds.height;
         m_wndFrame->SetBounds(result, true);
-        for (auto child = GetFirstChild_(); child; child = child->GetNextSibling_())
+        for (auto child = GetFirstChild(); child; child = child->GetNextSibling())
         {
 	        if (child->IsKindOf(RT_CLASS_LOCAL(Wnd)))
 	        {
@@ -536,7 +536,7 @@ void MsgBox::CalcSelfHeight()
         float max = 0.0;
         float add = 0.0;
         CStr childName;
-	    for (auto child= GetFirstChild_(); child; child = child->GetNextSibling_())
+	    for (auto child= GetFirstChild(); child; child = child->GetNextSibling())
 	    {
 		    if (child->IsKindOf(RT_CLASS_LOCAL(Wnd)))
 		    {

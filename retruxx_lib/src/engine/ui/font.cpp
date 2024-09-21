@@ -209,7 +209,7 @@ namespace m3d
                 m_textures.push_back(tex);
             }
             ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            xmlNode->GetFirstChild_(node, "Symbol");
+            xmlNode->GetFirstChild(node, "Symbol");
             while (!node->IsEmpty())
             {
                 CStr symbolValue;
@@ -258,7 +258,7 @@ namespace m3d
                 delete m_symbols[symbolIdx];
                 m_symbols[symbolIdx] = symbolInfo;
 
-                node->GetNextSibling_(node, "Symbol");
+                node->GetNextSibling(node, "Symbol");
             }
             m_type = FONT_TYPE_SELFMAKING;
             m_scaleTex = 1.0;
@@ -718,14 +718,14 @@ namespace m3d
             if (file)
             {
                 ref_ptr fontsNode = file->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                file->GetFirstChild_(fontsNode, "Fonts");
+                file->GetFirstChild(fontsNode, "Fonts");
                 if (fontsNode->IsEmpty())
                 {
                     M3D_LOG_ERR("FontManager: error while loading fonts");
                     return 0;
                 }
                 ref_ptr itemNode = file->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                fontsNode->GetFirstChild_(itemNode, "Item");
+                fontsNode->GetFirstChild(itemNode, "Item");
                 while(!itemNode->IsEmpty())
                 {
                     auto font = new Font;
@@ -737,7 +737,7 @@ namespace m3d
                     {
                         delete font;
                     }
-                    itemNode->GetNextSibling_(itemNode, "Item");
+                    itemNode->GetNextSibling(itemNode, "Item");
                 }
                 M3D_LOG_INFO("FontManager: fonts are loaded successfully");
                 return 1;

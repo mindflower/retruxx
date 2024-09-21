@@ -1,13 +1,10 @@
 // climits standard header
 #pragma once
-#ifndef _CLIMITS_
-#define _CLIMITS_
-#include <yvals.h>
+#include "yvals.hpp"
 
  #pragma warning(disable: 4514)
 
-#include <limits.h>
-#endif /* _CLIMITS_ */
+#include "limits.h"
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

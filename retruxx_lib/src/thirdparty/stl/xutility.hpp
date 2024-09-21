@@ -1,15 +1,13 @@
 // xutility internal header
 #pragma once
-#ifndef _XUTILITY_
-#define _XUTILITY_
-#include <climits>
-#include <utility>
+#include "climits.hpp"
+#include "utility.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
 
   #pragma warning(disable:4284 4786)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 //	ITERATOR STUFF (from <iterator>)
 
@@ -1270,11 +1268,10 @@ template<class _Ty,
 
   #pragma warning(default:4284 4786)
 
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _XUTILITY_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

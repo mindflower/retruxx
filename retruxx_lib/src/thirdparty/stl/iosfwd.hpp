@@ -1,15 +1,13 @@
 // iosfwd standard header
 #pragma once
-#ifndef _IOSFWD_
-#define _IOSFWD_
-#include <cstdio>
-#include <cstring>
-#include <cwchar>
-#include <xstddef>
+#include "cstdio.hpp"
+#include "cstring.hpp"
+#include "cwchar.hpp"
+#include "xstddef.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// STREAM POSITIONING TYPES (from <streambuf>)
 
@@ -521,11 +519,10 @@ typedef collate<char> ncollate;
 typedef collate<wchar_t> wcollate;
  #endif /* _DLL_CPPLIB */
 
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _IOSFWD_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

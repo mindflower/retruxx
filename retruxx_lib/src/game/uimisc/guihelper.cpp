@@ -90,8 +90,8 @@ namespace help
                 dstWnd->SetOnShowAnimation(srcWnd->GetOnShowAnimation());
                 dstWnd->SetOnHideAnimation(srcWnd->GetOnHideAnimation());
 
-                auto child = srcWnd->GetFirstChild_();
-                for (child = srcWnd->GetFirstChild_(); child && child->IsKindOf(RT_CLASS_LOCAL(Wnd)); child = child->GetNextSibling_())
+                auto child = srcWnd->GetFirstChild();
+                for (child = srcWnd->GetFirstChild(); child && child->IsKindOf(RT_CLASS_LOCAL(Wnd)); child = child->GetNextSibling())
                 {
                     auto childWnd = dynamic_cast<Wnd*>(child);
                     auto newObjClass = child->GetClass();

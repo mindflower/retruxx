@@ -9,7 +9,7 @@
 
  #pragma warning(disable: 4189)
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// basic_string TEMPLATE OPERATORS
 template<class _Elem,
@@ -626,7 +626,7 @@ template class _CRTIMP2 basic_ostream<wchar_t,
 
 
  #endif /* _DLL_CPPLIB */
-_STD_END
+_OLDSTD_END
  #pragma warning(default: 4189)
 #pragma warning(pop)
 #pragma pack(pop)

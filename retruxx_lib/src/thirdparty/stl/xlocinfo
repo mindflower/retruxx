@@ -8,7 +8,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// CLASS _Timevec
 class _CRTIMP2 _Timevec
@@ -52,7 +52,7 @@ public:
 	typedef ::_Collvec _Collvec;
 	typedef ::_Ctypevec _Ctypevec;
 	typedef ::_Cvtvec _Cvtvec;
-	typedef std::_Timevec _Timevec;
+	typedef oldstd::_Timevec _Timevec;
 
 	_Locinfo(const char * = "C");	// construct from named locale
 
@@ -200,7 +200,7 @@ template<> inline
 	{	// perform locale-specific transform of wchar_ts [_First1, _Last1)
 	return (_Wcsxfrm(_First1, _Last1, _First2, _Last2, _Vector));
 	}
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

@@ -189,7 +189,7 @@ void CreditsWnd::LoadPageInfo()
         {
             fileStream->Close();
             ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-            xmlFile->GetFirstChild_(node, "Credits");
+            xmlFile->GetFirstChild(node, "Credits");
             if (node->IsEmpty())
             {
                 M3D_LOG_DATA("CreditsWnd::LoadPageInfo error - cannot find root node \"Credits\"");
@@ -236,7 +236,7 @@ void CreditsWnd::LoadPageInfo()
                 );
             }
             ref_ptr pagesNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-            node->GetFirstChild_(pagesNode, "Pages");
+            node->GetFirstChild(pagesNode, "Pages");
             if (pagesNode->IsEmpty())
             {
                 M3D_LOG_DATA("CreditsWnd::LoadPageInfo warning - no pages was specified");
@@ -244,7 +244,7 @@ void CreditsWnd::LoadPageInfo()
             else
             {
                 ref_ptr pageNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-                for (pagesNode->GetFirstChild_(pageNode, "Page"); !pageNode->IsEmpty(); pageNode->GetNextSibling_(pageNode, "Page"))
+                for (pagesNode->GetFirstChild(pageNode, "Page"); !pageNode->IsEmpty(); pageNode->GetNextSibling(pageNode, "Page"))
                 {
                     auto info = new PageInfo;
                     m3d::SafeStrAttrib(info->m_text, pageNode, "text");

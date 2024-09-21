@@ -1870,6 +1870,7 @@ namespace ai
             auto const isWrongWay =
                 (direction.z * velocity.z + direction.y * velocity.y + direction.x * velocity.x) < -0.1 &&
                 RoughSign(throttle) == 0;
+
             if (isWrongWay)
             {
                 brake = 1.0;

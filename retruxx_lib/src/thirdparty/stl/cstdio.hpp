@@ -1,19 +1,17 @@
 // cstdio standard header
 #pragma once
-#ifndef _CSTDIO_
-#define _CSTDIO_
-#include <yvals.h>
+#include "yvals.hpp"
 
 #ifdef _STD_USING
  #undef _STD_USING
-  #include <stdio.h>
+  #include "stdio.h"
  #define _STD_USING
 
 #else /* _STD_USING */
- #include <stdio.h>
+ #include "stdio.h"
 
  #if _GLOBAL_USING
-_STD_BEGIN
+_OLDSTD_BEGIN
 using ::size_t; using ::fpos_t; using ::FILE;
 using ::clearerr; using ::fclose; using ::feof;
 using ::ferror; using ::fflush; using ::fgetc;
@@ -30,11 +28,10 @@ using ::setbuf; using ::setvbuf; using ::sprintf;
 using ::sscanf; using ::tmpfile; using ::tmpnam;
 using ::ungetc; using ::vfprintf; using ::vprintf;
 using ::vsprintf;
-_STD_END
+_OLDSTD_END
  #endif /* _GLOBAL_USING */
 
 #endif /* _STD_USING */
-#endif /* _CSTDIO_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

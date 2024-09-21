@@ -1,16 +1,12 @@
 // xstddef standard header
 #pragma once
-#ifndef _XSTDDEF_
-#define _XSTDDEF_
-#ifndef _YVALS
- #include <yvals.h>
-#endif /* _YVALS */
+ #include "yvals.hpp"
 
-#include <cstddef>
+#include "cstddef.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// EXCEPTION MACROS
 
@@ -25,7 +21,7 @@ _STD_BEGIN
 
  #define _THROW0()	throw ()
  #define _THROW1(x)	throw (...)
- #define _THROW(x, y)	throw x(y)
+ #define _THROWOLD(x, y)	throw x(y)
 
  #else /* _HAS_EXCEPTIONS */
  #define _TRY_BEGIN	{{
@@ -38,13 +34,13 @@ _STD_BEGIN
 
  #define _THROW0()
  #define _THROW1(x)
- #define _THROW(x, y)	x(y)._Raise()
+ #define _THROWOLD(x, y)	x(y)._Raise()
  #endif /* _HAS_EXCEPTIONS */
 
 		// BITMASK MACROS
  #define _BITMASK(Enum, Ty)	typedef int Ty
 
- #define _BITMASK_OPS(Ty)
+ #define _BITMASK_OPS_OLD(Ty)
 
 		// MISCELLANEOUS MACROS
 #define _DESTRUCTOR(ty, ptr)	(ptr)->~ty()
@@ -57,8 +53,8 @@ _STD_BEGIN
  #define _STCONS(ty, name, val)	static const ty name = (ty)(val)
 
  #ifndef _XSTD
-  #define _X_STD_BEGIN	_STD_BEGIN
-  #define _X_STD_END	_STD_END
+  #define _X_STD_BEGIN	_OLDSTD_BEGIN
+  #define _X_STD_END	_OLDSTD_END
   #define _XSTD	std::/* LEAVE SPACE */
  #endif /* _XSTD */
 
@@ -69,11 +65,9 @@ enum _Uninitialized
 
 		// FUNCTIONS
 _CRTIMP2 void __cdecl _Nomemory();
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
-
-#endif /* _XSTDDEF_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

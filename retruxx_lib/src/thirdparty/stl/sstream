@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
   #pragma warning(disable:4251)
 
@@ -513,7 +513,7 @@ template class _CRTIMP2 basic_stringstream<wchar_t,
 
 
  #endif /* _DLL_CPPLIB */
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

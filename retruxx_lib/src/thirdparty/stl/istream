@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS basic_istream
 template<class _Elem,
@@ -1116,7 +1116,7 @@ _CRTIMP2 inline basic_istream<wchar_t, char_traits<wchar_t> >&
 	}
 
 
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

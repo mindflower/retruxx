@@ -8,7 +8,7 @@
  #include <ymath.h>
 #endif
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		/* FLOAT PROPERTIES */
 #define _DBIAS	0x3fe
@@ -77,7 +77,7 @@ _STD_BEGIN
 #define FL_NAN	4
 #define FL_NEG	8
 
-_C_LIB_DECL
+_C_LIB_OLD_DECL
 		/* double declarations */
 _CRTIMP2 double __cdecl _Atan(double, int);
 _CRTIMP2 short __cdecl _Dint(double *, short);
@@ -115,8 +115,8 @@ _CRTIMP2 long double __cdecl _LPoly(long double, const long double *, int);
 
 extern _CRTIMP2 const _Dconst _LEps, _LRteps;
 extern _CRTIMP2 const long double _LXbig;
-_END_C_LIB_DECL
-_STD_END
+_END_C_LIB_OLD_DECL
+_OLDSTD_END
 #endif /* _XMATH */
 
 /*

@@ -1387,9 +1387,38 @@
     <ClInclude Include="src\server\weaponfirer.h" />
     <ClInclude Include="src\thirdparty\functionscrapper.h" />
     <ClInclude Include="src\thirdparty\injecttools.h" />
+    <ClInclude Include="src\thirdparty\stl\climits.hpp" />
+    <ClInclude Include="src\thirdparty\stl\cstdio.hpp" />
+    <ClInclude Include="src\thirdparty\stl\cstdlib.hpp" />
+    <ClInclude Include="src\thirdparty\stl\cstring.hpp" />
+    <ClInclude Include="src\thirdparty\stl\cwchar.hpp" />
+    <ClInclude Include="src\thirdparty\stl\exception.hpp" />
+    <ClInclude Include="src\thirdparty\stl\functional.hpp" />
+    <ClInclude Include="src\thirdparty\stl\iosfwd.hpp" />
+    <ClInclude Include="src\thirdparty\stl\iterator.hpp" />
+    <ClInclude Include="src\thirdparty\stl\list.hpp" />
+    <ClInclude Include="src\thirdparty\stl\memory.hpp" />
+    <ClInclude Include="src\thirdparty\stl\new.hpp" />
+    <ClInclude Include="src\thirdparty\stl\set.hpp" />
+    <ClInclude Include="src\thirdparty\stl\stddef.h" />
+    <ClInclude Include="src\thirdparty\stl\stdexcept.hpp" />
+    <ClInclude Include="src\thirdparty\stl\stdio.h" />
+    <ClInclude Include="src\thirdparty\stl\stdlib.h" />
+    <ClInclude Include="src\thirdparty\stl\string.h" />
+    <ClInclude Include="src\thirdparty\stl\utility.hpp" />
+    <ClInclude Include="src\thirdparty\stl\vector.hpp" />
+    <ClInclude Include="src\thirdparty\stl\wchar.h" />
+    <ClInclude Include="src\thirdparty\stl\xmemory.hpp" />
+    <ClInclude Include="src\thirdparty\stl\xstddef.hpp" />
+    <ClInclude Include="src\thirdparty\stl\xstring.hpp" />
+    <ClInclude Include="src\thirdparty\stl\yvals.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h" />
+    <None Include="src\thirdparty\stl\cstddef.hpp" />
+    <None Include="src\thirdparty\stl\map.hpp" />
+    <None Include="src\thirdparty\stl\xtree.hpp" />
+    <None Include="src\thirdparty\stl\xutility.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

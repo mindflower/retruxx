@@ -19,34 +19,34 @@
   #include <xmemory>
   #include <xstring>
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 struct _DebugHeapTag_t
 	{	// placement new tag type to select debug CRT heap
 	int _Type;
 	};
-_STD_END
+_OLDSTD_END
 
 _CRTIMP2 void * __cdecl operator new(size_t,
-	const std::_DebugHeapTag_t&, char *, int)
-		_THROW1(std::bad_alloc);	// allocate from the debug CRT heap
+	const oldstd::_DebugHeapTag_t&, char *, int)
+		_THROW1(oldstd::bad_alloc);	// allocate from the debug CRT heap
 
 _CRTIMP2 void * __cdecl operator new[](size_t,
-	const std::_DebugHeapTag_t&, char *, int)
-		_THROW1(std::bad_alloc);	// allocate array from the debug CRT heap
+	const oldstd::_DebugHeapTag_t&, char *, int)
+		_THROW1(oldstd::bad_alloc);	// allocate array from the debug CRT heap
 
 _CRTIMP2 void __cdecl operator delete(void *,
-	const std::_DebugHeapTag_t&, char *, int)
+	const oldstd::_DebugHeapTag_t&, char *, int)
 		_THROW0();	// delete if new for debug CRT heap fails
 
 _CRTIMP2 void __cdecl operator delete[](void *,
-	const std::_DebugHeapTag_t&, char *, int)
+	const oldstd::_DebugHeapTag_t&, char *, int)
 		_THROW0();	// delete if array new for debug CRT heap fails
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
-  #define _NEW_CRT				new(std::_DebugHeapTag, __FILE__, __LINE__)
-  #define _DELETE_CRT(_P)		std::_DebugHeapDelete(_P)
-  #define _DELETE_CRT_VEC(_P)	std::_DebugHeapDelete((void *)_P)
+  #define _NEW_CRT				new(oldstd::_DebugHeapTag, __FILE__, __LINE__)
+  #define _DELETE_CRT(_P)		oldstd::_DebugHeapDelete(_P)
+  #define _DELETE_CRT_VEC(_P)	oldstd::_DebugHeapDelete((void *)_P)
   #define _STRING_CRT			_DebugHeapString
 
 extern _CRTIMP2 const _DebugHeapTag_t _DebugHeapTag;
@@ -96,7 +96,7 @@ public:
 		// CLASS _DebugHeapString
 class _DebugHeapString
 	: public basic_string<char, char_traits<char>, _DebugHeapAllocator<char> >
-	{	// a version of std::string allocated on the debug CRT heap
+	{	// a version of oldstd::string allocated on the debug CRT heap
 public:
 	typedef _DebugHeapString _Myt;
 	typedef basic_string<char, char_traits<char>, _DebugHeapAllocator<char> >
@@ -120,7 +120,7 @@ public:
 
 	_DebugHeapString(const string &_Str)
 		: _Mybase(_Str.c_str())
-		{	// construct from std::string
+		{	// construct from oldstd::string
 		}
 
 	operator string() const
@@ -128,7 +128,7 @@ public:
 		return (string(c_str()));
 		}
 	};
-_STD_END
+_OLDSTD_END
  #endif  /* !defined(_DEBUG) */
 
 #pragma warning(pop)

@@ -465,7 +465,7 @@ int ConsoleImp::Load(CStr const& fname)
     if (ref_ptr xmlFile = m3d::ReadXmlFile(fname.c_str(), &err))
     {
         ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        xmlFile->GetFirstChild_(node, "config");
+        xmlFile->GetFirstChild(node, "config");
         if (node->IsEmpty())
         {
             M3D_LOG_INFO("Config::cannot find 'config' node");
@@ -473,7 +473,7 @@ int ConsoleImp::Load(CStr const& fname)
         }
         
         ref_ptr attrib = node->CreateAttribute();
-        for (node->GetFirstAttribute(attrib); !attrib->IsEmpty(); attrib->GetNextSibling_(attrib))
+        for (node->GetFirstAttribute(attrib); !attrib->IsEmpty(); attrib->GetNextSibling(attrib))
         {
             CVarLoadedValue val;
             val.m_name = attrib->GetName();
@@ -795,9 +795,9 @@ void ConsoleImp::Print(char const* txt)
         delete[] text;
 
         //TODO: check this and refactor!!!
-        char* v5; // ecx
+        const char* v5; // ecx
         char v6; // bl
-        char* v7; // ebp
+        const char* v7; // ebp
         int v8; // ecx
         int v9; // eax
         int v10; // eax
@@ -805,10 +805,10 @@ void ConsoleImp::Print(char const* txt)
         int v12; // eax
         CStr v13; // [esp+Ch] [ebp-24h] BYREF
 
-        v5 = str.m_charPtr;
-        v6 = *str.m_charPtr;
-        v7 = str.m_charPtr;
-        if (*str.m_charPtr)
+        v5 = str.c_str();
+        v6 = *str.c_str();
+        v7 = str.c_str();
+        if (*str.c_str())
         {
             while (1)
             {
@@ -858,7 +858,7 @@ void ConsoleImp::Print(char const* txt)
                 v6 = *v7;
                 if (!*v7)
                 {
-                    v5 = str.m_charPtr;
+                    v5 = str.c_str();
                     break;
                 }
             }

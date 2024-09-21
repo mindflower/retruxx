@@ -1,19 +1,17 @@
 // cstdlib standard header
 #pragma once
-#ifndef _CSTDLIB_
-#define _CSTDLIB_
-#include <yvals.h>
+#include "yvals.hpp"
 
 #ifdef _STD_USING
  #undef _STD_USING
-  #include <stdlib.h>
+#include "stdlib.h"
  #define _STD_USING
 
 #else /* _STD_USING */
- #include <stdlib.h>
+ #include "stdlib.h"
 
  #if _GLOBAL_USING
-_STD_BEGIN
+_OLDSTD_BEGIN
 using ::size_t; using ::div_t; using ::ldiv_t;
 
 using ::abort; using ::abs; using ::atexit;
@@ -26,11 +24,10 @@ using ::qsort; using ::rand; using ::realloc;
 using ::srand; using ::strtod; using ::strtol;
 using ::strtoul; using ::system;
 using ::wcstombs; using ::wctomb;
-_STD_END
+_OLDSTD_END
  #endif /* _GLOBAL_USING */
 
 #endif /* _STD_USING */
-#endif /* _CSTDLIB_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

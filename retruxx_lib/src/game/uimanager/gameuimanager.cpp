@@ -390,7 +390,7 @@ int GameUiManager::GUI_LoadResourceInfosFromFile(CStr const& fileName, std::vect
     if (xmlFile)
     {
         ref_ptr rootNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        xmlFile->GetFirstChild_(rootNode, "GuiResourceInfo");
+        xmlFile->GetFirstChild(rootNode, "GuiResourceInfo");
         if (rootNode->IsEmpty())
         {
             M3D_LOG_INFO("Interface: error - cannot find root node GuiResourceInfo in file " + fileName);
@@ -398,7 +398,7 @@ int GameUiManager::GUI_LoadResourceInfosFromFile(CStr const& fileName, std::vect
         }
         ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
         auto res = 1;
-        for(rootNode->GetFirstChild_(node, "Item");!node->IsEmpty(); node->GetNextSibling_(node, "Item"))
+        for(rootNode->GetFirstChild(node, "Item");!node->IsEmpty(); node->GetNextSibling(node, "Item"))
         {
             auto info = dynamic_cast<ResourceInfo*>(m3d::g_Kernel->New(className.c_str()));
             if (!info)

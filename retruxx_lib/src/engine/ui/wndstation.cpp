@@ -49,7 +49,7 @@ namespace m3d
             auto captureWnd = m_wndMouseCapture;
             if (!captureWnd)
             {
-                for (auto* it = GetFirstChild_(); it != nullptr; it = it->GetNextSibling_())
+                for (auto* it = GetFirstChild(); it != nullptr; it = it->GetNextSibling())
                 {
                     auto* wnd = reinterpret_cast<Wnd*>(it);
                     if ((wnd->GetStyle() & 0x200) != 0 && wnd->IsPtInBounds(m_prevMouseCoord))
@@ -219,7 +219,7 @@ namespace m3d
 
             //TODO: check child order
             std::vector<Wnd*> wnds;
-            for (auto child = curWnd->GetFirstChild_(); child; child = child->GetNextSibling_())
+            for (auto child = curWnd->GetFirstChild(); child; child = child->GetNextSibling())
             {
                 if (auto const wnd = dynamic_cast<Wnd*>(child))
                 {
@@ -260,7 +260,7 @@ namespace m3d
             auto res = curWnd;
             if (curWnd)
             {
-                for (auto obj = curWnd->GetFirstChild_(); obj; obj = obj->GetNextSibling_())
+                for (auto obj = curWnd->GetFirstChild(); obj; obj = obj->GetNextSibling())
                 {
                     auto wnd = (Wnd*)(obj);
                     if ((wnd->GetStyle() & 0x200) != 0 || affectAll)
@@ -441,10 +441,10 @@ namespace m3d
                 return 0;
             }
             ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            xmlFile->GetFirstChild_(node, "resource");
+            xmlFile->GetFirstChild(node, "resource");
             if (!node->IsEmpty())
             {
-                for (node->GetFirstChild_(node, "string"); !node->IsEmpty(); node->GetNextSibling_(node, "string"))
+                for (node->GetFirstChild(node, "string"); !node->IsEmpty(); node->GetNextSibling(node, "string"))
                 {
                     auto id = node->GetAttribute("id");
                     auto value = node->GetAttribute("value");
@@ -864,7 +864,7 @@ namespace m3d
             auto captureWnd = m_wndMouseCapture;
             if (!captureWnd)
             {
-                for (auto* it = GetFirstChild_(); it != nullptr; it = it->GetNextSibling_())
+                for (auto* it = GetFirstChild(); it != nullptr; it = it->GetNextSibling())
                 {
                     auto* wnd = reinterpret_cast<Wnd*>(it);
                     if ((wnd->GetStyle() & 0x200) != 0 && wnd->IsPtInBounds(m_prevMouseCoord))

@@ -1,10 +1,8 @@
 // xtree internal header
 #pragma once
-#ifndef _XTREE_
-#define _XTREE_
-#include <functional>
-#include <memory>
-#include <stdexcept>
+#include "functional.hpp"
+#include "memory.hpp"
+#include "stdexcept.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
@@ -14,7 +12,7 @@
   #define _GENERIC_BASE	_Node
 
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS _Tree_nod
 template<class _Traits>
@@ -349,8 +347,8 @@ public:
 			}
 		};
 
-	typedef std::reverse_iterator<iterator> reverse_iterator;
-	typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+	typedef oldstd::reverse_iterator<iterator> reverse_iterator;
+	typedef oldstd::reverse_iterator<const_iterator> const_reverse_iterator;
 	typedef pair<iterator, bool> _Pairib;
 	typedef pair<iterator, iterator> _Pairii;
 	typedef pair<const_iterator, const_iterator> _Paircc;
@@ -589,7 +587,7 @@ public:
 	iterator erase(iterator _Where)
 		{	// erase element at _Where
 		if (_Isnil(_Where._Mynode()))
-			_THROW(out_of_range, "invalid map/set<T> iterator");
+			_THROWOLD(out_of_range, "invalid map/set<T> iterator");
 		_Nodeptr _Erasednode = _Where._Mynode();	// node to erase
 		++_Where;	// save successor iterator for return
 
@@ -655,7 +653,7 @@ public:
 				_Right(_Parent(_Erasednode)) = _Pnode;	// link down to right
 
 			_Parent(_Pnode) = _Parent(_Erasednode);	// link successor up
-			std::swap(_Color(_Pnode), _Color(_Erasednode));	// recolor it
+			oldstd::swap(_Color(_Pnode), _Color(_Erasednode));	// recolor it
 			}
 
 		if (_Color(_Erasednode) == _Black)
@@ -839,9 +837,9 @@ public:
 		{	// exchange contents with _Right
 		if (get_allocator() == _Right.get_allocator())
 			{	// same allocator, swap control information
-			std::swap(this->comp, _Right.comp);
-			std::swap(_Myhead, _Right._Myhead);
-			std::swap(_Mysize, _Right._Mysize);
+			oldstd::swap(this->comp, _Right.comp);
+			oldstd::swap(_Myhead, _Right._Myhead);
+			oldstd::swap(_Mysize, _Right._Mysize);
 			}
 		else
 			{	// different allocator, do multiple assigns
@@ -910,7 +908,7 @@ protected:
 		const value_type& _Val)
 		{	// add node with value next to _Wherenode, to left if _Addnode
 		if (max_size() - 1 <= _Mysize)
-			_THROW(length_error, "map/set<T> too long");
+			_THROWOLD(length_error, "map/set<T> too long");
 		_Nodeptr _Newnode = _Buynode(_Myhead, _Wherenode, _Myhead,
 			_Val, _Red);
 
@@ -1190,14 +1188,13 @@ template<class _Traits> inline
 	{	// test if _Less >= _Right for _Trees
 	return (!(_Left < _Right));
 	}
-_STD_END
+_OLDSTD_END
 
   #pragma warning(default:4127 4284)
 
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _XTREE_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

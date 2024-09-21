@@ -77,14 +77,14 @@ namespace m3d
             return -1;
         }
         auto musicNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-        xmlFile->GetFirstChild_(musicNode, "Music");
+        xmlFile->GetFirstChild(musicNode, "Music");
         if (musicNode->IsEmpty())
         {
             return -1;
         }
 
         auto modelNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-        for (musicNode->GetFirstChild_(modelNode, "model"); !modelNode->IsEmpty(); modelNode->GetNextSibling_(modelNode, "model"))
+        for (musicNode->GetFirstChild(modelNode, "model"); !modelNode->IsEmpty(); modelNode->GetNextSibling(modelNode, "model"))
         { 
 	        if (modelNode->GetAttribute("id") == CStr(id))
 	        {

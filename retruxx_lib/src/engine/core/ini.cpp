@@ -263,7 +263,7 @@ char const* XmlFileImpl::GetError()
     return nullptr;
 }
 
-bool XmlFileImpl::GetFirstChild_(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
+bool XmlFileImpl::GetFirstChild(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
 {
     auto child = wantValue ? FirstChild(wantValue) : FirstChild();
     auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
@@ -414,9 +414,9 @@ int IniFileImpl::IncRef()
 bool IniFileImpl::FindSection(m3d::cmn::XmlNode* writeTo, CStr const& section)
 {
     ref_ptr node = m_file->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-    if (m_file->GetFirstChild_(node, "Ini"))
+    if (m_file->GetFirstChild(node, "Ini"))
     {
-        node->GetFirstChild_(writeTo, "Section");
+        node->GetFirstChild(writeTo, "Section");
         while (!writeTo->IsEmpty())
         {
             if (writeTo->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
@@ -430,7 +430,7 @@ bool IniFileImpl::FindSection(m3d::cmn::XmlNode* writeTo, CStr const& section)
                     }
                 }
             }
-            writeTo->GetNextSibling_(writeTo, "Section");
+            writeTo->GetNextSibling(writeTo, "Section");
         }
     }
     return !writeTo->IsEmpty();
@@ -467,7 +467,7 @@ bool IniFileImpl::FindKey(m3d::cmn::XmlNode* writeTo, CStr const& section, CStr 
     {
         return false;
     }
-    writeTo->GetFirstChild_(writeTo, "Key");
+    writeTo->GetFirstChild(writeTo, "Key");
     while (!writeTo->IsEmpty())
     {
         if (writeTo->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
@@ -481,20 +481,20 @@ bool IniFileImpl::FindKey(m3d::cmn::XmlNode* writeTo, CStr const& section, CStr 
                 }
             }
         }
-        writeTo->GetNextSibling_(writeTo, "Key");
+        writeTo->GetNextSibling(writeTo, "Key");
     }
     if (writeTo->IsEmpty())
     {
         return false;
     }
-    writeTo->GetFirstChild_(writeTo, nullptr);
+    writeTo->GetFirstChild(writeTo, nullptr);
     while (!writeTo->IsEmpty())
     {
         if (writeTo->IsOfType(m3d::cmn::XML_NODE_TEXT))
         {
             break;
         }
-        writeTo->GetNextSibling_(writeTo, nullptr);
+        writeTo->GetNextSibling(writeTo, nullptr);
     }
     return !writeTo->IsEmpty();
 }
@@ -581,7 +581,7 @@ XmlNodeImpl::XmlNodeImpl(TiXmlNode* fromNode) :
 {
 }
 
-bool XmlNodeImpl::GetPrevSibling_(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
+bool XmlNodeImpl::GetPrevSibling(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
 {
     auto sibling = wantValue ? m_node->PreviousSibling(wantValue) : m_node->PreviousSibling();
     auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
@@ -617,7 +617,7 @@ void XmlNodeImpl::SetValue(char const*)
     throw std::logic_error("Not implemented");
 }
 
-bool XmlNodeImpl::GetNextSibling_(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
+bool XmlNodeImpl::GetNextSibling(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
 {
     auto sibling = wantValue ? m_node->NextSibling(wantValue) : m_node->NextSibling();
     auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
@@ -655,7 +655,7 @@ m3d::cmn::XmlAttrib* XmlNodeImpl::CreateAttribute() const
     return new XmlAttribImpl;
 }
 
-bool XmlNodeImpl::GetFirstChild_(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
+bool XmlNodeImpl::GetFirstChild(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
 {
     auto child = wantValue ? m_node->FirstChild(wantValue) : m_node->FirstChild();
     auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
@@ -682,7 +682,7 @@ char const* XmlNodeImpl::GetAttribute(char const* name) const
     return attr ? attr->c_str() : nullptr;
 }
 
-bool XmlNodeImpl::GetLastChild_(m3d::cmn::XmlNode*, char const*) const
+bool XmlNodeImpl::GetLastChild(m3d::cmn::XmlNode*, char const*) const
 {
     throw std::logic_error("Not implemented");
 }
@@ -726,7 +726,7 @@ int XmlNodeImpl::DecRef()
     return ret;
 }
 
-bool XmlAttribImpl::GetNextSibling_(m3d::cmn::XmlAttrib* writeTo)
+bool XmlAttribImpl::GetNextSibling(m3d::cmn::XmlAttrib* writeTo)
 {
     auto writeToCasted = dynamic_cast<XmlAttribImpl*>(writeTo);
     auto attr = m_attrib->Next();

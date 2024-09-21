@@ -1,8 +1,6 @@
 // new standard header for Microsoft
 #pragma once
-#ifndef _NEW_
-#define _NEW_
-#include <exception>
+#include "exception.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
@@ -10,7 +8,7 @@
   #pragma push_macro("new")
   #undef new
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 		// CLASS bad_alloc
 class bad_alloc
 	: public exception
@@ -51,11 +49,11 @@ extern const nothrow_t nothrow;	// constant for placement new tag
 		// FUNCTION AND OBJECT DECLARATIONS
 _CRTIMP2 new_handler __cdecl set_new_handler(new_handler)
 	_THROW0();	// establish alternate new handler
-_STD_END
+_OLDSTD_END
 
 		// new AND delete DECLARATIONS (NB: NOT IN std)
 void __cdecl operator delete(void *) _THROW0();
-void *__cdecl operator new(size_t) _THROW1(std::bad_alloc);
+void *__cdecl operator new(size_t) _THROW1(oldstd::bad_alloc);
 
  #ifndef __PLACEMENT_NEW_INLINE
   #define __PLACEMENT_NEW_INLINE
@@ -84,27 +82,27 @@ inline void __cdecl operator delete[](void *, void *) _THROW0()
 void __cdecl operator delete[](void *) _THROW0();	// delete allocated array
 
 void *__cdecl operator new[](size_t)
-	_THROW1(std::bad_alloc);	// allocate array or throw exception
+	_THROW1(oldstd::bad_alloc);	// allocate array or throw exception
 
  #ifndef __NOTHROW_T_DEFINED
   #define __NOTHROW_T_DEFINED
-void *__cdecl operator new(size_t, const std::nothrow_t&)
+void *__cdecl operator new(size_t, const oldstd::nothrow_t&)
 	_THROW0();
 
-void *__cdecl operator new[](size_t, const std::nothrow_t&)
+void *__cdecl operator new[](size_t, const oldstd::nothrow_t&)
 	_THROW0();	// allocate array or return null pointer
 
-void __cdecl operator delete(void *, const std::nothrow_t&)
+void __cdecl operator delete(void *, const oldstd::nothrow_t&)
 	_THROW0();	// delete if nothrow new fails -- REPLACEABLE
 
-void __cdecl operator delete[](void *, const std::nothrow_t&)
+void __cdecl operator delete[](void *, const oldstd::nothrow_t&)
 	_THROW0();	// delete if nothrow array new fails -- REPLACEABLE
  #endif /* __NOTHROW_T_DEFINED */
 
 
 
  #if !defined(_INC_NEW) || !defined(_MSC_EXTENSIONS)
-using std::new_handler;
+using oldstd::new_handler;
  #endif /* !defined(_INC_NEW) || !defined(_MSC_EXTENSIONS) */
 
   #pragma pop_macro("new")
@@ -112,7 +110,6 @@ using std::new_handler;
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _NEW_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

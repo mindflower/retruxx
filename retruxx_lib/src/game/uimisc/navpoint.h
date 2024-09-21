@@ -8,7 +8,7 @@ namespace m3d
 {
     namespace cmn
     {
-        class XmlNode;
+        struct XmlNode;
         class XmlFile;
     }
 }

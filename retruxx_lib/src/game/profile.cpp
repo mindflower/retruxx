@@ -84,11 +84,11 @@ int Profile::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xm
         {
             int paramRes = 1;
             ref_ptr paramsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-            xmlNode->GetFirstChild_(paramsNode, "Params");
+            xmlNode->GetFirstChild(paramsNode, "Params");
             if (!paramsNode->IsEmpty())
             {
                 ref_ptr paramNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-                for (paramsNode->GetFirstChild_(paramNode, "Param"); !paramNode->IsEmpty();paramNode->GetNextSibling_(paramNode, "Param"))
+                for (paramsNode->GetFirstChild(paramNode, "Param"); !paramNode->IsEmpty();paramNode->GetNextSibling(paramNode, "Param"))
                 {
                     CStr idStr;
                     m3d::SafeStrAttrib(idStr, paramNode, "Id");
@@ -101,7 +101,7 @@ int Profile::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xm
                     else
                     {
                         ref_ptr valueNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-                        paramNode->GetFirstChild_(valueNode, "Value");
+                        paramNode->GetFirstChild(valueNode, "Value");
                         if (valueNode->IsEmpty())
                         {
                             M3D_LOG_INFO("Profile::LoadFromXml warning - invalid value node for param " + idStr);
@@ -463,7 +463,7 @@ int ProfileManager::LoadProfiles()
             {
                 stream->Close();
                 ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-                xmlFile->GetFirstChild_(node, "Profile");
+                xmlFile->GetFirstChild(node, "Profile");
                 if (!node->IsEmpty())
                 {
                     auto profile = dynamic_cast<Profile*>(m3d::g_Kernel->New("Profile"));

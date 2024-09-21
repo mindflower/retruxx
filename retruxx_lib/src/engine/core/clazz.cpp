@@ -48,7 +48,7 @@ namespace m3d
 	RT_CLASS_EXPORTS_END;
 
 
-    RT_CLASS_DEFINE(Object);
+    //RT_CLASS_DEFINE(Object);
 }
 
 namespace m3d
@@ -60,7 +60,7 @@ namespace m3d
 
     int RefCountedBase::DecRef()
     {
-        auto const result = --m_refCount;
+        const auto result = --m_refCount;
         if (result <=0)
         {
             delete this;
@@ -93,7 +93,7 @@ namespace m3d
         m_persistant(clazz.m_persistant),
         m_isChildDirty(clazz.m_isChildDirty)
     {
-        for (auto* it = GetFirstChild_(); it; it = it->GetNextSibling_())
+        for (auto* it = GetFirstChild(); it; it = it->GetNextSibling())
         {
             AddChild(it->Clone());
         }
@@ -139,10 +139,6 @@ namespace m3d
     {
         M3D_ASSERT(m_fnCreateObject);
         return m_fnCreateObject();
-    }
-
-    RefCountedBase::RefCountedBase()
-    {
     }
 
     int Object::AddChild(Object* node)
@@ -238,7 +234,7 @@ namespace m3d
             }
         }
         ref_ptr newNode = file->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
-        for (node->GetFirstChild_(newNode, "Node"); !newNode->IsEmpty(); newNode->GetNextSibling_(newNode, "Node"))
+        for (node->GetFirstChild(newNode, "Node"); !newNode->IsEmpty(); newNode->GetNextSibling(newNode, "Node"))
         {
             if (!ChildNodeFromXmlNode(file, newNode))
             {
@@ -263,7 +259,7 @@ namespace m3d
         }
         writeTo->SetAttribute("name", m_name.c_str());
         writeTo->SetAttribute("class", GetClassNameA());
-        for (auto* it = GetFirstChild_(); it != nullptr; it = it->GetNextSibling_())
+        for (auto* it = GetFirstChild(); it != nullptr; it = it->GetNextSibling())
         {
             //TODO: magic number
             it->GetProperty(4360, &writeTo);
@@ -276,12 +272,12 @@ namespace m3d
         return true;
     }
 
-    Object* Object::GetFirstChild_() const
+    Object* Object::GetFirstChild() const
     {
         return m_firstChild;
     }
 
-    Object* Object::GetLastChild_() const
+    Object* Object::GetLastChild() const
     {
         return m_lastChild;
     }
@@ -303,12 +299,12 @@ namespace m3d
         return nullptr;
     }
 
-    Object* Object::GetNextSibling_() const
+    Object* Object::GetNextSibling() const
     {
         return m_nextSibling;
     }
 
-    Object* Object::GetPrevSibling_() const
+    Object* Object::GetPrevSibling() const
     {
         throw std::logic_error("Not implemented");
     }
@@ -344,7 +340,7 @@ namespace m3d
     Object* Object::ChildNodeFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
     {
         CStr const name(xmlNode->GetAttribute("name"));
-        for (auto* it = GetFirstChild_(); it; it = GetNextSibling_())
+        for (auto* it = GetFirstChild(); it; it = GetNextSibling())
         {
             if (it->GetName() == name)
             {
@@ -574,20 +570,20 @@ namespace m3d
         }
 
         ref_ptr xmlNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-        xmlFile->GetFirstChild_(xmlNode, "Prefabs");
+        xmlFile->GetFirstChild(xmlNode, "Prefabs");
         if (xmlNode->IsEmpty())
         {
             M3D_LOG_INFO("ChildNodeFromXmlFile: Prefabs node should be root node in " + ext);
             return nullptr;
         }
-        xmlNode->GetFirstChild_(xmlNode, "Node");
+        xmlNode->GetFirstChild(xmlNode, "Node");
         while (!xmlNode->IsEmpty())
         {
             if (xmlNode->GetAttribute("name") == internalName)
             {
                 break;
             }
-            xmlNode->GetNextSibling_(xmlNode, "Node");
+            xmlNode->GetNextSibling(xmlNode, "Node");
         }
         if (xmlNode->IsEmpty())
         {

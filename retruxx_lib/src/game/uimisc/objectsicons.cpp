@@ -87,7 +87,7 @@ int ObjectsIcons::Load(CStr const& fileName, bool bGlobal)
     stream->Close();
 
     ref_ptr rootNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-    xmlFile->GetFirstChild_(rootNode, "icons");
+    xmlFile->GetFirstChild(rootNode, "icons");
     if (rootNode->IsEmpty())
     {
         M3D_LOG_INFO("ObjectsIcons::LoadFromXml error - cannot find root node icons");
@@ -95,7 +95,7 @@ int ObjectsIcons::Load(CStr const& fileName, bool bGlobal)
     }
     auto res = 1;
     ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-    for (rootNode->GetFirstChild_(node, "Item"); !node->IsEmpty(); node->GetNextSibling_(node, "Item"))
+    for (rootNode->GetFirstChild(node, "Item"); !node->IsEmpty(); node->GetNextSibling(node, "Item"))
     {
         CStr strId;
         CStr file;

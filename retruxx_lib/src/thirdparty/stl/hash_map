@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STDEXT_BEGIN
+_OLDSTDEXT_BEGIN
 
 		// TEMPLATE CLASS _Hmap_traits
 template<class _Kty,	// key type
@@ -18,7 +18,7 @@ template<class _Kty,	// key type
 	{	// traits required to make _Hash behave like a map
 public:
 	typedef _Kty key_type;
-	typedef _STD pair<const _Kty, _Ty> value_type;
+	typedef _OLDSTD pair<const _Kty, _Ty> value_type;
 	typedef _Tr key_compare;
 	typedef typename _Alloc::template rebind<value_type>::other
 		allocator_type;
@@ -38,7 +38,7 @@ public:
 		}
 
 	class value_compare
-		: public _STD binary_function<value_type, value_type, bool>
+		: public _OLDSTD binary_function<value_type, value_type, bool>
 		{	// functor for comparing two element values
 		friend class _Hmap_traits<_Kty, _Ty, _Tr, _Alloc, _Mfl>;
 
@@ -69,8 +69,8 @@ public:
 		// TEMPLATE CLASS hash_map
 template<class _Kty,
 	class _Ty,
-	class _Tr = hash_compare<_Kty, _STD less<_Kty> >,
-	class _Alloc = _STD allocator< _STD pair<const _Kty, _Ty> > >
+	class _Tr = hash_compare<_Kty, _OLDSTD less<_Kty> >,
+	class _Alloc = _OLDSTD allocator< _OLDSTD pair<const _Kty, _Ty> > >
 	class hash_map
 		: public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false> >
 	{	// hash table of {key, mapped} values, unique keys
@@ -151,8 +151,8 @@ template<class _Kty,
 	class _Ty,
 	class _Tr,
 	class _Alloc> inline
-	void swap( _STDEXT hash_map<_Kty, _Ty, _Tr, _Alloc>& _Left,
-		_STDEXT hash_map<_Kty, _Ty, _Tr, _Alloc>& _Right)
+	void swap( _OLDSTDEXT hash_map<_Kty, _Ty, _Tr, _Alloc>& _Left,
+		_OLDSTDEXT hash_map<_Kty, _Ty, _Tr, _Alloc>& _Right)
 	{	// swap _Left and _Right hash_maps
 	_Left.swap(_Right);
 	}
@@ -160,8 +160,8 @@ template<class _Kty,
 		// TEMPLATE CLASS hash_multimap
 template<class _Kty,
 	class _Ty,
-	class _Tr = hash_compare<_Kty, _STD less<_Kty> >,
-	class _Alloc = _STD allocator< _STD pair<const _Kty, _Ty> > >
+	class _Tr = hash_compare<_Kty, _OLDSTD less<_Kty> >,
+	class _Alloc = _OLDSTD allocator< _OLDSTD pair<const _Kty, _Ty> > >
 	class hash_multimap
 		: public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true> >
 	{	// hash table of {key, mapped} values, non-unique keys
@@ -252,31 +252,31 @@ template<class _Kty,
 	class _Ty,
 	class _Tr,
 	class _Alloc> inline
-	void swap( _STDEXT hash_multimap<_Kty, _Ty, _Tr, _Alloc>& _Left,
-		_STDEXT hash_multimap<_Kty, _Ty, _Tr, _Alloc>& _Right)
+	void swap( _OLDSTDEXT hash_multimap<_Kty, _Ty, _Tr, _Alloc>& _Left,
+		_OLDSTDEXT hash_multimap<_Kty, _Ty, _Tr, _Alloc>& _Right)
 	{	// swap _Left and _Right hash_multimaps
 	_Left.swap(_Right);
 	}
 
-_STDEXT_END
+_OLDSTDEXT_END
 
 #ifdef _MSC_EXTENSIONS
 #if _DEFINE_DEPRECATED_HASH_CLASSES
 #pragma warning(push)
 #pragma warning(disable: 4996)
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 		// TEMPLATE CLASS hash_map
 template<class _Kty,
 	class _Ty,
-	class _Tr = _STDEXT hash_compare<_Kty, less<_Kty> >,
+	class _Tr = _OLDSTDEXT hash_compare<_Kty, less<_Kty> >,
 	class _Alloc = allocator< pair<const _Kty, _Ty> > >
 	class _DEPRECATED hash_map
-		: public _STDEXT _Hash< _STDEXT _Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false> >
+		: public _OLDSTDEXT _Hash< _OLDSTDEXT _Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false> >
 	{	// hash table of {key, mapped} values, unique keys
 public:
 	typedef hash_map<_Kty, _Ty, _Tr, _Alloc> _Myt;
-	typedef _STDEXT _Hash< _STDEXT _Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false> > _Mybase;
+	typedef _OLDSTDEXT _Hash< _OLDSTDEXT _Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false> > _Mybase;
 	typedef _Kty key_type;
 	typedef _Ty mapped_type;
 	typedef _Ty referent_type;
@@ -360,14 +360,14 @@ template<class _Kty,
 		// TEMPLATE CLASS hash_multimap
 template<class _Kty,
 	class _Ty,
-	class _Tr = _STDEXT hash_compare<_Kty, less<_Kty> >,
+	class _Tr = _OLDSTDEXT hash_compare<_Kty, less<_Kty> >,
 	class _Alloc = allocator< pair<const _Kty, _Ty> > >
 	class _DEPRECATED hash_multimap
-		: public _STDEXT _Hash< _STDEXT _Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true> >
+		: public _OLDSTDEXT _Hash< _OLDSTDEXT _Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true> >
 	{	// hash table of {key, mapped} values, non-unique keys
 public:
 	typedef hash_multimap<_Kty, _Ty, _Tr, _Alloc> _Myt;
-	typedef _STDEXT _Hash< _STDEXT _Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true> > _Mybase;
+	typedef _OLDSTDEXT _Hash< _OLDSTDEXT _Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true> > _Mybase;
 	typedef _Kty key_type;
 	typedef _Ty mapped_type;
 	typedef _Ty referent_type;	// old name, magically gone
@@ -458,7 +458,7 @@ template<class _Kty,
 	_Left.swap(_Right);
 	}
 
-_STD_END
+_OLDSTD_END
 
 #pragma warning(pop)
 #endif /* _DEFINE_DEPRECATED_HASH_CLASSES */

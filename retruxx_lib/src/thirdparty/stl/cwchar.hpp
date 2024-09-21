@@ -1,19 +1,17 @@
 // cwchar standard header
 #pragma once
-#ifndef _CWCHAR_
-#define _CWCHAR_
-#include <yvals.h>
+#include "yvals.hpp"
 
 #ifdef _STD_USING
  #undef _STD_USING
-  #include <wchar.h>
+#include "wchar.h"
  #define _STD_USING
 
 #else /* _STD_USING */
- #include <wchar.h>
+ #include "wchar.h"
 
  #if _GLOBAL_USING
-_STD_BEGIN
+_OLDSTD_BEGIN
 using ::mbstate_t; using ::size_t; using ::tm; using ::wint_t;
 
 using ::btowc; using ::fgetwc; using ::fgetws; using ::fputwc;
@@ -33,11 +31,10 @@ using ::wcstod; using ::wcstoul; using ::wcsstr;
 using ::wcstok; using ::wcsxfrm; using ::wctob;
 using ::wmemchr; using ::wmemcmp; using ::wmemcpy;
 using ::wmemmove; using ::wmemset; using ::wcsftime;
-_STD_END
+_OLDSTD_END
  #endif /* _GLOBAL_USING */
 
 #endif /* _STD_USING */
-#endif /* _CWCHAR_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

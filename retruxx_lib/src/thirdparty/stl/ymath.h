@@ -3,8 +3,8 @@
 #ifndef _YMATH
 #define _YMATH
 #include <yvals.h>
-_C_STD_BEGIN
-_C_LIB_DECL
+_C_OLDSTD_BEGIN
+_C_LIB_OLD_DECL
 
 		/* MACROS FOR _Dtest RETURN (0 => ZERO) */
 #define _DENORM		(-2)	/* C9X only */
@@ -58,8 +58,8 @@ _CRTIMP2 long double __cdecl _LLog(long double, int);
 _CRTIMP2 long double __cdecl _LSin(long double, unsigned int);
 _CRTIMP2 long double __cdecl _LSinh(long double, long double);
 _CRTIMP2 extern const _Dconst _LDenorm, _LInf, _LNan, _LSnan;
-_END_C_LIB_DECL
-_C_STD_END
+_END_C_LIB_OLD_DECL
+_C_OLDSTD_END
 #endif /* _YMATH */
 
 /*

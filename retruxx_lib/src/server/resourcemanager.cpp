@@ -134,7 +134,7 @@ namespace ai
 		if (!xmlNode->IsEmpty())
 		{
 			ref_ptr typeNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-			for (xmlNode->GetFirstChild_(typeNode, "Type"); !typeNode->IsEmpty(); typeNode->GetNextSibling_(typeNode, "Type"))
+			for (xmlNode->GetFirstChild(typeNode, "Type"); !typeNode->IsEmpty(); typeNode->GetNextSibling(typeNode, "Type"))
 			{
 				_ReadResourceFromXml(xmlFile, typeNode, nullptr);
 			}
@@ -148,11 +148,11 @@ namespace ai
 		if (xmlFile)
 		{
 			ref_ptr xmlNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-			xmlFile->GetFirstChild_(xmlNode, "ResourceTypes");
+			xmlFile->GetFirstChild(xmlNode, "ResourceTypes");
 			if (!xmlNode->IsEmpty())
 			{
 				ref_ptr typeNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-				for (xmlNode->GetFirstChild_(typeNode, "Type"); !typeNode->IsEmpty(); typeNode->GetNextSibling_(typeNode, "Type"))
+				for (xmlNode->GetFirstChild(typeNode, "Type"); !typeNode->IsEmpty(); typeNode->GetNextSibling(typeNode, "Type"))
 				{
 					_ReadResourceFromXml(xmlFile, typeNode, nullptr);
 				}
@@ -172,12 +172,12 @@ namespace ai
 		{
 			ref_ptr partTypes = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
 			ref_ptr part = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-			xmlFile->GetFirstChild_(partTypes, "VehiclePartTypes");
+			xmlFile->GetFirstChild(partTypes, "VehiclePartTypes");
 			if (partTypes->IsEmpty())
 			{
 				return;
 			}
-			for (partTypes->GetFirstChild_(part, "VehiclePart"); !part->IsEmpty(); part->GetNextSibling_(part, "VehiclePart"))
+			for (partTypes->GetFirstChild(part, "VehiclePart"); !part->IsEmpty(); part->GetNextSibling(part, "VehiclePart"))
 			{
 				CStr vehiclePartName;
 				CStr resourceName;

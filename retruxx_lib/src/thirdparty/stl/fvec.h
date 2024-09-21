@@ -37,7 +37,7 @@
 #include <assert.h>
 #include <ivec.h>
 
-/* Define _ENABLE_VEC_DEBUG to enable std::ostream inserters for debug output */
+/* Define _ENABLE_VEC_DEBUG to enable oldstd::ostream inserters for debug output */
 #if defined(_ENABLE_VEC_DEBUG)
 	#include <iostream>
 #endif
@@ -165,7 +165,7 @@ public:
 	/* Debug Features */
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output */
-	friend std::ostream & operator<<(std::ostream & os, const F32vec4 &a)
+	friend oldstd::ostream & operator<<(oldstd::ostream & os, const F32vec4 &a)
 	{
 	/* To use: cout << "Elements of F32vec4 fvec are: " << fvec; */
 	  float *fp = (float*)&a;
@@ -411,7 +411,7 @@ public:
 	/* Debug Features */
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output */
-	friend std::ostream & operator<<(std::ostream & os, const F32vec1 &a)
+	friend oldstd::ostream & operator<<(oldstd::ostream & os, const F32vec1 &a)
 	{
 	/* To use: cout << "Elements of F32vec1 fvec are: " << fvec; */
 	  float *fp = (float*)&a;

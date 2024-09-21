@@ -8,7 +8,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// STRUCT time_base
 struct _CRTIMP2 time_base
@@ -646,7 +646,7 @@ template class _CRTIMP2 time_put<wchar_t,
 
 
  #endif /* _DLL_CPPLIB */
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

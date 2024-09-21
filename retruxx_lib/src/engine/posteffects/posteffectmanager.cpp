@@ -184,7 +184,7 @@ bool PostEffectManager::Initialize()
     if (xmlFile)
     {
         ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        xmlFile->GetFirstChild_(node, "Effects");
+        xmlFile->GetFirstChild(node, "Effects");
         LoadFromXml(xmlFile, node);
         OnAfterDeviceReset();
 
@@ -237,19 +237,19 @@ void PostEffectManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNod
 {
     ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
     
-    for (xmlNode->GetFirstChild_(node, "Model"); !node->IsEmpty(); node->GetNextSibling_(node, "Model"))
+    for (xmlNode->GetFirstChild(node, "Model"); !node->IsEmpty(); node->GetNextSibling(node, "Model"))
     {
         auto postEffectModel = new PostEffectModel(&m_varList);
         postEffectModel->LoadFromXml(xmlFile, node);
         m_models.push_back(postEffectModel);
     }
 
-    for (xmlNode->GetFirstChild_(node, "Sequence"); !node->IsEmpty(); node->GetNextSibling_(node, "Sequence"))
+    for (xmlNode->GetFirstChild(node, "Sequence"); !node->IsEmpty(); node->GetNextSibling(node, "Sequence"))
     {
         Sequence sequence;
         m3d::SafeBoolAttrib(sequence.m_loop, node, "Loop");
         ref_ptr tmp = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        for (node->GetFirstChild_(tmp, "Unit"); !tmp->IsEmpty(); node->GetNextSibling_(tmp, "Unit"))
+        for (node->GetFirstChild(tmp, "Unit"); !tmp->IsEmpty(); node->GetNextSibling(tmp, "Unit"))
         {
             CStr tmpName;
             m3d::SafeStrAttrib(tmpName, tmp, "Name");

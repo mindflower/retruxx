@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// STRUCT messages_base
 struct _CRTIMP2 messages_base
@@ -117,7 +117,7 @@ template class _CRTIMP2 messages<wchar_t>;
 
 
  #endif /* _DLL_CPPLIB */
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

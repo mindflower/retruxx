@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS stack
 template<class _Ty,
@@ -110,7 +110,7 @@ template<class _Ty,
 	{	// test if _Left >= _Right for stacks
 	return (!(_Left < _Right));
 	}
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

@@ -37,12 +37,12 @@ namespace m3d
         {
             fileStream->Close();
             ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            if (!xmlFile->GetFirstChild_(node, "Belongs"))
+            if (!xmlFile->GetFirstChild(node, "Belongs"))
             {
                 return;
             }
 
-            for (node->GetFirstChild_(node, "Belong"); !node->IsEmpty(); node->GetNextSibling_(node, "Belong"))
+            for (node->GetFirstChild(node, "Belong"); !node->IsEmpty(); node->GetNextSibling(node, "Belong"))
             {
                 int id = 0;
                 SafeIntAttrib(id, node, "id");

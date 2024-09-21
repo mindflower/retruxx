@@ -9,7 +9,7 @@
 #pragma warning(push,3)
 
  #pragma warning(disable: 4244 4700)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// FORWARD REFERENCES
 class gslice;
@@ -1533,7 +1533,7 @@ template<class _Ty> inline
 	{	// subscript mutable valarray by indirect (mapping) array
 	return (indirect_array<_Ty>(_Indarr, _Myptr));
 	}
-_STD_END
+_OLDSTD_END
 
   #pragma warning(default: 4244)
  #pragma warning(default: 4700)

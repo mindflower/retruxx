@@ -263,8 +263,8 @@ namespace m3d
         {
             ref_ptr beachsets = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
             ref_ptr wave = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            xmlFile->GetFirstChild_(beachsets, "Beachsets");
-            for (beachsets->GetFirstChild_(wave, "Wave"); !wave->IsEmpty(); wave->GetNextSibling_(wave, "Wave"))
+            xmlFile->GetFirstChild(beachsets, "Beachsets");
+            for (beachsets->GetFirstChild(wave, "Wave"); !wave->IsEmpty(); wave->GetNextSibling(wave, "Wave"))
             {
                 WaveSets ws;
                 SafeFloatAttrib(ws.m_tcomp, wave, "tcomp");

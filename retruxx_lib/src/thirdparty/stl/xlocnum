@@ -18,7 +18,7 @@
   #endif /* _LONGLONG */
 
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
  #define _VIRTUAL	virtual
 
@@ -1302,7 +1302,7 @@ template class _CRTIMP2 num_put<wchar_t,
 
 
  #endif /* _DLL_CPPLIB */
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

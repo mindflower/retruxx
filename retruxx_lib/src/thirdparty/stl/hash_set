@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STDEXT_BEGIN
+_OLDSTDEXT_BEGIN
 
 		// TEMPLATE CLASS _Hset_traits
 template<class _Kty,	// key type (same as value type)
@@ -48,8 +48,8 @@ public:
 
 		// TEMPLATE CLASS hash_set
 template<class _Kty,
-	class _Tr = hash_compare<_Kty, _STD less<_Kty> >,
-	class _Alloc = _STD allocator<_Kty> >
+	class _Tr = hash_compare<_Kty, _OLDSTD less<_Kty> >,
+	class _Alloc = _OLDSTD allocator<_Kty> >
 	class hash_set
 		: public _Hash<_Hset_traits<_Kty, _Tr, _Alloc, false> >
 	{	// hash table of key values, unique keys
@@ -118,16 +118,16 @@ public:
 template<class _Kty,
 	class _Tr,
 	class _Alloc> inline
-	void swap(_STDEXT hash_set<_Kty, _Tr, _Alloc>& _Left,
-		_STDEXT hash_set<_Kty, _Tr, _Alloc>& _Right)
+	void swap(_OLDSTDEXT hash_set<_Kty, _Tr, _Alloc>& _Left,
+		_OLDSTDEXT hash_set<_Kty, _Tr, _Alloc>& _Right)
 	{	// swap _Left and _Right hash_sets
 	_Left.swap(_Right);
 	}
 
 		// TEMPLATE CLASS hash_multiset
 template<class _Kty,
-	class _Tr = hash_compare<_Kty, _STD less<_Kty> >,
-	class _Alloc = _STD allocator<_Kty> >
+	class _Tr = hash_compare<_Kty, _OLDSTD less<_Kty> >,
+	class _Alloc = _OLDSTD allocator<_Kty> >
 	class hash_multiset
 		: public _Hash<_Hset_traits<_Kty, _Tr, _Alloc, true> >
 	{	// hash table of key values, non-unique keys
@@ -214,30 +214,30 @@ public:
 template<class _Kty,
 	class _Tr,
 	class _Alloc> inline
-	void swap(_STDEXT hash_multiset<_Kty, _Tr, _Alloc>& _Left,
-		_STDEXT hash_multiset<_Kty, _Tr, _Alloc>& _Right)
+	void swap(_OLDSTDEXT hash_multiset<_Kty, _Tr, _Alloc>& _Left,
+		_OLDSTDEXT hash_multiset<_Kty, _Tr, _Alloc>& _Right)
 	{	// swap _Left and _Right hash_multisets
 	_Left.swap(_Right);
 	}
-_STDEXT_END
+_OLDSTDEXT_END
 
 #ifdef _MSC_EXTENSIONS
 #if _DEFINE_DEPRECATED_HASH_CLASSES
 #pragma warning(push)
 #pragma warning(disable: 4996)
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS hash_set
 template<class _Kty,
-	class _Tr = _STDEXT hash_compare<_Kty, less<_Kty> >,
+	class _Tr = _OLDSTDEXT hash_compare<_Kty, less<_Kty> >,
 	class _Alloc = allocator<_Kty> >
 	class _DEPRECATED hash_set
-		: public _STDEXT _Hash< _STDEXT _Hset_traits<_Kty, _Tr, _Alloc, false> >
+		: public _OLDSTDEXT _Hash< _OLDSTDEXT _Hset_traits<_Kty, _Tr, _Alloc, false> >
 	{	// hash table of key values, unique keys
 public:
 	typedef hash_set<_Kty, _Tr, _Alloc> _Myt;
-	typedef _STDEXT _Hash< _STDEXT _Hset_traits<_Kty, _Tr, _Alloc, false> > _Mybase;
+	typedef _OLDSTDEXT _Hash< _OLDSTDEXT _Hset_traits<_Kty, _Tr, _Alloc, false> > _Mybase;
 	typedef _Kty key_type;
 	typedef _Tr key_compare;
 	typedef typename _Mybase::value_compare value_compare;
@@ -308,14 +308,14 @@ template<class _Kty,
 
 		// TEMPLATE CLASS hash_multiset
 template<class _Kty,
-	class _Tr = _STDEXT hash_compare<_Kty, less<_Kty> >,
+	class _Tr = _OLDSTDEXT hash_compare<_Kty, less<_Kty> >,
 	class _Alloc = allocator<_Kty> >
 	class _DEPRECATED hash_multiset
-		: public _STDEXT _Hash< _STDEXT _Hset_traits<_Kty, _Tr, _Alloc, true> >
+		: public _OLDSTDEXT _Hash< _OLDSTDEXT _Hset_traits<_Kty, _Tr, _Alloc, true> >
 	{	// hash table of key values, non-unique keys
 public:
 	typedef hash_multiset<_Kty, _Tr, _Alloc> _Myt;
-	typedef _STDEXT _Hash< _STDEXT _Hset_traits<_Kty, _Tr, _Alloc, true> > _Mybase;
+	typedef _OLDSTDEXT _Hash< _OLDSTDEXT _Hset_traits<_Kty, _Tr, _Alloc, true> > _Mybase;
 	typedef _Kty key_type;
 	typedef _Tr key_compare;
 	typedef typename _Mybase::value_compare value_compare;
@@ -402,7 +402,7 @@ template<class _Kty,
 	_Left.swap(_Right);
 	}
 
-_STD_END
+_OLDSTD_END
 
 #pragma warning(pop)
 #endif /* _DEFINE_DEPRECATED_HASH_CLASSES */

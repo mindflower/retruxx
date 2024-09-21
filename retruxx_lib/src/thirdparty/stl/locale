@@ -10,7 +10,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS collate
 template<class _Elem>
@@ -232,7 +232,7 @@ template<class _Elem> inline
 	{	// convert character to upper case, locale specific
 	return (_USE(_Loc, ctype<_Elem>).toupper(_Ch));
 	}
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

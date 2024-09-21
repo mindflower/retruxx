@@ -13,9 +13,9 @@
  #include <locale.h>
 
  #if _GLOBAL_USING
-_STD_BEGIN
+_OLDSTD_BEGIN
 using ::lconv; using ::localeconv; using ::setlocale;
-_STD_END
+_OLDSTD_END
  #endif /* _GLOBAL_USING */
 
 #endif /* _STD_USING */

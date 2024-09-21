@@ -234,7 +234,7 @@ namespace ai
 		m3d::SafeStrAttrib(levels, xmlNode, "Levels");
 		m3d::Tokenize(levels, m_ActionLevels, "(), ;\t");
 		ref_ptr questNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-		xmlNode->GetFirstChild_(questNode, "quest");
+		xmlNode->GetFirstChild(questNode, "quest");
 		while(!questNode->IsEmpty())
 		{
 		    if (subCond.empty())
@@ -250,7 +250,7 @@ namespace ai
 			m_subQuestNames.push_back(quest->GetName());
 			quest->m_parentQuestName = m_name;
 			theQuestManager->AddQuest(quest);
-			questNode->GetNextSibling_(questNode, "quest");
+			questNode->GetNextSibling(questNode, "quest");
 		}
 		return true;
 	}
@@ -315,14 +315,14 @@ namespace ai
 		if (xmlFile)
 		{
 			ref_ptr questsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-			xmlFile->GetFirstChild_(questsNode, "quests");
+			xmlFile->GetFirstChild(questsNode, "quests");
 			if (questsNode->IsEmpty())
 			{
 				M3D_LOG_INFO("QuestManager::LoadFromXmlFile error - cannot find root node \"quests\"");
 				return 0;
 			}
 			ref_ptr questNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-			for (questsNode->GetFirstChild_(questNode, "quest"); !questNode->IsEmpty(); questNode->GetNextSibling_(questNode, "quest"))
+			for (questsNode->GetFirstChild(questNode, "quest"); !questNode->IsEmpty(); questNode->GetNextSibling(questNode, "quest"))
 			{
 				auto quest = new Quest;
 				if (!quest->LoadFromXml(xmlFile, questNode))
@@ -338,11 +338,11 @@ namespace ai
 			}
 
 			ref_ptr mutuallyExclusivesNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-			questsNode->GetFirstChild_(mutuallyExclusivesNode, "MutuallyExclusives");
+			questsNode->GetFirstChild(mutuallyExclusivesNode, "MutuallyExclusives");
 			if (!mutuallyExclusivesNode->IsEmpty())
 			{
 				ref_ptr mutexNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-				for (mutuallyExclusivesNode->GetFirstChild_(mutexNode, "mutex"); !mutexNode->IsEmpty(); mutexNode->GetNextSibling_(mutexNode, "mutex"))
+				for (mutuallyExclusivesNode->GetFirstChild(mutexNode, "mutex"); !mutexNode->IsEmpty(); mutexNode->GetNextSibling(mutexNode, "mutex"))
 				{
 					CStr questsNameAttr;
 					m3d::SafeStrAttrib(questsNameAttr, mutexNode, "quests");

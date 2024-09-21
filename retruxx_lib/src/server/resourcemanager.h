@@ -9,7 +9,7 @@ namespace m3d
     namespace cmn
     {
         class XmlFile;
-        class XmlNode;
+        struct XmlNode;
     }
 }
 

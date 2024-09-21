@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
  #define _IOSskipws		0x0001
  #define _IOSunitbuf	0x0002
@@ -182,8 +182,8 @@ class _CRTIMP2 ios_base
 	{	// base class for ios
 public:
 
-	typedef std::streamoff streamoff;
-	typedef std::streampos streampos;
+	typedef oldstd::streamoff streamoff;
+	typedef oldstd::streampos streampos;
 
 	enum event
 		{	// constants for ios events
@@ -472,11 +472,11 @@ private:
 	static bool _Sync;	// C/C++ synchronization flag (ignored)
 	};
 
-_BITMASK_OPS(ios_base::_Fmtflags)
-_BITMASK_OPS(ios_base::_Iostate)
-_BITMASK_OPS(ios_base::_Openmode)
-_BITMASK_OPS(ios_base::_Seekdir)
-_STD_END
+_BITMASK_OPS_OLD(ios_base::_Fmtflags)
+_BITMASK_OPS_OLD(ios_base::_Iostate)
+_BITMASK_OPS_OLD(ios_base::_Openmode)
+_BITMASK_OPS_OLD(ios_base::_Seekdir)
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

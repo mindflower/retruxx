@@ -26,7 +26,7 @@ typedef struct _C_ldouble_complex
 	long double _Val[2];
 	} _C_ldouble_complex;
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 typedef ::_C_double_complex _Dcomplex_value;
 typedef ::_C_float_complex _Fcomplex_value;
 typedef ::_C_ldouble_complex _Lcomplex_value;
@@ -1156,7 +1156,7 @@ template _CRTIMP2 basic_ostream<wchar_t, char_traits<wchar_t> >&
 
 
  #endif /* _DLL_CPPLIB */
-_STD_END
+_OLDSTD_END
   #pragma warning(default: 4244)
 
 #pragma warning(pop)

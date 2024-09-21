@@ -8,7 +8,7 @@
 #pragma pack(push,8)
 #pragma warning(push,3)
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS _Deque_map
 template<class _Ty,
@@ -318,8 +318,8 @@ public:
 			}
 		};
 
-	typedef std::reverse_iterator<iterator> reverse_iterator;
-	typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+	typedef oldstd::reverse_iterator<iterator> reverse_iterator;
+	typedef oldstd::reverse_iterator<const_iterator> const_reverse_iterator;
 
 	deque()
 		: _Mybase(), _Map(0),
@@ -803,10 +803,10 @@ public:
 		{	// exchange contents with _Right
 		if (this->_Alval == _Right._Alval)
 			{	// same allocator, swap control information
-			std::swap(_Map, _Right._Map);
-			std::swap(_Mapsize, _Right._Mapsize);
-			std::swap(_Myoff, _Right._Myoff);
-			std::swap(_Mysize, _Right._Mysize);
+			oldstd::swap(_Map, _Right._Map);
+			oldstd::swap(_Mapsize, _Right._Mapsize);
+			oldstd::swap(_Myoff, _Right._Myoff);
+			oldstd::swap(_Mysize, _Right._Mysize);
 			}
 		else
 			{	// different allocator, do multiple assigns
@@ -895,12 +895,12 @@ protected:
 
 	void _Xlen() const
 		{	// report length error
-		_THROW(length_error, "deque<T> too long");
+		_THROWOLD(length_error, "deque<T> too long");
 		}
 
 	void _Xran() const
 		{	// report range error
-		_THROW(out_of_range, "invalid deque<T> subscript");
+		_THROWOLD(out_of_range, "invalid deque<T> subscript");
 		}
 
 	void _Growmap(size_type _Count)
@@ -1026,7 +1026,7 @@ template<class _Ty,
 	{	// test if _Left >= _Right for deques
 	return (!(_Left < _Right));
 	}
-_STD_END
+_OLDSTD_END
 
 #pragma warning(pop)
 #pragma pack(pop)

@@ -92,7 +92,7 @@ namespace m3d
         if (file)
         {
             ref_ptr nodeThemes = file->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            file->GetFirstChild_(nodeThemes, "Themes");
+            file->GetFirstChild(nodeThemes, "Themes");
             if (nodeThemes->IsEmpty())
             {
                 M3D_LOG_INFO("cannot parse " + filename);
@@ -100,13 +100,13 @@ namespace m3d
             }
 
             ref_ptr node = file->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            nodeThemes->GetFirstChild_(node, "Frames");
+            nodeThemes->GetFirstChild(node, "Frames");
             if (node->IsEmpty())
             {
                 M3D_LOG_INFO("cannot parse " + filename);
                 return 0;
             }
-            node->GetFirstChild_(node, "Item");
+            node->GetFirstChild(node, "Item");
             while(!node->IsEmpty())
             {
                 auto frame = new Frame;
@@ -118,16 +118,16 @@ namespace m3d
                 {
                     delete frame;
                 }
-                node->GetNextSibling_(node, "Item");
+                node->GetNextSibling(node, "Item");
             }
 
-            nodeThemes->GetFirstChild_(node, "Backgrounds");
+            nodeThemes->GetFirstChild(node, "Backgrounds");
             if (node->IsEmpty())
             {
                 M3D_LOG_INFO("cannot parse " + filename);
                 return 0;
             }
-            node->GetFirstChild_(node, "Item");
+            node->GetFirstChild(node, "Item");
             while (!node->IsEmpty())
             {
                 auto background = new BackGround;
@@ -139,16 +139,16 @@ namespace m3d
                 {
                     delete background;
                 }
-                node->GetNextSibling_(node, "Item");
+                node->GetNextSibling(node, "Item");
             }
 
-            nodeThemes->GetFirstChild_(node, "Panes");
+            nodeThemes->GetFirstChild(node, "Panes");
             if (node->IsEmpty())
             {
                 M3D_LOG_INFO("cannot parse " + filename);
                 return 0;
             }
-            node->GetFirstChild_(node, "Item");
+            node->GetFirstChild(node, "Item");
             while (!node->IsEmpty())
             {
                 auto pane = new Pane;
@@ -161,16 +161,16 @@ namespace m3d
                 {
                     delete pane;
                 }
-                node->GetNextSibling_(node, "Item");
+                node->GetNextSibling(node, "Item");
             }
 
-            nodeThemes->GetFirstChild_(node, "Scrolls");
+            nodeThemes->GetFirstChild(node, "Scrolls");
             if (node->IsEmpty())
             {
                 M3D_LOG_INFO("cannot parse " + filename);
                 return 0;
             }
-            node->GetFirstChild_(node, "Item");
+            node->GetFirstChild(node, "Item");
             while (!node->IsEmpty())
             {
                 auto scroll = new ScrollPane;
@@ -182,16 +182,16 @@ namespace m3d
                 {
                     delete scroll;
                 }
-                node->GetNextSibling_(node, "Item");
+                node->GetNextSibling(node, "Item");
             }
 
-            nodeThemes->GetFirstChild_(node, "GlyphButtons");
+            nodeThemes->GetFirstChild(node, "GlyphButtons");
             if (node->IsEmpty())
             {
                 M3D_LOG_INFO("cannot parse " + filename);
                 return 0;
             }
-            node->GetFirstChild_(node, "Item");
+            node->GetFirstChild(node, "Item");
             while (!node->IsEmpty())
             {
                 CStr buttonName = node->GetAttribute("name");
@@ -204,7 +204,7 @@ namespace m3d
                         Application::g_pApp->m_renderer->ReferenceTexture(m_glyphButtonTextures[buttonName]);
                     }
                 }
-                node->GetNextSibling_(node, "Item");
+                node->GetNextSibling(node, "Item");
             }
             return 1;
         }
@@ -303,13 +303,13 @@ namespace m3d
             return 0;
         }
         ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-        xmlFile->GetFirstChild_(node, "resource");
+        xmlFile->GetFirstChild(node, "resource");
         if (node->IsEmpty())
         {
             M3D_LOG_INFO("GfxServer:: Create cannot find resources in " + name);
             return 0;
         }
-        node->GetFirstChild_(node, "schema");
+        node->GetFirstChild(node, "schema");
         if (node->IsEmpty())
         {
             M3D_LOG_INFO("GfxServer:: Create cannot find schema in " + name);
@@ -487,7 +487,7 @@ namespace m3d
         if (Application::g_pApp->m_sound)
         {
             ref_ptr newNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            node->GetFirstChild_(newNode, nullptr);
+            node->GetFirstChild(newNode, nullptr);
             if (!newNode->IsEmpty())
             {
                 LoadSoundsFromXml(xmlFile, newNode);
@@ -927,7 +927,7 @@ namespace m3d
         ref_ptr soundNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
         CStr soundName;
         CStr fileName;
-        for (xmlNode->GetFirstChild_(soundNode, "SoundInfo"); !soundNode->IsEmpty(); soundNode->GetNextSibling_(soundNode, "SoundInfo"))
+        for (xmlNode->GetFirstChild(soundNode, "SoundInfo"); !soundNode->IsEmpty(); soundNode->GetNextSibling(soundNode, "SoundInfo"))
         {
             SafeStrAttrib(soundName, soundNode, "Name");
             if (soundName.empty())

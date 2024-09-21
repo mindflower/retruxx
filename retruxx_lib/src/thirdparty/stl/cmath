@@ -13,7 +13,7 @@
  #include <math.h>
 
  #if _GLOBAL_USING
-_STD_BEGIN
+_OLDSTD_BEGIN
 using ::abs; using ::acos; using ::asin;
 using ::atan; using ::atan2; using ::ceil;
 using ::cos; using ::cosh; using ::exp;
@@ -40,7 +40,7 @@ using ::frexpl; using ::ldexpl; using ::logl;
 using ::log10l; using ::modfl; using ::powl;
 using ::sinl; using ::sinhl; using ::sqrtl;
 using ::tanl; using ::tanhl;
-_STD_END
+_OLDSTD_END
  #endif /* _GLOBAL_USING */
 
 #endif /* _STD_USING */

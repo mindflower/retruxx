@@ -1,12 +1,10 @@
 // exception standard header for Microsoft
 #pragma once
-#ifndef _EXCEPTION_
-#define _EXCEPTION_
-#include <xstddef>
+#include "xstddef.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
   #define _USE_EX	using ::exception; \
 	using ::set_terminate; using ::terminate_handler; using ::terminate; \
@@ -14,7 +12,7 @@ _STD_BEGIN
 
 
  #if _HAS_EXCEPTIONS
- _STD_END
+ _OLDSTD_END
 
  #include <eh.h>
 
@@ -50,7 +48,7 @@ private:
 	int _m_doFree;
 	};
 
- _STD_BEGIN
+ _OLDSTD_BEGIN
 
 _USE_EX
 typedef void (*_Prhand)(const exception&);
@@ -171,11 +169,10 @@ protected:
  #endif /* _HAS_EXCEPTIONS */
 
 	};
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _EXCEPTION_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

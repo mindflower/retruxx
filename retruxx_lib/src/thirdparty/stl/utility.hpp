@@ -1,13 +1,11 @@
 // utility standard header
 #pragma once
-#ifndef _UTILITY_
-#define _UTILITY_
-#include <iosfwd>
+#include "iosfwd.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 		// TEMPLATE FUNCTION swap (from <algorithm>)
 template<class _Ty> inline
 	void swap(_Ty& _Left, _Ty& _Right)
@@ -43,8 +41,8 @@ template<class _Ty1,
 
 	void swap(_Myt& _Right)
 		{	// exchange contents with _Right
-		std::swap(first, _Right.first);
-		std::swap(second, _Right.second);
+		oldstd::swap(first, _Right.first);
+		oldstd::swap(second, _Right.second);
 		}
 
 	_Ty1 first;	// the first stored value
@@ -142,11 +140,10 @@ template<class _Ty> inline
 	return (!(_Left < _Right));
 	}
 		}
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _UTILITY_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

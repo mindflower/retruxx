@@ -11,7 +11,7 @@
 
 
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS bitset
 template<size_t _Bits>
@@ -392,17 +392,17 @@ private:
 
 	void _Xinv() const
 		{	// report invalid string element in bitset conversion
-		_THROW(invalid_argument, "invalid bitset<N> char");
+		_THROWOLD(invalid_argument, "invalid bitset<N> char");
 		}
 
 	void _Xoflo() const
 		{	// report converted value too big to represent
-		_THROW(overflow_error, "bitset<N> overflow");
+		_THROWOLD(overflow_error, "bitset<N> overflow");
 		}
 
 	void _Xran() const
 		{	// report bit index out of range
-		_THROW(out_of_range, "invalid bitset<N> position");
+		_THROWOLD(out_of_range, "invalid bitset<N> position");
 		}
 
 	_Ty _Array[_Words + 1];	// the set of bits
@@ -466,7 +466,7 @@ template<class _Elem,
 	_Right = bitset<_Bits>(_Str);	// convert string and store
 	return (_Istr);
 	}
-_STD_END
+_OLDSTD_END
 
   #pragma warning(default: 4127)
 

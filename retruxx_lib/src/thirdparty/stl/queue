@@ -9,7 +9,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS queue
 template<class _Ty,
@@ -210,7 +210,7 @@ protected:
 	_Container c;	// the underlying container
 	_Pr comp;	// the comparator functor
 	};
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

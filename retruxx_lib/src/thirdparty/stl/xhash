@@ -18,22 +18,22 @@
 
 /* 
 We start off by defining a specialisation of hash_value for stdext.
-This will work for stdext::hash_map<std::string, ...
-If the user is using std::hash_map, we pull the specialisation into std
+This will work for stdext::hash_map<oldstd::string, ...
+If the user is using oldstd::hash_map, we pull the specialisation into std
 as well.
 
 This comes at the top of our file before everything else to ensure we
 only pull in this one specialisation.
 */
 
-_STDEXT_BEGIN
+_OLDSTDEXT_BEGIN
 
 template<class _Elem,
 	class _Traits,
 	class _Alloc> inline
-	size_t hash_value(const _STD basic_string<_Elem, _Traits, _Alloc>& _Str)
+	size_t hash_value(const _OLDSTD basic_string<_Elem, _Traits, _Alloc>& _Str)
 	{	// hash string to size_t value
-	typedef typename _STD basic_string<_Elem, _Traits, _Alloc>::size_type _Strsize;
+	typedef typename _OLDSTD basic_string<_Elem, _Traits, _Alloc>::size_type _Strsize;
 
 	size_t _Val = _HASH_SEED;
 	_Strsize _Size = _Str.size();
@@ -47,24 +47,24 @@ template<class _Elem,
 	return (_Val);
 	}
 
-_STDEXT_END
+_OLDSTDEXT_END
 
 #ifdef _MSC_EXTENSIONS
 #if _DEFINE_DEPRECATED_HASH_CLASSES
 #pragma warning(push)
 #pragma warning(disable: 4996)
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
-	using _STDEXT hash_value;
+	using _OLDSTDEXT hash_value;
 
-_STD_END
+_OLDSTD_END
 
 #pragma warning(pop)
 #endif /* _DEFINE_DEPRECATED_HASH_CLASSES */
 #endif /* _MSC_EXTENSIONS */
 
-_STDEXT_BEGIN
+_OLDSTDEXT_BEGIN
 
 template<class _Kty> inline
 	size_t hash_value(const _Kty& _Keyval)
@@ -108,7 +108,7 @@ inline size_t hash_value(const wchar_t *_Str)
 
 
 template<class _Kty,
-	class _Pr = _STD less<_Kty> >
+	class _Pr = _OLDSTD less<_Kty> >
 	class hash_compare
 	{	// traits class for hash containers
 public:
@@ -164,7 +164,7 @@ public:
 		bucket_size = key_compare::bucket_size,
 		min_buckets = key_compare::min_buckets,
 		_Multi = _Traits::_Multi};
-	typedef _STD list<typename _Traits::value_type,
+	typedef _OLDSTD list<typename _Traits::value_type,
 		typename _Traits::allocator_type> _Mylist;
 
 	typedef typename _Mylist::allocator_type allocator_type;
@@ -182,12 +182,12 @@ public:
 		const_reverse_iterator;
 	typedef typename _Mylist::value_type value_type;
 
-	typedef _STD vector<iterator,
+	typedef _OLDSTD vector<iterator,
 		typename allocator_type::template
 			rebind<iterator>::other> _Myvec;
-	typedef _STD pair<iterator, bool> _Pairib;
-	typedef _STD pair<iterator, iterator> _Pairii;
-	typedef _STD pair<const_iterator, const_iterator> _Paircc;
+	typedef _OLDSTD pair<iterator, bool> _Pairib;
+	typedef _OLDSTD pair<iterator, iterator> _Pairii;
+	typedef _OLDSTD pair<const_iterator, const_iterator> _Paircc;
 
 	explicit _Hash(const key_compare& _Parg,
 		const allocator_type& _Al)
@@ -536,10 +536,10 @@ public:
 		if (get_allocator() == _Right.get_allocator())
 			{	// same allocator, swap control information
 			_List.swap(_Right._List);
-			std::swap(_Vec, _Right._Vec);
-			std::swap(_Mask, _Right._Mask);
-			std::swap(_Maxidx, _Right._Maxidx);
-			std::swap(this->comp, _Right.comp);
+			oldstd::swap(_Vec, _Right._Vec);
+			oldstd::swap(_Mask, _Right._Mask);
+			oldstd::swap(_Maxidx, _Right._Maxidx);
+			oldstd::swap(this->comp, _Right.comp);
 			}
 		else
 			{	// different allocator, do multiple assigns
@@ -625,14 +625,14 @@ template<class _Ty> inline
 	{	// test if _Left >= _Right for hash tables
 	return (!(_Left < _Right));
 	}
-_STDEXT_END
+_OLDSTDEXT_END
 
 #ifdef _MSC_EXTENSIONS
 #if _DEFINE_DEPRECATED_HASH_CLASSES
 #pragma warning(push)
 #pragma warning(disable: 4996)
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE FUNCTION hash_value
 template<class _Kty> inline
@@ -677,7 +677,7 @@ inline size_t _DEPRECATED hash_value(const wchar_t *_Str)
 
 
 template<class _Kty,
-	class _Pr = _STD less<_Kty> >
+	class _Pr = _OLDSTD less<_Kty> >
 	class _DEPRECATED hash_compare
 	{	// traits class for hash containers
 public:
@@ -718,7 +718,7 @@ protected:
 	_Pr comp;	// the comparator object
 	};
 
-_STD_END
+_OLDSTD_END
 
 #pragma warning(pop)
 #endif /* _DEFINE_DEPRECATED_HASH_CLASSES */

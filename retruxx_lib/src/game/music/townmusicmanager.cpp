@@ -38,9 +38,9 @@ namespace m3d
         if (xmlFile)
         {
             ref_ptr rootNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            xmlFile->GetFirstChild_(rootNode, "TownAmbience");
+            xmlFile->GetFirstChild(rootNode, "TownAmbience");
             ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            for (rootNode->GetFirstChild_(node, "Sound"); !node->IsEmpty(); node->GetNextSibling_(node, "Sound"))
+            for (rootNode->GetFirstChild(node, "Sound"); !node->IsEmpty(); node->GetNextSibling(node, "Sound"))
             {
                 auto pathAttr = node->GetAttribute("path");
                 //TODO: check this!!

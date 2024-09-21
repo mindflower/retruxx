@@ -123,8 +123,8 @@ namespace ai
     extern ProcessManager* theProcessManager;
     extern PrototypeManager* thePrototypeManager;
 
-    std::map<CStr, int> Obj::m_propertiesMap;
-    std::map<int, eGObjPropertySaveStatus> Obj::m_propertiesSaveStatesMap;
+    //std::map<CStr, int> Obj::m_propertiesMap;
+    //std::map<int, eGObjPropertySaveStatus> Obj::m_propertiesSaveStatesMap;
 
     RT_CLASS_EXPORTS_BEGIN(Obj)
         RT_CLASS_EXPORT(Obj, m3d::METHOD, Remove, "", "", "")
@@ -148,7 +148,7 @@ namespace ai
         RT_CLASS_EXPORT(Obj, m3d::METHOD, SetNameFromScript, "", "", "")
         RT_CLASS_EXPORT(Obj, m3d::METHOD, GetSchwarz, "", "", "")
 	RT_CLASS_EXPORTS_END;
-    RT_CLASS_DEFINE(Obj);
+    //RT_CLASS_DEFINE(Obj);
 
 
     m3d::Class* Obj::GetBaseClass()
@@ -221,7 +221,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Obj::ReceiveNodesToLink(std::list<m3d::SgNode*>&) const
+    void Obj::ReceiveNodesToLink(oldstd::list<m3d::SgNode*>&) const
     {
         throw std::logic_error("Not implemented");
     }
@@ -447,7 +447,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    std::map<int, Obj*>& Obj::GetChildren()
+    oldstd::map<int, Obj*>& Obj::GetChildren()
     {
         throw std::logic_error("Not implemented");
     }
@@ -497,7 +497,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    std::map<int, Obj*>& Obj::getAllChildren()
+    oldstd::map<int, Obj*>& Obj::getAllChildren()
     {
         throw std::logic_error("Not implemented");
     }
@@ -716,7 +716,7 @@ namespace ai
     {
     }
 
-    void Obj::GetPropertiesIDs(std::set<int>& props) const
+    void Obj::GetPropertiesIDs(oldstd::set<int>& props) const
     {
         for (auto const& prop : m_propertiesMap)
         {
@@ -750,7 +750,7 @@ namespace ai
         m_modifiers.resize(0, {});
     }
 
-    void Obj::GetPropertiesNames(std::set<CStr>& props) const
+    void Obj::GetPropertiesNames(oldstd::set<CStr>& props) const
     {
         for (auto const& prop : m_propertiesMap)
         {
@@ -770,11 +770,11 @@ namespace ai
     CStr Obj::GetPropertyName(int id) const
     {
         //TODO: check correctness
-        auto const it = std::find_if(cbegin(m_propertiesMap), cend(m_propertiesMap), [id](auto const& prop)
+        auto const it = std::find_if(std::begin(m_propertiesMap), std::end(m_propertiesMap), [id](auto const& prop)
         {
             return prop.second == id;
         });
-        if (it != cend(m_propertiesMap))
+        if (it != std::end(m_propertiesMap))
         {
             return it->first;
         }
@@ -851,14 +851,16 @@ namespace ai
         {
             if (auto const idx = _GetIndexByEventId(eventId); idx == -1)
             {
-                EventRecipientInfo info{eventId, {objId}};
+                EventRecipientInfo info{};
+                info.m_eventId = eventId;
+                info.m_objIds.push_back(objId);
                 m_eventRecipients.push_back(info);
             }
             else
             {
                 auto& eventRecipient = m_eventRecipients.at(idx);
                 //TODO: check this
-                if (std::find(cbegin(eventRecipient.m_objIds), cend(eventRecipient.m_objIds), objId) == cend(eventRecipient.m_objIds))
+                if (std::find(std::begin(eventRecipient.m_objIds), std::end(eventRecipient.m_objIds), objId) == std::end(eventRecipient.m_objIds))
                 {
                     eventRecipient.m_objIds.push_back(objId);
                 }
@@ -872,14 +874,14 @@ namespace ai
         if (auto const idx = _GetIndexByEventId(eventId); idx != -1)
         {
             auto& eventRecipient = m_eventRecipients.at(idx);
-            auto const it = std::find(cbegin(eventRecipient.m_objIds), cend(eventRecipient.m_objIds), objId);
-            if (it != cend(eventRecipient.m_objIds))
+            auto const it = std::find(std::begin(eventRecipient.m_objIds), std::end(eventRecipient.m_objIds), objId);
+            if (it != std::end(eventRecipient.m_objIds))
             {
                 eventRecipient.m_objIds.erase(it);
             }
             if (eventRecipient.m_objIds.empty())
             {
-                m_eventRecipients.erase(cbegin(m_eventRecipients) + idx);
+                m_eventRecipients.erase(std::begin(m_eventRecipients) + idx);
             }
         }
     }
@@ -1077,13 +1079,13 @@ namespace ai
     int Obj::_GetIndexByEventId(eGameEvent eventId) const
     {
         //TODO: check correctness
-        auto const it = std::find_if(cbegin(m_eventRecipients), cend(m_eventRecipients), [eventId](auto const& info)
+        auto const it = std::find_if(std::begin(m_eventRecipients), std::end(m_eventRecipients), [eventId](auto const& info)
         {
             return eventId == info.m_eventId;
         });
-        if (it != cend(m_eventRecipients))
+        if (it != std::end(m_eventRecipients))
         {
-            return std::distance(cbegin(m_eventRecipients), it);
+            return std::distance(std::begin(m_eventRecipients), it);
         }
         return -1;
     }

@@ -1,13 +1,11 @@
 // iterator standard header
 #pragma once
-#ifndef _ITERATOR_
-#define _ITERATOR_
-#include <xutility>
+#include "xutility.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS back_insert_iterator
 template<class _Container>
@@ -53,7 +51,7 @@ protected:
 template<class _Container> inline
 	back_insert_iterator<_Container> back_inserter(_Container& _Cont)
 	{	// return a back_insert_iterator
-	return (std::back_insert_iterator<_Container>(_Cont));
+	return (oldstd::back_insert_iterator<_Container>(_Cont));
 	}
 
 		// TEMPLATE CLASS front_insert_iterator
@@ -100,7 +98,7 @@ protected:
 template<class _Container> inline
 	front_insert_iterator<_Container> front_inserter(_Container& _Cont)
 	{	// return front_insert_iterator
-	return (std::front_insert_iterator<_Container>(_Cont));
+	return (oldstd::front_insert_iterator<_Container>(_Cont));
 	}
 
 		// TEMPLATE CLASS insert_iterator
@@ -150,7 +148,7 @@ template<class _Container,
 	class _Iter> inline
 	insert_iterator<_Container> inserter(_Container& _Cont, _Iter _Where)
 	{	// return insert_iterator
-	return (std::insert_iterator<_Container>(_Cont, _Where));
+	return (oldstd::insert_iterator<_Container>(_Cont, _Where));
 	}
 
 		// TEMPLATE CLASS istream_iterator
@@ -333,11 +331,10 @@ template<class _Iter> inline
 	}
 
 
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _ITERATOR_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

@@ -13,12 +13,12 @@
  #include <errno.h>
 
  #if _GLOBAL_USING
-_STD_BEGIN
+_OLDSTD_BEGIN
   #ifndef errno
 using ::errno;
   #endif /* errno */
 
-_STD_END
+_OLDSTD_END
  #endif /* _GLOBAL_USING */
 
 #endif /* _CERRNO_ */

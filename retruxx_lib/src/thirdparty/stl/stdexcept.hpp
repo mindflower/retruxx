@@ -1,13 +1,11 @@
 // stdexcept standard header
 #pragma once
-#ifndef _STDEXCEPT_
-#define _STDEXCEPT_
-#include <exception>
-#include <xstring>
+#include "exception.hpp"
+#include "xstring.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// CLASS logic_error
 class logic_error
@@ -229,11 +227,20 @@ protected:
  #endif /* _HAS_EXCEPTIONS */
 
 	};
-_STD_END
+
+inline void _String_base::_Xlen() const
+    {
+    _THROWOLD(length_error, "string<T> too long");
+    }
+
+inline void _String_base::_Xran() const
+    {	// report range error
+     _THROWOLD(out_of_range, "invalid string<T> subscript");
+    }
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _STDEXCEPT_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

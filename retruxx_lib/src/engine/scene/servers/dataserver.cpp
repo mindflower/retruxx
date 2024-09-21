@@ -23,7 +23,7 @@ namespace m3d
             CStr name = id;
             if (!name.empty())
             {
-                ::LCMapStringA(0x400u, 0x100u, name.c_str(), name.length() + 1, name.m_charPtr, name.length() + 1);
+                ::LCMapStringA(0x400u, 0x100u, name.c_str(), name.length() + 1, const_cast<char*>(name.c_str()), name.length() + 1);
             }
             auto const it = m_shRemap.find(name);
             if (it != m_shRemap.cend())

@@ -211,6 +211,9 @@
     <Filter Include="thirdparty">
       <UniqueIdentifier>{b58d90cf-6b3a-4128-9fa6-f8723a57f408}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thirdparty\stl">
+      <UniqueIdentifier>{5a01cf1a-1b47-4385-b32e-86f43c17643c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\benchmark.cpp">
@@ -3896,10 +3899,97 @@
     <ClInclude Include="src\thirdparty\functionscrapper.h">
       <Filter>thirdparty</Filter>
     </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\functional.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\xstddef.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\yvals.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\memory.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\stddef.h">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\iterator.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\xmemory.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\utility.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\climits.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\iosfwd.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\stdexcept.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\cstring.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\string.h">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\cstdio.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\stdio.h">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\cwchar.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\wchar.h">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\exception.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\new.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\xstring.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\cstdlib.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\stdlib.h">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\vector.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\list.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\set.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">
       <Filter>include\ui</Filter>
+    </None>
+    <None Include="src\thirdparty\stl\xtree.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </None>
+    <None Include="src\thirdparty\stl\map.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </None>
+    <None Include="src\thirdparty\stl\cstddef.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </None>
+    <None Include="src\thirdparty\stl\xutility.hpp">
+      <Filter>thirdparty\stl</Filter>
     </None>
   </ItemGroup>
 </Project>

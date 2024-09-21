@@ -9,8 +9,8 @@
  #include <yvals.h>
 #endif
 
-_C_STD_BEGIN
-_C_LIB_DECL
+_C_OLDSTD_BEGIN
+_C_LIB_OLD_DECL
 
 		/* SUPPLEMENTAL CTYPE MACROS & DECLARATIONS */
 #define _XA		0x100		/* extra alphabetic */
@@ -99,8 +99,8 @@ _CRTIMP2 const wchar_t * __cdecl _Getwctypes(const wchar_t *, const wchar_t *,
 	short*, const _Ctypevec*);
 _CRTIMP2 wchar_t __cdecl _Towlower(wchar_t, const _Ctypevec *);
 _CRTIMP2 wchar_t __cdecl _Towupper(wchar_t, const _Ctypevec *);
-_END_C_LIB_DECL
-_C_STD_END
+_END_C_LIB_OLD_DECL
+_C_OLDSTD_END
 #endif /* _XLOCINFO */
 
 /*

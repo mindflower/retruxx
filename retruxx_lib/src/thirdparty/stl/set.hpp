@@ -1,86 +1,62 @@
-// map standard header
+// set standard header
 #pragma once
-#ifndef _MAP_
-#define _MAP_
-#include <xtree>
+#include "xtree.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
-		// TEMPLATE CLASS _Tmap_traits
-template<class _Kty,	// key type
-	class _Ty,	// mapped type
+		// TEMPLATE CLASS _Tset_traits
+template<class _Kty,	// key/value type
 	class _Pr,	// comparator predicate type
 	class _Alloc,	// actual allocator type (should be value allocator)
 	bool _Mfl>	// true if multiple equivalent keys are permitted
-	class _Tmap_traits
-	{	// traits required to make _Tree behave like a map
+	class _Tset_traits
+	{	// traits required to make _Tree behave like a set
 public:
 	typedef _Kty key_type;
-	typedef pair<const _Kty, _Ty> value_type;
+	typedef _Kty value_type;
 	typedef _Pr key_compare;
 	typedef typename _Alloc::template rebind<value_type>::other
 		allocator_type;
 	typedef _POINTER_X(value_type, allocator_type) _ITptr;
 	typedef _REFERENCE_X(value_type, allocator_type) _IReft;
+
 	enum
-		{	// make multi parameter visible as an enum constant
+		{	// make multi parameter visible as an enumeration constant
 		_Multi = _Mfl};
 
-	_Tmap_traits()
+	_Tset_traits()
 		: comp()
 		{	// construct with default comparator
 		}
 
-	_Tmap_traits(_Pr _Parg)
+	_Tset_traits(_Pr _Parg)
 		: comp(_Parg)
 		{	// construct with specified comparator
 		}
 
-	class value_compare
-		: public binary_function<value_type, value_type, bool>
-		{	// functor for comparing two element values
-		friend class _Tmap_traits<_Kty, _Ty, _Pr, _Alloc, _Mfl>;
-
-	public:
-		bool operator()(const value_type& _Left,
-			const value_type& _Right) const
-			{	// test if _Left precedes _Right by comparing just keys
-			return (comp(_Left.first, _Right.first));
-			}
-
-		value_compare(key_compare _Pred)
-			: comp(_Pred)
-			{	// construct with specified predicate
-			}
-
-	protected:
-		key_compare comp;	// the comparator predicate for keys
-		};
+	typedef key_compare value_compare;
 
 	static const _Kty& _Kfn(const value_type& _Val)
 		{	// extract key from element value
-		return (_Val.first);
+		return (_Val);
 		}
 
 	_Pr comp;	// the comparator predicate for keys
 	};
 
-		// TEMPLATE CLASS map
+		// TEMPLATE CLASS set
 template<class _Kty,
-	class _Ty,
 	class _Pr = less<_Kty>,
-	class _Alloc = allocator<pair<const _Kty, _Ty> > >
-	class map
-		: public _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, false> >
-	{	// ordered red-black tree of {key, mapped} values, unique keys
+	class _Alloc = allocator<_Kty> >
+	class set
+		: public _Tree<_Tset_traits<_Kty, _Pr, _Alloc, false> >
+	{	// ordered red-black tree of key values, unique keys
 public:
-	typedef map<_Kty, _Ty, _Pr, _Alloc> _Myt;
-	typedef _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, false> > _Mybase;
+	typedef set<_Kty, _Pr, _Alloc> _Myt;
+	typedef _Tree<_Tset_traits<_Kty, _Pr, _Alloc, false> > _Mybase;
 	typedef _Kty key_type;
-	typedef _Ty mapped_type;
-	typedef _Ty referent_type;	// retained
 	typedef _Pr key_compare;
 	typedef typename _Mybase::value_compare value_compare;
 	typedef typename _Mybase::allocator_type allocator_type;
@@ -97,81 +73,68 @@ public:
 		const_reverse_iterator;
 	typedef typename _Mybase::value_type value_type;
 
-	map()
+	set()
 		: _Mybase(key_compare(), allocator_type())
-		{	// construct empty map from defaults
+		{	// construct empty set from defaults
 		}
 
-	explicit map(const key_compare& _Pred)
+	explicit set(const key_compare& _Pred)
 		: _Mybase(_Pred, allocator_type())
-		{	// construct empty map from comparator
+		{	// construct empty set from comparator
 		}
 
-	map(const key_compare& _Pred, const allocator_type& _Al)
+	set(const key_compare& _Pred, const allocator_type& _Al)
 		: _Mybase(_Pred, _Al)
-		{	// construct empty map from comparator and allocator
+		{	// construct empty set from comparator and allocator
 		}
 
 	template<class _Iter>
-		map(_Iter _First, _Iter _Last)
+		set(_Iter _First, _Iter _Last)
 		: _Mybase(key_compare(), allocator_type())
-		{	// construct map from [_First, _Last), defaults
+		{	// construct set from [_First, _Last), defaults
 		for (; _First != _Last; ++_First)
 			this->insert(*_First);
 		}
 
 	template<class _Iter>
-		map(_Iter _First, _Iter _Last,
+		set(_Iter _First, _Iter _Last,
 			const key_compare& _Pred)
 		: _Mybase(_Pred, allocator_type())
-		{	// construct map from [_First, _Last), comparator
+		{	// construct set from [_First, _Last), comparator
 		for (; _First != _Last; ++_First)
 			this->insert(*_First);
 		}
 
 	template<class _Iter>
-		map(_Iter _First, _Iter _Last,
+		set(_Iter _First, _Iter _Last,
 			const key_compare& _Pred, const allocator_type& _Al)
 		: _Mybase(_Pred, _Al)
-		{	// construct map from [_First, _Last), comparator, and allocator
+		{	// construct set from [_First, _Last), defaults, and allocator
 		for (; _First != _Last; ++_First)
 			this->insert(*_First);
-		}
-
-	mapped_type& operator[](const key_type& _Keyval)
-		{	// find element matching _Keyval or insert with default mapped
-		iterator _Where = this->lower_bound(_Keyval);
-		if (_Where == this->end() || this->comp(_Keyval, this->_Key(_Where._Mynode())))
-			_Where = this->insert(_Where,
-				value_type(_Keyval, mapped_type()));
-		return ((*_Where).second);
 		}
 	};
 
 template<class _Kty,
-	class _Ty,
 	class _Pr,
 	class _Alloc> inline
-	void swap(map<_Kty, _Ty, _Pr, _Alloc>& _Left,
-		map<_Kty, _Ty, _Pr, _Alloc>& _Right)
-	{	// swap _Left and _Right maps
+	void swap(set<_Kty, _Pr, _Alloc>& _Left,
+		set<_Kty, _Pr, _Alloc>& _Right)
+	{	// swap _Left and _Right sets
 	_Left.swap(_Right);
 	}
 
-		// TEMPLATE CLASS multimap
+		// TEMPLATE CLASS multiset
 template<class _Kty,
-	class _Ty,
 	class _Pr = less<_Kty>,
-	class _Alloc = allocator<pair<const _Kty, _Ty> > >
-	class multimap
-		: public _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, true> >
-	{	// ordered red-black tree of {key, mapped} values, non-unique keys
+	class _Alloc = allocator<_Kty> >
+	class multiset
+		: public _Tree<_Tset_traits<_Kty, _Pr, _Alloc, true> >
+	{	// ordered red-black tree of key values, non-unique keys
 public:
-	typedef multimap<_Kty, _Ty, _Pr, _Alloc> _Myt;
-	typedef _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, true> > _Mybase;
+	typedef multiset<_Kty, _Pr, _Alloc> _Myt;
+	typedef _Tree<_Tset_traits<_Kty, _Pr, _Alloc, true> > _Mybase;
 	typedef _Kty key_type;
-	typedef _Ty mapped_type;
-	typedef _Ty referent_type;	// retained
 	typedef _Pr key_compare;
 	typedef typename _Mybase::value_compare value_compare;
 	typedef typename _Mybase::allocator_type allocator_type;
@@ -188,79 +151,78 @@ public:
 		const_reverse_iterator;
 	typedef typename _Mybase::value_type value_type;
 
-	multimap()
+	multiset()
 		: _Mybase(key_compare(), allocator_type())
-		{	// construct empty map from defaults
+		{	// construct empty set from defaults
 		}
 
-	explicit multimap(const key_compare& _Pred)
+	explicit multiset(const key_compare& _Pred)
 		: _Mybase(_Pred, allocator_type())
-		{	// construct empty map from comparator
+		{	// construct empty set from comparator
 		}
-	multimap(const key_compare& _Pred, const allocator_type& _Al)
+
+	multiset(const key_compare& _Pred, const allocator_type& _Al)
 		: _Mybase(_Pred, _Al)
-		{	// construct empty map from comparator and allocator
+		{	// construct empty set from comparator and allocator
 		}
 
 	template<class _Iter>
-		multimap(_Iter _First, _Iter _Last)
+		multiset(_Iter _First, _Iter _Last)
 		: _Mybase(key_compare(), allocator_type())
-		{	// construct map from [_First, _Last), defaults
+		{	// construct set from [_First, _Last)
 		for (; _First != _Last; ++_First)
-			insert(*_First);
+			this->insert(*_First);
 		}
 
 	template<class _Iter>
-		multimap(_Iter _First, _Iter _Last,
+		multiset(_Iter _First, _Iter _Last,
 			const key_compare& _Pred)
 		: _Mybase(_Pred, allocator_type())
-		{	// construct map from [_First, _Last), comparator
+		{	// construct set from [_First, _Last), comparator
 		for (; _First != _Last; ++_First)
-			insert(*_First);
+			this->insert(*_First);
 		}
 
 	template<class _Iter>
-		multimap(_Iter _First, _Iter _Last,
+		multiset(_Iter _First, _Iter _Last,
 			const key_compare& _Pred, const allocator_type& _Al)
 		: _Mybase(_Pred, _Al)
-		{	// construct map from [_First, _Last), comparator, and allocator
+		{	// construct set from [_First, _Last), comparator, and allocator
 		for (; _First != _Last; ++_First)
-			insert(*_First);
+			this->insert(*_First);
 		}
 
 	iterator insert(const value_type& _Val)
-		{	// insert a {key, mapped} value
+		{	// insert a key value
 		return (_Mybase::insert(_Val).first);
 		}
 
 	iterator insert(iterator _Where, const value_type& _Val)
-		{	// insert a {key, mapped} value, with hint
+		{	// insert a key value, with hint
 		return (_Mybase::insert(_Where, _Val));
 		}
 
 	template<class _Iter>
 		void insert(_Iter _First, _Iter _Last)
-		{	// insert [_First, _Last), arbitrary iterators
+		{	// insert [_First, _Last)
 		for (; _First != _Last; ++_First)
-			insert(*_First);
+			this->insert(*_First);
 		}
 	};
 
 template<class _Kty,
-	class _Ty,
 	class _Pr,
 	class _Alloc> inline
-	void swap(multimap<_Kty, _Ty, _Pr, _Alloc>& _Left,
-		multimap<_Kty, _Ty, _Pr, _Alloc>& _Right)
-	{	// swap _Left and _Right multimaps
+	void swap(multiset<_Kty, _Pr, _Alloc>& _Left,
+		multiset<_Kty, _Pr, _Alloc>& _Right)
+	{	// swap _Left and _Right multisets
 	_Left.swap(_Right);
 	}
 
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _MAP_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

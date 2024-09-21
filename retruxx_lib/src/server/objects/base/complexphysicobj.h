@@ -1,5 +1,6 @@
 #pragma once
 #include "physicobj.h"
+#include <map>
 
 namespace ai
 {

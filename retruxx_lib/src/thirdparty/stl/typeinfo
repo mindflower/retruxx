@@ -30,7 +30,7 @@
 
  #include <typeinfo.h>
 
- _STD_BEGIN
+ _OLDSTD_BEGIN
  #if _HAS_EXCEPTIONS
 using ::type_info;
 using ::bad_cast;
@@ -90,7 +90,7 @@ public:
 	};
  #endif /* _HAS_EXCEPTIONS */
 
- _STD_END
+ _OLDSTD_END
 
 #endif // _TYPEINFO_
 

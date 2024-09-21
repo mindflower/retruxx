@@ -34,7 +34,7 @@
 #endif
 
 /*
- * Define _ENABLE_VEC_DEBUG to enable std::ostream inserters for debug output
+ * Define _ENABLE_VEC_DEBUG to enable oldstd::ostream inserters for debug output
  */
 #if defined(_ENABLE_VEC_DEBUG)
 	#include <iostream>
@@ -211,7 +211,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator<< (std::ostream &os, const Is32vec2 &a)
+	friend oldstd::ostream& operator<< (oldstd::ostream &os, const Is32vec2 &a)
 	{
 		os << " [1]:" << _MM_2DW(1,a)
 		<< " [0]:" << _MM_2DW(0,a);
@@ -286,7 +286,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator<< (std::ostream &os, const Iu32vec2 &a)
+	friend oldstd::ostream& operator<< (oldstd::ostream &os, const Iu32vec2 &a)
 	{
 		os << " [1]:" << _MM_2UDW(1,a)
 		<< " [0]:" << _MM_2UDW(0,a);
@@ -399,7 +399,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator<< (std::ostream &os, const Is16vec4 &a)
+	friend oldstd::ostream& operator<< (oldstd::ostream &os, const Is16vec4 &a)
 	{
 		os << "[3]:" << _MM_4W(3,a)
 			<< " [2]:" << _MM_4W(2,a)
@@ -486,7 +486,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator<< (std::ostream &os, const Iu16vec4 &a)
+	friend oldstd::ostream& operator<< (oldstd::ostream &os, const Iu16vec4 &a)
 	{
 		os << "[3]:" << _MM_4UW(3,a)
 			<< " [2]:" << _MM_4UW(2,a)
@@ -589,7 +589,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator<< (std::ostream &os, const Is8vec8 &a)
+	friend oldstd::ostream& operator<< (oldstd::ostream &os, const Is8vec8 &a)
 	{
 		os << "[7]:" << short(_MM_8B(7,a))
 			<< " [6]:" << short(_MM_8B(6,a))
@@ -666,7 +666,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator << (std::ostream &os, const Iu8vec8 &a)
+	friend oldstd::ostream& operator << (oldstd::ostream &os, const Iu8vec8 &a)
 	{
 		 os << "[7]:"  << unsigned short(_MM_8UB(7,a))
 			<< " [6]:" << unsigned short(_MM_8UB(6,a))

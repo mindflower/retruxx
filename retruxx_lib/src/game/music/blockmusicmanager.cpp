@@ -57,10 +57,10 @@ namespace m3d
             if (xmlFile)
             {
                 ref_ptr musicBlocksNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                xmlFile->GetFirstChild_(musicBlocksNode, "MusicBlocks");
+                xmlFile->GetFirstChild(musicBlocksNode, "MusicBlocks");
 
                 ref_ptr blockNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                for (musicBlocksNode->GetFirstChild_(blockNode, "Block"); !blockNode->IsEmpty(); blockNode->GetNextSibling_(blockNode, "Block"))
+                for (musicBlocksNode->GetFirstChild(blockNode, "Block"); !blockNode->IsEmpty(); blockNode->GetNextSibling(blockNode, "Block"))
                 {
                     std::vector<CStr> block;
                     const char* musicNames[3] = { "driving", "alarm", "battle" };

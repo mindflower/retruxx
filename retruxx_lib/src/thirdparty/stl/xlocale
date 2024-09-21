@@ -12,7 +12,7 @@
 #pragma pack(push,8)
 #pragma warning(push,3)
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS _Locbase
 template<class _Dummy>
@@ -179,8 +179,8 @@ public:
 		bool operator()(const basic_string<_Elem, _Traits, _Alloc>& _Left,
 			const basic_string<_Elem, _Traits, _Alloc>& _Right) const
 		{	// compare _Left and _Right strings using collate facet in locale
-		const std::collate<_Elem>& _Coll_fac =
-			std::use_facet<std::collate<_Elem> >(*this);
+		const oldstd::collate<_Elem>& _Coll_fac =
+			oldstd::use_facet<oldstd::collate<_Elem> >(*this);
 
 		return (_Coll_fac.compare(_Left.c_str(), _Left.c_str() + _Left.size(),
 			_Right.c_str(), _Right.c_str() + _Right.size()) < 0);
@@ -192,9 +192,9 @@ public:
 		_Facet *_Facptr;
 
 		_TRY_BEGIN
-			_Facptr = (_Facet *)&std::use_facet<_Facet>(_Loc);
+			_Facptr = (_Facet *)&oldstd::use_facet<_Facet>(_Loc);
 		_CATCH_ALL
-			_THROW(runtime_error, "locale::combine facet missing");
+			_THROWOLD(runtime_error, "locale::combine facet missing");
 		_CATCH_END
 
 		_Locimp *_Newimp = _NEW_CRT _Locimp(*_Ptr);
@@ -1560,7 +1560,7 @@ _PROTECTED:
 template class _CRTIMP2 codecvt<char, char, mbstate_t>;
 
  #endif /* _DLL_CPPLIB */
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

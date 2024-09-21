@@ -1,10 +1,8 @@
 // list standard header
 #pragma once
-#ifndef _LIST_
-#define _LIST_
-#include <functional>
-#include <memory>
-#include <stdexcept>
+#include "functional.hpp"
+#include "memory.hpp"
+#include "stdexcept.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
@@ -14,7 +12,7 @@
   #define _GENERIC_BASE	_Node
 
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS _List_nod
 template<class _Ty,
@@ -272,8 +270,8 @@ public:
 			}
 		};
 
-	typedef std::reverse_iterator<iterator> reverse_iterator;
-	typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+	typedef oldstd::reverse_iterator<iterator> reverse_iterator;
+	typedef oldstd::reverse_iterator<const_iterator> const_reverse_iterator;
 
 	list()
 		: _Mybase(), _Myhead(_Buynode()), _Mysize(0)
@@ -626,8 +624,8 @@ public:
 		{	// exchange contents with _Right
 		if (this->_Alval == _Right._Alval)
 			{	// same allocator, swap control information
-			std::swap(_Myhead, _Right._Myhead);
-			std::swap(_Mysize, _Right._Mysize);
+			oldstd::swap(_Myhead, _Right._Myhead);
+			oldstd::swap(_Mysize, _Right._Mysize);
 			}
 		else
 			{	// different allocator, do splices
@@ -955,7 +953,7 @@ protected:
 	void _Incsize(size_type _Count)
 		{	// alter element count, with checking
 		if (max_size() - _Mysize < _Count)
-			_THROW(length_error, "list<T> too long");
+			_THROWOLD(length_error, "list<T> too long");
 		_Mysize += _Count;
 		}
 
@@ -1017,11 +1015,10 @@ template<class _Ty, class _Alloc> inline
 	}
 
 
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _LIST_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

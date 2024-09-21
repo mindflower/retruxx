@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS basic_ios
 template<class _Elem,
@@ -295,7 +295,7 @@ inline ios_base& __cdecl uppercase(ios_base& _Iosbase)
 	_Iosbase.setf(ios_base::uppercase);
 	return (_Iosbase);
 	}
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

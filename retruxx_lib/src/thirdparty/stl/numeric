@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE FUNCTION accumulate
 template<class _InIt,
@@ -150,7 +150,7 @@ template<class _InIt,
 	return (_First == _Last ? _Dest : _Adjacent_difference(_First, _Last,
 		_Dest, _Func, _Val_type(_First)));
 	}
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

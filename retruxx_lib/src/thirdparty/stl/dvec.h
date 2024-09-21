@@ -31,7 +31,7 @@
 #include <assert.h>
 #include <fvec.h>
 
-/* Define _ENABLE_VEC_DEBUG to enable std::ostream inserters for debug output */
+/* Define _ENABLE_VEC_DEBUG to enable oldstd::ostream inserters for debug output */
 #if defined(_ENABLE_VEC_DEBUG)
 	#include <iostream>
 #endif
@@ -266,7 +266,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator<< (std::ostream &os, const Is32vec4 &a)
+	friend oldstd::ostream& operator<< (oldstd::ostream &os, const Is32vec4 &a)
 	{
 		os << "[3]:" << _MM_4DW(3,a)
 			<< " [2]:" << _MM_4DW(2,a)
@@ -343,7 +343,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator<< (std::ostream &os, const Iu32vec4 &a)
+	friend oldstd::ostream& operator<< (oldstd::ostream &os, const Iu32vec4 &a)
 	{
 		os << "[3]:" << _MM_4UDW(3,a)
 			<< " [2]:" << _MM_4UDW(2,a)
@@ -460,7 +460,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator<< (std::ostream &os, const Is16vec8 &a)
+	friend oldstd::ostream& operator<< (oldstd::ostream &os, const Is16vec8 &a)
 	{
 		os << "[7]:" << _MM_8W(7,a)
 			<< " [6]:" << _MM_8W(6,a)
@@ -555,7 +555,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator << (std::ostream &os, const Iu16vec8 &a)
+	friend oldstd::ostream& operator << (oldstd::ostream &os, const Iu16vec8 &a)
 	{
 		 os << "[7]:"  << unsigned short(_MM_8UW(7,a))
 			<< " [6]:" << unsigned short(_MM_8UW(6,a))
@@ -651,7 +651,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator << (std::ostream &os, const Is8vec16 &a)
+	friend oldstd::ostream& operator << (oldstd::ostream &os, const Is8vec16 &a)
 	{
 		 os << "[15]:"  << short(_MM_16B(15,a))
 			<< " [14]:" << short(_MM_16B(14,a))
@@ -723,7 +723,7 @@ public:
 
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output for Debug */
-	friend std::ostream& operator << (std::ostream &os, const Iu8vec16 &a)
+	friend oldstd::ostream& operator << (oldstd::ostream &os, const Iu8vec16 &a)
 	{
 		 os << "[15]:"  << unsigned short(_MM_16UB(15,a))
 			<< " [14]:" << unsigned short(_MM_16UB(14,a))
@@ -978,7 +978,7 @@ public:
 	/* Debug Features */
 #if defined(_ENABLE_VEC_DEBUG)
 	/* Output */
-	friend std::ostream & operator<<(std::ostream & os, const F64vec2 &a)
+	friend oldstd::ostream & operator<<(oldstd::ostream & os, const F64vec2 &a)
 	{
 	/* To use: cout << "Elements of F64vec2 fvec are: " << fvec; */
 	  double *dp = (double*)&a;

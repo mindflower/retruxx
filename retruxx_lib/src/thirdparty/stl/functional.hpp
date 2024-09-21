@@ -1,14 +1,12 @@
 // functional standard header
 #pragma once
-#ifndef _FUNCTIONAL_
-#define _FUNCTIONAL_
-#include <xstddef>
+#include "xstddef.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
 
  #pragma warning(disable: 4244)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE STRUCT unary_function
 template<class _Arg,
@@ -219,7 +217,7 @@ protected:
 template<class _Fn1> inline
 	unary_negate<_Fn1> not1(const _Fn1& _Func)
 	{	// return a unary_negate functor adapter
-	return (std::unary_negate<_Fn1>(_Func));
+	return (oldstd::unary_negate<_Fn1>(_Func));
 	}
 
 		// TEMPLATE CLASS binary_negate
@@ -248,7 +246,7 @@ protected:
 template<class _Fn2> inline
 	binary_negate<_Fn2> not2(const _Fn2& _Func)
 	{	// return a binary_negate functor adapter
-	return (std::binary_negate<_Fn2>(_Func));
+	return (oldstd::binary_negate<_Fn2>(_Func));
 	}
 
 		// TEMPLATE CLASS binder1st
@@ -290,7 +288,7 @@ template<class _Fn2,
 	binder1st<_Fn2> bind1st(const _Fn2& _Func, const _Ty& _Left)
 		{	// return a binder1st functor adapter
 		typename _Fn2::first_argument_type _Val(_Left);
-		return (std::binder1st<_Fn2>(_Func, _Val));
+		return (oldstd::binder1st<_Fn2>(_Func, _Val));
 		}
 
 		// TEMPLATE CLASS binder2nd
@@ -332,7 +330,7 @@ template<class _Fn2,
 	binder2nd<_Fn2> bind2nd(const _Fn2& _Func, const _Ty& _Right)
 	{	// return a binder2nd functor adapter
 	typename _Fn2::second_argument_type _Val(_Right);
-	return (std::binder2nd<_Fn2>(_Func, _Val));
+	return (oldstd::binder2nd<_Fn2>(_Func, _Val));
 	}
 
 		// TEMPLATE CLASS pointer_to_unary_function
@@ -385,7 +383,7 @@ template<class _Arg,
 	pointer_to_unary_function<_Arg, _Result>
 		ptr_fun(_Result (__cdecl *_Left)(_Arg))
 	{	// return pointer_to_unary_function functor adapter
-	return (std::pointer_to_unary_function<_Arg, _Result>(_Left));
+	return (oldstd::pointer_to_unary_function<_Arg, _Result>(_Left));
 	}
 
 template<class _Arg1,
@@ -394,7 +392,7 @@ template<class _Arg1,
 	pointer_to_binary_function<_Arg1, _Arg2, _Result>
 		ptr_fun(_Result (__cdecl *_Left)(_Arg1, _Arg2))
 	{	// return pointer_to_binary_function functor adapter
-	return (std::pointer_to_binary_function<_Arg1, _Arg2, _Result>(_Left));
+	return (oldstd::pointer_to_binary_function<_Arg1, _Arg2, _Result>(_Left));
 	}
 
 		// TEMPLATE CLASS mem_fun_t
@@ -488,7 +486,7 @@ template<class _Result,
 	class _Ty> inline
 	mem_fun_t<_Result, _Ty> mem_fun(_Result (_Ty::*_Pm)())
 	{	// return a mem_fun_t functor adapter
-	return (std::mem_fun_t<_Result, _Ty>(_Pm));
+	return (oldstd::mem_fun_t<_Result, _Ty>(_Pm));
 	}
 
 template<class _Result,
@@ -496,7 +494,7 @@ template<class _Result,
 	class _Arg> inline
 	mem_fun1_t<_Result, _Ty, _Arg> mem_fun(_Result (_Ty::*_Pm)(_Arg))
 	{	// return a mem_fun1_t functor adapter
-	return (std::mem_fun1_t<_Result, _Ty, _Arg>(_Pm));
+	return (oldstd::mem_fun1_t<_Result, _Ty, _Arg>(_Pm));
 	}
 
 template<class _Result,
@@ -504,7 +502,7 @@ template<class _Result,
 	const_mem_fun_t<_Result, _Ty>
 		mem_fun(_Result (_Ty::*_Pm)() const)
 	{	// return a const_mem_fun_t functor adapter
-	return (std::const_mem_fun_t<_Result, _Ty>(_Pm));
+	return (oldstd::const_mem_fun_t<_Result, _Ty>(_Pm));
 	}
 
 template<class _Result,
@@ -513,7 +511,7 @@ template<class _Result,
 	const_mem_fun1_t<_Result, _Ty, _Arg>
 		mem_fun(_Result (_Ty::*_Pm)(_Arg) const)
 	{	// return a const_mem_fun1_t functor adapter
-	return (std::const_mem_fun1_t<_Result, _Ty, _Arg>(_Pm));
+	return (oldstd::const_mem_fun1_t<_Result, _Ty, _Arg>(_Pm));
 	}
 
 		// TEMPLATE FUNCTION mem_fun1 (retained)
@@ -522,7 +520,7 @@ template<class _Result,
 	class _Arg> inline
 	mem_fun1_t<_Result, _Ty, _Arg> mem_fun1(_Result (_Ty::*_Pm)(_Arg))
 	{	// return a mem_fun1_t functor adapter
-	return (std::mem_fun1_t<_Result, _Ty, _Arg>(_Pm));
+	return (oldstd::mem_fun1_t<_Result, _Ty, _Arg>(_Pm));
 	}
 
 		// TEMPLATE CLASS mem_fun_ref_t
@@ -616,7 +614,7 @@ template<class _Result,
 	class _Ty> inline
 	mem_fun_ref_t<_Result, _Ty> mem_fun_ref(_Result (_Ty::*_Pm)())
 	{	// return a mem_fun_ref_t functor adapter
-	return (std::mem_fun_ref_t<_Result, _Ty>(_Pm));
+	return (oldstd::mem_fun_ref_t<_Result, _Ty>(_Pm));
 	}
 
 template<class _Result,
@@ -625,7 +623,7 @@ template<class _Result,
 	mem_fun1_ref_t<_Result, _Ty, _Arg>
 		mem_fun_ref(_Result (_Ty::*_Pm)(_Arg))
 	{	// return a mem_fun1_ref_t functor adapter
-	return (std::mem_fun1_ref_t<_Result, _Ty, _Arg>(_Pm));
+	return (oldstd::mem_fun1_ref_t<_Result, _Ty, _Arg>(_Pm));
 	}
 
 template<class _Result,
@@ -633,7 +631,7 @@ template<class _Result,
 	const_mem_fun_ref_t<_Result, _Ty>
 		mem_fun_ref(_Result (_Ty::*_Pm)() const)
 	{	// return a const_mem_fun_ref_t functor adapter
-	return (std::const_mem_fun_ref_t<_Result, _Ty>(_Pm));
+	return (oldstd::const_mem_fun_ref_t<_Result, _Ty>(_Pm));
 	}
 
 template<class _Result,
@@ -642,7 +640,7 @@ template<class _Result,
 	const_mem_fun1_ref_t<_Result, _Ty, _Arg>
 		mem_fun_ref(_Result (_Ty::*_Pm)(_Arg) const)
 	{	// return a const_mem_fun1_ref_t functor adapter
-	return (std::const_mem_fun1_ref_t<_Result, _Ty, _Arg>(_Pm));
+	return (oldstd::const_mem_fun1_ref_t<_Result, _Ty, _Arg>(_Pm));
 	}
 
 		// TEMPLATE FUNCTION mem_fun1_ref (retained)
@@ -651,16 +649,14 @@ template<class _Result,
 	class _Arg> inline
 	mem_fun1_ref_t<_Result, _Ty, _Arg> mem_fun1_ref(_Result (_Ty::*_Pm)(_Arg))
 	{	// return a mem_fun1_ref_t functor adapter
-	return (std::mem_fun1_ref_t<_Result, _Ty, _Arg>(_Pm));
+	return (oldstd::mem_fun1_ref_t<_Result, _Ty, _Arg>(_Pm));
 	}
-_STD_END
+_OLDSTD_END
 
   #pragma warning(default: 4244)
 
 #pragma warning(pop)
 #pragma pack(pop)
-
-#endif /* _FUNCTIONAL_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

@@ -1,13 +1,11 @@
 // memory standard header
 #pragma once
-#ifndef _MEMORY_
-#define _MEMORY_
-#include <iterator>
-#include <xmemory>
+#include "iterator.hpp"
+#include "xmemory.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE FUNCTION get_temporary_buffer
 template<class _Ty> inline
@@ -151,7 +149,7 @@ template<class _Ty,
 	void _Uninit_fill(_Ty *_First, _Ty *_Last, const _Tval& _Val,
 		_Scalar_ptr_iterator_tag)
 	{	// copy _Val throughout raw [_First, _Last), scalar type
-	std::fill(_First, _Last, _Val);
+	oldstd::fill(_First, _Last, _Val);
 	}
 
 template<class _FwdIt,
@@ -186,7 +184,7 @@ template<class _Ty,
 	void _Uninit_fill_n(_Ty *_First, _Diff _Count, const _Tval& _Val,
 		_Scalar_ptr_iterator_tag)
 	{	// copy _Count *_Val to raw _First, scalar type
-	std::fill_n(_First, _Count, _Val);
+	oldstd::fill_n(_First, _Count, _Val);
 	}
 
 template<class _FwdIt,
@@ -312,7 +310,7 @@ public:
 	_Temp_iterator(_PDFT _Count = 0)
 		{	// construct from desired temporary buffer size
 		pair<_Pty, _PDFT> _Pair =
-			std::get_temporary_buffer<_Ty>(_Count);
+			oldstd::get_temporary_buffer<_Ty>(_Count);
 		_Buf._Begin = _Pair.first;
 		_Buf._Current = _Pair.first;
 		_Buf._Hiwater = _Pair.first;
@@ -336,7 +334,7 @@ public:
 			for (_Pty _Next = _Buf._Begin;
 				_Next != _Buf._Hiwater; ++_Next)
 				_Destroy(&*_Next);
-			std::return_temporary_buffer(_Buf._Begin);
+			oldstd::return_temporary_buffer(_Buf._Begin);
 			}
 		}
 
@@ -516,11 +514,9 @@ public:
 private:
 	_Ty *_Myptr;	// the wrapped object pointer
 	};
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
-
-#endif /* _MEMORY_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

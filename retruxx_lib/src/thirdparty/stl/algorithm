@@ -7,7 +7,7 @@
 #pragma pack(push,8)
 #pragma warning(push,3)
  #pragma warning(disable: 4244)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// COMMON SORT PARAMETERS
 const int _ISORT_MAX = 32;	// maximum size for insertion sort
@@ -365,7 +365,7 @@ template<class _FwdIt1,
 	class _FwdIt2> inline
 	void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right)
 	{	// swap *_Left and *_Right
-	std::swap(*_Left, *_Right);
+	oldstd::swap(*_Left, *_Right);
 	}
 
 		// TEMPLATE FUNCTION swap_ranges
@@ -374,7 +374,7 @@ template<class _FwdIt1,
 	_FwdIt2 swap_ranges(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2)
 	{	// swap [_First1, _Last1) with [_First2, ...)
 	for (; _First1 != _Last1; ++_First1, ++_First2)
-		std::iter_swap(_First1, _First2);
+		oldstd::iter_swap(_First1, _First2);
 	return (_First2);
 	}
 
@@ -504,7 +504,7 @@ template<class _FwdIt,
 	else
 		{	// nonempty sequence, worth doing
 		_FwdIt _First1 = _First;
-		return (std::remove_copy(++_First1, _Last, _First, _Val));
+		return (oldstd::remove_copy(++_First1, _Last, _First, _Val));
 		}
 	}
 
@@ -513,13 +513,13 @@ template<class _FwdIt,
 	class _Pr> inline
 	_FwdIt remove_if(_FwdIt _First, _FwdIt _Last, _Pr _Pred)
 	{	// remove each satisfying _Pred
-	_First = std::find_if(_First, _Last, _Pred);
+	_First = oldstd::find_if(_First, _Last, _Pred);
 	if (_First == _Last)
 		return (_First);	// empty sequence, all done
 	else
 		{	// nonempty sequence, worth doing
 		_FwdIt _First1 = _First;
-		return (std::remove_copy_if(++_First1, _Last, _First, _Pred));
+		return (oldstd::remove_copy_if(++_First1, _Last, _First, _Pred));
 		}
 	}
 
@@ -685,14 +685,14 @@ template<class _BidIt> inline
 	void _Reverse(_BidIt _First, _BidIt _Last, bidirectional_iterator_tag)
 	{	// reverse elements in [_First, _Last), bidirectional iterators
 	for (; _First != _Last && _First != --_Last; ++_First)
-		std::iter_swap(_First, _Last);
+		oldstd::iter_swap(_First, _Last);
 	}
 
 template<class _RanIt> inline
 	void _Reverse(_RanIt _First, _RanIt _Last, random_access_iterator_tag)
 	{	// reverse elements in [_First, _Last), random-access iterators
 	for (; _First < _Last; ++_First)
-		std::iter_swap(_First, --_Last);
+		oldstd::iter_swap(_First, --_Last);
 	}
 
 template<class _BidIt> inline
@@ -718,7 +718,7 @@ template<class _FwdIt> inline
 	{	// rotate [_First, _Last), forward iterators
 	for (_FwdIt _Next = _Mid; ; )
 		{	// swap [_First, ...) into place
-		std::iter_swap(_First, _Next);
+		oldstd::iter_swap(_First, _Next);
 		if (++_First == _Mid)
 			if (++_Next == _Last)
 				break;	// done, quit
@@ -733,9 +733,9 @@ template<class _BidIt> inline
 	void _Rotate(_BidIt _First, _BidIt _Mid, _BidIt _Last,
 		bidirectional_iterator_tag)
 	{	// rotate [_First, _Last), bidirectional iterators
-	std::reverse(_First, _Mid);
-	std::reverse(_Mid, _Last);
-	std::reverse(_First, _Last);
+	oldstd::reverse(_First, _Mid);
+	oldstd::reverse(_Mid, _Last);
+	oldstd::reverse(_First, _Last);
 	}
 
 template<class _RanIt,
@@ -789,8 +789,8 @@ template<class _FwdIt,
 	class _OutIt> inline
 	_OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest)
 	{	// copy rotating [_First, _Last)
-	_Dest = std::copy(_Mid, _Last, _Dest);
-	return (std::copy(_First, _Mid, _Dest));
+	_Dest = oldstd::copy(_Mid, _Last, _Dest);
+	return (oldstd::copy(_First, _Mid, _Dest));
 	}
 
 		// TEMPLATE FUNCTION random_shuffle
@@ -810,7 +810,7 @@ template<class _RanIt,
 			_Rm = _Rm << _RANDOM_BITS | _RANDOM_MAX)
 			_Rn = _Rn << _RANDOM_BITS | _RANDOM_MAX;	// build random value
 
-		std::iter_swap(_Next, _First + _Diff(_Rn % _Index));	// swap a pair
+		oldstd::iter_swap(_Next, _First + _Diff(_Rn % _Index));	// swap a pair
 		}
 	}
 
@@ -830,7 +830,7 @@ template<class _RanIt,
 	_RanIt _Next = _First;
 
 	for (_Diff _Index = 2; ++_Next != _Last; ++_Index)
-		std::iter_swap(_Next, _First + _Diff(_Func(_Index)));
+		oldstd::iter_swap(_Next, _First + _Diff(_Func(_Index)));
 	}
 
 template<class _RanIt,
@@ -858,7 +858,7 @@ template<class _BidIt,
 		if (_First == _Last)
 			break;	// done
 
-		std::iter_swap(_First, _Last);	// swap out-of-place pair and loop
+		oldstd::iter_swap(_First, _Last);	// swap out-of-place pair and loop
 		}
 	return (_First);
 	}
@@ -882,13 +882,13 @@ template<class _BidIt,
 			else
 				*_Tempbuf++ = *_First;
 
-		std::copy(_Tempbuf._First(), _Tempbuf._Last(), _Next);	// copy back
+		oldstd::copy(_Tempbuf._First(), _Tempbuf._Last(), _Next);	// copy back
 		return (_Next);
 		}
 	else
 		{	// temp buffer not big enough, divide and conquer
 		_BidIt _Mid = _First;
-		std::advance(_Mid, _Count / 2);
+		oldstd::advance(_Mid, _Count / 2);
 
 		_BidIt _Left = _Stable_partition(_First, _Mid, _Pred,
 			_Count / 2, _Tempbuf);	// form L1R1 in left half
@@ -1157,7 +1157,7 @@ template<class _RanIt> inline
 	void sort_heap(_RanIt _First, _RanIt _Last)
 	{	// order heap by repeatedly popping, using operator<
 	for (; 1 < _Last - _First; --_Last)
-		std::pop_heap(_First, _Last);
+		oldstd::pop_heap(_First, _Last);
 	}
 
 		// TEMPLATE FUNCTION sort_heap WITH PRED
@@ -1166,7 +1166,7 @@ template<class _RanIt,
 	void sort_heap(_RanIt _First, _RanIt _Last, _Pr _Pred)
 	{	// order heap by repeatedly popping, using _Pred
 	for (; 1 < _Last - _First; --_Last)
-		std::pop_heap(_First, _Last, _Pred);
+		oldstd::pop_heap(_First, _Last, _Pred);
 	}
 
 		// TEMPLATE FUNCTION lower_bound
@@ -1182,7 +1182,7 @@ template<class _FwdIt,
 		{	// divide and conquer, find half that contains answer
 		_Diff _Count2 = _Count / 2;
 		_FwdIt _Mid = _First;
-		std::advance(_Mid, _Count2);
+		oldstd::advance(_Mid, _Count2);
 
 		if (*_Mid < _Val)
 			_First = ++_Mid, _Count -= _Count2 + 1;
@@ -1213,7 +1213,7 @@ template<class _FwdIt,
 		{	// divide and conquer, find half that contains answer
 		_Diff _Count2 = _Count / 2;
 		_FwdIt _Mid = _First;
-		std::advance(_Mid, _Count2);
+		oldstd::advance(_Mid, _Count2);
 
 		if (_Pred(*_Mid, _Val))
 			_First = ++_Mid, _Count -= _Count2 + 1;
@@ -1244,7 +1244,7 @@ template<class _FwdIt,
 		{	// divide and conquer, find half that contains answer
 		_Diff _Count2 = _Count / 2;
 		_FwdIt _Mid = _First;
-		std::advance(_Mid, _Count2);
+		oldstd::advance(_Mid, _Count2);
 
 		if (!(_Val < *_Mid))
 			_First = ++_Mid, _Count -= _Count2 + 1;
@@ -1275,7 +1275,7 @@ template<class _FwdIt,
 		{	// divide and conquer, find half that contains answer
 		_Diff _Count2 = _Count / 2;
 		_FwdIt _Mid = _First;
-		std::advance(_Mid, _Count2);
+		oldstd::advance(_Mid, _Count2);
 
 		if (!_Pred(_Val, *_Mid))
 			_First = ++_Mid, _Count -= _Count2 + 1;
@@ -1308,7 +1308,7 @@ template<class _FwdIt,
 		{	// divide and conquer, check midpoint
 		_Diff _Count2 = _Count / 2;
 		_FwdIt _Mid = _First;
-		std::advance(_Mid, _Count2);
+		oldstd::advance(_Mid, _Count2);
 
 		if (*_Mid < _Val)
 			{	// range begins above _Mid, loop
@@ -1320,7 +1320,7 @@ template<class _FwdIt,
 		else
 			{	// range straddles mid, find each end and return
 			_FwdIt _First2 = lower_bound(_First, _Mid, _Val);
-			std::advance(_First, _Count);
+			oldstd::advance(_First, _Count);
 			_FwdIt _Last2 = upper_bound(++_Mid, _First, _Val);
 			return (pair<_FwdIt, _FwdIt>(_First2, _Last2));
 			}
@@ -1352,7 +1352,7 @@ template<class _FwdIt,
 		{	// divide and conquer, check midpoint
 		_Diff _Count2 = _Count / 2;
 		_FwdIt _Mid = _First;
-		std::advance(_Mid, _Count2);
+		oldstd::advance(_Mid, _Count2);
 
 		if (_Pred(*_Mid, _Val))
 			{	// range begins above _Mid, loop
@@ -1364,7 +1364,7 @@ template<class _FwdIt,
 		else
 			{	// range straddles _Mid, find each end and return
 			_FwdIt _First2 = lower_bound(_First, _Mid, _Val, _Pred);
-			std::advance(_First, _Count);
+			oldstd::advance(_First, _Count);
 			_FwdIt _Last2 = upper_bound(++_Mid, _First, _Val, _Pred);
 			return (pair<_FwdIt, _FwdIt>(_First2, _Last2));
 			}
@@ -1387,7 +1387,7 @@ template<class _FwdIt,
 	class _Ty> inline
 	bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val)
 	{	// test if _Val equivalent to some element, using operator<
-	_First = std::lower_bound(_First, _Last, _Val);
+	_First = oldstd::lower_bound(_First, _Last, _Val);
 	return (_First != _Last && !(_Val < *_First));
 	}
 
@@ -1398,7 +1398,7 @@ template<class _FwdIt,
 	bool binary_search(_FwdIt _First, _FwdIt _Last,
 		const _Ty& _Val, _Pr _Pred)
 	{	// test if _Val equivalent to some element, using _Pred
-	_First = std::lower_bound(_First, _Last, _Val, _Pred);
+	_First = oldstd::lower_bound(_First, _Last, _Val, _Pred);
 	return (_First != _Last && !_Pred(_Val, *_First));
 	}
 
@@ -1415,8 +1415,8 @@ template<class _InIt1,
 		else
 			*_Dest = *_First1, ++_First1;
 
-	_Dest = std::copy(_First1, _Last1, _Dest);	// copy any tail
-	return (std::copy(_First2, _Last2, _Dest));
+	_Dest = oldstd::copy(_First1, _Last1, _Dest);	// copy any tail
+	return (oldstd::copy(_First2, _Last2, _Dest));
 	}
 
 		// TEMPLATE FUNCTION merge WITH PRED
@@ -1433,8 +1433,8 @@ template<class _InIt1,
 		else
 			*_Dest = *_First1, ++_First1;
 
-	_Dest = std::copy(_First1, _Last1, _Dest);	// copy any tail
-	return (std::copy(_First2, _Last2, _Dest));
+	_Dest = oldstd::copy(_First1, _Last1, _Dest);	// copy any tail
+	return (oldstd::copy(_First2, _Last2, _Dest));
 	}
 
 		// TEMPLATE FUNCTION inplace_merge
@@ -1446,21 +1446,21 @@ template<class _BidIt,
 	{	// rotate [_First, _Last) using temp buffer
 	if (_Count1 <= _Count2 && _Count1 <= _Tempbuf._Maxlen())
 		{	// buffer left partition, then copy parts
-		std::copy(_First, _Mid, _Tempbuf._Init());
-		std::copy(_Mid, _Last, _First);
-		return (std::copy_backward(_Tempbuf._First(), _Tempbuf._Last(),
+		oldstd::copy(_First, _Mid, _Tempbuf._Init());
+		oldstd::copy(_Mid, _Last, _First);
+		return (oldstd::copy_backward(_Tempbuf._First(), _Tempbuf._Last(),
 			_Last));
 		}
 	else if (_Count2 <= _Tempbuf._Maxlen())
 		{	// buffer right partition, then copy parts
-		std::copy(_Mid, _Last, _Tempbuf._Init());
-		std::copy_backward(_First, _Mid, _Last);
-		return (std::copy(_Tempbuf._First(), _Tempbuf._Last(), _First));
+		oldstd::copy(_Mid, _Last, _Tempbuf._Init());
+		oldstd::copy_backward(_First, _Mid, _Last);
+		return (oldstd::copy(_Tempbuf._First(), _Tempbuf._Last(), _First));
 		}
 	else
 		{	// buffer too small, rotate in place
-		std::rotate(_First, _Mid, _Last);
-		std::advance(_First, _Count2);
+		oldstd::rotate(_First, _Mid, _Last);
+		oldstd::advance(_First, _Count2);
 		return (_First);
 		}
 	}
@@ -1473,9 +1473,9 @@ template<class _BidIt1,
 	{	// merge backwards to _Dest, using operator<
 	for (; ; )
 		if (_First1 == _Last1)
-			return (std::copy_backward(_First2, _Last2, _Dest));
+			return (oldstd::copy_backward(_First2, _Last2, _Dest));
 		else if (_First2 == _Last2)
-			return (std::copy_backward(_First1, _Last1, _Dest));
+			return (oldstd::copy_backward(_First1, _Last1, _Dest));
 		else if (*--_Last2 < *--_Last1)
 			*--_Dest = *_Last1, ++_Last2;
 		else
@@ -1492,16 +1492,16 @@ template<class _BidIt,
 	if (_Count1 + _Count2 == 2)
 		{	// order two one-element partitions
 		if (*_Mid < *_First)
-			std::iter_swap(_First, _Mid);
+			oldstd::iter_swap(_First, _Mid);
 		}
 	else if (_Count1 <= _Count2 && _Count1 <= _Tempbuf._Maxlen())
 		{	// buffer left partition, then merge
-		std::copy(_First, _Mid, _Tempbuf._Init());
-		std::merge(_Tempbuf._First(), _Tempbuf._Last(), _Mid, _Last, _First);
+		oldstd::copy(_First, _Mid, _Tempbuf._Init());
+		oldstd::merge(_Tempbuf._First(), _Tempbuf._Last(), _Mid, _Last, _First);
 		}
 	else if (_Count2 <= _Tempbuf._Maxlen())
 		{	// buffer right partition, then merge
-		std::copy(_Mid, _Last, _Tempbuf._Init());
+		oldstd::copy(_Mid, _Last, _Tempbuf._Init());
 		_Merge_backward(_First, _Mid,
 			_Tempbuf._First(), _Tempbuf._Last(), _Last);
 		}
@@ -1514,16 +1514,16 @@ template<class _BidIt,
 			{	// left larger, cut it in half and partition right to match
 			_Count1n = _Count1 / 2, _Count2n = 0;
 			_Firstn = _First;
-			std::advance(_Firstn, _Count1n);
-			_Lastn = std::lower_bound(_Mid, _Last, *_Firstn);
+			oldstd::advance(_Firstn, _Count1n);
+			_Lastn = oldstd::lower_bound(_Mid, _Last, *_Firstn);
 			_Distance(_Mid, _Lastn, _Count2n);
 			}
 		else
 			{	// right larger, cut it in half and partition left to match
 			_Count1n = 0, _Count2n = _Count2 / 2;
 			_Lastn = _Mid;
-			std::advance(_Lastn, _Count2n);
-			_Firstn = std::upper_bound(_First, _Mid, *_Lastn);
+			oldstd::advance(_Lastn, _Count2n);
+			_Firstn = oldstd::upper_bound(_First, _Mid, *_Lastn);
 			_Distance(_First, _Firstn, _Count1n);
 			}
 
@@ -1569,9 +1569,9 @@ template<class _BidIt1,
 	{	// merge backwards to _Dest, using _Pred
 	for (; ; )
 		if (_First1 == _Last1)
-			return (std::copy_backward(_First2, _Last2, _Dest));
+			return (oldstd::copy_backward(_First2, _Last2, _Dest));
 		else if (_First2 == _Last2)
-			return (std::copy_backward(_First1, _Last1, _Dest));
+			return (oldstd::copy_backward(_First1, _Last1, _Dest));
 		else if (_Pred(*--_Last2, *--_Last1))
 			*--_Dest = *_Last1, ++_Last2;
 		else
@@ -1589,17 +1589,17 @@ template<class _BidIt,
 	if (_Count1 + _Count2 == 2)
 		{	// order two one-element partitions
 		if (_Pred(*_Mid, *_First))
-			std::iter_swap(_First, _Mid);
+			oldstd::iter_swap(_First, _Mid);
 		}
 	else if (_Count1 <= _Count2 && _Count1 <= _Tempbuf._Maxlen())
 		{	// buffer left partition, then merge
-		std::copy(_First, _Mid, _Tempbuf._Init());
-		std::merge(_Tempbuf._First(), _Tempbuf._Last(),
+		oldstd::copy(_First, _Mid, _Tempbuf._Init());
+		oldstd::merge(_Tempbuf._First(), _Tempbuf._Last(),
 			_Mid, _Last, _First, _Pred);
 		}
 	else if (_Count2 <= _Tempbuf._Maxlen())
 		{	// buffer right partition, then merge
-		std::copy(_Mid, _Last, _Tempbuf._Init());
+		oldstd::copy(_Mid, _Last, _Tempbuf._Init());
 		_Merge_backward(_First, _Mid, _Tempbuf._First(), _Tempbuf._Last(),
 			_Last, _Pred);
 		}
@@ -1611,7 +1611,7 @@ template<class _BidIt,
 			{	// left larger, cut it in half and partition right to match
 			_Count1n = _Count1 / 2, _Count2n = 0;
 			_Firstn = _First;
-			std::advance(_Firstn, _Count1n);
+			oldstd::advance(_Firstn, _Count1n);
 			_Lastn = lower_bound(_Mid, _Last, *_Firstn, _Pred);
 			_Distance(_Mid, _Lastn, _Count2n);
 			}
@@ -1619,7 +1619,7 @@ template<class _BidIt,
 			{	// right larger, cut it in half and partition left to match
 			_Count1n = 0, _Count2n = _Count2 / 2;
 			_Lastn = _Mid;
-			std::advance(_Lastn, _Count2n);
+			oldstd::advance(_Lastn, _Count2n);
 			_Firstn = upper_bound(_First, _Mid, *_Lastn, _Pred);
 			_Distance(_First, _Firstn, _Count1n);
 			}
@@ -1666,7 +1666,7 @@ template<class _BidIt> inline
 			if (*_Next < *_First)
 				{	// found new earliest element, rotate to front
 				_BidIt _Next1 = _Next;
-				std::rotate(_First, _Next, ++_Next1);
+				oldstd::rotate(_First, _Next, ++_Next1);
 				}
 			else
 				{	// look for insertion point after first
@@ -1676,7 +1676,7 @@ template<class _BidIt> inline
 				if (_Dest != _Next)
 					{	// rotate into place
 					_BidIt _Next1 = _Next;
-					std::rotate(_Dest, _Next, ++_Next1);
+					oldstd::rotate(_Dest, _Next, ++_Next1);
 					}
 				}
 	}
@@ -1685,11 +1685,11 @@ template<class _RanIt> inline
 	void _Med3(_RanIt _First, _RanIt _Mid, _RanIt _Last)
 	{	// sort median of three elements to middle
 	if (*_Mid < *_First)
-		std::iter_swap(_Mid, _First);
+		oldstd::iter_swap(_Mid, _First);
 	if (*_Last < *_Mid)
-		std::iter_swap(_Last, _Mid);
+		oldstd::iter_swap(_Last, _Mid);
 	if (*_Mid < *_First)
-		std::iter_swap(_Mid, _First);
+		oldstd::iter_swap(_Mid, _First);
 	}
 
 template<class _RanIt> inline
@@ -1735,32 +1735,32 @@ template<class _RanIt> inline
 			else if (*_Gfirst < *_Pfirst)
 				break;
 			else
-				std::iter_swap(_Plast++, _Gfirst);
+				oldstd::iter_swap(_Plast++, _Gfirst);
 		for (; _First < _Glast; --_Glast)
 			if (*(_Glast - 1) < *_Pfirst)
 				;
 			else if (*_Pfirst < *(_Glast - 1))
 				break;
 			else
-				std::iter_swap(--_Pfirst, _Glast - 1);
+				oldstd::iter_swap(--_Pfirst, _Glast - 1);
 		if (_Glast == _First && _Gfirst == _Last)
 			return (pair<_RanIt, _RanIt>(_Pfirst, _Plast));
 
 		if (_Glast == _First)
 			{	// no room at bottom, rotate pivot upward
 			if (_Plast != _Gfirst)
-				std::iter_swap(_Pfirst, _Plast);
+				oldstd::iter_swap(_Pfirst, _Plast);
 			++_Plast;
-			std::iter_swap(_Pfirst++, _Gfirst++);
+			oldstd::iter_swap(_Pfirst++, _Gfirst++);
 			}
 		else if (_Gfirst == _Last)
 			{	// no room at top, rotate pivot downward
 			if (--_Glast != --_Pfirst)
-				std::iter_swap(_Glast, _Pfirst);
-			std::iter_swap(_Pfirst, --_Plast);
+				oldstd::iter_swap(_Glast, _Pfirst);
+			oldstd::iter_swap(_Pfirst, --_Plast);
 			}
 		else
-			std::iter_swap(_Gfirst++, --_Glast);
+			oldstd::iter_swap(_Gfirst++, --_Glast);
 		}
 	}
 
@@ -1782,8 +1782,8 @@ template<class _RanIt,
 
 	if (_ISORT_MAX < _Count)
 		{	// heap sort if too many divisions
-		std::make_heap(_First, _Last);
-		std::sort_heap(_First, _Last);
+		oldstd::make_heap(_First, _Last);
+		oldstd::sort_heap(_First, _Last);
 		}
 	else if (1 < _Count)
 		_Insertion_sort(_First, _Last);	// small, insertion sort
@@ -1805,7 +1805,7 @@ template<class _BidIt,
 			if (_Pred(*_Next, *_First))
 				{	// found new earliest element, rotate to front
 				_BidIt _Next1 = _Next;
-				std::rotate(_First, _Next, ++_Next1);
+				oldstd::rotate(_First, _Next, ++_Next1);
 				}
 			else
 				{	// look for insertion point after first
@@ -1815,7 +1815,7 @@ template<class _BidIt,
 				if (_Dest != _Next)
 					{	// rotate into place
 					_BidIt _Next1 = _Next;
-					std::rotate(_Dest, _Next, ++_Next1);
+					oldstd::rotate(_Dest, _Next, ++_Next1);
 					}
 				}
 	}
@@ -1825,11 +1825,11 @@ template<class _RanIt,
 	void _Med3(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred)
 	{	// sort median of three elements to middle
 	if (_Pred(*_Mid, *_First))
-		std::iter_swap(_Mid, _First);
+		oldstd::iter_swap(_Mid, _First);
 	if (_Pred(*_Last, *_Mid))
-		std::iter_swap(_Last, _Mid);
+		oldstd::iter_swap(_Last, _Mid);
 	if (_Pred(*_Mid, *_First))
-		std::iter_swap(_Mid, _First);
+		oldstd::iter_swap(_Mid, _First);
 	}
 
 template<class _RanIt,
@@ -1878,32 +1878,32 @@ template<class _RanIt,
 			else if (_Pred(*_Gfirst, *_Pfirst))
 				break;
 			else
-				std::iter_swap(_Plast++, _Gfirst);
+				oldstd::iter_swap(_Plast++, _Gfirst);
 		for (; _First < _Glast; --_Glast)
 			if (_Pred(*(_Glast - 1), *_Pfirst))
 				;
 			else if (_Pred(*_Pfirst, *(_Glast - 1)))
 				break;
 			else
-				std::iter_swap(--_Pfirst, _Glast - 1);
+				oldstd::iter_swap(--_Pfirst, _Glast - 1);
 		if (_Glast == _First && _Gfirst == _Last)
 			return (pair<_RanIt, _RanIt>(_Pfirst, _Plast));
 
 		if (_Glast == _First)
 			{	// no room at bottom, rotate pivot upward
 			if (_Plast != _Gfirst)
-				std::iter_swap(_Pfirst, _Plast);
+				oldstd::iter_swap(_Pfirst, _Plast);
 			++_Plast;
-			std::iter_swap(_Pfirst++, _Gfirst++);
+			oldstd::iter_swap(_Pfirst++, _Gfirst++);
 			}
 		else if (_Gfirst == _Last)
 			{	// no room at top, rotate pivot downward
 			if (--_Glast != --_Pfirst)
-				std::iter_swap(_Glast, _Pfirst);
-			std::iter_swap(_Pfirst, --_Plast);
+				oldstd::iter_swap(_Glast, _Pfirst);
+			oldstd::iter_swap(_Pfirst, --_Plast);
 			}
 		else
-			std::iter_swap(_Gfirst++, --_Glast);
+			oldstd::iter_swap(_Gfirst++, --_Glast);
 		}
 	}
 
@@ -1927,8 +1927,8 @@ template<class _RanIt,
 
 	if (_ISORT_MAX < _Count)
 		{	// heap sort if too many divisions
-		std::make_heap(_First, _Last, _Pred);
-		std::sort_heap(_First, _Last, _Pred);
+		oldstd::make_heap(_First, _Last, _Pred);
+		oldstd::sort_heap(_First, _Last, _Pred);
 		}
 	else if (1 < _Count)
 		_Insertion_sort(_First, _Last, _Pred);	// small, insertion sort
@@ -1951,22 +1951,22 @@ template<class _BidIt,
 	for (_Diff _Chunk2 = _Chunk * 2; _Chunk2 <= _Count; _Count -= _Chunk2)
 		{	// copy merging pairs of adjacent chunks
 		_BidIt _Mid1 = _First;
-		std::advance(_Mid1, _Chunk);
+		oldstd::advance(_Mid1, _Chunk);
 		_BidIt _Mid2 = _Mid1;
-		std::advance(_Mid2, _Chunk);
+		oldstd::advance(_Mid2, _Chunk);
 
-		_Dest = std::merge(_First, _Mid1, _Mid1, _Mid2, _Dest);
+		_Dest = oldstd::merge(_First, _Mid1, _Mid1, _Mid2, _Dest);
 		_First = _Mid2;
 		}
 
 	if (_Count <= _Chunk)
-		std::copy(_First, _Last, _Dest);	// copy partial last chunk
+		oldstd::copy(_First, _Last, _Dest);	// copy partial last chunk
 	else
 		{	// copy merging whole and partial last chunk
 		_BidIt _Mid = _First;
-		std::advance(_Mid, _Chunk);
+		oldstd::advance(_Mid, _Chunk);
 
-		std::merge(_First, _Mid, _Mid, _Last, _Dest);
+		oldstd::merge(_First, _Mid, _Mid, _Last, _Dest);
 		}
 	}
 
@@ -1980,7 +1980,7 @@ template<class _BidIt,
 	for (_Diff _Nleft = _Count; _ISORT_MAX <= _Nleft; _Nleft -= _ISORT_MAX)
 		{	// sort chunks
 		_BidIt _Midend = _Mid;
-		std::advance(_Midend, (int)_ISORT_MAX);
+		oldstd::advance(_Midend, (int)_ISORT_MAX);
 
 		_Insertion_sort(_Mid, _Midend);
 		_Mid = _Midend;
@@ -2008,7 +2008,7 @@ template<class _BidIt,
 		{	// sort halves and merge
 		_Diff _Count2 = (_Count + 1) / 2;
 		_BidIt _Mid = _First;
-		std::advance(_Mid, _Count2);
+		oldstd::advance(_Mid, _Count2);
 
 		if (_Count2 <= _Tempbuf._Maxlen())
 			{	// temp buffer big enough, sort each half using buffer
@@ -2055,22 +2055,22 @@ template<class _BidIt,
 	for (_Diff _Chunk2 = _Chunk * 2; _Chunk2 <= _Count; _Count -= _Chunk2)
 		{	// copy merging pairs of adjacent chunks
 		_BidIt _Mid1 = _First;
-		std::advance(_Mid1, _Chunk);
+		oldstd::advance(_Mid1, _Chunk);
 		_BidIt _Mid2 = _Mid1;
-		std::advance(_Mid2, _Chunk);
+		oldstd::advance(_Mid2, _Chunk);
 
-		_Dest = std::merge(_First, _Mid1, _Mid1, _Mid2, _Dest, _Pred);
+		_Dest = oldstd::merge(_First, _Mid1, _Mid1, _Mid2, _Dest, _Pred);
 		_First = _Mid2;
 		}
 
 	if (_Count <= _Chunk)
-		std::copy(_First, _Last, _Dest);	// copy partial last chunk
+		oldstd::copy(_First, _Last, _Dest);	// copy partial last chunk
 	else
 		{	// copy merging whole and partial last chunk
 		_BidIt _Mid1 = _First;
-		std::advance(_Mid1, _Chunk);
+		oldstd::advance(_Mid1, _Chunk);
 
-		std::merge(_First, _Mid1, _Mid1, _Last, _Dest, _Pred);
+		oldstd::merge(_First, _Mid1, _Mid1, _Last, _Dest, _Pred);
 		}
 	}
 
@@ -2085,7 +2085,7 @@ template<class _BidIt,
 	for (_Diff _Nleft = _Count; _ISORT_MAX <= _Nleft; _Nleft -= _ISORT_MAX)
 		{	// sort chunks
 		_BidIt _Midn = _Mid;
-		std::advance(_Midn, (int)_ISORT_MAX);
+		oldstd::advance(_Midn, (int)_ISORT_MAX);
 
 		_Insertion_sort(_Mid, _Midn, _Pred);
 		_Mid = _Midn;
@@ -2114,7 +2114,7 @@ template<class _BidIt,
 		{	// sort halves and merge
 		_Diff _Count2 = (_Count + 1) / 2;
 		_BidIt _Mid = _First;
-		std::advance(_Mid, _Count2);
+		oldstd::advance(_Mid, _Count2);
 
 		if (_Count2 <= _Tempbuf._Maxlen())
 			{	// temp buffer big enough, sort each half using buffer
@@ -2159,13 +2159,13 @@ template<class _RanIt,
 	class _Ty> inline
 	void _Partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Ty *)
 	{	// order [First, _Last) up to _Mid, using operator<
-	std::make_heap(_First, _Mid);
+	oldstd::make_heap(_First, _Mid);
 
 	for (_RanIt _Next = _Mid; _Next < _Last; ++_Next)
 		if (*_Next < *_First)
 			_Pop_heap(_First, _Mid, _Next, _Ty(*_Next),
 				_Dist_type(_First));	// replace top with new largest
-	std::sort_heap(_First, _Mid);
+	oldstd::sort_heap(_First, _Mid);
 	}
 
 template<class _RanIt> inline
@@ -2181,13 +2181,13 @@ template<class _RanIt,
 	void _Partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last,
 		_Pr _Pred, _Ty *)
 	{	// order [First, _Last) up to _Mid, using _Pred
-	std::make_heap(_First, _Mid, _Pred);
+	oldstd::make_heap(_First, _Mid, _Pred);
 
 	for (_RanIt _Next = _Mid; _Next < _Last; ++_Next)
 		if (_Pred(*_Next, *_First))
 			_Pop_heap(_First, _Mid, _Next, _Ty(*_Next), _Pred,
 				_Dist_type(_First));	// replace top with new largest
-	std::sort_heap(_First, _Mid, _Pred);
+	oldstd::sort_heap(_First, _Mid, _Pred);
 	}
 
 template<class _RanIt,
@@ -2208,14 +2208,14 @@ template<class _InIt,
 	_RanIt _Mid2 = _First2;
 	for (; _First1 != _Last1 && _Mid2 != _Last2; ++_First1, ++_Mid2)
 		*_Mid2 = *_First1;	// copy min(_Last1 - _First1, _Last2 - _First2)
-	std::make_heap(_First2, _Mid2);
+	oldstd::make_heap(_First2, _Mid2);
 
 	for (; _First1 != _Last1; ++_First1)
 		if (*_First1 < *_First2)
 			_Adjust_heap(_First2, _Diff(0), _Diff(_Mid2 - _First2),
 				_Ty(*_First1));	// replace top with new largest
 
-	std::sort_heap(_First2, _Mid2);
+	oldstd::sort_heap(_First2, _Mid2);
 	return (_Mid2);
 	}
 
@@ -2240,14 +2240,14 @@ template<class _InIt,
 	_RanIt _Mid2 = _First2;
 	for (; _First1 != _Last1 && _Mid2 != _Last2; ++_First1, ++_Mid2)
 		*_Mid2 = *_First1;	// copy min(_Last1 - _First1, _Last2 - _First2)
-	std::make_heap(_First2, _Mid2, _Pred);
+	oldstd::make_heap(_First2, _Mid2, _Pred);
 
 	for (; _First1 != _Last1; ++_First1)
 		if (_Pred(*_First1, *_First2))
 			_Adjust_heap(_First2, _Diff(0), _Diff(_Mid2 - _First2),
 				_Ty(*_First1), _Pred);	// replace top with new largest
 
-	std::sort_heap(_First2, _Mid2, _Pred);
+	oldstd::sort_heap(_First2, _Mid2, _Pred);
 	return (_Mid2);
 	}
 
@@ -2350,8 +2350,8 @@ template<class _InIt1,
 			*_Dest++ = *_First2, ++_First2;
 		else
 			*_Dest++ = *_First1, ++_First1, ++_First2;
-	_Dest = std::copy(_First1, _Last1, _Dest);
-	return (std::copy(_First2, _Last2, _Dest));
+	_Dest = oldstd::copy(_First1, _Last1, _Dest);
+	return (oldstd::copy(_First2, _Last2, _Dest));
 	}
 
 		// TEMPLATE FUNCTION set_union WITH PRED
@@ -2369,8 +2369,8 @@ template<class _InIt1,
 			*_Dest++ = *_First2, ++_First2;
 		else
 			*_Dest++ = *_First1, ++_First1, ++_First2;
-	_Dest = std::copy(_First1, _Last1, _Dest);
-	return (std::copy(_First2, _Last2, _Dest));
+	_Dest = oldstd::copy(_First1, _Last1, _Dest);
+	return (oldstd::copy(_First2, _Last2, _Dest));
 	}
 
 		// TEMPLATE FUNCTION set_intersection
@@ -2422,7 +2422,7 @@ template<class _InIt1,
 			++_First2;
 		else
 			++_First1, ++_First2;
-	return (std::copy(_First1, _Last1, _Dest));
+	return (oldstd::copy(_First1, _Last1, _Dest));
 	}
 
 		// TEMPLATE FUNCTION set_difference WITH PRED
@@ -2440,7 +2440,7 @@ template<class _InIt1,
 			++_First2;
 		else
 			++_First1, ++_First2;
-	return (std::copy(_First1, _Last1, _Dest));
+	return (oldstd::copy(_First1, _Last1, _Dest));
 	}
 
 		// TEMPLATE FUNCTION set_symmetric_difference
@@ -2457,8 +2457,8 @@ template<class _InIt1,
 			*_Dest++ = *_First2, ++_First2;
 		else
 			++_First1, ++_First2;
-	_Dest = std::copy(_First1, _Last1, _Dest);
-	return (std::copy(_First2, _Last2, _Dest));
+	_Dest = oldstd::copy(_First1, _Last1, _Dest);
+	return (oldstd::copy(_First2, _Last2, _Dest));
 	}
 
 		// TEMPLATE FUNCTION set_symmetric_difference WITH PRED
@@ -2476,8 +2476,8 @@ template<class _InIt1,
 			*_Dest++ = *_First2, ++_First2;
 		else
 			++_First1, ++_First2;
-	_Dest = std::copy(_First1, _Last1, _Dest);
-	return (std::copy(_First2, _Last2, _Dest));
+	_Dest = oldstd::copy(_First1, _Last1, _Dest);
+	return (oldstd::copy(_First2, _Last2, _Dest));
 	}
 
 		// TEMPLATE FUNCTION max_element
@@ -2546,14 +2546,14 @@ template<class _BidIt> inline
 			_BidIt _Mid = _Last;
 			for (; !(*_Next < *--_Mid); )
 				;
-			std::iter_swap(_Next, _Mid);
-			std::reverse(_Next1, _Last);
+			oldstd::iter_swap(_Next, _Mid);
+			oldstd::reverse(_Next1, _Last);
 			return (true);
 			}
 
 		if (_Next == _First)
 			{	// pure descending, flip all
-			std::reverse(_First, _Last);
+			oldstd::reverse(_First, _Last);
 			return (false);
 			}
 		}
@@ -2576,14 +2576,14 @@ template<class _BidIt,
 			_BidIt _Mid = _Last;
 			for (; !_Pred(*_Next, *--_Mid); )
 				;
-			std::iter_swap(_Next, _Mid);
-			std::reverse(_Next1, _Last);
+			oldstd::iter_swap(_Next, _Mid);
+			oldstd::reverse(_Next1, _Last);
 			return (true);
 			}
 
 		if (_Next == _First)
 			{	// pure descending, flip all
-			std::reverse(_First, _Last);
+			oldstd::reverse(_First, _Last);
 			return (false);
 			}
 		}
@@ -2604,14 +2604,14 @@ template<class _BidIt> inline
 			_BidIt _Mid = _Last;
 			for (; *_Next < *--_Mid; )
 				;
-			std::iter_swap(_Next, _Mid);
-			std::reverse(_Next1, _Last);
+			oldstd::iter_swap(_Next, _Mid);
+			oldstd::reverse(_Next1, _Last);
 			return (true);
 			}
 
 		if (_Next == _First)
 			{	// pure ascending, flip all
-			std::reverse(_First, _Last);
+			oldstd::reverse(_First, _Last);
 			return (false);
 			}
 		}
@@ -2634,19 +2634,19 @@ template<class _BidIt,
 			_BidIt _Mid = _Last;
 			for (; _Pred(*_Next, *--_Mid); )
 				;
-			std::iter_swap(_Next, _Mid);
-			std::reverse(_Next1, _Last);
+			oldstd::iter_swap(_Next, _Mid);
+			oldstd::reverse(_Next1, _Last);
 			return (true);
 			}
 
 		if (_Next == _First)
 			{	// pure ascending, flip all
-			std::reverse(_First, _Last);
+			oldstd::reverse(_First, _Last);
 			return (false);
 			}
 		}
 	}
-_STD_END
+_OLDSTD_END
 
   #pragma warning(default: 4244)
 

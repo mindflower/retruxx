@@ -13,7 +13,7 @@
  #include <wctype.h>
 
  #if _GLOBAL_USING
-_STD_BEGIN
+_OLDSTD_BEGIN
 using ::wint_t; using ::wctrans_t; using ::wctype_t;
 
 using ::iswalnum; using ::iswalpha; using ::iswcntrl;
@@ -22,7 +22,7 @@ using ::iswlower; using ::iswprint; using ::iswpunct;
 using ::iswspace; using ::iswupper; using ::iswxdigit;
 using ::towctrans; using ::towlower; using ::towupper;
 using ::wctrans; using ::wctype;
-_STD_END
+_OLDSTD_END
  #endif /* _GLOBAL_USING */
 
 #endif /* _STD_USING */

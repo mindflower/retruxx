@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// OBJECTS
 extern _CRTIMP2 istream cin, *_Ptr_cin;
@@ -28,7 +28,7 @@ extern _CRTIMP2 wistream wcin, *_Ptr_wcin;
 extern _CRTIMP2 wostream wcout, *_Ptr_wcout;
 extern _CRTIMP2 wostream wcerr, *_Ptr_wcerr;
 extern _CRTIMP2 wostream wclog, *_Ptr_wclog;
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

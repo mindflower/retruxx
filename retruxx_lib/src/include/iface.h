@@ -3,19 +3,13 @@
 
 class CVector;
 
-class IBase
+struct IBase
 {
-protected:
     virtual ~IBase() = default;
-
-public:
-    virtual int DecRef() = 0;
-    virtual int IncRef() = 0;
-    virtual void* QueryIface(const char*) = 0;
-
-private:
-    //IBase_vtbl* __vftable /*VFT*/;
-};
+    virtual int DecRef() = 0 /* 0x04 */;
+    virtual int IncRef() = 0 /* 0x08 */;
+    virtual void* QueryIface(const char*) = 0 /* 0x0c */;
+}; /* size: 0x0004 */
 
 namespace m3d
 {

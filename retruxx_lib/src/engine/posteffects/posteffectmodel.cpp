@@ -33,7 +33,7 @@ CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode 
 
     ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
     int unitNum = 0;
-    for (xmlNode->GetFirstChild_(node, "Unit"); !node->IsEmpty(); node->GetNextSibling_(node, "Unit"))
+    for (xmlNode->GetFirstChild(node, "Unit"); !node->IsEmpty(); node->GetNextSibling(node, "Unit"))
     {
         CStr varName;
         m3d::SafeStrAttrib(varName, node, "VarName");
@@ -61,7 +61,7 @@ CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode 
         ++unitNum;
     }
 
-    for (xmlNode->GetFirstChild_(node, "ExitConditions"); !node->IsEmpty(); node->GetNextSibling_(node, "ExitConditions"))
+    for (xmlNode->GetFirstChild(node, "ExitConditions"); !node->IsEmpty(); node->GetNextSibling(node, "ExitConditions"))
     {
         CStr varName;
         m3d::SafeStrAttrib(varName, node, "VarName");
@@ -90,7 +90,7 @@ CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode 
         }
     }
 
-    xmlNode->GetFirstChild_(node, "VariableValue");
+    xmlNode->GetFirstChild(node, "VariableValue");
     if (node->IsEmpty())
     {
         m_pVarVal = nullptr;

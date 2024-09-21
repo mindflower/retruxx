@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// CLASS strstreambuf
 class strstreambuf
@@ -241,7 +241,7 @@ public:
 private:
 	strstreambuf _Mysb;	// the character array buffer
 	};
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

@@ -83,8 +83,8 @@ namespace std {
         typedef void (__cdecl * new_handler) ();
         _CRTIMP2 new_handler __cdecl set_new_handler(new_handler) throw();
 };
-using std::new_handler;
-using std::set_new_handler;
+using oldstd::new_handler;
+using oldstd::set_new_handler;
 #endif
 
 #ifndef __NOTHROW_T_DEFINED
@@ -97,10 +97,10 @@ namespace std {
         extern const nothrow_t nothrow;
 };
 
-void *__cdecl operator new(size_t, const std::nothrow_t&) throw();
-void *__cdecl operator new[](size_t, const std::nothrow_t&) throw();
-void __cdecl operator delete(void *, const std::nothrow_t&) throw();
-void __cdecl operator delete[](void *, const std::nothrow_t&) throw();
+void *__cdecl operator new(size_t, const oldstd::nothrow_t&) throw();
+void *__cdecl operator new[](size_t, const oldstd::nothrow_t&) throw();
+void __cdecl operator delete(void *, const oldstd::nothrow_t&) throw();
+void __cdecl operator delete[](void *, const oldstd::nothrow_t&) throw();
 #endif
 
 #ifndef __PLACEMENT_NEW_INLINE

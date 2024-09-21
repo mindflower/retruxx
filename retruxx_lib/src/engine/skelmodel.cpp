@@ -65,10 +65,10 @@ namespace m3d
 
                 ref_ptr texturesNode = xml->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
                 ref_ptr fileNode = xml->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
-                xml->GetFirstChild_(texturesNode, "Textures");
-                xml->GetFirstChild_(fileNode, "file");
+                xml->GetFirstChild(texturesNode, "Textures");
+                xml->GetFirstChild(fileNode, "file");
                 //TODO: check this
-                for (; !fileNode->IsEmpty(); fileNode->GetNextSibling_(fileNode, "file"))
+                for (; !fileNode->IsEmpty(); fileNode->GetNextSibling(fileNode, "file"))
                 {
                     CStr name;
                     CStr path;

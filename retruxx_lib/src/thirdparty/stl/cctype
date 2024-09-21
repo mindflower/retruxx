@@ -13,13 +13,13 @@
  #include <ctype.h>
 
  #if _GLOBAL_USING
-_STD_BEGIN
+_OLDSTD_BEGIN
 using ::isalnum; using ::isalpha; using ::iscntrl;
 using ::isdigit; using ::isgraph; using ::islower;
 using ::isprint; using ::ispunct; using ::isspace;
 using ::isupper; using ::isxdigit; using ::tolower;
 using ::toupper;
-_STD_END
+_OLDSTD_END
  #endif /* _GLOBAL_USING */
 
 #endif /* _STD_USING */

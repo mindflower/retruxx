@@ -8,7 +8,7 @@
 #pragma warning(push,3)
 
  #pragma warning(disable: 4127)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 extern _CRTIMP2 _Filet *__cdecl _Fiopen(const char *, ios_base::openmode, int);
 
@@ -728,7 +728,7 @@ template class _CRTIMP2 basic_fstream<wchar_t,
 
 
  #endif /* _DLL_CPPLIB */
-_STD_END
+_OLDSTD_END
 
   #pragma warning(default: 4127)
 

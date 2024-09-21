@@ -1,16 +1,14 @@
 // vector standard header
 #pragma once
-#ifndef _VECTOR_
-#define _VECTOR_
-#include <memory>
-#include <stdexcept>
+#include "memory.hpp"
+#include "stdexcept.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
 
  #pragma warning(disable: 4244)
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 		// TEMPLATE CLASS _Vector_val
 template<class _Ty, class _Alloc>
 	class _Vector_val
@@ -291,8 +289,8 @@ public:
 			}
 		};
 
-	typedef std::reverse_iterator<iterator> reverse_iterator;
-	typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+	typedef oldstd::reverse_iterator<iterator> reverse_iterator;
+	typedef oldstd::reverse_iterator<const_iterator> const_reverse_iterator;
 
 	vector()
 		: _Mybase()
@@ -748,9 +746,9 @@ public:
 		{	// exchange contents with _Right
 		if (this->_Alval == _Right._Alval)
 			{	// same allocator, swap control information
-			std::swap(_Myfirst, _Right._Myfirst);
-			std::swap(_Mylast, _Right._Mylast);
-			std::swap(_Myend, _Right._Myend);
+			oldstd::swap(_Myfirst, _Right._Myfirst);
+			oldstd::swap(_Mylast, _Right._Mylast);
+			oldstd::swap(_Myend, _Right._Myend);
 			}
 		else
 			{	// different allocator, do multiple assigns
@@ -881,12 +879,12 @@ protected:
 
 	void _Xlen() const
 		{	// report a length_error
-		_THROW(length_error, "vector<T> too long");
+		_THROWOLD(length_error, "vector<T> too long");
 		}
 
 	void _Xran() const
 		{	// report an out_of_range error
-		_THROW(out_of_range, "invalid vector<T> subscript");
+		_THROWOLD(out_of_range, "invalid vector<T> subscript");
 		}
 
 public:
@@ -956,10 +954,10 @@ template<class _Alloc>
 public:
 	typedef typename _Alloc::size_type size_type;
 	typedef typename _Alloc::difference_type _Dift;
-	typedef std::vector<_Vbase,
+	typedef vector<_Vbase,
 		typename _Alloc::template rebind<_Vbase>::other>
 			_Vbtype;
-	typedef std::vector<_Bool, _Alloc> _Myt;
+	typedef vector<_Bool, _Alloc> _Myt;
 	typedef _Dift difference_type;
 	typedef _Bool _Ty;
 	typedef _Alloc allocator_type;
@@ -1283,8 +1281,8 @@ public:
 
 	typedef iterator pointer;
 	typedef const_iterator const_pointer;
-	typedef std::reverse_iterator<iterator> reverse_iterator;
-	typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+	typedef reverse_iterator<iterator> reverse_iterator;
+	typedef oldstd::reverse_iterator<const_iterator> const_reverse_iterator;
 
 	vector()
 		: _Mysize(0), _Myvec()
@@ -1589,7 +1587,7 @@ public:
 
 	void swap(_Myt& _Right)
 		{	// exchange contents with right
-		std::swap(_Mysize, _Right._Mysize);
+		oldstd::swap(_Mysize, _Right._Mysize);
 		_Myvec.swap(_Right._Myvec);
 		}
 
@@ -1660,12 +1658,12 @@ protected:
 
 	void _Xlen() const
 		{	// report a length_error
-		_THROW(length_error, "vector<bool> too long");
+		_THROWOLD(length_error, "vector<bool> too long");
 		}
 
 	void _Xran() const
 		{	// throw an out_of_range error
-		_THROW(out_of_range, "invalid vector<bool> subscript");
+		_THROWOLD(out_of_range, "invalid vector<bool> subscript");
 		}
 
 public:
@@ -1676,12 +1674,11 @@ public:
 typedef vector<bool, allocator<bool> > _Bvector;
 
 
-_STD_END
+_OLDSTD_END
   #pragma warning(default: 4244)
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _VECTOR_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

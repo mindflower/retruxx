@@ -145,7 +145,7 @@ namespace m3d
         int Wnd::OnBeforeAddToWndStation()
         {
             auto res = 1;
-            for (auto wnd = dynamic_cast<Wnd*>(GetFirstChild_()); wnd; wnd = dynamic_cast<Wnd*>(wnd->GetNextSibling_()))
+            for (auto wnd = dynamic_cast<Wnd*>(GetFirstChild()); wnd; wnd = dynamic_cast<Wnd*>(wnd->GetNextSibling()))
             {
                 assert(wnd->IsKindOf(RT_CLASS_LOCAL(Wnd)));
                 res &= wnd->OnBeforeAddToWndStation();
@@ -156,7 +156,7 @@ namespace m3d
         int Wnd::OnAfterAddToWndStation()
         {
             auto res = 1;
-            for (auto wnd = dynamic_cast<Wnd*>(GetFirstChild_()); wnd; wnd = dynamic_cast<Wnd*>(wnd->GetNextSibling_()))
+            for (auto wnd = dynamic_cast<Wnd*>(GetFirstChild()); wnd; wnd = dynamic_cast<Wnd*>(wnd->GetNextSibling()))
             {
                 assert(wnd->IsKindOf(RT_CLASS_LOCAL(Wnd)));
                 res &= wnd->OnAfterAddToWndStation();
@@ -226,7 +226,7 @@ namespace m3d
         int Wnd::OnAfterRemoveFromWndStation()
         {
             auto res = 1;
-            for (auto child = GetFirstChild_(); child; child = child->GetNextSibling_())
+            for (auto child = GetFirstChild(); child; child = child->GetNextSibling())
             {
                 assert(child->IsKindOf(RT_CLASS_LOCAL(Wnd)));
                 res &= dynamic_cast<Wnd*>(child)->OnAfterRemoveFromWndStation();
@@ -341,11 +341,11 @@ namespace m3d
             }
 
             ref_ptr animationsNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            xmlNode->GetFirstChild_(animationsNode, "Animations");
+            xmlNode->GetFirstChild(animationsNode, "Animations");
             if (!animationsNode->IsEmpty())
             {
                 ref_ptr onShowAnimationNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                animationsNode->GetFirstChild_(onShowAnimationNode, "AnimationOnShow");
+                animationsNode->GetFirstChild(onShowAnimationNode, "AnimationOnShow");
                 if (!onShowAnimationNode->IsEmpty())
                 {
                     AnimationInfo animationInfo;
@@ -354,7 +354,7 @@ namespace m3d
                 }
 
                 ref_ptr onHideAnimationNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                animationsNode->GetFirstChild_(onHideAnimationNode, "AnimationOnHide");
+                animationsNode->GetFirstChild(onHideAnimationNode, "AnimationOnHide");
                 if (!onHideAnimationNode->IsEmpty())
                 {
                     AnimationInfo animationInfo;
@@ -685,7 +685,7 @@ namespace m3d
         int Wnd::OnBeforeRemoveFromWndStation()
         {
             auto res = 1;
-            for (auto child = GetFirstChild_(); child; child = child->GetNextSibling_())
+            for (auto child = GetFirstChild(); child; child = child->GetNextSibling())
             {
                 M3D_ASSERT(child->IsKindOf(RT_CLASS_LOCAL(Wnd)));
                 auto wnd = dynamic_cast<Wnd*>(child);
@@ -1173,8 +1173,8 @@ namespace m3d
             if (xmlFile)
             {
                 ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                xmlFile->GetFirstChild_(node, "Prefabs");
-                node->GetFirstChild_(node, "Node");
+                xmlFile->GetFirstChild(node, "Prefabs");
+                node->GetFirstChild(node, "Node");
                 auto attr = node->GetAttribute("class");
                 if (attr)
                 {
@@ -1483,10 +1483,10 @@ namespace m3d
         Wnd* Wnd::GetNextActivatableChild(Wnd* first, int back)
         {
             //TODO: check this and refactor
-            auto result = (Wnd*)GetFirstChild_();
+            auto result = (Wnd*)GetFirstChild();
             auto v4 = 0;
             auto v5 = result;
-            for (auto maxOrder = 0; v5; v5 = (Wnd*)v5->GetNextSibling_())
+            for (auto maxOrder = 0; v5; v5 = (Wnd*)v5->GetNextSibling())
             {
                 if ((v5->m_style & 0x2000) != 0)
                 {
@@ -1514,7 +1514,7 @@ namespace m3d
             {
                 if ((result->m_style & 0x2000) != 0 && result->m_activationOrder == v7)
                     break;
-                result = (Wnd*)result->GetNextSibling_();
+                result = (Wnd*)result->GetNextSibling();
             }
             return result;
         }

@@ -1,10 +1,8 @@
 // xmemory internal header (from <memory>)
 #pragma once
-#ifndef _XMEMORY_
-#define _XMEMORY_
-#include <cstdlib>
-#include <new>
-#include <xutility>
+#include "cstdlib.hpp"
+#include "new.hpp"
+#include "xutility.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
@@ -26,7 +24,7 @@
  #define _REFERENCE_X(T, A)	\
 	typename A::template rebind<T>::other::reference
 
-_STD_BEGIN
+_OLDSTD_BEGIN
 		// TEMPLATE FUNCTION _Allocate
 template<class _Ty> inline
 	_Ty _FARQ *_Allocate(_SIZT _Count, _Ty _FARQ *)
@@ -232,14 +230,13 @@ template<class _Ty,
 		_Scalar_ptr_iterator_tag)
 	{	// destroy [_First, _Last), scalar type (do nothing)
 	}
-_STD_END
+_OLDSTD_END
 
   #pragma warning(default: 4100)
 
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif /* _XMEMORY_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

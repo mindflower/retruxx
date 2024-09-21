@@ -24,10 +24,10 @@ namespace m3d
                 m_soundIdSound.clear();
 
                 ref_ptr radioSamples = samplesXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                samplesXmlFile->GetFirstChild_(radioSamples, "RadioSamples");
+                samplesXmlFile->GetFirstChild(radioSamples, "RadioSamples");
 
                 ref_ptr sample = samplesXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                for (radioSamples->GetFirstChild_(sample, "Sample"); !sample->IsEmpty(); sample->GetNextSibling_(sample, "Sample"))
+                for (radioSamples->GetFirstChild(sample, "Sample"); !sample->IsEmpty(); sample->GetNextSibling(sample, "Sample"))
                 {
                     auto idAttr = sample->GetAttribute("id");
                     if (idAttr)
@@ -52,10 +52,10 @@ namespace m3d
                     m_correctIds.clear();
                     m_groupNameByBelong.clear();
                     ref_ptr radioSounds = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                    soundsXmlFile->GetFirstChild_(radioSounds, "RadioSounds");
+                    soundsXmlFile->GetFirstChild(radioSounds, "RadioSounds");
 
                     ref_ptr group = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                    for (radioSounds->GetFirstChild_(group, "Group"); !group->IsEmpty(); group->GetNextSibling_(group, "Group"))
+                    for (radioSounds->GetFirstChild(group, "Group"); !group->IsEmpty(); group->GetNextSibling(group, "Group"))
                     {
                         auto nameAttr = group->GetAttribute("name");
                         auto belongsAttr = group->GetAttribute("belongs");
@@ -71,9 +71,9 @@ namespace m3d
                         }
 
                         ref_ptr enemy = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                        group->GetFirstChild_(enemy, "Enemy");
+                        group->GetFirstChild(enemy, "Enemy");
                         ref_ptr sound = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                        for (enemy->GetFirstChild_(sound, "Sound"); !sound->IsEmpty(); sound->GetNextSibling_(sound, "Sound"))
+                        for (enemy->GetFirstChild(sound, "Sound"); !sound->IsEmpty(); sound->GetNextSibling(sound, "Sound"))
                         {
                             auto idAttr = sound->GetAttribute("id");
                             auto probAttr = sound->GetAttribute("probability");
@@ -88,9 +88,9 @@ namespace m3d
                         }
 
                         ref_ptr neutral = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                        group->GetFirstChild_(neutral, "Neutral");
+                        group->GetFirstChild(neutral, "Neutral");
                         ref_ptr sound2 = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                        for (neutral->GetFirstChild_(sound2, "Sound"); !sound2->IsEmpty(); sound2->GetNextSibling_(sound2, "Sound"))
+                        for (neutral->GetFirstChild(sound2, "Sound"); !sound2->IsEmpty(); sound2->GetNextSibling(sound2, "Sound"))
                         {
                             auto idAttr = sound2->GetAttribute("id");
                             auto probAttr = sound2->GetAttribute("probability");

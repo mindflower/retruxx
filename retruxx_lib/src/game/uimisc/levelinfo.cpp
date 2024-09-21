@@ -539,14 +539,14 @@ int LevelInfoManager::LoadLevelInfoFromXml(CStr const& fileName)
         {
             stream->Close();
             ref_ptr rootNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-            xmlFile->GetFirstChild_(rootNode, "LevelInfoResource");
+            xmlFile->GetFirstChild(rootNode, "LevelInfoResource");
             if (rootNode->IsEmpty())
             {
                 M3D_LOG_INFO("LevelInfoManager: file " + fileName + " is empty");
                 return 1;
             }
             ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-            for (rootNode->GetFirstChild_(node, "LevelInfo"); !node->IsEmpty(); node->GetNextSibling_(node, "LevelInfo"))
+            for (rootNode->GetFirstChild(node, "LevelInfo"); !node->IsEmpty(); node->GetNextSibling(node, "LevelInfo"))
             {
                 auto info = new LevelInfo;
                 if (info->LoadFromXml(xmlFile, node))

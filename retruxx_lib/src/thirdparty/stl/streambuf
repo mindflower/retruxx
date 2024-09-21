@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE CLASS basic_streambuf
 template<class _Elem, class _Traits>
@@ -397,7 +397,7 @@ template class _CRTIMP2 basic_streambuf<wchar_t, char_traits<wchar_t> >;
 
 
  #endif /* _DLL_CPPLIB */
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

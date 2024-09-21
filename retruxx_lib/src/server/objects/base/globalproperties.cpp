@@ -26,7 +26,7 @@ namespace ai
     void GlobalProperties::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        xmlNode->GetFirstChild_(node, "IzvratRepository");
+        xmlNode->GetFirstChild(node, "IzvratRepository");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             CVector2 vec;
@@ -35,7 +35,7 @@ namespace ai
             m_izvratRepositoryMaxSize.y = vec.y;
         }
 
-        xmlNode->GetFirstChild_(node, "GroundRepository");
+        xmlNode->GetFirstChild(node, "GroundRepository");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             CVector2 vec;
@@ -44,7 +44,7 @@ namespace ai
             m_groundRepositorySize.y = vec.y;
         }
 
-        xmlNode->GetFirstChild_(node, "Belongs");
+        xmlNode->GetFirstChild(node, "Belongs");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             CStr strBelongs;
@@ -57,7 +57,7 @@ namespace ai
             }
         }
 
-        xmlNode->GetFirstChild_(node, "Mult");
+        xmlNode->GetFirstChild(node, "Mult");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_gameTimeMult, node, "GameTimeMult");
@@ -65,7 +65,7 @@ namespace ai
         }
         M3D_ASSERT(m_gameTimeMult > 1e-4f);
 
-        xmlNode->GetFirstChild_(node, "BurstParameters");
+        xmlNode->GetFirstChild(node, "BurstParameters");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeUintAttrib(m_maxBurstTime, node, "MaxBurstTime");
@@ -73,7 +73,7 @@ namespace ai
             m3d::SafeUintAttrib(m_timeBetweenBursts, node, "TimeBetweenBursts");
         }
 
-        xmlNode->GetFirstChild_(node, "DynamicQuest");
+        xmlNode->GetFirstChild(node, "DynamicQuest");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_probabilityToGenerateDynamicQuestInTown, node, "ProbabilityToGenerateDynamicQuestInTown");
@@ -83,7 +83,7 @@ namespace ai
             }
         }
 
-        xmlNode->GetFirstChild_(node, "CommonPaths");
+        xmlNode->GetFirstChild(node, "CommonPaths");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeStrAttrib(m_pathToRelationship, node, "Relationship");
@@ -94,7 +94,7 @@ namespace ai
             m3d::SafeStrAttrib(m_pathToVehiclePartTypes, node, "VehiclePartTypes");
         }
 
-        xmlNode->GetFirstChild_(node, "Physics");
+        xmlNode->GetFirstChild(node, "Physics");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_distToTurnOnPhysics, node, "DistToTurnOnPhysics");
@@ -103,13 +103,13 @@ namespace ai
         }
         M3D_ASSERT(m_distToTurnOnPhysics < m_distToTurnOffPhysics - 10.0f);
 
-        xmlNode->GetFirstChild_(node, "Npc");
+        xmlNode->GetFirstChild(node, "Npc");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeStrAttrib(m_barmenModelName, node, "BarmenModelName");
         }
 
-        xmlNode->GetFirstChild_(node, "BreakableObjectSplinters");
+        xmlNode->GetFirstChild(node, "BreakableObjectSplinters");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_splintersAutoDisableLinearThreshold, node, "AutoDisableLinearThreshold");
@@ -117,7 +117,7 @@ namespace ai
             m3d::SafeIntAttrib(m_splintersAutoDisableNumSteps, node, "AutoDisableNumSteps");
         }
 
-        xmlNode->GetFirstChild_(node, "Vehicles");
+        xmlNode->GetFirstChild(node, "Vehicles");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeBoolAttrib(m_vehiclesDropChests, node, "VehiclesDropChests");
@@ -125,7 +125,7 @@ namespace ai
             m_maxSpeedWithNoFuel *= 0.27777779;
         }
 
-        xmlNode->GetFirstChild_(node, "SmartCursor");
+        xmlNode->GetFirstChild(node, "SmartCursor");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeIntAttrib(m_infoAreaRadius, node, "InfoAreaRadius");
@@ -133,7 +133,7 @@ namespace ai
             m3d::SafeVector2Attrib(m_unlockRegion, node, "UnlockRegion");
         }
 
-        xmlNode->GetFirstChild_(node, "CameraController");
+        xmlNode->GetFirstChild(node, "CameraController");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_blastWaveCameraShakeRadiusCoeff, node, "BlastWaveCameraShakeRadiusCoeff");
@@ -142,13 +142,13 @@ namespace ai
         }
         M3D_ASSERT(m_maxShakeDamage > 1.0f);
 
-        xmlNode->GetFirstChild_(node, "Caravans");
+        xmlNode->GetFirstChild(node, "Caravans");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_distanceFromPlayerToMoveout, node, "DistanceFromPlayerToMoveout");
         }
 
-        xmlNode->GetFirstChild_(node, "ObstacleAvoidance");
+        xmlNode->GetFirstChild(node, "ObstacleAvoidance");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_defaultLookBoxLength, node, "DefaultLookBoxLength");
@@ -159,7 +159,7 @@ namespace ai
             m3d::SafeFloatAttrib(m_predictionTime, node, "PredictionTime");
         }
 
-        xmlNode->GetFirstChild_(node, "DeathProperties");
+        xmlNode->GetFirstChild(node, "DeathProperties");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_throwCoeff, node, "ThrowCoeff");
@@ -170,13 +170,13 @@ namespace ai
             m3d::SafeIntAttrib(m_energyWheelBlowProbability, node, "EnergyWheelBlowProbability");
         }
 
-        xmlNode->GetFirstChild_(node, "Repair");
+        xmlNode->GetFirstChild(node, "Repair");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_healthUnitPrice, node, "HealthUnitPrice");
         }
 
-        xmlNode->GetFirstChild_(node, "Articles");
+        xmlNode->GetFirstChild(node, "Articles");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_defaultArticleRegenerationTime, node, "DefaultRegenerationTime");
@@ -184,14 +184,14 @@ namespace ai
             m3d::SafeFloatAttrib(m_probabilityToDropGunsFromDeadVehicles, node, "ProbabilityToDropGunsFromDeadVehicles");
         }
 
-        xmlNode->GetFirstChild_(node, "InfectionZones");
+        xmlNode->GetFirstChild(node, "InfectionZones");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_zoneRespawnTimeOutIncreaseCoeff, node, "ZoneRespawnTimeOutIncreaseCoeff");
             m3d::SafeFloatAttrib(m_zoneDefaultFirstSpawnTime, node, "ZoneDefaultFirstSpawnTime");
         }
 
-        xmlNode->GetFirstChild_(node, "InterfaceStuff");
+        xmlNode->GetFirstChild(node, "InterfaceStuff");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeClrAttrib(m_colorFriend, node, "ColorFriend");
@@ -201,7 +201,7 @@ namespace ai
             m3d::SafeFloatAttrib(m_targetCapturedContourWidth, node, "TargetCapturedContourWidth");
         }
 
-        xmlNode->GetFirstChild_(node, "PlayerPassmap");
+        xmlNode->GetFirstChild(node, "PlayerPassmap");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_playerPassMapUnpassableMu, node, "PlayerPassMapUnpassableMu");
@@ -209,7 +209,7 @@ namespace ai
             m3d::SafeFloatAttrib(m_playerPassMapUnpassableCfm, node, "PlayerPassMapUnpassableCfm");
         }
 
-        xmlNode->GetFirstChild_(node, "Weapon");
+        xmlNode->GetFirstChild(node, "Weapon");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             float fullGroupingAngleDegree = 0.0;
@@ -219,11 +219,11 @@ namespace ai
         }
 
         m_difficultyLevelCoeffs.clear();
-        xmlNode->GetFirstChild_(node, "DifficultyLevels");
+        xmlNode->GetFirstChild(node, "DifficultyLevels");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             ref_ptr temp = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-            for (node->GetFirstChild_(temp, "Level"); !temp->IsEmpty(); temp->GetNextSibling_(temp, "Level"))
+            for (node->GetFirstChild(temp, "Level"); !temp->IsEmpty(); temp->GetNextSibling(temp, "Level"))
             {
                 CoeffsForDifficultyLevel coeff;
                 m3d::SafeStrAttrib(coeff.m_name, temp, "Name");
@@ -241,7 +241,7 @@ namespace ai
             }
         }
 
-        xmlNode->GetFirstChild_(node, "Price");
+        xmlNode->GetFirstChild(node, "Price");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_property2PriceCoeff, node, "Property2PriceCoeff");

@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// I/O EXCEPTION MACROS
 
@@ -991,7 +991,7 @@ template _CRTIMP2 basic_ostream<wchar_t, char_traits<wchar_t> >& __cdecl
 
 
  #endif /* _DLL_CPPLIB */
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

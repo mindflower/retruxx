@@ -11,7 +11,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 //	ASSUMES:
 //	wraparound 2's complement integer arithmetic w/o traps
@@ -1003,7 +1003,7 @@ public:
 	_STCONS(int, min_exponent, (int)LDBL_MIN_EXP);
 	_STCONS(int, min_exponent10, (int)LDBL_MIN_10_EXP);
 	};
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

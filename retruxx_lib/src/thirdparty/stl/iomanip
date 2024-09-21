@@ -6,7 +6,7 @@
 
 #pragma pack(push,8)
 #pragma warning(push,3)
-_STD_BEGIN
+_OLDSTD_BEGIN
 
 		// TEMPLATE STRUCT _Fillobj
 template<class _Elem>
@@ -80,7 +80,7 @@ _CRTIMP2 _Smanip<ios_base::fmtflags> __cdecl setiosflags(ios_base::fmtflags);
 _CRTIMP2 _Smanip<int> __cdecl setbase(int);
 _CRTIMP2 _Smanip<streamsize> __cdecl setprecision(streamsize);
 _CRTIMP2 _Smanip<streamsize> __cdecl setw(streamsize);
-_STD_END
+_OLDSTD_END
 #pragma warning(pop)
 #pragma pack(pop)
 

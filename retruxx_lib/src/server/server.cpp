@@ -554,7 +554,7 @@ namespace ai
         {
             stream->Close();
             ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-            xmlFile->GetFirstChild_(node, "Properties");
+            xmlFile->GetFirstChild(node, "Properties");
             theGlobProp.LoadFromXML(xmlFile, node);
             return;
         }
