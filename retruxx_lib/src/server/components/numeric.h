@@ -1,44 +1,38 @@
 #pragma once
 #include "component.h"
-#include "server/modifier.h"
+
 namespace ai
 {
     template<class T>
     class Numeric : public Component<T>
     {
+        using ThisType = ai::Numeric<T>;
+        using Base = ai::Component<T>;
+
     public:
-        void ApplyModifier(Modifier const&, T)
+        /* 0x0010 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeApplyModifier;
+        Numeric(T value) :
+            m_BeforeApplyModifier(nullptr)
         {
-            throw std::logic_error("Not implemented");
-        }
-        
-        Numeric(T)
-        {
-            throw std::logic_error("Not implemented");
-        }
-        
-        void sub(T)
-        {
-            throw std::logic_error("Not implemented");
-        }
-        
-        T get() const
-        {
-            throw std::logic_error("Not implemented");
-        }
-        
-        void set(T)
-        {
-            throw std::logic_error("Not implemented");
-        }
-        
-        void SetUnsafe(T)
-        {
-            throw std::logic_error("Not implemented");
+            throw std::runtime_error("not implemented");
         }
 
+        T get() const
+        {
+            return m_value;
+        }
+
+        void set(T newValue);
+        void assign(const ai::Numeric<T>&);
+        void add(T);
+        void sub(T value);
+        void SetUnsafe(T newValue);
+        void ApplyModifier(const ai::Modifier& modifier, T base);
+
+    protected:
+        void _AssignUnsafe(const ai::Numeric<T>&);
+
     private:
-        //FuncPtrTwoArgsRef<Modifier,T,bool> m_BeforeApplyModifier;
-        T m_value;
-    };
+        /* 0x0018 */ T m_value{};
+    }; /* size: 0x001c */
 }

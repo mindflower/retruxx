@@ -436,24 +436,24 @@ int CStr::Read(m3d::fs::IStream&)
     throw std::logic_error("Not implemented");
 }
 
-//CStr& CStr::operator=(CStr const& rhs)
-//{
-//    if (this == &rhs)
-//    {
-//        return *this;
-//    }
-//    if (rhs.length() > 0)
-//    {
-//        realloc(rhs.length() + 1);
-//        strcpy(m_charPtr, rhs.c_str());
-//    }
-//    else
-//    {
-//        realloc(1);
-//        m_charPtr[0] = '\0';
-//    }
-//    return *this;
-//}
+CStr& CStr::operator=(CStr const& rhs)
+{
+    if (this == &rhs)
+    {
+        return *this;
+    }
+    if (rhs.length() > 0)
+    {
+        realloc(rhs.length() + 1);
+        strcpy(m_charPtr, rhs.c_str());
+    }
+    else
+    {
+        realloc(1);
+        m_charPtr[0] = '\0';
+    }
+    return *this;
+}
 
 bool operator==(CStr const& lhs, CStr const& rhs)
 {

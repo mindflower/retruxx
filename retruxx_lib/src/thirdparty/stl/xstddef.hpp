@@ -52,11 +52,11 @@ _OLDSTD_BEGIN
 
  #define _STCONS(ty, name, val)	static const ty name = (ty)(val)
 
- #ifndef _XSTD
-  #define _X_STD_BEGIN	_OLDSTD_BEGIN
-  #define _X_STD_END	_OLDSTD_END
-  #define _XSTD	std::/* LEAVE SPACE */
- #endif /* _XSTD */
+ #ifndef _XSTDOLD
+  #define _X_OLDSTD_BEGIN	_OLDSTD_BEGIN
+  #define _X_OLDSTD_END	_OLDSTD_END
+  #define _XSTDOLD	oldstd::/* LEAVE SPACE */
+ #endif /* _XSTDOLD */
 
 		// TYPE DEFINITIONS
 enum _Uninitialized

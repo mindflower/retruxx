@@ -16,9 +16,6 @@
 #pragma once
 #endif
 
-#ifndef _INC_STRING
-#define _INC_STRING
-
 #if     !defined(_WIN32)
 #error ERROR: Only Win32 target supported!
 #endif
@@ -223,5 +220,3 @@ _CRTIMP int __cdecl wcsicoll(const wchar_t *, const wchar_t *);
 #ifdef  __cplusplus
 }
 #endif
-
-#endif  /* _INC_STRING */

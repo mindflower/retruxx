@@ -60,7 +60,7 @@ namespace m3d
 
     private:
         CWorld *m_world = nullptr;
-        std::vector<PredictInfo> m_predictData;
-        std::vector<int> m_predictLastEmptySlots;
+        oldstd::vector<PredictInfo> m_predictData;
+        oldstd::vector<int> m_predictLastEmptySlots;
     };
 }

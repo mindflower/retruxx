@@ -3935,19 +3935,19 @@
     <ClInclude Include="src\thirdparty\stl\cstring.hpp">
       <Filter>thirdparty\stl</Filter>
     </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\string.h">
+    <ClInclude Include="src\thirdparty\stl\string.hpp">
       <Filter>thirdparty\stl</Filter>
     </ClInclude>
     <ClInclude Include="src\thirdparty\stl\cstdio.hpp">
       <Filter>thirdparty\stl</Filter>
     </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\stdio.h">
+    <ClInclude Include="src\thirdparty\stl\stdio.hpp">
       <Filter>thirdparty\stl</Filter>
     </ClInclude>
     <ClInclude Include="src\thirdparty\stl\cwchar.hpp">
       <Filter>thirdparty\stl</Filter>
     </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\wchar.h">
+    <ClInclude Include="src\thirdparty\stl\wchar.hpp">
       <Filter>thirdparty\stl</Filter>
     </ClInclude>
     <ClInclude Include="src\thirdparty\stl\exception.hpp">
@@ -3962,7 +3962,7 @@
     <ClInclude Include="src\thirdparty\stl\cstdlib.hpp">
       <Filter>thirdparty\stl</Filter>
     </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\stdlib.h">
+    <ClInclude Include="src\thirdparty\stl\stdlib.hpp">
       <Filter>thirdparty\stl</Filter>
     </ClInclude>
     <ClInclude Include="src\thirdparty\stl\vector.hpp">

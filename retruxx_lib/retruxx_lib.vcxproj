@@ -1402,12 +1402,12 @@
     <ClInclude Include="src\thirdparty\stl\set.hpp" />
     <ClInclude Include="src\thirdparty\stl\stddef.h" />
     <ClInclude Include="src\thirdparty\stl\stdexcept.hpp" />
-    <ClInclude Include="src\thirdparty\stl\stdio.h" />
-    <ClInclude Include="src\thirdparty\stl\stdlib.h" />
-    <ClInclude Include="src\thirdparty\stl\string.h" />
+    <ClInclude Include="src\thirdparty\stl\stdio.hpp" />
+    <ClInclude Include="src\thirdparty\stl\stdlib.hpp" />
+    <ClInclude Include="src\thirdparty\stl\string.hpp" />
     <ClInclude Include="src\thirdparty\stl\utility.hpp" />
     <ClInclude Include="src\thirdparty\stl\vector.hpp" />
-    <ClInclude Include="src\thirdparty\stl\wchar.h" />
+    <ClInclude Include="src\thirdparty\stl\wchar.hpp" />
     <ClInclude Include="src\thirdparty\stl\xmemory.hpp" />
     <ClInclude Include="src\thirdparty\stl\xstddef.hpp" />
     <ClInclude Include="src\thirdparty\stl\xstring.hpp" />

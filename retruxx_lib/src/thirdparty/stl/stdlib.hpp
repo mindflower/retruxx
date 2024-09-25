@@ -17,9 +17,6 @@
 #pragma once
 #endif
 
-#ifndef _INC_STDLIB
-#define _INC_STDLIB
-
 #if     !defined(_WIN32)
 #error ERROR: Only Win32 target supported!
 #endif
@@ -452,4 +449,3 @@ _CRTIMP char * __cdecl ultoa(unsigned long, char *, int);
 #pragma pack(pop)
 #endif  /* _MSC_VER */
 
-#endif  /* _INC_STDLIB */

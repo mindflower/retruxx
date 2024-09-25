@@ -30,114 +30,128 @@ namespace ai
 
     class Player : public Obj
     {
+    protected:
+        virtual ~Player() override /* 0x00 */;
+
+    private:
+        Player(const ai::PlayerPrototypeInfo& prototypeInfo);
+        Player(const ai::Player&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
+
     public:
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static inline m3d::Class m_classPlayer;
+        virtual const ai::PlayerPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+
+    protected:
+        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+
+    public:
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
+        virtual void GetPropertiesNames(oldstd::set<CStr>& Props) const override /* 0x5c */;
+        virtual void GetPropertiesIDs(oldstd::set<int>& Props) const override /* 0x60 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x78 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
+
+    protected:
+        static inline oldstd::map<CStr, int, ai::Obj::LessNoCaseCStr> m_propertiesMap;
+        static inline oldstd::map<int, enum ai::eGObjPropertySaveStatus> m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
+
+    public:
+        virtual int OnEvent(const ai::Event& evn) override /* 0x40 */;
+
         enum PlayerFightState
         {
-            FIGHT_CLEAR = 0x0,
-            FIGHT_ALARM = 0x1,
-            FIGHT_BATTLE = 0x2,
-            FIGHT_BATTLE_JUST_FINISHED = 0x3,
-            NUM_FIGHT_STATES = 0x4,
+            FIGHT_CLEAR = 0,
+            FIGHT_ALARM = 1,
+            FIGHT_BATTLE = 2,
+            FIGHT_BATTLE_JUST_FINISHED = 3,
+            NUM_FIGHT_STATES = 4,
         };
 
     public:
-        static m3d::Class * GetBaseClass();
-        int GetMoney() const ;
-        void ChangeVehicleByExisting(int,bool);
-        virtual void Update(float,unsigned int);
-        std::vector<CStr,std::allocator<CStr> > const & GetQuestItemPrototypeNames() const ;
-        float GetFuel() const ;
-        bool HuntQuestIsTaken() const ;
-        int RemoveQuestItem(CStr const &);
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
-        unsigned int GetCfgNumber() const ;
-        CStr const & GetModelName() const ;
-        bool CanPlaceItemsToRepository(char const *,int);
-        Player(PlayerPrototypeInfo const &);
-        Vehicle * GetVehicle() const ;
-        virtual int OnEvent(Event const &);
-        void AddMoney(int);
-        bool IsQuestItemPresent(CStr const &) const ;
-        void ChangeVehicleByNew(int,bool);
-        virtual int GetPropertyId(char const *) const ;
-        IzvratRepository * GetRepository() const ;
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        float GetMaxHealth() const ;
-        virtual unsigned int GetPrice(IPriceCoeffProvider const *) const ;
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        float GetHealth() const ;
-        virtual void AddChild(Obj *);
-        float GetMaxFuel() const ;
-        bool RemoveItemsFromRepository(char const *,int);
-        virtual bool RemoveChild(Obj *);
-        virtual PlayerPrototypeInfo const * GetPrototypeInfo() const ;
-        bool AddItemsToRepository(char const *,int);
-        virtual void SetPassedToAnotherMapStatus();
-        virtual void RenderDebugInfo() const ;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x98 */;
+        virtual void AddChild(ai::Obj* pObj) override /* 0x94 */;
+        virtual bool RemoveChild(ai::Obj* pChild) override /* 0x9c */;
+        virtual void Remove() override /* 0x54 */;
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x80 */;
+        virtual void SetPassedToAnotherMapStatus() override /* 0x50 */;
+        ai::Vehicle* GetVehicle() const;
+        void ChangeVehicleByNew(int newVehiclePrototypeId, bool bDeleteOldVehicle);
+        void ChangeVehicleByExisting(int newVehicleObjId, bool bDeleteOldVehicle);
+        const ai::NumericBoundedBelow<int>& Money() const;
+        ai::NumericBoundedBelow<int>& Money();
+        int GetMoney() const;
+        void AddMoney(int amount);
+        float GetHealth() const;
+        float GetMaxHealth() const;
+        float GetFuel() const;
+        float GetMaxFuel() const;
+        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override /* 0xec */;
+        virtual unsigned int GetSchwarz() const override /* 0xf0 */;
+        bool AddItemsToRepository(const char* prototypeName, int amount);
+        bool RemoveItemsFromRepository(const char* prototypeName, int amount);
+        bool HasAmountOfItemsInRepository(const char* prototypeName, int amount) const;
+        bool CanPlaceItemsToRepository(const char* prototypeName, int amount);
+        ai::IzvratRepository* GetRepository() const;
+        const CStr& GetLastSaveDir() const;
+        void SetLastSaveDir(const CStr& saveDir);
         static void __fastcall Registration();
-        virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
-        virtual unsigned int GetSchwarz() const ;
-        virtual m3d::Class * GetClass() const ;
-        InfoCone const & GetInfoCone() const ;
-        virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        int AddQuestItem(CStr const &);
-        virtual void Remove();
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        bool HasAmountOfItemsInRepository(char const *,int) const ;
-        CStr const & GetLastSaveDir() const ;
-        void SetLastSaveDir(CStr const &);
-        int GetInfoObjId() const ;
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        int GetRadioManagerId() const ;
-        NumericBoundedBelow<int> & Money();
-        NumericBoundedBelow<int> const & Money() const ;
-        virtual CStr GetPropertyName(int) const ;
-        virtual bool CanChildBeAdded(m3d::Class *) const ;
-        unsigned int GetSkinNumber() const ;
+        bool IsQuestItemPresent(const CStr& itemPrototypeName) const;
+        int AddQuestItem(const CStr& itemPrototypeName);
+        int RemoveQuestItem(const CStr& itemPrototypeName);
+        const oldstd::vector<CStr>& GetQuestItemPrototypeNames() const;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xac */;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb4 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
+        const ai::InfoCone& GetInfoCone() const;
+        int GetInfoObjId() const;
+        int GetRadioManagerId() const;
+        const CStr& GetModelName() const;
+        unsigned int GetSkinNumber() const;
+        unsigned int GetCfgNumber() const;
+        bool HuntQuestIsTaken() const;
+        virtual void RenderDebugInfo() const override /* 0xe4 */;
 
     protected:
-        virtual ~Player();
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
-        virtual void _InternalPostLoad();
-        static void __fastcall RegisterProperty(char const *,int,eGObjPropertySaveStatus);
+        virtual void _InternalPostLoad() override /* 0xfc */;
+
+        //using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Player, int, void>;
 
     private:
-        void _OnDynamicQuestForgotten(Event const &);
-        static m3d::Object * CreateObject();
-        void _OnDynamicQuestFailed(Event const &);
-        void _OnUnderAttack(Event const &);
-        virtual m3d::Object * Clone();
-        //MemberFunctionOneArg<Player,int,void>::MemberFunctionOneArg<Player,int,void>(Player &,void (*const)(int));
-        void _OnDynamicQuestTaken(Event const &);
-        void _OnMoneyValueAfterChange(int);
-        void _OnNoticeEnemy(Event const &);
-        void _OnObjectDie(Event const &);
+        void _OnMoneyValueAfterChange(int oldMoneyValue);
+        /* 0x00c0 */ ai::NumericBoundedBelow<int> m_money{0, 0};
+        ///* 0x00c0 */ char Padding_24[120];
+        /* 0x0138 */ int m_vehicleObjId;
+        /* 0x013c */ ai::RadioManager* m_radioManager;
+        /* 0x0140 */ oldstd::vector<CStr> m_questItemPrototypeNames;
+        /* 0x0150 */ int m_infoObjId;
+        /* 0x0154 */ ai::InfoCone* m_infoCone;
+        /* 0x0158 */ float m_timeInfoObjTimeout;
+        /* 0x015c */ ai::Player::PlayerFightState m_playerFightState;
+        /* 0x0160 */ ai::Player::PlayerFightState m_prevPlayerFightState;
+        /* 0x0164 */ ai::NumericInRangeRegenerating<float> m_timeOfNoBattle{0.0, 0.0, 7.0, 1.0};
+        /* 0x023c */ CStr m_lastSaveDir;
+        /* 0x0248 */ CStr m_modelName;
+        /* 0x0254 */ unsigned int m_skinNumber;
+        /* 0x0258 */ unsigned int m_cfgNumber;
+        /* 0x025c */ bool m_huntQuestIsTaken;
+        /* 0x025d */ char Padding_25[3];
+        /* 0x0260 */ int m_curNumForVehicleWithoutName;
+        void _OnObjectDie(const ai::Event& evn);
+        void _OnNoticeEnemy(const ai::Event& evn);
+        void _OnUnderAttack(const ai::Event& evn);
+        void _OnDynamicQuestTaken(const ai::Event& evn);
+        void _OnDynamicQuestComplete(const ai::Event& evn);
+        void _OnDynamicQuestForgotten(const ai::Event& evn);
+        void _OnDynamicQuestFailed(const ai::Event& evn);
+    }; /* size: 0x0264 */
 
-    private:
-        void _OnDynamicQuestComplete(Event const &);
-
-    public:
-        RT_CLASS_DECLARE(Player);
-
-    private:
-        //NumericBoundedBelow<int> m_money;
-        //_BYTE gapC0[120];
-        int m_vehicleObjId;
-        RadioManager *m_radioManager;
-        std::vector<CStr> m_questItemPrototypeNames;
-        int m_infoObjId;
-        InfoCone *m_infoCone;
-        float m_timeInfoObjTimeout;
-        PlayerFightState m_playerFightState;
-        PlayerFightState m_prevPlayerFightState;
-        //NumericInRangeRegenerating<float> m_timeOfNoBattle;
-        CStr m_lastSaveDir;
-        CStr m_modelName;
-        unsigned int m_skinNumber;
-        unsigned int m_cfgNumber;
-        bool m_huntQuestIsTaken;
-        int m_curNumForVehicleWithoutName;
-    };
+    static_assert(sizeof(Player) == 0x264);
 }

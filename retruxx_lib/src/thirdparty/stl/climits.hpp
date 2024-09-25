@@ -4,7 +4,7 @@
 
  #pragma warning(disable: 4514)
 
-#include "limits.h"
+#include <limits.h>
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

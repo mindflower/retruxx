@@ -36,12 +36,43 @@ typedef const char *__exString;
 class _CRTIMP exception
 	{	// base of all library exceptions
 public:
-	exception();
-	exception(const char *const&);
-	exception(const exception&);
-	exception& operator=(const exception&);
-	virtual ~exception();
-	virtual const char *what() const;
+	//exception();
+	//exception(const char *const&);
+	//exception(const exception&);
+	//exception& operator=(const exception&);
+	//virtual ~exception() = default;
+	//virtual const char *what() const;
+
+    exception() _THROW0()
+        : _m_what("unknown")
+    {
+    }
+
+    explicit exception(const char* _Message)
+        _THROW0()
+        : _m_what(_Message)
+    {	// construct from message string
+    }
+
+    exception(const exception& _Right) _THROW0()
+        : _m_what(_Right._m_what)
+    {	// construct by copying _Right
+    }
+
+    exception& operator=(const exception& _Right) _THROW0()
+    {	// assign _Right
+        _m_what = _Right._m_what;
+        return (*this);
+    }
+
+    virtual ~exception()
+    {	// destroy the object
+    }
+
+    virtual const char* what() const _THROW0()
+    {	// return pointer to message string
+        return (_m_what);
+    }
 
 private:
 	const char *_m_what;

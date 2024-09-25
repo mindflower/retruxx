@@ -16,8 +16,6 @@
 #pragma once
 #endif
 
-#ifndef _INC_STDDEF
-#define _INC_STDDEF
 
 #if     !defined(_WIN32)
 #error ERROR: Only Win32 target supported!
@@ -140,4 +138,3 @@ _CRTIMP extern uintptr_t __cdecl __threadhandle(void);
 }
 #endif
 
-#endif  /* _INC_STDDEF */

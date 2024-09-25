@@ -1,21 +1,44 @@
 #pragma once
-#include <functional>
+#include "server/modifier.h"
+#include "functions/memberfunctiononearg.h"
+#include "functions/memberfunctiononeargref.h"
+#include "functions/memberfunctionstwoargsref.h"
 
 namespace ai
 {
     template<class T>
     class Component
     {
+        using ThisType = ai::Component<T>;
+
+ //   private:
     public:
-        Component()
+        Component() :
+            m_AfterChange(nullptr),
+            m_BeforeChange(nullptr)
         {
-            throw std::logic_error("Not implemented");
+            throw std::runtime_error("not implemented");
         }
 
-    private:
-        std::function<void(const T&)> m_AfterChange;
-        std::function<bool(const T&)> m_BeforeChange;
-        //FuncPtrOneArg<T,void> m_AfterChange;
-        //FuncPtrOneArgRef<T,bool> m_BeforeChange;
-    };
+        Component(const ThisType&)
+        {
+            throw std::runtime_error("not implemented");
+        }
+
+        using AfterChangeFuncPtr = ai::FuncPtrOneArg<T, void>;
+        using BeforeChangeFuncPtr = ai::FuncPtrOneArgRef<T, bool>;
+        using BeforeApplyModifierFuncPtr = ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool>;
+        using StoringType = T;
+        using AfterChangeCallback = ai::BaseFunctionOneArg<T, void>;
+        using BeforeChangeCallback = ai::BaseFunctionOneArgRef<T, bool>;
+        using BeforeApplyModifierCallback = ai::BaseFunctionTwoArgsRef<ai::Modifier, T, bool>;
+
+    public:
+        /* 0x0000 */ ai::FuncPtrOneArg<T, void> m_AfterChange;
+        /* 0x0008 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeChange;
+        void assign(const ThisType&);
+
+    protected:
+        void _AssignUnsafe(const ThisType&);
+    }; /* size: 0x0010 */
 }

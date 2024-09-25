@@ -40,11 +40,6 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    Modifier& Modifier::operator=(Modifier const&)
-    {
-        throw std::logic_error("Not implemented");
-    }
-
     void Modifier::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
         throw std::logic_error("Not implemented");
@@ -55,7 +50,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Modifier::ApplyModelNumList(std::vector<int, std::allocator<int>>*) const
+    void Modifier::ApplyModelNumList(oldstd::vector<int>*) const
     {
         throw std::logic_error("Not implemented");
     }

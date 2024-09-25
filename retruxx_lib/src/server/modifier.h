@@ -17,34 +17,24 @@ namespace ai
     class Modifier
     {
     public:
+        /* 0x0000 */ float m_timeOut;
+        /* 0x0004 */ ai::eModifierOperation m_Operation;
+        /* 0x0008 */ int m_magicPrototypeId;
+        /* 0x000c */ CStr m_PropertyName;
+        /* 0x0018 */ int m_SenderID;
+        /* 0x001c */ m3d::AIParam m_Value;
+        Modifier(const ai::Modifier& Mod);
         Modifier();
-        Modifier(Modifier const &);
         ~Modifier();
-        void Create(CStr const &,eModifierOperation,m3d::AIParam const &);
-        void Apply(float *,float) const ;
-        void Apply(CVector2 *,CVector2) const ;
-        void Apply(CVector *,CVector) const ;
-        Modifier & operator=(Modifier const &);
-
-        template <class T>
-        void ApplyInBuilt(T&, T) const
-        {
-            throw std::logic_error("Not implemented");
-        }
-
-        void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        void ApplyModelNum(int *,int) const ;
-        void ApplyModelNumList(std::vector<int,std::allocator<int> > *) const ;
-        void ReadFromStr(CStr const &);
-        void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        void ApplyEngineID(int *,int) const ;
-
-    public:
-        float m_timeOut;
-        eModifierOperation m_Operation;
-        int m_magicPrototypeId;
-        CStr m_PropertyName;
-        int m_SenderID;
-        m3d::AIParam m_Value;
-    };
+        void Create(const CStr& PropertyName, ai::eModifierOperation Operation, const m3d::AIParam& value);
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
+        void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
+        void ReadFromStr(const CStr& Str);
+        void Apply(CVector2* Property, CVector2 base) const;
+        void Apply(CVector* Property, CVector base) const;
+        void Apply(float* Property, float base) const;
+        void ApplyModelNum(int* Property, int base) const;
+        void ApplyModelNumList(oldstd::vector<int>* MNL) const;
+        void ApplyEngineID(int* Property, int base) const;
+    }; /* size: 0x0038 */
 }

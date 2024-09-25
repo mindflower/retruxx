@@ -1,5 +1,5 @@
 #include "player.h"
-
+#include "thirdparty/injecttools.h"
 #include <stdexcept>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Player, GetMoney)
@@ -92,7 +92,6 @@ namespace ai
         RT_CLASS_EXPORT(Player, m3d::METHOD, AddQuestItem, "", "", "")
         RT_CLASS_EXPORT(Player, m3d::METHOD, RemoveQuestItem, "", "", "")
     RT_CLASS_EXPORTS_END;
-    RT_CLASS_DEFINE(Player);
 
     CStr const& PlayerPrototypeInfo::GetModelName() const
     {
@@ -129,9 +128,10 @@ namespace ai
         return RT_CLASS_LOCAL(Obj);
     }
 
+    RETRUXX_DLL_INJECT_FUNCTION(0x0064FA80, Player::GetMoney)
     int Player::GetMoney() const
     {
-        throw std::logic_error("Not implemented");
+        return m_money.value().get();
     }
 
     void Player::ChangeVehicleByExisting(int, bool)
@@ -144,7 +144,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    std::vector<CStr, std::allocator<CStr>> const& Player::GetQuestItemPrototypeNames() const
+    oldstd::vector<CStr> const& Player::GetQuestItemPrototypeNames() const
     {
         throw std::logic_error("Not implemented");
     }
@@ -164,7 +164,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Player::GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>&) const
+    void Player::GetPropertiesNames(oldstd::set<CStr>&) const
     {
         throw std::logic_error("Not implemented");
     }
@@ -302,7 +302,7 @@ namespace ai
         m_propertiesMap["cfg"] = 46;
     }
 
-    void Player::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>&) const
+    void Player::GetPropertiesIDs(oldstd::set<int>&) const
     {
         throw std::logic_error("Not implemented");
     }

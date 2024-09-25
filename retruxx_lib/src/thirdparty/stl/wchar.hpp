@@ -20,11 +20,6 @@
 #endif
 
 
-#ifndef _INC_WCHAR
-#define _INC_WCHAR
-
-
-
 #if     !defined(_WIN32)
 #error ERROR: Only Win32 target supported!
 #endif
@@ -814,4 +809,3 @@ inline wchar_t *wmemchr(wchar_t *_S, wchar_t _C, size_t _N)
 #pragma pack(pop)
 #endif  /* _MSC_VER */
 
-#endif  /* _INC_WCHAR */

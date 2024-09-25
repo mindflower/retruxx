@@ -1,6 +1,6 @@
 #pragma once
 #include "stringm3d.h"
-#include <vector>
+#include "thirdparty/stl/vector.hpp"
 
 class CVector;
 class CVector2;
@@ -29,83 +29,85 @@ namespace m3d
 
     class AIParam
     {
-    public:
-        class RepEl
-        {
-        private:
-            CStr m_prototypeName;
-            int m_Amount;
-        };
-
-    public:
-        static int CompareInt(void const*, void const*);
-        static int CompareStr(void const*, void const*);
-
-    public:
-        AIParam() = default;
-        AIParam(AIParam const& param);
-        AIParam(CVector const& pos);
-        AIParam(CVector2 const& range);
-        AIParam(std::vector<int> const& list);
-        AIParam(CStr const& str);
-        AIParam(int const& pid);
-        AIParam(float const& value);
-        AIParam(Quaternion const& pos);
-        ~AIParam();
-
-        int GetAsID() const;
-        std::vector<int> GetAsIdList() const;
-        CVector2 GetAsRange() const;
-        CStr GetAsStr() const;
-        CVector GetAsVector() const;
-        void SaveToXML(cmn::XmlFile*, cmn::XmlNode*) const;
-        std::vector<CStr> GetAsStringList() const;
-        void Clear();
-        void ReadFromString(CStr const&);
-        bool operator==(AIParam const&);
-        bool operator<=(AIParam const&);
-        bool operator!=(AIParam const&);
-        bool operator<(AIParam const&);
-        AIParam& operator=(CVector2 const&);
-        AIParam& operator=(CVector const&);
-        AIParam& operator=(CStr const&);
-        AIParam& operator=(AIParam const&);
-        AIParam& operator=(std::vector<CStr> const&);
-        AIParam& operator=(float const&);
-        AIParam& operator=(std::vector<int> const&);
-        AIParam& operator=(unsigned int const&);
-        AIParam& operator=(Quaternion const&);
-        AIParam& operator=(int const&);
-        bool operator>(class AIParam const&);
-        void Init();
-        void LoadFromXML(cmn::XmlFile*, cmn::XmlNode const*);
-        float GetAsFloat() const;
-        eAIParamType GetType() const;
-        Quaternion GetAsQuaternion() const;
-        CStr ToStr() const;
-        void SetType(eAIParamType);
-
     protected:
-        void Copy(AIParam const& param);
-        void ConvertFromString(void*, eAIParamType) const;
-        void Detach();
-
-    private:
-        float y = 0;
-        float z = 0;
-        float w = 0;
-        eAIParamType Type = AIPARAM_UNDEFINE;
-        //CStr* (__fastcall* NameFromNum)(CStr* result, const m3d::AIParam*, int);
-        //int(__fastcall* NumFromName)(const m3d::AIParam*, CStr*);
-        //TODO: union initialization
         union
         {
-            int id = 0;
-            float x;
-            float Value;
-            std::vector<CStr>* m_NameList;
-            std::vector<int>* m_NumList;
-            CStr* m_Str;
-        };
-    };
+            struct
+            {
+                /* 0x0000 */ float x;
+                /* 0x0004 */ float y;
+                /* 0x0008 */ float z;
+                /* 0x000c */ float w;
+            }; /* size: 0x0010 */
+            /* 0x0000 */ int id;
+            /* 0x0000 */ float Value;
+            /* 0x0000 */ oldstd::vector<CStr>* m_NameList;
+            /* 0x0000 */ oldstd::vector<int>* m_NumList;
+            /* 0x0000 */ CStr* m_Str;
+        }; /* size: 0x0010 */
+        /* 0x0010 */ m3d::eAIParamType Type;
+        void Detach();
+        void Copy(const m3d::AIParam& PParam);
+        void ConvertFromString(void* retVal, m3d::eAIParamType ToType) const;
+        static int __cdecl CompareInt(const void* v1, const void* v2);
+        static int __cdecl CompareStr(const void* v1, const void* v2);
+
+        struct RepEl
+        {
+            /* 0x0000 */ CStr m_prototypeName;
+            /* 0x000c */ int m_Amount;
+            bool operator==(const m3d::AIParam::RepEl&);
+            RepEl(const m3d::AIParam::RepEl&);
+            RepEl(const CStr&, const int&);
+        }; /* size: 0x0010 */
+
+    protected:
+        static int __fastcall CompareRepEl(const void*, const void*);
+
+    public:
+        /* 0x0014 */ CStr(*NameFromNum)(const m3d::AIParam*, int);
+        /* 0x0018 */ int (*NumFromName)(const m3d::AIParam*, CStr&);
+        void ReadFromString(const CStr& Str);
+        void Clear();
+        ~AIParam();
+        AIParam(const float& PValue);
+        AIParam(const Quaternion&);
+        AIParam(const CVector& pos);
+        AIParam(const CVector2& range);
+        AIParam(const int& PID);
+        AIParam(const unsigned int&);
+        AIParam(const CStr& str);
+        AIParam();
+        AIParam(const m3d::AIParam& PParam);
+        AIParam(const oldstd::vector<int>& List);
+        bool operator>(const m3d::AIParam& with);
+        bool operator<(const m3d::AIParam& with);
+        bool operator>=(const m3d::AIParam&);
+        bool operator<=(const m3d::AIParam& with);
+        bool operator==(const m3d::AIParam& with);
+        bool operator!=(const m3d::AIParam& with);
+        void Init();
+        m3d::AIParam& operator=(const float&);
+        m3d::AIParam& operator=(const Quaternion&);
+        m3d::AIParam& operator=(const CVector&);
+        m3d::AIParam& operator=(const CVector2&);
+        m3d::AIParam& operator=(const int&);
+        m3d::AIParam& operator=(const unsigned int& PID);
+        m3d::AIParam& operator=(const CStr&);
+        m3d::AIParam& operator=(const oldstd::vector<CStr>&);
+        m3d::AIParam& operator=(const oldstd::vector<int>&);
+        CVector GetAsVector() const;
+        Quaternion GetAsQuaternion() const;
+        CVector2 GetAsRange() const;
+        int GetAsID() const;
+        float GetAsFloat() const;
+        oldstd::vector<int> GetAsIdList() const;
+        oldstd::vector<CStr> GetAsStringList() const;
+        void SetType(m3d::eAIParamType ParamType);
+        m3d::eAIParamType GetType() const;
+        CStr ToStr() const;
+        CStr GetAsStr() const;
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
+        void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
+    }; /* size: 0x001c */
 }

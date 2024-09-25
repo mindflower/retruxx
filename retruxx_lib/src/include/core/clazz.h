@@ -1,6 +1,7 @@
 #pragma once
 #include "stringm3d.h"
 #include <set>
+#include <vector>
 
 #define RT_CLASS_LOCAL(cl) &cl::m_class##cl
 #define RT_CLASS_DECLARE(cl) static m3d::Class m_class##cl
@@ -146,8 +147,8 @@ namespace m3d
         virtual const char* GetClassNameA() const /* 0x38 */;
         bool IsKindOf(const char* className) const;
         bool IsKindOf(const m3d::Class* object) const;
-        static m3d::Class* __fastcall GetBaseClass();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Class* GetBaseClass();
+        static m3d::Object* CreateObject();
 
     protected:
         Object(const m3d::Object& clazz);

@@ -4,33 +4,93 @@
 namespace ai
 {
     template<class T>
-    class NumericBoundedBelow : public Component<T>
+    class NumericBoundedBelow : public ai::Component<T>
     {
+        using ThisType = ai::NumericBoundedBelow<T>;
+        using InnerNumeric = ai::Numeric<T>;
+        using Base = ai::Component<T>;
+        using ThisAfterChangeCallback = ai::MemberFunctionOneArg<ThisType, T, void>;
+        using ThisBeforeChangeCallback = ai::MemberFunctionOneArgRef<ThisType, T, bool>;
+        using ThisBeforeApplyModifierCallback = ai::MemberFunctionTwoArgsRef<ThisType, ai::Modifier, T, bool>;
+
     public:
-        NumericBoundedBelow(T,T);
-        Numeric<T> const & value() const ;
-        Numeric<T> & value();
+        /* 0x0010 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeValueApplyModifier = nullptr;
+        /* 0x0018 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMinValueApplyModifier = nullptr;
+        /* 0x0020 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeValueChange = nullptr;
+        /* 0x0028 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeMinValueChange = nullptr;
+        /* 0x0030 */ ai::FuncPtrOneArg<T, void> m_AfterValueChange = nullptr;
+        /* 0x0038 */ ai::FuncPtrOneArg<T, void> m_AfterMinValueChange = nullptr;
+
+        NumericBoundedBelow(T value, T minValue) :
+            m_value{value},
+            m_minValue{minValue}
+        {
+            m_value.m_AfterChange = new MemberFunctionOneArg<ThisType, T, void>(*this, &ThisType::_OnAfterValueChange);
+            m_minValue.m_AfterChange = new MemberFunctionOneArg<ThisType, T, void>(*this, &ThisType::_OnAfterMinValueChange);
+
+            m_value.m_BeforeChange = new MemberFunctionOneArgRef<ThisType, T, bool>(*this, &ThisType::_OnBeforeValueChange);
+            m_minValue.m_BeforeChange = new MemberFunctionOneArgRef<ThisType, T, bool>(*this, &ThisType::_OnBeforeMinValueChange);
+
+            m_value.m_BeforeApplyModifier = new MemberFunctionTwoArgsRef<ThisType, ai::Modifier, T, bool>(*this, &ThisType::_OnBeforeValueApplyModifier);
+            m_minValue.m_BeforeApplyModifier = new MemberFunctionTwoArgsRef<ThisType, ai::Modifier, T, bool>(*this, &ThisType::_OnBeforeMinValueApplyModifier);
+        }
+
+        const ai::Numeric<T>& minValue() const;
+        ai::Numeric<T>& minValue();
+
+        const ai::Numeric<T>& value() const
+        {
+            return m_value;
+        }
+
+        ai::Numeric<T>& value()
+        {
+            return m_value;
+        }
+
+        void assign(const ai::NumericBoundedBelow<T>&);
         void setToMin();
-        Numeric<T> & minValue();
+        bool bIsMin() const;
+
+    protected:
+        void _AssignUnsafe(const ai::NumericBoundedBelow<T>&);
 
     private:
-        void _OnAfterValueChange(T);
-        //MemberFunctionOneArgRef<NumericBoundedBelow<T>,T,bool>::MemberFunctionOneArgRef<NumericBoundedBelow<T>,T,bool>(NumericBoundedBelow<T> &,bool (*const)(T &));
-        void _AfterSomeChange();
-        bool _OnBeforeValueChange(T &);
-        bool _OnBeforeMinValueChange(T &);
-        bool _OnBeforeValueApplyModifier(Modifier const &,T &);
-        bool _OnBeforeMinValueApplyModifier(Modifier const &,T &);
-        //MemberFunctionTwoArgsRef<NumericBoundedBelow<T>,Modifier,T,bool>::MemberFunctionTwoArgsRef<NumericBoundedBelow<T>,Modifier,T,bool>(NumericBoundedBelow<T> &,bool (*const)(Modifier const &,T &));
-        void _OnAfterMinValueChange(T);
-        //MemberFunctionOneArg<NumericBoundedBelow<T>,T,void>::MemberFunctionOneArg<NumericBoundedBelow<T>,T,void>(NumericBoundedBelow<T> &,void (*const)(T));
-        //FuncPtrTwoArgsRef<Modifier,T,bool> m_BeforeValueApplyModifier;
-        //FuncPtrTwoArgsRef<Modifier,T,bool> m_BeforeMinValueApplyModifier;
-        //FuncPtrOneArgRef<T,bool> m_BeforeValueChange;
-        //FuncPtrOneArgRef<T,bool> m_BeforeMinValueChange;
-        //FuncPtrOneArg<T,void> m_AfterValueChange;
-        //FuncPtrOneArg<T,void> m_AfterMinValueChange;
-        Numeric<T> m_value;
-        Numeric<T> m_minValue;
-    };
+        void _AfterSomeChange()
+        {
+            throw std::runtime_error("not implemented");
+        }
+
+        void _OnAfterValueChange(T oldValue)
+        {
+            throw std::runtime_error("not implemented");
+        }
+
+        void _OnAfterMinValueChange(T oldValue)
+        {
+            throw std::runtime_error("not implemented");
+        }
+
+        bool _OnBeforeValueChange(T& oldValue)
+        {
+            throw std::runtime_error("not implemented");
+        }
+
+        bool _OnBeforeMinValueChange(T& oldValue)
+        {
+            throw std::runtime_error("not implemented");
+        }
+
+        bool _OnBeforeValueApplyModifier(const ai::Modifier& modifier, T& oldValue)
+        {
+            throw std::runtime_error("not implemented");
+        }
+
+        bool _OnBeforeMinValueApplyModifier(const ai::Modifier& modifier, T& oldValue)
+        {
+            throw std::runtime_error("not implemented");
+        }
+        /* 0x0040 */ ai::Numeric<T> m_value;
+        /* 0x005c */ ai::Numeric<T> m_minValue;
+    }; /* size: 0x0078 */
 }

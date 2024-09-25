@@ -16,9 +16,6 @@
 #pragma once
 #endif
 
-#ifndef _INC_STDIO
-#define _INC_STDIO
-
 #if     !defined(_WIN32)
 #error ERROR: Only Win32 target supported!
 #endif
@@ -454,5 +451,3 @@ _CRTIMP int __cdecl unlink(const char *);
 #ifdef  _MSC_VER
 #pragma pack(pop)
 #endif  /* _MSC_VER */
-
-#endif  /* _INC_STDIO */

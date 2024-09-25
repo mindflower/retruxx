@@ -1,6 +1,8 @@
 /* yvals.h values header for Microsoft C/C++ */
 #pragma once
 
+#include <yvals.h>
+
 		/* NAMESPACE */
 
  #if defined(__cplusplus)

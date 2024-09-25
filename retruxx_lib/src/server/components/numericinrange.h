@@ -1,5 +1,4 @@
 #pragma once
-#include "component.h"
 #include "numeric.h"
 
 namespace ai
@@ -7,95 +6,59 @@ namespace ai
     template<class T>
     class NumericInRange :  public Component<T>
     {
+        using ThisType = ai::NumericInRange<T>;
+        using InnerNumeric = ai::Numeric<T>;
+        using Base = ai::Component<T>;
+        using ThisAfterChangeCallback = ai::MemberFunctionOneArg<ai::NumericInRange<T>, T, void>;
+        using ThisBeforeChangeCallback = ai::MemberFunctionOneArgRef<ai::NumericInRange<T>, T, bool>;
+        using ThisBeforeApplyModifierCallback = ai::MemberFunctionTwoArgsRef<ai::NumericInRange<T>, ai::Modifier, T, bool>;
+
     public:
-        Numeric<T> const & value() const ;
-        Numeric<T> & value();
+        /* 0x0010 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeValueApplyModifier = nullptr;
+        /* 0x0018 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMinValueApplyModifier = nullptr;
+        /* 0x0020 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMaxValueApplyModifier = nullptr;
+        /* 0x0028 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeValueChange = nullptr;
+        /* 0x0030 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeMinValueChange = nullptr;
+        /* 0x0038 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeMaxValueChange = nullptr;
+        /* 0x0040 */ ai::FuncPtrOneArg<T, void> m_AfterValueChange = nullptr;
+        /* 0x0048 */ ai::FuncPtrOneArg<T, void> m_AfterMinValueChange = nullptr;
+        /* 0x0050 */ ai::FuncPtrOneArg<T, void> m_AfterMaxValueChange = nullptr;
+
+        NumericInRange(T value, T minValue, T maxValue) :
+            m_value(value),
+            m_minValue(minValue),
+            m_maxValue(maxValue)
+        {
+            throw std::runtime_error("not implemented");
+        }
+
+        const ai::Numeric<T>& value() const;
+        ai::Numeric<T>& value();
+        const ai::Numeric<T>& minValue() const;
+        ai::Numeric<T>& minValue();
+        const ai::Numeric<T>& maxValue() const;
+        ai::Numeric<T>& maxValue();
+        void assign(const ai::NumericInRange<T>&);
         void setToMax();
-        Numeric<T> & minValue();
-        Numeric<T> const & minValue() const ;
-        NumericInRange(T,T,T);
+        bool bIsMax() const;
         void setToMin();
-        Numeric<T> const & maxValue() const ;
-        Numeric<T> & maxValue();
+        bool bIsMin() const;
+
+    protected:
+        void _AssignUnsafe(const ai::NumericInRange<T>&);
 
     private:
-        //bool _OnBeforeMinValueApplyModifier(Modifier const &,float &);
-        //MemberFunctionOneArg<NumericInRange<T>,T,void>::MemberFunctionOneArg<NumericInRange<T>,T,void>(NumericInRange<T> &,void (*const)(T));
-        //bool _OnBeforeMinValueChange(T &);
-        //bool _OnBeforeValueChange(T &);
-        //void _OnAfterValueChange(T);
-        //bool _OnBeforeValueApplyModifier(Modifier const &,T &);
-        //void _OnAfterMaxValueChange(T);
-        //bool _OnBeforeMaxValueApplyModifier(Modifier const &,float &);
-        //bool _OnBeforeMaxValueChange(float &);
-        //MemberFunctionTwoArgsRef<NumericInRange<float>,Modifier,float,bool>::MemberFunctionTwoArgsRef<NumericInRange<float>,Modifier,float,bool>(NumericInRange<float> &,bool (*const)(Modifier const &,float &));
-        //void _OnAfterMinValueChange(float);
-        //MemberFunctionOneArgRef<NumericInRange<float>,float,bool>::MemberFunctionOneArgRef<NumericInRange<float>,float,bool>(NumericInRange<float> &,bool (*const)(float &));
-        //FuncPtrTwoArgsRef<Modifier,float,bool> m_BeforeValueApplyModifier;
-        //FuncPtrTwoArgsRef<Modifier,float,bool> m_BeforeMinValueApplyModifier;
-        //FuncPtrTwoArgsRef<Modifier,float,bool> m_BeforeMaxValueApplyModifier;
-        //FuncPtrOneArgRef<float,bool> m_BeforeValueChange;
-        //FuncPtrOneArgRef<float,bool> m_BeforeMinValueChange;
-        //FuncPtrOneArgRef<float,bool> m_BeforeMaxValueChange;
-        //FuncPtrOneArg<float,void> m_AfterValueChange;
-        //FuncPtrOneArg<float,void> m_AfterMinValueChange;
-        //FuncPtrOneArg<float,void> m_AfterMaxValueChange;
-        //Numeric<float> m_value;
-        //Numeric<float> m_minValue;
-        //Numeric<float> m_maxValue;
-    };
-
-    template <class T>
-    Numeric<T> const& NumericInRange<T>::value() const
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    template <class T>
-    Numeric<T>& NumericInRange<T>::value()
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    template <class T>
-    void NumericInRange<T>::setToMax()
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    template <class T>
-    Numeric<T>& NumericInRange<T>::minValue()
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    template <class T>
-    Numeric<T> const& NumericInRange<T>::minValue() const
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    template <class T>
-    NumericInRange<T>::NumericInRange(T, T, T)
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    template <class T>
-    void NumericInRange<T>::setToMin()
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    template <class T>
-    Numeric<T> const& NumericInRange<T>::maxValue() const
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    template <class T>
-    Numeric<T>& NumericInRange<T>::maxValue()
-    {
-        throw std::logic_error("Not implemented");
-    }
+        void _OnAfterValueChange(T oldValue);
+        void _OnAfterMinValueChange(T oldValue);
+        void _OnAfterMaxValueChange(T oldValue);
+        bool _OnBeforeValueChange(T& newValue);
+        bool _OnBeforeMinValueChange(T& newValue);
+        bool _OnBeforeMaxValueChange(T& newValue);
+        bool _OnBeforeValueApplyModifier(const ai::Modifier& modifier, T& newValue);
+        bool _OnBeforeMinValueApplyModifier(const ai::Modifier& modifier, T& newValue);
+        bool _OnBeforeMaxValueApplyModifier(const ai::Modifier& modifier, T& newValue);
+        /* 0x0058 */ ai::Numeric<T> m_value;
+        /* 0x0074 */ ai::Numeric<T> m_minValue;
+        /* 0x0090 */ ai::Numeric<T> m_maxValue;
+    }; /* size: 0x00ac */
 }

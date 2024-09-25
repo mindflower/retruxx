@@ -136,7 +136,7 @@ public:
     };
 
 private:
-    std::vector<CVarLoadedValue> m_loadedValues;
+    oldstd::vector<CVarLoadedValue> m_loadedValues;
 
 private:
     void RegisterConsoleCommands();

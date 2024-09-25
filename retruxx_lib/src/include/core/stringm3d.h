@@ -73,6 +73,7 @@ public:
     static CStr __cdecl format_(const char* fmt, ...);
     int Write(m3d::fs::IStream&);
     int Read(m3d::fs::IStream&);
+    CStr& CStr::operator=(CStr const& rhs);
 }; /* size: 0x000c */
 
 void UnifyFileName(CStr& fileName);

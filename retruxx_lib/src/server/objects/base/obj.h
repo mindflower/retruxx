@@ -407,4 +407,6 @@ namespace ai
         static m3d::AIParam __fastcall AIGetParentID(ai::Obj* pObj);
         static m3d::AIParam __fastcall AIGetOwnerID(ai::Obj* pObj);
     }; /* size: 0x00c0 */
+
+    static_assert(sizeof(Obj) == 0xc0);
 }

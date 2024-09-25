@@ -4,11 +4,11 @@
 
 #ifdef _STD_USING
  #undef _STD_USING
-  #include "stdio.h"
+  #include <stdio.h>
  #define _STD_USING
 
 #else /* _STD_USING */
- #include "stdio.h"
+ #include <stdio.h>
 
  #if _GLOBAL_USING
 _OLDSTD_BEGIN

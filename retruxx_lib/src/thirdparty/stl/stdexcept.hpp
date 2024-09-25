@@ -9,7 +9,7 @@ _OLDSTD_BEGIN
 
 		// CLASS logic_error
 class logic_error
-	: public _XSTD exception
+	: public _XSTDOLD exception
 	{	// base of all logic-error exceptions
 public:
 	explicit logic_error(const string& _Message)
@@ -131,7 +131,7 @@ protected:
 
 		// CLASS runtime_error
 class runtime_error
-	: public _XSTD exception
+	: public _XSTDOLD exception
 	{	// base of all runtime-error exceptions
 public:
 	explicit runtime_error(const string& _Message)
