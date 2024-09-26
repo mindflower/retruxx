@@ -153,7 +153,8 @@ std::vector<m3d::rend::TexHandle> SplashWnd::GetLevelSplashes(CStr const& levelN
     auto levelInfo = infoManager->GetLevelInfoByName(levelName);
     if (levelInfo)
     {
-        return levelInfo->GetSplashes();
+        auto splashes = levelInfo->GetSplashes();
+        return {splashes.begin(), splashes.end()};
     }
     return {};
 }

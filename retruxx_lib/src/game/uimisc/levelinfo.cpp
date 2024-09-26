@@ -86,17 +86,17 @@ m3d::rend::TexHandle LevelInfo::GetImage1() const
 	throw std::logic_error("Not implemented");
 }
 
-std::vector<m3d::rend::TexHandle> LevelInfo::GetSplashes()
+oldstd::vector<m3d::rend::TexHandle> LevelInfo::GetSplashes()
 {
-    std::vector<m3d::rend::TexHandle> result;
+    oldstd::vector<m3d::rend::TexHandle> result;
     for (auto const& splashName : m_splasheNames)
     {
-        if (auto const it = m_splashes.find(splashName); it == m_splashes.cend())
+        if (auto const it = m_splashes.find(splashName); it == m_splashes.end())
         {
             auto splash = M3D_RENDERER->AddTexture(splashName, 4u);
             if (splash.IsValid())
             {
-                m_splashes.emplace(splashName, splash);
+                m_splashes.insert({splashName, splash});
                 result.push_back(splash);
             }
         }
@@ -221,7 +221,7 @@ void LevelInfoManager::ClearBeforeNewLevel()
     m_visitedLevels.clear();
 }
 
-void LevelInfoManager::GetVisitedLevelNames(std::vector<CStr>& visitedLevelNames) const
+void LevelInfoManager::GetVisitedLevelNames(oldstd::vector<CStr>& visitedLevelNames) const
 {
     visitedLevelNames.clear();
     for (auto const& level : m_visitedLevels)
@@ -243,7 +243,7 @@ void LevelInfoManager::ClearLevelObjects()
     m_levelObjects.clear();
 }
 
-void LevelInfoManager::GetAllLevelNames(std::vector<CStr>& allLevelNames) const
+void LevelInfoManager::GetAllLevelNames(oldstd::vector<CStr>& allLevelNames) const
 {
     allLevelNames.clear();
     for (auto const& level : m_levels)
@@ -279,15 +279,15 @@ m3d::Object* LevelInfoManager::Clone()
 
 void LevelInfoManager::UpdateLevelImages()
 {
-    std::vector<CStr> visitedLevelNames;
+    oldstd::vector<CStr> visitedLevelNames;
     GetVisitedLevelNames(visitedLevelNames);
     //TODO: check this!!
     for (auto const& level : m_levels)
     {
         if (level.second)
         {
-            auto const it = std::find(visitedLevelNames.cbegin(), visitedLevelNames.cend(), level.second->GetName());
-            if (it != visitedLevelNames.cend())
+            auto const it = std::find(visitedLevelNames.begin(), visitedLevelNames.end(), level.second->GetName());
+            if (it != visitedLevelNames.end())
             {
                 level.second->LoadBigImage();
             }
@@ -358,7 +358,7 @@ VisibilityMap* LevelInfoManager::AddVisibilityMapForLevel(CStr const& levelName)
         return nullptr;
     }
     auto const it = m_visibilityMaps.find(levelName);
-    if (it != m_visibilityMaps.cend())
+    if (it != m_visibilityMaps.end())
     {
         return it->second;
     }
@@ -368,7 +368,7 @@ VisibilityMap* LevelInfoManager::AddVisibilityMapForLevel(CStr const& levelName)
         delete visMap;
         return nullptr;
     }
-    m_visibilityMaps.emplace(levelName, visMap);
+    m_visibilityMaps.insert({levelName, visMap});
     return visMap;
 }
 
@@ -440,9 +440,9 @@ void LevelInfoManager::OnNewFrame()
 
 int LevelInfoManager::AddVisitedLevel(CStr const& levelName)
 {
-    std::vector<CStr> levelNames;
+    oldstd::vector<CStr> levelNames;
     GetAllLevelNames(levelNames);
-    if (std::find(levelNames.cbegin(), levelNames.cend(), levelName) == levelNames.cend())
+    if (std::find(levelNames.begin(), levelNames.end(), levelName) == levelNames.end())
     {
         M3D_LOG_INFO("LevelInfoManager::AddVisitedLevel error - level with name '" + levelName + "' does not exist");
         return 0;
@@ -451,12 +451,12 @@ int LevelInfoManager::AddVisitedLevel(CStr const& levelName)
     return 1;
 }
 
-std::map<CStr, ObjectInfo*> const* LevelInfoManager::GetObjectsForLevel(CStr const&) const
+oldstd::map<CStr, ObjectInfo*> const* LevelInfoManager::GetObjectsForLevel(CStr const&) const
 {
     throw std::logic_error("Not implemented");
 }
 
-std::map<CStr, ObjectInfo*>* LevelInfoManager::GetObjectsForLevel(CStr const&)
+oldstd::map<CStr, ObjectInfo*>* LevelInfoManager::GetObjectsForLevel(CStr const&)
 {
     throw std::logic_error("Not implemented");
 }
@@ -552,7 +552,7 @@ int LevelInfoManager::LoadLevelInfoFromXml(CStr const& fileName)
                 if (info->LoadFromXml(xmlFile, node))
                 {
                     //TODO: check this
-                    m_levels.emplace(++m_nextLevelInfoId, info);
+                    m_levels.insert({++m_nextLevelInfoId, info});
                 }
                 else
                 {
@@ -629,7 +629,7 @@ int LevelInfoManager::LoadLevelSizeFromXml(CStr const& fileName)
         CStr level = file->GetString("LEVEL", "LEVELNAME");
         int levelSize = file->GetInteger("LEVEL", "LEVELSIZE");
         float size = levelSize* 128.0;
-        m_levelSizes.emplace(level, size);
+        m_levelSizes.insert({level, size});
         return 1;
     }
     M3D_LOG_INFO("Error: could't open " + fileName + " file");
@@ -663,7 +663,7 @@ void LevelInfoManager::ClearKnownLevels()
     throw std::logic_error("Not implemented");
 }
 
-void LevelInfoManager::GetKnownLevelNames(std::vector<CStr>&) const
+void LevelInfoManager::GetKnownLevelNames(oldstd::vector<CStr>&) const
 {
     throw std::logic_error("Not implemented");
 }
@@ -691,7 +691,7 @@ m3d::Class* LevelInfoManager::GetClass() const
 float LevelInfoManager::GetLevelSize(CStr const& levelName) const
 {
     auto const it = m_levelSizes.find(levelName);
-    if (it != m_levelSizes.cend())
+    if (it != m_levelSizes.end())
     {
         return it->second;
     }
@@ -803,7 +803,7 @@ int ObjectInfo::AddSavedPriceByPrototypeId(int, int, int)
 	throw std::logic_error("Not implemented");
 }
 
-std::map<int, CVector2> const* ObjectInfo::GetSavedPrices() const
+oldstd::map<int, CVector2> const* ObjectInfo::GetSavedPrices() const
 {
 	throw std::logic_error("Not implemented");
 }

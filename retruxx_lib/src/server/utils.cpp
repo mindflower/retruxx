@@ -6,7 +6,7 @@
 
 namespace ai
 {
-    void StrToStringVector(CStr const& str, std::vector<CStr>& stringVector)
+    void StrToStringVector(CStr const& str, oldstd::vector<CStr>& stringVector)
     {
         //TODO: check this
         stringVector.clear();
@@ -16,12 +16,12 @@ namespace ai
             std::string s;
             while(getline(ss, s, ' '))
             {
-                stringVector.emplace_back(s.c_str());
+                stringVector.push_back(s.c_str());
             }
         }
     }
 
-    void StrToFloatVector(CStr const& str, std::vector<float>& floatVector)
+    void StrToFloatVector(CStr const& str, oldstd::vector<float>& floatVector)
     {
         //TODO: check this
         floatVector.clear();
@@ -36,7 +36,7 @@ namespace ai
         }
     }
 
-    void StrToIntVector(CStr const& str, std::vector<int>& intVector)
+    void StrToIntVector(CStr const& str, oldstd::vector<int>& intVector)
     {
         //TODO: check this
         intVector.clear();

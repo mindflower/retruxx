@@ -155,7 +155,7 @@ namespace m3d
 
             buffer[size] = '\0';
             CStr const fileContent(buffer.data());
-            std::vector<CStr> tokens;
+            oldstd::vector<CStr> tokens;
             Tokenize(&fileContent, tokens, "\r\n");
             if (!tokens.empty())
             {
@@ -175,7 +175,7 @@ namespace m3d
                 if (attr == -1 || (attr & 0x10) == 0)
                 {
                     auto const enableMapping = m_EnableMapping;
-                    std::vector<CStr> tokens2;
+                    oldstd::vector<CStr> tokens2;
                     Tokenize(&token, tokens, " \t");
                     if (tokens2.size() > 1 && tokens2[1] == "M")
                     {

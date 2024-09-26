@@ -49,7 +49,7 @@ namespace ai
         {
             CStr strBelongs;
             m3d::SafeStrAttrib(strBelongs, node, "Values");
-            std::vector<int> namedBelongIdsVector;
+            oldstd::vector<int> namedBelongIdsVector;
             StrToIntVector(strBelongs, namedBelongIdsVector);
             for (auto const id : namedBelongIdsVector)
             {

@@ -78,14 +78,14 @@ namespace ai
 	{
 	}
 
-	std::vector<int> const& Quest::GetPrecedingQuestIds() const
+	oldstd::vector<int> const& Quest::GetPrecedingQuestIds() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	CStr const& Quest::GetFuncOnFail() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	int Quest::GetId() const
@@ -98,14 +98,14 @@ namespace ai
 		return m_name;
 	}
 
-	std::vector<CStr, std::allocator<CStr>> const& Quest::getActionLevels() const
+	oldstd::vector<CStr, oldstd::allocator<CStr>> const& Quest::getActionLevels() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	bool Quest::bSubscribeAutomatic() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	Quest::Quest() :
@@ -113,9 +113,9 @@ namespace ai
 	{
 	}
 
-	std::vector<int, std::allocator<int>> const& Quest::GetSubQuestIds() const
+	oldstd::vector<int, oldstd::allocator<int>> const& Quest::GetSubQuestIds() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	void Quest::PostLoad()
@@ -124,28 +124,28 @@ namespace ai
 		m_parentQuestId = theQuestManager->GetQuestIdByName(m_parentQuestName);
 		for (auto const& subQuestName : m_subQuestNames)
 		{
-			auto questId = -1;
-		    for (auto const quest : theQuestManager->m_quests)
-		    {
-		        if (quest->GetName() == subQuestName)
-		        {
-					questId = quest->GetId();
-					break;
-		        }
-		    }
+			auto questId = theQuestManager->GetQuestIdByName(subQuestName);
+		    //for (auto const quest : theQuestManager->m_quests)
+		    //{
+		    //    if (quest->GetName() == subQuestName)
+		    //    {
+			//		questId = quest->GetId();
+			//		break;
+		    //    }
+		    //}
 			m_subQuestIds.push_back(questId);
 		}
 		for (auto const& precName : m_precedingQuestNames)
 		{
-			auto questId = -1;
-			for (auto const quest : theQuestManager->m_quests)
-			{
-				if (quest->GetName() == precName)
-				{
-					questId = quest->GetId();
-					break;
-				}
-			}
+			auto questId = theQuestManager->GetQuestIdByName(precName);
+			//for (auto const quest : theQuestManager->m_quests)
+			//{
+			//	if (quest->GetName() == precName)
+			//	{
+			//		questId = quest->GetId();
+			//		break;
+			//	}
+			//}
 			if (questId == -1)
 			{
 				M3D_LOG_ERR("Error: quest '" + precName + "' does not exist");
@@ -160,42 +160,42 @@ namespace ai
 
 	int Quest::GetParentId() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	long long Quest::getTimeForComplete() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	CStr const& Quest::GetFuncOnComplete() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	CStr const& Quest::GetFuncOnCanBeGiven() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	CStr const& Quest::GetFuncOnTake() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	Quest::ConditionToGive const& Quest::GetConditionToGive() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	Quest::SubQuestCondition Quest::GetSubQuestCondition() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	Quest::~Quest()
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	bool Quest::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -257,36 +257,36 @@ namespace ai
 
 	bool Quest::bCheckAllSubQuests() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
-	std::vector<int> const& Quest::GetSubsequentQuestIds() const
+	oldstd::vector<int> const& Quest::GetSubsequentQuestIds() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	unsigned QuestManager::GetNumQuests() const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
-	CStr QuestManager::QuestIdVectorToStr(std::vector<int, std::allocator<int>> const&)
+	CStr QuestManager::QuestIdVectorToStr(oldstd::vector<int, oldstd::allocator<int>> const&)
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	QuestManager::QuestManager()
 	{
 	}
 
-	void QuestManager::StrToQuestIdVector(CStr const&, std::vector<int, std::allocator<int>>&)
+	void QuestManager::StrToQuestIdVector(CStr const&, oldstd::vector<int, oldstd::allocator<int>>&)
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	QuestManager::~QuestManager()
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	int QuestManager::GetQuestIdByName(CStr const& questName) const
@@ -301,9 +301,9 @@ namespace ai
 		return -1;
 	}
 
-	std::set<int> const* QuestManager::GetMutexByQuestId(int) const
+	oldstd::set<int> const* QuestManager::GetMutexByQuestId(int) const
 	{
-		throw std::logic_error("Not implemented");
+		throw oldstd::logic_error("Not implemented");
 	}
 
 	bool QuestManager::LoadFromXmlFile(char const* filename)
@@ -346,9 +346,9 @@ namespace ai
 				{
 					CStr questsNameAttr;
 					m3d::SafeStrAttrib(questsNameAttr, mutexNode, "quests");
-					std::vector<CStr> questsNameVec;
+					oldstd::vector<CStr> questsNameVec;
 					StrToStringVector(questsNameAttr, questsNameVec);
-					std::set<int> newMtx;
+					oldstd::set<int> newMtx;
 					for (auto const& name : questsNameVec)
 					{
 						int questNameId = -1;

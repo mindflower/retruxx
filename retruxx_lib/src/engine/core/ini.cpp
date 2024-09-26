@@ -186,7 +186,7 @@ namespace m3d
         return 1;
     }
 
-    void Tokenize(CStr const& str, std::vector<CStr>& tokens, char const* chars)
+    void Tokenize(CStr const& str, oldstd::vector<CStr>& tokens, char const* chars)
     {
         if (!str.empty())
         {
@@ -195,13 +195,13 @@ namespace m3d
             strncpy(temp, str.c_str(), str.length() +1);
             for (auto i = strtok(temp, chars); i; i = strtok(nullptr, chars))
             {
-                tokens.emplace_back(i);
+                tokens.push_back(i);
             }
             delete[] temp;
         }
     }
 
-    void Tokenize(CStr const* str, std::vector<CStr>& tokens, char const* chars)
+    void Tokenize(CStr const* str, oldstd::vector<CStr>& tokens, char const* chars)
     {
         //TODO: check this
         if (str && !str->empty())

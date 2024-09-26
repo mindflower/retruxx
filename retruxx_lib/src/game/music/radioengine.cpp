@@ -59,7 +59,7 @@ namespace m3d
                     {
                         auto nameAttr = group->GetAttribute("name");
                         auto belongsAttr = group->GetAttribute("belongs");
-                        std::vector<int> belongs;
+                        oldstd::vector<int> belongs;
                         ai::StrToIntVector(belongsAttr, belongs);
                         for (auto belong : belongs)
                         {

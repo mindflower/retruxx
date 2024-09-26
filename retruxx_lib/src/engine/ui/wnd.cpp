@@ -313,7 +313,7 @@ namespace m3d
             SafeEnumAttrib(m_textFormat, xmlNode, "format");
             SafeIntAttrib(m_defFont, xmlNode, "font");
 
-            std::vector<float> vecClientEdges;
+            oldstd::vector<float> vecClientEdges;
             CStr strClientEdges;
             SafeStrAttrib(strClientEdges, xmlNode, "clientEdges");
             ai::StrToFloatVector(strClientEdges, vecClientEdges);

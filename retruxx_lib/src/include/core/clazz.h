@@ -142,7 +142,8 @@ namespace m3d
         virtual int DecWeakRef() /* 0x2c */;
         virtual int GetWeakRefCount() /* 0x30 */;
         /* 0x0030 */ void* m_scriptHandle;
-        static inline m3d::Class m_classObject;
+
+        static m3d::Class m_classObject;
         virtual m3d::Class* GetClass() const /* 0x34 */;
         virtual const char* GetClassNameA() const /* 0x38 */;
         bool IsKindOf(const char* className) const;

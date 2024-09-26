@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <core/stringm3d.h>
+#include "thirdparty/stl/vector.hpp"
 
 namespace m3d
 {
@@ -16,12 +17,11 @@ namespace m3d
             int type;
         };
 
-        class SCurId
+        struct SCurId
         {
-        public:
-            std::vector<int> ids;
-            int probability;
-        };
+            /* 0x0000 */ oldstd::vector<int> ids;
+            /* 0x0010 */ int probability;
+        }; /* size: 0x0014 */
 
     public:
         static inline RadioEngine* m_instance = nullptr;

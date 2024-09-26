@@ -190,7 +190,7 @@ namespace m3d
                 return 0;
             }
             SafeFloatAttrib(m_heightUnscaled, xmlNode, "heightVirtual");
-            std::vector<CStr> filesVector;
+            oldstd::vector<CStr> filesVector;
             ai::StrToStringVector(xmlNode->GetAttribute("file"), filesVector);
             if (filesVector.empty())
             {
@@ -228,7 +228,7 @@ namespace m3d
 
                 CStr strAbc;
                 SafeStrAttrib(strAbc, node, "abc");
-                std::vector<float> abc;
+                oldstd::vector<float> abc;
                 ai::StrToFloatVector(strAbc, abc);
                 if (abc.size() != 3)
                 {
@@ -241,7 +241,7 @@ namespace m3d
 
                 CStr strTcs;
                 SafeStrAttrib(strTcs, node, "tcs");
-                std::vector<float> tcs;
+                oldstd::vector<float> tcs;
                 ai::StrToFloatVector(strTcs, tcs);
                 if (tcs.size() != 5)
                 {

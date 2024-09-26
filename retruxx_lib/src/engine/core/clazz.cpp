@@ -46,9 +46,7 @@ namespace m3d
         RT_CLASS_EXPORT(Object, METHOD, GetClassName, "void", "", "get object's class name")
         RT_CLASS_EXPORT(Object, METHOD, IsKindOf, "bool", "const char*", "finds out if objects is of given class")
 	RT_CLASS_EXPORTS_END;
-
-
-    //RT_CLASS_DEFINE(Object);
+    RT_CLASS_DEFINE(Object);
 }
 
 namespace m3d
