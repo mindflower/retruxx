@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="oldstd::map&lt;*&gt;">
+		<DisplayString>{{size = {_Mysize}}}</DisplayString>
+		<Expand>
+			<Item Name="[size]">_Mysize</Item>
+			<Item Name="[comp]">comp</Item>
+			<TreeItems>
+				<Size>_Mysize</Size>
+				<HeadPointer>_Myhead-&gt;_Parent</HeadPointer>
+				<LeftPointer>_Left</LeftPointer>
+				<RightPointer>_Right</RightPointer>
+				<ValueNode Condition="!((bool)_Isnil)">_Myval</ValueNode>
+			</TreeItems>
+		</Expand>
+	</Type>
+
+	<Type Name="oldstd::vector&lt;*&gt;">
+		<Intrinsic Name="size" Expression="(size_t)(_Mylast - _Myfirst)" />
+		<Intrinsic Name="capacity" Expression="(size_t)(_Myend - _Myfirst)" />
+		<DisplayString>{{ size={size()} }}</DisplayString>
+		<Expand>
+			<Item Name="[capacity]" ExcludeView="simple">capacity()</Item>
+			<Item Name="[allocator]" ExcludeView="simple">_Alval</Item>
+			<ArrayItems>
+				<Size>size()</Size>
+				<ValuePointer>_Myfirst</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+</AutoVisualizer>

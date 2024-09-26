@@ -1420,6 +1420,9 @@
     <None Include="src\thirdparty\stl\xtree.hpp" />
     <None Include="src\thirdparty\stl\xutility.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\natvis\containers.natvis" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

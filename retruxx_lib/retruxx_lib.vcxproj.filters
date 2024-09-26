@@ -214,6 +214,9 @@
     <Filter Include="thirdparty\stl">
       <UniqueIdentifier>{5a01cf1a-1b47-4385-b32e-86f43c17643c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="natvis">
+      <UniqueIdentifier>{bba7d7d3-981b-4684-964d-50b9204db2f3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\benchmark.cpp">
@@ -3991,5 +3994,10 @@
     <None Include="src\thirdparty\stl\xutility.hpp">
       <Filter>thirdparty\stl</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\natvis\containers.natvis">
+      <Filter>natvis</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>
