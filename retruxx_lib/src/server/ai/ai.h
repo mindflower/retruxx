@@ -1,6 +1,6 @@
 #pragma once
-#include "decisionmatrix.h"
-#include <vector>
+#include "core/stringm3d.h"
+#include "thirdparty/stl/vector.hpp"
 
 namespace m3d
 {
@@ -18,54 +18,58 @@ namespace ai
     class Obj;
     class AIMessage;
     class AIPassageState;
+    class DecisionMatrix;
 
     class AI
     {
     public:
-        void LoadAIFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
+        AI(const ai::AI&);
+        AI();
+        void AIInit();
+        const CStr& GetCurState2Name();
+        const CStr& GetCurState1Name();
         int GetCurState2Num();
+        int GetCurState1Num();
+        m3d::AIParam GetCmdParam(unsigned int paramNum);
+        m3d::AIParam GetState1Param(unsigned int paramNum);
+        m3d::AIParam GetState2Param(unsigned int paramNum);
+        m3d::AIParam GetMessage1Param(unsigned int paramNum);
+        m3d::AIParam GetMessage2Param(unsigned int paramNum);
+        void SetDecisionMatrix(int MatrixNum);
+        ai::DecisionMatrix* GetDecisionMatrixPtr();
+        void AIUpdate(ai::Obj* pObj);
+        void SetState2Param(int ParamNum, const m3d::AIParam& Param);
+        void SetState1Param(int ParamNum, const m3d::AIParam& Param);
+        void PutCommand(int Num, const m3d::AIParam& Param1, const m3d::AIParam& Param2, const m3d::AIParam& Param3);
+        void PutCommand(const ai::AIMessage& command);
+        void InsCommand(int Num, const m3d::AIParam& Param1, const m3d::AIParam& Param2, const m3d::AIParam& Param3);
+        void SetCommand(int Num, const m3d::AIParam& Param1, const m3d::AIParam& Param2, const m3d::AIParam& Param3);
         void CommandStackOpen();
         void CommandStackClose();
-        m3d::AIParam GetMessage2Param(unsigned int);
-        m3d::AIParam GetMessage1Param(unsigned int);
-        void AIInit();
-        AI();
-        int GetCurState1Num();
-        void PutMessage2(AIMessage const &);
-        void PutMessage1(AIMessage const &);
-        void SaveAIToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        void SetDecisionMatrix(int);
-        void PutCommand(int,m3d::AIParam const &,m3d::AIParam const &,m3d::AIParam const &);
-        void PutCommand(AIMessage const &);
-        void SetCommand(int,m3d::AIParam const &,m3d::AIParam const &,m3d::AIParam const &);
-        void AIUpdate(Obj *);
+        void PutMessage2(const ai::AIMessage& Message);
+        void PutMessage1(const ai::AIMessage& Message);
+        void LoadAIFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode);
+        void SaveAIToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
         void Dump();
-        CStr const & GetCurState2Name();
-        m3d::AIParam GetCmdParam(unsigned int);
         CStr ToStr();
-        CStr const & GetCurState1Name();
-        void InsCommand(int,m3d::AIParam const &,m3d::AIParam const &,m3d::AIParam const &);
-        void SetState2Param(int,m3d::AIParam const &);
-        void SetState1Param(int,m3d::AIParam const &);
-        m3d::AIParam GetState2Param(unsigned int);
-        m3d::AIParam GetState1Param(unsigned int);
 
     private:
-        int _CurrentMessage1CommandNum();
-        int _CurrentMessage2CommandNum();
-        int _CurrentState1Num();
         int _CurrentState2Num();
+        int _CurrentState1Num();
+        int _CurrentMessage2CommandNum();
+        int _CurrentMessage1CommandNum();
+        /* 0x0000 */ oldstd::vector<ai::AIPassageState, oldstd::allocator<ai::AIPassageState> > m_StateStack2;
+        /* 0x0010 */ oldstd::vector<ai::AIPassageState, oldstd::allocator<ai::AIPassageState> > m_StateStack1;
+        /* 0x0020 */ ai::DecisionMatrix* m_pDM;
+        /* 0x0024 */ bool m_fStateStack2Changed;
+        /* 0x0025 */ char Padding_177[3];
+        /* 0x0028 */ oldstd::vector<ai::AIMessage, oldstd::allocator<ai::AIMessage> > m_Messages2;
+        /* 0x0038 */ oldstd::vector<ai::AIMessage, oldstd::allocator<ai::AIMessage> > m_Messages1;
+        /* 0x0048 */ oldstd::vector<ai::AIMessage, oldstd::allocator<ai::AIMessage> > m_Commands;
+        /* 0x0058 */ int m_numCurCommand;
+        /* 0x005c */ bool m_CommandProcessed;
+        /* 0x005d */ bool m_CommandStackOpen;
+    }; /* size: 0x0060 */
 
-    private:
-        std::vector<AIPassageState> m_StateStack2;
-        std::vector<AIPassageState> m_StateStack1;
-        DecisionMatrix *m_pDM;
-        bool m_fStateStack2Changed;
-        std::vector<AIMessage> m_Messages2;
-        std::vector<AIMessage> m_Messages1;
-        std::vector<AIMessage> m_Commands;
-        int m_numCurCommand;
-        bool m_CommandProcessed;
-        bool m_CommandStackOpen;
-    };
+    static_assert(sizeof(AI) == 0x0060);
 }

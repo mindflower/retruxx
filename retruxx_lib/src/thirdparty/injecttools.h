@@ -28,7 +28,19 @@ namespace inject
 #define CONCAT_(x,y) x##y
 #define CONCAT(x,y) CONCAT_(x,y)
 
-#define RETRUXX_DLL_INJECT_FUNCTION(address, function) namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(address, inject::cast<uint32_t>(&function)); }
+#define RETRUXX_DLL_FRIEND_CLASS(cl) public: template<typename Tag> \
+                                     static inline uint32_t accessPrivate()  \
+                                     {                      \
+                                         return 0;    \
+                                     } private:
+
+#define RETRUXX_DLL_DEFINE_ACCESSOR(cls, method) namespace { struct CONCAT(_Accessor, __LINE__) {}; } template<> static inline uint32_t cls::accessPrivate<CONCAT(_Accessor, __LINE__)>() { return inject::cast<uint32_t>(&cls::method); };
+#define RETRUXX_DLL_ACCESS_PRIVATE_METHOD(cls, method) cls::accessPrivate<CONCAT(_Accessor, __LINE__)>()
+
+#define RETRUXX_DLL_INJECT_CLASS_METHOD(address, cls, method) RETRUXX_DLL_DEFINE_ACCESSOR(cls, method); namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(address, RETRUXX_DLL_ACCESS_PRIVATE_METHOD(cls, method)); }
+#define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(address, cls, method) RETRUXX_DLL_DEFINE_ACCESSOR(cls, method); namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(RETRUXX_DLL_ACCESS_PRIVATE_METHOD(cls, method), address); }
+
+#define RETRUXX_DLL_INJECT_FUNCTION(address, function) namespace {bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(address, inject::cast<uint32_t>(&function)); }
 #define RETRUXX_DLL_INJECT_FUNCTION_TYPED(address, function, type) namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(address, inject::cast<uint32_t>(static_cast<type>(&function))); }
 #define RETRUXX_DLL_INJECT_VIRTUAL_FUNCTION(address, function) namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(address, inject::cast<uint32_t>(inject::FunctionScrapper::addressOfVirtual(&function))); }
 #define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(address, function) namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(inject::cast<uint32_t>(&function), address); }

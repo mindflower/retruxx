@@ -1,9 +1,7 @@
 // deque standard header
 #pragma once
-#ifndef _DEQUE_
-#define _DEQUE_
-#include <memory>
-#include <stdexcept>
+#include "memory.hpp"
+#include "stdexcept.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)
@@ -1030,8 +1028,6 @@ _OLDSTD_END
 
 #pragma warning(pop)
 #pragma pack(pop)
-
-#endif /* _DEQUE_ */
 
 /*
  * Copyright (c) 1992-2002 by P.J. Plauger.  ALL RIGHTS RESERVED.

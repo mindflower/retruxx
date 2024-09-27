@@ -3977,6 +3977,9 @@
     <ClInclude Include="src\thirdparty\stl\set.hpp">
       <Filter>thirdparty\stl</Filter>
     </ClInclude>
+    <ClInclude Include="src\thirdparty\stl\deque.hpp">
+      <Filter>thirdparty\stl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

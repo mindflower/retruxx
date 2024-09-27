@@ -31,125 +31,137 @@ namespace ai
         int m_engineModelId;
         CStr m_engineModelName;
         float m_massValue;
-        std::vector<CollisionInfo> m_collisionInfos;
+        oldstd::vector<CollisionInfo> m_collisionInfos;
         bool m_bCollisionTrimeshAllowed;
     };
 
-    class PhysicBody :  public Obj
+    class PhysicBody : public Obj
     {
-    public:
-        virtual void RelinkToSpace(dxSpace*);
-        virtual void DisableGeometry();
-        virtual void EnableGeometry();
-        virtual float GetMass() const;
-        virtual void LinkGeomToCollisionCells();
-        virtual void UnlinkGeomFromCollisionCells();
-        virtual void RelinkGeomToCollisionCells();
-        virtual Geom::CellAabb GetCollisionCellAabb() const;
-        virtual void SetNodeAction(int, bool);
-        virtual void SetNextForAnimation(int, int);
-        virtual void SetNodeAnimAction(int, bool);
+    protected:
+        PhysicBody(const ai::PhysicBody&);
+        PhysicBody(const ai::PhysicBodyPrototypeInfo& prototypeInfo);
+        PhysicBody();
 
     public:
-        PhysicBody(PhysicBody const&);
-        void SetEffectActions(std::vector<ActionType> &);
-        void SetModelName(CStr const &);
-        void SetModelNameUnsafe(CStr const &);
-        int GetNodeAnimAction() const ;
-        void ChangePhysicBodyByCollisionInfo(std::vector<CollisionInfo> const &);
-        void SetSgNode(m3d::SgNode *);
-        CVector GetPosition() const ;
-        void SetPosition(CVector const &);
-        void UpdateGeomsByCollisionInfo(std::vector<CollisionInfo> const &);
-        virtual void GetGeoms(std::vector<Geom *,std::allocator<Geom *> > &) const ;
-        static m3d::SgNode * __fastcall CreateNode(CStr const &,int,CVector const &,PhysicBody *,bool);
-        PhysicBody(PhysicBodyPrototypeInfo const &);
-        static m3d::Class * GetBaseClass();
-        virtual void TransferPhysicParamsToSceneGraphNode();
+        virtual ~PhysicBody() override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetRtClass() const override /* 0x00 */;
+        static m3d::Class m_classPhysicBody;
+
+        using GeomTransformPtrVector = oldstd::vector<ai::GeomTransform*, oldstd::allocator<ai::GeomTransform*> >;
+
+    public:
+        /* 0x00c0 */ CStr m_modelname;
+        /* 0x00cc */ dMass m_mass;
+        /* 0x0110 */ oldstd::vector<ai::GeomTransform*, oldstd::allocator<ai::GeomTransform*> > m_pGeoms;
+        /* 0x0120 */ float m_mU;
+        /* 0x0124 */ m3d::SgNode* m_Node;
+
         void _ClearGeoms();
-        CVector GetDirection() const ;
-        virtual unsigned int GetNumGeoms() const ;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        static m3d::SgNode * __fastcall CreateEffectNode(CStr const &,CVector const &,Quaternion const &,bool,float);
-        Quaternion GetRotation() const ;
-        void SetRotation(Quaternion const *);
-        void SetRotation(Quaternion const &);
-        void UnlinkGeomsFromBody();
-        void SetAnimationStopped(bool);
-        static m3d::DbgCounter * __fastcall GetCountNodeRelinks();
-        virtual Geom * GetGeom(unsigned int) const ;
-        virtual void RelinkSceneGraphNode();
-        virtual void SetNodeEffectAction(int);
-        virtual void DumpPhysicInfo(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        int GetNodeEffectAction() const ;
-        std::vector<CollisionInfo,std::allocator<CollisionInfo> > const & GetCollisionInfo() const ;
-        void SetNodeAbsolutePosition(CVector const &);
-        CVector GetNodeAbsolutePosition() const ;
-        virtual ~PhysicBody();
-        virtual void SetBelong(int);
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        int GetSkin() const ;
-        void SetSkin(int);
-        int GetNodeCfgNum() const ;
-        virtual void RenderDebugInfo() const ;
-        virtual void SetNodeCfgNum(int);
-        virtual void SetPassedToAnotherMapStatus();
-        virtual void ApplyCurrentModelCollision();
-        CVector GetNodeAbsoluteDirection() const ;
-        void SetNodeAbsoluteDirection(CVector const &);
-        virtual m3d::Class * GetRtClass() const ;
+        virtual void SetBelong(int newBelong) override /* 0x00 */;
+        void SetEffectActions(oldstd::vector<enum ActionType, oldstd::allocator<enum ActionType> >& Actions);
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        ai::PhysicObj* GetOwner() const;
+        void SetModelName(const CStr& newModelName);
+        void SetModelNameUnsafe(const CStr& newModelName);
+        void SetSgNode(m3d::SgNode* node);
+        CVector GetPosition() const;
+        Quaternion GetRotation() const;
+        CVector GetDirection() const;
+        void SetPosition(const CVector& vec);
+        void SetRotation(const Quaternion* q);
+        void SetRotation(const Quaternion& q);
+        virtual void RelinkToSpace(dxSpace* newSpace) /* 0x110 */;
         void SetOwnerBodyToGeoms();
+        void UnlinkGeomsFromBody();
+        virtual void DisableGeometry() /* 0x114 */;
+        virtual void EnableGeometry() /* 0x118 */;
+        virtual float GetMass() const /* 0x11c */;
+        CVector GetNodeRelativePosition() const;
+        void SetNodeRelativePosition(const CVector& pos);
+        CVector GetNodeAbsolutePosition() const;
+        void SetNodeAbsolutePosition(const CVector& pos);
+        Quaternion GetNodeRelativeRotation() const;
+        void SetNodeRelativeRotation(const Quaternion& q);
+        Quaternion GetNodeAbsoluteRotation() const;
+        void SetNodeAbsoluteRotation(const Quaternion& q);
+        CVector GetNodeRelativeDirection() const;
+        CVector GetNodeAbsoluteDirection() const;
+        void SetNodeAbsoluteDirection(const CVector& direction);
+        virtual void TransferPhysicParamsToSceneGraphNode() override /* 0x00 */;
+        virtual void RelinkSceneGraphNode() override /* 0x00 */;
+        virtual void LinkGeomToCollisionCells() /* 0x120 */;
+        virtual void UnlinkGeomFromCollisionCells() /* 0x124 */;
+        virtual void RelinkGeomToCollisionCells() /* 0x128 */;
+        virtual void ReceiveNodesToLink(oldstd::list<m3d::SgNode*, oldstd::allocator<m3d::SgNode*> >& nodes) const override /* 0x00 */;
+        virtual ai::Geom::CellAabb GetCollisionCellAabb() const /* 0x12c */;
+        virtual void RenderDebugInfo() const override /* 0x00 */;
+        bool bNeedToRelinkNode() const;
+        void SetSkin(int skin);
+        int GetSkin() const;
+        virtual void SetNodeAction(int action, bool forceRestartAction) /* 0x130 */;
+        virtual void SetNextForAnimation(int action, int nextAction) /* 0x134 */;
+        int GetNodeAnimAction() const;
+        virtual void SetNodeAnimAction(int action, bool forceRestartAction) /* 0x138 */;
+        int GetNodeEffectAction() const;
+        virtual void SetNodeEffectAction(int action) /* 0x13c */;
+        int GetNodeRealAnimAction() const;
+        int GetNodeCfgNum() const;
+        virtual void SetNodeCfgNum(int cfgNum) /* 0x140 */;
+        void SetAnimationStopped(bool bStopped);
+        virtual void SetPassedToAnotherMapStatus() override /* 0x00 */;
         static void __fastcall Registration();
-        int GetNodeRealAnimAction() const ;
-        void SetCollisionTrimeshAllowed(bool);
-        Quaternion GetNodeRelativeRotation() const ;
-        void SetNodeRelativeRotation(Quaternion const &);
-        int GetNodeRealAction() const ;
-        bool bNeedToRelinkNode() const ;
-        virtual void SetVisible();
-        virtual void SetOwner(PhysicObj *);
-        PhysicObj * GetOwner() const ;
-        virtual void SetInvisible();
-        virtual void ReceiveNodesToLink(std::list<m3d::SgNode *,std::allocator<m3d::SgNode *> > &) const ;
-        void SetNodeAbsoluteRotation(Quaternion const &);
-        Quaternion GetNodeAbsoluteRotation() const ;
-        virtual bool CanChildBeAdded(m3d::Class *) const ;
-        CVector GetNodeRelativeDirection() const ;
-        virtual m3d::AnimatedModel * GetModel() const ;
-        CVector GetNodeRelativePosition() const ;
-        void SetNodeRelativePosition(CVector const &);
-        int GetOwnerId() const ;
+
+        static m3d::SgNode* __fastcall CreateNode(const CStr& modelname, int action, const CVector& scale, ai::PhysicBody* owner, bool addToRoot);
+        static m3d::SgNode* __fastcall CreateAnimatedNode(const CStr&, int, const CVector&, ai::PhysicBody*, bool);
+        static m3d::SgNode* __fastcall CreateEffectNode(const CStr& modelname, const CVector& pos, const Quaternion& rot, bool bInsertInRemoveIfFree, float scale);
+        static m3d::DbgCounter* __fastcall GetCountNodeRelinks();
+
+        int GetOwnerId() const;
+        virtual void SetOwner(ai::PhysicObj* owner) /* 0x144 */;
+        virtual void DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x148 */;
+        virtual m3d::AnimatedModel* GetModel() const /* 0x14c */;
+        virtual void SetVisible() override /* 0x00 */;
+        virtual void SetInvisible() override /* 0x00 */;
+        virtual void GetGeoms(oldstd::vector<ai::Geom*, oldstd::allocator<ai::Geom*> >& geoms) const /* 0x150 */;
+        virtual unsigned int GetNumGeoms() const /* 0x154 */;
+        virtual ai::Geom* GetGeom(unsigned int n) const /* 0x158 */;
+        const oldstd::vector<ai::CollisionInfo, oldstd::allocator<ai::CollisionInfo> >& GetCollisionInfo() const;
+        void ChangePhysicBodyByCollisionInfo(const oldstd::vector<ai::CollisionInfo, oldstd::allocator<ai::CollisionInfo> >& collisionInfos);
+        virtual void ApplyCurrentModelCollision() /* 0x15c */;
+        int GetNodeRealAction() const;
+        void UpdateGeomsByCollisionInfo(const oldstd::vector<ai::CollisionInfo, oldstd::allocator<ai::CollisionInfo> >& collisionInfos);
+        void SetCollisionTrimeshAllowed(bool bCollisionTrimeshAllowed);
 
     protected:
-        int _GetCurAnimationFrame() const ;
-        void _SetScenegraphNode(CVector const &,Quaternion const &);
-        PhysicBody();
-        int _GetNodeRealAnimAction() const ;
-        virtual void _InternalCreateVisualPart();
+        /* 0x0128 */ int m_cfgNum;
+        /* 0x012c */ oldstd::vector<ai::CollisionInfo, oldstd::allocator<ai::CollisionInfo> > m_collisionInfos;
+        /* 0x013c */ bool m_bCollisionTrimeshAllowed;
+
+        virtual void _InternalCreateVisualPart() override /* 0x00 */;
+        void _SetScenegraphNode(const CVector& pos, const Quaternion& rot);
+        int _GetCurAnimationFrame() const;
+        int _GetNodeRealAnimAction() const;
+        /* 0x013d */ char Padding_31[3];
 
     private:
-        void _ApplyCurrentModelName();
-        void _DeleteNode();
-
-    public:
-        RT_CLASS_DECLARE(PhysicBody);
+        /* 0x0140 */ ai::PhysicObj* m_ownerPhysicObj;
+        /* 0x0144 */ bool m_bNeedToRelinkNode;
 
         static inline m3d::DbgCounter* m_countNodeRelinks = nullptr;
 
-    private:
-        CStr m_modelname;
-        dMass m_mass;
-        std::vector<GeomTransform *> m_pGeoms;
-        float m_mU;
-        m3d::SgNode *m_Node;
-        int m_cfgNum;
-        std::vector<CollisionInfo> m_collisionInfos;
-        bool m_bCollisionTrimeshAllowed;
-        PhysicObj *m_ownerPhysicObj;
-        bool m_bNeedToRelinkNode;
-        int m_animAction;
-        int m_effectAction;
-        bool m_bAnimationIsStopped;
-        int m_loadedAnimTime;
-    };
+        /* 0x0145 */ char Padding_32[3];
+        /* 0x0148 */ int m_animAction;
+        /* 0x014c */ int m_effectAction;
+        /* 0x0150 */ bool m_bAnimationIsStopped;
+        /* 0x0151 */ char Padding_33[3];
+        /* 0x0154 */ int m_loadedAnimTime;
+
+        void _DeleteNode();
+        void _ApplyCurrentModelName();
+    }; /* size: 0x0158 */
+
+    static_assert(sizeof(PhysicBody) == 0x0158);
 }

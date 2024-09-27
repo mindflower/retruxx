@@ -2,6 +2,7 @@
 #include "stringm3d.h"
 #include <set>
 #include <vector>
+#include "thirdparty/injecttools.h"
 
 #define RT_CLASS_LOCAL(cl) &cl::m_class##cl
 #define RT_CLASS_DECLARE(cl) static m3d::Class m_class##cl

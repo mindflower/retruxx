@@ -33,7 +33,8 @@ typedef unsigned int uint32;
 typedef unsigned int intP;
 
 /* select the base floating point type */
-#define dDOUBLE 1
+//#define dDOUBLE 1
+#define dSINGLE 1
 
 /* the floating point infinity */
 #define dInfinity DBL_MAX

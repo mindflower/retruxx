@@ -628,7 +628,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	std::map<int, Gadget*, std::less<int>, std::allocator<std::pair<int const, Gadget*>>> const& Vehicle::
+	oldstd::map<int, Gadget*, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, Gadget*>>> const& Vehicle::
 	GetGadgets() const
 	{
 		throw std::logic_error("Not implemented");
@@ -649,7 +649,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	int Vehicle::SetExternalPath(std::vector<CVector2, std::allocator<CVector2>> const&)
+	int Vehicle::SetExternalPath(oldstd::vector<CVector2, oldstd::allocator<CVector2>> const&)
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -952,7 +952,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	float Vehicle::EstimateDamageAI(CVector const&, std::vector<int, std::allocator<int>>) const
+	float Vehicle::EstimateDamageAI(CVector const&, oldstd::vector<int, oldstd::allocator<int>>) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -962,7 +962,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::PickUpNearbyObjects(bool, unsigned&, std::vector<int, std::allocator<int>>&)
+	void Vehicle::PickUpNearbyObjects(bool, unsigned&, oldstd::vector<int, oldstd::allocator<int>>&)
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -1107,7 +1107,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::GetEnemiesInNeighborhood(float, std::vector<int, std::allocator<int>>&) const
+	void Vehicle::GetEnemiesInNeighborhood(float, oldstd::vector<int, oldstd::allocator<int>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -1181,32 +1181,8 @@ namespace ai
     RETRUXX_DLL_INJECT_VIRTUAL_FUNCTION(0x005EAEE0, Vehicle::RenderDebugInfo)
 	void Vehicle::RenderDebugInfo() const
 	{
-#ifdef RETRUXX_DLL
-        auto& throttle = *inject::cast<decltype(m_throttle)*>((char*)this + 0x22C);
-        auto& bHandBrake = *inject::cast<decltype(m_bHandBrake)*>((char*)this + 0x249);
-        auto& brake = *inject::cast<decltype(m_brake)*>((char*)this + 0x230);
-        auto& engineRpm = *inject::cast<decltype(m_engineRpm)*>((char*)this + 0x238);
-        auto& realThrottle = *inject::cast<decltype(m_realThrottle)*>((char*)this + 0x234);
-        auto& effectActions = *inject::cast<decltype(m_effectActions)*>((char*)this + 0x354);
-        auto& pPath = *inject::cast<decltype(m_pPath)*>((char*)this + 0x300);
-        auto& pathNum = *inject::cast<decltype(m_pathNum)*>((char*)this + 0x304);
-        auto& averageWheelAVel = *inject::cast<decltype(m_averageWheelAVel)*>((char*)this + 0x244);
-        auto& bAutoBrake = *inject::cast<decltype(m_bAutoBrake)*>((char*)this + 0x248);
-#else
-        auto& throttle = m_throttle;
-        auto& bHandBrake = m_bHandBrake;
-        auto& brake = m_brake;
-        auto& engineRpm = m_engineRpm;
-        auto& realThrottle = m_realThrottle;
-        auto& effectActions = m_effectActions;
-        auto& pPath = m_pPath;
-        auto& pathNum = m_pathNum;
-        auto& averageWheelAVel = m_averageWheelAVel;
-        auto& bAutoBrake = m_bAutoBrake;
-#endif // RETRUXX_DLL
-
         CVector curPoint;
-        if (GetPathItem(pPath, pathNum, curPoint))
+        if (GetPathItem(m_pPath, m_pathNum, curPoint))
         {
             auto const nextPoint = _GetNextPathPoint();
 
@@ -1231,8 +1207,6 @@ namespace ai
 
             DebugCircle(curPoint, scal + 500/smth, 0xFFFF0000);
             DebugCircle(curPoint, dv.checkCircleRadius, 0xFFFFFF00);
-
-
         }
 		//throw std::logic_error("Not implemented");
 	}
@@ -1272,7 +1246,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::GetGeoms(std::vector<Geom*, std::allocator<Geom*>>&) const
+	void Vehicle::GetGeoms(oldstd::vector<Geom*, oldstd::allocator<Geom*>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -1297,20 +1271,13 @@ namespace ai
 	{
         if (fabs(throttle) <= 1.1)
         {
-#ifdef RETRUXX_DLL
-            *inject::cast<float*>((char*)this + 0x22C) = throttle; // this->m_throttle = throttle;
-            *inject::cast<float*>((char*)this + 0x230) = 0.0;      // this->m_brake = 0.0;
-            *inject::cast<bool*>((char*)this + 0x248) = autoBrake;     // this->m_bAutoBrake = false;
+            m_throttle = throttle;
+            m_brake = 0.0;
+            m_bAutoBrake = false;
             if (fabs(throttle) > 0.001)
-                *inject::cast<bool*>((char*)this + 0x249) = false; // this->m_bHandBrake = 0;
-#else
-
-            this->m_throttle = throttle;
-            this->m_brake = 0.0;
-            this->m_bAutoBrake = false;
-            if (fabs(throttle) > 0.001)
-                this->m_bHandBrake = 0;
-#endif // RETRUXX_DLL
+            {
+                m_bHandBrake = 0;
+            }
         }
 		//throw std::logic_error("Not implemented");
 	}
@@ -1422,7 +1389,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	std::set<ref_ptr<Obstacle>, std::less<ref_ptr<Obstacle>>, std::allocator<ref_ptr<Obstacle>>> const& Vehicle::
+	oldstd::set<ref_ptr<Obstacle>, oldstd::less<ref_ptr<Obstacle>>, oldstd::allocator<ref_ptr<Obstacle>>> const& Vehicle::
 	GetNearbyObstacles() const
 	{
 		throw std::logic_error("Not implemented");
@@ -1515,7 +1482,7 @@ namespace ai
 	}
 
 	float Vehicle::EstimateDamageFromPositionAI(CVector const&, CVector const&,
-		std::vector<int, std::allocator<int>>) const
+		oldstd::vector<int, oldstd::allocator<int>>) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -1610,7 +1577,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>&) const
+	void Vehicle::GetPropertiesNames(oldstd::set<CStr, oldstd::less<CStr>, oldstd::allocator<CStr>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -1677,7 +1644,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>&) const
+	void Vehicle::GetPropertiesIDs(oldstd::set<int, oldstd::less<int>, oldstd::allocator<int>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -1827,55 +1794,31 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005CCF40, Vehicle::_GetNextPathPoint)
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(0x005CCF40, Vehicle, _GetNextPathPoint)
 	CVector Vehicle::_GetNextPathPoint() const
 	{
 		throw std::logic_error("Not implemented");
 	}
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x005DAAE0, Vehicle::_KeepThrottle)
+    RETRUXX_DLL_INJECT_CLASS_METHOD(0x005DAAE0, Vehicle, _KeepThrottle)
 	void Vehicle::_KeepThrottle(bool applyActions)
 	{
-#ifdef RETRUXX_DLL
-        auto& throttle = *inject::cast<decltype(m_throttle)*>((char*)this + 0x22C);
-        auto& bHandBrake = *inject::cast<decltype(m_bHandBrake)*>((char*)this + 0x249);
-        auto& brake = *inject::cast<decltype(m_brake)*>((char*)this + 0x230);
-        auto& engineRpm = *inject::cast<decltype(m_engineRpm)*>((char*)this + 0x238);
-        auto& realThrottle = *inject::cast<decltype(m_realThrottle)*>((char*)this + 0x234);
-        auto& effectActions = *inject::cast<decltype(m_effectActions)*>((char*)this + 0x354);
-        auto& pPath = *inject::cast<decltype(m_pPath)*>((char*)this + 0x300);
-        auto& pathNum = *inject::cast<decltype(m_pathNum)*>((char*)this + 0x304);
-        auto& averageWheelAVel = *inject::cast<decltype(m_averageWheelAVel)*>((char*)this + 0x244);
-        auto& bAutoBrake = *inject::cast<decltype(m_bAutoBrake)*>((char*)this + 0x248);
-#else
-        auto& throttle = m_throttle;
-        auto& bHandBrake = m_bHandBrake;
-        auto& brake = m_brake;
-        auto& engineRpm = m_engineRpm;
-        auto& realThrottle = m_realThrottle;
-        auto& effectActions = m_effectActions;
-        auto& pPath = m_pPath;
-        auto& pathNum = m_pathNum;
-        auto& averageWheelAVel = m_averageWheelAVel;
-        auto& bAutoBrake = m_bAutoBrake;
-#endif // RETRUXX_DLL
-
-        auto const wheelRpm = fabs(averageWheelAVel) * 9.5492964;
+        auto const wheelRpm = fabs(m_averageWheelAVel) * 9.5492964;
         auto const velocity = GetLinearVelocity();
         if (m_bAutoBrake) 
         {
             CVector curPoint;
             auto const direction = GetDirection();
-            auto const directionState = RoughSign(engineRpm);
+            auto const directionState = RoughSign(m_engineRpm);
             auto const isWrongWay =
                 (direction.z * velocity.z + direction.y * velocity.y + direction.x * velocity.x) < -0.1 &&
-                RoughSign(throttle) == 0;
+                RoughSign(m_throttle) == 0;
 
             if (isWrongWay)
             {
-                brake = 1.0;
+                m_brake = 1.0;
             }
-            else if (GetPathItem(pPath, pathNum, curPoint))
+            else if (GetPathItem(m_pPath, m_pathNum, curPoint))
             {
                 auto tempPoint = curPoint;
                 tempPoint.y = M3D_KERNEL->GetEngineCfg().GetHeight(tempPoint.x, tempPoint.z);
@@ -1896,30 +1839,30 @@ namespace ai
                 {
                     auto const steeringForce = _CalcSteeringForceToPathPoint(curPoint, nextPoint);
                     auto const scalSteeringForce = sqrt(steeringForce.x * steeringForce.x + steeringForce.y * steeringForce.y + steeringForce.z * steeringForce.z);
-                    brake = 1 - pow(((scalSteeringForce * 0.5) + 0.5), 2);
+                    m_brake = 1 - pow(((scalSteeringForce * 0.5) + 0.5), 2);
                 }
             }
         }
 
-        if (RoughSign(throttle) == 0 &&
+        if (RoughSign(m_throttle) == 0 &&
             sqrt(velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) < 0.5)
         {
-            bHandBrake = 1;
+            m_bHandBrake = 1;
         }
-        if (bHandBrake)
+        if (m_bHandBrake)
         {
-            throttle = 0.0;
-            brake = 1.0;
+            m_throttle = 0.0;
+            m_brake = 1.0;
         }
     
-        realThrottle = throttle - ((RoughSign(engineRpm) * brake) * 10.0);
+        m_realThrottle = m_throttle - ((RoughSign(m_engineRpm) * m_brake) * 10.0);
 
         const auto doApplyActions = [&](const ActionType& type)
         {
             auto const flags = GetFlags();
             if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository())
             {
-                auto& effect = effectActions.front();
+                auto& effect = m_effectActions.front();
                 if (effect != type)
                 {
                     effect = type;
@@ -1927,14 +1870,14 @@ namespace ai
                     auto* basket = GetBasket();
                     if (basket)
                     {
-                        basket->SetEffectActions(effectActions);
+                        basket->SetEffectActions(m_effectActions);
                         basket->SetNodeAnimAction(type, true);
                     }
 
                     auto* cabin = GetCabin();
                     if (cabin)
                     {
-                        cabin->SetEffectActions(effectActions);
+                        cabin->SetEffectActions(m_effectActions);
                         cabin->SetNodeAnimAction(type, true);
                     }
                 }
@@ -1943,7 +1886,7 @@ namespace ai
 
         if (applyActions)
         {
-            if (brake <= (GetPrototypeInfo()->m_selfBrakingCoeff + 0.000099999997))
+            if (m_brake <= (GetPrototypeInfo()->m_selfBrakingCoeff + 0.000099999997))
             {
                 doApplyActions(AT_MOVE1);
             }
@@ -2024,7 +1967,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D62E0, Vehicle::_CalcSteeringForceToPathPoint)
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(0x005D62E0, Vehicle, _CalcSteeringForceToPathPoint)
 	CVector Vehicle::_CalcSteeringForceToPathPoint(CVector const&, CVector const&) const
 	{
 		throw std::logic_error("Not implemented");

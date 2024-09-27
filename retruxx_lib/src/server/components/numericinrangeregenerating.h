@@ -21,7 +21,7 @@ namespace ai
             m_AfterRegenerationChange(nullptr),
             m_regeneration(regeneration)
         {
-            throw std::runtime_error("not implemented");
+            //throw std::runtime_error("not implemented");
         }
 
         const ai::Numeric<T>& regeneration() const;

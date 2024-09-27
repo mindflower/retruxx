@@ -29,7 +29,7 @@ namespace ai
             m_minValue(minValue),
             m_maxValue(maxValue)
         {
-            throw std::runtime_error("not implemented");
+            //throw std::runtime_error("not implemented");
         }
 
         const ai::Numeric<T>& value() const;

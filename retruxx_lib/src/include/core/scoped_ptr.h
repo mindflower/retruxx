@@ -5,6 +5,11 @@ template<class T>
 class scoped_ptr
 {
 public:
+    scoped_ptr() :
+        m_ptr(nullptr)
+    {
+    }
+
     scoped_ptr(T* ptr) :
         m_ptr(ptr)
     {

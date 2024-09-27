@@ -3,12 +3,12 @@
 #include <math/quaternion.h>
 #include "wheel.h"
 #include "base/complexphysicobj.h"
-#include <deque>
 #include <skelmodel.h>
 #include <core/scoped_ptr.h>
 #include <server/damageinfo.h>
 #include <server/ai/ai.h>
 #include <server/components/numericinrangeregenerating.h>
+#include "thirdparty/stl/deque.hpp"
 
 namespace m3d
 {
@@ -58,7 +58,7 @@ namespace ai
         virtual void _InternalCopyFrom(PrototypeInfo const&);
 
     public:
-        std::vector<WheelInfo> m_wheelInfos;
+        oldstd::vector<WheelInfo> m_wheelInfos;
         float m_diffRatio;
         float m_maxEngineRpm;
         float m_lowGearShiftLimit;
@@ -81,462 +81,517 @@ namespace ai
         CStr m_blastWavePrototypeName;
     };
 
-    class Vehicle :  public ComplexPhysicObj
+    class Vehicle : public ComplexPhysicObj
     {
+        RETRUXX_DLL_FRIEND_CLASS(Vehicle);
+
+        using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Vehicle, float, void>;
+        using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Vehicle, ai::Modifier, float, bool>;
+
+    protected:
+        virtual ~Vehicle() override /* 0x00 */;
+
     public:
+        Vehicle(const ai::VehiclePrototypeInfo& prototypeInfo);
+        Vehicle(const ai::Vehicle&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* CreateObject();
+
+    public:
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classVehicle;
+        virtual const ai::VehiclePrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+
+    protected:
+        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+
+    public:
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x00 */;
+        virtual void GetPropertiesNames(oldstd::set<CStr, oldstd::less<CStr>, oldstd::allocator<CStr> >& Props) const override /* 0x00 */;
+        virtual void GetPropertiesIDs(oldstd::set<int, oldstd::less<int>, oldstd::allocator<int> >& Props) const override /* 0x00 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x00 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x00 */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x00 */;
+
+    protected:
+        static inline oldstd::map<CStr, int, ai::Obj::LessNoCaseCStr, oldstd::allocator<oldstd::pair<CStr const, int> > > m_propertiesMap;
+        static inline oldstd::map<int, enum ai::eGObjPropertySaveStatus, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+
         enum EffectActionsPoses
         {
-            DYNAMIC_ACTION = 0x0,
-            LIGHT_ACTION = 0x1,
-            EFFECT_ACTIONS_POSES_SIZE = 0x2,
+            DYNAMIC_ACTION = 0,
+            LIGHT_ACTION = 1,
+            EFFECT_ACTIONS_POSES_SIZE = 2,
         };
 
         enum TurningBackStatus
         {
-            TURN_BACK_NONE = 0x0,
-            TURN_BACK_ENABLED_ACCELERATING = 0x1,
-            TURN_BACK_ENABLED_BRAKING = 0x2,
-            TURN_BACK_DISABLED = 0x3,
+            TURN_BACK_NONE = 0,
+            TURN_BACK_ENABLED_ACCELERATING = 1,
+            TURN_BACK_ENABLED_BRAKING = 2,
+            TURN_BACK_DISABLED = 3,
         };
 
         enum CustomWeaponControlType
         {
-            CUSTOM_WEAPON_CONTROL_NONE = 0x0,
-            CUSTOM_WEAPON_CONTROL_POINT = 0x1,
-            CUSTOM_WEAPON_CONTROL_OBJECT = 0x2,
+            CUSTOM_WEAPON_CONTROL_NONE = 0,
+            CUSTOM_WEAPON_CONTROL_POINT = 1,
+            CUSTOM_WEAPON_CONTROL_OBJECT = 2,
         };
+
+    private:
+        static const int NUM_GEARS;
+        static const float GEAR_RATIOS[5];
+        static const float TRANSFERBOX_RATIO;
+
+        using IntGadgetMap = oldstd::map<int, ai::Gadget*, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, ai::Gadget*> > >;
 
         enum VehicleMoveStatus
         {
-            MOVE_IDLE = 0x0,
-            MOVE_MOVING_ALONG_PATH = 0x1,
-            MOVE_MOVING_BY_STEERING_FORCE = 0x2,
+            MOVE_IDLE = 0,
+            MOVE_MOVING_ALONG_PATH = 1,
+            MOVE_MOVING_BY_STEERING_FORCE = 2,
         };
 
         enum VehicleAttackStatus
         {
-            ATTACK_IDLE = 0x0,
-            ATTACK_ATTACKING = 0x1,
+            ATTACK_IDLE = 0,
+            ATTACK_ATTACKING = 1,
         };
+
+    public:
+        virtual void Remove() override /* 0x54 */;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
+        virtual void CreateChildren() override /* 0x00 */;
+        virtual void SetBelong(int newBelong) override /* 0x00 */;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
+        virtual void AddChild(ai::Obj* pObj) override /* 0x00 */;
+        virtual bool RemoveChild(ai::Obj* pObj) override /* 0x00 */;
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        virtual void TransferToSpace(dxSpace* newSpace) override /* 0x178 */;
+        virtual void SetPassedToAnotherMapStatus() override /* 0x50 */;
+        virtual bool ApplyModifier(const ai::Modifier& modifier) override /* 0x00 */;
+        virtual void SetPartByName(const CStr& partName, ai::VehiclePart* vehiclePart, bool bUnsafe) override /* 0x1a4 */;
+        const ai::Chassis* GetChassis() const;
+        ai::Chassis* GetChassis();
+        const ai::Cabin* GetCabin() const;
+        ai::Cabin* GetCabin();
+        const ai::Basket* GetBasket() const;
+        ai::Basket* GetBasket();
+        void SetCabin(ai::VehiclePart* newCabin);
+        void SetBasket(ai::VehiclePart* newBasket);
+        unsigned int GetNumWheels() const;
+        ai::Wheel* GetWheel(unsigned int num);
+        const ai::Wheel* GetWheel(unsigned int num) const;
+        Quaternion GetWheelInitialRotation(unsigned int num);
+        float GetHealth() const;
+        float GetMaxHealth() const;
+        float GetFuel() const;
+        float GetMaxFuel() const;
+        float GetControl() const;
+        void ActivateHeadLights(bool bActivate);
+        void GetOutOfDifficultPlace();
+        virtual void InflictDamage(const ai::DamageInfo& damageInfo) override /* 0x00 */;
+        ai::Vehicle::VehicleMoveStatus GetMoveStatus() const;
+        void SetMoveStatus(ai::Vehicle::VehicleMoveStatus moveStatus);
+        ai::Vehicle::VehicleAttackStatus GetAttackStatus() const;
+        void SetAttackStatus(ai::Vehicle::VehicleAttackStatus attackStatus);
+        const ai::IzvratRepository* GetRepository() const;
+        ai::IzvratRepository* GetRepository();
+        void CollectNearbyObjectsToGroundRepository();
+        ai::GeomRepository* GetGroundRepository() const;
+        void PickUpNearbyObjects(bool bNeedCollectFromGround, unsigned int& originalNumItems, oldstd::vector<int, oldstd::allocator<int> >& addedObjIds);
+        void IntersectWithWorld() const;
+        const oldstd::set<ref_ptr<ai::Obstacle>, oldstd::less<ref_ptr<ai::Obstacle> >, oldstd::allocator<ref_ptr<ai::Obstacle> > >& GetNearbyObstacles() const;
+        void GetEnemiesInNeighborhood(float radius, oldstd::vector<int, oldstd::allocator<int> >& enemiesIds) const;
+        void SubscribeRadioManagerOnNearbyObjId(const int objId) const;
+        void UnsubscribeRadioManagerFromNearbyObjId(const int objId) const;
+        void UnsubscribeRadioManagerFromAllNearbyObjIds() const;
+        bool bIsControlledByPlayer() const;
+        bool bIsMovingAlongExternalPath() const;
+        void SetCustomControlEnabled(bool Value);
+        void SetCustomControlWeapons(int Custom);
+        void SetCustomControlWeapons(ai::Vehicle::CustomWeaponControlType Custom);
+        ai::Vehicle::CustomWeaponControlType GetCustomControlWeapons() const;
+        void SetCustomControlWeaponsTarget(const CVector& lookAt);
+        CVector GetCustomControlWeaponsTarget() const;
+        void SetCustomControlWeaponsTargetObj(int lookAt);
+        int GetCustomControlWeaponsTargetObj() const;
+        void SetCustomLinearVelocity(float velocityValue);
+        int GetCurrentGear() const;
+        float GetEngineRpm() const;
+        float GetMaxEngineRpm() const;
+        float GetAverageEngineRpm() const;
+        float GetMaxPower() const;
+        void SetMaxPower(float newMaxPower);
+        float GetMaxTorque() const;
+        void SetMaxTorque(float newMaxTorque);
+        int GetMaxGadgets(const CStr& gadgetResourceName) const;
+        const oldstd::map<int, ai::Gadget*, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, ai::Gadget*> > >& GetGadgets() const;
+        int GetValidSlotIdForGadget(const ai::Gadget* gadget) const;
+        bool AddGadget(ai::Gadget* g);
+        void RecalcGadgets();
+        const ai::NumericInRangeRegenerating<float>& Health() const;
+        ai::NumericInRangeRegenerating<float>& Health();
+        const ai::NumericInRangeRegenerating<float>& Fuel() const;
+        ai::NumericInRangeRegenerating<float>& Fuel();
+        float GetFullDurability() const;
+        float GetMaxFullDurability() const;
+        float GetFullDurabilityCoeffForDamageType(ai::DamageType damageType) const;
+        void WeaponLookAtPoint(const CVector& lookAt, float elapsedTime);
+        void FireFromWeaponCustom(bool enable, const CVector& targetPoint, ai::Obj* target);
+        void FireFromWeaponCustom2(bool enable, int targetId);
+        void FireFromWeaponAI(bool enable, float elapsedTime, ai::Obj* target);
+        void HoldFire(int msc);
+        float EstimateDamageAI(const CVector& point, oldstd::vector<int, oldstd::allocator<int> > exceptions) const;
+        float EstimateDamageAI() const;
+        float EstimateDamageFromPositionAI(const CVector& position, const CVector& point, oldstd::vector<int, oldstd::allocator<int> > exceptions) const;
+        float GetMaxFiringRangeAI() const;
+        bool FireFromWeaponByGunId(int gunId, bool enable);
+        bool FireFromWeaponByGunPartName(const CStr& gunPartName, bool enable);
+        bool DriveToPoint(const CVector& point, const CVector& nextPoint, bool bPrecisely, float elapsedTime);
+        virtual float GetMass() const override /* 0x00 */;
+        CVector GetSize() const;
+        virtual void SetPositionSelf(const CVector& pos) override /* 0x00 */;
+        virtual void SetRotationSelf(const Quaternion& rot) override /* 0x00 */;
+        void SetGamePositionOnGround(const CVector& pos, bool bWithCollisions, bool bWithWater);
+        virtual CVector GetGeometricCenter() const override /* 0x00 */;
+        virtual CVector GetLinearVelocity() const override /* 0x00 */;
+        virtual void SetLinearVelocity(const CVector& linearVel) override /* 0x00 */;
+        void ResetPositionAndRotation();
+        float GetCameraHeight() const;
+        float GetCameraMaxDist() const;
+        int GetIndexInTeam() const;
+        void SetIndexInTeam(int indexInTeam);
+        ai::Team* GetTeam() const;
+        float GetThrottle() const;
+        void SetThrottle(float throttle, bool autoBrake);
+        bool bIsBraking() const;
+        float GetBrake() const;
+        void SetBrake(float brake);
+        void SetHandBrake();
+        void ReleaseAllPedals();
+        float GetSteer() const;
+        void SetSteer(float radians);
+        float GetCurrentSteerAngle() const;
+        unsigned char GetPriority() const;
+        float GetMaxSpeed() const;
+        void SetMaxSpeed(float speed);
+        float GetCruisingSpeed() const;
+        void SetCruisingSpeed(float cruisingSpeed);
+        float GetDefaultCruisingSpeed() const;
+        void LimitMaxSpeed(float maxSpeedLimit);
+        void UnlimitMaxSpeed();
+        void SetForcedMaxTorque(float forcedMaxTorque);
+        void ResetForcedMaxTorque();
+        void SetTurningToGroundForceAndTorque(const CVector& pos, const CVector& force, const CVector& torque);
+        CVector GetBumperPoint() const;
+        const ai::Wheel* GetFirstExistingWheel() const;
+        virtual void RenderDebugInfo() const override /* 0xe4 */;
+        virtual void Flow(ai::Obj* partToFlow, float averageSpeed) override /* 0x1a8 */;
+        virtual void Blow(ai::Obj* partToBlow) override /* 0x1ac */;
+        int SetExternalPath(const oldstd::vector<CVector2, oldstd::allocator<CVector2> >& path);
+        int SetExternalPathByName(const char* pathName);
+        void SetCanBeDistractedFromMoving(bool bCanBeDistracted);
+        void SetExternalDestination(const CVector& destination);
+        void PlaceToEndOfPath();
+        void SetTrailer();
+        bool IsTrailer() const;
+        bool AddThing(const ai::GeomRepositoryItem& item, bool bFlushInReferenceChests);
+        bool AddItemsToRepository(const char* prototypeName, int amount);
+        bool RemoveItemsFromRepository(const char* prototypeName, int amount);
+        bool HasAmountOfItemsInRepository(const char* prototypeName, int amount) const;
+        bool CanPlaceItemsToRepository(const char* prototypeName, int amount);
+        bool AddObjectToRepository(ai::Obj* pObj);
+        m3d::AIParam TakeOffAllGuns();
+        void AttachTrailer(const char* trailerPrototypeName);
+        void DetachTrailer();
+        bool TrailerExists() const;
+        ai::Vehicle* GetTrailer() const;
+        virtual void SetUpdatingByODE(bool byODE) override /* 0x00 */;
+        ai::VehicleRecollection* GetRecollection() const;
+        CVector GetRecollectionPosition(float recollectionRange) const;
+        float GetCollisionRadius() const;
+        void IncNumWheelsTouchingGround();
+        virtual void SetSkin(int skin) override /* 0x184 */;
+        virtual void SetRandomSkin() override /* 0x1b0 */;
+        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override /* 0x00 */;
+        virtual unsigned int GetSchwarz() const override /* 0x00 */;
+        bool GetHorn() const;
+        void SetHorn(bool bHorn);
+        void HealWheels();
+        virtual void SetVisible() override /* 0xc8 */;
+        virtual void SetInvisible() override /* 0xcc */;
+        bool getGodMode() const;
+        void setGodMode(bool bGod);
+        bool getImmortalMode() const;
+        void setImmortalMode(bool bImmortal);
+        bool GetStoppageMode() const;
+        void IncStoppageMode();
+        void DecStoppageMode();
+        bool GetOnOilMode() const;
+        void IncOnOilMode();
+        void DecOnOilMode();
+        bool GetInSmokeScreenMode() const;
+        void IncInSmokeScreenMode();
+        void DecInSmokeScreenMode();
+        float GetTurboThrottleTime() const;
+        void SetTurboThrottleTime(float time);
+        float GetTurboThrottleValue() const;
+        void SetTurboThrottleValue(float Value);
+        virtual void GetGeoms(oldstd::vector<ai::Geom*, oldstd::allocator<ai::Geom*> >& geoms) const override /* 0x1b4 */;
+        virtual ai::Obj* CloneObj() override /* 0x00 */;
+        virtual void ClearSavedStatus() override /* 0x00 */;
+        float GetDriftCoeff() const;
+        void ShowVehicle(bool bShow);
+        virtual void DisablePhysics() override /* 0x154 */;
+        virtual void EnablePhysics() override /* 0x158 */;
+        virtual void DisableGeometry(bool changePhysicState) override /* 0x15c */;
+        virtual void EnableGeometry(bool changePhysicState) override /* 0x160 */;
+        ai::VehicleRole* GetRole() const;
+        void SetRole(ai::VehicleRole* vr);
+        int GetNpcMotionControllerId() const;
+        void SetNpcMotionControllerId(int npcMotionControllerId);
+        int GetSeenObjId() const;
+        int GetInfoObjId() const;
+        int GetLockedObjId() const;
+        int GetToBeLockedObjId() const;
+        float GetTimeToLockTarget() const;
+        bool bRocketLaunchersPresent() const;
+        void EnableSounds(bool bEnable);
+        bool IsHealthZero() const;
+        void PlaySoundOnRechargeWeapon();
+        int CheckSkin(int skinNum);
 
         class WheelRuntimeInfo
         {
         public:
-            Wheel const* GetWheel() const;
-            Wheel* GetWheel();
-            WheelRuntimeInfo(Wheel*);
+            /* 0x0000 */ CVector m_initialPos;
+            /* 0x000c */ Quaternion m_initialRot;
+            WheelRuntimeInfo(const ai::Vehicle::WheelRuntimeInfo& __that);
+            WheelRuntimeInfo(ai::Wheel* wheel);
             bool IsWheelPresent() const;
-            void SetWheel(Wheel*);
+            const ai::Wheel* GetWheel() const;
+            ai::Wheel* GetWheel();
+            void SetWheel(ai::Wheel* wheel);
 
         private:
-            CVector m_initialPos;
-            Quaternion m_initialRot;
-            bool m_bWheelPresent;
-            Wheel* m_wheel;
-        };
+            /* 0x001c */ bool m_bWheelPresent;
+            /* 0x001d */ char Padding_175[3];
+            /* 0x0020 */ ai::Wheel* m_wheel;
+        }; /* size: 0x0024 */
 
-    public:
-
-
-    public:
-        Vehicle(Vehicle const&);
-        VehicleMoveStatus GetMoveStatus() const ;
-        float GetCruisingSpeed() const ;
-        void UnlimitMaxSpeed();
-        void IncStoppageMode();
-        virtual void EnablePhysics();
-        int GetInfoObjId() const ;
-        bool bRocketLaunchersPresent() const ;
-        void RecalcGadgets();
-        void HoldFire(int);
-        VehicleRecollection * GetRecollection() const ;
-        virtual void SetLinearVelocity(CVector const &);
-        CustomWeaponControlType GetCustomControlWeapons() const ;
-        Quaternion GetWheelInitialRotation(unsigned int);
-        void ActivateHeadLights(bool);
-        virtual void Flow(Obj *,float);
-        void DetachTrailer();
-        virtual void AddChild(Obj *);
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        bool GetHorn() const ;
-        bool IsTrailer() const ;
-        float GetCameraHeight() const ;
-        int GetLockedObjId() const ;
-        void setGodMode(bool);
-        std::map<int,Gadget *,std::less<int>,std::allocator<std::pair<int const ,Gadget *> > > const & GetGadgets() const ;
-        virtual void SetRandomSkin();
-        float GetDefaultCruisingSpeed() const ;
-        float GetMaxEngineRpm() const ;
-        int SetExternalPath(std::vector<CVector2,std::allocator<CVector2> > const &);
-        Chassis const * GetChassis() const ;
-        Chassis * GetChassis();
-        virtual void Remove();
-        void FireFromWeaponCustom2(bool,int);
-        float GetCameraMaxDist() const ;
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
-        void DecOnOilMode();
-        unsigned int GetNumWheels() const ;
-        void SetHandBrake();
-        CVector GetRecollectionPosition(float) const ;
-        float GetSteer() const ;
-        void IncNumWheelsTouchingGround();
-        virtual void CreateChildren();
-        void SetCustomControlEnabled(bool);
-        float GetMaxFiringRangeAI() const ;
-        static m3d::Class * GetBaseClass();
-        float GetMaxFuel() const ;
-        bool getImmortalMode() const ;
-        float GetHealth() const ;
-        bool AddThing(GeomRepositoryItem const &,bool);
-        void EnableSounds(bool);
-        virtual void TransferToSpace(dxSpace *);
-        static m3d::AIParam VehicleAIOnAttack(Obj *);
-        void SetCanBeDistractedFromMoving(bool);
-        int GetCustomControlWeaponsTargetObj() const ;
-        int GetToBeLockedObjId() const ;
-        virtual void SetSkin(int);
-        virtual void DisablePhysics();
-        void FireFromWeaponCustom(bool,CVector const &,Obj *);
-        virtual float GetMass() const ;
-        virtual unsigned int GetPrice(IPriceCoeffProvider const *) const ;
-        bool FireFromWeaponByGunId(int,bool);
-        void SetMoveStatus(VehicleMoveStatus);
-        virtual void SetPassedToAnotherMapStatus();
-        void SetCruisingSpeed(float);
-        void SetExternalDestination(CVector const &);
-        static void __fastcall Registration();
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        virtual void SetPartByName(CStr const &,VehiclePart *,bool);
-        float GetCurrentSteerAngle() const ;
-        int GetCurrentGear() const ;
-        virtual CVector GetLinearVelocity() const ;
-        virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        void SetCustomControlWeapons(int);
-        void SetCustomControlWeapons(CustomWeaponControlType);
-        virtual unsigned int GetSchwarz() const ;
-        void UnsubscribeRadioManagerFromNearbyObjId(int) const ;
-        virtual void Blow(Obj *);
-        void SetHorn(bool);
-        int SetExternalPathByName(char const *);
-        void IncInSmokeScreenMode();
-        unsigned char GetPriority() const ;
-        bool getGodMode() const ;
-        bool FireFromWeaponByGunPartName(CStr const &,bool);
-        virtual void SetUpdatingByODE(bool);
-        void GetOutOfDifficultPlace();
-        float GetMaxHealth() const ;
-        virtual int GetPropertyId(char const *) const ;
-        float EstimateDamageAI(CVector const &,std::vector<int,std::allocator<int> >) const ;
-        float EstimateDamageAI() const ;
-        void PickUpNearbyObjects(bool,unsigned int &,std::vector<int,std::allocator<int> > &);
-        float GetFullDurability() const ;
-        NumericInRangeRegenerating<float> const & Health() const ;
-        NumericInRangeRegenerating<float> & Health();
-        bool GetOnOilMode() const ;
-        bool bIsMovingAlongExternalPath() const ;
-        virtual void DisableGeometry(bool);
-        void SetSteer(float);
-        float GetControl() const ;
-        bool AddItemsToRepository(char const *,int);
-        void ResetForcedMaxTorque();
-        virtual void ClearSavedStatus();
-        void HealWheels();
-        void setImmortalMode(bool);
-        bool bIsBraking() const ;
-        static m3d::AIParam VehicleAIOnMove(Obj *);
-        bool IsHealthZero() const ;
-        void FireFromWeaponAI(bool,float,Obj *);
-        bool AddGadget(Gadget *);
-        void SetCustomControlWeaponsTargetObj(int);
-        bool AddObjectToRepository(Obj *);
-        void ResetPositionAndRotation();
-        virtual void SetPositionSelf(CVector const &);
-        void WeaponLookAtPoint(CVector const &,float);
-        bool CanPlaceItemsToRepository(char const *,int);
-        void AttachTrailer(char const *);
-        void SetTurboThrottleValue(float);
-        void SetMaxPower(float);
-        bool GetStoppageMode() const ;
-        void GetEnemiesInNeighborhood(float,std::vector<int,std::allocator<int> > &) const ;
-        VehicleRole* GetRole() const ;
-        void SubscribeRadioManagerOnNearbyObjId(int) const ;
-        int GetValidSlotIdForGadget(Gadget const *) const ;
-        Wheel const * GetFirstExistingWheel() const ;
-        bool TrailerExists() const ;
-        float GetAverageEngineRpm() const ;
-        CVector GetCustomControlWeaponsTarget() const ;
-        float GetMaxTorque() const ;
-        void SetAttackStatus(VehicleAttackStatus);
-        Vehicle(VehiclePrototypeInfo const &);
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        void DecInSmokeScreenMode();
-        void SetTrailer();
-        virtual void RenderDebugInfo() const ;
-        virtual void SetVisible();
-        int GetNpcMotionControllerId() const ;
-        void SetIndexInTeam(int);
-        NumericInRangeRegenerating<float> & Fuel();
-        NumericInRangeRegenerating<float> const & Fuel() const ;
-        float GetFuel() const ;
-        int GetSeenObjId() const ;
-        virtual void GetGeoms(std::vector<Geom *,std::allocator<Geom *> > &) const ;
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        bool bIsControlledByPlayer() const ;
-        m3d::AIParam TakeOffAllGuns();
-        void SetThrottle(float,bool);
-        float GetBrake() const ;
-        float GetMaxSpeed() const ;
-        virtual bool CanChildBeAdded(m3d::Class *) const ;
-        float GetTurboThrottleTime() const ;
-        float GetFullDurabilityCoeffForDamageType(DamageType) const ;
-        virtual Obj * CloneObj();
-        int CheckSkin(int);
-        static m3d::AIParam VehicleAIOnDefend(Obj *);
-        float GetEngineRpm() const ;
-        virtual void SetBelong(int);
-        Team * GetTeam() const ;
-        void UnsubscribeRadioManagerFromAllNearbyObjIds() const ;
-        void SetBasket(VehiclePart *);
-        Cabin const * GetCabin() const ;
-        Cabin * GetCabin();
-        float GetTurboThrottleValue() const ;
-        int GetMaxGadgets(CStr const &) const ;
-        float GetMaxPower() const ;
-        void DecStoppageMode();
-        void ShowVehicle(bool);
-        void SetRole(VehicleRole *);
-        std::set<ref_ptr<Obstacle>,std::less<ref_ptr<Obstacle> >,std::allocator<ref_ptr<Obstacle> > > const & GetNearbyObstacles() const ;
-        virtual CStr GetPropertyName(int) const ;
-        bool RemoveItemsFromRepository(char const *,int);
-        void SetCustomControlWeaponsTarget(CVector const &);
-        float GetTimeToLockTarget() const ;
-        void SetGamePositionOnGround(CVector const &,bool,bool);
-        void SetMaxTorque(float);
-        void LimitMaxSpeed(float);
-        virtual m3d::Class * GetClass() const ;
-        CVector GetSize() const ;
-        void CollectNearbyObjectsToGroundRepository();
-        VehicleAttackStatus GetAttackStatus() const ;
-        void ReleaseAllPedals();
-        bool GetInSmokeScreenMode() const ;
-        void PlaySoundOnRechargeWeapon();
-        Vehicle * GetTrailer() const ;
-        void IncOnOilMode();
-        virtual CVector GetGeometricCenter() const ;
-        float EstimateDamageFromPositionAI(CVector const &,CVector const &,std::vector<int,std::allocator<int> >) const ;
-        void SetNpcMotionControllerId(int);
-        virtual VehiclePrototypeInfo const * GetPrototypeInfo() const ;
-        void PlaceToEndOfPath();
-        int GetIndexInTeam() const ;
-        CVector GetBumperPoint() const ;
-        GeomRepository * GetGroundRepository() const ;
-        virtual bool ApplyModifier(Modifier const &);
-        void SetTurningToGroundForceAndTorque(CVector const &,CVector const &,CVector const &);
-        Wheel * GetWheel(unsigned int);
-        Wheel const * GetWheel(unsigned int) const ;
-        float GetThrottle() const ;
-        IzvratRepository const * GetRepository() const ;
-        IzvratRepository * GetRepository();
-        virtual bool RemoveChild(Obj *);
-        void SetBrake(float);
-        static m3d::AIParam VehicleAIOnDead(Obj *);
-        void SetMaxSpeed(float);
-        bool HasAmountOfItemsInRepository(char const *,int) const ;
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
-        void SetTurboThrottleTime(float);
-        virtual void Update(float,unsigned int);
-        float GetCollisionRadius() const ;
-        float GetDriftCoeff() const ;
-        virtual void SetRotationSelf(Quaternion const &);
-        virtual void InflictDamage(DamageInfo const &);
-        float GetMaxFullDurability() const ;
-        virtual void SetInvisible();
-        void SetCustomLinearVelocity(float);
-        Basket * GetBasket();
-        Basket const * GetBasket() const ;
-        void SetCabin(VehiclePart *);
-        virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
-        void IntersectWithWorld() const ;
-        void SetForcedMaxTorque(float);
-        bool DriveToPoint(CVector const &,CVector const &,bool,float);
-        virtual void EnableGeometry(bool);
+        using WheelRuntimeInfoVector = oldstd::vector<ai::Vehicle::WheelRuntimeInfo, oldstd::allocator<ai::Vehicle::WheelRuntimeInfo> >;
 
     protected:
-        virtual void _KeepSteer(float);
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
-        virtual void _PutContour();
-        virtual void _InternalCreateVisualPart();
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
-        virtual void _InternalPostLoad();
-        virtual float _CalcMassForBody() const ;
-        virtual void _RemoveContour();
-        virtual void _UpdateOwnPhysics(float);
-        virtual AI * GetAIPtr();
-        virtual ~Vehicle();
-        static void __fastcall RegisterProperty(char const *,int,eGObjPropertySaveStatus);
-
-    public:
-        float _GetTimeOutForNextIntersectionWithWorld() const ;
-        void _ApplyStabilizingForces();
-        void _UpdateAlarmStatus();
-        virtual m3d::Object * Clone();
-        void _AttachExistingTrailer(Vehicle *,bool);
-        void _InflictDamageToRepository(float);
-        bool _SetIdleMoveStatus();
-        CVector _CalcRepulsionForNearbyObjects(CVector const &,CVector const &,CVector const &,CVector const &,bool,CVector &) const ;
-        void _DeadActions(float);
-        void _OnChangeCabin();
-        bool _bPassedPathPoint(CVector const &,CVector const &,bool) const ;
-        void _CauseCustomGunPointedEvents();
-        void _KeepSuspension();
-        CVector _GetNextPathPoint() const ;
-        void _KeepThrottle(bool);
-        void _CreateBlastWave();
-        CStr _GetTrailerName() const ;
-        CVector _CalcRepulsionForObstacle(Obstacle const *,CVector const &,CVector const &,CVector const &,CVector const &,bool,CVector &) const ;
-        void _DriveBySteeringForce(CVector const &);
-        void _TurnWheelByAngle(Wheel *,float);
-        CVector _GetCustomWeaponTargetPoint() const ;
-        void _EnsureRecollection();
-        void _UpdateLockedObj(float);
-        bool _bPointIsBehind(CVector const &) const ;
-        void _GetOutOfDifficlultPlaceInternal();
-        float _GetCabinControlCoeff() const ;
-        void _ValidateVehicleParts();
-        void _AdjustLookBox(bool,CVector const &,CVector const &,CVector const &) const ;
-        CVector _CalcSteeringForceToPathPoint(CVector const &,CVector const &) const ;
-        void _TakeWaterIntoAccount(float);
-        void _KeepGearBox(float);
-        void _SetIdleMoveStatusAndCauseTargetReached();
-        void _CalcRpms();
-        int _UpdateRepositoryOnChangeBasket();
-        void _UpdatePhysicsUpdater();
-        void _AdjustSizeAndBumperPoint();
-        void _OnChangeBasket();
-        CVector _GetLastPathPoint() const ;
-        float _GetAngleTo(CVector const &) const ;
-        void _AdjustWheel(WheelRuntimeInfo &);
-        static m3d::Object * CreateObject();
-        void _CheckForNearbyChests() const ;
-        void _AdjustTrailer();
-        void _UpdateSeenObjAndWeapons(float);
-        CVector _CalcSteeringForce(float) const ;
-        CVector _GetEtalonWheelAVel() const ;
-        void _DropChests();
-        void _EvaluateToDead();
-
-    public:
-        RT_CLASS_DECLARE(Vehicle);
+        /* 0x014c */ oldstd::vector<ai::Vehicle::WheelRuntimeInfo, oldstd::allocator<ai::Vehicle::WheelRuntimeInfo> > m_wheels;
+        virtual void _InternalPostLoad() override /* 0x00 */;
+        virtual void _InternalCreateVisualPart() override /* 0x100 */;
+        virtual ai::AI* GetAIPtr() override /* 0x00 */;
+        virtual void _KeepSteer(float elapsedTime) /* 0x1cc */;
+        virtual void _UpdateOwnPhysics(float elapsedTime) override /* 0x00 */;
+        virtual void _PutContour() override /* 0x1c4 */;
+        virtual void _RemoveContour() override /* 0x1c8 */;
+        virtual float _CalcMassForBody() const override /* 0x1c0 */;
 
     private:
-        std::vector<WheelRuntimeInfo> m_wheels;
-        AI m_AI;
-        bool m_bHorn;
-        bool m_bGodMode;
-        bool m_bImmortalMode;
-        int m_stoppageMode;
-        int m_onOilMode;
-        int m_inSmokeScreenMode;
-        float m_turboThrottleTime;
-        float m_turboThrottleValue;
-        float m_timeAfterDeath;
-        unsigned int m_numBlownParts;
-        float m_timeAfterLastBlow;
-        unsigned int m_shootTypeChangeTime;
-        unsigned int m_shootTimeToWait;
-        bool m_bIsShooting;
-        std::map<int,Gadget *> m_gadgets;
-        float m_antiMissileGadgetSavingRadius;
-        float m_diffRatio;
-        float m_maxEngineRpm;
-        float m_lowGearShiftLimit;
-        float m_highGearShiftLimit;
-        float m_steeringSpeed;
-        bool m_bIsTrailer;
-        float m_cruisingSpeed;
-        bool m_maxSpeedLimited;
-        float m_maxSpeedLimit;
-        bool m_maxTorqueForced;
-        float m_maxTorqueForcedValue;
-        int m_currentGear;
-        float m_throttle;
-        float m_brake;
-        float m_realThrottle;
-        float m_engineRpm;
-        float m_averageEngineRpm;
-        float m_driftCoeff;
-        float m_averageWheelAVel;
-        bool m_bAutoBrake;
-        bool m_bHandBrake;
-        std::deque<float> m_recentEngineRpms;
-        float m_steerRadians;
-        TurningBackStatus m_turningBackStatus;
-        int m_seenObjId;
-        CVector m_curLookAt;
-        int m_npcMotionControllerId;
-        std::set<ref_ptr<Obstacle>> m_currentNearbyObstacles;
-        std::set<ref_ptr<Obstacle>> m_pastNearbyObstacles;
-        CVector m_pastTakingSpherePosition;
-        bool m_bAllowPickUpMessage;
-        int m_pastNumNearbyChests;
-        int m_currentNumNearbyChests;
-        //scoped_ptr<Box> m_lookBox;
-        //scoped_ptr<Box> m_targetBox;
-        std::set<m3d::Class *> m_targetClasses;
-        CVector m_externalDestination;
-        int m_numOfDrivenWheels;
-        CVector m_bumperPoint;
-        bool m_bIsControlledByPlayer;
-        bool m_bIsMovingAlongExternalPath;
-        int m_pathIndex;
-        bool m_bCanBeDistractedFromMoving;
-        CVector m_size;
-        CVector m_currentDestination;
-        Path *m_pPath;
-        int m_pathNum;
-        unsigned __int8 m_priority;
-        bool m_bCustomControl;
-        CustomWeaponControlType m_customControlWeapons;
-        CVector m_customControlWeaponsTarget;
-        int m_customControlWeaponsTargetObjId;
-        std::map<int,bool> m_gunsPointed;
-        bool m_bRocketLaunchersPresent;
-        int m_indexInTeam;
-        VehicleMoveStatus m_moveStatus;
-        VehicleAttackStatus m_attackStatus;
-        DamageType m_lastDamage;
-        VehiclePart *m_lastDamagedPart;
-        DamageType m_deathDamage;
-        SphereForIntersection *m_takingSphere;
-        IzvratRepository *m_repository;
-        GeomRepository *m_groundRepository;
-        std::vector<ActionType> m_effectActions;
-        CStr m_blastEffectName;
-        CStr m_destroyEffectNames[4];
-        m3d::SgSoundSourceNode *m_engineHighSoundNode;
-        m3d::SgSoundSourceNode *m_engineLowSoundNode;
-        m3d::SgNode *m_hornSoundNode;
-        float m_cameraHeight;
-        float m_cameraMaxDist;
-        int m_trailerObjId;
-        dxJoint *m_trailerJoint;
-        CVector m_relTrailerJointPosOnMe;
-        CVector m_relTrailerJointPosOnTrailer;
-        int m_recollectionId;
-        VehicleUpdater *m_ownUpdater;
-        int m_roleId;
-        //NumericInRangeRegenerating<float> m_timeOutForNextIntersectionWithWorld;
-        int m_numWheelsTouchingGround;
-        bool m_bHidden;
-        int m_lockedObjId;
-        int m_toBeLockedObjId;
-        float m_timeToLockTarget;
-        bool m_bMustGetOutOfDifficultPlace;
-        bool m_bWasStuck;
-        CVector m_prevPosToCheckStuck;
-        float m_timeOutToCheckStuck;
-        CVector m_curSteeringForce;
-        bool m_bCurSteeringForceValid;
-        int m_soundRechargeChannelId;
-    };
+        /* 0x015c */ ai::AI m_AI;
+        /* 0x01bc */ bool m_bHorn;
+        /* 0x01bd */ bool m_bGodMode;
+        /* 0x01be */ bool m_bImmortalMode;
+        /* 0x01bf */ char Padding_178;
+        /* 0x01c0 */ int m_stoppageMode;
+        /* 0x01c4 */ int m_onOilMode;
+        /* 0x01c8 */ int m_inSmokeScreenMode;
+        /* 0x01cc */ float m_turboThrottleTime;
+        /* 0x01d0 */ float m_turboThrottleValue;
+        /* 0x01d4 */ float m_timeAfterDeath;
+        /* 0x01d8 */ unsigned int m_numBlownParts;
+        /* 0x01dc */ float m_timeAfterLastBlow;
+        /* 0x01e0 */ unsigned int m_shootTypeChangeTime;
+        /* 0x01e4 */ unsigned int m_shootTimeToWait;
+        /* 0x01e8 */ bool m_bIsShooting;
+        /* 0x01e9 */ char Padding_179[3];
+        /* 0x01ec */ oldstd::map<int, ai::Gadget*, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, ai::Gadget*> > > m_gadgets;
+        /* 0x01f8 */ float m_antiMissileGadgetSavingRadius;
+        /* 0x01fc */ float m_diffRatio;
+        /* 0x0200 */ float m_maxEngineRpm;
+        /* 0x0204 */ float m_lowGearShiftLimit;
+        /* 0x0208 */ float m_highGearShiftLimit;
+        /* 0x020c */ float m_steeringSpeed;
+        /* 0x0210 */ bool m_bIsTrailer;
+        /* 0x0211 */ char Padding_180[3];
+        /* 0x0214 */ float m_cruisingSpeed;
+        /* 0x0218 */ bool m_maxSpeedLimited;
+        /* 0x0219 */ char Padding_181[3];
+        /* 0x021c */ float m_maxSpeedLimit;
+        /* 0x0220 */ bool m_maxTorqueForced;
+        /* 0x0221 */ char Padding_182[3];
+        /* 0x0224 */ float m_maxTorqueForcedValue;
+        /* 0x0228 */ int m_currentGear;
+        /* 0x022c */ float m_throttle;
+        /* 0x0230 */ float m_brake;
+        /* 0x0234 */ float m_realThrottle;
+        /* 0x0238 */ float m_engineRpm;
+        /* 0x023c */ float m_averageEngineRpm;
+        /* 0x0240 */ float m_driftCoeff;
+        /* 0x0244 */ float m_averageWheelAVel;
+        /* 0x0248 */ bool m_bAutoBrake;
+        /* 0x0249 */ bool m_bHandBrake;
+
+        using FloatDeque = oldstd::deque<float, oldstd::allocator<float> >;
+
+    private:
+        /* 0x024c */ oldstd::deque<float, oldstd::allocator<float> > m_recentEngineRpms;
+        /* 0x0260 */ float m_steerRadians;
+        /* 0x0264 */ ai::Vehicle::TurningBackStatus m_turningBackStatus;
+        /* 0x0268 */ int m_seenObjId;
+        /* 0x026c */ CVector m_curLookAt;
+        /* 0x0278 */ int m_npcMotionControllerId;
+        /* 0x027c */ oldstd::set<ref_ptr<ai::Obstacle>, oldstd::less<ref_ptr<ai::Obstacle> >, oldstd::allocator<ref_ptr<ai::Obstacle> > > m_currentNearbyObstacles;
+        /* 0x0288 */ oldstd::set<ref_ptr<ai::Obstacle>, oldstd::less<ref_ptr<ai::Obstacle> >, oldstd::allocator<ref_ptr<ai::Obstacle> > > m_pastNearbyObstacles;
+        /* 0x0294 */ CVector m_pastTakingSpherePosition;
+        /* 0x02a0 */ bool m_bAllowPickUpMessage;
+        /* 0x02a1 */ char Padding_183[3];
+        /* 0x02a4 */ int m_pastNumNearbyChests;
+        /* 0x02a8 */ int m_currentNumNearbyChests;
+        /* 0x02ac */ scoped_ptr<ai::Box> m_lookBox;
+        /* 0x02b0 */ scoped_ptr<ai::Box> m_targetBox;
+        /* 0x02b4 */ oldstd::set<m3d::Class*, oldstd::less<m3d::Class*>, oldstd::allocator<m3d::Class*> > m_targetClasses;
+        /* 0x02c0 */ CVector m_externalDestination;
+        /* 0x02cc */ int m_numOfDrivenWheels;
+        /* 0x02d0 */ CVector m_bumperPoint;
+        /* 0x02dc */ bool m_bIsControlledByPlayer;
+        /* 0x02dd */ bool m_bIsMovingAlongExternalPath;
+        /* 0x02de */ char Padding_184[2];
+        /* 0x02e0 */ int m_pathIndex;
+        /* 0x02e4 */ bool m_bCanBeDistractedFromMoving;
+        /* 0x02e5 */ char Padding_185[3];
+        /* 0x02e8 */ CVector m_size;
+        /* 0x02f4 */ CVector m_currentDestination;
+        /* 0x0300 */ ai::Path* m_pPath;
+        /* 0x0304 */ int m_pathNum;
+        /* 0x0308 */ unsigned char m_priority;
+        /* 0x0309 */ bool m_bCustomControl;
+        /* 0x030a */ char Padding_186[2];
+        /* 0x030c */ ai::Vehicle::CustomWeaponControlType m_customControlWeapons;
+        /* 0x0310 */ CVector m_customControlWeaponsTarget;
+        /* 0x031c */ int m_customControlWeaponsTargetObjId;
+
+        using GunPointedMap = oldstd::map<int, bool, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, bool> > >;
+        using GunPointedMapPair = oldstd::pair<int const, bool>;
+
+    private:
+        /* 0x0320 */ oldstd::map<int, bool, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, bool> > > m_gunsPointed;
+        /* 0x032c */ bool m_bRocketLaunchersPresent;
+        /* 0x032d */ char Padding_187[3];
+        /* 0x0330 */ int m_indexInTeam;
+        /* 0x0334 */ ai::Vehicle::VehicleMoveStatus m_moveStatus;
+        /* 0x0338 */ ai::Vehicle::VehicleAttackStatus m_attackStatus;
+        /* 0x033c */ ai::DamageType m_lastDamage;
+        /* 0x0340 */ ai::VehiclePart* m_lastDamagedPart;
+        /* 0x0344 */ ai::DamageType m_deathDamage;
+        /* 0x0348 */ ai::SphereForIntersection* m_takingSphere;
+        /* 0x034c */ ai::IzvratRepository* m_repository;
+        /* 0x0350 */ ai::GeomRepository* m_groundRepository;
+        /* 0x0354 */ oldstd::vector<enum ActionType, oldstd::allocator<enum ActionType> > m_effectActions;
+        /* 0x0364 */ CStr m_blastEffectName;
+        /* 0x0370 */ CStr m_destroyEffectNames[4];
+        /* 0x03a0 */ m3d::SgSoundSourceNode* m_engineHighSoundNode;
+        /* 0x03a4 */ m3d::SgSoundSourceNode* m_engineLowSoundNode;
+        /* 0x03a8 */ m3d::SgNode* m_hornSoundNode;
+        /* 0x03ac */ float m_cameraHeight;
+        /* 0x03b0 */ float m_cameraMaxDist;
+        /* 0x03b4 */ int m_trailerObjId;
+        /* 0x03b8 */ dxJoint* m_trailerJoint;
+        /* 0x03bc */ CVector m_relTrailerJointPosOnMe;
+        /* 0x03c8 */ CVector m_relTrailerJointPosOnTrailer;
+        /* 0x03d4 */ int m_recollectionId;
+        /* 0x03d8 */ ai::VehicleUpdater* m_ownUpdater;
+        /* 0x03dc */ int m_roleId;
+        /* 0x03e0 */ ai::NumericInRangeRegenerating<float> m_timeOutForNextIntersectionWithWorld{0,0,10,-1};
+        /* 0x04b8 */ int m_numWheelsTouchingGround;
+        /* 0x04bc */ bool m_bHidden;
+        /* 0x04bd */ char Padding_188[3];
+        /* 0x04c0 */ int m_lockedObjId;
+        /* 0x04c4 */ int m_toBeLockedObjId;
+        /* 0x04c8 */ float m_timeToLockTarget;
+        /* 0x04cc */ bool m_bMustGetOutOfDifficultPlace;
+        /* 0x04cd */ bool m_bWasStuck;
+        /* 0x04ce */ char Padding_189[2];
+        /* 0x04d0 */ CVector m_prevPosToCheckStuck;
+        /* 0x04dc */ float m_timeOutToCheckStuck;
+        /* 0x04e0 */ CVector m_curSteeringForce;
+        /* 0x04ec */ bool m_bCurSteeringForceValid;
+
+        float _GetTimeOutForNextIntersectionWithWorld() const;
+        void _DropChests();
+        void _EvaluateToDead();
+        void _DeadActions(float elapsedTime);
+        int _UpdateRepositoryOnChangeBasket();
+        void _ValidateVehicleParts();
+        void _OnChangeCabin();
+        void _OnChangeBasket();
+        void _CheckForNearbyChests() const;
+        void _CauseCustomGunPointedEvents();
+        CVector _GetCustomWeaponTargetPoint() const;
+        float _GetAngleTo(const CVector& point) const;
+        CVector _GetNextPathPoint() const;
+        CVector _GetLastPathPoint() const;
+        void _AdjustSizeAndBumperPoint();
+        void _AdjustWheel(ai::Vehicle::WheelRuntimeInfo& wheelInfo);
+        void _TurnWheelByAngle(ai::Wheel* pWheel, float angle);
+        void _DriveBySteeringForce(const CVector& steeringForce);
+        bool _bPassedPathPoint(const CVector& point, const CVector& nextPoint, bool bPrecisely) const;
+        bool _bPointIsBehind(const CVector& point) const;
+        void _KeepThrottle(bool applyActions);
+        void _KeepGearBox(float elapsedTime);
+        void _KeepSuspension();
+        void _ApplyStabilizingForces();
+        CVector _CalcSteeringForce(float elapsedTime) const;
+        CVector _CalcSteeringForceToPathPoint(const CVector& point, const CVector& nextPoint) const;
+        CVector _CalcRepulsionForNearbyObjects(const CVector& myPos, const CVector& myPredictedPos, const CVector& myVel, const CVector& guide, bool bIsLookObstacle, CVector& attraction) const;
+        CVector _CalcRepulsionForObstacle(const ai::Obstacle* ob, const CVector& myPos, const CVector& myPredictedPos, const CVector& myVel, const CVector& guide, bool bIsLookObstacle, CVector& attraction) const;
+        void _AdjustLookBox(bool bForLooking, const CVector& myPos, const CVector& pathPoint, const CVector& guide) const;
+        void _UpdateAlarmStatus();
+        CVector _GetEtalonWheelAVel() const;
+        void _CalcRpms();
+        CStr _GetTrailerName() const;
+        void _AttachExistingTrailer(ai::Vehicle* trailer, bool bTrailerIsNew);
+        void _AdjustTrailer();
+        void _TakeWaterIntoAccount(float elapsedTime);
+        void _UpdateSeenObjAndWeapons(float elapsedTime);
+        void _UpdateInfoObj();
+        void _UpdateLockedObj(float elapsedTime);
+        void _UpdatePhysicsUpdater();
+        void _InflictDamageToRepository(float damage);
+        void _CreateBlastWave();
+        void _EnsureRecollection();
+        bool _SetIdleMoveStatus();
+        void _SetIdleMoveStatusAndCauseTargetReached();
+        void _GetOutOfDifficlultPlaceInternal();
+        float _GetCabinControlCoeff() const;
+
+        /* 0x04ed */ char Padding_190[3];
+        /* 0x04f0 */ int m_soundRechargeChannelId;
+
+    public:
+        static void __fastcall Registration();
+        static m3d::AIParam __fastcall VehicleAIOnDefend(ai::Obj* pObj);
+        static m3d::AIParam __fastcall VehicleAIOnMove(ai::Obj* pObj);
+        static m3d::AIParam __fastcall VehicleAIOnAttack(ai::Obj* pObj);
+        static m3d::AIParam __fastcall VehicleAIOnDead(ai::Obj* pObj);
+        static const char* __fastcall MoveStatusName(ai::Vehicle::VehicleMoveStatus);
+        static const char* __fastcall AttackStatusName(ai::Vehicle::VehicleAttackStatus);
+        static ai::Vehicle::VehicleMoveStatus __fastcall MoveStatusID(const CStr&);
+        static ai::Vehicle::VehicleAttackStatus __fastcall AttackStatusID(const CStr&);
+    }; /* size: 0x04f4 */
+
+    static_assert(sizeof(Vehicle) == 0x04f4);
 }

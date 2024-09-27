@@ -1392,6 +1392,7 @@
     <ClInclude Include="src\thirdparty\stl\cstdlib.hpp" />
     <ClInclude Include="src\thirdparty\stl\cstring.hpp" />
     <ClInclude Include="src\thirdparty\stl\cwchar.hpp" />
+    <ClInclude Include="src\thirdparty\stl\deque.hpp" />
     <ClInclude Include="src\thirdparty\stl\exception.hpp" />
     <ClInclude Include="src\thirdparty\stl\functional.hpp" />
     <ClInclude Include="src\thirdparty\stl\iosfwd.hpp" />

@@ -17,7 +17,7 @@ namespace ai
             m_AfterChange(nullptr),
             m_BeforeChange(nullptr)
         {
-            throw std::runtime_error("not implemented");
+            //throw std::runtime_error("not implemented");
         }
 
         Component(const ThisType&)

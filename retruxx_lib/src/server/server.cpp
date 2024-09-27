@@ -12,6 +12,7 @@
 #include "queststate.h"
 #include "static2dpath.h"
 #include "ai/aimanager.h"
+#include "ai/decisionmatrix.h"
 #include "objects/articulatedvehicle.h"
 #include "objects/bar.h"
 #include "objects/barricade.h"

@@ -43,7 +43,11 @@ namespace ai
     class Boss02 : public ComplexPhysicObj
     {
     public:
-        using MoveState = Vehicle::VehicleMoveStatus;
+        enum MoveState
+        {
+            MOVE_IDLE = 0,
+            MOVE_MOVING = 1,
+        };
 
     public:
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;

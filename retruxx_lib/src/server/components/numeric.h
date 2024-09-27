@@ -14,7 +14,7 @@ namespace ai
         Numeric(T value) :
             m_BeforeApplyModifier(nullptr)
         {
-            throw std::runtime_error("not implemented");
+            //throw std::runtime_error("not implemented");
         }
 
         T get() const

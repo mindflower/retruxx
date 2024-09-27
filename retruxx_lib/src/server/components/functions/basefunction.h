@@ -35,9 +35,9 @@ namespace ai
     {
     //private:
     public:
-        FuncPtr(TFunc* pFunc)
+        FuncPtr(TFunc* pFunc) :
+            m_pFunc(pFunc)
         {
-            throw std::runtime_error("not implemented");
         }
 
         FuncPtr(const TFunc&)

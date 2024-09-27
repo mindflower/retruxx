@@ -39,7 +39,11 @@ namespace ai
     class BossMetalArm : public SimplePhysicObj
     {
     public:
-        using AttackState = Vehicle::VehicleAttackStatus;
+        enum AttackState
+        {
+            ATTACK_IDLE = 0,
+            ATTACK_ATTACKING = 1,
+        };
 
     public:
         static m3d::Class * GetBaseClass();

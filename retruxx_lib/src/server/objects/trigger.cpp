@@ -254,12 +254,12 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Trigger::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>&) const
+    void Trigger::GetPropertiesIDs(oldstd::set<int, oldstd::less<int>, oldstd::allocator<int>>&) const
     {
         throw std::logic_error("Not implemented");
     }
 
-    void Trigger::GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>&) const
+    void Trigger::GetPropertiesNames(oldstd::set<CStr, oldstd::less<CStr>, oldstd::allocator<CStr>>&) const
     {
         throw std::logic_error("Not implemented");
     }

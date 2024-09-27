@@ -36,9 +36,6 @@ namespace ai
     class BossArm : public VehiclePart
     {
     public:
-        using AttackState = Vehicle::VehicleAttackStatus;
-
-    public:
         virtual m3d::Class * GetClass() const ;
         virtual BossArmPrototypeInfo const * GetPrototypeInfo() const ;
         BossArm(BossArmPrototypeInfo const &);
@@ -50,6 +47,14 @@ namespace ai
         virtual int OnEvent(Event const &);
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
         static m3d::Class * GetBaseClass();
+
+        enum AttackState
+        {
+            ATTACK_IDLE = 0,
+            ATTACK_NOTICED_PLAYER = 1,
+            ATTACK_CHARGING = 2,
+            ATTACK_ATTACKING = 3,
+        };
 
     protected:
         void _PlaceLoadOnLoadpoint(float);

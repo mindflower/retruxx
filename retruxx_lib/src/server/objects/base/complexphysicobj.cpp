@@ -63,7 +63,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void ComplexPhysicObjPartDescription::GetPartNames(std::vector<CStr, std::allocator<CStr>>&) const
+	void ComplexPhysicObjPartDescription::GetPartNames(oldstd::vector<CStr, oldstd::allocator<CStr>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -133,7 +133,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void ComplexPhysicObjPrototypeInfo::GetPartNames(std::vector<CStr, std::allocator<CStr>>&) const
+	void ComplexPhysicObjPrototypeInfo::GetPartNames(oldstd::vector<CStr, oldstd::allocator<CStr>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -142,7 +142,7 @@ namespace ai
 	{
 	}
 
-	std::vector<CStr, std::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
+	oldstd::vector<CStr, oldstd::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -166,7 +166,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ComplexPhysicObj::GetGeoms(std::vector<Geom*, std::allocator<Geom*>>&) const
+    void ComplexPhysicObj::GetGeoms(oldstd::vector<Geom*, oldstd::allocator<Geom*>>&) const
     {
         throw std::logic_error("Not implemented");
     }
@@ -186,7 +186,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    std::vector<CStr, std::allocator<CStr>> ComplexPhysicObj::GetAttachedPartNames() const
+    oldstd::vector<CStr, oldstd::allocator<CStr>> ComplexPhysicObj::GetAttachedPartNames() const
     {
         throw std::logic_error("Not implemented");
     }
@@ -286,7 +286,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ComplexPhysicObj::ReceiveNodesToLink(std::list<m3d::SgNode*, std::allocator<m3d::SgNode*>>&) const
+    void ComplexPhysicObj::ReceiveNodesToLink(oldstd::list<m3d::SgNode*, oldstd::allocator<m3d::SgNode*>>&) const
     {
         throw std::logic_error("Not implemented");
     }
