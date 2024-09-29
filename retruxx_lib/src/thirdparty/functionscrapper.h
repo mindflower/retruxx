@@ -166,8 +166,7 @@ namespace inject
          */
         template <typename R, typename T, typename ...Ps>
         static intptr_t addressOfVirtual(R(T::* func)(Ps...)const) {
-            //static_assert(std::is_copy_constructible<T>::value, "must be copy constructable");
-            //MessageBox(NULL, __func__, "retruxx", MB_OK);
+            static_assert(std::is_copy_constructible<T>::value, "must be copy constructable");
             auto ptr = reinterpret_cast<T*>(operator new(sizeof(T)));
             auto ins = new T(*ptr);
 
@@ -205,6 +204,20 @@ namespace inject
         template <typename R, typename T, typename ...Ps>
         static intptr_t addressOfVirtual(T* ins, R(T::* func)(Ps...)) {
             auto address = *(intptr_t*)(*(intptr_t*)(pointerOf(ins) + thunkOf(func)) + indexOf(func));
+            return address;
+        }
+
+        template <typename R, typename T, typename ...Ps>
+        static intptr_t addressOfVirtual(void** vtableAddr, R(T::* func)(Ps...)const) {
+            auto casted = (intptr_t*)(vtableAddr);
+            auto address = (intptr_t)(*(casted + (indexOf(func) / sizeof(intptr_t))));
+            return address;
+        }
+
+        template <typename R, typename T, typename ...Ps>
+        static intptr_t addressOfVirtual(void** vtableAddr, R(T::* func)(Ps...)) {
+            auto casted = (intptr_t*)(vtableAddr);
+            auto address = (intptr_t)(*(casted + (indexOf(func) / sizeof(intptr_t))));
             return address;
         }
 

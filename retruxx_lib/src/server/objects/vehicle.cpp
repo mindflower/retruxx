@@ -1178,7 +1178,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-    RETRUXX_DLL_INJECT_VIRTUAL_FUNCTION(0x005EAEE0, Vehicle::RenderDebugInfo)
+    RETRUXX_DLL_INJECT_VIRTUAL_FUNCITON_NAMESPACED(0x005EAEE0, ai, Vehicle, RenderDebugInfo)
 	void Vehicle::RenderDebugInfo() const
 	{
         CVector curPoint;

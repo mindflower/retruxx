@@ -255,6 +255,7 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006216F0, ScriptServer::callScriptFunc)
     eScriptError ScriptServer::callScriptFunc(char const*, sArgStack&, int)
     {
         throw std::logic_error("Not implemented");
@@ -337,6 +338,7 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    /RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00621500, ScriptServer::getFormatedScriptErrorDesc)
     CStr ScriptServer::getFormatedScriptErrorDesc(eScriptError) const
     {
         throw std::logic_error("Not implemented");

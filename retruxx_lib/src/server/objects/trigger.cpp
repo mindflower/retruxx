@@ -3,6 +3,10 @@
 #include <stdexcept>
 
 #include "core/aiparam.h"
+#include <core/kernel.h>
+#include <script/scriptserver.h>
+#include <script/funcstack.h>
+#include <core/log.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, AddEvent)
 {
@@ -214,6 +218,11 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
+    Trigger::Trigger(const ai::Trigger&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     void Trigger::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
         throw std::logic_error("Not implemented");
@@ -264,11 +273,6 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Trigger::Update(float, unsigned)
-    {
-        throw std::logic_error("Not implemented");
-    }
-
     m3d::Class* Trigger::GetClass() const
     {
         throw std::logic_error("Not implemented");
@@ -304,6 +308,34 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
+    RETRUXX_DLL_INJECT_VIRTUAL_FUNCITON_NAMESPACED(0x008569A0, ai, Trigger, Update)
+    void Trigger::Update(float elapsedTime, unsigned int workTime)
+    {
+        if (elapsedTime > 0.001)
+        {
+            m_bCanUpdate = true;
+        }
+        if (m_bCanUpdate && m_state == TS_ACTION && m_bScriptPresent)
+        {
+            m_state = TS_EVENTWAIT;
+            auto& scriptServer = M3D_KERNEL->GetScriptServer();
+
+            m3d::sArgStack argStack;
+            auto* in = argStack.newIn();
+            in->SetO(this);
+
+            const auto error = scriptServer.callScriptFunc(m_triggerScriptFuncName.c_str(), argStack, 0);
+            if (error != m3d::SUCCESS)
+            {
+                const auto desc = scriptServer.getFormatedScriptErrorDesc(error);
+                M3D_LOG_INFO("***************** TRIGGER ERROR *******************");
+                M3D_LOG_INFO(desc);
+                m_bScriptPresent = false;
+            }
+            m_ObjIDs.clear();
+        }
+    }
+
     bool Trigger::_GetPropertyInternal(int, m3d::AIParam&) const
     {
         throw std::logic_error("Not implemented");
@@ -321,7 +353,7 @@ namespace ai
 
     Trigger::~Trigger()
     {
-        throw std::logic_error("Not implemented");
+        //throw std::logic_error("Not implemented");
     }
 
     void Trigger::_LoadTriggerRuntimesFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

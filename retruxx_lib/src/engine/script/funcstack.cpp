@@ -5,7 +5,6 @@ namespace m3d
 {
     sArgStack::~sArgStack()
     {
-        throw std::logic_error("Not implemented");
     }
 
     sArg* sArgStack::popIn()
@@ -25,7 +24,6 @@ namespace m3d
 
     sArgStack::sArgStack()
     {
-        throw std::logic_error("Not implemented");
     }
 
     unsigned sArgStack::getNumInArgs() const
@@ -40,6 +38,6 @@ namespace m3d
 
     sArg* sArgStack::newIn()
     {
-        throw std::logic_error("Not implemented");
+        return &m_InArgs[m_numInArgs++];
     }
 }

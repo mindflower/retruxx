@@ -6,6 +6,7 @@
 
 namespace m3d
 {
+    RETRUXX_DLL_INJECT_CTOR(0x00612C50, Log);
     Log::Log()
     {
     }
@@ -15,21 +16,10 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    RETRUXX_DLL_INJECT_DTOR(0x00613050, Log);
     Log::~Log()
     {
         endLog();
-    }
-
-    RETRUXX_DLL_INJECT_FUNCTION(0x00612C50, Log::ctor)
-    void Log::ctor()
-    {
-        this->Log::Log();
-    }
-
-    RETRUXX_DLL_INJECT_FUNCTION(0x006130500, Log::dtor)
-    void Log::dtor()
-    {
-        this->~Log();
     }
 
     RETRUXX_DLL_INJECT_FUNCTION(0x00613590, Log::logTex)
@@ -40,7 +30,7 @@ namespace m3d
         {
             if ((logFlags & m_logMask) != 0)
             {
-                std::ofstream file(m_fileName, std::ios_base::app);
+                std::ofstream file(m_fileName.c_str(), std::ios_base::app);
                 if (file)
                 {
                     auto const header = headerString(logFlags);
@@ -87,7 +77,7 @@ namespace m3d
             return true;
         }
 
-        std::ofstream logStream(m_fileName, std::ios_base::app);
+        std::ofstream logStream(m_fileName.c_str(), std::ios_base::app);
         if (logStream)
         {
             auto const timestamp = time(NULL);
@@ -143,7 +133,7 @@ namespace m3d
         AutoLock guard(m_cs);
         if (m_logStarted && (logBits & m_logMask) != 0)
         {
-            std::ofstream logStream(m_fileName, std::ios_base::app);
+            std::ofstream logStream(m_fileName.c_str(), std::ios_base::app);
             if (logStream)
             {
                 auto const header = headerString(logBits);
@@ -168,7 +158,7 @@ namespace m3d
             {
                 m_indentCount = 0;
             }
-            std::ofstream logStream(m_fileName, std::ios_base::app);
+            std::ofstream logStream(m_fileName.c_str(), std::ios_base::app);
             if (logStream)
             {
                 auto const header = headerString(logBits);
@@ -199,7 +189,7 @@ namespace m3d
         logFile += fileName;
         UnifyFileName(logFile);
         m_fileName = logFile.c_str();
-        std::ofstream logStream(m_fileName);
+        std::ofstream logStream(m_fileName.c_str());
         if (logStream)
         {
             auto const timestamp = time(NULL);
@@ -220,7 +210,7 @@ namespace m3d
         return false;
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x00613110, Log::headerString)
+    RETRUXX_DLL_INJECT_CLASS_METHOD(0x00613110, Log, headerString)
     CStr const& Log::headerString(eLogFlags logFlags) const
     {
         AutoLock guard(m_cs);

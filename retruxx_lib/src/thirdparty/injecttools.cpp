@@ -12,7 +12,6 @@ namespace inject
 {
     bool injectFunctionCall(uint32_t address, uint32_t newFunctionAddress)
     {
-        MessageBox(nullptr, "", "", MB_OK);
         const auto currentProcess = ::GetCurrentProcess();
         ::WriteProcessMemory(
             currentProcess,

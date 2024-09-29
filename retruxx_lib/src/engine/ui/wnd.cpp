@@ -458,7 +458,6 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_VIRTUAL_FUNCTION(0x0041C2C0, Wnd::EnableWindow)
         void Wnd::EnableWindow(bool bEnable)
         {
             if (bEnable)
@@ -1397,7 +1396,6 @@ namespace m3d
             throw std::logic_error("Not implemented");
         }
 
-        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_VIRTUAL_FUNCTION(0x006781D0, Wnd::OnMouseButton0)
         int Wnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
             //TODO: check and refactor this

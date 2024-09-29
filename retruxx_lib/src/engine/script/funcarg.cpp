@@ -6,7 +6,10 @@ namespace m3d
 {
     sArg::~sArg()
     {
-        throw std::logic_error("Not implemented");
+        if (m_type == ARGTYPE_STRING)
+        {
+            delete[] m_s;
+        }
     }
 
     Quaternion sArg::GetQ() const
@@ -41,7 +44,6 @@ namespace m3d
 
     sArg::sArg()
     {
-        throw std::logic_error("Not implemented");
     }
 
     CVector sArg::GetV() const
@@ -74,9 +76,10 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void sArg::SetO(Object*)
+    void sArg::SetO(Object* o)
     {
-        throw std::logic_error("Not implemented");
+        m_type = ARGTYPE_OBJECT;
+        m_o = o;
     }
 
     sArg::eArgType sArg::GetType() const

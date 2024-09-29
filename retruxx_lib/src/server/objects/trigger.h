@@ -12,6 +12,8 @@ namespace ai
 
     class Trigger : public ai::Obj
     {
+        RETRUXX_DLL_FRIEND_CLASS(Trigger);
+
     protected:
         virtual ~Trigger() override /* 0x00 */;
 
