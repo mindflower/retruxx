@@ -2,6 +2,8 @@
 #include "base/obj.h"
 #include "base/prototypeinfo.h"
 
+#include "thirdparty/containers.h"
+
 namespace ai
 {
     class TriggerPrototypeInfo : public PrototypeInfo
@@ -97,7 +99,7 @@ namespace ai
         /* 0x00f0 */ bool m_bScriptPresent;
         /* 0x00f1 */ char Padding_296[3];
         /* 0x00f4 */ CStr m_triggerScriptFuncName;
-        /* 0x0100 */ oldstd::vector<int, oldstd::allocator<int> > m_ObjIDs;
+        /* 0x0100 */ retruxx::vector<int> m_ObjIDs;
 
         struct auxEventInfo
         {

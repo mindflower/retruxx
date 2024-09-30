@@ -1385,6 +1385,8 @@
     <ClInclude Include="src\server\statistic\timestatistic.h" />
     <ClInclude Include="src\server\utils.h" />
     <ClInclude Include="src\server\weaponfirer.h" />
+    <ClInclude Include="src\thirdparty\allocator.h" />
+    <ClInclude Include="src\thirdparty\containers.h" />
     <ClInclude Include="src\thirdparty\functionscrapper.h" />
     <ClInclude Include="src\thirdparty\injecttools.h" />
     <ClInclude Include="src\thirdparty\stl\climits.hpp" />

@@ -338,7 +338,7 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    //RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00621500, ScriptServer::getFormatedScriptErrorDesc)
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00621500, ScriptServer::getFormatedScriptErrorDesc)
     CStr ScriptServer::getFormatedScriptErrorDesc(eScriptError) const
     {
         throw std::logic_error("Not implemented");

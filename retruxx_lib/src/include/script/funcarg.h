@@ -48,7 +48,9 @@ namespace m3d
             /* 0x0004 */ char* m_s;
             /* 0x0004 */ m3d::Object* m_o;
             /* 0x0004 */ float m_v[3];
+            /* 0x0004 */ float m_q[4];
         }; /* size: 0x000c */
-        /* 0x0004 */ float m_q[4] = {0};
     }; /* size: 0x0014 */
+
+    static_assert(sizeof(sArg) == 0x0014);
 }

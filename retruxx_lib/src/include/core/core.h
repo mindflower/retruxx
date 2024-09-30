@@ -4,16 +4,16 @@
 
 //TODO: custom new and delete
 
-//void* operator new(size_t count)
+//void* __cdecl operator new(std::size_t count)
 //{
-//    return m3d::g_Kernel->g_mar.AllocMem(count, nullptr, 0);
+//    return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
 //}
 //
-//void* operator new(size_t count, std::nothrow_t const&) noexcept
+//void* __cdecl operator new(std::size_t count, std::nothrow_t const&) noexcept
 //{
 //    try
 //    {
-//        return m3d::g_Kernel->g_mar.AllocMem(count, nullptr, 0);
+//        return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
 //    }
 //    catch(...)
 //    {
@@ -21,24 +21,24 @@
 //    }
 //}
 //
-//void* operator new[](size_t sz)
+//void* __cdecl operator new[](std::size_t sz)
 //{
-//    return m3d::g_Kernel->g_mar.AllocMem(sz, nullptr, 0);
+//    return M3D_KERNEL->g_mar.AllocMem(sz, nullptr, 0);
 //}
 //
-//void operator delete(void* p)
+//void __cdecl operator delete(void* p)
 //{
 //    if (p)
 //    {
-//        m3d::g_Kernel->g_mar.FreeMem(p, nullptr, 0);
+//        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
 //    }
 //}
 //
-//void operator delete[](void* p)
+//void __cdecl operator delete[](void* p)
 //{
 //    if (p)
 //    {
-//        m3d::g_Kernel->g_mar.FreeMem(p, nullptr, 0);
+//        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
 //    }
 //}
 

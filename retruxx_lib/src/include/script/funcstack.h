@@ -28,4 +28,6 @@ namespace m3d
         /* 0x0288 */ unsigned int m_curInArg = 0;
         /* 0x028c */ unsigned int m_curOutArg = 0;
     }; /* size: 0x0290 */
+
+    static_assert(sizeof(sArgStack) == 0x0290);
 }
