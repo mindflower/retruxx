@@ -1128,7 +1128,7 @@ protected:
 		{	// allocate a node with pointers, value, and color
 		_Nodeptr _Wherenode = this->_Alnod.allocate(1);
 		_TRY_BEGIN
-		new (_Wherenode) _Node(_Larg, _Parg, _Rarg, _Val, _Carg);
+         new ((void*)_Wherenode) _Node(_Larg, _Parg, _Rarg, _Val, _Carg);
 		_CATCH_ALL
 		this->_Alnod.deallocate(_Wherenode, 1);
 		_RERAISE;

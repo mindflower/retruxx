@@ -15,7 +15,7 @@ namespace m3d
         virtual int GetProperty(unsigned int, void*) const;
         virtual int Render(SgNodeRenderFlags, void*, int, int);
         virtual int SetProperty(unsigned int, void*);
-        virtual int GetPropertiesList(std::set<unsigned int>&) const;
+        virtual int GetPropertiesList(retruxx::set<unsigned int>&) const;
 
         virtual Class* GetClass() const;
     protected:

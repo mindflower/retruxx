@@ -8,7 +8,7 @@ CStr STR_UNKNOWN = "Unknown";
 
 namespace ai
 {
-    ProcessManager* theProcessManager = nullptr;
+    //ProcessManager* theProcessManager = nullptr;
 
     int ProcessManager::GetNumProcessedEvents() const
     {

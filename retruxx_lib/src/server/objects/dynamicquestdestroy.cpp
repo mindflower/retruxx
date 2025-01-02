@@ -1,4 +1,5 @@
 #include "dynamicquestdestroy.h"
+#include <stdexcept>
 
 namespace ai
 {

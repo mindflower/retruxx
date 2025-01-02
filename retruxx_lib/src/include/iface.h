@@ -15,13 +15,13 @@ namespace m3d
 {
     class Kernel;
 
-    class IDeviceResetCallback
+    struct IDeviceResetCallback
     {
-    public:
-        virtual char const* GetCallbackName() const = 0;
-        virtual void OnBeforeDeviceReset() = 0;
-        virtual void OnAfterDeviceReset() = 0;
-    };
+        /* 0x0000 */;
+        virtual const char* GetCallbackName() const = 0 /* 0x00 */;
+        virtual void OnBeforeDeviceReset() = 0 /* 0x04 */;
+        virtual void OnAfterDeviceReset() = 0 /* 0x08 */;
+    }; /* size: 0x0004 */
 
     namespace input
     {

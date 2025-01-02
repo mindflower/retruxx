@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <core/aiparam.h>
+#include "core/ini.h"
 #include <core/kernel.h>
 #include <math/quaternion.h>
 #include <math/vector.h>

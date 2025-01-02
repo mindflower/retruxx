@@ -273,7 +273,7 @@ bool CMiracle3d::GetCursorShow() const
     {
         return false;
     }
-    return m_showCursor;
+    return Wnd::GetCursorShow();
 }
 
 bool CMiracle3d::GetCursorShow0() const
@@ -284,7 +284,7 @@ bool CMiracle3d::GetCursorShow0() const
 void CMiracle3d::SetCursorShow(bool state)
 {
     auto app = dynamic_cast<CMiracle3d*>(g_pApp);
-    m_showCursor = state;
+    Wnd::SetCursorShow(state);
     //TODO: check this
     if (app->m_pInterfaceManager->IsGameModeValidForSmartCursor(m_curGameMode.Get()))
     {

@@ -5,6 +5,7 @@
 #include "m3dapp.h"
 #include "core/kernel.h"
 #include "core/log.h"
+#include <core/ini.h>
 #include "core/ref_ptr.h"
 #include "server/utils.h"
 
@@ -59,7 +60,7 @@ namespace m3d
                     {
                         auto nameAttr = group->GetAttribute("name");
                         auto belongsAttr = group->GetAttribute("belongs");
-                        oldstd::vector<int> belongs;
+                        retruxx::vector<int> belongs;
                         ai::StrToIntVector(belongsAttr, belongs);
                         for (auto belong : belongs)
                         {
@@ -84,7 +85,7 @@ namespace m3d
                             ai::StrToIntVector(samplesAttr, curId.ids);
 
                             auto fullName = nameAttr + CStr("_enemy_") + idAttr;
-                            m_correctIds.emplace(fullName, curId);
+                            m_correctIds.insert(retruxx::pair<CStr, SCurId>(fullName, curId));
                         }
 
                         ref_ptr neutral = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
@@ -101,7 +102,7 @@ namespace m3d
                             ai::StrToIntVector(samplesAttr, curId.ids);
 
                             auto fullName = nameAttr + CStr("_neutral_") + idAttr;
-                            m_correctIds.emplace(fullName, curId);
+                            m_correctIds.insert(retruxx::pair<CStr, SCurId>(fullName, curId));
                         }
                     }
                     m_soundDeque.clear();

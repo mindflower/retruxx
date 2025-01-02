@@ -19,12 +19,12 @@ namespace m3d
 
     int ui::GfxServer::GetSliderHeight()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ui::GfxServer::SetTexture(rend::TexHandle)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     rend::TexHandle ui::GfxServer::GetTexture(ThemeTexture tex)
@@ -56,12 +56,12 @@ namespace m3d
 
     float ui::GfxServer::GetTabButtonHeight() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ui::GfxServer::SetColor(unsigned, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     unsigned ui::GfxServer::GetColor(unsigned c) const
@@ -76,12 +76,12 @@ namespace m3d
 
     void ui::GfxServer::AddLineFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned, int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ui::GfxServer::AddRect(DrawInfo const&, BoundsBase<float> const&, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ui::GfxServer::ReadFrames()
@@ -254,27 +254,27 @@ namespace m3d
 
     float ui::GfxServer::GetGlyphHeight()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     float ui::GfxServer::GetTabButtonMaxWidth() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void ui::GfxServer::AddTabWndPaneNormal(DrawInfo const&, BoundsBase<float> const&, unsigned, TabButtonInfo const&, std::vector<BoundsBase<float>> const&, int, int, CStr const&, PaneFlagBg)
+    void ui::GfxServer::AddTabWndPaneNormal(DrawInfo const&, BoundsBase<float> const&, unsigned, TabButtonInfo const&, retruxx::vector<BoundsBase<float>> const&, int, int, CStr const&, PaneFlagBg)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ui::GfxServer::AddChkButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     float ui::GfxServer::GetTabButtonSpace() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ui::Pane* ui::GfxServer::GetPane(CStr const& paneName)
@@ -286,7 +286,7 @@ namespace m3d
 
     int ui::GfxServer::GetCornerSz() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ui::GfxServer::SetSchema(CStr const& name)
@@ -518,7 +518,7 @@ namespace m3d
 
     void ui::GfxServer::AddButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ui::GfxServer::AddFlatAxialPane0(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, int drawFlags, CStr const& paneName, PaneFlagBg bgFlags)
@@ -635,7 +635,7 @@ namespace m3d
                         auto scale = rect.height;
                         if (pane->m_frame[flag]->m_barRepeat)
                         {
-                            throw std::logic_error("Not implemented");
+                            throw retruxx::logic_error("Not implemented");
                             int sx = 0;
                             int sy = 0;
                             M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
@@ -658,13 +658,13 @@ namespace m3d
 
                             if (pane->m_frame[flag]->m_barRepeat)
                             {
-                                throw std::logic_error("Not implemented");
+                                throw retruxx::logic_error("Not implemented");
                             }
                             AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
                         }
                         else
                         {
-                            throw std::logic_error("Not implemented");
+                            throw retruxx::logic_error("Not implemented");
                             AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
                         }
                     }
@@ -681,7 +681,7 @@ namespace m3d
                         auto scale = rect.width;
                         if (pane->m_frame[flag]->m_barRepeat)
                         {
-                            throw std::logic_error("Not implemented");
+                            throw retruxx::logic_error("Not implemented");
                             int sx = 0;
                             int sy = 0;
                             M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
@@ -704,13 +704,13 @@ namespace m3d
 
                             if (pane->m_frame[flag]->m_barRepeat)
                             {
-                                throw std::logic_error("Not implemented");
+                                throw retruxx::logic_error("Not implemented");
                             }
                             AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, tv0 / scale, 1.0);
                         }
                         else
                         {
-                            throw std::logic_error("Not implemented");
+                            throw retruxx::logic_error("Not implemented");
                             AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv0 / scale);
                         }
                     }
@@ -812,7 +812,7 @@ namespace m3d
 
     rend::TexHandle ui::GfxServer::GetGlyph(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ui::GfxServer::GfxServer()
@@ -828,7 +828,7 @@ namespace m3d
             return -1;
         }
         auto const it = m_controlSoundInfos.find(soundName);
-        if (it == m_controlSoundInfos.cend())
+        if (it == m_controlSoundInfos.end())
         {
             return -1;
         }
@@ -843,37 +843,37 @@ namespace m3d
 
     int ui::GfxServer::GetBtnHeight()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ui::GfxServer::GetFontId(CStr const&, float, FontType, FontParams) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ui::GfxServer::GetBtnWidth()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ui::GfxServer::AddFlatAxialQuad(DrawInfo const&, BoundsBase<float> const&, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ui::GfxServer::SetFont(int&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ui::GfxServer::SetFont(Font*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ui::GfxServer::SetFont(CStr const&, float, FontType, FontParams)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ui::GfxServer::AddImagedRectGeneral(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, rend::TexHandle tex, float u0, float v0, float u1, float v1)
@@ -904,17 +904,17 @@ namespace m3d
 
     void ui::GfxServer::ClearFonts()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     float ui::GfxServer::GetTabButtonMinWidth() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ui::Font* ui::GfxServer::GetFontById(unsigned) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ui::GfxServer::LoadSoundsFromXml(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
@@ -935,7 +935,7 @@ namespace m3d
                 M3D_LOG_WARN("GfxServer::LoadSoundsFromXml error - empty sound mame");
                 continue;
             }
-            if (m_controlSoundInfos.find(soundName) != cend(m_controlSoundInfos))
+            if (m_controlSoundInfos.find(soundName) != m_controlSoundInfos.end())
             {
                 M3D_LOG_WARN("GfxServer::LoadSoundsFromXml error - sound with name " + soundName + " already exists. Second sound would be ignored");
                 continue;
@@ -964,7 +964,7 @@ namespace m3d
 
     void ui::GfxServer::ReleaseSchema()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ui::GfxServer::ClearSounds()

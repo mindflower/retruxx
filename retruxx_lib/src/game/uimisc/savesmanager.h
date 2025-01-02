@@ -1,5 +1,4 @@
 #pragma once
-#include <map>
 #include <core/aiparam.h>
 #include <core/clazz.h>
 #include <math/point2d.h>
@@ -63,7 +62,7 @@ public:
     int SaveGame(CStr const &,CStr const &,bool);
     void Clear();
     virtual m3d::Class * GetClass() const ;
-    int GetSaveFolderNames(std::vector<CStr> &) const ;
+    int GetSaveFolderNames(retruxx::vector<CStr> &) const ;
     int DeleteSaveGame(CStr const &);
 
 protected:
@@ -75,9 +74,9 @@ protected:
     CStr GetNewQuickSaveFolderName() const ;
     int SaveScreenshot(CStr const &);
     void OnCurProfileChanged();
-    CStr GetFirstUsedSaveFolderName(std::vector<CStr> const &) const ;
-    void GetSaveFoldersByPattern(CStr const &,std::vector<CStr> &) const ;
-    CStr GetLastUsedSaveFolderName(std::vector<CStr> const &) const ;
+    CStr GetFirstUsedSaveFolderName(retruxx::vector<CStr> const &) const ;
+    void GetSaveFoldersByPattern(CStr const &,retruxx::vector<CStr> &) const ;
+    CStr GetLastUsedSaveFolderName(retruxx::vector<CStr> const &) const ;
     void OnNewFrameForce();
     CStr GetAutoSaveName(CStr const &,CStr const &) const ;
     CStr GetQuickSaveName(CStr const &) const ;
@@ -90,7 +89,7 @@ public:
 
 private:
     ConstantSaveInfo m_constantSaveInfo;
-    std::map<CStr,SaveInfo *> m_saves;
+    retruxx::map<CStr,SaveInfo *> m_saves;
     m3d::rend::TexHandle m_curGameScreenshot;
     bool m_bDelayedQuickSave = false;
     unsigned int m_delayedQuickSaveFrame = 0;

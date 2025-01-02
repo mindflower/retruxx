@@ -1,4 +1,5 @@
 #include "dynamicquest.h"
+#include <stdexcept>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DynamicQuest, Take)
 {

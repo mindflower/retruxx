@@ -3,6 +3,7 @@
 #include "config.h"
 #include "core/kernel.h"
 #include "core/log.h"
+#include "core/ini.h"
 #include "core/scoped_ptr.h"
 #include "file/fileserver.h"
 #include "file/filestream.h"

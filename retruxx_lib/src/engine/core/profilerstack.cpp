@@ -134,6 +134,11 @@ namespace m3d
         return m_stack.size();
     }
 
+    ProfilerStack::ProfilerStack() :
+        m_numProfilers(0)
+    {
+    }
+
     ProfilerStack::~ProfilerStack()
     {
         Clear();

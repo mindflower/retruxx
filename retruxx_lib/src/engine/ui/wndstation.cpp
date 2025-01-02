@@ -115,7 +115,7 @@ namespace m3d
                 break;
             }
             default:
-                throw std::logic_error("Not implemented");
+                throw retruxx::logic_error("Not implemented");
             }
             if (ev.m_eventType == 10 || ev.m_eventType == 11 || ev.m_eventType == 12)
             {
@@ -123,7 +123,7 @@ namespace m3d
                 {
                     if (m_wndOpenedComboBox)
                     {
-                        throw std::logic_error("Not implemented");
+                        throw retruxx::logic_error("Not implemented");
                     }
                 }
             }
@@ -180,7 +180,7 @@ namespace m3d
 
         ModalWnd* WndStation::GetTopModal()
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int WndStation::DispatchPaint(Wnd* curWnd, BoundsBase<float> const& clipTo)
@@ -218,7 +218,7 @@ namespace m3d
             }
 
             //TODO: check child order
-            std::vector<Wnd*> wnds;
+            retruxx::vector<Wnd*> wnds;
             for (auto child = curWnd->GetFirstChild(); child; child = child->GetNextSibling())
             {
                 if (auto const wnd = dynamic_cast<Wnd*>(child))
@@ -251,7 +251,7 @@ namespace m3d
 
         int WndStation::CheckForMouseClick(Wnd*, bool, PointBase<float> const*)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         Wnd* WndStation::GetWndForMousePoint(Wnd* curWnd, PointBase<float> const& pt, bool affectAll)
@@ -313,7 +313,7 @@ namespace m3d
 
         int WndStation::PulseKeyForWindow(Wnd*, unsigned short, unsigned char)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         Wnd* WndStation::GetCapture() const
@@ -323,12 +323,12 @@ namespace m3d
 
         Wnd* WndStation::GetWndMouseOver()
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         void WndStation::EnableAnimation(bool)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int WndStation::Activate(Wnd* wnd)
@@ -376,7 +376,7 @@ namespace m3d
 
         Wnd* WndStation::CaptureMouse(Wnd*)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         CStr WndStation::GetStringByStringId0(CStr const& id)
@@ -418,7 +418,7 @@ namespace m3d
         RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00593210, WndStation::CheckForMouseDblClick);
         int WndStation::CheckForMouseDblClick(Wnd*, PointBase<float> const&, unsigned, PointBase<float>&)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int WndStation::GetDefaultCursor(Cursor& cur)
@@ -458,22 +458,22 @@ namespace m3d
 
         void WndStation::CloseAllModalWithCancelRet()
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int WndStation::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         void WndStation::StopAllAnimations()
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         Wnd* WndStation::GetFocus() const
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int WndStation::ProcessEvent(Event const& ev)
@@ -589,7 +589,7 @@ namespace m3d
 
         Wnd* WndStation::GetWndByUniqueId(int) const
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         void WndStation::EndModal(ModalWnd* wnd, unsigned toRet)
@@ -615,7 +615,7 @@ namespace m3d
 
         Wnd* WndStation::GetActive() const
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         bool WndStation::IsModal(ModalWnd* wnd)
@@ -632,7 +632,7 @@ namespace m3d
 
         void WndStation::OnEndAnimation(Wnd*)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         bool WndStation::IsAnimationEnabled() const
@@ -759,7 +759,7 @@ namespace m3d
 
         int WndStation::DispatchJoystick(Event const&)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         void WndStation::OnCloseComboBox(ComboBoxWnd* combo)
@@ -775,12 +775,12 @@ namespace m3d
 
         void WndStation::OnOpenComboBox(ComboBoxWnd*)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         void WndStation::ForEachChild(Wnd*, void(Wnd::*)())
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         void WndStation::RegisterWnd(Wnd* w)
@@ -799,7 +799,7 @@ namespace m3d
 
         GfxServer* WndStation::getGfxServer()
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         void WndStation::UnregisterWnd(Wnd* w)
@@ -821,7 +821,7 @@ namespace m3d
 
         int WndStation::DispatchKey(Event const&)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int WndStation::Done()

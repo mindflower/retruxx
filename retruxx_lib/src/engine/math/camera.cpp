@@ -4,7 +4,10 @@
 #include "math/matrix.h"
 
 CAffineXForm::CAffineXForm() :
-    m_worldOrigin(0.0, 0.0, 0.0)
+    m_worldOrigin(0.0, 0.0, 0.0),
+    m_rotRoll(0.0),
+    m_rotPitch(0.0),
+    m_rotYaw(0.0)
 {
 }
 
@@ -75,6 +78,12 @@ void CCamera::createProjectionMatrix(CMatrix& vv, float f) const
     vv._34 = 1.0;
     vv._11 = 1.0 / tan(v5 * v4 * 0.5);
     vv._22 = 1.0 / tan(v4 * 0.5);
+}
+
+CCamera::CCamera() :
+    m_fovX(120.0),
+    m_fovY(90.0)
+{
 }
 
 void CCamera::lookAt(CVector const&, CVector const&)

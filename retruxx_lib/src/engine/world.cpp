@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <world.h>
 #include <core/kernel.h>
+#include <core/ini.h>
 
 #include "config.h"
 #include "level.h"

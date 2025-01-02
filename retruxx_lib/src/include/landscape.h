@@ -54,7 +54,7 @@ namespace m3d
             TIVChunk();
 
         private:
-            std::vector<rend::VbHandle> m_vbHandle;
+            retruxx::vector<rend::VbHandle> m_vbHandle;
             rend::TexHandle m_texHandle;
             unsigned int m_offsetsmap[65536];
             unsigned __int16 m_banknumber[65536];
@@ -125,18 +125,18 @@ namespace m3d
             void InsertObstacle(ai::Obstacle*);
             ~CollisionCellItem();
             CollisionCellItem();
-            std::set<ref_ptr<ai::Obstacle>> const& GetObstacles() const;
+            retruxx::set<ref_ptr<ai::Obstacle>> const& GetObstacles() const;
             void InsertPhysicObjId(int);
-            std::set<int> const& GetPhysicObjIds() const;
+            retruxx::set<int> const& GetPhysicObjIds() const;
             void EraseObstacle(ai::Obstacle*);
             void ErasePhysicObjId(int);
 
         private:
-            std::set<GeomObject*> m_geomsList;
+            retruxx::set<GeomObject*> m_geomsList;
             bool m_wasEnabledLastFrame;
             bool m_bMustCheck;
-            std::set<int> m_physicObjIds;
-            std::set<ref_ptr<ai::Obstacle>>* m_obstacles;
+            retruxx::set<int> m_physicObjIds;
+            retruxx::set<ref_ptr<ai::Obstacle>>* m_obstacles;
         };
 
         class AlphaMask
@@ -145,7 +145,7 @@ namespace m3d
         protected:
         private:
             CStr m_name;
-            std::vector<rend::TexHandle> m_texMasks[4];
+            retruxx::vector<rend::TexHandle> m_texMasks[4];
         };
 
         enum VisibilityMode
@@ -203,7 +203,7 @@ namespace m3d
             int m_passmask;
             int m_alphaset;
             int m_priority;
-            std::vector<int> m_texIndices;
+            retruxx::vector<int> m_texIndices;
         };
 
         class GrassInstance
@@ -224,7 +224,7 @@ namespace m3d
         private:
             int modelId;
             int numInstances;
-            std::vector<GrassInstance*> grass;
+            retruxx::vector<GrassInstance*> grass;
         };
 
         class TileGrass
@@ -234,7 +234,7 @@ namespace m3d
         private:
             unsigned int numDiffModels;
             unsigned int numInstances;
-            std::vector<GrassInstancesForModel*> instancesPerModel;
+            retruxx::vector<GrassInstancesForModel*> instancesPerModel;
         };
 
     public:
@@ -248,7 +248,7 @@ namespace m3d
         void SetAllTexturesLoading(bool);
         void FreeShoresStuff();
         void BuildSolidLandscape();
-        void DrawCellsOverlayedEditor(std::vector<unsigned int> const &,unsigned int);
+        void DrawCellsOverlayedEditor(retruxx::vector<unsigned int> const &,unsigned int);
         void DrawSolidLandscape(LandRenderMode,int);
         void RemoveGrassInstance(unsigned int);
         void QueryWaterVisibility();
@@ -285,7 +285,7 @@ namespace m3d
         void SaveTileInfo();
         int Load();
         void RenderGrass(unsigned int,GrassInstance * *,int *,RenderGrassType);
-        void RenderGrass(std::deque<std::pair<int,int>> const &);
+        void RenderGrass(retruxx::deque<retruxx::pair<int,int>> const &);
         int GetLsSize() const ;
         void RecalcUV();
         void UpdateTexturesFilters();
@@ -333,7 +333,7 @@ namespace m3d
         static Class * GetBaseClass();
         void PostServersLoad();
         void RemoveGrassTile(int,int);
-        void DrawCells(std::vector<unsigned int> const &,unsigned int);
+        void DrawCells(retruxx::vector<unsigned int> const &,unsigned int);
         void GetVisCellHeights(float &,float &,int,int) const ;
         void CreateIndicesTriLists(int *,int,int);
         void UpdateNodeCollisionGeoms(SgNode *);
@@ -387,11 +387,11 @@ namespace m3d
         void RecursiveDisableShore(unsigned char *,int,int);
         Landscape(Landscape const &);
         Landscape();
-        void BuildCells0(rend::VertexLandscape *,TIVChunk &,int &,std::vector<unsigned int> const &,RenderTypes,std::vector<int,std::allocator<int> > &);
-        void DrawCellsFast0(std::vector<unsigned int> const &,TIVChunk &,RenderTypes);
+        void BuildCells0(rend::VertexLandscape *,TIVChunk &,int &,retruxx::vector<unsigned int> const &,RenderTypes,retruxx::vector<int,retruxx::allocator<int> > &);
+        void DrawCellsFast0(retruxx::vector<unsigned int> const &,TIVChunk &,RenderTypes);
         void RecursiveEnableShore(unsigned char *,int,int);
         bool traceLineThruCellLs0(float &,int,int,CVector const &,CVector const &);
-        void DrawCells0(std::vector<unsigned int> const &,RenderTypes);
+        void DrawCells0(retruxx::vector<unsigned int> const &,RenderTypes);
         int IsBackfaced(int,int,rend::Cull);
         void FreeTiles();
         void BuildUVSet();
@@ -409,11 +409,11 @@ namespace m3d
         Landscape::CollisionCellItem **m_oCollisionitems;
         GeomObject *m_terrainObject;
         int m_maxLOD;
-        std::vector<CollisionInfo *> m_collisions;
+        retruxx::vector<CollisionInfo *> m_collisions;
         float *m_heightMap;
         __int16 *m_waterMap;
         CVector *m_vnormal;
-        std::vector<rend::IbHandle> m_landIbConst;
+        retruxx::vector<rend::IbHandle> m_landIbConst;
         rend::VbHandle m_landUVVb;
         rend::VbHandle m_landVb;
         rend::IbHandle m_waterIb[16];
@@ -440,9 +440,9 @@ namespace m3d
         CMatrix m_matScale;
         int vertsPerCell;
         int trisPerCell[4];
-        std::vector<WaveSets> m_waves;
-        std::vector<std::vector<CVector>> m_shoreLines;
-        std::set<unsigned int> m_noShoresSet;
+        retruxx::vector<WaveSets> m_waves;
+        retruxx::vector<retruxx::vector<CVector>> m_shoreLines;
+        retruxx::set<unsigned int> m_noShoresSet;
         rend::VertexXYZNCT2 *m_dummyVB;
         unsigned __int16 *m_remappedIndices;
         unsigned __int16 *m_lsIndicesDubb;
@@ -472,8 +472,8 @@ namespace m3d
         rend::TexHandle m_baseWaterTex;
         rend::TexHandle m_texLightmap;
         int m_texNormalMapSize;
-        std::vector<AlphaMask> m_AlphaSets;
-        std::vector<LandType> m_Lands;
+        retruxx::vector<AlphaMask> m_AlphaSets;
+        retruxx::vector<LandType> m_Lands;
         CIntHash<int> m_hashIdxToPass;
         CStrHash<int> m_hashAlphaToLand;
         int m_CurAlphaSet;
@@ -484,21 +484,21 @@ namespace m3d
         RenderTypes m_lastState;
         int m_firstpasscounter;
         int m_otherpasscounter;
-        std::set<unsigned int> *m_texSetsmap;
+        retruxx::set<unsigned int> *m_texSetsmap;
         rend::IEffect *overlayShader;
         CIntHash<int> m_hashTexToIndex;
         CStrHash<int> m_texToIdx;
         CIntHash<int> m_hashIdxToLandType;
-        std::vector<TIVChunk *> m_tilesTextures;
+        retruxx::vector<TIVChunk *> m_tilesTextures;
         TileInfo *m_tiles;
         unsigned int *m_colormap;
         float m_uvForAngles[4][25][2];
         TextureAlphaSet m_setAndUVs;
-        std::vector<std::vector<unsigned int> > m_cellsPerTex;
+        retruxx::vector<retruxx::vector<unsigned int> > m_cellsPerTex;
         CStr m_pathTile;
         bool m_loadAllTextures;
-        std::set<CStr> m_usedTexturesList;
-        std::vector<int> m_lsNumIndices;
+        retruxx::set<CStr> m_usedTexturesList;
+        retruxx::vector<int> m_lsNumIndices;
         int m_wtNumTris[16];
         int m_drawtextured;
         int m_mapSize;
@@ -517,7 +517,7 @@ namespace m3d
         rend::IHlslShader *m_waterDumbPs;
         int m_waterShaderVersion;
         int m_maxWaterCellPerPass;
-        std::vector<std::pair<unsigned int,float>> waterCellsToDraw[16];
+        retruxx::vector<retruxx::pair<unsigned int,float>> waterCellsToDraw[16];
         CVector4 *waterTileInfo;
         rend::IHlslShader *m_grassVs;
         rend::IHlslShader *m_grassPs;

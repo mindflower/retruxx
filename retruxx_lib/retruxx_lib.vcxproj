@@ -774,6 +774,7 @@
     <ClCompile Include="src\server\statistic\timestatistic.cpp" />
     <ClCompile Include="src\server\utils.cpp" />
     <ClCompile Include="src\server\weaponfirer.cpp" />
+    <ClCompile Include="src\thirdparty\allocator.cpp" />
     <ClCompile Include="src\thirdparty\injecttools.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -875,6 +876,7 @@
     <ClInclude Include="src\engine\weather\weather.h" />
     <ClInclude Include="src\engine\weather\weathermanager.h" />
     <ClInclude Include="src\engine\wheeltraces\wheeltraces.h" />
+    <ClInclude Include="src\game\game.h" />
     <ClInclude Include="src\game\globalscriptfuncs.h" />
     <ClInclude Include="src\game\impulses\truxximpulses.h" />
     <ClInclude Include="src\game\m3dgame.h" />
@@ -1397,6 +1399,7 @@
     <ClInclude Include="src\thirdparty\stl\deque.hpp" />
     <ClInclude Include="src\thirdparty\stl\exception.hpp" />
     <ClInclude Include="src\thirdparty\stl\functional.hpp" />
+    <ClInclude Include="src\thirdparty\stl\hash_map.hpp" />
     <ClInclude Include="src\thirdparty\stl\iosfwd.hpp" />
     <ClInclude Include="src\thirdparty\stl\iterator.hpp" />
     <ClInclude Include="src\thirdparty\stl\list.hpp" />
@@ -1411,6 +1414,7 @@
     <ClInclude Include="src\thirdparty\stl\utility.hpp" />
     <ClInclude Include="src\thirdparty\stl\vector.hpp" />
     <ClInclude Include="src\thirdparty\stl\wchar.hpp" />
+    <ClInclude Include="src\thirdparty\stl\xhash.hpp" />
     <ClInclude Include="src\thirdparty\stl\xmemory.hpp" />
     <ClInclude Include="src\thirdparty\stl\xstddef.hpp" />
     <ClInclude Include="src\thirdparty\stl\xstring.hpp" />

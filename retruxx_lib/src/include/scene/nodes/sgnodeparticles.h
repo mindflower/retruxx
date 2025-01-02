@@ -17,7 +17,7 @@ namespace m3d
         virtual Class* GetClass() const;
         virtual bool IsFree() const;
         virtual int GetProperty(unsigned int, void*) const;
-        virtual int GetPropertiesList(std::set<unsigned int, std::less<unsigned int>>&) const;
+        virtual int GetPropertiesList(retruxx::set<unsigned int, retruxx::less<unsigned int>>&) const;
         virtual int SetProperty(unsigned int, void*);
         virtual void Restart();
         virtual DataServer* GetServer() const;

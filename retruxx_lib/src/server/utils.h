@@ -1,13 +1,13 @@
 #include <core/stringm3d.h>
-#include "thirdparty/stl/vector.hpp"
+#include "thirdparty/containers.h"
 
 namespace ai
 {
     class Path;
 
-    void StrToStringVector(CStr const&, oldstd::vector<CStr>&);
-    void StrToFloatVector(CStr const&, oldstd::vector<float>&);
-    void StrToIntVector(CStr const&, oldstd::vector<int>&);
+    void StrToStringVector(CStr const&, retruxx::vector<CStr>&);
+    void StrToFloatVector(CStr const&, retruxx::vector<float>&);
+    void StrToIntVector(CStr const&, retruxx::vector<int>&);
     bool GetPathItem(Path const*, unsigned int, CVector&);
     void DebugCircle(CVector const&, float, unsigned int);
 }

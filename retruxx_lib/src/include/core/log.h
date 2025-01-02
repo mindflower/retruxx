@@ -1,8 +1,9 @@
 #pragma once
 #include "stringm3d.h"
 #include "threadsync.h"
-#include <string>
 #include "kernel.h"
+#include "thirdparty/containers.h"
+#include "thirdparty/injecttools.h"
 
 #define M3D_LOG_INFO(msg) M3D_KERNEL->m_Log->sourceLine() = __LINE__; M3D_KERNEL->m_Log->setSourceFile(__FILE__); M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_INFO)
 #define M3D_LOG_ERR(msg)  M3D_KERNEL->m_Log->sourceLine() = __LINE__; M3D_KERNEL->m_Log->setSourceFile(__FILE__); M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_ERR)
@@ -53,9 +54,9 @@ namespace m3d
     private:
         /* 0x0000 */ bool m_logStarted = false;
         /* 0x0001 */ char Padding_79[3];
-        /* 0x0004 */ oldstd::string m_fileName;
+        /* 0x0004 */ retruxx::string m_fileName;
         /* 0x0020 */ unsigned int m_sourceLine = 0;
-        /* 0x0024 */ oldstd::string m_sourceFile;
+        /* 0x0024 */ retruxx::string m_sourceFile;
         /* 0x0040 */ unsigned int m_logMask = -1;
         /* 0x0044 */ int m_indentCount = 0;
         /* 0x0048 */ int m_indentChars = 4;

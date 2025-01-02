@@ -8,7 +8,7 @@ public:
     int DeleteWeaponGroup(int);
     void ClearSavedGroups();
     int ValidateWeaponGroups();
-    void GetAllWeapons(std::set<CStr> &) const ;
+    void GetAllWeapons(retruxx::set<CStr> &) const ;
     void SaveWeaponGroups();
     virtual m3d::Object * Clone();
     class WeaponGroup * GetWeaponGroupById(int) const ;
@@ -45,8 +45,8 @@ public:
     RT_CLASS_DECLARE(WeaponGroupManager);
 
 private:
-    std::map<int,WeaponGroup *> m_weaponGroups;
-    std::map<int,WeaponGroup *> m_savedWeaponGroups;
+    retruxx::map<int,WeaponGroup *> m_weaponGroups;
+    retruxx::map<int,WeaponGroup *> m_savedWeaponGroups;
 };
 
 class WeaponGroup :  public m3d::Object
@@ -74,7 +74,7 @@ public:
     WeaponGroup & operator=(WeaponGroup const &);
     void SetGroupId(int);
     virtual ~WeaponGroup();
-    std::set<CStr, std::less<CStr>, std::allocator<CStr> > const & GetWeapons() const ;
+    retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > const & GetWeapons() const ;
 
 protected:
     WeaponGroup();
@@ -86,5 +86,5 @@ public:
 private:
     int m_groupId;
     Impulse m_impulseId;
-    std::set<CStr> m_gunPartNames;
+    retruxx::set<CStr> m_gunPartNames;
 };

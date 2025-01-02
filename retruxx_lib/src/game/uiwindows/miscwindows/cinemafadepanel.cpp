@@ -57,7 +57,7 @@ CinemaFadePanel::CinemaFadePanel()
     rc.width = 1024.0;
     rc.height = 768.0;
     CreateWnd("", 0x300, rc, 0);
-    m_showCursor = false;
+    SetCursorShow(false);
     m_fadePeriod = m3d::Application::g_pApp->m_cinematic->m_fadePeriod.GetF();
 }
 

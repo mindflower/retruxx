@@ -141,8 +141,17 @@ int SaveButton::LoadPattern(m3d::ui::Wnd* pattern)
             {
                 m_aif.m_wndPatternSaveName = dynamic_cast<Wnd*>(child);;
                 pattern->RemoveChild(child);
-                SaveButton::m_aif.m_wndPatternSaveName->m_bounds.y0 = SaveButton::m_aif.m_wndPatternSaveName->m_bounds.y0 - SaveButton::m_aif.m_wndPattern->m_bounds.y0;
-                SaveButton::m_aif.m_wndPatternSaveName->m_bounds.x0 = SaveButton::m_aif.m_wndPatternSaveName->m_bounds.x0 - SaveButton::m_aif.m_wndPattern->m_bounds.x0;
+
+                auto patternSaveName = m_aif.m_wndPatternSaveName->GetBounds();
+                const auto pattern = m_aif.m_wndPattern->GetBounds();
+
+                patternSaveName.y0 = patternSaveName.y0 - pattern.y0;
+                patternSaveName.x0 = patternSaveName.x0 - pattern.x0;
+
+                m_aif.m_wndPatternSaveName->SetBounds(patternSaveName, false);
+
+                //SaveButton::m_aif.m_wndPatternSaveName->m_bounds.y0 = SaveButton::m_aif.m_wndPatternSaveName->m_bounds.y0 - SaveButton::m_aif.m_wndPattern->m_bounds.y0;
+                //SaveButton::m_aif.m_wndPatternSaveName->m_bounds.x0 = SaveButton::m_aif.m_wndPatternSaveName->m_bounds.x0 - SaveButton::m_aif.m_wndPattern->m_bounds.x0;
             }
             else
             {
@@ -153,19 +162,28 @@ int SaveButton::LoadPattern(m3d::ui::Wnd* pattern)
             child = pattern->Object::GetChildByName(SaveButton::m_aif.m_wndTimeName);
             if (child && child->IsKindOf(RT_CLASS_LOCAL(Wnd)))
             {
-                SaveButton::m_aif.m_wndPatternTime = dynamic_cast<Wnd*>(child);
+                m_aif.m_wndPatternTime = dynamic_cast<Wnd*>(child);
                 pattern->RemoveChild(child);
-                SaveButton::m_aif.m_wndPatternTime->m_bounds.y0 = SaveButton::m_aif.m_wndPatternTime->m_bounds.y0 - SaveButton::m_aif.m_wndPattern->m_bounds.y0;
-                SaveButton::m_aif.m_wndPatternTime->m_bounds.x0 = SaveButton::m_aif.m_wndPatternTime->m_bounds.x0
-                    - SaveButton::m_aif.m_wndPattern->m_bounds.x0;
+
+                auto patternTime = m_aif.m_wndPatternTime->GetBounds();
+                const auto pattern = m_aif.m_wndPattern->GetBounds();
+
+                patternTime.y0 = patternTime.y0 - pattern.y0;
+                patternTime.x0 = patternTime.x0 - pattern.x0;
+
+                m_aif.m_wndPatternTime->SetBounds(patternTime, false);
+
+                //m_aif.m_wndPatternTime->m_bounds.y0 = m_aif.m_wndPatternTime->m_bounds.y0 - m_aif.m_wndPattern->m_bounds.y0;
+                //m_aif.m_wndPatternTime->m_bounds.x0 = m_aif.m_wndPatternTime->m_bounds.x0 - m_aif.m_wndPattern->m_bounds.x0;
             }
             else
             {
                 M3D_LOG_INFO("GET_CHILD_PATTERN error - cannot find child wnd " + m_aif.m_wndTimeName);
                 res = 0;
             }
-            SaveButton::m_aif.m_wndPattern->m_bounds.x0 = 0.0;
-            SaveButton::m_aif.m_wndPattern->m_bounds.y0 = 0.0;
+            m_aif.m_wndPattern->SetBounds({ 0.0, 0.0 }, false);
+            //m_aif.m_wndPattern->m_bounds.x0 = 0.0;
+            //m_aif.m_wndPattern->m_bounds.y0 = 0.0;
         }
         else
         {

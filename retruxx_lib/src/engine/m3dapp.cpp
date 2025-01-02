@@ -52,7 +52,7 @@
 
 namespace
 {
-    std::set<size_t>* codePagesStringsPtr;
+    retruxx::set<size_t>* codePagesStringsPtr;
 
     BOOL CALLBACK EnumCodePagesProc(LPTSTR lpCodePageString)
     {
@@ -391,19 +391,19 @@ namespace m3d
                         g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
                         if (m_bDrawGraph)
                         {
-                            throw std::logic_error("Not implemented");
+                            throw retruxx::logic_error("Not implemented");
                         }
                         if (m_bDrawMemoryStats)
                         {
-                            throw std::logic_error("Not implemented");
+                            throw retruxx::logic_error("Not implemented");
                         }
                         if (m_bDrawStats)
                         {
-                            throw std::logic_error("Not implemented");
+                            throw retruxx::logic_error("Not implemented");
                         }
                         if (m_bDrawCounters)
                         {
-                            throw std::logic_error("Not implemented");
+                            throw retruxx::logic_error("Not implemented");
                         }
                         g_pApp->m_renderer->PopZbState();
                         m_counterStack.ClearStringStack();
@@ -414,11 +414,11 @@ namespace m3d
                         g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
                         if (m_bShowDeviceMemStats)
                         {
-                            throw std::logic_error("Not implemented");
+                            throw retruxx::logic_error("Not implemented");
                         }
                         if (m_bShowRenderStats)
                         {
-                            throw std::logic_error("Not implemented");
+                            throw retruxx::logic_error("Not implemented");
                         }
                         if (g_Kernel->GetEngineCfg().m_g_showEffectsStats.GetB())
                         {
@@ -429,7 +429,7 @@ namespace m3d
                     }
                     if (m_screenShotPending)
                     {
-                        throw std::logic_error("Not implemented");
+                        throw retruxx::logic_error("Not implemented");
                     }
                     m_renderer->PresentScene();
                 }
@@ -528,7 +528,7 @@ namespace m3d
                 ev.m_ushortEv[0] = key;
                 if (!key && param2 == 0x9C)
                 {
-                    throw std::logic_error("Not implemented");
+                    throw retruxx::logic_error("Not implemented");
                 }
                 ev.m_byteEv[3] = param2;
                 auto oldHead = m_eventsQueueHead;
@@ -744,7 +744,7 @@ namespace m3d
         __cpuid(reinterpret_cast<int*>(cpuInfo), 0x80000000);
 
         //TODO: other info...
-        //throw std::logic_error("Not implemented");
+        //throw retruxx::logic_error("Not implemented");
         return 1;
     }
 
@@ -817,7 +817,7 @@ namespace m3d
     void Application::SetCodepage()
     {
         //TODO: check this
-        std::set<size_t> codePagesStrings;
+        retruxx::set<size_t> codePagesStrings;
         codePagesStringsPtr = &codePagesStrings;
         ::EnumSystemCodePages(EnumCodePagesProc, CP_INSTALLED);
         CStr const codePageName = g_Kernel->GetEngineCfg().m_ui_codePageName.GetS();
@@ -1091,9 +1091,9 @@ namespace m3d
             break;
         }
         case 7:
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         case 8:
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         case 0xA:
         case 0xB:
         case 0xC:
@@ -1192,12 +1192,12 @@ namespace m3d
     void Application::DoneImpulses()
     {
         //TODO: ...
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::DetailSettings::RestoreGameSettings()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::DetailSettings::SaveGameSettings()
@@ -1209,12 +1209,16 @@ namespace m3d
 
     void Application::DetailSettings::SetMenuLevelSettings()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     Application::DetailSettings::DetailSettings()
     {
         SaveGameSettings();
+    }
+
+    Application::LoadScreenInfo::LoadScreenInfo()
+    {
     }
 
     Application::LoadScreenInfo::~LoadScreenInfo()
@@ -1241,6 +1245,12 @@ namespace m3d
         return m_lastPos;
     }
 
+    Application::MouseInfo::MouseInfo() :
+        m_deltaDuringGameFrame(0, 0),
+        m_lastPos(0, 0)
+    {
+    }
+
     void Application::MouseInfo::SetUpForCurPos(PointBase<int> const& curPos)
     {
         m_deltaDuringGameFrame.x += curPos.x - m_lastPos.x;
@@ -1250,47 +1260,47 @@ namespace m3d
 
     DataServer& Application::GetSoundServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::texGenProcess(IGeneratedTexture*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::DrawTri(CVector*, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::ForbidRendering()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     Class* Application::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     DataServer& Application::GetStaticModelsServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::DrawCross(CVector const&, float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     CStr const& Application::GetImageName() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::GetCurDifficultyLevel() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     char* Application::GetWindowTitle() const
@@ -1300,27 +1310,27 @@ namespace m3d
 
     void Application::MiniDump()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::DrawLogo()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     float Application::GetOnScreenSize(CVector const&, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::HandleCinematic(float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::PutSplashCallBack(int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::AllowRendering()
@@ -1330,42 +1340,43 @@ namespace m3d
 
     bool Application::StartPlayingMusic(char const*, bool, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     DataServer& Application::GetProjectorsServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool Application::CheckCommandLineParam(char const*) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     unsigned long Application::GetLocale() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::DrawQuad(CVector*, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::SaveToXml(cmn::XmlFile*, cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     Application::~Application()
     {
+        throw retruxx::logic_error("Not implemented");
         //TODO: implement Application::~Application
     }
 
     void Application::TexSoften(rend::TexHandle, rend::TexHandle, int, float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool Application::IsTextHieroglyphic(CStr const&) const
@@ -1375,7 +1386,7 @@ namespace m3d
 
     CStr Application::GetNativeFuncDesc(char const*) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::StopPlayingMusic()
@@ -1388,74 +1399,74 @@ namespace m3d
 
     void Application::SetMouseSensitivity(float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     float Application::getZoom()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool Application::LoadServers(CStr const&, bool)
     {
         //TODO: implement Application::LoadServers
         return true;
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool Application::SetPostEffectParam(CStr const&, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::ChangeLanguage()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::DrawWireRect(CVector2 const&, CVector2 const&, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::PostLoadServers()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::OnBeforeDeviceReset()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::FinishQuads()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::setZoom(float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::PutSpriteRelRot(float, float, float, float, unsigned, float, float, float, float, float, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::SetMouseXAxisFlipped(bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::SetMouseYAxisFlipped(bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::SetFlushQuadsShader(rend::IEffect*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::AppActive() const
@@ -1465,17 +1476,17 @@ namespace m3d
 
     rend::VertexXYZCT1* Application::RenderQuadXyzct1GetNextPtr()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::LoadFromXml(cmn::XmlFile*, cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::SwitchDisplayModes(HWND__*, int, int, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::done()
@@ -1485,22 +1496,22 @@ namespace m3d
 
     void Application::OnAfterDeviceReset()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::ReloadPostEffects()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool Application::GetPostEffectParam(CStr const&, float&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::GetTextFit(CStr const&, PointBase<float>&, float, TextWrapFlags)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::StartExclusiveMsgLoop()
@@ -1513,7 +1524,7 @@ namespace m3d
 
     DataServer& Application::GetSpritesServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::panic()
@@ -1541,12 +1552,12 @@ namespace m3d
 
     bool Application::SaveServers(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool Application::GetMouseHitPoint(CVector&, SgNode*&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::StartQuads(rend::VertexType vt)
@@ -1690,28 +1701,28 @@ namespace m3d
 
     int Application::DrawTextRelT(float, float, unsigned, CStr const&, unsigned, int)
     {
-        throw std::logic_error("Not implemented"); 
+        throw retruxx::logic_error("Not implemented"); 
     }
 
-    int Application::FormatText(std::vector<ui::FormattedLine>& linesOfText, PointBase<float> const& at, CStr const& textIn, ui::DrawInfo const& di, TextWrapFlags wrapFlags, TextFormatFlags formatFlags)
+    int Application::FormatText(retruxx::vector<ui::FormattedLine>& linesOfText, PointBase<float> const& at, CStr const& textIn, ui::DrawInfo const& di, TextWrapFlags wrapFlags, TextFormatFlags formatFlags)
     {
 
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::WaitForAnykey()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::SetFrameClearColor(unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::DrawTextAbs(float, float, unsigned, CStr const&, unsigned, int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     Application::Application(char const* logName)
@@ -1788,7 +1799,7 @@ namespace m3d
     void Application::sysError(CStr const& whence, CStr const& assertion)
     {
 
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
         auto const description = "Assertion failed at " + whence + "\nexpression: " + assertion;
         M3D_LOG_INFO(description);
         //TODO: check this
@@ -1803,7 +1814,7 @@ namespace m3d
 
     void Application::UnPause()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     Class* Application::GetBaseClass()
@@ -1813,12 +1824,12 @@ namespace m3d
 
     void Application::PutSpriteAbsRot(float, float, float, float, unsigned, float, float, float, float, float, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     Profiler* Application::CreateProfiler(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::PutSprite2Rel(float x1, float y1, float tu1, float tv1, float x2, float y2, float tu2, float tv2, unsigned c)
@@ -1830,67 +1841,67 @@ namespace m3d
 
     void Application::SetKeyboardFocus(IEventHandler*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::OnChangeMode(AuxImpulseInfo const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::DrawWireRectRel(CVector2 const&, CVector2 const&, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     DataServer& Application::GetLightsServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::SetFont(CStr const&, float, unsigned, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    bool Application::SaveUsedOnlyServers(CStr const&, std::set<int, std::less<int>, std::allocator<int>>&)
+    bool Application::SaveUsedOnlyServers(CStr const&, retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::Render3DText0(CVector const&, CStr const&, unsigned, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     rend::VertexXYZWCT1* Application::RenderQuadXyzwct1GetNextPtr()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool Application::AddPostEffect(CStr const&, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::FindLastColorInStr(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::PutSplashMainMenuLevelLoad(int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::RenderQuadXyzwct1(float, float, float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::DrawBoundingRadius(CVector const&, float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::SetMouseXy(float absX, float absY)
@@ -1908,32 +1919,32 @@ namespace m3d
 
     int Application::GetCurGameMode()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::HeightmapToNormalmap(unsigned short*, unsigned*, int, int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::SetFontSelfMaking(CStr const&, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::PutSplash(int, char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::DrawTextRel(float, float, unsigned, CStr const&, unsigned, int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     HWND Application::GetRenderWindow() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::PutSprite2Abs(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float tu1, float tv1, float tu2, float tv2, float tu3, float tv3, float tu4, float tv4, float zval, unsigned c)
@@ -1985,43 +1996,43 @@ namespace m3d
 
     char const* Application::GetCallbackName() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ui::MbRetCodes Application::RunMsgBoxDlg(CStr const&, CStr const&, unsigned, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::DrawTextAbsT(float, float, unsigned, CStr const&, unsigned, int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::SaveExportDescToFile(fs::FileStream&, bool) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::DrawLine(CVector2 const&, CVector2 const&, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x007B0010, Application::DrawLine, void(Application::*)(CVector const&, CVector const&, unsigned))
     void Application::DrawLine(CVector const&, CVector const&, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::Pause()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     CStr Application::GetClassDesc(Class*) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::ClearViewportToBlack()
@@ -2050,12 +2061,12 @@ namespace m3d
 
     CStr const& Application::GetStartupFolder() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::PutSpriteAbs(float, float, float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::PutSpriteAbs(float x1, float y1, float x2, float y2, unsigned c)
@@ -2065,22 +2076,22 @@ namespace m3d
 
     void Application::PutSpriteAbs(float, float, float, float, float, float, float, float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     DataServer& Application::GetAnimatedModelsServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool Application::KillPostEffect(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     DataServer& Application::GetDecalsServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::DrawTextRelClip(PointBase<float> const& at , CStr const& str, ui::DrawInfo const& di, TextWrapFlags wrapFlag, TextFormatFlags formatFlag)
@@ -2089,7 +2100,7 @@ namespace m3d
         StartQuads(rend::VERTEX_XYZWCT1);
         if (wrapFlag)
         {
-            std::vector<m3d::ui::FormattedLine> linesOfText;
+            retruxx::vector<m3d::ui::FormattedLine> linesOfText;
             FormatText(linesOfText, at, str, di, wrapFlag, formatFlag);
             if (formatFlag == TF_FULL && !linesOfText.empty())
             {
@@ -2118,32 +2129,32 @@ namespace m3d
 
     DataServer& Application::GetParticlesServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool Application::bIsMousePointing() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     DbgCounter* Application::CreateCounter(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::texGenEnqueue(IGeneratedTexture*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::HandleCommand(int, CConsoleParams const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::RunBenchmark()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::ShowSystemCursor(bool bShow)
@@ -2173,27 +2184,27 @@ namespace m3d
 
     void Application::FlushQuads()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::CreateQuadsIb()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::EnqueueEvent(Event const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool Application::GetEvent(Event&, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::finishFontRender()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::DrawStringRelClip(ui::FormattedLine const& fl, ui::DrawInfo const& di)
@@ -2247,20 +2258,20 @@ namespace m3d
             break;
         }
         default:
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     unsigned long Application::texGenThread(void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Application::AdjustWindowForChange(HWND, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::enterFontRender()
@@ -2325,7 +2336,7 @@ namespace m3d
     void Application::DiscardAllEvents()
     {
         //TODO: ...
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     unsigned long Application::GetStyleForRenderWindow(bool bFullScreen) const

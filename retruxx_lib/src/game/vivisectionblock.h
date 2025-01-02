@@ -20,7 +20,7 @@ public:
     bool shutdown();
 
 private:
-    std::vector<TownPosInfo> m_test;
+    retruxx::vector<TownPosInfo> m_test;
 };
 
 bool initVivisectionBlock();

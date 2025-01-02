@@ -1,4 +1,5 @@
 #include "dynamicquestpeace.h"
+#include <stdexcept>
 
 namespace ai
 {

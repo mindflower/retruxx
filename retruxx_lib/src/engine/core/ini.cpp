@@ -7,6 +7,8 @@
 
 #include "math/vector.h"
 
+#include <sstream>
+
 namespace m3d
 {
     cmn::XmlFile* ReadXmlFile(char const* filename, CStr* errorStr)
@@ -64,12 +66,14 @@ namespace m3d
 
     bool SafeIntAttrib(int& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
-        CStr str;
-        if (SafeStrAttrib(str, node, attrib) && !str.empty())
+        if (!node->IsEmpty())
         {
-            std::istringstream iss(str.c_str());
-            iss >> v;
-            return true;
+            auto attr = node->GetAttribute(attrib);
+            if (attr)
+            {
+                v = atoi(attr);
+                return true;
+            }
         }
         return false;
     }
@@ -100,12 +104,14 @@ namespace m3d
 
     bool SafeFloatAttrib(float& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
-        CStr str;
-        if (SafeStrAttrib(str, node, attrib) && !str.empty())
+        if (!node->IsEmpty())
         {
-            std::istringstream iss(str.c_str());
-            iss >> v;
-            return true;
+            auto attr = node->GetAttribute(attrib);
+            if (attr)
+            {
+                v = atof(attr);
+                return true;
+            }
         }
         return false;
     }
@@ -186,7 +192,7 @@ namespace m3d
         return 1;
     }
 
-    void Tokenize(CStr const& str, oldstd::vector<CStr>& tokens, char const* chars)
+    void Tokenize(CStr const& str, retruxx::vector<CStr>& tokens, char const* chars)
     {
         if (!str.empty())
         {
@@ -201,7 +207,7 @@ namespace m3d
         }
     }
 
-    void Tokenize(CStr const* str, oldstd::vector<CStr>& tokens, char const* chars)
+    void Tokenize(CStr const* str, retruxx::vector<CStr>& tokens, char const* chars)
     {
         //TODO: check this
         if (str && !str->empty())

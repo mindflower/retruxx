@@ -4,6 +4,7 @@
 #include <core/log.h>
 #include <core/ref_ptr.h>
 #include <core/scoped_ptr.h>
+#include "core/ini.h"
 #include <file/fileserver.h>
 #include <file/filestream.h>
 #include <ui/cursor.h>

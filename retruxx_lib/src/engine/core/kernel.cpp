@@ -3,11 +3,13 @@
 #include <cassert>
 #include <config.h>
 #include <m3dapp.h>
+#include "core/clazz.h"
 #include <map>
 #include <stdexcept>
 #include <core/kernel.h>
 #include <core/timer.h>
 #include <core/log.h>
+#include "core/ini.h"
 #include <file/fileserver.h>
 #include <ode/odememory.h>
 #include <script/scriptserver.h>
@@ -16,8 +18,8 @@
 
 namespace
 {
-    std::map<CStr, m3d::Class*>* m_classes = nullptr;
-    std::map<CStr, m3d::Object*>* m_lGlobals = nullptr;
+    retruxx::map<CStr, m3d::Class*>* m_classes = nullptr;
+    retruxx::map<CStr, m3d::Object*>* m_lGlobals = nullptr;
     m3d::MemoryManager* mm = nullptr;
 
     void* __fastcall AllocateMemory(unsigned int sz, char const* file, int linenum)
@@ -39,7 +41,50 @@ namespace
 namespace m3d
 {
     Kernel* g_Kernel = nullptr;
-    Kernel kernelObject;
+    //Kernel kernelObject;
+}
+
+void* __cdecl operator new(std::size_t count)
+{
+    return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
+}
+
+void* __cdecl operator new(std::size_t count, std::nothrow_t const&) noexcept
+{
+    try
+    {
+        return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
+    }
+    catch (...)
+    {
+        return nullptr;
+    }
+}
+
+void* __cdecl operator new[](std::size_t sz)
+{
+    return M3D_KERNEL->g_mar.AllocMem(sz, nullptr, 0);
+}
+
+void __cdecl operator delete(void* p)
+{
+    if (p)
+    {
+        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
+    }
+}
+
+void __cdecl operator delete[](void* p)
+{
+    if (p)
+    {
+        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
+    }
+}
+
+
+namespace m3d
+{
 
     void Kernel::UnRegisterGlobal(char const* name)
     {
@@ -95,7 +140,7 @@ namespace m3d
     {
         //TODO: check correctness
         const auto it = m_classes->find(className);
-        if (it != m_classes->cend())
+        if (it != m_classes->end())
         {
             return it->second;
         }
@@ -131,7 +176,7 @@ namespace m3d
     {
         assert(nullptr == FindClass(rtClass->m_className));
         rtClass->m_index = m_classes->size();
-        m_classes->emplace(rtClass->m_className, rtClass);
+        m_classes->insert(retruxx::pair<CStr, m3d::Class*>(rtClass->m_className, rtClass));
     }
 
     fs::FileServer& Kernel::GetFileServer()
@@ -168,7 +213,7 @@ namespace m3d
     {
         //TODO: check this
         auto const it = m_lGlobals->find(name);
-        if (it != m_lGlobals->cend())
+        if (it != m_lGlobals->end())
         {
             return it->second;
         }
@@ -249,10 +294,10 @@ namespace m3d
         g_mar.FreeMem = FreeMemory;
         mm = m_memMan;
 
-        m_classes = new std::map<CStr, m3d::Class*>;
+        m_classes = new retruxx::map<CStr, m3d::Class*>;
         AddClass(RT_CLASS_LOCAL(Object));
 
-        m_lGlobals = new std::map<CStr, m3d::Object*>;
+        m_lGlobals = new retruxx::map<CStr, m3d::Object*>;
 
         m_engineConfig = new EngineConfig;
         m_fileMan = new fs::FileServer;
@@ -295,5 +340,15 @@ namespace m3d
             g_uniqueId = 0;
         }
         return g_uniqueId++;
+    }
+
+    Kernel* Kernel::instance()
+    {
+        if (g_Kernel == nullptr)
+        {
+            static Kernel kernelObject;
+            g_Kernel = &kernelObject;
+        }
+        return g_Kernel;
     }
 }

@@ -1,6 +1,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <core/clazz.h>
+#include "core/ini.h"
 #include <core/kernel.h>
 #include <core/log.h>
 #include <core/ref_ptr.h>
@@ -51,11 +52,19 @@ namespace m3d
 
 namespace m3d
 {
+    RETRUXX_DLL_INJECT_CTOR(0x00616270, RefCountedBase)
+    RefCountedBase::RefCountedBase() :
+        m_refCount(0)
+    {
+    }
+
+    RETRUXX_DLL_INJECT_FUNCTION(0x00437010, RefCountedBase::IncRef)
     int RefCountedBase::IncRef()
     {
         return ++m_refCount;
     }
 
+    RETRUXX_DLL_INJECT_FUNCTION(0x004047B0, RefCountedBase::DecRef)
     int RefCountedBase::DecRef()
     {
         const auto result = --m_refCount;
@@ -66,6 +75,7 @@ namespace m3d
         return result;
     }
 
+    RETRUXX_DLL_INJECT_FUNCTION(0x00435580, RefCountedBase::GetRefCount)
     int RefCountedBase::GetRefCount() const
     {
         return m_refCount;
@@ -82,7 +92,7 @@ namespace m3d
     }
 
     Object::Object() :
-        m_name("Object" + CStr(g_Kernel->GetUniqueId()))
+        m_name("Object" + CStr(M3D_KERNEL->GetUniqueId()))
     {
     }
 
@@ -194,7 +204,7 @@ namespace m3d
         return 0;
     }
 
-    int Object::GetPropertiesList(std::set<size_t>& properties) const
+    int Object::GetPropertiesList(retruxx::set<size_t>& properties) const
     {
         return 1;
     }

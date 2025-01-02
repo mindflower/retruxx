@@ -35,14 +35,12 @@ namespace m3d
     };
 
     //IMPORTANT: fields and members order is strict
-    class IConHandler
+    struct IConHandler
     {
-    public:
-        virtual void HandleCommand(int, class m3d::CConsoleParams const&) = 0;
-        virtual bool HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&) = 0;
-        IConHandler(IConHandler const&);
-        IConHandler();
-    };
+        /* 0x0000 */;
+        virtual void HandleCommand(int, const m3d::CConsoleParams&) = 0 /* 0x00 */;
+        virtual bool HandleCVar(const m3d::CVar*, const m3d::CConsoleParams&) = 0 /* 0x04 */;
+    }; /* size: 0x0004 */
 
     class IConsole :
         public Object,

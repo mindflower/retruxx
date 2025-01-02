@@ -1,4 +1,5 @@
 #include "dynamicquesthunt.h"
+#include <stdexcept>
 
 namespace ai
 {

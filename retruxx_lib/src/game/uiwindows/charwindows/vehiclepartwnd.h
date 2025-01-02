@@ -20,7 +20,7 @@ protected:
     VehiclePartWnd(VehiclePartWnd const &);
     virtual int GameDataUpdate(void *,int);
     virtual int OnPaint(m3d::ui::DrawInfo const &);
-    void GetGunAngleEdges(std::set<m3d::ui::Edges> &) const ;
+    void GetGunAngleEdges(retruxx::set<m3d::ui::Edges> &) const ;
     virtual bool CanContainItem() const ;
     virtual int OnMouseButton1(unsigned int,class PointBase<float> const &);
     virtual bool IsValid() const ;
@@ -39,5 +39,5 @@ public:
 
 private:
     CStr m_partName;
-    std::set<m3d::ui::Edges> m_gunAngleEdges;
+    retruxx::set<m3d::ui::Edges> m_gunAngleEdges;
 };

@@ -4,24 +4,23 @@
 
 namespace ai
 {
-    class Event
+    struct Event
     {
-    public:
-        void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        void SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
+        /* 0x0000 */ ai::eGameEvent m_eventId;
+        /* 0x0004 */ int m_recipientObjId;
+        /* 0x0008 */ int m_senderObjId;
+        /* 0x000c */ float m_timeOut;
+        /* 0x0010 */ int m_framesToPass;
+        /* 0x0014 */ float m_timeStamp;
+        /* 0x0018 */ int m_debugNum;
+        /* 0x001c */ m3d::AIParam m_param1;
+        /* 0x0038 */ m3d::AIParam m_param2;
+        Event(const ai::Event& __that);
+        Event();
         CStr Dump() const;
-        Event(Event const&);
-        Event() = default;
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
+        void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
+    }; /* size: 0x0054 */
 
-    public:
-        eGameEvent m_eventId;
-        int m_recipientObjId;
-        int m_senderObjId;
-        float m_timeOut;
-        int m_framesToPass;
-        float m_timeStamp;
-        int m_debugNum;
-        m3d::AIParam m_param1;
-        m3d::AIParam m_param2;
-    };
+    static_assert(sizeof(ai::Event) == 0x0054);
 }

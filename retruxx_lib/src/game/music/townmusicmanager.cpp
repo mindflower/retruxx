@@ -6,6 +6,7 @@
 #include "core/kernel.h"
 #include "core/log.h"
 #include "core/ref_ptr.h"
+#include <core/ini.h>
 
 namespace m3d
 {

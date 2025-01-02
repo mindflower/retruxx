@@ -2,11 +2,11 @@
 #pragma once
 #ifndef _XHASH_
 #define _XHASH_
-#include <cstring>
-#include <cwchar>
-#include <functional>
-#include <list>
-#include <vector>
+#include "cstring.hpp"
+#include "cwchar.hpp"
+#include "functional.hpp"
+#include "list.hpp"
+#include "vector.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)

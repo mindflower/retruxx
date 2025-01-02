@@ -13,7 +13,7 @@ namespace m3d
         virtual void CanBeFree();
         virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual DataServer* GetServer() const;
-        virtual int GetPropertiesList(std::set<unsigned int>&) const;
+        virtual int GetPropertiesList(retruxx::set<unsigned int>&) const;
         virtual Class* GetClass() const;
         virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
         virtual float IntersectRay(CVector const&, CVector const&, SgNode*&, Class*);

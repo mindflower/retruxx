@@ -39,19 +39,24 @@ namespace m3d
     class ProfilerStack
     {
     public:
+        ProfilerStack(const m3d::ProfilerStack&);
+        ProfilerStack();
         ~ProfilerStack();
-
-        Profiler* GetProfiler(unsigned int);
+        unsigned int AddProfiler(const char* name, unsigned int averageVal);
+        const char* GetName(unsigned int id) const;
+        m3d::Profiler* GetProfiler(unsigned int id);
+        m3d::Profiler* GetProfilerByName(const char*);
+        void StartFrame();
+        void EndFrame();
         void Clear();
         unsigned int GetNumProfilers() const;
-        void StartFrame();
-        unsigned int AddProfiler(char const*, unsigned int);
-        char const* GetName(unsigned int) const;
-        void EndFrame();
 
     private:
-        std::vector<Profiler*> m_stack;
-    };
+        /* 0x0000 */ retruxx::vector<m3d::Profiler*, retruxx::allocator<m3d::Profiler*> > m_stack;
+        /* 0x0010 */ unsigned int m_numProfilers;
+    }; /* size: 0x0014 */
+
+    static_assert(sizeof(ProfilerStack) == 0x0014);
 
     class FrameProfilerPtr
     {

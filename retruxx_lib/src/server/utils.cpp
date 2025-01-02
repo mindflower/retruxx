@@ -1,12 +1,11 @@
 #include "utils.h"
 #include "path.h"
 #include <sstream>
-#include <stdexcept>
 #include "thirdparty/injecttools.h"
 
 namespace ai
 {
-    void StrToStringVector(CStr const& str, oldstd::vector<CStr>& stringVector)
+    void StrToStringVector(CStr const& str, retruxx::vector<CStr>& stringVector)
     {
         //TODO: check this
         stringVector.clear();
@@ -21,7 +20,7 @@ namespace ai
         }
     }
 
-    void StrToFloatVector(CStr const& str, oldstd::vector<float>& floatVector)
+    void StrToFloatVector(CStr const& str, retruxx::vector<float>& floatVector)
     {
         //TODO: check this
         floatVector.clear();
@@ -36,7 +35,7 @@ namespace ai
         }
     }
 
-    void StrToIntVector(CStr const& str, oldstd::vector<int>& intVector)
+    void StrToIntVector(CStr const& str, retruxx::vector<int>& intVector)
     {
         //TODO: check this
         intVector.clear();

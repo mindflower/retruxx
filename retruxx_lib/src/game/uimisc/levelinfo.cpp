@@ -9,6 +9,7 @@
 #include "core/console/console.h"
 #include "game/m3dgame.h"
 #include "core/log.h"
+#include "core/ini.h"
 #include "core/scoped_ptr.h"
 #include "file/fileserver.h"
 #include "file/filestream.h"
@@ -86,9 +87,9 @@ m3d::rend::TexHandle LevelInfo::GetImage1() const
 	throw std::logic_error("Not implemented");
 }
 
-oldstd::vector<m3d::rend::TexHandle> LevelInfo::GetSplashes()
+retruxx::vector<m3d::rend::TexHandle> LevelInfo::GetSplashes()
 {
-    oldstd::vector<m3d::rend::TexHandle> result;
+    retruxx::vector<m3d::rend::TexHandle> result;
     for (auto const& splashName : m_splasheNames)
     {
         if (auto const it = m_splashes.find(splashName); it == m_splashes.end())
@@ -221,7 +222,7 @@ void LevelInfoManager::ClearBeforeNewLevel()
     m_visitedLevels.clear();
 }
 
-void LevelInfoManager::GetVisitedLevelNames(oldstd::vector<CStr>& visitedLevelNames) const
+void LevelInfoManager::GetVisitedLevelNames(retruxx::vector<CStr>& visitedLevelNames) const
 {
     visitedLevelNames.clear();
     for (auto const& level : m_visitedLevels)
@@ -243,7 +244,7 @@ void LevelInfoManager::ClearLevelObjects()
     m_levelObjects.clear();
 }
 
-void LevelInfoManager::GetAllLevelNames(oldstd::vector<CStr>& allLevelNames) const
+void LevelInfoManager::GetAllLevelNames(retruxx::vector<CStr>& allLevelNames) const
 {
     allLevelNames.clear();
     for (auto const& level : m_levels)
@@ -279,7 +280,7 @@ m3d::Object* LevelInfoManager::Clone()
 
 void LevelInfoManager::UpdateLevelImages()
 {
-    oldstd::vector<CStr> visitedLevelNames;
+    retruxx::vector<CStr> visitedLevelNames;
     GetVisitedLevelNames(visitedLevelNames);
     //TODO: check this!!
     for (auto const& level : m_levels)
@@ -440,7 +441,7 @@ void LevelInfoManager::OnNewFrame()
 
 int LevelInfoManager::AddVisitedLevel(CStr const& levelName)
 {
-    oldstd::vector<CStr> levelNames;
+    retruxx::vector<CStr> levelNames;
     GetAllLevelNames(levelNames);
     if (std::find(levelNames.begin(), levelNames.end(), levelName) == levelNames.end())
     {
@@ -451,12 +452,12 @@ int LevelInfoManager::AddVisitedLevel(CStr const& levelName)
     return 1;
 }
 
-oldstd::map<CStr, ObjectInfo*> const* LevelInfoManager::GetObjectsForLevel(CStr const&) const
+retruxx::map<CStr, ObjectInfo*> const* LevelInfoManager::GetObjectsForLevel(CStr const&) const
 {
     throw std::logic_error("Not implemented");
 }
 
-oldstd::map<CStr, ObjectInfo*>* LevelInfoManager::GetObjectsForLevel(CStr const&)
+retruxx::map<CStr, ObjectInfo*>* LevelInfoManager::GetObjectsForLevel(CStr const&)
 {
     throw std::logic_error("Not implemented");
 }
@@ -663,7 +664,7 @@ void LevelInfoManager::ClearKnownLevels()
     throw std::logic_error("Not implemented");
 }
 
-void LevelInfoManager::GetKnownLevelNames(oldstd::vector<CStr>&) const
+void LevelInfoManager::GetKnownLevelNames(retruxx::vector<CStr>&) const
 {
     throw std::logic_error("Not implemented");
 }
@@ -803,7 +804,7 @@ int ObjectInfo::AddSavedPriceByPrototypeId(int, int, int)
 	throw std::logic_error("Not implemented");
 }
 
-oldstd::map<int, CVector2> const* ObjectInfo::GetSavedPrices() const
+retruxx::map<int, CVector2> const* ObjectInfo::GetSavedPrices() const
 {
 	throw std::logic_error("Not implemented");
 }

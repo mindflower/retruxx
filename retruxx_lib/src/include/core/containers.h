@@ -1,7 +1,5 @@
 #pragma once
-#include <map>
-#include <stdexcept>
-#include <unordered_map>
+#include "thirdparty/containers.h"
 #include <core/stringm3d.h>
 
 namespace m3d
@@ -14,16 +12,20 @@ namespace m3d
         {
         }
 
+        void clear()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
         void add(CStr const& key, T value)
         {
             m_hash[key] = value;
         }
-
         
         bool get(CStr const& key, T& v) const
         {
             auto it = m_hash.find(key);
-            if (it != end(m_hash))
+            if (it != m_hash.end())
             {
                 v = it->second;
                 return true;
@@ -31,14 +33,18 @@ namespace m3d
             return false;
         }
 
-        void clear()
+        void remove(const CStr&)
         {
             throw std::logic_error("Not implemented");
         }
 
+        using tStrHash = retruxx::map<CStr, T>;
+        class tStrHashIt;
+        class tConstStrHashIt;
+
     private:
-        std::map<CStr, T> m_hash;
-    };
+        /* 0x0000 */ tStrHash m_hash;
+    }; /* size: 0x000c */
 
     template <class T>
     class CIntHash
@@ -48,19 +54,14 @@ namespace m3d
         {
         }
 
-        void removeByKey(unsigned int key)
-        {
-            m_hash.erase(key);
-        }
-
         void clear()
         {
             throw std::logic_error("Not implemented");
         }
 
-        void addValueByKey(unsigned int key, T const& val)
+        void removeByKey(unsigned int key)
         {
-            m_hash.emplace(key, val);
+            m_hash.erase(key);
         }
 
         bool getValueByKey(unsigned int key, T& v) const
@@ -74,7 +75,17 @@ namespace m3d
             return true;
         }
 
+        void addValueByKey(unsigned int key, T const& val)
+        {
+            m_hash.insert(retruxx::pair<unsigned int, T>(key, val));
+        }
+
+        //using tHashFunction = stdext::hash_compare<unsigned int, std::less<unsigned int> >;
+        using tHash = retruxx::hash_map<unsigned int, T>;
+        class tHashIt;
+        class tConstHashIt;
+
     private:
-        std::unordered_map<unsigned int, T> m_hash;
-    };
+        /* 0x0000 */ tHash m_hash;
+    }; /* size: 0x0028 */
 }

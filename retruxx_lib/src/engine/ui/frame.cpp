@@ -187,7 +187,7 @@ namespace m3d
         {
         }
 
-        int Pane::ReadFromXmlNode(cmn::XmlNode* node, std::vector<BackGround*> const& gfxBgs, std::vector<Frame*> const& gfxFrames)
+        int Pane::ReadFromXmlNode(cmn::XmlNode* node, retruxx::vector<BackGround*> const& gfxBgs, retruxx::vector<Frame*> const& gfxFrames)
         {
             SafeStrAttrib(m_name, node, "name");
             if (m_name.empty())
@@ -199,11 +199,11 @@ namespace m3d
             {
                 CStr texName;
                 SafeStrAttrib(texName, node, frameIds[i]);
-                auto it = std::find_if(cbegin(gfxFrames), cend(gfxFrames), [&texName](auto* frame)
+                auto it = std::find_if(gfxFrames.begin(), gfxFrames.end(), [&texName](auto* frame)
                 {
                     return texName == frame->m_name;
                 });
-                if (it != cend(gfxFrames))
+                if (it != gfxFrames.end())
                 {
                     m_frame[i] = *it;
                 }
@@ -214,11 +214,11 @@ namespace m3d
             {
                 CStr texName;
                 SafeStrAttrib(texName, node, bgIds[i]);
-                auto it = std::find_if(cbegin(gfxBgs), cend(gfxBgs), [&texName](auto* frame)
+                auto it = std::find_if(gfxBgs.begin(), gfxBgs.end(), [&texName](auto* frame)
                 {
                     return texName == frame->m_name;
                 });
-                if (it != cend(gfxBgs))
+                if (it != gfxBgs.end())
                 {
                     m_bg[i] = *it;
                 }

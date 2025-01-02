@@ -5,6 +5,7 @@
 #include <core/aiparam.h>
 #include <core/kernel.h>
 #include <core/log.h>
+#include "core/ini.h"
 #include <core/ref_ptr.h>
 #include <math/vector2.h>
 #include <server/utils.h>
@@ -23,6 +24,25 @@ namespace m3d
         RT_CLASS_EXPORTS_BEGIN(Wnd)
     	RT_CLASS_EXPORTS_END;
         RT_CLASS_DEFINE(Wnd);
+
+        Wnd::AnimationInfo::AnimationInfo()
+        {
+            this->m_bEnabled = 1;
+            this->m_startPt.x = 0.0;
+            this->m_startPt.y = 0.0;
+            this->m_endPt.x = 0.0;
+            this->m_endPt.y = 0.0;
+            this->m_animationType = ANIMATIONTYPE_INVALID;
+            this->m_startSpeed = 0.0;
+            this->m_acceleration = 0.0;
+            this->m_curSpeed = 0.0;
+            this->m_delayTime = 0;
+            this->m_startTime = 0;
+            this->m_purpose = PURPOSE_UNKNOWN;
+            this->m_bImmediate = 0;
+            this->m_bSoundMoveEnabled = 0;
+            this->m_bSoundStopEnabled = 0;
+        }
 
         Wnd::AnimationInfo::~AnimationInfo()
         {
@@ -313,7 +333,7 @@ namespace m3d
             SafeEnumAttrib(m_textFormat, xmlNode, "format");
             SafeIntAttrib(m_defFont, xmlNode, "font");
 
-            oldstd::vector<float> vecClientEdges;
+            retruxx::vector<float> vecClientEdges;
             CStr strClientEdges;
             SafeStrAttrib(strClientEdges, xmlNode, "clientEdges");
             ai::StrToFloatVector(strClientEdges, vecClientEdges);
@@ -481,7 +501,7 @@ namespace m3d
             if (wnd->m_bSuspendedUnlink)
             {
                 wnd->m_bSuspendedUnlink = false;
-                std::vector<Object*> stack;
+                retruxx::vector<Object*> stack;
                 stack.push_back(w);
                 throw std::logic_error("Not implemented");
             }
@@ -723,7 +743,7 @@ namespace m3d
             return m_onHideAnimation;
         }
 
-        void Wnd::SetClientEdges(std::vector<float> const& edges)
+        void Wnd::SetClientEdges(retruxx::vector<float> const& edges)
         {
             m_clientEdges = edges;
         }
@@ -776,7 +796,7 @@ namespace m3d
                 wnd->m_bSuspendedUnlink = false;
                 wnd->m_bSuspendedParentUnlink = false;
                 //TODO: recreate vector logic (idk for what)
-                //std::vector<Object*> stack;
+                //retruxx::vector<Object*> stack;
                 //stack.push_back(wnd);
                 GetStation()->OnRemoveWnd(this, wnd);
                 UnlinkChild(wnd);
@@ -791,7 +811,7 @@ namespace m3d
                 wnd->m_bSuspendedUnlink = false;
                 wnd->m_bSuspendedParentUnlink = false;
                 //TODO: recreate vector logic (idk for what)
-                //std::vector<Object*> stack;
+                //retruxx::vector<Object*> stack;
                 //stack.push_back(wnd);
                 GetStation()->OnRemoveWnd(this, wnd);
                 UnlinkChild(wnd);
@@ -834,7 +854,7 @@ namespace m3d
                 m_currentAnimation.m_bEnabled;
         }
 
-        int Wnd::GetPropertiesList(std::set<unsigned>&) const
+        int Wnd::GetPropertiesList(retruxx::set<unsigned>&) const
         {
             throw std::logic_error("Not implemented");
         }
@@ -866,7 +886,7 @@ namespace m3d
             return 1;
         }
 
-        std::vector<float> const& Wnd::GetClientEdges() const
+        retruxx::vector<float> const& Wnd::GetClientEdges() const
         {
             return m_clientEdges;
         }
@@ -1267,7 +1287,7 @@ namespace m3d
 #endif
         }
 
-        bool Wnd::IsPtInBounds(PointBase<float> const& pt) const
+        int Wnd::IsPtInBounds(PointBase<float> const& pt) const
         {
             //TODO: check this
             auto const result = ToScreen(PointBase<float>{});

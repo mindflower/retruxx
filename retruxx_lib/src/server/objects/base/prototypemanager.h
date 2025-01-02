@@ -29,7 +29,7 @@ namespace ai
         CStr GetPrototypeName(int) const ;
         int GetPrototypeId(CStr const &) const ;
         ~PrototypeManager();
-        void GetPrototypeIdsByResourceId(int,std::vector<int> &) const ;
+        void GetPrototypeIdsByResourceId(int,retruxx::vector<int> &) const ;
         PrototypeInfo const * GetPrototypeInfo(CStr const &) const ;
         PrototypeInfo const * GetPrototypeInfo(int) const ;
         int GetNumOfPrototypes() const ;
@@ -45,7 +45,7 @@ namespace ai
         m3d::CStrHash<CStr> m_prototypeFullNames;
         m3d::CStrHash<unsigned int> m_prototypeFullNamesLocalizedForms;
         m3d::CStrHash<int> m_prototypeNamesToIds;
-        std::vector<PrototypeInfo *> m_prototypes;
+        retruxx::vector<PrototypeInfo *> m_prototypes;
         int m_loadingLock = 0;
     };
 }

@@ -1,6 +1,4 @@
 #pragma once
-#include <map>
-#include <vector>
 #include <core/clazz.h>
 #include <core/ref_ptr.h>
 #include <core/console/cvar.h>
@@ -111,10 +109,10 @@ protected:
     int GUI_LoadIconsResources(ResourceInfo::ResourceLoadType);
     int GUI_LoadWindowsResources(ResourceInfo::ResourceLoadType);
     int GUI_SetMinDynamicId(int);
-    virtual int GUI_SetEventsForWindow(int, std::vector<int, std::allocator<int> > const&);
+    virtual int GUI_SetEventsForWindow(int, retruxx::vector<int> const&);
     virtual int GUI_UpdateWindowsOnEvent(int, m3d::ui::Wnd*, void*);
-    int GUI_LoadResourceInfosFromFile(CStr const&, std::vector<ResourceInfo*, std::allocator<ResourceInfo*> >&, CStr const&);
-    void GUI_GetResourceInfosByLoadType(ResourceInfo::ResourceLoadType, std::vector<ResourceInfo*, std::allocator<ResourceInfo*> > const&, std::vector<ResourceInfo*, std::allocator<ResourceInfo*> >&) const;
+    int GUI_LoadResourceInfosFromFile(CStr const&, retruxx::vector<ResourceInfo*>&, CStr const&);
+    void GUI_GetResourceInfosByLoadType(ResourceInfo::ResourceLoadType, retruxx::vector<ResourceInfo*> const&, retruxx::vector<ResourceInfo*, retruxx::allocator<ResourceInfo*> >&) const;
     virtual int GUI_Save(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>);
     int GUI_CreateWindow(int, CStr const&, bool, CStr const&);
     GameUiManager();
@@ -123,7 +121,7 @@ protected:
     WindowResourceInfo* GUI_GetResourceInfoByWndGuiId(int) const;
     virtual bool GUI_IsModalEqualWndRunning() const;
     virtual int GUI_ProcessEvent(GuiEventType, int, void*, m3d::ui::Wnd*);
-    void GUI_GetIconsResourceInfoByLevel(CStr const&, std::vector<ResourceInfo*, std::allocator<ResourceInfo*> >&) const;
+    void GUI_GetIconsResourceInfoByLevel(CStr const&, retruxx::vector<ResourceInfo*>&) const;
     int GUI_LoadResources(ResourceInfo::ResourceLoadType);
     virtual int GUI_Init(bool);
     virtual int GUI_RemoveWindow(ref_ptr<m3d::ui::Wnd>);
@@ -140,7 +138,7 @@ protected:
     virtual ~GameUiManager();
     virtual void GUI_RegisterCVars();
     int GUI_LoadWindowFromResourceInfo(WindowResourceInfo const*);
-    void GUI_ClearResourceInfos(std::vector<ResourceInfo*>&);
+    void GUI_ClearResourceInfos(retruxx::vector<ResourceInfo*>&);
     virtual int GUI_HideWindow(int, bool, int*, bool);
     virtual int GUI_Done();
     void GUI_ClearAllResourceInfos();
@@ -159,22 +157,22 @@ protected:
     virtual void GUI_EndModalDlg() = 0;
 
 protected:
-    std::map<int, int> m_packToEvent;
-    std::map<int, int> m_impulseToEvent;
-    std::map<int, int> m_eventToEvent;
+    retruxx::map<int, int> m_packToEvent;
+    retruxx::map<int, int> m_impulseToEvent;
+    retruxx::map<int, int> m_eventToEvent;
     m3d::CVar m_cvPathToUiWindows;
     m3d::CVar m_cvPathToUiStrings;
     m3d::CVar m_cvPathToUiIcons;
-    std::vector<ResourceInfo*> m_resourceInfoWindows;
-    std::vector<ResourceInfo*> m_resourceInfoStrings;
-    std::vector<ResourceInfo*> m_resourceInfoIcons;
+    retruxx::vector<ResourceInfo*> m_resourceInfoWindows;
+    retruxx::vector<ResourceInfo*> m_resourceInfoStrings;
+    retruxx::vector<ResourceInfo*> m_resourceInfoIcons;
     bool m_bFirstLevelResourcesLoaded;
     ObjectsIcons* m_icons = nullptr;
     bool m_isInited = false;
     bool m_oneTimeStuffIsInited = false;
-    std::map<int, ref_ptr<m3d::ui::Wnd>> m_windows;
-    std::set<int> m_onScreenWindows;
-    std::map<int, std::set<int>> m_eventMap;
+    retruxx::map<int, ref_ptr<m3d::ui::Wnd>> m_windows;
+    retruxx::set<int> m_onScreenWindows;
+    retruxx::map<int, retruxx::set<int>> m_eventMap;
     bool m_isHidden = true;
     int m_nextDynamicId = 0;
     int m_minDynamicId = 0;

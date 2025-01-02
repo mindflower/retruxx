@@ -1,8 +1,7 @@
 #pragma once
-#include "clazz.h"
-#include "ini.h"
 #include <windows.h>
-#include "thirdparty/injecttools.h"
+
+class CStr;
 
 namespace m3d
 {
@@ -10,6 +9,8 @@ namespace m3d
     class Log;
     class MemoryManager;
     class ScriptServer;
+    struct Class;
+    class Object;
 
     namespace fs
     {
@@ -19,6 +20,8 @@ namespace m3d
     namespace cmn
     {
         class Timer;
+        class IniFile;
+        class XmlFile;
     }
 
     struct MemoryAllocationRoutines
@@ -92,6 +95,8 @@ namespace m3d
         };
 
         Kernel();
+
+        static Kernel* instance();
     };
 
     extern Kernel* g_Kernel;
@@ -102,7 +107,8 @@ namespace m3d
 #define M3D_CRITICAL_ERROR(msg)     M3D_LOG_ERR(CStr("Error: ") + (msg)); SYS_ERROR("!\"Critical error, see log\"");
 
 #ifdef RETRUXX_DLL
-#define M3D_KERNEL (*inject::cast<m3d::Kernel**>(0x00A0988C))
+//#define M3D_KERNEL (*inject::cast<m3d::Kernel**>(0x00A0988C))
+#define M3D_KERNEL                  m3d::Kernel::instance()
 #else
 #define M3D_KERNEL                  m3d::g_Kernel
 #endif

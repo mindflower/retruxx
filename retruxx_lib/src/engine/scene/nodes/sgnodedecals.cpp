@@ -13,71 +13,71 @@ namespace m3d
 
     Object* SgDecalsNode::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SgDecalsNode::GetProperty(unsigned, void*) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     unsigned SgDecalsNode::GetNumDecals()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SgDecalsNode::SetProperty(unsigned, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     DecalInfo const& SgDecalsNode::GetDecal(int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     DataServer* SgDecalsNode::GetServer() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     Object* SgDecalsNode::Clone()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SgDecalsNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    int SgDecalsNode::GetPropertiesList(std::set<unsigned>&) const
+    int SgDecalsNode::GetPropertiesList(retruxx::set<unsigned>&) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     Class* SgDecalsNode::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     SgDecalsNode::~SgDecalsNode()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     SgDecalsNode::SgDecalsNode(SgDecalsNode const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     SgDecalsNode::SgDecalsNode()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SgDecalsNode::UpdateOwnBoundingBox()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 }

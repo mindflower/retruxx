@@ -1,7 +1,7 @@
 #pragma once
-#include <vector>
 #include <math/point2d.h>
 #include <renderer/i_renderer.h>
+#include "thirdparty/containers.h"
 
 namespace m3d
 {
@@ -53,7 +53,7 @@ namespace m3d
         public:
             ~Pane();
             Pane();
-            int ReadFromXmlNode(cmn::XmlNode*, std::vector<BackGround*> const&, std::vector<Frame*> const&);
+            int ReadFromXmlNode(cmn::XmlNode*, retruxx::vector<BackGround*> const&, retruxx::vector<Frame*> const&);
 
         public:
             CStr m_name;

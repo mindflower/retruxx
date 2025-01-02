@@ -240,7 +240,7 @@ int GameUiManager::GUI_LoadIconsResources(ResourceInfo::ResourceLoadType loadTyp
     {
         return 0;
     }
-    std::vector<ResourceInfo*> resourceInfos;
+    retruxx::vector<ResourceInfo*> resourceInfos;
     if (loadType==ResourceInfo::LOADTYPE_AT_LEVEL_START)
     {
         CStr levelName;
@@ -279,7 +279,7 @@ int GameUiManager::GUI_LoadWindowsResources(ResourceInfo::ResourceLoadType loadT
     {
         return 0;
     }
-    std::vector<ResourceInfo*> resourceInfos;
+    retruxx::vector<ResourceInfo*> resourceInfos;
     GUI_GetResourceInfosByLoadType(loadType, m_resourceInfoWindows, resourceInfos);
     auto res = 1;
     for (auto info : resourceInfos)
@@ -305,7 +305,7 @@ int GameUiManager::GUI_SetMinDynamicId(int)
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_SetEventsForWindow(int wndId, std::vector<int> const& events)
+int GameUiManager::GUI_SetEventsForWindow(int wndId, retruxx::vector<int> const& events)
 {
     //TODO: check this
     for (auto const ev : events)
@@ -324,7 +324,7 @@ int GameUiManager::GUI_UpdateWindowsOnEvent(int eventId, m3d::ui::Wnd* forceWnd,
     }
     bool valid = m_isEventMapValide;
     auto const evIt = m_eventMap.find(eventId);
-    if (evIt == m_eventMap.cend())
+    if (evIt == m_eventMap.end())
     {
         --entries;
         return 0;
@@ -333,7 +333,7 @@ int GameUiManager::GUI_UpdateWindowsOnEvent(int eventId, m3d::ui::Wnd* forceWnd,
     for (auto const& ev : evIt->second)
     {
         auto const it = m_windows.find(ev);
-        if (it != m_windows.cend())
+        if (it != m_windows.end())
         {
             auto wnd = it->second;
             if (!forceWnd || forceWnd == wnd)
@@ -368,7 +368,7 @@ int GameUiManager::GUI_UpdateWindowsOnEvent(int eventId, m3d::ui::Wnd* forceWnd,
     return res;
 }
 
-int GameUiManager::GUI_LoadResourceInfosFromFile(CStr const& fileName, std::vector<ResourceInfo*>& resourceInfos, CStr const& className)
+int GameUiManager::GUI_LoadResourceInfosFromFile(CStr const& fileName, retruxx::vector<ResourceInfo*>& resourceInfos, CStr const& className)
 {
     if (m_isInited)
     {
@@ -425,7 +425,7 @@ int GameUiManager::GUI_LoadResourceInfosFromFile(CStr const& fileName, std::vect
     return 0;
 }
 
-void GameUiManager::GUI_GetResourceInfosByLoadType(ResourceInfo::ResourceLoadType loadType, std::vector<ResourceInfo*> const& srcInfos, std::vector<ResourceInfo*>& dstInfos) const
+void GameUiManager::GUI_GetResourceInfosByLoadType(ResourceInfo::ResourceLoadType loadType, retruxx::vector<ResourceInfo*> const& srcInfos, retruxx::vector<ResourceInfo*>& dstInfos) const
 {
     //TODO: check this
     dstInfos.clear();
@@ -468,10 +468,12 @@ int GameUiManager::GUI_CreateWindow(int wndId, CStr const& className, bool needS
     }
     if (fileName.empty() || m3d::ui::LoadExistingDialog(wnd, fileName))
     {
-        m_windows.emplace(wndId, wnd);
-        wnd->m_guiId = wndId;
+        m_windows.insert(retruxx::pair<int, ref_ptr<m3d::ui::Wnd>>(wndId, wnd));
+        wnd->SetGuiId(wndId);
+        //wnd->m_guiId = wndId;
         auto res = wnd->GameDataSetup() & 1;
-        wnd->m_gameDataFlags |= 0xA;
+        wnd->SetGameDataFlags(wnd->GetGameDataFlags() | 0xA);
+        //wnd->m_gameDataFlags |= 0xA;
         if (needShow)
         {
             GUI_ShowWindow(wndId, false, false, false, nullptr);
@@ -580,7 +582,7 @@ int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void
     return 0;
 }
 
-void GameUiManager::GUI_GetIconsResourceInfoByLevel(CStr const&, std::vector<ResourceInfo*, std::allocator<ResourceInfo*>>&) const
+void GameUiManager::GUI_GetIconsResourceInfoByLevel(CStr const&, retruxx::vector<ResourceInfo*, retruxx::allocator<ResourceInfo*>>&) const
 {
     throw std::logic_error("Not implemented");
 }
@@ -660,7 +662,7 @@ int GameUiManager::GUI_RemoveWindow(ref_ptr<m3d::ui::Wnd>)
 int GameUiManager::GUI_RemoveWindow(int wndId)
 {
     auto const wndIt = m_windows.find(wndId);
-    if (wndIt == m_windows.cend())
+    if (wndIt == m_windows.end())
     {
         return 0;
     }
@@ -695,7 +697,7 @@ int GameUiManager::GUI_LoadStringsResources(ResourceInfo::ResourceLoadType loadT
     {
         return 0;
     }
-    std::vector<ResourceInfo*> resourceInfosByLoadType;
+    retruxx::vector<ResourceInfo*> resourceInfosByLoadType;
     GUI_GetResourceInfosByLoadType(loadType, m_resourceInfoStrings, resourceInfosByLoadType);
     auto res = 1;
     for (auto* info : resourceInfosByLoadType)
@@ -779,15 +781,18 @@ int GameUiManager::GUI_AddWindow(ref_ptr<m3d::ui::Wnd> w, int& wndId, bool isPer
     wndId = m_nextDynamicId;
     if (isPersistent)
     {
-        w->m_gameDataFlags |= 8;
+        //w->m_gameDataFlags |= 8;
+        w->SetGameDataFlags(w->GetGameDataFlags() | 8);
     }
     else
     {
-        w->m_gameDataFlags &= 0xF7;
+        //w->m_gameDataFlags &= 0xF7;
+        w->SetGameDataFlags(w->GetGameDataFlags() & 0xF7);
     }
-    m_windows.emplace(wndId, w);
+    m_windows.insert(retruxx::pair<int, ref_ptr<m3d::ui::Wnd>>(wndId, w));
     ++m_nextDynamicId;
-    w->m_guiId = wndId;
+    w->SetGuiId(wndId);
+    //w->m_guiId = wndId;
     if (needShow)
     {
         GUI_ShowWindow(wndId, false, false, false, nullptr);
@@ -847,7 +852,7 @@ int GameUiManager::GUI_LoadWindowFromResourceInfo(WindowResourceInfo const* info
     return res;
 }
 
-void GameUiManager::GUI_ClearResourceInfos(std::vector<ResourceInfo*>& resourceInfos)
+void GameUiManager::GUI_ClearResourceInfos(retruxx::vector<ResourceInfo*>& resourceInfos)
 {
     for (auto* info: resourceInfos)
     {
@@ -923,7 +928,7 @@ void GameUiManager::GUI_ClearAllResourceInfos()
 ref_ptr<m3d::ui::Wnd> GameUiManager::GUI_GetWindow(int wndId) const
 {
     auto it = m_windows.find(wndId);
-    if (it != end(m_windows))
+    if (it != m_windows.end())
     {
         return it->second;
     }
@@ -987,7 +992,7 @@ int GameUiManager::GUI_ShowWindow(int wndId, bool forceShow, bool forceModal, bo
 			    {
 				    if (m_onScreenWindows.find(wndId) == m_onScreenWindows.end())
 				    {
-                        m_onScreenWindows.emplace(wndId);
+                        m_onScreenWindows.insert(wndId);
 				    }
                     auto modalRes = modalWnd->GetStation()->DoModal(modalWnd);
                     if (modalRetVal)
@@ -1020,7 +1025,7 @@ int GameUiManager::GUI_ShowWindow(int wndId, bool forceShow, bool forceModal, bo
     }
     if (!wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)) && m_onScreenWindows.find(wndId) == m_onScreenWindows.end())
     {
-        m_onScreenWindows.emplace(wndId);
+        m_onScreenWindows.insert(wndId);
     }
     return res;
 }
@@ -1040,15 +1045,18 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool is
     {
 	    if (isPersistent)
 	    {
-            w->m_gameDataFlags |= 8;
+            w->SetGameDataFlags(w->GetGameDataFlags() | 8);
+            //w->m_gameDataFlags |= 8;
 	    }
         else
         {
-            w->m_gameDataFlags & 0xFFFFFFF7;
+            w->SetGameDataFlags(w->GetGameDataFlags() & 0xFFFFFFF7);
+            //w->m_gameDataFlags & 0xFFFFFFF7;
         }
-        m_windows.emplace(wndId, w);
+        m_windows.insert(retruxx::pair<int, ref_ptr<m3d::ui::Wnd>>(wndId, w));
         //TODO: check this
-        w->m_guiId = wndId;
+        //w->m_guiId = wndId;
+        w->SetGuiId(wndId);
     }
     else
     {
@@ -1058,11 +1066,13 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool is
 	    }
         if (isPersistent)
         {
-            w->m_gameDataFlags |= 8;
+            w->SetGameDataFlags(w->GetGameDataFlags() | 8);
+            //w->m_gameDataFlags |= 8;
         }
         else
         {
-            w->m_gameDataFlags & 0xFFFFFFF7;
+            //w->m_gameDataFlags & 0xFFFFFFF7;
+            w->SetGameDataFlags(w->GetGameDataFlags() & 0xFFFFFFF7);
         }
     }
     if (needShow)
@@ -1074,7 +1084,7 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool is
 
 int GameUiManager::GUI_ValidateDynamicId(int id)
 {
-    if (m_windows.find(id) == end(m_windows))
+    if (m_windows.find(id) == m_windows.end())
     {
         return id;
     }

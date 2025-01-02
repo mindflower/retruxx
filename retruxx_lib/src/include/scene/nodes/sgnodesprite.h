@@ -11,7 +11,7 @@ namespace m3d
 
     public:
         virtual Class* GetClass() const;
-        virtual int GetPropertiesList(std::set<unsigned int>&) const;
+        virtual int GetPropertiesList(retruxx::set<unsigned int>&) const;
         virtual int Render(SgNodeRenderFlags, void*, int, int);
         virtual DataServer* GetServer() const;
         virtual Object* Clone();

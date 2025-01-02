@@ -31,12 +31,12 @@ public:
     const CStr& GetDiz1() const;
     m3d::rend::TexHandle GetImage0() const;
     m3d::rend::TexHandle GetImage1() const;
-    oldstd::vector<m3d::rend::TexHandle> GetSplashes();
+    retruxx::vector<m3d::rend::TexHandle> GetSplashes();
     CStr GetRandomMusicBlock() const;
     const CVector& GetNorth() const;
 
-    using TexMap = oldstd::map<CStr, m3d::rend::TexHandle>;
-    using TexPair = oldstd::pair<CStr, m3d::rend::TexHandle>;
+    using TexMap = retruxx::map<CStr, m3d::rend::TexHandle>;
+    using TexPair = retruxx::pair<CStr, m3d::rend::TexHandle>;
 
 private:
     int LoadBigImage();
@@ -47,11 +47,11 @@ private:
     /* 0x0030 */ CStr m_diz1;
     /* 0x003c */ CStr m_imageFile0;
     /* 0x0048 */ CStr m_imageFile1;
-    /* 0x0054 */ oldstd::vector<CStr> m_splasheNames;
-    /* 0x0064 */ oldstd::vector<CStr> m_musicBlockNames;
+    /* 0x0054 */ retruxx::vector<CStr> m_splasheNames;
+    /* 0x0064 */ retruxx::vector<CStr> m_musicBlockNames;
     /* 0x0074 */ m3d::rend::TexHandle m_image0;
     /* 0x0078 */ m3d::rend::TexHandle m_image1;
-    /* 0x007c */ oldstd::map<CStr, m3d::rend::TexHandle> m_splashes;
+    /* 0x007c */ retruxx::map<CStr, m3d::rend::TexHandle> m_splashes;
     /* 0x0088 */ CVector m_north;
 }; /* size: 0x0094 */
 
@@ -60,9 +60,9 @@ static_assert(sizeof(LevelInfo) == 0x94);
 class LevelInfoManager : public m3d::Object
 {
 public:
-    using CellsVector = oldstd::vector<int>;
-    using ObjectInfoMap = oldstd::map<CStr, ObjectInfo*>;
-    using ObjectInfoPair = oldstd::pair<CStr, ObjectInfo*>;
+    using CellsVector = retruxx::vector<int>;
+    using ObjectInfoMap = retruxx::map<CStr, ObjectInfo*>;
+    using ObjectInfoPair = retruxx::pair<CStr, ObjectInfo*>;
     class ObjectInfoConstIterator;
 
 public:
@@ -70,14 +70,14 @@ public:
     int GameDataUpdate(void* data, int dataType);
     LevelInfo* GetLevelInfoByName(const CStr& levelName);
     const LevelInfo* GetLevelInfoByName(const CStr& levelName) const;
-    void GetAllLevelNames(oldstd::vector<CStr, oldstd::allocator<CStr> >& allLevelNames) const;
-    void GetVisitedLevelNames(oldstd::vector<CStr, oldstd::allocator<CStr> >& visitedLevelNames) const;
-    void GetKnownLevelNames(oldstd::vector<CStr, oldstd::allocator<CStr> >& knownLevelNames) const;
+    void GetAllLevelNames(retruxx::vector<CStr, retruxx::allocator<CStr> >& allLevelNames) const;
+    void GetVisitedLevelNames(retruxx::vector<CStr, retruxx::allocator<CStr> >& visitedLevelNames) const;
+    void GetKnownLevelNames(retruxx::vector<CStr, retruxx::allocator<CStr> >& knownLevelNames) const;
     bool IsLevelKnown(const CStr& levelName) const;
     bool IsLevelVisited(const CStr& levelName) const;
     float GetLevelSize(const CStr& levelName) const;
-    oldstd::map<CStr, ObjectInfo*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, ObjectInfo*> > >* GetObjectsForLevel(const CStr& levelName);
-    const oldstd::map<CStr, ObjectInfo*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, ObjectInfo*> > >* GetObjectsForLevel(const CStr& levelName) const;
+    retruxx::map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*> > >* GetObjectsForLevel(const CStr& levelName);
+    const retruxx::map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*> > >* GetObjectsForLevel(const CStr& levelName) const;
     ObjectInfo* GetObjectInfo(const CStr& objectName, const CStr& levelName) const;
     VisibilityMap* GetVisibilityMapForLevel(const CStr& levelName) const;
     int GetVisibilityRadius() const;
@@ -100,16 +100,16 @@ public:
     virtual m3d::Class* GetClass() const override /* 0x34 */;
     static m3d::Class m_classLevelInfoManager;
 
-    using LevelInfoMap = oldstd::map<int, LevelInfo*, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, LevelInfo*> > >;
-    using LevelInfoPair = oldstd::pair<int, LevelInfo*>;
-    using LevelSizeMap = oldstd::map<CStr, float, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, float> > >;
-    using LevelSizePair = oldstd::pair<CStr, float>;
+    using LevelInfoMap = retruxx::map<int, LevelInfo*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, LevelInfo*> > >;
+    using LevelInfoPair = retruxx::pair<int, LevelInfo*>;
+    using LevelSizeMap = retruxx::map<CStr, float, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, float> > >;
+    using LevelSizePair = retruxx::pair<CStr, float>;
     class LevelSizeMapConstIterator;
-    using LevelObjectsMap = oldstd::map<CStr, oldstd::map<CStr, ObjectInfo*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, ObjectInfo*> > >, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, oldstd::map<CStr, ObjectInfo*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, ObjectInfo*> > > > > >;
-    using LevelObjectsPair = oldstd::pair<CStr, oldstd::map<CStr, ObjectInfo*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, ObjectInfo*> > > >;
+    using LevelObjectsMap = retruxx::map<CStr, retruxx::map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*> > >, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, retruxx::map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*> > > > > >;
+    using LevelObjectsPair = retruxx::pair<CStr, retruxx::map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*> > > >;
     class LevelObjectsConstIterator;
-    using VisibilityMapMap = oldstd::map<CStr, VisibilityMap*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, VisibilityMap*> > >;
-    using VisibilityMapPair = oldstd::pair<CStr, VisibilityMap*>;
+    using VisibilityMapMap = retruxx::map<CStr, VisibilityMap*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, VisibilityMap*> > >;
+    using VisibilityMapPair = retruxx::pair<CStr, VisibilityMap*>;
 
 public:
     void ClearBeforeNewLevel();
@@ -144,13 +144,13 @@ public:
     void UpdateKnownLevels();
     int AddObjectInfo(ObjectInfo* oi);
 
-    /* 0x0034 */ oldstd::map<int, LevelInfo*> m_levels;
+    /* 0x0034 */ retruxx::map<int, LevelInfo*> m_levels;
     /* 0x0040 */ int m_nextLevelInfoId;
-    /* 0x0044 */ oldstd::map<CStr, float> m_levelSizes;
-    /* 0x0050 */ oldstd::map<CStr, oldstd::map<CStr, ObjectInfo*>> m_levelObjects;
-    /* 0x005c */ oldstd::map<CStr, VisibilityMap*> m_visibilityMaps;
-    /* 0x0068 */ oldstd::set<CStr> m_knownLevels;
-    /* 0x0074 */ oldstd::set<CStr> m_visitedLevels;
+    /* 0x0044 */ retruxx::map<CStr, float> m_levelSizes;
+    /* 0x0050 */ retruxx::map<CStr, retruxx::map<CStr, ObjectInfo*>> m_levelObjects;
+    /* 0x005c */ retruxx::map<CStr, VisibilityMap*> m_visibilityMaps;
+    /* 0x0068 */ retruxx::set<CStr> m_knownLevels;
+    /* 0x0074 */ retruxx::set<CStr> m_visitedLevels;
     /* 0x0080 */ m3d::CVar m_cvVisibilityRadius;
 }; /* size: 0x00ac */
 
@@ -171,7 +171,7 @@ public:
     const CStr& GetLevelName() const;
     int GetBelong() const;
     const CStr* GetPassageAddress() const;
-    const oldstd::map<int, CVector2, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, CVector2> > >* GetSavedPrices() const;
+    const retruxx::map<int, CVector2, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector2> > >* GetSavedPrices() const;
     int SavePrices();
     int AddSavedPriceByPrototypeId(int prototypeId, int sellPrice, int buyPrice);
     void DeleteSavedPrices();
@@ -193,7 +193,7 @@ private:
     /* 0x0024 */ int m_prototypeId;
     /* 0x0028 */ CVector m_position;
     /* 0x0034 */ CStr m_levelName;
-    /* 0x0040 */ oldstd::map<int, CVector2, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, CVector2> > > m_savedPrices;
+    /* 0x0040 */ retruxx::map<int, CVector2, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector2> > > m_savedPrices;
     /* 0x004c */ bool m_bSavedPricesPersistant;
     /* 0x004d */ bool m_bRuined;
     /* 0x004e */ char Padding_133[2];

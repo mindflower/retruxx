@@ -12,6 +12,8 @@
 #include "ui/image.h"
 #include "ui/ui_srv.h"
 
+#include <sstream>
+
 namespace m3d
 {
     extern CClient* pClient;

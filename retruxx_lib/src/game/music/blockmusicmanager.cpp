@@ -4,6 +4,7 @@
 #include <core/kernel.h>
 #include <core/log.h>
 #include <core/ref_ptr.h>
+#include <core/ini.h>
 
 #include "game/m3dgame.h"
 #include "scene/servers/DataServer.h"
@@ -35,10 +36,10 @@ namespace m3d
     {
         for (auto const& block : m_blocks)
         {
-            auto item = M3D_APP->m_serverMusic->GetItemByName(block.front().c_str(), true);
+            auto item = M3D_APP->GetMusicServer().GetItemByName(block.front().c_str(), true);
             if (item != -1)
             {
-                M3D_APP->m_serverMusic->SetItemProperty(item, 9856, &BlockMusicManager::_MusicEndCallback);
+                M3D_APP->GetMusicServer().SetItemProperty(item, 9856, &BlockMusicManager::_MusicEndCallback);
             }
         }
     }

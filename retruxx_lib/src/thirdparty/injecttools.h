@@ -57,6 +57,8 @@ namespace inject
 #define RETRUXX_DLL_INJECT_CTOR(address, cls) namespace {void __fastcall  CONCAT(cls, _)ctor(cls* self) { self->cls::cls(); }}  RETRUXX_DLL_INJECT_FUNCTION(address, CONCAT(cls, _)ctor);
 #define RETRUXX_DLL_INJECT_DTOR(address, cls) namespace {void __fastcall  CONCAT(cls, _)dtor(cls* self) { self->cls::~cls(); }} RETRUXX_DLL_INJECT_FUNCTION(address, CONCAT(cls, _)dtor);
 
+#define RETUXX_DLL_JMP_TO_FUNCTION(address, function, ...) return (this->*inject::cast<decltype(&function)>(address))(__VA_ARGS__)
+
 #else //RETRUXX_DLL
 
 #define RETRUXX_DLL_FRIEND_CLASS(cl)

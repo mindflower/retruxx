@@ -76,19 +76,19 @@ namespace m3d
 
         struct VertexXYZWCT1
         {
-            float x;
-            float y;
-            float z;
-            float w;
-            unsigned int c;
-            float tu;
-            float tv;
+            void xyzw(const CVector4& v);
+            void xyzw(float xx, float yy, float zz, float ww);
+            void uv0(float u, float v);
+            /* 0x0000 */ float x;
+            /* 0x0004 */ float y;
+            /* 0x0008 */ float z;
+            /* 0x000c */ float w;
+            /* 0x0010 */ unsigned int c;
+            /* 0x0014 */ float tu;
+            /* 0x0018 */ float tv;
+        }; /* size: 0x001c */
 
-        public:
-            void xyzw(float, float, float, float);
-            void xyzw(CVector4 const&);
-            void uv0(float, float);
-        };
+        static_assert(sizeof(VertexXYZWCT1) == 0x001c);
 
         struct VertexXYZC
         {
@@ -118,18 +118,18 @@ namespace m3d
 
         struct VertexXYZCT1
         {
-            float x;
-            float y;
-            float z;
-            unsigned int c;
-            float tu;
-            float tv;
+            void xyz(const CVector& v);
+            void xyz(float xx, float yy, float zz);
+            void uv0(float u, float v);
+            /* 0x0000 */ float x;
+            /* 0x0004 */ float y;
+            /* 0x0008 */ float z;
+            /* 0x000c */ unsigned int c;
+            /* 0x0010 */ float tu;
+            /* 0x0014 */ float tv;
+        }; /* size: 0x0018 */
 
-        public:
-            void xyz(float, float, float);
-            void xyz(CVector const&);
-            void uv0(float, float);
-        };
+        static_assert(sizeof(VertexXYZCT1) == 0x0018);
 
         struct VertexXYZNCT2
         {

@@ -88,6 +88,6 @@ bool operator==(CStr const& lhs, CStr const& rhs);
 bool operator!=(CStr const& lhs, CStr const& rhs);
 bool operator<(CStr const& lhs, CStr const& rhs);
 bool operator>(CStr const& lhs, CStr const& rhs);
-CStr operator+(CStr lhs, CStr const& rhs);
+CStr operator+(CStr const& lhs, CStr const& rhs);
 
 unsigned int strToColor(CStr const& str, unsigned def);

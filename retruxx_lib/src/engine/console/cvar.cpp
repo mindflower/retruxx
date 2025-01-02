@@ -1,4 +1,5 @@
 #include <core/console/cvar.h>
+#include <core/console/console.h>
 #include <cstdio>
 #include <stdexcept>
 

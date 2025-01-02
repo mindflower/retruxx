@@ -2,10 +2,10 @@
 
 #include "stringm3d.h"
 #include <iface.h>
-#include <vector>
 #include <engine/tinyxml/tinyxml.h>
+#include "thirdparty/containers.h"
+
 #include <sstream>
-#include "thirdparty/stl/vector.hpp"
 
 #undef GetFirstChild
 #undef GetFirstSibling
@@ -103,7 +103,7 @@ namespace m3d
             virtual int Read(fs::IStream&) = 0;
             virtual int Write(fs::IStream&) = 0;
             virtual char const* GetError() = 0;
-            virtual XmlNode* CreateNode(XmlNodeType, char const*) const = 0;
+            virtual XmlNode* CreateNode(XmlNodeType = XML_NODE_EMPTY, char const* = nullptr) const = 0;
             virtual bool GetFirstChild(XmlNode*, char const*) const = 0;
             virtual bool GetLastChild_(XmlNode*, char const*) const = 0;
             virtual bool AddChild(XmlNode*) = 0;
@@ -126,7 +126,7 @@ namespace m3d
     bool SafeVector2Attrib(CVector2&, m3d::cmn::XmlNode const*, char const*);
     bool SafeVectorAttrib(CVector&, m3d::cmn::XmlNode const*, char const*);
     bool SafeQuaternionAttrib(Quaternion&, m3d::cmn::XmlNode const*, char const*);
-    void Tokenize(CStr const&, oldstd::vector<CStr>&, char const*);
+    void Tokenize(CStr const&, retruxx::vector<CStr>&, char const*);
 
     template<class T>
     bool SafeEnumAttrib(T& v, m3d::cmn::XmlNode const* node, char const* attrib)
@@ -143,7 +143,7 @@ namespace m3d
         return false;
     }
 
-    void Tokenize(CStr const*, oldstd::vector<CStr>&, char const*);
+    void Tokenize(CStr const*, retruxx::vector<CStr>&, char const*);
 }
 
 //IMPORTANT: fields and members order is strict
@@ -216,8 +216,8 @@ class XmlNodeImpl : public m3d::cmn::XmlNode
 {
     friend class XmlFileImpl;
 private:
-    /* 0x0004 */ int m_refCount;
-    /* 0x0008 */ IBase* m_parent;
+    /* 0x0004 */ int m_refCount = 0;
+    /* 0x0008 */ IBase* m_parent = nullptr;
     virtual int DecRef() override /* 0x04 */;
     virtual int IncRef() override /* 0x08 */;
     virtual void* QueryIface(const char* ifaceName) override /* 0x0c */;

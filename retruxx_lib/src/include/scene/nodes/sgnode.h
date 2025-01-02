@@ -99,7 +99,7 @@ namespace m3d
         virtual int UpdateXForm(bool, bool);
         bool VisCellBoundsChanged() const;
         virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-        virtual int GetPropertiesList(std::set<unsigned int, std::less<unsigned int>, std::allocator<unsigned int> >&) const;
+        virtual int GetPropertiesList(retruxx::set<unsigned int, retruxx::less<unsigned int>, retruxx::allocator<unsigned int> >&) const;
         Aabb GetOwnAabb() const;
         virtual float IntersectRay(CVector const&, CVector const&, SgNode*&, Class*);
         virtual void Restart();

@@ -1,8 +1,7 @@
 #pragma once
 #include "stringm3d.h"
-#include <set>
-#include <vector>
 #include "thirdparty/injecttools.h"
+#include "thirdparty/containers.h"
 
 #define RT_CLASS_LOCAL(cl) &cl::m_class##cl
 #define RT_CLASS_DECLARE(cl) static m3d::Class m_class##cl
@@ -76,6 +75,7 @@ namespace m3d
     class RefCountedBase
     {
     public:
+        RefCountedBase();
         virtual ~RefCountedBase() = default;
         int IncRef();
         int DecRef();
@@ -84,6 +84,7 @@ namespace m3d
     private:
         /* 0x0004 */ int m_refCount = 0;
     }; /* size: 0x0008 */
+    static_assert(sizeof(RefCountedBase) == 0x0008);
 
     //IMPORTANT: fields and members order is strict c
     class Object : public RefCountedBase
@@ -97,7 +98,7 @@ namespace m3d
         void SetPersistance(bool per);
         virtual int SetProperty(unsigned int propId, void* prop) /* 0x14 */;
         virtual int GetProperty(unsigned int propId, void* prop) const /* 0x18 */;
-        virtual int GetPropertiesList(std::set<unsigned int, std::less<unsigned int>, std::allocator<unsigned int> >& properties) const /* 0x1c */;
+        virtual int GetPropertiesList(retruxx::set<unsigned int>& properties) const /* 0x1c */;
         m3d::Object* GetParent() const;
         m3d::Object* GetFirstChild() const;
         m3d::Object* GetLastChild() const;

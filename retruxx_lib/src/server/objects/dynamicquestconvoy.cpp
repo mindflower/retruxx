@@ -1,4 +1,5 @@
 #include "dynamicquestconvoy.h"
+#include <stdexcept>
 
 namespace ai
 {

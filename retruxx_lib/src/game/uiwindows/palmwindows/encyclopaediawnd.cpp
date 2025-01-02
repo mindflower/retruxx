@@ -14,7 +14,7 @@ m3d::Class* EncyclopaediaWnd::GetClass() const
     throw std::logic_error("Not implemented");
 }
 
-std::vector<int> const* EncyclopaediaWnd::GetClans() const
+retruxx::vector<int> const* EncyclopaediaWnd::GetClans() const
 {
     throw std::logic_error("Not implemented");
 }
@@ -34,7 +34,7 @@ void EncyclopaediaWnd::ShowAll()
     throw std::logic_error("Not implemented");
 }
 
-std::vector<int> const* EncyclopaediaWnd::GetPrototypesForTheme(Theme) const
+retruxx::vector<int> const* EncyclopaediaWnd::GetPrototypesForTheme(Theme) const
 {
     throw std::logic_error("Not implemented");
 }
@@ -239,7 +239,7 @@ m3d::rend::TexHandle EncyclopaediaWnd::GetImageForAffix(CStr const&) const
     throw std::logic_error("Not implemented");
 }
 
-void EncyclopaediaWnd::GetPrototypeIdsKindOfResource(int, std::vector<int>&) const
+void EncyclopaediaWnd::GetPrototypeIdsKindOfResource(int, retruxx::vector<int>&) const
 {
     throw std::logic_error("Not implemented");
 }

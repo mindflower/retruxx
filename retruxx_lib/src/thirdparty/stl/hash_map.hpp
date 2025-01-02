@@ -2,7 +2,7 @@
 #pragma once
 #ifndef _HASH_MAP_
 #define _HASH_MAP_
-#include <xhash>
+#include "xhash.hpp"
 
 #pragma pack(push,8)
 #pragma warning(push,3)

@@ -4,6 +4,7 @@
 #include <windows.h>
 
 #include "math/vector.h"
+#include "thirdparty/injecttools.h"
 
 void UnifyFileName(CStr& fileName)
 {
@@ -97,18 +98,22 @@ CStr::ZeroCharHolder::operator char*()
 
 void CStr::cleanup()
 {
-    delete[] m_charPtr;
-    m_charPtr = nullptr;
-    m_allocSz = 0;
+    if (m_charPtr != ZERO)
+    {
+        delete[] m_charPtr;
+        m_charPtr = ZERO;
+        m_allocSz = 0;
+    }
 }
 
 void CStr::realloc(int sz)
 {
     //TODO: check this
     auto size = 32 * ((sz + 31) / 32);
-    if (size > m_allocSz || m_charPtr == nullptr)
+    if (size > m_allocSz || m_charPtr == ZERO)
     {
-        delete[] m_charPtr;
+
+        cleanup();
         m_charPtr = new char[size];
         m_allocSz = size;
         m_charPtr[0] = '\0';
@@ -199,6 +204,10 @@ CStr::CStr(int64_t)
 CStr::CStr(unsigned long v)
 {
     char buf[136] = { 0 };
+
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
     sprintf(buf, "%lu", v);
     realloc(strlen(buf) + 1);
     strcpy(m_charPtr, buf);
@@ -207,6 +216,10 @@ CStr::CStr(unsigned long v)
 CStr::CStr(unsigned int v)
 {
     char buf[136] = { 0 };
+
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
     sprintf(buf, "%u", v);
     realloc(strlen(buf) + 1);
     strcpy(m_charPtr, buf);
@@ -215,6 +228,10 @@ CStr::CStr(unsigned int v)
 CStr::CStr(int v)
 {
     char buf[136] = { 0 };
+
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
     sprintf(buf, "%d", v);
     realloc(strlen(buf) + 1);
     strcpy(m_charPtr, buf);
@@ -232,62 +249,47 @@ CStr::CStr(char const*, int)
 
 CStr::CStr(char const* str)
 {
+    m_charPtr = ZERO;
+    m_allocSz = 0;
     if (str)
     {
-        auto const len = strlen(str);
-        realloc(len + 1);
+        realloc(strlen(str) + 1);
         strcpy(m_charPtr, str);
-    }
-    else
-    {
-        realloc(1);
-        m_charPtr[0] = '\0';
     }
 }
 
 CStr::CStr(char c, int repeat)
 {
+    m_charPtr = ZERO;
+    m_allocSz = 0;
     if (repeat > 0)
     {
         realloc(repeat + 1);
         memset(m_charPtr, c, repeat);
         m_charPtr[repeat] = '\0';
     }
-    else
-    {
-        realloc(1);
-        m_charPtr[0] = '\0';
-    }
 }
 
 CStr::CStr(CStr const& s)
 {
-    if (this == &s)
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+    if (const auto len = s.length(); len > 0)
     {
-        return;
-    }
-    if (s.length() > 0)
-    {
-        realloc(s.length() + 1);
+        realloc(len + 1);
         strcpy(m_charPtr, s.c_str());
-    }
-    else
-    {
-        realloc(1);
-        m_charPtr[0] = '\0';
     }
 }
 
 CStr::CStr()
 {
-    realloc(1);
-    m_charPtr[0] = '\0';
+    m_charPtr = ZERO;
+    m_allocSz = 0;
 }
 
 CStr::~CStr()
 {
-    delete[] m_charPtr;
-    m_charPtr = nullptr;
+    cleanup();
 }
 
 int CStr::length() const
@@ -330,10 +332,18 @@ const char* CStr::c_str() const
 CStr& CStr::operator+=(CStr const& a)
 {
     auto const newSize = length() + a.length() + 1;
+    if (newSize == 1)
+    {
+        cleanup();
+        return *this;
+    }
+
     char* newCharPtr = new char[newSize];
     strcpy(newCharPtr, c_str());
     strcat(newCharPtr, a.c_str());
-    delete[] m_charPtr;
+    
+    cleanup();
+
     m_charPtr = newCharPtr;
     m_allocSz = newSize;
     return *this;
@@ -447,10 +457,9 @@ CStr& CStr::operator=(CStr const& rhs)
         realloc(rhs.length() + 1);
         strcpy(m_charPtr, rhs.c_str());
     }
-    else
+    else if (m_charPtr != ZERO)
     {
-        realloc(1);
-        m_charPtr[0] = '\0';
+        cleanup();
     }
     return *this;
 }
@@ -475,10 +484,11 @@ bool operator>(CStr const& lhs, CStr const& rhs)
     return std::string_view(lhs.c_str()) > std::string_view(rhs.c_str());
 }
 
-CStr operator+(CStr lhs, CStr const& rhs)
+CStr operator+(CStr const& lhs, CStr const& rhs)
 {
-    lhs += rhs;
-    return lhs;
+    CStr newS(lhs);
+    newS += rhs;
+    return newS;
 }
 
 unsigned int strToColor(CStr const& str, unsigned def)

@@ -15,19 +15,20 @@ class CMatrix;
 class CAffineXForm
 {
 public:
+    /* 0x0004 */ CVector m_worldOrigin;
+    /* 0x0010 */ float m_rotYaw;
+    /* 0x0014 */ float m_rotPitch;
+    /* 0x0018 */ float m_rotRoll;
+    CAffineXForm(const CAffineXForm&);
     CAffineXForm();
-    void createRotationMatrix(CMatrix&) const;
-    void createViewMatrix(CMatrix&) const;
-    virtual void LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-    virtual void SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
+    void createViewMatrix(CMatrix& viewMatrix) const;
+    void createRotationMatrix(CMatrix& matRot) const;
+    void MoveAlong(const CVector&);
+    virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) /* 0x00 */;
+    virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x04 */;
+}; /* size: 0x001c */
 
-public:
-    //CAffineXForm_vtbl* __vftable /*VFT*/;
-    CVector m_worldOrigin;
-    float m_rotYaw = 0.0;
-    float m_rotPitch = 0.0;
-    float m_rotRoll = 0.0;
-};
+static_assert(sizeof(CAffineXForm) == 0x001c);
 
 enum CameraModes
 {
@@ -42,14 +43,16 @@ enum CameraModes
 class CCamera : public CAffineXForm
 {
 public:
-    void createProjectionMatrix(CMatrix&, float) const;
-    void lookAt(CVector const&, CVector const&);
-    void lookAt(CVector const&);
-    virtual void LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-    virtual void SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-    void setFov(float, float, float);
+    /* 0x001c */ float m_fovX;
+    /* 0x0020 */ float m_fovY;
+    CCamera(const CCamera&);
+    CCamera();
+    void lookAt(const CVector& Aim, const CVector& Up);
+    void lookAt(const CVector& Aim);
+    void setFov(float fov, float w, float h);
+    void createProjectionMatrix(CMatrix& matProj, float nearOverride) const;
+    virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+    virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x04 */;
+}; /* size: 0x0024 */
 
-private:
-    float m_fovX = 120.0;
-    float m_fovY = 90.0;
-};
+static_assert(sizeof(CCamera) == 0x0024);

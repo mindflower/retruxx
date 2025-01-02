@@ -2,6 +2,7 @@
 #include <map>
 #include <stdexcept>
 #include "core/kernel.h"
+#include "core/clazz.h"
 
 namespace ai
 {

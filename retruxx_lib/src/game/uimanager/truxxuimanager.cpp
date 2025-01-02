@@ -733,342 +733,357 @@ void TruxxUiManager::GUI_EndModalDlg()
     }
 }
 
+namespace
+{
+    //TODO: get rid of this
+    retruxx::vector<int> convert(std::initializer_list<int> list)
+    {
+        retruxx::vector<int> result;
+        result.reserve(list.size());
+        for (const auto elem : list)
+        {
+            result.push_back(elem);
+        }
+        return result;
+    }
+}
+
 int TruxxUiManager::GUI_BindWindowsToEvents()
 {
     int res = 0;
-    std::vector<int> events;
+    retruxx::vector<int> events;
 
-    events = { 17 };
+    events = convert({ 17 });
     res = GUI_SetEventsForWindow(0, events) & 1;
 
-    events = { 64 };
+    events = convert({ 64 });
     res = GUI_SetEventsForWindow(64, events) & res;
 
-    events = { 65, 32, 31, 34 };
+    events = convert({ 65, 32, 31, 34 });
     res = GUI_SetEventsForWindow(90, events) & res;
 
-    events = { 65, 32, 31, 34 };
+    events = convert({ 65, 32, 31, 34 });
     res = GUI_SetEventsForWindow(90, events) & res;
 
-    events = { 65, 32, 31, 34 };
+    events = convert({ 65, 32, 31, 34 });
     res = GUI_SetEventsForWindow(91, events) & res;
 
-    events = { 65, 32, 102, 34 };
+    events = convert({ 65, 32, 102, 34 });
     res = GUI_SetEventsForWindow(92, events) & res;
 
-    events = { 65, 32, 31, 34 };
+    events = convert({ 65, 32, 31, 34 });
     res = GUI_SetEventsForWindow(93, events) & res;
 
-    events = { 65, 32, 31, 34 };
+    events = convert({ 65, 32, 31, 34 });
     res = GUI_SetEventsForWindow(93, events) & res;
 
-    events = { 91, 58, 97, 98, 99, 65, 75, 89 };
+    events = convert({ 91, 58, 97, 98, 99, 65, 75, 89 });
     res = GUI_SetEventsForWindow(8, events) & res;
 
-    events = { 91, 58, 97, 98, 99, 65, 75, 89 };
+    events = convert({ 91, 58, 97, 98, 99, 65, 75, 89 });
     res = GUI_SetEventsForWindow(9, events) & res;
 
-    events = { 91, 58, 97, 98, 99, 65, 75, 89 };
+    events = convert({ 91, 58, 97, 98, 99, 65, 75, 89 });
     res = GUI_SetEventsForWindow(10, events) & res;
 
-    events = { 91, 58, 97, 98, 99, 65, 75, 89 };
+    events = convert({ 91, 58, 97, 98, 99, 65, 75, 89 });
     res = GUI_SetEventsForWindow(32, events) & res;
 
-    events = { 91, 92, 93, 94, 95, 96, 97, 98, 65 };
+    events = convert({ 91, 92, 93, 94, 95, 96, 97, 98, 65 });
     res = GUI_SetEventsForWindow(11, events) & res;
 
-    events = { 64, 99, 100 };
+    events = convert({ 64, 99, 100 });
     res = GUI_SetEventsForWindow(66, events) & res;
 
-    events = { 89, 85, 28, 29 };
+    events = convert({ 89, 85, 28, 29 });
     res = GUI_SetEventsForWindow(17, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(20, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(23, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(135, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(136, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(137, events) & res;
 
     //TODO: check this
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(21, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(22, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(24, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(25, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(138, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(139, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(140, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(141, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(142, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(143, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(29, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(30, events) & res;
 
-    events = { 64 };
+    events = convert({ 64 });
     res = GUI_SetEventsForWindow(26, events) & res;
 
-    events = { 64 };
+    events = convert({ 64 });
     res = GUI_SetEventsForWindow(27, events) & res;
 
-    events = { 64 };
+    events = convert({ 64 });
     res = GUI_SetEventsForWindow(28, events) & res;
 
-    events = { 89, 58 };
+    events = convert({ 89, 58 });
     res = GUI_SetEventsForWindow(36, events) & res;
 
-    events = { 89, 99, 98, 91, 95, 94, 40, 42 };
+    events = convert({ 89, 99, 98, 91, 95, 94, 40, 42 });
     res = GUI_SetEventsForWindow(35, events) & res;
 
-    events = { 101, 27, 26 };
+    events = convert({ 101, 27, 26 });
     res = GUI_SetEventsForWindow(37, events) & res;
 
-    events = { 64, 65, 30, 17 };
+    events = convert({ 64, 65, 30, 17 });
     res = GUI_SetEventsForWindow(38, events) & res;
 
-    events = { 65 };
+    events = convert({ 65 });
     res = GUI_SetEventsForWindow(39, events) & res;
 
-    events = { 65 };
+    events = convert({ 65 });
     res = GUI_SetEventsForWindow(40, events) & res;
 
-    events = { 65 };
+    events = convert({ 65 });
     res = GUI_SetEventsForWindow(41, events) & res;
 
     //TODO: check this
     for (int i = 43; i <= 62; ++i)
     {
-        events = { 91, 92, 93, 94, 95, 96, 97, 98, 69 };
+        events = convert({ 91, 92, 93, 94, 95, 96, 97, 98, 69 });
         res = GUI_SetEventsForWindow(i, events) & res;
     }
 
-    events = { 64, 58, 85 };
+    events = convert({ 64, 58, 85 });
     res = GUI_SetEventsForWindow(63, events) & res;
 
-    events = { 2, 7, 4, 6, 5, 3, 12, 13, 21, 24, 20, 18, 33, 34, 35, 36, 38, 39, 14 };
+    events = convert({ 2, 7, 4, 6, 5, 3, 12, 13, 21, 24, 20, 18, 33, 34, 35, 36, 38, 39, 14 });
     res = GUI_SetEventsForWindow(7, events) & res;
 
-    events = { 64, 107, 65, 55 };
+    events = convert({ 64, 107, 65, 55 });
     res = GUI_SetEventsForWindow(68, events) & res;
 
-    events = { 64, 107, 65, 55 };
+    events = convert({ 64, 107, 65, 55 });
     res = GUI_SetEventsForWindow(69, events) & res;
 
-    events = { 75, 85 };
+    events = convert({ 75, 85 });
     res = GUI_SetEventsForWindow(70, events) & res;
 
-    events = { 75, 85 };
+    events = convert({ 75, 85 });
     res = GUI_SetEventsForWindow(71, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(74, events) & res;
 
-    events = { 75, 85 };
+    events = convert({ 75, 85 });
     res = GUI_SetEventsForWindow(75, events) & res;
 
-    events = { 75, 85 };
+    events = convert({ 75, 85 });
     res = GUI_SetEventsForWindow(76, events) & res;
 
-    events = { 67, 60, 59, 28, 29 };
+    events = convert({ 67, 60, 59, 28, 29 });
     res = GUI_SetEventsForWindow(78, events) & res;
 
-    events = { 85 };
+    events = convert({ 85 });
     res = GUI_SetEventsForWindow(80, events) & res;
 
-    events = { 85 };
+    events = convert({ 85 });
     res = GUI_SetEventsForWindow(81, events) & res;
 
-    events = { 25, 70 };
+    events = convert({ 25, 70 });
     res = GUI_SetEventsForWindow(88, events) & res;
 
-    events = { 23, 89 };
+    events = convert({ 23, 89 });
     res = GUI_SetEventsForWindow(87, events) & res;
 
-    events = { 28, 29, 40 };
+    events = convert({ 28, 29, 40 });
     res = GUI_SetEventsForWindow(83, events) & res;
 
-    events = { 17 };
+    events = convert({ 17 });
     res = GUI_SetEventsForWindow(89, events) & res;
 
-    events = { 65, 69, 58 };
+    events = convert({ 65, 69, 58 });
     res = GUI_SetEventsForWindow(94, events) & res;
 
-    events = { 58, 34, 65, 55 };
+    events = convert({ 58, 34, 65, 55 });
     res = GUI_SetEventsForWindow(73, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(98, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(99, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(101, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(102, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(100, events) & res;
 
-    events = { 89, 65 };
+    events = convert({ 89, 65 });
     res = GUI_SetEventsForWindow(103, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(77, events) & res;
 
-    events = { 57, 104, 105 };
+    events = convert({ 57, 104, 105 });
     res = GUI_SetEventsForWindow(4, events) & res;
 
-    events = { 85, 64, 69, 72, 73, 76, 77, 90, 51 };
+    events = convert({ 85, 64, 69, 72, 73, 76, 77, 90, 51 });
     res = GUI_SetEventsForWindow(97, events) & res;
 
-    events = { 85, 71 };
+    events = convert({ 85, 71 });
     res = GUI_SetEventsForWindow(84, events) & res;
 
-    events = { 89, 85 };
+    events = convert({ 89, 85 });
     res = GUI_SetEventsForWindow(105, events) & res;
 
-    events = { 52 };
+    events = convert({ 52 });
     res = GUI_SetEventsForWindow(106, events) & res;
 
-    events = { 41, 40 };
+    events = convert({ 41, 40 });
     res = GUI_SetEventsForWindow(111, events) & res;
 
-    events = { 40 };
+    events = convert({ 40 });
     res = GUI_SetEventsForWindow(72, events) & res;
 
-    events = { 44, 42, 40, 46 };
+    events = convert({ 44, 42, 40, 46 });
     res = GUI_SetEventsForWindow(112, events) & res;
 
-    events = { 43, 42, 40, 46 };
+    events = convert({ 43, 42, 40, 46 });
     res = GUI_SetEventsForWindow(113, events) & res;
 
-    events = { 90 };
+    events = convert({ 90 });
     res = GUI_SetEventsForWindow(117, events) & res;
 
-    events = { 90 };
+    events = convert({ 90 });
     res = GUI_SetEventsForWindow(116, events) & res;
 
     //TODO: check this! 118
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(118, events) & res;
 
-    events = { 47, 48 };
+    events = convert({ 47, 48 });
     res = GUI_SetEventsForWindow(118, events) & res;
 
-    events = { 64 };
+    events = convert({ 64 });
     res = GUI_SetEventsForWindow(124, events) & res;
 
-    events = { 89, 79 };
+    events = convert({ 89, 79 });
     res = GUI_SetEventsForWindow(125, events) & res;
 
-    events = { 89, 80 };
+    events = convert({ 89, 80 });
     res = GUI_SetEventsForWindow(126, events) & res;
 
-    events = { 42, 40 };
+    events = convert({ 42, 40 });
     res = GUI_SetEventsForWindow(15, events) & res;
 
-    events = { 28, 29 };
+    events = convert({ 28, 29 });
     res = GUI_SetEventsForWindow(82, events) & res;
 
-    events = { 64, 89, 58, 34 };
+    events = convert({ 64, 89, 58, 34 });
     res = GUI_SetEventsForWindow(67, events) & res;
 
-    events = { 65, 64, 89 };
+    events = convert({ 65, 64, 89 });
     res = GUI_SetEventsForWindow(128, events) & res;
 
-    events = { 65, 64, 89 };
+    events = convert({ 65, 64, 89 });
     res = GUI_SetEventsForWindow(129, events) & res;
 
-    events = { 65, 64, 89 };
+    events = convert({ 65, 64, 89 });
     res = GUI_SetEventsForWindow(130, events) & res;
 
-    events = { 58 };
+    events = convert({ 58 });
     res = GUI_SetEventsForWindow(133, events) & res;
 
-    events = { 58 };
+    events = convert({ 58 });
     res = GUI_SetEventsForWindow(134, events) & res;
 
-    events = { 76, 89 };
+    events = convert({ 76, 89 });
     res = GUI_SetEventsForWindow(145, events) & res;
 
-    events = { 77 };
+    events = convert({ 77 });
     res = GUI_SetEventsForWindow(146, events) & res;
 
-    events = { 89, 67, 85 };
+    events = convert({ 89, 67, 85 });
     res = GUI_SetEventsForWindow(147, events) & res;
 
-    events = { 28, 29 };
+    events = convert({ 28, 29 });
     res = GUI_SetEventsForWindow(153, events) & res;
 
-    events = { 89, 82, 83, 78 };
+    events = convert({ 89, 82, 83, 78 });
     res = GUI_SetEventsForWindow(155, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(156, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(157, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(158, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(159, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(160, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(161, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(162, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(163, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(164, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(165, events) & res;
 
-    events = { 89, 81 };
+    events = convert({ 89, 81 });
     res = GUI_SetEventsForWindow(166, events) & res;
 
-    events = { 89 };
+    events = convert({ 89 });
     res = GUI_SetEventsForWindow(171, events) & res;
 
     if (!res)

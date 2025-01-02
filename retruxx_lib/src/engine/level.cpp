@@ -9,6 +9,7 @@
 #include "core/scoped_ptr.h"
 #include "file/fileserver.h"
 #include "file/filestream.h"
+#include "core/ini.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Level, GetLandSize)
 {

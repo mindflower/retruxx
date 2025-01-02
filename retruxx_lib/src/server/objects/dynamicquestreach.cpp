@@ -1,4 +1,5 @@
 #include "dynamicquestreach.h"
+#include <stdexcept>
 
 namespace ai
 {

@@ -1,7 +1,6 @@
 #pragma once
 #include "font.h"
 #include "ui.h"
-#include <vector>
 #include <core/containers.h>
 #include <math/bounds2d.h>
 #include <math/point2d.h>
@@ -84,7 +83,7 @@ namespace m3d
             ~GfxServer();
             float GetGlyphHeight();
             float GetTabButtonMaxWidth() const;
-            void AddTabWndPaneNormal(DrawInfo const&, BoundsBase<float> const&, unsigned int, TabButtonInfo const&, std::vector<BoundsBase<float>> const&, int, int, CStr const&, PaneFlagBg);
+            void AddTabWndPaneNormal(DrawInfo const&, BoundsBase<float> const&, unsigned int, TabButtonInfo const&, retruxx::vector<BoundsBase<float>> const&, int, int, CStr const&, PaneFlagBg);
             void AddChkButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned int, bool);
             float GetTabButtonSpace() const;
             int Create();
@@ -127,13 +126,13 @@ namespace m3d
         private:
             unsigned int m_colors[255];
             rend::TexHandle m_texTheme[14];
-            std::vector<Pane> m_paneTexTheme;
-            std::vector<BackGround*> m_backgrounds;
-            std::vector<Frame*> m_frames;
+            retruxx::vector<Pane> m_paneTexTheme;
+            retruxx::vector<BackGround*> m_backgrounds;
+            retruxx::vector<Frame*> m_frames;
             CStrHash<Pane*> m_panes;
-            std::vector<Pane*> m_panesVector;
-            std::vector<ScrollPane*> m_scrollPanes;
-            std::map<CStr, rend::TexHandle> m_glyphButtonTextures;
+            retruxx::vector<Pane*> m_panesVector;
+            retruxx::vector<ScrollPane*> m_scrollPanes;
+            retruxx::map<CStr, rend::TexHandle> m_glyphButtonTextures;
             bool m_created = false;
             rend::TexHandle m_texBumpmap;
             FontManager* m_fontManager = nullptr;
@@ -155,7 +154,7 @@ namespace m3d
             float m_tabButtonMaxWidth;
             float m_tabButtonHeight;
             float m_tabButtonSpace;
-            std::map<CStr, SoundInfo*> m_controlSoundInfos;
+            retruxx::map<CStr, SoundInfo*> m_controlSoundInfos;
         };
     }
 }

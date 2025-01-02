@@ -3,6 +3,7 @@
 #include "m3dapp.h"
 #include "core/kernel.h"
 #include "core/timer.h"
+#include "core/ini.h"
 
 namespace m3d
 {

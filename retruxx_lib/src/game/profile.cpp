@@ -3,6 +3,7 @@
 #include <core/kernel.h>
 #include <core/aiparam.h>
 #include <core/log.h>
+#include "core/ini.h"
 
 #include "config.h"
 #include "m3dapp.h"

@@ -1,6 +1,5 @@
 #pragma once
 #include "checklist.h"
-#include <map>
 #include <ui/ui.h>
 
 class ContextModelWnd;
@@ -52,11 +51,11 @@ public:
 
 public:
     virtual m3d::Class * GetClass() const ;
-    std::vector<int> const * GetClans() const ;
+    retruxx::vector<int> const * GetClans() const ;
     int AddClan(int);
     bool IsClanVisible(int) const ;
     void ShowAll();
-    std::vector<int> const * GetPrototypesForTheme(Theme) const ;
+    retruxx::vector<int> const * GetPrototypesForTheme(Theme) const ;
     int AddPrototype(int);
     virtual ~EncyclopaediaWnd();
     static m3d::Class * GetBaseClass();
@@ -99,7 +98,7 @@ protected:
     virtual int GameDataSetup();
     void OnGadgetChanged(void *);
     m3d::rend::TexHandle GetImageForAffix(CStr const &) const ;
-    void GetPrototypeIdsKindOfResource(int,std::vector<int> &) const ;
+    void GetPrototypeIdsKindOfResource(int,retruxx::vector<int> &) const ;
     Theme GetThemeByPrototypeId(int) const ;
     Theme GetCurTheme() const ;
     CStr GetCurSubjectName() const ;
@@ -117,12 +116,12 @@ private:
     m3d::ui::ComboBoxWnd *m_comboThemes;
     ContextModelWnd *m_wndModel;
     EncyclopaediaWnd::AuxInfo m_aif;
-    std::map<EncyclopaediaWnd::Theme,std::vector<int>> m_prototypesByTheme;
-    std::set<int> m_visiblePrototypeIds;
-    std::map<int,int> m_relatedPrototypeIds;
+    retruxx::map<EncyclopaediaWnd::Theme,retruxx::vector<int>> m_prototypesByTheme;
+    retruxx::set<int> m_visiblePrototypeIds;
+    retruxx::map<int,int> m_relatedPrototypeIds;
     bool m_bInitedOnce;
-    std::vector<int> m_clanBelongsVector;
-    std::set<int> m_clanBelongsSet;
+    retruxx::vector<int> m_clanBelongsVector;
+    retruxx::set<int> m_clanBelongsSet;
     int m_prevInfoObjId;
     int m_prevCapturingObjId;
     int m_prevCapturedObjId;

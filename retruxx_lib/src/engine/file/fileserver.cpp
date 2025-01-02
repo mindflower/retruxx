@@ -6,6 +6,7 @@
 #include <file/memoryfile.h>
 #include <file/package.h>
 #include <file/rawfile.h>
+#include "thirdparty/containers.h"
 
 namespace m3d
 {
@@ -155,7 +156,7 @@ namespace m3d
 
             buffer[size] = '\0';
             CStr const fileContent(buffer.data());
-            oldstd::vector<CStr> tokens;
+            retruxx::vector<CStr> tokens;
             Tokenize(&fileContent, tokens, "\r\n");
             if (!tokens.empty())
             {
@@ -175,7 +176,7 @@ namespace m3d
                 if (attr == -1 || (attr & 0x10) == 0)
                 {
                     auto const enableMapping = m_EnableMapping;
-                    oldstd::vector<CStr> tokens2;
+                    retruxx::vector<CStr> tokens2;
                     Tokenize(&token, tokens, " \t");
                     if (tokens2.size() > 1 && tokens2[1] == "M")
                     {

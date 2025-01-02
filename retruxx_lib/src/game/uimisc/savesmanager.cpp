@@ -9,7 +9,7 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SavesManager, AutoSave)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 RT_CLASS_EXPORTS_BEGIN(SavesManager)
@@ -23,22 +23,22 @@ SavesManager::ConstantSaveInfo::ConstantSaveInfo()
 
 SavesManager::~SavesManager()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::QuickLoad()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 CStr SavesManager::GetNewSaveDefaultName() const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 m3d::Object* SavesManager::Clone()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 CStr SavesManager::GetPathForTemporaryMaps() const
@@ -60,12 +60,12 @@ CStr SavesManager::GetPathForTemporaryMaps() const
 
 CStr SavesManager::GetSaveFolderPathByFolderName(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::AutoSave(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 m3d::Class* SavesManager::GetBaseClass()
@@ -75,12 +75,12 @@ m3d::Class* SavesManager::GetBaseClass()
 
 m3d::rend::TexHandle SavesManager::GetCurGameScreenshot() const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 CStr SavesManager::GetNewSaveFolderName() const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 m3d::Object* SavesManager::CreateObject()
@@ -90,92 +90,92 @@ m3d::Object* SavesManager::CreateObject()
 
 int SavesManager::LoadGame(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 SavesManager::SaveInfo const* SavesManager::GetSaveInfoByFolderName(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::SaveGame(CStr const&, CStr const&, bool)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 m3d::Class* SavesManager::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
-int SavesManager::GetSaveFolderNames(std::vector<CStr>&) const
+int SavesManager::GetSaveFolderNames(retruxx::vector<CStr>&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::DeleteSaveGame(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 CStr SavesManager::GetNewAutoSaveFolderName() const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 CStr SavesManager::GetNewQuickSaveFolderName() const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::SaveScreenshot(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetFirstUsedSaveFolderName(std::vector<CStr> const&) const
+CStr SavesManager::GetFirstUsedSaveFolderName(retruxx::vector<CStr> const&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
-void SavesManager::GetSaveFoldersByPattern(CStr const&, std::vector<CStr>&) const
+void SavesManager::GetSaveFoldersByPattern(CStr const&, retruxx::vector<CStr>&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
-CStr SavesManager::GetLastUsedSaveFolderName(std::vector<CStr> const&) const
+CStr SavesManager::GetLastUsedSaveFolderName(retruxx::vector<CStr> const&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 CStr SavesManager::GetAutoSaveName(CStr const&, CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 CStr SavesManager::GetQuickSaveName(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 _FILETIME SavesManager::GetSaveFileModifyTime(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::SaveInfos(CStr const&, CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::MakeCurGameScreenshot()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::LastLoad()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::GameDataUpdate(void* data, int dataType)
@@ -188,34 +188,34 @@ int SavesManager::GameDataUpdate(void* data, int dataType)
         return 1;
     }
     }
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::QuickSave()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::Init()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 SavesManager::ConstantSaveInfo const& SavesManager::GetConstatntSaveInfo() const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 void SavesManager::Clear()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::LoadInfos()
 {
     //TODO: implement SavesManager::LoadInfos
     return 1;
-    //throw std::logic_error("Not implemented");
+    //throw retruxx::logic_error("Not implemented");
 }
 
 SavesManager::SavesManager()
@@ -224,25 +224,25 @@ SavesManager::SavesManager()
 
 SavesManager::SavesManager(SavesManager const&)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 void SavesManager::CheckAndHandleDelayedQuickSave(bool)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 void SavesManager::OnCurProfileChanged()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 void SavesManager::OnNewFrameForce()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int SavesManager::AddSaveInfo(SaveInfo*)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }

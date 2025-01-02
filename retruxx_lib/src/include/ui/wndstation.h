@@ -31,93 +31,106 @@ namespace m3d
         class WndStation : public Wnd
         {
             friend class Wnd;
-        public:
-            int DispatchMouse(Event const&);
-            bool IsWndAlive(Wnd const*, int) const;
-            static Class* GetBaseClass();
-            Wnd* CaptureFocus(Wnd*);
-            int Done();
-            ModalWnd* GetTopModal();
-            int DispatchPaint(Wnd*, BoundsBase<float> const&);
-            int CheckForMouseClick(Wnd*, bool, PointBase<float> const*);
-            Wnd* GetWndForMousePoint(Wnd*, PointBase<float> const&, bool);
-            int DoModal(ModalWnd*);
-            int PulseKeyForWindow(Wnd*, unsigned short, unsigned char);
-            Cursor const& GetCurrentCursor() const;
-            Wnd* GetCapture() const;
-            Wnd* GetWndMouseOver();
-            void EnableAnimation(bool);
-            int Activate(Wnd*);
-            int OnAddWnd(Wnd*, Wnd*);
-            virtual Wnd* CaptureMouse(Wnd*);
-            CStr GetStringByStringId0(CStr const&);
-            int GetStringByStringId(CStr&, CStr const&);
-            bool HasChildModalRunning();
-            int AddNotifyForWnd(Wnd*, Wnd*, unsigned int, AIParam const&, bool);
-            int CheckForMouseDblClick(Wnd*, PointBase<float> const&, unsigned int, PointBase<float>&);
-            virtual int GetDefaultCursor(Cursor&);
-            int LoadStrings(CStr const&);
-            void CloseAllModalWithCancelRet();
-            virtual int Create(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int);
-            int Create(CStr const&, CStr const&);
-            virtual Class* GetRtClass() const;
-            void StopAllAnimations();
-            Wnd* GetFocus() const;
-            virtual int OnEvent(Event const&) = 0;
-            int ProcessEvent(Event const&);
-            Wnd* GetWndByUniqueId(int) const;
-            void EndModal(ModalWnd*, unsigned int);
-            Wnd* GetActive() const;
-            int Repaint();
-            bool IsModal(ModalWnd*);
-            void OnEndAnimation(Wnd*);
-            int FlushGfx(rend::IRenderer*);
-            bool IsAnimationEnabled() const;
-            CStr InitializeStringUsingIds(CStr const&);
-            virtual ~WndStation();
-            int OnRemoveWnd(Wnd*, Wnd*);
-
         protected:
+            WndStation(const m3d::ui::WndStation&);
             WndStation();
 
+        public:
+            virtual  ~WndStation() override /* 0x00 */;
+            static m3d::Class* GetBaseClass();
+            virtual m3d::Class* GetRtClass() const /* 0x11c */;
+            static m3d::Class m_classWndStation;
+            /* 0x0220 */ m3d::ui::Wnd* m_wndMouseOver;
+            /* 0x0224 */ m3d::ui::Wnd* m_wndMouseCapture;
+            /* 0x0228 */ m3d::ui::Wnd* m_wndKbdCapture;
+            /* 0x022c */ m3d::ui::Wnd* m_wndActive;
+            /* 0x0230 */ m3d::ui::Wnd* m_wndForTooltip;
+            /* 0x0234 */ m3d::ui::Wnd* m_wndCandidateForDblClick;
+            /* 0x0238 */ m3d::ui::ComboBoxWnd* m_wndOpenedComboBox;
+            /* 0x023c */ retruxx::vector<m3d::ui::ModalWnd*> m_wndModalStack;
+            /* 0x024c */ unsigned int m_wndModalRetVal;
+            /* 0x0250 */ m3d::ui::Cursor* m_curDefault;
+            /* 0x0254 */ m3d::ui::Cursor m_currentCursor;
+            /* 0x0268 */ bool m_bAnimationEnabled;
+            int DispatchMouse(const m3d::Event& event);
+            m3d::ui::Wnd* GetWndMouseOver();
+            int DispatchPaint(m3d::ui::Wnd* curWnd, const BoundsBase<float>& clipTo);
+
         private:
-            int DispatchJoystick(Event const&);
-            void CreateDefaultStrings();
-            void OnCloseComboBox(ComboBoxWnd*);
-            void OnOpenComboBox(ComboBoxWnd*);
-            void ForEachChild(Wnd*, void (Wnd::*)());
-            Wnd* ModalOverride(Wnd* w);
-            void RegisterWnd(Wnd*);
-            static GfxServer* __fastcall getGfxServer();
+            int DispatchKey(const m3d::Event& event);
+            int DispatchJoystick(const m3d::Event& event);
+            void UpdateOnMouseInOut(m3d::ui::Wnd* newWnd);
+            m3d::ui::Wnd* ModalOverride(m3d::ui::Wnd* w);
             void RemoveCurrentTooltip();
-            void UpdateOnMouseInOut(Wnd* newWnd);
-            void UnregisterWnd(Wnd*);
-            int DispatchKey(Event const&);
+            static m3d::ui::GfxServer* __fastcall getGfxServer();
+            void OnOpenComboBox(m3d::ui::ComboBoxWnd* combo);
+            void OnCloseComboBox(m3d::ui::ComboBoxWnd* combo);
 
         public:
-            RT_CLASS_DECLARE(WndStation);
-
-            Wnd* m_wndMouseCapture = nullptr;
+            m3d::ui::Wnd* GetWndForMousePoint(m3d::ui::Wnd* curWnd, const PointBase<float>& pt, bool affectAll);
+            int CheckForMouseDblClick(m3d::ui::Wnd* w, const PointBase<float>& pt, unsigned int mouseState, PointBase<float>& prevClickPt);
+            int CheckForMouseClick(m3d::ui::Wnd* w, bool set, const PointBase<float>* pt);
+            /* 0x0269 */ char Padding_77[3];
 
         protected:
-            PointBase<float> m_prevMouseCoord;
+            /* 0x026c */ PointBase<float> m_prevMouseCoord;
 
         private:
-            Wnd* m_wndMouseOver = this;
-            Wnd* m_wndKbdCapture = this;
-            Wnd* m_wndActive = this;
-            Wnd* m_wndForTooltip = nullptr;
-            Wnd* m_wndCandidateForDblClick = nullptr;
-            ComboBoxWnd* m_wndOpenedComboBox = nullptr;
-            std::vector<ModalWnd*> m_wndModalStack;
-            unsigned int m_wndModalRetVal;
-            Cursor* m_curDefault = nullptr;
-            Cursor m_currentCursor;
-            bool m_bAnimationEnabled = false;
-            CStrHash<CStr> m_strings;
-            CIntHash<int> m_allWindows;
-            CIntHash<Wnd*> m_allWindowsById;
-            int m_nextUniqueId;
-        };
+            void ForEachChild(m3d::ui::Wnd* curWnd, void (m3d::ui::Wnd::* fn)());
+            /* 0x0274 */ m3d::CStrHash<CStr> m_strings;
+            void CreateDefaultStrings();
+
+        public:
+            int LoadStrings(const CStr& stringsName);
+            int GetStringByStringId(CStr& dest, const CStr& id);
+            CStr GetStringByStringId0(const CStr& id);
+            CStr InitializeStringUsingIds(const CStr& src);
+            int ProcessEvent(const m3d::Event& event);
+            virtual int OnEvent(const m3d::Event&) = 0 /* 0x120 */;
+            int OnRemoveWnd(m3d::ui::Wnd* parent, m3d::ui::Wnd* wnd);
+            int OnAddWnd(m3d::ui::Wnd* parent, m3d::ui::Wnd* wnd);
+            int AddNotifyForWnd(m3d::ui::Wnd* from, m3d::ui::Wnd* to, unsigned int msg, const m3d::AIParam& data, bool urgent);
+            int Activate(m3d::ui::Wnd* wnd);
+            m3d::ui::Wnd* GetActive() const;
+
+            // TODO: check if this virtual or not
+            /* virtual */ int Create(const CStr& stringsName, const CStr& schemaName) /* 0x00 */;
+
+            virtual int Create(const CStr& caption, unsigned int style, const BoundsBase<float>& rc, unsigned int id) override /* 0x00 */;
+            int Done();
+            int Repaint();
+            virtual m3d::ui::Wnd* CaptureMouse(m3d::ui::Wnd* wnd) /* 0x124 */;
+            m3d::ui::Wnd* GetCapture() const;
+            m3d::ui::Wnd* CaptureFocus(m3d::ui::Wnd* wnd);
+            m3d::ui::Wnd* GetFocus() const;
+            int FlushGfx(m3d::rend::IRenderer* rend);
+            bool IsModal(m3d::ui::ModalWnd* wnd);
+            bool HasChildModalRunning();
+            m3d::ui::ModalWnd* GetTopModal();
+            void CloseAllModalWithCancelRet();
+            int DoModal(m3d::ui::ModalWnd* wnd);
+            void EndModal(m3d::ui::ModalWnd* wnd, unsigned int toRet);
+            int PulseKeyForWindow(m3d::ui::Wnd* w, unsigned short key, unsigned char scanCode);
+            virtual int GetDefaultCursor(m3d::ui::Cursor& cur) /* 0x128 */;
+            const m3d::ui::Cursor& GetCurrentCursor() const;
+            bool IsAnimationEnabled() const;
+            void EnableAnimation(bool bEnable);
+            void StopAllAnimations();
+            void OnEndAnimation(m3d::ui::Wnd* wndThatWasAnimated);
+            void OnBearWindow(m3d::ui::Wnd*);
+
+        private:
+            /* 0x0280 */ m3d::CIntHash<int> m_allWindows;
+            /* 0x02a8 */ m3d::CIntHash<m3d::ui::Wnd*> m_allWindowsById;
+            void RegisterWnd(m3d::ui::Wnd* w);
+            void UnregisterWnd(m3d::ui::Wnd* w);
+            /* 0x02d0 */ int m_nextUniqueId;
+
+        public:
+            bool IsWndAlive(const m3d::ui::Wnd* w, int uniqueId) const;
+            m3d::ui::Wnd* GetWndByUniqueId(int uniqueId) const;
+        }; /* size: 0x02d4 */
+
+        static_assert(sizeof(WndStation) == 0x02d4);
     }
 }

@@ -61,13 +61,12 @@ namespace m3d
 
     class Event;
 
-    //IMPORTANT: fields and member order is strict!
-    class IEventHandler
+    struct IEventHandler
     {
-    public:
-        virtual ~IEventHandler() = default;
-        virtual int HandleEvent(m3d::Event const&) = 0;
-    };
+        /* 0x0000 */;
+        virtual ~IEventHandler() = default /* 0x00 */;
+        virtual int HandleEvent(const m3d::Event&) = 0 /* 0x04 */;
+    }; /* size: 0x0004 */
 
     //IMPORTANT: fields and member order is strict!
     class Event

@@ -84,21 +84,21 @@ namespace m3d
 
     AnimatedModelsServer::AnimatedModelsServer()
     {
-        auto idx = Application::g_pApp->GetProfilerStack().AddProfiler("animated", 0x1E);
-        if (idx < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        auto idx = M3D_APP->GetProfilerStack().AddProfiler("animated", 0x1E);
+        if (idx < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+            m_profiler = M3D_APP->GetProfilerStack().GetProfiler(idx);
         }
-        idx = Application::g_pApp->m_counterStack.AddCounter("nodes");
-        if (idx < Application::g_pApp->m_counterStack.GetNumCounters())
+        idx = M3D_APP->GetDbgCounterStack().AddCounter("nodes");
+        if (idx < M3D_APP->GetDbgCounterStack().GetNumCounters())
         {
-            m_countNodes = Application::g_pApp->m_counterStack.GetCounter(idx);
+            m_countNodes = M3D_APP->GetDbgCounterStack().GetCounter(idx);
             m_countNodes->SetI(0);
         }
-        idx = Application::g_pApp->m_counterStack.AddCounter("meshes");
-        if (idx < Application::g_pApp->m_counterStack.GetNumCounters())
+        idx = M3D_APP->GetDbgCounterStack().AddCounter("meshes");
+        if (idx < M3D_APP->GetDbgCounterStack().GetNumCounters())
         {
-            m_countMeshes = Application::g_pApp->m_counterStack.GetCounter(idx);
+            m_countMeshes = M3D_APP->GetDbgCounterStack().GetCounter(idx);
             m_countMeshes->SetI(0);
         }
     }

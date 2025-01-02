@@ -90,8 +90,8 @@ namespace ai
     private:
         bool m_Changed;
         PointBase<int> m_geomSize;
-        std::vector<GeomRepositoryItem> m_slots;
-        std::set<int> m_referenceChests;
+        retruxx::vector<GeomRepositoryItem> m_slots;
+        retruxx::set<int> m_referenceChests;
         int m_vehicleId;
         SortStyle m_sortStyle;
     };
