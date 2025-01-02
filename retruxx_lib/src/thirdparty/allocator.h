@@ -10,7 +10,7 @@ namespace retruxx
         : public oldstd::_Allocator_base<_Ty>
     {	// generic allocator for objects of class _Ty
     public:
-        typedef _Allocator_base<_Ty> _Mybase;
+        typedef oldstd::_Allocator_base<_Ty> _Mybase;
         typedef typename _Mybase::value_type value_type;
 
 

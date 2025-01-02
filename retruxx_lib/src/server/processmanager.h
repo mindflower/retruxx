@@ -41,4 +41,11 @@ namespace ai
         int m_numProcessedEvents = 0;
         int m_eventDebugNum = 0;
     };
+
+#ifdef RETRUXX_DLL
+    ProcessManager* theProcessManager = (*inject::cast<ai::ProcessManager**>(0x00A17990));
+#define M3D_KERNEL 
+#else
+    ProcessManager* theProcessManager = nullptr;
+#endif
 }

@@ -87,7 +87,7 @@ namespace ai
         static void __fastcall Registration();
 
     private:
-        /* 0x00c0 */ oldstd::map<CStr, m3d::AIParam> m_variables;
+        /* 0x00c0 */ retruxx::map<CStr, m3d::AIParam> m_variables;
         /* 0x00cc */ ai::Trigger::eTriggerState m_state;
         /* 0x00d0 */ bool m_StateKeep;
         /* 0x00d1 */ char Padding_295[3];
@@ -117,10 +117,10 @@ namespace ai
            CallEventInfo();
         }; /* size: 0x0014 */
 
-        using auxEventInfoVector = oldstd::vector<ai::Trigger::auxEventInfo>;
+        using auxEventInfoVector = retruxx::vector<ai::Trigger::auxEventInfo>;
 
     private:
-        /* 0x0110 */ oldstd::vector<ai::Trigger::auxEventInfo, oldstd::allocator<ai::Trigger::auxEventInfo> > m_eventInfos;
+        /* 0x0110 */ retruxx::vector<ai::Trigger::auxEventInfo> m_eventInfos;
         /* 0x0120 */ ai::Trigger::CallEventInfo m_callEvent;
         /* 0x0134 */ bool m_bCanUpdate;
 

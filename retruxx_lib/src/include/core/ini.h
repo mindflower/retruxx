@@ -103,7 +103,7 @@ namespace m3d
             virtual int Read(fs::IStream&) = 0;
             virtual int Write(fs::IStream&) = 0;
             virtual char const* GetError() = 0;
-            virtual XmlNode* CreateNode(XmlNodeType, char const*) const = 0;
+            virtual XmlNode* CreateNode(XmlNodeType = XML_NODE_EMPTY, char const* = nullptr) const = 0;
             virtual bool GetFirstChild(XmlNode*, char const*) const = 0;
             virtual bool GetLastChild_(XmlNode*, char const*) const = 0;
             virtual bool AddChild(XmlNode*) = 0;
