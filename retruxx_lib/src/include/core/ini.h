@@ -225,8 +225,8 @@ private:
     XmlNodeImpl(TiXmlNode* fromNode);
     XmlNodeImpl(m3d::cmn::XmlNodeType tt, const char* nodeName);
     XmlNodeImpl();
-    /* 0x000c */ TiXmlNode* m_node;
-    /* 0x0010 */ bool m_nodeOwned;
+    /* 0x000c */ TiXmlNode* m_node = nullptr;
+    /* 0x0010 */ bool m_nodeOwned = false;
 
 public:
     virtual  ~XmlNodeImpl() override /* 0x00 */;

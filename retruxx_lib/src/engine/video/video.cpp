@@ -249,7 +249,7 @@ namespace m3d
         M3D_APP->m_renderer->GetDims(g_pTexture, xsize, ysize);
 
         int retaddr = 0;
-        auto texLock = static_cast<char*>(M3D_APP->m_renderer->LockTexture(g_pTexture, rend::TM_DTF_RGBA8888_VIDEOFRAME, &retaddr, 0));
+        auto texLock = static_cast<char*>(M3D_APP->m_renderer->LockTexture(g_pTexture, rend::TM_DTF_RGBA8888_VIDEOFRAME, retaddr, 0));
         throw std::logic_error("Not implemented");
 
 

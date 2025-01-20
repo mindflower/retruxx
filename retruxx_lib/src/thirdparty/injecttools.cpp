@@ -83,5 +83,19 @@ namespace inject
 
         return true;
     }
+
+    bool injectMemoryAddress(uint32_t address, uint32_t newAddress)
+    {
+        const auto currentProcess = ::GetCurrentProcess();
+        ::WriteProcessMemory(
+            currentProcess,
+            reinterpret_cast<void*>(address),
+            &newAddress,
+            sizeof(newAddress),
+            0
+        );
+
+        return true;
+    }
 }
 #endif //RETRUXX_DLL

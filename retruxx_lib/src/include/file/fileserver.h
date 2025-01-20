@@ -1,7 +1,5 @@
 #pragma once
 #include "i_stream.h"
-#include <set>
-#include <vector>
 #include <core/ref_ptr.h>
 #include <core/stringm3d.h>
 #include <core/threadsync.h>
@@ -19,36 +17,48 @@ namespace m3d
         {
         public:
             FileServer();
-            virtual ~FileServer();
+            virtual  ~FileServer() /* 0x00 */;
             int Shutdown();
-            int Initialize(char const*);
-            int Reinitialize(char const*);
-            int AddFolder(char const*, char const*, bool);
-            int RemoveFolder(char const*);
-            int AddPackage(char const*);
-            int AddFile(char const*);
-            int RemoveFile(char const*);
-            void EnableMapping(bool);
-            void SetCurrentWorkDir(char const*);
-            char const* GetCurrentWorkDir() const;
-            virtual FileStream* CreateFileStream();
-            int OpenFileStream(FileReader*, char const*, IStream::OpenFlags);
-            virtual bool FileExists(char const*);
-            void GetOpenFilesList(std::vector<CStr>&) const;
-            CriticalSection& GetCriticalSecton();
+            int Initialize(const char* dataSourcesFile);
+            int Reinitialize(const char* dataSourcesFile);
+            int AddFolder(const char* FolderName, const char* FileMask, bool RecurseSubFolders);
+            int RemoveFolder(const char* FolderName);
+            int AddPackage(const char* PackageName);
+            int AddFile(const char* FileName);
+            int RemoveFile(const char* FileName);
+            void EnableMapping(bool State);
+            void SetCurrentWorkDir(const char* CurrentDirectory);
+            const char* GetCurrentWorkDir() const;
+            virtual m3d::fs::FileStream* CreateFileStream() /* 0x04 */;
+            int OpenFileStream(m3d::fs::FileReader* Reader, const char* filename, m3d::fs::IStream::OpenFlags flags);
+            virtual bool FileExists(const char* filename) /* 0x08 */;
+            void GetOpenFilesList(retruxx::vector<CStr, retruxx::allocator<CStr> >& fileList) const;
+            m3d::CriticalSection& GetCriticalSecton();
 
         protected:
-            void DecryptFileName(char const*, CStr&);
-            int InternalAddPackage(CStr const&);
-            int EnumDataFolderFiles(char const*);
+            void DecryptFileName(const char* fileName, CStr& decryptedFileName);
+            int InternalAddPackage(const CStr& PackageName);
+            int EnumDataFolderFiles(const char*);
+
+            /* 0x0004 */ bool m_Initialized = false;
+            /* 0x0005 */ bool m_EnableMapping = false;
+            /* 0x0006 */ char Padding_132[2];
+            /* 0x0008 */ m3d::CriticalSection m_cs;
+
+            using PackagePrt = ref_ptr<m3d::fs::Package>;
+            using PackageStorageType = retruxx::vector<ref_ptr<m3d::fs::Package>, retruxx::allocator<ref_ptr<m3d::fs::Package> > >;
 
         protected:
-            bool m_Initialized = false;
-            bool m_EnableMapping = false;
-            CriticalSection m_cs;
-            std::vector<ref_ptr<fs::Package>> m_Packages;
-            std::set<CStr> m_Files;
-            CStr m_CurrentWorkDir;
-        };
+            /* 0x0020 */ retruxx::vector<ref_ptr<m3d::fs::Package>, retruxx::allocator<ref_ptr<m3d::fs::Package> > > m_Packages;
+
+            using FilesStorageType = retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >;
+            class FilesStorageIterator;
+
+        protected:
+            /* 0x0030 */ retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > m_Files;
+            /* 0x003c */ CStr m_CurrentWorkDir;
+        }; /* size: 0x0048 */
+
+        static_assert(sizeof(FileServer) == 0x0048);
     }
 }

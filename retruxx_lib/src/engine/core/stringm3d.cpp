@@ -112,7 +112,6 @@ void CStr::realloc(int sz)
     auto size = 32 * ((sz + 31) / 32);
     if (size > m_allocSz || m_charPtr == ZERO)
     {
-
         cleanup();
         m_charPtr = new char[size];
         m_allocSz = size;
@@ -284,7 +283,6 @@ CStr::CStr(CStr const& s)
 CStr::CStr()
 {
     m_charPtr = ZERO;
-    m_allocSz = 0;
 }
 
 CStr::~CStr()
@@ -308,7 +306,7 @@ bool CStr::empty() const
 
 void CStr::erase()
 {
-    if (m_charPtr)
+    if (m_charPtr != ZERO)
     {
         m_charPtr[0] = '\0';
     }

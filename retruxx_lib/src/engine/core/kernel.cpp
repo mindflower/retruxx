@@ -351,4 +351,14 @@ namespace m3d
         }
         return g_Kernel;
     }
+
+    bool insss()
+    {
+        inject::InjectAddresses.push_back(std::make_pair(inject::cast<uint32_t>(0x00A0988C), inject::cast<uint32_t>(g_Kernel)));
+        return true;
+    }
+
+    namespace {
+        auto _injected355 = insss();
+    };
 }

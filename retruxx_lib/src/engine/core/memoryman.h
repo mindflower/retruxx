@@ -20,11 +20,9 @@ namespace m3d
 
     class MemoryManager
     {
-        //enum __unnamed;
-
     public:
-        /* 0x0000 */ m3d::auxChunkHeader* m_firstChunk;
-        /* 0x0004 */ m3d::auxChunkHeader* m_chunks;
+        /* 0x0000 */ m3d::auxChunkHeader* m_firstChunk = nullptr;
+        /* 0x0004 */ m3d::auxChunkHeader* m_chunks = nullptr;
         /* 0x0008 */ m3d::auxBlockHeader* m_blocks[7];
         /* 0x0024 */ int m_b_size[7];
         /* 0x0040 */ int m_b_num[7];
@@ -48,13 +46,13 @@ namespace m3d
 
     private:
         /* 0x005c */ m3d::CriticalSection m_cs;
-        /* 0x0074 */ unsigned int m_memAllocated;
-        /* 0x0078 */ unsigned int m_memUsed;
-        /* 0x007c */ unsigned int m_numNewChunks;
-        /* 0x0080 */ unsigned int m_memNumAlloc;
-        /* 0x0084 */ unsigned int m_memNumAllocToBreakIn;
-        /* 0x0088 */ unsigned int m_memOverhead;
-        /* 0x008c */ int m_lastUnsuccessfulAllocationSize;
+        /* 0x0074 */ unsigned int m_memAllocated = 0;
+        /* 0x0078 */ unsigned int m_memUsed = 0;
+        /* 0x007c */ unsigned int m_numNewChunks = 0;
+        /* 0x0080 */ unsigned int m_memNumAlloc = 0;
+        /* 0x0084 */ unsigned int m_memNumAllocToBreakIn = 0;
+        /* 0x0088 */ unsigned int m_memOverhead = 0;
+        /* 0x008c */ int m_lastUnsuccessfulAllocationSize = 0;
     }; /* size: 0x0090 */
 
     static_assert(sizeof(MemoryManager) == 0x0090);

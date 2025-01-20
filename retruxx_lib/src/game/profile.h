@@ -62,78 +62,78 @@ enum ProfileParam
 class Profile : public m3d::Object
 {
 public:
-    int LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-    CStr const & GetFolder() const ;
-    virtual m3d::Class* GetClass() const ;
-    static m3d::Object * CreateObject();
-    void SetFolder(CStr const &);
-    virtual m3d::Object * Clone();
-    int GetParam(ProfileParam, m3d::AIParam &) const ;
-    static m3d::Class* GetBaseClass();
-    void SetName(CStr const &);
-    int SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-    bool IsValid() const ;
-    int SetParam(ProfileParam, m3d::AIParam const &);
-    virtual ~Profile();
-    CStr const & GetName() const ;
+    const CStr& GetName() const;
+    void SetName(const CStr& name);
+    const CStr& GetFolder() const;
+    void SetFolder(const CStr& folder);
+    bool IsValid() const;
+    int GetParam(ProfileParam paramId, m3d::AIParam& paramVal) const;
+    int SetParam(ProfileParam paramId, const m3d::AIParam& paramVal);
+    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+    int SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
+
+    using ParamsMap = retruxx::map<ProfileParam, m3d::AIParam, retruxx::less<enum ProfileParam>, retruxx::allocator<retruxx::pair<enum ProfileParam const, m3d::AIParam> > >;
+    using ParamsPair = retruxx::pair<ProfileParam, m3d::AIParam>;
 
 protected:
+    ProfileParam ParamName2Id(const CStr& name) const;
+    CStr ParamId2Name(ProfileParam id) const;
     int SetParamsDefault();
     void Clear();
-    Profile(Profile const &);
+    /* 0x0034 */ CStr m_name;
+    /* 0x0040 */ CStr m_folder;
+    /* 0x004c */ retruxx::map<enum ProfileParam, m3d::AIParam, retruxx::less<enum ProfileParam>, retruxx::allocator<retruxx::pair<enum ProfileParam const, m3d::AIParam> > > m_params;
     Profile();
-    ProfileParam ParamName2Id(CStr const &) const ;
-    CStr ParamId2Name(ProfileParam) const ;
+    Profile(const Profile& rhs);
 
 public:
-    RT_CLASS_DECLARE(Profile);
+    virtual  ~Profile() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classProfile;
+}; /* size: 0x0058 */
 
-private:
-    CStr m_name;
-    CStr m_folder;
-    std::map<ProfileParam,m3d::AIParam> m_params;
-};
-
-class ProfileManager :  public m3d::Object
+class ProfileManager : public m3d::Object
 {
 public:
-    Profile * GetCurProfile() const ;
-    int SetCurProfile(CStr const &);
-    CStr GetDefaultProfileName() const ;
-    virtual m3d::Class* GetClass() const ;
-    int DeleteProfile(CStr const &);
-    std::vector<CStr> GetProfilesNames() const ;
-    int Done();
+    Profile* GetCurProfile() const;
+    int SetCurProfile(const CStr& profileName);
+    const Profile* CreateNewProfile(const CStr& profileName);
+    retruxx::vector<CStr, retruxx::allocator<CStr> > GetProfilesNames() const;
+    Profile* GetProfileByName(const CStr& profileName) const;
+    int DeleteProfile(const CStr& name);
     int Init();
-    Profile const * CreateNewProfile(CStr const &);
-    static m3d::Class* GetBaseClass();
-    virtual ~ProfileManager();
-    static m3d::Object * CreateObject();
-    int SaveProfile(Profile const *) const ;
+    int Done();
+    int SaveProfile(const Profile* profile) const;
     int LoadProfiles();
-    Profile * GetProfileByName(CStr const &) const ;
-    virtual m3d::Object * Clone();
+    int GameDataUpdate(void*, int);
+    CStr GetDefaultProfileName() const;
+
+    using ProfileVector = retruxx::vector<Profile*, retruxx::allocator<Profile*> >;
 
 protected:
     void Clear();
-    CStr GetProfileOwnFolderName(CStr const &) const ;
-    Profile const * CreateDefaultProfile();
-    int AddProfile(Profile *);
-    ProfileManager(ProfileManager const &);
+    Profile* _GetProfileByName(const CStr& profileName) const;
+    CStr GetProfileOwnFolderName(const CStr& profileName) const;
+    CStr GetProfileFolderName(const CStr& profileName) const;
+    CStr GetProfileFilePath(const CStr& profileName) const;
+    int AddProfile(Profile* profile);
+    const Profile* CreateDefaultProfile();
+    int GetProfileFiles(retruxx::vector<CStr, retruxx::allocator<CStr> >& profileFiles) const;
+    /* 0x0034 */ retruxx::vector<Profile*, retruxx::allocator<Profile*> > m_profiles;
+    /* 0x0044 */ CStr m_curProfileName;
+    /* 0x0050 */ m3d::CVar m_cvPathToProfiles;
+    /* 0x007c */ m3d::CVar m_cvProfileFileName;
     ProfileManager();
-    int GetProfileFiles(std::vector<CStr,std::allocator<CStr> > &) const ;
-    CStr GetProfileFolderName(CStr const &) const ;
-    CStr GetProfileFilePath(CStr const &) const ;
-    Profile* _GetProfileByName(CStr const &) const ;
+    ProfileManager(const ProfileManager& rhs);
 
 public:
-    RT_CLASS_DECLARE(ProfileManager);
-
-protected:
-    CStr m_curProfileName;
-
-private:
-    std::vector<Profile *> m_profiles;
-    m3d::CVar m_cvPathToProfiles;
-    m3d::CVar m_cvProfileFileName;
-};
+    virtual  ~ProfileManager() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classProfileManager;
+}; /* size: 0x00a8 */

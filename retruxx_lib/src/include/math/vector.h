@@ -1,28 +1,29 @@
 #pragma once
 
-class CVector
+struct CVector
 {
-public:
-    CVector operator-() const;
-    CVector& operator-=(CVector const&);
-    CVector getNormalized() const;
-    CVector& operator/=(float);
-    CVector& operator+=(CVector const&);
-    float& operator[](int);
-    float const& operator[](int) const;
-    CVector& operator*=(float);
-    float length() const;
-    void normalizeInplace();
-    void zero();
-    CVector() = default;
-    CVector(float*);
-    CVector(float, float, float);
-    void one();
-    CVector clampLength(float) const;
-    float lengthSq() const;
+    /* 0x0000 */ float x;
+    /* 0x0004 */ float y;
+    /* 0x0008 */ float z;
 
-public:
-    float x = 0;
-    float y = 0;
-    float z = 0;
-};
+    CVector(float* xx);
+    CVector(float);
+    CVector(float xx, float yy, float zz);
+    CVector() = default;
+    CVector operator-() const;
+    CVector& operator-=(const CVector& a);
+    CVector& operator+=(const CVector& a);
+    CVector& operator*=(float v);
+    CVector& operator/=(float v);
+    CVector getNormalized() const;
+    void normalizeInplace();
+    CVector clampLength(float clampTo) const;
+    void zero();
+    void one();
+    float length() const;
+    float lengthSq() const;
+    const float& operator[](int index) const;
+    float& operator[](int index);
+}; /* size: 0x000c */
+
+static_assert(sizeof(CVector) == 0x000c);

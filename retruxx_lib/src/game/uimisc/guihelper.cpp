@@ -152,7 +152,7 @@ namespace help
         return 0;
     }
 
-    int GetWindowsSubDirs(CStr const& parentDirPath, std::vector<CStr>& subDirs, CStr const& pattern)
+    int GetWindowsSubDirs(CStr const& parentDirPath, retruxx::vector<CStr>& subDirs, CStr const& pattern)
     {
         subDirs.clear();
         auto attr = GetFileAttributesA(parentDirPath.c_str());

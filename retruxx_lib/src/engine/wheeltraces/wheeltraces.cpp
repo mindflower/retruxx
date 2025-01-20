@@ -69,7 +69,7 @@ namespace m3d
         m_profiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(m3d::Application::g_pApp->GetProfilerStack().AddProfiler("wheeltraces", 0x1Eu));
     }
 
-    void WheelTraceMgr::Init()
+    void WheelTraceMgr::Init(int)
     {
         throw std::logic_error("Not implemented");
     }

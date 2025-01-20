@@ -39,13 +39,13 @@ namespace m3d
                 /* 0x0008 */ float z;
                 /* 0x000c */ float w;
             }; /* size: 0x0010 */
-            /* 0x0000 */ int id;
+            /* 0x0000 */ int id = 0;
             /* 0x0000 */ float Value;
             /* 0x0000 */ oldstd::vector<CStr>* m_NameList;
             /* 0x0000 */ oldstd::vector<int>* m_NumList;
             /* 0x0000 */ CStr* m_Str;
         }; /* size: 0x0010 */
-        /* 0x0010 */ m3d::eAIParamType Type;
+        /* 0x0010 */ m3d::eAIParamType Type = AIPARAM_UNDEFINE;
         void Detach();
         void Copy(const m3d::AIParam& PParam);
         void ConvertFromString(void* retVal, m3d::eAIParamType ToType) const;
@@ -65,8 +65,8 @@ namespace m3d
         static int __fastcall CompareRepEl(const void*, const void*);
 
     public:
-        /* 0x0014 */ CStr(*NameFromNum)(const m3d::AIParam*, int);
-        /* 0x0018 */ int (*NumFromName)(const m3d::AIParam*, CStr&);
+        /* 0x0014 */ CStr(*NameFromNum)(const m3d::AIParam*, int) = nullptr;
+        /* 0x0018 */ int (*NumFromName)(const m3d::AIParam*, CStr&) = nullptr;
         void ReadFromString(const CStr& Str);
         void Clear();
         ~AIParam();
@@ -94,6 +94,7 @@ namespace m3d
         m3d::AIParam& operator=(const int&);
         m3d::AIParam& operator=(const unsigned int& PID);
         m3d::AIParam& operator=(const CStr&);
+        m3d::AIParam& operator=(const m3d::AIParam& pparam);
         m3d::AIParam& operator=(const oldstd::vector<CStr>&);
         m3d::AIParam& operator=(const oldstd::vector<int>&);
         CVector GetAsVector() const;
@@ -110,4 +111,6 @@ namespace m3d
         void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
     }; /* size: 0x001c */
+
+    static_assert(sizeof(AIParam) == 0x001c);
 }

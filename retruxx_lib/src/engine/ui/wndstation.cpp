@@ -743,18 +743,33 @@ namespace m3d
         WndStation::WndStation()
         {
             m_wndStation = this;
+
+            inject::injectMemoryAddress(0x00A0A2D4, inject::cast<uint32_t>(m_wndStation));
+            //inject::cast<WndStation*>(0x00A0A2D4);
+
             if (gfxserver == nullptr)
             {
                 gfxserver = new GfxServer;
             }
             m_gfx = gfxserver;
 
+            this->m_wndMouseCapture = 0;
+            this->m_wndMouseOver = this;
+            this->m_wndKbdCapture = this;
+            this->m_wndActive = this;
+            this->m_style = 0;
+            this->m_wndForTooltip = 0;
+            this->m_wndCandidateForDblClick = 0;
+
+
             BoundsBase<float> const rc(0.0, 0.0, 1024.0, 768.0);
             CreateWnd("WndStation", 1, rc, 0);
+            m_bAnimationEnabled = true;
             m_curDefault = new Cursor;
             m_uniqueId = 0;
             m_prevMouseCoord.x = 100.0;
             m_prevMouseCoord.y = 100.0;
+            this->m_wndOpenedComboBox = nullptr;
         }
 
         int WndStation::DispatchJoystick(Event const&)

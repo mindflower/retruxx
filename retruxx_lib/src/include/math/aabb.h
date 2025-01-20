@@ -1,25 +1,28 @@
 #pragma once
 
-class CVector;
+struct CVector;
 
-struct Aabb
+class Aabb
 {
-    float m_box[6];
-
 public:
-    CVector Max() const;
-    void EmbracePoint(CVector const&);
-    float GetSx() const;
-    float GetSy() const;
+    /* 0x0000 */ float m_box[6];
+
+    void Create(const CVector& min, const CVector& max);
+    void Offset(const CVector& ofs);
+    void Scale(const CVector& sc);
     float GetSz() const;
-    void EmbraceBox(Aabb const&);
-    void Draw(unsigned int);
-    bool IsPtInside2(CVector const&) const;
+    float GetSy() const;
+    float GetSx() const;
+    void Inflate(float sz);
     void StartEmbracing();
-    //ai::Geom::CellCellAabb();
+    void EmbracePoint(const CVector& v);
+    void EmbraceBox(const Aabb& box);
     CVector Min() const;
-    void Offset(CVector const&);
-    void Inflate(float);
-    void Create(CVector const&, CVector const&);
-    void Scale(CVector const&);
-};
+    CVector Max() const;
+    float MaximumComponent() const;
+    bool IsPtInside(const CVector&) const;
+    bool IsPtInside2(const CVector& pt) const;
+    void Draw(unsigned int clr);
+}; /* size: 0x0018 */
+
+static_assert(sizeof(Aabb) == 0x0018);

@@ -1,9 +1,8 @@
 #pragma once
-#include <set>
-#include <vector>
 #include <core/stringm3d.h>
 #include <math/vector.h>
 #include <math/vector2.h>
+#include "thirdparty/containers.h"
 
 struct CClipper;
 
@@ -39,10 +38,10 @@ namespace m3d
 
     private:
         CStr m_name;
-        std::vector<AnimatedModel*> m_roadModels[4];
-        std::vector<std::vector<std::vector<unsigned int>>> m_boundVerts[4];
-        std::vector<std::vector<std::vector<unsigned int>>> m_fakeBoundVerts[4];
-        std::vector<std::vector<std::vector<unsigned int>>> m_cliffBorders[4];
+        retruxx::vector<AnimatedModel*> m_roadModels[4];
+        retruxx::vector<retruxx::vector<retruxx::vector<unsigned int>>> m_boundVerts[4];
+        retruxx::vector<retruxx::vector<retruxx::vector<unsigned int>>> m_fakeBoundVerts[4];
+        retruxx::vector<retruxx::vector<retruxx::vector<unsigned int>>> m_cliffBorders[4];
         float m_minX[4];
         float m_minZ[4];
         float m_maxX[4];
@@ -94,40 +93,44 @@ namespace m3d
 
     class RoadManager
     {
+    private:
+        /* 0x0000 */ m3d::Landscape* m_owner;
+        /* 0x0004 */ retruxx::vector<m3d::RoadNode*, retruxx::allocator<m3d::RoadNode*> >* m_coveredCells;
+
     public:
-        CStr const GetRoadSetNameByHandle(int);
-        void UpdateVis();
-        void ReleaseCollisionForRoadNode(RoadNode *);
-        void RebuildStructures();
-        int GetRoadSetHandleByName(CStr const &);
-        void RebuildSomeNodes(std::set<RoadNode *>,bool);
-        void GetRoadMinMaxZByHandle(int,int,float &,float &);
+        RoadManager(const m3d::RoadManager&);
         RoadManager();
-        int WriteRoadsToXmlFile(char const *);
-        void GetRoadMinMaxXByHandle(int,int,float &,float &);
-        void UnlinkRoadNodeCollisionFromCells(RoadNode *);
-        void SetOwner(Landscape *);
-        int ReadRoadSetConfigFromXmlFile(char const *);
-        int ReadRoadsFromXmlFile(char const *);
-        void Release();
-        int RenderRoads(std::vector<unsigned int> &,RenderRoadType,RoadTestCallBack const *,bool);
-        void Init();
+        /* 0x0008 */ m3d::RoadNode* m_roadRoot;
+        /* 0x000c */ retruxx::vector<m3d::RoadSet*, retruxx::allocator<m3d::RoadSet*> > m_roadSets;
         void ClearRoadSets();
+        void RebuildStructures();
+        void RebuildSomeNodes(retruxx::set<m3d::RoadNode*, retruxx::less<m3d::RoadNode*>, retruxx::allocator<m3d::RoadNode*> > nodesToRebuild, bool bNeedToRelink);
+        void Init();
+        void Release();
         void ReleaseCollision();
+        void ReleaseCollisionForRoadNode(m3d::RoadNode* rn);
+        void UnlinkRoadNodeCollisionFromCells(m3d::RoadNode* rn);
+        int ReadRoadSetConfigFromXmlFile(const char* configName);
+        int ReadRoadsFromXmlFile(const char* name);
+        int WriteRoadsToXmlFile(const char* filename);
+        void SetOwner(m3d::Landscape* owner);
+        int GetRoadSetHandleByName(const CStr& name);
+        const CStr GetRoadSetNameByHandle(int handle);
+        void GetRoadMinMaxXByHandle(int handle, int roadType, float& minx, float& maxx);
+        void GetRoadMinMaxZByHandle(int handle, int roadType, float& minz, float& maxz);
+        retruxx::vector<m3d::RoadNode*, retruxx::allocator<m3d::RoadNode*> >& GetCoveredCell(unsigned int);
+        int RenderRoads(retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >& visList, m3d::RenderRoadType rrt, const m3d::RoadTestCallBack* rnTest, bool bForRoadMap);
+        void UpdateVis();
 
     private:
-        void RecalcCoveredCells();
-        void LinkToBorder(RoadNode *,unsigned int,int,struct CVector &);
-        void LinkRoadNodes();
-        CVector2 FindLeftProjection(RoadNode *,float,float);
-        bool GetAdjPoint(RoadNode *,unsigned int,int,struct CVector &);
         void FindFriends();
-        void CalcNodeData(RoadNode *);
+        CVector2 FindLeftProjection(m3d::RoadNode* rn, float x, float z);
+        void RecalcCoveredCells();
+        void LinkRoadNodes();
+        void CalcNodeData(m3d::RoadNode* rn);
+        void LinkToBorder(m3d::RoadNode* rn, unsigned int idx, int link, CVector& res);
+        bool GetAdjPoint(m3d::RoadNode* rn, unsigned int idx, int link, CVector& acceptor);
+    }; /* size: 0x001c */
 
-    private:
-        Landscape *m_owner = nullptr;
-        std::vector<RoadNode *> *m_coveredCells;
-        RoadNode *m_roadRoot = nullptr;
-        std::vector<RoadSet *> m_roadSets;
-    };
+    static_assert(sizeof(RoadManager) == 0x001c);
 }

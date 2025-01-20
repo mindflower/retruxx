@@ -677,17 +677,8 @@ namespace m3d
         };
 
         //IMPORTANT: fields and member order is strict!
-        class IRenderer : public IBase
+        struct IRenderer : public IBase
         {
-        protected:
-            virtual ~IRenderer() = default;
-
-        public:
-            virtual int DecRef() = 0;
-            virtual int IncRef() = 0;
-            virtual void* QueryIface(const char*) = 0;
-
-        public:
             virtual int Create(void __fastcall(CStr const&), m3d::Kernel*) = 0;
             virtual int CreateDevice() = 0;
             virtual int SwitchDisplayModes(HWND, int, int, int) = 0;
@@ -937,7 +928,7 @@ namespace m3d
             virtual void SetTextureParameter(m3d::rend::TexHandle const&, m3d::rend::TexParam, unsigned int) = 0;
             virtual int GetTextureName(const m3d::rend::TexHandle*, CStr*) = 0;
             virtual int UploadTexImage(const m3d::rend::TexHandle&, unsigned int, unsigned int, unsigned __int8*, m3d::rend::TexDynFormat, int) = 0;
-            virtual void* LockTexture(const m3d::rend::TexHandle&, m3d::rend::TexDynFormat, int*, int) = 0;
+            virtual void* LockTexture(const m3d::rend::TexHandle&, m3d::rend::TexDynFormat, int&, int) = 0;
             virtual void UnlockTexture(const m3d::rend::TexHandle&) = 0;
             virtual int DownloadTexImageRgba8888(unsigned int*, const m3d::rend::TexHandle*, int, int) = 0;
             virtual int DownloadTexImageRgba8888(unsigned int*, const m3d::rend::TexHandle&) = 0;

@@ -265,9 +265,9 @@ namespace m3d
             return m_bgTexture;
         }
 
-        void Wnd::SetGameDataFlags(int)
+        void Wnd::SetGameDataFlags(int flags)
         {
-            throw std::logic_error("Not implemented");
+            m_gameDataFlags = flags;
         }
 
         PointBase<float> Wnd::GetOrigin() const
@@ -446,7 +446,7 @@ namespace m3d
 
         int Wnd::GetGameDataFlags()
         {
-            throw std::logic_error("Not implemented");
+            return m_gameDataFlags;
         }
 
         void Wnd::SetOrigin(PointBase<float> const&)
@@ -1281,7 +1281,8 @@ namespace m3d
         WndStation* Wnd::GetStation() const
         {
 #ifdef RETRUXX_DLL
-            return inject::cast<WndStation*>(0x00A0A2D4);
+            //return inject::cast<WndStation*>(0x00A0A2D4);
+            return m_wndStation;
 #else
             return m_wndStation;
 #endif

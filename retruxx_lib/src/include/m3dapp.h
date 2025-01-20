@@ -89,10 +89,10 @@ namespace m3d
         void PutSpriteRelRot(float cx, float cy, float sx, float sy, unsigned int c, float angleVerts, float avx, float avy, float angleImage, float aix, float aiy);
         void PutSpriteAbsRot(float, float, float, unsigned int, float, float, float, float, float, float);
         void PutSpriteAbsRot(float cx, float cy, float sx, float sy, unsigned int c, float angleVerts, float avx, float avy, float angleImage, float aix, float aiy);
-        /* 0x02fc */ m3d::rend::IRenderer* m_renderer;
-        /* 0x0300 */ snd::ISound* m_sound;
-        /* 0x0304 */ m3d::input::IInput* m_input;
-        /* 0x0308 */ m3d::Log* m_log;
+        /* 0x02fc */ m3d::rend::IRenderer* m_renderer = nullptr;
+        /* 0x0300 */ snd::ISound* m_sound = nullptr;
+        /* 0x0304 */ m3d::input::IInput* m_input = nullptr;
+        /* 0x0308 */ m3d::Log* m_log = nullptr;
         /* 0x030c */ CStr m_cfgName;
         static m3d::Application* g_pApp;
         void sysError(const CStr& whence, const CStr& assertion);
@@ -154,7 +154,7 @@ namespace m3d
         /* 0x032c */ tagRECT m_rcWindowClient;
         /* 0x033c */ CStr m_frameStats;
         /* 0x0348 */ unsigned long m_frameFillRate;
-        /* 0x034c */ char* m_strWindowTitle;
+        /* 0x034c */ char* m_strWindowTitle = nullptr;
 
     public:
         char* GetWindowTitle() const;
@@ -162,35 +162,35 @@ namespace m3d
     protected:
         /* 0x0350 */ CStr m_startupFolder;
         /* 0x035c */ CStr m_imageName;
-        /* 0x0368 */ int m_appNeedToRedraw;
+        /* 0x0368 */ int m_appNeedToRedraw = false;
 
     public:
         int AppActive() const;
         CStr& GetFrameStats();
 
     protected:
-        /* 0x036c */ int m_screenShotPending;
-        /* 0x0370 */ int m_screenShotPendingAlways;
+        /* 0x036c */ int m_screenShotPending = 0;
+        /* 0x0370 */ int m_screenShotPendingAlways = 0;
         virtual void HandleCommand(int cmdID, const m3d::CConsoleParams& params) override /* 0x00 */;
         virtual bool HandleCVar(const m3d::CVar* cvar, const m3d::CConsoleParams& params) override /* 0x04 */;
         virtual int HandleEvent(const m3d::Event& ev) override /* 0x04 */;
 
     private:
-        /* 0x0374 */ void* m_procTexNewTextureNotifyEvent;
-        /* 0x0378 */ void* m_procTexShutdownEvent;
-        /* 0x037c */ void* m_procTexThreadHandle;
+        /* 0x0374 */ void* m_procTexNewTextureNotifyEvent = nullptr;
+        /* 0x0378 */ void* m_procTexShutdownEvent = nullptr;
+        /* 0x037c */ void* m_procTexThreadHandle = nullptr;
         /* 0x0380 */ unsigned long m_procTexThreadId;
         static unsigned long __stdcall texGenThread(void* context);
         /* 0x0384 */ char Padding_309[4];
         /* 0x0388 */ m3d::Event m_eventsQueue[5000];
-        /* 0x581c8 */ int m_eventsQueueHead;
-        /* 0x581cc */ int m_eventsQueueTail;
-        /* 0x581d0 */ m3d::IEventHandler* m_focusKbdEntity;
-        /* 0x581d4 */ int m_mouseX;
-        /* 0x581d8 */ int m_mouseY;
-        /* 0x581dc */ float m_mouseSensitivity;
-        /* 0x581e0 */ bool m_bMouseYAxisFlipped;
-        /* 0x581e1 */ bool m_bMouseXAxisFlipped;
+        /* 0x581c8 */ int m_eventsQueueHead = 0;
+        /* 0x581cc */ int m_eventsQueueTail = 0;
+        /* 0x581d0 */ m3d::IEventHandler* m_focusKbdEntity = nullptr;
+        /* 0x581d4 */ int m_mouseX = 100;
+        /* 0x581d8 */ int m_mouseY = 100;
+        /* 0x581dc */ float m_mouseSensitivity = 1.0;
+        /* 0x581e0 */ bool m_bMouseYAxisFlipped = false;
+        /* 0x581e1 */ bool m_bMouseXAxisFlipped = false;
         /* 0x581e2 */ char Padding_310[2];
         /* 0x581e4 */ retruxx::vector<m3d::IEventHandler*, retruxx::allocator<m3d::IEventHandler*> > m_allEventHandlers;
         bool GetEvent(m3d::Event& event, bool removeFromQueue);
@@ -230,19 +230,19 @@ namespace m3d
         void doneSprite();
         int createUi();
         void doneUi();
-        /* 0x581f4 */ HINSTANCE__* m_hInputDll;
-        /* 0x581f8 */ HINSTANCE__* m_hRenderDll;
-        /* 0x581fc */ HINSTANCE__* m_hSoundDll;
-        /* 0x58200 */ bool m_breakLoop;
+        /* 0x581f4 */ HINSTANCE m_hInputDll;
+        /* 0x581f8 */ HINSTANCE m_hRenderDll;
+        /* 0x581fc */ HINSTANCE m_hSoundDll;
+        /* 0x58200 */ bool m_breakLoop = false;
         static long __stdcall WndProc(HWND__* hWnd, unsigned int uMsg, unsigned int wParam, long lParam);
         long MsgProc(HWND__* hWnd, unsigned int uMsg, unsigned int wParam, long lParam);
         /* 0x58201 */ char Padding_311[3];
-        /* 0x58204 */ int m_isAppActive;
+        /* 0x58204 */ int m_isAppActive = 0;
         int CheckAndLogPlatform();
         int64_t GetCpuFrequency(unsigned int uiMeasureMSecs);
-        /* 0x58208 */ unsigned int m_prevBtnsMask;
-        /* 0x5820c */ int m_prevJoystickBtnsMask;
-        /* 0x58210 */ int m_prevJoystickAxisInclination[12];
+        /* 0x58208 */ unsigned int m_prevBtnsMask = 0;
+        /* 0x5820c */ int m_prevJoystickBtnsMask = 0;
+        /* 0x58210 */ int m_prevJoystickAxisInclination[12] = {0};
         /* 0x58240 */ m3d::rend::VertexXYZWCT1 m_pointsVertsWct1[4000];
         /* 0x737c0 */ m3d::rend::VertexXYZCT1 m_pointsVertsCt1[4000];
         /* 0x8aec0 */ int m_numPointsVerts;
@@ -252,7 +252,7 @@ namespace m3d
         /* 0x8aed0 */ void* m_sourceVerts;
         /* 0x8aed4 */ int m_pointsVertsSz;
         /* 0x8aed8 */ unsigned int m_frameClearColor;
-        /* 0x8aedc */ m3d::rend::IEffect* m_flushQuadsShader;
+        /* 0x8aedc */ m3d::rend::IEffect* m_flushQuadsShader = nullptr;
         /* 0x8aee0 */ int64_t m_cpuSpeed;
         void FlushQuads();
         void CreateQuadsIb();
@@ -275,16 +275,16 @@ namespace m3d
         void PostLoadServers();
 
     protected:
-        /* 0x8aee8 */ m3d::DataServer* m_serverStaticModels;
-        /* 0x8aeec */ m3d::DataServer* m_serverAnimatedModels;
-        /* 0x8aef0 */ m3d::DataServer* m_serverLights;
-        /* 0x8aef4 */ m3d::DataServer* m_serverSprites;
-        /* 0x8aef8 */ m3d::DataServer* m_serverParticles;
-        /* 0x8aefc */ m3d::DataServer* m_serverSound;
-        /* 0x8af00 */ m3d::DataServer* m_serverMusic;
-        /* 0x8af04 */ m3d::DataServer* m_serverLines;
-        /* 0x8af08 */ m3d::DataServer* m_serverProjectors;
-        /* 0x8af0c */ m3d::DataServer* m_serverDecals;
+        /* 0x8aee8 */ m3d::DataServer* m_serverStaticModels = nullptr;
+        /* 0x8aeec */ m3d::DataServer* m_serverAnimatedModels = nullptr;
+        /* 0x8aef0 */ m3d::DataServer* m_serverLights = nullptr;
+        /* 0x8aef4 */ m3d::DataServer* m_serverSprites = nullptr;
+        /* 0x8aef8 */ m3d::DataServer* m_serverParticles = nullptr;
+        /* 0x8aefc */ m3d::DataServer* m_serverSound = nullptr;
+        /* 0x8af00 */ m3d::DataServer* m_serverMusic = nullptr;
+        /* 0x8af04 */ m3d::DataServer* m_serverLines = nullptr;
+        /* 0x8af08 */ m3d::DataServer* m_serverProjectors = nullptr;
+        /* 0x8af0c */ m3d::DataServer* m_serverDecals = nullptr;
         void SetCodepage();
 
     public:
@@ -342,10 +342,10 @@ namespace m3d
         /* 0x8b210 */ unsigned int m_profiler_OneFrame;
         /* 0x8b214 */ unsigned int m_profiler_Render;
         /* 0x8b218 */ unsigned int m_profiler_UiRender;
-        /* 0x8b21c */ bool m_bDrawStats;
-        /* 0x8b21d */ bool m_bDrawMemoryStats;
-        /* 0x8b21e */ bool m_bDrawCounters;
-        /* 0x8b21f */ bool m_bDrawGraph;
+        /* 0x8b21c */ bool m_bDrawStats = false;
+        /* 0x8b21d */ bool m_bDrawMemoryStats = false;
+        /* 0x8b21e */ bool m_bDrawCounters = false;
+        /* 0x8b21f */ bool m_bDrawGraph = false;
 
     public:
         m3d::ProfilerStack& GetProfilerStack();
@@ -357,13 +357,13 @@ namespace m3d
         int SaveExportDescToFile(m3d::fs::FileStream& outputFile, bool skipEmpty) const;
 
     protected:
-        /* 0x8b220 */ bool m_waitForAnykey;
-        /* 0x8b221 */ bool m_waitNetworkServer;
-        /* 0x8b222 */ bool m_enginePlayingVideo;
-        /* 0x8b223 */ bool m_isRenderingAllowed;
-        /* 0x8b224 */ bool m_isConsoleAllowed;
-        /* 0x8b225 */ bool m_bShowRenderStats;
-        /* 0x8b226 */ bool m_bShowDeviceMemStats;
+        /* 0x8b220 */ bool m_waitForAnykey = false;
+        /* 0x8b221 */ bool m_waitNetworkServer = false;
+        /* 0x8b222 */ bool m_enginePlayingVideo = false;
+        /* 0x8b223 */ bool m_isRenderingAllowed = true;
+        /* 0x8b224 */ bool m_isConsoleAllowed = false;
+        /* 0x8b225 */ bool m_bShowRenderStats = false;
+        /* 0x8b226 */ bool m_bShowDeviceMemStats = false;
 
     public:
         void WaitForAnykey();
@@ -412,7 +412,7 @@ namespace m3d
         HWND__* GetRenderWindow() const;
 
     private:
-        /* 0x8b244 */ bool m_bDXCursorEnabled;
+        /* 0x8b244 */ bool m_bDXCursorEnabled = true;
 
         struct MouseInfo
         {
@@ -430,15 +430,15 @@ namespace m3d
 
     private:
         /* 0x8b248 */ m3d::Application::MouseInfo m_mouseInfo;
-        /* 0x8b258 */ HWND__* m_renderWindow;
-        /* 0x8b25c */ m3d::IConHandler* m_soundConHandler;
+        /* 0x8b258 */ HWND m_renderWindow = NULL;
+        /* 0x8b25c */ m3d::IConHandler* m_soundConHandler = nullptr;
 
     protected:
         void CaptureAndClipSystemCursor(bool bState);
         void ShowSystemCursor(bool bShow);
 
     public:
-        /* 0x8b260 */ bool m_bGuiWasHiddenBeforeCinematic;
+        /* 0x8b260 */ bool m_bGuiWasHiddenBeforeCinematic = false;
         /* 0x8b261 */ char Padding_316[3];
         /* 0x8b264 */ m3d::Cinematic* m_cinematic;
         virtual int HandleCinematic(float dT) /* 0x7c */;
@@ -457,7 +457,8 @@ namespace m3d
 }
 
 #ifdef RETRUXX_DLL
-#define M3D_APP (*inject::cast<m3d::Application**>(0x00A0A55C))
+//#define M3D_APP (*inject::cast<m3d::Application**>(0x00A0A55C))
+#define M3D_APP m3d::Application::g_pApp
 #else
 #define M3D_APP m3d::Application::g_pApp
 #endif

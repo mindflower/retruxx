@@ -71,7 +71,7 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::DrawCellsOverlayedEditor(retruxx::vector<unsigned> const&, unsigned)
+    void Landscape::DrawCellsOverlayedEditor(cmn::vector<unsigned> const&, unsigned)
     {
         throw retruxx::logic_error("Not implemented");
     }
@@ -688,7 +688,7 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::DrawCells(retruxx::vector<unsigned> const&, unsigned)
+    void Landscape::DrawCells(cmn::vector<unsigned> const&, unsigned)
     {
         throw retruxx::logic_error("Not implemented");
     }
@@ -954,6 +954,8 @@ namespace m3d
     Landscape::Landscape() :
         m_lockVis("lockVis", "0", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE)
     {
+        RETRUXX_DLL_JMP_TO_CTOR(0x005B8950, Landscape::Landscape);
+
         this->m_numGrassModels = 0;
         this->m_grassArray = 0;
         this->m_heightMap = 0;
@@ -1081,12 +1083,12 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::BuildCells0(rend::VertexLandscape*, TIVChunk&, int&, retruxx::vector<unsigned> const&, RenderTypes, retruxx::vector<int, retruxx::allocator<int>>&)
+    void Landscape::BuildCells0(rend::VertexLandscape*, TIVChunk&, int&, cmn::vector<unsigned> const&, RenderTypes, retruxx::vector<int, retruxx::allocator<int>>&)
     {
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::DrawCellsFast0(retruxx::vector<unsigned> const&, TIVChunk&, RenderTypes)
+    void Landscape::DrawCellsFast0(cmn::vector<unsigned> const&, TIVChunk&, RenderTypes)
     {
         throw retruxx::logic_error("Not implemented");
     }
@@ -1101,7 +1103,7 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::DrawCells0(retruxx::vector<unsigned> const&, RenderTypes)
+    void Landscape::DrawCells0(cmn::vector<unsigned> const&, RenderTypes)
     {
         throw retruxx::logic_error("Not implemented");
     }

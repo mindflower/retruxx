@@ -111,8 +111,9 @@ namespace m3d
         //TODO: check correctness
         auto* profiler = new Profiler(name);
         profiler->SetAverageVal(averageVal);
+
         m_stack.push_back(profiler);
-        return m_stack.size() - 1;
+        return m_numProfilers++;
     }
 
     void ProfilerStack::Clear()
@@ -131,7 +132,7 @@ namespace m3d
 
     unsigned int ProfilerStack::GetNumProfilers() const
     {
-        return m_stack.size();
+        return m_numProfilers;
     }
 
     ProfilerStack::ProfilerStack() :
@@ -146,6 +147,10 @@ namespace m3d
 
     Profiler* ProfilerStack::GetProfiler(unsigned int id)
     {
-        return m_stack.at(id);
+        if (id < m_numProfilers)
+        {
+            return m_stack.at(id);
+        }
+        return nullptr;
     }
 }

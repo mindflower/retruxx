@@ -123,17 +123,17 @@ namespace m3d
 
     protected:
         /* 0x0008 */ CStr m_name;
-        /* 0x0014 */ bool m_persistant;
-        /* 0x0015 */ bool m_isChildDirty;
+        /* 0x0014 */ bool m_persistant = true;
+        /* 0x0015 */ bool m_isChildDirty = false;
         /* 0x0016 */ char Padding_3[2];
 
     private:
-        /* 0x0018 */ m3d::Object* m_parent;
-        /* 0x001c */ m3d::Object* m_firstChild;
-        /* 0x0020 */ m3d::Object* m_lastChild;
-        /* 0x0024 */ m3d::Object* m_nextSibling;
-        /* 0x0028 */ m3d::Object* m_prevSibling;
-        /* 0x002c */ int m_numChildren;
+        /* 0x0018 */ m3d::Object* m_parent = nullptr;
+        /* 0x001c */ m3d::Object* m_firstChild = nullptr;
+        /* 0x0020 */ m3d::Object* m_lastChild = nullptr;
+        /* 0x0024 */ m3d::Object* m_nextSibling = nullptr;
+        /* 0x0028 */ m3d::Object* m_prevSibling = nullptr;
+        /* 0x002c */ int m_numChildren = 0;
 
     protected:
         m3d::Object* ChildNodeFromXmlNode(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode);
@@ -143,7 +143,7 @@ namespace m3d
         virtual int IncWeakRef() /* 0x28 */;
         virtual int DecWeakRef() /* 0x2c */;
         virtual int GetWeakRefCount() /* 0x30 */;
-        /* 0x0030 */ void* m_scriptHandle;
+        /* 0x0030 */ void* m_scriptHandle = nullptr;
 
         static m3d::Class m_classObject;
         virtual m3d::Class* GetClass() const /* 0x34 */;

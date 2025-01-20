@@ -6,7 +6,7 @@ namespace m3d
 {
     int MemoryManager::debugMemLastUnsuccessfulAllocSize() const
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x00589400, MemoryManager::debugMemLastUnsuccessfulAllocSize);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x00589400, MemoryManager::debugMemLastUnsuccessfulAllocSize);
         throw std::logic_error("Not implemented");
     }
 
@@ -43,13 +43,13 @@ namespace m3d
 
     void* MemoryManager::Realloc(void* p, int newSize, char const* src_name, int src_line)
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x00748C10, MemoryManager::Realloc, p, newSize, src_name, src_line);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x00748C10, MemoryManager::Realloc, p, newSize, src_name, src_line);
         throw std::logic_error("Not implemented");
     }
 
     void MemoryManager::Free(void* p)
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x00748B50, MemoryManager::Free, p);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x00748B50, MemoryManager::Free, p);
         throw std::logic_error("Not implemented");
     }
 
@@ -61,49 +61,49 @@ namespace m3d
 
     unsigned MemoryManager::debugMemUsed() const
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x005893D0, MemoryManager::debugMemUsed);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x005893D0, MemoryManager::debugMemUsed);
         throw std::logic_error("Not implemented");
     }
 
     void MemoryManager::CheckMemory()
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x00748620, MemoryManager::CheckMemory);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x00748620, MemoryManager::CheckMemory);
         throw std::logic_error("Not implemented");
     }
 
     auxBlockHeader* MemoryManager::NewChunk(int bsize, int bnum)
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x00748670, MemoryManager::NewChunk, bsize, bnum);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x00748670, MemoryManager::NewChunk, bsize, bnum);
         throw std::logic_error("Not implemented");
     }
 
     unsigned MemoryManager::debugMemAllocated() const
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x005893E0, MemoryManager::debugMemAllocated);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x005893E0, MemoryManager::debugMemAllocated);
         throw std::logic_error("Not implemented");
     }
 
     unsigned MemoryManager::debugMemOverhead() const
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x005893F0, MemoryManager::debugMemOverhead);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x005893F0, MemoryManager::debugMemOverhead);
         throw std::logic_error("Not implemented");
     }
 
     void MemoryManager::DumpMemory(char const* filename)
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x00748780, MemoryManager::DumpMemory, filename);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x00748780, MemoryManager::DumpMemory, filename);
         throw std::logic_error("Not implemented");
     }
 
     void* MemoryManager::Malloc(int size, char const* src_name, int src_line)
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x00748A30, MemoryManager::Malloc, size, src_name, src_line);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x00748A30, MemoryManager::Malloc, size, src_name, src_line);
         throw std::logic_error("Not implemented");
     }
 
     void MemoryManager::turnAggressiveDebugMode(bool bOn)
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x00748610, MemoryManager::turnAggressiveDebugMode, bOn);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x00748610, MemoryManager::turnAggressiveDebugMode, bOn);
         throw std::logic_error("Not implemented");
     }
 
@@ -119,13 +119,13 @@ namespace m3d
 
     void MemoryManager::DumpMemoryFootprint(bool bDetailed) const
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x00748790, MemoryManager::DumpMemoryFootprint, bDetailed);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x00748790, MemoryManager::DumpMemoryFootprint, bDetailed);
         throw std::logic_error("Not implemented");
     }
 
     void MemoryManager::FreeChunk(auxChunkHeader* ch)
     {
-        RETUXX_DLL_JMP_TO_FUNCTION(0x00748710, MemoryManager::FreeChunk, ch);
+        RETRUXX_DLL_JMP_TO_FUNCTION(0x00748710, MemoryManager::FreeChunk, ch);
         throw std::logic_error("Not implemented");
     }
 }

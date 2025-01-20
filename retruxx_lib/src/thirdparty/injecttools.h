@@ -4,6 +4,7 @@
 #include "functionscrapper.h"
 #include <windows.h>
 #include <cstdint>
+#include <vector>
 
 
 namespace inject
@@ -12,6 +13,9 @@ namespace inject
     bool injectJmpShort(uint32_t from, uint32_t to);
     bool replaceVtableEntry(uint32_t entryAddress, uint32_t newFunctionAddress);
     bool replaceCondJmpToJmp(uint32_t address);
+    bool injectMemoryAddress(uint32_t address, uint32_t newAddress);
+
+    inline std::vector<std::pair<uint32_t, uint32_t>> InjectAddresses;
 
     template <class Out, class In>
     Out cast(In x)
@@ -57,7 +61,13 @@ namespace inject
 #define RETRUXX_DLL_INJECT_CTOR(address, cls) namespace {void __fastcall  CONCAT(cls, _)ctor(cls* self) { self->cls::cls(); }}  RETRUXX_DLL_INJECT_FUNCTION(address, CONCAT(cls, _)ctor);
 #define RETRUXX_DLL_INJECT_DTOR(address, cls) namespace {void __fastcall  CONCAT(cls, _)dtor(cls* self) { self->cls::~cls(); }} RETRUXX_DLL_INJECT_FUNCTION(address, CONCAT(cls, _)dtor);
 
-#define RETUXX_DLL_JMP_TO_FUNCTION(address, function, ...) return (this->*inject::cast<decltype(&function)>(address))(__VA_ARGS__)
+#define RETRUXX_DLL_JMP_TO_FUNCTION(address, function, ...) return (this->*inject::cast<decltype(&function)>(address))(__VA_ARGS__)
+#define RETRUXX_DLL_JMP_TO_CTOR(address, ctor) (inject::cast<void(__fastcall*)(void*)>(address))(this); return
+
+#define RETRUXX_DLL_ASSERT_CLASS_SIZE(cls, size) static_assert(sizeof(cls) == size)
+
+#define RETRUXX_DLL_INJECT_ADDRESS(address, newAddress) namespace {auto CONCAT(_injected, __LINE__) = inject::InjectAddresses.emplace_back(inject::cast<uint32_t>(address), inject::cast<uint32_t>(newAddress)); }
+//#define RETRUXX_DLL_INJECT_ADDRESS(address, newAddress) namespace {bool CONCAT(_injected, __LINE__) = inject::injectMemoryAddress(inject::cast<uint32_t>(address), inject::cast<uint32_t>(newAddress)); }
 
 #else //RETRUXX_DLL
 

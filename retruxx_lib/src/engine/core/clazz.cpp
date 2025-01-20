@@ -621,6 +621,7 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    RETRUXX_DLL_INJECT_FUNCTION(0X0041DD60, Object::IsChildOf)
     bool Object::IsChildOf(Object const* wnd) const
     {
         assert(wnd);

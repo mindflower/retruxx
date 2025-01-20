@@ -35,69 +35,70 @@ namespace m3d
     class Kernel
     {
     private:
-        MemoryManager* m_memMan = nullptr;
-        fs::FileServer* m_fileMan = nullptr;
-        cmn::Timer* m_timer = nullptr;
-        EngineConfig* m_engineConfig = nullptr;
-        ScriptServer* m_scriptServer = nullptr;
+        /* 0x0004 */ m3d::MemoryManager* m_memMan = nullptr;
+        /* 0x0008 */ m3d::fs::FileServer* m_fileMan = nullptr;
+        /* 0x000c */ m3d::cmn::Timer* m_timer = nullptr;
+        /* 0x0010 */ m3d::EngineConfig* m_engineConfig = nullptr;
+        /* 0x0014 */ m3d::ScriptServer* m_scriptServer = nullptr;
 
     public:
-        virtual ~Kernel();
-
-    public:
-        MemoryAllocationRoutines g_mar;
-
-    public:
-        int GetUniqueId();
-        virtual void AddClass(Class*);
-        virtual void RemoveClass(Class*);
-        virtual Class* FindClass(char const*);
-        virtual void GetListOfClasses(Class**&, unsigned int&);
-        virtual Object* New(Class*);
-        virtual Object* New(char const*);
-        virtual Object* RegisterGlobal(Object*, char const*);
-        virtual Object* FindGlobal(char const*);
-        virtual void UnRegisterGlobal(char const*);
-        virtual void UnRegisterGlobalObject(Object const*);
-        virtual void DumpMem(char const*);
-        virtual void TurnAggressiveMemoryDebugMode(bool);
-        virtual unsigned int debugMemUsed() const;
-        virtual unsigned int debugMemAllocated() const;
-        virtual unsigned int debugMemOverhead() const;
-        virtual int debugMemLastAllocSize() const;
-        virtual void SysError(CStr const&, CStr const&);
-        virtual cmn::IniFile* CreateIniFile();
-        virtual cmn::XmlFile* CreateXmlFile();
-        virtual cmn::Timer& GetTimer();
-        virtual fs::FileServer& GetFileServer();
-        virtual ScriptServer& GetScriptServer();
-        virtual EngineConfig& GetEngineCfg();
-        virtual CStr GetClipboardData() const;
-        virtual void SetClipboardData(char const*) const;
-        bool OpenLog(char const*);
-        virtual void KernelLog(char const*, ...);
-        virtual int MessageBoxA(HWND, char const*, char const*, unsigned int);
-
-    public:
-        Log* m_Log = nullptr;
-
-        class auxLogFlow
-        {
-        public:
-            auxLogFlow(const char*);
-            ~auxLogFlow();
-            const char* m_str;
-        };
-
-        class auxLogBlock
-        {
-            const char* m_str;
-        };
-
+        Kernel(const m3d::Kernel&);
         Kernel();
+        virtual  ~Kernel() /* 0x00 */;
+
+        /* 0x0018 */ m3d::MemoryAllocationRoutines g_mar;
+
+        int GetUniqueId();
+        virtual void AddClass(m3d::Class* rtClass) /* 0x04 */;
+        virtual void RemoveClass(m3d::Class* rtClass) /* 0x08 */;
+        virtual m3d::Class* FindClass(const char* className) /* 0x0c */;
+        virtual void GetListOfClasses(m3d::Class**& classList, unsigned int& numOfClasses) /* 0x10 */;
+        virtual m3d::Object* New(m3d::Class* cl) /* 0x18 */;
+        virtual m3d::Object* New(const char* className) /* 0x18 */;
+        virtual m3d::Object* RegisterGlobal(m3d::Object* object, const char* name) /* 0x1c */;
+        virtual m3d::Object* FindGlobal(const char* name) /* 0x20 */;
+        virtual void UnRegisterGlobal(const char* name) /* 0x24 */;
+        virtual void UnRegisterGlobalObject(const m3d::Object* object) /* 0x28 */;
+        virtual void DumpMem(const char* fileName) /* 0x2c */;
+        virtual void TurnAggressiveMemoryDebugMode(bool bOn) /* 0x30 */;
+        virtual unsigned int debugMemUsed() const /* 0x34 */;
+        virtual unsigned int debugMemAllocated() const /* 0x38 */;
+        virtual unsigned int debugMemOverhead() const /* 0x3c */;
+        virtual int debugMemLastAllocSize() const /* 0x40 */;
+        virtual void SysError(const CStr& whence, const CStr& descr) /* 0x44 */;
+        virtual m3d::cmn::IniFile* CreateIniFile() /* 0x48 */;
+        virtual m3d::cmn::XmlFile* CreateXmlFile() /* 0x4c */;
+        virtual m3d::cmn::Timer& GetTimer() /* 0x50 */;
+        virtual m3d::fs::FileServer& GetFileServer() /* 0x54 */;
+        virtual m3d::ScriptServer& GetScriptServer() /* 0x58 */;
+        virtual m3d::EngineConfig& GetEngineCfg() /* 0x5c */;
+        virtual CStr GetClipboardData() const /* 0x60 */;
+        virtual void SetClipboardData(const char* str) const /* 0x64 */;
+        bool OpenLog(const char* logFileName);
+        virtual void KernelLog(const char* str, ...) /* 0x68 */;
+        virtual int MessageBoxA(HWND__* hWnd, const char* pszText, const char* pszCaption, unsigned int uType) /* 0x6c */;
+
+        /* 0x0024 */ m3d::Log* m_Log = nullptr;
+
+        struct auxLogFlow
+        {
+            auxLogFlow(const char* functionName);
+            ~auxLogFlow();
+            /* 0x0000 */ const char* m_str;
+        }; /* size: 0x0004 */
+
+        struct auxLogBlock
+        {
+            auxLogBlock(const char* functionName);
+            ~auxLogBlock();
+            /* 0x0000 */ const char* m_str;
+        }; /* size: 0x0004 */
 
         static Kernel* instance();
-    };
+
+    }; /* size: 0x0028 */
+
+    static_assert(sizeof(Kernel) == 0x0028);
 
     extern Kernel* g_Kernel;
 }

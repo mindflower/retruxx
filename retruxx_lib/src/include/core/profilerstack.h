@@ -1,40 +1,41 @@
 #pragma once
-#include <string>
-#include <vector>
+#include "thirdparty/containers.h"
 
 namespace m3d
 {
     class Profiler
     {
     public:
+        Profiler(const m3d::Profiler&);
+        Profiler(const char* name);
         Profiler();
-        Profiler(char const* name);
-
-        void EndCountdown();
-        double GetAverageTime() const;
-        void EndFrame();
-        void SetAverageVal(unsigned int numFrames);
+        virtual ~Profiler() = default /* 0x00 */;
+        void SetName(const char* name);
+        const char* GetName() const;
         void StartFrame();
-        void SetName(char const* name);
-        char const* GetName() const;
+        void EndFrame();
         void StartCountdown();
+        void EndCountdown();
+        void Reset();
+        unsigned long GetTotalTime() const;
+        unsigned long GetLastFrameTime() const;
+        void SetAverageVal(unsigned int numFrames);
+        double GetAverageTime() const;
 
     private:
-        //std::mem_fun<void, m3d::Profiler>(void (*)());
+        /* 0x0008 */ retruxx::string m_name;
+        /* 0x0024 */ unsigned int m_curFrame;
+        /* 0x0028 */ unsigned int m_numFramesToRecalculate;
+        /* 0x002c */ float m_performanceCounterFrequency;
+        /* 0x0030 */ int64_t m_totalClocks;
+        /* 0x0038 */ int64_t m_totalClocksPerFrame;
+        /* 0x0040 */ int64_t m_lastClocks;
+        /* 0x0048 */ int64_t m_totalClocksForRecalcFrames;
+        /* 0x0050 */ int64_t m_averageClocks;
         void Init();
-        //std::mem_fun_t<void, m3d::Profiler>::mem_fun_t<void, m3d::Profiler>(void (*)());
+    }; /* size: 0x0058 */
 
-    private:
-        std::string m_name = "default";
-        unsigned int m_curFrame = 0;
-        unsigned int m_numFramesToRecalculate = 30;
-        float m_performanceCounterFrequency;
-        __int64 m_totalClocks = 0;
-        __int64 m_totalClocksPerFrame = 0;
-        __int64 m_lastClocks = 0;
-        __int64 m_totalClocksForRecalcFrames = 0;
-        __int64 m_averageClocks = 0;
-    };
+    static_assert(sizeof(Profiler) == 0x0058);
 
     class ProfilerStack
     {
@@ -58,13 +59,25 @@ namespace m3d
 
     static_assert(sizeof(ProfilerStack) == 0x0014);
 
+    class ProfilerPtr
+    {
+    public:
+        ProfilerPtr(m3d::Profiler*);
+        ~ProfilerPtr();
+        m3d::Profiler* GetProfiler() const;
+
+    private:
+        /* 0x0000 */ m3d::Profiler* m_counter;
+    }; /* size: 0x0004 */
+
     class FrameProfilerPtr
     {
     public:
-        FrameProfilerPtr(Profiler* pCounter);
+        FrameProfilerPtr(m3d::ProfilerPtr&);
+        FrameProfilerPtr(m3d::Profiler* pCounter);
         ~FrameProfilerPtr();
 
     private:
-        Profiler* m_counter;
-    };
+        /* 0x0000 */ m3d::Profiler* m_counter;
+    }; /* size: 0x0004 */
 }

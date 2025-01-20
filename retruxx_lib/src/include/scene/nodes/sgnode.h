@@ -24,10 +24,10 @@ namespace m3d
 
     struct TransparencyParams
     {
-        float value;
-        float startDist;
-        float objectWidth;
-    };
+        /* 0x0000 */ float value;
+        /* 0x0004 */ float startDist;
+        /* 0x0008 */ float objectWidth;
+    }; /* size: 0x000c */
 
     enum SgNodeRenderFlags
     {
@@ -37,124 +37,143 @@ namespace m3d
         NRF_NO_LIGHTING = 0x4,
     };
 
-    class SgNode : public Object
+    class SgNode : public m3d::Object
     {
         friend class SceneGraph;
-    public:
-        enum Ritual
-        {
-            RITUAL_NONE = 0x0,
-            RITUAL_THINK_NODE = 0x1,
-            RITUAL_REGISTERED_NODE = 0x2,
-            RITUAL_THINK_AND_REGISTERED_NODE = 0x3,
-        };
-
-    public:
-        static Object* CreateObject();
-        static Class* GetBaseClass();
-
-    public:
-        Obb GetObb() const;
-        CVector const& GetOrigin() const;
-        CMatrix const& GetCurrentMatrix() const;
-        int GetPrevThinkTime() const;
-        int SetScale(CVector const&);
-        void SetTransparencyType(TransparencyType);
-        int GetServerItemProperty(unsigned int, void*) const;
-        bool IsXFormUpdateNeeded() const;
-        virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-        CVector const& GetOriginWorldAbs() const;
-        void SetPrevThinkTime(int);
-        CVector const& GetScale() const;
-        virtual Class* GetClass() const;
-        int SetServerItemProperty(unsigned int, void*) const;
-        virtual int Think(int, int);
-        int GetTtl() const;
-        virtual void CanBeFree();
-        CVector const& GetOriginWorldAbsForSphere() const;
-        virtual int RemoveChild(Object*);
-        int GetNextThinkTime() const;
-        virtual int Render(SgNodeRenderFlags, void*, int, int);
-        Quaternion const& GetRotation() const;
-        virtual int GetProperty(unsigned int, void*) const;
-        SceneGraph* GetGraph();
-        int GetServerHandle() const;
-        virtual bool IsFree() const;
-        virtual DataServer* GetServer() const;
-        Aabb GetAabb() const;
-        virtual int AddChild(Object*);
-        virtual Object* Clone();
-        virtual int ReadFromXmlNodeAfterAdd(cmn::XmlFile*, cmn::XmlNode*);
-        TransparencyParams& GetTransparencyParams();
-        void SetBoundingBoxDirty();
-        void RemoveImmediateAfterParent(bool);
-        unsigned int GetContourColor();
-        Quaternion const& GetRotationWorldAbs() const;
-        int SetRotation(Quaternion const&);
-        virtual int SetProperty(unsigned int, void*);
-        float GetBoundingRadius() const;
-        void GetVisCellBounds(PointBase<int>&, PointBase<int>&) const;
-        float GetContourWidth();
-        int SetOriginAbs(CVector const&);
-        virtual int UpdateXForm(bool, bool);
-        bool VisCellBoundsChanged() const;
-        virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-        virtual int GetPropertiesList(retruxx::set<unsigned int, retruxx::less<unsigned int>, retruxx::allocator<unsigned int> >&) const;
-        Aabb GetOwnAabb() const;
-        virtual float IntersectRay(CVector const&, CVector const&, SgNode*&, Class*);
-        virtual void Restart();
 
     protected:
-        CMatrix MatrixFromFlags(SgNodeRenderFlags, void*) const;
-        virtual void UpdateOwnBoundingBox();
-        void RitualInConstructor(Ritual);
-        virtual ~SgNode();
-        SgNode(SgNode const&);
         SgNode();
-        void RitualInDestructor();
-        void InternalInit();
+        SgNode(const m3d::SgNode& node);
+        virtual  ~SgNode() override /* 0x00 */;
 
     public:
-        RT_CLASS_DECLARE(SgNode);
+        virtual m3d::Object* Clone() override /* 0x04 */;
+        static m3d::Object* CreateObject();
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        static m3d::Class m_classSgNode;
+        virtual int ReadFromXmlNode(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* node) override /* 0x08 */;
+        virtual int ReadFromXmlNodeAfterAdd(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) override /* 0x0c */;
+        virtual int WriteToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* writeTo) override /* 0x10 */;
+        virtual int SetProperty(unsigned int propId, void* prop) override /* 0x14 */;
+        virtual int GetProperty(unsigned int propId, void* prop) const override /* 0x18 */;
+        virtual int GetPropertiesList(retruxx::set<unsigned int, retruxx::less<unsigned int>, retruxx::allocator<unsigned int> >& properties) const override /* 0x1c */;
+        int SetServerItemProperty(unsigned int propId, void* property) const;
+        int GetServerItemProperty(unsigned int propId, void* property) const;
+        virtual int AddChild(m3d::Object* node) override /* 0x20 */;
+        virtual int RemoveChild(m3d::Object* node) override /* 0x24 */;
+        virtual m3d::DataServer* GetServer() const /* 0x3c */;
+        int GetTtl() const;
+        virtual bool IsFree() const /* 0x40 */;
+        virtual void CanBeFree() /* 0x44 */;
+        void RemoveImmediateAfterParent(bool YesOrNo);
+        void SetBoundingBoxDirty();
+        virtual void Restart() /* 0x48 */;
+        void SetTransparencyType(m3d::TransparencyType tt);
+        int GetNextThinkTime() const;
+        int GetPrevThinkTime() const;
+        void SetPrevThinkTime(int t);
+        bool IsXFormUpdateNeeded() const;
+        int SetOriginRel(const CVector&);
+        int SetOriginAbs(const CVector& origin);
+        int SetScale(const CVector& scale);
+        const CVector& GetScale() const;
+        int SetRotation(const Quaternion& quat);
+        const Quaternion& GetRotation() const;
+        const CVector& GetOriginWorldAbs() const;
+        const Quaternion& GetRotationWorldAbs() const;
+        const CVector& GetOriginWorldAbsForSphere() const;
+        const CVector& GetOrigin() const;
+        bool GetRelativeFlag() const;
+        const CMatrix& GetCurrentMatrix() const;
+        float GetBoundingRadius() const;
+        Obb GetObb() const;
+        Aabb GetAabb() const;
+        Aabb GetOwnAabb() const;
+        void GetVisCellBounds(PointBase<int>& p0, PointBase<int>& p1) const;
+        bool VisCellBoundsChanged() const;
+        m3d::TransparencyParams& GetTransparencyParams();
+        virtual float IntersectRay(const CVector& v0, const CVector& dir, m3d::SgNode*& hitNode, m3d::Class* wantClass) /* 0x4c */;
+        virtual int UpdateXForm(bool onlyVis, bool parentDirty) /* 0x50 */;
+        virtual int Think(int dt, int curTime) /* 0x54 */;
+        virtual int Render(m3d::SgNodeRenderFlags flags, void* data, int dt, int curTime) /* 0x58 */;
+        m3d::SceneGraph* GetGraph();
+        int GetServerHandle() const;
+        unsigned int GetContourColor();
+        float GetContourWidth();
+
+    protected:
+        virtual void UpdateOwnBoundingBox() /* 0x5c */;
+
+        /* 0x0034 */ int m_nextThinkTime;
+        /* 0x0038 */ int m_prevThinkTime;
+        /* 0x003c */ int m_ttl;
+        /* 0x0040 */ CMatrix m_ownXForm;
+        /* 0x0080 */ CMatrix m_currentXForm;
+        /* 0x00c0 */ CVector m_origin;
+        /* 0x00cc */ CVector m_scaling;
+        /* 0x00d8 */ Quaternion m_rotation;
+        /* 0x00e8 */ CVector m_currentWorldOrigin;
+        /* 0x00f4 */ Quaternion m_currentWorldRotation;
+        /* 0x0104 */ CVector m_originWorldAbsForSphere;
+        /* 0x0110 */ float m_boundingRadius;
+        /* 0x0114 */ Aabb m_boundingBox;
+        /* 0x012c */ Aabb m_ownBoundingBox;
+        /* 0x0144 */ bool m_isOriginRelative;
+        /* 0x0145 */ char Padding_110[3];
+        /* 0x0148 */ unsigned int m_isXFormDirty;
+        /* 0x014c */ bool m_isOwnBoundingBoxDirty;
+        /* 0x014d */ bool m_removeImmediateAfterParent;
+        /* 0x014e */ bool m_isRemoveIfFree;
+        /* 0x014f */ bool m_isInRemoveIfFree;
+        /* 0x0150 */ bool m_isContoured;
+        /* 0x0151 */ char Padding_111[3];
+        /* 0x0154 */ unsigned int m_contourColor;
+        /* 0x0158 */ float m_contourWidth;
+        /* 0x015c */ int m_frameTransparent;
+        /* 0x0160 */ m3d::TransparencyType m_transparencyType;
+        /* 0x0164 */ m3d::TransparencyParams m_transparencyParams;
+        /* 0x0170 */ bool m_isWaitingForRender;
+        /* 0x0171 */ char Padding_112[3];
+        /* 0x0174 */ int m_srvId;
+
+    public:
+        /* 0x0178 */ int m_frameVisible;
+        /* 0x017c */ int m_frameVisible2;
+        /* 0x0180 */ float m_onScreenSize;
+        /* 0x0184 */ bool m_isRootNode;
+        /* 0x0185 */ char Padding_113[3];
+
+    protected:
+        /* 0x0188 */ int m_properties[3];
+        /* 0x0194 */ CStr m_debugMsg;
+        /* 0x01a0 */ unsigned int m_props[10];
+        /* 0x01c8 */ m3d::GraphItemsForSgNode* m_forGraph;
+
+    public:
+        /* 0x01cc */ int m_predictIdx;
+
+    protected:
+        CMatrix MatrixFromFlags(m3d::SgNodeRenderFlags nrf, void* data) const;
+
+        enum Ritual
+        {
+            RITUAL_NONE = 0,
+            RITUAL_THINK_NODE = 1,
+            RITUAL_REGISTERED_NODE = 2,
+            RITUAL_THINK_AND_REGISTERED_NODE = 3,
+        };
+
+    protected:
+        void RitualInConstructor(m3d::SgNode::Ritual rt);
+        void RitualInDestructor();
 
     private:
-        int m_nextThinkTime;
-        int m_prevThinkTime;
-        int m_ttl;
-        CMatrix m_ownXForm;
-        CMatrix m_currentXForm;
-        CVector m_origin;
-        CVector m_scaling;
-        Quaternion m_rotation;
-        CVector m_currentWorldOrigin;
-        Quaternion m_currentWorldRotation;
-        CVector m_originWorldAbsForSphere;
-        float m_boundingRadius;
-        Aabb m_boundingBox;
-        Aabb m_ownBoundingBox;
-        bool m_isOriginRelative;
-        unsigned int m_isXFormDirty;
-        bool m_isOwnBoundingBoxDirty;
-        bool m_removeImmediateAfterParent;
-        bool m_isRemoveIfFree;
-        bool m_isInRemoveIfFree;
-        bool m_isContoured;
-        unsigned int m_contourColor;
-        float m_contourWidth;
-        int m_frameTransparent;
-        TransparencyType m_transparencyType;
-        TransparencyParams m_transparencyParams;
-        bool m_isWaitingForRender;
-        int m_srvId;
-        int m_frameVisible;
-        int m_frameVisible2;
-        float m_onScreenSize;
-        bool m_isRootNode;
-        int m_properties[3];
-        CStr m_debugMsg;
-        unsigned int m_props[10];
-        GraphItemsForSgNode* m_forGraph;
-        int m_predictIdx;
-        Ritual m_initedWithRitual;
-    };
+        /* 0x01d0 */ m3d::SgNode::Ritual m_initedWithRitual;
+
+    protected:
+        void InternalInit();
+    }; /* size: 0x01d4 */
+
+    static_assert(sizeof(SgNode) == 0x01d4);
 }

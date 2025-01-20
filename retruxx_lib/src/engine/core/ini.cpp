@@ -284,9 +284,9 @@ XmlFileImpl::~XmlFileImpl()
 int XmlFileImpl::Read(m3d::fs::IStream& in)
 {
     auto const size = in.GetSize();
-    std::vector<char> buffer(size + 1, 0);
-    buffer[in.ReadBytes(buffer.data(), size)] = '\0';
-    Parse(buffer.data());
+    retruxx::vector<char> buffer(size + 1, 0);
+    buffer[in.ReadBytes(&buffer[0], size)] = '\0';
+    Parse(&buffer[0]);
     //TODO: check this;
     return !Error();
 }

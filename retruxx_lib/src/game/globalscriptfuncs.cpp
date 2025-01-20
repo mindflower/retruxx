@@ -656,7 +656,7 @@ int n_DumpOpenFiles(m3d::sArgStack& scriptStack)
     }
 
     M3D_LOG_INFO("********** DUMPING OPEN FILES ********************");
-    std::vector<CStr> fileList;
+    retruxx::vector<CStr> fileList;
     m3d::g_Kernel->GetFileServer().GetOpenFilesList(fileList);
     for (auto const& file : fileList)
     {

@@ -34,7 +34,7 @@ namespace m3d
             DecryptFileName(filename, fullFilename);
             
             auto const it = m_Files.find(fullFilename);
-            if (it != m_Files.cend())
+            if (it != m_Files.end())
             {
                 return true;
             }
@@ -55,17 +55,17 @@ namespace m3d
 
         int FileServer::RemoveFile(char const*)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         void FileServer::EnableMapping(bool)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int FileServer::Reinitialize(char const*)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int FileServer::Shutdown()
@@ -119,17 +119,17 @@ namespace m3d
 
         int FileServer::AddPackage(char const*)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int FileServer::AddFile(char const*)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int FileServer::RemoveFolder(char const*)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int FileServer::Initialize(char const* dataSource)
@@ -147,15 +147,15 @@ namespace m3d
             } 
 
             auto const size = file->GetSize();
-            std::vector<char> buffer(size + 1, 0);
-            if (!file->ReadBytes(buffer.data(), size))
+            retruxx::vector<char> buffer(size + 1, 0);
+            if (!file->ReadBytes(&buffer[0], size))
             {
                 return -1;
             }
             file.reset();
 
             buffer[size] = '\0';
-            CStr const fileContent(buffer.data());
+            CStr const fileContent(&buffer[0]);
             retruxx::vector<CStr> tokens;
             Tokenize(&fileContent, tokens, "\r\n");
             if (!tokens.empty())
@@ -205,7 +205,7 @@ namespace m3d
 
         int FileServer::AddFolder(char const*, char const*, bool)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         void FileServer::SetCurrentWorkDir(char const* currentDirectory)
@@ -232,12 +232,12 @@ namespace m3d
 
         int FileServer::InternalAddPackage(CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         int FileServer::EnumDataFolderFiles(char const*)
         {
-            throw std::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
 
         char const* FileServer::GetCurrentWorkDir() const
@@ -245,14 +245,14 @@ namespace m3d
             return m_CurrentWorkDir.c_str();
         }
 
-        void FileServer::GetOpenFilesList(std::vector<CStr>& fileList) const
+        void FileServer::GetOpenFilesList(retruxx::vector<CStr>& fileList) const
         {
             fileList.clear();
             for (const auto& package : m_Packages)
             {
-                std::vector<CStr> tmpList;
+                retruxx::vector<CStr> tmpList;
                 package->GetOpenFilesList(tmpList);
-                fileList.insert(end(fileList), begin(tmpList), end(tmpList));
+                fileList.insert(fileList.end(), tmpList.begin(), tmpList.end());
             }
         }
     }

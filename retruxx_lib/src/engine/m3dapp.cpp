@@ -100,9 +100,9 @@ namespace
         {"s_modelsInfo", 22},
     };
 
-    using CreateIRendererType = m3d::rend::IRenderer* (*)(m3d::Kernel*);
-    using CreateIInputType = m3d::input::IInput* (*)(m3d::Kernel*);
-    using CreateISoundType = snd::ISound* (*)(m3d::Kernel*);
+    using CreateIRendererType = m3d::rend::IRenderer* (__cdecl*)(m3d::Kernel*);
+    using CreateIInputType = m3d::input::IInput* (__cdecl*)(m3d::Kernel*);
+    using CreateISoundType = snd::ISound* (__cdecl*)(m3d::Kernel*);
 }
 
 namespace ai
@@ -517,7 +517,7 @@ namespace m3d
         unsigned short key = 0;
         unsigned char param2 = 0;
         bool param3 = false;
-        long double time = 0.0;
+        double time = 0.0;
 
         if (m_input->GetLastKbdEvent(key, param2, param3, time, true))
         {
@@ -1731,6 +1731,9 @@ namespace m3d
         {
             M3D_LOG_INFO("Starting up...");
             g_pApp = this;
+
+            inject::injectMemoryAddress(0x00A0A55C, inject::cast<uint32_t>(g_pApp));
+
             m_focusKbdEntity = this;
             m_strWindowTitle = "retruxx - release version build v0.01";
 

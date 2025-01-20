@@ -1,6 +1,6 @@
 #pragma once
-#include <vector>
 #include <core/stringm3d.h>
+#include "thirdparty/containers.h"
 
 namespace m3d
 {
@@ -63,7 +63,7 @@ namespace help
     void DeleteAllFilesInDirectory(char const*);
     CStr GetCurrentLevelName();
     int CloneWndWithChildren(m3d::ui::Wnd const*, m3d::ui::Wnd*);
-    int GetWindowsSubDirs(CStr const&, std::vector<CStr>&, CStr const&);
+    int GetWindowsSubDirs(CStr const&, retruxx::vector<CStr>&, CStr const&);
     int CreateWindowsDir(CStr const&);
     CStr GetMapNameFromFileName(CStr const&);
     CStr Color2Str(unsigned);

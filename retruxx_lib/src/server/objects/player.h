@@ -37,12 +37,12 @@ namespace ai
         Player(const ai::PlayerPrototypeInfo& prototypeInfo);
         Player(const ai::Player&);
         virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override /* 0x00 */;
-        static inline m3d::Class m_classPlayer;
+        static m3d::Class m_classPlayer;
         virtual const ai::PlayerPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
 
     protected:

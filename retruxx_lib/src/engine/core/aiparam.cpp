@@ -236,16 +236,16 @@ namespace m3d
         return *this;
     }
 
-    //AIParam& AIParam::operator=(AIParam const& pparam)
-    //{
-    //    if (&pparam == this)
-    //    {
-    //        return *this;
-    //    }
-    //    Detach();
-    //    Copy(pparam);
-    //    return *this;
-    //}
+    AIParam& AIParam::operator=(AIParam const& pparam)
+    {
+        if (&pparam == this)
+        {
+            return *this;
+        }
+        Detach();
+        Copy(pparam);
+        return *this;
+    }
 
     AIParam& AIParam::operator=(oldstd::vector<CStr> const&)
     {

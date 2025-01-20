@@ -80,7 +80,7 @@ namespace m3d
             static m3d::Class m_classWnd;
 
         private:
-            /* 0x0034 */ int m_created;
+            /* 0x0034 */ int m_created = 0;
             static inline m3d::ui::WndStation* m_wndStation;
 
         public:
@@ -95,7 +95,7 @@ namespace m3d
             };
 
         private:
-            /* 0x0038 */ m3d::ui::Wnd::DragMode m_dragMode;
+            /* 0x0038 */ m3d::ui::Wnd::DragMode m_dragMode = DragMode::DRAG_NONE;
             /* 0x003c */ PointBase<float> m_dragStartPtLocal;
             /* 0x0044 */ PointBase<float> m_dragCurPtLocal;
             /* 0x004c */ PointBase<float> m_dragStartPt;
@@ -114,37 +114,37 @@ namespace m3d
 
         protected:
             /* 0x005c */ CStr m_toolTipText;
-            /* 0x0068 */ int m_toolTipTimeOut;
-            /* 0x006c */ m3d::ui::Wnd* m_toolTipWnd;
-            /* 0x0070 */ m3d::ui::ScrollWnd* m_scrollHWnd;
-            /* 0x0074 */ m3d::ui::ScrollWnd* m_scrollVWnd;
+            /* 0x0068 */ int m_toolTipTimeOut = -1;
+            /* 0x006c */ m3d::ui::Wnd* m_toolTipWnd = nullptr;
+            /* 0x0070 */ m3d::ui::ScrollWnd* m_scrollHWnd = nullptr;
+            /* 0x0074 */ m3d::ui::ScrollWnd* m_scrollVWnd = nullptr;
             void RemoveTooltip();
             m3d::ui::Wnd* CreateTooltipWnd();
             PointBase<float> GetOriginPoint() const;
 
         public:
-            /* 0x0078 */ int m_activationOrder;
+            /* 0x0078 */ int m_activationOrder = -1;
 
         protected:
             /* 0x007c */ CStr m_caption;
-            /* 0x0088 */ unsigned int m_style;
+            /* 0x0088 */ unsigned int m_style = 512;
             /* 0x008c */ BoundsBase<float> m_bounds;
             /* 0x009c */ retruxx::vector<float> m_clientEdges;
-            /* 0x00ac */ unsigned int m_curClr;
-            /* 0x00b0 */ unsigned int m_textColor;
-            /* 0x00b4 */ unsigned int m_textColorDisabled;
-            /* 0x00b8 */ CStr m_strTextColor;
-            /* 0x00c4 */ CStr m_strTextColorDisabled;
-            /* 0x00d0 */ bool m_gotFocus;
-            /* 0x00d1 */ bool m_mouseOver;
+            /* 0x00ac */ unsigned int m_curClr = 0;
+            /* 0x00b0 */ unsigned int m_textColor = -1;
+            /* 0x00b4 */ unsigned int m_textColorDisabled = -8421505;
+            /* 0x00b8 */ CStr m_strTextColor = "@ffffffff";
+            /* 0x00c4 */ CStr m_strTextColorDisabled = "@ff7f7f7f";
+            /* 0x00d0 */ bool m_gotFocus = false;
+            /* 0x00d1 */ bool m_mouseOver = false;
             /* 0x00d2 */ char Padding_22[2];
-            /* 0x00d4 */ unsigned int m_id;
+            /* 0x00d4 */ unsigned int m_id = 0;
             /* 0x00d8 */ CStr m_bgTextureName;
             /* 0x00e4 */ m3d::rend::TexHandle m_bgTexture;
-            /* 0x00e8 */ CStr m_paneName;
-            /* 0x00f4 */ int m_paneFlags;
-            /* 0x00f8 */ m3d::ui::PaneFlagBg m_bgFlags;
-            /* 0x00fc */ unsigned char m_mouseDown;
+            /* 0x00e8 */ CStr m_paneName = "defaultWnd";
+            /* 0x00f4 */ int m_paneFlags = 7;
+            /* 0x00f8 */ m3d::ui::PaneFlagBg m_bgFlags = PaneFlagBg::PANE_FLAG_BG_OUT;
+            /* 0x00fc */ unsigned char m_mouseDown = 0;
 
         public:
             int IsPtInBounds(PointBase<float> const& pt) const;
@@ -231,7 +231,7 @@ namespace m3d
             m3d::ui::Wnd* GetNextActivatableChild(m3d::ui::Wnd* first, int back);
 
         private:
-            /* 0x00fd */ bool m_showCursor;
+            /* 0x00fd */ bool m_showCursor = true;
 
         public:
             virtual void SetCursorShow(bool state) /* 0xd0 */;
@@ -255,8 +255,8 @@ namespace m3d
         protected:
             /* 0x0104 */ bool m_modalAttachedToStation;
             /* 0x0105 */ char Padding_24[3];
-            /* 0x0108 */ m3d::TextWrapFlags m_textWrap;
-            /* 0x010c */ m3d::TextFormatFlags m_textFormat;
+            /* 0x0108 */ m3d::TextWrapFlags m_textWrap = TextWrapFlags::TW_WORD_WRAP;
+            /* 0x010c */ m3d::TextFormatFlags m_textFormat = TextFormatFlags::TF_LEFT;
 
         public:
             void SetWrapMode(m3d::TextWrapFlags wrap);
@@ -268,7 +268,7 @@ namespace m3d
             void Centralize();
 
         protected:
-            /* 0x0110 */ int m_defFont;
+            /* 0x0110 */ int m_defFont = 0;
 
         public:
             virtual void SetDefaultFont(const CStr& name, float height, m3d::ui::FontType type, m3d::ui::FontParams params) /* 0xec */;
@@ -287,9 +287,9 @@ namespace m3d
             virtual float GetFrameWidth() const /* 0x100 */;
 
         protected:
-            /* 0x0114 */ int m_gameDataFlags;
-            /* 0x0118 */ CStr m_scrollPaneName;
-            /* 0x0124 */ int m_guiId;
+            /* 0x0114 */ int m_gameDataFlags = 0;
+            /* 0x0118 */ CStr m_scrollPaneName = "Scroll1";
+            /* 0x0124 */ int m_guiId = -1;
 
         public:
             virtual int GameDataSetup() /* 0x104 */;
@@ -306,7 +306,7 @@ namespace m3d
         private:
             void Register();
             void Unregister();
-            /* 0x0128 */ int m_uniqueId;
+            /* 0x0128 */ int m_uniqueId = -1;
 
         public:
             int GetUniqueId() const;
@@ -394,11 +394,11 @@ namespace m3d
             /* 0x012c */ m3d::ui::Wnd::AnimationInfo m_onShowAnimation;
             /* 0x0178 */ m3d::ui::Wnd::AnimationInfo m_onHideAnimation;
             /* 0x01c4 */ m3d::ui::Wnd::AnimationInfo m_currentAnimation;
-            /* 0x0210 */ bool m_bSuspendedUnlink;
-            /* 0x0211 */ bool m_bSuspendedParentUnlink;
+            /* 0x0210 */ bool m_bSuspendedUnlink = false;
+            /* 0x0211 */ bool m_bSuspendedParentUnlink = false;
             /* 0x0212 */ char Padding_25[2];
             /* 0x0214 */ PointBase<float> m_baseOrigin;
-            /* 0x021c */ int m_animationSoundMoveChannelId;
+            /* 0x021c */ int m_animationSoundMoveChannelId = -1;
             int ProcessAnimation(int curTime, int deltaTime);
             void OnEndAnimation(bool bUrgent);
             void StopAnimationMoveSound();

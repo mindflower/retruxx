@@ -155,7 +155,7 @@ void Profile::SetFolder(CStr const& folder)
 
 m3d::Object* Profile::Clone()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int Profile::GetParam(ProfileParam paramId, m3d::AIParam& param) const
@@ -166,7 +166,7 @@ int Profile::GetParam(ProfileParam paramId, m3d::AIParam& param) const
         return 0;
     }
     auto const it = m_params.find(paramId);
-    if (it != m_params.cend())
+    if (it != m_params.end())
     {
         param = it->second;
         return 1;
@@ -182,12 +182,12 @@ m3d::Class* Profile::GetBaseClass()
 
 void Profile::SetName(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int Profile::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 bool Profile::IsValid() const
@@ -213,7 +213,7 @@ int Profile::SetParam(ProfileParam paramId, m3d::AIParam const& paramVal)
 
 Profile::~Profile()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 CStr const& Profile::GetName() const
@@ -311,7 +311,7 @@ void Profile::Clear()
 
 Profile::Profile(Profile const&)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 Profile::Profile()
@@ -336,7 +336,7 @@ ProfileParam Profile::ParamName2Id(CStr const& name) const
 
 CStr Profile::ParamId2Name(ProfileParam) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 RT_CLASS_EXPORTS_BEGIN(ProfileManager)
@@ -374,22 +374,22 @@ int ProfileManager::SetCurProfile(CStr const& profileName)
 
 CStr ProfileManager::GetDefaultProfileName() const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 m3d::Class* ProfileManager::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int ProfileManager::DeleteProfile(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
-std::vector<CStr> ProfileManager::GetProfilesNames() const
+retruxx::vector<CStr> ProfileManager::GetProfilesNames() const
 {
-    std::vector<CStr> res;
+    retruxx::vector<CStr> res;
     res.reserve(m_profiles.size());
     for (auto const& profile : m_profiles)
     {
@@ -400,7 +400,7 @@ std::vector<CStr> ProfileManager::GetProfilesNames() const
 
 int ProfileManager::Done()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int ProfileManager::Init()
@@ -426,7 +426,7 @@ int ProfileManager::Init()
 
 Profile const* ProfileManager::CreateNewProfile(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 m3d::Class* ProfileManager::GetBaseClass()
@@ -436,7 +436,7 @@ m3d::Class* ProfileManager::GetBaseClass()
 
 ProfileManager::~ProfileManager()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 m3d::Object* ProfileManager::CreateObject()
@@ -447,7 +447,7 @@ m3d::Object* ProfileManager::CreateObject()
 int ProfileManager::LoadProfiles()
 {
     Clear();
-    std::vector<CStr> files;
+    retruxx::vector<CStr> files;
     if (!GetProfileFiles(files))
     {
 
@@ -508,12 +508,12 @@ int ProfileManager::LoadProfiles()
 
 Profile* ProfileManager::GetProfileByName(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 m3d::Object* ProfileManager::Clone()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 //Verified: ProfileManager::Clear
@@ -529,12 +529,12 @@ void ProfileManager::Clear()
 
 CStr ProfileManager::GetProfileOwnFolderName(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 Profile const* ProfileManager::CreateDefaultProfile()
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int ProfileManager::AddProfile(Profile* profile)
@@ -556,7 +556,7 @@ int ProfileManager::AddProfile(Profile* profile)
 
 ProfileManager::ProfileManager(ProfileManager const&)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 ProfileManager::ProfileManager() :
@@ -567,7 +567,7 @@ ProfileManager::ProfileManager() :
     m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvProfileFileName, nullptr);
 }
 
-int ProfileManager::GetProfileFiles(std::vector<CStr, std::allocator<CStr>>& files) const
+int ProfileManager::GetProfileFiles(retruxx::vector<CStr, retruxx::allocator<CStr>>& files) const
 {
     CStr pathToProfiles = m_cvPathToProfiles.GetS();
     auto attr = GetFileAttributesA(pathToProfiles.c_str());
@@ -579,7 +579,7 @@ int ProfileManager::GetProfileFiles(std::vector<CStr, std::allocator<CStr>>& fil
         M3D_LOG_INFO("ProfileManager::GetProfileFiles warning - profile folder is not found");
         return 0;
     }
-    std::vector<CStr> profileDirs;
+    retruxx::vector<CStr> profileDirs;
     auto res = help::GetWindowsSubDirs(pathToProfiles, profileDirs, "*.*");
     if (!res)
     {
@@ -599,19 +599,19 @@ int ProfileManager::GetProfileFiles(std::vector<CStr, std::allocator<CStr>>& fil
 
 CStr ProfileManager::GetProfileFolderName(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 CStr ProfileManager::GetProfileFilePath(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 int ProfileManager::SaveProfile(Profile const* profile) const
 {
     if (profile && profile->IsValid())
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
         //TODO: ...
     }
     else

@@ -93,6 +93,8 @@ namespace ai
         RT_CLASS_EXPORT(Player, m3d::METHOD, RemoveQuestItem, "", "", "")
     RT_CLASS_EXPORTS_END;
 
+    RT_CLASS_DEFINE(Player);
+
     CStr const& PlayerPrototypeInfo::GetModelName() const
     {
         throw std::logic_error("Not implemented");
