@@ -7,23 +7,28 @@ namespace ai
     class Article;
     class Workshop;
 
-    class WorkshopPriceCoeffProvider : public IPriceCoeffProvider
+    class WorkshopPriceCoeffProvider : public ai::IPriceCoeffProvider
     {
     public:
-        WorkshopPriceCoeffProvider(Workshop const*);
-        virtual float GetPriceCoeffForObj(Obj const*) const;
+        WorkshopPriceCoeffProvider(const ai::WorkshopPriceCoeffProvider&);
+        WorkshopPriceCoeffProvider(const ai::Workshop* workshop);
+        virtual float GetPriceCoeffForObj(const ai::Obj* obj) const override /* 0x04 */;
 
     private:
-        const Workshop* m_workshop;
-    };
+        /* 0x0004 */ const ai::Workshop* m_workshop;
+    }; /* size: 0x0008 */
 
-    class WorkshopPrototypeInfo : public BuildingPrototypeInfo
+    static_assert(sizeof(WorkshopPriceCoeffProvider) == 0x0008);
+
+    class WorkshopPrototypeInfo : public ai::BuildingPrototypeInfo
     {
     public:
         WorkshopPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual ai::Obj* CreateTargetObject() const;
-    };
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+    }; /* size: 0x0044 */
+
+    static_assert(sizeof(WorkshopPrototypeInfo) == 0x0044);
 
     enum WorkshopRepositoryType
     {
@@ -34,69 +39,74 @@ namespace ai
         WORKSHOP_NUM_TYPES = 0x4,
     };
 
-    class Workshop :  public Building
+    class Workshop : public ai::Building
     {
-    public:
-        unsigned int GetArticleBuyPriceByPrototypeId(int) const ;
-        void ApplyAffixGeneratorToRepository(WorkshopRepositoryType,int,unsigned int,int);
-        virtual void Remove();
-        float GetRepairPriceForOneUnit(Obj const *) const ;
-        static m3d::Class * GetBaseClass();
-        unsigned int GetObjectRepairPrice(Obj const *) const ;
-        Workshop(WorkshopPrototypeInfo const &);
-        void AddArticle(Article const &) const ;
-        void AddArticle(int) const ;
-        Article const * GetArticle(int) const ;
-        Article * GetArticle(int);
-        GeomRepository * GetRepositoryByType(int) const ;
-        GeomRepository * GetRepositoryByType(WorkshopRepositoryType) const ;
-        bool BuyArticle(int);
-        void GenerateGunRepository(int,unsigned int);
-        float GetHealthPriceForOneUnit() const ;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual void AddChild(Obj *);
-        unsigned int GetObjectSellPrice(Obj const *) const ;
-        unsigned int GetArticleAmount(int);
-        unsigned int GetObjectBuyPrice(Obj const *) const ;
-        virtual WorkshopPrototypeInfo const * GetPrototypeInfo() const ;
-        unsigned int GetArticleSellPriceByObj(Obj const *) const ;
-        GeomRepository * GetRepositoryByTypename(CStr const &) const ;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual void Update(float,unsigned int);
-        bool SellArticle(int,unsigned int);
-        unsigned int GetArticleSellPriceByPrototypeId(int) const ;
-        virtual m3d::Class * GetClass() const ;
-        unsigned int GetArticleBuyPriceByObj(Obj const *) const ;
-        static WorkshopRepositoryType __fastcall GetRepositoryTypeByResourceId(int);
-        bool BuyObject(Obj const *);
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        void OnSaveVisitedMap();
-        bool SellObject(Obj const *);
-
     protected:
-        virtual ~Workshop();
+        virtual  ~Workshop() override /* 0x00 */;
 
     private:
-        static m3d::Object * CreateObject();
-        void _GetArticles(std::vector<Article> &) const ;
-        virtual m3d::Object * Clone();
-        bool _ArticleExists(int) const ;
-        bool _SellRealObject(Obj const *);
-        static int __fastcall _GetWarePrototypeId(int);
-        float _GetRealObjectResourceCoeff(Obj const *) const ;
-        void ClearRepositoriesFromNonOriginalObjects();
-        unsigned int _GetRealObjectBuyPrice(Obj const *) const ;
-        bool _BuyRealObject(Obj const *);
-        unsigned int _GetRealObjectSellPrice(Obj const *) const ;
+        Workshop(const ai::WorkshopPrototypeInfo& prototypeInfo);
+        Workshop(const ai::Workshop&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        RT_CLASS_DECLARE(Workshop);
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classWorkshop;
+        virtual const ai::WorkshopPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual void Remove() override /* 0x54 */;
+        virtual void AddChild(ai::Obj* pObj) override /* 0x94 */;
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        ai::GeomRepository* GetRepositoryByType(int type) const;
+        ai::GeomRepository* GetRepositoryByType(ai::WorkshopRepositoryType type) const;
+        ai::GeomRepository* GetRepositoryByTypename(const CStr& type) const;
+        void GeneratePricesForVehiclePartsRepositories();
+        void ApplyRandomizerToRepository(ai::WorkshopRepositoryType, float, float);
+        void GenerateGunRepository(int GunGeneratorId, unsigned int DesiredGunsInWorkshop);
+        void ApplyAffixGeneratorToRepository(ai::WorkshopRepositoryType type, int AffixGeneratorPrototypeId, unsigned int count, int itemsResourceId);
+        unsigned int GetArticleSellPriceByObj(const ai::Obj* obj) const;
+        unsigned int GetArticleSellPriceByPrototypeId(int articleProtoId) const;
+        unsigned int GetArticleBuyPriceByObj(const ai::Obj* article) const;
+        unsigned int GetArticleBuyPriceByPrototypeId(int articleProtoId) const;
+        bool BuyArticle(int wareObjId);
+        bool SellArticle(int warePrototypeId, unsigned int amount);
+        ai::Article* GetArticle(int articlePrototypeId);
+        const ai::Article* GetArticle(int articlePrototypeId) const;
+        void AddArticle(const ai::Article& newArticle) const;
+        void AddArticle(int articlePrototypeId) const;
+        unsigned int GetArticleAmount(int pId);
+        unsigned int GetObjectBuyPrice(const ai::Obj* obj) const;
+        unsigned int GetObjectSellPrice(const ai::Obj* obj) const;
+        bool BuyObject(const ai::Obj* obj);
+        bool SellObject(const ai::Obj* obj);
+        unsigned int GetObjectRepairPrice(const ai::Obj* obj) const;
+        float GetHealthPriceForOneUnit() const;
+        float GetRepairPriceForOneUnit(const ai::Obj* obj) const;
+        static ai::WorkshopRepositoryType __fastcall GetRepositoryTypeByResourceId(int resId);
+        void OnSaveVisitedMap();
+
+        using RepositoryTypeMap = retruxx::map<enum ai::WorkshopRepositoryType, ai::GeomRepository*, retruxx::less<enum ai::WorkshopRepositoryType>, retruxx::allocator<retruxx::pair<enum ai::WorkshopRepositoryType const, ai::GeomRepository*> > >;
 
     private:
-        std::map<WorkshopRepositoryType,GeomRepository *> m_repositories;
-       // std::map<int,Article> m_articles;
-        WorkshopPriceCoeffProvider *m_priceCoeffProvider;
-        std::vector<int> m_originalObjectsInRepository;
-    };
+        /* 0x00d0 */ retruxx::map<enum ai::WorkshopRepositoryType, ai::GeomRepository*, retruxx::less<enum ai::WorkshopRepositoryType>, retruxx::allocator<retruxx::pair<enum ai::WorkshopRepositoryType const, ai::GeomRepository*> > > m_repositories;
+        /* 0x00dc */ retruxx::map<int, ai::Article, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Article> > > m_articles;
+        /* 0x00e8 */ ai::WorkshopPriceCoeffProvider* m_priceCoeffProvider;
+        float _GetRealObjectResourceCoeff(const ai::Obj* obj) const;
+        unsigned int _GetRealObjectBuyPrice(const ai::Obj* obj) const;
+        unsigned int _GetRealObjectSellPrice(const ai::Obj* obj) const;
+        bool _BuyRealObject(const ai::Obj* obj);
+        bool _SellRealObject(const ai::Obj* obj);
+        void _GetArticles(retruxx::vector<ai::Article, retruxx::allocator<ai::Article> >& articles) const;
+        bool _ArticleExists(int articlePrototypeId) const;
+        static int __fastcall _GetWarePrototypeId(int wareObjId);
+        /* 0x00ec */ retruxx::vector<int, retruxx::allocator<int> > m_originalObjectsInRepository;
+        void ClearRepositoriesFromNonOriginalObjects();
+    }; /* size: 0x00fc */
+
+    static_assert(sizeof(Workshop) == 0x00fc);
 }

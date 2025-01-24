@@ -17,7 +17,7 @@ namespace ai
     protected:
         virtual  ~AnimatedComplexPhysicObj() override /* 0x00 */;
 
-    private:
+    protected:
         AnimatedComplexPhysicObj(const ai::AnimatedComplexPhysicObjPrototypeInfo& prototypeInfo);
         AnimatedComplexPhysicObj(const ai::AnimatedComplexPhysicObj&);
         virtual m3d::Object* Clone() override /* 0x00 */;

@@ -56,7 +56,7 @@ namespace ai
     protected:
         virtual  ~VehiclePart() override /* 0x00 */;
 
-    private:
+    protected:
         VehiclePart(const ai::VehiclePartPrototypeInfo& prototypeInfo);
         VehiclePart(const ai::VehiclePart&);
         virtual m3d::Object* Clone() override /* 0x00 */;

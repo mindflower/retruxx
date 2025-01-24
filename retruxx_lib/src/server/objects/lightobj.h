@@ -3,39 +3,53 @@
 
 namespace ai
 {
-    class LightObjPrototypeInfo : public SgNodeObjPrototypeInfo
+    class LightObjPrototypeInfo : public ai::SgNodeObjPrototypeInfo
     {
     public:
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual ai::Obj* CreateTargetObject() const;
         LightObjPrototypeInfo();
-    };
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+    }; /* size: 0x004c */
 
-    class LightObj :  public SgNodeObj
+    static_assert(sizeof(LightObjPrototypeInfo) == 0x004c);
+
+    class LightObj : public ai::SgNodeObj
     {
-    public:
-        virtual m3d::Class * GetClass() const ;
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
-        static void __fastcall Registration();
-        LightObj(LightObjPrototypeInfo const &);
-        virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        static m3d::Class * GetBaseClass();
-        virtual LightObjPrototypeInfo const * GetPrototypeInfo() const ;
-        virtual CStr GetPropertyName(int) const ;
-        virtual int GetPropertyId(char const *) const ;
-
     protected:
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
-        virtual ~LightObj();
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
+        virtual  ~LightObj() override /* 0x00 */;
 
     private:
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
+        LightObj(const ai::LightObjPrototypeInfo& prototypeInfo);
+        LightObj(const ai::LightObj&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        RT_CLASS_DECLARE(LightObj);
-    };
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classLightObj;
+        virtual const ai::LightObjPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+
+    protected:
+        static void __fastcall RegisterProperty(const char*, int, ai::eGObjPropertySaveStatus);
+
+    public:
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x5c */;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x60 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x78 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
+
+    protected:
+        static retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
+        static retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
+
+    public:
+        static void __fastcall Registration();
+    }; /* size: 0x00f4 */
+
+    static_assert(sizeof(LightObj) == 0x00f4);
 }

@@ -4,85 +4,77 @@
 
 namespace ai
 {
-    class BossMetalArmPrototypeInfo : public SimplePhysicObjPrototypeInfo
+    class BossMetalArmPrototypeInfo : public ai::SimplePhysicObjPrototypeInfo
     {
     public:
-        class AttackActionInfo
-        {
-        public:
-            AttackActionInfo();
-            void LoadFromXML(m3d::cmn::XmlNode const*);
-
-        private:
-            int m_frameToReleaseLoad;
-            ActionType m_action;
-        };
+        struct AttackActionInfo;
+        using AttackActionInfoVector = retruxx::vector<ai::BossMetalArmPrototypeInfo::AttackActionInfo, retruxx::allocator<ai::BossMetalArmPrototypeInfo::AttackActionInfo> >;
 
     public:
+        /* 0x0080 */ CStr m_explosionEffectName;
+        /* 0x008c */ float m_turningSpeed;
+        /* 0x0090 */ int m_frameToPickUpLoad;
+        /* 0x0094 */ int m_lpIdForLoad;
+        /* 0x0098 */ retruxx::vector<int, retruxx::allocator<int> > m_loadProrotypeIds;
+        /* 0x00a8 */ retruxx::vector<ai::BossMetalArmPrototypeInfo::AttackActionInfo, retruxx::allocator<ai::BossMetalArmPrototypeInfo::AttackActionInfo> > m_attacks;
+        /* 0x00b8 */ int m_numExplodedLoadsToDie;
         BossMetalArmPrototypeInfo();
-        virtual void RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual void PostLoad();
-        virtual Obj* CreateTargetObject() const;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual void PostLoad() override /* 0x00 */;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
 
     private:
-        CStr m_explosionEffectName;
-        float m_turningSpeed;
-        int m_frameToPickUpLoad;
-        int m_lpIdForLoad;
-        std::vector<int> m_loadProrotypeIds;
-        std::vector<AttackActionInfo> m_attacks;
-        int m_numExplodedLoadsToDie;
-        std::vector<CStr> m_loadPtototypeNames;
-    };
+        /* 0x00bc */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_loadPtototypeNames;
+    }; /* size: 0x00cc */
 
-    class BossMetalArm : public SimplePhysicObj
+    static_assert(sizeof(BossMetalArmPrototypeInfo) == 0x00cc);
+
+    class BossMetalArm : public ai::SimplePhysicObj
     {
-    public:
-        enum AttackState
-        {
-            ATTACK_IDLE = 0,
-            ATTACK_ATTACKING = 1,
-        };
-
-    public:
-        static m3d::Class * GetBaseClass();
-        BossMetalArm(BossMetalArmPrototypeInfo const &);
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual bool CanChildBeAdded(m3d::Class *) const ;
-        virtual BossMetalArmPrototypeInfo const * GetPrototypeInfo() const ;
-        float GetMaxHealth() const ;
-        float GetHealth() const ;
-        virtual int OnEvent(Event const &);
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual m3d::Class * GetClass() const ;
-        virtual void Update(float,unsigned int);
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        void Die();
-        virtual void SetPositionSelf(CVector const &);
-
     protected:
-        virtual ~BossMetalArm();
+        virtual  ~BossMetalArm() override /* 0x00 */;
 
     private:
-        void _TurnToDir(CVector const &,float);
-        int _GetCurAnimationFrame() const ;
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
-        void _SetAttackState(AttackState);
-        void _PlaceLoadOnLoadpoint();
-        void _OnObjectDie(Event const &);
+        BossMetalArm(const ai::BossMetalArmPrototypeInfo& prototypeInfo);
+        BossMetalArm(const ai::BossMetalArm&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        RT_CLASS_DECLARE(BossMetalArm);
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classBossMetalArm;
+        virtual const ai::BossMetalArmPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual int OnEvent(const ai::Event& evn) override /* 0x00 */;
+
+        enum AttackState;
+
+    public:
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
+        virtual void SetPositionSelf(const CVector& pos) override /* 0x00 */;
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        void Die();
+        float GetMaxHealth() const;
+        float GetHealth() const;
 
     private:
-        int m_loadObjId;
-        //const float m_turningSpeed;
-        AttackState m_attackState;
-        CVector m_dirForCharging;
-        int m_curAttackAction;
-        int m_numExplodedLoads;
-        bool m_bCurLoadExploded;
-    };
+        /* 0x0144 */ int m_loadObjId;
+        /* 0x0148 */ const float m_turningSpeed;
+        /* 0x014c */ ai::BossMetalArm::AttackState m_attackState;
+        /* 0x0150 */ CVector m_dirForCharging;
+        /* 0x015c */ int m_curAttackAction;
+        /* 0x0160 */ int m_numExplodedLoads;
+        /* 0x0164 */ bool m_bCurLoadExploded;
+        void _SetAttackState(ai::BossMetalArm::AttackState newState);
+        int _GetCurAnimationFrame() const;
+        void _TurnToDir(const CVector& desiredDir, float elapsedTime);
+        void _PlaceLoadOnLoadpoint();
+        void _OnObjectDie(const ai::Event& evn);
+    }; /* size: 0x0168 */
+
+    static_assert(sizeof(BossMetalArm) == 0x0168);
 }

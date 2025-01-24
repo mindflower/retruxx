@@ -82,7 +82,7 @@ namespace ai
     protected:
         virtual  ~Gun() override = 0 /* 0x00 */;
 
-    private:
+    protected:
         Gun(const ai::GunPrototypeInfo& prototypeInfo);
         Gun(const ai::Gun&);
         virtual m3d::Object* Clone() override /* 0x00 */;

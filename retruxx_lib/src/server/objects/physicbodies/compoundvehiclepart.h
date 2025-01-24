@@ -25,7 +25,7 @@ namespace ai
     protected:
         virtual  ~CompoundVehiclePart() override = 0 /* 0x00 */;
 
-    private:
+    protected:
         CompoundVehiclePart(const ai::CompoundVehiclePartPrototypeInfo& prototypeInfo);
         CompoundVehiclePart(const ai::CompoundVehiclePart&);
         virtual m3d::Object* Clone() override /* 0x00 */;

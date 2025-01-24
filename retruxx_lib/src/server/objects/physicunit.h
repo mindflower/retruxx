@@ -5,95 +5,99 @@
 
 namespace ai
 {
-    class PhysicUnitPrototypeInfo : public SimplePhysicObjPrototypeInfo
+    class PhysicUnitPrototypeInfo : public ai::SimplePhysicObjPrototypeInfo
     {
     public:
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual Obj* CreateTargetObject() const;
+        /* 0x0080 */ float m_walkSpeed;
+        /* 0x0084 */ float m_turnSpeed;
+        /* 0x0088 */ float m_maxStandTime;
         PhysicUnitPrototypeInfo();
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+    }; /* size: 0x008c */
+
+    static_assert(sizeof(PhysicUnitPrototypeInfo) == 0x008c);
+
+    class PhysicUnit : public ai::SimplePhysicObj
+    {
+    protected:
+        virtual  ~PhysicUnit() override /* 0x00 */;
 
     private:
-        float m_walkSpeed;
-        float m_turnSpeed;
-        float m_maxStandTime;
-
-    };
-    class PhysicUnit : public SimplePhysicObj
-    {
-    public:
-        enum States
-        {
-            LIVE = 0,
-            DEAD = 1,
-        };
-
-        enum WalkState
-        {
-            STAND = 0x0,
-            TURN = 0x1,
-            WALK = 0x2,
-        };
+        PhysicUnit(const ai::PhysicUnitPrototypeInfo& prototypeInfo);
+        PhysicUnit(const ai::PhysicUnit&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        void SetCauseForce(float);
-        void OnCollideWithStandingVehicle();
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        PhysicUnit(PhysicUnitPrototypeInfo const &);
-        virtual CStr GetPropertyName(int) const ;
-        void SetState(States);
-        static void __fastcall Registration();
-        virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
-        virtual void RenderDebugInfo() const ;
-        virtual m3d::Class * GetClass() const ;
-        virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual int GetPropertyId(char const *) const ;
-        void SetCausePos(CVector const &);
-        bool SetWalkPathByName(char const *);
-        virtual void SetPositionSelf(CVector const &);
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual PhysicUnitPrototypeInfo const * GetPrototypeInfo() const ;
-        bool AddWalkPathByName(char const *);
-        static m3d::Class * GetBaseClass();
-        void SetInitVelocities(bool);
-        virtual void Update(float,unsigned int);
-        virtual void SetDirection(CVector const &);
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classPhysicUnit;
+        virtual const ai::PhysicUnitPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
 
     protected:
-        static void __fastcall RegisterProperty(char const *,int,eGObjPropertySaveStatus);
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
-        virtual ~PhysicUnit();
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
-
-    private:
-        void _SetWalkState(WalkState);
-        virtual m3d::Object * Clone();
-        static m3d::Object * CreateObject();
+        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
-        RT_CLASS_DECLARE(PhysicUnit);
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x00 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x00 */;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x00 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x00 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x00 */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x00 */;
+
+    protected:
+        static retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
+        static retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+
+    public:
+        static void __fastcall Registration();
+
+        enum States;
+        enum WalkState;
+
+    public:
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        void SetState(ai::PhysicUnit::States newState);
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        virtual void SetPositionSelf(const CVector& pos) override /* 0x00 */;
+        virtual void SetDirection(const CVector& direction) override /* 0x00 */;
+        virtual void RenderDebugInfo() const override /* 0x00 */;
+        bool SetWalkPathByName(const char* pathName);
+        bool AddWalkPathByName(const char* pathName);
+        void SetCausePos(const CVector& pos);
+        void SetCauseForce(float force);
+        void SetInitVelocities(bool initVelocities);
+        void OnCollideWithStandingVehicle();
 
     private:
-        States m_State;
-        CVector m_causePos;
-        float m_causeForce;
-        bool m_initVelocities;
-        float m_walkSpeed;
-        float m_turnSpeed;
-        float m_maxStandTime;
-        std::map<CStr,std::vector<CVector>> m_pathsMap;
-        const std::vector<CVector> *m_curPath;
-        CStr m_curPathName;
-        unsigned int m_curWayPointNum;
-        CVector m_prevWayPoint;
-        WalkState m_walkState;
-        //NumericInRangeRegenerating<float> m_standTtl;
-        //NumericInRangeRegenerating<float> m_walkTtl;
-        bool m_bMustChangePath;
-        bool m_bMustWalk;
-        std::vector<CVector> m_dummyPath;
-    };
+        /* 0x0144 */ ai::PhysicUnit::States m_State;
+        /* 0x0148 */ CVector m_causePos;
+        /* 0x0154 */ float m_causeForce;
+        /* 0x0158 */ bool m_initVelocities;
+        /* 0x0159 */ char Padding_373[3];
+        /* 0x015c */ float m_walkSpeed;
+        /* 0x0160 */ float m_turnSpeed;
+        /* 0x0164 */ float m_maxStandTime;
+        /* 0x0168 */ retruxx::map<CStr, retruxx::vector<CVector, retruxx::allocator<CVector> >, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, retruxx::vector<CVector, retruxx::allocator<CVector> > > > > m_pathsMap;
+        /* 0x0174 */ const retruxx::vector<CVector, retruxx::allocator<CVector> >* m_curPath;
+        /* 0x0178 */ CStr m_curPathName;
+        /* 0x0184 */ unsigned int m_curWayPointNum;
+        /* 0x0188 */ CVector m_prevWayPoint;
+        /* 0x0194 */ ai::PhysicUnit::WalkState m_walkState;
+        /* 0x0198 */ ai::NumericInRangeRegenerating<float> m_standTtl;
+        /* 0x0270 */ ai::NumericInRangeRegenerating<float> m_walkTtl;
+        /* 0x0348 */ bool m_bMustChangePath;
+        /* 0x0349 */ bool m_bMustWalk;
+        /* 0x034a */ char Padding_374[2];
+        /* 0x034c */ retruxx::vector<CVector, retruxx::allocator<CVector> > m_dummyPath;
+        void _SetWalkState(ai::PhysicUnit::WalkState newWalkState);
+    }; /* size: 0x035c */
+
+    static_assert(sizeof(PhysicUnit) == 0x035c);
 }

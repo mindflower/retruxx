@@ -44,7 +44,7 @@ namespace ai
 
     public:
         virtual ~PhysicBody() override /* 0x00 */;
-        static m3d::Class* GetBaseClass();
+        static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetRtClass() const override /* 0x00 */;
         static m3d::Class m_classPhysicBody;
 

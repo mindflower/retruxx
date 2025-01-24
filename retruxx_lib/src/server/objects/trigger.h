@@ -6,11 +6,13 @@
 
 namespace ai
 {
-    class TriggerPrototypeInfo : public PrototypeInfo
+    class TriggerPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        virtual Obj* CreateTargetObject() const;
-    };
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+    }; /* size: 0x0040 */
+
+    static_assert(sizeof(TriggerPrototypeInfo) == 0x0040);
 
     class Trigger : public ai::Obj
     {
@@ -23,10 +25,10 @@ namespace ai
         Trigger(const ai::TriggerPrototypeInfo& prototypeInfo);
         Trigger(const ai::Trigger&);
         virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* CreateObject();
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        static m3d::Class* GetBaseClass();
+        static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override /* 0x00 */;
         static m3d::Class m_classTrigger;
 
@@ -38,15 +40,15 @@ namespace ai
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
-        virtual void GetPropertiesNames(oldstd::set<CStr>& Props) const override /* 0x5c */;
-        virtual void GetPropertiesIDs(oldstd::set<int>& Props) const override /* 0x60 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr>& Props) const override /* 0x5c */;
+        virtual void GetPropertiesIDs(retruxx::set<int>& Props) const override /* 0x60 */;
         virtual CStr GetPropertyName(int id) const override /* 0x78 */;
         virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
         virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
 
     protected:
-        static inline oldstd::map<CStr, int, ai::Obj::LessNoCaseCStr> m_propertiesMap;
-        static inline oldstd::map<int, enum ai::eGObjPropertySaveStatus> m_propertiesSaveStatesMap;
+        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr> m_propertiesMap;
+        static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus> m_propertiesSaveStatesMap;
 
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;

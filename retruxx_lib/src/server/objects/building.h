@@ -17,45 +17,54 @@ namespace ai
         INVALID_BUILDINGTYPE = 0x5,
     };
 
-    class BuildingPrototypeInfo : public PrototypeInfo
+    class BuildingPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         BuildingPrototypeInfo();
-        virtual Obj* CreateTargetObject() const;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+        /* 0x0040 */ ai::BuildingType m_buildingType;
+    }; /* size: 0x0044 */
 
-    private:
-        BuildingType m_buildingType;
-    };
+    static_assert(sizeof(BuildingPrototypeInfo) == 0x0044);
 
-
-    class Building :  public Obj
+    class Building : public ai::Obj
     {
-    public:
-        Building(BuildingPrototypeInfo const &);
-        virtual m3d::Class * GetClass() const ;
-        virtual bool RemoveChild(Obj *);
-        BuildingType GetBuildingType() const ;
-        virtual void Remove();
-        static m3d::Class * GetBaseClass();
-        static BuildingType __fastcall GetBuildingTypeByName(CStr const &);
-        virtual bool CanChildBeAdded(m3d::Class *) const ;
-        std::vector<Npc *> const & GetNpcs() const ;
-        virtual void AddChild(Obj *);
-        static CStr __fastcall GetBuildingTypeName(BuildingType);
-        virtual BuildingPrototypeInfo const * GetPrototypeInfo() const ;
+    protected:
+        virtual  ~Building() override /* 0x00 */;
 
     protected:
-        virtual ~Building();
-
-    private:
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
+        Building(const ai::BuildingPrototypeInfo& prototypeInfo);
+        Building(const ai::Building&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        RT_CLASS_DECLARE(Building);
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classBuilding;
+        virtual const ai::BuildingPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+
+        using BuildingTypeSet = retruxx::set<enum ai::BuildingType, retruxx::less<enum ai::BuildingType>, retruxx::allocator<enum ai::BuildingType> >;
+
+    public:
+        virtual void Remove() override /* 0x54 */;
+        virtual void AddChild(ai::Obj* pObj) override /* 0x94 */;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x98 */;
+        virtual bool RemoveChild(ai::Obj* pChild) override /* 0x9c */;
+
+        using NpcVector = retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*> >;
+
+    public:
+        const retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*> >& GetNpcs() const;
+        ai::BuildingType GetBuildingType() const;
+        static CStr __fastcall GetBuildingTypeName(ai::BuildingType buildingType);
+        static ai::BuildingType __fastcall GetBuildingTypeByName(const CStr& buildingTypeName);
 
     private:
-        std::vector<Npc *> m_npcs;
-    };
+        static const CStr m_buildingTypeNames[5];
+        /* 0x00c0 */ retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*> > m_npcs;
+    }; /* size: 0x00d0 */
+
+    static_assert(sizeof(Building) == 0x00d0);
 }

@@ -16,6 +16,8 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x0094 */
 
+    static_assert(sizeof(BarricadePrototypeInfo) == 0x0094);
+
     class Barricade : public ai::ObjPrefab
     {
     protected:
@@ -59,4 +61,6 @@ namespace ai
     private:
         /* 0x0170 */ ai::NumericInRange<float> m_probability;
     }; /* size: 0x021c */
+
+    static_assert(sizeof(Barricade) == 0x021c);
 }

@@ -63,7 +63,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void ComplexPhysicObjPartDescription::GetPartNames(oldstd::vector<CStr, oldstd::allocator<CStr>>&) const
+	void ComplexPhysicObjPartDescription::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -133,7 +133,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void ComplexPhysicObjPrototypeInfo::GetPartNames(oldstd::vector<CStr, oldstd::allocator<CStr>>&) const
+	void ComplexPhysicObjPrototypeInfo::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -142,7 +142,7 @@ namespace ai
 	{
 	}
 
-	oldstd::vector<CStr, oldstd::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
+	retruxx::vector<CStr, retruxx::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -166,7 +166,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ComplexPhysicObj::GetGeoms(oldstd::vector<Geom*, oldstd::allocator<Geom*>>&) const
+    void ComplexPhysicObj::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
     {
         throw std::logic_error("Not implemented");
     }
@@ -186,7 +186,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    oldstd::vector<CStr, oldstd::allocator<CStr>> ComplexPhysicObj::GetAttachedPartNames() const
+    retruxx::vector<CStr, retruxx::allocator<CStr>> ComplexPhysicObj::GetAttachedPartNames() const
     {
         throw std::logic_error("Not implemented");
     }
@@ -286,7 +286,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ComplexPhysicObj::ReceiveNodesToLink(oldstd::list<m3d::SgNode*, oldstd::allocator<m3d::SgNode*>>&) const
+    void ComplexPhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>&) const
     {
         throw std::logic_error("Not implemented");
     }

@@ -146,7 +146,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    oldstd::vector<CStr> const& Player::GetQuestItemPrototypeNames() const
+    retruxx::vector<CStr> const& Player::GetQuestItemPrototypeNames() const
     {
         throw std::logic_error("Not implemented");
     }
@@ -166,7 +166,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Player::GetPropertiesNames(oldstd::set<CStr>&) const
+    void Player::GetPropertiesNames(retruxx::set<CStr>&) const
     {
         throw std::logic_error("Not implemented");
     }
@@ -304,7 +304,7 @@ namespace ai
         m_propertiesMap["cfg"] = 46;
     }
 
-    void Player::GetPropertiesIDs(oldstd::set<int>&) const
+    void Player::GetPropertiesIDs(retruxx::set<int>&) const
     {
         throw std::logic_error("Not implemented");
     }

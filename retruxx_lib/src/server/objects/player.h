@@ -11,22 +11,23 @@ namespace ai
     class Vehicle;
     class RadioManager;
 
-    class PlayerPrototypeInfo : public PrototypeInfo
+    class PlayerPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        CStr const& GetModelName() const;
         PlayerPrototypeInfo();
-        virtual ai::Obj* CreateTargetObject() const;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        const CStr& GetModelName() const;
         unsigned int GetSkinNumber() const;
         unsigned int GetCfgNumber() const;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
 
     private:
-        CStr m_modelName;
-        unsigned int m_skinNumber;
-        unsigned int m_cfgNumber;
+        /* 0x0040 */ CStr m_modelName;
+        /* 0x004c */ unsigned int m_skinNumber;
+        /* 0x0050 */ unsigned int m_cfgNumber;
+    }; /* size: 0x0054 */
 
-    };
+    static_assert(sizeof(PlayerPrototypeInfo) == 0x0054);
 
     class Player : public Obj
     {
@@ -37,10 +38,10 @@ namespace ai
         Player(const ai::PlayerPrototypeInfo& prototypeInfo);
         Player(const ai::Player&);
         virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* CreateObject();
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        static m3d::Class* GetBaseClass();
+        static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override /* 0x00 */;
         static m3d::Class m_classPlayer;
         virtual const ai::PlayerPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
@@ -50,15 +51,15 @@ namespace ai
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
-        virtual void GetPropertiesNames(oldstd::set<CStr>& Props) const override /* 0x5c */;
-        virtual void GetPropertiesIDs(oldstd::set<int>& Props) const override /* 0x60 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr>& Props) const override /* 0x5c */;
+        virtual void GetPropertiesIDs(retruxx::set<int>& Props) const override /* 0x60 */;
         virtual CStr GetPropertyName(int id) const override /* 0x78 */;
         virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
         virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
 
     protected:
-        static inline oldstd::map<CStr, int, ai::Obj::LessNoCaseCStr> m_propertiesMap;
-        static inline oldstd::map<int, enum ai::eGObjPropertySaveStatus> m_propertiesSaveStatesMap;
+        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr> m_propertiesMap;
+        static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus> m_propertiesSaveStatesMap;
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
 
@@ -105,7 +106,7 @@ namespace ai
         bool IsQuestItemPresent(const CStr& itemPrototypeName) const;
         int AddQuestItem(const CStr& itemPrototypeName);
         int RemoveQuestItem(const CStr& itemPrototypeName);
-        const oldstd::vector<CStr>& GetQuestItemPrototypeNames() const;
+        const retruxx::vector<CStr>& GetQuestItemPrototypeNames() const;
         virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xac */;
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb4 */;
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
@@ -122,7 +123,7 @@ namespace ai
     protected:
         virtual void _InternalPostLoad() override /* 0xfc */;
 
-        //using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Player, int, void>;
+        using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Player, int, void>;
 
     private:
         void _OnMoneyValueAfterChange(int oldMoneyValue);
@@ -130,7 +131,7 @@ namespace ai
         ///* 0x00c0 */ char Padding_24[120];
         /* 0x0138 */ int m_vehicleObjId;
         /* 0x013c */ ai::RadioManager* m_radioManager;
-        /* 0x0140 */ oldstd::vector<CStr> m_questItemPrototypeNames;
+        /* 0x0140 */ retruxx::vector<CStr> m_questItemPrototypeNames;
         /* 0x0150 */ int m_infoObjId;
         /* 0x0154 */ ai::InfoCone* m_infoCone;
         /* 0x0158 */ float m_timeInfoObjTimeout;

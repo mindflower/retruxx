@@ -79,10 +79,10 @@ namespace ai
         ComplexPhysicObj(const ai::ComplexPhysicObjPrototypeInfo& prototypeInfo);
         ComplexPhysicObj(const ai::ComplexPhysicObj&);
         virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* CreateObject();
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        static m3d::Class* GetBaseClass();
+        static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override /* 0x00 */;
         static m3d::Class m_classComplexPhysicObj;
         virtual const ai::ComplexPhysicObjPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;

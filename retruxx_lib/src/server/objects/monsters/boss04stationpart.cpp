@@ -10,72 +10,72 @@ namespace ai
 
 	Boss04StationPartPrototypeInfo::Boss04StationPartPrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void Boss04StationPartPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	Obj* Boss04StationPartPrototypeInfo::CreateTargetObject() const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	bool Boss04StationPartPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	Boss04StationPart::MeshGroupInfo::MeshGroupInfo(int, float)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
-	void Boss04StationPart::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>&) const
+	void Boss04StationPart::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	m3d::Class* Boss04StationPart::GetClass() const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	int Boss04StationPart::GetPropertyId(char const*) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	CStr Boss04StationPart::GetPropertyName(int) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	eGObjPropertySaveStatus Boss04StationPart::GetPropertySaveStatus(int) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	Boss04StationPartPrototypeInfo const* Boss04StationPart::GetPrototypeInfo() const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	Boss04StationPart::Boss04StationPart(Boss04StationPartPrototypeInfo const& prototype) : VehiclePart(prototype)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	float Boss04StationPart::GetHealth() const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
-	void Boss04StationPart::GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>&) const
+	void Boss04StationPart::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void Boss04StationPart::Registration()
@@ -84,7 +84,7 @@ namespace ai
 
 	void Boss04StationPart::Update(float, unsigned)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	m3d::Class* Boss04StationPart::GetBaseClass()
@@ -94,41 +94,41 @@ namespace ai
 
 	bool Boss04StationPart::SetPropertyById(int, m3d::AIParam const&)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void Boss04StationPart::_InternalPostLoad()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	bool Boss04StationPart::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	Boss04StationPart::~Boss04StationPart()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	bool Boss04StationPart::_GetPropertyInternal(int, m3d::AIParam&) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	m3d::Object* Boss04StationPart::CreateObject()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	m3d::Object* Boss04StationPart::Clone()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void Boss04StationPart::_UpdateMeshGroupsHealth()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 }

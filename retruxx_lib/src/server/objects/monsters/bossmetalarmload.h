@@ -6,58 +6,57 @@ struct dContact;
 
 namespace ai
 {
-    class BossMetalArmLoadPrototypeInfo : public DummyObjectPrototypeInfo
+    class BossMetalArmLoadPrototypeInfo : public ai::DummyObjectPrototypeInfo
     {
     public:
+        /* 0x0084 */ int m_blastWavePrototypeId;
+        /* 0x0088 */ CStr m_explosionEffectName;
+        /* 0x0094 */ float m_maxHealth;
         BossMetalArmLoadPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual Obj* CreateTargetObject() const;
-        virtual void PostLoad();
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual void PostLoad() override /* 0x00 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
 
     private:
-        int m_blastWavePrototypeId;
-        CStr m_explosionEffectName;
-        float m_maxHealth;
-        CStr m_blastWavePrototypeName;
-    };
+        /* 0x0098 */ CStr m_blastWavePrototypeName;
+    }; /* size: 0x00a4 */
 
-    class BossMetalArmLoad :  public DummyObject
+    static_assert(sizeof(BossMetalArmLoadPrototypeInfo) == 0x00a4);
+
+    class BossMetalArmLoad : public ai::DummyObject
     {
-    public:
-        enum CollisionMode
-        {
-            COLLIDE_NONE = 0x0,
-            COLLIDE_NORMAL = 0x1,
-            COLLIDE_EXPLODE = 0x2,
-        };
-
-    public:
-        virtual bool ApplyModifier(Modifier const &);
-        static m3d::Class * GetBaseClass();
-        void SetCollisionMode(CollisionMode);
-        BossMetalArmLoad(BossMetalArmLoadPrototypeInfo const &);
-        virtual BossMetalArmLoadPrototypeInfo const * GetPrototypeInfo() const ;
-        static int CollideBossMetalArmLoadWithObject(m3d::Object *,m3d::Object *,dContact *,unsigned int &,bool);
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual m3d::Class * GetClass() const ;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-
-        void Explode();
     protected:
-        virtual ~BossMetalArmLoad();
+        virtual  ~BossMetalArmLoad() override /* 0x00 */;
 
     private:
-        static m3d::Object * CreateObject();
-        void _OnAfterHealthValueChange(float);
-        virtual m3d::Object * Clone();
-        //MemberFunctionOneArg<BossMetalArmLoad,float,void>::MemberFunctionOneArg<BossMetalArmLoad,float,void>(BossMetalArmLoad &,void (*const)(float));
-        void _CreateBlastWave();
+        BossMetalArmLoad(const ai::BossMetalArmLoadPrototypeInfo& prototypeInfo);
+        BossMetalArmLoad(const ai::BossMetalArmLoad&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        RT_CLASS_DECLARE(BossMetalArmLoad);
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classBossMetalArmLoad;
+        virtual const ai::BossMetalArmLoadPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+
+        using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::BossMetalArmLoad, float, void>;
+        enum CollisionMode;
+
+    public:
+        virtual bool ApplyModifier(const ai::Modifier& modifier) override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        void SetCollisionMode(ai::BossMetalArmLoad::CollisionMode collisionMode);
+        void Explode();
+        static int __fastcall CollideBossMetalArmLoadWithObject(m3d::Object* obj1, m3d::Object* obj2, dContact* contacts, unsigned int& numContacts, bool reverse);
 
     private:
-        CollisionMode m_collisionMode;
-        //NumericInRange<float> m_health;
-    };
+        /* 0x0150 */ ai::BossMetalArmLoad::CollisionMode m_collisionMode;
+        /* 0x0154 */ ai::NumericInRange<float> m_health;
+        void _CreateBlastWave();
+        void _OnAfterHealthValueChange(float oldHealth);
+    }; /* size: 0x0200 */
+
+    static_assert(sizeof(BossMetalArmLoad) == 0x0200);
 }

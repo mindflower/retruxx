@@ -14,9 +14,11 @@ namespace m3d
 
 namespace ai
 {
+    class Obj;
+
     class PrototypeInfo
     {
-    private:
+    protected:
         PrototypeInfo();
         PrototypeInfo(const ai::PrototypeInfo&);
 

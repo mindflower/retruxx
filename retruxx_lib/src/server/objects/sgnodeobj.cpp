@@ -4,37 +4,37 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNodeObj, SetPosition)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNodeObj, GetPosition)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNodeObj, SetRotation)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNodeObj, GetRotation)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNodeObj, SetSgNode)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNodeObj, SetScale)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNodeObj, GetScale)
 {
-    throw std::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 namespace ai
@@ -52,42 +52,42 @@ namespace ai
 
     bool SgNodeObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     SgNodeObjPrototypeInfo::SgNodeObjPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     CStr const& SgNodeObjPrototypeInfo::GetEngineModelName() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ai::Obj* SgNodeObjPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     SgNodeObj::SgNodeObj(SgNodeObjPrototypeInfo const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SgNodeObj::Update(float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void SgNodeObj::GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>&) const
+    void SgNodeObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SgNodeObj::SetRotation(Quaternion const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SgNodeObj::Registration()
@@ -100,17 +100,17 @@ namespace ai
 
     bool SgNodeObj::SetPropertyById(int, m3d::AIParam const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SgNodeObj::SetSgNode(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SgNodeObj::SetSgNode()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::Class* SgNodeObj::GetBaseClass()
@@ -120,96 +120,96 @@ namespace ai
 
     Quaternion SgNodeObj::GetRotation() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SgNodeObj::GetPropertyId(char const*) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     SgNodeObjPrototypeInfo const* SgNodeObj::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SgNodeObj::DeleteSgNode()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     eGObjPropertySaveStatus SgNodeObj::GetPropertySaveStatus(int) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     CStr SgNodeObj::GetPropertyName(int) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::Class* SgNodeObj::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void SgNodeObj::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>&) const
+    void SgNodeObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SgNodeObj::SetPosition(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     float SgNodeObj::GetScale() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     CVector SgNodeObj::GetPosition() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SgNodeObj::SetScale(float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool SgNodeObj::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool SgNodeObj::_GetPropertyInternal(int, m3d::AIParam&) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SgNodeObj::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SgNodeObj::_InternalCreateVisualPart()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     SgNodeObj::~SgNodeObj()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::Object* SgNodeObj::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::Object* SgNodeObj::Clone()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 }

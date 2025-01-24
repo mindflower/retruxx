@@ -43,7 +43,7 @@ namespace ai
     protected:
         virtual  ~DynamicQuest() override = 0 /* 0x00 */;
 
-    private:
+    protected:
         DynamicQuest(const ai::DynamicQuestPrototypeInfo& prototypeInfo);
         DynamicQuest(const ai::DynamicQuest&);
         virtual m3d::Object* Clone() override /* 0x00 */;

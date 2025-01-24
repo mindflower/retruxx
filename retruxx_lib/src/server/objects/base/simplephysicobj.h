@@ -40,7 +40,7 @@ namespace ai
     protected:
         virtual  ~SimplePhysicObj() override /* 0x00 */;
 
-    private:
+    protected:
         SimplePhysicObj(const ai::SimplePhysicObjPrototypeInfo& prototypeInfo);
         SimplePhysicObj(const ai::SimplePhysicObj&);
         virtual m3d::Object* Clone() override /* 0x00 */;

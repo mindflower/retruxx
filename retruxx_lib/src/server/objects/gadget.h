@@ -9,96 +9,76 @@ namespace ai
     class VehiclePart;
     class Vehicle;
 
-    class GadgetPrototypeInfo : public PrototypeInfo
+    class GadgetPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        enum GadgetAppliers
-        {
-            GA_VEHICLE = 0x0,
-            GA_OBJECT_BY_RESOURCE = 0x1,
-            GA_GUN_BY_TYPE = 0x2,
-        };
-
-        class GadgetApplicationInfo
-        {
-        public:
-            GadgetApplicationInfo();
-
-        private:
-            GadgetAppliers applierType;
-            int targetResourceId;
-            ai::FiringTypes targetFiringType;
-        };
-
-        class ModificationInfo
-        {
-        public:
-            enum ModificationType
-            {
-                MULTIPLY = 0x0,
-                ADD = 0x1,
-            };
-
-        public:
-            bool ApplyToObj(ai::Obj*, bool) const;
-            ModificationInfo(CStr const&, ai::GadgetPrototypeInfo const*);
-
-        private:
-            GadgetApplicationInfo m_applierInfo;
-            CStr m_propertyName;
-            ModificationType m_modificationType;
-            m3d::AIParam m_value;
-        };
+        enum GadgetAppliers;
+        struct GadgetApplicationInfo;
+        struct ModificationInfo;
+        using ModificationInfoVector = retruxx::vector<ai::GadgetPrototypeInfo::ModificationInfo, retruxx::allocator<ai::GadgetPrototypeInfo::ModificationInfo> >;
 
     public:
-        virtual ai::Obj* CreateTargetObject() const;
-        bool ApplyToVp(ai::VehiclePart*, bool) const;
         GadgetPrototypeInfo();
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+        virtual bool ApplyToVehicle(ai::Vehicle* pVehicle, bool enable) const /* 0x1c */;
+        bool ApplyToVp(ai::VehiclePart* vp, bool enable) const;
+        const CStr& GetModelName() const;
         int GetSkinNum() const;
-        CStr const& GetModelName() const;
-        virtual bool ApplyToVehicle(ai::Vehicle*, bool) const;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        std::vector<ModificationInfo, std::allocator<ModificationInfo> > const& GetModifications() const;
+        const retruxx::vector<ai::GadgetPrototypeInfo::ModificationInfo, retruxx::allocator<ai::GadgetPrototypeInfo::ModificationInfo> >& GetModifications() const;
 
     private:
-        std::vector<ai::GadgetPrototypeInfo::ModificationInfo> m_modifications;
-        CStr m_modelName;
-        int m_skinNum;
-    };
+        /* 0x0040 */ retruxx::vector<ai::GadgetPrototypeInfo::ModificationInfo, retruxx::allocator<ai::GadgetPrototypeInfo::ModificationInfo> > m_modifications;
+        /* 0x0050 */ CStr m_modelName;
+        /* 0x005c */ int m_skinNum;
+    }; /* size: 0x0060 */
 
-    class Gadget :  public Obj
+    static_assert(sizeof(GadgetPrototypeInfo) == 0x0060);
+
+    class Gadget : public ai::Obj
     {
+    protected:
+        virtual  ~Gadget() override /* 0x00 */;
+
+    private:
+        Gadget(const ai::GadgetPrototypeInfo& prototypeInfo);
+        Gadget(const ai::Gadget&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
+
     public:
-        virtual int GetPropertyId(char const *) const ;
-        int GetSlotNum() const ;
-        void SetSlotNum(int);
-        virtual GadgetPrototypeInfo const * GetPrototypeInfo() const ;
-        Gadget(GadgetPrototypeInfo const &);
-        bool ApplyToVehicle(Vehicle *,bool) const ;
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
-        static m3d::Class * GetBaseClass();
-        bool ApplyToVp(VehiclePart *,bool) const ;
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        virtual CStr GetPropertyName(int) const ;
-        virtual m3d::Class * GetClass() const ;
-        static void __fastcall Registration();
-        virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classGadget;
+        virtual const ai::GadgetPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
 
     protected:
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
-        virtual ~Gadget();
-        static void __fastcall RegisterProperty(char const *,int,eGObjPropertySaveStatus);
-
-    private:
-        virtual m3d::Object * Clone();
-        static m3d::Object * CreateObject();
+        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
-        RT_CLASS_DECLARE(Gadget);
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x5c */;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x60 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x78 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
+
+    protected:
+        static retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
+        static retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
+
+    public:
+        int GetSlotNum() const;
+        void SetSlotNum(int slotNum);
+        bool ApplyToVehicle(ai::Vehicle* pVehicle, bool enable) const;
+        bool ApplyToVp(ai::VehiclePart* vp, bool enable) const;
+        static void __fastcall Registration();
 
     private:
-        int m_slotNum;
-    };
+        /* 0x00c0 */ int m_slotNum;
+    }; /* size: 0x00c4 */
+
+    static_assert(sizeof(Gadget) == 0x00c4);
 }

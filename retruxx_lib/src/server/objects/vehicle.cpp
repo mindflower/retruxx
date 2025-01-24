@@ -628,8 +628,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	oldstd::map<int, Gadget*, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, Gadget*>>> const& Vehicle::
-	GetGadgets() const
+	retruxx::map<int, Gadget*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, Gadget*>>> const& Vehicle::GetGadgets() const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -649,7 +648,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	int Vehicle::SetExternalPath(oldstd::vector<CVector2, oldstd::allocator<CVector2>> const&)
+	int Vehicle::SetExternalPath(retruxx::vector<CVector2, retruxx::allocator<CVector2>> const&)
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -952,7 +951,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	float Vehicle::EstimateDamageAI(CVector const&, oldstd::vector<int, oldstd::allocator<int>>) const
+	float Vehicle::EstimateDamageAI(CVector const&, retruxx::vector<int, retruxx::allocator<int>>) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -962,7 +961,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::PickUpNearbyObjects(bool, unsigned&, oldstd::vector<int, oldstd::allocator<int>>&)
+	void Vehicle::PickUpNearbyObjects(bool, unsigned&, retruxx::vector<int, retruxx::allocator<int>>&)
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -1107,7 +1106,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::GetEnemiesInNeighborhood(float, oldstd::vector<int, oldstd::allocator<int>>&) const
+	void Vehicle::GetEnemiesInNeighborhood(float, retruxx::vector<int, retruxx::allocator<int>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -1246,7 +1245,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::GetGeoms(oldstd::vector<Geom*, oldstd::allocator<Geom*>>&) const
+	void Vehicle::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -1389,7 +1388,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	oldstd::set<ref_ptr<Obstacle>, oldstd::less<ref_ptr<Obstacle>>, oldstd::allocator<ref_ptr<Obstacle>>> const& Vehicle::
+	retruxx::set<ref_ptr<Obstacle>, retruxx::less<ref_ptr<Obstacle>>, retruxx::allocator<ref_ptr<Obstacle>>> const& Vehicle::
 	GetNearbyObstacles() const
 	{
 		throw std::logic_error("Not implemented");
@@ -1482,7 +1481,7 @@ namespace ai
 	}
 
 	float Vehicle::EstimateDamageFromPositionAI(CVector const&, CVector const&,
-		oldstd::vector<int, oldstd::allocator<int>>) const
+		retruxx::vector<int, retruxx::allocator<int>>) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -1577,7 +1576,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::GetPropertiesNames(oldstd::set<CStr, oldstd::less<CStr>, oldstd::allocator<CStr>>&) const
+	void Vehicle::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -1644,7 +1643,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::GetPropertiesIDs(oldstd::set<int, oldstd::less<int>, oldstd::allocator<int>>&) const
+	void Vehicle::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}

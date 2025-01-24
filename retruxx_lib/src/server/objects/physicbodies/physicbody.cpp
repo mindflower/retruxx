@@ -33,7 +33,7 @@ namespace ai
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x0061D180, PhysicBody::SetEffectActions)
-    void PhysicBody::SetEffectActions(oldstd::vector<ActionType>&)
+    void PhysicBody::SetEffectActions(retruxx::vector<ActionType>&)
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -63,7 +63,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::ChangePhysicBodyByCollisionInfo(oldstd::vector<CollisionInfo> const&)
+	void PhysicBody::ChangePhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const&)
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -83,7 +83,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::UpdateGeomsByCollisionInfo(oldstd::vector<CollisionInfo> const&)
+	void PhysicBody::UpdateGeomsByCollisionInfo(retruxx::vector<CollisionInfo> const&)
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -93,7 +93,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::GetGeoms(oldstd::vector<Geom*, oldstd::allocator<Geom*>>&) const
+	void PhysicBody::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -203,7 +203,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-    oldstd::vector<CollisionInfo, oldstd::allocator<CollisionInfo>> const& PhysicBody::GetCollisionInfo() const
+    retruxx::vector<CollisionInfo, retruxx::allocator<CollisionInfo>> const& PhysicBody::GetCollisionInfo() const
 	{
 		throw std::logic_error("Not implemented");
 	}
@@ -354,7 +354,7 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::ReceiveNodesToLink(oldstd::list<m3d::SgNode*, oldstd::allocator<m3d::SgNode*>>&) const
+	void PhysicBody::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>&) const
 	{
 		throw std::logic_error("Not implemented");
 	}

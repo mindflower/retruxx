@@ -4,73 +4,85 @@
 
 namespace ai
 {
-    class NpcPrototypeInfo : public PrototypeInfo
+    class NpcPrototypeInfo : public ai::PrototypeInfo
     {
     public:
         NpcPrototypeInfo();
-        virtual Obj* CreateTargetObject() const;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+    }; /* size: 0x0040 */
 
-    };
+    static_assert(sizeof(NpcPrototypeInfo) == 0x0040);
 
-    class Npc :  public Obj
+    class Npc : public ai::Obj
     {
-    public:
-        enum NpcType
-        {
-            NPC_BARMAN = 0x0,
-            NPC_CLIENT = 0x1,
-        };
+    protected:
+        virtual  ~Npc() override /* 0x00 */;
+
+    private:
+        Npc(const ai::NpcPrototypeInfo& prototypeInfo);
+        Npc(const ai::Npc&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        bool HasDynamicQuests() const ;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        unsigned int GetCfgNumber() const ;
-        unsigned int GetSkinNumber() const ;
-        static void __fastcall SetCurrentNpc(Npc *);
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        void SetSpokenCount(int);
-        virtual NpcPrototypeInfo const * GetPrototypeInfo() const ;
-        virtual m3d::Class * GetClass() const ;
-        virtual CStr GetPropertyName(int) const ;
-        virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
-        static Npc * __fastcall GetCurrentNpc();
-        int GetSpokenCount() const ;
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
-        void SetHelloReplyNames(std::vector<CStr,std::allocator<CStr> > const &);
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        static m3d::Class * GetBaseClass();
-        CStr const & GetModelName() const ;
-        virtual int GetPropertyId(char const *) const ;
-        bool HasNotTakenDynamicQuests() const ;
-        std::vector<CStr,std::allocator<CStr> > const & GetHelloReplyNames() const ;
-        virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        static void __fastcall Registration();
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        NpcType GetNpcType() const ;
-        Npc(NpcPrototypeInfo const &);
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classNpc;
+        virtual const ai::NpcPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
 
     protected:
-        static void __fastcall RegisterProperty(char const *,int,eGObjPropertySaveStatus);
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
-        virtual ~Npc();
-        virtual void _InternalPostLoad();
-
-    private:
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
+        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
-        RT_CLASS_DECLARE(Npc);
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x5c */;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x60 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x78 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
+
+    protected:
+        static retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
+        static retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
+
+        enum NpcType;
+
+    public:
+        const retruxx::vector<CStr, retruxx::allocator<CStr> >& GetHelloReplyNames() const;
+        void SetHelloReplyNames(const retruxx::vector<CStr, retruxx::allocator<CStr> >& replyNames);
+        bool HasDynamicQuests() const;
+        bool HasNotTakenDynamicQuests() const;
+        ai::Npc::NpcType GetNpcType() const;
+        const CStr& GetModelName() const;
+        unsigned int GetSkinNumber() const;
+        unsigned int GetCfgNumber() const;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xac */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb4 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
+        int GetSpokenCount() const;
+        void SetSpokenCount(int spokenCount);
+
+    protected:
+        virtual void _InternalPostLoad() override /* 0xfc */;
 
     private:
-        NpcType m_npcType;
-        CStr m_ModelName;
-        unsigned int m_SkinNumber;
-        unsigned int m_CfgNumber;
-        std::vector<CStr> m_helloReplyNames;
-        int m_spokenCount;
-    };
+        /* 0x00c0 */ ai::Npc::NpcType m_npcType;
+        /* 0x00c4 */ CStr m_ModelName;
+        /* 0x00d0 */ unsigned int m_SkinNumber;
+        /* 0x00d4 */ unsigned int m_CfgNumber;
+        /* 0x00d8 */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_helloReplyNames;
+        /* 0x00e8 */ int m_spokenCount;
+        static ai::Npc* theCurrentNpc;
+
+    public:
+        static void __fastcall SetCurrentNpc(ai::Npc* npc);
+        static ai::Npc* __fastcall GetCurrentNpc();
+        static void __fastcall Registration();
+    }; /* size: 0x00ec */
+
+    static_assert(sizeof(Npc) == 0x00ec);
 }

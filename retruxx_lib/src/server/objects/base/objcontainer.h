@@ -10,201 +10,190 @@ namespace ai
 
     class GameTime
     {
-    public:
-        __int64 asInt64() const;
-        void operator+=(float);
-        m3d::AIParam asAIParam() const;
-        float GameDiff(ObjContainer const*) const;
-        GameTime(int, int, int, int, int);
-        GameTime(__int64);
-        GameTime();
-        void setInt64(__int64);
-        virtual void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        void setExpanded(int, int, int, int, int);
-        float Diff() const;
-        m3d::AIParam asAIParam24Hour() const;
-        virtual void SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
+        ///* 0x0004 */ char Padding_42[4];
 
     private:
-        //ai::GameTime_vtbl* __vftable /*VFT*/;
-        __int64 m_milliSeconds = 0;
-        __int64 m_milliSeconds0 = 0;
-    };
+        /* 0x0008 */ int64_t m_milliSeconds;
+        /* 0x0010 */ int64_t m_milliSeconds0;
+        static const int64_t SecondBase;
+        static const int64_t MinuteBase;
+        static const int64_t HourBase;
+        static const int64_t DayBase;
+        static const int64_t MonthBase;
+        static const int64_t YearBase;
 
-    class ObjContainer :  public m3d::Object
+    public:
+        GameTime(const ai::GameTime&);
+        GameTime(int64_t milliSeconds);
+        GameTime(int hour, int minute, int day, int month, int year);
+        GameTime();
+        void setInt64(int64_t milliSeconds);
+        void setExpanded(int hour, int minute, int day, int month, int year);
+        int64_t asInt64() const;
+        m3d::AIParam asAIParam24Hour() const;
+        m3d::AIParam asAIParam() const;
+        void operator+=(float gameTimeSeconds);
+        float Diff() const;
+        float GameDiff(const ai::ObjContainer* container) const;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) /* 0x00 */;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x04 */;
+    }; /* size: 0x0018 */
+
+    static_assert(sizeof(GameTime) == 0x0018);
+
+    class ObjContainer : public m3d::Object
     {
-    public:
-        enum eSAVE_TYPES
-        {
-            SAVE_LEVEL = 0x0,
-            SAVE_FULL = 0x1,
-            SAVE_EDITOR = 0x2,
-        };
-
-        class Node
-        {
-        public:
-            Node();
-
-        public:
-            int m_id = -1;
-            int m_prevId = -1;
-            int m_nextId = -1;
-            Obj* m_value = nullptr;
-            bool m_isValid = false;
-            int m_totalObjects = 0;
-        };
-
-        class InnerContainer
-        {
-        public:
-            InnerContainer();
-            void EraseNode(Node&, bool);
-            int Add(Obj*);
-            bool AddWithOwnObjId(Obj*, int);
-            bool empty() const;
-            Obj* GetObjById(int);
-            void Clear();
-            unsigned int size() const;
-
-        private:
-            Node* _GetNodeById(int);
-
-        private:
-            std::vector<Node> m_records;
-            std::vector<int> m_freePlaces;
-            unsigned int m_size = 0;
-            int m_firstNodeId = -1;
-            int m_lastNodeId = -1;
-        };
-
-        class const_iterator// : public std::_Bidit<Node, int, Node const*, Node const&>
-        {
-        public:
-            const_iterator(std::vector<Node> const*, int);
-            void _Inc();
-            Obj const* operator*() const;
-            Obj const* operator->() const;
-            bool operator==(const_iterator const&) const;
-            bool operator!=(const_iterator const&) const;
-            const_iterator& operator++();
-
-        private:
-            int m_nodeId;
-            const std::vector<Node>* m_pRecords;
-        };
-
-        class iterator : public const_iterator
-        {
-        public:
-            iterator(std::vector<Node>*, int);
-            Obj* operator->() const;
-            iterator operator++(int);
-            iterator& operator++();
-            Obj* operator*() const;
-        };
-
-    public:
-        Obj * GetEntityByObjName(CStr const &);
-        void Purge();
-        iterator updatingEnd();
-        virtual ~ObjContainer();
-        CStr GetObjectFullName(CStr const &) const ;
-        void RelinkGeomsToCollisionCells();
-        void AddObjToUpdate(Obj *);
-        virtual m3d::Object * Clone();
-        void PermitCreation();
-        int CreateNewObjectWithSuspendedPostLoad(int,char const *,int,int);
-        iterator updatingBegin();
-        void LoadNodeStatesFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
-        bool IsSaveAllowed() const ;
-        void PauseGameTime();
-        void DeleteAll();
-        void PassToMap(CStr const &,CStr const &,int,bool);
-        float GetHeight(float,float) const ;
-        static m3d::Class * GetBaseClass();
-        int GetPrototypeId(char const *) const ;
-        void Dump();
-        void SetGameTimeInt64(__int64);
-        int GetObjIdByObjName(CStr const &);
-        float GetTolerance(int,int) const ;
-        void SetGameTime(int,int,int,int,int);
-        static Object * CreateObject();
-        void TransferPhysicParamsToSceneGraph();
-        void UnpauseGameTime();
-        void UnlinkGeomsFromCollisionCells();
-        void SetTolerance(int,int,float);
-        bool AddWithOwnObjId(Obj *);
-        void SetObjName(int,CStr const &);
-        GameTime & getGameTime();
-        m3d::AIParam GetGameTime() const ;
-        void AddObjToPostCollideList(Obj *);
-        void DumpPhysicInfo(CStr const &) const ;
-        __int64 GetGameTimeInt64() const ;
-        unsigned int GetNumUpdatingObjects() const ;
-        bool empty() const ;
-        Obj * GetEntityByObjId(int);
-        void DenyCreation();
-        void LoadObjectNamesFromXML(CStr const &);
-        m3d::AIParam Get24HourTime() const ;
-        int CreateEntityForLoad(int,char const *,int,int);
-        void MessageBoxA(int,int,Obj *);
-        void AllowSave(bool);
-        float GetGameTimeDiff() const ;
-        iterator begin();
-        const_iterator begin() const ;
-        int GetNumRemovalsLastFrame() const ;
-        void Update(float,unsigned int,bool);
-        int CreateNewObject(int,char const *,int,int);
-        void Clear(bool);
-        virtual m3d::Class * GetClass() const ;
-        void SaveNodeStatesToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        void SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        const_iterator end() const ;
-        iterator end();
-        void LinkGeomsToCollisionCells();
-        void RelinkSceneGraphNodes();
-        void AddObjIdToRemove(int);
-        unsigned int size() const ;
-        m3d::AIParam GetObjList(char const *,CVector const &,float) const ;
-        void IncTolerance(int,int,float);
-        void AddObjToNotUpdate(Obj *);
-        void PostCollide();
-        void AddObjIdToRelinkSceneGraphNode(int);
-
     protected:
         ObjContainer();
-        ObjContainer(ObjContainer const &);
-
-    private:
-        void _SetObjNotUpdating(int);
-        int _Add(Obj *);
-        void _PassToMapAfterFading();
-        void _SetObjUpdating(int);
-        void _DeleteObj(Obj * &);
+        ObjContainer(const ai::ObjContainer& rhs);
 
     public:
-        RT_CLASS_DECLARE(ObjContainer);
+        virtual  ~ObjContainer() override /* 0x00 */;
+        virtual m3d::Object* Clone() override /* 0x04 */;
+        static m3d::Object* __fastcall CreateObject();
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        static m3d::Class m_classObjContainer;
 
     private:
-        InnerContainer m_allObjects;
-        InnerContainer m_updatingObjects;
-        std::map<CStr,int> m_nameToIdMap;
-        eSAVE_TYPES m_SaveType = SAVE_LEVEL;
-        m3d::CStrHash<CStr> m_ObjectFullNames;
-        GameTime m_GameTime;
-        bool m_GameTimePaused = false;
-        unsigned int m_denyCreationCount = 0;
-        int m_numRemovalsLastFrame;
-        std::vector<int> m_objIdsToUpdate;
-        std::vector<int> m_objIdsToNotUpdate;
-        std::vector<Obj *> m_objectsToPostCollide;
-        std::vector<int> m_objIdsToRelinkSceneGraphNode;
-        std::vector<int> m_objIdsToRemove;
-        bool m_inPurge = false;
-        bool m_inUpdate = false;
-        bool m_bSaveAllowed = true;
-    };
+        static const int BITS_IN_MAX_OBJECTS;
+        static const int MAX_OBJECTS;
+        static const int MAX_OBJECTS_MASK;
+        static const int MAX_OBJECTS_IN_CELL;
+
+        struct Node;
+        using allocator_type = retruxx::allocator<ai::ObjContainer::Node>;
+        using size_type = unsigned int;
+        using difference_type = int;
+        using InnerRecordVector = retruxx::vector<ai::ObjContainer::Node, retruxx::allocator<ai::ObjContainer::Node> >;
+        using KeyTypeVector = retruxx::vector<int, retruxx::allocator<int> >;
+
+        struct InnerContainer
+        {
+            /* 0x0000 */ retruxx::vector<ai::ObjContainer::Node, retruxx::allocator<ai::ObjContainer::Node> > m_records;
+            /* 0x0010 */ retruxx::vector<int, retruxx::allocator<int> > m_freePlaces;
+            /* 0x0020 */ unsigned int m_size;
+            /* 0x0024 */ int m_firstNodeId;
+            /* 0x0028 */ int m_lastNodeId;
+            InnerContainer(const ai::ObjContainer::InnerContainer&);
+            InnerContainer();
+            void Clear();
+            int Add(ai::Obj* pObj);
+            bool AddWithOwnObjId(ai::Obj* pObj, int id);
+            unsigned int size() const;
+            bool empty() const;
+            ai::Obj* GetObjById(int objId);
+            void EraseNode(ai::ObjContainer::Node& node, bool deleteObj);
+            ai::ObjContainer::Node* _GetNodeById(int nodeId);
+        }; /* size: 0x002c */
+
+    private:
+        /* 0x0034 */ ai::ObjContainer::InnerContainer m_allObjects;
+        /* 0x0060 */ ai::ObjContainer::InnerContainer m_updatingObjects;
+
+        using StrObjIdMap = retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > >;
+
+    private:
+        /* 0x008c */ retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > > m_nameToIdMap;
+
+        class const_iterator;
+        class iterator;
+
+    public:
+        unsigned int size() const;
+        bool empty() const;
+        unsigned int GetNumUpdatingObjects() const;
+        ai::ObjContainer::const_iterator begin() const;
+        ai::ObjContainer::iterator begin();
+        ai::ObjContainer::const_iterator end() const;
+        ai::ObjContainer::iterator end();
+        ai::ObjContainer::const_iterator updatingBegin() const;
+        ai::ObjContainer::iterator updatingBegin();
+        ai::ObjContainer::const_iterator updatingEnd() const;
+        ai::ObjContainer::iterator updatingEnd();
+
+        enum eSAVE_TYPES;
+
+    public:
+        /* 0x0098 */ ai::ObjContainer::eSAVE_TYPES m_SaveType;
+        void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
+        void Clear(bool bDeleteObjectsPassedToAnotherMap);
+        void DeleteAll();
+        void Purge();
+        void Update(float elapsedTime, unsigned int workTime, bool bCinematic);
+        int GetPrototypeId(const char* prototypeName) const;
+        CStr GetPrototypeName(int) const;
+        int CreateEntityForLoad(int prototypeId, const char* name, int parentId, int objId);
+        int CreateNewObject(int prototypeId, const char* name, int parentId, int belongId);
+        int CreateNewObjectWithSuspendedPostLoad(int prototypeId, const char* name, int parentId, int belongId);
+        void MessageBoxA(int command, int textId, ai::Obj* pPlayer);
+        void SetTolerance(int PlayerID1, int PlayerID2, float Tolerance);
+        float GetTolerance(int PlayerID1, int PlayerID2) const;
+        void IncTolerance(int PlayerID1, int PlayerID2, float IncTolerance);
+        ai::Obj* GetEntityByObjId(int objId);
+        ai::Obj* GetEntityByObjName(const CStr& name);
+        int GetObjIdByObjName(const CStr& name);
+        void SetObjName(int objId, const CStr& name);
+        CStr GetObjectFullName(const CStr& ObjectName) const;
+        m3d::AIParam GetObjList(const char* ClassName, const CVector& Pos, float radius) const;
+        bool AddWithOwnObjId(ai::Obj* pObj);
+        void AddObjToPostCollideList(ai::Obj* pObj);
+        void PostCollide();
+        void LoadObjectNamesFromXML(const CStr& fileName);
+        void SetGameTimeInt64(int64_t Seconds);
+        int64_t GetGameTimeInt64() const;
+        float GetGameTimeDiff() const;
+        void SetGameTime(int hour, int minute, int day, int month, int year);
+        m3d::AIParam GetGameTime() const;
+        m3d::AIParam Get24HourTime() const;
+        void PauseGameTime();
+        void UnpauseGameTime();
+        void SaveNodeStatesToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
+        void LoadNodeStatesFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode);
+        void TransferPhysicParamsToSceneGraph();
+        void RelinkSceneGraphNodes();
+        void LinkGeomsToCollisionCells();
+        void UnlinkGeomsFromCollisionCells();
+        void RelinkGeomsToCollisionCells();
+        int GetNumRemovalsLastFrame() const;
+        void PassToMap(const CStr& mapName, const CStr& locationName, int angle, bool bImmediate);
+        float GetHeight(float x, float z) const;
+        void AddObjToUpdate(ai::Obj* obj);
+        void AddObjToNotUpdate(ai::Obj* obj);
+        void AddObjIdToRelinkSceneGraphNode(int objId);
+        void AddObjIdToRemove(int objId);
+        void DumpPhysicInfo(const CStr& fileName) const;
+        void Dump();
+        ai::GameTime& getGameTime();
+        const ai::GameTime& getGameTime() const;
+        void DenyCreation();
+        void PermitCreation();
+        void AllowSave(bool allow);
+        bool IsSaveAllowed() const;
+
+    private:
+        /* 0x009c */ m3d::CStrHash<CStr> m_ObjectFullNames;
+        /* 0x00a8 */ ai::GameTime m_GameTime;
+        /* 0x00c0 */ bool m_GameTimePaused;
+        /* 0x00c1 */ char Padding_198[3];
+        /* 0x00c4 */ unsigned int m_denyCreationCount;
+        /* 0x00c8 */ int m_numRemovalsLastFrame;
+        /* 0x00cc */ retruxx::vector<int, retruxx::allocator<int> > m_objIdsToUpdate;
+        /* 0x00dc */ retruxx::vector<int, retruxx::allocator<int> > m_objIdsToNotUpdate;
+        /* 0x00ec */ retruxx::vector<ai::Obj*, retruxx::allocator<ai::Obj*> > m_objectsToPostCollide;
+        /* 0x00fc */ retruxx::vector<int, retruxx::allocator<int> > m_objIdsToRelinkSceneGraphNode;
+        /* 0x010c */ retruxx::vector<int, retruxx::allocator<int> > m_objIdsToRemove;
+        /* 0x011c */ bool m_inPurge;
+        /* 0x011d */ bool m_inUpdate;
+        /* 0x011e */ bool m_bSaveAllowed;
+        int _Add(ai::Obj* pObj);
+        void _DeleteObj(ai::Obj*& pObj);
+        void _PassToMapAfterFading();
+        void _SetObjUpdating(int objId);
+        void _SetObjNotUpdating(int objId);
+    }; /* size: 0x0120 */
+
+    static_assert(sizeof(ObjContainer) == 0x0120);
 
     void SetObjects(ObjContainer*);
 }
