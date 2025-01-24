@@ -1,6 +1,5 @@
 #pragma once
 #include "physicobj.h"
-#include <map>
 
 namespace ai
 {
@@ -9,62 +8,66 @@ namespace ai
 
     class ComplexPhysicObjPartDescription : public m3d::Object
     {
-    public:
-        virtual m3d::Class* GetClass() const;
-        static m3d::Object* CreateObject();
-        int GetPartResourceId() const;
-        unsigned int GetNumLps() const;
-        void GetPartNames(oldstd::vector<CStr, oldstd::allocator<CStr> >&) const;
-        void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        ComplexPhysicObjPartDescription const* GetChildByNameDeep(CStr const&) const;
-        CStr const& GetLpName(unsigned int) const;
-        virtual m3d::Object* Clone();
-        ComplexPhysicObjPartDescription* GetParent() const;
-        virtual ~ComplexPhysicObjPartDescription();
-        static m3d::Class* GetBaseClass();
-
     protected:
         ComplexPhysicObjPartDescription();
-        ComplexPhysicObjPartDescription(ComplexPhysicObjPartDescription const&);
+        ComplexPhysicObjPartDescription(const ai::ComplexPhysicObjPartDescription& rhs);
 
     public:
-        RT_CLASS_DECLARE(ComplexPhysicObjPartDescription);
+        virtual  ~ComplexPhysicObjPartDescription() override /* 0x00 */;
+        virtual m3d::Object* Clone() override /* 0x04 */;
+        static m3d::Object* __fastcall CreateObject();
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        static m3d::Class m_classComplexPhysicObjPartDescription;
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        ai::ComplexPhysicObjPartDescription* GetParent() const;
+        const ai::ComplexPhysicObjPartDescription* GetChildByNameDeep(const CStr& childName) const;
+        int GetPartResourceId() const;
+        void GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr> >& partNames) const;
+        const CStr& GetLpName(unsigned int index) const;
+        unsigned int GetNumLps() const;
 
     private:
-        int m_partResourceId;
-        oldstd::vector<CStr> m_lpNames;
-    };
+        /* 0x0034 */ int m_partResourceId;
+        /* 0x0038 */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_lpNames;
+    }; /* size: 0x0048 */
 
-    class ComplexPhysicObjPrototypeInfo :  public PhysicObjPrototypeInfo
+    static_assert(sizeof(ComplexPhysicObjPartDescription) == 0x0048);
+
+    class ComplexPhysicObjPrototypeInfo : public ai::PhysicObjPrototypeInfo
     {
     public:
-        enum MassShapes
-        {
-            MS_BOX = 0x0,
-            MS_SPHERE = 0x1,
-        };
-
-    public:
-        MassShapes GetMassShape() const ;
-        ComplexPhysicObjPartDescription const * GetPartDescriptionByName(CStr const &) const ;
-        virtual Obj * CreateRandomTargetObject() const ;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        void GetPartNames(oldstd::vector<CStr,oldstd::allocator<CStr> > &) const ;
-        virtual ~ComplexPhysicObjPrototypeInfo();
-        oldstd::vector<CStr,oldstd::allocator<CStr> > const & GetAllPartNames() const ;
         ComplexPhysicObjPrototypeInfo();
-        virtual unsigned int GetBasePrice() const ;
-        virtual void PostLoad();
+        virtual  ~ComplexPhysicObjPrototypeInfo() override = 0 /* 0x00 */;
+        /* 0x0048 */ retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > > m_partPrototypeIds;
+        /* 0x0054 */ CVector m_massSize;
+        /* 0x0060 */ CVector m_massTranslation;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual void PostLoad() override /* 0x00 */;
+        const ai::ComplexPhysicObjPartDescription* GetPartDescriptionByName(const CStr& partName) const;
+        void GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr> >& partNames) const;
+        virtual unsigned int GetBasePrice() const override /* 0x00 */;
+        virtual ai::Obj* CreateRandomTargetObject() const /* 0x1c */;
+        const retruxx::vector<CStr, retruxx::allocator<CStr> >& GetAllPartNames() const;
+
+        enum MassShapes;
 
     public:
-        oldstd::map<CStr,int> m_partPrototypeIds;
-        CVector m_massSize;
-        CVector m_massTranslation;
-        ref_ptr<ComplexPhysicObjPartDescription> m_partDescription;
-        oldstd::map<CStr,CStr> m_partPrototypeNames;
-        oldstd::vector<CStr> m_allPartNames;
-        MassShapes m_massShape;
-    };
+        ai::ComplexPhysicObjPrototypeInfo::MassShapes GetMassShape() const;
+
+    private:
+        /* 0x006c */ ref_ptr<ai::ComplexPhysicObjPartDescription> m_partDescription;
+
+        using StrStrMap = retruxx::map<CStr, CStr, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, CStr> > >;
+        class StrStrMapConstIterator;
+
+    private:
+        /* 0x0070 */ retruxx::map<CStr, CStr, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, CStr> > > m_partPrototypeNames;
+        /* 0x007c */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_allPartNames;
+        /* 0x008c */ ai::ComplexPhysicObjPrototypeInfo::MassShapes m_massShape;
+    }; /* size: 0x0090 */
+
+    static_assert(sizeof(ComplexPhysicObjPrototypeInfo) == 0x0090);
 
     class ComplexPhysicObj : public PhysicObj
     {
@@ -94,12 +97,12 @@ namespace ai
         virtual void AddChild(ai::Obj* pObj) override /* 0x00 */;
         virtual bool RemoveChild(ai::Obj* pObj) override /* 0x00 */;
         virtual void RemoveComponent(ai::Obj* pComponent) override /* 0x00 */;
-        oldstd::vector<CStr, oldstd::allocator<CStr> > GetAttachedPartNames() const;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > GetAttachedPartNames() const;
         const ai::VehiclePart* GetPartByName(const CStr& partName) const;
         ai::VehiclePart* GetPartByName(const CStr& partName);
         bool CanPartBeAttached(const CStr& partName) const;
         virtual void SetPartByName(const CStr& partName, ai::VehiclePart* vehiclePart, bool bUnsafe) /* 0x1a4 */;
-        virtual void ReceiveNodesToLink(oldstd::list<m3d::SgNode*, oldstd::allocator<m3d::SgNode*> >& nodelist) const override /* 0x00 */;
+        virtual void ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*> >& nodelist) const override /* 0x00 */;
         virtual void TransferPhysicParamsToSceneGraphNode() override /* 0x00 */;
         int GetNumPhysicBodies() const;
         virtual void TransferToSpace(dxSpace* newSpace) override /* 0x178 */;
@@ -123,7 +126,7 @@ namespace ai
         virtual void SetInvisible() override /* 0xcc */;
         virtual void DisablePhysics() override /* 0x154 */;
         virtual void EnablePhysics() override /* 0x158 */;
-        virtual void GetGeoms(oldstd::vector<ai::Geom*, oldstd::allocator<ai::Geom*> >& geoms) const /* 0x1b4 */;
+        virtual void GetGeoms(retruxx::vector<ai::Geom*, retruxx::allocator<ai::Geom*> >& geoms) const /* 0x1b4 */;
         virtual ai::Obj* CloneObj() override /* 0x00 */;
         virtual void ClearSavedStatus() override /* 0x00 */;
         virtual void DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x1a0 */;
@@ -137,10 +140,10 @@ namespace ai
         virtual bool IsVisible() override /* 0x188 */;
         CVector GetSmoothTargetPointForObj(const ai::Obj* target, float elapsedTime);
 
-        using VehiclePartsMap = oldstd::map<CStr, ai::VehiclePart*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, ai::VehiclePart*> > >;
+        using VehiclePartsMap = retruxx::map<CStr, ai::VehiclePart*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::VehiclePart*> > >;
 
     protected:
-        /* 0x0120 */ oldstd::map<CStr, ai::VehiclePart*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, ai::VehiclePart*> > > m_vehicleParts;
+        /* 0x0120 */ retruxx::map<CStr, ai::VehiclePart*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::VehiclePart*> > > m_vehicleParts;
         virtual void _InternalCreateVisualPart() override /* 0x100 */;
         virtual void _ConstructVehiclePart(const CStr& name, ai::VehiclePart* vehiclePart, int index, bool bForAnimation) /* 0x1b8 */;
         virtual void _Construct(bool bForAnimation) /* 0x1bc */;
@@ -169,10 +172,10 @@ namespace ai
         class const_iterator;
 
     public:
-        oldstd::_Tree<oldstd::_Tmap_traits<CStr, ai::VehiclePart*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, ai::VehiclePart*> >, 0> >::const_iterator begin() const;
-        oldstd::_Tree<oldstd::_Tmap_traits<CStr, ai::VehiclePart*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, ai::VehiclePart*> >, 0> >::iterator begin();
-        oldstd::_Tree<oldstd::_Tmap_traits<CStr, ai::VehiclePart*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, ai::VehiclePart*> >, 0> >::const_iterator end() const;
-        oldstd::_Tree<oldstd::_Tmap_traits<CStr, ai::VehiclePart*, oldstd::less<CStr>, oldstd::allocator<oldstd::pair<CStr const, ai::VehiclePart*> >, 0> >::iterator end();
+        VehiclePartsMap::const_iterator begin() const;
+        VehiclePartsMap::iterator begin();
+        VehiclePartsMap::const_iterator end() const;
+        VehiclePartsMap::iterator end();
         unsigned int size() const;
     }; /* size: 0x014c */
 

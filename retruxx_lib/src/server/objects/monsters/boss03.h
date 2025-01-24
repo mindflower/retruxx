@@ -12,152 +12,143 @@ namespace ai
     class Team;
     class Boss03Part;
 
-    class Boss03PrototypeInfo : public AnimatedComplexPhysicObjPrototypeInfo
+    class Boss03PrototypeInfo : public ai::AnimatedComplexPhysicObjPrototypeInfo
     {
     public:
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        /* 0x0090 */ retruxx::vector<int, retruxx::allocator<int> > m_dronePrototypeIds;
+        /* 0x00a0 */ int m_maxDrones;
+        /* 0x00a4 */ CVector m_droneRelPosition;
+        /* 0x00b0 */ Quaternion m_droneRelRotation;
+        /* 0x00c0 */ float m_maxHealth;
+        /* 0x00c4 */ float m_maxHorizAngularVelocity;
+        /* 0x00c8 */ float m_horizAngularAcceleration;
+        /* 0x00cc */ float m_maxVertAngularVelocity;
+        /* 0x00d0 */ float m_vertAngularAcceleration;
+        /* 0x00d4 */ float m_maxLinearVelocity;
+        /* 0x00d8 */ float m_linearAcceleration;
+        /* 0x00dc */ float m_pathTrackTiltAngle;
+        /* 0x00e0 */ float m_maxShootingTime;
+        /* 0x00e4 */ float m_defaultHover;
+        /* 0x00e8 */ float m_hoverForPlacingDrones;
         Boss03PrototypeInfo();
-        virtual void PostLoad();
-        virtual void RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual Obj* CreateTargetObject() const;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void PostLoad() override /* 0x00 */;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
 
     private:
-        std::vector<int> m_dronePrototypeIds;
-        int m_maxDrones;
-        CVector m_droneRelPosition;
-        Quaternion m_droneRelRotation;
-        float m_maxHealth;
-        float m_maxHorizAngularVelocity;
-        float m_horizAngularAcceleration;
-        float m_maxVertAngularVelocity;
-        float m_vertAngularAcceleration;
-        float m_maxLinearVelocity;
-        float m_linearAcceleration;
-        float m_pathTrackTiltAngle;
-        float m_maxShootingTime;
-        float m_defaultHover;
-        float m_hoverForPlacingDrones;
-        std::vector<CStr> m_dronePrototypeNames;
-    };
+        /* 0x00ec */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_dronePrototypeNames;
+    }; /* size: 0x00fc */
 
-    class Boss03 :  public AnimatedComplexPhysicObj
+    static_assert(sizeof(Boss03PrototypeInfo) == 0x00fc);
+
+    class Boss03 : public ai::AnimatedComplexPhysicObj
     {
     public:
-        enum LiveStatus
-        {
-            LIVE_PLACING_DRONES = 0x0,
-            LIVE_FIGHTING_WITH_WINGS = 0x1,
-            LIVE_SMALL_HELICOPTER = 0x2,
-            LIVE_DEAD = 0x3,
-            LIVE_IDLE = 0x4,
-            LIVE_LAST = 0x5,
-        };
-
-        enum DroneSpawningStatus
-        {
-            DRONE_DECIDING = 0x0,
-            DRONE_FLYING_TO_SPAWN = 0x1,
-            DRONE_START_PLACING = 0x2,
-            DRONE_PLACING_NOW = 0x3,
-            DRONE_END_PLACING = 0x4,
-            DRONE_FLYING_TO_SHOOT = 0x5,
-            DRONE_SHOOTING = 0x6,
-            DRONE_LAST = 0x7,
-        };
-
-        enum PathTrackingStatus
-        {
-            PATH_IDLE = 0x0,
-            PATH_SETTING_HORIZONTAL_BEFORE = 0x1,
-            PATH_SETTING_DIRECTION_TO_MOVE = 0x2,
-            PATH_TILTING = 0x3,
-            PATH_MOVING = 0x4,
-            PATH_SETTING_HORIZONTAL_AFTER = 0x5,
-            PATH_SETTING_FINAL_DIRECTION = 0x6,
-        };
-
-    public:
-        virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual void CreateChildren();
-        static void __fastcall Registration();
-        Boss03(Boss03PrototypeInfo const &);
-        virtual void InflictDamage(DamageInfo const &);
-        virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
-        bool StartPlacingDrone();
-        virtual m3d::Class * GetClass() const ;
-        virtual CStr GetPropertyName(int) const ;
-        virtual bool CanChildBeAdded(m3d::Class *) const ;
-        void StartMoving(CVector const &,CVector const &);
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
-        static m3d::Class * GetBaseClass();
-        virtual void Update(float,unsigned int);
-        virtual bool ApplyModifier(Modifier const &);
-        void NoticePlayer();
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        float GetHealth() const ;
-        virtual void AddChild(Obj *);
-        virtual Boss03PrototypeInfo const * GetPrototypeInfo() const ;
-        virtual bool RemoveChild(Obj *);
-        virtual int GetPropertyId(char const *) const ;
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        float GetMaxHealth() const ;
+        using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Boss03, float, void>;
+        using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Boss03, ai::Modifier, float, bool>;
 
     protected:
-        virtual void _InternalPostLoad();
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
-        virtual void _Construct(bool);
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
-        virtual void _InternalCreateVisualPart();
-        virtual ~Boss03();
+        virtual  ~Boss03() override /* 0x00 */;
 
     private:
-        void _SetAllPartsNotDamageable();
-        void _UpdateLiveFightingWithWings(float);
-        void _SetDroneSpawningStatus(DroneSpawningStatus);
-        Boss03Part * _GetBossPartByName(CStr const &);
-        bool _OnHealthValueBeforeApplyModifier(Modifier const &,float &);
-        //MemberFunctionTwoArgsRef<Boss03,Modifier,float,bool>::MemberFunctionTwoArgsRef<Boss03,Modifier,float,bool>(Boss03 &,bool (*const)(Modifier const &,float &));
-        bool _ProceedSettingVerticalAngle(float,float);
-        void _SpawnDroneNow();
-        void _UpdatePathTracking(float);
-        Boss03Part * _GetMainPart();
-        Boss03Part * _GetDroneSpawner();
-        void _SetLiveStatus(LiveStatus);
-        void _RecalcFlyPath();
-        void _UpdateLookAtPlayer(float);
-        void _UpdateLivePlacingDrones(float);
-        void _UpdateSwinging(float);
-        bool _ProceedSettingHorizontalDirection(float,CVector const &);
-        static CStr const & __fastcall _DroneSpawningStatusToStr(DroneSpawningStatus);
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
-        static CStr const & __fastcall _LiveStatusToStr(LiveStatus);
-        void _SetPathTrackingStatus(PathTrackingStatus);
-        float CalcKeyPartsMaxDurability() const ;
+        Boss03(const ai::Boss03PrototypeInfo& prototypeInfo);
+        Boss03(const ai::Boss03&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        RT_CLASS_DECLARE(Boss03);
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classBoss03;
+        virtual const ai::Boss03PrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+
+    protected:
+        static void __fastcall RegisterProperty(const char*, int, ai::eGObjPropertySaveStatus);
+
+    public:
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x00 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x00 */;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x00 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x00 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x00 */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x00 */;
+
+    protected:
+        static retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
+        static retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+
+        enum LiveStatus;
+        enum DroneSpawningStatus;
+        enum PathTrackingStatus;
+
+    public:
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
+        virtual void AddChild(ai::Obj* pObj) override /* 0x00 */;
+        virtual bool RemoveChild(ai::Obj* pChild) override /* 0x00 */;
+        virtual void CreateChildren() override /* 0x00 */;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        virtual bool ApplyModifier(const ai::Modifier& modifier) override /* 0x00 */;
+        virtual void InflictDamage(const ai::DamageInfo& damageInfo) override /* 0x00 */;
+        bool StartPlacingDrone();
+        void StartMoving(const CVector& destination, const CVector& finalDirection);
+        void NoticePlayer();
+        float GetMaxHealth() const;
+        float GetHealth() const;
+
+    protected:
+        virtual void _InternalPostLoad() override /* 0x00 */;
+        virtual void _InternalCreateVisualPart() override /* 0x00 */;
+        virtual void _Construct(bool bForAnimation) override /* 0x00 */;
 
     private:
-        //NumericInRange<float> m_health;
-        CVector m_linearVelocity;
-        CVector m_relAngularVelocity;
-        std::vector<CVector> m_pointsForDrones;
-        std::vector<CVector> m_pointsForShooting;
-        Boss03::LiveStatus m_liveStatus;
-        Boss03::DroneSpawningStatus m_droneSpawningStatus;
-        float m_dronePlacingTimeout;
-        float m_shootingTimeout;
-        Boss03::PathTrackingStatus m_pathTrackingStatus;
-        CVector m_desiredDestination;
-        CVector m_desiredDirection;
-        Team *m_droneTeam;
-        CStr m_pathNameForFlyingWithWings;
-        m3d::CameraPath *m_currentFlyPath;
-        float m_currentFlyTime;
-        float m_keyPartsMaxDurability;
-    };
+        /* 0x014c */ ai::NumericInRange<float> m_health;
+        /* 0x01f8 */ CVector m_linearVelocity;
+        /* 0x0204 */ CVector m_relAngularVelocity;
+        /* 0x0210 */ retruxx::vector<CVector, retruxx::allocator<CVector> > m_pointsForDrones;
+        /* 0x0220 */ retruxx::vector<CVector, retruxx::allocator<CVector> > m_pointsForShooting;
+        /* 0x0230 */ ai::Boss03::LiveStatus m_liveStatus;
+        /* 0x0234 */ ai::Boss03::DroneSpawningStatus m_droneSpawningStatus;
+        /* 0x0238 */ float m_dronePlacingTimeout;
+        /* 0x023c */ float m_shootingTimeout;
+        /* 0x0240 */ ai::Boss03::PathTrackingStatus m_pathTrackingStatus;
+        /* 0x0244 */ CVector m_desiredDestination;
+        /* 0x0250 */ CVector m_desiredDirection;
+        /* 0x025c */ ai::Team* m_droneTeam;
+        /* 0x0260 */ CStr m_pathNameForFlyingWithWings;
+        /* 0x026c */ m3d::CameraPath* m_currentFlyPath;
+        /* 0x0270 */ float m_currentFlyTime;
+        /* 0x0274 */ float m_keyPartsMaxDurability;
+        void _UpdateLivePlacingDrones(float elapsedTime);
+        void _UpdateLiveFightingWithWings(float elapsedTime);
+        void _UpdatePathTracking(float elapsedTime);
+        void _UpdateSwinging(float elapsedTime);
+        void _SetLiveStatus(ai::Boss03::LiveStatus newLiveStatus);
+        void _SetDroneSpawningStatus(ai::Boss03::DroneSpawningStatus newSpawinigStatus);
+        void _SpawnDroneNow();
+        void _SetPathTrackingStatus(ai::Boss03::PathTrackingStatus newPathTrackingStatus);
+        bool _ProceedSettingVerticalAngle(float elapsedTime, float desiredAngle);
+        bool _ProceedSettingHorizontalDirection(float elapsedTime, const CVector& desiredDir);
+        void _UpdateLookAtPlayer(float elapsedTime);
+        ai::Boss03Part* _GetBossPartByName(const CStr& partName);
+        ai::Boss03Part* _GetDroneSpawner();
+        ai::Boss03Part* _GetMainPart();
+        void _SetAllPartsNotDamageable();
+        void _RecalcFlyPath();
+        bool _OnHealthValueBeforeApplyModifier(const ai::Modifier& modifier, float& newHealth);
+        static const CStr& __fastcall _LiveStatusToStr(ai::Boss03::LiveStatus status);
+        static const CStr& __fastcall _DroneSpawningStatusToStr(ai::Boss03::DroneSpawningStatus status);
+        float CalcKeyPartsMaxDurability() const;
+
+    public:
+        static void __fastcall Registration();
+    }; /* size: 0x0278 */
+
+    static_assert(sizeof(Boss03) == 0x0278);
 }

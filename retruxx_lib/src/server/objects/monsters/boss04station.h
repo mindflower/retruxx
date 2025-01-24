@@ -1,55 +1,77 @@
 #pragma once
 #include <server/objects/base/complexphysicobj.h>
+#include <server/components/functions/memberfunctiononearg.h>
+#include <server/components/functions/memberfunctionstwoargsref.h>
 
 namespace ai
 {
-    class Boss04StationPrototypeInfo : public ComplexPhysicObjPrototypeInfo
+    class Boss04StationPrototypeInfo : public ai::ComplexPhysicObjPrototypeInfo
     {
     public:
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         Boss04StationPrototypeInfo();
-        virtual void PostLoad();
-        virtual Obj* CreateTargetObject() const;
-    };
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual void PostLoad() override /* 0x00 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+    }; /* size: 0x0090 */
 
-    class Boss04Station : public ComplexPhysicObj
+    static_assert(sizeof(Boss04StationPrototypeInfo) == 0x0090);
+
+    class Boss04Station : public ai::ComplexPhysicObj
     {
     public:
-        void EvaluateToDead();
-        Boss04Station(Boss04StationPrototypeInfo const &);
-        virtual void Update(float,unsigned int);
-        virtual void InflictDamage(DamageInfo const &);
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
-        static void __fastcall Registration();
-        bool bDestroyed() const ;
-        static m3d::Class * GetBaseClass();
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual m3d::Class * GetClass() const ;
-        virtual int GetPropertyId(char const *) const ;
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        virtual CStr GetPropertyName(int) const ;
-        virtual Boss04StationPrototypeInfo const * GetPrototypeInfo() const ;
-        virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
+        using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Boss04Station, float, void>;
+        using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Boss04Station, ai::Modifier, float, bool>;
 
     protected:
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
-        virtual void _InternalPostLoad();
-        virtual void _InternalCreateVisualPart();
-        virtual ~Boss04Station();
+        virtual  ~Boss04Station() override /* 0x00 */;
 
     private:
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
+        Boss04Station(const ai::Boss04StationPrototypeInfo& prototypeInfo);
+        Boss04Station(const ai::Boss04Station&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        RT_CLASS_DECLARE(Boss04Station);
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classBoss04Station;
+        virtual const ai::Boss04StationPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+
+    protected:
+        static void __fastcall RegisterProperty(const char*, int, ai::eGObjPropertySaveStatus);
+
+    public:
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x00 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x00 */;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x00 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x00 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x00 */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x00 */;
+
+    protected:
+        static retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
+        static retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+
+    public:
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        virtual void InflictDamage(const ai::DamageInfo& damageInfo) override /* 0x00 */;
+        void EvaluateToDead();
+        bool bDestroyed() const;
+        static void __fastcall Registration();
+
+    protected:
+        virtual void _InternalPostLoad() override /* 0x00 */;
+        virtual void _InternalCreateVisualPart() override /* 0x100 */;
 
     private:
-        bool m_bDestroyed;
-    };
+        /* 0x014c */ bool m_bDestroyed;
+    }; /* size: 0x0150 */
+
+    static_assert(sizeof(Boss04Station) == 0x0150);
 }

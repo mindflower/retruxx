@@ -20,20 +20,20 @@ namespace ai
     class CollisionInfo;
     class PhysicObj;
 
-    class PhysicBodyPrototypeInfo : public PrototypeInfo
+    class PhysicBodyPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        virtual void RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        /* 0x0040 */ int m_engineModelId;
+        /* 0x0044 */ CStr m_engineModelName;
+        /* 0x0050 */ float m_massValue;
+        /* 0x0054 */ retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> > m_collisionInfos;
+        /* 0x0064 */ bool m_bCollisionTrimeshAllowed;
         PhysicBodyPrototypeInfo();
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x0c */;
+    }; /* size: 0x0068 */
 
-    private:
-        int m_engineModelId;
-        CStr m_engineModelName;
-        float m_massValue;
-        oldstd::vector<CollisionInfo> m_collisionInfos;
-        bool m_bCollisionTrimeshAllowed;
-    };
+    static_assert(sizeof(PhysicBodyPrototypeInfo) == 0x0068);
 
     class PhysicBody : public Obj
     {
@@ -48,18 +48,18 @@ namespace ai
         virtual m3d::Class* GetRtClass() const override /* 0x00 */;
         static m3d::Class m_classPhysicBody;
 
-        using GeomTransformPtrVector = oldstd::vector<ai::GeomTransform*, oldstd::allocator<ai::GeomTransform*> >;
+        using GeomTransformPtrVector = retruxx::vector<ai::GeomTransform*, retruxx::allocator<ai::GeomTransform*> >;
 
     public:
         /* 0x00c0 */ CStr m_modelname;
         /* 0x00cc */ dMass m_mass;
-        /* 0x0110 */ oldstd::vector<ai::GeomTransform*, oldstd::allocator<ai::GeomTransform*> > m_pGeoms;
+        /* 0x0110 */ retruxx::vector<ai::GeomTransform*, retruxx::allocator<ai::GeomTransform*> > m_pGeoms;
         /* 0x0120 */ float m_mU;
         /* 0x0124 */ m3d::SgNode* m_Node;
 
         void _ClearGeoms();
         virtual void SetBelong(int newBelong) override /* 0x00 */;
-        void SetEffectActions(oldstd::vector<enum ActionType, oldstd::allocator<enum ActionType> >& Actions);
+        void SetEffectActions(retruxx::vector<enum ActionType, retruxx::allocator<enum ActionType> >& Actions);
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
@@ -95,7 +95,7 @@ namespace ai
         virtual void LinkGeomToCollisionCells() /* 0x120 */;
         virtual void UnlinkGeomFromCollisionCells() /* 0x124 */;
         virtual void RelinkGeomToCollisionCells() /* 0x128 */;
-        virtual void ReceiveNodesToLink(oldstd::list<m3d::SgNode*, oldstd::allocator<m3d::SgNode*> >& nodes) const override /* 0x00 */;
+        virtual void ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*> >& nodes) const override /* 0x00 */;
         virtual ai::Geom::CellAabb GetCollisionCellAabb() const /* 0x12c */;
         virtual void RenderDebugInfo() const override /* 0x00 */;
         bool bNeedToRelinkNode() const;
@@ -125,19 +125,19 @@ namespace ai
         virtual m3d::AnimatedModel* GetModel() const /* 0x14c */;
         virtual void SetVisible() override /* 0x00 */;
         virtual void SetInvisible() override /* 0x00 */;
-        virtual void GetGeoms(oldstd::vector<ai::Geom*, oldstd::allocator<ai::Geom*> >& geoms) const /* 0x150 */;
+        virtual void GetGeoms(retruxx::vector<ai::Geom*, retruxx::allocator<ai::Geom*> >& geoms) const /* 0x150 */;
         virtual unsigned int GetNumGeoms() const /* 0x154 */;
         virtual ai::Geom* GetGeom(unsigned int n) const /* 0x158 */;
-        const oldstd::vector<ai::CollisionInfo, oldstd::allocator<ai::CollisionInfo> >& GetCollisionInfo() const;
-        void ChangePhysicBodyByCollisionInfo(const oldstd::vector<ai::CollisionInfo, oldstd::allocator<ai::CollisionInfo> >& collisionInfos);
+        const retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> >& GetCollisionInfo() const;
+        void ChangePhysicBodyByCollisionInfo(const retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> >& collisionInfos);
         virtual void ApplyCurrentModelCollision() /* 0x15c */;
         int GetNodeRealAction() const;
-        void UpdateGeomsByCollisionInfo(const oldstd::vector<ai::CollisionInfo, oldstd::allocator<ai::CollisionInfo> >& collisionInfos);
+        void UpdateGeomsByCollisionInfo(const retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> >& collisionInfos);
         void SetCollisionTrimeshAllowed(bool bCollisionTrimeshAllowed);
 
     protected:
         /* 0x0128 */ int m_cfgNum;
-        /* 0x012c */ oldstd::vector<ai::CollisionInfo, oldstd::allocator<ai::CollisionInfo> > m_collisionInfos;
+        /* 0x012c */ retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> > m_collisionInfos;
         /* 0x013c */ bool m_bCollisionTrimeshAllowed;
 
         virtual void _InternalCreateVisualPart() override /* 0x00 */;

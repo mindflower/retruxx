@@ -155,9 +155,7 @@ namespace m3d
         {
             /* 0x0000 */ m3d::ObjectsContainer m_nodesLinkedDirect;
             /* 0x0300 */ retruxx::set<m3d::Object*, retruxx::less<m3d::Object*>, retruxx::allocator<m3d::Object*> > m_nodesShadowingDirect;
-            /* 0x030c */ bool m_bVisibleInCurrentFrame;
-            CellItems(const m3d::SceneGraph::CellItems&);
-            CellItems();
+            /* 0x030c */ bool m_bVisibleInCurrentFrame = false;
         }; /* size: 0x0310 */
 
     private:

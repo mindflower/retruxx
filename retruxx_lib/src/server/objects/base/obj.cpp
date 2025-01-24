@@ -148,7 +148,7 @@ namespace ai
         RT_CLASS_EXPORT(Obj, m3d::METHOD, SetNameFromScript, "", "", "")
         RT_CLASS_EXPORT(Obj, m3d::METHOD, GetSchwarz, "", "", "")
 	RT_CLASS_EXPORTS_END;
-    //RT_CLASS_DEFINE(Obj);
+    RT_CLASS_DEFINE(Obj);
 
 
     m3d::Class* Obj::GetBaseClass()
@@ -221,7 +221,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Obj::ReceiveNodesToLink(oldstd::list<m3d::SgNode*>&) const
+    void Obj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*>&) const
     {
         throw std::logic_error("Not implemented");
     }
@@ -447,7 +447,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    oldstd::map<int, Obj*>& Obj::GetChildren()
+    retruxx::map<int, Obj*>& Obj::GetChildren()
     {
         throw std::logic_error("Not implemented");
     }
@@ -497,14 +497,14 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    oldstd::map<int, Obj*>& Obj::getAllChildren()
+    retruxx::map<int, Obj*>& Obj::getAllChildren()
     {
         throw std::logic_error("Not implemented");
     }
 
     Obj::Obj()
     {
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     bool Obj::_GetDeadStatus() const
@@ -716,7 +716,7 @@ namespace ai
     {
     }
 
-    void Obj::GetPropertiesIDs(oldstd::set<int>& props) const
+    void Obj::GetPropertiesIDs(retruxx::set<int>& props) const
     {
         for (auto const& prop : m_propertiesMap)
         {
@@ -750,7 +750,7 @@ namespace ai
         m_modifiers.resize(0, {});
     }
 
-    void Obj::GetPropertiesNames(oldstd::set<CStr>& props) const
+    void Obj::GetPropertiesNames(retruxx::set<CStr>& props) const
     {
         for (auto const& prop : m_propertiesMap)
         {

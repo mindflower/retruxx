@@ -1,13 +1,6 @@
 #pragma once
 #include <core/clazz.h>
-#include "thirdparty/stl/map.hpp"
-#include "thirdparty/stl/vector.hpp"
-#include "thirdparty/stl/list.hpp"
-#include "thirdparty/stl/set.hpp"
-#include <map>
-#include <set>
-#include <list>
-#include <vector>
+#include "thirdparty/containers.h"
 
 namespace m3d
 {
@@ -204,7 +197,7 @@ namespace ai
         Obj(const ai::Obj&);
         Obj(const ai::PrototypeInfo& prototypeInfo);
         Obj();
-        virtual  ~Obj() override /* 0x00 */;
+        virtual ~Obj() override /* 0x00 */;
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
@@ -212,7 +205,7 @@ namespace ai
         static inline m3d::Class m_classObj;
         virtual int OnEvent(const ai::Event& evn) /* 0x40 */;
 
-        struct LessNoCaseCStr : public oldstd::binary_function<CStr, CStr, bool>
+        struct LessNoCaseCStr : public retruxx::binary_function<CStr, CStr, bool>
         {
             bool operator()(const CStr& a1, const CStr& a2) const
             {
@@ -237,7 +230,7 @@ namespace ai
         int GetParentId() const;
         int GetPrototypeId() const;
         void SetParentInvalid();
-        oldstd::map<int, ai::Obj*, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, ai::Obj*> > >& GetChildren();
+        retruxx::map<int, ai::Obj*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Obj*> > >& GetChildren();
         void UnlinkFromParent();
         void LinkToParent(int newParentID, ai::Obj::HierarchyType newHierarchyType);
         bool bHasParent() const;
@@ -262,8 +255,8 @@ namespace ai
         int TimeOutActivated() const;
         static void __fastcall Registration();
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const /* 0x58 */;
-        virtual void GetPropertiesNames(oldstd::set<CStr, oldstd::less<CStr>, oldstd::allocator<CStr> >& Props) const /* 0x5c */;
-        virtual void GetPropertiesIDs(oldstd::set<int, oldstd::less<int>, oldstd::allocator<int> >& Props) const /* 0x60 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const /* 0x5c */;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const /* 0x60 */;
         virtual int GetProperty(unsigned int propId, void* property) const /* 0x64 */;
         virtual m3d::AIParam GetProperty(const char* PropertyName) const /* 0x64 */;
         virtual m3d::AIParam GetPropertyDefault(const char* PropertyName) const /* 0x68 */;
@@ -319,7 +312,7 @@ namespace ai
         virtual void TransferPhysicParamsToSceneGraphNode() /* 0xdc */;
         virtual void RelinkSceneGraphNode() /* 0xe0 */;
         virtual void RenderDebugInfo() const /* 0xe4 */;
-        virtual void ReceiveNodesToLink(oldstd::list<m3d::SgNode*, oldstd::allocator<m3d::SgNode*> >& nodes) const /* 0xe8 */;
+        virtual void ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*> >& nodes) const /* 0xe8 */;
         bool GetDeletedStatus() const;
         virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const /* 0xec */;
         float GetPriceCoeff(const ai::IPriceCoeffProvider* priceCoeffProvider) const;
@@ -329,8 +322,8 @@ namespace ai
         bool IsAffixesApplied() const;
         void SetAffixesApplied(bool bApplied);
 
-        using PropertyMapType = oldstd::map<CStr, int, ai::Obj::LessNoCaseCStr, oldstd::allocator<oldstd::pair<CStr const, int> > >;
-        using PropertySaveStatesMapType = oldstd::map<int, enum ai::eGObjPropertySaveStatus, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, enum ai::eGObjPropertySaveStatus> > >;
+        using PropertyMapType = retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > >;
+        using PropertySaveStatesMapType = retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > >;
         class PropertyMapIterator;
 
     protected:
@@ -344,7 +337,7 @@ namespace ai
         virtual void _SetAllPropertiesToMax() /* 0x104 */;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const /* 0x108 */;
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const /* 0x10c */;
-        oldstd::map<int, ai::Obj*, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, ai::Obj*> > >& getAllChildren();
+        retruxx::map<int, ai::Obj*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Obj*> > >& getAllChildren();
         int GetLastDamageSource() const;
         void SetLastDamageSource(int objId);
 
@@ -370,23 +363,23 @@ namespace ai
         /* 0x0065 */ char Padding_15[3];
         /* 0x0068 */ ai::Obj::HierarchyType m_hierarchyType;
         /* 0x006c */ int m_prototypeId;
-        /* 0x0070 */ oldstd::map<int, ai::Obj*, oldstd::less<int>, oldstd::allocator<oldstd::pair<int const, ai::Obj*> > > m_allChildren;
-        /* 0x007c */ oldstd::vector<int, oldstd::allocator<int> > m_appliedPrefixIds;
-        /* 0x008c */ oldstd::vector<int, oldstd::allocator<int> > m_appliedSuffixIds;
+        /* 0x0070 */ retruxx::map<int, ai::Obj*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Obj*> > > m_allChildren;
+        /* 0x007c */ retruxx::vector<int, retruxx::allocator<int> > m_appliedPrefixIds;
+        /* 0x008c */ retruxx::vector<int, retruxx::allocator<int> > m_appliedSuffixIds;
         /* 0x009c */ bool m_bAffixesWasApplied;
         /* 0x009d */ char Padding_16[3];
-        /* 0x00a0 */ oldstd::vector<ai::Modifier, oldstd::allocator<ai::Modifier> > m_modifiers;
+        /* 0x00a0 */ retruxx::vector<ai::Modifier, retruxx::allocator<ai::Modifier> > m_modifiers;
 
         struct EventRecipientInfo
         {
             /* 0x0000 */ ai::eGameEvent m_eventId;
-            /* 0x0004 */ oldstd::vector<int> m_objIds;
+            /* 0x0004 */ retruxx::vector<int> m_objIds;
         }; /* size: 0x0014 */
 
-        using EventRecipientInfoVector = oldstd::vector<ai::Obj::EventRecipientInfo, oldstd::allocator<ai::Obj::EventRecipientInfo> >;
+        using EventRecipientInfoVector = retruxx::vector<ai::Obj::EventRecipientInfo, retruxx::allocator<ai::Obj::EventRecipientInfo> >;
 
     private:
-        /* 0x00b0 */ oldstd::vector<ai::Obj::EventRecipientInfo, oldstd::allocator<ai::Obj::EventRecipientInfo> > m_eventRecipients;
+        /* 0x00b0 */ retruxx::vector<ai::Obj::EventRecipientInfo, retruxx::allocator<ai::Obj::EventRecipientInfo> > m_eventRecipients;
         int _GetIndexByEventId(ai::eGameEvent eventId) const;
         void _Init();
         void OnSubscribe(const ai::Event& evn);

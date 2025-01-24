@@ -100,7 +100,7 @@ namespace ai
 
     namespace
     {
-        oldstd::set<m3d::Class*> standardTargetClasses;
+        retruxx::set<m3d::Class*> standardTargetClasses;
     }
 
     extern AIManager* theAIManager;
@@ -265,7 +265,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void PhysicObj::GetPropertiesNames(oldstd::set<CStr, oldstd::less<CStr>, oldstd::allocator<CStr>>&) const
+    void PhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
     {
         throw std::logic_error("Not implemented");
     }
@@ -526,7 +526,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void PhysicObj::GetPropertiesIDs(oldstd::set<int, oldstd::less<int>, oldstd::allocator<int>>&) const
+    void PhysicObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
     {
         throw std::logic_error("Not implemented");
     }

@@ -39,6 +39,9 @@ namespace retruxx
     using hash_map = oldstdext::hash_map<Key, Val, Comp, Al>;
 
     using string = oldstd::string;
+
+    template<typename... Args>
+    using binary_function = oldstd::binary_function<Args...>;
 }
 
 #else //RETRUXX_DLL

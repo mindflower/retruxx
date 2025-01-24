@@ -2,6 +2,7 @@
 #include "base/obj.h"
 #include "base/objcontainer.h"
 #include "base/prototypeinfo.h"
+#include "server/dynamicquestmanager.h"
 
 namespace ai
 {
@@ -27,88 +28,98 @@ namespace ai
         FM_DYNAMIC_QUEST_FAILED_BECAUSE_HIRER_BECAMES_ENEMY = 0x11,
     };
 
-    class DynamicQuestPrototypeInfo : public PrototypeInfo
+    class DynamicQuestPrototypeInfo : public ai::PrototypeInfo
     {
     public:
         DynamicQuestPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        /* 0x0040 */ int m_minReward;
+    }; /* size: 0x0044 */
+
+    static_assert(sizeof(DynamicQuestPrototypeInfo) == 0x0044);
+
+    class DynamicQuest : public ai::Obj
+    {
+    protected:
+        virtual  ~DynamicQuest() override = 0 /* 0x00 */;
 
     private:
-        int m_minReward;
-
-    };
-    class DynamicQuest : public Obj
-    {
-    public:
-        enum QuestStatus
-        {
-            STATUS_NOT_TAKEN = 0x0,
-            STATUS_PROCESSING = 0x1,
-            STATUS_COMPLETE = 0x2,
-            STATUS_FAILED = 0x3,
-            STATUS_FORGOTTEN = 0x4,
-            STATUS_NUM_STATES = 0x5,
-        };
+        DynamicQuest(const ai::DynamicQuestPrototypeInfo& prototypeInfo);
+        DynamicQuest(const ai::DynamicQuest&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        virtual int GetPropertyId(char const *) const ;
-        virtual bool CanChildBeAdded(m3d::Class *) const ;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        DynamicQuest(DynamicQuestPrototypeInfo const &);
-        virtual DynamicQuestPrototypeInfo const * GetPrototypeInfo() const ;
-        virtual CStr GetPropertyName(int) const ;
-        GameTime const & GetTakeGameTime() const ;
-        CStr const & GetTargetName() const ;
-        int GetHirerObjId() const ;
-        void Take();
-        virtual void PassToAnotherMap();
-        static m3d::Class * GetBaseClass();
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        int GetReward() const ;
-        CStr const & GetHirerName() const ;
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
-        virtual int OnEvent(Event const &);
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual void UpdateBeforeShowInConversation();
-        virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
-        virtual m3d::Class * GetClass() const ;
-        int GetTargetObjId() const ;
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
-        static void __fastcall Registration();
-        QuestStatus GetQuestStatus() const ;
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classDynamicQuest;
+        virtual const ai::DynamicQuestPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual int OnEvent(const ai::Event& evn) override /* 0x40 */;
 
     protected:
-        virtual ~DynamicQuest();
-        virtual void _OnHirerBecamesEnemyWithPlayer();
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
-        void _SetStatus(QuestStatus);
-        virtual void _OnCreate();
-        virtual void _OnTake();
-        static void __fastcall RegisterProperty(char const *,int,eGObjPropertySaveStatus);
-        virtual void _InternalPostLoad();
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
-
-    private:
-        virtual m3d::Object * Clone();
-        void _OnObjectEntersLocation(Event const &);
-        static m3d::Object * CreateObject();
-        void _OnObjectDie(Event const &);
-        void _OnRelationChanged(Event const &);
+        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
-        RT_CLASS_DECLARE(DynamicQuest);
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x5c */;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x60 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x78 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
+
+    protected:
+        static retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
+        static retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
+
+    public:
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x98 */;
+
+        enum QuestStatus;
+
+    public:
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xac */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb4 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
+        virtual void PassToAnotherMap() /* 0x110 */;
+        virtual void UpdateBeforeShowInConversation() /* 0x114 */;
+        void Take();
+        static void __fastcall Registration();
+        virtual ai::DynamicQuestManager::QuestType GetQuestType() const = 0 /* 0x118 */;
+        int GetHirerObjId() const;
+        int GetTargetObjId() const;
+        const CStr& GetHirerName() const;
+        const CStr& GetTargetName() const;
+        ai::DynamicQuest::QuestStatus GetQuestStatus() const;
+        int GetReward() const;
+        const ai::GameTime& GetTakeGameTime() const;
+
+    protected:
+        virtual void _InternalPostLoad() override /* 0xfc */;
+        virtual void _OnCreate() /* 0x11c */;
+        virtual void _OnTake() /* 0x120 */;
+        virtual int _CalcReward() = 0 /* 0x124 */;
+        virtual void _OnHirerBecamesEnemyWithPlayer() /* 0x128 */;
+        void _SetStatus(ai::DynamicQuest::QuestStatus newStatus);
+        /* 0x00c0 */ int m_reward;
+        /* 0x00c4 */ char Padding_43[4];
+        /* 0x00c8 */ ai::GameTime m_takeGameTime;
+        /* 0x00e0 */ ai::FadingMsgId m_fadingMsgIdOnComplete;
+        /* 0x00e4 */ bool m_bShowMessageForAddMoney;
+        /* 0x00e5 */ char Padding_44[3];
 
     private:
-        int m_reward;
-        GameTime m_takeGameTime;
-        FadingMsgId m_fadingMsgIdOnComplete;
-        bool m_bShowMessageForAddMoney;
-        QuestStatus m_questStatus;
-        int m_hirerObjId;
-        int m_targetObjId;
-        CStr m_hirerName;
-        CStr m_targetName;
-    };
+        /* 0x00e8 */ ai::DynamicQuest::QuestStatus m_questStatus;
+        /* 0x00ec */ int m_hirerObjId;
+        /* 0x00f0 */ int m_targetObjId;
+        /* 0x00f4 */ CStr m_hirerName;
+        /* 0x0100 */ CStr m_targetName;
+        void _OnObjectDie(const ai::Event& evn);
+        void _OnObjectEntersLocation(const ai::Event& evn);
+        void _OnRelationChanged(const ai::Event& evn);
+    }; /* size: 0x0110 */
+
+    static_assert(sizeof(DynamicQuest) == 0x0110);
 }

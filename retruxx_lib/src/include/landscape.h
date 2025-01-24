@@ -32,8 +32,12 @@ namespace m3d
         template<class T>
         struct vector
         {
-            vector();
-            ~vector();
+            ~vector()
+            {
+                delete m_data;
+                m_maxItems = 0;
+                m_numItems = 0;
+            }
             void Allocate(int sz);
             void Deallocate();
             void clear();
@@ -42,9 +46,9 @@ namespace m3d
             void push_back(const T& shit);
             int empty() const;
             int size() const;
-            /* 0x0000 */ T* m_data;
-            /* 0x0004 */ int m_numItems;
-            /* 0x0008 */ int m_maxItems;
+            /* 0x0000 */ T* m_data = nullptr;
+            /* 0x0004 */ int m_numItems = 0;
+            /* 0x0008 */ int m_maxItems = 0;
         }; /* size: 0x000c */
     }
 
@@ -181,8 +185,6 @@ namespace m3d
             /* 0x0020 */ float m_sphase = 0.15000001;
             /* 0x0024 */ float m_sfreq = 0.2;
             /* 0x0028 */ rend::TexHandle m_texHandle;
-            WaveSets(const m3d::Landscape::WaveSets& __that);
-            WaveSets();
         }; /* size: 0x002c */
 
     public:

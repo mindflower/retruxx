@@ -27,12 +27,12 @@ namespace ai
     {
     public:
         PhysicObjPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        /* 0x0040 */ float m_intersectionRadius;
+        /* 0x0044 */ float m_lookRadius;
+    }; /* size: 0x0048 */
 
-    public:
-        float m_intersectionRadius;
-        float m_lookRadius;
-    };
+    static_assert(sizeof(PhysicObjPrototypeInfo) == 0x0048);
 
     class PhysicObj : public Obj
     {
@@ -44,10 +44,10 @@ namespace ai
         PhysicObj(const ai::PhysicObjPrototypeInfo& prototypeInfo);
         PhysicObj(const ai::PhysicObj&);
         virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* CreateObject();
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        static m3d::Class* GetBaseClass();
+        static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override /* 0x00 */;
         static m3d::Class m_classPhysicObj;
         virtual const ai::PhysicObjPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
@@ -57,15 +57,15 @@ namespace ai
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
-        virtual void GetPropertiesNames(oldstd::set<CStr>& Props) const override /* 0x5c */;
-        virtual void GetPropertiesIDs(oldstd::set<int>& Props) const override /* 0x60 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr>& Props) const override /* 0x5c */;
+        virtual void GetPropertiesIDs(retruxx::set<int>& Props) const override /* 0x60 */;
         virtual CStr GetPropertyName(int id) const override /* 0x78 */;
         virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
         virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
 
     protected:
-        static inline oldstd::map<CStr, int, ai::Obj::LessNoCaseCStr> m_propertiesMap;
-        static inline oldstd::map<int, enum ai::eGObjPropertySaveStatus> m_propertiesSaveStatesMap;
+        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr> m_propertiesMap;
+        static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus> m_propertiesSaveStatesMap;
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
 

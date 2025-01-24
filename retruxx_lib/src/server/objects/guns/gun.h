@@ -24,183 +24,202 @@ namespace ai
         FT_NUM_FIRING_TYPES = 0xD,
     };
 
-    class GunPrototypeInfo : public VehiclePartPrototypeInfo
+    class GunPrototypeInfo : public ai::VehiclePartPrototypeInfo
     {
     public:
-        virtual void RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        static CStr __fastcall DamageType2Str(DamageType);
         GunPrototypeInfo();
-        void CreateBlastWave(CVector const&, int) const;
-        static CStr __fastcall FiringType2Str(FiringTypes);
-        static FiringTypes __fastcall Str2FiringType(CStr const&);
-        static DamageType __fastcall Str2DamageType(CStr const&);
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual float GetDamageForOneShell() const;
-        virtual void PostLoad();
+        /* 0x0110 */ CStr m_barrelModelName;
+        /* 0x011c */ int m_shellPrototypeId;
+        /* 0x0120 */ float m_damage;
+        /* 0x0124 */ ai::DamageType m_damageType;
+        /* 0x0128 */ float m_firingRate;
+        /* 0x012c */ float m_firingRange;
+        /* 0x0130 */ float m_lowStopAngle;
+        /* 0x0134 */ float m_highStopAngle;
+        /* 0x0138 */ bool m_ignoreStopAnglesWhenFire;
+        /* 0x0139 */ char Padding_128;
+        /* 0x013a */ unsigned short m_explosionType;
+        /* 0x013c */ int m_decalId;
+        /* 0x0140 */ float m_recoilForce;
+        /* 0x0144 */ float m_turningSpeed;
+        /* 0x0148 */ unsigned int m_ChargeSize;
+        /* 0x014c */ float m_ReChargingTime;
+        /* 0x0150 */ float m_ReChargingTimePerShell;
+        /* 0x0154 */ unsigned int m_ShellsPoolSize;
+        /* 0x0158 */ bool m_WithCharging;
+        /* 0x0159 */ bool m_WithShellsPoolLimit;
+        /* 0x015a */ char Padding_129[2];
+        /* 0x015c */ int m_blastWavePrototypeId;
+        /* 0x0160 */ ai::FiringTypes m_firingType;
+
+        using TMatrixVector = retruxx::vector<CMatrix, retruxx::allocator<CMatrix> >;
+
+    public:
+        /* 0x0164 */ retruxx::vector<CMatrix, retruxx::allocator<CMatrix> > m_fireLpMatrices;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual void PostLoad() override /* 0x00 */;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x0c */;
+        void CreateBlastWave(const CVector& pos, int gunId) const;
         short GetExplosionType() const;
+        int GetDecalId() const;
+        virtual float GetDamageForOneShell() const /* 0x1c */;
+        static ai::FiringTypes __fastcall Str2FiringType(const CStr& firingTypeStr);
+        static CStr __fastcall FiringType2Str(ai::FiringTypes firingType);
+        static ai::DamageType __fastcall Str2DamageType(const CStr& damageTypeStr);
+        static CStr __fastcall DamageType2Str(ai::DamageType damageType);
 
     private:
         bool _bIsRapidFiring() const;
+        /* 0x0174 */ CStr m_explosionTypeName;
+        /* 0x0180 */ CStr m_shellPrototypeName;
+        /* 0x018c */ CStr m_blastWavePrototypeName;
+    }; /* size: 0x0198 */
+
+    static_assert(sizeof(GunPrototypeInfo) == 0x0198);
+
+    class Gun : public ai::VehiclePart
+    {
+    protected:
+        virtual  ~Gun() override = 0 /* 0x00 */;
 
     private:
-        CStr m_barrelModelName;
-        int m_shellPrototypeId;
-        float m_damage;
-        DamageType m_damageType;
-        float m_firingRate;
-        float m_firingRange;
-        float m_lowStopAngle;
-        float m_highStopAngle;
-        bool m_ignoreStopAnglesWhenFire;
-        unsigned __int16 m_explosionType;
-        int m_decalId;
-        float m_recoilForce;
-        float m_turningSpeed;
-        unsigned int m_ChargeSize;
-        float m_ReChargingTime;
-        float m_ReChargingTimePerShell;
-        unsigned int m_ShellsPoolSize;
-        bool m_WithCharging;
-        bool m_WithShellsPoolLimit;
-        int m_blastWavePrototypeId;
-        FiringTypes m_firingType;
-        std::vector<CMatrix> m_fireLpMatrices;
-        CStr m_explosionTypeName;
-        CStr m_shellPrototypeName;
-        CStr m_blastWavePrototypeName;
-    };
-
-    class Gun : public VehiclePart
-    {
-    public:
-        enum ChargeState
-        {
-            csReady = 0x0,
-            csInCharging = 0x1,
-        };
+        Gun(const ai::GunPrototypeInfo& prototypeInfo);
+        Gun(const ai::Gun&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        m3d::SgNode* GetBarrelNode() const;
-        virtual bool Fire(bool);
-        virtual GunPrototypeInfo const* GetPrototypeInfo() const;
-        void SetShellsInPool(unsigned int);
-        void RenderGunDebugInfo() const;
-        virtual float EstimateDamage(CVector const&, std::vector<int, std::allocator<int> > const&) const;
-        virtual float EstimateDamage() const;
-        bool bIs360DegreesHoriz() const;
-        virtual CStr GetPropertyName(int) const;
-        virtual bool CanLookAtTarget() const;
-        float GetRechargingTime() const;
-        virtual m3d::Class* GetClass() const;
-        virtual bool isLookAtPoint(CVector const&, float) const;
-        virtual void SetInvisible();
-        virtual void GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr> >&) const;
-        virtual void Update(float, unsigned int);
-        virtual float GetDamageForOneShell() const;
-        bool CanShotToTarget(int) const;
-        virtual void GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int> >&) const;
-        virtual bool PointIsReachableFromPosition(CVector const&, CVector const&, std::vector<int, std::allocator<int> >) const;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        unsigned int GetShellsInPool() const;
-        bool IsWithCharging() const;
-        float GetFiringRate() const;
-        CMatrix GetMatrixForShot(unsigned int) const;
-        float GetCurrentRechargingTime() const;
-        unsigned int GetShellsPoolSize() const;
-        virtual int OnEvent(Event const&);
-        void SetTargetId(int);
-        unsigned int GetChargeSize() const;
-        float GetFiringRange() const;
-        virtual float EstimateDamageFromPosition(CVector const&, CVector const&, std::vector<int, std::allocator<int> > const&);
-        virtual bool PointIsReachable(CVector const&, std::vector<int, std::allocator<int> >) const;
-        unsigned int GetShellsInCurrentCharge() const;
-        virtual void LookAtPoint(CVector const&, float);
-        void Recharge();
-        virtual int GetPropertyId(char const*) const;
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const;
-        static void __fastcall Registration();
-        virtual void SetPassedToAnotherMapStatus();
-        float GetDamage() const;
-        void SetInitialHorizAngle(float);
-        int GetShellPrototypeId() const;
-        ChargeState GetChargeState() const;
-        float GetTurningSpeed() const;
-        virtual bool SetPropertyById(int, m3d::AIParam const&);
-        void SetShellsInCurrentCharge(unsigned int);
-        DamageType GetDamageType() const;
-        bool IsDurabilityEnoughForFiring() const;
-        bool IsWithShellsPoolLimit() const;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-        virtual bool CanFire() const;
-        virtual unsigned int GetPrice(IPriceCoeffProvider const*) const;
-        Gun(GunPrototypeInfo const&);
-        float GetInitialHorizAngle() const;
-        void SetChargeState(int);
-        void SetChargeState(ChargeState);
-        void SetHorizontalStopAngles(float, float);
-        static m3d::Class* GetBaseClass();
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classGun;
+        virtual const ai::GunPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual int OnEvent(const ai::Event& evn) override /* 0x00 */;
 
     protected:
-        virtual void DoRecoil();
-        static void __fastcall RegisterProperty(char const*, int, eGObjPropertySaveStatus);
-        bool _DoFire();
-        bool _IsDirVerticallyReachable(CVector const&) const;
-        virtual bool _GetPropertyDefaultInternal(int, m3d::AIParam&) const;
-        virtual void _InternalCreateVisualPart();
-        virtual bool _bIsUsingVolley() const;
-        unsigned int GetBarrelsNum();
-        virtual void _LaunchShells();
-        CVector _CalcDirForNextShot() const;
-        virtual void _InternalPostLoad();
-        CVector _CalcRoughPosForNextShot() const;
-        virtual bool _bIsVolleyFiring() const;
-        virtual ~Gun();
+        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+
+    public:
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x00 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x00 */;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x00 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x00 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x00 */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x00 */;
+
+    protected:
+        static retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
+        static retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+
+    public:
+        /* 0x02c8 */ float m_leftStopAngle;
+        /* 0x02cc */ float m_rightStopAngle;
+        /* 0x02d0 */ float m_lowStopAngle;
+        /* 0x02d4 */ float m_highStopAngle;
+
+        enum ChargeState;
+
+    public:
+        virtual void LookAtPoint(const CVector& lookAt, float elapsedTime) /* 0x168 */;
+        virtual bool isLookAtPoint(const CVector& lookAt, float eps) const /* 0x16c */;
+        bool CanShotToTarget(int targetId) const;
+        void SetTargetId(int targetObjId);
+        virtual bool Fire(bool enable) /* 0x170 */;
+        void SetHorizontalStopAngles(float leftStopAngle, float rightStopAngle);
+        m3d::SgNode* GetBarrelNode() const;
+        virtual void SetPassedToAnotherMapStatus() override /* 0x00 */;
+        static void __fastcall Registration();
+        ai::Gun::ChargeState GetChargeState() const;
+        void SetChargeState(int Value);
+        void SetChargeState(ai::Gun::ChargeState Value);
+        unsigned int GetShellsInCurrentCharge() const;
+        void SetShellsInCurrentCharge(unsigned int Value);
+        unsigned int GetShellsInPool() const;
+        void SetShellsInPool(unsigned int Shells);
+        unsigned int GetShellsPoolSize() const;
+        bool IsWithCharging() const;
+        bool IsWithShellsPoolLimit() const;
+        unsigned int GetChargeSize() const;
+        float GetRechargingTime() const;
+        float GetCurrentRechargingTime() const;
+        CMatrix GetMatrixForShot(unsigned int barrelIndex) const;
+        virtual float EstimateDamage(const CVector& pos, const retruxx::vector<int, retruxx::allocator<int> >& exceptions) const /* 0x178 */;
+        virtual float EstimateDamage() const /* 0x178 */;
+        virtual bool PointIsReachable(const CVector& pos, retruxx::vector<int, retruxx::allocator<int> > exceptions) const /* 0x17c */;
+        virtual bool PointIsReachableFromPosition(const CVector& newPosition, const CVector& target, retruxx::vector<int, retruxx::allocator<int> > exceptions) const /* 0x180 */;
+        virtual float EstimateDamageFromPosition(const CVector& position, const CVector& pos, const retruxx::vector<int, retruxx::allocator<int> >& exceptions) /* 0x184 */;
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual void SetInvisible() override /* 0x00 */;
+        int GetShellPrototypeId() const;
+        float GetTurningSpeed() const;
+        float GetDamage() const;
+        virtual float GetDamageForOneShell() const /* 0x188 */;
+        ai::DamageType GetDamageType() const;
+        float GetFiringRate() const;
+        float GetFiringRange() const;
+        float GetInitialHorizAngle() const;
+        void SetInitialHorizAngle(float angle);
+        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override /* 0x00 */;
+        void Recharge();
+        virtual bool CanLookAtTarget() const /* 0x18c */;
+        bool bIs360DegreesHoriz() const;
+        bool IsDurabilityEnoughForFiring() const;
+        virtual bool CanFire() const /* 0x190 */;
+        void RenderGunDebugInfo() const;
+
+    protected:
+        /* 0x02d8 */ int m_targetObjId;
+        /* 0x02dc */ float m_damage;
+        /* 0x02e0 */ unsigned int m_curBarrelIndex;
+        /* 0x02e4 */ float m_currentDesiredAlpha;
+        /* 0x02e8 */ float m_timeFromLastShot;
+        /* 0x02ec */ bool m_bIsFiring;
         CVector _CalcPosForNextShot() const;
-        virtual bool _GetPropertyInternal(int, m3d::AIParam&) const;
+        CVector _CalcRoughPosForNextShot() const;
+        CVector _CalcDirForNextShot() const;
+        bool _IsDirVerticallyReachable(const CVector& dir) const;
+        virtual void DoRecoil() /* 0x194 */;
+        virtual void _InternalPostLoad() override /* 0x00 */;
+        virtual void _InternalCreateVisualPart() override /* 0x00 */;
+        bool _DoFire();
+        virtual void _LaunchShells() = 0 /* 0x198 */;
+        unsigned int GetBarrelsNum();
+        virtual bool _bIsUsingVolley() const /* 0x19c */;
+        virtual bool _bIsVolleyFiring() const /* 0x1a0 */;
+        /* 0x02ed */ char Padding_35[3];
 
     private:
-        void _CreateBarrelNode();
-        void _OnCinematic(Event const&);
-        static m3d::Object* CreateObject();
-        void _GetCurrentOffsetAngles(float&, float&) const;
+        /* 0x02f0 */ int m_shellPrototypeId;
+        /* 0x02f4 */ ai::DamageType m_damageType;
+        /* 0x02f8 */ float m_firingRate;
+        /* 0x02fc */ float m_firingRange;
+        /* 0x0300 */ float m_recoilForce;
+        /* 0x0304 */ float m_turningSpeed;
+        /* 0x0308 */ unsigned int m_ChargeSize;
+        /* 0x030c */ float m_ReChargingTime;
+        /* 0x0310 */ float m_ReChargingTimePerShell;
+        /* 0x0314 */ unsigned int m_ShellsInPool;
+        /* 0x0318 */ ai::Gun::ChargeState m_ChargeState;
+        /* 0x031c */ float m_CurrentReChargingTime;
+        /* 0x0320 */ unsigned int m_ShellsInCurrentCharge;
+        /* 0x0324 */ m3d::SgNode* m_barrelNode;
+        /* 0x0328 */ bool m_bWasShot;
+        /* 0x0329 */ bool m_bJustShot;
+        /* 0x032a */ char Padding_36[2];
+        /* 0x032c */ float m_initialHorizAngle;
         CMatrix _CalcMatrixForNextShot() const;
-        void BeginReCharge();
+        void _GetCurrentOffsetAngles(float& alpha, float& beta) const;
+        void _GetOffsetAngles(const CVector& lookAt, float elapsedTime, float& alpha, float& beta);
         unsigned int getShellsForRecharge() const;
-        void _GetOffsetAngles(CVector const&, float, float&, float&);
         bool _bIsRapidFiring() const;
         void _UpdateNodeFiringAction();
-        virtual m3d::Object* Clone();
+        void BeginReCharge();
+        void _CreateBarrelNode();
+        void _OnCinematic(const ai::Event& evn);
+    }; /* size: 0x0330 */
 
-    public:
-        RT_CLASS_DECLARE(Gun);
-
-    public:
-        float m_leftStopAngle;
-        float m_rightStopAngle;
-        float m_lowStopAngle;
-        float m_highStopAngle;
-        int m_targetObjId;
-        float m_damage;
-        unsigned int m_curBarrelIndex;
-        float m_currentDesiredAlpha;
-        float m_timeFromLastShot;
-        bool m_bIsFiring;
-        int m_shellPrototypeId;
-        DamageType m_damageType;
-        float m_firingRate;
-        float m_firingRange;
-        float m_recoilForce;
-        float m_turningSpeed;
-        unsigned int m_ChargeSize;
-        float m_ReChargingTime;
-        float m_ReChargingTimePerShell;
-        unsigned int m_ShellsInPool;
-        Gun::ChargeState m_ChargeState;
-        float m_CurrentReChargingTime;
-        unsigned int m_ShellsInCurrentCharge;
-        m3d::SgNode* m_barrelNode;
-        bool m_bWasShot;
-        bool m_bJustShot;
-        float m_initialHorizAngle;
-    };
+    static_assert(sizeof(Gun) == 0x0330);
 }

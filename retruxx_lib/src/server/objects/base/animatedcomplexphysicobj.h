@@ -3,30 +3,33 @@
 
 namespace ai
 {
-    class AnimatedComplexPhysicObjPrototypeInfo : public ComplexPhysicObjPrototypeInfo
+    class AnimatedComplexPhysicObjPrototypeInfo : public ai::ComplexPhysicObjPrototypeInfo
     {
     public:
         AnimatedComplexPhysicObjPrototypeInfo();
-        virtual Obj* CreateTargetObject() const;
-    };
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+    }; /* size: 0x0090 */
 
-    class AnimatedComplexPhysicObj : public ComplexPhysicObj
+    static_assert(sizeof(AnimatedComplexPhysicObjPrototypeInfo) == 0x0090);
+
+    class AnimatedComplexPhysicObj : public ai::ComplexPhysicObj
     {
-    public:
-        AnimatedComplexPhysicObj(AnimatedComplexPhysicObjPrototypeInfo const&);
-        static m3d::Class* GetBaseClass();
-        virtual AnimatedComplexPhysicObjPrototypeInfo const* GetPrototypeInfo() const;
-        virtual void Update(float, unsigned int);
-        virtual m3d::Class* GetClass() const;
-
     protected:
-        virtual ~AnimatedComplexPhysicObj();
+        virtual  ~AnimatedComplexPhysicObj() override /* 0x00 */;
 
     private:
-        static m3d::Object* CreateObject();
-        virtual m3d::Object* Clone();
+        AnimatedComplexPhysicObj(const ai::AnimatedComplexPhysicObjPrototypeInfo& prototypeInfo);
+        AnimatedComplexPhysicObj(const ai::AnimatedComplexPhysicObj&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        RT_CLASS_DECLARE(AnimatedComplexPhysicObj);
-    };
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classAnimatedComplexPhysicObj;
+        virtual const ai::AnimatedComplexPhysicObjPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+    }; /* size: 0x014c */
+
+    static_assert(sizeof(AnimatedComplexPhysicObj) == 0x014c);
 }

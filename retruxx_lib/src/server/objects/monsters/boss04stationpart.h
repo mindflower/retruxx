@@ -3,63 +3,70 @@
 
 namespace ai
 {
-    class Boss04StationPartPrototypeInfo : public VehiclePartPrototypeInfo
+    class Boss04StationPartPrototypeInfo : public ai::VehiclePartPrototypeInfo
     {
     public:
+        /* 0x0110 */ retruxx::vector<int, retruxx::allocator<int> > m_criticalMeshGroupIds;
         Boss04StationPartPrototypeInfo();
-        virtual void RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual Obj* CreateTargetObject() const;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x0c */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+        /* 0x0120 */ float m_maxHealth;
+    }; /* size: 0x0124 */
+
+    static_assert(sizeof(Boss04StationPartPrototypeInfo) == 0x0124);
+
+    class Boss04StationPart : public ai::VehiclePart
+    {
+    protected:
+        virtual  ~Boss04StationPart() override /* 0x00 */;
 
     private:
-        std::vector<int> m_criticalMeshGroupIds;
-        float m_maxHealth;
-    };
-
-    class Boss04StationPart :  public VehiclePart
-    {
-    public:
-        class MeshGroupInfo
-        {
-        public:
-            MeshGroupInfo(int, float);
-
-        private:
-            int m_groupId;
-            float m_health;
-        };
+        Boss04StationPart(const ai::Boss04StationPartPrototypeInfo& prototypeInfo);
+        Boss04StationPart(const ai::Boss04StationPart&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
-        virtual m3d::Class * GetClass() const ;
-        virtual int GetPropertyId(char const *) const ;
-        virtual CStr GetPropertyName(int) const ;
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        virtual Boss04StationPartPrototypeInfo const * GetPrototypeInfo() const ;
-        Boss04StationPart(Boss04StationPartPrototypeInfo const &);
-        float GetHealth() const ;
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
-        static void __fastcall Registration();
-        virtual void Update(float,unsigned int);
-        static m3d::Class * GetBaseClass();
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classBoss04StationPart;
+        virtual const ai::Boss04StationPartPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
 
     protected:
-        virtual void _InternalPostLoad();
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
-        virtual ~Boss04StationPart();
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
-
-    private:
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
-        void _UpdateMeshGroupsHealth();
+        static void __fastcall RegisterProperty(const char*, int, ai::eGObjPropertySaveStatus);
 
     public:
-        RT_CLASS_DECLARE(Boss04StationPart);
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x00 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x00 */;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x00 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x00 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x00 */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x00 */;
+
+    protected:
+        static retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
+        static retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+
+        struct MeshGroupInfo;
+
+    public:
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        static void __fastcall Registration();
+        float GetHealth() const;
+
+    protected:
+        virtual void _InternalPostLoad() override /* 0x00 */;
+
+        using MeshGroupInfoVector = retruxx::vector<ai::Boss04StationPart::MeshGroupInfo, retruxx::allocator<ai::Boss04StationPart::MeshGroupInfo> >;
 
     private:
-        std::vector<MeshGroupInfo> m_meshGroupInfos;
-        std::vector<MeshGroupInfo> m_prevMeshGroupInfos;
-    };
+        /* 0x02c8 */ retruxx::vector<ai::Boss04StationPart::MeshGroupInfo, retruxx::allocator<ai::Boss04StationPart::MeshGroupInfo> > m_meshGroupInfos;
+        /* 0x02d8 */ retruxx::vector<ai::Boss04StationPart::MeshGroupInfo, retruxx::allocator<ai::Boss04StationPart::MeshGroupInfo> > m_prevMeshGroupInfos;
+        void _UpdateMeshGroupsHealth();
+    }; /* size: 0x02e8 */
+
+    static_assert(sizeof(Boss04StationPart) == 0x02e8);
 }

@@ -5,41 +5,44 @@
 
 namespace ai
 {
-    class BasketPrototypeInfo : public VehiclePartPrototypeInfo
+    class BasketPrototypeInfo : public ai::VehiclePartPrototypeInfo
     {
+    protected:
+        virtual void _InternalCopyFrom(const ai::PrototypeInfo& rhs) override /* 0x00 */;
+
+        using SlotPositionMap = retruxx::map<CStr, PointBase<int>, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, PointBase<int> > > >;
+
     public:
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        PointBase<int> const& GetRepositorySize() const;
-        std::map<CStr, PointBase<int>, std::less<CStr>, std::allocator<std::pair<CStr const, PointBase<int> > > > const& GetSlotPositions() const;
-        int GetRepositoryCapacity() const;
-        BoundsBase<int> GetSlotBounds(CStr const&, bool) const;
         BasketPrototypeInfo();
-        virtual Obj* CreateTargetObject() const;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+        const retruxx::map<CStr, PointBase<int>, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, PointBase<int> > > >& GetSlotPositions() const;
+        const PointBase<int>& GetRepositorySize() const;
+        int GetRepositoryCapacity() const;
+        BoundsBase<int> GetSlotBounds(const CStr& gunPartName, bool bWithEmptyBorders) const;
+
+        using SlotPositionPair = retruxx::pair<CStr, PointBase<int> >;
 
     protected:
-        virtual void _InternalCopyFrom(PrototypeInfo const&);
+        /* 0x0110 */ retruxx::map<CStr, PointBase<int>, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, PointBase<int> > > > m_slots;
+        /* 0x011c */ PointBase<int> m_repositorySize;
+    }; /* size: 0x0124 */
 
-    private:
-        std::map<CStr, PointBase<int>> m_slots;
-        PointBase<int> m_repositorySize;
-    };
-
-    class Basket : public VehiclePart
+    class Basket : public ai::VehiclePart
     {
-    public:
-        virtual m3d::Class* GetClass() const;
-        Basket(BasketPrototypeInfo const&);
-        static m3d::Class* GetBaseClass();
-        virtual BasketPrototypeInfo const* GetPrototypeInfo() const;
-
     protected:
-        virtual ~Basket();
+        virtual  ~Basket() override /* 0x00 */;
 
     private:
-        static m3d::Object* CreateObject();
-        virtual m3d::Object* Clone();
+        Basket(const ai::BasketPrototypeInfo& prototypeInfo);
+        Basket(const ai::Basket&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        RT_CLASS_DECLARE(Basket);
-    };
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classBasket;
+        virtual const ai::BasketPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+    }; /* size: 0x02c8 */
 }
