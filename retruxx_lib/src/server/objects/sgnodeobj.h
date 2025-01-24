@@ -25,7 +25,7 @@ namespace ai
     protected:
         virtual  ~SgNodeObj() override /* 0x00 */;
 
-    private:
+    protected:
         SgNodeObj(const ai::SgNodeObjPrototypeInfo& prototypeInfo);
         SgNodeObj(const ai::SgNodeObj&);
         virtual m3d::Object* Clone() override /* 0x00 */;

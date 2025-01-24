@@ -41,6 +41,11 @@ namespace retruxx
     using string = oldstd::string;
 
     template<typename... Args>
+    using _Bidit = oldstd::_Bidit<Args...>;
+
+    using bidirectional_iterator_tag = oldstd::bidirectional_iterator_tag;
+
+    template<typename... Args>
     using binary_function = oldstd::binary_function<Args...>;
 }
 

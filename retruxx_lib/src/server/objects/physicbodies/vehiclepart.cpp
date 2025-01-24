@@ -235,7 +235,10 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	VehiclePart::VehiclePart(VehiclePartPrototypeInfo const& prototypeInfo) : PhysicBody(prototypeInfo)
+	VehiclePart::VehiclePart(VehiclePartPrototypeInfo const& prototypeInfo) :
+        PhysicBody(prototypeInfo),
+        m_price(prototypeInfo.m_price),
+        m_durability(prototypeInfo.m_durability, 0.0, prototypeInfo.m_durability, 0.0)
 	{
 		throw retruxx::logic_error("Not implemented");
 	}

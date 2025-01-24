@@ -48,7 +48,10 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    PhysicUnit::PhysicUnit(PhysicUnitPrototypeInfo const& prototype) : SimplePhysicObj(prototype)
+    PhysicUnit::PhysicUnit(PhysicUnitPrototypeInfo const& prototype) :
+        SimplePhysicObj(prototype),
+        m_standTtl(0.0, 0.0, m_maxStandTime, -1.0),
+        m_walkTtl(0.0, 0.0, 1.0, 0.0)
     {
         throw retruxx::logic_error("Not implemented");
     }

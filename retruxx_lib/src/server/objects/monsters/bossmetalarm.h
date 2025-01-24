@@ -7,7 +7,14 @@ namespace ai
     class BossMetalArmPrototypeInfo : public ai::SimplePhysicObjPrototypeInfo
     {
     public:
-        struct AttackActionInfo;
+        struct AttackActionInfo
+        {
+            /* 0x0000 */ int m_frameToReleaseLoad;
+            /* 0x0004 */ ActionType m_action;
+            AttackActionInfo();
+            void LoadFromXML(const m3d::cmn::XmlNode* xmlNode);
+        }; /* size: 0x0008 */
+
         using AttackActionInfoVector = retruxx::vector<ai::BossMetalArmPrototypeInfo::AttackActionInfo, retruxx::allocator<ai::BossMetalArmPrototypeInfo::AttackActionInfo> >;
 
     public:

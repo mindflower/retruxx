@@ -12,7 +12,14 @@ namespace ai
     class SettlementPrototypeInfo : public ai::SimplePhysicObjPrototypeInfo
     {
     public:
-        struct auxZoneInfo;
+        struct auxZoneInfo
+        {
+            /* 0x0000 */ CStr m_action;
+            /* 0x000c */ CVector m_offset;
+            /* 0x0018 */ float m_radius;
+            auxZoneInfo(const ai::SettlementPrototypeInfo::auxZoneInfo& __that);
+            auxZoneInfo();
+        }; /* size: 0x001c */
 
     public:
         /* 0x0080 */ retruxx::vector<ai::SettlementPrototypeInfo::auxZoneInfo, retruxx::allocator<ai::SettlementPrototypeInfo::auxZoneInfo> > m_zoneInfos;
@@ -35,7 +42,7 @@ namespace ai
     protected:
         virtual  ~Settlement() override /* 0x00 */;
 
-    private:
+    protected:
         Settlement(const ai::SettlementPrototypeInfo& prototypeInfo);
         Settlement(const ai::Settlement&);
         virtual m3d::Object* Clone() override /* 0x00 */;

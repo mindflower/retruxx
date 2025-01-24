@@ -43,7 +43,9 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	BossMetalArmLoad::BossMetalArmLoad(BossMetalArmLoadPrototypeInfo const& prototypeInfo) : DummyObject(prototypeInfo)
+	BossMetalArmLoad::BossMetalArmLoad(BossMetalArmLoadPrototypeInfo const& prototypeInfo) :
+        DummyObject(prototypeInfo),
+        m_health(prototypeInfo.m_maxHealth, 0.0, prototypeInfo.m_maxHealth)
 	{
 		throw std::logic_error("Not implemented");
 	}

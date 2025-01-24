@@ -52,7 +52,9 @@ namespace ai
 		return RT_CLASS_LOCAL(SimplePhysicObj);
 	}
 
-	BossMetalArm::BossMetalArm(BossMetalArmPrototypeInfo const& prototype) : SimplePhysicObj(prototype)
+	BossMetalArm::BossMetalArm(BossMetalArmPrototypeInfo const& prototype) :
+        SimplePhysicObj(prototype),
+        m_turningSpeed(prototype.m_turningSpeed)
 	{
 		throw std::logic_error("Not implemented");
 	}

@@ -12,9 +12,33 @@ namespace ai
     class GadgetPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        enum GadgetAppliers;
-        struct GadgetApplicationInfo;
-        struct ModificationInfo;
+        enum GadgetAppliers
+        {
+            GA_VEHICLE = 0,
+            GA_OBJECT_BY_RESOURCE = 1,
+            GA_GUN_BY_TYPE = 2,
+        };
+
+        struct GadgetApplicationInfo
+        {
+            /* 0x0000 */ ai::GadgetPrototypeInfo::GadgetAppliers applierType;
+            /* 0x0004 */ int targetResourceId;
+            /* 0x0008 */ ai::FiringTypes targetFiringType;
+            GadgetApplicationInfo();
+        }; /* size: 0x000c */
+
+        struct ModificationInfo
+        {
+            enum ModificationType;
+            /* 0x0000 */ ai::GadgetPrototypeInfo::GadgetApplicationInfo m_applierInfo;
+            /* 0x000c */ CStr m_propertyName;
+            /* 0x0018 */ ai::GadgetPrototypeInfo::ModificationInfo::ModificationType m_modificationType;
+            /* 0x001c */ m3d::AIParam m_value;
+            ModificationInfo(const ai::GadgetPrototypeInfo::ModificationInfo& __that);
+            ModificationInfo(const CStr& str, const ai::GadgetPrototypeInfo* gadgetPrototype);
+            bool ApplyToObj(ai::Obj* pObj, bool enable) const;
+        }; /* size: 0x0038 */
+
         using ModificationInfoVector = retruxx::vector<ai::GadgetPrototypeInfo::ModificationInfo, retruxx::allocator<ai::GadgetPrototypeInfo::ModificationInfo> >;
 
     public:

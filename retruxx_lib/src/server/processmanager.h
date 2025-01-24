@@ -7,7 +7,11 @@ namespace ai
 
     class ProcessManager
     {
-        struct auxEventInfo;
+        struct auxEventInfo
+        {
+            /* 0x0000 */ ai::eGameEvent m_eventId;
+            /* 0x0004 */ CStr m_eventName;
+        }; /* size: 0x0010 */
 
     private:
         /* 0x0000 */ retruxx::vector<ai::ProcessManager::auxEventInfo, retruxx::allocator<ai::ProcessManager::auxEventInfo> > m_eventInfo;

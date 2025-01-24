@@ -6,7 +6,13 @@ namespace ai
     class CompoundVehiclePartPrototypeInfo : public ai::VehiclePartPrototypeInfo
     {
     public:
-        struct TPartInfo;
+        struct TPartInfo
+        {
+            /* 0x0000 */ int prototypeId;
+            /* 0x0004 */ CStr prototypeName;
+            /* 0x0010 */ unsigned int index;
+        }; /* size: 0x0014 */
+
         using StrPartInfoMap = retruxx::map<CStr, ai::CompoundVehiclePartPrototypeInfo::TPartInfo, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::CompoundVehiclePartPrototypeInfo::TPartInfo> > >;
         class StrPartInfoMapConstIterator;
         class StrPartInfoMapIterator;
@@ -37,7 +43,13 @@ namespace ai
         static m3d::Class m_classCompoundVehiclePart;
         virtual const ai::CompoundVehiclePartPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
 
-        struct TVehiclePart;
+        struct TVehiclePart
+        {
+            /* 0x0000 */ ai::VehiclePart* vp;
+            /* 0x0004 */ unsigned int index;
+            TVehiclePart(ai::VehiclePart* _vp, unsigned int _index);
+            TVehiclePart();
+        }; /* size: 0x0008 */
 
     public:
         virtual void SetVisible() override /* 0x00 */;

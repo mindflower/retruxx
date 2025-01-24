@@ -36,7 +36,16 @@ namespace ai
     protected:
         virtual void _InternalCopyFrom(const ai::PrototypeInfo& rhs) override /* 0x00 */;
 
-        struct WheelInfo;
+        struct WheelInfo
+        {
+            WheelInfo(const ai::VehiclePrototypeInfo::WheelInfo& __that);
+            WheelInfo(const CStr wheelPrototypeName, ai::Wheel::WheelSteering steering);
+            void PostLoad();
+            /* 0x0000 */ int m_wheelPrototypeId;
+            /* 0x0004 */ ai::Wheel::WheelSteering m_steering;
+            /* 0x0008 */ CStr m_wheelPrototypeName;
+        }; /* size: 0x0014 */
+
         using WheelInfoVector = retruxx::vector<ai::VehiclePrototypeInfo::WheelInfo, retruxx::allocator<ai::VehiclePrototypeInfo::WheelInfo> >;
 
     public:

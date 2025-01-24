@@ -43,7 +43,7 @@ namespace ai
     protected:
         virtual  ~Team() override /* 0x00 */;
 
-    private:
+    protected:
         Team(const ai::TeamPrototypeInfo& prototypeInfo);
         Team(const ai::Team&);
         virtual m3d::Object* Clone() override /* 0x00 */;

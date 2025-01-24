@@ -114,7 +114,11 @@ namespace ai
         /* 0x0170 */ retruxx::vector<ai::GoDataForLoad, retruxx::allocator<ai::GoDataForLoad> > m_dataForLoad;
         /* 0x0180 */ retruxx::map<unsigned int, ai::GoDataForLoad, retruxx::less<unsigned int>, retruxx::allocator<retruxx::pair<unsigned int const, ai::GoDataForLoad> > > m_edataForLoad;
 
-        struct SplineBones;
+        struct SplineBones
+        {
+            /* 0x0000 */ retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > bones;
+            /* 0x0010 */ float t;
+        }; /* size: 0x0014 */
 
     protected:
         /* 0x018c */ bool m_asRope;

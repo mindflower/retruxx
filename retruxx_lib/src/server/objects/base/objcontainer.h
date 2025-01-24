@@ -61,7 +61,18 @@ namespace ai
         static const int MAX_OBJECTS_MASK;
         static const int MAX_OBJECTS_IN_CELL;
 
-        struct Node;
+        struct Node
+        {
+            /* 0x0000 */ int m_id;
+            /* 0x0004 */ int m_prevId;
+            /* 0x0008 */ int m_nextId;
+            /* 0x000c */ ai::Obj* m_value;
+            /* 0x0010 */ bool m_isValid;
+            /* 0x0011 */ char Padding_197[3];
+            /* 0x0014 */ int m_totalObjects;
+            Node();
+        }; /* size: 0x0018 */
+
         using allocator_type = retruxx::allocator<ai::ObjContainer::Node>;
         using size_type = unsigned int;
         using difference_type = int;
@@ -96,8 +107,46 @@ namespace ai
     private:
         /* 0x008c */ retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > > m_nameToIdMap;
 
-        class const_iterator;
-        class iterator;
+        class const_iterator : public retruxx::_Bidit<ai::ObjContainer::Node, int, ai::ObjContainer::Node const*, ai::ObjContainer::Node const&>
+        {
+        public:
+            using iterator_category = retruxx::bidirectional_iterator_tag;
+            using BaseType = retruxx::_Bidit<ai::ObjContainer::Node, int, ai::ObjContainer::Node const*, ai::ObjContainer::Node const&>;
+            using difference_type = int;
+
+        public:
+            const_iterator(const retruxx::vector<ai::ObjContainer::Node, retruxx::allocator<ai::ObjContainer::Node> >* pRecords, int nodeId);
+            const ai::Obj* operator*() const;
+            const ai::Obj* operator->() const;
+            ai::ObjContainer::const_iterator operator++(int);
+            ai::ObjContainer::const_iterator& operator++();
+            ai::ObjContainer::const_iterator operator--(int);
+            ai::ObjContainer::const_iterator& operator--();
+            bool operator==(const ai::ObjContainer::const_iterator& rhs) const;
+            bool operator!=(const ai::ObjContainer::const_iterator& rhs) const;
+            void _Dec();
+            void _Inc();
+
+        protected:
+            /* 0x0000 */ int m_nodeId;
+            /* 0x0004 */ const retruxx::vector<ai::ObjContainer::Node, retruxx::allocator<ai::ObjContainer::Node> >* m_pRecords;
+        }; /* size: 0x0008 */
+
+        class iterator : public ai::ObjContainer::const_iterator
+        {
+        public:
+            using iterator_category = retruxx::bidirectional_iterator_tag;
+            using difference_type = int;
+
+        public:
+            iterator(retruxx::vector<ai::ObjContainer::Node, retruxx::allocator<ai::ObjContainer::Node> >* pRecords, int nodeId);
+            ai::Obj* operator*() const;
+            ai::Obj* operator->() const;
+            ai::ObjContainer::iterator operator++(int __formal);
+            ai::ObjContainer::iterator& operator++();
+            ai::ObjContainer::iterator operator--(int);
+            ai::ObjContainer::iterator& operator--();
+        }; /* size: 0x0008 */
 
     public:
         unsigned int size() const;
@@ -112,7 +161,12 @@ namespace ai
         ai::ObjContainer::const_iterator updatingEnd() const;
         ai::ObjContainer::iterator updatingEnd();
 
-        enum eSAVE_TYPES;
+        enum eSAVE_TYPES
+        {
+            SAVE_LEVEL = 0,
+            SAVE_FULL = 1,
+            SAVE_EDITOR = 2,
+        };
 
     public:
         /* 0x0098 */ ai::ObjContainer::eSAVE_TYPES m_SaveType;

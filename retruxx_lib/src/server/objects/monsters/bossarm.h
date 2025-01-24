@@ -7,7 +7,14 @@ namespace ai
     class BossArmPrototypeInfo : public ai::VehiclePartPrototypeInfo
     {
     public:
-        struct AttackActionInfo;
+        struct AttackActionInfo
+        {
+            /* 0x0000 */ int m_frameToReleaseLoad;
+            /* 0x0004 */ ActionType m_action;
+            AttackActionInfo();
+            void LoadFromXML(const m3d::cmn::XmlNode* xmlNode);
+        }; /* size: 0x0008 */
+
         using AttackActionInfoVector = retruxx::vector<ai::BossArmPrototypeInfo::AttackActionInfo, retruxx::allocator<ai::BossArmPrototypeInfo::AttackActionInfo> >;
 
     public:
@@ -29,7 +36,7 @@ namespace ai
     protected:
         virtual  ~BossArm() override /* 0x00 */;
 
-    private:
+    protected:
         BossArm(const ai::BossArmPrototypeInfo& prototypeInfo);
         BossArm(const ai::BossArm&);
         virtual m3d::Object* Clone() override /* 0x00 */;

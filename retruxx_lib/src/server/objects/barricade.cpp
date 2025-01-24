@@ -73,7 +73,9 @@ namespace ai
 		m_propertiesMap["Probability"] = 67;
 	}
 
-	Barricade::Barricade(BarricadePrototypeInfo const& prototype) : ObjPrefab(prototype)
+	Barricade::Barricade(BarricadePrototypeInfo const& prototype) : 
+        ObjPrefab(prototype),
+        m_probability(prototype.m_probability, 0.0, 1.0)
 	{
 		throw retruxx::logic_error("Not implemented");
 	}

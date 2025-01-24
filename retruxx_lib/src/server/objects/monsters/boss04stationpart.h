@@ -50,7 +50,12 @@ namespace ai
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
 
-        struct MeshGroupInfo;
+        struct MeshGroupInfo
+        {
+            MeshGroupInfo(int groupId, float health);
+            /* 0x0000 */ int m_groupId;
+            /* 0x0004 */ float m_health;
+        }; /* size: 0x0008 */
 
     public:
         virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;

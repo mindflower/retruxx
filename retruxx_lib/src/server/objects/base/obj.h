@@ -202,7 +202,7 @@ namespace ai
     public:
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetRtClass() const /* 0x3c */;
-        static inline m3d::Class m_classObj;
+        static m3d::Class m_classObj;
         virtual int OnEvent(const ai::Event& evn) /* 0x40 */;
 
         struct LessNoCaseCStr : public retruxx::binary_function<CStr, CStr, bool>

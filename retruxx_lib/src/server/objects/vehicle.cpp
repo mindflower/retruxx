@@ -2067,10 +2067,6 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-    Vehicle::Vehicle(Vehicle const& veh) : ComplexPhysicObj({})
-    {
-    }
-
     Vehicle::VehicleMoveStatus Vehicle::GetMoveStatus() const
     {
         throw std::logic_error("Not implemented");

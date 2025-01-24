@@ -9,7 +9,19 @@ namespace ai
     class ObjPrefabPrototypeInfo : public ai::SimplePhysicObjPrototypeInfo
     {
     public:
-        struct ObjInfo;
+        struct ObjInfo
+        {
+            /* 0x0000 */ int m_prototypeId;
+            /* 0x0004 */ CVector m_relPos;
+            /* 0x0010 */ Quaternion m_relRot;
+            /* 0x0020 */ float m_scale;
+            /* 0x0024 */ CStr m_modelName;
+            ObjInfo(const ai::ObjPrefabPrototypeInfo::ObjInfo& __that);
+            ObjInfo();
+            void PostLoad();
+            /* 0x0030 */ CStr m_prototypeName;
+        }; /* size: 0x003c */
+
         using ObjInfoVector = retruxx::vector<ai::ObjPrefabPrototypeInfo::ObjInfo, retruxx::allocator<ai::ObjPrefabPrototypeInfo::ObjInfo> >;
 
     public:

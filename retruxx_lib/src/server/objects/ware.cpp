@@ -43,7 +43,9 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    Ware::Ware(WarePrototypeInfo const& prototype) : Obj(prototype)
+    Ware::Ware(WarePrototypeInfo const& prototype) :
+        Obj(prototype),
+        m_durability(prototype.m_maxDurability, 0.0, prototype.m_maxDurability)
     {
         throw retruxx::logic_error("Not implemented");
     }

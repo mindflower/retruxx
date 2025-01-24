@@ -46,7 +46,9 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	BossArm::BossArm(BossArmPrototypeInfo const& prototype) : VehiclePart(prototype)
+	BossArm::BossArm(BossArmPrototypeInfo const& prototype) :
+        VehiclePart(prototype),
+        m_turningSpeed(prototype.m_turningSpeed)
 	{
 		throw retruxx::logic_error("Not implemented");
 	}

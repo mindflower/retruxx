@@ -20,7 +20,7 @@ namespace ai
     protected:
         virtual  ~RocketLauncher() override /* 0x00 */;
 
-    private:
+    protected:
         RocketLauncher(const ai::RocketLauncherPrototypeInfo& prototypeInfo);
         RocketLauncher(const ai::RocketLauncher&);
         virtual m3d::Object* Clone() override /* 0x00 */;

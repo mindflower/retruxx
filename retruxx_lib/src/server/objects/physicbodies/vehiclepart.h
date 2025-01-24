@@ -85,13 +85,48 @@ namespace ai
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
 
-        struct BreakModelData;
+        struct BreakModelData
+        {
+            /* 0x0000 */ m3d::AnimatedModel* mdl;
+            /* 0x0004 */ m3d::Configuration* cfg;
+            /* 0x0008 */ int meshId;
+            /* 0x000c */ int groupId;
+            /* 0x0010 */ CVector pos;
+            /* 0x001c */ CVector dir;
+            /* 0x0028 */ CVector normal;
+            BreakModelData(const ai::VehiclePart::BreakModelData&);
+            BreakModelData();
+        }; /* size: 0x0034 */
+
         struct DecalsPassageInfo;
         struct JadedEffectsPassageInfo;
         struct PassToAnotherMapData;
-        struct LoadDecalData;
-        struct ModelPart;
-        struct BreakData;
+
+        struct LoadDecalData
+        {
+            /* 0x0000 */ m3d::SgNode* node;
+            /* 0x0004 */ m3d::DecalData dd;
+            /* 0x0044 */ int meshNum;
+        }; /* size: 0x0048 */
+
+        struct ModelPart
+        {
+            /* 0x0000 */ float maxHealth;
+            /* 0x0004 */ float health;
+            /* 0x0008 */ m3d::SgNode* jadedEffect;
+            ModelPart();
+        }; /* size: 0x000c */
+
+        struct BreakData
+        {
+            /* 0x0000 */ CVector point;
+            /* 0x000c */ CVector dir;
+            /* 0x0018 */ CVector normal;
+            /* 0x0024 */ float damage;
+            /* 0x0028 */ int decalId;
+            BreakData(const ai::VehiclePart::BreakData&);
+            BreakData();
+        }; /* size: 0x002c */
 
     public:
         /* 0x0158 */ m3d::SgNode* m_SplashEffect;

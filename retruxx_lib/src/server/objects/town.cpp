@@ -1,5 +1,6 @@
 #include "town.h"
 #include "article.h"
+#include "include/math/random.h"
 #include <stdexcept>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Town, SpawnCaravanToLocation)
@@ -98,7 +99,9 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    Town::Town(TownPrototypeInfo const& prototype) : Settlement(prototype)
+    Town::Town(TownPrototypeInfo const& prototype) :
+        Settlement(prototype),
+        m_gateTime(0.0, 0.0)
     {
         throw retruxx::logic_error("Not implemented");
     }

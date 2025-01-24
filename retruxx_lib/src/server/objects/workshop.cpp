@@ -1,5 +1,5 @@
 #include "workshop.h"
-
+#include "article.h"
 #include <stdexcept>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Workshop, GetRepositoryByType)

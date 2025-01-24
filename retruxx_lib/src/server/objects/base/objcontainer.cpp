@@ -281,7 +281,8 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    ObjContainer::iterator::iterator(retruxx::vector<Node>* pRecords, int nodeId) : const_iterator(pRecords, nodeId)
+    ObjContainer::iterator::iterator(retruxx::vector<Node>* pRecords, int nodeId) :
+        ObjContainer::const_iterator(pRecords, nodeId)
     {
         throw retruxx::logic_error("Not implemented");
     }

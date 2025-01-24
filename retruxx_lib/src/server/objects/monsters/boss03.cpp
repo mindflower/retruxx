@@ -70,7 +70,9 @@ namespace ai
 	{
 	}
 
-	Boss03::Boss03(Boss03PrototypeInfo const& prototype) : AnimatedComplexPhysicObj(prototype)
+	Boss03::Boss03(Boss03PrototypeInfo const& prototype) :
+        AnimatedComplexPhysicObj(prototype),
+        m_health(prototype.m_maxHealth, 0.0, prototype.m_maxHealth)
 	{
 		throw retruxx::logic_error("Not implemented");
 	}

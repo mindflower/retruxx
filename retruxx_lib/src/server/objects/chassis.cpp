@@ -38,7 +38,10 @@ namespace ai
         return RT_CLASS_LOCAL(VehiclePart);
     }
 
-    Chassis::Chassis(ChassisPrototypeInfo const& prototype) : VehiclePart(prototype)
+    Chassis::Chassis(ChassisPrototypeInfo const& prototype) :
+        VehiclePart(prototype),
+        m_health(prototype.m_maxHealth, 0.0, prototype.m_maxHealth, 0.0),
+        m_fuel(prototype.m_maxFuel, 0.0, prototype.m_maxFuel, 0.0)
     {
         throw retruxx::logic_error("Not implemented");
     }

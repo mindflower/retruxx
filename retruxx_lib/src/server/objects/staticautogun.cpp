@@ -133,7 +133,10 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    StaticAutoGun::StaticAutoGun(StaticAutoGunPrototypeInfo const& prototype) : ComplexPhysicObj(prototype)
+    StaticAutoGun::StaticAutoGun(StaticAutoGunPrototypeInfo const& prototype) :
+        ComplexPhysicObj(prototype),
+        m_health(prototype.m_maxHealth, 0.0, prototype.m_maxHealth),
+        m_timeForNextCheck(0.1, 0.0, 10.0, -1.0)
     {
         throw retruxx::logic_error("Not implemented");
     }
