@@ -36,6 +36,11 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
+    SubmarinePrototypeInfo::~SubmarinePrototypeInfo()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     Obj* SubmarinePrototypeInfo::CreateTargetObject() const
     {
         throw retruxx::logic_error("Not implemented");

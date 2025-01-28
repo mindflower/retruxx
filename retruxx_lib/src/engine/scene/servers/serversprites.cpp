@@ -6,42 +6,42 @@ namespace m3d
 {
     int SpritesServer::GetItemProperty(int, int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SpritesServer::SetItemProperty(int, int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     SpritesServer::~SpritesServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SpritesServer::Release()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SpritesServer::RenderItem(int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SpritesServer::SaveAllLoadedEntities(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SpritesServer::RemoveItem(int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SpritesServer::AddItem(char const*, char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     SpritesServer::SpritesServer()
@@ -59,8 +59,8 @@ namespace m3d
         return 1;
     }
 
-    void SpritesServer::AddItemsList(std::vector<m3d::DataServer::ServerItem>&)
+    void SpritesServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 }

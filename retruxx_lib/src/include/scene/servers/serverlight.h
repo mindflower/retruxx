@@ -5,24 +5,26 @@ namespace m3d
 {
     class Profiler;
 
-    class LightsServer : public DataServer
+    class LightsServer : public m3d::DataServer
     {
     public:
-        virtual int SaveAllLoadedEntities(char const*);
-        virtual int Init();
-        virtual int Release();
-        virtual int AddItem(char const*, char const*);
-        virtual ~LightsServer();
-        virtual void RenderItem(int, void*);
-        virtual int RemoveItem(int);
-        virtual int GetItemProperty(int, int, void*);
         LightsServer();
-        virtual int SetItemProperty(int, int, void*)
-        ;
+        virtual  ~LightsServer() override /* 0x00 */;
+        virtual int Init() override /* 0x04 */;
+        virtual int Release() override /* 0x08 */;
+        virtual int AddItem(const char* params, const char* id) override /* 0x0c */;
+        virtual int RemoveItem(int id) override /* 0x18 */;
+        virtual void RenderItem(int id, void* params) override /* 0x1c */;
+        virtual int GetItemProperty(int id, int prop, void* dest) override /* 0x10 */;
+        virtual int SetItemProperty(int id, int prop, void* src) override /* 0x14 */;
+        virtual int SaveAllLoadedEntities(const char* filename) override /* 0x4c */;
+
     protected:
-        virtual void AddItemsList(std::vector<ServerItem>&);
+        virtual void AddItemsList(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >& itemslist) override /* 0x58 */;
 
     private:
-        Profiler* m_profiler = nullptr;
-    };
+        /* 0x0048 */ m3d::Profiler* m_profiler = nullptr;
+    }; /* size: 0x004c */
+
+    static_assert(sizeof(LightsServer) == 0x004c);
 }

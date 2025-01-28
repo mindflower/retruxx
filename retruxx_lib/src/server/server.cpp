@@ -132,7 +132,7 @@ namespace ai
     extern Relationship* theRelationship;
     extern DynamicScene* gDynamicScene;
     extern Player* thePlayer;
-    //extern ProcessManager* theProcessManager;
+    extern ProcessManager* theProcessManager;
     extern AIManager* theAIManager;
 
     int n_AddToCinematic(m3d::sArgStack& scriptStack)
@@ -584,7 +584,7 @@ namespace ai
         m_pExternalPaths = new ExternalPaths;
         m_pPlayerPassMap = new PlayerPassMap;
         M3D_KERNEL->GetEngineCfg().m_console->executeCommand("/conScript data\\scripts\\server.lua");
-        //theProcessManager = new ProcessManager;
+        theProcessManager = new ProcessManager;
         theAIManager->RegisterMatrix("void", nullptr);
         ai::Obj::Registration();
         ai::Trigger::Registration();

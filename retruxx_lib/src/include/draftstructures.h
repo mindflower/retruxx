@@ -1,9 +1,8 @@
 #pragma once
-#include <string>
-#include <vector>
 #include <math/vector.h>
 #include <math/quaternion.h>
 #include <renderer/i_renderer.h>
+#include <thirdparty/containers.h>
 
 namespace m3d
 {
@@ -15,12 +14,14 @@ namespace m3d
         unsigned short & operator[](unsigned int);
         unsigned short const & operator[](unsigned int) const ;
     };
-    class DCollisionData
+
+    struct DCollisionData
     {
-    private:
-        std::vector<CVector> Points;
-        std::vector<Index3> Triangles;
-    };
+        /* 0x0000 */ retruxx::vector<CVector, retruxx::allocator<CVector> > Points;
+        /* 0x0010 */ retruxx::vector<m3d::Index3, retruxx::allocator<m3d::Index3> > Triangles;
+    }; /* size: 0x0020 */
+
+    static_assert(sizeof(DCollisionData) == 0x0020);
 
     enum DRAFT_GeomType
     {
@@ -171,15 +172,13 @@ namespace m3d
         int Size;
     };
 
-    class DShader
+    struct DShader
     {
-    public:
-        DShader(DShader const&);
+        /* 0x0000 */ retruxx::string Name;
+        /* 0x001c */ m3d::rend::IEffect* Handle = nullptr;
+    }; /* size: 0x0020 */
 
-    private:
-        std::string Name;
-        rend::IEffect* Handle;
-    };
+    static_assert(sizeof(DShader) == 0x0020);
 
     enum DRAFT_TextureType
     {
@@ -198,7 +197,7 @@ namespace m3d
     private:
         DRAFT_TextureType Type;
         unsigned int UV_Set;
-        std::string FileName;
+        retruxx::string FileName;
         rend::TexHandle Handle;
     };
 
@@ -207,7 +206,7 @@ namespace m3d
     private:
         rend::Material material;
         DShader Shader;
-        std::vector<DTextureInfo> Textures;
+        retruxx::vector<DTextureInfo> Textures;
     };
 
     class DMesh
@@ -216,17 +215,17 @@ namespace m3d
         m3d::DRAFT_GeometryHeader Header;
         m3d::rend::VertexType VertType;
         unsigned int VertTypeSize;
-        std::vector<m3d::DRAFT_VertexComponent> VertexComponentHeaders;
-        std::vector<void*> VerticesComponents;
-        std::vector<m3d::Index3> Triangles;
+        retruxx::vector<m3d::DRAFT_VertexComponent> VertexComponentHeaders;
+        retruxx::vector<void*> VerticesComponents;
+        retruxx::vector<m3d::Index3> Triangles;
     };
 
     class DAnimation
     {
     private:
         m3d::DRAFT_AnimationHeader Info;
-        std::vector<m3d::DRAFT_HierarchyChange> HierarchyChanges;
-        std::vector<std::vector<m3d::DRAFT_Transform>> AnimationKeys;
+        retruxx::vector<m3d::DRAFT_HierarchyChange> HierarchyChanges;
+        retruxx::vector<retruxx::vector<m3d::DRAFT_Transform>> AnimationKeys;
     };
 }
 

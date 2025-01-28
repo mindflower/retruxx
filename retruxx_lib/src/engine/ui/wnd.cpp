@@ -75,7 +75,7 @@ namespace m3d
 
         bool Wnd::AnimationInfo::CanAnimate() const
         {
-            throw std::logic_error("Not implemented");
+            return this->m_animationType != ANIMATIONTYPE_INVALID && this->m_bEnabled;
         }
 
         int Wnd::AnimationInfo::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)

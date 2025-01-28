@@ -2,42 +2,43 @@
 #include <m3dapp.h>
 #include <core/kernel.h>
 #include <scene/servers/serveranimatedmodel.h>
+#include <core/ini.h>
 
 namespace m3d
 {
     void AnimatedModelsServer::PostLoad()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    int AnimatedModelsServer::AddItem(char const*, char const*)
+    int AnimatedModelsServer::AddItem(char const* params, char const* id)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::RemoveItem(int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool AnimatedModelsServer::IsBonePresentsInModel(char const*, char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void AnimatedModelsServer::RenderItem(int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void AnimatedModelsServer::UnregisterNode(SgNode*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool AnimatedModelsServer::ReportServerInfo(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::Init()
@@ -64,22 +65,22 @@ namespace m3d
 
     CVector AnimatedModelsServer::GetBoundSizes(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::GetBoneMatrixByNameFromModelName(char const*, CStr const&, CMatrix&, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::SaveAllLoadedEntities(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::Release()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     AnimatedModelsServer::AnimatedModelsServer()
@@ -105,73 +106,125 @@ namespace m3d
 
     int AnimatedModelsServer::SetItemProperty(int, int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::RenderNodeSet(SgNode**, unsigned, RenderNodeInfo)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void AnimatedModelsServer::RenderTransparents(SgNode**, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::RenderShadowVolumesSet(SgNode**, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     AnimatedModelsServer::~AnimatedModelsServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::GenerateImpostorsIfNeeded()
     {
         //TODO: implement AnimatedModelsServer::GenerateImpostorsIfNeeded
-        return 0;
-        throw std::logic_error("Not implemented");
+        //return 0;
+        throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::GetItemProperty(int, int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void AnimatedModelsServer::RegisterNode(SgNode*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void AnimatedModelsServer::UpdateItem(int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModelsServer::AddItemsList(std::vector<ServerItem>&)
+    namespace
     {
-        throw std::logic_error("Not implemented");
+        void __fastcall DefineSkinsToLoad(m3d::LoadSkins& skinsToLoad, CStr const& paramsStr)
+        {
+            retruxx::string view(paramsStr.c_str(), paramsStr.length());
+            const auto skinsPos = view.find("skins:");
+            const auto postSkinsPos = skinsPos + 6;
+            const auto semicolonPos = view.find(";", postSkinsPos);
+            if (skinsPos == retruxx::string::npos || semicolonPos == retruxx::string::npos)
+            {
+                return;
+            }
+
+            const auto params = view.substr(postSkinsPos, semicolonPos - postSkinsPos);
+            retruxx::vector<CStr> tokens;
+            Tokenize(params.c_str(), tokens, "(), ;\t");
+
+            skinsToLoad.loadAllSkins = tokens.empty();
+
+            for (const auto& token : tokens)
+            {
+                skinsToLoad.loadSkins.insert(strToInt(token));
+            }
+        }
+    }
+
+    void AnimatedModelsServer::AddItemsList(retruxx::vector<ServerItem>& itemslist)
+    {
+        auto startTime = GetTickCount();
+        if (itemslist.empty())
+        {
+            return;
+        }
+
+        retruxx::vector<LoadSkins> skinsToLoad(itemslist.size());
+        for (int i = 0; i < skinsToLoad.size(); ++i)
+        {
+            if (!itemslist[i].m_params.empty())
+            {
+                DefineSkinsToLoad(skinsToLoad[i], itemslist[i].m_params);
+            }
+        }
+
+        for (auto& item : itemslist)
+        {
+            for (const auto& model : m_models)
+            {
+                if (model.m_name == item.m_id)
+                {
+                    item.m_fileWasRead = true;
+                    M3D_APP->m_cachedSoundIDs.insert(model.m_name);
+                }
+            }
+        }
+        throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::RenderMesh(SgAnimatedModelNode*, AnimatedModel::Mesh&, rend::IEffect*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::RenderMesh(AnimInfo*, AnimatedModel::Mesh&, rend::IEffect*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void AnimatedModelsServer::RenderModelForImpostor(AnimatedModel*, float, int, int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void AnimatedModelsServer::UpdateGlobalRenderingParams()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 }

@@ -29,7 +29,7 @@ namespace ai
     class CompoundVehiclePart : public ai::VehiclePart
     {
     protected:
-        virtual  ~CompoundVehiclePart() override = 0 /* 0x00 */;
+        virtual  ~CompoundVehiclePart() override/* 0x00 */;
 
     protected:
         CompoundVehiclePart(const ai::CompoundVehiclePartPrototypeInfo& prototypeInfo);

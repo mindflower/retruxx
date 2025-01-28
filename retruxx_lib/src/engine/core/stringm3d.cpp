@@ -514,3 +514,14 @@ unsigned int strToColor(CStr const& str, unsigned def)
     return def;
 }
 
+int strToInt(CStr const& str)
+{
+    if (str.empty())
+    {
+        return 0;
+    }
+    int v = 0;
+    sscanf(str.c_str(), "%d", &v);
+    return v;
+}
+

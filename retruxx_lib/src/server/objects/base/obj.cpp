@@ -120,7 +120,7 @@ namespace ai
 {
     extern ObjContainer* theObjects;
     extern AIManager* theAIManager;
-    //extern ProcessManager* theProcessManager;
+    extern ProcessManager* theProcessManager;
     extern PrototypeManager* thePrototypeManager;
 
     //std::map<CStr, int> Obj::m_propertiesMap;
@@ -838,11 +838,11 @@ namespace ai
             for (auto const recipientObjId : eventRecipient.m_objIds)
             {
                 ev.m_recipientObjId = recipientObjId;
-                //theProcessManager->PostMessageA(ev);
+                theProcessManager->PostMessageA(ev);
             }
         }
         ev.m_recipientObjId = m_parentId;
-        //theProcessManager->PostMessageA(ev);
+        theProcessManager->PostMessageA(ev);
     }
 
     void Obj::Subscribe(eGameEvent eventId, int objId)

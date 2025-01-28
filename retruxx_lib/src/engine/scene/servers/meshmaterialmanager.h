@@ -10,14 +10,15 @@ namespace m3d
     class MeshMaterialManager
     {
     public:
-        ~MeshMaterialManager();
-        void Init(CStr const &,CStr const &);
+        MeshMaterialManager(const m3d::MeshMaterialManager&);
         MeshMaterialManager();
+        ~MeshMaterialManager();
+        void Init(const CStr& LogoFileName, const CStr& BelongsToLogoFileName);
         void Release();
-        DSurfaceMaterial& GetMaterial(SgNode &,AnimatedModel::Mesh &);
+        m3d::DSurfaceMaterial& GetMaterial(m3d::SgNode& Node, m3d::AnimatedModel::Mesh& Mh);
 
-    private:
-        AnimatedModel *m_pLogos = nullptr;
-        std::map<int,int> m_mapBelongToLogo;
-    };
+    protected:
+        /* 0x0000 */ m3d::AnimatedModel* m_pLogos;
+        /* 0x0004 */ retruxx::map<int, int, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, int> > > m_mapBelongToLogo;
+    }; /* size: 0x0010 */
 }

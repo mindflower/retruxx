@@ -80,6 +80,7 @@ namespace m3d
     int CWorld::Load(CStr const& levelname, CCamera& cam, bool bQuiet)
     {
         //TODO: implement CWorld::Load
+
         auto timeStart = M3D_KERNEL->GetTimer().GetCurTime();
         M3D_LOG_INFO("----------------------- World Loading");
         M3D_KERNEL->GetEngineCfg().m_levFileName.Set(levelname.c_str(), true);
@@ -113,8 +114,8 @@ namespace m3d
         {
             return 0;
         }
-        return 1;
         throw retruxx::logic_error("Not implemented");
+        return 1;
     }
 
     bool CWorld::SaveWorld(CStr const&)

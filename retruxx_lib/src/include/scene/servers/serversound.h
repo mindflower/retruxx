@@ -3,27 +3,33 @@
 
 namespace m3d
 {
-    class Sound3DServer : public DataServer
+    class Sound3DServer : public m3d::DataServer
     {
     public:
-        virtual void UnregisterNode(m3d::SgNode*);
-        virtual int RemoveItem(int);
-        virtual ~Sound3DServer();
-        virtual int AddItem(char const*, char const*);
-        virtual void PostLoad();
-        virtual int GetItemProperty(int, int, void*);
-        virtual void RegisterNode(m3d::SgNode*);
-        virtual int SaveAllLoadedEntities(char const*);
-        virtual void RenderItem(int, void*);
-        virtual int Release();
+        virtual  ~Sound3DServer() override /* 0x00 */;
+        virtual int Release() override /* 0x08 */;
+        virtual int AddItem(const char* fileName, const char* id) override /* 0x0c */;
+        virtual int RemoveItem(int id) override /* 0x18 */;
+        virtual void RenderItem(int id, void* params) override /* 0x1c */;
+        virtual void RegisterNode(m3d::SgNode* node) override /* 0x34 */;
+        virtual void UnregisterNode(m3d::SgNode* node) override /* 0x38 */;
+        virtual void PostLoad() override /* 0x50 */;
+        virtual int GetItemProperty(int id, int prop, void* dest) override /* 0x10 */;
+        virtual int SaveAllLoadedEntities(const char* filename) override /* 0x4c */;
+
     protected:
-        virtual void AddItemsList(std::vector<m3d::DataServer::ServerItem>&);
+        virtual void AddItemsList(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >& itemslist) override /* 0x58 */;
 
     private:
-        void _AddItemFromXmlNode(m3d::cmn::XmlNode const*);
+        void _AddItemFromXmlNode(const m3d::cmn::XmlNode* xmlNode);
         int _AddFakeItem();
-        int _AddTripleItem(CStr, CStr, CStr, char const*, char const*);
-        int _AddItem(char const*, char const*, char const*);
-        int _AddDoubleItem(CStr, CStr, char const*, char const*);
-    };
+        int _AddItem(const char* fileName, const char* id, const char* groupName);
+        int _AddDoubleItem(CStr f1, CStr f2, const char* id, const char* groupName);
+        int _AddTripleItem(CStr f1, CStr f2, CStr f3, const char* id, const char* groupName);
+
+        enum SoundTypeEnum;
+        struct SoundItem;
+    }; /* size: 0x0048 */
+
+    static_assert(sizeof(Sound3DServer) == 0x0048);
 }

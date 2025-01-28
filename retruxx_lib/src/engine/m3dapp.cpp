@@ -1407,6 +1407,7 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006A6FC0, Application::LoadServers)
     bool Application::LoadServers(CStr const&, bool)
     {
         //TODO: implement Application::LoadServers

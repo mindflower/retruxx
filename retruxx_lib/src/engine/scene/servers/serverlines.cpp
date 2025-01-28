@@ -5,37 +5,37 @@ namespace m3d
 {
     int LinesServer::AddItem(char const*, char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int LinesServer::SaveAllLoadedEntities(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     LinesServer::~LinesServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int LinesServer::RemoveItem(int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int LinesServer::Init()
     {
         m_valid = true;
-        m_models.emplace_back(nullptr, nullptr, nullptr, "LSI_CIRCLE");
-        m_models.emplace_back(nullptr, nullptr, nullptr, "LSI_SIGHT");
-        m_models.emplace_back(nullptr, nullptr, nullptr, "LSI_FLOWER");
-        m_models.emplace_back(nullptr, nullptr, nullptr, "LSI_ARROW");
+        m_models.push_back({ nullptr, nullptr, nullptr, "LSI_CIRCLE" });
+        m_models.push_back({ nullptr, nullptr, nullptr, "LSI_SIGHT" });
+        m_models.push_back({ nullptr, nullptr, nullptr, "LSI_FLOWER" });
+        m_models.push_back({ nullptr, nullptr, nullptr, "LSI_ARROW" });
         return 1;
     }
 
     int LinesServer::Release()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     LinesServer::LinesServer()
@@ -44,21 +44,21 @@ namespace m3d
 
     void LinesServer::RenderItem(int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int LinesServer::SetItemProperty(int, int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int LinesServer::GetItemProperty(int, int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void LinesServer::AddItemsList(std::vector<ServerItem>&)
+    void LinesServer::AddItemsList(retruxx::vector<ServerItem>&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 }

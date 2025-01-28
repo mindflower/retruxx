@@ -3,67 +3,84 @@
 
 namespace ai
 {
-    class ArticulatedVehiclePrototypeInfo : public VehiclePrototypeInfo
+    class ArticulatedVehiclePrototypeInfo : public ai::VehiclePrototypeInfo
     {
+    protected:
+        virtual void _InternalCopyFrom(const ai::PrototypeInfo& rhs) override /* 0x00 */;
+
     public:
-        virtual void PostLoad();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        /* 0x012c */ int m_trailerPrototypeId;
         ArticulatedVehiclePrototypeInfo();
-        virtual Obj* CreateTargetObject() const;
-
-    protected:
-        virtual void _InternalCopyFrom(PrototypeInfo const&);
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+        virtual void PostLoad() override /* 0x00 */;
 
     private:
-        int m_trailerPrototypeId;
-        CStr m_trailerPrototypeName;
-    };
+        /* 0x0130 */ CStr m_trailerPrototypeName;
+    }; /* size: 0x013c */
 
-    class ArticulatedVehicle :  public Vehicle
+    static_assert(sizeof(ArticulatedVehiclePrototypeInfo) == 0x013c);
+
+    class ArticulatedVehicle : public ai::Vehicle
     {
+    protected:
+        virtual  ~ArticulatedVehicle() override /* 0x00 */;
+
+    private:
+        ArticulatedVehicle(const ai::ArticulatedVehiclePrototypeInfo& prototypeInfo);
+        ArticulatedVehicle(const ai::ArticulatedVehicle&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
+
     public:
-        virtual CStr GetPropertyName(int) const ;
-        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int) const ;
-        ArticulatedVehicle(ArticulatedVehiclePrototypeInfo const &);
-        virtual void CreateChildren();
-        virtual void Remove();
-        virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual m3d::Class * GetClass() const ;
-        virtual void GetPropertiesIDs(std::set<int,std::less<int>,std::allocator<int> > &) const ;
-        virtual void SetPassedToAnotherMapStatus();
-        virtual ArticulatedVehiclePrototypeInfo const * GetPrototypeInfo() const ;
-        virtual bool RemoveChild(Obj *);
-        virtual void AddChild(Obj *);
-        virtual bool SetPropertyById(int,m3d::AIParam const &);
-        virtual void SetPositionSelf(CVector const &);
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual int GetPropertyId(char const *) const ;
-        virtual void GetPropertiesNames(std::set<CStr,std::less<CStr>,std::allocator<CStr> > &) const ;
-        virtual void SetRotationSelf(Quaternion const &);
-        virtual void Update(float,unsigned int);
-        static m3d::Class * GetBaseClass();
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classArticulatedVehicle;
+        virtual const ai::ArticulatedVehiclePrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
 
     protected:
-        virtual void _InternalPostLoad();
-        virtual bool _GetPropertyInternal(int,m3d::AIParam &) const ;
-        virtual ~ArticulatedVehicle();
-        virtual void _KeepSteer(float);
-        virtual bool _GetPropertyDefaultInternal(int,m3d::AIParam &) const ;
-
-    private:
-        CStr _GetTrailerName() const ;
-        virtual m3d::Object * Clone();
-        void _AdjustTrailerPosition();
-        static m3d::Object * CreateObject();
-        Vehicle * _GetTrailer() const ;
+        static void __fastcall RegisterProperty(const char*, int, ai::eGObjPropertySaveStatus);
 
     public:
-        RT_CLASS_DECLARE(ArticulatedVehicle);
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x00 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x00 */;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x00 */;
+        virtual CStr GetPropertyName(int id) const override /* 0x00 */;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x00 */;
+        virtual int GetPropertyId(const char* PropertyName) const override /* 0x00 */;
+
+    protected:
+        static retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
+        static retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+
+    public:
+        virtual void CreateChildren() override /* 0x00 */;
+        virtual void Remove() override /* 0x54 */;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual void AddChild(ai::Obj* pObj) override /* 0x00 */;
+        virtual bool RemoveChild(ai::Obj* pObj) override /* 0x00 */;
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        virtual void SetPassedToAnotherMapStatus() override /* 0x50 */;
+        virtual void SetPositionSelf(const CVector& pos) override /* 0x00 */;
+        virtual void SetRotationSelf(const Quaternion& rot) override /* 0x00 */;
+        ai::Vehicle* GetTrailer();
+
+    protected:
+        virtual void _KeepSteer(float elapsedTime) override /* 0x1cc */;
+        virtual void _InternalPostLoad() override /* 0x00 */;
 
     private:
-        int m_trailerObjId;
-        dxJoint *m_trailerJoint;
-        CVector m_relJointPosOnMe;
-        CVector m_relJointPosOnTrailer;
-    };
+        /* 0x04f4 */ int m_trailerObjId;
+        /* 0x04f8 */ dxJoint* m_trailerJoint;
+        /* 0x04fc */ CVector m_relJointPosOnMe;
+        /* 0x0508 */ CVector m_relJointPosOnTrailer;
+        CStr _GetTrailerName() const;
+        ai::Vehicle* _GetTrailer() const;
+        void _AdjustTrailerPosition();
+    }; /* size: 0x0514 */
+
+    static_assert(sizeof(ArticulatedVehicle) == 0x0514);
 }

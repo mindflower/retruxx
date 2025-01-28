@@ -1,6 +1,8 @@
 #include <stdexcept>
 #include <windows.h>
 #include <scene/servers/dataserver.h>
+#include <core/ref_ptr.h>
+#include <core/ini.h>
 
 namespace m3d
 {
@@ -26,7 +28,7 @@ namespace m3d
                 ::LCMapStringA(0x400u, 0x100u, name.c_str(), name.length() + 1, const_cast<char*>(name.c_str()), name.length() + 1);
             }
             auto const it = m_shRemap.find(name);
-            if (it != m_shRemap.cend())
+            if (it != m_shRemap.end())
             {
                 return it->second;
             }
@@ -113,9 +115,22 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int DataServer::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int DataServer::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* root)
     {
-        throw std::logic_error("Not implemented");
+        ref_ptr node = file->CreateNode();
+        for (root->GetFirstChild(node, "Item"); !node->IsEmpty(); node->GetNextSibling(node, "Item"))
+        {
+            ServerItem item;
+            m3d::SafeStrAttrib(item.m_id, node, "id");
+            m3d::SafeStrAttrib(item.m_params, node, "params");
+            m3d::SafeStrAttrib(item.m_filename, node, "file");
+            m_itemslist.push_back(std::move(item));
+        }
+
+        AddItemsList(m_itemslist);
+        GenerateItemsRemap();
+        m_itemslist.clear();
+        return 1;
     }
 
     DataServer::DataServer()

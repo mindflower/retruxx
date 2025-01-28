@@ -5,22 +5,22 @@ namespace m3d
 {
     ProjectorsServer::~ProjectorsServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ProjectorsServer::GetItemProperty(int, int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ProjectorsServer::SetItemProperty(int, int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ProjectorsServer::SaveAllLoadedEntities(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ProjectorsServer::Init()
@@ -108,26 +108,26 @@ namespace m3d
 
     int ProjectorsServer::Release()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ProjectorsServer::AddItem(char const*, char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ProjectorsServer::RenderItem(int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ProjectorsServer::RemoveItem(int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void ProjectorsServer::AddItemsList(std::vector<m3d::DataServer::ServerItem>&)
+    void ProjectorsServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 }

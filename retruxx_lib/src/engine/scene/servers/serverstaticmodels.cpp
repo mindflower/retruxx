@@ -5,37 +5,37 @@ namespace m3d
 {
     int StaticModelsServer::GetItemProperty(int, int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int StaticModelsServer::SaveAllLoadedEntities(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void StaticModelsServer::ReleaseBuffers()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void StaticModelsServer::RenderItem(int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int StaticModelsServer::SetItemProperty(int, int, void*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int StaticModelsServer::RemoveItem(int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int StaticModelsServer::Release()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     StaticModelsServer::StaticModelsServer()
@@ -59,21 +59,21 @@ namespace m3d
 
     StaticModelsServer::~StaticModelsServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int StaticModelsServer::AddItem(char const*, char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void StaticModelsServer::AddItemsList(std::vector<m3d::DataServer::ServerItem>&)
+    void StaticModelsServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int StaticModelsServer::PrepareToRender()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 }

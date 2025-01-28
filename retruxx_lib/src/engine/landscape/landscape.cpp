@@ -248,130 +248,135 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
+    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005BDC00, Landscape::Load)
     int Landscape::Load()
     {
-        //TODO: implement Landscape::Load
-        M3D_LOG_FLOW();
-        m_mapSize = 16 * m_owner->m_level->land_size;
-        auto const fileName = m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_beachsetsName);
-        CStr error;
-        ref_ptr xmlFile = ReadXmlFile(fileName.c_str(), &error);
-        if (!xmlFile)
-        {
-            xmlFile = ReadXmlFile("data\\Beachsets.xml", &error);
-        }
-        if (xmlFile)
-        {
-            ref_ptr beachsets = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            ref_ptr wave = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-            xmlFile->GetFirstChild(beachsets, "Beachsets");
-            for (beachsets->GetFirstChild(wave, "Wave"); !wave->IsEmpty(); wave->GetNextSibling(wave, "Wave"))
-            {
-                WaveSets ws;
-                SafeFloatAttrib(ws.m_tcomp, wave, "tcomp");
-                if (ws.m_tcomp < 0.0)
-                {
-                    SafeFloatAttrib(ws.m_tlevel, wave, "tlevel");
-                    SafeFloatAttrib(ws.m_tamplitude, wave, "tamplitude");
-                    SafeFloatAttrib(ws.m_tphase, wave, "tphase");
-                    SafeFloatAttrib(ws.m_tfreq, wave, "tfreq");
-                }
-                SafeFloatAttrib(ws.m_scomp, wave, "scomp");
-                if (ws.m_scomp < 0.0)
-                {
-                    SafeFloatAttrib(ws.m_slevel, wave, "slevel");
-                    SafeFloatAttrib(ws.m_samplitude, wave, "samplitude");
-                    SafeFloatAttrib(ws.m_sphase, wave, "sphase");
-                    SafeFloatAttrib(ws.m_sfreq, wave, "sfreq");
-                }
-                CStr tex;
-                SafeStrAttrib(tex, wave, "texture");
-                auto texHandle = M3D_APP->m_renderer->AddTexture(tex, 2);
-                if (texHandle.IsValid())
-                {
-                    M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_WRAP_S, 3u);
-                    M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_WRAP_T, 3u);
-                    M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_MIP_LOD_BIAS, M3D_KERNEL->GetEngineCfg().m_g_shoresMipBias.GetF());
-                    ws.m_texHandle = texHandle;
-                }
-                m_waves.push_back(ws);
-            }
-        }
-        else
-        {
-            M3D_LOG_INFO("Error:No Beachset.xml file");
-        }
+        //const auto asd = reinterpret_cast<char*>(&m_owner) - reinterpret_cast<char*>(this);
+        auto method = inject::cast<decltype(&Landscape::Load)>(0x005BDC00);
+        return (this->*method)();
 
-        delete[] m_colormap;
-        //TODO: check size
-        m_colormap = new unsigned[(m_mapSize + 1) * (m_mapSize + 1)];
-        
-        delete[] m_texSetsmap;
-        m_texSetsmap = new retruxx::set<unsigned>[m_owner->m_level->land_size * m_owner->m_level->land_size];
-        
-        
-        if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
-            stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName).c_str(), fs::IStream::OPEN_READ))
-        {
-            //TODO: check this!!!!
-            auto const streamSize = stream->GetSize();
-            auto* data = new unsigned[streamSize / sizeof(unsigned)];
-            stream->ReadBytes(data, streamSize);
-            for (int i = 0; i < m_mapSize; ++i)
-            {
-                for (int j = 0; j < m_mapSize; ++j)
-                {
-                    m_colormap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
-                }
-            }
-            delete[] data;
-        }
-        else
-        {
-            M3D_LOG_INFO("Cannot read colormap: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName) + "using default values");
-            for (int i = 0; i < (this->m_mapSize + 1) * (this->m_mapSize + 1); ++i)
-                this->m_colormap[i] = -8421505;
-        }
-        
-        delete[] m_heightMap;
-        m_heightMap = new float[(m_mapSize + 1) * (m_mapSize + 1)];
-        
-        delete[] m_cliffHeightMap;
-        m_cliffHeightMap = new unsigned char[(m_mapSize + 1) * (m_mapSize + 1)];
+        ////TODO: implement Landscape::Load
+        //M3D_LOG_FLOW();
+        //m_mapSize = 16 * m_owner->m_level->land_size;
+        //auto const fileName = m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_beachsetsName);
+        //CStr error;
+        //ref_ptr xmlFile = ReadXmlFile(fileName.c_str(), &error);
+        //if (!xmlFile)
+        //{
+        //    xmlFile = ReadXmlFile("data\\Beachsets.xml", &error);
+        //}
+        //if (xmlFile)
+        //{
+        //    ref_ptr beachsets = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+        //    ref_ptr wave = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+        //    xmlFile->GetFirstChild(beachsets, "Beachsets");
+        //    for (beachsets->GetFirstChild(wave, "Wave"); !wave->IsEmpty(); wave->GetNextSibling(wave, "Wave"))
+        //    {
+        //        WaveSets ws;
+        //        SafeFloatAttrib(ws.m_tcomp, wave, "tcomp");
+        //        if (ws.m_tcomp < 0.0)
+        //        {
+        //            SafeFloatAttrib(ws.m_tlevel, wave, "tlevel");
+        //            SafeFloatAttrib(ws.m_tamplitude, wave, "tamplitude");
+        //            SafeFloatAttrib(ws.m_tphase, wave, "tphase");
+        //            SafeFloatAttrib(ws.m_tfreq, wave, "tfreq");
+        //        }
+        //        SafeFloatAttrib(ws.m_scomp, wave, "scomp");
+        //        if (ws.m_scomp < 0.0)
+        //        {
+        //            SafeFloatAttrib(ws.m_slevel, wave, "slevel");
+        //            SafeFloatAttrib(ws.m_samplitude, wave, "samplitude");
+        //            SafeFloatAttrib(ws.m_sphase, wave, "sphase");
+        //            SafeFloatAttrib(ws.m_sfreq, wave, "sfreq");
+        //        }
+        //        CStr tex;
+        //        SafeStrAttrib(tex, wave, "texture");
+        //        auto texHandle = M3D_APP->m_renderer->AddTexture(tex, 2);
+        //        if (texHandle.IsValid())
+        //        {
+        //            M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_WRAP_S, 3u);
+        //            M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_WRAP_T, 3u);
+        //            M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_MIP_LOD_BIAS, M3D_KERNEL->GetEngineCfg().m_g_shoresMipBias.GetF());
+        //            ws.m_texHandle = texHandle;
+        //        }
+        //        m_waves.push_back(ws);
+        //    }
+        //}
+        //else
+        //{
+        //    M3D_LOG_INFO("Error:No Beachset.xml file");
+        //}
 
-        return 1;
-        
-        if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
-            stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName).c_str(), fs::IStream::OPEN_READ))
-        {
-            auto const streamSize = stream->GetSize();
-            if (streamSize == 2 * this->m_mapSize * this->m_mapSize)
-            {
-                //TODO: check this
-                auto* data = new unsigned[streamSize / sizeof(float)];
-                stream->ReadBytes(data, streamSize);
-                for (int i = 0; i < m_mapSize; ++i)
-                {
-                    for (int j = 0; j < m_mapSize; ++j)
-                    {
-                        m_heightMap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
-                    }
-                }
-                delete[] data;
-            }
-            else
-            {
-                throw retruxx::logic_error("Not implemented");
-            }
-        }
-        else
-        {
-            M3D_LOG_INFO("Cannot read heightfield: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName));
-            return 0;
-        }
-        
-        throw retruxx::logic_error("Not implemented");
-        return 1;
+        //delete[] m_colormap;
+        ////TODO: check size
+        //m_colormap = new unsigned[(m_mapSize + 1) * (m_mapSize + 1)];
+        //
+        //delete[] m_texSetsmap;
+        //m_texSetsmap = new retruxx::set<unsigned>[m_owner->m_level->land_size * m_owner->m_level->land_size];
+        //
+        //
+        //if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        //    stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName).c_str(), fs::IStream::OPEN_READ))
+        //{
+        //    //TODO: check this!!!!
+        //    auto const streamSize = stream->GetSize();
+        //    auto* data = new unsigned[streamSize / sizeof(unsigned)];
+        //    stream->ReadBytes(data, streamSize);
+        //    for (int i = 0; i < m_mapSize; ++i)
+        //    {
+        //        for (int j = 0; j < m_mapSize; ++j)
+        //        {
+        //            m_colormap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
+        //        }
+        //    }
+        //    delete[] data;
+        //}
+        //else
+        //{
+        //    M3D_LOG_INFO("Cannot read colormap: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName) + "using default values");
+        //    for (int i = 0; i < (this->m_mapSize + 1) * (this->m_mapSize + 1); ++i)
+        //        this->m_colormap[i] = -8421505;
+        //}
+        //
+        //delete[] m_heightMap;
+        //m_heightMap = new float[(m_mapSize + 1) * (m_mapSize + 1)];
+        //
+        //delete[] m_cliffHeightMap;
+        //m_cliffHeightMap = new unsigned char[(m_mapSize + 1) * (m_mapSize + 1)];
+
+        //return 1;
+        //
+        //if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        //    stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName).c_str(), fs::IStream::OPEN_READ))
+        //{
+        //    auto const streamSize = stream->GetSize();
+        //    if (streamSize == 2 * this->m_mapSize * this->m_mapSize)
+        //    {
+        //        //TODO: check this
+        //        auto* data = new unsigned[streamSize / sizeof(float)];
+        //        stream->ReadBytes(data, streamSize);
+        //        for (int i = 0; i < m_mapSize; ++i)
+        //        {
+        //            for (int j = 0; j < m_mapSize; ++j)
+        //            {
+        //                m_heightMap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
+        //            }
+        //        }
+        //        delete[] data;
+        //    }
+        //    else
+        //    {
+        //        throw retruxx::logic_error("Not implemented");
+        //    }
+        //}
+        //else
+        //{
+        //    M3D_LOG_INFO("Cannot read heightfield: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName));
+        //    return 0;
+        //}
+        //
+        //throw retruxx::logic_error("Not implemented");
+        //return 1;
     }
 
     void Landscape::RenderGrass(unsigned, GrassInstance**, int*, RenderGrassType)

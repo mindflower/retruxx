@@ -79,7 +79,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ProcessManager::PostMessageA(Event const&)
+    void ProcessManager::PostMessageA(ai::Event const&)
     {
         throw std::logic_error("Not implemented");
     }
