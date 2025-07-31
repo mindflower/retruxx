@@ -15,7 +15,10 @@ namespace m3d
 
         auxTaggedFile::~auxTaggedFile()
         {
-            throw std::logic_error("Not implemented");
+            if (m_bOpened)
+            {
+                Close();
+            }
         }
 
         auxTaggedFile::eError auxTaggedFile::addChunk(unsigned)
@@ -181,6 +184,7 @@ namespace m3d
                     mChunkData data;
                     data.is_copy = false;
                     data.size = fileData[1];
+                    data.data = nullptr;
                     chunk.chunk_header.offset += reinterpret_cast<unsigned>(m_pFileData);
                     chunk.chunk_data.push_back(data);
                     m_lAllChunks.push_back(chunk);
@@ -255,6 +259,7 @@ namespace m3d
                 mChunkData data;
                 data.is_copy = false;
                 data.size = fileData[1];
+                data.data = nullptr;
                 chunk.chunk_header.offset += reinterpret_cast<unsigned>(m_pFileData);
                 chunk.chunk_data.push_back(data);
                 m_lAllChunks.push_back(chunk);
@@ -273,7 +278,117 @@ namespace m3d
 
         auxTaggedFile::eError auxTaggedFile::Close()
         {
-            throw std::logic_error("Not implemented");
+            //TODO: generated code
+            if (!m_bOpened)
+                return eError::NOT_INITIALIZED;
+
+            const eOpenFlag openFlag = m_openflag;
+
+            // Handle CREATE or CREATE_IGNORE_CRC mode
+            if (openFlag == CREATE || openFlag == CREATE_IGNORE_CRC)
+            {
+                if (!m_lAllChunks.empty())
+                {
+                    // Truncate format name if too long
+                    if (strlen(m_format_name) > 0x1D)
+                        m_format_name[29] = '\0';
+
+                    // Add special chunks for format info
+                    addChunk(0xF001u);
+                    addChunkData(0xF001u, 0x1Eu, m_format_name);
+
+                    addChunk(0xF002u);
+                    addChunkData(0xF002u, sizeof(m_format_version), &m_format_version);
+
+                    // Write file header
+                    mTaggedHeader header;
+                    strncpy(header.cSignature, "ecbnt,t", 7);
+                    header.numChunks = static_cast<uint32_t>(m_lAllChunks.size());
+
+                    DWORD numWritten = 0;
+                    if (!WriteFile(m_hFile, &header, sizeof(header), &numWritten, 0) ||
+                        numWritten != sizeof(header))
+                    {
+                        CloseHandle(m_hFile);
+                        return COMMON_ERROR; // Error code
+                    }
+
+                    // Calculate data offset after all chunk headers
+                    uint32_t dataOffset = sizeof(header) +
+                        static_cast<uint32_t>(m_lAllChunks.size() * sizeof(auxChunkInfo));
+
+                    // Write chunk headers
+                    for (auto& chunk : m_lAllChunks)
+                    {
+                        chunk.chunk_header.offset = dataOffset;
+
+                        if (!WriteFile(m_hFile, &chunk.chunk_header, sizeof(chunk.chunk_header),
+                            &numWritten, 0) || numWritten != sizeof(chunk.chunk_header))
+                        {
+                            CloseHandle(m_hFile);
+                            return COMMON_ERROR;
+                        }
+
+                        dataOffset += chunk.chunk_header.size;
+                    }
+
+                    // Write chunk data
+                    for (auto& chunk : m_lAllChunks)
+                    {
+                        for (auto& data : chunk.chunk_data)
+                        {
+                            if (!WriteFile(m_hFile, data.data, data.size, &numWritten, 0) ||
+                                numWritten != data.size)
+                            {
+                                CloseHandle(m_hFile);
+                                return COMMON_ERROR;
+                            }
+
+                            if (data.is_copy)
+                            {
+                                delete[] data.data;
+                            }
+                        }
+                    }
+                }
+                CloseHandle(m_hFile);
+            }
+            // Handle memory-mapped modes
+            else if (openFlag == PROCESS_MAPPED || openFlag == PROCESS_MAPPED_IGNORE_CRC)
+            {
+                UnmapViewOfFile(m_pFileData);
+                CloseHandle(m_hFileMapping);
+            }
+
+            // Common cleanup for both PROCESS modes
+            if (openFlag == PROCESS_MAPPED || openFlag == PROCESS_MAPPED_IGNORE_CRC ||
+                openFlag == PROCESS_NORMAL || openFlag == PROCESS_NORMAL_IGNORE_CRC)
+            {
+                if (m_pFileData &&
+                    (openFlag == PROCESS_NORMAL || openFlag == PROCESS_NORMAL_IGNORE_CRC))
+                {
+                    delete[] m_pFileData;
+                }
+
+                // Clean up chunk data
+                for (auto& chunk : m_lAllChunks)
+                {
+                    for (auto& data : chunk.chunk_data)
+                    {
+                        delete[] data.data;
+                    }
+                    chunk.chunk_data.clear();
+                }
+
+                // Clear all chunks
+                m_lAllChunks.clear();
+            }
+
+            // Clean up format name
+            delete[] m_format_name;
+
+            m_bOpened = false;
+            return SUCCESS; // Success
         }
 
         unsigned auxTaggedFile::findChunk(unsigned _chunkTag) const

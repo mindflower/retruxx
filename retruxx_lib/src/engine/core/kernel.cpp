@@ -24,63 +24,66 @@ namespace
 
     void* __fastcall AllocateMemory(unsigned int sz, char const* file, int linenum)
     {
-        return mm->Malloc(sz, file, linenum);
+        //return mm->Malloc(sz, file, linenum);
+        return malloc(sz);
     }
 
     void* __fastcall ReallocateMemory(void* mem, unsigned int sz, char const* file, int linenum)
     {
-        return mm->Realloc(mem, sz, file, linenum);
+        //return mm->Realloc(mem, sz, file, linenum);
+        return realloc(mem, sz);
     }
 
     void __fastcall FreeMemory(void* p, char const* file , int linenum)
     {
-        return mm->Free(p);
+        //return mm->Free(p);
+        return free(p);
     }
 }
 
 namespace m3d
 {
     Kernel* g_Kernel = nullptr;
-    //Kernel kernelObject;
+    Kernel kernelObject;
 }
 
-void* __cdecl operator new(std::size_t count)
-{
-    return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
-}
-
-void* __cdecl operator new(std::size_t count, std::nothrow_t const&) noexcept
-{
-    try
-    {
-        return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
-    }
-    catch (...)
-    {
-        return nullptr;
-    }
-}
-
-void* __cdecl operator new[](std::size_t sz)
-{
-    return M3D_KERNEL->g_mar.AllocMem(sz, nullptr, 0);
-}
-
-void __cdecl operator delete(void* p)
-{
-    if (p)
-    {
-        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
-    }
-}
-
-void __cdecl operator delete[](void* p)
-{
-    if (p)
-    {
-        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
-    }
-}
+//void* __cdecl operator new(std::size_t count)
+//{
+//    return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
+//}
+//
+//void* __cdecl operator new(std::size_t count, std::nothrow_t const&) noexcept
+//{
+//    try
+//    {
+//        return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
+//    }
+//    catch (...)
+//    {
+//        return nullptr;
+//    }
+//}
+//
+//void* __cdecl operator new[](std::size_t sz)
+//{
+//    return M3D_KERNEL->g_mar.AllocMem(sz, nullptr, 0);
+//}
+//
+//void __cdecl operator delete(void* p)
+//{
+//    if (p)
+//    {
+//        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
+//    }
+//}
+//
+//void __cdecl operator delete[](void* p)
+//{
+//    if (p)
+//    {
+//        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
+//    }
+//}
 
 
 namespace m3d
@@ -352,13 +355,13 @@ namespace m3d
         return g_Kernel;
     }
 
-    bool insss()
-    {
-        inject::InjectAddresses.push_back(std::make_pair(inject::cast<uint32_t>(0x00A0988C), inject::cast<uint32_t>(g_Kernel)));
-        return true;
-    }
-
-    namespace {
-        auto _injected355 = insss();
-    };
+    //bool insss()
+    //{
+    //    inject::InjectAddresses.push_back(std::make_pair(inject::cast<uint32_t>(0x00A0988C), inject::cast<uint32_t>(g_Kernel)));
+    //    return true;
+    //}
+    //
+    //namespace {
+    //    auto _injected355 = insss();
+    //};
 }

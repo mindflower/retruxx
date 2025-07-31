@@ -72,15 +72,16 @@ namespace inject
 #else //RETRUXX_DLL
 
 #define RETRUXX_DLL_FRIEND_CLASS(cl)
+
 #define RETRUXX_DLL_DEFINE_ACCESSOR(cls, method)
 #define RETRUXX_DLL_ACCESS_PRIVATE_METHOD(cls, method)
 
 #define RETRUXX_DLL_INJECT_CLASS_METHOD(address, cls, method)
 #define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(address, cls, method)
 
-#define RETRUXX_DLL_INJECT_FUNCTION(address, funcName)
+#define RETRUXX_DLL_INJECT_FUNCTION(address, function)
 #define RETRUXX_DLL_INJECT_FUNCTION_TYPED(address, function, type)
-//#define RETRUXX_DLL_INJECT_VIRTUAL_FUNCTION(address, function)
+//#define RETRUXX_DLL_INJECT_VIRTUAL_FUNCTION(address, function) namespace { bool CONCAT(_injected, __LINE__) = inject::injectFunctionCall(address, inject::cast<uint32_t>(inject::FunctionScrapper::addressOfVirtual(&function))); }
 #define RETRUXX_DLL_INJECT_VIRTUAL_FUNCITON_NAMESPACED(address, Namespace, Class, Function)
 
 #define RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(address, function)
@@ -88,5 +89,14 @@ namespace inject
 
 #define RETRUXX_DLL_INJECT_CTOR(address, cls)
 #define RETRUXX_DLL_INJECT_DTOR(address, cls)
+
+#define RETRUXX_DLL_JMP_TO_FUNCTION(address, function, ...)
+#define RETRUXX_DLL_JMP_TO_CTOR(address, ctor)
+
+#define RETRUXX_DLL_ASSERT_CLASS_SIZE(cls, size)
+
+#define RETRUXX_DLL_INJECT_ADDRESS(address, newAddress)
+//#define RETRUXX_DLL_INJECT_ADDRESS(address, newAddress) namespace {bool CONCAT(_injected, __LINE__) = inject::injectMemoryAddress(inject::cast<uint32_t>(address), inject::cast<uint32_t>(newAddress)); }
+
 
 #endif //RETRUXX_DLL

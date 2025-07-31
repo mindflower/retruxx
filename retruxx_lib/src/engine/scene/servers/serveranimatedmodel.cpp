@@ -175,6 +175,7 @@ namespace m3d
                 skinsToLoad.loadSkins.insert(strToInt(token));
             }
         }
+
     }
 
     void AnimatedModelsServer::AddItemsList(retruxx::vector<ServerItem>& itemslist)
@@ -194,14 +195,19 @@ namespace m3d
             }
         }
 
-        for (auto& item : itemslist)
+        for (const auto& model : m_models)
         {
-            for (const auto& model : m_models)
+            throw retruxx::logic_error("Not implemented");
+            for (auto& item : itemslist)
             {
                 if (model.m_name == item.m_id)
                 {
                     item.m_fileWasRead = true;
+                    throw retruxx::logic_error("Not implemented");
+                    //TODO: check this!!!!!!
                     M3D_APP->m_cachedSoundIDs.insert(model.m_name);
+
+
                 }
             }
         }

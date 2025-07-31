@@ -57,9 +57,13 @@ namespace retruxx
 #include <set>
 #include <map>
 #include <unordered_map>
+#include <stdexcept>
+#include <string>
 
 namespace retruxx
 {
+    using logic_error = std::logic_error;
+
     template<typename... Args>
     using allocator = std::allocator<Args...>;
 
@@ -73,7 +77,7 @@ namespace retruxx
     using list = std::list<Args...>;
 
     template<typename... Args>
-    using pair = std::vector<Args...>;
+    using pair = std::pair<Args...>;
 
     template<typename... Args>
     using less = std::less<Args...>;
@@ -86,6 +90,22 @@ namespace retruxx
 
     template<typename... Args>
     using hash_map = std::unordered_map<Args...>;
+
+    using string = std::string;
+
+    //template<typename... Args>
+    //using _Bidit = std::_Bidit<Args...>;
+
+    template<typename... Args>
+    struct _Bidit {};
+
+    using bidirectional_iterator_tag = std::bidirectional_iterator_tag;
+
+    //template<typename... Args>
+    //using binary_function = std::binary_function<Args...>;
+
+    template<typename... Args>
+    struct binary_function {};
 }
 
 #endif //RETRUXX_DLL

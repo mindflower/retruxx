@@ -12,6 +12,10 @@ namespace m3d
 
     CVar::CVar()
     {
+        m_s = "errormsg";
+        m_type = CVAR_UNDEFINED;
+        m_defaultValue = 0;
+        m_handler = 0;
     }
 
     CVar::CVar(char const* name, char const* value, eType type, eFlags flags)

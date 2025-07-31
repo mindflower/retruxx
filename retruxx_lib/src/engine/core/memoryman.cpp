@@ -12,33 +12,33 @@ namespace m3d
 
     MemoryManager::MemoryManager()
     {
-        (this->*inject::cast<void(MemoryManager::*)()>(0x007487A0))();
-        return;
+        //(this->*inject::cast<void(MemoryManager::*)()>(0x007487A0))();
+        //return;
 
         //TODO: implement memeory manager initialization
-        this->m_memAllocated = 0;
-        this->m_memUsed = 0;
-        this->m_memNumAlloc = 1;
-        this->m_numNewChunks = 0;
-        this->m_memOverhead = 0;
-        this->m_memNumAllocToBreakIn = 0;
-        this->m_lastUnsuccessfulAllocationSize = 0;
-        this->m_chunks = 0;
-
-        auto v2 = 0;
-        auto mm_b_num = m_b_num;
-        do
-        {
-            auto v4 = 1 << (v2 + 4);
-            *(mm_b_num - 7) = v4;
-            *mm_b_num = 0x4000 / v4;
-            auto v5 = NewChunk(v4, 0x4000 / v4);
-            *(mm_b_num - 14) = reinterpret_cast<int>(v5);
-            if (!v5)
-                __debugbreak();
-            ++v2;
-            ++mm_b_num;
-        } while (v2 < 7);
+        //this->m_memAllocated = 0;
+        //this->m_memUsed = 0;
+        //this->m_memNumAlloc = 1;
+        //this->m_numNewChunks = 0;
+        //this->m_memOverhead = 0;
+        //this->m_memNumAllocToBreakIn = 0;
+        //this->m_lastUnsuccessfulAllocationSize = 0;
+        //this->m_chunks = 0;
+        //
+        //auto v2 = 0;
+        //auto mm_b_num = m_b_num;
+        //do
+        //{
+        //    auto v4 = 1 << (v2 + 4);
+        //    *(mm_b_num - 7) = v4;
+        //    *mm_b_num = 0x4000 / v4;
+        //    auto v5 = NewChunk(v4, 0x4000 / v4);
+        //    *(mm_b_num - 14) = reinterpret_cast<int>(v5);
+        //    if (!v5)
+        //        __debugbreak();
+        //    ++v2;
+        //    ++mm_b_num;
+        //} while (v2 < 7);
     }
 
     void* MemoryManager::Realloc(void* p, int newSize, char const* src_name, int src_line)

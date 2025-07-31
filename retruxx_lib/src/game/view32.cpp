@@ -261,7 +261,7 @@ int CMiracle3d::OnFlyMouse(m3d::AuxImpulseInfo const&)
 int CMiracle3d::GameInit()
 {
     m3d::pClient = new m3d::CClient;
-    inject::injectMemoryAddress(0x00A1185C, inject::cast<uint32_t>(m3d::pClient));
+    //inject::injectMemoryAddress(0x00A1185C, inject::cast<uint32_t>(m3d::pClient));
 
     m3d::pClient->Init();
     m_gameInited = true;
