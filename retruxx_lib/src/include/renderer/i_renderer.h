@@ -943,7 +943,7 @@ namespace m3d
             virtual void* LockIb(const m3d::rend::IbHandle&, int, int, unsigned int) = 0;
             virtual void* LockIbStreaming(const m3d::rend::IbHandle*, int, int*, int*) = 0;
             virtual void UnlockIb(const m3d::rend::IbHandle&) = 0;
-            virtual int ReleaseIb(m3d::rend::IbHandle*) = 0;
+            virtual int ReleaseIb(m3d::rend::IbHandle&) = 0;
             virtual int ReferenceIb(const m3d::rend::IbHandle*) = 0;
             virtual m3d::rend::IbPoolField AddIbPoolField(unsigned int) = 0;
             virtual void ReleaseIbPoolField(m3d::rend::IbPoolField*) = 0;
@@ -959,7 +959,7 @@ namespace m3d
             virtual void* LockVbStreaming(const m3d::rend::VbHandle&, int, int&, int*) = 0;
             virtual void UnlockVb(const m3d::rend::VbHandle&) = 0;
             virtual int ReferenceVb(const m3d::rend::VbHandle*) = 0;
-            virtual int ReleaseVb(m3d::rend::VbHandle*) = 0;
+            virtual int ReleaseVb(m3d::rend::VbHandle&) = 0;
             virtual bool ReportVbsInfo(const char*) = 0;
             virtual m3d::rend::VbPoolField AddVbPoolField(m3d::rend::VertexType, unsigned int) = 0;
             virtual void ReleaseVbPoolField(m3d::rend::VbPoolField*) = 0;

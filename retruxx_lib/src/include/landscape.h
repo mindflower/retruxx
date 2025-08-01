@@ -34,18 +34,54 @@ namespace m3d
         {
             ~vector()
             {
-                delete m_data;
+                Deallocate();
+            }
+            void Allocate(int sz)
+            {
+                m_data = new T[sz];
+                m_maxItems = sz;
+                m_numItems = 0;
+            }
+
+            void Deallocate()
+            {
+                delete[] m_data;
                 m_maxItems = 0;
                 m_numItems = 0;
             }
-            void Allocate(int sz);
-            void Deallocate();
-            void clear();
-            T& operator[](int);
-            const T& operator[](int) const;
-            void push_back(const T& shit);
-            int empty() const;
-            int size() const;
+            void clear()
+            {
+                m_numItems = 0;
+            }
+            T& operator[](int index)
+            {
+                return m_data[index];
+            }
+
+            const T& operator[](int index) const
+            {
+                return m_data[index];
+            }
+
+            void push_back(const T& shit)
+            {
+                if (m_numItems < m_maxItems)
+                {
+                    m_data[m_numItems] = shit;
+                    ++m_numItems;
+                }
+            }
+
+            int empty() const
+            {
+                return m_numItems == 0;
+            }
+
+            int size() const
+            {
+                return m_numItems;
+            }
+
             /* 0x0000 */ T* m_data = nullptr;
             /* 0x0004 */ int m_numItems = 0;
             /* 0x0008 */ int m_maxItems = 0;
@@ -218,18 +254,16 @@ namespace m3d
 
         struct CellParams
         {
-            CellParams(const m3d::Landscape::CellParams&);
-            CellParams();
             /* 0x0000 */ float m_h0;
             /* 0x0004 */ float m_h1;
-            /* 0x0008 */ bool m_iswatercell;
+            /* 0x0008 */ bool m_iswatercell = false;
             /* 0x0009 */ char Padding_153[3];
             /* 0x000c */ float m_minwater;
             /* 0x0010 */ float m_maxwater;
             /* 0x0014 */ float m_lodDelta[5];
-            /* 0x0028 */ bool m_lodDeltaCreated;
+            /* 0x0028 */ bool m_lodDeltaCreated = false;
             /* 0x0029 */ char Padding_154[3];
-            /* 0x002c */ float m_normalTheta;
+            /* 0x002c */ float m_normalTheta = 0.0;
             /* 0x0030 */ CVector m_normalAverage;
         }; /* size: 0x003c */
 
@@ -363,15 +397,13 @@ namespace m3d
 
         struct TIVChunk
         {
-            TIVChunk(const m3d::Landscape::TIVChunk&);
-            TIVChunk();
             /* 0x0000 */ retruxx::vector<m3d::rend::VbHandle, retruxx::allocator<m3d::rend::VbHandle> > m_vbHandle;
             /* 0x0010 */ m3d::rend::TexHandle m_texHandle;
             /* 0x0014 */ unsigned int m_offsetsmap[65536];
             /* 0x40014 */ unsigned short m_banknumber[65536];
             /* 0x60014 */ unsigned short m_numCellsPerCellMap[4096];
-            /* 0x62014 */ int iotherPassOffset;
-            /* 0x62018 */ int iotherPassBankNumber;
+            /* 0x62014 */ int iotherPassOffset = 0;
+            /* 0x62018 */ int iotherPassBankNumber = 0;
         }; /* size: 0x6201c */
 
         using TexVec = retruxx::vector<m3d::Landscape::TIVChunk*, retruxx::allocator<m3d::Landscape::TIVChunk*> >;
@@ -439,14 +471,12 @@ namespace m3d
         struct TileInfo
         {
             /* 0x0000 */ int m_texIndex0;
-            /* 0x0004 */ int m_angle;
+            /* 0x0004 */ int m_angle = 0;
             /* 0x0008 */ int m_texIndices[4];
             /* 0x0018 */ int m_texFlags[4];
             /* 0x0028 */ int m_numTexs;
             /* 0x002c */ int m_maskIndex;
             /* 0x0030 */ int m_rotate;
-            TileInfo();
-            ~TileInfo();
         }; /* size: 0x0034 */
 
         struct DrawCliffInfo

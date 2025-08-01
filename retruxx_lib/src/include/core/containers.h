@@ -14,7 +14,7 @@ namespace m3d
 
         void clear()
         {
-            throw std::logic_error("Not implemented");
+            m_hash.clear();
         }
 
         void add(CStr const& key, T value)
@@ -56,7 +56,7 @@ namespace m3d
 
         void clear()
         {
-            throw std::logic_error("Not implemented");
+            m_hash.clear();
         }
 
         void removeByKey(unsigned int key)

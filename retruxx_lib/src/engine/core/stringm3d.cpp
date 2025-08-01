@@ -241,9 +241,17 @@ CStr::CStr(char)
     throw std::logic_error("Not implemented");
 }
 
-CStr::CStr(char const*, int)
+CStr::CStr(char const* str, int num)
 {
-    throw std::logic_error("Not implemented");
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
+    if (str)
+    {
+        realloc(num + 1);
+        strncpy(m_charPtr, str, num);
+        m_charPtr[num] = '\0';
+    }
 }
 
 CStr::CStr(char const* str)

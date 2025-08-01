@@ -55,9 +55,154 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
+    m3d::rend::IAsmShader* waterPs = nullptr;
+
     void Landscape::InitReflectionRefractionTextures()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        // Release any existing textures
+        ReleaseReflectionRefractionTextures();
+
+        // Determine texture size based on water quality setting
+        int waterQuality = M3D_KERNEL->GetEngineCfg().m_r_waterQuality.GetI();
+        int textureSize = (waterQuality >= 2 && waterQuality <= 3) ? 512 : 256;
+
+        // Create reflection texture
+        m_texRtReflection = m3d::Application::g_pApp->m_renderer->AddDynamicTexture(
+            "$RtReflection",
+            textureSize,
+            textureSize,
+            0);
+
+        // Set reflection texture parameters
+        M3D_RENDERER->SetTextureParameter(m_texRtReflection, m3d::rend::TexParam::TM_WRAP_S, 3);
+        M3D_RENDERER->SetTextureParameter(m_texRtReflection, m3d::rend::TexParam::TM_WRAP_T, 3);
+        M3D_RENDERER->SetTextureParameter(m_texRtReflection, m3d::rend::TexParam::TM_TEX_FILTER, 2);
+
+        // Create refraction texture
+        m_texRtRefraction = M3D_RENDERER->AddDynamicTexture(
+            "$RtRefraction",
+            textureSize,
+            textureSize,
+            0);
+
+        // Set refraction texture parameters
+        M3D_RENDERER->SetTextureParameter(m_texRtRefraction, m3d::rend::TexParam::TM_WRAP_S, 3);
+        M3D_RENDERER->SetTextureParameter(m_texRtRefraction, m3d::rend::TexParam::TM_WRAP_T, 3);
+        M3D_RENDERER->SetTextureParameter(m_texRtRefraction, m3d::rend::TexParam::TM_TEX_FILTER, 2);
+
+        // Determine shader version to use
+        int forcedVersion = M3D_KERNEL->GetEngineCfg().m_g_forceWaterPSVersion.GetI();
+        m_waterShaderVersion = (forcedVersion == 11 || forcedVersion == 14 || forcedVersion == 20)
+            ? forcedVersion
+            : 20;
+
+        // Downgrade shader version if hardware doesn't support it
+        if (m_waterShaderVersion == 20) {
+            bool allowPS20 = M3D_KERNEL->GetEngineCfg().m_r_allowPS20.GetB();
+            if (!allowPS20 || !M3D_RENDERER->IsFeatureSupported(m3d::rend::DeviceFeature::FEATURE_PS_2_0)) {
+                m_waterShaderVersion = 14;
+            }
+        }
+
+        if (m_waterShaderVersion == 14 && !M3D_RENDERER->IsFeatureSupported(m3d::rend::DeviceFeature::FEATURE_PS_1_4)) {
+            m_waterShaderVersion = 11;
+        }
+
+        // Load appropriate shaders based on version
+        if (m_waterShaderVersion == 11) {
+            // PS1.1 shaders
+            waterPs = M3D_RENDERER->NewAsmShader("data/shaders/waterTest_ps11.asm", m3d::rend::IAsmShader::Type::PIXEL_SHADER);
+            m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps11.vs", "WaterVS", m3d::rend::IHlslShader::VS_1_1);
+
+            // Load wave bump texture
+            m_waveBumpTex = M3D_RENDERER->AddTexture("data/textures/water_dsdt.shader", 2);
+            M3D_RENDERER->SetTextureParameter(m_waveBumpTex, m3d::rend::TexParam::TM_WRAP_S, 3);
+            M3D_RENDERER->SetTextureParameter(m_waveBumpTex, m3d::rend::TexParam::TM_WRAP_T, 1);
+        }
+        else {
+            // PS1.4 or PS2.0 shaders
+            if (m_waterShaderVersion == 14) {
+                // PS1.4 shaders
+                waterPs = M3D_RENDERER->NewAsmShader("data/shaders/waterTest_ps14.asm", m3d::rend::IAsmShader::Type::PIXEL_SHADER);
+                m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps11.vs", "WaterVS", m3d::rend::IHlslShader::VS_1_1);
+            }
+            else {
+                if (m_solidDeepVs)
+                {
+                    m_solidDeepVs->Release();
+                    m_solidDeepVs = nullptr;
+                }
+
+                if (m_solidDeepPs)
+                {
+                    m_solidDeepPs->Release();
+                    m_solidDeepPs = nullptr;
+                }
+
+                // PS2.0 shaders - select quality level
+                if (waterQuality == 2)
+                {
+                    m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTestMed_ps20.vs", "WaterVS", m3d::rend::IHlslShader::VS_2_0);
+                    m_waterPs = M3D_RENDERER->NewHlslShader("data/shaders/waterTestMed_ps20.ps", "WaterPS", m3d::rend::IHlslShader::PS_2_0);
+
+                    // Load deep shaders
+                    m_solidDeepVs = M3D_RENDERER->NewHlslShader(
+                        "data/shaders/landscapeDeep_ps20.vs", "LandscapeVS", m3d::rend::IHlslShader::VS_2_0);
+                    m_solidDeepPs = M3D_RENDERER->NewHlslShader(
+                        "data/shaders/landscapeDeep_ps20.ps", "LandscapePS", m3d::rend::IHlslShader::PS_2_0);
+                }
+                else if (waterQuality == 3)
+                {
+                    m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps20.vs", "WaterVS", m3d::rend::IHlslShader::VS_2_0);
+                    m_waterPs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps20.ps", "WaterPS", m3d::rend::IHlslShader::PS_2_0);
+
+                    // Load deep shaders
+                    m_solidDeepVs = M3D_RENDERER->NewHlslShader(
+                        "data/shaders/landscapeDeep_ps20.vs", "LandscapeVS", m3d::rend::IHlslShader::VS_2_0);
+                    m_solidDeepPs = M3D_RENDERER->NewHlslShader(
+                        "data/shaders/landscapeDeep_ps20.ps", "LandscapePS", m3d::rend::IHlslShader::PS_2_0);
+                }
+                else
+                {
+                    m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTestLow_ps20.vs", "WaterVS", m3d::rend::IHlslShader::VS_2_0);
+                    m_waterPs = M3D_RENDERER->NewHlslShader("data/shaders/waterTestLow_ps20.ps", "WaterPS", m3d::rend::IHlslShader::PS_2_0);
+
+                    // Load deep shaders
+                    m_solidDeepVs = M3D_RENDERER->NewHlslShader(
+                        "data/shaders/landscapeDeep_ps20.vs", "LandscapeVS", m3d::rend::IHlslShader::VS_2_0);
+                    m_solidDeepPs = M3D_RENDERER->NewHlslShader(
+                        "data/shaders/landscapeDeep_ps20.ps", "LandscapePS", m3d::rend::IHlslShader::PS_2_0);
+                }
+            }
+            // Load fresnel texture
+            m_fresnelTex = M3D_RENDERER->AddTexture("data/textures/fresnel.dds", 0);
+            M3D_RENDERER->SetTextureParameter(m_fresnelTex, m3d::rend::TexParam::TM_WRAP_S, 3);
+            M3D_RENDERER->SetTextureParameter(m_fresnelTex, m3d::rend::TexParam::TM_WRAP_T, 3);
+        }
+
+        // Load simple water shaders
+        m_waterDumbPs = M3D_RENDERER->NewHlslShader("data/shaders/water_dumb.ps", "WaterPS", m3d::rend::IHlslShader::PS_1_1);
+        m_waterDumbVs = M3D_RENDERER->NewHlslShader("data/shaders/water_dumb.vs", "WaterVS", m3d::rend::IHlslShader::VS_1_1);
+
+        // Initialize scale matrix
+        m_matScale._12 = 0.0;
+        m_matScale._13 = 0.0;
+        m_matScale._14 = 0.0;
+        m_matScale._21 = 0.0;
+        m_matScale._23 = 0.0;
+        m_matScale._24 = 0.0;
+        m_matScale._31 = 0.0;
+        m_matScale._32 = 0.0;
+        m_matScale._33 = 0.0;
+        m_matScale._34 = 0.0;
+        m_matScale._11 = 0.5f;
+        m_matScale._22 = -0.5f;
+
+        float offset = (0.5f / textureSize) + 0.5f;
+        m_matScale._41 = offset;
+        m_matScale._42 = offset;
+        m_matScale._43 = 1.0f;
     }
 
     void Landscape::SetAllTexturesLoading(bool)
@@ -72,7 +217,107 @@ namespace m3d
 
     void Landscape::BuildSolidLandscape()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (m_solidVb.IsValid())
+        {
+            M3D_RENDERER->ReleaseVb(m_solidVb);
+        }
+
+        // TODO: check and refactor
+        auto land_size = this->m_owner->m_level->land_size;
+        m_solidVb = M3D_RENDERER->AddVb(rend::VertexType::VERTEX_YNI, 289 * land_size * land_size, "SolidLandscape", 0);
+        float* buff = (float*)M3D_RENDERER->LockVb(m_solidVb, 289 * land_size * land_size, 0, 0);
+        M3D_ASSERT(buff);
+
+        auto sizeinCells = land_size;
+        auto v9 = 0;
+        auto v10 = buff;
+        auto v = 0;
+        if (land_size)
+        {
+            do
+            {
+                auto v11 = 0;
+                auto i = 0;
+                auto v32 = 16 * v9;
+                do
+                {
+                    auto v12 = 0;
+                    auto nn = 0;
+                    auto v34 = 16 * v11;
+                    do
+                    {
+                        auto v13 = v32 + v12;
+                        auto v14 = 0;
+                        auto v15 = v12 << 7;
+                        do
+                        {
+                            auto v16 = v13 + (this->m_mapSize + 1) * (v14 + v34);
+                            *((unsigned short*)v10 + 2) = v15 + v14;
+                            *v10 = this->m_heightMap[v16];
+                            v16 *= 12;
+                            *((unsigned short*)v10 + 3) = (int)(float)(*(float*)((char*)&this->m_vnormal->x + v16) * 1024.0);
+                            *((unsigned short*)v10 + 4) = (int)(float)(*(float*)((char*)&this->m_vnormal->z + v16) * 1024.0);
+                            *((unsigned short*)v10 + 5) = (int)(float)(*(float*)((char*)&this->m_vnormal->y + v16) * 1024.0);
+                            ++v14;
+                            v10 += 3;
+                        } while (v14 <= 0x10);
+                        v12 = ++nn;
+                    } while (nn <= 0x10);
+                    v11 = ++i;
+                } while (i < sizeinCells);
+                v9 = ++v;
+            } while (v < sizeinCells);
+        }
+        M3D_RENDERER->UnlockVb(m_solidVb);
+
+        auto v17 = 0;
+        auto ia = 0;
+        auto v25 = 0;
+        do
+        {
+            if (m_solidIb->IsValid())
+            {
+                M3D_RENDERER->ReleaseIb(m_solidIb[ia]);
+            }
+            auto v19 = 1 << v17;
+            auto v20 = (unsigned __int16)(1 << v17);
+            m_solidIb[ia] = M3D_RENDERER->AddIb(32 * (16 / v20 + 2) / v20, 0);
+            unsigned short* v21 = (unsigned short*)M3D_RENDERER->LockIb(m_solidIb[ia],
+                32 * (16 / v20 + 2) / v20,
+                0,
+                0);
+
+            auto str = M3D_RENDERER->GetLastErrorStr();
+            auto v22 = 0;
+            auto nna = 0;
+            auto va = 0;
+            auto v23 = 17 * v19;
+            do
+            {
+                auto v24 = 0;
+                do
+                {
+                    *v21 = v23 + v22;
+                    v21[1] = v22;
+                    if (v24 == 16)
+                        v22 = v23 + v22 - 16;
+                    else
+                        v22 += v19;
+                    nna += 2;
+                    v24 += v20;
+                    v21 += 2;
+                } while (v24 <= 16);
+                nna += 2;
+                *v21 = v22 - v23 + 16;
+                v21[1] = v23 + v22;
+                v21 += 2;
+                va += v20;
+            } while (va < 16);
+
+            M3D_RENDERER->UnlockIb(m_solidIb[ia]);
+            v17 = ia + 1;
+            v25 = ++ia < 4;
+        } while (v25);
     }
 
     void Landscape::DrawCellsOverlayedEditor(cmn::vector<unsigned> const&, unsigned)
@@ -110,9 +355,14 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::ChangedNumberOfUsedTextures(unsigned)
+    void Landscape::ChangedNumberOfUsedTextures(unsigned numTexs)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_cellsPerTex.Deallocate();
+        m_cellsPerTex.Allocate(numTexs);
+        for (unsigned i = 0; i < numTexs; ++i)
+        {
+            m_cellsPerTex[i].Allocate(0x10000);
+        }
     }
 
     int Landscape::ConstructCollisionData()
@@ -147,9 +397,146 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::ReadTileInfo(int)
+    void Landscape::ReadTileInfo(int loadExtraTextures)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        // Construct the TileInfo.xml path
+        CStr tileInfoPath = m_pathTile + "TileInfo.xml";
+
+        // Create and open the file stream
+        scoped_ptr fileStream(M3D_KERNEL->GetFileServer().CreateFileStream());
+
+        if (!fileStream->Open(tileInfoPath.c_str(), m3d::fs::IStream::OpenFlags::OPEN_READ))
+        {
+            M3D_LOG_ERR("TileSet: cannot open resources " + tileInfoPath);
+            return;
+        }
+
+        // Create and read the XML file
+        ref_ptr xmlFile(M3D_KERNEL->CreateXmlFile());
+        if (!xmlFile->Read(*fileStream))
+        {
+            M3D_LOG_ERR("TileSet: cannot parse resources (" + CStr(xmlFile->GetError()) + ") " + tileInfoPath);
+            return;
+        }
+
+        // Create XML nodes for parsing
+        ref_ptr tileSetNode(xmlFile->CreateNode());
+        ref_ptr alphaSetsNode(xmlFile->CreateNode());
+        ref_ptr alphaSetNode(xmlFile->CreateNode());
+        ref_ptr maskNode(xmlFile->CreateNode());
+
+        // Get the TileSetName node
+        xmlFile->GetFirstChild(tileSetNode, "TileSetName");
+
+        // Process AlphaSets
+        tileSetNode->GetFirstChild(alphaSetsNode, "AlphaSets");
+        m_AlphaSets.clear();
+
+        alphaSetsNode->GetFirstChild(alphaSetNode, "Set");
+        while (!alphaSetNode->IsEmpty())
+        {
+            // Create new AlphaMask entry
+            AlphaMask alphaMask;
+            const char* setName = alphaSetNode->GetAttribute("name");
+            alphaMask.m_name = setName;
+
+            // Process mask textures (mask1, mask2, etc.)
+            for (int i = 1; i <= 4; i++)
+            {
+                CStr maskName = "mask" + CStr(i);
+                alphaSetNode->GetFirstChild(maskNode, maskName.c_str());
+
+                while (!maskNode->IsEmpty())
+                {
+                    const char* textureName = maskNode->GetAttribute("name");
+                    CStr fullTexturePath = m_pathTile + textureName;
+
+                    // Add texture and set parameters
+                    rend::TexHandle texHandle = M3D_RENDERER->AddTexture(fullTexturePath, 2);
+
+                    M3D_RENDERER->SetTextureParameter(texHandle, m3d::rend::TexParam::TM_WRAP_S, 3);
+                    M3D_RENDERER->SetTextureParameter(texHandle, m3d::rend::TexParam::TM_WRAP_T, 3);
+                    M3D_RENDERER->SetTextureParameter(texHandle, m3d::rend::TexParam::TM_MIP_LOD_BIAS, -1.0f);
+
+                    alphaMask.m_texMasks[i - 1].push_back(texHandle);
+
+                    maskNode->GetNextSibling(maskNode, maskName.c_str());
+                }
+            }
+
+            // Add to AlphaSets and mapping
+            m_AlphaSets.push_back(alphaMask);
+            m_hashAlphaToLand.add(alphaMask.m_name, m_AlphaSets.size() - 1);
+
+            alphaSetNode->GetNextSibling(alphaSetNode, "Set");
+        }
+
+        // Process LandTypes
+        ref_ptr landTypesNode(xmlFile->CreateNode());
+        tileSetNode->GetFirstChild(landTypesNode, "LandTypes");
+        m_Lands.clear();
+
+        // Process by priority order (0-9)
+        for (int priority = 0; priority < 10; priority++)
+        {
+            ref_ptr typeNode(xmlFile->CreateNode());
+            landTypesNode->GetFirstChild(typeNode, "type");
+
+            while (!typeNode->IsEmpty())
+            {
+                // Check if this type matches current priority
+                int typePriority = 0;
+                m3d::SafeIntAttrib(typePriority, typeNode, "priority");
+
+                if (typePriority == priority)
+                {
+                    LandType landType;
+                    landType.m_priority = typePriority;
+
+                    // Get basic attributes
+                    const char* nameAttr = typeNode->GetAttribute("name");
+                    landType.m_name = nameAttr;
+
+                    const char* passmaskAttr = typeNode->GetAttribute("passmask");
+                    landType.m_passmask = passmaskAttr ? atoi(passmaskAttr) : 0;
+
+                    const char* alphasetAttr = typeNode->GetAttribute("alphaset");
+                    landType.m_alphaset = 0;
+                    m_hashAlphaToLand.add(alphasetAttr, landType.m_alphaset);
+
+                    // Process tiles
+                    ref_ptr tileNode(xmlFile->CreateNode());
+                    typeNode->GetFirstChild(tileNode, "tile");
+
+                    while (!tileNode->IsEmpty())
+                    {
+                        const char* tileFile = tileNode->GetAttribute("file");
+
+                        if (loadExtraTextures &&
+                            (m_loadAllTextures || m_usedTexturesList.find(tileFile) != m_usedTexturesList.end()))
+                        {
+                            CStr fullTilePath = m_pathTile + tileFile;
+                            int texIndex = AddOneTexture(fullTilePath.c_str());
+                            landType.m_texIndices.push_back(texIndex);
+
+                            // Update mappings
+                            m_hashIdxToLandType.addValueByKey(texIndex, m_Lands.size());
+                            m_hashIdxToPass.addValueByKey(texIndex, landType.m_passmask);
+                        }
+
+                        tileNode->GetNextSibling(tileNode, "tile");
+                    }
+
+                    m_Lands.push_back(landType);
+                }
+
+                typeNode->GetNextSibling(typeNode, "type");
+            }
+        }
+
+        // Update texture count
+        ChangedNumberOfUsedTextures(m_tilesTextures.size());
     }
 
     void Landscape::_dbgGenerateGrass()
@@ -182,9 +569,25 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int Landscape::AddOneTexture(CStr const&)
+    int Landscape::AddOneTexture(CStr const& name)
     {
-        throw retruxx::logic_error("Not implemented");
+        int idx = 0;
+        if (m_texToIdx.get(name, idx))
+        {
+            return idx;
+        }
+
+        auto tex = M3D_RENDERER->AddTexture(name, 2);
+        M3D_RENDERER->SetTextureParameter(tex, m3d::rend::TexParam::TM_WRAP_S, 1);
+        M3D_RENDERER->SetTextureParameter(tex, m3d::rend::TexParam::TM_WRAP_T, 1);
+
+        idx = m_tilesTextures.size();
+        m_texToIdx.add(name, idx);
+
+        auto chunk = new TIVChunk;
+        chunk->m_texHandle = tex;
+        m_tilesTextures.push_back(chunk);
+        return idx;
     }
 
     void Landscape::HandleCommand(int, CConsoleParams const&)
@@ -514,12 +917,103 @@ namespace m3d
 
     void Landscape::RecalcUV()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        // Initialize variables
+        float* uvAnglePtr = &m_uvForAngles[0][0][1];
+        float* setUVsPtr = &m_setAndUVs.m_sets[0][0].m_uvForAngles[0][0][1];
+        const float half = 0.5f;
+        const float quarter = 0.25f;
+        const float angleStep = 1.5707964f;
+
+        // Process 8 groups (32 angles divided by 4)
+        for (int group = 0; group < 8; ++group)
+        {
+            // Process 5 mask types
+            for (int masknum = 0; masknum < 5; ++masknum)
+            {
+                float* currentUVAngle = uvAnglePtr;
+
+                // Process 4 angles per group
+                for (int angleIdx = 0; angleIdx < 4; ++angleIdx)
+                {
+                    // Calculate rotation angle
+                    float angle = -(angleIdx * angleStep);
+                    float sinAngle = std::sin(angle);
+                    float cosAngle = std::cos(angle);
+
+                    // Create rotation matrix
+                    CMatrix rotationMat;
+                    rotationMat._11 = cosAngle;
+                    rotationMat._12 = -sinAngle;
+                    rotationMat._21 = sinAngle;
+                    rotationMat._22 = cosAngle;
+
+                    // Create transformation matrix
+                    CMatrix transformMat;
+                    transformMat._11 = rotationMat._11;
+                    transformMat._12 = rotationMat._12;
+                    transformMat._21 = rotationMat._21;
+                    transformMat._22 = rotationMat._22;
+                    transformMat._41 = -cosAngle * half;
+                    transformMat._42 = -sinAngle * half;
+                    transformMat._43 = -half;
+
+                    // Process 5x5 grid
+                    for (int yy = 0; yy < 5; ++yy)
+                    {
+                        float yPos = yy * quarter;
+                        float xBase = yPos * rotationMat._21 + transformMat._41;
+                        float yBase = yPos * rotationMat._22 + transformMat._42;
+
+                        for (int xx = 0; xx < 5; ++xx)
+                        {
+                            float xPos = xx * quarter;
+
+                            // Calculate transformed coordinates
+                            float u = xPos * rotationMat._11 + xBase;
+                            float v = xPos * rotationMat._12 + yBase;
+
+                            // Store original UV coordinates
+                            *(currentUVAngle - 1) = u;
+                            *currentUVAngle = v;
+
+                            // Calculate and store final UV coordinates
+                            float finalU = (u * 0.125f) * 0.95f;
+                            float finalV = (v * half) * 0.95f;
+
+                            if (masknum != 0)
+                            {
+                                // Apply mask-specific offsets
+                                finalU += ((group * 4 + masknum) % 8) * 0.125f;
+                                finalV += ((group * 4 + masknum) / 8) * half;
+                            }
+
+                            // Store with small offsets
+                            *(setUVsPtr - 1) = finalU + 0.0031250007f;
+                            *setUVsPtr = finalV + 0.012500003f;
+
+                            // Move pointers
+                            currentUVAngle += 2;
+                            setUVsPtr += 2;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void Landscape::UpdateTexturesFilters()
     {
-        throw retruxx::logic_error("Not implemented");
+        const auto color = M3D_KERNEL->GetEngineCfg().m_g_texturesFilter.GetC();
+        for (auto& tile : m_tilesTextures)
+        {
+            M3D_RENDERER->SetTextureParameter(tile->m_texHandle, m3d::rend::TexParam::TM_TEX_FILTER, color);
+            if (color == 3)
+            {
+                const auto maxAnisotropy = M3D_RENDERER->GetMaxAnisotropy();
+                M3D_RENDERER->SetTextureParameter(tile->m_texHandle, m3d::rend::TexParam::TM_MAX_ANISOTROPY, maxAnisotropy);
+            }
+        }
     }
 
     void Landscape::ScaleGrassRadius(CVector const&, float, float)
@@ -755,56 +1249,6 @@ namespace m3d
 
     void Landscape::getMinMaxHeightForBox(float* box, float buldgeY)
     {
-        //TODO: check and refactor this
-        //float VISCELL_EDGE_LENGTH_0 = 128.0;
-        //auto v3 = VISCELL_EDGE_LENGTH_0;
-        //auto v5 = static_cast<unsigned>(*box * (1.0 / VISCELL_EDGE_LENGTH_0));
-        //auto v6 = (box[3] * (1.0 / VISCELL_EDGE_LENGTH_0));
-        //auto v7 = static_cast<unsigned>(box[2] * (1.0 / VISCELL_EDGE_LENGTH_0));
-        //auto v8 = box[5] * (1.0 / VISCELL_EDGE_LENGTH_0);
-        //box[1] = -999999.0;
-        //auto v9 = v8;
-        //auto x1 = v6;
-        //auto z0 = v7;
-        //auto boxa = v8;
-        //for (box[4] = -999999.0; v5 < v6; ++v5)
-        //{
-        //    if (v7 < v9)
-        //    {
-        //        do
-        //        {
-        //            auto v10 = this->m_cellParams;
-        //            auto v11 = v10[v5 + v7 * this->m_owner->m_level->land_size].m_h0;
-        //            auto v12 = v10[v5 + v7 * this->m_owner->m_level->land_size].m_h1;
-        //            if (box[1] > v11)
-        //                box[1] = v11;
-        //            if (v11 > box[4])
-        //                box[4] = v11;
-        //            if (box[1] > v12)
-        //                box[1] = v12;
-        //            if (v12 > box[4])
-        //                box[4] = v12;
-        //            auto v13 = this->m_owner->m_level->land_size;
-        //            if (v5 >= 0 || v7 >= 0 || v5 < v13 || v7 < v13)
-        //            {
-        //                auto v14 = this->m_cellParams;
-        //                if (v14[v5 + v7 * v13].m_iswatercell)
-        //                {
-        //                    auto v15 = v14[v5 + v7 * v13].m_maxwater;
-        //                    if (v15 > box[4])
-        //                        box[4] = v15;
-        //                }
-        //            }
-        //            v9 = boxa;
-        //            ++v7;
-        //        } while (v7 < boxa);
-        //        v6 = x1;
-        //        v7 = z0;
-        //    }
-        //}
-        //box[4] = (box[4] + v3) + buldgeY;
-        //throw retruxx::logic_error("Not implemented");
-
         constexpr float VISCELL_EDGE_LENGTH = 128.0f;
         const float invCellSize = 1.0f / VISCELL_EDGE_LENGTH;
 
@@ -1066,7 +1510,16 @@ namespace m3d
 
     void Landscape::CreateLod()
     {
-        throw retruxx::logic_error("Not implemented");
+        const auto land_size = m_owner->m_level->land_size;
+
+        delete[] m_cellParams;
+        m_cellParams = new CellParams[land_size * land_size];
+        CreateHeights(m_cellParams, land_size, 16);
+
+        const auto drawedCellSize = 4 * m_owner->m_level->land_size;
+        delete[] m_drawedCellParams;
+        m_drawedCellParams = new CellParams[drawedCellSize * drawedCellSize];
+        CreateHeights(m_drawedCellParams, drawedCellSize, 4);
     }
 
     void Landscape::drawSpriteOverlayedProjected(unsigned, CVector const&, CMatrix const&, CClipper const&)
@@ -1074,9 +1527,102 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::CreateHeights(CellParams*, int, int)
+    void Landscape::CreateHeights(CellParams* dest, int ls, int cellSize)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+            // Initialize variables
+        float minHeight = 999999.0f;
+        float maxHeight = -999999.0f;
+        float minWaterHeight = 999999.0f;
+        float maxWaterHeight = -999999.0f;
+
+        // Initialize data structures
+        std::unordered_map<unsigned int, int> heightCounts; // Tracks frequency of water heights
+        std::set<int> usedHeights;                         // Tracks unique water heights
+
+        // Process each cell in the landscape
+        for (int cy = 0; cy < ls; cy++)
+        {
+            for (int cx = 0; cx < ls; cx++)
+            {
+                // Reset min/max for this cell
+                float cellMinHeight = 999999.0f;
+                float cellMaxHeight = -999999.0f;
+                float cellMinWater = 999999.0f;
+                float cellMaxWater = -999999.0f;
+
+                // Process each point within the cell
+                for (int y = 0; y < cellSize; y++)
+                {
+                    for (int x = 0; x < cellSize; x++)
+                    {
+                        // Get terrain height
+                        int mapX = cx * cellSize + x;
+                        int mapY = cy * cellSize + y;
+                        float height = m_heightMap[mapX + mapY * (m_mapSize + 1)];
+
+                        // Update terrain height bounds
+                        cellMaxHeight = std::max(cellMaxHeight, height + 64.0f);
+                        cellMinHeight = std::min(cellMinHeight, height - 64.0f);
+
+                        // Process water if this is a high-res cell (4x4)
+                        if (cellSize == 4 && m_waterMap[4 * cy * m_owner->m_level->land_size + cx])
+                        {
+                            float waterHeight = getWaterHeight(cx, cy);
+
+                            // Track water height frequency
+                            unsigned int quantizedHeight = static_cast<unsigned int>(waterHeight * 8.333334f);
+                            heightCounts[quantizedHeight]++;
+                            usedHeights.insert(quantizedHeight);
+
+                            // Update water height bounds
+                            cellMaxWater = std::max(cellMaxWater, waterHeight);
+                            cellMinWater = std::min(cellMinWater, waterHeight);
+
+                            // Mark as water cell in main params
+                            int mainCellX = cx / 4;
+                            int mainCellY = cy / 4;
+                            m_cellParams[mainCellY * m_owner->m_level->land_size + mainCellX].m_iswatercell = 1;
+                        }
+                    }
+                }
+
+                // Store cell height bounds
+                dest[cy * ls + cx].m_h0 = cellMinHeight;
+                dest[cy * ls + cx].m_h1 = cellMaxHeight;
+
+                // For high-res cells, store water bounds in main cell params
+                if (cellSize == 4)
+                {
+                    int mainCellX = cx / 4;
+                    int mainCellY = cy / 4;
+                    m_cellParams[mainCellY * m_owner->m_level->land_size + mainCellX].m_minwater = cellMinWater;
+                    m_cellParams[mainCellY * m_owner->m_level->land_size + mainCellX].m_maxwater = cellMaxWater;
+                }
+
+                // Track global min height
+                minHeight = std::min(minHeight, cellMinHeight);
+            }
+        }
+
+        // Determine most common water height
+        int mostCommonHeight = 0;
+        int maxCount = 0;
+        for (const auto& entry : heightCounts)
+        {
+            if (entry.second > maxCount)
+            {
+                maxCount = entry.second;
+                mostCommonHeight = entry.first;
+            }
+        }
+
+        // Set global water level based on most common height
+        m_owner->m_level->waterlevel = mostCommonHeight * 0.12f;
+
+        // Clean up
+        heightCounts.clear();
+        usedHeights.clear();
     }
 
     int Landscape::isWaterCell(int, int) const
@@ -1089,14 +1635,70 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    float Landscape::getWaterHeight(int, int) const
+    float Landscape::getWaterHeight(int x, int z) const
     {
-        throw retruxx::logic_error("Not implemented");
+        auto v3 = 4 * this->m_owner->m_level->land_size;
+        if (x < 0 || x >= v3 || z < 0 || z >= v3)
+            return 0.0;
+        else
+            return (double)this->m_waterMap[x + z * v3] * 0.12;
     }
 
     void Landscape::ReleaseReflectionRefractionTextures()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (this->m_texRtReflection.IsValid())
+            M3D_RENDERER->ReleaseTexture(m_texRtReflection);
+        if (this->m_texRtRefraction.IsValid())
+            M3D_RENDERER->ReleaseTexture(m_texRtRefraction);
+        if (this->m_waveBumpTex.IsValid())
+            M3D_RENDERER->ReleaseTexture(m_waveBumpTex);
+        if (this->m_fresnelTex.IsValid())
+            M3D_RENDERER->ReleaseTexture(m_fresnelTex);
+        if (this->m_waveBumpSmTex.IsValid())
+            M3D_RENDERER->ReleaseTexture(m_waveBumpSmTex);
+
+        if (m_waterVs)
+        {
+            m_waterVs->Release();
+            this->m_waterVs = 0;
+        }
+
+        if (m_waterPs)
+        {
+            m_waterPs->Release();
+            this->m_waterPs = 0;
+        }
+
+        if (m_waterDumbVs)
+        {
+            m_waterDumbVs->Release();
+            this->m_waterDumbVs = 0;
+        }
+
+        if (m_waterDumbPs)
+        {
+            m_waterDumbPs->Release();
+            this->m_waterDumbPs = 0;
+        }
+
+        if (waterPs)
+        {
+            waterPs->Release();
+            waterPs = 0;
+        }
+
+        if (m_solidDeepVs)
+        {
+            m_solidDeepVs->Release();
+            this->m_solidDeepVs = 0;
+        }
+
+        if (m_solidDeepPs)
+        {
+            m_solidDeepPs->Release();
+            this->m_solidDeepPs = 0;
+        }
+
     }
 
     char const* Landscape::GetGrassModelName(unsigned) const
@@ -1129,9 +1731,138 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int Landscape::LoadTiles(CStr const&)
+    int Landscape::LoadTiles(CStr const& filename)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        // Free existing tiles if any
+        FreeTiles();
+
+        // Calculate land size and allocate memory for tiles
+        const int landSize = m_owner->m_level->land_size;
+        const int totalTiles = landSize * landSize;
+
+        // Allocate memory for tile info
+        m_tiles = new TileInfo[totalTiles];
+
+        // Open the tagged file
+        fs::auxTaggedFile file;
+        int openResult = file.Open(filename.c_str(), fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC);
+
+        if (openResult != fs::auxTaggedFile::eError::BAD_FORMAT)
+        {
+            if (openResult != fs::auxTaggedFile::eError::SUCCESS)
+            {
+                // Log error
+                M3D_LOG_ERR("Cannot open tiles file " + filename);
+                return 0;
+            }
+        }
+        else
+        {
+            M3D_LOG_ERR("Tiles bad format " + filename);
+            return 0;
+        }
+
+        // Check file format
+        char* formatTitle = nullptr;
+        file.getFormatTitle(&formatTitle);
+        if (strcmp(formatTitle, "TILEMAP") != 0)
+        {
+            M3D_LOG_ERR("Error: Bad tiles format title: " + CStr(formatTitle));
+            return 0;
+        }
+
+        // Check format version
+        unsigned int formatVersion = 0;
+        file.getFormatVersion(formatVersion);
+        if (formatVersion != 1)
+        {
+            M3D_LOG_ERR("Error: Wrong tiles format version: " + CStr(formatVersion));
+            return 0;
+        }
+
+        // Process the tile data
+        unsigned char* data = nullptr;
+        if (file.getChunkData(0xBADF00Du, reinterpret_cast<void**>(&data)))
+        {
+            return 0;
+        }
+
+        // Verify land size matches
+        unsigned int fileLandSize = *reinterpret_cast<unsigned int*>(data);
+        data += 4;
+
+        if (fileLandSize != static_cast<unsigned int>(landSize * sizeof(int)))
+        {
+            M3D_LOG_ERR("Error: Bad tilemap file, landsize = " + CStr(landSize) + ", tilemap size in file = " + CStr(fileLandSize));
+            return 0;
+        }
+
+        // Read tile path
+        unsigned int pathLength = *reinterpret_cast<unsigned int*>(data);
+        data += 4;
+        m_pathTile = CStr(reinterpret_cast<char*>(data), pathLength);
+        data += pathLength + 1;
+
+        // Ensure path ends with backslash
+        if (m_pathTile[m_pathTile.length() - 1] != '\\')
+        {
+            m_pathTile += "\\";
+        }
+
+        // Read tile names
+        unsigned int tileNameCount = *reinterpret_cast<unsigned int*>(data);
+        data += 4;
+
+        std::vector<CStr> tileNames;
+        tileNames.reserve(tileNameCount);
+
+        for (unsigned int i = 0; i < tileNameCount; ++i)
+        {
+            unsigned int nameLength = *reinterpret_cast<unsigned int*>(data);
+            data += 4;
+            tileNames.emplace_back(reinterpret_cast<char*>(data), nameLength);
+            data += nameLength + 1;
+
+            // Add to used textures set
+            m_usedTexturesList.insert(tileNames.back());
+        }
+
+        // Read tile info
+        ReadTileInfo(1); // Initialize tile info
+
+        // Process each tile
+        for (int y = 0; y < landSize; ++y)
+        {
+            for (int x = 0; x < landSize; ++x)
+            {
+                TileInfo& tile = m_tiles[y * landSize + x];
+
+                // Read tile data (2 bytes: index, 2 bytes: angle)
+                unsigned short tileIndex = *reinterpret_cast<unsigned short*>(data);
+                unsigned short tileAngle = *reinterpret_cast<unsigned short*>(data + 2);
+                data += 4;
+
+                // Clamp angle
+                if (tileAngle > 4) tileAngle = 4;
+                tile.m_angle = tileAngle;
+
+                // Create full texture path and add texture
+                CStr texturePath = m_pathTile + tileNames[tileIndex];
+                tile.m_texIndex0 = AddOneTexture(texturePath);
+            }
+        }
+
+        // Clean up
+        file.Close();
+
+        // Update texture information
+        const size_t textureCount = m_tilesTextures.size();
+        ChangedNumberOfUsedTextures(textureCount);
+        RecalcUV();
+        UpdateTexturesFilters();
+
+        return 1;
     }
 
     bool Landscape::traceLineThruCellLs(float&, int, int, CVector const&, CVector const&, bool)
@@ -1771,7 +2502,49 @@ namespace m3d
 
     void Landscape::FreeTiles()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        // Free tile data array
+        delete[] m_tiles;
+
+        // Release textures and vertex buffers
+        const size_t textureCount = m_tilesTextures.size();
+        for (size_t i = 0; i < textureCount; ++i)
+        {
+            TIVChunk* texture = m_tilesTextures[i];
+            if (texture)
+            {
+                // Release texture
+                M3D_RENDERER->ReleaseTexture(texture->m_texHandle);
+
+                // Release vertex buffers
+                for (auto& vbHandle : texture->m_vbHandle)
+                {
+                    M3D_RENDERER->ReleaseVb(vbHandle);
+                }
+            }
+        }
+
+        // Free texture resources
+        for (size_t i = 0; i < textureCount; ++i)
+        {
+            TIVChunk* texture = m_tilesTextures[i];
+            delete[] texture;
+        }
+
+        // Free textures array
+        m_tilesTextures.clear();
+
+        // Free cells per texture data
+        m_cellsPerTex.Deallocate();
+
+        // Clear texture to index map
+        m_texToIdx.clear();
+
+        // Clear hash table for texture indices
+        m_hashTexToIndex.clear();
+
+        // Free passed cells array
+        delete[] m_passedCells;
     }
 
     void Landscape::BuildUVSet()
