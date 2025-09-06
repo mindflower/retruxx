@@ -69,7 +69,7 @@ namespace m3d
 
     RoadManager& CWorld::GetRoadManager()
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_roadManager;
     }
 
     unsigned CWorld::GetWeatherFogColor() const
@@ -114,7 +114,7 @@ namespace m3d
         {
             return 0;
         }
-        throw retruxx::logic_error("Not implemented");
+        //throw retruxx::logic_error("Not implemented");
         return 1;
     }
 

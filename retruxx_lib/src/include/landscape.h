@@ -112,6 +112,7 @@ namespace m3d
     class Landscape : public m3d::SgNode, public m3d::IConHandler
     {
         friend class CWorld;
+        friend class RoadManager;
 
     protected:
         Landscape();

@@ -19,9 +19,64 @@ int CClipper::clipPolyInPlace(CVector*, int)
     throw std::logic_error("Not implemented");
 }
 
-int CClipper::testBBox(tbEnum, float*, CVector const&) const
+int CClipper::testBBox(tbEnum test, float* minmaxs, const CVector& ofs) const
 {
-    throw std::logic_error("Not implemented");
+    // TODO: generated code
+    float* v4 = minmaxs;
+    unsigned int m_nfrustums = this->m_nfrustums;
+    unsigned int v7 = 0;
+
+    if (m_nfrustums) {
+        const float* v8 = &this->m_planes[0][1];
+        const unsigned int* v9 = &this->m_indices[4];
+
+        while (true) {
+            v4 = minmaxs;
+            if (((1 << v7) & this->m_enabled) != 0 &&
+                ((float)((float)((float)((float)(minmaxs[v9[1]] + ofs.z) * v8[1]) +
+                    (float)((float)(minmaxs[*(v9 - 1)] + ofs.x) * *(v8 - 1))) +
+                    (float)((float)(minmaxs[*v9] + ofs.y) * *v8)) - v8[2]) > 50.0f) {
+                return 0;
+            }
+
+            ++v7;
+            v9 += 6;
+            v8 += 4;
+
+            if (v7 >= m_nfrustums) {
+                break;
+            }
+        }
+    }
+
+    if (test == tbFullTest) {
+        unsigned int v10 = 0;
+        if (m_nfrustums == 0) {
+            return 2;
+        }
+
+        const float* v11 = &this->m_planes[0][1];
+        const unsigned int* i = &this->m_indices[1];
+
+        while (true) {
+            if (((1 << v10) & this->m_enabled) != 0 &&
+                ((float)((float)((float)((float)(v4[i[1]] + ofs.z) * v11[1]) +
+                    (float)((float)(v4[*(i - 1)] + ofs.x) * *(v11 - 1))) +
+                    (float)((float)(v4[*i] + ofs.y) * *v11)) - v11[2] > 0.0f)) {
+                break;
+            }
+
+            ++v10;
+            i += 6;
+            v11 += 4;
+
+            if (v10 >= m_nfrustums) {
+                return 2;
+            }
+        }
+    }
+
+    return 1;
 }
 
 void CClipper::buildfrustum(float*, CVector const&, CMatrix const&, CVector const&, float)
@@ -249,10 +304,30 @@ void CClipper::translate(CVector const&)
 
 void CClipper::enableAll()
 {
-    throw std::logic_error("Not implemented");
+    m_enabled = 1;
 }
 
-void CClipper::enableUpdateFromBox(float*, CVector const&)
+void CClipper::enableUpdateFromBox(float* minmaxs, const CVector& ofs)
 {
-    throw std::logic_error("Not implemented");
+    // TODO: check and refactor this
+    int v4 = 0;
+    if (this->m_nfrustums)
+    {
+        auto v5 = &this->m_planes[0][1];
+        auto v6 = &this->m_indices[1];
+        do
+        {
+            if (((1 << v4) & this->m_enabled) != 0
+                && (float)((float)((float)((float)((float)(minmaxs[v6[1]] + ofs.z) * v5[1])
+                    + (float)((float)(minmaxs[*(v6 - 1)] + ofs.x) * *(v5 - 1)))
+                    + (float)((float)(minmaxs[*v6] + ofs.y) * *v5))
+                    - v5[2]) <= 0.0)
+            {
+                this->m_enabled &= ~(1 << v4);
+            }
+            ++v4;
+            v6 += 6;
+            v5 += 4;
+        } while (v4 < this->m_nfrustums);
+    }
 }

@@ -856,8 +856,8 @@ namespace m3d
             virtual void PopMultiSampleMask() = 0;
             virtual void SetMultiSampleMask(unsigned int, bool) = 0;
             virtual void SetViewMatrix(const CMatrix&) = 0;
-            virtual const CMatrix* GetViewMatrix() = 0;
-            virtual const CVector* GetViewOrigin() = 0;
+            virtual const CMatrix& GetViewMatrix() = 0;
+            virtual const CVector& GetViewOrigin() = 0;
             virtual void MatPush(const CMatrix&) = 0;
             virtual void MatPush() = 0;
             virtual void MatPop(bool) = 0;
@@ -874,7 +874,7 @@ namespace m3d
             virtual void MatPushWorld() = 0;
             virtual void MatPopWorld() = 0;
             virtual void MatSetProj(const CMatrix&) = 0;
-            virtual const CMatrix* MatGetProj() = 0;
+            virtual const CMatrix& MatGetProj() = 0;
             virtual void MatPushProj() = 0;
             virtual void MatPopProj() = 0;
             virtual const CMatrix* GetModelViewProjMatrix() = 0;

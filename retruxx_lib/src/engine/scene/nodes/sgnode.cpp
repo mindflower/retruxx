@@ -5,6 +5,8 @@
 #include "config.h"
 #include "core/kernel.h"
 #include "core/console/cvar.h"
+#include "client.h"
+#include "world.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNode, GetOrigin)
 {
@@ -13,6 +15,8 @@ RT_CLASS_EXPORT_METHOD_DEFINE(SgNode, GetOrigin)
 
 namespace m3d
 {
+    extern CClient* pClient;
+
     RT_CLASS_EXPORTS_BEGIN(SgNode)
         RT_CLASS_EXPORT(SgNode, m3d::METHOD, GetOrigin, "", "", "")
     RT_CLASS_EXPORTS_END;
@@ -145,7 +149,9 @@ namespace m3d
 
     SceneGraph* SgNode::GetGraph()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (m3d::pClient)
+            return &m3d::pClient->GetWorld().GetGraph();
+        return nullptr;
     }
 
     int SgNode::GetServerHandle() const

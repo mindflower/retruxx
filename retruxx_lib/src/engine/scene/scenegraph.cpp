@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include <stdexcept>
 #include <scene/scenegraph.h>
 
@@ -6,6 +7,7 @@
 #include "core/kernel.h"
 #include "world.h"
 #include "level.h"
+
 
 namespace
 {
@@ -137,9 +139,12 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    bool SceneGraph::SortedCellsStartFetching(int, int)
+    bool SceneGraph::SortedCellsStartFetching(int radius0, int radius1)
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_sortedCellsCurRadius = radius0;
+        this->m_sortedCellsCurCell = 0;
+        this->m_sortedCellsEndRadius = radius1;
+        return this->m_cellsPrepared;
     }
 
     void SceneGraph::RefreshObjectsInRect(int, int, int, int)
@@ -147,9 +152,44 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SceneGraph::SortedCellsFetch(int&, int&, int&, int&)
+    int SceneGraph::SortedCellsFetch(int& cellX, int& cellY, int& vis, int& radius)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        radius = m_sortedCellsCurRadius;
+        int v5 = m_sortedCellsCurRadius * (6 * m_sortedCellsCurRadius + 2);
+
+        if (m_sortedCellsX[v5 + m_sortedCellsCurCell] >= 0)
+        {
+            cellX = m_sortedCellsX[v5 + m_sortedCellsCurCell];
+            cellY = m_sortedCellsY[v5 + m_sortedCellsCurCell];
+            vis = (m_enableVisSpaceMask & m_enableMap[256 * (cellY) + cellX]) != 0;
+            ++m_sortedCellsCurCell;
+            return 1;
+        }
+        else
+        {
+            int endRadius = m_sortedCellsEndRadius;
+
+            while (true)
+            {
+                ++m_sortedCellsCurRadius;
+                m_sortedCellsCurCell = 0;
+
+                if (m_sortedCellsCurRadius >= endRadius)
+                    return 0;
+
+                v5 = m_sortedCellsCurRadius * (6 * m_sortedCellsCurRadius + 2);
+
+                if (m_sortedCellsX[v5 + m_sortedCellsCurCell] >= 0)
+                {
+                    cellX = m_sortedCellsX[v5 + m_sortedCellsCurCell];
+                    cellY = m_sortedCellsY[v5 + m_sortedCellsCurCell];
+                    vis = (m_enableVisSpaceMask & m_enableMap[256 * (cellY) + cellX]) != 0;
+                    ++m_sortedCellsCurCell;
+                    return 1;
+                }
+            }
+        }
     }
 
     int SceneGraph::SortedCellsFetch(int&, int&, int&)
@@ -335,7 +375,7 @@ namespace m3d
         this->m_cellsPrepared = 0;
     }
 
-    void SceneGraph::UpdateVis(bool newFrame, CClipper const& frusta, bool primary)
+    void SceneGraph::UpdateVis(bool newFrame, const CClipper& frusta, bool primary)
     {
         if (newFrame)
         {
@@ -523,14 +563,51 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SceneGraph::enableCellsSetRect(int*, unsigned, unsigned)
+    void SceneGraph::enableCellsSetRect(int* rc, unsigned orValue, unsigned andValue)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: check and refactor this
+        auto v4 = rc[1];
+        if (v4 < rc[3])
+        {
+            auto v5 = rc[2];
+            auto v6 = &this->m_enableMap[256 * v4];
+            do
+            {
+                for (int i = *rc; i < v5; v5 = rc[2])
+                {
+                    auto v8 = v6[i++] & andValue;
+                    v6[i - 1] = orValue | v8;
+                }
+                ++v4;
+                v6 += 256;
+            } while (v4 < rc[3]);
+        }
     }
 
-    void SceneGraph::enableCellsSetRect(float*, unsigned, unsigned)
+    void SceneGraph::enableCellsSetRect(float* rc, unsigned v0, unsigned v1)
     {
-        throw retruxx::logic_error("Not implemented");
+        //TODO: check and refactor this
+        int rrc[4] = {0};
+
+        auto v4 = rc[3] * (float)(1.0 / VISCELL_EDGE_LENGTH_6);
+        rrc[0] = (int)(float)(*rc * (float)(1.0 / VISCELL_EDGE_LENGTH_6));
+        auto v5 = (int)v4;
+        auto v6 = rc[2] * (float)(1.0 / VISCELL_EDGE_LENGTH_6);
+        rrc[2] = v5;
+        auto v7 = (int)v6;
+        auto v8 = rc[5] * (float)(1.0 / VISCELL_EDGE_LENGTH_6);
+        rrc[1] = v7;
+        auto land_size = this->m_owner->m_level->land_size;
+        rrc[3] = (int)v8;
+        if (rrc[0] > land_size)
+            rrc[0] = land_size;
+        if (v7 > land_size)
+            rrc[1] = land_size;
+        if (v5 > land_size)
+            rrc[2] = land_size;
+        if ((int)v8 > land_size)
+            rrc[3] = land_size;
+        enableCellsSetRect(rrc, v0, v1);
     }
 
     SgNode* SceneGraph::TraceLineThruCellNodesForClass(float&, int, int, CVector const&, CVector const&, Class*, retruxx::set<SgNode*>&, unsigned)
@@ -553,8 +630,89 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SceneGraph::enableVisibleCells_r(CClipper&, float*, unsigned)
+    void SceneGraph::enableVisibleCells_r(CClipper& frusta, float* box, unsigned int orFlags)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        const float VISCELL_EDGE_LENGTH = 6.0f;
+        const float MAX_LAND_SIZE = static_cast<float>(m_owner->m_level->land_size) * VISCELL_EDGE_LENGTH;
+
+        // Test bounding box against frustum
+        CVector ofs(0, 0, 0);
+        int testResult = frusta.testBBox(tbFullTest, box, ofs);
+
+        // Handle fully outside frustum
+        if (testResult == 0) {
+            enableCellsSetRect(box, 0, ~orFlags);
+            return;
+        }
+
+        // Handle fully inside frustum
+        if (testResult == 2) {
+            enableCellsSetRect(box, orFlags, 0xFFFFFFFF);
+            return;
+        }
+
+        // Partially visible case
+        unsigned int clipSave = frusta.m_enabled;
+        ofs = CVector(0, 0, 0);
+        frusta.enableUpdateFromBox(box, ofs);
+
+        // Clamp box to maximum landscape size
+        box[3] = std::min(box[3], MAX_LAND_SIZE);
+        box[5] = std::min(box[5], MAX_LAND_SIZE);
+
+        // Calculate box dimensions
+        float width = box[3] - box[0];
+        float depth = box[5] - box[2];
+
+        // Check if we should split the box
+        if (width > VISCELL_EDGE_LENGTH || depth > VISCELL_EDGE_LENGTH) {
+            // Calculate number of subdivisions
+            float xCells = std::ceil((width * 0.5f) / VISCELL_EDGE_LENGTH);
+            float zCells = std::ceil((depth * 0.5f) / VISCELL_EDGE_LENGTH);
+
+            // Calculate sub-box dimensions
+            float subWidth = VISCELL_EDGE_LENGTH * xCells;
+            float subDepth = VISCELL_EDGE_LENGTH * zCells;
+
+            // Create four sub-boxes
+            float newBoxes[4][6] = {
+                // Bottom-left sub-box
+                { box[0],           box[1], box[2],
+                  box[0] + subWidth, box[4], box[2] + subDepth },
+
+                  // Bottom-right sub-box
+                  { box[0] + subWidth, box[1], box[2],
+                    box[0] + subWidth * 2, box[4], box[2] + subDepth },
+
+                    // Top-right sub-box
+                    { box[0] + subWidth, box[1], box[2] + subDepth,
+                      box[0] + subWidth * 2, box[4], box[2] + subDepth * 2 },
+
+                      // Top-left sub-box
+                      { box[0],           box[1], box[2] + subDepth,
+                        box[0] + subWidth, box[4], box[2] + subDepth * 2 }
+            };
+
+            // Process each sub-box
+            for (auto& newBox : newBoxes) {
+                // Clamp to landscape boundaries
+                newBox[3] = std::min(newBox[3], MAX_LAND_SIZE);
+                newBox[5] = std::min(newBox[5], MAX_LAND_SIZE);
+
+                // Get height range for this box
+                m_owner->GetLandscape().getMinMaxHeightForBox(newBox, 0.0f);
+
+                // Recurse into sub-box
+                enableVisibleCells_r(frusta, newBox, orFlags);
+            }
+        }
+        else {
+            // Box is small enough, mark cells
+            enableCellsSetRect(box, orFlags, 0xFFFFFFFF);
+        }
+
+        // Restore original frustum state
+        frusta.m_enabled = clipSave;
     }
 }

@@ -882,17 +882,17 @@ namespace m3d
 
         // Load shoreline
         startTime = M3D_KERNEL->GetTimer().GetCurTime();
-        if (!LoadShoreLine(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_shoreLineName)))
-        {
-            GenerateShoreLine();
-        }
+        //if (!LoadShoreLine(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_shoreLineName)))
+        //{
+        //    GenerateShoreLine();
+        //}
 
         loadTime = M3D_KERNEL->GetTimer().GetCurTime() - startTime;
         M3D_LOG_INFO(CStr("ShoreLine loaded in: ") + loadTime);
 
         // Initialize grass
-        InitGrass();
-        ReadGrassFromXmlFile(m_owner->m_level->GetFullPathNameA("grass.xml").c_str());
+        //InitGrass();
+        //ReadGrassFromXmlFile(m_owner->m_level->GetFullPathNameA("grass.xml").c_str());
 
         // Build final landscape
         BuildSolidLandscape();
@@ -1138,7 +1138,7 @@ namespace m3d
 
     void Landscape::UpdateVis(bool vp)
     {
-        //m_profilerUpdateVis->StartCountdown();
+        m_profilerUpdateVis->StartCountdown();
         if (!m_lockVis.GetB())
         {
             m_dirtyReflection = vp;
@@ -1149,14 +1149,15 @@ namespace m3d
             m_numWaterCells = 0;
             if (M3D_KERNEL->GetEngineCfg().m_g_drawWater.GetB())
             {
-                throw retruxx::logic_error("Not implemented");
+                // TODO: implement this!!!
+                //throw retruxx::logic_error("Not implemented");
             }
             if (m_numWaterCells)
             {
-                throw retruxx::logic_error("Not implemented");
+                //throw retruxx::logic_error("Not implemented");
             }
         }
-        //m_profilerUpdateVis->EndCountdown();
+        m_profilerUpdateVis->EndCountdown();
     }
 
     Landscape::CollisionCellItem* Landscape::GetCollisionCellItem(int, int) const
@@ -1440,6 +1441,20 @@ namespace m3d
 
     void Landscape::Render()
     {
+        if (M3D_KERNEL->GetEngineCfg().m_lsWireframe.GetB())
+        {
+            M3D_RENDERER->PushFillMode(rend::FillMode::M3DFILL_WIREFRAME);
+        }
+        else
+        {
+            M3D_RENDERER->PushFillMode(rend::FillMode::M3DFILL_SOLID);
+        }
+
+        // TODO: check this (m3d::g_Kernel->GetEngineCfg(m3d::g_Kernel)->m_r_waterQuality.m_i)
+        m_waterPlane.m_normal.x = 0.0;
+        m_waterPlane.m_normal.y = 1.0;
+        m_waterPlane.m_normal.z = 0.0;
+        m_waterPlane.m_dist = this->m_owner->m_level->waterlevel;
         throw retruxx::logic_error("Not implemented");
     }
 

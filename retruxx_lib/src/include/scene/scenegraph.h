@@ -6,7 +6,7 @@
 #include <math/point2d.h>
 #include <renderer/i_renderer.h>
 
-struct CClipper;
+class CClipper;
 
 namespace m3d
 {
@@ -175,6 +175,7 @@ namespace m3d
         int AddOneNodeToRender(m3d::SgNode* n, const CClipper& frusta, int curFrame);
         int AddNodeAndItsChildrenToRender(m3d::SgNode* n, const CClipper& frusta, int curFrame);
         void RemoveNodeExceptRemoveIfFree(m3d::SgNode*& toRemove);
+
         static const int NUM_CELL_ITEMS;
         /* 0x0054 */ m3d::SceneGraph::CellItems m_cellItems[4096];
         /* 0x310054 */ bool m_easyRelink;
@@ -204,6 +205,7 @@ namespace m3d
         /* 0x310498 */ m3d::rend::IEffect* m_roadDetailShadowShader;
         /* 0x31049c */ m3d::rend::IHlslShader* m_grassShadowVs;
         /* 0x3104a0 */ m3d::rend::IHlslShader* m_grassShadowPs;
+
         void DrawShadows();
         void DrawDetailedShadows(const CVector& pos, float radius, m3d::rend::TexHandle tex, const retruxx::vector<m3d::Class*, retruxx::allocator<m3d::Class*> >& classesToRender);
         void DrawShadowsToTexture(int* cis, int cnt, int size, m3d::rend::TexHandle tex, const retruxx::vector<m3d::Class*, retruxx::allocator<m3d::Class*> >& classesToRender, CVector& pos, float radius);

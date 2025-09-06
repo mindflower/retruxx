@@ -3,6 +3,13 @@
 #include <core/kernel.h>
 #include <scene/servers/serveranimatedmodel.h>
 #include <core/ini.h>
+#include <client.h>
+#include <world.h>
+
+namespace m3d
+{
+    extern CClient* pClient;
+}
 
 namespace m3d
 {
@@ -131,9 +138,8 @@ namespace m3d
 
     int AnimatedModelsServer::GenerateImpostorsIfNeeded()
     {
-        //TODO: implement AnimatedModelsServer::GenerateImpostorsIfNeeded
-        //return 0;
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement this
+        return 0;
     }
 
     int AnimatedModelsServer::GetItemProperty(int, int, void*)
