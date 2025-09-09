@@ -48,6 +48,8 @@ namespace m3d
 
     class CWorld
     {
+        friend class Landscape;
+
     public:
         /* 0x0000 */ m3d::CVar m_lsInscatterCoeff;
         /* 0x002c */ m3d::CVar m_lsOutscatterCoeff;

@@ -130,7 +130,6 @@ namespace ai
     extern ResourceManager* theResourceManager;
     extern PrototypeManager* thePrototypeManager;
     extern Relationship* theRelationship;
-    extern DynamicScene* gDynamicScene;
     extern Player* thePlayer;
     extern ProcessManager* theProcessManager;
     extern AIManager* theAIManager;

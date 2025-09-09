@@ -11,11 +11,14 @@
 #include "core/timer.h"
 #include "server/dynamicscene.h"
 #include "server/server.h"
+#include <ode/collision.h>
+#include <core/scoped_ptr.h>
+#include <file/fileserver.h>
+#include <file/filestream.h>
 
 namespace ai
 {
     extern CServer* pServer;
-    extern DynamicScene* gDynamicScene;
 }
 
 namespace m3d
@@ -114,7 +117,79 @@ namespace m3d
         {
             return 0;
         }
-        //throw retruxx::logic_error("Not implemented");
+
+        if (!CreatePrefabsFromFile("prefabs.xml") && !CreatePrefabsFromFile("data\\models\\prefabs.xml"))
+        {
+            M3D_LOG_INFO("Could not find prefabs.xml");
+        }
+
+        M3D_APP->PostLoadServers();
+
+        auto const serversEnd = M3D_KERNEL->GetTimer().GetCurTime();
+        M3D_LOG_INFO("----------------------- Servers loaded in: " + CStr(serversEnd - landscapeEnd));
+
+        const auto worldBegin = M3D_KERNEL->GetTimer().GetCurTime();
+        if (!bQuiet)
+        {
+            const auto str = M3D_APP->GetStringByStringId0("LoadWorld");
+            M3D_APP->PutSplash(100, str.c_str());
+        }
+
+        LoadWorld(m_level->GetFullPathNameA("world.xml"));
+
+        const auto worldEnd = M3D_KERNEL->GetTimer().GetCurTime();
+        M3D_LOG_INFO("----------------------- Nodes loaded in: " + CStr(worldEnd - worldBegin));
+
+        const auto initWorldBegin = M3D_KERNEL->GetTimer().GetCurTime();
+        if (!bQuiet)
+        {
+            const auto str = M3D_APP->GetStringByStringId0("InitWorld");
+            M3D_APP->PutSplash(100, str.c_str());
+        }
+
+        const auto initWorldEnd = M3D_KERNEL->GetTimer().GetCurTime();
+        M3D_LOG_INFO("----------------------- Prefabs loaded in: " + CStr(initWorldEnd - initWorldBegin));
+
+        ProcessCollisionStuff();
+        m_weatherManager.ReadFromXmlFile(M3D_KERNEL->GetEngineCfg().m_weather_ConfigFile.GetS());
+        m_weatherManager.UpdateDayTime();
+
+        const auto worldLoadedEnd = M3D_KERNEL->GetTimer().GetCurTime();
+        M3D_LOG_INFO("----------------------- World loaded in: " + CStr(worldLoadedEnd - timeStart));
+
+        if (m_borderWallGeoms[0])
+        {
+            dGeomPlaneSetParams(m_borderWallGeoms[0], 1.0, 0.0, 0.0, m_level->m_minSafex);
+        }
+        else
+        {
+            m_borderWallGeoms[0] = dCreatePlane(ai::gGlobalSpace, 1.0, 0.0, 0.0, m_level->m_minSafex);
+        }
+        dGeomSetCategoryBits(this->m_borderWallGeoms[0], 1u);
+        dGeomSetCollideBits(this->m_borderWallGeoms[0], 0xFFFFFFFE);
+        if (m_borderWallGeoms[1])
+            dGeomPlaneSetParams(m_borderWallGeoms[1], -1.0, 0.0, 0.0, 0.0 - this->m_level->m_maxSafex);
+        else
+            this->m_borderWallGeoms[1] = dCreatePlane(ai::gGlobalSpace, -1.0, 0.0, 0.0, 0.0 - this->m_level->m_maxSafex);
+        dGeomSetCategoryBits(this->m_borderWallGeoms[1], 1u);
+        dGeomSetCollideBits(this->m_borderWallGeoms[1], 0xFFFFFFFE);
+        if (m_borderWallGeoms[3])
+            dGeomPlaneSetParams(m_borderWallGeoms[3], 0.0, 0.0, 1.0, this->m_level->m_minSafey);
+        else
+            this->m_borderWallGeoms[3] = dCreatePlane(ai::gGlobalSpace, 0.0, 0.0, 1.0, this->m_level->m_minSafey);
+        dGeomSetCategoryBits(this->m_borderWallGeoms[3], 1u);
+        dGeomSetCollideBits(this->m_borderWallGeoms[3], 0xFFFFFFFE);
+        if (m_borderWallGeoms[4])
+            dGeomPlaneSetParams(m_borderWallGeoms[4], 0.0, 0.0, -1.0, 0.0 - this->m_level->m_maxSafey);
+        else
+            this->m_borderWallGeoms[4] = dCreatePlane(ai::gGlobalSpace, 0.0, 0.0, -1.0, 0.0 - this->m_level->m_maxSafey);
+        dGeomSetCategoryBits(this->m_borderWallGeoms[4], 1u);
+        dGeomSetCollideBits(this->m_borderWallGeoms[4], 0xFFFFFFFE);
+
+
+
+
+        throw retruxx::logic_error("Not implemented");
         return 1;
     }
 
@@ -286,8 +361,14 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int CWorld::CreatePrefabsFromFile(char const*)
+    int CWorld::CreatePrefabsFromFile(char const* fileName)
     {
+        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        if (!fileStream->Open(fileName, fs::IStream::OPEN_READ))
+        {
+            return 0;
+        }
+
         throw retruxx::logic_error("Not implemented");
     }
 
@@ -308,7 +389,7 @@ namespace m3d
 
     float CWorld::GetFogReduceFactorFromWeather() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_weatherManager.GetFogReduceFactorFromWeather();
     }
 
     SgNode* CWorld::ReadPrefab(ref_ptr<cmn::XmlFile>, ref_ptr<cmn::XmlNode>)

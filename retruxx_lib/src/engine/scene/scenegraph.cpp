@@ -403,9 +403,9 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SceneGraph::SetVisMask(unsigned char)
+    void SceneGraph::SetVisMask(unsigned char vis)
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_enableVisSpaceMask = vis;
     }
 
     bool SceneGraph::IsInUnlinkAndDeleteAll() const

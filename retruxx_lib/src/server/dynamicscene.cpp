@@ -33,15 +33,6 @@
 
 namespace ai
 {
-	DynamicScene* gDynamicScene = nullptr;
-	dxSpace* gGlobalSpace = nullptr;
-	dxSpace* gTempSpace = nullptr;
-	dxSpace* gBulletSpace = nullptr;
-	dxSpace* gIntersectionSpace = nullptr;
-	dxSpace* gSpaceForAllPhysicParticles = nullptr;
-	dxWorld* gGlobalWorld = nullptr;
-
-
 	extern Player* thePlayer;
 
 	namespace
@@ -49,39 +40,38 @@ namespace ai
 		dxJointGroup* contactGroup = nullptr;
 	}
 
-
 	RT_CLASS_EXPORTS_BEGIN(DynamicScene)
 	RT_CLASS_EXPORTS_END;
 	RT_CLASS_DEFINE(DynamicScene);
 
 	void DynamicScene::SoilProps::LoadFromXml(m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	DynamicScene::SoilProps::SoilProps()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	short DynamicScene::GetBoEffectTypeByName(CStr const&)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::DeleteAll()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::PurgeBodies()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	CStr const& DynamicScene::GetBoEffectTypeName(unsigned short)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	m3d::Object* DynamicScene::Clone()
@@ -91,12 +81,12 @@ namespace ai
 
 	void DynamicScene::LinkNodesFromBodyToSceneGraph(Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	int DynamicScene::ProcessShellAndBody(Shell*, PhysicBody*, dContact*, unsigned&, bool)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::InitClashDecalId()
@@ -106,47 +96,47 @@ namespace ai
 
 	void DynamicScene::ReadSoilProps(char const*)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	CStr const& DynamicScene::GetShellWaterEffectName(unsigned short) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
-	bool DynamicScene::LoadSceneFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, std::vector<m3d::Class*> const&)
+	bool DynamicScene::LoadSceneFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, retruxx::vector<m3d::Class*> const&)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::StepScene(float)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	bool DynamicScene::SaveSceneToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	DynamicScene::SoilProps const& DynamicScene::GetSoilProps(unsigned, unsigned) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	CStr const& DynamicScene::GetShellStaticsEffectName(unsigned short) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	CStr const& DynamicScene::GetSoilEffectName(unsigned, unsigned short, bool) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::RenderDebugInfo()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	m3d::Object* DynamicScene::CreateObject()
@@ -156,27 +146,27 @@ namespace ai
 
 	CStr const& DynamicScene::GetBoVehicleEffectName(unsigned short) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::CollideScene(float)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	CStr const& DynamicScene::GetShellVehicleEffectName(unsigned short) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::CreateBoShellEffectNames()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	CStr const& DynamicScene::GetVehicleSoilEffectName(unsigned short) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	m3d::Class* DynamicScene::GetBaseClass()
@@ -186,17 +176,17 @@ namespace ai
 
 	CStr const& DynamicScene::GetDecalName(int)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::ClearOnce()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	int DynamicScene::GetNumNearCallbacksLastFrame()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	int DynamicScene::AddDecalName(CStr const& name)
@@ -214,7 +204,7 @@ namespace ai
 
 	int DynamicScene::GetClashDecalId()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::InitOnce()
@@ -249,43 +239,43 @@ namespace ai
 
 	DynamicScene::~DynamicScene()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	unsigned DynamicScene::GetWheelTypeByName(CStr const&)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	CStr const& DynamicScene::GetBoShellEffectName(unsigned short, unsigned short)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::CollideBullet(Bullet const&)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
-	bool DynamicScene::LoadSceneFromFile(char const*, std::vector<m3d::Class*> const&)
+	bool DynamicScene::LoadSceneFromFile(char const*, retruxx::vector<m3d::Class*> const&)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	int DynamicScene::ReadNewObjectFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*,
-		std::vector<m3d::Class*> const&)
+		retruxx::vector<m3d::Class*> const&)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	short DynamicScene::GetExplosionType(CStr const&)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	bool DynamicScene::SaveSceneToFile(char const*)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	Vehicle* DynamicScene::GetVehicleControlledByPlayer() const
@@ -299,17 +289,17 @@ namespace ai
 
 	CStr const& DynamicScene::GetRoadEffectName(unsigned, bool) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	CStr const& DynamicScene::GetShellRoadEffectName(unsigned short) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::Clear()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	m3d::Class* DynamicScene::GetClass() const
@@ -319,17 +309,17 @@ namespace ai
 
 	CStr const& DynamicScene::GetShellEffectName(unsigned short, unsigned short) const
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::UpdateSceneItems(float)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	DynamicScene::DynamicScene(DynamicScene const&)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	DynamicScene::DynamicScene()
@@ -557,16 +547,16 @@ namespace ai
 
 	void DynamicScene::_InitWheelTraces()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::_RecalcWheelEffectNames()
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 
 	void DynamicScene::_AddSoilEffectNameForWheelTypeName(CStr const&)
 	{
-		throw std::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
 	}
 }

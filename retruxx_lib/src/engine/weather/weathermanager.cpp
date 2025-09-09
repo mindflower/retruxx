@@ -104,7 +104,7 @@ namespace m3d
 
     float WeatherManager::GetFogReduceFactorFromWeather() const
     {
-        throw std::logic_error("Not implemented");
+        return m_currentWeather->m_reduceDistFactor;
     }
 
     void WeatherManager::SetActiveWeather(unsigned)

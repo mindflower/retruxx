@@ -592,6 +592,7 @@
     <ClCompile Include="src\game\view32_loadsave.cpp" />
     <ClCompile Include="src\game\view32_video.cpp" />
     <ClCompile Include="src\game\vivisectionblock.cpp" />
+    <ClCompile Include="src\include\renderer\i_renderer_colors.cpp" />
     <ClCompile Include="src\server\affix.cpp" />
     <ClCompile Include="src\server\ai\ai.cpp" />
     <ClCompile Include="src\server\ai\aifunc.cpp" />

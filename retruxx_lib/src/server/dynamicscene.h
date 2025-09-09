@@ -2,6 +2,7 @@
 #include <core/clazz.h>
 #include <deque>
 #include <vector>
+#include <engine/ode/sources/objects.h>
 
 struct dContact;
 
@@ -12,113 +13,119 @@ namespace ai
     class PhysicBody;
     class Shell;
     class Obj;
+    class PhysicObj;
 
     class TraceLineCallback
     {
     public:
-        virtual ~TraceLineCallback();
+        virtual  ~TraceLineCallback() /* 0x00 */;
+        virtual bool CollideId(int) const = 0 /* 0x04 */;
+        virtual bool CollidePhysicObj(const ai::PhysicObj*) const = 0 /* 0x08 */;
+    }; /* size: 0x0004 */
 
-    private:
-        //TraceLineCallback_vtbl* __vftable /*VFT*/;
-    };
-
-    class DynamicScene :  public m3d::Object
+    class DynamicScene : public m3d::Object
     {
-    public:
-        class SoilProps
-        {
-        public:
-            void LoadFromXml(m3d::cmn::XmlNode const*);
-            SoilProps();
+    protected:
+        DynamicScene();
+        DynamicScene(const ai::DynamicScene& __formal);
 
-        private:
-            __int16 m_splashType;
+    public:
+        virtual  ~DynamicScene() override /* 0x00 */;
+        virtual m3d::Object* Clone() override /* 0x04 */;
+        static m3d::Object* __fastcall CreateObject();
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        static m3d::Class m_classDynamicScene;
+
+        struct SoilProps
+        {
+            /* 0x0000 */ short m_splashType;
+            /* 0x0002 */ char Padding_30[2];
             CStr m_splashTypeName;
             CStr m_wheelTraceTextureName;
-            float m_friction;
-            float m_resistance;
-            int m_idx;
-        };
+            /* 0x001c */ float m_friction;
+            /* 0x0020 */ float m_resistance;
+            /* 0x0024 */ int m_idx;
+            SoilProps(const ai::DynamicScene::SoilProps& __that);
+            SoilProps();
+            void LoadFromXml(const m3d::cmn::XmlNode* xmlNode);
+        }; /* size: 0x0028 */
+
+    private:
+        retruxx::vector<ai::DynamicScene::SoilProps, retruxx::allocator<ai::DynamicScene::SoilProps> > m_soilProps;
+        retruxx::vector<retruxx::vector<unsigned short, retruxx::allocator<unsigned short> >, retruxx::allocator<retruxx::vector<unsigned short, retruxx::allocator<unsigned short> > > > m_soilPropsIdx;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_wheelTypeNames;
+        retruxx::vector<retruxx::vector<CStr, retruxx::allocator<CStr> >, retruxx::allocator<retruxx::vector<CStr, retruxx::allocator<CStr> > > > m_soilEffectNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_roadEffectNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_soilSplashTypeNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_shellTypesNames;
+        retruxx::vector<retruxx::vector<CStr, retruxx::allocator<CStr> >, retruxx::allocator<retruxx::vector<CStr, retruxx::allocator<CStr> > > > m_shellsEffectsNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_shellWaterEffectNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_shellsStaticsEffNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_shellsVehiclesEffNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_shellsRoadEffNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_vehicleSoilEffectNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_BoEffectTypeNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_BoVehicleEffectNames;
+        retruxx::vector<retruxx::vector<CStr, retruxx::allocator<CStr> >, retruxx::allocator<retruxx::vector<CStr, retruxx::allocator<CStr> > > > m_BoShellEffectNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_decalsNames;
+        /* 0x0144 */ int m_clashDecalId;
+        /* 0x0148 */ float m_physicTimeAccumulator;
 
     public:
-        short GetBoEffectTypeByName(CStr const &);
+        static void __fastcall Clear();
+        static void __fastcall InitOnce();
+        static void __fastcall ClearOnce();
+        static int __fastcall ProcessShellAndBody(ai::Shell* shell, ai::PhysicBody* body, dContact* contact, unsigned int& numContacts, bool reverse);
+        static void __fastcall CollideBullet(const ai::Bullet& bullet);
         void DeleteAll();
         void PurgeBodies();
-        CStr const & GetBoEffectTypeName(unsigned short);
-        virtual m3d::Object * Clone();
-        void LinkNodesFromBodyToSceneGraph(Obj *);
-        static int ProcessShellAndBody(Shell *,PhysicBody *,dContact *,unsigned int &,bool);
-        void InitClashDecalId();
-        void ReadSoilProps(char const *);
-        CStr const & GetShellWaterEffectName(unsigned short) const ;
-        bool LoadSceneFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *, std::vector<m3d::Class *> const &);
-        void StepScene(float);
-        bool SaveSceneToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
-        SoilProps const & GetSoilProps(unsigned int,unsigned int) const ;
-        CStr const & GetShellStaticsEffectName(unsigned short) const ;
-        CStr const & GetSoilEffectName(unsigned int,unsigned short,bool) const ;
-        void RenderDebugInfo();
-        static m3d::Object * CreateObject();
-        CStr const & GetBoVehicleEffectName(unsigned short) const ;
-        void CollideScene(float);
-        CStr const & GetShellVehicleEffectName(unsigned short) const ;
+        ai::Vehicle* GetVehicleControlledByPlayer() const;
+        bool LoadSceneFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* rootNode, const retruxx::vector<m3d::Class*, retruxx::allocator<m3d::Class*> >& allowedClasses);
+        bool SaveSceneToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* sceneNode);
+        bool LoadSceneFromFile(const char* fileName, const retruxx::vector<m3d::Class*, retruxx::allocator<m3d::Class*> >& allowedClasses);
+        bool SaveSceneToFile(const char* fileName);
+        int ReadNewObjectFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode, const retruxx::vector<m3d::Class*, retruxx::allocator<m3d::Class*> >& allowedClasses);
+        void ReadSoilProps(const char* fileName);
+        const ai::DynamicScene::SoilProps& GetSoilProps(unsigned int x, unsigned int z) const;
+        unsigned int GetWheelTypeByName(const CStr& wheelTypeName);
+        const CStr& GetSoilEffectName(unsigned int wheelType, unsigned short soilType, bool bVehicleIsBraking) const;
+        const CStr& GetRoadEffectName(unsigned int wheelType, bool bVehicleIsBraking) const;
+        short GetExplosionType(const CStr& shellTypeName);
+        const CStr& GetShellEffectName(unsigned short shellType, unsigned short soilType) const;
+        const CStr& GetShellWaterEffectName(unsigned short shellType) const;
+        const CStr& GetShellRoadEffectName(unsigned short shellType) const;
+        const CStr& GetShellStaticsEffectName(unsigned short shellType) const;
+        const CStr& GetShellVehicleEffectName(unsigned short shellType) const;
+        const CStr& GetVehicleSoilEffectName(unsigned short splashType) const;
+        short GetBoEffectTypeByName(const CStr& BreakableObjectEffectName);
+        const CStr& GetBoEffectTypeName(unsigned short BoEffectType);
         void CreateBoShellEffectNames();
-        CStr const & GetVehicleSoilEffectName(unsigned short) const ;
-        static m3d::Class * GetBaseClass();
-        CStr const & GetDecalName(int);
-        static void __fastcall ClearOnce();
-        int GetNumNearCallbacksLastFrame();
-        int AddDecalName(CStr const &);
+        const CStr& GetBoShellEffectName(unsigned short BoEffectType, unsigned short ShellEffectType);
+        const CStr& GetBoVehicleEffectName(unsigned short BoEffectType) const;
+        int AddDecalName(const CStr& name);
+        const CStr& GetDecalName(int id);
+        void InitClashDecalId();
         int GetClashDecalId();
-        static void InitOnce();
-        virtual ~DynamicScene();
-        unsigned int GetWheelTypeByName(CStr const &);
-        CStr const & GetBoShellEffectName(unsigned short,unsigned short);
-        static void __fastcall CollideBullet(Bullet const &);
-        bool LoadSceneFromFile(char const *,class std::vector<m3d::Class *> const &);
-        int ReadNewObjectFromXml(m3d::cmn::XmlFile *, m3d::cmn::XmlNode const *, std::vector<m3d::Class *> const &);
-        short GetExplosionType(CStr const &);
-        bool SaveSceneToFile(char const *);
-        Vehicle * GetVehicleControlledByPlayer() const ;
-        CStr const & GetRoadEffectName(unsigned int,bool) const ;
-        CStr const & GetShellRoadEffectName(unsigned short) const ;
-        static void __fastcall Clear();
-        virtual m3d::Class * GetClass() const ;
-        CStr const & GetShellEffectName(unsigned short,unsigned short) const ;
-        void UpdateSceneItems(float);
-
-    protected:
-        DynamicScene(DynamicScene const &);
-        DynamicScene();
+        void LinkNodesFromBodyToSceneGraph(ai::Obj* pObj);
+        void CollideScene(float elapsedTime);
+        void StepScene(float elapsedTime);
+        void UpdateSceneItems(float elapsedTime);
+        void RenderDebugInfo();
+        int GetNumNearCallbacksLastFrame();
 
     private:
+        retruxx::deque<int, retruxx::allocator<int> > m_timefilterValues;
         void _InitWheelTraces();
         void _RecalcWheelEffectNames();
-        void _AddSoilEffectNameForWheelTypeName(CStr const &);
+        void _AddSoilEffectNameForWheelTypeName(const CStr& wheelTypeName);
+    }; /* size: 0x0160 */
 
-    public:
-        RT_CLASS_DECLARE(DynamicScene);
-
-    private:
-        std::vector<SoilProps> m_soilProps;
-        std::vector<std::vector<unsigned short>> m_soilPropsIdx;
-        std::vector<CStr> m_wheelTypeNames;
-        std::vector<std::vector<CStr>> m_soilEffectNames;
-        std::vector<CStr> m_roadEffectNames;
-        std::vector<CStr> m_soilSplashTypeNames;
-        std::vector<CStr> m_shellTypesNames;
-        std::vector<std::vector<CStr>> m_shellsEffectsNames;
-        std::vector<CStr> m_shellWaterEffectNames;
-        std::vector<CStr> m_shellsStaticsEffNames;
-        std::vector<CStr> m_shellsVehiclesEffNames;
-        std::vector<CStr> m_shellsRoadEffNames;
-        std::vector<CStr> m_vehicleSoilEffectNames;
-        std::vector<CStr> m_BoEffectTypeNames;
-        std::vector<CStr> m_BoVehicleEffectNames;
-        std::vector<std::vector<CStr>> m_BoShellEffectNames;
-        std::vector<CStr> m_decalsNames;
-        int m_clashDecalId = -1;
-        float m_physicTimeAccumulator = 0.0;
-        std::deque<int> m_timefilterValues;
-    };
+    inline dxSpace* gGlobalSpace = nullptr;
+    inline dxSpace* gTempSpace = nullptr;
+    inline dxSpace* gBulletSpace = nullptr;
+    inline dxSpace* gIntersectionSpace = nullptr;
+    inline dxSpace* gSpaceForAllPhysicParticles = nullptr;
+    inline dxWorld* gGlobalWorld = nullptr;
+    inline DynamicScene* gDynamicScene = nullptr;
 }

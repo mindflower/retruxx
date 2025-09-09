@@ -18,9 +18,14 @@
 #include "file/fileserver.h"
 #include "file/filestream.h"
 #include "math/vector4.h"
+#include "client.h"
 
 namespace m3d
 {
+    extern CClient* pClient;
+
+    m3d::RenderModes Landscape::m_renderMode = RM_GAME;
+
     RT_CLASS_EXPORTS_BEGIN(Landscape)
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Landscape);
@@ -340,8 +345,132 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::DrawLandScapeTextures(VisibilityMode, bool, bool)
+    void Landscape::DrawLandScapeTextures(VisibilityMode visMode, bool drawMinimap, bool roadMap)
     {
+        int landSize = this->m_owner->m_level->land_size;
+        int gridSize = 4 * landSize;
+
+        m_owner->m_sceneGraph.SortedCellsStartFetching(0, (M3D_KERNEL->GetEngineCfg().m_lsTransitionDevider.GetI() * this->m_drawRadius) + 1);
+        
+        auto fogReduceFactor = m_owner->GetFogReduceFactorFromWeather();
+
+        float s = 0.0;
+        float e = 0.0;
+        GetFogStartAndEnd(s, e);
+
+        s *= fogReduceFactor;
+        e *= fogReduceFactor;
+
+        M3D_RENDERER->SetFogStart(s, false);
+        M3D_RENDERER->SetFogEnd(e, false);
+
+        if (drawMinimap)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
+        else
+        {
+            int x = 0;
+            int y = 0;
+            int vis = 0;
+            int radius = 0;
+            while (m_owner->m_sceneGraph.SortedCellsFetch(x, y, vis, radius))
+            {
+                if (vis == 0) continue;
+
+                // TODO: generated code check this
+                throw retruxx::logic_error("Not implemented");
+
+                bool isFullyUnderwater = true;
+                bool hasUnderwaterParts = false;
+
+                // Check water conditions for 4 sub-cells
+                for (int i = 0; i < 4; i++)
+                {
+                    int subX = 4 * x + i;
+                    int subY = 4 * y + i;
+                    int cellIndex = subX + subY * landSize;
+
+                    if (this->m_waterMap[cellIndex])
+                    {
+                        float waterHeight = this->getWaterHeight(subX, subY);
+                        const m3d::Landscape::CellParams& params = this->m_drawedCellParams[cellIndex];
+
+                        if (params.m_h1 > waterHeight) isFullyUnderwater = false;
+                        if (waterHeight > params.m_h0) hasUnderwaterParts = true;
+
+                        // Editor mode texture processing
+                        if (m3d::Landscape::m_renderMode == RM_EDITOR)
+                        {
+                            const auto& tileInfo = this->GetTileInfo(subX, subY);
+                            if (tileInfo.m_numTexs > 0)
+                            {
+                                for (int texIndex = 0; texIndex < tileInfo.m_numTexs; texIndex++)
+                                {
+                                    int texId = tileInfo.m_texFlags[texIndex];
+                                    m3d::cmn::vector<unsigned int>& cells = this->m_cellsPerTex.m_data[texId];
+
+                                    if (cells.m_numItems < cells.m_maxItems)
+                                    {
+                                        unsigned int cellId = subX + ((subY + ((tileInfo.m_angle + (texId << 8)) << 8)) << 8);
+                                        cells.m_data[cells.m_numItems] = cellId;
+                                        cells.m_numItems++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        isFullyUnderwater = false;
+                    }
+                }
+
+                // Visibility filtering
+                if ((visMode == VIS_DIRECT) ||
+                    (visMode == VIS_REFLECTION && !isFullyUnderwater) ||
+                    (visMode == VIS_REFRACTION && hasUnderwaterParts))
+                {
+                    // Add cell to texture sets
+                    int mapIndex = x + landSize * y;
+                    std::set<unsigned int>& texSet = this->m_texSetsmap[mapIndex];
+
+                    for (auto it = texSet.begin(); it != texSet.end(); ++it)
+                    {
+                        unsigned int texId = *it;
+                        m3d::cmn::vector<unsigned int>& cells = this->m_cellsPerTex.m_data[texId];
+
+                        if (cells.m_numItems < cells.m_maxItems)
+                        {
+                            cells.m_data[cells.m_numItems] = x + (y << 8);
+                            cells.m_numItems++;
+                        }
+                    }
+                }
+            }
+
+            // Setup lighting for non-minimap mode
+            if (m3d::Landscape::m_renderMode == RM_EDITOR)
+            {
+                // TODO: generated code check this
+                throw retruxx::logic_error("Not implemented");
+
+                CVector sunDir = this->m_owner->m_sunDir;
+                CVector lightDir(-sunDir.x, -sunDir.y, -sunDir.z);
+
+                m3d::rend::LightSource light;
+                light.m_type = rend::M3DLIGHT_DIRECTIONAL;
+                light.m_direction = lightDir;
+                light.m_range = 1000.0f;
+                light.m_origin = CVector(0.0f, 20000.0f, 0.0f);
+
+                light.m_diffuse = m_owner->GetWeatherDiffuseColor();
+                light.m_ambient = m_owner->GetWeatherAmbientColor() * 0.5f;
+
+                M3D_RENDERER->LightSet(0, light);
+            }
+        }
+
         throw retruxx::logic_error("Not implemented");
     }
 
@@ -1439,6 +1568,9 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
+    unsigned int frame = 0;
+    const float VISCELL_EDGE_LENGTH_24 = 128.0;
+
     void Landscape::Render()
     {
         if (M3D_KERNEL->GetEngineCfg().m_lsWireframe.GetB())
@@ -1455,7 +1587,176 @@ namespace m3d
         m_waterPlane.m_normal.y = 1.0;
         m_waterPlane.m_normal.z = 0.0;
         m_waterPlane.m_dist = this->m_owner->m_level->waterlevel;
-        throw retruxx::logic_error("Not implemented");
+        
+
+        // TODO: save divider
+        m_bindDevider = ((1.1 - M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF()) * 0.44999999) + 0.55000001;
+
+        auto saveDistDivider = ((M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF() * 8.0) + 4.0);
+        if (saveDistDivider >= 4)
+        {
+            if (saveDistDivider <= 12)
+            {
+
+            }
+            else
+            {
+                saveDistDivider = 2;
+            }
+        }
+        else
+        {
+            saveDistDivider = 4;
+        }
+        
+        M3D_RENDERER->SetLighting(false, false);
+        M3D_RENDERER->PushZFunc(rend::CmpFunc::M3DCMP_LESS);
+        M3D_RENDERER->PushBlend(rend::BlendMode::BM_NONE);
+        M3D_RENDERER->PushCull();
+        M3D_RENDERER->PushZbState();
+        M3D_RENDERER->PushFog(M3D_KERNEL->GetEngineCfg().m_r_enableFog.GetB());
+        if (m_numWaterCells != 0 && m_isWaterVisible)
+        {
+            // TODO: implement water rendering
+            throw retruxx::logic_error("Not implemented");
+        }
+
+        m_profilerDraw->StartCountdown();
+        M3D_RENDERER->SetFog(false, false);
+        M3D_RENDERER->SetBlend(rend::BlendMode::BM_NONE, false);
+        M3D_RENDERER->SetZbState(rend::ZbState::ZB_DISABLE, false);
+
+        if ((M3D_KERNEL->GetEngineCfg().m_g_drawSky.GetB()))
+        {
+            if ((frame & 1) == 0)
+            {
+                m_owner->UpdateSkyParams();
+            }
+            ++frame;
+            m_owner->RenderSky(LandRenderMode::LRM_DIRECT);
+        }
+
+        if ((M3D_KERNEL->GetEngineCfg().m_lgtFlares.GetB()))
+        {
+            m_flares.Render(FlareMode::FLARE_SUN, m_owner->m_sunDir, 1.0, 1.0);
+        }
+
+
+        auto v55 = VISCELL_EDGE_LENGTH_24;
+        auto v56 = (float)(saveDistDivider - 4) * VISCELL_EDGE_LENGTH_24;
+        auto v57 = (float)(saveDistDivider - 8) * VISCELL_EDGE_LENGTH_24;
+        this->m_landscapeClip0z = v57;
+        auto v58 = (float)saveDistDivider * v55;
+        this->m_landscapeClip1zSq = v56 * v56;
+        this->m_drawRadius = saveDistDivider;
+        this->m_landscapeClip0 = saveDistDivider - 8;
+        this->m_landscapeClip1 = saveDistDivider - 4;
+        this->m_landscapeClip2 = saveDistDivider;
+        this->m_landscapeClip1z = v56;
+        this->m_landscapeClip2z = v58;
+        this->m_landscapeClip0zSq = v57 * v57;
+        this->m_landscapeClip2zSq = v58 * v58;
+
+        if ((M3D_KERNEL->GetEngineCfg().m_r_renderZGuard.GetB()))
+        {
+            renderZGuard();
+        }
+
+        M3D_RENDERER->SetFog(M3D_KERNEL->GetEngineCfg().m_r_enableFog.GetB(), false);
+        M3D_RENDERER->PushZbState(rend::ZbState::ZB_ENABLE);
+        M3D_RENDERER->PushZFunc(rend::CmpFunc::M3DCMP_LESS);
+        M3D_RENDERER->PushBlend(rend::BlendMode::BM_NONE);
+        this->m_owner->m_sceneGraph.SetVisMask(1);
+        M3D_RENDERER->SetCull(rend::Cull::M3DCULL_CW, false);
+        DrawLandScapeTextures(VIS_DIRECT, false, false);
+
+        M3D_RENDERER->SetZbState(rend::ZbState::ZB_ENABLE, false);
+        M3D_RENDERER->SetZFunc(rend::CmpFunc::M3DCMP_LESS, false);
+        M3D_RENDERER->SetCull(rend::Cull::M3DCULL_CCW, false);
+        M3D_RENDERER->SetBlend(rend::BlendMode::BM_NONE, false);
+        DrawSolidLandscape(LRM_DIRECT, 0);
+
+        M3D_RENDERER->SetZbState(rend::ZbState::ZB_NOWRITE, false);
+        M3D_RENDERER->SetBlend(rend::BlendMode::BM_ALPHA, false);
+        DrawSolidLandscape(LRM_BIND, 0);
+
+        M3D_RENDERER->SetZbState(rend::ZbState::ZB_ENABLE, false);
+        RenderRoads();
+
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopZFunc();
+        M3D_RENDERER->PopBlend();
+
+        m_profilerDraw->EndCountdown();
+
+        DrawCollisionGeoms(true);
+
+        M3D_RENDERER->SetFog(M3D_KERNEL->GetEngineCfg().m_r_enableFog.GetB(), false);
+        M3D_RENDERER->SetCull(rend::Cull::M3DCULL_CCW, false);
+        M3D_RENDERER->SetZbState(rend::ZbState::ZB_ENABLE, false);
+
+        m_owner->m_sceneGraph.UpdateVis(false, m_frustumCull, true);
+        m_owner->m_sceneGraph.Render(SGRF_DEFAULT_OPAQUE);
+
+        if ((M3D_KERNEL->GetEngineCfg().m_r_waterInQuery.GetB()))
+        {
+            if (m_numWaterCells)
+            {
+                QueryWaterVisibility();
+            }
+        }
+        else
+        {
+            m_isWaterVisible = true;
+        }
+
+        M3D_RENDERER->SetFog(false, false);
+        m_owner->m_sceneGraph.Render(SGRF_SHADOWS);
+
+        M3D_RENDERER->SetFog(M3D_KERNEL->GetEngineCfg().m_r_enableFog.GetB(), false);
+        if (!M3D_KERNEL->GetEngineCfg().m_dsShadows.GetB() || !pClient->GetWorld().GetWeatherManager().GetShadowVisibilityFromWeather())
+        {
+            RenderGrass({});
+        }
+
+        if (m_numWaterCells /* && HIBYTE(v97) */)
+        {
+            // TODO: implement water rendering
+            throw retruxx::logic_error("Not implemented");
+        }
+
+        if ((M3D_KERNEL->GetEngineCfg().m_g_drawShores.GetB()))
+        {
+            DrawShoresLayer();
+        }
+
+        M3D_RENDERER->SetZbState(rend::ZbState::ZB_NOWRITE, false);
+        m_owner->m_sceneGraph.Render(SGRF_DEFAULT_TRANS);
+        m_owner->m_weatherManager.RenderWeatherParticles();
+
+        if ((M3D_KERNEL->GetEngineCfg().m_lsWireframe.GetB()))
+        {
+            M3D_RENDERER->PopFillMode();
+        }
+
+        M3D_RENDERER->SetFog(false, false);
+        M3D_RENDERER->SetZbState(rend::ZbState::ZB_DISABLE, false);
+        m_owner->m_sceneGraph.Render(SGRF_OVERLAYS);
+        m_owner->m_sceneGraph.RenderContouredNodes();
+
+        m_profilerDraw->StartCountdown();
+        M3D_RENDERER->PopFog();
+        M3D_RENDERER->PopZFunc();
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopCull();
+        M3D_RENDERER->PopZbState();
+
+        if ((M3D_KERNEL->GetEngineCfg().m_g_showReflRefrMaps.GetB()))
+        {
+            // TODO: implement reflections rendering
+            throw retruxx::logic_error("Not implemented");
+        }
+        m_profilerDraw->EndCountdown();
     }
 
     int Landscape::Render(SgNodeRenderFlags, void*, int, int)
@@ -1723,7 +2024,204 @@ namespace m3d
 
     void Landscape::renderZGuard()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: check this!!!!
+        M3D_RENDERER->SetAlphaTest(0);
+        M3D_RENDERER->SetColorWriteMask(0, false);
+        M3D_RENDERER->PushZbState(rend::ZB_ENABLE);
+        M3D_RENDERER->PushCull(rend::M3DCULL_NONE);
+        M3D_RENDERER->PushBlend(rend::BM_NONE);
+        M3D_RENDERER->DisableTextureStages(0);
+
+        auto vbHandle = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC);
+
+        int x = 0;
+        int y = 0;
+        int z = 0;
+
+        auto* stream = (char*)M3D_RENDERER->LockVbStreaming(vbHandle, x, y, &z);
+
+        m3d::rend::VertexXYZC poly[4];
+        poly[3].c = 0xFFFFFF;
+        poly[2].c = 0xFFFFFF;
+        poly[1].c = 0xFFFFFF;
+        poly[0].c = 0xFFFFFF;
+
+        CVector r;
+        CVector u;
+        CVector f;
+        M3D_RENDERER->MatGetBasis(r, u, f);
+
+        CVector org;
+
+        auto v13 = 5000.0;
+
+        if (fabs(f.y) < 0.89999998)
+        {
+            auto v37 = 1.0 / sqrt(f.x * f.x + f.z * f.z + 0.00000011920929);
+            f.x = f.x * v37;
+            f.y = v37 * 0.0;
+            f.z = f.z * v37;
+            org = M3D_RENDERER->MatGetOrgInv();
+            auto v10 = (float)((float)((float)this->m_drawRadius - 0.76999998) * VISCELL_EDGE_LENGTH_24) * f.y;
+            auto v11 = org.x + (float)((float)((float)((float)this->m_drawRadius - 0.76999998) * VISCELL_EDGE_LENGTH_24) * f.x);
+            auto v12 = org.z + (float)(f.z * (float)((float)((float)this->m_drawRadius - 0.76999998) * VISCELL_EDGE_LENGTH_24));
+            r.z = f.x - (float)(f.y * 0.0);
+            auto v41 = r.z * 10000.0;
+            r.x = (float)(f.y * 0.0) - f.z;
+            r.y = (float)(f.z * 0.0) - (float)(f.x * 0.0);
+            poly[0].x = v11 - (float)(r.x * 10000.0);
+            poly[0].z = v12 - (float)(r.z * 10000.0);
+            poly[0].y = v10 - (float)(r.y * 10000.0);
+            org.z = (float)(r.z * 10000.0) + v12;
+            poly[1].x = (float)(r.x * 10000.0) + v11;
+            poly[1].z = org.z;
+            poly[1].y = (float)(r.y * 10000.0) + v10;
+            org.x = poly[1].x;
+            org.y = poly[1].y + 5000.0;
+            poly[2].x = poly[1].x;
+            poly[2].y = poly[1].y + 5000.0;
+            poly[2].z = org.z;
+            poly[3].x = poly[0].x;
+            poly[3].y = poly[0].y + 5000.0;
+            poly[3].z = poly[0].z;
+            memcpy(stream, poly, 0x40u);
+            stream += 64;
+        }
+
+        const auto land_scale_27 = 8.0;
+        CVector v[4];
+
+        auto v14 = (float)((float)this->m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_24) - 8.0;
+        v[0].x = land_scale_27;
+        v[0].y = 0.0;
+        v[0].z = land_scale_27;
+        v[1].x = v14;
+        auto v15 = v14;
+        v[1].y = 0.0;
+        v[1].z = land_scale_27;
+        poly[1].z = land_scale_27;
+        v[2].x = v14;
+        poly[1].y = v13 + 0.0;
+        v[2].z = v14;
+        auto v44 = v14;
+        auto v41 = v14;
+        poly[2].x = v14;
+        v[2].y = 0.0;
+        auto v16 = v13 + 0.0;
+        poly[2].y = v13 + 0.0;
+        auto v17 = v14;
+        poly[2].z = v14;
+        v[3].x = land_scale_27;
+        v[3].y = 0.0;
+        auto v18 = v13 + 0.0;
+        auto v19 = v13 + 0.0;
+        v[3].z = v17;
+        poly[0].x = land_scale_27;
+        poly[0].y = v13 + 0.0;
+        poly[0].z = land_scale_27;
+        poly[1].x = v15;
+        poly[3].x = land_scale_27;
+        poly[3].y = v13 + 0.0;
+        poly[3].z = v17;
+        memcpy(stream, poly, 0x40u);
+        poly[0].x = land_scale_27;
+        poly[0].y = v[0].y;
+        poly[0].z = land_scale_27;
+        poly[1].x = v15;
+        poly[1].y = v[1].y;
+        poly[1].z = v[1].z;
+        poly[2].x = v15;
+        poly[2].y = v13 + 0.0;
+        poly[2].z = land_scale_27;
+        poly[3].x = land_scale_27;
+        auto v20 = stream + 64;
+        poly[3].y = v13 + 0.0;
+        poly[3].z = land_scale_27;
+        memcpy(v20, poly, 0x40u);
+        poly[0].x = v15;
+        poly[0].y = v[1].y;
+        poly[0].z = v[1].z;
+        poly[1].x = v[2].x;
+        poly[1].y = v[2].y;
+        poly[1].z = v[2].z;
+        poly[2].x = v41;
+        poly[2].y = v13 + 0.0;
+        poly[2].z = v44;
+        v20 += 64;
+        poly[3].y = v13 + 0.0;
+        x = v[2].x;
+        poly[3].z = land_scale_27;
+        y = v[3].y;
+        poly[3].x = v15;
+        memcpy(v20, poly, 0x40u);
+        poly[0].x = x;
+        poly[0].y = v[2].y;
+        poly[0].z = v[2].z;
+        auto v23 = v[3].x;
+        poly[1].y = y;
+        v20 += 64;
+        poly[1].x = v[3].x;
+        poly[1].z = v[3].z;
+        org.y = v19;
+        z = v[3].z;
+        poly[2].x = v[3].x;
+        poly[3].y = v16;
+        auto v24 = v[3].y;
+        poly[2].y = v19;
+        poly[2].z = v[3].z;
+        poly[3].x = v41;
+        poly[3].z = v44;
+        memcpy(v20, poly, 0x40u);
+        poly[0].y = v24;
+        poly[0].z = v[3].z;
+        poly[1].x = land_scale_27;
+        poly[1].y = v[0].y;
+        poly[2].y = v18;
+        poly[0].x = v23;
+        poly[1].z = land_scale_27;
+        poly[2].x = land_scale_27;
+        poly[2].z = land_scale_27;
+        poly[3].x = v23;
+        poly[3].y = v19;
+        poly[3].z = z;
+        memcpy(v20 + 64, poly, 0x40u);
+
+        auto v28 = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC);
+        M3D_RENDERER->UnlockVb(v28);
+
+        auto v32 = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC);
+        M3D_RENDERER->SetToStream0(v32);
+
+        unsigned vofs = 0;
+
+        auto v33 = 0;
+        if (fabs(f.y) < 0.89999998)
+        {
+            M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
+                vofs,
+                2u);
+            v33 = 4;
+        }
+
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
+            v33 + vofs,
+            2u);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
+            v33 + vofs + 4,
+            2u);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
+            v33 + vofs + 8,
+            2u);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
+            v33 + vofs + 12,
+            2u);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
+            v33 + vofs + 16,
+            2u);
+        M3D_RENDERER->PopCull();
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->SetColorWriteMask(15u, false);
     }
 
     void Landscape::GetWaterCellHeights(float&, float&, int, int) const

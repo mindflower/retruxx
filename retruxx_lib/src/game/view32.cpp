@@ -46,7 +46,6 @@ namespace m3d
 namespace ai
 {
     extern CServer* pServer;
-    extern DynamicScene* gDynamicScene;
 }
 
 namespace

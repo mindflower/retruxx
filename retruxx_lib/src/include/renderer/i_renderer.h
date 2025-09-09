@@ -439,26 +439,23 @@ namespace m3d
             M3DLIGHT_DIRECTIONAL = 0x2,
         };
 
-        class LightSource
+        struct LightSource
         {
-        public:
-            void init(LightType, CVector const&);
-
-        private:
-            LightType m_type;
-            Colorf m_diffuse;
-            Colorf m_specular;
-            Colorf m_ambient;
+            /* 0x0000 */ m3d::rend::LightType m_type;
+            m3d::rend::Colorf m_diffuse;
+            m3d::rend::Colorf m_specular;
+            m3d::rend::Colorf m_ambient;
             CVector m_origin;
             CVector m_direction;
-            float m_range;
-            float m_falloff;
-            float m_attenuation0;
-            float m_attenuation1;
-            float m_attenuation2;
-            float m_theta;
-            float m_phi;
-        };
+            /* 0x004c */ float m_range;
+            /* 0x0050 */ float m_falloff;
+            /* 0x0054 */ float m_attenuation0;
+            /* 0x0058 */ float m_attenuation1;
+            /* 0x005c */ float m_attenuation2;
+            /* 0x0060 */ float m_theta;
+            /* 0x0064 */ float m_phi;
+            void init(m3d::rend::LightType type, const CVector& pos);
+        }; /* size: 0x0068 */
 
         struct RenderStats
         {
@@ -695,8 +692,8 @@ namespace m3d
             virtual void PushCull(m3d::rend::Cull) = 0;
             virtual void PopCull() = 0;
             virtual void SetCull(m3d::rend::Cull, bool) = 0;
-            virtual void PushZFunc(m3d::rend::CmpFunc) = 0;
             virtual void PushZFunc() = 0;
+            virtual void PushZFunc(m3d::rend::CmpFunc) = 0;
             virtual void PopZFunc() = 0;
             virtual void SetZFunc(m3d::rend::CmpFunc, bool) = 0;
             virtual void PushLighting() = 0;
@@ -707,8 +704,8 @@ namespace m3d
             virtual void PushAmbient() = 0;
             virtual void PopAmbient() = 0;
             virtual void SetAmbient(unsigned int, bool) = 0;
-            virtual void PushFog(bool) = 0;
             virtual void PushFog() = 0;
+            virtual void PushFog(bool) = 0;
             virtual void PopFog() = 0;
             virtual void SetFog(bool, bool) = 0;
             virtual void PushFogColor(unsigned int) = 0;
@@ -727,8 +724,8 @@ namespace m3d
             virtual void PushFogEnd() = 0;
             virtual void PopFogEnd() = 0;
             virtual void SetFogEnd(float, bool) = 0;
-            virtual void PushFillMode(m3d::rend::FillMode) = 0;
             virtual void PushFillMode() = 0;
+            virtual void PushFillMode(m3d::rend::FillMode) = 0;
             virtual void PopFillMode() = 0;
             virtual void SetFillMode(m3d::rend::FillMode, bool) = 0;
             virtual void PushZBias(float) = 0;
@@ -866,7 +863,7 @@ namespace m3d
             virtual const CMatrix& MatGet() = 0;
             virtual const CMatrix& MatGetInv() = 0;
             virtual void MatSet(const CMatrix&) = 0;
-            virtual void MatGetBasis(CVector*, CVector*, CVector*) = 0;
+            virtual void MatGetBasis(CVector&, CVector&, CVector&) const = 0;
             virtual CVector MatGetOrgInv() = 0;
             virtual CVector MatGetOrg() = 0;
             virtual void MatSetWorld(const CMatrix*) = 0;
@@ -970,7 +967,7 @@ namespace m3d
             virtual int DrawPrimitive(m3d::rend::PrimType, unsigned int, unsigned int) = 0;
             virtual int GetMaxLights() = 0;
             virtual void LightEnable(int, int) = 0;
-            virtual void LightSet(int, const m3d::rend::LightSource*) = 0;
+            virtual void LightSet(int, const m3d::rend::LightSource&) = 0;
             virtual void MaterialSet(const m3d::rend::Material*) = 0;
             virtual void RelToAbs(float&, float&) = 0;
             virtual void AbsToRel(float&, float&) = 0;
