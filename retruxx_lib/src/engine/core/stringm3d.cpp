@@ -86,6 +86,15 @@ Quaternion strToQuat(CStr const& str)
     return res;
 }
 
+bool strToBool(CStr const& str)
+{
+    int v = 0;
+    if (str.empty())
+        return 0;
+    sscanf(str.c_str(), "%d", &v);
+    return v != 0;
+}
+
 CStr::ZeroCharHolder::ZeroCharHolder() :
     m_zeroChar(0)
 {

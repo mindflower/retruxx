@@ -94,9 +94,9 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SceneGraph::UnlinkThinkNode(SgNode*)
+    void SceneGraph::UnlinkThinkNode(SgNode* toThink)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_thinkList.erase(toThink);
     }
 
     float SceneGraph::GetAlphaForNode(SgNode*)

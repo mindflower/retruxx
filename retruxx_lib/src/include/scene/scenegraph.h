@@ -60,6 +60,8 @@ namespace m3d
 
     class SceneGraph
     {
+        friend class CWorld;
+
     public:
         SceneGraph(const m3d::SceneGraph&);
         SceneGraph();

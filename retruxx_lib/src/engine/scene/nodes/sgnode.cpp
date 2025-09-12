@@ -7,6 +7,7 @@
 #include "core/console/cvar.h"
 #include "client.h"
 #include "world.h"
+#include "core/ini.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNode, GetOrigin)
 {
@@ -24,7 +25,7 @@ namespace m3d
 
     Object* SgNode::CreateObject()
     {
-        throw retruxx::logic_error("Not implemented");
+        return new SgNode;
     }
 
     Class* SgNode::GetBaseClass()
@@ -256,9 +257,26 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgNode::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int SgNode::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto result = Object::ReadFromXmlNode(xmlFile, node);
+        if (result)
+        {
+            m_origin = strToVec(node->GetAttribute("org"));
+            m_isOriginRelative = strToBool(node->GetAttribute("orgRel"));
+            m_rotation = strToQuat(node->GetAttribute("rot"));
+            m_scaling = strToVec(node->GetAttribute("scale"));
+            if (m_scaling.x == 0.0)
+            {
+                m_scaling.z = 1.0;
+                m_scaling.y = 1.0;
+                m_scaling.x = 1.0;
+            }
+            result = 1;
+            this->m_isXFormDirty = 1;
+            this->m_isOwnBoundingBoxDirty = true;
+        }
+        return result;
     }
 
     int SgNode::GetPropertiesList(retruxx::set<unsigned, retruxx::less<unsigned>, retruxx::allocator<unsigned>>&) const

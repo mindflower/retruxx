@@ -83,6 +83,7 @@ CStr NameFromFileName(CStr const& source);
 CVector2 strToVec2(CStr const&);
 CVector strToVec(CStr const&);
 Quaternion strToQuat(CStr const&);
+bool strToBool(CStr const& str);
 
 bool operator==(CStr const& lhs, CStr const& rhs);
 bool operator!=(CStr const& lhs, CStr const& rhs);

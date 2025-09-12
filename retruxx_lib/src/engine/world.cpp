@@ -363,13 +363,145 @@ namespace m3d
 
     int CWorld::CreatePrefabsFromFile(char const* fileName)
     {
-        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
-        if (!fileStream->Open(fileName, fs::IStream::OPEN_READ))
+        // TODO: generated code 
+        std::vector<CStr> PrefabFiles;
+
+        // Create file stream
+        m3d::fs::FileServer& fileServer = M3D_KERNEL->GetFileServer();
+        scoped_ptr fileStream = fileServer.CreateFileStream();
+
+        // Open file
+        if (!fileStream->Open(fileName, m3d::fs::IStream::OpenFlags::OPEN_READ))
         {
             return 0;
         }
 
-        throw retruxx::logic_error("Not implemented");
+        // Create XML file and parse
+        ref_ptr<m3d::cmn::XmlFile> xmlFile = m3d::g_Kernel->CreateXmlFile();
+
+        xmlFile->Read(*fileStream);
+        fileStream->Close();
+
+        // Check for XML parsing errors
+        const char* error = xmlFile->GetError();
+        if (error)
+        {
+            CStr errorMsg = "CreatePrefabsFromFile(): Can't parse: " + CStr(error);
+            M3D_LOG_INFO(errorMsg);
+            return 0;
+        }
+
+        // Get PrefabFiles section
+        ref_ptr<m3d::cmn::XmlNode> filesNode = xmlFile->CreateNode();
+        xmlFile->GetFirstChild(filesNode, "PrefabFiles");
+
+        // Iterate through all Item nodes
+        filesNode->GetFirstChild(filesNode, "Item");
+
+        while (!filesNode->IsEmpty())
+        {
+            const char* file = filesNode->GetAttribute("file");
+            PrefabFiles.push_back(CStr(file));
+            filesNode->GetNextSibling(filesNode, "Item");
+        }
+
+        // Process each prefab file
+        for (unsigned int i = 0; i < PrefabFiles.size(); ++i)
+        {
+            const CStr& prefabFile = PrefabFiles[i];
+
+            // Reopen file stream for this prefab file
+            if (!fileStream->Open(prefabFile.c_str(), m3d::fs::IStream::OpenFlags::OPEN_READ))
+                continue;
+
+            // Parse prefab XML
+            ref_ptr<m3d::cmn::XmlFile> prefabXml = m3d::g_Kernel->CreateXmlFile();
+
+            prefabXml->Read(*fileStream);
+            fileStream->Close();
+
+            // Check for errors
+            if (prefabXml->GetError())
+            {
+                CStr errorMsg = "Can't parse: " + CStr(prefabXml->GetError());
+                M3D_APP->RunMsgBoxDlg("error", errorMsg, 1, false);
+                return 0;
+            }
+
+            // Get Prefabs section
+            ref_ptr<m3d::cmn::XmlNode> prefabsNode = prefabXml->CreateNode();
+            prefabXml->GetFirstChild(prefabsNode, "Prefabs");
+
+            // Process each Node
+            prefabsNode->GetFirstChild(prefabsNode, "Node");
+
+            while (!prefabsNode->IsEmpty())
+            {
+                bool isMulti = false;
+                m3d::SafeBoolAttrib(isMulti, prefabsNode, "multi");
+
+                if (isMulti)
+                {
+                    // Multi-effect prefab
+                    const char* name = prefabsNode->GetAttribute("name");
+
+                    m3d::CWorld::EffectsData effData;
+                    effData.onlyOne = false;
+
+                    // Process child nodes
+                    ref_ptr<m3d::cmn::XmlNode> childNode = prefabXml->CreateNode();
+                    prefabsNode->GetFirstChild(childNode, "Node");
+
+                    while (!childNode->IsEmpty())
+                    {
+                        m3d::SgNode* prefab = ReadPrefab(prefabXml, childNode);
+                        if (prefab)
+                        {
+                            effData.effects.push_back(prefab);
+
+                            // Validate name matching
+                            if (!strstr(prefab->GetName(), name))
+                            {
+                                CStr warning = "Warning: multieffect child names doesn't match for parent name. For effect " + CStr(name);
+                                M3D_LOG_INFO(warning);
+                            }
+                        }
+
+                        childNode->GetNextSibling(childNode, "Node");
+                    }
+
+                    M3D_ASSERT(!effData.effects.empty());
+
+                    m_effectsFactory.push_back(effData);
+                    fxNames.push_back(CStr(name));
+                }
+                else
+                {
+                    // Single effect prefab
+                    m3d::SgNode* prefab = ReadPrefab(prefabXml, prefabsNode);
+                    if (prefab)
+                    {
+                        m3d::CWorld::EffectsData effData;
+                        effData.onlyOne = true;
+                        effData.effect = prefab;
+
+                        m_effectsFactory.push_back(effData);
+                        fxNames.push_back(prefab->GetName());
+                    }
+                }
+
+                prefabsNode->GetNextSibling(prefabsNode, "Node");
+            }
+        }
+
+        // Rebuild FX remap table
+        fxRemap.clear();
+        for (unsigned int i = 0; i < fxNames.size(); ++i)
+        {
+            fxRemap[fxNames[i]] = i;
+        }
+
+        return 1;
     }
 
     SgNode* CWorld::CreatePrefabsNode(int)
@@ -392,9 +524,70 @@ namespace m3d
         return m_weatherManager.GetFogReduceFactorFromWeather();
     }
 
-    SgNode* CWorld::ReadPrefab(ref_ptr<cmn::XmlFile>, ref_ptr<cmn::XmlNode>)
+    SgNode* CWorld::ReadPrefab(ref_ptr<cmn::XmlFile> file, ref_ptr<cmn::XmlNode> pnode)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+
+        // Get node attributes
+        const char* name = pnode->GetAttribute("name");
+        const char* className = pnode->GetAttribute("class");
+
+        // Create new node instance
+        m3d::SgNode* loader = dynamic_cast<m3d::SgNode*>(m3d::g_Kernel->New(className));
+
+        // Try to load from XML
+        if (loader->ReadFromXmlNode(file, pnode) &&
+            loader->ReadFromXmlNodeAfterAdd(file, pnode))
+        {
+            // Successfully loaded - process the node hierarchy
+            m3d::SceneGraph* graph = loader->GetGraph();
+            std::set<m3d::SgNode*>& thinkList = graph->m_thinkList;
+
+            // Remove loader from think list temporarily
+            thinkList.erase(loader);
+
+            // Process node hierarchy using a stack
+            std::vector<m3d::Object*> stack;
+            stack.push_back(loader);
+
+            while (!stack.empty())
+            {
+                m3d::Object* current = stack.back();
+                stack.pop_back();
+
+                // Process children
+                m3d::SgNode* child = static_cast<m3d::SgNode*>(current->GetFirstChild());
+                while (child)
+                {
+                    // Remove child from think list
+                    auto range = thinkList.equal_range(child);
+                    thinkList.erase(range.first, range.second);
+
+                    // If this child has children, add to stack for processing
+                    if (child->GetFirstChild())
+                    {
+                        stack.push_back(child);
+                    }
+
+                    child = static_cast<m3d::SgNode*>(child->GetNextSibling());
+                }
+            }
+        }
+        else
+        {
+            CStr errorMsg = "Error: Couldn't load prefab '" + CStr(name) +
+                "'. Check if you have child nodes with duplicate names.";
+
+            M3D_LOG_ERR(errorMsg);
+
+            // Remove the failed node from the scene graph
+            GetGraph().RemoveNode(loader);
+
+            return nullptr;
+        }
+
+        return loader;
+
     }
 
     bool CWorld::LoadWorld(CStr const&)
