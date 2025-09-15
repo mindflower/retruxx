@@ -25,7 +25,44 @@ namespace m3d
 
     ParticlesList::ParticlesList() : m_TLM(0x1F4)
     {
-        throw std::logic_error("Not implemented");
+        this->m_renderCalled = 0;
+        this->m_updateCalled = 0;
+        this->m_numParticles = 0;
+        this->m_particles = 0;
+        this->m_maxParticles = 200;
+        this->m_time = 0.0;
+
+        memset(&this->m_curXFormToWorld, 0, sizeof(this->m_curXFormToWorld));
+        this->m_curXFormToWorld._44 = 1.0;
+        this->m_curXFormToWorld._33 = 1.0;
+        this->m_curXFormToWorld._22 = 1.0;
+        this->m_curXFormToWorld._11 = 1.0;
+        this->m_meshEmitterVerts = 0;
+        this->m_numMeshEmitterVerts = 0;
+        this->m_rotvel.y = 0LL;
+        this->m_rotvel.x = 0.0;
+        this->m_rotaccel.y = 0LL;
+        this->m_rotaccel.x = 0.0;
+        this->m_vel.y = 0LL;
+        this->m_vel.x = 0.0;
+        this->m_rotvel.y = 0LL;
+        this->m_rotvel.x = 0.0;
+        this->m_accel.y = 0LL;
+        this->m_accel.x = 0.0;
+        this->m_rotaccel.y = 0LL;
+        this->m_rotaccel.x = 0.0;
+        this->m_origin.y = 0LL;
+        this->m_origin.x = 0.0;
+        this->m_worldVel.y = 0LL;
+        this->m_worldVel.x = 0.0;
+        this->m_skinIb = 0;
+        this->m_numIb = 0;
+        this->m_numSkinMesh = 0;
+        this->m_meshAutoEmitted = 0;
+        this->m_spriteAngle = 0.0;
+        this->m_RandShader = 0.0;
+        this->m_PhaseTime = 0.0;
+        this->m_start1 = 0.0;
     }
 
     void ParticlesList::SetAutoMeshEmitterPoints(int, int, float, CVector, CVector)

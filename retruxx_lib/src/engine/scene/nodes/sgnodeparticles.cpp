@@ -1,5 +1,8 @@
 #include <stdexcept>
 #include <scene/nodes/sgnodeparticles.h>
+#include <m3dapp.h>
+#include "scene/servers/dataserver.h"
+#include <scene/servers/serverparticles.h>
 
 namespace m3d
 {
@@ -13,7 +16,7 @@ namespace m3d
 
     Object* SgParticlesNode::CreateObject()
     {
-        throw retruxx::logic_error("Not implemented");
+        return new SgParticlesNode;
     }
 
     Class* SgParticlesNode::GetBaseClass()
@@ -51,9 +54,21 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgParticlesNode::GetProperty(unsigned, void*) const
+    int SgParticlesNode::GetProperty(unsigned propId, void* property) const
     {
-        throw retruxx::logic_error("Not implemented");
+        if (SgNode::GetProperty(propId, property))
+            return 1;
+        if (propId == 4360)
+        {
+            *(int*)property = this->m_srvId;
+            return 1;
+        }
+        if (propId == 9472)
+        {
+            *(int*)property = this->m_numMesh;
+            return 1;
+        }
+        return 0;
     }
 
     int SgParticlesNode::GetPropertiesList(retruxx::set<unsigned, retruxx::less<unsigned>>&) const
@@ -61,9 +76,46 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgParticlesNode::SetProperty(unsigned, void*)
+    int SgParticlesNode::SetProperty(unsigned propId, void* property)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (SgNode::SetProperty(propId, property))
+            return 1;
+
+        if (propId == 4360)
+        {
+            this->m_srvId = *static_cast<int*>(property);
+            GetServer()->UnregisterNode(this);
+            GetServer()->RegisterNode(this);
+            return 1;
+        }
+        if (propId == 9472)
+        {
+            this->m_numMesh = *static_cast<int*>(property);
+            GetServer()->UnregisterNode(this);
+            GetServer()->RegisterNode(this);
+            return 1;
+        }
+        if (propId == 9473)
+        {
+            auto v7 = dynamic_cast<m3d::ParticlesServer*>(this->GetServer());
+            v7->AddParticle(this, static_cast<CVector*>(property));
+            return 0;
+        }
+        else if (propId == 9475)
+        {
+            auto v8 = dynamic_cast<m3d::ParticlesServer*>(this->GetServer());
+            v8->AddParticles(this, static_cast<const retruxx::vector<CVector>*>(property));
+            return 0;
+        }
+        else
+        {
+            if (propId == 9474)
+            {
+                auto v9 = dynamic_cast<m3d::ParticlesServer*>(this->GetServer());
+                v9->MoveParticles(this, static_cast<const retruxx::vector<CVector>*>(property));
+            }
+            return 0;
+        }
     }
 
     void SgParticlesNode::Restart()
@@ -73,7 +125,7 @@ namespace m3d
 
     DataServer* SgParticlesNode::GetServer() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return &M3D_APP->GetParticlesServer();
     }
 
     int SgParticlesNode::Render(SgNodeRenderFlags, void*, int, int)
@@ -98,7 +150,10 @@ namespace m3d
 
     SgParticlesNode::SgParticlesNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_numMesh = -1;
+        this->m_Parts0Times = 0;
+        this->m_lastTimeUpdated = -1000;
+        RitualInConstructor(RITUAL_THINK_AND_REGISTERED_NODE);
     }
 
     void SgParticlesNode::UpdateOwnBoundingBox()

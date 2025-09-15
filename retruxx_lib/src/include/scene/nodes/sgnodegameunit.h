@@ -5,20 +5,16 @@ namespace m3d
 {
     class SgGameUnitNode : public m3d::SgAnimatedModelNode
     {
-    public:
-        static Object* CreateObject();
-        static Class* GetBaseClass();
-
-    public:
-        virtual Class* GetClass() const;
-        virtual Object* Clone();
-
     protected:
-        virtual ~SgGameUnitNode();
-        SgGameUnitNode(m3d::SgGameUnitNode const&);
         SgGameUnitNode();
+        SgGameUnitNode(const m3d::SgGameUnitNode& node);
+        virtual  ~SgGameUnitNode() override /* 0x00 */;
 
     public:
-        RT_CLASS_DECLARE(SgGameUnitNode);
-    };
+        virtual m3d::Object* Clone() override /* 0x04 */;
+        static m3d::Object* __fastcall CreateObject();
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        static m3d::Class m_classSgGameUnitNode;
+    }; /* size: 0x0230 */;
 }

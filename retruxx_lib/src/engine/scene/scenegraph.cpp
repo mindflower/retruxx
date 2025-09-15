@@ -503,9 +503,9 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SceneGraph::LinkThinkNode(SgNode*)
+    void SceneGraph::LinkThinkNode(SgNode* toThink)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_thinkList.insert(toThink);
     }
 
     void SceneGraph::DeleteFromUpdateXFormList(SgNode*)

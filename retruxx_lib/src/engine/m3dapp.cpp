@@ -2133,7 +2133,7 @@ namespace m3d
 
     DataServer& Application::GetParticlesServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        return *m_serverParticles;
     }
 
     bool Application::bIsMousePointing() const

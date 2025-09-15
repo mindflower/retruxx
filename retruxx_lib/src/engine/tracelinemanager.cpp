@@ -15,14 +15,18 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void TraceLineManager::SetTransparentBody(m3d::SgNode*)
+    void TraceLineManager::SetTransparentBody(m3d::SgNode* n)
     {
-        throw std::logic_error("Not implemented");
+        this->m_presentNode = n;
     }
 
-    TraceLineManager::TraceLineManager(unsigned)
+    TraceLineManager::TraceLineManager(unsigned Dt)
     {
-        throw std::logic_error("Not implemented");
+        this->m_LastTimeUpdated = 0;
+        this->m_Dt = Dt;
+        this->m_LastVerdict = 0;
+        this->m_exceptionIds = 0;
+        this->m_presentNode = 0;
     }
 
     void TraceLineManager::InitTraceLineRay(bool create)

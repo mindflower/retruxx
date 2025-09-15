@@ -59,6 +59,7 @@ namespace retruxx
 #include <unordered_map>
 #include <stdexcept>
 #include <string>
+#include <stack>
 
 namespace retruxx
 {
@@ -106,6 +107,9 @@ namespace retruxx
 
     template<typename... Args>
     struct binary_function {};
+
+    template<typename... Args>
+    using stack = std::stack<Args...>;
 }
 
 #endif //RETRUXX_DLL

@@ -8,6 +8,7 @@
 #include "client.h"
 #include "world.h"
 #include "core/ini.h"
+#include "scene/servers/dataserver.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNode, GetOrigin)
 {
@@ -45,7 +46,7 @@ namespace m3d
 
     CMatrix const& SgNode::GetCurrentMatrix() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_currentXForm;
     }
 
     int SgNode::GetPrevThinkTime() const
@@ -143,9 +144,49 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgNode::GetProperty(unsigned, void*) const
+    int SgNode::GetProperty(unsigned propId, void* prop) const
     {
-        throw retruxx::logic_error("Not implemented");
+        if (propId >= 3)
+        {
+            if (propId == 4360)
+            {
+                return 0;
+            }
+            else
+            {
+                auto v4 = propId - 4352;
+                if ((int)(propId - 4352) < 0 || v4 >= 10)
+                {
+                    if (propId == 4096)
+                    {
+                        if (m_debugMsg.empty())
+                        {
+                            *(char*)prop = 0;
+                            return 1;
+                        }
+                        else
+                        {
+                            strcpy((char*)prop, m_debugMsg.c_str());
+                            return 1;
+                        }
+                    }
+                    else
+                    {
+                        return Object::GetProperty(propId, prop) != 0;
+                    }
+                }
+                else
+                {
+                    *(int*)prop = this->m_props[v4];
+                    return 1;
+                }
+            }
+        }
+        else
+        {
+            *(int*)prop = this->m_properties[propId];
+            return 1;
+        }
     }
 
     SceneGraph* SgNode::GetGraph()
@@ -220,9 +261,28 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgNode::SetProperty(unsigned, void*)
+    int SgNode::SetProperty(unsigned propId, void* prop)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!Object::SetProperty(propId, prop))
+        {
+            if (propId == 4360)
+                return 0;
+            if (propId == 4096)
+            {
+                this->m_debugMsg = (char*)prop;
+                return 1;
+            }
+            auto v6 = propId - 4352;
+            if ((int)(propId - 4352) >= 0 && v6 < 10)
+            {
+                this->m_props[v6] = *(int*)prop;
+                return 1;
+            }
+            if (propId >= 3)
+                return 0;
+            this->m_properties[propId] = *(int*)prop;
+        }
+        return 1;
     }
 
     float SgNode::GetBoundingRadius() const
@@ -309,9 +369,16 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SgNode::RitualInConstructor(Ritual)
+    void SgNode::RitualInConstructor(Ritual rt)
     {
-        throw retruxx::logic_error("Not implemented");
+        if ((rt & 2) != 0)
+        {
+            GetServer()->RegisterNode(this);
+        }
+        if ((rt & 1) != 0)
+        {
+            m3d::pClient->GetWorld().GetGraph().LinkThinkNode(this);
+        }
     }
 
     SgNode::~SgNode()

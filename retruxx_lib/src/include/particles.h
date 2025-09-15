@@ -54,34 +54,35 @@ namespace m3d
     class ParticlesList
     {
     public:
-        ~ParticlesList();
+        ParticlesList(const m3d::ParticlesList&);
         ParticlesList();
-        void SetAutoMeshEmitterPoints(int, int, float, CVector, CVector);
-        void SetMeshEmitterPoints(CMatrix**, int, void**, int*, std::vector<rend::VertexType>&, std::vector<unsigned int>&, int);
-        void Step(float);
-        void SetMeshEmitterInds(int**, int*);
-
-    private:
-        unsigned int m_maxParticles;
-        unsigned int m_numParticles;
-        Particle* m_particles;
+        ~ParticlesList();
+        void SetMeshEmitterPoints(CMatrix** mat, int numMeshes, void** verts, int* numVerts, std::vector<enum m3d::rend::VertexType, std::allocator<enum m3d::rend::VertexType> >& VertexTypes, std::vector<unsigned int, std::allocator<unsigned int> >& VertexTypeSizes, int numSkinMesh);
+        void SetMeshEmitterInds(int** inds, int* numinds);
+        void SetAutoMeshEmitterPoints(int mode, int numVerts, float radius, CVector point1, CVector point2);
+        void SetCurrentXForm(const CMatrix&);
+        void Step(float dt);
+        /* 0x0000 */ unsigned int m_maxParticles;
+        /* 0x0004 */ unsigned int m_numParticles;
+        /* 0x0008 */ m3d::Particle* m_particles;
         CMatrix m_curXFormToWorld;
-        float m_time;
-        float m_spriteAngle;
-        bool m_meshAutoEmitted;
-        bool m_renderCalled;
-        bool m_updateCalled;
-        CMatrix** m_local;
-        void** m_meshEmitterVerts;
-        std::vector<rend::VertexType> m_VertexTypes;
-        std::vector<unsigned int> m_VertexTypeSizes;
-        int** m_meshEmitterInds;
-        int* m_numMeshEmitterVerts;
-        int* m_numMeshEmitterInds;
-        int m_numMeshes;
-        int m_numSkinMesh;
-        rend::IbHandle* m_skinIb;
-        unsigned int m_numIb;
+        /* 0x004c */ float m_time;
+        /* 0x0050 */ float m_spriteAngle;
+        /* 0x0054 */ bool m_meshAutoEmitted;
+        /* 0x0055 */ bool m_renderCalled;
+        /* 0x0056 */ bool m_updateCalled;
+        /* 0x0057 */ char Padding_33;
+        /* 0x0058 */ CMatrix** m_local;
+        /* 0x005c */ void** m_meshEmitterVerts;
+        std::vector<enum m3d::rend::VertexType, std::allocator<enum m3d::rend::VertexType> > m_VertexTypes;
+        std::vector<unsigned int, std::allocator<unsigned int> > m_VertexTypeSizes;
+        /* 0x0080 */ int** m_meshEmitterInds;
+        /* 0x0084 */ int* m_numMeshEmitterVerts;
+        /* 0x0088 */ int* m_numMeshEmitterInds;
+        /* 0x008c */ int m_numMeshes;
+        /* 0x0090 */ int m_numSkinMesh;
+        /* 0x0094 */ m3d::rend::IbHandle* m_skinIb;
+        /* 0x0098 */ unsigned int m_numIb;
         CVector m_vel;
         CVector m_accel;
         CVector m_origin;
@@ -89,13 +90,13 @@ namespace m3d
         CVector m_mrotvel;
         CVector m_rotaccel;
         CVector m_worldVel;
-        float m_RandShader;
-        float m_PhaseTime;
-        float m_start1;
+        /* 0x00f0 */ float m_RandShader;
+        /* 0x00f4 */ float m_PhaseTime;
+        /* 0x00f8 */ float m_start1;
         CVector m_point2Max;
-        TraceLineManager m_TLM;
-        float m_maxSize;
-    };
+        m3d::TraceLineManager m_TLM;
+        /* 0x011c */ float m_maxSize;
+    }; /* size: 0x0120 */
 
     class ParticleSystem
     {
