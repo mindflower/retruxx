@@ -1,6 +1,23 @@
 #pragma once
 #include "DataServer.h"
 
+#include "poolmanager.h"
+#include "particles.h"
+
+struct PsInfoForNode
+{
+    /* 0x0000 */ m3d::ParticlesList* m_list = nullptr;
+    /* 0x0004 */ m3d::SgNode* m_nodeForMesh = nullptr;
+    /* 0x0008 */ m3d::DataServer* m_serverForMesh = nullptr;
+    /* 0x000c */ int m_itemForMesh = 0;
+    /* 0x0010 */ int m_numMesh = 0;
+}; /* size: 0x0014 */
+
+struct ParticleBases
+{
+    /* 0x0000 */ m3d::ParticleBase AllPB[15];
+}; /* size: 0x0618 */
+
 namespace m3d
 {
     class Profiler;
@@ -42,4 +59,9 @@ namespace m3d
     }; /* size: 0x0050 */
 
     static_assert(sizeof(ParticlesServer) == 0x0050);
+
+    inline PoolManager<PsInfoForNode> Info_PoolManager(0);
+    inline PoolManager<m3d::ParticlesList> PL_PoolManager(0);
+    inline PoolManager<m3d::Particle> ParticlesPool(0);
+    inline PoolManager<ParticleBases> TrailsPool(0);
 }

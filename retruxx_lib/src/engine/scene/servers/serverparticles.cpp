@@ -5,18 +5,6 @@
 #include <poolmanager.h>
 #include <scene/nodes/sgnodegameunit.h>
 
-struct PsInfoForNode
-{
-    /* 0x0000 */ m3d::ParticlesList* m_list = nullptr;
-    /* 0x0004 */ m3d::SgNode* m_nodeForMesh = nullptr;
-    /* 0x0008 */ m3d::DataServer* m_serverForMesh = nullptr;
-    /* 0x000c */ int m_itemForMesh = 0;
-    /* 0x0010 */ int m_numMesh = 0;
-}; /* size: 0x0014 */
-
-m3d::PoolManager<PsInfoForNode> Info_PoolManager(0);
-m3d::PoolManager<m3d::ParticlesList> PL_PoolManager(0);
-
 namespace m3d
 {
     struct PropInternalGetMeshPoints
@@ -117,9 +105,29 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void ParticlesServer::UnregisterNode(m3d::SgNode*)
+    void ParticlesServer::UnregisterNode(m3d::SgNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        PsInfoForNode* info = nullptr;
+        node->GetProperty(1u, &info);
+        if (info->m_list->m_meshEmitterVerts)
+        {
+            m3d::PropInternalGetMeshPoints prop;
+            prop.m_node = info->m_nodeForMesh;
+            prop.m_numMesh = info->m_numMesh;
+            prop.m_verts = info->m_list->m_meshEmitterVerts;
+            prop.m_numVerts = info->m_list->m_numMeshEmitterVerts;
+            prop.m_indxs = (unsigned short**)info->m_list->m_meshEmitterInds;
+            prop.m_numIndxs = info->m_list->m_numMeshEmitterInds;
+            prop.m_localmatr = info->m_list->m_local;
+            if (info->m_serverForMesh)
+            {
+                info->m_serverForMesh->SetItemProperty(info->m_itemForMesh, 16392, &prop);
+            }
+        }
+
+        PL_PoolManager.Delete(info->m_list);
+        Info_PoolManager.Delete(info);
+        node->SetProperty(1u, &info);
     }
 
     void ParticlesServer::AddParticle(m3d::SgNode*, CVector const*)

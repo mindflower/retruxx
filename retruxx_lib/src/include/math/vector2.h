@@ -1,21 +1,22 @@
 #pragma once
 
-class CVector2
+struct CVector2
 {
-public:
-    CVector2(float, float);
+    /* 0x0000 */ float x = 0.0;
+    /* 0x0004 */ float y = 0.0;
+    CVector2(const CVector2& vv);
+    CVector2(float xx, float yy);
     CVector2();
-    CVector2(CVector2 const&);
+    void zero();
+    void one();
+    CVector2 normalize() const;
+    operator const float* () const;
     operator float* ();
     float length() const;
-    CVector2& operator-=(CVector2 const&);
-    CVector2& operator*=(float);
     float lengthSq() const;
-    void zero();
+    CVector2& operator-=(const CVector2& a);
+    CVector2& operator+=(const CVector2&);
+    CVector2& operator*=(float v);
+    CVector2& operator/=(float);
     float randomValue() const;
-    CVector2 normalize() const;
-
-public:
-    float x = 0.0;
-    float y = 0.0;
-};
+}; /* size: 0x0008 */

@@ -159,7 +159,6 @@ namespace m3d
 
     void DataServer::RegisterNode(SgNode*)
     {
-        throw std::logic_error("Not implemented");
     }
 
     void DataServer::Invalidate()

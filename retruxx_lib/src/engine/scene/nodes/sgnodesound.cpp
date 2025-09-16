@@ -1,5 +1,10 @@
 #include <stdexcept>
 #include <scene/nodes/sgnodesound.h>
+#include <m3dapp.h>
+#include <core/ini.h>
+#include "scene/servers/dataserver.h"
+#include <core/kernel.h>
+#include <config.h>
 
 namespace m3d
 {
@@ -9,7 +14,7 @@ namespace m3d
 
     Object* SgSoundSourceNode::CreateObject()
     {
-        throw retruxx::logic_error("Not implemented");
+        return new SgSoundSourceNode;
     }
 
     Class* SgSoundSourceNode::GetBaseClass()
@@ -22,14 +27,22 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgSoundSourceNode::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int SgSoundSourceNode::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto result = SgNode::ReadFromXmlNode(file, node);
+        if (result)
+        {
+            int looped = 1;
+            m3d::SafeIntAttrib(looped, node, "looped");
+            this->SetProperty(9728u, &looped);
+            return 1;
+        }
+        return result;
     }
 
     DataServer* SgSoundSourceNode::GetServer() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return &m3d::Application::g_pApp->GetSoundServer();
     }
 
     int SgSoundSourceNode::GetPropertiesList(retruxx::set<unsigned>&) const
@@ -39,7 +52,7 @@ namespace m3d
 
     Class* SgSoundSourceNode::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgSoundSourceNode);
     }
 
     int SgSoundSourceNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -62,14 +75,49 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgSoundSourceNode::GetProperty(unsigned, void*) const
+    int SgSoundSourceNode::GetProperty(unsigned propId, void* property) const
     {
-        throw retruxx::logic_error("Not implemented");
+        if (SgNode::GetProperty(propId, property))
+            return 1;
+
+        if (propId == 4360)
+        {
+            *(int*)property = this->m_srvId;
+            return 1;
+        }
+        int v5 = propId - 9728;
+        if ((int)(propId - 9728) >= 0 && v5 < 6)
+            *(int*)property = this->m_props[v5];
+
+        return 0;
     }
 
-    int SgSoundSourceNode::SetProperty(unsigned, void*)
+    int SgSoundSourceNode::SetProperty(unsigned propId, void* property)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (SgNode::SetProperty(propId, property))
+            return 1;
+        if (propId == 4360)
+        {
+            GetServer()->UnregisterNode(this);
+            m_srvId = *(int*)property;
+            GetServer()->RegisterNode(this);
+            return 1;
+        }
+
+        auto v8 = propId - 9728;
+        if ((int)(propId - 9728) >= 0 && v8 < 6)
+            this->m_props[v8] = *(int*)property;
+        if (propId != 9732)
+        {
+            if (propId != 9733)
+                return 0;
+            _InternalRender();
+            return 1;
+        }
+
+        if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+            m3d::Application::g_pApp->m_sound->SetChannelFrequency(this->m_props[1], (int)(float)((float)(int)this->m_props[3] * *(float*)property));
+        return 1;
     }
 
     void SgSoundSourceNode::Restart()
@@ -89,7 +137,15 @@ namespace m3d
 
     SgSoundSourceNode::SgSoundSourceNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_currentSoundNum = 0;
+        this->m_framesPassed = 0;
+        RitualInConstructor(RITUAL_REGISTERED_NODE);
+        this->m_props[2] = 0;
+        this->m_props[3] = 0;
+        this->m_props[0] = 1;
+        this->m_props[4] = 1;
+        this->m_props[5] = 1;
+        this->m_props[1] = -1;
     }
 
     SgSoundSourceNode::SgSoundSourceNode(SgSoundSourceNode const&)

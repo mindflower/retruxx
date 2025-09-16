@@ -1260,7 +1260,7 @@ namespace m3d
 
     DataServer& Application::GetSoundServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        return *m_serverSound;
     }
 
     void Application::texGenProcess(IGeneratedTexture*)
@@ -1860,7 +1860,7 @@ namespace m3d
 
     DataServer& Application::GetLightsServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        return *m_serverLights;
     }
 
     int Application::SetFont(CStr const&, float, unsigned, unsigned)

@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <scene/nodes/sgnodepointlightsource.h>
+#include <m3dapp.h>
 
 namespace m3d
 {
@@ -14,7 +15,7 @@ namespace m3d
 
     Object* SgPointLightSourceNode::CreateObject()
     {
-        throw retruxx::logic_error("Not implemented");
+        return new SgPointLightSourceNode;
     }
 
     Object* SgPointLightSourceNode::Clone()
@@ -24,7 +25,7 @@ namespace m3d
 
     DataServer* SgPointLightSourceNode::GetServer() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return &M3D_APP->GetLightsServer();
     }
 
     int SgPointLightSourceNode::GetProperty(unsigned, void*) const
@@ -49,7 +50,7 @@ namespace m3d
 
     Class* SgPointLightSourceNode::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgPointLightSourceNode);
     }
 
     SgPointLightSourceNode::~SgPointLightSourceNode()
@@ -59,7 +60,10 @@ namespace m3d
 
     SgPointLightSourceNode::SgPointLightSourceNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        *(float*)&this->m_props[1] = 10.0;
+        this->m_props[0] = -1;
+        this->m_props[2] = -1;
+        RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
 
     SgPointLightSourceNode::SgPointLightSourceNode(SgPointLightSourceNode const&)

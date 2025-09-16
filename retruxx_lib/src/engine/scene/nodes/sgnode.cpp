@@ -9,6 +9,8 @@
 #include "world.h"
 #include "core/ini.h"
 #include "scene/servers/dataserver.h"
+#include <core/log.h>
+#include "scene/nodes/sgnodesound.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNode, GetOrigin)
 {
@@ -216,9 +218,9 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgNode::AddChild(Object*)
+    int SgNode::AddChild(Object* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        return m3d::Object::AddChild(node) != 0;
     }
 
     Object* SgNode::Clone()
@@ -226,9 +228,34 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgNode::ReadFromXmlNodeAfterAdd(cmn::XmlFile*, cmn::XmlNode*)
+    int SgNode::ReadFromXmlNodeAfterAdd(cmn::XmlFile* file, cmn::XmlNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto idAttr = node->GetAttribute("id");
+        if (!idAttr)
+        {
+            return 1;
+        }
+
+        auto* server = GetServer();
+        if (!server)
+        {
+            m_srvId = atoi(idAttr);
+            return 1;
+        }
+
+        // TODO: check this 0 models
+        auto item = server->GetItemByName(idAttr, true);
+        if (item == -1)
+        {
+            item = 0;
+            if (!IsKindOf(&m3d::SgSoundSourceNode::m_classSgSoundSourceNode))
+            {
+                M3D_LOG_INFO("ReadFromXmlNode: GetItemByName for name = " + CStr(idAttr) + " failed for node " + CStr(GetName()) + ". Taking a 0 model.");
+            }
+        }
+        this->SetProperty(4360u, &item);
+        return 1;
+
     }
 
     TransparencyParams& SgNode::GetTransparencyParams()

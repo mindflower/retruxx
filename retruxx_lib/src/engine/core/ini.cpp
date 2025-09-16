@@ -273,7 +273,7 @@ bool XmlFileImpl::GetFirstChild(m3d::cmn::XmlNode* writeTo, char const* wantValu
 {
     auto child = wantValue ? FirstChild(wantValue) : FirstChild();
     auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
-    *writeToCasted = XmlNodeImpl(child);
+    writeToCasted->m_node = child;
     return child != nullptr;
 }
 
@@ -576,7 +576,7 @@ XmlNodeImpl::XmlNodeImpl(m3d::cmn::XmlNodeType type, char const* nodeName)
     }
     default:
     {
-        m_nodeOwned = true;
+        m_nodeOwned = false;
         break;
     }
     }
@@ -627,7 +627,7 @@ bool XmlNodeImpl::GetNextSibling(m3d::cmn::XmlNode* writeTo, char const* wantVal
 {
     auto sibling = wantValue ? m_node->NextSibling(wantValue) : m_node->NextSibling();
     auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
-    *writeToCasted = XmlNodeImpl(sibling);
+    writeToCasted->m_node = sibling;
     return sibling != nullptr;
 }
 
@@ -665,7 +665,7 @@ bool XmlNodeImpl::GetFirstChild(m3d::cmn::XmlNode* writeTo, char const* wantValu
 {
     auto child = wantValue ? m_node->FirstChild(wantValue) : m_node->FirstChild();
     auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
-    *writeToCasted = XmlNodeImpl(child);
+    writeToCasted->m_node = child;
     return child != nullptr;
 }
 

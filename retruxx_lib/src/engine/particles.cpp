@@ -1,5 +1,6 @@
 #include "particles.h"
 #include <m3dapp.h>
+#include <scene/servers/serverparticles.h>
 
 namespace m3d
 {
@@ -20,7 +21,24 @@ namespace m3d
 
     ParticlesList::~ParticlesList()
     {
-        throw std::logic_error("Not implemented");
+        for (auto particle = m_particles; particle != nullptr; particle = particle->m_next)
+        {
+            ParticlesPool.Delete(particle);
+        }
+        if (this->m_skinIb)
+        {
+            for (unsigned i = 0; i < this->m_numIb; ++i)
+            {
+                if (m_skinIb[i].IsValid())
+                    m3d::Application::g_pApp->m_renderer->ReleaseIb(m_skinIb[i]);
+            }
+            delete[] m_skinIb;
+        }
+        if (m_meshAutoEmitted)
+        {
+            delete[] m_numMeshEmitterVerts;
+            delete[] m_meshEmitterVerts;
+        }
     }
 
     ParticlesList::ParticlesList() : m_TLM(0x1F4)

@@ -7,7 +7,7 @@ namespace m3d
 {
     TraceLineManager::~TraceLineManager()
     {
-        throw std::logic_error("Not implemented");
+        delete m_exceptionIds;
     }
 
     bool TraceLineManager::TraceLine(CVector const&, CVector const&)

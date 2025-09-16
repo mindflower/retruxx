@@ -18,10 +18,8 @@ namespace m3d
     class AnimInfo;
     class AnimatedModel;
 
-    class ParticleBase
+    struct ParticleBase
     {
-
-    private:
         CVector m_locorigin;
         CVector m_origin;
         CVector m_rotvel;
@@ -29,27 +27,26 @@ namespace m3d
         CVector m_vel;
         CVector m_accel;
         CVector m_dir;
-        float m_size;
-        unsigned int m_curClr;
+        /* 0x0054 */ float m_size;
+        /* 0x0058 */ unsigned int m_curClr;
         CVector m_forigin;
-    };
+    }; /* size: 0x0068 */
 
-    class Particle : public ParticleBase
+    struct Particle : public m3d::ParticleBase
     {
-    public:
-        void Step(float);
+        m3d::ParticleBase m3d::ParticleBase;
+        /* 0x0068 */ int m_trailSize;
+        /* 0x006c */ m3d::ParticleBase* m_trail;
+        /* 0x0070 */ float m_time0;
+        /* 0x0074 */ float m_fade;
+        /* 0x0078 */ float m_ttl;
+        /* 0x007c */ m3d::rend::BlendMode m_blendMode;
+        /* 0x0080 */ m3d::Particle* m_next;
+        void Step(float dt);
+        Particle(const m3d::Particle&);
         Particle();
         ~Particle();
-
-    private:
-        int m_trailSize;
-        ParticleBase* m_trail;
-        float m_time0;
-        float m_fade;
-        float m_ttl;
-        rend::BlendMode m_blendMode;
-        Particle* m_next;
-    };
+    }; /* size: 0x0084 */
 
     class ParticlesList
     {

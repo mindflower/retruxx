@@ -3,6 +3,7 @@
 #include <m3dapp.h>
 #include "scene/servers/dataserver.h"
 #include <scene/servers/serverparticles.h>
+#include "core/ini.h"
 
 namespace m3d
 {
@@ -39,14 +40,21 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgParticlesNode::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int SgParticlesNode::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        int result = m3d::SgNode::ReadFromXmlNode(file, node);
+        if (result)
+        {
+            this->m_numMesh = -1;
+            m3d::SafeIntAttrib(m_numMesh, node, "psNumEmitterMesh");
+            return 1;
+        }
+        return result;
     }
 
     Class* SgParticlesNode::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return &m_classSgParticlesNode;
     }
 
     bool SgParticlesNode::IsFree() const

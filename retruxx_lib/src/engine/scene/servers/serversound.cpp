@@ -1,11 +1,20 @@
 #include <stdexcept>
 #include <scene/servers/serversound.h>
+#include <core/kernel.h>
+#include <config.h>
+#include <m3dapp.h>
 
 namespace m3d
 {
-    void Sound3DServer::UnregisterNode(m3d::SgNode*)
+    void Sound3DServer::UnregisterNode(m3d::SgNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        {
+            auto channel = -1;
+            node->GetProperty(9729u, &channel);
+            if (channel != -1)
+                m3d::Application::g_pApp->m_sound->StopChannel(channel);
+        }
     }
 
     int Sound3DServer::RemoveItem(int)
@@ -35,7 +44,6 @@ namespace m3d
 
     void Sound3DServer::RegisterNode(m3d::SgNode*)
     {
-        throw retruxx::logic_error("Not implemented");
     }
 
     int Sound3DServer::SaveAllLoadedEntities(char const*)

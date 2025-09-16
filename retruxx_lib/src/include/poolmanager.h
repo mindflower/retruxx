@@ -35,7 +35,18 @@ namespace m3d
         }
 
         T* GetFree();
-        void Delete(T*& pData);
+
+        void Delete(T*& pData)
+        {
+            if (pData)
+            {
+                auto block = (Block*)(pData);
+                Free.push(block->BlockNumber);
+                delete pData;
+                pData = nullptr;
+            }
+        }
+
         void SetFree(T*& pData);
         PoolManager(const PoolManager<T>&);
 

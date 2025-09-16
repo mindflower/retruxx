@@ -2,9 +2,9 @@
 
 struct CVector
 {
-    /* 0x0000 */ float x;
-    /* 0x0004 */ float y;
-    /* 0x0008 */ float z;
+    /* 0x0000 */ float x = 0.0;
+    /* 0x0004 */ float y = 0.0;
+    /* 0x0008 */ float z = 0.0;
 
     CVector(float* xx);
     CVector(float);
