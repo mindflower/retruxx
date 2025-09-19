@@ -215,7 +215,7 @@ namespace m3d
 
     Class* SgAnimatedModelNode::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgAnimatedModelNode);
     }
 
     SgAnimatedModelNode::~SgAnimatedModelNode()

@@ -19,6 +19,7 @@
 #include "file/filestream.h"
 #include "math/vector4.h"
 #include "client.h"
+#include <algorithm>
 
 namespace m3d
 {
@@ -50,9 +51,66 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::LinkNodeAndChildrenCollisionGeomsToCell(SgNode*)
+    void Landscape::LinkNodeAndChildrenCollisionGeomsToCell(SgNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+    
+        // Get OBB and convert to AABB bounds
+        auto obb = node->GetObb();
+        // Assuming Obb::GetBounds converts OBB to AABB
+        auto bounds = obb.GetBounds();
+
+        auto VISCELL_EDGE_LENGTH_8 = 128.0;
+        // Convert world coordinates to cell coordinates
+        int x0 = static_cast<int>(bounds.m_box[0] * (1.0f / VISCELL_EDGE_LENGTH_8));
+        int z0 = static_cast<int>(bounds.m_box[2] * (1.0f / VISCELL_EDGE_LENGTH_8));
+        int x1 = static_cast<int>(bounds.m_box[3] * (1.0f / VISCELL_EDGE_LENGTH_8));
+        int z1 = static_cast<int>(bounds.m_box[5] * (1.0f / VISCELL_EDGE_LENGTH_8));
+
+        int landSize = this->m_owner->m_level->land_size - 1;
+
+        // Clamp coordinates to valid range
+        x0 = std::clamp(x0, 0, landSize);
+        x1 = std::clamp(x1, 0, landSize);
+        z0 = std::clamp(z0, 0, landSize);
+        z1 = std::clamp(z1, 0, landSize);
+
+        // Check node properties
+        int PhysicBodyPtr = 0;
+        int isNodeHaveCollision = 0;
+        node->GetProperty(4356u, &PhysicBodyPtr);
+        node->GetProperty(4358u, &isNodeHaveCollision);
+
+        if (!PhysicBodyPtr || isNodeHaveCollision) {
+            // Link the main node
+            LinkNodeCollisionGeomsToCell(node, x0, x1, z0, z1);
+            UpdateNodeCollisionGeoms(node);
+
+            // Process children using iterative DFS
+            std::vector<m3d::Object*> stack;
+            stack.push_back(dynamic_cast<m3d::Object*>(node));
+
+            while (!stack.empty()) {
+                m3d::Object* current = stack.back();
+                stack.pop_back();
+
+                // Process all siblings of the current node
+                m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
+                while (sibling) {
+                    // Link the sibling node
+                    LinkNodeCollisionGeomsToCell(sibling, x0, x1, z0, z1);
+                    UpdateNodeCollisionGeoms(sibling);
+
+                    // If this sibling has children, add to stack for processing
+                    if (sibling->GetFirstChild()) {
+                        stack.push_back(sibling->GetFirstChild());
+                    }
+
+                    // Move to next sibling
+                    sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
+                }
+            }
+        }
     }
 
     float Landscape::GetHeightWithCollisions(float, float, bool) const

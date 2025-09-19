@@ -11,6 +11,8 @@
 #include "scene/servers/dataserver.h"
 #include <core/log.h>
 #include "scene/nodes/sgnodesound.h"
+#include "world.h"
+#include "level.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNode, GetOrigin)
 {
@@ -38,7 +40,17 @@ namespace m3d
 
     Obb SgNode::GetObb() const
     {
-        throw retruxx::logic_error("Not implemented");
+        CVector max;
+        CVector min;
+
+        max = *(CVector*)&this->m_boundingBox.m_box[3];
+        min.x = this->m_boundingBox.m_box[0];
+        min.y = this->m_boundingBox.m_box[1];
+        min.z = this->m_boundingBox.m_box[2];
+
+        Obb obb;
+        obb.Create(min, max, this->m_currentXForm, 1);
+        return obb;
     }
 
     CVector const& SgNode::GetOrigin() const
@@ -66,9 +78,11 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgNode::GetServerItemProperty(unsigned, void*) const
+    int SgNode::GetServerItemProperty(unsigned propId, void* property) const
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!GetServer() || this->m_srvId == -1)
+            return 0;
+        return GetServer()->GetItemProperty(this->m_srvId, propId, property);
     }
 
     bool SgNode::IsXFormUpdateNeeded() const
@@ -317,9 +331,31 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SgNode::GetVisCellBounds(PointBase<int>&, PointBase<int>&) const
+    void SgNode::GetVisCellBounds(PointBase<int>& p0, PointBase<int>& p1) const
     {
-        throw retruxx::logic_error("Not implemented");
+        auto v3 = 1.0 / 128.0;
+        p0.x = (int)(float)((float)(this->m_originWorldAbsForSphere.x - this->m_boundingRadius)
+            * (float)(1.0 / 128.0));
+        p0.y = (int)(float)((float)(this->m_originWorldAbsForSphere.z - this->m_boundingRadius) * v3);
+        p1.x = (int)(float)((float)(this->m_boundingRadius + this->m_originWorldAbsForSphere.x) * v3);
+        p1.y = (int)(float)((float)(this->m_boundingRadius + this->m_originWorldAbsForSphere.z) * v3);
+        auto v4 = m3d::pClient->GetWorld().m_level->land_size - 1;
+        if (p0.x < 0)
+            p0.x = 0;
+        if (p0.x > v4)
+            p0.x = v4;
+        if (p0.y < 0)
+            p0.y = 0;
+        if (p0.y > v4)
+            p0.y = v4;
+        if (p1.x < 0)
+            p1.x = 0;
+        if (p1.x > v4)
+            p1.x = v4;
+        if (p1.y < 0)
+            p1.y = 0;
+        if (p1.y > v4)
+            p1.y = v4;
     }
 
     float SgNode::GetContourWidth()

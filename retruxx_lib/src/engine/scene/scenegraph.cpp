@@ -1,6 +1,7 @@
 #define NOMINMAX
 #include <stdexcept>
 #include <scene/scenegraph.h>
+#include <algorithm>
 
 #include "config.h"
 #include "m3dapp.h"
@@ -31,9 +32,82 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SceneGraph::LinkNode(SgNode*)
+    void SceneGraph::LinkNode(SgNode* toLink)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        toLink->m_forGraph = new GraphItemsForSgNode;
+
+        PointBase<int> p0;
+        PointBase<int> p1;
+        toLink->GetVisCellBounds(p0, p1);
+        toLink->m_forGraph->m_cellsCoveredPoint0 = p0;
+        toLink->m_forGraph->m_cellsCoveredPoint1 = p1;
+
+        if (p0.x <= p1.x) {
+            int y = p0.y;
+            int v5 = p1.y;
+
+            for (int x = p0.x; x <= p1.x; x++) {
+                int j = y;
+                if (y <= v5) {
+                    do {
+                        int cellIndex = x + (j << 6);
+                        m3d::SceneGraph::CellItems& v7 = m_cellItems[cellIndex];
+                        v7.m_nodesLinkedDirect.AddObject(toLink);
+                        j++;
+                    } while (j <= v5);
+                }
+            }
+        }
+
+        auto v13 = m_owner->m_level->land_size - 1;
+        int modelCastShadow = 0;
+        toLink->GetServerItemProperty(0, &modelCastShadow);
+        if (modelCastShadow) {
+            int v35 = 0;
+            toLink->GetProperty(8721u, &v35);
+
+            if (v35) {
+                auto v15 = toLink->m_currentWorldOrigin.y;
+                auto x = toLink->m_currentWorldOrigin.x;
+                auto z = toLink->m_currentWorldOrigin.z;
+
+                Aabb box = toLink->m_boundingBox;
+
+                float v23 = (float)((float)(v15 + box.m_box[4]) - (float)(v15 + box.m_box[1])) * 1.3f;
+                float v24 = v23 + (z + box.m_box[5]);
+
+                int v25 = static_cast<int>((1.0f / VISCELL_EDGE_LENGTH_6) * ((z + box.m_box[2]) - v23));
+                int v26 = static_cast<int>((1.0f / VISCELL_EDGE_LENGTH_6) * ((x + box.m_box[0]) - v23));
+                int v27 = static_cast<int>((1.0f / VISCELL_EDGE_LENGTH_6) * (v23 + (x + box.m_box[3])));
+                int v28 = static_cast<int>((1.0f / VISCELL_EDGE_LENGTH_6) * v24);
+
+                int x0 = v26;
+                int z0 = v25;
+                int x1 = v27;
+                int z1 = v28;
+
+                // Clamp values to valid range
+                x0 = std::clamp(v26, 0, v13);
+                x1 = std::clamp(v27, 0, v13);
+                z0 = std::clamp(v25, 0, v13);
+                z1 = std::clamp(v28, 0, v13);
+
+                for (int xCoord = x0; xCoord <= x1; xCoord++) {
+                    for (int zCoord = z0; zCoord <= z1; zCoord++) {
+                        int cellIndex = 64 * zCoord + xCoord;
+                        m3d::SceneGraph::CellItems& cell = m_cellItems[cellIndex];
+
+                        // Insert into shadowing set
+                        auto result = cell.m_nodesShadowingDirect.insert(toLink);
+
+                        // Store the cell identifier (combining x and z coordinates)
+                        unsigned int cellId = (xCoord & 0xFFFF) | ((zCoord & 0xFFFF) << 16);
+                        toLink->m_forGraph->m_cellsShadowCovered.push_back(cellId);
+                    }
+                }
+            }
+        }
     }
 
     void SceneGraph::SortedCellsPrepare()
@@ -714,5 +788,11 @@ namespace m3d
 
         // Restore original frustum state
         frusta.m_enabled = clipSave;
+    }
+
+    void ObjectsContainer::AddObject(m3d::Object* obj)
+    {
+        auto clz = obj->GetClass();
+        m_objectsByClassIdx[clz->m_index].push_back(obj);
     }
 }

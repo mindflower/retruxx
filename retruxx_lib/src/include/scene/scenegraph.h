@@ -33,7 +33,7 @@ namespace m3d
     class ObjectsContainer
     {
     private:
-        /* 0x0000 */ retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*> > m_objectsByClassIdx[64];
+        /* 0x0000 */ retruxx::list<m3d::Object*> m_objectsByClassIdx[64];
 
     public:
         void AddObject(m3d::Object* obj);

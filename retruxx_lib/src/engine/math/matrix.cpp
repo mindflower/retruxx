@@ -128,9 +128,29 @@ void CMatrix::rotTranslate(Quaternion const&, CVector const&)
     throw std::logic_error("Not implemented");
 }
 
-void CMatrix::GetNormalizedBasis(CVector&, CVector&, CVector&) const
+void CMatrix::GetNormalizedBasis(CVector& x, CVector& y , CVector& z) const
 {
-    throw std::logic_error("Not implemented");
+    x.x = this->_11;
+    x.y = this->_21;
+    x.z = this->_31;
+    y.x = this->_12;
+    y.y = this->_22;
+    y.z = this->_32;
+    z.x = this->_13;
+    z.y = this->_23;
+    z.z = this->_33;
+    auto v4 = sqrt(x.x * x.x + x.y * x.y + x.z * x.z + 0.00000011920929);
+    x.x = 1.0 / v4 * x.x;
+    x.y = 1.0 / v4 * x.y;
+    x.z = 1.0 / v4 * x.z;
+    auto v5 = sqrt(y.x * y.x + y.y * y.y + y.z * y.z + 0.00000011920929);
+    y.x = 1.0 / v5 * y.x;
+    y.y = 1.0 / v5 * y.y;
+    y.z = 1.0 / v5 * y.z;
+    auto v6 = sqrt(z.x * z.x + z.y * z.y + z.z * z.z + 0.00000011920929);
+    z.x = 1.0 / v6 * z.x;
+    z.y = 1.0 / v6 * z.y;
+    z.z = 1.0 / v6 * z.z;
 }
 
 CVector CMatrix::vecMul(CVector const&) const
