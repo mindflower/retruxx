@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <scene/nodes/sgnodeprojector.h>
+#include <m3dapp.h>
 
 namespace m3d
 {
@@ -14,12 +15,12 @@ namespace m3d
 
     Object* SgProjectorNode::CreateObject()
     {
-        throw retruxx::logic_error("Not implemented");
+        return new SgProjectorNode;
     }
 
     Class* SgProjectorNode::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgProjectorNode);
     }
 
     int SgProjectorNode::Render(SgNodeRenderFlags, void*, int, int)
@@ -27,14 +28,25 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgProjectorNode::SetProperty(unsigned, void*)
+    int SgProjectorNode::SetProperty(unsigned propId, void* property)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (SgNode::SetProperty(propId, property))
+            return 1;
+
+        if (propId == 4360)
+        {
+            this->m_srvId = *(int*)property;
+            return 1;
+        }
+        auto v5 = propId - 10240;
+        if ((int)(propId - 10240) >= 0 && v5 < 2)
+            this->m_props[v5] = *(int*)property;
+        return 0;
     }
 
     DataServer* SgProjectorNode::GetServer() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return &M3D_APP->GetProjectorsServer();
     }
 
     int SgProjectorNode::GetProperty(unsigned, void*) const
@@ -69,6 +81,7 @@ namespace m3d
 
     SgProjectorNode::SgProjectorNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        *(float*)&this->m_props[1] = 10.0;
+        RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
 }

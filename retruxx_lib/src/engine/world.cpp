@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "weather/weather.h"
 #include <stdexcept>
 #include <world.h>
@@ -11,10 +12,13 @@
 #include "core/timer.h"
 #include "server/dynamicscene.h"
 #include "server/server.h"
+#include "server/playerpassmap.h"
+#include "server/obstacle.h"
 #include <ode/collision.h>
 #include <core/scoped_ptr.h>
 #include <file/fileserver.h>
 #include <file/filestream.h>
+
 
 namespace ai
 {
@@ -590,14 +594,235 @@ namespace m3d
 
     }
 
-    bool CWorld::LoadWorld(CStr const&)
+    bool CWorld::LoadWorld(CStr const& filename)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: check this!!!
+        M3D_LOG_INFO("LoadWorld begin...");
+
+        // Start timing
+        unsigned int startTime = M3D_KERNEL->GetTimer().GetCurTime();
+
+        // Read XML file
+        CStr err;
+        ref_ptr<m3d::cmn::XmlFile> xmlFile = m3d::ReadXmlFile(filename.c_str(), &err);
+        if (xmlFile)
+        {
+            // Log XML parsing time
+            CStr fileName("%%%% read/parse xml: ");
+
+            unsigned int parseTime = M3D_KERNEL->GetTimer().GetCurTime();
+            CStr timeStr(parseTime - startTime);
+            CStr name(fileName);
+            name += timeStr;
+
+            CStr logMsg(name);
+            M3D_LOG_INFO(logMsg);
+
+            // Get root node
+            ref_ptr<m3d::cmn::XmlNode> root = xmlFile->CreateNode();
+            xmlFile->GetFirstChild(root, "World");
+
+            // Get last saved ID if available
+            int lastId = 0;
+            SafeIntAttrib(lastId, root, "LastId");
+
+            // Load world data from XML
+            unsigned int loadStartTime = M3D_KERNEL->GetTimer().GetCurTime();
+
+            m3d::SgNode* rootNode = GetGraph().GetRootNode();
+            rootNode->ReadFromXmlNode(xmlFile, root);
+
+            // Log loading time
+            CStr loadTimeMsg("%%%% read from xml: ");
+            unsigned int loadEndTime = M3D_KERNEL->GetTimer().GetCurTime();
+
+            CStr loadTimeStr(loadEndTime - loadStartTime);
+            CStr loadMsg(loadTimeMsg);;
+            M3D_LOG_INFO(logMsg);
+
+            // Process static obstacles if enabled
+            unsigned int processStartTime = M3D_KERNEL->GetTimer().GetCurTime();
+
+            if (M3D_KERNEL->GetEngineCfg().m_ai_static_obstacles_enabled.GetB())
+            {
+                std::vector<m3d::SgNode*> stack;
+                stack.push_back(rootNode);
+
+                while (!stack.empty())
+                {
+                    m3d::SgNode* currentNode = stack.back();
+                    stack.pop_back();
+
+                    m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
+                    while (child)
+                    {
+                        char isObstacle = 1;
+                        if (child->GetProperty(8717u, &isObstacle))
+                        {
+                            child->UpdateXForm(0, 1);
+                            child->SetProperty(8717u, &isObstacle);
+                            m_landscape.LinkNodeObstacleToCells(child);
+                        }
+
+                        if (child->GetFirstChild())
+                        {
+                            stack.push_back(child);
+                        }
+
+                        child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
+                    }
+                }
+
+                LoadStaticObstacles();
+            }
+
+            // Load player pass map
+            ai::PlayerPassMap playerPassMap;
+            CStr pathSep("\\");
+            CStr levelPath(m_level->m_levelPath);
+            levelPath += pathSep;
+
+            CStr passMapPath(levelPath);
+            passMapPath += m_level->m_playerPassMapFileName;
+
+            playerPassMap.LoadFromBinaryFile(passMapPath);
+
+            // Process pass map
+            int tileSize = 2 * m_landscape.GetTileSize();
+            if (!playerPassMap.IsEmpty())
+            {
+                for (int j = 0; j < tileSize; ++j)
+                {
+                    for (int k = 0; k < tileSize; ++k)
+                    {
+                        if (!playerPassMap.GetValue(j, k))
+                        {
+                            PointBase<int> point(j, k);
+                            m_landscape.LinkPassMapCellToCollisionCell(point);
+                        }
+                    }
+                }
+            }
+
+            playerPassMap.Clear();
+
+            // Process scene graph nodes
+            m3d::SgNode* firstChild = dynamic_cast<m3d::SgNode*>(GetGraph().GetRootNode()->GetFirstChild());
+            m_lastId = 0;
+            int maxIdNode = 0;
+            int nodeCount = 0;
+
+            while (firstChild)
+            {
+                firstChild->UpdateXForm(0, 1);
+                m_sceneGraph.LinkNode(firstChild);
+                m_landscape.LinkNodeAndChildrenCollisionGeomsToCell(firstChild);
+
+                // Extract ID from node name
+                CStr nameStr(firstChild->GetName());
+                for (size_t m = 0; m < nameStr.length(); ++m)
+                {
+                    char c = nameStr[m];
+                    if (c < '0' || c > '9')
+                    {
+                        nameStr.del(m, 1);
+                        --m;
+                    }
+                }
+
+                int idNode = 0;
+                if (nameStr.length() > 0)
+                {
+                    int id;
+                    sscanf(nameStr.c_str(), "%d", &id);
+                    idNode = id;
+                }
+
+                if (idNode > maxIdNode)
+                    maxIdNode = idNode;
+
+                nodeCount++;
+                firstChild = dynamic_cast<m3d::SgNode*>(firstChild->GetNextSibling());
+            }
+
+            // Set last ID
+            int lastSavedId = lastId;
+            int maxId = std::max(nodeCount, std::max(lastSavedId, maxIdNode));
+            m_lastId = maxId;
+
+            // Log processing time
+
+            CStr processMsg("%%%% link nodes: ");
+            unsigned int processEndTime = M3D_KERNEL->GetTimer().GetCurTime();
+
+            CStr processTimeStr(processEndTime - processStartTime);
+            CStr finalMsg(processMsg);
+            finalMsg += processTimeStr;
+
+            CStr finalLogMsg(finalMsg);
+            M3D_LOG_INFO(finalLogMsg);
+
+            // Cleanup
+            return 1;
+        }
+        else
+        {
+            // Error handling
+            CStr errorMsg("LoadWorld: ");
+            errorMsg += err;
+
+            M3D_LOG_INFO(errorMsg);
+
+            return 0;
+        }
     }
 
     void CWorld::LoadStaticObstacles()
     {
-        throw retruxx::logic_error("Not implemented");
+        scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+        if (fileStream->Open(m_level->GetFullPathNameA(m_level->m_staticObstaclesFileName).c_str(), fs::IStream::OPEN_READ))
+        {
+            ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
+            if (xmlFile->Read(*fileStream))
+            {
+                fileStream->Close();
+                ref_ptr node = xmlFile->CreateNode();
+                xmlFile->GetFirstChild(node, "Boxes");
+                if (!node->IsEmpty())
+                {
+                    ref_ptr box = xmlFile->CreateNode();
+                    for (node->GetFirstChild(box, "Box"); !box->IsEmpty(); box->GetNextSibling(box, "Box"))
+                    {
+                        CStr buf;
+
+                        SafeStrAttrib(buf, node, "min");
+                        auto min = strToVec(buf);
+
+                        SafeStrAttrib(buf, node, "max");
+                        auto max = strToVec(buf);
+
+                        SafeStrAttrib(buf, node, "origin");
+                        auto origin = strToVec(buf);
+
+                        SafeStrAttrib(buf, node, "rotation");
+                        auto rotation = strToQuat(buf);
+
+                        CMatrix mat;
+                        mat.rotTranslate(rotation, origin);
+
+                        Obb newBox;
+                        newBox.Create(min, max, mat, true);
+
+                        auto obstacle = new ai::Obstacle(newBox);
+                        m_landscape.LinkObstacleToCells(obstacle);
+                    }
+                }
+            }
+            else
+            {
+                M3D_LOG_ERR("Error!!!! Bad static obstacles file: " + m_level->m_staticObstaclesFileName);
+            }
+        }
     }
 
     void CWorld::Register()

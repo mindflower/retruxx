@@ -332,6 +332,8 @@ namespace m3d
 
     class AnimInfo
     {
+        friend class AnimatedModelsServer;
+
     public:
         AnimInfo(const m3d::AnimInfo&);
         AnimInfo();

@@ -773,7 +773,7 @@ namespace m3d
 
     bool AnimInfo::IsEmpty()
     {
-	    throw retruxx::logic_error("Not implemented");
+        return this->m_Empty;
     }
 
     int& AnimInfo::CurAnimFrame()
@@ -788,7 +788,21 @@ namespace m3d
 
     AnimInfo::AnimInfo()
     {
-	    throw retruxx::logic_error("Not implemented");
+        this->m_bonesAnim = 0;
+        this->m_curAnimation = 0;
+        this->m_curAnimFrame = 0;
+        this->m_timeOutToNextFrame = 0;
+        this->m_forModel = 0;
+        this->m_Empty = 1;
+        this->m_bonesAnimPrev = 0;
+        this->m_stickToLastFrame = -1;
+        this->m_lastInterpolationUpdate = -1;
+        this->m_curBox.m_box[0] = 0.0;
+        this->m_curBox.m_box[1] = 0.0;
+        this->m_curBox.m_box[2] = 0.0;
+        this->m_curBox.m_box[3] = 0.0;
+        this->m_curBox.m_box[4] = 0.0;
+        this->m_curBox.m_box[5] = 0.0;
     }
 
     int AnimInfo::SetAnimation(ActionType)

@@ -1345,7 +1345,7 @@ namespace m3d
 
     DataServer& Application::GetProjectorsServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        return *m_serverProjectors;
     }
 
     bool Application::CheckCommandLineParam(char const*) const
@@ -1432,7 +1432,43 @@ namespace m3d
 
     void Application::PostLoadServers()
     {
-        throw retruxx::logic_error("Not implemented");
+        struct {
+            m3d::DataServer* m_server;
+            const char* m_name;
+            CStr m_diz;
+        } servers[9];
+
+        servers[0].m_server = this->m_serverAnimatedModels;
+        servers[0].m_diz = GetStringByStringId0("AnimatedModelsServer");
+        servers[1].m_server = m_serverStaticModels;
+        servers[1].m_diz = GetStringByStringId0("StaticModelsServer");
+        servers[2].m_server = m_serverLights;
+        servers[2].m_diz = GetStringByStringId0("LightsServer");
+        servers[3].m_server = m_serverSprites;
+        servers[3].m_diz = GetStringByStringId0("SpritesServer");
+        servers[4].m_server = m_serverParticles;
+        servers[4].m_diz = GetStringByStringId0("ParticlesServer");
+        servers[5].m_server = m_serverSound;
+        servers[5].m_diz = GetStringByStringId0("SoundsServer");
+        servers[6].m_server = m_serverMusic;
+        servers[6].m_diz = GetStringByStringId0("MusicServer");
+        servers[7].m_server = m_serverProjectors;
+        servers[0].m_name = "AnimatedModelsServer";
+        servers[1].m_name = "StaticModelsServer";
+        servers[2].m_name = "LightsServer";
+        servers[3].m_name = "SpritesServer";
+        servers[4].m_name = "ParticlesServer";
+        servers[5].m_name = "SoundsServer";
+        servers[6].m_name = "MusicServer";
+        servers[7].m_name = "ProjectorsServer";
+        servers[7].m_diz = GetStringByStringId0("ProjectorsServer");
+        servers[8].m_server = m_serverDecals;
+        servers[8].m_name = "DecalsServer";
+        servers[8].m_diz = GetStringByStringId0("DecalsServer");
+        for (auto& server : servers)
+        {
+            server.m_server->PostLoad();
+        }
     }
 
     void Application::OnBeforeDeviceReset()
@@ -2085,7 +2121,7 @@ namespace m3d
 
     DataServer& Application::GetAnimatedModelsServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        return *m_serverAnimatedModels;
     }
 
     bool Application::KillPostEffect(CStr const&)

@@ -38,9 +38,20 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgPointLightSourceNode::SetProperty(unsigned, void*)
+    int SgPointLightSourceNode::SetProperty(unsigned propId, void* property)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (SgNode::SetProperty(propId, property))
+            return 1;
+
+        if (propId == 4360)
+        {
+            this->m_srvId = *(int*)property;
+            return 1;
+        }
+        int v5 = propId - 8448;
+        if ((int)(propId - 8448) >= 0 && v5 < 3)
+            this->m_props[v5] = *(int*)property;
+        return 0;
     }
 
     int SgPointLightSourceNode::GetPropertiesList(retruxx::set<unsigned>&) const

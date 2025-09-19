@@ -61,7 +61,6 @@ namespace m3d
 
     void DataServer::PostLoad()
     {
-        throw std::logic_error("Not implemented");
     }
 
     CStr const& DataServer::GetNameByItem(int) const
@@ -166,9 +165,30 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int DataServer::GetItemProperty(int, int, void*)
+    int DataServer::GetItemProperty(int id, int prop, void* dest)
     {
-        throw std::logic_error("Not implemented");
+        if (prop > 6)
+        {
+            if (prop == 256)
+            {
+                *(CStr*)dest = this->m_models[id].m_name;
+                return 1;
+            }
+            else if (prop == 257)
+            {
+                *(CStr*)dest = this->m_models[id].m_fileName;
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        else
+        {
+            *(int*)dest = this->m_models[id].m_additionalData[prop];
+            return 1;
+        }
     }
 
     int DataServer::GetNumItems() const

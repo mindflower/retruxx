@@ -1,24 +1,23 @@
 #pragma once
 #include "vector.h"
+#include "math/matrix.h"
 
 struct Aabb;
 
 class Obb
 {
 public:
-    void Create(Aabb const&, CMatrix const&, bool);
-    void Create(CVector const&, CVector const&, CMatrix const&, bool);
-    void Draw(unsigned int);
-    int IsPtInside2(CVector const&) const;
-    Aabb GetBounds() const;
-    CVector toLocalRotate(CVector const&) const;
-    float IntersectRay(CVector const&, CVector const&) const;
-    CVector toWorld(CVector const&) const;
-    int IsPtInside(CVector const&) const;
-
-private:
+    CVector toWorld(const CVector& v) const;
+    CVector toLocalRotate(const CVector& v) const;
     CVector m_origin;
-    CVector m_basis[3];
+    /* 0x000c */ CVector m_basis[3];
     CVector m_min;
     CVector m_max;
-};
+    void Create(const CVector& min, const CVector& max, const CMatrix& mat, bool noScale);
+    void Create(const Aabb& aabb, const CMatrix& mat, bool noScale);
+    void Draw(unsigned int clr);
+    float IntersectRay(const CVector& v0, const CVector& dir) const;
+    int IsPtInside(const CVector& v) const;
+    int IsPtInside2(const CVector& v) const;
+    Aabb GetBounds() const;
+}; /* size: 0x0048 */

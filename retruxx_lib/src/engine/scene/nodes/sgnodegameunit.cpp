@@ -8,7 +8,7 @@ namespace m3d
 
     Object* SgGameUnitNode::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new SgGameUnitNode;
     }
 
     Class* SgGameUnitNode::GetBaseClass()
@@ -18,7 +18,7 @@ namespace m3d
 
     Class* SgGameUnitNode::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgGameUnitNode);
     }
 
     Object* SgGameUnitNode::Clone()
@@ -38,6 +38,5 @@ namespace m3d
 
     SgGameUnitNode::SgGameUnitNode()
     {
-        throw std::logic_error("Not implemented");
     }
 }

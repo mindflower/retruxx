@@ -38,7 +38,6 @@ namespace m3d
 
     void MusicServer::PostLoad()
     {
-        throw retruxx::logic_error("Not implemented");
     }
 
     int MusicServer::RemoveItem(int)

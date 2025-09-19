@@ -2072,6 +2072,9 @@
     </ClCompile>
     <ClCompile Include="src\thirdparty\allocator.cpp" />
     <ClCompile Include="src\include\renderer\i_renderer_colors.cpp" />
+    <ClCompile Include="src\engine\math\obb.cpp">
+      <Filter>engine\math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">

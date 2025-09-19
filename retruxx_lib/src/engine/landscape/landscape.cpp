@@ -42,7 +42,7 @@ namespace m3d
 
     int Landscape::GetTileSize() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return 4 * this->m_owner->m_level->land_size;
     }
 
     void Landscape::SetOverlayShader(rend::IEffect*)
@@ -521,9 +521,17 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::LinkNodeObstacleToCells(SgNode*)
+    void Landscape::LinkNodeObstacleToCells(SgNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        ai::Obstacle* nodeObstacle = nullptr;
+        node->GetProperty(8718u, &nodeObstacle);
+        if (nodeObstacle)
+        {
+            int smh = 0;
+            node->GetProperty(4356u, &smh);
+            if (!smh)
+                LinkObstacleToCells(nodeObstacle);
+        }
     }
 
     void Landscape::ReadTileInfo(int loadExtraTextures)

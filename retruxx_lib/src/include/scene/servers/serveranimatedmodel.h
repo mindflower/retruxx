@@ -93,4 +93,78 @@ namespace m3d
     }; /* size: 0x0258 */
 
     static_assert(sizeof(AnimatedModelsServer) == 0x0258);
+
+    struct PropSrvSoundForAction
+    {
+        /* 0x0000 */ int m_action;
+        /* 0x0004 */ char* m_soundStr;
+        /* 0x0008 */ int m_looped;
+    }; /* size: 0x000c */
 }
+
+struct DynamicModel
+{
+    static const unsigned short MAX_INSTANCES_PER_BUFFER;
+    DynamicModel(const DynamicModel&);
+    DynamicModel();
+    ~DynamicModel();
+    /* 0x0000 */ CStr m_soundIds[32];
+    /* 0x0180 */ int m_soundsLooped[32];
+    /* 0x0200 */ m3d::AnimatedModel* m_mdl[5];
+    /* 0x0214 */ unsigned char m_numLods;
+    /* 0x0215 */ unsigned char m_curLod;
+    /* 0x0216 */ bool m_useImpostors;
+    /* 0x0217 */ char Padding_270;
+    m3d::rend::TexHandle m_impostorTex;
+    m3d::rend::VbHandle m_impostorVb;
+    m3d::rend::IbHandle m_impostorIb;
+    /* 0x0224 */ unsigned short m_numVerts;
+    /* 0x0226 */ unsigned short m_numTris;
+    /* 0x0228 */ unsigned short m_numIndices;
+    /* 0x022a */ char Padding_271[2];
+    /* 0x022c */ float m_impostorDisplacement;
+    void _createImpostorShit();
+    void _releaseImpostorShit();
+    struct auxEffectDesc;
+    using tActionEffectsDesc = std::vector<DynamicModel::auxEffectDesc, std::allocator<DynamicModel::auxEffectDesc> >;
+
+    struct DynamicModel::auxActionEffectsDesc
+    {
+        std::vector<DynamicModel::auxEffectDesc, std::allocator<DynamicModel::auxEffectDesc> > lpEffects;
+        /* 0x0010 */ int startAttackFrame;
+        /* 0x0014 */ int endAttackFrame;
+        /* 0x0018 */ int skinNum;
+        /* 0x001c */ int cfgNum;
+        auxActionEffectsDesc(const DynamicModel::auxActionEffectsDesc&);
+        auxActionEffectsDesc();
+    }; /* size: 0x0020 */
+
+    /* 0x0230 */ DynamicModel::auxActionEffectsDesc m_effects[32];
+    int GetRandomSound(m3d::PropSrvSoundForAction*);
+}; /* size: 0x0630 */
+
+struct ModelEffectList
+{
+    struct ModelEffectList::tEffect
+    {
+        /* 0x0000 */ DynamicModel::auxEffectDesc* m_desc;
+        /* 0x0004 */ m3d::SgNode* m_effectNode;
+        bool IsValid() const;
+    }; /* size: 0x0008 */
+
+    using tActionEffects = std::vector<ModelEffectList::tEffect, std::allocator<ModelEffectList::tEffect> >;
+
+    std::vector<ModelEffectList::tEffect, std::allocator<ModelEffectList::tEffect> > m_curEffectList;
+    ModelEffectList(const ModelEffectList&);
+    ModelEffectList(DynamicModel* meta);
+    void adjustModelEffects(m3d::SgNode* realModel, std::vector<ModelEffectList::tEffect, std::allocator<ModelEffectList::tEffect> >& newEffectList);
+    void adjustModelEffects(m3d::SgNode* realModel, const std::vector<enum ActionType, std::allocator<enum ActionType> >& newActions);
+    void adjustModelEffects(m3d::SgNode* realModel, ActionType newAction);
+    ~ModelEffectList();
+    /* 0x0010 */ DynamicModel* m_dynModel;
+    
+    struct SortPred
+    {
+        bool operator()(const ModelEffectList::tEffect& a, const ModelEffectList::tEffect& b);
+    }; /* size: 0x0001 */
+}; /* size: 0x0014 */

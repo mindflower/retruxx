@@ -219,6 +219,7 @@
     <ClCompile Include="src\engine\m3dfont.cpp" />
     <ClCompile Include="src\engine\math\camera.cpp" />
     <ClCompile Include="src\engine\math\matrix.cpp" />
+    <ClCompile Include="src\engine\math\obb.cpp" />
     <ClCompile Include="src\engine\math\plane.cpp" />
     <ClCompile Include="src\engine\math\quaternion.cpp" />
     <ClCompile Include="src\engine\math\vector.cpp" />

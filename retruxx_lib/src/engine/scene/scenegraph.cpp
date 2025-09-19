@@ -116,7 +116,7 @@ namespace m3d
 
     SgNode* SceneGraph::GetRootNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        return &m_rootNode;
     }
 
     SgNode const* SceneGraph::GetRootNode() const

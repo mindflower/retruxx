@@ -34,7 +34,6 @@ namespace m3d
 
     void Sound3DServer::PostLoad()
     {
-        throw retruxx::logic_error("Not implemented");
     }
 
     int Sound3DServer::GetItemProperty(int, int, void*)

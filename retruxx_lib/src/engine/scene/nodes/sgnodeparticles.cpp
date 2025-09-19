@@ -176,7 +176,7 @@ namespace m3d
 
     Object* SgParticlesOpaqueNode::CreateObject()
     {
-        throw retruxx::logic_error("Not implemented");
+        return new SgParticlesOpaqueNode;
     }
 
     SgParticlesOpaqueNode::~SgParticlesOpaqueNode()
@@ -186,7 +186,7 @@ namespace m3d
 
     Class* SgParticlesOpaqueNode::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgParticlesOpaqueNode);
     }
 
     Object* SgParticlesOpaqueNode::Clone()
@@ -201,6 +201,5 @@ namespace m3d
 
     SgParticlesOpaqueNode::SgParticlesOpaqueNode()
     {
-        throw retruxx::logic_error("Not implemented");
     }
 }

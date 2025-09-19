@@ -15,7 +15,10 @@ namespace m3d
 {
     void AnimatedModelsServer::PostLoad()
     {
-        throw retruxx::logic_error("Not implemented");
+        for (auto& model : m_models)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
     }
 
     int AnimatedModelsServer::AddItem(char const* params, char const* id)
@@ -138,18 +141,74 @@ namespace m3d
 
     int AnimatedModelsServer::GenerateImpostorsIfNeeded()
     {
-        // TODO: implement this
-        return 0;
-    }
-
-    int AnimatedModelsServer::GetItemProperty(int, int, void*)
-    {
         throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModelsServer::RegisterNode(SgNode*)
+    int AnimatedModelsServer::GetItemProperty(int id, int prop, void* dest)
     {
+        if (DataServer::GetItemProperty(id, prop, dest))
+        {
+            return 1;
+        }
+        if (id == -1)
+        {
+            return 0;
+        }
         throw retruxx::logic_error("Not implemented");
+    }
+
+    void AnimatedModelsServer::RegisterNode(SgNode* node)
+    {
+        AnimInfo* anim = nullptr;
+        node->GetProperty(1u, &anim);
+        anim = new AnimInfo;
+        node->SetProperty(1u, &anim);
+
+        int modelId = -1;
+        node->GetProperty(4360u, &modelId);
+        if (modelId >= 0)
+        {
+            if (modelId < m_models.size())
+            {
+                auto* model = reinterpret_cast<DynamicModel*>(&m_models[modelId]);
+                auto& animModel = model->m_mdl[0];
+                if (anim->m_forModel != animModel)
+                {
+                    anim->Release();
+                    anim->CreateFor(animModel);
+                }
+
+                auto modelEffectList = new ModelEffectList(model);
+                node->SetProperty(2u, &modelEffectList);
+
+                m3d::Configuration* cfg = nullptr;
+                node->GetProperty(8707u, &cfg);
+
+                animModel->FromCfgNum(*cfg);
+                animModel->CalculateMeshes(*cfg);
+
+                void* temp = nullptr;
+                node->GetProperty(8706u, &temp);
+                node->SetProperty(8706u, &temp);
+
+                bool useImpostors = true;
+                node->GetProperty(8720u, &useImpostors);
+                if (useImpostors)
+                {
+                    node->SetProperty(8720u, &model->m_useImpostors);
+                }
+
+                m3d::TransparencyType tt = TT_NONE;
+                node->GetServerItemProperty(2u, &tt);
+                node->SetTransparencyType(tt);
+            }
+        }
+
+        if (!anim->IsEmpty())
+        {
+            // TODO: check this
+            node->GetGraph()->LinkThinkNode(node);
+        }
     }
 
     void AnimatedModelsServer::UpdateItem(int, void*)
@@ -239,4 +298,9 @@ namespace m3d
     {
         throw retruxx::logic_error("Not implemented");
     }
+}
+
+ModelEffectList::ModelEffectList(DynamicModel* meta) :
+    m_dynModel(meta)
+{
 }
