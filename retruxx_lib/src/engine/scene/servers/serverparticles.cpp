@@ -42,9 +42,20 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int ParticlesServer::GetItemProperty(int, int, void*)
+    int ParticlesServer::GetItemProperty(int id, int prop, void* dest)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (prop == 12288)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
+        else
+        {
+            if (prop == 12293)
+            {
+                throw retruxx::logic_error("Not implemented");
+            }
+            return m3d::DataServer::GetItemProperty(id, prop, dest);
+        }
     }
 
     ParticlesServer::ParticlesServer()

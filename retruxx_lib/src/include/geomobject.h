@@ -40,45 +40,45 @@ namespace m3d
         GeometryInfo toPutOn;
     };
 
-    class GeomObject : public Object
+    class GeomObject : public m3d::Object
     {
-    public:
-        void IncEnabledCellsCount();
-        void SetBounds(PointBase<int> const&, PointBase<int> const&);
-        virtual Object* Clone();
-        PointBase<int> const& GetEndCell();
-        PointBase<int> const& GetStartCell();
-        static Class* GetBaseClass();
-        virtual ~GeomObject();
-        virtual Class* GetClass() const;
-        static Object* CreateObject();
-        void SetGeom(dxGeom*);
-        void SetEnabled(bool);
-        void DecEnabledCellsCount();
-        void Release();
-        dxGeom* GetGeom() const;
-        void SetMayBeEnabled(bool);
-
     protected:
         GeomObject();
-        GeomObject(GeomObject const&);
+        GeomObject(const m3d::GeomObject& rhs);
 
     public:
-        RT_CLASS_DECLARE(GeomObject);
-
-    private:
+        virtual ~GeomObject() override /* 0x00 */;
+        virtual m3d::Object* Clone() override /* 0x04 */;
+        static m3d::Object* __fastcall CreateObject();
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        static m3d::Class m_classGeomObject;
         CVector m_translation;
         Quaternion m_rotation;
-        dxTriMeshData* m_TriData;
-        CVector* m_Vertices;
-        int* m_Indices;
-        bool m_needToDeleteInUnlink;
-        dxGeom* m_geom;
-        bool m_bMayBeEnabled;
+        /* 0x0050 */ dxTriMeshData* m_TriData;
+        /* 0x0054 */ CVector* m_Vertices;
+        /* 0x0058 */ int* m_Indices;
+        /* 0x005c */ bool m_needToDeleteInUnlink;
+        void Release();
+        void IncEnabledCellsCount();
+        void DecEnabledCellsCount();
+        void SetGeom(dxGeom* geom);
+        dxGeom* GetGeom() const;
+        void SetEnabled(bool enabled);
+        void SetMayBeEnabled(bool bMayBeEbabled);
+        void SetBounds(const PointBase<int>& startCell, const PointBase<int>& endCell);
+        const PointBase<int>& GetStartCell();
+        const PointBase<int>& GetEndCell();
+        /* 0x005d */ char Padding_169[3];
+
+    private:
+        /* 0x0060 */ dxGeom* m_geom;
+        /* 0x0064 */ bool m_bMayBeEnabled;
+        /* 0x0065 */ char Padding_170[3];
         PointBase<int> m_startCell;
         PointBase<int> m_endCell;
-        int m_enabledCellsCount;
-    };
+        /* 0x0078 */ int m_enabledCellsCount;
+    }; /* size: 0x007c */
 
     class GeomObjectLandscape :  public GeomObject
     {
@@ -97,22 +97,21 @@ namespace m3d
         RT_CLASS_DECLARE(GeomObjectLandscape);
     };
 
-    class GeomObjectStatics : public GeomObject
+    class GeomObjectStatics : public m3d::GeomObject
     {
-    public:
-        virtual Class* GetClass() const;
-        virtual ~GeomObjectStatics();
-        static Class* GetBaseClass();
-        static Object* CreateObject();
-        virtual Object* Clone();
 
     protected:
         GeomObjectStatics();
-        GeomObjectStatics(GeomObjectStatics const&);
+        GeomObjectStatics(const m3d::GeomObjectStatics& rhs);
 
     public:
-        RT_CLASS_DECLARE(GeomObjectStatics);
-    };
+        virtual  ~GeomObjectStatics() override /* 0x00 */;
+        virtual m3d::Object* Clone() override /* 0x04 */;
+        static m3d::Object* __fastcall CreateObject();
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        static m3d::Class m_classGeomObjectStatics;
+    }; /* size: 0x007c */
 
     class GeomObjectRoad : public GeomObject
     {

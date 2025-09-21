@@ -49,6 +49,7 @@
 #include <ui/uidialogs.h>
 
 #include "impulses/i_impulses.h"
+#include <core/ini.h>
 
 namespace
 {
@@ -1408,11 +1409,87 @@ namespace m3d
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006A6FC0, Application::LoadServers)
-    bool Application::LoadServers(CStr const&, bool)
+    bool Application::LoadServers(CStr const& filename, bool bQuiet)
     {
-        //TODO: implement Application::LoadServers
-        return true;
-        throw retruxx::logic_error("Not implemented");
+        struct {
+            m3d::DataServer* m_server;
+            const char* m_name;
+            CStr m_diz;
+        } servers[9];
+
+        servers[0].m_server = this->m_serverAnimatedModels;
+        servers[0].m_diz = GetStringByStringId0("AnimatedModelsServer");
+        servers[1].m_server = m_serverStaticModels;
+        servers[1].m_diz = GetStringByStringId0("StaticModelsServer");
+        servers[2].m_server = m_serverLights;
+        servers[2].m_diz = GetStringByStringId0("LightsServer");
+        servers[3].m_server = m_serverSprites;
+        servers[3].m_diz = GetStringByStringId0("SpritesServer");
+        servers[4].m_server = m_serverParticles;
+        servers[4].m_diz = GetStringByStringId0("ParticlesServer");
+        servers[5].m_server = m_serverSound;
+        servers[5].m_diz = GetStringByStringId0("SoundsServer");
+        servers[6].m_server = m_serverMusic;
+        servers[6].m_diz = GetStringByStringId0("MusicServer");
+        servers[7].m_server = m_serverProjectors;
+        servers[0].m_name = "AnimatedModelsServer";
+        servers[1].m_name = "StaticModelsServer";
+        servers[2].m_name = "LightsServer";
+        servers[3].m_name = "SpritesServer";
+        servers[4].m_name = "ParticlesServer";
+        servers[5].m_name = "SoundsServer";
+        servers[6].m_name = "MusicServer";
+        servers[7].m_name = "ProjectorsServer";
+        servers[7].m_diz = GetStringByStringId0("ProjectorsServer");
+        servers[8].m_server = m_serverDecals;
+        servers[8].m_name = "DecalsServer";
+        servers[8].m_diz = GetStringByStringId0("DecalsServer");
+
+        M3D_LOG_INFO("Loading Servers: " + filename);
+
+        CStr err;
+        if (ref_ptr xmlFile = m3d::ReadXmlFile(filename.c_str(), &err))
+        {
+            ref_ptr serversNode = xmlFile->CreateNode();
+            xmlFile->GetFirstChild(serversNode, "Servers");
+            if (serversNode->IsEmpty())
+            {
+                M3D_LOG_INFO("Load servers: cannot find Servers");
+                return 0;
+            }
+
+            ref_ptr node = xmlFile->CreateNode();
+            for (const auto& server : servers)
+            {
+                auto loadingSplash = GetStringByStringId0("Loading") + " " + server.m_diz;
+                if (bQuiet)
+                {
+                    server.m_server->m_fnLoadCallback = PutSplashCallBackQuiet;
+                }
+                else
+                {
+                    server.m_server->m_fnLoadCallback = m3d::Application::PutSplashCallBack;
+                }
+                server.m_server->m_fnLoadCallbackData = &loadingSplash;
+
+                serversNode->GetFirstChild(node, server.m_name);
+                if (node->IsEmpty() || !server.m_server->ReadFromXmlNode(xmlFile, node))
+                {
+                    M3D_LOG_INFO("Load servers: server " + CStr(server.m_name) + " failed to load");
+                    return 0;
+                }
+
+                loadingSplash = GetStringByStringId0("Precaching") + ":" + server.m_diz;
+                server.m_server->m_fnLoadCallbackData = &loadingSplash;
+                server.m_server->RenderItem(-4, 0);
+            }
+            return 1;
+        }
+        else
+        {
+            M3D_LOG_INFO("Load servers: " + err);
+        }
+        return 0;
     }
 
     bool Application::SetPostEffectParam(CStr const&, float)
@@ -1930,6 +2007,11 @@ namespace m3d
     }
 
     void Application::PutSplashMainMenuLevelLoad(int, void*)
+    {
+        throw retruxx::logic_error("Not implemented");
+    }
+
+    void Application::PutSplashCallBackQuiet(int, void*)
     {
         throw retruxx::logic_error("Not implemented");
     }

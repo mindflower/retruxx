@@ -79,8 +79,17 @@ namespace m3d
 
     static_assert(sizeof(MeshesGroup) == 0x0044);
 
+    struct AnimAction
+    {
+        /* 0x0000 */ char* m_name;
+        /* 0x0004 */ ActionType m_action;
+    }; /* size: 0x0008 */
+
+    AnimAction* GetAnimActions();
+
     class AnimatedModel
     {
+        friend class AnimatedModelsServer;
     public:
         struct HierarchyChange
         {

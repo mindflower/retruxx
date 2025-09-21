@@ -436,9 +436,33 @@ int CStr::findsubstr(char const* substr, int offset) const
     return view.find(substr, offset);
 }
 
-int CStr::del(int, int)
+int CStr::del(int idx, int count)
 {
-    throw std::logic_error("Not implemented");
+    // Validate parameters
+    assert(idx >= 0 && count > 0);
+
+    if (!m_charPtr)
+        return 0;
+
+    int length = strlen(m_charPtr);
+
+    // Validate index
+    assert(idx < length);
+
+    // Adjust count if it would exceed string bounds
+    if (idx + count > length)
+    {
+        count = length - idx;
+    }
+
+    // Calculate positions
+    char* deletionStart = m_charPtr + idx;
+    char* copySource = deletionStart + count;
+
+    // Shift characters to overwrite the deleted portion
+    memmove(deletionStart, copySource, strlen(copySource) + 1); // +1 for null terminator
+
+    return strlen(m_charPtr);
 }
 
 int CStr::format(char const*, ...)

@@ -5,6 +5,8 @@
 #include <core/ini.h>
 #include <client.h>
 #include <world.h>
+#include <core/log.h>
+#include <file/fileserver.h>
 
 namespace m3d
 {
@@ -114,8 +116,10 @@ namespace m3d
         }
     }
 
-    int AnimatedModelsServer::SetItemProperty(int, int, void*)
+    int AnimatedModelsServer::SetItemProperty(int id, int prop, void* src)
     {
+        if (m3d::DataServer::SetItemProperty(id, prop, src))
+            return 1;
         throw retruxx::logic_error("Not implemented");
     }
 
@@ -245,38 +249,349 @@ namespace m3d
 
     void AnimatedModelsServer::AddItemsList(retruxx::vector<ServerItem>& itemslist)
     {
-        auto startTime = GetTickCount();
+        // TODO: generated code
         if (itemslist.empty())
-        {
             return;
-        }
 
+        // Track loading time
+        DWORD dwStartTime = GetTickCount();
+        DWORD dwGamTime = 0;
+
+        // Create list of skins to load
         retruxx::vector<LoadSkins> skinsToLoad(itemslist.size());
-        for (int i = 0; i < skinsToLoad.size(); ++i)
-        {
-            if (!itemslist[i].m_params.empty())
-            {
+
+        // Pre-define skins to load from item parameters
+        for (int i = 0; i < skinsToLoad.size(); ++i) {
+            if (!itemslist[i].m_params.empty()) {
                 DefineSkinsToLoad(skinsToLoad[i], itemslist[i].m_params);
             }
         }
 
-        for (const auto& model : m_models)
-        {
-            throw retruxx::logic_error("Not implemented");
-            for (auto& item : itemslist)
-            {
-                if (model.m_name == item.m_id)
-                {
-                    item.m_fileWasRead = true;
-                    throw retruxx::logic_error("Not implemented");
-                    //TODO: check this!!!!!!
-                    M3D_APP->m_cachedSoundIDs.insert(model.m_name);
+        int numitems = itemslist.size();
+        int iterNode = 0;
 
+        // First pass: update existing models
+        for (auto it = m_models.begin(); it != m_models.end(); ) {
+            if (iterNode < numitems) {
+                bool found = false;
+                for (size_t i = 0; i < itemslist.size(); i++) {
+                    if (itemslist[i].m_id == it->m_name) {
+                        // Update existing model
+                        itemslist[i].m_fileWasRead = true;
+                        iterNode++;
 
+                        DynamicModel* dynamicModel = reinterpret_cast<DynamicModel*>(it->m_ptr);
+                        // Cache sound IDs
+                        for (int j = 0; j < 32; j++) {
+                            if (!dynamicModel->m_soundIds[j].empty()) {
+                                m3d::Application::g_pApp->m_cachedSoundIDs.insert(dynamicModel->m_soundIds[j]);
+                            }
+                        }
+
+                        // Reload skins and update cubemap
+                        dynamicModel->m_mdl[0]->ReloadSkins(skinsToLoad[i]);
+                        dynamicModel->m_mdl[0]->UpdateCubemap();
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found) {
+                    ++it;
+                    continue;
                 }
             }
+
+            // Remove model that's no longer in the list
+            if (it->m_ptr) {
+                delete it->m_ptr;
+                it->m_ptr = nullptr;
+            }
+            it = m_models.erase(it);
         }
-        throw retruxx::logic_error("Not implemented");
+
+        numitems -= iterNode;
+        if (numitems <= 0) {
+            return; // All items were existing models
+        }
+
+        // Parse protocol from first item
+        m3d::DataServer::Proto proto;
+        int protoPos;
+        ParseProto(itemslist.front().m_filename.c_str(), &proto, &protoPos);
+
+        if (proto != PROTO_FILE) {
+            M3D_LOG_ERR("Error protocol: " + CStr(proto));
+            return;
+        }
+
+        // Load XML file
+        CStr xmlFilename = &itemslist.front().m_filename[protoPos];
+        CStr xmlContent;
+
+        ref_ptr xmlFile = m3d::ReadXmlFile(xmlFilename.c_str(), &xmlContent);
+        if (!xmlFile) {
+            M3D_LOG_ERR("ServerAnimatedModel: " + xmlFilename);
+            return;
+        }
+
+        // Process XML models
+        ref_ptr modelsNode = xmlFile->CreateNode();
+        xmlFile->GetFirstChild(modelsNode, "AnimatedModels");
+
+        if (modelsNode->IsEmpty()) {
+            return;
+        }
+
+        ref_ptr modelNode = xmlFile->CreateNode();
+        modelsNode->GetFirstChild(modelNode, "model");
+
+        while (!modelNode->IsEmpty()) {
+            CStr modelId = modelNode->GetAttribute("id");
+
+            // Check if this model is in our items list
+            int itemIndex = -1;
+            for (size_t i = 0; i < itemslist.size(); i++) {
+                if (itemslist[i].m_id == modelId && !itemslist[i].m_fileWasRead) {
+                    itemIndex = i;
+                    break;
+                }
+            }
+
+            if (itemIndex == -1) {
+                 modelNode->GetNextSibling(modelNode, "model");
+                continue;
+            }
+
+            // Parse model attributes
+            CStr modelFile;
+            SafeStrAttrib(modelFile, modelNode, "file");
+
+            int shadow = 0;
+            SafeIntAttrib(shadow, modelNode, "shadow");
+
+            int windwavy = 0;
+            SafeIntAttrib(shadow, modelNode, "windwavy");
+
+            int tessellate = 0;
+            SafeIntAttrib(shadow, modelNode, "tessellate");
+
+            int trackland = 0;
+            SafeIntAttrib(shadow, modelNode, "trackland");
+
+            int shadowVolume = 0;
+            SafeIntAttrib(shadow, modelNode, "shadowVolume");
+
+            bool useImpostors = false;
+            m3d::SafeBoolAttrib(useImpostors, modelNode, "useImpostors");
+
+            bool composite = false;
+            m3d::SafeBoolAttrib(composite, modelNode, "composite");
+
+            bool passable = false;
+            m3d::SafeBoolAttrib(passable, modelNode, "passable");
+
+            int trans = 0;
+            SafeIntAttrib(shadow, modelNode, "trans");
+
+            CVector bBoxMin, bBoxMax;
+
+            bool hasMin = m3d::SafeVectorAttrib(bBoxMin, modelNode, "bBoxMin");
+            bool hasMax = m3d::SafeVectorAttrib(bBoxMax, modelNode, "bBoxMax");
+            bool hasBBox = hasMin && hasMax;
+
+            // Create dynamic model
+            DynamicModel* dynamicModel = new DynamicModel();
+
+            // Load main model
+            DWORD loadStart = GetTickCount();
+            m3d::AnimatedModel* mainModel = new m3d::AnimatedModel();
+            mainModel->SetComposite(composite);
+            mainModel->m_passable = passable;
+            mainModel->SetSkinsToLoad(skinsToLoad[itemIndex]);
+
+            bool loadFromGAM = M3D_KERNEL->GetEngineCfg().m_loadFromGAM.GetB();
+            bool loadSuccess = false;
+
+            if (loadFromGAM) {
+                loadSuccess = mainModel->LoadGAM(modelFile.c_str(), true);
+            }
+            else {
+                loadSuccess = mainModel->LoadSAM(modelFile.c_str(), true);
+            }
+
+            if (!loadSuccess) {
+                delete dynamicModel;
+                delete mainModel;
+                continue;
+            }
+
+            dwGamTime += GetTickCount() - loadStart;
+
+            if (hasBBox) {
+                mainModel->m_box.Create(bBoxMin, bBoxMax);
+            }
+
+            dynamicModel->m_mdl[0] = mainModel;
+            dynamicModel->m_numLods = 1;
+            dynamicModel->m_curLod = 0;
+            dynamicModel->m_useImpostors = useImpostors;
+
+            // Load LOD models
+            CStr baseFilename = modelFile;
+            if (auto pos = baseFilename.rfind('.'); pos != -1)
+            {
+                baseFilename.del(pos, 4);
+            }
+
+            for (unsigned int lod = 1; lod < 5; lod++) {
+                CStr lodFilename;
+                if (loadFromGAM) {
+                    lodFilename = baseFilename + "_lod" + CStr(lod) + ".gam";
+                }
+                else {
+                    lodFilename = baseFilename + "_lod" + CStr(lod) + ".sam";
+                }
+
+                if (M3D_KERNEL->GetFileServer().FileExists(lodFilename.c_str())) {
+                    m3d::AnimatedModel* lodModel = new m3d::AnimatedModel();
+                    if (lodModel->Load(lodFilename.c_str(), true)) {
+                        dynamicModel->m_mdl[lod] = lodModel;
+                        dynamicModel->m_numLods++;
+                    }
+                    else {
+                        delete lodModel;
+                    }
+                }
+            }
+
+            // Process sound effects
+            ref_ptr soundNode = xmlFile->CreateNode();
+            modelNode->GetFirstChild(soundNode, "sound");
+
+            const auto actions = GetAnimActions();
+            while (!soundNode->IsEmpty()) {
+                CStr action;
+                SafeStrAttrib(action, soundNode, "action");
+
+                CStr soundId;
+                SafeStrAttrib(soundId, soundNode, "id");
+
+                bool looped = false;
+                SafeBoolAttrib(looped, soundNode, "looped");
+
+                // Find action index and assign sound
+                for (size_t i = 0; i < AT_NUMTYPES; i++) {
+                    if (actions[i].m_name == action) {
+                        dynamicModel->m_soundIds[i] = soundId;
+                        dynamicModel->m_soundsLooped[i] = looped;
+                        m3d::Application::g_pApp->m_cachedSoundIDs.insert(soundId);
+                        break;
+                    }
+                }
+
+                soundNode->GetNextSibling(soundNode, "sound");
+            }
+
+            // Process action effects
+            ref_ptr<m3d::cmn::XmlNode> actionNode = xmlFile->CreateNode();
+            modelNode->GetFirstChild(actionNode, "action");
+            while (!actionNode->IsEmpty()) {
+                CStr actionName;
+                SafeStrAttrib(actionName, actionNode, "name");
+
+                int startAttackFrame = -1;
+                SafeIntAttrib(startAttackFrame, actionNode, "startAttackFrame");
+
+                int endAttackFrame = -1;
+                SafeIntAttrib(endAttackFrame, actionNode, "endAttackFrame");
+
+                int skinNum = -1;
+                SafeIntAttrib(skinNum, actionNode, "skin");
+
+                int cfgNum = -1;
+                SafeIntAttrib(cfgNum, actionNode, "cfg");
+
+                // Find action index
+                size_t actionIndex = -1;
+                for (size_t i = 0; i < AT_NUMTYPES; i++) {
+                    if (actions[i].m_name == actionName) {
+                        actionIndex = i;
+                        break;
+                    }
+                }
+
+                if (actionIndex != -1) {
+                    // Process load points for this action
+                    ref_ptr<m3d::cmn::XmlNode> lpNode = xmlFile->CreateNode();
+                    actionNode->GetFirstChild(lpNode, "lp");
+                    while (!lpNode->IsEmpty()) {
+                        CStr lpId;
+                        SafeStrAttrib(lpId, lpNode, "id");
+
+                        CStr effectId;
+                        SafeStrAttrib(effectId, lpNode, "effect_id");
+
+                        bool restartOnAnimChange = 0;
+                        SafeBoolAttrib(restartOnAnimChange, lpNode, "restartOnAnimationChange");
+
+                        bool immediateRemove = 0;
+                        SafeBoolAttrib(immediateRemove, lpNode, "ImmediateRemove");
+
+                        DynamicModel::auxEffectDesc effectDesc;
+                        effectDesc.m_lpId = mainModel->GetLoadPointIdByName(lpId.c_str());
+                        effectDesc.m_effectName = effectId;
+                        effectDesc.m_restartOnAnimChange = restartOnAnimChange;
+                        effectDesc.m_immediateRemove = immediateRemove;
+
+                        dynamicModel->m_effects[actionIndex].lpEffects.push_back(effectDesc);
+
+                        lpNode->GetNextSibling(lpNode, "lp");
+                    }
+
+                    dynamicModel->m_effects[actionIndex].startAttackFrame = startAttackFrame;
+                    dynamicModel->m_effects[actionIndex].endAttackFrame = endAttackFrame;
+                    dynamicModel->m_effects[actionIndex].skinNum = skinNum;
+                    dynamicModel->m_effects[actionIndex].cfgNum = cfgNum;
+                }
+
+                actionNode->GetNextSibling(actionNode, "action");
+            }
+
+            // Create impostors if needed
+            if (useImpostors) {
+                dynamicModel->_createImpostorShit();
+            }
+
+            // Add to server models
+            m3d::DataServer::Model newModel((void*)dynamicModel, modelFile.c_str(), itemslist[itemIndex].m_filename.c_str(), modelId.c_str());
+            m_models.push_back(newModel);
+
+            // Update item properties
+            size_t modelIndex = m_models.size() - 1;
+            SetItemProperty(modelIndex, 0, &shadow);
+            SetItemProperty(modelIndex, 1, &windwavy);
+            SetItemProperty(modelIndex, 4, &tessellate);
+            SetItemProperty(modelIndex, 5, &trackland);
+            SetItemProperty(modelIndex, 6, &shadowVolume);
+            SetItemProperty(modelIndex, 2, &trans);
+
+            itemslist[itemIndex].m_fileWasRead = true;
+
+            modelNode->GetNextSibling(modelNode, "model");
+        }
+
+        // Log unread files
+        for (const auto& item : itemslist) {
+            if (!item.m_fileWasRead) {
+                M3D_LOG_ERR("ServerAnimatedModels: cannot read file: " + item.m_filename + " id = " + item.m_id);
+            }
+        }
+
+        // Log loading statistics
+        DWORD totalTime = GetTickCount() - dwStartTime;
+        M3D_LOG_INFO("### Total time: " + CStr(totalTime) + ", GAM time: " + CStr(dwGamTime));
     }
 
     int AnimatedModelsServer::RenderMesh(SgAnimatedModelNode*, AnimatedModel::Mesh&, rend::IEffect*)
@@ -303,4 +618,46 @@ namespace m3d
 ModelEffectList::ModelEffectList(DynamicModel* meta) :
     m_dynModel(meta)
 {
+}
+
+DynamicModel::DynamicModel()
+{
+    memset(this->m_soundsLooped, 0, sizeof(this->m_soundsLooped));
+    this->m_mdl[0] = 0;
+    this->m_mdl[1] = 0;
+    this->m_mdl[2] = 0;
+    this->m_mdl[3] = 0;
+    this->m_mdl[4] = 0;
+    this->m_numLods = 0;
+    this->m_curLod = 0;
+    this->m_useImpostors = 0;
+}
+
+DynamicModel::~DynamicModel()
+{
+    // TODO: check this
+    if (this->m_useImpostors)
+        _releaseImpostorShit();
+    for (auto& mdl : m_mdl)
+    {
+        delete mdl;
+    }
+}
+
+void DynamicModel::_createImpostorShit()
+{
+    throw retruxx::logic_error("Not implemented");
+}
+
+void DynamicModel::_releaseImpostorShit()
+{
+    throw retruxx::logic_error("Not implemented");
+}
+
+DynamicModel::auxActionEffectsDesc::auxActionEffectsDesc()
+{
+    this->endAttackFrame = -1;
+    this->startAttackFrame = -1;
+    this->cfgNum = -1;
+    this->skinNum = -1;
 }

@@ -66,6 +66,16 @@ Quaternion Quaternion::getInversed() const
     throw std::logic_error("Not implemented");
 }
 
+float& Quaternion::operator[](unsigned int i)
+{
+    return *(float*)(this + i);
+}
+
+float Quaternion::operator[](unsigned int i) const
+{
+    return operator[](i);
+}
+
 void Quaternion::Lerp(Quaternion const&, Quaternion const&, float)
 {
     throw std::logic_error("Not implemented");
@@ -92,11 +102,6 @@ void Quaternion::RotY(float)
 }
 
 CVector Quaternion::vecRot(CVector const&) const
-{
-    throw std::logic_error("Not implemented");
-}
-
-float& Quaternion::operator[](unsigned)
 {
     throw std::logic_error("Not implemented");
 }

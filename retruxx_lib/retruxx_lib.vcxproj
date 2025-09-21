@@ -217,6 +217,7 @@
     <ClCompile Include="src\engine\m3dapp.cpp" />
     <ClCompile Include="src\engine\m3dapp_console.cpp" />
     <ClCompile Include="src\engine\m3dfont.cpp" />
+    <ClCompile Include="src\engine\math\aabb.cpp" />
     <ClCompile Include="src\engine\math\camera.cpp" />
     <ClCompile Include="src\engine\math\matrix.cpp" />
     <ClCompile Include="src\engine\math\obb.cpp" />
@@ -1096,11 +1097,8 @@
     <ClInclude Include="src\include\math\vector.h" />
     <ClInclude Include="src\include\math\vector2.h" />
     <ClInclude Include="src\include\math\vector4.h" />
-    <ClInclude Include="src\include\ode\contact.h" />
-    <ClInclude Include="src\include\ode\mass.h" />
     <ClInclude Include="src\include\ode\odecpp.h" />
-    <ClInclude Include="src\include\ode\odemath.h" />
-    <ClInclude Include="src\include\ode\odememory.h" />
+    <ClInclude Include="src\include\ode\odecpp_collision.h" />
     <ClInclude Include="src\include\particles.h" />
     <ClInclude Include="src\include\poolmanager.h" />
     <ClInclude Include="src\include\posteffects\posteffect.h" />

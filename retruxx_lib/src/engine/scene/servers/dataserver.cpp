@@ -122,7 +122,11 @@ namespace m3d
             ServerItem item;
             m3d::SafeStrAttrib(item.m_id, node, "id");
             m3d::SafeStrAttrib(item.m_params, node, "params");
-            m3d::SafeStrAttrib(item.m_filename, node, "file");
+
+            CStr file;
+            m3d::SafeStrAttrib(file, node, "file");
+
+            item.m_filename = "file:" + file;
             m_itemslist.push_back(std::move(item));
         }
 
@@ -208,19 +212,23 @@ namespace m3d
 
     int DataServer::ParseProto(char const* in, Proto* protocol, int* paramsPos)
     {
-        auto pos = strchr(in, ':');
-        if (strlen(in) >= 3 && pos != 0)
+        *protocol = PROTO_NONE;
+        if (strlen(in) >= 3)
         {
-            *paramsPos = pos - in + 1;
-            if (!strncmp(in, "new", 3))
+            auto pos = strchr(in, ':');
+            if (pos != 0)
             {
-                *protocol = PROTO_NEW;
-                return 1;
-            }
-            if (!strncmp(in, "file", 4))
-            {
-                *protocol = PROTO_FILE;
-                return 1;
+                *paramsPos = pos - in + 1;
+                if (!strncmp(in, "new", 3))
+                {
+                    *protocol = PROTO_NEW;
+                    return 1;
+                }
+                if (!strncmp(in, "file", 4))
+                {
+                    *protocol = PROTO_FILE;
+                    return 1;
+                }
             }
         }
         m_lastError = "No protocol found";

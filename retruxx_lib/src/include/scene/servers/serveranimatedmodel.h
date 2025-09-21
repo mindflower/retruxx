@@ -125,12 +125,22 @@ struct DynamicModel
     /* 0x022c */ float m_impostorDisplacement;
     void _createImpostorShit();
     void _releaseImpostorShit();
-    struct auxEffectDesc;
-    using tActionEffectsDesc = std::vector<DynamicModel::auxEffectDesc, std::allocator<DynamicModel::auxEffectDesc> >;
+
+    struct auxEffectDesc
+    {
+        CStr m_lpName;
+        CStr m_effectName;
+        /* 0x0018 */ int m_lpId;
+        /* 0x001c */ int m_effectId;
+        /* 0x0020 */ bool m_restartOnAnimChange;
+        /* 0x0021 */ bool m_immediateRemove;
+    }; /* size: 0x0024 */
+
+    using tActionEffectsDesc = retruxx::vector<DynamicModel::auxEffectDesc, retruxx::allocator<DynamicModel::auxEffectDesc> >;
 
     struct DynamicModel::auxActionEffectsDesc
     {
-        std::vector<DynamicModel::auxEffectDesc, std::allocator<DynamicModel::auxEffectDesc> > lpEffects;
+        retruxx::vector<DynamicModel::auxEffectDesc, retruxx::allocator<DynamicModel::auxEffectDesc> > lpEffects;
         /* 0x0010 */ int startAttackFrame;
         /* 0x0014 */ int endAttackFrame;
         /* 0x0018 */ int skinNum;
@@ -152,13 +162,13 @@ struct ModelEffectList
         bool IsValid() const;
     }; /* size: 0x0008 */
 
-    using tActionEffects = std::vector<ModelEffectList::tEffect, std::allocator<ModelEffectList::tEffect> >;
+    using tActionEffects = retruxx::vector<ModelEffectList::tEffect, retruxx::allocator<ModelEffectList::tEffect> >;
 
-    std::vector<ModelEffectList::tEffect, std::allocator<ModelEffectList::tEffect> > m_curEffectList;
+    retruxx::vector<ModelEffectList::tEffect, retruxx::allocator<ModelEffectList::tEffect> > m_curEffectList;
     ModelEffectList(const ModelEffectList&);
     ModelEffectList(DynamicModel* meta);
-    void adjustModelEffects(m3d::SgNode* realModel, std::vector<ModelEffectList::tEffect, std::allocator<ModelEffectList::tEffect> >& newEffectList);
-    void adjustModelEffects(m3d::SgNode* realModel, const std::vector<enum ActionType, std::allocator<enum ActionType> >& newActions);
+    void adjustModelEffects(m3d::SgNode* realModel, retruxx::vector<ModelEffectList::tEffect, retruxx::allocator<ModelEffectList::tEffect> >& newEffectList);
+    void adjustModelEffects(m3d::SgNode* realModel, const retruxx::vector<enum ActionType, retruxx::allocator<enum ActionType> >& newActions);
     void adjustModelEffects(m3d::SgNode* realModel, ActionType newAction);
     ~ModelEffectList();
     /* 0x0010 */ DynamicModel* m_dynModel;

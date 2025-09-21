@@ -20,6 +20,14 @@
 #include "math/vector4.h"
 #include "client.h"
 #include <algorithm>
+#include "scene/servers/dataserver.h"
+#include "skelmodel.h"
+#include <draftstructures.h>
+
+extern "C" {
+#include <ode/collision.h>
+#include <ode/collision_trimesh.h>
+}
 
 namespace m3d
 {
@@ -1216,9 +1224,177 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::LinkNodeCollisionGeomsToCell(SgNode*, int, int, int, int)
+    void Landscape::LinkNodeCollisionGeomsToCell(SgNode* node, int startX, int endX, int startY, int endY)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+
+        int land_size = m_owner->m_level->land_size;
+        int numCells = land_size;
+        m3d::SgNode* v8 = node;
+        m3d::AnimatedModel* mdl = nullptr;
+
+        int sh;
+        if (node->GetProperty(4360u, &sh) && sh != -1)
+        {
+            m3d::DataServer* v10 = node->GetServer();
+            v10->GetItemProperty(sh, 16394, &mdl);
+        }
+
+        std::set<m3d::GeomObject*>* geomObjsList = new std::set<m3d::GeomObject*>();
+
+        if (mdl)
+        {
+            // Process collision points and triangles
+            if (!mdl->GetCollisionTrimesh().Points.empty())
+            {
+                float scale = node->GetScale().x;
+                size_t pointsCount = mdl->GetCollisionTrimesh().Points.size();
+
+                // Create GeomObjectStatics
+                m3d::GeomObjectStatics* geomStatic = static_cast<m3d::GeomObjectStatics*>(
+                    m3d::g_Kernel->New("GeomObjectStatics"));
+
+                // Allocate and copy points
+                geomStatic->m_Vertices = new CVector(pointsCount);
+                for (size_t i = 0; i < pointsCount; i++)
+                {
+                    geomStatic->m_Vertices[i].x = mdl->GetCollisionTrimesh().Points[i].x * scale;
+                    geomStatic->m_Vertices[i].y = mdl->GetCollisionTrimesh().Points[i].y * scale;
+                    geomStatic->m_Vertices[i].z = mdl->GetCollisionTrimesh().Points[i].z * scale;
+                }
+
+                // Allocate and copy triangles
+                size_t trianglesCount = mdl->GetCollisionTrimesh().Triangles.size();
+                geomStatic->m_Indices = new int(trianglesCount * 3);
+                for (size_t i = 0; i < trianglesCount; i++)
+                {
+                    geomStatic->m_Indices[i * 3] = mdl->GetCollisionTrimesh().Triangles[i].I[0];
+                    geomStatic->m_Indices[i * 3 + 1] = mdl->GetCollisionTrimesh().Triangles[i].I[1];
+                    geomStatic->m_Indices[i * 3 + 2] = mdl->GetCollisionTrimesh().Triangles[i].I[2];
+                }
+
+                // Create ODE trimesh
+                auto triMeshData = dGeomTriMeshDataCreate();
+                dGeomTriMeshDataBuildSingle(triMeshData,
+                    geomStatic->m_Vertices, sizeof(CVector), pointsCount,
+                    geomStatic->m_Indices, trianglesCount * 3, sizeof(int));
+
+                dxSpace* odeSpace = m_owner->GetOdeSpace();
+                dxGeom* triMesh = dCreateTriMesh(odeSpace, triMeshData, 0, 0, 0);
+
+                // Set up geom object
+                m3d::GeomObject* geomObj = static_cast<m3d::GeomObject*>(geomStatic);
+                geomObj->SetGeom(triMesh);
+
+                // Set bounds
+                PointBase<int> startCell(startX, startY);
+                PointBase<int> endCell(endX, endY);
+                geomObj->SetBounds(startCell, endCell);
+
+                // Add to list
+                geomObjsList->insert(geomObj);
+
+                // Add to collision cells
+                for (int y = startY; y <= endY; y++)
+                {
+                    for (int x = startX;
+                        x <= endX; x++)
+                    {
+                        int cellIndex = x + y * numCells;
+                        m_oCollisionitems[cellIndex]->m_geomsList.insert(geomObj);
+
+                        if (m_oCollisionitems[cellIndex]->m_wasEnabledLastFrame)
+                        {
+                            geomObj->IncEnabledCellsCount();
+                        }
+                    }
+                }
+            }
+
+            // Process individual geoms
+            for (size_t i = 0; i < mdl->GetNumGeoms(); i++)
+            {
+                auto* geom = mdl->GetGeom(i);
+                float scale = node->GetScale().x;
+
+                m3d::GeomObjectStatics* geomStatic = static_cast<m3d::GeomObjectStatics*>(
+                    m3d::g_Kernel->New("GeomObjectStatics"));
+
+                dxGeom* odeGeom = nullptr;
+
+                switch (geom->Type)
+                {
+                case 0: // Box
+                {
+                    float lx = geom->Sizes.BoxSizes.x * scale;
+                    float ly = geom->Sizes.BoxSizes.y * scale;
+                    float lz = geom->Sizes.BoxSizes.z * scale;
+                    dxSpace* odeSpace = m_owner->GetOdeSpace();
+                    odeGeom = dCreateBox(odeSpace, lx, ly, lz);
+                    break;
+                }
+                case 1: // Sphere
+                {
+                    float radius = geom->Sizes.BoxSizes.x * scale;
+                    dxSpace* odeSpace = m_owner->GetOdeSpace();
+                    odeGeom = dCreateSphere(odeSpace, radius);
+                    break;
+                }
+                case 2: // Cylinder/Capsule
+                {
+                    float radius = geom->Sizes.BoxSizes.x * scale;
+                    float length = geom->Sizes.BoxSizes.y * scale;
+                    dxSpace* odeSpace = m_owner->GetOdeSpace();
+
+                    // Apply rotation for cylinder (45 degrees around some axis)
+                    Quaternion rot(geom->Rotation[0], geom->Rotation[1],
+                        geom->Rotation[2], geom->Rotation[3]);
+                    Quaternion addRot(0.7071f, 0.0f, 0.0f, 0.7071f); // 45 degrees
+                    rot *= addRot;
+
+                    geomStatic->m_rotation = rot;
+                    odeGeom = dCreateCCylinder(odeSpace, radius, length);
+                    break;
+                }
+                }
+
+                // Set position and rotation
+                geomStatic->m_translation = geom->Translation;
+                geomStatic->m_rotation = geom->Rotation;
+
+                m3d::GeomObject* geomObj = static_cast<m3d::GeomObject*>(geomStatic);
+                geomObj->SetGeom(odeGeom);
+
+                // Set bounds
+                PointBase<int> startCell(startX, startY);
+                PointBase<int> endCell(endX, endY);
+                geomObj->SetBounds(startCell, endCell);
+
+                // Add to list
+                geomObjsList->insert(geomObj);
+
+                // Add to collision cells
+                for (int y = startY; y <= endY; y++)
+                {
+                    for (int x = startX;
+                        x <= endX; x++)
+                    {
+                        int cellIndex = x + y * numCells;
+                        m_oCollisionitems[cellIndex]->m_geomsList.insert(geomObj);
+                    }
+                }
+            }
+        }
+
+        // Set property or cleanup
+        if (!geomObjsList->empty())
+        {
+            node->SetProperty(4357u, &geomObjsList);
+        }
+        else
+        {
+            delete geomObjsList;
+        }
     }
 
     void Landscape::DrawShoresLayer()
@@ -1554,9 +1730,88 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::UpdateNodeCollisionGeoms(SgNode*)
+    void Landscape::UpdateNodeCollisionGeoms(SgNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        std::set<m3d::GeomObject*>* t;
+        node->GetProperty(4357u, &t);
+        if (t)
+        {
+            for (auto& elem : *t)
+            {
+                auto x = node->GetScale().x;
+                CVector pos;
+                pos.x = elem->m_translation.x * x;
+                pos.y = elem->m_translation.y * x;
+                pos.z = elem->m_translation.z * x;
+
+                CMatrix childMat;
+                CMatrix parentMat;
+
+                childMat.rotTranslate(elem->m_rotation, pos);
+                parentMat.rotTranslate(node->GetRotationWorldAbs(), node->GetOriginWorldAbs());
+
+                CMatrix vv;
+                vv._11 = (float)((float)((float)(parentMat._41 * childMat._14) + (float)(parentMat._31 * childMat._13))
+                    + (float)(parentMat._21 * childMat._12))
+                    + (float)(parentMat._11 * childMat._11);
+                vv._12 = (float)((float)((float)(parentMat._42 * childMat._14) + (float)(parentMat._32 * childMat._13))
+                    + (float)(parentMat._22 * childMat._12))
+                    + (float)(parentMat._12 * childMat._11);
+                vv._13 = (float)((float)((float)(parentMat._43 * childMat._14) + (float)(parentMat._33 * childMat._13))
+                    + (float)(parentMat._23 * childMat._12))
+                    + (float)(parentMat._13 * childMat._11);
+                vv._14 = (float)((float)((float)(parentMat._44 * childMat._14) + (float)(parentMat._34 * childMat._13))
+                    + (float)(parentMat._24 * childMat._12))
+                    + (float)(parentMat._14 * childMat._11);
+                vv._21 = (float)((float)((float)(childMat._24 * parentMat._41) + (float)(childMat._23 * parentMat._31))
+                    + (float)(childMat._22 * parentMat._21))
+                    + (float)(childMat._21 * parentMat._11);
+                vv._22 = (float)((float)((float)(childMat._24 * parentMat._42) + (float)(childMat._23 * parentMat._32))
+                    + (float)(childMat._22 * parentMat._22))
+                    + (float)(childMat._21 * parentMat._12);
+                vv._23 = (float)((float)((float)(childMat._24 * parentMat._43) + (float)(childMat._23 * parentMat._33))
+                    + (float)(childMat._22 * parentMat._23))
+                    + (float)(childMat._21 * parentMat._13);
+                vv._24 = (float)((float)((float)(childMat._24 * parentMat._44) + (float)(childMat._23 * parentMat._34))
+                    + (float)(childMat._22 * parentMat._24))
+                    + (float)(childMat._21 * parentMat._14);
+                vv._31 = (float)((float)((float)(childMat._34 * parentMat._41) + (float)(childMat._33 * parentMat._31))
+                    + (float)(childMat._32 * parentMat._21))
+                    + (float)(childMat._31 * parentMat._11);
+                vv._32 = (float)((float)((float)(childMat._34 * parentMat._42) + (float)(childMat._33 * parentMat._32))
+                    + (float)(childMat._32 * parentMat._22))
+                    + (float)(childMat._31 * parentMat._12);
+                vv._33 = (float)((float)((float)(childMat._34 * parentMat._43) + (float)(childMat._33 * parentMat._33))
+                    + (float)(childMat._32 * parentMat._23))
+                    + (float)(childMat._31 * parentMat._13);
+                vv._34 = (float)((float)((float)(childMat._34 * parentMat._44) + (float)(childMat._33 * parentMat._34))
+                    + (float)(childMat._32 * parentMat._24))
+                    + (float)(childMat._31 * parentMat._14);
+                vv._41 = (float)((float)((float)(childMat._44 * parentMat._41) + (float)(childMat._43 * parentMat._31))
+                    + (float)(childMat._42 * parentMat._21))
+                    + (float)(childMat._41 * parentMat._11);
+                vv._42 = (float)((float)((float)(childMat._44 * parentMat._42) + (float)(childMat._43 * parentMat._32))
+                    + (float)(childMat._42 * parentMat._22))
+                    + (float)(childMat._41 * parentMat._12);
+                vv._43 = (float)((float)((float)(childMat._44 * parentMat._43) + (float)(childMat._43 * parentMat._33))
+                    + (float)(childMat._42 * parentMat._23))
+                    + (float)(childMat._41 * parentMat._13);
+                vv._44 = (float)((float)((float)(childMat._44 * parentMat._44) + (float)(childMat._43 * parentMat._34))
+                    + (float)(childMat._42 * parentMat._24))
+                    + (float)(childMat._41 * parentMat._14);
+
+                Quaternion quat;
+                quat.FromMatrix(vv);
+
+                float odeq[4];
+                odeq[0] = quat.w;
+                odeq[1] = quat.x;
+                odeq[2] = quat.y;
+                odeq[3] = quat.z;
+                dGeomSetQuaternion(elem->GetGeom(), odeq);
+                dGeomSetPosition(elem->GetGeom(), vv._41, vv._42, vv._43);
+            }
+        }
     }
 
     void Landscape::ReleaseLod()

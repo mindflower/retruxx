@@ -119,9 +119,9 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModel::SetSkinsToLoad(LoadSkins const&)
+    void AnimatedModel::SetSkinsToLoad(LoadSkins const& skins)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_loadSkins = skins;
     }
 
     bool AnimatedModel::LoadGAM(CStr const& fileName, bool bForceNextAnimation)
@@ -390,6 +390,11 @@ namespace m3d
     void AnimatedModel::UpdateTexturesFilter()
     {
         throw retruxx::logic_error("Not implemented");
+    }
+
+    void AnimatedModel::SetComposite(bool isComposite)
+    {
+        m_composite = isComposite;
     }
 
     unsigned AnimatedModel::GetNumSkins() const
@@ -818,5 +823,47 @@ namespace m3d
     BoneAnim& AnimInfo::GetBoneAnim(unsigned)
     {
 	    throw retruxx::logic_error("Not implemented");
+    }
+
+    AnimAction actions[] = {
+        {"STAN", AT_STAND1},
+        {"STAND2", AT_STAND2 }       ,
+        {"MOVE1", AT_MOVE1}         ,
+        {"MOVE2", AT_MOVE2}         ,
+        {"ATTACK1", AT_ATTACK1}       ,
+        {"ATTACK2", AT_ATTACK2}       ,
+        {"PAIN1", AT_PAIN1 }        ,
+        {"PAIN2", AT_PAIN2 }        ,
+        {"DEATH1", AT_DEATH1 }       ,
+        {"DEATH2", AT_DEATH2 }       ,
+        {"BLOCK1", AT_BLOCK1 }       ,
+        {"BLOCK2", AT_BLOCK2 }       ,
+        {"RESERVED1", AT_RESERVED1 }    ,
+        {"RESERVED2", AT_RESERVED2 }    ,
+        {"RESERVED3", AT_RESERVED3 }    ,
+        {"RESERVED4", AT_RESERVED4 }    ,
+        {"SEL1RUS", AT_SND_SELECT }   ,
+        {"SEL2RUS", AT_SND_SELECT2}   ,
+        {"SEL3RUS", AT_SND_SELECT3}   ,
+        {"SEL4RUS", AT_SND_SELECT4}   ,
+        {"AT1RUS", AT_SND_ATTACK }   ,
+        {"AT2RUS", AT_SND_ATTACK2}   ,
+        {"AT3RUS", AT_SND_ATTACK3}   ,
+        {"AT4RUS", AT_SND_ATTACK4}   ,
+        {"WALK1RUS", AT_SND_WALK }     ,
+        {"WALK2RUS", AT_SND_WALK2}     ,
+        {"WALK3RUS", AT_SND_WALK3}     ,
+        {"WALK4RUS", AT_SND_WALK4}     ,
+        {"MOVE1A", AT_SND_MOVE1A }   ,
+        {"MOVE2A", AT_SND_MOVE2A }   ,
+        {"UNREACH1RUS", AT_SND_UNREACH}   ,
+        {"ALLFRAMES", AT_ALL_FRAMES }   ,
+        {nullptr, AT_NUMTYPES  },
+    };
+
+
+    AnimAction* GetAnimActions()
+    {
+        return actions;
     }
 }

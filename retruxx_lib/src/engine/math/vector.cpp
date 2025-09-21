@@ -10,7 +10,12 @@ namespace
 
 CVector::CVector(float* xx)
 {
-    x = *xx;
+    *this = *(CVector*)xx;
+}
+
+CVector::CVector(float xx)
+{
+    x = xx;
 }
 
 CVector::CVector(float xx, float yy, float zz)

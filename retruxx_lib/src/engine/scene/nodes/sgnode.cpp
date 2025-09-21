@@ -112,7 +112,7 @@ namespace m3d
 
     Class* SgNode::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SgNode);
     }
 
     int SgNode::SetServerItemProperty(unsigned, void*) const
@@ -224,7 +224,7 @@ namespace m3d
 
     DataServer* SgNode::GetServer() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return 0;
     }
 
     Aabb SgNode::GetAabb() const

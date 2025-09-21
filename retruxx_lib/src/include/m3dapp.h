@@ -317,10 +317,10 @@ namespace m3d
     public:
         void SetFrameClearColor(unsigned int color);
         virtual void PutSplash(int proc, const char* text) /* 0x54 */;
-        static void __fastcall PutSplashCallBack(int proc, void* data);
+        static void PutSplashCallBack(int proc, void* data);
         void DrawLogo();
         void PutSplashMainMenuLevelLoad(int proc, void* data);
-        static void __fastcall PutSplashCallBackQuiet(int, void*);
+        static void PutSplashCallBackQuiet(int, void*);
         int64_t GetMeasuredCpuFrequency() const;
         /* 0x8b194 */ m3d::CameraController* m_cameraController;
         /* 0x8b198 */ retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > m_cachedSoundIDs;

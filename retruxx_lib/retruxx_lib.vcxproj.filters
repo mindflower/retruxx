@@ -2075,6 +2075,9 @@
     <ClCompile Include="src\engine\math\obb.cpp">
       <Filter>engine\math</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\math\aabb.cpp">
+      <Filter>engine\math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">
@@ -2839,16 +2842,7 @@
     <ClInclude Include="src\include\math\vector4.h">
       <Filter>include\math</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\ode\contact.h">
-      <Filter>include\ode</Filter>
-    </ClInclude>
-    <ClInclude Include="src\include\ode\mass.h">
-      <Filter>include\ode</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\ode\odecpp.h">
-      <Filter>include\ode</Filter>
-    </ClInclude>
-    <ClInclude Include="src\include\ode\odemath.h">
       <Filter>include\ode</Filter>
     </ClInclude>
     <ClInclude Include="src\include\particles.h">
@@ -3838,9 +3832,6 @@
     <ClInclude Include="src\game\globalscriptfuncs.h">
       <Filter>game</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\ode\odememory.h">
-      <Filter>include\ode</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\script\luavector.h">
       <Filter>include\script</Filter>
     </ClInclude>
@@ -3995,6 +3986,9 @@
     </ClInclude>
     <ClInclude Include="src\game\game.h">
       <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ode\odecpp_collision.h">
+      <Filter>include\ode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

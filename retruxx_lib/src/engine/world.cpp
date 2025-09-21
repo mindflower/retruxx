@@ -722,6 +722,7 @@ namespace m3d
                 CStr nameStr(firstChild->GetName());
                 for (size_t m = 0; m < nameStr.length(); ++m)
                 {
+                    // TODO: refactor this shit
                     char c = nameStr[m];
                     if (c < '0' || c > '9')
                     {

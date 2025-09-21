@@ -74,14 +74,13 @@ namespace m3d
         DRAFT_CylinderSizes CylinderSizes;
     };
 
-    class DRAFT_Geom
+    struct DRAFT_Geom
     {
-    private:
-        DRAFT_GeomType Type;
+        /* 0x0000 */ m3d::DRAFT_GeomType Type;
         CVector Translation;
         Quaternion Rotation;
         m3d::DRAFT_GeomSize Sizes;
-    };
+    }; /* size: 0x002c */
 
     class DRAFT_HierGeom
     {
