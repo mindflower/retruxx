@@ -374,19 +374,16 @@ namespace m3d
             float m_zMax;
         };
 
-        class Material
+        struct Material
         {
-        public:
-            Material();
-            void init(Colorf const&);
+            m3d::rend::Colorf m_diffuse;
+            m3d::rend::Colorf m_ambient;
+            m3d::rend::Colorf m_specular;
+            m3d::rend::Colorf m_emissive;
+            /* 0x0040 */ float m_specularPower;
 
-        private:
-            Colorf m_diffuse;
-            Colorf m_ambient;
-            Colorf m_specular;
-            Colorf m_emissive;
-            float m_specularPower;
-        };
+            void init(const m3d::rend::Colorf& diff);
+        }; /* size: 0x0044 */
 
         class TexHandle : public Handle<TexHandle>
         {
@@ -935,8 +932,8 @@ namespace m3d
             virtual void DrawFullScreenQuad(m3d::rend::IEffect*) = 0;
             virtual void DrawFullScreenQuad() = 0;
             virtual m3d::rend::IbHandle AddIb(int, bool) = 0;
-            virtual void SetIndices(const m3d::rend::IbPoolField*, int) = 0;
-            virtual void SetIndices(const m3d::rend::IbHandle*, int) = 0;
+            virtual void SetIndices(const m3d::rend::IbPoolField&, int) = 0;
+            virtual void SetIndices(const m3d::rend::IbHandle&, int) = 0;
             virtual void* LockIb(const m3d::rend::IbHandle&, int, int, unsigned int) = 0;
             virtual void* LockIbStreaming(const m3d::rend::IbHandle*, int, int*, int*) = 0;
             virtual void UnlockIb(const m3d::rend::IbHandle&) = 0;

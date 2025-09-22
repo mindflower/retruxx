@@ -200,13 +200,12 @@ namespace m3d
         rend::TexHandle Handle;
     };
 
-    class DSurfaceMaterial
+    struct DSurfaceMaterial
     {
-    private:
-        rend::Material material;
-        DShader Shader;
-        retruxx::vector<DTextureInfo> Textures;
-    };
+        m3d::rend::Material material;
+        m3d::DShader Shader;
+        retruxx::vector<m3d::DTextureInfo, retruxx::allocator<m3d::DTextureInfo> > Textures;
+    }; /* size: 0x0074 */
 
     class DMesh
     {

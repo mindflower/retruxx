@@ -4,6 +4,13 @@
 #include <scene/servers/serverparticles.h>
 #include <poolmanager.h>
 #include <scene/nodes/sgnodegameunit.h>
+#include <core/scoped_ptr.h>
+#include <core/ini.h>
+#include <core/kernel.h>
+#include <file/fileserver.h>
+#include <file/filestream.h>
+
+bool loadedViaBPS = false;
 
 namespace m3d
 {
@@ -233,8 +240,55 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void ParticlesServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>&)
+    void ParticlesServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!loadedViaBPS)
+        {
+            scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
+            if (fileStream->Open("data\\models\\effects.bps", fs::IStream::OPEN_READ))
+            {
+                unsigned version = 0;
+                fileStream->ReadBytes(&version, 4u);
+                if (version != 2)
+                {
+                    AddItemsByOne(itemslist);
+                    fileStream->Close();
+                    return;
+                }
+
+                retruxx::vector<AttrProps> m_Attractors;
+                char buffer[52];
+                PSProps psProps;
+                unsigned psNum = 0;
+                fileStream->ReadBytes(&psNum, 4u);
+                for (int i = 0; i < psNum; ++i)
+                {
+                    fileStream->ReadBytes(buffer, 50);
+                    buffer[50] = 0;
+                    fileStream->ReadBytes(&psProps, sizeof(PSProps));
+
+                    unsigned attrNum = 0;
+                    fileStream->ReadBytes(&attrNum, 4u);
+                    
+                    AttrProps attrProps;
+                    m_Attractors.resize(attrNum, attrProps);
+
+                    for (int j = 0; j < attrNum; ++j)
+                    {
+                        fileStream->ReadBytes(&m_Attractors[j], sizeof(AttrProps));
+                    }
+
+                    auto* system = m3d::ParticleSystem::Factory(psProps, m_Attractors);
+                    m3d::DataServer::Model model(system, buffer, buffer, buffer);
+                    m_models.push_back(std::move(model));
+                }
+                fileStream->Close();
+                loadedViaBPS = true;
+            }
+            else
+            {
+                AddItemsByOne(itemslist);
+            }
+        }
     }
 }

@@ -27,4 +27,11 @@ namespace m3d
     }; /* size: 0x004c */
 
     static_assert(sizeof(LightsServer) == 0x004c);
+
+    struct PointLightModel
+    {
+        /* 0x0000 */ int m_radius;
+        CVector m_color;
+        /* 0x0010 */ float m_ttl;
+    }; /* size: 0x0014 */
 }

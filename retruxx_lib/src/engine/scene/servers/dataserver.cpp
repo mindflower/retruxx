@@ -140,14 +140,27 @@ namespace m3d
     {
     }
 
-    int DataServer::SetItemProperty(int, int, void*)
+    int DataServer::SetItemProperty(int id, int prop, void* src)
     {
-        throw std::logic_error("Not implemented");
+        if (prop > 6)
+            return 0;
+        this->m_models[id].m_additionalData[prop] = *(unsigned*)src;
+        return 1;
     }
 
     void DataServer::GenerateItemsRemap()
     {
-        throw std::logic_error("Not implemented");
+        m_shRemap.clear();
+        for (int i = 0; i < m_models.size(); ++i)
+        {
+            auto name = m_models[i].m_name;
+            if (!name.empty())
+            {
+                auto len = name.length() + 1;
+                LCMapStringA(0x400u, 0x100u, name.c_str(), len, &name[0], len);
+            }
+            m_shRemap[name] = i;
+        }
     }
 
     CStr DataServer::GetOriginalFileName(int)

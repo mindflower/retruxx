@@ -40,7 +40,6 @@ namespace m3d
 
     void AnimatedModelsServer::RenderItem(int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
     }
 
     void AnimatedModelsServer::UnregisterNode(SgNode*)
@@ -120,6 +119,8 @@ namespace m3d
     {
         if (m3d::DataServer::SetItemProperty(id, prop, src))
             return 1;
+
+
         throw retruxx::logic_error("Not implemented");
     }
 
@@ -646,7 +647,77 @@ DynamicModel::~DynamicModel()
 
 void DynamicModel::_createImpostorShit()
 {
-    throw retruxx::logic_error("Not implemented");
+    auto v2 = this->m_mdl[0];
+    auto v4 = v2->m_box.m_box[3] - v2->m_box.m_box[0];
+    auto v5 = v2->m_box.m_box[5] - v2->m_box.m_box[2];
+    auto sy = v2->m_box.m_box[4] - v2->m_box.m_box[1];
+    this->m_impostorDisplacement = v2->m_box.m_box[1];
+    auto boxSizeMaxXZ2 = sqrt(v5 * v5 + v4 * v4) * 0.5;
+
+    this->m_impostorVb = M3D_RENDERER->AddVb(m3d::rend::VertexType::VERTEX_IMPOSTORTEST, 240, "Impostors", 0);
+    int* v6 = (int*)M3D_RENDERER->LockVb(m_impostorVb, 0, 0, 0);
+    
+    // TODO: check and refactor this
+    auto v7 = 0.0 - boxSizeMaxXZ2;
+    auto v8 = 0;
+    auto v9 = 60;
+    do
+    {
+        *(float*)v6 = v7;
+        v6[1] = 0;
+        v6[3] = 0;
+        v6[4] = 1.0;
+        auto v10 = (char*)(v6 + 5);
+        *((float*)v10 - 3) = (float)v8;
+        *((float*)v10 + 2) = (float)v8;
+        *(float*)v10 = v7;
+        *((float*)v10 + 1) = sy;
+        *((int*)v10 + 3) = 0;
+        *((int*)v10 + 4) = 0;
+        v10 += 20;
+        *((float*)v10 + 2) = (float)v8;
+        *(float*)v10 = boxSizeMaxXZ2;
+        *((int*)v10 + 1) = 0;
+        *((float*)v10 + 3) = 1.0;
+        *((float*)v10 + 4) = 1.0;
+        v10 += 20;
+        *((float*)v10 + 2) = (float)v8;
+        *(float*)v10 = boxSizeMaxXZ2;
+        *((float*)v10 + 1) = sy;
+        *((float*)v10 + 3) = 1.0;
+        *((int*)v10 + 4) = 0;
+        v6 = (int*)(v10 + 20);
+        ++v8;
+        --v9;
+    } while (v9);
+
+    M3D_RENDERER->UnlockVb(m_impostorVb);
+
+    this->m_impostorIb = M3D_RENDERER->AddIb(360, 0);
+    char* v11 = (char*)M3D_RENDERER->LockIb(m_impostorIb, 0, 0, 0);
+
+    auto v12 = 1;
+    do
+    {
+        auto v13 = v11 + 2;
+        *(v13 - 1) = v12 - 1;
+        *v13++ = v12;
+        *v13++ = v12 + 1;
+        *v13++ = v12 + 1;
+        *v13++ = v12;
+        *v13 = v12 + 2;
+        v12 += 4;
+        v11 = (char*)(v13 + 1);
+    } while ((unsigned __int16)v12 < 241u);
+
+    M3D_RENDERER->UnlockIb(m_impostorIb);
+
+
+    M3D_RENDERER->AddDynamicTexture((CStr("$ImpostorTex.") + m_mdl[0]->GetName()).c_str(), 256, 256, 1);
+    M3D_RENDERER->SetTextureParameter(m_impostorTex, m3d::rend::TexParam::TM_WRAP_S, 3);
+    M3D_RENDERER->SetTextureParameter(m_impostorTex, m3d::rend::TexParam::TM_WRAP_T, 3);
+    M3D_RENDERER->SetTextureParameter(m_impostorTex, m3d::rend::TexParam::TM_TEX_FILTER, 1);
+
 }
 
 void DynamicModel::_releaseImpostorShit()

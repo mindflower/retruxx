@@ -24,9 +24,16 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SpritesServer::RenderItem(int, void*)
+    void SpritesServer::RenderItem(int id, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_profiler->StartCountdown();
+
+        if (id != -4)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
+
+        m_profiler->EndCountdown();
     }
 
     int SpritesServer::SaveAllLoadedEntities(char const*)
@@ -59,8 +66,11 @@ namespace m3d
         return 1;
     }
 
-    void SpritesServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>&)
+    void SpritesServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemsList)
     {
-        throw retruxx::logic_error("Not implemented");
+        for (int i = 0; i < itemsList.size(); ++i)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
     }
 }

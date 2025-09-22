@@ -437,9 +437,18 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int AnimatedModel::GetLoadPointIdByName(char const*) const
+    int AnimatedModel::GetLoadPointIdByName(char const* lpName) const
     {
-        throw retruxx::logic_error("Not implemented");
+        auto m_numNodes = this->m_header.m_numNodes;
+        auto v3 = 0;
+        if (m_numNodes <= 0)
+            return -1;
+        for (auto i = this->m_boneInitialPos; strcmp(i->m_boneName, lpName); ++i)
+        {
+            if (++v3 >= m_numNodes)
+                return -1;
+        }
+        return this->m_boneInitialPos[v3].m_ownIdx;
     }
 
     DRAFT_Geom const* AnimatedModel::GetGeom(unsigned) const
@@ -539,7 +548,7 @@ namespace m3d
 
     char const* AnimatedModel::GetName() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_Name.c_str();
     }
 
     Aabb& AnimatedModel::GetAabb()

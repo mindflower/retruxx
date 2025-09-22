@@ -1,22 +1,23 @@
 #include "particles.h"
 #include <m3dapp.h>
 #include <scene/servers/serverparticles.h>
+#include <core/log.h>
 
 namespace m3d
 {
     void Particle::Step(float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     Particle::Particle()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     Particle::~Particle()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ParticlesList::~ParticlesList()
@@ -85,222 +86,349 @@ namespace m3d
 
     void ParticlesList::SetAutoMeshEmitterPoints(int, int, float, CVector, CVector)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void ParticlesList::SetMeshEmitterPoints(CMatrix**, int, void**, int*, std::vector<rend::VertexType>&, std::vector<unsigned>&, int)
+    void ParticlesList::SetMeshEmitterPoints(CMatrix** mat, int numMeshes, void** verts, int* numVerts, retruxx::vector<m3d::rend::VertexType>& VertexTypes, retruxx::vector<unsigned int>& VertexTypeSizes, int numSkinMesh)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticlesList::Step(float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticlesList::SetMeshEmitterInds(int**, int*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::SetPsVolume(int, float, float, ForceType, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::SetPsVolume(CoordinatesSystemType)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    ParticleSystem* ParticleSystem::New(CStr const&)
+    ParticleSystem* ParticleSystem::New(CStr const& className)
     {
-        throw std::logic_error("Not implemented");
+        if (className == "Quad")
+        {
+            return new QuadPS;
+        }
+        if (className == "GlowQuad")
+        {
+            return new GlowQuadPS;
+        }
+        if (className == "Sprite")
+        {
+            return new SpritePS;
+        }
+        if (className == "Poly")
+        {
+            return new PolyPS;
+        }
+        if (className == "StripAll")
+        {
+            return new StripAllPS;
+        }
+        if (className == "Poly1")
+        {
+            return new Poly1PS;
+        }
+        if (className == "StripOne")
+        {
+            return new StripOnePS;
+        }
+        if (className == "Skin")
+        {
+            return new SkinPS;
+        }
+        if (className == "LandSprite")
+        {
+            return new LandSpritePS;
+        }
+        if (className == "Rain")
+        {
+            return new RainPS;
+        }
+        if (className == "Model")
+        {
+            return new ModelPS;
+        }
+        if (className == "PhysicModel")
+        {
+            return new PhysicModelPS;
+        }
+        M3D_LOG_INFO("New: wrong class name" + className);
+        return new ParticleSystem;
     }
 
     int ParticleSystem::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::SetScaleParts(float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     cmn::XmlNode* ParticleSystem::Write(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*, CStr)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    ParticleSystem* ParticleSystem::Factory(PSProps const&, std::vector<AttrProps> const&)
+    ParticleSystem* ParticleSystem::Factory(PSProps const& psprops, retruxx::vector<AttrProps> const& AttrProtos)
     {
-        throw std::logic_error("Not implemented");
+        auto* system = New(psprops.m_ClassName);
+        system->ReadFromProtos(psprops, AttrProtos);
+        return system;
     }
 
     ParticleSystem* ParticleSystem::Factory(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void ParticleSystem::ReadFromProtos(PSProps const&, std::vector<AttrProps> const&)
+    void ParticleSystem::ReadFromProtos(PSProps const&, retruxx::vector<AttrProps> const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ParticleSystem* ParticleSystem::CreateCopy(ParticleSystem&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::SetPsColor(float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ParticleSystem::GetTimeDiscretion() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::SetParticleColor(Particle*, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::SetPsTrailLen(int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void ParticleSystem::MoveParticles(ParticlesList*, std::vector<CVector> const*)
+    void ParticleSystem::MoveParticles(ParticlesList*, retruxx::vector<CVector> const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::InterpolateColors()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ParticleSystem::ReadRenderParams(ref_ptr<cmn::XmlNode>&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::SetPsBlendMode(PBlendMode)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::setParticleSize(Particle*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void ParticleSystem::WriteToProtos(PSProps&, std::vector<AttrProps>&)
+    void ParticleSystem::WriteToProtos(PSProps&, retruxx::vector<AttrProps>&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::SetPsMesh(float, int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::SetInterpolateColorsOnLoad(bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool ParticleSystem::IsLocal()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ParticleSystem::ParticleSystem()
     {
-        throw std::logic_error("Not implemented");
+        for (int i = 0; i < 20; ++i)
+        {
+            auto v5 = (float)i * 0.050000001;
+            auto v6 = v5;
+            if (v5 >= 0.0)
+            {
+                if (v5 > 1.0)
+                    v6 = 1.0;
+            }
+            else
+            {
+                v6 = 0.0;
+            }
+            auto v7 = (int)(float)(v6 * 20.0);
+            if (v7 >= 0)
+            {
+                if (v7 > 19)
+                    v7 = 19;
+            }
+            else
+            {
+                v7 = 0;
+            }
+            this->m_colors[v7] = -1;
+            if (v5 >= 0.0)
+            {
+                if (v5 > 1.0)
+                    v5 = 1.0;
+            }
+            else
+            {
+                v5 = 0.0;
+            }
+            auto v8 = (int)(float)(v5 * 20.0);
+            if (v8 >= 0)
+            {
+                if (v8 > 19)
+                    v8 = 19;
+            }
+            else
+            {
+                v8 = 0;
+            }
+            this->m_sizes[v8] = 0.30000001;
+        }
+
+        this->m_Emitter.m_emitAtPeriod = 10.0;
+        this->m_Emitter.m_wtime.m_start = 0.0;
+        this->m_Emitter.m_wtime.m_length = 1.0;
+        this->m_Emitter.m_wtime.m_repeat = 1.0;
+        this->m_Emitter.m_resettime = 0.0;
+        this->m_Emitter.m_localStop = 0;
+        this->m_Emitter.m_stopTime = 0.0;
+        this->m_trailLen = 15;
+        this->m_HaveTrail = 0;
+        this->m_CreateOne = 0;
+        this->m_scaleparts = 1.0;
+        this->m_blendMode = PS_ADDSMOOTH;
+        this->m_shader = 0;
+        this->m_shaderType = PSST_DUST;
+        this->m_meshradius = 5.0;
+        this->m_autoMeshEmitter = 1;
+        this->m_points = 20;
+        this->m_numvert = 0;
+        this->m_forv = 1;
+        this->m_back = 1;
+        this->m_backflag = 0;
+        this->m_Specific = 0;
+        
+        m_Attractors.reserve(3);
+        this->m_parentDependency = 0.0;
+        this->m_bBox.m_box[0] = -20.0;
+        this->m_bBox.m_box[1] = -20.0;
+        this->m_bBox.m_box[2] = -20.0;
+        this->m_bBox.m_box[3] = 20.0;
+        this->m_bBox.m_box[4] = 20.0;
+        this->m_bBox.m_box[5] = 20.0;
     }
 
     int ParticleSystem::ReadVolumeParams(ref_ptr<cmn::XmlNode>&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::SetPsSize(float, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ParticleSystem::ReadMeshParams(ref_ptr<cmn::XmlNode>&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ParticleSystem::Read(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     float ParticleSystem::GetBoundRadius() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ParticleSystem::~ParticleSystem()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::SetTextureName(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::Reset(ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void ParticleSystem::AddParticles(ParticlesList*, std::vector<CVector> const*)
+    void ParticleSystem::AddParticles(ParticlesList*, retruxx::vector<CVector> const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::AddParticle(ParticlesList*, CVector const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticleSystem::ApplyBlending()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ParticleSystem::Update(ParticlesList*, float, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int StripOnePS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     StripOnePS::StripOnePS()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void StripOnePS::ReleaseIb()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool StripOnePS::IsLocal()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     rend::IbPoolField StripOnePS::m_IbPoolField;
@@ -328,37 +456,37 @@ namespace m3d
 
     int PhysicModelPS::Update(ParticlesList*, float, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     cmn::XmlNode* PhysicModelPS::Write(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*, CStr)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void PhysicModelPS::WriteToProtos(PSProps&, std::vector<AttrProps>&)
+    void PhysicModelPS::WriteToProtos(PSProps&, retruxx::vector<AttrProps>&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int PhysicModelPS::Read(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int PhysicModelPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void PhysicModelPS::ReadFromProtos(PSProps const&, std::vector<AttrProps> const&)
+    void PhysicModelPS::ReadFromProtos(PSProps const&, retruxx::vector<AttrProps> const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void PolyPS::ReleaseIb()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     rend::IbPoolField PolyPS::m_IbPoolField;
@@ -384,39 +512,39 @@ namespace m3d
 
     int PolyPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     SkinPS::~SkinPS()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SkinPS::Reset(ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SkinPS::Update(ParticlesList*, float, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SkinPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     SkinPS::SkinPS()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     rend::IbPoolField Poly1PS::m_IbPoolField;
 
     void Poly1PS::ReleaseIb()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Poly1PS::CreateIb()
@@ -440,17 +568,17 @@ namespace m3d
 
     int Poly1PS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int StripAllPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     StripAllPS::StripAllPS()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     rend::IbPoolField StripAllPS::m_IbPoolField;
@@ -478,32 +606,32 @@ namespace m3d
 
     bool StripAllPS::IsLocal()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void StripAllPS::ReleaseIb()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     float LandSpritePS::GetBoundRadius() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool LandSpritePS::IsLocal()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int LandSpritePS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int SpritePS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     rend::IbPoolField SpritePS::m_IbPoolField;
@@ -531,52 +659,52 @@ namespace m3d
 
     float SpritePS::GetBoundRadius() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SpritePS::ReleaseIb()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ModelPS::~ModelPS()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ModelPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     cmn::XmlNode* ModelPS::Write(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*, CStr)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int ModelPS::Read(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void ModelPS::WriteToProtos(PSProps&, std::vector<AttrProps>&)
+    void ModelPS::WriteToProtos(PSProps&, retruxx::vector<AttrProps>&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void ModelPS::ReadFromProtos(PSProps const&, std::vector<AttrProps> const&)
+    void ModelPS::ReadFromProtos(PSProps const&, retruxx::vector<AttrProps> const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ModelPS::ModelPS()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int GlowQuadPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     rend::IbPoolField GlowQuadPS::m_IbPoolField;
@@ -604,12 +732,12 @@ namespace m3d
 
     float GlowQuadPS::GetBoundRadius() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void GlowQuadPS::ReleaseIb()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     rend::IbPoolField RainPS::m_IbPoolField;
@@ -632,19 +760,19 @@ namespace m3d
 
     void RainPS::ReleaseIb()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int RainPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     rend::IbPoolField QuadPS::m_IbPoolField;
 
     int QuadPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void QuadPS::CreateIb()
@@ -670,11 +798,11 @@ namespace m3d
 
     void QuadPS::ReleaseIb()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     float QuadPS::GetBoundRadius() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 }

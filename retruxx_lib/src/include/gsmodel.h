@@ -2,6 +2,7 @@
 #include <core/stringm3d.h>
 #include <math/aabb.h>
 #include <renderer/i_renderer_vertex.h>
+#include <draftstructures.h>
 
 class CMatrix;
 
@@ -9,51 +10,93 @@ namespace m3d
 {
     struct ModelInfo
     {
-        unsigned int m_numVertices;
-        unsigned int m_numFaces;
-        char m_alpha;
-    };
+        /* 0x0000 */ unsigned int m_numVertices;
+        /* 0x0004 */ unsigned int m_numFaces;
+        /* 0x0008 */ char m_alpha;
+    }; /* size: 0x000c */
+
+    struct CollisionDataHeader
+    {
+        /* 0x0000 */ unsigned int numVertices;
+        /* 0x0004 */ unsigned int numFaces;
+    }; /* size: 0x0008 */
+
+    struct CollidingVertex
+    {
+        /* 0x0000 */ float x;
+        /* 0x0004 */ float y;
+        /* 0x0008 */ float z;
+    }; /* size: 0x000c */
+
+    struct LPoint
+    {
+        /* 0x0000 */ char name[30];
+        /* 0x001e */ char Padding_306[2];
+        /* 0x0020 */ float x;
+        /* 0x0024 */ float y;
+        /* 0x0028 */ float z;
+    }; /* size: 0x002c */
+
 
     class CGSModel
     {
+        friend class StaticModelsServer;
+    private:
+        m3d::ModelInfo m_header;
+        m3d::DSurfaceMaterial m_SurfaceMaterial;
+        /* 0x0080 */ m3d::rend::VertexType m_VertType;
+        /* 0x0084 */ unsigned int m_VertTypeSize;
+        /* 0x0088 */ unsigned short* m_drawIndices;
+        /* 0x008c */ int m_idxOffset;
+        /* 0x0090 */ int m_vertsOffset;
+        /* 0x0094 */ void* m_drawVerts;
+        m3d::CollisionDataHeader m_col_header;
+        /* 0x00a0 */ m3d::CollidingVertex* m_col_verts;
+        /* 0x00a4 */ unsigned short* m_col_idx;
+        /* 0x00a8 */ m3d::LPoint* m_loadPoints;
+        /* 0x00ac */ int m_numLoadPoints;
+
     public:
-        void CalculateNormals(int);
-        void FlipFaces();
-        int Load(CStr const &);
-        int Prepare2Draw(CStr const &,int,int);
-        int RenderNormals(CMatrix const &,float);
-        ~CGSModel();
-        int Render(CMatrix const &,float);
-        ModelInfo & GetHeader();
-        void ChangeScale(float);
-        CGSModel();
-        int ChangeTexture(CStr const &,unsigned int);
-        void Release();
-        int Save(CStr const &);
-        int Prepare2Draw2(void *,void *);
+        Aabb m_box;
+        /* 0x00c8 */ int m_numDrawVerts;
+        /* 0x00cc */ int m_numDrawIndices;
+        /* 0x00d0 */ int m_numvbbank;
+        /* 0x00d4 */ int m_numibbank;
 
     private:
         void CalculateBBox();
         void renderMesh();
-        ModelInfo m_header;
-        DSurfaceMaterial m_SurfaceMaterial;
-        rend::VertexType m_VertType;
-        unsigned int m_VertTypeSize;
-        unsigned __int16 *m_drawIndices;
-        int m_idxOffset;
-        int m_vertsOffset;
-        void *m_drawVerts;
-        CollisionDataHeader m_col_header;
-        CollidingVertex *m_col_verts;
-        unsigned __int16 *m_col_idx;
-        LPoint *m_loadPoints;
-        int m_numLoadPoints;
-        Aabb m_box;
-        int m_numDrawVerts;
-        int m_numDrawIndices;
-        int m_numvbbank;
-        int m_numibbank;
-        unsigned __int16 *m_triIndices;
-        void *m_verts;
-    };
+        void renderBillboard(const CMatrix&, float);
+        /* 0x00d8 */ unsigned short* m_triIndices;
+        /* 0x00dc */ void* m_verts;
+        int Load(const CStr& fname);
+        int Load();
+
+    public:
+        CGSModel(const m3d::CGSModel&);
+        CGSModel();
+        ~CGSModel();
+        int Prepare2Draw(const CStr& dirToTextures, int vertOffset, int index);
+        int Prepare2Draw2(void* destVerts, void* destIndices);
+        int ChangeTexture(const CStr& name, unsigned int TexNum);
+        int Save(const CStr& model_name);
+        void Release();
+        int Render(const CMatrix& mat, float opacity);
+        int RenderNormals(const CMatrix& matT, float scale);
+        void CalculateNormals(int mode);
+        void FlipFaces();
+        void ChangeScale(float s);
+        void RestoreDeviceObjects();
+        void InvalidateDeviceObjects();
+        m3d::ModelInfo& GetHeader();
+        const m3d::LPoint* GetLPoints() const;
+        int GetNumLPoints() const;
+        int getNVerts();
+        int getNTriIdxs();
+        const void* GetVerts() const;
+        int GetVertsOffset();
+        const unsigned short* GetTris() const;
+        const m3d::rend::TexHandle GetTex(unsigned int) const;
+        unsigned int GetVertTypeSize();
+    }; /* size: 0x00e0 */
 }

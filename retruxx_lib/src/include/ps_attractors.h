@@ -70,23 +70,22 @@ namespace m3d
     class Emitter
     {
     public:
-        void ReadFromXmlNode(ref_ptr<m3d::cmn::XmlNode>&);
-        void WriteToXmlNode(ref_ptr<m3d::cmn::XmlNode>&);
-        void Set(float, float, float, float, float, float, float);
-        void LocalStop(m3d::Particle*, float);
-        unsigned int Emit(double, float);
-        bool IsWork(float);
-
-    private:
-        float m_emitAtPeriod;
+        /* 0x0000 */ float m_emitAtPeriod;
         WorkTime m_wtime;
-        unsigned int m_maxParticles;
-        float m_ttlMin;
-        float m_ttlMax;
-        float m_resettime;
-        bool m_localStop;
-        float m_stopTime;
-        float m_start;
-    };
+        /* 0x0010 */ unsigned int m_maxParticles;
+        /* 0x0014 */ float m_ttlMin;
+        /* 0x0018 */ float m_ttlMax;
+        /* 0x001c */ float m_resettime;
+        /* 0x0020 */ bool m_localStop;
+        /* 0x0021 */ char Padding_67[3];
+        /* 0x0024 */ float m_stopTime;
+        /* 0x0028 */ float m_start;
+        void Set(float ttlmin, float ttlmax, float max, float emit, float emitSt, float emitFin, float emitRpt);
+        void ReadFromXmlNode(ref_ptr<m3d::cmn::XmlNode>& emitter);
+        void WriteToXmlNode(ref_ptr<m3d::cmn::XmlNode>& emitter);
+        bool IsWork(float time);
+        void LocalStop(m3d::Particle* pParticle, float Time);
+        unsigned int Emit(double time, float lastFrameSecs);
+    }; /* size: 0x002c */
 }
 
