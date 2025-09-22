@@ -2,6 +2,9 @@
 #include <m3dapp.h>
 #include <scene/servers/serverparticles.h>
 #include <core/log.h>
+#include <skelmodel.h>
+
+bool interpolateColorsOnLoad = false;
 
 namespace m3d
 {
@@ -195,9 +198,113 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void ParticleSystem::ReadFromProtos(PSProps const&, retruxx::vector<AttrProps> const&)
+    void ParticleSystem::ReadFromProtos(PSProps const& psprops, retruxx::vector<AttrProps> const& AttrProtos)
     {
-        throw retruxx::logic_error("Not implemented");
+        // Copy basic properties
+        m_Name = psprops.m_Name;
+        m_ClassName = psprops.m_ClassName;
+
+        m_Specific = psprops.m_Specific;
+        m_HaveTrail = psprops.m_HaveTrail;
+        m_trailLen = psprops.m_trailLen;
+        m_CreateOne = psprops.m_CreateOne;
+        m_autoMeshEmitter = psprops.m_autoMeshEmitter;
+        m_meshradius = psprops.m_meshradius;
+        m_points = psprops.m_points;
+        m_point1 = psprops.m_point1;
+        m_point2 = psprops.m_point2;
+        m_point2Max = psprops.m_point2Max;
+
+        // Copy size arrays (optimized copy for 20 elements)
+        memcpy(m_sizes, psprops.m_sizes, sizeof(m_sizes));
+
+        if (interpolateColorsOnLoad)
+        {
+            InterpolateColors();
+        }
+
+        m_blendMode = psprops.m_blendMode;
+        m_forv = psprops.m_forv;
+        m_back = psprops.m_back;
+        m_orient = psprops.m_orient;
+        m_scaleparts = psprops.m_scaleparts;
+        m_updateXForm = psprops.m_updateXForm;
+        m_SpriteAngle = psprops.m_SpriteAngle;
+        m_TexTiling = psprops.m_TexTiling;
+
+        SetTextureName(psprops.m_texName);
+
+        // Set up shader based on type
+        m_shaderType = psprops.m_shaderType;
+        switch (m_shaderType) {
+        case PSST_DUST:
+            m_shader = M3D_RENDERER->NewEffect(
+                "data/shaders/ps_dust.fx", true);
+            break;
+        case PSST_LIGHT:
+            m_shader = M3D_RENDERER->NewEffect(
+                "data/shaders/ps_light.fx", true);
+            break;
+        case PSST_NOFOG_DUST:
+            m_shader = M3D_RENDERER->NewEffect(
+                "data/shaders/ps_nofog_dust.fx", true);
+            break;
+        case PSST_NOFOG_LIGHT:
+            m_shader = M3D_RENDERER->NewEffect(
+                "data/shaders/ps_nofog_light.fx", true);
+            break;
+        default:
+            M3D_ASSERT(false);
+            break;
+        }
+
+        M3D_ASSERT(m_shader);
+        m_shader->SetDefaultTechnique(true);
+
+        // Copy emitter properties
+        m_Emitter.m_emitAtPeriod = psprops.m_emitAtPeriod;
+        m_Emitter.m_wtime = psprops.m_wtime;
+        m_Emitter.m_maxParticles = psprops.m_maxParticles;
+        m_Emitter.m_ttlMin = psprops.m_ttlMin;
+        m_Emitter.m_ttlMax = psprops.m_ttlMax;
+        m_Emitter.m_resettime = psprops.m_resettime;
+        m_Emitter.m_localStop = psprops.m_localStop;
+        m_Emitter.m_stopTime = psprops.m_stopTime;
+        m_Emitter.m_start = psprops.m_start;
+
+        // Copy position and initial position properties
+        for (int i = 0; i < 3; ++i)
+        {
+            m_x0[i] = psprops.m_x0[i];
+            m_pos[i] = psprops.m_pos[i];
+        }
+        m_x0Cst = psprops.m_x0Cst;
+
+        m_parentDependency = psprops.m_parentDependency;
+
+        // Copy bounding box
+        m_bBox.Create(psprops.m_bBoxMin, psprops.m_bBoxMax);
+
+        // Clear existing attractors
+        for (auto* attractor : m_Attractors)
+        {
+            if (attractor)
+            {
+                delete attractor;
+            }
+        }
+        m_Attractors.clear();
+
+        // Create new attractors from prototypes
+        m_Attractors.reserve(AttrProtos.size());
+
+        for (const auto& attrProto : AttrProtos)
+        {
+            // Create new attractor based on class name
+            auto* newAttractor = m3d::Attr::New(attrProto.m_ClassName);
+            newAttractor->ReadFromProto(attrProto);
+            m_Attractors.push_back(newAttractor);
+        }
     }
 
     ParticleSystem* ParticleSystem::CreateCopy(ParticleSystem&)
@@ -381,9 +488,28 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void ParticleSystem::SetTextureName(CStr const&)
+    void ParticleSystem::SetTextureName(CStr const& name)
     {
-        throw retruxx::logic_error("Not implemented");
+        M3D_RENDERER->ReleaseTexture(this->m_texAdd);
+        if (!name.empty())
+        {
+                this->m_texAdd = M3D_RENDERER->AddTexture(
+                    name,
+                    0);
+                M3D_RENDERER->SetTextureParameter(
+                    this->m_texAdd,
+                    m3d::rend::TexParam::TM_WRAP_S,
+                    3u);
+                M3D_RENDERER->SetTextureParameter(
+                    this->m_texAdd,
+                    m3d::rend::TexParam::TM_WRAP_T,
+                    3u);
+                M3D_RENDERER->SetTextureParameter(
+                    this->m_texAdd,
+                    m3d::rend::TexParam::TM_TEX_FILTER,
+                    2u);
+        }
+        this->m_texName = name;
     }
 
     void ParticleSystem::Reset(ParticlesList*)
@@ -418,7 +544,7 @@ namespace m3d
 
     StripOnePS::StripOnePS()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_CreateOne = 1;
     }
 
     void StripOnePS::ReleaseIb()
@@ -479,9 +605,10 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void PhysicModelPS::ReadFromProtos(PSProps const&, retruxx::vector<AttrProps> const&)
+    void PhysicModelPS::ReadFromProtos(PSProps const& Prototype, retruxx::vector<AttrProps> const& AttrProtos)
     {
-        throw retruxx::logic_error("Not implemented");
+        ParticleSystem::ReadFromProtos(Prototype, AttrProtos);
+        m_modelName = Prototype.m_PartsModelName;
     }
 
     void PolyPS::ReleaseIb()
@@ -578,7 +705,7 @@ namespace m3d
 
     StripAllPS::StripAllPS()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_HaveTrail = 1;
     }
 
     rend::IbPoolField StripAllPS::m_IbPoolField;
@@ -692,14 +819,28 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void ModelPS::ReadFromProtos(PSProps const&, retruxx::vector<AttrProps> const&)
+    void ModelPS::ReadFromProtos(PSProps const& Prototype, retruxx::vector<AttrProps> const& AttrProtos)
     {
-        throw retruxx::logic_error("Not implemented");
+        ParticleSystem::ReadFromProtos(Prototype, AttrProtos);
+        m_PartsModelName = Prototype.m_PartsModelName;
+        
+        delete m_PartsModel;
+        m_PartsModel = nullptr;
+
+        delete m_Anim;
+        m_Anim = nullptr;
+
+        m_PartsModel = new AnimatedModel;
+        m_PartsModel->Load(m_PartsModelName, true);
+
+        m_Anim = new AnimInfo;
+        m_Anim->CreateFor(m_PartsModel);
     }
 
     ModelPS::ModelPS()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_PartsModel = 0;
+        this->m_Anim = 0;
     }
 
     int GlowQuadPS::Render(CMatrix const*, ParticlesList*)

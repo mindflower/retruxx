@@ -8,6 +8,7 @@
 #include <file/tagged.h>
 
 #include "game/m3dgame.h"
+#include <config.h>
 
 namespace m3d
 {
@@ -126,8 +127,7 @@ namespace m3d
 
     bool AnimatedModel::LoadGAM(CStr const& fileName, bool bForceNextAnimation)
     {
-        //TODO: implement AnimatedModel::LoadGAM
-        return true;
+        throw retruxx::logic_error("Not implemented");
         if (m_bVerification)
         {
             M3D_LOG_ERR("LoadGAM does work not for verification of models!!!");
@@ -412,9 +412,12 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    bool AnimatedModel::Load(CStr const&, bool)
+    bool AnimatedModel::Load(CStr const& FileName, bool bForceNextAnimation)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (M3D_KERNEL->GetEngineCfg().m_loadFromGAM.GetB())
+            return m3d::AnimatedModel::LoadGAM(FileName, bForceNextAnimation);
+        else
+            return m3d::AnimatedModel::LoadSAM(FileName, bForceNextAnimation);
     }
 
     unsigned AnimatedModel::GetGroupsNum() const
