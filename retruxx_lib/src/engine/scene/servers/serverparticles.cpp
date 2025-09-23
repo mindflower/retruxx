@@ -105,7 +105,6 @@ namespace m3d
 
     void ParticlesServer::RenderItem(int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
     }
 
     void ParticlesServer::SaveAllLoadedEntitiesToBPS()

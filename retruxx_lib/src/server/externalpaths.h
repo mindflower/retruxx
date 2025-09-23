@@ -1,6 +1,5 @@
 #pragma once
-#include <map>
-#include <vector>
+#include <thirdparty/containers.h>
 #include <core/stringm3d.h>
 
 class CVector2;
@@ -10,17 +9,19 @@ namespace ai
     class ExternalPaths
     {
     public:
-        std::vector<CStr> const& GetPathNames() const;
-        bool Load(CStr const&);
-        bool DelPath(CStr const&);
-        bool SetPath(CStr const&, std::vector<CVector2> const&);
-        bool Save(CStr const&);
-        bool AddPath(CStr const&, std::vector<CVector2> const&);
-        std::vector<CVector2> const& GetPath(CStr const&) const;
+        bool Load(const CStr& fileName);
+        bool Save(const CStr& filename);
+        const retruxx::vector<CVector2, retruxx::allocator<CVector2> >& GetPath(const CStr& pathName) const;
+        bool SetPath(const CStr& pathName, const retruxx::vector<CVector2, retruxx::allocator<CVector2> >& thePath);
+        bool AddPath(const CStr& pathName, const retruxx::vector<CVector2, retruxx::allocator<CVector2> >& thePath);
+        bool DelPath(const CStr& pathName);
+        const retruxx::vector<CStr, retruxx::allocator<CStr> >& GetPathNames() const;
+
+        using PathMap = retruxx::map<CStr, retruxx::vector<CVector2, retruxx::allocator<CVector2> >, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, retruxx::vector<CVector2, retruxx::allocator<CVector2> > > > >;
 
     private:
-        std::map<CStr, std::vector<CVector2>> m_paths;
-        std::vector<CVector2> m_emptyPath;
-        std::vector<CStr> m_emptyNames;
-    };
+        retruxx::map<CStr, retruxx::vector<CVector2, retruxx::allocator<CVector2> >, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, retruxx::vector<CVector2, retruxx::allocator<CVector2> > > > > m_paths;
+        retruxx::vector<CVector2, retruxx::allocator<CVector2> > m_emptyPath;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_emptyNames;
+    }; /* size: 0x002c */
 }

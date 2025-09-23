@@ -6,6 +6,7 @@
 #include "config.h"
 #include "m3dapp.h"
 #include "core/kernel.h"
+#include "core/timer.h"
 #include "world.h"
 #include "level.h"
 
@@ -180,7 +181,22 @@ namespace m3d
 
     void SceneGraph::UpdateThinkNodes()
     {
-        throw retruxx::logic_error("Not implemented");
+        auto curTime = M3D_KERNEL->GetTimer().GetFrameStartTime();
+        for (auto& think : m_thinkList)
+        {
+            auto nextThinkTime = think->m_nextThinkTime;
+            if (nextThinkTime > 0 && nextThinkTime < curTime)
+            {
+                auto prevThinkTime = think->m_prevThinkTime;
+                auto delta = curTime - prevThinkTime;
+                if (delta == 1)
+                {
+                    delta = 100;
+                }
+                think->Think(delta, curTime);
+                think->m_prevThinkTime = curTime;
+            }
+        }
     }
 
     void SceneGraph::DumpRenderingNodesInfoForClass(const Class*)
@@ -313,7 +329,8 @@ namespace m3d
 
     void SceneGraph::Update()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement SceneGraph::Update
+        //throw retruxx::logic_error("Not implemented");
     }
 
     void SceneGraph::RenderDebugForNode(SgNode*)
@@ -323,7 +340,8 @@ namespace m3d
 
     void SceneGraph::RenderContouredNodes()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement SceneGraph::RenderContouredNodes
+        //throw retruxx::logic_error("Not implemented");
     }
 
     void SceneGraph::UpdateAllXForms()
@@ -348,7 +366,8 @@ namespace m3d
 
     void SceneGraph::Render(SgRenderFlags)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement SceneGraph::Render
+        //throw retruxx::logic_error("Not implemented");
     }
 
     void SceneGraph::GetNodeNamesHierarchy(SgNode*, retruxx::vector<CStr>&)
@@ -458,7 +477,8 @@ namespace m3d
         }
         else
         {
-            throw retruxx::logic_error("Not implemented");
+            // TODO: implement SceneGraph::UpdateVis
+            //throw retruxx::logic_error("Not implemented");
         }
     }
 

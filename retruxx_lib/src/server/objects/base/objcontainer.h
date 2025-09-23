@@ -250,4 +250,6 @@ namespace ai
     static_assert(sizeof(ObjContainer) == 0x0120);
 
     void SetObjects(ObjContainer*);
+
+    inline ObjContainer* theObjects = nullptr;
 }

@@ -32,8 +32,16 @@ namespace ai
             //throw std::runtime_error("not implemented");
         }
 
-        const ai::Numeric<T>& value() const;
-        ai::Numeric<T>& value();
+        const ai::Numeric<T>& value() const
+        {
+            return m_value;
+        }
+
+        ai::Numeric<T>& value()
+        {
+            return m_value;
+        }
+
         const ai::Numeric<T>& minValue() const;
         ai::Numeric<T>& minValue();
         const ai::Numeric<T>& maxValue() const;

@@ -101,11 +101,11 @@ namespace m3d
 
         struct ModelInfo
         {
-            /* 0x0000 */ short m_numNodes;
-            /* 0x0002 */ short m_numTriMeshes;
-            /* 0x0004 */ short m_numSkinMeshes;
-            /* 0x0006 */ short m_numStaticMeshes;
-            /* 0x0008 */ short m_numAnimations;
+            /* 0x0000 */ short m_numNodes = 0;
+            /* 0x0002 */ short m_numTriMeshes = 0;
+            /* 0x0004 */ short m_numSkinMeshes = 0;
+            /* 0x0006 */ short m_numStaticMeshes = 0;
+            /* 0x0008 */ short m_numAnimations = 0;
         }; /* size: 0x000a */
 
         struct AnimationTransform

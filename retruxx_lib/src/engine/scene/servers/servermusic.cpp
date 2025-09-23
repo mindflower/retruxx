@@ -28,7 +28,8 @@ namespace m3d
 
     void MusicServer::RenderItem(int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement MusicServer::RenderItem
+        //throw retruxx::logic_error("Not implemented");
     }
 
     int MusicServer::Release()
@@ -114,7 +115,8 @@ namespace m3d
 
     void MusicServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>&)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement MusicServer::AddItemsList
+        //throw retruxx::logic_error("Not implemented");
     }
 
     int MusicServer::_GetSoundIdByServerHandle(int) const

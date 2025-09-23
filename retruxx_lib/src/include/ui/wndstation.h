@@ -124,7 +124,7 @@ namespace m3d
             /* 0x02a8 */ m3d::CIntHash<m3d::ui::Wnd*> m_allWindowsById;
             void RegisterWnd(m3d::ui::Wnd* w);
             void UnregisterWnd(m3d::ui::Wnd* w);
-            /* 0x02d0 */ int m_nextUniqueId;
+            /* 0x02d0 */ int m_nextUniqueId = 0;
 
         public:
             bool IsWndAlive(const m3d::ui::Wnd* w, int uniqueId) const;

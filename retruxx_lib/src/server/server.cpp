@@ -136,100 +136,190 @@ namespace ai
 
     int n_AddToCinematic(m3d::sArgStack& scriptStack)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int n_EndCinematic(m3d::sArgStack& scriptStack)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int n_CreateObjectByClassName(m3d::sArgStack& scriptStack)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     CServer* pServer = nullptr;
 
     void CServer::AddToCinematic(Obj*, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::AddToCinematic(int, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::SetPause(bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::Profiler* CServer::GetTmpProfiler()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::Profiler* CServer::GetBulletProfiler()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::Profiler* CServer::GetCollideProfiler()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::Profiler* CServer::GetObjectsUpdateProfiler()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ExternalPaths const* CServer::GetExternalPaths() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     PlayerPassMap const* CServer::GetPlayerPassMap() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::SetLastId(int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    void CServer::Load(StartupMode, m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, bool, ObjContainer::eSAVE_TYPES)
+    void CServer::Load(StartupMode mode, m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode, bool bContiniousMap, ObjContainer::eSAVE_TYPES saveType)
     {
-        //TODO: implement  CServer::Load
-        //throw std::logic_error("Not implemented");
+        M3D_LOG_INFO("AI: Loading Server...");
+
+        auto saveSaveType = ai::theObjects->m_SaveType;
+        ai::theObjects->m_SaveType = saveType;
+
+        if (!bContiniousMap)
+        {
+            M3D_LOG_INFO("\tAI: Loading Relationship");
+            ai::theRelationship->LoadFromXmlFile(ai::theGlobProp.m_pathToRelationship.c_str());
+            ai::theRelationship->LoadDefaultFromXmlFile(ai::theGlobProp.m_pathToRelationship.c_str());
+        }
+
+        M3D_LOG_INFO("\tAI: Loading SoilProps");
+        m_pDynamicScene->ReadSoilProps(M3D_KERNEL->GetEngineCfg().m_pathToSoilProps.GetS());
+
+        M3D_LOG_INFO("\tAI: Loading ExternalPaths");
+        m_pExternalPaths->Load(m_level->GetFullPathNameA(this->m_level->m_externalPathsFileName));
+
+        M3D_LOG_INFO("\tAI: Loading PlayerPassMap");
+        m_pPlayerPassMap->LoadFromBinaryFile(m_level->GetFullPathNameA(this->m_level->m_playerPassMapFileName));
+
+        if (!bContiniousMap)
+        {
+            M3D_LOG_INFO("\tAI: Loading GameObjects");
+            ai::thePrototypeManager->LoadFromXmlFile(ai::theGlobProp.m_pathToGameObjects);
+
+            M3D_LOG_INFO("\tAI: Initializing VehicleGeneratorInfoCache");
+            ai::theVehiclesGeneratorInfoCache->EnsureInitialized();
+        }
+
+        M3D_LOG_INFO("\tAI: Refreshing GameObjects");
+        ai::thePrototypeManager->RefreshFromXmlFile(ai::theGlobProp.m_pathToGameObjects);
+
+        M3D_LOG_INFO("\tAI: Loading QuestStates");
+        ai::theQuestStateManager->LoadFromXmlFile(m_level->GetFullPathNameA(this->m_level->m_questStatesFileName));
+        M3D_LOG_INFO("\tAI: QuestStates loaded");
+
+        M3D_LOG_INFO("\tAI: Loading DynamicScene");
+        if (xmlNode)
+        {
+            retruxx::vector<m3d::Class*> classes;
+            m_pDynamicScene->LoadSceneFromXml(xmlFile, xmlNode, classes);
+        }
+        else
+        {
+            retruxx::vector<m3d::Class*> classes;
+            m_pDynamicScene->LoadSceneFromFile(m_level->GetFullPathNameA(this->m_level->m_dsSrvName).c_str(), classes);
+        }
+        M3D_LOG_INFO("\tAI: DynamicScene loaded");
+
+        ai::UpdateLights();
+        m_StartServerUpdates = 1;
+
+        M3D_LOG_INFO("\tAI: Loading Triggers");
+        LoadTriggersFromXML(m_level->GetFullPathNameA(this->m_level->m_TriggersName));
+        LoadTriggersFromXML(m_level->GetFullPathNameA(this->m_level->m_cinemaTriggersName));
+        M3D_LOG_INFO("\tAI: Triggers loaded");
+        
+        M3D_LOG_INFO("\tAI: Loading Object Names");
+        ai::theObjects->LoadObjectNamesFromXML(m_level->GetFullPathNameA(this->m_level->m_ObjectFullNames));
+ 
+        LoadPrototypeNamesFromXML(this->m_level->m_prototypeFullNames);
+        m_LastSenderID = 0;
+        
+        M3D_LOG_INFO("\tAI: Initing Player");  
+        m3d::sArgStack stack;
+        if (auto res = M3D_KERNEL->GetScriptServer().callScriptFunc("InitPlayer", stack, 0))
+        {
+            auto formatedScriptErrorDesc = M3D_KERNEL->GetScriptServer().getFormatedScriptErrorDesc(res);
+            M3D_LOG_ERR(formatedScriptErrorDesc);
+
+        }
+
+        ai::theProcessManager->Update(0.000099999997, 1u, 2u);
+        if (ai::thePlayer && ai::theObjects->m_SaveType != ai::ObjContainer::eSAVE_TYPES::SAVE_FULL)
+        {
+            ai::thePlayer->CauseEvent(GE_GAME_START, 0.0, {}, {});
+        }
+
+        M3D_LOG_INFO("\t\tBefore first Update");
+        ai::theProcessManager->Update(0.050000001, 1u, 2u);
+        if (ai::theObjects->m_SaveType == ai::ObjContainer::eSAVE_TYPES::SAVE_LEVEL)
+        {
+            Update(0.0099999998);
+            Update(0.0099999998);
+            Update(0.0099999998);
+        }
+        M3D_LOG_INFO("\t\tAfter first Update");
+
+        M3D_LOG_INFO("AI: Finished Loading Server");
+
+        ai::theObjects->m_SaveType = saveSaveType;
     }
 
     bool CServer::GetPause() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int CServer::GetPrototypeId(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     PrototypeInfo* CServer::CreatePrototypeInfoByClassName(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::CWorld* CServer::GetWorld()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::LoadVisitedMap(CStr const&, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::Register()
@@ -351,27 +441,45 @@ namespace ai
 
     float CServer::GetLevelSize() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::Level* CServer::GetLevel() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::Profiler* CServer::GetPathFindingProfiler()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::RelinkSceneGraphNodes()
     {
-        throw std::logic_error("Not implemented");
+        m_pObjects->RelinkSceneGraphNodes();
     }
 
     CServer::CServer()
     {
         assert(m3d::g_Kernel);
+
+        this->pGlobalMap = 0;
+        this->m_pWorld = 0;
+        this->m_level = 0;
+        this->m_pDynamicScene = 0;
+        this->pAIManager = 0;
+        this->m_pAffixManager = 0;
+        this->m_pExternalPaths = 0;
+        this->m_pPlayerPassMap = 0;
+        this->cam = CVector(0.0, 0.0, 0.0);
+        this->fPause = 0;
+        this->m_lastId = 0;
+        this->m_averageElapsedTime = 0.0;
+        this->m_CurIndex = 0;
+        this->m_MaxAverageLength = 20;
+        this->m_Accumulation = 1;
+        this->m_AveElapsedTimeUsed = 0;
+
         m_lastElapsedTimes.resize(0x14, 0.0);
         m_pObjects = dynamic_cast<ObjContainer*>(m3d::g_Kernel->New("ObjContainer"));
         m3d::g_Kernel->UnRegisterGlobal("g_ObjContainer");
@@ -426,82 +534,83 @@ namespace ai
 
     void CServer::LoadTriggersFromXML(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::PostPlayerEvent(eGameEvent)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int CServer::GetLastId()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     CStr CServer::GetPrototypeFullName(int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     CStr CServer::GetPrototypeFullName(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::Update(float)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement CServer::Update
+        //throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::LoadGlobalMapFromRawFile(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::ClearOnce()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::EndCinematic()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::GetControlData()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     unsigned CServer::GetGlobalMapValue(long, long)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int CServer::GetPathFindQuant()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     CStr CServer::GetFullNameByObjID(int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::Clear()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::ResetCinematicObjects()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     PrototypeInfo const* CServer::GetPrototypeInfo(int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::InitOnce()
@@ -534,12 +643,12 @@ namespace ai
 
     eTolerance CServer::CheckTolerance(int, int)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::LoadPrototypeNamesFromXML(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::LoadGlobalPropertiesFromXML(CStr const& fileName)
@@ -564,12 +673,12 @@ namespace ai
 
     AffixManager* CServer::GetAffixManager() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::StartCinematic()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::Init(m3d::CWorld* world)
@@ -664,47 +773,47 @@ namespace ai
 
     void CServer::PutGameData()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::HandleCommand(int, m3d::CConsoleParams const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     CServer::~CServer()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     bool CServer::HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::SaveVisitedMap(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::_PostProcessConsoleCommands()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::_RegisterConsoleCommands()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::RestorePrevCinematicState()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::SavePrevCinematicState()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::_SetLevel(m3d::Level* newLevel)
@@ -722,5 +831,10 @@ namespace ai
     void SetDynamicScene(DynamicScene* DS)
     {
         gDynamicScene = DS;
+    }
+
+    void UpdateLights()
+    {
+        throw retruxx::logic_error("Not implemented");
     }
 }

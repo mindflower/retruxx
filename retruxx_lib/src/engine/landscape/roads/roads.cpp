@@ -78,7 +78,7 @@ namespace m3d
 
     Object* RoadNode::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new RoadNode;
     }
 
     RoadNode::RoadNode(RoadNode const&)
@@ -88,6 +88,26 @@ namespace m3d
 
     RoadNode::RoadNode()
     {
-        throw std::logic_error("Not implemented");
+        this->minb.x = 0.0;
+        this->minb.y = 0.0;
+        this->minb.z = 0.0;
+        this->maxb.x = 0.0;
+        this->maxb.y = 0.0;
+        this->maxb.z = 0.0;
+        this->m_frameVisible = -1;
+        this->m_linkedNodes[0] = 0;
+        this->m_linkedNodes[1] = 0;
+        this->m_linkedNodes[2] = 0;
+        this->m_linkedNodes[3] = 0;
+        this->m_bRoadDrawn = 0;
+        this->m_geomObject = 0;
+        this->m_type = 0;
+        this->m_modelNum = 0;
+        this->m_skinNumber = 0;
+        this->m_friend = 0;
+        this->m_asCliff = 0;
+        this->m_boundCenter = CVector(0.0, 0.0, 0.0);
+        this->m_boundRadius = 0.0;
+        this->m_cachedVertices = 0;
     }
 }

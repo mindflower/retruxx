@@ -60,6 +60,7 @@ namespace retruxx
 #include <stdexcept>
 #include <string>
 #include <stack>
+#include <queue>
 
 namespace retruxx
 {
@@ -110,6 +111,9 @@ namespace retruxx
 
     template<typename... Args>
     using stack = std::stack<Args...>;
+
+    template<typename... Args>
+    using queue = std::queue<Args...>;
 }
 
 #endif //RETRUXX_DLL

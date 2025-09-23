@@ -34,7 +34,7 @@ namespace m3d
 
     WeatherManager& CWorld::GetWeatherManager()
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_weatherManager;
     }
 
     void CWorld::Invalidate()
@@ -190,10 +190,15 @@ namespace m3d
         dGeomSetCategoryBits(this->m_borderWallGeoms[4], 1u);
         dGeomSetCollideBits(this->m_borderWallGeoms[4], 0xFFFFFFFE);
 
+        const auto roadsLoadedBegin = M3D_KERNEL->GetTimer().GetCurTime();
 
+        m_roadManager.Init();
+        m_roadManager.ReadRoadSetConfigFromXmlFile((m_level->m_levelPath + "\\" + m_level->m_roadsetName).c_str());
+        m_roadManager.ReadRoadsFromXmlFile((m_level->m_levelPath + "\\" + m_level->m_roadmapName).c_str());
 
+        const auto roadsLoadedEnd = M3D_KERNEL->GetTimer().GetCurTime();
+        M3D_LOG_INFO("----------------------- Roads loaded in: " + CStr(roadsLoadedEnd - roadsLoadedBegin));
 
-        throw retruxx::logic_error("Not implemented");
         return 1;
     }
 
@@ -287,7 +292,7 @@ namespace m3d
 
     ai::Vehicle* CWorld::GetVehicleControlledByPlayer()
     {
-        throw retruxx::logic_error("Not implemented");
+        return ai::gDynamicScene->GetVehicleControlledByPlayer();
     }
 
     float CWorld::GetSForShadowsFromWeather() const
@@ -347,7 +352,26 @@ namespace m3d
 
     void CWorld::Update()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (M3D_KERNEL->GetEngineCfg().m_dbg_doNotUpdateAI.GetB())
+        {
+            m_weatherManager.UpdateWheatherParticles();
+            m_landscape.Update();
+            m_sceneGraph.Update();
+        }
+        else
+        {
+            m_weatherManager.UpdateWheatherParticles();
+            m_sceneGraph.UpdateThinkNodes();
+            ai::pServer->Update(0.0);
+            m_landscape.Update();
+            m_sceneGraph.Update();
+
+            m_profilerUpdateOde->StartCountdown();
+            ai::pServer->RelinkSceneGraphNodes();
+            m_profilerUpdateOde->EndCountdown();
+
+            m_landscape.ManageLandScapeCollisionTriMeshes();
+        }
     }
 
     unsigned CWorld::GetWeatherDiffuseColor() const
@@ -362,7 +386,8 @@ namespace m3d
 
     void CWorld::ProcessCollisionStuff()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement CWorld::ProcessCollisionStuff
+        //throw retruxx::logic_error("Not implemented");
     }
 
     int CWorld::CreatePrefabsFromFile(char const* fileName)

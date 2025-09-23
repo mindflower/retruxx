@@ -4,6 +4,8 @@
 #include "scene/servers/dataserver.h"
 #include <scene/servers/serverparticles.h>
 #include "core/ini.h"
+#include <core/kernel.h>
+#include <core/timer.h>
 
 namespace m3d
 {
@@ -30,9 +32,33 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgParticlesNode::Think(int, int)
+    int SgParticlesNode::Think(int dt, int curTime)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (this->m_srvId == -1)
+            return 0;
+        if (this->m_frameVisible != M3D_KERNEL->GetTimer().GetCurFrame() - 1
+            && (!this->m_isRemoveIfFree || curTime - this->m_lastTimeUpdated < 500))
+        {
+            return 0;
+        }
+
+        int v6 = 0;
+        if (this->m_isRemoveIfFree && (m_lastTimeUpdated = this->m_lastTimeUpdated, m_lastTimeUpdated >= 0))
+            v6 = curTime - m_lastTimeUpdated;
+        else
+            v6 = dt;
+
+        struct
+        {
+            m3d::SgNode* m_node;
+            unsigned int m_dt;
+        } ri;
+
+        ri.m_dt = v6;
+        ri.m_node = this;
+        GetServer()->UpdateItem(this->m_srvId, &ri);
+        this->m_lastTimeUpdated = curTime;
+        return 1;
     }
 
     Object* SgParticlesNode::Clone()

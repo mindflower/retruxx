@@ -136,7 +136,8 @@ namespace ai
 
 	void DynamicScene::RenderDebugInfo()
 	{
-		throw retruxx::logic_error("Not implemented");
+        // TODO: implement DynamicScene::RenderDebugInfo
+        //throw retruxx::logic_error("Not implemented");
 	}
 
 	m3d::Object* DynamicScene::CreateObject()

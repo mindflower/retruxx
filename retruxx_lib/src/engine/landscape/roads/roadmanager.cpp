@@ -103,6 +103,9 @@ namespace m3d
 
     RoadManager::RoadManager()
     {
+        this->m_owner = 0;
+        this->m_coveredCells = 0;
+        this->m_roadRoot = 0;
     }
 
     int RoadManager::WriteRoadsToXmlFile(char const*)
@@ -122,12 +125,16 @@ namespace m3d
 
     int RoadManager::ReadRoadSetConfigFromXmlFile(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement RoadManager::ReadRoadSetConfigFromXmlFile
+        //throw retruxx::logic_error("Not implemented");
+        return 1;
     }
 
     int RoadManager::ReadRoadsFromXmlFile(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement RoadManager::ReadRoadsFromXmlFile
+        //throw retruxx::logic_error("Not implemented");
+        return 1;
     }
 
     void RoadManager::Release()
@@ -137,7 +144,10 @@ namespace m3d
 
     void RoadManager::Init()
     {
-        throw retruxx::logic_error("Not implemented");
+        M3D_ASSERT(m_roadRoot == nullptr);
+        m_roadRoot = (m3d::RoadNode*)M3D_KERNEL->New("RoadNode");
+
+        M3D_ASSERT(m_coveredCells == nullptr);
     }
 
     void RoadManager::ClearRoadSets()

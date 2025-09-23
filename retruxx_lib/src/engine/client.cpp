@@ -34,9 +34,11 @@ namespace m3d
             this);
     }
 
-    int CClient::Update(int, unsigned)
+    int CClient::Update(int curTime, unsigned dt)
     {
-        throw std::logic_error("Not implemented");
+        m3d::CClient::PredictUpdate(curTime, dt);
+        m_world->Update();
+        return 1;
     }
 
     void CClient::OnBeforeDeviceReset()
@@ -78,7 +80,6 @@ namespace m3d
 
     void CClient::PredictUpdate(int, unsigned)
     {
-        throw std::logic_error("Not implemented");
     }
 
     void CClient::PredictAddNode(SgNode*)

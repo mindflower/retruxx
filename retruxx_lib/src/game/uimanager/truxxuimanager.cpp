@@ -587,7 +587,8 @@ CStr TruxxUiManager::GetPathToSplashes() const
 
 int TruxxUiManager::Update()
 {
-    throw std::logic_error("Not implemented");
+    auto v2 = this->LaunchEvent(89, GUI_EVENT_CUSTOM, 0) & 1;
+    return v2 & this->LaunchEvent(90, GUI_EVENT_CUSTOM, 0);
 }
 
 int TruxxUiManager::LaunchEvent(int eventId, GuiEventType type, void* data)
@@ -1210,6 +1211,16 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         m_levelInfoManager->GameDataUpdate(data, guiEventId);
         m_questInfoManager->GameDataUpdate(data, guiEventId);
         OnStartLevel(data);
+        return 0;
+    }
+    case 89:
+    {
+        return 0;
+    }
+    case 90:
+    {
+        m_levelInfoManager->GameDataUpdate(data, guiEventId);
+        m_savesManager->GameDataUpdate(data, guiEventId);
         return 0;
     }
     default:

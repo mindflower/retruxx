@@ -35,8 +35,20 @@
 #include "server/objects/vehicle.h"
 #include "uimisc/questinfo.h"
 #include "uiwindows/miscwindows/cinemapanel.h"
+#include <algorithm>
+#include <game/uimisc/weapongroup.h>
+
+extern "C"
+{
+#include <engine/ode/sources/collision_kernel.h>
+}
+
+#undef GetFirstChild
+#undef GetNextSibling
 
 extern Vivisector* g_Vivisector;
+
+bool LightActivated = false;
 
 namespace m3d
 {
@@ -298,9 +310,40 @@ int CMiracle3d::CinematicInit()
     throw std::logic_error("Not implemented");
 }
 
-void CMiracle3d::PlayHackedMusic(HackedMusicType, bool)
+void CMiracle3d::PlayHackedMusic(HackedMusicType musicType, bool bForceRestart)
 {
-    throw std::logic_error("Not implemented");
+    if (M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
+    {
+        if (musicType == HACKMUSIC_GAME)
+        {
+            m_blockMusicManager->PlayCurrentMusic();
+            this->m_hackedMusicType = HACKMUSIC_GAME;
+            this->m_bMustStartNewMusic = 0;
+        }
+        else
+        {
+            m_bMustStartNewMusic = this->m_bMustStartNewMusic;
+            if (m_bMustStartNewMusic && musicType == HACKMUSIC_BAR)
+            {
+                m_townMusicManager->Activate();
+                this->m_hackedMusicType = HACKMUSIC_BAR;
+                this->m_bMustStartNewMusic = 0;
+            }
+            else
+            {
+                if (musicType != HACKMUSIC_CUSTOM
+                    && (m_bMustStartNewMusic || bForceRestart || musicType != this->m_hackedMusicType)
+                    && m3d::Application::g_pApp->m_sound
+                    && musicType >= HACKMUSIC_MENU
+                    && musicType < m_musicNames.size())
+                {
+                    m3d::Application::StartPlayingMusic(this->m_musicNames[musicType].c_str(), 1, 1);
+                }
+                this->m_hackedMusicType = musicType;
+                this->m_bMustStartNewMusic = 0;
+            }
+        }
+    }
 }
 
 bool CMiracle3d::CinematicFade()
@@ -444,7 +487,8 @@ void CMiracle3d::RenderAsBackground(bool)
 
 void CMiracle3d::UpdateCameraPosition(ai::PhysicObj*)
 {
-    throw std::logic_error("Not implemented");
+    // TODO: implement CMiracle3d::UpdateCameraPosition
+    //throw std::logic_error("Not implemented");
 }
 
 float CMiracle3d::GetMaxTimeScale() const
@@ -738,7 +782,43 @@ bool CMiracle3d::LoadMap(CStr const&, bool, m3d::cmn::XmlFile*, m3d::cmn::XmlNod
 
 int CMiracle3d::ValidateCameraAngles()
 {
-    throw std::logic_error("Not implemented");
+    if(m_curCamera.m_rotYaw > 3.1415927)
+        m_curCamera.m_rotYaw = m_curCamera.m_rotYaw
+        - (float)((float)(int)(float)((float)(m_curCamera.m_rotYaw + 3.1415927) * 0.15915494)
+            * 6.2831855);
+    if (m_curCamera.m_rotYaw < -3.1415927)
+        m_curCamera.m_rotYaw = (float)((float)(int)(float)((float)(3.1415927 - m_curCamera.m_rotYaw) * 0.15915494)
+            * 6.2831855)
+        + m_curCamera.m_rotYaw;
+
+    auto v2 = m_curCamera.m_rotPitch;
+    if (v2 > 3.1415927)
+        m_curCamera.m_rotPitch = m_curCamera.m_rotPitch
+        - (float)((float)(int)(float)((float)(v2 + 3.1415927) * 0.15915494) * 6.2831855);
+    if (m_curCamera.m_rotPitch < -3.1415927)
+        m_curCamera.m_rotPitch = (float)((float)(int)(float)((float)(3.1415927 - m_curCamera.m_rotPitch) * 0.15915494)
+            * 6.2831855)
+        + m_curCamera.m_rotPitch;
+
+    auto v3 = m_minDist.GetF();
+    auto v4 = m_maxDist.GetF();
+
+    auto v5 = m_curGameMode.m_mode;
+
+    if (v5 == GS_GAME || v5 == GS_MAINMENU && !m_bDoNotLoadMainmenuLevel)
+    {
+        v3 = v3 * 0.70921987;
+        v4 = v4 * 0.70921987;
+    }
+    if (v3 > m_gameCameraRho)
+        m_gameCameraRho = v3;
+    if (m_gameCameraRho > v4)
+        m_gameCameraRho = v4;
+    if (v3 > m_player.m_desiredDistance)
+        m_player.m_desiredDistance = v3;
+    if (m_player.m_desiredDistance > v4)
+        m_player.m_desiredDistance = v4;
+    return 1;
 }
 
 m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
@@ -795,9 +875,136 @@ void CMiracle3d::EmergencyRedrawAllObjs()
     throw std::logic_error("Not implemented");
 }
 
-int CMiracle3d::Controls(double, double)
+int CMiracle3d::Controls(double t0, double tlen)
 {
-    throw std::logic_error("Not implemented");
+    // TODO: generated code
+
+    if(!m3d::pClient)
+    {
+        return 1;
+    }
+
+    auto vehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer();
+
+    if (vehicle && !vehicle->bIsMovingAlongExternalPath())
+    {
+        // Weapon controls
+        auto weaponManager = M3D_APP->m_pInterfaceManager->GetWeaponGroupManager();
+        weaponManager->KeepFire();
+
+        // Horn control
+        bool hornState = M3D_APP->m_pImpulses->GetImpulseState(28);
+        vehicle->SetHorn(hornState);
+
+        // Steering
+        auto* impulses = M3D_APP->m_pImpulses;
+        auto* input = M3D_APP->m_input;
+
+        if (impulses->GetImpulseState(26) || input->GetParam(m3d::input::DeviceParam::DP_JOY_X) < -300)
+        {
+            vehicle->SetSteer(0.78539819f);
+        }
+        else if (impulses->GetImpulseState(27) || input->GetParam(m3d::input::DeviceParam::DP_JOY_X) > 300)
+        {
+            vehicle->SetSteer(-0.78539819f);
+        }
+        else {
+            vehicle->SetSteer(0.0f);
+        }
+
+        // Throttle and braking
+        if (impulses->GetImpulseState(23))
+        {
+            vehicle->SetThrottle(1.0f, true);
+        }
+        else if (impulses->GetImpulseState(24))
+        {
+            vehicle->SetThrottle(-1.0f, true);
+        }
+        else {
+            vehicle->ReleaseAllPedals();
+        }
+
+        if (impulses->GetImpulseState(25))
+        {
+            vehicle->SetHandBrake();
+        }
+
+        // Special controls
+        if (impulses->GetImpulseState(29))
+        {
+            auto turnToWheelsAllowed = m3d::g_Kernel->GetEngineCfg().m_ai_turntowheels_allowed;
+            if (turnToWheelsAllowed.GetB())
+            {
+                CVector torque{ 0.0f, 0.0f, 0.0f };
+                CVector force{ 0.0f, 1.0f, 0.0f };
+                CVector pos{ 1.0f, 0.0f, 0.0f };
+                vehicle->SetTurningToGroundForceAndTorque(pos, force, torque);
+            }
+        }
+
+        if (impulses->GetImpulseState(31))
+        {
+            impulses->ResetImpulseWithoutNotification(31);
+            LightActivated = !LightActivated;
+            vehicle->ActivateHeadLights(LightActivated);
+        }
+
+        if (impulses->GetImpulseState(32))
+        {
+            impulses->ResetImpulseWithoutNotification(32);
+            vehicle->GetOutOfDifficultPlace();
+        }
+    }
+
+    // Game pause toggle
+    if (m_curGameMode.m_mode == GS_GAME &&
+        M3D_APP->m_pImpulses->GetImpulseStateAndReset(51))
+    {
+        ai::pServer->SetPause(!ai::pServer->GetPause());
+    }
+
+    // Fly camera movement
+    m_flyCamMove = { 0.0f, 0.0f, 0.0f };
+    auto* impulses = M3D_APP->m_pImpulses;
+
+    if (impulses->GetImpulseState(4)) m_flyCamMove.z += 1.0f;
+    if (impulses->GetImpulseState(5)) m_flyCamMove.z -= 1.0f;
+    if (impulses->GetImpulseState(7)) m_flyCamMove.x += 1.0f;
+    if (impulses->GetImpulseState(6)) m_flyCamMove.x -= 1.0f;
+
+    // Apply camera speed and time delta
+    float cameraSpeed = m_cameraSpeed.GetF();
+    float scale = cameraSpeed * static_cast<float>(t0);
+
+    m_flyCamMove.x *= scale;
+    m_flyCamMove.y *= scale;
+    m_flyCamMove.z *= scale;
+
+    // Camera rotation
+    if (m_player.m_cameraMode != CM_BUMPER) {
+        float mouseSensitivity = GetMouseSensitivity();
+
+        m_curCamera.m_rotPitch += (m_gameSlideAuto.z * 0.00015000001f) - m_flyCamTurn.y;
+        m_curCamera.m_rotYaw += (-m_flyCamTurn.x) - (m_gameSlideAuto.x * 0.00030000001f);
+        m_curCamera.m_rotRoll = 0.0f;
+
+        // Clamp pitch in follow mode
+        if (m_player.m_cameraMode == CM_FOLLOWMODE)
+        {
+            m_curCamera.m_rotPitch = std::clamp(m_curCamera.m_rotPitch, -0.44879895f, 0.44879895f);
+        }
+    }
+
+    ValidateCameraAngles();
+
+    // Update camera position
+    if (m_curGameMode.m_mode == GS_GAME ||
+        (m_curGameMode.m_mode == GS_MAINMENU && !m_bDoNotLoadMainmenuLevel)) {
+        UpdateCameraPosition(vehicle);
+    }
+
+    return 1;
 }
 
 float CMiracle3d::GetMeanHigh(float, float)
@@ -1111,109 +1318,300 @@ int CMiracle3d::RemoveChildForce(m3d::Object* object)
 
 int CMiracle3d::Render(bool needToRedrawAllObjs)
 {
-    if (m_playingVideo)
+    // TODO: generated code
+    if (!m_playingVideo)
     {
-        return 1;
-    }
-    if (m_curGameMode.Get() == GS_MAINMENU && m_bDoNotLoadMainmenuLevel)
-    {
-        g_pApp->m_renderer->ClearViewport(m3d::rend::M3DCLEAR_CZ, 0xFF000000);
-        return 1;
-    }
-    auto const viewport = m_renderer->GetViewport();
-    auto const fov = m_fov.GetF();
-    m_curCamera.setFov(fov, viewport.m_width, viewport.m_height);
-    CMatrix v102;
-    v102.rotYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
-    CMatrix v103;
-    memset(&v103, 0, sizeof(v103));
-
-    auto const rolling = GetCameraController()->GetShakingRolling();
-    auto const v97 = sin(rolling);
-    auto const v98 = cos(rolling);
-
-    CMatrix vv;
-    vv._11 = (float)((float)((float)(v103._41 * v102._14) + (float)(v103._31 * v102._13))
-        + (float)(v102._12 * (float)(0.0 - v97)))
-        + (float)(v102._11 * v98);
-    vv._12 = v103._42 * v102._14 + v103._32 * v102._13 + v102._12 * v98 + v102._11 * v97;
-    vv._13 = (float)((float)((float)(v103._43 * v102._14) + (float)(v103._23 * v102._12)) + (float)(v103._13 * v102._11))
-        + v102._13;
-    vv._14 = (float)((float)((float)(v103._34 * v102._13) + (float)(v103._24 * v102._12)) + (float)(v103._14 * v102._11))
-        + v102._14;
-    vv._21 = (float)((float)((float)(v102._24 * v103._41) + (float)(v102._23 * v103._31))
-        + (float)(v102._22 * (float)(0.0 - v97)))
-        + (float)(v102._21 * v98);
-    vv._22 = v102._24 * v103._42 + v102._23 * v103._32 + v102._22 * v98 + v102._21 * v97;
-    vv._23 = (float)((float)((float)(v102._24 * v103._43) + (float)(v102._22 * v103._23)) + (float)(v102._21 * v103._13))
-        + v102._23;
-    vv._24 = (float)((float)((float)(v102._23 * v103._34) + (float)(v102._22 * v103._24)) + (float)(v102._21 * v103._14))
-        + v102._24;
-    vv._31 = (float)((float)((float)(v103._41 * v102._34) + (float)(v103._31 * v102._33))
-        + (float)((float)(0.0 - v97) * v102._32))
-        + (float)(v98 * v102._31);
-    vv._32 = (float)((float)((float)(v103._42 * v102._34) + (float)(v103._32 * v102._33)) + (float)(v98 * v102._32))
-        + (float)(v97 * v102._31);
-    vv._33 = (float)((float)((float)(v103._43 * v102._34) + (float)(v103._23 * v102._32)) + (float)(v103._13 * v102._31))
-        + v102._33;
-    vv._34 = (float)((float)((float)(v103._24 * v102._32) + (float)(v103._14 * v102._31)) + (float)(v103._34 * v102._33))
-        + v102._34;
-    vv._41 = (float)((float)((float)(v103._31 * v102._43) + (float)((float)(0.0 - v97) * v102._42))
-        + (float)(v98 * v102._41))
-        + (float)(v103._41 * v102._44);
-    vv._42 = (float)((float)((float)(v98 * v102._42) + (float)(v97 * v102._41)) + (float)(v103._42 * v102._44))
-        + (float)(v103._32 * v102._43);
-    vv._43 = (float)((float)((float)(v103._43 * v102._44) + (float)(v103._23 * v102._42)) + (float)(v103._13 * v102._41))
-        + v102._43;
-    vv._44 = (float)((float)((float)(v103._34 * v102._43) + (float)(v103._24 * v102._42)) + (float)(v103._14 * v102._41))
-        + v102._44;
-    vv.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
-
-    auto const shakingTranslation = GetCameraController()->GetShakingTranslation();
-    m_curCamera.m_worldOrigin.x = shakingTranslation.x + m_curCamera.m_worldOrigin.x;
-    m_curCamera.m_worldOrigin.y = shakingTranslation.y + m_curCamera.m_worldOrigin.y;
-    m_curCamera.m_worldOrigin.z = shakingTranslation.z + m_curCamera.m_worldOrigin.z;
-
-    CMatrix viewMatrix;
-    CAffineXForm form;
-    form.createViewMatrix(viewMatrix);
-    m_renderer->MatSet(viewMatrix);
-    m_renderer->SetViewMatrix(viewMatrix);
-
-    CMatrix projMatrix;
-    m_curCamera.createProjectionMatrix(projMatrix, 1.0);
-    m_renderer->MatSetProj(projMatrix);
-
-    //m_curCamera.m_worldOrigin.x = v89;
-    //m_curCamera.m_worldOrigin.y = v24;
-    //m_curCamera.m_worldOrigin.z = v25;
-    //vv.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
-    if (m_gameInited)
-    {
-        if (m_bRenderAsBackground)
+        if (m_curGameMode.m_mode == GS_MAINMENU && m_bDoNotLoadMainmenuLevel)
         {
-            if (m_bBackgroundTextureIsValid)
-            {
-                DrawBackground();
-            }
-            else
-            {
-                m3d::pClient->GetWorld().Render();
-                CaptureBackground();
-                m_bBackgroundTextureIsValid = true;
-            }
+            M3D_RENDERER->ClearViewport(m3d::rend::ClearFlags::M3DCLEAR_CZ, 0xFF000000);
+            return 1;
+        }
+
+        // Calculate FOV
+        float fovValue = m_fov.GetF();
+
+        // Get viewport dimensions
+        m3d::rend::Viewport viewport = M3D_RENDERER->GetViewport();
+        float viewportWidth = static_cast<float>(viewport.m_width);
+        float viewportHeight = static_cast<float>(viewport.m_height);
+        float aspectRatio = viewportWidth / viewportHeight;
+
+        // Calculate FOV based on aspect ratio
+        if (aspectRatio > 1.0f)
+        {
+            m_curCamera.m_fovX = fovValue * aspectRatio;
+            m_curCamera.m_fovY = fovValue;
         }
         else
         {
-            m_renderer->PushMultiSample(M3D_KERNEL->GetEngineCfg().m_g_antiAliasing.GetB());
-            m3d::pClient->GetWorld().Render();
-            m_renderer->PopMultiSample();
+            m_curCamera.m_fovX = fovValue;
+            m_curCamera.m_fovY = fovValue / aspectRatio;
+        }
+
+        // Save original camera state
+        CVector originalPosition = m_curCamera.m_worldOrigin;
+        float originalYaw = m_curCamera.m_rotYaw;
+        float originalPitch = m_curCamera.m_rotPitch;
+        float originalRoll = m_curCamera.m_rotRoll;
+
+        // Create rotation matrix from original angles
+        CMatrix rotationMatrix;
+        rotationMatrix.rotYPR(originalYaw, originalPitch, originalRoll);
+
+        // Apply camera shaking rotation
+        float shakingRoll = m_cameraController->GetShakingRolling();
+        float sinRoll = sin(shakingRoll);
+        float cosRoll = cos(shakingRoll);
+
+        CMatrix shakeRotationMatrix;
+        memset(&shakeRotationMatrix, 0, sizeof(shakeRotationMatrix));
+
+        // Apply rotation shaking (matrix multiplication)
+        shakeRotationMatrix._11 = rotationMatrix._11 * cosRoll + rotationMatrix._12 * -sinRoll;
+        shakeRotationMatrix._12 = rotationMatrix._11 * sinRoll + rotationMatrix._12 * cosRoll;
+        shakeRotationMatrix._13 = rotationMatrix._13;
+        shakeRotationMatrix._14 = rotationMatrix._14;
+
+        shakeRotationMatrix._21 = rotationMatrix._21 * cosRoll + rotationMatrix._22 * -sinRoll;
+        shakeRotationMatrix._22 = rotationMatrix._21 * sinRoll + rotationMatrix._22 * cosRoll;
+        shakeRotationMatrix._23 = rotationMatrix._23;
+        shakeRotationMatrix._24 = rotationMatrix._24;
+
+        shakeRotationMatrix._31 = rotationMatrix._31 * cosRoll + rotationMatrix._32 * -sinRoll;
+        shakeRotationMatrix._32 = rotationMatrix._31 * sinRoll + rotationMatrix._32 * cosRoll;
+        shakeRotationMatrix._33 = rotationMatrix._33;
+        shakeRotationMatrix._34 = rotationMatrix._34;
+
+        shakeRotationMatrix._41 = rotationMatrix._41 * cosRoll + rotationMatrix._42 * -sinRoll;
+        shakeRotationMatrix._42 = rotationMatrix._41 * sinRoll + rotationMatrix._42 * cosRoll;
+        shakeRotationMatrix._43 = rotationMatrix._43;
+        shakeRotationMatrix._44 = rotationMatrix._44;
+
+        // Extract new rotation angles from shaken matrix
+        shakeRotationMatrix.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
+
+        // Apply translation shaking
+        CVector shakingTranslation = m_cameraController->GetShakingTranslation();
+        m_curCamera.m_worldOrigin.x += shakingTranslation.x;
+        m_curCamera.m_worldOrigin.y += shakingTranslation.y;
+        m_curCamera.m_worldOrigin.z += shakingTranslation.z;
+
+        // Create and set view matrix
+        CMatrix viewMatrix;
+        CAffineXForm xForm;
+        xForm.createViewMatrix(viewMatrix);
+        M3D_RENDERER->MatSet(viewMatrix);
+        M3D_RENDERER->SetViewMatrix(viewMatrix);
+
+        // Create and set projection matrix
+        CMatrix projectionMatrix;
+        m_curCamera.createProjectionMatrix(projectionMatrix, 1.0f);
+        M3D_RENDERER->MatSetProj(projectionMatrix);
+
+        // Restore original camera position for rendering calculations
+        m_curCamera.m_worldOrigin = originalPosition;
+
+        // CMatrix::getYPR(
+        //(CMatrix*)&carSpeed.m_allocSz,
+        //    & this->m_curCamera.m_rotYaw,
+        //    & this->m_curCamera.m_rotPitch,
+        //    & this->m_curCamera.m_rotRoll);
+
+        // Main rendering logic
+        if (m_gameInited)
+        {
+            if (m_bRenderAsBackground)
+            {
+                if (m_bBackgroundTextureIsValid)
+                {
+                    // Draw existing background
+                    DrawBackground();
+                    // Background drawing implementation would go here
+                }
+                else {
+                    // Render scene and capture as background
+                    m3d::pClient->GetWorld().Render();
+                    // Background capture implementation would go here
+                    CaptureBackground();
+                    m_bBackgroundTextureIsValid = true;
+                }
+            }
+            else
+            {
+                // Normal rendering with anti-aliasing
+                bool antiAliasing = M3D_KERNEL->GetEngineCfg().m_g_antiAliasing.GetB();
+
+                M3D_RENDERER->PushMultiSample(antiAliasing);
+                m3d::pClient->GetWorld().Render();
+                M3D_RENDERER->PopMultiSample();
+            }
+        }
+
+        // Post-processing
+        M3D_RENDERER->SetFog(false, 0);
+        m_postEffect->Render(m_bBackgroundTextureIsValid);
+
+        // Debug information display
+        bool showCameraInfo = M3D_KERNEL->GetEngineCfg().m_camInfo.GetB();
+
+        if (showCameraInfo && m3d::pClient)
+        {
+            M3D_RENDERER->PushZbState(m3d::rend::ZbState::ZB_DISABLE);
+
+            // Display camera position   
+            CStr posText = CStr::format("%0.4f %0.4f %0.4f",
+                m_curCamera.m_worldOrigin.x,
+                m_curCamera.m_worldOrigin.y,
+                m_curCamera.m_worldOrigin.z);
+
+            float textX = 1024.0f - posText.length() * 10.0f;
+            DrawTextRel(textX, 12.0f, 0xFFFF0000, posText, 0, -1);
+
+            // Display vehicle speed if available
+            ai::Vehicle* playerVehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer();
+            if (playerVehicle)
+            {
+                CVector velocity = playerVehicle->GetLinearVelocity();
+                float speedKmh = velocity.length() * 3.6f;
+                CStr speedText(speedKmh);
+                float speedTextX = 1024.0f - speedText.length() * 10.0f;
+                m3d::Application::DrawTextRel(speedTextX, 24.5f, 0xFFFF0000, speedText, 0, -1);
+            }
+
+            // Display camera rotation
+            CStr rotText = CStr::format("Y=%0.4f P=%0.4f R=%0.4f",
+                m_curCamera.m_rotYaw,
+                m_curCamera.m_rotPitch,
+                m_curCamera.m_rotRoll);
+
+            float rotTextX = 1024.0f - rotText.length() * 10.0f;
+            DrawTextRel(rotTextX, 37.0f, 0xFFFF0000, rotText, 0, -1);
+
+            M3D_RENDERER->PopZbState();
+        }
+
+        // AI vehicle statistics display
+        bool showAIVehicleStats = M3D_KERNEL->GetEngineCfg().m_ai_vehicle_stats.GetB();
+
+        if (showAIVehicleStats && m3d::pClient)
+        {
+            // Count scene graph nodes (simplified version)
+            int nodeCount = 0;
+            retruxx::vector<m3d::Object*> nodeStack;
+            if (auto* rootNode = m3d::pClient->GetWorld().GetGraph().GetRootNode())
+            {
+                nodeStack.push_back(rootNode);
+            }
+
+            while (!nodeStack.empty())
+            {
+                m3d::Object* currentNode = nodeStack.back();
+                nodeStack.pop_back();
+                nodeCount++;
+
+                // Add children to stack
+                m3d::Object* child = currentNode->GetFirstChild();
+                while (child)
+                {
+                    nodeStack.push_back(child);
+                    child = child->GetNextSibling();
+                }
+            }
+
+            // Count vehicles
+            int vehicleCount = 0;
+            for (const auto& obj : *ai::theObjects)
+            {
+                if (obj->GetClass() == &ai::Vehicle::m_classVehicle)
+                {
+                    ++vehicleCount;
+                }
+            }
+
+            M3D_RENDERER->PushZbState(m3d::rend::ZbState::ZB_DISABLE);
+
+            // Display various statistics
+            float statY = 413.0f;
+            float statX = 800.0f;
+
+            // Game time
+            float gameTime = ai::theObjects->GetGameTimeDiff();
+            auto timeText = CStr(gameTime) + " game time";
+            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, timeText, 0, -1);
+            statY += 13.0f;
+
+            // Geometry count
+            auto geomText = CStr(ai::gGlobalSpace->count) + " geoms in global space";
+            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, geomText, 0, -1);
+            statY += 13.0f;
+
+            // Node count
+            auto nodeText = CStr(nodeCount) + " nodes";
+            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, nodeText.c_str(), 0, -1);
+            statY += 13.0f;
+
+            // Object count
+            auto objText = CStr(ai::theObjects->size()) + (" objects");
+            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, objText.c_str(), 0, -1);
+            statY += 13.0f;
+
+            // Updating objects
+            auto updateText = CStr(ai::theObjects->GetNumUpdatingObjects()) + ("updating objects");
+            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, updateText.c_str(), 0, -1);
+            statY += 13.0f;
+
+            // Vehicle count
+            auto vehicleText = CStr(vehicleCount) + (" vehicles");
+            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, vehicleText.c_str(), 0, -1);
+            statY += 13.0f;
+
+            // Near callbacks
+            int nearCallbacks = ai::gDynamicScene->GetNumNearCallbacksLastFrame();
+            auto callbackText = CStr(nearCallbacks) + (" near callbacks");
+            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, callbackText.c_str(), 0, -1);
+            statY += 13.0f;
+
+            // Removals
+            auto removalText = CStr(ai::theObjects->GetNumRemovalsLastFrame()) + (" removals");
+            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, removalText.c_str(), 0, -1);
+
+            // Player vehicle specific info
+            ai::Vehicle* playerVehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer();
+            if (playerVehicle)
+            {
+                float vehicleStatY = 717.0f;
+                float vehicleStatX = 270.0f;
+
+                // Fuel
+                float fuel = playerVehicle->Fuel().value().get();
+                auto fuelText = CStr(fuel) + (" fuel");
+                m3d::Application::DrawTextRel(vehicleStatX, vehicleStatY, 0xFFFF0000, fuelText.c_str(), 0, -1);
+                vehicleStatY += 13.0f;
+
+                // Speed
+                CVector velocity = playerVehicle->GetLinearVelocity();
+                float speedKmh = velocity.length() * 3.6f;
+                auto speedText = CStr(speedKmh) + (" km/h");
+                m3d::Application::DrawTextRel(vehicleStatX, vehicleStatY, 0xFFFF0000, speedText.c_str(), 0, -1);
+                vehicleStatY += 13.0f;
+
+                // RPM
+                float rpm = playerVehicle->GetEngineRpm();
+                auto rpmText = CStr(rpm) + (" rpm");
+                m3d::Application::DrawTextRel(vehicleStatX, vehicleStatY, 0xFFFF0000, rpmText.c_str(), 0, -1);
+                vehicleStatY += 13.0f;
+
+                // Gear
+                int gear = playerVehicle->GetCurrentGear();
+                auto gearText = CStr(gear) + (" gear");
+                m3d::Application::DrawTextRel(vehicleStatX, vehicleStatY, 0xFFFF0000, gearText.c_str(), 0, -1);
+            }
+
+            m3d::Application::g_pApp->m_renderer->PopZbState();
         }
     }
-    m_renderer->SetFog(false, false);
-    m_postEffect->Render(m_bBackgroundTextureIsValid);
 
-    throw std::logic_error("Not implemented");
+    return 1;
 }
 
 int CMiracle3d::RemoveChild(m3d::Object* node)
@@ -1351,8 +1749,6 @@ int CMiracle3d::FrameMove()
     //TODO: implement CMiracle3d::FrameMove
     if (!m_playingVideo || m_enginePlayingVideo)
     {
-        return 1;
-        throw std::logic_error("Not implemented");
         auto* profiler = GetProfilerStack().GetProfiler(m_profiler_Client);
         profiler->StartCountdown();
         PlayHackedMusic(m_hackedMusicType, false);
@@ -1365,9 +1761,33 @@ int CMiracle3d::FrameMove()
             GetCameraController()->Update();
             if (m_cinematic->m_state != m3d::CINEMATIC_NOT_INITED)
             {
-                auto wndTown = m_pInterfaceManager->GetWindow(4);
+                ref_ptr wndTown = m_pInterfaceManager->GetWindow(4);
+                if (wndTown && wndTown->IsChildOf(M3D_APP))
+                {
+                    HandleCinematic(m3d::g_Kernel->GetTimer().GetLastFrameTimeUnscaled() * 0.001);
+                }
+                else
+                {
+                    HandleCinematic(m3d::g_Kernel->GetTimer().GetLastFrameTime() * 0.001);
+                }
             }
+            m3d::pClient->Update(startTime, lastTime);
+            if (m_cinematic->m_state != m3d::CinematicState::CINEMATIC_NOT_INITED)
+            {
+                HandleCinematic(0.0);
+            }
+            if (this->m_curGameMode.m_mode != GS_CINEMATIC)
+            {
+                // TODO: check this!!!!!!
+                Controls(startTime, dT);
+            }
+            M3D_APP->m_pInterfaceManager->Update();
         }
+        else
+        {
+            M3D_APP->m_pInterfaceManager->Update();
+        }
+        profiler->EndCountdown();
     }
     else
     {

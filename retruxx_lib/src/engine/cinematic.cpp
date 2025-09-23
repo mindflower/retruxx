@@ -512,5 +512,30 @@ namespace m3d
     Cinematic::Cinematic() :
         m_fadePeriod("cinematicFadePeriod", "1", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE)
     {
+        this->m_curItem.m_flags = 0;
+        this->m_curItem.m_bLookTo = 0;
+        this->m_curItem.m_idToLookAt = -1;
+        this->m_curItem.m_pointToLookAt = CVector(0.0, 0.0, 0.0);
+        this->m_curItem.m_baseId = -1;
+        this->m_curItem.m_bRelativeRotations = 0;
+        this->m_curItem.m_bRelativePoints = 0;
+        this->m_curItem.m_playType = CINEMATIC_OFF;
+        this->m_curItem.m_bWaitWhenStop = 0;
+        this->m_curItem.m_finalPhi = 0.0;
+        this->m_curItem.m_finalTheta = 0.0;
+        this->m_curItem.m_finalRadius = 0.0;
+        this->m_curItem.m_startPhi = 0.0;
+        this->m_curItem.m_startTheta = 0.0;
+        this->m_curItem.m_startRadius = 0.0;
+        this->m_curItem.m_bLerpFromPreviousItem = 0;
+        this->m_playTime = 0;
+        this->m_fadeStartTime = 0;
+        this->m_bWasSkipped = 0;
+        this->m_bWasSkippedInEnterFadeOut = 0;
+        this->m_bDebugMode = 0;
+        this->m_numConsecutiveItemPlayingNow = 0;
+        this->m_state = CINEMATIC_NOT_INITED;
+        this->m_curTime = 0.0;
+        this->m_curDebugPointNum = -1;
     }
 }

@@ -493,9 +493,10 @@ namespace m3d
         if (m_firstChild != wnd)
         {
             UnlinkChild(wnd);
-            if (m_firstChild)
+            auto firstChild = m_firstChild;
+            if (firstChild)
             {
-                wnd->m_nextSibling = m_firstChild;
+                wnd->m_nextSibling = firstChild;
                 m_firstChild->m_prevSibling = wnd;
             }
             else

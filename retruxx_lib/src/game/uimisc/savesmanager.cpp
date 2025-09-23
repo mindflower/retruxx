@@ -6,6 +6,7 @@
 #include "core/log.h"
 #include "game/m3dgame.h"
 #include "game/profile.h"
+#include <core/timer.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SavesManager, AutoSave)
 {
@@ -187,6 +188,11 @@ int SavesManager::GameDataUpdate(void* data, int dataType)
         LoadInfos();
         return 1;
     }
+    case 90:
+    {
+        OnNewFrameForce();
+        return 1;
+    }
     }
     throw retruxx::logic_error("Not implemented");
 }
@@ -239,7 +245,18 @@ void SavesManager::OnCurProfileChanged()
 
 void SavesManager::OnNewFrameForce()
 {
-    throw retruxx::logic_error("Not implemented");
+    if (m_bDelayedQuickSave)
+    {
+        auto curFrame = M3D_KERNEL->GetTimer().GetCurFrame();;
+        auto v4 = curFrame == m_delayedQuickSaveFrame;
+        auto v3 = curFrame - m_delayedQuickSaveFrame;
+        if (!v4 && v3 != 1)
+        {
+            m_bDelayedQuickSave = 0;
+            m_delayedQuickSaveFrame = 0;
+            SavesManager::QuickSave();
+        }
+    }
 }
 
 int SavesManager::AddSaveInfo(SaveInfo*)

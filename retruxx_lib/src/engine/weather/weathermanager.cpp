@@ -99,12 +99,17 @@ namespace m3d
 
     int WeatherManager::UpdateDayTime()
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement WeatherManager::UpdateDayTime
+        //throw retruxx::logic_error("Not implemented");
+        return 1;
     }
 
     float WeatherManager::GetFogReduceFactorFromWeather() const
     {
-        return m_currentWeather->m_reduceDistFactor;
+        // TODO: implement WeatherManager::GetFogReduceFactorFromWeather
+        //throw retruxx::logic_error("Not implemented");
+        //return m_currentWeather->m_reduceDistFactor;
+        return 0.0;
     }
 
     void WeatherManager::SetActiveWeather(unsigned)
@@ -114,7 +119,9 @@ namespace m3d
 
     int WeatherManager::RenderWeatherParticles()
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement WeatherManager::RenderWeatherParticles
+        //throw retruxx::logic_error("Not implemented");
+        return 1;
     }
 
     int WeatherManager::RenderWeather(Landscape::LandRenderMode)
@@ -134,17 +141,27 @@ namespace m3d
 
     bool WeatherManager::GetShadowVisibilityFromWeather() const
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement WeatherManager::GetShadowVisibilityFromWeather
+        //throw retruxx::logic_error("Not implemented");
+        //return this->m_currentWeather->m_shadowVisibility[this->m_curDayTime];
+        return false;
     }
 
     int WeatherManager::UpdateWheatherParticles()
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement WeatherManager::UpdateWheatherParticles
+        //throw retruxx::logic_error("Not implemented");
+        //auto idList = ai::theObjects->GetGameTime().GetAsIdList();
+        //m_currentWeather->Update(1.0, )
+        //throw std::logic_error("Not implemented");
+        return 1;
     }
 
     int WeatherManager::ReadFromXmlFile(char const*)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement WeatherManager::ReadFromXmlFile
+        //throw retruxx::logic_error("Not implemented");
+        return 1;
     }
 
     WeatherManager::WeatherManager()

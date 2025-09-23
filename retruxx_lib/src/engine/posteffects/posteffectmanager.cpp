@@ -215,7 +215,8 @@ bool PostEffectManager::SetParam(CStr const&, float)
 
 void PostEffectManager::Render(bool)
 {
-    throw std::logic_error("Not implemented");
+    // TODO: implement PostEffectManager::Render
+    //throw retruxx::logic_error("Not implemented");
 }
 
 bool PostEffectManager::AddEffect(CStr const&, float, unsigned)

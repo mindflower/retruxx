@@ -70,7 +70,6 @@ namespace m3d
         RT_CLASS_EXPORT(IConsole, METHOD, Toggle, "", "", "")
         RT_CLASS_EXPORT(IConsole, METHOD, SetScreenSize, "", "", "")
 	RT_CLASS_EXPORTS_END;
-
     RT_CLASS_DEFINE(IConsole);
 
     void CConsoleParams::Set(char const* buf)

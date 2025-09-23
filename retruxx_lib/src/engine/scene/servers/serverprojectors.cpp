@@ -118,7 +118,8 @@ namespace m3d
 
     void ProjectorsServer::RenderItem(int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement ProjectorsServer::RenderItem
+        //throw retruxx::logic_error("Not implemented");
     }
 
     int ProjectorsServer::RemoveItem(int)
@@ -128,6 +129,7 @@ namespace m3d
 
     void ProjectorsServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>&)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement ProjectorsServer::AddItemsList
+        //throw retruxx::logic_error("Not implemented");
     }
 }

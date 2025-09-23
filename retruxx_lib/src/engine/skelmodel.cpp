@@ -93,6 +93,14 @@ namespace m3d
 
     AnimatedModel::AnimatedModel()
     {
+        this->m_boneInitialPos = 0;
+        this->m_meshes = 0;
+        this->m_animations = 0;
+        this->m_initialBoneInvMatrices = 0;
+        this->m_composite = 0;
+        this->m_passable = 0;
+        this->m_bVerification = 0;
+        this->m_hasCubemap = 0;
         memset(&m_Dummy, 0, sizeof(m_Dummy));
         m_Dummy._44 = 1.0;
         m_Dummy._33 = 1.0;
@@ -127,7 +135,8 @@ namespace m3d
 
     bool AnimatedModel::LoadGAM(CStr const& fileName, bool bForceNextAnimation)
     {
-        throw retruxx::logic_error("Not implemented");
+        //TODO: implement AnimatedModel::LoadGAM
+        return true;
         if (m_bVerification)
         {
             M3D_LOG_ERR("LoadGAM does work not for verification of models!!!");
@@ -476,12 +485,18 @@ namespace m3d
 
     void AnimatedModel::ReloadSkins(LoadSkins const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement AnimatedModel::ReloadSkins
+        // throw retruxx::logic_error("Not implemented");
     }
 
     void AnimatedModel::CalculateMeshes(Configuration&) const
     {
         throw retruxx::logic_error("Not implemented");
+    }
+
+    unsigned int AnimatedModel::GetNumAnimations() const
+    {
+        return m_header.m_numAnimations;
     }
 
     void AnimatedModel::RenderHierGeoms(CMatrix const&, AnimInfo*, unsigned)
@@ -566,7 +581,8 @@ namespace m3d
 
     void AnimatedModel::UpdateCubemap()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement AnimatedModel::UpdateCubemap
+        //throw retruxx::logic_error("Not implemented");
     }
 
     unsigned AnimatedModel::GetNumGeoms() const
@@ -748,9 +764,19 @@ namespace m3d
 	    throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimInfo::CreateFor(AnimatedModel*)
+    void AnimInfo::CreateFor(AnimatedModel* am)
     {
-	    throw retruxx::logic_error("Not implemented");
+        Release();
+        this->m_curBox = am->m_box;
+        this->m_forModel = am;
+        if (am->GetNumAnimations())
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
+        else
+        {
+            m_Empty = true;
+        }
     }
 
     void AnimInfo::SetBoneCurMatrix(unsigned, CMatrix const&)
@@ -770,7 +796,16 @@ namespace m3d
 
     void AnimInfo::Release()
     {
-	    throw retruxx::logic_error("Not implemented");
+        m_forModel = 0;
+        for (auto& vert : m_meshesVerts)
+        {
+            delete vert;
+        }
+        m_meshesVerts.clear();
+        delete m_bonesAnim;
+        m_bonesAnim = 0;
+        delete m_bonesAnimPrev;
+        m_bonesAnimPrev = 0;
     }
 
     AnimatedModel::Animation const* AnimInfo::GetCurAnimation() const

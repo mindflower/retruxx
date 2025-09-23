@@ -1,6 +1,8 @@
 #include "objcontainer.h"
 #include <core/aiparam.h>
 #include <stdexcept>
+#include <server/objects/physicbodies/physicbody.h>
+#include <core/debugcounter.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, CreateNewObject)
 {
@@ -121,8 +123,6 @@ namespace ai
         RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, IsSaveAllowed, "", "", "")
 	RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(ObjContainer);
-
-    ObjContainer* theObjects = nullptr;
 
     long long GameTime::asInt64() const
     {
@@ -599,7 +599,11 @@ namespace ai
 
     void ObjContainer::RelinkSceneGraphNodes()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement ObjContainer::RelinkSceneGraphNodes
+        //throw retruxx::logic_error("Not implemented");
+        //auto* countNode = ai::PhysicBody::GetCountNodeRelinks();
+        //countNode->SetI(0);
+        //for ()
     }
 
     void ObjContainer::AddObjIdToRemove(int)

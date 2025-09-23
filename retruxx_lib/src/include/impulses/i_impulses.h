@@ -11,20 +11,18 @@ namespace m3d
 
     class Event;
 
-    class AuxImpulseInfo
+    struct AuxImpulseInfo
     {
-    public:
-        void UnpackXy(float*, float*, float*, float*) const;
-        AuxImpulseInfo(int, bool, int, unsigned int, unsigned int);
+        AuxImpulseInfo(int impId, bool state, int gameMode, unsigned int i0, unsigned int i1);
+        void UnpackXy(float* x, float* y, float* dx, float* dy) const;
         float UnpackWheel() const;
-
-    public:
-        int m_impId;
-        bool m_state;
-        int m_gameMode;
-        unsigned int m_info0;
-        unsigned int m_info1;
-    };
+        /* 0x0000 */ int m_impId;
+        /* 0x0004 */ bool m_state;
+        /* 0x0005 */ char Padding_319[3];
+        /* 0x0008 */ int m_gameMode;
+        /* 0x000c */ unsigned int m_info0;
+        /* 0x0010 */ unsigned int m_info1;
+    }; /* size: 0x0014 */
 
     class IImpulse
     {

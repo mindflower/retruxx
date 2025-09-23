@@ -17,7 +17,8 @@ namespace m3d
 
     void DecalsServer::RenderItem(int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement DecalsServer::RenderItem
+        //throw retruxx::logic_error("Not implemented");
     }
 
     int DecalsServer::Init()
@@ -63,6 +64,7 @@ namespace m3d
 
     void DecalsServer::AddItemsList(retruxx::vector<ServerItem>&)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement DecalsServer::AddItemsList
+        //throw retruxx::logic_error("Not implemented");
     }
 }

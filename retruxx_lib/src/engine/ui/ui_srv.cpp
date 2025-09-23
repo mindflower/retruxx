@@ -856,9 +856,27 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void ui::GfxServer::AddFlatAxialQuad(DrawInfo const&, BoundsBase<float> const&, unsigned)
+    void ui::GfxServer::AddFlatAxialQuad(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr)
     {
-        throw retruxx::logic_error("Not implemented");
+        M3D_RENDERER->PushBlend();
+        M3D_RENDERER->PushZbState(m3d::rend::ZbState::ZB_DISABLE);
+        M3D_RENDERER->SetWhiteTexture(0);
+        M3D_RENDERER->DisableTextureStages(1);
+        M3D_RENDERER->SetStageState(0, m3d::rend::BlendMode::BM_COLOR, m3d::rend::TextureState::TS_MODULATE);
+        M3D_RENDERER->SetStageState(0, m3d::rend::BlendMode::BM_ALPHA, m3d::rend::TextureState::TS_MODULATE);
+
+        auto v5 = clr;
+        if ((clr & 0xFF000000) == 0 && clr < 0xFF)
+            v5 = this->m_colors[clr];
+        
+        if ((v5 & 0xFF000000) != 0)
+            M3D_RENDERER->SetBlend(m3d::rend::BlendMode::BM_ALPHA, 0);
+        else
+            M3D_RENDERER->SetBlend(m3d::rend::BlendMode::BM_NONE, 0);
+
+        AddFlatAxialQuad(di, rect, clr, 0.0, 0.0, 1.0, 1.0);
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopBlend();
     }
 
     int ui::GfxServer::SetFont(int&)

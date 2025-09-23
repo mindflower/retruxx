@@ -398,7 +398,8 @@ namespace m3d
 
     void Landscape::DrawSolidLandscape(LandRenderMode, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement Landscape::DrawSolidLandscape
+        //throw retruxx::logic_error("Not implemented");
     }
 
     void Landscape::RemoveGrassInstance(unsigned)
@@ -413,6 +414,10 @@ namespace m3d
 
     void Landscape::DrawLandScapeTextures(VisibilityMode visMode, bool drawMinimap, bool roadMap)
     {
+        // TODO: implement Landscape::DrawLandScapeTextures
+        //throw retruxx::logic_error("Not implemented");
+        return;
+
         int landSize = this->m_owner->m_level->land_size;
         int gridSize = 4 * landSize;
 
@@ -1110,7 +1115,8 @@ namespace m3d
 
     void Landscape::RenderGrass(retruxx::deque<retruxx::pair<int, int>> const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement Landscape::RenderGrass
+        //throw retruxx::logic_error("Not implemented");
     }
 
     int Landscape::GetLsSize() const
@@ -1439,7 +1445,8 @@ namespace m3d
 
     void Landscape::DrawCollisionGeoms(bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement Landscape::DrawCollisionGeoms
+        //throw retruxx::logic_error("Not implemented");
     }
 
     void Landscape::ClearCollisionCellsMap()
@@ -1679,7 +1686,6 @@ namespace m3d
 
     void Landscape::Update()
     {
-        throw retruxx::logic_error("Not implemented");
     }
 
     void Landscape::DrawWaterLayer()
@@ -2135,9 +2141,36 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::GetFogStartAndEnd(float&, float&) const
+    void Landscape::GetFogStartAndEnd(float& s, float& e) const
     {
-        throw retruxx::logic_error("Not implemented");
+        auto m_f = m3d::g_Kernel->GetEngineCfg().m_lsViewDistanceDivider.GetF();
+        auto v6 = (int)(float)((float)(m_f * 8.0) + 4.0);
+        if (v6 >= 4)
+        {
+            if (v6 > 12)
+                v6 = 12;
+        }
+        else
+        {
+            v6 = 4;
+        }
+        auto v8 = VISCELL_EDGE_LENGTH_24;
+        auto v9 = (float)v6;
+        if (m_curVisMode == VIS_REFLECTION)
+        {
+            s = (float)(v9 * 0.16666667) * VISCELL_EDGE_LENGTH_24;
+            e = (float)(v9 - 0.80000001) * v8;
+        }
+        else if (m_curVisMode == VIS_REFRACTION)
+        {
+            s = (float)(v9 - 0.30000001) * VISCELL_EDGE_LENGTH_24;
+            e = (float)(v9 - 0.050000001) * v8;
+        }
+        else
+        {
+            s = (float)(v9 * 0.16666667) * VISCELL_EDGE_LENGTH_24;
+            e = (float)(v9 - 0.80000001) * v8;
+        }
     }
 
     int Landscape::GetNumAlphas() const
@@ -2552,7 +2585,8 @@ namespace m3d
 
     void Landscape::ManageLandScapeCollisionTriMeshes()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement Landscape::ManageLandScapeCollisionTriMeshes
+        //throw retruxx::logic_error("Not implemented");
     }
 
     void Landscape::LinkPassMapCellToCollisionCell(PointBase<int> const&)
@@ -3403,7 +3437,8 @@ namespace m3d
 
     void Landscape::RenderRoads()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement Landscape::RenderRoads
+        //throw retruxx::logic_error("Not implemented");
     }
 
     void Landscape::Register()

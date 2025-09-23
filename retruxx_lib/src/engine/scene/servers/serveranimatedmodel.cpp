@@ -17,10 +17,12 @@ namespace m3d
 {
     void AnimatedModelsServer::PostLoad()
     {
-        for (auto& model : m_models)
-        {
-            throw retruxx::logic_error("Not implemented");
-        }
+        // TODO: implement AnimatedModelsServer::PostLoad
+        //throw retruxx::logic_error("Not implemented");
+        //for (auto& model : m_models)
+        //{
+        //    throw retruxx::logic_error("Not implemented");
+        //}
     }
 
     int AnimatedModelsServer::AddItem(char const* params, char const* id)
@@ -146,7 +148,9 @@ namespace m3d
 
     int AnimatedModelsServer::GenerateImpostorsIfNeeded()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement AnimatedModelsServer::GenerateImpostorsIfNeeded
+        //throw retruxx::logic_error("Not implemented");
+        return 1;
     }
 
     int AnimatedModelsServer::GetItemProperty(int id, int prop, void* dest)
