@@ -1,31 +1,28 @@
 #pragma once
 #include "base/prototypeinfo.h"
-#include <vector>
+#include "server/geomrepository.h"
+#include "thirdparty/containers.h"
 
 namespace ai
 {
-    class GeomRepository;
-    class Obj;
-
-    class RepositoryObjectsGeneratorPrototypeInfo : public PrototypeInfo
+    class RepositoryObjectsGeneratorPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        class ObjectDescription
+        struct ObjectDescription
         {
-        private:
             CStr prototypeName;
-            int prototypeId;
-        };
+            /* 0x000c */ int prototypeId;
+        }; /* size: 0x0010 */
+
+        using ObjectDescriptionVector = retruxx::vector<ai::RepositoryObjectsGeneratorPrototypeInfo::ObjectDescription, retruxx::allocator<ai::RepositoryObjectsGeneratorPrototypeInfo::ObjectDescription> >;
 
     public:
-        virtual Obj* CreateTargetObject() const;
+        retruxx::vector<ai::RepositoryObjectsGeneratorPrototypeInfo::ObjectDescription, retruxx::allocator<ai::RepositoryObjectsGeneratorPrototypeInfo::ObjectDescription> > m_objectDescriptions;
         RepositoryObjectsGeneratorPrototypeInfo();
-        virtual void PostLoad();
-        void Generate(unsigned int, GeomRepository*) const;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-
-    private:
-        std::vector<ObjectDescription> m_objectDescriptions;
-    };
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual void PostLoad() override /* 0x08 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+        void Generate(unsigned int count, ai::GeomRepository* repository) const;
+    }; /* size: 0x0050 */
 
 }

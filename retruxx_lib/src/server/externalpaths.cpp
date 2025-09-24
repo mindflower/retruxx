@@ -4,6 +4,8 @@ namespace ai
 {
     bool ExternalPaths::Load(const CStr& fileName)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement ExternalPaths::Load
+        // throw std::logic_error("Not implemented");
+        return true;
     }
 }

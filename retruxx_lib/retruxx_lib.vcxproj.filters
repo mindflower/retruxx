@@ -3990,6 +3990,9 @@
     <ClInclude Include="src\include\ode\odecpp_collision.h">
       <Filter>include\ode</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\objects\affixgenerator.h">
+      <Filter>server\objects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

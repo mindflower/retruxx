@@ -1,29 +1,33 @@
 #pragma once
+#include "server/objects/temporarylocation.h"
 
 namespace ai
 {
-    class ai::SmokeScreenLocationPrototypeInfo : public ai::TemporaryLocationPrototypeInfo
+    class SmokeScreenLocationPrototypeInfo : public ai::TemporaryLocationPrototypeInfo
     {
     public:
-        SmokeScreenLocationPrototypeInfo(void);
-        virtual class ai::Obj* CreateTargetObject(void) const;
-    protected:
-    private:
+        SmokeScreenLocationPrototypeInfo();
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+    }; /* size: 0x0094 */
 
-    };
-    class ai::SmokeScreenLocation : public ai::TemporaryLocation
+    class SmokeScreenLocation : public ai::TemporaryLocation
     {
-    public:
-        virtual struct m3d::Class* GetClass(void) const;
-        virtual class ai::SmokeScreenLocationPrototypeInfo const* GetPrototypeInfo(void) const;
-        static struct m3d::Class* GetBaseClass(void);
-        SmokeScreenLocation(class ai::SmokeScreenLocationPrototypeInfo const&);
     protected:
-        virtual void OnObjectOut(class ai::Obj*);
-        virtual ~SmokeScreenLocation(void);
-        virtual void OnObjectIn(class ai::Obj*);
+        virtual  ~SmokeScreenLocation() override /* 0x00 */;
+
     private:
-        static class m3d::Object* CreateObject(void);
-        virtual class m3d::Object* Clone(void);
-    };
+        SmokeScreenLocation(const ai::SmokeScreenLocationPrototypeInfo& prototypeInfo);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
+
+    public:
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classSmokeScreenLocation;
+        virtual const ai::SmokeScreenLocationPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+
+    protected:
+        virtual void OnObjectIn(ai::Obj* object) override /* 0x00 */;
+        virtual void OnObjectOut(ai::Obj* object) override /* 0x00 */;
+    }; /* size: 0x0284 */
 }

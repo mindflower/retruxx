@@ -2,38 +2,39 @@
 #include "sphere.h"
 #include <set>
 
+#include "server/obstacle.h"
+
 namespace m3d {
     struct Class;
 }
 
 namespace ai
 {
-    class Obstacle;
-
-    class SphereForIntersection :  public Sphere
+    class SphereForIntersection : public ai::Sphere
     {
     public:
+        static const int SIGNATURE;
+        /* 0x0018 */ int m_signature;
+
         enum SpherePurpose
         {
-            LOOKING = 0x0,
-            INTERSECTING = 0x1,
+            LOOKING = 0,
+            INTERSECTING = 1,
         };
 
     public:
-        void SetTargetClasses(std::set<m3d::Class *> const &);
-        static SphereForIntersection * CreateObject(float,SpherePurpose,Obstacle *);
-        virtual ~SphereForIntersection();
-        Obstacle * GetOwner() const ;
+        virtual  ~SphereForIntersection() override /* 0x00 */;
+        static ai::SphereForIntersection* __fastcall CreateObject(float radius, ai::SphereForIntersection::SpherePurpose purpose, ai::Obstacle* owner);
+        ai::SphereForIntersection::SpherePurpose GetPurpose() const;
+        void SetTargetClasses(const retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*> >& targetClasses);
+        ai::Obstacle* GetOwner() const;
 
     private:
-        SphereForIntersection(dxGeom * const,enum SpherePurpose,Obstacle *);
-
-    private:
-        int m_signature;
-        SpherePurpose m_purpose;
-        std::set<m3d::Class *> m_targetClasses;
-        SphereForIntersection *m_prev;
-        SphereForIntersection *m_next;
-        Obstacle *m_owner;
-    };
+        SphereForIntersection(dxGeom* const geomId, ai::SphereForIntersection::SpherePurpose purpose, ai::Obstacle* owner);
+        /* 0x001c */ ai::SphereForIntersection::SpherePurpose m_purpose;
+        retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*> > m_targetClasses;
+        /* 0x002c */ ai::SphereForIntersection* m_prev;
+        /* 0x0030 */ ai::SphereForIntersection* m_next;
+        /* 0x0034 */ ai::Obstacle* m_owner;
+    }; /* size: 0x0038 */
 }

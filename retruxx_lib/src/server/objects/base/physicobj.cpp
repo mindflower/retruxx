@@ -518,7 +518,17 @@ namespace ai
 
     PhysicObj::PhysicObj(PhysicObjPrototypeInfo const&) : m_intersectionObstacle(nullptr)
     {
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
+    }
+
+    void PhysicObj::EnablePhysicsAndGeometry()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    const ai::SphereForIntersection* PhysicObj::GetIntersectionSphere() const
+    {
+        throw std::logic_error("Not implemented");
     }
 
     bool PhysicObj::bIsBodyDisabledGeomEnabled() const

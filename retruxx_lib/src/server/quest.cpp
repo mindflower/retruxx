@@ -275,6 +275,26 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
+    QuestItemPrototypeInfo::QuestItemPrototypeInfo()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool QuestItemPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    const CStr& QuestItemPrototypeInfo::GetModelName() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Obj* QuestItemPrototypeInfo::CreateTargetObject() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
 	QuestManager::QuestManager()
 	{
 	}

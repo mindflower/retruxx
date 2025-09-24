@@ -18,12 +18,11 @@ namespace ai
 
     VehicleRecollectionPrototypeInfo::VehicleRecollectionPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
-    bool VehicleRecollectionPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool VehicleRecollectionPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        return ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode) != 0;
     }
 
     VehicleRecollection::ReollectionItem::ReollectionItem(ReollectionItem const&)

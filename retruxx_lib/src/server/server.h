@@ -142,4 +142,6 @@ namespace ai
 
     void SetDynamicScene(DynamicScene*);
     void UpdateLights();
+
+    inline CServer* pServer = nullptr;
 }

@@ -1239,6 +1239,7 @@
     <ClInclude Include="src\server\izvratrepository.h" />
     <ClInclude Include="src\server\map.h" />
     <ClInclude Include="src\server\modifier.h" />
+    <ClInclude Include="src\server\objects\affixgenerator.h" />
     <ClInclude Include="src\server\objects\article.h" />
     <ClInclude Include="src\server\objects\articulatedvehicle.h" />
     <ClInclude Include="src\server\objects\bar.h" />

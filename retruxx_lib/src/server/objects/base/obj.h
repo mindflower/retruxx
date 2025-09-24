@@ -193,8 +193,8 @@ namespace ai
 
     class Obj : public m3d::Object
     {
+        friend class ObjContainer;
     protected:
-        Obj(const ai::Obj&);
         Obj(const ai::PrototypeInfo& prototypeInfo);
         Obj();
         virtual ~Obj() override /* 0x00 */;

@@ -3,6 +3,9 @@
 #include <stdexcept>
 #include <server/objects/physicbodies/physicbody.h>
 #include <core/debugcounter.h>
+#include "prototypemanager.h"
+#include <core/kernel.h>
+#include <core/log.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, CreateNewObject)
 {
@@ -226,9 +229,18 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    Obj* ObjContainer::InnerContainer::GetObjById(int)
+    Obj* ObjContainer::InnerContainer::GetObjById(int objId)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (objId >= 0)
+        {
+            // TODO: check this
+            const auto& record = m_records[objId];
+            if (objId >> 14 == record.m_totalObjects && record.m_isValid)
+            {
+                return record.m_value;
+            }
+        }
+        return nullptr;
     }
 
     void ObjContainer::InnerContainer::Clear()
@@ -307,9 +319,19 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    Obj* ObjContainer::GetEntityByObjName(CStr const&)
+    Obj* ObjContainer::GetEntityByObjName(CStr const& name)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (name.empty())
+        {
+            return nullptr;
+        }
+
+        auto objId = GetObjIdByObjName(name);
+        if (objId >= 0)
+        {
+            return m_allObjects.GetObjById(objId);
+        }
+        return nullptr;
     }
 
     void ObjContainer::Purge()
@@ -352,9 +374,23 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    int ObjContainer::CreateNewObjectWithSuspendedPostLoad(int, char const*, int, int)
+    int ObjContainer::CreateNewObjectWithSuspendedPostLoad(int prototypeId, char const* name, int parentId, int belongId)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto objId = CreateEntityForLoad(prototypeId, name, parentId, -1);
+        if (objId >= 0)
+        {
+            auto* node = m_allObjects._GetNodeById(objId);
+            // TODO: check this
+            if (objId >> 14 == node->m_totalObjects && node->m_isValid)
+            {
+                if (node->m_value)
+                {
+                    node->m_value->SetBelong(belongId);
+                    node->m_value->CreateChildren();
+                }
+            }
+        }
+        return objId;
     }
 
     ObjContainer::iterator ObjContainer::updatingBegin()
@@ -412,9 +448,19 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    int ObjContainer::GetObjIdByObjName(CStr const&)
+    int ObjContainer::GetObjIdByObjName(CStr const& name)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (name.empty())
+        {
+            return -1;
+        }
+
+        auto it = m_nameToIdMap.find(name);
+        if (it != m_nameToIdMap.end())
+        {
+            return it->second;
+        }
+        return -1;
     }
 
     float ObjContainer::GetTolerance(int, int) const
@@ -497,9 +543,9 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    Obj* ObjContainer::GetEntityByObjId(int)
+    Obj* ObjContainer::GetEntityByObjId(int objId)
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_allObjects.GetObjById(objId);
     }
 
     void ObjContainer::DenyCreation()
@@ -517,9 +563,40 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    int ObjContainer::CreateEntityForLoad(int, char const*, int, int)
+    int ObjContainer::CreateEntityForLoad(int prototypeId, char const* name, int parentId, int objId)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (prototypeId < 0 || prototypeId >= ai::thePrototypeManager->GetNumOfPrototypes())
+        {
+            return -1;
+        }
+
+        auto* prototype = ai::thePrototypeManager->GetPrototypeInfo(prototypeId);
+        auto* obj = prototype->CreateTargetObject();
+        if (!obj)
+        {
+            return -1;
+        }
+
+        obj->SetName(name);
+        if (parentId == -1)
+        {
+            obj->SetParentInvalid();
+        }
+        else
+        {
+            obj->LinkToParent(parentId, ai::Obj::HierarchyType::HIERARCHY_CHILD);
+        }
+
+        obj->m_prototypeId = prototypeId;
+        if (objId == -1)
+            return _Add(obj);
+        obj->m_objId = objId;
+
+        if (!AddWithOwnObjId(obj))
+        {
+            M3D_CRITICAL_ERROR("Could not add object with own objId: " + obj->GetDebugDescription());
+        }
+        return objId;
     }
 
     void ObjContainer::MessageBoxA(int, int, Obj*)
@@ -557,9 +634,16 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    int ObjContainer::CreateNewObject(int, char const*, int, int)
+    int ObjContainer::CreateNewObject(int prototypeId, char const* name, int parentId, int belongId)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto objId = CreateNewObjectWithSuspendedPostLoad(prototypeId, name, parentId, belongId);
+        if (objId != -1)
+        {
+            auto* obj = m_allObjects.GetObjById(objId);
+            obj->PostLoad();
+            obj->CreateVisualPart();
+        }
+        return objId;
     }
 
     void ObjContainer::Clear(bool)

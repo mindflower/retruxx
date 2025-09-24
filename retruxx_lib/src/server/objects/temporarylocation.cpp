@@ -4,8 +4,14 @@
 
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(TemporaryLocation)
+    RT_CLASS_EXPORTS_END;
+
+    RT_CLASS_DEFINE(TemporaryLocation);
+
     TemporaryLocationPrototypeInfo::TemporaryLocationPrototypeInfo()
     {
+        throw std::logic_error("Not implemented");
     }
 
     Obj* TemporaryLocationPrototypeInfo::CreateTargetObject() const

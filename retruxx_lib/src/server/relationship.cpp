@@ -1,5 +1,8 @@
 #include "relationship.h"
 #include <stdexcept>
+#include <core/ini.h>
+#include <core/ref_ptr.h>
+#include <core/log.h>
 
 namespace ai
 {
@@ -13,7 +16,8 @@ namespace ai
 
     void Relationship::LoadDefaultFromXmlFile(char const*)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement Relationship::LoadDefaultFromXmlFile
+       // throw std::logic_error("Not implemented");
     }
 
     int Relationship::GetMinBelong() const
@@ -23,7 +27,8 @@ namespace ai
 
     void Relationship::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement Relationship::LoadFromXML
+       // throw std::logic_error("Not implemented");
     }
 
     bool Relationship::AmongTolerance(int, int, std::set<eTolerance> const&) const
@@ -41,9 +46,22 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Relationship::LoadFromXmlFile(char const*)
+    void Relationship::LoadFromXmlFile(char const* fileName)
     {
-        throw std::logic_error("Not implemented");
+        CStr err;
+        ref_ptr file = m3d::ReadXmlFile(fileName, &err);
+
+        M3D_LOG_INFO("\t\t File readed");
+        if (file)
+        {
+            ref_ptr node = file->CreateNode();
+            file->GetFirstChild(node, "relationship");
+            LoadFromXML(file, node);
+        }
+        else
+        {
+            M3D_LOG_ERR("Error: No Relationship file: " + CStr(fileName));
+        }
     }
 
     float Relationship::GetDefaultTolerance(int, int) const

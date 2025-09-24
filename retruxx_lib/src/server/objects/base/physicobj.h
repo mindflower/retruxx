@@ -5,6 +5,7 @@
 #include <math/quaternion.h>
 #include <math/vector.h>
 #include <server/objects/physicbodies/geoms/geom.h>
+#include <server/objects/physicbodies/geoms/sphereforintersection.h>
 
 namespace m3d
 {
@@ -17,10 +18,6 @@ struct dxSpace;
 
 namespace ai
 {
-    class Sphere;
-    class SphereForIntersection;
-    class Obstacle;
-
     CVector getPhysicObjOrPhysicBodyGeometricCenter(ai::Obj const*);
 
     class PhysicObjPrototypeInfo : public ai::PrototypeInfo
@@ -42,7 +39,6 @@ namespace ai
     //private:
     public:
         PhysicObj(const ai::PhysicObjPrototypeInfo& prototypeInfo);
-        PhysicObj(const ai::PhysicObj&);
         virtual m3d::Object* Clone() override /* 0x00 */;
         static m3d::Object* __fastcall CreateObject();
 

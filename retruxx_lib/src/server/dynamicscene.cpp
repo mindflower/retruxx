@@ -96,7 +96,8 @@ namespace ai
 
 	void DynamicScene::ReadSoilProps(char const*)
 	{
-		throw retruxx::logic_error("Not implemented");
+        // TODO: implement DynamicScene::ReadSoilProps
+        // throw std::logic_error("Not implemented");
 	}
 
 	CStr const& DynamicScene::GetShellWaterEffectName(unsigned short) const
@@ -260,7 +261,9 @@ namespace ai
 
 	bool DynamicScene::LoadSceneFromFile(char const*, retruxx::vector<m3d::Class*> const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+        // TODO: implement DynamicScene::LoadSceneFromFile
+        // throw std::logic_error("Not implemented");
+        return true;
 	}
 
 	int DynamicScene::ReadNewObjectFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*,

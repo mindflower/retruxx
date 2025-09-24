@@ -57,6 +57,41 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
+    InfectionTeamPrototypeInfo::Item::Item(const ai::InfectionTeamPrototypeInfo::Item& __that)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    InfectionTeamPrototypeInfo::Item::Item(const CStr& protoName, int count)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    InfectionTeamPrototypeInfo::Item::Item()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    InfectionTeamPrototypeInfo::InfectionTeamPrototypeInfo()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool InfectionTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void InfectionTeamPrototypeInfo::PostLoad()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    ai::Obj* InfectionTeamPrototypeInfo::CreateTargetObject() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     InfectionTeam::~InfectionTeam()
     {
         throw std::logic_error("Not implemented");

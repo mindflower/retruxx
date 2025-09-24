@@ -98,7 +98,17 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	int SimplePhysicObj::GetPropertyId(char const*) const
+    float SimplePhysicObj::GetScale()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool SimplePhysicObj::bDeadTimerActive()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    int SimplePhysicObj::GetPropertyId(char const*) const
 	{
 		throw retruxx::logic_error("Not implemented");
 	}

@@ -58,4 +58,6 @@ namespace ai
         std::vector<ai::Resource*> m_resourceVector;
         std::map<CStr, CStr> m_vehiclePart2Resource;
     };
+
+    inline ResourceManager* theResourceManager = nullptr;
 }

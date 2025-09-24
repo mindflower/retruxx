@@ -35,10 +35,10 @@ namespace ai
         int GetNumOfPrototypes() const ;
 
     private:
-        void _LoadGameObjectsFolderFromXML(CStr const &,bool (__fastcall*)(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *));
+        void _LoadGameObjectsFolderFromXML(CStr const &,bool (*)(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *));
         PrototypeInfo * _InternalGetPrototypeInfo(CStr const &);
         static bool _RefreshPrototype(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        void _LoadFromFolder(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *,CStr const &,bool (__fastcall*)(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *));
+        void _LoadFromFolder(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *,CStr const &,bool (*)(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *));
         static bool _ReadNewPrototype(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
 
     private:
@@ -48,4 +48,7 @@ namespace ai
         retruxx::vector<PrototypeInfo *> m_prototypes;
         int m_loadingLock = 0;
     };
+
+
+   inline PrototypeManager* thePrototypeManager = nullptr;
 }

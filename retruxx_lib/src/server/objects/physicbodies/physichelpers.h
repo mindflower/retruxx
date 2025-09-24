@@ -8,24 +8,21 @@
 
 namespace ai
 {
-    class CollisionInfo
+    struct CollisionInfo
     {
-    public:
-        CollisionInfo();
-        CollisionInfo(CollisionInfo const &);
-        void Init();
-
-    private:
-        GeomType m_geomType;
+        /* 0x0000 */ ai::GeomType m_geomType;
         CVector m_relTranslation;
         Quaternion m_relRotation;
         CVector m_size;
-        float m_radius;
-        ref_ptr<ref_count_helper<std::vector<CVector>>> m_trimeshVertices;
-        unsigned int m_numTrimeshVertices;
-        ref_ptr<ref_count_helper<std::vector<int>>> m_trimeshIndices;
-        unsigned int m_numTrimeshIndices;
-    };
+        /* 0x002c */ float m_radius;
+        ref_ptr<ref_count_helper<retruxx::vector<CVector, retruxx::allocator<CVector> > > > m_trimeshVertices;
+        /* 0x0034 */ unsigned int m_numTrimeshVertices;
+        ref_ptr<ref_count_helper<retruxx::vector<int, retruxx::allocator<int> > > > m_trimeshIndices;
+        /* 0x003c */ unsigned int m_numTrimeshIndices;
+        CollisionInfo(const ai::CollisionInfo& info);
+        CollisionInfo();
+        void Init();
+    }; /* size: 0x0040 */
 
     int RoughSign(float);
 }

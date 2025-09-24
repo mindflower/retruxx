@@ -3,63 +3,65 @@
 
 namespace ai
 {
-    class InfectionTeamPrototypeInfo : public TeamPrototypeInfo
+    class InfectionTeamPrototypeInfo : public ai::TeamPrototypeInfo
     {
     public:
-        class Item
+        struct Item
         {
-        public:
-            Item(Item const&);
-
-        private:
             CStr m_protoName;
-            unsigned int m_count;
-        };
+            /* 0x000c */ unsigned int m_count;
+            Item(const ai::InfectionTeamPrototypeInfo::Item& __that);
+            Item(const CStr& protoName, int count);
+            Item();
+        }; /* size: 0x0010 */
+
+        using ItemVector = retruxx::vector<ai::InfectionTeamPrototypeInfo::Item, retruxx::allocator<ai::InfectionTeamPrototypeInfo::Item> >;
 
     public:
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        retruxx::vector<ai::InfectionTeamPrototypeInfo::Item, retruxx::allocator<ai::InfectionTeamPrototypeInfo::Item> > m_items;
+        /* 0x0070 */ int m_vehiclesGeneratorProtoId;
         InfectionTeamPrototypeInfo();
-        virtual void PostLoad();
-        virtual Obj* CreateTargetObject() const;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual void PostLoad() override /* 0x08 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
 
     private:
-        std::vector<Item> m_items;
-        int m_vehiclesGeneratorProtoId;
         CStr m_vehiclesGeneratorProtoName;
+    }; /* size: 0x0080 */
 
-    };
-    class InfectionTeam :  public Team
+    class InfectionTeam : public ai::Team
     {
+    protected:
+        virtual  ~InfectionTeam() override /* 0x00 */;
+
+    private:
+        InfectionTeam(const ai::InfectionTeamPrototypeInfo& prototypeInfo);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
+
     public:
-        void SetCriticalDistAndTime(float,float);
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        InfectionTeam(InfectionTeamPrototypeInfo const &);
-        void SetBlindDistAndTime(float,float);
-        static m3d::Class * GetBaseClass();
-        void Generate(std::vector<CVector,std::allocator<CVector> > const &,unsigned int);
-        virtual m3d::Class * GetClass() const ;
-        virtual InfectionTeamPrototypeInfo const * GetPrototypeInfo() const ;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classInfectionTeam;
+        virtual const ai::InfectionTeamPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
+        void Generate(const retruxx::vector<CVector, retruxx::allocator<CVector> >& points, unsigned int restSchwarz);
+        void SetCriticalDistAndTime(float criticalDist, float criticalTime);
+        void SetBlindDistAndTime(float blindDist, float blindTime);
 
     protected:
-        virtual void _InternalPostLoad();
-        virtual ~InfectionTeam();
-        virtual void _TeamUpdate(float,unsigned int);
+        virtual void _InternalPostLoad() override /* 0xfc */;
+        virtual void _TeamUpdate(float elapsedTime, unsigned int workTime) override /* 0x110 */;
 
     private:
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
-
-    public:
-        RT_CLASS_DECLARE(InfectionTeam);
-
-    private:
-        bool m_bGenerated;
-        float m_criticalTeamDist;
-        float m_criticalTeamTime;
-        float m_timeBeyondCriticalDist;
-        float m_blindTeamDist;
-        float m_blindTeamTime;
-        float m_timeBeyondBlindDist;
-    };
+        /* 0x0168 */ bool m_bGenerated;
+        /* 0x0169 */ char Padding_274[3];
+        /* 0x016c */ float m_criticalTeamDist;
+        /* 0x0170 */ float m_criticalTeamTime;
+        /* 0x0174 */ float m_timeBeyondCriticalDist;
+        /* 0x0178 */ float m_blindTeamDist;
+        /* 0x017c */ float m_blindTeamTime;
+        /* 0x0180 */ float m_timeBeyondBlindDist;
+    }; /* size: 0x0184 */
 }

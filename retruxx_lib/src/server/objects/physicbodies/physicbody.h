@@ -4,6 +4,10 @@
 #include <server/objects/base/obj.h>
 #include <server/objects/base/prototypeinfo.h>
 
+#include "physichelpers.h"
+#include "geoms/geomtransform.h"
+#include "server/objects/base/physicobj.h"
+
 struct dxSpace;
 
 namespace m3d
@@ -16,10 +20,6 @@ enum ActionType;
 
 namespace ai
 {
-    class GeomTransform;
-    class CollisionInfo;
-    class PhysicObj;
-
     class PhysicBodyPrototypeInfo : public ai::PrototypeInfo
     {
     public:

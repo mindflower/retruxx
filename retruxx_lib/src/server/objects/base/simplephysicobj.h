@@ -1,11 +1,9 @@
 #pragma once
 #include "physicobj.h"
+#include "server/objects/physicbodies/simplephysicbody.h"
 
 namespace ai
 {
-	class CollisionInfo;
-	class SimplePhysicBody;
-
     class SimplePhysicObjPrototypeInfo : public ai::PhysicObjPrototypeInfo
     {
     public:
@@ -42,7 +40,6 @@ namespace ai
 
     protected:
         SimplePhysicObj(const ai::SimplePhysicObjPrototypeInfo& prototypeInfo);
-        SimplePhysicObj(const ai::SimplePhysicObj&);
         virtual m3d::Object* Clone() override /* 0x00 */;
         static m3d::Object* __fastcall CreateObject();
 

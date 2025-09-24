@@ -8,8 +8,6 @@
 
 namespace ai
 {
-	ResourceManager* theResourceManager = nullptr;
-
 	Resource::Resource(Resource const* parent)
 	{
 		if (parent)

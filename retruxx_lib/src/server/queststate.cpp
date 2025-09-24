@@ -170,7 +170,9 @@ namespace ai
 
     bool QuestStateManager::LoadFromXmlFile(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement QuestStateManager::LoadFromXmlFile
+        // throw std::logic_error("Not implemented");
+        return true;
     }
 
     bool QuestStateManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const

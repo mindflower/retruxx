@@ -4,49 +4,53 @@
 
 namespace ai
 {
-    class RadioManagerPrototypeInfo : public PrototypeInfo
+    class RadioManagerPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        virtual Obj* CreateTargetObject() const;
-    };
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+    }; /* size: 0x0040 */
 
-    class RadioManager :  public Obj
+    class RadioManager : public ai::Obj
     {
+    protected:
+        virtual  ~RadioManager() override /* 0x00 */;
+
+    private:
+        RadioManager(const ai::RadioManagerPrototypeInfo& prototypeInfo);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
+
     public:
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classRadioManager;
+        virtual const ai::RadioManagerPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual int OnEvent(const ai::Event& evn) override /* 0x40 */;
+
+    private:
+        void _OnObjectDie(const ai::Event& evn);
+        void _OnSomeoneAtSight(const ai::Event& evn);
+        void _OnUnderAttack(const ai::Event& evn);
+        void _OnRelationChanged(const ai::Event& evn);
+        void _OnPartBroken(const ai::Event& evn);
+        void _OnPlayerVehicleChanged(const ai::Event& evn);
+
         enum RM_ENUM
         {
-            RM_OBJECT_DIE = 0x0,
-            RM_NOTICE = 0x1,
-            RM_PART_BROKEN = 0x2,
-            RM_UNDER_ATTACK = 0x3,
-            RM_RELATION_CHANGED = 0x4,
-            RM_MAX_NUMBER = 0x5,
+            RM_OBJECT_DIE = 0,
+            RM_NOTICE = 1,
+            RM_PART_BROKEN = 2,
+            RM_UNDER_ATTACK = 3,
+            RM_RELATION_CHANGED = 4,
+            RM_MAX_NUMBER = 5,
         };
 
+    private:
+        void ReadyMessage(ai::RadioManager::RM_ENUM type, int belong, const CStr& mes);
+        /* 0x00c0 */ bool m_bRadioEnabled;
+
     public:
-        virtual int OnEvent(Event const &);
-        void DisableRadio();
-        RadioManager(RadioManagerPrototypeInfo const &);
-        virtual m3d::Class * GetClass() const ;
-        static m3d::Class * GetBaseClass();
-        virtual RadioManagerPrototypeInfo const * GetPrototypeInfo() const ;
         void EnableRadio();
-
-    protected:
-        virtual ~RadioManager();
-
-    private:
-        void _OnPlayerVehicleChanged(Event const &);
-        void _OnObjectDie(Event const &);
-        void _OnRelationChanged(Event const &);
-        void _OnUnderAttack(Event const &);
-        void ReadyMessage(RM_ENUM,int,CStr const &);
-        void _OnSomeoneAtSight(Event const &);
-        static m3d::Object * CreateObject();
-        void _OnPartBroken(Event const &);
-        virtual m3d::Object * Clone();
-
-    private:
-        bool m_bRadioEnabled;
-    };
+        void DisableRadio();
+    }; /* size: 0x00c4 */
 }
