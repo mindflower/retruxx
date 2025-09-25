@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "core/ini.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(InfectionZone, ResetTimeOut)
 {
     throw retruxx::logic_error("Not implemented");
@@ -23,12 +25,28 @@ namespace ai
 
     InfectionZonePrototypeInfo::InfectionZonePrototypeInfo()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_minDistToPlayer = 100.0;
+        this->m_criticalTeamDist = 1000000.0;
+        this->m_criticalTeamTime = 0.0;
+        this->m_blindTeamDist = 1000000.0;
+        this->m_blindTeamTime = 0.0;
+        this->m_dropOutSegmentAngle = 180;
     }
 
-    bool InfectionZonePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool InfectionZonePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_minDistToPlayer, xmlNode, "MinDistToPlayer");
+            m3d::SafeFloatAttrib(m_criticalTeamDist, xmlNode, "CriticalTeamDist");
+            m3d::SafeFloatAttrib(m_criticalTeamTime, xmlNode, "CriticalTeamTime");
+            m3d::SafeFloatAttrib(m_blindTeamDist, xmlNode, "BlindTeamDist");
+            m3d::SafeFloatAttrib(m_blindTeamTime, xmlNode, "BlindTeamTime");
+            m3d::SafeIntAttrib(m_dropOutSegmentAngle, xmlNode, "DropOutSegmentAngle");
+            return 1;
+        }
+        return result;
     }
 
     Obj* InfectionZonePrototypeInfo::CreateTargetObject() const

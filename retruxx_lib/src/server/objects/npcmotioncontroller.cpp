@@ -23,7 +23,6 @@ namespace ai
 
     NPCMotionControllerPrototypeInfo::NPCMotionControllerPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
     Obj* NPCMotionControllerPrototypeInfo::CreateTargetObject() const
@@ -31,9 +30,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool NPCMotionControllerPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool NPCMotionControllerPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        return ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode) != 0;
     }
 
     int NPCMotionController::OnEvent(Event const&)

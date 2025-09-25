@@ -8,14 +8,13 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(InfectionLair);
 
-    bool InfectionLairPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool InfectionLairPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        return ai::SettlementPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
     InfectionLairPrototypeInfo::InfectionLairPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
     Obj* InfectionLairPrototypeInfo::CreateTargetObject() const

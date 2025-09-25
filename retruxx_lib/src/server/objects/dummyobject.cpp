@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "core/ini.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(DummyObject, SetModelName)
 {
 	throw retruxx::logic_error("Not implemented");
@@ -16,12 +18,23 @@ namespace ai
 
 	DummyObjectPrototypeInfo::DummyObjectPrototypeInfo()
 	{
-		throw retruxx::logic_error("Not implemented");
+        this->m_DisablePhysics = 0;
+        this->m_DisableGeometry = 0;
+        this->m_bIsUpdating = 0;
 	}
 
-	bool DummyObjectPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	bool DummyObjectPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		throw retruxx::logic_error("Not implemented");
+        auto result = ai::SimplePhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            ai::SimplePhysicObjPrototypeInfo::_SetGeomType(GEOM_TYPE_FROM_MODEL);
+            m3d::SafeBoolAttrib(this->m_DisablePhysics, xmlNode, "DisablePhysics");
+            m3d::SafeBoolAttrib(this->m_DisableGeometry, xmlNode, "DisableGeometry");
+            this->m_bCollisionTrimeshAllowed = this->m_DisablePhysics;
+            return 1;
+        }
+        return result;
 	}
 
 	Obj* DummyObjectPrototypeInfo::CreateTargetObject() const

@@ -44,6 +44,11 @@ namespace ai
 
     extern AIManager* theAIManager;
 
+    namespace
+    {
+        const char* TEAM_DEFAULT_FORMATION_PROTOTYPE = "caravanFormation";
+    }
+
     void TeamPrototypeInfo::PostLoad()
     {
         throw retruxx::logic_error("Not implemented");
@@ -66,7 +71,12 @@ namespace ai
 
     TeamPrototypeInfo::TeamPrototypeInfo()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_decisionMatrixNum = -1;
+        this->m_bRemoveWhenChildrenDead = 1;
+        this->m_formationPrototypeName = TEAM_DEFAULT_FORMATION_PROTOTYPE;
+        this->m_overridesDistBetweenVehicles = 0;
+        this->m_bIsUpdating = 0;
+        this->m_formationDistBetweenVehicles = 30.0;
     }
 
     bool TeamPrototypeInfo::GetOverridesDistBetweenVehicles() const

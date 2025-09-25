@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "core/ini.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(Settlement)
@@ -13,9 +15,31 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    bool SettlementPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    SettlementPrototypeInfo::auxZoneInfo::auxZoneInfo()
     {
-        throw retruxx::logic_error("Not implemented");
+        m_offset.x = 0.0;
+        m_offset.y = 0.0;
+        m_offset.z = 0.0;
+        m_radius = 10.0;
+    }
+
+    bool SettlementPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    {
+        auto result = ai::SimplePhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            ref_ptr node = xmlFile->CreateNode();
+            for (xmlNode->GetFirstChild(node, "zone"); !node->IsEmpty(); node->GetNextSibling(node, "zone"))
+            {
+                ai::SettlementPrototypeInfo::auxZoneInfo ZI;
+                m3d::SafeStrAttrib(ZI.m_action, node, "action");
+                m3d::SafeVectorAttrib(ZI.m_offset, node, "offset");
+                m3d::SafeFloatAttrib(ZI.m_radius, node, "radius");
+                m_zoneInfos.push_back(std::move(ZI));
+            }
+            m3d::SafeStrAttrib(m_vehiclesPrototypeName, xmlNode, "Vehicles");
+        }
+        return result;
     }
 
     void SettlementPrototypeInfo::PostLoad()
@@ -25,7 +49,6 @@ namespace ai
 
     SettlementPrototypeInfo::SettlementPrototypeInfo()
     {
-        throw retruxx::logic_error("Not implemented");
     }
 
     m3d::Class* Settlement::GetClass() const

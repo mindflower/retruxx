@@ -3,6 +3,9 @@
 #include "server/objects/physicbodies/physichelpers.h"
 #include <stdexcept>
 
+#include "core/ini.h"
+#include "core/kernel.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetMass)
 {
 	throw retruxx::logic_error("Not implemented");
@@ -37,14 +40,26 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	bool SimplePhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	bool SimplePhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		throw retruxx::logic_error("Not implemented");
+        auto result = ai::PhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_massValue, xmlNode, "Mass");
+            m3d::SafeStrAttrib(m_engineModelName, xmlNode, "ModelFile");
+            m3d::SafeBoolAttrib(m_bCollisionTrimeshAllowed, xmlNode, "CollisionTrimeshAllowed");
+            return 1;
+        }
+        return result;
 	}
 
 	SimplePhysicObjPrototypeInfo::SimplePhysicObjPrototypeInfo()
 	{
-		throw retruxx::logic_error("Not implemented");
+        this->m_bCollisionTrimeshAllowed = 0;
+        this->m_geomType = GEOM_TYPE_NONE;
+        this->m_size = CVector(0.0, 0.0, 0.0);
+        this->m_radius = 1.0;
+        this->m_massValue = 1.0;
 	}
 
 	float SimplePhysicObjPrototypeInfo::GetRadius() const
@@ -72,9 +87,41 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void SimplePhysicObjPrototypeInfo::_SetGeomType(GeomType)
+	void SimplePhysicObjPrototypeInfo::_SetGeomType(GeomType geomType)
 	{
-		throw retruxx::logic_error("Not implemented");
+        m_geomType = geomType;
+        if (geomType == GEOM_TYPE_FROM_MODEL)
+            return;
+
+        m_collisionInfos.clear();
+
+        CollisionInfo ci;
+        ci.Init();
+        if (m_geomType == GEOM_TYPE_BOX)
+        {
+            ci.m_geomType = GEOM_TYPE_BOX;
+            ci.m_size.x = m_size.x;
+            ci.m_size.y = m_size.y;
+            ci.m_size.z = m_size.z;
+        }
+        else if (m_geomType == GEOM_TYPE_SPHERE)
+        {
+            m_radius = m_radius;
+            ci.m_geomType = GEOM_TYPE_SPHERE;
+            ci.m_radius = m_radius;
+        }
+        else
+        {
+            if (m_geomType == GEOM_TYPE_TRIMESH)
+            {
+                M3D_ASSERT(!"obsolete");
+            }
+            if (ci.m_geomType == GEOM_TYPE_NONE)
+            {
+                return;
+            }
+        }
+        m_collisionInfos.push_back(ci);
 	}
 
 	eGObjPropertySaveStatus SimplePhysicObj::GetPropertySaveStatus(int) const

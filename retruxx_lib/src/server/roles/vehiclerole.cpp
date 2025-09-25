@@ -2,20 +2,27 @@
 
 #include <stdexcept>
 
+#include "core/ini.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(VehicleRole)
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(VehicleRole);
 
-    bool VehicleRolePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool VehicleRolePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_vehicleFiringRangeCoeff, xmlNode, "FiringRangeCoeff");
+        }
+        return result;
     }
 
     VehicleRolePrototypeInfo::VehicleRolePrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        m_vehicleFiringRangeCoeff = 1.0;
     }
 
     Vehicle* VehicleRolePrototypeInfo::getBestOpponentFromTeam(Vehicle const*, Team const*) const

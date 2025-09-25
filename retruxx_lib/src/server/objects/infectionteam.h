@@ -12,7 +12,6 @@ namespace ai
             /* 0x000c */ unsigned int m_count;
             Item(const ai::InfectionTeamPrototypeInfo::Item& __that);
             Item(const CStr& protoName, int count);
-            Item();
         }; /* size: 0x0010 */
 
         using ItemVector = retruxx::vector<ai::InfectionTeamPrototypeInfo::Item, retruxx::allocator<ai::InfectionTeamPrototypeInfo::Item> >;

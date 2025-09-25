@@ -3,6 +3,7 @@
 #include <core/aiparam.h>
 #include <server/obstacle.h>
 
+#include "core/ini.h"
 #include "game/m3dgame.h"
 #include "server/ai/aimanager.h"
 
@@ -107,11 +108,20 @@ namespace ai
 
 	PhysicObjPrototypeInfo::PhysicObjPrototypeInfo()
 	{
+        this->m_intersectionRadius = 0.0;
+        this->m_lookRadius = 0.0;
 	}
 
-	bool PhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	bool PhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		throw std::logic_error("Not implemented");
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_intersectionRadius, xmlNode, "IntersectionRadius");
+            m3d::SafeFloatAttrib(m_lookRadius, xmlNode, "LookRadius");
+            return 1;
+        }
+        return result;
 	}
 
     void PhysicObj::SetDirections(CVector const&, CVector const&)

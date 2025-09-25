@@ -2,6 +2,9 @@
 
 #include <stdexcept>
 
+#include "core/ini.h"
+#include "core/ref_ptr.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(TeamTactic)
@@ -19,12 +22,11 @@ namespace ai
 
     TeamTacticPrototypeInfo::TeamTacticPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
-    bool TeamTacticPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool TeamTacticPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        return ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode) != 0;
     }
 
     m3d::Class* TeamTactic::GetBaseClass()
@@ -64,7 +66,6 @@ namespace ai
 
     TeamTacticWithRolesPrototypeInfo::TeamTacticWithRolesPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
     Obj* TeamTacticWithRolesPrototypeInfo::CreateTargetObject() const
@@ -77,9 +78,20 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool TeamTacticWithRolesPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool TeamTacticWithRolesPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            ref_ptr node = xmlFile->CreateNode();
+            for (xmlNode->GetFirstChild(node, "Role"); !node->IsEmpty(); node->GetNextSibling(node, "Role"))
+            {
+                CStr prototype;
+                m3d::SafeStrAttrib(prototype, node, "Prototype");
+                m_rolePrototypeNames.push_back(std::move(prototype));
+            }
+        }
+        return result;
     }
 
     void TeamTacticWithRolesPrototypeInfo::PostLoad()

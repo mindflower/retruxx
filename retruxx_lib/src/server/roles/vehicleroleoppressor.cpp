@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "core/ini.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(VehicleRoleOppressor)
@@ -18,14 +20,19 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool VehicleRoleOppressorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool VehicleRoleOppressorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::VehicleRolePrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeVector2Attrib(m_oppressionShift, xmlNode, "OppressionShift");
+            return 1;
+        }
+        return result;
     }
 
     VehicleRoleOppressorPrototypeInfo::VehicleRoleOppressorPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
     float VehicleRoleOppressorPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const

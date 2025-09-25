@@ -15,7 +15,6 @@ namespace ai
 
     VehicleRoleSniperPrototypeInfo::VehicleRoleSniperPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
     float VehicleRoleSniperPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
@@ -28,9 +27,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool VehicleRoleSniperPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool VehicleRoleSniperPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        return ai::VehicleRolePrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
     float VehicleRoleSniperPrototypeInfo::FitAgainstObj(Vehicle const*, Obj const*) const

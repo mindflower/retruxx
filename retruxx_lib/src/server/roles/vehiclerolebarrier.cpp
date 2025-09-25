@@ -10,12 +10,11 @@ namespace ai
 
     VehicleRoleBarrierPrototypeInfo::VehicleRoleBarrierPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
-    bool VehicleRoleBarrierPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool VehicleRoleBarrierPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        return ai::VehicleRolePrototypeInfo::LoadFromXML(xmlFile, xmlNode) != 0;
     }
 
     float VehicleRoleBarrierPrototypeInfo::FitAgainstObj(Vehicle const*, Obj const*) const

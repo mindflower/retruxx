@@ -10,7 +10,6 @@ namespace ai
 
     VehicleRoleCheaterPrototypeInfo::VehicleRoleCheaterPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
     float VehicleRoleCheaterPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const
@@ -33,9 +32,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool VehicleRoleCheaterPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool VehicleRoleCheaterPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        return ai::VehicleRolePrototypeInfo::LoadFromXML(xmlFile, xmlNode) != 0;
     }
 
     m3d::Class* VehicleRoleCheater::GetBaseClass()

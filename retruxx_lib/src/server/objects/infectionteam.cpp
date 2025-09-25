@@ -1,6 +1,8 @@
 #include "infectionteam.h"
 #include <stdexcept>
 
+#include "core/ini.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(InfectionTeam)
@@ -62,24 +64,36 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    InfectionTeamPrototypeInfo::Item::Item(const CStr& protoName, int count)
+    InfectionTeamPrototypeInfo::Item::Item(const CStr& protoName, int count) : m_protoName(protoName), m_count(count)
     {
-        throw std::logic_error("Not implemented");
-    }
-
-    InfectionTeamPrototypeInfo::Item::Item()
-    {
-        throw std::logic_error("Not implemented");
     }
 
     InfectionTeamPrototypeInfo::InfectionTeamPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
     bool InfectionTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::TeamPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeStrAttrib(m_vehiclesGeneratorProtoName, xmlNode, "VehiclesGenerator");
+            m_items.clear();
+
+            ref_ptr vehiclesNode = xmlFile->CreateNode();
+            xmlNode->GetFirstChild(vehiclesNode, "Vehicles");
+
+            ref_ptr node = xmlFile->CreateNode();
+            for (vehiclesNode->GetFirstChild(node, "Vehicle"); !node->IsEmpty(); node->GetNextSibling(node, "Vehicle"))
+            {
+                CStr protoName;
+                unsigned count = 0;
+                m3d::SafeStrAttrib(protoName, node, "PrototypeName");
+                m3d::SafeUintAttrib(count, node, "Count");
+                m_items.emplace_back(protoName, count);
+            }
+        }
+        return result;
     }
 
     void InfectionTeamPrototypeInfo::PostLoad()
