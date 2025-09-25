@@ -8,6 +8,8 @@
 #include <script/funcstack.h>
 #include <core/log.h>
 
+#include "core/ini.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, AddEvent)
 {
     throw std::logic_error("Not implemented");
@@ -258,9 +260,18 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Trigger::LoadFromMapXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Trigger::LoadFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        if (!m_StateKeep)
+        {
+            CStr active = xmlNode->GetAttribute("active");
+            if (active == "0")
+            {
+                m_state = TS_OFF;
+            }
+        }
+        _LoadEventsFromMapXML(xmlFile, xmlNode);
+        _LoadScriptFromMapXML(xmlFile, xmlNode);
     }
 
     void Trigger::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const

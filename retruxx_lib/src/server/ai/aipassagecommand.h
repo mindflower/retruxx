@@ -1,5 +1,5 @@
 #pragma once
-#include <vector>
+#include <thirdparty/containers.h>
 
 namespace ai
 {
@@ -8,11 +8,8 @@ namespace ai
     class AIPassageCommand
     {
     public:
-        void operator=(AIPassageCommand const &);
+        /* 0x0000 */ int m_StateNum;
+        retruxx::vector<ai::AIParamRef, retruxx::allocator<ai::AIParamRef> > m_ParamRefList;
         void Dump();
-
-    private:
-        int m_StateNum;
-        std::vector<AIParamRef> m_ParamRefList;
-    };
+    }; /* size: 0x0014 */
 }

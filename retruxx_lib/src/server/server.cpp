@@ -211,6 +211,7 @@ namespace ai
 
     void CServer::Load(StartupMode mode, m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode, bool bContiniousMap, ObjContainer::eSAVE_TYPES saveType)
     {
+        // TODO: implement CServer::Load
         M3D_LOG_INFO("AI: Loading Server...");
 
         auto saveSaveType = ai::theObjects->m_SaveType;

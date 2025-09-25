@@ -4,6 +4,7 @@
 #include <server/ai/aimessage.h>
 #include <server/ai/aipassagestate.h>
 
+#include "core/ini.h"
 #include "server/ai/aimanager.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, SetDestination)
@@ -59,9 +60,38 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    bool TeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool TeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            CStr decisionMatrixName;
+            m3d::SafeStrAttrib(decisionMatrixName, xmlNode, "DecisionMatrix");
+
+            ai::theAIManager->LoadMatrix(decisionMatrixName.c_str());
+            m_decisionMatrixNum = theAIManager->GetMatrixNum(decisionMatrixName);
+
+            m3d::SafeBoolAttrib(this->m_bRemoveWhenChildrenDead, xmlNode, "RemoveWhenChildrenDead");
+
+            ref_ptr node = xmlFile->CreateNode();
+            xmlNode->GetFirstChild(node, "Formation");
+
+            if (!node->IsEmpty())
+            {
+                m3d::SafeStrAttrib(m_formationPrototypeName, node, "Prototype");
+
+                ref_ptr protoNode = xmlFile->CreateNode();
+                node->GetFirstAttribute((m3d::cmn::XmlAttrib*)&*protoNode);
+
+                if (!protoNode->IsEmpty())
+                {
+                    m_overridesDistBetweenVehicles = 1;
+                    m3d::SafeFloatAttrib(m_formationDistBetweenVehicles, node, "DistBetweenVehicles");
+                }
+
+            }
+        }
+        return result;
     }
 
     float TeamPrototypeInfo::GetFormationDistBetweenVehicles() const

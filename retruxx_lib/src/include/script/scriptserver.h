@@ -97,7 +97,7 @@ namespace m3d
         eScriptError callScriptFunc(char const*, sArgStack&, int);
         eScriptError done();
         char const* getNameOfLastScript() const;
-        std::map<CStr, auxFuncDesc> const& getRegisteredFunctionsDesc() const;
+        retruxx::map<CStr, auxFuncDesc> const& getRegisteredFunctionsDesc() const;
         eScriptError addScript(char const*);
         eScriptError execute(char const*, char const*);
         eScriptError executeBuffer(void*, unsigned int, char const*);
@@ -118,8 +118,8 @@ namespace m3d
         ScriptServer() = default;
 
     private:
-        std::map<CStr, Scriptlet*> m_scripts;
-        std::map<CStr, auxFuncDesc> m_funcDescs;
+        retruxx::map<CStr, Scriptlet*> m_scripts;
+        retruxx::map<CStr, auxFuncDesc> m_funcDescs;
         CStr m_lastScriptExecuted;
         bool m_bInitialized = false;
     };

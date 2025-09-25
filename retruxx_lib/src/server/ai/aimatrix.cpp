@@ -18,12 +18,12 @@ namespace ai
 
     CStr const& AIMatrix::GetName() const
     {
-        throw std::logic_error("Not implemented");
+        return m_name;
     }
 
     DecisionMatrix* AIMatrix::GetPtr() const
     {
-        throw std::logic_error("Not implemented");
+        return m_pDM;
     }
 
     void AIMatrix::Set(CStr const&, DecisionMatrix*)

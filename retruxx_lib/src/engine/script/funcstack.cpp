@@ -1,6 +1,8 @@
 #include <script/funcstack.h>
 #include <stdexcept>
 
+#include "core/kernel.h"
+
 namespace m3d
 {
     sArgStack::~sArgStack()
@@ -9,7 +11,10 @@ namespace m3d
 
     sArg* sArgStack::popIn()
     {
-        throw std::logic_error("Not implemented");
+        M3D_ASSERT(m_curInArg < m_numInArgs);
+        auto result = &this->m_InArgs[m_curInArg];
+        this->m_curInArg = m_curInArg + 1;
+        return result;
     }
 
     unsigned sArgStack::getNumOutArgs() const
@@ -28,12 +33,12 @@ namespace m3d
 
     unsigned sArgStack::getNumInArgs() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_numInArgs;
     }
 
     sArg* sArgStack::newOut()
     {
-        throw std::logic_error("Not implemented");
+        return &m_OutArgs[m_numOutArgs++];
     }
 
     sArg* sArgStack::newIn()

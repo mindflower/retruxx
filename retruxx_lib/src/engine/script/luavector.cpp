@@ -13,3 +13,8 @@ void ext_initVector(lua_State* L)
     lua_insert(L, -2);
     lua_settable(L, -10001);
 }
+
+CVector* ext_createVector(lua_State*)
+{
+    throw std::logic_error("Not implemented");
+}

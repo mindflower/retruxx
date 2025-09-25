@@ -11,9 +11,18 @@ extern "C"{
 
 namespace m3d
 {
-	void LuaContext::pushObject(Object*)
+	void LuaContext::pushObject(Object* x)
 	{
-		throw std::logic_error("Not implemented");
+        if (x)
+        {
+            auto ScriptObject = ScriptServer::_getScriptObject(x);
+            lua_rawgeti(this->L, -10000, ScriptObject);
+        }
+        else
+        {
+            lua_pushnil(this->L);
+        }
+        ++this->m_numOutputs;
 	}
 
 	void LuaContext::pushAIParam(AIParam const&)

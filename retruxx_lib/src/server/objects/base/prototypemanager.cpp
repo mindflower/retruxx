@@ -40,9 +40,9 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    void PrototypeManager::RefreshFromXmlFile(CStr const&)
+    void PrototypeManager::RefreshFromXmlFile(CStr const& fileName)
     {
-        throw retruxx::logic_error("Not implemented");
+        ai::PrototypeManager::_LoadGameObjectsFolderFromXML(fileName, ai::PrototypeManager::_RefreshPrototype);
     }
 
     CStr PrototypeManager::GetPrototypeFullName(CStr const&) const
@@ -133,14 +133,31 @@ namespace ai
         }
     }
 
-    PrototypeInfo* PrototypeManager::_InternalGetPrototypeInfo(CStr const&)
+    PrototypeInfo* PrototypeManager::_InternalGetPrototypeInfo(CStr const& prototypeName)
     {
-        throw retruxx::logic_error("Not implemented");
+        for (const auto& proto : m_prototypes)
+        {
+            if (proto->m_prototypeName == prototypeName)
+            {
+                return proto;
+            }
+        }
+        return nullptr;
     }
 
-    bool PrototypeManager::_RefreshPrototype(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool PrototypeManager::_RefreshPrototype(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw retruxx::logic_error("Not implemented");
+        CStr prototypeName = xmlNode->GetAttribute("Name");
+
+        auto* prototypeInfo = thePrototypeManager->_InternalGetPrototypeInfo(prototypeName);
+        if (prototypeInfo)
+        {
+            prototypeInfo->RefreshFromXml(xmlFile, xmlNode);
+            return 1;
+        }
+
+        M3D_LOG_ERR("Error: prototype '" + prototypeName + "' is not loaded");
+        return 0;
     }
 
     void PrototypeManager::_LoadFromFolder(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* RootNode, CStr const& directory, bool(*action)(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*))

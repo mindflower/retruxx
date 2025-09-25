@@ -4,9 +4,18 @@
 #include <server/ai/aifunc.h>
 #include <server/ai/aimatrix.h>
 
+#include "decisionmatrix.h"
+#include "core/kernel.h"
+#include "core/log.h"
+#include "script/funcstack.h"
+#include "script/scriptserver.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(AIManager, CreateNewDecisionMatrix)
 {
-    throw std::logic_error("Not implemented");
+    context->asObject(0, "AIManager");
+    auto* obj = m3d::g_Kernel->New("DecisionMatrix");
+    context->pushObject(obj);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(AIManager, LoadMatrix)
@@ -16,17 +25,25 @@ RT_CLASS_EXPORT_METHOD_DEFINE(AIManager, LoadMatrix)
 
 namespace ai
 {
-    AIManager* theAIManager = nullptr;
-
     RT_CLASS_EXPORTS_BEGIN(AIManager)
 		RT_CLASS_EXPORT(AIManager, m3d::METHOD, CreateNewDecisionMatrix, "", "", "")
         RT_CLASS_EXPORT(AIManager, m3d::METHOD, LoadMatrix, "", "", "")
 	RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(AIManager);
 
-    DecisionMatrix* AIManager::LoadMatrix(char const*)
+    DecisionMatrix* AIManager::LoadMatrix(char const* fileName)
     {
-        throw std::logic_error("Not implemented");
+        auto matrixNum = GetMatrixNum(fileName);
+        if (matrixNum != 0xFFFF)
+        {
+            return m_Matrix[matrixNum].GetPtr();
+        }
+
+        auto newMatrix = ReadNewMatrix(fileName);
+        ai::AIMatrix matrix(fileName, newMatrix);
+        m_Matrix.push_back(std::move(matrix));
+
+        return newMatrix;
     }
 
     int AIManager::GetMatrixNum(CStr const& name) const
@@ -80,9 +97,16 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    int AIManager::GetSchemeNum(CStr const&) const
+    int AIManager::GetSchemeNum(CStr const& word) const
     {
-        throw std::logic_error("Not implemented");
+        for (int i = 0; i < m_Schemes.size(); ++i)
+        {
+            if (m_Schemes[i] == word)
+            {
+                return i;
+            }
+        }
+        return 0xFFFF;
     }
 
     CStr AIManager::GetMatrixName(int) const
@@ -147,9 +171,36 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    DecisionMatrix* AIManager::ReadNewMatrix(char const*)
+    DecisionMatrix* AIManager::ReadNewMatrix(char const* fileName)
     {
-        throw std::logic_error("Not implemented");
+        auto extension = strchr(fileName, '.');
+        if (CStr(extension) == ".lua")
+        {
+            auto& scriptServer = M3D_KERNEL->GetScriptServer();
+
+            m3d::sArgStack argStack;
+            argStack.newIn()->SetS(fileName);
+            if (auto res = scriptServer.callScriptFunc("ReadMatrix", argStack, 1))
+            {
+                M3D_LOG_ERR(scriptServer.getFormatedScriptErrorDesc(res));
+            }
+            if (argStack.getNumOutArgs() != 1)
+            {
+                M3D_LOG_ERR("Error in return results: invalid number of return values");
+                return 0;
+            }
+
+            auto* out = argStack.popOut();
+            if (out->m_type != m3d::sArg::ARGTYPE_OBJECT)
+            {
+                M3D_LOG_ERR("Error in return results: invalid type of return value");
+                return 0;
+            }
+
+            return dynamic_cast<DecisionMatrix*>(out->GetO());
+        }
+        M3D_LOG_ERR("Error: old-style matrices in *.ai are not supportted.");
+        return 0;
     }
 
     void SetAIManager(AIManager* pAIManager)

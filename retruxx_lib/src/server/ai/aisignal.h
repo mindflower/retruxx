@@ -1,23 +1,24 @@
 #pragma once
-#include <vector>
 #include <core/stringm3d.h>
+
+#include "aiparamref.h"
+#include "thirdparty/containers.h"
 
 namespace ai
 {
-    class AIParamRef;
-
     class AISignal
     {
     public:
+        /* 0x0000 */ int m_FuncNum;
+        retruxx::vector<ai::AIParamRef, retruxx::allocator<ai::AIParamRef> > m_ParamRefList;
+
         AISignal();
-        CStr const & GetName() const ;
-        void Dump() const ;
-        void Set(CStr const &);
-        void Set(CStr const &,int);
+        void Set(const CStr& Name, int FuncNum);
+        void Set(const CStr& Name);
+        void Dump() const;
+        const CStr& GetName() const;
 
     private:
-        int m_FuncNum;
-        std::vector<AIParamRef> m_ParamRefList;
         CStr m_name;
-    };
+    }; /* size: 0x0020 */
 }

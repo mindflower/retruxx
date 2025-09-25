@@ -56,4 +56,7 @@ namespace ai
     };
 
     void SetAIManager(AIManager*);
+
+
+    inline AIManager* theAIManager = nullptr;
 }

@@ -19,7 +19,7 @@ namespace m3d
 
     char const* sArg::GetS() const
     {
-        throw std::logic_error("Not implemented");
+        return  m_s;
     }
 
     float sArg::GetF() const
@@ -56,9 +56,21 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void sArg::SetS(char const*)
+    void sArg::SetS(char const* s)
     {
-        throw std::logic_error("Not implemented");
+        if (m_type == ARGTYPE_STRING)
+        {
+            delete[] m_s;
+        }
+        m_s = nullptr;
+        m_type = ARGTYPE_STRING;
+        if (s)
+        {
+            auto len = strlen(s);
+            m_s = new char[len + 1];
+            strcpy(m_s, s);
+            m_s[len] = '\0';
+        }
     }
 
     void sArg::SetQ(Quaternion const&)
@@ -84,6 +96,6 @@ namespace m3d
 
     sArg::eArgType sArg::GetType() const
     {
-        throw std::logic_error("Not implemented");
+        return m_type;
     }
 }

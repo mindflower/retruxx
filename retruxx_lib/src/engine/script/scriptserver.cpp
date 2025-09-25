@@ -6,6 +6,7 @@
 #include "core/scoped_ptr.h"
 #include "file/fileserver.h"
 #include "file/filestream.h"
+#include "math/vector.h"
 #include "script/scriptcontext.h"
 
 extern "C"
@@ -34,7 +35,7 @@ namespace
 
     int _logMethod(lua_State *)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int _execLuaScript(lua_State * L)
@@ -46,7 +47,7 @@ namespace
 
     int _errorMethod(lua_State *)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int _callClassMethod(lua_State *L)
@@ -63,17 +64,17 @@ namespace
 
     int _callClassNativeMethod(lua_State *)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int _toString(lua_State *)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int _callNativeGlobalFunction(lua_State *)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void _addExports(m3d::Class* pClass)
@@ -160,7 +161,7 @@ namespace m3d
 
     eScriptError Scriptlet::compile()
     {
-	    throw std::logic_error("Not implemented");
+	    throw retruxx::logic_error("Not implemented");
     }
 
     Scriptlet::~Scriptlet()
@@ -252,13 +253,155 @@ namespace m3d
 
     eScriptError ScriptServer::reloadScript(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006216F0, ScriptServer::callScriptFunc)
-    eScriptError ScriptServer::callScriptFunc(char const*, sArgStack&, int)
+    eScriptError ScriptServer::callScriptFunc(char const* funcName, sArgStack& stack, int nresults)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        if (!this->m_bInitialized)
+        {
+            return NOT_INITIALIZED;
+        }
+
+        // Create temporary string for function name
+
+        // Get the function from Lua registry
+        lua_pushstring(L, funcName);
+        lua_gettable(L, LUA_GLOBALSINDEX);
+
+        if (lua_type(L, -1) == LUA_TNIL)
+        {
+            lua_settop(L, -2); // Clean up stack
+            return NO_SUCH_FUNCTION; // Function not found
+        }
+
+        // Push arguments to Lua stack
+        for (unsigned int i = 0; i < stack.getNumInArgs(); ++i)
+        {
+            m3d::sArg* arg = stack.popIn();
+
+            switch (arg->GetType())
+            {
+            case sArg::ARGTYPE_INT:
+                lua_pushnumber(L, arg->GetI());
+                break;
+
+            case sArg::ARGTYPE_FLOAT:
+                lua_pushnumber(L, arg->GetF());
+                break;
+
+            case sArg::ARGTYPE_BOOL:
+                lua_pushboolean(L, arg->GetB());
+                break;
+
+            case sArg::ARGTYPE_STRING:
+                lua_pushstring(L, arg->GetS());
+                break;
+
+            case sArg::ARGTYPE_VECTOR:
+            {
+                CVector* vec = ext_createVector(L);
+                *vec = arg->GetV();
+                break;
+            }
+
+            case sArg::ARGTYPE_OBJECT:
+            {
+                m3d::Object* obj = arg->GetO();
+                if (obj)
+                {
+                    int scriptObject = _getScriptObject(obj);
+                    lua_rawgeti(L, LUA_REGISTRYINDEX, scriptObject);
+                }
+                else
+                {
+                    lua_pushnil(L);
+                }
+                break;
+            }
+
+            case sArg::ARGTYPE_QUATERNION: {
+                Quaternion* quat = ext_createQuaternion(L);
+                *quat = arg->GetQ();
+                break;
+            }
+
+            default:
+                return OTHER_ERROR; // Unknown argument type
+            }
+        }
+
+        // Call the Lua function
+        int callResult = lua_pcall(L, stack.getNumInArgs(), nresults, 0);
+        if (callResult)
+        {
+            // Handle Lua errors
+            switch (callResult)
+            {
+            case LUA_ERRRUN: return RUNTIME_ERROR;   // Runtime error
+            case LUA_ERRMEM: return MEMORY_ERROR;   // Memory error
+            case LUA_ERRSYNTAX: return SYNTAX_ERROR;   // Error handler error
+            default: return OTHER_ERROR;           // Unknown error
+            }
+        }
+
+        // Process return values
+        if (nresults == -1)
+        {
+            nresults = lua_gettop(L); // Get all results
+        }
+
+        for (int j = 0; j < nresults; ++j)
+        {
+            if (lua_gettop(L) == 0) break; // No more results
+
+            int luaType = lua_type(L, -1);
+            m3d::sArg* outArg = stack.newOut();
+
+            switch (luaType)
+            {
+            case LUA_TNIL:
+                outArg->SetB(false);
+                break;
+
+            case LUA_TNUMBER:
+                outArg->SetF(lua_tonumber(L, -1));
+                break;
+
+            case LUA_TSTRING:
+                outArg->SetS(lua_tostring(L, -1));
+                break;
+
+            case LUA_TUSERDATA:
+                // Check if it's an object or vector
+                lua_rawgeti(L, -1, 0); // Get metatable reference
+                if (lua_isuserdata(L, -1))
+                {
+                    // Object type
+                    outArg->SetO((Object*)lua_touserdata(L, -2));
+                }
+                else
+                {
+                    // Vector type
+                    int* vecData = (int*)lua_touserdata(L, -2);
+                    CVector vec(vecData[0], vecData[1], vecData[2]);
+                    outArg->SetV(vec);
+                }
+                lua_settop(L, -2); // Clean up metatable check
+                break;
+
+            default:
+                // Skip unsupported types
+                stack.popOut(); // Undo the increment
+                break;
+            }
+
+            lua_settop(L, -2); // Remove processed value
+        }
+
+        return SUCCESS; // Success
     }
 
     eScriptError ScriptServer::done()
@@ -279,22 +422,22 @@ namespace m3d
 
     char const* ScriptServer::getNameOfLastScript() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    std::map<CStr, ScriptServer::auxFuncDesc> const& ScriptServer::getRegisteredFunctionsDesc() const
+    retruxx::map<CStr, ScriptServer::auxFuncDesc> const& ScriptServer::getRegisteredFunctionsDesc() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     eScriptError ScriptServer::addScript(char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     eScriptError ScriptServer::execute(char const*, char const*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     eScriptError ScriptServer::executeBuffer(void* buf, unsigned bufSize, char const* bufName)
@@ -330,23 +473,23 @@ namespace m3d
 
     lua_State* ScriptServer::getGlobalEnvironment()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     eScriptError ScriptServer::reloadAllScripts()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00621500, ScriptServer::getFormatedScriptErrorDesc)
     CStr ScriptServer::getFormatedScriptErrorDesc(eScriptError) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     auxScriptErrorDesc const& ScriptServer::getLastErrorDesc() const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     Class* ScriptServer::GetClass() const
@@ -356,12 +499,12 @@ namespace m3d
 
     char const* ScriptServer::getErrorDescString(eScriptError) const
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void ScriptServer::dumpStack()
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     eScriptError ScriptServer::executeScriptFile(char const* fileName)
@@ -447,7 +590,7 @@ namespace m3d
 
     Object* ScriptServer::Clone()
     {
-        throw std::logic_error("Not implemented");   
+        throw retruxx::logic_error("Not implemented");   
     }
 
     eScriptError ScriptServer::registerGlobalFunction(int(*NativeGlobalFunc)(sArgStack&), char const* name, char const* returnValue, char const* params, char const* shortDesc)

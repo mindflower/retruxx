@@ -3,20 +3,36 @@
 #include "aistate.h"
 #include "aiparamref.h"
 #include <stdexcept>
+#include "aimanager.h"
+#include "core/log.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddSignal)
 {
-    throw std::logic_error("Not implemented");
+    auto* matrix = dynamic_cast<ai::DecisionMatrix*>(context->asObject(0, "DecisionMatrix"));
+    auto signalName = context->asString(1);
+    auto externSignalName = context->asString(2);
+    auto functionName = context->asString(3);
+    matrix->AddSignal(signalName, externSignalName, functionName);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddState)
 {
-    throw std::logic_error("Not implemented");
+    auto* matrix = dynamic_cast<ai::DecisionMatrix*>(context->asObject(0, "DecisionMatrix"));
+    auto stateName = context->asString(1);
+    auto functionName = context->asString(2);
+    matrix->AddState(stateName, functionName);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetRetValueInterpretation)
 {
-    throw std::logic_error("Not implemented");
+    auto* matrix = dynamic_cast<ai::DecisionMatrix*>(context->asObject(0, "DecisionMatrix"));
+    auto stateName = context->asString(1);
+    auto schemeName = context->asString(2);
+    auto signalName = context->asString(3);
+    matrix->SetRetValueInterpretation(stateName, schemeName, signalName);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetDefaultState)
@@ -117,9 +133,16 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    unsigned DecisionMatrix::GetSignalNum(CStr const&) const
+    unsigned DecisionMatrix::GetSignalNum(CStr const& signalName) const
     {
-        throw std::logic_error("Not implemented");
+        for (int i = 0; i < m_Signals.size(); ++i)
+        {
+            if (signalName == m_Signals[i].GetName())
+            {
+                return i;
+            }
+        }
+        return 0xFFFF;
     }
 
     unsigned DecisionMatrix::UnsafeFirstDecision(unsigned, unsigned) const
@@ -139,7 +162,7 @@ namespace ai
 
     m3d::Object* DecisionMatrix::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new DecisionMatrix;
     }
 
     void DecisionMatrix::Create(int, int)
@@ -178,14 +201,33 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void DecisionMatrix::AddState(char const*, char const*)
+    void DecisionMatrix::AddState(char const* stateName, char const* functionName)
     {
-        throw std::logic_error("Not implemented");
+        CStr functionNameStr = functionName;
+
+        auto funcNum = theAIManager->GetFuncNum(functionNameStr);
+        if (funcNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(functionNameStr);
+        }
+        else
+        {
+            AIState aiState;
+            aiState.Set(stateName, funcNum);
+            AddState(aiState);
+        }
     }
 
-    void DecisionMatrix::AddState(AIState const&)
+    void DecisionMatrix::AddState(AIState const& state)
     {
-        throw std::logic_error("Not implemented");
+        if (GetStateNum(state.GetName()) == 0xFFFF)
+        {
+            m_States.push_back(state);
+        }
+        else
+        {
+            M3D_LOG_ERR("AI Error: state already present");
+        }
     }
 
     void DecisionMatrix::SetSaveStackFlag(char const*, char const*)
@@ -198,14 +240,51 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void DecisionMatrix::AddSignal(char const*, char const*, char const*)
+    void DecisionMatrix::AddSignal(char const* signalName, char const* externSignalName, char const* functionName)
     {
-        throw std::logic_error("Not implemented");
+        int schemeNum = 0xFFFF;
+        CStr externSignalNameStr = externSignalName;
+        if (!externSignalNameStr.empty())
+        {
+            schemeNum = theAIManager->GetSchemeNum(externSignalNameStr);
+            if (schemeNum == 0xFFFF)
+            {
+                _LogUnexpectedToken(externSignalNameStr);
+            }
+        }
+
+        int funcNum = 0xFFFF;
+        CStr functionNamelNameStr = functionName;
+        if (!functionNamelNameStr.empty())
+        {
+            funcNum = theAIManager->GetFuncNum(functionNamelNameStr);
+            if (funcNum == 0xFFFF)
+            {
+                _LogUnexpectedToken(functionNamelNameStr);
+            }
+        }
+
+        AISignal aiSignal;
+        aiSignal.Set(signalName, funcNum);
+        AddSignal(aiSignal);
+
+        if (schemeNum != 0xFFFF)
+        {
+            auto signalNum = GetSignalNum(signalName);
+            m_ExternSignalMappings[schemeNum] = signalNum;
+        }
     }
 
-    void DecisionMatrix::AddSignal(AISignal const&)
+    void DecisionMatrix::AddSignal(AISignal const& signal)
     {
-        throw std::logic_error("Not implemented");
+        if (GetSignalNum(signal.GetName()) == 0xFFFF)
+        {
+            m_Signals.push_back(signal);
+        }
+        else
+        {
+            M3D_LOG_ERR("AI Error: Signal already present");
+        }
     }
 
     int DecisionMatrix::NumSignals() const
@@ -245,10 +324,10 @@ namespace ai
 
     m3d::Class* DecisionMatrix::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(DecisionMatrix);
     }
 
-    void DecisionMatrix::SetRetValueInterpretation(char const*, char const*, char const*)
+    void DecisionMatrix::SetRetValueInterpretation(const char* stateName, const char* schemeName, const char* signalName)
     {
         throw std::logic_error("Not implemented");
     }
@@ -273,9 +352,16 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    int DecisionMatrix::GetStateNum(CStr const&) const
+    int DecisionMatrix::GetStateNum(CStr const& stateName) const
     {
-        throw std::logic_error("Not implemented");
+        for (int i = 0; i < m_States.size(); ++i)
+        {
+            if (stateName == m_States[i].GetName())
+            {
+                return i;
+            }
+        }
+        return 0xFFFF;
     }
 
     DecisionMatrix::DecisionMatrix(DecisionMatrix const&)
@@ -285,7 +371,24 @@ namespace ai
 
     DecisionMatrix::DecisionMatrix()
     {
-        throw std::logic_error("Not implemented");
+        this->m_Default.m_StateNum = 0xFFFF;
+        this->m_ExitStateNum = 0xFFFF;
+        this->m_ExternSignalMappings[0] = 0xFFFF;
+        this->m_ExternSignalMappings[1] = 0xFFFF;
+        this->m_ExternSignalMappings[2] = 0xFFFF;
+        this->m_ExternSignalMappings[3] = 0xFFFF;
+        this->m_ExternSignalMappings[4] = 0xFFFF;
+        this->m_ExternSignalMappings[5] = 0xFFFF;
+        this->m_ExternSignalMappings[6] = 0xFFFF;
+        this->m_ExternSignalMappings[7] = 0xFFFF;
+        this->m_ExternSignalMappings[8] = 0xFFFF;
+        this->m_ExternSignalMappings[9] = 0xFFFF;
+        this->m_ExternSignalMappings[10] = 0xFFFF;
+        this->m_ExternSignalMappings[11] = 0xFFFF;
+        this->m_ExternSignalMappings[12] = 0xFFFF;
+        this->m_ExternSignalMappings[13] = 0xFFFF;
+        this->m_ExternSignalMappings[14] = 0xFFFF;
+        this->m_ExternSignalMappings[15] = 0xFFFF;
     }
 
     DecisionMatrixElement const& DecisionMatrix::_GetElement(int, int) const
