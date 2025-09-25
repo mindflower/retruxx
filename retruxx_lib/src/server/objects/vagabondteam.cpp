@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "core/ini.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(VagabondTeam)
@@ -15,7 +17,7 @@ namespace ai
 
     VagabondTeamPrototypeInfo::VagabondTeamPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        m_bRemoveWhenChildrenDead = 1;
     }
 
     Obj* VagabondTeamPrototypeInfo::CreateTargetObject() const
@@ -28,9 +30,20 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool VagabondTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool VagabondTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement VagabondTeamPrototypeInfo::LoadFromXML
+        auto result = ai::TeamPrototypeInfo::LoadFromXML( xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeStrAttrib(this->m_vehiclesGeneratorPrototype, xmlNode, "VehicleGeneratorPrototype");
+
+            CStr strWares;
+            m3d::SafeStrAttrib(strWares, xmlNode, "WaresPrototypes");
+            m3d::Tokenize(strWares, this->m_waresPrototypes, "(), ;\t");
+            return 1;
+        }
+        return result;
     }
 
     VagabondTeam::VagabondTeam(VagabondTeamPrototypeInfo const& prototype) : Team(prototype)

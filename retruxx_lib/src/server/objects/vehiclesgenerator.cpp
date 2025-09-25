@@ -35,7 +35,6 @@ namespace ai
 
     VehiclesGeneratorPrototypeInfo::VehiclesGeneratorPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
     Obj* VehiclesGeneratorPrototypeInfo::CreateTargetObject() const
@@ -45,7 +44,9 @@ namespace ai
 
     bool VehiclesGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement VehiclesGeneratorPrototypeInfo::LoadFromXML
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        return result;
     }
 
     void VehiclesGeneratorPrototypeInfo::PostLoad()

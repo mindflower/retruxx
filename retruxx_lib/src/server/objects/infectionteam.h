@@ -10,7 +10,6 @@ namespace ai
         {
             CStr m_protoName;
             /* 0x000c */ unsigned int m_count;
-            Item(const ai::InfectionTeamPrototypeInfo::Item& __that);
             Item(const CStr& protoName, int count);
         }; /* size: 0x0010 */
 

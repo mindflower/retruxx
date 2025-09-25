@@ -10,7 +10,8 @@ namespace ai
 
     CaravanTeamPrototypeInfo::CaravanTeamPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        m_bRemoveWhenChildrenDead = 1;
+        m_formationPrototypeName = "caravanFormation";
     }
 
     std::vector<CStr, std::allocator<CStr>> const& CaravanTeamPrototypeInfo::GetWaresPrototypes() const
@@ -28,9 +29,11 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool CaravanTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool CaravanTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement CaravanTeamPrototypeInfo::LoadFromXML
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        return result;
     }
 
     void CaravanTeam::SetWaitingPlayerToMoveout()

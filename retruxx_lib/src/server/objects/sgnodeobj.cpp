@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "core/ini.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNodeObj, SetPosition)
 {
     throw retruxx::logic_error("Not implemented");
@@ -50,14 +52,19 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(SgNodeObj);
 
-    bool SgNodeObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool SgNodeObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeStrAttrib(this->m_engineModelName, xmlNode, "ModelFile");
+            return 1;
+        }
+        return result;
     }
 
     SgNodeObjPrototypeInfo::SgNodeObjPrototypeInfo()
     {
-        throw retruxx::logic_error("Not implemented");
     }
 
     CStr const& SgNodeObjPrototypeInfo::GetEngineModelName() const

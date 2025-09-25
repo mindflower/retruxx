@@ -1,6 +1,8 @@
 #include "dynamicquestpeace.h"
 #include <stdexcept>
 
+#include "core/ini.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(DynamicQuestPeace)
@@ -9,7 +11,7 @@ namespace ai
 
     DynamicQuestPeacePrototypeInfo::DynamicQuestPeacePrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        m_playerMoneyPart = 0.0;
     }
 
     ai::DynamicQuest* DynamicQuestPeacePrototypeInfo::CreateTargetObject() const
@@ -17,9 +19,15 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool DynamicQuestPeacePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool DynamicQuestPeacePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::DynamicQuestPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_playerMoneyPart, xmlNode, "PlayerMoneyPart");
+            return 1;
+        }
+        return result;
     }
 
     DynamicQuestPeace::DynamicQuestPeace(DynamicQuestPeacePrototypeInfo const& prototype) : DynamicQuest(prototype)

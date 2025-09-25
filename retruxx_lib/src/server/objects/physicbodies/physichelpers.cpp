@@ -4,17 +4,19 @@ namespace ai
 {
     CollisionInfo::CollisionInfo(const ai::CollisionInfo& info)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement CollisionInfo::CollisionInfo
+        //throw std::logic_error("Not implemented");
     }
 
     CollisionInfo::CollisionInfo()
     {
-        throw std::logic_error("Not implemented");
+        Init();
     }
 
     void CollisionInfo::Init()
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement CollisionInfo::Init
+        //throw std::logic_error("Not implemented");
     }
 
     int ai::RoughSign(float value)

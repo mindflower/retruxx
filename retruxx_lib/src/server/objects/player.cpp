@@ -1,6 +1,10 @@
 #include "player.h"
 #include "thirdparty/injecttools.h"
 #include <stdexcept>
+#include <client.h>
+
+#include "world.h"
+#include "core/ini.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Player, GetMoney)
 {
@@ -74,6 +78,32 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Player, RemoveQuestItem)
 
 namespace ai
 {
+    namespace 
+    {
+        class TestPlayerVisibility : public m3d::IsNodeTransparent
+        {
+        public:
+            virtual bool test(m3d::SgNode*, float) override /* 0x00 */;
+            virtual float getTransparentRadius() override /* 0x04 */;
+            virtual bool setPermanentTransparency(m3d::SgNode*) override /* 0x08 */;
+        }; /* size: 0x0004 */
+
+        bool TestPlayerVisibility::test(m3d::SgNode*, float)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        float TestPlayerVisibility::getTransparentRadius()
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        bool TestPlayerVisibility::setPermanentTransparency(m3d::SgNode*)
+        {
+            throw std::logic_error("Not implemented");
+        }
+    }
+
     Player* thePlayer = nullptr;
 
     RT_CLASS_EXPORTS_BEGIN(Player)
@@ -102,7 +132,7 @@ namespace ai
 
     PlayerPrototypeInfo::PlayerPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        m3d::pClient->GetWorld().GetGraph().SetTransparencyTest(new TestPlayerVisibility);
     }
 
     ai::Obj* PlayerPrototypeInfo::CreateTargetObject() const
@@ -120,9 +150,17 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool PlayerPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool PlayerPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeStrAttrib(this->m_modelName, xmlNode, "ModelFile");
+            m3d::SafeUintAttrib(this->m_skinNumber, xmlNode, "SkinNum");
+            m3d::SafeUintAttrib(this->m_cfgNumber, xmlNode, "CfgNum");
+            return 1;
+        }
+        return result;
     }
 
     m3d::Class* Player::GetBaseClass()

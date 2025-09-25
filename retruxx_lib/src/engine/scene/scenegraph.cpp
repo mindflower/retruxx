@@ -577,9 +577,13 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SceneGraph::SetTransparencyTest(IsNodeTransparent*)
+    void SceneGraph::SetTransparencyTest(IsNodeTransparent* t)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (t)
+        {
+            delete m_transparencyTest;
+            m_transparencyTest = t;
+        }
     }
 
     void SceneGraph::InsertInContourList(SgNode*, unsigned, float)

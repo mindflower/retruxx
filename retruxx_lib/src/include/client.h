@@ -64,4 +64,6 @@ namespace m3d
     }; /* size: 0x002c */
 
     static_assert(sizeof(CClient) == 0x002c);
+
+    inline CClient* pClient = nullptr;
 }

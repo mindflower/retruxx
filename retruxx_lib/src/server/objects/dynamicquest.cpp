@@ -1,6 +1,8 @@
 #include "dynamicquest.h"
 #include <stdexcept>
 
+#include "core/ini.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(DynamicQuest, Take)
 {
     throw retruxx::logic_error("Not implemented");
@@ -21,12 +23,18 @@ namespace ai
 
     DynamicQuestPrototypeInfo::DynamicQuestPrototypeInfo()
     {
-        throw retruxx::logic_error("Not implemented");
+        m_minReward = 0;
     }
 
-    bool DynamicQuestPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool DynamicQuestPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeIntAttrib(m_minReward, xmlNode, "MinReward");
+            return 1;
+        }
+        return result;
     }
 
     int DynamicQuest::GetPropertyId(char const*) const

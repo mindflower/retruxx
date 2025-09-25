@@ -16,12 +16,11 @@ namespace ai
 
     CinematicMoverPrototypeInfo::CinematicMoverPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
-    bool CinematicMoverPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool CinematicMoverPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        return ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode) != 0;
     }
 
     Obj* CinematicMoverPrototypeInfo::CreateTargetObject() const

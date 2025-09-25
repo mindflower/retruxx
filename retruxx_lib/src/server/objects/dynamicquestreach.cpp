@@ -1,6 +1,8 @@
 #include "dynamicquestreach.h"
 #include <stdexcept>
 
+#include "core/ini.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(DynamicQuestReach)
@@ -9,7 +11,7 @@ namespace ai
 
     DynamicQuestReachPrototypeInfo::DynamicQuestReachPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        m_playerSchwarzPart = 0.0;
     }
 
     ai::DynamicQuest* DynamicQuestReachPrototypeInfo::CreateTargetObject() const
@@ -17,9 +19,15 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool DynamicQuestReachPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool DynamicQuestReachPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::DynamicQuestPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_playerSchwarzPart, xmlNode, "PlayerSchwarzPart");
+            return 1;
+        }
+        return result;
     }
 
     m3d::Class* DynamicQuestReach::GetClass() const

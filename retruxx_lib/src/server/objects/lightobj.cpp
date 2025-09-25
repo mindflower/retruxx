@@ -8,9 +8,9 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(LightObj);
 
-    bool LightObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool LightObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw retruxx::logic_error("Not implemented");
+        return ai::SgNodeObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode) != 0;
     }
 
     ai::Obj* LightObjPrototypeInfo::CreateTargetObject() const
@@ -20,7 +20,7 @@ namespace ai
 
     LightObjPrototypeInfo::LightObjPrototypeInfo()
     {
-        throw retruxx::logic_error("Not implemented");
+        m_bIsUpdating = 0;
     }
 
     m3d::Class* LightObj::GetClass() const

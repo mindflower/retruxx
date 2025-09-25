@@ -1,5 +1,7 @@
 #include "formation.h"
 
+#include "core/ini.h"
+
 namespace ai
 {
 	RT_CLASS_EXPORTS_BEGIN(Formation)
@@ -8,12 +10,30 @@ namespace ai
 
     FormationPrototypeInfo::FormationPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        this->m_maxVehicles = 5;
+        this->m_polylineLength = 0.0;
+        this->m_headOffset = 0.0;
+        this->m_linearVelocity = 100.0;
+        this->m_headPosition = 0;
+        this->m_bIsUpdating = 0;
+        this->m_angularVelocity = 0.5;
     }
 
     bool FormationPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement FormationPrototypeInfo::LoadFromXML
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        return result;
+
+        //auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        //if (result)
+        //{
+        //    m3d::SafeFloatAttrib(m_linearVelocity, xmlNode, "LinearVelocity");
+        //    m3d::SafeFloatAttrib(m_angularVelocity, xmlNode, "AngularVelocity");
+        //    ai::FormationPrototypeInfo::loadPolylinePoints(xmlFile, xmlNode);
+        //    return 1;
+        //}
+        //return result;
     }
 
     ai::Obj* FormationPrototypeInfo::CreateTargetObject() const

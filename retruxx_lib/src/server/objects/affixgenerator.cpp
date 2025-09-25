@@ -9,12 +9,13 @@ namespace ai
 
     AffixGeneratorPrototypeInfo::AffixGeneratorPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
     bool AffixGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement AffixGeneratorPrototypeInfo::LoadFromXML
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        return result;
     }
 
     void AffixGeneratorPrototypeInfo::PostLoad()

@@ -136,12 +136,15 @@ namespace ai
 
     WanderersGeneratorPrototypeInfo::WanderersGeneratorPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        this->m_desiredCountLow = -1;
+        this->m_desiredCountHigh = -1;
     }
 
     bool WanderersGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement WanderersGeneratorPrototypeInfo::LoadFromXML
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        return result;
     }
 
     ai::Obj* WanderersGeneratorPrototypeInfo::CreateTargetObject() const

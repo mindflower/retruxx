@@ -15,12 +15,17 @@ namespace ai
 
     LocationPrototypeInfo::LocationPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
     }
 
-    bool LocationPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool LocationPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::SimplePhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            _SetGeomType(GEOM_TYPE_BOX);
+            return 1;
+        }
+        return result;
     }
 
     LocationPrototypeInfo const* Location::GetPrototypeInfo() const

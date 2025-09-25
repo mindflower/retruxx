@@ -6,8 +6,6 @@
 
 namespace m3d
 {
-    CClient* pClient = nullptr;
-
     CClient::~CClient()
     {
         throw std::logic_error("Not implemented");

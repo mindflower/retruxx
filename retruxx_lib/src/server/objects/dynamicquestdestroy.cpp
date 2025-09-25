@@ -1,20 +1,28 @@
 #include "dynamicquestdestroy.h"
 #include <stdexcept>
 
+#include "core/ini.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(DynamicQuestDestroy)
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(DynamicQuestDestroy);
 
-    bool DynamicQuestDestroyPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool DynamicQuestDestroyPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::DynamicQuestPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_targetSchwarzPart, xmlNode, "TargetSchwarzPart");
+            return 1;
+        }
+        return result;
     }
 
     DynamicQuestDestroyPrototypeInfo::DynamicQuestDestroyPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        m_targetSchwarzPart = 0.0;
     }
 
     DynamicQuest* DynamicQuestDestroyPrototypeInfo::CreateTargetObject() const

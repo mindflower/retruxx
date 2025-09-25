@@ -1,6 +1,8 @@
 #include "dynamicquestconvoy.h"
 #include <stdexcept>
 
+#include "core/ini.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(DynamicQuestConvoy)
@@ -9,12 +11,22 @@ namespace ai
 
     DynamicQuestConvoyPrototypeInfo::DynamicQuestConvoyPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        this->m_playerSchwarzPart = 0.0;
+        this->m_criticalDistFromPlayer = 100.0;
+        this->m_criticalTime = 20.0;
     }
 
-    bool DynamicQuestConvoyPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool DynamicQuestConvoyPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::DynamicQuestPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_playerSchwarzPart, xmlNode, "PlayerSchwarzPart");
+            m3d::SafeFloatAttrib(m_criticalDistFromPlayer, xmlNode, "CriticalDistFromPlayer");
+            m3d::SafeFloatAttrib(m_criticalTime, xmlNode, "CriticalTime");
+            return 1;
+        }
+        return result;
     }
 
     DynamicQuest* DynamicQuestConvoyPrototypeInfo::CreateTargetObject() const

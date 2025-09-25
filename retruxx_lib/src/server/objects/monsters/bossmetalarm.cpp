@@ -24,7 +24,8 @@ namespace ai
 
 	BossMetalArmPrototypeInfo::BossMetalArmPrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
+        this->m_turningSpeed = 0.5;
+        this->m_lpIdForLoad = -1;
 	}
 
 	void BossMetalArmPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -32,9 +33,11 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	bool BossMetalArmPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	bool BossMetalArmPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		throw std::logic_error("Not implemented");
+        // TODO: implement BossMetalArmPrototypeInfo::LoadFromXML
+        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        return result;
 	}
 
 	void BossMetalArmPrototypeInfo::PostLoad()

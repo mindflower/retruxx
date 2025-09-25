@@ -62,35 +62,36 @@ namespace ai
 
     bool TeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
+        // TODO: implement TeamPrototypeInfo::LoadFromXML
         auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
-        if (result)
-        {
-            CStr decisionMatrixName;
-            m3d::SafeStrAttrib(decisionMatrixName, xmlNode, "DecisionMatrix");
-
-            ai::theAIManager->LoadMatrix(decisionMatrixName.c_str());
-            m_decisionMatrixNum = theAIManager->GetMatrixNum(decisionMatrixName);
-
-            m3d::SafeBoolAttrib(this->m_bRemoveWhenChildrenDead, xmlNode, "RemoveWhenChildrenDead");
-
-            ref_ptr node = xmlFile->CreateNode();
-            xmlNode->GetFirstChild(node, "Formation");
-
-            if (!node->IsEmpty())
-            {
-                m3d::SafeStrAttrib(m_formationPrototypeName, node, "Prototype");
-
-                ref_ptr protoNode = xmlFile->CreateNode();
-                node->GetFirstAttribute((m3d::cmn::XmlAttrib*)&*protoNode);
-
-                if (!protoNode->IsEmpty())
-                {
-                    m_overridesDistBetweenVehicles = 1;
-                    m3d::SafeFloatAttrib(m_formationDistBetweenVehicles, node, "DistBetweenVehicles");
-                }
-
-            }
-        }
+        //if (result)
+        //{
+        //    CStr decisionMatrixName;
+        //    m3d::SafeStrAttrib(decisionMatrixName, xmlNode, "DecisionMatrix");
+        //
+        //    ai::theAIManager->LoadMatrix(decisionMatrixName.c_str());
+        //    m_decisionMatrixNum = theAIManager->GetMatrixNum(decisionMatrixName);
+        //
+        //    m3d::SafeBoolAttrib(this->m_bRemoveWhenChildrenDead, xmlNode, "RemoveWhenChildrenDead");
+        //
+        //    ref_ptr node = xmlFile->CreateNode();
+        //    xmlNode->GetFirstChild(node, "Formation");
+        //
+        //    if (!node->IsEmpty())
+        //    {
+        //        m3d::SafeStrAttrib(m_formationPrototypeName, node, "Prototype");
+        //
+        //        ref_ptr protoNode = xmlFile->CreateNode();
+        //        node->GetFirstAttribute((m3d::cmn::XmlAttrib*)&*protoNode);
+        //
+        //        if (!protoNode->IsEmpty())
+        //        {
+        //            m_overridesDistBetweenVehicles = 1;
+        //            m3d::SafeFloatAttrib(m_formationDistBetweenVehicles, node, "DistBetweenVehicles");
+        //        }
+        //
+        //    }
+        //}
         return result;
     }
 

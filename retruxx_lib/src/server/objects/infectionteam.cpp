@@ -59,11 +59,6 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    InfectionTeamPrototypeInfo::Item::Item(const ai::InfectionTeamPrototypeInfo::Item& __that)
-    {
-        throw std::logic_error("Not implemented");
-    }
-
     InfectionTeamPrototypeInfo::Item::Item(const CStr& protoName, int count) : m_protoName(protoName), m_count(count)
     {
     }
