@@ -271,9 +271,9 @@ namespace ai
         M3D_LOG_INFO("\tAI: Triggers loaded");
         
         M3D_LOG_INFO("\tAI: Loading Object Names");
-        ai::theObjects->LoadObjectNamesFromXML(m_level->GetFullPathNameA(this->m_level->m_ObjectFullNames));
+       // ai::theObjects->LoadObjectNamesFromXML(m_level->GetFullPathNameA(this->m_level->m_ObjectFullNames));
  
-        LoadPrototypeNamesFromXML(this->m_level->m_prototypeFullNames);
+       // LoadPrototypeNamesFromXML(this->m_level->m_prototypeFullNames);
         m_LastSenderID = 0;
         
         M3D_LOG_INFO("\tAI: Initing Player");  
@@ -285,7 +285,7 @@ namespace ai
 
         }
 
-        ai::theProcessManager->Update(0.000099999997, 1u, 2u);
+        ai::theProcessManager->Update(0.0001, 1u, 2u);
         if (ai::thePlayer && ai::theObjects->m_SaveType != ai::ObjContainer::eSAVE_TYPES::SAVE_FULL)
         {
             ai::thePlayer->CauseEvent(GE_GAME_START, 0.0, {}, {});
@@ -720,8 +720,7 @@ namespace ai
 
     void CServer::Update(float)
     {
-        // TODO: implement CServer::Update
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::LoadGlobalMapFromRawFile(char const*)

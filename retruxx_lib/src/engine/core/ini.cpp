@@ -317,6 +317,9 @@ void* XmlFileImpl::QueryIface(char const*)
 
 XmlFileImpl::XmlFileImpl()
 {
+    this->m_parent = 0;
+    this->m_refCount = 0;
+    SetCondenseWhiteSpace(0);
 }
 
 int XmlFileImpl::DecRef()

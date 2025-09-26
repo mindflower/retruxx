@@ -3,6 +3,9 @@
 #include <core/aiparam.h>
 #include "event.h"
 #include "core/kernel.h"
+#include "core/log.h"
+#include "core/timer.h"
+#include "objects/base/objcontainer.h"
 
 CStr STR_UNKNOWN = "Unknown";
 
@@ -15,9 +18,50 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ProcessManager::Update(float, unsigned, unsigned)
+    void ProcessManager::Update(float elapsedTime, unsigned framesPassed, unsigned workTime)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        for (auto it = m_eventQueue.begin(); it != m_eventQueue.end(); ++it)
+        {
+            it->m_timeOut -= elapsedTime;
+            it->m_framesToPass -= framesPassed;
+        }
+
+        // Process events that are ready
+        auto it = m_eventQueue.begin();
+        while (it != m_eventQueue.end())
+        {
+            // Check if event is not ready yet
+            if (it->m_timeOut >= 0.00001 || it->m_framesToPass > 0)
+            {
+                ++it;
+                continue;
+            }
+
+            // Event is ready to process
+            if (it->m_recipientObjId == -10)
+            {
+                // Broadcast event to all objects
+                M3D_LOG_INFO("Broadcast event!");
+
+                // Send event to all objects in the container
+                for (auto* node : *theObjects)
+                {
+                    node->OnEvent(*it);
+                }
+            }
+            else if (it->m_recipientObjId >= 0)
+            {
+                // Send event to specific object
+                int objId = it->m_recipientObjId;
+                auto* node = ai::theObjects->GetEntityByObjId(objId);
+                node->OnEvent(*it);
+            }
+
+            // Remove processed event
+            ++m_numProcessedEvents;
+            it = m_eventQueue.erase(it);
+        }
     }
 
     ProcessManager::ProcessManager()
@@ -79,9 +123,16 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ProcessManager::PostMessageA(ai::Event const&)
+    void ProcessManager::PostMessageA(ai::Event const& evn)
     {
-        throw std::logic_error("Not implemented");
+        if (evn.m_recipientObjId != -1)
+        {
+            auto curTime = M3D_KERNEL->GetTimer().GetCurTime();
+            ai::Event e = evn;
+            e.m_timeStamp = curTime * 0.001;
+            e.m_debugNum = ++m_eventDebugNum;
+            m_eventQueue.push_back(std::move(e));
+        }
     }
 
     void ProcessManager::PostMessageA(int, int, int, float, m3d::AIParam, m3d::AIParam, int)

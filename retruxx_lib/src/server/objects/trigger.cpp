@@ -9,6 +9,9 @@
 #include <core/log.h>
 
 #include "core/ini.h"
+#include "core/ref_ptr.h"
+#include <server/processmanager.h>
+#include "base/objcontainer.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, AddEvent)
 {
@@ -160,7 +163,15 @@ namespace ai
 
     void Trigger::ActivateIfNeeded()
     {
-        throw std::logic_error("Not implemented");
+        if (m_triggerScriptFuncName.empty())
+        {
+            m_state = TS_OFF;
+        }
+
+        if (m_state != TS_OFF)
+        {
+            Activate();
+        }
     }
 
     int Trigger::IsActivated() const
@@ -190,7 +201,45 @@ namespace ai
 
     void Trigger::Activate()
     {
-        throw std::logic_error("Not implemented");
+        m_state = TS_EVENTWAIT;
+        for (auto& eventInfo : m_eventInfos)
+        {
+            if (eventInfo.m_eventId == GE_TIME_PERIOD)
+            {
+                ai::Event ev;
+                ev.m_recipientObjId = GetId();
+                ev.m_senderObjId = ev.m_recipientObjId;
+                ev.m_eventId = GE_TIME_PERIOD;
+                ev.m_timeOut = m_timeOutForTimePeriod;
+                ev.m_framesToPass = 1;
+                theProcessManager->PostMessageA(ev);
+            }
+            else if (eventInfo.m_eventId == GE_FRAMES_PASSED)
+            {
+                ai::Event ev;
+                ev.m_framesToPass = this->m_framesForFramesPassed;
+                ev.m_eventId = GE_FRAMES_PASSED;
+                ev.m_recipientObjId = GetId();
+                ev.m_senderObjId = GetId();
+                ev.m_timeOut = -1.0;
+                theProcessManager->PostMessageA(ev);
+            }
+            else
+            {
+                auto* entity = theObjects->GetEntityByObjName(eventInfo.m_objName);
+                if (entity)
+                {
+                    // TODO: check this
+                    theProcessManager->PostMessageA(2, entity->GetId(), GetId(), 0.0, {}, {}, 1);
+                }
+                else
+                {
+                    M3D_LOG_ERR("***************** TRIGGER ERROR *******************");
+                    M3D_LOG_ERR("Error: object " + eventInfo.m_objName + " can't subscribe for " + GetName());
+                }
+            }
+        }
+        CauseEvent(GE_OBJECT_ACTIVATED, 0.0, {}, {});
     }
 
     void Trigger::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -240,9 +289,46 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    int Trigger::OnEvent(Event const&)
+    int Trigger::OnEvent(Event const& evn)
     {
-        throw std::logic_error("Not implemented");
+        Obj::OnEvent(evn);
+        int result = 0;
+        switch (evn.m_eventId)
+        {
+        case GE_OBJECT_ENTERS_LOCATION:
+        case GE_OBJECT_LEAVES_LOCATION:
+        case GE_OBJECT_IN_LOCATION:
+            ai::Trigger::_OnObjectChangesLocation(evn);
+            result = 1;
+            break;
+        case GE_OBJECT_DIE:
+        case GE_OBJECT_DIE_SENSE:
+        case GE_TARGET_REACHED:
+            ai::Trigger::_OnTargetReachedOrObjectDie(evn);
+            result = 1;
+            break;
+        case GE_TIME_PERIOD:
+            ai::Trigger::_OnTimePeriod(evn);
+            result = 1;
+            break;
+        case GE_FRAMES_PASSED:
+            ai::Trigger::_OnFramesPassed(evn);
+            result = 1;
+            break;
+        case GE_START_CINEMATIC_MSG:
+            ai::Trigger::_OnCinemaMessage(evn);
+            result = 1;
+            break;
+        case GE_START_CINEMATIC_FLY:
+            ai::Trigger::_OnCinematicFly(evn);
+            result = 1;
+            break;
+        default:
+            ai::Trigger::_OnDefaultEvent(evn);
+            result = 1;
+            break;
+        }
+        return result;
     }
 
     bool Trigger::CanChildBeAdded(m3d::Class*) const
@@ -374,7 +460,7 @@ namespace ai
 
     Trigger::~Trigger()
     {
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     void Trigger::_LoadTriggerRuntimesFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -392,9 +478,21 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Trigger::_StoreCallEvent(Event const&)
+    void Trigger::_StoreCallEvent(Event const& evn)
     {
-        throw std::logic_error("Not implemented");
+        m_callEvent.m_eventId = evn.m_eventId;
+        auto* senderObj = theObjects->GetEntityByObjId(evn.m_senderObjId);
+        if (senderObj)
+        {
+            m_callEvent.m_objName = senderObj->GetName();
+            // TODO: check this
+            m_callEvent.m_callObjId = evn.m_eventId;
+        }
+        else
+        {
+            m_callEvent.m_objName = "Unknown";
+            m_callEvent.m_callObjId = -1;
+        }
     }
 
     void Trigger::_OnObjectChangesLocation(Event const&)
@@ -402,9 +500,32 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Trigger::_LoadScriptFromMapXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Trigger::_LoadScriptFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        ref_ptr scriptNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(scriptNode, "script");
+        if (!scriptNode->IsEmpty())
+        {
+            m_triggerScriptFuncName = "trigger" + m_name;
+
+            ref_ptr scriptBody = xmlFile->CreateNode();
+            if (scriptNode->GetFirstChild(scriptBody, nullptr))
+            {
+                CStr scriptValue = scriptBody->GetValue();
+
+                auto embedBody = _EmbedTriggerBody(scriptValue, m_name);
+                auto& scriptServer = M3D_KERNEL->GetScriptServer();
+
+                if (auto res = scriptServer.execute(embedBody.c_str(), m_triggerScriptFuncName.c_str()))
+                {
+                    M3D_LOG_ERR(scriptServer.getFormatedScriptErrorDesc(res));
+                }
+                else
+                {
+                    m_bScriptPresent = true;
+                }
+            }
+        }
     }
 
     void Trigger::_OnFramesPassed(Event const&)
@@ -412,9 +533,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    CStr Trigger::_EmbedTriggerBody(CStr const&, CStr const&)
+    CStr Trigger::_EmbedTriggerBody(CStr const& scriptCode, CStr const& triggerName)
     {
-        throw std::logic_error("Not implemented");
+        return "function trigger" + triggerName + "( trigger )\n" + scriptCode + "\nend";
     }
 
     void Trigger::_SaveTriggerRuntimesToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -432,9 +553,20 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Trigger::_OnTimePeriod(Event const&)
+    void Trigger::_OnTimePeriod(Event const& evn)
     {
-        throw std::logic_error("Not implemented");
+        if (m_state == TS_EVENTWAIT)
+        {
+            Event ev;
+            ev.m_recipientObjId = GetId();
+            ev.m_senderObjId = ev.m_recipientObjId;
+            ev.m_eventId = GE_TIME_PERIOD;
+            ev.m_timeOut = m_timeOutForTimePeriod;
+            ev.m_framesToPass = 1;
+            theProcessManager->PostMessageA(ev);
+            m_state = TS_ACTION;
+            _StoreCallEvent(evn);
+        }
     }
 
     void Trigger::_OnDefaultEvent(Event const&)
@@ -447,8 +579,41 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Trigger::_LoadEventsFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const*)
+    void Trigger::_LoadEventsFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        ref_ptr eventNode = xmlFile->CreateNode();
+        for (xmlNode->GetFirstChild(eventNode, "event"); !eventNode->IsEmpty(); eventNode->GetNextSibling(eventNode, "event"))
+        {
+            CStr eventName = eventNode->GetAttribute("eventid");
+            auto eventId = theProcessManager->GetEventId(eventName);
+            switch(eventId)
+            {
+            case GE_TIME_PERIOD:
+                m3d::SafeFloatAttrib(m_timeOutForTimePeriod, eventNode, "timeout");
+                break;
+            case GE_FRAMES_PASSED:
+                m3d::SafeUintAttrib(m_framesForFramesPassed, eventNode, "numframes");
+                break;
+            case GE_START_CINEMATIC_MSG:
+                m3d::SafeIntAttrib(m_idForCinemaMsg, eventNode, "msgid");
+                break;
+            case GE_START_CINEMATIC_FLY:
+                m3d::SafeStrAttrib(m_flyPathForCinematicFly, eventNode, "flypath");
+                break;
+            }
+
+            if (this->m_timeOutForTimePeriod < 0.0)
+                this->m_timeOutForTimePeriod = 0.0;
+            if (!this->m_framesForFramesPassed)
+                this->m_framesForFramesPassed = 1;
+
+            if (eventId)
+            {
+                auxEventInfo eventInfo;
+                eventInfo.m_objName = eventNode->GetAttribute("ObjName");
+                eventInfo.m_eventId = eventId;
+                m_eventInfos.push_back(std::move(eventInfo));
+            }
+        }
     }
 }

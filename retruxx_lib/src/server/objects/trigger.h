@@ -104,7 +104,7 @@ namespace ai
 
         struct auxEventInfo
         {
-            /* 0x0000 */ ai::eGameEvent m_eventId;
+            /* 0x0000 */ ai::eGameEvent m_eventId = GE_UNKNOWN;
             /* 0x0004 */ CStr m_objName;
             //auxEventInfo(const ai::Trigger::auxEventInfo& __that);
             //auxEventInfo();

@@ -16,8 +16,24 @@ extern "C"
 }
 #include <stdexcept>
 
+const char* ScriptErrorDesc[9] = {
+    "success",
+    "ScriptServer::init() was not called or that call had been failed",
+    "file not found or could not be read",
+    "run-time script error",
+    "syntax error during pre-compilation",
+    "memory allocation error",
+    "unknown error",
+    "no such function",
+    "function is already registered",
+};
+
 namespace
 {
+    m3d::auxScriptErrorDesc errDesc;
+    lua_CFunction oldToString = nullptr;
+    m3d::ScriptServer* g_scriptServer = nullptr;
+
     int _getGlobalObject(lua_State * L)
     {
         auto glob = lua_tostring(L, 1);
@@ -33,9 +49,65 @@ namespace
         return 1;
     }
 
-    int _logMethod(lua_State *)
+    int _getLastErrorInfo(lua_State* L, lua_Debug* dbgInfo)
     {
-        throw retruxx::logic_error("Not implemented");
+        int v4 = 1;
+        int level = 1;
+        int v5 = 0;
+        while (1)
+        {
+            v5 = lua_getstack(L, v4, dbgInfo);
+            if (v5)
+                break;
+            v4 = ++level;
+            if (!v5)
+                return 0;
+        }
+        lua_getinfo(L, "Sln", dbgInfo);
+        if (strcmp(dbgInfo->what, "Lua") && strcmp(dbgInfo->what, "main"))
+        {
+            v4 = ++level;
+            if (!v5)
+                return 0;
+        }
+        return 1;
+    }
+
+    int _logMethod(lua_State * L)
+    {
+        auto v2 = lua_gettop(L);
+        lua_pushstring(L, "tostring");
+        lua_gettable(L, -10001);
+
+        CStr buf;
+        for (int i = 1; i <= v2; ++i)
+        {
+            lua_pushvalue(L, -1);
+            lua_pushvalue(L, i);
+            lua_call(L, 1, 1);
+            auto v4 = lua_tostring(L, -1);
+            if (!v4)
+            {
+                lua_pushstring(L, "ScriptSystem::_logMethod(): `tostring' must return a string to `print'");
+                lua_error(L);
+            }
+            if (i > 1)
+            {
+                buf += "\t";
+            }
+            buf += v4;
+            lua_settop(L, -2);
+        }
+
+        lua_Debug ar;
+        if (_getLastErrorInfo(L, &ar) )
+        {
+            auto v6 = NameFromFileName(g_scriptServer->getNameOfLastScript());
+            m3d::g_Kernel->m_Log->sourceLine() = ar.currentline;
+            m3d::g_Kernel->m_Log->setSourceFile(v6.c_str());
+            m3d::g_Kernel->m_Log->logTex(buf, m3d::LOG_INFO);
+        }
+        return 0;
     }
 
     int _execLuaScript(lua_State * L)
@@ -45,9 +117,29 @@ namespace
         return m3d::Scriptlet::g_scriptServer->executeScriptFile(file);
     }
 
-    int _errorMethod(lua_State *)
+    int _errorMethod(lua_State * L)
     {
-        throw retruxx::logic_error("Not implemented");
+        luaL_checktype(L, 1, 4);
+        errDesc.descriptionString = lua_tostring(L, 1);
+
+        lua_Debug ar;
+        if (_getLastErrorInfo(L, &ar))
+        {
+            errDesc.lineNumber = ar.currentline;
+            errDesc.defLineNumber = ar.linedefined;
+            errDesc.whatString = ar.what;
+            errDesc.nameString = ar.name;
+            errDesc.nameWhatString = ar.namewhat;
+        }
+        else
+        {
+            errDesc.lineNumber = 0;
+            errDesc.defLineNumber = 0;
+            errDesc.whatString = {};
+            errDesc.nameString = {};
+            errDesc.nameWhatString = {};
+        }
+        return 1;
     }
 
     int _callClassMethod(lua_State *L)
@@ -67,9 +159,33 @@ namespace
         throw retruxx::logic_error("Not implemented");
     }
 
-    int _toString(lua_State *)
+    char buf_0[5] = { 0 };
+    char buf[5] = { 0 };
+
+    int _toString(lua_State *L)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto v2 = ext_getTag(L, -1) - 1001;
+        if (v2)
+        {
+            if (v2 == 2)
+            {
+                auto v4 = (float*)lua_touserdata(L, -1);
+                sprintf(buf_0, "(%.3f, %.3f, %.3f, %.3f)", *v4, v4[1], v4[2], v4[3]);
+                lua_pushstring(L, buf_0);
+                return 1;
+            }
+            else
+            {
+                return oldToString(L);
+            }
+        }
+        else
+        {
+            auto v5 = (float*)lua_touserdata(L, -1);
+            sprintf(buf, "(%.3f, %.3f, %.3f)", *v5, v5[1], v5[2]);
+            lua_pushstring(L, buf);
+            return 1;
+        }
     }
 
     int _callNativeGlobalFunction(lua_State *)
@@ -149,10 +265,6 @@ namespace
         lua_gettable(L, -2);
         return 1;
     }
-
-    lua_CFunction oldToString = nullptr;
-    m3d::ScriptServer* g_scriptServer = nullptr;
-    m3d::auxScriptErrorDesc errDesc;
 }
 
 namespace m3d
@@ -422,7 +534,7 @@ namespace m3d
 
     char const* ScriptServer::getNameOfLastScript() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_lastScriptExecuted.c_str();
     }
 
     retruxx::map<CStr, ScriptServer::auxFuncDesc> const& ScriptServer::getRegisteredFunctionsDesc() const
@@ -435,9 +547,13 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    eScriptError ScriptServer::execute(char const*, char const*)
+    eScriptError ScriptServer::execute(char const* str, char const* bufName)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (this->m_bInitialized)
+        {
+            return executeBuffer((void*)str, strlen(str), bufName);
+        }
+        return NOT_INITIALIZED;
     }
 
     eScriptError ScriptServer::executeBuffer(void* buf, unsigned bufSize, char const* bufName)
@@ -482,9 +598,15 @@ namespace m3d
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00621500, ScriptServer::getFormatedScriptErrorDesc)
-    CStr ScriptServer::getFormatedScriptErrorDesc(eScriptError) const
+    CStr ScriptServer::getFormatedScriptErrorDesc(eScriptError err) const
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement ScriptServer::getFormatedScriptErrorDes
+        if (err)
+        {
+            return ScriptErrorDesc[err];
+            //auto desc = ScriptErrorDesc[err];
+        }
+        return {};
     }
 
     auxScriptErrorDesc const& ScriptServer::getLastErrorDesc() const
