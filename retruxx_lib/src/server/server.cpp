@@ -176,7 +176,7 @@ namespace ai
 
     m3d::Profiler* CServer::GetTmpProfiler()
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_profilerTmpForServer;
     }
 
     m3d::Profiler* CServer::GetBulletProfiler()
@@ -601,43 +601,43 @@ namespace ai
         SetObjects(m_pObjects);
 
         auto idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI physic step", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
         {
             m_profilerTmpForServer = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
         }
 
         idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI collisions", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
         {
             m_collideProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
         }
 
         idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI bullets update", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
         {
             m_bulletProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
         }
 
         idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI blast waves update", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
         {
             m_blastWaveProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
         }
 
         idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI vehicles update", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
         {
             m_pathFindingProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
         }
 
         idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI total objects update", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
         {
             m_objectsUpdateProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
         }
 
         idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI full update", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
         {
             m_serverUpdateProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
         }
@@ -718,9 +718,163 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    void CServer::Update(float)
+    void CServer::Update(float elapsedTime)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        if (!m_StartServerUpdates)
+        {
+            return;
+        }
+
+        // Start profiling server update
+        m_serverUpdateProfiler->StartCountdown();
+
+        // Calculate current time
+        float CurTime = 0.0;
+        if (m3d::g_Kernel->GetTimer().GetTimeScale() == 0.0f)
+        {
+            CurTime = m_LastUpdateTime;
+        }
+        else
+        {
+            CurTime = static_cast<float>(m3d::g_Kernel->GetTimer().GetCurTime()) * 0.001f;
+        }
+
+        // Handle very small elapsed times
+        if (elapsedTime < 0.001f)
+        {
+            elapsedTime = CurTime - m_LastUpdateTime;
+            if (elapsedTime < 0.0f)
+            {
+                elapsedTime = 0.0f;
+            }
+        }
+
+        // Apply minimum frame time constraint
+        float minFrameTime = m3d::g_Kernel->GetEngineCfg().m_ai_min_frame_time.GetF();
+
+        float m_averageElapsedTime = elapsedTime;
+        if (elapsedTime > minFrameTime)
+        {
+            elapsedTime = minFrameTime;
+            m_averageElapsedTime = minFrameTime;
+        }
+
+        // Update moving average of elapsed times
+        if (m_Accumulation)
+        {
+            if (m_CurIndex >= m_MaxAverageLength)
+            {
+                m_Accumulation = false;
+            }
+            else
+            {
+                m_lastElapsedTimes[m_CurIndex] = m_averageElapsedTime;
+
+                // Calculate new average
+                m_averageElapsedTime = 0.0f;
+                for (int i = 0; i <= m_CurIndex; ++i)
+                {
+                    m_averageElapsedTime += m_lastElapsedTimes[i];
+                }
+                m_averageElapsedTime /= static_cast<float>(m_CurIndex + 1);
+                m_CurIndex++;
+            }
+        }
+
+        if (!m_Accumulation)
+        {
+            if (m_CurIndex >= m_MaxAverageLength)
+            {
+                m_CurIndex = 0;
+            }
+
+            float* currentSlot = &m_lastElapsedTimes[m_CurIndex];
+            m_averageElapsedTime += (m_averageElapsedTime - *currentSlot) / static_cast<float>(m_MaxAverageLength);
+            *currentSlot = m_averageElapsedTime;
+            m_CurIndex++;
+        }
+
+        // Use average elapsed time if configured
+        if (m_AveElapsedTimeUsed)
+        {
+            m_averageElapsedTime = m_averageElapsedTime;
+            elapsedTime = m_averageElapsedTime;
+        }
+
+        // Determine work time based on elapsed time
+        unsigned int workTime = 2;
+        if (m_averageElapsedTime <= 0.0001f)
+        {
+            workTime = 0;
+        }
+
+        // Handle pause
+        if (fPause)
+        {
+            elapsedTime = 0.0f;
+        }
+
+        float v14 = elapsedTime; // Store original elapsed time
+
+        // AI simulation steps
+        ai::IntersectionManager::ClearCounters();
+        ai::gDynamicScene->StepScene(elapsedTime);
+        _PostProcessConsoleCommands();
+
+        ai::Path::QuantAmount = 0;
+        ai::theAIManager->m_elapsedTime = elapsedTime;
+        ai::theAIManager->m_workTime = workTime;
+
+        // Determine if in cinematic mode
+        bool InCinematic = false;
+        if (m_InCinematic)
+        {
+            bool useCinematic = m3d::g_Kernel->GetEngineCfg().m_UseCinematicUpdate.GetB();
+
+            if (useCinematic)
+            {
+                InCinematic = true;
+            }
+        }
+
+        // Update process manager with minimum time threshold
+        float processTime = (elapsedTime <= 0.0001f) ? elapsedTime : 0.0001f;
+        ai::theProcessManager->Update(processTime, 0, workTime);
+
+        // Object container updates with profiling
+        m_pObjects->PostCollide();
+        ai::gDynamicScene->PurgeBodies();
+
+        m_objectsUpdateProfiler->StartCountdown();
+        m_pObjects->Update(v14, workTime, InCinematic);
+        m_objectsUpdateProfiler->EndCountdown();
+
+        // Post-update processing
+        m_pObjects->PostCollide();
+        ai::theProcessManager->Update(v14, 1, workTime);
+        m_pObjects->PostCollide();
+        ai::gDynamicScene->PurgeBodies();
+
+        // Collision detection
+        ai::gDynamicScene->CollideScene(v14);
+
+        // Final process manager update
+        processTime = (elapsedTime <= 0.0001f) ? elapsedTime : 0.0001f;
+        ai::theProcessManager->Update(processTime, 0, workTime);
+
+        m_pObjects->PostCollide();
+        ai::gDynamicScene->PurgeBodies();
+
+        // Update timing and handle step mode
+        m_LastUpdateTime = CurTime;
+        if (m3d::g_Kernel->GetEngineCfg().m_StepMode.GetI() == 1)
+        {
+            fPause = true;
+        }
+
+        // Final profiling update
+        m_serverUpdateProfiler->EndCountdown();
     }
 
     void CServer::LoadGlobalMapFromRawFile(char const*)
@@ -958,7 +1112,12 @@ namespace ai
 
     void CServer::_PostProcessConsoleCommands()
     {
-        throw retruxx::logic_error("Not implemented");
+        while (!m_consoleCommandsToPostProcess.empty())
+        {
+            auto command = m_consoleCommandsToPostProcess.front();
+            m_consoleCommandsToPostProcess.pop();
+            throw retruxx::logic_error("Not implemented");
+        }
     }
 
     void CServer::_RegisterConsoleCommands()

@@ -30,6 +30,8 @@
 #include "objects/monsters/boss04stationpart.h"
 #include "objects/monsters/bossmetalarmload.h"
 #include "objects/physicbodies/vehiclepart.h"
+#include "server.h"
+#include "core/profilerstack.h"
 
 namespace ai
 {
@@ -110,9 +112,15 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void DynamicScene::StepScene(float)
+	void DynamicScene::StepScene(float elapsedTime)
 	{
-		throw retruxx::logic_error("Not implemented");
+        if (elapsedTime >= 0.0001)
+        {
+            ai::pServer->GetTmpProfiler()->StartCountdown();
+            dWorldQuickStep(ai::gGlobalWorld, elapsedTime);
+            ai::pServer->GetTmpProfiler()->EndCountdown();
+            dJointGroupEmpty(contactGroup);
+        }
 	}
 
 	bool DynamicScene::SaveSceneToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)

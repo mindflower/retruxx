@@ -13,47 +13,50 @@ namespace ai
     class AIMatrix;
     class Obj;
     class DecisionMatrix;
+    struct GPARSER_VARS;
 
-    class AIManager :  public m3d::Object
+    class AIManager : public m3d::Object
     {
-    public:
-        DecisionMatrix * LoadMatrix(char const *);
-        int GetMatrixNum(CStr const &) const ;
-        void RegisterMatrix(CStr const &,DecisionMatrix *);
-        void Dump();
-        static m3d::Class* GetBaseClass();
-        int RegisterFunc(CStr const &, m3d::AIParam(__fastcall*)(Obj*));
-        void LogDump();
-        int GetSchemeNum(CStr const &) const ;
-        CStr GetMatrixName(int) const ;
-        DecisionMatrix * GetDecisionMatrixPtr(int) const ;
-        static Object * CreateObject();
-        virtual m3d::Class* GetClass() const ;
-        virtual ~AIManager();
-        m3d::AIParam AIAction(int,Obj *);
-        int GetFuncNum(CStr const &) const ;
-        virtual m3d::Object * Clone();
-        DecisionMatrix * CreateNewDecisionMatrix();
-
     protected:
         AIManager();
-        AIManager(AIManager const &);
-
-    private:
-        DecisionMatrix * ReadNewMatrix(char const *);
+        AIManager(const ai::AIManager& rhs);
 
     public:
-        RT_CLASS_DECLARE(AIManager);
-
-    public:
-        float m_elapsedTime;
+        virtual  ~AIManager() override /* 0x00 */;
+        virtual m3d::Object* Clone() override /* 0x04 */;
+        static m3d::Object* __fastcall CreateObject();
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        static m3d::Class m_classAIManager;
 
     private:
-        std::vector<AIMatrix> m_Matrix;
-        std::vector<AIFunc> m_Actions;
-        std::vector<CStr> m_Schemes;
-        unsigned int m_workTime;
-    };
+        std::vector<ai::AIMatrix, std::allocator<ai::AIMatrix> > m_Matrix;
+        std::vector<ai::AIFunc, std::allocator<ai::AIFunc> > m_Actions;
+        std::vector<CStr, std::allocator<CStr> > m_Schemes;
+
+    public:
+        /* 0x0064 */ unsigned int m_workTime;
+        /* 0x0068 */ float m_elapsedTime;
+
+    private:
+        ai::DecisionMatrix* ReadNewMatrix(const char* FileName);
+        int GetParamNum(ai::GPARSER_VARS*, const CStr&) const;
+        int GetSymbolNum(const CStr&) const;
+
+    public:
+        void RegisterMatrix(const CStr& Name, ai::DecisionMatrix* pDM);
+        int RegisterFunc(const CStr& Name, m3d::AIParam(*funcAction)(ai::Obj*));
+        int GetSchemeNum(const CStr& Word) const;
+        int GetFuncNum(const CStr& Name) const;
+        int GetMatrixNum(const CStr& Name) const;
+        CStr GetMatrixName(int MatrixNum) const;
+        ai::DecisionMatrix* GetDecisionMatrixPtr(int MatrixNum) const;
+        m3d::AIParam AIAction(int FuncNum, ai::Obj* pObj);
+        void Dump();
+        void LogDump();
+        ai::DecisionMatrix* CreateNewDecisionMatrix();
+        ai::DecisionMatrix* LoadMatrix(const char* fileName);
+    }; /* size: 0x006c */
 
     void SetAIManager(AIManager*);
 

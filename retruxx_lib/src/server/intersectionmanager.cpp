@@ -61,7 +61,10 @@ namespace ai
 
     void IntersectionManager::ClearCounters()
     {
-        throw std::logic_error("Not implemented");
+        cntIntersectionCalls->SetI(0);
+        cntObjectsChecked->SetI(0);
+        cntIntersectingObjectsChecked->SetI(0);
+        cntObjectsSatisfied->SetI(0);
     }
 
     void IntersectionManager::RemoveLookingSphere(SphereForIntersection*)

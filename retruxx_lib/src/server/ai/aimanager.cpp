@@ -80,7 +80,7 @@ namespace ai
         return RT_CLASS_LOCAL(Object);
     }
 
-    int AIManager::RegisterFunc(CStr const& name, m3d::AIParam(*funcAction)(Obj*))
+    int AIManager::RegisterFunc(const CStr& name, m3d::AIParam(*funcAction)(ai::Obj*))
     {
         auto const num = GetFuncNum(name);
         if (num == 0xFFFF)
