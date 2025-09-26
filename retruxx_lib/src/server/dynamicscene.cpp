@@ -32,6 +32,8 @@
 #include "objects/physicbodies/vehiclepart.h"
 #include "server.h"
 #include "core/profilerstack.h"
+#include "game/m3dgame.h"
+#include "objects/vehicle.h"
 
 namespace ai
 {
@@ -68,7 +70,19 @@ namespace ai
 
 	void DynamicScene::PurgeBodies()
 	{
-		throw retruxx::logic_error("Not implemented");
+        if (thePlayer)
+        {
+            auto vehicle = thePlayer->GetVehicle();
+            if (!vehicle
+                || ((vehicle->GetFlags() & 8) != 0)
+                || (vehicle->GetFlags() & 2) != 0
+                || vehicle->GetParentRepository())
+            {
+                M3D_APP->ImmediateMessage(66544, 0, 0, 0, 0, {}, {});
+                thePlayer->CauseEvent(GE_PLAYER_VEHICLE_CHANGED, 0.0, {}, {});
+            }
+        }
+        theObjects->Purge();
 	}
 
 	CStr const& DynamicScene::GetBoEffectTypeName(unsigned short)

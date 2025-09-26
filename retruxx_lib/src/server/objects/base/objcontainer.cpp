@@ -7,7 +7,17 @@
 #include <core/kernel.h>
 #include <core/log.h>
 
+#include "globalproperties.h"
 #include "m3dapp.h"
+#include "server/queststate.h"
+#include "server/statistic/timestatistic.h"
+#include <server/server.h>
+
+#include "config.h"
+#include "level.h"
+#include "world.h"
+#include "core/timer.h"
+#include "server/passagedata.h"
 
 void ShowCurrentStack()
 {
@@ -317,9 +327,10 @@ namespace ai
         return &m_records[id];
     }
 
-    ObjContainer::const_iterator::const_iterator(retruxx::vector<Node> const*, int)
+    ObjContainer::const_iterator::const_iterator(retruxx::vector<Node> const* pRecords, int nodeId)
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_nodeId = nodeId;
+        this->m_pRecords = pRecords;
     }
 
     void ObjContainer::const_iterator::_Inc()
@@ -342,9 +353,9 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    bool ObjContainer::const_iterator::operator!=(const_iterator const&) const
+    bool ObjContainer::const_iterator::operator!=(const_iterator const& rhs) const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_nodeId != rhs.m_nodeId;
     }
 
     ObjContainer::const_iterator& ObjContainer::const_iterator::operator++()
@@ -355,12 +366,11 @@ namespace ai
     ObjContainer::iterator::iterator(retruxx::vector<Node>* pRecords, int nodeId) :
         ObjContainer::const_iterator(pRecords, nodeId)
     {
-        throw retruxx::logic_error("Not implemented");
     }
 
     Obj* ObjContainer::iterator::operator->() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return (*this->m_pRecords)[this->m_nodeId].m_value;
     }
 
     ObjContainer::iterator ObjContainer::iterator::operator++(int)
@@ -395,12 +405,13 @@ namespace ai
 
     void ObjContainer::Purge()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement ObjContainer::Purge
+        //throw retruxx::logic_error("Not implemented");
     }
 
     ObjContainer::iterator ObjContainer::updatingEnd()
     {
-        throw retruxx::logic_error("Not implemented");
+        return iterator(&m_updatingObjects.m_records, -1);
     }
 
     ObjContainer::~ObjContainer()
@@ -454,7 +465,7 @@ namespace ai
 
     ObjContainer::iterator ObjContainer::updatingBegin()
     {
-        throw retruxx::logic_error("Not implemented");
+        return ObjContainer::iterator(&m_updatingObjects.m_records, m_updatingObjects.m_firstNodeId);
     }
 
     void ObjContainer::LoadNodeStatesFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
@@ -715,9 +726,81 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    void ObjContainer::Update(float, unsigned, bool)
+    void ObjContainer::Update(float elapsedTime, unsigned workTime, bool bCinematic)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+
+        // Reset debug counters
+        PhysicBody::GetCountNodeRelinks()->SetI(0);
+        PhysicObj::GetRelinksToCollisionCounter()->SetI(0);
+
+        // Update all objects in the container
+        m_inUpdate = true;
+
+        for (auto it = updatingBegin(); it != updatingEnd(); ++it)
+        {
+            if (bCinematic && !it->NeedCinematicUpdate())
+            {
+                continue;
+            }
+
+            // Update the object
+            it->Update(elapsedTime, workTime);
+        }
+
+        m_inUpdate = false;
+
+        // Update quest state manager
+        theQuestStateManager->Update(elapsedTime);
+
+        // Update game time if not in cinematic mode and game time is not paused
+        if (!bCinematic && !m_GameTimePaused)
+        {
+            // TODO: check this time
+            m_GameTime += ai::theGlobProp.m_gameTimeMult * elapsedTime;
+
+            // Update global game time statistic
+            auto* gameTimeStat = dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic("GameTime", "TimeStatistic"));
+
+            gameTimeStat->m_bGlobalFlag = true;
+            gameTimeStat->IncreaseByMilliseconds(ai::theGlobProp.m_gameTimeMult * elapsedTime * 1000.0);
+
+            // Update level-specific game time statistic
+            auto levelStatName = "GameTime"+ ai::pServer->GetWorld()->m_level->m_levelName;
+            auto* levelGameTimeStat = dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic(levelStatName, "TimeStatistic"));
+
+            levelGameTimeStat->m_bGlobalFlag = false;
+            levelGameTimeStat->IncreaseByMilliseconds(ai::theGlobProp.m_gameTimeMult * elapsedTime * 1000.0);
+        }
+
+        // Update real time statistics (always updated)
+        auto* realTimeStat = dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic("RealTime", "TimeStatistic"));
+        realTimeStat->m_bGlobalFlag = true;
+        uint64_t realTimeDelta = static_cast<uint64_t>(elapsedTime * 1000.0);
+        realTimeStat->IncreaseByMilliseconds(realTimeDelta);
+
+        // Update level-specific real time statistic
+        CStr levelRealTimeName("RealTime");
+        levelRealTimeName += ai::pServer->GetWorld()->m_level->m_levelName;
+        TimeStatistic* levelRealTimeStat = dynamic_cast<ai::TimeStatistic*>(ai::theStatisticManager->GetStatistic(levelRealTimeName, "TimeStatistic"));
+
+       levelRealTimeStat->m_bGlobalFlag = false;
+       levelRealTimeStat->IncreaseByMilliseconds(elapsedTime * 1000.0);
+
+        // Handle map transition after fading
+        if (ai::thePassageData)
+        {
+            float fadingTime = m3d::g_Kernel->GetEngineCfg().m_fadingTimeBeforeNextMap.GetF();
+
+            m3d::cmn::Timer& timer = m3d::g_Kernel->GetTimer();
+            auto currentTime = timer.GetCurTimeUnscaled();
+            auto elapsedFadingTime = (currentTime - ai::thePassageData->m_fadingStartTime) * 0.001;
+
+            if (elapsedFadingTime >= fadingTime)
+            {
+                _PassToMapAfterFading();
+            }
+        }
     }
 
     int ObjContainer::CreateNewObject(int prototypeId, char const* name, int parentId, int belongId)
@@ -803,7 +886,11 @@ namespace ai
 
     void ObjContainer::PostCollide()
     {
-        throw retruxx::logic_error("Not implemented");
+        for (auto& obj : m_objectsToPostCollide)
+        {
+            obj->PostCollide();
+        }
+        m_objectsToPostCollide.clear();
     }
 
     void ObjContainer::AddObjIdToRelinkSceneGraphNode(int)

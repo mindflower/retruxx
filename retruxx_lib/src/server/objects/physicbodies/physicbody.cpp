@@ -170,7 +170,7 @@ namespace ai
 
 	m3d::DbgCounter* PhysicBody::GetCountNodeRelinks()
 	{
-		throw std::logic_error("Not implemented");
+        return m_countNodeRelinks;
 	}
 
 	Geom* PhysicBody::GetGeom(unsigned) const

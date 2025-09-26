@@ -633,7 +633,7 @@ namespace ai
 
     m3d::DbgCounter* PhysicObj::GetRelinksToCollisionCounter()
     {
-        throw std::logic_error("Not implemented");
+        return ai::PhysicObj::m_countRelinksToCollisionCells;
     }
 
     int PhysicObj::GetPropertyId(char const*) const
