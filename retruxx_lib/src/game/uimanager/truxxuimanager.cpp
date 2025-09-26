@@ -1201,6 +1201,22 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         OnGameModeChanged(data);
         return 0;
     }
+    case 61:
+    {
+        if (!data)
+            return 1;
+
+        auto event = (m3d::Event*)data;
+        auto entityByObjId = ai::theObjects->GetEntityByObjId(event->m_intEv[0]);
+        if (!entityByObjId)
+            return 1;
+
+        auto* cls= entityByObjId->GetClass();
+        if (!m_objectCollection.IsClassCollected(cls))
+            return 1;
+        m_objectCollection.AddObject(entityByObjId);
+        return 1;
+    }
     case 84:
     {
         OnBeforeStartLevel();

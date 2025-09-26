@@ -3,6 +3,8 @@
 #include <core/kernel.h>
 #include <core/stringm3d.h>
 
+#include "core/clazz.h"
+
 ObjectCollection::~ObjectCollection()
 {
     throw std::logic_error("Not implemented");
@@ -23,9 +25,21 @@ ObjectCollection::ObjectCollection()
     InitClasses();
 }
 
-bool ObjectCollection::IsClassCollected(m3d::Class const*) const
+bool ObjectCollection::IsClassCollected(m3d::Class const* cl) const
 {
-    throw std::logic_error("Not implemented");
+    if (!cl)
+    {
+        return false;
+    }
+
+    for (const auto& colCl : m_collectedClasses)
+    {
+        if (cl->IsKindOf(colCl))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void ObjectCollection::ClearObjects()

@@ -90,14 +90,18 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    PrototypeInfo const* PrototypeManager::GetPrototypeInfo(int) const
+    PrototypeInfo const* PrototypeManager::GetPrototypeInfo(int id) const
     {
-        throw retruxx::logic_error("Not implemented");
+        if (id < m_prototypes.size())
+        {
+            return m_prototypes[id];
+        }
+        return nullptr;
     }
 
     int PrototypeManager::GetNumOfPrototypes() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_prototypes.size();
     }
 
     void PrototypeManager::_LoadGameObjectsFolderFromXML(CStr const& fileName, bool(* action)(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*))

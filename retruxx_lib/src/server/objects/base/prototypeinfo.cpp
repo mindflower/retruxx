@@ -11,7 +11,6 @@ namespace ai
 {
 	void PrototypeInfo::PostLoad()
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	unsigned PrototypeInfo::GetBasePrice() const
@@ -73,7 +72,6 @@ namespace ai
 
 	void PrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
 	}
 
 	CStr PrototypeInfo::GetDebugDescription() const

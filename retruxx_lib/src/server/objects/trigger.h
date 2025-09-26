@@ -16,8 +16,7 @@ namespace ai
 
     class Trigger : public ai::Obj
     {
-        RETRUXX_DLL_FRIEND_CLASS(Trigger);
-
+        friend class TriggerPrototypeInfo;
     protected:
         virtual ~Trigger() override /* 0x00 */;
 
@@ -115,7 +114,6 @@ namespace ai
         struct CallEventInfo : public auxEventInfo
         {
             /* 0x0010 */ int m_callObjId;
-           // CallEventInfo(const ai::Trigger::CallEventInfo&);
            CallEventInfo();
         }; /* size: 0x0014 */
 

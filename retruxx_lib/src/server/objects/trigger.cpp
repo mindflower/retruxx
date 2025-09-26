@@ -114,12 +114,13 @@ namespace ai
 
     Obj* TriggerPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        return new Trigger(*this);
     }
 
     Trigger::CallEventInfo::CallEventInfo()
     {
-        throw std::logic_error("Not implemented");
+        this->m_eventId = GE_UNKNOWN;
+        this->m_callObjId = -1;
     }
 
     void Trigger::Deactivate()
@@ -215,9 +216,18 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    Trigger::Trigger(TriggerPrototypeInfo const&)
+    Trigger::Trigger(TriggerPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
     {
-        throw std::logic_error("Not implemented");
+        this->m_callEvent.m_eventId = GE_UNKNOWN;
+        this->m_callEvent.m_callObjId = -1;
+        this->m_state = TS_EVENTWAIT;
+        this->m_timeOutForTimePeriod = 1.0;
+        this->m_framesForFramesPassed = 0;
+        this->m_idForCinemaMsg = -1;
+        this->m_Count = 0;
+        this->m_bScriptPresent = 0;
+        this->m_StateKeep = 0;
+        this->m_bCanUpdate = 0;
     }
 
     Trigger::Trigger(const ai::Trigger&)
@@ -286,7 +296,7 @@ namespace ai
 
     m3d::Class* Trigger::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Trigger);
     }
 
     CStr Trigger::GetPropertyName(int) const
@@ -437,7 +447,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Trigger::_LoadEventsFromMapXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Trigger::_LoadEventsFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const*)
     {
         throw std::logic_error("Not implemented");
     }

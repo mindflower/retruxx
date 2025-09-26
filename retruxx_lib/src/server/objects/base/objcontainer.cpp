@@ -7,6 +7,13 @@
 #include <core/kernel.h>
 #include <core/log.h>
 
+#include "m3dapp.h"
+
+void ShowCurrentStack()
+{
+    throw retruxx::logic_error("Not implemented");
+}
+
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, CreateNewObject)
 {
     throw retruxx::logic_error("Not implemented");
@@ -104,6 +111,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, IsSaveAllowed)
 
 namespace ai
 {
+    namespace
+    {
+        int ObjContainerSize = 0x4000;
+    }
+
     RT_CLASS_EXPORTS_BEGIN(ObjContainer)
         RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, CreateNewObject, "", "", "")
         RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetEntityByObjId, "", "", "")
@@ -196,12 +208,22 @@ namespace ai
 
     ObjContainer::Node::Node()
     {
+        this->m_id = -1;
+        this->m_prevId = -1;
+        this->m_nextId = -1;
+        this->m_value = 0;
+        this->m_isValid = 0;
+        this->m_totalObjects = 0;
     }
 
     ObjContainer::InnerContainer::InnerContainer()
     {
-        m_records.resize(0x4000, {});
-        m_freePlaces.reserve(0x4000);
+        this->m_firstNodeId = -1;
+        this->m_lastNodeId = -1;
+        this->m_size = 0;
+
+        m_records.resize(ObjContainerSize, {});
+        m_freePlaces.reserve(ObjContainerSize);
         for (int i = m_records.size() - 1; i!=0; --i)
         {
             m_records[i].m_id = i;
@@ -214,13 +236,46 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    int ObjContainer::InnerContainer::Add(Obj*)
+    int ObjContainer::InnerContainer::Add(Obj* pObj)
     {
-        throw retruxx::logic_error("Not implemented");
+        int nodeId = -1;
+        if (!m_freePlaces.empty())
+        {
+            nodeId = m_freePlaces.back();
+            m_freePlaces.pop_back();
+        }
+        else
+        {
+            auto msg = "Error: maximum objects count exceeded: " + CStr(ObjContainerSize) + " when attempting to add " + pObj->GetDebugDescription() + " to ObjContainer";
+            M3D_LOG_CRIT(msg);
+            ShowCurrentStack();
+            theObjects->Dump();
+            M3D_CRITICAL_ERROR(msg);
+        }
+
+        auto& record = m_records[nodeId];
+        record.m_isValid = true;
+        record.m_value = pObj;
+        if (m_size)
+        {
+            m_records[m_lastNodeId].m_nextId = nodeId;
+            record.m_prevId = m_lastNodeId;
+        }
+        else
+        {
+            m_firstNodeId = nodeId;
+        }
+
+        m_lastNodeId = nodeId;
+        ++m_size;
+        return (record.m_totalObjects << 14) + nodeId;
     }
 
-    bool ObjContainer::InnerContainer::AddWithOwnObjId(Obj*, int)
+    bool ObjContainer::InnerContainer::AddWithOwnObjId(Obj* pObj, int id)
     {
+        M3D_ASSERT(id >= 0);
+
+
         throw retruxx::logic_error("Not implemented");
     }
 
@@ -253,9 +308,13 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    ObjContainer::Node* ObjContainer::InnerContainer::_GetNodeById(int)
+    ObjContainer::Node* ObjContainer::InnerContainer::_GetNodeById(int id)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (id == -1)
+        {
+            return nullptr;
+        }
+        return &m_records[id];
     }
 
     ObjContainer::const_iterator::const_iterator(retruxx::vector<Node> const*, int)
@@ -498,14 +557,41 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    bool ObjContainer::AddWithOwnObjId(Obj*)
+    bool ObjContainer::AddWithOwnObjId(Obj* pObj)
     {
-        throw retruxx::logic_error("Not implemented");
+        M3D_ASSERT(pObj);
+
+        auto result = m_allObjects.AddWithOwnObjId(pObj, pObj->GetId());
+        if (result)
+        {
+            if (pObj->m_bIsUpdating)
+            {
+                pObj->m_updatingObjId = m_updatingObjects.Add(pObj);
+            }
+            CStr name = pObj->GetName();
+            if (!name.empty())
+            {
+                m_nameToIdMap[name] = pObj->GetId();
+            }
+
+            M3D_APP->ImmediateMessage(66541, pObj->GetId(), 0, 0, 0, {}, {});
+            return 1;
+        }
+        return result;
     }
 
-    void ObjContainer::SetObjName(int, CStr const&)
+    void ObjContainer::SetObjName(int objId, CStr const& name)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (objId >= 0)
+        {
+            auto* obj = m_allObjects.GetObjById(objId);
+            if (obj && obj->GetName() != name)
+            {
+                m_nameToIdMap.erase(obj->GetName());
+                m_nameToIdMap[name] = objId;
+                obj->SetName(name);
+            }
+        }
     }
 
     GameTime& ObjContainer::getGameTime()
@@ -745,9 +831,26 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    int ObjContainer::_Add(Obj*)
+    int ObjContainer::_Add(Obj* pObj)
     {
-        throw retruxx::logic_error("Not implemented");
+        M3D_ASSERT(pObj);
+        M3D_ASSERT(pObj->GetId() == -1);
+
+        auto objId = m_allObjects.Add(pObj);
+        pObj->m_objId = objId;
+        if (pObj->m_bIsUpdating)
+        {
+            pObj->m_updatingObjId = m_updatingObjects.Add(pObj);
+        }
+
+        CStr name = pObj->GetName();
+        if (!name.empty())
+        {
+            m_nameToIdMap[name] = objId;
+        }
+
+        M3D_APP->ImmediateMessage(66541, objId, 0, 0, 0, {}, {});
+        return objId;
     }
 
     void ObjContainer::_PassToMapAfterFading()

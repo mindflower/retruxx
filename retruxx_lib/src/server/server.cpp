@@ -318,6 +318,13 @@ namespace ai
 
     PrototypeInfo* CServer::CreatePrototypeInfoByClassName(CStr const& className)
     {
+        // TODO: implement CServer::CreatePrototypeInfoByClassName
+        if (className != "Trigger")
+        {
+            return nullptr;
+        }
+
+
         if (className == "Vehicle") return new VehiclePrototypeInfo;
         else if (className == "ArticulatedVehicle") return new ArticulatedVehiclePrototypeInfo;
         else if (className == "VehiclePart") return new VehiclePartPrototypeInfo;

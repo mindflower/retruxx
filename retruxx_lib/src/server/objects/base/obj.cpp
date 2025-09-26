@@ -218,7 +218,6 @@ namespace ai
 
     void Obj::CreateChildren()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void Obj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*>&) const
@@ -404,7 +403,7 @@ namespace ai
 
     int Obj::GetId() const
     {
-        throw std::logic_error("Not implemented");
+        return m_objId;
     }
 
     int Obj::TimeOutActivated() const
@@ -452,9 +451,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Obj::SetName(CStr const&)
+    void Obj::SetName(CStr const& str)
     {
-        throw std::logic_error("Not implemented");
+        theObjects->SetObjName(m_objId, str);
     }
 
     void Obj::UnlinkFromParent()
@@ -464,7 +463,7 @@ namespace ai
 
     void Obj::SetParentInvalid()
     {
-        throw std::logic_error("Not implemented");
+        this->m_parentId = -1;
     }
 
     void Obj::SetNameFromScript(CStr const&)
@@ -504,7 +503,23 @@ namespace ai
 
     Obj::Obj()
     {
-        throw std::logic_error("Not implemented");
+        this->m_parentRepository = 0;
+        this->m_bPassedToAnotherMap = 0;
+        this->m_hierarchyType = HIERARCHY_CHILD;
+        this->m_bIsAlreadySaved = 0;
+        this->m_bAffixesWasApplied = 0;
+        this->m_prototypeId = -1;
+        this->m_flags = 17;
+        this->m_bNeedPostLoad = 1;
+        this->m_bMustCreateVisualPart = 1;
+        this->m_parentId = -1;
+        this->m_belong = 1000;
+        this->m_objId = -1;
+        this->m_updatingObjId = -1;
+        this->m_bIsUpdating = 1;
+        this->m_bMustBeUpdating = 1;
+        this->m_timeOut = 0.0;
+        this->m_LastDamageSource = -1;
     }
 
     bool Obj::_GetDeadStatus() const
@@ -801,6 +816,23 @@ namespace ai
         m_bIsUpdating(prototypeInfo.m_bIsUpdating),
         m_prototypeId(prototypeInfo.m_prototypeId)
     {
+        this->m_parentRepository = 0;
+        this->m_bPassedToAnotherMap = 0;
+        this->m_hierarchyType = HIERARCHY_CHILD;
+        this->m_bIsAlreadySaved = 0;
+        this->m_bAffixesWasApplied = 0;
+        this->m_prototypeId = -1;
+        this->m_bIsUpdating = 1;
+        this->m_flags = 17;
+        this->m_bNeedPostLoad = 1;
+        this->m_bMustCreateVisualPart = 1;
+        this->m_parentId = -1;
+        this->m_belong = 1000;
+        this->m_objId = -1;
+        this->m_updatingObjId = -1;
+        this->m_bMustBeUpdating = 1;
+        this->m_timeOut = 0.0;
+        this->m_LastDamageSource = -1;
     }
 
     void Obj::SetParentRepository(GeomRepository* parentRepository)
