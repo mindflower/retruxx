@@ -1265,6 +1265,7 @@ int n_GetNodeByName(m3d::sArgStack& scriptStack)
 
 int n_SetCameraDirectionToObj(m3d::sArgStack& scriptStack)
 {
+    throw std::logic_error("Not implemented");
     //TODO:..
     return 0;
 }

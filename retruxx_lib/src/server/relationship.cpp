@@ -6,8 +6,6 @@
 
 namespace ai
 {
-    Relationship* theRelationship = nullptr;
-
     Relationship::auxToleranceInfo::auxToleranceInfo(ai::eTolerance tolerance, CStr name) :
         m_tolerance(tolerance),
         m_name(name)

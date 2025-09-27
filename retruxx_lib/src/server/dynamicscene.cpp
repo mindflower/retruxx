@@ -6,6 +6,7 @@
 #include <ode/objects.h>
 
 #include "geomobject.h"
+#include "passagedata.h"
 #include "colliders/breakableobjectcolliders.h"
 #include "colliders/bulletcolliders.h"
 #include "colliders/colliderkrnl.h"
@@ -32,9 +33,14 @@
 #include "objects/monsters/bossmetalarmload.h"
 #include "objects/physicbodies/vehiclepart.h"
 #include "server.h"
+#include "core/ini.h"
+#include "core/log.h"
 #include "core/profilerstack.h"
 #include "game/m3dgame.h"
+#include "objects/dynamicquestdestroy.h"
 #include "objects/vehicle.h"
+#include "objects/base/globalproperties.h"
+#include "objects/base/prototypemanager.h"
 
 namespace ai
 {
@@ -129,9 +135,170 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	bool DynamicScene::LoadSceneFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, retruxx::vector<m3d::Class*> const&)
+	bool DynamicScene::LoadSceneFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* rootNode, retruxx::vector<m3d::Class*> const& allowedClasses)
 	{
-		throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        // Validate allowed classes
+        if (allowedClasses.empty())
+        {
+            M3D_ASSERT(ai::theObjects->empty());
+        }
+
+        // Create XML node for parsing
+        ref_ptr xmlNode = xmlFile->CreateNode();
+
+        if (rootNode->IsEmpty())
+        {
+            return false;
+        }
+
+        // Reset physic time accumulator
+        this->m_physicTimeAccumulator = 0.0;
+
+        // Load physic time accumulator if doing full save
+        if (ai::theObjects->m_SaveType == ObjContainer::SAVE_FULL)
+        {
+            m3d::SafeFloatAttrib(m_physicTimeAccumulator, rootNode, "PhysicTimeAccumulator");
+        }
+
+        // Load relationships
+        rootNode->GetFirstChild(xmlNode, "relationship");
+        if (!xmlNode->IsEmpty() && xmlNode->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
+        {
+            // Clean up existing relationship
+            delete theRelationship;
+            theRelationship = nullptr;
+
+            // Create and load new relationship
+            ai::theRelationship = new ai::Relationship();
+            ai::theRelationship->LoadFromXML(xmlFile, xmlNode);
+            ai::theRelationship->LoadDefaultFromXmlFile(ai::theGlobProp.m_pathToRelationship.c_str());
+        }
+
+        // Load target names for destruction
+        rootNode->GetFirstChild(xmlNode, "TargetNamesForDestroy");
+        ai::DynamicQuestDestroy::LoadNamesForTargetsFromXml(xmlNode);
+
+        // Load runtime object container state for full save
+        if (ai::theObjects->m_SaveType == ObjContainer::SAVE_FULL)
+        {
+            rootNode->GetFirstChild(xmlNode, "ObjContainerRuntime");
+            if (!xmlNode->IsEmpty())
+            {
+                theObjects->LoadNodeStatesFromXml(xmlFile, xmlNode);
+            }
+        }
+
+        // Process passage data if exists
+        if (ai::thePassageData)
+        {
+            thePassageData->PutPassedObjectsToObjContainer();
+        }
+
+        // Validate event recipients for all objects
+        for (auto* obj : *theObjects)
+        {
+            obj->ValidateEventRecipientsList();
+        }
+
+        // Deny object creation during loading for full save
+        if (ai::theObjects->m_SaveType == ObjContainer::SAVE_FULL)
+        {
+            theObjects->DenyCreation();
+        }
+
+        // Load objects from XML
+        rootNode->GetFirstChild(xmlNode, "Object");
+        while (!xmlNode->IsEmpty())
+        {
+            this->ReadNewObjectFromXml(xmlFile, xmlNode, allowedClasses);
+            xmlNode->GetNextSibling(xmlNode, "Object");
+        }
+
+        // Permit creation and purge objects
+        if (ai::theObjects->m_SaveType == ObjContainer::SAVE_FULL)
+        {
+            theObjects->PermitCreation();
+        }
+        theObjects->Purge();
+
+        // Create player if doesn't exist
+        if (!ai::thePlayer)
+        {
+            CStr prototypeName("player");
+            int prototypeId = thePrototypeManager->GetPrototypeId(prototypeName);
+            int objId = theObjects->CreateNewObject(prototypeId, "Player1", -1, -1);
+
+            ai::thePlayer = dynamic_cast<ai::Player*>(ai::theObjects->GetEntityByObjId(objId));
+            ai::thePlayer->AddMoney(1100); // Assuming method based on vtable offset 0xc0
+        }
+
+        // Set player name properly
+        CStr playerName(ai::thePlayer->GetName());
+        CStr tempName("random name which cannot be used !$%");
+
+        theObjects->SetObjName(ai::thePlayer->GetId(), tempName);
+        theObjects->SetObjName(ai::thePlayer->GetId(), playerName);
+
+        // Handle player vehicle naming
+        ai::Vehicle* vehicle = ai::thePlayer->GetVehicle();
+        if (vehicle)
+        {
+            CStr vehicleName(vehicle->GetName());
+            CStr tempVehicleName("random name which cannot be used !$%");
+
+            theObjects->SetObjName(vehicle->GetId(), tempVehicleName);
+            theObjects->SetObjName(vehicle->GetId(), vehicleName);
+        }
+
+        // Register player as global
+        m3d::g_Kernel->UnRegisterGlobal("g_Player");
+        m3d::g_Kernel->RegisterGlobal(ai::thePlayer, "g_Player");
+
+        // Post-load processing for all objects
+        for (auto* obj : *theObjects)
+        {
+            obj->PostLoad();
+
+            // Send immediate messages based on object flags
+            if (obj->GetFlags() & 2)
+            { // Some specific flag
+                M3D_APP->ImmediateMessage(66542, (int)obj, 0, 0, 0, {}, {});
+            }
+
+            if (obj->GetFlags() & 8)
+            {
+                M3D_APP->ImmediateMessage(66542, (int)obj, 0, 0, 0, {}, {});
+            }
+
+        }
+
+        // Create visual parts for objects that need them
+        for (auto* obj : *theObjects)
+        {
+            if ((obj->GetFlags() & 2) == 0)
+            {
+                obj->CreateVisualPart();
+            }
+        }
+
+        // Clean up passage data
+        if (ai::thePassageData)
+        {
+            thePassageData->SetPositionToPlayerVehicle();
+            delete ai::thePassageData;
+            ai::thePassageData = nullptr;
+        }
+
+        // Send completion message
+        M3D_APP->EnqueueMessage(66544, 0, 0, 0, 0, {}, {});
+
+        // Load last ID
+        int lastId = 0;
+        m3d::SafeIntAttrib(lastId, rootNode, "LastId");
+        ai::pServer->SetLastId(lastId);
+
+        return 1;
 	}
 
 	void DynamicScene::StepScene(float elapsedTime)
@@ -299,11 +466,21 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	bool DynamicScene::LoadSceneFromFile(char const*, retruxx::vector<m3d::Class*> const&)
+	bool DynamicScene::LoadSceneFromFile(char const* fileName, retruxx::vector<m3d::Class*> const& allowedClasses)
 	{
-        // TODO: implement DynamicScene::LoadSceneFromFile
-        // throw std::logic_error("Not implemented");
-        return true;
+        CStr err;
+        if (ref_ptr xmlFile = m3d::ReadXmlFile(fileName, &err))
+        {
+            ref_ptr xmlNode = xmlFile->CreateNode();
+            xmlFile->GetFirstChild(xmlNode, "DynamicScene");
+
+            M3D_LOG_INFO("\t\t Scene loading begin");
+            LoadSceneFromXml(xmlFile, xmlNode, allowedClasses);
+            M3D_LOG_INFO("\t\t Scene loading end");
+            return true;
+        }
+        M3D_LOG_ERR("Error: No DynamicScene file: " + CStr(fileName));
+        return false;
 	}
 
 	int DynamicScene::ReadNewObjectFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*,

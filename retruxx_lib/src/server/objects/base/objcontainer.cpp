@@ -645,7 +645,7 @@ namespace ai
 
     bool ObjContainer::empty() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_allObjects.m_size == 0;
     }
 
     Obj* ObjContainer::GetEntityByObjId(int objId)

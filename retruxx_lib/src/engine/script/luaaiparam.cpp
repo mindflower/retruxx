@@ -1,6 +1,86 @@
 #include "script/luaaiparam.h"
 
+#include <cassert>
 #include <stdexcept>
+
+#include "script/scriptserver.h"
+
+extern "C"
+{
+#include "lauxlib.h"
+}
+
+void SetParams(m3d::AIParam* p, lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_AIParamDestructor(lua_State* L)
+{
+    auto* aiParam = (m3d::AIParam*)lua_touserdata(L, 1);
+    aiParam->~AIParam();
+    return 1;
+}
+
+int ext_AIParamGet(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_AIParamSet(lua_State* L)
+{
+    auto* param = (m3d::AIParam*)lua_touserdata(L, 1);
+    auto str = luaL_checklstring(L, 2, 0);
+    if (!strcmp(str, "AsFloat")
+        || !strcmp(str, "AsID")
+        || !strcmp(str, "AsInt")
+        || !strcmp(str, "AsString")
+        || !strcmp(str, "AsVector")
+        || !strcmp(str, "AsRange")
+        || !strcmp(str, "AsNumList"))
+    {
+        SetParams(param, L);
+        return 1;
+    }
+    else
+    {
+        lua_pushnumber(L, 0.0);
+        return 1;
+    }
+}
+
+int ext_AIParamEq(lua_State* L)
+{
+    assert(ext_checkTag(L, 1, tag_luaAIParam) && ext_checkTag(L, 2, tag_luaAIParam));
+    
+    auto* lhs = (m3d::AIParam*)lua_touserdata(L, 1);
+    auto* rhs = (m3d::AIParam*)lua_touserdata(L, 2);
+    auto res = *lhs == *rhs;
+    lua_pushboolean(L, res);
+    return 1;
+}
+
+int ext_AIParamLt(lua_State* L)
+{
+    assert(ext_checkTag(L, 1, tag_luaAIParam) && ext_checkTag(L, 2, tag_luaAIParam));
+
+    auto* lhs = (m3d::AIParam*)lua_touserdata(L, 1);
+    auto* rhs = (m3d::AIParam*)lua_touserdata(L, 2);
+    auto res = *lhs < *rhs;
+    lua_pushboolean(L, res);
+    return 1;
+}
+
+int ext_AIParamLe(lua_State* L)
+{
+    assert(ext_checkTag(L, 1, tag_luaAIParam) && ext_checkTag(L, 2, tag_luaAIParam));
+
+    auto* lhs = (m3d::AIParam*)lua_touserdata(L, 1);
+    auto* rhs = (m3d::AIParam*)lua_touserdata(L, 2);
+    auto res = *lhs > *rhs;
+    lua_pushboolean(L, res);
+    return 1;
+}
 
 m3d::AIParam* ext_createAIParam(lua_State* L)
 {

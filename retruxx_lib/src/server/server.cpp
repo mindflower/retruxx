@@ -319,7 +319,7 @@ namespace ai
     PrototypeInfo* CServer::CreatePrototypeInfoByClassName(CStr const& className)
     {
         // TODO: implement CServer::CreatePrototypeInfoByClassName
-        if (className != "Trigger")
+        if (className != "Trigger" && className != "Player")
         {
             return nullptr;
         }

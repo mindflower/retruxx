@@ -132,6 +132,8 @@ namespace ai
 
     PlayerPrototypeInfo::PlayerPrototypeInfo()
     {
+        this->m_skinNumber = 0;
+        this->m_cfgNumber = 0;
         m3d::pClient->GetWorld().GetGraph().SetTransparencyTest(new TestPlayerVisibility);
     }
 

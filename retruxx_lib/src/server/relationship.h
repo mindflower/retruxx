@@ -72,4 +72,6 @@ namespace ai
         float* m_pTolerance = nullptr;
         float* m_pDefaultTolerance = nullptr;
     };
+
+    inline Relationship* theRelationship = nullptr;
 }
