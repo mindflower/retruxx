@@ -47,7 +47,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, InputLine)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, executeCommand)
 {
-    throw std::logic_error("Not implemented");
+    auto console = dynamic_cast<m3d::IConsole*>(context->asObject(0, "IConsole"));
+    auto cmd = context->asString(1);
+    console->executeCommand(cmd);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, Toggle)

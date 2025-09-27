@@ -188,9 +188,115 @@ namespace
         }
     }
 
-    int _callNativeGlobalFunction(lua_State *)
+    int _callNativeGlobalFunction(lua_State* L)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: check this
+        auto* func = *(int(__thiscall**)(m3d::sArgStack*))lua_touserdata(L, 1);
+        m3d::sArgStack stack;
+        for (int i = 2; i <= lua_gettop(L); ++i)
+        {
+            switch (lua_type(L, i))
+            {
+            case 0:
+                stack.newIn()->SetB(false);
+                break;
+
+            case 1: // boolean
+                stack.newIn()->SetB(lua_toboolean(L, i) != 0);
+                break;
+
+            case 3: // number
+                stack.newIn()->SetF(static_cast<float>(lua_tonumber(L, i)));
+                break;
+
+            case 4: // string
+                stack.newIn()->SetS(lua_tostring(L, i));
+                break;
+
+            case 5:
+                if (ext_getTag(L, i) == tag_instance)
+                {
+                    lua_rawgeti(L, i, 0);
+                    auto obj = (m3d::Object*)lua_touserdata(L, -1);
+                    lua_settop(L, -2);
+                    stack.newIn()->SetO(obj);
+                }
+
+            case 2:
+            case 7: // userdata
+                if (ext_getTag(L, i) == tag_luaVector)
+                {
+                    auto vec = reinterpret_cast<CVector*>(lua_touserdata(L, i));
+                    stack.newIn()->SetV(*vec);
+                }
+                else if (ext_getTag(L, i) == tag_luaQuaternion)
+                {
+                    auto quat = reinterpret_cast<Quaternion*>(lua_touserdata(L, i));
+                    stack.newIn()->SetQ(*quat);
+                }
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        if (func(&stack))
+        {
+            for (int i = 0; i < stack.getNumOutArgs(); ++i)
+            {
+                auto out = stack.getOut(i);
+
+                switch (out->GetType())
+                {
+                case m3d::sArg::ARGTYPE_INT:
+                    lua_pushnumber(L, out->GetI());
+                    break;
+                case m3d::sArg::ARGTYPE_FLOAT:
+                    lua_pushnumber(L, out->GetF());
+                    break;
+                case m3d::sArg::ARGTYPE_BOOL:
+                    lua_pushboolean(L, out->GetB() ? 1 : 0);
+                    break;
+                case m3d::sArg::ARGTYPE_STRING:
+                    lua_pushstring(L, out->GetS());
+                    break;
+                case m3d::sArg::ARGTYPE_VECTOR:
+                {
+                    auto vec = ext_createVector(L);
+                    *vec = out->GetV();
+                    break;
+                }
+                case m3d::sArg::ARGTYPE_QUATERNION:
+                {
+                    auto quat = ext_createQuaternion(L);
+                    *quat = out->GetQ();
+                    break;
+                }
+                case m3d::sArg::ARGTYPE_OBJECT:
+                {
+                    auto obj = out->GetO();
+                    if (obj)
+                    {
+                        lua_rawgeti(L, -10000, m3d::ScriptServer::_getScriptObject(obj));
+                    }
+                    else
+                    {
+                        lua_pushnil(L);
+                    }
+                    break;
+                }
+                default:
+                    lua_pushnil(L);
+                    break;
+                }
+            }
+            return stack.getNumOutArgs();
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     void _addExports(m3d::Class* pClass)

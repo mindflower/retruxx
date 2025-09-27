@@ -1217,6 +1217,15 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         m_objectCollection.AddObject(entityByObjId);
         return 1;
     }
+    case 64:
+    {
+        // TODO: implement m_weaponGroupManager->GameDataUpdate
+        //throw std::logic_error("Not implemented");
+        return 1;
+        m_weaponGroupManager->GameDataUpdate(data, guiEventId);
+        //auto event = (m3d::Event*)data;
+        return 1;
+    }
     case 84:
     {
         OnBeforeStartLevel();

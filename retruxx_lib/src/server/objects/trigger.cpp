@@ -250,7 +250,8 @@ namespace ai
                 if (entity)
                 {
                     // TODO: check this
-                    theProcessManager->PostMessageA(2, entity->GetId(), GetId(), 0.0, {}, {}, 1);
+                    m3d::AIParam param(eventInfo.m_eventId);
+                    theProcessManager->PostMessageA(GE_SUBSCRIBE, entity->GetId(), GetId(), 0.0, param, {}, 1);
                 }
                 else
                 {
@@ -589,9 +590,21 @@ namespace ai
         }
     }
 
-    void Trigger::_OnDefaultEvent(Event const&)
+    void Trigger::_OnDefaultEvent(Event const& evn)
     {
-        throw std::logic_error("Not implemented");
+        if (evn.m_param1.GetType())
+        {
+            m_ObjIDs.push_back(evn.m_param1.GetAsID());
+        }
+        if (evn.m_param1.GetType())
+        {
+            m_ObjIDs.push_back(evn.m_param2.GetAsID());
+        }
+        if (this->m_state == TS_EVENTWAIT)
+        {
+            this->m_state = TS_ACTION;
+            ai::Trigger::_StoreCallEvent(evn);
+        }
     }
 
     void Trigger::_OnCinemaMessage(Event const&)

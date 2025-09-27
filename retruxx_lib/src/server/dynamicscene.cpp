@@ -40,6 +40,7 @@
 #include "objects/dynamicquestdestroy.h"
 #include "objects/vehicle.h"
 #include "objects/base/globalproperties.h"
+#include "objects/base/jointedobj.h"
 #include "objects/base/prototypemanager.h"
 
 namespace ai
@@ -84,19 +85,21 @@ namespace ai
 
 	void DynamicScene::PurgeBodies()
 	{
-        if (thePlayer)
-        {
-            auto vehicle = thePlayer->GetVehicle();
-            if (!vehicle
-                || ((vehicle->GetFlags() & 8) != 0)
-                || (vehicle->GetFlags() & 2) != 0
-                || vehicle->GetParentRepository())
-            {
-                M3D_APP->ImmediateMessage(66544, 0, 0, 0, 0, {}, {});
-                thePlayer->CauseEvent(GE_PLAYER_VEHICLE_CHANGED, 0.0, {}, {});
-            }
-        }
-        theObjects->Purge();
+        // TODO: implement DynamicScene::PurgeBodies
+        //throw retruxx::logic_error("Not implemented");
+        //if (thePlayer)
+        //{
+        //    auto vehicle = thePlayer->GetVehicle();
+        //    if (!vehicle
+        //        || ((vehicle->GetFlags() & 8) != 0)
+        //        || (vehicle->GetFlags() & 2) != 0
+        //        || vehicle->GetParentRepository())
+        //    {
+        //        M3D_APP->ImmediateMessage(66544, 0, 0, 0, 0, {}, {});
+        //        thePlayer->CauseEvent(GE_PLAYER_VEHICLE_CHANGED, 0.0, {}, {});
+        //    }
+        //}
+        //theObjects->Purge();
 	}
 
 	CStr const& DynamicScene::GetBoEffectTypeName(unsigned short)
@@ -230,7 +233,7 @@ namespace ai
             int objId = theObjects->CreateNewObject(prototypeId, "Player1", -1, -1);
 
             ai::thePlayer = dynamic_cast<ai::Player*>(ai::theObjects->GetEntityByObjId(objId));
-            ai::thePlayer->AddMoney(1100); // Assuming method based on vtable offset 0xc0
+            thePlayer->SetBelong(1100);
         }
 
         // Set player name properly
@@ -483,10 +486,60 @@ namespace ai
         return false;
 	}
 
-	int DynamicScene::ReadNewObjectFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*,
-		retruxx::vector<m3d::Class*> const&)
+	int DynamicScene::ReadNewObjectFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode,
+		retruxx::vector<m3d::Class*> const& allowedClasses)
 	{
-		throw retruxx::logic_error("Not implemented");
+        CStr name = xmlNode->GetAttribute("Name");
+        CStr prototypeName = xmlNode->GetAttribute("Prototype");
+
+        auto prototypeId = thePrototypeManager->GetPrototypeId(prototypeName);
+        if (prototypeId == -1)
+        {
+            M3D_LOG_ERR("Error: unknown prototype in DynamicScene.xml: '" + prototypeName + "'");
+            return -1;
+        }
+
+        if (!allowedClasses.empty())
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
+
+        int objId = -1;
+        m3d::SafeIntAttrib(objId, xmlNode, "ObjectId");
+
+        if (theObjects->GetObjIdByObjName(name) != -1)
+        {
+            M3D_LOG_ERR("Attempting to load object " + name + " of prototype " + prototypeName + ", but an object with this name already exists!");
+        }
+
+        auto entityForLoadId = theObjects->CreateEntityForLoad(prototypeId, name.c_str(), -1, objId);
+        if (entityForLoadId == -1)
+        {
+            return -1;
+        }
+
+        auto* obj = theObjects->GetEntityByObjId(entityForLoadId);
+        if (!obj)
+        {
+            M3D_LOG_ERR("Error: object with id " + CStr(entityForLoadId) + " was created but it is not in the ObjContainer");
+            return -1;
+        }
+
+        obj->LoadFromXML(xmlFile, xmlNode);
+        if (obj->GetClass() == RT_CLASS_LOCAL(Player))
+        {
+            if (ai::thePlayer)
+                obj->Remove();
+            else
+                ai::thePlayer = (Player*)obj;
+        }
+
+        if (obj->IsKindOf(&ai::JointedObj::m_classJointedObj) && ai::theObjects->m_SaveType != ObjContainer::SAVE_FULL)
+        {
+            M3D_CRITICAL_ERROR("invalid object in DynamicScene : " + obj->GetDebugDescription());
+        }
+
+        return obj->GetId();
 	}
 
 	short DynamicScene::GetExplosionType(CStr const&)

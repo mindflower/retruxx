@@ -3,15 +3,14 @@
 
 namespace ai
 {
-    class Sphere : public Geom
+    class Sphere : public ai::Geom
     {
     public:
-        static Sphere * CreateObject(dxSpace *,float,void (__fastcall*)(dxGeom *));
-        void SetRadius(float);
-        float GetRadius() const ;
+        static ai::Sphere* __fastcall CreateObject(dxSpace* space, float radius, void (*movedCallback)(dxGeom*));
+        float GetRadius() const;
+        void SetRadius(float radius);
 
     protected:
-        Sphere(dxGeom * const,void (__fastcall*)(dxGeom *));
-
-    };
+        Sphere(dxGeom* const geomId, void (*movedCalback)(dxGeom*));
+    }; /* size: 0x0018 */
 }

@@ -393,7 +393,7 @@ namespace ai
 
     Obj* ObjContainer::iterator::operator*() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return (*this->m_pRecords)[this->m_nodeId].m_value;
     }
 
     Obj* ObjContainer::GetEntityByObjName(CStr const& name)
@@ -604,11 +604,11 @@ namespace ai
         if (objId >= 0)
         {
             auto* obj = m_allObjects.GetObjById(objId);
-            if (obj && obj->GetName() != name)
+            if (obj && obj->m_name != name)
             {
                 m_nameToIdMap.erase(obj->GetName());
                 m_nameToIdMap[name] = objId;
-                obj->SetName(name);
+                obj->m_name = name;
             }
         }
     }
@@ -721,7 +721,7 @@ namespace ai
 
     ObjContainer::iterator ObjContainer::begin()
     {
-        throw retruxx::logic_error("Not implemented");
+        return ObjContainer::iterator(&m_allObjects.m_records, m_allObjects.m_firstNodeId);
     }
 
     ObjContainer::const_iterator ObjContainer::begin() const
@@ -852,7 +852,7 @@ namespace ai
 
     ObjContainer::iterator ObjContainer::end()
     {
-        throw retruxx::logic_error("Not implemented");
+        return iterator(&m_allObjects.m_records, -1);
     }
 
     void ObjContainer::LinkGeomsToCollisionCells()

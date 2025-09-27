@@ -3,8 +3,13 @@
 #include <stdexcept>
 #include <client.h>
 
+#include "vehicle.h"
 #include "world.h"
 #include "core/ini.h"
+#include "server/infocone.h"
+#include "base/objcontainer.h"
+#include "base/prototypemanager.h"
+#include "server/event.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Player, GetMoney)
 {
@@ -127,7 +132,7 @@ namespace ai
 
     CStr const& PlayerPrototypeInfo::GetModelName() const
     {
-        throw std::logic_error("Not implemented");
+        return m_modelName;
     }
 
     PlayerPrototypeInfo::PlayerPrototypeInfo()
@@ -139,17 +144,17 @@ namespace ai
 
     ai::Obj* PlayerPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        return new Player(*this);
     }
 
     unsigned PlayerPrototypeInfo::GetSkinNumber() const
     {
-        throw std::logic_error("Not implemented");
+        return m_skinNumber;
     }
 
     unsigned PlayerPrototypeInfo::GetCfgNumber() const
     {
-        throw std::logic_error("Not implemented");
+        return m_cfgNumber;
     }
 
     bool PlayerPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -183,7 +188,9 @@ namespace ai
 
     void Player::Update(float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement Player::Update
+        //throw retruxx::logic_error("Not implemented");
+        //throw std::logic_error("Not implemented");
     }
 
     retruxx::vector<CStr> const& Player::GetQuestItemPrototypeNames() const
@@ -226,19 +233,83 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    Player::Player(PlayerPrototypeInfo const&)
+    Player::Player(PlayerPrototypeInfo const& prototypeInfo) :
+        Obj(prototypeInfo),
+        m_money{ 0, 0 },
+        m_timeOfNoBattle{ 0.0, 0.0, 7.0, 1.0 }
     {
-        throw std::logic_error("Not implemented");
+        m_radioManager = 0;
+        this->m_vehicleObjId = -1;
+        this->m_playerFightState = NUM_FIGHT_STATES;
+        this->m_prevPlayerFightState = NUM_FIGHT_STATES;
+        m_lastSaveDir = "saves\\__tmp__save\\";
+
+        m_money.m_AfterValueChange = new ai::MemberFunctionOneArg<ai::Player, int, void>(*this, &Player::_OnMoneyValueAfterChange);
+        m_infoObjId = -1;
+
+        m_infoCone = new InfoCone;
+        this->m_timeInfoObjTimeout = 0.0;
+        this->m_modelName = prototypeInfo.GetModelName();
+        this->m_skinNumber = prototypeInfo.GetSkinNumber();
+        this->m_cfgNumber = prototypeInfo.GetCfgNumber();
+        this->m_huntQuestIsTaken = 0;
+        this->m_curNumForVehicleWithoutName = 0;
     }
 
     Vehicle* Player::GetVehicle() const
     {
-        throw std::logic_error("Not implemented");
+        auto* vehicle = dynamic_cast<Vehicle*>(theObjects->GetEntityByObjId(m_vehicleObjId));
+        if (vehicle)
+        {
+            if ((vehicle->GetFlags() & 8) != 0 || (vehicle->GetFlags() & 2) != 0 || vehicle->GetParentRepository())
+                return nullptr;
+        }
+        return vehicle;
     }
 
-    int Player::OnEvent(Event const&)
+    int Player::OnEvent(Event const& evn)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::Obj::OnEvent(evn);
+        switch (evn.m_eventId)
+        {
+        case GE_OBJECT_DIE:
+            ai::Player::_OnObjectDie(evn);
+            result = 1;
+            break;
+        case GE_UNDER_ATTACK:
+            if (this->m_playerFightState >= FIGHT_BATTLE)
+            {
+                result = 1;
+                break;
+            }
+            this->m_playerFightState = FIGHT_BATTLE;
+            result = 1;
+            break;
+        case GE_NOTICE_ENEMY:
+            result = 1;
+            if (this->m_playerFightState < FIGHT_ALARM)
+                this->m_playerFightState = FIGHT_ALARM;
+            break;
+        case GE_DYNAMIC_QUEST_TAKEN:
+            ai::Player::_OnDynamicQuestTaken(evn);
+            result = 1;
+            break;
+        case GE_DYNAMIC_QUEST_COMPLETE:
+            ai::Player::_OnDynamicQuestComplete(evn);
+            result = 1;
+            break;
+        case GE_DYNAMIC_QUEST_FORGOTTEN:
+            ai::Player::_OnDynamicQuestForgotten(evn);
+            result = 1;
+            break;
+        case GE_DYNAMIC_QUEST_FAILED:
+            ai::Player::_OnDynamicQuestFailed(evn);
+            result = 1;
+            break;
+        default:
+            return result;
+        }
+        return result;
     }
 
     void Player::AddMoney(int)
@@ -266,9 +337,11 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Player::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Player::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        //ai::Obj::LoadFromXML(xmlFile, xmlNode);
+        // TODO: implement Player::LoadFromXML
+        //throw std::logic_error("Not implemented");
     }
 
     float Player::GetMaxHealth() const
@@ -296,9 +369,11 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Player::AddChild(Obj*)
+    void Player::AddChild(Obj* obj)
     {
-        throw std::logic_error("Not implemented");
+        //Obj::AddChild(obj);
+        // TODO: implement Player::AddChild
+        //throw std::logic_error("Not implemented");
     }
 
     float Player::GetMaxFuel() const
@@ -356,7 +431,7 @@ namespace ai
 
     m3d::Class* Player::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Player);
     }
 
     InfoCone const& Player::GetInfoCone() const
@@ -456,7 +531,10 @@ namespace ai
 
     void Player::_InternalPostLoad()
     {
-        throw std::logic_error("Not implemented");
+        auto protoId = thePrototypeManager->GetPrototypeId("radioManager");
+        auto radioManagerId = theObjects->CreateNewObject(protoId, "", this->GetId(), -1);
+        auto radioManager = theObjects->GetEntityByObjId(radioManagerId);
+        AddChild(radioManager);
     }
 
     void Player::RegisterProperty(char const*, int, eGObjPropertySaveStatus)

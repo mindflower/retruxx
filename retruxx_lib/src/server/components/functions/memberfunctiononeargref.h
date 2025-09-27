@@ -22,7 +22,12 @@ namespace ai
 
         const FuncPtrOneArgRef<T1, T2>& operator=(BaseFunc* pNewFunc)
         {
-            throw std::runtime_error("not implemented");
+            assert(m_pFunc == 0);
+            if (pNewFunc)
+            {
+                m_pFunc = pNewFunc;
+            }
+            return *this;
         }
 
     }; /* size: 0x0008 */
@@ -45,7 +50,8 @@ namespace ai
 
         MemberFunctionOneArgRef(TClass& t, RetType(TClass::*func)(T1&))
         {
-            throw std::runtime_error("not implemented");
+            m_pT = &t;
+            m_func = func;
         }
 
         virtual RetType Execute(T1& arg) override /* 0x04 */

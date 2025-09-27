@@ -19,7 +19,7 @@ namespace m3d
 
     unsigned sArgStack::getNumOutArgs() const
     {
-        throw std::logic_error("Not implemented");
+        return m_numOutArgs;
     }
 
     sArg* sArgStack::popOut()
@@ -39,6 +39,11 @@ namespace m3d
     sArg* sArgStack::newOut()
     {
         return &m_OutArgs[m_numOutArgs++];
+    }
+
+    m3d::sArg* sArgStack::getOut(unsigned int i)
+    {
+        return &m_OutArgs[i];
     }
 
     sArg* sArgStack::newIn()

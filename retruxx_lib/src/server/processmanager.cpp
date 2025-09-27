@@ -135,9 +135,23 @@ namespace ai
         }
     }
 
-    void ProcessManager::PostMessageA(int, int, int, float, m3d::AIParam, m3d::AIParam, int)
+    void ProcessManager::PostMessageA(int eventId, int recipientObjId, int senderObjId, float timeOut, m3d::AIParam param1, m3d::AIParam param2, int framesToPass)
     {
-        throw std::logic_error("Not implemented");
+        if (recipientObjId == -1)
+        {
+            return;
+        }
+        ai::Event e;
+        e.m_eventId = static_cast<eGameEvent>(eventId);
+        e.m_senderObjId = senderObjId;
+        e.m_recipientObjId = recipientObjId;
+        e.m_timeOut = timeOut;
+        e.m_framesToPass = framesToPass;
+        e.m_param1 = param1;
+        e.m_param2 = param2;
+        e.m_timeStamp = M3D_KERNEL->GetTimer().GetCurTime() * 0.001;
+        e.m_debugNum = ++m_eventDebugNum;
+        m_eventQueue.push_back(std::move(e));
     }
 
     void ProcessManager::_RegisterEvents()

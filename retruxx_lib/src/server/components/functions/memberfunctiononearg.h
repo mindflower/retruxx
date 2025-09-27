@@ -45,7 +45,8 @@ namespace ai
 
         MemberFunctionOneArg(TClass& t, RetType(TClass::*func)(T1))
         {
-            throw std::runtime_error("not implemented");
+            m_pT = &t;
+            m_func = func;
         }
 
         virtual RetType Execute(T1 arg) override /* 0x04 */

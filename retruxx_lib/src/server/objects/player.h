@@ -31,6 +31,7 @@ namespace ai
 
     class Player : public Obj
     {
+        friend class PlayerPrototypeInfo;
     protected:
         virtual ~Player() override /* 0x00 */;
 
@@ -127,7 +128,7 @@ namespace ai
 
     private:
         void _OnMoneyValueAfterChange(int oldMoneyValue);
-        /* 0x00c0 */ ai::NumericBoundedBelow<int> m_money{0, 0};
+        /* 0x00c0 */ ai::NumericBoundedBelow<int> m_money;
         ///* 0x00c0 */ char Padding_24[120];
         /* 0x0138 */ int m_vehicleObjId;
         /* 0x013c */ ai::RadioManager* m_radioManager;
@@ -137,7 +138,7 @@ namespace ai
         /* 0x0158 */ float m_timeInfoObjTimeout;
         /* 0x015c */ ai::Player::PlayerFightState m_playerFightState;
         /* 0x0160 */ ai::Player::PlayerFightState m_prevPlayerFightState;
-        /* 0x0164 */ ai::NumericInRangeRegenerating<float> m_timeOfNoBattle{0.0, 0.0, 7.0, 1.0};
+        /* 0x0164 */ ai::NumericInRangeRegenerating<float> m_timeOfNoBattle;
         /* 0x023c */ CStr m_lastSaveDir;
         /* 0x0248 */ CStr m_modelName;
         /* 0x0254 */ unsigned int m_skinNumber;

@@ -628,9 +628,17 @@ void CMiracle3d::UpdateCinematicCameraRotation()
     throw std::logic_error("Not implemented");
 }
 
-void CMiracle3d::SetCurHackedMusicType(HackedMusicType)
+void CMiracle3d::SetCurHackedMusicType(HackedMusicType musicType)
 {
-    throw std::logic_error("Not implemented");
+    if (m_hackedMusicType != musicType)
+    {
+        m_bMustStartNewMusic = 1;
+        m_hackedMusicType = musicType;
+        if (musicType == HACKMUSIC_GAME)
+        {
+            m_blockMusicManager->Reset();
+        }
+    }
 }
 
 HackedMusicType CMiracle3d::GetCurHackedMusicType() const

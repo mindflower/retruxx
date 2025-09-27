@@ -204,9 +204,9 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    void CServer::SetLastId(int)
+    void CServer::SetLastId(int id)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_lastId = id;
     }
 
     void CServer::Load(StartupMode mode, m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode, bool bContiniousMap, ObjContainer::eSAVE_TYPES saveType)

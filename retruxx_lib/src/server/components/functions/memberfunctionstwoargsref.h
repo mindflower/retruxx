@@ -22,7 +22,12 @@ namespace ai
 
         const ai::FuncPtrTwoArgsRef<T1, T2, RetType>& operator=(BaseFunc* pNewFunc)
         {
-            throw std::runtime_error("not implemented");
+            assert(m_pFunc == 0);
+            if (pNewFunc)
+            {
+                m_pFunc = pNewFunc;
+            }
+            return *this;
         }
     }; /* size: 0x0008 */
 
@@ -44,7 +49,8 @@ namespace ai
 
         MemberFunctionTwoArgsRef(TClass& t, bool (TClass::*func)(const T1&, T2&))
         {
-            throw std::runtime_error("not implemented");
+            this->m_pT = &t;
+            this->m_func = func;
         }
 
         virtual bool Execute(const T1& arg1, T2& arg2) override /* 0x04 */

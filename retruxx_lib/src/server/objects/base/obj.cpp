@@ -383,7 +383,7 @@ namespace ai
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00602610, Obj::GetFlags)
     unsigned Obj::GetFlags() const
     {
-        throw std::logic_error("Not implemented");
+        return m_flags;
     }
 
     bool Obj::bIsVisible() const
@@ -1100,12 +1100,8 @@ namespace ai
 
     void Obj::OnSubscribe(Event const& evn)
     {
-        if (evn.m_param1.GetType() != m3d::AIPARAM_ID)
-        {
-            SYS_ERROR("evn.m_param1.GetType() == m3d::AIPARAM_ID");
-        }
-
-        Subscribe(static_cast<eGameEvent>(evn.m_senderObjId), evn.m_param1.GetAsID());
+        M3D_ASSERT(evn.m_param1.GetType() == m3d::AIPARAM_ID);
+        Subscribe(static_cast<eGameEvent>(evn.m_param1.GetAsID()), evn.m_senderObjId);
     }
 
     int Obj::_GetIndexByEventId(eGameEvent eventId) const

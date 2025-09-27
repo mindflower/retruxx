@@ -1341,7 +1341,9 @@ namespace m3d
 
     bool Application::StartPlayingMusic(char const*, bool, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement Application::StartPlayingMusic
+        //throw retruxx::logic_error("Not implemented");
+        return true;
     }
 
     DataServer& Application::GetProjectorsServer()
