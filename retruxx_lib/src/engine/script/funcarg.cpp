@@ -34,7 +34,7 @@ namespace m3d
 
     Object* sArg::GetO() const
     {
-        throw std::logic_error("Not implemented");
+        return m_o;
     }
 
     int sArg::GetI() const

@@ -240,9 +240,17 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void QuestStateManager::Update(float)
+    void QuestStateManager::Update(float elapsedTime)
     {
-        throw std::logic_error("Not implemented");
+        if (m_UpdateCount > 0x64)
+        {
+            for (auto& state : m_questStates)
+            {
+                state->Update();
+            }
+            m_UpdateCount = 0;
+        }
+        ++m_UpdateCount;
     }
 
     void QuestStateManager::FailQuest(char const*)

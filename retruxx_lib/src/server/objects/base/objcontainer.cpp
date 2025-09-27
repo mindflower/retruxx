@@ -41,7 +41,13 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, size)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetEntityByObjName)
 {
-    throw retruxx::logic_error("Not implemented");
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    CStr objName = context->asString(1);
+
+    auto* objByName = objContainer->GetEntityByObjName(objName);
+    context->pushObject(objByName);
+
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetPrototypeId)
@@ -380,7 +386,9 @@ namespace ai
 
     ObjContainer::iterator& ObjContainer::iterator::operator++()
     {
-        throw retruxx::logic_error("Not implemented");
+        auto result = this;
+        this->m_nodeId = (*this->m_pRecords)[this->m_nodeId].m_nextId;
+        return *result;
     }
 
     Obj* ObjContainer::iterator::operator*() const
@@ -674,7 +682,7 @@ namespace ai
             return -1;
         }
 
-        obj->SetName(name);
+        obj->m_name = name;
         if (parentId == -1)
         {
             obj->SetParentInvalid();
@@ -729,7 +737,7 @@ namespace ai
     void ObjContainer::Update(float elapsedTime, unsigned workTime, bool bCinematic)
     {
         // TODO: generated code
-
+        // TODO: implement ObjContainer::Update
         // Reset debug counters
         PhysicBody::GetCountNodeRelinks()->SetI(0);
         PhysicObj::GetRelinksToCollisionCounter()->SetI(0);
@@ -752,6 +760,8 @@ namespace ai
 
         // Update quest state manager
         theQuestStateManager->Update(elapsedTime);
+
+        return;
 
         // Update game time if not in cinematic mode and game time is not paused
         if (!bCinematic && !m_GameTimePaused)

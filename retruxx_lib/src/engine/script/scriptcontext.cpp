@@ -3,6 +3,8 @@
 
 #include "core/kernel.h"
 #include "core/log.h"
+#include "math/vector.h"
+#include "script/luaaiparam.h"
 #include "script/scriptserver.h"
 
 extern "C"{
@@ -85,9 +87,56 @@ namespace m3d
 		throw std::logic_error("Not implemented");
 	}
 
-	AIParam& LuaContext::asAIParam(int)
+	AIParam& LuaContext::asAIParam(int i)
 	{
-		throw std::logic_error("Not implemented");
+        if (i < 0)
+        {
+            lua_pushstring(this->L, "not enough arguments");
+            lua_error(this->L);
+        }
+
+        auto idx = i + m_stackStart;
+        switch (lua_type(L, idx))
+        {
+        case 3:
+        {
+            auto result = ext_createAIParam(this->L);
+            auto ia = lua_tonumber(this->L, idx);
+            *result = (float)ia;
+            //TODO: dangling pointer?
+            return *result;
+        }
+        case 4:
+        {
+            auto result = ext_createAIParam(this->L);
+            CStr str = lua_tostring(this->L, idx);
+            *result = str;
+            return *result;
+        }
+        case 7:
+        {
+            if (ext_checkTag(L, idx, tag_luaAIParam))
+            {
+                return *(m3d::AIParam*)lua_touserdata(L, idx);
+            }
+            if (ext_checkTag(L, idx, tag_luaVector))
+            {
+                auto* vec = (CVector*)lua_touserdata(L, idx);
+                auto result = ext_createAIParam(this->L);
+                *result = *vec;
+                return *result;
+            }
+        }
+        default:
+        {
+            M3D_LOG_ERR("Invalid argument type.");
+            lua_pushstring(this->L, "Invalid argument type.");
+            lua_error(this->L);
+            break;
+        }
+        }
+        // TODO: check this
+        return *ext_createAIParam(this->L);
 	}
 
 	void LuaContext::pushBool(bool)

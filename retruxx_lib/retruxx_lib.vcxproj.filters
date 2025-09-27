@@ -3993,6 +3993,9 @@
     <ClInclude Include="src\server\objects\affixgenerator.h">
       <Filter>server\objects</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\script\luaaiparam.h">
+      <Filter>include\script</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

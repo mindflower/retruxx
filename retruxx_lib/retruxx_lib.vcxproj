@@ -1139,6 +1139,7 @@
     <ClInclude Include="src\include\scene\servers\serverstaticmodels.h" />
     <ClInclude Include="src\include\script\funcarg.h" />
     <ClInclude Include="src\include\script\funcstack.h" />
+    <ClInclude Include="src\include\script\luaaiparam.h" />
     <ClInclude Include="src\include\script\luaquaternion.h" />
     <ClInclude Include="src\include\script\luavector.h" />
     <ClInclude Include="src\include\script\lua\lapi.h" />

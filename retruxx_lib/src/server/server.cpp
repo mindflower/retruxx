@@ -186,7 +186,7 @@ namespace ai
 
     m3d::Profiler* CServer::GetCollideProfiler()
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_collideProfiler;
     }
 
     m3d::Profiler* CServer::GetObjectsUpdateProfiler()
@@ -683,7 +683,7 @@ namespace ai
                 if (!entity)
                 {
                     auto id = ai::thePrototypeManager->GetPrototypeId("trigger");
-                    auto objId = ai::theObjects->CreateNewObject(id, "trigger", -1, -1);
+                    auto objId = ai::theObjects->CreateNewObject(id, name.c_str(), -1, -1);
                     entity = ai::theObjects->GetEntityByObjId(objId);
                 }
 

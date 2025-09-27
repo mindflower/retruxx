@@ -529,7 +529,7 @@ namespace m3d
                 ev.m_ushortEv[0] = key;
                 if (!key && param2 == 0x9C)
                 {
-                    throw retruxx::logic_error("Not implemented");
+                    key |= 4;
                 }
                 ev.m_byteEv[3] = param2;
                 auto oldHead = m_eventsQueueHead;

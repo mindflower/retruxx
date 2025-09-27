@@ -65,7 +65,9 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, Activate)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, Deactivate)
 {
-    throw std::logic_error("Not implemented");
+    auto* trigger = (ai::Trigger*)context->asObject(0, "Trigger");
+    trigger->Deactivate();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, GetCallEvent)
@@ -90,7 +92,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, Var)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, SetVar)
 {
-    throw std::logic_error("Not implemented");
+    auto* trigger = (ai::Trigger *)context->asObject(0, "Trigger");
+    auto& aiParam = context->asAIParam(2);
+    auto* str = context->asString(1);
+    trigger->SetVar(str, aiParam);
+    return 1;
 }
 
 namespace ai
@@ -128,7 +134,21 @@ namespace ai
 
     void Trigger::Deactivate()
     {
-        throw std::logic_error("Not implemented");
+        this->m_Count = 0;
+        this->m_state = TS_OFF;
+        for (auto& info : m_eventInfos)
+        {
+            if (info.m_eventId != GE_TIME_PERIOD)
+            {
+                auto* obj = theObjects->GetEntityByObjName(info.m_objName);
+                if (obj)
+                {
+                    theProcessManager->PostMessageA(3, obj->GetId(), GetId(), 0.0, {}, {}, 1);
+                }
+            }
+        }
+
+        CauseEvent(GE_OBJECT_DEACTIVATED, 0.0, {}, {});
     }
 
     m3d::Class* Trigger::GetBaseClass()
@@ -346,9 +366,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Trigger::SetVar(char const*, m3d::AIParam&)
+    void Trigger::SetVar(char const* name, m3d::AIParam& var)
     {
-        throw std::logic_error("Not implemented");
+        m_variables[name] = var;
     }
 
     char const* Trigger::GetCallEvent() const

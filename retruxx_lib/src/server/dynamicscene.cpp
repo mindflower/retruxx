@@ -1,6 +1,7 @@
 #include "dynamicscene.h"
 
 #include <stdexcept>
+#include <ode/collision.h>
 #include <ode/collision_space.h>
 #include <ode/objects.h>
 
@@ -42,6 +43,13 @@ namespace ai
 	namespace
 	{
 		dxJointGroup* contactGroup = nullptr;
+	    int numNearCallbacksLastFrame = 0;
+	}
+
+    void NearCallback(void*, dxGeom*, dxGeom*)
+	{
+        // TODO: implement NearCallback
+        //throw retruxx::logic_error("Not implemented");
 	}
 
 	RT_CLASS_EXPORTS_BEGIN(DynamicScene)
@@ -173,9 +181,19 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void DynamicScene::CollideScene(float)
+	void DynamicScene::CollideScene(float elapsedTime)
 	{
-		throw retruxx::logic_error("Not implemented");
+        if (elapsedTime >= 0.0001)
+        {
+            numNearCallbacksLastFrame = 0;
+            ai::pServer->GetCollideProfiler()->StartCountdown();
+
+            dSpaceCollide(ai::gGlobalSpace, 0, ai::NearCallback);
+            
+            ai::pServer->GetCollideProfiler()->EndCountdown();
+
+            theObjects->PostCollide();
+        }
 	}
 
 	CStr const& DynamicScene::GetShellVehicleEffectName(unsigned short) const
