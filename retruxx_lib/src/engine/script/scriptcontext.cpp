@@ -32,9 +32,29 @@ namespace m3d
 		throw std::logic_error("Not implemented");
 	}
 
-	int LuaContext::asInt(int)
+	int LuaContext::asInt(int i)
 	{
-		throw std::logic_error("Not implemented");
+        // TODO: check this
+        if (i < 0)
+        {
+            lua_pushstring(this->L, "not enough arguments");
+            lua_error(this->L);
+        }
+        auto v3 = i + this->m_stackStart;
+        auto v4 = lua_type(this->L, v3) - 3;
+        L = this->L;
+        if (!v4)
+            return (int)lua_tonumber(L, v3);
+        if (v4 == 1)
+        {
+            auto v7 = lua_tostring(L, v3);
+            return atoi(v7);
+        }
+        else
+        {
+            luaL_checktype(L, v3, 3);
+            return 0;
+        }
 	}
 
 	bool LuaContext::asBool(int)

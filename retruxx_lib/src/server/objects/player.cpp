@@ -43,7 +43,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Player, GetMaxFuel)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Player, GetVehicle)
 {
-    throw std::logic_error("Not implemented");
+    auto* player = (ai::Player*)context->asObject(0, "Player");
+    auto vehicle = player->GetVehicle();
+    context->pushObject(vehicle);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Player, AddItemsToRepository)

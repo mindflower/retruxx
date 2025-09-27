@@ -26,12 +26,18 @@ void ShowCurrentStack()
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, CreateNewObject)
 {
-    throw retruxx::logic_error("Not implemented");
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    auto id = objContainer->CreateNewObject(context->asInt(1), context->asString(2), context->asInt(3), context->asInt(4));
+    context->pushInt(id);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetEntityByObjId)
 {
-    throw retruxx::logic_error("Not implemented");
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    auto* obj = objContainer->GetEntityByObjId(context->asInt(1));
+    context->pushObject(obj);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, size)
@@ -52,7 +58,13 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetEntityByObjName)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetPrototypeId)
 {
-    throw retruxx::logic_error("Not implemented");
+    context->asObject(0, "ObjContainer");
+    CStr protoName = context->asString(1);
+
+    auto res = ai::thePrototypeManager->GetPrototypeId(protoName);
+    context->pushInt(res);
+
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, MessageBox)

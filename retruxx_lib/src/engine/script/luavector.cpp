@@ -104,6 +104,46 @@ void ext_initVector(lua_State* L)
     lua_settable(L, -10001);
 }
 
+int ext_vecDestructor(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecGet(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecSet(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecAdd(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecSub(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecNeg(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecMul(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecCall(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
 CVector* ext_createVector(lua_State* L)
 {
     auto buff = lua_newuserdata(L, sizeof(CVector));
