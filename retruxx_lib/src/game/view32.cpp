@@ -38,10 +38,14 @@
 #include <algorithm>
 #include <game/uimisc/weapongroup.h>
 
+#include "uiwindows/miscwindows/cinemafadepanel.h"
+
 extern "C"
 {
 #include <engine/ode/sources/collision_kernel.h>
 }
+
+#include <server/objects/player.h>
 
 #undef GetFirstChild
 #undef GetNextSibling
@@ -324,7 +328,20 @@ int CMiracle3d::CinematicInit()
         }
     }
 
-    throw std::logic_error("Not implemented");
+    auto* station = GetStation();
+    station->SetCursorShow(false);
+    m_curGameMode.Set(GS_CINEMATIC);
+    m_cinematic->m_playTime = 0;
+    m_cinematic->m_fadeStartTime = m_cinematic->m_playTime;
+    m_cinematic->m_state = m3d::CINEMATIC_ENTER_FADE_OUT;
+
+    auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(19);
+    if (wnd)
+    {
+        auto* cinemaFadePanel = (CinemaFadePanel*)&(*wnd);
+        cinemaFadePanel->AttachToScreenCinematicRelated();
+    }
+    return 1;
 }
 
 void CMiracle3d::PlayHackedMusic(HackedMusicType musicType, bool bForceRestart)
@@ -363,9 +380,218 @@ void CMiracle3d::PlayHackedMusic(HackedMusicType musicType, bool bForceRestart)
     }
 }
 
+namespace
+{
+    bool l_modalsJustClosed = false;
+
+    CinemaFadePanel* GetCinemaFadePanel()
+    {
+        auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(19);
+        auto cinemaFadePanel = (CinemaFadePanel*)&(*wnd);
+        return cinemaFadePanel;
+    }
+}
+
 bool CMiracle3d::CinematicFade()
 {
-    throw std::logic_error("Not implemented");
+    // TODO: generated code
+    int fadeTime = m_cinematic->m_playTime - m_cinematic->m_fadeStartTime;
+    double fadePeriodDouble = m_cinematic->GetFadePeriodForState(m_cinematic->m_state) * 1000.0;
+    int fadePeriod = static_cast<int>(fadePeriodDouble);
+
+    bool result = true;
+
+    // Handle skipped cinematic case
+    if (m_cinematic->m_bWasSkippedInEnterFadeOut)
+    {
+        m3d::CinematicState m_state = m_cinematic->m_state;
+        if (m_state == m3d::CINEMATIC_ENTER_FADE_IN || m_state == m3d::CINEMATIC_EXIT_FADE_OUT)
+        {
+            fadeTime = fadePeriod;
+        }
+    }
+
+    CinemaPanel* cinemaPanel = GetCinemaPanel(); // Assuming this returns CinemaPanel*
+
+    if (fadeTime < fadePeriod)
+    {
+        if (l_modalsJustClosed)
+        {
+            l_modalsJustClosed = 0;
+        }
+        return result;
+    }
+
+    m3d::Cinematic* currentCinematic = m_cinematic;
+
+    switch (currentCinematic->m_state)
+    {
+    case m3d::CINEMATIC_ENTER_FADE_OUT:
+    {
+        // Store GUI state and hide interface
+        m_bGuiWasHiddenBeforeCinematic =
+            M3D_APP->m_pInterfaceManager->IsHiddenByUser();
+
+        ref_ptr wndMainMenu = M3D_APP->m_pInterfaceManager->GetWindow(72);
+
+        // Show interface and close modals if needed
+        if (!wndMainMenu || !M3D_APP || !wndMainMenu->IsChildOf(M3D_APP))
+        {
+            M3D_APP->m_pInterfaceManager->Show(false, true);
+            CloseAllModalWithCancelRet();
+            l_modalsJustClosed = true;
+        }
+
+        // Clear cinema panel if exists
+        if (cinemaPanel)
+        {
+            cinemaPanel->Clear();
+        }
+
+        // Show/hide windows based on cinematic flags
+        if ((m_cinematic->m_curItem.m_flags & 4) == 0)
+        {
+            M3D_APP->m_pInterfaceManager->ShowWindow(18, true, true, false, false, false);
+        }
+
+        // Update cinematic state and post event
+        m_cinematic->m_fadeStartTime = m_cinematic->m_playTime;
+        m_cinematic->m_state = m3d::CINEMATIC_ENTER_FADE_IN;
+        ai::pServer->PostPlayerEvent(static_cast<ai::eGameEvent>(61));
+
+        // Handle fade panel if needed
+        if ((m_cinematic->m_curItem.m_flags & 1) != 0)
+        {
+            M3D_APP->m_pInterfaceManager->ShowWindow(19, true, true, false, false, false);
+
+            CinemaFadePanel* fadePanel = GetCinemaFadePanel();
+            if (fadePanel)
+            {
+                if (m3d::Object::IsDirectChild(fadePanel))
+                {
+                    m3d::Object::MoveChildToFirstPosition(fadePanel);
+                }
+            }
+        }
+
+        // Clean up window reference
+        result = false;
+        break;
+    }
+
+    case m3d::CINEMATIC_ENTER_FADE_IN:
+    {
+        if (currentCinematic->m_bWasSkippedInEnterFadeOut)
+        {
+            currentCinematic->m_fadeStartTime = currentCinematic->m_playTime;
+            m_cinematic->m_state = m3d::CINEMATIC_EXIT_FADE_OUT;
+            result = false;
+        }
+        else
+        {
+            currentCinematic->m_state = m3d::CINEMATIC_IS_PLAYING;
+            M3D_APP->m_pInterfaceManager->ShowWindow(19, false, false, false, false, false);
+            result = true;
+        }
+        break;
+    }
+
+    case m3d::CINEMATIC_EXIT_FADE_OUT:
+    {
+        currentCinematic->Stop();
+
+        // Update engine configuration
+        m3d::g_Kernel->GetEngineCfg().m_FogOfWar.SetI(1, false);
+        ai::pServer->EndCinematic();
+
+        // Handle cinematic skipping or continuation
+        if (m_cinematic->m_bWasSkipped)
+        {
+            ai::pServer->PostPlayerEvent(ai::GE_SKIP_CINEMATIC);
+            while (m_cinematic->SkipCinematic())
+            {
+                // Continue skipping
+            }
+            m_cinematic->m_bWasSkipped = false;
+        }
+        else if (m_cinematic->m_cinematicItems.size() > 0)
+        {
+            if (ai::thePlayer)
+            {
+                CStr flyPathName = m_cinematic->GetNextFlyPathName();
+                m3d::AIParam aiParam(flyPathName);
+                ai::thePlayer->CauseEvent(ai::GE_START_CINEMATIC_FLY, 0.0, aiParam, m3d::AIParam());
+            }
+            else
+            {
+                ai::pServer->PostPlayerEvent(ai::GE_SKIP_CINEMATIC);
+                while (m_cinematic->SkipCinematic())
+                {
+                    // Continue skipping
+                }
+            }
+        }
+        else
+        {
+            ai::pServer->PostPlayerEvent(ai::GE_END_CINEMATIC);
+        }
+
+        // Update cinematic state
+        m_cinematic->m_fadeStartTime = m_cinematic->m_playTime;
+        m_cinematic->m_state = m3d::CINEMATIC_EXIT_FADE_IN;
+
+        // Handle next cinematic or cleanup
+        if (m_cinematic->bMustBeNextCinematic())
+        {
+            if (cinemaPanel)
+            {
+                cinemaPanel->Clear();
+                // Note: The deque tidy operation would need proper context
+            }
+            result = false;
+        }
+        else
+        {
+            if (cinemaPanel)
+            {
+                cinemaPanel->OnHide();
+            }
+
+            // Restore GUI state
+            bool showGui = !m_bGuiWasHiddenBeforeCinematic;
+            M3D_APP->m_pInterfaceManager->Show(showGui, true);
+
+            // Change game mode
+            m3d::AuxImpulseInfo impulseInfo(3, 1, m_curGameMode.m_mode, 1u, false);
+            OnChangeMode(impulseInfo);
+            result = false;
+        }
+        break;
+    }
+
+    case m3d::CINEMATIC_EXIT_FADE_IN:
+    {
+        M3D_APP->m_pInterfaceManager->ShowWindow(19, false, false, false, false, false);
+
+        if (m_cinematic->bMustBeNextCinematic())
+        {
+            m_cinematic->StartCinematic();
+        }
+        else
+        {
+            m_cinematic->LoadDefaults();
+            SetCursorShow(true);
+        }
+        result = true;
+        break;
+    }
+
+    default:
+        result = true;
+        break;
+    }
+
+    return result;
 }
 
 m3d::Class* CMiracle3d::GetBaseClass()

@@ -225,7 +225,7 @@ namespace m3d
 
     float CameraPath::GetFullTime() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_fullTime;
     }
 
     float CameraPath::_CalcSplineSegmentLength(unsigned, unsigned) const
@@ -263,9 +263,36 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    float Cinematic::GetFadePeriodForState(CinematicState) const
+    float Cinematic::GetFadePeriodForState(CinematicState state) const
     {
-        throw std::logic_error("Not implemented");
+        float result = 0.0;
+        switch (state)
+        {
+        case CINEMATIC_ENTER_FADE_OUT:
+        case CINEMATIC_ENTER_FADE_IN:
+            if (!this->m_bWasSkipped && (this->m_curItem.m_flags & 1) == 0)
+            {
+                result = 0.0;
+                break;
+            }
+            result = m_fadePeriod.GetF();
+            break;
+
+        case CINEMATIC_EXIT_FADE_OUT:
+        case CINEMATIC_EXIT_FADE_IN:
+            if (!this->m_bWasSkipped && (this->m_curItem.m_flags & 2) == 0)
+            {
+                result = 0.0;
+                break;
+            }
+            result = m_fadePeriod.GetF();
+            break;
+
+        default:
+            result = 0.0;
+            break;
+        }
+        return result;
     }
 
     Class* Cinematic::GetClass() const
@@ -315,7 +342,7 @@ namespace m3d
 
     bool Cinematic::InPlay() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_curItem.m_playType != CINEMATIC_OFF;
     }
 
     CinematicType Cinematic::GetPlayType() const
@@ -405,7 +432,10 @@ namespace m3d
 
     float Cinematic::GetTimeToTheEnd() const
     {
-        throw std::logic_error("Not implemented");
+        if (this->m_curItem.m_playType)
+            return this->m_curItem.m_cameraPath.GetFullTime() - this->m_curTime;
+        else
+            return -1.0;
     }
 
     Object* Cinematic::CreateObject()
@@ -430,7 +460,8 @@ namespace m3d
 
     void Cinematic::Update(CCamera&, float)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement Cinematic::Update
+        //throw std::logic_error("Not implemented");
     }
 
     void Cinematic::SetLerpFromPreviousItem(bool)
@@ -510,7 +541,7 @@ namespace m3d
 
     bool Cinematic::bWaitWhenStop() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_curItem.m_bWaitWhenStop;
     }
 
     CameraPath const& Cinematic::GetPathByName(CStr const&) const

@@ -698,9 +698,12 @@ namespace ai
         }
     }
 
-    void CServer::PostPlayerEvent(eGameEvent)
+    void CServer::PostPlayerEvent(eGameEvent eventId)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (thePlayer)
+        {
+            thePlayer->CauseEvent(eventId, 0.0, {}, {});
+        }
     }
 
     int CServer::GetLastId()
@@ -992,7 +995,7 @@ namespace ai
 
     void CServer::StartCinematic()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_InCinematic = 1;
     }
 
     void CServer::Init(m3d::CWorld* world)

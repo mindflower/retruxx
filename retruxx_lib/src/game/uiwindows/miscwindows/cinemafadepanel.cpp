@@ -21,7 +21,17 @@ m3d::Class* CinemaFadePanel::GetClass() const
 
 void CinemaFadePanel::AttachToScreenCinematicRelated()
 {
-    throw std::logic_error("Not implemented");
+    M3D_APP->m_pInterfaceManager->ShowWindow(19, true, true, false, false, nullptr);
+    if (GetParent())
+    {
+        GetParent()->MoveChildToFirstPosition(this);
+    }
+    m_isCinematicRelated = true;
+
+    auto fadePeriod = M3D_APP->m_cinematic->m_fadePeriod.GetF();
+    m_fadePeriod = fadePeriod;
+    m_fadeStart = M3D_APP->m_cinematic->m_fadeStartTime;
+    m_isFading = 1;
 }
 
 m3d::Class* CinemaFadePanel::GetBaseClass()

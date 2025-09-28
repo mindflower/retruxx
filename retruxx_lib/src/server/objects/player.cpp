@@ -112,8 +112,6 @@ namespace ai
         }
     }
 
-    Player* thePlayer = nullptr;
-
     RT_CLASS_EXPORTS_BEGIN(Player)
         RT_CLASS_EXPORT(Player, m3d::METHOD, GetMoney, "", "", "")
         RT_CLASS_EXPORT(Player, m3d::METHOD, AddMoney, "", "", "")

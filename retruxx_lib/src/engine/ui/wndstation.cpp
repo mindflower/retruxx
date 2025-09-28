@@ -458,7 +458,10 @@ namespace m3d
 
         void WndStation::CloseAllModalWithCancelRet()
         {
-            throw retruxx::logic_error("Not implemented");
+            for (auto& modal : m_wndModalStack)
+            {
+                modal->CloseModal(0);
+            }
         }
 
         int WndStation::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)

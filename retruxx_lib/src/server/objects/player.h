@@ -156,4 +156,6 @@ namespace ai
     }; /* size: 0x0264 */
 
     static_assert(sizeof(Player) == 0x264);
+
+    inline Player* thePlayer = nullptr;
 }

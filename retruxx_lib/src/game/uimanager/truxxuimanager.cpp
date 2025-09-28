@@ -315,7 +315,7 @@ TruxxUiManager::TruxxUiManager()
 
 bool TruxxUiManager::IsHiddenByUser() const
 {
-    throw std::logic_error("Not implemented");
+    return this->m_bIsHiddenByUser;
 }
 
 CStr TruxxUiManager::GetPathToDynamicDialogsFileGlobal() const
