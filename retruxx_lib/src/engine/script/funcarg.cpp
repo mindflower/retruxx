@@ -1,3 +1,4 @@
+#include <cassert>
 #include <script/funcarg.h>
 #include <math/vector.h>
 #include <stdexcept>
@@ -24,7 +25,11 @@ namespace m3d
 
     float sArg::GetF() const
     {
-        throw std::logic_error("Not implemented");
+        assert(m_type == ARGTYPE_FLOAT || m_type == ARGTYPE_INT);
+        if (this->m_type == ARGTYPE_FLOAT)
+            return this->m_f;
+        else
+            return (float)this->m_i;
     }
 
     bool sArg::GetB() const
@@ -78,9 +83,10 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void sArg::SetF(float)
+    void sArg::SetF(float f)
     {
-        throw std::logic_error("Not implemented");
+        this->m_type = ARGTYPE_FLOAT;
+        this->m_f = f;
     }
 
     void sArg::SetB(bool)

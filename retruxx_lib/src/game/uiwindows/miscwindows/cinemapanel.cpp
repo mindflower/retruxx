@@ -61,6 +61,11 @@ void CinemaPanel::SkipMessage()
     throw std::logic_error("Not implemented");
 }
 
+bool CinemaPanel::HasMsg()
+{
+    return !m_msgInfos.empty() || m_bIsShowingMessage;
+}
+
 void CinemaPanel::ClearMessages()
 {
     throw std::logic_error("Not implemented");

@@ -15,7 +15,6 @@ namespace m3d
     class CameraPathState
     {
     public:
-        CameraPathState(CameraPathState const&);
         CameraPathState(CVector const&, Quaternion const&, float, float, float);
         void SaveToXmlRuntime(cmn::XmlFile*, cmn::XmlNode*) const;
         void LoadFromXmlRuntime(cmn::XmlFile*, cmn::XmlNode const*);

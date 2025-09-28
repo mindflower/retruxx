@@ -202,6 +202,11 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
         }
         return 1;
     }
+    if (impInfo.m_impId == 2)
+    {
+        CMiracle3d::CinematicInit();
+        return 1;
+    }
     throw std::logic_error("Not implemented");
 }
 
@@ -307,6 +312,18 @@ void CMiracle3d::SetCursorShow(bool state)
 
 int CMiracle3d::CinematicInit()
 {
+    ai::pServer->StartCinematic();
+    M3D_APP->m_pImpulses->ResetAllImpulses(false);
+
+    if (GetCapture() != this)
+    {
+        auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(72);
+        if (!wnd || !wnd->IsChildOf(this))
+        {
+            CaptureMouse(this);
+        }
+    }
+
     throw std::logic_error("Not implemented");
 }
 
@@ -366,9 +383,54 @@ bool CMiracle3d::AddPostEffect(CStr const&, float)
     throw std::logic_error("Not implemented");
 }
 
-int CMiracle3d::HandleCinematic(float)
+int CMiracle3d::HandleCinematic(float dT)
 {
-    throw std::logic_error("Not implemented");
+    if (m_cinematic->bCanUpdate())
+    {
+        m_cinematic->Update(m_curCamera, dT);
+    }
+    m_cinematic->m_playTime += dT * 1000;
+
+    while(true)
+    {
+        switch (this->m_cinematic->m_state)
+        {
+        case m3d::CINEMATIC_ENTER_FADE_OUT:
+        case m3d::CINEMATIC_ENTER_FADE_IN:
+        case m3d::CINEMATIC_EXIT_FADE_OUT:
+        case m3d::CINEMATIC_EXIT_FADE_IN:
+        {
+            if (!CinematicFade())
+                break;
+            return 1;
+
+        case m3d::CINEMATIC_IS_PLAYING:
+            // TODO: check this
+            ai::pServer->PostPlayerEvent(ai::GE_IN_CINEMATIC);
+            auto fadePeriod = this->m_cinematic->GetFadePeriodForState(m3d::CINEMATIC_EXIT_FADE_OUT);
+
+            auto timeToShowDlg = 0.0;
+            if (!m_cinematic->InPlay() || m_cinematic->GetTimeToTheEnd() >= 0.0)
+            {
+                timeToShowDlg = m_cinematic->GetTimeToTheEnd();
+            }
+            auto cinemaPanel = GetCinemaPanel();
+            if (m_cinematic->bWaitWhenStop() || fadePeriod < timeToShowDlg || cinemaPanel && (cinemaPanel->HasMsg()))
+            {
+                return 1;
+            }
+
+            CinematicInterrupt();
+            break;
+        }
+        case m3d::CINEMATIC_NOT_INITED:
+            return 0;
+
+        default:
+            return 1;
+        }
+    }
+    return 0;
 }
 
 m3d::Object* CMiracle3d::CreateObject()

@@ -3,7 +3,9 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, StartCinematic)
 {
-    throw std::logic_error("Not implemented");
+    auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
+    cinematic->StartCinematic();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, Play)
@@ -268,7 +270,7 @@ namespace m3d
 
     Class* Cinematic::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Cinematic);
     }
 
     void Cinematic::SetRelativePoints(bool)
@@ -441,14 +443,31 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
+    bool Cinematic::_TakeNextCinematicItem()
+    {
+        ++this->m_numConsecutiveItemPlayingNow;
+        if (this->m_cinematicItems.empty())
+            return 0;
+
+        m_curItem = m_cinematicItems.front();
+        m_cinematicItems.erase(m_cinematicItems.begin());
+        this->m_playTime = 0;
+        this->m_fadeStartTime = 0;
+        this->m_state = CINEMATIC_ENTER_FADE_OUT;
+        this->m_bWasSkipped = 0;
+        this->m_bWasSkippedInEnterFadeOut = 0;
+        this->m_curTime = 0.0;
+        return 1;
+    }
+
     bool Cinematic::bCanUpdate() const
     {
-        throw std::logic_error("Not implemented");
+        return m_state == CINEMATIC_ENTER_FADE_IN || m_state == CINEMATIC_IS_PLAYING || m_state == CINEMATIC_EXIT_FADE_OUT;
     }
 
     void Cinematic::StartCinematic()
     {
-        throw std::logic_error("Not implemented");
+        _TakeNextCinematicItem();
     }
 
     void Cinematic::SetFolder(char const* folder)
