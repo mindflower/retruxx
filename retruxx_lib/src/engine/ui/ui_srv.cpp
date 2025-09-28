@@ -34,7 +34,6 @@ namespace m3d
 
     PointBase<float> ui::GfxServer::MeasureText(CStr const& text, int uiFont, TextWrapFlags tw, float maxWidth)
     {
-        //TODO: implement GfxServer::MeasureText
         PointBase<float> result;
         if (m_fontManager->ValidateFontId(uiFont))
         {

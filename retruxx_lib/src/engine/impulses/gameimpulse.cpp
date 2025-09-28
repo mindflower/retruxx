@@ -417,9 +417,25 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int GameImpulse::SetImpulseState(AuxImpulseInfo const&, ui::Wnd*)
+    int GameImpulse::SetImpulseState(AuxImpulseInfo const& impInfo, ui::Wnd* causeWnd)
     {
-        throw std::logic_error("Not implemented");
+        if (!m_isInited)
+        {
+            return 0;
+        }
+
+        auto it = m_impulseStates.find(impInfo.m_impId);
+        if (it == m_impulseStates.end())
+        {
+            return 0;
+        }
+
+        if (impInfo.m_state == it->second)
+        {
+            return 1;
+        }
+        it->second = impInfo.m_state;
+        return HandleImpulse(impInfo, causeWnd);
     }
 
     void GameImpulse::RaiseOneTimeImpulse(AuxImpulseInfo const&)
@@ -691,5 +707,9 @@ namespace m3d
 
     GameImpulse::GameImpulse()
     {
+        this->m_isBinded = 0;
+        this->m_isInited = 0;
+        this->m_bSuppressEvent = 0;
+        m_profileFileName = "KeyBindings.lua";
     }
 }

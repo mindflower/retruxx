@@ -921,75 +921,75 @@ namespace m3d
             //TODO: implement Wnd::DrawWndText
             if (!m_caption.empty())
             {
-                //auto textColor = m_strTextColor;
-                //if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
-                //{
-                //    textColor = m_strTextColorDisabled;
-                //}
-                //auto measureText = GetGfxServer()->MeasureText(m_caption, m_defFont, m_textWrap, di.m_clientRect.width);
-                //auto origin = measureText;
-                //switch (m_textFormat)
-                //{
-                //case TF_CENTER:
-                //{
-                //    origin.x = di.m_clientRect.width*0.5;
-                //    if (origin.x < 0.0)
-                //    {
-                //        origin.x = 0.0;
-                //    }
-                //    if (origin.x > di.m_clientRect.width)
-                //    {
-                //        origin.x = di.m_clientRect.width;
-                //    }
-                //    break;
-                //}
-                //case TF_LEFT:
-                //case TF_FULL:
-                //{
-                //    if ((m_style & 0x400) != 0)
-                //    {
-                //        origin.x = (di.m_clientRect.width - measureText.x) * 0.5;
-                //        if (origin.x < 0.0)
-                //        {
-                //            origin.x = 0.0;
-                //        }
-                //        if (origin.x > di.m_clientRect.width)
-                //        {
-                //            origin.x = di.m_clientRect.width;
-                //        }
-                //        break;
-                //    }
-                //    origin.x = 0.0;
-                //    break;
-                //}
-                //case TF_RIGHT:
-                //{
-                //    if ((m_style & 0x400) != 0)
-                //    {
-                //        origin.x = (di.m_clientRect.width + measureText.x) * 0.5;
-                //        if (origin.x < 0.0)
-                //        {
-                //            origin.x = 0.0;
-                //        }
-                //        if (origin.x > di.m_clientRect.width)
-                //        {
-                //            origin.x = di.m_clientRect.width;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        origin.x = di.m_clientRect.width;
-                //    }
-                //    break;
-                //}
-                //default:
-                //    break;
-                //}
-                //if ((m_style & 0x800) != 0)
-                //    origin.y = (di.m_clientRect.height - measureText.y) * 0.5;
-                //else
-                //    origin.y = 0.0;
-                //GetGfxServer()->AddText(di, origin, textColor + m_caption, m_defFont, m_textWrap, m_textFormat);
+                auto textColor = m_strTextColor;
+                if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+                {
+                    textColor = m_strTextColorDisabled;
+                }
+                auto measureText = GetGfxServer()->MeasureText(m_caption, m_defFont, m_textWrap, di.m_clientRect.width);
+                auto origin = measureText;
+                switch (m_textFormat)
+                {
+                case TF_CENTER:
+                {
+                    origin.x = di.m_clientRect.width*0.5;
+                    if (origin.x < 0.0)
+                    {
+                        origin.x = 0.0;
+                    }
+                    if (origin.x > di.m_clientRect.width)
+                    {
+                        origin.x = di.m_clientRect.width;
+                    }
+                    break;
+                }
+                case TF_LEFT:
+                case TF_FULL:
+                {
+                    if ((m_style & 0x400) != 0)
+                    {
+                        origin.x = (di.m_clientRect.width - measureText.x) * 0.5;
+                        if (origin.x < 0.0)
+                        {
+                            origin.x = 0.0;
+                        }
+                        if (origin.x > di.m_clientRect.width)
+                        {
+                            origin.x = di.m_clientRect.width;
+                        }
+                        break;
+                    }
+                    origin.x = 0.0;
+                    break;
+                }
+                case TF_RIGHT:
+                {
+                    if ((m_style & 0x400) != 0)
+                    {
+                        origin.x = (di.m_clientRect.width + measureText.x) * 0.5;
+                        if (origin.x < 0.0)
+                        {
+                            origin.x = 0.0;
+                        }
+                        if (origin.x > di.m_clientRect.width)
+                        {
+                            origin.x = di.m_clientRect.width;
+                        }
+                    }
+                    else
+                    {
+                        origin.x = di.m_clientRect.width;
+                    }
+                    break;
+                }
+                default:
+                    break;
+                }
+                if ((m_style & 0x800) != 0)
+                    origin.y = (di.m_clientRect.height - measureText.y) * 0.5;
+                else
+                    origin.y = 0.0;
+                GetGfxServer()->AddText(di, origin, textColor + m_caption, m_defFont, m_textWrap, m_textFormat);
             }
         }
 
