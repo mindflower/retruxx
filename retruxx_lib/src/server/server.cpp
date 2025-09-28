@@ -892,7 +892,7 @@ namespace ai
 
     void CServer::EndCinematic()
     {
-        throw retruxx::logic_error("Not implemented");
+        m_InCinematic = 0;
     }
 
     void CServer::GetControlData()

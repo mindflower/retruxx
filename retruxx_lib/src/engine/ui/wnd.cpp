@@ -774,7 +774,7 @@ namespace m3d
 
         int Wnd::GameDataClear(bool)
         {
-            throw std::logic_error("Not implemented");
+            return 1;
         }
 
         TextWrapFlags Wnd::GetWrapMode() const

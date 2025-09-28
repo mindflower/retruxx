@@ -1188,6 +1188,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     case 41:
     case 42:
     case 44:
+    case 47:
     {
         return 0;
     }

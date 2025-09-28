@@ -766,9 +766,68 @@ int GameUiManager::GUI_Load(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNod
     throw std::logic_error("Not implemented");
 }
 
-int GameUiManager::GUI_Clear(bool)
+int GameUiManager::GUI_Clear(bool beforeContinuousLevel)
 {
-    throw std::logic_error("Not implemented");
+    M3D_LOG_INFO("Interface: is clearing...");
+
+    int res = 1;
+
+    for (auto& window : m_windows)
+    {
+        if (!window.second->GameDataClear(beforeContinuousLevel))
+        {
+            res = 0;
+        }
+    }
+
+    // TODO: check this
+    for (auto it = m_windows.begin(); it != m_windows.end();)
+    {
+        if (it->second)
+        {
+            if ((it->second->GetGameDataFlags() & 8) == 0)
+            {
+                GUI_RemoveWindow(it->second);
+            }
+            ++it;
+        }
+        else
+        {
+            it = m_windows.erase(it);
+        }
+    }
+
+    for (auto wnd : m_onScreenWindows)
+    {
+        auto it = m_windows.find(wnd);
+        if (it != m_windows.end())
+        {
+            if (it->second->IsKindOf(&m3d::ui::ModalWnd::m_classModalWnd))
+            {
+                auto* modalWnd = (m3d::ui::ModalWnd*)&(*it->second);
+                if (modalWnd->GetStation()->IsModal(modalWnd))
+                {
+                    modalWnd->GetStation()->EndModal(modalWnd, 0);
+                }
+            }
+        }
+    }
+
+    // TODO: check this
+    m_icons->Clear(false);
+    M3D_APP->UnPause();
+    m_isInited = false;
+
+    if (res)
+    {
+        M3D_LOG_INFO("Interface: is cleared successfully");
+    }
+    else
+    {
+        M3D_LOG_INFO("Interface: is cleared with errors");
+    }
+
+    return res;
 }
 
 int GameUiManager::GUI_AddWindow(ref_ptr<m3d::ui::Wnd> w, int& wndId, bool isPersistent, bool needShow)

@@ -343,9 +343,24 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    bool GameImpulse::GetImpulseStateAndReset(int)
+    bool GameImpulse::GetImpulseStateAndReset(int impId)
     {
-        throw std::logic_error("Not implemented");
+        if (!m_isInited)
+        {
+            return 0;
+        }
+
+        auto impIda = GetImpulseState(impId);
+        m3d::AuxImpulseInfo impInfo(impId, false, -1, 0, 0);
+        auto v6 = !M3D_APP->HasChildModalRunning()
+            ? M3D_APP
+            : 0;
+
+        ui::Wnd* v3 = nullptr;
+        if (v6)
+            v3 = M3D_APP;
+        this->SetImpulseState(impInfo, v3);
+        return impIda;
     }
 
     GameImpulse::~GameImpulse()

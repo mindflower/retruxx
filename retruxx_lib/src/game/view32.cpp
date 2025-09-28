@@ -206,12 +206,56 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
         }
         return 1;
     }
+    if (m_curGameMode.Get() == GS_MAINMENU && impInfo.m_impId == 3)
+    {
+        M3D_APP->m_pInterfaceManager->ShowWindow(72, false, true, false, false, nullptr);
+        CleanMainMenuLevel();
+        if (!m_gameInited)
+        {
+            GameInit();
+        }
+
+        // TODO: check this
+        M3D_APP->m_pInterfaceManager->StartSplashing(11);
+        auto v22 = LoadLevel(M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(), {}, true, false, false, nullptr, nullptr, (ai::ObjContainer::eSAVE_TYPES)(ai::ObjContainer::SAVE_EDITOR | ai::ObjContainer::SAVE_FULL | 0x8)) == 0;
+        if (v22)
+        {
+            return 0;
+        }
+        CaptureMouse(0);
+        m_curGameMode.Set(GS_GAME);
+    }
+    if (!impInfo.m_impId)
+    {
+        if (m_curGameMode.Get() == GS_GAME)
+        {
+            M3D_APP->m_pInterfaceManager->GetSavesManager()->MakeCurGameScreenshot();
+        }
+        M3D_APP->EnqueueMessage(65656,
+            0,
+            0,
+            0,
+            0,
+            {},
+            {});
+        return 1;
+    }
+
     if (impInfo.m_impId == 2)
     {
         CMiracle3d::CinematicInit();
         return 1;
     }
-    throw std::logic_error("Not implemented");
+    if (impInfo.m_impId != 3)
+        return 1;
+
+    m_curGameMode.Set(GS_GAME);
+    if (m_curGameMode.Get() != GS_CINEMATIC)
+    {
+        SetCursorShow(1);
+    }
+    CaptureMouse(0);
+    return 1;
 }
 
 void CMiracle3d::SkipCinematicMessage()
@@ -750,12 +794,44 @@ void CMiracle3d::OnBeforeDeviceReset()
 
 void CMiracle3d::CinematicInterrupt()
 {
-    throw std::logic_error("Not implemented");
+    if (m_cinematic->m_state)
+    {
+        auto v5 = m_cinematic->m_state - 1;
+        if (v5)
+        {
+            if (v5 == 1)
+            {
+                auto playTime = m_cinematic->m_playTime;
+                m_cinematic->m_fadeStartTime = (int)playTime;
+                m_cinematic->m_state = m3d::CINEMATIC_EXIT_FADE_OUT;
+                auto cinemaFadePanel = GetCinemaFadePanel();
+                    if (cinemaFadePanel)
+                        cinemaFadePanel->AttachToScreenCinematicRelated();
+            }
+        }
+        else
+        {
+            auto v11 = m_cinematic->m_playTime - m_cinematic->m_fadeStartTime;
+            m_cinematic->m_state = m3d::CINEMATIC_EXIT_FADE_OUT;
+            m_cinematic->m_fadeStartTime = v11 + m_cinematic->m_playTime
+                - (int)(m_cinematic->GetFadePeriodForState(m3d::CINEMATIC_ENTER_FADE_IN) * 1000.0);
+        }
+    }
+    else
+    {
+        m_cinematic->m_bWasSkippedInEnterFadeOut = 1;
+    }
 }
 
-void CMiracle3d::setZoom(float)
+void CMiracle3d::setZoom(float zoom)
 {
-    throw std::logic_error("Not implemented");
+    if (!this->zoomInited)
+    {
+        auto m_f = m_fov.GetF();
+        this->m_Fov0 = m_f;
+        this->zoomInited = 1;
+    }
+    setFov(this->m_Fov0 / zoom);
 }
 
 void CMiracle3d::OnAfterDeviceReset()

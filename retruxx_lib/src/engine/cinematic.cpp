@@ -1,6 +1,8 @@
 #include <cinematic.h>
 #include <stdexcept>
 
+#include "m3dapp.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, StartCinematic)
 {
     auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
@@ -255,7 +257,7 @@ namespace m3d
 
     bool Cinematic::bMustBeNextCinematic() const
     {
-        throw std::logic_error("Not implemented");
+        return !this->m_cinematicItems.empty();
     }
 
     void Cinematic::SetCurrentDebugPointNum(int)
@@ -417,7 +419,10 @@ namespace m3d
 
     void Cinematic::Stop()
     {
-        throw std::logic_error("Not implemented");
+        // TODO: check this
+        M3D_APP->setZoom(1.0);
+        if (!this->m_bDebugMode)
+            this->m_curItem.m_playType = CINEMATIC_OFF;
     }
 
     void Cinematic::RemoveCurrentDebugPoint()
@@ -551,7 +556,9 @@ namespace m3d
 
     void Cinematic::LoadDefaults()
     {
-        throw std::logic_error("Not implemented");
+        m_cinematicItems.clear();
+        // TODO: implement Cinematic::LoadDefaults
+        //throw std::logic_error("Not implemented");
     }
 
     void Cinematic::MoveCurrentDebugPoint(CVector const&, Quaternion const&, float)
