@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "soundconhandler.h"
 #include "video/video.h"
 #include <atomic>
@@ -1557,7 +1558,8 @@ namespace m3d
 
     void Application::FinishQuads()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (this->m_numPointsVerts)
+            FlushQuads();
     }
 
     void Application::setZoom(float)
@@ -1625,9 +1627,367 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int Application::GetTextFit(CStr const&, PointBase<float>&, float, TextWrapFlags)
+    namespace
     {
-        throw retruxx::logic_error("Not implemented");
+        bool IsEscSymbolBeforeSymbol(CStr const& str, int symbolPos)
+        {
+            if (str.empty() || symbolPos <= 0 || symbolPos >= str.length())
+                return 0;
+
+            auto result = 0;
+            for (int i = 0; i < symbolPos; ++i)
+            {
+                result = (str[i] == '#' && !result);
+            }
+            return result;
+        }
+
+        void GetWord(CStr const& src, int i, m3d::TextWrapFlags wrapFlags, CStr& word, int& nextWordPos)
+        {
+            // TODO: generated code
+            // Initialize with empty string
+            word = "";
+            nextWordPos = -1;
+
+            const char* srcStr = src.c_str();
+            int srcLen = src.length();
+
+            if (i < 0 || i >= srcLen) {
+                nextWordPos = -1;
+                return;
+            }
+
+            if (wrapFlags == TW_CHAR_WRAP)
+            {
+                // Character-based wrapping
+                nextWordPos = 1; // Default: single character word
+
+                if (!IsEscSymbolBeforeSymbol(src, i))
+                {
+                    char currentChar = srcStr[i];
+
+                    switch (currentChar)
+                    {
+                    case '#':
+                        // Color code - typically 2 characters (# followed by color code)
+                        if (i + 1 < srcLen)
+                        {
+                            nextWordPos = 2;
+                        }
+                        break;
+
+                    case '@':
+                        // Special command - typically 9 characters
+                        if (i + 9 <= srcLen)
+                        {
+                            nextWordPos = 9;
+                        }
+                        break;
+
+                    case '|':
+                        // Line break character
+                        nextWordPos = 0;
+                        break;
+
+                    default:
+                        // Regular character - keep default of 1
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                // Word-based wrapping (space-separated)
+                int v8 = 0;
+
+                while (true) {
+                    // Find next space or pipe character
+                    int foundPos = src.findOneOf(" |", v8 + i);
+
+                    if (foundPos == -1)
+                    {
+                        // No delimiter found - take rest of string
+                        nextWordPos = -1;
+                        break;
+                    }
+
+                    int relativePos = foundPos - i;
+                    nextWordPos = relativePos;
+
+                    if (relativePos == -1)
+                    {
+                        break;
+                    }
+
+                    char foundChar = srcStr[foundPos];
+
+                    if (foundChar != '|')
+                    {
+                        // Found a space, not a pipe
+                        break;
+                    }
+
+                    // Found a pipe character
+                    if (!IsEscSymbolBeforeSymbol(src, foundPos))
+                    {
+                        // Unescaped pipe - treat as word boundary
+                        break;
+                    }
+
+                    // Escaped pipe - continue searching
+                    if (foundPos + 1 >= srcLen)
+                    {
+                        nextWordPos = -1;
+                        break;
+                    }
+
+                    v8 = relativePos + 1;
+                    if (nextWordPos == -1)
+                    {
+                        break;
+                    }
+                }
+
+                // Handle special case: if we found a space at the beginning
+                if (nextWordPos != -1)
+                {
+                    char boundaryChar = srcStr[i + nextWordPos];
+                    if (boundaryChar == ' ' && nextWordPos == 0)
+                    {
+                        nextWordPos = 1; // Single space word
+                    }
+                }
+            }
+
+            // Extract the actual word
+            if (nextWordPos == -1)
+            {
+                // Take the rest of the string from position i
+                if (i < srcLen)
+                {
+                    word = src.substr(i, srcLen - i);
+                }
+            }
+            else if (nextWordPos == 0)
+            {
+                // Special case: pipe character as a word
+                word = "|";
+            }
+            else
+            {
+                // Extract substring of specified length
+                word = src.substr(i, nextWordPos);
+            }
+        }
+    }
+
+    int Application::GetTextFit(CStr const& strText, PointBase<float>& size, float maxX, TextWrapFlags flags)
+    {
+        // TODO: generated code
+        if (flags == TW_NOWRAP)
+        {
+            GetTextExtent(strText, size, -1, 0, 0, 0, 0, 0);
+            return 1;
+        }
+
+        std::vector<ui::FormattedLine> linesOfText;
+        CStr src = strText;
+
+        CStr line;
+        CStr lhs;
+        float x = 0.0f;
+        float lineHeight = 0.0f;
+        float totalHeight = 0.0f;
+        float maxLineWidth = 0.0f;
+        float lastColor = 0.0;
+        int wordCount = 0;
+        int lastWordPos = -1;
+
+        const char* srcText = src.c_str();
+        int textLen = strlen(srcText);
+        int currentPos = 0;
+
+        float availableWidth = maxX + 0.01f; // Small epsilon
+
+        while (currentPos < textLen)
+        {
+            CStr word;
+            int wordLen;
+
+            GetWord(src, currentPos, flags, word, wordLen);
+
+            if (wordLen == -1)
+            {
+                currentPos = textLen;
+                continue;
+            }
+
+            bool forceBreak = false;
+            if (lastWordPos != -1)
+            {
+                int prevPos = currentPos - 1;
+                if (prevPos < textLen && prevPos > 0 && srcText[prevPos] == '|')
+                {
+                    forceBreak = !IsEscSymbolBeforeSymbol(src, prevPos);
+                }
+            }
+
+            // Update position
+            if (wordLen == 0)
+            {
+                currentPos++;
+            }
+            else
+            {
+                int newPos = currentPos + wordLen;
+                if (newPos < textLen && srcText[newPos] == '|' && !IsEscSymbolBeforeSymbol(src, newPos))
+                {
+                    currentPos = newPos + 1;
+                }
+                else {
+                    currentPos = newPos;
+                }
+            }
+
+            PointBase<float> wordSize;
+            if (flags == TW_CHAR_WRAP)
+            {
+                GetTextExtent(word, wordSize, -1, 0, 0, 0, 0, 0);
+            }
+            else
+            {
+                // Handle word wrapping with spaces
+                CStr temp = word;
+                if (line.c_str()[0] != '\0' && !(lhs == " ") && !(word == " "))
+                {
+                    temp += " ";
+                }
+                GetTextExtent(temp, wordSize, -1, 0, 0, 0, 0, 0);
+            }
+
+            if (wordSize.x + x > availableWidth || forceBreak)
+            {
+                // Create new line
+                ui::FormattedLine newLine;
+                newLine.m_origin.x = 0.0f;
+                newLine.m_origin.y = totalHeight;
+
+                if (wordCount > 0)
+                {
+                    newLine.m_text = line;
+                }
+                else
+                {
+                    newLine.m_text = word;
+                }
+
+                newLine.m_color = static_cast<unsigned int>(lastColor);
+                newLine.m_isHieroglyphic = false;
+                newLine.m_format = TF_LEFT;
+
+                linesOfText.push_back(newLine);
+
+                // Update color tracking
+                float foundColor = FindLastColorInStr(line);
+                if (foundColor != 0.0)
+                {
+                    lastColor = foundColor;
+                }
+
+                if (lineHeight == 0.0f)
+                {
+                    lineHeight = wordSize.y;
+                }
+                totalHeight += lineHeight;
+
+                // Reset line
+                if (wordCount > 0)
+                {
+                    line = word;
+                    wordCount = 1;
+                }
+                else
+                {
+                    line = "";
+                    wordCount = 0;
+                }
+
+                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
+                x = wordSize.x;
+                lineHeight = wordSize.y;
+            }
+            else
+            {
+                // Add to current line
+                if (flags == TW_CHAR_WRAP)
+                {
+                    line += word;
+                }
+                else
+                {
+                    if (line.c_str()[0] != '\0' && !(lhs == " ") && !(word == " "))
+                    {
+                        line += " ";
+                    }
+                    line += word;
+                }
+                wordCount++;
+
+                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
+                x = wordSize.x;
+                if (wordSize.y > lineHeight)
+                {
+                    lineHeight = wordSize.y;
+                }
+            }
+
+            lhs = word;
+            lastWordPos = wordLen;
+        }
+
+        // Handle remaining text
+        if (line.c_str()[0] != '\0')
+        {
+            ui::FormattedLine newLine;
+            newLine.m_origin.x = 0.0f;
+            newLine.m_origin.y = totalHeight;
+            newLine.m_text = line;
+            newLine.m_color = static_cast<unsigned int>(lastColor);
+            newLine.m_isHieroglyphic = false;
+            newLine.m_format = TF_LEFT;
+            linesOfText.push_back(newLine);
+        }
+
+        // Calculate final dimensions
+        float maxWidth = 0.0f;
+        float totalTextHeight = 0.0f;
+
+        for (const auto& formattedLine : linesOfText)
+        {
+            PointBase<float> lineSize;
+            if (formattedLine.m_text.c_str()[0] != '\0')
+            {
+                GetTextExtent(formattedLine.m_text, lineSize, -1, 0, 0, 0, 0, 0);
+            }
+            else
+            {
+                // Measure a single character for empty lines
+                CStr singleChar("A");
+                GetTextExtent(singleChar, lineSize, -1, 0, 0, 0, 0, 0);
+                lineSize.x = 0.0f;
+            }
+
+            if (lineSize.x > maxWidth)
+            {
+                maxWidth = lineSize.x;
+            }
+            totalTextHeight += lineSize.y;
+        }
+
+        size.x = maxWidth;
+        size.y = totalTextHeight;
+
+        return 1;
     }
 
     int Application::StartExclusiveMsgLoop()
@@ -1822,8 +2182,236 @@ namespace m3d
 
     int Application::FormatText(retruxx::vector<ui::FormattedLine>& linesOfText, PointBase<float> const& at, CStr const& textIn, ui::DrawInfo const& di, TextWrapFlags wrapFlags, TextFormatFlags formatFlags)
     {
+        // TODO: generated code
+        CStr src = textIn;
+        CStr line;
+        CStr prevWord;
 
-        throw retruxx::logic_error("Not implemented");
+        int wordsInLine = 0;
+        float lineWidth = 0.0f;
+        float lineHeight = 0.0f;
+        float availableWidth = 0.0f;
+
+        PointBase<float> origin = at;
+        int prevWordPos = -1;
+        int lineColor = -1;
+
+        // Calculate available width based on text format
+        switch (formatFlags)
+        {
+        case TF_CENTER:
+            availableWidth = di.m_clientRect.width;
+            break;
+
+        case TF_LEFT:
+        case TF_FULL:
+            availableWidth = di.m_clientRect.width - (at.x - di.m_clientRect.x0);
+            break;
+
+        case TF_RIGHT:
+            availableWidth = at.x - di.m_clientRect.x0;
+            break;
+
+        default:
+            availableWidth = di.m_clientRect.width;
+            break;
+        }
+
+        // Add small epsilon to avoid floating point precision issues
+        float maxWidth = availableWidth + 0.01f;
+
+        // Get source text length
+        const char* srcText = src.c_str();
+        int textLen = srcText ? strlen(srcText) : 0;
+        int currentPos = 0;
+
+        if (textLen <= 0)
+        {
+            if (line.c_str()[0] != '\0')
+            {
+                m3d::ui::FormattedLine formattedLine;
+                formattedLine.m_origin = origin;
+                formattedLine.m_text = line;
+                formattedLine.m_color = lineColor;
+                formattedLine.m_isHieroglyphic = false;
+                formattedLine.m_format = (formatFlags != TF_FULL) ? formatFlags : TF_LEFT;
+
+                linesOfText.push_back(formattedLine);
+            }
+
+            return 1;
+        }
+
+        // Process text word by word
+        do
+        {
+            CStr word;
+            int wordLen;
+            bool forceBreak = false;
+
+            // Get next word
+            GetWord(src, currentPos, wrapFlags, word, wordLen);
+
+            // Check for forced line break (pipe character)
+            if (prevWordPos != -1)
+            {
+                int prevCharPos = currentPos - 1;
+                if (prevCharPos < textLen && prevCharPos > 0 && srcText[prevCharPos] == '|')
+                {
+                    forceBreak = !IsEscSymbolBeforeSymbol(src, prevCharPos);
+                }
+            }
+
+            // Update current position
+            if (wordLen == -1)
+            {
+                currentPos = textLen;
+            }
+            else
+            {
+                int newPos = currentPos + wordLen;
+                if (newPos < textLen && srcText[newPos] == '|' && !IsEscSymbolBeforeSymbol(src, newPos))
+                {
+                    currentPos = newPos + 1;
+                }
+                else
+                {
+                    currentPos = newPos;
+                }
+            }
+
+            prevWordPos = wordLen;
+
+            PointBase<float> wordSize;
+
+            if (wrapFlags == TW_CHAR_WRAP)
+            {
+                // Character-based wrapping - measure word directly
+                GetTextExtent(word, wordSize, -1, 0, 0, 0, 0, 0);
+            }
+            else
+            {
+                // Word-based wrapping - measure word with potential space
+                CStr tempWord = word;
+                if (line.c_str()[0] != '\0' && !(prevWord == " ") && !(word == " "))
+                {
+                    tempWord += " ";
+                }
+                GetTextExtent(tempWord, wordSize, -1, 0, 0, 0, 0, 0);
+            }
+
+            // Check if we need to break the line
+            if (wordSize.x + lineWidth > maxWidth || forceBreak)
+            {
+                // Create formatted line
+                m3d::ui::FormattedLine formattedLine;
+                formattedLine.m_origin = origin;
+
+                if (wordsInLine > 0)
+                {
+                    formattedLine.m_text = line;
+                }
+                else
+                {
+                    formattedLine.m_text = word;
+                }
+
+                formattedLine.m_color = lineColor;
+
+                // Update color tracking
+                float foundColor = FindLastColorInStr(line);
+                if (foundColor != 0.0f)
+                {
+                    lineColor = static_cast<int>(foundColor);
+                }
+
+                formattedLine.m_isHieroglyphic = false;
+
+                // Set format - special handling for TF_FULL with forced breaks
+                if (formatFlags != TF_FULL || !forceBreak)
+                {
+                    formattedLine.m_format = formatFlags;
+                }
+                else
+                {
+                    formattedLine.m_format = TF_LEFT;
+                }
+
+                // Add to lines vector
+                linesOfText.push_back(formattedLine);
+
+                // Update line height if this is the first line
+                if (lineHeight == 0.0f)
+                {
+                    lineHeight = wordSize.y;
+                }
+
+                // Move origin down for next line
+                origin.y += lineHeight;
+
+                // Reset line buffer
+                if (wordsInLine > 0)
+                {
+                    line = word;
+                    wordsInLine = 1;
+                }
+                else
+                {
+                    line = "";
+                    wordsInLine = 0;
+                }
+
+                // Measure new line
+                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
+                lineWidth = wordSize.x;
+                lineHeight = wordSize.y;
+            }
+            else
+            {
+                // Add word to current line
+                if (wrapFlags == TW_CHAR_WRAP)
+                {
+                    line += word;
+                }
+                else
+                {
+                    // Add space between words if appropriate
+                    if (line.c_str()[0] != '\0' && !(prevWord == " ") && !(word == " "))
+                    {
+                        line += " ";
+                    }
+                    line += word;
+                }
+                wordsInLine++;
+
+                // Measure updated line
+                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
+                lineWidth = wordSize.x;
+
+                // Update line height if this word is taller
+                if (wordSize.y > lineHeight)
+                {
+                    lineHeight = wordSize.y;
+                }
+            }
+
+            prevWord = word;
+
+        } while (currentPos < textLen);
+
+        // Handle any remaining text in the line buffer
+        if (line.c_str()[0] != '\0') {
+            m3d::ui::FormattedLine formattedLine;
+            formattedLine.m_origin = origin;
+            formattedLine.m_text = line;
+            formattedLine.m_color = lineColor;
+            formattedLine.m_isHieroglyphic = false;
+            formattedLine.m_format = (formatFlags != TF_FULL) ? formatFlags : TF_LEFT;
+
+            linesOfText.push_back(formattedLine);
+        }
+
+        return 1;
     }
 
     void Application::WaitForAnykey()
@@ -1995,7 +2583,12 @@ namespace m3d
 
     rend::VertexXYZWCT1* Application::RenderQuadXyzwct1GetNextPtr()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (this->m_numPointsVerts + 4 >= 0xFA0)
+            m3d::Application::FlushQuads();
+
+        auto result = &this->m_pointsVertsWct1[m_numPointsVerts];
+        this->m_numPointsVerts = m_numPointsVerts + 4;
+        return result;
     }
 
     bool Application::AddPostEffect(CStr const&, float)
@@ -2308,7 +2901,29 @@ namespace m3d
 
     void Application::FlushQuads()
     {
-        throw retruxx::logic_error("Not implemented");
+        int vOfs = 0;
+        if (m_numPointsVerts)
+        {
+            memcpy(M3D_RENDERER->LockVbStreaming(m_pointsVertsVb, m_numPointsVerts, vOfs, nullptr), m_sourceVerts, this->m_numPointsVerts * this->m_pointsVertsSz);
+            M3D_RENDERER->UnlockVb(this->m_pointsVertsVb);
+            // TODO: check this
+            M3D_RENDERER->SetIndices(this->m_pointsVertsIb, 0);
+            M3D_RENDERER->SetToStream0(this->m_pointsVertsVb);
+            if (m_flushQuadsShader)
+            {
+                M3D_RENDERER->DrawIndexedPrimitiveEffect(rend::M3DPT_TRIANGLELIST, m_flushQuadsShader, 0, m_numPointsVerts, 0, 2 * (this->m_numPointsVerts / 4));
+            }
+            else
+            {
+                M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST,
+                    0,
+                    this->m_numPointsVerts,
+                    0,
+                    2 * (this->m_numPointsVerts / 4));
+            }
+            this->m_numPointsVerts = 0;
+
+        }
     }
 
     void Application::CreateQuadsIb()
@@ -2328,64 +2943,461 @@ namespace m3d
 
     void Application::finishFontRender()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (GetGfxServer()->GetCurFont())
+        {
+            M3D_RENDERER->PopCull();
+            M3D_RENDERER->PopBlend();
+        }
     }
 
     int Application::DrawStringRelClip(ui::FormattedLine const& fl, ui::DrawInfo const& di)
     {
+        // TODO: generated code
         if (fl.m_isHieroglyphic && M3D_KERNEL->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
         {
             GetGfxServer()->SetFont(GetGfxServer()->m_hieroglyphicFontId);
         }
-        auto curFont = GetGfxServer()->GetCurFont();
-        if (curFont == nullptr)
+        
+        ui::Font* fnt = GetGfxServer()->GetCurFont();
+        if (!fnt)
         {
             return 0;
         }
-        auto text = fl.m_text;
-        auto const textSize = text.length();
-        auto firstSpacePos = -1;
-        auto lastSpacePos = textSize;
+
+        CStr text = fl.m_text;
+        int lastLeadingSpacePos = -1;
+        int textLen = text.length();
+
+        // Handle TF_FULL formatting (justified text)
         if (fl.m_format == TF_FULL)
         {
-            auto v15 = 0;
-            if (text[0] == '@')
+            // Count leading spaces
+            const char* textStr = text.c_str();
+            int leadingSpaces = 0;
+            if (textStr && textStr[0] == '@')
             {
-                v15 = 9;
+                leadingSpaces = 9; // Skip command prefix
             }
-            if (v15 < textSize)
+
+            // Count consecutive leading spaces
+            for (int i = leadingSpaces; i < textLen; i++)
             {
-                firstSpacePos = text.find(' ', v15);
+                if (textStr[i] != ' ') break;
+                leadingSpaces++;
+                lastLeadingSpacePos = i;
             }
-            lastSpacePos = text.rfind(' ');
-            text = text.substr(0, lastSpacePos);
-        }
-        PointBase<float> sz;
-        GetTextExtent(text, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
-        BoundsBase<float> absClient;
-        switch(fl.m_format)
-        {
-        case TF_CENTER:
-        {
-            absClient.x0 = fl.m_origin.x - (sz.x * 0.5);
-            absClient.y0 = fl.m_origin.y;
-            absClient.width = ((sz.x * 0.5) + fl.m_origin.x) - fl.m_origin.x;
-            absClient.height = sz.y;
-            break;
-        }
-        case TF_LEFT:
-        {
-            absClient.x0 = fl.m_origin.x;
-            absClient.y0 = fl.m_origin.y;
-            absClient.width = sz.x;
-            absClient.height = sz.y;
-            break;
-        }
-        default:
-            throw retruxx::logic_error("Not implemented");
+
+            // Count trailing spaces
+            int trailingSpaces = 0;
+            for (int i = textLen - 1; i >= 0; i--)
+            {
+                if (textStr[i] != ' ') break;
+                trailingSpaces++;
+            }
+
+            // Trim trailing spaces
+            if (trailingSpaces > 0)
+            {
+                text = text.substr(0, textLen - trailingSpaces);
+                textLen = text.length();
+            }
         }
 
-        throw retruxx::logic_error("Not implemented");
+        // Measure text extent
+        PointBase<float> sz;
+        GetTextExtent(text, sz, -1, 0, 0, 0, 0, 0);
+
+        // Calculate text bounds based on format
+        BoundsBase<float> textBounds;
+        switch (fl.m_format)
+        {
+        case TF_CENTER:
+            textBounds.x0 = fl.m_origin.x - (sz.x * 0.5f);
+            textBounds.y0 = fl.m_origin.y;
+            textBounds.width = sz.x;
+            textBounds.height = sz.y;
+            break;
+
+        case TF_LEFT:
+            textBounds.x0 = fl.m_origin.x;
+            textBounds.y0 = fl.m_origin.y;
+            textBounds.width = sz.x;
+            textBounds.height = sz.y;
+            break;
+
+        case TF_RIGHT:
+            textBounds.x0 = fl.m_origin.x - sz.x;
+            textBounds.y0 = fl.m_origin.y;
+            textBounds.width = sz.x;
+            textBounds.height = sz.y;
+            break;
+
+        case TF_FULL:
+            textBounds.x0 = di.m_clientRect.x0;
+            textBounds.y0 = fl.m_origin.y;
+            textBounds.width = di.m_clientRect.width;
+            textBounds.height = sz.y;
+            break;
+
+        default:
+            textBounds.x0 = fl.m_origin.x;
+            textBounds.y0 = fl.m_origin.y;
+            textBounds.width = sz.x;
+            textBounds.height = sz.y;
+            break;
+        }
+
+        // Calculate clipping
+        BoundsBase<float> clipRect = di.m_clientClippedRect;
+        BoundsBase<float> visibleBounds;
+
+        // Check if text is completely outside clip region
+        if (textBounds.x0 + textBounds.width < clipRect.x0 ||
+            textBounds.x0 > clipRect.x0 + clipRect.width ||
+            textBounds.y0 + textBounds.height < clipRect.y0 ||
+            textBounds.y0 > clipRect.y0 + clipRect.height)
+        {
+            // Text is completely invisible
+            return 0;
+        }
+
+        // Calculate visible portion
+        visibleBounds.x0 = std::max(textBounds.x0, clipRect.x0);
+        visibleBounds.y0 = std::max(textBounds.y0, clipRect.y0);
+        visibleBounds.width = std::min(textBounds.x0 + textBounds.width, clipRect.x0 + clipRect.width) - visibleBounds.x0;
+        visibleBounds.height = std::min(textBounds.y0 + textBounds.height, clipRect.y0 + clipRect.height) - visibleBounds.y0;
+
+        bool doClip = (textBounds.x0 != visibleBounds.x0 ||
+            textBounds.y0 != visibleBounds.y0 ||
+            textBounds.width != visibleBounds.width ||
+            textBounds.height != visibleBounds.height);
+
+        // Handle text clipping
+        int firstInvisibleChar = textLen;
+        CStr leftInvisibleSubstr;
+        CStr rightInvisibleSubstr;
+        float y1 = NAN;
+        int firstVisibleChar = -1;
+
+        if (doClip)
+        {
+            // Convert clip coordinates to text space
+            BoundsBase<float> textSpaceClip = visibleBounds;
+
+            switch (fl.m_format)
+            {
+            case TF_CENTER:
+                textSpaceClip.x0 = visibleBounds.x0 - (fl.m_origin.x - (sz.x * 0.5f));
+                textSpaceClip.y0 = visibleBounds.y0 - fl.m_origin.y;
+                break;
+
+            case TF_LEFT:
+            case TF_FULL:
+                textSpaceClip.x0 = visibleBounds.x0 - fl.m_origin.x;
+                textSpaceClip.y0 = visibleBounds.y0 - fl.m_origin.y;
+                break;
+
+            case TF_RIGHT:
+                textSpaceClip.x0 = visibleBounds.x0 - (fl.m_origin.x - sz.x);
+                textSpaceClip.y0 = visibleBounds.y0 - fl.m_origin.y;
+                break;
+
+            default:
+                break;
+            }
+
+            // Get clipped text portions
+            GetTextExtent(text, sz, -1, &textSpaceClip, &firstVisibleChar,
+                &firstInvisibleChar, &leftInvisibleSubstr, &rightInvisibleSubstr);
+        }
+
+        // Calculate starting position
+        float curX = 0.0f;
+        if (doClip && !leftInvisibleSubstr.empty())
+        {
+            // Calculate width of invisible left portion
+            for (int i = 0; i < leftInvisibleSubstr.length(); i++)
+            {
+                unsigned char ch = leftInvisibleSubstr.c_str()[i];
+                if (ch < 32) continue;
+
+                ui::Font::SymbolInfo* sym = fnt->m_symbols[ch];
+                if (sym)
+                {
+                    curX += sym->m_precalcedABCWidth;
+                }
+            }
+        }
+
+        // Calculate text origin based on format
+        PointBase<float> at;
+        switch (fl.m_format)
+        {
+        case TF_CENTER:
+            at.x = fl.m_origin.x - (sz.x * 0.5f);
+            at.y = fl.m_origin.y;
+            break;
+
+        case TF_LEFT:
+        case TF_FULL:
+            at = fl.m_origin;
+            break;
+
+        case TF_RIGHT:
+            at.x = fl.m_origin.x - sz.x;
+            at.y = fl.m_origin.y;
+            break;
+
+        default:
+            at = fl.m_origin;
+            break;
+        }
+
+        // Convert to absolute coordinates
+        m_renderer->RelToAbs(at.x, at.y);
+        BoundsBase<float> absClip = visibleBounds;
+        m_renderer->RelToAbs(absClip.x0, absClip.y0);
+        m_renderer->RelToAbs(absClip.width, absClip.height);
+
+        // Get color
+        unsigned int clr = fl.m_color;
+        if (firstVisibleChar != -1)
+        {
+            CStr visibleText = text.substr(0, firstVisibleChar);
+            float foundColor = FindLastColorInStr(visibleText);
+            if (foundColor != 0.0f)
+            {
+                clr = static_cast<unsigned int>(foundColor);
+            }
+        }
+
+        // Calculate space width for justified text
+        float spaceW = 0.0f;
+        float extraSpace = 0.0f;
+
+        if (fnt->m_symbols[' '])
+        {
+            spaceW = fnt->m_symbols[' ']->m_precalcedABCWidth;
+        }
+
+        if (fl.m_format == TF_FULL)
+        {
+            // Count spaces for justification
+            int spaceCount = 0;
+            for (int i = lastLeadingSpacePos + 1; i < textLen; i++) {
+                if (text.c_str()[i] == ' ')
+                {
+                    spaceCount++;
+                }
+            }
+
+            if (spaceCount > 0) {
+                // Calculate extra space to distribute
+                PointBase<float> absSz = sz;
+                m_renderer->RelToAbs(absSz.x, absSz.y);
+
+                BoundsBase<float> absClient = di.m_clientRect;
+                m_renderer->RelToAbs(absClient.x0, absClient.y0);
+                m_renderer->RelToAbs(absClient.width, absClient.height);
+
+                float availableWidth = absClient.width;
+                float textWidth = absSz.x;
+                extraSpace = (availableWidth - textWidth) / spaceCount;
+                spaceW += extraSpace;
+            }
+        }
+
+        // Render visible characters
+        bool inColorCode = false;
+        int charIndex = (firstVisibleChar != -1) ? firstVisibleChar : 0;
+
+        while (charIndex < firstInvisibleChar)
+        {
+            unsigned char ch = text.c_str()[charIndex];
+
+            if (ch < 32)
+            {
+                // Control character
+                inColorCode = false;
+                charIndex++;
+                continue;
+            }
+
+            if (ch == '@' && !inColorCode)
+            {
+                // Command prefix
+                charIndex++;
+                continue;
+            }
+
+            if (ch == '#' && !inColorCode)
+            {
+                // Color code start
+                inColorCode = true;
+                charIndex++;
+                continue;
+            }
+
+            if ((ch == '$' || ch == '&') && !inColorCode)
+            {
+                // Other special characters
+                charIndex++;
+                continue;
+            }
+
+            if (inColorCode)
+            {
+                // Parse color code
+                if (charIndex + 8 <= textLen)
+                {
+                    char colorStr[9];
+                    strncpy(colorStr, text.c_str() + charIndex, 8);
+                    colorStr[8] = '\0';
+                    sscanf(colorStr, "%x", &clr);
+                    charIndex += 8;
+                }
+                inColorCode = false;
+                continue;
+            }
+
+            // Render character
+            ui::Font::SymbolInfo* sym = fnt->m_symbols[ch];
+            if (!sym)
+            {
+                charIndex++;
+                continue;
+            }
+
+            float charWidth = sym->m_precalcedABCWidth;
+            float glyphWidth = sym->m_precalcedGlyphSz.x;
+            float glyphHeight = sym->m_precalcedGlyphSz.y;
+
+            // Adjust space width for justified text
+            if (ch == ' ' && charIndex > lastLeadingSpacePos)
+            {
+                charWidth = spaceW;
+                glyphWidth = spaceW;
+            }
+
+            // Calculate character position
+            float x0 = at.x + curX + sym->m_abc.m_A;
+            float y0 = at.y;
+            float x1 = x0 + glyphWidth;
+            float y1 = y0 + glyphHeight;
+
+            // Get texture coordinates
+            float tx0 = sym->m_tcs.m_coordinates[0];
+            float ty0 = sym->m_tcs.m_coordinates[1];
+            float tx1 = sym->m_tcs.m_coordinates[2];
+            float ty1 = sym->m_tcs.m_coordinates[3];
+
+            // Apply clipping
+            float clippedX0 = x0;
+            float clippedX1 = x1;
+            float clippedY0 = y0;
+            float clippedY1 = y1;
+            float clippedTx0 = tx0;
+            float clippedTx1 = tx1;
+            float clippedTy0 = ty0;
+            float clippedTy1 = ty1;
+
+            if (doClip)
+            {
+                // Horizontal clipping
+                if (charIndex == firstVisibleChar && absClip.x0 > x0)
+                {
+                    float clipRatio = (absClip.x0 - x0) / glyphWidth;
+                    clippedX0 = absClip.x0;
+                    clippedTx0 = tx0 + (tx1 - tx0) * clipRatio;
+                }
+
+                if (charIndex == firstInvisibleChar - 1 && x1 > absClip.x0 + absClip.width)
+                {
+                    float clipRatio = (x1 - (absClip.x0 + absClip.width)) / glyphWidth;
+                    clippedX1 = absClip.x0 + absClip.width;
+                    clippedTx1 = tx1 - (tx1 - tx0) * clipRatio;
+                }
+
+                // Vertical clipping
+                if (absClip.y0 > y0)
+                {
+                    float clipRatio = (absClip.y0 - y0) / glyphHeight;
+                    clippedY0 = absClip.y0;
+                    clippedTy0 = ty0 + (ty1 - ty0) * clipRatio;
+                }
+
+                if (y1 > absClip.y0 + absClip.height)
+                {
+                    float clipRatio = (y1 - (absClip.y0 + absClip.height)) / glyphHeight;
+                    clippedY1 = absClip.y0 + absClip.height;
+                    clippedTy1 = ty1 - (ty1 - ty0) * clipRatio;
+                }
+            }
+
+            // Set texture if needed
+            int textureIndex = -1; // Would be determined from symbol
+            if (textureIndex >= 0)
+            {
+                // Check if texture needs to be changed
+                if (fnt->m_textures[textureIndex] != GetGfxServer()->m_curFontTexture)
+                {
+                    FlushQuads();
+                    m_renderer->SetTexture(0, fnt->m_textures[textureIndex], -1.0f);
+                    GetGfxServer()->m_curFontTexture = fnt->m_textures[textureIndex];
+                }
+            }
+
+            // Render quad
+            rend::VertexXYZWCT1* vertices = RenderQuadXyzwct1GetNextPtr();
+            if (vertices) {
+                // Set up quad vertices
+                for (int i = 0; i < 4; i++)
+                {
+                    vertices[i].z = 0.0f;
+                    vertices[i].w = 0.5f;
+                    vertices[i].c = clr;
+                }
+
+                // Vertex 0: top-left
+                vertices[0].x = clippedX0;
+                vertices[0].y = clippedY0;
+                vertices[0].tu = clippedTx0;
+                vertices[0].tv = clippedTy0;
+
+                // Vertex 1: top-right
+                vertices[1].x = clippedX1;
+                vertices[1].y = clippedY0;
+                vertices[1].tu = clippedTx1;
+                vertices[1].tv = clippedTy0;
+
+                // Vertex 2: bottom-right
+                vertices[2].x = clippedX1;
+                vertices[2].y = clippedY1;
+                vertices[2].tu = clippedTx1;
+                vertices[2].tv = clippedTy1;
+
+                // Vertex 3: bottom-left
+                vertices[3].x = clippedX0;
+                vertices[3].y = clippedY1;
+                vertices[3].tu = clippedTx0;
+                vertices[3].tv = clippedTy1;
+            }
+
+            // Advance cursor
+            if (ch == ' ' && charIndex > lastLeadingSpacePos)
+            {
+                curX += spaceW;
+            }
+            else
+            {
+                curX += charWidth;
+            }
+
+            charIndex++;
+        }
+
+        return 1;
+
     }
 
     unsigned long Application::texGenThread(void*)

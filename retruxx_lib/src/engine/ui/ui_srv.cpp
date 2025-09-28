@@ -9,12 +9,24 @@
 
 namespace m3d
 {
+    ui::FormattedLine::FormattedLine(CStr text)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     ui::FormattedLine::FormattedLine()
     {
+        this->m_color = 0;
+        this->m_origin.x = 0.0;
+        this->m_origin.y = 0.0;
+        this->m_format = TF_LEFT;
+        this->m_isHieroglyphic = 0;
     }
 
     ui::GfxServer::SoundInfo::SoundInfo()
     {
+        this->m_soundTableId = -1;
+        this->m_bSoundLooped = 0;
     }
 
     int ui::GfxServer::GetSliderHeight()

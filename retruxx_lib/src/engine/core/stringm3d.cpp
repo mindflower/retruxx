@@ -396,9 +396,29 @@ void CStr::FirstCharToUpper(unsigned long)
     throw std::logic_error("Not implemented");
 }
 
-int CStr::findOneOf(char const*, int) const
+int CStr::findOneOf(char const* str, int startIdx) const
 {
-    throw std::logic_error("Not implemented");
+    assert(m_charPtr);
+    if (startIdx < 0)
+    {
+        return -1;
+    }
+
+    auto len = length();
+    if (startIdx >= len)
+    {
+        return -1;
+    }
+
+    auto result = strcspn(&m_charPtr[startIdx], str);
+
+    auto v7 = this->m_charPtr;
+    if (this->m_charPtr)
+        v7 = (char*)strlen(v7);
+
+    if ((char*)result == &v7[-startIdx])
+        return -1;
+    return result;
 }
 
 int CStr::find(char c, int startIdx) const

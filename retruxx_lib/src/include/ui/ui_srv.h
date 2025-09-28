@@ -36,19 +36,16 @@ namespace m3d
             TEX_NUM_TEXS = 0xE,
         };
 
-        class FormattedLine
+        struct FormattedLine
         {
-        public:
-            FormattedLine();
-            FormattedLine(FormattedLine const&);
-
-        public:
-            unsigned int m_color = 0;
+            /* 0x0000 */ unsigned int m_color;
             CStr m_text;
-            PointBase<float> m_origin = {0.0, 0.0};
-            m3d::TextFormatFlags m_format = TF_LEFT;
-            bool m_isHieroglyphic = false;
-        };
+            PointBase<float> m_origin;
+            /* 0x0018 */ m3d::TextFormatFlags m_format;
+            /* 0x001c */ bool m_isHieroglyphic;
+            FormattedLine(CStr text);
+            FormattedLine();
+        }; /* size: 0x0020 */
 
         class GfxServer
         {
