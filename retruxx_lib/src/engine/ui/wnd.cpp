@@ -634,7 +634,7 @@ namespace m3d
         PointBase<float> Wnd::ToScreen(PointBase<float> const& pt) const
         {
             //TODO: check this!!!
-            PointBase<float> res;
+            PointBase<float> res = pt;
             for (auto obj = this; obj; obj = dynamic_cast<const Wnd*>(obj->GetParent()))
             {
                 res.x += obj->m_bounds.x0;

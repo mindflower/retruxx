@@ -1711,7 +1711,7 @@ namespace m3d
                         break;
                     }
 
-                    int relativePos = foundPos - i;
+                    int relativePos = foundPos + v8;
                     nextWordPos = relativePos;
 
                     if (relativePos == -1)
@@ -1719,7 +1719,7 @@ namespace m3d
                         break;
                     }
 
-                    char foundChar = srcStr[foundPos];
+                    char foundChar = srcStr[foundPos + i];
 
                     if (foundChar != '|')
                     {
@@ -1728,14 +1728,14 @@ namespace m3d
                     }
 
                     // Found a pipe character
-                    if (!IsEscSymbolBeforeSymbol(src, foundPos))
+                    if (!IsEscSymbolBeforeSymbol(src, foundPos + i))
                     {
                         // Unescaped pipe - treat as word boundary
                         break;
                     }
 
                     // Escaped pipe - continue searching
-                    if (foundPos + 1 >= srcLen)
+                    if (foundPos + i+ 1 >= srcLen)
                     {
                         nextWordPos = -1;
                         break;
@@ -1775,8 +1775,9 @@ namespace m3d
             }
             else
             {
+                // TODO: check this
                 // Extract substring of specified length
-                word = src.substr(i, nextWordPos);
+                word = src.substr(i, nextWordPos+i);
             }
         }
     }
@@ -1798,13 +1799,12 @@ namespace m3d
         float x = 0.0f;
         float lineHeight = 0.0f;
         float totalHeight = 0.0f;
-        float maxLineWidth = 0.0f;
-        float lastColor = 0.0;
+        //float maxLineWidth = 0.0f;
+        int lastColor = 0;
         int wordCount = 0;
-        int lastWordPos = -1;
+        int lastWordPos = 0;
 
-        const char* srcText = src.c_str();
-        int textLen = strlen(srcText);
+        int textLen = src.length();
         int currentPos = 0;
 
         float availableWidth = maxX + 0.01f; // Small epsilon
@@ -1812,35 +1812,33 @@ namespace m3d
         while (currentPos < textLen)
         {
             CStr word;
-            int wordLen;
+            int nextWordPos;
 
-            GetWord(src, currentPos, flags, word, wordLen);
-
-            if (wordLen == -1)
-            {
-                currentPos = textLen;
-                continue;
-            }
+            GetWord(src, currentPos, flags, word, nextWordPos);
 
             bool forceBreak = false;
             if (lastWordPos != -1)
             {
                 int prevPos = currentPos - 1;
-                if (prevPos < textLen && prevPos > 0 && srcText[prevPos] == '|')
+                if (prevPos < textLen && prevPos > 0 && src[prevPos] == '|')
                 {
                     forceBreak = !IsEscSymbolBeforeSymbol(src, prevPos);
                 }
             }
 
             // Update position
-            if (wordLen == 0)
+            if (nextWordPos == 0)
             {
                 currentPos++;
             }
+            else if (nextWordPos == -1)
+            {
+                currentPos = textLen;
+            }
             else
             {
-                int newPos = currentPos + wordLen;
-                if (newPos < textLen && srcText[newPos] == '|' && !IsEscSymbolBeforeSymbol(src, newPos))
+                int newPos = currentPos + nextWordPos;
+                if (newPos < textLen && src[newPos] == '|' && !IsEscSymbolBeforeSymbol(src, newPos))
                 {
                     currentPos = newPos + 1;
                 }
@@ -1888,8 +1886,8 @@ namespace m3d
                 linesOfText.push_back(newLine);
 
                 // Update color tracking
-                float foundColor = FindLastColorInStr(line);
-                if (foundColor != 0.0)
+                int foundColor = FindLastColorInStr(line);
+                if (foundColor != 0)
                 {
                     lastColor = foundColor;
                 }
@@ -1942,7 +1940,7 @@ namespace m3d
             }
 
             lhs = word;
-            lastWordPos = wordLen;
+            lastWordPos = nextWordPos;
         }
 
         // Handle remaining text
@@ -2039,10 +2037,11 @@ namespace m3d
     void Application::StartQuads(rend::VertexType vt)
     {
         m_numPointsVerts = 0;
+        CreateQuadsIb();
         if (vt == rend::VERTEX_XYZWCT1)
         {
             m_pointsVertsVb = M3D_APP->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1);
-            m_pointsVertsSz = 28;
+            m_pointsVertsSz = sizeof(rend::VertexXYZWCT1);
             m_sourceVerts = m_pointsVertsWct1;
         }
         else if (vt == rend::VERTEX_XYZCT1)
@@ -2055,123 +2054,181 @@ namespace m3d
 
     int Application::GetTextExtent(CStr const& str, PointBase<float>& size, int fid, BoundsBase<float>* csz, int* minc, int* maxc, CStr* leftInvisibleSubstr, CStr* rightInvisibleSubstr)
     {
-        //TODO: check this shit!!!!
-        if (leftInvisibleSubstr)
-        {
+        // Initialize output parameters
+        if (leftInvisibleSubstr && !leftInvisibleSubstr->empty()) {
             leftInvisibleSubstr->erase();
         }
-        if (rightInvisibleSubstr)
-        {
+        if (rightInvisibleSubstr && !rightInvisibleSubstr->empty()) {
             rightInvisibleSubstr->erase();
         }
-        if (str.empty())
-        {
-            size.x = 0;
-            size.y = 0;
+
+        // Check for empty string
+        if (str.empty()) {
+            size.x = 0.0f;
+            size.y = 0.0f;
             return 0;
         }
 
-        auto fnt = fid == -1 ? GetGfxServer()->GetCurFont() : GetGfxServer()->GetFontById(fid);
-        if (!fnt)
+        // Get font
+        ui::Font* font = nullptr;
+        if (fid == -1)
+        {
+            font = GetGfxServer()->GetCurFont();
+        }
+        else {
+            font = GetGfxServer()->GetFontById(fid);
+        }
+
+        if (!font)
         {
             return 0;
         }
 
-        bool flag1 = false;
-        bool flag2 = false;
-        float width = 0.0;
-        float height = 0.0;
-        auto numChars = 0;
-        auto len = str.length();
-        for (int i = 0; i < len; ++i)
-        {
-            if (str[i] > ' ')
-            {
-                switch (str[i])
-                {
-                case '#':
-                    if (!flag1)
-                    {
-                        flag1 = true;
-                        continue;
-                    }
-                    break;
-                case '&':
-                    if (!flag1)
-                    {
-                        flag2 = true;
-                        continue;
-                    }
-                    break;
-                case '|':
-                    if (!flag1)
-                    {
-                        if (!flag2)
-                        {
-                            continue;
-                        }
-                        flag2 = false;
-                    }
-                    break;
-                case '@':
-                    if (!flag1)
-                    {
-                        i += 8;
-                        continue;
-                    }
-                    break;
-                default:
-                    if (str[i] == '$' && !flag1)
-                    {
-                        continue;
-                    }
-                    break;
-                }
+        const char* text = str.c_str();
+        float totalWidth = 0.0f;
+        float maxHeight = 0.0f;
+        float scaledWidth = 0.0f;
+        int numChars = 0;
+        int len = strlen(text);
 
-                flag1 = false;
-                if (csz && maxc && (width / (fnt->m_heightScaled / fnt->m_heightUnscaled)) > (csz->width + csz->x0))
-                {
-                    *maxc = i;
-                    if (rightInvisibleSubstr != nullptr)
-                    {
-                        (*rightInvisibleSubstr) += CStr(str[i]);
-                    }
-                    break;
-                }
-                width = fnt->GetCharWidthAdvanced(str[i]) + width;
-                auto heiTemp = fnt->GetGlyphSz(str[i]).y;
-                if (heiTemp > height)
-                {
-                    height = heiTemp;
-                }
-                if (csz && minc && csz->x0 > (width / (fnt->m_heightScaled / fnt->m_heightUnscaled)))
-                {
-                    *minc = i;
-                    if (leftInvisibleSubstr != nullptr)
-                    {
-                        (*leftInvisibleSubstr) += CStr(str[i]);
-                    }
-                    break;
-                }
-                ++numChars;
-            }
-            else
-            {
-                flag1 = false;
-            }
-        }
-        if (len <= 0 || !numChars)
+        bool inColorCode = false;  // For '#' sequences
+        bool inSpecialMode = false; // For '&' sequences
+        int charIndex = 0;
+
+        // Process each character
+        for (int i = 0; i < len; i++)
         {
-            auto glyphY = 0.0;
-            if (fnt->m_symbols['A'])
+            unsigned char ch = text[i];
+            if (ch == '\0') break;
+
+            // Handle control characters and special sequences
+            if (ch < ' ')
             {
-                glyphY = fnt->m_symbols['A']->m_precalcedGlyphSz.y;
+                inColorCode = false;
+                continue;
             }
-            if (glyphY > height)
-                height = glyphY;
+
+            switch (ch)
+            {
+            case '#':
+                if (!inColorCode)
+                {
+                    inColorCode = true;
+                    continue;
+                }
+                break;
+
+            case '&':
+                if (!inColorCode)
+                {
+                    inSpecialMode = true;
+                    continue;
+                }
+                break;
+
+            case '|':
+                if (!inColorCode)
+                {
+                    if (inSpecialMode)
+                    {
+                        inSpecialMode = false;
+                        continue;
+                    }
+                }
+                break;
+
+            case '@':
+                if (!inColorCode)
+                {
+                    // Skip 8 characters (probably a special sequence)
+                    i += 8;
+                    continue;
+                }
+                break;
+
+            case '$':
+                if (!inColorCode)
+                {
+                    continue; // Skip '$' character
+                }
+                break;
+
+            default:
+                break;
+            }
+
+            // Reset color code flag for non-special characters
+            if (ch != '#' && inColorCode)
+            {
+                inColorCode = false;
+            }
+
+            // Skip processing if we're in a color code or special mode
+            if (inColorCode || inSpecialMode)
+            {
+                continue;
+            }
+
+            // Check right boundary for invisible text
+            if (csz && maxc)
+            {
+                float scaledTotalWidth = scaledWidth / (font->m_heightScaled / font->m_heightUnscaled);
+                if (scaledTotalWidth > (csz->width + csz->x0))
+                {
+                    *maxc = charIndex;
+                    if (rightInvisibleSubstr) {
+                        CStr charStr(std::string(1, ch).c_str());
+                        *rightInvisibleSubstr += charStr;
+                    }
+                    break;
+                }
+            }
+
+            // Calculate character metrics
+            float charWidth = font->GetCharWidthAdvanced(ch);
+            totalWidth += charWidth;
+            scaledWidth = totalWidth;
+
+            PointBase<float> glyphSize = font->GetGlyphSz(ch);
+
+            if (glyphSize.y > maxHeight)
+            {
+                maxHeight = glyphSize.y;
+            }
+
+            // Check left boundary for invisible text
+            if (csz && minc)
+            {
+                float currentScaledWidth = totalWidth / (font->m_heightScaled / font->m_heightUnscaled);
+                if (csz->x0 > currentScaledWidth)
+                {
+                    *minc = charIndex;
+                    if (leftInvisibleSubstr)
+                    {
+                        CStr charStr(std::string(1, ch).c_str());
+                        *leftInvisibleSubstr += charStr;
+                    }
+                }
+            }
+
+            numChars++;
+            charIndex++;
         }
-        size.x = width / (fnt->m_heightScaled / fnt->m_heightUnscaled);
-        size.y = height / (fnt->m_heightScaled / fnt->m_heightUnscaled);
+
+        // If no characters were processed, use 'A' as reference
+        if (numChars == 0)
+        {
+            if (font->m_symbols['A'])
+            {
+                maxHeight = font->m_symbols['A']->m_precalcedGlyphSz.y;
+            }
+        }
+
+        // Convert to scaled coordinates
+        float scaleFactor = font->m_heightScaled / font->m_heightUnscaled;
+        size.x = scaledWidth / scaleFactor;
+        size.y = maxHeight / scaleFactor;
+
         return numChars;
     }
 
@@ -2596,9 +2653,76 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int Application::FindLastColorInStr(CStr const&)
+    int Application::FindLastColorInStr(CStr const& line)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: check this
+        if (line.empty())
+        {
+            return 0;
+        }
+
+        int nColor = 0;
+        bool bEsc = false;
+        int v3 = 0;  // position index
+        int v4 = 8;  // some offset counter
+
+
+        while (true)
+        {
+            int v6 = line.length();
+
+            if (v3 >= v6)
+                return nColor;
+
+            char v7 = line[v3];
+
+            if (v7 == '#')
+            {
+                if (bEsc) {
+                    bEsc = false;
+                    v3++;
+                    v4++;
+                    continue;
+                }
+                ++v3;
+                bEsc = true;
+                ++v4;
+            }
+            else
+            {
+                if (v7 != '@' || bEsc)
+                {
+                    bEsc = false;
+                    v3++;
+                    v4++;
+                    continue;
+                }
+
+                int v8 = v6;
+                if (v8 <= v4) {
+                    v3++;
+                    v4++;
+                    continue;
+                }
+
+                // Extract color code
+                char color[9];  // 8 chars + null terminator
+                color[0] = line[v3 + 1];
+                color[1] = line[v3 + 2];
+                color[2] = line[v3 + 3];
+                color[3] = line[v3 + 4];
+                color[4] = line[v3 + 5];
+                color[5] = line[v3 + 6];
+                color[6] = line[v3 + 7];
+                color[7] = line[v3 + 8];
+                color[8] = 0;
+
+                sscanf(color, "%x", &nColor);
+                v3 += 9;
+                v4 += 9;
+            }
+        }
+        return 0;
     }
 
     void Application::PutSplashMainMenuLevelLoad(int, void*)
@@ -2904,10 +3028,11 @@ namespace m3d
         int vOfs = 0;
         if (m_numPointsVerts)
         {
-            memcpy(M3D_RENDERER->LockVbStreaming(m_pointsVertsVb, m_numPointsVerts, vOfs, nullptr), m_sourceVerts, this->m_numPointsVerts * this->m_pointsVertsSz);
+            auto vbStream = M3D_RENDERER->LockVbStreaming(m_pointsVertsVb, m_numPointsVerts, vOfs, nullptr);
+            memcpy(vbStream, m_sourceVerts, this->m_numPointsVerts * this->m_pointsVertsSz);
             M3D_RENDERER->UnlockVb(this->m_pointsVertsVb);
             // TODO: check this
-            M3D_RENDERER->SetIndices(this->m_pointsVertsIb, 0);
+            M3D_RENDERER->SetIndices(this->m_pointsVertsIb, vOfs);
             M3D_RENDERER->SetToStream0(this->m_pointsVertsVb);
             if (m_flushQuadsShader)
             {
@@ -2928,7 +3053,28 @@ namespace m3d
 
     void Application::CreateQuadsIb()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!m_pointsVertsIb.IsValid())
+        {
+            m_pointsVertsIb = M3D_RENDERER->AddIb(6000, false);
+
+            auto v3 = (WORD*)M3D_RENDERER->LockIb(m_pointsVertsIb, 0, 0, 0);
+            auto v4 = 2;
+            auto v5 = 1000;
+            do
+            {
+                *v3 = v4 - 2;
+                v3[3] = v4 - 2;
+                v3[2] = v4;
+                v3[4] = v4;
+                v3[1] = v4 - 1;
+                v3[5] = v4 + 1;
+                v4 += 4;
+                v3 += 6;
+                --v5;
+            } while (v5);
+
+            M3D_RENDERER->UnlockIb(m_pointsVertsIb);
+        }
     }
 
     void Application::EnqueueEvent(Event const&)
@@ -2972,9 +3118,8 @@ namespace m3d
         if (fl.m_format == TF_FULL)
         {
             // Count leading spaces
-            const char* textStr = text.c_str();
             int leadingSpaces = 0;
-            if (textStr && textStr[0] == '@')
+            if (textLen > 0 && text[0] == '@')
             {
                 leadingSpaces = 9; // Skip command prefix
             }
@@ -2982,7 +3127,7 @@ namespace m3d
             // Count consecutive leading spaces
             for (int i = leadingSpaces; i < textLen; i++)
             {
-                if (textStr[i] != ' ') break;
+                if (text[i] != ' ') break;
                 leadingSpaces++;
                 lastLeadingSpacePos = i;
             }
@@ -2991,7 +3136,7 @@ namespace m3d
             int trailingSpaces = 0;
             for (int i = textLen - 1; i >= 0; i--)
             {
-                if (textStr[i] != ' ') break;
+                if (text[i] != ' ') break;
                 trailingSpaces++;
             }
 
@@ -3014,36 +3159,29 @@ namespace m3d
         case TF_CENTER:
             textBounds.x0 = fl.m_origin.x - (sz.x * 0.5f);
             textBounds.y0 = fl.m_origin.y;
-            textBounds.width = sz.x;
-            textBounds.height = sz.y;
+            textBounds.width = ((sz.x * 0.5f) + fl.m_origin.x) - fl.m_origin.x - (sz.x * 0.5);
+            textBounds.height = fl.m_origin.y + sz.y - fl.m_origin.y;
             break;
 
         case TF_LEFT:
             textBounds.x0 = fl.m_origin.x;
             textBounds.y0 = fl.m_origin.y;
-            textBounds.width = sz.x;
-            textBounds.height = sz.y;
+            textBounds.width = (fl.m_origin.x + sz.x) - fl.m_origin.x;
+            textBounds.height = (fl.m_origin.y + sz.y) - fl.m_origin.y;
             break;
 
         case TF_RIGHT:
             textBounds.x0 = fl.m_origin.x - sz.x;
             textBounds.y0 = fl.m_origin.y;
-            textBounds.width = sz.x;
-            textBounds.height = sz.y;
+            textBounds.width = (fl.m_origin.x + sz.x) - fl.m_origin.x;
+            textBounds.height = (fl.m_origin.y + sz.y) - fl.m_origin.y;
             break;
 
         case TF_FULL:
             textBounds.x0 = di.m_clientRect.x0;
             textBounds.y0 = fl.m_origin.y;
-            textBounds.width = di.m_clientRect.width;
-            textBounds.height = sz.y;
-            break;
-
-        default:
-            textBounds.x0 = fl.m_origin.x;
-            textBounds.y0 = fl.m_origin.y;
-            textBounds.width = sz.x;
-            textBounds.height = sz.y;
+            textBounds.width = di.m_clientRect.width + di.m_clientRect.x0 - di.m_clientRect.x0;
+            textBounds.height = fl.m_origin.y + sz.y - fl.m_origin.y;
             break;
         }
 
@@ -3076,7 +3214,6 @@ namespace m3d
         int firstInvisibleChar = textLen;
         CStr leftInvisibleSubstr;
         CStr rightInvisibleSubstr;
-        float y1 = NAN;
         int firstVisibleChar = -1;
 
         if (doClip)
@@ -3154,10 +3291,10 @@ namespace m3d
         }
 
         // Convert to absolute coordinates
-        m_renderer->RelToAbs(at.x, at.y);
+        M3D_RENDERER->RelToAbs(at.x, at.y);
         BoundsBase<float> absClip = visibleBounds;
-        m_renderer->RelToAbs(absClip.x0, absClip.y0);
-        m_renderer->RelToAbs(absClip.width, absClip.height);
+        M3D_RENDERER->RelToAbs(absClip.x0, absClip.y0);
+        M3D_RENDERER->RelToAbs(absClip.width, absClip.height);
 
         // Get color
         unsigned int clr = fl.m_color;
@@ -3194,11 +3331,11 @@ namespace m3d
             if (spaceCount > 0) {
                 // Calculate extra space to distribute
                 PointBase<float> absSz = sz;
-                m_renderer->RelToAbs(absSz.x, absSz.y);
+                M3D_RENDERER->RelToAbs(absSz.x, absSz.y);
 
                 BoundsBase<float> absClient = di.m_clientRect;
-                m_renderer->RelToAbs(absClient.x0, absClient.y0);
-                m_renderer->RelToAbs(absClient.width, absClient.height);
+                M3D_RENDERER->RelToAbs(absClient.x0, absClient.y0);
+                M3D_RENDERER->RelToAbs(absClient.width, absClient.height);
 
                 float availableWidth = absClient.width;
                 float textWidth = absSz.x;
@@ -3226,7 +3363,7 @@ namespace m3d
             if (ch == '@' && !inColorCode)
             {
                 // Command prefix
-                charIndex++;
+                charIndex+=9;
                 continue;
             }
 
@@ -3272,6 +3409,7 @@ namespace m3d
             float glyphWidth = sym->m_precalcedGlyphSz.x;
             float glyphHeight = sym->m_precalcedGlyphSz.y;
 
+
             // Adjust space width for justified text
             if (ch == ' ' && charIndex > lastLeadingSpacePos)
             {
@@ -3280,8 +3418,8 @@ namespace m3d
             }
 
             // Calculate character position
-            float x0 = at.x + curX + sym->m_abc.m_A;
-            float y0 = at.y;
+            float x0 = at.x + curX + sym->m_abc.m_A + 0.5;
+            float y0 = at.y + 0.5;
             float x1 = x0 + glyphWidth;
             float y1 = y0 + glyphHeight;
 
@@ -3334,16 +3472,14 @@ namespace m3d
                 }
             }
 
-            // Set texture if needed
-            int textureIndex = -1; // Would be determined from symbol
-            if (textureIndex >= 0)
+            if (sym->m_tcs.m_texId >= 0)
             {
                 // Check if texture needs to be changed
-                if (fnt->m_textures[textureIndex] != GetGfxServer()->m_curFontTexture)
+                if (fnt->m_textures[sym->m_tcs.m_texId] != GetGfxServer()->m_curFontTexture)
                 {
                     FlushQuads();
-                    m_renderer->SetTexture(0, fnt->m_textures[textureIndex], -1.0f);
-                    GetGfxServer()->m_curFontTexture = fnt->m_textures[textureIndex];
+                    M3D_RENDERER->SetTexture(0, fnt->m_textures[sym->m_tcs.m_texId], -1.0f);
+                    GetGfxServer()->m_curFontTexture = fnt->m_textures[sym->m_tcs.m_texId];
                 }
             }
 
@@ -3414,14 +3550,14 @@ namespace m3d
     {
         if (GetGfxServer()->GetCurFont())
         {
-            M3D_APP->m_renderer->SetTexture(0, GetGfxServer()->m_curFontTexture, -1.0);
-            M3D_APP->m_renderer->PushBlend(rend::BM_ALPHA);
-            M3D_APP->m_renderer->SetAlphaTest(1);
-            M3D_APP->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
-            M3D_APP->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
-            M3D_APP->m_renderer->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
-            M3D_APP->m_renderer->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
-            M3D_APP->m_renderer->PushCull(rend::M3DCULL_CCW);
+            M3D_RENDERER->SetTexture(0, GetGfxServer()->m_curFontTexture, -1.0);
+            M3D_RENDERER->PushBlend(rend::BM_ALPHA);
+            M3D_RENDERER->SetAlphaTest(1);
+            M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+            M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+            M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+            M3D_RENDERER->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+            M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
         }
     }
 

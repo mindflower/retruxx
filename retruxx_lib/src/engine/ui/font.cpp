@@ -80,14 +80,33 @@ namespace m3d
 
         Font::FontABC::FontABC()
         {
+            this->m_A = 0.0;
+            this->m_B = 0.0;
+            this->m_C = 0.0;
         }
 
         Font::TextureCoordinates::TextureCoordinates()
         {
+            this->m_texId = -1;
+            this->m_coordinates[0] = 0.0;
+            this->m_coordinates[1] = 0.0;
+            this->m_coordinates[2] = 0.0;
+            this->m_coordinates[3] = 0.0;
         }
 
         Font::SymbolInfo::SymbolInfo()
         {
+            this->m_abc.m_A = 0.0;
+            this->m_abc.m_B = 0.0;
+            this->m_abc.m_C = 0.0;
+            this->m_tcs.m_texId = -1;
+            this->m_tcs.m_coordinates[0] = 0.0;
+            this->m_tcs.m_coordinates[1] = 0.0;
+            this->m_tcs.m_coordinates[2] = 0.0;
+            this->m_tcs.m_coordinates[3] = 0.0;
+            this->m_symbol = 0;
+            this->m_precalcedGlyphSz.x = 0.0;
+            this->m_precalcedGlyphSz.y = 0.0;
         }
 
         int Font::SaveToXml()

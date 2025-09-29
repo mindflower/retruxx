@@ -200,8 +200,10 @@ namespace m3d
                     drawReserved.height = curWnd->m_bounds.height;
                     info.m_originalRect = curWnd->ToScreen(drawReserved);
                     info.m_clippedRect = clipTo.Intersect(info.m_originalRect);
-                    info.m_clientRect = curWnd->GetClientBounds();
+
+                    info.m_clientRect = curWnd->ToScreen(curWnd->GetClientBounds());
                     info.m_clientClippedRect = clipTo.Intersect(info.m_clientRect);
+
                     if (info.m_clippedRect.width + info.m_clippedRect.x0 - info.m_clippedRect.x0 != 0.0
                         || info.m_clippedRect.y0 - (info.m_clippedRect.height + info.m_clippedRect.y0) != 0.0)
                     {
