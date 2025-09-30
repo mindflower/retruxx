@@ -31,9 +31,7 @@ namespace ai
 
     bool CaravanTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        // TODO: implement CaravanTeamPrototypeInfo::LoadFromXML
-        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
-        return result;
+        throw std::logic_error("Not implemented");
     }
 
     void CaravanTeam::SetWaitingPlayerToMoveout()

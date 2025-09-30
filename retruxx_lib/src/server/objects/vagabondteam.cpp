@@ -32,7 +32,7 @@ namespace ai
 
     bool VagabondTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        // TODO: implement VagabondTeamPrototypeInfo::LoadFromXML
+        throw std::logic_error("Not implemented");
         auto result = ai::TeamPrototypeInfo::LoadFromXML( xmlFile, xmlNode);
         if (result)
         {

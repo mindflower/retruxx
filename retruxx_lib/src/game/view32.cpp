@@ -710,8 +710,7 @@ m3d::Object* CMiracle3d::CreateObject()
 
 void CMiracle3d::OnChangeProfile()
 {
-    //TODO: implement CMiracle3d::OnChangeProfile
-    //throw std::logic_error("Not implemented");
+    throw std::logic_error("Not implemented");
 }
 
 void CMiracle3d::CleanMainMenuLevel()
@@ -851,8 +850,7 @@ void CMiracle3d::RenderAsBackground(bool)
 
 void CMiracle3d::UpdateCameraPosition(ai::PhysicObj*)
 {
-    // TODO: implement CMiracle3d::UpdateCameraPosition
-    //throw std::logic_error("Not implemented");
+    throw std::logic_error("Not implemented");
 }
 
 float CMiracle3d::GetMaxTimeScale() const
@@ -1129,7 +1127,7 @@ int CMiracle3d::StartPlayingVideo(char const* videoFile, int(CMiracle3d::* onFin
 
 CMiracle3d::~CMiracle3d()
 {
-    //TODO: implement CMiracle3d::~CMiracle3d
+    throw std::logic_error("Not implemented");
 }
 
 float CMiracle3d::GetNormalTimeScale() const
@@ -2175,7 +2173,6 @@ int CMiracle3d::FrameMove()
 
 void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
 {
-    //TODO: ...
     throw std::logic_error("Not implemented");
 }
 

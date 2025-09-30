@@ -612,7 +612,6 @@ int ProfileManager::SaveProfile(Profile const* profile) const
     if (profile && profile->IsValid())
     {
         throw retruxx::logic_error("Not implemented");
-        //TODO: ...
     }
     else
     {

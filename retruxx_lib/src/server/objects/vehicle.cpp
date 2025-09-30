@@ -701,6 +701,7 @@ namespace ai
     RETRUXX_DLL_INJECT_FUNCTION(0x005DCFD0, Vehicle::GetRecollectionPosition)
 	CVector Vehicle::GetRecollectionPosition(float) const
 	{
+        throw std::logic_error("Not implemented");
         //TODO: implement recollection logic
         auto center = GetGeometricCenter();
         return center;

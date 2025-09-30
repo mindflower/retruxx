@@ -465,8 +465,7 @@ namespace m3d
 
     void Cinematic::Update(CCamera&, float)
     {
-        // TODO: implement Cinematic::Update
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     void Cinematic::SetLerpFromPreviousItem(bool)
@@ -557,8 +556,7 @@ namespace m3d
     void Cinematic::LoadDefaults()
     {
         m_cinematicItems.clear();
-        // TODO: implement Cinematic::LoadDefaults
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     void Cinematic::MoveCurrentDebugPoint(CVector const&, Quaternion const&, float)

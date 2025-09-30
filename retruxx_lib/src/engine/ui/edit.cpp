@@ -121,11 +121,10 @@ namespace m3d
 
         CStr EditWnd::GetVisibleText() const
         {
-            //TODO: implement this
+            throw std::logic_error("Not implemented");
             auto len = m_caption.length();
             CStr serviceSymbols = "|@$#&";
             return m_caption;
-            throw std::logic_error("Not implemented");
         }
 
         void EditWnd::SetCursorColor(unsigned color)

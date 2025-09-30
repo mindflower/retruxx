@@ -918,7 +918,6 @@ namespace m3d
 
         void Wnd::DrawWndText(DrawInfo const& di)
         {
-            //TODO: implement Wnd::DrawWndText
             if (!m_caption.empty())
             {
                 auto textColor = m_strTextColor;
@@ -1358,7 +1357,6 @@ namespace m3d
 
         int Wnd::ReflectChildNotifyToParent(Wnd*, unsigned, unsigned, AIParam const&)
         {
-            //TODO: ...
             throw std::logic_error("Not implemented");
         }
 
@@ -1397,7 +1395,6 @@ namespace m3d
 
         int Wnd::OnMouseClick(PointBase<float> const&)
         {
-            //TODO: ...
             throw std::logic_error("Not implemented");
         }
 
@@ -1407,13 +1404,11 @@ namespace m3d
 
         int Wnd::OnMouseButton2(unsigned int, PointBase<float> const&)
         {
-            //TODO: ...
             throw std::logic_error("Not implemented");
         }
 
         int Wnd::OnMouseButton1(unsigned, PointBase<float> const&)
         {
-            //TODO: ...
             throw std::logic_error("Not implemented");
         }
 
@@ -1491,7 +1486,6 @@ namespace m3d
 
         int Wnd::OnMouseWheel(int, PointBase<float> const&)
         {
-            //TODO: ...
             throw std::logic_error("Not implemented");
         }
 
@@ -1642,7 +1636,6 @@ namespace m3d
 
         void Wnd::DoDragMove(PointBase<float> const&)
         {
-            //TODO: ...
             throw std::logic_error("Not implemented");
         }
 

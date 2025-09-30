@@ -135,8 +135,6 @@ namespace m3d
 
     bool AnimatedModel::LoadGAM(CStr const& fileName, bool bForceNextAnimation)
     {
-        //TODO: implement AnimatedModel::LoadGAM
-        return true;
         if (m_bVerification)
         {
             M3D_LOG_ERR("LoadGAM does work not for verification of models!!!");
@@ -485,8 +483,7 @@ namespace m3d
 
     void AnimatedModel::ReloadSkins(LoadSkins const&)
     {
-        // TODO: implement AnimatedModel::ReloadSkins
-        // throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void AnimatedModel::CalculateMeshes(Configuration&) const
@@ -581,8 +578,7 @@ namespace m3d
 
     void AnimatedModel::UpdateCubemap()
     {
-        // TODO: implement AnimatedModel::UpdateCubemap
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     unsigned AnimatedModel::GetNumGeoms() const

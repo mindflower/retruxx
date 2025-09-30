@@ -367,9 +367,7 @@ int SaveList::MeasureItem(int, BoundsBase<float>&) const
 
 int SaveList::CreateItems()
 {
-    //TODO: implement SaveList::CreateItems
-    return 1;
-    //throw std::logic_error("Not implemented");
+    throw std::logic_error("Not implemented");
 }
 
 void SaveList::SortSaves0(SortArg, SortDir, std::vector<SaveButton*, std::allocator<SaveButton*>>&)

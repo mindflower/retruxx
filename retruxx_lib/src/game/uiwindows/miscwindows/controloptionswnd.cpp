@@ -255,6 +255,7 @@ void ControlOptionsWnd::UpdateMouseSensitivityControls()
 
 int ControlOptionsWnd::OnBeforeAddToWndStation()
 {
+    throw std::logic_error("Not implemented");
     //TODO: implement ControlOptionsWnd::OnBeforeAddToWndStation
     //ControlOptionsWnd::UpdateControls(this);
     return Wnd::OnBeforeAddToWndStation();

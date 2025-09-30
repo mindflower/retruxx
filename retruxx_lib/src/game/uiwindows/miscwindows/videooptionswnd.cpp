@@ -782,9 +782,7 @@ void VideoOptionsWnd::UpdateGammaPrevNextButtonsState()
 
 VideoOptionsWnd::GraphicQuality VideoOptionsWnd::DetectCurrentGraphicQuality() const
 {
-    //TODO: implement VideoOptionsWnd::DetectCurrentGraphicQuality
-    //throw std::logic_error("Not implemented");
-    return GRAPHIC_QUALITY_CUSTOM;
+    throw std::logic_error("Not implemented");
 }
 
 int VideoOptionsWnd::GetDefaultBlumForGraphicQuality(GraphicQuality) const

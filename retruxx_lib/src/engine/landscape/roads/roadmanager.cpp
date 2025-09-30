@@ -125,16 +125,12 @@ namespace m3d
 
     int RoadManager::ReadRoadSetConfigFromXmlFile(char const*)
     {
-        // TODO: implement RoadManager::ReadRoadSetConfigFromXmlFile
-        //throw retruxx::logic_error("Not implemented");
-        return 1;
+        throw retruxx::logic_error("Not implemented");
     }
 
     int RoadManager::ReadRoadsFromXmlFile(char const*)
     {
-        // TODO: implement RoadManager::ReadRoadsFromXmlFile
-        //throw retruxx::logic_error("Not implemented");
-        return 1;
+        throw retruxx::logic_error("Not implemented");
     }
 
     void RoadManager::Release()

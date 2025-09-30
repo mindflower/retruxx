@@ -21,7 +21,7 @@ namespace ai
 
     bool FormationPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        // TODO: implement FormationPrototypeInfo::LoadFromXML
+        throw std::logic_error("Not implemented");
         auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         return result;
 

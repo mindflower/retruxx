@@ -268,8 +268,6 @@ void LevelInfoManager::OnTownRuined(void*)
 
 void LevelInfoManager::UpdateKnownLevels()
 {
-    //TODO: implement LevelInfoManager::UpdateKnownLevels
-    return;
     throw std::logic_error("Not implemented");
 }
 
@@ -298,8 +296,6 @@ void LevelInfoManager::UpdateLevelImages()
 
 void LevelInfoManager::UpdateObjectInfoForCurrentLevel()
 {
-    //TODO: implement LevelInfoManager::UpdateObjectInfoForCurrentLevel
-    return;
     for (auto it = ai::theObjects->begin(); it != ai::theObjects->end(); ++it)
     {
         bool tasd = true;
@@ -681,8 +677,7 @@ int LevelInfoManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 
 void LevelInfoManager::UpdateVisibilityMaps()
 {
-    // TODO: implement LevelInfoManager::UpdateVisibilityMaps
-    //throw std::logic_error("Not implemented");
+    throw std::logic_error("Not implemented");
 }
 
 m3d::Class* LevelInfoManager::GetClass() const

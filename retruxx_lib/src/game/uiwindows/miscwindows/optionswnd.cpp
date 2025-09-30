@@ -175,9 +175,7 @@ void OptionsWnd::SelectTabButton(Tab tabId)
 
 int OptionsWnd::ApplyTabChanges(Tab tab)
 {
-    //TODO: implement OptionsWnd::ApplyTabChanges
-    //throw std::logic_error("Not implemented");
-    return 1;
+    throw std::logic_error("Not implemented");
 }
 
 int OptionsWnd::OnAfterRemoveFromWndStation()

@@ -297,7 +297,7 @@ namespace m3d
 
         void ProgressBarWnd::CalcTexCoordinates(float& u0, float& v0, float& u1, float& v1) const
         {
-            //TODO: implement ProgressBarWnd::CalcTexCoordinates
+            throw std::logic_error("Not implemented");
             u0 = 0.0;
             v0 = 0.0;
             u1 = 1.0;

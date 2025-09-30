@@ -644,7 +644,6 @@ int n_VTuneResume(m3d::sArgStack& scriptStack)
 int n_CreateNodeTTLed(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO: ....
     return 0;
 }
 
@@ -764,7 +763,6 @@ int n_MoveCurrentCinematicPointToCamera(m3d::sArgStack& scriptStack)
 int n_PassToMap(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO: ...
     return 0;
 }
 
@@ -829,7 +827,6 @@ int n_ResetFogOfWarFC(m3d::sArgStack& scriptStack)
 int n_SetWeather(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO: ...
     return 0;
 }
 
@@ -853,14 +850,12 @@ int n_VTunePause(m3d::sArgStack& scriptStack)
 int n_SetCinematicPoint(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO: ...
     return 0;
 }
 
 int n_CreateEffectInsertedInRemove(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO: ...
     return 0;
 }
 
@@ -1049,7 +1044,6 @@ int n_Assert(m3d::sArgStack& scriptStack)
 int n_PauseRadio(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO: ...
     return 0;
 }
 
@@ -1072,7 +1066,6 @@ int n_SetMaxTimescale(m3d::sArgStack& scriptStack)
 int n_CreateEffectTTLed(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO: ...
     return 0;
 }
 
@@ -1141,14 +1134,12 @@ int n_SetMinTimescale(m3d::sArgStack& scriptStack)
 int n_InsertCurrentPointToCinematicPath(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO: ...
     return 0;
 }
 
 int n_ResumeRadio(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO: ...
     return 0;
 }
 
@@ -1170,7 +1161,6 @@ int n_DumpSceneGraph(m3d::sArgStack& scriptStack)
 int n_SetCameraZoom(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO: ...
     return 0;
 }
 
@@ -1209,14 +1199,12 @@ int n_EnableCinematicDebug(m3d::sArgStack& scriptStack)
 int n_ShowDeathMenu(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO:...
     return 0;
 }
 
 int n_SetCinematicFadeParams(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO:...
     return 0;
 }
 
@@ -1238,7 +1226,6 @@ int n_SetGameSpeed(m3d::sArgStack& scriptStack)
 int n_SetProfileBloom(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO: ...
     return 0;
 }
 
@@ -1252,21 +1239,18 @@ int n_GetMinTimescale(m3d::sArgStack& scriptStack)
 int n_GetProfileMotionBlurAlpha(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO:...
     return 0;
 }
 
 int n_GetNodeByName(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO:...
     return 0;
 }
 
 int n_SetCameraDirectionToObj(m3d::sArgStack& scriptStack)
 {
     throw std::logic_error("Not implemented");
-    //TODO:..
     return 0;
 }
 

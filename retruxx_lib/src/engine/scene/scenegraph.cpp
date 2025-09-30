@@ -329,8 +329,7 @@ namespace m3d
 
     void SceneGraph::Update()
     {
-        // TODO: implement SceneGraph::Update
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SceneGraph::RenderDebugForNode(SgNode*)
@@ -340,8 +339,7 @@ namespace m3d
 
     void SceneGraph::RenderContouredNodes()
     {
-        // TODO: implement SceneGraph::RenderContouredNodes
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SceneGraph::UpdateAllXForms()
@@ -366,8 +364,7 @@ namespace m3d
 
     void SceneGraph::Render(SgRenderFlags)
     {
-        // TODO: implement SceneGraph::Render
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void SceneGraph::GetNodeNamesHierarchy(SgNode*, retruxx::vector<CStr>&)
@@ -477,8 +474,7 @@ namespace m3d
         }
         else
         {
-            // TODO: implement SceneGraph::UpdateVis
-            //throw retruxx::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         }
     }
 

@@ -14,8 +14,7 @@ namespace ai
 
     void Relationship::LoadDefaultFromXmlFile(char const*)
     {
-        // TODO: implement Relationship::LoadDefaultFromXmlFile
-       // throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     int Relationship::GetMinBelong() const
@@ -25,8 +24,7 @@ namespace ai
 
     void Relationship::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        // TODO: implement Relationship::LoadFromXML
-       // throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     bool Relationship::AmongTolerance(int, int, std::set<eTolerance> const&) const

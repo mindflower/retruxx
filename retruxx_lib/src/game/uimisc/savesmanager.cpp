@@ -219,9 +219,7 @@ void SavesManager::Clear()
 
 int SavesManager::LoadInfos()
 {
-    //TODO: implement SavesManager::LoadInfos
-    return 1;
-    //throw retruxx::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
 SavesManager::SavesManager()

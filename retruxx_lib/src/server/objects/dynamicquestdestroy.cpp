@@ -37,8 +37,7 @@ namespace ai
 
     void DynamicQuestDestroy::LoadNamesForTargetsFromXml(m3d::cmn::XmlNode const*)
     {
-        // TODO: implement DynamicQuestDestroy::LoadNamesForTargetsFromXml
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     m3d::Class* DynamicQuestDestroy::GetBaseClass()

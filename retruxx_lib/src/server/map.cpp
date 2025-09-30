@@ -238,8 +238,7 @@ namespace ai
         m_lastIndex(0, 0),
         m_CurPos(0, 0)
     {
-        //TODO: implement Map::Map
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     bool Map::IsCircleBlocked(MapIndex const&, int, unsigned char)

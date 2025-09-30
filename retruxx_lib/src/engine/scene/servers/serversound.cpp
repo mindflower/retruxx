@@ -52,8 +52,7 @@ namespace m3d
 
     void Sound3DServer::RenderItem(int, void*)
     {
-        // TODO: implement Sound3DServer::RenderItem
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Sound3DServer::Release()
@@ -63,8 +62,7 @@ namespace m3d
 
     void Sound3DServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>&)
     {
-        // TODO: implement Sound3DServer::AddItemsList
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Sound3DServer::_AddItemFromXmlNode(m3d::cmn::XmlNode const*)

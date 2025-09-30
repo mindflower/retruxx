@@ -1220,8 +1220,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     }
     case 64:
     {
-        // TODO: implement m_weaponGroupManager->GameDataUpdate
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
         return 1;
         m_weaponGroupManager->GameDataUpdate(data, guiEventId);
         //auto event = (m3d::Event*)data;

@@ -189,9 +189,7 @@ namespace ai
 
     void Player::Update(float, unsigned)
     {
-        // TODO: implement Player::Update
-        //throw retruxx::logic_error("Not implemented");
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     retruxx::vector<CStr> const& Player::GetQuestItemPrototypeNames() const
@@ -340,9 +338,7 @@ namespace ai
 
     void Player::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        //ai::Obj::LoadFromXML(xmlFile, xmlNode);
-        // TODO: implement Player::LoadFromXML
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     float Player::GetMaxHealth() const
@@ -372,9 +368,7 @@ namespace ai
 
     void Player::AddChild(Obj* obj)
     {
-        //Obj::AddChild(obj);
-        // TODO: implement Player::AddChild
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     float Player::GetMaxFuel() const

@@ -45,7 +45,7 @@ QuestInfoManager::~QuestInfoManager()
 
 int QuestInfoManager::Init()
 {
-    //TODO: implement QuestInfoManager::Init
+    throw std::logic_error("Not implemented");
     if (m_isInited)
     {
         ClearQuestInfos();

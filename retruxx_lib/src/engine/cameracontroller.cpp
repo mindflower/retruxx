@@ -15,8 +15,7 @@ namespace m3d
 
     void CameraController::Update()
     {
-        // TODO: implement CameraController::Update
-        //throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 
     float CameraController::GetShakingRolling() const

@@ -211,7 +211,6 @@ namespace ai
 
     void CServer::Load(StartupMode mode, m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode, bool bContiniousMap, ObjContainer::eSAVE_TYPES saveType)
     {
-        // TODO: implement CServer::Load
         M3D_LOG_INFO("AI: Loading Server...");
 
         auto saveSaveType = ai::theObjects->m_SaveType;
@@ -271,9 +270,9 @@ namespace ai
         M3D_LOG_INFO("\tAI: Triggers loaded");
         
         M3D_LOG_INFO("\tAI: Loading Object Names");
-       // ai::theObjects->LoadObjectNamesFromXML(m_level->GetFullPathNameA(this->m_level->m_ObjectFullNames));
+        ai::theObjects->LoadObjectNamesFromXML(m_level->GetFullPathNameA(this->m_level->m_ObjectFullNames));
  
-       // LoadPrototypeNamesFromXML(this->m_level->m_prototypeFullNames);
+        LoadPrototypeNamesFromXML(this->m_level->m_prototypeFullNames);
         m_LastSenderID = 0;
         
         M3D_LOG_INFO("\tAI: Initing Player");  
@@ -282,7 +281,6 @@ namespace ai
         {
             auto formatedScriptErrorDesc = M3D_KERNEL->GetScriptServer().getFormatedScriptErrorDesc(res);
             M3D_LOG_ERR(formatedScriptErrorDesc);
-
         }
 
         ai::theProcessManager->Update(0.0001, 1u, 2u);
@@ -318,13 +316,6 @@ namespace ai
 
     PrototypeInfo* CServer::CreatePrototypeInfoByClassName(CStr const& className)
     {
-        // TODO: implement CServer::CreatePrototypeInfoByClassName
-        if (className != "Trigger" && className != "Player" && className != "Location")
-        {
-            return nullptr;
-        }
-
-
         if (className == "Vehicle") return new VehiclePrototypeInfo;
         else if (className == "ArticulatedVehicle") return new ArticulatedVehiclePrototypeInfo;
         else if (className == "VehiclePart") return new VehiclePartPrototypeInfo;
@@ -1157,7 +1148,6 @@ namespace ai
 
     void UpdateLights()
     {
-        // TODO: implement UpdateLights
-        // throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
     }
 }

@@ -88,7 +88,6 @@ namespace m3d
         void Package::GetOpenFilesList(retruxx::vector<CStr>& fileList) const
         {
             fileList.clear();
-            //TODO: thats all?
         }
     }
 }

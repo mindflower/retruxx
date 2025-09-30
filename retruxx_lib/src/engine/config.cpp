@@ -28,7 +28,7 @@ namespace m3d
 
     EngineConfig::~EngineConfig()
     {
-        //TODO: implement EngineConfig::~EngineConfig
+        throw std::logic_error("Not implemented");
     }
 
     float EngineConfig::GetAttackAnimationFrametime(int, int)

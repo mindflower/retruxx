@@ -17,17 +17,11 @@ int MsgManager::ShowMsgBox(int, bool)
 
 int MsgManager::Init(bool bGlobal)
 {
-    //TODO: implement MsgManager::Init
-    Clear(bGlobal);
-    return 1;
     throw std::logic_error("Not implemented");
-    return 1;
 }
 
 void MsgManager::Clear(bool)
 {
-    //TODO: implement MsgManager::Clear
-    return;
     throw std::logic_error("Not implemented");
 }
 

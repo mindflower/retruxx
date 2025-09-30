@@ -425,8 +425,7 @@ namespace ai
 
     void ObjContainer::Purge()
     {
-        // TODO: implement ObjContainer::Purge
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ObjContainer::iterator ObjContainer::updatingEnd()
@@ -750,6 +749,7 @@ namespace ai
     {
         // TODO: generated code
         // TODO: implement ObjContainer::Update
+        throw std::logic_error("Not implemented");
         // Reset debug counters
         PhysicBody::GetCountNodeRelinks()->SetI(0);
         PhysicObj::GetRelinksToCollisionCounter()->SetI(0);
@@ -874,8 +874,7 @@ namespace ai
 
     void ObjContainer::RelinkSceneGraphNodes()
     {
-        // TODO: implement ObjContainer::RelinkSceneGraphNodes
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
         //auto* countNode = ai::PhysicBody::GetCountNodeRelinks();
         //countNode->SetI(0);
         //for ()

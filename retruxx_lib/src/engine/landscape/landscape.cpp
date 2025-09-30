@@ -398,8 +398,7 @@ namespace m3d
 
     void Landscape::DrawSolidLandscape(LandRenderMode, int)
     {
-        // TODO: implement Landscape::DrawSolidLandscape
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Landscape::RemoveGrassInstance(unsigned)
@@ -414,8 +413,7 @@ namespace m3d
 
     void Landscape::DrawLandScapeTextures(VisibilityMode visMode, bool drawMinimap, bool roadMap)
     {
-        // TODO: implement Landscape::DrawLandScapeTextures
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
         return;
 
         int landSize = this->m_owner->m_level->land_size;
@@ -567,8 +565,6 @@ namespace m3d
 
     int Landscape::ConstructCollisionData()
     {
-        //TODO: implement Landscape::ConstructCollisionData
-        return 1;
         throw retruxx::logic_error("Not implemented");
     }
 
@@ -1115,8 +1111,7 @@ namespace m3d
 
     void Landscape::RenderGrass(retruxx::deque<retruxx::pair<int, int>> const&)
     {
-        // TODO: implement Landscape::RenderGrass
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Landscape::GetLsSize() const
@@ -1445,8 +1440,7 @@ namespace m3d
 
     void Landscape::DrawCollisionGeoms(bool)
     {
-        // TODO: implement Landscape::DrawCollisionGeoms
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Landscape::ClearCollisionCellsMap()
@@ -1695,8 +1689,6 @@ namespace m3d
 
     void Landscape::CreateHelperStructures()
     {
-        //TODO: implement Landscape::CreateHelperStructures
-        return;
         throw retruxx::logic_error("Not implemented");
     }
 
@@ -2585,8 +2577,7 @@ namespace m3d
 
     void Landscape::ManageLandScapeCollisionTriMeshes()
     {
-        // TODO: implement Landscape::ManageLandScapeCollisionTriMeshes
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Landscape::LinkPassMapCellToCollisionCell(PointBase<int> const&)
@@ -3437,8 +3428,7 @@ namespace m3d
 
     void Landscape::RenderRoads()
     {
-        // TODO: implement Landscape::RenderRoads
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Landscape::Register()

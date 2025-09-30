@@ -99,15 +99,13 @@ namespace m3d
 
     int WeatherManager::UpdateDayTime()
     {
-        // TODO: implement WeatherManager::UpdateDayTime
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
         return 1;
     }
 
     float WeatherManager::GetFogReduceFactorFromWeather() const
     {
-        // TODO: implement WeatherManager::GetFogReduceFactorFromWeather
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
         //return m_currentWeather->m_reduceDistFactor;
         return 0.0;
     }
@@ -119,8 +117,7 @@ namespace m3d
 
     int WeatherManager::RenderWeatherParticles()
     {
-        // TODO: implement WeatherManager::RenderWeatherParticles
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
         return 1;
     }
 
@@ -141,16 +138,12 @@ namespace m3d
 
     bool WeatherManager::GetShadowVisibilityFromWeather() const
     {
-        // TODO: implement WeatherManager::GetShadowVisibilityFromWeather
-        //throw retruxx::logic_error("Not implemented");
-        //return this->m_currentWeather->m_shadowVisibility[this->m_curDayTime];
-        return false;
+        return this->m_currentWeather->m_shadowVisibility[this->m_curDayTime];
     }
 
     int WeatherManager::UpdateWheatherParticles()
     {
-        // TODO: implement WeatherManager::UpdateWheatherParticles
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
         //auto idList = ai::theObjects->GetGameTime().GetAsIdList();
         //m_currentWeather->Update(1.0, )
         //throw std::logic_error("Not implemented");
@@ -159,8 +152,7 @@ namespace m3d
 
     int WeatherManager::ReadFromXmlFile(char const*)
     {
-        // TODO: implement WeatherManager::ReadFromXmlFile
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
         return 1;
     }
 

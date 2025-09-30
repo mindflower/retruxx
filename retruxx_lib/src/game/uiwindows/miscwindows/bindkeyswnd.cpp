@@ -100,9 +100,7 @@ BindKeysWnd::BindKeysItem::BindKeysItem(float)
 
 int BindKeysWnd::BindKeysList::CreateItems()
 {
-    //TODO: implement BindKeysWnd::BindKeysList::CreateItems
-    //throw std::logic_error("Not implemented");
-    return 1;
+    throw std::logic_error("Not implemented");
 }
 
 int BindKeysWnd::BindKeysList::MeasureItem(int, BoundsBase<float>&) const
@@ -112,9 +110,7 @@ int BindKeysWnd::BindKeysList::MeasureItem(int, BoundsBase<float>&) const
 
 int BindKeysWnd::BindKeysList::Rebind(Impulse)
 {
-    //TODO: implement BindKeysWnd::BindKeysList::Rebind
-    //throw std::logic_error("Not implemented");
-    return 1;
+    throw std::logic_error("Not implemented");
 }
 
 int BindKeysWnd::BindKeysList::RenderItem(int, PointBase<float> const&, m3d::ui::DrawInfo const&)

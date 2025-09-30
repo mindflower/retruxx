@@ -184,8 +184,7 @@ int MainMenuUI::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::
 
 void MainMenuUI::OnCurProfileChanged()
 {
-    //TODO: implement MainMenuUI::OnCurProfileChanged
-    //throw std::logic_error("Not implemented");
+    throw std::logic_error("Not implemented");
 }
 
 int MainMenuUI::GameDataUpdate(void* data, int dataType)

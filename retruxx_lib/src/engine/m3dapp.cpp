@@ -1193,7 +1193,6 @@ namespace m3d
 
     void Application::DoneImpulses()
     {
-        //TODO: ...
         throw retruxx::logic_error("Not implemented");
     }
 
@@ -1342,9 +1341,7 @@ namespace m3d
 
     bool Application::StartPlayingMusic(char const*, bool, bool)
     {
-        // TODO: implement Application::StartPlayingMusic
-        //throw retruxx::logic_error("Not implemented");
-        return true;
+        throw retruxx::logic_error("Not implemented");
     }
 
     DataServer& Application::GetProjectorsServer()
@@ -1375,7 +1372,6 @@ namespace m3d
     Application::~Application()
     {
         throw retruxx::logic_error("Not implemented");
-        //TODO: implement Application::~Application
     }
 
     void Application::TexSoften(rend::TexHandle, rend::TexHandle, int, float, unsigned)
@@ -1609,7 +1605,7 @@ namespace m3d
 
     void Application::done()
     {
-        //TODO: implement Application::done
+        throw retruxx::logic_error("Not implemented");
     }
 
     void Application::OnAfterDeviceReset()
@@ -3612,7 +3608,6 @@ namespace m3d
 
     void Application::DiscardAllEvents()
     {
-        //TODO: ...
         throw retruxx::logic_error("Not implemented");
     }
 

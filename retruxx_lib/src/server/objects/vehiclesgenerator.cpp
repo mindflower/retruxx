@@ -44,9 +44,7 @@ namespace ai
 
     bool VehiclesGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        // TODO: implement VehiclesGeneratorPrototypeInfo::LoadFromXML
-        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
-        return result;
+        throw std::logic_error("Not implemented");
     }
 
     void VehiclesGeneratorPrototypeInfo::PostLoad()
@@ -120,8 +118,7 @@ namespace ai
 
 	void VehiclesGeneratorInfoCache::EnsureInitialized()
 	{
-        // TODO: implement VehiclesGeneratorInfoCache::EnsureInitialized
-        // throw retruxx::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
 	}
 
 	void VehiclesGeneratorInfoCache::_GetVehiclePartInfos(retruxx::vector<int> const&, retruxx::vector<VehiclePartInfo>&)

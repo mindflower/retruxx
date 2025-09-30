@@ -62,7 +62,7 @@ namespace ai
 
     bool TeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        // TODO: implement TeamPrototypeInfo::LoadFromXML
+        throw std::logic_error("Not implemented");
         auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         //if (result)
         //{

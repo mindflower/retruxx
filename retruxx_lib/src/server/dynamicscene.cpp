@@ -55,8 +55,7 @@ namespace ai
 
     void NearCallback(void*, dxGeom*, dxGeom*)
 	{
-        // TODO: implement NearCallback
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
 	}
 
 	RT_CLASS_EXPORTS_BEGIN(DynamicScene)
@@ -85,8 +84,7 @@ namespace ai
 
 	void DynamicScene::PurgeBodies()
 	{
-        // TODO: implement DynamicScene::PurgeBodies
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
         //if (thePlayer)
         //{
         //    auto vehicle = thePlayer->GetVehicle();
@@ -129,8 +127,7 @@ namespace ai
 
 	void DynamicScene::ReadSoilProps(char const*)
 	{
-        // TODO: implement DynamicScene::ReadSoilProps
-        // throw std::logic_error("Not implemented");
+        throw std::logic_error("Not implemented");
 	}
 
 	CStr const& DynamicScene::GetShellWaterEffectName(unsigned short) const
@@ -337,8 +334,7 @@ namespace ai
 
 	void DynamicScene::RenderDebugInfo()
 	{
-        // TODO: implement DynamicScene::RenderDebugInfo
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
 	}
 
 	m3d::Object* DynamicScene::CreateObject()
