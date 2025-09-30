@@ -5,6 +5,8 @@
 
 #include "core/ini.h"
 #include "core/kernel.h"
+#include "game/m3dgame.h"
+#include "scene/servers/serveranimatedmodel.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetMass)
 {
@@ -72,8 +74,21 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void SimplePhysicObjPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	void SimplePhysicObjPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
+        auto* serverAnimatedModels = (m3d::AnimatedModelsServer*)&M3D_APP->GetAnimatedModelsServer();
+        const auto sizes = serverAnimatedModels->GetBoundSizes(m_engineModelName.c_str());
+        const auto item = serverAnimatedModels->GetItemByName(m_engineModelName.c_str(), true);
+        GetCollisionInfoByServerHandle(item, m_collisionInfos, m_bCollisionTrimeshAllowed);
+        m_size = m_collisionInfos[0].m_size;
+        m3d::SafeVectorAttrib(m_size, xmlNode, "Size");
+        m_radius = sizes.y * 0.5;
+        m3d::SafeFloatAttrib(m_radius, xmlNode, "Radius");
+        if (m_geomType)
+        {
+            _SetGeomType(m_geomType);
+        }
+
 		throw retruxx::logic_error("Not implemented");
 	}
 

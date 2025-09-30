@@ -76,8 +76,13 @@ namespace m3d
         return 1;
     }
 
-    CVector AnimatedModelsServer::GetBoundSizes(char const*)
+    CVector AnimatedModelsServer::GetBoundSizes(char const* modelName)
     {
+        auto item = GetItemByName(modelName, true);
+        if (item == -1)
+        {
+            return CVector(0.0, 0.0, 0.0);
+        }
         throw retruxx::logic_error("Not implemented");
     }
 

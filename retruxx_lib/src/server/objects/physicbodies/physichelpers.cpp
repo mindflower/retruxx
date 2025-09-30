@@ -27,5 +27,10 @@ namespace ai
             return 0;
         return -1;
     }
+
+    bool GetCollisionInfoByServerHandle(int, retruxx::vector<CollisionInfo>&, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
 }
 

@@ -25,4 +25,5 @@ namespace ai
     }; /* size: 0x0040 */
 
     int RoughSign(float);
+    bool GetCollisionInfoByServerHandle(int, retruxx::vector<CollisionInfo>&, bool);
 }
