@@ -221,6 +221,7 @@ namespace m3d
                 auto tex = Application::g_pApp->m_renderer->AddTexture(file, 4);
                 if (!tex.IsValid())
                 {
+                    Clear();
                     M3D_LOG_ERR("Font " + m_nameShort + ": fail to create from xml - invalid texture");
                     return 0;
                 }
@@ -511,7 +512,7 @@ namespace m3d
 
         std::vector<rend::TexHandle> const& Font::GetTextures() const
         {
-            throw std::logic_error("Not implemented");
+            return m_textures;
         }
 
         Font::~Font()

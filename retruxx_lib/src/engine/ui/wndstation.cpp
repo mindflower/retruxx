@@ -233,7 +233,7 @@ namespace m3d
                 DispatchPaint(wnd, childBounds);
             }
 
-            if (curWnd->m_bounds.width + curWnd->m_bounds.x0 - curWnd->m_bounds.x0 != 0.0 ||
+            if ((curWnd->m_bounds.width + curWnd->m_bounds.x0) - curWnd->m_bounds.x0 != 0.0 ||
                 curWnd->m_bounds.y0 - (curWnd->m_bounds.height + curWnd->m_bounds.y0) != 0.0)
             {
                 if ((curWnd->m_style & 1) == 0 &&

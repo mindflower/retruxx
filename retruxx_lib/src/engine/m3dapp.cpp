@@ -3030,6 +3030,7 @@ namespace m3d
         {
             auto vbStream = M3D_RENDERER->LockVbStreaming(m_pointsVertsVb, m_numPointsVerts, vOfs, nullptr);
             memcpy(vbStream, m_sourceVerts, this->m_numPointsVerts * this->m_pointsVertsSz);
+
             M3D_RENDERER->UnlockVb(this->m_pointsVertsVb);
             // TODO: check this
             M3D_RENDERER->SetIndices(this->m_pointsVertsIb, vOfs);
@@ -3477,7 +3478,10 @@ namespace m3d
                 // Check if texture needs to be changed
                 if (fnt->m_textures[sym->m_tcs.m_texId] != GetGfxServer()->m_curFontTexture)
                 {
-                    FlushQuads();
+                    if (GetGfxServer()->m_curFontTexture.IsValid())
+                    {
+                        FlushQuads();
+                    }
                     M3D_RENDERER->SetTexture(0, fnt->m_textures[sym->m_tcs.m_texId], -1.0f);
                     GetGfxServer()->m_curFontTexture = fnt->m_textures[sym->m_tcs.m_texId];
                 }
@@ -3485,7 +3489,8 @@ namespace m3d
 
             // Render quad
             rend::VertexXYZWCT1* vertices = RenderQuadXyzwct1GetNextPtr();
-            if (vertices) {
+            if (vertices)
+            {
                 // Set up quad vertices
                 for (int i = 0; i < 4; i++)
                 {
