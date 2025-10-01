@@ -12,6 +12,42 @@
 
 namespace m3d
 {
+    AnimAction actions[] = {
+        {"STAN", AT_STAND1},
+        {"STAND2", AT_STAND2 }       ,
+        {"MOVE1", AT_MOVE1}         ,
+        {"MOVE2", AT_MOVE2}         ,
+        {"ATTACK1", AT_ATTACK1}       ,
+        {"ATTACK2", AT_ATTACK2}       ,
+        {"PAIN1", AT_PAIN1 }        ,
+        {"PAIN2", AT_PAIN2 }        ,
+        {"DEATH1", AT_DEATH1 }       ,
+        {"DEATH2", AT_DEATH2 }       ,
+        {"BLOCK1", AT_BLOCK1 }       ,
+        {"BLOCK2", AT_BLOCK2 }       ,
+        {"RESERVED1", AT_RESERVED1 }    ,
+        {"RESERVED2", AT_RESERVED2 }    ,
+        {"RESERVED3", AT_RESERVED3 }    ,
+        {"RESERVED4", AT_RESERVED4 }    ,
+        {"SEL1RUS", AT_SND_SELECT }   ,
+        {"SEL2RUS", AT_SND_SELECT2}   ,
+        {"SEL3RUS", AT_SND_SELECT3}   ,
+        {"SEL4RUS", AT_SND_SELECT4}   ,
+        {"AT1RUS", AT_SND_ATTACK }   ,
+        {"AT2RUS", AT_SND_ATTACK2}   ,
+        {"AT3RUS", AT_SND_ATTACK3}   ,
+        {"AT4RUS", AT_SND_ATTACK4}   ,
+        {"WALK1RUS", AT_SND_WALK }     ,
+        {"WALK2RUS", AT_SND_WALK2}     ,
+        {"WALK3RUS", AT_SND_WALK3}     ,
+        {"WALK4RUS", AT_SND_WALK4}     ,
+        {"MOVE1A", AT_SND_MOVE1A }   ,
+        {"MOVE2A", AT_SND_MOVE2A }   ,
+        {"UNREACH1RUS", AT_SND_UNREACH}   ,
+        {"ALLFRAMES", AT_ALL_FRAMES }   ,
+        {nullptr, AT_NUMTYPES  },
+    };
+
     AnimatedModel::Bone::Bone(Bone const&)
     {
         throw retruxx::logic_error("Not implemented");
@@ -133,240 +169,763 @@ namespace m3d
         m_loadSkins = skins;
     }
 
-    bool AnimatedModel::LoadGAM(CStr const& fileName, bool bForceNextAnimation)
+    int nextAnims_0[32] = { 0, -1, 2, 3, 0xA, 0xA, 0xA, 0, -1, -1, 0xA, 0xB, -1, 0,  -1, -1 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0, 0 };
+
+    bool AnimatedModel::LoadGAM(CStr const& FileName, bool bForceNextAnimation)
     {
-        if (m_bVerification)
+        // TODO: generated code
+        if (!this->m_bVerification)
         {
             M3D_LOG_ERR("LoadGAM does work not for verification of models!!!");
             return false;
         }
-        m_Name = NameFromFileName(fileName).c_str();
-        m_PathToFile = DirectoryFromFileName(fileName).c_str();
 
-        fs::auxTaggedFile taggedFile;
-        if (taggedFile.Open(fileName.c_str(), fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC))
+        CStr path;
+        CStr a;
+
+        // Extract name and path
+        m_Name = NameFromFileName(FileName).c_str();
+        m_PathToFile = DirectoryFromFileName(FileName).c_str();
+
+        m3d::fs::auxTaggedFile File;
+
+        void* Data = 0;
+
+        if (File.Open(FileName.c_str(), fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC))
         {
-            M3D_LOG_ERR("AnimatedModel::LoadGAM -- cannot open file " + fileName);
+            M3D_LOG_ERR("AnimatedModel::LoadGAM -- cannot open file " + FileName);
             return false;
         }
-        char* formatTitle = nullptr;
-        taggedFile.getFormatTitle(&formatTitle);
-        if (strcmp(formatTitle, "IVR"))
+
+        char* cFormatTitle = nullptr;
+        File.getFormatTitle(&cFormatTitle);
+
+        if (strcmp(cFormatTitle, "IVR"))
         {
             M3D_LOG_ERR("Wrong file format!!!");
             return false;
         }
-        unsigned formatVersion = 0;
-        taggedFile.getFormatVersion(formatVersion);
-        if (formatVersion <= 1)
-        {  
-            void* data = nullptr;
-            taggedFile.getChunkData(1, &data);
-            auto* shorts = static_cast<unsigned short*>(data);
-            m_header.m_numTriMeshes = shorts[0];
-            m_header.m_numSkinMeshes = shorts[1];
-            m_header.m_numStaticMeshes = shorts[2];
-            m_header.m_numAnimations = shorts[3];
-            unsigned numMaterials = shorts[4];
-            m_header.m_numNodes = shorts[5];
-            m_cfgSize = static_cast<unsigned*>(data)[3];
 
-            taggedFile.getChunkData(2, &data);
-            m_boneInitialPos = new Bone[m_header.m_numNodes];
-            m_initialBoneInvMatrices = new CMatrix[m_header.m_numNodes];
-            for (unsigned i = 0; i < m_header.m_numNodes; ++i)
+        unsigned int uFormatVersion = 0;
+        File.getFormatVersion(uFormatVersion);
+
+        if (uFormatVersion <= 1)
+        {
+            // Read header chunk (chunk 1)
+            File.getChunkData(1u, &Data);
+            uint16_t* v14 = (uint16_t*)Data;
+
+            this->m_header.m_numTriMeshes = v14[0];
+            this->m_header.m_numSkinMeshes = v14[1];
+            this->m_header.m_numStaticMeshes = v14[2];
+            this->m_header.m_numAnimations = v14[3];
+            this->m_header.m_numNodes = v14[5];
+            this->m_cfgSize = *((uint32_t*)v14 + 3);
+            uint16_t iNumMaterials = v14[4];
+
+            // Read bone data chunk (chunk 2)
+            File.getChunkData(2u, &Data);
+            uint8_t* v16 = (uint8_t*)Data;
+
+            int m_numNodes = this->m_header.m_numNodes;
+            this->m_boneInitialPos = new Bone[m_numNodes];
+
+            int v19 = this->m_header.m_numNodes;
+            this->m_initialBoneInvMatrices = new CMatrix[v19];
+
+            int v22 = 0;
+            bool v23 = this->m_header.m_numNodes <= 0;
+            unsigned int j = 0;
+            unsigned int v152 = 0;
+
+            if (!v23)
             {
-                auto charData = static_cast<char*>(data);
-                strcpy(m_boneInitialPos[i].m_boneName, charData);
-                m_boneInitialPos[i].m_ownIdx = i;
-                m_boneInitialPos[i].m_parentIdx = *((int*)charData + 10);
-                m_boneInitialPos[i].m_translation0 = *(CVector*)(charData + 44);
-                m_boneInitialPos[i].m_quaternion0 = *(Quaternion*)(charData + 56);
+                int v28 = 0;
+                do
+                {
+                    Bone* v24 = (Bone*)((char*)this->m_boneInitialPos + v152);
+                    strcpy(v24->m_boneName, (const char*)v16);
+                    v24->m_ownIdx = v22;
+                    v24->m_parentIdx = *((uint32_t*)v16 + 10);
+                    v24->m_translation0 = *(CVector*)(v16 + 44);
+                    v24->m_quaternion0 = *(Quaternion*)(v16 + 56);
 
-                auto invMat = (float*)(charData + 76);
-                for (unsigned j = 0; j < 4; ++j)
-                {
-                    m_initialBoneInvMatrices[i].m[j][0] = *(invMat - 1);
-                    m_initialBoneInvMatrices[i].m[j][1] = *(invMat);
-                    m_initialBoneInvMatrices[i].m[j][2] = *(invMat + 1);
-                    m_initialBoneInvMatrices[i].m[j][3] = *(invMat + 2);
-                    invMat += 4;
-                }
-                charData += 136;
-            }
+                    int v25 = v22 * 64;
+                    float* v26 = (float*)(v16 + 76);
 
-            taggedFile.getChunkData(4, &data);
-            m_numMeshes = m_header.m_numStaticMeshes + m_header.m_numTriMeshes + m_header.m_numSkinMeshes;
-            m_meshes = new Mesh[m_numMeshes];
-            auto charData = static_cast<char*>(data);
-            for (unsigned i = 0; i < m_numMeshes; ++i)
-            {
-                strcpy(m_meshes[i].m_meshName, charData);
-                m_meshes[i].meshId = i;
-                m_meshes[i].m_meshType = *((int*)charData + 10);
-                m_meshes[i].m_numNode = *((int*)charData + 11);
-                m_meshes[i].groupId = *((int*)charData + 12);
-                m_meshes[i].m_MaterialNumber = *((int*)charData + 13);
-                m_meshes[i].m_VertexTypeSize = *((int*)charData + 14);
-                m_meshes[i].m_VertexType = (rend::VertexType)*((int*)charData + 15);
-                m_meshes[i].m_numVertices = *((int*)charData + 16);
-                m_meshes[i].m_numFaces = *((int*)charData + 17);
-                m_meshes[i].m_pModelSkins = &m_Skins;
-                charData += 72;
-
-                //TODO: check this
-                m_meshes[i].m_verts = new unsigned char[m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize];
-                memcpy(m_meshes[i].m_verts, charData, m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize);
-                charData += m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize;
-                if (m_meshes[i].m_meshType == 4)
-                {
-                    m_meshes[i].m_VbPoolField = M3D_APP->m_renderer->AddVbPoolField(m_meshes[i].m_VertexType, m_meshes[i].m_numVertices);
-                    memcpy(
-                        M3D_APP->m_renderer->LockVbPoolField(m_meshes[i].m_VbPoolField),
-                        m_meshes[i].m_verts,
-                        m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize
-                    );
-                    M3D_APP->m_renderer->UnlockVbPoolField(m_meshes[i].m_VbPoolField);
-                }
-                if (m_meshes[i].m_meshType == 1)
-                {
-                    m_meshes[i].m_VbPoolField = M3D_APP->m_renderer->AddVbPoolField(m_meshes[i].m_VertexType, m_meshes[i].m_numVertices);
-                    memcpy(
-                        M3D_APP->m_renderer->LockVbPoolField(m_meshes[i].m_VbPoolField),
-                        charData,
-                        m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize
-                    );
-                    M3D_APP->m_renderer->UnlockVbPoolField(m_meshes[i].m_VbPoolField);
-                    charData += m_meshes[i].m_numVertices * m_meshes[i].m_VertexTypeSize;
-                }
-                if (m_meshes[i].m_meshType == 1)
-                {
-                    throw retruxx::logic_error("Not implemented");
-                }
-                m_meshes[i].m_tris = new  unsigned short[3 * m_meshes[i].m_numFaces];
-                memcpy(m_meshes[i].m_tris, data, 2 * 3 * m_meshes[i].m_numFaces);
-                charData += 2 * 3 * m_meshes[i].m_numFaces;
-                m_meshes[i].m_numDrawIndices = 3 * m_meshes[i].m_numFaces;
-                m_meshes[i].m_drawIndices = m_meshes[i].m_tris;
-                m_meshes[i].m_numDrawVerts = m_meshes[i].m_numVertices;
-                m_meshes[i].m_IbPoolField = M3D_APP->m_renderer->AddIbPoolField(m_meshes[i].m_numDrawIndices);
-                memcpy(
-                    M3D_APP->m_renderer->LockIbPoolField(m_meshes[i].m_IbPoolField),
-                    m_meshes[i].m_drawIndices,
-                    m_meshes[i].m_numDrawIndices * 2
-                );
-                M3D_APP->m_renderer->UnlockIbPoolField(m_meshes[i].m_IbPoolField);
-                //TODO: check this
-                charData += 188;
-            }
-            m_box.m_box[0] = *(float*)charData;
-            m_box.m_box[1] = *(float*)charData + 1;
-            m_box.m_box[2] = *(float*)charData + 2;
-            m_box.m_box[3] = *(float*)charData + 3;
-            m_box.m_box[4] = *(float*)charData + 4;
-            m_box.m_box[5] = *(float*)charData + 5;
-
-            taggedFile.getChunkData(8, &data);
-            charData = static_cast<char*>(data);
-            m_animations = new Animation[m_header.m_numAnimations];
-            for (unsigned i = 0; i < m_header.m_numAnimations; ++i)
-            {
-                m_animations[i].m_fps = *(short*)(charData + 27);
-                m_animations[i].m_numFrames = *(short*)(charData + 25);
-                m_animations[i].m_nextAnimation = *(short*)(charData + 29);
-                m_animations[i].m_numChanges = *(short*)(charData + 31);
-                m_animations[i].m_action = (ActionType)*(int*)(charData + 35);
-                m_animations[i].m_numNodes = *(int*)(charData + 33);
-                strcpy(m_animations[i].m_name, charData);
-                charData += 39;
-
-                m_animations[i].m_hierChanges = new HierarchyChange[m_animations[i].m_numChanges];
-                auto hierData = charData + 6;
-                for (unsigned j = 0; j < m_animations[i].m_numChanges; ++j)
-                {
-                    m_animations[i].m_hierChanges[j].ownIdx = *((short*)hierData - 1);
-                    m_animations[i].m_hierChanges[j].newParentIdx = *(short*)hierData;
-                    m_animations[i].m_hierChanges[j].changeType = (DRAFT_Change)*(int*)(hierData - 6);
-                    hierData += 8;
-                }
-                charData += 8 * m_animations[i].m_numChanges;
-
-                auto const nodesPositions = m_animations[i].m_numNodes * m_animations[i].m_numNodes;
-                auto nodesData = static_cast<char*>(data) + 36;
-                m_animations[i].m_nodesPositions = new AnimationTransform[nodesPositions];
-                auto nodesIdx = 0;
-                for (int j = 0; j < nodesPositions; j+=4)
-                {
-                    m_animations[i].m_nodesPositions[j].idx = *((short*)nodesData - 18);
-                    m_animations[i].m_nodesPositions[j].tx = *(float*)(nodesData - 34);
-                    m_animations[i].m_nodesPositions[j].ty = *(float*)(nodesData - 30);
-                    m_animations[i].m_nodesPositions[j].tz = *(float*)(nodesData - 26);
-                    m_animations[i].m_nodesPositions[j].qx = *(float*)(nodesData - 22);
-                    m_animations[i].m_nodesPositions[j].qy = *(float*)(nodesData - 18);
-                    m_animations[i].m_nodesPositions[j].qz = *(float*)(nodesData - 14);
-                    m_animations[i].m_nodesPositions[j].qw = *(float*)(nodesData - 10);
-                    m_animations[i].m_nodesPositions[j + 1].idx = *((short*)nodesData - 3);
-                    m_animations[i].m_nodesPositions[j + 1].tx = *((float*)nodesData - 1);
-                    m_animations[i].m_nodesPositions[j + 1].ty = *(float*)nodesData;
-                    m_animations[i].m_nodesPositions[j + 1].tz = *((float*)nodesData + 1);
-                    m_animations[i].m_nodesPositions[j + 1].qx = *((float*)nodesData + 2);
-                    m_animations[i].m_nodesPositions[j + 1].qy = *((float*)nodesData + 3);
-                    m_animations[i].m_nodesPositions[j + 1].qz = *((float*)nodesData + 4);
-                    m_animations[i].m_nodesPositions[j + 1].qw = *((float*)nodesData + 5);
-                    m_animations[i].m_nodesPositions[j+2].idx = *((short*)nodesData + 12);
-                    m_animations[i].m_nodesPositions[j+2].tx = *(float*)(nodesData + 26);
-                    m_animations[i].m_nodesPositions[j+2].ty = *(float*)(nodesData + 30);
-                    m_animations[i].m_nodesPositions[j+2].tz = *(float*)(nodesData + 34);
-                    m_animations[i].m_nodesPositions[j+2].qx = *(float*)(nodesData + 38);
-                    m_animations[i].m_nodesPositions[j+2].qy = *(float*)(nodesData + 42);
-                    m_animations[i].m_nodesPositions[j+2].qz = *(float*)(nodesData + 46);
-                    m_animations[i].m_nodesPositions[j+2].qw = *(float*)(nodesData + 50);
-                    m_animations[i].m_nodesPositions[j+3].idx = *((short*)nodesData + 27);
-                    m_animations[i].m_nodesPositions[j+3].tx = *((float*)nodesData + 14);
-                    m_animations[i].m_nodesPositions[j+3].ty = *((float*)nodesData + 15);
-                    m_animations[i].m_nodesPositions[j+3].tz = *((float*)nodesData + 16);
-                    m_animations[i].m_nodesPositions[j+3].qx = *((float*)nodesData + 17);
-                    m_animations[i].m_nodesPositions[j+3].qy = *((float*)nodesData + 18);
-                    m_animations[i].m_nodesPositions[j+3].qz = *((float*)nodesData + 19);
-                    m_animations[i].m_nodesPositions[j+3].qw = *((float*)nodesData + 20);
-                    nodesData += 120;
-                    nodesIdx += 4;
-                }
-                if (nodesIdx < nodesPositions)
-                {
-                    auto nodesDataInt = (unsigned int*)((char*)data + 30 * nodesIdx + 6);
-                    for (int j = nodesPositions - nodesIdx; j >= 0; --j)
-                    {
-                        m_animations[i].m_nodesPositions[j].idx = *((short*)nodesDataInt - 3);
-                        m_animations[i].m_nodesPositions[j].tx = *(float*)(nodesDataInt - 1);
-                        m_animations[i].m_nodesPositions[j].ty = *(float*)nodesDataInt;
-                        m_animations[i].m_nodesPositions[j].tz = (float)nodesDataInt[1];
-                        m_animations[i].m_nodesPositions[j].qx = (float)nodesDataInt[2];
-                        m_animations[i].m_nodesPositions[j].qy = (float)nodesDataInt[3];
-                        m_animations[i].m_nodesPositions[j].qz = (float)nodesDataInt[4];
-                        m_animations[i].m_nodesPositions[j].qw = *((float*)nodesDataInt + 5);;
-                        nodesDataInt = (unsigned*)((char*)nodesDataInt + 30);
+                    for (int v27 = 0; v27 < 4; v27++) {
+                        *(float*)((char*)&this->m_initialBoneInvMatrices->_11 + v25) = *(v26 - 1);
+                        *(float*)((char*)&this->m_initialBoneInvMatrices->_12 + v25) = *v26;
+                        *(float*)((char*)&this->m_initialBoneInvMatrices->_13 + v25) = v26[1];
+                        *(float*)((char*)&this->m_initialBoneInvMatrices->_14 + v25) = v26[2];
+                        v26 += 4;
+                        v25 += 16;
                     }
+
+                    v28 = this->m_header.m_numNodes;
+                    v152 += 76;
+                    v22 = j + 1;
+                    v16 += 136;
+                    ++j;
+                } while ((int)j < v28);
+            }
+
+            // Read mesh data chunk (chunk 4)
+            File.getChunkData(4u, &Data);
+            unsigned int v29 = this->m_header.m_numStaticMeshes + this->m_header.m_numTriMeshes + this->m_header.m_numSkinMeshes;
+            this->m_numMeshes = v29;
+
+            this->m_meshes = new Mesh[v29];
+            bool v4 = this->m_numMeshes == 0;
+            v152 = 0;
+
+            if (!v4)
+            {
+                unsigned int m_animRemap = 0;
+                bool v57 = false;
+                do
+                {
+                    AnimatedModel* v32 = this;
+                    char* v33 = &this->m_meshes->m_meshName[m_animRemap];
+                    uint8_t* v34 = (uint8_t*)Data;
+                    uint8_t* v35 = (uint8_t*)Data;
+                    char* v36 = v33;
+
+                    // Copy mesh name
+                    uint8_t v37 = 0;
+                    do
+                    {
+                        v37 = *v35;
+                        *v36++ = *v35++;
+                    } while (v37);
+
+                    *((uint32_t*)v33 + 12) = v152;
+                    *((uint32_t*)v33 + 10) = *((uint32_t*)v34 + 10);
+                    *((uint32_t*)v33 + 11) = *((uint32_t*)v34 + 11);
+                    *((uint32_t*)v33 + 13) = *((uint32_t*)v34 + 12);
+                    *((uint32_t*)v33 + 14) = *((uint32_t*)v34 + 13);
+                    *((uint32_t*)v33 + 20) = *((uint32_t*)v34 + 14);
+                    *((uint32_t*)v33 + 21) = *((uint32_t*)v34 + 15);
+                    *((uint32_t*)v33 + 22) = *((uint32_t*)v34 + 16);
+                    *((uint32_t*)v33 + 29) = *((uint32_t*)v34 + 17);
+                    *((uint32_t*)v33 + 15) = (uint32_t)&v32->m_Skins;
+
+                    Data = (uint8_t*)Data + 72;
+
+                    // Allocate and copy vertex data
+                    auto v38 = new char[*((uint32_t*)v33 + 22) * *((uint32_t*)v33 + 20)];
+                    unsigned int v39 = *((uint32_t*)v33 + 22) * *((uint32_t*)v33 + 20);
+                    *((uint32_t*)v33 + 23) = (uint32_t)v38;
+                    memcpy(v38, Data, v39);
+
+                    Data = (uint8_t*)Data + (*((uint32_t*)v33 + 22) * *((uint32_t*)v33 + 20));
+
+                    // Handle different mesh types
+                    if (*((uint32_t*)v33 + 10) == 4)
+                    {
+                        // Type 4 mesh - create VB pool field
+                        m3d::rend::VbPoolField v40 = m3d::Application::g_pApp->m_renderer->AddVbPoolField(*(m3d::rend::VertexType*)((uint32_t*)v33 + 21), *((uint32_t*)v33 + 22));
+
+                        *((uint32_t*)v33 + 33) = v40.Offset;
+                        *((uint32_t*)v33 + 34) = v40.Size;
+                        *((uint32_t*)v33 + 35) = v40.RealOffset;
+                        *((uint32_t*)v33 + 36) = v40.VertType;
+                        *((m3d::rend::VbHandle*)((uint32_t*)v33 + 37)) = v40.Vb;
+
+                        void* lockPtr = m3d::Application::g_pApp->m_renderer->LockVbPoolField(*((m3d::rend::VbPoolField*)(v33 + 132)));
+                        memcpy(lockPtr, *((const void**)v33 + 23),
+                            *((uint32_t*)v33 + 22) * *((uint32_t*)v33 + 20));
+                        m3d::Application::g_pApp->m_renderer->UnlockVbPoolField(*((m3d::rend::VbPoolField*)(v33 + 132)));
+                    }
+
+                    if (*((uint32_t*)v33 + 10) == 1) {
+                        // Type 1 mesh
+                        m3d::rend::VbPoolField v41 = m3d::Application::g_pApp->m_renderer->AddVbPoolField(*(m3d::rend::VertexType*)((uint32_t*)v33 + 21), *((uint32_t*)v33 + 22));
+
+                        *((uint32_t*)v33 + 33) = v41.Offset;
+                        *((uint32_t*)v33 + 34) = v41.Size;
+                        *((uint32_t*)v33 + 35) = v41.RealOffset;
+                        *((uint32_t*)v33 + 36) = v41.VertType;
+                        *((m3d::rend::VbHandle*)((uint32_t*)v33 + 37)) = v41.Vb;
+
+                        uint8_t* v42 = (uint8_t*)m3d::Application::g_pApp->m_renderer->LockVbPoolField(*((m3d::rend::VbPoolField*)(v33 + 132)));
+                        memcpy(v42, Data, *((uint32_t*)v33 + 22) * *((uint32_t*)v33 + 20));
+                        m3d::Application::g_pApp->m_renderer->UnlockVbPoolField(*((m3d::rend::VbPoolField*)(v33 + 132)));
+
+                        Data = (uint8_t*)Data + (*((uint32_t*)v33 + 22) * *((uint32_t*)v33 + 20));
+                    }
+
+                    if (*((uint32_t*)v33 + 10) == 2)
+                    {
+                        // Type 2 mesh - skin influences
+                        int v43 = *((uint32_t*)v33 + 22);
+                        void* v45 = new Influences[v43];
+
+
+                        *((uint32_t*)v33 + 26) = (uint32_t)v45;
+                        int v46 = 0;
+
+                        if (*((int*)v33 + 22) > 0)
+                        {
+                            int v47 = 0;
+                            uint8_t* v48 = (uint8_t*)Data + 8;
+
+                            do
+                            {
+                                int v49 = *((uint32_t*)v33 + 26);
+                                *(uint16_t*)(v49 + v47) = *((uint16_t*)v48 - 4);
+                                int v50 = v47 + v49;
+                                *(uint16_t*)(v50 + 4) = *((uint16_t*)v48 - 3);
+                                *(uint32_t*)(v50 + 8) = *((uint32_t*)v48 - 1);
+                                *(uint32_t*)(v50 + 12) = *(uint32_t*)v48;
+                                *(uint32_t*)(v50 + 16) = *((uint32_t*)v48 + 1);
+                                *(uint32_t*)(v50 + 20) = *((uint32_t*)v48 + 2);
+                                *(uint32_t*)(v50 + 24) = *((uint32_t*)v48 + 3);
+                                *(uint32_t*)(v50 + 28) = *((uint32_t*)v48 + 4);
+                                *(uint32_t*)(v50 + 32) = *((uint32_t*)v48 + 5);
+                                *(uint16_t*)(v50 + 36) = *((uint16_t*)v48 + 12);
+                                *(uint32_t*)(v50 + 40) = *(uint32_t*)(v48 + 26);
+                                *(uint32_t*)(v50 + 44) = *(uint32_t*)(v48 + 30);
+                                *(uint32_t*)(v50 + 48) = *(uint32_t*)(v48 + 34);
+                                *(uint32_t*)(v50 + 52) = *(uint32_t*)(v48 + 38);
+                                *(uint32_t*)(v50 + 56) = *(uint32_t*)(v48 + 42);
+                                *(uint32_t*)(v50 + 60) = *(uint32_t*)(v48 + 46);
+                                *(uint32_t*)(v50 + 64) = *(uint32_t*)(v48 + 50);
+                                *(uint16_t*)(v50 + 68) = *((uint16_t*)v48 + 27);
+                                *(uint32_t*)(v50 + 72) = *((uint32_t*)v48 + 14);
+                                *(uint32_t*)(v50 + 76) = *((uint32_t*)v48 + 15);
+                                *(uint32_t*)(v50 + 80) = *((uint32_t*)v48 + 16);
+                                *(uint32_t*)(v50 + 84) = *((uint32_t*)v48 + 17);
+                                *(uint32_t*)(v50 + 88) = *((uint32_t*)v48 + 18);
+                                *(uint32_t*)(v50 + 92) = *((uint32_t*)v48 + 19);
+                                *(uint32_t*)(v50 + 96) = *((uint32_t*)v48 + 20);
+                                *(uint16_t*)(v50 + 100) = *((uint16_t*)v48 + 42);
+                                *(uint32_t*)(v50 + 104) = *(uint32_t*)(v48 + 86);
+                                *(uint32_t*)(v50 + 108) = *(uint32_t*)(v48 + 90);
+                                *(uint32_t*)(v50 + 112) = *(uint32_t*)(v48 + 94);
+                                *(uint32_t*)(v50 + 116) = *(uint32_t*)(v48 + 98);
+                                *(uint32_t*)(v50 + 120) = *(uint32_t*)(v48 + 102);
+                                *(uint32_t*)(v50 + 124) = *(uint32_t*)(v48 + 106);
+                                ++v46;
+                                *(uint32_t*)(v50 + 128) = *(uint32_t*)(v48 + 110);
+                                v47 += 132;
+                                v48 += 122;
+                            } while (v46 < *((uint32_t*)v33 + 22));
+                        }
+
+                        Data = (uint8_t*)Data + (122 * *((uint32_t*)v33 + 22));
+                    }
+
+                    // Index buffer data
+                    uint8_t* v51 = (uint8_t*) new unsigned short[3* *((uint32_t*)v33 + 29)];
+                    int v52 = 3 * *((uint32_t*)v33 + 29);
+                    *((uint32_t*)v33 + 28) = (uint32_t)v51;
+                    memcpy(v51, Data, 2 * v52);
+
+                    Data = (uint8_t*)Data + (6 * *((uint32_t*)v33 + 29));
+
+                    int v53 = *((uint32_t*)v33 + 28);
+                    int v54 = *((uint32_t*)v33 + 22);
+                    *((uint32_t*)v33 + 25) = *((uint32_t*)v33 + 23);
+                    unsigned int v55 = 3 * *((uint32_t*)v33 + 29);
+                    *((uint32_t*)v33 + 31) = v55;
+                    *((uint32_t*)v33 + 30) = v53;
+                    *((uint32_t*)v33 + 24) = v54;
+
+                    // Create index buffer pool field
+                    m3d::rend::IbPoolField v56 = m3d::Application::g_pApp->m_renderer->AddIbPoolField(v55);
+
+                    *((uint32_t*)v33 + 38) = v56.Offset;
+                    *((uint32_t*)v33 + 39) = v56.Size;
+                    *((uint32_t*)v33 + 40) = v56.RealOffset;
+                    *((m3d::rend::IbHandle*)((uint32_t*)v33 + 41)) = v56.Ib;
+
+                    void* ibLockPtr = m3d::Application::g_pApp->m_renderer->LockIbPoolField(*(m3d::rend::IbPoolField*)(v33 + 152));
+                    memcpy(ibLockPtr, *((const void**)v33 + 30), 2 * *((uint32_t*)v33 + 31));
+                    m3d::Application::g_pApp->m_renderer->UnlockIbPoolField(*(m3d::rend::IbPoolField*)(v33 + 152));
+
+                    m_animRemap += 188;
+                    v57 = ++v152 < this->m_numMeshes;
+                } while (v57);
+            }
+
+            // Bounding box data
+            float v58 = *((float*)Data + 3);
+            float v59 = *((float*)Data + 4);
+            float v60 = *((float*)Data + 5);
+            float v61 = *(float*)Data;
+            float v62 = *((float*)Data + 1);
+            float v63 = *((float*)Data + 2);
+
+            this->m_box.m_box[0] = v61;
+            this->m_box.m_box[1] = v62;
+            this->m_box.m_box[2] = v63;
+            this->m_box.m_box[3] = v58;
+            this->m_box.m_box[4] = v59;
+            this->m_box.m_box[5] = v60;
+
+            // Animation data (chunk 8)
+            File.getChunkData(8u, &Data);
+            unsigned int numAnimations = this->m_header.m_numAnimations;
+
+            this->m_animations = new Animation[numAnimations + 4];
+            v23 = this->m_header.m_numAnimations <= 0;
+            int v155 = 0;
+
+            if (!v23)
+            {
+                uint8_t* v68 = (uint8_t*)Data;
+                unsigned int m_animRemap = 0;
+
+                do {
+                    Animation* v69 = (Animation*)((char*)this->m_animations + m_animRemap);
+                    v69->m_fps = *((uint16_t*)(v68 + 27));
+                    v69->m_numFrames = *((uint16_t*)(v68 + 25));
+                    v69->m_nextAnimation = *((uint16_t*)(v68 + 29));
+                    v69->m_numChanges = *((uint16_t*)(v68 + 31));
+                    v69->m_action = (ActionType)(*((uint32_t*)(v68 + 35)));
+                    v69->m_numNodes = *((uint16_t*)(v68 + 33));
+
+                    // Copy animation name
+                    char* v70 = (char*)((char*)v69 - (char*)v68 + 16);
+                    uint8_t v71 = 0;
+                    do {
+                        v71 = *v68;
+                        v70[(uint32_t)v68] = *v68;
+                        ++v68;
+                    } while (v71);
+
+                    Data = (uint8_t*)Data + 39;
+
+                    // Hierarchy changes
+                    HierarchyChange* v72 = (HierarchyChange*)m3d::g_Kernel->g_mar.AllocMem(12 * v69->m_numChanges, 0, 0);
+                    int v73 = 0;
+                    v23 = v69->m_numChanges <= 0;
+                    v69->m_hierChanges = v72;
+
+                    if (!v23) {
+                        int v74 = 0;
+                        uint8_t* v75 = (uint8_t*)Data + 6;
+
+                        do {
+                            HierarchyChange* v76 = &v69->m_hierChanges[v74];
+                            v76->ownIdx = *((uint16_t*)v75 - 1);
+                            v76->newParentIdx = *(uint16_t*)v75;
+                            v76->changeType = (DRAFT_Change)*((uint32_t*)(v75 - 6));
+                            ++v73;
+                            v75 += 8;
+                            ++v74;
+                        } while (v73 < v69->m_numChanges);
+                    }
+
+                    Data = (uint8_t*)Data + (8 * v69->m_numChanges);
+
+                    // Animation transforms
+                    unsigned int numTransforms = v69->m_numFrames * v69->m_numNodes;
+                    v69->m_nodesPositions = (AnimationTransform*)m3d::g_Kernel->g_mar.AllocMem(32 * numTransforms, 0, 0);
+
+                    unsigned int v78 = 0;
+                    uint32_t* GroupsNum = (uint32_t*)Data;
+
+                    if (numTransforms >= 4)
+                    {
+                        int v79 = 0;
+                        unsigned int v80 = ((numTransforms - 4) >> 2) + 1;
+                        uint8_t* v81 = (uint8_t*)Data + 36;
+                        unsigned int i = 4 * v80;
+
+                        do
+                        {
+                            AnimationTransform* m_nodesPositions = v69->m_nodesPositions;
+                            m_nodesPositions[v79].idx = *((uint16_t*)v81 - 18);
+                            m_nodesPositions[v79].tx = *(float*)(v81 - 34);
+                            m_nodesPositions[v79].ty = *(float*)(v81 - 30);
+                            m_nodesPositions[v79].tz = *(float*)(v81 - 26);
+                            m_nodesPositions[v79].qx = *(float*)(v81 - 22);
+                            m_nodesPositions[v79].qy = *(float*)(v81 - 18);
+                            AnimationTransform* v83 = &m_nodesPositions[v79];
+                            v83->qz = *(float*)(v81 - 14);
+                            v83->qw = *(float*)(v81 - 10);
+
+                            AnimationTransform* v84 = v69->m_nodesPositions;
+                            v84[v79 + 1].idx = *((uint16_t*)v81 - 3);
+                            v84[v79 + 1].tx = *((float*)v81 - 1);
+                            v84[v79 + 1].ty = *(float*)v81;
+                            v84[v79 + 1].tz = *((float*)v81 + 1);
+                            AnimationTransform* v85 = &v84[v79 + 1];
+                            v85->qx = *((float*)v81 + 2);
+                            v85->qy = *((float*)v81 + 3);
+                            v85->qz = *((float*)v81 + 4);
+                            v85->qw = *((float*)v81 + 5);
+
+                            AnimationTransform* v86 = &v69->m_nodesPositions[v79 + 2];
+                            v86->idx = *((uint16_t*)v81 + 12);
+                            v86->tx = *(float*)(v81 + 26);
+                            v86->ty = *(float*)(v81 + 30);
+                            v86->tz = *(float*)(v81 + 34);
+                            v86->qx = *(float*)(v81 + 38);
+                            v86->qy = *(float*)(v81 + 42);
+                            v86->qz = *(float*)(v81 + 46);
+                            v86->qw = *(float*)(v81 + 50);
+
+                            AnimationTransform* v87 = &v69->m_nodesPositions[v79 + 3];
+                            v87->idx = *((uint16_t*)v81 + 27);
+                            v87->tx = *((float*)v81 + 14);
+                            v87->ty = *((float*)v81 + 15);
+                            v87->tz = *((float*)v81 + 16);
+                            v87->qx = *((float*)v81 + 17);
+                            v87->qy = *((float*)v81 + 18);
+                            v87->qz = *((float*)v81 + 19);
+                            float v88 = *((float*)v81 + 20);
+                            v81 += 120;
+                            v79 += 4;
+                            --v80;
+                            v87->qw = v88;
+                        } while (v80);
+
+                        v78 = i;
+                    }
+
+                    // Remaining animation transforms
+                    if (v78 < numTransforms) {
+                        uint32_t* v89 = (uint32_t*)((char*)GroupsNum + 30 * v78 + 6);
+                        unsigned int v90 = v78;
+                        unsigned int remaining = numTransforms - v78;
+
+                        do {
+                            AnimationTransform* v91 = &v69->m_nodesPositions[v90];
+                            v91->idx = *((uint16_t*)v89 - 3);
+                            v91->tx = *(float*)(v89 - 1);
+                            v91->ty = *(float*)v89;
+                            v91->tz = (float)v89[1];
+                            v91->qx = (float)v89[2];
+                            v91->qy = (float)v89[3];
+                            v91->qz = (float)v89[4];
+                            float v92 = *((float*)v89 + 5);
+                            v89 = (uint32_t*)((char*)v89 + 30);
+                            ++v90;
+                            v4 = remaining-- == 1;
+                            v91->qw = v92;
+                        } while (!v4);
+                    }
+
+                    m_animRemap += 52;
+                    v68 = &((uint8_t*)Data)[30 * numTransforms];
+                    v23 = v155 + 1 < this->m_header.m_numAnimations;
+                    Data = v68;
+                    ++v155;
+                } while (v23);
+            }
+
+            // Animation remapping
+            v152 = 0;
+            v155 = (int)m3d::actions;
+            unsigned int m_animRemap = (unsigned int)this->m_animRemap;
+            j = 32;
+
+            do {
+                uint16_t v93 = 0;
+                if (this->m_header.m_numAnimations > 0) {
+                    Animation* m_animations = this->m_animations;
+                    unsigned int i = *(uint32_t*)v155;
+
+                    do {
+                        if (!strcmp((const char*)i, m_animations[v93].m_name)) {
+                            break;
+                        }
+                        ++v93;
+                    } while (v93 < this->m_header.m_numAnimations);
                 }
-                data = (char*)data + (30 * nodesPositions);
-                //data = &data[30 * nodesPositions];
+
+                if (v93 >= this->m_header.m_numAnimations) {
+                    *(uint16_t*)m_animRemap = -1;
+                }
+                else {
+                    *(uint16_t*)m_animRemap = v93;
+                    this->m_animations[v93].m_action = (ActionType)v152;
+                }
+
+                m_animRemap += 2;
+                v155 += 8;
+                ++v152;
+                --j;
+            } while (j);
+
+            // Set next animations
+            int v95 = 0;
+            if (this->m_header.m_numAnimations > 0) {
+                int v96 = 0;
+                do {
+                    if (bForceNextAnimation)
+                    {
+                        int v97 = 0;
+                        short* v98 = &this->m_animRemap[1];
+
+                        while (*(v98 - 1) != v95) {
+                            if (*v98 == v95) {
+                                ++v97;
+                                break;
+                            }
+                            if (v98[1] == v95) {
+                                v97 += 2;
+                                break;
+                            }
+                            if (v98[2] == v95) {
+                                v97 += 3;
+                                break;
+                            }
+                            v97 += 4;
+                            v98 += 4;
+                            if (v97 >= 32) {
+                                break;
+                            }
+                        }
+
+                        auto v99 = nextAnims_0[v97];
+                        if (v97 == 32 || (v99 < 0)) {
+                            this->m_animations[v96].m_nextAnimation = -1;
+                        }
+                        else {
+                            this->m_animations[v96].m_nextAnimation = this->m_animRemap[v99];
+                        }
+                    }
+                    else {
+                        this->m_animations[v96].m_nextAnimation = v95;
+                    }
+                    ++v95;
+                    ++v96;
+                } while (v95 < this->m_header.m_numAnimations);
             }
-            for (auto& remap : m_animRemap)
+
+            // Load skins/materials (chunk 15)
+            File.getChunkData(0xFu, &Data);
+            m_Skins.resize(*(uint32_t*)Data);
+
+            Data = (uint8_t*)Data + 4;
+            m_animRemap = 0;
+            v152 = 0;
+
+            while (true) {
+                if (m_animRemap >= this->m_Skins.size()) {
+                    break;
+                }
+
+                std::vector<DSurfaceMaterial>* v101 = &this->m_Skins[m_animRemap];
+                // Initialize v148 structure
+
+                v101->resize(iNumMaterials);
+
+                bool v4 = !this->m_loadSkins.loadAllSkins;
+                bool load = true;
+
+                if (v4) {
+                    unsigned int i = m_animRemap;
+                    // Check if this skin should be loaded
+                    // load = (skin is in load list)
+                    load = m_loadSkins.loadSkins.find(i) != m_loadSkins.loadSkins.end();
+                }
+
+                if (iNumMaterials > 0) {
+                    j = 0;
+                    unsigned int i = iNumMaterials;
+
+                    do {
+                        AnimatedModel* v102 = this;
+                        uint8_t* v103 = (uint8_t*)Data;
+                        char* v104 = (char*)&this->m_Skins[m_animRemap][0] + j;
+
+                        memcpy(v104, Data, 0x44u);
+                        uint32_t* v105 = (uint32_t*)*((uint32_t*)v103 + 17);
+                        unsigned int* VariantsNum = v105;
+
+                        *((std::string*)(v104 + 68)) = (const char*)(v103 + 72);
+
+                        if (load && *((uint32_t*)v104 + 22)) {
+                            v102->NewEffect(*(const std::string*)(v104 + 68),*(m3d::rend::IEffect**)(v104 + 24));
+                        }
+                        else {
+                            *((uint32_t*)v104 + 24) = 0;
+                        }
+
+                        Data = (uint8_t*)Data + 172;
+                        uint8_t* v106 = (uint8_t*)Data;
+
+                        // Initialize texture array
+                        (*(std::vector<m3d::DTextureInfo>*)(v104 + 100)).resize((unsigned int)v105);
+
+                        if (v105) {
+                            v155 = 0;
+                            unsigned int* GroupsNum = VariantsNum;
+
+                            do {
+                                int v107 = v155 + *((uint32_t*)v104 + 26);
+                                *(uint32_t*)v107 = *((uint32_t*)v106 + 11);
+                                int v108 = *((uint32_t*)v106 + 10);
+                                *((uint32_t*)(v107 + 4)) = v108;
+
+                                (*(std::string*)(v107 + 8)) = (const char*)v106;
+                                *((uint32_t*)(v107 + 36)) = -1;
+
+
+                                AnimatedModel* v113 = this;
+                                path = DefinePathToTexture((const char*)v106);
+
+
+                                if (load) {
+                                    v113->SetTexture(path,
+                                        *(m3d::DRAFT_TextureType*)v107,
+                                        *(m3d::rend::TexHandle*)(v107 + 36));
+                                }
+
+                                v155 += 40;
+                                v106 += 48;
+                                GroupsNum = (unsigned int*)((char*)GroupsNum - 1);
+                            } while (GroupsNum);
+                        }
+
+                        j += 116;
+                        Data = (uint8_t*)Data + (48 * (*VariantsNum));
+                        --i;
+                    } while (i);
+                }
+
+                ++m_animRemap;
+                v152 += 16;
+            }
+
+            // Load collision data (chunk 16)
+
+            if (!File.getChunkData(16, &Data))
             {
-                throw retruxx::logic_error("Not implemented");
+                        uint32_t* v118 = (uint32_t*)Data;
+                        Data = (uint8_t*)Data + 8;
+
+                        this->m_Collision.Points.resize(*v118);
+                        memcpy(this->m_Collision.Points.data(), Data, 12 * *v118);
+
+                        uint8_t* v119 = (uint8_t*)Data + (12 * *v118);
+                        Data = v119;
+
+                        unsigned int v120 = v118[1];
+                        this->m_Collision.Triangles.resize(v120);
+                        memcpy(this->m_Collision.Triangles.data(), Data, 6 * v118[1]);
             }
-            for (unsigned i = 0; i < m_header.m_numAnimations; ++i)
+
+            // Load geometry data (chunk 32)
+            if (!File.getChunkData(32, &Data))
             {
-                throw retruxx::logic_error("Not implemented");
+                uint8_t* v123 = (uint8_t*)Data;
+                Data = (uint8_t*)Data + 4;
+
+                this->m_Geoms.resize(*(uint32_t*)v123);
+                memcpy(this->m_Geoms.data(), Data, 44 * *(uint32_t*)v123);
             }
 
-            taggedFile.getChunkData(0xFu, &data);
-            m_Skins.resize(*(int*)data);
-            data = (char*)data + 4;
+            // Load hierarchical geometry (chunk 64)
+            if (!File.getChunkData(64, &Data))
+            {
+                uint8_t* v126 = (uint8_t*)Data;
+                Data = (uint8_t*)Data + 4;
+
+                unsigned int v127 = *(uint32_t*)v126;
+                this->m_HierGeoms.resize(v127);
+                memcpy(this->m_HierGeoms.data(), Data, 48 * *(uint32_t*)v126);
+            }
 
 
+            // Load bone bounds (chunk 128)
+            if (!File.getChunkData(128, &Data))
+            {
+                uint8_t* v130 = (uint8_t*)Data;
+                Data = (uint8_t*)Data + 4;
+
+                unsigned int v131 = *(uint32_t*)v130;
+                std::vector<m3d::DRAFT_BoneBounds> BonesBounds;
+
+                BonesBounds.resize(v131);
+                memcpy(BonesBounds.data(), Data, 28 * *(uint32_t*)v130);
+
+                for (auto& bound : BonesBounds)
+                {
+                    m_BonesBounds[bound.BoneIndex] = bound;
+                }
+            }
+
+            // Load mesh groups (chunk 240)
+            if (!File.getChunkData(240, &Data))
+            {
+                uint32_t* v137 = (uint32_t*)Data;
+                Data = (uint8_t*)Data + 4;
+
+                unsigned int v138 = *v137;
+                unsigned int* GroupsNum = v137;
+
+                m_MhGroups.resize(v138);
+
+                bool v4 = *v137 == 0;
+                unsigned int i = 0;
+
+                if (!v4) {
+                    unsigned int iNumMaterials = 0;
+                    uint8_t* v139 = (uint8_t*)Data;
+                    bool v57 = false;
+                    do {
+                        m3d::MeshesGroup* v140 = &this->m_MhGroups[iNumMaterials / 0x44];
+                        uint8_t* v141 = v139;
+
+                        v140->Name = (const char*)v139;
+                        v140->VisibleAtOnceMax = *((uint32_t*)v141 + 6);
+                        v140->VisibleAtOnceMin = *((uint32_t*)v141 + 5);
+
+                        v140->MeshesId.resize(*((uint32_t*)v141 + 7));
+                        Data = (uint8_t*)Data + 32;
+                        memcpy(v140->MeshesId.data(), Data, 4 * *((uint32_t*)v141 + 7));
+
+                        Data = (uint8_t*)Data + (4 * *((uint32_t*)v141 + 7));
+                        int v142 = 0;
+
+                        v140->m_variants.resize(*(uint32_t*)Data);
+
+                        v139 = (uint8_t*)Data + 4;
+                        j = 0;
+
+                        while (true) {
+                            Data = v139;
+
+                            if (j >= v140->m_variants.size()) {
+                                break;
+                            }
+
+
+                            uint32_t* v144 = (uint32_t*)v139;
+                            unsigned int v145 = *(uint32_t*)v139;
+                            unsigned int* VariantsNum = v144;
+
+                            v140->m_variants[v142].resize(v145);
+                            Data = (uint8_t*)Data + 4;
+
+                            unsigned int v146 = *v144;
+                            uint32_t* v147 = v140->m_variants[v142].data();
+                            ++j;
+
+                            memcpy(v147, Data, 4 * v146);
+                            v139 = (uint8_t*)Data + (4 * *VariantsNum);
+                            ++v142;
+                        }
+
+                        iNumMaterials += 68;
+                        v57 = ++i < *GroupsNum;
+                    } while (v57);
+                }
+            }
+
+            return 1;
         }
-        throw retruxx::logic_error("Not implemented");
+        else 
+        {
+            M3D_LOG_ERR("AnimatedModel::LoadGAM -- tagged file version is wrong: " + CStr(uFormatVersion));
+            return 0;
+        }
     }
 
     bool AnimatedModel::LoadSAM(CStr const&, bool)
@@ -867,43 +1426,6 @@ namespace m3d
     {
 	    throw retruxx::logic_error("Not implemented");
     }
-
-    AnimAction actions[] = {
-        {"STAN", AT_STAND1},
-        {"STAND2", AT_STAND2 }       ,
-        {"MOVE1", AT_MOVE1}         ,
-        {"MOVE2", AT_MOVE2}         ,
-        {"ATTACK1", AT_ATTACK1}       ,
-        {"ATTACK2", AT_ATTACK2}       ,
-        {"PAIN1", AT_PAIN1 }        ,
-        {"PAIN2", AT_PAIN2 }        ,
-        {"DEATH1", AT_DEATH1 }       ,
-        {"DEATH2", AT_DEATH2 }       ,
-        {"BLOCK1", AT_BLOCK1 }       ,
-        {"BLOCK2", AT_BLOCK2 }       ,
-        {"RESERVED1", AT_RESERVED1 }    ,
-        {"RESERVED2", AT_RESERVED2 }    ,
-        {"RESERVED3", AT_RESERVED3 }    ,
-        {"RESERVED4", AT_RESERVED4 }    ,
-        {"SEL1RUS", AT_SND_SELECT }   ,
-        {"SEL2RUS", AT_SND_SELECT2}   ,
-        {"SEL3RUS", AT_SND_SELECT3}   ,
-        {"SEL4RUS", AT_SND_SELECT4}   ,
-        {"AT1RUS", AT_SND_ATTACK }   ,
-        {"AT2RUS", AT_SND_ATTACK2}   ,
-        {"AT3RUS", AT_SND_ATTACK3}   ,
-        {"AT4RUS", AT_SND_ATTACK4}   ,
-        {"WALK1RUS", AT_SND_WALK }     ,
-        {"WALK2RUS", AT_SND_WALK2}     ,
-        {"WALK3RUS", AT_SND_WALK3}     ,
-        {"WALK4RUS", AT_SND_WALK4}     ,
-        {"MOVE1A", AT_SND_MOVE1A }   ,
-        {"MOVE2A", AT_SND_MOVE2A }   ,
-        {"UNREACH1RUS", AT_SND_UNREACH}   ,
-        {"ALLFRAMES", AT_ALL_FRAMES }   ,
-        {nullptr, AT_NUMTYPES  },
-    };
-
 
     AnimAction* GetAnimActions()
     {

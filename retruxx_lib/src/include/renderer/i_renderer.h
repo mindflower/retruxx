@@ -398,36 +398,29 @@ namespace m3d
         {
         };
 
-        class VbPoolField
+        struct VbPoolField
         {
-        public:
-            unsigned int GetOffset() const;
-            VbHandle GetVbHandle() const;
-
-        private:
-            unsigned int Offset;
-            unsigned int Size;
-            unsigned int RealOffset;
-            VertexType VertType;
-            VbHandle Vb;
-        };
-
-        class IbPoolField
-        {
-        public:
             unsigned int GetOffset() const;
             unsigned int GetSize() const;
-            IbHandle GetIbHandle() const;
+            m3d::rend::VertexType GetVertexType() const;
+            m3d::rend::VbHandle GetVbHandle() const;
+            /* 0x0000 */ unsigned int Offset;
+            /* 0x0004 */ unsigned int Size;
+            /* 0x0008 */ unsigned int RealOffset;
+            /* 0x000c */ m3d::rend::VertexType VertType;
+            m3d::rend::VbHandle Vb;
+        }; /* size: 0x0014 */
 
-        private:
-            unsigned int Offset = 0;
-            unsigned int Size = 0;
-            unsigned int RealOffset = 0;
-            IbHandle Ib;
-
-        public:
-            IbPoolField(){}
-        };
+        struct IbPoolField
+        {
+            unsigned int GetOffset() const;
+            unsigned int GetSize() const;
+            m3d::rend::IbHandle GetIbHandle() const;
+            /* 0x0000 */ unsigned int Offset;
+            /* 0x0004 */ unsigned int Size;
+            /* 0x0008 */ unsigned int RealOffset;
+            m3d::rend::IbHandle Ib;
+        }; /* size: 0x0010 */
 
         enum LightType
         {

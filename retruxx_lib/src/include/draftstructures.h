@@ -96,16 +96,13 @@ namespace m3d
         __int16 NewParent;
     };
 
-    class DRAFT_BoneBounds
+    struct DRAFT_BoneBounds
     {
-    public:
-        DRAFT_BoneBounds(DRAFT_BoneBounds const&);
-
-    private:
-        unsigned int BoneIndex;
+        /* 0x0000 */ unsigned int BoneIndex;
         CVector MinRot;
         CVector MaxRot;
-    };
+        DRAFT_BoneBounds();
+    }; /* size: 0x001c */
 
     struct DRAFT_Bone
     {
@@ -188,17 +185,14 @@ namespace m3d
         DETAIL = 0x4,
     };
 
-    class DTextureInfo
+    struct DTextureInfo
     {
-    public:
-        bool operator<(DTextureInfo const&);
-
-    private:
-        DRAFT_TextureType Type;
-        unsigned int UV_Set;
-        retruxx::string FileName;
-        rend::TexHandle Handle;
-    };
+        /* 0x0000 */ m3d::DRAFT_TextureType Type;
+        /* 0x0004 */ unsigned int UV_Set;
+        std::basic_string<char, std::char_traits<char>, std::allocator<char> > FileName;
+        m3d::rend::TexHandle Handle;
+        bool operator<(const m3d::DTextureInfo& A);
+    }; /* size: 0x0028 */
 
     struct DSurfaceMaterial
     {
