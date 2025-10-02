@@ -989,7 +989,24 @@ namespace m3d
 
     AnimatedModel::~AnimatedModel()
     {
-        throw retruxx::logic_error("Not implemented");
+        delete m_boneInitialPos;
+        delete[] m_meshes;
+        delete[] m_animations;
+        delete[] m_initialBoneInvMatrices;
+        // TODO: check this
+        for (auto& skin : m_Skins)
+        {
+            for (auto& material : skin)
+            {
+                if (!m_bVerification)
+                {
+                    for (auto& texture : material.Textures)
+                    {
+                        M3D_RENDERER->ReleaseTexture(texture.Handle);
+                    }
+                }
+            }
+        }
     }
 
     rend::TexHandle AnimatedModel::GetTexHandle(unsigned, unsigned, unsigned) const
@@ -1059,8 +1076,17 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModel::ReloadSkins(LoadSkins const&)
+    void AnimatedModel::ReloadSkins(LoadSkins const& skinsToLoad)
     {
+        if (skinsToLoad.loadAllSkins && m_loadSkins.loadAllSkins)
+        {
+            return;
+        }
+
+        for (auto& skin : m_Skins)
+        {
+            
+        }
         throw retruxx::logic_error("Not implemented");
     }
 
@@ -1156,7 +1182,10 @@ namespace m3d
 
     void AnimatedModel::UpdateCubemap()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (m_hasCubemap)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
     }
 
     unsigned AnimatedModel::GetNumGeoms() const

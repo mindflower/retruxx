@@ -1329,9 +1329,9 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Application::PutSplashCallBack(int, void*)
+    void Application::PutSplashCallBack(int proc, void* data)
     {
-        throw retruxx::logic_error("Not implemented");
+        M3D_APP->PutSplash(proc, *(const char**)data);
     }
 
     void Application::AllowRendering()

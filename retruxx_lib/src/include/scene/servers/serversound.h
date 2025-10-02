@@ -27,8 +27,19 @@ namespace m3d
         int _AddDoubleItem(CStr f1, CStr f2, const char* id, const char* groupName);
         int _AddTripleItem(CStr f1, CStr f2, CStr f3, const char* id, const char* groupName);
 
-        enum SoundTypeEnum;
-        struct SoundItem;
+        enum SoundTypeEnum
+        {
+            SOUND_TYPE_SIMPLE = 0,
+            SOUND_TYPE_DOUBLE = 1,
+            SOUND_TYPE_TRIPLE = 2,
+        };
+
+        struct SoundItem
+        {
+            SoundItem();
+            /* 0x0000 */ m3d::Sound3DServer::SoundTypeEnum type;
+            /* 0x0004 */ int soundIds[3];
+        }; /* size: 0x0010 */
     }; /* size: 0x0048 */
 
     static_assert(sizeof(Sound3DServer) == 0x0048);

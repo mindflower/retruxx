@@ -50,7 +50,7 @@ void SplashWnd::ShowSplash(int processStatus, CStr const& text)
             }
 
         }
-        m_progressBar->SetCurValue(m_curSplash * 100.0 + processStatus / m_numSplashes);
+        m_progressBar->SetCurValue((m_curSplash * 100.0 + processStatus) / m_numSplashes);
         auto const image = m_wndImage->GetImage();
         if (!image.IsValid())
         {

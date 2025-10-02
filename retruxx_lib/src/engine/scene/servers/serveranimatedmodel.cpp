@@ -354,7 +354,8 @@ namespace m3d
         ref_ptr modelNode = xmlFile->CreateNode();
         modelsNode->GetFirstChild(modelNode, "model");
 
-        while (!modelNode->IsEmpty()) {
+        for (; !modelNode->IsEmpty(); modelNode->GetNextSibling(modelNode, "model"))
+        {
             CStr modelId = modelNode->GetAttribute("id");
 
             // Check if this model is in our items list
@@ -366,8 +367,8 @@ namespace m3d
                 }
             }
 
-            if (itemIndex == -1) {
-                 modelNode->GetNextSibling(modelNode, "model");
+            if (itemIndex == -1)
+            {
                 continue;
             }
 
@@ -585,8 +586,6 @@ namespace m3d
             SetItemProperty(modelIndex, 2, &trans);
 
             itemslist[itemIndex].m_fileWasRead = true;
-
-            modelNode->GetNextSibling(modelNode, "model");
         }
 
         // Log unread files
