@@ -220,17 +220,7 @@ namespace m3d
             group = DEFAULT_GROUP;
         }
 
-        if (type == TYPE_SINGLE)
-        {
-            CStr file;
-            m3d::SafeStrAttrib(file, xmlNode, "file_start");
-
-            if (_AddItem(file.c_str(), id.c_str(), group) == -1)
-            {
-                M3D_LOG_ERR("DataServer: cannot read " + file + " id = " + id);
-            }
-        }
-        else if (type == TYPE_DOUBLE)
+        if (type == TYPE_DOUBLE)
         {
             CStr fileStart;
             m3d::SafeStrAttrib(fileStart, xmlNode, "file_start");
@@ -267,9 +257,15 @@ namespace m3d
                 M3D_LOG_ERR("DataServer: cannot read " + CStr(FAKE_ITEM_NAME));
             }
         }
-        else
+        else if (type.empty() || type == TYPE_SINGLE)
         {
-            M3D_LOG_ERR("DataServer: invalid type " + CStr(type));
+            CStr file;
+            m3d::SafeStrAttrib(file, xmlNode, "file");
+
+            if (_AddItem(file.c_str(), id.c_str(), group) == -1)
+            {
+                M3D_LOG_ERR("DataServer: cannot read " + file + " id = " + id);
+            }
         }
     }
 
