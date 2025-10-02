@@ -297,88 +297,112 @@ namespace m3d
 
         void ProgressBarWnd::CalcTexCoordinates(float& u0, float& v0, float& u1, float& v1) const
         {
-            throw std::logic_error("Not implemented");
-            u0 = 0.0;
-            v0 = 0.0;
-            u1 = 1.0;
-            v1 = 1.0;
-            //auto curNumOfSteps = 0;
-            //if (this->m_minValue == this->m_maxValue)
-            //{
-            //    curNumOfSteps = 0;
-            //}
-            //else
-            //{
-            //    auto value = (this->m_curValue - this->m_minValue) / ((this->m_maxValue - this->m_minValue) / this->m_numOfSteps);
-            //    if (value > 0.001)
-            //    {
-            //        throw std::logic_error("Not implemented");
-            //    }
-            //    else
-            //    {
-            //        curNumOfSteps = 0;
-            //    }
-            //}
-            //auto barRect = GetBarRect();
-            //float* left = nullptr;
-            //float* right = nullptr;
-            //auto horizontal = m_orientation == ORIENTATION_LEFT_TO_RIGHT || m_orientation == ORIENTATION_RIGHT_TO_LEFT;
-            //auto vert = false;
-            //if (m_orientation == ORIENTATION_RIGHT_TO_LEFT || m_orientation == ORIENTATION_BOTTOM_TO_TOP)
-            //    vert = true;
-            //if (horizontal)
-            //{
-            //    left = &u0;
-            //    right = &u1;
-            //
-            //}
-            //else
-            //{
-            //    left = &v0;
-            //    right = &v1;
-            //}
-            //auto x = 0;
-            //auto y = 0;
-            //M3D_RENDERER->GetDims(this->m_barTexture, x, y);
-            //auto texDim = x;
-            //if (!horizontal)
-            //    texDim = y;
-            //float perc = 0.0;
-            //if (m_textureStyle == TEXTURE_CLAMP)
-            //{
-            //    float cur = 0.0;
-            //    float max = 0.0;
-            //    if (m_numOfSteps <= 1)
-            //    {
-            //        cur = this->m_curValue - this->m_minValue;
-            //        max = this->m_maxValue - this->m_minValue;
-            //    }
-            //    else
-            //    {
-            //        cur = curNumOfSteps;
-            //        max = m_numOfSteps;
-            //    }
-            //    perc = cur / max;
-            //}
-            //else
-            //{
-            //    throw std::logic_error("Not implemented");
-            //    if (this->m_textureStyle != TEXTURE_REPEAT)
-            //        //goto LABEL_30;
-            //    if (m_numOfSteps <= 1)
-            //    {
-            //        //perc = *v21 / texDim;
-            //        //goto LABEL_30;
-            //    }
-            //    perc = curNumOfSteps;
-            //}
-            //u1 = perc;
-            //if (vert)
-            //{
-            //    throw std::logic_error("Not implemented");
-            //    //*v31 = 1.0 - perc;
-            //    //*v20 = 1.0;
-            //}
+            float* v11 = &u1;
+            float* v12 = &u0;
+            u0 = 0.0f;
+            float* v13 = &v0;
+            v0 = 0.0f;
+            float* v15 = &v1;
+            *v11 = 1.0f;
+            *v15 = 1.0f;
+
+            int curNumOfSteps;
+            if (this->m_minValue == this->m_maxValue)
+            {
+                curNumOfSteps = 0;
+            }
+            else
+            {
+                float stepValue = (this->m_curValue - this->m_minValue)
+                    / ((this->m_maxValue - this->m_minValue) / (float)this->m_numOfSteps);
+
+                if (stepValue > 0.001f)
+                {
+                    int v16 = (int)stepValue;
+                    if (v16 == 0)
+                    {
+                        v16 = 1;
+                    }
+                    curNumOfSteps = v16;
+                }
+                else
+                {
+                    curNumOfSteps = 0;
+                }
+            }
+
+            int maxNumOfSteps = this->m_numOfSteps;
+
+            BoundsBase<float> barRect =  GetBarRect();
+
+            m3d::ui::ProgressBarWnd::Orientation m_orientation = this->m_orientation;
+            bool v19 = (m_orientation == ORIENTATION_LEFT_TO_RIGHT || m_orientation == ORIENTATION_RIGHT_TO_LEFT);
+
+            bool reverseDirection = false;
+            if (m_orientation == ORIENTATION_RIGHT_TO_LEFT || m_orientation == ORIENTATION_BOTTOM_TO_TOP)
+            {
+                reverseDirection = true;
+            }
+
+            float* v20;
+            float* p_u0;
+
+            if (v19)
+            {
+                v20 = &u1;
+                barRect.width = u0;
+                p_u0 = &u0;
+            }
+            else {
+                barRect.width = v0;
+                v20 = &v1;
+                p_u0 = &v0;
+            }
+
+            int textureWidth = 0;
+            int textureHeight = 0;
+            m3d::Application::g_pApp->m_renderer->GetDims(this->m_barTexture,
+                textureWidth,
+                textureHeight);
+
+            int* p_texH;
+            if (!v19)
+            {
+                p_texH = &textureHeight;
+            }
+            else {
+                p_texH = (int*)&v0;
+            }
+
+            if (this->m_textureStyle == TEXTURE_CLAMP)
+            {
+                float ratio;
+                if (maxNumOfSteps <= 1)
+                {
+                    ratio = (this->m_curValue - this->m_minValue) / (this->m_maxValue - this->m_minValue);
+                }
+                else
+                {
+                    ratio = (float)curNumOfSteps / (float)maxNumOfSteps;
+                }
+                *v20 = ratio;
+            }
+            else if (this->m_textureStyle == TEXTURE_REPEAT)
+            {
+                if (maxNumOfSteps <= 1)
+                {
+                    *v20 = *p_u0 / (float)*p_texH;
+                }
+                else {
+                    *v20 = (float)curNumOfSteps;
+                }
+            }
+
+            if (reverseDirection)
+            {
+                *v11 = 1.0f - *v20;
+                *v20 = 1.0f;
+            }
         }
 
         float ProgressBarWnd::GetMaxValueInPixel() const

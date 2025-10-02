@@ -9,6 +9,44 @@
 
 namespace ai
 {
+    GMAPOFFSET::GMAPOFFSET(int Px, int Py)
+    {
+        this->x = Px;
+        this->y = Py;
+    }
+
+    void DirSet::AddItem(bool IsDiag, int x, int y)
+    {
+        int tempx = x;
+        int tempy = y;
+        if (IsDiag)
+        {
+            m_Dir[4].m_Off.emplace_back(tempx, tempy);
+            tempx = -x;
+            tempy = -y;
+            m_Dir[6].m_Off.emplace_back(tempx, tempy);
+            tempx = -x;
+            tempy = y;
+            m_Dir[5].m_Off.emplace_back(tempx, tempy);
+            tempx = x;
+            tempy = -y;
+            m_Dir[7].m_Off.emplace_back(tempx, tempy);
+        }
+        else
+        {
+            m_Dir[0].m_Off.emplace_back(tempx, tempy);
+            tempx = -x;
+            tempy = y;
+            m_Dir[2].m_Off.emplace_back(tempx, tempy);
+            tempx = y;
+            tempy = x;
+            m_Dir[1].m_Off.emplace_back(tempx, tempy);
+            tempx = y;
+            tempy = -x;
+            m_Dir[3].m_Off.emplace_back(tempx, tempy);
+        }
+    }
+
     MapIndex::MapIndex(int xx, int yy) :
         x(xx),
         y(yy)
@@ -238,7 +276,60 @@ namespace ai
         m_lastIndex(0, 0),
         m_CurPos(0, 0)
     {
-        throw std::logic_error("Not implemented");
+        pField = 0;
+
+        m_DirSet.resize(8);
+        m_DirSet[0].AddItem(false, 0, 0);
+        m_DirSet[0].AddItem(false, 1, -1);
+        m_DirSet[0].AddItem(false, 1, 0);
+        m_DirSet[0].AddItem(false, 1, 1);
+        m_DirSet[0].AddItem(true, 0, 0);
+        m_DirSet[0].AddItem(true, 0, 1);
+        m_DirSet[0].AddItem(true, 1, 0);
+        m_DirSet[0].AddItem(true, 1, 1);
+
+
+        m_DirSet[1].AddItem(false, 0, 0);
+        m_DirSet[1].AddItem(false, 2, 0);
+        m_DirSet[1].AddItem(false, 2, 1);
+        m_DirSet[1].AddItem(false, 2, -1);
+        m_DirSet[1].AddItem(false, 1, -2);
+        m_DirSet[1].AddItem(false, 1,2);
+        m_DirSet[1].AddItem(false, 0, -2);
+        m_DirSet[1].AddItem(false, 0, 2);
+        m_DirSet[1].AddItem(false, 0, -2);
+        m_DirSet[1].AddItem(true, 0, 0);
+        m_DirSet[1].AddItem(true, 2, 1);
+        m_DirSet[1].AddItem(true, 1, 2);
+        m_DirSet[1].AddItem(true, 2, 0);
+        m_DirSet[1].AddItem(true, 0, 2);
+        m_DirSet[1].AddItem(true, 2, -1);
+        m_DirSet[1].AddItem(true, -1, 2);
+
+
+        m_DirSet[2].AddItem(false, 0, 0);
+        m_DirSet[2].AddItem(false, 3, 0);
+        m_DirSet[2].AddItem(false, 3, 1);
+        m_DirSet[2].AddItem(false, 3, -1);
+        m_DirSet[2].AddItem(false, 2, 2);
+        m_DirSet[2].AddItem(false, 2, -2);
+        m_DirSet[2].AddItem(false, 1, 3);
+        m_DirSet[2].AddItem(false, 1, 3);
+        m_DirSet[2].AddItem(false, 0, 3);
+        m_DirSet[2].AddItem(false, 0, 3);
+        m_DirSet[2].AddItem(false, 0, 0);
+        m_DirSet[2].AddItem(true, 2, 2);
+        m_DirSet[2].AddItem(true, 1, 3);
+        m_DirSet[2].AddItem(true, 3, 1);
+        m_DirSet[2].AddItem(true, 3, 0);
+        m_DirSet[2].AddItem(true, 0, 3);
+        m_DirSet[2].AddItem(true, -1, 3);
+        m_DirSet[2].AddItem(true, 3, -1);
+        m_DirSet[2].AddItem(true, -2, 2);
+        m_DirSet[2].AddItem(true, -2, 2);
+        m_DirSet[2].AddItem(true, 2, -2);
+
+        // TODO: implement MAP::MAP
     }
 
     bool Map::IsCircleBlocked(MapIndex const&, int, unsigned char)

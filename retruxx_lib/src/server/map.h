@@ -5,30 +5,23 @@
 namespace ai
 {
 
-    class GMAPOFFSET
+    struct GMAPOFFSET
     {
-    public:
-        GMAPOFFSET(int, int);
+        /* 0x0000 */ int x;
+        /* 0x0004 */ int y;
+        GMAPOFFSET(int Px, int Py);
+    }; /* size: 0x0008 */
 
-    private:
-        int x;
-        int y;
-    };
-
-    class OffsetSet
+    struct OffsetSet
     {
-    private:
-        std::vector<ai::GMAPOFFSET> m_Off;
-    };
+        std::vector<ai::GMAPOFFSET, std::allocator<ai::GMAPOFFSET> > m_Off;
+    }; /* size: 0x0010 */
 
-    class DirSet
+    struct DirSet
     {
-    public:
-        void AddItem(bool, int, int);
-
-    private:
-        OffsetSet m_Dir[8];
-    };
+        /* 0x0000 */ ai::OffsetSet m_Dir[8];
+        void AddItem(bool IsDiag, int x, int y);
+    }; /* size: 0x0080 */
 
     class MapIndex
     {

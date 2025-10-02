@@ -47,9 +47,17 @@ void CMatrix::FromInvBasis(CVector const&, CVector const&, CVector const&)
     throw std::logic_error("Not implemented");
 }
 
-void CMatrix::DecomposeScale(float&, float&, float&)
+void CMatrix::DecomposeScale(float& x, float& y, float& z)
 {
-    throw std::logic_error("Not implemented");
+    auto vy = this->_12;
+    auto vy_4 = this->_22;
+    auto vy_8 = this->_32;
+    auto vz = this->_13;
+    auto vz_4 = this->_23;
+    auto vz_8 = this->_33;
+    x = sqrt(this->_31 * this->_31 + this->_21 * this->_21 + this->_11 * this->_11);
+    y = sqrt(vy_8 * vy_8 + vy_4 * vy_4 + vy * vy);
+    z = sqrt(vz_8 * vz_8 + vz_4 * vz_4 + vz * vz);
 }
 
 float CMatrix::GetScaleX() const

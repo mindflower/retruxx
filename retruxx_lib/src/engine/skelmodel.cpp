@@ -754,8 +754,8 @@ namespace m3d
                         char* v104 = (char*)&this->m_Skins[m_animRemap][0] + j;
 
                         memcpy(v104, Data, 0x44u);
-                        uint32_t* v105 = (uint32_t*)*((uint32_t*)v103 + 17);
-                        unsigned int* VariantsNum = v105;
+                        uint32_t v105 = *((uint32_t*)v103 + 17);
+                        unsigned int VariantsNum = v105;
 
                         *((std::string*)(v104 + 68)) = (const char*)(v103 + 72);
 
@@ -774,7 +774,7 @@ namespace m3d
 
                         if (v105) {
                             v155 = 0;
-                            unsigned int* GroupsNum = VariantsNum;
+                            unsigned int GroupsNum = VariantsNum;
 
                             do {
                                 int v107 = v155 + *((uint32_t*)v104 + 26);
@@ -798,12 +798,12 @@ namespace m3d
 
                                 v155 += 40;
                                 v106 += 48;
-                                GroupsNum = (unsigned int*)((char*)GroupsNum - 1);
+                                GroupsNum = (GroupsNum - 1);
                             } while (GroupsNum);
                         }
 
                         j += 116;
-                        Data = (uint8_t*)Data + (48 * (*VariantsNum));
+                        Data = (uint8_t*)Data + (48 * (VariantsNum));
                         --i;
                     } while (i);
                 }
@@ -1284,9 +1284,45 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModel::SetTexture(CStr const&, DRAFT_TextureType, rend::TexHandle&)
+    void AnimatedModel::SetTexture(CStr const& path, DRAFT_TextureType type, rend::TexHandle& texHandle)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (m_bVerification)
+        {
+            return;
+        }
+
+        switch (type)
+        {
+        case DETAIL:
+        case LIGHTMAP:
+        case DIFFUSE:
+        {
+            texHandle = M3D_RENDERER->AddTexture(path, 2);
+            M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_S, 1);
+            M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_T, 1);
+            M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_TEX_FILTER, 4);
+            break;
+        }
+        case BUMP:
+        {
+            texHandle = M3D_RENDERER->AddTexture(path, 5);
+            M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_S, 1);
+            M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_T, 1);
+            M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_TEX_FILTER, 5);
+        }
+        case CUBEMAP:
+        {
+            texHandle = M3D_RENDERER->AddTexture(path, 2);
+            M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_S, 3);
+            M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_T, 3);
+            M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_R, 3);
+            M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_TEX_FILTER, 4);
+        }
+        }
+        if (!texHandle.IsValid())
+        {
+            M3D_LOG_ERR("Error: Couldn't load texture " + path + " for model " + CStr(m_Name.c_str()));
+        }
     }
 
     void AnimatedModel::ReadMaterial(DSurfaceMaterial&, unsigned char*&, bool)

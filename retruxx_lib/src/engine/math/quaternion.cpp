@@ -3,9 +3,34 @@
 #include <math/vector.h>
 #include <stdexcept>
 
-void Quaternion::FromMatrix(CMatrix const&)
+const int nxt[3] = { 1,2,0 };
+
+void Quaternion::FromMatrix(CMatrix const& m)
 {
-    throw std::logic_error("Not implemented");
+    auto ma = (float)(m._22 + m._11) + m._33;
+    if (ma <= 0.0)
+    {
+        auto v4 = m._22 > m._11;
+        if (m._33 > *(&m._11 + 5 * v4))
+            v4 = 2;
+        auto v5 = nxt[v4];
+        auto v6 = nxt[v5];
+        auto v7 = sqrt(*(&m._11 + 5 * v4) - (*(&m._11 + 5 * v6) + *(&m._11 + 5 * v5)) + 1.0);
+        auto mc = v7;
+        *(&this->x + v4) = v7 * 0.5;
+        this->w = (float)(*(&m._11 + 4 * v5 + v6) - *(&m._11 + 4 * v6 + v5)) * (float)(0.5 / mc);
+        *(&this->x + v5) = (float)(*(&m._11 + 4 * v5 + v4) + *(&m._11 + 4 * v4 + v5)) * (float)(0.5 / mc);
+        *(&this->x + v6) = (float)(*(&m._11 + 4 * v6 + v4) + *(&m._11 + 4 * v4 + v6)) * (float)(0.5 / mc);
+    }
+    else
+    {
+        auto v3 = sqrt(ma + 1.0);
+        auto mb = v3;
+        this->w = v3 * 0.5;
+        this->x = (float)(m._23 - m._32) * (float)(0.5 / mb);
+        this->y = (float)(m._31 - m._13) * (float)(0.5 / mb);
+        this->z = (float)(m._12 - m._21) * (float)(0.5 / mb);
+    }
 }
 
 void Quaternion::Normalize()
