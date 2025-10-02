@@ -101,7 +101,17 @@ namespace m3d
         /* 0x0000 */ unsigned int BoneIndex;
         CVector MinRot;
         CVector MaxRot;
-        DRAFT_BoneBounds();
+
+        DRAFT_BoneBounds()
+        {
+            this->BoneIndex = 0;
+            this->MinRot.x = -6.2831855;
+            this->MinRot.y = -6.2831855;
+            this->MinRot.z = -6.2831855;
+            this->MaxRot.x = 6.2831855;
+            this->MaxRot.y = 6.2831855;
+            this->MaxRot.z = 6.2831855;
+        }
     }; /* size: 0x001c */
 
     struct DRAFT_Bone

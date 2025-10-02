@@ -121,10 +121,44 @@ namespace m3d
 
         CStr EditWnd::GetVisibleText() const
         {
-            throw std::logic_error("Not implemented");
-            auto len = m_caption.length();
+            CStr res;
             CStr serviceSymbols = "|@$#&";
-            return m_caption;
+            bool bEsc = false;
+
+            for (int i = 0; i < m_caption.length(); ++i)
+            {
+                auto pos = serviceSymbols.find(m_caption[i]);
+                if (pos != CStr_npos)
+                {
+                    if (serviceSymbols[pos] == '#')
+                    {
+                        if (bEsc)
+                        {
+                            res += m_caption[i];
+                            bEsc = false;
+                        }
+                        else
+                        {
+                            bEsc = true;
+                        }
+                    }
+                    else if (bEsc)
+                    {
+                        res += m_caption[i];
+                        bEsc = false;
+                    }
+                    else if (serviceSymbols[pos] == '@')
+                    {
+                        i += 8;
+                    }
+                }
+                else
+                {
+                    res += m_caption[i];
+                    bEsc = false;
+                }
+            }
+            return res;
         }
 
         void EditWnd::SetCursorColor(unsigned color)

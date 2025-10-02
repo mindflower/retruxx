@@ -6,10 +6,10 @@ namespace m3d
     {
         struct Colorf
         {
-            /* 0x0000 */ float r;
-            /* 0x0004 */ float g;
-            /* 0x0008 */ float b;
-            /* 0x000c */ float a;
+            /* 0x0000 */ float r = 0.0;
+            /* 0x0004 */ float g = 0.0;
+            /* 0x0008 */ float b = 0.0;
+            /* 0x000c */ float a = 0.0;
             Colorf(unsigned int clr);
             Colorf(float _r, float _g, float _b, float _a);
             Colorf();

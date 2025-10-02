@@ -13,5 +13,4 @@ m3d::rend::Colorf::Colorf(float _r, float _g, float _b, float _a)
 
 m3d::rend::Colorf::Colorf()
 {
-    throw retruxx::logic_error("Not implemented");
 }

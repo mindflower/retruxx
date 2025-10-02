@@ -7,6 +7,8 @@
 #include <math/vector.h>
 #include <Windows.h>
 
+#include "i_renderer_query.h"
+
 class CVector2;
 class CPlane;
 class CMatrix;
@@ -483,185 +485,186 @@ namespace m3d
             unsigned int IBPoolsSize;
         };
 
-        class ShaderMacro
+        struct ShaderMacro
         {
-        public:
-            ShaderMacro(char const*, char const*);
-
-        private:
             CStr name;
             CStr definition;
-        };
+            ShaderMacro(const m3d::rend::ShaderMacro&);
+            ShaderMacro(const char* n, const char* d);
+            ShaderMacro();
+        }; /* size: 0x0018 */
 
-        class IRenderResource
+        struct IRenderResource
         {
-        public:
-            virtual int AddRef() = 0;
-            virtual int Release() = 0;
-            virtual int GetRefCount() = 0;
-            virtual bool IsValid() = 0;
+            /* 0x0000 */;
+            IRenderResource(const m3d::rend::IRenderResource&);
+            IRenderResource();
+            virtual int AddRef() /* 0x00 */;
+            virtual int Release() /* 0x04 */;
+            virtual int GetRefCount() /* 0x08 */;
+            virtual bool IsValid() const = 0 /* 0x0c */;
+            /* 0x0004 */ int m_refCount;
+            virtual  ~IRenderResource() /* 0x10 */;
+        }; /* size: 0x0008 */
 
-        protected:
-            int m_refCount;
-
-        public:
-            virtual ~IRenderResource() = default;
-        };
-
-        class IQuery : public IRenderResource
+        class IQuery : public m3d::rend::IRenderResource
         {
         public:
             enum Type
             {
-                QUERY_VCACHE = 0x4,
-                QUERY_EVENT = 0x8,
-                QUERY_OCCLUSION = 0x9,
-                QUERY_TIMESTAMP = 0xA,
-                QUERY_TIMESTAMPDISJOINT = 0xB,
-                QUERY_TIMESTAMPFREQ = 0xC,
-                QUERY_PIPELINETIMINGS = 0xD,
-                QUERY_INTERFACETIMINGS = 0xE,
-                QUERY_VERTEXTIMINGS = 0xF,
-                QUERY_BANDWIDTHTIMINGS = 0x11,
-                QUERY_CACHEUTILIZATION = 0x12,
+                QUERY_VCACHE = 4,
+                QUERY_EVENT = 8,
+                QUERY_OCCLUSION = 9,
+                QUERY_TIMESTAMP = 10,
+                QUERY_TIMESTAMPDISJOINT = 11,
+                QUERY_TIMESTAMPFREQ = 12,
+                QUERY_PIPELINETIMINGS = 13,
+                QUERY_INTERFACETIMINGS = 14,
+                QUERY_VERTEXTIMINGS = 15,
+                QUERY_BANDWIDTHTIMINGS = 17,
+                QUERY_CACHEUTILIZATION = 18,
             };
 
             enum State
             {
-                QUERY_NOT_SUPPORT = 0x0,
-                QUERY_SIGNALED = 0x1,
-                QUERY_ISSUED = 0x2,
-                QUERY_ERROR = 0x3,
+                QUERY_NOT_SUPPORT = 0,
+                QUERY_SIGNALED = 1,
+                QUERY_ISSUED = 2,
+                QUERY_ERROR = 3,
             };
-        };
 
-        class IHlslShader : public IRenderResource
-        {
         public:
+            virtual m3d::rend::IQuery::Type GetType() const = 0 /* 0x14 */;
+            virtual void Begin() = 0 /* 0x18 */;
+            virtual void End() = 0 /* 0x1c */;
+            virtual m3d::rend::IQuery::State GetState() = 0 /* 0x20 */;
+            virtual const m3d::rend::QueryReturnValue& GetData() = 0 /* 0x24 */;
+
+        protected:
+            virtual  ~IQuery() override /* 0x00 */;
+        }; /* size: 0x0008 */
+
+        struct IHlslShader : public m3d::rend::IRenderResource
+        {
             enum Profile
             {
-                VS_1_1 = 0x0,
-                VS_2_0 = 0x1,
-                VS_3_0 = 0x2,
-                PS_1_1 = 0x3,
-                PS_1_3 = 0x4,
-                PS_1_4 = 0x5,
-                PS_2_0 = 0x6,
-                PS_2_a = 0x7,
-                PS_3_0 = 0x8,
+                VS_1_1 = 0,
+                VS_2_0 = 1,
+                VS_3_0 = 2,
+                PS_1_1 = 3,
+                PS_1_3 = 4,
+                PS_1_4 = 5,
+                PS_2_0 = 6,
+                PS_2_a = 7,
+                PS_3_0 = 8,
             };
 
-            using ParameterHandle = unsigned;
+            using ParameterHandle = unsigned int;
 
-        public:
-            static const ParameterHandle INVALID_PARAM;
+            static const unsigned int INVALID_PARAM;
+            virtual unsigned int GetNumberOfParams() const = 0 /* 0x14 */;
+            virtual unsigned int GetParamHandleByName(const char*) = 0 /* 0x18 */;
+            virtual void SetInt(unsigned int, int) = 0 /* 0x1c */;
+            virtual void SetFloat(unsigned int, float) = 0 /* 0x20 */;
+            virtual void SetVector4(unsigned int, const CVector4&) = 0 /* 0x24 */;
+            virtual void SetVector3(unsigned int, const CVector&) = 0 /* 0x28 */;
+            virtual void SetFloat4(unsigned int, const nFloat4&) = 0 /* 0x2c */;
+            virtual void SetMatrix(unsigned int, const CMatrix&) = 0 /* 0x30 */;
+            virtual void SetIntArray(unsigned int, const int*, int) = 0 /* 0x34 */;
+            virtual void SetFloatArray(unsigned int, const float*, int) = 0 /* 0x38 */;
+            virtual void SetFloat4Array(unsigned int, const nFloat4*, int) = 0 /* 0x3c */;
+            virtual void SetVector4Array(unsigned int, const CVector4*, int) = 0 /* 0x40 */;
+            virtual void SetMatrixArray(unsigned int, const CMatrix*, int) = 0 /* 0x44 */;
+            virtual void SetMatrixPointerArray(unsigned int, const CMatrix**, int) = 0 /* 0x48 */;
+            virtual void Apply() = 0 /* 0x4c */;
+            virtual  ~IHlslShader() override /* 0x00 */;
+        }; /* size: 0x0008 */
 
-        public:
-            virtual unsigned int GetNumberOfParams() = 0;
-            virtual unsigned int GetParamHandleByName(const char*) = 0;
-            virtual void SetInt(unsigned int, int) = 0;
-            virtual void SetFloat(unsigned int, float) = 0;
-            virtual void SetVector4(unsigned int, const CVector4*) = 0;
-            virtual void SetVector3(unsigned int, const CVector*) = 0;
-            virtual void SetFloat4(unsigned int, const nFloat4*) = 0;
-            virtual void SetMatrix(unsigned int, const CMatrix*) = 0;
-            virtual void SetIntArray(unsigned int, const int*, int) = 0;
-            virtual void SetFloatArray(unsigned int, const float*, int) = 0;
-            virtual void SetFloat4Array(unsigned int, const nFloat4*, int) = 0;
-            virtual void SetVector4Array(unsigned int, const CVector4*, int) = 0;
-            virtual void SetMatrixArray(unsigned int, const CMatrix*, int) = 0;
-            virtual void SetMatrixPointerArray(unsigned int, const CMatrix**, int) = 0;
-            virtual void Apply() = 0;
-            virtual ~IHlslShader() = default;
-            IHlslShader(IHlslShader const&){}
-            IHlslShader(){}
-        };
-
-        class IAsmShader : public IRenderResource
+        struct IAsmShader : public m3d::rend::IRenderResource
         {
-        public:
             enum Type
             {
-                VERTEX_SHADER = 0x0,
-                PIXEL_SHADER = 0x1,
+                VERTEX_SHADER = 0,
+                PIXEL_SHADER = 1,
             };
-        };
 
-        class IEffect : public IRenderResource
+            virtual void Apply() = 0 /* 0x14 */;
+            virtual  ~IAsmShader() override /* 0x00 */;
+        }; /* size: 0x0008 */
+
+        struct IEffect : public m3d::rend::IRenderResource
         {
-        public:
             enum Parameter
             {
-                World = 0x0,
-                View = 0x1,
-                Projection = 0x2,
-                ModelView = 0x3,
-                InvWorld = 0x4,
-                ModelViewProjection = 0x5,
-                ViewPos = 0x6,
-                DiffMap0 = 0x7,
-                CubeMap0 = 0x8,
-                BumpMap0 = 0x9,
-                DetailMap0 = 0xA,
-                LightMap0 = 0xB,
-                NormalizationCubemap = 0xC,
-                Time_Linear = 0xD,
-                Tree_Bend_Term = 0xE,
-                LightAmbient = 0xF,
-                LightDiffuse = 0x10,
-                LightPlant = 0x11,
-                LightSpecular = 0x12,
-                FogTerm = 0x13,
-                Transparency = 0x14,
-                TransStartDist = 0x15,
-                TransObjectWidth = 0x16,
-                TmpLight0Dir = 0x17,
-                User_float_param = 0x18,
-                User_float_param2 = 0x19,
-                User_float_param3 = 0x1A,
-                User_float3_param = 0x1B,
-                User_float3_param2 = 0x1C,
-                User_float4_param = 0x1D,
-                User_float4x4_param = 0x1E,
-                NumParameters = 0x1F,
-                InvalidParameter = 0x20,
+                World = 0,
+                View = 1,
+                Projection = 2,
+                ModelView = 3,
+                InvWorld = 4,
+                ModelViewProjection = 5,
+                ViewPos = 6,
+                DiffMap0 = 7,
+                CubeMap0 = 8,
+                BumpMap0 = 9,
+                DetailMap0 = 10,
+                LightMap0 = 11,
+                NormalizationCubemap = 12,
+                Time_Linear = 13,
+                Tree_Bend_Term = 14,
+                LightAmbient = 15,
+                LightDiffuse = 16,
+                LightPlant = 17,
+                LightSpecular = 18,
+                FogTerm = 19,
+                Transparency = 20,
+                TransStartDist = 21,
+                TransObjectWidth = 22,
+                TmpLight0Dir = 23,
+                User_float_param = 24,
+                User_float_param2 = 25,
+                User_float_param3 = 26,
+                User_float3_param = 27,
+                User_float3_param2 = 28,
+                User_float4_param = 29,
+                User_float4x4_param = 30,
+                NumParameters = 31,
+                InvalidParameter = 32,
             };
 
-            class TechniqueDesc
+            struct TechniqueDesc
             {
-            private:
                 CStr name;
-                unsigned int numPasses;
+                /* 0x000c */ unsigned int numPasses;
                 CStr briefDesc;
                 CStr vertexFormatStr;
-                m3d::rend::VertexType vertexFormat;
-                bool tangentSpaceUsed;
-                bool isDefault;
-                bool isPS20;
-                bool useAlpha;
-            };
+                /* 0x0028 */ m3d::rend::VertexType vertexFormat;
+                /* 0x002c */ bool tangentSpaceUsed;
+                /* 0x002d */ bool isDefault;
+                /* 0x002e */ bool isPS20;
+                /* 0x002f */ bool useAlpha;
+            }; /* size: 0x0030 */
 
-        public:
-            virtual unsigned int GetNumTechniques() = 0;
-            virtual const m3d::rend::IEffect::TechniqueDesc*  GetTechniqueDesc(unsigned int) = 0;
-            virtual void SetCurTechnique(unsigned int) = 0;
-            virtual unsigned int GetCurTechnique() = 0;
-            virtual void SetDefaultTechnique(bool) = 0;
-            virtual bool IsParameterUsed(m3d::rend::IEffect::Parameter) = 0;
-            virtual void SetInt(m3d::rend::IEffect::Parameter, int) = 0;
-            virtual void SetFloat(m3d::rend::IEffect::Parameter, float) = 0;
-            virtual void SetVector4(m3d::rend::IEffect::Parameter, const CVector4*) = 0;
-            virtual void SetVector3(m3d::rend::IEffect::Parameter, const CVector*) = 0;
-            virtual void SetFloat4(m3d::rend::IEffect::Parameter, const nFloat4*) = 0;
-            virtual void SetMatrix(m3d::rend::IEffect::Parameter, const CMatrix*) = 0;
-            virtual void SetTexture(m3d::rend::IEffect::Parameter, m3d::rend::TexHandle*) = 0;
-            virtual void SetIntArray(m3d::rend::IEffect::Parameter, const int*, int) = 0;
-            virtual void SetFloatArray(m3d::rend::IEffect::Parameter, const float*, int) = 0;
-            virtual void SetFloat4Array(m3d::rend::IEffect::Parameter, const nFloat4*, int) = 0;
-            virtual void SetVector4Array(m3d::rend::IEffect::Parameter, const CVector4*, int) = 0;
-            virtual void SetMatrixArray(m3d::rend::IEffect::Parameter, const CMatrix*, int) = 0;
-            virtual void SetMatrixPointerArray(m3d::rend::IEffect::Parameter, const CMatrix**, int) = 0;
-        };
+            virtual unsigned int GetNumTechniques() const = 0 /* 0x14 */;
+            virtual const m3d::rend::IEffect::TechniqueDesc& GetTechniqueDesc(unsigned int) const = 0 /* 0x18 */;
+            virtual void SetCurTechnique(unsigned int) = 0 /* 0x1c */;
+            virtual unsigned int GetCurTechnique() const = 0 /* 0x20 */;
+            virtual void SetDefaultTechnique(bool) = 0 /* 0x24 */;
+            virtual bool IsParameterUsed(m3d::rend::IEffect::Parameter) = 0 /* 0x28 */;
+            virtual void SetInt(m3d::rend::IEffect::Parameter, int) = 0 /* 0x2c */;
+            virtual void SetFloat(m3d::rend::IEffect::Parameter, float) = 0 /* 0x30 */;
+            virtual void SetVector4(m3d::rend::IEffect::Parameter, const CVector4&) = 0 /* 0x34 */;
+            virtual void SetVector3(m3d::rend::IEffect::Parameter, const CVector&) = 0 /* 0x38 */;
+            virtual void SetFloat4(m3d::rend::IEffect::Parameter, const nFloat4&) = 0 /* 0x3c */;
+            virtual void SetMatrix(m3d::rend::IEffect::Parameter, const CMatrix&) = 0 /* 0x40 */;
+            virtual void SetTexture(m3d::rend::IEffect::Parameter, m3d::rend::TexHandle*) = 0 /* 0x44 */;
+            virtual void SetIntArray(m3d::rend::IEffect::Parameter, const int*, int) = 0 /* 0x48 */;
+            virtual void SetFloatArray(m3d::rend::IEffect::Parameter, const float*, int) = 0 /* 0x4c */;
+            virtual void SetFloat4Array(m3d::rend::IEffect::Parameter, const nFloat4*, int) = 0 /* 0x50 */;
+            virtual void SetVector4Array(m3d::rend::IEffect::Parameter, const CVector4*, int) = 0 /* 0x54 */;
+            virtual void SetMatrixArray(m3d::rend::IEffect::Parameter, const CMatrix*, int) = 0 /* 0x58 */;
+            virtual void SetMatrixPointerArray(m3d::rend::IEffect::Parameter, const CMatrix**, int) = 0 /* 0x5c */;
+            virtual  ~IEffect() override /* 0x00 */;
+        }; /* size: 0x0008 */
 
         //IMPORTANT: fields and member order is strict!
         struct IRenderer : public IBase

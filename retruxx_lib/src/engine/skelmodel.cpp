@@ -64,7 +64,14 @@ namespace m3d
 
     AnimatedModel::Animation::Animation()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_fps = 30;
+        this->m_numNodes = 0;
+        this->m_numFrames = 0;
+        this->m_numChanges = 0;
+        this->m_nextAnimation = -1;
+        this->m_action = AT_STAND1;
+        this->m_hierChanges = 0;
+        this->m_nodesPositions = 0;
     }
 
     void AnimatedModel::Mesh::ComputeShadowsRelatedStuff()
@@ -79,7 +86,20 @@ namespace m3d
 
     AnimatedModel::Mesh::Mesh()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_verts = 0;
+        this->m_vertsInfluences = 0;
+        this->m_tris = 0;
+        this->m_lastFrameUpdated = -1;
+        this->m_drawIndices = 0;
+        this->m_numDrawIndices = 0;
+        this->m_drawVerts = 0;
+        this->m_numDrawVerts = 0;
+        this->m_vertsRemap = 0;
+        this->m_numFacesWelded = 0;
+        this->m_trisWelded = 0;
+        this->m_numVertsWelded = 0;
+        this->m_vertsWelded = 0;
+        this->m_faceNormals = 0;
     }
 
     DSurfaceMaterial& AnimatedModel::Mesh::GetMaterial(unsigned) const
@@ -100,9 +120,8 @@ namespace m3d
                 ref_ptr texturesNode = xml->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
                 ref_ptr fileNode = xml->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
                 xml->GetFirstChild(texturesNode, "Textures");
-                xml->GetFirstChild(fileNode, "file");
                 //TODO: check this
-                for (; !fileNode->IsEmpty(); fileNode->GetNextSibling(fileNode, "file"))
+                for (texturesNode->GetFirstChild(fileNode, "file"); !fileNode->IsEmpty(); fileNode->GetNextSibling(fileNode, "file"))
                 {
                     CStr name;
                     CStr path;
@@ -174,7 +193,7 @@ namespace m3d
     bool AnimatedModel::LoadGAM(CStr const& FileName, bool bForceNextAnimation)
     {
         // TODO: generated code
-        if (!this->m_bVerification)
+        if (this->m_bVerification)
         {
             M3D_LOG_ERR("LoadGAM does work not for verification of models!!!");
             return false;
@@ -1247,9 +1266,17 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModel::NewEffect(retruxx::string const&, rend::IEffect*&)
+    void AnimatedModel::NewEffect(retruxx::string const& name, rend::IEffect*& shader)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!shader && ! m_bVerification)
+        {
+            auto shaderFile = "data/shaders/" + name + ".fx";
+            shader = M3D_RENDERER->NewEffect(shaderFile.c_str(), true);
+            if (shader)
+            {
+                shader->SetDefaultTechnique(true);
+            }
+        }
     }
 
     void AnimatedModel::CreateVariants()
@@ -1282,9 +1309,21 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    CStr AnimatedModel::DefinePathToTexture(CStr const&)
+    CStr AnimatedModel::DefinePathToTexture(CStr const& fileName)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto it = m_textureFiles.find(fileName);
+        CStr path;
+        if (it == m_textureFiles.end())
+        {
+            path = m_PathToFile.c_str();
+            path += "\\" + fileName;
+        }
+        else
+        {
+            path = it->second;
+        }
+        UnifyFileName(path);
+        return path;
     }
 
     bool AnimInfo::IsAnimation(ActionType)
