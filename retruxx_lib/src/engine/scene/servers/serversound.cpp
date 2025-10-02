@@ -297,9 +297,32 @@ namespace m3d
         this->soundIds[2] = -1;
     }
 
-    int Sound3DServer::_AddItem(char const*, char const*, char const*)
+    int Sound3DServer::_AddItem(char const* fileName, char const* id, char const* groupName)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        {
+            return 0;
+        }
+
+        int soundType = 1;
+        if (groupName)
+        {
+            soundType = strcmp(groupName, "SOUND2D") != 0;
+        }
+
+        auto soundId = M3D_APP->m_sound->AddSound(fileName, (snd::UserSoundType)soundType, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        if (soundId == -1)
+        {
+            M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(fileName));
+            return -1;
+        }
+
+        auto soundItem = new SoundItem();
+        soundItem->type = SOUND_TYPE_SIMPLE;
+        soundItem->soundIds[0] = soundId;
+        DataServer::Model model(soundItem, fileName, fileName, id);
+        m_models.push_back(std::move(model));
+        return m_models.size() - 1;
     }
 
     int Sound3DServer::_AddDoubleItem(CStr, CStr, char const*, char const*)

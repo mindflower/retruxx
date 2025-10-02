@@ -220,7 +220,7 @@ namespace m3d
 
     bool DataServer::IsValid() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_valid;
     }
 
     int DataServer::ParseProto(char const* in, Proto* protocol, int* paramsPos)

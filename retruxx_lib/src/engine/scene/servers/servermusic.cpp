@@ -38,9 +38,30 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void MusicServer::RenderItem(int, void*)
+    void MusicServer::RenderItem(int id, void* params)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        {
+            return;
+        }
+
+        M3D_ASSERT(IsValid());
+        if (id != -2 && id != -3 && id != -4)
+        {
+            M3D_ASSERT(params);
+            if (id < m_models.size())
+            {
+                auto param1 = *(bool*)params;
+                auto param2 = *((bool*)(params) + 1);
+                auto soundId = _GetSoundIdByServerHandle(id);
+                // TODO: check this
+                M3D_APP->m_sound->PlayMusic(soundId, param1, param2);
+            }
+            else
+            {
+                M3D_LOG_INFO("Error: invalid id for RenderItem: " + CStr(id));
+            }
+        }
     }
 
     int MusicServer::Release()
