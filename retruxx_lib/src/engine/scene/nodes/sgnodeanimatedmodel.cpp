@@ -225,7 +225,22 @@ namespace m3d
 
     void SgAnimatedModelNode::UpdateOwnBoundingBox()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (this->m_srvId == -1)
+        {
+            this->m_ownBoundingBox.m_box[0] = 0.0;
+            this->m_ownBoundingBox.m_box[1] = 0.0;
+            this->m_ownBoundingBox.m_box[2] = 0.0;
+            this->m_ownBoundingBox.m_box[3] = 0.0;
+            this->m_ownBoundingBox.m_box[4] = 0.0;
+            this->m_ownBoundingBox.m_box[5] = 0.0;
+        }
+        else
+        {
+            m3d::PropSrvBoundingBox prop;
+            prop.m_node = this;
+            prop.m_destBox = &m_ownBoundingBox;
+            GetServer()->GetItemProperty(m_srvId, 12288, &prop);
+        }
     }
 
     SgAnimatedModelNode::SgAnimatedModelNode()

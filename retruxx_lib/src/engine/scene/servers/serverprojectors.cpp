@@ -1,6 +1,27 @@
 #include <m3dapp.h>
 #include <scene/servers/serverprojectors.h>
 
+struct ProjectorStats
+{
+    /* 0x0000 */ int numProjToRender;
+    /* 0x0004 */ int numCellsRendered;
+    /* 0x0008 */ int numModelsRendered;
+    /* 0x000c */ int curFrame;
+
+    void Zero()
+    {
+        throw retruxx::logic_error("Not implemented");
+    }
+
+    ProjectorStats()
+    {
+        this->curFrame = 0;
+        this->numModelsRendered = 0;
+        this->numProjToRender = 0;
+        this->numCellsRendered = 0;
+    }
+}; /* size: 0x0010 */
+
 namespace m3d
 {
     ProjectorsServer::~ProjectorsServer()
@@ -116,18 +137,32 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void ProjectorsServer::RenderItem(int, void*)
+    void ProjectorsServer::RenderItem(int id, void* params)
+    {
+        static ProjectorStats stats;
+        m_profiler->StartCountdown();
+        switch (id)
+        {
+        case -4:
+        {
+            break;
+        }
+        default:
+            throw retruxx::logic_error("Not implemented");
+        }
+        m_profiler->EndCountdown();
+    }
+
+    int ProjectorsServer::RemoveItem(int id)
     {
         throw retruxx::logic_error("Not implemented");
     }
 
-    int ProjectorsServer::RemoveItem(int)
+    void ProjectorsServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)
     {
-        throw retruxx::logic_error("Not implemented");
-    }
-
-    void ProjectorsServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>&)
-    {
-        throw retruxx::logic_error("Not implemented");
+        for (auto& item : itemslist)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
     }
 }

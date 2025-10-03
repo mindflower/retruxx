@@ -220,7 +220,7 @@ namespace m3d
 
     int SgNode::GetServerHandle() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_srvId;
     }
 
     bool SgNode::IsFree() const

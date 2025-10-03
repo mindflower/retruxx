@@ -53,7 +53,24 @@ namespace m3d
     {
         if (prop == 12288)
         {
-            throw retruxx::logic_error("Not implemented");
+            m3d::PropSrvBoundingBox* destConverted = (m3d::PropSrvBoundingBox*)dest;
+            auto srvId = destConverted->m_node->GetServerHandle();
+            if (srvId >= 0 && srvId < m_models.size())
+            {
+                ParticleSystem* system = (ParticleSystem*)m_models[srvId].m_ptr;
+                *destConverted->m_destBox = system->m_bBox;
+                return 1;
+            }
+            else
+            {
+                (destConverted->m_destBox->m_box)[0] = 0.0;
+                (destConverted->m_destBox->m_box)[1] = 0.0;
+                (destConverted->m_destBox->m_box)[2] = 0.0;
+                (destConverted->m_destBox->m_box)[3] = 0.0;
+                (destConverted->m_destBox->m_box)[4] = 0.0;
+                (destConverted->m_destBox->m_box)[5] = 0.0;
+                return 1;
+            }
         }
         else
         {

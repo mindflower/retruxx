@@ -15,9 +15,25 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void DecalsServer::RenderItem(int, void*)
+    void DecalsServer::RenderItem(int id, void* params)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_profiler->StartCountdown();
+        if (id == -2)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
+        else if (id == -3)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
+        else
+        {
+            if (id != -4)
+            {
+                throw retruxx::logic_error("Not implemented");
+            }
+        }
+        m_profiler->EndCountdown();
     }
 
     int DecalsServer::Init()
@@ -61,8 +77,11 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void DecalsServer::AddItemsList(retruxx::vector<ServerItem>&)
+    void DecalsServer::AddItemsList(retruxx::vector<ServerItem>& itemsList)
     {
-        throw retruxx::logic_error("Not implemented");
+        for (const auto& item : itemsList)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
     }
 }

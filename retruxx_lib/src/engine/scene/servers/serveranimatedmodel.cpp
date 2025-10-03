@@ -10,18 +10,27 @@
 
 namespace m3d
 {
-    extern CClient* pClient;
-}
-
-namespace m3d
-{
     void AnimatedModelsServer::PostLoad()
     {
-        throw retruxx::logic_error("Not implemented");
-        //for (auto& model : m_models)
-        //{
-        //    throw retruxx::logic_error("Not implemented");
-        //}
+        for (const auto& model : m_models)
+        {
+            auto* dynamicModel = (DynamicModel*)model.m_ptr;
+            for (auto& actionEffect : dynamicModel->m_effects)
+            {
+                std::vector<DynamicModel::auxEffectDesc> newEffectList;
+                for (const auto& effect : actionEffect.lpEffects)
+                {
+                    DynamicModel::auxEffectDesc desc = effect;
+                    auto id = M3D_KERNEL->GetEngineCfg().GetModelIdByName(effect.m_effectName);
+                    if (id != -1)
+                    {
+                        desc.m_effectId = id;
+                        newEffectList.push_back(std::move(desc));
+                    }
+                }
+                actionEffect.lpEffects = newEffectList;
+            }
+        }
     }
 
     int AnimatedModelsServer::AddItem(char const* params, char const* id)

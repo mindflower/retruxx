@@ -1,6 +1,11 @@
 #include <geomobject.h>
 #include <stdexcept>
 
+extern "C"
+{
+#include <ode/collision.h>
+}
+
 namespace m3d
 {
     RT_CLASS_EXPORTS_BEGIN(GeomObject)
@@ -72,9 +77,16 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void GeomObject::SetGeom(dxGeom*)
+    void GeomObject::SetGeom(dxGeom* geom)
     {
-        throw std::logic_error("Not implemented");
+        this->m_geom = geom;
+        dGeomSetCategoryBits(geom, 1u);
+        dGeomSetCollideBits(this->m_geom, 0xFFFFFFFE);
+        m_geom = this->m_geom;
+        if (m_geom)
+            dGeomSetData(m_geom, this);
+        if (!this->m_enabledCellsCount)
+            dGeomDisable(this->m_geom);
     }
 
     void GeomObject::SetEnabled(bool)
@@ -94,7 +106,7 @@ namespace m3d
 
     dxGeom* GeomObject::GetGeom() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_geom;
     }
 
     void GeomObject::SetMayBeEnabled(bool)
@@ -104,7 +116,17 @@ namespace m3d
 
     GeomObject::GeomObject()
     {
-        throw std::logic_error("Not implemented");
+        this->m_startCell.x = 0;
+        this->m_startCell.y = 0;
+        this->m_endCell.x = -1;
+        this->m_endCell.y = -1;
+        this->m_geom = 0;
+        this->m_TriData = 0;
+        this->m_Vertices = 0;
+        this->m_Indices = 0;
+        this->m_enabledCellsCount = 0;
+        this->m_needToDeleteInUnlink = 1;
+        this->m_bMayBeEnabled = 1;
     }
 
     GeomObject::GeomObject(GeomObject const&)
@@ -129,7 +151,7 @@ namespace m3d
 
     Object* GeomObjectLandscape::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new GeomObjectLandscape;
     }
 
     Class* GeomObjectLandscape::GetBaseClass()
@@ -139,7 +161,6 @@ namespace m3d
 
     GeomObjectLandscape::GeomObjectLandscape()
     {
-        throw std::logic_error("Not implemented");
     }
 
     GeomObjectLandscape::GeomObjectLandscape(GeomObjectLandscape const&)
@@ -239,7 +260,7 @@ namespace m3d
 
     Object* GeomObjectWater::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new GeomObjectWater;
     }
 
     Object* GeomObjectWater::Clone()
@@ -254,7 +275,6 @@ namespace m3d
 
     GeomObjectWater::GeomObjectWater()
     {
-        throw std::logic_error("Not implemented");
     }
 
     GeomObjectWater::GeomObjectWater(GeomObjectWater const&)

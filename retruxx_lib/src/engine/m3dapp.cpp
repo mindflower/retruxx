@@ -1994,7 +1994,7 @@ namespace m3d
 
     DataServer& Application::GetSpritesServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        return *m_serverSprites;
     }
 
     void Application::panic()

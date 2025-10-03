@@ -789,39 +789,100 @@ namespace m3d
 
         int Wnd::RemoveChild(Object* w)
         {
-            //TODO: check this
-            auto wnd = dynamic_cast<Wnd*>(w);
-            if (this != GetStation() && !wnd->IsChildOf(GetStation()))
+            // TODO: generated code
+            m3d::ui::Wnd* targetWnd = (m3d::ui::Wnd*)w;
+            bool canRemove = false;
+
+            // Check if we can remove from WndStation
+            if (this != GetStation() && !IsChildOf(GetStation()))
             {
-                wnd->m_bSuspendedUnlink = false;
-                wnd->m_bSuspendedParentUnlink = false;
-                //TODO: recreate vector logic (idk for what)
-                //retruxx::vector<Object*> stack;
-                //stack.push_back(wnd);
-                GetStation()->OnRemoveWnd(this, wnd);
-                UnlinkChild(wnd);
-                if (wnd)
+                canRemove = true;
+            }
+            else
+            {
+                // Call virtual function to check if removal is allowed
+                if ((targetWnd->OnBeforeRemoveFromWndStation() & 1) != 0)
                 {
-                    wnd->OnAfterRemoveFromWndStation();
+                    canRemove = true;
                 }
+                else
+                {
+                    // Removal not allowed - suspend unlinking for this window and its children
+                    targetWnd->m_bSuspendedUnlink = true;
+
+                    std::vector<m3d::ui::Wnd*> stack;
+                    stack.push_back(targetWnd);
+
+                    // Traverse children and mark them as suspended
+                    while (!stack.empty()) {
+                        m3d::ui::Wnd* current = stack.back();
+                        stack.pop_back();
+
+                        // Process all children
+                        m3d::ui::Wnd* child = (m3d::ui::Wnd*)current->GetFirstChild();
+                        while (child != nullptr)
+                        {
+                            child->m_bSuspendedParentUnlink = true;
+
+                            // If child has children, add to stack
+                            if (child->GetFirstChild() != nullptr)
+                            {
+                                stack.push_back(child);
+                            }
+
+                            child = (m3d::ui::Wnd*)child->GetNextSibling();
+                        }
+                    }
+                    return 0;
+                }
+            }
+
+            // Proceed with removal
+            if (canRemove)
+            {
+                targetWnd->m_bSuspendedUnlink = false;
+                targetWnd->m_bSuspendedParentUnlink = false;
+
+                std::vector<m3d::ui::Wnd*> stack;
+                stack.push_back(targetWnd);
+
+                // Traverse and process all descendants
+                while (!stack.empty())
+                {
+                    m3d::ui::Wnd* current = stack.back();
+                    stack.pop_back();
+
+                    // Process all children of current node
+                    m3d::ui::Wnd* child = (m3d::ui::Wnd*)current->GetFirstChild();
+                    while (child != nullptr)
+                    {
+                        // Clear some flag (based on the original BYTE1(i[10].m_name.m_charPtr) = 0)
+                        // This appears to be resetting a flag on the child
+                        child->m_bSuspendedUnlink = false; // Simplified interpretation
+
+                        // If child has children, add to stack
+                        if (child->GetFirstChild() != nullptr)
+                        {
+                            stack.push_back(child);
+                        }
+
+                        child = (m3d::ui::Wnd*)child->GetNextSibling();
+                    }
+                }
+
+                // Notify WndStation and perform actual unlinking
+                GetStation()->OnRemoveWnd(this, targetWnd);
+                m3d::Object::UnlinkChild(targetWnd);
+
+                // Call post-removal callback if needed
+                if (canRemove)
+                {
+                    targetWnd->OnAfterRemoveFromWndStation();
+                }
+
                 return 1;
             }
-            if ((wnd->OnBeforeRemoveFromWndStation() & 1) != 0)
-            {
-                wnd->m_bSuspendedUnlink = false;
-                wnd->m_bSuspendedParentUnlink = false;
-                //TODO: recreate vector logic (idk for what)
-                //retruxx::vector<Object*> stack;
-                //stack.push_back(wnd);
-                GetStation()->OnRemoveWnd(this, wnd);
-                UnlinkChild(wnd);
-                if (wnd)
-                {
-                    wnd->OnAfterRemoveFromWndStation();
-                }
-                return 1;
-            }
-            wnd->m_bSuspendedUnlink = true;
+
             return 0;
         }
 

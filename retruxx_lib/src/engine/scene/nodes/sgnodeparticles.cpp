@@ -192,7 +192,22 @@ namespace m3d
 
     void SgParticlesNode::UpdateOwnBoundingBox()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (this->m_srvId == -1)
+        {
+            this->m_ownBoundingBox.m_box[0] = 0.0;
+            this->m_ownBoundingBox.m_box[1] = 0.0;
+            this->m_ownBoundingBox.m_box[2] = 0.0;
+            this->m_ownBoundingBox.m_box[3] = 0.0;
+            this->m_ownBoundingBox.m_box[4] = 0.0;
+            this->m_ownBoundingBox.m_box[5] = 0.0;
+        }
+        else
+        {
+            m3d::PropSrvBoundingBox ri;
+            ri.m_node = this;
+            ri.m_destBox = &this->m_ownBoundingBox;
+            GetServer()->GetItemProperty(this->m_srvId, 12288, &ri);
+        }
     }
 
     Class* SgParticlesOpaqueNode::GetBaseClass()

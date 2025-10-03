@@ -56,7 +56,30 @@ void Aabb::EmbracePoint(const CVector& v)
 
 void Aabb::EmbraceBox(const Aabb& box)
 {
-    throw std::logic_error("Not implemented");
+    auto v2 = &box;
+    if (this->m_box[0] <= box.m_box[0])
+        v2 = this;
+    this->m_box[0] = v2->m_box[0];
+    auto v3 = &box.m_box[3];
+    if (box.m_box[3] <= this->m_box[3])
+        v3 = &this->m_box[3];
+    this->m_box[3] = *v3;
+    auto v4 = &box.m_box[1];
+    if (this->m_box[1] <= box.m_box[1])
+        v4 = &this->m_box[1];
+    this->m_box[1] = *v4;
+    auto v5 = &box.m_box[4];
+    if (box.m_box[4] <= this->m_box[4])
+        v5 = &this->m_box[4];
+    this->m_box[4] = *v5;
+    auto v6 = &box.m_box[2];
+    if (this->m_box[2] <= box.m_box[2])
+        v6 = &this->m_box[2];
+    this->m_box[2] = *v6;
+    if (box.m_box[5] <= this->m_box[5])
+        this->m_box[5] = this->m_box[5];
+    else
+        this->m_box[5] = box.m_box[5];
 }
 
 CVector Aabb::Min() const

@@ -3,6 +3,12 @@
 
 namespace m3d
 {
+    struct PropSrvBoundingBox
+    {
+        /* 0x0000 */ m3d::SgNode* m_node;
+        /* 0x0004 */ Aabb* m_destBox;
+    }; /* size: 0x0008 */
+
     enum RenderNodeType
     {
         RNT_SIMPLE = 0x0,

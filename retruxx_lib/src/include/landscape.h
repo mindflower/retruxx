@@ -10,14 +10,11 @@
 #include <renderer/i_renderer.h>
 #include <scene/nodes/sgnode.h>
 
+#include "server/obstacle.h"
+
 struct dxJoint;
 struct dxGeom;
 struct dMass;
-
-namespace ai
-{
-    class Obstacle;
-}
 
 namespace m3d
 {
@@ -133,7 +130,6 @@ namespace m3d
             /* 0x0000 */ retruxx::set<m3d::GeomObject*, retruxx::less<m3d::GeomObject*>, retruxx::allocator<m3d::GeomObject*> > m_geomsList;
             /* 0x000c */ bool m_wasEnabledLastFrame;
             /* 0x000d */ bool m_bMustCheck;
-            CollisionCellItem(const m3d::Landscape::CollisionCellItem&);
             CollisionCellItem();
             ~CollisionCellItem();
             void InsertPhysicObjId(int objId);

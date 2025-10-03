@@ -138,7 +138,7 @@ struct DynamicModel
 
     using tActionEffectsDesc = retruxx::vector<DynamicModel::auxEffectDesc, retruxx::allocator<DynamicModel::auxEffectDesc> >;
 
-    struct DynamicModel::auxActionEffectsDesc
+    struct auxActionEffectsDesc
     {
         retruxx::vector<DynamicModel::auxEffectDesc, retruxx::allocator<DynamicModel::auxEffectDesc> > lpEffects;
         /* 0x0010 */ int startAttackFrame;
@@ -155,7 +155,7 @@ struct DynamicModel
 
 struct ModelEffectList
 {
-    struct ModelEffectList::tEffect
+    struct tEffect
     {
         /* 0x0000 */ DynamicModel::auxEffectDesc* m_desc;
         /* 0x0004 */ m3d::SgNode* m_effectNode;

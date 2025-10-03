@@ -565,7 +565,133 @@ namespace m3d
 
     int Landscape::ConstructCollisionData()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        int land_size = this->m_owner->m_level->land_size;
+        int vertexCounter = 0;
+
+        // Allocate collision items array
+        this->m_oCollisionitems = new CollisionCellItem*[4 * land_size * land_size];
+
+        // Process each cell in the landscape
+        for (int cellY = 0; cellY < land_size; cellY++)
+        {
+            int cellArrayOffset = 4 * land_size * cellY;
+
+            for (int cellX = 0; cellX < land_size; cellX++)
+            {
+                // Create collision cell item
+                m3d::Landscape::CollisionCellItem* item = new m3d::Landscape::CollisionCellItem;
+                item->m_wasEnabledLastFrame = false;
+                item->m_bMustCheck = false;
+
+                // Process sub-cells (4x4 grid within each cell)
+                for (int subY = 0; subY < 4; subY++)
+                {
+                    int worldY = subY + 4 * cellY;
+                    int vertexYOffset = 16 * cellY + 4 * subY;
+
+                    for (int subX = 0; subX < 4; subX++)
+                    {
+                        int worldX = subX + 4 * cellX;
+
+                        // Check if this position has water
+                        if (this->m_waterMap[4 * worldY * this->m_owner->m_level->land_size + 4 * worldX])
+                        {
+                            // Create water geometry object
+                            m3d::GeomObject* waterObj =
+                                (m3d::GeomObject*)m3d::g_Kernel->New("GeomObjectWater");
+
+                            // Allocate vertices and indices
+                            waterObj->m_Vertices = (CVector*)m3d::g_Kernel->g_mar.AllocMem(48, 0, 0); // 4 vertices * 12 bytes each
+                            waterObj->m_Indices = (int*)m3d::g_Kernel->g_mar.AllocMem(24, 0, 0); // 6 indices * 4 bytes each
+
+                            // Set up indices for two triangles forming a quad
+                            int* indices = waterObj->m_Indices;
+                            indices[0] = 2; indices[1] = 1; indices[2] = 0; // First triangle
+                            indices[3] = 3; indices[4] = 1; indices[5] = 2; // Second triangle
+
+                            // Create vertices for water quad
+                            vertexCounter = 0;
+                            for (int vertexSubY = 0; vertexSubY < 2; vertexSubY++)
+                            {
+                                float vertexZ = (vertexYOffset + vertexSubY * 4) * 8.0f;
+
+                                for (int vertexSubX = 0; vertexSubX < 2; vertexSubX++)
+                                {
+                                    float vertexX = (4 * worldX + vertexSubX * 4) * 8.0f;
+                                    float waterHeight = m3d::Landscape::getWaterHeight(worldX, worldY);
+
+                                    CVector* vertex = &waterObj->m_Vertices[vertexCounter];
+                                    vertex->x = vertexX;
+                                    vertex->y = waterHeight;
+                                    vertex->z = vertexZ;
+
+                                    vertexCounter++;
+                                }
+                            }
+
+                            // Create triangle mesh for collision
+                            dxTriMeshData* triMeshData = dGeomTriMeshDataCreate();
+                            waterObj->m_TriData = triMeshData;
+                            dGeomTriMeshDataBuildSingle(
+                                triMeshData,
+                                waterObj->m_Vertices,
+                                sizeof(CVector),  // vertex stride
+                                4,                // vertex count
+                                waterObj->m_Indices,
+                                6,                // index count
+                                3 * sizeof(int)   // triangle stride
+                            );
+
+                            // Create ODE geometry
+                            dxSpace* odeSpace = m_owner->GetOdeSpace();
+                            dxGeom* triMeshGeom = dCreateTriMesh(odeSpace, waterObj->m_TriData, 0, 0, 0);
+                            waterObj->SetGeom(triMeshGeom);
+
+                            waterObj->m_needToDeleteInUnlink = false;
+
+                            // Add to collision cell's geometry list
+                            std::pair<std::set<m3d::GeomObject*>::iterator, bool> result;
+                            item->m_geomsList.insert(waterObj);
+                        }
+                    }
+                }
+
+                // Store collision cell item in the array
+                this->m_oCollisionitems[cellArrayOffset + cellX] = item;
+            }
+        }
+
+        // Create terrain heightfield data
+        float* heightData = new float[4 * this->m_mapSize * this->m_mapSize];
+
+        // Copy heightmap data (convert from (n+1)x(n+1) to nxn)
+        for (int y = 0; y < this->m_mapSize; y++)
+        {
+            float* sourceRow = &this->m_heightMap[y * (this->m_mapSize + 1)];
+            float* destRow = &heightData[y * this->m_mapSize];
+            memcpy(destRow, sourceRow, sizeof(float) * this->m_mapSize);
+        }
+
+        // Create terrain geometry object
+        this->m_terrainObject = (m3d::GeomObject*)m3d::g_Kernel->New("GeomObjectLandscape");
+
+        dxSpace* terrainSpace = m_owner->GetOdeSpace();
+        dxGeom* terrainGeom = dCreateTerrainY(
+            terrainSpace,
+            heightData,
+            this->m_mapSize * 8.0f,  // terrain width
+            this->m_mapSize,         // grid size
+            1.0f,                    // vertical scale
+            0                        // flags
+        );
+
+        m_terrainObject->SetGeom(terrainGeom);
+        dGeomEnable(this->m_terrainObject->GetGeom());
+
+        // Free temporary height data
+        delete[] heightData;
+        return true;
     }
 
     void Landscape::setOwner(CWorld* world)
@@ -576,6 +702,11 @@ namespace m3d
     Class* Landscape::GetClass() const
     {
         throw retruxx::logic_error("Not implemented");
+    }
+
+    Landscape::CollisionCellItem::CollisionCellItem()
+    {
+        m_obstacles = new retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > >;
     }
 
     CStr const& Landscape::GetPathToTiles() const
@@ -829,9 +960,34 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    float Landscape::GetLsHeight(float, float) const
+    float Landscape::GetLsHeight(float x, float y) const
     {
-        throw retruxx::logic_error("Not implemented");
+        auto v3 = (int)(float)(x * 0.125);
+        auto v4 = (int)(float)(y * 0.125);
+        if (v3 < 0)
+            return 0.0;
+        if (v4 < 0)
+            return 0.0;
+        auto v6 = this->m_mapSize - 1;
+        if (v3 > v6 || v4 > v6)
+            return 0.0;
+        auto z1 = getHgtAtHfPoint(v3, (int)(float)(y * 0.125));
+        auto HgtAtHfPoint = m3d::Landscape::getHgtAtHfPoint(v3 + 1, v4);
+        auto v8 = v4 + 1;
+        auto z2 = HgtAtHfPoint;
+        auto z3 = m3d::Landscape::getHgtAtHfPoint(v3, v8);
+        auto z4 = m3d::Landscape::getHgtAtHfPoint(v3 + 1, v8);
+
+        int ox;
+        *(float*)&ox = (x - (double)(int)(float)(x * 0.125) * 8.0) * 0.125;
+        auto v9 = (y - (double)(int)(float)(y * 0.125) * 8.0) * 0.125;
+        auto xa = v9;
+        if (fabs(v9) + fabs(*(float*)&ox) > 1.0)
+            return (float)((float)((float)((float)(z2 - z4) * (float)(1.0 - xa))
+                + (float)((float)(z3 - z4) * (float)(1.0 - *(float*)&ox)))
+                + z4);
+        else
+            return (float)((float)((float)((float)(z3 - z1) * xa) + (float)((float)(z2 - z1) * *(float*)&ox)) + z1);
     }
 
     unsigned Landscape::GetNumGrassModels() const
@@ -844,9 +1000,12 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    float Landscape::getHgtAtHfPoint(int, int) const
+    float Landscape::getHgtAtHfPoint(int x, int y) const
     {
-        throw retruxx::logic_error("Not implemented");
+        if (x > m_mapSize || x < 0 || y > m_mapSize || y < 0)
+            return 0.0;
+        else
+            return this->m_heightMap[x + y * (m_mapSize + 1)];
     }
 
     rend::TexHandle Landscape::GetTexHandleFromList(unsigned) const
@@ -1478,9 +1637,15 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    float Landscape::GetHeight(float, float, int, bool)
+    float Landscape::GetHeight(float x, float y, int excludeTag, bool notForCamera)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto height = GetLsHeight(x, y);
+        auto v5 = -99999.0;
+        if (notForCamera)
+            v5 = -999999.0;
+        if (height <= v5)
+            return v5;
+        return height;
     }
 
     void Landscape::CheckLandscapeCollisionTriMeshesForObjId(int)
@@ -1689,7 +1854,8 @@ namespace m3d
 
     void Landscape::CreateHelperStructures()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement Landscape::CreateHelperStructures
+       // throw retruxx::logic_error("Not implemented");
     }
 
     void Landscape::drawSpriteOverlayed2Projected(float, float, float, float, unsigned, bool, CClipper const&)

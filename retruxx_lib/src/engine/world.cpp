@@ -265,7 +265,7 @@ namespace m3d
 
     dxSpace* CWorld::GetOdeSpace()
     {
-        throw retruxx::logic_error("Not implemented");
+        return ai::gGlobalSpace;
     }
 
     unsigned CWorld::GetWeatherSunColor() const
@@ -333,9 +333,14 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int CWorld::GetFxId(CStr const&)
+    int CWorld::GetFxId(CStr const& name)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto it = fxRemap.find(name);
+        if (it != fxRemap.end())
+        {
+            return it->second;
+        }
+        return -1;
     }
 
     CVector const& CWorld::GetSun(float) const
@@ -384,7 +389,42 @@ namespace m3d
 
     void CWorld::ProcessCollisionStuff()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        // Clear collision triangles from landscape
+        m_landscape.RemoveCollisionTris(-1);
+
+        // Stack for depth-first traversal of scene graph
+        std::vector<m3d::Object*> stack;
+
+        // Start with the root node
+        m3d::Object* rootNode = &m_sceneGraph.m_rootNode;
+        stack.push_back(rootNode);
+
+        // Depth-first traversal
+        while (!stack.empty())
+        {
+            // Pop the last node from stack
+            m3d::Object* currentNode = stack.back();
+            stack.pop_back();
+
+            // Process all children of current node
+            m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
+
+            while (child != nullptr)
+            {
+                // Process collision for this child node
+                ProcessCollisionStuffOnNode(child);
+
+                // If child has children of its own, push to stack for processing
+                if (child->GetFirstChild() != nullptr)
+                {
+                    stack.push_back(child);
+                }
+
+                // Move to next sibling
+                child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
+            }
+        }
     }
 
     int CWorld::CreatePrefabsFromFile(char const* fileName)

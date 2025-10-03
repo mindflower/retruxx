@@ -4,6 +4,13 @@
 #include <core/console/console.h>
 #include <server/objects/monsters/boss02arm.h>
 
+#include "m3dapp.h"
+#include "scene/servers/DataServer.h"
+#include <client.h>
+
+#include "world.h"
+#include "core/log.h"
+
 namespace m3d
 {
     CStr EngineConfig::GetNameByModelId(int)
@@ -21,9 +28,43 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int EngineConfig::GetModelIdByName(CStr const&)
+    int EngineConfig::GetModelIdByName(CStr const& name)
     {
-        throw std::logic_error("Not implemented");
+        auto id = M3D_APP->GetAnimatedModelsServer().GetItemByName(name.c_str(), true);
+        if (id != -1)
+        {
+            return id + 0x200000;
+        }
+
+        id = M3D_APP->GetProjectorsServer().GetItemByName(name.c_str(), true);
+        if (id != -1)
+        {
+            return id + 0x100000;
+        }
+
+        id = M3D_APP->GetLightsServer().GetItemByName(name.c_str(), true);
+        if (id != -1)
+        {
+            return id + 0x800000;
+        }
+
+        id = M3D_APP->GetSpritesServer().GetItemByName(name.c_str(), true);
+        if (id != -1)
+        {
+            return id + 0x1000000;
+        }
+
+        id = m3d::pClient->GetWorld().GetFxId(name);
+        if (id != -1)
+        {
+            return id + 0x400000;
+        }
+
+        if (!name.empty())
+        {
+            M3D_LOG_ERR("Error: Cant find server item for name: '" + name + "'");
+        }
+        return 0x200000;
     }
 
     EngineConfig::~EngineConfig()
