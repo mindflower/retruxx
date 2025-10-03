@@ -29,7 +29,7 @@ namespace m3d
 
     Object* WeatherClear::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new WeatherClear();
     }
 
     WeatherClear::WeatherClear(WeatherClear const&)
@@ -39,6 +39,5 @@ namespace m3d
 
     WeatherClear::WeatherClear()
     {
-        throw std::logic_error("Not implemented");
     }
 }

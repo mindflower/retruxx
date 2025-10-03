@@ -19,6 +19,8 @@
 #include <file/fileserver.h>
 #include <file/filestream.h>
 
+#include "scene/nodes/sgnodestaticmodel.h"
+
 
 namespace ai
 {
@@ -298,9 +300,12 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void CWorld::ProcessCollisionStuffOnNode(SgNode*)
+    void CWorld::ProcessCollisionStuffOnNode(SgNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (node->IsKindOf(&m3d::SgStaticModelNode::m_classSgStaticModelNode))
+        {
+            assert(!"obsolete");
+        }
     }
 
     float CWorld::GetShadowTransparencyFromWeather() const

@@ -709,6 +709,10 @@ namespace m3d
         m_obstacles = new retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > >;
     }
 
+    Landscape::CollisionInfo::~CollisionInfo()
+    {
+    }
+
     CStr const& Landscape::GetPathToTiles() const
     {
         throw retruxx::logic_error("Not implemented");
@@ -1775,9 +1779,25 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::RemoveCollisionTris(int)
+    void Landscape::RemoveCollisionTris(int tag)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (tag >= 0)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
+        else
+        {
+            for (auto& collision : m_collisions)
+            {
+                if (collision)
+                {
+                    delete[] collision->m_verts;
+                    delete[] collision->m_tris;
+                    delete collision;
+                }
+            }
+            m_collisions.clear();
+        }
     }
 
     Object* Landscape::CreateObject()

@@ -20,7 +20,21 @@ namespace m3d
 
     WindInfo::WindInfo()
     {
-        throw std::logic_error("Not implemented");
+        this->m_changeVelTime = 100000.0;
+        this->m_changeDirTime = 100000.0;
+        this->m_maxVel = 0.0;
+        this->m_minVel = 0.0;
+        this->m_prevValue.x = 0.0099999998;
+        this->m_prevValue.y = 0.0;
+        this->m_prevValue.z = 0.0099999998;
+        this->m_curValue.x = 0.0099999998;
+        this->m_curValue.y = 0.0;
+        this->m_curValue.z = 0.0099999998;
+        this->m_deltaValue.x = 0.0;
+        this->m_deltaValue.y = 0.0;
+        this->m_deltaValue.z = 0.0;
+        this->m_DeltaVelChanged = 0.0;
+        this->m_DeltaDirChanged = 0.0;
     }
 
     CVector const& WindInfo::GetCurWind() const
@@ -220,6 +234,5 @@ namespace m3d
 
     Weather::Weather()
     {
-        throw std::logic_error("Not implemented");
     }
 }
