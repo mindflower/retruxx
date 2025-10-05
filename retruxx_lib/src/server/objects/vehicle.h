@@ -38,7 +38,6 @@ namespace ai
 
         struct WheelInfo
         {
-            WheelInfo(const ai::VehiclePrototypeInfo::WheelInfo& __that);
             WheelInfo(const CStr wheelPrototypeName, ai::Wheel::WheelSteering steering);
             void PostLoad();
             /* 0x0000 */ int m_wheelPrototypeId;

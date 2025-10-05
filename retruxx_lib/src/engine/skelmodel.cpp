@@ -1523,7 +1523,7 @@ namespace m3d
 
     AnimInfo::~AnimInfo()
     {
-	    throw retruxx::logic_error("Not implemented");
+        Release();
     }
 
     AnimInfo::AnimInfo()

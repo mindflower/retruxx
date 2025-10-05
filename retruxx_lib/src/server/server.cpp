@@ -316,6 +316,18 @@ namespace ai
 
     PrototypeInfo* CServer::CreatePrototypeInfoByClassName(CStr const& className)
     {
+        std::set<CStr> classes = {
+            "Vehicle",
+            "Location",
+            "Player",
+            "Location"
+        };
+
+        if (classes.find(className) == classes.end())
+        {
+            return nullptr;
+        }
+
         if (className == "Vehicle") return new VehiclePrototypeInfo;
         else if (className == "ArticulatedVehicle") return new ArticulatedVehiclePrototypeInfo;
         else if (className == "VehiclePart") return new VehiclePartPrototypeInfo;

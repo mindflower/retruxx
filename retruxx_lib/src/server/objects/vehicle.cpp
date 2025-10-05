@@ -10,6 +10,8 @@
 #include "server/utils.h"
 #include <server/objects/physicbodies/physichelpers.h>
 
+#include "core/ini.h"
+#include "core/log.h"
 #include "server/ai/aimanager.h"
 #include "include/m3dapp.h"
 #include "include/core/kernel.h"
@@ -454,9 +456,11 @@ namespace ai
 
 	extern AIManager* theAIManager;
 
-	VehiclePrototypeInfo::WheelInfo::WheelInfo(CStr, Wheel::WheelSteering)
+	VehiclePrototypeInfo::WheelInfo::WheelInfo(CStr wheelPrototypeName, Wheel::WheelSteering steering)
 	{
-		throw std::logic_error("Not implemented");
+        this->m_wheelPrototypeId = -1;
+        this->m_steering = steering;
+        this->m_wheelPrototypeName = wheelPrototypeName;
 	}
 
 	void VehiclePrototypeInfo::WheelInfo::PostLoad()
@@ -466,12 +470,108 @@ namespace ai
 
 	VehiclePrototypeInfo::VehiclePrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
+        this->m_selfBrakingCoeff = 0.0060000001;
+        this->m_diffRatio = 1.0;
+        this->m_maxEngineRpm = 1.0;
+        this->m_lowGearShiftLimit = 1.0;
+        this->m_highGearShiftLimit = 1.0;
+        this->m_steeringSpeed = 1.0;
+        this->m_takingRadius = 1.0;
+        this->m_priority = -56;
+        this->m_decisionMatrixNum = -1;
+        this->m_cameraHeight = -1.0;
+        this->m_cameraMaxDist = 2.0;
+        this->m_blastWavePrototypeId = -1;
+        this->m_additionalWheelsHover = 0.0;
+        this->m_driftCoeff = 1.0;
+        this->m_pressingForce = 1.0;
+        this->m_healthRegeneration = 0.0;
+        this->m_durabilityRegeneration = 0.0;
+        for (auto& name : this->m_destroyEffectNames)
+        {
+            name = "ET_PS_VEH_EXP";
+        }
+        this->m_bVisibleInEncyclopedia = 0;
 	}
 
-	bool VehiclePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    namespace
 	{
-		throw std::logic_error("Not implemented");
+        const char* DestroyEffectNames[] = { "DestroyEffectPiercing", "DestroyEffectBlast", "DestroyEffectEnergy", "DestroyEffectWater" };
+	}
+
+	bool VehiclePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+	{
+        auto result = ComplexPhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_diffRatio, xmlNode, "DiffRatio");
+            m3d::SafeFloatAttrib(m_maxEngineRpm, xmlNode, "MaxEngineRpm");
+            m3d::SafeFloatAttrib(m_lowGearShiftLimit, xmlNode, "LowGearShiftLimit");
+            m3d::SafeFloatAttrib(m_highGearShiftLimit, xmlNode, "HighGearShiftLimit");
+            m3d::SafeFloatAttrib(m_selfBrakingCoeff, xmlNode, "SelfBrakingCoeff");
+            m3d::SafeFloatAttrib(m_steeringSpeed, xmlNode, "SteeringSpeed");
+
+            CStr decisionMatrixName;
+            m3d::SafeStrAttrib(decisionMatrixName, xmlNode, "DecisionMatrix");
+            if (!decisionMatrixName.empty())
+            {
+                theAIManager->LoadMatrix(decisionMatrixName.c_str());
+                m_decisionMatrixNum = theAIManager->GetMatrixNum(decisionMatrixName);
+            }
+
+            m3d::SafeFloatAttrib(m_takingRadius, xmlNode, "TakingRadius");
+            m3d::SafeUintAttrib((unsigned&)m_priority, xmlNode, "Priority");
+            m3d::SafeStrAttrib(m_hornSoundName, xmlNode, "HornSound");
+            m3d::SafeFloatAttrib(m_cameraHeight, xmlNode, "CameraHeight");
+            m3d::SafeFloatAttrib(m_cameraMaxDist, xmlNode, "CameraMaxDist");
+
+            for (int i = 0; i < 4; ++i)
+            {
+                m3d::SafeStrAttrib(m_destroyEffectNames[i], xmlNode, DestroyEffectNames[i]);
+            }
+
+            ref_ptr wheelsNode = xmlFile->CreateNode();
+            if (!wheelsNode->IsEmpty())
+            {
+                if (!m_parentPrototypeName.empty())
+                {
+                    M3D_LOG_ERR("Error: wheels info is present for inherited vehicle '" + m_prototypeName + "'");
+                    M3D_CRITICAL_ERROR("");
+                }
+
+                m_wheelInfos.clear();
+                ref_ptr wheelNode = xmlFile->CreateNode();
+                for (wheelsNode->GetFirstChild(wheelNode, "Wheel"); wheelNode->IsEmpty(); wheelNode->GetNextSibling(wheelNode, "Wheel"))
+                {
+                    CStr wheelPrototypeName;
+                    m3d::SafeStrAttrib(wheelPrototypeName, wheelNode, "Prototype");
+
+                    CStr steeringStr = 0;
+                    m3d::SafeStrAttrib(steeringStr, wheelNode, "steering");
+
+                    Wheel::WheelSteering steering = Wheel::WheelSteering::STEERING_NO;
+                    if (steeringStr == "correct")
+                    {
+                        steering = Wheel::WheelSteering::STEERING_CORRECT;
+                    }
+                    else if (steeringStr == "inverse")
+                    {
+                        steering = Wheel::WheelSteering::STEERING_INVERSE;
+                    }
+
+                    WheelInfo wheelInfo(wheelPrototypeName, steering);
+                    m_wheelInfos.push_back(std::move(wheelInfo));
+                }
+            }
+
+            m3d::SafeStrAttrib(m_blastWavePrototypeName, xmlNode, "BlastWave");
+            m3d::SafeFloatAttrib(m_additionalWheelsHover, xmlNode, "AdditionalWheelsHover");
+            m3d::SafeFloatAttrib(m_driftCoeff, xmlNode, "DriftCoeff");
+            m3d::SafeFloatAttrib(m_pressingForce, xmlNode, "PressingForce");
+            m3d::SafeFloatAttrib(m_healthRegeneration, xmlNode, "HealthRegeneration");
+            m3d::SafeFloatAttrib(m_durabilityRegeneration, xmlNode, "DurabilityRegeneration");
+        }
+        return result;
 	}
 
 	void VehiclePrototypeInfo::PostLoad()

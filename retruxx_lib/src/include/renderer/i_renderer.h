@@ -859,7 +859,7 @@ namespace m3d
             virtual void MatGetBasis(CVector&, CVector&, CVector&) const = 0;
             virtual CVector MatGetOrgInv() = 0;
             virtual CVector MatGetOrg() = 0;
-            virtual void MatSetWorld(const CMatrix*) = 0;
+            virtual void MatSetWorld(const CMatrix&) = 0;
             virtual const CMatrix* MatGetWorld() = 0;
             virtual void MatPushWorld() = 0;
             virtual void MatPopWorld() = 0;
@@ -942,7 +942,7 @@ namespace m3d
             virtual bool ReportIbsInfo(const char*) = 0;
             virtual m3d::rend::VbHandle AddVb(m3d::rend::VertexType, int, CStr const&, unsigned int) = 0;
             virtual void SetToStream0(const m3d::rend::VbHandle&) = 0;
-            virtual void SetToStream0(const m3d::rend::VbPoolField*) = 0;
+            virtual void SetToStream0(const m3d::rend::VbPoolField&) = 0;
             virtual void SetToStream(int, const m3d::rend::VbHandle*) = 0;
             virtual void SetToStream(int, const m3d::rend::VbPoolField*) = 0;
             virtual void* LockVb(const m3d::rend::VbHandle&, int, int, unsigned int) = 0;

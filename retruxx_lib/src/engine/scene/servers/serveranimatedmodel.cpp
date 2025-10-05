@@ -756,9 +756,124 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int AnimatedModelsServer::RenderMesh(AnimInfo*, AnimatedModel::Mesh&, rend::IEffect*)
+    int AnimatedModelsServer::RenderMesh(AnimInfo* ai, AnimatedModel::Mesh& mh, rend::IEffect* shader)
     {
-        throw retruxx::logic_error("Not implemented");
+        unsigned beginRenderTime = 0;
+        const bool debugRender = M3D_KERNEL->GetEngineCfg().m_g_renderMeshesDebug.GetB();
+        if (debugRender)
+        {
+            beginRenderTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+        }
+
+        auto meshType = mh.m_meshType - 1;
+        if (meshType)
+        {
+            if (meshType - 1 == 0)
+            {
+                int vofs = 0;
+                auto& verts = ai->m_meshesVerts[mh.meshId];
+
+                auto vb = M3D_RENDERER->GetVbStreaming(mh.m_VertexType);
+                auto stream = M3D_RENDERER->LockVbStreaming(vb, mh.m_numVertices, vofs, nullptr);
+                memcpy(stream, ai->m_meshesVerts[mh.meshId], mh.m_numVertices * mh.m_VertexTypeSize);
+                M3D_RENDERER->UnlockVb(vb);
+                M3D_RENDERER->SetToStream0(vb);
+                M3D_RENDERER->SetIndices(mh.m_IbPoolField, vofs);
+            }
+            if (meshType - 1 == 2)
+            {
+                M3D_RENDERER->SetToStream0(mh.m_VbPoolField);
+                M3D_RENDERER->SetIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
+            }
+        }
+        else
+        {
+            M3D_RENDERER->MatPushWorld();
+            M3D_RENDERER->MatSetWorld(ai->m_bonesAnim[mh.m_numNode].m_curMatrix);
+            M3D_RENDERER->SetToStream0(mh.m_VbPoolField);
+            M3D_RENDERER->SetIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
+        }
+
+        if (shader)
+        {
+            if (this->m_globalFxParamAmbientNotActuated && shader->IsParameterUsed(rend::IEffect::LightAmbient))
+            {
+                shader->SetVector3(rend::IEffect::LightAmbient, m_colorAmbient);
+                this->m_globalFxParamAmbientNotActuated = 0;
+            }
+            if (this->m_globalFxParamDiffuseNotActuated && shader->IsParameterUsed(rend::IEffect::LightDiffuse))
+            {
+                shader->SetVector3(rend::IEffect::LightDiffuse, m_colorDiffuse);
+                this->m_globalFxParamDiffuseNotActuated = 0;
+            }
+            if (this->m_globalFxParamSpecularNotActuated && shader->IsParameterUsed(rend::IEffect::LightSpecular))
+            {
+                shader->SetVector3(rend::IEffect::LightSpecular, m_colorSpecular);
+                this->m_globalFxParamSpecularNotActuated = 0;
+            }
+            if (this->m_globalFxParamPlantAmbientNotActuated && shader->IsParameterUsed(rend::IEffect::LightPlant))
+            {
+                shader->SetVector3(rend::IEffect::LightPlant, m_colorPlant);
+                this->m_globalFxParamPlantAmbientNotActuated = 0;
+            }
+            if (this->m_globalFxParamFogNotActuated && shader->IsParameterUsed(rend::IEffect::FogTerm))
+            {
+                shader->SetVector3(rend::IEffect::FogTerm, m_fogTerm);
+                this->m_globalFxParamFogNotActuated = 0;
+            }
+
+            if (this->m_globalFxParamFrameStartTimeNotActuated && shader->IsParameterUsed(rend::IEffect::Time_Linear))
+            {
+                auto frameStartTimeSec = m3d::g_Kernel->GetTimer().GetFrameStartTimeSec();
+                shader->SetFloat(rend::IEffect::Time_Linear, frameStartTimeSec);
+                this->m_globalFxParamFrameStartTimeNotActuated = 0;
+            }
+            if (this->m_globalFxParamTreeBendTermNotActuated && shader->IsParameterUsed(rend::IEffect::Tree_Bend_Term))
+            {
+                shader->SetVector3(rend::IEffect::Tree_Bend_Term, m_treeBendTerm);
+                this->m_globalFxParamTreeBendTermNotActuated = 0;
+            }
+            M3D_RENDERER->DrawIndexedPrimitiveEffect(rend::M3DPT_TRIANGLELIST,
+                shader,
+                0,
+                mh.m_numVertices,
+                mh.m_IbPoolField.RealOffset,
+                mh.m_numDrawIndices / 3);
+        }
+        else
+        {
+            M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST,
+                0,
+                mh.m_numVertices,
+                mh.m_IbPoolField.RealOffset,
+                mh.m_numDrawIndices / 3);
+        }
+
+        if (mh.m_meshType == 1)
+        {
+            M3D_RENDERER->MatPopWorld();
+        }
+
+        auto curTimeUnscaled = 0;
+        if (debugRender)
+        {
+            curTimeUnscaled = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+        }
+
+        if (curTimeUnscaled > beginRenderTime + 10)
+        {
+            if (ai->m_forModel)
+            {
+                M3D_LOG_INFO("Critical render time for mesh of impostor '" + CStr(ai->m_forModel->GetName()) + "': " + CStr(curTimeUnscaled - beginRenderTime) + " ms");
+            }
+            else
+            {
+
+                M3D_LOG_INFO("Critical render time for mesh of unknown impostor: " + CStr(curTimeUnscaled - beginRenderTime) + " ms");
+            }
+        }
+
+        return 1;
     }
 
     void AnimatedModelsServer::RenderModelForImpostor(AnimatedModel* mdl, float rotY, int offX, int offY)

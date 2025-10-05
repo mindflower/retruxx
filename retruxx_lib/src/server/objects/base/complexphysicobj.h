@@ -50,7 +50,11 @@ namespace ai
         virtual ai::Obj* CreateRandomTargetObject() const /* 0x1c */;
         const retruxx::vector<CStr, retruxx::allocator<CStr> >& GetAllPartNames() const;
 
-        enum MassShapes;
+        enum MassShapes
+        {
+            MS_BOX = 0,
+            MS_SPHERE = 1,
+        };
 
     public:
         ai::ComplexPhysicObjPrototypeInfo::MassShapes GetMassShape() const;

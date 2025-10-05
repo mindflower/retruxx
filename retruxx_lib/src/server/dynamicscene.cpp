@@ -127,7 +127,8 @@ namespace ai
 
 	void DynamicScene::ReadSoilProps(char const*)
 	{
-        throw std::logic_error("Not implemented");
+        // TODO: implement DynamicScene::ReadSoilProps
+        // throw std::logic_error("Not implemented");
 	}
 
 	CStr const& DynamicScene::GetShellWaterEffectName(unsigned short) const

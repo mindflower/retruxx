@@ -1,5 +1,8 @@
 #include "complexphysicobj.h"
 #include <stdexcept>
+
+#include "core/ini.h"
+#include "core/kernel.h"
 #include "thirdparty/injecttools.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
@@ -128,9 +131,20 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	bool ComplexPhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	bool ComplexPhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		throw std::logic_error("Not implemented");
+        auto result = ai::PhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            ref_ptr mainPartNode = xmlFile->CreateNode();
+            xmlNode->GetFirstChild(mainPartNode, "MainPartDescription");
+            if (!mainPartNode->IsEmpty())
+            {
+                
+            }
+            throw std::logic_error("Not implemented");
+        }
+        return result;
 	}
 
 	void ComplexPhysicObjPrototypeInfo::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>&) const
@@ -140,6 +154,7 @@ namespace ai
 
 	ComplexPhysicObjPrototypeInfo::~ComplexPhysicObjPrototypeInfo()
 	{
+        throw std::logic_error("Not implemented");
 	}
 
 	retruxx::vector<CStr, retruxx::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
@@ -149,6 +164,12 @@ namespace ai
 
 	ComplexPhysicObjPrototypeInfo::ComplexPhysicObjPrototypeInfo()
 	{
+        this->m_massSize.x = 1.0;
+        this->m_massSize.y = 1.0;
+        this->m_massSize.z = 1.0;
+        this->m_massTranslation = {0.0, 0.0, 0.0};
+        m_partDescription = (ComplexPhysicObjPartDescription*)M3D_KERNEL->New("ComplexPhysicObjPartDescription");
+        this->m_massShape = MS_BOX;
 	}
 
 	unsigned ComplexPhysicObjPrototypeInfo::GetBasePrice() const
