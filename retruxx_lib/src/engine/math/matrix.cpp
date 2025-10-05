@@ -379,9 +379,48 @@ void CMatrix::identity()
     throw std::logic_error("Not implemented");
 }
 
-void CMatrix::lookAtLH(CVector const&, CVector const&, CVector const&)
+void CMatrix::lookAtLH(CVector const& eye, CVector const& at, CVector const& up)
 {
-    throw std::logic_error("Not implemented");
+    auto v4 = at.z - eye.z;
+    auto v5 = at.x - eye.x;
+    auto xAxis_4 = at.y - eye.y;
+    auto ata = 1.0 / sqrt(v4 * v4 + xAxis_4 * xAxis_4 + v5 * v5 + 0.00000011920929);
+    auto zAxis = ata * v5;
+    auto v6 = xAxis_4 * ata;
+    auto v7 = v4 * ata;
+    auto z = up.z;
+    auto v9 = (float)(up.y * v7) - (float)(z * (float)(xAxis_4 * ata));
+    auto v10 = (float)(z * zAxis) - (float)(up.x * v7);
+    auto xAxis_8 = (float)(up.x * (float)(xAxis_4 * ata)) - (float)(up.y * zAxis);
+    auto atb = 1.0 / sqrt(xAxis_8 * xAxis_8 + v10 * v10 + v9 * v9 + 0.00000011920929);
+    auto xAxis_8a = atb * xAxis_8;
+    this->_11 = atb * v9;
+    this->_21 = atb * v10;
+    this->_31 = xAxis_8a;
+    auto v11 = (float)((float)(eye.x * (float)(0.0 - (float)(atb * v9))) + (float)((float)(0.0 - (float)(atb * v10)) * eye.y))
+        + (float)(eye.z * (float)(0.0 - xAxis_8a));
+    auto yAxis = (float)(v6 * xAxis_8a) - (float)(v7 * (float)(atb * v10));
+    this->_12 = yAxis;
+    this->_41 = v11;
+    auto v12 = (float)(v7 * (float)(atb * v9)) - (float)(zAxis * xAxis_8a);
+    this->_22 = v12;
+    auto yAxis_8 = (float)(zAxis * (float)(atb * v10)) - (float)(v6 * (float)(atb * v9));
+    this->_32 = yAxis_8;
+    auto v13 = (float)((float)(eye.x * (float)(0.0 - yAxis)) + (float)((float)(0.0 - v12) * eye.y))
+        + (float)(eye.z * (float)(0.0 - yAxis_8));
+    this->_13 = zAxis;
+    this->_42 = v13;
+    this->_23 = v6;
+    this->_33 = v7;
+    auto v14 = (float)(0.0 - v6) * eye.y;
+    auto v15 = 0.0 - v7;
+    auto v16 = (float)(eye.x * (float)(0.0 - zAxis)) + v14;
+    auto v17 = eye.z * v15;
+    this->_14 = 0.0;
+    this->_24 = 0.0;
+    this->_34 = 0.0;
+    this->_43 = v16 + v17;
+    this->_44 = 1.0;
 }
 
 void CMatrix::shear(float, float, float, float, float, float)

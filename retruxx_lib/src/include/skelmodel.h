@@ -90,6 +90,7 @@ namespace m3d
     class AnimatedModel
     {
         friend class AnimatedModelsServer;
+        friend class AnimInfo;
     public:
         struct HierarchyChange
         {

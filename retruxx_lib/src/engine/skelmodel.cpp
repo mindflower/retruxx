@@ -102,9 +102,13 @@ namespace m3d
         this->m_faceNormals = 0;
     }
 
-    DSurfaceMaterial& AnimatedModel::Mesh::GetMaterial(unsigned) const
+    DSurfaceMaterial& AnimatedModel::Mesh::GetMaterial(unsigned skinNumber) const
     {
-        throw retruxx::logic_error("Not implemented");
+        if (skinNumber < m_pModelSkins->size())
+        {
+            return (*m_pModelSkins)[skinNumber][m_MaterialNumber];
+        }
+        return m_pModelSkins->front()[m_MaterialNumber];
     }
 
     void AnimatedModel::CreateTexFileMapping()
@@ -724,96 +728,60 @@ namespace m3d
             m_animRemap = 0;
             v152 = 0;
 
-            while (true) {
-                if (m_animRemap >= this->m_Skins.size()) {
-                    break;
-                }
+            for (int skinsIdx = 0; skinsIdx < this->m_Skins.size(); ++skinsIdx)
+            {
+                auto& surfaceMaterials = m_Skins[skinsIdx];
+                surfaceMaterials.resize(iNumMaterials);
 
-                std::vector<DSurfaceMaterial>* v101 = &this->m_Skins[m_animRemap];
-                // Initialize v148 structure
-
-                v101->resize(iNumMaterials);
-
-                bool v4 = !this->m_loadSkins.loadAllSkins;
                 bool load = true;
-
-                if (v4) {
-                    unsigned int i = m_animRemap;
-                    // Check if this skin should be loaded
-                    // load = (skin is in load list)
-                    load = m_loadSkins.loadSkins.find(i) != m_loadSkins.loadSkins.end();
+                if (!m_loadSkins.loadAllSkins)
+                {
+                    load = m_loadSkins.loadSkins.find(skinsIdx) != m_loadSkins.loadSkins.end();
                 }
 
-                if (iNumMaterials > 0) {
-                    j = 0;
-                    unsigned int i = iNumMaterials;
+                for (int matIdx = 0; matIdx < iNumMaterials; ++matIdx)
+                {
+                    auto& surfaceMaterial = m_Skins[skinsIdx][matIdx];
 
-                    do {
-                        AnimatedModel* v102 = this;
-                        uint8_t* v103 = (uint8_t*)Data;
-                        char* v104 = (char*)&this->m_Skins[m_animRemap][0] + j;
+                    memcpy(&surfaceMaterial, Data, sizeof(rend::Material));
+                    unsigned int textureCount = *((uint32_t*)Data + 17);
 
-                        memcpy(v104, Data, 0x44u);
-                        uint32_t v105 = *((uint32_t*)v103 + 17);
-                        unsigned int VariantsNum = v105;
+                    const char* shaderName = (const char*)((uint8_t*)Data + 72);
+                    surfaceMaterial.Shader.Name = shaderName;
 
-                        *((std::string*)(v104 + 68)) = (const char*)(v103 + 72);
+                    if (load && !surfaceMaterial.Shader.Name.empty())
+                    {
+                        NewEffect(surfaceMaterial.Shader.Name, surfaceMaterial.Shader.Handle);
+                    }
+                    else
+                    {
+                        surfaceMaterial.Shader.Handle = nullptr;
+                    }
 
-                        if (load && *((uint32_t*)v104 + 22)) {
-                            v102->NewEffect(*(const std::string*)(v104 + 68),*(m3d::rend::IEffect**)(v104 + 24));
+                    Data = (uint8_t*)Data + 172;
+
+                    // Initialize texture array
+                    surfaceMaterial.Textures.resize(textureCount);
+                    for (int texIdx = 0; texIdx < textureCount; ++texIdx)
+                    {
+                        auto& textureInfo = surfaceMaterial.Textures[texIdx];
+                        textureInfo.Type = (DRAFT_TextureType)*((int*)Data + 11);
+                        textureInfo.UV_Set = *((int*)Data + 10);
+                        textureInfo.FileName = (const char*)Data;
+                        textureInfo.Handle.SetInvalid();
+
+                        auto pathToTex = DefinePathToTexture(textureInfo.FileName.c_str());
+                        if (load)
+                        {
+                            SetTexture(pathToTex, textureInfo.Type, textureInfo.Handle);
                         }
-                        else {
-                            *((uint32_t*)v104 + 24) = 0;
-                        }
-
-                        Data = (uint8_t*)Data + 172;
-                        uint8_t* v106 = (uint8_t*)Data;
-
-                        // Initialize texture array
-                        (*(std::vector<m3d::DTextureInfo>*)(v104 + 100)).resize((unsigned int)v105);
-
-                        if (v105) {
-                            v155 = 0;
-                            unsigned int GroupsNum = VariantsNum;
-
-                            do {
-                                int v107 = v155 + *((uint32_t*)v104 + 26);
-                                *(uint32_t*)v107 = *((uint32_t*)v106 + 11);
-                                int v108 = *((uint32_t*)v106 + 10);
-                                *((uint32_t*)(v107 + 4)) = v108;
-
-                                (*(std::string*)(v107 + 8)) = (const char*)v106;
-                                *((uint32_t*)(v107 + 36)) = -1;
-
-
-                                AnimatedModel* v113 = this;
-                                path = DefinePathToTexture((const char*)v106);
-
-
-                                if (load) {
-                                    v113->SetTexture(path,
-                                        *(m3d::DRAFT_TextureType*)v107,
-                                        *(m3d::rend::TexHandle*)(v107 + 36));
-                                }
-
-                                v155 += 40;
-                                v106 += 48;
-                                GroupsNum = (GroupsNum - 1);
-                            } while (GroupsNum);
-                        }
-
-                        j += 116;
-                        Data = (uint8_t*)Data + (48 * (VariantsNum));
-                        --i;
-                    } while (i);
+                        // TODO: check this
+                        Data = (uint8_t*)Data + (48);
+                    }
                 }
-
-                ++m_animRemap;
-                v152 += 16;
             }
 
             // Load collision data (chunk 16)
-
             if (!File.getChunkData(16, &Data))
             {
                         uint32_t* v118 = (uint32_t*)Data;
@@ -1208,9 +1176,70 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    rend::IEffect* AnimatedModel::ApplyMaterial(DSurfaceMaterial&)
+    rend::IEffect* AnimatedModel::ApplyMaterial(DSurfaceMaterial& material)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!material.Shader.Handle)
+        {
+            M3D_RENDERER->MaterialSet(material.material);
+            for (int i = 0; i < material.Textures.size(); ++i)
+            {
+                if (material.Textures[i].Handle.IsValid())
+                {
+                    M3D_RENDERER->SetTexture(i, material.Textures[i].Handle, -1.0);
+                    M3D_RENDERER->TgSetTcSource(i, rend::TC_FROM_VERTEX, material.Textures[i].UV_Set);
+
+                    auto typ = material.Textures[i].Type;
+                    if (typ)
+                    {
+                        if (typ == LIGHTMAP)
+                        {
+                            M3D_RENDERER->SetStageState(i, rend::BM_COLOR, rend::TS_NONE);
+                        }
+                        else
+                        {
+                            M3D_RENDERER->SetStageState(i, rend::BM_COLOR, rend::TS_TEX_MODULATE2X_PREV);
+                        }
+                    }
+                    else
+                    {
+                        M3D_RENDERER->SetStageState(i, rend::BM_COLOR, rend::TS_MODULATE);
+                    }
+                }
+            }
+            return material.Shader.Handle;
+        }
+
+        M3D_RENDERER->ResetTextureStates();
+        for (int i = 0; i < material.Textures.size(); ++i)
+        {
+            if (material.Textures[i].Handle.IsValid())
+            {
+                switch (material.Textures[i].Type)
+                {
+                case DIFFUSE:
+                    material.Shader.Handle->SetTexture(rend::IEffect::DiffMap0, &material.Textures[i].Handle);
+                    break;
+
+                case BUMP:
+                    material.Shader.Handle->SetTexture(rend::IEffect::BumpMap0, &material.Textures[i].Handle);
+                    break;
+
+                case LIGHTMAP:
+                    material.Shader.Handle->SetTexture(rend::IEffect::LightMap0, &material.Textures[i].Handle);
+                    break;
+
+                case CUBEMAP:
+                    material.Shader.Handle->SetTexture(rend::IEffect::CubeMap0, &material.Textures[i].Handle);
+                    break;
+
+                case DETAIL:
+                    material.Shader.Handle->SetTexture(rend::IEffect::DetailMap0, &material.Textures[i].Handle);
+                    break;
+                }
+            }
+        }
+
+        return material.Shader.Handle;
     }
 
     rend::IEffect* AnimatedModel::ApplyMaterial(unsigned)
@@ -1516,9 +1545,12 @@ namespace m3d
         this->m_curBox.m_box[5] = 0.0;
     }
 
-    int AnimInfo::SetAnimation(ActionType)
+    int AnimInfo::SetAnimation(ActionType action)
     {
-	    throw retruxx::logic_error("Not implemented");
+        if (m_forModel->m_header.m_numAnimations)
+            return SetAnimationIdx(m_forModel->m_animRemap[action]);
+        else
+            return 0;
     }
 
     void AnimInfo::MoveFrame(unsigned)

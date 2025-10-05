@@ -848,8 +848,8 @@ namespace m3d
             virtual void SetViewMatrix(const CMatrix&) = 0;
             virtual const CMatrix& GetViewMatrix() = 0;
             virtual const CVector& GetViewOrigin() = 0;
-            virtual void MatPush(const CMatrix&) = 0;
             virtual void MatPush() = 0;
+            virtual void MatPush(const CMatrix&) = 0;
             virtual void MatPop(bool) = 0;
             virtual void MatMul(const CMatrix*) = 0;
             virtual void MatMulR(const CMatrix*) = 0;
@@ -890,7 +890,7 @@ namespace m3d
             virtual int PresentScene() = 0;
             virtual void ClearViewport(m3d::rend::ClearFlags, unsigned int) = 0;
             virtual rend::Viewport GetViewport() = 0;
-            virtual int SetViewport(const m3d::rend::Viewport*) = 0;
+            virtual int SetViewport(const m3d::rend::Viewport&) = 0;
             virtual void RegisterResetCallback(m3d::IDeviceResetCallback*) = 0;
             virtual void UnregisterResetCallback(m3d::IDeviceResetCallback*) = 0;
             virtual void SetGamma(float, float, float) = 0;
@@ -961,7 +961,7 @@ namespace m3d
             virtual int GetMaxLights() = 0;
             virtual void LightEnable(int, int) = 0;
             virtual void LightSet(int, const m3d::rend::LightSource&) = 0;
-            virtual void MaterialSet(const m3d::rend::Material*) = 0;
+            virtual void MaterialSet(const m3d::rend::Material&) = 0;
             virtual void RelToAbs(float&, float&) = 0;
             virtual void AbsToRel(float&, float&) = 0;
             virtual unsigned int AddTextureFromBackBuffer(m3d::rend::TexHandle result) = 0;

@@ -761,9 +761,46 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModelsServer::RenderModelForImpostor(AnimatedModel*, float, int, int)
+    void AnimatedModelsServer::RenderModelForImpostor(AnimatedModel* mdl, float rotY, int offX, int offY)
     {
-        throw retruxx::logic_error("Not implemented");
+        rend::Viewport port;
+        port.m_height = 51;
+        port.m_width = 51;
+        port.m_zMin = 0.0;
+        port.m_x0 = offX;
+        port.m_y0 = offY;
+        port.m_zMax = 1.0;
+        M3D_RENDERER->SetViewport(port);
+
+
+        CMatrix m;
+        memset(&m, 0, sizeof(CMatrix));
+        auto v7 = *(float*)&offY * 0.017453292;
+        auto v19 = v7;
+        auto v8 = sin(v7);
+        auto v9 = 0;
+        m._22 = 1.0;
+        m._33 = cos(v19);
+        m._11 = m._33;
+        m._13 = -v8;
+        m._31 = v8;
+
+        auto animInfo = new AnimInfo;
+        animInfo->CreateFor(mdl);
+        animInfo->SetAnimation(AT_STAND1);
+        M3D_RENDERER->MatPush(m);
+        for (int i =0; i < mdl->m_numMeshes; ++i)
+        {
+            auto& mesh = mdl->m_meshes[i];
+            if (mesh.m_numNode >= 0)
+            {
+                auto& material = mesh.GetMaterial(0);
+                auto* shader = mdl->ApplyMaterial(material);
+                RenderMesh(animInfo, mesh, shader);
+            }
+        }
+        M3D_RENDERER->MatPop(true);
+        delete animInfo;
     }
 
     void AnimatedModelsServer::UpdateGlobalRenderingParams()
