@@ -879,7 +879,7 @@ namespace m3d
             virtual void TgDisable(int) = 0;
             virtual void SetTextureMatrix(int, const CMatrix*) = 0;
             virtual void Set2x2BumpMatrix(int, float, float, float, float) = 0;
-            virtual int RenderToTexStart(const m3d::rend::TexHandle*, bool) = 0;
+            virtual int RenderToTexStart(const m3d::rend::TexHandle&, bool) = 0;
             virtual void RenderToTexFinish() = 0;
             virtual void CopyRenderTargetToTexture(const m3d::rend::TexHandle*) = 0;
             virtual int CanRender() = 0;
@@ -923,7 +923,7 @@ namespace m3d
             virtual int DownloadTexImageRgba8888(unsigned int*, const m3d::rend::TexHandle*, int, int) = 0;
             virtual int DownloadTexImageRgba8888(unsigned int*, const m3d::rend::TexHandle&) = 0;
             virtual void GetDims(m3d::rend::TexHandle const&, int&, int&) = 0;
-            virtual void TexCopy(const m3d::rend::TexHandle*, const m3d::rend::TexHandle*) = 0;
+            virtual void TexCopy(const m3d::rend::TexHandle&, const m3d::rend::TexHandle&) = 0;
             virtual void RepaintAllTexturesMips() = 0;
             virtual void DrawFullScreenQuad(m3d::rend::IEffect*) = 0;
             virtual void DrawFullScreenQuad() = 0;

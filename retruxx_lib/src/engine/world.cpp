@@ -277,7 +277,7 @@ namespace m3d
 
     unsigned CWorld::GetWeatherPlantColor() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_weatherManager.GetWeatherColor(CI_PLANT);
     }
 
     void CWorld::Release()
@@ -287,7 +287,7 @@ namespace m3d
 
     unsigned CWorld::GetWeatherSpecularColor() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_weatherManager.GetWeatherColor(CI_SPECULAR);
     }
 
     ai::Vehicle* CWorld::GetVehicleControlledByPlayer()
@@ -335,7 +335,7 @@ namespace m3d
 
     unsigned CWorld::GetWeatherAmbientColor() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_weatherManager.GetWeatherColor(CI_AMBIENT);
     }
 
     int CWorld::GetFxId(CStr const& name)
@@ -384,7 +384,7 @@ namespace m3d
 
     unsigned CWorld::GetWeatherDiffuseColor() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_weatherManager.GetWeatherColor(CI_DIFFUSE);
     }
 
     Landscape& CWorld::GetLandscape()

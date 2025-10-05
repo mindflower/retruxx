@@ -74,6 +74,5 @@ namespace m3d
 
     WeatherInclement::WeatherInclement()
     {
-        throw std::logic_error("Not implemented");
     }
 }

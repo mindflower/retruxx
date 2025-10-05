@@ -9,6 +9,12 @@ namespace m3d
 
     void WeatherThunderstorm::DefaultInitialize()
     {
+        WeatherInclement::DefaultInitialize();
+        this->m_thunderLerpValue = 0.0;
+        this->m_minThunderDuty = 300;
+        this->m_maxThunderDuty = 600;
+        this->m_minThunderPeriod = 30000;
+        this->m_maxThunderPeriod = 60000;
         throw std::logic_error("Not implemented");
     }
 
@@ -39,7 +45,7 @@ namespace m3d
 
     Object* WeatherThunderstorm::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new WeatherThunderstorm;
     }
 
     int WeatherThunderstorm::UpdateColors(ColorItems, ColorTypes)
@@ -74,7 +80,6 @@ namespace m3d
 
     WeatherThunderstorm::WeatherThunderstorm()
     {
-        throw std::logic_error("Not implemented");
     }
 
     WeatherThunderstorm::WeatherThunderstorm(WeatherThunderstorm const&)

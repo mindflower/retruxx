@@ -8,6 +8,8 @@
 #include <core/log.h>
 #include <file/fileserver.h>
 
+#include "core/timer.h"
+
 namespace m3d
 {
     void AnimatedModelsServer::PostLoad()
@@ -161,7 +163,147 @@ namespace m3d
 
     int AnimatedModelsServer::GenerateImpostorsIfNeeded()
     {
-        throw retruxx::logic_error("Not implemented");
+        pClient->GetWorld().m_isWeatherActual = true;
+
+        bool wasInScene = false;
+        if (M3D_RENDERER->InScene())
+        {
+            wasInScene = true;
+        }
+        else
+        {
+            M3D_RENDERER->BeginScene();
+        }
+
+        M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
+        M3D_RENDERER->SetCull(rend::M3DCULL_CCW, 0);
+        M3D_RENDERER->SetAlphaTest(M3D_KERNEL->GetEngineCfg().m_alphaTestWorld.GetI());
+        M3D_RENDERER->SetZbState(rend::ZB_ENABLE, 0);
+        M3D_RENDERER->SetFog(0, 0);
+        M3D_RENDERER->TgDisable(0);
+        M3D_RENDERER->TgDisable(1);
+        M3D_RENDERER->TgDisable(2);
+        M3D_RENDERER->TgDisable(3);
+        M3D_RENDERER->TgDisable(4);
+        M3D_RENDERER->TgDisable(5);
+        M3D_RENDERER->TgDisable(6);
+        M3D_RENDERER->TgDisable(7);
+
+        UpdateGlobalRenderingParams();
+
+        auto tmpTexHack = M3D_RENDERER->AddDynamicTexture("$TmpTexHack", 256, 256, 0);
+        auto impostorTmpTex = M3D_RENDERER->AddDynamicTexture("$ImpostorTmpTex", 256, 256, 0);
+
+        auto saveView = M3D_RENDERER->GetViewMatrix();
+        auto saveProj = M3D_RENDERER->MatGetProj();
+
+        for (auto& model : m_models)
+        {
+            auto* dynamicModel = (DynamicModel*)model.m_ptr;
+            if (dynamicModel->m_useImpostors)
+            {
+                auto* animModel = dynamicModel->m_mdl[0];
+                auto v11 = animModel->m_box.m_box[4] - animModel->m_box.m_box[1];
+                auto sy = v11;
+                auto h2 = v11 * 0.5;
+                auto mx = animModel->m_box.m_box[3] - animModel->m_box.m_box[0];
+                auto mz = animModel->m_box.m_box[5] - animModel->m_box.m_box[2];
+
+                CVector eye;
+                CVector at;
+                CVector up;
+
+                up.y = 1.0;
+                auto v12 = dynamicModel->m_impostorDisplacement + (float)(v11 * 0.5);
+                up.x = 0.0;
+                up.z = 0.0;
+
+                at.x = 0.0;
+                at.y = v12;
+                at.z = 0.0;
+                eye.x = 0.0;
+                eye.y = v12;
+                auto v22 = tan(0.1963495463132858);
+                eye.z = -((float)(v11 * 0.5) / v22);
+
+                CMatrix camera;
+                camera.lookAtLH(eye, at, up);
+
+                // Set up projection matrix
+                CMatrix proj;
+                memset(&proj, 0, sizeof(proj));
+                proj.m[2][2] = 1.0f;
+                proj.m[3][2] = 1.0002f;
+                proj._43 = -1.0002f;
+
+                float fov = sqrt(mz * mz + mx * mx) / sy * 0.19634955f;
+                proj._11 = 1.0f / tan(fov);
+                proj._22 = 1.0f / tan(0.19634955f);
+
+                // Set matrices
+                M3D_RENDERER->MatSet(camera);
+                M3D_RENDERER->SetViewMatrix(camera);
+                M3D_RENDERER->MatSetProj(proj);
+
+                // First render pass
+                M3D_RENDERER->RenderToTexStart(tmpTexHack, 1);
+                M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, 0);
+                M3D_RENDERER->RenderToTexFinish();
+
+                // Second render pass - render impostor from multiple angles
+                if (M3D_RENDERER->RenderToTexStart(impostorTmpTex, 1))
+                {
+                    M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, 0);
+                    M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, 0);
+
+                    // Render model from 25 different angles (5x5 grid)
+                    float angles[] = {
+                        0.0f, 14.4f, 28.8f, 43.2f, 57.6f,
+                        72.0f, 86.4f, 100.8f, 115.2f, 129.6f,
+                        144.0f, 158.4f, 172.8f, 187.2f, 201.6f,
+                        216.0f, 230.4f, 244.8f, 259.2f, 273.6f,
+                        288.0f, 302.4f, 316.8f, 331.2f, 345.6f
+                    };
+
+                    int offsetsX[] = {
+                        0, 51, 102, 153, 204,
+                        0, 51, 102, 153, 204,
+                        0, 51, 102, 153, 204,
+                        0, 51, 102, 153, 204,
+                        0, 51, 102, 153, 204
+                    };
+
+                    int offsetsY[] = {
+                        0, 0, 0, 0, 0,
+                        51, 51, 51, 51, 51,
+                        102, 102, 102, 102, 102,
+                        153, 153, 153, 153, 153,
+                        204, 204, 204, 204, 204
+                    };
+
+                    for (int j = 0; j < 25; j++)
+                    {
+                        RenderModelForImpostor(animModel, angles[j], offsetsX[j], offsetsY[j]);
+                    }
+                }
+
+                M3D_RENDERER->RenderToTexFinish();
+                // TODO: check this
+                M3D_RENDERER->TexCopy(dynamicModel->m_impostorTex, impostorTmpTex);
+            }
+        }
+
+        if (!wasInScene)
+        {
+            M3D_RENDERER->EndScene();
+        }
+
+        M3D_RENDERER->MatSet(saveView);
+        M3D_RENDERER->SetViewMatrix(saveView);
+        M3D_RENDERER->MatSetProj(saveProj);
+        M3D_RENDERER->ReleaseTexture(tmpTexHack);
+        M3D_RENDERER->ReleaseTexture(impostorTmpTex);
+        return 0;
     }
 
     int AnimatedModelsServer::GetItemProperty(int id, int prop, void* dest)
@@ -626,7 +768,54 @@ namespace m3d
 
     void AnimatedModelsServer::UpdateGlobalRenderingParams()
     {
-        throw retruxx::logic_error("Not implemented");
+        const auto getByte = [](unsigned x, unsigned n)
+        {
+            return (*((uint8_t*)&(x)+n));
+        };
+
+        auto ambientColor = pClient->GetWorld().GetWeatherAmbientColor();
+        this->m_colorAmbient.x = (float)getByte(ambientColor, 2) * 0.0039215689;
+        this->m_colorAmbient.y = (float)getByte(ambientColor, 1) * 0.0039215689;
+        this->m_colorAmbient.z = (float)(uint8_t)ambientColor * 0.0039215689;
+
+        auto diffuseColor = pClient->GetWorld().GetWeatherDiffuseColor();
+        this->m_colorDiffuse.x = (float)getByte(diffuseColor, 2) * 0.0039215689;
+        this->m_colorDiffuse.y = (float)getByte(diffuseColor, 1) * 0.0039215689;
+        this->m_colorDiffuse.z = (float)(uint8_t)diffuseColor * 0.0039215689;
+
+
+        auto specularColor = pClient->GetWorld().GetWeatherSpecularColor();
+        this->m_colorSpecular.x = (float)getByte(specularColor, 2) * 0.0039215689;
+        this->m_colorSpecular.y = (float)getByte(specularColor, 1) * 0.0039215689;
+        this->m_colorSpecular.z = (float)(uint8_t)specularColor * 0.0039215689;
+
+
+        auto plantColor = pClient->GetWorld().GetWeatherPlantColor();
+        this->m_colorPlant.x = (float)getByte(plantColor, 2) * 0.0039215689;
+        this->m_colorPlant.y = (float)getByte(plantColor, 1) * 0.0039215689;
+        this->m_colorPlant.z = (float)(uint8_t)plantColor * 0.0039215689;
+
+        float s, e;
+        pClient->GetWorld().GetLandscape().GetFogStartAndEnd(s, e);
+        auto reduceFactor = pClient->GetWorld().GetWeatherManager().GetFogReduceFactorFromWeather();
+
+        auto v7 = reduceFactor * s;
+        auto v8 = reduceFactor * e;
+        this->m_fogTerm.x = reduceFactor * e;
+        this->m_fogTerm.z = v7;
+        this->m_fogTerm.y = 1.0 / (float)(v8 - v7);
+        const auto& v9 = m3d::g_Kernel->GetTimer();
+        auto v10 = m3d::g_Kernel->GetTimer().GetFrameStartTimeSec() + m3d::g_Kernel->GetTimer().GetFrameStartTimeSec();
+        this->m_treeBendTerm.z = 0.0;
+        this->m_globalFxParamFogNotActuated = 1;
+        this->m_globalFxParamDiffuseNotActuated = 1;
+        this->m_globalFxParamAmbientNotActuated = 1;
+        this->m_globalFxParamFrameStartTimeNotActuated = 1;
+        this->m_globalFxParamPlantAmbientNotActuated = 1;
+        this->m_globalFxParamTreeBendTermNotActuated = 1;
+        this->m_globalFxParamSpecularNotActuated = 1;
+        this->m_treeBendTerm.x = sin(v10) * 0.0099999998;
+        this->m_treeBendTerm.y = cos(v10) * 0.0099999998;
     }
 }
 

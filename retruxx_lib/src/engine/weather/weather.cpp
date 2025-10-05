@@ -2,6 +2,11 @@
 #include <stdexcept>
 #include <core/ini.h>
 
+CVector fullColor(255.0, 255.0, 255.0);
+CVector halfColor(128.0, 128.0, 128.0);
+CVector quarterColor(64.0, 64.0, 64.0);
+const CVector m_colorItemsInit[4] = { halfColor, fullColor, halfColor, quarterColor };
+
 namespace m3d
 {
     RT_CLASS_EXPORTS_BEGIN(Weather)
@@ -127,8 +132,12 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int Weather::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int Weather::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
     {
+        // TODO: implement Weather::ReadFromXmlNode
+        return 0;
+        //m_Name = xmlNode->GetAttribute("name");
+
         throw std::logic_error("Not implemented");
     }
 
@@ -184,7 +193,35 @@ namespace m3d
 
     void Weather::DefaultInitialize()
     {
-        throw std::logic_error("Not implemented");
+        for (int i = 0; i < 7; ++i)
+        {
+            m_currentColors[i] = fullColor;
+            m_colorSets[0][i] = m_colorItemsInit[0];
+            m_colorSets[1][i] = m_colorItemsInit[1];
+            m_colorSets[2][i] = m_colorItemsInit[2];
+            m_colorSets[3][i] = m_colorItemsInit[3];
+        }
+
+        this->m_waterSpeed = 0.51999998;
+        this->m_waterHeightBig = 0.0;
+        this->m_waterHeightSmall = 0.0;
+        this->m_waterCourseAng = 0.0;
+        this->m_waterSpecularM = 200.0;
+        this->m_reduceDistFactor = 1.0;
+        this->m_weatherWeight = 1.0;
+        this->m_waterSizeBig = 1.0;
+        this->m_waterSizeSmall = 1.0;
+        this->m_waterSpecularS = 0.0049999999;
+        this->m_weatherSkyDomeFactor = 1.0;
+
+        for (int i = 0; i < 4; ++i)
+        {
+            m_cloudsSpeed[i] = 1.0;
+            m_shadowTransparency[i] = 0.5;
+            m_lightmapTextureName[i] = "LoadMe.txt";
+            m_cloudsTextureName[i] = "LoadMe.txt";
+            m_PostEffectName[i] = "NoEffect";
+        }
     }
 
     char const* Weather::ColorItemName(unsigned) const

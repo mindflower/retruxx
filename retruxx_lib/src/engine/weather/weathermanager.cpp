@@ -86,8 +86,11 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    unsigned WeatherManager::GetWeatherColor(ColorItems) const
+    unsigned WeatherManager::GetWeatherColor(ColorItems ci) const
     {
+        // TODO: implement WeatherManager::GetWeatherColor
+        return 0;
+        //return (int)this->m_currentWeather->m_currentColors[ci].z | (((int)this->m_currentWeather->m_currentColors[ci].y | (((int)this->m_currentWeather->m_currentColors[ci].x | 0xFFFFFF00) << 8)) << 8);
         throw std::logic_error("Not implemented");
     }
 
@@ -108,15 +111,19 @@ namespace m3d
 
     int WeatherManager::UpdateDayTime()
     {
+        // TODO: implement WeatherManager::UpdateDayTime
+        return 0;
         throw retruxx::logic_error("Not implemented");
         return 1;
     }
 
     float WeatherManager::GetFogReduceFactorFromWeather() const
     {
+        // TODO: implement WeatherManager::GetFogReduceFactorFromWeather
+        return 0.0;
+
         throw retruxx::logic_error("Not implemented");
         //return m_currentWeather->m_reduceDistFactor;
-        return 0.0;
     }
 
     void WeatherManager::SetActiveWeather(unsigned)
@@ -166,6 +173,8 @@ namespace m3d
 
     int WeatherManager::ReadFromXmlFile(char const* name)
     {
+        // TODO: implement  WeatherManager::ReadFromXmlFile
+        return 0;
         ref_ptr<m3d::cmn::XmlFile> rootXmlFile;
         ref_ptr<m3d::cmn::XmlNode> rootNode;
         {
