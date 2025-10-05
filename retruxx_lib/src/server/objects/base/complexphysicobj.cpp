@@ -3,7 +3,9 @@
 
 #include "core/ini.h"
 #include "core/kernel.h"
+#include "core/log.h"
 #include "thirdparty/injecttools.h"
+#include <server/resourcemanager.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
 {
@@ -30,6 +32,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, GetPartByName)
     throw std::logic_error("Not implemented");
 }
 
+const CStr NO_LP("NO_LP");
 
 namespace ai
 {
@@ -53,7 +56,7 @@ namespace ai
 
 	m3d::Object* ComplexPhysicObjPartDescription::CreateObject()
 	{
-		throw std::logic_error("Not implemented");
+        return new ComplexPhysicObjPartDescription;
 	}
 
 	int ComplexPhysicObjPartDescription::GetPartResourceId() const
@@ -71,9 +74,39 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void ComplexPhysicObjPartDescription::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	void ComplexPhysicObjPartDescription::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		throw std::logic_error("Not implemented");
+        m3d::SafeStrAttrib(m_name, xmlNode, "id");
+        if (GetParent())
+        {
+            auto child = GetParent()->GetChildByName(m_name);
+            if (child && this != child)
+            {
+                M3D_LOG_INFO("Warning: when loading PartDescription: name = " + m_name + " conflicts with another child");
+            }
+        }
+
+        CStr strPartResourceId;
+        m3d::SafeStrAttrib(strPartResourceId, xmlNode, "partResourceType");
+        m_partResourceId = theResourceManager->GetResourceId(strPartResourceId);
+
+        CStr lpName;
+        m3d::SafeStrAttrib(lpName, xmlNode, "lpName");
+
+        retruxx::vector<CStr> names;
+        m3d::Tokenize(lpName, names, "(), ;\t");
+        if (names.empty())
+        {
+            m_lpNames.push_back(NO_LP);
+        }
+
+        ref_ptr descNode = xmlFile->CreateNode();
+        for (xmlNode->GetFirstChild(descNode, "PartDescription"); !descNode->IsEmpty(); descNode->GetNextSibling(descNode, "PartDescription"))
+        {
+            auto desc = (ComplexPhysicObjPartDescription*)M3D_KERNEL->New("ComplexPhysicObjPartDescription");
+            AddChild(desc);
+            desc->LoadFromXML(xmlFile, descNode);
+        }
 	}
 
 	ComplexPhysicObjPartDescription const* ComplexPhysicObjPartDescription::GetChildByNameDeep(CStr const&) const
@@ -93,7 +126,7 @@ namespace ai
 
 	ComplexPhysicObjPartDescription* ComplexPhysicObjPartDescription::GetParent() const
 	{
-		throw std::logic_error("Not implemented");
+        return dynamic_cast<ComplexPhysicObjPartDescription*>(Object::GetParent());
 	}
 
 	ComplexPhysicObjPartDescription::~ComplexPhysicObjPartDescription()
@@ -108,7 +141,7 @@ namespace ai
 
 	ComplexPhysicObjPartDescription::ComplexPhysicObjPartDescription()
 	{
-		throw std::logic_error("Not implemented");
+        this->m_partResourceId = -1;
 	}
 
 	ComplexPhysicObjPartDescription::ComplexPhysicObjPartDescription(ComplexPhysicObjPartDescription const&)
@@ -136,13 +169,44 @@ namespace ai
         auto result = ai::PhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
-            ref_ptr mainPartNode = xmlFile->CreateNode();
-            xmlNode->GetFirstChild(mainPartNode, "MainPartDescription");
-            if (!mainPartNode->IsEmpty())
+            ref_ptr partsRootNode = xmlFile->CreateNode();
+            xmlNode->GetFirstChild(partsRootNode, "MainPartDescription");
+            if (partsRootNode->IsEmpty())
             {
-                
+                if (m_parentPrototypeName.empty())
+                {
+                    M3D_LOG_INFO("Warning: parts description missing for prototype '" + m_prototypeName + "'");
+                }
             }
-            throw std::logic_error("Not implemented");
+            else
+            {
+                m_partDescription->LoadFromXML(xmlFile, partsRootNode);
+            }
+
+            xmlNode->GetFirstChild(partsRootNode, "Parts");
+            if (partsRootNode->IsEmpty())
+            {
+                M3D_LOG_INFO("Warning: Parts description is missing for prototype '" + m_prototypeName + "'");
+            }
+            else
+            {
+                ref_ptr partNode = xmlFile->CreateNode();
+                for (partsRootNode->GetFirstChild(partNode, "Part"); !partNode->IsEmpty(); partNode->GetNextSibling(partNode, "Part"))
+                {
+                    CStr id;
+                    m3d::SafeStrAttrib(id, partNode, "id");
+
+                    CStr proto;
+                    m3d::SafeStrAttrib(proto, partNode, "Prototype");
+
+                    // TODO: check this
+                    m_partPrototypeNames[id] = proto;
+                }
+            }
+
+            m3d::SafeVectorAttrib(m_massSize, xmlNode, "MassSize");
+            m3d::SafeVectorAttrib(m_massTranslation, xmlNode, "MassTranslation");
+            m3d::SafeEnumAttrib(m_massShape, xmlNode, "MassShape");
         }
         return result;
 	}

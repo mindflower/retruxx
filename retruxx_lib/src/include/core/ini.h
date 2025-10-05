@@ -131,16 +131,15 @@ namespace m3d
     template<class T>
     bool SafeEnumAttrib(T& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
-        CStr str;
-        if (SafeStrAttrib(str, node, attrib) && !str.empty())
-        {
-            int temp = 0;
-            std::istringstream iss(str.c_str());
-            iss >> temp;
-            v = static_cast<T>(temp);
-            return true;
-        }
-        return false;
+        if (node->IsEmpty())
+            return false;
+
+        auto attr = node->GetAttribute(attrib);
+        if (!attr)
+            return false;
+
+        v = static_cast<T>(atoi(attr));
+        return true;
     }
 
     void Tokenize(CStr const*, retruxx::vector<CStr>&, char const*);
