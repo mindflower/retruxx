@@ -568,7 +568,7 @@ namespace m3d
         // Process return values
         if (nresults == -1)
         {
-            nresults = lua_gettop(L); // Get all results
+            nresults = 100;
         }
 
         for (int j = 0; j < nresults; ++j)
@@ -576,43 +576,45 @@ namespace m3d
             if (lua_gettop(L) == 0) break; // No more results
 
             int luaType = lua_type(L, -1);
-            m3d::sArg* outArg = stack.newOut();
 
             switch (luaType)
             {
             case LUA_TNIL:
+            {
+                m3d::sArg* outArg = stack.newOut();
                 outArg->SetB(false);
                 break;
-
+            }
             case LUA_TNUMBER:
+            {
+                m3d::sArg* outArg = stack.newOut();
                 outArg->SetF(lua_tonumber(L, -1));
                 break;
-
+            }
             case LUA_TSTRING:
+            {
+                m3d::sArg* outArg = stack.newOut();
                 outArg->SetS(lua_tostring(L, -1));
                 break;
-
-            case LUA_TUSERDATA:
-                // Check if it's an object or vector
-                lua_rawgeti(L, -1, 0); // Get metatable reference
-                if (lua_isuserdata(L, -1))
-                {
-                    // Object type
-                    outArg->SetO((Object*)lua_touserdata(L, -2));
-                }
-                else
-                {
-                    // Vector type
-                    int* vecData = (int*)lua_touserdata(L, -2);
-                    CVector vec(vecData[0], vecData[1], vecData[2]);
-                    outArg->SetV(vec);
-                }
-                lua_settop(L, -2); // Clean up metatable check
+            }
+            case LUA_TTABLE:
+            {
+                // Check if it's an object
+                lua_rawgeti(L, -1, 0);
+                auto userdata = lua_touserdata(L, -1);
+                m3d::sArg* outArg = stack.newOut();
+                outArg->SetO((Object*)userdata);
+                lua_settop(L, -2);
                 break;
-
+            }
+            case LUA_TUSERDATA:
+            {
+                auto userdata = (CVector*)lua_touserdata(L, -1);
+                m3d::sArg* outArg = stack.newOut();
+                outArg->SetV(*userdata);
+                break;
+            }
             default:
-                // Skip unsupported types
-                stack.popOut(); // Undo the increment
                 break;
             }
 

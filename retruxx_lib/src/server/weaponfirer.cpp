@@ -7,6 +7,7 @@ namespace ai
     RETRUXX_DLL_INJECT_FUNCTION(0x007C3370, WeaponFirer::AimAndFireFromWeapons)
     void WeaponFirer::AimAndFireFromWeapons(ComplexPhysicObj* obj, bool enable, float elapsedTime, Obj* target)
     {
+        throw std::logic_error("Not implemented");
         CVector enemyPos;
         if (enable)
         {

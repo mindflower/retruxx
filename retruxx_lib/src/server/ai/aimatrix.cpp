@@ -5,11 +5,6 @@
 
 namespace ai
 {
-    AIMatrix::AIMatrix(AIMatrix const&)
-    {
-        throw std::logic_error("Not implemented");
-    }
-
     AIMatrix::AIMatrix(CStr const& name, DecisionMatrix* pDM) :
         m_name(name),
         m_pDM(pDM)

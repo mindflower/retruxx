@@ -37,12 +37,18 @@ RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetRetValueInterpretation)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetDefaultState)
 {
-    throw std::logic_error("Not implemented");
+    auto decisionMatrix = (ai::DecisionMatrix*)context->asObject(0, "DecisionMatrix");
+    auto state= context->asString(1);
+    decisionMatrix->SetDefaultState(state);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddDefaultStateParam)
 {
-    throw std::logic_error("Not implemented");
+    auto decisionMatrix = (ai::DecisionMatrix*)context->asObject(0, "DecisionMatrix");
+    auto state = context->asString(1);
+    decisionMatrix->AddDefaultStateParam(state);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetExitState)
@@ -52,7 +58,9 @@ RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetExitState)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, FitMatrix)
 {
-    throw std::logic_error("Not implemented");
+    auto decisionMatrix = (ai::DecisionMatrix*)context->asObject(0, "DecisionMatrix");
+    decisionMatrix->FitMatrix();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetSaveStackFlag)
@@ -62,17 +70,27 @@ RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetSaveStackFlag)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, ClearTemporaryParams)
 {
-    throw std::logic_error("Not implemented");
+    auto decisionMatrix = (ai::DecisionMatrix*)context->asObject(0, "DecisionMatrix");
+    decisionMatrix->ClearTemporaryParams();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddTemporaryParam)
 {
-    throw std::logic_error("Not implemented");
+    auto decisionMatrix = (ai::DecisionMatrix*)context->asObject(0, "DecisionMatrix");
+    auto param = context->asString(1);
+    decisionMatrix->AddTemporaryParam(param);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddCommand)
 {
-    throw std::logic_error("Not implemented");
+    auto decisionMatrix = (ai::DecisionMatrix*)context->asObject(0, "DecisionMatrix");
+    auto param1 = context->asString(1);
+    auto param2 = context->asString(2);
+    auto param3 = context->asString(3);
+    decisionMatrix->AddCommand(param1, param2, param3);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddSublevel)
@@ -100,7 +118,7 @@ namespace ai
 
     DecisionMatrixElement::DecisionMatrixElement()
     {
-        throw std::logic_error("Not implemented");
+        this->m_flags = 1;
     }
 
     void DecisionMatrixElement::Dump()
@@ -110,12 +128,15 @@ namespace ai
 
     void DecisionMatrix::ClearTemporaryParams()
     {
-        throw std::logic_error("Not implemented");
+        m_tmpParamRefList.clear();
     }
 
     void DecisionMatrix::FitMatrix()
     {
-        throw std::logic_error("Not implemented");
+        m_numStates = m_States.size();
+        m_numSignals = m_Signals.size();
+        
+        m_Elements.resize(m_numStates * m_numSignals);
     }
 
     int DecisionMatrix::GetExternSignalMapping(int) const
@@ -123,9 +144,17 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void DecisionMatrix::AddTemporaryParam(char const*)
+    void DecisionMatrix::AddTemporaryParam(char const* functionName)
     {
-        throw std::logic_error("Not implemented");
+        auto funcNum = theAIManager->GetFuncNum(functionName);
+        if (funcNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(functionName);
+        }
+        else
+        {
+            m_tmpParamRefList.push_back(funcNum);
+        }
     }
 
     m3d::Object* DecisionMatrix::Clone()
@@ -175,20 +204,67 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void DecisionMatrix::SetDefaultState(char const*)
+    void DecisionMatrix::SetDefaultState(char const* stateName)
     {
-        throw std::logic_error("Not implemented");
+        auto stateNum = GetStateNum(stateName);
+        if (stateNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(stateName);
+        }
+        else
+        {
+            this->m_Default.m_StateNum = stateNum;
+            this->m_Default.m_ParamRefList.clear();
+        }
     }
 
-    void DecisionMatrix::AddCommand(char const*, char const*, char const*)
+    void DecisionMatrix::AddCommand(char const* stateName, char const* signalName, char const* newStateName)
     {
-        throw std::logic_error("Not implemented");
+        auto stateNum = GetStateNum(stateName);
+        if (stateNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(stateName);
+            return;
+        }
+
+        auto signalNum = GetSignalNum(signalName);
+        if (signalNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(signalName);
+            return;
+        }
+
+        auto newStateNum = GetStateNum(newStateName);
+        if (newStateNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(newStateName);
+            return;
+        }
+
+        AddCommand(stateNum, signalNum, newStateNum, m_tmpParamRefList);
+        ClearTemporaryParams();
     }
 
-    void DecisionMatrix::AddCommand(unsigned, unsigned, unsigned,
-        std::vector<AIParamRef, std::allocator<AIParamRef>> const&)
+    void DecisionMatrix::AddCommand(unsigned StateID, unsigned SignalID, unsigned PassStateID,
+        std::vector<AIParamRef, std::allocator<AIParamRef>> const& ParamRefList)
     {
-        throw std::logic_error("Not implemented");
+        if (StateID == 0xFFFF || SignalID == 0xFFFF || PassStateID == 0xFFFF)
+        {
+            M3D_LOG_ERR("AI Error: state or Signal absent");
+            return;
+        }
+
+        if (m_numStates * m_numSignals != m_Elements.size())
+        {
+            M3D_LOG_ERR("AI Error: state or Signal absent");
+            return;
+        }
+
+        ai::AIPassageCommand command;
+        command.m_StateNum = PassStateID;
+        command.m_ParamRefList = ParamRefList;
+
+        m_Elements[StateID + SignalID * this->m_numStates].m_PassageCommands.push_back(std::move(command));
     }
 
     int DecisionMatrix::GetExitStateNum() const
@@ -302,9 +378,17 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void DecisionMatrix::AddDefaultStateParam(char const*)
+    void DecisionMatrix::AddDefaultStateParam(char const* functionName)
     {
-        throw std::logic_error("Not implemented");
+        auto funcNum = theAIManager->GetFuncNum(functionName);
+        if (funcNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(functionName);
+        }
+        else
+        {
+            this->m_Default.m_ParamRefList.push_back(funcNum);
+        }
     }
 
     AIState const& DecisionMatrix::GetState(int) const
@@ -329,7 +413,39 @@ namespace ai
 
     void DecisionMatrix::SetRetValueInterpretation(const char* stateName, const char* schemeName, const char* signalName)
     {
-        throw std::logic_error("Not implemented");
+        unsigned signalNum = 0xFFFF;
+        auto stateNum = GetStateNum(stateName);
+        if (stateNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(stateName);
+        }
+        else
+        {
+            auto& state = m_States[stateNum];
+            auto schemeNum = theAIManager->GetSchemeNum(schemeName);
+            if (schemeNum != 0xFFFF)
+            {
+                if (CStr(signalName) == "STACK_POP")
+                {
+                    signalNum = 65534;
+                }
+                else
+                {
+                    signalNum = GetSignalNum(signalName);
+                    if (signalNum == 0xFFFF)
+                    {
+                        _LogUnexpectedToken(signalName);
+                        return;
+                    }
+                }
+                if (schemeNum < 16)
+                {
+                    state.m_SignalIDs[schemeNum] = signalNum;
+                }
+                return;
+            }
+            _LogUnexpectedToken(schemeName);
+        }
     }
 
     void DecisionMatrix::SetExitState(char const*)

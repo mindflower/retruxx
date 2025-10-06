@@ -1,3 +1,4 @@
+#include <cassert>
 #include <script/funcstack.h>
 #include <stdexcept>
 
@@ -11,7 +12,7 @@ namespace m3d
 
     sArg* sArgStack::popIn()
     {
-        M3D_ASSERT(m_curInArg < m_numInArgs);
+        assert(m_curInArg < m_numInArgs);
         auto result = &this->m_InArgs[m_curInArg];
         this->m_curInArg = m_curInArg + 1;
         return result;
@@ -24,7 +25,8 @@ namespace m3d
 
     sArg* sArgStack::popOut()
     {
-        throw std::logic_error("Not implemented");
+        assert(m_curOutArg < m_numOutArgs);
+        return &this->m_OutArgs[m_curOutArg++];
     }
 
     sArgStack::sArgStack()

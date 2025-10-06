@@ -588,9 +588,9 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void VehiclePrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
+	void VehiclePrototypeInfo::_InternalCopyFrom(PrototypeInfo const& rhs)
 	{
-		throw std::logic_error("Not implemented");
+        *this = static_cast<VehiclePrototypeInfo const&>(rhs);
 	}
 
 	Wheel const* Vehicle::WheelRuntimeInfo::GetWheel() const

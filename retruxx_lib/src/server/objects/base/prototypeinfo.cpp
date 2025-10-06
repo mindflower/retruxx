@@ -65,9 +65,10 @@ namespace ai
         return true;
 	}
 
-	void PrototypeInfo::CopyFrom(PrototypeInfo const&)
+	void PrototypeInfo::CopyFrom(PrototypeInfo const& rhs)
 	{
-		throw std::logic_error("Not implemented");
+        M3D_ASSERT(m_className == rhs.m_className);
+        _InternalCopyFrom(rhs);
 	}
 
 	void PrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

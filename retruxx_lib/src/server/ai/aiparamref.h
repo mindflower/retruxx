@@ -5,10 +5,7 @@ namespace ai
     class AIParamRef
     {
     public:
-        AIParamRef(int);
-        AIParamRef & operator=(AIParamRef const &);
-
-    private:
-        int m_Num;
-    };
+        /* 0x0000 */ int m_Num;
+        AIParamRef(int P) : m_Num(P) {}
+    }; /* size: 0x0004 */
 }

@@ -131,7 +131,7 @@ namespace ai
 
 	ComplexPhysicObjPartDescription::~ComplexPhysicObjPartDescription()
 	{
-		throw std::logic_error("Not implemented");
+        RemoveAllChildren();
 	}
 
 	m3d::Class* ComplexPhysicObjPartDescription::GetBaseClass()

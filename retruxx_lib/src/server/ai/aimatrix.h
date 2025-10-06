@@ -12,7 +12,6 @@ namespace ai
         CStr m_name;
 
     public:
-        AIMatrix(const ai::AIMatrix& __that);
         AIMatrix(const CStr& Name, ai::DecisionMatrix* pDM);
         void Set(const CStr& Name, ai::DecisionMatrix* pDM);
         ai::DecisionMatrix* GetPtr() const;

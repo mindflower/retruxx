@@ -11,13 +11,11 @@ namespace ai
     class DecisionMatrixElement
     {
     public:
+        /* 0x0000 */ std::vector<ai::AIPassageCommand, std::allocator<ai::AIPassageCommand> > m_PassageCommands;
+        /* 0x0010 */ unsigned short m_flags;
         DecisionMatrixElement();
         void Dump();
-    protected:
-    private:
-        std::vector<AIPassageCommand> m_PassageCommands;
-        unsigned __int16 m_flags;
-    };
+    }; /* size: 0x0014 */
 
 class DecisionMatrix :  public m3d::Object
     {
