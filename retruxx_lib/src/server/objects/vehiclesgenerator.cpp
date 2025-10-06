@@ -20,7 +20,7 @@ namespace ai
 
     bool VehiclesGeneratorInfoCache::WareInfo::operator<(const ai::VehiclesGeneratorInfoCache::WareInfo& rhs) const
     {
-        throw std::logic_error("Not implemented");
+        return this->price < rhs.price;
     }
 
     VehiclesGeneratorInfoCache::VehiclesGeneratorInfoCache(const VehiclesGeneratorInfoCache&)
@@ -170,12 +170,34 @@ namespace ai
 
 	void VehiclesGeneratorInfoCache::_InitializeGuns()
 	{
-		throw retruxx::logic_error("Not implemented");
+        retruxx::vector<int> gunsTypes;
+        theResourceManager->GetResourceDescendants(theResourceManager->GetResourceId("GUN"), gunsTypes);
+
+        for (auto& gun : gunsTypes)
+        {
+            retruxx::vector<int> gunTypePrototypes;
+            thePrototypeManager->GetPrototypeIdsByResourceId(gun, gunTypePrototypes);
+
+            retruxx::vector<ai::VehiclesGeneratorInfoCache::VehiclePartInfo> gunPartInfos;
+            _GetVehiclePartInfos(gunTypePrototypes, gunPartInfos);
+
+            m_gunInfos[theResourceManager->GetResourceName(gun)] = std::move(gunPartInfos);
+        }
 	}
 
-	void VehiclesGeneratorInfoCache::_GetWareInfos(retruxx::vector<int> const&, retruxx::vector<WareInfo>&)
+	void VehiclesGeneratorInfoCache::_GetWareInfos(retruxx::vector<int> const& prototypes, retruxx::vector<WareInfo>& wareInfos)
 	{
-		throw retruxx::logic_error("Not implemented");
+        wareInfos.clear();
+        for (auto& id : prototypes)
+        {
+            auto proto = (VehiclePrototypeInfo*)thePrototypeManager->GetPrototypeInfo(id);
+            WareInfo val;
+            val.price = proto->GetBasePrice();
+            val.protoId = id;
+            m_wareInfos.push_back(std::move(val));
+        }
+
+        std::sort(wareInfos.begin(), wareInfos.end());
 	}
 
 	VehiclesGeneratorInfoCache::WareInfo VehiclesGeneratorInfoCache::_GetWareInfo(int) const
@@ -208,7 +230,26 @@ namespace ai
 
 	void VehiclesGeneratorInfoCache::_InitializeWares()
 	{
-		throw retruxx::logic_error("Not implemented");
+        retruxx::vector<int> goodsTypes;
+        theResourceManager->GetResourceDescendants(theResourceManager->GetResourceId("GOODS"), goodsTypes);
+
+        retruxx::vector<int> allGoods;
+        allGoods.reserve(goodsTypes.size());
+
+        for (auto& good : goodsTypes)
+        {
+            if (!theResourceManager->ResourceHasChildren(good))
+            {
+                retruxx::vector<int> goodPrototypes;
+                thePrototypeManager->GetPrototypeIdsByResourceId(good, goodPrototypes);
+                if (goodPrototypes.size() == 1)
+                {
+                    allGoods.push_back(goodPrototypes.front());
+                }
+            }
+        }
+
+        _GetWareInfos(allGoods, m_wareInfos);
 	}
 
 	void VehiclesGeneratorInfoCache::_InitializeVehicleParts()

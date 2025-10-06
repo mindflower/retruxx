@@ -75,9 +75,13 @@ namespace ai
 		}
 	}
 
-	CStr ResourceManager::GetResourceName(int) const
+	CStr ResourceManager::GetResourceName(int resourceId) const
 	{
-		throw std::logic_error("Not implemented");
+        if (resourceId >=0 && resourceId < m_resourceVector.size() && m_resourceVector[resourceId])
+        {
+            return m_resourceVector[resourceId]->m_name;
+        }
+        return {};
 	}
 
 	void ResourceManager::Init()
@@ -86,14 +90,28 @@ namespace ai
 		_LoadVehiclePartTypeToResourceXmlFile(theGlobProp.m_pathToVehiclePartTypes.c_str());
 	}
 
-	void ResourceManager::GetResourceDescendants(int, std::vector<int>&) const
+	void ResourceManager::GetResourceDescendants(int resourceId, std::vector<int>& descendants) const
 	{
-		throw std::logic_error("Not implemented");
+        descendants.clear();
+        for (auto& resource : m_resourceVector)
+        {
+            if (resource->bIsKindOf(resourceId))
+            {
+                descendants.push_back(resource->m_id);
+            }
+        }
 	}
 
-	bool ResourceManager::ResourceHasChildren(int) const
+	bool ResourceManager::ResourceHasChildren(int resourceId) const
 	{
-		throw std::logic_error("Not implemented");
+        for (auto res : m_resourceVector)
+        {
+            if (res->m_parentId == resourceId)
+            {
+                return true;
+            }
+        }
+        return false;
 	}
 
 	int ResourceManager::GetResourceId(CStr const& resourceName) const

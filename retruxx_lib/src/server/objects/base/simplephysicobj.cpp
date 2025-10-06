@@ -88,8 +88,6 @@ namespace ai
         {
             _SetGeomType(m_geomType);
         }
-
-		throw retruxx::logic_error("Not implemented");
 	}
 
 	CVector SimplePhysicObjPrototypeInfo::GetSize() const

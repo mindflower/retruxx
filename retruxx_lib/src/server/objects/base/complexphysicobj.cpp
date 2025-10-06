@@ -247,7 +247,7 @@ namespace ai
 
 	retruxx::vector<CStr, retruxx::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
 	{
-		throw std::logic_error("Not implemented");
+        return m_allPartNames;
 	}
 
 	ComplexPhysicObjPrototypeInfo::ComplexPhysicObjPrototypeInfo()
