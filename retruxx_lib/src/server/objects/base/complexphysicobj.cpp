@@ -6,6 +6,7 @@
 #include "core/log.h"
 #include "thirdparty/injecttools.h"
 #include <server/resourcemanager.h>
+#include "prototypemanager.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
 {
@@ -69,9 +70,13 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void ComplexPhysicObjPartDescription::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>&) const
+	void ComplexPhysicObjPartDescription::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>& partNames) const
 	{
-		throw std::logic_error("Not implemented");
+        partNames.push_back(m_name);
+        for (auto child = dynamic_cast<ComplexPhysicObjPartDescription*>(GetFirstChild()); child; child = dynamic_cast<ComplexPhysicObjPartDescription*>(child->GetNextSibling()))
+        {
+            child->GetPartNames(partNames);
+        }
 	}
 
 	void ComplexPhysicObjPartDescription::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -243,7 +248,13 @@ namespace ai
 
 	void ComplexPhysicObjPrototypeInfo::PostLoad()
 	{
-		throw std::logic_error("Not implemented");
+        for (auto& name : m_partPrototypeNames)
+        {
+            m_partPrototypeIds[name.first] = thePrototypeManager->GetPrototypeId(name.second);
+        }
+
+        m_allPartNames.clear();
+        m_partDescription->GetPartNames(m_allPartNames);
 	}
 
     void ComplexPhysicObj::UnlinkGeomsFromCollisionCells()

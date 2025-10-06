@@ -1,6 +1,8 @@
 #include "vehiclesgenerator.h"
 
 #include <stdexcept>
+#include <server/resourcemanager.h>
+#include "base/prototypemanager.h"
 
 namespace ai
 {
@@ -118,7 +120,13 @@ namespace ai
 
 	void VehiclesGeneratorInfoCache::EnsureInitialized()
 	{
-        throw std::logic_error("Not implemented");
+        if (!this->m_bInited)
+        {
+            _InitializeVehicleParts();
+            _InitializeWares();
+            _InitializeGuns();
+            this->m_bInited = true;
+        }
 	}
 
 	void VehiclesGeneratorInfoCache::_GetVehiclePartInfos(retruxx::vector<int> const&, retruxx::vector<VehiclePartInfo>&)
@@ -169,6 +177,90 @@ namespace ai
 
 	void VehiclesGeneratorInfoCache::_InitializeVehicleParts()
 	{
-		throw retruxx::logic_error("Not implemented");
+        retruxx::vector<int> vehiclePrototypeIds;
+        _GetAbstractVehiclesPrototypeIds(vehiclePrototypeIds);
+
+        auto gunsId = theResourceManager->GetResourceId("GUN");
+
+        for (auto toVehicleId = vehiclePrototypeIds.begin(); toVehicleId != vehiclePrototypeIds.end(); ++toVehicleId)
+        {
+            unsigned int prototypeId = *toVehicleId;
+            const ai::VehiclePrototypeInfo* vehicleProto = nullptr;
+
+            // Get the vehicle prototype info
+             vehicleProto = dynamic_cast<const ai::VehiclePrototypeInfo*>(ai::thePrototypeManager->GetPrototypeInfo(prototypeId));
+
+             if (!vehicleProto)
+             {
+                 continue;
+             }
+
+            // Initialize new group info
+            VehicleGroupInfo newGroupInfo;
+
+            // Get basket parts
+            _GetVehiclePartInfosForVehicle(vehicleProto, "BASKET", newGroupInfo.baskets);
+
+            // Get chassis parts
+            _GetVehiclePartInfosForVehicle(vehicleProto, "CHASSIS", newGroupInfo.chassises);
+
+            // Get cabin parts
+            CStr cabinPartName("CABIN");
+            ai::VehiclesGeneratorInfoCache::_GetVehiclePartInfosForVehicle(vehicleProto, "CABIN", newGroupInfo.cabins);
+
+            // Find gun parts
+            for (auto partNameIter = vehicleProto->GetAllPartNames().begin();
+                partNameIter != vehicleProto->GetAllPartNames().end();
+                ++partNameIter)
+            {
+                if (!vehicleProto->m_partDescription.m_ptr)
+                {
+                    // Handle null pointer case - this was an assert in the original
+                    continue;
+                }
+
+                // Get the part description
+                ai::ComplexPhysicObjPartDescription* partDesc =
+                    ai::ComplexPhysicObjPartDescription::GetChildByNameDeep(
+                        vehicleProto->m_partDescription.m_ptr,
+                        &(*partNameIter));
+
+                if (!partDesc)
+                    continue;
+
+                // Get resource ID and check if it's a gun
+                int partResourceId = ai::ComplexPhysicObjPartDescription::GetPartResourceId(partDesc);
+                ai::Resource* resource = ai::ResourceManager::GetResource(ai::theResourceManager, partResourceId);
+
+                if (resource && ai::Resource::bIsKindOf(resource, gunsResId))
+                {
+                    newGroupInfo.gunPartNames.push_back(*partNameIter);
+                }
+            }
+
+            // Create the map entry
+            std::pair<CStr, ai::VehiclesGeneratorInfoCache::VehicleGroupInfo> newEntry(
+                vehicleProto->m_prototypeName,
+                newGroupInfo);
+
+            // Insert into the map (assuming m_vehicleGroupInfos is a std::map)
+            auto result = this->m_vehicleGroupInfos.insert(newEntry);
+
+            // Clean up the temporary entry
+            newEntry.first.Release();
+            newEntry.second.cabins.clear();
+            newEntry.second.chassises.clear();
+            newEntry.second.baskets.clear();
+            newEntry.second.gunPartNames.clear();
+
+            // Clean up the local newGroupInfo
+            newGroupInfo.cabins.clear();
+            newGroupInfo.chassises.clear();
+            newGroupInfo.baskets.clear();
+            newGroupInfo.gunPartNames.clear();
+        }
+
+        // Clean up the prototype IDs vector
+        vehiclePrototypeIds.clear();
 	}
 }

@@ -10,6 +10,7 @@
 #include "server/utils.h"
 #include <server/objects/physicbodies/physichelpers.h>
 
+#include "base/prototypemanager.h"
 #include "core/ini.h"
 #include "core/log.h"
 #include "server/ai/aimanager.h"
@@ -576,11 +577,17 @@ namespace ai
 
 	void VehiclePrototypeInfo::PostLoad()
 	{
-		throw std::logic_error("Not implemented");
+        ComplexPhysicObjPrototypeInfo::PostLoad();
+        for (auto& wheelInfo : this->m_wheelInfos)
+        {
+            wheelInfo.PostLoad();
+        }
+        m_blastWavePrototypeId = thePrototypeManager->GetPrototypeId(m_blastWavePrototypeName);
 	}
 
 	VehiclePrototypeInfo::~VehiclePrototypeInfo()
 	{
+        throw std::logic_error("Not implemented");
 	}
 
 	ai::Obj* VehiclePrototypeInfo::CreateTargetObject() const

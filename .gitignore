@@ -33,7 +33,7 @@
 
 .vs
 x64
-Release*
-Debug*
+Release_Retruxx*
+Debug_Retruxx*
 *.bin
 *.vcxproj.user
