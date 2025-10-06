@@ -38,9 +38,24 @@ namespace ai
 		return m_id;
 	}
 
-	bool Resource::bIsKindOf(int) const
+	bool Resource::bIsKindOf(int resourceId) const
 	{
-		throw std::logic_error("Not implemented");
+        if (m_id == -1)
+        {
+            return false;
+        }
+
+        auto id = m_id;
+        while (id != resourceId)
+        {
+            auto res = theResourceManager->GetResource(id);
+            id = res->m_parentId;
+            if (id == -1)
+            {
+                return false;
+            }
+        }
+        return true;
 	}
 
 	void Resource::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -100,14 +115,23 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	Resource* ResourceManager::GetResource(int) const
+	Resource* ResourceManager::GetResource(int resourceId) const
 	{
-		throw std::logic_error("Not implemented");
+        if (resourceId < 0 || resourceId >= m_resourceVector.size())
+        {
+            return nullptr;
+        }
+
+        return m_resourceVector[resourceId];
 	}
 
-	bool ResourceManager::bResourceIsKindOf(int, int)
+	bool ResourceManager::bResourceIsKindOf(int resourceId, int ancestorId)
 	{
-		throw std::logic_error("Not implemented");
+        if (resourceId >= 0 && resourceId < m_resourceVector.size())
+        {
+            return m_resourceVector[resourceId] && m_resourceVector[resourceId]->bIsKindOf(ancestorId);
+        }
+        return false;
 	}
 
 	ResourceManager::~ResourceManager()

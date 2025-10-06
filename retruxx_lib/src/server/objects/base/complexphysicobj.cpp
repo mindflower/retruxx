@@ -62,7 +62,7 @@ namespace ai
 
 	int ComplexPhysicObjPartDescription::GetPartResourceId() const
 	{
-		throw std::logic_error("Not implemented");
+        return m_partResourceId;
 	}
 
 	unsigned ComplexPhysicObjPartDescription::GetNumLps() const
@@ -114,9 +114,28 @@ namespace ai
         }
 	}
 
-	ComplexPhysicObjPartDescription const* ComplexPhysicObjPartDescription::GetChildByNameDeep(CStr const&) const
+	ComplexPhysicObjPartDescription const* ComplexPhysicObjPartDescription::GetChildByNameDeep(CStr const& childName) const
 	{
-		throw std::logic_error("Not implemented");
+        if (m_name == childName)
+        {
+            return this;
+        }
+
+	    auto child = dynamic_cast<ai::ComplexPhysicObjPartDescription*>(GetFirstChild());
+        if (!child)
+            return nullptr;
+
+        while (true)
+        {
+            auto result = child->GetChildByNameDeep(childName);
+            if (result)
+                return result;
+
+            child = dynamic_cast<ai::ComplexPhysicObjPartDescription*>(child->GetNextSibling());
+            if (!child)
+                return nullptr;
+        }
+        return nullptr;
 	}
 
 	CStr const& ComplexPhysicObjPartDescription::GetLpName(unsigned) const
@@ -159,9 +178,9 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	ComplexPhysicObjPartDescription const* ComplexPhysicObjPrototypeInfo::GetPartDescriptionByName(CStr const&) const
+	ComplexPhysicObjPartDescription const* ComplexPhysicObjPrototypeInfo::GetPartDescriptionByName(CStr const& partName) const
 	{
-		throw std::logic_error("Not implemented");
+        return m_partDescription->GetChildByNameDeep(partName);
 	}
 
 	Obj* ComplexPhysicObjPrototypeInfo::CreateRandomTargetObject() const

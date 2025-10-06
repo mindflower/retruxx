@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <server/resourcemanager.h>
 #include "base/prototypemanager.h"
+#include <algorithm>
 
 namespace ai
 {
@@ -14,7 +15,7 @@ namespace ai
     bool VehiclesGeneratorInfoCache::VehiclePartInfo::operator<(
         const ai::VehiclesGeneratorInfoCache::VehiclePartInfo& rhs) const
     {
-        throw std::logic_error("Not implemented");
+        return this->price < rhs.price;
     }
 
     bool VehiclesGeneratorInfoCache::WareInfo::operator<(const ai::VehiclesGeneratorInfoCache::WareInfo& rhs) const
@@ -129,15 +130,37 @@ namespace ai
         }
 	}
 
-	void VehiclesGeneratorInfoCache::_GetVehiclePartInfos(retruxx::vector<int> const&, retruxx::vector<VehiclePartInfo>&)
+	void VehiclesGeneratorInfoCache::_GetVehiclePartInfos(retruxx::vector<int> const& prototypes, retruxx::vector<VehiclePartInfo>& vehiclePartInfos)
 	{
-		throw retruxx::logic_error("Not implemented");
+        vehiclePartInfos.clear();
+        for (auto& protoId : prototypes)
+        {
+            auto proto = (VehiclePrototypeInfo*)thePrototypeManager->GetPrototypeInfo(protoId);
+
+            VehiclePartInfo partInfo;
+            partInfo.price = proto->GetBasePrice();
+            partInfo.protoId = protoId;
+            // TODO: check this
+            partInfo.canBeUsedInAutoGenerating = false;
+            vehiclePartInfos.push_back(std::move(partInfo));
+        }
+        std::sort(vehiclePartInfos.begin(), vehiclePartInfos.end());
 	}
 
-	void VehiclesGeneratorInfoCache::_GetVehiclePartInfosForVehicle(VehiclePrototypeInfo const*, CStr const&,
-		retruxx::vector<VehiclePartInfo>&)
+	void VehiclesGeneratorInfoCache::_GetVehiclePartInfosForVehicle(VehiclePrototypeInfo const* protoV, CStr const& partName,
+		retruxx::vector<VehiclePartInfo>& vehiclePartInfos)
 	{
-		throw retruxx::logic_error("Not implemented");
+        if (auto partInfo = protoV->GetPartDescriptionByName(partName))
+        {
+            retruxx::vector<int> goodParts;
+            auto partResId = partInfo->GetPartResourceId();
+            thePrototypeManager->GetPrototypeIdsByResourceId(partResId, goodParts);
+            _GetVehiclePartInfos(goodParts, vehiclePartInfos);
+        }
+        else
+        {
+            vehiclePartInfos.clear();
+        }
 	}
 
 	void VehiclesGeneratorInfoCache::_Initialize()
@@ -165,9 +188,22 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void VehiclesGeneratorInfoCache::_GetAbstractVehiclesPrototypeIds(retruxx::vector<int, retruxx::allocator<int>>&)
+	void VehiclesGeneratorInfoCache::_GetAbstractVehiclesPrototypeIds(retruxx::vector<int, retruxx::allocator<int>>& abstractVehiclesPrototypeIds)
 	{
-		throw retruxx::logic_error("Not implemented");
+        auto id = theResourceManager->GetResourceId("VEHICLE");
+
+        retruxx::vector<int> vehiclesPrototypesIds;
+        thePrototypeManager->GetPrototypeIdsByResourceId(id, vehiclesPrototypesIds);
+        abstractVehiclesPrototypeIds.clear();
+
+        for (auto& protoId : vehiclesPrototypesIds)
+        {
+            auto prototype = thePrototypeManager->GetPrototypeInfo(protoId);
+            if (prototype->bIsAbstract())
+            {
+                abstractVehiclesPrototypeIds.push_back(protoId);
+            }
+        }
 	}
 
 	void VehiclesGeneratorInfoCache::_InitializeWares()
@@ -177,91 +213,58 @@ namespace ai
 
 	void VehiclesGeneratorInfoCache::_InitializeVehicleParts()
 	{
-        throw retruxx::logic_error("Not implemented");
-        //retruxx::vector<int> vehiclePrototypeIds;
-        //_GetAbstractVehiclesPrototypeIds(vehiclePrototypeIds);
-        //
-        //auto gunsId = theResourceManager->GetResourceId("GUN");
-        //
-        //for (auto toVehicleId = vehiclePrototypeIds.begin(); toVehicleId != vehiclePrototypeIds.end(); ++toVehicleId)
-        //{
-        //    unsigned int prototypeId = *toVehicleId;
-        //    const ai::VehiclePrototypeInfo* vehicleProto = nullptr;
-        //
-        //    // Get the vehicle prototype info
-        //     vehicleProto = dynamic_cast<const ai::VehiclePrototypeInfo*>(ai::thePrototypeManager->GetPrototypeInfo(prototypeId));
-        //
-        //     if (!vehicleProto)
-        //     {
-        //         continue;
-        //     }
-        //
-        //    // Initialize new group info
-        //    VehicleGroupInfo newGroupInfo;
-        //
-        //    // Get basket parts
-        //    _GetVehiclePartInfosForVehicle(vehicleProto, "BASKET", newGroupInfo.baskets);
-        //
-        //    // Get chassis parts
-        //    _GetVehiclePartInfosForVehicle(vehicleProto, "CHASSIS", newGroupInfo.chassises);
-        //
-        //    // Get cabin parts
-        //    CStr cabinPartName("CABIN");
-        //    ai::VehiclesGeneratorInfoCache::_GetVehiclePartInfosForVehicle(vehicleProto, "CABIN", newGroupInfo.cabins);
-        //
-        //    // Find gun parts
-        //    for (auto partNameIter = vehicleProto->GetAllPartNames().begin();
-        //        partNameIter != vehicleProto->GetAllPartNames().end();
-        //        ++partNameIter)
-        //    {
-        //        if (!vehicleProto->m_partDescription.m_ptr)
-        //        {
-        //            // Handle null pointer case - this was an assert in the original
-        //            continue;
-        //        }
-        //
-        //        // Get the part description
-        //        ai::ComplexPhysicObjPartDescription* partDesc =
-        //            ai::ComplexPhysicObjPartDescription::GetChildByNameDeep(
-        //                vehicleProto->m_partDescription.m_ptr,
-        //                &(*partNameIter));
-        //
-        //        if (!partDesc)
-        //            continue;
-        //
-        //        // Get resource ID and check if it's a gun
-        //        int partResourceId = ai::ComplexPhysicObjPartDescription::GetPartResourceId(partDesc);
-        //        ai::Resource* resource = ai::ResourceManager::GetResource(ai::theResourceManager, partResourceId);
-        //
-        //        if (resource && ai::Resource::bIsKindOf(resource, gunsResId))
-        //        {
-        //            newGroupInfo.gunPartNames.push_back(*partNameIter);
-        //        }
-        //    }
-        //
-        //    // Create the map entry
-        //    std::pair<CStr, ai::VehiclesGeneratorInfoCache::VehicleGroupInfo> newEntry(
-        //        vehicleProto->m_prototypeName,
-        //        newGroupInfo);
-        //
-        //    // Insert into the map (assuming m_vehicleGroupInfos is a std::map)
-        //    auto result = this->m_vehicleGroupInfos.insert(newEntry);
-        //
-        //    // Clean up the temporary entry
-        //    newEntry.first.Release();
-        //    newEntry.second.cabins.clear();
-        //    newEntry.second.chassises.clear();
-        //    newEntry.second.baskets.clear();
-        //    newEntry.second.gunPartNames.clear();
-        //
-        //    // Clean up the local newGroupInfo
-        //    newGroupInfo.cabins.clear();
-        //    newGroupInfo.chassises.clear();
-        //    newGroupInfo.baskets.clear();
-        //    newGroupInfo.gunPartNames.clear();
-        //}
-        //
-        //// Clean up the prototype IDs vector
-        //vehiclePrototypeIds.clear();
+        retruxx::vector<int> vehiclePrototypeIds;
+        _GetAbstractVehiclesPrototypeIds(vehiclePrototypeIds);
+        
+        auto gunsId = theResourceManager->GetResourceId("GUN");
+        
+        for (auto toVehicleId = vehiclePrototypeIds.begin(); toVehicleId != vehiclePrototypeIds.end(); ++toVehicleId)
+        {
+            unsigned int prototypeId = *toVehicleId;
+            const ai::VehiclePrototypeInfo* vehicleProto = nullptr;
+        
+            // Get the vehicle prototype info
+             vehicleProto = dynamic_cast<const ai::VehiclePrototypeInfo*>(ai::thePrototypeManager->GetPrototypeInfo(prototypeId));
+        
+             if (!vehicleProto)
+             {
+                 continue;
+             }
+        
+            // Initialize new group info
+            VehicleGroupInfo newGroupInfo;
+        
+            // Get basket parts
+            _GetVehiclePartInfosForVehicle(vehicleProto, "BASKET", newGroupInfo.baskets);
+        
+            // Get chassis parts
+            _GetVehiclePartInfosForVehicle(vehicleProto, "CHASSIS", newGroupInfo.chassises);
+        
+            // Get cabin parts
+            _GetVehiclePartInfosForVehicle(vehicleProto, "CABIN", newGroupInfo.cabins);
+        
+            // Find gun parts
+            for (auto partNameIter = vehicleProto->GetAllPartNames().begin();
+                partNameIter != vehicleProto->GetAllPartNames().end();
+                ++partNameIter)
+            {
+                // Get the part description
+                auto* partDesc = vehicleProto->GetPartDescriptionByName((*partNameIter));
+        
+                if (!partDesc)
+                    continue;
+        
+                // Get resource ID and check if it's a gun
+                int partResourceId = partDesc->GetPartResourceId();
+                ai::Resource* resource = ai::theResourceManager->GetResource(partResourceId);
+        
+                if (resource && resource->bIsKindOf(gunsId))
+                {
+                    newGroupInfo.gunPartNames.push_back(*partNameIter);
+                }
+            }
+            // Insert into the map (assuming m_vehicleGroupInfos is a std::map)
+            auto result = this->m_vehicleGroupInfos.emplace(vehicleProto->m_prototypeName, std::move(newGroupInfo));
+        }
 	}
 }

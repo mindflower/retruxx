@@ -6,6 +6,7 @@
 #include <core/scoped_ptr.h>
 #include <core/ini.h>
 #include <server/server.h>
+#include <server/resourcemanager.h>
 
 
 namespace ai
@@ -80,9 +81,17 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    void PrototypeManager::GetPrototypeIdsByResourceId(int, retruxx::vector<int, retruxx::allocator<int>>&) const
+    void PrototypeManager::GetPrototypeIdsByResourceId(int resourceId,  retruxx::vector<int, retruxx::allocator<int>>& prototypeIds) const
     {
-        throw retruxx::logic_error("Not implemented");
+        prototypeIds.clear();
+
+        for (auto& proto : m_prototypes)
+        {
+            if (theResourceManager->bResourceIsKindOf(proto->m_resourceId, resourceId))
+            {
+                prototypeIds.push_back(proto->m_resourceId);
+            }
+        }
     }
 
     PrototypeInfo const* PrototypeManager::GetPrototypeInfo(CStr const&) const

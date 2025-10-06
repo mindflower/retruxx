@@ -32,7 +32,7 @@ namespace ai
 
 	bool PrototypeInfo::bIsAbstract() const
 	{
-		throw std::logic_error("Not implemented");
+        return m_bIsAbstract;
 	}
 
 	bool PrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const* xmlNode)
