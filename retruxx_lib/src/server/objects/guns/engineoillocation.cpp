@@ -21,12 +21,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    EngineOilLocation::EngineOilLocation(const EngineOilLocationPrototypeInfo& prototypeInfo): TemporaryLocation(prototypeInfo)
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    EngineOilLocation::EngineOilLocation(const EngineOilLocation& location): TemporaryLocation(location)
+    EngineOilLocation::EngineOilLocation(const EngineOilLocationPrototypeInfo& prototypeInfo) : TemporaryLocation(prototypeInfo)
     {
         throw std::logic_error("Not implemented");
     }

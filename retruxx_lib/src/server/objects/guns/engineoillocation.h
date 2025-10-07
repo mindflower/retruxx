@@ -17,7 +17,6 @@ namespace ai
 
     private:
         EngineOilLocation(const ai::EngineOilLocationPrototypeInfo& prototypeInfo);
-        EngineOilLocation(const ai::EngineOilLocation&);
         virtual m3d::Object* Clone() override /* 0x00 */;
         static m3d::Object* __fastcall CreateObject();
 

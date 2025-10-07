@@ -14,7 +14,16 @@
 #include <server/processmanager.h>
 #include <server/ai/ai.h>
 #include <server/ai/aimanager.h>
+
+#include "core/ini.h"
+#include "core/ref_ptr.h"
 #include "thirdparty/injecttools.h"
+#include <server/server.h>
+
+#include "server/affix.h"
+#include <server/resourcemanager.h>
+
+#include "server/dynamicscene.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, Remove)
 {
@@ -181,9 +190,90 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Obj::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Obj::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        m3d::SafeUintAttrib(m_flags, xmlNode, "Flags");
+
+        ref_ptr runTimeNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(runTimeNode, "Runtime");
+        m3d::SafeUintAttrib(m_flags, runTimeNode, "Flags");
+
+        ref_ptr attr = xmlNode->CreateAttribute();
+        for (xmlNode->GetFirstAttribute(attr); !attr->IsEmpty(); attr->GetNextSibling(attr))
+        {
+            auto name = attr->GetName();
+            if (stricmp(name, "Prototype"))
+            {
+                m3d::AIParam param(attr->GetValue());
+                auto propId = GetPropertyId(name);
+                if (propId != -1)
+                {
+                    SetPropertyById(propId, param);
+                }
+            }
+        }
+
+        m_bAffixesWasApplied = false;
+        m3d::SafeBoolAttrib(m_bAffixesWasApplied, xmlNode, "AffixesWasApplied");
+
+        ref_ptr prefixNode = xmlFile->CreateNode();
+        m_appliedPrefixIds.clear();
+        for (xmlNode->GetFirstChild(prefixNode, "Prefix"); !prefixNode->IsEmpty(); prefixNode->GetNextSibling(prefixNode, "Prefix"))
+        {
+            CStr name;
+            m3d::SafeStrAttrib(name, prefixNode, "name");
+
+            CStr res;
+            m3d::SafeStrAttrib(res, prefixNode, "targetResource");
+
+            auto id = pServer->GetAffixManager()->GetAffixIdByNameAndResource(name, theResourceManager->GetResourceId(res));
+            if (id == -1)
+            {
+                M3D_LOG_ERR("Error: trying to apply invalid prefix: name = '" + name + "', resource = '" + res + "' to " + GetDebugDescription());
+            }
+            m_appliedPrefixIds.push_back(id);
+        }
+
+        ref_ptr suffixNode = xmlFile->CreateNode();
+        m_appliedSuffixIds.clear();
+        for (xmlNode->GetFirstChild(suffixNode, "Suffix"); !suffixNode->IsEmpty(); suffixNode->GetNextSibling(suffixNode, "Suffix"))
+        {
+            CStr name;
+            m3d::SafeStrAttrib(name, suffixNode, "name");
+
+            CStr res;
+            m3d::SafeStrAttrib(res, suffixNode, "targetResource");
+
+            auto id = pServer->GetAffixManager()->GetAffixIdByNameAndResource(name, theResourceManager->GetResourceId(res));
+            if (id == -1)
+            {
+                M3D_LOG_ERR("Error: trying to apply invalid suffix: name = '" + name + "', resource = '" + res + "' to " + GetDebugDescription());
+            }
+            m_appliedSuffixIds.push_back(id);
+        }
+
+        if (!runTimeNode->IsEmpty())
+        {
+            LoadRuntimeValues(xmlFile, runTimeNode);
+        }
+
+        ref_ptr objNode = xmlFile->CreateNode();
+        for (xmlNode->GetFirstChild(objNode, "Object"); !objNode->IsEmpty(); objNode->GetNextSibling(objNode, "Suffix"))
+        {
+            if (objNode->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
+            {
+                retruxx::vector<m3d::Class*> classes;
+                auto objId = gDynamicScene->ReadNewObjectFromXml(xmlFile, objNode, classes);
+                if (objId >= 0)
+                {
+                    auto obj = theObjects->GetEntityByObjId(objId);
+                    if (obj)
+                    {
+                        AddChild(obj);
+                    }
+                }
+            }
+        }
     }
 
     Obj* Obj::CloneObj()
@@ -260,9 +350,21 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool Obj::SetPropertyById(int, m3d::AIParam const&)
+    bool Obj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        throw std::logic_error("Not implemented");
+        if (!propertyId)
+        {
+            SetBelong(newValue.GetAsID());
+            return true;
+        }
+        if (propertyId == 3)
+        {
+            theObjects->SetObjName(m_objId, newValue.GetAsStr());
+            return true;
+        }
+
+        M3D_LOG_ERR("Error: setting invalid property " + CStr(propertyId) + " to " + GetDebugDescription());
+        return false;
     }
 
     int Obj::GetProperty(unsigned, void*) const
@@ -340,9 +442,15 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    int Obj::GetPropertyId(char const*) const
+    int Obj::GetPropertyId(char const* propName) const
     {
-        throw std::logic_error("Not implemented");
+        auto it = Obj::m_propertiesMap.find(propName);
+        if (it != Obj::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return -1;
     }
 
     CStr Obj::GetFullDescriptionWithAffixes() const

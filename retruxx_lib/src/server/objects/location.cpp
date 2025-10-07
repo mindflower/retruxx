@@ -2,6 +2,9 @@
 
 #include <stdexcept>
 
+#include "vehicle.h"
+#include "monsters/boss02.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(Location)
@@ -10,7 +13,7 @@ namespace ai
 
     Obj* LocationPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        return new Location(*this);
     }
 
     LocationPrototypeInfo::LocationPrototypeInfo()
@@ -48,9 +51,26 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    Location::Location(LocationPrototypeInfo const& prototype) : SimplePhysicObj(prototype)
+    Location::Location(LocationPrototypeInfo const& prototype) :
+        SimplePhysicObj(prototype),
+        m_timeForNextCheck(0.0, 0.0, 10.0, -1.0)
+        
     {
-        throw std::logic_error("Not implemented");
+        this->m_locationType = LOCATION_GENERIC;
+        this->m_toleranceSet.insert(RS_OWN);
+        this->m_bIsActive = true;
+        this->m_lookingTimeOut = 1.0;
+        this->m_bPassageActive = true;
+
+        this->m_targetClasses.insert(&Vehicle::m_classVehicle);
+        this->m_targetClasses.insert(&Boss02::m_classBoss02);
+
+        this->m_numFramesPassed = 0;
+
+        this->_GetLookSphere()->SetTargetClasses(m_targetClasses);
+
+        this->DisablePhysics();
+        this->DisableGeometry(1);
     }
 
     std::vector<Npc*, std::allocator<Npc*>> const& Location::GetNpcs() const

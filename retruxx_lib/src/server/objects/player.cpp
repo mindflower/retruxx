@@ -9,7 +9,9 @@
 #include "server/infocone.h"
 #include "base/objcontainer.h"
 #include "base/prototypemanager.h"
+#include "core/log.h"
 #include "server/event.h"
+#include "server/utils.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Player, GetMoney)
 {
@@ -326,9 +328,15 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    int Player::GetPropertyId(char const*) const
+    int Player::GetPropertyId(char const* propName) const
     {
-        throw std::logic_error("Not implemented");
+        auto it = Player::m_propertiesMap.find(propName);
+        if (it != Player::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return Obj::GetPropertyId(propName);
     }
 
     IzvratRepository* Player::GetRepository() const
@@ -338,7 +346,25 @@ namespace ai
 
     void Player::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        Obj::LoadFromXML(xmlFile, xmlNode);
+        m_questItemPrototypeNames.clear();
+
+        ref_ptr questItemsNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(questItemsNode, "QuestItems");
+        if (!questItemsNode->IsEmpty())
+        {
+            retruxx::vector<CStr> questItemPrototypeNames;
+            CStr prototypeNames;
+            m3d::SafeStrAttrib(prototypeNames, questItemsNode, "PrototypeNames");
+            StrToStringVector(prototypeNames, questItemPrototypeNames);
+            for (auto& name : questItemPrototypeNames)
+            {
+                if (!AddQuestItem(name))
+                {
+                    M3D_LOG_ERR("Player::LoadFromXML error - fail to add quest item for prototype " + name);
+                }
+            }
+        }
     }
 
     float Player::GetMaxHealth() const
@@ -351,9 +377,30 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool Player::SetPropertyById(int, m3d::AIParam const&)
+    bool Player::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        throw std::logic_error("Not implemented");
+        switch (propertyId)
+        {
+        case 11:
+            m_money.value().set(newValue.GetAsID());
+            return true;
+
+        case 44:
+            m_modelName = newValue.GetAsStr();
+            return true;
+
+        case 45:
+            m_skinNumber = newValue.GetAsID();
+            return true;
+
+        case 46:
+            this->m_cfgNumber = newValue.GetAsID();
+            return true;
+
+        default:
+            return Obj::SetPropertyById(propertyId, newValue);
+        }
+        return false;
     }
 
     void Player::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

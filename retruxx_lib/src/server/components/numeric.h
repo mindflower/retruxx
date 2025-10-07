@@ -22,7 +22,15 @@ namespace ai
             return m_value;
         }
 
-        void set(T newValue);
+        void set(T newValue)
+        {
+            if (!m_BeforeChange(newValue))
+            {
+                m_value = newValue;
+                m_AfterChange(m_value);
+            }
+        }
+
         void assign(const ai::Numeric<T>&);
         void add(T);
         void sub(T value);

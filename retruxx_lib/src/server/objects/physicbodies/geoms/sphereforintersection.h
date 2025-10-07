@@ -1,12 +1,10 @@
 #pragma once
 #include "sphere.h"
-#include <set>
+#include "core/clazz.h"
 
 #include "server/obstacle.h"
+#include "thirdparty/containers.h"
 
-namespace m3d {
-    struct Class;
-}
 
 namespace ai
 {
