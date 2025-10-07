@@ -5,26 +5,27 @@ namespace ai
 {
     class Box;
 
-    class BoxyBody :  public SimplePhysicBody
+    class BoxyBody : public ai::SimplePhysicBody
     {
-    public:
-        BoxyBody(std::vector<CollisionInfo,std::allocator<CollisionInfo> > const &,float);
-        virtual m3d::Class * GetClass() const ;
-        virtual m3d::Object * Clone();
-        virtual void SetMass(float);
-        static m3d::Object * CreateObject();
-        static m3d::Class * GetBaseClass();
-        virtual ~BoxyBody();
-        CVector GetSize() const ;
-
+        friend class SimplePhysicObjPrototypeInfo;
     protected:
+        BoxyBody(const std::vector<ai::CollisionInfo, std::allocator<ai::CollisionInfo> >& collisionInfos, float massValue);
         BoxyBody();
-        BoxyBody(BoxyBody const &);
+        BoxyBody(const ai::BoxyBody& rhs);
+
+    public:
+        virtual  ~BoxyBody() override /* 0x00 */;
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classBoxyBody;
+        CVector GetSize() const;
+        void SetSize(const CVector&);
+        virtual void SetMass(float newMassValue) override /* 0x160 */;
 
     private:
-        Box const * _Box() const ;
-
-    public:
-        RT_CLASS_DECLARE(BoxyBody);
-    };
+        const ai::Box* _Box() const;
+        ai::Box* _Box();
+    }; /* size: 0x0158 */
 }

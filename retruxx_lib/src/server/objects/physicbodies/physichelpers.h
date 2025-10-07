@@ -26,4 +26,5 @@ namespace ai
 
     int RoughSign(float);
     bool GetCollisionInfoByServerHandle(int, retruxx::vector<CollisionInfo>&, bool);
+    void CommonGeomMovedCallback(dxGeom*);
 }

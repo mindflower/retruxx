@@ -105,6 +105,9 @@ struct dxBody : public dObject {
   dxAutoDisable adis;		// auto-disable parameters
   dReal adis_timeleft;		// time left to be idle
   int adis_stepsleft;		// steps left to be idle
+
+    // retruxx
+  void (*m_changeEnabledStateCallback)(dxBody*);
 };
 
 struct dxDamping

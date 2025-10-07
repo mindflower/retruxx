@@ -10,6 +10,7 @@ namespace ai
 {
     class SphereForIntersection : public ai::Sphere
     {
+        friend class IntersectionManager;
     public:
         static const int SIGNATURE;
         /* 0x0018 */ int m_signature;

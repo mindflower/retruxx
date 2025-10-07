@@ -52,7 +52,7 @@ namespace ai
 
     dxGeom* Geom::GetGeomId() const
     {
-        throw std::logic_error("Not implemented");
+        return m_geomId;
     }
 
     void Geom::Disable()

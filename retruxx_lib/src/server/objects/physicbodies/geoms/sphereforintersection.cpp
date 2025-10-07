@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+#include "server/dynamicscene.h"
 #include "server/intersectionmanager.h"
 
 extern "C"
@@ -19,7 +20,11 @@ namespace ai
     ai::SphereForIntersection* SphereForIntersection::CreateObject(float radius,
         ai::SphereForIntersection::SpherePurpose purpose, ai::Obstacle* owner)
     {
-        throw std::logic_error("Not implemented");
+        if (radius < 0.1)
+            radius = 0.1;
+
+        auto sphere = dCreateSphere(gIntersectionSpace, radius);
+        return new SphereForIntersection(sphere, purpose, owner);
     }
 
     ai::SphereForIntersection::SpherePurpose SphereForIntersection::GetPurpose() const
@@ -30,7 +35,7 @@ namespace ai
     void SphereForIntersection::SetTargetClasses(
         const retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>>& targetClasses)
     {
-        throw std::logic_error("Not implemented");
+        m_targetClasses = targetClasses;
     }
 
     ai::Obstacle* SphereForIntersection::GetOwner() const

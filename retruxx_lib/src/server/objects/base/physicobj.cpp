@@ -5,9 +5,18 @@
 
 #include "core/ini.h"
 #include "game/m3dgame.h"
+#include "server/dynamicscene.h"
 #include "server/ai/aimanager.h"
 
 #include "thirdparty/injecttools.h"
+
+extern "C"
+{
+#include "ode/collision.h"
+#include "ode/objects.h"
+}
+
+#include "ode/odecpp.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetPosition)
 {
@@ -526,9 +535,44 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    PhysicObj::PhysicObj(PhysicObjPrototypeInfo const&) : m_intersectionObstacle(nullptr)
+    PhysicObj::PhysicObj(PhysicObjPrototypeInfo const& prototypeInfo)
     {
-        throw std::logic_error("Not implemented");
+        this->m_intersectionObstacle = nullptr;
+        this->m_body = 0;
+        this->m_lookSphere = 0;
+        this->m_postActionFlags = 0;
+        this->m_postRotation.x = 0.0;
+        this->m_postRotation.y = 0.0;
+        this->m_postRotation.z = 0.0;
+        this->m_postRotation.w = 1.0;
+        this->m_postPosition.x = 0.0;
+        this->m_postPosition.y = 0.0;
+        this->m_postPosition.z = 0.0;
+        this->m_physicBehaviorFlags = 0;
+        this->m_massCenter.x = 0.0;
+        this->m_massCenter.y = 0.0;
+        this->m_massCenter.y = 0.0;
+
+        m_body = new dBody(gGlobalWorld);
+
+        m_body->setData(this);
+        m_body->setChangeEnabledStateCallback(ai::PhysicObj::_CommonBodyChangeEnabledStateCallback);
+        this->m_spaceId = 0;
+        this->m_bIsSpaceOwner = 1;
+        if (prototypeInfo.m_lookRadius > 0.0099999998)
+        {
+            m_lookSphere = SphereForIntersection::CreateObject(prototypeInfo.m_lookRadius, SphereForIntersection::LOOKING, nullptr);
+            dGeomSetBody(m_lookSphere->GetGeomId(), m_body->id());
+            m_lookSphere->SetTargetClasses(standardTargetClasses);
+        }
+        this->m_boundSphere = ai::Sphere::CreateObject(0, 1.0, 0);;
+        dGeomSetBody(m_boundSphere->GetGeomId(), this->m_body->id());
+        this->m_bIsUpdatingByODE = 1;
+        this->m_enabledCellsCount = 0;
+        this->m_bBodyEnabledLastFrame = 1;
+        this->m_skinNumber = 0;
+        this->m_physicState = 3;
+        this->m_timeFromLastCollisionEffect = 1000.0;
     }
 
     void PhysicObj::EnablePhysicsAndGeometry()

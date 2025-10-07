@@ -10,18 +10,18 @@ namespace ai
         SimplePhysicBodyPrototypeInfo();
     };
 
-    class SimplePhysicBody : public PhysicBody
+    class SimplePhysicBody : public ai::PhysicBody
     {
-    public:
-        SimplePhysicBody(ai::SimplePhysicBodyPrototypeInfo const&);
-        virtual ~SimplePhysicBody();
-        static m3d::Class* GetBaseClass();
-        virtual m3d::Class* GetRtClass() const;
-
     protected:
+        SimplePhysicBody(const ai::SimplePhysicBody&);
+        SimplePhysicBody(const ai::SimplePhysicBodyPrototypeInfo& prototypeInfo);
         SimplePhysicBody();
 
     public:
-        RT_CLASS_DECLARE(SimplePhysicBody);
-    };
+        virtual  ~SimplePhysicBody() override /* 0x00 */;
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetRtClass() const override /* 0x00 */;
+        static m3d::Class m_classSimplePhysicBody;
+        virtual void SetMass(float) = 0 /* 0x160 */;
+    }; /* size: 0x0158 */
 }

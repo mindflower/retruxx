@@ -4,17 +4,17 @@
 
 namespace ai
 {
+    ai::Box* Box::CreateObject(dxSpace* space, const CVector& size, void(*movedCalback)(dxGeom*))
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     CVector Box::GetSize() const
     {
         throw std::logic_error("Not implemented");
     }
 
-    Box* Box::CreateObject(dxSpace*, CVector const&, void(__fastcall *)(dxGeom*))
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    void Box::SetSize(CVector const&)
+    void Box::SetSize(const CVector& size)
     {
         throw std::logic_error("Not implemented");
     }

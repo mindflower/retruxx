@@ -1,20 +1,9 @@
 #pragma once
-
-namespace m3d
-{
-    namespace cmn
-    {
-        struct XmlNode;
-        class XmlFile;
-    }
-}
-
-class CVector;
-class Aabb;
-struct dxBody;
-struct dxGeom;
-struct dxSpace;
-class Quaternion;
+#include "core/ini.h"
+#include "engine/ode/sources/collision_kernel.h"
+#include "math/aabb.h"
+#include "math/quaternion.h"
+#include "math/vector.h"
 
 namespace ai
 {
@@ -31,52 +20,51 @@ namespace ai
 
     class Geom
     {
+    private:
+        Geom(const ai::Geom&);
+
     public:
-        class CellAabb
+        struct CellAabb
         {
-        public:
+            /* 0x0000 */ int x0;
+            /* 0x0004 */ int z0;
+            /* 0x0008 */ int x1;
+            /* 0x000c */ int z1;
             CellAabb();
+            ai::Geom::CellAabb& operator+=(const ai::Geom::CellAabb&);
+        }; /* size: 0x0010 */
 
-        public:
-            int x0;
-            int z0;
-            int x1;
-            int z1;
-        };
-
-    public:
-        Quaternion GetRotation() const ;
-        void SetBody(dxBody * const);
-        dxSpace * GetSpace() const ;
-        void UnlinkFromCollisionCells(int);
-        void RelinkToSpace(dxSpace *);
-        void SetRotation(Quaternion const &);
-        virtual ~Geom();
-        dxGeom * GetGeomId() const ;
-        void Disable();
-        void LinkToCollisionCells(int,CellAabb *);
-        CVector GetPosition() const ;
-        CellAabb GetCollisionCellAabb() const ;
-        void * GetData() const ;
-        int GetGeomClass() const ;
-        CellAabb CountCellAabb() const ;
-        Aabb GetAabb() const ;
+        virtual  ~Geom() /* 0x00 */;
+        dxGeom* GetGeomId() const;
+        CVector GetPosition() const;
+        Quaternion GetRotation() const;
+        void SetPosition(const CVector& vec);
+        void SetRotation(const Quaternion& q);
+        void SetDirection(const CVector& direction);
+        void* GetData() const;
+        void SetData(void* ptr);
+        void SetBody(dxBody* const body);
         void UnlinkFromBody();
-        void SetData(void *);
-        void SetPosition(CVector const &);
+        dxSpace* GetSpace() const;
+        void RelinkToSpace(dxSpace* newSpace);
         void Enable();
-        void RelinkToCollisionCells(int);
-        bool IsEnabled() const ;
+        void Disable();
+        bool IsEnabled() const;
+        Aabb GetAabb() const;
+        int GetGeomClass() const;
+        ai::Geom::CellAabb CountCellAabb() const;
+        void LinkToCollisionCells(int physicObjId, ai::Geom::CellAabb* newAabb);
+        void UnlinkFromCollisionCells(int physicObjId);
+        void RelinkToCollisionCells(int physicObjId);
         void CheckCollisionCells();
-        void SetDirection(CVector const &);
-        virtual void DumpPhysicInfo(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
+        ai::Geom::CellAabb GetCollisionCellAabb() const;
+        virtual void DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x04 */;
 
     protected:
-        Geom(dxGeom* const geomId,void (* movedCallback)(dxGeom *));
+        Geom(dxGeom* const geomId, void (*movedCallback)(dxGeom*));
+        /* 0x0004 */ dxGeom* m_geomId;
 
     private:
-        //Geom_vtbl *__vftable /*VFT*/;
-        dxGeom *m_geomId;
-        CellAabb m_curAabb;
-    };
+        /* 0x0008 */ ai::Geom::CellAabb m_curAabb;
+    }; /* size: 0x0018 */
 }

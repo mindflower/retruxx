@@ -102,6 +102,8 @@ void dBodyDestroy (dBodyID);
 void  dBodySetData (dBodyID, void *data);
 void *dBodyGetData (dBodyID);
 
+void dBodySetChangeEnabledStateCallback(dBodyID b, void(*callback)(dBodyID));
+
 void dBodySetPosition   (dBodyID, dReal x, dReal y, dReal z);
 void dBodySetRotation   (dBodyID, const dMatrix3 R);
 void dBodySetQuaternion (dBodyID, const dQuaternion q);

@@ -52,5 +52,10 @@ namespace ai
         return false;
         throw std::logic_error("Not implemented");
     }
+
+    void CommonGeomMovedCallback(dxGeom*)
+    {
+        throw std::logic_error("Not implemented");
+    }
 }
 

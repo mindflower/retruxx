@@ -3,14 +3,14 @@
 
 namespace ai
 {
-    class Box :  public Geom
+    class Box : public ai::Geom
     {
     public:
-        CVector GetSize() const ;
-        static Box * CreateObject(dxSpace *,CVector const &,void (__fastcall*)(dxGeom *));
-        void SetSize(CVector const &);
+        static ai::Box* CreateObject(dxSpace* space, const CVector& size, void (*movedCalback)(dxGeom*));
+        CVector GetSize() const;
+        void SetSize(const CVector& size);
 
     private:
-        Box(dxGeom * const,void (*)(dxGeom *));
-    };
+        Box(dxGeom* const geomId, void (*movedCalback)( dxGeom*));
+    }; /* size: 0x0018 */
 }

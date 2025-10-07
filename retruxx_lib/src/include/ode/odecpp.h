@@ -130,6 +130,9 @@ public:
   void *getData() const
     { return dBodyGetData (_id); }
 
+  void setChangeEnabledStateCallback(void(*callback)(dBodyID))
+    { dBodySetChangeEnabledStateCallback(_id, callback); }
+
   void setPosition (dReal x, dReal y, dReal z)
     { dBodySetPosition (_id,x,y,z); }
   void setRotation (const dMatrix3 R)

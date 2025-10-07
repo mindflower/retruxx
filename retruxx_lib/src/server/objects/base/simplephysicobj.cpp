@@ -2,11 +2,18 @@
 
 #include "server/objects/physicbodies/physichelpers.h"
 #include <stdexcept>
+#include <ode/collision.h>
 
 #include "core/ini.h"
 #include "core/kernel.h"
 #include "game/m3dgame.h"
 #include "scene/servers/serveranimatedmodel.h"
+#include "server/dynamicscene.h"
+#include "server/objects/physicbodies/boxybody.h"
+#include "server/objects/physicbodies/genericbody.h"
+#include "server/objects/physicbodies/raybody.h"
+#include "server/objects/physicbodies/sphericbody.h"
+#include "server/objects/physicbodies/geoms/box.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetMass)
 {
@@ -71,7 +78,55 @@ namespace ai
 
 	SimplePhysicBody* SimplePhysicObjPrototypeInfo::CreatePhysicBody() const
 	{
-		throw retruxx::logic_error("Not implemented");
+        SimplePhysicBody* body = nullptr;
+        switch (this->m_geomType)
+        {
+        case GEOM_TYPE_BOX:
+            body = new BoxyBody(m_collisionInfos, m_massValue);
+            break;
+
+        case GEOM_TYPE_SPHERE:
+            body = new SphericBody(m_collisionInfos, m_massValue);
+            break;
+
+        case GEOM_TYPE_RAY:
+            body = new RayBody(1000.0);
+            break;
+
+        case GEOM_TYPE_TRIMESH:
+            M3D_ASSERT(!"obsolete");
+
+        case GEOM_TYPE_FROM_MODEL:
+        {
+            auto body = new GenericBody(1.0);
+            body->SetCollisionTrimeshAllowed(m_bCollisionTrimeshAllowed);
+            body->ChangePhysicBodyByCollisionInfo(m_collisionInfos);
+            body->SetMass(m_massValue);
+            body = body;
+            break;
+        }
+            
+        default:
+            break;
+        }
+
+        // TODO: check this!!
+        M3D_ASSERT(body);
+
+        if (body->m_pGeoms.empty())
+        {
+            auto obj = ai::GeomTransform::CreateObject(ai::gGlobalSpace, ai::CommonGeomMovedCallback);
+            body->m_pGeoms.push_back(obj);
+
+            auto box = ai::Box::CreateObject(0, {1.0, 1.0, 1.0}, 0);
+            obj->SetGeom(box);
+        }
+        body->SetModelNameUnsafe(m_engineModelName);
+        for (auto& geom : body->m_pGeoms)
+        {
+            dGeomSetData(geom->GetGeomId(), body);
+        }
+        return body;
 	}
 
 	void SimplePhysicObjPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -155,7 +210,14 @@ namespace ai
 
 	SimplePhysicObj::SimplePhysicObj(SimplePhysicObjPrototypeInfo const& prototypeInfo) : PhysicObj(prototypeInfo)
 	{
-		throw retruxx::logic_error("Not implemented");
+        this->m_collisionInfos = prototypeInfo.m_collisionInfos;
+        this->m_scale = 1.0;
+        this->m_physicBody = prototypeInfo.CreatePhysicBody();
+        this->m_physicBody->SetOwner(this);
+        this->m_deadTimerActive = 0;
+        this->m_deadTimer = 0.0;
+        this->m_testVisibility = 0;
+        ai::SimplePhysicObj::_Construct();
 	}
 
     float SimplePhysicObj::GetScale()

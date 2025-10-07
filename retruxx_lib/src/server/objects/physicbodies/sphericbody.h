@@ -15,27 +15,28 @@ namespace ai
         float m_radius;
     };
 
-    class SphericBody :  public SimplePhysicBody
+    class SphericBody : public ai::SimplePhysicBody
     {
-    public:
-        virtual m3d::Object * Clone();
-        static m3d::Class * GetBaseClass();
-        virtual void SetMass(float);
-        SphericBody(std::vector<CollisionInfo,std::allocator<CollisionInfo> > const &,float);
-        SphericBody(SphericBodyPrototypeInfo const &);
-        float GetRadius() const ;
-        virtual ~SphericBody();
-        virtual m3d::Class * GetClass() const ;
-        static m3d::Object * CreateObject();
-
+        friend class SimplePhysicObjPrototypeInfo;
     protected:
+        SphericBody(const ai::SphericBodyPrototypeInfo& prototypeInfo);
+        SphericBody(const std::vector<ai::CollisionInfo, std::allocator<ai::CollisionInfo> >& collisionInfos, float massValue);
         SphericBody();
-        SphericBody(SphericBody const &);
+        SphericBody(const ai::SphericBody& rhs);
+
+    public:
+        virtual  ~SphericBody() override /* 0x00 */;
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classSphericBody;
+        float GetRadius() const;
+        void SetRadius(float);
+        virtual void SetMass(float newMassValue) override /* 0x160 */;
 
     private:
-        Sphere const * _Sphere() const ;
-
-    public:
-        RT_CLASS_DECLARE(SphericBody);
-    };
+        const ai::Sphere* _Sphere() const;
+        ai::Sphere* _Sphere();
+    }; /* size: 0x0158 */
 }

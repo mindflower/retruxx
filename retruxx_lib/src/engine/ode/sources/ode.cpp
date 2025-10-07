@@ -301,6 +301,11 @@ void *dBodyGetData (dBodyID b)
   return b->userdata;
 }
 
+void dBodySetChangeEnabledStateCallback(dBodyID b, void(*callback)(dBodyID))
+{
+    dAASSERT(b);
+    b->m_changeEnabledStateCallback = callback;
+}
 
 void dBodySetPosition (dBodyID b, dReal x, dReal y, dReal z)
 {

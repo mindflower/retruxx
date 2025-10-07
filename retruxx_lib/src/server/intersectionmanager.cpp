@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <math/vector.h>
 
+#include "objects/physicbodies/geoms/sphereforintersection.h"
+
 namespace ai
 {
     namespace
@@ -13,14 +15,14 @@ namespace ai
         m3d::DbgCounter* cntObjectsSatisfied = nullptr;
     }
 
-    bool IntersectionManager::SpheresIntersect(CVector const&, float, CVector, float)
+    bool IntersectionManager::SpheresIntersect(const CVector&, float, const CVector, float)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
-    bool IntersectionManager::IsSphereValid(Sphere const*, std::set<m3d::Class*> const&, bool)
+    bool IntersectionManager::IsSphereValid(Sphere const*, retruxx::set<m3d::Class*> const&, bool)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     void IntersectionManager::Registration()
@@ -54,9 +56,13 @@ namespace ai
         cntObjectsSatisfied->SetI(0);
     }
 
-    void IntersectionManager::AddLookingSphere(SphereForIntersection*)
+    void IntersectionManager::AddLookingSphere(SphereForIntersection* lookingSphere)
     {
-        throw std::logic_error("Not implemented");
+        lookingSphere->m_next = ai::IntersectionManager::m_firstLookingSphere;
+        lookingSphere->m_prev = 0;
+        if (ai::IntersectionManager::m_firstLookingSphere)
+            ai::IntersectionManager::m_firstLookingSphere->m_prev = lookingSphere;
+        ai::IntersectionManager::m_firstLookingSphere = lookingSphere;
     }
 
     void IntersectionManager::ClearCounters()
@@ -69,6 +75,6 @@ namespace ai
 
     void IntersectionManager::RemoveLookingSphere(SphereForIntersection*)
     {
-        throw std::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 }
