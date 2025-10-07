@@ -709,6 +709,43 @@ namespace m3d
         m_obstacles = new retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > >;
     }
 
+    Landscape::CollisionCellItem::~CollisionCellItem()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Landscape::CollisionCellItem::InsertPhysicObjId(int objId)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Landscape::CollisionCellItem::ErasePhysicObjId(int objId)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Landscape::CollisionCellItem::InsertObstacle(ai::Obstacle* ob)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Landscape::CollisionCellItem::EraseObstacle(ai::Obstacle* ob)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    const retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Landscape::CollisionCellItem::
+    GetPhysicObjIds() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    const retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle>>, retruxx::allocator<ref_ptr<ai::
+    Obstacle>>>& Landscape::CollisionCellItem::GetObstacles() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     Landscape::CollisionInfo::~CollisionInfo()
     {
     }

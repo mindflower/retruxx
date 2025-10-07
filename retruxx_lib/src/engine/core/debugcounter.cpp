@@ -42,7 +42,7 @@ namespace m3d
 
     void DbgCounter::IncI()
     {
-        throw std::logic_error("Not implemented");
+        ++m_i;
     }
 
     DbgCounter::DbgCounter()

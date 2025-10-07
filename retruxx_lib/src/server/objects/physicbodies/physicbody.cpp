@@ -8,6 +8,8 @@
 #include "geoms/box.h"
 #include "math/vector.h"
 #include "ode/odecpp.h"
+#include "scene/nodes/sgnode.h"
+#include "scene/servers/DataServer.h"
 #include "thirdparty/injecttools.h"
 
 namespace ai
@@ -462,7 +464,16 @@ namespace ai
 
 	m3d::AnimatedModel* PhysicBody::GetModel() const
 	{
-		throw std::logic_error("Not implemented");
+		if (m_Node == nullptr)
+		{
+            return nullptr;
+		}
+
+        auto* server = m_Node->GetServer();
+
+        m3d::AnimatedModel* mdl = nullptr;
+        server->GetItemProperty(this->m_Node->GetServerHandle(), 16394, &mdl);
+        return mdl;
 	}
 
 	float PhysicBody::GetMass() const
@@ -514,9 +525,17 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::RelinkToSpace(dxSpace*)
+	void PhysicBody::RelinkToSpace(dxSpace* newSpace)
 	{
-		throw std::logic_error("Not implemented");
+        for (auto& geom : m_pGeoms)
+        {
+            if (dGeomGetSpace(geom->GetGeomId()))
+            {
+                auto Space = dGeomGetSpace(geom->GetGeomId());
+                dSpaceRemove(Space, geom->GetGeomId());
+            }
+            dSpaceAdd(newSpace, geom->GetGeomId());
+        }
 	}
 
 	int PhysicBody::GetOwnerId() const

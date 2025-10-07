@@ -862,6 +862,20 @@ void dBodySetAutoDisableDefaults (dBodyID b)
 	dBodySetAutoDisableFlag (b, w->adis_flag);
 }
 
+//retruxx
+void dBodyDetachAllContactJoints (dBodyID b)
+{
+    dxJointNode* firstjoint = b->firstjoint;
+    while (firstjoint)
+    {
+        dxJoint* joint = firstjoint->joint;
+        bool is_contact = firstjoint->joint->vtable == &__dcontact_vtable;
+        firstjoint = firstjoint->next;
+        if (is_contact && (joint->node[0].body || joint->node[1].body))
+            removeJointReferencesFromAttachedBodies(joint);
+    }
+}
+
 //****************************************************************************
 // joints
 

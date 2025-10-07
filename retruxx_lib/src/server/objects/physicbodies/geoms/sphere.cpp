@@ -20,7 +20,9 @@ namespace ai
 
     void Sphere::SetRadius(float radius)
     {
-        throw std::logic_error("Not implemented");
+        if (radius < 0.1)
+            radius = 0.1;
+        dGeomSphereSetRadius(this->m_geomId, radius);
     }
 
     Sphere::Sphere(dxGeom* const geomId, void(*movedCallback)(dxGeom*)) : Geom(geomId, movedCallback)

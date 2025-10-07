@@ -427,7 +427,14 @@ namespace ai
 
     void PhysicObj::DisablePhysics()
     {
-        throw std::logic_error("Not implemented");
+        if (m_body)
+            dBodyDisable(m_body->id());
+        this->m_physicState &= ~1u;
+        ai::PhysicObj::SetCorrectEnabledCellsCounter();
+        this->m_bBodyEnabledLastFrame = 0;
+        ai::PhysicObj::SetCorrectEnabledCellsCounter();
+        dBodyDetachAllContactJoints(this->m_body->id());
+        this->_UnlinkBodyFromGeoms();
     }
 
     void PhysicObj::SetDisablePhysicsWhenBodyDisabled()
@@ -697,7 +704,7 @@ namespace ai
 
     SphereForIntersection* PhysicObj::_GetLookSphere() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_lookSphere;
     }
 
     void PhysicObj::_SetRotationToGeoms(Quaternion const&)
@@ -710,9 +717,12 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void PhysicObj::_SetBoundSphereRadius(float)
+    void PhysicObj::_SetBoundSphereRadius(float radius)
     {
-        throw std::logic_error("Not implemented");
+        auto v2 = 1.0;
+        if (radius < 1.0 || (v2 = 1.0e30, radius > 1.0e30))
+            radius = v2;
+        this->m_boundSphere->SetRadius(radius);
     }
 
     void PhysicObj::_SetBodyEnabledBit(bool)
@@ -720,9 +730,17 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void PhysicObj::_CreateSpace(bool)
+    void PhysicObj::_CreateSpace(bool bForUntransfer)
     {
-        throw std::logic_error("Not implemented");
+        if (!this->m_spaceId && this->m_bIsSpaceOwner || bForUntransfer)
+        {
+            auto v3 = ai::gGlobalSpace;
+            if (ai::gGlobalSpace->lock_count)
+                v3 = ai::gTempSpace;
+            auto v4 = dSimpleSpaceCreate(v3);
+            this->m_spaceId = v4;
+            dSpaceSetCleanup(v4, 0);
+        }
     }
 
     bool PhysicObj::_GetPropertyInternal(int, m3d::AIParam&) const

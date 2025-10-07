@@ -5,6 +5,14 @@
 #include <math/vector.h>
 #include <ode/collision.h>
 
+#include "core/debugcounter.h"
+#include "core/log.h"
+#include "server/objects/base/physicobj.h"
+#include <server/server.h>
+
+#include "level.h"
+#include "world.h"
+
 namespace ai
 {
     Geom::CellAabb::CellAabb()
@@ -30,9 +38,21 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Geom::UnlinkFromCollisionCells(int)
+    void Geom::UnlinkFromCollisionCells(int physicObjId)
     {
-        throw std::logic_error("Not implemented");
+        if (physicObjId != -1)
+        {
+            auto& landscape = ai::pServer->GetWorld()->GetLandscape();
+            for (auto x0 = this->m_curAabb.x0; x0 <= this->m_curAabb.x1; ++x0)
+            {
+                for (auto j = this->m_curAabb.z0; j <= this->m_curAabb.z1; ++j)
+                {
+                    auto CollisionCellItem = landscape.GetCollisionCellItem(x0, j);
+                    if (CollisionCellItem)
+                        CollisionCellItem->ErasePhysicObjId(physicObjId);
+                }
+            }
+        }
     }
 
     void Geom::RelinkToSpace(dxSpace*)
@@ -60,9 +80,34 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Geom::LinkToCollisionCells(int, CellAabb*)
+    void Geom::LinkToCollisionCells(int physicObjId, CellAabb* newAabb)
     {
-        throw std::logic_error("Not implemented");
+        if (physicObjId != -1)
+        {
+            ai::Geom::CellAabb result;
+            auto v4 = newAabb;
+            if (!newAabb)
+            {
+                result = ai::Geom::CountCellAabb();
+                v4 = &result;
+            }
+            this->m_curAabb.x0 = v4->x0;
+            this->m_curAabb.z0 = v4->z0;
+            this->m_curAabb.x1 = v4->x1;
+            this->m_curAabb.z1 = v4->z1;
+
+            auto& landscape = ai::pServer->GetWorld()->GetLandscape();
+            auto x0 = this->m_curAabb.x0;
+            for (; x0 <= this->m_curAabb.x1; ++x0)
+            {
+                for (auto j = this->m_curAabb.z0; j <= this->m_curAabb.z1; ++j)
+                {
+                    auto CollisionCellItem = landscape.GetCollisionCellItem(x0, j);
+                    if (CollisionCellItem)
+                        CollisionCellItem->InsertPhysicObjId(physicObjId);
+                }
+            }
+        }
     }
 
     CVector Geom::GetPosition() const
@@ -87,7 +132,56 @@ namespace ai
 
     Geom::CellAabb Geom::CountCellAabb() const
     {
-        throw std::logic_error("Not implemented");
+        ai::PhysicObj::GetRelinksToCollisionCounter()->IncI();
+
+        float aabb[6];
+        dGeomGetAABB(this->m_geomId, aabb);
+
+        const float VISCELL_EDGE_LENGTH_INV = 0.0078125;
+
+        auto x0 = (int)(float)(VISCELL_EDGE_LENGTH_INV * aabb[0]);
+        auto x1 = (int)(float)(VISCELL_EDGE_LENGTH_INV * aabb[1]);
+
+        if (x0 > x1)
+        {
+            M3D_LOG_ERR("Error: incorrect cell AABB for geom: x0 = " + CStr(x0) + ", x1 = " + CStr(x1));
+            x0 = x1;
+        }
+
+
+        auto z0 = (int)(float)(VISCELL_EDGE_LENGTH_INV * aabb[4]);
+        auto z1 = (int)(float)(VISCELL_EDGE_LENGTH_INV * aabb[5]);
+        if (z0 > z1)
+        {
+            M3D_LOG_ERR("Error: incorrect cell AABB for geom: z0 = " + CStr(z0) + ", z1 = " + CStr(z1));
+            z0 = z1;
+        }
+
+        auto m_pWorld = ai::pServer->GetWorld();
+        auto v8 = m_pWorld->m_level->land_size - 1;
+        if (x0 < 0)
+            x0 = 0;
+        if (x0 > v8)
+            x0 = m_pWorld->m_level->land_size - 1;
+        if (x1 < 0)
+            x1 = 0;
+        if (x1 > v8)
+            x1 = m_pWorld->m_level->land_size - 1;
+        if (z0 < 0)
+            z0 = 0;
+        if (z0 > v8)
+            z0 = m_pWorld->m_level->land_size - 1;
+        if (z1 < 0)
+            z1 = 0;
+        if (z1 > v8)
+            z1 = v8;
+
+        ai::Geom::CellAabb result;
+        result.x0 = x0;
+        result.z0 = z0;
+        result.x1 = x1;
+        result.z1 = z1;
+        return result;
     }
 
     Aabb Geom::GetAabb() const
@@ -97,7 +191,7 @@ namespace ai
 
     void Geom::UnlinkFromBody()
     {
-        throw std::logic_error("Not implemented");
+        dGeomUnlinkFromBody(this->m_geomId);
     }
 
     void Geom::SetData(void*)

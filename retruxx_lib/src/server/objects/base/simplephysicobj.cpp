@@ -3,10 +3,13 @@
 #include "server/objects/physicbodies/physichelpers.h"
 #include <stdexcept>
 #include <ode/collision.h>
+#include <ode/objects.h>
 
 #include "core/ini.h"
 #include "core/kernel.h"
+#include "core/log.h"
 #include "game/m3dgame.h"
+#include "ode/odecpp.h"
 #include "scene/servers/serveranimatedmodel.h"
 #include "server/dynamicscene.h"
 #include "server/objects/physicbodies/boxybody.h"
@@ -438,7 +441,42 @@ namespace ai
 
 	void SimplePhysicObj::_Construct()
 	{
-		throw retruxx::logic_error("Not implemented");
+        if (this->m_physicBody)
+        {
+            ai::PhysicObj::_CreateSpace(0);
+
+            dMass mass;
+            dMassSetZero(&mass);
+            dMassSetZero(&mass);
+            this->m_physicBody->RelinkToSpace(this->m_spaceId);
+            dMassAdd(&mass, &this->m_physicBody->m_mass);
+            if (mass.mass < 0.001)
+            {
+                M3D_LOG_ERR("Error: mass is too low: " + CStr(mass.mass) + " for " + GetDebugDescription());
+                dMassSetSphereTotal(&mass, 1.0, 1.0);
+            }
+            dBodySetMass(this->m_body->id(), &mass);
+            
+            auto v6 = this->m_physicBody->GetModel();
+            if (v6)
+            {
+                auto v7 = v6->m_box.m_box[1];
+                auto v8 = v6->m_box.m_box[4];
+                auto v9 = v6->m_box.m_box[0];
+                auto v10 = v6->m_box.m_box[3];
+
+                float b[3];
+                b[2] = v6->m_box.m_box[5] - v6->m_box.m_box[2];
+                b[1] = v8 - v7;
+                b[0] = v10 - v9;
+                auto radius = sqrt(b[2] * b[2] + b[1] * b[1] + b[0] * b[0]) * 0.5;
+                ai::PhysicObj::_SetBoundSphereRadius(radius);
+            }
+            else
+            {
+                ai::PhysicObj::_SetBoundSphereRadius(15.0);
+            }
+        }
 	}
 
 	void SimplePhysicObj::_SetRotationToGeoms(Quaternion const&)

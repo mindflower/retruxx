@@ -94,6 +94,9 @@ int   dBodyGetAutoDisableFlag (dBodyID);
 void  dBodySetAutoDisableFlag (dBodyID, int do_auto_disable);
 void  dBodySetAutoDisableDefaults (dBodyID);
 
+//retruxx
+void dBodyDetachAllContactJoints (dBodyID b);
+
 /* bodies */
 
 dBodyID dBodyCreate (dWorldID);

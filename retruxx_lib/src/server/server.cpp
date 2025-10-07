@@ -431,7 +431,7 @@ namespace ai
 
     m3d::CWorld* CServer::GetWorld()
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_pWorld;
     }
 
     void CServer::LoadVisitedMap(CStr const&, bool)

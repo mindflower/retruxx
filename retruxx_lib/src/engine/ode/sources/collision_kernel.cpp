@@ -520,6 +520,13 @@ int dGeomIsEnabled (dxGeom *g)
 	return (g->gflags & GEOM_ENABLED) != 0;
 }
 
+//retruxx
+void dGeomUnlinkFromBody (dxGeom* g)
+{
+    dAASSERT(g);
+    g->gflags |= 0x10u;
+}
+
 
 //****************************************************************************
 // C interface that lets the user make new classes. this interface is a lot

@@ -58,6 +58,9 @@ void dGeomEnable (dGeomID);
 void dGeomDisable (dGeomID);
 int dGeomIsEnabled (dGeomID);
 
+//retruxx
+void dGeomUnlinkFromBody (dGeomID);
+
 /* ************************************************************************ */
 /* collision detection */
 
