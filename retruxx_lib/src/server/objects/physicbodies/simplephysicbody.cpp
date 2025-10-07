@@ -37,11 +37,10 @@ namespace ai
 
     m3d::Class* SimplePhysicBody::GetRtClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(SimplePhysicBody);
     }
 
     SimplePhysicBody::SimplePhysicBody()
     {
-        throw std::logic_error("Not implemented");
     }
 }

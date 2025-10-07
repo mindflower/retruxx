@@ -1,5 +1,7 @@
 #include "physichelpers.h"
 
+#include "physicbody.h"
+
 namespace ai
 {
     CollisionInfo::CollisionInfo(const ai::CollisionInfo& info)
@@ -53,9 +55,30 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void CommonGeomMovedCallback(dxGeom*)
+    void CommonGeomMovedCallback(dxGeom* geomId)
     {
-        throw std::logic_error("Not implemented");
+        auto Data = (m3d::Object*)dGeomGetData(geomId);
+        auto v2 = (ai::PhysicBody*)Data;
+        if (Data)
+        {
+            PhysicObj* Owner = nullptr;
+            if (Data->IsKindOf(&ai::PhysicBody::m_classPhysicBody))
+            {
+                v2->TransferPhysicParamsToSceneGraphNode();
+                Owner = v2->GetOwner();
+            }
+            else
+            {
+                if (!v2->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
+                    return;
+                Owner = (ai::PhysicObj*)v2;
+            }
+            if (Owner)
+            {
+                if ((Owner->GetFlags() & 2) == 0)
+                    Owner->RelinkGeomsToCollisionCells();
+            }
+        }
     }
 }
 

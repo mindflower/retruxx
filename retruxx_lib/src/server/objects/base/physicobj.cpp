@@ -371,12 +371,12 @@ namespace ai
 
     dBody* PhysicObj::GetBody()
     {
-        throw std::logic_error("Not implemented");
+        return this->m_body;
     }
 
     dBody const* PhysicObj::GetBody() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_body;
     }
 
     void PhysicObj::Update(float, unsigned)
@@ -452,7 +452,7 @@ namespace ai
 
     int PhysicObj::GetPhysicState() const
     {
-        throw std::logic_error("Not implemented");
+        return m_physicState;
     }
 
     void PhysicObj::RenderDebugInfo() const

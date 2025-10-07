@@ -2,9 +2,12 @@
 
 #include "server/objects/physicbodies/physichelpers.h"
 #include <stdexcept>
+#include <ode/objects.h>
 
 #include "game/m3dgame.h"
+#include "geoms/box.h"
 #include "math/vector.h"
+#include "ode/odecpp.h"
 #include "thirdparty/injecttools.h"
 
 namespace ai
@@ -43,9 +46,9 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::SetModelNameUnsafe(CStr const&)
+	void PhysicBody::SetModelNameUnsafe(CStr const& newModelName)
 	{
-		throw std::logic_error("Not implemented");
+        m_modelname = newModelName;
 	}
 
 	int PhysicBody::GetNodeAnimAction() const
@@ -83,9 +86,37 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::UpdateGeomsByCollisionInfo(retruxx::vector<CollisionInfo> const&)
+	void PhysicBody::UpdateGeomsByCollisionInfo(retruxx::vector<CollisionInfo> const& collisionInfos)
 	{
-		throw std::logic_error("Not implemented");
+        auto pos = GetNodeRelativePosition();
+        m_collisionInfos = collisionInfos;
+        for (int i = 0; i < m_pGeoms.size(); ++i)
+        {
+            auto geom = m_pGeoms[i]->GetGeom();
+            if (geom)
+            {
+                dGeomSetPosition(geom->GetGeomId(), m_collisionInfos[i].m_relTranslation.x, m_collisionInfos[i].m_relTranslation.y, m_collisionInfos[i].m_relTranslation.z);
+
+                dQuaternion quat;
+                quat[0] = m_collisionInfos[i].m_relRotation.x;
+                quat[1] = m_collisionInfos[i].m_relRotation.y;
+                quat[2] = m_collisionInfos[i].m_relRotation.z;
+                quat[3] = m_collisionInfos[i].m_relRotation.w;
+                dGeomSetQuaternion(geom->GetGeomId(), quat);
+
+                auto cl = dGeomGetClass(geom->GetGeomId());
+                if (cl)
+                {
+                    if (cl == 1)
+                        ((ai::Box*)geom)->SetSize(m_collisionInfos[i].m_size);
+                }
+                else
+                {
+                    ((ai::Sphere*)geom)->SetRadius(m_collisionInfos[i].m_radius);
+                }
+            }
+        }
+        SetNodeRelativePosition(pos);
 	}
 
 	void PhysicBody::SetNodeAction(int, bool)
@@ -115,7 +146,33 @@ namespace ai
 
 	void PhysicBody::TransferPhysicParamsToSceneGraphNode()
 	{
-		throw std::logic_error("Not implemented");
+        if (this->m_Node)
+        {
+            auto NodeRelativeRotation = ai::PhysicBody::GetNodeRelativeRotation();
+            auto Rotation = ai::PhysicBody::GetRotation();
+            auto v4 = Rotation.w * NodeRelativeRotation.y;
+
+            Quaternion rot; // [esp+10h] [ebp-30h] BYREF
+            rot.x = (float)((float)((float)(NodeRelativeRotation.z * Rotation.y)
+                + (float)(Rotation.w * NodeRelativeRotation.x))
+                + (float)(NodeRelativeRotation.w * Rotation.x))
+                - (float)(Rotation.z * NodeRelativeRotation.y);
+            auto v5 = (float)((float)((float)(NodeRelativeRotation.w * Rotation.y) + v4)
+                + (float)(Rotation.z * NodeRelativeRotation.x))
+                - (float)(NodeRelativeRotation.z * Rotation.x);
+            auto v6 = NodeRelativeRotation.w * Rotation.z;
+            rot.y = v5;
+            auto v7 = (float)((float)((float)(NodeRelativeRotation.z * Rotation.w) + v6)
+                + (float)(Rotation.x * NodeRelativeRotation.y))
+                - (float)(Rotation.y * NodeRelativeRotation.x);
+            auto v8 = Rotation.x * NodeRelativeRotation.x;
+            rot.z = v7;
+            rot.w = (float)((float)((float)(NodeRelativeRotation.w * Rotation.w) - v8)
+                - (float)(Rotation.y * NodeRelativeRotation.y))
+                - (float)(NodeRelativeRotation.z * Rotation.z);
+            auto NodeAbsolutePosition = ai::PhysicBody::GetNodeAbsolutePosition();
+            ai::PhysicBody::_SetScenegraphNode(NodeAbsolutePosition, rot);
+        }
 	}
 
 	void PhysicBody::_ClearGeoms()
@@ -290,7 +347,27 @@ namespace ai
 
 	void PhysicBody::SetOwnerBodyToGeoms()
 	{
-		throw std::logic_error("Not implemented");
+        m_ownerPhysicObj = this->m_ownerPhysicObj;
+
+        dBodyID id = 0;
+        if (m_ownerPhysicObj)
+            id = m_ownerPhysicObj->GetBody()->id();
+
+        auto v4 = 0;
+        if (m_ownerPhysicObj)
+        {
+            v4 = 1;
+            if ((m_ownerPhysicObj->GetPhysicState() & 1) != 0 || dBodyGetAutoDisableFlag(id))
+                v4 = 0;
+        }
+        for (auto& geom : m_pGeoms)
+        {
+            dGeomSetData(geom->GetGeomId(), this);
+            dGeomSetBody(geom->GetGeomId(), id);
+            if (v4)
+                dGeomSetBody(geom->GetGeomId(), id);
+            geom->UnlinkFromBody();
+        }
 	}
 
 	void PhysicBody::Registration()
@@ -339,14 +416,18 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::SetOwner(PhysicObj*)
+	void PhysicBody::SetOwner(PhysicObj* owner)
 	{
-		throw std::logic_error("Not implemented");
+        if (owner != this->m_ownerPhysicObj)
+        {
+            this->m_ownerPhysicObj = owner;
+            SetOwnerBodyToGeoms();
+        }
 	}
 
 	PhysicObj* PhysicBody::GetOwner() const
 	{
-		throw std::logic_error("Not implemented");
+        return this->m_ownerPhysicObj;
 	}
 
 	void PhysicBody::SetInvisible()
@@ -391,12 +472,25 @@ namespace ai
 
 	CVector PhysicBody::GetNodeRelativePosition() const
 	{
-		throw std::logic_error("Not implemented");
+        if (!m_pGeoms.empty() && m_pGeoms.front()->GetGeom() != nullptr)
+        {
+            auto& relPos = m_collisionInfos.front().m_relTranslation;
+            auto inner = m_pGeoms.front()->GetGeom();
+            auto pos = dGeomGetPosition(inner->GetGeomId());
+            return { pos[0] - relPos.x, pos[1] - relPos.y , pos[2] - relPos.z };
+        }
+        return { 0.0, 0.0, 0.0 };
 	}
 
-	void PhysicBody::SetNodeRelativePosition(CVector const&)
+	void PhysicBody::SetNodeRelativePosition(CVector const& pos)
 	{
-		throw std::logic_error("Not implemented");
+        for (int i = 0; i < m_pGeoms.size(); ++i)
+        {
+            auto x = m_collisionInfos[i].m_relTranslation.x + pos.x;
+            auto y = m_collisionInfos[i].m_relTranslation.y + pos.y;
+            auto z = m_collisionInfos[i].m_relTranslation.z + pos.z;
+            dGeomSetPosition(m_pGeoms[i]->GetGeom()->GetGeomId(), x, y, z);
+        }
 	}
 
 	void PhysicBody::UnlinkGeomFromCollisionCells()
@@ -406,7 +500,13 @@ namespace ai
 
 	void PhysicBody::RelinkGeomToCollisionCells()
 	{
-		throw std::logic_error("Not implemented");
+		for (auto& geom : m_pGeoms)
+		{
+            auto objId = -1;
+            if (m_ownerPhysicObj)
+                objId = m_ownerPhysicObj->GetId();
+            geom->RelinkToCollisionCells(objId);
+		}
 	}
 
 	void PhysicBody::DisableGeometry()
@@ -436,7 +536,24 @@ namespace ai
 
 	PhysicBody::PhysicBody()
 	{
-		throw std::logic_error("Not implemented");
+        dMassSetZero(&m_mass);
+        m_modelname = "BOX";
+        auto obj = GeomTransform::CreateObject(nullptr, CommonGeomMovedCallback);
+        m_pGeoms.push_back(obj);
+
+        CollisionInfo info;
+        m_collisionInfos.push_back(std::move(info));
+
+        this->m_bCollisionTrimeshAllowed = 0;
+        this->m_Node = 0;
+        this->m_ownerPhysicObj = 0;
+        this->m_animAction = 0;
+        this->m_effectAction = 0;
+        this->m_cfgNum = 0;
+        this->m_bAnimationIsStopped = 0;
+        this->m_loadedAnimTime = 0;
+        this->m_mU = 1.0;
+        this->m_bNeedToRelinkNode = 1;
 	}
 
 	int PhysicBody::_GetNodeRealAnimAction() const

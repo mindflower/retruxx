@@ -6,7 +6,8 @@ namespace ai
 {
     ai::GeomTransform* GeomTransform::CreateObject(dxSpace* space, void(* movedCalback)(dxGeom*))
     {
-        throw std::logic_error("Not implemented");
+        auto geom = dCreateGeomTransform(space);
+        return new GeomTransform(geom, movedCalback);
     }
 
     GeomTransform::~GeomTransform()
@@ -21,16 +22,20 @@ namespace ai
 
     ai::Geom* GeomTransform::GetGeom()
     {
-        throw std::logic_error("Not implemented");
+        return m_innerGeom;
     }
 
     GeomTransform::GeomTransform(dxGeom* const geomId, void(*movedCalback)(dxGeom*)) : Geom(geomId, movedCalback)
     {
-        throw std::logic_error("Not implemented");
+        this->m_innerGeom = 0;
+        dGeomTransformSetCleanup(m_geomId, 0);;
     }
 
     void GeomTransform::SetGeom(ai::Geom* pGeom)
     {
-        throw std::logic_error("Not implemented");
+        delete m_innerGeom;
+        m_innerGeom = nullptr;
+        dGeomTransformSetGeom(m_geomId, pGeom->GetGeomId());
+        m_innerGeom = pGeom;
     }
 }

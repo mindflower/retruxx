@@ -115,9 +115,17 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Geom::RelinkToCollisionCells(int)
+    void Geom::RelinkToCollisionCells(int physicObjId)
     {
-        throw std::logic_error("Not implemented");
+        auto newAabb = ai::Geom::CountCellAabb();
+        if (newAabb.x0 != this->m_curAabb.x0
+            || newAabb.z0 != this->m_curAabb.z0
+            || newAabb.x1 != this->m_curAabb.x1
+            || newAabb.z1 != this->m_curAabb.z1)
+        {
+            ai::Geom::UnlinkFromCollisionCells(physicObjId);
+            ai::Geom::LinkToCollisionCells(physicObjId, &newAabb);
+        }
     }
 
     bool Geom::IsEnabled() const

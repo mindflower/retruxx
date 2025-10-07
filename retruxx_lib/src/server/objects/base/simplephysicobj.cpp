@@ -332,7 +332,8 @@ namespace ai
 
 	void SimplePhysicObj::RelinkGeomsToCollisionCells()
 	{
-		throw retruxx::logic_error("Not implemented");
+        if (this->m_physicBody)
+            this->m_physicBody->RelinkGeomToCollisionCells();
 	}
 
 	void SimplePhysicObj::SetNextForAnimation(int, int)
