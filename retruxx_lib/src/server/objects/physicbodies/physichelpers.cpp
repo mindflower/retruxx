@@ -80,5 +80,10 @@ namespace ai
             }
         }
     }
+
+    void SetNodeElapsedAnimationTimeInMs(m3d::SgNode*, int)
+    {
+        throw std::logic_error("Not implemented");
+    }
 }
 

@@ -320,7 +320,8 @@ namespace ai
             "Vehicle",
             "Location",
             "Player",
-            "Location"
+            "Location",
+            "Trigger"
         };
 
         if (classes.find(className) == classes.end())
@@ -1160,6 +1161,7 @@ namespace ai
 
     void UpdateLights()
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement UpdateLights
+        //throw std::logic_error("Not implemented");
     }
 }

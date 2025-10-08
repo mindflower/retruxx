@@ -88,7 +88,36 @@ void Quaternion::Zero()
 
 Quaternion Quaternion::getInversed() const
 {
-    throw std::logic_error("Not implemented");
+    // TODO: generated code
+    Quaternion result;
+
+    // Calculate the squared length (magnitude) of the quaternion
+    float squaredLength = (w * w) + (x * x) + (y * y) + (z * z);
+
+    // Check for zero length quaternion to avoid division by zero
+    if (squaredLength <= 0.0f)
+    {
+        // Return identity quaternion for zero-length input
+        result.x = 0.0f;
+        result.y = 0.0f;
+        result.z = 0.0f;
+        result.w = 1.0f;
+    }
+    else
+    {
+        // Calculate inverse length (1 / magnitude)
+        float invLength = 1.0f / sqrt(squaredLength);
+
+        // For a unit quaternion, inverse is conjugate (negate x,y,z) divided by squared length
+        // Since we're normalizing, we multiply conjugate by invLength
+        result.x = -x * invLength;
+        result.y = -y * invLength;
+        result.z = -z * invLength;
+        result.w = w * invLength;
+    }
+
+    return result;
+
 }
 
 float& Quaternion::operator[](unsigned int i)

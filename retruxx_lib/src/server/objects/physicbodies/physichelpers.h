@@ -6,6 +6,8 @@
 #include <math/quaternion.h>
 #include <math/vector.h>
 
+#include "scene/nodes/sgnode.h"
+
 namespace ai
 {
     struct CollisionInfo
@@ -27,4 +29,5 @@ namespace ai
     int RoughSign(float);
     bool GetCollisionInfoByServerHandle(int, retruxx::vector<CollisionInfo>&, bool);
     void CommonGeomMovedCallback(dxGeom*);
+    void SetNodeElapsedAnimationTimeInMs(m3d::SgNode*, int);
 }

@@ -7,6 +7,7 @@
 #include "server/utils.h"
 #include "player.h"
 #include <server/processmanager.h>
+#include "base/prototypemanager.h"
 
 namespace ai
 {
@@ -36,7 +37,7 @@ namespace ai
 
     LocationPrototypeInfo const* Location::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        return dynamic_cast<LocationPrototypeInfo const*>(ai::thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     CStr Location::GetPropertyName(int) const
@@ -212,9 +213,17 @@ namespace ai
         m_propertiesMap["PassageActive"] = 56;
     }
 
-    void Location::SetLocationType(LocationType)
+    void Location::SetLocationType(LocationType locationType)
     {
-        throw std::logic_error("Not implemented");
+        m_locationType = locationType;
+        if (locationType != LOCATION_GENERIC && locationType != LOCATION_PASSAGE)
+        {
+            m_toleranceSet.clear();
+            m_toleranceSet.insert(RS_ENEMY);
+            m_toleranceSet.insert(RS_NEUTRAL);
+            m_toleranceSet.insert(RS_ALLY);
+            m_toleranceSet.insert(RS_OWN);
+        }
     }
 
     int Location::OnEvent(Event const&)

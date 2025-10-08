@@ -1,4 +1,7 @@
 #include "game.h"
+
+#include <ctime>
+
 #include "m3dgame.h"
 
 namespace
@@ -31,6 +34,8 @@ int APIENTRY mainImpl(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(nCmdShow);
+
+    srand(time(nullptr));
 
     injectRetruxxAddresses();
 

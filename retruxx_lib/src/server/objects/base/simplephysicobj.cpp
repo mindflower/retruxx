@@ -246,7 +246,8 @@ namespace ai
 
 	void SimplePhysicObj::LinkGeomsToCollisionCells()
 	{
-		throw retruxx::logic_error("Not implemented");
+        if (this->m_physicBody)
+            this->m_physicBody->LinkGeomToCollisionCells();
 	}
 
 	void SimplePhysicObj::DisableGeometry(bool changePhysicState)
@@ -330,9 +331,11 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void SimplePhysicObj::SetSkin(int)
+	void SimplePhysicObj::SetSkin(int skin)
 	{
-		throw retruxx::logic_error("Not implemented");
+        PhysicObj::SetSkin(skin);
+        if (m_physicBody)
+            m_physicBody->SetSkin(skin);
 	}
 
 	CStr SimplePhysicObj::GetPropertyName(int) const
@@ -401,9 +404,71 @@ namespace ai
 		return PhysicObj::GetCollisionCellAabb();
 	}
 
-	void SimplePhysicObj::SetScale(float, bool)
+	void SimplePhysicObj::SetScale(float scale, bool recalcMass)
 	{
-		throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        if (!m_physicBody || !m_physicBody->m_Node)
+            return;
+
+        // Calculate scale delta from current scale
+        float currentScale = m_physicBody->m_Node->GetScale().x;
+        float deltaScale = scale / currentScale;
+
+        // Only proceed if scale change is significant
+        if (fabs(deltaScale - 1.0f) < 0.00001f)
+            return;
+
+        // Scale all collision info properties
+        for (auto& collisionInfo : m_collisionInfos)
+        {
+            // Scale size
+            collisionInfo.m_size.x *= deltaScale;
+            collisionInfo.m_size.y *= deltaScale;
+            collisionInfo.m_size.z *= deltaScale;
+
+            // Scale offset (assuming m_offset is at p_z[1] based on decompilation)
+            collisionInfo.m_radius *= deltaScale;
+
+            // Scale relative translation
+            collisionInfo.m_relTranslation.x *= deltaScale;
+            collisionInfo.m_relTranslation.y *= deltaScale;
+            collisionInfo.m_relTranslation.z *= deltaScale;
+        }
+
+        // Update physics geometry with new collision info
+        if (m_physicBody)
+        {
+            m_physicBody->UpdateGeomsByCollisionInfo(m_collisionInfos);
+        }
+
+        // Update mass center (using first collision info)
+        if (!m_collisionInfos.empty())
+        {
+            _SetMassCenter(m_collisionInfos[0].m_relTranslation);
+        }
+
+        // Recalculate mass if requested (mass scales with volume)
+        if (recalcMass && m_physicBody)
+        {
+            float currentMass = GetMass();
+            float newMass = currentMass * deltaScale * deltaScale * deltaScale;
+            m_physicBody->SetMass(newMass);
+            _Construct(); // Reconstruct physics object with new mass
+        }
+
+        // Update visual node scale
+        if (m_physicBody->m_Node)
+        {
+            CVector newScale(scale, scale, scale);
+
+            // Update transform and set new scale
+            m_physicBody->m_Node->UpdateXForm(true, false);
+            m_physicBody->m_Node->SetScale(newScale);
+            m_physicBody->m_Node->UpdateXForm(true, false);
+        }
+
+        // Store new scale
+        m_scale = scale;
 	}
 
 	void SimplePhysicObj::UnlinkGeomsFromCollisionCells()
@@ -440,7 +505,11 @@ namespace ai
 
 	void SimplePhysicObj::_InternalCreateVisualPart()
 	{
-		throw retruxx::logic_error("Not implemented");
+        ai::PhysicObj::_InternalCreateVisualPart();
+        if (m_physicBody)
+            m_physicBody->CreateVisualPart();
+        this->SetSkin(GetSkin());
+        SetScale(this->m_scale, false);
 	}
 
 	bool SimplePhysicObj::_GetPropertyDefaultInternal(int, m3d::AIParam&) const

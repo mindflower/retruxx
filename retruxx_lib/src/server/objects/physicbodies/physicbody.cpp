@@ -4,13 +4,20 @@
 #include <stdexcept>
 #include <ode/objects.h>
 
+#include "config.h"
+#include "core/kernel.h"
 #include "game/m3dgame.h"
 #include "geoms/box.h"
 #include "math/vector.h"
 #include "ode/odecpp.h"
+#include "scene/scenegraph.h"
 #include "scene/nodes/sgnode.h"
 #include "scene/servers/DataServer.h"
 #include "thirdparty/injecttools.h"
+#include <client.h>
+
+#include "world.h"
+#include "server/dynamicscene.h"
 
 namespace ai
 {
@@ -204,7 +211,25 @@ namespace ai
 
 	Quaternion PhysicBody::GetRotation() const
 	{
-		throw std::logic_error("Not implemented");
+        if (!m_pGeoms.empty())
+        {
+            auto& first = m_pGeoms.front();
+
+            float quat[4];
+            dGeomGetQuaternion(first->GetGeomId(), quat);
+            auto v7 = quat[0];
+            auto v4 = quat[2];
+
+            Quaternion result;
+            result.x = quat[1];
+            auto v5 = v4;
+            auto v6 = quat[3];
+            result.y = v5;
+            result.z = v6;
+            result.w = v7;
+            return result;
+        }
+        return { 0.0, 0.0, 0.0, 1.0 };
 	}
 
 	void PhysicBody::SetRotation(Quaternion const*)
@@ -259,7 +284,16 @@ namespace ai
 
 	void PhysicBody::LinkGeomToCollisionCells()
 	{
-		throw std::logic_error("Not implemented");
+        for (auto& geom : m_pGeoms)
+        {
+            int objId = -1;
+            if (m_ownerPhysicObj)
+            {
+                objId = m_ownerPhysicObj->GetId();
+            }
+
+            geom->LinkToCollisionCells(objId, nullptr);
+        }
 	}
 
     retruxx::vector<CollisionInfo, retruxx::allocator<CollisionInfo>> const& PhysicBody::GetCollisionInfo() const
@@ -274,7 +308,60 @@ namespace ai
 
 	CVector PhysicBody::GetNodeAbsolutePosition() const
 	{
-		throw std::logic_error("Not implemented");
+        // Get node relative position and body rotation
+        CVector relativePos  = GetNodeRelativePosition();
+        Quaternion rotation = GetRotation();
+
+        // Convert quaternion to rotation matrix
+        float xx = rotation.x * rotation.x;
+        float xy = rotation.x * rotation.y;
+        float xz = rotation.x * rotation.z;
+        float xw = rotation.x * rotation.w;
+        float yy = rotation.y * rotation.y;
+        float yz = rotation.y * rotation.z;
+        float yw = rotation.y * rotation.w;
+        float zz = rotation.z * rotation.z;
+        float zw = rotation.z * rotation.w;
+
+        // Build 3x3 rotation matrix from quaternion
+        CMatrix rotMatrix;
+        rotMatrix._11 = 1.0f - 2.0f * (yy + zz);
+        rotMatrix._12 = 2.0f * (xy + zw);
+        rotMatrix._13 = 2.0f * (xz - yw);
+        rotMatrix._14 = 0.0f;
+
+        rotMatrix._21 = 2.0f * (xy - zw);
+        rotMatrix._22 = 1.0f - 2.0f * (xx + zz);
+        rotMatrix._23 = 2.0f * (yz + xw);
+        rotMatrix._24 = 0.0f;
+
+        rotMatrix._31 = 2.0f * (xz + yw);
+        rotMatrix._32 = 2.0f * (yz - xw);
+        rotMatrix._33 = 1.0f - 2.0f * (xx + yy);
+        rotMatrix._34 = 0.0f;
+
+        rotMatrix._41 = 0.0f;
+        rotMatrix._42 = 0.0f;
+        rotMatrix._43 = 0.0f;
+        rotMatrix._44 = 1.0f;
+
+        // Transform relative position by rotation matrix
+        CVector rotatedPos;
+        rotatedPos.x = relativePos.x * rotMatrix._11 + relativePos.y * rotMatrix._21 + relativePos.z * rotMatrix._31;
+        rotatedPos.y = relativePos.x * rotMatrix._12 + relativePos.y * rotMatrix._22 + relativePos.z * rotMatrix._32;
+        rotatedPos.z = relativePos.x * rotMatrix._13 + relativePos.y * rotMatrix._23 + relativePos.z * rotMatrix._33;
+
+        // Get physics geometry position (assuming ODE physics)
+        const float* geomPosition = dGeomGetPosition(m_pGeoms[0]->GetGeomId());
+
+        CVector result;
+
+        // Combine rotated relative position with physics body position
+        result.x = geomPosition[0] + rotatedPos.x;
+        result.y = geomPosition[1] + rotatedPos.y;
+        result.z = geomPosition[2] + rotatedPos.z;
+
+        return result;
 	}
 
 	PhysicBody::~PhysicBody()
@@ -299,9 +386,10 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::SetSkin(int)
+	void PhysicBody::SetSkin(int skin)
 	{
-		throw std::logic_error("Not implemented");
+        if (this->m_Node)
+            this->m_Node->SetProperty(8706u, &skin);
 	}
 
 	int PhysicBody::GetNodeCfgNum() const
@@ -392,7 +480,32 @@ namespace ai
 
 	Quaternion PhysicBody::GetNodeRelativeRotation() const
 	{
-		throw std::logic_error("Not implemented");
+        // Check if we have valid geometry and collision info
+        if (!m_pGeoms.empty() && m_pGeoms[0] != nullptr && m_pGeoms[0]->GetGeom() != nullptr)
+        {
+            // Get the rotation from the inner geometry
+            Quaternion geomRotation = m_pGeoms[0]->GetGeom()->GetRotation();
+
+            // Get the inverse of the relative rotation from collision info
+            Quaternion inverseRelRot = m_collisionInfos[0].m_relRotation.getInversed();
+
+            Quaternion result;
+            // Combine the rotations: result = inverseRelRot * geomRotation
+            result.x = (inverseRelRot.w * geomRotation.x + inverseRelRot.x * geomRotation.w +
+                inverseRelRot.y * geomRotation.z - inverseRelRot.z * geomRotation.y);
+
+            result.y = (inverseRelRot.w * geomRotation.y - inverseRelRot.x * geomRotation.z +
+                inverseRelRot.y * geomRotation.w + inverseRelRot.z * geomRotation.x);
+
+            result.z = (inverseRelRot.w * geomRotation.z + inverseRelRot.x * geomRotation.y -
+                inverseRelRot.y * geomRotation.x + inverseRelRot.z * geomRotation.w);
+
+            result.w = (inverseRelRot.w * geomRotation.w - inverseRelRot.x * geomRotation.x -
+                inverseRelRot.y * geomRotation.y - inverseRelRot.z * geomRotation.z);
+
+            return result;
+        }
+        return { 0.0, 0.0, 0.0, 1.0 };
 	}
 
 	void PhysicBody::SetNodeRelativeRotation(Quaternion const&)
@@ -584,12 +697,83 @@ namespace ai
 
 	void PhysicBody::_InternalCreateVisualPart()
 	{
-		throw std::logic_error("Not implemented");
+        ai::PhysicBody::_ApplyCurrentModelName();
+        if (m_loadedAnimTime > 0)
+            ai::SetNodeElapsedAnimationTimeInMs(this->m_Node, m_loadedAnimTime);
+        if ((this->GetFlags() & 1) == 0)
+            this->SetInvisible();
 	}
 
 	void PhysicBody::_ApplyCurrentModelName()
 	{
-		throw std::logic_error("Not implemented");
+        // TODO: generated code
+        // Get current node transformations
+        CVector nodePos = GetNodeAbsolutePosition();
+        Quaternion relativeRot = GetNodeRelativeRotation();
+        Quaternion rotation = GetRotation();
+
+        // Calculate combined rotation (applying relative rotation to base rotation)
+        Quaternion nodeRot;
+        nodeRot.x = (rotation.w * relativeRot.x + relativeRot.z * rotation.y + relativeRot.w * rotation.x)
+            - (rotation.z * relativeRot.y);
+        nodeRot.y = (relativeRot.w * rotation.y + rotation.w * relativeRot.y + rotation.z * relativeRot.x)
+            - (relativeRot.z * rotation.x);
+        nodeRot.z = (relativeRot.z * rotation.w + relativeRot.w * rotation.z + rotation.x * relativeRot.y)
+            - (relativeRot.x * rotation.y);
+        nodeRot.w = (relativeRot.w * rotation.w - rotation.x * relativeRot.x
+            - rotation.y * relativeRot.y - relativeRot.z * rotation.z);
+
+        // Remove existing node from scene graph
+        if (m_Node != nullptr)
+        {
+            m3d::SceneGraph* graph = m_Node->GetGraph();
+            graph->RemoveNode(m_Node);
+            m_Node = nullptr;
+        }
+
+        // Create new node if model name is valid
+        if (!m_modelname.empty())
+        {
+            // Create scale vector
+            CVector scale(1.0f, 1.0f, 1.0f);
+
+            // Get engine configuration and create node
+            int modelId = M3D_KERNEL->GetEngineCfg().GetModelIdByName(m_modelname); // Assuming GetModelId based on context
+
+            m3d::SgNode* serverControlledNode = m3d::pClient->CreateServerControlledNode(modelId);
+            if (serverControlledNode != nullptr)
+            {
+                // Add to scene graph
+                m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(serverControlledNode);
+
+                // Set properties
+                serverControlledNode->SetProperty(PROPERTY_BELONG, this); // 4356u appears to be a property ID
+                serverControlledNode->SetScale(scale);
+                serverControlledNode->SetPersistance(false);
+                serverControlledNode->UpdateXForm(false, true);
+            }
+
+            m_Node = serverControlledNode;
+
+            // Set transformations
+            if (m_Node != nullptr)
+            {
+                m_Node->SetOriginAbs(nodePos);
+                m_Node->SetRotation(nodeRot);
+
+                // Apply animations and effects
+                SetNodeAnimAction(m_animAction, true);
+                SetNodeEffectAction(m_effectAction);
+                SetNodeCfgNum(m_cfgNum);
+
+                auto belong = GetBelong();
+                // Set ownership property
+                m_Node->SetProperty(4353u, &belong);
+
+                // Link to dynamic scene
+                ai::gDynamicScene->LinkNodesFromBodyToSceneGraph(this);
+            }
+        }
 	}
 
 	void PhysicBody::_DeleteNode()

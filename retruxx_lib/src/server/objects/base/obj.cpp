@@ -560,7 +560,7 @@ namespace ai
 
     int Obj::GetPrototypeId() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_prototypeId;
     }
 
     retruxx::map<int, Obj*>& Obj::GetChildren()

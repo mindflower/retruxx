@@ -20,6 +20,7 @@ extern "C"
 
 #include "ode/odecpp.h"
 #include <server/server.h>
+#include "prototypemanager.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetPosition)
 {
@@ -202,9 +203,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void PhysicObj::SetSkin(int)
+    void PhysicObj::SetSkin(int skin)
     {
-        throw std::logic_error("Not implemented");
+        this->m_skinNumber = skin;
     }
 
     m3d::Class* PhysicObj::GetBaseClass()
@@ -417,7 +418,7 @@ namespace ai
 
     unsigned PhysicObj::GetSkin() const
     {
-        throw std::logic_error("Not implemented");
+        return m_skinNumber;
     }
 
     void PhysicObj::EnablePhysicsIfPossible()
@@ -803,7 +804,7 @@ namespace ai
 
     PhysicObjPrototypeInfo const* PhysicObj::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        return dynamic_cast<PhysicObjPrototypeInfo const*>(ai::thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     CVector PhysicObj::GetLinearVelocity() const
@@ -921,16 +922,20 @@ namespace ai
 
     PhysicObj::~PhysicObj()
     {
+        throw std::logic_error("Not implemented");
     }
 
     void PhysicObj::_InternalPostLoad()
     {
-        throw std::logic_error("Not implemented");
+        if (GetPrototypeInfo()->m_intersectionRadius > 0.0099999998)
+        {
+            m_intersectionObstacle = new Obstacle(this);
+        }
     }
 
     void PhysicObj::_InternalCreateVisualPart()
     {
-        throw std::logic_error("Not implemented");
+        this->LinkGeomsToCollisionCells();
     }
 
     void PhysicObj::_SetGeomEnabledBit(bool)
