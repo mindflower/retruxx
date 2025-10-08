@@ -209,19 +209,34 @@ namespace m3d
 
     void Tokenize(CStr const* str, retruxx::vector<CStr>& tokens, char const* chars)
     {
-        //TODO: check this
-        if (str && !str->empty())
+        if (!str || str->empty()) 
         {
-            tokens.clear();
-            size_t start;
-            size_t end = 0;
-            std::string_view view(str->c_str());
-            while ((start = view.find_first_not_of(chars, end)) != CStr_npos)
-            {
-                end = view.find(chars, start);
-                tokens.push_back(str->substr(start, end - start));
-            }
+            return;
         }
+
+        // Clear existing tokens
+        tokens.clear();
+
+        // Calculate string length
+        auto strLen = str->length();
+
+        // Allocate memory for copy
+        char* buffer = new char[strLen + 1];
+
+        // Copy the string
+        std::strcpy(buffer, str->c_str());
+
+        // Tokenize the copied string
+        char* token = strtok(buffer, chars);
+        while (token != nullptr)
+        {
+
+            tokens.push_back(token);
+            token = strtok(nullptr, chars);
+        }
+
+        // Free the buffer
+        delete[] buffer;
     }
 }
 

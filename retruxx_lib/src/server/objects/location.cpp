@@ -4,6 +4,7 @@
 
 #include "vehicle.h"
 #include "monsters/boss02.h"
+#include "server/utils.h"
 
 namespace ai
 {
@@ -83,9 +84,15 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    int Location::GetPropertyId(char const*) const
+    int Location::GetPropertyId(char const* propName) const
     {
-        throw std::logic_error("Not implemented");
+        auto it = Location::m_propertiesMap.find(propName);
+        if (it != Location::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return ai::SimplePhysicObj::GetPropertyId(propName);
     }
 
     void Location::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -113,9 +120,38 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool Location::SetPropertyById(int, m3d::AIParam const&)
+    bool Location::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        throw std::logic_error("Not implemented");
+        switch (propertyId)
+        {
+        case 49:
+            throw std::logic_error("Not implemented");
+            break;
+
+        case 52:
+            throw std::logic_error("Not implemented");
+            break;
+
+        case 53:
+            throw std::logic_error("Not implemented");
+            break;
+
+        case 54:
+            throw std::logic_error("Not implemented");
+            break;
+
+        case 55:
+            throw std::logic_error("Not implemented");
+            break;
+
+        case 56:
+            throw std::logic_error("Not implemented");
+            break;
+
+        default:
+            return ai::SimplePhysicObj::SetPropertyById(propertyId, newValue);
+        }
+        return false;
     }
 
     Location* Location::GetCorrespondingPassageLocation() const
@@ -123,9 +159,10 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Location::SetPositionSelf(CVector const&)
+    void Location::SetPositionSelf(CVector const& pos)
     {
-        throw std::logic_error("Not implemented");
+        auto groundPos = ai::GetGroundPos(pos, 0, 0);
+        ai::PhysicObj::SetPositionSelf(groundPos);
     }
 
     eGObjPropertySaveStatus Location::GetPropertySaveStatus(int) const
@@ -140,7 +177,7 @@ namespace ai
 
     m3d::Class* Location::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Location);
     }
 
     void Location::Update(float, unsigned)

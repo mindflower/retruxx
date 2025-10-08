@@ -233,9 +233,15 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    int SimplePhysicObj::GetPropertyId(char const*) const
+    int SimplePhysicObj::GetPropertyId(char const* propName) const
 	{
-		throw retruxx::logic_error("Not implemented");
+        auto it = SimplePhysicObj::m_propertiesMap.find(propName);
+        if (it != SimplePhysicObj::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return ai::PhysicObj::GetPropertyId(propName);
 	}
 
 	void SimplePhysicObj::LinkGeomsToCollisionCells()
@@ -243,9 +249,14 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void SimplePhysicObj::DisableGeometry(bool)
+	void SimplePhysicObj::DisableGeometry(bool changePhysicState)
 	{
-		throw retruxx::logic_error("Not implemented");
+        ai::PhysicObj::DisableGeometry(changePhysicState);
+        if (!this->m_spaceId || !this->m_bIsSpaceOwner)
+        {
+            if (this->m_physicBody)
+                this->m_physicBody->DisableGeometry();
+        }
 	}
 
 	SimplePhysicBody* SimplePhysicObj::GetPhysicBody()
@@ -268,9 +279,20 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	bool SimplePhysicObj::SetPropertyById(int, m3d::AIParam const&)
+	bool SimplePhysicObj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
 	{
-		throw retruxx::logic_error("Not implemented");
+        if (propertyId == 6)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
+        else if (propertyId == 7)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
+        else
+        {
+            return ai::PhysicObj::SetPropertyById(propertyId, newValue);
+        }
 	}
 
 	void SimplePhysicObj::Remove()
@@ -376,7 +398,7 @@ namespace ai
 
 	Geom::CellAabb SimplePhysicObj::GetCollisionCellAabb() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		return PhysicObj::GetCollisionCellAabb();
 	}
 
 	void SimplePhysicObj::SetScale(float, bool)
@@ -409,9 +431,11 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void SimplePhysicObj::SetBelong(int)
+	void SimplePhysicObj::SetBelong(int newBelong)
 	{
-		throw retruxx::logic_error("Not implemented");
+        ai::Obj::SetBelong(newBelong);
+        if (this->m_physicBody)
+            this->m_physicBody->SetBelong(newBelong);
 	}
 
 	void SimplePhysicObj::_InternalCreateVisualPart()
@@ -516,7 +540,7 @@ namespace ai
 
 	void SimplePhysicObj::_UnlinkBodyFromGeoms()
 	{
-		throw retruxx::logic_error("Not implemented");
+        ai::PhysicObj::_UnlinkBodyFromGeoms();
 	}
 
 	m3d::Object* SimplePhysicObj::Clone()

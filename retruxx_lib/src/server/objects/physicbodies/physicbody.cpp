@@ -282,9 +282,11 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::SetBelong(int)
+	void PhysicBody::SetBelong(int newBelong)
 	{
-		throw std::logic_error("Not implemented");
+        ai::Obj::SetBelong(newBelong);
+        if (m_Node)
+            m_Node->SetProperty(4353u, &newBelong);
 	}
 
 	void PhysicBody::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const

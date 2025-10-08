@@ -10,4 +10,6 @@ namespace ai
     void StrToIntVector(CStr const&, retruxx::vector<int>&);
     bool GetPathItem(Path const*, unsigned int, CVector&);
     void DebugCircle(CVector const&, float, unsigned int);
+    CVector GetGroundPos(CVector const&, bool, bool);
+    CVector GetGroundPos(CVector2 const&, bool);
 }

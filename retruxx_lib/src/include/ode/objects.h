@@ -96,6 +96,7 @@ void  dBodySetAutoDisableDefaults (dBodyID);
 
 //retruxx
 void dBodyDetachAllContactJoints (dBodyID b);
+dxGeom* dBodyGetFirstGeom(dBodyID b);
 
 /* bodies */
 

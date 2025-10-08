@@ -1738,9 +1738,13 @@ namespace m3d
         m_profilerUpdateVis->EndCountdown();
     }
 
-    Landscape::CollisionCellItem* Landscape::GetCollisionCellItem(int, int) const
+    Landscape::CollisionCellItem* Landscape::GetCollisionCellItem(int x, int y) const
     {
-        throw retruxx::logic_error("Not implemented");
+        auto land_size = this->m_owner->m_level->land_size;
+        if (x < 0 || x >= land_size || y < 0 || y >= land_size)
+            return 0;
+        else
+            return (m3d::Landscape::CollisionCellItem*)*((int*)&this->m_oCollisionitems[x] + y * land_size);
     }
 
     int Landscape::GenerateShoreLine()

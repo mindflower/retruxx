@@ -172,7 +172,36 @@ namespace m3d
 
     CVector AIParam::GetAsVector() const
     {
-        throw std::logic_error("Not implemented");
+        CVector res;
+        switch (Type)
+        {
+        case AIPARAM_VECTOR:
+            res.x = x;
+            res.y = y;
+            res.z = z;
+            return res;
+
+        case AIPARAM_ID:
+            res.x = id;
+            return res;
+
+        case AIPARAM_FLOAT:
+            res.x = x;
+            return res;
+
+        case AIPARAM_STRING:
+            ConvertFromString(&res, AIPARAM_VECTOR);
+            return res;
+
+        case AIPARAM_RANGE:
+            res.x = x;
+            res.z = z;
+            res.y = 0.0;
+            return res;
+
+        default:
+            return res;
+        }
     }
 
     void AIParam::SaveToXML(cmn::XmlFile*, cmn::XmlNode*) const
@@ -430,9 +459,34 @@ namespace m3d
         }
     }
 
-    void AIParam::ConvertFromString(void*, eAIParamType) const
+    void AIParam::ConvertFromString(void* retVal, eAIParamType ToType) const
     {
-        throw std::logic_error("Not implemented");
+        switch (ToType)
+        {
+        case AIPARAM_VECTOR:
+        {
+            std::vector<CStr> tokens;
+            m3d::Tokenize(m_Str, tokens, "(), ;\t");
+            const auto size = tokens.size();
+            auto vec = (CVector*)retVal;
+            if (size > 0)
+            {
+                vec->x = atof(tokens[0].c_str());
+            }
+            if (size > 1)
+            {
+                vec->y = atof(tokens[1].c_str());
+            }
+            if (size > 2)
+            {
+                vec->z = atof(tokens[2].c_str());
+            }
+            return;
+        }
+
+        default:
+            throw std::logic_error("Not implemented");
+        }
     }
 
     eAIParamType AIParam::GetType() const

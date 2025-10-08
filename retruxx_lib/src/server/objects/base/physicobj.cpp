@@ -3,6 +3,8 @@
 #include <core/aiparam.h>
 #include <server/obstacle.h>
 
+#include "landscape.h"
+#include "world.h"
 #include "core/ini.h"
 #include "game/m3dgame.h"
 #include "server/dynamicscene.h"
@@ -17,6 +19,7 @@ extern "C"
 }
 
 #include "ode/odecpp.h"
+#include <server/server.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetPosition)
 {
@@ -218,9 +221,21 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool PhysicObj::SetPropertyById(int, m3d::AIParam const&)
+    bool PhysicObj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        throw std::logic_error("Not implemented");
+        switch (propertyId)
+        {
+        case 4:
+            SetPositionSelf(newValue.GetAsVector());
+            return true;
+
+        case 5:
+            throw std::logic_error("Not implemented");
+        case 45:
+            throw std::logic_error("Not implemented");
+        default:
+            return ai::Obj::SetPropertyById(propertyId, newValue);
+        }
     }
 
     void PhysicObj::SetPostEnablePhysicsIfPossible()
@@ -349,9 +364,12 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void PhysicObj::DisableGeometry(bool)
+    void PhysicObj::DisableGeometry(bool changePhysicState)
     {
-        throw std::logic_error("Not implemented");
+        if (m_spaceId && this->m_bIsSpaceOwner)
+            dGeomDisable(m_spaceId);
+        if (changePhysicState)
+            this->m_physicState &= ~2u;
     }
 
     void PhysicObj::EnableGeometry(bool)
@@ -489,7 +507,7 @@ namespace ai
 
     Geom::CellAabb PhysicObj::GetCollisionCellAabb() const
     {
-        throw std::logic_error("Not implemented");
+        return m_boundSphere->CountCellAabb();
     }
 
     void PhysicObj::RenderObstacleDebugInfo() const
@@ -669,7 +687,42 @@ namespace ai
 
     void PhysicObj::SetCorrectEnabledCellsCounter()
     {
-        throw std::logic_error("Not implemented");
+        m_enabledCellsCount = 0;
+        if ((m_physicState & 1) == 0 && (m_physicState & 2) != 0)
+        {
+            auto aabb = GetCollisionCellAabb();
+            if (aabb.z0 <= aabb.z1)
+            {
+                auto z0 = aabb.z0;
+                if (aabb.z0 <= aabb.z1)
+                {
+                    int retaddr = 0;
+                    auto v6 = retaddr;
+                    auto x1 = aabb.x1;
+                    do
+                    {
+                        if (x1 <= v6)
+                        {
+                            do
+                            {
+                                auto CollisionCellItem = ai::pServer->GetWorld()->GetLandscape().GetCollisionCellItem(z0, x1);
+                                if (CollisionCellItem->m_wasEnabledLastFrame)
+                                    ++this->m_enabledCellsCount;
+                                CollisionCellItem->m_bMustCheck = 1;
+                                v6 = retaddr;
+                                ++x1;
+                            } while (x1 <= retaddr);
+                            x1 = aabb.x1;
+                        }
+                        ++z0;
+                    } while (z0 <= aabb.z1);
+                }
+                if (this->m_enabledCellsCount <= 0)
+                    this->DisableGeometry(0);
+                else
+                    this->EnableGeometry(0);
+            }
+        }
     }
 
     PhysicObjPrototypeInfo const* PhysicObj::GetPrototypeInfo() const
@@ -687,9 +740,15 @@ namespace ai
         return ai::PhysicObj::m_countRelinksToCollisionCells;
     }
 
-    int PhysicObj::GetPropertyId(char const*) const
+    int PhysicObj::GetPropertyId(char const* propName) const
     {
-        throw std::logic_error("Not implemented");
+        auto it = PhysicObj::m_propertiesMap.find(propName);
+        if (it != PhysicObj::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return ai::Obj::GetPropertyId(propName);
     }
 
     void PhysicObj::_SetSimpleCollision()
@@ -765,7 +824,8 @@ namespace ai
 
     void PhysicObj::_UnlinkBodyFromGeoms()
     {
-        throw std::logic_error("Not implemented");
+        for (auto i = dBodyGetFirstGeom(m_body->id()); i; i = dGeomGetBodyNext(i))
+            dGeomUnlinkFromBody(i);
     }
 
     void PhysicObj::_SetStaticCollision()

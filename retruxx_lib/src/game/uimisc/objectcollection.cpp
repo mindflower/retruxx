@@ -4,6 +4,7 @@
 #include <core/stringm3d.h>
 
 #include "core/clazz.h"
+#include "server/objects/base/obj.h"
 
 ObjectCollection::~ObjectCollection()
 {
@@ -47,9 +48,20 @@ void ObjectCollection::ClearObjects()
     throw std::logic_error("Not implemented");
 }
 
-int ObjectCollection::AddObject(ai::Obj*)
+int ObjectCollection::AddObject(ai::Obj* obj)
 {
-    throw std::logic_error("Not implemented");
+    if (!obj || !obj->GetClass())
+    {
+        return 0;
+    }
+
+    
+    for (auto cls = obj->GetClass(); IsClassCollected(cls); cls = cls->m_fnGetBaseClass())
+    {
+        m_objects[cls].insert(obj->GetId());
+    }
+
+    return 1;
 }
 
 void ObjectCollection::ClearClasses()

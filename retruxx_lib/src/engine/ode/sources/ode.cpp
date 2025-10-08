@@ -876,6 +876,12 @@ void dBodyDetachAllContactJoints (dBodyID b)
     }
 }
 
+dxGeom* dBodyGetFirstGeom (dBodyID b)
+{
+    dAASSERT(b);
+    return b->geom;
+}
+
 //****************************************************************************
 // joints
 
