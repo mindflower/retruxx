@@ -415,7 +415,11 @@ namespace ai
 
     void Player::AddChild(Obj* obj)
     {
-        throw std::logic_error("Not implemented");
+        Obj::AddChild(obj);
+        if (obj)
+        {
+            throw std::logic_error("Not implemented");
+        }
     }
 
     float Player::GetMaxFuel() const

@@ -153,7 +153,18 @@ namespace ai
 
     Quaternion PhysicObj::GetRotation() const
     {
-        throw std::logic_error("Not implemented");
+        auto quat = dBodyGetQuaternion(this->m_body->id());
+        auto dq = *quat;
+        auto v3 = quat[2];
+        auto dq_4 = quat[1];
+        auto v4 = quat[3];
+
+        Quaternion result;
+        result.x = dq_4;
+        result.y = v3;
+        result.z = v4;
+        result.w = dq;
+        return result;
     }
 
     void PhysicObj::SetPostDisablePhysicsWithAutoEnable()
@@ -309,9 +320,74 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void PhysicObj::SetPositionSelf(CVector const&)
+    void PhysicObj::SetPositionSelf(CVector const& pos)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        Quaternion rotation = GetRotation();
+
+        float qx = rotation.x;
+        float qy = rotation.y;
+        float qz = rotation.z;
+        float qw = rotation.w;
+
+        // Calculate quaternion products
+        float qx_qx = qx * qx;
+        float qy_qy = qy * qy;
+        float qz_qz = qz * qz;
+        float qw_qz = qw * qz;
+        float qx_qz = qx * qz;
+        float qw_qx = qw * qx;
+        float qx_qy = qx * qy;
+        float qz_qy = qz * qy;
+        float qw_qy = qw * qy;
+
+        // Build rotation matrix from quaternion
+        CMatrix rotationMatrix;
+
+        rotationMatrix._11 = 1.0f - 2.0f * (qz_qz + qy_qy);
+        rotationMatrix._12 = 2.0f * (qx_qy + qw_qz);
+        rotationMatrix._13 = 2.0f * (qx_qz - qw_qy);
+        rotationMatrix._14 = 0.0f;
+
+        rotationMatrix._21 = 2.0f * (qx_qy - qw_qz);
+        rotationMatrix._22 = 1.0f - 2.0f * (qz_qz + qx_qx);
+        rotationMatrix._23 = 2.0f * (qz_qy + qw_qx);
+        rotationMatrix._24 = 0.0f;
+
+        rotationMatrix._31 = 2.0f * (qx_qz + qw_qy);
+        rotationMatrix._32 = 2.0f * (qz_qy - qw_qx);
+        rotationMatrix._33 = 1.0f - 2.0f * (qy_qy + qx_qx);
+        rotationMatrix._34 = 0.0f;
+
+        rotationMatrix._41 = 0.0f;
+        rotationMatrix._42 = 0.0f;
+        rotationMatrix._43 = 0.0f;
+        rotationMatrix._44 = 1.0f;
+
+        // Transform mass center by rotation matrix
+        float transformedX = (this->m_massCenter.x * rotationMatrix._11) +
+            (this->m_massCenter.y * rotationMatrix._21) +
+            (this->m_massCenter.z * rotationMatrix._31);
+
+        float transformedY = (this->m_massCenter.x * rotationMatrix._12) +
+            (this->m_massCenter.y * rotationMatrix._22) +
+            (this->m_massCenter.z * rotationMatrix._32);
+
+        float transformedZ = (this->m_massCenter.x * rotationMatrix._13) +
+            (this->m_massCenter.y * rotationMatrix._23) +
+            (this->m_massCenter.z * rotationMatrix._33);
+
+        // Calculate final position (position + transformed mass center)
+        CVector realPos;
+        realPos.x = pos.x + transformedX;
+        realPos.y = pos.y + transformedY;
+        realPos.z = pos.z + transformedZ;
+
+        // Set body position
+        dBodySetPosition(this->m_body->id(), realPos.x, realPos.y, realPos.z);
+
+        // Update enabled cells counter
+        ai::PhysicObj::SetCorrectEnabledCellsCounter();
     }
 
     void PhysicObj::SetPostRotation(Quaternion const&)

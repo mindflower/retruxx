@@ -425,7 +425,8 @@ namespace ai
 
     void ObjContainer::Purge()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement ObjContainer::Purge
+        //throw retruxx::logic_error("Not implemented");
     }
 
     ObjContainer::iterator ObjContainer::updatingEnd()

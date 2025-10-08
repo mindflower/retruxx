@@ -335,9 +335,16 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Obj::AddChild(Obj*)
+    void Obj::AddChild(Obj* pObj)
     {
-        throw std::logic_error("Not implemented");
+        if (pObj)
+        {
+            throw std::logic_error("Not implemented");
+        }
+        else
+        {
+            M3D_LOG_INFO("Warning: null object is added to " + GetDebugDescription());
+        }
     }
 
     int Obj::AddChild(m3d::Object*)
@@ -465,7 +472,9 @@ namespace ai
 
     CStr Obj::GetDebugDescription() const
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement Obj::GetDebugDescription
+        //throw std::logic_error("Not implemented");
+        return {};
     }
 
     void Obj::ValidateEventRecipientsList()

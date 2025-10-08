@@ -571,6 +571,10 @@ namespace m3d
 
         // Allocate collision items array
         this->m_oCollisionitems = new CollisionCellItem*[4 * land_size * land_size];
+        for (int i = 0; i < 4 * land_size * land_size; i++)
+        {
+            m_oCollisionitems[i] = nullptr;
+        }
 
         // Process each cell in the landscape
         for (int cellY = 0; cellY < land_size; cellY++)
@@ -716,7 +720,8 @@ namespace m3d
 
     void Landscape::CollisionCellItem::InsertPhysicObjId(int objId)
     {
-        throw std::logic_error("Not implemented");
+        m_physicObjIds.insert(objId);
+        m_bMustCheck = true;
     }
 
     void Landscape::CollisionCellItem::ErasePhysicObjId(int objId)
@@ -1742,9 +1747,14 @@ namespace m3d
     {
         auto land_size = this->m_owner->m_level->land_size;
         if (x < 0 || x >= land_size || y < 0 || y >= land_size)
-            return 0;
+        {
+            return nullptr;
+        }
         else
-            return (m3d::Landscape::CollisionCellItem*)*((int*)&this->m_oCollisionitems[x] + y * land_size);
+        {
+            auto idx = x + y * land_size;
+            return this->m_oCollisionitems[idx];
+        }
     }
 
     int Landscape::GenerateShoreLine()

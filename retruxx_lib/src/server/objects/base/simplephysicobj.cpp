@@ -455,7 +455,8 @@ namespace ai
 
 	void SimplePhysicObj::_InternalPostLoad()
 	{
-		throw retruxx::logic_error("Not implemented");
+        ai::PhysicObj::_InternalPostLoad();
+        this->_Construct();
 	}
 
 	void SimplePhysicObj::_SetPositionToGeoms(CVector const&)

@@ -5,6 +5,8 @@
 #include "vehicle.h"
 #include "monsters/boss02.h"
 #include "server/utils.h"
+#include "player.h"
+#include <server/processmanager.h>
 
 namespace ai
 {
@@ -125,8 +127,8 @@ namespace ai
         switch (propertyId)
         {
         case 49:
-            throw std::logic_error("Not implemented");
-            break;
+            SetRadius(newValue.GetAsFloat());
+            return true;
 
         case 52:
             throw std::logic_error("Not implemented");
@@ -195,9 +197,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Location::SetRadius(float)
+    void Location::SetRadius(float radius)
     {
-        throw std::logic_error("Not implemented");
+        _GetLookSphere()->SetRadius(radius);
     }
 
     void Location::Registration()
@@ -272,7 +274,59 @@ namespace ai
 
     void Location::_InternalPostLoad()
     {
-        throw std::logic_error("Not implemented");
+        SimplePhysicObj::_InternalPostLoad();
+        auto v2 = strstr(m_name.c_str(), "_enter");
+        if (!v2 || v2 - m_name.c_str() == -1)
+        {
+            auto v3 = strstr(m_name.c_str(), "_defend");
+            if (!v3 || v3 - m_name.c_str() == -1)
+            {
+                auto v4 = strstr(m_name.c_str(), "_attack");
+                if (!v4 || v4 - m_name.c_str() == -1)
+                {
+                    auto v5 = strstr(m_name.c_str(), "_deploy");
+                    if (!v5 || v5 - m_name.c_str() == -1)
+                    {
+                        if (m_name.findsubstr("_caravan", 0) == -1)
+                        {
+                            SetLocationType(m_passageAddress.empty() ? LOCATION_PASSAGE : LOCATION_GENERIC);
+                        }
+                        else
+                        {
+                            ai::Location::SetLocationType(LOCATION_CARAVAN_ARRIVE);
+                        }
+                    }
+                    else
+                    {
+                        ai::Location::SetLocationType(LOCATION_DEPLOY);
+                    }
+                }
+                else
+                {
+                    ai::Location::SetLocationType(LOCATION_ATTACK);
+                }
+            }
+            else
+            {
+                ai::Location::SetLocationType(LOCATION_DEFEND);
+            }
+        }
+        else
+        {
+            ai::Location::SetLocationType(LOCATION_ENTER);
+        }
+
+        if (!m_correspondingPassageLocationName.empty())
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        if (thePlayer)
+        {
+            // TODO: check this
+            m3d::AIParam param(1);
+            theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0, param, {}, 1);
+        }
     }
 
     bool Location::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
