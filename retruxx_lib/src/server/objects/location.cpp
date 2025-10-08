@@ -226,9 +226,15 @@ namespace ai
         }
     }
 
-    int Location::OnEvent(Event const&)
+    int Location::OnEvent(Event const& evn)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::Obj::OnEvent(evn);
+        if (evn.m_eventId == GE_GAME_START)
+        {
+            ai::Location::_OnGameStart(evn);
+            return 1;
+        }
+        return result;
     }
 
     CStr const& Location::GetPassageAddress() const
@@ -348,9 +354,10 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Location::_OnGameStart(Event const&)
+    void Location::_OnGameStart(Event const& evn)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: check this
+        m_timeForNextCheck.setToMin();
     }
 
     m3d::Object* Location::Clone()

@@ -17,7 +17,11 @@ namespace ai
 
         RetType operator()(T1 arg)
         {
-            throw std::runtime_error("not implemented");
+            if (m_pFunc)
+            {
+                return m_pFunc->Execute(arg);
+            }
+            return RetType();
         }
 
         const FuncPtrOneArg<T1, RetType>& operator=(BaseFunc* pNewFunc)

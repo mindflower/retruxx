@@ -42,14 +42,36 @@ namespace ai
             return m_value;
         }
 
-        const ai::Numeric<T>& minValue() const;
-        ai::Numeric<T>& minValue();
-        const ai::Numeric<T>& maxValue() const;
-        ai::Numeric<T>& maxValue();
+        const ai::Numeric<T>& minValue() const
+        {
+            return m_minValue;
+        }
+
+        ai::Numeric<T>& minValue()
+        {
+            return m_minValue;
+        }
+
+        const ai::Numeric<T>& maxValue() const
+        {
+            return m_maxValue;
+        }
+
+        ai::Numeric<T>& maxValue()
+        {
+            return m_maxValue;
+        }
+
         void assign(const ai::NumericInRange<T>&);
         void setToMax();
         bool bIsMax() const;
-        void setToMin();
+
+        void setToMin()
+        {
+            // TODO: check this
+            m_value.set(m_minValue.get());
+        }
+
         bool bIsMin() const;
 
     protected:

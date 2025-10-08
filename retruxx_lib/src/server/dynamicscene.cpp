@@ -84,7 +84,8 @@ namespace ai
 
 	void DynamicScene::PurgeBodies()
 	{
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement DynamicScene::PurgeBodies
+        //throw retruxx::logic_error("Not implemented");
         //if (thePlayer)
         //{
         //    auto vehicle = thePlayer->GetVehicle();

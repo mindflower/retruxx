@@ -969,7 +969,8 @@ namespace ai
 
     void CServer::LoadPrototypeNamesFromXML(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement CServer::LoadPrototypeNamesFromXML
+        //throw retruxx::logic_error("Not implemented");
     }
 
     void CServer::LoadGlobalPropertiesFromXML(CStr const& fileName)

@@ -3,8 +3,10 @@
 #include <stdexcept>
 #include <client.h>
 
+#include "m3dapp.h"
 #include "vehicle.h"
 #include "world.h"
+#include "base/globalproperties.h"
 #include "core/ini.h"
 #include "server/infocone.h"
 #include "base/objcontainer.h"
@@ -189,9 +191,89 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Player::Update(float, unsigned)
+    void Player::Update(float elapsedTime, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        // Early return for very small time steps
+        if (elapsedTime < 0.001f)
+            return;
+
+        PlayerFightState currentFightState = m_playerFightState;
+
+        // Handle transition from battle state
+        if (currentFightState != FIGHT_BATTLE)
+        {
+            PlayerFightState prevState = m_prevPlayerFightState;
+            if (prevState == FIGHT_BATTLE || prevState == FIGHT_BATTLE_JUST_FINISHED)
+            {
+                m_playerFightState = FIGHT_BATTLE_JUST_FINISHED;
+                if (prevState == FIGHT_BATTLE)
+                {
+                    m_timeOfNoBattle.setToMin();
+                }
+            }
+        }
+
+        // Handle fight state changes and messaging
+        PlayerFightState newFightState = m_playerFightState;
+        if (newFightState >= FIGHT_CLEAR && newFightState <= FIGHT_BATTLE)
+        {
+            if (newFightState != m_prevPlayerFightState)
+            {
+                // Send state change message
+                M3D_APP->EnqueueMessage(66555, // Message ID for fight state change
+                    newFightState,
+                    0, 0, 0,
+                    {},
+                    {}
+                );
+            }
+        }
+        else if (newFightState == FIGHT_BATTLE_JUST_FINISHED)
+        {
+            // Regenerate cooldown timer after battle
+            m_timeOfNoBattle.regenerate(elapsedTime);
+
+            // Check if cooldown is complete
+            if (m_timeOfNoBattle.value().get() >= m_timeOfNoBattle.maxValue().get())
+            {
+                bool stateChanged = (currentFightState != m_prevPlayerFightState);
+                m_playerFightState = currentFightState;
+
+                if (stateChanged)
+                {
+                    // Send state reversion message
+                    M3D_APP->EnqueueMessage(66555, // Message ID for fight state change
+                        currentFightState,
+                        0, 0, 0,
+                        {},
+                        {}
+                    );
+                }
+            }
+        }
+
+        // Update state tracking
+        PlayerFightState finalState = m_playerFightState;
+        m_playerFightState = FIGHT_CLEAR;
+        m_prevPlayerFightState = finalState;
+
+        // Update info object tracking with timeout
+        if (ai::theGlobProp.m_infoObjUpdateTimeout <= m_timeInfoObjTimeout)
+        {
+            m_timeInfoObjTimeout = 0.0f;
+            m_infoObjId = -1;
+
+            // Update vehicle info if we have a valid vehicle
+            if (m_vehicleObjId != -1 && m_infoCone->SetVehicleId(m_vehicleObjId))
+            {
+                m_infoObjId = m_infoCone->GetInfoObjId();
+            }
+        }
+        else
+        {
+            m_timeInfoObjTimeout += elapsedTime;
+        }
     }
 
     retruxx::vector<CStr> const& Player::GetQuestItemPrototypeNames() const

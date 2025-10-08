@@ -672,7 +672,8 @@ namespace ai
 
     void ObjContainer::LoadObjectNamesFromXML(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement ObjContainer::LoadObjectNamesFromXML
+        //throw retruxx::logic_error("Not implemented");
     }
 
     m3d::AIParam ObjContainer::Get24HourTime() const
@@ -749,8 +750,6 @@ namespace ai
     void ObjContainer::Update(float elapsedTime, unsigned workTime, bool bCinematic)
     {
         // TODO: generated code
-        // TODO: implement ObjContainer::Update
-        throw std::logic_error("Not implemented");
         // Reset debug counters
         PhysicBody::GetCountNodeRelinks()->SetI(0);
         PhysicObj::GetRelinksToCollisionCounter()->SetI(0);
@@ -773,8 +772,6 @@ namespace ai
 
         // Update quest state manager
         theQuestStateManager->Update(elapsedTime);
-
-        return;
 
         // Update game time if not in cinematic mode and game time is not paused
         if (!bCinematic && !m_GameTimePaused)

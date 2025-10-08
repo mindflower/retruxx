@@ -26,7 +26,12 @@ namespace ai
 
         const ai::Numeric<T>& regeneration() const;
         ai::Numeric<T>& regeneration();
-        void regenerate(T time);
+
+        void regenerate(T time)
+        {
+            throw std::runtime_error("not implemented");
+        }
+
         void assign(const ai::NumericInRangeRegenerating<T>&);
 
     protected:

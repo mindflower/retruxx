@@ -15,9 +15,9 @@ namespace ai
         {
         }
 
-        bool operator()(T1& arg)
+        T2 operator()(T1& arg)
         {
-            throw std::runtime_error("not implemented");
+            return m_pFunc && m_pFunc->Execute(arg);
         }
 
         const FuncPtrOneArgRef<T1, T2>& operator=(BaseFunc* pNewFunc)
