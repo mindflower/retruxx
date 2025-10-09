@@ -130,7 +130,7 @@ namespace snd
         virtual bool DeleteIdTableSound(int) = 0 /* 0x78 */;
         virtual bool DeleteAllSounds() = 0 /* 0x7c */;
         virtual bool SetSoundPriority(int, snd::SoundPriority) = 0 /* 0x80 */;
-        virtual bool SetEndMusicCallback(int, void (*)(int, int)) = 0 /* 0x84 */;
+        virtual bool SetEndMusicCallback(int, void (*)(int)) = 0 /* 0x84 */;
         virtual float GetCPUusage() = 0 /* 0x88 */;
         virtual void GetMemUsage(unsigned int&, unsigned int&) = 0 /* 0x8c */;
         virtual int GetSoundGroupId(int) = 0 /* 0x90 */;

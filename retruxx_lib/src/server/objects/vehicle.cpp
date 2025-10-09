@@ -592,7 +592,7 @@ namespace ai
 
 	ai::Obj* VehiclePrototypeInfo::CreateTargetObject() const
 	{
-		throw std::logic_error("Not implemented");
+        return new Vehicle(*this);
 	}
 
 	void VehiclePrototypeInfo::_InternalCopyFrom(PrototypeInfo const& rhs)

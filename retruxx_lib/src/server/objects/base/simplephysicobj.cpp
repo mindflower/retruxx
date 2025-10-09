@@ -8,6 +8,7 @@
 #include "core/ini.h"
 #include "core/kernel.h"
 #include "core/log.h"
+#include "core/timer.h"
 #include "game/m3dgame.h"
 #include "ode/odecpp.h"
 #include "scene/servers/serveranimatedmodel.h"
@@ -374,9 +375,22 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void SimplePhysicObj::Update(float, unsigned)
+	void SimplePhysicObj::Update(float elapsedTime, unsigned workTime)
 	{
-		throw retruxx::logic_error("Not implemented");
+        ai::PhysicObj::Update(elapsedTime, workTime);
+        if (this->m_deadTimerActive)
+        {
+            auto v4 = this->m_deadTimer - elapsedTime;
+            this->m_deadTimer = v4;
+            if (v4 <= 0.0
+                && (!this->m_testVisibility
+                    || m_physicBody == 0
+                    || !m_physicBody->m_Node
+                    || m_physicBody->m_Node->m_frameVisible != m3d::g_Kernel->GetTimer().GetCurFrame() - 1))
+            {
+                Remove();
+            }
+        }
 	}
 
 	void SimplePhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const

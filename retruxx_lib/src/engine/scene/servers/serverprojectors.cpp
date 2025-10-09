@@ -160,9 +160,10 @@ namespace m3d
 
     void ProjectorsServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)
     {
-        for (auto& item : itemslist)
-        {
-            throw retruxx::logic_error("Not implemented");
-        }
+        // TODO: implement ProjectorsServer::AddItemsList
+        //for (auto& item : itemslist)
+        //{
+        //    throw retruxx::logic_error("Not implemented");
+        //}
     }
 }

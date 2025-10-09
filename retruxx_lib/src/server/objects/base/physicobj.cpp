@@ -474,9 +474,12 @@ namespace ai
         return this->m_body;
     }
 
-    void PhysicObj::Update(float, unsigned)
+    void PhysicObj::Update(float elapsedTime, unsigned workTime)
     {
-        throw std::logic_error("Not implemented");
+        ai::Obj::Update(elapsedTime, workTime);
+        if (!this->m_bIsUpdatingByODE)
+            this->_UpdateOwnPhysics(elapsedTime);
+        this->m_timeFromLastCollisionEffect = this->m_timeFromLastCollisionEffect + elapsedTime;
     }
 
     void PhysicObj::SetUpdatingByODE(bool)

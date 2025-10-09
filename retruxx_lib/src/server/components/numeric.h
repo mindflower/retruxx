@@ -34,7 +34,12 @@ namespace ai
         void assign(const ai::Numeric<T>&);
         void add(T);
         void sub(T value);
-        void SetUnsafe(T newValue);
+
+        void SetUnsafe(T newValue)
+        {
+            m_value = newValue;
+        }
+
         void ApplyModifier(const ai::Modifier& modifier, T base);
 
     protected:

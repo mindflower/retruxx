@@ -33,9 +33,17 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int MusicServer::SetItemProperty(int, int, void*)
+    int MusicServer::SetItemProperty(int id, int prop, void* src)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (m3d::DataServer::SetItemProperty(id, prop, src))
+            return 1;
+
+        if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB() && prop == 9856)
+        {
+            M3D_APP->m_sound->SetEndMusicCallback(static_cast<MusicItem*>(m_models[id].m_ptr)->m_soundId, (void (*)(int))src);
+            return 1;
+        }
+        return 0;
     }
 
     void MusicServer::RenderItem(int id, void* params)
@@ -139,9 +147,10 @@ namespace m3d
         }
 
         //TODO: check this
-        auto snd = new int(res);
+        auto snd = new MusicItem(res);
         Model model(snd, fileName.c_str(), {}, id);
         m_models.push_back(std::move(model));
+        GenerateItemsRemap();
         return m_models.size();
     }
 
@@ -211,7 +220,7 @@ namespace m3d
         if (ref_ptr xmlFile = m3d::ReadXmlFile(M3D_KERNEL->GetEngineCfg().m_snd_pathToMusic.GetS(), &err))
         {
             ref_ptr xmlNode = xmlFile->CreateNode();
-            xmlFile->GetFirstChild(xmlNode, "sounds");
+            xmlFile->GetFirstChild(xmlNode, "Music");
             if (xmlNode->IsEmpty())
             {
                 return;
@@ -262,8 +271,8 @@ namespace m3d
         }
     }
 
-    int MusicServer::_GetSoundIdByServerHandle(int) const
+    int MusicServer::_GetSoundIdByServerHandle(int id) const
     {
-        throw retruxx::logic_error("Not implemented");
+        return static_cast<MusicItem*>(m_models[id].m_ptr)->m_soundId;
     }
 }

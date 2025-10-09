@@ -7,7 +7,9 @@ namespace ai
 {
     Modifier::Modifier()
     {
-        throw std::logic_error("Not implemented");
+        this->m_Operation = MO_ADD;
+        this->m_magicPrototypeId = -1;
+        this->m_SenderID = -1;
     }
 
     Modifier::Modifier(Modifier const&)
@@ -17,7 +19,6 @@ namespace ai
 
     Modifier::~Modifier()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void Modifier::Create(CStr const&, eModifierOperation, m3d::AIParam const&)

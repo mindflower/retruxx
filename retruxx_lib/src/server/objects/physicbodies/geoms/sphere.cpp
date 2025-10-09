@@ -15,7 +15,7 @@ namespace ai
 
     float Sphere::GetRadius() const
     {
-        throw std::logic_error("Not implemented");
+        return dGeomSphereGetRadius(this->m_geomId);
     }
 
     void Sphere::SetRadius(float radius)

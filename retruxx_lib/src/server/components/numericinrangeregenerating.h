@@ -29,7 +29,17 @@ namespace ai
 
         void regenerate(T time)
         {
-            throw std::runtime_error("not implemented");
+            // TODO: check this
+            auto regeneration = (m_regeneration.get() * time) + value().get();
+            if (m_BeforeRegenerate(regeneration))
+            {
+                return;
+            }
+
+            auto oldValue = value().get();
+            value().SetUnsafe(regeneration);
+            value().m_AfterChange(oldValue);
+
         }
 
         void assign(const ai::NumericInRangeRegenerating<T>&);

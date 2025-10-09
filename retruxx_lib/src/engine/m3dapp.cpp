@@ -1339,9 +1339,31 @@ namespace m3d
         m_isRenderingAllowed = 1;
     }
 
-    bool Application::StartPlayingMusic(char const*, bool, bool)
+    bool Application::StartPlayingMusic(char const* musicName, bool bDoLoop, bool bImmediate)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto item = M3D_APP->m_serverMusic->GetItemByName(musicName, true);
+        if (item == -1)
+        {
+            if (M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
+            {
+                M3D_LOG_ERR("Error: invalid music name: '" + CStr(musicName) + "'");
+                return false;
+            }
+        }
+
+        struct RenderInfo
+        {
+            /* 0x0000 */ bool m_bDoLoop;
+            /* 0x0001 */ bool m_bImmediate;
+            /* 0x0002 */ char Padding_330[2];
+            /* 0x0004 */ int m_channelId;
+        }; /* size: 0x0008 */
+
+        RenderInfo ri;
+        ri.m_bDoLoop = bDoLoop;
+        ri.m_bImmediate = bImmediate;
+        ri.m_channelId = -1;
+        M3D_APP->m_serverMusic->RenderItem(item, &ri);
     }
 
     DataServer& Application::GetProjectorsServer()
@@ -1472,7 +1494,12 @@ namespace m3d
                 server.m_server->m_fnLoadCallbackData = &loadingSplash;
 
                 serversNode->GetFirstChild(node, server.m_name);
-                if (node->IsEmpty() || !server.m_server->ReadFromXmlNode(xmlFile, node))
+                if (node->IsEmpty())
+                {
+                    continue;
+                }
+
+                if (!server.m_server->ReadFromXmlNode(xmlFile, node))
                 {
                     M3D_LOG_INFO("Load servers: server " + CStr(server.m_name) + " failed to load");
                     return 0;

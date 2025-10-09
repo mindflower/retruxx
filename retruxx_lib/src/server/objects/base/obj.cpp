@@ -538,9 +538,10 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Obj::SetTimeOut(float)
+    void Obj::SetTimeOut(float timeOut)
     {
-        throw std::logic_error("Not implemented");
+        this->m_flags |= 4u;
+        this->m_timeOut = timeOut;
     }
 
     int Obj::GetParentId() const

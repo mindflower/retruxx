@@ -33,6 +33,7 @@ namespace ai
 
     class PhysicObj : public Obj
     {
+        friend class IntersectionManager;
     protected:
         virtual ~PhysicObj() override /* 0x00 */;
 

@@ -79,9 +79,10 @@ namespace m3d
 
     void DecalsServer::AddItemsList(retruxx::vector<ServerItem>& itemsList)
     {
-        for (const auto& item : itemsList)
-        {
-            throw retruxx::logic_error("Not implemented");
-        }
+        // TODO: implement DecalsServer::AddItemsList
+        //for (const auto& item : itemsList)
+        //{
+        //    throw retruxx::logic_error("Not implemented");
+        //}
     }
 }

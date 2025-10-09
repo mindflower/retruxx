@@ -68,6 +68,8 @@ namespace m3d
 
     void SpritesServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemsList)
     {
+        // TODO: implememnt SpritesServer::AddItemsList
+        return;
         for (int i = 0; i < itemsList.size(); ++i)
         {
             throw retruxx::logic_error("Not implemented");

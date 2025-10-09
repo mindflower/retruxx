@@ -8,6 +8,8 @@
 #include "player.h"
 #include <server/processmanager.h>
 #include "base/prototypemanager.h"
+#include "core/log.h"
+#include "server/intersectionmanager.h"
 
 namespace ai
 {
@@ -183,9 +185,30 @@ namespace ai
         return RT_CLASS_LOCAL(Location);
     }
 
-    void Location::Update(float, unsigned)
+    void Location::Update(float elapsedTime, unsigned workTime)
     {
-        throw std::logic_error("Not implemented");
+        SimplePhysicObj::Update(elapsedTime, workTime);
+        if (elapsedTime >= 0.001 && this->m_bIsActive)
+        {
+            ++this->m_numFramesPassed;
+            m_timeForNextCheck.regenerate(elapsedTime);
+            retruxx::set<ref_ptr<ai::Obstacle>> seenObstacles;
+            if (this->m_timeForNextCheck.value().get() == this->m_timeForNextCheck.minValue().get() || this->m_numFramesPassed <= 2)
+            {
+                auto newValue = ((rand() * 0.000030518509) * 0.39999998) + 0.30000001;
+                m_timeForNextCheck.value().set(newValue);
+                _CheckIncomingOutgoingObjects(seenObstacles);
+            }
+            if (TimeOutFinished())
+            {
+                for (auto& id : m_idsWasInside)
+                {
+                    throw std::logic_error("Not implemented");
+                }
+
+                SetTimeOut(m_lookingTimeOut);
+            }
+        }
     }
 
     void Location::GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>&) const
@@ -376,8 +399,69 @@ namespace ai
     }
 
     void Location::_CheckIncomingOutgoingObjects(
-        std::set<ref_ptr<Obstacle>, std::less<ref_ptr<Obstacle>>, std::allocator<ref_ptr<Obstacle>>>&)
+        std::set<ref_ptr<Obstacle>, std::less<ref_ptr<Obstacle>>, std::allocator<ref_ptr<Obstacle>>>& seenObstacles)
     {
-        throw std::logic_error("Not implemented");
+
+        IntersectionManager::GetIntersectedObjects(seenObstacles, _GetLookSphere(), m_targetClasses, false, false);
+        for (auto& obstacle : seenObstacles)
+        {
+            auto obj = obstacle->GetOwnerPhysicObj();
+            if (!obj)
+            {
+                continue;
+            }
+
+            auto it = m_idsWasInside.find(obj->GetId());
+            if (it == m_idsWasInside.end())
+            {
+                if (_MustCheckObject(obj))
+                {
+                    auto pos = obj->GetPosition();
+                    auto scale = ((pos.x * pos.x) + (pos.y * pos.y)) + (pos.z * pos.z);
+                    if (std::isnan(sqrt(scale)))
+                    {
+                        M3D_LOG_ERR("Error: " + obj->GetDebugDescription() + " is in hyperspace when intersecting with " + GetDebugDescription());
+                        continue;
+                    }
+
+                    CauseEvent(GE_OBJECT_ENTERS_LOCATION, 0.0, { obj->GetId() }, {});
+                    OnObjectIn(obj);
+
+                    if (!m_npcs.empty())
+                    {
+                        throw std::logic_error("Not implemented");
+                    }
+
+                    if (this->m_locationType != LOCATION_PASSAGE
+                        || obj != thePlayer->GetVehicle()
+                        || !this->m_bPassageActive)
+                    {
+                        continue;
+                    }
+
+                    throw std::logic_error("Not implemented");
+                }
+            }
+            else
+            {
+                m_idsWasInside.erase(it);
+            }
+        }
+
+        for (auto& id : m_idsWasInside)
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        m_idsWasInside.clear();
+
+        for (auto& obstacle : seenObstacles)
+        {
+            auto obj = obstacle->GetOwnerPhysicObj();
+            if (obj)
+            {
+                m_idsWasInside.insert(obj->GetId());
+            }
+        }
     }
 }
