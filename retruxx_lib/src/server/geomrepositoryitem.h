@@ -6,54 +6,49 @@ namespace ai
 {
     class Obj;
 
-    class GeomRepositoryItem
+    struct GeomRepositoryItem
     {
-    public:
         enum GeomRepositoryItemType
         {
-            ITEMTYPE_RESOURCE = 0x0,
-            ITEMTYPE_OBJECT = 0x1,
+            ITEMTYPE_RESOURCE = 0,
+            ITEMTYPE_OBJECT = 1,
         };
 
-    public:
-        int GetObjId() const ;
-        void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        PointBase<int> GetGeomSize() const ;
-        unsigned int GetMaxAmount() const ;
-        int GetPrototypeId() const ;
-        GeomRepositoryItem(int);
-        GeomRepositoryItem(int,unsigned int);
+        /* 0x0000 */ int m_resourceId;
+        /* 0x0004 */ int m_objId;
+        /* 0x0008 */ unsigned int m_amount;
+        /* 0x000c */ ai::GeomRepositoryItem::GeomRepositoryItemType m_repositoryItemType;
+        /* 0x0010 */ ai::GeomRepository* m_parentRepository;
+        /* 0x0014 */ PointBase<int> m_origin;
+        GeomRepositoryItem(const ai::GeomRepositoryItem& rhs);
+        GeomRepositoryItem(int resourceId, unsigned int amount);
+        GeomRepositoryItem(int objId);
         GeomRepositoryItem();
-        GeomRepositoryItem(GeomRepositoryItem const &);
-        CStr GetIcoName() const ;
-        void Clear(bool);
-        BoundsBase<int> GetBounds() const ;
-        unsigned int GetAmount() const ;
-        int GetResourceId() const ;
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
+        PointBase<int> GetGeomSize() const;
+        BoundsBase<int> GetBounds() const;
+        unsigned int GetMaxAmount() const;
+        unsigned int GiveUpAmount(unsigned int amount);
+        bool IsComplete() const;
+        void AddToRepository(ai::GeomRepository* parent, const PointBase<int>& origin);
+        bool IsValid() const;
         void Invalidate();
-        CStr GetDebugDescription() const ;
-        bool IsValid() const ;
-        void AddToRepository(GeomRepository *,PointBase<int> const &);
-        bool IsComplete() const ;
-        void RemoveObj(bool);
-        Obj * GetObj() const ;
-        unsigned int AcceptItem(GeomRepositoryItem const &);
-        unsigned int GetAcceptedNum(GeomRepositoryItem const &) const ;
-        unsigned int GiveUpAmount(unsigned int);
-        void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        GeomRepositoryItem GetConvertedToObjectItem() const ;
-
-    private:
-        void _Init(int,int);
-        void _Init(int);
+        CStr GetIcoName() const;
+        CStr GetDebugDescription() const;
+        bool bIsResourceItem() const;
+        unsigned int GetAcceptedNum(const ai::GeomRepositoryItem& item) const;
+        unsigned int AcceptItem(const ai::GeomRepositoryItem& item);
+        unsigned int GetAmount() const;
+        ai::Obj* GetObj() const;
+        int GetObjId() const;
+        int GetResourceId() const;
+        int GetPrototypeId() const;
+        ai::GeomRepositoryItem GetConvertedToObjectItem() const;
+        void Clear(bool bUnsafe);
+        void RemoveObj(bool bUnsafe);
+        void _Init(int resourceId, int amount);
+        void _Init(int objId);
         void _Init();
-
-    private:
-        int m_resourceId;
-        int m_objId;
-        unsigned int m_amount;
-        GeomRepositoryItemType m_repositoryItemType;
-        GeomRepository *m_parentRepository;
-        PointBase<int> m_origin;
-    };
+    }; /* size: 0x001c */
 }

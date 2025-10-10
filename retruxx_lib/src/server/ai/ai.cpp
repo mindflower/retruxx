@@ -3,6 +3,7 @@
 #include "aipassagestate.h"
 #include <core/aiparam.h>
 #include <stdexcept>
+#include "aimanager.h"
 
 namespace ai
 {
@@ -43,7 +44,11 @@ namespace ai
 
     AI::AI()
     {
-        //throw std::logic_error("Not implemented");
+        this->m_fStateStack2Changed = 0;
+        this->m_pDM = 0;
+        this->m_CommandStackOpen = 0;
+        this->m_numCurCommand = 0;
+        this->m_CommandProcessed = 0;
     }
 
     int AI::GetCurState1Num()
@@ -66,9 +71,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void AI::SetDecisionMatrix(int)
+    void AI::SetDecisionMatrix(int MatrixNum)
     {
-        throw std::logic_error("Not implemented");
+        this->m_pDM = ai::theAIManager->GetDecisionMatrixPtr(MatrixNum);
     }
 
     void AI::PutCommand(int, m3d::AIParam const&, m3d::AIParam const&, m3d::AIParam const&)

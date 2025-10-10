@@ -114,9 +114,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    DecisionMatrix* AIManager::GetDecisionMatrixPtr(int) const
+    DecisionMatrix* AIManager::GetDecisionMatrixPtr(int MatrixNum) const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_Matrix[MatrixNum].GetPtr();
     }
 
     m3d::Object* AIManager::CreateObject()

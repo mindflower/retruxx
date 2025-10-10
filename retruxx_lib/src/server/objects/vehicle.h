@@ -515,7 +515,7 @@ namespace ai
         /* 0x03d4 */ int m_recollectionId;
         /* 0x03d8 */ ai::VehicleUpdater* m_ownUpdater;
         /* 0x03dc */ int m_roleId;
-        /* 0x03e0 */ ai::NumericInRangeRegenerating<float> m_timeOutForNextIntersectionWithWorld{0,0,10,-1};
+        /* 0x03e0 */ ai::NumericInRangeRegenerating<float> m_timeOutForNextIntersectionWithWorld;
         /* 0x04b8 */ int m_numWheelsTouchingGround;
         /* 0x04bc */ bool m_bHidden;
         /* 0x04bd */ char Padding_188[3];

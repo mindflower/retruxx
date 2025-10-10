@@ -10,6 +10,7 @@
 #include "server/utils.h"
 #include <server/objects/physicbodies/physichelpers.h>
 
+#include "base/globalproperties.h"
 #include "base/prototypemanager.h"
 #include "core/ini.h"
 #include "core/log.h"
@@ -17,6 +18,13 @@
 #include "include/m3dapp.h"
 #include "include/core/kernel.h"
 #include "include/config.h"
+#include "server/izvratrepository.h"
+
+#include "ode/collision.h"
+#include "ode/objects.h"
+
+#include "ode/odecpp.h"
+#include "base/objcontainer.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
@@ -826,7 +834,8 @@ namespace ai
 
 	void Vehicle::CreateChildren()
 	{
-		throw std::logic_error("Not implemented");
+        ai::ComplexPhysicObj::CreateChildren();
+        ai::Vehicle::_UpdateRepositoryOnChangeBasket();
 	}
 
 	void Vehicle::SetCustomControlEnabled(bool)
@@ -1265,9 +1274,131 @@ namespace ai
 	}
 
 	Vehicle::Vehicle(VehiclePrototypeInfo const& prototypeInfo) :
-		ComplexPhysicObj(prototypeInfo)
+		ComplexPhysicObj(prototypeInfo),
+        m_timeOutForNextIntersectionWithWorld{ 0,0,10,-1 }
 	{
-		throw std::logic_error("Not implemented");
+        this->m_diffRatio = prototypeInfo.m_diffRatio;
+        this->m_maxEngineRpm = prototypeInfo.m_maxEngineRpm;
+        this->m_lowGearShiftLimit = prototypeInfo.m_lowGearShiftLimit;
+        this->m_highGearShiftLimit = prototypeInfo.m_highGearShiftLimit;
+        this->m_steeringSpeed = prototypeInfo.m_steeringSpeed;
+        this->m_driftCoeff = prototypeInfo.m_driftCoeff;
+
+        this->m_lookBox = ai::Box::CreateObject(nullptr, { 1.0, 1.0, 1.0 }, nullptr);
+        this->m_targetBox = ai::Box::CreateObject(nullptr, { 1.0, 1.0, 1.0 }, nullptr);
+
+        this->m_priority = prototypeInfo.m_priority;
+        this->m_cameraHeight = prototypeInfo.m_cameraHeight;
+        this->m_cameraMaxDist = prototypeInfo.m_cameraMaxDist;
+
+        this->m_AI.SetDecisionMatrix(prototypeInfo.m_decisionMatrixNum);
+        this->m_bHorn = 0;
+        this->m_bGodMode = 0;
+        this->m_bImmortalMode = 0;
+        this->m_stoppageMode = 0;
+        this->m_onOilMode = 0;
+        this->m_inSmokeScreenMode = 0;
+        this->m_turboThrottleTime = 0.0;
+        this->m_turboThrottleValue = 1.0;
+        this->m_timeAfterDeath = 0.0;
+        this->m_numBlownParts = 0;
+        this->m_timeAfterLastBlow = 0.0;
+        this->m_shootTypeChangeTime = 0;
+        this->m_shootTimeToWait = 0;
+        this->m_bIsShooting = 0;
+        this->m_antiMissileGadgetSavingRadius = 0.0;
+        this->m_bIsTrailer = 0;
+        this->m_cruisingSpeed = 0.0;
+        this->m_maxSpeedLimited = 0;
+        this->m_maxSpeedLimit = 0.0;
+        this->m_maxTorqueForced = 0;
+        this->m_maxTorqueForcedValue = 0.0;
+        this->m_currentGear = 0;
+        this->m_throttle = 0.0;
+        this->m_brake = 0.0;
+        this->m_realThrottle = 0.0;
+        this->m_engineRpm = 0.0;
+        this->m_averageEngineRpm = 0.0;
+        this->m_averageWheelAVel = 0.0;
+        this->m_bAutoBrake = 1;
+        this->m_bHandBrake = 0;
+        this->m_steerRadians = 0.0;
+        this->m_turningBackStatus = TURN_BACK_NONE;
+        this->m_seenObjId = -1;
+        this->m_curLookAt = {0.0, 0.0, 0.0};
+        this->m_npcMotionControllerId = -1;
+
+        dGeomDisable(this->m_lookBox->GetGeomId());
+        dGeomDisable(this->m_targetBox->GetGeomId());
+
+        this->m_pastTakingSpherePosition = {0.0, 0.0, 0.0};
+        this->m_bAllowPickUpMessage = 1;
+        this->m_pastNumNearbyChests = 0;
+        this->m_currentNumNearbyChests = 0;
+        this->m_externalDestination = { 0.0, 0.0, 0.0 };
+        this->m_numOfDrivenWheels = 0;
+        this->m_bumperPoint = { 0.0, 0.0, 0.0 };
+        this->m_bIsControlledByPlayer = 0;
+        this->m_bIsMovingAlongExternalPath = 0;
+        this->m_pathIndex = 0;
+        this->m_bCanBeDistractedFromMoving = 0;
+        this->m_size = { 0.0, 0.0, 0.0 };
+        this->m_currentDestination = { 0.0, 0.0, 0.0 };
+        this->m_pathNum = -1;
+        this->m_pPath = 0;
+        this->m_bCustomControl = 0;
+        this->m_customControlWeapons = CUSTOM_WEAPON_CONTROL_NONE;
+        this->m_customControlWeaponsTarget = { 0.0, 0.0, 0.0 };
+        this->m_customControlWeaponsTargetObjId = -1;
+        this->m_indexInTeam = -1;
+        this->m_bRocketLaunchersPresent = 0;
+        this->m_moveStatus = MOVE_IDLE;
+        this->m_attackStatus = ATTACK_IDLE;
+        this->m_lastDamage = DAMAGE_BLAST;
+        this->m_lastDamagedPart = 0;
+        this->m_deathDamage = DAMAGE_BLAST;
+
+        this->m_takingSphere = SphereForIntersection::CreateObject(prototypeInfo.m_takingRadius, SphereForIntersection::LOOKING, 0);
+        dGeomSetBody(this->m_takingSphere->GetGeomId(), GetBody()->id());
+
+        this->m_repository = dynamic_cast<IzvratRepository*>(M3D_KERNEL->New("IzvratRepository"));
+        this->m_repository->Clear(false);
+        this->m_repository->SetGeomSize({15, 35});
+
+        this->m_groundRepository = dynamic_cast<GeomRepository*>(M3D_KERNEL->New("GeomRepository"));
+        this->m_groundRepository->SetGeomSize(ai::theGlobProp.m_groundRepositorySize);
+
+        this->m_effectActions.resize(2);
+        this->m_effectActions[0] = AT_STAND1;
+        this->m_effectActions[1] = AT_RESERVED1;
+
+        for (int i =0 ; i < 4; ++i)
+        {
+            m_destroyEffectNames[i] = prototypeInfo.m_destroyEffectNames[i];
+        }
+
+        this->m_engineHighSoundNode = 0;
+        this->m_engineLowSoundNode = 0;
+        this->m_hornSoundNode = 0;
+        this->m_trailerJoint = 0;
+        this->m_trailerObjId = -1;
+        this->m_relTrailerJointPosOnMe = {0.0, 0.0, 0.0};
+        this->m_relTrailerJointPosOnTrailer = { 0.0, 0.0, 0.0 };
+        this->m_recollectionId = -1;
+        this->m_ownUpdater = 0;
+        this->m_roleId = -1;
+        this->m_numWheelsTouchingGround = 0;
+        this->m_bHidden = 0;
+        this->m_lockedObjId = -1;
+        this->m_toBeLockedObjId = -1;
+        this->m_bMustGetOutOfDifficultPlace = 0;
+        this->m_bWasStuck = 0;
+        this->m_timeToLockTarget = 0.0;
+        this->m_prevPosToCheckStuck = { 0.0, 0.0, 0.0 };
+        this->m_timeOutToCheckStuck = 0.0;
+        this->m_curSteeringForce = { 0.0, 0.0, 0.0 };
+        this->m_soundRechargeChannelId = -1;
+        this->m_bCurSteeringForceValid = 0;
 	}
 
 	void Vehicle::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -1434,9 +1565,25 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetBelong(int)
+	void Vehicle::SetBelong(int newBelong)
 	{
-		throw std::logic_error("Not implemented");
+        ComplexPhysicObj::SetBelong(newBelong);
+        for (auto& wheelInfo : m_wheels)
+        {
+            if (auto* wheel = wheelInfo.GetWheel())
+            {
+                wheel->SetBelong(newBelong);
+            }
+        }
+
+        if (m_trailerObjId >=0)
+        {
+            auto* obj = theObjects->GetEntityByObjId(m_trailerObjId);
+            if (obj)
+            {
+                obj->SetBelong(newBelong);
+            }
+        }
 	}
 
 	Team* Vehicle::GetTeam() const
@@ -1539,7 +1686,7 @@ namespace ai
 
 	m3d::Class* Vehicle::GetClass() const
 	{
-		throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Vehicle);
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005CC1C0, Vehicle::GetSize)

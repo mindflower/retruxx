@@ -189,13 +189,13 @@ template <class T>
 BoundsBase<T> BoundsBase<T>::Intersect(BoundsBase<T> const& b) const
 {
     //TODO: check this and refactor
-    float v3; // xmm2_4
-    float v4; // xmm1_4
-    float v5; // xmm4_4
-    float v6; // xmm0_4
-    float v7; // xmm3_4
-    float v8; // xmm2_4
-    BoundsBase<float> result; // eax
+    T v3; // xmm2_4
+    T v4; // xmm1_4
+    T v5; // xmm4_4
+    T v6; // xmm0_4
+    T v7; // xmm3_4
+    T v8; // xmm2_4
+    BoundsBase<T> result; // eax
 
     v3 = b.width + b.x0;
     if (this->x0 > v3

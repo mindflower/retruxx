@@ -25,6 +25,44 @@ public:
         }
     }
 
+    ref_ptr(ref_ptr<T>&& rhs) noexcept :
+        m_ptr(rhs.m_ptr)
+    {
+        rhs.m_ptr = nullptr;
+    }
+
+    ref_ptr& operator=(ref_ptr<T> const& rhs)
+    {
+        if (m_ptr == rhs.m_ptr)
+        {
+            return *this;
+        }
+        if (m_ptr)
+        {
+            m_ptr->DecRef();
+        }
+        if (rhs.m_ptr)
+        {
+            rhs.m_ptr->IncRef();
+        }
+        m_ptr = rhs.m_ptr;
+        return *this;
+    }
+
+    ref_ptr& operator=(ref_ptr<T>&& rhs) noexcept
+    {
+        if (m_ptr != rhs.m_ptr)
+        {
+            if (m_ptr)
+            {
+                m_ptr->DecRef();
+            }
+            m_ptr = rhs.m_ptr;
+            rhs.m_ptr = nullptr;
+        }
+        return *this;
+    }
+
     ~ref_ptr()
     {
         if (m_ptr)
@@ -58,24 +96,6 @@ public:
     {
         assert(nullptr != m_ptr);
         return m_ptr;
-    }
-
-    ref_ptr<T>& operator=(ref_ptr<T> const& rhs)
-    {
-        if (this == &rhs)
-        {
-            return *this;
-        }
-        if (m_ptr)
-        {
-            m_ptr->DecRef();
-        }
-        if (rhs.m_ptr)
-        {
-            rhs.m_ptr->IncRef();
-        }
-        m_ptr = rhs.m_ptr;
-        return *this;
     }
 
 private:

@@ -6,7 +6,10 @@
 #include "core/log.h"
 #include "thirdparty/injecttools.h"
 #include <server/resourcemanager.h>
+
+#include "config.h"
 #include "prototypemanager.h"
+#include "server/objects/physicbodies/vehiclepart.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
 {
@@ -323,7 +326,12 @@ namespace ai
 
     ComplexPhysicObj::ComplexPhysicObj(ComplexPhysicObjPrototypeInfo const& prototypeInfo) : PhysicObj(prototypeInfo)
     {
-        //throw std::logic_error("Not implemented");
+        this->m_isContoured = 0;
+        this->m_contourColor = M3D_KERNEL->GetEngineCfg().m_g_contourColor.GetC();
+        this->m_contourWidth = M3D_KERNEL->GetEngineCfg().m_g_contourWidth.GetF();
+        this->m_targetId = -1;
+        this->m_timeoutForReAimGuns = 0.0;
+        this->m_currentTargetPos = {0.0, 0.0, 0.0};
     }
 
     m3d::Class* ComplexPhysicObj::GetBaseClass()
@@ -476,9 +484,13 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ComplexPhysicObj::SetBelong(int)
+    void ComplexPhysicObj::SetBelong(int newBelong)
     {
-        throw std::logic_error("Not implemented");
+        Obj::SetBelong(newBelong);
+        for (auto& part : m_vehicleParts)
+        {
+            part.second->SetBelong(newBelong);
+        }
     }
 
     void ComplexPhysicObj::SetInvisible()

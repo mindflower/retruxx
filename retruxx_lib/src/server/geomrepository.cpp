@@ -1,8 +1,12 @@
 #include "geomrepository.h"
 
+#include <algorithm>
 #include <stdexcept>
 
 #include "geomrepositoryitem.h"
+#include "game/m3dgame.h"
+#include "objects/vehicle.h"
+#include "objects/base/objcontainer.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GeomRepository, AddItems)
 {
@@ -62,17 +66,47 @@ namespace ai
 
     void GeomRepository::SetChanged()
     {
-        throw std::logic_error("Not implemented");
+        Purge();
+        m_Changed = true;
+        if (m_vehicleId >=0)
+        {
+            auto* obj = dynamic_cast<Vehicle*>(theObjects->GetEntityByObjId(m_vehicleId));
+            if (obj)
+            {
+                obj->RefreshMass();
+            }
+        }
+        M3D_APP->EnqueueMessage(66537, (int)this, 0, 0, 0, {}, {});
     }
 
-    bool GeomRepository::SetGeomSize(PointBase<int> const&)
+    bool GeomRepository::SetGeomSize(PointBase<int> const& geomSize)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        // Save the current slots and geometry size
+        std::vector<GeomRepositoryItem> oldSlots = m_slots;
+        PointBase<int> oldGeomSize = m_geomSize;
+
+        // Set the new geometry size
+        m_geomSize = geomSize;
+
+        // Try to repack items with the new size
+        if (_RepackItems(m_sortStyle))
+        {
+            // Success - old slots are automatically cleaned up when oldSlots goes out of scope
+            return true;
+        }
+        else
+        {
+            // Failed - restore original state
+            m_geomSize = oldGeomSize;
+            m_slots = std::move(oldSlots);
+            return false;
+        }
     }
 
     PointBase<int> GeomRepository::GetGeomSize() const
     {
-        throw std::logic_error("Not implemented");
+        return m_geomSize;
     }
 
     unsigned GeomRepository::GetAmountByPrototypeId(int) const
@@ -90,17 +124,18 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void GeomRepository::Clear(bool)
+    void GeomRepository::Clear(bool bUnsafe)
     {
-        throw std::logic_error("Not implemented");
+        for (auto& slot : m_slots)
+        {
+            slot.Clear(bUnsafe);
+        }
+        m_slots.clear();
+        m_referenceChests.clear();
+        SetChanged();
     }
 
     bool GeomRepository::AddThingToPlace(GeomRepositoryItem&, PointBase<int> const&)
-    {
-        throw std::logic_error("Not implemented");
-    }
-
-    GeomRepository& GeomRepository::operator=(GeomRepository const&)
     {
         throw std::logic_error("Not implemented");
     }
@@ -217,7 +252,7 @@ namespace ai
 
     m3d::Object* GeomRepository::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new GeomRepository;
     }
 
     int GeomRepository::GiveUpThingByResourceId(int, int)
@@ -300,14 +335,98 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool GeomRepository::_RepackItems(SortStyle)
+    namespace
     {
-        throw std::logic_error("Not implemented");
+        bool LessByResourceId(
+            const ai::GeomRepositoryItem &item1,
+            const ai::GeomRepositoryItem& item2)
+        {
+            return item1.m_resourceId < item2.m_resourceId;
+        }
+    }
+
+    bool GeomRepository::_RepackItems(SortStyle sortStyle)
+    {
+        // TODO: generated code
+        // If there are no slots to repack, return success
+        if (m_slots.empty())
+            return true;
+
+        // Create a temporary copy of the current slots
+        std::vector<GeomRepositoryItem> tempSlots = m_slots;
+
+        // Clear the current repository
+        Clear(true);
+
+        bool result = true;
+
+        switch (sortStyle)
+        {
+        case SORT_NONE:
+        {
+            // Add items back without sorting
+            SortStyle originalSortStyle = m_sortStyle;
+            SetSortStyle(SORT_NONE, false);
+
+            for (const auto& item : tempSlots)
+            {
+                if (!AddThing(item, false))
+                {
+                    result = false;
+                }
+            }
+
+            SetSortStyle(originalSortStyle, false);
+            break;
+        }
+
+        case SORT_BY_RESOURCE:
+        {
+            // Sort items by resource ID
+            std::sort(tempSlots.begin(), tempSlots.end(), LessByResourceId);
+
+            int currentResourceId = -1;
+            int minEmptyY = 0;
+
+            for (const auto& item : tempSlots)
+            {
+                // Reset item position
+                GeomRepositoryItem newItem = item;
+                newItem.m_origin.x = -1;
+                newItem.m_origin.y = -1;
+
+                // Update minEmptyY when resource ID changes
+                if (currentResourceId != newItem.m_resourceId)
+                {
+                    minEmptyY = _GetMinEmptyY();
+                    currentResourceId = newItem.m_resourceId;
+                }
+
+                // Add the item
+                if (!_AddThingUnsorted(newItem, minEmptyY))
+                {
+                    result = false;
+                }
+            }
+            break;
+        }
+
+        default:
+            // Unknown sort style
+            result = false;
+            break;
+        }
+
+        return result;
     }
 
     GeomRepository::GeomRepository()
     {
-        throw std::logic_error("Not implemented");
+        this->m_Changed = 0;
+        this->m_geomSize.x = 1;
+        this->m_geomSize.y = 1;
+        this->m_sortStyle = SORT_NONE;
+        this->m_vehicleId = -1;
     }
 
     GeomRepository::GeomRepository(GeomRepository const&)
