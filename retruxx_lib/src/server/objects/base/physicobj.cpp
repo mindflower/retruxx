@@ -515,7 +515,78 @@ namespace ai
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005FC410, PhysicObj::GetPosition)
     CVector PhysicObj::GetPosition() const
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        Quaternion rotation = GetRotation();
+
+        // Extract quaternion components for clarity
+        const float x = rotation.x;
+        const float y = rotation.y;
+        const float z = rotation.z;
+        const float w = rotation.w;
+
+        // Calculate quaternion products
+        const float xx = x * x;
+        const float xy = x * y;
+        const float xz = x * z;
+        const float xw = x * w;
+
+        const float yy = y * y;
+        const float yz = y * z;
+        const float yw = y * w;
+
+        const float zz = z * z;
+        const float zw = z * w;
+
+        // Build rotation matrix from quaternion
+        CMatrix rotationMatrix;
+
+        // First row
+        rotationMatrix._11 = 1.0f - 2.0f * (yy + zz);
+        rotationMatrix._12 = 2.0f * (xy + zw);
+        rotationMatrix._13 = 2.0f * (xz - yw);
+        rotationMatrix._14 = 0.0f;
+
+        // Second row
+        rotationMatrix._21 = 2.0f * (xy - zw);
+        rotationMatrix._22 = 1.0f - 2.0f * (xx + zz);
+        rotationMatrix._23 = 2.0f * (yz + xw);
+        rotationMatrix._24 = 0.0f;
+
+        // Third row
+        rotationMatrix._31 = 2.0f * (xz + yw);
+        rotationMatrix._32 = 2.0f * (yz - xw);
+        rotationMatrix._33 = 1.0f - 2.0f * (xx + yy);
+        rotationMatrix._34 = 0.0f;
+
+        // Fourth row (translation/identity)
+        rotationMatrix._41 = 0.0f;
+        rotationMatrix._42 = 0.0f;
+        rotationMatrix._43 = 0.0f;
+        rotationMatrix._44 = 1.0f;
+
+        // Transform mass center by rotation matrix
+        const float transformedX = m_massCenter.x * rotationMatrix._11 +
+            m_massCenter.y * rotationMatrix._21 +
+            m_massCenter.z * rotationMatrix._31;
+
+        const float transformedY = m_massCenter.x * rotationMatrix._12 +
+            m_massCenter.y * rotationMatrix._22 +
+            m_massCenter.z * rotationMatrix._32;
+
+        const float transformedZ = m_massCenter.x * rotationMatrix._13 +
+            m_massCenter.y * rotationMatrix._23 +
+            m_massCenter.z * rotationMatrix._33;
+
+        // Get body position (assuming dBodyGetPosition returns a pointer to 3 floats)
+        const float* bodyPosition = dBodyGetPosition(m_body->id());
+
+        // Calculate final position: body position - transformed mass center
+        CVector result;
+        result.x = bodyPosition[0] - transformedX;
+        result.y = bodyPosition[1] - transformedY;
+        result.z = bodyPosition[2] - transformedZ;
+
+        return result;
     }
 
     void PhysicObj::PostCollide()

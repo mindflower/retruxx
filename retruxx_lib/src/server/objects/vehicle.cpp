@@ -1748,7 +1748,7 @@ namespace ai
 
 	VehiclePrototypeInfo const* Vehicle::GetPrototypeInfo() const
 	{
-		throw std::logic_error("Not implemented");
+		return dynamic_cast<VehiclePrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
 	}
 
 	void Vehicle::PlaceToEndOfPath()
@@ -1950,7 +1950,12 @@ namespace ai
 
 	float Vehicle::_CalcMassForBody() const
 	{
-		throw std::logic_error("Not implemented");
+		auto res = ai::ComplexPhysicObj::_CalcMassForBody();
+		if (m_repository)
+		{
+			return m_repository->GetMass() + res;
+		}
+		return res;
 	}
 
 	void Vehicle::_RemoveContour()

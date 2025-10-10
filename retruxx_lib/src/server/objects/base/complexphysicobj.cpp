@@ -1,5 +1,6 @@
 #include "complexphysicobj.h"
 #include <stdexcept>
+#include <ode/objects.h>
 
 #include "core/ini.h"
 #include "core/kernel.h"
@@ -10,6 +11,9 @@
 #include "config.h"
 #include "prototypemanager.h"
 #include "server/objects/physicbodies/vehiclepart.h"
+#include "objcontainer.h"
+#include "ode/odecpp.h"
+#include "server/objects/physicbodies/compoundvehiclepart.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
 {
@@ -356,7 +360,49 @@ namespace ai
 
     void ComplexPhysicObj::CreateChildren()
     {
-        throw std::logic_error("Not implemented");
+        Obj::CreateChildren();
+
+        auto* prototypeInfo = GetPrototypeInfo();
+        for (const auto& [name, protoId] : prototypeInfo->m_partPrototypeIds)
+        {
+            auto objId = theObjects->CreateNewObject(protoId, {}, -1, -1);
+            if (objId >= 0)
+            {
+                auto* vehiclePart = dynamic_cast<VehiclePart*>(theObjects->GetEntityByObjId(objId));
+                if (vehiclePart)
+                {
+                    SetPartByName(name, vehiclePart, true);
+                    continue;
+                }
+            }
+            M3D_LOG_ERR("Error: couldn't create part for " + GetDebugDescription() + " part name = " + name + ", part prototype id = " + CStr(protoId));
+            //M3D_CRITICAL_ERROR("");
+        }
+
+        _Construct(false);
+
+        // TODO: check this
+        for (const auto& [name, part] : m_vehicleParts)
+        {
+            part->TransferPhysicParamsToSceneGraphNode();
+            if (part->m_Node)
+            {
+                part->m_Node->UpdateXForm(false, true);
+            }
+
+            if (part->IsKindOf(&ai::CompoundVehiclePart::m_classCompoundVehiclePart))
+            {
+                auto* compoundVehiclePart = dynamic_cast<CompoundVehiclePart*>(part);
+                for (const auto& [vehPartName, vehPart] : *compoundVehiclePart)
+                {
+                    vehPart.vp->TransferPhysicParamsToSceneGraphNode();
+                    if (vehPart.vp->m_Node)
+                    {
+                        vehPart.vp->m_Node->UpdateXForm(false, true);
+                    }
+                }
+            }
+        }
     }
 
     void ComplexPhysicObj::TransferPhysicParamsToSceneGraphNode()
@@ -555,7 +601,28 @@ namespace ai
 
     void ComplexPhysicObj::RefreshMass()
     {
-        throw std::logic_error("Not implemented");
+        dMass mass;
+        dMassSetZero(&mass);
+        dMassSetZero(&mass);
+
+        auto massValue = _CalcMassForBody();
+        if (massValue < 0.1)
+        {
+            massValue = 1.0;
+        }
+
+        auto* protoInfo = GetPrototypeInfo();
+        auto massSize = protoInfo->m_massSize;
+        if (protoInfo->GetMassShape() == ComplexPhysicObjPrototypeInfo::MS_SPHERE)
+        {
+            // TODO: check this
+            dMassSetSphereTotal(&mass, massValue, ((massSize.x + massSize.y) + massSize.z) * 0.16666667);
+        }
+        else
+        {
+            dMassSetBoxTotal(&mass, massValue, massSize.x, massSize.y, massSize.z);
+        }
+        dBodySetMass(this->GetBody()->id(), &mass);
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006BCC10, ComplexPhysicObj::GetSmoothTargetPointForObj)
@@ -638,9 +705,51 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ComplexPhysicObj::_Construct(bool)
+    void ComplexPhysicObj::_Construct(bool bForAnimation)
     {
-        throw std::logic_error("Not implemented");
+        const auto pos = GetPosition();
+        const auto rot = GetRotation();
+        _CreateSpace(false);
+        for (const auto&[name, part] : m_vehicleParts)
+        {
+            if (part->IsKindOf(&ai::CompoundVehiclePart::m_classCompoundVehiclePart))
+            {
+                auto* compoundVehiclePart = dynamic_cast<CompoundVehiclePart*>(part);
+                _ConstructVehiclePart(name, part, 0, bForAnimation);
+                for (const auto& [vehPartName, vehPart] : *compoundVehiclePart)
+                {
+                    _ConstructVehiclePart(vehPartName, vehPart.vp, vehPart.index, bForAnimation);
+                }
+            }
+            else
+            {
+                _ConstructVehiclePart(name, part, 0, bForAnimation);
+            }
+        }
+
+        RefreshMass();
+
+        auto* prototypeInfo = GetPrototypeInfo();
+        this->m_massCenter = { 0.0, 0.0, 0.0 };
+        
+
+        _SetMassCenter(prototypeInfo->m_massTranslation);
+        _SetCorrectBoundSphereRadius();
+        SetPosition(pos);
+
+        for (const auto& [name, part] : m_vehicleParts)
+        {
+            part->TransferPhysicParamsToSceneGraphNode();
+            if (part->m_Node)
+            {
+                part->m_Node->UpdateXForm(false, true);
+            }
+        }
+
+        if ((this->GetPhysicState() & 1) != 0)
+            this->EnablePhysics();
+        else
+            this->DisablePhysics();
     }
 
     m3d::Object* ComplexPhysicObj::CreateObject()
