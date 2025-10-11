@@ -182,7 +182,7 @@ namespace ai
 
 	ComplexPhysicObjPrototypeInfo::MassShapes ComplexPhysicObjPrototypeInfo::GetMassShape() const
 	{
-		throw std::logic_error("Not implemented");
+        return this->m_massShape;
 	}
 
 	ComplexPhysicObjPartDescription const* ComplexPhysicObjPrototypeInfo::GetPartDescriptionByName(CStr const& partName) const
@@ -688,7 +688,12 @@ namespace ai
 
     float ComplexPhysicObj::_CalcMassForBody() const
     {
-        throw std::logic_error("Not implemented");
+        float mass = 0.0;
+        for (const auto& part : m_vehicleParts)
+        {
+            mass += part.second->GetMass();
+        }
+        return mass;
     }
 
     ComplexPhysicObj::~ComplexPhysicObj()

@@ -1188,9 +1188,63 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetPositionSelf(CVector const&)
+	void Vehicle::SetPositionSelf(CVector const& pos)
 	{
-		throw std::logic_error("Not implemented");
+		// TODO: generated code
+		// Store old position and calculate shift
+		CVector oldpos = GetPosition();
+
+		CVector shift;
+		shift.x = pos.x - oldpos.x;
+		shift.y = pos.y - oldpos.y;
+		shift.z = pos.z - oldpos.z;
+
+		// Set new position for the vehicle itself
+		ai::PhysicObj::SetPositionSelf(pos);
+
+		// Update positions for all wheels
+		for (auto& wheelInfo : m_wheels)
+		{
+			if (auto* wheel = wheelInfo.GetWheel())
+			{
+				CVector wheelPos = wheel->GetPosition();
+
+				// Apply the same shift to the wheel
+				wheelPos.x += shift.x;
+				wheelPos.y += shift.y;
+				wheelPos.z += shift.z;
+
+				wheel->SetPosition(wheelPos);
+			}
+		}
+
+		// Update position for trailer if it exists
+		if (m_trailerObjId >= 0)
+		{
+			auto* trailerObj = dynamic_cast<PhysicObj*>(theObjects->GetEntityByObjId(m_trailerObjId));
+            if (trailerObj)
+			{
+				CVector trailerPos = GetPosition();
+
+				// Apply the same shift to the trailer
+				trailerPos.x += shift.x;
+				trailerPos.y += shift.y;
+				trailerPos.z += shift.z;
+
+				trailerObj->SetPosition(trailerPos);
+			}
+		}
+
+		// Update taking sphere position and reset pickup flag
+		m_bAllowPickUpMessage = true;
+
+		if (m_takingSphere && m_takingSphere->GetGeomId())
+		{
+			const float* spherePos = dGeomGetPosition(m_takingSphere->GetGeomId());
+			m_pastTakingSpherePosition.x = spherePos[0];
+			m_pastTakingSpherePosition.y = spherePos[1];
+			m_pastTakingSpherePosition.z = spherePos[2];
+		}
 	}
 
 	void Vehicle::WeaponLookAtPoint(CVector const&, float)

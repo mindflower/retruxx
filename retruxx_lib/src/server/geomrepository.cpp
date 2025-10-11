@@ -197,7 +197,25 @@ namespace ai
 
     float GeomRepository::GetMass() const
     {
-        throw std::logic_error("Not implemented");
+        float mass = 0.0;
+        for (const auto& slot : m_slots)
+        {
+            auto* obj = slot.GetObj();
+            if (obj)
+            {
+                if (obj->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
+                {
+                    auto* physicObj = dynamic_cast<PhysicObj*>(obj);
+                    mass += physicObj->GetMass();
+                }
+                else if (obj->IsKindOf(&ai::PhysicBody::m_classPhysicBody))
+                {
+                    auto* physicBody = dynamic_cast<PhysicBody*>(obj);
+                    mass += physicBody->GetMass();
+                }
+            }
+        }
+        return mass;
     }
 
     bool GeomRepository::Sort(SortStyle)

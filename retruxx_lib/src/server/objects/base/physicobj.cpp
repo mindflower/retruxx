@@ -909,7 +909,22 @@ namespace ai
 
     void PhysicObj::_AdjustMassCenter()
     {
-        throw std::logic_error("Not implemented");
+        for (auto i = dBodyGetFirstGeom(this->m_body->id()); i; i = dGeomGetBodyNext(i))
+        {
+            if (dGeomGetClass(i) == 6)
+            {
+                auto geom = dGeomTransformGetGeom(i);
+                if (geom)
+                {
+                    auto position = dGeomGetPosition(geom);
+                    dGeomSetPosition(
+                        geom,
+                        position[0] - this->m_massCenter.x,
+                        position[1] - this->m_massCenter.y,
+                        position[2] - this->m_massCenter.z);
+                }
+            }
+        }
     }
 
     SphereForIntersection* PhysicObj::_GetLookSphere() const
@@ -989,9 +1004,16 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void PhysicObj::_SetMassCenter(CVector const&)
+    void PhysicObj::_SetMassCenter(CVector const& massCenter)
     {
-        throw std::logic_error("Not implemented");
+        const auto pos = GetPosition();
+        this->m_massCenter.x = 0.0 - this->m_massCenter.x;
+        this->m_massCenter.y = 0.0 - this->m_massCenter.y;
+        this->m_massCenter.z = 0.0 - this->m_massCenter.z;
+        _AdjustMassCenter();
+        m_massCenter = massCenter;
+        _AdjustMassCenter();
+        SetPositionSelf(pos);
     }
 
     PhysicObj::~PhysicObj()
