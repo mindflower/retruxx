@@ -85,5 +85,23 @@ namespace ai
     {
         throw std::logic_error("Not implemented");
     }
+
+    CVector ProjectVectorOntoPlane(CVector const& normal, CVector const& v)
+    {
+        auto v3 = 0.0;
+        CVector result;
+        auto v6 = normal.y * v.y + normal.x * v.x + v.z * normal.z;
+        if (fabs(v6) >= 0.001)
+        {
+            v3 = v6;
+        }
+        float v7 = normal.x * v3;
+        float v8 = v.z - (v3 * normal.z);
+        float v9 = v.y - (normal.y * v3);
+        result.x = v.x - v7;
+        result.y = v9;
+        result.z = v8;
+        return result;
+    }
 }
 

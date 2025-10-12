@@ -13,6 +13,7 @@
 #include <server/objects/physicbodies/physichelpers.h>
 
 #include "chassis.h"
+#include "landscape.h"
 #include "player.h"
 #include "vehicleupdater.h"
 #include "base/globalproperties.h"
@@ -34,6 +35,10 @@
 #include "scene/servers/DataServer.h"
 #include "scene/servers/serveranimatedmodel.h"
 #include "server/processmanager.h"
+#include <client.h>
+
+#include "world.h"
+#include <server/server.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
@@ -42,7 +47,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetGamePositionOnGround)
 {
-	throw std::logic_error("Not implemented");
+	auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+	auto vec = context->asVector(1);
+	vehicle->SetGamePositionOnGround(vec, true, true);
+	return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetSize)
@@ -316,6 +324,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, ResetForcedMaxTorque)
 }
 
 CStr CABIN = "CABIN";
+CStr CHASSIS = "CHASSIS";
 CStr BASKET = "BASKET";
 CStr ENGINE = "ENGINE";
 
@@ -923,9 +932,16 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetSkin(int)
+	void Vehicle::SetSkin(int skin)
 	{
-		throw std::logic_error("Not implemented");
+		ComplexPhysicObj::SetSkin(skin);
+		for (auto& wheelInfo : m_wheels)
+		{
+		    if (auto* wheel = wheelInfo.GetWheel())
+		    {
+				wheel->SetSkin(skin);
+		    }
+		}
 	}
 
 	void Vehicle::DisablePhysics()
@@ -1604,7 +1620,28 @@ namespace ai
 
 	float Vehicle::GetMaxSpeed() const
 	{
-		throw std::logic_error("Not implemented");
+		auto cabin = GetPartByName(CABIN);
+		float maxSpeed = (cabin && cabin->IsKindOf(RT_CLASS_LOCAL(Cabin))) ? dynamic_cast<const Cabin*>(cabin)->GetMaxSpeed() : 0.0;
+
+		if (m_maxSpeedLimited)
+		{
+		    if (m_maxSpeedLimit > maxSpeed)
+		    {
+				return maxSpeed;
+		    }
+			return m_maxSpeedLimit;
+		}
+
+		if (m_bIsControlledByPlayer)
+		{
+			auto* part = GetPartByName(CHASSIS);
+			auto* chassis = dynamic_cast<const Chassis*>(part);
+			if (chassis->Fuel().value().get() == chassis->Fuel().minValue().get())
+			{
+				return maxSpeed > theGlobProp.m_maxSpeedWithNoFuel ? theGlobProp.m_maxSpeedWithNoFuel : maxSpeed;
+			}
+		}
+		return maxSpeed;
 	}
 
 	bool Vehicle::CanChildBeAdded(m3d::Class*) const
@@ -1627,9 +1664,46 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	int Vehicle::CheckSkin(int)
+	int Vehicle::CheckSkin(int skinNum)
 	{
-		throw std::logic_error("Not implemented");
+		if (!m_bIsControlledByPlayer)
+		{
+			// TODO: check this
+			auto cabin = GetPartByName(CABIN);
+			if (cabin && cabin->IsKindOf(RT_CLASS_LOCAL(Cabin)))
+			{
+				auto model = cabin->GetModel();
+				if (model && !model->GetLoadedSkins().loadAllSkins)
+				{
+					auto it = model->GetLoadedSkins().loadSkins.find(skinNum);
+					if (it == model->GetLoadedSkins().loadSkins.end())
+					{
+					    if (!model->GetLoadedSkins().loadSkins.empty())
+					    {
+							return *model->GetLoadedSkins().loadSkins.begin();
+					    }
+					}
+				}
+			}
+			return skinNum;
+		}
+
+		for (auto& part : m_vehicleParts)
+		{
+		    if (part.second->m_Node)
+		    {
+				auto server = part.second->m_Node->GetServer();
+
+                m3d::AnimatedModel* model = 0;
+				server->GetItemProperty(part.second->m_Node->GetServerHandle(), 16394, &model);
+				if (model)
+				{
+					model->LoadSkin(skinNum);
+				}
+		    }
+		}
+
+		return skinNum;
 	}
 
 	m3d::AIParam Vehicle::VehicleAIOnDefend(Obj*)
@@ -1746,9 +1820,116 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetGamePositionOnGround(CVector const&, bool, bool)
+	void Vehicle::SetGamePositionOnGround(CVector const& pos, bool bWithCollisions, bool bWithWater)
 	{
-		throw std::logic_error("Not implemented");
+		// TODO: generated code
+		CVector normal = {0.0, 1.0, 0.0};  // Default up vector
+		CVector hoverOffset = {0.0, 0.0, 0.0};
+
+		// Step 1: Get the ground position at the target location
+		// This considers terrain height and optionally collisions with other objects
+		CVector groundPos = ai::GetGroundPos(pos, bWithCollisions, true);
+
+		bool isOnWater = false;
+
+		// Step 2: Handle water collisions if enabled
+		if (bWithWater)
+		{
+			// Convert world coordinates to landscape coordinates (scale factor 0.03125 = 1/32)
+			float landscapeX = pos.x * 0.03125f;
+			float landscapeZ = pos.z * 0.03125f;
+
+			float waterHeight = m3d::pClient->GetWorld().GetLandscape().getWaterHeight(landscapeX,
+				landscapeZ
+			);
+
+			// If water is higher than ground, use water level
+			if (waterHeight > groundPos.y)
+			{
+				groundPos.y = waterHeight;
+				isOnWater = true;
+			}
+		}
+
+		// Step 3: Get current vehicle rotation for reference
+		Quaternion currentRotation = GetRotation();
+
+		// Step 4: Calculate hover height based on wheel geometry
+		// Find the first valid wheel to determine appropriate hover height
+		float hoverHeight = 0.0f;
+		bool foundValidWheel = false;
+
+		for (const auto& wheelInfo : m_wheels)
+		{
+			// Check if this wheel has all required components
+			if (wheelInfo.GetWheel() &&
+				wheelInfo.GetWheel()->GetPhysicBody() &&
+				!wheelInfo.GetWheel()->GetPhysicBody()->m_pGeoms.empty() &&
+				wheelInfo.GetWheel()->GetPhysicBody()->m_pGeoms[0]->GetGeom()) {
+
+				// Get the wheel's sphere geometry to determine radius
+				ai::Sphere* wheelSphere = dynamic_cast<ai::Sphere*>(
+					wheelInfo.GetWheel()->GetPhysicBody()->m_pGeoms[0]->GetGeom());
+
+				if (wheelSphere)
+				{
+					float wheelRadius = wheelSphere->GetRadius();
+
+					// Calculate hover height: wheel radius minus initial Y position plus small offset
+					// This positions the vehicle so wheels touch the ground at their initial positions
+					hoverHeight = wheelRadius - wheelInfo.m_initialPos.y + 0.1f;
+					foundValidWheel = true;
+					break;
+				}
+			}
+		}
+
+		// Fallback: if no valid wheels found, use vehicle size
+		if (!foundValidWheel)
+		{
+			hoverHeight = m_size.y * 0.5f;  // Use half vehicle height as reasonable default
+		}
+
+		hoverOffset.y = hoverHeight;
+
+		// Step 5: Get terrain surface normal (unless on water)
+		if (!isOnWater)
+		{
+			CVector terrainNormal = ai::pServer->GetWorld()->GetLandscape().getNormal(groundPos.x, groundPos.z);
+			normal = terrainNormal;
+		}
+
+		// Step 6: Calculate vehicle orientation based on ground surface
+		CVector vehicleForwardDir = GetDirection();
+
+		// Project the forward direction onto the ground plane defined by the surface normal
+		CVector projectedForwardDir = ai::ProjectVectorOntoPlane(normal, vehicleForwardDir);
+
+		// TODO: check this!!!!
+
+		// Only update orientation if the projected direction is significant
+		float projectedDirLengthSq = ((projectedForwardDir.x * projectedForwardDir.x) + (projectedForwardDir.z * projectedForwardDir.z)) + (projectedForwardDir.y * projectedForwardDir.y);
+
+		if (projectedDirLengthSq > 0.001f)
+		{
+			// Normalize the projected direction vector
+			float invLength = 1.0f / sqrt(projectedDirLengthSq + 1.1920929e-7f);
+
+			CVector normalizedForwardDir;
+			normalizedForwardDir.x = projectedForwardDir.x * invLength;
+			normalizedForwardDir.y = projectedForwardDir.y * invLength;
+			normalizedForwardDir.z = projectedForwardDir.z * invLength;
+
+			// Set the vehicle's orientation to align with the ground surface
+			this->SetDirections(normalizedForwardDir, normal);
+		}
+
+		// Step 7: Calculate final position and set it
+		CVector finalPosition;
+		finalPosition.x = groundPos.x + hoverOffset.x;
+		finalPosition.y = groundPos.y + hoverOffset.y;
+		finalPosition.z = groundPos.z + hoverOffset.z;
+		this->SetPosition(finalPosition);
 	}
 
 	void Vehicle::SetMaxTorque(float)
@@ -2018,9 +2199,209 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
+	namespace
+	{
+		bool bMustTakeScreenShot = false;
+	}
+
 	void Vehicle::_InternalCreateVisualPart()
 	{
+		// TODO: generated code
+		// Call parent implementation
+		ai::ComplexPhysicObj::_InternalCreateVisualPart();
+
+		// Initialize vehicle properties
+		this->m_maxSpeedLimited = 0;
+		this->m_maxTorqueForced = 0;
+
+		// Validate and set skin
+		int validSkin = ai::Vehicle::CheckSkin(GetSkin());
+		this->SetSkin(validSkin);
+
+		// Set global screenshot flag
+		ai::bMustTakeScreenShot = 1;
+
+		// Get prototype information
+		const ai::PrototypeInfo* prototypeInfo = this->GetPrototypeInfo();
+
+		// Find chassis part
+		Chassis* chassis = nullptr;
+		VehiclePart* chassisPart = ai::ComplexPhysicObj::GetPartByName("CHASSIS");
+		if (chassisPart && chassisPart->IsKindOf(&ai::Chassis::m_classChassis))
+		{
+			chassis = dynamic_cast<Chassis*>(chassisPart);
+		}
+
+		// Find cabin part
+		Cabin* cabin = nullptr;
+		VehiclePart* cabinPart = ai::ComplexPhysicObj::GetPartByName("CABIN");
+		if (cabinPart && cabinPart->IsKindOf(&ai::Cabin::m_classCabin))
+		{
+			cabin = dynamic_cast<Cabin*>(cabinPart);
+		}
+
+		// Proceed only if chassis exists
+		if (!chassis)
+		{
+			// Log error about missing chassis
+			M3D_LOG_ERR("Error: the vehicle with prototype '" +
+						prototypeInfo->m_prototypeName +
+						"' haven't CHASSIS part");
+			return;
+		}
+
+
 		throw std::logic_error("Not implemented");
+
+		/*
+		// Set up engine sound if cabin exists and has engine sound
+		if (cabin) {
+			const char* engineSoundName = cabin->GetPrototypeInfo()->m_engineHighSoundName.c_str();
+			if (engineSoundName && strlen(engineSoundName) > 0) {
+				// Create engine sound node
+				m3d::SgSoundSourceNode* soundNode = ai::PhysicBody::CreateNode(
+					cabin->GetPrototypeInfo()->m_engineHighSoundName, 0, 0, 0, false);
+				this->m_engineHighSoundNode = soundNode;
+
+				// Attach sound node to chassis
+				chassis->m_Node->AddChild(chassis->m_Node, soundNode);
+			}
+		}
+
+		// Get animated models server and chassis model name
+		m3d::AnimatedModelsServer* animatedModelsServer = m3d::Application::g_pApp->m_serverAnimatedModels;
+		std::string chassisModelName = chassis->m_modelname;
+
+		// Store current position and rotation
+		CVector oldPos;
+		Quaternion oldRot;
+		ai::PhysicObj::GetPosition(this, &oldPos);
+		ai::PhysicObj::GetRotation(this, &oldRot);
+
+		// Reset to origin for setup
+		this->SetPosition(&CVector::Zero);
+		this->SetRotation(&Quaternion::Identity);
+
+		// Set up suspension nodes for all wheels
+		for (size_t i = 0; i < m_wheels.size(); ++i) {
+			WheelRuntimeInfo& wheelInfo = m_wheels[i];
+			Wheel* wheel = wheelInfo.m_wheel;
+
+			if (!wheel) continue;
+
+			// Create suspension node for the wheel
+			ai::Wheel::CreateSuspensionNode(wheel);
+
+			if (wheel->m_suspensionNode) {
+				// Determine wheel side (L/R) and number
+				std::string wheelSide = (i % 2 == 0) ? "L" : "R";
+				int wheelNumber = (i / 2) + 1;
+
+				// Build suspension load point name (e.g., "LP_SSP1L")
+				std::string suspensionLpName = "LP_SSP" + std::to_string(wheelNumber) + wheelSide;
+
+				// Find chassis again for attachment
+				Chassis* currentChassis = nullptr;
+				VehiclePart* currentChassisPart = ai::ComplexPhysicObj::GetPartByName(this, "CHASSIS");
+				if (currentChassisPart && m3d::Object::IsKindOf(currentChassisPart, &ai::Chassis::m_classChassis)) {
+					currentChassis = static_cast<Chassis*>(currentChassisPart);
+				}
+
+				if (currentChassis) {
+					// Attach suspension node to chassis
+					currentChassis->m_Node->AddChild(currentChassis->m_Node, wheel->m_suspensionNode);
+
+					// Get suspension position from bone matrix
+					CMatrix boneMatrix;
+					if (m3d::AnimatedModelsServer::GetBoneMatrixByNameFromModelName(
+						animatedModelsServer,
+						chassisModelName.c_str(),
+						suspensionLpName.c_str(),
+						&boneMatrix,
+						0)) {
+
+						// Extract position and rotation from bone matrix
+						CVector suspensionOrigin(
+							boneMatrix.m[3][0],
+							boneMatrix.m[3][1],
+							boneMatrix.m[3][2]
+						);
+
+						Quaternion suspensionRot;
+						Quaternion::FromMatrix(&suspensionRot, &boneMatrix);
+
+						// Set suspension node transform
+						m3d::SgNode::SetOriginAbs(wheel->m_suspensionNode, &suspensionOrigin);
+						m3d::SgNode::SetRotation(wheel->m_suspensionNode, &suspensionRot);
+						wheel->m_suspensionNode->UpdateXForm(wheel->m_suspensionNode, 0, 1);
+					}
+					else {
+						// Fallback: set to zero position and log error
+						m3d::SgNode::SetOriginAbs(wheel->m_suspensionNode, &CVector::Zero);
+
+						std::string errorMsg = "Error: LoadPoint not found: " + suspensionLpName +
+							" for model '" + chassisModelName + "'";
+						m3d::Log::logTex(m3d::g_Kernel->m_Log, errorMsg.c_str(), LOG_ERR);
+					}
+				}
+			}
+		}
+
+		// Restore original position and rotation
+		this->SetPosition(&oldPos);
+		this->SetRotation(&oldRot);
+
+		// Create visual parts for all wheels and update their transforms
+		for (size_t i = 0; i < m_wheels.size(); ++i) {
+			Wheel* wheel = m_wheels[i].m_wheel;
+			if (!wheel) continue;
+
+			// Create visual representation for wheel
+			ai::Obj::CreateVisualPart(wheel);
+
+			// Transfer physics parameters to scene graph
+			wheel->TransferPhysicParamsToSceneGraphNode(wheel);
+
+			// Update transforms
+			wheel->m_physicBody->m_Node->UpdateXForm(wheel->m_physicBody->m_Node, 0, 1);
+			if (wheel->m_suspensionNode) {
+				wheel->m_suspensionNode->UpdateXForm(wheel->m_suspensionNode, 0, 1);
+			}
+		}
+
+		// Transfer vehicle physics parameters to scene graph
+		this->TransferPhysicParamsToSceneGraphNode(this);
+
+		// Perform world intersection test
+		ai::Vehicle::IntersectWithWorld(this);
+
+		// Set up effect actions for basket and cabin if conditions are met
+		unsigned int flags = this->m_flags;
+		if ((flags & 8) == 0 && (flags & 2) == 0 && !ai::Obj::GetParentRepository(this)) {
+			// Set up basket effect actions
+			VehiclePart* basketPart = ai::ComplexPhysicObj::GetPartByName(this, "BASKET");
+			if (basketPart && m3d::Object::IsKindOf(basketPart, &ai::Basket::m_classBasket)) {
+				Basket* basket = static_cast<Basket*>(basketPart);
+				ai::PhysicBody::SetEffectActions(basket, &this->m_effectActions);
+				if (!this->m_effectActions.empty()) {
+					basket->SetNodeAnimAction(basket, this->m_effectActions[0], 1);
+				}
+			}
+
+			// Set up cabin effect actions
+			if (cabin) {
+				ai::PhysicBody::SetEffectActions(cabin, &this->m_effectActions);
+				if (!this->m_effectActions.empty()) {
+					cabin->SetNodeAnimAction(cabin, this->m_effectActions[0], 1);
+				}
+			}
+		}
+
+		// Handle contouring if enabled
+		if (ai::ComplexPhysicObj::bIsContoured()) {
+			ai::ComplexPhysicObj::PutContour();
+		}
+		*/
 	}
 
 	bool Vehicle::_GetPropertyDefaultInternal(int, m3d::AIParam&) const

@@ -363,9 +363,13 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ComplexPhysicObj::SetSkin(int)
+    void ComplexPhysicObj::SetSkin(int skin)
     {
-        throw std::logic_error("Not implemented");
+        PhysicObj::SetSkin(skin);
+        for (auto& part : m_vehicleParts)
+        {
+            part.second->SetSkin(skin);
+        }
     }
 
     void ComplexPhysicObj::CreateChildren()
@@ -425,9 +429,19 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    VehiclePart const* ComplexPhysicObj::GetPartByName(CStr const&) const
+    VehiclePart const* ComplexPhysicObj::GetPartByName(CStr const& partName) const
     {
-        throw std::logic_error("Not implemented");
+        if (partName.empty())
+        {
+            return nullptr;
+        }
+
+        auto it = m_vehicleParts.find(partName);
+        if (it != m_vehicleParts.end())
+        {
+            return it->second;
+        }
+        return nullptr;
     }
 
     VehiclePart* ComplexPhysicObj::GetPartByName(CStr const& partName)
@@ -551,7 +565,7 @@ namespace ai
 
     void ComplexPhysicObj::LinkGeomsToCollisionCells()
     {
-        throw std::logic_error("Not implemented");
+        PhysicObj::LinkGeomsToCollisionCells();
     }
 
     void ComplexPhysicObj::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -749,7 +763,19 @@ namespace ai
 
     void ComplexPhysicObj::_InternalCreateVisualPart()
     {
-        throw std::logic_error("Not implemented");
+        PhysicObj::_InternalCreateVisualPart();
+        for (auto& part : m_vehicleParts)
+        {
+            part.second->CreateVisualPart();
+        }
+
+        SetSkin(GetSkin());
+        _Construct(false);
+
+        if (m_isContoured)
+        {
+            _PutContour();
+        }
     }
 
     void ComplexPhysicObj::_SetPositionToGeoms(CVector const&)

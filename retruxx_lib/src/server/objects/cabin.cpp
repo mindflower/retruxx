@@ -30,7 +30,7 @@ namespace ai
 
     float Cabin::GetMaxSpeed() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_maxSpeed;
     }
 
     void Cabin::SetMaxPower(float)

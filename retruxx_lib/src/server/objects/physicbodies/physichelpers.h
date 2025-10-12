@@ -30,4 +30,5 @@ namespace ai
     bool GetCollisionInfoByServerHandle(int, retruxx::vector<CollisionInfo>&, bool);
     void CommonGeomMovedCallback(dxGeom*);
     void SetNodeElapsedAnimationTimeInMs(m3d::SgNode*, int);
+    CVector ProjectVectorOntoPlane(CVector const&, CVector const&);
 }

@@ -1,3 +1,4 @@
+#include <cassert>
 #include <stdexcept>
 #include <script/scriptcontext.h>
 
@@ -204,9 +205,16 @@ namespace m3d
 		throw std::logic_error("Not implemented");
 	}
 
-	CVector& LuaContext::asVector(int)
+	CVector& LuaContext::asVector(int i)
 	{
-		throw std::logic_error("Not implemented");
+		if (i < 0)
+		{
+			lua_pushstring(this->L, "not enough arguments");
+			lua_error(this->L);
+		}
+		auto pos = i + this->m_stackStart;
+		assert(ext_checkTag(L, pos, tag_luaVector));
+		return *(CVector*)lua_touserdata(this->L, pos);
 	}
 
 	void LuaContext::pushVector(CVector const&)

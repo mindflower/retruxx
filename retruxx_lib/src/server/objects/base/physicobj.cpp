@@ -829,7 +829,7 @@ namespace ai
 
     void PhysicObj::LinkGeomsToCollisionCells()
     {
-        throw std::logic_error("Not implemented");
+        m_boundSphere->LinkToCollisionCells(GetId(), nullptr);
     }
 
     CStr PhysicObj::GetPropertyName(int) const
