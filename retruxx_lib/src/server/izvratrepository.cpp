@@ -63,7 +63,6 @@ namespace ai
 
     IzvratRepository::~IzvratRepository()
     {
-        throw std::logic_error("Not implemented");
     }
 
     int IzvratRepository::CanAddThingToPlace(GeomRepositoryItem const&, PointBase<int> const&, int*) const

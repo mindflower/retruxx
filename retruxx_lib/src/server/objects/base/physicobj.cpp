@@ -449,9 +449,12 @@ namespace ai
             this->m_physicState &= ~2u;
     }
 
-    void PhysicObj::EnableGeometry(bool)
+    void PhysicObj::EnableGeometry(bool changePhysicState)
     {
-        throw std::logic_error("Not implemented");
+        if (m_spaceId && this->m_bIsSpaceOwner)
+            dGeomEnable(m_spaceId);
+        if (changePhysicState)
+            this->m_physicState |= 2u;
     }
 
     float PhysicObj::GetIntersectionRadius() const
@@ -494,7 +497,15 @@ namespace ai
 
     void PhysicObj::EnablePhysics()
     {
-        throw std::logic_error("Not implemented");
+        if (m_body)
+            dBodyEnable(m_body->id());
+        this->_LinkBodyToGeoms();
+        this->m_physicState |= 1u;
+        SetCorrectEnabledCellsCounter();
+        auto v3 = (this->m_physicState & 2) == 0;
+        this->m_bBodyEnabledLastFrame = 1;
+        if (!v3)
+            this->EnableGeometry(0);
     }
 
     void PhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -706,9 +717,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void PhysicObj::SetPosition(CVector const&)
+    void PhysicObj::SetPosition(CVector const& pos)
     {
-        throw std::logic_error("Not implemented");
+        this->SetPositionSelf(pos);
     }
 
     PhysicObj::PhysicObj(PhysicObjPrototypeInfo const& prototypeInfo)
@@ -1051,7 +1062,8 @@ namespace ai
 
     void PhysicObj::_LinkBodyToGeoms()
     {
-        throw std::logic_error("Not implemented");
+        for (auto i = dBodyGetFirstGeom(this->m_body->id()); i; i = dGeomGetBodyNext(i))
+            dGeomLinkToBody(i);
     }
 
     m3d::Object* PhysicObj::Clone()

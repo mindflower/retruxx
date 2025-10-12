@@ -4,6 +4,10 @@
 #include <math/quaternion.h>
 #include <math/vector.h>
 
+#include "ode/objects.h"
+#include "objects/base/physicobj.h"
+#include "ode/odecpp.h"
+
 namespace ai
 {
     void Obstacle::UnlinkFromOwner()
@@ -36,9 +40,19 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    Obstacle::Obstacle(PhysicObj const*)
+    Obstacle::Obstacle(PhysicObj const* physicObj)
     {
-        throw std::logic_error("Not implemented");
+        this->m_refCount = 0;
+        this->m_bIsEnabled = 1;
+        this->m_intersectionSphere = 0;
+        this->m_intersectionBox = 0;
+        this->m_ownerPhysicObjId = -1;
+        this->m_ownerSgNode = 0;
+
+        const auto* protoInfo = physicObj->GetPrototypeInfo();
+        this->m_intersectionSphere = ai::SphereForIntersection::CreateObject(protoInfo->m_intersectionRadius, SphereForIntersection::INTERSECTING, this);
+        dGeomSetBody(this->m_intersectionSphere->GetGeomId(), physicObj->GetBody()->id());
+        this->m_ownerPhysicObjId = physicObj->GetId();
     }
 
     Aabb Obstacle::GetAabb() const
@@ -63,7 +77,7 @@ namespace ai
 
     int Obstacle::IncRef()
     {
-        throw std::logic_error("Not implemented");
+        return ++this->m_refCount;
     }
 
     void Obstacle::Enable()

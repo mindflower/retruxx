@@ -374,7 +374,6 @@ namespace ai
         public:
             /* 0x0000 */ CVector m_initialPos;
             /* 0x000c */ Quaternion m_initialRot;
-            WheelRuntimeInfo(const ai::Vehicle::WheelRuntimeInfo& __that);
             WheelRuntimeInfo(ai::Wheel* wheel);
             bool IsWheelPresent() const;
             const ai::Wheel* GetWheel() const;

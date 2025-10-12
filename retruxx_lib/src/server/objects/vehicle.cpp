@@ -1,3 +1,5 @@
+#define NOMINMAX
+
 #include "vehicle.h"
 #include "physicbodies/geoms/box.h"
 #include <stdexcept>
@@ -10,6 +12,9 @@
 #include "server/utils.h"
 #include <server/objects/physicbodies/physichelpers.h>
 
+#include "chassis.h"
+#include "player.h"
+#include "vehicleupdater.h"
 #include "base/globalproperties.h"
 #include "base/prototypemanager.h"
 #include "core/ini.h"
@@ -25,6 +30,10 @@
 
 #include "ode/odecpp.h"
 #include "base/objcontainer.h"
+#include "physicbodies/compoundvehiclepart.h"
+#include "scene/servers/DataServer.h"
+#include "scene/servers/serveranimatedmodel.h"
+#include "server/processmanager.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
@@ -305,6 +314,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, ResetForcedMaxTorque)
 {
 	throw std::logic_error("Not implemented");
 }
+
+CStr CABIN = "CABIN";
+CStr BASKET = "BASKET";
+CStr ENGINE = "ENGINE";
 
 namespace ai
 {
@@ -650,7 +663,14 @@ namespace ai
 
 	void Vehicle::EnablePhysics()
 	{
-		throw std::logic_error("Not implemented");
+		ComplexPhysicObj::EnablePhysics();
+		for (auto& wheelInfo : m_wheels)
+		{
+		    if (auto* wheel = wheelInfo.GetWheel())
+		    {
+				wheel->EnablePhysics();
+		    }
+		}
 	}
 
 	int Vehicle::GetInfoObjId() const
@@ -1571,7 +1591,10 @@ namespace ai
                 m_bHandBrake = 0;
             }
         }
-		//throw std::logic_error("Not implemented");
+		else
+		{
+			M3D_LOG_ERR("Error: throttle too large for " + GetDebugDescription());
+		}
 	}
 
 	float Vehicle::GetBrake() const
@@ -1972,9 +1995,17 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::EnableGeometry(bool)
+	void Vehicle::EnableGeometry(bool changePhysicState)
 	{
-		throw std::logic_error("Not implemented");
+		// TODO: check changePhysicState
+		ComplexPhysicObj::EnableGeometry(true);
+		for (auto& wheelInfo : m_wheels)
+		{
+		    if (auto* wheel = wheelInfo.GetWheel())
+		    {
+				wheel->EnableGeometry(true);
+		    }
+		}
 	}
 
 	bool Vehicle::_GetPropertyInternal(int, m3d::AIParam&) const
@@ -1999,7 +2030,208 @@ namespace ai
 
 	void Vehicle::_InternalPostLoad()
 	{
-		throw std::logic_error("Not implemented");
+		// TODO: generated code
+		// Call parent implementation
+		ai::PhysicObj::_InternalPostLoad();
+
+		// Set up repository
+		if (m_repository)
+		{
+			m_repository->SetVehicle(this);
+		}
+
+		// Adjust vehicle properties
+		_AdjustSizeAndBumperPoint();
+
+		// Set default camera height if not set
+		if (m_cameraHeight <= 0.0f)
+		{
+			m_cameraHeight = m_size.y + 1.0f;
+		}
+
+		// Set cruising speed
+		m_cruisingSpeed = GetMaxSpeed();
+
+		// Get prototype info
+		const auto* prototypeInfo = GetPrototypeInfo();
+
+		// Verify chassis part exists
+		VehiclePart* part = GetPartByName("CHASSIS");
+		if (!part || !part->IsKindOf(&ai::Chassis::m_classChassis))
+		{
+			M3D_LOG_ERR("Error: the vehicle with prototype '" + prototypeInfo->m_prototypeName + "' haven't CHASSIS part");
+			return;
+		}
+
+		// Get chassis model name
+		auto* chassisPart = dynamic_cast<Chassis*>(part);
+		const auto chassisModelName = chassisPart->m_modelname;
+
+		auto* serverAnimatedModels = dynamic_cast<m3d::AnimatedModelsServer*>(&M3D_APP->GetAnimatedModelsServer());
+
+		// Store current position and rotation
+		CVector oldPos = GetPosition();
+		Quaternion oldRot = GetRotation();
+
+		// Reset to origin for setup
+		this->SetPosition({0.0, 0.0, 0.0});
+		this->SetRotation({0.0, 0.0, 0.0, 1.0});
+
+		// Create wheels if they don't exist
+		bool wheelsJustCreated = m_wheels.empty();
+		if (wheelsJustCreated)
+		{
+			for (size_t i = 0; i < prototypeInfo->m_wheelInfos.size(); ++i)
+			{
+				const auto& wheelInfo = prototypeInfo->m_wheelInfos[i];
+
+				// Create wheel object
+				Wheel* wheel = nullptr;
+				int newObjectId = theObjects->CreateNewObject(
+					wheelInfo.m_wheelPrototypeId,
+					{}, -1, -1);
+
+				wheel = dynamic_cast<Wheel*>(theObjects->GetEntityByObjId(newObjectId));
+
+				// Add wheel runtime info
+				WheelRuntimeInfo wheelRuntime(wheel);
+				m_wheels.push_back(std::move(wheelRuntime));
+			}
+		}
+
+		// Initialize wheel counters
+		m_numOfDrivenWheels = 0;
+
+		// Set up each wheel
+		for (size_t i = 0; i < prototypeInfo->m_wheelInfos.size(); ++i)
+		{
+			auto& wheelInfo = prototypeInfo->m_wheelInfos[i];
+			WheelRuntimeInfo& runtimeInfo = m_wheels[i];
+			Wheel* wheel = runtimeInfo.GetWheel();
+
+			if (!wheel)
+			{
+				continue;
+			}
+
+			// Configure wheel properties
+			wheel->m_driven = 1;
+			wheel->m_steering = wheelInfo.m_steering;
+
+			// Determine wheel position name (LP_WHL0L, LP_WHL0R, etc.)
+			CStr wheelSide = (i % 2 == 0) ? "L" : "R";
+			int wheelNumber = (i / 2) + 1;
+			CStr boneName = "LP_WHL" + CStr(wheelNumber) + wheelSide;
+
+			// Get wheel position from bone matrix
+			CMatrix boneMatrix;
+			bool boneFound = serverAnimatedModels->GetBoneMatrixByNameFromModelName(
+				chassisModelName.c_str(), boneName, boneMatrix,0) != 0;
+
+			if (!boneFound)
+			{
+				M3D_LOG_ERR("Error: LoadPoint not found: " + boneName +
+							" for model '" + chassisModelName + "'");
+
+				// Use current wheel position as fallback
+				runtimeInfo.m_initialPos = wheel->GetPosition();
+			}
+			else
+			{
+				// Extract position and rotation from bone matrix
+				runtimeInfo.m_initialPos = CVector(boneMatrix.m[3][0], boneMatrix.m[3][1], boneMatrix.m[3][2]);
+				runtimeInfo.m_initialRot.FromMatrix(boneMatrix);
+
+				if (wheelsJustCreated)
+				{
+					wheel->SetRotation(runtimeInfo.m_initialRot);
+				}
+			}
+
+			// Adjust wheel position
+			runtimeInfo.m_initialPos.y -= prototypeInfo->m_additionalWheelsHover;
+
+			// Set wheel position relative to mass center
+			if (wheelsJustCreated)
+			{
+				wheel->SetPosition(runtimeInfo.m_initialPos);
+			}
+			else
+			{
+				CVector wheelPos = wheel->GetPosition();
+				CVector relativePos;
+				relativePos.x = wheelPos.x - m_massCenter.x;
+				relativePos.y = wheelPos.y - m_massCenter.y;
+				relativePos.z = wheelPos.z - m_massCenter.z;
+				wheel->SetPosition(relativePos);
+			}
+
+			// Store initial rotation in wheel
+			wheel->SetInitialRotation(runtimeInfo.m_initialRot);
+
+			// Store current wheel state, reset to initial, then restore
+			CVector currentWheelPos = wheel->GetPosition();
+			Quaternion currentWheelRot = wheel->GetRotation();
+
+			wheel->SetPosition(runtimeInfo.m_initialPos);
+			wheel->SetRotation(runtimeInfo.m_initialRot);
+
+			// Attach wheel to vehicle
+			wheel->AttachToPhysicObj(this);
+
+			// Restore wheel position
+			wheel->SetPosition(currentWheelPos);
+			wheel->SetRotation(currentWheelRot);
+
+			// Count driven wheels
+			if (wheel->m_driven)
+			{
+				m_numOfDrivenWheels++;
+			}
+
+			// Set wheel space ID
+			wheel->TransferToSpace(m_spaceId);
+
+			// Enable or disable wheel based on vehicle flags
+			if (GetFlags() & 1)
+			{
+				wheel->SetVisible();
+			}
+			else {
+				wheel->SetInvisible();
+			}
+		}
+
+		// Restore original position and rotation
+		this->SetPosition(oldPos);
+		this->SetRotation(oldRot);
+
+		// Reset vehicle controls
+		SetThrottle(0.0f, true);
+		m_steerRadians = 0.0f;
+
+		// Send messages to radio manager if this is not a player-controlled vehicle
+		if (ai::thePlayer &&
+			ai::thePlayer->GetRadioManagerId() != -1 &&
+			!m_bIsControlledByPlayer)
+		{
+
+			// Send three different message types (45, 46, 47)
+			for (int messageType : {46, 47, 45})
+			{
+				m3d::AIParam param(messageType);
+				ai::theProcessManager->PostMessageA(2, GetId(), ai::thePlayer->GetRadioManagerId(), 0.0f, param, {}, 1);
+			}
+		}
+
+		// Create vehicle updater if needed
+		if (!m_ownUpdater)
+		{
+			m_ownUpdater = new ai::VehicleUpdater(this);
+		}
+
+		// Final setup
+		_EnsureRecollection();
 	}
 
 	float Vehicle::_CalcMassForBody() const
@@ -2308,7 +2540,23 @@ namespace ai
 
 	int Vehicle::_UpdateRepositoryOnChangeBasket()
 	{
-		throw std::logic_error("Not implemented");
+		auto basket = GetPartByName(BASKET);
+		if (basket && basket->IsKindOf(&ai::Basket::m_classBasket))
+		{
+			throw std::logic_error("Not implemented");
+		}
+
+		if (!m_repository)
+		{
+			return 1;
+		}
+
+		m_repository->TransferToRepository(m_groundRepository);
+
+		// TODO: check this
+		delete m_repository;
+		m_repository = nullptr;
+		return 1;
 	}
 
 	void Vehicle::_UpdatePhysicsUpdater()
@@ -2318,7 +2566,142 @@ namespace ai
 
 	void Vehicle::_AdjustSizeAndBumperPoint()
 	{
-		throw std::logic_error("Not implemented");
+		// TODO: generated code
+		Aabb myAabb;
+		myAabb.m_box[0] = 0.0;
+		myAabb.m_box[1] = 0.0;
+		myAabb.m_box[2] = 0.0;
+		myAabb.m_box[3] = 0.0;
+		myAabb.m_box[4] = 0.0;
+		myAabb.m_box[5] = 0.0;
+		bool hasParts = false;
+
+		// Iterate through all vehicle parts to calculate the overall bounding box
+		for (const auto& partPair : m_vehicleParts)
+		{
+			VehiclePart* part = partPair.second;
+			if (!part) continue;
+
+			if (part->IsKindOf(&CompoundVehiclePart::m_classCompoundVehiclePart))
+			{
+				// Handle compound vehicle parts (contain multiple sub-parts)
+				CompoundVehiclePart* compoundPart = dynamic_cast<CompoundVehiclePart*>(part);
+
+				for (const auto& subPartPair : *compoundPart)
+				{
+					VehiclePart* subPart = subPartPair.second.vp;
+					if (!subPart) continue;
+
+					// Get part position and size
+					CVector partPos = subPart->GetNodeRelativePosition();
+					CVector partSize = subPart->GetSize();
+					CVector halfSize;
+					halfSize.x = partSize.x * 0.5f;
+					halfSize.y = partSize.y * 0.5f;
+					halfSize.z = partSize.z * 0.5f;
+
+					// Calculate part's AABB in local space
+					Aabb partAabb;
+					partAabb.m_box[0] = partPos.x - halfSize.x;
+					partAabb.m_box[1] = partPos.y - halfSize.y;
+					partAabb.m_box[2] = partPos.z - halfSize.z;
+
+					partAabb.m_box[3] = partPos.x + halfSize.x;
+					partAabb.m_box[4] = partPos.y + halfSize.y;
+					partAabb.m_box[5] = partPos.z + halfSize.z;
+
+					// Expand the overall AABB to include this part
+					if (!hasParts)
+					{
+						myAabb = partAabb;
+						hasParts = true;
+					}
+					else
+					{
+						myAabb.m_box[0] = std::min(myAabb.m_box[0], partAabb.m_box[0]);
+						myAabb.m_box[1] = std::min(myAabb.m_box[1], partAabb.m_box[1]);
+						myAabb.m_box[2] = std::min(myAabb.m_box[2], partAabb.m_box[2]);
+						myAabb.m_box[3] = std::max(myAabb.m_box[3], partAabb.m_box[3]);
+						myAabb.m_box[4] = std::max(myAabb.m_box[4], partAabb.m_box[4]);
+						myAabb.m_box[5] = std::max(myAabb.m_box[5], partAabb.m_box[5]);
+					}
+				}
+			}
+			else
+			{
+				// Handle regular vehicle parts
+				// Get part position and size
+				CVector partPos = part->GetNodeRelativePosition();
+				CVector partSize = part->GetSize();
+				CVector halfSize;
+				halfSize.x = partSize.x * 0.5f;
+				halfSize.y = partSize.y * 0.5f;
+				halfSize.z = partSize.z * 0.5f;
+
+				// Calculate part's AABB in local space
+				Aabb partAabb;
+				partAabb.m_box[0] = partPos.x - halfSize.x;
+				partAabb.m_box[1] = partPos.y - halfSize.y;
+				partAabb.m_box[2] = partPos.z - halfSize.z;
+
+				partAabb.m_box[3] = partPos.x + halfSize.x;
+				partAabb.m_box[4] = partPos.y + halfSize.y;
+				partAabb.m_box[5] = partPos.z + halfSize.z;
+
+				// Expand the overall AABB to include this part
+				if (!hasParts)
+				{
+					myAabb = partAabb;
+					hasParts = true;
+				}
+				else
+				{
+					myAabb.m_box[0] = std::min(myAabb.m_box[0], partAabb.m_box[0]);
+					myAabb.m_box[1] = std::min(myAabb.m_box[1], partAabb.m_box[1]);
+					myAabb.m_box[2] = std::min(myAabb.m_box[2], partAabb.m_box[2]);
+					myAabb.m_box[3] = std::max(myAabb.m_box[3], partAabb.m_box[3]);
+					myAabb.m_box[4] = std::max(myAabb.m_box[4], partAabb.m_box[4]);
+					myAabb.m_box[5] = std::max(myAabb.m_box[5], partAabb.m_box[5]);
+				}
+			}
+		}
+
+		// If no parts were found, use a default size
+		if (!hasParts)
+		{
+			myAabb.m_box[0] = -0.5f;
+			myAabb.m_box[1] = -0.5f;
+			myAabb.m_box[2] = -0.5f;
+			myAabb.m_box[3] = 0.5f;
+			myAabb.m_box[4] = 0.5f;
+			myAabb.m_box[5] = 0.5f;
+		}
+
+		// Calculate vehicle size from AABB dimensions
+		m_size.x = myAabb.m_box[3] - myAabb.m_box[0];
+		m_size.y = myAabb.m_box[4] - myAabb.m_box[1];
+		m_size.z = myAabb.m_box[5] - myAabb.m_box[2];
+
+		// Set bumper point (front collision detection point)
+		m_bumperPoint.x = 0.0f;  // Centered on X axis
+		m_bumperPoint.y = m_size.y * 0.2f;  // 20% from front in Y direction
+		m_bumperPoint.z = (m_size.z * 0.5f) + 0.1f;  // Slightly above center in Z direction
+
+		// Update look box dimensions
+		CVector lookBoxSize;
+		lookBoxSize.x = m_size.x * 1.5f;  // 50% wider than vehicle
+		lookBoxSize.y = m_size.y * 5.0f;  // 5 times longer for forward vision
+		lookBoxSize.z = ai::theGlobProp.m_defaultLookBoxLength;  // Use global property
+
+		m_lookBox->SetSize(lookBoxSize);
+
+		// Update target box dimensions
+		CVector targetBoxSize;
+		targetBoxSize.x = m_size.x * 1.5f;  // 50% wider than vehicle
+		targetBoxSize.y = m_size.y * 5.0f;  // 5 times longer for target detection
+		targetBoxSize.z = ai::theGlobProp.m_defaultTargetBoxLength;  // Use global property
+
+		m_targetBox->SetSize(targetBoxSize);
 	}
 
 	void Vehicle::_OnChangeBasket()

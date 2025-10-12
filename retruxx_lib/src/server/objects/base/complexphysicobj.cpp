@@ -298,9 +298,19 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ComplexPhysicObj::EnableGeometry(bool)
+    void ComplexPhysicObj::EnableGeometry(bool changePhysicState)
     {
-        throw std::logic_error("Not implemented");
+        PhysicObj::EnableGeometry(changePhysicState);
+        if (!this->m_spaceId || !this->m_bIsSpaceOwner)
+        {
+            for (auto& [name, part] : m_vehicleParts)
+            {
+                if (part)
+                {
+                    part->EnableGeometry();
+                }
+            }
+        }
     }
 
     void ComplexPhysicObj::RenderDebugInfo() const
@@ -420,9 +430,38 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    VehiclePart* ComplexPhysicObj::GetPartByName(CStr const&)
+    VehiclePart* ComplexPhysicObj::GetPartByName(CStr const& partName)
     {
-        throw std::logic_error("Not implemented");
+        if (partName.empty())
+        {
+            return nullptr;
+        }
+
+        auto it = m_vehicleParts.find(partName);
+        if (it != m_vehicleParts.end())
+        {
+            return it->second;
+        }
+
+        for (const auto& pair : m_vehicleParts)
+        {
+            VehiclePart* part = pair.second;
+
+            // Check if this part is a compound vehicle part
+            if (part->IsKindOf(&ai::CompoundVehiclePart::m_classCompoundVehiclePart))
+            {
+                CompoundVehiclePart* compoundPart = dynamic_cast<CompoundVehiclePart*>(part);
+
+                // Search within the compound part
+                auto compoundIt = compoundPart->find(partName);
+                if (compoundIt != compoundPart->end())
+                {
+                    return compoundIt->second.vp;  // Return the vehicle part from the compound
+                }
+            }
+        }
+
+        return nullptr;
     }
 
     void ComplexPhysicObj::SetVisible()
@@ -437,7 +476,7 @@ namespace ai
 
     void ComplexPhysicObj::EnablePhysics()
     {
-        throw std::logic_error("Not implemented");
+        PhysicObj::EnablePhysics();
     }
 
     VehiclePart* ComplexPhysicObj::TakeOffPart(CStr const&)
@@ -653,7 +692,7 @@ namespace ai
 
     void ComplexPhysicObj::_LinkBodyToGeoms()
     {
-        throw std::logic_error("Not implemented");
+        PhysicObj::_LinkBodyToGeoms();
     }
 
     void ComplexPhysicObj::_UnlinkBodyFromGeoms()
@@ -663,7 +702,44 @@ namespace ai
 
     void ComplexPhysicObj::_SetCorrectBoundSphereRadius()
     {
-        throw std::logic_error("Not implemented");
+        Aabb aabb;
+        aabb.m_box[0] = 10000.0;
+        aabb.m_box[3] = -10000.0;
+        aabb.m_box[1] = 10000.0;
+        aabb.m_box[4] = -10000.0;
+        aabb.m_box[2] = 10000.0;
+        aabb.m_box[5] = -10000.0;
+
+        for (const auto& [name, part] : m_vehicleParts)
+        {
+            if (part->IsKindOf(&ai::CompoundVehiclePart::m_classCompoundVehiclePart))
+            {
+                auto* compoundVehiclePart = dynamic_cast<CompoundVehiclePart*>(part);
+                for (const auto& [vehPartName, vehPart] : *compoundVehiclePart)
+                {
+                    for (const auto& geom : vehPart.vp->m_pGeoms)
+                    {
+                        const auto geomAabb = geom->GetAabb();
+                        aabb.EmbraceBox(geomAabb);
+                    }
+                }
+            }
+            else
+            {
+                for (const auto& geom : part->m_pGeoms)
+                {
+                    const auto geomAabb = geom->GetAabb();
+                    aabb.EmbraceBox(geomAabb);
+                }
+            }
+        }
+
+        float radius = sqrt(
+            (aabb.m_box[5] - aabb.m_box[2]) * (aabb.m_box[5] - aabb.m_box[2])
+            + (aabb.m_box[4] - aabb.m_box[1]) * (aabb.m_box[4] - aabb.m_box[1])
+            + (aabb.m_box[3] - aabb.m_box[0]) * (aabb.m_box[3] - aabb.m_box[0]))
+            * 0.75;
+        _SetBoundSphereRadius(radius);
     }
 
     void ComplexPhysicObj::_RemoveContour()

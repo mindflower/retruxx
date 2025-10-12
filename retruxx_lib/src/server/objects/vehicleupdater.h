@@ -1,28 +1,25 @@
 #pragma once
-#include <math/vector.h>
+#include "vehicle.h"
 
 namespace ai
 {
-    class Vehicle;
-
     class VehicleUpdater
     {
     public:
-        void Update(float);
-        VehicleUpdater(Vehicle *);
-        CVector GetLinearVelocity() const ;
+        VehicleUpdater(const ai::VehicleUpdater&);
+        VehicleUpdater(ai::Vehicle* vehicle);
         ~VehicleUpdater();
-        void CalcRpmsAndGear(float &,float &,int &) const ;
+        void Update(float elapsedTime);
+        CVector GetLinearVelocity() const;
+        void CalcRpmsAndGear(float& wheelAVel, float& engineRpm, int& gear) const;
 
     private:
-        void _UpdateForceAndVelocity(float);
-        float _CalcWheelAVel() const ;
-
-    private:
-        Vehicle *m_vehicle;
-        float m_wheelRadius;
-        CVector m_velocity;
-        CVector m_relFrontPoint;
-        CVector m_relRearPoint;
-    };
+        /* 0x0000 */ ai::Vehicle* m_vehicle;
+        /* 0x0004 */ float m_wheelRadius;
+        /* 0x0008 */ CVector m_velocity;
+        /* 0x0014 */ CVector m_relFrontPoint;
+        /* 0x0020 */ CVector m_relRearPoint;
+        float _CalcWheelAVel() const;
+        void _UpdateForceAndVelocity(float elapsedTime);
+    }; /* size: 0x002c */
 }

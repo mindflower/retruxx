@@ -51,7 +51,6 @@ namespace ai
 
     GeomRepository::~GeomRepository()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void GeomRepository::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -313,9 +312,51 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void GeomRepository::TransferToRepository(GeomRepository*)
+    void GeomRepository::TransferToRepository(GeomRepository* targetRepository)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        // Early return if no target repository
+        if (targetRepository == nullptr)
+        {
+            return;
+        }
+
+        // Vector to track items that failed to transfer
+        std::vector<int> failedTransfers;
+
+        // Transfer all valid items to target repository
+        for (size_t i = 0; i < m_slots.size(); ++i)
+        {
+            GeomRepositoryItem currentItem = GetItem(static_cast<int>(i));
+
+            if (currentItem.IsValid())
+            {
+                // Release ownership from current repository
+                m_slots[i].GiveUpAmount(1);
+
+                // Attempt to transfer to target repository
+                bool transferSuccessful = targetRepository->AddThing(currentItem, 0);
+
+                if (!transferSuccessful)
+                {
+                    // If transfer failed, remember the object ID to return it later
+                    failedTransfers.push_back(currentItem.GetObjId());
+                }
+            }
+        }
+
+        // Clean up the current repository (remove transferred items)
+        Purge();
+
+        // Return any items that failed to transfer back to this repository
+        for (int objId : failedTransfers)
+        {
+            GeomRepositoryItem item(objId);
+            AddThing(item, 0);
+        }
+
+        // Notify that this repository has changed
+        SetChanged();
     }
 
     void GeomRepository::Purge()

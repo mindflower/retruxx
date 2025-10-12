@@ -8,82 +8,88 @@ namespace ai
     class SphericBody;
     class Vehicle;
 
-    class WheelPrototypeInfo : public SimplePhysicObjPrototypeInfo
+    class WheelPrototypeInfo : public ai::SimplePhysicObjPrototypeInfo
     {
     public:
+        /* 0x0080 */ CStr m_suspensionModelName;
+        /* 0x008c */ float m_suspensionRange;
+        /* 0x0090 */ float m_suspensionCFM;
+        /* 0x0094 */ float m_suspensionERP;
+        /* 0x0098 */ float m_mU;
+        /* 0x009c */ CStr m_typeName;
+        /* 0x00a8 */ CStr m_blowEffectName;
         WheelPrototypeInfo();
-        virtual ai::Obj* CreateTargetObject() const;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+    }; /* size: 0x00b4 */
+
+    class Wheel : public ai::SimplePhysicObj
+    {
+    protected:
+        virtual  ~Wheel() override /* 0x00 */;
 
     private:
-        CStr m_suspensionModelName;
-        float m_suspensionRange;
-        float m_suspensionCFM;
-        float m_suspensionERP;
-        float m_mU;
-        CStr m_typeName;
-        CStr m_blowEffectName;
+        Wheel(const ai::WheelPrototypeInfo& prototypeInfo);
+        Wheel(const ai::Wheel&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
-    };
-    class Wheel : public SimplePhysicObj
-    {
     public:
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classWheel;
+        virtual const ai::WheelPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+
         enum WheelSteering
         {
-            STEERING_NO = 0x0,
-            STEERING_CORRECT = 0x1,
-            STEERING_INVERSE = 0xFFFFFFFF,
+            STEERING_NO = 0,
+            STEERING_CORRECT = 1,
+            STEERING_INVERSE = -1,
         };
 
     public:
-        void BreakModel();
-        Wheel(WheelPrototypeInfo const &);
-        virtual WheelPrototypeInfo const * GetPrototypeInfo() const ;
-        virtual void RelinkGeomsToCollisionCells();
-        SphericBody const * _SphericBody() const ;
-        virtual m3d::Class * GetClass() const ;
-        virtual void LinkGeomsToCollisionCells();
-        bool AttachToPhysicObj(PhysicObj const *);
-        float GetWidth() const ;
-        virtual CVector GetDirection() const ;
-        void CreateSuspensionNode();
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual bool CanChildBeAdded(m3d::Class *) const ;
-        Vehicle * GetVehicle() const ;
-        void SetInitialRotation(Quaternion const &);
-        virtual void RenderDebugInfo() const ;
-        virtual void Remove();
-        virtual void Update(float,unsigned int);
-        void HealModel();
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
+        virtual void Remove() override /* 0x00 */;
+        /* 0x0144 */ dxJoint* m_jointID;
+        /* 0x0148 */ int m_driven;
+        /* 0x014c */ ai::Wheel::WheelSteering m_steering;
+        /* 0x0150 */ m3d::SgNode* m_SplashEffect;
+        /* 0x0154 */ short m_SplashType;
+        /* 0x0156 */ bool m_MakeSplash;
+        /* 0x0157 */ char Padding_303;
+        /* 0x0158 */ unsigned int m_wheelType;
+        /* 0x015c */ float m_curAngle;
+        /* 0x0160 */ bool m_bModelBroken;
+        /* 0x0161 */ char Padding_304[3];
+        /* 0x0164 */ m3d::SgNode* m_suspensionNode;
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual void LinkGeomsToCollisionCells() override /* 0x00 */;
+        virtual void UnlinkGeomsFromCollisionCells() override /* 0x00 */;
+        virtual void RelinkGeomsToCollisionCells() override /* 0x00 */;
+        virtual void SetPassedToAnotherMapStatus() override /* 0x00 */;
+        virtual void RenderDebugInfo() const override /* 0x00 */;
+        const ai::SphericBody* _SphericBody() const;
+        ai::SphericBody* _SphericBody();
+        float GetRadius() const;
+        float GetWidth() const;
+        virtual CVector GetDirection() const override /* 0x00 */;
+        bool AttachToPhysicObj(const ai::PhysicObj* physicObj);
         void DetachFromPhysicObj();
-        virtual void SetPassedToAnotherMapStatus();
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual void UnlinkGeomsFromCollisionCells();
-        static m3d::Class * GetBaseClass();
-        float GetRadius() const ;
+        ai::Vehicle* GetVehicle() const;
+        void CreateSuspensionNode();
+        void BreakModel();
+        void HealModel();
+        const Quaternion& GetInitialRotation() const;
+        void SetInitialRotation(const Quaternion& rot);
+        static const CVector AXIS_FOR_WHEEL;
+        static const float STEERING_LIMIT;
 
     protected:
-        virtual void _InternalCreateVisualPart();
-        virtual ~Wheel();
+        virtual void _InternalCreateVisualPart() override /* 0x00 */;
 
     private:
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
-
-    public:
-        RT_CLASS_DECLARE(Wheel);
-
-    private:
-        dxJoint *m_jointID;
-        int m_driven;
-        WheelSteering m_steering;
-        m3d::SgNode *m_SplashEffect;
-        __int16 m_SplashType;
-        bool m_MakeSplash;
-        unsigned int m_wheelType;
-        float m_curAngle;
-        bool m_bModelBroken;
-        m3d::SgNode *m_suspensionNode;
-        Quaternion m_initialRotation;
-    };
+        /* 0x0168 */ Quaternion m_initialRotation;
+    }; /* size: 0x0178 */
 }

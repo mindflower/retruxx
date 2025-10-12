@@ -524,7 +524,13 @@ int dGeomIsEnabled (dxGeom *g)
 void dGeomUnlinkFromBody (dxGeom* g)
 {
     dAASSERT(g);
-    g->gflags |= 0x10u;
+    g->gflags |= 0x10;
+}
+
+void dGeomLinkToBody (dxGeom* g)
+{
+    dAASSERT(g);
+    g->gflags &= ~0x10;
 }
 
 
