@@ -7,19 +7,25 @@
 
 namespace ai
 {
-    void Ray::SetDirection(CVector const&)
+    void Ray::SetDirection(CVector const& direction)
     {
-        throw std::logic_error("Not implemented");
+        auto pos = dGeomGetPosition(this->m_geomId);
+        dGeomRaySet(this->m_geomId, pos[0], pos[1], pos[2], direction.x, direction.y, direction.z);
     }
 
     float Ray::GetLength() const
     {
-        throw std::logic_error("Not implemented");
+        return dGeomRayGetLength(this->m_geomId);
     }
 
     CVector Ray::GetDirection() const
     {
-        throw std::logic_error("Not implemented");
+        float dir[4];
+        float start[4];
+
+        dGeomRayGet(this->m_geomId, start, dir);
+        CVector result = dir;
+        return result;
     }
 
     Ray* Ray::CreateObject(dxSpace* space, float length, void(*movedCallback)(dxGeom*))

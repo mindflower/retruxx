@@ -109,9 +109,112 @@ int ext_vecDestructor(lua_State* L)
     throw std::logic_error("Not implemented");
 }
 
-int ext_vecGet(lua_State* L)
+int ext_vecNormalize(lua_State* L)
 {
     throw std::logic_error("Not implemented");
+}
+
+int ext_vecLength(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecLengthSq(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecZero(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecOne(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecDotProduct(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecCrossProduct(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_vecGet(lua_State* L)
+{
+    // TODO: generated code
+    // Get the CVector userdata from Lua stack
+    CVector* vec = static_cast<CVector*>(lua_touserdata(L, 1));
+
+    // Get the property name being accessed
+    const char* propertyName = luaL_checklstring(L, 2, nullptr);
+
+    // Handle special internal tag
+    if (strcmp(propertyName, "internalTag") == 0)
+    {
+        lua_pushnumber(L, 1001.0);
+        return 1;
+    }
+
+    // Handle single-character properties (x, y, z)
+    if (strlen(propertyName) == 1)
+    {
+        switch (propertyName[0]) {
+        case 'x':
+            lua_pushnumber(L, vec->x);
+            return 1;
+        case 'y':
+            lua_pushnumber(L, vec->y);
+            return 1;
+        case 'z':
+            lua_pushnumber(L, vec->z);
+            return 1;
+        }
+    }
+
+    // Handle method calls (return closure functions)
+    if (strcmp(propertyName, "normalize") == 0)
+    {
+        lua_pushcclosure(L, ext_vecNormalize, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "length") == 0)
+    {
+        lua_pushcclosure(L, ext_vecLength, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "lengthSq") == 0)
+    {
+        lua_pushcclosure(L, ext_vecLengthSq, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "zero") == 0)
+    {
+        lua_pushcclosure(L, ext_vecZero, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "one") == 0)
+    {
+        lua_pushcclosure(L, ext_vecOne, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "dot") == 0)
+    {
+        lua_pushcclosure(L, ext_vecDotProduct, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "cross") == 0)
+    {
+        lua_pushcclosure(L, ext_vecCrossProduct, 0);
+        return 1;
+    }
+
+    lua_pushnumber(L, 0.0);
+    return 1;
 }
 
 int ext_vecSet(lua_State* L)

@@ -270,7 +270,7 @@ namespace m3d
 
     Class* GeomObjectWater::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(GeomObjectWater);
     }
 
     GeomObjectWater::GeomObjectWater()

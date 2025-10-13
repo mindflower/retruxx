@@ -24,6 +24,9 @@
 #include "skelmodel.h"
 #include <draftstructures.h>
 
+#include "server/objects/physicbodies/physichelpers.h"
+#include "server/objects/physicbodies/geoms/ray.h"
+
 extern "C" {
 #include <ode/collision.h>
 #include <ode/collision_trimesh.h>
@@ -121,9 +124,21 @@ namespace m3d
         }
     }
 
-    float Landscape::GetHeightWithCollisions(float, float, bool) const
+    float Landscape::GetHeightWithCollisions(float x, float y, bool forVehicle) const
     {
-        throw retruxx::logic_error("Not implemented");
+        static scoped_ptr viewRay = ai::Ray::CreateObject(nullptr, 10000.0, nullptr);
+        static const CVector down{ 0.0, -1.0, 0.0 };
+        static dContact contact;
+
+        viewRay->SetDirection(down);
+        dGeomSetPosition(viewRay->GetGeomId(), x, 3000.0, y);
+
+        const auto aabb = viewRay->GetAabb();
+        if (ai::TraceLine(*viewRay, contact, 1, 0, 0, 1, 0, 1, forVehicle))
+        {
+            return contact.geom.pos[1];
+        }
+        return 0.0;
     }
 
     m3d::rend::IAsmShader* waterPs = nullptr;
@@ -1701,7 +1716,7 @@ namespace m3d
 
     GeomObject* Landscape::GetTerrainGeomObject() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_terrainObject;
     }
 
     void Landscape::GetDPVSCollisionInfo(int, int, int&, int&)

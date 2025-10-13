@@ -200,7 +200,25 @@ namespace ai
 
     Aabb Geom::GetAabb() const
     {
-        throw std::logic_error("Not implemented");
+        float aabb[6];
+        dGeomGetAABB(this->m_geomId, aabb);
+        auto res_4 = aabb[2];
+        auto v3 = aabb[4];
+
+        Aabb result;
+        result.m_box[0] = aabb[0];
+        result.m_box[1] = res_4;
+        auto v4 = v3;
+        auto v5 = aabb[1];
+        result.m_box[2] = v4;
+        auto v6 = v5;
+        auto v7 = aabb[3];
+        result.m_box[3] = v6;
+        auto v8 = v7;
+        auto v9 = aabb[5];
+        result.m_box[4] = v8;
+        result.m_box[5] = v9;
+        return result;
     }
 
     void Geom::UnlinkFromBody()

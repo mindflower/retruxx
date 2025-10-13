@@ -6,7 +6,9 @@
 #include <math/quaternion.h>
 #include <math/vector.h>
 
+#include "geoms/ray.h"
 #include "scene/nodes/sgnode.h"
+#include "server/dynamicscene.h"
 
 namespace ai
 {
@@ -31,4 +33,6 @@ namespace ai
     void CommonGeomMovedCallback(dxGeom*);
     void SetNodeElapsedAnimationTimeInMs(m3d::SgNode*, int);
     CVector ProjectVectorOntoPlane(CVector const&, CVector const&);
+    int TraceLine(ai::Ray const&, retruxx::vector<ai::Geom*> const&, dContact*);
+    bool TraceLine(ai::Ray const&, dContact&, bool, bool, bool, bool, ai::TraceLineCallback*, bool, bool);
 }

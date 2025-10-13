@@ -559,7 +559,7 @@ namespace ai
 
     float CServer::GetLevelSize() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_level->land_size * 128.0;
     }
 
     m3d::Level* CServer::GetLevel() const
