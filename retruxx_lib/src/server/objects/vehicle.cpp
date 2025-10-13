@@ -122,7 +122,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetThrottle)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomControlEnabled)
 {
-	throw std::logic_error("Not implemented");
+	auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+	auto enable = context->asBool(1);
+	vehicle->SetCustomControlEnabled(enable);
+	return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetSteer)
@@ -252,7 +255,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, getImmortalMode)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, setImmortalMode)
 {
-	throw std::logic_error("Not implemented");
+	auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+	auto enable = context->asBool(1);
+	vehicle->setImmortalMode(enable);
+	return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetHorn)
@@ -869,9 +875,9 @@ namespace ai
         ai::Vehicle::_UpdateRepositoryOnChangeBasket();
 	}
 
-	void Vehicle::SetCustomControlEnabled(bool)
+	void Vehicle::SetCustomControlEnabled(bool value)
 	{
-		throw std::logic_error("Not implemented");
+		this->m_bCustomControl = value;
 	}
 
 	float Vehicle::GetMaxFiringRangeAI() const
@@ -1207,9 +1213,9 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::setImmortalMode(bool)
+	void Vehicle::setImmortalMode(bool bImmortal)
 	{
-		throw std::logic_error("Not implemented");
+		this->m_bImmortalMode = bImmortal;
 	}
 
 	bool Vehicle::bIsBraking() const
@@ -2138,7 +2144,8 @@ namespace ai
 
 	void Vehicle::Update(float, unsigned)
 	{
-		throw std::logic_error("Not implemented");
+		// TODO: implement Vehicle::Update
+		//throw std::logic_error("Not implemented");
 	}
 
 	float Vehicle::GetCollisionRadius() const

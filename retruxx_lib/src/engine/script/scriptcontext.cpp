@@ -58,9 +58,23 @@ namespace m3d
         }
 	}
 
-	bool LuaContext::asBool(int)
+	bool LuaContext::asBool(int i)
 	{
-		throw std::logic_error("Not implemented");
+		if (i < 0)
+		{
+			lua_pushstring(this->L, "not enough arguments");
+			lua_error(this->L);
+		}
+		auto pos = i + this->m_stackStart;
+		auto type = lua_type(this->L, pos);
+		if (!type)
+			return 0;
+		auto v5 = type - 1;
+		if (!v5)
+			return lua_toboolean(this->L, pos) != 0;
+		if (v5 == 2)
+			return lua_tonumber(this->L, pos) != 0;
+		return 1;
 	}
 
 	Object* LuaContext::asObject(int i, char const* className)

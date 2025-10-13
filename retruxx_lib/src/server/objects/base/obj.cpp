@@ -392,7 +392,7 @@ namespace ai
 
     Obj* Obj::GetParent() const
     {
-        throw std::logic_error("Not implemented");
+        return theObjects->GetEntityByObjId(m_parentId);
     }
 
     void Obj::Remove()
@@ -536,7 +536,7 @@ namespace ai
 
     int Obj::GetBelong() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_belong;
     }
 
     void Obj::RemoveFromCinematic()

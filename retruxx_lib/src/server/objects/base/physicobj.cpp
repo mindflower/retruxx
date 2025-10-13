@@ -87,7 +87,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetSkin)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetSkin)
 {
-    throw std::logic_error("Not implemented");
+    auto* obj = dynamic_cast<ai::PhysicObj*>(context->asObject(0, "PhysicObj"));
+    auto skin = context->asInt(1);
+    obj->SetSkin(skin);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, IsVisible)
