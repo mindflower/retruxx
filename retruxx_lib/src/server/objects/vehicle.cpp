@@ -40,6 +40,8 @@
 #include "world.h"
 #include <server/server.h>
 
+#include "server/weaponfirer.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
 	throw std::logic_error("Not implemented");
@@ -969,9 +971,9 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetMoveStatus(VehicleMoveStatus)
+	void Vehicle::SetMoveStatus(VehicleMoveStatus moveStatus)
 	{
-		throw std::logic_error("Not implemented");
+		this->m_moveStatus = moveStatus;
 	}
 
 	void Vehicle::SetPassedToAnotherMapStatus()
@@ -1084,9 +1086,35 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetUpdatingByODE(bool)
+	void Vehicle::SetUpdatingByODE(bool byODE)
 	{
-		throw std::logic_error("Not implemented");
+		if (byODE && !bIsUpdatingByODE())
+		{
+			auto pos = GetPosition();
+			pos.y += 0.5;
+			SetPosition(pos);
+
+			_EnableIntersections(false);
+
+			CVector newPos;
+			auto validPosition = ai::GetValidPosition(GetPosition(), GetIntersectionRadius(), GetPrototypeInfo()->m_priority, newPos, true, false, {});
+			if (validPosition)
+			{
+				SetGamePositionOnGround(newPos, true, false);
+                _EnableIntersections(true);
+			}
+			else
+			{
+				M3D_LOG_ERR("Error: couldn't find valid position for " + GetDebugDescription() + " when enabling physics");
+			}
+		}
+
+		PhysicObj::SetUpdatingByODE(byODE);
+		auto trailer = dynamic_cast<PhysicObj*>(theObjects->GetEntityByObjId(m_trailerObjId));
+		if (trailer)
+		{
+			trailer->SetUpdatingByODE(byODE);
+		}
 	}
 
 	void Vehicle::GetOutOfDifficultPlace()
@@ -1358,9 +1386,11 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetAttackStatus(VehicleAttackStatus)
+	void Vehicle::SetAttackStatus(VehicleAttackStatus attackStatus)
 	{
-		throw std::logic_error("Not implemented");
+		this->m_attackStatus = attackStatus;
+		if (!attackStatus)
+			ai::WeaponFirer::FireFromWeaponsIfPossible(this, 0, {0.0, 0.0, 0.0}, 0);
 	}
 
 	Vehicle::Vehicle(VehiclePrototypeInfo const& prototypeInfo) :
@@ -1744,7 +1774,14 @@ namespace ai
 
 	void Vehicle::UnsubscribeRadioManagerFromAllNearbyObjIds() const
 	{
-		throw std::logic_error("Not implemented");
+		for (auto& obstacle : m_currentNearbyObstacles)
+		{
+			auto* obj = obstacle->GetOwnerPhysicObj();
+			if (obj && obj->IsKindOf(&ai::Vehicle::m_classVehicle))
+			{
+                dynamic_cast<Vehicle*>(obj)->UnsubscribeRadioManagerFromNearbyObjId(GetId());
+			}
+		}
 	}
 
 	void Vehicle::SetBasket(VehiclePart*)
@@ -2114,9 +2151,142 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetRotationSelf(Quaternion const&)
+	void Vehicle::SetRotationSelf(Quaternion const& rot)
 	{
-		throw std::logic_error("Not implemented");
+		// Store old rotation and calculate relative rotation
+		Quaternion oldRot = GetRotation();
+
+		Quaternion invOldRot = oldRot.getInversed();
+
+		// Calculate relative rotation: rot * invOldRot
+		Quaternion relRot;
+		relRot.x = (rot.w * invOldRot.x) + (rot.y * invOldRot.z) + (invOldRot.w * rot.x) - (invOldRot.y * rot.z);
+		relRot.y = (invOldRot.w * rot.y) + (invOldRot.x * rot.z) + (rot.w * invOldRot.y) - (rot.x * invOldRot.z);
+		relRot.z = (invOldRot.w * rot.z) + (invOldRot.y * rot.x) + (rot.w * invOldRot.z) - (rot.y * invOldRot.x);
+		relRot.w = (invOldRot.w * rot.w) - (rot.x * invOldRot.x) - (rot.y * invOldRot.y) - (invOldRot.z * rot.z);
+
+		// Apply new rotation to vehicle
+		ai::PhysicObj::SetRotationSelf(rot);
+
+		// Get new vehicle position
+		CVector vehiclePos = GetPosition();
+
+		// Update wheel positions and rotations
+		for (auto wheelInfo : m_wheels)
+		{
+			ai::PhysicObj* wheel = wheelInfo.GetWheel();
+			if (!wheel) continue;
+
+			// Get wheel position relative to vehicle
+			CVector wheelWorldPos = wheel->GetPosition();
+
+			CVector wheelRelPos;
+			wheelRelPos.x = wheelWorldPos.x - vehiclePos.x;
+			wheelRelPos.y = wheelWorldPos.y - vehiclePos.y;
+			wheelRelPos.z = wheelWorldPos.z - vehiclePos.z;
+
+			// Create rotation matrix from relative rotation quaternion
+			CMatrix rotMatrix;
+			memset(&rotMatrix, 0, sizeof(rotMatrix));
+
+			// Convert quaternion to rotation matrix
+			float qx = relRot.x, qy = relRot.y, qz = relRot.z, qw = relRot.w;
+			float xx = qx * qx, yy = qy * qy, zz = qz * qz;
+			float xy = qx * qy, xz = qx * qz, yz = qy * qz;
+			float wx = qw * qx, wy = qw * qy, wz = qw * qz;
+
+			rotMatrix._11 = 1.0f - 2.0f * (yy + zz);
+			rotMatrix._12 = 2.0f * (xy + wz);
+			rotMatrix._13 = 2.0f * (xz - wy);
+
+			rotMatrix._21 = 2.0f * (xy - wz);
+			rotMatrix._22 = 1.0f - 2.0f * (xx + zz);
+			rotMatrix._23 = 2.0f * (yz + wx);
+
+			rotMatrix._31 = 2.0f * (xz + wy);
+			rotMatrix._32 = 2.0f * (yz - wx);
+			rotMatrix._33 = 1.0f - 2.0f * (xx + yy);
+
+			// Transform wheel position by relative rotation
+			CVector newWheelPos;
+			newWheelPos.x = (rotMatrix._11 * wheelRelPos.x) + (rotMatrix._21 * wheelRelPos.y) + (rotMatrix._31 * wheelRelPos.z) + vehiclePos.x;
+			newWheelPos.y = (rotMatrix._12 * wheelRelPos.x) + (rotMatrix._22 * wheelRelPos.y) + (rotMatrix._32 * wheelRelPos.z) + vehiclePos.y;
+			newWheelPos.z = (rotMatrix._13 * wheelRelPos.x) + (rotMatrix._23 * wheelRelPos.y) + (rotMatrix._33 * wheelRelPos.z) + vehiclePos.z;
+
+			// Set new wheel position
+			wheel->SetPosition(newWheelPos);
+
+			// Apply relative rotation to wheel
+			Quaternion wheelRot = wheel->GetRotation();
+
+			Quaternion newWheelRot;
+			newWheelRot.x = (wheelRot.w * relRot.x) + (wheelRot.z * relRot.y) + (wheelRot.x * relRot.w) - (wheelRot.y * relRot.z);
+			newWheelRot.y = (wheelRot.w * relRot.y) + (wheelRot.y * relRot.w) + (wheelRot.x * relRot.z) - (wheelRot.z * relRot.x);
+			newWheelRot.z = (wheelRot.w * relRot.z) + (wheelRot.z * relRot.w) + (wheelRot.y * relRot.x) - (wheelRot.x * relRot.y);
+			newWheelRot.w = (wheelRot.w * relRot.w) - (wheelRot.x * relRot.x) - (wheelRot.y * relRot.y) - (wheelRot.z * relRot.z);
+
+			wheel->SetRotation(newWheelRot);
+		}
+
+		// Update trailer if exists
+		int trailerObjId = this->m_trailerObjId;
+		if (trailerObjId >= 0)
+		{
+			ai::PhysicObj* trailer = dynamic_cast<ai::PhysicObj*>(theObjects->GetEntityByObjId(trailerObjId));
+
+			// Check if trailer object is valid
+				if (trailer)
+				{
+					// Get trailer position relative to vehicle
+					CVector trailerWorldPos = trailer->GetPosition();
+
+					CVector trailerRelPos;
+					trailerRelPos.x = trailerWorldPos.x - vehiclePos.x;
+					trailerRelPos.y = trailerWorldPos.y - vehiclePos.y;
+					trailerRelPos.z = trailerWorldPos.z - vehiclePos.z;
+
+					// Create rotation matrix from relative rotation quaternion (same as above)
+					CMatrix rotMatrix;
+					rotMatrix.zero();
+
+					float qx = relRot.x, qy = relRot.y, qz = relRot.z, qw = relRot.w;
+					float xx = qx * qx, yy = qy * qy, zz = qz * qz;
+					float xy = qx * qy, xz = qx * qz, yz = qy * qz;
+					float wx = qw * qx, wy = qw * qy, wz = qw * qz;
+
+					rotMatrix._11 = 1.0f - 2.0f * (yy + zz);
+					rotMatrix._12 = 2.0f * (xy + wz);
+					rotMatrix._13 = 2.0f * (xz - wy);
+
+					rotMatrix._21 = 2.0f * (xy - wz);
+					rotMatrix._22 = 1.0f - 2.0f * (xx + zz);
+					rotMatrix._23 = 2.0f * (yz + wx);
+
+					rotMatrix._31 = 2.0f * (xz + wy);
+					rotMatrix._32 = 2.0f * (yz - wx);
+					rotMatrix._33 = 1.0f - 2.0f * (xx + yy);
+
+					// Transform trailer position by relative rotation
+					CVector newTrailerPos;
+					newTrailerPos.x = (rotMatrix._11 * trailerRelPos.x) + (rotMatrix._21 * trailerRelPos.y) + (rotMatrix._31 * trailerRelPos.z) + vehiclePos.x;
+					newTrailerPos.y = (rotMatrix._12 * trailerRelPos.x) + (rotMatrix._22 * trailerRelPos.y) + (rotMatrix._32 * trailerRelPos.z) + vehiclePos.y;
+					newTrailerPos.z = (rotMatrix._13 * trailerRelPos.x) + (rotMatrix._23 * trailerRelPos.y) + (rotMatrix._33 * trailerRelPos.z) + vehiclePos.z;
+
+					// Set new trailer position
+					trailer->SetPosition(newTrailerPos);
+
+					// Apply relative rotation to trailer
+					Quaternion trailerRot = trailer->GetRotation();
+
+					Quaternion newTrailerRot;
+					newTrailerRot.x = (trailerRot.w * relRot.x) + (trailerRot.z * relRot.y) + (trailerRot.x * relRot.w) - (trailerRot.y * relRot.z);
+					newTrailerRot.y = (trailerRot.w * relRot.y) + (trailerRot.y * relRot.w) + (trailerRot.x * relRot.z) - (trailerRot.z * relRot.x);
+					newTrailerRot.z = (trailerRot.w * relRot.z) + (trailerRot.z * relRot.w) + (trailerRot.y * relRot.x) - (trailerRot.x * relRot.y);
+					newTrailerRot.w = (trailerRot.w * relRot.w) - (trailerRot.x * relRot.x) - (trailerRot.y * relRot.y) - (trailerRot.z * relRot.z);
+
+					trailer->SetRotation(newTrailerRot);
+				}
+		}
 	}
 
 	void Vehicle::InflictDamage(DamageInfo const&)

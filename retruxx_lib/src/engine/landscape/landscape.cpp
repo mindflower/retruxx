@@ -2345,9 +2345,93 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    CVector Landscape::getNormal(float, float)
+    CVector Landscape::getNormal(float worldX, float worldZ)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+         // Convert world coordinates to heightmap coordinates (scale factor 0.125 = 1/8)
+        int mapX = static_cast<int>(worldX * 0.125f);
+        int mapZ = static_cast<int>(worldZ * 0.125f);
+
+        int mapSize = this->m_mapSize;
+        int mapSizePlusOne = mapSize + 1;
+
+
+        // Check if coordinates are out of bounds
+        if (mapX < 0 || mapZ < 0 ||
+            mapX + 2 >= mapSizePlusOne ||
+            mapZ + 2 >= mapSizePlusOne) {
+            // Return default up vector for out-of-bounds coordinates
+
+            CVector result;
+            result.x = 0.0f;
+            result.y = 1.0f;
+            result.z = 0.0f;
+            return result;
+        }
+
+        // Clamp coordinates to map boundaries
+        if (mapX == mapSizePlusOne) {
+            mapX = mapSize;
+        }
+        if (mapZ == mapSizePlusOne) {
+            mapZ = mapSize;
+        }
+
+        // Arrays to store normal components for the 2x2 quad
+        float normalX[8];
+        float normalY[8];
+        float normalZ[8];
+
+        // Initialize normal arrays
+        for (int i = 0; i < 8; i++) {
+            normalZ[i] = 64.0f;  // Constant Z component
+            normalY[i] = 64.0f;  // Constant Y component
+        }
+
+        // Calculate normals for the 2x2 quad around the point
+        int index = 0;
+        for (int z = mapZ; z <= mapZ + 1; z++) {
+            for (int x = mapX; x <= mapX + 1; x++) {
+                // Get height values for the current quad
+                int currentIndex = z * (mapSize + 1) + x;
+                int rightIndex = z * (mapSize + 1) + ((x + 1) % (mapSize + 1));
+                int bottomIndex = ((z + 1) % (mapSize + 1)) * (mapSize + 1) + x;
+                int bottomRightIndex = ((z + 1) % (mapSize + 1)) * (mapSize + 1) + ((x + 1) % (mapSize + 1));
+
+                float currentHeight = m_heightMap[currentIndex];
+                float rightHeight = m_heightMap[rightIndex];
+                float bottomHeight = m_heightMap[bottomIndex];
+                float bottomRightHeight = m_heightMap[bottomRightIndex];
+
+                // Calculate X component of normal (derivative in X direction)
+                // Based on height differences between right and current points
+                normalX[index] = (0.0f - (rightHeight - currentHeight)) * 8.0f;
+                normalX[index + 1] = (0.0f - (rightHeight - currentHeight)) * 8.0f;
+
+                // Calculate Y component of normal (derivative in Z direction)  
+                // Based on height differences between bottom and current points
+                normalY[index] = (bottomHeight - currentHeight) * 8.0f;
+                normalY[index + 1] = (bottomRightHeight - rightHeight) * 8.0f;
+
+                index += 2;
+            }
+        }
+
+        // Sum up all the normal components
+        float sumX = (normalX[6] + normalX[2] + normalX[5] + normalX[1]);
+        float sumY = (normalY[6] + normalY[2] + normalY[5] + normalY[1]);
+        float sumZ = (normalZ[6] + normalZ[2] + normalZ[5] + normalZ[1]);
+
+        // Normalize the resulting vector
+        float length = sqrt(sumX * sumX + sumY * sumY + sumZ * sumZ);
+        float invLength = 1.0f / length;
+
+        CVector result;
+        result.x = invLength * sumX;
+        result.y = invLength * sumY;
+        result.z = invLength * sumZ;
+
+        return result;
     }
 
     unsigned char Landscape::GetColor(float, float)

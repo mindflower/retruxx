@@ -99,9 +99,154 @@ void ext_initQuaternion(lua_State* L)
     lua_settable(L, -10001);
 }
 
-int ext_quatGet(lua_State* L)
+int ext_quatIdentity(lua_State* L)
 {
     throw std::logic_error("Not implemented");
+}
+
+int ext_quatZero(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_quatNorm(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_quatNormalize(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_quatRotX(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_quatRotY(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_quatRotZ(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_quatFromAxisAngle(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_quatGetConjugated(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_quatGetInversed(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_quatFromYPR(lua_State* L)
+{
+    throw std::logic_error("Not implemented");
+}
+
+int ext_quatGet(lua_State* L)
+{
+    // TODO: generated code
+    Quaternion* quat = static_cast<Quaternion*>(lua_touserdata(L, 1));
+
+    // Get the property name being accessed
+    const char* propertyName = luaL_checklstring(L, 2, nullptr);
+
+    // Handle special internal tag
+    if (strcmp(propertyName, "internalTag") == 0)
+    {
+        lua_pushnumber(L, 1003.0);
+        return 1;
+    }
+
+    // Handle single-character properties (x, y, z, w)
+    if (strlen(propertyName) == 1)
+    {
+        switch (propertyName[0]) {
+        case 'x':
+            lua_pushnumber(L, quat->x);
+            return 1;
+        case 'y':
+            lua_pushnumber(L, quat->y);
+            return 1;
+        case 'z':
+            lua_pushnumber(L, quat->z);
+            return 1;
+        case 'w':
+            lua_pushnumber(L, quat->w);
+            return 1;
+        }
+    }
+
+    // Handle method calls (return closure functions)
+    if (strcmp(propertyName, "Identity") == 0)
+    {
+        lua_pushcclosure(L, ext_quatIdentity, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "Zero") == 0)
+    {
+        lua_pushcclosure(L, ext_quatZero, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "Norm") == 0)
+    {
+        lua_pushcclosure(L, ext_quatNorm, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "Normalize") == 0)
+    {
+        lua_pushcclosure(L, ext_quatNormalize, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "RotX") == 0)
+    {
+        lua_pushcclosure(L, ext_quatRotX, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "RotY") == 0)
+    {
+        lua_pushcclosure(L, ext_quatRotY, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "RotZ") == 0)
+    {
+        lua_pushcclosure(L, ext_quatRotZ, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "FromAxisAngle") == 0)
+    {
+        lua_pushcclosure(L, ext_quatFromAxisAngle, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "getConjugated") == 0)
+    {
+        lua_pushcclosure(L, ext_quatGetConjugated, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "getInversed") == 0)
+    {
+        lua_pushcclosure(L, ext_quatGetInversed, 0);
+        return 1;
+    }
+    else if (strcmp(propertyName, "fromYPR") == 0)
+    {
+        lua_pushcclosure(L, ext_quatFromYPR, 0);
+        return 1;
+    }
+
+    lua_pushnumber(L, 0.0);
+    return 1;
 }
 
 int ext_quatSet(lua_State* L)

@@ -41,7 +41,8 @@ namespace ai
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x007C2FC0, WeaponFirer::FireFromWeaponsIfPossible)
     void WeaponFirer::FireFromWeaponsIfPossible(ComplexPhysicObj*, bool, CVector const&, Obj*)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement WeaponFirer::FireFromWeaponsIfPossible
+        //throw std::logic_error("Not implemented");
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x007C3210, WeaponFirer::WeaponLookAtPoint)

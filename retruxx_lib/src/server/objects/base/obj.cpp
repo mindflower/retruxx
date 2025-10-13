@@ -42,7 +42,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetChild)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, AddChild)
 {
-    throw std::logic_error("Not implemented");
+    auto* obj = (ai::Obj*)context->asObject(0, "Obj");
+    auto* child = (ai::Obj*)context->asObject(1, "Obj");
+    obj->AddChild(child);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, AddModifier)
@@ -339,7 +342,10 @@ namespace ai
     {
         if (pObj)
         {
-            throw std::logic_error("Not implemented");
+            if (CanChildBeAdded(pObj->GetClass()))
+            {
+                m_allChildren[pObj->GetId()] = pObj;
+            }
         }
         else
         {

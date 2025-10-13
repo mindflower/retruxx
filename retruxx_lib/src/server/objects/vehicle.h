@@ -83,7 +83,7 @@ namespace ai
 
     class Vehicle : public ComplexPhysicObj
     {
-        RETRUXX_DLL_FRIEND_CLASS(Vehicle);
+        friend class Player;
 
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Vehicle, float, void>;
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Vehicle, ai::Modifier, float, bool>;

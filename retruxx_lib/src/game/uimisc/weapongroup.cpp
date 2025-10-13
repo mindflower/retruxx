@@ -33,7 +33,9 @@ void WeaponGroupManager::ClearSavedGroups()
 
 int WeaponGroupManager::ValidateWeaponGroups()
 {
-    throw retruxx::logic_error("Not implemented");
+    // TODO: implement WeaponGroupManager::ValidateWeaponGroups
+    //throw retruxx::logic_error("Not implemented");
+    return 1;
 }
 
 void WeaponGroupManager::GetAllWeapons(retruxx::set<CStr>&) const
@@ -63,7 +65,26 @@ void WeaponGroupManager::KeepFire()
 
 int WeaponGroupManager::GameDataUpdate(void* data, int dataType)
 {
-    throw retruxx::logic_error("Not implemented");
+    auto v3 = dataType - 11;
+    if (v3)
+    {
+        auto v4 = v3 - 53;
+        if (!v4)
+        {
+            WeaponGroupManager::ValidateWeaponGroups();
+            return 1;
+        }
+        if (v4 == 1)
+        {
+            WeaponGroupManager::OnVehiclePartChanged(data);
+            return 1;
+        }
+    }
+    else
+    {
+        WeaponGroupManager::ReloadAllWeapon();
+    }
+    return 1;
 }
 
 WeaponGroup* WeaponGroupManager::CreateWeaponGroup(int)

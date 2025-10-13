@@ -882,6 +882,17 @@ dxGeom* dBodyGetFirstGeom (dBodyID b)
     return b->geom;
 }
 
+void dBodyAddIslandToWorld (dBodyID b, dxWorld* w)
+{
+    // TODO: implememnt dBodyAddIslandToWorld
+}
+
+void dBodyRemoveIslandFromWorld (dBodyID b)
+{
+    // TODO: implememnt dBodyRemoveIslandFromWorld
+}
+
+
 //****************************************************************************
 // joints
 

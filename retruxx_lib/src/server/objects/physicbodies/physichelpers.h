@@ -35,4 +35,5 @@ namespace ai
     CVector ProjectVectorOntoPlane(CVector const&, CVector const&);
     int TraceLine(ai::Ray const&, retruxx::vector<ai::Geom*> const&, dContact*);
     bool TraceLine(ai::Ray const&, dContact&, bool, bool, bool, bool, ai::TraceLineCallback*, bool, bool);
+    bool GetValidPosition(CVector const&, float, unsigned char, CVector&, bool, bool, std::set<m3d::Class* > const&);
 }

@@ -448,5 +448,10 @@ namespace ai
 
         return foundContact;
     }
+
+    bool GetValidPosition(CVector const&, float, unsigned char, CVector&, bool, bool, std::set<m3d::Class*> const&)
+    {
+        throw std::logic_error("Not implemented");
+    }
 }
 

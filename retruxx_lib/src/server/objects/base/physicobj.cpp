@@ -34,7 +34,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetPosition)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetRotation)
 {
-    throw std::logic_error("Not implemented");
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    auto& quat = context->asQuaternion(1);
+    obj->SetRotation(quat);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetRotation)
@@ -137,9 +140,32 @@ namespace ai
         return result;
 	}
 
-    void PhysicObj::SetDirections(CVector const&, CVector const&)
+    void PhysicObj::SetDirections(CVector const& forward, CVector const& up)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        // Create rotation matrix directly from forward and up vectors
+        CMatrix mat;
+        memset(&mat, 0, sizeof(mat));
+
+        // Calculate the right vector (x-axis) as cross product of up and forward
+        mat.m[0][0] = up.y * forward.z - up.z * forward.y;  // right.x
+        mat.m[0][1] = up.z * forward.x - up.x * forward.z;  // right.y  
+        mat.m[0][2] = up.x * forward.y - up.y * forward.x;  // right.z
+
+        // Use provided up vector for y-axis
+        mat.m[1][0] = up.x;
+        mat.m[1][1] = up.y;
+        mat.m[1][2] = up.z;
+
+        // Use provided forward vector for z-axis
+        mat.m[2][0] = forward.x;
+        mat.m[2][1] = forward.y;
+        mat.m[2][2] = forward.z;
+
+        // Convert to quaternion and set rotation
+        Quaternion rotation;
+        rotation.FromMatrix(mat);
+        SetRotation(rotation);
     }
 
     void PhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -180,7 +206,7 @@ namespace ai
 
     bool PhysicObj::bIsUpdatingByODE() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_bIsUpdatingByODE != 0;
     }
 
     void PhysicObj::RelinkToSpace(dxSpace*)
@@ -301,9 +327,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void PhysicObj::SetRotation(Quaternion const&)
+    void PhysicObj::SetRotation(Quaternion const& rot)
     {
-        throw std::logic_error("Not implemented");
+        this->SetRotationSelf(rot);
     }
 
     bool PhysicObj::CanCreateCollisionEffect() const
@@ -485,9 +511,27 @@ namespace ai
         this->m_timeFromLastCollisionEffect = this->m_timeFromLastCollisionEffect + elapsedTime;
     }
 
-    void PhysicObj::SetUpdatingByODE(bool)
+    void PhysicObj::SetUpdatingByODE(bool byODE)
     {
-        throw std::logic_error("Not implemented");
+        if (byODE)
+        {
+            if (!this->m_bIsUpdatingByODE)
+            {
+                dBodyAddIslandToWorld(this->m_body->id(), ai::gGlobalWorld);
+                this->m_bIsUpdatingByODE = 1;
+                SetLinearVelocity({0.0, 0.0, 0.0});
+                dBodySetAngularVel(this->m_body->id(), 0.0, 0.0, 0.0);
+                dBodySetForce(this->m_body->id(), 0.0, 0.0, 0.0);
+                dBodySetTorque(this->m_body->id(), 0.0, 0.0, 0.0);
+                this->CheckCollisionCells();
+            }
+        }
+        else if (this->m_bIsUpdatingByODE)
+        {
+            dBodyRemoveIslandFromWorld(this->m_body->id());
+            this->m_bIsUpdatingByODE = 0;
+            CheckCollisionCells();
+        }
     }
 
     void PhysicObj::SetMassCenterPosition(CVector const&)
@@ -787,9 +831,18 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void PhysicObj::SetRotationSelf(Quaternion const&)
+    void PhysicObj::SetRotationSelf(Quaternion const& rot)
     {
-        throw std::logic_error("Not implemented");
+        CVector pos = GetPosition();
+        m_body = this->m_body;
+
+        float dq[4];
+        dq[0] = rot.w;
+        dq[1] = rot.x;
+        dq[2] = rot.y;
+        dq[3] = rot.z;
+        dBodySetQuaternion(m_body->id(), dq);
+        ai::PhysicObj::SetPositionSelf(pos);
     }
 
     void PhysicObj::SetPostPosition(CVector const&)
@@ -819,7 +872,77 @@ namespace ai
 
     CVector PhysicObj::GetDirection() const
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        // Get the object's current rotation as a quaternion
+        Quaternion rotation = GetRotation();
+
+        // Extract quaternion components for readability
+        float x = rotation.x;
+        float y = rotation.y;
+        float z = rotation.z;
+        float w = rotation.w;
+
+        // Calculate squared components (used in matrix diagonal)
+        float x2 = x * x;
+        float y2 = y * y;
+        float z2 = z * z;
+
+        // Calculate cross terms (used in matrix off-diagonals)
+        float xy = x * y;
+        float xz = x * z;
+        float xw = x * w;
+        float yz = y * z;
+        float yw = y * w;
+        float zw = z * w;
+
+        // Construct rotation matrix from quaternion
+        // This is the standard conversion: R = [1-2(y²+z²)  2(xy-zw)    2(xz+yw)   ]
+        //                                     [2(xy+zw)     1-2(x²+z²)  2(yz-xw)   ]
+        //                                     [2(xz-yw)     2(yz+xw)    1-2(x²+y²) ]
+        CMatrix rotationMatrix;
+
+        // First row
+        rotationMatrix._11 = 1.0f - 2.0f * (y2 + z2);
+        rotationMatrix._12 = 2.0f * (xy - zw);
+        rotationMatrix._13 = 2.0f * (xz + yw);
+        rotationMatrix._14 = 0.0f;
+
+        // Second row
+        rotationMatrix._21 = 2.0f * (xy + zw);
+        rotationMatrix._22 = 1.0f - 2.0f * (x2 + z2);
+        rotationMatrix._23 = 2.0f * (yz - xw);
+        rotationMatrix._24 = 0.0f;
+
+        // Third row
+        rotationMatrix._31 = 2.0f * (xz - yw);
+        rotationMatrix._32 = 2.0f * (yz + xw);
+        rotationMatrix._33 = 1.0f - 2.0f * (x2 + y2);
+        rotationMatrix._34 = 0.0f;
+
+        // Fourth row (identity for homogeneous coordinates)
+        rotationMatrix._41 = 0.0f;
+        rotationMatrix._42 = 0.0f;
+        rotationMatrix._43 = 0.0f;
+        rotationMatrix._44 = 1.0f;
+
+        CVector INITIAL_OBJECTS_DIRECTION_5(0.0, 0.0, 1.0);
+
+        // Transform the initial forward direction by the rotation matrix
+        // This gives us the object's current forward direction in world space
+        CVector result;
+        result.x = rotationMatrix._11 * INITIAL_OBJECTS_DIRECTION_5.x +
+            rotationMatrix._21 * INITIAL_OBJECTS_DIRECTION_5.y +
+            rotationMatrix._31 * INITIAL_OBJECTS_DIRECTION_5.z;
+
+        result.y = rotationMatrix._12 * INITIAL_OBJECTS_DIRECTION_5.x +
+            rotationMatrix._22 * INITIAL_OBJECTS_DIRECTION_5.y +
+            rotationMatrix._32 * INITIAL_OBJECTS_DIRECTION_5.z;
+
+        result.z = rotationMatrix._13 * INITIAL_OBJECTS_DIRECTION_5.x +
+            rotationMatrix._23 * INITIAL_OBJECTS_DIRECTION_5.y +
+            rotationMatrix._33 * INITIAL_OBJECTS_DIRECTION_5.z;
+
+        return result;
     }
 
     bool PhysicObj::GetGeomEnabledBit() const

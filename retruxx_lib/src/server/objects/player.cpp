@@ -14,6 +14,9 @@
 #include "core/log.h"
 #include "server/event.h"
 #include "server/utils.h"
+#include <server/processmanager.h>
+
+#include "radiomanager.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Player, GetMoney)
 {
@@ -500,7 +503,51 @@ namespace ai
         Obj::AddChild(obj);
         if (obj)
         {
-            throw std::logic_error("Not implemented");
+            if (obj->IsKindOf(&ai::Vehicle::m_classVehicle))
+            {
+                if (m_vehicleObjId == -1)
+                {
+                    m_vehicleObjId = obj->GetId();
+
+                    auto newVehicle = dynamic_cast<Vehicle*>(theObjects->GetEntityByObjId(m_vehicleObjId));
+                    newVehicle->m_bIsControlledByPlayer = true;
+                    newVehicle->SetMoveStatus(Vehicle::MOVE_IDLE);
+                    newVehicle->SetAttackStatus(Vehicle::ATTACK_IDLE);
+                    newVehicle->SetUpdatingByODE(true);
+                    newVehicle->UnsubscribeRadioManagerFromAllNearbyObjIds();
+                    if (CStr(newVehicle->GetName()).empty())
+                    {
+                        newVehicle->SetName("PlayerVehicle_" + CStr(m_vehicleObjId));
+                        ++m_curNumForVehicleWithoutName;
+                    }
+
+                    M3D_APP->ImmediateMessage(66544, 0, 0, 0, 0, {}, {});
+                    CauseEvent(GE_PLAYER_VEHICLE_CHANGED, 0.0, {}, {});
+                    if (m_radioManager)
+                    {
+                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, { 9 }, {}, 1);
+                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, { 44 }, {}, 1);
+                    }
+                }
+            }
+            else
+            {
+                if (!obj->IsKindOf(&ai::RadioManager::m_classRadioManager))
+                {
+                    return;
+                }
+                if (!m_radioManager)
+                {
+                    m_radioManager = dynamic_cast<RadioManager*>(obj);
+                    if (m_vehicleObjId != -1)
+                    {
+                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, { 9 }, {}, 1);
+                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, { 44 }, {}, 1);
+                    }
+                    theProcessManager->PostMessageA(2, GetId(), m_radioManager->GetId(), 0.0, { 65 }, {}, 1);
+                }
+            }
+            LinkToParent(GetId(), HIERARCHY_CHILD);
         }
     }
 
@@ -632,9 +679,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool Player::CanChildBeAdded(m3d::Class*) const
+    bool Player::CanChildBeAdded(m3d::Class* pClass) const
     {
-        throw std::logic_error("Not implemented");
+        return ai::Obj::CanChildBeAdded(pClass) || pClass->m3d::Class::IsKindOf(&ai::Vehicle::m_classVehicle);
     }
 
     unsigned Player::GetSkinNumber() const

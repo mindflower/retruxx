@@ -1220,10 +1220,15 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     }
     case 64:
     {
-        throw std::logic_error("Not implemented");
-        return 1;
+        //throw std::logic_error("Not implemented");
+        //return 1;
         m_weaponGroupManager->GameDataUpdate(data, guiEventId);
-        //auto event = (m3d::Event*)data;
+        auto event = (m3d::Event*)data;
+        if (event->m_intEv[0] != 1)
+        {
+            return 1;
+        }
+        m_bIsHiddenByUser = true;
         return 1;
     }
     case 84:

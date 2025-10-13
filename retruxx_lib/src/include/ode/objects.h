@@ -98,6 +98,9 @@ void  dBodySetAutoDisableDefaults (dBodyID);
 void dBodyDetachAllContactJoints (dBodyID b);
 dxGeom* dBodyGetFirstGeom(dBodyID b);
 
+void dBodyAddIslandToWorld(dBodyID b, dxWorld* w);
+void dBodyRemoveIslandFromWorld(dBodyID b);
+
 /* bodies */
 
 dBodyID dBodyCreate (dWorldID);

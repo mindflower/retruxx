@@ -195,9 +195,16 @@ namespace m3d
 		throw std::logic_error("Not implemented");
 	}
 
-	Quaternion& LuaContext::asQuaternion(int)
+	Quaternion& LuaContext::asQuaternion(int i)
 	{
-		throw std::logic_error("Not implemented");
+		if (i < 0)
+		{
+			lua_pushstring(this->L, "not enough arguments");
+			lua_error(this->L);
+		}
+		auto pos = i + this->m_stackStart;
+		assert(ext_checkTag(L, pos, tag_luaQuaternion));
+		return *(Quaternion*)lua_touserdata(this->L, pos);
 	}
 
 	void LuaContext::pushString(char const*)

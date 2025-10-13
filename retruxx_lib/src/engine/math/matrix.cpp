@@ -24,7 +24,7 @@ CMatrix CMatrix::getInverseRotTranslate() const
 
 void CMatrix::zero()
 {
-    throw std::logic_error("Not implemented");
+    memset(this, 0, sizeof(CMatrix));
 }
 
 CMatrix CMatrix::getTransposed() const

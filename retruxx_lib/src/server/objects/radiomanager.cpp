@@ -2,6 +2,10 @@
 
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(RadioManager)
+        RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(RadioManager);
+
     ai::Obj* RadioManagerPrototypeInfo::CreateTargetObject() const
     {
         throw std::logic_error("Not implemented");
