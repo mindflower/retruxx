@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "core/kernel.h"
+
 namespace ai
 {
 	RT_CLASS_EXPORTS_BEGIN(Statistic)
@@ -45,7 +47,6 @@ namespace ai
 
     Statistic::Statistic()
     {
-        throw std::logic_error("Not implemented");
     }
 
 	StatisticManager::StatisticManager()
@@ -87,9 +88,17 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	Statistic* StatisticManager::GetStatistic(CStr const&, CStr const&)
+	Statistic* StatisticManager::GetStatistic(CStr const& name, CStr const& statisticClassName)
 	{
-		throw std::logic_error("Not implemented");
+        auto it = m_statistics.find(name);
+		if (it != m_statistics.end())
+		{
+			return it->second;
+		}
+
+        auto statistic = _CreateStatisticByClassName(statisticClassName);
+        m_statistics[name] = statistic;
+		return statistic;
 	}
 
 	Statistic const* StatisticManager::GetStatistic(CStr const&) const
@@ -97,8 +106,10 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	Statistic* StatisticManager::_CreateStatisticByClassName(CStr const&)
+	Statistic* StatisticManager::_CreateStatisticByClassName(CStr const& className)
 	{
-		throw std::logic_error("Not implemented");
+		auto res = M3D_KERNEL->New(className.c_str());
+		M3D_ASSERT(IS_KIND_OF(res, Statistic));
+		return RT_DYNCAST(res, Statistic);
 	}
 }

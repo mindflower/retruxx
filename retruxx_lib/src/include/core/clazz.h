@@ -13,6 +13,9 @@
 #define RT_CLASS_EXPORT(cl, type, funcName, retVal, params, desc) m3d::ExportInfo{#funcName, type, _export_##cl##_##funcName, nullptr, retVal, params, desc},
 #define RT_CLASS_EXPORT_METHOD_DEFINE(cl, funcName) int _export_##cl##_##funcName##(m3d::Context* context)
 
+#define IS_KIND_OF(obj, className) ((obj) != nullptr && (obj)->IsKindOf(RT_CLASS_LOCAL(className)))
+#define RT_DYNCAST(obj, className) dynamic_cast<className*>(obj)
+
 #undef GetFirstChild
 #undef GetFirstSibling
 #undef GetLastSibling

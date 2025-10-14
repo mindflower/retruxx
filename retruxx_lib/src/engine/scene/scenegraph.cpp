@@ -14,6 +14,10 @@
 namespace
 {
     float const VISCELL_EDGE_LENGTH_6 = 128.0;
+
+    CVector camOrg;
+    float transparentRadius = 0.0;
+    bool inTransparencyRadius = false;
 }
 
 namespace m3d
@@ -449,19 +453,21 @@ namespace m3d
         this->m_rootNode.UpdateXForm(false , true);
         memset(this->m_enableMap, 0, sizeof(this->m_enableMap));
         this->m_enableVisSpaceMask = 1;
+
         //TODO: add this fields
-        //this->m_visSlots = m3d::g_Kernel->g_mar.AllocMem(512000, 0, 0);
-        //this->m_visNumSlots = m3d::g_Kernel->g_mar.AllocMem(256, 0, 0);
-        //this->m_visSlotsUnderwater = m3d::g_Kernel->g_mar.AllocMem(512000, 0, 0);
-        //this->m_visNumSlotsUnderwater = m3d::g_Kernel->g_mar.AllocMem(256, 0, 0);
-        //this->m_transparentNodes = m3d::g_Kernel->g_mar.AllocMem(2000, 0, 0);
+        this->m_visSlots = new SgNode*[128000];
+        this->m_visNumSlots = new int[64];
+        this->m_visSlotsUnderwater = new SgNode*[128000];
+        this->m_visNumSlotsUnderwater = new int[64];
+        this->m_transparentNodes = new SgNode*[500];
         this->m_numTransparentNodes = 0;
         this->m_transparencyTest = new IsNodeTransparent;
-        //memset(this->m_visNumSlots, 0, 0x100u);
-        //memset(this->m_visSlots, 0, 0x7D000u);
-        //memset(this->m_visNumSlotsUnderwater, 0, 0x100u);
-        //memset(this->m_visSlotsUnderwater, 0, 0x7D000u);
-        //memset(this->m_transparentNodes, 0, 0x7D0u);
+
+        memset(this->m_visNumSlots, 0, 64 * sizeof(int));
+        memset(this->m_visSlots, 0, 128000 * sizeof(SgNode*));
+        memset(this->m_visNumSlotsUnderwater, 0, 64 * sizeof(int));
+        memset(this->m_visSlotsUnderwater, 0, 28000 * sizeof(SgNode*));
+        memset(this->m_transparentNodes, 0, 500 * sizeof(SgNode*));
         this->m_cellsPrepared = 0;
     }
 
@@ -474,7 +480,67 @@ namespace m3d
         }
         else
         {
-            throw retruxx::logic_error("Not implemented");
+            memset(this->m_visNumSlots, 0, 0x100u);
+            m_numTransparentNodes = 0;
+            camOrg = M3D_RENDERER->MatGetOrgInv();
+            transparentRadius = m_transparencyTest->getTransparentRadius();
+
+            const auto curFrame = M3D_KERNEL->GetTimer().GetCurFrame()
+            ;
+            float lsViewDistanceDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
+            lsViewDistanceDivider = ((lsViewDistanceDivider * 8.0) + 4.0);
+            if (lsViewDistanceDivider >= 4)
+            {
+                if (lsViewDistanceDivider > 12)
+                    lsViewDistanceDivider = 12;
+            }
+            else
+            {
+                lsViewDistanceDivider = 4;
+            }
+
+            SortedCellsStartFetching(0, lsViewDistanceDivider);
+
+            int x, y, vis, radius;
+            while (SortedCellsFetch(x, y, vis, radius))
+            {
+                inTransparencyRadius = false;
+                if (primary)
+                {
+                    inTransparencyRadius = (((VISCELL_EDGE_LENGTH_6 * 0.70700002)
+                                             + transparentRadius)
+                                             * ((VISCELL_EDGE_LENGTH_6 * 0.70700002)
+                                                + transparentRadius)) > ((((((y + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.z) * (((y + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.z)) + ((camOrg.y - camOrg.y) * (camOrg.y - camOrg.y))) + ((((x + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.x) * (((x + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.x)));
+                }
+
+                auto idx = x + (y << 6);
+                m_cellItems[idx].m_bVisibleInCurrentFrame = true;
+                auto* objects = m_cellItems[idx].m_nodesLinkedDirect.GetObjects();
+                for (int i = 0 ; i < 64; ++i)
+                {
+                    for (auto& obj : objects[i])
+                    {
+                        AddNodeAndItsChildrenToRender(RT_DYNCAST(obj, SgNode), frusta, curFrame);
+                    }
+                }
+            }
+
+            int v12 = 0;
+            for (int i = 0; i < 64; ++i)
+            {
+                auto v14 = v12 + this->m_visNumSlots[i];
+                for (int j = v12; j < v14; ++j)
+                {
+                    auto v16 = this->m_visSlots[j];
+                    v16->m_isWaitingForRender = 0;
+                }
+                v12 += 2000;
+            }
+            for (int  k = 0; k < this->m_numTransparentNodes; ++k)
+            {
+                auto v18 = this->m_transparentNodes[k];
+                v18->m_isWaitingForRender = 0;
+            }
         }
     }
 
@@ -814,5 +880,30 @@ namespace m3d
     {
         auto clz = obj->GetClass();
         m_objectsByClassIdx[clz->m_index].push_back(obj);
+    }
+
+    void ObjectsContainer::RemoveObject(m3d::Object* obj)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* ObjectsContainer::GetObjectsByClass(m3d::Class* cl)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    const retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* ObjectsContainer::GetObjects() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* ObjectsContainer::GetObjects()
+    {
+        return m_objectsByClassIdx;
+    }
+
+    bool ObjectsContainer::empty() const
+    {
+        throw std::logic_error("Not implemented");
     }
 }

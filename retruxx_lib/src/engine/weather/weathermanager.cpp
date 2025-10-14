@@ -89,7 +89,7 @@ namespace m3d
     unsigned WeatherManager::GetWeatherColor(ColorItems ci) const
     {
         // TODO: implement WeatherManager::GetWeatherColor
-        return 0;
+        return 0xFFFFFFFF;
         //return (int)this->m_currentWeather->m_currentColors[ci].z | (((int)this->m_currentWeather->m_currentColors[ci].y | (((int)this->m_currentWeather->m_currentColors[ci].x | 0xFFFFFF00) << 8)) << 8);
         throw std::logic_error("Not implemented");
     }

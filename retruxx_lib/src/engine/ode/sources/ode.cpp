@@ -892,6 +892,12 @@ void dBodyRemoveIslandFromWorld (dBodyID b)
     // TODO: implememnt dBodyRemoveIslandFromWorld
 }
 
+dxWorld* dBodyGetWorld (dxBody* b)
+{
+    dAASSERT(b);
+    return b->world;
+}
+
 
 //****************************************************************************
 // joints

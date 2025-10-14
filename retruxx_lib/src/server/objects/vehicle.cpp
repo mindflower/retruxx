@@ -1993,7 +1993,7 @@ namespace ai
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005CC1C0, Vehicle::GetSize)
 	CVector Vehicle::GetSize() const
 	{
-		throw std::logic_error("Not implemented");
+		return m_size;
 	}
 
 	void Vehicle::CollectNearbyObjectsToGroundRepository()
@@ -2033,7 +2033,102 @@ namespace ai
 
 	CVector Vehicle::GetGeometricCenter() const
 	{
-		throw std::logic_error("Not implemented");
+        // TODO: generated code
+		// Get the vehicle's rotation as a quaternion
+		Quaternion rotation = GetRotation();
+
+		// Calculate intermediate values for quaternion to matrix conversion
+		float qx_qx = rotation.x * rotation.x;
+		float qy_qy = rotation.y * rotation.y;
+		float qz_qz = rotation.z * rotation.z;
+
+		float qx_qy = rotation.x * rotation.y;
+		float qx_qz = rotation.x * rotation.z;
+		float qx_qw = rotation.x * rotation.w;
+
+		float qy_qz = rotation.y * rotation.z;
+		float qy_qw = rotation.y * rotation.w;
+		float qz_qw = rotation.z * rotation.w;
+
+		// Construct rotation matrix from quaternion
+		// First row
+		float m11 = 1.0f - 2.0f * (qy_qy + qz_qz);
+		float m12 = 2.0f * (qx_qy + qz_qw);
+		float m13 = 2.0f * (qx_qz - qy_qw);
+
+		// Second row  
+		float m21 = 2.0f * (qx_qy - qz_qw);
+		float m22 = 1.0f - 2.0f * (qx_qx + qz_qz);
+		float m23 = 2.0f * (qy_qz + qx_qw);
+
+		// Third row
+		float m31 = 2.0f * (qx_qz + qy_qw);
+		float m32 = 2.0f * (qy_qz - qx_qw);
+		float m33 = 1.0f - 2.0f * (qx_qx + qy_qy);
+
+		// Create the full rotation matrix
+		CMatrix rotationMatrix;
+
+		// Set rotation components
+		rotationMatrix._11 = m11;
+		rotationMatrix._12 = m12;
+		rotationMatrix._13 = m13;
+		rotationMatrix._14 = 0.0f;
+
+		rotationMatrix._21 = m21;
+		rotationMatrix._22 = m22;
+		rotationMatrix._23 = m23;
+		rotationMatrix._24 = 0.0f;
+
+		rotationMatrix._31 = m31;
+		rotationMatrix._32 = m32;
+		rotationMatrix._33 = m33;
+		rotationMatrix._34 = 0.0f;
+
+		// Set translation components to zero and homogeneous coordinate to 1
+		rotationMatrix._41 = 0.0f;
+		rotationMatrix._42 = 0.0f;
+		rotationMatrix._43 = 0.0f;
+		rotationMatrix._44 = 1.0f;
+
+		// Create a copy of the matrix (as in the original code)
+		CMatrix finalMatrix;
+		finalMatrix = rotationMatrix;
+
+		// Define the initial up direction vector (typically (0, 1, 0) or similar)
+		const CVector INITIAL_UP_DIRECTION = { 0.0, 1.0, 0.0 };
+
+		// Calculate the offset vector by rotating the initial up direction
+		// and scaling by vehicle height and a factor of 0.4
+		float vehicleHeight = this->m_size.y;
+		float scaleFactor = 0.4f;
+
+		// Transform the up direction vector by the rotation matrix
+		// This rotates the vector from local space to world space
+		float offsetX = (finalMatrix._11 * INITIAL_UP_DIRECTION.x +
+						 finalMatrix._21 * INITIAL_UP_DIRECTION.y +
+						 finalMatrix._31 * INITIAL_UP_DIRECTION.z) * vehicleHeight * scaleFactor;
+
+		float offsetY = (finalMatrix._12 * INITIAL_UP_DIRECTION.x +
+						 finalMatrix._22 * INITIAL_UP_DIRECTION.y +
+						 finalMatrix._32 * INITIAL_UP_DIRECTION.z) * vehicleHeight * scaleFactor;
+
+		float offsetZ = (finalMatrix._13 * INITIAL_UP_DIRECTION.x +
+						 finalMatrix._23 * INITIAL_UP_DIRECTION.y +
+						 finalMatrix._33 * INITIAL_UP_DIRECTION.z) * vehicleHeight * scaleFactor;
+
+		// Get the vehicle's world position
+		CVector vehiclePosition = GetPosition();
+
+		// Calculate the geometric center by adding the offset to the vehicle position
+		// The geometric center is typically above the vehicle's base position
+		CVector result;
+		result.x = vehiclePosition.x + offsetX;
+		result.y = vehiclePosition.y + offsetY;
+		result.z = vehiclePosition.z + offsetZ;
+
+		return result;
+
 	}
 
 	float Vehicle::EstimateDamageFromPositionAI(CVector const&, CVector const&,

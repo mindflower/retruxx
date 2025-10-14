@@ -110,7 +110,19 @@ namespace ai
 
         float TestPlayerVisibility::getTransparentRadius()
         {
-            throw std::logic_error("Not implemented");
+            auto* vehicle = ai::gDynamicScene->GetVehicleControlledByPlayer();
+            if (!vehicle)
+                return 0.0;
+
+            const auto center = vehicle->GetGeometricCenter();
+            auto invMat = M3D_RENDERER->MatGetOrgInv();
+
+            CVector v9;
+            v9.x = invMat.x - center.x;
+            v9.y = invMat.y - center.y;
+            v9.z = invMat.z - center.z;
+            auto size = vehicle->GetSize().z * 0.5;
+            return v9.length() + size;
         }
 
         bool TestPlayerVisibility::setPermanentTransparency(m3d::SgNode*)

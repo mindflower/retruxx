@@ -278,6 +278,7 @@ namespace m3d
         CVar m_clipCursorWithinRenderWnd;
         CVar m_hasServers;
         CVar m_fadingTimeBeforeNextMap;
-
     };
 }
+
+#define M3D_ENGINE_CFG (M3D_KERNEL->GetEngineCfg())

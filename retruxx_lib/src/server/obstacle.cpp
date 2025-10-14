@@ -92,12 +92,12 @@ namespace ai
 
     Box const* Obstacle::GetBox() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_intersectionBox;
     }
 
     SphereForIntersection const* Obstacle::GetSphere() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_intersectionSphere;
     }
 
     void Obstacle::RenderDebugInfo() const
@@ -107,7 +107,7 @@ namespace ai
 
     bool Obstacle::bIsEnabled() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_bIsEnabled;
     }
 
     float Obstacle::GetIntersectionRadius() const

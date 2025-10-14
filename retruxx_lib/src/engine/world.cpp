@@ -83,7 +83,7 @@ namespace m3d
 
     unsigned CWorld::GetWeatherFogColor() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_weatherManager.GetWeatherColor(CI_FOG);
     }
 
     int CWorld::Load(CStr const& levelname, CCamera& cam, bool bQuiet)

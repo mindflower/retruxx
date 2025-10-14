@@ -533,6 +533,14 @@ void dGeomLinkToBody (dxGeom* g)
     g->gflags &= ~0x10;
 }
 
+dxBody* dGeomGetLinkedBody (dxGeom* g)
+{
+    dAASSERT(g);
+    if ((g->gflags & 0x1000) != 0)
+        return 0;
+    return g->body;
+}
+
 
 //****************************************************************************
 // C interface that lets the user make new classes. this interface is a lot

@@ -61,6 +61,7 @@ int dGeomIsEnabled (dGeomID);
 //retruxx
 void dGeomUnlinkFromBody (dGeomID);
 void dGeomLinkToBody (dxGeom* g);
+dxBody* dGeomGetLinkedBody (dxGeom* g);
 
 /* ************************************************************************ */
 /* collision detection */

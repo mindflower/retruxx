@@ -28,7 +28,8 @@ namespace m3d
 
     void BlockMusicManager::Reset()
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement BlockMusicManager::Reset
+        //throw std::logic_error("Not implemented");
     }
 
     void BlockMusicManager::Init()

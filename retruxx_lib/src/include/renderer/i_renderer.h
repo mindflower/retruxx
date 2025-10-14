@@ -851,7 +851,7 @@ namespace m3d
             virtual void MatPush() = 0;
             virtual void MatPush(const CMatrix&) = 0;
             virtual void MatPop(bool) = 0;
-            virtual void MatMul(const CMatrix*) = 0;
+            virtual void MatMul(const CMatrix&) = 0;
             virtual void MatMulR(const CMatrix*) = 0;
             virtual const CMatrix& MatGet() = 0;
             virtual const CMatrix& MatGetInv() = 0;

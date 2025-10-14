@@ -1,5 +1,12 @@
 #include "msgmanager.h"
 
+#include "config.h"
+#include "core/kernel.h"
+#include <client.h>
+
+#include "level.h"
+#include "world.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(MsgManager, ShowMsgBox)
 {
     throw std::logic_error("Not implemented");
@@ -17,12 +24,24 @@ int MsgManager::ShowMsgBox(int, bool)
 
 int MsgManager::Init(bool bGlobal)
 {
-    throw std::logic_error("Not implemented");
+    Clear(bGlobal);
+
+    CStr fileName;
+    if (bGlobal)
+    {
+        fileName = M3D_ENGINE_CFG.m_ui_pathToStrings.GetS();
+    }
+    else
+    {
+        fileName = m3d::pClient->GetWorld().m_level->GetFullPathNameA(m3d::pClient->GetWorld().m_level->m_dialogStrings);
+    }
+    return LoadFromXml(fileName, bGlobal);
 }
 
 void MsgManager::Clear(bool)
 {
-    throw std::logic_error("Not implemented");
+    // TODO: implement MsgManager::Clear
+    //throw std::logic_error("Not implemented");
 }
 
 m3d::Class* MsgManager::GetClass() const
@@ -71,5 +90,7 @@ MsgManager::MsgManager()
 
 int MsgManager::LoadFromXml(CStr const&, bool)
 {
-    throw std::logic_error("Not implemented");
+    // TODO: implement MsgManager::LoadFromXml
+    //throw std::logic_error("Not implemented");
+    return 0;
 }

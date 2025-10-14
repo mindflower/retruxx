@@ -42,6 +42,7 @@
 #include "objects/base/globalproperties.h"
 #include "objects/base/jointedobj.h"
 #include "objects/base/prototypemanager.h"
+#include "objects/guns/bullet.h"
 
 namespace ai
 {
@@ -53,9 +54,187 @@ namespace ai
 	    int numNearCallbacksLastFrame = 0;
 	}
 
-    void NearCallback(void*, dxGeom*, dxGeom*)
+	int FillDefaultContactParameters(dContact* contacts, unsigned int numContacts)
 	{
-        throw retruxx::logic_error("Not implemented");
+		throw retruxx::logic_error("Not implemented");
+	}
+
+    void NearCallback(void* data, dxGeom* geom1, dxGeom* geom2)
+	{
+		// TODO: generated code
+		if (!dGeomIsEnabled(geom1) || !dGeomIsEnabled(geom2))
+			return;
+
+		// Handle space collisions recursively
+		if (dGeomIsSpace(geom1) || dGeomIsSpace(geom2))
+		{
+			if (geom1 != geom2)
+			{
+				dSpaceCollide2(geom1, geom2, data, NearCallback);
+			}
+			return;
+		}
+
+		// Get bodies for the geometries
+		dGeomGetBody(geom1);
+		dGeomGetBody(geom2);
+
+		++numNearCallbacksLastFrame;
+
+		// Initialize contact array
+		dContact contacts[32];
+
+		// Get objects associated with geometries
+		m3d::Object* obj1 = (m3d::Object*)dGeomGetData(geom1);
+		m3d::Object* obj2 = (m3d::Object*)dGeomGetData(geom2);
+
+		// Cast to PhysicBody if possible
+		PhysicBody* body1 = nullptr;
+		PhysicBody* body2 = nullptr;
+
+		if (obj1 && obj1->IsKindOf(&PhysicBody::m_classPhysicBody))
+		{
+			body1 = static_cast<PhysicBody*>(obj1);
+		}
+
+		if (obj2 && obj2->IsKindOf(&PhysicBody::m_classPhysicBody))
+		{
+			body2 = static_cast<PhysicBody*>(obj2);
+		}
+
+		// Get owners of physic bodies
+		PhysicObj* owner1 = body1 ? body1->GetOwner() : nullptr;
+		PhysicObj* owner2 = body2 ? body2->GetOwner() : nullptr;
+
+		// Update object pointers to use owners when appropriate
+		if (body1) obj1 = body1;
+		if (body2) obj2 = body2;
+
+		// Use owner objects instead of vehicle parts
+		if (owner1 && !body1->IsKindOf(&VehiclePart::m_classVehiclePart))
+		{
+			obj1 = owner1;
+		}
+
+		if (owner2 && !body2->IsKindOf(&VehiclePart::m_classVehiclePart))
+		{
+			obj2 = owner2;
+		}
+
+		// Get class types
+		m3d::Class* class1 = obj1 ? obj1->GetClass() : nullptr;
+		m3d::Class* class2 = obj2 ? obj2->GetClass() : nullptr;
+
+		// Check if collision should be processed
+		if (!ColliderKrnl::MustCheckForCollision(obj1, obj2)) {
+			return;
+		}
+
+		// Determine if collision should proceed based on object types and worlds
+		bool shouldCollide = false;
+
+		if ((class1 && class1->IsKindOf(&Shell::m_classShell)) ||
+			(class2 && class2->IsKindOf(&Shell::m_classShell)))
+		{
+			shouldCollide = true;
+		}
+		else
+		{
+			// Check if both geometries are in the same world (global world)
+			dxWorld* world1 = nullptr;
+			dxWorld* world2 = nullptr;
+
+			dxBody* body1 = dGeomGetBody(geom1);
+			dxBody* body2 = dGeomGetBody(geom2);
+
+			world1 = body1 ? dBodyGetWorld(body1) : gGlobalWorld;
+			world2 = body2 ? dBodyGetWorld(body2) : gGlobalWorld;
+
+			shouldCollide = (world1 == gGlobalWorld && world2 == gGlobalWorld);
+		}
+
+		if (!shouldCollide)
+		{
+			return;
+		}
+
+		// Perform collision detection
+		unsigned int numContacts = dCollide(geom1, geom2, 32, &contacts[0].geom, sizeof(dContact));
+
+		if (numContacts == 0)
+		{
+			return;
+		}
+
+		// Handle bullet collisions specially (find closest contact point)
+		if ((owner1 && owner1->GetClass() == &Bullet::m_classBullet) ||
+			(owner2 && owner2->GetClass() == &Bullet::m_classBullet))
+		{
+
+			Bullet* bullet = nullptr;
+			if (owner1 && owner1->GetClass() == &Bullet::m_classBullet)
+			{
+				bullet = static_cast<Bullet*>(owner1);
+			}
+			else if (owner2 && owner2->GetClass() == &Bullet::m_classBullet)
+			{
+				bullet = static_cast<Bullet*>(owner2);
+			}
+
+			if (bullet)
+			{
+				Ray* bulletRay = bullet->_Ray();
+				CVector bulletPos = bulletRay->GetPosition();
+
+				// Find closest contact point to bullet
+				unsigned int closestContactIndex = 0;
+				float minDistanceSq = 1.0e30f;
+
+				for (unsigned int i = 0; i < numContacts; ++i)
+				{
+					CVector contactPos;
+					contactPos.x = contacts[i].geom.pos[0];
+					contactPos.y = contacts[i].geom.pos[1];
+					contactPos.z = contacts[i].geom.pos[2];
+
+					CVector diff = bulletPos - contactPos;
+					float distanceSq = diff.lengthSq();
+
+					if (distanceSq < minDistanceSq) {
+						minDistanceSq = distanceSq;
+						closestContactIndex = i;
+					}
+				}
+
+				// Use only the closest contact for bullets
+				if (closestContactIndex != 0)
+				{
+					contacts[0] = contacts[closestContactIndex];
+				}
+				numContacts = 1;
+			}
+		}
+
+		// Fill default contact parameters and check collision
+		FillDefaultContactParameters(contacts, numContacts);
+
+		if (!ColliderKrnl::CollideObjs(obj1, obj2, contacts, numContacts))
+		{
+			return;
+		}
+
+		// Create contact joints
+		for (unsigned int i = 0; i < numContacts; ++i)
+		{
+			dxJoint* contactJoint = dJointCreateContact(gGlobalWorld,
+														contactGroup,
+														&contacts[i]);
+
+			dxBody* body1 = dGeomGetLinkedBody(geom1);
+			dxBody* body2 = dGeomGetLinkedBody(geom2);
+
+			dJointAttach(contactJoint, body1, body2);
+		}
 	}
 
 	RT_CLASS_EXPORTS_BEGIN(DynamicScene)

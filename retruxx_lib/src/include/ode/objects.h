@@ -101,6 +101,8 @@ dxGeom* dBodyGetFirstGeom(dBodyID b);
 void dBodyAddIslandToWorld(dBodyID b, dxWorld* w);
 void dBodyRemoveIslandFromWorld(dBodyID b);
 
+dxWorld* dBodyGetWorld(dxBody* b);
+
 /* bodies */
 
 dBodyID dBodyCreate (dWorldID);

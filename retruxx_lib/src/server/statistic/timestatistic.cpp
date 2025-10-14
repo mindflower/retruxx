@@ -32,12 +32,12 @@ namespace ai
 
     m3d::Object* TimeStatistic::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new TimeStatistic;
     }
 
     m3d::Class* TimeStatistic::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(TimeStatistic);
     }
 
     void TimeStatistic::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -60,9 +60,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void TimeStatistic::IncreaseByMilliseconds(long long)
+    void TimeStatistic::IncreaseByMilliseconds(long long milliseconds)
     {
-        throw std::logic_error("Not implemented");
+        m_milliseconds += milliseconds;
     }
 
     TimeStatistic::TimeStatistic(TimeStatistic const&)
@@ -72,6 +72,6 @@ namespace ai
 
     TimeStatistic::TimeStatistic()
     {
-        throw std::logic_error("Not implemented");
+        this->m_milliseconds = 0;
     }
 }

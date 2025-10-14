@@ -268,7 +268,21 @@ void LevelInfoManager::OnTownRuined(void*)
 
 void LevelInfoManager::UpdateKnownLevels()
 {
-    throw std::logic_error("Not implemented");
+    CStr curLevelName;
+    if (m3d::pClient && m3d::pClient->GetWorld().m_level)
+    {
+        curLevelName = m3d::pClient->GetWorld().m_level->GetLevelName();
+    }
+    AddKnownLevel(curLevelName);
+
+    retruxx::vector<CStr> allLevels;
+    GetAllLevelNames(allLevels);
+
+    auto it = m_levelObjects.find(curLevelName);
+    if (it != m_levelObjects.end())
+    {
+        throw std::logic_error("Not implemented");
+    }
 }
 
 m3d::Object* LevelInfoManager::Clone()
@@ -638,9 +652,19 @@ ObjectInfo* LevelInfoManager::GetObjectInfo(CStr const&, CStr const&) const
     throw std::logic_error("Not implemented");
 }
 
-int LevelInfoManager::AddKnownLevel(CStr const&)
+int LevelInfoManager::AddKnownLevel(CStr const& levelName)
 {
-    throw std::logic_error("Not implemented");
+    retruxx::vector<CStr> levels;
+    GetAllLevelNames(levels);
+    if (std::find(levels.begin(), levels.end(), levelName) == levels.end())
+    {
+        M3D_LOG_INFO("LevelInfoManager::AddKnownLevel error - level with name '" + levelName + "' does not exist");
+        return 0;
+    }
+
+    m_knownLevels.insert(levelName);
+    M3D_APP->EnqueueMessage(65675, 0, 0, 0, 0, levelName, {});
+    return 1;
 }
 
 int LevelInfoManager::GetLevelInfoId(CStr const& name) const
