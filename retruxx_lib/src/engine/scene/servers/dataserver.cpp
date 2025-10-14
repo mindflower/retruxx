@@ -136,6 +136,22 @@ namespace m3d
         return 1;
     }
 
+    RenderNodeInfo::RenderNodeInfo(m3d::RenderNodeType t)
+    {
+        this->rnt = t;
+        this->isCullInverted = 0;
+        this->isPrimaryRender = 0;
+        this->isUseImpostors = 1;
+    }
+
+    RenderNodeInfo::RenderNodeInfo()
+    {
+        this->rnt = RNT_SIMPLE;
+        this->isCullInverted = 0;
+        this->isPrimaryRender = 0;
+        this->isUseImpostors = 1;
+    }
+
     DataServer::DataServer()
     {
     }

@@ -115,9 +115,20 @@ void CClipper::enableSetState(unsigned)
     throw std::logic_error("Not implemented");
 }
 
-int CClipper::testSphere(CVector const&, float) const
+int CClipper::testSphere(CVector const& o, float r) const
 {
-    throw std::logic_error("Not implemented");
+    if (!m_nfrustums)
+        return 1;
+
+    auto v4 = 0;
+    for (auto i = &this->m_planes[0][1];
+         ((1 << v4) & this->m_enabled) == 0 || ((((i[1] * o.z) + (*(i - 1) * o.x)) + (o.y * *i)) - i[2]) <= r;
+         i += 4)
+    {
+        if (++v4 >= m_nfrustums)
+            return 1;
+    }
+    return 0;
 }
 
 int CClipper::enableSetFromBox(float*, CVector const&)

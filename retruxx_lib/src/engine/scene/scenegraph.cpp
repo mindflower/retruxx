@@ -9,6 +9,17 @@
 #include "core/timer.h"
 #include "world.h"
 #include "level.h"
+#include "scene/nodes/sgnodeanimatedmodel.h"
+#include "scene/nodes/sgnodedecals.h"
+#include "scene/nodes/sgnodegameunit.h"
+#include "scene/nodes/sgnodelines.h"
+#include "scene/nodes/sgnodeparticles.h"
+#include "scene/nodes/sgnodepointlightsource.h"
+#include "scene/nodes/sgnodeprojector.h"
+#include "scene/nodes/sgnodesound.h"
+#include "scene/nodes/sgnodesprite.h"
+#include "scene/nodes/sgnodestaticmodel.h"
+#include "scene/servers/dataserver.h"
 
 
 namespace
@@ -366,9 +377,111 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SceneGraph::Render(SgRenderFlags)
+    void SceneGraph::Render(SgRenderFlags flags)
     {
-        throw retruxx::logic_error("Not implemented");
+        const auto frameStart = M3D_KERNEL->GetTimer().GetFrameStartTime();
+        const auto lastFrameTime = M3D_KERNEL->GetTimer().GetLastFrameTime();
+        if (flags == SGRF_LOW_DETAIL || flags < SGRF_SHADOWS)
+        {
+            retruxx::vector<int> effectiveClasses;
+            if (flags == SGRF_LOW_DETAIL)
+            {
+                if (M3D_ENGINE_CFG.m_ssRender.GetB())
+                {
+                    effectiveClasses.push_back(m3d::SgStaticModelNode::m_classSgStaticModelNode.m_index);
+                }
+
+                if (M3D_ENGINE_CFG.m_dsRender.GetB())
+                {
+                    effectiveClasses.push_back(m3d::SgAnimatedModelNode::m_classSgAnimatedModelNode.m_index);
+                    effectiveClasses.push_back(m3d::SgGameUnitNode::m_classSgGameUnitNode.m_index);
+                }
+            }
+            else if (flags)
+            {
+                if (M3D_ENGINE_CFG.m_esRender.GetB())
+                {
+                    effectiveClasses.push_back(m3d::SgParticlesNode::m_classSgParticlesNode.m_index);
+                    effectiveClasses.push_back(m3d::SgProjectorNode::m_classSgProjectorNode.m_index);
+                    effectiveClasses.push_back(m3d::SgPointLightSourceNode::m_classSgPointLightSourceNode.m_index);
+                }
+                M3D_APP->GetAnimatedModelsServer().RenderTransparents(m_transparentNodes, m_numTransparentNodes);
+            }
+            else
+            {
+                if (M3D_ENGINE_CFG.m_ssRender.GetB())
+                {
+                    effectiveClasses.push_back(m3d::SgStaticModelNode::m_classSgStaticModelNode.m_index);
+                }
+
+                if (M3D_ENGINE_CFG.m_esRender.GetB())
+                {
+                    effectiveClasses.push_back(m3d::SgSpriteNode::m_classSgSpriteNode.m_index);
+                    effectiveClasses.push_back(m3d::SgLinesNode::m_classSgLinesNode.m_index);
+                    effectiveClasses.push_back(m3d::SgParticlesOpaqueNode::m_classSgParticlesOpaqueNode.m_index);
+                }
+
+                if (M3D_ENGINE_CFG.m_dsRender.GetB())
+                {
+                    effectiveClasses.push_back(m3d::SgGameUnitNode::m_classSgGameUnitNode.m_index);
+                    effectiveClasses.push_back(m3d::SgAnimatedModelNode::m_classSgAnimatedModelNode.m_index);
+                    effectiveClasses.push_back(m3d::SgDecalsNode::m_classSgDecalsNode.m_index);
+                }
+
+                if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
+                {
+                    effectiveClasses.push_back(m3d::SgSoundSourceNode::m_classSgSoundSourceNode.m_index);
+                }
+            }
+
+            for (const auto clsIdx : effectiveClasses)
+            {
+                if (m_visNumSlots[clsIdx])
+                {
+                    auto effIdx = clsIdx * 2000;
+                    if (auto* server = m_visSlots[effIdx]->GetServer())
+                    {
+                        if (server == &M3D_APP->GetAnimatedModelsServer() || server == &M3D_APP->GetParticlesServer())
+                        {
+                            RenderNodeInfo rni;
+                            rni.rnt = RNT_SIMPLE;
+                            rni.isCullInverted = flags == SGRF_LOW_DETAIL;
+                            rni.isUseImpostors = 1;
+                            rni.isPrimaryRender = flags != SGRF_LOW_DETAIL;
+                            // TODO: check this
+                            server->RenderNodeSet(&m_visSlots[effIdx], m_visNumSlots[clsIdx], rni);
+                        }
+                        else
+                        {
+                            // TODO: check this
+                            bool renderStart = false;
+                            server->RenderItem(-2, 0);
+                            renderStart = true;
+
+                            for (int i = 0; i < m_visNumSlots[clsIdx]; i++)
+                            {
+                                if (renderStart)
+                                {
+                                    server->RenderItem(-3, 0);
+                                }
+                                server->RenderItem(-2, 0);
+                                renderStart = true;
+                                m_visSlots[effIdx]->Render(NRF_DEFAULT, nullptr, lastFrameTime, frameStart);
+                            }
+                            if (renderStart)
+                            {
+                                server->RenderItem(-3, 0);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+        else if (flags == SGRF_SHADOWS)
+        {
+            DrawShadows();
+        }
     }
 
     void SceneGraph::GetNodeNamesHierarchy(SgNode*, retruxx::vector<CStr>&)
@@ -698,9 +811,60 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SceneGraph::AddOneNodeToRender(SgNode*, CClipper const&, int)
+    int SceneGraph::AddOneNodeToRender(SgNode* n, CClipper const& frusta, int curFrame)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto cls = n->GetClass();
+        if (this->m_visNumSlots[cls->m_index] >= 1999)
+            return 0;
+
+        if (IS_KIND_OF(n, SgSoundSourceNode))
+        {
+            int prop = 0;
+            n->GetProperty(4354, &prop);
+            if (!prop)
+            {
+                prop = 750;
+            }
+
+            auto origin = M3D_RENDERER->GetViewOrigin();
+            auto v12 = origin.z - n->m_currentWorldOrigin.z;
+            auto v13 = origin.y - n->m_currentWorldOrigin.y;
+            if ((((v12 * v12) + (v13 * v13)) + ((origin.x - n->m_currentWorldOrigin.x) * (origin.x - n->m_currentWorldOrigin.x))) <= (prop * prop))
+            {
+                n->m_isWaitingForRender = true;
+                *(&this->m_visSlots[2000 * cls->m_index] + this->m_visNumSlots[cls->m_index]++) = n;
+                n->m_frameVisible = curFrame;
+                return 1;
+            }
+            return 0;
+        }
+
+        auto& orgForSphere = n->m_originWorldAbsForSphere;
+        auto na = n->m_boundingRadius;
+        if (!frusta.testSphere(orgForSphere, na*2.0))
+        {
+            return 0;
+        }
+
+        n->m_frameVisible2 = curFrame;
+        if (!frusta.testSphere(orgForSphere, na))
+        {
+            return 0;
+        }
+
+        if (IsTransparent(n))
+        {
+            n->m_frameTransparent = curFrame;
+            n->m_frameVisible = curFrame;
+            n->m_isWaitingForRender = 1;
+            this->m_transparentNodes[this->m_numTransparentNodes++] = n;
+            return 1;
+        }
+
+        n->m_isWaitingForRender = true;
+        *(&this->m_visSlots[2000 * cls->m_index] + this->m_visNumSlots[cls->m_index]++) = n;
+        n->m_frameVisible = curFrame;
+        return 1;
     }
 
     void SceneGraph::RemoveNodeExceptRemoveIfFree(SgNode*&)
@@ -775,9 +939,49 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SceneGraph::AddNodeAndItsChildrenToRender(SgNode*, CClipper const&, int)
+    int SceneGraph::AddNodeAndItsChildrenToRender(SgNode* n, CClipper const& frusta, int curFrame)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (n->m_isWaitingForRender)
+            return 0;
+
+        auto prop = AddOneNodeToRender(n, frusta, curFrame);
+        if (!prop)
+        {
+            n->GetProperty(4355, &prop);
+        }
+        if (prop)
+        {
+            retruxx::vector<m3d::Object*> stack;
+            stack.push_back(n);
+
+            // Depth-first traversal
+            while (!stack.empty())
+            {
+                // Pop the last node from stack
+                m3d::Object* currentNode = stack.back();
+                stack.pop_back();
+
+                // Process all children of current node
+                m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
+
+                // TODO: check this
+                while (child != nullptr)
+                {
+                    // Process collision for this child node
+                    AddOneNodeToRender(child, frusta, curFrame);
+
+                    // If child has children of its own, push to stack for processing
+                    if (child->GetFirstChild() != nullptr)
+                    {
+                        stack.push_back(child);
+                    }
+
+                    // Move to next sibling
+                    child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
+                }
+            }
+        }
+        return 1;
     }
 
     void SceneGraph::DrawStencilShadows()
@@ -785,9 +989,29 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    bool SceneGraph::IsTransparent(SgNode*)
+    bool SceneGraph::IsTransparent(SgNode* n)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (n->m_transparencyType == TT_NONE)
+            return 0;
+
+        if (n->m_transparencyType == TT_PERMANENT)
+            return this->m_transparencyTest->setPermanentTransparency(n);
+
+        if (!inTransparencyRadius )
+            return 0;
+
+        auto na = (((n->m_originWorldAbsForSphere.z - camOrg.z)
+                    * (n->m_originWorldAbsForSphere.z - camOrg.z))
+                   + ((n->m_originWorldAbsForSphere.x - camOrg.x)
+                      * (n->m_originWorldAbsForSphere.x - camOrg.x)))
+            + ((n->m_originWorldAbsForSphere.y - camOrg.y)
+               * (n->m_originWorldAbsForSphere.y - camOrg.y));
+
+        if (na >= (transparentRadius * transparentRadius))
+            return 0;
+
+        auto v5 = sqrt(na) / transparentRadius;
+        return this->m_transparencyTest->test(n, v5);
     }
 
     void SceneGraph::enableVisibleCells_r(CClipper& frusta, float* box, unsigned int orFlags)

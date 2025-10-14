@@ -27,7 +27,6 @@ namespace m3d
         /* 0x005c */ bool isCullInverted;
         /* 0x005d */ bool isPrimaryRender;
         /* 0x005e */ bool isUseImpostors;
-        RenderNodeInfo(const m3d::RenderNodeInfo& __that);
         RenderNodeInfo(m3d::RenderNodeType t);
         RenderNodeInfo();
     }; /* size: 0x0060 */
