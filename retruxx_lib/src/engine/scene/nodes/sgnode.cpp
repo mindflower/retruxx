@@ -79,9 +79,9 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SgNode::SetTransparencyType(TransparencyType)
+    void SgNode::SetTransparencyType(TransparencyType tt)
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_transparencyType = tt;
     }
 
     int SgNode::GetServerItemProperty(unsigned propId, void* property) const

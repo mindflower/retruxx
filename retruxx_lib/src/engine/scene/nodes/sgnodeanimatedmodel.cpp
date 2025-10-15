@@ -50,10 +50,10 @@ namespace m3d
 
     int SgAnimatedModelNode::ReadFromXmlNodeAfterAdd(cmn::XmlFile* file, cmn::XmlNode* node)
     {
-        auto result = SgNode::ReadFromXmlNode(file, node);
+        auto result = SgNode::ReadFromXmlNodeAfterAdd(file, node);
         if (result)
         {
-            SafeIntAttrib((int&)m_action, node, "ndmAction");
+            SafeEnumAttrib(m_action, node, "ndmAction");
             
             m3d::AnimatedModel* mdl = nullptr;
             GetServer()->GetItemProperty(m_srvId, 16394, &mdl);
@@ -95,36 +95,73 @@ namespace m3d
         switch (propId)
         {
         case 0x1108u:
-            retruxx::logic_error("Not implemented");
+        {
+            this->m_srvId = *(int*)property;
+            GetServer()->UnregisterNode(this);
+            GetServer()->RegisterNode(this);
             return 1;
+        }
         case 0x2200u:
-            retruxx::logic_error("Not implemented");
+        {
+            this->m_action = *(ActionType*)property;
+            m_effectActions.resize(1);
+            m_effectActions[0] = m_action;
+                //TODO: check this
+            GetServer()->SetItemProperty(m_srvId, 8704, this);
             return 1;
+        }
         case 0x2204u:
-            retruxx::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
             return 1;
         case 0x2207u:
-            retruxx::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         case 0x2208u:
-            retruxx::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         case 0x2206u:
-            retruxx::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         case 0x220Bu:
-            retruxx::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
         case 0x2205u:
-            retruxx::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
             return 1;
         case 0x2202u:
-            retruxx::logic_error("Not implemented");
+        {
+            this->m_SkinNumber = *(int*)property;
+            if (this->m_srvId != -1)
+            {
+                m3d::AnimatedModel* mdl = nullptr;
+                GetServer()->GetItemProperty(this->m_srvId, 16394, &mdl);
+                if (mdl)
+                {
+                    auto skin = mdl->GetNumSkins() - 1;
+                    if (this->m_SkinNumber > skin)
+                        this->m_SkinNumber = skin;
+                }
+            }
             return 1;
+        }
         case 0x2203u:
-            retruxx::logic_error("Not implemented");
+            this->m_cfg.m_num = *(int*)property;
+            if (this->m_srvId != -1)
+            {
+                m3d::AnimatedModel* mdl = nullptr;
+                GetServer()->GetItemProperty(this->m_srvId, 16394, &mdl);
+                if (mdl)
+                {
+                    auto cfgSize = mdl->GetCfgSize() - 1;
+                    if (this->m_cfg.m_num > cfgSize)
+                        this->m_cfg.m_num = cfgSize;
+                    mdl->FromCfgNum(m_cfg);
+                    mdl->CalculateMeshes(m_cfg);
+                    return 1;
+                }
+            }
             return 0;
         case 0x220Au:
-            retruxx::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
             return 1;
         case 0x220Cu:
-            retruxx::logic_error("Not implemented");
+            throw retruxx::logic_error("Not implemented");
             return 1;
         }
 
@@ -147,7 +184,7 @@ namespace m3d
         }
 
         this->m_passable = *(bool*)property;
-        retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     DataServer* SgAnimatedModelNode::GetServer() const

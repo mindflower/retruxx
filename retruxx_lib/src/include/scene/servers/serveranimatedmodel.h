@@ -170,7 +170,6 @@ struct ModelEffectList
     void adjustModelEffects(m3d::SgNode* realModel, retruxx::vector<ModelEffectList::tEffect, retruxx::allocator<ModelEffectList::tEffect> >& newEffectList);
     void adjustModelEffects(m3d::SgNode* realModel, const retruxx::vector<enum ActionType, retruxx::allocator<enum ActionType> >& newActions);
     void adjustModelEffects(m3d::SgNode* realModel, ActionType newAction);
-    ~ModelEffectList();
     /* 0x0010 */ DynamicModel* m_dynModel;
     
     struct SortPred

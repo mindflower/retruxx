@@ -11,6 +11,7 @@ namespace m3d
 {
     class SgAnimatedModelNode : public m3d::SgNode
     {
+        friend class AnimatedModelsServer;
     protected:
         SgAnimatedModelNode();
         SgAnimatedModelNode(const m3d::SgAnimatedModelNode& node);

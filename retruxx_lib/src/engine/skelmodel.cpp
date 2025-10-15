@@ -952,7 +952,7 @@ namespace m3d
 
     unsigned AnimatedModel::GetNumSkins() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_Skins.size();
     }
 
     AnimatedModel::~AnimatedModel()
@@ -1036,7 +1036,7 @@ namespace m3d
 
     bool AnimatedModel::bIsPassable() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_passable;
     }
 
     void AnimatedModel::FromGroupVariants(Configuration&) const
@@ -1058,9 +1058,19 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModel::CalculateMeshes(Configuration&) const
+    void AnimatedModel::CalculateMeshes(Configuration& cfg) const
     {
-        throw retruxx::logic_error("Not implemented");
+        cfg.m_meshes.clear();
+        for (int i = 0; i < cfg.m_groupVariants.size(); ++i)
+        {
+            auto& group = m_MhGroups[i];
+            auto& variants = group.m_variants[cfg.m_groupVariants[i]];
+            for (int j = 0; j < variants.size(); ++j)
+            {
+                auto& mesh = m_meshes[group.MeshesId[variants[j]]];
+                cfg.m_meshes.push_back(&mesh);
+            }
+        }
     }
 
     unsigned int AnimatedModel::GetNumAnimations() const
@@ -1128,9 +1138,25 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModel::FromCfgNum(Configuration&) const
+    void AnimatedModel::FromCfgNum(Configuration& cfg) const
     {
-        throw retruxx::logic_error("Not implemented");
+        auto v2 = this->m_cfgSize - 1;
+        if (cfg.m_num > v2)
+            cfg.m_num = v2;
+
+        auto cfgSize = m_cfgSize;
+        auto num = cfg.m_num;
+        cfg.m_groupVariants.resize(m_MhGroups.size());
+        for (int i = 0; i < cfg.m_groupVariants.size(); ++i)
+        {
+            auto& group = m_MhGroups[i];
+            auto variantsSize = group.m_variants.size();
+            auto size = cfgSize / variantsSize;
+
+            cfg.m_groupVariants[i] = num / size;
+            cfgSize = size;
+            num = num % size;
+        }
     }
 
     char const* AnimatedModel::GetName() const
@@ -1444,7 +1470,9 @@ namespace m3d
 
     int AnimInfo::SetAnimationIdx(int)
     {
-	    throw retruxx::logic_error("Not implemented");
+        // // TODO: implement AnimInfo::SetAnimationIdx
+	    //throw retruxx::logic_error("Not implemented");
+        return 0;
     }
 
     AnimatedModel::Mesh const& AnimInfo::GetMesh(unsigned) const
@@ -1454,10 +1482,12 @@ namespace m3d
 
     void AnimInfo::CreateFor(AnimatedModel* am)
     {
+        // TODO: implement AnimInfo::CreateFor
         Release();
         this->m_curBox = am->m_box;
         this->m_forModel = am;
-        if (am->GetNumAnimations())
+         if (false)
+        //if (am->GetNumAnimations())
         {
             throw retruxx::logic_error("Not implemented");
         }

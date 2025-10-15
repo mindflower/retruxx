@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <config.h>
 #include <m3dapp.h>
 #include <core/kernel.h>
@@ -9,6 +10,7 @@
 #include <file/fileserver.h>
 
 #include "core/timer.h"
+#include "scene/nodes/sgnodeanimatedmodel.h"
 
 namespace m3d
 {
@@ -54,9 +56,24 @@ namespace m3d
     {
     }
 
-    void AnimatedModelsServer::UnregisterNode(SgNode*)
+    void AnimatedModelsServer::UnregisterNode(SgNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        m3d::AnimInfo* anim = nullptr;
+        node->GetProperty(1, &anim);
+        if (!anim->m_Empty)
+        {
+            node->GetGraph()->UnlinkThinkNode(node);
+        }
+        delete anim;
+        anim = nullptr;
+
+        ModelEffectList* list = nullptr;
+        node->GetProperty(2, &list);
+        delete list;
+        list = nullptr;
+
+        node->SetProperty(1, &anim);
+        node->SetProperty(2, &list);
     }
 
     bool AnimatedModelsServer::ReportServerInfo(char const*)
@@ -137,13 +154,290 @@ namespace m3d
         if (m3d::DataServer::SetItemProperty(id, prop, src))
             return 1;
 
+        switch (prop)
+        {
+        case 8704:
+        {
+            this->SetItemProperty(id, 8708, src);
+            this->SetItemProperty(id, 8709, src);
+            return 1;
+        }
+        case 8708:
+        {
+            auto* node = (SgAnimatedModelNode*)src;
+            ModelEffectList* list = nullptr;
+            node->GetProperty(2, &list);
+            list->adjustModelEffects(node, node->m_action);
 
+            auto* dynamicModel = (DynamicModel*)m_models.front().m_ptr;
+            auto* animatedModel = dynamicModel->m_mdl[0];
+
+            for (int i = 0; i < list->m_curEffectList.size(); ++i)
+            {
+                auto mat = animatedModel->GetBoneMatrix(i);
+                CVector pos;
+                pos.x = (float)((float)((float)(mat._11 + mat._21) + mat._31) * 0.0) + mat._41;
+                pos.y = (float)((float)((float)(mat._12 + mat._22) + mat._32) * 0.0) + mat._42;
+                pos.z = (float)((float)((float)(mat._13 + mat._23) + mat._33) * 0.0) + mat._43;
+                list->m_curEffectList[i].m_effectNode->SetOriginAbs(pos);
+
+                Quaternion quat;
+                quat.FromMatrix(mat);
+                list->m_curEffectList[i].m_effectNode->SetRotation(quat);
+            }
+
+            auto skinNum = dynamicModel->m_effects[node->m_action].skinNum;
+            auto cfgNum = dynamicModel->m_effects[node->m_action].cfgNum;
+            if (skinNum >=0)
+            {
+                node->SetProperty(8706u, &skinNum);
+            }
+            if (cfgNum >= 0)
+            {
+                node->SetProperty(8707u, &cfgNum);
+            }
+
+            return 1;
+        }
+        case 8709:
+        {
+            auto* node = (SgAnimatedModelNode*)src;
+            AnimInfo* anim = nullptr;
+            node->GetProperty(1, &anim);
+            anim->SetAnimation(node->m_action);
+            return 1;
+        }
+        }
         throw retruxx::logic_error("Not implemented");
     }
 
-    int AnimatedModelsServer::RenderNodeSet(SgNode**, unsigned, RenderNodeInfo)
+    namespace
     {
-        throw retruxx::logic_error("Not implemented");
+        struct ImpostoredMeshInfo
+        {
+            /* 0x0000 */ m3d::SgAnimatedModelNode* nodeLookup;
+            /* 0x0004 */ m3d::AnimatedModel* modelLookup;
+            /* 0x0008 */ DynamicModel* dmLookup;
+        }; /* size: 0x000c */
+
+        struct MeshImposteredSortPred
+        {
+            MeshImposteredSortPred(const ImpostoredMeshInfo*);
+            bool operator()(unsigned int, unsigned int) const;
+            /* 0x0000 */ const ImpostoredMeshInfo* m_meshes;
+        }; /* size: 0x0004 */
+
+        struct MeshInfo
+        {
+            /* 0x0000 */ m3d::AnimatedModel::Mesh* mesh;
+            /* 0x0004 */ m3d::DSurfaceMaterial* material;
+            /* 0x0008 */ m3d::SgAnimatedModelNode* nodeLookup;
+            /* 0x000c */ m3d::AnimatedModel* modelLookup;
+        }; /* size: 0x0010 */
+
+        struct MeshSortPred
+        {
+            MeshSortPred(const MeshInfo*)
+            {
+                throw retruxx::logic_error("Not implemented");
+            }
+
+            bool operator()(unsigned int, unsigned int) const
+            {
+                throw retruxx::logic_error("Not implemented");
+            }
+            /* 0x0000 */ const MeshInfo* m_meshes;
+        }; /* size: 0x0004 */
+    }
+
+    int AnimatedModelsServer::RenderNodeSet(SgNode** nodes, unsigned numNodes, RenderNodeInfo rni)
+    {
+        // TODO: generated code
+        // Profile timing start
+        m_profiler->StartCountdown();
+
+        // Get scene graph and setup
+        m3d::SceneGraph* graph = (*nodes)->GetGraph();
+        //m3d::rend::IEffect* contourShader = graph->GetContourShader();
+
+        int numMeshes = 0;
+        int numMeshesImpostered = 0;
+
+        // Generate impostors if needed
+        if (!m3d::pClient->GetWorld().m_isWeatherActual && rni.isPrimaryRender)
+        {
+            GenerateImpostorsIfNeeded();
+        }
+
+        // Setup render state for simple rendering
+        if (rni.rnt == RNT_SIMPLE)
+        {
+            m3d::EngineConfig* engineCfg = &m3d::g_Kernel->GetEngineCfg();
+            m3d::rend::IRenderer* renderer = m3d::Application::g_pApp->m_renderer;
+
+            renderer->SetAlphaTest(engineCfg->m_alphaTestWorld.GetI());
+            renderer->SetBlend(rend::BM_ALPHA, 0);
+
+            // Set culling based on parameter
+            if (numNodes)
+                renderer->SetCull(rend::M3DCULL_CW, 0);
+            else
+                renderer->SetCull(rend::M3DCULL_CCW, 0);
+
+            renderer->SetZbState(rend::ZB_ENABLE, 0);
+            renderer->SetFog(1, 0);
+            renderer->SetBlend(rend::BM_NONE, 0);
+
+            // Disable texture stages
+            for (int i = 0; i < 8; i++)
+            {
+                renderer->TgDisable(i);
+            }
+
+            // Wireframe mode if enabled
+            bool wireframe = engineCfg->m_lsWireframe.GetB();
+            if (wireframe)
+            {
+                renderer->SetFillMode(rend::M3DFILL_WIREFRAME, 0);
+            }
+
+            UpdateGlobalRenderingParams();
+        }
+
+        // Get view position for distance calculations
+        CVector viewPos = m3d::Application::g_pApp->m_renderer->GetViewOrigin();
+        float distSq = 0.0f;
+
+        // Get impostor threshold
+        m3d::EngineConfig* engineCfg = &m3d::g_Kernel->GetEngineCfg();
+        float impostorThreshold = engineCfg->m_g_impostorThreshold.GetF();
+
+        float impostorDistanceSquared = impostorThreshold * impostorThreshold;
+
+        // Arrays for sorting meshes
+        unsigned int meshesShifts[5000];
+        unsigned int meshesShiftsImpostered[5000];
+        MeshInfo meshes[5000];
+        ImpostoredMeshInfo meshesImpostered[5000];
+
+        // Process each node
+        for (unsigned int nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
+        {
+            m3d::SgNode* currentNode = nodes[nodeIndex];
+            DynamicModel* modelData = (DynamicModel*)this->m_models[currentNode->GetServerHandle()].m_ptr;
+
+            // Calculate distance squared to view position
+            distSq = (
+                (currentNode->GetOriginWorldAbs().x - viewPos.x) * (currentNode->GetOriginWorldAbs().x - viewPos.x) +
+                (currentNode->GetOriginWorldAbs().y - viewPos.y) * (currentNode->GetOriginWorldAbs().y - viewPos.y) +
+                (currentNode->GetOriginWorldAbs().z - viewPos.z) * (currentNode->GetOriginWorldAbs().z - viewPos.z)
+                );
+
+            // Determine LOD level based on distance
+            unsigned int lodLevel = 0;
+            if (rni.rnt == RNT_SIMPLE)
+            {
+                char useImpostor = 0;
+                currentNode->GetProperty(8720u, &useImpostor);
+
+                // Check if should use impostor
+                if (distSq <= impostorDistanceSquared && (!rni.isCullInverted || distSq <= 22500.0f))
+                {
+                    if (useImpostor && rni.isUseImpostors)
+                    {
+                        // Add to impostor list
+                        meshesShiftsImpostered[numMeshesImpostered] = numMeshesImpostered;
+                        meshesImpostered[numMeshesImpostered].nodeLookup = (m3d::SgAnimatedModelNode*)currentNode;
+                        meshesImpostered[numMeshesImpostered].dmLookup = modelData;
+                        meshesImpostered[numMeshesImpostered].modelLookup = modelData->m_mdl[0];
+                        numMeshesImpostered++;
+                        continue;
+                    }
+                }
+
+                // Determine LOD level
+                if (distSq <= 90000.0f)
+                {
+                    if (distSq <= 40000.0f)
+                    {
+                        if (distSq > 10000.0f)
+                            lodLevel = 1;
+                    }
+                    else
+                    {
+                        lodLevel = 2;
+                    }
+                }
+                else
+                {
+                    lodLevel = 3;
+                }
+
+                // Clamp LOD level
+                unsigned int maxLod = modelData->m_numLods;
+                if (lodLevel >= maxLod)
+                    lodLevel = maxLod - 1;
+            }
+
+            // Get model and instances
+            m3d::AnimatedModel* model = modelData->m_mdl[lodLevel];
+            m3d::Configuration* configuration = 0;
+            currentNode->GetProperty(8707u, &configuration);
+
+            // Process each instance
+            for (auto* mesh : configuration->m_meshes)
+            {
+                // Get material and mesh for this instance
+                auto& material = this->m_MeshMaterialManager.GetMaterial(*currentNode, *mesh);
+
+                // Add to mesh list for sorting
+                meshesShifts[numMeshes] = numMeshes;
+                meshes[numMeshes].nodeLookup = (m3d::SgAnimatedModelNode*)currentNode;
+                meshes[numMeshes].modelLookup = model;
+                meshes[numMeshes].material = &material;
+                meshes[numMeshes].mesh = mesh;
+
+                numMeshes++;
+                assert(numMeshes <= 5000);
+            }
+        }
+
+        // Sort meshes for optimal rendering
+        if (numMeshes > 0)
+        {
+            std::stable_sort(meshesShifts, meshesShifts + (int)numMeshes, MeshSortPred(meshes));
+        }
+
+        if (rni.rnt == RNT_SIMPLE)
+        {
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("meshes = " + CStr(numMeshes)).c_str());
+        }
+
+        for (int i = 0; i < numMeshes; i++)
+        {
+            auto& mesh = meshes[meshesShifts[i]];
+
+            if (rni.rnt == RNT_SIMPLE)
+            {
+                graph->LightSetupLightsForNode(mesh.nodeLookup);
+                auto shader = mesh.modelLookup->ApplyMaterial(*mesh.material);
+                M3D_RENDERER->MatPush(mesh.nodeLookup->GetCurrentMatrix());
+                RenderMesh(mesh.nodeLookup, *mesh.mesh, shader);
+                M3D_RENDERER->MatPop(1);
+            }
+            else
+            {
+                throw retruxx::logic_error("Not implemented");
+            }
+        }
+
+        if (!rni.rnt && numMeshesImpostered != 0)
+        {
+            // TODO: implement impostored mesh rendering
+        }
+
+        m_profiler->EndCountdown();
+        return 1;
     }
 
     void AnimatedModelsServer::RenderTransparents(SgNode**, unsigned)
@@ -316,6 +610,12 @@ namespace m3d
         {
             return 0;
         }
+        if (prop == 16394)
+        {
+            auto* model = (DynamicModel*)m_models[id].m_ptr;
+            *(AnimatedModel**)dest = model->m_mdl[0];
+            return 1;
+        }
         throw retruxx::logic_error("Not implemented");
     }
 
@@ -332,7 +632,7 @@ namespace m3d
         {
             if (modelId < m_models.size())
             {
-                auto* model = reinterpret_cast<DynamicModel*>(&m_models[modelId]);
+                auto* model = reinterpret_cast<DynamicModel*>(m_models[modelId].m_ptr);
                 auto& animModel = model->m_mdl[0];
                 if (anim->m_forModel != animModel)
                 {
@@ -974,6 +1274,62 @@ namespace m3d
 ModelEffectList::ModelEffectList(DynamicModel* meta) :
     m_dynModel(meta)
 {
+}
+
+void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
+    retruxx::vector<ModelEffectList::tEffect, retruxx::allocator<ModelEffectList::tEffect>>& newEffectList)
+{
+    // TODO: implement ModelEffectList::adjustModelEffects
+    //throw std::logic_error("Not implemented");
+}
+
+void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
+    const retruxx::vector<ActionType, retruxx::allocator<ActionType>>& newActions)
+{
+    throw std::logic_error("Not implemented");
+}
+
+void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel, ActionType newAction)
+{
+    retruxx::vector<ModelEffectList::tEffect> newEffectList;
+    retruxx::set<int>* suppressedLPs = nullptr;
+    realModel->GetProperty(8714, &suppressedLPs);
+
+    if (suppressedLPs)
+    {
+        for (int i = 0; i < m_dynModel->m_effects[newAction].lpEffects.size(); ++i)
+        {
+            tEffect effect;
+            effect.m_effectNode = 0;
+            effect.m_desc = &m_dynModel->m_effects[newAction].lpEffects[i];
+            auto it = suppressedLPs->find(effect.m_desc->m_lpId);
+            if (it == suppressedLPs->end())
+            {
+                newEffectList.push_back(std::move(effect));
+            }
+        }
+    }
+    else
+    {
+        for (int i = 0; i < m_dynModel->m_effects[newAction].lpEffects.size(); ++i)
+        {
+            tEffect effect;
+            effect.m_effectNode = 0;
+            effect.m_desc = &m_dynModel->m_effects[newAction].lpEffects[i];
+            newEffectList.push_back(std::move(effect));
+        }
+    }
+
+    if (!newEffectList.empty())
+    {
+        std::stable_sort(newEffectList.begin(), newEffectList.end(), SortPred());
+    }
+    adjustModelEffects(realModel, newEffectList);
+}
+
+bool ModelEffectList::SortPred::operator()(const ModelEffectList::tEffect& a, const ModelEffectList::tEffect& b)
+{
+    throw std::logic_error("Not implemented");
 }
 
 DynamicModel::DynamicModel()
