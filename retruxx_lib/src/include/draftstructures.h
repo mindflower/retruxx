@@ -82,19 +82,18 @@ namespace m3d
         m3d::DRAFT_GeomSize Sizes;
     }; /* size: 0x002c */
 
-    class DRAFT_HierGeom
+    struct DRAFT_HierGeom
     {
-    private:
-        DRAFT_Geom geom;
-        unsigned int parentBone;
-    };
+        /* 0x0000 */ m3d::DRAFT_Geom geom;
+        /* 0x002c */ unsigned int parentBone;
+    }; /* size: 0x0030 */
 
     struct DRAFT_HierarchyChange
     {
-        DRAFT_Change Type;
-        __int16 Index;
-        __int16 NewParent;
-    };
+        /* 0x0000 */ m3d::DRAFT_Change Type;
+        /* 0x0004 */ short Index;
+        /* 0x0006 */ short NewParent;
+    }; /* size: 0x0008 */
 
     struct DRAFT_BoneBounds
     {

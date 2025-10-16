@@ -37,9 +37,10 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void GeomObject::SetBounds(PointBase<int> const&, PointBase<int> const&)
+    void GeomObject::SetBounds(PointBase<int> const& startCell, PointBase<int> const& endCell)
     {
-        throw std::logic_error("Not implemented");
+        this->m_startCell = startCell;
+        this->m_endCell = endCell;
     }
 
     Object* GeomObject::Clone()
@@ -185,7 +186,7 @@ namespace m3d
 
     Object* GeomObjectStatics::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new GeomObjectStatics;
     }
 
     Object* GeomObjectStatics::Clone()
@@ -195,7 +196,6 @@ namespace m3d
 
     GeomObjectStatics::GeomObjectStatics()
     {
-        throw std::logic_error("Not implemented");
     }
 
     GeomObjectStatics::GeomObjectStatics(GeomObjectStatics const&)

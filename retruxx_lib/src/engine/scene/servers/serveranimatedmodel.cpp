@@ -616,6 +616,31 @@ namespace m3d
             *(AnimatedModel**)dest = model->m_mdl[0];
             return 1;
         }
+        if (prop == 12288)
+        {
+            auto* model = (DynamicModel*)m_models[id].m_ptr;
+            auto* animModel = model->m_mdl[0];
+            if (animModel->m_composite)
+            {
+                auto* box = (m3d::PropSrvBoundingBox*)dest;
+
+                AnimInfo* anim = nullptr;
+                box->m_node->GetProperty(1, &anim);
+                *box->m_destBox = anim->m_curBox;
+            }
+            else
+            {
+                auto* box = (m3d::PropSrvBoundingBox*)dest;
+                auto p_m_box = &animModel->m_box;
+                box->m_destBox->m_box[0] = p_m_box->m_box[0];
+                box->m_destBox->m_box[1] = p_m_box->m_box[1];
+                box->m_destBox->m_box[2] = p_m_box->m_box[2];
+                box->m_destBox->m_box[3] = p_m_box->m_box[3];
+                box->m_destBox->m_box[4] = p_m_box->m_box[4];
+                box->m_destBox->m_box[5] = p_m_box->m_box[5];
+            }
+            return 1;
+        }
         throw retruxx::logic_error("Not implemented");
     }
 

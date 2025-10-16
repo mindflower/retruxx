@@ -3,6 +3,8 @@
 #include <scene/servers/dataserver.h>
 #include <core/ini.h>
 
+#include "server/obstacle.h"
+
 namespace m3d
 {
     RT_CLASS_EXPORTS_BEGIN(SgAnimatedModelNode)
@@ -184,7 +186,18 @@ namespace m3d
         }
 
         this->m_passable = *(bool*)property;
-        throw retruxx::logic_error("Not implemented");
+        if (!this->m_passable || m_obstacle)
+        {
+            if (m_obstacle)
+            {
+                m_obstacle->DecRef();
+                m_obstacle = nullptr;
+            }
+            return 1;
+        }
+        m_obstacle = new ai::Obstacle(this);
+        m_obstacle->IncRef();
+        return 1;
     }
 
     DataServer* SgAnimatedModelNode::GetServer() const

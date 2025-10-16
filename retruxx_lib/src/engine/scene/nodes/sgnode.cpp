@@ -113,7 +113,7 @@ namespace m3d
 
     CVector const& SgNode::GetScale() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_scaling;
     }
 
     Class* SgNode::GetClass() const

@@ -27,7 +27,12 @@ namespace ai
 
     int Obstacle::DecRef()
     {
-        throw std::logic_error("Not implemented");
+        auto res = --this->m_refCount;
+        if (m_refCount <= 0)
+        {
+            delete this;
+        }
+        return res;
     }
 
     Obstacle::Obstacle(m3d::SgNode*)
