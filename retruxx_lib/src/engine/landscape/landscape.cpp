@@ -92,7 +92,8 @@ namespace m3d
         node->GetProperty(4356u, &PhysicBodyPtr);
         node->GetProperty(4358u, &isNodeHaveCollision);
 
-        if (!PhysicBodyPtr || isNodeHaveCollision) {
+        if (!PhysicBodyPtr || isNodeHaveCollision)
+        {
             // Link the main node
             LinkNodeCollisionGeomsToCell(node, x0, x1, z0, z1);
             UpdateNodeCollisionGeoms(node);
@@ -101,13 +102,15 @@ namespace m3d
             std::vector<m3d::Object*> stack;
             stack.push_back(dynamic_cast<m3d::Object*>(node));
 
-            while (!stack.empty()) {
+            while (!stack.empty())
+            {
                 m3d::Object* current = stack.back();
                 stack.pop_back();
 
                 // Process all siblings of the current node
                 m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
-                while (sibling) {
+                while (sibling)
+                {
                     // Link the sibling node
                     LinkNodeCollisionGeomsToCell(sibling, x0, x1, z0, z1);
                     UpdateNodeCollisionGeoms(sibling);
@@ -2213,161 +2216,157 @@ namespace m3d
     void Landscape::LinkNodeCollisionGeomsToCell(SgNode* node, int startX, int endX, int startY, int endY)
     {
         // TODO: generated code
+        const auto landSize = m_owner->m_level->land_size;
 
-        int land_size = m_owner->m_level->land_size;
-        int numCells = land_size;
-        m3d::SgNode* v8 = node;
         m3d::AnimatedModel* mdl = nullptr;
-
-        int sh;
-        if (node->GetProperty(4360u, &sh) && sh != -1)
+        int srvId = 0;
+        if (node->GetProperty(4360u, &srvId) && srvId != -1)
         {
-            m3d::DataServer* v10 = node->GetServer();
-            v10->GetItemProperty(sh, 16394, &mdl);
+            node->GetServer()->GetItemProperty(srvId, 16394, &mdl);
         }
 
-        std::set<m3d::GeomObject*>* geomObjsList = new std::set<m3d::GeomObject*>();
-
-        if (mdl)
+        if (mdl == nullptr)
         {
-            // Process collision points and triangles
-            if (!mdl->GetCollisionTrimesh().Points.empty())
+            return;
+        }
+
+        auto* geomObjsList = new retruxx::set<m3d::GeomObject*>();
+
+        // Process collision points and triangles
+        if (!mdl->GetCollisionTrimesh().Points.empty())
+        {
+            // Create GeomObjectStatics
+            auto* geomStatic = RT_DYNCAST(M3D_KERNEL->New("GeomObjectStatics"), GeomObjectStatics);
+
+            // Allocate and copy points
+            const auto pointsCount = mdl->GetCollisionTrimesh().Points.size();
+            geomStatic->m_Vertices = new CVector[pointsCount];
+
+            const auto scale = node->GetScale().x;
+            for (size_t i = 0; i < pointsCount; i++)
             {
-                float scale = node->GetScale().x;
-                size_t pointsCount = mdl->GetCollisionTrimesh().Points.size();
+                geomStatic->m_Vertices[i].x = mdl->GetCollisionTrimesh().Points[i].x * scale;
+                geomStatic->m_Vertices[i].y = mdl->GetCollisionTrimesh().Points[i].y * scale;
+                geomStatic->m_Vertices[i].z = mdl->GetCollisionTrimesh().Points[i].z * scale;
+            }
 
-                // Create GeomObjectStatics
-                m3d::GeomObjectStatics* geomStatic = static_cast<m3d::GeomObjectStatics*>(
-                    m3d::g_Kernel->New("GeomObjectStatics"));
+            // Allocate and copy triangles
+            const auto trisCount = mdl->GetCollisionTrimesh().Triangles.size();
+            geomStatic->m_Indices = new int[trisCount * 3];
 
-                // Allocate and copy points
-                geomStatic->m_Vertices = new CVector(pointsCount);
-                for (size_t i = 0; i < pointsCount; i++)
+            for (size_t i = 0; i < trisCount; ++i)
+            {
+                geomStatic->m_Indices[i * 3] = mdl->GetCollisionTrimesh().Triangles[i].I[0];
+                geomStatic->m_Indices[i * 3 + 1] = mdl->GetCollisionTrimesh().Triangles[i].I[1];
+                geomStatic->m_Indices[i * 3 + 2] = mdl->GetCollisionTrimesh().Triangles[i].I[2];
+            }
+
+
+            // Create ODE trimesh
+            geomStatic->m_TriData = dGeomTriMeshDataCreate();
+
+            dGeomTriMeshDataBuildSingle(geomStatic->m_TriData,
+                geomStatic->m_Vertices, sizeof(CVector), pointsCount,
+                geomStatic->m_Indices, trisCount * 3, 12);
+
+            dxSpace* odeSpace = m_owner->GetOdeSpace();
+            dxGeom* triMesh = dCreateTriMesh(odeSpace, geomStatic->m_TriData, 0, 0, 0);
+            geomStatic->SetGeom(triMesh);
+
+            geomStatic->m_rotation = { 0.0, 0.0, 0.0, 1.0 };
+            geomStatic->m_translation = { 0.0, 0.0, 0.0 };
+
+            // Set bounds
+            PointBase<int> startCell(startX, startY);
+            PointBase<int> endCell(endX, endY);
+            geomStatic->SetBounds(startCell, endCell);
+
+            // Add to list
+            geomObjsList->insert(geomStatic);
+
+            // Add to collision cells
+            for (int y = startY; y <= endY; y++)
+            {
+                for (int x = startX; x <= endX; x++)
                 {
-                    geomStatic->m_Vertices[i].x = mdl->GetCollisionTrimesh().Points[i].x * scale;
-                    geomStatic->m_Vertices[i].y = mdl->GetCollisionTrimesh().Points[i].y * scale;
-                    geomStatic->m_Vertices[i].z = mdl->GetCollisionTrimesh().Points[i].z * scale;
-                }
+                    int cellIndex = x + y * landSize;
+                    m_oCollisionitems[cellIndex]->m_geomsList.insert(geomStatic);
 
-                // Allocate and copy triangles
-                size_t trianglesCount = mdl->GetCollisionTrimesh().Triangles.size();
-                geomStatic->m_Indices = new int(trianglesCount * 3);
-                for (size_t i = 0; i < trianglesCount; i++)
-                {
-                    geomStatic->m_Indices[i * 3] = mdl->GetCollisionTrimesh().Triangles[i].I[0];
-                    geomStatic->m_Indices[i * 3 + 1] = mdl->GetCollisionTrimesh().Triangles[i].I[1];
-                    geomStatic->m_Indices[i * 3 + 2] = mdl->GetCollisionTrimesh().Triangles[i].I[2];
-                }
-
-                // Create ODE trimesh
-                auto triMeshData = dGeomTriMeshDataCreate();
-                dGeomTriMeshDataBuildSingle(triMeshData,
-                    geomStatic->m_Vertices, sizeof(CVector), pointsCount,
-                    geomStatic->m_Indices, trianglesCount * 3, sizeof(int));
-
-                dxSpace* odeSpace = m_owner->GetOdeSpace();
-                dxGeom* triMesh = dCreateTriMesh(odeSpace, triMeshData, 0, 0, 0);
-
-                // Set up geom object
-                m3d::GeomObject* geomObj = static_cast<m3d::GeomObject*>(geomStatic);
-                geomObj->SetGeom(triMesh);
-
-                // Set bounds
-                PointBase<int> startCell(startX, startY);
-                PointBase<int> endCell(endX, endY);
-                geomObj->SetBounds(startCell, endCell);
-
-                // Add to list
-                geomObjsList->insert(geomObj);
-
-                // Add to collision cells
-                for (int y = startY; y <= endY; y++)
-                {
-                    for (int x = startX;
-                        x <= endX; x++)
+                    if (m_oCollisionitems[cellIndex]->m_wasEnabledLastFrame)
                     {
-                        int cellIndex = x + y * numCells;
-                        m_oCollisionitems[cellIndex]->m_geomsList.insert(geomObj);
-
-                        if (m_oCollisionitems[cellIndex]->m_wasEnabledLastFrame)
-                        {
-                            geomObj->IncEnabledCellsCount();
-                        }
+                        geomStatic->IncEnabledCellsCount();
                     }
                 }
             }
+        }
 
-            // Process individual geoms
-            for (size_t i = 0; i < mdl->GetNumGeoms(); i++)
+        // Process individual geoms
+        for (size_t i = 0; i < mdl->GetNumGeoms(); i++)
+        {
+            auto* geom = mdl->GetGeom(i);
+            const auto scale = node->GetScale().x;
+
+            auto* geomStatic = RT_DYNCAST(M3D_KERNEL->New("GeomObjectStatics"), GeomObjectStatics);
+
+            dxGeom* odeGeom = nullptr;
+
+            switch (geom->Type)
             {
-                auto* geom = mdl->GetGeom(i);
-                float scale = node->GetScale().x;
+            case 0: // Box
+            {
+                const auto lx = geom->Sizes.BoxSizes.x * scale;
+                const auto ly = geom->Sizes.BoxSizes.y * scale;
+                const auto lz = geom->Sizes.BoxSizes.z * scale;
+                dxSpace* odeSpace = m_owner->GetOdeSpace();
+                odeGeom = dCreateBox(odeSpace, lx, ly, lz);
+                break;
+            }
+            case 1: // Sphere
+            {
+                float radius = geom->Sizes.BoxSizes.x * scale;
+                dxSpace* odeSpace = m_owner->GetOdeSpace();
+                odeGeom = dCreateSphere(odeSpace, radius);
+                break;
+            }
+            case 2: // Cylinder/Capsule
+            {
+                float radius = geom->Sizes.BoxSizes.x * scale;
+                float length = geom->Sizes.BoxSizes.y * scale;
+                dxSpace* odeSpace = m_owner->GetOdeSpace();
 
-                m3d::GeomObjectStatics* geomStatic = static_cast<m3d::GeomObjectStatics*>(
-                    m3d::g_Kernel->New("GeomObjectStatics"));
+                // Apply rotation for cylinder (45 degrees around some axis)
+                Quaternion rot(geom->Rotation[0], geom->Rotation[1],
+                    geom->Rotation[2], geom->Rotation[3]);
+                Quaternion addRot(0.7071f, 0.0f, 0.0f, 0.7071f); // 45 degrees
+                rot *= addRot;
 
-                dxGeom* odeGeom = nullptr;
+                geomStatic->m_rotation = rot;
+                odeGeom = dCreateCCylinder(odeSpace, radius, length);
+                break;
+            }
+            }
 
-                switch (geom->Type)
+            // Set position and rotation
+            geomStatic->m_translation = geom->Translation;
+            geomStatic->m_rotation = geom->Rotation;
+
+            geomStatic->SetGeom(odeGeom);
+
+            // Set bounds
+            PointBase<int> startCell(startX, startY);
+            PointBase<int> endCell(endX, endY);
+            geomStatic->SetBounds(startCell, endCell);
+
+            // Add to list
+            geomObjsList->insert(geomStatic);
+
+            // Add to collision cells
+            for (int y = startY; y <= endY; y++)
+            {
+                for (int x = startX; x <= endX; x++)
                 {
-                case 0: // Box
-                {
-                    float lx = geom->Sizes.BoxSizes.x * scale;
-                    float ly = geom->Sizes.BoxSizes.y * scale;
-                    float lz = geom->Sizes.BoxSizes.z * scale;
-                    dxSpace* odeSpace = m_owner->GetOdeSpace();
-                    odeGeom = dCreateBox(odeSpace, lx, ly, lz);
-                    break;
-                }
-                case 1: // Sphere
-                {
-                    float radius = geom->Sizes.BoxSizes.x * scale;
-                    dxSpace* odeSpace = m_owner->GetOdeSpace();
-                    odeGeom = dCreateSphere(odeSpace, radius);
-                    break;
-                }
-                case 2: // Cylinder/Capsule
-                {
-                    float radius = geom->Sizes.BoxSizes.x * scale;
-                    float length = geom->Sizes.BoxSizes.y * scale;
-                    dxSpace* odeSpace = m_owner->GetOdeSpace();
-
-                    // Apply rotation for cylinder (45 degrees around some axis)
-                    Quaternion rot(geom->Rotation[0], geom->Rotation[1],
-                        geom->Rotation[2], geom->Rotation[3]);
-                    Quaternion addRot(0.7071f, 0.0f, 0.0f, 0.7071f); // 45 degrees
-                    rot *= addRot;
-
-                    geomStatic->m_rotation = rot;
-                    odeGeom = dCreateCCylinder(odeSpace, radius, length);
-                    break;
-                }
-                }
-
-                // Set position and rotation
-                geomStatic->m_translation = geom->Translation;
-                geomStatic->m_rotation = geom->Rotation;
-
-                m3d::GeomObject* geomObj = static_cast<m3d::GeomObject*>(geomStatic);
-                geomObj->SetGeom(odeGeom);
-
-                // Set bounds
-                PointBase<int> startCell(startX, startY);
-                PointBase<int> endCell(endX, endY);
-                geomObj->SetBounds(startCell, endCell);
-
-                // Add to list
-                geomObjsList->insert(geomObj);
-
-                // Add to collision cells
-                for (int y = startY; y <= endY; y++)
-                {
-                    for (int x = startX;
-                        x <= endX; x++)
-                    {
-                        int cellIndex = x + y * numCells;
-                        m_oCollisionitems[cellIndex]->m_geomsList.insert(geomObj);
-                    }
+                    int cellIndex = x + y * landSize;
+                    m_oCollisionitems[cellIndex]->m_geomsList.insert(geomStatic);
                 }
             }
         }

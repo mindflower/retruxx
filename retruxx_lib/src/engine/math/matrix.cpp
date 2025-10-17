@@ -3,6 +3,8 @@
 #include <math/vector.h>
 #include <math/vector4.h>
 
+#include "math/quaternion.h"
+
 CMatrix::CMatrix(CMatrix const& vv)
 {
     *this = vv;
@@ -131,9 +133,44 @@ LABEL_7:
     r = v6;
 }
 
-void CMatrix::rotTranslate(Quaternion const&, CVector const&)
+void CMatrix::rotTranslate(Quaternion const& rot, CVector const& pos)
 {
-    throw std::logic_error("Not implemented");
+    // TODO: generated code
+    // Calculate intermediate values for the rotation matrix
+    float xx = rot.x * rot.x;
+    float yy = rot.y * rot.y;
+    float zz = rot.z * rot.z;
+    float xy = rot.x * rot.y;
+    float xz = rot.x * rot.z;
+    float yz = rot.y * rot.z;
+    float xw = rot.x * rot.w;
+    float yw = rot.y * rot.w;
+    float zw = rot.z * rot.w;
+
+    // Build the rotation matrix from quaternion
+    // First row
+    this->_11 = 1.0f - 2.0f * (yy + zz);
+    this->_12 = 2.0f * (xy + zw);
+    this->_13 = 2.0f * (xz - yw);
+    this->_14 = 0.0f;
+
+    // Second row
+    this->_21 = 2.0f * (xy - zw);
+    this->_22 = 1.0f - 2.0f * (xx + zz);
+    this->_23 = 2.0f * (yz + xw);
+    this->_24 = 0.0f;
+
+    // Third row
+    this->_31 = 2.0f * (xz + yw);
+    this->_32 = 2.0f * (yz - xw);
+    this->_33 = 1.0f - 2.0f * (xx + yy);
+    this->_34 = 0.0f;
+
+    // Fourth row (translation)
+    this->_41 = pos.x;
+    this->_42 = pos.y;
+    this->_43 = pos.z;
+    this->_44 = 1.0f;
 }
 
 void CMatrix::GetNormalizedBasis(CVector& x, CVector& y , CVector& z) const

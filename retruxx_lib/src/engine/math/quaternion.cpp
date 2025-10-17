@@ -127,7 +127,7 @@ float& Quaternion::operator[](unsigned int i)
 
 float Quaternion::operator[](unsigned int i) const
 {
-    return operator[](i);
+    return *(float*)(this + i);
 }
 
 void Quaternion::Lerp(Quaternion const&, Quaternion const&, float)

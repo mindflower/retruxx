@@ -8,12 +8,10 @@ namespace m3d
 {
     struct Index3
     {
-        unsigned __int16 I[3];
-
-    public:
-        unsigned short & operator[](unsigned int);
-        unsigned short const & operator[](unsigned int) const ;
-    };
+        /* 0x0000 */ unsigned short I[3];
+        const unsigned short& operator[](unsigned int i) const;
+        unsigned short& operator[](unsigned int i);
+    }; /* size: 0x0006 */
 
     struct DCollisionData
     {

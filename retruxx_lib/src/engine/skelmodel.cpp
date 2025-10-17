@@ -516,7 +516,7 @@ namespace m3d
 
             for (int matIdx = 0; matIdx < numMaterials; ++matIdx)
             {
-                auto& surfaceMaterial = m_Skins[skinsIdx][matIdx];
+                auto& surfaceMaterial = surfaceMaterials[matIdx];
 
                 const auto materialSize = sizeof(rend::Material);
                 assert(materialSize == 68);
@@ -559,6 +559,8 @@ namespace m3d
         if (!stream.setChunk(16u))
         {
             const auto pointsCount = stream.get<uint32_t>();
+            const auto trisCount = stream.get<uint32_t>();
+
             m_Collision.Points.resize(pointsCount);
 
             const auto cvectorSize = sizeof(CVector);
@@ -567,11 +569,10 @@ namespace m3d
             const auto pointsSize = pointsCount * cvectorSize;
             memcpy(m_Collision.Points.data(), stream.getRaw(pointsSize), pointsSize);
 
-            const auto trisCount = stream.get<uint32_t>();
             m_Collision.Triangles.resize(trisCount);
 
             const auto index3Size = sizeof(Index3);
-            assert(cvectorSize == 6);
+            assert(index3Size == 6);
 
             const auto trisSize = trisCount * index3Size;
             memcpy(m_Collision.Triangles.data(), stream.getRaw(trisSize), trisSize);
@@ -652,7 +653,7 @@ namespace m3d
                 }
             }
         }
-        return 1;
+        return true;
     }
 
     bool AnimatedModel::LoadSAM(CStr const&, bool)

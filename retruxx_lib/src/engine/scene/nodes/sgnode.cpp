@@ -103,7 +103,7 @@ namespace m3d
 
     CVector const& SgNode::GetOriginWorldAbs() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_currentWorldOrigin;
     }
 
     void SgNode::SetPrevThinkTime(int)
@@ -300,7 +300,7 @@ namespace m3d
 
     Quaternion const& SgNode::GetRotationWorldAbs() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_currentWorldRotation;
     }
 
     int SgNode::SetRotation(Quaternion const&)
