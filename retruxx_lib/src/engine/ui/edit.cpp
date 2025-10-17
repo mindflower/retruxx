@@ -134,7 +134,7 @@ namespace m3d
                     {
                         if (bEsc)
                         {
-                            res += m_caption[i];
+                            res += CStr(m_caption[i]);
                             bEsc = false;
                         }
                         else
@@ -144,7 +144,7 @@ namespace m3d
                     }
                     else if (bEsc)
                     {
-                        res += m_caption[i];
+                        res += CStr(m_caption[i]);
                         bEsc = false;
                     }
                     else if (serviceSymbols[pos] == '@')
@@ -154,7 +154,7 @@ namespace m3d
                 }
                 else
                 {
-                    res += m_caption[i];
+                    res += CStr(m_caption[i]);
                     bEsc = false;
                 }
             }

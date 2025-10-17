@@ -585,7 +585,7 @@ namespace ai
                     CStr wheelPrototypeName;
                     m3d::SafeStrAttrib(wheelPrototypeName, wheelNode, "Prototype");
 
-                    CStr steeringStr = 0;
+                    CStr steeringStr;
                     m3d::SafeStrAttrib(steeringStr, wheelNode, "steering");
 
                     Wheel::WheelSteering steering = Wheel::WheelSteering::STEERING_NO;

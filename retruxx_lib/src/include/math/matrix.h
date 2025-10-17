@@ -90,7 +90,7 @@ struct CMatrix
     void DiagMatrixMul(const CVector&);
     float& operator()(int i, int j);
     float operator()(int i, int j) const;
-    void operator*=(const CMatrix& lhs);
+    CMatrix& operator*=(const CMatrix& other);
     void DecomposeScale(float& x, float& y, float& z);
     void createPlaneTransform();
     void transformPlane(CVector4&);

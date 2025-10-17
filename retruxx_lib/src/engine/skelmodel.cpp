@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <skelmodel.h>
 #include <core/kernel.h>
 #include <core/log.h>
@@ -11,6 +12,7 @@
 #include <config.h>
 
 #include "core/timer.h"
+#include "math/coremath.h"
 
 namespace m3d
 {
@@ -920,13 +922,12 @@ namespace m3d
     {
         if (!ai->IsEmpty())
         {
-            auto curFrame = m3d::g_Kernel->GetTimer().GetCurFrame();
+            const auto curFrame = m3d::g_Kernel->GetTimer().GetCurFrame();
             ai->InterpolateBones(curFrame);
             for (int i = 0; i < this->m_header.m_numNodes; ++i)
             {
                 MatrixForBone(ai, curFrame, i);
             }
-
             UpdateVertices(ai, notFirstTime, cfg);
         }
         return 1;
@@ -1041,9 +1042,29 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModel::UpdateVertices(AnimInfo*, bool, Configuration*)
+    void AnimatedModel::UpdateVertices(AnimInfo* ai, bool notFirstTime, Configuration* cfg)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (cfg)
+        {
+            for (auto& mesh : cfg->m_meshes)
+            {
+                if (mesh->m_numNode != -1 && mesh->m_meshType == 2)
+                {
+                    VertsForSkinmesh(ai, *mesh, ai->m_meshesVerts[mesh->meshId], notFirstTime);
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < m_numMeshes; ++i)
+            {
+                auto& mesh = m_meshes[i];
+                if (mesh.m_numNode != -1 && mesh.m_meshType == 2)
+                {
+                    VertsForSkinmesh(ai, mesh, ai->m_meshesVerts[i], notFirstTime);
+                }
+            }
+        }
     }
 
     void AnimatedModel::RenderMesh(unsigned, AnimInfo*, rend::IEffect*)
@@ -1103,9 +1124,101 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModel::MatrixForBone(AnimInfo*, int, int)
+    void AnimatedModel::MatrixForBone(AnimInfo* ai, int curFrame, int boneIndex)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        if (curFrame < 0 || ai->GetBoneAnim(boneIndex).m_lastUpdatedFrame == curFrame) {
+            return;
+        }
+
+        // Build a stack of bones from the target bone up to the root
+        retruxx::stack<int> boneStack;
+        int currentBoneIdx = boneIndex;
+
+        while (true)
+        {
+            BoneAnim* currentBone = &ai->GetBoneAnim(currentBoneIdx);
+            boneStack.push(currentBoneIdx);
+
+            // Stop if this bone is already updated or if we reached the root
+            if (curFrame >= 0 && currentBone->m_lastUpdatedFrame == curFrame) {
+                break;
+            }
+            if (currentBone->m_parentIdx < 0) { // Root bone
+                break;
+            }
+            currentBoneIdx = currentBone->m_parentIdx;
+        }
+
+        // Process bones from root to target (reverse order of stack)
+        while (!boneStack.empty())
+        {
+            int boneIdx = boneStack.top();
+            boneStack.pop();
+
+            BoneAnim* bone = &ai->GetBoneAnim(boneIdx);
+            BoneAnim* parentBone = nullptr;
+            CMatrix* parentMatrix = nullptr;
+
+            if (bone->m_parentIdx >= 0)
+            {
+                parentBone = &ai->GetBoneAnim(bone->m_parentIdx);
+                parentMatrix = &parentBone->m_curMatrix;
+            }
+
+            // Convert quaternion rotation to matrix
+            const Quaternion& rot = bone->m_rotation;
+            CMatrix rotationMatrix;
+
+            // Calculate quaternion components for matrix conversion
+            float xx = rot.x * rot.x;
+            float xy = rot.x * rot.y;
+            float xz = rot.x * rot.z;
+            float xw = rot.x * rot.w;
+
+            float yy = rot.y * rot.y;
+            float yz = rot.y * rot.z;
+            float yw = rot.y * rot.w;
+
+            float zz = rot.z * rot.z;
+            float zw = rot.z * rot.w;
+
+            // Build rotation matrix from quaternion
+            rotationMatrix._11 = 1.0f - 2.0f * (yy + zz);
+            rotationMatrix._12 = 2.0f * (xy + zw);
+            rotationMatrix._13 = 2.0f * (xz - yw);
+            rotationMatrix._14 = 0.0f;
+
+            rotationMatrix._21 = 2.0f * (xy - zw);
+            rotationMatrix._22 = 1.0f - 2.0f * (xx + zz);
+            rotationMatrix._23 = 2.0f * (yz + xw);
+            rotationMatrix._24 = 0.0f;
+
+            rotationMatrix._31 = 2.0f * (xz + yw);
+            rotationMatrix._32 = 2.0f * (yz - xw);
+            rotationMatrix._33 = 1.0f - 2.0f * (xx + yy);
+            rotationMatrix._34 = 0.0f;
+
+            rotationMatrix._41 = bone->m_translation.x;
+            rotationMatrix._42 = bone->m_translation.y;
+            rotationMatrix._43 = bone->m_translation.z;
+            rotationMatrix._44 = 1.0f;
+
+            // Combine with parent matrix if exists
+            if (parentMatrix)
+            {
+                // Multiply bone's local matrix by parent's world matrix
+                bone->m_curMatrix = rotationMatrix;
+                bone->m_curMatrix *= (*parentMatrix);
+            }
+            else
+            {
+                // No parent, so local matrix is world matrix
+                bone->m_curMatrix = rotationMatrix;
+            }
+
+            bone->m_lastUpdatedFrame = curFrame;
+        }
     }
 
     void AnimatedModel::NewEffect(retruxx::string const& name, rend::IEffect*& shader)
@@ -1172,9 +1285,66 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimatedModel::VertsForSkinmesh(AnimInfo*, Mesh&, void*, bool)
+    void AnimatedModel::VertsForSkinmesh(AnimInfo* ai, Mesh& mesh, void* dstVerts, bool onlyXYZN)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        // Copy original vertices if we need full vertex data
+        if (!onlyXYZN)
+        {
+            size_t vertexDataSize = mesh.m_VertexTypeSize * mesh.m_numDrawVerts;
+            memcpy(dstVerts, mesh.m_drawVerts, vertexDataSize);
+        }
+
+        // Process each vertex through skinning
+        for (int vertexIndex = 0; vertexIndex < mesh.m_numDrawVerts; ++vertexIndex)
+        {
+            auto& vertexInfluences = mesh.m_vertsInfluences[vertexIndex];
+
+            // Accumulators for transformed position and normal
+            CVector transformedPos(0.0f, 0.0f, 0.0f);
+            CVector transformedNormal(0.0f, 0.0f, 0.0f);
+
+            // Apply all bone influences for this vertex
+            for (int boneIndex = 0; boneIndex < vertexInfluences.m_numBones; ++boneIndex)
+            {
+                const auto& influence = vertexInfluences.m_influences[boneIndex];
+                const auto& boneAnim = ai->m_bonesAnim[influence.m_boneIdx];
+                const auto& boneMatrix = boneAnim.m_curMatrix;
+                float weight = influence.m_boneWeight;
+
+                // Transform position by bone matrix
+                CVector weightedPos = influence.m_offsetVec;
+                CVector transformedWeightedPos;
+                transformedWeightedPos.x = boneMatrix._11 * weightedPos.x + boneMatrix._21 * weightedPos.y + boneMatrix._31 * weightedPos.z + boneMatrix._41;
+                transformedWeightedPos.y = boneMatrix._12 * weightedPos.x + boneMatrix._22 * weightedPos.y + boneMatrix._32 * weightedPos.z + boneMatrix._42;
+                transformedWeightedPos.z = boneMatrix._13 * weightedPos.x + boneMatrix._23 * weightedPos.y + boneMatrix._33 * weightedPos.z + boneMatrix._43;
+
+                transformedPos += transformedWeightedPos * weight;
+
+                // Transform normal by bone matrix (3x3 rotation part only)
+                CVector weightedNormal = influence.m_offsetNormal;
+                CVector transformedWeightedNormal;
+                transformedWeightedNormal.x = boneMatrix._11 * weightedNormal.x + boneMatrix._21 * weightedNormal.y + boneMatrix._31 * weightedNormal.z;
+                transformedWeightedNormal.y = boneMatrix._12 * weightedNormal.x + boneMatrix._22 * weightedNormal.y + boneMatrix._32 * weightedNormal.z;
+                transformedWeightedNormal.z = boneMatrix._13 * weightedNormal.x + boneMatrix._23 * weightedNormal.y + boneMatrix._33 * weightedNormal.z;
+
+                transformedNormal += transformedWeightedNormal * weight;
+            }
+
+            // Write transformed vertex data to output buffer
+            float* outputVertex = reinterpret_cast<float*>(
+                static_cast<char*>(dstVerts) + vertexIndex * mesh.m_VertexTypeSize);
+
+            outputVertex[0] = transformedPos.x;
+            outputVertex[1] = transformedPos.y;
+            outputVertex[2] = transformedPos.z;
+            outputVertex[3] = transformedNormal.x;
+            outputVertex[4] = transformedNormal.y;
+            outputVertex[5] = transformedNormal.z;
+
+            // Note: If !onlyXYZN, the rest of vertex data (texcoords, colors, etc.) 
+            // was already copied and remains unchanged
+        }
     }
 
     void AnimatedModel::DrawBones(AnimInfo*)
@@ -1221,9 +1391,105 @@ namespace m3d
 	    throw retruxx::logic_error("Not implemented");
     }
 
-    void AnimInfo::InterpolateBones(int)
+    void AnimInfo::InterpolateBones(int curUpdateFrame)
     {
-	    throw retruxx::logic_error("Not implemented");
+        // TODO generated code
+        // Early exit if we already processed this frame
+        if (curUpdateFrame < 0 || m_lastInterpolationUpdate == curUpdateFrame)
+        {
+            return;
+        }
+
+        m_lastInterpolationUpdate = curUpdateFrame;
+
+        if (!m_curAnimation)
+        {
+            return;
+        }
+
+        // Get animation data pointers and interpolation factor
+        auto* anim = m_curAnimation;
+        AnimatedModel::AnimationTransform* currentFrameData = nullptr;
+        AnimatedModel::AnimationTransform* nextFrameData = nullptr;
+        float interpolationFactor = 0.0f;
+
+        if (m_stickToLastFrame)
+        {
+            // Stick to the current frame (no interpolation)
+            currentFrameData = &anim->m_nodesPositions[m_curAnimFrame * anim->m_numNodes];
+            interpolationFactor = 0.0f;
+        }
+        else
+        {
+            // Normal interpolation between frames
+            currentFrameData = &anim->m_nodesPositions[m_curAnimFrame * anim->m_numNodes];
+            int nextFrame = (m_curAnimFrame + 1) % anim->m_numFrames;
+            nextFrameData = &anim->m_nodesPositions[nextFrame * anim->m_numNodes];
+
+            // Calculate interpolation factor based on time to next frame
+            interpolationFactor = 1.0f - ((float)m_timeOutToNextFrame / (float)anim->m_fps);
+            interpolationFactor = std::clamp(interpolationFactor, 0.0f, 1.0f);
+        }
+
+        // Interpolate bone transformations
+        for (int nodeIndex = 0; nodeIndex < anim->m_numNodes; ++nodeIndex)
+        {
+            auto& boneAnim = m_bonesAnim[nodeIndex];
+
+            if (m_stickToLastFrame)
+            {
+                // Just copy current frame data
+                const auto& currentTransform = currentFrameData[nodeIndex];
+                boneAnim.m_rotation = Quaternion(currentTransform.qx, currentTransform.qy, currentTransform.qz, currentTransform.qw);
+                boneAnim.m_translation = CVector(currentTransform.tx, currentTransform.ty, currentTransform.tz);
+            }
+            else
+            {
+                // Interpolate between current and next frame
+                const auto& currentTransform = currentFrameData[nodeIndex];
+                const auto& nextTransform = nextFrameData[nodeIndex];
+
+                // Interpolate rotation using quaternion lerp
+                Quaternion q1(currentTransform.qx, currentTransform.qy, currentTransform.qz, currentTransform.qw);
+                Quaternion q2(nextTransform.qx, nextTransform.qy, nextTransform.qz, nextTransform.qw);
+                boneAnim.m_rotation.Lerp(q1, q2, interpolationFactor);
+
+                // Interpolate translation using linear interpolation
+                CVector v1(currentTransform.tx, currentTransform.ty, currentTransform.tz);
+                CVector v2(nextTransform.tx, nextTransform.ty, nextTransform.tz);
+                boneAnim.m_translation = lerp(v1, v2, interpolationFactor);
+            }
+        }
+
+        // Handle animation blending if active
+        if (m_isBlending)
+        {
+            // Calculate blend factor
+            float blendFactor = 1.0f - (float)((float)(m_timeOutToNextFrame + anim->m_fps * (m_blendFramesNum - 1)) /
+                                        (float)(7.0f * (float)anim->m_fps));
+            blendFactor = std::clamp(blendFactor, 0.0f, 1.0f);
+
+            // Apply blending between previous and current bone animations
+            for (int nodeIndex = 0; nodeIndex < anim->m_numNodes; ++nodeIndex)
+            {
+                auto& prevBone = m_bonesAnimPrev[nodeIndex];
+                auto& currentBone = m_bonesAnim[nodeIndex];
+
+                // Only blend if bones have the same parent (same hierarchy)
+                if (prevBone.m_parentIdx == currentBone.m_parentIdx)
+                {
+                    // Store the current state before blending
+                    Quaternion currentRotation = currentBone.m_rotation;
+                    CVector currentTranslation = currentBone.m_translation;
+
+                    // Blend rotation from previous to current
+                    currentBone.m_rotation.Lerp(prevBone.m_rotation, currentRotation, blendFactor);
+
+                    // Blend translation from previous to current
+                    currentBone.m_translation = lerp(prevBone.m_translation, currentTranslation, blendFactor);
+                }
+            }
+        }
     }
 
     int AnimInfo::SetAnimationIdx(int)
@@ -1413,9 +1679,9 @@ namespace m3d
         }
     }
 
-    BoneAnim& AnimInfo::GetBoneAnim(unsigned)
+    BoneAnim& AnimInfo::GetBoneAnim(unsigned j)
     {
-	    throw retruxx::logic_error("Not implemented");
+        return m_bonesAnim[j];
     }
 
     AnimAction* GetAnimActions()

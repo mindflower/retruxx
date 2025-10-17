@@ -37,6 +37,20 @@ CVector CVector::operator-(const CVector& rhs) const
     return res;
 }
 
+CVector CVector::operator*(float v) const
+{
+    CVector res;
+    res *= v;
+    return res;
+}
+
+CVector CVector::operator+(const CVector& rhs) const
+{
+    CVector res;
+    res += rhs;
+    return res;
+}
+
 CVector& CVector::operator*=(float v)
 {
     x *= v;

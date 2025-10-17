@@ -12,6 +12,8 @@ struct CVector
     CVector() = default;
     CVector operator-() const;
     CVector operator-(const CVector& rhs) const;
+    CVector operator*(float v) const;
+    CVector operator+(const CVector& rhs) const;
     CVector& operator-=(const CVector& a);
     CVector& operator+=(const CVector& a);
     CVector& operator*=(float v);

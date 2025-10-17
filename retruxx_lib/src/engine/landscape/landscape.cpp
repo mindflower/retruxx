@@ -2038,7 +2038,7 @@ namespace m3d
         }
         
         unsigned int loadTime = M3D_KERNEL->GetTimer().GetCurTime() - startTime;
-        M3D_LOG_INFO(CStr("Normal map loaded in: ") + loadTime);
+        M3D_LOG_INFO("Normal map loaded in: " + CStr(loadTime));
 
         // Load tiles
         startTime =  M3D_KERNEL->GetTimer().GetCurTime();
@@ -2048,7 +2048,7 @@ namespace m3d
         }
 
         loadTime = M3D_KERNEL->GetTimer().GetCurTime() - startTime;
-        M3D_LOG_INFO(CStr("Tiles loaded in: ") + loadTime);
+        M3D_LOG_INFO(CStr("Tiles loaded in: ") + CStr(loadTime));
 
         // Create LOD
         CreateLod();
@@ -2074,7 +2074,7 @@ namespace m3d
         //}
 
         loadTime = M3D_KERNEL->GetTimer().GetCurTime() - startTime;
-        M3D_LOG_INFO(CStr("ShoreLine loaded in: ") + loadTime);
+        M3D_LOG_INFO(CStr("ShoreLine loaded in: ") + CStr(loadTime));
 
         // Initialize grass
         //InitGrass();

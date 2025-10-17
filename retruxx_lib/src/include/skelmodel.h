@@ -3,6 +3,7 @@
 #include <math/aabb.h>
 #include <math/matrix.h>
 #include <math/quaternion.h>
+#include <math/vector.h>
 #include <thirdparty/containers.h>
 
 enum ActionType
@@ -343,6 +344,7 @@ namespace m3d
     class AnimInfo
     {
         friend class AnimatedModelsServer;
+        friend class AnimatedModel;
 
     public:
         AnimInfo(const m3d::AnimInfo&);

@@ -233,9 +233,29 @@ CMatrix CMatrix::getInverse() const
     throw std::logic_error("Not implemented");
 }
 
-void CMatrix::operator*=(CMatrix const&)
+CMatrix& CMatrix::operator*=(CMatrix const& other)
 {
-    throw std::logic_error("Not implemented");
+    _11 = _11 * other._11 + _12 * other._21 + _13 * other._31 + _14 * other._41;
+    _12 = _11 * other._12 + _12 * other._22 + _13 * other._32 + _14 * other._42;
+    _13 = _11 * other._13 + _12 * other._23 + _13 * other._33 + _14 * other._43;
+    _14 = _11 * other._14 + _12 * other._24 + _13 * other._34 + _14 * other._44;
+
+    _21 = _21 * other._11 + _22 * other._21 + _23 * other._31 + _24 * other._41;
+    _22 = _21 * other._12 + _22 * other._22 + _23 * other._32 + _24 * other._42;
+    _23 = _21 * other._13 + _22 * other._23 + _23 * other._33 + _24 * other._43;
+    _24 = _21 * other._14 + _22 * other._24 + _23 * other._34 + _24 * other._44;
+
+    _31 = _31 * other._11 + _32 * other._21 + _33 * other._31 + _34 * other._41;
+    _32 = _31 * other._12 + _32 * other._22 + _33 * other._32 + _34 * other._42;
+    _33 = _31 * other._13 + _32 * other._23 + _33 * other._33 + _34 * other._43;
+    _34 = _31 * other._14 + _32 * other._24 + _33 * other._34 + _34 * other._44;
+
+    _41 = _41 * other._11 + _42 * other._21 + _43 * other._31 + _44 * other._41;
+    _42 = _41 * other._12 + _42 * other._22 + _43 * other._32 + _44 * other._42;
+    _43 = _41 * other._13 + _42 * other._23 + _43 * other._33 + _44 * other._43;
+    _44 = _41 * other._14 + _42 * other._24 + _43 * other._34 + _44 * other._44;
+
+    return *this;
 }
 
 CVector CMatrix::getOrgInv() const

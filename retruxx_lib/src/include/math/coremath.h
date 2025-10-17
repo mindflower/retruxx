@@ -104,3 +104,9 @@ inline int CBrezLine::step(int& curx, int& cury)
     this->m_y += m_yinc1;
     return 1;
 }
+
+template<class T>
+T lerp(const T& a, const T& b, float s)
+{
+    return a + ((b - a) * s) ;
+}

@@ -1829,7 +1829,7 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
             M3D_RENDERER->PushZbState(m3d::rend::ZbState::ZB_DISABLE);
 
             // Display camera position   
-            CStr posText = CStr::format("%0.4f %0.4f %0.4f",
+            CStr posText = CStr::format_("%0.4f %0.4f %0.4f",
                 m_curCamera.m_worldOrigin.x,
                 m_curCamera.m_worldOrigin.y,
                 m_curCamera.m_worldOrigin.z);
@@ -1849,7 +1849,7 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
             }
 
             // Display camera rotation
-            CStr rotText = CStr::format("Y=%0.4f P=%0.4f R=%0.4f",
+            CStr rotText = CStr::format_("Y=%0.4f P=%0.4f R=%0.4f",
                 m_curCamera.m_rotYaw,
                 m_curCamera.m_rotPitch,
                 m_curCamera.m_rotRoll);
