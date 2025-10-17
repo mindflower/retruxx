@@ -171,7 +171,7 @@ namespace m3d
 
     Class* GeomObjectStatics::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(GeomObjectStatics);
     }
 
     GeomObjectStatics::~GeomObjectStatics()

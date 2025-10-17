@@ -1349,25 +1349,22 @@ namespace m3d
     int Landscape::ConstructCollisionData()
     {
         // TODO: generated code
-        int land_size = this->m_owner->m_level->land_size;
-        int vertexCounter = 0;
+        int landSize = this->m_owner->m_level->land_size;
 
         // Allocate collision items array
-        this->m_oCollisionitems = new CollisionCellItem*[4 * land_size * land_size];
-        for (int i = 0; i < 4 * land_size * land_size; i++)
+        m_oCollisionitems = new CollisionCellItem*[landSize * landSize];
+        for (int i = 0; i < landSize * landSize; i++)
         {
             m_oCollisionitems[i] = nullptr;
         }
 
         // Process each cell in the landscape
-        for (int cellY = 0; cellY < land_size; cellY++)
+        for (int cellY = 0; cellY < landSize; cellY++)
         {
-            int cellArrayOffset = 4 * land_size * cellY;
-
-            for (int cellX = 0; cellX < land_size; cellX++)
+            for (int cellX = 0; cellX < landSize; cellX++)
             {
                 // Create collision cell item
-                m3d::Landscape::CollisionCellItem* item = new m3d::Landscape::CollisionCellItem;
+                auto* item = new CollisionCellItem;
                 item->m_wasEnabledLastFrame = false;
                 item->m_bMustCheck = false;
 
@@ -1382,15 +1379,14 @@ namespace m3d
                         int worldX = subX + 4 * cellX;
 
                         // Check if this position has water
-                        if (this->m_waterMap[4 * worldY * this->m_owner->m_level->land_size + 4 * worldX])
+                        if (m_waterMap[4 * worldY * landSize + 4 * worldX])
                         {
                             // Create water geometry object
-                            m3d::GeomObject* waterObj =
-                                (m3d::GeomObject*)m3d::g_Kernel->New("GeomObjectWater");
+                            auto* waterObj = RT_DYNCAST(M3D_KERNEL->New("GeomObjectWater"), GeomObjectWater);
 
                             // Allocate vertices and indices
-                            waterObj->m_Vertices = (CVector*)m3d::g_Kernel->g_mar.AllocMem(48, 0, 0); // 4 vertices * 12 bytes each
-                            waterObj->m_Indices = (int*)m3d::g_Kernel->g_mar.AllocMem(24, 0, 0); // 6 indices * 4 bytes each
+                            waterObj->m_Vertices = new CVector[4]; // 4 vertices for the quad
+                            waterObj->m_Indices = new int[6];     // 6 indices for two triangles
 
                             // Set up indices for two triangles forming a quad
                             int* indices = waterObj->m_Indices;
@@ -1398,7 +1394,7 @@ namespace m3d
                             indices[3] = 3; indices[4] = 1; indices[5] = 2; // Second triangle
 
                             // Create vertices for water quad
-                            vertexCounter = 0;
+                            int vertexCounter = 0;
                             for (int vertexSubY = 0; vertexSubY < 2; vertexSubY++)
                             {
                                 float vertexZ = (vertexYOffset + vertexSubY * 4) * 8.0f;
@@ -1418,10 +1414,9 @@ namespace m3d
                             }
 
                             // Create triangle mesh for collision
-                            dxTriMeshData* triMeshData = dGeomTriMeshDataCreate();
-                            waterObj->m_TriData = triMeshData;
+                            waterObj->m_TriData = dGeomTriMeshDataCreate();
                             dGeomTriMeshDataBuildSingle(
-                                triMeshData,
+                                waterObj->m_TriData,
                                 waterObj->m_Vertices,
                                 sizeof(CVector),  // vertex stride
                                 4,                // vertex count
@@ -1438,14 +1433,13 @@ namespace m3d
                             waterObj->m_needToDeleteInUnlink = false;
 
                             // Add to collision cell's geometry list
-                            std::pair<std::set<m3d::GeomObject*>::iterator, bool> result;
                             item->m_geomsList.insert(waterObj);
                         }
                     }
                 }
 
                 // Store collision cell item in the array
-                this->m_oCollisionitems[cellArrayOffset + cellX] = item;
+                m_oCollisionitems[cellY * landSize + cellX] = item;
             }
         }
 

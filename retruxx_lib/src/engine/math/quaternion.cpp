@@ -180,7 +180,17 @@ Quaternion& Quaternion::operator*=(float)
     throw std::logic_error("Not implemented");
 }
 
-void Quaternion::operator*=(Quaternion const&)
+void Quaternion::operator*=(Quaternion const& b)
 {
-    throw std::logic_error("Not implemented");
+    auto v2 = (float)((float)((float)(b.w * this->y) + (float)(this->w * b.y)) + (float)(this->z * b.x))
+        - (float)(b.z * this->x);
+    auto v3 = (float)((float)((float)(b.w * this->z) + (float)(this->x * b.y)) + (float)(b.z * this->w))
+        - (float)(b.x * this->y);
+    auto v4 = (float)((float)((float)(b.w * this->w) - (float)(b.x * this->x)) - (float)(b.y * this->y))
+        - (float)(this->z * b.z);
+    this->x = (float)((float)((float)(this->w * b.x) + (float)(b.z * this->y)) + (float)(b.w * this->x))
+        - (float)(this->z * b.y);
+    this->y = v2;
+    this->z = v3;
+    this->w = v4;
 }

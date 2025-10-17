@@ -7,6 +7,9 @@
 #include <file/fileserver.h>
 #include <file/filestream.h>
 
+#include "scene/nodes/sgnode.h"
+#include "server/objects/base/obj.h"
+
 namespace m3d
 {
     MeshMaterialManager::~MeshMaterialManager()
@@ -67,8 +70,25 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    DSurfaceMaterial& MeshMaterialManager::GetMaterial(SgNode&, AnimatedModel::Mesh&)
+    DSurfaceMaterial& MeshMaterialManager::GetMaterial(SgNode& node, AnimatedModel::Mesh& mh)
     {
-        throw std::logic_error("Not implemented");
+        if (mh.m_MaterialNumber < 0)
+        {
+            if (m_pLogos)
+            {
+                ai::Obj* belong = nullptr;
+                node.GetProperty(4353, &belong);
+                auto it = m_mapBelongToLogo.find(belong->GetId());
+                if (it == m_mapBelongToLogo.end())
+                {
+                    return m_pLogos->GetMaterial(0, 0);
+                }
+                return m_pLogos->GetMaterial(0, it->second);
+            }
+            return mh.m_pModelSkins->front().front();
+        }
+        int skin = 0;
+        node.GetProperty(8706, &skin);
+        return mh.GetMaterial(skin);
     }
 }

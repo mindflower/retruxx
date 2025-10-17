@@ -34,31 +34,32 @@ namespace ai
 
         void IntersectionCallback(void* data,dxGeom* o1,dxGeom* o2)
         {
-            if ((dGeomIsSpace(o1) || dGeomIsSpace(o2)) && o1 != o2)
-            {
-                dSpaceCollide2(o1, o2, data, IntersectionCallback);
-            }
-            else
-            {
-                throw retruxx::logic_error("Not implemented");
-                auto v5 = (ai::Obj*)dGeomGetData(o1);
-                auto v6 = (ai::Obj*)dGeomGetData(o2);
-
-                //int id = 0;
-                //if (v5)
-                //    id = v5->GetId();
-                //if (v6)
-                //{
-                //    auto otherId = v6->GetId();
-                //    PushObstacle(id);
-                //    PushObstacle(otherId);
-                //}
-                //else
-                //{
-                //    PushObstacle(id);
-                //    PushObstacle(0);
-                //}
-            }
+            // TODO: implement IntersectionCallback
+            //if ((dGeomIsSpace(o1) || dGeomIsSpace(o2)) && o1 != o2)
+            //{
+            //    dSpaceCollide2(o1, o2, data, IntersectionCallback);
+            //}
+            //else
+            //{
+            //    throw retruxx::logic_error("Not implemented");
+            //    auto v5 = (ai::Obj*)dGeomGetData(o1);
+            //    auto v6 = (ai::Obj*)dGeomGetData(o2);
+            //
+            //    //int id = 0;
+            //    //if (v5)
+            //    //    id = v5->GetId();
+            //    //if (v6)
+            //    //{
+            //    //    auto otherId = v6->GetId();
+            //    //    PushObstacle(id);
+            //    //    PushObstacle(otherId);
+            //    //}
+            //    //else
+            //    //{
+            //    //    PushObstacle(id);
+            //    //    PushObstacle(0);
+            //    //}
+            //}
         }
     }
 

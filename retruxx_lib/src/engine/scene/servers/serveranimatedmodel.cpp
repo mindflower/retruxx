@@ -237,14 +237,25 @@ namespace m3d
 
         struct MeshSortPred
         {
-            MeshSortPred(const MeshInfo*)
+            MeshSortPred(const MeshInfo* meshes) : m_meshes(meshes)
             {
-                throw retruxx::logic_error("Not implemented");
             }
 
-            bool operator()(unsigned int, unsigned int) const
+            bool operator()(unsigned int meshIdx1, unsigned int meshIdx2) const
             {
-                throw retruxx::logic_error("Not implemented");
+                // TODO: check this
+                auto& material1 = m_meshes[meshIdx1].material;
+                auto& material2 = m_meshes[meshIdx2].material;
+                if (material1->Shader.Handle < material2->Shader.Handle)
+                {
+                    return true;
+                }
+                if (material1->Shader.Handle == material2->Shader.Handle)
+                {
+                    return &material1->Textures.front().Handle < &material2->Textures.front().Handle;
+                }
+
+                return false;
             }
             /* 0x0000 */ const MeshInfo* m_meshes;
         }; /* size: 0x0004 */
