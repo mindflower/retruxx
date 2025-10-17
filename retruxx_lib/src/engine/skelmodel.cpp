@@ -10,6 +10,8 @@
 #include "game/m3dgame.h"
 #include <config.h>
 
+#include "core/timer.h"
+
 namespace m3d
 {
     AnimAction actions[] = {
@@ -914,9 +916,20 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int AnimatedModel::Update(AnimInfo*, bool, Configuration*)
+    int AnimatedModel::Update(AnimInfo* ai, bool notFirstTime, Configuration* cfg)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!ai->IsEmpty())
+        {
+            auto curFrame = m3d::g_Kernel->GetTimer().GetCurFrame();
+            ai->InterpolateBones(curFrame);
+            for (int i = 0; i < this->m_header.m_numNodes; ++i)
+            {
+                MatrixForBone(ai, curFrame, i);
+            }
+
+            UpdateVertices(ai, notFirstTime, cfg);
+        }
+        return 1;
     }
 
     void AnimatedModel::UpdateCubemap()
@@ -1229,12 +1242,43 @@ namespace m3d
     {
         // TODO: implement AnimInfo::CreateFor
         Release();
-        this->m_curBox = am->m_box;
-        this->m_forModel = am;
-         if (false)
-        //if (am->GetNumAnimations())
+        m_curBox = am->m_box;
+        m_forModel = am;
+        if (am->GetNumAnimations())
         {
-            throw retruxx::logic_error("Not implemented");
+            m_Empty = false;
+            m_bonesAnim = new BoneAnim[am->m_header.m_numNodes];
+            m_bonesAnimPrev = new BoneAnim[am->m_header.m_numNodes];
+            for (int i = 0; i < am->m_header.m_numNodes; ++i)
+            {
+                auto& boneAnim = m_bonesAnim[i];
+                boneAnim.m_rotation = am->m_boneInitialPos[i].m_quaternion0;
+                boneAnim.m_translation = am->m_boneInitialPos[i].m_translation0;
+                boneAnim.m_parentIdx = am->m_boneInitialPos[i].m_parentIdx;
+            }
+
+            m_meshesVerts.resize(m_forModel->m_numMeshes, 0);
+            m_VertTypes.resize(m_forModel->m_numMeshes, rend::VERTEX_XYZ);
+            m_VertTypesSize.resize(m_forModel->m_numMeshes, 0);
+            for (unsigned i = 0; i < m_forModel->m_numMeshes; ++i)
+            {
+                auto& mesh = m_forModel->m_meshes[i];
+                m_VertTypes[i] = mesh.m_VertexType;
+                m_VertTypesSize[i] = mesh.m_VertexTypeSize;
+                if (mesh.m_meshType == 2)
+                {
+                    m_meshesVerts[i] = new uint8_t[mesh.m_numVertices * mesh.m_VertexTypeSize];
+                }
+                else
+                {
+                    m_meshesVerts[i] = nullptr;
+                }
+            }
+
+            m_timeOutToNextFrame = 0;
+            m_isBlending = 0;
+            m3d::AnimInfo::MoveFrame(0);
+            am->Update(this, 0, 0);
         }
         else
         {
@@ -1328,9 +1372,45 @@ namespace m3d
             return 0;
     }
 
-    void AnimInfo::MoveFrame(unsigned)
+    void AnimInfo::MoveFrame(unsigned dti)
     {
-	    throw retruxx::logic_error("Not implemented");
+        if (m_curAnimation && m_curAnimation->m_fps >= 1)
+        {
+            auto v5 = m_curAnimation->m_fps * m_curAnimation->m_numFrames;
+            if (m_timeOutToNextFrame > v5)
+            {
+                this->m_timeOutToNextFrame = m_timeOutToNextFrame % v5;
+            }
+            this->m_timeOutToNextFrame -= dti;
+            while (this->m_timeOutToNextFrame <= 0)
+            {
+                if (++this->m_curAnimFrame >= m_curAnimation->m_numFrames - 1)
+                {
+                    if (m_curAnimation->m_nextAnimation < 0)
+                    {
+                        this->m_stickToLastFrame = 1;
+                        this->m_curAnimFrame = m_curAnimation->m_numFrames - 1;
+                    }
+                    else if (m_curAnimation->m_nextAnimation == m_curAnimation - this->m_forModel->m_animations)
+                    {
+                        this->m_curAnimFrame = 0;
+                    }
+                    else
+                    {
+                        SetAnimationIdx(m_curAnimation->m_nextAnimation);
+                    }
+                }
+
+                this->m_timeOutToNextFrame += m_curAnimation->m_fps;
+                if (this->m_isBlending && --this->m_blendFramesNum < 0)
+                    this->m_isBlending = 0;
+            }
+            this->m_lastInterpolationUpdate = -1;
+        }
+        else
+        {
+            this->m_curAnimFrame = 0;
+        }
     }
 
     BoneAnim& AnimInfo::GetBoneAnim(unsigned)

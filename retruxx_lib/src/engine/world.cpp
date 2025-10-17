@@ -350,7 +350,7 @@ namespace m3d
 
     CVector const& CWorld::GetSun(float) const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_sunDir;
     }
 
     CWorld::~CWorld()

@@ -1087,9 +1087,123 @@ namespace m3d
         M3D_LOG_INFO("### Total time: " + CStr(totalTime) + ", GAM time: " + CStr(dwGamTime));
     }
 
-    int AnimatedModelsServer::RenderMesh(SgAnimatedModelNode*, AnimatedModel::Mesh&, rend::IEffect*)
+    int AnimatedModelsServer::RenderMesh(SgAnimatedModelNode* node, AnimatedModel::Mesh& mh, rend::IEffect* shader)
     {
-        throw retruxx::logic_error("Not implemented");
+        unsigned beginRenderTime = 0;
+        const bool debugRender = M3D_ENGINE_CFG.m_g_renderMeshesDebug.GetB();
+        if (debugRender)
+        {
+            beginRenderTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+        }
+
+        switch (mh.m_meshType)
+        {
+        case 1:
+        {
+            AnimInfo* anim = nullptr;
+            node->GetProperty(1, &anim);
+
+            M3D_RENDERER->MatPushWorld();
+            M3D_RENDERER->MatSetWorld(anim->m_bonesAnim[mh.m_numNode].m_curMatrix);
+            M3D_RENDERER->SetToStream0(mh.m_VbPoolField);
+            M3D_RENDERER->SetIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
+            break;
+        }
+        case 2:
+        {
+            int vOfs = 0;
+            AnimInfo* anim = nullptr;
+            node->GetProperty(1, &anim);
+
+            auto verts = anim->m_meshesVerts[mh.meshId];
+            auto vbHandle = M3D_RENDERER->GetVbStreaming(mh.m_VertexType);
+            memcpy(M3D_RENDERER->LockVbStreaming(vbHandle, mh.m_numVertices, vOfs, nullptr), verts, mh.m_numVertices * mh.m_VertexTypeSize);
+            M3D_RENDERER->UnlockVb(vbHandle);
+            M3D_RENDERER->SetToStream0(vbHandle);
+            M3D_RENDERER->SetIndices(mh.m_IbPoolField, vOfs);
+            break;
+        }
+        case 4:
+        {
+            M3D_RENDERER->SetToStream0(mh.m_VbPoolField);
+            M3D_RENDERER->SetIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
+            break;
+        }
+        default:
+            throw retruxx::logic_error("Not implemented");
+        }
+
+        if (shader)
+        {
+            if (m_globalFxParamAmbientNotActuated && shader->IsParameterUsed(rend::IEffect::LightAmbient))
+            {
+                shader->SetVector3(rend::IEffect::LightAmbient, m_colorAmbient);
+                m_globalFxParamAmbientNotActuated = 0;
+            }
+            if (m_globalFxParamDiffuseNotActuated && shader->IsParameterUsed(rend::IEffect::LightDiffuse))
+            {
+                shader->SetVector3(rend::IEffect::LightDiffuse, m_colorDiffuse);
+                m_globalFxParamDiffuseNotActuated = 0;
+            }
+            if (m_globalFxParamSpecularNotActuated && shader->IsParameterUsed(rend::IEffect::LightSpecular))
+            {
+                shader->SetVector3(rend::IEffect::LightSpecular, m_colorSpecular);
+                m_globalFxParamSpecularNotActuated = 0;
+            }
+            if (m_globalFxParamPlantAmbientNotActuated && shader->IsParameterUsed(rend::IEffect::LightPlant))
+            {
+                shader->SetVector3(rend::IEffect::LightPlant, m_colorPlant);
+                m_globalFxParamPlantAmbientNotActuated = 0;
+            }
+            if (m_globalFxParamFogNotActuated && shader->IsParameterUsed(rend::IEffect::FogTerm))
+            {
+                shader->SetVector3(rend::IEffect::FogTerm, m_fogTerm);
+                m_globalFxParamFogNotActuated = 0;
+            }
+            if (m_globalFxParamFrameStartTimeNotActuated && shader->IsParameterUsed(rend::IEffect::Time_Linear))
+            {
+                auto frameStartTimeSec = M3D_KERNEL->GetTimer().GetFrameStartTimeSec();
+                shader->SetFloat(rend::IEffect::Time_Linear, frameStartTimeSec);
+                m_globalFxParamFrameStartTimeNotActuated = 0;
+            }
+            if (m_globalFxParamTreeBendTermNotActuated && shader->IsParameterUsed(rend::IEffect::Tree_Bend_Term))
+            {
+                shader->SetVector3(rend::IEffect::Tree_Bend_Term, m_treeBendTerm);
+                this->m_globalFxParamTreeBendTermNotActuated = 0;
+            }
+
+            M3D_RENDERER->DrawIndexedPrimitiveEffect(
+                rend::M3DPT_TRIANGLELIST,
+                shader,
+                0,
+                mh.m_numVertices,
+                mh.m_IbPoolField.RealOffset,
+                mh.m_numDrawIndices / 3);
+        }
+        else
+        {
+            M3D_RENDERER->DrawIndexedPrimitive(
+                rend::M3DPT_TRIANGLELIST,
+                0,
+                mh.m_numVertices,
+                mh.m_IbPoolField.RealOffset,
+                mh.m_numDrawIndices / 3);
+        }
+
+        if (mh.m_meshType == 1)
+        {
+            M3D_RENDERER->MatPopWorld();
+        }
+
+        if (debugRender)
+        {
+            unsigned endRenderTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+            if (endRenderTime - beginRenderTime > 10)
+            {
+                M3D_LOG_ERR("Critical render time for mesh of model");
+            }
+        }
+        return 1;
     }
 
     int AnimatedModelsServer::RenderMesh(AnimInfo* ai, AnimatedModel::Mesh& mh, rend::IEffect* shader)

@@ -337,9 +337,42 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SceneGraph::LightSetupLightsForNode(SgNode*)
+    void SceneGraph::LightSetupLightsForNode(SgNode* node)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!node || !m_owner) return;
+
+        // Transform the sun direction by the node's inverse transpose (for normal transformation)
+        const CVector& sunDir = m_owner->GetSun(0.0);
+        const CMatrix& transform = node->m_currentXForm;
+
+        // Calculate the transformed light direction (applying the node's rotation)
+        // This appears to be transforming the sun direction by the upper 3x3 of the matrix
+        float transformedX = -(sunDir.x * transform._11 + sunDir.y * transform._12 + sunDir.z * transform._13);
+        float transformedY = -(sunDir.x * transform._21 + sunDir.y * transform._22 + sunDir.z * transform._23);
+        float transformedZ = -(sunDir.x * transform._31 + sunDir.y * transform._32 + sunDir.z * transform._33);
+
+        // Setup the directional light source
+        rend::LightSource light;
+        light.m_type = rend::M3DLIGHT_DIRECTIONAL;
+        light.m_direction.x = transformedX;
+        light.m_direction.y = transformedY;
+        light.m_direction.z = transformedZ;
+        light.m_origin.x = transformedX;
+        light.m_origin.y = transformedY;
+        light.m_origin.z = transformedZ;
+        light.m_range = 1000.0f;
+
+        // Set diffuse color from weather system
+        uint32_t weatherDiffuse = m_owner->GetWeatherDiffuseColor();
+        light.m_diffuse = rend::Colorf(weatherDiffuse);
+
+        // Set ambient color from weather system
+        uint32_t weatherAmbient = m_owner->GetWeatherAmbientColor();
+        light.m_ambient = rend::Colorf(weatherAmbient);
+
+        // Apply the light to the renderer
+        M3D_RENDERER->LightSet(0, light);
+        M3D_RENDERER->LightEnable(0, true);
     }
 
     void SceneGraph::Update()
