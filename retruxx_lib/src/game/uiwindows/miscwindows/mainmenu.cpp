@@ -3,6 +3,7 @@
 #include <core/log.h>
 
 #include "config.h"
+#include "game/profile.h"
 
 RT_CLASS_EXPORTS_BEGIN(MainMenuUI)
     RT_CLASS_EXPORTS_END;
@@ -184,7 +185,16 @@ int MainMenuUI::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::
 
 void MainMenuUI::OnCurProfileChanged()
 {
-    throw std::logic_error("Not implemented");
+    // TODO: implement MainMenuUI::OnCurProfileChanged
+    //if ((m_gameDataFlags & 1) != 0)
+    //{
+    //    auto profile = M3D_APP->GetProfileManager()->GetCurProfile();
+    //    if (profile)
+    //    {
+    //        
+    //    }
+    //}
+   // throw std::logic_error("Not implemented");
 }
 
 int MainMenuUI::GameDataUpdate(void* data, int dataType)

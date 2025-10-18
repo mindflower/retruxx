@@ -41,12 +41,15 @@ namespace m3d
 
     int ParticlesServer::RenderNodeSet(SgNode**, unsigned, m3d::RenderNodeInfo)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement ParticlesServer::RenderNodeSet
+        //throw retruxx::logic_error("Not implemented");
+        return 0;
     }
 
     void ParticlesServer::UpdateItem(int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement ParticlesServer::UpdateItem
+        //throw retruxx::logic_error("Not implemented");
     }
 
     int ParticlesServer::GetItemProperty(int id, int prop, void* dest)

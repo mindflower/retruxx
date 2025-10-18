@@ -3,6 +3,8 @@
 #include <scene/servers/dataserver.h>
 #include <core/ini.h>
 
+#include "core/kernel.h"
+#include "core/timer.h"
 #include "server/obstacle.h"
 
 namespace m3d
@@ -74,9 +76,72 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgAnimatedModelNode::Think(int, int)
+    int SgAnimatedModelNode::Think(int dt, int curTime)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (m_srvId == -1)
+        {
+            return 0;
+        }
+
+        AnimInfo* anim = nullptr;
+        GetProperty(1u, &anim);
+        if (anim->IsEmpty())
+        {
+            return 1;
+        }
+
+        const auto curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        if (m_frameVisible != curFrame - 1)
+        {
+            return 0;
+        }
+
+        auto onScreenSize = M3D_APP->GetOnScreenSize(m_originWorldAbsForSphere, m_boundingRadius);
+        if (onScreenSize <= 16.0)
+        {
+            if (onScreenSize <= 8.0)
+            {
+                if (onScreenSize <= 4.0)
+                    m_skipFrames = 10;
+                else
+                    m_skipFrames = 4;
+            }
+            else
+            {
+                m_skipFrames = 2;
+            }
+        }
+        else
+        {
+            m_skipFrames = 1;
+        }
+
+        if (m_frameUpdated != curFrame && m_frameUpdated + m_skipFrames <= curFrame)
+        {
+            auto actualDt = 0.0f;
+            if (m_lastTimeUpdated < 0)
+                actualDt = dt;
+            else
+                actualDt = curTime - m_lastTimeUpdated;
+
+            struct RenderInfo
+            {
+                /* 0x0000 */ m3d::SgNode* m_node = nullptr;
+                /* 0x0004 */ unsigned int m_dt = 0;
+                /* 0x0008 */ unsigned int m_fps = 0;
+            }; /* size: 0x000c */
+
+            RenderInfo ri;
+            ri.m_node = this;
+            ri.m_dt = actualDt;
+            if (actualDt)
+            {
+                GetServer()->UpdateItem(m_srvId, &ri);
+            }
+            m_lastTimeUpdated = curTime;
+            m_frameUpdated = curFrame;
+        }
+        return 1;
     }
 
     int SgAnimatedModelNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)

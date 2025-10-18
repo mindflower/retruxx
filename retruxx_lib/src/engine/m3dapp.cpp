@@ -1319,9 +1319,30 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    float Application::GetOnScreenSize(CVector const&, float)
+    float Application::GetOnScreenSize(CVector const& o, float radius)
     {
-        throw retruxx::logic_error("Not implemented");
+        CVector myOrg = o;
+        CVector camOrg = M3D_RENDERER->MatGetOrgInv();
+        auto oa = sqrt(
+            (myOrg.z - camOrg.z) * (myOrg.z - camOrg.z)
+            + (myOrg.y - camOrg.y) * (myOrg.y - camOrg.y)
+            + (myOrg.x - camOrg.x) * (myOrg.x - camOrg.x));
+
+        CVector r, u, f;
+        M3D_RENDERER->MatGetBasis(r, u, f);
+
+        CVector v1;
+        CVector v0;
+        v0.x = f.x * oa;
+        v0.y = f.y * oa;
+        v0.z = f.z * oa;
+        v1.x = (r.x * radius) + (f.x * oa);
+        v1.y = (r.y * radius) + (f.y * oa);
+        v1.z = (r.z * radius) + (f.z * oa);
+
+        auto res0 = M3D_RENDERER->Project(v0);
+        auto res1 = M3D_RENDERER->Project(v1);
+        return fabs(res1.x - res0.x);
     }
 
     int Application::HandleCinematic(float)

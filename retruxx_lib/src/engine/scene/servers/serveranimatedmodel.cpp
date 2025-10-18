@@ -453,7 +453,8 @@ namespace m3d
 
     void AnimatedModelsServer::RenderTransparents(SgNode**, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement AnimatedModelsServer::RenderTransparents
+        //throw retruxx::logic_error("Not implemented");
     }
 
     int AnimatedModelsServer::RenderShadowVolumesSet(SgNode**, unsigned)

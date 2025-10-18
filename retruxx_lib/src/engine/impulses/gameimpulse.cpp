@@ -514,7 +514,9 @@ namespace m3d
 
     int GameImpulse::HandleKeyboardMouseEvent(Event const& ev, ui::Wnd* causeWnd)
     {
-        throw std::logic_error("Not implemented");
+        // TODO implement GameImpulse::HandleKeyboardMouseEvent
+        //throw std::logic_error("Not implemented");
+        return 1;
     }
 
     int GameImpulse::FilterShifts(int&, bool&)

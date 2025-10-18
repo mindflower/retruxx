@@ -132,7 +132,8 @@ namespace m3d
 
     void RadioEngine::PlayNextSoundMessage()
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implmement RadioEngine::PlayNextSoundMessage
+        // throw std::logic_error("Not implemented");
     }
 
     RadioEngine* RadioEngine::GetInstance()

@@ -9,16 +9,21 @@
 #include "game/m3dgame.h"
 #include "scene/servers/DataServer.h"
 
-namespace
-{
-    const unsigned NUM_MUSIC_TYPES = 3;
-}
-
 namespace m3d
 {
-    void BlockMusicManager::SetMusicType(BlockMusicType)
+    void BlockMusicManager::SetMusicType(BlockMusicType musicType)
     {
-        throw std::logic_error("Not implemented");
+        M3D_ASSERT((int)musicType >= 0 && (int)musicType < NUM_MUSIC_TYPES);
+
+        if (musicType != m_curMusicType)
+        {
+            if (musicType == DRIVING)
+            {
+                Reset();
+            }
+            m_curMusicType = musicType;
+            m_bMustPlayNewMusic = true;
+        }
     }
 
     bool BlockMusicManager::IsMusicBlockNameValid(CStr const& musicBlockName) const

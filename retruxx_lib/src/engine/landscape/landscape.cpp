@@ -2093,7 +2093,8 @@ namespace m3d
 
     void Landscape::RenderGrass(retruxx::deque<retruxx::pair<int, int>> const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement void Landscape::RenderGrass
+       // throw retruxx::logic_error("Not implemented");
     }
 
     int Landscape::GetLsSize() const

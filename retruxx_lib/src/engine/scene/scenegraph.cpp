@@ -387,7 +387,8 @@ namespace m3d
 
     void SceneGraph::RenderContouredNodes()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement SceneGraph::RenderContouredNodes
+        // throw retruxx::logic_error("Not implemented");
     }
 
     void SceneGraph::UpdateAllXForms()
@@ -917,7 +918,8 @@ namespace m3d
 
     void SceneGraph::DrawShadows()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement SceneGraph::DrawShadow
+        //throw retruxx::logic_error("Not implemented");
     }
 
     void SceneGraph::enableCellsSetRect(int* rc, unsigned orValue, unsigned andValue)

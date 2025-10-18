@@ -133,8 +133,9 @@ namespace m3d
 
     int WeatherManager::RenderWeatherParticles()
     {
-        throw retruxx::logic_error("Not implemented");
-        return 1;
+        // TODO: implement WeatherManager::RenderWeatherParticles
+        //throw retruxx::logic_error("Not implemented");
+        return 0;
     }
 
     int WeatherManager::RenderWeather(Landscape::LandRenderMode)
@@ -154,16 +155,18 @@ namespace m3d
 
     bool WeatherManager::GetShadowVisibilityFromWeather() const
     {
-        return this->m_currentWeather->m_shadowVisibility[this->m_curDayTime];
+        // TODO: implement WeatherManager::GetShadowVisibilityFromWeather
+        //return this->m_currentWeather->m_shadowVisibility[this->m_curDayTime];
+        return false;
     }
 
     int WeatherManager::UpdateWheatherParticles()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement WeatherManager::UpdateWheatherParticles
         //auto idList = ai::theObjects->GetGameTime().GetAsIdList();
         //m_currentWeather->Update(1.0, )
         //throw std::logic_error("Not implemented");
-        return 1;
+        return 0;
     }
 
     namespace
