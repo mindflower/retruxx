@@ -522,7 +522,7 @@ int TruxxUiManager::Reset(bool)
 
 WeaponGroupManager* TruxxUiManager::GetWeaponGroupManager() const
 {
-    throw std::logic_error("Not implemented");
+    return m_weaponGroupManager;
 }
 
 void TruxxUiManager::AddImportantFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&) const

@@ -767,7 +767,7 @@ namespace ai
 
 	float Vehicle::GetCameraHeight() const
 	{
-		throw std::logic_error("Not implemented");
+		return this->m_cameraHeight;
 	}
 
 	int Vehicle::GetLockedObjId() const
@@ -827,7 +827,7 @@ namespace ai
 
 	float Vehicle::GetCameraMaxDist() const
 	{
-		throw std::logic_error("Not implemented");
+		return this->m_cameraMaxDist;
 	}
 
 	bool Vehicle::SetPropertyById(int, m3d::AIParam const&)
@@ -1029,7 +1029,12 @@ namespace ai
 
 	CVector Vehicle::GetLinearVelocity() const
 	{
-		throw std::logic_error("Not implemented");
+		if (bIsUpdatingByODE())
+		{
+			return PhysicObj::GetLinearVelocity();
+		}
+
+	    return m_ownUpdater->GetLinearVelocity();
 	}
 
 	void Vehicle::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -1064,7 +1069,8 @@ namespace ai
 
 	void Vehicle::SetHorn(bool)
 	{
-		throw std::logic_error("Not implemented");
+		// TODO: implement Vehicle::SetHorn
+		//throw std::logic_error("Not implemented");
 	}
 
 	int Vehicle::SetExternalPathByName(char const*)
@@ -1175,7 +1181,7 @@ namespace ai
 
 	bool Vehicle::bIsMovingAlongExternalPath() const
 	{
-		throw std::logic_error("Not implemented");
+		return m_bIsMovingAlongExternalPath;
 	}
 
 	void Vehicle::DisableGeometry(bool)
@@ -1183,9 +1189,9 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetSteer(float)
+	void Vehicle::SetSteer(float radians)
 	{
-		throw std::logic_error("Not implemented");
+		this->m_steerRadians = radians;
 	}
 
 	float Vehicle::GetControl() const
@@ -2008,7 +2014,8 @@ namespace ai
 
 	void Vehicle::ReleaseAllPedals()
 	{
-		throw std::logic_error("Not implemented");
+		SetThrottle(0.0, 0);
+		m_brake = GetPrototypeInfo()->m_selfBrakingCoeff;
 	}
 
 	bool Vehicle::GetInSmokeScreenMode() const

@@ -3708,7 +3708,8 @@ namespace m3d
 
     void Landscape::ManageLandScapeCollisionTriMeshes()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement Landscape::ManageLandScapeCollisionTriMeshes
+        //throw retruxx::logic_error("Not implemented");
     }
 
     void Landscape::LinkPassMapCellToCollisionCell(PointBase<int> const&)

@@ -24,6 +24,11 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
+    CVector VehicleUpdater::GetLinearVelocity() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     void VehicleUpdater::CalcRpmsAndGear(float& wheelAVel, float& engineRpm, int& gear) const
     {
         throw std::logic_error("Not implemented");

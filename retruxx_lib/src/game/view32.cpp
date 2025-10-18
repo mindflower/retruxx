@@ -849,9 +849,207 @@ void CMiracle3d::RenderAsBackground(bool)
     throw std::logic_error("Not implemented");
 }
 
-void CMiracle3d::UpdateCameraPosition(ai::PhysicObj*)
+void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
 {
-    throw std::logic_error("Not implemented");
+    // TODO: generated code
+    auto deltaTime = m3d::g_Kernel->GetTimer().GetLastFrameTime() * 0.001;
+
+    switch (m_player.m_cameraMode)
+    {
+    case 1: // First camera mode
+    {
+        throw std::logic_error("Not implemented");
+        //if (trackedObj && trackedObj->GetClass() == &ai::Vehicle::m_classVehicle)
+        //{
+        //    auto vehicle = RT_DYNCAST(trackedObj, ai::Vehicle);
+        //    CVector oldOrigin = this->m_curCamera.m_worldOrigin;
+        //
+        //    // Get bumper point and position
+        //    CVector bumperPoint = vehicle->GetBumperPoint();
+        //
+        //    CVector org = vehicle->GetPositionAtRelPoint(bumperPoint);
+        //
+        //    // Calculate interpolation factor
+        //    float interpFactor = deltaTime * 5.0f;
+        //
+        //    // Calculate look at point with interpolation
+        //    CVector lookAtPoint;
+        //    lookAtPoint.x = (((org.x - oldOrigin.x) * interpFactor) + oldOrigin.x) - org.x;
+        //    lookAtPoint.y = (((org.y - oldOrigin.y) * interpFactor) + oldOrigin.y) - org.y;
+        //    lookAtPoint.z = (((org.z - oldOrigin.z) * interpFactor) + oldOrigin.z) - org.z;
+        //
+        //    // Clamp length
+        //    lookAtPoint = lookAtPoint.clampLength(0.0f);
+        //
+        //    // Update camera position
+        //    this->m_curCamera.m_worldOrigin.x = org.x + lookAtPoint.x;
+        //    this->m_curCamera.m_worldOrigin.y = org.y + lookAtPoint.y;
+        //    this->m_curCamera.m_worldOrigin.z = org.z + lookAtPoint.z;
+        //
+        //    // Handle rotation interpolation
+        //    Quaternion currentRotation = vehicle->GetRotation();
+        //
+        //    this->m_player.m_lastobjQuat = SLerp(&this->m_player.m_lastobjQuat, &currentRotation, interpFactor);
+        //
+        //    // Convert quaternion to matrix
+        //    CMatrix rotationMatrix;
+        //    float qx = this->m_player.m_lastobjQuat.x;
+        //    float qy = this->m_player.m_lastobjQuat.y;
+        //    float qz = this->m_player.m_lastobjQuat.z;
+        //    float qw = this->m_player.m_lastobjQuat.w;
+        //
+        //    float xx = qx * qx;
+        //    float yy = qy * qy;
+        //    float zz = qz * qz;
+        //    float xy = qx * qy;
+        //    float xz = qx * qz;
+        //    float yz = qy * qz;
+        //    float xw = qx * qw;
+        //    float yw = qy * qw;
+        //    float zw = qz * qw;
+        //
+        //    rotationMatrix._11 = 1.0f - 2.0f * (yy + zz);
+        //    rotationMatrix._12 = 2.0f * (xy + zw);
+        //    rotationMatrix._13 = 2.0f * (xz - yw);
+        //
+        //    rotationMatrix._21 = 2.0f * (xy - zw);
+        //    rotationMatrix._22 = 1.0f - 2.0f * (xx + zz);
+        //    rotationMatrix._23 = 2.0f * (yz + xw);
+        //
+        //    rotationMatrix._31 = 2.0f * (xz + yw);
+        //    rotationMatrix._32 = 2.0f * (yz - xw);
+        //    rotationMatrix._33 = 1.0f - 2.0f * (xx + yy);
+        //
+        //    rotationMatrix._14 = 0.0f;
+        //    rotationMatrix._24 = 0.0f;
+        //    rotationMatrix._34 = 0.0f;
+        //    rotationMatrix._41 = 0.0f;
+        //    rotationMatrix._42 = 0.0f;
+        //    rotationMatrix._43 = 0.0f;
+        //    rotationMatrix._44 = 1.0f;
+        //
+        //    // Get Yaw, Pitch, Roll from transposed matrix
+        //    CMatrix transposedMatrix;
+        //    CMatrix::getTransposed(&rotationMatrix, &transposedMatrix);
+        //
+        //    float yaw, pitch, roll;
+        //    CMatrix::getYPR(&transposedMatrix, &yaw, &pitch, &roll);
+        //
+        //    this->m_curCamera.m_rotYaw = yaw;
+        //    this->m_curCamera.m_rotPitch = pitch;
+        //    this->m_curCamera.m_rotRoll = roll;
+        //}
+        break;
+    }
+
+    case CM_FOLLOWMODE: // Second camera mode
+    {
+        if (trackedObj && trackedObj->GetClass() == &ai::Vehicle::m_classVehicle)
+        {
+            auto vehicle = RT_DYNCAST(trackedObj, ai::Vehicle);
+            // Get vehicle velocity
+            CVector velocity = trackedObj->GetLinearVelocity();
+        
+            // Clamp camera distances
+            float maxDist = vehicle->GetCameraMaxDist();
+        
+            if (this->m_gameCameraRho < 0.0f)
+                this->m_gameCameraRho = 0.0f;
+            if (this->m_gameCameraRho > maxDist)
+                this->m_gameCameraRho = maxDist;
+
+            if (this->m_player.m_desiredDistance < 0.0f)
+                this->m_player.m_desiredDistance = 0.0f;
+            if (this->m_player.m_desiredDistance > maxDist)
+                this->m_player.m_desiredDistance = maxDist;
+        
+            // Create rotation matrix
+            CMatrix sightLine;
+            sightLine.rotYPR(this->m_curCamera.m_rotYaw, this->m_curCamera.m_rotPitch, this->m_curCamera.m_rotRoll);
+        
+            // Calculate camera offset
+            CVector cameraOffset;
+            cameraOffset.x = this->m_flyCamTurn.x;
+            cameraOffset.y = this->m_flyCamTurn.y;
+            cameraOffset.z = this->m_flyCamTurn.z - this->m_gameCameraRho;
+        
+            // Transform offset by rotation matrix
+            CVector transformedOffset;
+            transformedOffset.x = (sightLine._11 * cameraOffset.x) + (sightLine._12 * cameraOffset.y) + (sightLine._13 * cameraOffset.z);
+            transformedOffset.y = (sightLine._21 * cameraOffset.x) + (sightLine._22 * cameraOffset.y) + (sightLine._23 * cameraOffset.z);
+            transformedOffset.z = (sightLine._31 * cameraOffset.x) + (sightLine._32 * cameraOffset.y) + (sightLine._33 * cameraOffset.z);
+        
+            // Apply auto slide movement
+            CVector autoSlide;
+            autoSlide.x = this->m_gameSlideAuto.x * deltaTime;
+            autoSlide.y = this->m_gameSlideAuto.y * deltaTime;
+            autoSlide.z = this->m_gameSlideAuto.z * deltaTime;
+        
+            CVector slideMovement;
+            slideMovement.x = (sightLine._11 * autoSlide.x) + (sightLine._12 * autoSlide.y) + (sightLine._13 * autoSlide.z);
+            slideMovement.y = (sightLine._21 * autoSlide.x) + (sightLine._22 * autoSlide.y) + (sightLine._23 * autoSlide.z);
+            slideMovement.z = (sightLine._31 * autoSlide.x) + (sightLine._32 * autoSlide.y) + (sightLine._33 * autoSlide.z);
+        
+            // Get vehicle position and height
+            CVector vehiclePos =  vehicle->GetPosition();
+        
+            float cameraHeight = vehicle->GetCameraHeight();
+        
+            // Calculate final camera position
+            this->m_curCamera.m_worldOrigin.x = vehiclePos.x + transformedOffset.x + slideMovement.x;
+            this->m_curCamera.m_worldOrigin.y = vehiclePos.y + cameraHeight + transformedOffset.y + slideMovement.y;
+            this->m_curCamera.m_worldOrigin.z = vehiclePos.z + transformedOffset.z + slideMovement.z;
+        
+            // Calculate look at point
+            CVector lookAtPoint;
+            lookAtPoint.x = vehiclePos.x;
+            lookAtPoint.y = vehiclePos.y + cameraHeight;
+            lookAtPoint.z = vehiclePos.z;
+        
+            // Calculate direction vector for collision
+            CVector direction;
+            direction.x = lookAtPoint.x - this->m_curCamera.m_worldOrigin.x;
+            direction.y = lookAtPoint.y - this->m_curCamera.m_worldOrigin.y;
+            direction.z = lookAtPoint.z - this->m_curCamera.m_worldOrigin.z;
+        
+            // Perform camera collision detection
+            float collisionRho = this->m_gameCameraRho;
+            //TODO: check this
+            CollideCamera(this->m_curCamera.m_worldOrigin, collisionRho, direction, {});
+        
+            // Make camera look at the target point
+            m_curCamera.lookAt(lookAtPoint);
+        }
+        break;
+    }
+
+    case 3: // Third camera mode (fly camera)
+    {
+
+        throw std::logic_error("Not implemented");
+        //// Create rotation matrix for fly camera
+        //CMatrix sightLine;
+        //CMatrix::rotYPR(&sightLine, this->m_curCamera.m_rotYaw, this->m_curCamera.m_rotPitch, this->m_curCamera.m_rotRoll);
+        //
+        //// Apply auto slide movement
+        //CVector movement;
+        //movement.x = this->m_flyCamMove.x + (this->m_gameSlideAuto.x * deltaTime);
+        //movement.y = this->m_flyCamMove.y + (this->m_gameSlideAuto.y * deltaTime);
+        //movement.z = this->m_flyCamMove.z + (this->m_gameSlideAuto.z * deltaTime);
+        //
+        //// Transform movement by rotation matrix
+        //CVector transformedMovement;
+        //transformedMovement.x = (sightLine._11 * movement.x) + (sightLine._12 * movement.y) + (sightLine._13 * movement.z);
+        //transformedMovement.y = (sightLine._21 * movement.x) + (sightLine._22 * movement.y) + (sightLine._23 * movement.z);
+        //transformedMovement.z = (sightLine._31 * movement.x) + (sightLine._32 * movement.y) + (sightLine._33 * movement.z);
+        //
+        //// Update camera position
+        //this->m_curCamera.m_worldOrigin.x += transformedMovement.x;
+        //this->m_curCamera.m_worldOrigin.y += transformedMovement.y;
+        //this->m_curCamera.m_worldOrigin.z += transformedMovement.z;
+        break;
+    }
+    }
 }
 
 float CMiracle3d::GetMaxTimeScale() const
@@ -1223,7 +1421,9 @@ m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
 
 int CMiracle3d::CollideCamera(CVector&, float&, CVector const&, CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    // TODO: implement CMiracle3d::CollideCamera
+    //throw std::logic_error("Not implemented");
+    return 0;
 }
 
 int CMiracle3d::OnSkipCinematicMessage(m3d::AuxImpulseInfo const&)

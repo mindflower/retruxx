@@ -1020,7 +1020,14 @@ namespace ai
 
     CVector PhysicObj::GetLinearVelocity() const
     {
-        throw std::logic_error("Not implemented");
+        auto linearVel = dBodyGetLinearVel(this->m_body->id());
+
+        CVector result;
+        result.x = linearVel[0];
+        result.y = linearVel[1];
+        result.z = linearVel[2];
+
+        return result;
     }
 
     m3d::DbgCounter* PhysicObj::GetRelinksToCollisionCounter()

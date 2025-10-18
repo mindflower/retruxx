@@ -872,10 +872,16 @@ namespace ai
 
     void ObjContainer::RelinkSceneGraphNodes()
     {
-        throw retruxx::logic_error("Not implemented");
-        //auto* countNode = ai::PhysicBody::GetCountNodeRelinks();
-        //countNode->SetI(0);
-        //for ()
+        PhysicBody::GetCountNodeRelinks()->SetI(0);
+        for (auto& objId : m_objIdsToRelinkSceneGraphNode)
+        {
+            auto* obj = m_allObjects.GetObjById(objId);
+            if (obj)
+            {
+                obj->RelinkSceneGraphNode();
+            }
+        }
+        m_objIdsToRelinkSceneGraphNode.clear();
     }
 
     void ObjContainer::AddObjIdToRemove(int)

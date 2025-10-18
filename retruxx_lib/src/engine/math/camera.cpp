@@ -91,9 +91,16 @@ void CCamera::lookAt(CVector const&, CVector const&)
     throw std::logic_error("Not implemented");
 }
 
-void CCamera::lookAt(CVector const&)
+void CCamera::lookAt(CVector const& aim)
 {
-    throw std::logic_error("Not implemented");
+    CVector up; // [esp+0h] [ebp-4Ch] BYREF
+    CMatrix v4;
+
+    up.x = 0.0;
+    up.y = 1.0;
+    up.z = 0.0;
+    v4.lookAtLH(this->m_worldOrigin, aim, up);
+    v4.getYPR(this->m_rotYaw, this->m_rotPitch, this->m_rotRoll);
 }
 
 void CCamera::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

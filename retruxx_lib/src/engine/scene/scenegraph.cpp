@@ -375,9 +375,110 @@ namespace m3d
         M3D_RENDERER->LightEnable(0, true);
     }
 
+    namespace
+    {
+        void CheckNodeValidity(m3d::SgNode *node, const char *debugStr)
+        {
+            throw retruxx::logic_error("Not implemented");
+        }
+    }
+
     void SceneGraph::Update()
     {
-        throw retruxx::logic_error("Not implemented");
+        const auto frameStartTime = M3D_KERNEL->GetTimer().GetFrameStartTime();
+        UpdateAllXForms();
+        auto ttlIt = m_ttledList.begin();
+        while (ttlIt != m_ttledList.end())
+        {
+            auto* node = *ttlIt;
+            if (node->m_ttl <= 0 || node->m_ttl >= frameStartTime)
+            {
+                ++ttlIt;
+            }
+            else
+            {
+                ttlIt = m_ttledList.erase(ttlIt);
+                RemoveNodeExceptRemoveIfFree(node);
+            }
+        }
+
+        // TODO: generated code
+
+        // Process nodes marked for removal if free
+        m_bIsPurgingRemoveIfFree = true;
+
+        auto removeIt = m_RemoveIfFreeList.begin();
+        while (removeIt != m_RemoveIfFreeList.end())
+        {
+            SgNode* currentNode = *removeIt;
+            bool needToRemove = true;
+
+            // Check if all children are free (eligible for removal)
+            std::vector<SgNode*> stack;
+            stack.push_back(currentNode);
+
+            while (!stack.empty())
+            {
+                SgNode* current = stack.back();
+                stack.pop_back();
+
+                // Check all children of this node
+                SgNode* child = (SgNode*)current->GetFirstChild();
+                while (child != nullptr)
+                {
+                    if (!child->IsFree())
+                    {
+                        needToRemove = false;
+                    }
+
+                    if (child->GetFirstChild() != nullptr)
+                    {
+                        stack.push_back(child);
+                    }
+
+                    child = (SgNode*)child->GetNextSibling();
+                }
+            }
+
+            if (needToRemove)
+            {
+                // Remove the node from various lists and clean up
+                auto nextIt = m_RemoveIfFreeList.erase(removeIt);
+
+                // If node is linked in the spatial partitioning, unlink it
+                GraphItemsForSgNode* graphItems = currentNode->m_forGraph;
+                if (graphItems &&
+                    graphItems->m_cellsCoveredPoint0.x <= graphItems->m_cellsCoveredPoint1.x &&
+                    graphItems->m_cellsCoveredPoint0.y <= graphItems->m_cellsCoveredPoint1.y)
+                {
+                    UnlinkNode(currentNode);
+                }
+
+                // Remove from parent if it has one
+                if (currentNode->GetParent() != nullptr)
+                {
+                    currentNode->GetParent()->RemoveChild(currentNode);
+                }
+
+                // Remove from transformation update list
+                DeleteFromUpdateXFormList(currentNode);
+
+                // Validate node before deletion
+                CheckNodeValidity(currentNode, "Check Two");
+
+                // Delete the node
+                delete currentNode;
+
+                removeIt = nextIt;
+            }
+            else
+            {
+                // Move to next node in the list
+                ++removeIt;
+            }
+        }
+
+        m_bIsPurgingRemoveIfFree = false;
     }
 
     void SceneGraph::RenderDebugForNode(SgNode*)
@@ -393,7 +494,11 @@ namespace m3d
 
     void SceneGraph::UpdateAllXForms()
     {
-        throw retruxx::logic_error("Not implemented");
+        for (auto& node : m_updateXFormList)
+        {
+            node->UpdateXForm(true, false);
+        }
+        m_updateXFormList.clear();
     }
 
     void SceneGraph::DeleteFromTtlList(SgNode*)

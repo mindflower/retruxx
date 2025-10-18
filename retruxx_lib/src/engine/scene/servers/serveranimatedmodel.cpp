@@ -710,9 +710,50 @@ namespace m3d
         }
     }
 
-    void AnimatedModelsServer::UpdateItem(int, void*)
+    void AnimatedModelsServer::UpdateItem(int id, void* param)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_profiler->StartCountdown();
+
+        struct RenderInfo
+        {
+            /* 0x0000 */ m3d::SgNode* m_node;
+            /* 0x0004 */ unsigned int m_dt;
+            /* 0x0008 */ unsigned int m_fps;
+        }; /* size: 0x000c */
+
+        auto* ri = (RenderInfo*)param;
+        AnimInfo* anim = nullptr;
+        ri->m_node->GetProperty(1, &anim);
+
+        int manualAnimControl = 0;
+        ri->m_node->GetProperty(7816, &manualAnimControl);
+        if (manualAnimControl == 0)
+        {
+            anim->MoveFrame(ri->m_dt);
+        }
+
+        Configuration* cfg = nullptr;
+        ri->m_node->GetProperty(8707, &cfg);
+
+        auto* dynamicModel = (DynamicModel*)m_models[id].m_ptr;
+        auto* mdl = dynamicModel->m_mdl[0];
+
+        mdl->Update(anim, true, cfg);
+
+        ModelEffectList* effectList = nullptr;
+        ri->m_node->GetProperty(2, &effectList);
+
+        for (auto& effectDesc : effectList->m_curEffectList)
+        {
+            auto& effectNode = effectDesc.m_effectNode;
+            auto currentLoadpointMatrix = anim->GetCurrentLoadpointMatrix(effectDesc.m_desc->m_lpId);
+            effectNode->SetOriginAbs({ currentLoadpointMatrix._41, currentLoadpointMatrix._42 , currentLoadpointMatrix._43 });
+
+            Quaternion q;
+            q.FromMatrix(currentLoadpointMatrix);
+            effectNode->SetRotation(q);
+        }
+        m_profiler->EndCountdown();
     }
 
     namespace

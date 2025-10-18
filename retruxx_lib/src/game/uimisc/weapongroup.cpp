@@ -1,5 +1,8 @@
 #include "weapongroup.h"
 #include <stdexcept>
+#include <server/objects/player.h>
+
+#include "server/objects/vehicle.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(WeaponGroupManager, SaveWeaponGroups)
 {
@@ -60,7 +63,17 @@ WeaponGroup* WeaponGroupManager::GetWeaponGroupById(int) const
 
 void WeaponGroupManager::KeepFire()
 {
-    throw retruxx::logic_error("Not implemented");
+    auto vehicle = ai::thePlayer->GetVehicle();
+    if (vehicle)
+    {
+        if (!vehicle->bIsMovingAlongExternalPath())
+        {
+            for (auto& [id, group] : this->m_weaponGroups)
+            {
+                group->KeepFire();
+            }
+        }
+    }
 }
 
 int WeaponGroupManager::GameDataUpdate(void* data, int dataType)

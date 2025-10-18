@@ -701,7 +701,8 @@ int LevelInfoManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 
 void LevelInfoManager::UpdateVisibilityMaps()
 {
-    throw std::logic_error("Not implemented");
+    // TODO: implement LevelInfoManager::UpdateVisibilityMaps
+    //throw std::logic_error("Not implemented");
 }
 
 m3d::Class* LevelInfoManager::GetClass() const

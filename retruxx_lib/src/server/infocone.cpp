@@ -33,7 +33,9 @@ namespace ai
 
     bool InfoCone::SetVehicleId(int vehicleId)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: implement InfoCone::SetVehicleId
+        //throw std::logic_error("Not implemented");
+        return false;
     }
 
     int InfoCone::GetInfoObjId() const
