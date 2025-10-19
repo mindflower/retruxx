@@ -39,7 +39,7 @@ namespace ai
 
 	Obj* DummyObjectPrototypeInfo::CreateTargetObject() const
 	{
-		throw retruxx::logic_error("Not implemented");
+        return new DummyObject(*this);
 	}
 
 	void DummyObject::Registration()
@@ -109,7 +109,17 @@ namespace ai
 
 	DummyObject::DummyObject(DummyObjectPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
 	{
-		throw retruxx::logic_error("Not implemented");
+		if (prototypeInfo.m_DisablePhysics)
+			ai::PhysicObj::DisablePhysics();
+
+		if (prototypeInfo.m_DisableGeometry)
+			ai::SimplePhysicObj::DisableGeometry(1);
+
+		if (m_physicBody)
+		{
+			if (m_modelName != m_physicBody->m_modelname)
+			    m_modelName = m_physicBody->m_modelname;
+		}
 	}
 
 	bool DummyObject::CanChildBeAdded(m3d::Class*) const

@@ -186,7 +186,11 @@ namespace ai
 
 	void PhysicBody::_ClearGeoms()
 	{
-		throw std::logic_error("Not implemented");
+		for (auto& geom : m_pGeoms)
+		{
+			delete geom;
+		}
+        m_pGeoms.clear();
 	}
 
 	CVector PhysicBody::GetDirection() const

@@ -3,6 +3,8 @@
 #include <cassert>
 #include <stdexcept>
 
+#include "math/vector.h"
+#include "script/luavector.h"
 #include "script/scriptserver.h"
 
 extern "C"
@@ -22,9 +24,76 @@ int ext_AIParamDestructor(lua_State* L)
     return 1;
 }
 
-int ext_AIParamGet(lua_State* L)
+int ext_AIParamCmp(lua_State* L)
 {
     throw std::logic_error("Not implemented");
+}
+
+int ext_AIParamGet(lua_State* L)
+{
+    auto aiParam  = (m3d::AIParam*)lua_touserdata(L, 1);
+    auto param = luaL_checklstring(L, 2, 0);
+    if (!strcmp(param, "internalTag"))
+    {
+        lua_pushnumber(L, 1000.0);
+        return 1;
+    }
+    if (!strcmp(param, "Cmp"))
+    {
+        lua_pushcclosure(L, ext_AIParamCmp, 0);
+        return 1;
+    }
+    if (!strcmp(param, "AsFloat"))
+    {
+        auto num = aiParam->GetAsFloat();
+        lua_pushnumber(L, num);
+        return 1;
+    }
+    if (!strcmp(param, "AsID") || !strcmp(param, "AsInt"))
+    {
+        auto num = aiParam->GetAsID();
+        lua_pushnumber(L, num);
+        return 1;
+    }
+    if (!strcmp(param, "AsString"))
+    {
+        auto str = aiParam->GetAsStr();
+        lua_pushstring(L, str.c_str());
+        return 1;
+    }
+    if (!strcmp(param, "AsVector"))
+    {
+        auto vec = aiParam->GetAsVector();
+        auto res = ext_createVector(L);
+        *res = vec;
+        return 1;
+    }
+    if (!strcmp(param, "AsRange"))
+    {
+        auto vec = aiParam->GetAsRange();
+        auto res = ext_createVector(L);
+        res->x = vec.x;
+        res->y = vec.y;
+        lua_pushlightuserdata(L, res);
+        return 1;
+    }
+    if (!strcmp(param, "AsNumList"))
+    {
+        // TODO: check this
+        lua_gettop(L);
+        lua_newtable(L);
+        auto top = lua_gettop(L);
+        auto idList = aiParam->GetAsIdList();
+        for (int i = 0; i < idList.size(); ++i)
+        {
+            lua_pushnumber(L, i);
+            lua_pushnumber(L, idList[i]);
+            lua_rawset(L, top);
+        }
+        return 1;
+    }
+    lua_pushnumber(L, 0.0);
+    return 1;
 }
 
 int ext_AIParamSet(lua_State* L)

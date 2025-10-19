@@ -196,7 +196,7 @@ namespace ai
 
     ExternalPaths const* CServer::GetExternalPaths() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_pExternalPaths;
     }
 
     PlayerPassMap const* CServer::GetPlayerPassMap() const
@@ -321,7 +321,8 @@ namespace ai
             "Location",
             "Player",
             "Location",
-            "Trigger"
+            "Trigger",
+            "DummyObject"
         };
 
         if (classes.find(className) == classes.end())

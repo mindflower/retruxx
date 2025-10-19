@@ -75,7 +75,6 @@ namespace ai
         CVector2 m_endPoint;
         void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode, ai::Map* pMap);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
-        Path(const ai::Path&);
         Path(const std::vector<CVector2, std::allocator<CVector2> >& path);
         Path();
         ~Path();

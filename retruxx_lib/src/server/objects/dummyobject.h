@@ -17,12 +17,12 @@ namespace ai
 
     class DummyObject : public ai::SimplePhysicObj
     {
+        friend class DummyObjectPrototypeInfo;
     protected:
         virtual  ~DummyObject() override /* 0x00 */;
 
     protected:
         DummyObject(const ai::DummyObjectPrototypeInfo& prototypeInfo);
-        DummyObject(const ai::DummyObject&);
         virtual m3d::Object* Clone() override /* 0x00 */;
         static m3d::Object* __fastcall CreateObject();
 

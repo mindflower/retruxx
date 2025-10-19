@@ -40,6 +40,8 @@
 #include "world.h"
 #include <server/server.h>
 
+#include "server/externalpaths.h"
+#include "server/path.h"
 #include "server/weaponfirer.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
@@ -97,7 +99,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetMaxFuel)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetExternalPathByName)
 {
-	throw std::logic_error("Not implemented");
+	auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+	auto name = context->asString(1);
+	vehicle->SetExternalPathByName(name);
+	return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCanBeDistractedFromMoving)
@@ -800,9 +805,15 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	int Vehicle::SetExternalPath(retruxx::vector<CVector2, retruxx::allocator<CVector2>> const&)
+	int Vehicle::SetExternalPath(retruxx::vector<CVector2, retruxx::allocator<CVector2>> const& path)
 	{
-		throw std::logic_error("Not implemented");
+		delete m_pPath;
+        m_pPath = new ai::Path(path);
+		++m_pathIndex;
+		m_bIsMovingAlongExternalPath = true;
+        m_moveStatus = VehicleMoveStatus::MOVE_MOVING_ALONG_PATH;
+		m_pathNum = 0;
+        return m_pathIndex;
 	}
 
 	Chassis const* Vehicle::GetChassis() const
@@ -1073,9 +1084,10 @@ namespace ai
 		//throw std::logic_error("Not implemented");
 	}
 
-	int Vehicle::SetExternalPathByName(char const*)
+	int Vehicle::SetExternalPathByName(char const* pathName)
 	{
-		throw std::logic_error("Not implemented");
+        auto path = pServer->GetExternalPaths()->GetPath(pathName);
+		return SetExternalPath(path);
 	}
 
 	void Vehicle::IncInSmokeScreenMode()

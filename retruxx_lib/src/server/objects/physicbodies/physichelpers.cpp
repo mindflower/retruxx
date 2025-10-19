@@ -19,6 +19,9 @@
 #include "server/objects/vehicle.h"
 #include <algorithm>
 
+#include "m3dapp.h"
+#include "scene/servers/dataserver.h"
+
 namespace ai
 {
     CollisionInfo::CollisionInfo(const ai::CollisionInfo& info)
@@ -65,11 +68,193 @@ namespace ai
         return -1;
     }
 
-    bool GetCollisionInfoByServerHandle(int, retruxx::vector<CollisionInfo>&, bool)
+    bool GetCollisionInfoByServerHandle(int serverHandle, retruxx::vector<CollisionInfo>& collisionInfos, bool bTrimeshAllowed)
     {
-        // TODO: impement GetCollisionInfoByServerHandle
-        return false;
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        auto& animatedModelsServer = M3D_APP->GetAnimatedModelsServer();
+
+        // Clear existing collision infos
+        collisionInfos.clear();
+
+        m3d::AnimatedModel* model = nullptr;
+
+        // If no valid server handle, return empty
+        if (serverHandle != -1)
+        {
+            // Get the animated model from the server
+            animatedModelsServer.GetItemProperty(serverHandle, 16394, &model);
+
+            if (!model)
+                return false;
+
+            // Process collision trimesh data if available and allowed
+            const auto& collisionTrimesh = model->GetCollisionTrimesh();
+
+            if (!collisionTrimesh.Points.empty() && bTrimeshAllowed)
+            {
+                ai::CollisionInfo collisionInfo;
+                collisionInfo.m_geomType = GEOM_TYPE_TRIMESH;
+                collisionInfo.m_numTrimeshVertices = collisionTrimesh.Points.size();
+                collisionInfo.m_numTrimeshIndices = 3 * collisionTrimesh.Triangles.size();
+
+                // Allocate and copy vertices
+                collisionInfo.m_trimeshVertices = new ref_count_helper<retruxx::vector<CVector>>();
+                collisionInfo.m_trimeshVertices->GetObjectA().resize(collisionInfo.m_numTrimeshVertices);
+
+                for (unsigned int i = 0; i < collisionInfo.m_numTrimeshVertices; ++i)
+                {
+                    collisionInfo.m_trimeshVertices->GetObjectA()[i] = collisionTrimesh.Points[i];
+                }
+
+                // Allocate and copy indices
+                collisionInfo.m_trimeshIndices = new ref_count_helper<std::vector<int>>();
+                collisionInfo.m_trimeshIndices->GetObjectA().resize(collisionInfo.m_numTrimeshIndices);
+
+                unsigned int indexOffset = 0;
+                for (unsigned int triIndex = 0; triIndex < collisionTrimesh.Triangles.size(); ++triIndex)
+                {
+                    for (unsigned int vertexIndex = 0; vertexIndex < 3; ++vertexIndex)
+                    {
+                        collisionInfo.m_trimeshIndices->GetObjectA()[indexOffset++] =
+                            collisionTrimesh.Triangles[triIndex].I[vertexIndex];
+                    }
+                }
+
+                collisionInfos.push_back(std::move(collisionInfo));
+            }
+
+            // Process geometry primitives (boxes, spheres, cylinders)
+            unsigned int geomCount = model->GetNumGeoms();
+            for (unsigned int geomIndex = 0; geomIndex < geomCount; ++geomIndex)
+            {
+                const auto* geom = model->GetGeom(geomIndex);
+                if (!geom)
+                    continue;
+
+                ai::CollisionInfo collisionInfo;
+
+                // Set geometry transformation
+                collisionInfo.m_relRotation = geom->Rotation;
+                collisionInfo.m_relTranslation = geom->Translation;
+
+                // Process based on geometry type
+                switch (geom->Type)
+                {
+                case m3d::BOX:
+                    collisionInfo.m_geomType = GEOM_TYPE_BOX;
+                    collisionInfo.m_size.x = geom->Sizes.BoxSizes.x;
+                    collisionInfo.m_size.y = geom->Sizes.BoxSizes.y;
+                    collisionInfo.m_size.z = geom->Sizes.BoxSizes.z;
+                    break;
+
+                case m3d::SPHERE:
+                    collisionInfo.m_geomType = GEOM_TYPE_SPHERE;
+                    collisionInfo.m_radius = geom->Sizes.SphereRadius;
+                    break;
+
+                case m3d::CYLINDER:
+                    collisionInfo.m_geomType = GEOM_TYPE_CYLINDER;
+                    collisionInfo.m_radius = geom->Sizes.CylinderSizes.r;
+                    collisionInfo.m_size.y = geom->Sizes.CylinderSizes.y;
+
+                    // Apply 45-degree rotation for cylinder
+                    Quaternion rotationAdjust;
+                    rotationAdjust.y = sin(0.7853981852531433f); // sin(45°)
+                    float cos45 = cos(0.7853981852531433f);      // cos(45°)
+
+                    Quaternion adjustedRotation;
+                    adjustedRotation.x = (cos45 * collisionInfo.m_relRotation.x) +
+                        (collisionInfo.m_relRotation.w * rotationAdjust.y);
+                    adjustedRotation.y = (collisionInfo.m_relRotation.y * cos45) +
+                        (collisionInfo.m_relRotation.z * rotationAdjust.y);
+                    adjustedRotation.z = (collisionInfo.m_relRotation.z * cos45) -
+                        (collisionInfo.m_relRotation.y * rotationAdjust.y);
+                    adjustedRotation.w = (collisionInfo.m_relRotation.w * cos45) -
+                        (collisionInfo.m_relRotation.x * rotationAdjust.y);
+
+                    collisionInfo.m_relRotation = adjustedRotation;
+                    break;
+                }
+
+                collisionInfos.push_back(std::move(collisionInfo));
+            }
+        }
+
+        // If no collision data found, create a default box based on model bounds
+        if (collisionInfos.empty())
+        {
+            ai::CollisionInfo collisionInfo;
+            collisionInfo.m_geomType = GEOM_TYPE_BOX;
+
+            if (model)
+            {
+                // Calculate box size from model bounds
+                collisionInfo.m_size.x = model->m_box.m_box[3] - model->m_box.m_box[0];
+                collisionInfo.m_size.y = model->m_box.m_box[4] - model->m_box.m_box[1];
+                collisionInfo.m_size.z = model->m_box.m_box[5] - model->m_box.m_box[2];
+
+                // Calculate center position
+                collisionInfo.m_relTranslation.x = (model->m_box.m_box[3] + model->m_box.m_box[0]) * 0.5f;
+                collisionInfo.m_relTranslation.y = (model->m_box.m_box[4] + model->m_box.m_box[1]) * 0.5f;
+                collisionInfo.m_relTranslation.z = (model->m_box.m_box[5] + model->m_box.m_box[2]) * 0.5f;
+            }
+            else
+            {
+                // Default small box
+                collisionInfo.m_size = CVector(0.1f, 0.1f, 0.1f);
+            }
+
+            collisionInfos.push_back(std::move(collisionInfo));
+        }
+
+        // Validate and fix invalid geometry sizes
+        for (auto& collInfo : collisionInfos)
+        {
+            switch (collInfo.m_geomType)
+            {
+            case GEOM_TYPE_BOX:
+            {
+                float boxSizeSq = collInfo.m_size.x * collInfo.m_size.x +
+                    collInfo.m_size.y * collInfo.m_size.y +
+                    collInfo.m_size.z * collInfo.m_size.z;
+
+                if (boxSizeSq < 0.0001f)
+                {
+                    // Log warning about zero-sized box
+                    M3D_LOG_INFO("Warning: size of box in model is zero. Setting to (0.5, 0.5, 0.5)");
+                    collInfo.m_size = CVector(0.5f, 0.5f, 0.5f);
+                }
+                break;
+            }
+
+            case GEOM_TYPE_SPHERE:
+                if (collInfo.m_radius < 0.0001f)
+                {
+                    // Log warning about zero-radius sphere
+                    M3D_LOG_INFO("Warning: size of sphere in model is zero. Setting to 0.5");
+                    collInfo.m_radius = 0.5f;
+                }
+                break;
+
+            case GEOM_TYPE_CYLINDER:
+            {
+                float cylinderSizeSq = collInfo.m_size.x * collInfo.m_size.x +
+                    collInfo.m_size.y * collInfo.m_size.y +
+                    collInfo.m_size.z * collInfo.m_size.z;
+
+                if (collInfo.m_radius < 0.0001f || cylinderSizeSq < 0.0001f)
+                {
+                    // Log warning about invalid cylinder sizes
+                    M3D_LOG_INFO("Warning: sizes of cylinder in model are invalid. Setting to (0.5, 0.5)");
+                    collInfo.m_size = CVector(0.0f, 0.5f, 0.0f);
+                    collInfo.m_radius = 0.5f;
+                }
+                break;
+            }
+            }
+        }
+
+        return !collisionInfos.empty();
     }
 
     void CommonGeomMovedCallback(dxGeom* geomId)

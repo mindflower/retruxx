@@ -216,7 +216,11 @@ namespace ai
             {
                 for (auto& id : m_idsWasInside)
                 {
-                    throw std::logic_error("Not implemented");
+                    auto obj = ai::theObjects->GetEntityByObjId(id);
+                    if (obj && _MustCheckObject(obj))
+                    {
+                        CauseEvent(GE_OBJECT_IN_LOCATION, 0.0, { obj->GetId() }, {});
+                    }
                 }
 
                 SetTimeOut(m_lookingTimeOut);

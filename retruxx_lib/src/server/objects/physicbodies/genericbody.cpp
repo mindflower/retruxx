@@ -4,7 +4,8 @@ namespace ai
 {
     GenericBody::GenericBody(float massValue)
     {
-        throw std::logic_error("Not implemented");
+        _ClearGeoms();
+        SetMass(massValue);
     }
 
     GenericBody::GenericBody()

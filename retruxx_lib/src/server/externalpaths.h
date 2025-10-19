@@ -2,8 +2,6 @@
 #include <thirdparty/containers.h>
 #include <core/stringm3d.h>
 
-class CVector2;
-
 namespace ai
 {
     class ExternalPaths
