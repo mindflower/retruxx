@@ -40,7 +40,7 @@ namespace ai
 
     ai::Obstacle* SphereForIntersection::GetOwner() const
     {
-        throw std::logic_error("Not implemented");
+        return m_owner;
     }
 
     SphereForIntersection::SphereForIntersection(dxGeom* const geomId, ai::SphereForIntersection::SpherePurpose purpose,

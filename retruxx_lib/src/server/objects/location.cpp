@@ -10,6 +10,11 @@
 #include "base/prototypemanager.h"
 #include "core/log.h"
 #include "server/intersectionmanager.h"
+#include "server/statistic/statisticmanager.h"
+#include <server/server.h>
+
+#include "level.h"
+#include "world.h"
 
 namespace ai
 {
@@ -120,9 +125,17 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    CStr Location::GetLevelNameFromPassageAddress(CStr const&)
+    CStr Location::GetLevelNameFromPassageAddress(CStr const& passageAddress)
     {
-        throw std::logic_error("Not implemented");
+        retruxx::vector<CStr> tokens;
+        m3d::Tokenize(passageAddress, tokens, "(), ;\t");
+        // TODO: check this
+        if (tokens.size() != 2)
+        {
+            return {};
+        }
+
+        return tokens[0];
     }
 
     bool Location::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
@@ -297,7 +310,6 @@ namespace ai
 
     void Location::OnObjectIn(Obj*)
     {
-        throw std::logic_error("Not implemented");
     }
 
     void Location::OnObjectOut(Obj*)
@@ -327,7 +339,7 @@ namespace ai
                     {
                         if (m_name.findsubstr("_caravan", 0) == -1)
                         {
-                            SetLocationType(m_passageAddress.empty() ? LOCATION_PASSAGE : LOCATION_GENERIC);
+                            SetLocationType(m_passageAddress.empty() ? LOCATION_GENERIC : LOCATION_PASSAGE );
                         }
                         else
                         {
@@ -393,9 +405,22 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool Location::_MustCheckObject(Obj const*) const
+    bool Location::_MustCheckObject(Obj const* pObj) const
     {
-        throw std::logic_error("Not implemented");
+        if (pObj)
+        {
+            auto cls = pObj->GetClass();
+            auto it = m_targetClasses.find(cls);
+            if (it != m_targetClasses.end())
+            {
+                auto belong = GetBelong();
+                if (belong == -1 || theRelationship->AmongTolerance(pObj->GetBelong(), belong, m_toleranceSet))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     void Location::_CheckIncomingOutgoingObjects(
@@ -437,6 +462,27 @@ namespace ai
                         || !this->m_bPassageActive)
                     {
                         continue;
+                    }
+
+                    auto levelName = GetLevelNameFromPassageAddress(m_passageAddress);
+                    auto locationName = GetLocationNameFromPassageAddress(m_passageAddress);
+                    if (levelName.empty() || locationName.empty())
+                    {
+                        M3D_LOG_ERR("Error: invalid pasageAddress: '" + m_passageAddress + "' for location '" + m_name + "'");
+                    }
+                    else
+                    {
+                        if (!IS_KIND_OF(obj, Vehicle))
+                        {
+                            M3D_LOG_ERR("Error: seen obj is not a vehicle. Name = '" + CStr(obj->GetName()) + "'");
+                        }
+                        else
+                        {
+                            // TODO:
+                           // M3D_LOG_INFO("Log for passage");
+                            theStatisticManager->ZeroStatisticsForLevel(pServer->GetWorld()->m_level->m_levelName);
+                            theObjects->PassToMap(levelName, locationName, -1, false);
+                        }
                     }
 
                     throw std::logic_error("Not implemented");

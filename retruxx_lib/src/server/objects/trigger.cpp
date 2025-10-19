@@ -87,7 +87,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, GetCallObjId)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, Var)
 {
-    throw std::logic_error("Not implemented");
+    auto* trigger = (ai::Trigger*)context->asObject(0, "Trigger");
+    auto* str = context->asString(1);
+    auto aiParam = trigger->Var(str);
+    context->pushAIParam(aiParam);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, SetVar)
@@ -411,9 +415,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    m3d::AIParam Trigger::Var(char const*)
+    m3d::AIParam Trigger::Var(char const* varName)
     {
-        throw std::logic_error("Not implemented");
+        return m_variables[varName];
     }
 
     TriggerPrototypeInfo const* Trigger::GetPrototypeInfo() const
@@ -516,9 +520,19 @@ namespace ai
         }
     }
 
-    void Trigger::_OnObjectChangesLocation(Event const&)
+    void Trigger::_OnObjectChangesLocation(Event const& evn)
     {
-        throw std::logic_error("Not implemented");
+        auto id = evn.m_param1.GetAsID();
+        auto it = std::find(m_ObjIDs.begin(), m_ObjIDs.end(), id);
+        if (it == m_ObjIDs.end())
+        {
+            m_ObjIDs.push_back(id);
+        }
+        if (m_state == TS_EVENTWAIT)
+        {
+            m_state = TS_ACTION;
+            _StoreCallEvent(evn);
+        }
     }
 
     void Trigger::_LoadScriptFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

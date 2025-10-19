@@ -28,9 +28,11 @@ namespace m3d
         ++this->m_numOutputs;
 	}
 
-	void LuaContext::pushAIParam(AIParam const&)
+	void LuaContext::pushAIParam(AIParam const& x)
 	{
-		throw std::logic_error("Not implemented");
+		auto param = ext_createAIParam(this->L);
+		*param = x;
+		++this->m_numOutputs;
 	}
 
 	int LuaContext::asInt(int i)

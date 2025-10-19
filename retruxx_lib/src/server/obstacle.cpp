@@ -7,6 +7,8 @@
 #include "ode/objects.h"
 #include "objects/base/physicobj.h"
 #include "ode/odecpp.h"
+#include "objects/base/objcontainer.h"
+#include "scene/nodes/sgnode.h"
 
 namespace ai
 {
@@ -67,7 +69,10 @@ namespace ai
 
     m3d::Object* Obstacle::GetOwner() const
     {
-        throw std::logic_error("Not implemented");
+        if (m_ownerPhysicObjId == -1)
+            return this->m_ownerSgNode;
+
+        return ai::theObjects->GetEntityByObjId(m_ownerPhysicObjId);
     }
 
     void Obstacle::Disable()
@@ -122,7 +127,7 @@ namespace ai
 
     PhysicObj* Obstacle::GetOwnerPhysicObj() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_DYNCAST(theObjects->GetEntityByObjId(m_ownerPhysicObjId), PhysicObj);
     }
 
     void Obstacle::_Init()

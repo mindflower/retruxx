@@ -29,9 +29,10 @@ namespace ai
         //throw std::logic_error("Not implemented");
     }
 
-    bool Relationship::AmongTolerance(int, int, std::set<eTolerance> const&) const
+    bool Relationship::AmongTolerance(int belongId1, int belongId2, std::set<eTolerance> const& toleranceSet) const
     {
-        throw std::logic_error("Not implemented");
+        auto checkTolerance = CheckTolerance(belongId1, belongId2);
+        return toleranceSet.find(checkTolerance) != toleranceSet.end();
     }
 
     Relationship::Relationship() :
@@ -87,8 +88,17 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    eTolerance Relationship::CheckTolerance(int, int) const
+    eTolerance Relationship::CheckTolerance(int belongId1, int belongId2) const
     {
+        if (belongId1 == belongId2)
+            return RS_OWN;
+
+        if (belongId1 < this->m_MinID)
+            return this->m_defaultTolerance;
+
+        if (belongId1 > m_MaxID || belongId2 < m_MinID || belongId2 > m_MaxID)
+            return this->m_defaultTolerance;
+
         throw std::logic_error("Not implemented");
     }
 
