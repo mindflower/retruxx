@@ -81,7 +81,7 @@ namespace ai
 
     Geom::~Geom()
     {
-        throw std::logic_error("Not implemented");
+        dGeomDestroy(m_geomId);
     }
 
     dxGeom* Geom::GetGeomId() const

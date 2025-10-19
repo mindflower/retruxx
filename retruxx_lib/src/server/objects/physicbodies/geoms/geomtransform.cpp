@@ -12,7 +12,7 @@ namespace ai
 
     GeomTransform::~GeomTransform()
     {
-        throw std::logic_error("Not implemented");
+        delete m_innerGeom;
     }
 
     const ai::Geom* GeomTransform::GetGeom() const

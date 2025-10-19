@@ -1,12 +1,19 @@
 #include "dummyobject.h"
 
 #include <stdexcept>
+#include <ode/objects.h>
 
+#include "skelmodel.h"
 #include "core/ini.h"
+#include "base/prototypemanager.h"
+#include "ode/odecpp.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DummyObject, SetModelName)
 {
-	throw retruxx::logic_error("Not implemented");
+	auto* obj = dynamic_cast<ai::DummyObject*>(context->asObject(0, "DummyObject"));
+	auto name = context->asString(1);
+	obj->SetModelName(name);
+	return 1;
 }
 
 namespace ai
@@ -57,9 +64,24 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void DummyObject::SetModelName(char const*)
+	void DummyObject::SetModelName(char const* modelName)
 	{
-		throw retruxx::logic_error("Not implemented");
+		m_modelName = modelName;
+		m_physicBody->SetModelName(modelName);
+
+        auto model = m_physicBody->GetModel();
+		auto x = model->m_box.m_box[3] - model->m_box.m_box[0];
+		auto y = model->m_box.m_box[4] - model->m_box.m_box[1];
+		auto z = model->m_box.m_box[5] - model->m_box.m_box[2];
+        auto radius = sqrt(x * x + y * y + z * z) * 0.5f;
+		_SetBoundSphereRadius(radius);
+		_UpdateCollisionInfoFromPhysicBody();
+		if (!dBodyIsEnabled(GetBody()->id()))
+		{
+			m_physicBody->UnlinkGeomsFromBody();
+        }
+		SetMass(GetMass());
+		SetScale(m_scale, true);
 	}
 
 	bool DummyObject::SetPropertyById(int, m3d::AIParam const&)
@@ -74,7 +96,7 @@ namespace ai
 
 	m3d::Class* DummyObject::GetClass() const
 	{
-		throw retruxx::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(DummyObject);
 	}
 
 	CStr DummyObject::GetPropertyName(int) const
@@ -84,7 +106,7 @@ namespace ai
 
 	DummyObjectPrototypeInfo const* DummyObject::GetPrototypeInfo() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const DummyObjectPrototypeInfo);
 	}
 
 	void DummyObject::SetModelNameUnsafe(CStr const&)

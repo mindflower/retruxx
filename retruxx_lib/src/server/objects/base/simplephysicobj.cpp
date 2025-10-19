@@ -102,11 +102,10 @@ namespace ai
 
         case GEOM_TYPE_FROM_MODEL:
         {
-            auto body = new GenericBody(1.0);
+            body = new GenericBody(1.0);
             body->SetCollisionTrimeshAllowed(m_bCollisionTrimeshAllowed);
             body->ChangePhysicBodyByCollisionInfo(m_collisionInfos);
             body->SetMass(m_massValue);
-            body = body;
             break;
         }
             

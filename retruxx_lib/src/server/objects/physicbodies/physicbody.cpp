@@ -17,6 +17,9 @@
 #include <client.h>
 
 #include "world.h"
+#include "core/log.h"
+#include "geoms/cylinder.h"
+#include "geoms/trimesh.h"
 #include "server/dynamicscene.h"
 
 namespace ai
@@ -75,9 +78,75 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::ChangePhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const&)
+	void PhysicBody::ChangePhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const& collisionInfos)
 	{
-		throw std::logic_error("Not implemented");
+		UnlinkGeomFromCollisionCells();
+		_ClearGeoms();
+		for (auto& collisionInfo : collisionInfos)
+		{
+			auto obj = GeomTransform::CreateObject(gGlobalSpace, CommonGeomMovedCallback);
+			m_pGeoms.push_back(obj);
+            switch (collisionInfo.m_geomType)
+            {
+			case GEOM_TYPE_BOX:
+			{
+				auto box = Box::CreateObject(0, collisionInfo.m_size, 0);
+				obj->SetGeom(box);
+
+				break;
+			}
+            case GEOM_TYPE_SPHERE:
+			{
+				auto sphere = Sphere::CreateObject(0, collisionInfo.m_radius, 0);
+				obj->SetGeom(sphere);
+				break;
+			}
+            case GEOM_TYPE_CYLINDER:
+			{
+				// TODO: check this
+                auto cylinder = Cylinder::CreateObject(0, collisionInfo.m_radius, collisionInfo.m_size.y, 0);
+				obj->SetGeom(cylinder);
+				break;
+
+			}
+            case GEOM_TYPE_RAY:
+			{
+                auto ray = Ray::CreateObject(0, 1000.0, 0);
+				obj->SetGeom(ray);
+				break;
+			}
+            case GEOM_TYPE_TRIMESH:
+			{
+				// TODO: check this
+                auto trimesh = TriMesh::CreateObject(
+					0,
+					collisionInfo.m_trimeshVertices->GetObjectA().data(),
+					collisionInfo.m_numTrimeshVertices,
+					collisionInfo.m_trimeshIndices->GetObjectA().data(),
+					collisionInfo.m_numTrimeshIndices,
+					nullptr,
+					-1);
+				obj->SetGeom(trimesh);
+				break;
+			}
+			default:
+			{
+				M3D_LOG_ERR("Invalid geom type: " + CStr(collisionInfo.m_geomType) + ", for model: " + GetDebugDescription());
+				M3D_ASSERT(0);
+			}
+            }
+
+			dGeomSetPosition(obj->GetGeomId(), collisionInfo.m_relTranslation.x, collisionInfo.m_relTranslation.y, collisionInfo.m_relTranslation.z);
+
+			dQuaternion q;
+            q[0] = collisionInfo.m_relRotation.w;
+			q[1] = collisionInfo.m_relRotation.x;
+			q[2] = collisionInfo.m_relRotation.y;
+			q[3] = collisionInfo.m_relRotation.z;
+			dGeomSetQuaternion(obj->GetGeomId(), q);
+        }
+		SetOwnerBodyToGeoms();
+		m_collisionInfos = collisionInfos;
 	}
 
 	void PhysicBody::SetSgNode(m3d::SgNode*)
@@ -477,13 +546,14 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::SetCollisionTrimeshAllowed(bool)
+	void PhysicBody::SetCollisionTrimeshAllowed(bool bCollisionTrimeshAllowed)
 	{
-		throw std::logic_error("Not implemented");
+		m_bCollisionTrimeshAllowed = bCollisionTrimeshAllowed;
 	}
 
 	Quaternion PhysicBody::GetNodeRelativeRotation() const
 	{
+		// TODO: generated code
         // Check if we have valid geometry and collision info
         if (!m_pGeoms.empty() && m_pGeoms[0] != nullptr && m_pGeoms[0]->GetGeom() != nullptr)
         {
@@ -625,7 +695,13 @@ namespace ai
 
 	void PhysicBody::UnlinkGeomFromCollisionCells()
 	{
-		throw std::logic_error("Not implemented");
+		for (auto& geom : m_pGeoms)
+		{
+			auto objId = -1;
+			if (m_ownerPhysicObj)
+				objId = m_ownerPhysicObj->GetId();
+			geom->UnlinkFromCollisionCells(objId);
+        }
 	}
 
 	void PhysicBody::RelinkGeomToCollisionCells()

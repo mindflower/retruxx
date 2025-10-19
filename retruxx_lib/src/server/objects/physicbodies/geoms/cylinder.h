@@ -3,14 +3,14 @@
 
 namespace ai
 {
-    class Cylinder : public Geom
+    class Cylinder : public ai::Geom
     {
     public:
+        static ai::Cylinder* CreateObject(dxSpace* space, float radius, float length, void (*movedCalback)(dxGeom*));
         float GetRadius();
         float GetLength();
-        static Cylinder * CreateObject(dxSpace *,float,float,void (__fastcall*)(dxGeom *));
 
     private:
-        Cylinder(dxGeom * const,void (__fastcall*)(dxGeom *));
-    };
+        Cylinder(dxGeom* const geomId, void (*movedCalback)(dxGeom*));
+    }; /* size: 0x0018 */
 }
