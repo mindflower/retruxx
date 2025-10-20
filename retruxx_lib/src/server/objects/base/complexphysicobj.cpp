@@ -285,7 +285,7 @@ namespace ai
 
     void ComplexPhysicObj::UnlinkGeomsFromCollisionCells()
     {
-        throw std::logic_error("Not implemented");
+        PhysicObj::UnlinkGeomsFromCollisionCells();
     }
 
     void ComplexPhysicObj::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
@@ -335,7 +335,14 @@ namespace ai
 
     void ComplexPhysicObj::Remove()
     {
-        throw std::logic_error("Not implemented");
+        PhysicObj::Remove();
+        for (auto& [name, part] : m_vehicleParts)
+        {
+            if (part)
+            {
+                part->Remove();
+            }
+        }
     }
 
     ComplexPhysicObj::ComplexPhysicObj(ComplexPhysicObjPrototypeInfo const& prototypeInfo) : PhysicObj(prototypeInfo)

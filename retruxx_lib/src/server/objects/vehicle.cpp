@@ -40,6 +40,7 @@
 #include "world.h"
 #include <server/server.h>
 
+#include "gadget.h"
 #include "server/externalpaths.h"
 #include "server/path.h"
 #include "server/weaponfirer.h"
@@ -59,7 +60,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetGamePositionOnGround)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetSize)
 {
-	throw std::logic_error("Not implemented");
+	auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+	auto res = vehicle->GetSize();
+	context->pushVector(res);
+	return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCabin)
@@ -828,7 +832,46 @@ namespace ai
 
 	void Vehicle::Remove()
 	{
-		throw std::logic_error("Not implemented");
+		for (auto& wheel : m_wheels)
+		{
+			if (auto* wheelPtr = wheel.GetWheel())
+			{
+				wheelPtr->DetachFromPhysicObj();
+				wheelPtr->Remove();
+			}
+        }
+
+		for (auto& [id, gadget] : m_gadgets)
+		{
+		    if (gadget)
+		    {
+				gadget->Remove();
+		    }
+		}
+
+		auto trailer = theObjects->GetEntityByObjId(m_trailerObjId);
+		if (trailer)
+		{
+			dJointDestroy(m_trailerJoint);
+			m_trailerJoint = nullptr;
+			trailer->Remove();
+			m_trailerObjId = -1;
+        }
+
+        auto recollection = theObjects->GetEntityByObjId(m_recollectionId);
+		if (recollection)
+		{
+			recollection->Remove();
+		}
+
+        auto role = theObjects->GetEntityByObjId(m_roleId);
+		if (role)
+		{
+			role->Remove();
+		}
+        m_roleId = -1;
+
+        ComplexPhysicObj::Remove();
 	}
 
 	void Vehicle::FireFromWeaponCustom2(bool, int)

@@ -97,7 +97,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, GetFolder)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, Load)
 {
-    throw std::logic_error("Not implemented");
+    auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
+    auto fileName = context->asString(1);
+    auto res = cinematic->Load(fileName);
+    context->pushBool(res);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, FlyAround)

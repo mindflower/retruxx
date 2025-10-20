@@ -891,9 +891,10 @@ namespace ai
         m_objIdsToRelinkSceneGraphNode.clear();
     }
 
-    void ObjContainer::AddObjIdToRemove(int)
+    void ObjContainer::AddObjIdToRemove(int objId)
     {
-        throw retruxx::logic_error("Not implemented");
+        objId = objId & 0x3FFF;
+        m_objIdsToRemove.push_back(objId);
     }
 
     unsigned ObjContainer::size() const

@@ -23,6 +23,7 @@
 #include "server/affix.h"
 #include <server/resourcemanager.h>
 
+#include "game/m3dgame.h"
 #include "server/dynamicscene.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, Remove)
@@ -291,9 +292,10 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool Obj::RemoveChild(Obj*)
+    bool Obj::RemoveChild(Obj* pChild)
     {
-        throw std::logic_error("Not implemented");
+        m_allChildren.erase(pChild->GetId());
+        return false;
     }
 
     int Obj::RemoveChild(m3d::Object*)
@@ -663,7 +665,12 @@ namespace ai
 
     void Obj::_SetDeadStatus()
     {
-        throw std::logic_error("Not implemented");
+        m_flags |= 8;
+        if ((m_flags & 8) == 0)
+        {
+            M3D_APP->ImmediateMessage(66542, (int)this, 0, 0, 0, {}, {});
+            CauseEvent(GE_OBJECT_DIE, 0.0, { GetId() }, {});
+        }
     }
 
     void Obj::SetLastDamageSource(int)

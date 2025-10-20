@@ -573,9 +573,26 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool Player::RemoveChild(Obj*)
+    bool Player::RemoveChild(Obj* pChild)
     {
+        Obj::RemoveChild(pChild);
+        if (!pChild)
+        {
+            return false;
+        }
+
+        if (!IS_KIND_OF(pChild, Vehicle) || pChild->GetId() != m_vehicleObjId)
+        {
+            if (IS_KIND_OF(pChild, RadioManager) && pChild == m_radioManager)
+            {
+                m_radioManager = nullptr;
+                return true;
+            }
+            return false;
+        }
+
         throw std::logic_error("Not implemented");
+
     }
 
     PlayerPrototypeInfo const* Player::GetPrototypeInfo() const

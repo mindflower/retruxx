@@ -250,7 +250,7 @@ namespace ai
 
     void PhysicObj::UnlinkGeomsFromCollisionCells()
     {
-        throw std::logic_error("Not implemented");
+        this->m_boundSphere->UnlinkFromCollisionCells(GetId());
     }
 
     bool PhysicObj::CanPhysicsBeEnabled() const
@@ -716,7 +716,8 @@ namespace ai
 
     void PhysicObj::Remove()
     {
-        throw std::logic_error("Not implemented");
+        ai::Obj::Remove();
+        this->UnlinkGeomsFromCollisionCells();
     }
 
     void PhysicObj::SetDirection(CVector const&)
