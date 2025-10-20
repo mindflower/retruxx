@@ -6,6 +6,7 @@
 #include <math/quaternion.h>
 #include <math/vector.h>
 
+#include "skelmodel.h"
 #include "geoms/ray.h"
 #include "scene/nodes/sgnode.h"
 #include "server/dynamicscene.h"
@@ -29,6 +30,7 @@ namespace ai
     }; /* size: 0x0040 */
 
     int RoughSign(float);
+    bool GetCollisionInfoByModelName(CStr const&, retruxx::vector<ai::CollisionInfo>&, bool);
     bool GetCollisionInfoByServerHandle(int, retruxx::vector<CollisionInfo>&, bool);
     void CommonGeomMovedCallback(dxGeom*);
     void SetNodeElapsedAnimationTimeInMs(m3d::SgNode*, int);
@@ -36,4 +38,5 @@ namespace ai
     int TraceLine(ai::Ray const&, retruxx::vector<ai::Geom*> const&, dContact*);
     bool TraceLine(ai::Ray const&, dContact&, bool, bool, bool, bool, ai::TraceLineCallback*, bool, bool);
     bool GetValidPosition(CVector const&, float, unsigned char, CVector&, bool, bool, std::set<m3d::Class* > const&);
+    m3d::AnimInfo* GetNodeAnimInfo(m3d::SgNode const*);
 }

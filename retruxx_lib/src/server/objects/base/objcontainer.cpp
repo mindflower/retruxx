@@ -918,9 +918,9 @@ namespace ai
         m_objectsToPostCollide.clear();
     }
 
-    void ObjContainer::AddObjIdToRelinkSceneGraphNode(int)
+    void ObjContainer::AddObjIdToRelinkSceneGraphNode(int objId)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_objIdsToRelinkSceneGraphNode.push_back(objId);
     }
 
     ObjContainer::ObjContainer()

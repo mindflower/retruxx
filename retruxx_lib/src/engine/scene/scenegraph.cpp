@@ -229,9 +229,13 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SceneGraph::RelinkNode(SgNode*, bool)
+    void SceneGraph::RelinkNode(SgNode* toRelink, bool bForceRelink)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (bForceRelink || toRelink->VisCellBoundsChanged())
+        {
+            m3d::SceneGraph::UnlinkNode(toRelink);
+            m3d::SceneGraph::LinkNode(toRelink);
+        }
     }
 
     void SceneGraph::CollectNodesLight(retruxx::set<SgNode*>&, unsigned, unsigned, CVector const&, float)
@@ -317,9 +321,12 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    bool SceneGraph::IsLinkedNode(SgNode*)
+    bool SceneGraph::IsLinkedNode(SgNode* toCheck)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto* forGraph = toCheck->m_forGraph;
+        return forGraph
+            && forGraph->m_cellsCoveredPoint0.x <= forGraph->m_cellsCoveredPoint1.x
+            && forGraph->m_cellsCoveredPoint0.y <= forGraph->m_cellsCoveredPoint1.y;
     }
 
     bool SceneGraph::IsCellVisible(int, int) const
@@ -806,9 +813,9 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void SceneGraph::InsertInUpdateXFormList(SgNode*)
+    void SceneGraph::InsertInUpdateXFormList(SgNode* toInsert)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_updateXFormList.insert(toInsert);
     }
 
     void SceneGraph::SetVisMask(unsigned char vis)

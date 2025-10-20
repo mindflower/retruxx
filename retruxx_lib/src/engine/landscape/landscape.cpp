@@ -1503,7 +1503,8 @@ namespace m3d
 
     void Landscape::CollisionCellItem::ErasePhysicObjId(int objId)
     {
-        throw std::logic_error("Not implemented");
+        m_physicObjIds.erase(objId);
+        m_bMustCheck = true;
     }
 
     void Landscape::CollisionCellItem::InsertObstacle(ai::Obstacle* ob)

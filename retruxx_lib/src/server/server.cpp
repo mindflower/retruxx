@@ -322,7 +322,8 @@ namespace ai
             "Player",
             "Location",
             "Trigger",
-            "DummyObject"
+            "DummyObject",
+            "Team"
         };
 
         if (classes.find(className) == classes.end())

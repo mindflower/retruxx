@@ -24,12 +24,18 @@ extern "C"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetPosition)
 {
-    throw std::logic_error("Not implemented");
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    auto& vec = context->asVector(1);
+    obj->SetPosition(vec);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetPosition)
 {
-    throw std::logic_error("Not implemented");
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    auto pos = obj->GetPosition();
+    context->pushVector(pos);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetRotation)
@@ -254,7 +260,11 @@ namespace ai
 
     float PhysicObj::GetMass() const
     {
-        throw std::logic_error("Not implemented");
+        dMass mass;
+
+        dMassSetZero(&mass);
+        dBodyGetMass(this->m_body->id(), &mass);
+        return mass.mass;
     }
 
     void PhysicObj::DisablePhysicsAndGeometry()

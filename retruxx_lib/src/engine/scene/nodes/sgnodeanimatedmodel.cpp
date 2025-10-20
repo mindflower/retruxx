@@ -178,8 +178,12 @@ namespace m3d
             return 1;
         }
         case 0x2204u:
-            throw retruxx::logic_error("Not implemented");
+        {
+            m_effectActions.resize(1u, AT_STAND1);
+            this->m_effectActions.front() = *(ActionType*)property;
+            GetServer()->SetItemProperty(this->m_srvId, 8708, this);
             return 1;
+        }
         case 0x2207u:
             throw retruxx::logic_error("Not implemented");
         case 0x2208u:
@@ -189,8 +193,11 @@ namespace m3d
         case 0x220Bu:
             throw retruxx::logic_error("Not implemented");
         case 0x2205u:
-            throw retruxx::logic_error("Not implemented");
+        {
+            this->m_action = *(ActionType*)property;
+            GetServer()->SetItemProperty(this->m_srvId, 8709, this);
             return 1;
+        }
         case 0x2202u:
         {
             this->m_SkinNumber = *(int*)property;

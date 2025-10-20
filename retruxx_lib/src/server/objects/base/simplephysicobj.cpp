@@ -270,9 +270,13 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void SimplePhysicObj::SetMass(float)
+	void SimplePhysicObj::SetMass(float mass)
 	{
-		throw retruxx::logic_error("Not implemented");
+        if (m_physicBody)
+        {
+            m_physicBody->SetMass(mass);
+            _Construct();
+        }
 	}
 
 	void SimplePhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -313,7 +317,8 @@ namespace ai
 
 	void SimplePhysicObj::RelinkSceneGraphNode()
 	{
-		throw retruxx::logic_error("Not implemented");
+        if (this->m_physicBody)
+            this->m_physicBody->RelinkSceneGraphNode();
 	}
 
 	void SimplePhysicObj::SetDeadTimer(int, bool)
@@ -532,7 +537,11 @@ namespace ai
 
 	void SimplePhysicObj::_UpdateCollisionInfoFromPhysicBody()
 	{
-		throw retruxx::logic_error("Not implemented");
+        if (m_physicBody)
+        {
+            m_collisionInfos = m_physicBody->GetCollisionInfo();
+            _SetMassCenter(m_collisionInfos.front().m_relTranslation);
+        }
 	}
 
 	void SimplePhysicObj::_InternalPostLoad()

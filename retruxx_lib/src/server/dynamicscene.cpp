@@ -33,6 +33,7 @@
 #include "objects/monsters/bossmetalarmload.h"
 #include "objects/physicbodies/vehiclepart.h"
 #include "server.h"
+#include "world.h"
 #include "core/ini.h"
 #include "core/log.h"
 #include "core/profilerstack.h"
@@ -290,9 +291,18 @@ namespace ai
 		return Object::Clone();
 	}
 
-	void DynamicScene::LinkNodesFromBodyToSceneGraph(Obj*)
+	void DynamicScene::LinkNodesFromBodyToSceneGraph(Obj* pObj)
 	{
-		throw retruxx::logic_error("Not implemented");
+		if (pObj)
+		{
+			retruxx::list<m3d::SgNode*> nodelist;
+			pObj->ReceiveNodesToLink(nodelist);
+			for (auto& node : nodelist)
+			{
+				node->UpdateXForm(true, false);
+				ai::pServer->GetWorld()->GetGraph().LinkNode(node);
+            }
+		}
 	}
 
 	int DynamicScene::ProcessShellAndBody(Shell*, PhysicBody*, dContact*, unsigned&, bool)

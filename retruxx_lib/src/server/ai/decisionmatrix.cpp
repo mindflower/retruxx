@@ -65,7 +65,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, FitMatrix)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetSaveStackFlag)
 {
-    throw std::logic_error("Not implemented");
+    auto decisionMatrix = (ai::DecisionMatrix*)context->asObject(0, "DecisionMatrix");
+    auto param = context->asString(1);
+    auto param2 = context->asString(2);
+    decisionMatrix->SetSaveStackFlag(param, param2);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, ClearTemporaryParams)

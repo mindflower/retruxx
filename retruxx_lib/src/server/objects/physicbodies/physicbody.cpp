@@ -53,9 +53,11 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::SetModelName(CStr const&)
+	void PhysicBody::SetModelName(CStr const& modelName)
 	{
-		throw std::logic_error("Not implemented");
+        m_modelname = modelName;
+		_ApplyCurrentModelName();
+		ApplyCurrentModelCollision();
 	}
 
 	void PhysicBody::SetModelNameUnsafe(CStr const& newModelName)
@@ -68,9 +70,54 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::SetNodeAnimAction(int, bool)
+	void PhysicBody::SetNodeAnimAction(int action, bool forceRestartAction)
 	{
-		throw std::logic_error("Not implemented");
+		m_animAction = action;
+		if (action < 0x20)
+		{
+			auto nodeAnimInfo = GetNodeAnimInfo(m_Node);
+			if (forceRestartAction || nodeAnimInfo)
+			{
+				auto curAnimAction = -1;
+				if (!nodeAnimInfo->GetStickToLastFrame() && nodeAnimInfo->GetCurAnimation())
+				{
+					curAnimAction = nodeAnimInfo->GetCurAnimation()->m_action;
+				}
+
+				if (curAnimAction != m_animAction && m_Node)
+				{
+					m_Node->SetProperty(8709, &action);
+					retruxx::vector<m3d::Object*> stack;
+					stack.push_back(m_Node);
+
+					// Depth-first traversal
+					while (!stack.empty())
+					{
+						// Pop the last node from stack
+						m3d::Object* currentNode = stack.back();
+						stack.pop_back();
+
+						// Process all children of current node
+						m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
+
+						// TODO: check this
+						while (child != nullptr)
+						{
+							child->SetProperty(8709, &action);
+
+							// If child has children of its own, push to stack for processing
+							if (child->GetFirstChild() != nullptr)
+							{
+								stack.push_back(child);
+							}
+
+							// Move to next sibling
+							child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
+						}
+					}
+				}
+			}
+		}
 	}
 
 	void PhysicBody::SetNextForAnimation(int, int)
@@ -317,7 +364,10 @@ namespace ai
 
 	void PhysicBody::UnlinkGeomsFromBody()
 	{
-		throw std::logic_error("Not implemented");
+		for (auto& geom : m_pGeoms)
+		{
+			geom->UnlinkFromBody();
+        }
 	}
 
 	void PhysicBody::SetAnimationStopped(bool)
@@ -337,12 +387,60 @@ namespace ai
 
 	void PhysicBody::RelinkSceneGraphNode()
 	{
-		throw std::logic_error("Not implemented");
+		if (this->m_bNeedToRelinkNode)
+		{
+			if (m_Node)
+			{
+				auto* graph = m_Node->GetGraph();
+				if (graph->IsLinkedNode(m_Node))
+				{
+					ai::PhysicBody::m_countNodeRelinks->IncI();
+					graph->RelinkNode(m_Node, 0);
+					this->m_bNeedToRelinkNode = 0;
+				}
+			}
+		}
 	}
 
-	void PhysicBody::SetNodeEffectAction(int)
+	void PhysicBody::SetNodeEffectAction(int action)
 	{
-		throw std::logic_error("Not implemented");
+		m_effectAction = action;
+		m_effectAction = action;
+		if (action < 0x20)
+		{
+			if (m_Node)
+			{
+				m_Node->SetProperty(8708, &action);
+				retruxx::vector<m3d::Object*> stack;
+				stack.push_back(m_Node);
+
+				// Depth-first traversal
+				while (!stack.empty())
+				{
+					// Pop the last node from stack
+					m3d::Object* currentNode = stack.back();
+					stack.pop_back();
+
+					// Process all children of current node
+					m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
+
+					// TODO: check this
+					while (child != nullptr)
+					{
+						child->SetProperty(8708, &action);
+
+						// If child has children of its own, push to stack for processing
+						if (child->GetFirstChild() != nullptr)
+						{
+							stack.push_back(child);
+						}
+
+						// Move to next sibling
+						child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
+					}
+				}
+			}
+		}
 	}
 
 	void PhysicBody::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -371,7 +469,7 @@ namespace ai
 
     retruxx::vector<CollisionInfo, retruxx::allocator<CollisionInfo>> const& PhysicBody::GetCollisionInfo() const
 	{
-		throw std::logic_error("Not implemented");
+		return this->m_collisionInfos;
 	}
 
 	void PhysicBody::SetNodeAbsolutePosition(CVector const&)
@@ -475,9 +573,11 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::SetNodeCfgNum(int)
+	void PhysicBody::SetNodeCfgNum(int cfgNum)
 	{
-		throw std::logic_error("Not implemented");
+		this->m_cfgNum = cfgNum;
+		if (m_Node)
+			m_Node->SetProperty(8707u, &cfgNum);
 	}
 
 	void PhysicBody::SetPassedToAnotherMapStatus()
@@ -487,7 +587,18 @@ namespace ai
 
 	void PhysicBody::ApplyCurrentModelCollision()
 	{
-		throw std::logic_error("Not implemented");
+		if (this->m_Node)
+		{
+			int sh = -1;
+			m_Node->GetProperty(4360u, &sh);
+			ai::GetCollisionInfoByServerHandle(sh, this->m_collisionInfos, this->m_bCollisionTrimeshAllowed);
+			ai::PhysicBody::ChangePhysicBodyByCollisionInfo(this->m_collisionInfos);
+		}
+		else
+		{
+			ai::GetCollisionInfoByModelName(this->m_modelname, this->m_collisionInfos, this->m_bCollisionTrimeshAllowed);
+			ai::PhysicBody::ChangePhysicBodyByCollisionInfo(this->m_collisionInfos);
+		}
 	}
 
 	CVector PhysicBody::GetNodeAbsoluteDirection() const
@@ -626,9 +737,12 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>&) const
+	void PhysicBody::ReceiveNodesToLink(retruxx::list<m3d::SgNode*>& nodes) const
 	{
-		throw std::logic_error("Not implemented");
+		if (m_Node)
+		{
+			nodes.push_back(m_Node);
+		}
 	}
 
 	void PhysicBody::SetNodeAbsoluteRotation(Quaternion const&)
@@ -743,9 +857,23 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void PhysicBody::_SetScenegraphNode(CVector const&, Quaternion const&)
+	void PhysicBody::_SetScenegraphNode(CVector const& pos, Quaternion const& rot)
 	{
-		throw std::logic_error("Not implemented");
+		m_Node->SetOriginAbs(pos);
+		m_Node->SetRotation(rot);
+		this->m_bNeedToRelinkNode = true;
+
+		auto objId = GetId();
+		if (objId == -1)
+		{
+			if (m_ownerPhysicObj)
+			{
+				ai::theObjects->AddObjIdToRelinkSceneGraphNode(m_ownerPhysicObj->GetId());
+				return;
+			}
+			objId = -1;
+		}
+		ai::theObjects->AddObjIdToRelinkSceneGraphNode(objId);
 	}
 
 	PhysicBody::PhysicBody()

@@ -74,9 +74,20 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgNode::SetScale(CVector const&)
+    int SgNode::SetScale(CVector const& scale)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_scaling = scale;
+        m_isXFormDirty |= 1u;
+        for (auto parent = GetParent(); parent; parent = parent->GetParent())
+        {
+            if (parent->GetChildDirty())
+            {
+                break;
+            }
+            parent->SetChildDirty(true);
+        }
+        GetGraph()->InsertInUpdateXFormList(this);
+        return 1;
     }
 
     void SgNode::SetTransparencyType(TransparencyType tt)
@@ -303,9 +314,20 @@ namespace m3d
         return m_currentWorldRotation;
     }
 
-    int SgNode::SetRotation(Quaternion const&)
+    int SgNode::SetRotation(Quaternion const& rotation)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_rotation = rotation;
+        m_isXFormDirty |= 4u;
+        for (auto* parent = GetParent(); parent; parent = parent->GetParent())
+        {
+            if (parent->GetChildDirty())
+            {
+                break;
+            }
+            parent->SetChildDirty(true);
+        }
+        GetGraph()->InsertInUpdateXFormList(this);
+        return 1;
     }
 
     int SgNode::SetProperty(unsigned propId, void* prop)
@@ -369,9 +391,21 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    int SgNode::SetOriginAbs(CVector const&)
+    int SgNode::SetOriginAbs(CVector const& origin)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_origin = origin;
+        m_isXFormDirty |= 2u;
+        m_isOriginRelative = false;
+        for (auto* parent = GetParent(); parent; parent = parent->GetParent())
+        {
+            if (parent->GetChildDirty())
+            {
+                break;
+            }
+            parent->SetChildDirty(true);
+        }
+        GetGraph()->InsertInUpdateXFormList(this);
+        return 1;
     }
 
     int SgNode::UpdateXForm(bool onlyVis, bool parentDirty)
@@ -852,7 +886,16 @@ namespace m3d
 
     bool SgNode::VisCellBoundsChanged() const
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!m_forGraph)
+            return true;
+
+        PointBase<int> p0;
+        PointBase<int> p1;
+        m3d::SgNode::GetVisCellBounds(p0, p1);
+        return p0.x != m_forGraph->m_cellsCoveredPoint0.x
+            || p0.y != m_forGraph->m_cellsCoveredPoint0.y
+            || p1.x != m_forGraph->m_cellsCoveredPoint1.x
+            || p1.y != m_forGraph->m_cellsCoveredPoint1.y;
     }
 
     int SgNode::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* node)

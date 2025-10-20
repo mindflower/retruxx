@@ -6,6 +6,7 @@
 #include "core/log.h"
 #include "math/vector.h"
 #include "script/luaaiparam.h"
+#include "script/luavector.h"
 #include "script/scriptserver.h"
 
 extern "C"{
@@ -240,9 +241,11 @@ namespace m3d
 		return *(CVector*)lua_touserdata(this->L, pos);
 	}
 
-	void LuaContext::pushVector(CVector const&)
+	void LuaContext::pushVector(CVector const& x)
 	{
-		throw std::logic_error("Not implemented");
+		auto* vec = ext_createVector(L);
+		*vec = x;
+        ++m_numOutputs;
 	}
 
 	int LuaContext::_validateArg(int)

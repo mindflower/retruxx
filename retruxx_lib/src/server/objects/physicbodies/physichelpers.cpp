@@ -68,6 +68,11 @@ namespace ai
         return -1;
     }
 
+    bool GetCollisionInfoByModelName(CStr const&, retruxx::vector<ai::CollisionInfo>&, bool)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
     bool GetCollisionInfoByServerHandle(int serverHandle, retruxx::vector<CollisionInfo>& collisionInfos, bool bTrimeshAllowed)
     {
         // TODO: generated code
@@ -637,6 +642,18 @@ namespace ai
     bool GetValidPosition(CVector const&, float, unsigned char, CVector&, bool, bool, std::set<m3d::Class*> const&)
     {
         throw std::logic_error("Not implemented");
+    }
+
+    m3d::AnimInfo* GetNodeAnimInfo(m3d::SgNode const* node)
+    {
+        if (!node)
+        {
+            return nullptr;
+        }
+
+        m3d::AnimInfo* anim = nullptr;
+        node->GetProperty(1u, &anim);
+        return anim;
     }
 }
 

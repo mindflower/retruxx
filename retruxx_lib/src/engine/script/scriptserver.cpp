@@ -711,8 +711,9 @@ namespace m3d
         // TODO: implement ScriptServer::getFormatedScriptErrorDes
         if (err)
         {
-            return ScriptErrorDesc[err];
-            //auto desc = ScriptErrorDesc[err];
+            CStr res = "(" + errDesc.sourceString + "/" + errDesc.nameString + "@ "+ CStr(errDesc.lineNumber) + "):" +
+                CStr(ScriptErrorDesc[err]) + "\n" + errDesc.descriptionString;
+            return res;
         }
         return {};
     }

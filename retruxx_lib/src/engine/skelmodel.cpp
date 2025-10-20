@@ -948,7 +948,7 @@ namespace m3d
 
     unsigned AnimatedModel::GetCfgSize() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_cfgSize;
     }
 
     MeshesGroup const& AnimatedModel::GetGroup(unsigned) const
@@ -1588,7 +1588,7 @@ namespace m3d
 
     int AnimInfo::GetStickToLastFrame() const
     {
-	    throw retruxx::logic_error("Not implemented");
+        return this->m_stickToLastFrame;
     }
 
     void AnimInfo::RemoveCopyMesh(void**&, int*&, unsigned short**&, int*&, CMatrix**&)
