@@ -11,6 +11,7 @@
 #include "server/roles/combatmastermind.h"
 #include <server/processmanager.h>
 #include "player.h"
+#include "server/roles/teamrolemanager.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, SetDestination)
 {
@@ -53,6 +54,7 @@ namespace ai
     namespace
     {
         const char* TEAM_DEFAULT_FORMATION_PROTOTYPE = "caravanFormation";
+        const float TEAM_LINEAR_VELOCITY = 100.f;
     }
 
     void TeamPrototypeInfo::PostLoad()
@@ -378,9 +380,24 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Team::AddChild(Obj*)
+    void Team::AddChild(Obj* pObj)
     {
-        throw retruxx::logic_error("Not implemented");
+        Obj::AddChild(pObj);
+        if (pObj && IS_KIND_OF(pObj, Vehicle))
+        {
+            m_needAdjustBehaviour = true;
+            auto* vehicle = RT_DYNCAST(pObj, Vehicle);
+            vehicle->SetCruisingSpeed(m_maxTeamSpeed);
+            vehicle->SetIndexInTeam(m_vehicles.size());
+            m_vehicles.push_back(vehicle);
+            if (m_formation)
+            {
+                _AddVehicleToFormation(vehicle);
+                theObjects->AddObjToUpdate(m_formation);
+            }
+            theObjects->AddObjToUpdate(this);
+            LinkToParent(GetId(), HIERARCHY_CHILD);
+        }
     }
 
     void Team::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -388,9 +405,9 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    bool Team::CanChildBeAdded(m3d::Class*) const
+    bool Team::CanChildBeAdded(m3d::Class* pClass) const
     {
-        throw retruxx::logic_error("Not implemented");
+        return ai::Obj::CanChildBeAdded(pClass) || pClass->IsKindOf(&ai::Vehicle::m_classVehicle);
     }
 
     int Team::GetPropertyId(char const*) const
@@ -421,7 +438,28 @@ namespace ai
 
     void Team::Remove()
     {
-        throw retruxx::logic_error("Not implemented");
+        Obj::Remove();
+        for (auto& vehicle : m_vehicles)
+        {
+            vehicle->Remove();
+        }
+
+        if (m_formation)
+        {
+            m_formation->Remove();
+        }
+
+        auto tactic = theObjects->GetEntityByObjId(m_TeamTacticId);
+        if (tactic)
+        {
+            tactic->Remove();
+        }
+
+        if (m_TeamTacticId != -1)
+        {
+            TeamRoleManager::ClearRoles(this);
+            m_TeamTacticId = -1;
+        }
     }
 
     m3d::AIParam Team::TeamAIOnStartDefend(Obj*)
@@ -559,9 +597,10 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Team::_AddVehicleToFormation(Vehicle*)
+    void Team::_AddVehicleToFormation(Vehicle* pVehicle)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_formation->AddVehicle(pVehicle);
+        m_formation->SetLinearVelocity(_GetTeamVelocity());
     }
 
     bool Team::_IsTooFarFromTargets() const
@@ -571,7 +610,16 @@ namespace ai
 
     float Team::_GetTeamVelocity() const
     {
-        throw retruxx::logic_error("Not implemented");
+        float speed = TEAM_LINEAR_VELOCITY;
+        for (const auto& vehicle : m_vehicles)
+        {
+            auto vehicleSpeed = vehicle->GetCruisingSpeed();
+            if (vehicleSpeed < speed)
+            {
+                speed = vehicleSpeed;
+            }
+        }
+        return speed;
     }
 
     void Team::_TuneFormation()

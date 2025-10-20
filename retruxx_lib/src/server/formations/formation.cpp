@@ -1,6 +1,8 @@
 #include "formation.h"
 
 #include "core/ini.h"
+#include "core/kernel.h"
+#include "core/log.h"
 
 namespace ai
 {
@@ -258,7 +260,11 @@ namespace ai
 
     void Formation::AddVehicle(ai::Vehicle* vehicle)
     {
-        throw std::logic_error("Not implemented");
+        if (m_vehicles.size() >= this->m_maxVehicles)
+        {
+            M3D_CRITICAL_ERROR("maximum vehicles count exceeded: " + CStr(m_maxVehicles) + " for " + GetDebugDescription());
+        }
+        m_vehicles.push_back(vehicle);
     }
 
     void Formation::RemoveVehicle(ai::Vehicle* vehicle)

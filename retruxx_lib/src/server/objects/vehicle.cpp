@@ -670,7 +670,7 @@ namespace ai
 
 	float Vehicle::GetCruisingSpeed() const
 	{
-		throw std::logic_error("Not implemented");
+		return this->m_cruisingSpeed;
 	}
 
 	void Vehicle::UnlimitMaxSpeed()
@@ -998,9 +998,14 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetCruisingSpeed(float)
+	void Vehicle::SetCruisingSpeed(float cruisingSpeed)
 	{
-		throw std::logic_error("Not implemented");
+		auto maxSpeed = GetMaxSpeed();
+		if (cruisingSpeed < 0.0)
+			cruisingSpeed = 0.0;
+		if (cruisingSpeed > maxSpeed)
+			cruisingSpeed = maxSpeed;
+		this->m_cruisingSpeed = cruisingSpeed;
 	}
 
 	void Vehicle::SetExternalDestination(CVector const&)
@@ -1603,9 +1608,9 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetIndexInTeam(int)
+	void Vehicle::SetIndexInTeam(int indexInTeam)
 	{
-		throw std::logic_error("Not implemented");
+		m_indexInTeam = indexInTeam;
 	}
 
 	NumericInRangeRegenerating<float>& Vehicle::Fuel()
@@ -1690,7 +1695,7 @@ namespace ai
 		{
 			auto* part = GetPartByName(CHASSIS);
 			auto* chassis = dynamic_cast<const Chassis*>(part);
-			if (chassis->Fuel().value().get() == chassis->Fuel().minValue().get())
+			if (chassis && chassis->Fuel().value().get() == chassis->Fuel().minValue().get())
 			{
 				return maxSpeed > theGlobProp.m_maxSpeedWithNoFuel ? theGlobProp.m_maxSpeedWithNoFuel : maxSpeed;
 			}

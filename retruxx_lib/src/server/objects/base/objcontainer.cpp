@@ -449,9 +449,16 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    void ObjContainer::AddObjToUpdate(Obj*)
+    void ObjContainer::AddObjToUpdate(Obj* obj)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (obj)
+        {
+            if (obj->m_objId != -1)
+            {
+                obj->m_bMustBeUpdating = true;
+                m_objIdsToUpdate.push_back(obj->m_objId);
+            }
+        }
     }
 
     m3d::Object* ObjContainer::Clone()

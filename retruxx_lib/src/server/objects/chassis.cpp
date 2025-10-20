@@ -76,12 +76,12 @@ namespace ai
 
     NumericInRangeRegenerating<float> const& Chassis::Fuel() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_fuel;
     }
 
     NumericInRangeRegenerating<float>& Chassis::Fuel()
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_fuel;
     }
 
     void Chassis::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

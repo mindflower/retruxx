@@ -3999,6 +3999,9 @@
     <ClInclude Include="src\server\roles\combatmastermind.h">
       <Filter>server\roles</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\roles\teamrolemanager.h">
+      <Filter>server\roles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

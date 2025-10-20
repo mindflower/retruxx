@@ -27,7 +27,9 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, Remove)
 {
-    throw std::logic_error("Not implemented");
+    auto* obj = (ai::Obj*)context->asObject(0, "Obj");
+    obj->Remove();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, IsAlive)
@@ -397,7 +399,10 @@ namespace ai
 
     void Obj::Remove()
     {
-        throw std::logic_error("Not implemented");
+        ai::Obj::_SetDeadStatus();
+        this->m_flags |= 2u;
+        if (m_objId != -1)
+            ai::theObjects->AddObjIdToRemove(m_objId);
     }
 
     bool Obj::NeedCinematicUpdate()
