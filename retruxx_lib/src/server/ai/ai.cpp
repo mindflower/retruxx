@@ -4,9 +4,16 @@
 #include <core/aiparam.h>
 #include <stdexcept>
 #include "aimanager.h"
+#include "aistate.h"
+#include "decisionmatrix.h"
 
 namespace ai
 {
+    namespace
+    {
+        const CStr UNDEFINED = "Undefined";
+    }
+
     void AI::LoadAIFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
     {
         throw std::logic_error("Not implemented");
@@ -111,7 +118,21 @@ namespace ai
 
     CStr const& AI::GetCurState2Name()
     {
-        throw std::logic_error("Not implemented");
+        if (m_StateStack2.empty())
+        {
+            return UNDEFINED;
+        }
+
+        if (m_pDM)
+        {
+            auto stateNum = m_StateStack2.back().m_StateNum;
+            if (stateNum < m_pDM->NumStates())
+            {
+                return m_pDM->GetState(stateNum).GetName();
+            }
+        }
+
+        return UNDEFINED;
     }
 
     m3d::AIParam AI::GetCmdParam(unsigned)

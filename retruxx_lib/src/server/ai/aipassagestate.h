@@ -17,11 +17,9 @@ namespace ai
     class AIPassageState
     {
     public:
-        void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-
-    private:
-        int m_StateNum;
-        std::vector<m3d::AIParam> m_ParamList;
-    };
+        /* 0x0000 */ int m_StateNum;
+        /* 0x0004 */ std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > m_ParamList;
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
+        void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
+    }; /* size: 0x0014 */
 }

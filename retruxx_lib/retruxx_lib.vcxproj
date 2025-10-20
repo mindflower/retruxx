@@ -219,6 +219,7 @@
     <ClCompile Include="src\engine\m3dfont.cpp" />
     <ClCompile Include="src\engine\math\aabb.cpp" />
     <ClCompile Include="src\engine\math\camera.cpp" />
+    <ClCompile Include="src\engine\math\coremath.cpp" />
     <ClCompile Include="src\engine\math\matrix.cpp" />
     <ClCompile Include="src\engine\math\obb.cpp" />
     <ClCompile Include="src\engine\math\plane.cpp" />

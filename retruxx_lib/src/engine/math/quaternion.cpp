@@ -48,14 +48,31 @@ void Quaternion::fromYPR(float, float, float)
     throw std::logic_error("Not implemented");
 }
 
-Quaternion Quaternion::operator*(float) const
+Quaternion Quaternion::operator*(float v) const
 {
-    throw std::logic_error("Not implemented");
+    auto res_12 = this->w;
+    auto res_4 = this->y * v;
+
+    Quaternion result;
+    result.x = this->x * v;
+    result.y = res_4;
+    result.z = z * v;
+    result.w = res_12 * v;
+    return result;
 }
 
-Quaternion Quaternion::operator+(Quaternion const&) const
+Quaternion Quaternion::operator+(Quaternion const& q) const
 {
-    throw std::logic_error("Not implemented");
+    auto res_4 = q.y + y;
+    auto res_8 = q.z + z;
+    auto v4 = q.w + w;
+
+    Quaternion result;
+    result.x = q.x + x;
+    result.y = res_4;
+    result.z = res_8;
+    result.w = v4;
+    return result;
 }
 
 Quaternion::Quaternion(CMatrix const&)
@@ -73,7 +90,49 @@ Quaternion::Quaternion(float qx, float qy, float qz, float qw) :
 
 CMatrix Quaternion::ToMatrix() const
 {
-    throw std::logic_error("Not implemented");
+    float x = this->x;
+    float y = this->y;
+    float z = this->z;
+    float w = this->w;
+
+    // Precompute common terms
+    float x2 = x * x;
+    float y2 = y * y;
+    float z2 = z * z;
+    float xy = x * y;
+    float xz = x * z;
+    float yz = y * z;
+    float wx = w * x;
+    float wy = w * y;
+    float wz = w * z;
+
+    // Compute the rotation matrix from quaternion
+    // First row
+    CMatrix result;
+    result._11 = 1.0f - 2.0f * (y2 + z2);
+    result._12 = 2.0f * (xy + wz);
+    result._13 = 2.0f * (xz - wy);
+    result._14 = 0.0f;
+
+    // Second row
+    result._21 = 2.0f * (xy - wz);
+    result._22 = 1.0f - 2.0f * (x2 + z2);
+    result._23 = 2.0f * (yz + wx);
+    result._24 = 0.0f;
+
+    // Third row
+    result._31 = 2.0f * (xz + wy);
+    result._32 = 2.0f * (yz - wx);
+    result._33 = 1.0f - 2.0f * (x2 + y2);
+    result._34 = 0.0f;
+
+    // Fourth row (homogeneous coordinates)
+    result._41 = 0.0f;
+    result._42 = 0.0f;
+    result._43 = 0.0f;
+    result._44 = 1.0f;
+
+    return result;
 }
 
 Quaternion Quaternion::getConjugated() const

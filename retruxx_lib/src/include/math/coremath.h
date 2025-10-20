@@ -1,4 +1,5 @@
 #pragma once
+#include "quaternion.h"
 
 //TODO: add static functions
 
@@ -26,87 +27,26 @@ protected:
     /* 0x0038 */ int m_i;
 }; /* size: 0x003c */
 
-inline int CBrezLine::start(int srcx, int srcy, int dstx, int dsty)
-{
-    this->m_y1 = dsty;
-    auto v5 = dstx - srcx;
-    auto v6 = dsty - srcy;
-    this->m_x0 = srcx;
-    this->m_x1 = dstx;
-    this->m_y0 = srcy;
-    if (dstx - srcx < 0)
-        v5 = srcx - dstx;
-    if (v6 < 0)
-        v6 = srcy - dsty;
-
-    int v7 = 0;
-    if (v5 <= v6)
-    {
-        this->m_numsteps = v6 + 1;
-        this->m_d = 2 * v5 - v6;
-        this->m_dinc1 = (v5 - v6) >> 1;
-        v7 = v5 >> 1;
-        this->m_xinc1 = 1;
-        this->m_yinc1 = 1;
-        this->m_yinc0 = 1;
-        this->m_xinc0 = 0;
-    }
-    else
-    {
-        this->m_numsteps = v5 + 1;
-        this->m_d = 2 * v6 - v5;
-        v7 = v6 >> 1;
-        this->m_xinc0 = 1;
-        this->m_xinc1 = 1;
-        this->m_yinc1 = 1;
-        this->m_dinc1 = (v6 - v5) >> 1;
-        this->m_yinc0 = 0;
-    }
-    this->m_dinc0 = v7;
-    if (srcx > dstx)
-    {
-        this->m_xinc0 = -this->m_xinc0;
-        this->m_xinc1 = -1;
-    }
-    if (srcy > dsty)
-    {
-        this->m_yinc0 = -this->m_yinc0;
-        this->m_yinc1 = -1;
-    }
-    this->m_x = srcx;
-    this->m_y = srcy;
-    this->m_i = 0;
-    return this->m_numsteps;
-}
-
-inline int CBrezLine::step(int& curx, int& cury)
-{
-    if (m_i >= this->m_numsteps)
-        return 0;
-    this->m_i = m_i + 1;
-    curx = this->m_x;
-    cury = this->m_y;
-    m_d = this->m_d;
-    if (m_d >= 0)
-    {
-        auto v8 = m_d + this->m_dinc1;
-        this->m_x += this->m_xinc1;
-        this->m_d = v8;
-        m_yinc1 = this->m_yinc1;
-    }
-    else
-    {
-        auto v6 = m_d + this->m_dinc0;
-        this->m_x += this->m_xinc0;
-        this->m_d = v6;
-        m_yinc1 = this->m_yinc0;
-    }
-    this->m_y += m_yinc1;
-    return 1;
-}
+Quaternion CubicInterpolation(float, Quaternion const&, Quaternion const&, Quaternion const&, Quaternion const&);
+Quaternion Exp(Quaternion const&);
+Quaternion Ln(Quaternion const&);
+Quaternion SLerp(Quaternion const&, Quaternion const&, float);
+Quaternion SLerpAcc(Quaternion const&, Quaternion const&, float);
+Quaternion SQuad(float, Quaternion const&, Quaternion const&, Quaternion const&, Quaternion const&);
+Quaternion getTangent(Quaternion const& prevQuat, Quaternion const& currentQuat, Quaternion const& nextQuat);
 
 template<class T>
 T lerp(const T& a, const T& b, float s)
 {
     return a + ((b - a) * s) ;
+}
+
+template<class T>
+T CatmullRomSubdivide(float t, T const& p1, T const& p2, T const& p3, T const& p4)
+{
+    return (p3 * ((4.0 - t * 3.0) * t + 1.0) * t
+            + p2 * (((t * t) * t) * 3.0 - (t * t) * 5.0 + 2.0)
+            + p1 * ((2.0 - t) * t * t - t)
+            + p4 * (((t * t) * t) - (t * t)))
+        * 0.5;
 }

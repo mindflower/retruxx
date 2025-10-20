@@ -147,7 +147,7 @@ namespace ai
                 auto* obj = theObjects->GetEntityByObjName(info.m_objName);
                 if (obj)
                 {
-                    theProcessManager->PostMessageA(3, obj->GetId(), GetId(), 0.0, {}, {}, 1);
+                    theProcessManager->PostMessageA(3, obj->GetId(), GetId(), 0.0, { info.m_eventId}, {}, 1);
                 }
             }
         }
@@ -210,7 +210,7 @@ namespace ai
 
     bool Trigger::NeedCinematicUpdate()
     {
-        throw std::logic_error("Not implemented");
+        return true;
     }
 
     void Trigger::AddTriggeredObjectID(int)

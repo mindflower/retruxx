@@ -3,6 +3,7 @@
 #include "core/ini.h"
 #include "core/kernel.h"
 #include "core/log.h"
+#include "server/utils.h"
 
 namespace ai
 {
@@ -274,7 +275,27 @@ namespace ai
 
     void Formation::Update(float elapsedTime, unsigned int workTime)
     {
-        throw std::logic_error("Not implemented");
+        if (m_pPath)
+        {
+            if (m_numPathPoint < m_pPath->GetSize() && m_numPathPoint >= 0)
+            {
+                CVector curPathPoint;
+                ai::GetPathItem(this->m_pPath, m_numPathPoint, curPathPoint);
+                auto v6 = curPathPoint.x - this->m_position.x;
+                curPathPoint.y = 0.0;
+
+                CVector v9;
+                v9.y = 0.0 - this->m_position.y;
+                auto v7 = curPathPoint.z - this->m_position.z;
+                v9.x = v6;
+                v9.z = v7;
+
+                CVector desiredDir = v9.getNormalized();
+                _UpdateVelocity(elapsedTime, desiredDir);
+                _UpdateDirection(elapsedTime, desiredDir);
+                _UpdatePosition(elapsedTime, desiredDir, curPathPoint);
+            }
+        }
     }
 
     void Formation::RenderDebugInfo() const

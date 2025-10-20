@@ -55,6 +55,7 @@ namespace ai
     {
         const char* TEAM_DEFAULT_FORMATION_PROTOTYPE = "caravanFormation";
         const float TEAM_LINEAR_VELOCITY = 100.f;
+        const float TIMEOUT_FOR_ADJUSTING_VEHICLES = 0.30000001f;
     }
 
     void TeamPrototypeInfo::PostLoad()
@@ -224,7 +225,7 @@ namespace ai
 
     retruxx::vector<Vehicle*> const& Team::GetVehicles() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_vehicles;
     }
 
     void Team::SetTeamFrozen(bool)
@@ -260,14 +261,32 @@ namespace ai
         theAIManager->RegisterFunc("TeamAIOnMoveFinished", &Team::TeamAIOnMoveFinished);
     }
 
-    void Team::SetTeamTactic(TeamTactic*)
+    void Team::SetTeamTactic(TeamTactic* tactic)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto curTactic = theObjects->GetEntityByObjId(m_TeamTacticId);
+        if (curTactic)
+        {
+            curTactic->Remove();
+        }
+        if (tactic)
+        {
+            m_TeamTacticId = tactic->GetId();
+        }
+        else
+        {
+            TeamRoleManager::ClearRoles(this);
+            m_TeamTacticId = -1;
+        }
     }
 
-    void Team::Update(float, unsigned)
+    void Team::Update(float elapsedTime, unsigned workTime)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (!this->m_bFrozen)
+        {
+            ai::Obj::Update(elapsedTime, workTime);
+            if (elapsedTime >= 0.001)
+                _TeamUpdate(elapsedTime, workTime);
+        }
     }
 
     void Team::GetPropertiesNames(retruxx::set<CStr>&) const
@@ -332,7 +351,16 @@ namespace ai
 
     void Team::_AdjustBehaviour()
     {
-        throw retruxx::logic_error("Not implemented");
+        const auto state = m_AI.GetCurState2Name();
+        if (state == "Attack")
+        {
+            auto id= AIGetState2Param1(this).GetAsID();
+            _AdjustRoles(id);
+        }
+        else
+        {
+            SetTeamTactic(nullptr);
+        }
     }
 
     float Team::GetDistToPhysicObj(PhysicObj const*) const
@@ -559,7 +587,29 @@ namespace ai
 
     void Team::_TeamUpdate(float, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (this->m_needAdjustBehaviour)
+        {
+            _AdjustBehaviour();
+            this->m_needAdjustBehaviour = false;
+        }
+
+        if (m_vehicles.empty() && m_bRemoveWhenChildrenDead)
+        {
+            Remove();
+        }
+
+        const auto flags = GetFlags();
+        if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository() && TimeOutFinished())
+        {
+            m_AI.AIUpdate(this);
+            SetTimeOut(TIMEOUT_FOR_ADJUSTING_VEHICLES);
+            if (m_bMustMoveToTarget)
+            {
+                m_bMustMoveToTarget = false;
+                auto pos = _GetAggregatedTargetsPos();
+                m_AI.InsCommand(1, pos , {}, {});
+            }
+        }
     }
 
     Team::~Team()

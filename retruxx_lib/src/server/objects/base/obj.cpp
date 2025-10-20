@@ -409,7 +409,7 @@ namespace ai
 
     bool Obj::NeedCinematicUpdate()
     {
-        throw std::logic_error("Not implemented");
+        return (this->m_flags >> 4) & 1;
     }
 
     m3d::AIParam Obj::GetPropertyDefault(char const*) const
@@ -687,9 +687,10 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Obj::OnUnsubscribe(Event const&)
+    void Obj::OnUnsubscribe(Event const& evn)
     {
-        throw std::logic_error("Not implemented");
+        M3D_ASSERT(evn.m_param1.GetType() == m3d::AIPARAM_ID);
+        Obj::Unsubscribe(static_cast<eGameEvent>(evn.m_param1.GetAsID()), evn.m_senderObjId);
     }
 
     m3d::AIParam Obj::AIGetParentID(Obj* obj)

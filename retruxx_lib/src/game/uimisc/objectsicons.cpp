@@ -49,7 +49,8 @@ ObjectsIcons::ObjectsIcons()
 
 void ObjectsIcons::Clear(bool)
 {
-    throw std::logic_error("Not implemented");
+    // TODO: implement ObjectsIcons::Clear
+    // throw std::logic_error("Not implemented");
 }
 
 m3d::rend::TexHandle ObjectsIcons::GetIcoByName(CStr const& name, int mode) const

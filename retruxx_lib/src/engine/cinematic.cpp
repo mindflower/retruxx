@@ -1,6 +1,8 @@
 #include <cinematic.h>
 #include <stdexcept>
 
+#include "config.h"
+#include "landscape.h"
 #include "m3dapp.h"
 #include "core/ini.h"
 #include "core/kernel.h"
@@ -9,6 +11,11 @@
 #include "core/scoped_ptr.h"
 #include "file/fileserver.h"
 #include "file/filestream.h"
+#include "math/coremath.h"
+#include "math/matrix.h"
+#include <client.h>
+
+#include "world.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, StartCinematic)
 {
@@ -177,9 +184,72 @@ namespace m3d
         return m_cameraPathStates.size();
     }
 
-    void CameraPath::GetCameraForTime(float, CVector&, Quaternion&, float&) const
+    void CameraPath::GetCameraForTime(float curTime, CVector& pos, Quaternion& rot, float& zoom) const
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        // Find the segment that contains the current time
+        int segmentIndex = 1;
+        for (; segmentIndex < this->m_cameraPathStates.size(); ++segmentIndex)
+        {
+            if (curTime <= this->m_cameraPathStates[segmentIndex].m_flyTime)
+                break;
+        }
+
+        // Handle case where time is beyond the last keyframe
+        if (segmentIndex == this->m_cameraPathStates.size())
+        {
+            pos = this->m_cameraPathStates.back().m_point;
+            rot = this->m_cameraPathStates.back().m_rotation;
+            zoom = this->m_cameraPathStates.back().m_zoom;
+            return;
+        }
+
+        // Adjust segment index to ensure we have enough points for interpolation
+        if (segmentIndex > 1)
+            segmentIndex--;
+
+        // Ensure we have valid control points for Catmull-Rom interpolation
+        while (segmentIndex > 0)
+        {
+            if (segmentIndex + 2 < this->m_cameraPathStates.size())
+                break;
+            segmentIndex--;
+        }
+
+        // Get the four control points for Catmull-Rom interpolation
+        const auto& p0 = this->m_cameraPathStates[segmentIndex - 1];
+        const auto& p1 = this->m_cameraPathStates[segmentIndex];
+        const auto& p2 = this->m_cameraPathStates[segmentIndex + 1];
+        const auto& p3 = this->m_cameraPathStates[segmentIndex + 2];
+
+        // Calculate normalized time within the segment [0,1]
+        float segmentStartTime = p1.m_flyTime;
+        float segmentEndTime = p2.m_flyTime;
+        float normalizedTime = (curTime - segmentStartTime) / (segmentEndTime - segmentStartTime);
+
+        // Calculate speed-based interpolation parameter
+        float speedFactor = ((p2.m_speed - p1.m_speed) * normalizedTime + (p1.m_speed * 2.0f)) * normalizedTime;
+        speedFactor /= (p1.m_speed + p2.m_speed);
+
+        // Check if points are too close (degenerate case)
+        float distance = (p1.m_point - p2.m_point).length();
+        if (distance <= 0.001f)
+        {
+            // Use exact point if too close
+            pos = p1.m_point;
+            zoom = p1.m_zoom;
+        }
+        else
+        {
+            // Interpolate position using Catmull-Rom spline
+            pos = CatmullRomSubdivide(speedFactor, p0.m_point, p1.m_point, p2.m_point, p3.m_point);
+
+            // Interpolate zoom using Catmull-Rom spline
+            zoom = CatmullRomSubdivide(speedFactor, p0.m_zoom, p1.m_zoom, p2.m_zoom, p3.m_zoom);
+        }
+
+        // Interpolate rotation using cubic interpolation
+        rot = CubicInterpolation(speedFactor, p0.m_rotation, p1.m_rotation, p2.m_rotation, p3.m_rotation);
     }
 
     bool CameraPath::empty() const
@@ -187,9 +257,86 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void CameraPath::CalcFlyTimes(unsigned, bool)
+    void CameraPath::CalcFlyTimes(unsigned pointNum, bool recalcFullLength)
     {
-        throw std::logic_error("Not implemented");
+        M3D_ASSERT(pointNum >= 1);
+        if (recalcFullLength)
+        {
+            CalcFullLength(pointNum);
+        }
+
+        // TODO: generated code
+        
+        // Get the camera path states
+        auto& states = this->m_cameraPathStates;
+        if (states.empty())
+            return;
+
+        // Reset fly times for the specified number of points
+        for (int i = 0; i < pointNum && i < states.size(); ++i)
+        {
+            states[i].m_flyTime = 0.0f;
+        }
+
+        // Handle different cases based on point count
+        if (pointNum < 4)
+        {
+            // For small point counts, just set all times to 0
+            // (already done in the loop above)
+            return;
+        }
+
+        // For larger point counts, distribute times evenly
+        // Set fly times for intermediate points using linear interpolation
+        int startIndex = pointNum;
+        for (unsigned int i = 0; startIndex < (states.size() - 2); ++i)
+        {
+            states[startIndex].m_flyTime = (i * this->m_fullTime) / (states.size() - pointNum - 2);
+            ++startIndex;
+        }
+
+        // Set fly times for the last two points
+        if (!states.empty())
+        {
+            states.back().m_flyTime = this->m_fullTime;
+            if (states.size() >= 2)
+            {
+                states[states.size() - 2].m_flyTime = this->m_fullTime;
+            }
+        }
+
+        // Validate minimum state count
+        M3D_ASSERT(empty() || size() >= 4);
+
+        // Calculate average speed for time adjustment
+        float totalSpeed = 0.0f;
+        int speedCount = 0;
+
+        // Sum speeds of intermediate points (excluding first and last two points)
+        for (int i = 1; i < (states.size() - 2); ++i)
+        {
+            totalSpeed += states[i].m_speed;
+            ++speedCount;
+        }
+
+        if (speedCount > 0)
+        {
+            float averageSpeed = totalSpeed / speedCount;
+            float previousFlyTime = states[1].m_flyTime;
+
+            // Adjust fly times based on speed variations
+            for (int i = 2; i < (states.size() - 2); ++i)
+            {
+                float currentFlyTime = states[i].m_flyTime;
+                float segmentSpeed = (states[i].m_speed + states[i - 1].m_speed) * 0.5f;
+
+                // Adjust time based on speed ratio
+                states[i].m_flyTime = states[i - 1].m_flyTime +
+                    ((currentFlyTime - previousFlyTime) * averageSpeed / segmentSpeed) * 2.0f;
+
+                previousFlyTime = currentFlyTime;
+            }
+        }
     }
 
     void CameraPath::push_back(CameraPathState const&)
@@ -202,9 +349,14 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void CameraPath::CalcFullLength(unsigned)
+    void CameraPath::CalcFullLength(unsigned pointNum)
     {
-        throw std::logic_error("Not implemented");
+        M3D_ASSERT(pointNum >= 1);
+        m_fullLength = 0.0;
+        for (; pointNum < m_cameraPathStates.size(); ++pointNum)
+        {
+            m_fullLength += _CalcSplineSegmentLength(pointNum - 1, pointNum);
+        }
     }
 
     float CameraPath::GetFullLength() const
@@ -286,7 +438,7 @@ namespace m3d
     {
         m_cameraPathStates.clear();
         ref_ptr pointNode = xmlFile->CreateNode();
-        for (xmlNode->GetFirstChild(pointNode, "Point"); !pointNode->IsEmpty(); xmlNode->GetNextSibling(pointNode, "Point"))
+        for (xmlNode->GetFirstChild(pointNode, "Point"); !pointNode->IsEmpty(); pointNode->GetNextSibling(pointNode, "Point"))
         {
             CameraPathState state;
             state.LoadFromXmlRuntime(xmlFile, pointNode);
@@ -310,9 +462,91 @@ namespace m3d
         return this->m_fullTime;
     }
 
-    float CameraPath::_CalcSplineSegmentLength(unsigned, unsigned) const
+    float CameraPath::_CalcSplineSegmentLength(unsigned startPointIndex, unsigned endPointIndex) const
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        auto& states = this->m_cameraPathStates;
+        // Get references to start and end points
+        const auto& startState = states[startPointIndex];
+        const auto& endState = states[endPointIndex];
+
+        // Calculate direct distance between points
+        CVector delta = startState.m_point - endState.m_point;
+        float directDistance = sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
+
+        // If points are very close, return 0 length
+        if (directDistance < 0.001f)
+            return 0.0f;
+
+        // Calculate step size for numerical integration
+        float stepSize = fabs(1.0f - 1.0f / directDistance) * 0.01f;
+        int numSteps = static_cast<int>(1.0f / stepSize);
+
+        // Initialize position tracking
+        CVector currentPos = startState.m_point;
+        float t = 0.0f;
+        float totalLength = 0.0f;
+
+        // Get control points for cubic Hermite spline
+        const auto& prevControlPoint = states[startPointIndex - 1];  // Previous control point
+        const auto& nextControlPoint = states[endPointIndex + 1];    // Next control point
+
+        // Numerical integration along the spline
+        for (int step = 0; step < numSteps; ++step)
+        {
+            // Calculate cubic Hermite spline basis functions
+            float t2 = t * t;
+            float t3 = t2 * t;
+
+            // Basis functions for cubic Hermite spline:
+            // h1 = 2t³ - 3t² + 1  (h00)
+            // h2 = -2t³ + 3t²      (h01)  
+            // h3 = t³ - 2t² + t    (h10)
+            // h4 = t³ - t²         (h11)
+
+            float h1 = 2.0f * t3 - 3.0f * t2 + 1.0f;
+            float h2 = -2.0f * t3 + 3.0f * t2;
+            float h3 = t3 - 2.0f * t2 + t;
+            float h4 = t3 - t2;
+
+            // Calculate spline position using Hermite interpolation
+            CVector newPos;
+            newPos.x = 0.5f * ((prevControlPoint.m_point.x * h3) +
+                               (startState.m_point.x * h1) +
+                               (endState.m_point.x * h2) +
+                               (nextControlPoint.m_point.x * h4));
+
+            newPos.y = 0.5f * ((prevControlPoint.m_point.y * h3) +
+                               (startState.m_point.y * h1) +
+                               (endState.m_point.y * h2) +
+                               (nextControlPoint.m_point.y * h4));
+
+            newPos.z = 0.5f * ((prevControlPoint.m_point.z * h3) +
+                               (startState.m_point.z * h1) +
+                               (endState.m_point.z * h2) +
+                               (nextControlPoint.m_point.z * h4));
+
+            // Calculate segment length from previous position
+            CVector segmentDelta = currentPos - newPos;
+            float segmentLength = sqrt(segmentDelta.x * segmentDelta.x +
+                                       segmentDelta.y * segmentDelta.y +
+                                       segmentDelta.z * segmentDelta.z);
+
+            totalLength += segmentLength;
+
+            // Update for next iteration
+            currentPos = newPos;
+            t += stepSize;
+        }
+
+        // Add final segment to reach exact end point
+        CVector finalDelta = currentPos - endState.m_point;
+        float finalSegmentLength = sqrt(finalDelta.x * finalDelta.x +
+                                        finalDelta.y * finalDelta.y +
+                                        finalDelta.z * finalDelta.z);
+        totalLength += finalSegmentLength;
+
+        return totalLength;
     }
 
     void CameraPath::_DeFix()
@@ -504,7 +738,7 @@ namespace m3d
         }
 
         ref_ptr pathNode = xmlFile->CreateNode();
-        for (pathsNode->GetFirstChild(pathNode, "Path"); !pathNode->IsEmpty(); pathsNode->GetNextSibling(pathNode, "Path"))
+        for (pathsNode->GetFirstChild(pathNode, "Path"); !pathNode->IsEmpty(); pathNode->GetNextSibling(pathNode, "Path"))
         {
             CStr name = pathNode->GetAttribute("Name");
             if (name.empty())
@@ -621,9 +855,148 @@ namespace m3d
         m_curItem.m_bWaitWhenStop = wait;
     }
 
-    void Cinematic::Update(CCamera&, float)
+    void Cinematic::Update(CCamera& cam, float deltaTime)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        if (this->m_curItem.m_playType == CINEMATIC_PLAY_PATH)
+        {
+            // Get camera position and rotation from camera path
+            CVector cameraPosition;
+            Quaternion cameraRotation;
+            float lookAtPoint;
+
+            m_curItem.m_cameraPath.GetCameraForTime(this->m_curTime,cameraPosition, cameraRotation, lookAtPoint);
+
+            // Store current camera state for interpolation
+            CVector currentCamPos = cam.m_worldOrigin;
+
+            CMatrix currentCamMatrix;
+            currentCamMatrix.rotYPR(cam.m_rotYaw, cam.m_rotPitch, cam.m_rotRoll);
+
+            Quaternion currentCamRot;
+            currentCamRot.FromMatrix(currentCamMatrix);
+
+            // Calculate interpolation factor based on spring coefficient and delta time
+            float springCoeff = M3D_ENGINE_CFG.m_cinematic_spring_coeff.GetF();
+            float interpolationFactor = springCoeff * deltaTime;
+            interpolationFactor = (interpolationFactor <= 1.0f) ? interpolationFactor : 1.0f;
+
+            // Handle relative coordinate transformations
+            if (this->m_curItem.m_bRelativePoints)
+            {
+                // Transform camera position by base rotation and translation
+                Quaternion baseRotation = m3d::Cinematic::_GetBaseRotation();
+                CVector basePoint = m3d::Cinematic::_GetBasePoint();
+
+                // Rotate camera position by base rotation
+                CMatrix rotationMatrix = baseRotation.ToMatrix();
+                cameraPosition = rotationMatrix.vecRot(cameraPosition);
+
+                // Translate by base point
+                cameraPosition = cameraPosition + basePoint;
+
+                // Apply interpolation if needed
+                if (this->m_curTime > 0.1f ||
+                    (this->m_curItem.m_bLerpFromPreviousItem && this->m_numConsecutiveItemPlayingNow >= 2))
+                {
+                    cameraPosition = lerp(currentCamPos, cameraPosition, interpolationFactor);
+                }
+            }
+            else
+            {
+                // Apply interpolation for non-relative points with consecutive items
+                if (this->m_curItem.m_bLerpFromPreviousItem && this->m_numConsecutiveItemPlayingNow >= 2)
+                {
+                    cameraPosition = lerp(currentCamPos, cameraPosition, interpolationFactor);
+                }
+            }
+
+            // Update camera position
+            cam.m_worldOrigin = cameraPosition;
+
+            // Handle camera rotation
+            if (!this->m_curItem.m_bLookTo)
+            {
+                if (this->m_curItem.m_bRelativeRotations)
+                {
+                    // Transform rotation by base rotation
+                    Quaternion baseRotation = m3d::Cinematic::_GetBaseRotation();
+                    Quaternion inverseBaseRotation = baseRotation.getInversed();
+                    cameraRotation = inverseBaseRotation;
+                    cameraRotation *= cameraRotation;
+                }
+
+                // Apply interpolation to rotation if needed
+                if ((this->m_curItem.m_bRelativePoints && this->m_curTime > 0.1f) ||
+                    (this->m_curItem.m_bLerpFromPreviousItem && this->m_numConsecutiveItemPlayingNow >= 2))
+                {
+                    cameraRotation.Lerp(currentCamRot, cameraRotation, interpolationFactor);
+                }
+
+                // Convert quaternion to Euler angles and update camera
+                CMatrix rotationMatrix = cameraRotation.ToMatrix();
+
+                float yaw, pitch, roll;
+                rotationMatrix.getYPR(yaw, pitch, roll);
+
+                cam.m_rotYaw = yaw;
+                cam.m_rotPitch = pitch;
+                cam.m_rotRoll = roll;
+            }
+            else
+            {
+                // Look at specific point
+                CVector targetPoint = m3d::Cinematic::_GetPointToLookAt();
+                cam.lookAt(targetPoint);
+            }
+        }
+        else if (this->m_curItem.m_playType == CINEMATIC_FLY_AROUND)
+        {
+            // Spherical camera movement around a point
+            float timeRatio = this->m_curTime / this->m_curItem.m_cameraPath.GetFullTime();
+
+            // Interpolate spherical coordinates
+            float phi = lerp(this->m_curItem.m_startPhi, this->m_curItem.m_finalPhi, timeRatio);
+            float theta = lerp(this->m_curItem.m_startTheta, this->m_curItem.m_finalTheta, timeRatio);
+            float radius = lerp(this->m_curItem.m_startRadius, this->m_curItem.m_finalRadius, timeRatio);
+
+            // Get the point to look at
+            CVector lookAtPoint = m3d::Cinematic::_GetPointToLookAt();
+
+            // Calculate camera position in spherical coordinates
+            float cosTheta = cos(theta);
+            float sinTheta = sin(theta);
+            float cosPhi = cos(phi);
+            float sinPhi = sin(phi);
+
+            cam.m_worldOrigin.x = lookAtPoint.x + radius * cosPhi * cosTheta;
+            cam.m_worldOrigin.z = lookAtPoint.z + radius * cosPhi * sinTheta;
+            cam.m_worldOrigin.y = lookAtPoint.y + radius * sinPhi;
+
+            // Ensure camera doesn't go below landscape
+            float landscapeHeight = m3d::pClient->GetWorld().GetLandscape().GetLsHeight(cam.m_worldOrigin.x, cam.m_worldOrigin.z) + 3.0f;
+            if (landscapeHeight > cam.m_worldOrigin.y)
+            {
+                cam.m_worldOrigin.y = landscapeHeight;
+            }
+
+            // Make camera look at the target point
+            cam.lookAt(lookAtPoint);
+        }
+
+        // Handle cinematic completion
+        if (this->m_curTime > this->m_curItem.m_cameraPath.GetFullTime() && !this->m_curItem.m_bWaitWhenStop)
+        {
+            // Reset zoom and stop cinematic if not in debug mode
+            M3D_APP->setZoom(1.0f);
+            if (!this->m_bDebugMode)
+            {
+                this->m_curItem.m_playType = CINEMATIC_OFF;
+            }
+        }
+
+        // Update current time
+        this->m_curTime += deltaTime;
     }
 
     void Cinematic::SetLerpFromPreviousItem(bool bLerp)
@@ -632,6 +1005,36 @@ namespace m3d
     }
 
     CinematicItem const& Cinematic::GetCurItem() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CVector Cinematic::_GetPointToLookAt() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CVector Cinematic::_GetBasePoint() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    Quaternion Cinematic::_GetBaseRotation() const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    m3d::CameraPathState Cinematic::_GetPathState(float curTime) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    void Cinematic::_PushCinematicItem()
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    bool Cinematic::_bIsFirstItemPlayingNow() const
     {
         throw std::logic_error("Not implemented");
     }

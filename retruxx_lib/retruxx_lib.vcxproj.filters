@@ -2078,6 +2078,9 @@
     <ClCompile Include="src\engine\math\aabb.cpp">
       <Filter>engine\math</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\math\coremath.cpp">
+      <Filter>engine\math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">

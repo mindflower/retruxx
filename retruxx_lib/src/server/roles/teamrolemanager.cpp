@@ -1,5 +1,8 @@
 #include "teamrolemanager.h"
 
+#include "VehicleRole.h"
+#include "server/objects/team.h"
+
 namespace ai
 {
     void TeamRoleManager::GetRolePrototypeIds(const ai::TeamTacticWithRoles* tactic, const ai::Team* team,
@@ -66,7 +69,16 @@ namespace ai
 
     void TeamRoleManager::ClearRoles(const ai::Team* team)
     {
-        throw std::logic_error("Not implemented");
+        for (auto& vehicle : team->GetVehicles())
+        {
+            auto role = vehicle->GetRole();
+            if (role)
+            {
+                vehicle->SetRole(nullptr);
+                vehicle->FireFromWeaponAI(false, 0.0, nullptr);
+                role->Remove();
+            }
+        }
     }
 
     void TeamRoleManager::GetTargetsPositions(const ai::Team* team,

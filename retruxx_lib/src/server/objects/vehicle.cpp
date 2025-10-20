@@ -44,6 +44,7 @@
 #include "server/externalpaths.h"
 #include "server/path.h"
 #include "server/weaponfirer.h"
+#include "server/roles/VehicleRole.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
@@ -1420,7 +1421,7 @@ namespace ai
 
 	VehicleRole* Vehicle::GetRole() const
 	{
-		throw std::logic_error("Not implemented");
+        return RT_DYNCAST(theObjects->GetEntityByObjId(m_roleId), VehicleRole);
 	}
 
 	void Vehicle::SubscribeRadioManagerOnNearbyObjId(int) const
