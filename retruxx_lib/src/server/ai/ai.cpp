@@ -39,7 +39,15 @@ namespace ai
 
     void AI::AIInit()
     {
-        throw std::logic_error("Not implemented");
+        m_StateStack1.clear();
+        m_StateStack2.clear();
+        m_Messages1.clear();
+        m_Messages2.clear();
+        m_Commands.clear();
+        m_fStateStack2Changed = 0;
+        m_CommandStackOpen = 0;
+        m_numCurCommand = 0;
+        m_CommandProcessed = 0;
     }
 
     AI::AI()

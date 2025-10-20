@@ -8,6 +8,9 @@
 #include "core/ini.h"
 #include "server/ai/aimanager.h"
 #include "base/objcontainer.h"
+#include "server/roles/combatmastermind.h"
+#include <server/processmanager.h>
+#include "player.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, SetDestination)
 {
@@ -453,7 +456,32 @@ namespace ai
 
     void Team::_InternalPostLoad()
     {
-        throw retruxx::logic_error("Not implemented");
+        m_combatMastermind = new CombatMastermind(GetId());
+        m_needAdjustBehaviour = true;
+        theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0, { 65 }, {}, 1);
+        if (!m_formation)
+        {
+            _CreateFormation();
+        }
+        if (!m_vehicles.empty())
+        {
+            theObjects->AddObjToUpdate(m_formation);
+        }
+        if (m_pPath)
+        {
+            m_formation->SetPath(m_pPath, false);
+        }
+        else
+        {
+            m_AI.AIInit();
+        }
+
+        for (auto& vehicle : m_vehicles)
+        {
+            m_formation->AddVehicle(vehicle);
+        }
+
+        m_formation->SetLinearVelocity(_GetTeamVelocity());
     }
 
     void Team::_DoPosUnreachable()
