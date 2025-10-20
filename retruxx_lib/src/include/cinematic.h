@@ -12,54 +12,55 @@ class CCamera;
 namespace m3d
 {
 
-    class CameraPathState
+    struct CameraPathState
     {
-    public:
-        CameraPathState(CVector const&, Quaternion const&, float, float, float);
-        void SaveToXmlRuntime(cmn::XmlFile*, cmn::XmlNode*) const;
-        void LoadFromXmlRuntime(cmn::XmlFile*, cmn::XmlNode const*);
-
-    private:
-        CVector m_point;
-        Quaternion m_rotation;
-        float m_zoom;
-        float m_speed;
-        float m_flyTime;
-    };
+        /* 0x0000 */ CVector m_point;
+        /* 0x000c */ Quaternion m_rotation;
+        /* 0x001c */ float m_zoom;
+        /* 0x0020 */ float m_speed;
+        /* 0x0024 */ float m_flyTime;
+        CameraPathState(const CVector& point, const Quaternion& rotation, float zoom, float flyTime, float speed);
+        CameraPathState();
+        void LoadFromXmlRuntime(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        void SaveToXmlRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
+    }; /* size: 0x0028 */
 
     class CameraPath
     {
     public:
-        void insert(int, CameraPathState const&);
-        unsigned int size() const;
-        void GetCameraForTime(float, CVector&, Quaternion&, float&) const;
-        bool empty() const;
-        void CalcFlyTimes(unsigned int, bool);
-        void push_back(CameraPathState const&);
-        void MovePoint(int, CameraPathState const&);
-        void CalcFullLength(unsigned int);
-        float GetFullLength() const;
-        void SaveToXmlRuntime(cmn::XmlFile*, cmn::XmlNode*) const;
-        void LoadFromXml(cmn::XmlFile*, cmn::XmlNode const*);
-        void SetFullTime(float);
-        void InitByStates(std::vector<CameraPathState, std::allocator<CameraPathState> > const&);
+        static const m3d::CameraPath m_emptyPath;
+        CameraPath(const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >&);
+        CameraPath();
+        void LoadFromXmlRuntime(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        void SaveToXmlRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
+        void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        void CalcFlyTimes(unsigned int pointNum, bool recalcFullLength);
+        void CalcFullLength(unsigned int pointNum);
+        void GetCameraForTime(float curTime, CVector& pos, Quaternion& rot, float& zoom) const;
+        void InitByStates(const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >& states);
+        std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >& GetCameraPathStates();
+        const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >& GetCameraPathStates() const;
         void clear();
-        void RemovePoint(int);
-        void LoadFromXmlRuntime(cmn::XmlFile*, cmn::XmlNode const*);
-        CameraPathState& operator[](unsigned int);
-        CameraPathState const& operator[](unsigned int) const;
+        bool empty() const;
+        unsigned int size() const;
+        void push_back(const m3d::CameraPathState& state);
+        void insert(int pointNum, const m3d::CameraPathState& state);
+        const m3d::CameraPathState& operator[](unsigned int index) const;
+        m3d::CameraPathState& operator[](unsigned int index);
+        void MovePoint(int pointNum, const m3d::CameraPathState& state);
+        void RemovePoint(int pointNum);
         float GetFullTime() const;
+        void SetFullTime(float fullTime);
+        float GetFullLength() const;
 
     private:
-        float _CalcSplineSegmentLength(unsigned int, unsigned int) const;
-        void _DeFix();
+        /* 0x0000 */ std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> > m_cameraPathStates;
+        /* 0x0010 */ float m_fullLength;
+        /* 0x0014 */ float m_fullTime;
         void _Fix();
-
-    private:
-        std::vector<CameraPathState> m_cameraPathStates;
-        float m_fullLength = 0.0;
-        float m_fullTime = 1.0;
-    };
+        void _DeFix();
+        float _CalcSplineSegmentLength(unsigned int iPoint1, unsigned int iPoint2) const;
+    }; /* size: 0x0018 */
 
     enum CinematicState
     {

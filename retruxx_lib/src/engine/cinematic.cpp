@@ -2,6 +2,13 @@
 #include <stdexcept>
 
 #include "m3dapp.h"
+#include "core/ini.h"
+#include "core/kernel.h"
+#include "core/log.h"
+#include "core/ref_ptr.h"
+#include "core/scoped_ptr.h"
+#include "file/fileserver.h"
+#include "file/filestream.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, StartCinematic)
 {
@@ -32,7 +39,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, InPlay)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetPath)
 {
-    throw std::logic_error("Not implemented");
+    auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
+    auto path = context->asString(1);
+    cinematic->SetPath(path);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetPathFromPos)
@@ -72,7 +82,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetBaseToId)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetLookTo)
 {
-    throw std::logic_error("Not implemented");
+    auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
+    auto value = context->asBool(1);
+    cinematic->SetLookTo(value);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetWaitWhenStop)
@@ -214,9 +227,57 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void CameraPath::LoadFromXmlRuntime(cmn::XmlFile*, cmn::XmlNode const*)
+    CameraPathState::CameraPathState(const CVector& point, const Quaternion& rotation, float zoom, float flyTime,
+        float speed)
     {
         throw std::logic_error("Not implemented");
+    }
+
+    CameraPathState::CameraPathState()
+    {
+        m_point = {0.0, 0.0, 0.0};
+        m_rotation = { 0.0, 0.0, 0.0, 1.0 };
+        m_zoom = 1.0;
+        m_speed = 1.0;
+        m_flyTime = 0.0;
+    }
+
+    void CameraPathState::LoadFromXmlRuntime(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    {
+        m3d::SafeVectorAttrib(m_point, xmlNode, "coord");
+        m3d::SafeQuaternionAttrib(m_rotation, xmlNode, "rotation");
+        m3d::SafeFloatAttrib(m_zoom, xmlNode, "zoom");
+        m3d::SafeFloatAttrib(m_speed, xmlNode, "speed");
+        m3d::SafeFloatAttrib(m_flyTime, xmlNode, "flyTime");
+    }
+
+    void CameraPathState::SaveToXmlRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CameraPath::CameraPath(const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>>&)
+    {
+        throw std::logic_error("Not implemented");
+    }
+
+    CameraPath::CameraPath()
+    {
+        this->m_fullTime = 1.0;
+        this->m_fullLength = 0.0;
+    }
+
+    void CameraPath::LoadFromXmlRuntime(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
+    {
+        m_cameraPathStates.clear();
+        ref_ptr pointNode = xmlFile->CreateNode();
+        for (xmlNode->GetFirstChild(pointNode, "Point"); !pointNode->IsEmpty(); xmlNode->GetNextSibling(pointNode, "Point"))
+        {
+            CameraPathState state;
+            state.LoadFromXmlRuntime(xmlFile, pointNode);
+            m_cameraPathStates.push_back(state);
+        }
+        _Fix();
     }
 
     CameraPathState& CameraPath::operator[](unsigned)
@@ -246,7 +307,38 @@ namespace m3d
 
     void CameraPath::_Fix()
     {
-        throw std::logic_error("Not implemented");
+        if (!m_cameraPathStates.empty())
+        {
+            // TODO: check this
+            m_cameraPathStates.insert(m_cameraPathStates.begin(), m_cameraPathStates.front());
+            if (m_cameraPathStates.size() < 4)
+            {
+                m_cameraPathStates.push_back(this->m_cameraPathStates.back());
+            }
+        }
+
+        // TODO: generated code
+        // Fix quaternion continuity by ensuring consecutive rotations have positive dot product
+        for (size_t i = 1; i < this->m_cameraPathStates.size(); ++i)
+        {
+            m3d::CameraPathState& prevState = this->m_cameraPathStates[i - 1];
+            m3d::CameraPathState& currentState = this->m_cameraPathStates[i];
+
+            // Calculate dot product between consecutive quaternions
+            float dotProduct = (prevState.m_rotation.x * currentState.m_rotation.x) +
+                (prevState.m_rotation.y * currentState.m_rotation.y) +
+                (prevState.m_rotation.z * currentState.m_rotation.z) +
+                (prevState.m_rotation.w * currentState.m_rotation.w);
+
+            // If dot product is negative, flip the current quaternion to maintain continuity
+            if (dotProduct < 0.0f)
+            {
+                currentState.m_rotation.x = -currentState.m_rotation.x;
+                currentState.m_rotation.y = -currentState.m_rotation.y;
+                currentState.m_rotation.z = -currentState.m_rotation.z;
+                currentState.m_rotation.w = -currentState.m_rotation.w;
+            }
+        }
     }
 
     bool Cinematic::SkipCinematic()
@@ -356,9 +448,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Cinematic::SetLookTo(bool)
+    void Cinematic::SetLookTo(bool value)
     {
-        throw std::logic_error("Not implemented");
+        m_curItem.m_bLookTo = value;
     }
 
     void Cinematic::UpdateCameraRotation(CCamera&)
@@ -371,19 +463,55 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    bool Cinematic::Load(char const*)
+    bool Cinematic::Load(char const* fileName)
     {
-        throw std::logic_error("Not implemented");
+        CStr fullName = m_folder + fileName;
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        if (!stream->Open(fullName.c_str(), fs::IStream::OPEN_READ) && !stream->Open(fileName, fs::IStream::OPEN_READ))
+        {
+            M3D_LOG_ERR("Error:Cinematic can't read file " + CStr(fileName));
+            return false;
+        }
+
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
+        if (!xmlFile->Read(*stream))
+        {
+            M3D_LOG_ERR("Error:Cinematic can't read file" + CStr(fileName) + "(" + CStr(xmlFile->GetError()) + ")");
+            return false;
+        }
+
+        ref_ptr pathsNode = xmlFile->CreateNode();
+        xmlFile->GetFirstChild(pathsNode, "Paths");
+        if (pathsNode->IsEmpty())
+        {
+            M3D_LOG_ERR("Error:Cinematic can't find root node Paths in file " + CStr(fileName));
+            return false;
+        }
+
+        ref_ptr pathNode = xmlFile->CreateNode();
+        for (pathsNode->GetFirstChild(pathNode, "Path"); !pathNode->IsEmpty(); pathsNode->GetNextSibling(pathNode, "Path"))
+        {
+            CStr name = pathNode->GetAttribute("Name");
+            if (name.empty())
+            {
+                continue;
+            }
+
+            CameraPath newPath;
+            newPath.LoadFromXmlRuntime(xmlFile, pathNode);
+            m_paths.emplace(std::move(name), std::move(newPath));
+        }
+        return true;
     }
 
     int Cinematic::GetFlags() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_curItem.m_flags;
     }
 
-    void Cinematic::SetFlags(int)
+    void Cinematic::SetFlags(int flags)
     {
-        throw std::logic_error("Not implemented");
+        this->m_curItem.m_flags = flags;
     }
 
     void Cinematic::PlayFromPoint(float, int)

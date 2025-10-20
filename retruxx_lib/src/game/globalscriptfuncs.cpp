@@ -1204,8 +1204,45 @@ int n_ShowDeathMenu(m3d::sArgStack& scriptStack)
 
 int n_SetCinematicFadeParams(m3d::sArgStack& scriptStack)
 {
-    throw std::logic_error("Not implemented");
-    return 0;
+    if (scriptStack.getNumInArgs() != 2)
+        return -1;
+
+    auto v2 = scriptStack.popIn();
+    if (v2->m_type != m3d::sArg::ARGTYPE_FLOAT)
+        return -1;
+
+    int Flags = 0;
+    if (v2->GetF())
+    {
+        Flags = M3D_APP->m_cinematic->GetFlags();
+        Flags = Flags | 1;
+    }
+    else
+    {
+        Flags = M3D_APP->m_cinematic->GetFlags();
+        Flags = Flags & 0xFE;
+    }
+
+    M3D_APP->m_cinematic->SetFlags(Flags);
+
+    auto v4 = scriptStack.popIn();
+    if (v4->m_type != m3d::sArg::ARGTYPE_FLOAT)
+        return -1;
+
+    int v5 = 0;
+    if (v4->GetF())
+    {
+        v5 = M3D_APP->m_cinematic->GetFlags();
+        v5 = v5 | 2;
+    }
+    else
+    {
+        v5 = M3D_APP->m_cinematic->GetFlags();
+        v5 = v5 & 0xFD;
+    }
+
+    M3D_APP->m_cinematic->SetFlags(v5);
+    return 1;
 }
 
 int n_SetGameSpeed(m3d::sArgStack& scriptStack)

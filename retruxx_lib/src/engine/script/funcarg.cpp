@@ -34,7 +34,14 @@ namespace m3d
 
     bool sArg::GetB() const
     {
-        throw std::logic_error("Not implemented");
+        assert(m_type == ARGTYPE_BOOL || m_type == ARGTYPE_OBJECT || m_type == ARGTYPE_FLOAT || m_type == ARGTYPE_INT);
+        if (this->m_type == ARGTYPE_BOOL)
+            return this->m_b;
+
+        if (this->m_type == ARGTYPE_FLOAT)
+            return fabs(this->m_f) > 0.0000099999997;
+
+        return this->m_i != 0;
     }
 
     Object* sArg::GetO() const
@@ -89,9 +96,10 @@ namespace m3d
         this->m_f = f;
     }
 
-    void sArg::SetB(bool)
+    void sArg::SetB(bool b)
     {
-        throw std::logic_error("Not implemented");
+        this->m_type = ARGTYPE_BOOL;
+        this->m_b = b;
     }
 
     void sArg::SetO(Object* o)

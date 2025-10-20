@@ -177,9 +177,13 @@ namespace m3d
         return *ext_createAIParam(this->L);
 	}
 
-	void LuaContext::pushBool(bool)
+	void LuaContext::pushBool(bool x)
 	{
-		throw std::logic_error("Not implemented");
+		if (x)
+			lua_pushnumber(L, 1.0);
+		else
+			lua_pushnil(L);
+		++this->m_numOutputs;
 	}
 
 	char const* LuaContext::asString(int i)
