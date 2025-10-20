@@ -4,8 +4,10 @@
 #include <server/ai/aimessage.h>
 #include <server/ai/aipassagestate.h>
 
+#include "base/prototypemanager.h"
 #include "core/ini.h"
 #include "server/ai/aimanager.h"
+#include "base/objcontainer.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, SetDestination)
 {
@@ -52,12 +54,12 @@ namespace ai
 
     void TeamPrototypeInfo::PostLoad()
     {
-        throw retruxx::logic_error("Not implemented");
+        m_formationPrototypeId = thePrototypeManager->GetPrototypeId(m_formationPrototypeName);
     }
 
     ai::Obj* TeamPrototypeInfo::CreateTargetObject() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return new Team(*this);
     }
 
     bool TeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -80,8 +82,8 @@ namespace ai
             {
                 m3d::SafeStrAttrib(m_formationPrototypeName, node, "Prototype");
         
-                ref_ptr protoNode = xmlFile->CreateNode();
-                node->GetFirstAttribute((m3d::cmn::XmlAttrib*)&*protoNode);
+                ref_ptr protoNode = node->CreateAttribute();
+                node->GetFirstAttribute(protoNode);
         
                 if (!protoNode->IsEmpty())
                 {
@@ -96,7 +98,7 @@ namespace ai
 
     float TeamPrototypeInfo::GetFormationDistBetweenVehicles() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_formationDistBetweenVehicles;
     }
 
     TeamPrototypeInfo::TeamPrototypeInfo()
@@ -111,7 +113,7 @@ namespace ai
 
     bool TeamPrototypeInfo::GetOverridesDistBetweenVehicles() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_overridesDistBetweenVehicles;
     }
 
     retruxx::map<int, CVector> const& Team::GetSteeringForceMap() const
@@ -174,9 +176,20 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    Team::Team(TeamPrototypeInfo const&)
+    Team::Team(TeamPrototypeInfo const& prototypeInfo) : ai::Obj(prototypeInfo)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_bRemoveWhenChildrenDead = prototypeInfo.m_bRemoveWhenChildrenDead;
+        m_bUseStandardUpdatingBehavior = 1;
+        m_AI.SetDecisionMatrix(prototypeInfo.m_decisionMatrixNum);
+        m_formation = 0;
+        m_combatMastermind = 0;
+        m_pPath = 0;
+        m_bFrozen = 0;
+        m_bMustMoveToTarget = 0;
+        m_maxTeamSpeed = 13.888889;
+        m_needAdjustBehaviour = 1;
+        m_TeamTacticId = -1;
+        m_TeamTacticShouldBeAssigned = true;
     }
 
     bool Team::RemoveChild(Obj*)
@@ -201,7 +214,7 @@ namespace ai
 
     m3d::Class* Team::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Team);
     }
 
     retruxx::vector<Vehicle*> const& Team::GetVehicles() const
@@ -324,7 +337,7 @@ namespace ai
 
     TeamPrototypeInfo const* Team::GetPrototypeInfo() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const TeamPrototypeInfo);
     }
 
     CStr Team::GetPropertyName(int) const
@@ -384,7 +397,8 @@ namespace ai
 
     void Team::CreateChildren()
     {
-        throw retruxx::logic_error("Not implemented");
+        ai::Obj::CreateChildren();
+        ai::Team::_CreateFormation();
     }
 
     Formation* Team::GetFormation() const
@@ -499,7 +513,17 @@ namespace ai
 
     void Team::_CreateFormation()
     {
-        throw retruxx::logic_error("Not implemented");
+        auto* protoInfo = GetPrototypeInfo();
+        auto objId = theObjects->CreateNewObject(protoInfo->m_formationPrototypeId, {}, -1, -1);
+        auto* obj = theObjects->GetEntityByObjId(objId);
+        m_formation = dynamic_cast<Formation*>(obj);
+        m_formation->LinkToParent(GetId(), HIERARCHY_COMPONENT);
+        if (protoInfo->GetOverridesDistBetweenVehicles())
+        {
+            m_formation->SetDistBetweenVehicles(protoInfo->GetFormationDistBetweenVehicles());
+        }
+        m_formation->SetAngularVelocity(0.5);
+        m_formation->SetLinearVelocity(100.0);
     }
 
     void Team::_OnUnderAttack(Event const&)

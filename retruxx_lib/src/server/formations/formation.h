@@ -35,6 +35,7 @@ namespace ai
 
     class Formation : public ai::Obj
     {
+        friend class FormationPrototypeInfo;
     protected:
         virtual  ~Formation() override /* 0x00 */;
 

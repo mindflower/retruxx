@@ -40,6 +40,7 @@ namespace ai
 
     class Team : public ai::Obj
     {
+        friend class TeamPrototypeInfo;
     protected:
         virtual  ~Team() override /* 0x00 */;
 

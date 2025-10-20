@@ -21,29 +21,25 @@ namespace ai
 
     bool FormationPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        throw std::logic_error("Not implemented");
         auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_linearVelocity, xmlNode, "LinearVelocity");
+            m3d::SafeFloatAttrib(m_angularVelocity, xmlNode, "AngularVelocity");
+            ai::FormationPrototypeInfo::loadPolylinePoints(xmlFile, xmlNode);
+            return 1;
+        }
         return result;
-
-        //auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
-        //if (result)
-        //{
-        //    m3d::SafeFloatAttrib(m_linearVelocity, xmlNode, "LinearVelocity");
-        //    m3d::SafeFloatAttrib(m_angularVelocity, xmlNode, "AngularVelocity");
-        //    ai::FormationPrototypeInfo::loadPolylinePoints(xmlFile, xmlNode);
-        //    return 1;
-        //}
-        //return result;
     }
 
     ai::Obj* FormationPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        return new Formation(*this);
     }
 
     unsigned int FormationPrototypeInfo::GetMaxVehicles() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_maxVehicles;
     }
 
     const retruxx::vector<CVector2, retruxx::allocator<CVector2>>& FormationPrototypeInfo::GetPolylinePoints() const
@@ -63,27 +59,68 @@ namespace ai
 
     float FormationPrototypeInfo::GetLinearVelocity() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_linearVelocity;
     }
 
     float FormationPrototypeInfo::GetAngularVelocity() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_angularVelocity;
     }
 
     void FormationPrototypeInfo::PostLoad()
     {
-        throw std::logic_error("Not implemented");
+        calcPolylineLengths();
     }
 
     void FormationPrototypeInfo::loadPolylinePoints(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        ref_ptr polylineNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(polylineNode, "Polyline");
+
+        ref_ptr pointNode = xmlFile->CreateNode();
+        for (polylineNode->GetFirstChild(pointNode, "Point"); !pointNode->IsEmpty(); pointNode->GetNextSibling(pointNode, "Point"))
+        {
+            CVector2 point;
+            m3d::SafeVector2Attrib(point, pointNode, "Coord");
+            if (point.x == 0.0 && point.y == 0.0)
+            {
+                this->m_headPosition = m_polylinePoints.size();
+            }
+            this->m_polylinePoints.push_back(point);
+        }
     }
 
     void FormationPrototypeInfo::calcPolylineLengths()
     {
-        throw std::logic_error("Not implemented");
+        // TODO: generated code
+        // Reset accumulated lengths
+        this->m_polylineLength = 0.0f;
+        this->m_headOffset = 0.0f;
+
+        // Check if we have enough points to form segments
+        if (this->m_polylinePoints.empty() || this->m_polylinePoints.size() < 2)
+            return;
+
+        // Iterate through each segment of the polyline
+        for (size_t i = 0; i < this->m_polylinePoints.size() - 1; ++i)
+        {
+            const CVector2& currentPoint = this->m_polylinePoints[i];
+            const CVector2& nextPoint = this->m_polylinePoints[i + 1];
+
+            // Calculate segment length using distance formula
+            float dx = nextPoint.x - currentPoint.x;
+            float dy = nextPoint.y - currentPoint.y;
+            float segmentLength = sqrt(dx * dx + dy * dy);
+
+            // Add to total polyline length
+            this->m_polylineLength += segmentLength;
+
+            // If this segment is before the head position, add to head offset
+            if (i < this->m_headPosition)
+            {
+                this->m_headOffset += segmentLength;
+            }
+        }
     }
 
     Formation::~Formation()
@@ -120,7 +157,7 @@ namespace ai
 
     m3d::Class* Formation::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Formation);
     }
 
     const ai::FormationPrototypeInfo* Formation::GetPrototypeInfo() const
@@ -191,22 +228,22 @@ namespace ai
 
     float Formation::GetLinearVelocity() const
     {
-        throw std::logic_error("Not implemented");
+        return m_linearVelocity;
     }
 
     void Formation::SetLinearVelocity(float linearVelocity)
     {
-        throw std::logic_error("Not implemented");
+        m_linearVelocity = linearVelocity;
     }
 
     float Formation::GetAngularVelocity() const
     {
-        throw std::logic_error("Not implemented");
+        return m_angularVelocity;
     }
 
     void Formation::SetAngularVelocity(float angularVelocity)
     {
-        throw std::logic_error("Not implemented");
+        this->m_angularVelocity = angularVelocity;
     }
 
     void Formation::SetPath(ai::Path* pPath, bool bForceResetPathNum)

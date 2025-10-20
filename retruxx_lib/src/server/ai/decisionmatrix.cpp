@@ -53,7 +53,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddDefaultStateParam)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetExitState)
 {
-    throw std::logic_error("Not implemented");
+    auto decisionMatrix = (ai::DecisionMatrix*)context->asObject(0, "DecisionMatrix");
+    auto state = context->asString(1);
+    decisionMatrix->SetExitState(state);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, FitMatrix)
@@ -99,7 +102,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddCommand)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddSublevel)
 {
-    throw std::logic_error("Not implemented");
+    auto decisionMatrix = (ai::DecisionMatrix*)context->asObject(0, "DecisionMatrix");
+    auto str = context->asString(1);
+    auto anotherMatrix = context->asObject(2, "DecisionMatrix");
+    decisionMatrix->AddSublevel(str, anotherMatrix);
+    return 1;
 }
 
 namespace ai
@@ -310,9 +317,23 @@ namespace ai
         }
     }
 
-    void DecisionMatrix::SetSaveStackFlag(char const*, char const*)
+    void DecisionMatrix::SetSaveStackFlag(char const* stateName, char const* signalName)
     {
-        throw std::logic_error("Not implemented");
+        auto stateNum = GetStateNum(stateName);
+        if (stateNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(stateName);
+            return;
+        }
+
+        auto signalNum = GetSignalNum(signalName);
+        if (signalNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(signalName);
+            return;
+        }
+
+        m_Elements[stateNum + signalNum * m_numStates].m_flags &= ~1;
     }
 
     void DecisionMatrix::SetSaveStackFlag(int, int)
@@ -452,19 +473,43 @@ namespace ai
         }
     }
 
-    void DecisionMatrix::SetExitState(char const*)
+    void DecisionMatrix::SetExitState(char const* stateName)
     {
-        throw std::logic_error("Not implemented");
+        auto stateNum = GetStateNum(stateName);
+        if (stateNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(stateName);
+            return;
+        }
+
+        m_ExitStateNum = stateNum;
     }
 
-    void DecisionMatrix::AddSublevel(unsigned, DecisionMatrix*)
+    void DecisionMatrix::AddSublevel(unsigned stateID, DecisionMatrix* pSubDM)
     {
-        throw std::logic_error("Not implemented");
+        if (stateID != 0xFFFF)
+        {
+            delete m_States[stateID].m_pChildDecisionMatrix;
+            m_States[stateID].m_pChildDecisionMatrix = pSubDM;
+        }
     }
 
-    void DecisionMatrix::AddSublevel(char const*, m3d::Object*)
+    void DecisionMatrix::AddSublevel(char const* stateName, m3d::Object* pSubDM)
     {
-        throw std::logic_error("Not implemented");
+        auto stateNum = GetStateNum(stateName);
+        if (stateNum == 0xFFFF)
+        {
+            _LogUnexpectedToken(stateName);
+            return;
+        }
+
+        if (pSubDM->GetClass() == RT_CLASS_LOCAL(DecisionMatrix))
+        {
+            AddSublevel(stateNum, RT_DYNCAST(pSubDM, DecisionMatrix));
+            return;
+        }
+
+        M3D_LOG_ERR("Error: Unexpected object in AddSublevel");
     }
 
     DecisionMatrixElement const* DecisionMatrix::UnsafeGetDecision(int, int) const

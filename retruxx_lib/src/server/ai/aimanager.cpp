@@ -20,7 +20,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(AIManager, CreateNewDecisionMatrix)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(AIManager, LoadMatrix)
 {
-    throw std::logic_error("Not implemented");
+    auto* aiManager = (ai::AIManager*)context->asObject(0, "AIManager");
+    auto str = context->asString(1);
+    auto mat = aiManager->LoadMatrix(str);
+    context->pushObject(mat);
+    return 1;
 }
 
 namespace ai
