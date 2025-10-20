@@ -120,9 +120,28 @@ namespace m3d
 		throw std::logic_error("Not implemented");
 	}
 
-	float LuaContext::asFloat(int)
+	float LuaContext::asFloat(int i)
 	{
-		throw std::logic_error("Not implemented");
+		if (i < 0)
+		{
+			lua_pushstring(this->L, "not enough arguments");
+			lua_error(this->L);
+		}
+		auto v3 = i + this->m_stackStart;
+		auto v4 = lua_type(this->L, v3) - 3;
+		L = this->L;
+		if (!v4)
+			return lua_tonumber(L, v3);
+		if (v4 == 1)
+		{
+			auto v7 = lua_tostring(L, v3);
+			return atof(v7);
+		}
+		else
+		{
+			luaL_checktype(L, v3, 3);
+			return 0.0;
+		}
 	}
 
 	AIParam& LuaContext::asAIParam(int i)

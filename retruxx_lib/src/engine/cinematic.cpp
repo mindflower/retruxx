@@ -19,7 +19,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, StartCinematic)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, Play)
 {
-    throw std::logic_error("Not implemented");
+    auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
+    auto time = context->asFloat(1);
+    cinematic->Play(time);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, PlayFromPoint)
@@ -67,12 +70,18 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetAimToID)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetRelativePoints)
 {
-    throw std::logic_error("Not implemented");
+    auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
+    auto val = context->asBool(1);
+    cinematic->SetRelativePoints(val);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetRelativeRotations)
 {
-    throw std::logic_error("Not implemented");
+    auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
+    auto val = context->asBool(1);
+    cinematic->SetRelativeRotations(val);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetBaseToId)
@@ -90,12 +99,18 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetLookTo)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetWaitWhenStop)
 {
-    throw std::logic_error("Not implemented");
+    auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
+    auto value = context->asBool(1);
+    cinematic->SetWaitWhenStop(value);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetLerpFromPreviousItem)
 {
-    throw std::logic_error("Not implemented");
+    auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
+    auto value = context->asBool(1);
+    cinematic->SetLerpFromPreviousItem(value);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetFolder)
@@ -159,7 +174,7 @@ namespace m3d
 
     unsigned CameraPath::size() const
     {
-        throw std::logic_error("Not implemented");
+        return m_cameraPathStates.size();
     }
 
     void CameraPath::GetCameraForTime(float, CVector&, Quaternion&, float&) const
@@ -207,9 +222,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void CameraPath::SetFullTime(float)
+    void CameraPath::SetFullTime(float fullTime)
     {
-        throw std::logic_error("Not implemented");
+        m_fullTime = fullTime;
     }
 
     void CameraPath::InitByStates(std::vector<CameraPathState, std::allocator<CameraPathState>> const&)
@@ -398,9 +413,9 @@ namespace m3d
         return RT_CLASS_LOCAL(Cinematic);
     }
 
-    void Cinematic::SetRelativePoints(bool)
+    void Cinematic::SetRelativePoints(bool value)
     {
-        throw std::logic_error("Not implemented");
+        m_curItem.m_bRelativePoints = value;
     }
 
     void Cinematic::SaveToXml(cmn::XmlFile*, cmn::XmlNode*) const
@@ -514,9 +529,20 @@ namespace m3d
         this->m_curItem.m_flags = flags;
     }
 
-    void Cinematic::PlayFromPoint(float, int)
+    void Cinematic::PlayFromPoint(float playTime, int pointNum)
     {
-        throw std::logic_error("Not implemented");
+        m_curItem.m_cameraPath.SetFullTime(playTime);
+        const auto size = m_curItem.m_cameraPath.size() / 40;
+        if (size >= (pointNum - 1))
+        {
+            m_curItem.m_cameraPath.CalcFlyTimes(pointNum, true);
+            m_curItem.m_playType = CINEMATIC_PLAY_PATH;
+            m_cinematicItems.push_back(m_curItem);
+        }
+        else
+        {
+            m_curItem.m_playType = CINEMATIC_OFF;
+        }
     }
 
     void Cinematic::SetAim(CVector const&)
@@ -539,9 +565,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Cinematic::Play(float)
+    void Cinematic::Play(float playTime)
     {
-        throw std::logic_error("Not implemented");
+        PlayFromPoint(playTime, 1);
     }
 
     Class* Cinematic::GetBaseClass()
@@ -585,14 +611,14 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Cinematic::SetRelativeRotations(bool)
+    void Cinematic::SetRelativeRotations(bool value)
     {
-        throw std::logic_error("Not implemented");
+        m_curItem.m_bRelativeRotations = value;
     }
 
-    void Cinematic::SetWaitWhenStop(bool)
+    void Cinematic::SetWaitWhenStop(bool wait)
     {
-        throw std::logic_error("Not implemented");
+        m_curItem.m_bWaitWhenStop = wait;
     }
 
     void Cinematic::Update(CCamera&, float)
@@ -600,9 +626,9 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void Cinematic::SetLerpFromPreviousItem(bool)
+    void Cinematic::SetLerpFromPreviousItem(bool bLerp)
     {
-        throw std::logic_error("Not implemented");
+        m_curItem.m_bLerpFromPreviousItem = bLerp;
     }
 
     CinematicItem const& Cinematic::GetCurItem() const
@@ -670,9 +696,26 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    bool Cinematic::SetPath(char const*)
+    bool Cinematic::SetPath(char const* pathName)
     {
-        throw std::logic_error("Not implemented");
+        M3D_APP->setZoom(1.0);
+        if (!m_bDebugMode)
+        {
+            m_curItem.m_playType = CINEMATIC_OFF;
+        }
+
+        const auto it = m_paths.find(pathName);
+        if (it == m_paths.end())
+        {
+            m_curItem.m_cameraPath.clear();
+            m_curItem.m_cameraPathName = {};
+            return false;
+        }
+
+        m_curItem.m_cameraPathName = it->first;
+        m_curItem.m_cameraPath = it->second;
+
+        return true;
     }
 
     bool Cinematic::bWaitWhenStop() const
