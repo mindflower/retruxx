@@ -2,10 +2,22 @@
 #include <stdexcept>
 #include <core/ini.h>
 
+#include "core/log.h"
+
 CVector fullColor(255.0, 255.0, 255.0);
 CVector halfColor(128.0, 128.0, 128.0);
 CVector quarterColor(64.0, 64.0, 64.0);
 const CVector m_colorItemsInit[4] = { halfColor, fullColor, halfColor, quarterColor };
+const char* m_colorTypesNames[4] = { "sunrise" , "day" , "sunset", "night" };
+const char* m_colorItemsNames[7] = {
+    "Sky",
+    "Fog",
+    "Ambient",
+    "Diffuse",
+    "Sun",
+    "Plant",
+    "Specular",
+};
 
 namespace m3d
 {
@@ -18,9 +30,12 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void WindInfo::Read(ref_ptr<cmn::XmlNode>)
+    void WindInfo::Read(ref_ptr<cmn::XmlNode> node)
     {
-        throw std::logic_error("Not implemented");
+        m3d::SafeFloatAttrib(m_maxVel, node, "windMaxVel");
+        m3d::SafeFloatAttrib(m_minVel, node, "windMinVel");
+        m3d::SafeFloatAttrib(m_changeVelTime, node, "windChangeVelTime");
+        m3d::SafeFloatAttrib(m_changeDirTime, node, "windChangeDirTime");
     }
 
     WindInfo::WindInfo()
@@ -134,11 +149,83 @@ namespace m3d
 
     int Weather::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
     {
-        // TODO: implement Weather::ReadFromXmlNode
-        return 0;
-        //m_Name = xmlNode->GetAttribute("name");
+        m_Name = xmlNode->GetAttribute("name");
+        for (int i = 0; i < 7; ++i)
+        {
+            CStr effName = m_colorItemsNames[i];
+            ref_ptr effNode = xmlFile->CreateNode();
+            xmlNode->GetFirstChild(effNode, effName.c_str());
+            if (effNode->IsEmpty())
+            {
+                M3D_LOG_ERR("Colorset for " + effName + " not found");
+                continue;
+            }
+            for (int j = 0; j < 4; ++j)
+            {
+                m_colorSets[j][i] = m_colorItemsInit[j];
+                CStr typeName = m_colorTypesNames[j] + CStr("Color");
+                m3d::SafeVectorAttrib(m_colorSets[j][i], effNode, typeName.c_str());
+            }
+        }
 
-        throw std::logic_error("Not implemented");
+        ref_ptr postEffectNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(postEffectNode, "PostEffect");
+        if (!postEffectNode->IsEmpty())
+        {
+            for (int i = 0; i < 4; ++i)
+            {
+                m3d::SafeStrAttrib(m_PostEffectName[i], postEffectNode, m_colorItemsNames[i]);
+            }
+        }
+
+        ref_ptr shadowVisibilityNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(shadowVisibilityNode, "ShadowVisibility");
+        if (!shadowVisibilityNode->IsEmpty())
+        {
+            for (int i = 0; i < 4; ++i)
+            {
+                m_shadowVisibility[i] = true;
+                m3d::SafeBoolAttrib(m_shadowVisibility[i], shadowVisibilityNode, m_colorItemsNames[i]);
+            }
+        }
+
+        ref_ptr shadowTransparencyNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(shadowTransparencyNode, "ShadowTransparency");
+        if (!shadowTransparencyNode->IsEmpty())
+        {
+            for (int i = 0; i < 4; ++i)
+            {
+                m_shadowTransparency[i] = 0.5;
+                m3d::SafeFloatAttrib(m_shadowTransparency[i], shadowTransparencyNode, m_colorItemsNames[i]);
+            }
+        }
+
+        ref_ptr cloudsSpeedNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(cloudsSpeedNode, "cloudsSpeed");
+        if (!cloudsSpeedNode->IsEmpty())
+        {
+            for (int i = 0; i < 4; ++i)
+            {
+                m_cloudsSpeed[i] = 0.1;
+                m3d::SafeFloatAttrib(m_cloudsSpeed[i], cloudsSpeedNode, m_colorItemsNames[i]);
+            }
+        }
+
+        m3d::SafeFloatAttrib(m_weatherSkyDomeFactor, xmlNode, "skyDomeFactor");
+        m3d::SafeFloatAttrib(m_waterSpeed, xmlNode, "waterSpeed");
+        m3d::SafeFloatAttrib(m_waterHeightBig, xmlNode, "waterWaveHBig");
+        m3d::SafeFloatAttrib(m_waterHeightSmall, xmlNode, "waterWaveHSmall");
+        m3d::SafeFloatAttrib(m_waterSizeBig, xmlNode, "waterWaveSizeBig");
+        m3d::SafeFloatAttrib(m_waterSizeSmall, xmlNode, "waterWaveSizeSmall");
+        m3d::SafeFloatAttrib(m_waterCourseAng, xmlNode, "waterCourseAngle");
+        m3d::SafeFloatAttrib(m_waterSpecularM, xmlNode, "waterSpecularM");
+        m3d::SafeFloatAttrib(m_waterSpecularS, xmlNode, "waterSpecularS");
+
+        ref_ptr windInfoNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(windInfoNode, "WindInfo");
+        m_wind.Read(windInfoNode);
+
+        return 1;
     }
 
     float Weather::GetWaterSpecularS() const
@@ -163,12 +250,25 @@ namespace m3d
 
     void Weather::SetUp()
     {
-        throw std::logic_error("Not implemented");
     }
 
-    int Weather::ReadDetailFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int Weather::ReadDetailFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
     {
-        throw std::logic_error("Not implemented");
+        ref_ptr colorTypeNode = file->CreateNode();
+        for (node->GetFirstChild(colorTypeNode, "ColorType"); !colorTypeNode->IsEmpty(); colorTypeNode->GetNextSibling(colorTypeNode, "ColorType"))
+        {
+            CStr name = colorTypeNode->GetAttribute("name");
+            for (int i = 0; i < 4; ++i)
+            {
+                if (name == m_colorTypesNames[i])
+                {
+                    m_lightmapTextureName[i] = colorTypeNode->GetAttribute("LightmapTexture");
+                    m_cloudsTextureName[i] = colorTypeNode->GetAttribute("CloudsTexture");
+                    break;
+                }
+            }
+        }
+        return 1;
     }
 
     WindInfo const& Weather::GetWindInfo() const

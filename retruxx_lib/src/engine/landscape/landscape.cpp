@@ -3000,7 +3000,7 @@ namespace m3d
                 m_owner->UpdateSkyParams();
             }
             ++frame;
-            m_owner->RenderSky(LandRenderMode::LRM_DIRECT);
+            m_owner->RenderSky(LRM_DIRECT);
         }
 
         if ((M3D_KERNEL->GetEngineCfg().m_lgtFlares.GetB()))

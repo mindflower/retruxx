@@ -88,10 +88,7 @@ namespace m3d
 
     unsigned WeatherManager::GetWeatherColor(ColorItems ci) const
     {
-        // TODO: implement WeatherManager::GetWeatherColor
-        return 0;
-        //return (int)this->m_currentWeather->m_currentColors[ci].z | (((int)this->m_currentWeather->m_currentColors[ci].y | (((int)this->m_currentWeather->m_currentColors[ci].x | 0xFFFFFF00) << 8)) << 8);
-        throw std::logic_error("Not implemented");
+        return (int)this->m_currentWeather->m_currentColors[ci].z | (((int)this->m_currentWeather->m_currentColors[ci].y | (((int)this->m_currentWeather->m_currentColors[ci].x | 0xFFFFFF00) << 8)) << 8);
     }
 
     void WeatherManager::ChangeLightmapTexture()
@@ -111,30 +108,34 @@ namespace m3d
 
     int WeatherManager::UpdateDayTime()
     {
-        // TODO: implement WeatherManager::UpdateDayTime
-        return 0;
         throw retruxx::logic_error("Not implemented");
-        return 1;
     }
 
     float WeatherManager::GetFogReduceFactorFromWeather() const
     {
-        // TODO: implement WeatherManager::GetFogReduceFactorFromWeather
-        return 0.0;
-
-        throw retruxx::logic_error("Not implemented");
-        //return m_currentWeather->m_reduceDistFactor;
+        return m_currentWeather->m_reduceDistFactor;
     }
 
-    void WeatherManager::SetActiveWeather(unsigned)
+    void WeatherManager::SetActiveWeather(unsigned cur)
     {
-        throw std::logic_error("Not implemented");
+        if (m_currentWeather)
+            m_currentWeather->TurnOffEffects();
+        if (this->m_bEdit)
+        {
+            this->m_owner->m_isWeatherActual = (m_currentWeather == this->m_weatherStorage[cur]);
+            this->m_currentWeather = this->m_weatherStorage[cur];
+        }
+        else
+        {
+            this->m_owner->m_isWeatherActual = (this->m_currentWeather == this->m_curWeatherStorage[cur]);
+            this->m_currentWeather = this->m_curWeatherStorage[cur];
+        }
+        this->m_currentWeather->SetUp();
     }
 
     int WeatherManager::RenderWeatherParticles()
     {
-        // TODO: implement WeatherManager::RenderWeatherParticles
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
         return 0;
     }
 
@@ -155,14 +156,12 @@ namespace m3d
 
     bool WeatherManager::GetShadowVisibilityFromWeather() const
     {
-        // TODO: implement WeatherManager::GetShadowVisibilityFromWeather
-        //return this->m_currentWeather->m_shadowVisibility[this->m_curDayTime];
-        return false;
+        return this->m_currentWeather->m_shadowVisibility[this->m_curDayTime];
     }
 
     int WeatherManager::UpdateWheatherParticles()
     {
-        // TODO: implement WeatherManager::UpdateWheatherParticles
+        throw std::logic_error("Not implemented");
         //auto idList = ai::theObjects->GetGameTime().GetAsIdList();
         //m_currentWeather->Update(1.0, )
         //throw std::logic_error("Not implemented");
@@ -176,8 +175,6 @@ namespace m3d
 
     int WeatherManager::ReadFromXmlFile(char const* name)
     {
-        // TODO: implement  WeatherManager::ReadFromXmlFile
-        return 0;
         ref_ptr<m3d::cmn::XmlFile> rootXmlFile;
         ref_ptr<m3d::cmn::XmlNode> rootNode;
         {

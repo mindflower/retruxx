@@ -1,15 +1,20 @@
 #include "weather.h"
 #include <stdexcept>
 
+#include "core/ini.h"
+
 namespace m3d
 {
     RT_CLASS_EXPORTS_BEGIN(WeatherFoggy)
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(WeatherFoggy);
 
-    int WeatherFoggy::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int WeatherFoggy::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
     {
-        throw std::logic_error("Not implemented");
+        m3d::Weather::ReadFromXmlNode(file, node);
+        this->m_reduceDistFactor = 0.5;
+        m3d::SafeFloatAttrib(m_reduceDistFactor, node, "reduceDistFactor");
+        return 1;
     }
 
     int WeatherFoggy::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -34,7 +39,7 @@ namespace m3d
 
     Object* WeatherFoggy::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        return new WeatherFoggy;
     }
 
     Object* WeatherFoggy::Clone()
@@ -49,6 +54,5 @@ namespace m3d
 
     WeatherFoggy::WeatherFoggy()
     {
-        throw std::logic_error("Not implemented");
     }
 }
