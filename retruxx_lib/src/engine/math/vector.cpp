@@ -39,14 +39,14 @@ CVector CVector::operator-(const CVector& rhs) const
 
 CVector CVector::operator*(float v) const
 {
-    CVector res;
+    CVector res = *this;
     res *= v;
     return res;
 }
 
 CVector CVector::operator+(const CVector& rhs) const
 {
-    CVector res;
+    CVector res = *this;
     res += rhs;
     return res;
 }

@@ -592,7 +592,7 @@ namespace m3d
                             RenderNodeInfo rni;
                             rni.rnt = RNT_SIMPLE;
                             rni.isCullInverted = flags == SGRF_LOW_DETAIL;
-                            rni.isUseImpostors = 1;
+                            rni.isUseImpostors = true;
                             rni.isPrimaryRender = flags != SGRF_LOW_DETAIL;
                             // TODO: check this
                             server->RenderNodeSet(&m_visSlots[effIdx], m_visNumSlots[clsIdx], rni);

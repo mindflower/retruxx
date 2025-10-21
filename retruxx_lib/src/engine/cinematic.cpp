@@ -291,7 +291,6 @@ namespace m3d
                 ++startIndex;
             }
         }
-
         
 
         // Set fly times for the last two points

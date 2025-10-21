@@ -267,10 +267,6 @@ namespace m3d
         // Profile timing start
         m_profiler->StartCountdown();
 
-        // Get scene graph and setup
-        m3d::SceneGraph* graph = (*nodes)->GetGraph();
-        //m3d::rend::IEffect* contourShader = graph->GetContourShader();
-
         int numMeshes = 0;
         int numMeshesImpostered = 0;
 
@@ -283,51 +279,45 @@ namespace m3d
         // Setup render state for simple rendering
         if (rni.rnt == RNT_SIMPLE)
         {
-            m3d::EngineConfig* engineCfg = &m3d::g_Kernel->GetEngineCfg();
-            m3d::rend::IRenderer* renderer = m3d::Application::g_pApp->m_renderer;
-
-            renderer->SetAlphaTest(engineCfg->m_alphaTestWorld.GetI());
-            renderer->SetBlend(rend::BM_ALPHA, 0);
+            M3D_RENDERER->SetAlphaTest(M3D_ENGINE_CFG.m_alphaTestWorld.GetI());
+            M3D_RENDERER->SetBlend(rend::BM_ALPHA, 0);
 
             // Set culling based on parameter
             if (numNodes)
-                renderer->SetCull(rend::M3DCULL_CW, 0);
+                M3D_RENDERER->SetCull(rend::M3DCULL_CW, 0);
             else
-                renderer->SetCull(rend::M3DCULL_CCW, 0);
+                M3D_RENDERER->SetCull(rend::M3DCULL_CCW, 0);
 
-            renderer->SetZbState(rend::ZB_ENABLE, 0);
-            renderer->SetFog(1, 0);
-            renderer->SetBlend(rend::BM_NONE, 0);
+            M3D_RENDERER->SetZbState(rend::ZB_ENABLE, 0);
+            M3D_RENDERER->SetFog(1, 0);
+            M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
 
             // Disable texture stages
             for (int i = 0; i < 8; i++)
             {
-                renderer->TgDisable(i);
+                M3D_RENDERER->TgDisable(i);
             }
 
             // Wireframe mode if enabled
-            bool wireframe = engineCfg->m_lsWireframe.GetB();
-            if (wireframe)
+            if (M3D_ENGINE_CFG.m_lsWireframe.GetB())
             {
-                renderer->SetFillMode(rend::M3DFILL_WIREFRAME, 0);
+                M3D_RENDERER->SetFillMode(rend::M3DFILL_WIREFRAME, 0);
             }
 
             UpdateGlobalRenderingParams();
         }
 
         // Get view position for distance calculations
-        CVector viewPos = m3d::Application::g_pApp->m_renderer->GetViewOrigin();
+        CVector viewPos = M3D_RENDERER->GetViewOrigin();
         float distSq = 0.0f;
 
         // Get impostor threshold
-        m3d::EngineConfig* engineCfg = &m3d::g_Kernel->GetEngineCfg();
-        float impostorThreshold = engineCfg->m_g_impostorThreshold.GetF();
-
+        float impostorThreshold = M3D_ENGINE_CFG.m_g_impostorThreshold.GetF();
         float impostorDistanceSquared = impostorThreshold * impostorThreshold;
 
         // Arrays for sorting meshes
-        unsigned int meshesShifts[5000];
-        unsigned int meshesShiftsImpostered[5000];
+        unsigned int meshesShifts[5000] = {0};
+        unsigned int meshesShiftsImpostered[5000] = { 0 };
         MeshInfo meshes[5000];
         ImpostoredMeshInfo meshesImpostered[5000];
 
@@ -345,14 +335,14 @@ namespace m3d
                 );
 
             // Determine LOD level based on distance
-            unsigned int lodLevel = 0;
+            unsigned int lodLevel = false;
             if (rni.rnt == RNT_SIMPLE)
             {
-                char useImpostor = 0;
+                bool useImpostor = 0;
                 currentNode->GetProperty(8720u, &useImpostor);
 
                 // Check if should use impostor
-                if (distSq <= impostorDistanceSquared && (!rni.isCullInverted || distSq <= 22500.0f))
+                if (distSq > impostorDistanceSquared || (rni.isCullInverted && distSq > 22500.0f))
                 {
                     if (useImpostor && rni.isUseImpostors)
                     {
@@ -430,7 +420,7 @@ namespace m3d
 
             if (rni.rnt == RNT_SIMPLE)
             {
-                graph->LightSetupLightsForNode(mesh.nodeLookup);
+                nodes[0]->GetGraph()->LightSetupLightsForNode(mesh.nodeLookup);
                 auto shader = mesh.modelLookup->ApplyMaterial(*mesh.material);
                 M3D_RENDERER->MatPush(mesh.nodeLookup->GetCurrentMatrix());
                 RenderMesh(mesh.nodeLookup, *mesh.mesh, shader);
@@ -444,6 +434,7 @@ namespace m3d
 
         if (!rni.rnt && numMeshesImpostered != 0)
         {
+            throw retruxx::logic_error("Not implemented");
             // TODO: implement impostored mesh rendering
         }
 
@@ -1412,32 +1403,27 @@ namespace m3d
 
     void AnimatedModelsServer::UpdateGlobalRenderingParams()
     {
-        const auto getByte = [](unsigned x, unsigned n)
-        {
-            return (*((uint8_t*)&(x)+n));
-        };
+        auto ambientColor = rend::Colorf(pClient->GetWorld().GetWeatherAmbientColor());
+        this->m_colorAmbient.x = ambientColor.r;
+        this->m_colorAmbient.y = ambientColor.g;
+        this->m_colorAmbient.z = ambientColor.b;
 
-        auto ambientColor = pClient->GetWorld().GetWeatherAmbientColor();
-        this->m_colorAmbient.x = (float)getByte(ambientColor, 2) * 0.0039215689;
-        this->m_colorAmbient.y = (float)getByte(ambientColor, 1) * 0.0039215689;
-        this->m_colorAmbient.z = (float)(uint8_t)ambientColor * 0.0039215689;
-
-        auto diffuseColor = pClient->GetWorld().GetWeatherDiffuseColor();
-        this->m_colorDiffuse.x = (float)getByte(diffuseColor, 2) * 0.0039215689;
-        this->m_colorDiffuse.y = (float)getByte(diffuseColor, 1) * 0.0039215689;
-        this->m_colorDiffuse.z = (float)(uint8_t)diffuseColor * 0.0039215689;
+        auto diffuseColor = rend::Colorf(pClient->GetWorld().GetWeatherDiffuseColor());
+        this->m_colorDiffuse.x = diffuseColor.r;
+        this->m_colorDiffuse.y = diffuseColor.g;
+        this->m_colorDiffuse.z = diffuseColor.b;
 
 
-        auto specularColor = pClient->GetWorld().GetWeatherSpecularColor();
-        this->m_colorSpecular.x = (float)getByte(specularColor, 2) * 0.0039215689;
-        this->m_colorSpecular.y = (float)getByte(specularColor, 1) * 0.0039215689;
-        this->m_colorSpecular.z = (float)(uint8_t)specularColor * 0.0039215689;
+        auto specularColor = rend::Colorf(pClient->GetWorld().GetWeatherSpecularColor());
+        this->m_colorSpecular.x = specularColor.r;
+        this->m_colorSpecular.y = specularColor.g;
+        this->m_colorSpecular.z = specularColor.b;
 
 
-        auto plantColor = pClient->GetWorld().GetWeatherPlantColor();
-        this->m_colorPlant.x = (float)getByte(plantColor, 2) * 0.0039215689;
-        this->m_colorPlant.y = (float)getByte(plantColor, 1) * 0.0039215689;
-        this->m_colorPlant.z = (float)(uint8_t)plantColor * 0.0039215689;
+        auto plantColor = rend::Colorf(pClient->GetWorld().GetWeatherPlantColor());
+        this->m_colorPlant.x = plantColor.r;
+        this->m_colorPlant.y = plantColor.g;
+        this->m_colorPlant.z = plantColor.b;
 
         float s, e;
         pClient->GetWorld().GetLandscape().GetFogStartAndEnd(s, e);
