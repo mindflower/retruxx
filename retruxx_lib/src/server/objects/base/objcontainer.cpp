@@ -179,7 +179,43 @@ namespace ai
 
     m3d::AIParam GameTime::asAIParam() const
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        // Extract time components from milliseconds
+        const int64_t totalMilliseconds = m_milliSeconds;
+
+        // Constants for time calculations
+        const int64_t MILLISECONDS_PER_YEAR = 32140800000LL;   // 372 * 24 * 60 * 60 * 1000
+        const int64_t MILLISECONDS_PER_MONTH = 2678400000LL;   // 31 * 24 * 60 * 60 * 1000
+        const int64_t MILLISECONDS_PER_DAY = 86400000LL;
+        const int64_t MILLISECONDS_PER_HOUR = 3600000LL;
+        const int64_t MILLISECONDS_PER_MINUTE = 60000LL;
+
+        // Calculate time components
+        const int year = static_cast<int>(totalMilliseconds / MILLISECONDS_PER_YEAR);
+        const int64_t remainderAfterYears = totalMilliseconds % MILLISECONDS_PER_YEAR;
+
+        const int month = static_cast<int>(remainderAfterYears / MILLISECONDS_PER_MONTH) + 1;
+        const int64_t remainderAfterMonths = remainderAfterYears % MILLISECONDS_PER_MONTH;
+
+        const int day = static_cast<int>(remainderAfterMonths / MILLISECONDS_PER_DAY) + 1;
+        const int64_t remainderAfterDays = remainderAfterMonths % MILLISECONDS_PER_DAY;
+
+        const int hour = static_cast<int>(remainderAfterDays / MILLISECONDS_PER_HOUR);
+        const int64_t remainderAfterHours = remainderAfterDays % MILLISECONDS_PER_HOUR;
+
+        const int minute = static_cast<int>(remainderAfterHours / MILLISECONDS_PER_MINUTE);
+
+        // Create vector with time components in order: hour, minute, day, month, year
+        std::vector<int> timeComponents;
+        timeComponents.reserve(5);
+
+        timeComponents.push_back(hour);
+        timeComponents.push_back(minute);
+        timeComponents.push_back(day);
+        timeComponents.push_back(month);
+        timeComponents.push_back(year);
+
+        return { timeComponents };
     }
 
     float GameTime::GameDiff(ObjContainer const*) const
@@ -634,12 +670,12 @@ namespace ai
 
     GameTime& ObjContainer::getGameTime()
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_GameTime;
     }
 
     m3d::AIParam ObjContainer::GetGameTime() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_GameTime.asAIParam();
     }
 
     void ObjContainer::AddObjToPostCollideList(Obj*)

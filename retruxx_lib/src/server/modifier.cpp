@@ -51,7 +51,7 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void Modifier::ApplyModelNumList(oldstd::vector<int>*) const
+    void Modifier::ApplyModelNumList(retruxx::vector<int>*) const
     {
         throw std::logic_error("Not implemented");
     }

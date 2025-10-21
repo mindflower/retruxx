@@ -13,14 +13,9 @@ bool PostEffectModel::IsInstant() const
     throw std::logic_error("Not implemented");
 }
 
-bool PostEffectModel::FindByName(CStr)
+bool PostEffectModel::FindByName(CStr name)
 {
-    throw std::logic_error("Not implemented");
-}
-
-PostEffectModel::~PostEffectModel()
-{
-    throw std::logic_error("Not implemented");
+    return m_name == name;
 }
 
 CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode const* xmlNode)

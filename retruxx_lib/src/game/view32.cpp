@@ -648,9 +648,9 @@ m3d::TownMusicManager* CMiracle3d::GetTownMusicManager()
     throw std::logic_error("Not implemented");
 }
 
-bool CMiracle3d::AddPostEffect(CStr const&, float)
+bool CMiracle3d::AddPostEffect(CStr const& effectName, float effParam)
 {
-    throw std::logic_error("Not implemented");
+    return this->m_postEffect->AddEffect(effectName, effParam, 0);
 }
 
 int CMiracle3d::HandleCinematic(float dT)

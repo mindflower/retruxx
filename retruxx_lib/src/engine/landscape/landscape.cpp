@@ -3250,9 +3250,25 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Landscape::ReloadLightmapTexture(CStr const&)
+    void Landscape::ReloadLightmapTexture(CStr const& fileName)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (m_texLightmap.IsValid())
+        {
+            M3D_RENDERER->ReleaseTexture(m_texLightmap);
+        }
+
+        m_texLightmap = M3D_RENDERER->AddTexture(fileName, 2);
+        if (!m_texLightmap.IsValid())
+        {
+            m_texLightmap = M3D_RENDERER->AddTexture("data\\grid.dds", 2);
+        }
+
+        M3D_RENDERER->SetTextureParameter(m_texLightmap, rend::TM_WRAP_S, 1);
+        M3D_RENDERER->SetTextureParameter(m_texLightmap, rend::TM_WRAP_T, 1);
+
+        // TODO: check this
+        auto dbgFloat = M3D_ENGINE_CFG.m_dbg_floatVar2.GetF();
+        M3D_RENDERER->SetTextureParameter(m_texLightmap, rend::TM_MIP_LOD_BIAS, dbgFloat);
     }
 
     Object* Landscape::Clone()

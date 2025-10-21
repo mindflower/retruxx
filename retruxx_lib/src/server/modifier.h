@@ -34,7 +34,7 @@ namespace ai
         void Apply(CVector* Property, CVector base) const;
         void Apply(float* Property, float base) const;
         void ApplyModelNum(int* Property, int base) const;
-        void ApplyModelNumList(oldstd::vector<int>* MNL) const;
+        void ApplyModelNumList(retruxx::vector<int>* MNL) const;
         void ApplyEngineID(int* Property, int base) const;
     }; /* size: 0x0038 */
 }

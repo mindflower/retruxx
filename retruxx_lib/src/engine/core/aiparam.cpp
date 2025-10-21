@@ -41,10 +41,10 @@ namespace m3d
     {
     }
 
-    AIParam::AIParam(oldstd::vector<int> const& list) :
+    AIParam::AIParam(retruxx::vector<int> const& list) :
         Type(AIPARAM_ID_LIST)
     {
-        m_NumList = new oldstd::vector<int>(list);
+        m_NumList = new retruxx::vector<int>(list);
     }
 
     AIParam::AIParam(CStr const& str) :
@@ -105,8 +105,12 @@ namespace m3d
         return 0;
     }
 
-    oldstd::vector<int> AIParam::GetAsIdList() const
+    retruxx::vector<int> AIParam::GetAsIdList() const
     {
+        if (Type == AIPARAM_ID_LIST)
+        {
+            return *m_NumList;
+        }
         throw std::logic_error("Not implemented");
     }
 
@@ -209,7 +213,7 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    oldstd::vector<CStr> AIParam::GetAsStringList() const
+    retruxx::vector<CStr> AIParam::GetAsStringList() const
     {
         throw std::logic_error("Not implemented");
     }
@@ -276,7 +280,7 @@ namespace m3d
         return *this;
     }
 
-    AIParam& AIParam::operator=(oldstd::vector<CStr> const&)
+    AIParam& AIParam::operator=(retruxx::vector<CStr> const&)
     {
         throw std::logic_error("Not implemented");
     }
@@ -292,7 +296,7 @@ namespace m3d
         return *this;
     }
 
-    AIParam& AIParam::operator=(oldstd::vector<int> const&)
+    AIParam& AIParam::operator=(retruxx::vector<int> const&)
     {
         throw std::logic_error("Not implemented");
     }
@@ -527,7 +531,7 @@ namespace m3d
                 {
                     break;
                 }
-                m_NumList = new oldstd::vector(*param.m_NumList);
+                m_NumList = new retruxx::vector<int>(*param.m_NumList);
                 break;
             }
             case AIPARAM_STRING_LIST:
@@ -541,7 +545,7 @@ namespace m3d
                 {
                     break;
                 }
-                m_NameList = new oldstd::vector(*param.m_NameList);
+                m_NameList = new retruxx::vector<CStr>(*param.m_NameList);
                 break;
             }
             default:

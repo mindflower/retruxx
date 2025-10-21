@@ -3,6 +3,8 @@
 #include <core/ini.h>
 
 #include "core/log.h"
+#include "core/timer.h"
+#include "math/matrix.h"
 
 CVector fullColor(255.0, 255.0, 255.0);
 CVector halfColor(128.0, 128.0, 128.0);
@@ -67,9 +69,59 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    void WindInfo::CalculateCurWind(float)
+    void WindInfo::CalculateCurWind(float dt)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: check this
+        auto prevVel = this->m_prevValue;
+        auto p_m_curValue = &this->m_curValue;
+        auto y = this->m_curValue.y;
+        auto z = this->m_curValue.z;
+        this->m_prevValue.x = this->m_curValue.x;
+        auto v8 = m_DeltaVelChanged + dt;
+        auto v9 = v8 <= this->m_changeVelTime;
+        this->m_prevValue.y = y;
+        this->m_prevValue.z = z;
+        this->m_DeltaVelChanged = v8;
+        this->m_DeltaDirChanged = m_DeltaDirChanged + dt;
+        if (!v9)
+        {
+            this->m_DeltaVelChanged = v8 - this->m_changeVelTime;
+            auto v10 = rand();
+            auto v11 = p_m_curValue->z;
+            auto v12 = (((this->m_maxVel - this->m_minVel) * (10000 * v10 / 0x8000)) * 0.000099999997) + this->m_minVel;
+            auto dta = 1.0
+                / sqrt(p_m_curValue->x * p_m_curValue->x + p_m_curValue->y * p_m_curValue->y + v11 * v11 + 0.00000011920929);
+            auto v13 = (p_m_curValue->y * dta) * v12;
+            p_m_curValue->x = (dta * p_m_curValue->x) * v12;
+            p_m_curValue->y = v13;
+            p_m_curValue->z = (v11 * dta) * v12;
+        }
+        auto v14 = this->m_DeltaDirChanged;
+        if (v14 > this->m_changeDirTime)
+        {
+            this->m_DeltaDirChanged = v14 - this->m_changeDirTime;
+            auto v15 = rand();
+            auto x = p_m_curValue->x;
+
+            CMatrix rot;
+            rot.zero();
+            auto v17 = (10000 * v15 / 0x8000) * 0.00031415926 - 1.5707964;
+            auto dtb = sin(v17);
+            auto v25 = cos(v17);
+            auto v18 = v25 * p_m_curValue->z;
+            auto v19 = ((p_m_curValue->x * rot._12) + (rot._32 * p_m_curValue->z)) + p_m_curValue->y;
+            auto v20 = p_m_curValue->x * (0.0 - dtb);
+            auto v21 = rot._23 * p_m_curValue->y;
+            p_m_curValue->x = ((x * v25) + (rot._21 * p_m_curValue->y)) + (dtb * p_m_curValue->z);
+            p_m_curValue->y = v19;
+            p_m_curValue->z = (v20 + v21) + v18;
+        }
+        auto v22 = p_m_curValue->z - prevVel.z;
+        auto v23 = p_m_curValue->y - prevVel.y;
+        auto p_m_deltaValue = &this->m_deltaValue;
+        p_m_deltaValue->x = p_m_curValue->x - prevVel.x;
+        p_m_deltaValue->y = v23;
+        p_m_deltaValue->z = v22;
     }
 
     CStr const& Weather::GetWeatherName() const
@@ -117,9 +169,14 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int Weather::UpdateColors(ColorItems, ColorTypes)
+    int Weather::UpdateColors(ColorItems colorItem, ColorTypes curTime)
     {
-        throw std::logic_error("Not implemented");
+        auto v3 = &this->m_colorSets[colorItem][curTime];
+        auto v4 = &this->m_currentColors[colorItem];
+        v4->x = v3->x;
+        v4->y = v3->y;
+        v4->z = v3->z;
+        return 1;
     }
 
     void Weather::SetWeatherName(CStr const&)
@@ -162,9 +219,9 @@ namespace m3d
             }
             for (int j = 0; j < 4; ++j)
             {
-                m_colorSets[j][i] = m_colorItemsInit[j];
+                m_colorSets[i][j] = m_colorItemsInit[j];
                 CStr typeName = m_colorTypesNames[j] + CStr("Color");
-                m3d::SafeVectorAttrib(m_colorSets[j][i], effNode, typeName.c_str());
+                m3d::SafeVectorAttrib(m_colorSets[i][j], effNode, typeName.c_str());
             }
         }
 
@@ -286,9 +343,12 @@ namespace m3d
         throw std::logic_error("Not implemented");
     }
 
-    int Weather::Update(float, int)
+    int Weather::Update(float amount, int)
     {
-        throw std::logic_error("Not implemented");
+        auto dt = M3D_KERNEL->GetTimer().GetLastFrameTime() * 0.001;
+        m_wind.CalculateCurWind(dt);
+        this->m_weatherWeight = amount;
+        return 1;
     }
 
     void Weather::DefaultInitialize()

@@ -252,7 +252,40 @@ namespace m3d
 
     void CWorld::UpdateSun()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: check this
+        auto m_curDayTime = this->m_weatherManager.GetCurrentDayTime();
+        float m_sunRiseAscention = 0.0;
+        if (m_curDayTime == GTP_SUNRISE_TIME)
+        {
+            m_sunRiseAscention = this->m_level->m_sunRiseAscention;
+            this->m_sunAscention = m_sunRiseAscention;
+        }
+        auto v2 = m_curDayTime - 1;
+        if (!v2)
+        {
+            m_sunRiseAscention = this->m_level->m_sunDayAscention;
+            this->m_sunAscention = m_sunRiseAscention;
+        }
+        if (v2 == 1)
+        {
+            m_sunRiseAscention = this->m_level->m_sunSetAscention;
+            this->m_sunAscention = m_sunRiseAscention;
+        }
+
+        auto v4 = this->m_sunAscention * 0.017453292;
+        m_sunAzimuth = this->m_level->m_sunAzimuth;
+        auto v6 = cos(v4);
+        this->m_sunDir.x = cos(m_sunAzimuth * 0.017453292) * v6 * 20000.0;
+        this->m_sunDir.z = sin(this->m_sunAzimuth * 0.017453292) * v6 * 20000.0;
+        this->m_sunDir.y = sin(v4) * 20000.0;
+        auto v7 = sqrt(
+            this->m_sunDir.x * this->m_sunDir.x
+            + this->m_sunDir.y * this->m_sunDir.y
+            + this->m_sunDir.z * this->m_sunDir.z
+            + 0.00000011920929);
+        this->m_sunDir.x = 1.0 / v7 * this->m_sunDir.x;
+        this->m_sunDir.y = 1.0 / v7 * this->m_sunDir.y;
+        this->m_sunDir.z = 1.0 / v7 * this->m_sunDir.z;
     }
 
     void CWorld::ReleasePrefabs()
@@ -582,7 +615,7 @@ namespace m3d
 
     void CWorld::UpdateSkyParams()
     {
-        throw retruxx::logic_error("Not implemented");
+        m_weatherManager.SetupSkyParams();
     }
 
     float CWorld::GetSunAscention() const

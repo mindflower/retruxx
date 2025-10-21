@@ -1,6 +1,6 @@
 #pragma once
 #include "stringm3d.h"
-#include "thirdparty/stl/vector.hpp"
+#include "thirdparty/containers.h"
 
 class CVector;
 class CVector2;
@@ -41,8 +41,8 @@ namespace m3d
             }; /* size: 0x0010 */
             /* 0x0000 */ int id = 0;
             /* 0x0000 */ float Value;
-            /* 0x0000 */ oldstd::vector<CStr>* m_NameList;
-            /* 0x0000 */ oldstd::vector<int>* m_NumList;
+            /* 0x0000 */ retruxx::vector<CStr>* m_NameList;
+            /* 0x0000 */ retruxx::vector<int>* m_NumList;
             /* 0x0000 */ CStr* m_Str;
         }; /* size: 0x0010 */
         /* 0x0010 */ m3d::eAIParamType Type = AIPARAM_UNDEFINE;
@@ -79,7 +79,7 @@ namespace m3d
         AIParam(const CStr& str);
         AIParam();
         AIParam(const m3d::AIParam& PParam);
-        AIParam(const oldstd::vector<int>& List);
+        AIParam(const retruxx::vector<int>& List);
         bool operator>(const m3d::AIParam& with);
         bool operator<(const m3d::AIParam& with);
         bool operator>=(const m3d::AIParam&);
@@ -95,15 +95,15 @@ namespace m3d
         m3d::AIParam& operator=(const unsigned int& PID);
         m3d::AIParam& operator=(const CStr&);
         m3d::AIParam& operator=(const m3d::AIParam& pparam);
-        m3d::AIParam& operator=(const oldstd::vector<CStr>&);
-        m3d::AIParam& operator=(const oldstd::vector<int>&);
+        m3d::AIParam& operator=(const retruxx::vector<CStr>&);
+        m3d::AIParam& operator=(const retruxx::vector<int>&);
         CVector GetAsVector() const;
         Quaternion GetAsQuaternion() const;
         CVector2 GetAsRange() const;
         int GetAsID() const;
         float GetAsFloat() const;
-        oldstd::vector<int> GetAsIdList() const;
-        oldstd::vector<CStr> GetAsStringList() const;
+        retruxx::vector<int> GetAsIdList() const;
+        retruxx::vector<CStr> GetAsStringList() const;
         void SetType(m3d::eAIParamType ParamType);
         m3d::eAIParamType GetType() const;
         CStr ToStr() const;

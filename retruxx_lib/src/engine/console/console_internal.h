@@ -1,7 +1,6 @@
 #pragma once
 #include <core/console/console.h>
 #include <script/scriptserver.h>
-#include <list>
 
 class ConsoleImp :
     public m3d::IConsole,
@@ -136,7 +135,7 @@ public:
     };
 
 private:
-    oldstd::vector<CVarLoadedValue> m_loadedValues;
+    retruxx::vector<CVarLoadedValue> m_loadedValues;
 
 private:
     void RegisterConsoleCommands();

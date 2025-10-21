@@ -1,6 +1,6 @@
 #pragma once
 #include "core/stringm3d.h"
-#include "thirdparty/stl/vector.hpp"
+#include "thirdparty/containers.h"
 
 namespace m3d
 {
@@ -58,14 +58,14 @@ namespace ai
         int _CurrentState1Num();
         int _CurrentMessage2CommandNum();
         int _CurrentMessage1CommandNum();
-        /* 0x0000 */ oldstd::vector<ai::AIPassageState, oldstd::allocator<ai::AIPassageState> > m_StateStack2;
-        /* 0x0010 */ oldstd::vector<ai::AIPassageState, oldstd::allocator<ai::AIPassageState> > m_StateStack1;
+        /* 0x0000 */ retruxx::vector<ai::AIPassageState, retruxx::allocator<ai::AIPassageState> > m_StateStack2;
+        /* 0x0010 */ retruxx::vector<ai::AIPassageState, retruxx::allocator<ai::AIPassageState> > m_StateStack1;
         /* 0x0020 */ ai::DecisionMatrix* m_pDM;
         /* 0x0024 */ bool m_fStateStack2Changed;
         /* 0x0025 */ char Padding_177[3];
-        /* 0x0028 */ oldstd::vector<ai::AIMessage, oldstd::allocator<ai::AIMessage> > m_Messages2;
-        /* 0x0038 */ oldstd::vector<ai::AIMessage, oldstd::allocator<ai::AIMessage> > m_Messages1;
-        /* 0x0048 */ oldstd::vector<ai::AIMessage, oldstd::allocator<ai::AIMessage> > m_Commands;
+        /* 0x0028 */ retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage> > m_Messages2;
+        /* 0x0038 */ retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage> > m_Messages1;
+        /* 0x0048 */ retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage> > m_Commands;
         /* 0x0058 */ int m_numCurCommand;
         /* 0x005c */ bool m_CommandProcessed;
         /* 0x005d */ bool m_CommandStackOpen;

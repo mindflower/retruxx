@@ -3,9 +3,6 @@
 #include <core/console/cvar.h>
 #include <math/vector.h>
 #include <renderer/i_renderer.h>
-#include "thirdparty/stl/vector.hpp"
-#include "thirdparty/stl/map.hpp"
-#include "thirdparty/stl/set.hpp"
 
 namespace ai
 {

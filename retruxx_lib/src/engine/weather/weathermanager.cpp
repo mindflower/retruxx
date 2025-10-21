@@ -11,6 +11,7 @@
 #include "file/fileserver.h"
 #include "file/filestream.h"
 #include "game/m3dgame.h"
+#include "server/server.h"
 
 namespace m3d
 {
@@ -58,7 +59,14 @@ namespace m3d
 
     void WeatherManager::ChangeCloudsTexture()
     {
-        throw std::logic_error("Not implemented");
+        M3D_RENDERER->ReleaseTexture(m_cloudTextureHandle);
+
+        CStr pathToTex = M3D_ENGINE_CFG.m_weather_PathToTextures.GetS();
+        pathToTex += m_currentWeather->m_cloudsTextureName[m_curDayTime];
+
+        m_cloudTextureHandle = M3D_RENDERER->AddTexture(pathToTex, 0);
+        M3D_RENDERER->SetTextureParameter(m_cloudTextureHandle, rend::TM_WRAP_S, 1);
+        M3D_RENDERER->SetTextureParameter(m_cloudTextureHandle, rend::TM_WRAP_T, 1);
     }
 
     float WeatherManager::SetGlobalTimeParam(unsigned, float)
@@ -78,7 +86,7 @@ namespace m3d
 
     GlobalTimeParams WeatherManager::GetCurrentDayTime() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_curDayTime;
     }
 
     Weather const* WeatherManager::GetActiveWeather() const
@@ -93,7 +101,8 @@ namespace m3d
 
     void WeatherManager::ChangeLightmapTexture()
     {
-        throw std::logic_error("Not implemented");
+        auto path = m_owner->m_level->GetFullPathNameA(m_currentWeather->m_lightmapTextureName[m_curDayTime]);
+        m_owner->GetLandscape().ReloadLightmapTexture(path);
     }
 
     float WeatherManager::GetGlobalTimeParam(unsigned) const
@@ -108,7 +117,55 @@ namespace m3d
 
     int WeatherManager::UpdateDayTime()
     {
-        throw retruxx::logic_error("Not implemented");
+        if (m_weatherStorage.empty())
+            return 0;
+
+        auto gameTime = ai::theObjects->GetGameTime().GetAsIdList();
+        auto secs = gameTime[2] + 60 * gameTime[1] + 3600 * gameTime[0];
+        m_currentWeather->Update(1.0, secs);
+
+        auto oldDayTime = this->m_curDayTime;
+        if (secs < this->m_globalTimeParams[0] || this->m_globalTimeParams[1] <= secs)
+        {
+            if (secs < this->m_globalTimeParams[1] || this->m_globalTimeParams[2] <= secs)
+            {
+                if (secs < this->m_globalTimeParams[2] || this->m_globalTimeParams[3] <= secs)
+                    this->m_curDayTime = GTP_NIGHT_TIME;
+                else
+                    this->m_curDayTime = GTP_SUNSET_TIME;
+            }
+            else
+            {
+                this->m_curDayTime = GTP_DAY_TIME;
+            }
+        }
+        else
+        {
+            this->m_curDayTime = GTP_SUNRISE_TIME;
+        }
+
+        for (int i = CI_SKY; i < CI_NUM_COLORITEMS; ++i)
+            this->m_currentWeather->UpdateColors((ColorItems)i, (ColorTypes)this->m_curDayTime);
+
+        m_owner->UpdateSun();
+        ai::UpdateLights();
+
+        if (this->m_curDayTime != oldDayTime)
+            this->m_owner->m_isWeatherActual = 0;
+
+        if (!this->m_owner->m_isWeatherActual)
+        {
+            m3d::WeatherManager::ChangeLightmapTexture();
+            m3d::WeatherManager::ChangeCloudsTexture();
+        }
+        if (!this->m_bEdit)
+        {
+        
+            M3D_APP->ReloadPostEffects();
+            M3D_APP->AddPostEffect(this->m_currentWeather->m_PostEffectName[this->m_curDayTime], 0.0);
+        }
+
+        return 1;
     }
 
     float WeatherManager::GetFogReduceFactorFromWeather() const

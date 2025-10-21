@@ -68,7 +68,7 @@ namespace m3d
         virtual m3d::Class* GetClass() const override /* 0x34 */;
         static m3d::Class m_classWeather;
         CStr m_Name;
-        /* 0x0040 */ CVector m_colorSets[4][7];
+        /* 0x0040 */ CVector m_colorSets[7][4];
         /* 0x0190 */ CVector m_currentColors[7];
         /* 0x01e4 */ bool m_shadowVisibility[4];
         /* 0x01e8 */ float m_shadowTransparency[4];

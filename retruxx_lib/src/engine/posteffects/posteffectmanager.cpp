@@ -7,6 +7,8 @@
 #include <posteffects/posteffectmanager.h>
 #include <posteffects/posteffectmodel.h>
 
+#include "posteffects/posteffect.h"
+
 char const* PostEffectManager::GetCallbackName() const
 {
     return nullptr;
@@ -216,11 +218,16 @@ bool PostEffectManager::SetParam(CStr const&, float)
 void PostEffectManager::Render(bool)
 {
     // TODO: implement PostEffectManager::Render
-    //throw retruxx::logic_error("Not implemented");
+    throw retruxx::logic_error("Not implemented");
 }
 
-bool PostEffectManager::AddEffect(CStr const&, float, unsigned)
+bool PostEffectManager::AddEffect(CStr const& effName, float, unsigned)
 {
+    auto it = m_sequence.find(effName);
+    if (it == m_sequence.end())
+    {
+        return false;
+    }
     throw std::logic_error("Not implemented");
 }
 
@@ -231,7 +238,79 @@ bool PostEffectManager::KillEffect(CStr const&)
 
 void PostEffectManager::Destroy()
 {
-    throw std::logic_error("Not implemented");
+    for (auto& effect : m_effectList)
+    {
+        delete effect;
+    }
+
+    for (auto& model : m_models)
+    {
+        delete model;
+    }
+    m_models.clear();
+    m_sequence.clear();
+    m_unregList.clear();
+    m_effectList.clear();
+
+    m_varList.clear();
+    M3D_RENDERER->ReleaseTexture(this->g_tex1);
+    M3D_RENDERER->ReleaseTexture(this->g_tex2);
+    M3D_RENDERER->ReleaseTexture(this->g_filmTex1);
+    M3D_RENDERER->ReleaseTexture(this->g_filmShift);
+    M3D_RENDERER->ReleaseTexture(this->g_filmScrach1);
+
+    if (g_DownsampleVs)
+    {
+        g_DownsampleVs->Release();
+        g_DownsampleVs = nullptr;
+    }
+
+    if (g_DownsamplePs)
+    {
+        g_DownsamplePs->Release();
+        this->g_DownsamplePs = 0;
+    }
+    if (g_BlurVs)
+    {
+        g_BlurVs->Release();
+        this->g_BlurVs = 0;
+    }
+    if (g_BlurPs)
+    {
+        g_BlurPs->Release();
+        this->g_BlurPs = 0;
+    }
+    if (g_FinalCompVs)
+    {
+        g_FinalCompVs->Release();
+        this->g_FinalCompVs = 0;
+    }
+    if (g_FinalCompPsAsm)
+    {
+        g_FinalCompPsAsm->Release();
+        this->g_FinalCompPsAsm = 0;
+    }
+    if (g_BlackNWhiteVs)
+    {
+        g_BlackNWhiteVs->Release();
+        this->g_BlackNWhiteVs = 0;
+    }
+    if (g_BlackNWhitePs)
+    {
+        g_BlackNWhitePs->Release();
+        this->g_BlackNWhitePs = 0;
+    }
+    if (g_FilmPsAsm)
+    {
+        g_FilmPsAsm->Release();
+        this->g_FilmPsAsm = 0;
+    }
+    if (g_FilmVs)
+    {
+        g_FilmVs->Release();
+        this->g_FilmVs = 0;
+    }
+    M3D_RENDERER->UnregisterResetCallback(this);
 }
 
 void PostEffectManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -254,12 +333,12 @@ void PostEffectManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNod
         {
             CStr tmpName;
             m3d::SafeStrAttrib(tmpName, tmp, "Name");
-            auto itor = std::find_if(cbegin(m_models), cend(m_models), [&tmpName](auto const* model)
+            auto it = std::find_if(begin(m_models), end(m_models), [&tmpName](PostEffectModel* model)
             {
-                return model->m_name == tmpName;
+                return model->FindByName(tmpName);
             });
-            M3D_ASSERT(itor != cend(m_models));
-            sequence.m_list.push_back(*itor);
+            M3D_ASSERT(it != end(m_models));
+            sequence.m_list.push_back(*it);
         }
         sequence.m_inUse = false;
         CStr tmpName;
