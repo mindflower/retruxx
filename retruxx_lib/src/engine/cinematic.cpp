@@ -254,7 +254,7 @@ namespace m3d
 
     bool CameraPath::empty() const
     {
-        throw std::logic_error("Not implemented");
+        return m_cameraPathStates.size();
     }
 
     void CameraPath::CalcFlyTimes(unsigned pointNum, bool recalcFullLength)
@@ -273,36 +273,32 @@ namespace m3d
             return;
 
         // Reset fly times for the specified number of points
-        for (int i = 0; i < pointNum && i < states.size(); ++i)
-        {
-            states[i].m_flyTime = 0.0f;
-        }
-
-        // Handle different cases based on point count
         if (pointNum < 4)
         {
-            // For small point counts, just set all times to 0
-            // (already done in the loop above)
-            return;
+            for (int i = 0; i < pointNum && i < states.size(); ++i)
+            {
+                states[i].m_flyTime = 0.0f;
+            }
+        }
+        else
+        {
+            // For larger point counts, distribute times evenly
+            // Set fly times for intermediate points using linear interpolation
+            int startIndex = pointNum;
+            for (unsigned int i = 0; startIndex < (states.size() - 2); ++i)
+            {
+                states[startIndex].m_flyTime = (i * this->m_fullTime) / (states.size() - pointNum - 2);
+                ++startIndex;
+            }
         }
 
-        // For larger point counts, distribute times evenly
-        // Set fly times for intermediate points using linear interpolation
-        int startIndex = pointNum;
-        for (unsigned int i = 0; startIndex < (states.size() - 2); ++i)
-        {
-            states[startIndex].m_flyTime = (i * this->m_fullTime) / (states.size() - pointNum - 2);
-            ++startIndex;
-        }
+        
 
         // Set fly times for the last two points
-        if (!states.empty())
+        states.back().m_flyTime = this->m_fullTime;
+        if (states.size() >= 2)
         {
-            states.back().m_flyTime = this->m_fullTime;
-            if (states.size() >= 2)
-            {
-                states[states.size() - 2].m_flyTime = this->m_fullTime;
-            }
+            states[states.size() - 2].m_flyTime = this->m_fullTime;
         }
 
         // Validate minimum state count
@@ -861,11 +857,11 @@ namespace m3d
         if (this->m_curItem.m_playType == CINEMATIC_PLAY_PATH)
         {
             // Get camera position and rotation from camera path
-            CVector cameraPosition;
-            Quaternion cameraRotation;
-            float lookAtPoint;
+            CVector cameraPosition{0.0, 0.0, 0.0};
+            Quaternion cameraRotation{ 0.0, 0.0, 0.0, 1.0 };
+            float zoom = M3D_APP->getZoom();
 
-            m_curItem.m_cameraPath.GetCameraForTime(this->m_curTime,cameraPosition, cameraRotation, lookAtPoint);
+            m_curItem.m_cameraPath.GetCameraForTime(this->m_curTime,cameraPosition, cameraRotation, zoom);
 
             // Store current camera state for interpolation
             CVector currentCamPos = cam.m_worldOrigin;
@@ -952,36 +948,8 @@ namespace m3d
         }
         else if (this->m_curItem.m_playType == CINEMATIC_FLY_AROUND)
         {
-            // Spherical camera movement around a point
-            float timeRatio = this->m_curTime / this->m_curItem.m_cameraPath.GetFullTime();
 
-            // Interpolate spherical coordinates
-            float phi = lerp(this->m_curItem.m_startPhi, this->m_curItem.m_finalPhi, timeRatio);
-            float theta = lerp(this->m_curItem.m_startTheta, this->m_curItem.m_finalTheta, timeRatio);
-            float radius = lerp(this->m_curItem.m_startRadius, this->m_curItem.m_finalRadius, timeRatio);
-
-            // Get the point to look at
-            CVector lookAtPoint = m3d::Cinematic::_GetPointToLookAt();
-
-            // Calculate camera position in spherical coordinates
-            float cosTheta = cos(theta);
-            float sinTheta = sin(theta);
-            float cosPhi = cos(phi);
-            float sinPhi = sin(phi);
-
-            cam.m_worldOrigin.x = lookAtPoint.x + radius * cosPhi * cosTheta;
-            cam.m_worldOrigin.z = lookAtPoint.z + radius * cosPhi * sinTheta;
-            cam.m_worldOrigin.y = lookAtPoint.y + radius * sinPhi;
-
-            // Ensure camera doesn't go below landscape
-            float landscapeHeight = m3d::pClient->GetWorld().GetLandscape().GetLsHeight(cam.m_worldOrigin.x, cam.m_worldOrigin.z) + 3.0f;
-            if (landscapeHeight > cam.m_worldOrigin.y)
-            {
-                cam.m_worldOrigin.y = landscapeHeight;
-            }
-
-            // Make camera look at the target point
-            cam.lookAt(lookAtPoint);
+            throw std::logic_error("Not implemented");
         }
 
         // Handle cinematic completion

@@ -56,9 +56,9 @@ namespace m3d
         ai::gDynamicScene->RenderDebugInfo();
     }
 
-    int CWorld::RenderSky(Landscape::LandRenderMode)
+    int CWorld::RenderSky(Landscape::LandRenderMode rendMode)
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_weatherManager.RenderWeather(rendMode);
     }
 
     void CWorld::New(CCamera&, int, float)

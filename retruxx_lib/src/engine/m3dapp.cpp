@@ -2520,9 +2520,9 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    void Application::SetFrameClearColor(unsigned)
+    void Application::SetFrameClearColor(unsigned color)
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_frameClearColor = color;
     }
 
     int Application::DrawTextAbs(float, float, unsigned, CStr const&, unsigned, int)

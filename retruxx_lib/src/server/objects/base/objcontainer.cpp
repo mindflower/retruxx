@@ -250,7 +250,7 @@ namespace ai
     void GameTime::setExpanded(int hour, int minute, int day, int month, int year)
     {
         //TODO: check this
-        __int64 res = 60000 * (minute + 60 * (hour + 24 * (day + 31 * (month + 12 * year) - 32)));
+        uint64_t res = (uint64_t)60000 * (uint64_t)(minute + 60 * (uint64_t)(hour + 24 * (uint64_t)(day + 31 * (uint64_t)(month + 12 * year) - 32)));
         m_milliSeconds = res;
         m_milliSeconds0 = res;
     }

@@ -142,7 +142,10 @@ Quaternion Quaternion::getConjugated() const
 
 void Quaternion::Zero()
 {
-    throw std::logic_error("Not implemented");
+    this->x = 0.0;
+    this->y = 0.0;
+    this->z = 0.0;
+    this->w = 0.0;
 }
 
 Quaternion Quaternion::getInversed() const

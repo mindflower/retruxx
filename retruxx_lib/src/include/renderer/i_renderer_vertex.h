@@ -90,6 +90,24 @@ namespace m3d
 
         static_assert(sizeof(VertexXYZWCT1) == 0x001c);
 
+        struct VertexXYZCT2
+        {
+            void xyz(const CVector&);
+            void xyz(float, float, float);
+            void uv0(float, float);
+            void uv1(float, float);
+            /* 0x0000 */ float x;
+            /* 0x0004 */ float y;
+            /* 0x0008 */ float z;
+            /* 0x000c */ unsigned int c;
+            /* 0x0010 */ float tu0;
+            /* 0x0014 */ float tv0;
+            /* 0x0018 */ float tu1;
+            /* 0x001c */ float tv1;
+        }; /* size: 0x0020 */
+
+        static_assert(sizeof(VertexXYZCT2) == 0x0020);
+
         struct VertexXYZC
         {
             float x;

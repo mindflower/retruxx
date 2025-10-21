@@ -761,7 +761,13 @@ void CMiracle3d::ChangeLanguage()
 
 float CMiracle3d::getZoom()
 {
-    throw std::logic_error("Not implemented");
+    if (!this->zoomInited)
+    {
+        this->m_Fov0 = m_fov.GetF();
+        this->zoomInited = 1;
+    }
+
+    return m_fov.GetF() / this->m_Fov0;
 }
 
 int CMiracle3d::CinematicClear()

@@ -411,7 +411,7 @@ namespace m3d
 
     int Weather::Render()
     {
-        throw std::logic_error("Not implemented");
+        return 1;
     }
 
     float Weather::GetShadowTransparency(unsigned) const
