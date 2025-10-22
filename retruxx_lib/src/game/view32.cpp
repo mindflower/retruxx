@@ -1904,287 +1904,100 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
             return 1;
         }
 
-        // Calculate FOV
-        float fovValue = m_fov.GetF();
-
-        // Get viewport dimensions
-        m3d::rend::Viewport viewport = M3D_RENDERER->GetViewport();
-        float viewportWidth = static_cast<float>(viewport.m_width);
-        float viewportHeight = static_cast<float>(viewport.m_height);
-        float aspectRatio = viewportWidth / viewportHeight;
-
-        // Calculate FOV based on aspect ratio
-        if (aspectRatio > 1.0f)
+        const auto fov = m_fov.GetF();
+        const auto viewport = M3D_RENDERER->GetViewport();
+        if (viewport.m_width <= viewport.m_height)
         {
-            m_curCamera.m_fovX = fovValue * aspectRatio;
-            m_curCamera.m_fovY = fovValue;
+            m_curCamera.m_fovX = fov;
+            m_curCamera.m_fovY = (viewport.m_width / viewport.m_height) * fov;
         }
         else
         {
-            m_curCamera.m_fovX = fovValue;
-            m_curCamera.m_fovY = fovValue / aspectRatio;
+            m_curCamera.m_fovX = (viewport.m_width / viewport.m_height) * fov;
+            m_curCamera.m_fovY = fov;
         }
 
-        // Save original camera state
-        CVector originalPosition = m_curCamera.m_worldOrigin;
-        float originalYaw = m_curCamera.m_rotYaw;
-        float originalPitch = m_curCamera.m_rotPitch;
-        float originalRoll = m_curCamera.m_rotRoll;
+        const auto oldWorldOrigin = m_curCamera.m_worldOrigin;
 
-        // Create rotation matrix from original angles
         CMatrix rotationMatrix;
-        rotationMatrix.rotYPR(originalYaw, originalPitch, originalRoll);
+        rotationMatrix.rotYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
 
-        // Apply camera shaking rotation
-        float shakingRoll = m_cameraController->GetShakingRolling();
-        float sinRoll = sin(shakingRoll);
-        float cosRoll = cos(shakingRoll);
+        CMatrix addRotZ;
+        addRotZ.zero();
 
-        CMatrix shakeRotationMatrix;
-        memset(&shakeRotationMatrix, 0, sizeof(shakeRotationMatrix));
+        const auto shakingRolling = GetCameraController()->GetShakingRolling();
+        const float shakeSin = sin(shakingRolling);
+        const float shakeCos = cos(shakingRolling);
+        addRotZ._11 = (((addRotZ._41 * rotationMatrix._14) + (addRotZ._31 * rotationMatrix._13)) + (rotationMatrix._12 * (0.0 - shakeSin))) + (rotationMatrix._11 * shakeCos);
+        addRotZ._12 = addRotZ._42 * rotationMatrix._14 + addRotZ._32 * rotationMatrix._13 + rotationMatrix._12 * shakeCos + rotationMatrix._11 * shakeSin;
+        addRotZ._13 = (((addRotZ._43 * rotationMatrix._14) + (addRotZ._23 * rotationMatrix._12)) + (addRotZ._13 * rotationMatrix._11)) + rotationMatrix._13;
+        addRotZ._14 = (((addRotZ._34 * rotationMatrix._13) + (addRotZ._24 * rotationMatrix._12)) + (addRotZ._14 * rotationMatrix._11)) + rotationMatrix._14;
+        addRotZ._21 = (((rotationMatrix._24 * addRotZ._41) + (rotationMatrix._23 * addRotZ._31)) + (rotationMatrix._22 * (0.0 - shakeSin))) + (rotationMatrix._21 * shakeCos);
+        addRotZ._22 = rotationMatrix._24 * addRotZ._42 + rotationMatrix._23 * addRotZ._32 + rotationMatrix._22 * shakeCos + rotationMatrix._21 * shakeSin;
+        addRotZ._23 = (((rotationMatrix._24 * addRotZ._43) + (rotationMatrix._22 * addRotZ._23)) + (rotationMatrix._21 * addRotZ._13)) + rotationMatrix._23;
+        addRotZ._24 = (((rotationMatrix._23 * addRotZ._34) + (rotationMatrix._22 * addRotZ._24)) + (rotationMatrix._21 * addRotZ._14)) + rotationMatrix._24;
+        addRotZ._31 = (((addRotZ._41 * rotationMatrix._34) + (addRotZ._31 * rotationMatrix._33)) + ((0.0 - shakeSin) * rotationMatrix._32)) + (shakeCos * rotationMatrix._31);
+        addRotZ._32 = (((addRotZ._42 * rotationMatrix._34) + (addRotZ._32 * rotationMatrix._33)) + (shakeCos * rotationMatrix._32)) + (shakeSin * rotationMatrix._31);
+        addRotZ._33 = (((addRotZ._43 * rotationMatrix._34) + (addRotZ._23 * rotationMatrix._32)) + (addRotZ._13 * rotationMatrix._31)) + rotationMatrix._33;
+        addRotZ._34 = (((addRotZ._24 * rotationMatrix._32) + (addRotZ._14 * rotationMatrix._31)) + (addRotZ._34 * rotationMatrix._33)) + rotationMatrix._34;
+        addRotZ._41 = (((addRotZ._31 * rotationMatrix._43) + ((0.0 - shakeSin) * rotationMatrix._42)) + (shakeCos * rotationMatrix._41)) + (addRotZ._41 * rotationMatrix._44);
+        addRotZ._42 = (((shakeCos * rotationMatrix._42) + (shakeSin * rotationMatrix._41)) + (addRotZ._42 * rotationMatrix._44)) + (addRotZ._32 * rotationMatrix._43);
+        addRotZ._43 = (((addRotZ._43 * rotationMatrix._44) + (addRotZ._23 * rotationMatrix._42)) + (addRotZ._13 * rotationMatrix._41)) + rotationMatrix._43;
+        addRotZ._44 = (((addRotZ._34 * rotationMatrix._43) + (addRotZ._24 * rotationMatrix._42)) + (addRotZ._14 * rotationMatrix._41)) + rotationMatrix._44;
+        addRotZ.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
 
-        // Apply rotation shaking (matrix multiplication)
-        shakeRotationMatrix._11 = rotationMatrix._11 * cosRoll + rotationMatrix._12 * -sinRoll;
-        shakeRotationMatrix._12 = rotationMatrix._11 * sinRoll + rotationMatrix._12 * cosRoll;
-        shakeRotationMatrix._13 = rotationMatrix._13;
-        shakeRotationMatrix._14 = rotationMatrix._14;
+        const auto shakingTranslation = GetCameraController()->GetShakingTranslation();
+        m_curCamera.m_worldOrigin = m_curCamera.m_worldOrigin + shakingTranslation;
 
-        shakeRotationMatrix._21 = rotationMatrix._21 * cosRoll + rotationMatrix._22 * -sinRoll;
-        shakeRotationMatrix._22 = rotationMatrix._21 * sinRoll + rotationMatrix._22 * cosRoll;
-        shakeRotationMatrix._23 = rotationMatrix._23;
-        shakeRotationMatrix._24 = rotationMatrix._24;
 
-        shakeRotationMatrix._31 = rotationMatrix._31 * cosRoll + rotationMatrix._32 * -sinRoll;
-        shakeRotationMatrix._32 = rotationMatrix._31 * sinRoll + rotationMatrix._32 * cosRoll;
-        shakeRotationMatrix._33 = rotationMatrix._33;
-        shakeRotationMatrix._34 = rotationMatrix._34;
-
-        shakeRotationMatrix._41 = rotationMatrix._41 * cosRoll + rotationMatrix._42 * -sinRoll;
-        shakeRotationMatrix._42 = rotationMatrix._41 * sinRoll + rotationMatrix._42 * cosRoll;
-        shakeRotationMatrix._43 = rotationMatrix._43;
-        shakeRotationMatrix._44 = rotationMatrix._44;
-
-        // Extract new rotation angles from shaken matrix
-        shakeRotationMatrix.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
-
-        // Apply translation shaking
-        CVector shakingTranslation = m_cameraController->GetShakingTranslation();
-        m_curCamera.m_worldOrigin.x += shakingTranslation.x;
-        m_curCamera.m_worldOrigin.y += shakingTranslation.y;
-        m_curCamera.m_worldOrigin.z += shakingTranslation.z;
-
-        // Create and set view matrix
         CMatrix viewMatrix;
-        CAffineXForm xForm;
-        xForm.createViewMatrix(viewMatrix);
+        m_curCamera.createViewMatrix(viewMatrix);
         M3D_RENDERER->MatSet(viewMatrix);
+        // TODO: check this
         M3D_RENDERER->SetViewMatrix(viewMatrix);
 
-        // Create and set projection matrix
-        CMatrix projectionMatrix;
-        m_curCamera.createProjectionMatrix(projectionMatrix, 1.0f);
-        M3D_RENDERER->MatSetProj(projectionMatrix);
+        CMatrix projMatrix;
+        m_curCamera.createProjectionMatrix(projMatrix, 1.0);
+        M3D_RENDERER->MatSetProj(projMatrix);
 
-        // Restore original camera position for rendering calculations
-        m_curCamera.m_worldOrigin = originalPosition;
+        // TODO: check this
+        m_curCamera.m_worldOrigin = oldWorldOrigin;
+        rotationMatrix.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
 
-        // CMatrix::getYPR(
-        //(CMatrix*)&carSpeed.m_allocSz,
-        //    & this->m_curCamera.m_rotYaw,
-        //    & this->m_curCamera.m_rotPitch,
-        //    & this->m_curCamera.m_rotRoll);
-
-        // Main rendering logic
         if (m_gameInited)
         {
             if (m_bRenderAsBackground)
             {
                 if (m_bBackgroundTextureIsValid)
                 {
-                    // Draw existing background
                     DrawBackground();
-                    // Background drawing implementation would go here
                 }
-                else {
-                    // Render scene and capture as background
+                else
+                {
                     m3d::pClient->GetWorld().Render();
-                    // Background capture implementation would go here
                     CaptureBackground();
-                    m_bBackgroundTextureIsValid = true;
+                    m_bBackgroundTextureIsValid = 1;
                 }
             }
             else
             {
-                // Normal rendering with anti-aliasing
-                bool antiAliasing = M3D_KERNEL->GetEngineCfg().m_g_antiAliasing.GetB();
-
-                M3D_RENDERER->PushMultiSample(antiAliasing);
+                M3D_RENDERER->PushMultiSample(M3D_ENGINE_CFG.m_g_antiAliasing.GetB());
                 m3d::pClient->GetWorld().Render();
                 M3D_RENDERER->PopMultiSample();
             }
         }
 
-        // Post-processing
-        M3D_RENDERER->SetFog(false, 0);
+        M3D_RENDERER->SetFog(false, false);
         m_postEffect->Render(m_bBackgroundTextureIsValid);
 
-        // Debug information display
-        bool showCameraInfo = M3D_KERNEL->GetEngineCfg().m_camInfo.GetB();
-
-        if (showCameraInfo && m3d::pClient)
+        if (M3D_ENGINE_CFG.m_camInfo.GetB() && m3d::pClient)
         {
-            M3D_RENDERER->PushZbState(m3d::rend::ZbState::ZB_DISABLE);
-
-            // Display camera position   
-            CStr posText = CStr::format_("%0.4f %0.4f %0.4f",
-                m_curCamera.m_worldOrigin.x,
-                m_curCamera.m_worldOrigin.y,
-                m_curCamera.m_worldOrigin.z);
-
-            float textX = 1024.0f - posText.length() * 10.0f;
-            DrawTextRel(textX, 12.0f, 0xFFFF0000, posText, 0, -1);
-
-            // Display vehicle speed if available
-            ai::Vehicle* playerVehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer();
-            if (playerVehicle)
-            {
-                CVector velocity = playerVehicle->GetLinearVelocity();
-                float speedKmh = velocity.length() * 3.6f;
-                CStr speedText(speedKmh);
-                float speedTextX = 1024.0f - speedText.length() * 10.0f;
-                m3d::Application::DrawTextRel(speedTextX, 24.5f, 0xFFFF0000, speedText, 0, -1);
-            }
-
-            // Display camera rotation
-            CStr rotText = CStr::format_("Y=%0.4f P=%0.4f R=%0.4f",
-                m_curCamera.m_rotYaw,
-                m_curCamera.m_rotPitch,
-                m_curCamera.m_rotRoll);
-
-            float rotTextX = 1024.0f - rotText.length() * 10.0f;
-            DrawTextRel(rotTextX, 37.0f, 0xFFFF0000, rotText, 0, -1);
-
-            M3D_RENDERER->PopZbState();
+            throw std::logic_error("Not implemented");
         }
 
-        // AI vehicle statistics display
-        bool showAIVehicleStats = M3D_KERNEL->GetEngineCfg().m_ai_vehicle_stats.GetB();
-
-        if (showAIVehicleStats && m3d::pClient)
+        if (M3D_ENGINE_CFG.m_ai_vehicle_stats.GetB() && m3d::pClient)
         {
-            // Count scene graph nodes (simplified version)
-            int nodeCount = 0;
-            retruxx::vector<m3d::Object*> nodeStack;
-            if (auto* rootNode = m3d::pClient->GetWorld().GetGraph().GetRootNode())
-            {
-                nodeStack.push_back(rootNode);
-            }
-
-            while (!nodeStack.empty())
-            {
-                m3d::Object* currentNode = nodeStack.back();
-                nodeStack.pop_back();
-                nodeCount++;
-
-                // Add children to stack
-                m3d::Object* child = currentNode->GetFirstChild();
-                while (child)
-                {
-                    nodeStack.push_back(child);
-                    child = child->GetNextSibling();
-                }
-            }
-
-            // Count vehicles
-            int vehicleCount = 0;
-            for (const auto& obj : *ai::theObjects)
-            {
-                if (obj->GetClass() == &ai::Vehicle::m_classVehicle)
-                {
-                    ++vehicleCount;
-                }
-            }
-
-            M3D_RENDERER->PushZbState(m3d::rend::ZbState::ZB_DISABLE);
-
-            // Display various statistics
-            float statY = 413.0f;
-            float statX = 800.0f;
-
-            // Game time
-            float gameTime = ai::theObjects->GetGameTimeDiff();
-            auto timeText = CStr(gameTime) + " game time";
-            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, timeText, 0, -1);
-            statY += 13.0f;
-
-            // Geometry count
-            auto geomText = CStr(ai::gGlobalSpace->count) + " geoms in global space";
-            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, geomText, 0, -1);
-            statY += 13.0f;
-
-            // Node count
-            auto nodeText = CStr(nodeCount) + " nodes";
-            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, nodeText.c_str(), 0, -1);
-            statY += 13.0f;
-
-            // Object count
-            auto objText = CStr(ai::theObjects->size()) + (" objects");
-            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, objText.c_str(), 0, -1);
-            statY += 13.0f;
-
-            // Updating objects
-            auto updateText = CStr(ai::theObjects->GetNumUpdatingObjects()) + ("updating objects");
-            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, updateText.c_str(), 0, -1);
-            statY += 13.0f;
-
-            // Vehicle count
-            auto vehicleText = CStr(vehicleCount) + (" vehicles");
-            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, vehicleText.c_str(), 0, -1);
-            statY += 13.0f;
-
-            // Near callbacks
-            int nearCallbacks = ai::gDynamicScene->GetNumNearCallbacksLastFrame();
-            auto callbackText = CStr(nearCallbacks) + (" near callbacks");
-            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, callbackText.c_str(), 0, -1);
-            statY += 13.0f;
-
-            // Removals
-            auto removalText = CStr(ai::theObjects->GetNumRemovalsLastFrame()) + (" removals");
-            m3d::Application::DrawTextRel(statX, statY, 0xFFFF0000, removalText.c_str(), 0, -1);
-
-            // Player vehicle specific info
-            ai::Vehicle* playerVehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer();
-            if (playerVehicle)
-            {
-                float vehicleStatY = 717.0f;
-                float vehicleStatX = 270.0f;
-
-                // Fuel
-                float fuel = playerVehicle->Fuel().value().get();
-                auto fuelText = CStr(fuel) + (" fuel");
-                m3d::Application::DrawTextRel(vehicleStatX, vehicleStatY, 0xFFFF0000, fuelText.c_str(), 0, -1);
-                vehicleStatY += 13.0f;
-
-                // Speed
-                CVector velocity = playerVehicle->GetLinearVelocity();
-                float speedKmh = velocity.length() * 3.6f;
-                auto speedText = CStr(speedKmh) + (" km/h");
-                m3d::Application::DrawTextRel(vehicleStatX, vehicleStatY, 0xFFFF0000, speedText.c_str(), 0, -1);
-                vehicleStatY += 13.0f;
-
-                // RPM
-                float rpm = playerVehicle->GetEngineRpm();
-                auto rpmText = CStr(rpm) + (" rpm");
-                m3d::Application::DrawTextRel(vehicleStatX, vehicleStatY, 0xFFFF0000, rpmText.c_str(), 0, -1);
-                vehicleStatY += 13.0f;
-
-                // Gear
-                int gear = playerVehicle->GetCurrentGear();
-                auto gearText = CStr(gear) + (" gear");
-                m3d::Application::DrawTextRel(vehicleStatX, vehicleStatY, 0xFFFF0000, gearText.c_str(), 0, -1);
-            }
-
-            m3d::Application::g_pApp->m_renderer->PopZbState();
+            throw std::logic_error("Not implemented");
         }
     }
 

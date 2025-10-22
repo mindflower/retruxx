@@ -425,6 +425,8 @@ namespace m3d
                 M3D_RENDERER->MatPush(mesh.nodeLookup->GetCurrentMatrix());
                 RenderMesh(mesh.nodeLookup, *mesh.mesh, shader);
                 M3D_RENDERER->MatPop(1);
+
+                
             }
             else
             {
@@ -434,7 +436,7 @@ namespace m3d
 
         if (!rni.rnt && numMeshesImpostered != 0)
         {
-            throw retruxx::logic_error("Not implemented");
+           // throw retruxx::logic_error("Not implemented");
             // TODO: implement impostored mesh rendering
         }
 
