@@ -197,54 +197,6 @@ namespace m3d
 
     int nextAnims_0[32] = { 0, -1, 2, 3, 0xA, 0xA, 0xA, 0, -1, -1, 0xA, 0xB, -1, 0,  -1, -1 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0, 0 };
 
-    namespace 
-    {
-        class TaggedFileReader
-        {
-        public:
-            TaggedFileReader(m3d::fs::auxTaggedFile& file) : m_file(file)
-            {
-            }
-
-            fs::auxTaggedFile::eError setChunk(unsigned id)
-            {
-                return m_file.getChunkData(id, &m_data);
-            }
-
-            template <class T>
-            T get(const size_t byteCount)
-            {
-                auto res = *static_cast<T*>(m_data);
-                m_data = static_cast<uint8_t*>(m_data) + byteCount;
-                return res;
-            }
-
-            template <class T>
-            T get()
-            {
-                return get<T>(sizeof(T));
-            }
-
-            const char* getStr(const size_t byteCount)
-            {
-                auto res = static_cast<const char*>(m_data);
-                m_data = static_cast<uint8_t*>(m_data) + byteCount;
-                return res;
-            }
-
-            void* getRaw(const size_t byteCount)
-            {
-                auto res = m_data;
-                m_data = static_cast<uint8_t*>(m_data) + byteCount;
-                return res;
-            }
-
-        private:
-            m3d::fs::auxTaggedFile& m_file;
-            void* m_data = nullptr;
-        };
-    }
-
     bool AnimatedModel::LoadGAM(CStr const& fileName, bool bForceNextAnimation)
     {
         // TODO: generated code
@@ -283,7 +235,7 @@ namespace m3d
             return false;
         }
 
-        TaggedFileReader stream(file);
+        fs::TaggedFileReader stream(file);
 
         // Read header chunk (chunk 1)
         stream.setChunk(1u);

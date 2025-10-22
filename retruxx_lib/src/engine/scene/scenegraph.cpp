@@ -850,9 +850,9 @@ namespace m3d
 
     void SceneGraph::EnableVisibleCells(CClipper& frusta, unsigned or)
     {
-        float v5 = m_owner->m_level->GetLandSize() * VISCELL_EDGE_LENGTH_6;
+        float v5 = (float)m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_6;
         //TODO: check this
-        float box[6];
+        float box[6] = {0};
         box[2] = 0.0;
         box[5] = v5;
         box[0] = 0.0;
@@ -1172,13 +1172,15 @@ namespace m3d
         int testResult = frusta.testBBox(tbFullTest, box, ofs);
 
         // Handle fully outside frustum
-        if (testResult == 0) {
+        if (testResult == 0)
+        {
             enableCellsSetRect(box, 0, ~orFlags);
             return;
         }
 
         // Handle fully inside frustum
-        if (testResult == 2) {
+        if (testResult == 2)
+        {
             enableCellsSetRect(box, orFlags, 0xFFFFFFFF);
             return;
         }
@@ -1197,7 +1199,8 @@ namespace m3d
         float depth = box[5] - box[2];
 
         // Check if we should split the box
-        if (width > VISCELL_EDGE_LENGTH || depth > VISCELL_EDGE_LENGTH) {
+        if (width > VISCELL_EDGE_LENGTH && depth > VISCELL_EDGE_LENGTH)
+        {
             // Calculate number of subdivisions
             float xCells = std::ceil((width * 0.5f) / VISCELL_EDGE_LENGTH);
             float zCells = std::ceil((depth * 0.5f) / VISCELL_EDGE_LENGTH);
@@ -1226,7 +1229,8 @@ namespace m3d
             };
 
             // Process each sub-box
-            for (auto& newBox : newBoxes) {
+            for (auto& newBox : newBoxes)
+            {
                 // Clamp to landscape boundaries
                 newBox[3] = std::min(newBox[3], MAX_LAND_SIZE);
                 newBox[5] = std::min(newBox[5], MAX_LAND_SIZE);

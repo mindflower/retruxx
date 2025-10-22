@@ -187,19 +187,23 @@ namespace m3d
             : 20;
 
         // Downgrade shader version if hardware doesn't support it
-        if (m_waterShaderVersion == 20) {
+        if (m_waterShaderVersion == 20)
+        {
             bool allowPS20 = M3D_KERNEL->GetEngineCfg().m_r_allowPS20.GetB();
-            if (!allowPS20 || !M3D_RENDERER->IsFeatureSupported(m3d::rend::DeviceFeature::FEATURE_PS_2_0)) {
+            if (!allowPS20 || !M3D_RENDERER->IsFeatureSupported(m3d::rend::DeviceFeature::FEATURE_PS_2_0))
+            {
                 m_waterShaderVersion = 14;
             }
         }
 
-        if (m_waterShaderVersion == 14 && !M3D_RENDERER->IsFeatureSupported(m3d::rend::DeviceFeature::FEATURE_PS_1_4)) {
+        if (m_waterShaderVersion == 14 && !M3D_RENDERER->IsFeatureSupported(m3d::rend::DeviceFeature::FEATURE_PS_1_4))
+        {
             m_waterShaderVersion = 11;
         }
 
         // Load appropriate shaders based on version
-        if (m_waterShaderVersion == 11) {
+        if (m_waterShaderVersion == 11)
+        {
             // PS1.1 shaders
             waterPs = M3D_RENDERER->NewAsmShader("data/shaders/waterTest_ps11.asm", m3d::rend::IAsmShader::Type::PIXEL_SHADER);
             m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps11.vs", "WaterVS", m3d::rend::IHlslShader::VS_1_1);
@@ -209,14 +213,17 @@ namespace m3d
             M3D_RENDERER->SetTextureParameter(m_waveBumpTex, m3d::rend::TexParam::TM_WRAP_S, 3);
             M3D_RENDERER->SetTextureParameter(m_waveBumpTex, m3d::rend::TexParam::TM_WRAP_T, 1);
         }
-        else {
+        else
+        {
             // PS1.4 or PS2.0 shaders
-            if (m_waterShaderVersion == 14) {
+            if (m_waterShaderVersion == 14)
+            {
                 // PS1.4 shaders
                 waterPs = M3D_RENDERER->NewAsmShader("data/shaders/waterTest_ps14.asm", m3d::rend::IAsmShader::Type::PIXEL_SHADER);
                 m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps11.vs", "WaterVS", m3d::rend::IHlslShader::VS_1_1);
             }
-            else {
+            else
+            {
                 if (m_solidDeepVs)
                 {
                     m_solidDeepVs->Release();
@@ -292,6 +299,7 @@ namespace m3d
         m_matScale._41 = offset;
         m_matScale._42 = offset;
         m_matScale._43 = 1.0f;
+        m_matScale._44 = 1.0f;
     }
 
     void Landscape::SetAllTexturesLoading(bool)
@@ -416,324 +424,137 @@ namespace m3d
 
     void Landscape::DrawSolidLandscape(LandRenderMode landMode, int lod)
     {
-        // TODO: generated code
-        m3d::rend::IRenderer* renderer = m3d::Application::g_pApp->m_renderer;
+        M3D_RENDERER->SetAlphaTest(0);
 
-        // Setup basic rendering states
-        renderer->SetAlphaTest(0);
+        const auto fogColor = m_owner->GetWeatherFogColor();
+        M3D_RENDERER->SetFogColor(fogColor, false);
+        M3D_RENDERER->PushFog(M3D_ENGINE_CFG.m_r_enableFog.GetB());
 
-        // Set fog color from weather
-        unsigned int weatherFogColor = m_owner->GetWeatherFogColor();
-        renderer->SetFogColor(weatherFogColor, 0);
-
-        // Check if fog is enabled
-        bool fogEnabled = M3D_ENGINE_CFG.m_r_enableFog.GetB();
-        renderer->PushFog(fogEnabled);
-
-        // Get fog parameters
-        float fogStart, fogEnd;
+        float fogStart = 0.0;
+        float fogEnd = 0.0;
         GetFogStartAndEnd(fogStart, fogEnd);
 
-        float fogReduceFactor = m_owner->m_weatherManager.GetFogReduceFactorFromWeather();
+        const auto fogReduceFactor = m_owner->GetWeatherManager().GetFogReduceFactorFromWeather();
 
-        // Calculate fog terms for shader
-        float fogTerm[4];
-        fogTerm[0] = fogReduceFactor * fogEnd;  // fog end
-        fogTerm[1] = 1.0f / ((fogReduceFactor * fogEnd) - (fogReduceFactor * fogStart)); // 1/(end-start)
-        fogTerm[2] = fogReduceFactor * fogStart; // fog start
-        fogTerm[3] = m_owner->m_level->waterlevel;
+        float vsFloat[4] = { 0 };
+        vsFloat[0] = fogReduceFactor * fogEnd;
+        vsFloat[1] = 1.0 / ((fogReduceFactor * fogEnd) - (fogReduceFactor * fogStart));
+        vsFloat[2] = fogReduceFactor * fogStart;
+        vsFloat[3] = m_owner->m_level->waterlevel;
+        M3D_RENDERER->SetVsFloatConst(4u, vsFloat , 1u);
 
+        auto projMat = M3D_RENDERER->MatGetProj();
+        auto mat = M3D_RENDERER->MatGet();
 
-        // Set fog constants in vertex shader
-        renderer->SetVsFloatConst(4, fogTerm, 1);
-
-        int landSize = m_owner->m_level->land_size;
-        float textureScale = 1.0f / (16 * landSize);
-        //fogTerm.x = textureScale;
-
-        // Get projection matrix
-        CMatrix projMatrixMat = renderer->MatGetProj();
-        const float* projMatrix = &projMatrixMat._11;
-
-        // Get view matrix
-        const CMatrix* viewMatrix = &renderer->MatGet();
-
-        // Calculate view-projection matrix: viewProj = view * projection
         CMatrix du;
+        auto v14 = projMat._42 * mat._14;
+        du._11 = (((mat._13 * projMat._31) + (projMat._21 * mat._12)) + (mat._11 * projMat._11))
+            + (mat._14 * projMat._41);
+        auto v15 = (((projMat._22 * mat._12) + v14) + (mat._11 * projMat._12)) + (projMat._32 * mat._13);
+        auto v16 = projMat._13;
+        du._12 = v15;
+        auto v17 = (((projMat._33 * mat._13) + (v16 * mat._11)) + (projMat._23 * mat._12)) + (mat._14 * projMat._43);
+        auto v18 = mat._14 * projMat._44;
+        du._13 = v17;
+        auto v19 = (((projMat._14 * mat._11) + v18) + (mat._13 * projMat._34)) + (projMat._24 * mat._12);
+        auto v20 = mat._23 * projMat._31;
+        du._14 = v19;
+        auto v21 = (((projMat._11 * mat._21) + v20) + (mat._24 * projMat._41)) + (projMat._21 * mat._22);
+        auto v22 = projMat._22 * mat._22;
+        du._21 = v21;
+        auto v23 = (((mat._23 * projMat._32) + v22) + (mat._24 * projMat._42)) + (mat._21 * projMat._12);
+        auto v24 = mat._24 * projMat._43;
+        du._22 = v23;
+        auto v25 = (((projMat._23 * mat._22) + v24) + (projMat._13 * mat._21)) + (mat._23 * projMat._33);
+        auto v26 = mat._23 * projMat._34;
+        du._23 = v25;
+        auto v27 = (((mat._24 * projMat._44) + v26) + (projMat._24 * mat._22)) + (projMat._14 * mat._21);
+        auto v28 = mat._33 * projMat._31;
+        du._24 = v27;
+        du._31 = (((projMat._11 * mat._31) + v28) + (projMat._21 * mat._32)) + (mat._34 * projMat._41);
+        auto v29 = projMat._13 * mat._31;
+        du._32 = (((mat._34 * projMat._42) + (mat._33 * projMat._32)) + (projMat._22 * mat._32))
+            + (mat._31 * projMat._12);
+        auto v30 = (((projMat._23 * mat._32) + v29) + (mat._34 * projMat._43)) + (mat._33 * projMat._33);
+        auto v31 = mat._33 * projMat._34;
+        du._33 = v30;
+        auto v32 = (((mat._34 * projMat._44) + v31) + (projMat._24 * mat._32)) + (projMat._14 * mat._31);
+        auto v33 = mat._43 * projMat._31;
+        du._34 = v32;
+        auto v34 = (((projMat._11 * mat._41) + v33) + (projMat._21 * mat._42)) + (mat._44 * projMat._41);
+        auto v35 = mat._43 * projMat._32;
+        du._41 = v34;
+        auto v36 = (((mat._44 * projMat._42) + v35) + (projMat._22 * mat._42)) + (mat._41 * projMat._12);
+        auto v37 = projMat._13 * mat._41;
+        du._42 = v36;
+        auto v38 = (((projMat._23 * mat._42) + v37) + (mat._44 * projMat._43)) + (mat._43 * projMat._33);
+        auto v39 = mat._43 * projMat._34;
+        du._43 = v38;
+        du._44 = (((mat._44 * projMat._44) + v39) + (projMat._24 * mat._42)) + (projMat._14 * mat._41);
 
-        // Row 1
-        du._11 = (viewMatrix->_11 * projMatrix[0]) + (viewMatrix->_12 * projMatrix[4]) +
-            (viewMatrix->_13 * projMatrix[8]) + (viewMatrix->_14 * projMatrix[12]);
-        du._12 = (viewMatrix->_11 * projMatrix[1]) + (viewMatrix->_12 * projMatrix[5]) +
-            (viewMatrix->_13 * projMatrix[9]) + (viewMatrix->_14 * projMatrix[13]);
-        du._13 = (viewMatrix->_11 * projMatrix[2]) + (viewMatrix->_12 * projMatrix[6]) +
-            (viewMatrix->_13 * projMatrix[10]) + (viewMatrix->_14 * projMatrix[14]);
-        du._14 = (viewMatrix->_11 * projMatrix[3]) + (viewMatrix->_12 * projMatrix[7]) +
-            (viewMatrix->_13 * projMatrix[11]) + (viewMatrix->_14 * projMatrix[15]);
-
-        // Row 2
-        du._21 = (viewMatrix->_21 * projMatrix[0]) + (viewMatrix->_22 * projMatrix[4]) +
-            (viewMatrix->_23 * projMatrix[8]) + (viewMatrix->_24 * projMatrix[12]);
-        du._22 = (viewMatrix->_21 * projMatrix[1]) + (viewMatrix->_22 * projMatrix[5]) +
-            (viewMatrix->_23 * projMatrix[9]) + (viewMatrix->_24 * projMatrix[13]);
-        du._23 = (viewMatrix->_21 * projMatrix[2]) + (viewMatrix->_22 * projMatrix[6]) +
-            (viewMatrix->_23 * projMatrix[10]) + (viewMatrix->_24 * projMatrix[14]);
-        du._24 = (viewMatrix->_21 * projMatrix[3]) + (viewMatrix->_22 * projMatrix[7]) +
-            (viewMatrix->_23 * projMatrix[11]) + (viewMatrix->_24 * projMatrix[15]);
-
-        // Row 3
-        du._31 = (viewMatrix->_31 * projMatrix[0]) + (viewMatrix->_32 * projMatrix[4]) +
-            (viewMatrix->_33 * projMatrix[8]) + (viewMatrix->_34 * projMatrix[12]);
-        du._32 = (viewMatrix->_31 * projMatrix[1]) + (viewMatrix->_32 * projMatrix[5]) +
-            (viewMatrix->_33 * projMatrix[9]) + (viewMatrix->_34 * projMatrix[13]);
-        du._33 = (viewMatrix->_31 * projMatrix[2]) + (viewMatrix->_32 * projMatrix[6]) +
-            (viewMatrix->_33 * projMatrix[10]) + (viewMatrix->_34 * projMatrix[14]);
-        du._34 = (viewMatrix->_31 * projMatrix[3]) + (viewMatrix->_32 * projMatrix[7]) +
-            (viewMatrix->_33 * projMatrix[11]) + (viewMatrix->_34 * projMatrix[15]);
-
-        // Row 4
-        du._41 = (viewMatrix->_41 * projMatrix[0]) + (viewMatrix->_42 * projMatrix[4]) +
-            (viewMatrix->_43 * projMatrix[8]) + (viewMatrix->_44 * projMatrix[12]);
-        du._42 = (viewMatrix->_41 * projMatrix[1]) + (viewMatrix->_42 * projMatrix[5]) +
-            (viewMatrix->_43 * projMatrix[9]) + (viewMatrix->_44 * projMatrix[13]);
-        du._43 = (viewMatrix->_41 * projMatrix[2]) + (viewMatrix->_42 * projMatrix[6]) +
-            (viewMatrix->_43 * projMatrix[10]) + (viewMatrix->_44 * projMatrix[14]);
-        du._44 = (viewMatrix->_41 * projMatrix[3]) + (viewMatrix->_42 * projMatrix[7]) +
-            (viewMatrix->_43 * projMatrix[11]) + (viewMatrix->_44 * projMatrix[15]);
-
-        // Copy to viewProjMatrix
-        auto viewProjMatrix = du;
-
-        // Handle different LOD levels
         switch (lod)
         {
         case 0:
         {
-            // LOD 0 - Transition level;
-            float transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-
-            int drawRadius = m_drawRadius;
-            m3d::SceneGraph* sceneGraph = &m_owner->m_sceneGraph;
-            sceneGraph->SortedCellsStartFetching((drawRadius * transitionDivider) + 1, drawRadius + 1);
-
-            // Setup shaders
+            const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
+            m_owner->GetGraph().SortedCellsStartFetching(m_drawRadius * transitionDivider + 1, m_drawRadius + 1);
             m_solidPs->Apply();
             m_solidVs->Apply();
 
-            // Set view-projection matrix in shader
-            int viewProjParam = m_solidVs->GetParamHandleByName("mViewProj");
-            m_solidVs->SetMatrix(viewProjParam, viewProjMatrix);
+            int projMatrixHandle = m_solidVs->GetParamHandleByName("mViewProj");
+            m_solidVs->SetMatrix(projMatrixHandle, du);
 
-            // Set lightmap texture
-            m3d::rend::TexHandle lightmapTex = GetLightmapTexture();
-            renderer->SetTexture(0, lightmapTex, -1.0);
+            auto lightmapTexture = GetLightmapTexture();
+            M3D_RENDERER->SetTexture(0, lightmapTexture, -1.0);
             break;
         }
-
-        case 1:
-        {
-            // LOD 1 - Normal level
-            int drawRadius = m_drawRadius;
-            m3d::SceneGraph* sceneGraph = &m_owner->m_sceneGraph;
-            sceneGraph->SortedCellsStartFetching(0 , drawRadius + 1);
-
-            // Setup shaders
-            m_solidPs->Apply();
-            m_solidVs->Apply();
-
-            // Set view-projection matrix in shader
-            int viewProjParam = m_solidVs->GetParamHandleByName("mViewProj");
-            m_solidVs->SetMatrix(viewProjParam, viewProjMatrix);
-
-            // Set lightmap texture
-            m3d::rend::TexHandle lightmapTex = GetLightmapTexture();
-            renderer->SetTexture(0, lightmapTex, -1.0);
-            break;
-        }
-
-        case 2:
-        {
-            // LOD 2 - Deep water level
-            int drawRadius = m_drawRadius;
-            m3d::SceneGraph* sceneGraph = &m_owner->m_sceneGraph;
-            sceneGraph->SortedCellsStartFetching(0, drawRadius + 1);
-
-            // Setup shaders
-            m_solidDeepVs->Apply();
-            m_solidDeepPs->Apply();
-
-            // Set view-projection matrix in shader
-            int viewProjParam = m_solidDeepVs->GetParamHandleByName("mViewProj");
-            m_solidDeepVs->SetMatrix(viewProjParam, viewProjMatrix);
-
-            // Calculate texture matrix: textureMatrix = m_matScale * viewProjMatrix
-            CMatrix textureMatrix;
-
-            // Row 1
-            textureMatrix._11 = (m_matScale._11 * viewProjMatrix._12) + (m_matScale._21 * viewProjMatrix._13) +
-                (m_matScale._31 * viewProjMatrix._14) + (m_matScale._41 * viewProjMatrix._21);
-            textureMatrix._12 = (m_matScale._12 * viewProjMatrix._12) + (m_matScale._22 * viewProjMatrix._13) +
-                (m_matScale._32 * viewProjMatrix._14) + (m_matScale._42 * viewProjMatrix._21);
-            textureMatrix._13 = (m_matScale._13 * viewProjMatrix._12) + (m_matScale._23 * viewProjMatrix._13) +
-                (m_matScale._33 * viewProjMatrix._14) + (m_matScale._43 * viewProjMatrix._21);
-            textureMatrix._14 = (m_matScale._14 * viewProjMatrix._12) + (m_matScale._24 * viewProjMatrix._13) +
-                (m_matScale._34 * viewProjMatrix._14) + (m_matScale._44 * viewProjMatrix._21);
-
-            // Row 2
-            textureMatrix._21 = (m_matScale._11 * viewProjMatrix._22) + (m_matScale._21 * viewProjMatrix._23) +
-                (m_matScale._31 * viewProjMatrix._24) + (m_matScale._41 * viewProjMatrix._31);
-            textureMatrix._22 = (m_matScale._12 * viewProjMatrix._22) + (m_matScale._22 * viewProjMatrix._23) +
-                (m_matScale._32 * viewProjMatrix._24) + (m_matScale._42 * viewProjMatrix._31);
-            textureMatrix._23 = (m_matScale._13 * viewProjMatrix._22) + (m_matScale._23 * viewProjMatrix._23) +
-                (m_matScale._33 * viewProjMatrix._24) + (m_matScale._43 * viewProjMatrix._31);
-            textureMatrix._24 = (m_matScale._14 * viewProjMatrix._22) + (m_matScale._24 * viewProjMatrix._23) +
-                (m_matScale._34 * viewProjMatrix._24) + (m_matScale._44 * viewProjMatrix._31);
-
-            // Row 3
-            textureMatrix._31 = (m_matScale._11 * viewProjMatrix._32) + (m_matScale._21 * viewProjMatrix._33) +
-                (m_matScale._31 * viewProjMatrix._34) + (m_matScale._41 * viewProjMatrix._41);
-            textureMatrix._32 = (m_matScale._12 * viewProjMatrix._32) + (m_matScale._22 * viewProjMatrix._33) +
-                (m_matScale._32 * viewProjMatrix._34) + (m_matScale._42 * viewProjMatrix._41);
-            textureMatrix._33 = (m_matScale._13 * viewProjMatrix._32) + (m_matScale._23 * viewProjMatrix._33) +
-                (m_matScale._33 * viewProjMatrix._34) + (m_matScale._43 * viewProjMatrix._41);
-            textureMatrix._34 = (m_matScale._14 * viewProjMatrix._32) + (m_matScale._24 * viewProjMatrix._33) +
-                (m_matScale._34 * viewProjMatrix._34) + (m_matScale._44 * viewProjMatrix._41);
-
-            // Row 4
-            textureMatrix._41 = (m_matScale._11 * viewProjMatrix._42) + (m_matScale._21 * viewProjMatrix._43) +
-                (m_matScale._31 * viewProjMatrix._44) + (m_matScale._41 * textureMatrix._11);
-            textureMatrix._42 = (m_matScale._12 * viewProjMatrix._42) + (m_matScale._22 * viewProjMatrix._43) +
-                (m_matScale._32 * viewProjMatrix._44) + (m_matScale._42 * textureMatrix._11);
-            textureMatrix._43 = (m_matScale._13 * viewProjMatrix._42) + (m_matScale._23 * viewProjMatrix._43) +
-                (m_matScale._33 * viewProjMatrix._44) + (m_matScale._43 * textureMatrix._11);
-            textureMatrix._44 = (m_matScale._14 * viewProjMatrix._42) + (m_matScale._24 * viewProjMatrix._43) +
-                (m_matScale._34 * viewProjMatrix._44) + (m_matScale._44 * textureMatrix._11);
-
-            // Set texture matrix in shader
-            int textureMatrixParam = m_solidDeepVs->GetParamHandleByName("mTexture");
-            m_solidDeepVs->SetMatrix(textureMatrixParam, textureMatrix);
-
-            // Set view position in shader
-            const CMatrix* currentViewMatrix = &renderer->MatGet();
-            CVector viewPos = currentViewMatrix->getOrgInv();
-
-            int viewPosParam = m_solidDeepVs->GetParamHandleByName("viewPos");
-            m_solidDeepVs->SetVector3(viewPosParam, viewPos);
-
-            // Set water absorption/dye parameters
-            m3d::Level* level = m3d::pClient->GetWorld().m_level;
-            CVector waterDye;
-            waterDye.x = level->m_waterAbsorptionRed;
-            waterDye.y = level->m_waterAbsorptionGreen;
-            waterDye.z = level->m_waterAbsorptionBlue;
-
-            renderer->SetVsFloatConst(15, &waterDye.x, 1);
-
-            // Setup full frame texture for water rendering
-            m3d::rend::TexHandle fullFrameTex = renderer->GetFullFrameFrameBufferTexture();
-            renderer->SetTextureParameter(fullFrameTex, rend::TM_TEX_FILTER, 5);
-            renderer->SetTexture(0, fullFrameTex, -1.0);
-
-            // Disable fog for deep water
-            renderer->SetFog(0, 0);
-            break;
-        }
-
-        case 3:
-        {
-            // LOD 3 - Binding level
-            float transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-            float transitionCFactor = M3D_ENGINE_CFG.m_lsTransitionCFactor.GetF();
-            float viewDistanceDivider = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
-
-            int drawRadius = m_drawRadius;
-            m3d::SceneGraph* sceneGraph = &m_owner->m_sceneGraph;
-            sceneGraph->SortedCellsStartFetching((drawRadius* transitionCFactor) - 1, (drawRadius* transitionDivider) + 1);
-
-            // Setup shaders
-            m_solidBindPs->Apply();
-            m_solidBindVs->Apply();
-
-            // Set view-projection matrix in shader
-            int viewProjParam = m_solidBindVs->GetParamHandleByName("mViewProj");
-            m_solidBindVs->SetMatrix(viewProjParam, viewProjMatrix);
-
-            // Set view position in shader
-            const CMatrix* currentViewMatrix = &renderer->MatGet();
-            CVector viewPos = currentViewMatrix->getOrgInv();
-
-            int viewPosParam = m_solidBindVs->GetParamHandleByName("ViewPos");
-            m_solidBindVs->SetVector3(viewPosParam, viewPos);
-
-            // Calculate and set transition distance
-            float transitionDistance = ((drawRadius * transitionDivider) - (viewDistanceDivider * transitionCFactor)) * 128.0f;
-            fogTerm[0] = transitionDistance;
-            renderer->SetVsFloatConst(7, fogTerm, 1);
-
-            // Set lightmap texture
-            m3d::rend::TexHandle lightmapTex = GetLightmapTexture();
-            renderer->SetTexture(0, lightmapTex, -1.0);
-            break;
-        }
-
         default:
-            break;
+            throw retruxx::logic_error("Not implemented");
         }
 
-        // Setup vertex buffer
-        renderer->SetToStream0(m_solidVb);
+        M3D_RENDERER->SetToStream0(m_solidVb);
 
-        // Render cells
-        unsigned int landTris = 0;
-        unsigned int landDips = 0;
-        int x, y;
-        int vis;
-        int radius;
-
-        while (m_owner->m_sceneGraph.SortedCellsFetch(x, y, vis, radius))
+        // TODO: check this!!!
+        int x = 0;
+        int y = 0;
+        int vis = 0;
+        int radius = 0;
+        int v = 0;
+        int landDips = 0;
+        float sizeinCells = m_owner->m_level->land_size;
+        while (m_owner->GetGraph().SortedCellsFetch(x, y, vis, radius))
         {
-            if (vis != 0)
+            if (vis)
             {
-                // Calculate cell position
-                CVector cellPos;
-                cellPos.x = x * 128.0f;
-                cellPos.y = y * 128.0f;
-                cellPos.z = 8.0;
+                float buff[3] = { 0 };
 
-                // Set cell position in shader
-                renderer->SetVsFloatConst(5, &cellPos.x, 1);
+                buff[0] = x * 128.0;
+                buff[1] = y * 128.0;
+                buff[2] = 8.0 * 128.0;
+                M3D_RENDERER->SetVsFloatConst(5u, buff, 1u);
 
-                // Calculate texture coordinates
-                CVector texCoords;
-                texCoords.x = static_cast<float>(x) / landSize;
-                texCoords.y = static_cast<float>(y) / landSize;
-                texCoords.z = du._44; // Use from earlier calculation
+                buff[0] = x / sizeinCells;
+                buff[1] = y / sizeinCells;
+                buff[2] = du._44;
+                M3D_RENDERER->SetVsFloatConst(6u, buff, 1u);
 
-                renderer->SetVsFloatConst(6, &texCoords.x, 1);
+                v += trisPerCell[lod];
+                ++landDips;
 
-                // Update statistics
-                landTris += trisPerCell[lod];
-                landDips++;
-
-                // Set indices and render
-                int indexOffset = vertsPerCell * (y + landSize * x);
-                renderer->SetIndices(m_solidIb[lod], indexOffset);
-
-                renderer->DrawIndexedPrimitiveShader(
-                    rend::M3DPT_TRIANGLESTRIP,
-                    0,
-                    vertsPerCell,
-                    0,
-                    trisPerCell[lod]);
+                M3D_RENDERER->SetIndices(m_solidIb[lod], vertsPerCell * (y + sizeinCells * x));
+                M3D_RENDERER->DrawIndexedPrimitiveShader(rend::M3DPT_TRIANGLESTRIP,
+                                                  0,
+                                                  this->vertsPerCell,
+                                                  0,
+                                                  this->trisPerCell[lod]);
             }
         }
 
-        // Output statistics
         M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("lanscapeDips = " + CStr(landDips)).c_str());
-        M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("lanscapeTris = " + CStr(landTris)).c_str());
+        M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("lanscapeTris = " + CStr(v)).c_str());
 
-        // Restore fog state
-        renderer->PopFog();
+        M3D_RENDERER->PopFog();
+
     }
 
     void Landscape::RemoveGrassInstance(unsigned)
@@ -1152,8 +973,7 @@ namespace m3d
         {
             // Create new AlphaMask entry
             AlphaMask alphaMask;
-            const char* setName = alphaSetNode->GetAttribute("name");
-            alphaMask.m_name = setName;
+            alphaMask.m_name = alphaSetNode->GetAttribute("name");
 
             // Process mask textures (mask1, mask2, etc.)
             for (int i = 1; i <= 4; i++)
@@ -1180,7 +1000,7 @@ namespace m3d
             }
 
             // Add to AlphaSets and mapping
-            m_AlphaSets.push_back(alphaMask);
+            m_AlphaSets.push_back(std::move(alphaMask));
             m_hashAlphaToLand.add(alphaMask.m_name, m_AlphaSets.size() - 1);
 
             alphaSetNode->GetNextSibling(alphaSetNode, "Set");
@@ -1401,7 +1221,9 @@ namespace m3d
     int Landscape::Load()
     {
         M3D_LOG_FLOW();
+
         m_mapSize = 16 * m_owner->m_level->land_size;
+
         auto const fileName = m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_beachsetsName);
         CStr error;
         ref_ptr xmlFile = ReadXmlFile(fileName.c_str(), &error);
@@ -1456,7 +1278,7 @@ namespace m3d
         m_colormap = new unsigned[(m_mapSize + 1) * (m_mapSize + 1)];
         
         delete[] m_texSetsmap;
-        m_texSetsmap = new retruxx::set<unsigned>[m_owner->m_level->land_size * m_owner->m_level->land_size];
+        m_texSetsmap = new retruxx::set<unsigned>[m_owner->m_level->land_size * m_owner->m_level->land_size + 1];
         
         
         if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
@@ -1470,8 +1292,10 @@ namespace m3d
             {
                 for (int j = 0; j < m_mapSize; ++j)
                 {
-                    m_colormap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
+                    auto idx = j + i * (m_mapSize + 1);
+                    m_colormap[idx] = data[idx];
                 }
+                m_colormap[m_mapSize + i * (m_mapSize + 1)] = m_colormap[m_mapSize + i * (m_mapSize + 1) - 1];
             }
             delete[] data;
         }
@@ -1494,7 +1318,7 @@ namespace m3d
             stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName).c_str(), fs::IStream::OPEN_READ))
         {
             auto const streamSize = stream->GetSize();
-            if (streamSize == 2 * this->m_mapSize * this->m_mapSize) // 16-bit heightfield
+            if (streamSize == 2 * m_mapSize * m_mapSize) // 16-bit heightfield
             {
                 //TODO: check this
                 auto* data = new unsigned short[streamSize];
@@ -1503,13 +1327,11 @@ namespace m3d
                 {
                     for (int j = 0; j < m_mapSize; ++j)
                     {
-                        m_heightMap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize] * 0.12;
+                        auto idx = j + i * (m_mapSize + 1);
+                        m_heightMap[idx] = data[idx] * 0.12;
                     }
-                    m_heightMap[m_mapSize + i * (m_mapSize + 1)] = m_heightMap[(m_mapSize - 1) + i * (m_mapSize + 1)];
+                    m_heightMap[m_mapSize + i * (m_mapSize + 1)] = m_heightMap[m_mapSize + i * (m_mapSize + 1) - 1];
                 }
-                memcpy(&m_heightMap[m_mapSize * (m_mapSize + 1)],
-                    &m_heightMap[(m_mapSize - 1) * (m_mapSize + 1)],
-                    (m_mapSize + 1) * sizeof(float));
                 delete[] data;
             }
             else
@@ -1526,13 +1348,9 @@ namespace m3d
                     // Expand last column
                     m_heightMap[m_mapSize + j * (m_mapSize + 1)] = m_heightMap[(m_mapSize - 1) + j * (m_mapSize + 1)];
                 }
-                // Expand last row
-                memcpy(&m_heightMap[m_mapSize * (m_mapSize + 1)],
-                    &m_heightMap[(m_mapSize - 1) * (m_mapSize + 1)],
-                    (m_mapSize + 1) * sizeof(float));
-
                 delete[] data;
             }
+            stream->Close();
         }
         else
         {
@@ -1540,11 +1358,19 @@ namespace m3d
             return 0;
         }
 
+        memcpy(&m_heightMap[(m_mapSize + 1) * (m_mapSize - 2)], &m_heightMap[(m_mapSize + 1) * (m_mapSize - 3)], 4 * m_mapSize + 4);
+        memcpy((char*)m_heightMap + (m_mapSize + 1) * (4 * m_mapSize - 4), &m_heightMap[(m_mapSize + 1) * (m_mapSize - 2)], 4 * m_mapSize + 4);
+        memcpy(&this->m_heightMap[m_mapSize * (m_mapSize + 1)], (char*)this->m_heightMap + (m_mapSize + 1) * (4 * m_mapSize - 4), 4 * m_mapSize + 4);
+        memcpy(&this->m_colormap[(m_mapSize + 1) * (m_mapSize - 2)], &this->m_colormap[(m_mapSize + 1) * (m_mapSize - 3)], 4 * m_mapSize + 4);
+        memcpy((char*)this->m_colormap + (m_mapSize + 1) * (4 * m_mapSize - 4), &this->m_colormap[(m_mapSize + 1) * (m_mapSize - 2)], 4 * m_mapSize + 4);
+        memcpy(&this->m_colormap[m_mapSize * (m_mapSize + 1)], (char*)this->m_colormap + (m_mapSize + 1) * (4 * m_mapSize - 4), 4 * m_mapSize + 4);
+
         delete[] m_waterMap;
 
-        auto landSize = 4 * this->m_owner->m_level->land_size;
+        const auto landSize = 4 * this->m_owner->m_level->land_size;
+        const auto waterMapSize = landSize * landSize * sizeof(short);
         m_waterMap = new short[landSize * landSize];
-        size_t waterMapSize = landSize * landSize * sizeof(short);
+        memset(m_waterMap, 0, waterMapSize);
 
         // TODO check this!!
         if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
@@ -1558,6 +1384,7 @@ namespace m3d
             }
             else
             {
+                throw retruxx::logic_error("Not implemented");
                 // Process water data with conversion
                 unsigned char* tempData = new unsigned char[waterDataSize];
                 stream->ReadBytes(tempData, waterDataSize);
@@ -1619,22 +1446,22 @@ namespace m3d
 
         // Set draw radius
         float viewDist = M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF();
-        m_drawRadius = (int)(viewDist * 8.0f + 4.0f);
-        m_drawRadius = std::max(4, std::min(m_drawRadius, 12));
+        m_drawRadius = viewDist * 8 + 4;
+        m_drawRadius = std::clamp(m_drawRadius, 4, 12);
 
         // Load shoreline
         startTime = M3D_KERNEL->GetTimer().GetCurTime();
-        //if (!LoadShoreLine(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_shoreLineName)))
-        //{
-        //    GenerateShoreLine();
-        //}
+        if (!LoadShoreLine(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_shoreLineName)))
+        {
+            GenerateShoreLine();
+        }
 
         loadTime = M3D_KERNEL->GetTimer().GetCurTime() - startTime;
         M3D_LOG_INFO(CStr("ShoreLine loaded in: ") + CStr(loadTime));
 
         // Initialize grass
-        //InitGrass();
-        //ReadGrassFromXmlFile(m_owner->m_level->GetFullPathNameA("grass.xml").c_str());
+        InitGrass();
+        ReadGrassFromXmlFile(m_owner->m_level->GetFullPathNameA("grass.xml").c_str());
 
         // Build final landscape
         BuildSolidLandscape();
@@ -1649,8 +1476,7 @@ namespace m3d
 
     void Landscape::RenderGrass(retruxx::deque<retruxx::pair<int, int>> const&)
     {
-        // TODO: implement void Landscape::RenderGrass
-       // throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     int Landscape::GetLsSize() const
@@ -1660,89 +1486,153 @@ namespace m3d
 
     void Landscape::RecalcUV()
     {
-        // TODO: generated code
-        // Initialize variables
-        float* uvAnglePtr = &m_uvForAngles[0][0][1];
-        float* setUVsPtr = &m_setAndUVs.m_sets[0][0].m_uvForAngles[0][0][1];
-        const float half = 0.5f;
-        const float quarter = 0.25f;
-        const float angleStep = 1.5707964f;
-
-        // Process 8 groups (32 angles divided by 4)
-        for (int group = 0; group < 8; ++group)
+        // TODO: check and rafactor this shit!!
+        auto v48 = &this->m_uvForAngles[0][0][1];
+        auto v29 = 0;
+        auto v1 = &this->m_setAndUVs.m_sets[0][0].m_uvForAngles[0][0][1];
+        do
         {
-            // Process 5 mask types
             for (int masknum = 0; masknum < 5; ++masknum)
             {
-                float* currentUVAngle = uvAnglePtr;
-
-                // Process 4 angles per group
-                for (int angleIdx = 0; angleIdx < 4; ++angleIdx)
+                auto v2 = v48;
+                auto i = 0;
+                bool v24 = false;
+                do
                 {
-                    // Calculate rotation angle
-                    float angle = -(angleIdx * angleStep);
-                    float sinAngle = std::sin(angle);
-                    float cosAngle = std::cos(angle);
+                    CMatrix shiftHalf0;
+                    memset(&shiftHalf0, 0, sizeof(shiftHalf0));
+                    auto v3 = -((double)i * 1.5707964);
 
-                    // Create rotation matrix
-                    CMatrix rotationMat;
-                    rotationMat._11 = cosAngle;
-                    rotationMat._12 = -sinAngle;
-                    rotationMat._21 = sinAngle;
-                    rotationMat._22 = cosAngle;
+                    CMatrix shiftHalf1;
+                    CMatrix mat;
+                    memset(&shiftHalf1, 0, sizeof(shiftHalf1));
+                    memset(&mat, 0, sizeof(mat));
 
-                    // Create transformation matrix
-                    CMatrix transformMat;
-                    transformMat._11 = rotationMat._11;
-                    transformMat._12 = rotationMat._12;
-                    transformMat._21 = rotationMat._21;
-                    transformMat._22 = rotationMat._22;
-                    transformMat._41 = -cosAngle * half;
-                    transformMat._42 = -sinAngle * half;
-                    transformMat._43 = -half;
-
-                    // Process 5x5 grid
-                    for (int yy = 0; yy < 5; ++yy)
+                    auto v27 = sin(v3);
+                    auto v26 = cos(v3);
+                    auto v47 = v26;
+                    auto v4 = (float)((float)((float)(mat._41 * shiftHalf0._14) + (float)(mat._31 * shiftHalf0._13))
+                                 + (float)(shiftHalf0._12 * (float)(0.0 - v27)))
+                        + v26;
+                    auto v5 = (float)((float)((float)(mat._43 * shiftHalf0._14) + (float)(mat._23 * shiftHalf0._12)) + mat._13)
+                        + shiftHalf0._13;
+                    auto v36 = shiftHalf0._12 * v26 + mat._42 * shiftHalf0._14 + mat._32 * shiftHalf0._13 + v27;
+                    auto v37 = (float)((float)((float)(mat._34 * shiftHalf0._13) + (float)(mat._24 * shiftHalf0._12)) + mat._14)
+                        + shiftHalf0._14;
+                    auto v6 = (float)((float)((float)(shiftHalf0._21 * v26) + (float)(shiftHalf0._24 * mat._41))
+                                 + (float)(shiftHalf0._23 * mat._31))
+                        + (float)(0.0 - v27);
+                    auto v38 = (float)((float)((float)(shiftHalf0._23 * mat._34) + (float)(shiftHalf0._21 * mat._14)) + shiftHalf0._24)
+                        + mat._24;
+                    auto v39 = (float)((float)((float)(shiftHalf0._32 * v26) + (float)(shiftHalf0._31 * v27))
+                                  + (float)(shiftHalf0._34 * mat._42))
+                        + mat._32;
+                    auto v40 = (float)((float)((float)(shiftHalf0._34 * mat._43) + (float)(shiftHalf0._32 * mat._23))
+                                  + (float)(shiftHalf0._31 * mat._13))
+                        + 1.0;
+                    auto v7 = (float)((float)((float)(shiftHalf0._21 * v27) + (float)(shiftHalf0._24 * mat._42))
+                                 + (float)(shiftHalf0._23 * mat._32))
+                        + v26;
+                    auto v8 = (float)((float)((float)(shiftHalf0._24 * mat._43) + (float)(shiftHalf0._21 * mat._13)) + shiftHalf0._23)
+                        + mat._23;
+                    auto v9 = (float)((float)((float)(shiftHalf0._31 * v26) + (float)(shiftHalf0._34 * mat._41))
+                                 + (float)(shiftHalf0._32 * (float)(0.0 - v27)))
+                        + mat._31;
+                    auto v41 = (float)((float)((float)(shiftHalf0._32 * mat._24) + (float)(shiftHalf0._31 * mat._14)) + shiftHalf0._34)
+                        + mat._34;
+                    auto v33 = v26 * -0.5;
+                    auto v42 = (float)((float)((float)(mat._31 * 0.0) - (float)((float)(0.0 - v27) * 0.5)) + (float)(v26 * -0.5))
+                        + mat._41;
+                    auto v43 = (float)((float)((float)(mat._32 * 0.0) - (float)(v27 * 0.5)) + (float)(v26 * -0.5)) + mat._42;
+                    auto v44 = mat._43 - (float)((float)(mat._23 + mat._13) * 0.5);
+                    auto v35 = v37 * 0.5;
+                    auto v45 = (float)((float)(mat._34 * 0.0) - (float)((float)(mat._24 + mat._14) * 0.5)) + 1.0;
+                    auto v52 = (float)((float)((float)(shiftHalf1._31 * v5) + (float)(shiftHalf1._21 * v36)) + (float)(v37 * 0.5)) + v4;
+                    auto v53 = (float)((float)((float)(shiftHalf1._32 * v5) + (float)(shiftHalf1._12 * v4)) + (float)(v37 * 0.5)) + v36;
+                    auto v54 = (float)((float)((float)(shiftHalf1._23 * v36) + (float)(shiftHalf1._13 * v4)) + (float)(v37 * 0.0)) + v5;
+                    auto v55 = (float)((float)((float)(shiftHalf1._34 * v5) + (float)(shiftHalf1._24 * v36))
+                                  + (float)(shiftHalf1._14 * v4))
+                        + v37;
+                    auto v49 = v38 * 0.5;
+                    auto v56 = (float)((float)((float)(shiftHalf1._31 * v8) + (float)(shiftHalf1._21 * v7)) + (float)(v38 * 0.5)) + v6;
+                    auto v57 = (float)((float)((float)(shiftHalf1._32 * v8) + (float)(shiftHalf1._12 * v6)) + (float)(v38 * 0.5)) + v7;
+                    auto v58 = (float)((float)((float)(shiftHalf1._23 * v7) + (float)(shiftHalf1._13 * v6)) + (float)(v38 * 0.0)) + v8;
+                    auto v34 = v41 * 0.5;
+                    auto v59 = (float)((float)((float)(shiftHalf1._31 * v40) + (float)(shiftHalf1._21 * v39)) + (float)(v41 * 0.5)) + v9;
+                    auto v60 = (float)((float)((float)(shiftHalf1._32 * v40) + (float)(shiftHalf1._12 * v9)) + (float)(v41 * 0.5)) + v39;
+                    auto v61 = (float)((float)((float)(shiftHalf1._23 * v39) + (float)(shiftHalf1._13 * v9)) + (float)(v41 * 0.0)) + v40;
+                    auto v32 = v45 * 0.5;
+                    auto v62 = (float)((float)((float)(shiftHalf1._31 * v44) + (float)(shiftHalf1._21 * v43)) + (float)(v45 * 0.5)) + v42;
+                    auto v63 = (float)((float)((float)(shiftHalf1._32 * v44) + (float)(shiftHalf1._12 * v42)) + (float)(v45 * 0.5)) + v43;
+                    float v64[16];
+                    v64[0] = v52;
+                    v64[1] = v53;
+                    v64[2] = v54;
+                    v64[3] = v55;
+                    v64[4] = v56;
+                    v64[5] = v57;
+                    v64[6] = v58;
+                    v64[8] = v59;
+                    v64[9] = v60;
+                    v64[10] = v61;
+                    v64[12] = v62;
+                    v64[11] = (float)((float)((float)(shiftHalf1._34 * v40) + (float)(shiftHalf1._24 * v39))
+                                      + (float)(shiftHalf1._14 * v9))
+                        + v41;
+                    v64[7] = (float)((float)((float)(shiftHalf1._34 * v8) + (float)(shiftHalf1._24 * v7))
+                                     + (float)(shiftHalf1._14 * v6))
+                        + v38;
+                    auto v10 = 0.5;
+                    v64[13] = v63;
+                    v64[14] = (float)((float)((float)(shiftHalf1._23 * v43) + (float)(shiftHalf1._13 * v42)) + (float)(v45 * 0.0))
+                        + v44;
+                    v64[15] = (float)((float)((float)(shiftHalf1._34 * v44) + (float)(shiftHalf1._24 * v43))
+                                      + (float)(shiftHalf1._14 * v42))
+                        + v45;
+                    memcpy(&mat, v64, sizeof(mat));
+                    auto yy = 0;
+                    auto v11 = mat._31 * 0.0;
+                    auto v12 = mat._32 * 0.0;
+                    auto v13 = v1;
+                    do
                     {
-                        float yPos = yy * quarter;
-                        float xBase = yPos * rotationMat._21 + transformMat._41;
-                        float yBase = yPos * rotationMat._22 + transformMat._42;
-
-                        for (int xx = 0; xx < 5; ++xx)
+                        auto v14 = (float)yy * 0.25;
+                        auto v15 = v14 * mat._21;
+                        auto v16 = v13;
+                        auto v17 = 0;
+                        auto v18 = v2;
+                        v13 += 10;
+                        auto v46 = (float)(v14 * mat._22) + v12;
+                        v2 += 10;
+                        do
                         {
-                            float xPos = xx * quarter;
-
-                            // Calculate transformed coordinates
-                            float u = xPos * rotationMat._11 + xBase;
-                            float v = xPos * rotationMat._12 + yBase;
-
-                            // Store original UV coordinates
-                            *(currentUVAngle - 1) = u;
-                            *currentUVAngle = v;
-
-                            // Calculate and store final UV coordinates
-                            float finalU = (u * 0.125f) * 0.95f;
-                            float finalV = (v * half) * 0.95f;
-
-                            if (masknum != 0)
+                            auto v19 = (float)v17 * 0.25;
+                            auto v20 = (float)((float)(mat._12 * v19) + v46) + mat._42;
+                            auto v21 = (float)((float)((float)(v19 * mat._11) + v11) + mat._41) + v15;
+                            *(v18 - 1) = v21;
+                            *v18 = v20;
+                            auto v22 = (float)(v21 * 0.125) * 0.94999999;
+                            auto v23 = (float)(v20 * v10) * 0.94999999;
+                            if (masknum)
                             {
-                                // Apply mask-specific offsets
-                                finalU += ((group * 4 + masknum) % 8) * 0.125f;
-                                finalV += ((group * 4 + masknum) / 8) * half;
+                                v22 = (float)((float)((v29 + masknum) % 8) * 0.125) + v22;
+                                v10 = 0.5;
+                                v23 = (float)((float)((v29 + masknum) / 8) * 0.5) + v23;
                             }
-
-                            // Store with small offsets
-                            *(setUVsPtr - 1) = finalU + 0.0031250007f;
-                            *setUVsPtr = finalV + 0.012500003f;
-
-                            // Move pointers
-                            currentUVAngle += 2;
-                            setUVsPtr += 2;
-                        }
-                    }
-                }
+                            *(v16 - 1) = v22 + 0.0031250007;
+                            *v16 = v23 + 0.012500003;
+                            ++v17;
+                            v18 += 2;
+                            v16 += 2;
+                        } while (v17 < 5);
+                        ++yy;
+                    } while (yy < 5);
+                    v24 = ++i < 4;
+                    v1 = v13;
+                } while (v24);
             }
-        }
+            v29 += 4;
+        } while (v29 < 32);
     }
 
     void Landscape::UpdateTexturesFilters()
@@ -2224,6 +2114,7 @@ namespace m3d
 
     void Landscape::getMinMaxHeightForBox(float* box, float buldgeY)
     {
+        // TODO: generated code
         constexpr float VISCELL_EDGE_LENGTH = 128.0f;
         const float invCellSize = 1.0f / VISCELL_EDGE_LENGTH;
 
@@ -2234,35 +2125,40 @@ namespace m3d
         const float maxGridZ = box[5] * invCellSize;
 
         const unsigned landSize = m_owner->m_level->land_size;
-        const float minInit = -999999.0f;
-        float& minHeight = box[1];
-        float& maxHeight = box[4];
 
-        minHeight = minInit;
-        maxHeight = minInit;
+        box[1] = 999999.0;
+        box[4] = -999999.0;
 
         // Process all grid cells in bounding box
-        for (unsigned gridX = minGridX; gridX < maxGridX; ++gridX) {
-            for (unsigned gridZ = minGridZ; gridZ < maxGridZ; ++gridZ) {
+        for (unsigned gridX = minGridX; gridX < maxGridX; ++gridX)
+        {
+            for (unsigned gridZ = minGridZ; gridZ < maxGridZ; ++gridZ)
+            {
                 // Skip out-of-bounds cells
                 if (gridX >= landSize || gridZ >= landSize)
                     continue;
 
                 const auto& cell = m_cellParams[gridX + gridZ * landSize];
 
-                // Update min/max with terrain heights
-                minHeight = std::min(minHeight, std::min(cell.m_h0, cell.m_h1));
-                maxHeight = std::max(maxHeight, std::max(cell.m_h0, cell.m_h1));
+                if (box[1] > cell.m_h0)
+                    box[1] = cell.m_h0;
+                if (cell.m_h0 > box[4])
+                    box[4] = cell.m_h0;
+                if (box[1] > cell.m_h1)
+                    box[1] = cell.m_h1;
+                if (cell.m_h1 > box[4])
+                    box[4] = cell.m_h1;
 
                 // Process water cells
-                if (cell.m_iswatercell) {
-                    maxHeight = std::max(maxHeight, cell.m_maxwater);
+                if (cell.m_iswatercell)
+                {
+                    box[4] = std::max(box[4], cell.m_maxwater);
                 }
             }
         }
 
         // Apply final offset to max height
-        maxHeight += VISCELL_EDGE_LENGTH + buldgeY;
+        box[4] += VISCELL_EDGE_LENGTH + buldgeY;
     }
 
     void Landscape::SetGameRenderMode()
@@ -2427,7 +2323,22 @@ namespace m3d
 
     bool Landscape::InitGrass()
     {
-        throw retruxx::logic_error("Not implemented");
+        m_grassVs = M3D_RENDERER->NewHlslShader("data/shaders/grassTest_vs11.vs", "GrassVS", rend::IHlslShader::VS_1_1);
+        if (!m_grassVs->IsValid())
+        {
+            return false;
+        }
+
+        m_grassPs = M3D_RENDERER->NewHlslShader("data/shaders/grassTest_ps11.ps", "GrassPS", rend::IHlslShader::PS_1_1);
+        if (!m_grassPs->IsValid())
+        {
+            return false;
+        }
+
+        m_grassArray = new TileGrass*[0x10000];
+        memset(m_grassArray, 0, 0x10000 * sizeof(TileGrass*));
+
+        return true;
     }
 
     void Landscape::StartWaterQuery()
@@ -2688,7 +2599,8 @@ namespace m3d
 
     void Landscape::ReadGrassFromXmlFile(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement Landscape::ReadGrassFromXmlFile
+        // throw retruxx::logic_error("Not implemented");
     }
 
     bool Landscape::WriteGrassToXmlFile(char const*)
@@ -2833,7 +2745,9 @@ namespace m3d
 
     bool Landscape::LoadShoreLine(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: implement Landscape::LoadShoreLine
+        //throw retruxx::logic_error("Not implemented");
+        return true;
     }
 
     void Landscape::GetFogStartAndEnd(float& s, float& e) const
@@ -2894,100 +2808,87 @@ namespace m3d
 
     void Landscape::CreateHeights(CellParams* dest, int ls, int cellSize)
     {
-        // TODO: generated code
-            // Initialize variables
-        float minHeight = 999999.0f;
-        float maxHeight = -999999.0f;
-        float minWaterHeight = 999999.0f;
-        float maxWaterHeight = -999999.0f;
-
-        // Initialize data structures
-        std::unordered_map<unsigned int, int> heightCounts; // Tracks frequency of water heights
-        std::set<int> usedHeights;                         // Tracks unique water heights
-
-        // Process each cell in the landscape
-        for (int cy = 0; cy < ls; cy++)
+        std::unordered_map<int, int> counterForHeights;
+        std::set<int> usedHeights;
+        float maxCounts = 999999.0;
+        for (int z =0; z < ls; ++z)
         {
-            for (int cx = 0; cx < ls; cx++)
+            for (int x = 0; x < ls; ++x)
             {
-                // Reset min/max for this cell
-                float cellMinHeight = 999999.0f;
-                float cellMaxHeight = -999999.0f;
-                float cellMinWater = 999999.0f;
-                float cellMaxWater = -999999.0f;
+                float v11 = 999999.0f;
+                float z_max = -999999.0f;
+                float z_min = 999999.0f;
+                float wmax = -999999.0f;
+                float wmin = 999999.0f;
 
-                // Process each point within the cell
-                for (int y = 0; y < cellSize; y++)
+                for (int yi = 0; yi < cellSize; ++yi)
                 {
-                    for (int x = 0; x < cellSize; x++)
+                    for (int xi = 0; xi < cellSize; ++xi)
                     {
-                        // Get terrain height
-                        int mapX = cx * cellSize + x;
-                        int mapY = cy * cellSize + y;
-                        float height = m_heightMap[mapX + mapY * (m_mapSize + 1)];
+                        auto idx = (xi + x * cellSize) + (yi + z * cellSize) * (m_mapSize + 1);
+                        auto height = m_heightMap[idx];
 
-                        // Update terrain height bounds
-                        cellMaxHeight = std::max(cellMaxHeight, height + 64.0f);
-                        cellMinHeight = std::min(cellMinHeight, height - 64.0f);
-
-                        // Process water if this is a high-res cell (4x4)
-                        if (cellSize == 4 && m_waterMap[4 * cy * m_owner->m_level->land_size + cx])
+                        if (height > z_max)
                         {
-                            float waterHeight = getWaterHeight(cx, cy);
-
-                            // Track water height frequency
-                            unsigned int quantizedHeight = static_cast<unsigned int>(waterHeight * 8.333334f);
-                            heightCounts[quantizedHeight]++;
-                            usedHeights.insert(quantizedHeight);
-
-                            // Update water height bounds
-                            cellMaxWater = std::max(cellMaxWater, waterHeight);
-                            cellMinWater = std::min(cellMinWater, waterHeight);
-
-                            // Mark as water cell in main params
-                            int mainCellX = cx / 4;
-                            int mainCellY = cy / 4;
-                            m_cellParams[mainCellY * m_owner->m_level->land_size + mainCellX].m_iswatercell = 1;
+                            z_max = height + 64.0f;
                         }
+                        if (z_min > height)
+                        {
+                            z_min = height - 64.0f;
+                        }
+
+                        if (cellSize == 4 && m_waterMap[4 * z * m_owner->m_level->land_size + x])
+                        {
+                            auto waterHeight = getWaterHeight(x, z);
+
+                            int key = (int)(waterHeight * 8.333334);
+                            counterForHeights[key]++;
+                            usedHeights.insert(key);
+
+                            if (waterHeight > wmax)
+                                wmax = waterHeight;
+                            if (wmin > waterHeight)
+                                wmin = waterHeight;
+
+                            auto v6 = z;
+                            auto v9 = x;
+                            auto v5 = v9 / 4 + m_owner->m_level->land_size * (v6 / 4);
+                            m_cellParams[v5].m_iswatercell = true;
+                        }
+
                     }
                 }
+                if (maxCounts > wmin)
+                    maxCounts = wmin;
 
-                // Store cell height bounds
-                dest[cy * ls + cx].m_h0 = cellMinHeight;
-                dest[cy * ls + cx].m_h1 = cellMaxHeight;
+                auto& cellParams = dest[x + z * ls];
+                cellParams.m_h0 = z_min;
+                cellParams.m_h1 = z_max;
 
-                // For high-res cells, store water bounds in main cell params
                 if (cellSize == 4)
                 {
-                    int mainCellX = cx / 4;
-                    int mainCellY = cy / 4;
-                    m_cellParams[mainCellY * m_owner->m_level->land_size + mainCellX].m_minwater = cellMinWater;
-                    m_cellParams[mainCellY * m_owner->m_level->land_size + mainCellX].m_maxwater = cellMaxWater;
+                    auto v21 = wmax;
+                    auto v5 = x / 4 + m_owner->m_level->land_size * (z / 4);
+                    auto v22 = v5;
+                    m_cellParams[v22].m_minwater = v11;
+                    m_cellParams[v22].m_maxwater = v21;
                 }
-
-                // Track global min height
-                minHeight = std::min(minHeight, cellMinHeight);
             }
         }
 
-        // Determine most common water height
-        int mostCommonHeight = 0;
-        int maxCount = 0;
-        for (const auto& entry : heightCounts)
+        auto heightCandidate = 0;
+        auto heightMaxCount = 0;
+        for (auto& height : usedHeights)
         {
-            if (entry.second > maxCount)
+            auto count = counterForHeights[height];
+            if (count > heightMaxCount)
             {
-                maxCount = entry.second;
-                mostCommonHeight = entry.first;
+                heightMaxCount = count;
+                heightCandidate = height;
             }
         }
 
-        // Set global water level based on most common height
-        m_owner->m_level->waterlevel = mostCommonHeight * 0.12f;
-
-        // Clean up
-        heightCounts.clear();
-        usedHeights.clear();
+        m_owner->m_level->waterlevel = heightCandidate * 0.12;
     }
 
     int Landscape::isWaterCell(int, int) const
@@ -3296,12 +3197,12 @@ namespace m3d
 
     int Landscape::LoadTiles(CStr const& filename)
     {
-        // TODO: generated code
+        // TODO: generated code (looks ok)
         // Free existing tiles if any
         FreeTiles();
 
         // Calculate land size and allocate memory for tiles
-        const int landSize = m_owner->m_level->land_size;
+        const int landSize = 4 * m_owner->m_level->land_size;
         const int totalTiles = landSize * landSize;
 
         // Allocate memory for tile info
@@ -3355,7 +3256,7 @@ namespace m3d
         unsigned int fileLandSize = *reinterpret_cast<unsigned int*>(data);
         data += 4;
 
-        if (fileLandSize != static_cast<unsigned int>(landSize * sizeof(int)))
+        if (fileLandSize != landSize)
         {
             M3D_LOG_ERR("Error: Bad tilemap file, landsize = " + CStr(landSize) + ", tilemap size in file = " + CStr(fileLandSize));
             return 0;
@@ -3364,7 +3265,7 @@ namespace m3d
         // Read tile path
         unsigned int pathLength = *reinterpret_cast<unsigned int*>(data);
         data += 4;
-        m_pathTile = CStr(reinterpret_cast<char*>(data), pathLength);
+        m_pathTile = CStr(reinterpret_cast<char*>(data));
         data += pathLength + 1;
 
         // Ensure path ends with backslash
@@ -3379,12 +3280,13 @@ namespace m3d
 
         std::vector<CStr> tileNames;
         tileNames.reserve(tileNameCount);
-
         for (unsigned int i = 0; i < tileNameCount; ++i)
         {
             unsigned int nameLength = *reinterpret_cast<unsigned int*>(data);
             data += 4;
-            tileNames.emplace_back(reinterpret_cast<char*>(data), nameLength);
+
+            CStr tileName(reinterpret_cast<char*>(data));
+            tileNames.push_back(std::move(tileName));
             data += nameLength + 1;
 
             // Add to used textures set
@@ -3445,6 +3347,7 @@ namespace m3d
 
     int CreateIndices(uint16_t* indices, int sizeIndex, int sizeVertex, int step)
     {
+        // looks ok
         const int vertexPlusOne = sizeVertex + 1;
         uint16_t* currentIndex = indices;
         int vertexOffset = 0;
@@ -3452,11 +3355,14 @@ namespace m3d
         const int loopLimit = 64;
         int loopCounter = loopLimit;
 
-        do {
-            if (sizeIndex > 0) {
+        do
+        {
+            if (sizeIndex > 0)
+            {
                 int remainingIndices = sizeIndex;
                 do {
-                    for (int i = 0; i <= sizeIndex; i++) {
+                    for (int i = 0; i <= sizeIndex; i++)
+                    {
                         *currentIndex = stepVertexOffset + vertexOffset;
                         currentIndex[1] = vertexOffset;
 
@@ -3528,12 +3434,14 @@ namespace m3d
         m_dummyVB = new rend::VertexXYZNCT2[1600];
 
         // Reserve space for water cells
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 16; i++)
+        {
             waterCellsToDraw[i].reserve(100);
         }
 
         // Create water queries
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++)
+        {
             m_waterQueries[i] = M3D_RENDERER->NewQuery(rend::IQuery::Type::QUERY_OCCLUSION); // OCCLUSION query type
         }
 
@@ -3546,12 +3454,13 @@ namespace m3d
         m_loadAllTextures = false;
 
         // Register CVar with console
-        M3D_KERNEL->GetEngineCfg().m_console->RegisterCVar(&m_lockVis, false);
+        M3D_KERNEL->GetEngineCfg().m_console->RegisterCVar(&m_lockVis, nullptr);
 
         // Create LOD index buffers
         unsigned int lodFactor = 1;
         m_maxLOD = 0;
 
+        // loop looks ok
         for (int size = 4; size > 0; size >>= 1)
         {
             // Create index buffer for this LOD level
@@ -3581,30 +3490,24 @@ namespace m3d
         m_waterVb = M3D_RENDERER->AddVb(m3d::rend::VertexType::VERTEX_WATERTEST, 81 * m_maxWaterCellPerPass, "Water", 0);
 
         // Initialize water vertices
+        // looks ok
         VertexWaterTest* waterVertices = static_cast<VertexWaterTest*>(M3D_RENDERER->LockVb(m_waterVb, 0, 0, 0));
-
         constexpr uint8_t gridSize = 9;  // Since loops go up to 8 (0-8 inclusive)
-        VertexWaterTest currentVertex;
-
-        for (uint8_t zCoord = 0; zCoord < m_maxWaterCellPerPass; ++zCoord) {
-            currentVertex.z = zCoord;
-            const int packedZ = *reinterpret_cast<int*>(&currentVertex.z);
-
-            for (uint8_t yCoord = 0; yCoord < gridSize; ++yCoord) {
-                currentVertex.y = yCoord;
-
-                for (uint8_t xCoord = 0; xCoord < gridSize; ++xCoord) {
-                    currentVertex.x = xCoord;
-
+        for (uint8_t zCoord = 0; zCoord < m_maxWaterCellPerPass; ++zCoord)
+        {
+            for (uint8_t yCoord = 0; yCoord < gridSize; ++yCoord)
+            {
+                for (uint8_t xCoord = 0; xCoord < gridSize; ++xCoord)
+                {
                     // Copy vertex data
-                    *reinterpret_cast<int*>(&waterVertices->x) = *reinterpret_cast<int*>(&currentVertex.x);
-                    *reinterpret_cast<int*>(&waterVertices->z) = packedZ;
-
+                    waterVertices->x = xCoord;
+                    waterVertices->y = yCoord;
+                    waterVertices->z = zCoord;
+                    waterVertices->w = 0;
                     ++waterVertices;
                 }
             }
         }
-
         M3D_RENDERER->UnlockVb(m_waterVb);
 
         // Allocate water tile info
@@ -3612,6 +3515,8 @@ namespace m3d
 
         // Create water index buffers for 16 LOD levels (4 patterns x 4 levels each)
         // First loop (4 iterations)
+
+        // This loop looks OK
         int i = 0;
         int v46 = 0;
         do
@@ -4065,7 +3970,7 @@ namespace m3d
 
     void Landscape::FreeTiles()
     {
-        // TODO: generated code
+        // TODO: generated code (looks ok)
         // Free tile data array
         delete[] m_tiles;
 
