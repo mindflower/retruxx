@@ -384,7 +384,12 @@ namespace m3d
             m3d::rend::Colorf m_emissive;
             /* 0x0040 */ float m_specularPower;
 
-            void init(const m3d::rend::Colorf& diff);
+            void init(const m3d::rend::Colorf& diff)
+            {
+                memset(this, 0, sizeof(m3d::rend::Material));
+                this->m_diffuse = diff;
+                this->m_ambient = diff;
+            }
         }; /* size: 0x0044 */
 
         class TexHandle : public Handle<TexHandle>

@@ -11,7 +11,10 @@ m3d::rend::Colorf::Colorf(unsigned int clr)
 
 m3d::rend::Colorf::Colorf(float _r, float _g, float _b, float _a)
 {
-    throw retruxx::logic_error("Not implemented");
+    this->r = _r;
+    this->g = _g;
+    this->b = _b;
+    this->a = _a;
 }
 
 m3d::rend::Colorf::Colorf()

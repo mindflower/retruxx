@@ -748,582 +748,137 @@ namespace m3d
 
     void Landscape::DrawLandScapeTextures(VisibilityMode visMode, bool drawMinimap, bool roadMap)
     {
-        // TODO: generated code
-        int landSize = m_owner->m_level->land_size;
-        int gridSize = 4 * landSize;
+        auto& sceneGraph = m_owner->m_sceneGraph;
+        const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
+        sceneGraph.SortedCellsStartFetching(0, m_drawRadius * transitionDivider + 1);
 
-        // Get transition divider from configuration
-        float transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
+        const auto fogReduceFactor = m_owner->m_weatherManager.GetFogReduceFactorFromWeather();
 
-        // Setup scene graph for cell processing
-        m3d::SceneGraph* sceneGraph = &m_owner->m_sceneGraph;
-
-        sceneGraph->SortedCellsStartFetching(0, m_drawRadius * transitionDivider + 1);
-
-        // Setup fog parameters
-        float fogReduceFactor = m_owner->m_weatherManager.GetFogReduceFactorFromWeather();
-        float fogStart, fogEnd;
+        float fogStart = 0.0;
+        float fogEnd = 0.0;
         GetFogStartAndEnd(fogStart, fogEnd);
 
-        fogStart *= fogReduceFactor;
-        fogEnd *= fogReduceFactor;
-
-        m3d::rend::IRenderer* renderer = m3d::Application::g_pApp->m_renderer;
-        renderer->SetFogStart(fogStart, 0);
-        renderer->SetFogEnd(fogEnd, 0);
-
+        M3D_RENDERER->SetFogStart(fogStart, false);
+        M3D_RENDERER->SetFogEnd(fogEnd, false);
+        
         if (drawMinimap)
         {
             throw retruxx::logic_error("Not implemented");
-            /*
-            // Minimap rendering mode
-            if (m_renderMode == RM_EDITOR) {
-                // Process all cells for the minimap
-                for (int x = 0; x < gridSize; x++) {
-                    for (int y = 0; y < gridSize; y++) {
-                        const TileInfo* tileInfo = GetTileInfo(x, y);
-                        if (tileInfo->m_numTexs > 0) {
-                            for (int texIndex = 0; texIndex < tileInfo->m_numTexs; texIndex++) {
-                                int textureId = tileInfo->m_texFlags[texIndex];
-                                m3d::cmn::vector<unsigned int>& cellsList = m_cellsPerTex.m_data[textureId];
-
-                                if (cellsList.m_numItems < cellsList.m_maxItems) {
-                                    unsigned int cellData = x + ((y + ((tileInfo->m_angle + (textureId << 8)) << 8)) << 8);
-                                    cellsList.m_data[cellsList.m_numItems++] = cellData;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Update road objects with current frame
-                unsigned int currentFrame = m3d::g_Kernel->GetTimer(m3d::g_Kernel)->m_curFrame;
-                for (m3d::Object* roadObj = m_owner->m_roadManager.m_roadRoot->m_firstChild;
-                     roadObj;
-                     roadObj = roadObj->m_nextSibling) {
-                    roadObj[5].m_parent = currentFrame;
-                }
-
-                // Setup minimap lighting with full matrix calculations
-                CVector fogTerm;
-                fogTerm.y = 20000.0f;
-                fogTerm.x = 0.0f;
-                fogTerm.z = 0.0f;
-
-                CMatrix worldMatrix;
-                worldMatrix._32 = 0.49803922f;
-                worldMatrix._33 = 0.49803922f;
-                worldMatrix._34 = 0.49803922f;
-                worldMatrix._11 = 2.0f;
-                worldMatrix._42 = -m_owner->m_sunDir.x;
-                worldMatrix._43 = -m_owner->m_sunDir.y;
-                worldMatrix._44 = -m_owner->m_sunDir.z;
-                worldMatrix._41 = 1000.0f;
-
-                unsigned int weatherAmbientColor = m3d::CWorld::GetWeatherAmbientColor(m_owner);
-                unsigned int weatherDiffuseColor = m3d::CWorld::GetWeatherDiffuseColor(m_owner);
-
-                worldMatrix._12 = static_cast<float>((weatherDiffuseColor >> 16) & 0xFF) * 0.0039215689f;
-                worldMatrix._13 = static_cast<float>((weatherDiffuseColor >> 8) & 0xFF) * 0.0039215689f;
-                worldMatrix._14 = static_cast<float>(weatherDiffuseColor & 0xFF) * 0.0039215689f;
-                worldMatrix._21 = static_cast<float>((weatherDiffuseColor >> 24) & 0xFF) * 0.0039215689f;
-
-                worldMatrix._31 = static_cast<float>((weatherAmbientColor >> 16) & 0xFF) * 0.0019607844f;
-                worldMatrix._32 = static_cast<float>((weatherAmbientColor >> 8) & 0xFF) * 0.0019607844f;
-                worldMatrix._33 = static_cast<float>(weatherAmbientColor & 0xFF) * 0.0019607844f;
-                worldMatrix._41 = static_cast<float>((weatherAmbientColor >> 24) & 0xFF) * 0.0019607844f;
-
-                renderer->LightSet(0, &worldMatrix);
-            }
-            */
         }
         else
         {
-            // Normal landscape rendering mode
-            int x, y, cellX, cellY;
-
-            // Process cells from scene graph
-            while (sceneGraph->SortedCellsFetch(x, y, cellX, cellY))
+            int x = 0;
+            int y = 0;
+            int vis = 0;
+            int radius = 0;
+            while (sceneGraph.SortedCellsFetch(x, y, vis, radius))
             {
-                // TODO: check this always 0
-                if (cellX == 0) continue;
-
-                bool isFullyUnderwater = true;
-                bool hasUnderwaterParts = false;
-
-                // Process 4x4 sub-cell grid
-                for (int subCell = 0; subCell < 4; subCell++)
+                if (!x)
                 {
-                    int subY = subCell + 4 * y;
-                    int subX = 4 * x;
+                    continue;
+                }
 
-                    for (int j = 0; j < 4; j++)
+                bool isUnderWater = true;
+                // TODO: check naming
+                bool inWater = false;
+                for (int i = 0; i < 4; ++i)
+                {
+                    for (int j = 0; j < 4; ++j)
                     {
-                        int cellIndex = subX + 4 * subY * landSize;
-
-                        // Check water status
-                        if (m_waterMap[cellIndex])
+                        auto actX = 4 * x;
+                        auto actZ = i + 4 * y;
+                        auto idx = actX + 4 * actZ * m_owner->m_level->land_size;
+                        if (m_waterMap[idx])
                         {
-                            const CellParams& cellParams = m_drawedCellParams[cellIndex];
-                            float waterHeight = getWaterHeight(subX, subY);
-
-                            if (cellParams.m_h1 > waterHeight)
-                            {
-                                isFullyUnderwater = false;
-                            }
-                            if (waterHeight > cellParams.m_h0)
-                            {
-                                hasUnderwaterParts = true;
-                            }
+                            auto height = getWaterHeight(actX, actZ);
+                            if (m_drawedCellParams[idx].m_h1 > height)
+                                isUnderWater = false;
+                            if (height > m_drawedCellParams[idx].m_h0)
+                                inWater = 1;
                         }
                         else
                         {
-                            isFullyUnderwater = false;
+                            isUnderWater = false;
                         }
-
-                        // In editor mode, collect texture usage data
-                        if (m_renderMode == RM_EDITOR)
+                        if (m3d::Landscape::m_renderMode == RM_EDITOR)
                         {
                             throw retruxx::logic_error("Not implemented");
-                            /*
-                            const TileInfo* tileInfo = GetTileInfo(subX, subY);
-                            if (tileInfo->m_numTexs > 0) {
-                                for (int texIndex = 0; texIndex < tileInfo->m_numTexs; texIndex++) {
-                                    int textureId = tileInfo->m_texFlags[texIndex];
-                                    m3d::cmn::vector<unsigned int>& cellsList = m_cellsPerTex.m_data[textureId];
-
-                                    if (cellsList.m_numItems < cellsList.m_maxItems) {
-                                        unsigned int cellData = subX + ((subY + ((tileInfo->m_angle + (textureId << 8)) << 8)) << 8);
-                                        cellsList.m_data[cellsList.m_numItems++] = cellData;
-                                    }
-                                }
-                            }
-                            */
                         }
-
-                        subX++;
                     }
                 }
 
-                // Skip cell based on visibility mode
-                if (m_renderMode == RM_GAME)
+                if (m_renderMode)
                 {
-                    if (visMode == VIS_DIRECT)
-                    {
-                        // Always process in direct mode
-                    }
-                    else if (visMode == VIS_REFLECTION)
-                    {
-                        if (!isFullyUnderwater) continue;
-                    }
-                    else if (visMode == VIS_REFRACTION)
-                    {
-                        if (!hasUnderwaterParts) continue;
-                    }
+                    continue;
                 }
 
-                // Add cell to texture sets using tree traversal
-                int mapIndex = x + landSize * y;
-                auto& texSet = m_texSetsmap[mapIndex];
-
-                for (auto& currentNode : texSet)
+                // check this
+                if (visMode != VIS_DIRECT && !(visMode == VIS_REFLECTION && isUnderWater) && !(visMode == VIS_REFRACTION && inWater))
                 {
-                    unsigned int textureId = currentNode;
-                    m3d::cmn::vector<unsigned int>& cellsList = m_cellsPerTex.m_data[textureId];
+                    continue;
+                }
 
-                    if (cellsList.m_numItems < cellsList.m_maxItems)
-                    {
-                        unsigned int cellData = x + (y << 8);
-                        cellsList.m_data[cellsList.m_numItems++] = cellData;
-                    }
+                auto& texSetMap = m_texSetsmap[x + m_owner->m_level->land_size * y];
+                for (const auto tex : texSetMap)
+                {
+                    auto& cells = m_cellsPerTex[tex];
+                    cells.push_back(x + (y << 8));
                 }
             }
 
-            // Setup editor lighting
-            if (m_renderMode == RM_EDITOR)
+            if (m3d::Landscape::m_renderMode == RM_EDITOR)
             {
                 throw retruxx::logic_error("Not implemented");
-                /*
-                m3d::CWorld* world = m_owner;
-                CVector sunDir = world->m_sunDir;
-
-                CMatrix worldMatrix;
-                worldMatrix._11 = 2.0f;
-                worldMatrix._42 = -sunDir.x;
-                worldMatrix._43 = -sunDir.y;
-                worldMatrix._44 = -sunDir.z;
-                worldMatrix._41 = 1000.0f;
-
-                unsigned int weatherAmbientColor = m3d::CWorld::GetWeatherAmbientColor(world);
-                unsigned int weatherDiffuseColor = m3d::CWorld::GetWeatherDiffuseColor(world);
-
-                worldMatrix._12 = static_cast<float>((weatherDiffuseColor >> 16) & 0xFF) * 0.0039215689f;
-                worldMatrix._13 = static_cast<float>((weatherDiffuseColor >> 8) & 0xFF) * 0.0039215689f;
-                worldMatrix._14 = static_cast<float>(weatherDiffuseColor & 0xFF) * 0.0039215689f;
-                worldMatrix._21 = static_cast<float>((weatherDiffuseColor >> 24) & 0xFF) * 0.0039215689f;
-
-                worldMatrix._31 = static_cast<float>((weatherAmbientColor >> 16) & 0xFF) * 0.0019607844f;
-                worldMatrix._32 = static_cast<float>((weatherAmbientColor >> 8) & 0xFF) * 0.0019607844f;
-                worldMatrix._33 = static_cast<float>(weatherAmbientColor & 0xFF) * 0.0019607844f;
-                worldMatrix._41 = static_cast<float>((weatherAmbientColor >> 24) & 0xFF) * 0.0019607844f;
-
-                renderer->LightSet(0, &worldMatrix);
-                */
             }
         }
 
-        // Setup rendering states
-        renderer->SetLighting(1, 0);
-        renderer->LightEnable(0, 1);
+        M3D_RENDERER->SetLighting(1, 0);
+        M3D_RENDERER->LightEnable(0, 1);
 
-        // Setup material
         m3d::rend::Material material;
-        memset(&material, 0, sizeof(material));
-        material.m_diffuse.r = 1.0f;
-        material.m_diffuse.g = 1.0f;
-        material.m_diffuse.b = 1.0f;
-        material.m_diffuse.a = 1.0f;
-        material.m_ambient.r = 1.0f;
-        material.m_ambient.g = 1.0f;
-        material.m_ambient.b = 1.0f;
-        material.m_ambient.a = 1.0f;
-        renderer->MaterialSet(material);
+        material.init({ 1.0, 1.0, 1.0, 1.0 });
+        M3D_RENDERER->MaterialSet(material);
 
-        // Reset counters
         m_firstpasscounter = 0;
         m_otherpasscounter = 0;
 
-        // Check shadow configuration
-        bool enableShadows = M3D_ENGINE_CFG.m_lsShadows.GetB();
-        //if (enableShadows)
+        // TODO: implement shadow rendering
+        //if (M3D_ENGINE_CFG.m_lsShadows.GetB())
         if (false)
         {
-            // TODO: implement shadow rendering
-            /*
-            // Setup shadow rendering
-            renderer->SetToStream(1, &m_landUVVb);
-            renderer->SetTexture(0, m_AlphaSets._Myfirst->m_texMasks[0]._Myfirst, -1.0, -1.0);
-
-            m3d::rend::TexHandle* lightmapTex = GetLightmapTexture(&sizeInCells);
-            renderer->SetTexture(2, lightmapTex, -1.0, -1.0);
-
-            unsigned int fogColor = m3d::CWorld::GetWeatherFogColor(m_owner);
-            renderer->SetFogColor(fogColor, 0);
-            renderer->SetFogMode(M3DFOG_LINEAR, 0);
-
-            if (m_renderMode == RM_EDITOR) {
-                // Editor-specific shadow setup with full matrix calculations
-                float texScale = 1.0f / (landSize * VISCELL_EDGE_LENGTH_24);
-
-                CMatrix viewMatrix;
-                memset(&viewMatrix, 0, sizeof(viewMatrix));
-                CMatrix viewProjMatrix;
-                memset(&viewProjMatrix, 0, sizeof(viewProjMatrix));
-
-                // Complex matrix multiplication for texture projection
-                float v57 = (((viewMatrix._34 * viewProjMatrix._13) + (viewMatrix._24 * viewProjMatrix._12)) + (viewMatrix._14 * texScale)) + viewProjMatrix._14;
-                float v58 = (((viewMatrix._43 * viewProjMatrix._14) + (viewMatrix._33 * viewProjMatrix._13)) + (viewMatrix._13 * texScale)) + viewProjMatrix._12;
-                float v144 = (((viewProjMatrix._24 * viewMatrix._41) + (viewProjMatrix._23 * viewMatrix._31)) + (viewMatrix._21 * 0.0f)) + viewProjMatrix._21;
-                float v145 = (((viewProjMatrix._24 * viewMatrix._42) + (viewProjMatrix._21 * viewMatrix._12)) + (viewMatrix._22 * 0.0f)) + viewProjMatrix._23;
-                float v146 = (((viewProjMatrix._23 * viewMatrix._34) + (viewProjMatrix._21 * viewMatrix._14)) + (viewMatrix._24 * 0.0f)) + viewProjMatrix._24;
-                float v145_2 = ((viewProjMatrix._24 * viewMatrix._43) + (viewProjMatrix._23 * viewMatrix._33)) + (viewProjMatrix._21 * viewMatrix._13);
-                float v146_2 = (((viewProjMatrix._34 * viewMatrix._41) + (viewProjMatrix._32 * viewMatrix._21)) + (viewMatrix._31 * (0.0f - texScale))) + viewProjMatrix._31;
-                float v147 = (((viewProjMatrix._34 * viewMatrix._42) + (viewProjMatrix._32 * viewMatrix._22)) + (viewProjMatrix._31 * viewMatrix._12)) + (0.0f - texScale);
-                float v147_2 = (((viewProjMatrix._34 * viewMatrix._43) + (viewProjMatrix._31 * viewMatrix._13)) + (viewMatrix._33 * (0.0f - texScale))) + viewProjMatrix._32;
-                float v148 = (((viewProjMatrix._32 * viewMatrix._24) + (viewProjMatrix._31 * viewMatrix._14)) + (viewMatrix._34 * (0.0f - texScale))) + viewProjMatrix._34;
-                float v149 = (((viewProjMatrix._42 * viewMatrix._22) + (viewProjMatrix._41 * viewMatrix._12)) + viewProjMatrix._43) + viewMatrix._42;
-                float v149_2 = (((viewProjMatrix._43 * viewMatrix._33) + (viewProjMatrix._41 * viewMatrix._13)) + viewProjMatrix._42) + viewMatrix._43;
-                float v59 = (((viewProjMatrix._43 * viewMatrix._34) + (viewProjMatrix._42 * viewMatrix._24)) + (viewProjMatrix._41 * viewMatrix._14)) + 1.0f;
-
-                viewProjMatrix._21 = v144;
-                viewProjMatrix._22 = v145;
-                viewProjMatrix._23 = v145_2;
-                viewProjMatrix._24 = v146;
-                viewProjMatrix._31 = v146_2;
-                viewProjMatrix._32 = v147;
-                viewProjMatrix._33 = v147_2;
-                viewProjMatrix._34 = v148;
-                viewProjMatrix._41 = (((viewProjMatrix._43 * viewMatrix._31) + (viewProjMatrix._42 * viewMatrix._21)) + viewProjMatrix._41) + viewMatrix._41;
-                viewProjMatrix._42 = v149;
-                viewProjMatrix._43 = v149_2;
-                viewProjMatrix._11 = (((viewMatrix._41 * viewProjMatrix._14) + (viewMatrix._31 * viewProjMatrix._13)) + (viewMatrix._21 * viewProjMatrix._12)) + texScale;
-                viewProjMatrix._12 = (((viewMatrix._42 * viewProjMatrix._14) + (viewMatrix._22 * viewProjMatrix._12)) + (viewMatrix._12 * texScale)) + viewProjMatrix._13;
-                viewProjMatrix._13 = v57;
-                viewProjMatrix._14 = v58;
-                viewProjMatrix._44 = v59;
-
-                renderer->TgEnableSetMatrixSt(2, &viewProjMatrix, 0);
-                renderer->SetStageState(2, BM_COLOR, TS_TEX_MODULATE2X_PREV);
-                renderer->SetStageState(2, BM_ALPHA, TS_PREV);
-                renderer->DisableTextureStages(3);
-            }
-            else {
-                // Normal shadow rendering with shaders - full matrix calculations
-                m_landscapeVs->Apply();
-
-                CVector fogTerms(e, 1.0f / (e - s), s);
-                int fogParam = m_landscapeVs->GetParamHandleByName("g_FogTerm");
-                m_landscapeVs->SetVector3(fogParam, &fogTerms);
-
-                // Get view matrix
-                CMatrix viewMatrix;
-                const CMatrix* viewMat = renderer->MatGet();
-                viewMatrix._11 = viewMat->_11;
-                viewMatrix._12 = viewMat->_12;
-                viewMatrix._13 = viewMat->_13;
-                viewMatrix._14 = viewMat->_14;
-                viewMatrix._21 = viewMat->_21;
-                viewMatrix._22 = viewMat->_22;
-                viewMatrix._23 = viewMat->_23;
-                viewMatrix._24 = viewMat->_24;
-                viewMatrix._31 = viewMat->_31;
-                viewMatrix._32 = viewMat->_32;
-                viewMatrix._33 = viewMat->_33;
-                viewMatrix._34 = viewMat->_34;
-                viewMatrix._41 = viewMat->_41;
-                viewMatrix._42 = viewMat->_42;
-                viewMatrix._43 = viewMat->_43;
-                viewMatrix._44 = viewMat->_44;
-
-                // Get projection matrix and multiply view * projection
-                float* projMat = renderer->MatGetProj();
-                CMatrix viewProjMatrix;
-
-                // Full matrix multiplication: viewProj = view * projection
-                viewProjMatrix._11 = (viewMatrix._11 * projMat[0]) + (viewMatrix._12 * projMat[4]) + (viewMatrix._13 * projMat[8]) + (viewMatrix._14 * projMat[12]);
-                viewProjMatrix._12 = (viewMatrix._11 * projMat[1]) + (viewMatrix._12 * projMat[5]) + (viewMatrix._13 * projMat[9]) + (viewMatrix._14 * projMat[13]);
-                viewProjMatrix._13 = (viewMatrix._11 * projMat[2]) + (viewMatrix._12 * projMat[6]) + (viewMatrix._13 * projMat[10]) + (viewMatrix._14 * projMat[14]);
-                viewProjMatrix._14 = (viewMatrix._11 * projMat[3]) + (viewMatrix._12 * projMat[7]) + (viewMatrix._13 * projMat[11]) + (viewMatrix._14 * projMat[15]);
-
-                viewProjMatrix._21 = (viewMatrix._21 * projMat[0]) + (viewMatrix._22 * projMat[4]) + (viewMatrix._23 * projMat[8]) + (viewMatrix._24 * projMat[12]);
-                viewProjMatrix._22 = (viewMatrix._21 * projMat[1]) + (viewMatrix._22 * projMat[5]) + (viewMatrix._23 * projMat[9]) + (viewMatrix._24 * projMat[13]);
-                viewProjMatrix._23 = (viewMatrix._21 * projMat[2]) + (viewMatrix._22 * projMat[6]) + (viewMatrix._23 * projMat[10]) + (viewMatrix._24 * projMat[14]);
-                viewProjMatrix._24 = (viewMatrix._21 * projMat[3]) + (viewMatrix._22 * projMat[7]) + (viewMatrix._23 * projMat[11]) + (viewMatrix._24 * projMat[15]);
-
-                viewProjMatrix._31 = (viewMatrix._31 * projMat[0]) + (viewMatrix._32 * projMat[4]) + (viewMatrix._33 * projMat[8]) + (viewMatrix._34 * projMat[12]);
-                viewProjMatrix._32 = (viewMatrix._31 * projMat[1]) + (viewMatrix._32 * projMat[5]) + (viewMatrix._33 * projMat[9]) + (viewMatrix._34 * projMat[13]);
-                viewProjMatrix._33 = (viewMatrix._31 * projMat[2]) + (viewMatrix._32 * projMat[6]) + (viewMatrix._33 * projMat[10]) + (viewMatrix._34 * projMat[14]);
-                viewProjMatrix._34 = (viewMatrix._31 * projMat[3]) + (viewMatrix._32 * projMat[7]) + (viewMatrix._33 * projMat[11]) + (viewMatrix._34 * projMat[15]);
-
-                viewProjMatrix._41 = (viewMatrix._41 * projMat[0]) + (viewMatrix._42 * projMat[4]) + (viewMatrix._43 * projMat[8]) + (viewMatrix._44 * projMat[12]);
-                viewProjMatrix._42 = (viewMatrix._41 * projMat[1]) + (viewMatrix._42 * projMat[5]) + (viewMatrix._43 * projMat[9]) + (viewMatrix._44 * projMat[13]);
-                viewProjMatrix._43 = (viewMatrix._41 * projMat[2]) + (viewMatrix._42 * projMat[6]) + (viewMatrix._43 * projMat[10]) + (viewMatrix._44 * projMat[14]);
-                viewProjMatrix._44 = (viewMatrix._41 * projMat[3]) + (viewMatrix._42 * projMat[7]) + (viewMatrix._43 * projMat[11]) + (viewMatrix._44 * projMat[15]);
-
-                // Get world matrix
-                CMatrix worldMatrix;
-                const CMatrix* worldMat = renderer->MatGetWorld();
-                worldMatrix._11 = worldMat->_11;
-                worldMatrix._12 = worldMat->_12;
-                worldMatrix._13 = worldMat->_13;
-                worldMatrix._14 = worldMat->_14;
-                worldMatrix._21 = worldMat->_21;
-                worldMatrix._22 = worldMat->_22;
-                worldMatrix._23 = worldMat->_23;
-                worldMatrix._24 = worldMat->_24;
-                worldMatrix._31 = worldMat->_31;
-                worldMatrix._32 = worldMat->_32;
-                worldMatrix._33 = worldMat->_33;
-                worldMatrix._34 = worldMat->_34;
-                worldMatrix._41 = worldMat->_41;
-                worldMatrix._42 = worldMat->_42;
-                worldMatrix._43 = worldMat->_43;
-                worldMatrix._44 = worldMat->_44;
-
-                // Set shader parameters
-                int viewProjParam = m_landscapeVs->GetParamHandleByName("mViewProj");
-                m_landscapeVs->SetMatrix(viewProjParam, &viewProjMatrix);
-
-                float lightmapScale = 1.0f / (landSize * VISCELL_EDGE_LENGTH_24);
-                CVector lightmapScaleVec(lightmapScale, -lightmapScale, 0.0f);
-                int lightmapScaleParam = m_landscapeVs->GetParamHandleByName("lightmapScale");
-                m_landscapeVs->SetVector3(lightmapScaleParam, &lightmapScaleVec);
-
-                int worldParam = m_landscapeVs->GetParamHandleByName("mWorld");
-                m_landscapeVs->SetMatrix(worldParam, &worldMatrix);
-            }
-
-            // Render texture sets
-            for (auto it = m_tilesTextures.begin(); it != m_tilesTextures.end(); ++it) {
-                int texIndex = static_cast<int>(it - m_tilesTextures.begin());
-                if (m_cellsPerTex.m_data[texIndex].m_numItems > 0) {
-                    renderer->SetTexture(1, &(*it)->m_texHandle, -1.0, -1.0);
-
-                    // Determine current alpha set using hash lookup
-                    auto hashResult = m_hashIdxToLandType.m_hash.lower_bound(texIndex);
-                    if (hashResult == m_hashIdxToLandType.m_hash.end() || hashResult->first != texIndex) {
-                        m_CurAlphaSet = 0;
-                    }
-                    else {
-                        m_CurAlphaSet = m_Lands[hashResult->second].m_alphaset;
-                    }
-
-                    renderer->TgSetTcSource(1, TC_FROM_VERTEX, 1);
-
-                    if (m_renderMode == RM_NORMAL) {
-                        // Normal rendering path with full per-cell calculations
-                        renderer->SetZbState(ZB_ENABLE, 0);
-                        DrawCellsFast0(&m_cellsPerTex.m_data[texIndex], *it, RT_FIRSTPASSLIGHT);
-                        renderer->SetZbState(ZB_NOWRITE, 0);
-
-                        m3d::Landscape::TIVChunk* texChunk = *it;
-                        int* cellData = m_cellsPerTex.m_data[texIndex].m_data;
-                        int numCells = m_cellsPerTex.m_data[texIndex].m_numItems;
-
-                        renderer->SetBlend(BM_ALPHA, 0);
-                        renderer->SetAlphaTest(1);
-                        m_landscapePsSP->Apply();
-                        m_lastState = RT_OTHERPASSES;
-
-                        for (int i = 0; i < numCells; i++) {
-                            int cellValue = cellData[i];
-                            int cellX = cellValue & 0xFF;
-                            int cellY = (cellValue >> 8) & 0xFF;
-
-                            CVector cellPos(static_cast<float>(cellX) * 128.0f,
-                                            static_cast<float>(cellY) * 128.0f,
-                                            land_scale_27);
-                            renderer->SetVsFloatConst(10, &cellPos, 1);
-
-                            int offsetIndex = HIWORD(texChunk->m_offsetsmap[cellX]);
-                            int numCellsInMap = HIBYTE(texChunk->m_numCellsPerCellMap[64 * cellY + cellX]);
-                            int bankNumber = HIBYTE(texChunk->m_banknumber[cellX]);
-
-                            if (offsetIndex != 0xFFFF && numCellsInMap > 0) {
-                                int vertexCount = numCellsInMap * 25;
-                                int indexCount = numCellsInMap * *m_lsNumIndices._Myfirst - 3;
-
-                                renderer->SetIndices(m_landIbConst._Myfirst, offsetIndex);
-                                renderer->SetToStream0(&texChunk->m_vbHandle._Myfirst[bankNumber]);
-                                renderer->DrawIndexedPrimitiveShader(
-                                    M3DPT_TRIANGLESTRIP, 0, vertexCount, 0, indexCount);
-                            }
-                        }
-                    }
-                    else if (m_renderMode == RM_EDITOR && !roadMap) {
-                        // Editor rendering path
-                        renderer->SetZbState(ZB_ENABLE, 0);
-                        DrawCells0(&m_cellsPerTex.m_data[texIndex], RT_FIRSTPASSLIGHT);
-                        renderer->TgSetTcSource(1, TC_FROM_VERTEX, 1);
-                        renderer->SetZbState(ZB_NOWRITE, 0);
-                        DrawCells0(&m_cellsPerTex.m_data[texIndex], RT_OTHERPASSES);
-                    }
-
-                    // Reset cell count for this texture
-                    m_cellsPerTex.m_data[texIndex].m_numItems = 0;
-                }
-            }
-            */
+            throw retruxx::logic_error("Not implemented");
         }
         else
         {
-            // No shadows - just clear the texture lists
-            renderer->DisableTextureStages(0);
-            for (size_t i = 0; i < m_tilesTextures.size(); i++)
+            M3D_RENDERER->DisableTextureStages(0);
+            // TODO: check this
+            for (int i = 0; i < m_tilesTextures.size(); ++i)
             {
-                m_cellsPerTex.m_data[i].m_numItems = 0;
+                if (m_cellsPerTex[i].empty())
+                {
+                    m_cellsPerTex[i].clear();
+                }
             }
         }
 
-        // Common cleanup
-        renderer->SetAlphaTest(0);
-        renderer->SetBlend(rend::BM_NONE, 0);
-        renderer->TgSetTcSource(0, rend::TC_FROM_VERTEX, 0);
-        renderer->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
-        renderer->TgDisable(2);
-        renderer->DisableTextureStages(1);
+        M3D_RENDERER->SetAlphaTest(0);
+        M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
+        M3D_RENDERER->TgSetTcSource(0, rend::TC_FROM_VERTEX, 0);
+        M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
+        M3D_RENDERER->TgDisable(2);
+        M3D_RENDERER->DisableTextureStages(1);
 
-        // Draw roads in editor mode
-        if (m_renderMode == RM_EDITOR)
+        if (m3d::Landscape::m_renderMode == RM_EDITOR)
         {
             throw retruxx::logic_error("Not implemented");
-            /*
-            m3d::CVar* drawRoadsVar = m3d::g_Kernel->GetEngineCfg(m3d::g_Kernel)->m_g_drawRoads;
-            bool drawRoads;
-            if (drawRoadsVar->m_type == CVAR_BOOL)
-                drawRoads = drawRoadsVar->m_b;
-            else
-                drawRoads = drawRoadsVar->m_i > 0;
-
-            if (drawRoads) {
-                std::vector<unsigned int> visibleCells;
-                visibleCells._Myfirst = nullptr;
-                visibleCells._Mylast = nullptr;
-                visibleCells._Myend = nullptr;
-                visibleCells.reserve(1000);
-
-                // Reset scene graph for road rendering
-                sceneGraph->m_sortedCellsCurCell = 0;
-                sceneGraph->m_sortedCellsCurRadius = 0;
-                sceneGraph->m_sortedCellsEndRadius = m_drawRadius;
-
-                // Clear any existing visible cells data
-                if (visibleCells._Myfirst) {
-                    m3d::g_Kernel->g_mar.FreeMem(visibleCells._Myfirst);
-                }
-                visibleCells._Myfirst = nullptr;
-                visibleCells._Mylast = nullptr;
-                visibleCells._Myend = nullptr;
-
-                // Collect visible cells for roads
-                int x, y, cellX, cellY;
-                while (sceneGraph->SortedCellsFetch(&x, &y, &cellX, &cellY)) {
-                    if (cellX != 0) {
-                        unsigned int cellData = x + (y << 16);
-                        if (visibleCells._Myfirst &&
-                            (visibleCells._Mylast - visibleCells._Myfirst) < (visibleCells._Myend - visibleCells._Myfirst)) {
-                            *visibleCells._Mylast = cellData;
-                            visibleCells._Mylast++;
-                        }
-                        else {
-                            std::vector<unsigned int>::_Insert_n(&visibleCells, visibleCells._Mylast, 1, &cellData);
-                        }
-                    }
-                }
-
-                // Render roads
-                if (roadMap) {
-                    renderer->PushBlend(0);
-                }
-
-                m3d::RoadManager::RenderRoads(&m_owner->m_roadManager, &visibleCells, RRT_SIMPLE, 0, roadMap);
-
-                if (roadMap) {
-                    renderer->PopBlend();
-                }
-
-                // Cleanup visible cells
-                if (visibleCells._Myfirst) {
-                    m3d::g_Kernel->g_mar.FreeMem(visibleCells._Myfirst);
-                }
-            }
-            */
         }
-
-        // Draw shorelines in minimap editor mode
-        if (drawMinimap && m_renderMode == RM_EDITOR)
+        if (drawMinimap && m3d::Landscape::m_renderMode == RM_EDITOR)
         {
             throw retruxx::logic_error("Not implemented");
-            /*
-            m3d::CVar* drawShoresVar = m3d::g_Kernel->GetEngineCfg(m3d::g_Kernel)->m_g_drawShores;
-            bool drawShores;
-            if (drawShoresVar->m_type == CVAR_BOOL)
-                drawShores = drawShoresVar->m_b;
-            else
-                drawShores = drawShoresVar->m_i > 0;
-
-            if (drawShores) {
-                m3d::rend::TexHandle nullTex;
-                nullTex.m_handle = -1; // NAN equivalent
-                renderer->SetTexture(0, &nullTex, -1.0, -1.0);
-                DrawShoreLine();
-            }
-            */
         }
 
-        // Final cleanup
-        renderer->LightEnable(0, 0);
-        renderer->SetLighting(0, 0);
+        M3D_RENDERER->LightEnable(0, 0);
+        M3D_RENDERER->SetLighting(0, 0);
     }
 
     rend::TexHandle Landscape::GetLightmapTexture() const
