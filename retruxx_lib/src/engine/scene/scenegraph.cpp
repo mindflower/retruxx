@@ -128,55 +128,56 @@ namespace m3d
 
     void SceneGraph::SortedCellsPrepare()
     {
-        m_cellsPrepared = true;
-        memset(m_sortedCellsX, 0xFF, sizeof(m_sortedCellsX));
-        auto const org = M3D_RENDERER->MatGetOrgInv();
+        this->m_cellsPrepared = 1;
+        memset(this->m_sortedCellsX, 0xFFu, sizeof(this->m_sortedCellsX));
 
-        auto const curX = (1.0 / VISCELL_EDGE_LENGTH_6) * org.x;
-        auto const curZ = (1.0 / VISCELL_EDGE_LENGTH_6) * org.z;
-        int SortedCellsTops[256] = { 0 };
-        const auto sds = 50176 / sizeof(m_cellItems[0]);
-        //TODO: check this and refactor
-        auto ls = m_owner->m_level->GetLandSize();
+        auto org = M3D_RENDERER->MatGetOrgInv();
+        auto v2 = (float)(1.0 / VISCELL_EDGE_LENGTH_6) * org.x;
+        auto curZ = (int)(float)((float)(1.0 / VISCELL_EDGE_LENGTH_6) * org.z);
+
+        int SortedCellsTops[256];
+        memset(SortedCellsTops, 0, sizeof(SortedCellsTops));
+        auto ls = this->m_owner->m_level->land_size;
         auto x = 0;
         if (ls > 0)
         {
-            auto v3 = curX;
-            auto v10 = curX;
-            auto cellItem = m_cellItems;
-            while (true)
+            auto v3 = (int)v2;
+            auto v10 = (int)v2;
+            while (1)
             {
                 auto v4 = curZ;
-                auto tempCellItem = cellItem;
+                auto v5 = &m_cellItems[x].m_bVisibleInCurrentFrame;
                 auto v6 = 0;
-                auto v16 = v3 * v3;
+                auto v16 = (float)(v3 * v3);
                 do
                 {
-                    tempCellItem->m_bVisibleInCurrentFrame = false;
-                    auto v7 = static_cast<unsigned>(floor(sqrt((v4 * v4) + v16)));
+                    *v5 = 0;
+                    auto v7 = (int)floor(sqrt((double)(v4 * v4) + v16));
                     if (v7 <= 0x64)
                     {
-                        auto idx = SortedCellsTops[v7] + v7 * (6 * v7 + 2);
-                        //TODO: check this!!!!
-                        //SceneGraph* v9 = (char*)this + idx;
+                        auto v8 = SortedCellsTops[v7];
+                        auto idx = v8 + v7 * (6 * v7 + 2);
+                        if (idx >= 240000 || idx < 4)
+                        {
+                            bool asd = true;
+                        }
+                        //auto v9 = (m3d::SceneGraph*)((char*)this + v8 + v7 * (6 * v7 + 2));
+                        //v9->m_sortedCellsX[0] = x;
+                        //v9->m_sortedCellsY[0] = v6;
                         m_sortedCellsX[idx] = x;
                         m_sortedCellsY[idx] = v6;
-                        SortedCellsTops[v7] = SortedCellsTops[v7] + 1;
+                        SortedCellsTops[v7] = v8 + 1;
                     }
                     ++v6;
-                    tempCellItem += 64;
+                    v5 += sizeof(CellItems) * 0x64;
                     --v4;
                 } while (v6 < ls);
                 --v10;
-                ++cellItem;
                 if (++x >= ls)
-                {
                     break;
-                }
                 v3 = v10;
             }
         }
-      // throw retruxx::logic_error("Not implemented");
     }
 
     void SceneGraph::UnlinkAndDeleteAll()

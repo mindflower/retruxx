@@ -2867,11 +2867,11 @@ namespace m3d
 
                 if (cellSize == 4)
                 {
-                    auto v21 = wmax;
+                    // TODO: check this
                     auto v5 = x / 4 + m_owner->m_level->land_size * (z / 4);
                     auto v22 = v5;
-                    m_cellParams[v22].m_minwater = v11;
-                    m_cellParams[v22].m_maxwater = v21;
+                    m_cellParams[v22].m_minwater = wmin;
+                    m_cellParams[v22].m_maxwater = wmax;
                 }
             }
         }
