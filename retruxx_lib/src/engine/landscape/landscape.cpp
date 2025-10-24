@@ -322,13 +322,14 @@ namespace m3d
         // TODO: check and refactor
         auto land_size = this->m_owner->m_level->land_size;
         m_solidVb = M3D_RENDERER->AddVb(rend::VertexType::VERTEX_YNI, 289 * land_size * land_size, "SolidLandscape", 0);
-        float* buff = (float*)M3D_RENDERER->LockVb(m_solidVb, 289 * land_size * land_size, 0, 0);
+        this->vertsPerCell = 289;
+        float* buff = (float*)M3D_RENDERER->LockVb(m_solidVb, vertsPerCell * land_size * land_size, 0, 0);
         M3D_ASSERT(buff);
 
         auto sizeinCells = land_size;
-        auto v9 = 0;
-        auto v10 = buff;
-        auto v = 0;
+        unsigned v9 = 0;
+        float* v10 = buff;
+        unsigned v = 0;
         if (land_size)
         {
             do
@@ -367,28 +368,27 @@ namespace m3d
         }
         M3D_RENDERER->UnlockVb(m_solidVb);
 
-        auto v17 = 0;
-        auto ia = 0;
-        auto v25 = 0;
+        int v25 = 0;
+        int v17 = 0;
+        unsigned ia = 0;
         do
         {
-            if (m_solidIb->IsValid())
-            {
+            if (m_solidIb[ia].IsValid())
                 M3D_RENDERER->ReleaseIb(m_solidIb[ia]);
-            }
-            auto v19 = 1 << v17;
-            auto v20 = (unsigned __int16)(1 << v17);
-            m_solidIb[ia] = M3D_RENDERER->AddIb(32 * (16 / v20 + 2) / v20, 0);
-            unsigned short* v21 = (unsigned short*)M3D_RENDERER->LockIb(m_solidIb[ia],
+            int v19 = 1 << v17;
+            int v20 = (unsigned __int16)(1 << v17);
+            m_solidIb[ia] = M3D_RENDERER->AddIb(32 * (16 / v20 + 2) / v20,
+                0);
+            auto asd = 32 * (16 / v20 + 2) / v20;
+            short* v21 = (short*)M3D_RENDERER->LockIb(m_solidIb[ia],
                 32 * (16 / v20 + 2) / v20,
                 0,
                 0);
-
-            auto str = M3D_RENDERER->GetLastErrorStr();
-            auto v22 = 0;
-            auto nna = 0;
-            auto va = 0;
-            auto v23 = 17 * v19;
+            M3D_RENDERER->GetLastErrorStr();
+            int v22 = 0;
+            unsigned nna = 0;
+            unsigned va = 0;
+            int v23 = 17 * v19;
             do
             {
                 auto v24 = 0;
@@ -411,8 +411,8 @@ namespace m3d
                 va += v20;
             } while (va < 16);
 
+            trisPerCell[ia] = nna - 4;
             M3D_RENDERER->UnlockIb(m_solidIb[ia]);
-            v17 = ia + 1;
             v25 = ++ia < 4;
         } while (v25);
     }
@@ -492,9 +492,9 @@ namespace m3d
         du._43 = v38;
         du._44 = (((mat._44 * projMat._44) + v39) + (projMat._24 * mat._42)) + (projMat._14 * mat._41);
 
-        switch (lod)
+        switch (landMode)
         {
-        case 0:
+        case LRM_DIRECT:
         {
             const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
             m_owner->GetGraph().SortedCellsStartFetching(m_drawRadius * transitionDivider + 1, m_drawRadius + 1);
@@ -503,6 +503,28 @@ namespace m3d
 
             int projMatrixHandle = m_solidVs->GetParamHandleByName("mViewProj");
             m_solidVs->SetMatrix(projMatrixHandle, du);
+
+            auto lightmapTexture = GetLightmapTexture();
+            M3D_RENDERER->SetTexture(0, lightmapTexture, -1.0);
+            break;
+        }
+        case LRM_BIND:
+        {
+            const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
+            m_owner->GetGraph().SortedCellsStartFetching(transitionDivider * m_drawRadius - 1, transitionDivider * m_drawRadius + 1);
+            m_solidBindPs->Apply();
+            m_solidBindVs->Apply();
+
+            int projMatrixHandle = m_solidBindVs->GetParamHandleByName("mViewProj");
+            m_solidBindVs->SetMatrix(projMatrixHandle, du);
+
+            int viewPosHandle = m_solidBindVs->GetParamHandleByName("ViewPos");
+            m_solidBindVs->SetVector3(viewPosHandle, du.getOrgInv());
+
+            const auto transitionCFatror = M3D_ENGINE_CFG.m_lsTransitionCFactor.GetF();
+            const auto viewDistanceDivider = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
+            float vsConst = ((this->m_drawRadius * transitionDivider) - (viewDistanceDivider * transitionCFatror)) * 128.0;
+            M3D_RENDERER->SetVsFloatConst(7u, &vsConst, 1u);
 
             auto lightmapTexture = GetLightmapTexture();
             M3D_RENDERER->SetTexture(0, lightmapTexture, -1.0);
@@ -522,20 +544,37 @@ namespace m3d
         int v = 0;
         int landDips = 0;
         float sizeinCells = m_owner->m_level->land_size;
+
+        int maxX = -1;
+        int maxY = -1;
+        int maxVis = -1;
+        int maxRadius = -1;
+        int minX = 9999999;
+        int minY = 9999999;
+        int minVis = 9999999;
+        int minRadius = 9999999;
         while (m_owner->GetGraph().SortedCellsFetch(x, y, vis, radius))
         {
             if (vis)
             {
+                maxX = std::max(maxX, x);
+                maxY = std::max(maxY, y);
+                maxVis = std::max(maxVis, vis);
+                maxRadius = std::max(maxRadius, radius);
+                minX = std::min(minX, x);
+                minY = std::min(minY, y);
+                minVis = std::min(minVis, vis);
+                minRadius = std::min(minRadius, radius);
                 float buff[3] = { 0 };
 
                 buff[0] = x * 128.0;
                 buff[1] = y * 128.0;
-                buff[2] = 8.0 * 128.0;
+                buff[2] = 8.0;
                 M3D_RENDERER->SetVsFloatConst(5u, buff, 1u);
 
                 buff[0] = x / sizeinCells;
                 buff[1] = y / sizeinCells;
-                buff[2] = du._44;
+                buff[2] = 1.0 / (float)(16 * m_owner->m_level->land_size);
                 M3D_RENDERER->SetVsFloatConst(6u, buff, 1u);
 
                 v += trisPerCell[lod];
@@ -573,8 +612,6 @@ namespace m3d
         const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
         sceneGraph.SortedCellsStartFetching(0, m_drawRadius * transitionDivider + 1);
 
-        const auto fogReduceFactor = m_owner->m_weatherManager.GetFogReduceFactorFromWeather();
-
         float fogStart = 0.0;
         float fogEnd = 0.0;
         GetFogStartAndEnd(fogStart, fogEnd);
@@ -590,42 +627,52 @@ namespace m3d
         {
             int x = 0;
             int y = 0;
-            int vis = 0;
-            int radius = 0;
-            while (sceneGraph.SortedCellsFetch(x, y, vis, radius))
+            int xx = 0;
+            int yy = 0;
+            while (sceneGraph.SortedCellsFetch(x, y, xx, yy))
             {
-                if (!x)
+                if (!xx)
                 {
                     continue;
                 }
 
-                bool isUnderWater = true;
-                // TODO: check naming
-                bool inWater = false;
-                for (int i = 0; i < 4; ++i)
+                auto v14 = 0;
+                bool isFullyUnderwater = 1;
+                bool v129 = 0;
+                for (int i = 0; i < 4; v14 = ++i)
                 {
-                    for (int j = 0; j < 4; ++j)
+                    auto v15 = v14 + 4 * y;
+                    auto v16 = 4 * x;
+                    yy = v15;
+                    auto v122 = 4 * x;
+                    auto v131 = 4;
+                    int v24 = 0;
+                    do
                     {
-                        auto actX = 4 * x;
-                        auto actZ = i + 4 * y;
-                        auto idx = actX + 4 * actZ * m_owner->m_level->land_size;
-                        if (m_waterMap[idx])
+                        auto v17 = v16 + 4 * v15 * this->m_owner->m_level->land_size;
+                        if (this->m_waterMap[v17])
                         {
-                            auto height = getWaterHeight(actX, actZ);
-                            if (m_drawedCellParams[idx].m_h1 > height)
-                                isUnderWater = false;
-                            if (height > m_drawedCellParams[idx].m_h0)
-                                inWater = 1;
+                            m_drawedCellParams = this->m_drawedCellParams;
+                            auto h0 = m_drawedCellParams[v17].m_h0;
+                            auto h1 = m_drawedCellParams[v17].m_h1;
+                            auto height = m3d::Landscape::getWaterHeight(v16, v15);
+                            if (h1 > height)
+                                isFullyUnderwater = 0;
+                            if (height > h0)
+                                v129 = 1;
                         }
                         else
                         {
-                            isUnderWater = false;
+                            isFullyUnderwater = 0;
                         }
                         if (m3d::Landscape::m_renderMode == RM_EDITOR)
                         {
                             throw retruxx::logic_error("Not implemented");
                         }
-                    }
+                        ++v16;
+                        v24 = v131-- == 1;
+                        v122 = v16;
+                    } while (!v24);
                 }
 
                 if (m_renderMode)
@@ -634,7 +681,7 @@ namespace m3d
                 }
 
                 // check this
-                if (visMode != VIS_DIRECT && !(visMode == VIS_REFLECTION && isUnderWater) && !(visMode == VIS_REFRACTION && inWater))
+                if (visMode != VIS_DIRECT && !(visMode == VIS_REFLECTION && isFullyUnderwater) && !(visMode == VIS_REFRACTION && v129))
                 {
                     continue;
                 }
@@ -664,10 +711,9 @@ namespace m3d
         m_otherpasscounter = 0;
 
         // TODO: implement shadow rendering
-        //if (M3D_ENGINE_CFG.m_lsShadows.GetB())
-        if (false)
+        if (M3D_ENGINE_CFG.m_lsShadows.GetB())
         {
-            throw retruxx::logic_error("Not implemented");
+            
         }
         else
         {
@@ -2434,7 +2480,7 @@ namespace m3d
             }
             else
             {
-                saveDistDivider = 2;
+                saveDistDivider = 12;
             }
         }
         else
@@ -2506,7 +2552,6 @@ namespace m3d
         M3D_RENDERER->SetZbState(rend::ZbState::ZB_ENABLE, false);
         M3D_RENDERER->SetZFunc(rend::CmpFunc::M3DCMP_LESS, false);
         M3D_RENDERER->SetCull(rend::Cull::M3DCULL_CCW, false);
-        M3D_RENDERER->SetBlend(rend::BlendMode::BM_NONE, false);
         DrawSolidLandscape(LRM_DIRECT, 0);
 
         M3D_RENDERER->SetZbState(rend::ZbState::ZB_NOWRITE, false);

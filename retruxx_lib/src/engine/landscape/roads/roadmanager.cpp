@@ -17,6 +17,8 @@ namespace m3d
 
     void RoadManager::UpdateVis()
     {
+        // TODO: implement RoadManager::UpdateVis
+        return;
         // TODO: check and refactor this
         if (this->m_coveredCells)
         {

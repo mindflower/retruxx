@@ -128,54 +128,60 @@ namespace m3d
 
     void SceneGraph::SortedCellsPrepare()
     {
-        this->m_cellsPrepared = 1;
-        memset(this->m_sortedCellsX, 0xFFu, sizeof(this->m_sortedCellsX));
+        this->m_cellsPrepared = true;
 
-        auto org = M3D_RENDERER->MatGetOrgInv();
-        auto v2 = (float)(1.0 / VISCELL_EDGE_LENGTH_6) * org.x;
-        auto curZ = (int)(float)((float)(1.0 / VISCELL_EDGE_LENGTH_6) * org.z);
+        // Initialize sorted cells with invalid values (-1)
+        memset(this->m_sortedCellsX, 0xFF, sizeof(this->m_sortedCellsX));
+        memset(this->m_sortedCellsY, 0xFF, sizeof(this->m_sortedCellsY));
 
-        int SortedCellsTops[256];
-        memset(SortedCellsTops, 0, sizeof(SortedCellsTops));
-        auto ls = this->m_owner->m_level->land_size;
-        auto x = 0;
-        if (ls > 0)
+        // Get the origin position from the renderer
+        CVector origin = Application::g_pApp->m_renderer->MatGetOrgInv();
+
+        // Calculate current grid position based on origin
+        float gridScale = 1.0f / VISCELL_EDGE_LENGTH_6;
+        int currentX = static_cast<int>(gridScale * origin.x);
+        int currentZ = static_cast<int>(gridScale * origin.z);
+
+        // Initialize sorted cells tops (tracking how many cells are at each distance)
+        int SortedCellsTops[256] = { 0 };
+
+        int levelSize = this->m_owner->m_level->land_size;
+
+        // Process each cell in the grid
+        for (int x = 0; x < levelSize; ++x)
         {
-            auto v3 = (int)v2;
-            auto v10 = (int)v2;
-            while (1)
+            int relX = currentX - x;  // Calculate relative X position
+
+            for (int z = 0; z < levelSize; ++z)
             {
-                auto v4 = curZ;
-                auto v5 = &m_cellItems[x].m_bVisibleInCurrentFrame;
-                auto v6 = 0;
-                auto v16 = (float)(v3 * v3);
-                do
+                int index = x * levelSize + z;
+
+                // Mark cell as not visible in current frame
+                this->m_cellItems[index].m_bVisibleInCurrentFrame = false;
+
+                int relZ = currentZ - z;  // Calculate relative Z position
+
+                // Calculate distance from origin
+                float distanceSquared = static_cast<float>(relX * relX + relZ * relZ);
+                unsigned int distance = static_cast<unsigned int>(floor(sqrt(distanceSquared)));
+
+                // Only process cells within reasonable distance (100 units)
+                if (distance <= 100)
                 {
-                    *v5 = 0;
-                    auto v7 = (int)floor(sqrt((double)(v4 * v4) + v16));
-                    if (v7 <= 0x64)
-                    {
-                        auto v8 = SortedCellsTops[v7];
-                        auto idx = v8 + v7 * (6 * v7 + 2);
-                        if (idx >= 240000 || idx < 4)
-                        {
-                            bool asd = true;
-                        }
-                        //auto v9 = (m3d::SceneGraph*)((char*)this + v8 + v7 * (6 * v7 + 2));
-                        //v9->m_sortedCellsX[0] = x;
-                        //v9->m_sortedCellsY[0] = v6;
-                        m_sortedCellsX[idx] = x;
-                        m_sortedCellsY[idx] = v6;
-                        SortedCellsTops[v7] = v8 + 1;
-                    }
-                    ++v6;
-                    v5 += sizeof(CellItems) * 0x64;
-                    --v4;
-                } while (v6 < ls);
-                --v10;
-                if (++x >= ls)
-                    break;
-                v3 = v10;
+                    // Get the current top index for this distance
+                    int topIndex = SortedCellsTops[distance];
+
+                    // Calculate the base index for this distance bucket
+                    // Each distance bucket can hold up to (6 * distance + 2) cells
+                    int baseIndex = distance * (6 * distance + 2);
+
+                    // Store the cell coordinates in sorted arrays
+                    this->m_sortedCellsX[baseIndex + topIndex] = static_cast<char>(x);
+                    this->m_sortedCellsY[baseIndex + topIndex] = static_cast<char>(z);
+
+                    // Update the top index for this distance
+                    SortedCellsTops[distance] = topIndex + 1;
+                }
             }
         }
     }
@@ -264,42 +270,39 @@ namespace m3d
 
     int SceneGraph::SortedCellsFetch(int& cellX, int& cellY, int& vis, int& radius)
     {
-        // TODO: generated code
-        radius = m_sortedCellsCurRadius;
-        int v5 = m_sortedCellsCurRadius * (6 * m_sortedCellsCurRadius + 2);
-
-        if (m_sortedCellsX[v5 + m_sortedCellsCurCell] >= 0)
+        radius = this->m_sortedCellsCurRadius;
+        auto v5 = this->m_sortedCellsCurRadius * (6 * this->m_sortedCellsCurRadius + 2);
+        auto result = 1;
+        if (this->m_sortedCellsX[v5 + this->m_sortedCellsCurCell] >= 0)
         {
-            cellX = m_sortedCellsX[v5 + m_sortedCellsCurCell];
-            cellY = m_sortedCellsY[v5 + m_sortedCellsCurCell];
-            vis = (m_enableVisSpaceMask & m_enableMap[256 * (cellY) + cellX]) != 0;
-            ++m_sortedCellsCurCell;
-            return 1;
+            cellX = this->m_sortedCellsX[v5 + this->m_sortedCellsCurCell];
+            auto v9 = this->m_sortedCellsY[v5 + this->m_sortedCellsCurCell];
+            cellY = v9;
+            vis = (this->m_enableVisSpaceMask & this->m_enableMap[256 * v9 + cellX]) != 0;
+            ++this->m_sortedCellsCurCell;
         }
         else
         {
-            int endRadius = m_sortedCellsEndRadius;
-
-            while (true)
+            auto sortedCellsEndRadius = this->m_sortedCellsEndRadius;
+            while (1)
             {
-                ++m_sortedCellsCurRadius;
-                m_sortedCellsCurCell = 0;
-
-                if (m_sortedCellsCurRadius >= endRadius)
+                auto v8 = ++this->m_sortedCellsCurRadius;
+                this->m_sortedCellsCurCell = 0;
+                if (v8 >= sortedCellsEndRadius)
                     return 0;
-
-                v5 = m_sortedCellsCurRadius * (6 * m_sortedCellsCurRadius + 2);
-
-                if (m_sortedCellsX[v5 + m_sortedCellsCurCell] >= 0)
+                v5 = v8 * (6 * v8 + 2);
+                if (this->m_sortedCellsX[v5 + this->m_sortedCellsCurCell] >= 0)
                 {
-                    cellX = m_sortedCellsX[v5 + m_sortedCellsCurCell];
-                    cellY = m_sortedCellsY[v5 + m_sortedCellsCurCell];
-                    vis = (m_enableVisSpaceMask & m_enableMap[256 * (cellY) + cellX]) != 0;
-                    ++m_sortedCellsCurCell;
+                    cellX = this->m_sortedCellsX[v5 + this->m_sortedCellsCurCell];
+                    auto v9 = this->m_sortedCellsY[v5 + this->m_sortedCellsCurCell];
+                    cellY = v9;
+                    vis = (this->m_enableVisSpaceMask & this->m_enableMap[256 * v9 + cellX]) != 0;
+                    ++this->m_sortedCellsCurCell;
                     return 1;
                 }
             }
         }
+        return result;
     }
 
     int SceneGraph::SortedCellsFetch(int&, int&, int&)
@@ -1165,8 +1168,8 @@ namespace m3d
     void SceneGraph::enableVisibleCells_r(CClipper& frusta, float* box, unsigned int orFlags)
     {
         // TODO: generated code
-        const float VISCELL_EDGE_LENGTH = 6.0f;
-        const float MAX_LAND_SIZE = static_cast<float>(m_owner->m_level->land_size) * VISCELL_EDGE_LENGTH;
+        const float VISCELL_EDGE_LENGTH = 128.0f;
+        const float MAX_LAND_SIZE = m_owner->m_level->land_size * VISCELL_EDGE_LENGTH;
 
         // Test bounding box against frustum
         CVector ofs(0, 0, 0);

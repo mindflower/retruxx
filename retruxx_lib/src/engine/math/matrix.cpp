@@ -230,7 +230,106 @@ void CMatrix::FromBasis(CVector const&, CVector const&, CVector const&)
 
 CMatrix CMatrix::getInverse() const
 {
-    throw std::logic_error("Not implemented");
+    CMatrix result;
+    // Temporary arrays for the augmented matrix [A|I]
+    float r1[8], r2[8], r3[8], r4[8];
+    float* s[4] = { r1, r2, r3, r4 };
+
+    // Initialize augmented matrix: original matrix + identity matrix
+    for (int i = 0; i < 4; ++i) {
+        float* row = s[i];
+
+        // Copy original matrix row
+        row[0] = this->m[i][0];
+        row[1] = this->m[i][1];
+        row[2] = this->m[i][2];
+        row[3] = this->m[i][3];
+
+        // Add identity matrix columns
+        for (int j = 0; j < 4; ++j) {
+            row[4 + j] = (i == j) ? 1.0f : 0.0f;
+        }
+    }
+
+    // Scale factors for each row (for pivoting)
+    float scp[4];
+    for (int i = 0; i < 4; ++i) {
+        float* row = s[i];
+        scp[i] = std::max(std::max(std::abs(row[0]), std::abs(row[1])),
+                          std::max(std::abs(row[2]), std::abs(row[3])));
+
+        if (scp[i] == 0.0f) {
+            // Matrix is singular, return identity
+            result.identity();
+            return result;
+        }
+    }
+
+    // Gaussian elimination with partial pivoting
+    for (int pivot = 0; pivot < 4; ++pivot) {
+        // Find pivot row with maximum scaled value in current column
+        int maxRow = pivot;
+        float maxVal = std::abs(s[pivot][pivot] / scp[pivot]);
+
+        for (int row = pivot + 1; row < 4; ++row) {
+            float scaledVal = std::abs(s[row][pivot] / scp[row]);
+            if (scaledVal > maxVal) {
+                maxVal = scaledVal;
+                maxRow = row;
+            }
+        }
+
+        // Swap rows if necessary
+        if (maxRow != pivot) {
+            std::swap(s[pivot], s[maxRow]);
+            std::swap(scp[pivot], scp[maxRow]);
+        }
+
+        // Check if pivot element is zero (matrix is singular)
+        if (s[pivot][pivot] == 0.0f) {
+            result.identity();
+            return result;
+        }
+
+        // Eliminate entries below the pivot
+        for (int row = pivot + 1; row < 4; ++row) {
+            float factor = s[row][pivot] / s[pivot][pivot];
+            s[row][pivot] = 0.0f;
+
+            // Subtract factor * pivot row from current row
+            for (int col = pivot + 1; col < 8; ++col) {
+                s[row][col] -= factor * s[pivot][col];
+            }
+        }
+    }
+
+    // Check if last pivot is zero
+    if (s[3][3] == 0.0f) {
+        result.identity();
+        return result;
+    }
+
+    // Back substitution
+    CMatrix minv;
+    for (int i = 3; i >= 0; --i) {
+        float* row = s[i];
+        float pivotInverse = 1.0f / row[i];
+
+        // Solve for identity matrix columns
+        for (int j = 0; j < 4; ++j) {
+            minv.m[i][j] = row[4 + j] * pivotInverse;
+        }
+
+        // Eliminate entries above the pivot
+        for (int rowAbove = 0; rowAbove < i; ++rowAbove) {
+            float factor = s[rowAbove][i];
+            for (int col = 0; col < 4; ++col) {
+                s[rowAbove][4 + col] -= factor * minv.m[i][col];
+            }
+        }
+    }
+
+    return minv;
 }
 
 CMatrix& CMatrix::operator*=(CMatrix const& other)
@@ -260,7 +359,9 @@ CMatrix& CMatrix::operator*=(CMatrix const& other)
 
 CVector CMatrix::getOrgInv() const
 {
-    throw std::logic_error("Not implemented");
+    CMatrix im = getInverse();
+    CVector result = *(CVector*)&im.m[3][0];
+    return result;
 }
 
 void CMatrix::perspectiveFovLH(float, float, float, float)
