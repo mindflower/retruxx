@@ -38,6 +38,14 @@ namespace m3d
 
     m3d::RenderModes Landscape::m_renderMode = RM_GAME;
 
+    struct AlphaSpecial
+    {
+        /* 0x0000 */ int m_maskindex;
+        /* 0x0004 */ int m_rotate;
+    }; /* size: 0x0008 */;
+
+    AlphaSpecial specialMapper[16] = { {0, 0}, {3, 0}, {3, 1}, {1, 1}, {3, 3}, {1, 0}, {4, 1}, {2, 0}, {3, 2}, {4, 0}, {1, 2}, {2, 1}, {1, 3}, {2, 3}, {2, 2}, {0, 0} };
+
     RT_CLASS_EXPORTS_BEGIN(Landscape)
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Landscape);
@@ -497,7 +505,9 @@ namespace m3d
         case LRM_DIRECT:
         {
             const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-            m_owner->GetGraph().SortedCellsStartFetching(m_drawRadius * transitionDivider + 1, m_drawRadius + 1);
+            // TODO: enable when DrawLandscapeTextures is implemented
+            //m_owner->GetGraph().SortedCellsStartFetching(m_drawRadius * transitionDivider + 1, m_drawRadius + 1);
+            m_owner->GetGraph().SortedCellsStartFetching(0, m_drawRadius + 1);
             m_solidPs->Apply();
             m_solidVs->Apply();
 
@@ -710,8 +720,9 @@ namespace m3d
         m_firstpasscounter = 0;
         m_otherpasscounter = 0;
 
-        // TODO: implement shadow rendering
-        if (M3D_ENGINE_CFG.m_lsShadows.GetB())
+        // TODO: implement landscape textures rendering
+        if (false)
+        //if (M3D_ENGINE_CFG.m_lsShadows.GetB())
         {
             // TODO: check this
             M3D_RENDERER->SetToStream(1, m_landUVVb);
@@ -759,60 +770,60 @@ namespace m3d
 
                 const auto worldMatHandle = m_landscapeVs->GetParamHandleByName("mWorld");
                 m_landscapeVs->SetMatrix(worldMatHandle, matWorld);
+            }
 
-                for (int i = 0; i < m_tilesTextures.size(); ++i)
+            for (int i = 0; i < m_tilesTextures.size(); ++i)
+            {
+                if (m_cellsPerTex[i].empty())
                 {
-                    if (m_cellsPerTex[i].empty())
+                    continue;
+                }
+
+                M3D_RENDERER->SetTexture(1, m_tilesTextures[i]->m_texHandle, -1.0);
+
+                m_CurAlphaSet = 0;
+                m_hashIdxToLandType.getValueByKey(m_CurAlphaSet, i);
+
+                M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
+                if (m3d::Landscape::m_renderMode != RM_GAME)
+                {
+                    throw retruxx::logic_error("Not implemented");
+                }
+                else
+                {
+                    M3D_RENDERER->SetZbState(rend::ZB_ENABLE, false);
+                    DrawCellsFast0(m_cellsPerTex[i], *m_tilesTextures[i], RT_FIRSTPASSLIGHT);
+
+                    M3D_RENDERER->SetZbState(rend::ZB_NOWRITE, false);
+                    M3D_RENDERER->SetBlend(rend::BM_ALPHA, 0);
+                    M3D_RENDERER->SetAlphaTest(1);
+                    m_landscapePsSP->Apply();
+                    m_lastState = RT_OTHERPASSES;
+
+                    const float land_scale_27 = 8.0;
+                    for (int j = 0; j < m_cellsPerTex[i].size(); ++i)
                     {
-                        continue;
-                    }
+                        CVector vsFloatConst;
+                        vsFloatConst.x = m_cellsPerTex[i][j] * 128.0;
+                        vsFloatConst.y = m_cellsPerTex[i][j] * 128.0;
+                        vsFloatConst.z = land_scale_27;
+                        M3D_RENDERER->SetVsFloatConst(10u, (float*)& vsFloatConst, 1u);
 
-                    M3D_RENDERER->SetTexture(1, m_tilesTextures[i]->m_texHandle, -1.0);
-
-                    m_CurAlphaSet = 0;
-                    m_hashIdxToLandType.getValueByKey(m_CurAlphaSet, i);
-
-                    M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
-                    if (m3d::Landscape::m_renderMode != RM_GAME)
-                    {
-                        throw retruxx::logic_error("Not implemented");
-                    }
-                    else
-                    {
-                        M3D_RENDERER->SetZbState(rend::ZB_ENABLE, false);
-                        DrawCellsFast0(m_cellsPerTex[i], *m_tilesTextures[i], RT_FIRSTPASSLIGHT);
-
-                        M3D_RENDERER->SetZbState(rend::ZB_NOWRITE, false);
-                        M3D_RENDERER->SetBlend(rend::BM_ALPHA, 0);
-                        M3D_RENDERER->SetAlphaTest(1);
-                        m_landscapePsSP->Apply();
-                        m_lastState = RT_OTHERPASSES;
-
-                        const float land_scale_27 = 8.0;
-                        for (int j = 0; j < m_cellsPerTex[i].size(); ++i)
+                        const auto v105 = m_tilesTextures[i]->m_offsetsmap[m_cellsPerTex[i][j]];
+                        const auto v106 = m_tilesTextures[i]->m_numCellsPerCellMap[64 * m_cellsPerTex[i][j] + m_cellsPerTex[i][j]];
+                        const auto bankNum = m_tilesTextures[i]->m_banknumber[m_cellsPerTex[i][j]];
+                        if (v105 != 0xFFFF && v106)
                         {
-                            CVector vsFloatConst;
-                            vsFloatConst.x = m_cellsPerTex[i][j] * 128.0;
-                            vsFloatConst.y = m_cellsPerTex[i][j] * 128.0;
-                            vsFloatConst.z = land_scale_27;
-                            M3D_RENDERER->SetVsFloatConst(10u, (float*)& vsFloatConst, 1u);
-
-                            const auto v105 = m_tilesTextures[i]->m_offsetsmap[m_cellsPerTex[i][j]];
-                            const auto v106 = m_tilesTextures[i]->m_numCellsPerCellMap[64 * m_cellsPerTex[i][j] + m_cellsPerTex[i][j]];
-                            const auto bankNum = m_tilesTextures[i]->m_banknumber[m_cellsPerTex[i][j]];
-                            if (v105 != 0xFFFF && v106)
-                            {
-                                M3D_RENDERER->SetIndices(m_landIbConst.front(), v105);
-                                M3D_RENDERER->SetToStream0(m_tilesTextures[i]->m_vbHandle[bankNum]);
-                                M3D_RENDERER->DrawIndexedPrimitiveShader(
-                                    rend::M3DPT_TRIANGLESTRIP,
-                                    0,
-                                    25 * v106,
-                                    0,
-                                    106 * this->m_lsNumIndices.front() - 3);
-                            }
-
+                            M3D_RENDERER->SetIndices(m_landIbConst.front(), v105);
+                            M3D_RENDERER->SetToStream0(m_tilesTextures[i]->m_vbHandle[bankNum]);
+                            M3D_RENDERER->DrawIndexedPrimitiveShader(
+                                rend::M3DPT_TRIANGLESTRIP,
+                                0,
+                                25 * v106,
+                                0,
+                                106 * this->m_lsNumIndices.front() - 3);
                         }
+
                     }
                 }
             }
@@ -2335,254 +2346,7 @@ namespace m3d
 
     void Landscape::CreateHelperStructures()
     {
-            int land_size = this->m_owner->m_level->land_size;
-            int sizeinCells = land_size;
-            int stride = 4 * land_size;
-
-            // Initialize flags for texture processing
-            int flags[4] = { 1, 2, 4, 8 };
-
-            // Initialize data structures
-            m3d::CIntHash<unsigned int> maskHash;
-            std::set<unsigned int> setofTexs;
-
-            // Initialize mask hash
-            std::vector<std::list<std::pair<unsigned int const, unsigned int>>::iterator> initVec(9);
-
-            // Process all landscape tiles
-            for (int y = 0; y < land_size; ++y)
-            {
-                for (int vofs = 0; vofs < land_size; ++vofs)
-                {
-                    for (int yc = 0; yc < 4; ++yc)
-                    {
-                        unsigned int baseOffset = 4 * stride * y;
-                        int i = yc + 4 * y;
-
-                        for (int subX = 0; subX < 4; ++subX)
-                        {
-                            int v4 = 4 * vofs + subX;
-                            m3d::Landscape::TileInfo* currentTile = &this->m_tiles[baseOffset + v4];
-
-                            // Calculate bounds
-                            int xBound = v4;
-                            if (xBound < 0) xBound = 0;
-                            if (xBound > stride - 1) xBound = stride - 1;
-
-                            int yBound = i;
-                            if (yBound < 0) yBound = 0;
-                            if (yBound > stride - 1) yBound = stride - 1;
-
-                            // Get texture indices for the 4 corners of the quad
-                            int tex[4];
-                            tex[0] = this->m_tiles[xBound + 4 * sizeinCells * yBound].m_texIndex0;
-
-                            int x1 = v4 + 1;
-                            if (x1 < 0) x1 = 0;
-                            if (x1 > stride - 1) x1 = stride - 1;
-                            tex[1] = this->m_tiles[x1 + 4 * sizeinCells * yBound].m_texIndex0;
-
-                            int y1 = i + 1;
-                            if (y1 < 0) y1 = 0;
-                            if (y1 > stride - 1) y1 = stride - 1;
-                            tex[2] = this->m_tiles[xBound + 4 * sizeinCells * y1].m_texIndex0;
-
-                            int x1b = v4 + 1;
-                            if (x1b < 0) x1b = 0;
-                            if (x1b > stride - 1) x1b = stride - 1;
-                            tex[3] = this->m_tiles[x1b + 4 * sizeinCells * y1].m_texIndex0;
-
-                            // Process texture combinations
-                            currentTile->m_numTexs = 0;
-                            bool processed[4] = { false };
-
-                            for (int corner = 0; corner < 4; ++corner)
-                            {
-                                if (!processed[corner])
-                                {
-                                    int combinedFlags = flags[corner];
-
-                                    // Combine identical textures
-                                    for (int otherCorner = corner + 1; otherCorner < 4; ++otherCorner)
-                                    {
-                                        if (!processed[otherCorner] && tex[corner] == tex[otherCorner])
-                                        {
-                                            combinedFlags |= flags[otherCorner];
-                                            processed[otherCorner] = true;
-                                        }
-                                    }
-
-                                    // Add to tile's texture list
-                                    currentTile->m_texFlags[currentTile->m_numTexs] = combinedFlags;
-                                    currentTile->m_texIndices[currentTile->m_numTexs] = tex[corner];
-                                    currentTile->m_numTexs++;
-                                    processed[corner] = true;
-                                }
-                            }
-
-                            // Check for uniform land type
-                            bool uniformLandType = true;
-                            unsigned int baseTex = tex[0];
-
-                            int baseLandType = -1;
-                            m_hashIdxToLandType.getValueByKey(baseTex, baseLandType);
-
-                            // Check surrounding tiles for consistent land type
-                            for (int checkY = i - 1; checkY <= i + 1; ++checkY)
-                            {
-                                for (int checkX = v4 - 1; checkX <= v4 + 1; ++checkX)
-                                {
-                                    if (checkX >= 0 && checkX < stride && checkY >= 0 && checkY < stride)
-                                    {
-                                        unsigned int checkTex = this->m_tiles[checkX + 4 * sizeinCells * checkY].m_texIndex0;
-
-                                        int landType = -1;
-                                        auto checkLandTypeIter = this->m_hashIdxToLandType.getValueByKey(checkTex, landType);
-
-                                        if (checkLandTypeIter)
-                                        {
-                                            if (landType != baseLandType)
-                                            {
-                                                uniformLandType = false;
-                                                break;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            uniformLandType = false;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (!uniformLandType) break;
-                            }
-
-                            // Simplify if uniform or single texture
-                            if (currentTile->m_numTexs == 1 || uniformLandType)
-                            {
-                                currentTile->m_texFlags[0] = 0;
-                                currentTile->m_numTexs = 1;
-                            }
-
-                            // Sort textures by some criteria (simplified)
-                            for (int sortPass = currentTile->m_numTexs - 1; sortPass > 0; --sortPass)
-                            {
-                                // Simple bubble-sort like arrangement
-                                if (currentTile->m_texIndices[sortPass] < currentTile->m_texIndices[sortPass - 1])
-                                {
-                                    std::swap(currentTile->m_texFlags[sortPass], currentTile->m_texFlags[sortPass - 1]);
-                                    std::swap(currentTile->m_texIndices[sortPass], currentTile->m_texIndices[sortPass - 1]);
-                                }
-                            }
-
-                            // Set default flags for multi-texture tiles
-                            if (currentTile->m_numTexs != 1)
-                            {
-                                currentTile->m_texFlags[0] = 15; // All corners
-                            }
-
-                            // Update texture-cell mapping for game rendering
-                            if (m3d::Landscape::m_renderMode == RM_GAME)
-                            {
-                                for (int texIdx = 0; texIdx < currentTile->m_numTexs; ++texIdx)
-                                {
-                                    unsigned int textureIndex = currentTile->m_texIndices[texIdx];
-                                    m3d::cmn::vector<unsigned int>& textureCells = this->m_cellsPerTex.m_data[textureIndex];
-
-                                    if (textureCells.m_numItems < textureCells.m_maxItems)
-                                    {
-                                        // Encode tile position and angle into cell data
-                                        unsigned int cellData = v4 + ((i + ((currentTile->m_angle + (currentTile->m_texFlags[texIdx] << 8)) << 8)) << 8);
-                                        textureCells.m_data[textureCells.m_numItems] = cellData;
-                                        textureCells.m_numItems++;
-                                    }
-
-                                    // Update texture set mapping
-                                    int cellMapIndex = vofs + sizeinCells * y;
-                                    this->m_texSetsmap[cellMapIndex].insert(textureIndex);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Handle different rendering modes
-            if (m3d::Landscape::m_renderMode != RM_GAME)
-            {
-                // Build vertex buffers and rendering data
-                int maxCells = 0;
-
-                // Find maximum cells count
-                for (size_t texIdx = 0; texIdx < this->m_tilesTextures.size(); ++texIdx)
-                {
-                    if (this->m_cellsPerTex.m_data[texIdx].m_numItems > maxCells)
-                    {
-                        maxCells = this->m_cellsPerTex.m_data[texIdx].m_numItems;
-                    }
-                }
-
-                // Allocate vertex buffer
-                m3d::rend::VertexLandscape* vertexBuffer = new m3d::rend::VertexLandscape[25 * maxCells];
-
-                // Process each texture
-                for (size_t texIdx = 0; texIdx < this->m_tilesTextures.size(); ++texIdx)
-                {
-                    m3d::Landscape::TIVChunk* textureChunk = this->m_tilesTextures[texIdx];
-
-                    if (this->m_cellsPerTex.m_data[texIdx].m_numItems > 0)
-                    {
-                        // Initialize chunk data
-                        memset(textureChunk->m_offsetsmap, 0, sizeof(textureChunk->m_offsetsmap));
-                        memset(textureChunk->m_banknumber, 0, sizeof(textureChunk->m_banknumber));
-                        memset(textureChunk->m_numCellsPerCellMap, 0, sizeof(textureChunk->m_numCellsPerCellMap));
-                        textureChunk->iotherPassOffset = 0;
-                        textureChunk->iotherPassBankNumber = 0;
-
-                        // Build rendering cells
-                        int vertexOffset = 0;
-                        std::vector<int> bankSwitchingMap;
-
-                        // Build primary and secondary passes
-                        BuildCells0(&vertexBuffer[0], *textureChunk, vertexOffset,
-                                    this->m_cellsPerTex[texIdx], RT_FIRSTPASSLIGHT, bankSwitchingMap);
-                        BuildCells0(&vertexBuffer[textureChunk->iotherPassOffset], *textureChunk,
-                                    vertexOffset, this->m_cellsPerTex[texIdx], RT_OTHERPASSES, bankSwitchingMap);
-
-                        // Reset cell count
-                        this->m_cellsPerTex.m_data[texIdx].m_numItems = 0;
-
-                        // Create vertex buffers for each bank
-                        char* vertexDataPtr = (char*)vertexBuffer;
-                        for (size_t bankIdx = 0; bankIdx < bankSwitchingMap.size(); ++bankIdx)
-                        {
-                            int vertexCount = bankSwitchingMap[bankIdx];
-
-                            // Create vertex buffer
-                            m3d::rend::VbHandle vbHandle = m3d::Application::g_pApp->m_renderer->AddVb(rend::VERTEX_XYZNCT1_UV2_S1,
-                                vertexCount,
-                                "Landscape",
-                                0);
-
-                            // Copy vertex data
-                            void* lockedBuffer = m3d::Application::g_pApp->m_renderer->LockVb(vbHandle, vertexCount, 0, 0);
-                            memcpy(lockedBuffer, vertexDataPtr, 8 * vertexCount);
-                            m3d::Application::g_pApp->m_renderer->UnlockVb(vbHandle);
-
-                            vertexDataPtr += 8 * vertexCount;
-
-                            // Store vertex buffer handle
-                            textureChunk->m_vbHandle.push_back(vbHandle);
-                        }
-                    }
-                }
-
-                // Clean up
-                delete[] vertexBuffer;
-
-                // Build UV coordinates
-                BuildUVSet();
-            }
+        // TODO: implement Landscape::CreateHelperStructures
     }
 
     void Landscape::drawSpriteOverlayed2Projected(float, float, float, float, unsigned, bool, CClipper const&)
@@ -4331,14 +4095,206 @@ namespace m3d
         m_waterDumbPs = nullptr;
     }
 
-    void Landscape::BuildCells0(rend::VertexLandscape*, TIVChunk&, int&, cmn::vector<unsigned> const&, RenderTypes, retruxx::vector<int, retruxx::allocator<int>>&)
+    void Landscape::BuildCells0(rend::VertexLandscape* vert, TIVChunk& chunk, int& vofs, cmn::vector<unsigned> const& cellsPerTex, RenderTypes RenderType, retruxx::vector<int, retruxx::allocator<int>>& bankSwitchingMap)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        const int numCells = cellsPerTex.size();
+        if (numCells == 0)
+        {
+            chunk.iotherPassOffset = vofs;
+            return;
+        }
+
+        const uint32_t* curCell = cellsPerTex.m_data;
+        int banknumber = chunk.iotherPassBankNumber;
+        int numCellsToDrawPerPass = 0;
+        int lastSquareX = -1;
+        int lastSquareY = -1;
+        int ofsToStore = vofs;
+        int vertProcessed = vofs;
+
+        int remainingCells = numCells;
+        while (remainingCells > 0)
+        {
+            int numCellsToDraw = (remainingCells > 1) ? 1 : remainingCells;
+            int cellsProcessed = numCellsToDraw;
+
+            for (int i = 0; i < numCellsToDraw; i++)
+            {
+                uint32_t cellData = *curCell;
+                uint8_t x = cellData & 0xFF;
+                uint8_t y = (cellData >> 8) & 0xFF;
+                int ang = (cellData >> 16) & 3;
+                int corner = (cellData >> 24) & 0xF;
+
+                // Filter cells based on RenderType and corner
+                bool shouldProcess = true;
+                if (RenderType)
+                {
+                    if (corner == 0 || specialMapper[corner].m_maskindex == 0)
+                    {
+                        shouldProcess = false;
+                    }
+                }
+                else
+                {
+                    if (corner != 0 && specialMapper[corner].m_maskindex != 0)
+                    {
+                        shouldProcess = false;
+                    }
+                }
+
+                if (!shouldProcess)
+                {
+                    curCell++;
+                    cellsProcessed--;
+                    continue;
+                }
+
+                int tileX = x / 4;
+                int tileY = y / 4;
+                int subX = x % 4;
+                int subY = y % 4;
+
+                // Check if we're starting a new square
+                if (tileX != lastSquareX || tileY != lastSquareY)
+                {
+                    // Store previous square data if valid
+                    if (lastSquareX != -1 && lastSquareY != -1)
+                    {
+                        int shift = (RenderType != 0) ? 4 : 0;
+
+                        // Bounds checking
+                        assert(lastSquareX >= 0 && lastSquareX < 64);
+                        assert(lastSquareY >= 0 && lastSquareY < 64);
+
+                        int mapIndex = 64 * lastSquareY + lastSquareX;
+                        chunk.m_numCellsPerCellMap[mapIndex] |= (numCellsToDrawPerPass << (2 * shift));
+
+                        int offsetIndex = lastSquareX + (lastSquareY << 8);
+                        chunk.m_offsetsmap[offsetIndex] |= (ofsToStore << (4 * shift));
+                        chunk.m_banknumber[offsetIndex] |= (banknumber << (2 * shift));
+                    }
+
+                    // Start new square
+                    lastSquareX = tileX;
+                    lastSquareY = tileY;
+                    numCellsToDrawPerPass = 0;
+                    ofsToStore = vofs;
+                }
+
+                numCellsToDrawPerPass++;
+
+                // Get UV coordinates based on angle
+                float* srcUv = m_uvForAngles[ang][0];
+                float* srcUv2 = nullptr;
+
+                if (RenderType == 1) {
+                    int setIndex = m_CurAlphaSet;
+                    int cornerIndex = specialMapper[corner].m_maskindex;
+                    int angleIndex = specialMapper[corner].m_rotate;
+                    srcUv2 = m_setAndUVs.m_sets[setIndex][cornerIndex].m_uvForAngles[angleIndex][0];
+                }
+
+                // Process vertices (5x5 grid)
+                int mapStride = m_mapSize + 1;
+                int heightMapOffset = 4 * x + 4 * y * mapStride;
+
+                for (int k = 0; k < 5; k++)
+                {
+                    int verticesProcessed = 0;
+
+                    if (RenderType == 1)
+                    {
+                        // Process with secondary UVs
+                        float* uvPtr = srcUv2;
+                        for (int j = 0; j <= 4; j++)
+                        {
+                            uint16_t vertexIndex = k + 4 * (subY + 32 * (j + 4 * subX));
+                            vert[verticesProcessed].xz = vertexIndex;
+                            vert[verticesProcessed].y = m_heightMap[heightMapOffset + j];
+
+                            // Calculate UV (simplified from original)
+                            int u = static_cast<int>(uvPtr[0] * 64.0f);
+                            int v = static_cast<int>(uvPtr[1] * -64.0f);
+                            vert[verticesProcessed].uv = u - (v << 9);
+
+                            verticesProcessed++;
+                            uvPtr += 2;
+                        }
+                    }
+                    else
+                    {
+                        // Process with primary UVs
+                        float* uvPtr = srcUv;
+                        for (int j = 0; j <= 4; j++)
+                        {
+                            uint16_t vertexIndex = k + 4 * (subY + 32 * (j + 4 * subX));
+                            vert[verticesProcessed].xz = vertexIndex;
+                            vert[verticesProcessed].y = m_heightMap[heightMapOffset + j];
+
+                            // Calculate UV (simplified from original)
+                            int u = static_cast<int>(uvPtr[0] * 64.0f);
+                            int v = static_cast<int>(uvPtr[1] * -64.0f);
+                            vert[verticesProcessed].uv = u - (v << 9);
+
+                            verticesProcessed++;
+                            uvPtr += 2;
+                        }
+                    }
+
+                    heightMapOffset += 4 * mapStride;
+                    srcUv += 10;
+                    if (srcUv2) srcUv2 += 10;
+                    vert += verticesProcessed;
+                }
+
+                vofs += 25;
+                vertProcessed += 25;
+
+                // Handle bank switching if vertex offset exceeds 16-bit limit
+                if (vofs > 0xFFFF)
+                {
+                    bankSwitchingMap.push_back(ofsToStore);
+                    vofs -= ofsToStore;
+                    banknumber++;
+                    ofsToStore = 0;
+                }
+
+                curCell++;
+            }
+
+            remainingCells -= cellsProcessed;
+        }
+
+        // Store final square data if we have pending cells
+        if (numCellsToDrawPerPass > 0)
+        {
+            int shift = (RenderType != 0) ? 4 : 0;
+
+            assert(lastSquareX >= 0 && lastSquareX < 64);
+            assert(lastSquareY >= 0 && lastSquareY < 64);
+
+            int mapIndex = 64 * lastSquareY + lastSquareX;
+            chunk.m_numCellsPerCellMap[mapIndex] |= (numCellsToDrawPerPass << (2 * shift));
+
+            int offsetIndex = lastSquareX + (lastSquareY << 8);
+            chunk.m_offsetsmap[offsetIndex] |= (ofsToStore << (4 * shift));
+            chunk.m_banknumber[offsetIndex] |= (banknumber << (2 * shift));
+
+            chunk.iotherPassBankNumber = banknumber;
+            chunk.iotherPassOffset = vertProcessed;
+        }
+        else
+        {
+            chunk.iotherPassBankNumber = banknumber;
+            chunk.iotherPassOffset = vertProcessed;
+        }
     }
 
     void Landscape::DrawCellsFast0(cmn::vector<unsigned> const& cellsPerTex, TIVChunk& tivchunk, RenderTypes RenderType)
     {
-        // TODO: generated code
+        // TODO: generated code (looks ok)
         // Set up rendering state based on render type
         if (RenderType == RT_OTHERPASSES)
         {
@@ -4371,6 +4327,7 @@ namespace m3d
             unsigned char posY = static_cast<unsigned char>(cellData >> 8);
 
             const float land_scale_27 = 8.0;
+
             // Set position constant for vertex shader
             CVector position;
             position.x = static_cast<float>(posX) * 128.0f;
@@ -4401,12 +4358,9 @@ namespace m3d
                 unsigned int vertexCount = 25 * primitiveCount;
 
                 // Set up rendering resources
-                m3d::Application::g_pApp->m_renderer->SetIndices(
-                    this->m_landIbConst.front(),
-                    vertexOffset);
+                M3D_RENDERER->SetIndices(m_landIbConst.front(), vertexOffset);
 
-                m3d::Application::g_pApp->m_renderer->SetToStream0(
-                    tivchunk.m_vbHandle[bankNumber]);
+                M3D_RENDERER->SetToStream0(tivchunk.m_vbHandle[bankNumber]);
 
                 // Draw the geometry
                 m3d::Application::g_pApp->m_renderer->DrawIndexedPrimitiveShader(
@@ -4488,7 +4442,16 @@ namespace m3d
 
     void Landscape::BuildUVSet()
     {
-        throw retruxx::logic_error("Not implemented");
+        auto vb = (float*)M3D_RENDERER->LockVb(this->m_landUVVb, 0, 0, 0);
+        auto v4 = 2621;
+        do
+        {
+            auto v5 = vb;
+            vb += 50;
+            --v4;
+            memcpy(v5, this->m_uvForAngles, 0xC8u);
+        } while (v4);
+        M3D_RENDERER->UnlockVb(m_landUVVb);
     }
 
     Landscape::VisibilityMode Landscape::GetCurVisMode() const

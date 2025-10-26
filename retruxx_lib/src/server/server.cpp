@@ -324,7 +324,14 @@ namespace ai
             "Trigger",
             "DummyObject",
             "Team",
-            "Formation"
+            "Formation",
+            "Chassis",
+            "VehiclePart",
+            "Cabin",
+            "Basket",
+            "Wheel",
+            "CompoundVehiclePart"
+
         };
 
         if (classes.find(className) == classes.end())
