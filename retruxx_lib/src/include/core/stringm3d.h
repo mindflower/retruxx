@@ -93,3 +93,4 @@ CStr operator+(CStr const& lhs, CStr const& rhs);
 
 unsigned int strToColor(CStr const& str, unsigned def);
 int strToInt(CStr const& str);
+float strToFloat(CStr const& str);

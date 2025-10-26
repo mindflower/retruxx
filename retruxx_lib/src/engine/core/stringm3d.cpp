@@ -586,3 +586,14 @@ int strToInt(CStr const& str)
     return v;
 }
 
+float strToFloat(CStr const& str)
+{
+    if (str.empty())
+    {
+        return 0;
+    }
+    float v = 0.0;
+    sscanf(str.c_str(), "%f", &v);
+    return v;
+}
+

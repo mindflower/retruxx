@@ -2,6 +2,8 @@
 #include "server/objects/physicbodies/physichelpers.h"
 #include <stdexcept>
 
+#include "core/log.h"
+
 namespace ai
 {
 	RT_CLASS_EXPORTS_BEGIN(VehiclePart)
@@ -15,7 +17,15 @@ namespace ai
 
 	VehiclePartPrototypeInfo::VehiclePartPrototypeInfo()
 	{
-		throw retruxx::logic_error("Not implemented");
+		m_blowEffectName = "ET_PS_HARD_BLOW";
+		m_canBeUsedInAutogenerating = 1;
+		m_weaponPrototypeId = -1;
+		m_durability = 0.0;
+		m_repairCoef = 1.0;
+		m_durabilityCoeffsForDamageTypes[0] = 0.0;
+		m_durabilityCoeffsForDamageTypes[1] = 0.0;
+		m_durabilityCoeffsForDamageTypes[2] = 0.0;
+		m_durabilityCoeffsForDamageTypes[3] = 0.0;
 	}
 
 	Obj* VehiclePartPrototypeInfo::CreateTargetObject() const
@@ -23,9 +33,15 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void VehiclePartPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	void VehiclePartPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		throw retruxx::logic_error("Not implemented");
+		ai::PhysicBodyPrototypeInfo::RefreshFromXml(xmlFile, xmlNode);
+		if (m_collisionInfos.front().m_geomType != GEOM_TYPE_BOX)
+		{
+			M3D_LOG_ERR("Error: collision geom in vehicle part name = '" + m_engineModelName + "' is not BOX");
+		}
+		m3d::SafeVectorAttrib(this->m_collisionInfos.front().m_size, xmlNode, "Size");
+		_InitModelMeshes(xmlFile, xmlNode);
 	}
 
 	VehiclePartPrototypeInfo::~VehiclePartPrototypeInfo()
@@ -33,9 +49,50 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	bool VehiclePartPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	bool VehiclePartPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		throw retruxx::logic_error("Not implemented");
+		auto result = ai::PhysicBodyPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+		if (result)
+		{
+			m3d::SafeStrAttrib(this->m_blowEffectName, xmlNode, "BlowEffect");
+			m3d::SafeFloatAttrib(this->m_durability, xmlNode, "Durability");
+
+			CStr strDurabilityCoeffs;
+			m3d::SafeStrAttrib(strDurabilityCoeffs, xmlNode, "DurCoeffsForDamageTypes");
+			if (!strDurabilityCoeffs.empty())
+			{
+				std::vector<CStr> strs;
+				m3d::Tokenize(strDurabilityCoeffs, strs, "(), ;\t");
+				for (int i = 0; i < 4 && i < strs.size(); ++i)
+				{
+					m_durabilityCoeffsForDamageTypes[i] = strToFloat(strs[i]);
+					if (m_durabilityCoeffsForDamageTypes[i] < -25.1 || m_durabilityCoeffsForDamageTypes[i] > 25.0)
+					{
+						M3D_CRITICAL_ERROR("invalid DurCoeffsForDamageTypes for '" + m_prototypeName + "'");
+					}
+
+                }
+			}
+			else
+			{
+				m_durabilityCoeffsForDamageTypes[0] = 0.0;
+				m_durabilityCoeffsForDamageTypes[1] = 0.0;
+				m_durabilityCoeffsForDamageTypes[2] = 0.0;
+				m_durabilityCoeffsForDamageTypes[3] = 0.0;
+			}
+
+			std::vector<CStr> strs;
+			CStr strLoadPoints;
+			m3d::SafeStrAttrib(strLoadPoints, xmlNode, "LoadPoints");
+			m3d::Tokenize(strDurabilityCoeffs, strs, "(), ;\t");
+			m_loadPoints.insert(strs.begin(), strs.end());
+
+			m3d::SafeUintAttrib(this->m_price, xmlNode, "Price");
+			m3d::SafeFloatAttrib(this->m_repairCoef, xmlNode, "RepairCoef");
+			m3d::SafeBoolAttrib(this->m_canBeUsedInAutogenerating, xmlNode, "CanBeUsedInAutogenerating");
+		}
+
+		return result;
 	}
 
 	void VehiclePartPrototypeInfo::_InitModelMeshes(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

@@ -10,12 +10,23 @@ namespace ai
 
     ChassisPrototypeInfo::ChassisPrototypeInfo()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_maxHealth = 1.0;
+        this->m_maxFuel = 1.0;
     }
 
-    bool ChassisPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool ChassisPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw retruxx::logic_error("Not implemented");
+        auto result = ai::VehiclePartPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(this->m_maxHealth, xmlNode, "MaxHealth");
+            m3d::SafeFloatAttrib(this->m_maxFuel, xmlNode, "MaxFuel");
+            m3d::SafeStrAttrib(this->m_brakingSoundName, xmlNode, "BrakingSound");
+            m3d::SafeStrAttrib(this->m_pneumoSoundName, xmlNode, "PneumoSound");
+            m3d::SafeStrAttrib(this->m_gearShiftSoundName, xmlNode, "GearShiftSound");
+            return 1;
+        }
+        return result;
     }
 
     Obj* ChassisPrototypeInfo::CreateTargetObject() const

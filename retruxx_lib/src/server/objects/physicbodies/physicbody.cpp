@@ -16,6 +16,7 @@
 #include "thirdparty/injecttools.h"
 #include <client.h>
 
+#include "compoundvehiclepart.h"
 #include "world.h"
 #include "core/log.h"
 #include "geoms/cylinder.h"
@@ -33,14 +34,32 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	bool PhysicBodyPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	bool PhysicBodyPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		throw std::logic_error("Not implemented");
+		auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+		if (result)
+		{
+			m_engineModelName = xmlNode->GetAttribute("ModelFile");
+			if (this->m_engineModelName.empty() && !IsPrototypeOf(&ai::CompoundVehiclePart::m_classCompoundVehiclePart))
+			{
+				M3D_CRITICAL_ERROR("no model file is provided for prototype '" + m_prototypeName + "'");
+            }
+
+			m3d::SafeBoolAttrib(this->m_bCollisionTrimeshAllowed, xmlNode, "CollisionTrimeshAllowed");
+			m3d::SafeFloatAttrib(this->m_massValue, xmlNode, "Mass");
+
+			if (this->m_massValue < 0.001)
+			{
+				M3D_CRITICAL_ERROR("mass is too low for '" + m_prototypeName + "'");
+			}
+		}
+		return result;
 	}
 
 	PhysicBodyPrototypeInfo::PhysicBodyPrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
+		this->m_massValue = 1.0;
+		this->m_bCollisionTrimeshAllowed = 0;
 	}
 
     PhysicBody::PhysicBody(PhysicBody const&)

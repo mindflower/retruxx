@@ -8,9 +8,36 @@ namespace ai
 	RT_CLASS_EXPORTS_END;
 	RT_CLASS_DEFINE(Basket);
 
-	bool BasketPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	bool BasketPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		throw retruxx::logic_error("Not implemented");
+		auto result = ai::VehiclePartPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+		if (result)
+		{
+			ref_ptr repositoryDescriptionNode = xmlFile->CreateNode();
+			xmlNode->GetFirstChild(repositoryDescriptionNode, "RepositoryDescription");
+
+			if (!repositoryDescriptionNode->IsEmpty() && repositoryDescriptionNode->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
+			{
+				ref_ptr slotNode = xmlFile->CreateNode();
+				for (repositoryDescriptionNode->GetFirstChild(slotNode, "Slot"); !slotNode->IsEmpty(); slotNode->GetNextSibling(slotNode, "Slot"))
+				{
+					CStr slotName;
+					m3d::SafeStrAttrib(slotName, slotNode, "Name");
+
+                    CVector2 pos;
+					m3d::SafeVector2Attrib(pos, slotNode, "Pos");
+					PointBase<int> point(pos.x, pos.y);
+
+					m_slots.emplace(std::move(slotName), std::move(point));
+				}
+
+                CVector2 size;
+				m3d::SafeVector2Attrib(size, repositoryDescriptionNode, "RepositorySize");
+				this->m_repositorySize.x = size.x;
+				this->m_repositorySize.y = size.y;
+			}
+		}
+		return result;
 	}
 
 	PointBase<int> const& BasketPrototypeInfo::GetRepositorySize() const
@@ -36,7 +63,8 @@ namespace ai
 
 	BasketPrototypeInfo::BasketPrototypeInfo()
 	{
-		throw retruxx::logic_error("Not implemented");
+		this->m_repositorySize.x = 10;
+		this->m_repositorySize.y = 10;
 	}
 
 	Obj* BasketPrototypeInfo::CreateTargetObject() const

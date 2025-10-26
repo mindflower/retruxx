@@ -10,7 +10,12 @@ namespace ai
 
     WheelPrototypeInfo::WheelPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        this->m_suspensionRange = 0.5;
+        this->m_suspensionCFM = 0.1;
+        this->m_suspensionERP = 0.80000001;
+        this->m_mU = 1.0;
+        this->m_typeName = "BIG";
+        this->m_blowEffectName = "ET_PS_HARD_BLOW";
     }
 
     ai::Obj* WheelPrototypeInfo::CreateTargetObject() const
@@ -18,9 +23,21 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    bool WheelPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool WheelPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        auto result = ai::SimplePhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            _SetGeomType(GEOM_TYPE_SPHERE);
+            m3d::SafeFloatAttrib(this->m_suspensionRange, xmlNode, "SuspensionRange");
+            m3d::SafeStrAttrib(this->m_suspensionModelName, xmlNode, "SuspensionModelFile");
+            m3d::SafeFloatAttrib(this->m_suspensionCFM, xmlNode, "SuspensionCFM");
+            m3d::SafeFloatAttrib(this->m_suspensionERP, xmlNode, "SuspensionERP");
+            m3d::SafeFloatAttrib(this->m_mU, xmlNode, "mU");
+            m3d::SafeStrAttrib(this->m_typeName, xmlNode, "EffectType");
+            m3d::SafeStrAttrib(this->m_blowEffectName, xmlNode, "BlowEffect");
+        }
+        return result;
     }
 
     void Wheel::BreakModel()
