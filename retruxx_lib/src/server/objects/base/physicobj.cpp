@@ -780,7 +780,7 @@ namespace ai
         this->SetPositionSelf(pos);
     }
 
-    PhysicObj::PhysicObj(PhysicObjPrototypeInfo const& prototypeInfo)
+    PhysicObj::PhysicObj(PhysicObjPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
     {
         this->m_intersectionObstacle = nullptr;
         this->m_body = 0;

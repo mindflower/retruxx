@@ -15,6 +15,7 @@
 #include "objcontainer.h"
 #include "ode/odecpp.h"
 #include "scene/servers/dataserver.h"
+#include "server/objects/guns/gun.h"
 #include "server/objects/physicbodies/compoundvehiclepart.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
@@ -113,6 +114,10 @@ namespace ai
         {
             m_lpNames.push_back(NO_LP);
         }
+        else
+        {
+            m_lpNames = names;
+        }
 
         ref_ptr descNode = xmlFile->CreateNode();
         for (xmlNode->GetFirstChild(descNode, "PartDescription"); !descNode->IsEmpty(); descNode->GetNextSibling(descNode, "PartDescription"))
@@ -147,9 +152,9 @@ namespace ai
         return nullptr;
 	}
 
-	CStr const& ComplexPhysicObjPartDescription::GetLpName(unsigned) const
+	CStr const& ComplexPhysicObjPartDescription::GetLpName(unsigned index) const
 	{
-		throw std::logic_error("Not implemented");
+        return this->m_lpNames[index];
 	}
 
 	m3d::Object* ComplexPhysicObjPartDescription::Clone()
@@ -845,6 +850,7 @@ namespace ai
 
     void ComplexPhysicObj::_ConstructVehiclePart(CStr const& name, VehiclePart* vehiclePart, int index, bool bForAnimation)
     {
+        // TODO: check all this shiit
         if (vehiclePart)
         {
             vehiclePart->SetPartName(name);
@@ -856,51 +862,99 @@ namespace ai
             if (partDesc)
             {
                 auto parentPartDescription = partDesc->GetParent();
-                while (parentPartDescription)
+                if (parentPartDescription)
                 {
-                    CMatrix parentMat;
-                    parentMat.identity();
+                    VehiclePart* parent = nullptr;
+                    while (parentPartDescription)
+                    {
+                        CMatrix parentMat;
+                        parentMat.identity();
 
-                    auto it = m_vehicleParts.find(parentPartDescription->GetName());
-                    if (it == m_vehicleParts.end())
-                    {
-                        break;
-                    }
-                    
-                    auto lpName = partDesc->GetLpName(index);
-                    if (lpName != NO_LP)
-                    {
-                        m3d::AnimatedModel* mdl = nullptr;
-                        if (it->second->m_Node)
+                        auto it = m_vehicleParts.find(parentPartDescription->GetName());
+                        if (it == m_vehicleParts.end())
                         {
-                            it->second->m_Node->GetServerItemProperty(16394, &mdl);
+                            break;
                         }
-                        else
+
+                        auto lpName = partDesc->GetLpName(index);
+                        if (lpName != NO_LP)
                         {
-                            auto item = M3D_APP->GetAnimatedModelsServer().GetItemByName(it->second->m_modelname.c_str(), true);
-                            if (item != -1)
+                            m3d::AnimatedModel* mdl = nullptr;
+                            if (it->second->m_Node)
                             {
-                                M3D_APP->GetAnimatedModelsServer().GetItemProperty(item, 16394, &mdl);
+                                it->second->m_Node->GetServerItemProperty(16394, &mdl);
+                            }
+                            else
+                            {
+                                auto item = M3D_APP->GetAnimatedModelsServer().GetItemByName(it->second->m_modelname.c_str(), true);
+                                if (item != -1)
+                                {
+                                    M3D_APP->GetAnimatedModelsServer().GetItemProperty(item, 16394, &mdl);
+                                }
+                            }
+
+                            if (mdl)
+                            {
+                                auto loadPointIdByName = mdl->GetLoadPointIdByName(lpName.c_str());
+                                if (loadPointIdByName != -1)
+                                {
+                                    if (it->second->m_Node)
+                                    {
+                                        m3d::AnimInfo* anim = nullptr;
+                                        it->second->m_Node->GetProperty(1, &anim);
+                                        if (!anim || anim->IsEmpty())
+                                        {
+                                            parentMat = mdl->GetBoneMatrix(loadPointIdByName);
+                                        }
+                                        else
+                                        {
+                                            parentMat = anim->GetCurrentLoadpointMatrix(loadPointIdByName);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        parentMat = mdl->GetBoneMatrix(loadPointIdByName);
+                                    }
+                                }
+                                else
+                                {
+                                    M3D_LOG_ERR("Error: LoadPoint not found! Model = '" + GetDebugDescription() + "', lp = " + lpName + " for " + it->second->m_modelname);
+                                }
+                            }
+                            else
+                            {
+                                M3D_LOG_ERR("Error: LoadPoint not found! Model = '" + GetDebugDescription() + "', lp = " + lpName + " for " + it->second->m_modelname);
                             }
                         }
 
-                        if (mdl)
+                        if (!parent)
                         {
-                            auto loadPointIdByName = mdl->GetLoadPointIdByName(lpName.c_str());
-                            if (loadPointIdByName != -1)
+                            parent = it->second;
+                            if (IS_KIND_OF(parent, Gun))
                             {
                                 throw std::logic_error("Not implemented");
                             }
                         }
+                        res *= parentMat;
+                        parentPartDescription = parentPartDescription->GetParent();
                     }
-
-
-
                 }
-            }
+                else
+                {
+                    M3D_LOG_INFO("Warning: parent part for child does not exist in object '" + GetDebugDescription() + "'");
+                }
 
+                CVector resVector = res.getOrg();
+                Quaternion quat;
+                quat.FromMatrix(res);
+                vehiclePart->SetNodeRelativePosition(resVector);
+                if ((!IS_KIND_OF(vehiclePart, Gun) || !bForAnimation) && theObjects->m_SaveType != ObjContainer::SAVE_FULL)
+                {
+                    vehiclePart->SetNodeRelativeRotation(quat);
+                }
+                vehiclePart->RelinkToSpace(m_spaceId);
+            }
         }
-        throw std::logic_error("Not implemented");
     }
 
     float ComplexPhysicObj::_CalcMassForBody() const

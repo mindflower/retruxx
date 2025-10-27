@@ -534,7 +534,11 @@ void CMatrix::scaling(float, float, float)
 
 void CMatrix::identity()
 {
-    throw std::logic_error("Not implemented");
+    memset(this, 0, sizeof(CMatrix));
+    _44 = 1.0;
+    _33 = 1.0;
+    _22 = 1.0;
+    _11 = 1.0;
 }
 
 void CMatrix::lookAtLH(CVector const& eye, CVector const& at, CVector const& up)
