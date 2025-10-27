@@ -110,7 +110,14 @@ namespace m3d
         {
             return CVector(0.0, 0.0, 0.0);
         }
-        throw retruxx::logic_error("Not implemented");
+        auto* dynamicModel = (DynamicModel*)m_models[item].m_ptr;
+        auto* animatedModel = dynamicModel->m_mdl[0];
+
+        CVector result;
+        result.y = animatedModel->m_box.m_box[4] - animatedModel->m_box.m_box[1];
+        result.z = animatedModel->m_box.m_box[5] - animatedModel->m_box.m_box[2];
+        result.x = animatedModel->m_box.m_box[3] - animatedModel->m_box.m_box[0];
+        return result;
     }
 
     int AnimatedModelsServer::GetBoneMatrixByNameFromModelName(char const*, CStr const&, CMatrix&, bool)

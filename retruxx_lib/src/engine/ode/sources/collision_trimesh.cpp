@@ -57,11 +57,11 @@ dxTriMeshData::Build(const void* Vertices, int VertexStide, int VertexCount,
     // recommended in Opcode User Manual
     //Settings.mRules = SPLIT_COMPLETE | SPLIT_SPLATTERPOINTS | SPLIT_GEOMCENTER;
     // used in ODE, why?
-	Settings.mRules = SPLIT_BEST_AXIS;
+	//Settings.mRules = SPLIT_BEST_AXIS;
 
     // best compromise?
-    //Settings.mRules = SPLIT_BEST_AXIS | SPLIT_SPLATTER_POINTS | SPLIT_GEOM_CENTER;
-
+    Settings.mRules = SPLIT_BEST_AXIS | SPLIT_SPLATTER_POINTS | SPLIT_GEOM_CENTER;
+	Settings.mLimit = 1;
 
 	OPCODECREATE TreeBuilder;
 	TreeBuilder.mIMesh = &Mesh;

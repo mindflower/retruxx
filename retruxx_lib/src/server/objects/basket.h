@@ -30,6 +30,7 @@ namespace ai
 
     class Basket : public ai::VehiclePart
     {
+        friend class BasketPrototypeInfo;
     protected:
         virtual  ~Basket() override /* 0x00 */;
 

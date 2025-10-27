@@ -170,14 +170,14 @@ namespace m3d
         m_Dummy._11 = 1.0;
     }
 
-    AnimatedModel::Mesh& AnimatedModel::GetMesh(unsigned)
+    AnimatedModel::Mesh& AnimatedModel::GetMesh(unsigned MeshNum)
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_meshes[MeshNum];
     }
 
-    AnimatedModel::Mesh const& AnimatedModel::GetMesh(unsigned) const
+    AnimatedModel::Mesh const& AnimatedModel::GetMesh(unsigned MeshNum) const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_meshes[MeshNum];
     }
 
     DRAFT_BoneBounds const& AnimatedModel::GetBoneBounds(unsigned)
@@ -624,7 +624,7 @@ namespace m3d
 
     unsigned AnimatedModel::GetNumMeshes() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_numMeshes;
     }
 
     void AnimatedModel::DeleteSkin(unsigned)
@@ -689,7 +689,7 @@ namespace m3d
 
     unsigned AnimatedModel::GetGroupsNum() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_MhGroups.size();
     }
 
     int AnimatedModel::GetFrames(int, int) const
@@ -903,9 +903,9 @@ namespace m3d
         return this->m_cfgSize;
     }
 
-    MeshesGroup const& AnimatedModel::GetGroup(unsigned) const
+    MeshesGroup const& AnimatedModel::GetGroup(unsigned Num) const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_MhGroups[Num];
     }
 
     DSurfaceMaterial& AnimatedModel::GetMaterial(unsigned, unsigned)

@@ -31,7 +31,9 @@ namespace ai
 
 	void PhysicBodyPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		auto itemByName = M3D_APP->GetAnimatedModelsServer().GetItemByName(m_engineModelName.c_str(), 1);
+		m_engineModelId = itemByName;
+		ai::GetCollisionInfoByServerHandle(itemByName, m_collisionInfos, m_bCollisionTrimeshAllowed);
 	}
 
 	bool PhysicBodyPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -278,10 +280,24 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	PhysicBody::PhysicBody(PhysicBodyPrototypeInfo const&)
+	PhysicBody::PhysicBody(PhysicBodyPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
 	{
-		throw std::logic_error("Not implemented");
-	}
+		m_modelname = prototypeInfo.m_engineModelName;
+        dMassSetZero(&m_mass);
+		m_bCollisionTrimeshAllowed = prototypeInfo.m_bCollisionTrimeshAllowed;
+
+		auto geomTransform = ai::GeomTransform::CreateObject(ai::gGlobalSpace, ai::CommonGeomMovedCallback);
+		m_pGeoms.push_back(geomTransform);
+
+		m_Node = 0;
+		m_cfgNum = 0;
+		m_ownerPhysicObj = 0;
+		m_animAction = 0;
+		m_effectAction = 0;
+		m_bAnimationIsStopped = 0;
+		m_mU = 1.0;
+		m_bNeedToRelinkNode = 1;
+    }
 
 	m3d::Class* PhysicBody::GetBaseClass()
 	{

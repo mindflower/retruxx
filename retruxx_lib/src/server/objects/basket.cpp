@@ -69,7 +69,7 @@ namespace ai
 
 	Obj* BasketPrototypeInfo::CreateTargetObject() const
 	{
-		throw retruxx::logic_error("Not implemented");
+        return new Basket(*this);
 	}
 
 	void BasketPrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
@@ -79,12 +79,11 @@ namespace ai
 
 	m3d::Class* Basket::GetClass() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		return RT_CLASS_LOCAL(Basket);
 	}
 
 	Basket::Basket(BasketPrototypeInfo const& prototype) : VehiclePart(prototype)
 	{
-		throw retruxx::logic_error("Not implemented");
 	}
 
 	m3d::Class* Basket::GetBaseClass()
