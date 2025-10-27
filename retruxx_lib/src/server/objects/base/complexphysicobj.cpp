@@ -9,10 +9,12 @@
 #include <server/resourcemanager.h>
 
 #include "config.h"
+#include "m3dapp.h"
 #include "prototypemanager.h"
 #include "server/objects/physicbodies/vehiclepart.h"
 #include "objcontainer.h"
 #include "ode/odecpp.h"
+#include "scene/servers/dataserver.h"
 #include "server/objects/physicbodies/compoundvehiclepart.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
@@ -328,9 +330,60 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ComplexPhysicObj::SetPartByName(CStr const&, VehiclePart*, bool)
+    void ComplexPhysicObj::SetPartByName(CStr const& partName, VehiclePart* vehiclePart, bool bUnsafe)
     {
-        throw std::logic_error("Not implemented");
+        if (vehiclePart)
+        {
+            if (!bUnsafe && !ai::ComplexPhysicObj::CanPartBeAttached(partName))
+            {
+                M3D_LOG_ERR("Warning: attaching a physic object part that can't be attached. Object desc: " + GetDebugDescription() + ", part name = '" + partName + "'");
+            }
+
+            auto it = m_vehicleParts.find(partName);
+            if (it != m_vehicleParts.end())
+            {
+                SetPartByName(partName, nullptr, true);
+            }
+            vehiclePart->SetPartName(partName);
+            vehiclePart->SetOwner(this);
+            m_vehicleParts[partName] = vehiclePart;
+            vehiclePart->LinkToParent(GetId(), HIERARCHY_COMPONENT);
+            if ((GetFlags() & 1) != 0)
+                vehiclePart->SetVisible();
+            else
+                vehiclePart->SetInvisible();
+        }
+        else
+        {
+            auto it = m_vehicleParts.find(partName);
+            if (it != m_vehicleParts.end())
+            {
+                auto oldPart = it->second;
+                m_vehicleParts.erase(it);
+                oldPart->SetParentInvalid();
+                oldPart->SetInvisible();
+                oldPart->SetOwner(nullptr);
+            }
+        }
+
+        if (!bUnsafe)
+        {
+            _Construct(false);
+            for (auto& part : m_vehicleParts)
+            {
+                if (auto* node = part.second->m_Node)
+                {
+                    node->UpdateXForm(false, true);
+                }
+            }
+        }
+
+        if (m_isContoured)
+        {
+            _PutContour();
+        }
+
+        M3D_APP->EnqueueMessage(66545, GetId(), 0, 0, 0, partName, {});
     }
 
     void ComplexPhysicObj::Remove()
@@ -527,7 +580,7 @@ namespace ai
 
     void ComplexPhysicObj::RelinkGeomsToCollisionCells()
     {
-        throw std::logic_error("Not implemented");
+        PhysicObj::RelinkGeomsToCollisionCells();
     }
 
     ComplexPhysicObjPrototypeInfo const* ComplexPhysicObj::GetPrototypeInfo() const
@@ -790,8 +843,63 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void ComplexPhysicObj::_ConstructVehiclePart(CStr const&, VehiclePart*, int, bool)
+    void ComplexPhysicObj::_ConstructVehiclePart(CStr const& name, VehiclePart* vehiclePart, int index, bool bForAnimation)
     {
+        if (vehiclePart)
+        {
+            vehiclePart->SetPartName(name);
+
+            CMatrix res;
+            res.identity();
+
+            auto* partDesc = GetPrototypeInfo()->GetPartDescriptionByName(name);
+            if (partDesc)
+            {
+                auto parentPartDescription = partDesc->GetParent();
+                while (parentPartDescription)
+                {
+                    CMatrix parentMat;
+                    parentMat.identity();
+
+                    auto it = m_vehicleParts.find(parentPartDescription->GetName());
+                    if (it == m_vehicleParts.end())
+                    {
+                        break;
+                    }
+                    
+                    auto lpName = partDesc->GetLpName(index);
+                    if (lpName != NO_LP)
+                    {
+                        m3d::AnimatedModel* mdl = nullptr;
+                        if (it->second->m_Node)
+                        {
+                            it->second->m_Node->GetServerItemProperty(16394, &mdl);
+                        }
+                        else
+                        {
+                            auto item = M3D_APP->GetAnimatedModelsServer().GetItemByName(it->second->m_modelname.c_str(), true);
+                            if (item != -1)
+                            {
+                                M3D_APP->GetAnimatedModelsServer().GetItemProperty(item, 16394, &mdl);
+                            }
+                        }
+
+                        if (mdl)
+                        {
+                            auto loadPointIdByName = mdl->GetLoadPointIdByName(lpName.c_str());
+                            if (loadPointIdByName != -1)
+                            {
+                                throw std::logic_error("Not implemented");
+                            }
+                        }
+                    }
+
+
+
+                }
+            }
+
+        }
         throw std::logic_error("Not implemented");
     }
 

@@ -1,6 +1,7 @@
 #include "basket.h"
 
 #include <stdexcept>
+#include "base/prototypemanager.h"
 
 namespace ai
 {
@@ -93,7 +94,7 @@ namespace ai
 
 	BasketPrototypeInfo const* Basket::GetPrototypeInfo() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const BasketPrototypeInfo);
 	}
 
 	Basket::~Basket()

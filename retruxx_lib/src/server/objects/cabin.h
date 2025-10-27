@@ -28,6 +28,7 @@ namespace ai
 
     class Cabin : public ai::VehiclePart
     {
+        friend class CabinPrototypeInfo;
     protected:
         virtual  ~Cabin() override /* 0x00 */;
 

@@ -1,6 +1,7 @@
 #include "chassis.h"
 
 #include <stdexcept>
+#include "base/prototypemanager.h"
 
 namespace ai
 {
@@ -31,7 +32,7 @@ namespace ai
 
     Obj* ChassisPrototypeInfo::CreateTargetObject() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return new Chassis(*this);
     }
 
     bool Chassis::SetPropertyById(int, m3d::AIParam const&)
@@ -54,17 +55,17 @@ namespace ai
         m_health(prototype.m_maxHealth, 0.0, prototype.m_maxHealth, 0.0),
         m_fuel(prototype.m_maxFuel, 0.0, prototype.m_maxFuel, 0.0)
     {
-        throw retruxx::logic_error("Not implemented");
+        m_health.m_BeforeValueApplyModifier = new BeforeApplyModifierFloatCallback(*this, &ai::Chassis::_OnHealthValueBeforeApplyModifier);
     }
 
     NumericInRangeRegenerating<float> const& Chassis::Health() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_health;
     }
 
     NumericInRangeRegenerating<float>& Chassis::Health()
     {
-        throw retruxx::logic_error("Not implemented");
+        return m_health;
     }
 
     int Chassis::GetPropertyId(char const*) const
@@ -102,12 +103,12 @@ namespace ai
 
     ChassisPrototypeInfo const* Chassis::GetPrototypeInfo() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const ChassisPrototypeInfo);
     }
 
     m3d::Class* Chassis::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Chassis);
     }
 
     CStr Chassis::GetPropertyName(int) const

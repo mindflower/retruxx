@@ -193,7 +193,8 @@ namespace ai
 
 	VehiclePart::ModelPart::ModelPart()
 	{
-		throw retruxx::logic_error("Not implemented");
+		this->maxHealth = 0.0;
+		this->health = 0.0;
 	}
 
 	void VehiclePart::RenderDebugInfo() const
@@ -213,7 +214,12 @@ namespace ai
 
 	void VehiclePart::TransferPhysicParamsToSceneGraphNode()
 	{
-		throw retruxx::logic_error("Not implemented");
+		if (this->m_Node)
+		{
+			auto nodeAbsoluteRotation = ai::PhysicBody::GetNodeAbsoluteRotation();
+			auto nodeAbsolutePosition = ai::PhysicBody::GetNodeAbsolutePosition();
+			ai::PhysicBody::_SetScenegraphNode(nodeAbsolutePosition, nodeAbsoluteRotation);
+		}
 	}
 
 	CompoundVehiclePart* VehiclePart::GetOwnerCompoundVehiclePart()
@@ -266,9 +272,9 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	void VehiclePart::SetPartName(CStr const&)
+	void VehiclePart::SetPartName(CStr const& newName)
 	{
-		throw retruxx::logic_error("Not implemented");
+		m_partName = newName;
 	}
 
 	bool VehiclePart::ApplyModifier(Modifier const&)
@@ -360,12 +366,12 @@ namespace ai
 
 	NumericInRangeRegenerating<float> const& VehiclePart::Durability() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		return this->m_durability;
 	}
 
 	NumericInRangeRegenerating<float>& VehiclePart::Durability()
 	{
-		throw retruxx::logic_error("Not implemented");
+		return this->m_durability;
 	}
 
 	void VehiclePart::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const

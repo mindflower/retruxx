@@ -876,7 +876,7 @@ namespace ai
 
     void PhysicObj::RelinkGeomsToCollisionCells()
     {
-        throw std::logic_error("Not implemented");
+        m_boundSphere->RelinkToCollisionCells(GetId());
     }
 
     void PhysicObj::AddRelativeRotation(Quaternion const&)

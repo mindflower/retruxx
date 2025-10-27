@@ -742,12 +742,28 @@ namespace ai
 
 	void PhysicBody::SetVisible()
 	{
-		throw std::logic_error("Not implemented");
+		Obj::SetVisible();
+		EnableGeometry();
+		if (m_Node)
+		{
+			m3d::SgNode* parent = nullptr;
+			m_Node->GetProperty(4359u, &parent);
+			if (parent)
+			{
+				parent->AddChild(m_Node);
+				parent = nullptr;
+				m_Node->SetProperty(4359, &parent);
+			}
+
+		}
 	}
 
 	void PhysicBody::EnableGeometry()
 	{
-		throw std::logic_error("Not implemented");
+		for (auto& geom : m_pGeoms)
+		{
+			dGeomEnable(geom->GetGeomId());
+		}
 	}
 
 	void PhysicBody::SetOwner(PhysicObj* owner)
@@ -784,7 +800,27 @@ namespace ai
 
 	Quaternion PhysicBody::GetNodeAbsoluteRotation() const
 	{
-		throw std::logic_error("Not implemented");
+		auto nodeRelativeRotation = ai::PhysicBody::GetNodeRelativeRotation();
+		auto rotation = ai::PhysicBody::GetRotation();
+		auto v5 = (((rotation.w * nodeRelativeRotation.y) + (nodeRelativeRotation.w * rotation.y))
+			  + (rotation.z * nodeRelativeRotation.x))
+			- (rotation.x * nodeRelativeRotation.z);
+		auto v6 = (((rotation.w * nodeRelativeRotation.z) + (rotation.x * nodeRelativeRotation.y))
+			  + (rotation.z * nodeRelativeRotation.w))
+			- (nodeRelativeRotation.x * rotation.y);
+		auto v7 = (((rotation.w * nodeRelativeRotation.w) - (rotation.x * nodeRelativeRotation.x))
+			  - (rotation.y * nodeRelativeRotation.y))
+			- (rotation.z * nodeRelativeRotation.z);
+		auto v8 = ((nodeRelativeRotation.z * rotation.y) + (rotation.x * nodeRelativeRotation.w))
+			+ (rotation.w * nodeRelativeRotation.x);
+		auto v9 = rotation.z * nodeRelativeRotation.y;
+
+		Quaternion result;
+		result.x = v8 - v9;
+		result.y = v5;
+		result.z = v6;
+		result.w = v7;
+		return result;
 	}
 
 	bool PhysicBody::CanChildBeAdded(m3d::Class*) const

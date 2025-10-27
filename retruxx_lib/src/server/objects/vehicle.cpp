@@ -1163,22 +1163,22 @@ namespace ai
 			auto protoInfo = GetPrototypeInfo();
 			if (protoInfo)
 			{
-				if (IS_KIND_OF(part, Chassis))
+				if (IS_KIND_OF(vehiclePart, Chassis))
 				{
-					auto chassis = RT_DYNCAST(part, Chassis);
+					auto chassis = RT_DYNCAST(vehiclePart, Chassis);
 
 					float arg = protoInfo->m_healthRegeneration;
 					chassis->Health().m_BeforeChange(arg);
 				}
-				if (IS_KIND_OF(part, CompoundVehiclePart))
+				if (IS_KIND_OF(vehiclePart, CompoundVehiclePart))
 				{
-					auto compound = RT_DYNCAST(part, CompoundVehiclePart);
+					auto compound = RT_DYNCAST(vehiclePart, CompoundVehiclePart);
 					compound->SetDurabilityRegeneration(protoInfo->m_durabilityRegeneration);
 				}
 				else
 				{
 					float arg = protoInfo->m_durabilityRegeneration;
-					part->Durability().m_BeforeRegenerate(arg);
+					vehiclePart->Durability().m_BeforeRegenerate(arg);
 				}
 			}
 		}

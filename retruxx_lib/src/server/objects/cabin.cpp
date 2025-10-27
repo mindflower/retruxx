@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include "base/prototypemanager.h"
 
 namespace ai
 {
@@ -20,7 +21,7 @@ namespace ai
 
     ai::Obj* CabinPrototypeInfo::CreateTargetObject() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return new Cabin(*this);
     }
 
     bool CabinPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -93,9 +94,14 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    Cabin::Cabin(CabinPrototypeInfo const& prototype) : VehiclePart(prototype)
+    Cabin::Cabin(CabinPrototypeInfo const& prototypeInfo) : VehiclePart(prototypeInfo)
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_maxPower = prototypeInfo.m_maxPower;
+        this->m_maxTorque = prototypeInfo.m_maxTorque;
+        this->m_maxSpeed = prototypeInfo.m_maxSpeed;
+        this->m_fuelConsumption = prototypeInfo.m_fuelConsumption;
+        this->m_control = 50.0;
+        this->m_maxGadgets = 3;
     }
 
     void Cabin::SetMaxSpeed(float)
@@ -115,7 +121,7 @@ namespace ai
 
     m3d::Class* Cabin::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(Cabin);
     }
 
     int Cabin::GetPropertyId(char const*) const
@@ -145,7 +151,7 @@ namespace ai
 
     CabinPrototypeInfo const* Cabin::GetPrototypeInfo() const
     {
-        throw retruxx::logic_error("Not implemented");
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const CabinPrototypeInfo);
     }
 
     m3d::Class* Cabin::GetBaseClass()

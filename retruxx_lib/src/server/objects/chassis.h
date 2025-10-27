@@ -20,6 +20,7 @@ namespace ai
 
     class Chassis : public ai::VehiclePart
     {
+        friend class ChassisPrototypeInfo;
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Chassis, float, void>;
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Chassis, ai::Modifier, float, bool>;
 
