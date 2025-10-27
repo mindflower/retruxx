@@ -58,7 +58,6 @@ namespace ai
 
     protected:
         VehiclePart(const ai::VehiclePartPrototypeInfo& prototypeInfo);
-        VehiclePart(const ai::VehiclePart&);
         virtual m3d::Object* Clone() override /* 0x00 */;
         static m3d::Object* __fastcall CreateObject();
 
@@ -98,9 +97,28 @@ namespace ai
             BreakModelData();
         }; /* size: 0x0034 */
 
-        struct DecalsPassageInfo;
-        struct JadedEffectsPassageInfo;
-        struct PassToAnotherMapData;
+        struct DecalsPassageInfo
+        {
+            /* 0x0000 */ std::vector<CVector, std::allocator<CVector> > poses;
+            /* 0x0010 */ std::vector<CVector, std::allocator<CVector> > normals;
+            /* 0x0020 */ std::vector<CVector, std::allocator<CVector> > tangents;
+            /* 0x0030 */ std::vector<int, std::allocator<int> > meshNums;
+            /* 0x0040 */ int id;
+            /* 0x0044 */ CStr name;
+        }; /* size: 0x0050 */
+
+        struct JadedEffectsPassageInfo
+        {
+            /* 0x0000 */ CVector pos;
+            /* 0x000c */ CStr name;
+            /* 0x0018 */ int num;
+        }; /* size: 0x001c */
+
+        struct PassToAnotherMapData
+        {
+            /* 0x0000 */ std::vector<ai::VehiclePart::JadedEffectsPassageInfo, std::allocator<ai::VehiclePart::JadedEffectsPassageInfo> > jadedEffects;
+            /* 0x0010 */ std::vector<ai::VehiclePart::DecalsPassageInfo, std::allocator<ai::VehiclePart::DecalsPassageInfo> > decals;
+        }; /* size: 0x0020 */
 
         struct LoadDecalData
         {

@@ -507,7 +507,7 @@ namespace m3d
             const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
             // TODO: enable when DrawLandscapeTextures is implemented
             //m_owner->GetGraph().SortedCellsStartFetching(m_drawRadius * transitionDivider + 1, m_drawRadius + 1);
-            m_owner->GetGraph().SortedCellsStartFetching(0, m_drawRadius + 1);
+            m_owner->GetGraph().SortedCellsStartFetching(0, m_drawRadius);
             m_solidPs->Apply();
             m_solidVs->Apply();
 

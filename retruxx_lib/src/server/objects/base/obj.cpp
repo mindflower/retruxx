@@ -609,7 +609,7 @@ namespace ai
 
     bool Obj::GetPassedToAnotherMapStatus() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_bPassedToAnotherMap;
     }
 
     void Obj::AddToCinematic()

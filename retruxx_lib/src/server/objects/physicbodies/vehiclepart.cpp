@@ -7,6 +7,7 @@
 #include "geoms/box.h"
 #include "geoms/trimesh.h"
 #include "scene/servers/dataserver.h"
+#include "server/objects/basket.h"
 
 namespace ai
 {
@@ -282,7 +283,79 @@ namespace ai
 
 	void VehiclePart::DefineSuppressedLPs()
 	{
-		throw retruxx::logic_error("Not implemented");
+		if (m_Node)
+		{
+			m3d::AnimatedModel* mdl = nullptr;
+			m_Node->GetServer()->GetItemProperty(m_Node->GetServerHandle(), 16394, &mdl);
+			if (mdl)
+			{
+				m3d::Configuration* cfg = nullptr;
+				m_Node->GetProperty(8707, &cfg);
+				m_suppressedLPs.clear();
+
+                // TODO: check this!!!
+				for (int nodeNum = 0; nodeNum < mdl->GetHeader().m_numNodes; ++nodeNum)
+				{
+					bool found = false;
+					for (int meshNum = 0;  meshNum < mdl->GetNumMeshes(); ++meshNum)
+					{
+						if (mdl->GetBone(nodeNum).m_parentIdx == mdl->GetMesh(meshNum).m_numNode)
+						{
+							for (auto& cfgMesh : cfg->m_meshes)
+							{
+								if (cfgMesh == &mdl->GetMesh(meshNum))
+								{
+									found = true;
+									break;
+								}
+							}
+							if (found)
+							{
+								break;
+                            }
+						}
+
+						if (found)
+						{
+						    m_suppressedLPs.insert(nodeNum);
+						}
+					}
+
+					if (found)
+					{
+						m_suppressedLPs.insert(nodeNum);
+					}
+                }
+
+				for (int nodeNum = 0; nodeNum < mdl->GetHeader().m_numNodes; ++nodeNum)
+				{
+					CStr name = mdl->GetBone(nodeNum).m_boneName;
+					if (name.findsubstr("LP_LIGHT") != CStr_npos)
+					{
+						m_suppressedLPs.insert(nodeNum);
+					}
+				}
+
+				for (int nodeNum = 0; nodeNum < mdl->GetHeader().m_numNodes; ++nodeNum)
+				{
+					CStr name = mdl->GetBone(nodeNum).m_boneName;
+					if (name.findsubstr("LP_PROJECTOR") != CStr_npos)
+					{
+						m_suppressedLPs.insert(nodeNum);
+					}
+				}
+
+				if (!m_suppressedLPs.empty())
+				{
+					m_Node->SetProperty(8714, &m_suppressedLPs);
+				}
+				else
+				{
+					m_Node->SetProperty(8714, nullptr);
+				}
+				m_Node->SetProperty(8715u, 0);
+			}
+		}
 	}
 
 	NumericInRangeRegenerating<float> const& VehiclePart::Durability() const
@@ -444,9 +517,53 @@ namespace ai
 
 	void VehiclePart::_InternalCreateVisualPart()
 	{
-		ai::PhysicBody::_InternalCreateVisualPart();
-		ai::VehiclePart::DefineSuppressedLPs();
-		throw retruxx::logic_error("Not implemented");
+		PhysicBody::_InternalCreateVisualPart();
+		DefineSuppressedLPs();
+		if (m_Node)
+		{
+		    if (GetPassedToAnotherMapStatus())
+		    {
+				throw retruxx::logic_error("Not implemented");
+				M3D_ASSERT(m_passToAnotherMapData);
+                for (int i = 0; i < m_passToAnotherMapData->jadedEffects.size(); ++i)
+                {
+                    
+                }
+		    }
+			else
+			{
+				// TODO: check this!!
+			    for (int i = 0; i < m_loadDecalsData.size(); ++i)
+			    {
+					auto& data = m_loadDecalsData[i];
+					m3d::AnimInfo* anim = nullptr;
+					m_Node->GetProperty(1u, &anim);
+
+					data.dd.toPutOn.transform = nullptr;
+					if (anim && !anim->IsEmpty())
+					{
+						auto& mesh = anim->GetMesh(data.meshNum);
+						if (mesh.m_meshType == 1 && mesh.m_numNode >=0)
+						{
+							data.dd.toPutOn.transform = &anim->GetBoneAnim(mesh.m_numNode).m_curMatrix;
+						}
+					}
+
+					for (auto& decal : m_decals)
+					{
+						if (decal.second)
+						{
+							m_Node->AddChild(decal.second);
+							decal.second->UpdateXForm(false, true);
+						}
+					}
+			    }
+			}
+		}
+
+		m_loadDecalsData.clear();
+		delete m_passToAnotherMapData;
+		m_passToAnotherMapData = nullptr;
 	}
 
 	bool VehiclePart::_GetPropertyDefaultInternal(int, m3d::AIParam&) const

@@ -191,7 +191,8 @@ namespace m3d
         case 0x2206u:
             throw retruxx::logic_error("Not implemented");
         case 0x220Bu:
-            throw retruxx::logic_error("Not implemented");
+            GetServer()->SetItemProperty(m_srvId, 8710, this);
+            return 1;
         case 0x2205u:
         {
             this->m_action = *(ActionType*)property;
@@ -232,8 +233,9 @@ namespace m3d
             }
             return 0;
         case 0x220Au:
-            throw retruxx::logic_error("Not implemented");
+            m_suppressedLPs = (decltype(m_suppressedLPs))property;
             return 1;
+
         case 0x220Cu:
             throw retruxx::logic_error("Not implemented");
             return 1;

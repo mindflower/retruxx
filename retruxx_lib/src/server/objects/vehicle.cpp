@@ -41,6 +41,9 @@
 #include <server/server.h>
 
 #include "gadget.h"
+#include "guns/compoundgun.h"
+#include "guns/rocketlauncher.h"
+#include "guns/rocketvolleylauncher.h"
 #include "server/externalpaths.h"
 #include "server/path.h"
 #include "server/weaponfirer.h"
@@ -1072,9 +1075,113 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::SetPartByName(CStr const&, VehiclePart*, bool)
+	void Vehicle::SetPartByName(CStr const& partName, VehiclePart* vehiclePart, bool bUnsafe)
 	{
-		throw std::logic_error("Not implemented");
+		// TODO: check this
+		M3D_ASSERT(!vehiclePart || partName != CHASSIS || IS_KIND_OF(vehiclePart, Chassis));
+
+		auto part = GetPartByName(partName);
+		if (part)
+		{
+		    for (auto& gadget : m_gadgets)
+		    {
+				gadget.second->ApplyToVp(part, false);
+		    }
+
+			if (IS_KIND_OF(part, Chassis))
+			{
+				auto chassis = RT_DYNCAST(part, Chassis);
+
+				float arg = 0.0;
+				chassis->Health().m_BeforeRegenerate(arg);
+
+			}
+
+			if (IS_KIND_OF(part, CompoundVehiclePart))
+			{
+				auto compound = RT_DYNCAST(part, CompoundVehiclePart);
+				compound->SetDurabilityRegeneration(0.0);
+			}
+			else
+			{
+				float arg = 0.0;
+				part->Durability().m_BeforeRegenerate(arg);
+			}
+		}
+
+		if (vehiclePart)
+		{
+		    if (theObjects->m_SaveType != ObjContainer::SAVE_FULL)
+		    {
+		        for (auto& gadget : m_gadgets)
+		        {
+					if (gadget.second)
+					{
+						gadget.second->ApplyToVp(vehiclePart, false);
+					}
+		        }
+		    }
+		}
+
+		ComplexPhysicObj::SetPartByName(partName, vehiclePart, bUnsafe);
+		m_bRocketLaunchersPresent = 0;
+
+		for (auto part : m_vehicleParts)
+		{
+			auto actualPart = part.second;
+			if (IS_KIND_OF(actualPart, CompoundGun))
+			{
+				actualPart = RT_DYNCAST(actualPart, CompoundGun)->begin()->second.vp;
+			}
+			m_bRocketLaunchersPresent = IS_KIND_OF(actualPart, RocketLauncher) || IS_KIND_OF(actualPart, RocketVolleyLauncher);
+			if (m_bRocketLaunchersPresent)
+			{
+				break;
+			}
+		}
+
+		if (!bUnsafe)
+		{
+		    if (partName == CABIN)
+		    {
+				_OnChangeCabin();
+		    }
+			else if (partName == BASKET)
+			{
+				_ValidateVehicleParts();
+				_UpdateRepositoryOnChangeBasket();
+			}
+		}
+
+		if (vehiclePart)
+		{
+			if (m_bIsControlledByPlayer)
+			{
+				M3D_APP->EnqueueMessage(66558, vehiclePart->GetPrototypeId(), 0, 0, 0, {}, {});
+			}
+
+			auto protoInfo = GetPrototypeInfo();
+			if (protoInfo)
+			{
+				if (IS_KIND_OF(part, Chassis))
+				{
+					auto chassis = RT_DYNCAST(part, Chassis);
+
+					float arg = protoInfo->m_healthRegeneration;
+					chassis->Health().m_BeforeChange(arg);
+				}
+				if (IS_KIND_OF(part, CompoundVehiclePart))
+				{
+					auto compound = RT_DYNCAST(part, CompoundVehiclePart);
+					compound->SetDurabilityRegeneration(protoInfo->m_durabilityRegeneration);
+				}
+				else
+				{
+					float arg = protoInfo->m_durabilityRegeneration;
+					part->Durability().m_BeforeRegenerate(arg);
+				}
+			}
+		}
 	}
 
 	float Vehicle::GetCurrentSteerAngle() const

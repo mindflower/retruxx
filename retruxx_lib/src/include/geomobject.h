@@ -20,25 +20,22 @@ namespace m3d
 
     struct GeometryInfo
     {
-        void* mesh;
-        unsigned int numIndices;
-        Triangle* indices;
-        unsigned __int8* vertices;
-        unsigned int vertexStride;
-        CMatrix* transform;
-        void* oldMesh;
-    };
+        /* 0x0000 */ void* mesh;
+        /* 0x0004 */ unsigned int numIndices;
+        /* 0x0008 */ m3d::Triangle* indices;
+        /* 0x000c */ unsigned char* vertices;
+        /* 0x0010 */ unsigned int vertexStride;
+        /* 0x0014 */ CMatrix* transform;
+        /* 0x0018 */ void* oldMesh;
+    }; /* size: 0x001c */
 
-    class DecalData
+    struct DecalData
     {
-    public:
-    protected:
-    private:
-        CVector pos;
-        CVector normal;
-        CVector tangent;
-        GeometryInfo toPutOn;
-    };
+        /* 0x0000 */ CVector pos;
+        /* 0x000c */ CVector normal;
+        /* 0x0018 */ CVector tangent;
+        /* 0x0024 */ m3d::GeometryInfo toPutOn;
+    }; /* size: 0x0040 */
 
     class GeomObject : public m3d::Object
     {

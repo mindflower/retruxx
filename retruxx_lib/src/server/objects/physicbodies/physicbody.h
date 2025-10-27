@@ -38,7 +38,6 @@ namespace ai
     class PhysicBody : public Obj
     {
     protected:
-        PhysicBody(const ai::PhysicBody&);
         PhysicBody(const ai::PhysicBodyPrototypeInfo& prototypeInfo);
         PhysicBody();
 

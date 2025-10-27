@@ -64,10 +64,6 @@ namespace ai
 		this->m_bCollisionTrimeshAllowed = 0;
 	}
 
-    PhysicBody::PhysicBody(PhysicBody const&)
-    {
-    }
-
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x0061D180, PhysicBody::SetEffectActions)
     void PhysicBody::SetEffectActions(retruxx::vector<ActionType>&)
 	{
@@ -286,6 +282,7 @@ namespace ai
         dMassSetZero(&m_mass);
 		m_bCollisionTrimeshAllowed = prototypeInfo.m_bCollisionTrimeshAllowed;
 
+        m_collisionInfos = prototypeInfo.m_collisionInfos;
 		auto geomTransform = ai::GeomTransform::CreateObject(ai::gGlobalSpace, ai::CommonGeomMovedCallback);
 		m_pGeoms.push_back(geomTransform);
 

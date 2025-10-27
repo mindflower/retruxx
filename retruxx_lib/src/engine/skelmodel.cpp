@@ -617,9 +617,9 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    AnimatedModel::Bone& AnimatedModel::GetBone(unsigned) const
+    AnimatedModel::Bone& AnimatedModel::GetBone(unsigned N) const
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_boneInitialPos[N];
     }
 
     unsigned AnimatedModel::GetNumMeshes() const
@@ -1059,6 +1059,11 @@ namespace m3d
     void AnimatedModel::SetNextForAnimation(ActionType, int)
     {
         throw retruxx::logic_error("Not implemented");
+    }
+
+    m3d::AnimatedModel::ModelInfo& AnimatedModel::GetHeader()
+    {
+        return  m_header;
     }
 
     LoadSkins const& AnimatedModel::GetLoadedSkins()

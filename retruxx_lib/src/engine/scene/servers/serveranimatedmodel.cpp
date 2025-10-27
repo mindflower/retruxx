@@ -214,6 +214,49 @@ namespace m3d
             anim->SetAnimation(node->m_action);
             return 1;
         }
+        case 8710:
+        {
+            auto* node = (SgAnimatedModelNode*)src;
+            ModelEffectList* list = nullptr;
+            node->GetProperty(2, &list);
+            list->adjustModelEffects(node, node->m_action);
+
+            auto* dynamicModel = (DynamicModel*)m_models.front().m_ptr;
+            auto* animatedModel = dynamicModel->m_mdl[0];
+
+            for (int i = 0; i < list->m_curEffectList.size(); ++i)
+            {
+                auto mat = animatedModel->GetBoneMatrix(i);
+                CVector pos;
+                pos.x = (float)((float)((float)(mat._11 + mat._21) + mat._31) * 0.0) + mat._41;
+                pos.y = (float)((float)((float)(mat._12 + mat._22) + mat._32) * 0.0) + mat._42;
+                pos.z = (float)((float)((float)(mat._13 + mat._23) + mat._33) * 0.0) + mat._43;
+                list->m_curEffectList[i].m_effectNode->SetOriginAbs(pos);
+
+                Quaternion quat;
+                quat.FromMatrix(mat);
+                list->m_curEffectList[i].m_effectNode->SetRotation(quat);
+            }
+
+            // TODO: check this
+            for (int i = 0; i < node->m_action; ++i)
+            {
+                auto skinNum = dynamicModel->m_effects[i].skinNum;
+                auto cfgNum = dynamicModel->m_effects[i].cfgNum;
+                if (skinNum >= 0)
+                {
+                    node->SetProperty(8706u, &skinNum);
+                }
+                if (cfgNum >= 0)
+                {
+                    node->SetProperty(8707u, &cfgNum);
+                }
+            }
+
+            return 1;
+
+            return 1;
+        }
         }
         throw retruxx::logic_error("Not implemented");
     }
