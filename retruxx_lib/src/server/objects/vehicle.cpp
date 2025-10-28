@@ -41,6 +41,7 @@
 #include <server/server.h>
 
 #include "gadget.h"
+#include "vehiclerecollection.h"
 #include "guns/compoundgun.h"
 #include "guns/rocketlauncher.h"
 #include "guns/rocketvolleylauncher.h"
@@ -1543,7 +1544,14 @@ namespace ai
 
 	Wheel const* Vehicle::GetFirstExistingWheel() const
 	{
-		throw std::logic_error("Not implemented");
+		for (const auto&  wheelInfo : m_wheels)
+		{
+		    if (auto* wheel = wheelInfo.GetWheel())
+		    {
+				return wheel;
+		    }
+		}
+		return nullptr;
 	}
 
 	bool Vehicle::TrailerExists() const
@@ -2653,27 +2661,23 @@ namespace ai
 
 	void Vehicle::_InternalCreateVisualPart()
 	{
-		// TODO: generated code
-		// Call parent implementation
 		ai::ComplexPhysicObj::_InternalCreateVisualPart();
 
-		// Initialize vehicle properties
 		this->m_maxSpeedLimited = 0;
 		this->m_maxTorqueForced = 0;
 
-		// Validate and set skin
-		int validSkin = ai::Vehicle::CheckSkin(GetSkin());
+		int validSkin = CheckSkin(GetSkin());
 		this->SetSkin(validSkin);
 
 		// Set global screenshot flag
-		ai::bMustTakeScreenShot = 1;
+		ai::bMustTakeScreenShot = true;
 
 		// Get prototype information
-		const ai::PrototypeInfo* prototypeInfo = this->GetPrototypeInfo();
+		const auto * prototypeInfo = this->GetPrototypeInfo();
 
 		// Find chassis part
 		Chassis* chassis = nullptr;
-		VehiclePart* chassisPart = ai::ComplexPhysicObj::GetPartByName("CHASSIS");
+		VehiclePart* chassisPart = GetPartByName("CHASSIS");
 		if (chassisPart && chassisPart->IsKindOf(&ai::Chassis::m_classChassis))
 		{
 			chassis = dynamic_cast<Chassis*>(chassisPart);
@@ -2681,7 +2685,7 @@ namespace ai
 
 		// Find cabin part
 		Cabin* cabin = nullptr;
-		VehiclePart* cabinPart = ai::ComplexPhysicObj::GetPartByName("CABIN");
+		VehiclePart* cabinPart = GetPartByName("CABIN");
 		if (cabinPart && cabinPart->IsKindOf(&ai::Cabin::m_classCabin))
 		{
 			cabin = dynamic_cast<Cabin*>(cabinPart);
@@ -2697,158 +2701,35 @@ namespace ai
 			return;
 		}
 
+		if (cabin)
+		{
+			const auto* cabinPrototypeInfo = cabin->GetPrototypeInfo();
+			if (!cabinPrototypeInfo->m_engineHighSoundName.empty())
+			{
+				CVector scale = { 1.0, 1.0, 1.0 };
+				// TODO: check this;
+				auto node = PhysicBody::CreateNode(cabinPrototypeInfo->m_engineHighSoundName, 0, scale, nullptr, false);
+				cabin->m_Node->AddChild(node);
+			}
+		}
 
+		const auto oldPosition = GetPosition();
+		const auto oldRotation = GetRotation();
+		SetPosition({ 0.0, 0.0, 0.0 });
+		SetRotation({ 0.0, 0.0, 0.0, 1.0 });
+
+		for (int i =0; i < m_wheels.size(); ++i)
+		{
+		    if (auto* wheel = m_wheels[i].GetWheel())
+		    {
+				wheel->CreateSuspensionNode();
+
+
+				throw std::logic_error("Not implemented");
+		    }
+		}
 		throw std::logic_error("Not implemented");
 
-		/*
-		// Set up engine sound if cabin exists and has engine sound
-		if (cabin) {
-			const char* engineSoundName = cabin->GetPrototypeInfo()->m_engineHighSoundName.c_str();
-			if (engineSoundName && strlen(engineSoundName) > 0) {
-				// Create engine sound node
-				m3d::SgSoundSourceNode* soundNode = ai::PhysicBody::CreateNode(
-					cabin->GetPrototypeInfo()->m_engineHighSoundName, 0, 0, 0, false);
-				this->m_engineHighSoundNode = soundNode;
-
-				// Attach sound node to chassis
-				chassis->m_Node->AddChild(chassis->m_Node, soundNode);
-			}
-		}
-
-		// Get animated models server and chassis model name
-		m3d::AnimatedModelsServer* animatedModelsServer = m3d::Application::g_pApp->m_serverAnimatedModels;
-		std::string chassisModelName = chassis->m_modelname;
-
-		// Store current position and rotation
-		CVector oldPos;
-		Quaternion oldRot;
-		ai::PhysicObj::GetPosition(this, &oldPos);
-		ai::PhysicObj::GetRotation(this, &oldRot);
-
-		// Reset to origin for setup
-		this->SetPosition(&CVector::Zero);
-		this->SetRotation(&Quaternion::Identity);
-
-		// Set up suspension nodes for all wheels
-		for (size_t i = 0; i < m_wheels.size(); ++i) {
-			WheelRuntimeInfo& wheelInfo = m_wheels[i];
-			Wheel* wheel = wheelInfo.m_wheel;
-
-			if (!wheel) continue;
-
-			// Create suspension node for the wheel
-			ai::Wheel::CreateSuspensionNode(wheel);
-
-			if (wheel->m_suspensionNode) {
-				// Determine wheel side (L/R) and number
-				std::string wheelSide = (i % 2 == 0) ? "L" : "R";
-				int wheelNumber = (i / 2) + 1;
-
-				// Build suspension load point name (e.g., "LP_SSP1L")
-				std::string suspensionLpName = "LP_SSP" + std::to_string(wheelNumber) + wheelSide;
-
-				// Find chassis again for attachment
-				Chassis* currentChassis = nullptr;
-				VehiclePart* currentChassisPart = ai::ComplexPhysicObj::GetPartByName(this, "CHASSIS");
-				if (currentChassisPart && m3d::Object::IsKindOf(currentChassisPart, &ai::Chassis::m_classChassis)) {
-					currentChassis = static_cast<Chassis*>(currentChassisPart);
-				}
-
-				if (currentChassis) {
-					// Attach suspension node to chassis
-					currentChassis->m_Node->AddChild(currentChassis->m_Node, wheel->m_suspensionNode);
-
-					// Get suspension position from bone matrix
-					CMatrix boneMatrix;
-					if (m3d::AnimatedModelsServer::GetBoneMatrixByNameFromModelName(
-						animatedModelsServer,
-						chassisModelName.c_str(),
-						suspensionLpName.c_str(),
-						&boneMatrix,
-						0)) {
-
-						// Extract position and rotation from bone matrix
-						CVector suspensionOrigin(
-							boneMatrix.m[3][0],
-							boneMatrix.m[3][1],
-							boneMatrix.m[3][2]
-						);
-
-						Quaternion suspensionRot;
-						Quaternion::FromMatrix(&suspensionRot, &boneMatrix);
-
-						// Set suspension node transform
-						m3d::SgNode::SetOriginAbs(wheel->m_suspensionNode, &suspensionOrigin);
-						m3d::SgNode::SetRotation(wheel->m_suspensionNode, &suspensionRot);
-						wheel->m_suspensionNode->UpdateXForm(wheel->m_suspensionNode, 0, 1);
-					}
-					else {
-						// Fallback: set to zero position and log error
-						m3d::SgNode::SetOriginAbs(wheel->m_suspensionNode, &CVector::Zero);
-
-						std::string errorMsg = "Error: LoadPoint not found: " + suspensionLpName +
-							" for model '" + chassisModelName + "'";
-						m3d::Log::logTex(m3d::g_Kernel->m_Log, errorMsg.c_str(), LOG_ERR);
-					}
-				}
-			}
-		}
-
-		// Restore original position and rotation
-		this->SetPosition(&oldPos);
-		this->SetRotation(&oldRot);
-
-		// Create visual parts for all wheels and update their transforms
-		for (size_t i = 0; i < m_wheels.size(); ++i) {
-			Wheel* wheel = m_wheels[i].m_wheel;
-			if (!wheel) continue;
-
-			// Create visual representation for wheel
-			ai::Obj::CreateVisualPart(wheel);
-
-			// Transfer physics parameters to scene graph
-			wheel->TransferPhysicParamsToSceneGraphNode(wheel);
-
-			// Update transforms
-			wheel->m_physicBody->m_Node->UpdateXForm(wheel->m_physicBody->m_Node, 0, 1);
-			if (wheel->m_suspensionNode) {
-				wheel->m_suspensionNode->UpdateXForm(wheel->m_suspensionNode, 0, 1);
-			}
-		}
-
-		// Transfer vehicle physics parameters to scene graph
-		this->TransferPhysicParamsToSceneGraphNode(this);
-
-		// Perform world intersection test
-		ai::Vehicle::IntersectWithWorld(this);
-
-		// Set up effect actions for basket and cabin if conditions are met
-		unsigned int flags = this->m_flags;
-		if ((flags & 8) == 0 && (flags & 2) == 0 && !ai::Obj::GetParentRepository(this)) {
-			// Set up basket effect actions
-			VehiclePart* basketPart = ai::ComplexPhysicObj::GetPartByName(this, "BASKET");
-			if (basketPart && m3d::Object::IsKindOf(basketPart, &ai::Basket::m_classBasket)) {
-				Basket* basket = static_cast<Basket*>(basketPart);
-				ai::PhysicBody::SetEffectActions(basket, &this->m_effectActions);
-				if (!this->m_effectActions.empty()) {
-					basket->SetNodeAnimAction(basket, this->m_effectActions[0], 1);
-				}
-			}
-
-			// Set up cabin effect actions
-			if (cabin) {
-				ai::PhysicBody::SetEffectActions(cabin, &this->m_effectActions);
-				if (!this->m_effectActions.empty()) {
-					cabin->SetNodeAnimAction(cabin, this->m_effectActions[0], 1);
-				}
-			}
-		}
-
-		// Handle contouring if enabled
-		if (ai::ComplexPhysicObj::bIsContoured()) {
-			ai::ComplexPhysicObj::PutContour();
-		}
-		*/
 	}
 
 	bool Vehicle::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
@@ -3307,7 +3188,27 @@ namespace ai
 
 	void Vehicle::_EnsureRecollection()
 	{
-		throw std::logic_error("Not implemented");
+		if (m_bIsControlledByPlayer)
+		{
+		    if (m_recollectionId == -1)
+		    {
+				auto protoId = thePrototypeManager->GetPrototypeId("someRecollection");
+				auto objId = theObjects->CreateNewObject(protoId, {}, -1, GetBelong());
+				m_recollectionId = objId;
+
+				auto obj = RT_DYNCAST(theObjects->GetEntityByObjId(m_recollectionId), VehicleRecollection);
+				if (obj)
+				{
+					obj->SetVehicle(this);
+				}
+		    }
+		}
+		else if (m_recollectionId != -1)
+		{
+			auto recollection = GetRecollection();
+			recollection->Remove();
+			m_recollectionId = -1;
+		}
 	}
 
 	void Vehicle::_UpdateLockedObj(float)
@@ -3368,10 +3269,35 @@ namespace ai
 
 	int Vehicle::_UpdateRepositoryOnChangeBasket()
 	{
-		auto basket = GetPartByName(BASKET);
-		if (basket && basket->IsKindOf(&ai::Basket::m_classBasket))
+		auto part = GetPartByName(BASKET);
+		if (part && IS_KIND_OF(part, Basket))
 		{
-			throw std::logic_error("Not implemented");
+			auto* basket = RT_DYNCAST(part, Basket);
+			auto* protoInfo = basket->GetPrototypeInfo();
+			if (!protoInfo)
+			{
+				return 0;
+			}
+
+			if (!m_repository)
+			{
+				m_repository = RT_DYNCAST(M3D_KERNEL->New("IzvratRepository"), IzvratRepository);
+			}
+
+			const auto& size = protoInfo->GetRepositorySize();
+			m_repository->SetGeomSize(size);
+
+			const auto& slotPositions = protoInfo->GetSlotPositions();
+			for (const auto& slot : slotPositions)
+			{
+				const auto& bounds = protoInfo->GetSlotBounds(slot.first, true);
+				if (bounds.width || bounds.height)
+				{
+					m_repository->SnapPiece(bounds);
+				}
+			}
+
+			return 1;
 		}
 
 		if (!m_repository)

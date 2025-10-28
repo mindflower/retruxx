@@ -19,7 +19,11 @@ namespace ai
 
     CVector Box::GetSize() const
     {
-        throw std::logic_error("Not implemented");
+        float v[4];
+        dGeomBoxGetLengths(m_geomId, v);
+
+        CVector result = v;
+        return result;
     }
 
     void Box::SetSize(const CVector& size)

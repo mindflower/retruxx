@@ -43,13 +43,13 @@ namespace ai
 
 	PointBase<int> const& BasketPrototypeInfo::GetRepositorySize() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		return m_repositorySize;
 	}
 
 	retruxx::map<CStr, PointBase<int>, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, PointBase<int>>>> const&
 	BasketPrototypeInfo::GetSlotPositions() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		return m_slots;
 	}
 
 	int BasketPrototypeInfo::GetRepositoryCapacity() const

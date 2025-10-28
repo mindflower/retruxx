@@ -271,9 +271,26 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	m3d::SgNode* PhysicBody::CreateNode(CStr const&, int, CVector const&, PhysicBody*, bool)
+	m3d::SgNode* PhysicBody::CreateNode(CStr const& modelname, int action, CVector const& scale, PhysicBody* owner, bool addToRoot)
 	{
-		throw std::logic_error("Not implemented");
+		auto modelId = M3D_ENGINE_CFG.GetModelIdByName(modelname);
+		auto serverNode = m3d::pClient->CreateServerControlledNode(modelId);
+		if (serverNode)
+		{
+		    if (addToRoot)
+		    {
+				m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(serverNode);
+		    }
+			if (action != -1)
+			{
+				serverNode->SetProperty(8704, &action);
+			}
+			serverNode->SetProperty(4356, &owner);
+			serverNode->SetScale(scale);
+			serverNode->SetPersistance(false);
+			serverNode->UpdateXForm(false, true);
+		}
+		return serverNode;
 	}
 
 	PhysicBody::PhysicBody(PhysicBodyPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
@@ -725,9 +742,22 @@ namespace ai
         return { 0.0, 0.0, 0.0, 1.0 };
 	}
 
-	void PhysicBody::SetNodeRelativeRotation(Quaternion const&)
+	void PhysicBody::SetNodeRelativeRotation(Quaternion const& q)
 	{
-		throw std::logic_error("Not implemented");
+		auto& colInfoRotation = m_collisionInfos.front().m_relRotation;
+		for (auto& geom : m_pGeoms)
+		{
+		    if (auto* inner = geom->GetGeom())
+		    {
+				// TODO: check this 
+				float quat[4];
+				quat[0] = (((q.w * colInfoRotation.w) - (colInfoRotation.x * q.x)) - (q.y * colInfoRotation.y)) - (colInfoRotation.z * q.z);
+				quat[1] = (((colInfoRotation.w * q.x) + (q.y * colInfoRotation.z)) + (q.w * (colInfoRotation.x))) - (colInfoRotation.y * q.z);
+				quat[2] = (((q.w * colInfoRotation.y) + (q.y * colInfoRotation.w)) + ((colInfoRotation.y - 1) * q.z)) - (colInfoRotation.z * q.x);
+				quat[3] = (((q.w * colInfoRotation.z) + (q.x * colInfoRotation.y)) + (colInfoRotation.z * q.z)) - (q.y * colInfoRotation.x);
+				dGeomSetQuaternion(inner->GetGeomId(), quat);
+		    }
+		}
 	}
 
 	int PhysicBody::GetNodeRealAction() const
@@ -849,7 +879,7 @@ namespace ai
 
 	float PhysicBody::GetMass() const
 	{
-		throw std::logic_error("Not implemented");
+		return this->m_mass.mass;
 	}
 
 	CVector PhysicBody::GetNodeRelativePosition() const

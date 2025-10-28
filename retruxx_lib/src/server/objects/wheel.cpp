@@ -162,7 +162,8 @@ namespace ai
 
     float Wheel::GetRadius() const
     {
-        throw std::logic_error("Not implemented");
+        auto* sphere = RT_DYNCAST(m_physicBody->m_pGeoms.front()->GetGeom(), Sphere);
+        return sphere->GetRadius();
     }
 
     void Wheel::_InternalCreateVisualPart()

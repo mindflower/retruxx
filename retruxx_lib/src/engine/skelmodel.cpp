@@ -185,9 +185,131 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    CMatrix AnimatedModel::GetBoneMatrix(int) const
+    CMatrix AnimatedModel::GetBoneMatrix(int boneIndex) const
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: generated code
+        // Initialize result as identity matrix
+        CMatrix result;
+        result.identity();
+
+        if (boneIndex < 0)
+            return result;
+
+        Bone* bones = m_boneInitialPos;
+
+        // Calculate local bone matrix from quaternion
+        const Bone& currentBone = bones[boneIndex];
+        const Quaternion& q = currentBone.m_quaternion0;
+
+        CMatrix boneMatrix;
+        memset(&boneMatrix, 0, sizeof(boneMatrix));
+
+        // Convert quaternion to rotation matrix
+        float xx = q.x * q.x;
+        float yy = q.y * q.y;
+        float zz = q.z * q.z;
+        float xy = q.x * q.y;
+        float xz = q.x * q.z;
+        float yz = q.y * q.z;
+        float wx = q.w * q.x;
+        float wy = q.w * q.y;
+        float wz = q.w * q.z;
+
+        boneMatrix._11 = 1.0f - 2.0f * (yy + zz);
+        boneMatrix._12 = 2.0f * (xy + wz);
+        boneMatrix._13 = 2.0f * (xz - wy);
+        boneMatrix._14 = 0.0f;
+
+        boneMatrix._21 = 2.0f * (xy - wz);
+        boneMatrix._22 = 1.0f - 2.0f * (xx + zz);
+        boneMatrix._23 = 2.0f * (yz + wx);
+        boneMatrix._24 = 0.0f;
+
+        boneMatrix._31 = 2.0f * (xz + wy);
+        boneMatrix._32 = 2.0f * (yz - wx);
+        boneMatrix._33 = 1.0f - 2.0f * (xx + yy);
+        boneMatrix._34 = 0.0f;
+
+        // Set bone position
+        boneMatrix._41 = currentBone.m_translation0[0];
+        boneMatrix._42 = currentBone.m_translation0[1];
+        boneMatrix._43 = currentBone.m_translation0[2];
+        boneMatrix._44 = 1.0f;
+
+        // Start with the current bone's matrix
+        CMatrix finalMatrix = boneMatrix;
+
+        // Traverse up the bone hierarchy
+        int parentIndex = currentBone.m_parentIdx;
+        while (parentIndex >= 0)
+        {
+            const Bone& parentBone = bones[parentIndex];
+            const Quaternion& parentQ = parentBone.m_quaternion0;
+
+            // Calculate parent bone matrix from quaternion
+            CMatrix parentMatrix;
+            memset(&parentMatrix, 0, sizeof(parentMatrix));
+
+            float parent_xx = parentQ.x * parentQ.x;
+            float parent_yy = parentQ.y * parentQ.y;
+            float parent_zz = parentQ.z * parentQ.z;
+            float parent_xy = parentQ.x * parentQ.y;
+            float parent_xz = parentQ.x * parentQ.z;
+            float parent_yz = parentQ.y * parentQ.z;
+            float parent_wx = parentQ.w * parentQ.x;
+            float parent_wy = parentQ.w * parentQ.y;
+            float parent_wz = parentQ.w * parentQ.z;
+
+            parentMatrix._11 = 1.0f - 2.0f * (parent_yy + parent_zz);
+            parentMatrix._12 = 2.0f * (parent_xy + parent_wz);
+            parentMatrix._13 = 2.0f * (parent_xz - parent_wy);
+            parentMatrix._14 = 0.0f;
+
+            parentMatrix._21 = 2.0f * (parent_xy - parent_wz);
+            parentMatrix._22 = 1.0f - 2.0f * (parent_xx + parent_zz);
+            parentMatrix._23 = 2.0f * (parent_yz + parent_wx);
+            parentMatrix._24 = 0.0f;
+
+            parentMatrix._31 = 2.0f * (parent_xz + parent_wy);
+            parentMatrix._32 = 2.0f * (parent_yz - parent_wx);
+            parentMatrix._33 = 1.0f - 2.0f * (parent_xx + parent_yy);
+            parentMatrix._34 = 0.0f;
+
+            // Set parent bone position
+            parentMatrix._41 = parentBone.m_translation0[0];
+            parentMatrix._42 = parentBone.m_translation0[1];
+            parentMatrix._43 = parentBone.m_translation0[2];
+            parentMatrix._44 = 1.0f;
+
+            // Multiply matrices: finalMatrix = parentMatrix * finalMatrix
+            CMatrix tempResult;
+
+            tempResult._11 = parentMatrix._11 * finalMatrix._11 + parentMatrix._12 * finalMatrix._21 + parentMatrix._13 * finalMatrix._31 + parentMatrix._14 * finalMatrix._41;
+            tempResult._12 = parentMatrix._11 * finalMatrix._12 + parentMatrix._12 * finalMatrix._22 + parentMatrix._13 * finalMatrix._32 + parentMatrix._14 * finalMatrix._42;
+            tempResult._13 = parentMatrix._11 * finalMatrix._13 + parentMatrix._12 * finalMatrix._23 + parentMatrix._13 * finalMatrix._33 + parentMatrix._14 * finalMatrix._43;
+            tempResult._14 = parentMatrix._11 * finalMatrix._14 + parentMatrix._12 * finalMatrix._24 + parentMatrix._13 * finalMatrix._34 + parentMatrix._14 * finalMatrix._44;
+
+            tempResult._21 = parentMatrix._21 * finalMatrix._11 + parentMatrix._22 * finalMatrix._21 + parentMatrix._23 * finalMatrix._31 + parentMatrix._24 * finalMatrix._41;
+            tempResult._22 = parentMatrix._21 * finalMatrix._12 + parentMatrix._22 * finalMatrix._22 + parentMatrix._23 * finalMatrix._32 + parentMatrix._24 * finalMatrix._42;
+            tempResult._23 = parentMatrix._21 * finalMatrix._13 + parentMatrix._22 * finalMatrix._23 + parentMatrix._23 * finalMatrix._33 + parentMatrix._24 * finalMatrix._43;
+            tempResult._24 = parentMatrix._21 * finalMatrix._14 + parentMatrix._22 * finalMatrix._24 + parentMatrix._23 * finalMatrix._34 + parentMatrix._24 * finalMatrix._44;
+
+            tempResult._31 = parentMatrix._31 * finalMatrix._11 + parentMatrix._32 * finalMatrix._21 + parentMatrix._33 * finalMatrix._31 + parentMatrix._34 * finalMatrix._41;
+            tempResult._32 = parentMatrix._31 * finalMatrix._12 + parentMatrix._32 * finalMatrix._22 + parentMatrix._33 * finalMatrix._32 + parentMatrix._34 * finalMatrix._42;
+            tempResult._33 = parentMatrix._31 * finalMatrix._13 + parentMatrix._32 * finalMatrix._23 + parentMatrix._33 * finalMatrix._33 + parentMatrix._34 * finalMatrix._43;
+            tempResult._34 = parentMatrix._31 * finalMatrix._14 + parentMatrix._32 * finalMatrix._24 + parentMatrix._33 * finalMatrix._34 + parentMatrix._34 * finalMatrix._44;
+
+            tempResult._41 = parentMatrix._41 * finalMatrix._11 + parentMatrix._42 * finalMatrix._21 + parentMatrix._43 * finalMatrix._31 + parentMatrix._44 * finalMatrix._41;
+            tempResult._42 = parentMatrix._41 * finalMatrix._12 + parentMatrix._42 * finalMatrix._22 + parentMatrix._43 * finalMatrix._32 + parentMatrix._44 * finalMatrix._42;
+            tempResult._43 = parentMatrix._41 * finalMatrix._13 + parentMatrix._42 * finalMatrix._23 + parentMatrix._43 * finalMatrix._33 + parentMatrix._44 * finalMatrix._43;
+            tempResult._44 = parentMatrix._41 * finalMatrix._14 + parentMatrix._42 * finalMatrix._24 + parentMatrix._43 * finalMatrix._34 + parentMatrix._44 * finalMatrix._44;
+
+            finalMatrix = tempResult;
+            parentIndex = parentBone.m_parentIdx;
+        }
+
+        result = finalMatrix;
+        return result;
     }
 
     void AnimatedModel::SetSkinsToLoad(LoadSkins const& skins)
@@ -1068,7 +1190,7 @@ namespace m3d
 
     LoadSkins const& AnimatedModel::GetLoadedSkins()
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_loadSkins;
     }
 
     void AnimatedModel::CalculateCfgSize()

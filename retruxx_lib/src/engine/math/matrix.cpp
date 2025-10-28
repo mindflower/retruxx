@@ -215,7 +215,8 @@ void CMatrix::GetBasis(CVector&, CVector&, CVector&) const
 
 CVector CMatrix::getOrg() const
 {
-    throw std::logic_error("Not implemented");
+    CVector result = *(CVector*)&m[3][0];
+    return result;
 }
 
 CVector CMatrix::vecRotBack(CVector const&) const

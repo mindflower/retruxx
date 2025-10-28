@@ -690,7 +690,11 @@ namespace ai
 
     int Player::GetRadioManagerId() const
     {
-        throw std::logic_error("Not implemented");
+        if (m_radioManager)
+        {
+            return m_radioManager->GetId();
+        }
+        return -1;
     }
 
     NumericBoundedBelow<int>& Player::Money()

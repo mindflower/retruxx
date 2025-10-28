@@ -254,7 +254,14 @@ namespace ai
 
 	CVector VehiclePart::GetSize() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		const auto* box = RT_DYNCAST(m_pGeoms.front()->GetGeom(), Box);
+		if (box)
+		{
+			return box->GetSize();
+		}
+
+		M3D_LOG_INFO("GetSize or empty node");
+		return { 0.0, 0.0, 0.0 };
 	}
 
 	CStr VehiclePart::GetPropertyName(int) const

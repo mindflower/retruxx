@@ -237,9 +237,9 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    void GeomRepository::SetVehicle(Vehicle*)
+    void GeomRepository::SetVehicle(Vehicle* vehicle)
     {
-        throw std::logic_error("Not implemented");
+        this->m_vehicleId = vehicle->GetId();
     }
 
     Vehicle* GeomRepository::GetVehicle() const

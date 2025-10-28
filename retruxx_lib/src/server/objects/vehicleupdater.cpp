@@ -11,7 +11,17 @@ namespace ai
 
     VehicleUpdater::VehicleUpdater(ai::Vehicle* vehicle)
     {
-        throw std::logic_error("Not implemented");
+        m_vehicle = vehicle;
+        m_velocity = {0.0, 0.0, 0.0};
+
+        if (auto firstExistingWheel = m_vehicle->GetFirstExistingWheel())
+        {
+            m_wheelRadius = firstExistingWheel->GetRadius();
+        }
+        else
+        {
+            m_wheelRadius = 1.0;
+        }
     }
 
     VehicleUpdater::~VehicleUpdater()
