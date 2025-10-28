@@ -1636,9 +1636,12 @@ namespace m3d
 	    throw retruxx::logic_error("Not implemented");
     }
 
-    CMatrix const& AnimInfo::GetCurrentLoadpointMatrix(int) const
+    CMatrix const& AnimInfo::GetCurrentLoadpointMatrix(int lpId) const
     {
-	    throw retruxx::logic_error("Not implemented");
+        if (lpId < 0 || this->m_Empty)
+            return this->m_forModel->m_Dummy;
+        else
+            return this->m_bonesAnim[lpId].m_curMatrix;
     }
 
     int AnimInfo::SetCurFrame(float)

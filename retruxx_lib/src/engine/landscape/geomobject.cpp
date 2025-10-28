@@ -142,7 +142,7 @@ namespace m3d
 
     Class* GeomObjectLandscape::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        return RT_CLASS_LOCAL(GeomObjectLandscape);
     }
 
     Object* GeomObjectLandscape::Clone()

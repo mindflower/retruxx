@@ -161,14 +161,14 @@ namespace m3d
 
         switch (propId)
         {
-        case 0x1108u:
+        case 4360u:
         {
             this->m_srvId = *(int*)property;
             GetServer()->UnregisterNode(this);
             GetServer()->RegisterNode(this);
             return 1;
         }
-        case 0x2200u:
+        case 8704u:
         {
             this->m_action = *(ActionType*)property;
             m_effectActions.resize(1);
@@ -177,29 +177,33 @@ namespace m3d
             GetServer()->SetItemProperty(m_srvId, 8704, this);
             return 1;
         }
-        case 0x2204u:
+        case 8708u:
         {
             m_effectActions.resize(1u, AT_STAND1);
             this->m_effectActions.front() = *(ActionType*)property;
             GetServer()->SetItemProperty(this->m_srvId, 8708, this);
             return 1;
         }
-        case 0x2207u:
+        case 8711u:
             throw retruxx::logic_error("Not implemented");
-        case 0x2208u:
+        case 8712u:
             throw retruxx::logic_error("Not implemented");
-        case 0x2206u:
-            throw retruxx::logic_error("Not implemented");
-        case 0x220Bu:
+        case 8710:
+        {
+            m_effectActions = *(decltype(m_effectActions)*)property;
+            GetServer()->SetItemProperty(this->m_srvId, 8710, this);
+            return 1;
+        }
+        case 8715u:
             GetServer()->SetItemProperty(m_srvId, 8710, this);
             return 1;
-        case 0x2205u:
+        case 8709u:
         {
             this->m_action = *(ActionType*)property;
             GetServer()->SetItemProperty(this->m_srvId, 8709, this);
             return 1;
         }
-        case 0x2202u:
+        case 8706u:
         {
             this->m_SkinNumber = *(int*)property;
             if (this->m_srvId != -1)

@@ -486,7 +486,6 @@ namespace ai
 
     void ComplexPhysicObj::TransferPhysicParamsToSceneGraphNode()
     {
-        throw std::logic_error("Not implemented");
     }
 
     void ComplexPhysicObj::ClearSavedStatus()
@@ -620,7 +619,7 @@ namespace ai
 
     bool ComplexPhysicObj::bIsContoured() const
     {
-        throw std::logic_error("Not implemented");
+        return this->m_isContoured;
     }
 
     void ComplexPhysicObj::DisablePhysics()

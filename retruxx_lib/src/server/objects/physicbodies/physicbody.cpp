@@ -65,9 +65,20 @@ namespace ai
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x0061D180, PhysicBody::SetEffectActions)
-    void PhysicBody::SetEffectActions(retruxx::vector<ActionType>&)
+    void PhysicBody::SetEffectActions(retruxx::vector<ActionType>& actions)
 	{
-		throw std::logic_error("Not implemented");
+		if (m_Node != nullptr)
+		{
+			if (!m_ownerPhysicObj || m_ownerPhysicObj->bIsUpdatingByODE())
+			{
+				m_Node->SetProperty(8710u, &actions);
+			}
+			else
+			{
+				static retruxx::vector<ActionType> empty;
+				m_Node->SetProperty(8710u, &empty);
+			}
+		}
 	}
 
 	void PhysicBody::SetModelName(CStr const& modelName)

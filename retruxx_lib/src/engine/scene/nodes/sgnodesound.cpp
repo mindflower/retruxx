@@ -72,7 +72,7 @@ namespace m3d
 
     Object* SgSoundSourceNode::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        return new SgSoundSourceNode(*this);
     }
 
     int SgSoundSourceNode::GetProperty(unsigned propId, void* property) const
@@ -148,14 +148,27 @@ namespace m3d
         this->m_props[1] = -1;
     }
 
-    SgSoundSourceNode::SgSoundSourceNode(SgSoundSourceNode const&)
+    SgSoundSourceNode::SgSoundSourceNode(SgSoundSourceNode const& node) : SgNode(node)
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_currentSoundNum = 0;
+        this->m_framesPassed = 0;
+        RitualInConstructor(RITUAL_REGISTERED_NODE);
+        this->m_props[0] = node.m_props[0];
+        this->m_props[1] = node.m_props[1];
+        this->m_props[2] = node.m_props[2];
+        this->m_props[3] = node.m_props[3];
+        this->m_props[4] = node.m_props[4];
+        this->m_props[5] = node.m_props[5];
     }
 
     void SgSoundSourceNode::UpdateOwnBoundingBox()
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_ownBoundingBox.m_box[0] = -200.0;
+        this->m_ownBoundingBox.m_box[1] = -200.0;
+        this->m_ownBoundingBox.m_box[2] = -200.0;
+        this->m_ownBoundingBox.m_box[3] = 200.0;
+        this->m_ownBoundingBox.m_box[4] = 200.0;
+        this->m_ownBoundingBox.m_box[5] = 200.0;
     }
 
     bool SgSoundSourceNode::_OnSoundStopped()

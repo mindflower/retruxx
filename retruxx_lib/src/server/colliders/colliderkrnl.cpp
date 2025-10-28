@@ -1,8 +1,11 @@
 #include "colliderkrnl.h"
 #include <map>
 #include <stdexcept>
+
+#include "defaultcollider.h"
 #include "core/kernel.h"
 #include "core/clazz.h"
+#include "server/objects/base/obj.h"
 
 namespace ai
 {
@@ -11,6 +14,42 @@ namespace ai
 		std::map<unsigned, ColliderEntry>* g_collidersMap = nullptr;
 		m3d::Class** g_allClasses = nullptr;
 		unsigned g_numClasses = 0;
+
+		ColliderEntry const& GetCollider(m3d::Object* obj1, m3d::Object* obj2)
+		{
+			static const ColliderEntry emptyCollider{ ai::EmptyCollider, 0 };
+			static const ColliderEntry defaultCollider{ ai::DefaultCollider, 0 };
+
+			unsigned index1 = 0xFFFF;
+			unsigned index2 = 0xFFFF;
+
+			if (obj1)
+			{
+				index1 = obj1->GetClass()->m_index;
+				if (IS_KIND_OF(obj1, Obj) && ((ai::Obj*)obj1)->GetPassedToAnotherMapStatus())
+				{
+					return emptyCollider;
+				}
+			}
+
+			if (obj2)
+			{
+				index2 = obj2->GetClass()->m_index;
+				if (IS_KIND_OF(obj2, Obj) && ((ai::Obj*)obj2)->GetPassedToAnotherMapStatus())
+				{
+					return emptyCollider;
+				}
+			}
+
+			unsigned merged = index1 | (index2 << 16);
+			auto it = g_collidersMap->find(merged);
+			if (it != g_collidersMap->end())
+			{
+				it->second;
+			}
+
+			return defaultCollider;
+		}
 
 		void RegisterColliderForClassesOnly(m3d::Class *c1,m3d::Class *c2,int (*fn)(m3d::Object *,m3d::Object *,dContact *,unsigned int &,bool))
 		{
@@ -112,9 +151,9 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	bool ColliderKrnl::MustCheckForCollision(m3d::Object*, m3d::Object*)
+	bool ColliderKrnl::MustCheckForCollision(m3d::Object* obj1, m3d::Object* obj2)
 	{
-		throw std::logic_error("Not implemented");
+		return GetCollider(obj1, obj2).fn != ai::EmptyCollider;
 	}
 
 	void ColliderKrnl::RegisterCollider(m3d::Class* c1, m3d::Class* c2,

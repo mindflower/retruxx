@@ -827,7 +827,7 @@ namespace ai
 
     const ai::SphereForIntersection* PhysicObj::GetIntersectionSphere() const
     {
-        throw std::logic_error("Not implemented");
+        return m_lookSphere;
     }
 
     bool PhysicObj::bIsBodyDisabledGeomEnabled() const

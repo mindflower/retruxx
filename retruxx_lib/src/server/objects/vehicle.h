@@ -207,7 +207,7 @@ namespace ai
         void CollectNearbyObjectsToGroundRepository();
         ai::GeomRepository* GetGroundRepository() const;
         void PickUpNearbyObjects(bool bNeedCollectFromGround, unsigned int& originalNumItems, retruxx::vector<int, retruxx::allocator<int> >& addedObjIds);
-        void IntersectWithWorld() const;
+        void IntersectWithWorld();
         const retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > >& GetNearbyObstacles() const;
         void GetEnemiesInNeighborhood(float radius, retruxx::vector<int, retruxx::allocator<int> >& enemiesIds) const;
         void SubscribeRadioManagerOnNearbyObjId(const int objId) const;
@@ -453,8 +453,8 @@ namespace ai
         /* 0x0268 */ int m_seenObjId;
         /* 0x026c */ CVector m_curLookAt;
         /* 0x0278 */ int m_npcMotionControllerId;
-        /* 0x027c */ retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > > m_currentNearbyObstacles;
-        /* 0x0288 */ retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > > m_pastNearbyObstacles;
+        /* 0x027c */ retruxx::set<ref_ptr<ai::Obstacle>> m_currentNearbyObstacles;
+        /* 0x0288 */ retruxx::set<ref_ptr<ai::Obstacle>> m_pastNearbyObstacles;
         /* 0x0294 */ CVector m_pastTakingSpherePosition;
         /* 0x02a0 */ bool m_bAllowPickUpMessage;
         /* 0x02a1 */ char Padding_183[3];

@@ -46,6 +46,7 @@
 #include "guns/rocketlauncher.h"
 #include "guns/rocketvolleylauncher.h"
 #include "server/externalpaths.h"
+#include "server/intersectionmanager.h"
 #include "server/path.h"
 #include "server/weaponfirer.h"
 #include "server/roles/VehicleRole.h"
@@ -2616,9 +2617,35 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	void Vehicle::IntersectWithWorld() const
+	void Vehicle::IntersectWithWorld()
 	{
-		throw std::logic_error("Not implemented");
+		if (m_bIsControlledByPlayer)
+		{
+			m_pastNearbyObstacles = m_currentNearbyObstacles;
+
+			auto* pos = dGeomGetPosition(m_takingSphere->GetGeomId());
+			m_pastTakingSpherePosition.x = pos[0];
+			m_pastTakingSpherePosition.y = pos[1];
+			m_pastTakingSpherePosition.z = pos[2];
+			m_pastNumNearbyChests = m_currentNumNearbyChests;
+			m_currentNumNearbyChests = 0;
+			m_bAllowPickUpMessage = 1;
+		}
+
+		IntersectionManager::GetIntersectedObjects(m_currentNearbyObstacles, GetIntersectionSphere(), m_targetClasses, false, false);
+
+		if (m_bIsControlledByPlayer)
+		{
+			for (auto& obstacle : m_currentNearbyObstacles)
+			{
+				throw std::logic_error("Not implemented");
+			}
+
+			for (auto& obstacle : m_pastNearbyObstacles)
+			{
+				throw std::logic_error("Not implemented");
+			}
+		}
 	}
 
 	void Vehicle::SetForcedMaxTorque(float)
@@ -2728,8 +2755,38 @@ namespace ai
 				throw std::logic_error("Not implemented");
 		    }
 		}
-		throw std::logic_error("Not implemented");
 
+		SetPosition(oldPosition);
+		SetRotation(oldRotation);
+		for (int i = 0; i < m_wheels.size(); ++i)
+		{
+			throw std::logic_error("Not implemented");
+		}
+
+		TransferPhysicParamsToSceneGraphNode();
+		IntersectWithWorld();
+
+		const auto flags = GetFlags();
+		if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository())
+		{
+			auto* basketPart = GetPartByName(BASKET);
+			if (basketPart && IS_KIND_OF(basketPart, Basket))
+			{
+				basketPart->SetEffectActions(m_effectActions);
+				basketPart->SetNodeAnimAction(m_effectActions.front(), true);
+			}
+
+			if (cabin)
+			{
+				cabin->SetEffectActions(m_effectActions);
+				cabin->SetNodeAnimAction(m_effectActions.front(), true);
+			}
+		}
+
+		if (bIsContoured())
+		{
+			PutContour();
+		}
 	}
 
 	bool Vehicle::_GetPropertyDefaultInternal(int, m3d::AIParam&) const

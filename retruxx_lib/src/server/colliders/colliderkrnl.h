@@ -9,15 +9,12 @@ namespace m3d
 
 namespace ai
 {
-    class ColliderEntry
+    struct ColliderEntry
     {
-    public:
-        ColliderEntry(int (*)(m3d::Object *,m3d::Object *,dContact *,unsigned int &,bool),int);
-
-    public:
-        int (*fn)(m3d::Object *, m3d::Object *, dContact *, unsigned int &, bool);
-        int reverse;
-    };
+        /* 0x0000 */ int (*fn)(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
+        /* 0x0004 */ int reverse;
+        ColliderEntry(int (*f)(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool), int r);
+    }; /* size: 0x0008 */
 
     class ColliderKrnl
     {

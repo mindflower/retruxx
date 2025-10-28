@@ -608,9 +608,33 @@ namespace m3d
         return 1;
     }
 
-    SgNode* CWorld::CreatePrefabsNode(int)
+    SgNode* CWorld::CreatePrefabsNode(int type)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (type < 0 || type >= fxNames.size())
+        {
+            return nullptr;
+        }
+
+        if (type >= m_effectsFactory.size())
+        {
+            return nullptr;
+        }
+
+        SgNode* result = nullptr;
+        auto& factory = m_effectsFactory[type];
+        if (factory.onlyOne)
+        {
+            result = factory.effect;
+        }
+        else
+        {
+            result = factory.effects[rand() % factory.effects.size()];
+        }
+        if (result)
+        {
+            return (SgNode*)result->Clone();
+        }
+        return result;
     }
 
     void CWorld::UpdateSkyParams()

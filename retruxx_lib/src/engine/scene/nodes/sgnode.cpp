@@ -973,9 +973,47 @@ namespace m3d
         throw retruxx::logic_error("Not implemented");
     }
 
-    SgNode::SgNode(SgNode const&)
+    SgNode::SgNode(SgNode const& node) : Object(node)
     {
-        throw retruxx::logic_error("Not implemented");
+        this->m_nextThinkTime = node.m_nextThinkTime;
+        this->m_prevThinkTime = node.m_prevThinkTime;
+        this->m_ttl = node.m_ttl;
+        this->m_ownXForm = node.m_ownXForm;
+        this->m_currentXForm = node.m_currentXForm;
+        this->m_origin = node.m_origin;
+        this->m_scaling = node.m_scaling;
+        this->m_rotation = node.m_rotation;
+        this->m_currentWorldOrigin = node.m_currentWorldOrigin;
+        this->m_originWorldAbsForSphere = node.m_originWorldAbsForSphere;
+        this->m_boundingRadius = node.m_boundingRadius;
+        this->m_boundingBox = node.m_boundingBox;
+        this->m_ownBoundingBox = node.m_ownBoundingBox;
+        this->m_isOriginRelative = node.m_isOriginRelative;
+        this->m_isXFormDirty = node.m_isXFormDirty;
+        this->m_isOwnBoundingBoxDirty = node.m_isOwnBoundingBoxDirty;
+        this->m_removeImmediateAfterParent = node.m_removeImmediateAfterParent;
+        this->m_isRemoveIfFree = 0;
+        this->m_isInRemoveIfFree = 0;
+        this->m_isContoured = 0;
+        this->m_contourColor = node.m_contourColor;
+        this->m_contourWidth = node.m_contourWidth;
+        this->m_transparencyType = TT_NONE;
+        this->m_frameTransparent = -1;
+        this->m_srvId = node.m_srvId;
+        this->m_frameVisible = 0;
+        this->m_frameVisible2 = 0;
+        this->m_predictIdx = 0;
+        this->m_isRootNode = 0;
+        this->m_forGraph = 0;
+        this->m_isWaitingForRender = 0;
+        this->m_initedWithRitual = RITUAL_NONE;
+        this->m_onScreenSize = 0.0;
+        this->m_properties[0] = node.m_properties[0];
+        this->m_properties[1] = node.m_properties[1];
+        this->m_properties[2] = node.m_properties[2];
+        memcpy(this->m_props, node.m_props, sizeof(this->m_props));
+        this->m_properties[1] = 0;
+        this->m_properties[2] = 0;
     }
 
     SgNode::SgNode()
