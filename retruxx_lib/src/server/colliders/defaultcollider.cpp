@@ -6,12 +6,12 @@ namespace ai
 {
 	int DefaultCollider(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
 	{
-		throw std::logic_error("Not implemented");
+		return 1;
 	}
 
 	int EmptyCollider(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
 	{
-		throw std::logic_error("Not implemented");
+		return 0;
 	}
 
 	int CollideGeomObjAndLandscape(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)

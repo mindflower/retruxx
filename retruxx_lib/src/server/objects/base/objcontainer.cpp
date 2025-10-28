@@ -353,7 +353,7 @@ namespace ai
         if (objId >= 0)
         {
             // TODO: check this
-            const auto& record = m_records[objId];
+            const auto& record = m_records[objId & 0x3FFF];
             if (objId >> 14 == record.m_totalObjects && record.m_isValid)
             {
                 return record.m_value;
@@ -461,8 +461,7 @@ namespace ai
 
     void ObjContainer::Purge()
     {
-        // TODO: implement ObjContainer::Purge
-        //throw retruxx::logic_error("Not implemented");
+        throw retruxx::logic_error("Not implemented");
     }
 
     ObjContainer::iterator ObjContainer::updatingEnd()

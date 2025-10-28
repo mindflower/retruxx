@@ -6,6 +6,7 @@
 #include "core/kernel.h"
 #include "core/clazz.h"
 #include "server/objects/base/obj.h"
+#include <server/ai/aimanager.h>
 
 namespace ai
 {
@@ -146,9 +147,19 @@ namespace ai
 		throw std::logic_error("Not implemented");
 	}
 
-	int ColliderKrnl::CollideObjs(m3d::Object*, m3d::Object*, dContact*, unsigned&)
+	int ColliderKrnl::CollideObjs(m3d::Object* obj1, m3d::Object* obj2, dContact* contact, unsigned& numContacts)
 	{
-		throw std::logic_error("Not implemented");
+		if (ai::theAIManager->m_elapsedTime < 0.001)
+		{
+			return 0;
+		}
+
+		auto collider = GetCollider(obj1, obj2);
+		if (collider.reverse)
+		{
+			return collider.fn(obj2, obj1, contact, numContacts, 1);
+		}
+		return collider.fn(obj1, obj2, contact, numContacts, 0);
 	}
 
 	bool ColliderKrnl::MustCheckForCollision(m3d::Object* obj1, m3d::Object* obj2)

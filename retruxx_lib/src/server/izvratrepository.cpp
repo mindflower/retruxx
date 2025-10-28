@@ -130,9 +130,52 @@ namespace ai
         throw std::logic_error("Not implemented");
     }
 
-    int IzvratRepository::SnapPiece(BoundsBase<int> const&)
+    int IzvratRepository::SnapPiece(BoundsBase<int> const& piece)
     {
-        throw std::logic_error("Not implemented");
+        // TODO: check and refactor this
+
+        auto y = this->m_maxGeomSize.y;
+        BoundsBase<int> pc;
+        pc.x0 = 0;
+        pc.y0 = 0;
+        pc.width = this->m_maxGeomSize.x;
+        pc.height = y;
+        auto v4 = pc.Intersect(piece);
+        auto x0 = v4.x0;
+        auto width = v4.width;
+        auto y0 = v4.y0;
+        auto height = v4.height;
+        auto v9 = x0 + width;
+        pc.y0 = y0;
+        auto v10 = x0;
+        auto piecea = v9;
+        if (x0 < v9)
+        {
+            auto v11 = height + y0;
+            while (1)
+            {
+                if (pc.y0 < v11)
+                {
+                    do
+                    {
+                        auto v12 = v10 + y0 * this->m_maxGeomSize.x;
+                        if (v12 >= 0)
+                        {
+                            auto v14 = this->m_cells.size();
+                            if (v12 < v14)
+                                this->m_cells[v12] = -2;
+                        }
+                        ++y0;
+                    } while (y0 < v11);
+                    v9 = piecea;
+                }
+                if (++v10 >= v9)
+                    break;
+                y0 = pc.y0;
+            }
+        }
+        _RepackItems(this->m_sortStyle);
+        return 1;
     }
 
     void IzvratRepository::SetMaxGeomSize(PointBase<int> const& maxGeomSize)

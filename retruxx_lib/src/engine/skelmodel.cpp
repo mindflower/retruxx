@@ -1030,9 +1030,9 @@ namespace m3d
         return this->m_MhGroups[Num];
     }
 
-    DSurfaceMaterial& AnimatedModel::GetMaterial(unsigned, unsigned)
+    DSurfaceMaterial& AnimatedModel::GetMaterial(unsigned SkinNumber, unsigned MatNum)
     {
-        throw retruxx::logic_error("Not implemented");
+        return this->m_Skins[SkinNumber][MatNum];
     }
 
     rend::IEffect* AnimatedModel::ApplyMaterial(DSurfaceMaterial& material)

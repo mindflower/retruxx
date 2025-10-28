@@ -57,7 +57,26 @@ namespace ai
 
 	int FillDefaultContactParameters(dContact* contacts, unsigned int numContacts)
 	{
-		throw retruxx::logic_error("Not implemented");
+		// TODO: check and refactor this
+		if (numContacts)
+		{
+			auto p_slip1 = &contacts->surface.slip1;
+			auto v3 = numContacts;
+			do
+			{
+				*((int*)p_slip1 - 9) = 12312;
+				*(p_slip1 - 8) = 0.80000001;
+				*p_slip1 = 0.0000099999997;
+				p_slip1[1] = 0.0000099999997;
+				*(p_slip1 - 4) = 0.80000001;
+				*(p_slip1 - 3) = 0.0000049999999;
+				*(p_slip1 - 6) = 0.001;
+				*(p_slip1 - 5) = 0.0099999998;
+				p_slip1 += 26;
+				--v3;
+			} while (v3);
+		}
+		return 1;
 	}
 
     void NearCallback(void* data, dxGeom* geom1, dxGeom* geom2)
@@ -264,21 +283,19 @@ namespace ai
 
 	void DynamicScene::PurgeBodies()
 	{
-        // TODO: implement DynamicScene::PurgeBodies
-        //throw retruxx::logic_error("Not implemented");
-        //if (thePlayer)
-        //{
-        //    auto vehicle = thePlayer->GetVehicle();
-        //    if (!vehicle
-        //        || ((vehicle->GetFlags() & 8) != 0)
-        //        || (vehicle->GetFlags() & 2) != 0
-        //        || vehicle->GetParentRepository())
-        //    {
-        //        M3D_APP->ImmediateMessage(66544, 0, 0, 0, 0, {}, {});
-        //        thePlayer->CauseEvent(GE_PLAYER_VEHICLE_CHANGED, 0.0, {}, {});
-        //    }
-        //}
-        //theObjects->Purge();
+        if (thePlayer)
+        {
+            auto vehicle = thePlayer->GetVehicle();
+            if (!vehicle
+                || ((vehicle->GetFlags() & 8) != 0)
+                || (vehicle->GetFlags() & 2) != 0
+                || vehicle->GetParentRepository())
+            {
+                M3D_APP->ImmediateMessage(66544, 0, 0, 0, 0, {}, {});
+                thePlayer->CauseEvent(GE_PLAYER_VEHICLE_CHANGED, 0.0, {}, {});
+            }
+        }
+        theObjects->Purge();
 	}
 
 	CStr const& DynamicScene::GetBoEffectTypeName(unsigned short)

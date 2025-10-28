@@ -19,8 +19,9 @@ namespace m3d
 	{
         if (x)
         {
-            auto ScriptObject = ScriptServer::_getScriptObject(x);
-            lua_rawgeti(this->L, -10000, ScriptObject);
+            auto scriptObject = ScriptServer::_getScriptObject(x);
+            lua_rawgeti(this->L, -10000, scriptObject);
+
         }
         else
         {

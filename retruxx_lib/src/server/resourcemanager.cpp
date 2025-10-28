@@ -20,7 +20,7 @@ namespace ai
 
 	PointBase<int> Resource::GetGeomSize() const
 	{
-		throw std::logic_error("Not implemented");
+		return this->m_geomSize;
 	}
 
 	int Resource::GetParentId() const
@@ -128,9 +128,15 @@ namespace ai
 	{
 	}
 
-	CStr ResourceManager::GetResourceNameByVehiclePartName(CStr const&) const
+	CStr ResourceManager::GetResourceNameByVehiclePartName(CStr const& vehiclePartName) const
 	{
-		throw std::logic_error("Not implemented");
+		auto it = m_vehiclePart2Resource.find(vehiclePartName);
+		if (it == m_vehiclePart2Resource.end())
+		{
+			return {};
+		}
+
+		return it->second;
 	}
 
 	Resource* ResourceManager::GetResource(int resourceId) const

@@ -2,6 +2,10 @@
 
 #include <stdexcept>
 #include "base/prototypemanager.h"
+#include <server/resourcemanager.h>
+
+#include "base/globalproperties.h"
+#include "core/log.h"
 
 namespace ai
 {
@@ -57,9 +61,44 @@ namespace ai
 		throw retruxx::logic_error("Not implemented");
 	}
 
-	BoundsBase<int> BasketPrototypeInfo::GetSlotBounds(CStr const&, bool) const
+	BoundsBase<int> BasketPrototypeInfo::GetSlotBounds(CStr const& gunPartName, bool bWithEmptyBorders) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		auto it = m_slots.find(gunPartName);
+		if (it == m_slots.end())
+		{
+			return { 0, 0, 0, 0 };
+		}
+
+		auto resName = theResourceManager->GetResourceNameByVehiclePartName(gunPartName);
+		auto id = theResourceManager->GetResourceId(resName);
+		if (id == -1)
+		{
+			M3D_LOG_ERR("BasketPrototypeInfo::GetSlotBounds error: invalid resource for basket slot " + gunPartName + ", see " + theGlobProp.m_pathToVehiclePartTypes);
+			return { 0, 0, 0, 0 };
+		}
+
+		auto res = theResourceManager->GetResource(id);
+		auto x = it->second.x;
+		auto y = it->second.y;
+
+		auto resSize = res->GetGeomSize();
+		auto width = resSize.x;
+		auto height = resSize.y;
+
+		if (bWithEmptyBorders)
+		{
+			--x;
+			--y;
+			width += 2;
+			height += 2;
+		}
+
+		BoundsBase<int> result;
+		result.x0 = x;
+		result.y0 = y;
+		result.width = width;
+		result.height = height;
+		return result;
 	}
 
 	BasketPrototypeInfo::BasketPrototypeInfo()

@@ -76,9 +76,9 @@ namespace m3d
         {
             if (m_pLogos)
             {
-                ai::Obj* belong = nullptr;
+                int belong = -1;
                 node.GetProperty(4353, &belong);
-                auto it = m_mapBelongToLogo.find(belong->GetId());
+                auto it = m_mapBelongToLogo.find(belong);
                 if (it == m_mapBelongToLogo.end())
                 {
                     return m_pLogos->GetMaterial(0, 0);
