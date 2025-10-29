@@ -6,7 +6,7 @@ namespace ai
 {
     VehicleUpdater::VehicleUpdater(const ai::VehicleUpdater&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleUpdater::VehicleUpdater(ai::Vehicle* vehicle)
@@ -26,31 +26,31 @@ namespace ai
 
     VehicleUpdater::~VehicleUpdater()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleUpdater::Update(float elapsedTime)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector VehicleUpdater::GetLinearVelocity() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleUpdater::CalcRpmsAndGear(float& wheelAVel, float& engineRpm, int& gear) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float VehicleUpdater::_CalcWheelAVel() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleUpdater::_UpdateForceAndVelocity(float elapsedTime)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

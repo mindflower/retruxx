@@ -6,22 +6,22 @@ RT_CLASS_DEFINE(NavPointButton);
 
 int NavPointButton::SetupForQuest(help::QuestType, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* NavPointButton::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPointButton::~NavPointButton()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* NavPointButton::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* NavPointButton::GetBaseClass()
@@ -31,70 +31,70 @@ m3d::Class* NavPointButton::GetBaseClass()
 
 int NavPointButton::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointButton::GetNavPointId() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPoint::NavPointType NavPointButton::GetNavPointType() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr NavPointButton::NavPointType2Str(NavPoint::NavPointType)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* NavPointButton::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPointButton::NavPointButton()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPointButton::NavPointButton(NavPointButton const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void NavPointButton::FullUpdate()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPoint const* NavPointButton::GetNavPoint() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void NavPointButton::UpdateNpTexture()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPoint::NavPointType NavPointButton::GetNavPointTypeByQuest(help::QuestType, int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointButton::GameDataClear(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void NavPointButton::OnNcPaint(m3d::ui::DrawInfo const&, unsigned)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void NavPointButton::UpdateTooltip()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

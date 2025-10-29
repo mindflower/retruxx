@@ -11,67 +11,67 @@ namespace ai
 
     void MortarPrototypeInfo::PostLoad()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     MortarPrototypeInfo::MortarPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool MortarPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* MortarPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Mortar::TMortarAngles::ToVector() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Mortar::TMortarAngles::TMortarAngles(float, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Mortar::TMortarAngles::TMortarAngles()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Mortar::Mortar(MortarPrototypeInfo const& prototype) : Gun(prototype)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Mortar::LookAtPoint(CVector const&, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* Mortar::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Mortar::GetMortarShellPosition(CVector const&, CVector const&, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Mortar::isLookAtPoint(CVector const&, float) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     MortarPrototypeInfo const* Mortar::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* Mortar::GetBaseClass()
@@ -81,46 +81,46 @@ namespace ai
 
     Mortar::~Mortar()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Mortar::_LaunchShells()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Mortar::GetVelocityByDirection(CVector const&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Mortar::setCurrentMortarAngles(TMortarAngles const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Mortar::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Mortar::targetFunction2(CVector const&, CVector const&, float, float, float, float) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Mortar::targetFunction(CVector const&, CVector const&, float, float, float) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Mortar::GetMortarDirection(CVector const&, CVector const&, CVector const&, float) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Mortar::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

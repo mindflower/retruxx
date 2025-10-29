@@ -11,52 +11,52 @@ namespace ai
 
     TemporaryLocationPrototypeInfo::TemporaryLocationPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* TemporaryLocationPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool TemporaryLocationPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TemporaryLocation::CreateEffectNode()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TemporaryLocation::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TemporaryLocation::Remove()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     TemporaryLocation::TemporaryLocation(TemporaryLocationPrototypeInfo const& prototype) : Location(prototype)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* TemporaryLocation::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     TemporaryLocationPrototypeInfo const* TemporaryLocation::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TemporaryLocation::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* TemporaryLocation::GetBaseClass()
@@ -66,26 +66,26 @@ namespace ai
 
     void TemporaryLocation::Update(float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     TemporaryLocation::~TemporaryLocation()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* TemporaryLocation::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* TemporaryLocation::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TemporaryLocation::OnActivate()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

@@ -19,7 +19,7 @@ GameOptionsWnd::AuxInfo::AuxInfo()
 
 GameOptionsWnd::~GameOptionsWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* GameOptionsWnd::GetBaseClass()
@@ -34,7 +34,7 @@ m3d::Object* GameOptionsWnd::CreateObject()
 
 m3d::Object* GameOptionsWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* GameOptionsWnd::GetClass() const
@@ -44,7 +44,7 @@ m3d::Class* GameOptionsWnd::GetClass() const
 
 void GameOptionsWnd::InitNumRepliesControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void GameOptionsWnd::ApplyNumReplies()
@@ -62,7 +62,7 @@ void GameOptionsWnd::ApplyNumReplies()
 
 void GameOptionsWnd::UpdateControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 GameOptionsWnd::GameOptionsWnd()
@@ -71,12 +71,12 @@ GameOptionsWnd::GameOptionsWnd()
 
 GameOptionsWnd::GameOptionsWnd(GameOptionsWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void GameOptionsWnd::InitAutoHelpControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void GameOptionsWnd::OnSliderNumRepliesChange(m3d::AIParam const&)
@@ -92,7 +92,7 @@ void GameOptionsWnd::OnSliderNumRepliesChange(m3d::AIParam const&)
 
 void GameOptionsWnd::OnCheckAutoHelpClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
@@ -160,7 +160,7 @@ void GameOptionsWnd::UpdateNumRepliesControls()
 
 void GameOptionsWnd::ApplyGameDifficulty()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void GameOptionsWnd::UpdateNumRepliesPrevNextButtonsState()
@@ -353,5 +353,5 @@ void GameOptionsWnd::ApplyAutoHelp()
 
 void GameOptionsWnd::InitControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

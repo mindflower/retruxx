@@ -11,27 +11,27 @@ namespace ai
 
     MinePusherPrototypeInfo::MinePusherPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* MinePusherPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     MinePusher::MinePusher(MinePusherPrototypeInfo const& prototype) : Gun(prototype)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* MinePusher::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     MinePusherPrototypeInfo const* MinePusher::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* MinePusher::GetBaseClass()
@@ -41,26 +41,26 @@ namespace ai
 
     MinePusher::~MinePusher()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void MinePusher::_LaunchShells()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool MinePusher::isLookAtPoint(CVector const&, float) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* MinePusher::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* MinePusher::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

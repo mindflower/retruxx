@@ -1,44 +1,46 @@
 #include "navpoint.h"
 #include <stdexcept>
 
+#include "thirdparty/containers.h"
+
 std::vector<int> NavPointManager::GetNavPointsByType(CStr const&, NavPoint::NavPointType) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::Init()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::GetMaxNavPointsNumByType(NavPoint::NavPointType) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPoint const* NavPointManager::GetNavPointByObjectId(CStr const&, int, NavPoint::ObjectType) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::RemoveNavPointById(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void NavPointManager::Clear()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool NavPointManager::CanNavPointOfTypeBeAdded(CStr const&, NavPoint::NavPointType, bool) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPointManager::NavPointManager()
@@ -47,75 +49,75 @@ NavPointManager::NavPointManager()
 
 NavPoint const* NavPointManager::GetNavPointById(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 std::vector<int> NavPointManager::GetAllNavPointsByQuestId(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::AddNavPointUserLocation(CStr const&, CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::AddNavPointObjectDependend(CStr const&, NavPoint::NavPointType, NavPoint::ObjectType, int, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 std::vector<int> NavPointManager::GetNavPointsForLevel(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPointManager::~NavPointManager()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool NavPointManager::CanNavPointBeAdded(CStr const&, int, NavPoint::ObjectType, NavPoint::NavPointType, bool) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::UpdateOnQuestStateChanged(void*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::MakeNavPointOnFirstFitDynamicQuest()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::UpdateOnQuestTaken(void*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::UpdateOnDynamicQuestStateChanged(void*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::MakeNavPointOnFirstFitStaticQuest(CStr const&, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointManager::AddNavPoint(NavPoint*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

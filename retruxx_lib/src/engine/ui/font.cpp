@@ -25,17 +25,17 @@ namespace m3d
 
         CStr const& TCharDictionary::GetSrcFile() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr const& TCharDictionary::GetCharSetName() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr const& TCharDictionary::GetCodePageName() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool TCharDictionary::IsTCharPresent(unsigned char tChar) const
@@ -64,7 +64,7 @@ namespace m3d
 
         int TCharDictionary::CreateFromXml(CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TCharDictionary::InitDefault()
@@ -111,17 +111,17 @@ namespace m3d
 
         int Font::SaveToXml()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Font::SaveToTga()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr Font::GetFileNameForReadableInfo() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Font::CreateFromPrototype(Font* prototype, float heightUnscaled)
@@ -169,22 +169,22 @@ namespace m3d
 
         FontType Font::GetType() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Font::Save()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr Font::GetBaseFileName() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         float Font::GetScale() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Font::CreateFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
@@ -497,17 +497,17 @@ namespace m3d
 
         unsigned Font::GetStyle() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Font::SaveGrid()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr Font::GetFileNameForTexture(int) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         std::vector<rend::TexHandle> const& Font::GetTextures() const
@@ -557,17 +557,17 @@ namespace m3d
 
         Font::TextureCoordinates Font::GetTexCoord(unsigned char) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr const& Font::GetName() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         float Font::CalcCharWidthAdvanced(unsigned char) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         PointBase<int> Font::GetTexSz() const
@@ -602,7 +602,7 @@ namespace m3d
 
         CStr Font::GetFileNameForGrid(int) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         float Font::GetCharWidthAdvanced(unsigned char c) const
@@ -616,7 +616,7 @@ namespace m3d
 
         Font::FontABC Font::GetAbcWidth(unsigned char) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool FontManager::NeedCharSetWChars(unsigned charSet)
@@ -675,7 +675,7 @@ namespace m3d
 
         void FontManager::Clear()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FontManager::GetFontId(CStr const& name, float heightUnscaled, FontType type, FontParams params)
@@ -768,7 +768,7 @@ namespace m3d
 
         int FontManager::GetNumFonts() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void FontManager::RearrangeFonts(int id1, int id2)
@@ -835,7 +835,7 @@ namespace m3d
 
         float FontManager::GetScaledHeight(float) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FontManager::FindMatchFont(CStr const& name, float heightUnscaled, bool strictName, bool strictHeight)

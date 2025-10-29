@@ -10,72 +10,72 @@ namespace m3d
 
         TabButtonInfo::TabButtonInfo()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TabButtonInfo::SetIzvrat(float, float, float, Alignment)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TabButtonInfo::SetNormal(float, float, float, float, Alignment, float)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         TabWnd::AuxInfo::AuxInfo()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* TabWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TabWnd::SetCurSel(int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         TabWnd::~TabWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* TabWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TabWnd::AddItem(ref_ptr<Wnd>, TabItemInfo const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         TabItem const* TabWnd::GetItem(int) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TabWnd::GetCurSel() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TabWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         TabButtonInfo const& TabWnd::GetTabButtonInfo() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TabWnd::RemoveAllItems()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* TabWnd::GetBaseClass()
@@ -85,107 +85,107 @@ namespace m3d
 
         void TabWnd::SetClientEdges(std::vector<float, std::allocator<float>> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TabWnd::SetClientEdges(float, float, float, float)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TabWnd::SetTabButtonInfo(TabButtonInfo const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* TabWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TabWnd::GetItemsCount() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TabWnd::AdjustWorkWindowRect(Wnd*, TabItemInfo const&) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TabWnd::_SetCurSel(int, SelectionType)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         PointBase<float> TabWnd::RecalcButtonSize(int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TabWnd::DrawWndText(DrawInfo const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         std::vector<float, std::allocator<float>> TabWnd::_GetClientEdges() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TabWnd::OnNcPaint(DrawInfo const&, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TabWnd::OnWndNotify(Wnd*, unsigned, unsigned, AIParam const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TabWnd::OnAfterChangeCurSel(int, SelectionType)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TabWnd::AddButton(int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool TabWnd::IsItemIdValid(int) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         PointBase<float> TabWnd::RecalcButtonPos(int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TabWnd::OnKey(unsigned short, unsigned char, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TabWnd::OnBeforeChangeCurSel(int, SelectionType)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         TabWnd::TabWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         TabWnd::TabWnd(TabWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         float TabWnd::_GetTopEdgeDiff() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

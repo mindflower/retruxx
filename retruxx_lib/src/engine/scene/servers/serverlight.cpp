@@ -30,7 +30,7 @@ namespace m3d
 {
     int LightsServer::SaveAllLoadedEntities(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int LightsServer::Init()
@@ -42,7 +42,7 @@ namespace m3d
 
     int LightsServer::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int LightsServer::AddItem(char const* params, char const* id)
@@ -97,7 +97,7 @@ namespace m3d
 
     LightsServer::~LightsServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void LightsServer::RenderItem(int id, void*)
@@ -114,7 +114,7 @@ namespace m3d
 
         if (id != -4)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         m_profiler->EndCountdown();
@@ -122,12 +122,12 @@ namespace m3d
 
     int LightsServer::RemoveItem(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int LightsServer::GetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     LightsServer::LightsServer()
@@ -141,7 +141,7 @@ namespace m3d
 
     int LightsServer::SetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void LightsServer::AddItemsList(retruxx::vector<ServerItem>& list)

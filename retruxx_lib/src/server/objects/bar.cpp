@@ -10,57 +10,57 @@ namespace ai
 
 	Obj* BarPrototypeInfo::CreateTargetObject() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	BarPrototypeInfo::BarPrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool BarPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BarPrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Bar::bWithBarman() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Bar::CanChildBeAdded(m3d::Class*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Bar::Bar(BarPrototypeInfo const& prototypeInfo) : Building(prototypeInfo)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Bar::RemoveChild(Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Bar::Update(float, unsigned)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* Bar::GetClass() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	BarPrototypeInfo const* Bar::GetPrototypeInfo() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* Bar::GetBaseClass()
@@ -70,31 +70,31 @@ namespace ai
 
 	void Bar::CreateChildren()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Bar::AddChild(Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Bar::~Bar()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Bar::CreateBarman()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* Bar::CreateObject()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* Bar::Clone()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

@@ -17,12 +17,12 @@ ChangeProfileWnd::AuxInfo::AuxInfo()
 
 m3d::Object* ChangeProfileWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ChangeProfileWnd::~ChangeProfileWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* ChangeProfileWnd::CreateObject()
@@ -59,7 +59,7 @@ ChangeProfileWnd::ChangeProfileWnd()
 
 ChangeProfileWnd::ChangeProfileWnd(ChangeProfileWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ChangeProfileWnd::GameDataSetup()
@@ -154,12 +154,12 @@ void ChangeProfileWnd::OnChangeProfileSelection()
 
 int ChangeProfileWnd::OnKey(unsigned short, unsigned char, unsigned)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ChangeProfileWnd::ChoseProfileAndExit()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ChangeProfileWnd::OnProfilesListChanged()
@@ -202,7 +202,7 @@ int ChangeProfileWnd::GameDataUpdate(void* data, int dataType)
 
 int ChangeProfileWnd::ChoseProfile()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ChangeProfileWnd::OnCurProfileChanged()
@@ -224,7 +224,7 @@ void ChangeProfileWnd::OnCurProfileChanged()
 
 int ChangeProfileWnd::DeleteProfile()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ChangeProfileWnd::Clear()
@@ -238,12 +238,12 @@ void ChangeProfileWnd::Clear()
 
 int ChangeProfileWnd::CreateProfile()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ChangeProfileWnd::FullUpdate()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ChangeProfileWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)

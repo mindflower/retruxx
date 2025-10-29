@@ -39,7 +39,7 @@ RT_CLASS_DEFINE(ResourceInfo);
 
 m3d::Class* ResourceInfo::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* ResourceInfo::CreateObject()
@@ -87,7 +87,7 @@ bool ResourceInfo::IsValid() const
 
 ResourceInfo::~ResourceInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ResourceInfo::ResourceInfo()
@@ -96,7 +96,7 @@ ResourceInfo::ResourceInfo()
 
 ResourceInfo::ResourceInfo(ResourceInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORTS_BEGIN(WindowResourceInfo)
@@ -110,7 +110,7 @@ m3d::Class* WindowResourceInfo::GetClass() const
 
 WindowResourceInfo::~WindowResourceInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* WindowResourceInfo::CreateObject()
@@ -142,12 +142,12 @@ bool WindowResourceInfo::IsValid() const
 
 m3d::Object* WindowResourceInfo::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WindowResourceInfo::WindowResourceInfo(WindowResourceInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WindowResourceInfo::WindowResourceInfo()
@@ -181,12 +181,12 @@ m3d::Class* IcoResourceInfo::GetBaseClass()
 
 IcoResourceInfo::~IcoResourceInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* IcoResourceInfo::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool IcoResourceInfo::IsValid() const
@@ -212,7 +212,7 @@ bool IcoResourceInfo::IsValid() const
 
 IcoResourceInfo::IcoResourceInfo(IcoResourceInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 IcoResourceInfo::IcoResourceInfo()
@@ -221,7 +221,7 @@ IcoResourceInfo::IcoResourceInfo()
 
 int GameUiManager::GUI_SetNextDynamicId(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameUiManager::GUI_LoadResourceInfos()
@@ -302,7 +302,7 @@ int GameUiManager::GUI_LoadWindowsResources(ResourceInfo::ResourceLoadType loadT
 
 int GameUiManager::GUI_SetMinDynamicId(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameUiManager::GUI_SetEventsForWindow(int wndId, retruxx::vector<int> const& events)
@@ -440,7 +440,7 @@ void GameUiManager::GUI_GetResourceInfosByLoadType(ResourceInfo::ResourceLoadTyp
 
 int GameUiManager::GUI_Save(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameUiManager::GUI_CreateWindow(int wndId, CStr const& className, bool needShow, CStr const& fileName)
@@ -490,7 +490,7 @@ GameUiManager::GameUiManager()
 
 bool GameUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameUiManager::GUI_LoadStringsFromResourceInfo(ResourceInfo const* info)
@@ -509,7 +509,7 @@ int GameUiManager::GUI_LoadStringsFromResourceInfo(ResourceInfo const* info)
 
 WindowResourceInfo* GameUiManager::GUI_GetResourceInfoByWndGuiId(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool GameUiManager::GUI_IsModalEqualWndRunning() const
@@ -584,7 +584,7 @@ int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void
 
 void GameUiManager::GUI_GetIconsResourceInfoByLevel(CStr const&, retruxx::vector<ResourceInfo*, retruxx::allocator<ResourceInfo*>>&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameUiManager::GUI_LoadResources(ResourceInfo::ResourceLoadType loadType)
@@ -656,7 +656,7 @@ int GameUiManager::GUI_Init(bool reloadResources)
 
 int GameUiManager::GUI_RemoveWindow(ref_ptr<m3d::ui::Wnd>)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameUiManager::GUI_RemoveWindow(int wndId)
@@ -678,17 +678,17 @@ int GameUiManager::GUI_RemoveWindow(int wndId)
 
 void GameUiManager::GUI_UnregisterCVars()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameUiManager::GUI_ReadFromXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void GameUiManager::GUI_RegisterEvents()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameUiManager::GUI_LoadStringsResources(ResourceInfo::ResourceLoadType loadType)
@@ -763,7 +763,7 @@ int GameUiManager::GUI_ShowInterface(bool needShow, bool enableAnimation)
 
 int GameUiManager::GUI_Load(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameUiManager::GUI_Clear(bool beforeContinuousLevel)
@@ -883,7 +883,7 @@ int GameUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void*
 
 GameUiManager::~GameUiManager()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void GameUiManager::GUI_RegisterCVars()
@@ -973,7 +973,7 @@ int GameUiManager::GUI_HideWindow(int wndId, bool canBeShownAgain, int* modalRet
 
 int GameUiManager::GUI_Done()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void GameUiManager::GUI_ClearAllResourceInfos()
@@ -1015,12 +1015,12 @@ int GameUiManager::GUI_LoadIconsFromResourceInfo(IcoResourceInfo const* info)
 
 bool GameUiManager::GUI_IsHidden() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameUiManager::GUI_WriteToXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameUiManager::GUI_ShowWindow(int wndId, bool forceShow, bool forceModal, bool pause, int* modalRetVal)

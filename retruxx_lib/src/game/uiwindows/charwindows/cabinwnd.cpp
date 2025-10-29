@@ -7,17 +7,17 @@ RT_CLASS_DEFINE(CabinWnd);
 
 CabinWnd::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* CabinWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* CabinWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* CabinWnd::GetBaseClass()
@@ -27,60 +27,60 @@ m3d::Class* CabinWnd::GetBaseClass()
 
 CabinWnd::~CabinWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* CabinWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CabinWnd::CabinWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CabinWnd::CabinWnd(CabinWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CabinWnd::CreateGadgetWnd(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 InventoryWnd::VehicleType CabinWnd::GetVehicleTypeByGuiId(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CabinWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ref_ptr<GadgetWnd> CabinWnd::GetGadgetWndByGadgetSlotId(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CabinWnd::SetupGadgets()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CabinWnd::SetupChildVehicleParts()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CabinWnd::UpdateOnMainPartChanged()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CabinWnd::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

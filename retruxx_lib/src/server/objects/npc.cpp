@@ -4,22 +4,22 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Npc, GetSpokenCount)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Npc, SetSpokenCount)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Npc, HasDynamicQuests)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Npc, HasNotTakenDynamicQuests)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 namespace ai
@@ -34,102 +34,102 @@ namespace ai
 
     NpcPrototypeInfo::NpcPrototypeInfo()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* NpcPrototypeInfo::CreateTargetObject() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool NpcPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Npc::HasDynamicQuests() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned Npc::GetCfgNumber() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned Npc::GetSkinNumber() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::SetCurrentNpc(Npc*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::SetSpokenCount(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     NpcPrototypeInfo const* Npc::GetPrototypeInfo() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* Npc::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr Npc::GetPropertyName(int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Npc* Npc::GetCurrentNpc()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Npc::GetSpokenCount() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Npc::SetPropertyById(int, m3d::AIParam const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::SetHelloReplyNames(retruxx::vector<CStr, retruxx::allocator<CStr>> const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* Npc::GetBaseClass()
@@ -139,27 +139,27 @@ namespace ai
 
     CStr const& Npc::GetModelName() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Npc::GetPropertyId(char const*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Npc::HasNotTakenDynamicQuests() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     retruxx::vector<CStr, retruxx::allocator<CStr>> const& Npc::GetHelloReplyNames() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::Registration()
@@ -173,51 +173,51 @@ namespace ai
 
     eGObjPropertySaveStatus Npc::GetPropertySaveStatus(int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Npc::NpcType Npc::GetNpcType() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Npc::Npc(NpcPrototypeInfo const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Npc::_GetPropertyInternal(int, m3d::AIParam&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Npc::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Npc::~Npc()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Npc::_InternalPostLoad()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Npc::CreateObject()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Npc::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

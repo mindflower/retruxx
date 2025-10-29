@@ -6,12 +6,12 @@ RT_CLASS_DEFINE(HelpSimpleMsgWnd);
 
 void HelpSimpleMsgWnd::SetupForHelp(CStr const&, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* HelpSimpleMsgWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* HelpSimpleMsgWnd::GetBaseClass()
@@ -21,35 +21,35 @@ m3d::Class* HelpSimpleMsgWnd::GetBaseClass()
 
 m3d::Object* HelpSimpleMsgWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 HelpSimpleMsgWnd::~HelpSimpleMsgWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* HelpSimpleMsgWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 HelpSimpleMsgWnd::HelpSimpleMsgWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 HelpSimpleMsgWnd::HelpSimpleMsgWnd(HelpSimpleMsgWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int HelpSimpleMsgWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int HelpSimpleMsgWnd::GameDataClear(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

@@ -10,62 +10,62 @@ namespace ai
 
 	BarricadePrototypeInfo::BarricadePrototypeInfo()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Obj* BarricadePrototypeInfo::CreateTargetObject() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool BarricadePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BarricadePrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* Barricade::GetClass() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Barricade::GetPropertyId(char const*) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	eGObjPropertySaveStatus Barricade::GetPropertySaveStatus(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr Barricade::GetPropertyName(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	BarricadePrototypeInfo const* Barricade::GetPrototypeInfo() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Barricade::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Barricade::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Barricade::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Barricade::Registration()
@@ -77,7 +77,7 @@ namespace ai
         ObjPrefab(prototype),
         m_probability(prototype.m_probability, 0.0, 1.0)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* Barricade::GetBaseClass()
@@ -87,36 +87,36 @@ namespace ai
 
 	bool Barricade::SetPropertyById(int, m3d::AIParam const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Barricade::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Barricade::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Barricade::~Barricade()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Barricade::_GetPropertyInternal(int, m3d::AIParam&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* Barricade::CreateObject()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* Barricade::Clone()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

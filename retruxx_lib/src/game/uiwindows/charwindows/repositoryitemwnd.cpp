@@ -6,22 +6,22 @@ RT_CLASS_DEFINE(RepositoryItemWnd);
 
 m3d::Object* RepositoryItemWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* RepositoryItemWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* RepositoryItemWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void RepositoryItemWnd::SetUpForRepositoryItem(ai::GeomRepositoryItem const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* RepositoryItemWnd::GetBaseClass()
@@ -31,95 +31,95 @@ m3d::Class* RepositoryItemWnd::GetBaseClass()
 
 RepositoryItemWnd::~RepositoryItemWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RepositoryItemWnd::CanAddDragItem(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RepositoryItemWnd::GetResourceId() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool RepositoryItemWnd::NeedUpdateInfoWnd(ItemInfoWnd*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RepositoryItemWnd::DeactivateItem()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RepositoryItemWnd::OnMouseButton1(unsigned, PointBase<float> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RepositoryItemWnd::RepositoryItemWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RepositoryItemWnd::RepositoryItemWnd(RepositoryItemWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RepositoryItemWnd::ActivateItem(ai::GeomRepositoryItem const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void RepositoryItemWnd::SetupInfoWnd(ItemInfoWnd*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RepositoryItemWnd::GiveUpItem(ai::GeomRepositoryItem const&, m3d::ui::Wnd*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool RepositoryItemWnd::SetItemObjId(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RepositoryItemWnd::AddItem(ai::GeomRepositoryItem const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void RepositoryItemWnd::LaunchEventOnItemDeactivation() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool RepositoryItemWnd::CanChangeItem() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool RepositoryItemWnd::IsValid() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::GeomRepositoryItem RepositoryItemWnd::GetAsRepositoryItem() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void RepositoryItemWnd::SetVehicleId(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void RepositoryItemWnd::UpdateItemValue()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

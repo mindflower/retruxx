@@ -29,7 +29,7 @@ namespace m3d
 
         Object* SliderWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int SliderWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -52,12 +52,12 @@ namespace m3d
 
         int SliderWnd::Create(float, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         SliderWnd::~SliderWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int SliderWnd::GetMin() const
@@ -184,7 +184,7 @@ namespace m3d
 
         BoundsBase<float> SliderWnd::GetBodyRect() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int SliderWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
@@ -202,7 +202,7 @@ namespace m3d
 
         SliderWnd::SliderWnd(SliderWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

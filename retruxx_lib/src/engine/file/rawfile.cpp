@@ -126,12 +126,12 @@ namespace m3d
 
         int RawFile::ReadLine(CStr&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         RawFile* RawFile::Copy()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned RawFile::ReadBytes(void* dst, unsigned numBytes)
@@ -155,7 +155,7 @@ namespace m3d
 
         IStream* RawFile::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         RawFile::~RawFile()
@@ -165,67 +165,67 @@ namespace m3d
 
         FileStream& RawFile::operator<<(int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& RawFile::operator<<(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& RawFile::operator<<(char const*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& RawFile::operator<<(float)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned RawFile::FRead(void*, unsigned, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& RawFile::operator>>(unsigned&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& RawFile::operator>>(int&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& RawFile::operator>>(CStr&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& RawFile::operator>>(float&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned RawFile::WriteBytes(void const*, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned RawFile::SetPosition(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int RawFile::Eof()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int RawFile::Flush()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int RawFile::Open(char const* fileName, OpenFlags openMode)
@@ -289,7 +289,7 @@ namespace m3d
 
         int RawFile::Error()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FILETIME RawFile::GetDate() const
@@ -325,12 +325,12 @@ namespace m3d
 
         unsigned RawFile::PeekBytes(void*, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         RawFile::RawFile(RawFile const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         RawFile::RawFile(char const* fileName, OpenFlags openMode, bool enableMapping) :
@@ -351,22 +351,22 @@ namespace m3d
 
         RawFile::RawFile()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned RawFile::PeekBytesInternal(void*, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int RawFile::Open(char const*, m3d::fs::IStream::OpenFlags, bool)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned RawFile::WriteBytesInternal(void const*, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned RawFile::ReadBytesInternal(void* dst, unsigned numBytes)

@@ -7,22 +7,22 @@ RT_CLASS_DEFINE(WeaponSlotList);
 
 WeaponSlotList::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* WeaponSlotList::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponSlotList::~WeaponSlotList()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponSlotList::SetupForVehicle(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* WeaponSlotList::GetBaseClass()
@@ -32,90 +32,90 @@ m3d::Class* WeaponSlotList::GetBaseClass()
 
 m3d::Object* WeaponSlotList::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* WeaponSlotList::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponSlotList::OnVehiclePartChanged(void*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponSlotList::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponSlotList::WeaponSlotList()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponSlotList::WeaponSlotList(WeaponSlotList const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponSlotList::GetGunPartNames(int, std::vector<CStr, std::allocator<CStr>>&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponSlotList::GameDataClear(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponSlotList::OnAfterRemoveFromWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponSlotList::ClearItems()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponSlotList::AddItem(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponSlotList::CreateItems()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::Vehicle const* WeaponSlotList::GetVehicle() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponSlotList::SortGunPartNames(std::vector<CStr, std::allocator<CStr>>&, ai::Vehicle const*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponSlotList::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponSlotList::FullUpdate()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponSlotList::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponSlotList::RecalcLayot()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

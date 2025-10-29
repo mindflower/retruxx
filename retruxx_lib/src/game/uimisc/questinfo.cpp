@@ -6,7 +6,7 @@
 
 int QuestInfoManager::SaveModifiedQuestInfosToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 QuestInfoManager::QuestInfoManager()
@@ -15,39 +15,39 @@ QuestInfoManager::QuestInfoManager()
 
 QuestInfo const* QuestInfoManager::GetQuestInfoByQuestInfoName(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void QuestInfoManager::SetCoordinateForQuest(CStr const&, CStr const&, CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr QuestInfoManager::GetDynamicQuestInfoPatternNameByType(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 QuestInfo const* QuestInfoManager::GetQuestInfoForStaticQuest(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void QuestInfoManager::Clear()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 QuestInfoManager::~QuestInfoManager()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int QuestInfoManager::Init()
 {
     // TODO: implement QuestInfoManager::Init
     return 0;
-    //throw std::logic_error("Not implemented");
+    //RETRUXX_NOT_IMPLEMENTED;
     if (m_isInited)
     {
         ClearQuestInfos();
@@ -56,17 +56,17 @@ int QuestInfoManager::Init()
     }
     //M3D_APP->m_pInterfaceManager->GetPathToDialogsFileGlobal()
     return 1;
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int QuestInfoManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool QuestInfoManager::IsQuestDynamic(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int QuestInfoManager::GameDataUpdate(void* data, int dataType)
@@ -104,27 +104,27 @@ int QuestInfoManager::GameDataUpdate(void* data, int dataType)
 
 QuestInfo const* QuestInfoManager::GetQuestInfoForDynamicQuest(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int QuestInfoManager::LoadModifiedQuestInfosFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void QuestInfoManager::OnEndLevel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void QuestInfoManager::ClearQuestInfos()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 QuestInfo* QuestInfoManager::CreateQuestInfoForDynamicQuest(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void QuestInfoManager::OnStartLevel()
@@ -144,35 +144,35 @@ void QuestInfoManager::OnStartLevel()
 
 void QuestInfoManager::OnDynamicQuestStateChanged(void*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void QuestInfoManager::GetAllQuestInfosByNamePattern(CStr const&, std::vector<CStr>&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int QuestInfoManager::LoadFromFile(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 QuestInfo const* QuestInfoManager::AddQuestInfoForDynamicQuest(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void QuestInfoManager::ClearDynamicQuestInfos()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void QuestInfoManager::OnEndLevelBeforeContinuousLevel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int QuestInfoManager::RemoveQuestInfoForDynamicQuest(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

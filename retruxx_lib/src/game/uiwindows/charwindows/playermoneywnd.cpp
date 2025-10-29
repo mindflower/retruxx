@@ -6,17 +6,17 @@ RT_CLASS_DEFINE(PlayerMoneyWnd);
 
 PlayerMoneyWnd::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* PlayerMoneyWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* PlayerMoneyWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* PlayerMoneyWnd::GetBaseClass()
@@ -26,45 +26,45 @@ m3d::Class* PlayerMoneyWnd::GetBaseClass()
 
 PlayerMoneyWnd::~PlayerMoneyWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* PlayerMoneyWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void PlayerMoneyWnd::OnStartLevel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 PlayerMoneyWnd::PlayerMoneyWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 PlayerMoneyWnd::PlayerMoneyWnd(PlayerMoneyWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void PlayerMoneyWnd::UpdateValue()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int PlayerMoneyWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int PlayerMoneyWnd::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void PlayerMoneyWnd::OnPlayerMoneyChanged()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

@@ -14,7 +14,7 @@ namespace ai
 
     float VehicleRoleMeatPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool VehicleRoleMeatPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -24,17 +24,17 @@ namespace ai
 
     Obj* VehicleRoleMeatPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float VehicleRoleMeatPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float VehicleRoleMeatPrototypeInfo::FitAgainstObj(Vehicle const*, Obj const*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* VehicleRoleMeat::GetBaseClass()
@@ -44,66 +44,66 @@ namespace ai
 
     VehicleRoleMeat::VehicleRoleMeat(VehicleRoleMeatPrototypeInfo const& prototype) : VehicleRole(prototype)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleMeat::setTargetTeam(Team const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleMeat::setTargetVehicle(Vehicle const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool VehicleRoleMeat::UpdateVehicle(float, Vehicle*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleMeat::setTargetObj(Obj const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* VehicleRoleMeat::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRoleMeatPrototypeInfo const* VehicleRoleMeat::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRoleMeat::~VehicleRoleMeat()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector VehicleRoleMeat::_EvaluateChasePointToMove(float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* VehicleRoleMeat::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleMeat::_CreateChaseTacticsIfNeeded(Vehicle*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ChaseMotionTactics* VehicleRoleMeat::CreateChaseMotionTactic(Vehicle const*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* VehicleRoleMeat::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

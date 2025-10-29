@@ -23,7 +23,7 @@ namespace m3d
 
         Object* ScrollWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         float ScrollWnd::GetCurPos() const
@@ -85,7 +85,7 @@ namespace m3d
 
         int ScrollWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ScrollWnd::~ScrollWnd()
@@ -94,7 +94,7 @@ namespace m3d
 
         float ScrollWnd::GetMaxPos() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ScrollWnd::SetScrollPane(CStr const& scrollPaneName)
@@ -278,7 +278,7 @@ namespace m3d
 
         int ScrollWnd::OnMouseMove(PointBase<float> const&, PointBase<float> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ScrollWnd::ScrollWnd()
@@ -289,12 +289,12 @@ namespace m3d
 
         ScrollWnd::ScrollWnd(ScrollWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ScrollWnd::OnWndNotify(Wnd*, unsigned, unsigned, AIParam const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         BoundsBase<float> ScrollWnd::GetThumbRect() const
@@ -349,7 +349,7 @@ namespace m3d
 
         int ScrollWnd::OnMouseButton0(unsigned, PointBase<float> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 	}
 }

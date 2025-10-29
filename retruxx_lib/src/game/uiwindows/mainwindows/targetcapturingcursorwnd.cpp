@@ -6,22 +6,22 @@ RT_CLASS_DEFINE(TargetCapturingCursorWnd);
 
 m3d::Class* TargetCapturingCursorWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TargetCapturingCursorWnd::~TargetCapturingCursorWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr const& TargetCapturingCursorWnd::GetCaptureTexName()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float TargetCapturingCursorWnd::GetCapturingTexAngle()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* TargetCapturingCursorWnd::GetBaseClass()
@@ -31,60 +31,60 @@ m3d::Class* TargetCapturingCursorWnd::GetBaseClass()
 
 m3d::Object* TargetCapturingCursorWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 PointBase<float> const& TargetCapturingCursorWnd::GetCaptureTexSmallSz()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* TargetCapturingCursorWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TargetCapturingCursorWnd::GetTargetObjId() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TargetCapturingCursorWnd::TargetCapturingCursorWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TargetCapturingCursorWnd::TargetCapturingCursorWnd(TargetCapturingCursorWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TargetCapturingCursorWnd::UpdateCaptureTexAngle()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TargetCapturingCursorWnd::OnNewFrame()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TargetCapturingCursorWnd::UpdateCaptureTex()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TargetCapturingCursorWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 PointBase<float> TargetCapturingCursorWnd::GetCaptureTexSize() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 unsigned char TargetCapturingCursorWnd::GetCaptureTexAlpha() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

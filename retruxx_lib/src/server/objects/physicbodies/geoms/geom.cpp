@@ -44,12 +44,12 @@ namespace ai
 
     void Geom::SetBody(dxBody* const)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     dxSpace* Geom::GetSpace() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Geom::UnlinkFromCollisionCells(int physicObjId)
@@ -71,12 +71,12 @@ namespace ai
 
     void Geom::RelinkToSpace(dxSpace*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Geom::SetRotation(Quaternion const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Geom::~Geom()
@@ -91,7 +91,7 @@ namespace ai
 
     void Geom::Disable()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Geom::LinkToCollisionCells(int physicObjId, CellAabb* newAabb)
@@ -126,22 +126,22 @@ namespace ai
 
     CVector Geom::GetPosition() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Geom::CellAabb Geom::GetCollisionCellAabb() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void* Geom::GetData() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Geom::GetGeomClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Geom::CellAabb Geom::CountCellAabb() const
@@ -228,17 +228,17 @@ namespace ai
 
     void Geom::SetData(void*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Geom::SetPosition(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Geom::Enable()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Geom::RelinkToCollisionCells(int physicObjId)
@@ -256,22 +256,22 @@ namespace ai
 
     bool Geom::IsEnabled() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Geom::CheckCollisionCells()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Geom::SetDirection(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Geom::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Geom::Geom(dxGeom* const geomId, void(* movedCallback)(dxGeom*))

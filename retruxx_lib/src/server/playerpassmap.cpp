@@ -25,22 +25,22 @@ namespace ai
 
     bool PlayerPassMap::SaveToBinaryFile(CStr const&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PlayerPassMap::SetValue(unsigned, unsigned, bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PlayerPassMap::Create(unsigned, bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PlayerPassMap::Fill(bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     PlayerPassMap::PlayerPassMap()

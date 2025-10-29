@@ -6,17 +6,17 @@ RT_CLASS_DEFINE(VehiclePartWnd);
 
 VehiclePartWnd::~VehiclePartWnd()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* VehiclePartWnd::Clone()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* VehiclePartWnd::CreateObject()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* VehiclePartWnd::GetBaseClass()
@@ -26,115 +26,115 @@ m3d::Class* VehiclePartWnd::GetBaseClass()
 
 int VehiclePartWnd::GetResourceId() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehiclePartWnd::SetVehicleId(int)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* VehiclePartWnd::GetClass() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehiclePartWnd::SetPartName(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool VehiclePartWnd::NeedUpdateInfoWnd(ItemInfoWnd*) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehiclePartWnd::LaunchEventOnItemDeactivation() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 VehiclePartWnd::VehiclePartWnd()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 VehiclePartWnd::VehiclePartWnd(VehiclePartWnd const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VehiclePartWnd::GameDataUpdate(void*, int)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VehiclePartWnd::OnPaint(m3d::ui::DrawInfo const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehiclePartWnd::GetGunAngleEdges(retruxx::set<m3d::ui::Edges>&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool VehiclePartWnd::CanContainItem() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VehiclePartWnd::OnMouseButton1(unsigned, PointBase<float> const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool VehiclePartWnd::IsValid() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehiclePartWnd::DrawGunAngleEdges(m3d::ui::DrawInfo const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool VehiclePartWnd::CanChangeItem() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehiclePartWnd::DrawGunAngleEdge(m3d::ui::Edges, m3d::ui::DrawInfo const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehiclePartWnd::UpdateItemValue()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehiclePartWnd::DrawGrid(m3d::ui::DrawInfo const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehiclePartWnd::UpdateGunAngleEdges()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool VehiclePartWnd::SetItemObjId(int)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehiclePartWnd::UpdateBg()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehiclePartWnd::SetupInfoWnd(ItemInfoWnd*)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

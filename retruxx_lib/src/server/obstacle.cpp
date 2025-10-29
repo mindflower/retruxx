@@ -14,17 +14,17 @@ namespace ai
 {
     void Obstacle::UnlinkFromOwner()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obstacle::~Obstacle()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Quaternion Obstacle::GetRotation() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Obstacle::DecRef()
@@ -39,12 +39,12 @@ namespace ai
 
     Obstacle::Obstacle(m3d::SgNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obstacle::Obstacle(Obb const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obstacle::Obstacle(PhysicObj const* physicObj)
@@ -64,7 +64,7 @@ namespace ai
 
     Aabb Obstacle::GetAabb() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Obstacle::GetOwner() const
@@ -77,12 +77,12 @@ namespace ai
 
     void Obstacle::Disable()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Obstacle::GetPosition() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Obstacle::IncRef()
@@ -92,12 +92,12 @@ namespace ai
 
     void Obstacle::Enable()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Obstacle::GetLinearVelocity() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Box const* Obstacle::GetBox() const
@@ -112,7 +112,7 @@ namespace ai
 
     void Obstacle::RenderDebugInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Obstacle::bIsEnabled() const
@@ -122,7 +122,7 @@ namespace ai
 
     float Obstacle::GetIntersectionRadius() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     PhysicObj* Obstacle::GetOwnerPhysicObj() const
@@ -132,6 +132,6 @@ namespace ai
 
     void Obstacle::_Init()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

@@ -11,105 +11,105 @@ m3d::Class* DurabilityIndicatorWnd::GetBaseClass()
 
 m3d::Object* DurabilityIndicatorWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int DurabilityIndicatorWnd::CreateFromPattern(m3d::ui::Wnd*, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* DurabilityIndicatorWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void DurabilityIndicatorWnd::SetType(Type, CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* DurabilityIndicatorWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void DurabilityIndicatorWnd::SetVehicleId(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 DurabilityIndicatorWnd::~DurabilityIndicatorWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::rend::TexHandle DurabilityIndicatorWnd::GetImageByDurabilityRelValue(float) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int DurabilityIndicatorWnd::UpdateOnNewFrame()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 DurabilityIndicatorWnd::DurabilityIndicatorWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 DurabilityIndicatorWnd::DurabilityIndicatorWnd(DurabilityIndicatorWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 BoundsBase<float> DurabilityIndicatorWnd::GetRect() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::Vehicle* DurabilityIndicatorWnd::GetVehicle() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void DurabilityIndicatorWnd::SetDurTextures(CStr const&, CStr const&, CStr const&, CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int DurabilityIndicatorWnd::OnPaint(m3d::ui::DrawInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int DurabilityIndicatorWnd::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int DurabilityIndicatorWnd::UpdateOnVehiclePartChanged()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void DurabilityIndicatorWnd::UpdateTooltip(float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::VehiclePart* DurabilityIndicatorWnd::GetVehiclePart() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void DurabilityIndicatorWnd::UpdateVehiclePartImage()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void DurabilityIndicatorWnd::UpdateValue(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

@@ -12,22 +12,22 @@ namespace ai
 
     bool SimplePhysicBodyPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SimplePhysicBodyPrototypeInfo::SimplePhysicBodyPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SimplePhysicBody::SimplePhysicBody(ai::SimplePhysicBodyPrototypeInfo const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SimplePhysicBody::~SimplePhysicBody()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* SimplePhysicBody::GetBaseClass()

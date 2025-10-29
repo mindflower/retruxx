@@ -4,12 +4,12 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Submarine, InitPosition)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Submarine, StartMotionToPort)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 namespace ai
@@ -28,87 +28,87 @@ namespace ai
 
     void SubmarinePrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SubmarinePrototypeInfo::SubmarinePrototypeInfo()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SubmarinePrototypeInfo::~SubmarinePrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* SubmarinePrototypeInfo::CreateTargetObject() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool SubmarinePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::_InternalPostLoad()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Submarine::GetPropertyId(char const*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     eGObjPropertySaveStatus Submarine::GetPropertySaveStatus(int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr Submarine::GetPropertyName(int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SubmarinePrototypeInfo const* Submarine::GetPrototypeInfo() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* Submarine::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Submarine::OnEvent(Event const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::RenderDebugInfo() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::Registration()
@@ -119,27 +119,27 @@ namespace ai
 
     void Submarine::Update(float, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Submarine::Submarine(SubmarinePrototypeInfo const& prototype) : DummyObject(prototype)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::InitPosition()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::StartMotionToPort()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Submarine::SetPropertyById(int, m3d::AIParam const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* Submarine::GetBaseClass()
@@ -149,62 +149,62 @@ namespace ai
 
     void Submarine::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Submarine::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Submarine::~Submarine()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Submarine::_GetPropertyInternal(int, m3d::AIParam&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::_OnSkipCinematic(Event const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::_UpdatePositionOnMove(float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::_SetSubmarineState(eSubmarineState)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Submarine::CreateObject()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Submarine::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::_WatchPlatformRotation()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::_FillCameraStates(retruxx::vector<m3d::CameraPathState, retruxx::allocator<m3d::CameraPathState>>&,
         CVector const&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Submarine::_OnTargetReached(Event const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

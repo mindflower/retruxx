@@ -6,17 +6,17 @@
 
 int CClipper::testVertexInside(CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CClipper::CreateFromWinding(int, CVector*, int, CVector const&, CPlane*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CClipper::clipPolyInPlace(CVector*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CClipper::testBBox(tbEnum test, float* minmaxs, const CVector& ofs) const
@@ -81,7 +81,7 @@ int CClipper::testBBox(tbEnum test, float* minmaxs, const CVector& ofs) const
 
 void CClipper::buildfrustum(float*, CVector const&, CMatrix const&, CVector const&, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CClipper::buildfrustum(float* fr, CVector const* const n, CMatrix const& m, CVector const& org, float offset)
@@ -107,12 +107,12 @@ void CClipper::buildfrustum(float* fr, CVector const* const n, CMatrix const& m,
 
 unsigned CClipper::enableGetState() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CClipper::enableSetState(unsigned)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CClipper::testSphere(CVector const& o, float r) const
@@ -133,7 +133,7 @@ int CClipper::testSphere(CVector const& o, float r) const
 
 int CClipper::enableSetFromBox(float*, CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CClipper::createIndices()
@@ -189,12 +189,12 @@ void CClipper::createIndices()
 
 int CClipper::clipLineZ(CVector*, CVector*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CClipper::clipPolyInPlaceZ(CVector*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CClipper::createScreenFrustums(CVector const& origin, CMatrix const& rotMat, float fovx, float fovy, float znear, float zfar)
@@ -310,7 +310,7 @@ void CClipper::CreateScreenFrustums(float farz, float lessen, float nearz, float
 
 void CClipper::translate(CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CClipper::enableAll()

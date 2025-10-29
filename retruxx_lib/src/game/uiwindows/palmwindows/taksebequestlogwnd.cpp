@@ -10,12 +10,12 @@ RT_CLASS_DEFINE(TakSebeQuestLogWnd);
 
 TakSebeQuestLogWnd::TsqlAuxInfo::TsqlAuxInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TakSebeQuestLogWnd::~TakSebeQuestLogWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* TakSebeQuestLogWnd::GetBaseClass()
@@ -25,175 +25,175 @@ m3d::Class* TakSebeQuestLogWnd::GetBaseClass()
 
 m3d::Object* TakSebeQuestLogWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* TakSebeQuestLogWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* TakSebeQuestLogWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TakSebeQuestLogWnd::CanQuestBeShown(help::QuestType, int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TakSebeQuestLogWnd::IsInQuestItemMode()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TakSebeQuestLogWnd::UpdateFilterButtonTooltip()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TakSebeQuestLogWnd::UpdateFilterButtonState()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TakSebeQuestLogWnd::TakSebeQuestLogWnd(TakSebeQuestLogWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TakSebeQuestLogWnd::TakSebeQuestLogWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TakSebeQuestLogWnd::ShowQuestItemsWnd(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TakSebeQuestLogWnd::OnCurProfileParamChanged(void*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TakSebeQuestLogWnd::OnCurProfileChanged()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TakSebeQuestLogWnd::ToggleQuestItemsWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TakSebeQuestLogWnd::OnCompleteFilterPartChanged()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::OnChangeFilter()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TakSebeQuestLogWnd::ToggleFilter()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::ShowAll()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::SetFilter0(long)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::SetFilter(long)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 short TakSebeQuestLogWnd::GetCompleteFilterPart(long) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::SetCompleteFilterPart(short)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TakSebeQuestLogWnd::IsCompleteStatusFit(help::QuestType, int, short) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TakSebeQuestLogWnd::IsMapFit(help::QuestType, int, short) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::ShowNoncompleted()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::ChangeMap()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::MakeFilterFromParts(short, short)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TakSebeQuestLogWnd::UpdateQuestItemsButtonState()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TakSebeQuestLogWnd::UpdateQuestItemsButtonTooltip()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 short TakSebeQuestLogWnd::GetMapFilterPart(long) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::SetMapFilterPart(short)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TakSebeQuestLogWnd::OnChangeSelectedQuest()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

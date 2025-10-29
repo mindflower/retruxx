@@ -6,22 +6,22 @@ namespace m3d
 {
     int SpritesServer::GetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SpritesServer::SetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SpritesServer::~SpritesServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SpritesServer::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SpritesServer::RenderItem(int id, void*)
@@ -30,7 +30,7 @@ namespace m3d
 
         if (id != -4)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         m_profiler->EndCountdown();
@@ -38,17 +38,17 @@ namespace m3d
 
     int SpritesServer::SaveAllLoadedEntities(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SpritesServer::RemoveItem(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SpritesServer::AddItem(char const*, char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SpritesServer::SpritesServer()
@@ -72,7 +72,7 @@ namespace m3d
         return;
         for (int i = 0; i < itemsList.size(); ++i)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

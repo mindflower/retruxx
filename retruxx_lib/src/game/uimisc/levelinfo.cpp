@@ -19,32 +19,32 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, AddKnownLevel)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, AddVisibilityCircleForLevel)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, AddVisibilityRectForLevel)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, IsLevelKnown)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, IsLevelVisited)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, ClearVisibilityMapForLevel)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORTS_BEGIN(LevelInfoManager)
@@ -74,17 +74,17 @@ CStr const& LevelInfo::GetName() const
 
 CStr const& LevelInfo::GetFullName() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::rend::TexHandle LevelInfo::GetImage0() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::rend::TexHandle LevelInfo::GetImage1() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 retruxx::vector<m3d::rend::TexHandle> LevelInfo::GetSplashes()
@@ -123,22 +123,22 @@ LevelInfo::LevelInfo()
 
 CStr const& LevelInfo::GetDiz0() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 LevelInfo::~LevelInfo()
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr const& LevelInfo::GetDiz1() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 CVector const& LevelInfo::GetNorth() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfo::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -197,7 +197,7 @@ int LevelInfo::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* 
 
 CStr LevelInfo::GetRandomMusicBlock() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfo::LoadBigImage()
@@ -237,7 +237,7 @@ void LevelInfoManager::ClearLevelObjects()
     {
 	    for (auto info : obj.second)
 	    {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
             delete info.second;
 	    }
     }
@@ -258,12 +258,12 @@ void LevelInfoManager::GetAllLevelNames(retruxx::vector<CStr>& allLevelNames) co
 
 int LevelInfoManager::AddVisibilityCircleForLevel(CStr const&, CVector const&, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::OnTownRuined(void*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::UpdateKnownLevels()
@@ -281,13 +281,13 @@ void LevelInfoManager::UpdateKnownLevels()
     auto it = m_levelObjects.find(curLevelName);
     if (it != m_levelObjects.end())
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }
 
 m3d::Object* LevelInfoManager::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::UpdateLevelImages()
@@ -314,32 +314,32 @@ void LevelInfoManager::UpdateObjectInfoForCurrentLevel()
     {
         bool tasd = true;
     }
-    //throw std::logic_error("Not implemented");
+    //RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::UpdateObjectPositions()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::OnEndLevel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfoManager::AddVisibilityRectForLevel(CStr const&, float, float, float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 LevelInfo* LevelInfoManager::GetLevelInfoById(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfoManager::SaveObjectInfoForObject(ai::Obj const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* LevelInfoManager::CreateObject()
@@ -349,17 +349,17 @@ m3d::Object* LevelInfoManager::CreateObject()
 
 void LevelInfoManager::ClearVisibilityMapForLevel(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 VisibilityMap* LevelInfoManager::GetVisibilityMapForLevel(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool LevelInfoManager::IsObjectCharted(ai::Obj const*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 VisibilityMap* LevelInfoManager::AddVisibilityMapForLevel(CStr const& levelName)
@@ -390,7 +390,7 @@ m3d::Class* LevelInfoManager::GetBaseClass()
 
 void LevelInfoManager::ClearNonPersistantPriceInfoForLevel(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::ClearOnce()
@@ -406,17 +406,17 @@ void LevelInfoManager::ClearOnce()
 
 int LevelInfoManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::ClearObjectIds(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool LevelInfoManager::IsLevelKnown(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfoManager::Init()
@@ -446,7 +446,7 @@ int LevelInfoManager::GetVisibilityRadius() const
 
 void LevelInfoManager::OnNewFrame()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfoManager::AddVisitedLevel(CStr const& levelName)
@@ -464,12 +464,12 @@ int LevelInfoManager::AddVisitedLevel(CStr const& levelName)
 
 retruxx::map<CStr, ObjectInfo*> const* LevelInfoManager::GetObjectsForLevel(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 retruxx::map<CStr, ObjectInfo*>* LevelInfoManager::GetObjectsForLevel(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfoManager::LoadLevelSizes()
@@ -485,22 +485,22 @@ int LevelInfoManager::LoadLevelSizes()
 
 void LevelInfoManager::ClearBeforeContinuousLevel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::ClearVisitedLevels()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 LevelInfoManager::~LevelInfoManager()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::OnEndLevelBeforeContinuousLevel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfoManager::GameDataUpdate(void* data, int dataType)
@@ -610,17 +610,17 @@ LevelInfo* LevelInfoManager::GetLevelInfoByName(CStr const& levelName)
 
 LevelInfo const* LevelInfoManager::GetLevelInfoByName(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfoManager::AddObjectInfo(ObjectInfo*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::OnLocationStateChanged(void*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfoManager::LoadLevelSizeFromXml(CStr const& fileName)
@@ -649,7 +649,7 @@ int LevelInfoManager::LoadLevelSizeFromXml(CStr const& fileName)
 
 ObjectInfo* LevelInfoManager::GetObjectInfo(CStr const&, CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfoManager::AddKnownLevel(CStr const& levelName)
@@ -681,28 +681,28 @@ int LevelInfoManager::GetLevelInfoId(CStr const& name) const
 
 void LevelInfoManager::ClearKnownLevels()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::GetKnownLevelNames(retruxx::vector<CStr>&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr LevelInfoManager::GetLevelInfoName(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LevelInfoManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void LevelInfoManager::UpdateVisibilityMaps()
 {
     // TODO: implement LevelInfoManager::UpdateVisibilityMaps
-    //throw std::logic_error("Not implemented");
+    //RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* LevelInfoManager::GetClass() const
@@ -731,7 +731,7 @@ void LevelInfoManager::ClearVisibilityMaps()
 
 bool LevelInfoManager::IsLevelVisited(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 LevelInfoManager::LevelInfoManager() :
@@ -742,125 +742,125 @@ LevelInfoManager::LevelInfoManager() :
 
 LevelInfoManager::LevelInfoManager(LevelInfoManager const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ObjectInfo::ObjectInfo()
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ObjectInfo::IsSavedPricesPersistant() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ObjectInfo::SavePrices()
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ObjectInfo::GetId() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ObjectInfo::GetBelong() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ObjectInfo::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ObjectInfo::SetSavedPricesPersistant(bool)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr const* ObjectInfo::GetPassageAddress() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ObjectInfo::GetPrototypeId() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ObjectInfo::IsTown() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ObjectInfo::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ObjectInfo::IsLocation() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 ObjectInfo::~ObjectInfo()
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr const& ObjectInfo::GetLevelName() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr const& ObjectInfo::GetName() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ObjectInfo::AddSavedPriceByPrototypeId(int, int, int)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 retruxx::map<int, CVector2> const* ObjectInfo::GetSavedPrices() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr const& ObjectInfo::GetPrototypeName() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 CVector const& ObjectInfo::GetPosition() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ObjectInfo::IsActive() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ObjectInfo::IsRuined() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ObjectInfo::DeleteSavedPrices()
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr const& ObjectInfo::GetFullName() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class const* ObjectInfo::GetObjectClass() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }

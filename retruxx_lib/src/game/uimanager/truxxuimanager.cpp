@@ -254,7 +254,7 @@ namespace
 
 CStr TruxxUiManager::GetPathToDialogsFileGlobal() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 QuestInfoManager* TruxxUiManager::GetQuestInfoManager() const
@@ -269,22 +269,22 @@ ref_ptr<m3d::ui::Wnd> TruxxUiManager::GetWindow(int wndId) const
 
 int TruxxUiManager::GetDefaultFloatPrecision() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MsgManager* TruxxUiManager::GetMsgManager() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ObjectCollection const& TruxxUiManager::GetObjectCollection() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TruxxUiManager::IsHidden() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxUiManager::AddWindow(ref_ptr<m3d::ui::Wnd> w, int& wndId, bool isPersistent, bool needShow)
@@ -299,12 +299,12 @@ int TruxxUiManager::AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool isPer
 
 CStr TruxxUiManager::GetPathToQuestInfoFileGlobal() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxUiManager::HandleImpulse(m3d::AuxImpulseInfo const&, m3d::ui::Wnd*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TruxxUiManager::TruxxUiManager()
@@ -320,17 +320,17 @@ bool TruxxUiManager::IsHiddenByUser() const
 
 CStr TruxxUiManager::GetPathToDynamicDialogsFileGlobal() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TruxxUiManager::IsWindowVisibleAndNotAnimating(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxUiManager::Load(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxUiManager::Init()
@@ -406,7 +406,7 @@ LevelInfoManager* TruxxUiManager::GetLevelInfoManager() const
 
 void TruxxUiManager::OnEnterTown(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr TruxxUiManager::GetPathToLevelInfoFile() const
@@ -449,37 +449,37 @@ int TruxxUiManager::Show(bool needShow, bool enabeleAnimation)
 
 int TruxxUiManager::CreateAndAddWindow(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 StringParser const& TruxxUiManager::GetStringParser() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::Workshop* TruxxUiManager::GetCurrentShop() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::AddFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPointManager* TruxxUiManager::GetNavPointManager() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::Workshop* TruxxUiManager::GetCurrentWorkshop() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::AddFadingMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TruxxUiManager::IsGameModeValidForSmartCursor(GameState mode) const
@@ -502,22 +502,22 @@ int TruxxUiManager::Str2WndGuiId(CStr const& strId) const
 
 ai::Vehicle* TruxxUiManager::GetVehicleSellingInWorkshop() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 std::vector<int, std::allocator<int>> const& TruxxUiManager::GetTakenQuestIds() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RepliesManager* TruxxUiManager::GetRepliesManager() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxUiManager::Reset(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponGroupManager* TruxxUiManager::GetWeaponGroupManager() const
@@ -527,7 +527,7 @@ WeaponGroupManager* TruxxUiManager::GetWeaponGroupManager() const
 
 void TruxxUiManager::AddImportantFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::ui::MbRetCodes TruxxUiManager::RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned flags, bool bPause)
@@ -553,7 +553,7 @@ m3d::ui::MbRetCodes TruxxUiManager::RunMsgBoxDlg(CStr const& caption, CStr const
 
 bool TruxxUiManager::IsInSaleMode() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TruxxUiManager::IsWindowVisible(int wndGuiId) const
@@ -572,17 +572,17 @@ bool TruxxUiManager::IsWindowVisible(int wndGuiId) const
 
 int TruxxUiManager::SetEventsForWindow(int, std::vector<int, std::allocator<int>> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TruxxUiManager::~TruxxUiManager()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr TruxxUiManager::GetPathToSplashes() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxUiManager::Update()
@@ -603,12 +603,12 @@ SavesManager* TruxxUiManager::GetSavesManager() const
 
 ai::Town* TruxxUiManager::GetCurrentTown() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxUiManager::Save(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::StartSplashing(int numSplashes) const
@@ -632,12 +632,12 @@ int TruxxUiManager::HandleAppEvent(m3d::Event const& appEvent)
 
 void TruxxUiManager::OnLeaveTown(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::AddImportantFadingMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 HelpManager* TruxxUiManager::GetHelpManager() const
@@ -662,22 +662,22 @@ bool TruxxUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd* w) const
 
 int TruxxUiManager::GUI_ReadFromXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxUiManager::IncRef()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::GUI_UnRegisterScriptGlobals()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::ShowGameMenu(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::OnGameModeChanged(void* data)
@@ -699,7 +699,7 @@ void TruxxUiManager::OnBeforeStartLevel()
     bool bOldFirstLevelResourcesLoaded = m_bFirstLevelResourcesLoaded;
     if (!m_bFirstLevelResourcesLoaded && !GUI_IsCurrentLevelMainMenuLevel())
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
     auto res = 1;
     if (GUI_IsCurrentLevelMainMenuLevel())
@@ -1114,7 +1114,7 @@ void TruxxUiManager::GUI_RegisterCVars()
 
 int TruxxUiManager::GUI_WriteToXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::OnStartLevel(void* data)
@@ -1132,27 +1132,27 @@ void TruxxUiManager::OnStartLevel(void* data)
 
 void TruxxUiManager::OnEndLevel(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxUiManager::LoadCommonDiz()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TruxxUiManager::CanLaunchModalEqualWindow()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::PrepareMenuForShow(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxUiManager::DecRef()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TruxxUiManager::GUI_NeedUpdateWndOnEvent(ref_ptr<m3d::ui::Wnd> wnd, int eventId, void* data)
@@ -1223,7 +1223,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     }
     case 64:
     {
-        //throw std::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
         //return 1;
         m_weaponGroupManager->GameDataUpdate(data, guiEventId);
         auto event = (m3d::Event*)data;
@@ -1257,13 +1257,13 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         return 0;
     }
     default:
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }
 
 void* TruxxUiManager::QueryIface(char const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::GUI_RegisterEvents()
@@ -1531,17 +1531,17 @@ void TruxxUiManager::GUI_RegisterClasses()
 
 void TruxxUiManager::OnChangeGameMenuMode()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::GUI_UnregisterCVars()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::SetGameMenuMode(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxUiManager::GUI_BeginModalDlg(bool forcePause, bool forceModal)
@@ -1565,5 +1565,5 @@ int TruxxUiManager::GUI_BeginModalDlg(bool forcePause, bool forceModal)
 
 int TruxxUiManager::GUI_RegisterScriptGlobals()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

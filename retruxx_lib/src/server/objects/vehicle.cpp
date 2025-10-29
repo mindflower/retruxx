@@ -54,7 +54,7 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetGamePositionOnGround)
@@ -75,37 +75,37 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetSize)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCabin)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetBasket)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetChassis)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetHealth)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetMaxHealth)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetFuel)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetMaxFuel)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetExternalPathByName)
@@ -118,22 +118,22 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetExternalPathByName)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCanBeDistractedFromMoving)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, PlaceToEndOfPath)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetThrottle)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetThrottle)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomControlEnabled)
@@ -146,127 +146,127 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomControlEnabled)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetSteer)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetSteer)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, FireFromWeaponCustom)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, FireFromWeaponCustom2)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, HoldFire)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomControlWeapons)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCustomControlWeapons)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomControlWeaponsTarget)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCustomControlWeaponsTarget)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomControlWeaponsTargetObj)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCustomControlWeaponsTargetObj)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomLinearVelocity)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, AddItemsToRepository)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, RemoveItemsFromRepository)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, HasAmountOfItemsInRepository)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, CanPlaceItemsToRepository)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, AddObjectToRepository)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, TakeOffAllGuns)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, AttachTrailer)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, DetachTrailer)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, TrailerExists)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetTrailer)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, getGodMode)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, setGodMode)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, getImmortalMode)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, setImmortalMode)
@@ -279,72 +279,72 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, setImmortalMode)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetHorn)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetHorn)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetVisible)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetInvisible)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetMaxTorque)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetMaxTorque)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetMaxSpeed)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetMaxSpeed)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCruisingSpeed)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCruisingSpeed)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, LimitMaxSpeed)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, UnlimitMaxSpeed)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetForcedMaxTorque)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, ResetForcedMaxTorque)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr CABIN = "CABIN";
@@ -425,12 +425,12 @@ namespace ai
 
             bool IsPointInFront(const CVector&)
             {
-                throw std::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
 
             void RenderDebugInfo(unsigned int)
             {
-                throw std::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
         }; /* size: 0x0018 */
 
@@ -438,7 +438,7 @@ namespace ai
         RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D5680, FlatLine::CreateOrthogonal)
         FlatLine* FlatLine::CreateOrthogonal(FlatLine* ,const CVector&, const CVector&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         struct DrivingValues
@@ -452,7 +452,7 @@ namespace ai
 
         float GetAngleBetween(CVector const&, CVector const&, CVector const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D07A0, GetAngleBetween)
 
@@ -520,7 +520,7 @@ namespace ai
 
 	void VehiclePrototypeInfo::WheelInfo::PostLoad()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	VehiclePrototypeInfo::VehiclePrototypeInfo()
@@ -641,7 +641,7 @@ namespace ai
 
 	VehiclePrototypeInfo::~VehiclePrototypeInfo()
 	{
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	ai::Obj* VehiclePrototypeInfo::CreateTargetObject() const
@@ -656,27 +656,27 @@ namespace ai
 
 	Wheel const* Vehicle::WheelRuntimeInfo::GetWheel() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Wheel* Vehicle::WheelRuntimeInfo::GetWheel()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Vehicle::WheelRuntimeInfo::WheelRuntimeInfo(Wheel*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::WheelRuntimeInfo::IsWheelPresent() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::WheelRuntimeInfo::SetWheel(Wheel*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetCruisingSpeed() const
@@ -686,12 +686,12 @@ namespace ai
 
 	void Vehicle::UnlimitMaxSpeed()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::IncStoppageMode()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::EnablePhysics()
@@ -708,77 +708,77 @@ namespace ai
 
 	int Vehicle::GetInfoObjId() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::bRocketLaunchersPresent() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::RecalcGadgets()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::HoldFire(int)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	VehicleRecollection* Vehicle::GetRecollection() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetLinearVelocity(CVector const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Vehicle::CustomWeaponControlType Vehicle::GetCustomControlWeapons() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Quaternion Vehicle::GetWheelInitialRotation(unsigned)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::ActivateHeadLights(bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::Flow(Obj*, float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::DetachTrailer()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::AddChild(Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::GetHorn() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::IsTrailer() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetCameraHeight() const
@@ -788,32 +788,32 @@ namespace ai
 
 	int Vehicle::GetLockedObjId() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::setGodMode(bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	retruxx::map<int, Gadget*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, Gadget*>>> const& Vehicle::GetGadgets() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetRandomSkin()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetDefaultCruisingSpeed() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetMaxEngineRpm() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::SetExternalPath(retruxx::vector<CVector2, retruxx::allocator<CVector2>> const& path)
@@ -829,12 +829,12 @@ namespace ai
 
 	Chassis const* Vehicle::GetChassis() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Chassis* Vehicle::GetChassis()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::Remove()
@@ -883,7 +883,7 @@ namespace ai
 
 	void Vehicle::FireFromWeaponCustom2(bool, int)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetCameraMaxDist() const
@@ -893,28 +893,28 @@ namespace ai
 
 	bool Vehicle::SetPropertyById(int, m3d::AIParam const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::DecOnOilMode()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	unsigned Vehicle::GetNumWheels() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetHandBrake()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     RETRUXX_DLL_INJECT_FUNCTION(0x005DCFD0, Vehicle::GetRecollectionPosition)
 	CVector Vehicle::GetRecollectionPosition(float) const
 	{
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
         //TODO: implement recollection logic
         auto center = GetGeometricCenter();
         return center;
@@ -922,12 +922,12 @@ namespace ai
 
 	float Vehicle::GetSteer() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::IncNumWheelsTouchingGround()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::CreateChildren()
@@ -943,7 +943,7 @@ namespace ai
 
 	float Vehicle::GetMaxFiringRangeAI() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* Vehicle::GetBaseClass()
@@ -953,52 +953,52 @@ namespace ai
 
 	float Vehicle::GetMaxFuel() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::getImmortalMode() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetHealth() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::AddThing(GeomRepositoryItem const&, bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::EnableSounds(bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::TransferToSpace(dxSpace*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::AIParam Vehicle::VehicleAIOnAttack(Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetCanBeDistractedFromMoving(bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::GetCustomControlWeaponsTargetObj() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::GetToBeLockedObjId() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetSkin(int skin)
@@ -1015,27 +1015,27 @@ namespace ai
 
 	void Vehicle::DisablePhysics()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::FireFromWeaponCustom(bool, CVector const&, Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetMass() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	unsigned Vehicle::GetPrice(IPriceCoeffProvider const*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::FireFromWeaponByGunId(int, bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetMoveStatus(VehicleMoveStatus moveStatus)
@@ -1045,7 +1045,7 @@ namespace ai
 
 	void Vehicle::SetPassedToAnotherMapStatus()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetCruisingSpeed(float cruisingSpeed)
@@ -1060,7 +1060,7 @@ namespace ai
 
 	void Vehicle::SetExternalDestination(CVector const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::Registration()
@@ -1075,7 +1075,7 @@ namespace ai
 
 	eGObjPropertySaveStatus Vehicle::GetPropertySaveStatus(int) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetPartByName(CStr const& partName, VehiclePart* vehiclePart, bool bUnsafe)
@@ -1189,12 +1189,12 @@ namespace ai
 
 	float Vehicle::GetCurrentSteerAngle() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::GetCurrentGear() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector Vehicle::GetLinearVelocity() const
@@ -1209,38 +1209,38 @@ namespace ai
 
 	void Vehicle::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetCustomControlWeapons(int)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetCustomControlWeapons(CustomWeaponControlType)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	unsigned Vehicle::GetSchwarz() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::UnsubscribeRadioManagerFromNearbyObjId(int) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::Blow(Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetHorn(bool)
 	{
 		// TODO: implement Vehicle::SetHorn
-		//throw std::logic_error("Not implemented");
+		//RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::SetExternalPathByName(char const* pathName)
@@ -1251,22 +1251,22 @@ namespace ai
 
 	void Vehicle::IncInSmokeScreenMode()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	unsigned char Vehicle::GetPriority() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::getGodMode() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::FireFromWeaponByGunPartName(CStr const&, bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetUpdatingByODE(bool byODE)
@@ -1302,52 +1302,52 @@ namespace ai
 
 	void Vehicle::GetOutOfDifficultPlace()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetMaxHealth() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::GetPropertyId(char const*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::EstimateDamageAI(CVector const&, retruxx::vector<int, retruxx::allocator<int>>) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::EstimateDamageAI() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::PickUpNearbyObjects(bool, unsigned&, retruxx::vector<int, retruxx::allocator<int>>&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetFullDurability() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	NumericInRangeRegenerating<float> const& Vehicle::Health() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	NumericInRangeRegenerating<float>& Vehicle::Health()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::GetOnOilMode() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::bIsMovingAlongExternalPath() const
@@ -1357,7 +1357,7 @@ namespace ai
 
 	void Vehicle::DisableGeometry(bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetSteer(float radians)
@@ -1367,27 +1367,27 @@ namespace ai
 
 	float Vehicle::GetControl() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::AddItemsToRepository(char const*, int)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::ResetForcedMaxTorque()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::ClearSavedStatus()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::HealWheels()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::setImmortalMode(bool bImmortal)
@@ -1397,42 +1397,42 @@ namespace ai
 
 	bool Vehicle::bIsBraking() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::AIParam Vehicle::VehicleAIOnMove(Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::IsHealthZero() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::FireFromWeaponAI(bool, float, Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::AddGadget(Gadget*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetCustomControlWeaponsTargetObj(int)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::AddObjectToRepository(Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::ResetPositionAndRotation()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetPositionSelf(CVector const& pos)
@@ -1496,37 +1496,37 @@ namespace ai
 
 	void Vehicle::WeaponLookAtPoint(CVector const&, float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::CanPlaceItemsToRepository(char const*, int)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::AttachTrailer(char const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetTurboThrottleValue(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetMaxPower(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::GetStoppageMode() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::GetEnemiesInNeighborhood(float, retruxx::vector<int, retruxx::allocator<int>>&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	VehicleRole* Vehicle::GetRole() const
@@ -1536,12 +1536,12 @@ namespace ai
 
 	void Vehicle::SubscribeRadioManagerOnNearbyObjId(int) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::GetValidSlotIdForGadget(Gadget const*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Wheel const* Vehicle::GetFirstExistingWheel() const
@@ -1558,22 +1558,22 @@ namespace ai
 
 	bool Vehicle::TrailerExists() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetAverageEngineRpm() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector Vehicle::GetCustomControlWeaponsTarget() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetMaxTorque() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetAttackStatus(VehicleAttackStatus attackStatus)
@@ -1713,17 +1713,17 @@ namespace ai
 
 	void Vehicle::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::DecInSmokeScreenMode()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetTrailer()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     RETRUXX_DLL_INJECT_VIRTUAL_FUNCITON_NAMESPACED(0x005EAEE0, ai, Vehicle, RenderDebugInfo)
@@ -1756,17 +1756,17 @@ namespace ai
             DebugCircle(curPoint, scal + 500/smth, 0xFFFF0000);
             DebugCircle(curPoint, dv.checkCircleRadius, 0xFFFFFF00);
         }
-		//throw std::logic_error("Not implemented");
+		//RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetVisible()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::GetNpcMotionControllerId() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetIndexInTeam(int indexInTeam)
@@ -1776,42 +1776,42 @@ namespace ai
 
 	NumericInRangeRegenerating<float>& Vehicle::Fuel()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	NumericInRangeRegenerating<float> const& Vehicle::Fuel() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetFuel() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::GetSeenObjId() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::bIsControlledByPlayer() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::AIParam Vehicle::TakeOffAllGuns()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     RETRUXX_DLL_INJECT_FUNCTION(0x005D1210, Vehicle::SetThrottle)
@@ -1835,7 +1835,7 @@ namespace ai
 
 	float Vehicle::GetBrake() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetMaxSpeed() const
@@ -1866,22 +1866,22 @@ namespace ai
 
 	bool Vehicle::CanChildBeAdded(m3d::Class*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetTurboThrottleTime() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetFullDurabilityCoeffForDamageType(DamageType) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Obj* Vehicle::CloneObj()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::CheckSkin(int skinNum)
@@ -1928,12 +1928,12 @@ namespace ai
 
 	m3d::AIParam Vehicle::VehicleAIOnDefend(Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetEngineRpm() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetBelong(int newBelong)
@@ -1959,7 +1959,7 @@ namespace ai
 
 	Team* Vehicle::GetTeam() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::UnsubscribeRadioManagerFromAllNearbyObjIds() const
@@ -1976,75 +1976,75 @@ namespace ai
 
 	void Vehicle::SetBasket(VehiclePart*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA60, Vehicle::GetCabin, Cabin const* (Vehicle::*)()const)
 	Cabin const* Vehicle::GetCabin() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CB9D0, Vehicle::GetCabin, Cabin* (Vehicle::*)())
 	Cabin* Vehicle::GetCabin()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetTurboThrottleValue() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::GetMaxGadgets(CStr const&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetMaxPower() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::DecStoppageMode()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::ShowVehicle(bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetRole(VehicleRole*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	retruxx::set<ref_ptr<Obstacle>, retruxx::less<ref_ptr<Obstacle>>, retruxx::allocator<ref_ptr<Obstacle>>> const& Vehicle::
 	GetNearbyObstacles() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr Vehicle::GetPropertyName(int) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::RemoveItemsFromRepository(char const*, int)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetCustomControlWeaponsTarget(CVector const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetTimeToLockTarget() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetGamePositionOnGround(CVector const& pos, bool bWithCollisions, bool bWithWater)
@@ -2161,12 +2161,12 @@ namespace ai
 
 	void Vehicle::SetMaxTorque(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::LimitMaxSpeed(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* Vehicle::GetClass() const
@@ -2182,12 +2182,12 @@ namespace ai
 
 	void Vehicle::CollectNearbyObjectsToGroundRepository()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Vehicle::VehicleAttackStatus Vehicle::GetAttackStatus() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::ReleaseAllPedals()
@@ -2198,22 +2198,22 @@ namespace ai
 
 	bool Vehicle::GetInSmokeScreenMode() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::PlaySoundOnRechargeWeapon()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Vehicle* Vehicle::GetTrailer() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::IncOnOilMode()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector Vehicle::GetGeometricCenter() const
@@ -2319,12 +2319,12 @@ namespace ai
 	float Vehicle::EstimateDamageFromPositionAI(CVector const&, CVector const&,
 		retruxx::vector<int, retruxx::allocator<int>>) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetNpcMotionControllerId(int)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	VehiclePrototypeInfo const* Vehicle::GetPrototypeInfo() const
@@ -2334,108 +2334,108 @@ namespace ai
 
 	void Vehicle::PlaceToEndOfPath()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::GetIndexInTeam() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector Vehicle::GetBumperPoint() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	GeomRepository* Vehicle::GetGroundRepository() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::ApplyModifier(Modifier const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetTurningToGroundForceAndTorque(CVector const&, CVector const&, CVector const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Wheel* Vehicle::GetWheel(unsigned)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Wheel const* Vehicle::GetWheel(unsigned) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetThrottle() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	IzvratRepository const* Vehicle::GetRepository() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	IzvratRepository* Vehicle::GetRepository()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::RemoveChild(Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetBrake(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::AIParam Vehicle::VehicleAIOnDead(Obj*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetMaxSpeed(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::HasAmountOfItemsInRepository(char const*, int) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetTurboThrottleTime(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::Update(float, unsigned)
 	{
 		// TODO: implement Vehicle::Update
-		//throw std::logic_error("Not implemented");
+		//RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetCollisionRadius() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetDriftCoeff() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetRotationSelf(Quaternion const& rot)
@@ -2578,44 +2578,44 @@ namespace ai
 
 	void Vehicle::InflictDamage(DamageInfo const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::GetMaxFullDurability() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetInvisible()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetCustomLinearVelocity(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA00, Vehicle::GetBasket, Basket* (Vehicle::*)())
 	Basket* Vehicle::GetBasket()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA90, Vehicle::GetBasket, Basket const*(Vehicle::*)()const)
 	Basket const* Vehicle::GetBasket() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::SetCabin(VehiclePart*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::IntersectWithWorld()
@@ -2639,24 +2639,24 @@ namespace ai
 		{
 			for (auto& obstacle : m_currentNearbyObstacles)
 			{
-				throw std::logic_error("Not implemented");
+				RETRUXX_NOT_IMPLEMENTED;
 			}
 
 			for (auto& obstacle : m_pastNearbyObstacles)
 			{
-				throw std::logic_error("Not implemented");
+				RETRUXX_NOT_IMPLEMENTED;
 			}
 		}
 	}
 
 	void Vehicle::SetForcedMaxTorque(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::DriveToPoint(CVector const&, CVector const&, bool, float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::EnableGeometry(bool changePhysicState)
@@ -2674,12 +2674,12 @@ namespace ai
 
 	bool Vehicle::_GetPropertyInternal(int, m3d::AIParam&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_PutContour()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	namespace
@@ -2753,7 +2753,7 @@ namespace ai
 				wheel->CreateSuspensionNode();
 
 
-				throw std::logic_error("Not implemented");
+				RETRUXX_NOT_IMPLEMENTED;
 		    }
 		}
 
@@ -2761,7 +2761,7 @@ namespace ai
 		SetRotation(oldRotation);
 		for (int i = 0; i < m_wheels.size(); ++i)
 		{
-			throw std::logic_error("Not implemented");
+			RETRUXX_NOT_IMPLEMENTED;
 		}
 
 		TransferPhysicParamsToSceneGraphNode();
@@ -2792,7 +2792,7 @@ namespace ai
 
 	bool Vehicle::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_InternalPostLoad()
@@ -3013,22 +3013,22 @@ namespace ai
 
 	void Vehicle::_RemoveContour()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_KeepSteer(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_UpdateOwnPhysics(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	AI* Vehicle::GetAIPtr()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Vehicle::~Vehicle()
@@ -3049,79 +3049,79 @@ namespace ai
 
 	void Vehicle::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::_GetTimeOutForNextIntersectionWithWorld() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_ApplyStabilizingForces()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_UpdateAlarmStatus()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* Vehicle::Clone()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_AttachExistingTrailer(Vehicle*, bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_InflictDamageToRepository(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::_SetIdleMoveStatus()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector Vehicle::_CalcRepulsionForNearbyObjects(CVector const&, CVector const&, CVector const&, CVector const&,
 		bool, CVector&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_DeadActions(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_OnChangeCabin()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::_bPassedPathPoint(CVector const&, CVector const&, bool) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_CauseCustomGunPointedEvents()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_KeepSuspension()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(0x005CCF40, Vehicle, _GetNextPathPoint)
 	CVector Vehicle::_GetNextPathPoint() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     RETRUXX_DLL_INJECT_CLASS_METHOD(0x005DAAE0, Vehicle, _KeepThrottle)
@@ -3227,33 +3227,33 @@ namespace ai
 
 	void Vehicle::_CreateBlastWave()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr Vehicle::_GetTrailerName() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector Vehicle::_CalcRepulsionForObstacle(Obstacle const*, CVector const&, CVector const&, CVector const&,
 		CVector const&, bool, CVector&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_DriveBySteeringForce(CVector const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_TurnWheelByAngle(Wheel*, float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector Vehicle::_GetCustomWeaponTargetPoint() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_EnsureRecollection()
@@ -3283,58 +3283,58 @@ namespace ai
 
 	void Vehicle::_UpdateLockedObj(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::_bPointIsBehind(CVector const&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_GetOutOfDifficlultPlaceInternal()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::_GetCabinControlCoeff() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_ValidateVehicleParts()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_AdjustLookBox(bool, CVector const&, CVector const&, CVector const&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(0x005D62E0, Vehicle, _CalcSteeringForceToPathPoint)
 	CVector Vehicle::_CalcSteeringForceToPathPoint(CVector const&, CVector const&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_TakeWaterIntoAccount(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_KeepGearBox(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_SetIdleMoveStatusAndCauseTargetReached()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_CalcRpms()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::_UpdateRepositoryOnChangeBasket()
@@ -3385,7 +3385,7 @@ namespace ai
 
 	void Vehicle::_UpdatePhysicsUpdater()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_AdjustSizeAndBumperPoint()
@@ -3530,66 +3530,66 @@ namespace ai
 
 	void Vehicle::_OnChangeBasket()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector Vehicle::_GetLastPathPoint() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float Vehicle::_GetAngleTo(CVector const&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_AdjustWheel(WheelRuntimeInfo&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* Vehicle::CreateObject()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_CheckForNearbyChests() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_AdjustTrailer()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_UpdateSeenObjAndWeapons(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector Vehicle::_CalcSteeringForce(float) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector Vehicle::_GetEtalonWheelAVel() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_DropChests()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::_EvaluateToDead()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     Vehicle::VehicleMoveStatus Vehicle::GetMoveStatus() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

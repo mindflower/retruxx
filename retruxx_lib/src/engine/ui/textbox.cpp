@@ -15,67 +15,67 @@ namespace m3d
 
         Object* TextBoxWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TextBoxWnd::SetText(CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr TextBoxWnd::GetText() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* TextBoxWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TextBoxWnd::SetVScrollToPos(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* TextBoxWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TextBoxWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TextBoxWnd::Create(BoundsBase<float> const&, unsigned, int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         TextBoxWnd::~TextBoxWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TextBoxWnd::RecalcLayout()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TextBoxWnd::OnPaint(DrawInfo const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         TextBoxWnd::TextBoxWnd(TextBoxWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         TextBoxWnd::TextBoxWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

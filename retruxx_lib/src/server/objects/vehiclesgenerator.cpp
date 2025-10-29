@@ -9,7 +9,7 @@ namespace ai
 {
 	retruxx::vector<VehiclesGeneratorInfoCache::WareInfo> const& VehiclesGeneratorInfoCache::GetWareInfos() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     bool VehiclesGeneratorInfoCache::VehiclePartInfo::operator<(
@@ -25,7 +25,7 @@ namespace ai
 
     VehiclesGeneratorInfoCache::VehiclesGeneratorInfoCache(const VehiclesGeneratorInfoCache&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     const retruxx::map<CStr, retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<
@@ -33,7 +33,7 @@ namespace ai
     retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache::
     VehiclePartInfo>>>>>& VehiclesGeneratorInfoCache::GetGunInfos() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehiclesGeneratorPrototypeInfo::VehiclesGeneratorPrototypeInfo()
@@ -42,70 +42,70 @@ namespace ai
 
     Obj* VehiclesGeneratorPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool VehiclesGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehiclesGeneratorPrototypeInfo::PostLoad()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehiclesGeneratorPrototypeInfo::Generate(unsigned int restSchwarz,
         retruxx::vector<int, retruxx::allocator<int>>& generatedVehicleIds) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehiclesGeneratorPrototypeInfo::GenerateAndPlace(
         const retruxx::vector<CVector, retruxx::allocator<CVector>>& points, unsigned int restSchwarz,
         retruxx::vector<int, retruxx::allocator<int>>& generatedVehicleIds) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehiclesGeneratorPrototypeInfo::TuneVehicleBySchwarz(Vehicle* v, float desiredSchwarz,
         const VehicleDescription* vd) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetBestPrototypeByMoney(
         const retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache
         ::VehiclePartInfo>>& partInfos, float money)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetBestPrototypeByMoneyEconomy(
         const retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache
         ::VehiclePartInfo>>& partInfos, float money)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetRandomPrototypeByMoney(
         const retruxx::vector<VehiclesGeneratorInfoCache::WareInfo, retruxx::allocator<VehiclesGeneratorInfoCache::
         WareInfo>>& wareInfos, float money)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetRandomPrototypeByMoney(
         const retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache
         ::VehiclePartInfo>>& partInfos, float money)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned int VehiclesGeneratorPrototypeInfo::_ChangeVehiclePart(Vehicle* v, const CStr& partName,
         int newPartProtoId, int affixGenetatorProtoId)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
 	VehiclesGeneratorInfoCache::VehiclesGeneratorInfoCache()
@@ -116,7 +116,7 @@ namespace ai
 	retruxx::map<CStr, VehiclesGeneratorInfoCache::VehicleGroupInfo> const& VehiclesGeneratorInfoCache::
 	GetVehicleGroupInfos() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclesGeneratorInfoCache::EnsureInitialized()
@@ -165,7 +165,7 @@ namespace ai
 
 	void VehiclesGeneratorInfoCache::_Initialize()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclesGeneratorInfoCache::_InitializeGuns()
@@ -202,12 +202,12 @@ namespace ai
 
 	VehiclesGeneratorInfoCache::WareInfo VehiclesGeneratorInfoCache::_GetWareInfo(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	VehiclesGeneratorInfoCache::VehiclePartInfo VehiclesGeneratorInfoCache::_GetVehiclePartInfo(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclesGeneratorInfoCache::_GetAbstractVehiclesPrototypeIds(retruxx::vector<int, retruxx::allocator<int>>& abstractVehiclesPrototypeIds)

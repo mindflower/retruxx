@@ -27,32 +27,32 @@ namespace ai
 
     Vehicle* VehicleRolePrototypeInfo::getBestOpponentFromTeam(Vehicle const*, Team const*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* VehicleRolePrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool VehicleRole::UpdateVehicle(float, Vehicle*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float VehicleRole::FitAgainstVehicle(Vehicle const*, Vehicle const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRole::setTargetTeam(Team const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRole::setTargetVehicle(Vehicle const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* VehicleRole::GetBaseClass()
@@ -62,81 +62,81 @@ namespace ai
 
     void VehicleRole::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float VehicleRole::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float VehicleRole::FitAgainstObj(Vehicle const*, Obj const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Team* VehicleRole::getTargetTeam() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Vehicle* VehicleRole::getTargetVehicle() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* VehicleRole::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRole::setTargetObj(Obj const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRolePrototypeInfo const* VehicleRole::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRole::VehicleRole(VehicleRolePrototypeInfo const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* VehicleRole::getTargetObj() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRole::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRole::_LookAndFireToEnemy(Vehicle*, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Vehicle* VehicleRole::getBestOpponentFromTeam(Vehicle const*, Team const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRole::~VehicleRole()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* VehicleRole::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* VehicleRole::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

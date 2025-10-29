@@ -10,12 +10,12 @@ namespace ai
 
     MortarVolleyLauncherPrototypeInfo::MortarVolleyLauncherPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* MortarVolleyLauncherPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* MortarVolleyLauncher::GetBaseClass()
@@ -25,36 +25,36 @@ namespace ai
 
     MortarVolleyLauncher::MortarVolleyLauncher(MortarVolleyLauncherPrototypeInfo const& prototype) : Mortar(prototype)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     MortarVolleyLauncherPrototypeInfo const* MortarVolleyLauncher::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* MortarVolleyLauncher::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool MortarVolleyLauncher::Fire(bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     MortarVolleyLauncher::~MortarVolleyLauncher()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* MortarVolleyLauncher::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* MortarVolleyLauncher::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

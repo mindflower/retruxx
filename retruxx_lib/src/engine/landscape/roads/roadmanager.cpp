@@ -12,7 +12,7 @@ namespace m3d
 {
     CStr const RoadManager::GetRoadSetNameByHandle(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::UpdateVis()
@@ -70,22 +70,22 @@ namespace m3d
 
     void RoadManager::ReleaseCollisionForRoadNode(RoadNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::RebuildStructures()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int RoadManager::GetRoadSetHandleByName(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::RebuildSomeNodes(retruxx::set<RoadNode*>, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::SetOwner(Landscape* landscape)
@@ -95,12 +95,12 @@ namespace m3d
 
     int RoadManager::RenderRoads(retruxx::vector<unsigned>&, RenderRoadType, RoadTestCallBack const*, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::GetRoadMinMaxZByHandle(int, int, float&, float&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     RoadManager::RoadManager()
@@ -112,36 +112,36 @@ namespace m3d
 
     int RoadManager::WriteRoadsToXmlFile(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::GetRoadMinMaxXByHandle(int, int, float&, float&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::UnlinkRoadNodeCollisionFromCells(RoadNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int RoadManager::ReadRoadSetConfigFromXmlFile(char const*)
     {
         // TODO: implement RoadManager::ReadRoadSetConfigFromXmlFile
         return 0;
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int RoadManager::ReadRoadsFromXmlFile(char const*)
     {
         // TODO: implement RoadManager::ReadRoadsFromXmlFile
         return 0;
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::Init()
@@ -154,46 +154,46 @@ namespace m3d
 
     void RoadManager::ClearRoadSets()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::ReleaseCollision()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::RecalcCoveredCells()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::LinkToBorder(RoadNode*, unsigned, int, CVector&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::LinkRoadNodes()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector2 RoadManager::FindLeftProjection(RoadNode*, float, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool RoadManager::GetAdjPoint(RoadNode*, unsigned, int, CVector&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::FindFriends()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RoadManager::CalcNodeData(RoadNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

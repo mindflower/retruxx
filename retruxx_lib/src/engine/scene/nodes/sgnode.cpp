@@ -19,7 +19,7 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNode, GetOrigin)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int cntUpdateNeededChecks = 0;
@@ -61,7 +61,7 @@ namespace m3d
 
     CVector const& SgNode::GetOrigin() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CMatrix const& SgNode::GetCurrentMatrix() const
@@ -71,7 +71,7 @@ namespace m3d
 
     int SgNode::GetPrevThinkTime() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgNode::SetScale(CVector const& scale)
@@ -104,12 +104,12 @@ namespace m3d
 
     bool SgNode::IsXFormUpdateNeeded() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector const& SgNode::GetOriginWorldAbs() const
@@ -119,7 +119,7 @@ namespace m3d
 
     void SgNode::SetPrevThinkTime(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector const& SgNode::GetScale() const
@@ -134,47 +134,47 @@ namespace m3d
 
     int SgNode::SetServerItemProperty(unsigned, void*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgNode::Think(int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgNode::GetTtl() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SgNode::CanBeFree()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector const& SgNode::GetOriginWorldAbsForSphere() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgNode::RemoveChild(Object*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgNode::GetNextThinkTime() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Quaternion const& SgNode::GetRotation() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgNode::GetProperty(unsigned propId, void* prop) const
@@ -236,7 +236,7 @@ namespace m3d
 
     bool SgNode::IsFree() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DataServer* SgNode::GetServer() const
@@ -246,7 +246,7 @@ namespace m3d
 
     Aabb SgNode::GetAabb() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgNode::AddChild(Object* node)
@@ -256,7 +256,7 @@ namespace m3d
 
     Object* SgNode::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgNode::ReadFromXmlNodeAfterAdd(cmn::XmlFile* file, cmn::XmlNode* node)
@@ -291,22 +291,22 @@ namespace m3d
 
     TransparencyParams& SgNode::GetTransparencyParams()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SgNode::SetBoundingBoxDirty()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SgNode::RemoveImmediateAfterParent(bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned SgNode::GetContourColor()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Quaternion const& SgNode::GetRotationWorldAbs() const
@@ -356,7 +356,7 @@ namespace m3d
 
     float SgNode::GetBoundingRadius() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SgNode::GetVisCellBounds(PointBase<int>& p0, PointBase<int>& p1) const
@@ -388,7 +388,7 @@ namespace m3d
 
     float SgNode::GetContourWidth()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgNode::SetOriginAbs(CVector const& origin)
@@ -923,27 +923,27 @@ namespace m3d
 
     int SgNode::GetPropertiesList(retruxx::set<unsigned, retruxx::less<unsigned>, retruxx::allocator<unsigned>>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Aabb SgNode::GetOwnAabb() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float SgNode::IntersectRay(CVector const&, CVector const&, SgNode*&, Class*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SgNode::Restart()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CMatrix SgNode::MatrixFromFlags(SgNodeRenderFlags, void*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SgNode::UpdateOwnBoundingBox()
@@ -970,7 +970,7 @@ namespace m3d
 
     SgNode::~SgNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgNode::SgNode(SgNode const& node) : Object(node)
@@ -1079,11 +1079,11 @@ namespace m3d
 
     void SgNode::RitualInDestructor()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SgNode::InternalInit()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

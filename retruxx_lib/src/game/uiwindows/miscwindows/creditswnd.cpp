@@ -28,27 +28,27 @@ CreditsWnd::Pointer::Pointer()
 
 void CreditsWnd::Pointer::Update(float, float, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::Pointer::Draw(m3d::ui::DrawInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CreditsWnd::Pointer::~Pointer()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::Pointer::Clear()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::Pointer::Init()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CreditsWnd::AuxInfo::AuxInfo()
@@ -58,7 +58,7 @@ CreditsWnd::AuxInfo::AuxInfo()
 
 CreditsWnd::~CreditsWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* CreditsWnd::GetClass() const
@@ -68,7 +68,7 @@ m3d::Class* CreditsWnd::GetClass() const
 
 m3d::Object* CreditsWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* CreditsWnd::GetBaseClass()
@@ -83,17 +83,17 @@ m3d::Object* CreditsWnd::CreateObject()
 
 int CreditsWnd::OnAfterRemoveFromWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::StartShowingPages()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::UpdateStartTime()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CreditsWnd::CreditsWnd()
@@ -106,77 +106,77 @@ CreditsWnd::CreditsWnd()
 
 CreditsWnd::CreditsWnd(CreditsWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::UpdateBg()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CreditsWnd::OnKey(unsigned short, unsigned char, unsigned)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::UpdatePortrait()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::Exit()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::DoShowPage()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::PlaySwitchSound()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::DoBreak()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::StopSwitchSound()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::CheckAndShowCurrentPage()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::UpdateText()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CreditsWnd::IsCurPageIdValid() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CreditsWnd::PlaySoundA(int, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CreditsWnd::IsTimeEnded() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::StopSound(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::LoadPageInfo()
@@ -275,17 +275,17 @@ void CreditsWnd::LoadPageInfo()
 
 int CreditsWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::StopAllSoundsAndMusic()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::UpdateControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::ClearPages()
@@ -299,42 +299,42 @@ void CreditsWnd::ClearPages()
 
 void CreditsWnd::UpdatePointer()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::PlayMusic()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CreditsWnd::OnPaint(m3d::ui::DrawInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CreditsWnd::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::StopMusic()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::Reset()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::UpdatePortraitAnimation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::OnNewFrame()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CreditsWnd::GameDataSetup()
@@ -396,20 +396,20 @@ int CreditsWnd::GameDataSetup()
 
 bool CreditsWnd::NeedExit() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::CheckAndShowNextPage()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::PlayAmbientSound()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CreditsWnd::StopAmbientSound()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

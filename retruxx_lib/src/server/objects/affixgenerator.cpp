@@ -4,7 +4,7 @@ namespace ai
 {
     void AffixGeneratorPrototypeInfo::_InternalCopyFrom(const PrototypeInfo& rhs)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AffixGeneratorPrototypeInfo::AffixGeneratorPrototypeInfo()
@@ -13,21 +13,21 @@ namespace ai
 
     bool AffixGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AffixGeneratorPrototypeInfo::PostLoad()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* AffixGeneratorPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AffixGeneratorPrototypeInfo::GenerateAffixesForObj(Obj* obj, unsigned int desiredNumAffixes) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

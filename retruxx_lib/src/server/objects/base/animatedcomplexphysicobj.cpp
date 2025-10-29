@@ -10,18 +10,18 @@ namespace ai
 
 	AnimatedComplexPhysicObjPrototypeInfo::AnimatedComplexPhysicObjPrototypeInfo()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Obj* AnimatedComplexPhysicObjPrototypeInfo::CreateTargetObject() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	AnimatedComplexPhysicObj::AnimatedComplexPhysicObj(AnimatedComplexPhysicObjPrototypeInfo const& prototypeInfo) :
 		ComplexPhysicObj(prototypeInfo)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* AnimatedComplexPhysicObj::GetBaseClass()
@@ -31,31 +31,31 @@ namespace ai
 
 	AnimatedComplexPhysicObjPrototypeInfo const* AnimatedComplexPhysicObj::GetPrototypeInfo() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void AnimatedComplexPhysicObj::Update(float, unsigned)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* AnimatedComplexPhysicObj::GetClass() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	AnimatedComplexPhysicObj::~AnimatedComplexPhysicObj()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* AnimatedComplexPhysicObj::CreateObject()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* AnimatedComplexPhysicObj::Clone()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

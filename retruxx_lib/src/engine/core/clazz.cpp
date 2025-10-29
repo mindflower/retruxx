@@ -314,12 +314,12 @@ namespace m3d
 
     Object* Object::GetPrevSibling() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Object::GetNumChildren() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* Object::GetParent() const
@@ -619,7 +619,7 @@ namespace m3d
 
     bool Object::GetPersistance() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     RETRUXX_DLL_INJECT_FUNCTION(0X0041DD60, Object::IsChildOf)

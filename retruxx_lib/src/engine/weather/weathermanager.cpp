@@ -18,7 +18,7 @@ namespace m3d
 {
     int WeatherManager::DeleteWeather(unsigned)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WeatherManager::CreateSky()
@@ -55,7 +55,7 @@ namespace m3d
 
     int WeatherManager::WriteToXmlFile(char const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WeatherManager::ChangeCloudsTexture()
@@ -72,7 +72,7 @@ namespace m3d
 
     float WeatherManager::SetGlobalTimeParam(unsigned, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::rend::VertexXYZCT2 tmp_0[400];
@@ -170,7 +170,7 @@ namespace m3d
 
     float WeatherManager::GetShadowTransparencyFromWeather() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GlobalTimeParams WeatherManager::GetCurrentDayTime() const
@@ -180,7 +180,7 @@ namespace m3d
 
     Weather const* WeatherManager::GetActiveWeather() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned WeatherManager::GetWeatherColor(ColorItems ci) const
@@ -196,12 +196,12 @@ namespace m3d
 
     float WeatherManager::GetGlobalTimeParam(unsigned) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WeatherManager::LoadWeatherStateFromXMLNode(cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WeatherManager::UpdateDayTime()
@@ -416,7 +416,7 @@ namespace m3d
 
     int WeatherManager::SaveWeatherStateToXMLNode(cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool WeatherManager::GetShadowVisibilityFromWeather() const
@@ -583,41 +583,41 @@ namespace m3d
 
     void WeatherManager::DoneSky()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WeatherManager::AddWeather(CStr const&, CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned WeatherManager::GetNumWeathers() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     char const* WeatherManager::GetGlobalTimeParamName(unsigned) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WeatherManager::SetActiveWeatherByName(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WeatherManager::ChangeStarsTexture(CStr&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Weather* WeatherManager::GetWeather(unsigned)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Weather* WeatherManager::GetWeatherByName(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

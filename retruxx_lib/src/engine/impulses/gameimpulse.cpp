@@ -195,7 +195,7 @@ namespace
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey3)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey2)
@@ -208,7 +208,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey2)
     auto res = gameImpulse->BindKey2(gameMode, key1, key2, imp);
     context->pushInt(res);
     return 1;
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey1)
@@ -224,17 +224,17 @@ RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey1)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindKey3)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindKey2)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindKey1)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindAll)
@@ -246,22 +246,22 @@ RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindAll)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, LoadFromDefaults)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, SaveToDefaults)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, LoadFromProfile)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, SaveToProfile)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 namespace m3d
@@ -284,7 +284,7 @@ namespace m3d
 
     void AuxImpulseInfo::UnpackXy(float*, float*, float*, float*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AuxImpulseInfo::AuxImpulseInfo(int impId, bool state, int gameMode, unsigned i0, unsigned i1)
@@ -298,7 +298,7 @@ namespace m3d
 
     float AuxImpulseInfo::UnpackWheel() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GameImpulse::LoadFromFile(CStr const& bindFile)
@@ -335,12 +335,12 @@ namespace m3d
 
     int GameImpulse::DecRef()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GameImpulse::ResetImpulseWithoutNotification(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GameImpulse::GetImpulseStateAndReset(int impId)
@@ -365,12 +365,12 @@ namespace m3d
 
     GameImpulse::~GameImpulse()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void* GameImpulse::QueryIface(char const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GameImpulse::Init()
@@ -389,12 +389,12 @@ namespace m3d
 
     int GameImpulse::SaveToDefaults()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GameImpulse::Done()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GameImpulse::ResetAllImpulses(bool bClearPressedKeys)
@@ -414,7 +414,7 @@ namespace m3d
 
     int GameImpulse::SetImpulsesStateBySet(KeysSet, bool, int, ui::Wnd*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GameImpulse::SetImpulseState(AuxImpulseInfo const& impInfo, ui::Wnd* causeWnd)
@@ -440,7 +440,7 @@ namespace m3d
 
     void GameImpulse::RaiseOneTimeImpulse(AuxImpulseInfo const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GameImpulse::GetImpulseState(int impId)
@@ -475,7 +475,7 @@ namespace m3d
 
     int GameImpulse::GetImpulseForKeys(std::vector<int, std::allocator<int>>, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GameImpulse::BindKey0(int gameMode, KeysSet const& ks, int impId)
@@ -504,24 +504,24 @@ namespace m3d
 
     int GameImpulse::IncRef()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     std::vector<std::vector<int>> GameImpulse::GetKeysForImpulse(int, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GameImpulse::HandleKeyboardMouseEvent(Event const& ev, ui::Wnd* causeWnd)
     {
         // TODO implement GameImpulse::HandleKeyboardMouseEvent
-        //throw std::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
         return 1;
     }
 
     int GameImpulse::FilterShifts(int&, bool&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GameImpulse::BindKey2(CStr const& strGameMode, CStr const& strKey1, CStr const& strKey2, CStr const& strImp)
@@ -539,7 +539,7 @@ namespace m3d
 
     int GameImpulse::SaveToProfile()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GameImpulse::HandleBinding(int action, CStr const& strGameMode, CStr const& strKey1, CStr const& strKey2, CStr const& strKey3, CStr const& strImp)
@@ -605,12 +605,12 @@ namespace m3d
 
     CStr GameImpulse::GetFormattedScriptErrorDesc(eScriptError) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GameImpulse::UnbindKey3(CStr const&, CStr const&, CStr const&, CStr const&, CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GameImpulse::GetBaseClass()
@@ -635,7 +635,7 @@ namespace m3d
 
     int GameImpulse::UnbindKey2(CStr const&, CStr const&, CStr const&, CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GameImpulse::UnbindAll()
@@ -677,32 +677,32 @@ namespace m3d
 
     int GameImpulse::UnbindKey1(CStr const&, CStr const&, CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr GameImpulse::GetKeyNameById(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GameImpulse::GetRtClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GameImpulse::LoadFromProfile()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GameImpulse::UnbindKey0(int, KeysSet const&, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GameImpulse::SaveToFile(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GameImpulse::GameImpulse()

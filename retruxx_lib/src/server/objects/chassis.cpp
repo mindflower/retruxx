@@ -37,12 +37,12 @@ namespace ai
 
     bool Chassis::SetPropertyById(int, m3d::AIParam const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Chassis::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* Chassis::GetBaseClass()
@@ -70,12 +70,12 @@ namespace ai
 
     int Chassis::GetPropertyId(char const*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     eGObjPropertySaveStatus Chassis::GetPropertySaveStatus(int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Chassis::Registration()
@@ -98,7 +98,7 @@ namespace ai
 
     void Chassis::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ChassisPrototypeInfo const* Chassis::GetPrototypeInfo() const
@@ -113,51 +113,51 @@ namespace ai
 
     CStr Chassis::GetPropertyName(int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Chassis::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Chassis::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Chassis::_GetPropertyInternal(int, m3d::AIParam&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Chassis::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Chassis::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Chassis::~Chassis()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Chassis::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Chassis::_OnHealthValueBeforeApplyModifier(Modifier const&, float&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Chassis::CreateObject()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

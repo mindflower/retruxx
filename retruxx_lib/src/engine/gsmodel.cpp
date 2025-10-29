@@ -4,7 +4,7 @@ namespace m3d
 {
     int CGSModel::Load(const CStr& fname)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CGSModel::CGSModel()

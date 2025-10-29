@@ -260,7 +260,7 @@ namespace m3d
 
             virtual int MeasureItem(int, BoundsBase<float>&) const
             {
-                throw std::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
 
             //ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);

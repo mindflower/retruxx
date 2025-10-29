@@ -9,6 +9,6 @@ namespace ai
 
     void CombatMastermind::GenerateLineOfFireAvoidanceSteeringForces(retruxx::map<int, CVector>& steeringForces)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

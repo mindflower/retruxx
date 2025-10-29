@@ -2,8 +2,8 @@
 
 class Obb;
 class Aabb;
-class CVector;
-class Quaternion;
+struct CVector;
+struct Quaternion;
 
 namespace m3d
 {

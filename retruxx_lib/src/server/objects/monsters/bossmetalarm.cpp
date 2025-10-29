@@ -2,7 +2,7 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(BossMetalArm, Die)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 namespace ai
@@ -14,12 +14,12 @@ namespace ai
 
 	BossMetalArmPrototypeInfo::AttackActionInfo::AttackActionInfo()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArmPrototypeInfo::AttackActionInfo::LoadFromXML(m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	BossMetalArmPrototypeInfo::BossMetalArmPrototypeInfo()
@@ -30,22 +30,22 @@ namespace ai
 
 	void BossMetalArmPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool BossMetalArmPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArmPrototypeInfo::PostLoad()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Obj* BossMetalArmPrototypeInfo::CreateTargetObject() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* BossMetalArm::GetBaseClass()
@@ -57,106 +57,106 @@ namespace ai
         SimplePhysicObj(prototype),
         m_turningSpeed(prototype.m_turningSpeed)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArm::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool BossMetalArm::CanChildBeAdded(m3d::Class*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	BossMetalArmPrototypeInfo const* BossMetalArm::GetPrototypeInfo() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float BossMetalArm::GetMaxHealth() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float BossMetalArm::GetHealth() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int BossMetalArm::OnEvent(Event const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArm::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* BossMetalArm::GetClass() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArm::Update(float, unsigned)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArm::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArm::Die()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArm::SetPositionSelf(CVector const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	BossMetalArm::~BossMetalArm()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArm::_TurnToDir(CVector const&, float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int BossMetalArm::_GetCurAnimationFrame() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* BossMetalArm::CreateObject()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* BossMetalArm::Clone()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArm::_SetAttackState(AttackState)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArm::_PlaceLoadOnLoadpoint()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void BossMetalArm::_OnObjectDie(Event const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

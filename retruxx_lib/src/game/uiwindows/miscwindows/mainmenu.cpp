@@ -20,7 +20,7 @@ m3d::Class* MainMenuUI::GetClass() const
 
 MainMenuUI::~MainMenuUI()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* MainMenuUI::CreateObject()
@@ -35,12 +35,12 @@ m3d::Class* MainMenuUI::GetBaseClass()
 
 void MainMenuUI::OnFinishVideoPlaying()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* MainMenuUI::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MainMenuUI::OnBeforeAddToWndStation()
@@ -55,12 +55,12 @@ MainMenuUI::MainMenuUI()
 
 MainMenuUI::MainMenuUI(MainMenuUI const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MainMenuUI::OnNewGame()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MainMenuUI::OnAfterRemoveFromWndStation()
@@ -72,7 +72,7 @@ int MainMenuUI::OnAfterRemoveFromWndStation()
 
 int MainMenuUI::OnKey(unsigned short, unsigned char, unsigned)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MainMenuUI::GameDataSetup()
@@ -194,7 +194,7 @@ void MainMenuUI::OnCurProfileChanged()
     //        
     //    }
     //}
-   // throw std::logic_error("Not implemented");
+   // RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MainMenuUI::GameDataUpdate(void* data, int dataType)

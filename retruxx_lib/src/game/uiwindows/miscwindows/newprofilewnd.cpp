@@ -13,7 +13,7 @@ NewProfileWnd::AuxInfo::AuxInfo()
 
 m3d::Object* NewProfileWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* NewProfileWnd::GetClass() const
@@ -33,17 +33,17 @@ m3d::Class* NewProfileWnd::GetBaseClass()
 
 NewProfileWnd::~NewProfileWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NewProfileWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NewProfileWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NewProfileWnd::GameDataSetup()
@@ -87,22 +87,22 @@ int NewProfileWnd::GameDataSetup()
 
 void NewProfileWnd::OnEditChange()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NewProfileWnd::OnKey(unsigned short, unsigned char, unsigned)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NewProfileWnd::CreateNewProfile()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NewProfileWnd::NewProfileWnd(NewProfileWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NewProfileWnd::NewProfileWnd()

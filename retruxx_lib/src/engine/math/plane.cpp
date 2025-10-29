@@ -1,9 +1,11 @@
 #include <stdexcept>
 #include <math/plane.h>
 
+#include "thirdparty/containers.h"
+
 void CPlane::buildplane(CPlane*, CVector*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CPlane::CPlane()
@@ -12,30 +14,30 @@ CPlane::CPlane()
 
 CPlane::CPlane(CPlane const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CPlane::fromPointNormal(CVector const&, CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float CPlane::intersectRay(CVector const&, CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CPlane CPlane::Reverse()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float CPlane::dist(CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CVector CPlane::origin()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

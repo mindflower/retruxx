@@ -1,7 +1,7 @@
 #pragma once
 #include <renderer/i_renderer.h>
 
-class CVector;
+struct CVector;
 
 namespace m3d
 {

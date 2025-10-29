@@ -7,82 +7,82 @@ namespace m3d
     {
         PackageFileRecordHeader::PackageFileRecordHeader()
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Package::Package(bool)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Package::~Package()
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Package::DecRef()
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned Package::OpenFile(char const*, void**, unsigned*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Package::CloseFile(unsigned)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Package::Open(char const*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Package::Close()
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool Package::HaveFile(char const*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Package::GetFilesList(retruxx::vector<CStr>&)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Package::IncRef()
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Package::ClosePackageFile()
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned Package::MakeView(unsigned, unsigned, unsigned*, void**)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Package::LoadFileRecords(unsigned char*, int)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Package::OpenPackageFile(char const*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Package::CloseView(unsigned)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Package::GetOpenFilesList(retruxx::vector<CStr>& fileList) const

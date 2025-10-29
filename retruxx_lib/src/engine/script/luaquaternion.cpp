@@ -101,57 +101,57 @@ void ext_initQuaternion(lua_State* L)
 
 int ext_quatIdentity(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatZero(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatNorm(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatNormalize(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatRotX(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatRotY(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatRotZ(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatFromAxisAngle(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatGetConjugated(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatGetInversed(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatFromYPR(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatGet(lua_State* L)
@@ -251,17 +251,17 @@ int ext_quatGet(lua_State* L)
 
 int ext_quatSet(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatMul(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_quatCall(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Quaternion* ext_createQuaternion(lua_State* L)

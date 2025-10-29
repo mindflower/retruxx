@@ -29,7 +29,7 @@ namespace m3d
 
     int SgParticlesNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgParticlesNode::Think(int dt, int curTime)
@@ -63,7 +63,7 @@ namespace m3d
 
     Object* SgParticlesNode::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgParticlesNode::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
@@ -85,7 +85,7 @@ namespace m3d
 
     bool SgParticlesNode::IsFree() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgParticlesNode::GetProperty(unsigned propId, void* property) const
@@ -107,7 +107,7 @@ namespace m3d
 
     int SgParticlesNode::GetPropertiesList(retruxx::set<unsigned, retruxx::less<unsigned>>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgParticlesNode::SetProperty(unsigned propId, void* property)
@@ -154,7 +154,7 @@ namespace m3d
 
     void SgParticlesNode::Restart()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DataServer* SgParticlesNode::GetServer() const
@@ -164,22 +164,22 @@ namespace m3d
 
     int SgParticlesNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SgParticlesNode::CanBeFree()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgParticlesNode::~SgParticlesNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgParticlesNode::SgParticlesNode(SgParticlesNode const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgParticlesNode::SgParticlesNode()
@@ -222,7 +222,7 @@ namespace m3d
 
     SgParticlesOpaqueNode::~SgParticlesOpaqueNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* SgParticlesOpaqueNode::GetClass() const
@@ -232,12 +232,12 @@ namespace m3d
 
     Object* SgParticlesOpaqueNode::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgParticlesOpaqueNode::SgParticlesOpaqueNode(SgParticlesOpaqueNode const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgParticlesOpaqueNode::SgParticlesOpaqueNode()

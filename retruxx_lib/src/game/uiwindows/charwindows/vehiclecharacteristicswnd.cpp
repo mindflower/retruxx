@@ -6,22 +6,22 @@ RT_CLASS_DEFINE(VehicleCharacteristicsWnd);
 
 VehicleCharacteristicsWnd::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* VehicleCharacteristicsWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* VehicleCharacteristicsWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* VehicleCharacteristicsWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* VehicleCharacteristicsWnd::GetBaseClass()
@@ -31,30 +31,30 @@ m3d::Class* VehicleCharacteristicsWnd::GetBaseClass()
 
 VehicleCharacteristicsWnd::~VehicleCharacteristicsWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehicleCharacteristicsWnd::UpdateCharacteristics()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VehicleCharacteristicsWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehicleCharacteristicsWnd::ClearCharacteristics()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 VehicleCharacteristicsWnd::VehicleCharacteristicsWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 VehicleCharacteristicsWnd::VehicleCharacteristicsWnd(VehicleCharacteristicsWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

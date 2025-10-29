@@ -31,25 +31,25 @@ namespace m3d
 
     int ParticlesServer::SetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ParticlesServer::~ParticlesServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ParticlesServer::RenderNodeSet(SgNode**, unsigned, m3d::RenderNodeInfo)
     {
         // TODO: implement ParticlesServer::RenderNodeSet
-        //throw retruxx::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
         return 0;
     }
 
     void ParticlesServer::UpdateItem(int, void*)
     {
         // TODO: implement ParticlesServer::UpdateItem
-        //throw retruxx::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ParticlesServer::GetItemProperty(int id, int prop, void* dest)
@@ -79,7 +79,7 @@ namespace m3d
         {
             if (prop == 12293)
             {
-                throw retruxx::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
             return m3d::DataServer::GetItemProperty(id, prop, dest);
         }
@@ -109,7 +109,7 @@ namespace m3d
 
     void ParticlesServer::MoveParticles(m3d::SgNode*, retruxx::vector<CVector> const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ParticlesServer::Init()
@@ -120,7 +120,7 @@ namespace m3d
 
     int ParticlesServer::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticlesServer::RenderItem(int, void*)
@@ -129,17 +129,17 @@ namespace m3d
 
     void ParticlesServer::SaveAllLoadedEntitiesToBPS()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ParticlesServer::RemoveItem(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticlesServer::ResetItem(m3d::SgNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticlesServer::UnregisterNode(m3d::SgNode* node)
@@ -169,17 +169,17 @@ namespace m3d
 
     void ParticlesServer::AddParticle(m3d::SgNode*, CVector const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ParticlesServer::AddItem(char const*, char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ParticlesServer::SaveAllLoadedEntities(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticlesServer::RegisterNode(m3d::SgNode* node)
@@ -251,12 +251,12 @@ namespace m3d
 
     void ParticlesServer::AddParticles(m3d::SgNode*, retruxx::vector<CVector> const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticlesServer::AddItemsByOne(retruxx::vector<m3d::DataServer::ServerItem>&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticlesServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)

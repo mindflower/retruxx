@@ -134,7 +134,7 @@ namespace ai
 
     void DecisionMatrixElement::Dump()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecisionMatrix::ClearTemporaryParams()
@@ -152,7 +152,7 @@ namespace ai
 
     int DecisionMatrix::GetExternSignalMapping(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecisionMatrix::AddTemporaryParam(char const* functionName)
@@ -170,7 +170,7 @@ namespace ai
 
     m3d::Object* DecisionMatrix::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned DecisionMatrix::GetSignalNum(CStr const& signalName) const
@@ -187,7 +187,7 @@ namespace ai
 
     unsigned DecisionMatrix::UnsafeFirstDecision(unsigned, unsigned) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* DecisionMatrix::GetBaseClass()
@@ -197,7 +197,7 @@ namespace ai
 
     void DecisionMatrix::Dump() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* DecisionMatrix::CreateObject()
@@ -207,12 +207,12 @@ namespace ai
 
     void DecisionMatrix::Create(int, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecisionMatrix::LogDump() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecisionMatrix::SetDefaultState(char const* stateName)
@@ -280,12 +280,12 @@ namespace ai
 
     int DecisionMatrix::GetExitStateNum() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DecisionMatrix::NumStates() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecisionMatrix::AddState(char const* stateName, char const* functionName)
@@ -338,7 +338,7 @@ namespace ai
 
     void DecisionMatrix::SetSaveStackFlag(int, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecisionMatrix::AddSignal(char const* signalName, char const* externSignalName, char const* functionName)
@@ -390,17 +390,17 @@ namespace ai
 
     int DecisionMatrix::NumSignals() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AISignal const& DecisionMatrix::GetSignal(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecisionMatrix::~DecisionMatrix()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecisionMatrix::AddDefaultStateParam(char const* functionName)
@@ -418,17 +418,17 @@ namespace ai
 
     AIState const& DecisionMatrix::GetState(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecisionMatrix const* DecisionMatrix::GetSubmatrix(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AIPassageCommand const& DecisionMatrix::GetDefault() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* DecisionMatrix::GetClass() const
@@ -514,7 +514,7 @@ namespace ai
 
     DecisionMatrixElement const* DecisionMatrix::UnsafeGetDecision(int, int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DecisionMatrix::GetStateNum(CStr const& stateName) const
@@ -531,7 +531,7 @@ namespace ai
 
     DecisionMatrix::DecisionMatrix(DecisionMatrix const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecisionMatrix::DecisionMatrix()
@@ -558,16 +558,16 @@ namespace ai
 
     DecisionMatrixElement const& DecisionMatrix::_GetElement(int, int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecisionMatrixElement& DecisionMatrix::_GetElement(int, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecisionMatrix::_LogUnexpectedToken(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

@@ -156,7 +156,7 @@ namespace
 
     int _callClassNativeMethod(lua_State *)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     char buf_0[5] = { 0 };
@@ -379,7 +379,7 @@ namespace m3d
 
     eScriptError Scriptlet::compile()
     {
-	    throw retruxx::logic_error("Not implemented");
+	    RETRUXX_NOT_IMPLEMENTED;
     }
 
     Scriptlet::~Scriptlet()
@@ -471,7 +471,7 @@ namespace m3d
 
     eScriptError ScriptServer::reloadScript(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006216F0, ScriptServer::callScriptFunc)
@@ -647,12 +647,12 @@ namespace m3d
 
     retruxx::map<CStr, ScriptServer::auxFuncDesc> const& ScriptServer::getRegisteredFunctionsDesc() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     eScriptError ScriptServer::addScript(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     eScriptError ScriptServer::execute(char const* str, char const* bufName)
@@ -697,12 +697,12 @@ namespace m3d
 
     lua_State* ScriptServer::getGlobalEnvironment()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     eScriptError ScriptServer::reloadAllScripts()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00621500, ScriptServer::getFormatedScriptErrorDesc)
@@ -720,7 +720,7 @@ namespace m3d
 
     auxScriptErrorDesc const& ScriptServer::getLastErrorDesc() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* ScriptServer::GetClass() const
@@ -730,12 +730,12 @@ namespace m3d
 
     char const* ScriptServer::getErrorDescString(eScriptError) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ScriptServer::dumpStack()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     eScriptError ScriptServer::executeScriptFile(char const* fileName)
@@ -821,7 +821,7 @@ namespace m3d
 
     Object* ScriptServer::Clone()
     {
-        throw retruxx::logic_error("Not implemented");   
+        RETRUXX_NOT_IMPLEMENTED;   
     }
 
     eScriptError ScriptServer::registerGlobalFunction(int(*NativeGlobalFunc)(sArgStack&), char const* name, char const* returnValue, char const* params, char const* shortDesc)

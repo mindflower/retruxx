@@ -133,7 +133,7 @@ namespace m3d
     void RadioEngine::PlayNextSoundMessage()
     {
         // TODO: implmement RadioEngine::PlayNextSoundMessage
-        // throw std::logic_error("Not implemented");
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     RadioEngine* RadioEngine::GetInstance()
@@ -143,6 +143,6 @@ namespace m3d
 
     void RadioEngine::PlaySoundMessage(int, int, CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

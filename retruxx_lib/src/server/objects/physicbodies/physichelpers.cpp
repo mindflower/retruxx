@@ -70,7 +70,7 @@ namespace ai
 
     bool GetCollisionInfoByModelName(CStr const&, retruxx::vector<ai::CollisionInfo>&, bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GetCollisionInfoByServerHandle(int serverHandle, retruxx::vector<CollisionInfo>& collisionInfos, bool bTrimeshAllowed)
@@ -290,7 +290,7 @@ namespace ai
 
     void SetNodeElapsedAnimationTimeInMs(m3d::SgNode*, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector ProjectVectorOntoPlane(CVector const& normal, CVector const& v)
@@ -313,14 +313,14 @@ namespace ai
 
     int TraceLine(ai::Ray const&, retruxx::vector<ai::Geom*> const&, dContact*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     namespace
     {
         bool IsLittle(dxGeom *)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 
@@ -641,7 +641,7 @@ namespace ai
 
     bool GetValidPosition(CVector const&, float, unsigned char, CVector&, bool, bool, std::set<m3d::Class*> const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::AnimInfo* GetNodeAnimInfo(m3d::SgNode const* node)

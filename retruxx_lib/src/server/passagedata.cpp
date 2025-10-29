@@ -2,35 +2,37 @@
 
 #include <stdexcept>
 
+#include "thirdparty/containers.h"
+
 namespace ai
 {
 	void PassageData::SetPositionToPlayerVehicle()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PassageData::PutPassedObjectsToObjContainer()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	PassageData::PassageData()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PassageData::TakeNeededObjectsFromObjContainer()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PassageData::Dump()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	PassageData::~PassageData()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

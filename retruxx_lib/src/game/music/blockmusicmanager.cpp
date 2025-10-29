@@ -34,7 +34,7 @@ namespace m3d
     void BlockMusicManager::Reset()
     {
         // TODO: implement BlockMusicManager::Reset
-        //throw std::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     void BlockMusicManager::Init()
@@ -105,11 +105,11 @@ namespace m3d
 
     int BlockMusicManager::PlayCurrentMusic()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void BlockMusicManager::_MusicEndCallback(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

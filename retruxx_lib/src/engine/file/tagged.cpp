@@ -23,12 +23,12 @@ namespace m3d
 
         auxTaggedFile::eError auxTaggedFile::addChunk(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool auxTaggedFile::isChunkPresent(unsigned) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         auxTaggedFile::eError auxTaggedFile::getChunkDataCopy(unsigned _chunkTag, void* _data) const
@@ -52,12 +52,12 @@ namespace m3d
 
         auxTaggedFile::eError auxTaggedFile::addChunkDataCopy(unsigned, unsigned, void const*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         auxTaggedFile::eError auxTaggedFile::setFormatTitle(char const*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         auxTaggedFile::eError auxTaggedFile::getFormatTitle(char** _formatName)
@@ -109,17 +109,17 @@ namespace m3d
 
         auxTaggedFile::eError auxTaggedFile::setFormatVersion(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         auxTaggedFile::eError auxTaggedFile::getChunkInfo(unsigned, auxChunkInfo&) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         auxTaggedFile::eError auxTaggedFile::addChunkData(unsigned, unsigned, void const*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         auxTaggedFile::eError auxTaggedFile::Open(char const* _fname, eOpenFlag _flag)

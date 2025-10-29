@@ -47,17 +47,17 @@ namespace ai
 
     const retruxx::vector<CVector2, retruxx::allocator<CVector2>>& FormationPrototypeInfo::GetPolylinePoints() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float FormationPrototypeInfo::GetPolylineLength() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float FormationPrototypeInfo::GetHeadOffset() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float FormationPrototypeInfo::GetLinearVelocity() const
@@ -128,7 +128,7 @@ namespace ai
 
     Formation::~Formation()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Formation::Formation(const ai::FormationPrototypeInfo& prototypeInfo) : Obj(prototypeInfo),
@@ -145,12 +145,12 @@ namespace ai
 
     m3d::Object* Formation::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Formation::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* Formation::GetBaseClass()
@@ -165,68 +165,68 @@ namespace ai
 
     const ai::FormationPrototypeInfo* Formation::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::GetPositionAndDirectionForVehicle(int numVehicle, int totalVehicles, CVector& position,
         CVector& direction) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned int Formation::GetMaxVehicles() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Formation::GetDistBetweenVehicles() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::SetDistBetweenVehicles(float dist)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Formation::GetPosition() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::SetPosition(const CVector& pos)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Formation::GetDirection() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::SetDirection(const CVector& direction)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Formation::GetAngle() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::SetAngle(float angle)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Formation::GetLinearVelocity() const
@@ -265,7 +265,7 @@ namespace ai
 
     bool Formation::bIsMoving() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::AddVehicle(ai::Vehicle* vehicle)
@@ -279,7 +279,7 @@ namespace ai
 
     void Formation::RemoveVehicle(ai::Vehicle* vehicle)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::Update(float elapsedTime, unsigned int workTime)
@@ -309,26 +309,26 @@ namespace ai
 
     void Formation::RenderDebugInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::generatePositions(int totalVehicles) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::_UpdateDirection(float elapsedTime, const CVector& desiredDir)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::_UpdatePosition(float elapsedTime, const CVector& desiredDir, const CVector& curPathPoint)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Formation::_UpdateVelocity(float elapsedTime, const CVector& desiredDir)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

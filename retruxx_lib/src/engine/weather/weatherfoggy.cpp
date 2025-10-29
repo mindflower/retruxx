@@ -19,12 +19,12 @@ namespace m3d
 
     int WeatherFoggy::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WeatherFoggy::~WeatherFoggy()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* WeatherFoggy::GetBaseClass()
@@ -34,7 +34,7 @@ namespace m3d
 
     Class* WeatherFoggy::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* WeatherFoggy::CreateObject()
@@ -44,12 +44,12 @@ namespace m3d
 
     Object* WeatherFoggy::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WeatherFoggy::WeatherFoggy(WeatherFoggy const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WeatherFoggy::WeatherFoggy()

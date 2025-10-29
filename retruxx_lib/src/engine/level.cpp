@@ -20,7 +20,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Level, GetLandSize)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Level, GetLevelName)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 namespace m3d
@@ -53,17 +53,17 @@ namespace m3d
 
     int Level::Save(CStr const&, CCamera const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Level::~Level()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* Level::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr Level::GetFullPathNameA(CStr const& name)
@@ -73,7 +73,7 @@ namespace m3d
 
     int Level::New(CCamera&, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* Level::GetClass() const
@@ -324,7 +324,7 @@ namespace m3d
 
     Level::Level(Level const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Level::Level()

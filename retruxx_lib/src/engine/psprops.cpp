@@ -1,6 +1,8 @@
 #include <psprops.h>
 #include <stdexcept>
 
+#include "thirdparty/containers.h"
+
 WorkTime::WorkTime()
 {
     this->m_start = 0.0;
@@ -10,7 +12,7 @@ WorkTime::WorkTime()
 
 void Force::SetAxis(float, float, ForceType, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Force::Force()

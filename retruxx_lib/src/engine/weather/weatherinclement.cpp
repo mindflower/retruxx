@@ -32,17 +32,17 @@ namespace m3d
 
     void WeatherInclement::SetUp()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WeatherInclement::RecreateEffect()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WeatherInclement::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* WeatherInclement::GetBaseClass()
@@ -52,7 +52,7 @@ namespace m3d
 
     WeatherInclement::~WeatherInclement()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WeatherInclement::DefaultInitialize()
@@ -67,7 +67,7 @@ namespace m3d
 
     Class* WeatherInclement::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* WeatherInclement::CreateObject()
@@ -77,22 +77,22 @@ namespace m3d
 
     Object* WeatherInclement::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WeatherInclement::Render()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WeatherInclement::TurnOffEffects()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WeatherInclement::WeatherInclement(WeatherInclement const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WeatherInclement::WeatherInclement()

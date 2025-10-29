@@ -15,17 +15,17 @@ namespace m3d
 {
     CStr EngineConfig::GetNameByModelId(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float EngineConfig::GetHeight(float, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int EngineConfig::Save(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int EngineConfig::GetModelIdByName(CStr const& name)
@@ -69,12 +69,12 @@ namespace m3d
 
     EngineConfig::~EngineConfig()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float EngineConfig::GetAttackAnimationFrametime(int, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     EngineConfig::EngineConfig()
@@ -642,7 +642,7 @@ namespace m3d
 
     float EngineConfig::GetAnimationLength(int, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int EngineConfig::Load(CStr const& fname)

@@ -25,12 +25,12 @@ namespace m3d
 {
     MusicServer::~MusicServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int MusicServer::GetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int MusicServer::SetItemProperty(int id, int prop, void* src)
@@ -74,7 +74,7 @@ namespace m3d
 
     int MusicServer::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void MusicServer::PostLoad()
@@ -83,12 +83,12 @@ namespace m3d
 
     int MusicServer::RemoveItem(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int MusicServer::SaveAllLoadedEntities(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int MusicServer::AddItem(char const* params, char const* id)

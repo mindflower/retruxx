@@ -31,7 +31,7 @@ namespace m3d
 {
     bool CWorld::GetShadowVisibilityFromWeather() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WeatherManager& CWorld::GetWeatherManager()
@@ -41,12 +41,12 @@ namespace m3d
 
     void CWorld::Invalidate()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WheelTraceMgr& CWorld::GetWheelTracesMgr()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CWorld::Render()
@@ -63,7 +63,7 @@ namespace m3d
 
     void CWorld::New(CCamera&, int, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SceneGraph& CWorld::GetGraph()
@@ -204,12 +204,12 @@ namespace m3d
 
     bool CWorld::SaveWorld(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CWorld::RefreshObjectsOnLandscapeRect(CVector const&, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CWorld::CWorld() :
@@ -290,12 +290,12 @@ namespace m3d
 
     void CWorld::ReleasePrefabs()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int CWorld::CreateGeomsRepresentingSceneNodes()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     dxSpace* CWorld::GetOdeSpace()
@@ -305,7 +305,7 @@ namespace m3d
 
     unsigned CWorld::GetWeatherSunColor() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned CWorld::GetWeatherPlantColor() const
@@ -315,7 +315,7 @@ namespace m3d
 
     void CWorld::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned CWorld::GetWeatherSpecularColor() const
@@ -330,7 +330,7 @@ namespace m3d
 
     float CWorld::GetSForShadowsFromWeather() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CWorld::ProcessCollisionStuffOnNode(SgNode* node)
@@ -343,27 +343,27 @@ namespace m3d
 
     float CWorld::GetShadowTransparencyFromWeather() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GlobalTimeParams CWorld::GetCurDayTimeFromWeatherManager() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CWorld::Restore()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector CWorld::GetScatteringSunColor() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     retruxx::vector<CStr, retruxx::allocator<CStr>> const& CWorld::GetFxNames() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned CWorld::GetWeatherAmbientColor() const
@@ -388,7 +388,7 @@ namespace m3d
 
     CWorld::~CWorld()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CWorld::Update()
@@ -644,7 +644,7 @@ namespace m3d
 
     float CWorld::GetSunAscention() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float CWorld::GetFogReduceFactorFromWeather() const

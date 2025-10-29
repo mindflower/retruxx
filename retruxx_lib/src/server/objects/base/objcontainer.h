@@ -2,7 +2,7 @@
 #include "obj.h"
 #include <core/containers.h>
 
-class CVector;
+struct CVector;
 
 namespace ai
 {

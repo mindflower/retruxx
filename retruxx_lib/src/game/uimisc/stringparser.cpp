@@ -1,44 +1,46 @@
 #include "stringparser.h"
 #include <stdexcept>
 
+#include "thirdparty/containers.h"
+
 FormatParam::ParamType FormatParam::GetType() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr FormatParam::GetAsTString() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int FormatParam::GetAsNum() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 FormatParam::FormatParam(FormatParam const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 FormatParam::FormatParam(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 FormatParam::FormatParam(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 FormatParam::FormatParam(StrW const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr FormatParam::GetAsString() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 StringParser::StringParser()
@@ -47,15 +49,15 @@ StringParser::StringParser()
 
 StringParser::~StringParser()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void StringParser::FormatString(CStr&, std::vector<FormatParam> const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void StringParser::FormatStringForDynamicQuest(CStr&, ai::DynamicQuest const*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

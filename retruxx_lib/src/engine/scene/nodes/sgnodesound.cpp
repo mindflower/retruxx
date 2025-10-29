@@ -24,7 +24,7 @@ namespace m3d
 
     void SgSoundSourceNode::CanBeFree()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgSoundSourceNode::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
@@ -47,7 +47,7 @@ namespace m3d
 
     int SgSoundSourceNode::GetPropertiesList(retruxx::set<unsigned>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* SgSoundSourceNode::GetClass() const
@@ -57,17 +57,17 @@ namespace m3d
 
     int SgSoundSourceNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float SgSoundSourceNode::IntersectRay(CVector const&, CVector const&, SgNode*&, Class*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgSoundSourceNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* SgSoundSourceNode::Clone()
@@ -122,17 +122,17 @@ namespace m3d
 
     void SgSoundSourceNode::Restart()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool SgSoundSourceNode::IsFree() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgSoundSourceNode::~SgSoundSourceNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgSoundSourceNode::SgSoundSourceNode()
@@ -173,11 +173,11 @@ namespace m3d
 
     bool SgSoundSourceNode::_OnSoundStopped()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgSoundSourceNode::_InternalRender()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

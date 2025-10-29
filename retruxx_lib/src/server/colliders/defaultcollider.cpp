@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "thirdparty/containers.h"
+
 namespace ai
 {
 	int DefaultCollider(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
@@ -16,11 +18,11 @@ namespace ai
 
 	int CollideGeomObjAndLandscape(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int CollideBreakableObjectAndGeomObject(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

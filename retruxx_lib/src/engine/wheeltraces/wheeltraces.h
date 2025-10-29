@@ -3,7 +3,7 @@
 #include <renderer/i_renderer.h>
 #include "thirdparty/containers.h"
 
-class Quaternion;
+struct Quaternion;
 
 namespace m3d
 {

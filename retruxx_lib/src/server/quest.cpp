@@ -80,12 +80,12 @@ namespace ai
 
 	retruxx::vector<int> const& Quest::GetPrecedingQuestIds() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& Quest::GetFuncOnFail() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Quest::GetId() const
@@ -100,12 +100,12 @@ namespace ai
 
 	retruxx::vector<CStr, retruxx::allocator<CStr>> const& Quest::getActionLevels() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Quest::bSubscribeAutomatic() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Quest::Quest() :
@@ -115,7 +115,7 @@ namespace ai
 
 	retruxx::vector<int, retruxx::allocator<int>> const& Quest::GetSubQuestIds() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Quest::PostLoad()
@@ -160,42 +160,42 @@ namespace ai
 
 	int Quest::GetParentId() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	long long Quest::getTimeForComplete() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& Quest::GetFuncOnComplete() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& Quest::GetFuncOnCanBeGiven() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& Quest::GetFuncOnTake() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Quest::ConditionToGive const& Quest::GetConditionToGive() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Quest::SubQuestCondition Quest::GetSubQuestCondition() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Quest::~Quest()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Quest::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -257,42 +257,42 @@ namespace ai
 
 	bool Quest::bCheckAllSubQuests() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	retruxx::vector<int> const& Quest::GetSubsequentQuestIds() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	unsigned QuestManager::GetNumQuests() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr QuestManager::QuestIdVectorToStr(retruxx::vector<int, retruxx::allocator<int>> const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
     QuestItemPrototypeInfo::QuestItemPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool QuestItemPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     const CStr& QuestItemPrototypeInfo::GetModelName() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* QuestItemPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
 	QuestManager::QuestManager()
@@ -301,12 +301,12 @@ namespace ai
 
 	void QuestManager::StrToQuestIdVector(CStr const&, retruxx::vector<int, retruxx::allocator<int>>&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	QuestManager::~QuestManager()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int QuestManager::GetQuestIdByName(CStr const& questName) const
@@ -323,7 +323,7 @@ namespace ai
 
 	retruxx::set<int> const* QuestManager::GetMutexByQuestId(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool QuestManager::LoadFromXmlFile(char const* filename)

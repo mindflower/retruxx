@@ -10,12 +10,12 @@ namespace ai
 
 	Obj* Boss04PartPrototypeInfo::CreateTargetObject() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Boss04PartPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* Boss04Part::GetBaseClass()
@@ -25,56 +25,56 @@ namespace ai
 
 	Boss04Part::Boss04Part(Boss04PartPrototypeInfo const& prototype) : VehiclePart(prototype)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Boss04Part::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Boss04PartPrototypeInfo const* Boss04Part::GetPrototypeInfo() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Boss04Part::CollideBoss04PartAndVehiclePart(Boss04Part*, VehiclePart*, dContact*, unsigned&, bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Boss04Part::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* Boss04Part::GetClass() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Boss04Part::_OnDurabilityValueBeforeApplyModifier(Modifier const&, float&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Boss04Part::~Boss04Part()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Boss04Part::_OnDurabilityValueAfterChange(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* Boss04Part::CreateObject()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* Boss04Part::Clone()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

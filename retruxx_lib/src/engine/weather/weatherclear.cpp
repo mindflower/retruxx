@@ -14,17 +14,17 @@ namespace m3d
 
     Object* WeatherClear::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WeatherClear::~WeatherClear()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* WeatherClear::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* WeatherClear::CreateObject()
@@ -34,7 +34,7 @@ namespace m3d
 
     WeatherClear::WeatherClear(WeatherClear const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WeatherClear::WeatherClear()

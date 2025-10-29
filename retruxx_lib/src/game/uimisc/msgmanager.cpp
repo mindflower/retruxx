@@ -9,7 +9,7 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MsgManager, ShowMsgBox)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORTS_BEGIN(MsgManager)
@@ -19,7 +19,7 @@ RT_CLASS_DEFINE(MsgManager);
 
 int MsgManager::ShowMsgBox(int, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MsgManager::Init(bool bGlobal)
@@ -41,12 +41,12 @@ int MsgManager::Init(bool bGlobal)
 void MsgManager::Clear(bool)
 {
     // TODO: implement MsgManager::Clear
-    //throw std::logic_error("Not implemented");
+    //RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* MsgManager::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* MsgManager::GetBaseClass()
@@ -56,7 +56,7 @@ m3d::Class* MsgManager::GetBaseClass()
 
 MsgInfo const* MsgManager::GetMsgInfo(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* MsgManager::CreateObject()
@@ -66,22 +66,22 @@ m3d::Object* MsgManager::CreateObject()
 
 MsgManager::~MsgManager()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* MsgManager::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MsgManager::AddMsg(MsgInfo*, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MsgManager::MsgManager(MsgManager const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MsgManager::MsgManager()
@@ -91,6 +91,6 @@ MsgManager::MsgManager()
 int MsgManager::LoadFromXml(CStr const&, bool)
 {
     // TODO: implement MsgManager::LoadFromXml
-    //throw std::logic_error("Not implemented");
+    //RETRUXX_NOT_IMPLEMENTED;
     return 0;
 }

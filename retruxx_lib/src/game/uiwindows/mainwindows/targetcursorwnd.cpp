@@ -6,7 +6,7 @@ RT_CLASS_DEFINE(TargetCursorWnd);
 
 m3d::Class* TargetCursorWnd::GetRtClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* TargetCursorWnd::GetBaseClass()
@@ -16,40 +16,40 @@ m3d::Class* TargetCursorWnd::GetBaseClass()
 
 TargetCursorWnd::~TargetCursorWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TargetCursorWnd::OnNewFrame()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TargetCursorWnd::TargetCursorWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TargetCursorWnd::OnPaint(m3d::ui::DrawInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TargetCursorWnd::NeedShow() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TargetCursorWnd::UpdatePosition()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TargetCursorWnd::Show(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TargetCursorWnd::AccidentValidateBounds()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

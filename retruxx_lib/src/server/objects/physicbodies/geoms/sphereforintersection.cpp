@@ -32,7 +32,7 @@ namespace ai
 
     ai::SphereForIntersection::SpherePurpose SphereForIntersection::GetPurpose() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SphereForIntersection::SetTargetClasses(

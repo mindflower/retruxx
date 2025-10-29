@@ -12,7 +12,7 @@ namespace m3d
 
     bool TraceLineManager::TraceLine(CVector const&, CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TraceLineManager::SetTransparentBody(m3d::SgNode* n)

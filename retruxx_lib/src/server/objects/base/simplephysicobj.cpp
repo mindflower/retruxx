@@ -21,17 +21,17 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetMass)
 {
-	throw retruxx::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetNodeAction)
 {
-	throw retruxx::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetNextForAnimation)
 {
-	throw retruxx::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 namespace ai
@@ -45,12 +45,12 @@ namespace ai
 
 	SimplePhysicObjPrototypeInfo::~SimplePhysicObjPrototypeInfo()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& SimplePhysicObjPrototypeInfo::GetEngineModelName() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool SimplePhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -77,7 +77,7 @@ namespace ai
 
 	float SimplePhysicObjPrototypeInfo::GetRadius() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	SimplePhysicBody* SimplePhysicObjPrototypeInfo::CreatePhysicBody() const
@@ -150,12 +150,12 @@ namespace ai
 
 	CVector SimplePhysicObjPrototypeInfo::GetSize() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float SimplePhysicObjPrototypeInfo::GetMassValue() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObjPrototypeInfo::_SetGeomType(GeomType geomType)
@@ -197,7 +197,7 @@ namespace ai
 
 	eGObjPropertySaveStatus SimplePhysicObj::GetPropertySaveStatus(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::Registration()
@@ -208,7 +208,7 @@ namespace ai
 
 	void SimplePhysicObj::SetPassedToAnotherMapStatus()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	SimplePhysicObj::SimplePhysicObj(SimplePhysicObjPrototypeInfo const& prototypeInfo) : PhysicObj(prototypeInfo)
@@ -225,12 +225,12 @@ namespace ai
 
     float SimplePhysicObj::GetScale()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool SimplePhysicObj::bDeadTimerActive()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SimplePhysicObj::GetPropertyId(char const* propName) const
@@ -262,12 +262,12 @@ namespace ai
 
 	SimplePhysicBody* SimplePhysicObj::GetPhysicBody()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	SimplePhysicBody const* SimplePhysicObj::GetPhysicBody() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::SetMass(float mass)
@@ -281,18 +281,18 @@ namespace ai
 
 	void SimplePhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool SimplePhysicObj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
 	{
         if (propertyId == 6)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         else if (propertyId == 7)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         else
         {
@@ -302,12 +302,12 @@ namespace ai
 
 	void SimplePhysicObj::Remove()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* SimplePhysicObj::GetBaseClass()
@@ -323,17 +323,17 @@ namespace ai
 
 	void SimplePhysicObj::SetDeadTimer(int, bool)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::TransferToSpace(dxSpace*)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::SetNodeAction(int, bool)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::SetSkin(int skin)
@@ -345,22 +345,22 @@ namespace ai
 
 	CStr SimplePhysicObj::GetPropertyName(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* SimplePhysicObj::GetClass() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	SimplePhysicObjPrototypeInfo const* SimplePhysicObj::GetPrototypeInfo() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector SimplePhysicObj::GetGeometricCenter() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::RelinkGeomsToCollisionCells()
@@ -371,12 +371,12 @@ namespace ai
 
 	void SimplePhysicObj::SetNextForAnimation(int, int)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::SetInvisible()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::Update(float elapsedTime, unsigned workTime)
@@ -399,22 +399,22 @@ namespace ai
 
 	void SimplePhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::EnableGeometry(bool)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool SimplePhysicObj::IsVisible()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Geom::CellAabb SimplePhysicObj::GetCollisionCellAabb() const
@@ -491,27 +491,27 @@ namespace ai
 
 	void SimplePhysicObj::UnlinkGeomsFromCollisionCells()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::TransferPhysicParamsToSceneGraphNode()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::SetVisible()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::RenderDebugInfo() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::SetBelong(int newBelong)
@@ -532,7 +532,7 @@ namespace ai
 
 	bool SimplePhysicObj::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::_UpdateCollisionInfoFromPhysicBody()
@@ -552,7 +552,7 @@ namespace ai
 
 	void SimplePhysicObj::_SetPositionToGeoms(CVector const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::_Construct()
@@ -597,37 +597,37 @@ namespace ai
 
 	void SimplePhysicObj::_SetRotationToGeoms(Quaternion const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool SimplePhysicObj::_GetPropertyInternal(int, m3d::AIParam&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::_UpdatePhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::_LinkBodyToGeoms()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::_UpdateFullPhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	SimplePhysicObj::~SimplePhysicObj()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void SimplePhysicObj::_UnlinkBodyFromGeoms()
@@ -637,11 +637,11 @@ namespace ai
 
 	m3d::Object* SimplePhysicObj::Clone()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* SimplePhysicObj::CreateObject()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

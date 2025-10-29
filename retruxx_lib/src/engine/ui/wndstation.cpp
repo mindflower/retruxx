@@ -115,7 +115,7 @@ namespace m3d
                 break;
             }
             default:
-                throw retruxx::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
             if (ev.m_eventType == 10 || ev.m_eventType == 11 || ev.m_eventType == 12)
             {
@@ -123,7 +123,7 @@ namespace m3d
                 {
                     if (m_wndOpenedComboBox)
                     {
-                        throw retruxx::logic_error("Not implemented");
+                        RETRUXX_NOT_IMPLEMENTED;
                     }
                 }
             }
@@ -180,7 +180,7 @@ namespace m3d
 
         ModalWnd* WndStation::GetTopModal()
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int WndStation::DispatchPaint(Wnd* curWnd, BoundsBase<float> const& clipTo)
@@ -253,7 +253,7 @@ namespace m3d
 
         int WndStation::CheckForMouseClick(Wnd*, bool, PointBase<float> const*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Wnd* WndStation::GetWndForMousePoint(Wnd* curWnd, PointBase<float> const& pt, bool affectAll)
@@ -315,7 +315,7 @@ namespace m3d
 
         int WndStation::PulseKeyForWindow(Wnd*, unsigned short, unsigned char)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Wnd* WndStation::GetCapture() const
@@ -325,12 +325,12 @@ namespace m3d
 
         Wnd* WndStation::GetWndMouseOver()
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void WndStation::EnableAnimation(bool)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int WndStation::Activate(Wnd* wnd)
@@ -378,7 +378,7 @@ namespace m3d
 
         Wnd* WndStation::CaptureMouse(Wnd*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr WndStation::GetStringByStringId0(CStr const& id)
@@ -420,7 +420,7 @@ namespace m3d
         RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00593210, WndStation::CheckForMouseDblClick);
         int WndStation::CheckForMouseDblClick(Wnd*, PointBase<float> const&, unsigned, PointBase<float>&)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int WndStation::GetDefaultCursor(Cursor& cur)
@@ -468,17 +468,17 @@ namespace m3d
 
         int WndStation::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void WndStation::StopAllAnimations()
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Wnd* WndStation::GetFocus() const
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int WndStation::ProcessEvent(Event const& ev)
@@ -594,7 +594,7 @@ namespace m3d
 
         Wnd* WndStation::GetWndByUniqueId(int) const
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void WndStation::EndModal(ModalWnd* wnd, unsigned toRet)
@@ -620,7 +620,7 @@ namespace m3d
 
         Wnd* WndStation::GetActive() const
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool WndStation::IsModal(ModalWnd* wnd)
@@ -637,7 +637,7 @@ namespace m3d
 
         void WndStation::OnEndAnimation(Wnd*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool WndStation::IsAnimationEnabled() const
@@ -779,7 +779,7 @@ namespace m3d
 
         int WndStation::DispatchJoystick(Event const&)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void WndStation::OnCloseComboBox(ComboBoxWnd* combo)
@@ -795,12 +795,12 @@ namespace m3d
 
         void WndStation::OnOpenComboBox(ComboBoxWnd*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void WndStation::ForEachChild(Wnd*, void(Wnd::*)())
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void WndStation::RegisterWnd(Wnd* w)
@@ -819,7 +819,7 @@ namespace m3d
 
         GfxServer* WndStation::getGfxServer()
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void WndStation::UnregisterWnd(Wnd* w)
@@ -841,7 +841,7 @@ namespace m3d
 
         int WndStation::DispatchKey(Event const&)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int WndStation::Done()

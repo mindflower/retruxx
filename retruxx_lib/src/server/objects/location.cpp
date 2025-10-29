@@ -49,17 +49,17 @@ namespace ai
 
     CStr Location::GetPropertyName(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr Location::GetLocationNameFromPassageAddress(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::AddChild(Obj*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Location::Location(LocationPrototypeInfo const& prototype) :
@@ -86,12 +86,12 @@ namespace ai
 
     std::vector<Npc*, std::allocator<Npc*>> const& Location::GetNpcs() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Location::CanChildBeAdded(m3d::Class*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Location::GetPropertyId(char const* propName) const
@@ -107,7 +107,7 @@ namespace ai
 
     void Location::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* Location::GetBaseClass()
@@ -117,12 +117,12 @@ namespace ai
 
     void Location::RenderDebugInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::Remove()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr Location::GetLevelNameFromPassageAddress(CStr const& passageAddress)
@@ -147,23 +147,23 @@ namespace ai
             return true;
 
         case 52:
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
             break;
 
         case 53:
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
             break;
 
         case 54:
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
             break;
 
         case 55:
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
             break;
 
         case 56:
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
             break;
 
         default:
@@ -174,7 +174,7 @@ namespace ai
 
     Location* Location::GetCorrespondingPassageLocation() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::SetPositionSelf(CVector const& pos)
@@ -185,12 +185,12 @@ namespace ai
 
     eGObjPropertySaveStatus Location::GetPropertySaveStatus(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Location::IsObjectInside(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* Location::GetClass() const
@@ -230,12 +230,12 @@ namespace ai
 
     void Location::GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::SetActive(bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::SetRadius(float radius)
@@ -279,37 +279,37 @@ namespace ai
 
     CStr const& Location::GetPassageAddress() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Location::IsPassageActive() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Location::LocationType Location::GetLocationType() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Location::GetRadius() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Location::_GetPropertyInternal(int, m3d::AIParam&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::OnObjectIn(Obj*)
@@ -318,12 +318,12 @@ namespace ai
 
     void Location::OnObjectOut(Obj*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::_InternalPostLoad()
@@ -372,7 +372,7 @@ namespace ai
 
         if (!m_correspondingPassageLocationName.empty())
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         if (thePlayer)
@@ -385,12 +385,12 @@ namespace ai
 
     bool Location::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Location::~Location()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::_OnGameStart(Event const& evn)
@@ -401,12 +401,12 @@ namespace ai
 
     m3d::Object* Location::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Location::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Location::_MustCheckObject(Obj const* pObj) const
@@ -458,7 +458,7 @@ namespace ai
 
                     if (!m_npcs.empty())
                     {
-                        throw std::logic_error("Not implemented");
+                        RETRUXX_NOT_IMPLEMENTED;
                     }
 
                     if (this->m_locationType != LOCATION_PASSAGE
@@ -489,7 +489,7 @@ namespace ai
                         }
                     }
 
-                    throw std::logic_error("Not implemented");
+                    RETRUXX_NOT_IMPLEMENTED;
                 }
             }
             else
@@ -500,7 +500,7 @@ namespace ai
 
         for (auto& id : m_idsWasInside)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         m_idsWasInside.clear();

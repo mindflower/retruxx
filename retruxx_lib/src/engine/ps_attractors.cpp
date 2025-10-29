@@ -4,7 +4,7 @@
 
 m3d::Attr::Attr(const m3d::Attr&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Attr::Attr()
@@ -25,7 +25,7 @@ m3d::Attr::Attr()
 
 m3d::Attr::~Attr()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Attr* __fastcall m3d::Attr::New(const CStr& ClassName)
@@ -73,17 +73,17 @@ void m3d::Attr::ReadFromProto(const AttrProps& props)
 
 void m3d::Attr::WriteToProto(AttrProps& props)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::Attractor::ReadFromXmlNode(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& pattr)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::Attractor::WriteToXmlNode(m3d::cmn::XmlFile* xmlFile, ref_ptr<m3d::cmn::XmlNode>& psroot)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::Attractor::ReadFromProto(const AttrProps& props)
@@ -96,115 +96,115 @@ void m3d::Attractor::ReadFromProto(const AttrProps& props)
 
 void m3d::Attractor::WriteToProto(AttrProps& props)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::Attractor::InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::Attractor::InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::Attractor::AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::Attractor::AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::RotAttractor::ReadFromXmlNode(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& prattr)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::RotAttractor::WriteToXmlNode(m3d::cmn::XmlFile* xmlFile, ref_ptr<m3d::cmn::XmlNode>& psroot)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::RotAttractor::InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::RotAttractor::InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::RotAttractor::AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::RotAttractor::AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::GameAttractor::ReadFromXmlNode(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& gattr)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::GameAttractor::WriteToXmlNode(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& psroot)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::GameAttractor::InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::GameAttractor::InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::GameAttractor::AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::GameAttractor::AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::SAttractor::ReadFromXmlNode(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& sattr)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::SAttractor::WriteToXmlNode(m3d::cmn::XmlFile* xmlFile, ref_ptr<m3d::cmn::XmlNode>& psroot)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::SAttractor::InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::SAttractor::InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::SAttractor::AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void m3d::SAttractor::AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

@@ -13,7 +13,7 @@ LoadWnd::LAuxInfo::LAuxInfo()
 
 m3d::Object* LoadWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* LoadWnd::GetBaseClass()
@@ -33,7 +33,7 @@ m3d::Object* LoadWnd::CreateObject()
 
 LoadWnd::~LoadWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LoadWnd::GameDataUpdate(void* data, int dataType)
@@ -87,12 +87,12 @@ int LoadWnd::GameDataSetup()
 
 void LoadWnd::OnEnter()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 LoadWnd::LoadWnd(LoadWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 LoadWnd::LoadWnd()
@@ -101,7 +101,7 @@ LoadWnd::LoadWnd()
 
 void LoadWnd::OnSaveSelectionChange()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int LoadWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
@@ -137,5 +137,5 @@ int LoadWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIP
 
 void LoadWnd::OnLoad()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

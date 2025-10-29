@@ -41,7 +41,7 @@ m3d::Class* MsgBox::GetClass() const
 
 m3d::Object* MsgBox::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MsgBox::~MsgBox()
@@ -76,13 +76,13 @@ void MsgBox::SetIdioticEmbossesBounds(PointBase<float> const&)
 {
     if ((m_gameDataFlags & 1) != 0 && (m_msgBoxFlags & 3) != 0)
     {
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }
 
 MsgBox::MsgBox(MsgBox const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MsgBox::MsgBox()
@@ -223,7 +223,7 @@ void MsgBox::SetDownLineBounds()
     if ((m_gameDataFlags & 1) != 0 && IsDirectChild(m_wndDownLine))
     {
         //auto patternChild = m_pattern->GetChildByName(m_aif.m_wndDownLineName);
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }
 
@@ -246,7 +246,7 @@ PointBase<float> MsgBox::CalcSummaryButtonsSize() const
         }
         if (m_msgBoxFlags & 3 > 1)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         PointBase<float> res;
         res.x = buttonsMaxSzX + buttonsMaxSzY;
@@ -298,7 +298,7 @@ PointBase<float> MsgBox::CalcSummaryIdioticEmbossesSize() const
         }
         if (m_msgBoxFlags & 3 > 1)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         PointBase<float> res;
         res.x = embossesMaxSzX + embossesMaxSzY;
@@ -399,7 +399,7 @@ PointBase<float> MsgBox::CalcMsgSize() const
 
 void MsgBox::ClearPattern()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MsgBox::RecalcLayot()
@@ -444,7 +444,7 @@ void MsgBox::RecalcLayot()
 
 void MsgBox::CenterOnScreen()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MsgBox::HackedExpandToScreen()
@@ -500,7 +500,7 @@ void MsgBox::AddButtonsAndIdioticEmbosses()
     {
 	    switch (m_msgBoxFlags & 3)
 	    {
-	    case 1: throw std::logic_error("Not implemented");
+	    case 1: RETRUXX_NOT_IMPLEMENTED;
         case 2:
         {
             if (m_buttons[0] && !m_buttons[0]->GetParent())
@@ -522,7 +522,7 @@ void MsgBox::AddButtonsAndIdioticEmbosses()
             m_buttons[0]->SetText(GetStation()->InitializeStringUsingIds("^yes^"));
             break;
         }
-	    case 3: throw std::logic_error("Not implemented");
+	    case 3: RETRUXX_NOT_IMPLEMENTED;
         default: return;
 	    }
     }
@@ -565,14 +565,14 @@ void MsgBox::CalcSelfHeight()
 
 int MsgBox::LoadPattern()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MsgBox::SetButtonsBounds(PointBase<float> const& buttonsSza)
 {
     if ((m_gameDataFlags & 1) != 0 && (m_msgBoxFlags & 3) != 0)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }
 
@@ -702,5 +702,5 @@ int MsgBox::GameDataSetup()
 
 int MsgBox::CreateFromPattern()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

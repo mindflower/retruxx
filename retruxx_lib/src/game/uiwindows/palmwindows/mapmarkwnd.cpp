@@ -6,7 +6,7 @@ RT_CLASS_DEFINE(MapMarkWnd);
 
 m3d::Object* MapMarkWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* MapMarkWnd::GetBaseClass()
@@ -16,42 +16,42 @@ m3d::Class* MapMarkWnd::GetBaseClass()
 
 m3d::Object* MapMarkWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MapMarkWnd::~MapMarkWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* MapMarkWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ObjectInfo* MapMarkWnd::GetObjectInfo() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MapMarkWnd::FullUpdate()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MapMarkWnd::MapMarkWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MapMarkWnd::MapMarkWnd(MapMarkWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MapMarkWnd::SetUpForObjectInfo(ObjectInfo*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORTS_BEGIN(MapMarkIcoWnd)
@@ -60,7 +60,7 @@ RT_CLASS_DEFINE(MapMarkIcoWnd);
 
 int MapMarkIcoWnd::SetUp(ObjectInfo*, PointBase<float> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* MapMarkIcoWnd::GetBaseClass()
@@ -70,67 +70,67 @@ m3d::Class* MapMarkIcoWnd::GetBaseClass()
 
 m3d::Object* MapMarkIcoWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* MapMarkIcoWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MapMarkIcoWnd::Select(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MapMarkIcoWnd::~MapMarkIcoWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* MapMarkIcoWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool MapMarkIcoWnd::IsSelected() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MapMarkIcoWnd::MapMarkIcoWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MapMarkIcoWnd::MapMarkIcoWnd(MapMarkIcoWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MapMarkIcoWnd::FullUpdate()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MapMarkIcoWnd::OnPaint(m3d::ui::DrawInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MapMarkIcoWnd::UpdateToleranceColor()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MapMarkIcoWnd::UpdateIcon()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MapMarkIcoWnd::UpdateTooltip()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORTS_BEGIN(PlayerMarkWnd)
@@ -139,12 +139,12 @@ RT_CLASS_DEFINE(PlayerMarkWnd);
 
 PlayerMarkWnd::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int PlayerMarkWnd::CreatePlayerMarkWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* PlayerMarkWnd::GetBaseClass()
@@ -154,52 +154,52 @@ m3d::Class* PlayerMarkWnd::GetBaseClass()
 
 void PlayerMarkWnd::SetImageCoords(PointBase<float> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* PlayerMarkWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void PlayerMarkWnd::SetImageAngle(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 PlayerMarkWnd::~PlayerMarkWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* PlayerMarkWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* PlayerMarkWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void PlayerMarkWnd::SetImageSize(PointBase<float> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int PlayerMarkWnd::OnPaint(m3d::ui::DrawInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 PlayerMarkWnd::PlayerMarkWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 PlayerMarkWnd::PlayerMarkWnd(PlayerMarkWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORTS_BEGIN(NavPointMarkWnd)
@@ -208,27 +208,27 @@ RT_CLASS_DEFINE(NavPointMarkWnd);
 
 int NavPointMarkWnd::CreateNavPointMarkWnd(PointBase<float> const&, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* NavPointMarkWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* NavPointMarkWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int NavPointMarkWnd::GetNavPointId() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* NavPointMarkWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* NavPointMarkWnd::GetBaseClass()
@@ -238,27 +238,27 @@ m3d::Class* NavPointMarkWnd::GetBaseClass()
 
 NavPointMarkWnd::~NavPointMarkWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::rend::TexHandle NavPointMarkWnd::GetNpIcoByType(NavPoint::NavPointType) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr NavPointMarkWnd::GetTooltipForNp(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPointMarkWnd::NavPointMarkWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPointMarkWnd::NavPointMarkWnd(NavPointMarkWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORTS_BEGIN(MapMarkNameWnd)
@@ -267,12 +267,12 @@ RT_CLASS_DEFINE(MapMarkNameWnd);
 
 MapMarkNameWnd::~MapMarkNameWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* MapMarkNameWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* MapMarkNameWnd::GetBaseClass()
@@ -282,25 +282,25 @@ m3d::Class* MapMarkNameWnd::GetBaseClass()
 
 m3d::Object* MapMarkNameWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* MapMarkNameWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MapMarkNameWnd::SetUp(ObjectInfo*, BoundsBase<float> const&, BoundsBase<float> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MapMarkNameWnd::MapMarkNameWnd(MapMarkNameWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MapMarkNameWnd::MapMarkNameWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

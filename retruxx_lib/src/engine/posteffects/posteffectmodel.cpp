@@ -10,7 +10,7 @@ PostEffectModel::PostEffectModel(std::map<CStr, float*>* vList) : m_varList(vLis
 
 bool PostEffectModel::IsInstant() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool PostEffectModel::FindByName(CStr name)

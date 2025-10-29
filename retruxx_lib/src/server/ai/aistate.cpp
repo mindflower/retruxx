@@ -35,7 +35,7 @@ namespace ai
 
     void AIState::SetRetValueInterpretation(int S, unsigned int SignalID)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     const CStr& AIState::GetName() const
@@ -45,6 +45,6 @@ namespace ai
 
     void AIState::Dump() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

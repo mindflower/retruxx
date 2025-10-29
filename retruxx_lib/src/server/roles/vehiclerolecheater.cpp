@@ -14,22 +14,22 @@ namespace ai
 
     float VehicleRoleCheaterPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float VehicleRoleCheaterPrototypeInfo::FitAgainstObj(Vehicle const*, Obj const*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* VehicleRoleCheaterPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float VehicleRoleCheaterPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool VehicleRoleCheaterPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -44,66 +44,66 @@ namespace ai
 
     void VehicleRoleCheater::setTargetVehicle(Vehicle const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRoleCheater::VehicleRoleCheater(VehicleRoleCheaterPrototypeInfo const& prototype) : VehicleRole(prototype)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool VehicleRoleCheater::UpdateVehicle(float, Vehicle*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleCheater::setTargetTeam(Team const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleCheater::setTargetObj(Obj const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRoleCheaterPrototypeInfo const* VehicleRoleCheater::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* VehicleRoleCheater::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRoleCheater::~VehicleRoleCheater()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ChaseMotionTactics* VehicleRoleCheater::CreateChaseMotionTactic(Vehicle const*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* VehicleRoleCheater::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector VehicleRoleCheater::_EvaluateChasePointToMove(float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* VehicleRoleCheater::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleCheater::_CreateChaseTacticsIfNeeded(Vehicle*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

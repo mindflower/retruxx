@@ -12,12 +12,12 @@ namespace ai
 
     CStr TimeStatistic::GetValue() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::AIParam TimeStatistic::GetValueAsAIParam() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* TimeStatistic::GetBaseClass()
@@ -27,7 +27,7 @@ namespace ai
 
     void TimeStatistic::Zero()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* TimeStatistic::CreateObject()
@@ -42,22 +42,22 @@ namespace ai
 
     void TimeStatistic::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     TimeStatistic::~TimeStatistic()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TimeStatistic::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* TimeStatistic::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TimeStatistic::IncreaseByMilliseconds(long long milliseconds)
@@ -67,7 +67,7 @@ namespace ai
 
     TimeStatistic::TimeStatistic(TimeStatistic const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     TimeStatistic::TimeStatistic()

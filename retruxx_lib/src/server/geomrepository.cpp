@@ -10,22 +10,22 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GeomRepository, AddItems)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GeomRepository, RemoveItems)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GeomRepository, HasAmountOfItems)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GeomRepository, CanPlaceItems)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 
@@ -41,12 +41,12 @@ namespace ai
 
     bool GeomRepository::RemoveItems(char const*, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GeomRepository::GetSlotByPlace(PointBase<int> const&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomRepository::~GeomRepository()
@@ -55,12 +55,12 @@ namespace ai
 
     void GeomRepository::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomRepository::DropAll(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomRepository::SetChanged()
@@ -110,17 +110,17 @@ namespace ai
 
     unsigned GeomRepository::GetAmountByPrototypeId(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* GeomRepository::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomRepository::GeomRepository(PointBase<int> const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomRepository::Clear(bool bUnsafe)
@@ -136,62 +136,62 @@ namespace ai
 
     bool GeomRepository::AddThingToPlace(GeomRepositoryItem&, PointBase<int> const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::CanPlaceItems(char const*, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::CanPlaceItems(int, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::SetSortStyle(SortStyle, bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomRepository::SortStyle GeomRepository::GetSortStyle() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::IsEmpty()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GeomRepository::GetSlotByObjId(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomRepositoryItem GeomRepository::GetItem(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned GeomRepository::GetAmountByResourceId(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::HasAmountOfItems(char const*, int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::IsChanged()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GeomRepository::CanAddThingToPlace(GeomRepositoryItem const&, PointBase<int> const&, int*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float GeomRepository::GetMass() const
@@ -219,22 +219,22 @@ namespace ai
 
     bool GeomRepository::Sort(SortStyle)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GeomRepository::GiveUpThingByPrototypeId(int, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::CanAddThing(GeomRepositoryItem const&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomRepositoryItem GeomRepository::PutThingToSlot(int, GeomRepositoryItem const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomRepository::SetVehicle(Vehicle* vehicle)
@@ -244,27 +244,27 @@ namespace ai
 
     Vehicle* GeomRepository::GetVehicle() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned GeomRepository::GiveUpThingFromSlot(unsigned, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::AddThing(GeomRepositoryItem const&, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned GeomRepository::GetNumItems() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned GeomRepository::GiveUpThingFromSlotUnsafe(unsigned, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* GeomRepository::CreateObject()
@@ -274,12 +274,12 @@ namespace ai
 
     int GeomRepository::GiveUpThingByResourceId(int, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GeomRepository::GetFirstSlotByResourceId(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* GeomRepository::GetBaseClass()
@@ -289,27 +289,27 @@ namespace ai
 
     bool GeomRepository::AddItems(char const*, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::AddItems(int, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GeomRepository::GetFirstNonCompleteSlot(GeomRepositoryItem const&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* GeomRepository::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomRepository::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomRepository::TransferToRepository(GeomRepository* targetRepository)
@@ -361,37 +361,37 @@ namespace ai
 
     void GeomRepository::Purge()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomRepository::FlushInReferenceChests(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::AppendChest(Chest*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::GiveUpThingByObjId(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomRepository::DetachAllObjectsFromParents()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned GeomRepository::GetAmountInSlot(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomRepository::ApplyDamageToAllItems(float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     namespace
@@ -490,26 +490,26 @@ namespace ai
 
     GeomRepository::GeomRepository(GeomRepository const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::_AddThingUnsorted(GeomRepositoryItem const&, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GeomRepository::_GetMinEmptyY() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::_bItemInBounds(GeomRepositoryItem const&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool GeomRepository::_AppendRepository(GeomRepository*, Chest*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

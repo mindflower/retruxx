@@ -16,12 +16,12 @@ namespace ai
 
     void AISignal::Set(const CStr& Name)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AISignal::Dump() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     const CStr& AISignal::GetName() const

@@ -5,7 +5,7 @@ namespace ai
 {
     TriMesh::~TriMesh()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ai::TriMesh* TriMesh::CreateObject(dxSpace* space, const void* trimeshVertices, int numVertices,

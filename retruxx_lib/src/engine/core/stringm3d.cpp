@@ -4,6 +4,7 @@
 #include <windows.h>
 
 #include "math/vector.h"
+#include "thirdparty/containers.h"
 #include "thirdparty/injecttools.h"
 
 void UnifyFileName(CStr& fileName)
@@ -176,37 +177,37 @@ int CStr::my_stricmp(char const* lhs, char const* rhs)
 
 CStr::CStr(Quaternion const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr::CStr(CVector2 const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr::CStr(CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr::CStr(double)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr::CStr(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr::CStr(uint64_t)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr::CStr(int64_t)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr::CStr(unsigned long v)
@@ -247,7 +248,7 @@ CStr::CStr(int v)
 
 CStr::CStr(char)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr::CStr(char const* str, int num)
@@ -366,7 +367,7 @@ CStr& CStr::operator+=(CStr const& a)
 
 unsigned int CStr::getHashCode()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CStr::toLower(unsigned long locale)
@@ -383,17 +384,17 @@ void CStr::toLower(unsigned long locale)
 
 void CStr::toUpper(unsigned long)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CStr::FirstCharToLower(unsigned long)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CStr::FirstCharToUpper(unsigned long)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CStr::findOneOf(char const* str, int startIdx) const
@@ -487,22 +488,22 @@ int CStr::del(int idx, int count)
 
 int CStr::format(char const*, ...)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr CStr::format_(char const*, ...)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CStr::Write(m3d::fs::IStream&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CStr::Read(m3d::fs::IStream&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr& CStr::operator=(CStr const& rhs)

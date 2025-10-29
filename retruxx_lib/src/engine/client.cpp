@@ -9,7 +9,7 @@ namespace m3d
 {
     CClient::~CClient()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgNode* CClient::CreateServerControlledNode(int numModel)
@@ -45,12 +45,12 @@ namespace m3d
 
     void CClient::Reset()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     char const* CClient::GetCallbackName() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CClient::CClient()
@@ -68,7 +68,7 @@ namespace m3d
 
     void CClient::OnBeforeDeviceReset()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int CClient::Init()
@@ -81,12 +81,12 @@ namespace m3d
 
     void CClient::OnAfterDeviceReset()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int CClient::RecieveData(CSimpleNetPacket const*, ai::CServer*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CClient::PredictInit()
@@ -95,12 +95,12 @@ namespace m3d
 
     bool CClient::HandleCVar(CVar const*, CConsoleParams const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CClient::PredictUpdateNode(SgNode*, Quaternion const&, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CClient::PredictUpdate(int, unsigned)
@@ -109,22 +109,22 @@ namespace m3d
 
     void CClient::PredictAddNode(SgNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CClient::PredictDone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CClient::HandleCommand(int, CConsoleParams const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CClient::PredictRemoveNode(SgNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CWorld& CClient::GetWorld()

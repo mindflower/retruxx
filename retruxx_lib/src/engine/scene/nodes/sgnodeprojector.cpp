@@ -25,7 +25,7 @@ namespace m3d
 
     int SgProjectorNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgProjectorNode::SetProperty(unsigned propId, void* property)
@@ -51,32 +51,32 @@ namespace m3d
 
     int SgProjectorNode::GetProperty(unsigned, void*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgProjectorNode::GetPropertiesList(retruxx::set<unsigned, retruxx::less<unsigned>, retruxx::allocator<unsigned>>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* SgProjectorNode::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgProjectorNode::~SgProjectorNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SgProjectorNode::UpdateOwnBoundingBox()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgProjectorNode::SgProjectorNode(SgProjectorNode const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgProjectorNode::SgProjectorNode()

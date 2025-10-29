@@ -242,37 +242,37 @@ namespace m3d
 
 bool XmlFileImpl::AddBeforeChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void XmlFileImpl::SetHeader(char const*, char const*, char const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool XmlFileImpl::AddAfterChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int XmlFileImpl::Write(m3d::fs::IStream&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void XmlFileImpl::GetHeader(char**, char**, char**)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool XmlFileImpl::AddChild(m3d::cmn::XmlNode*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool XmlFileImpl::RemoveChild(m3d::cmn::XmlNode*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 char const* XmlFileImpl::GetError()
@@ -313,7 +313,7 @@ m3d::cmn::XmlNode* XmlFileImpl::CreateNode(m3d::cmn::XmlNodeType type, char cons
 
 bool XmlFileImpl::GetLastChild_(m3d::cmn::XmlNode* node, char const* nodeName)  const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int XmlFileImpl::IncRef()
@@ -327,7 +327,7 @@ int XmlFileImpl::IncRef()
 
 void* XmlFileImpl::QueryIface(char const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 XmlFileImpl::XmlFileImpl()
@@ -354,7 +354,7 @@ int XmlFileImpl::DecRef()
 
 TiXmlNode* XmlFileImpl::GetDeclarationNode()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 IniFileImpl::IniFileImpl() : m_file(m3d::g_Kernel->CreateXmlFile())
@@ -363,7 +363,7 @@ IniFileImpl::IniFileImpl() : m_file(m3d::g_Kernel->CreateXmlFile())
 
 int IniFileImpl::Write(m3d::fs::IStream&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 char const* IniFileImpl::GetError()
@@ -373,12 +373,12 @@ char const* IniFileImpl::GetError()
 
 unsigned IniFileImpl::GetHex(CStr const&, CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void IniFileImpl::SetString(CStr const&, CStr const&, CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int IniFileImpl::GetInteger(CStr const& section, CStr const& key)
@@ -418,12 +418,12 @@ int IniFileImpl::Read(m3d::fs::IStream& in)
 
 void IniFileImpl::SetInteger(CStr const&, CStr const&, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void IniFileImpl::SetFloat(CStr const&, CStr const&, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int IniFileImpl::IncRef()
@@ -462,7 +462,7 @@ bool IniFileImpl::FindSection(m3d::cmn::XmlNode* writeTo, CStr const& section)
 
 bool IniFileImpl::AddKey(m3d::cmn::XmlNode*, CStr const&, CStr const&, CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int IniFileImpl::DecRef()
@@ -482,7 +482,7 @@ int IniFileImpl::DecRef()
 
 void* IniFileImpl::QueryIface(char const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool IniFileImpl::FindKey(m3d::cmn::XmlNode* writeTo, CStr const& section, CStr const& key)
@@ -525,7 +525,7 @@ bool IniFileImpl::FindKey(m3d::cmn::XmlNode* writeTo, CStr const& section, CStr 
 
 bool XmlNodeImpl::HasChildOrAttribute() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool XmlNodeImpl::AddBeforeChild(m3d::cmn::XmlNode const* addBefore, m3d::cmn::XmlNode* child)
@@ -555,7 +555,7 @@ bool XmlNodeImpl::GetFirstAttribute(m3d::cmn::XmlAttrib* writeTo) const
 
 bool XmlNodeImpl::RemoveAttribute(char const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool XmlNodeImpl::IsEmpty() const
@@ -633,12 +633,12 @@ bool XmlNodeImpl::IsOfType(m3d::cmn::XmlNodeType castTo) const
 
 bool XmlNodeImpl::AddAfterChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void XmlNodeImpl::SetValue(char const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool XmlNodeImpl::GetNextSibling(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
@@ -651,27 +651,27 @@ bool XmlNodeImpl::GetNextSibling(m3d::cmn::XmlNode* writeTo, char const* wantVal
 
 bool XmlNodeImpl::GetParent(m3d::cmn::XmlNode*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void XmlNodeImpl::GetAttributeMbcsSafe(char const*, char**, int*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool XmlNodeImpl::AddChild(m3d::cmn::XmlNode*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool XmlNodeImpl::SetAttribute(char const*, char const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool XmlNodeImpl::RemoveChild(m3d::cmn::XmlNode*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::cmn::XmlAttrib* XmlNodeImpl::CreateAttribute() const
@@ -708,7 +708,7 @@ char const* XmlNodeImpl::GetAttribute(char const* name) const
 
 bool XmlNodeImpl::GetLastChild(m3d::cmn::XmlNode*, char const*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int XmlNodeImpl::IncRef()
@@ -722,17 +722,17 @@ int XmlNodeImpl::IncRef()
 
 XmlNodeImpl::XmlNodeImpl()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void* XmlNodeImpl::QueryIface(char const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 XmlNodeImpl::XmlNodeImpl(XmlNodeImpl const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int XmlNodeImpl::DecRef()
@@ -773,7 +773,7 @@ XmlAttribImpl::~XmlAttribImpl()
 
 XmlAttribImpl::XmlAttribImpl(XmlAttribImpl const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 XmlAttribImpl::XmlAttribImpl()
@@ -816,5 +816,5 @@ int XmlAttribImpl::DecRef()
 
 void* XmlAttribImpl::QueryIface(char const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

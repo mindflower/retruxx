@@ -34,17 +34,17 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, Play)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, PlayFromPoint)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, Stop)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, InPlay)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetPath)
@@ -57,22 +57,22 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetPath)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetPathFromPos)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, LoadDefaults)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetAim)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetAimToID)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetRelativePoints)
@@ -93,7 +93,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetRelativeRotations)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetBaseToId)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetLookTo)
@@ -122,12 +122,12 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetLerpFromPreviousItem)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetFolder)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, GetFolder)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, Load)
@@ -141,7 +141,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, Load)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, FlyAround)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 namespace m3d
@@ -176,7 +176,7 @@ namespace m3d
 {
     void CameraPath::insert(int, CameraPathState const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned CameraPath::size() const
@@ -336,12 +336,12 @@ namespace m3d
 
     void CameraPath::push_back(CameraPathState const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CameraPath::MovePoint(int, CameraPathState const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CameraPath::CalcFullLength(unsigned pointNum)
@@ -356,17 +356,17 @@ namespace m3d
 
     float CameraPath::GetFullLength() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CameraPath::SaveToXmlRuntime(cmn::XmlFile*, cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CameraPath::LoadFromXml(cmn::XmlFile*, cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CameraPath::SetFullTime(float fullTime)
@@ -376,23 +376,23 @@ namespace m3d
 
     void CameraPath::InitByStates(std::vector<CameraPathState, std::allocator<CameraPathState>> const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CameraPath::clear()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CameraPath::RemovePoint(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CameraPathState::CameraPathState(const CVector& point, const Quaternion& rotation, float zoom, float flyTime,
         float speed)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CameraPathState::CameraPathState()
@@ -415,12 +415,12 @@ namespace m3d
 
     void CameraPathState::SaveToXmlRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CameraPath::CameraPath(const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>>&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CameraPath::CameraPath()
@@ -444,12 +444,12 @@ namespace m3d
 
     CameraPathState& CameraPath::operator[](unsigned)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CameraPathState const& CameraPath::operator[](unsigned) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float CameraPath::GetFullTime() const
@@ -546,7 +546,7 @@ namespace m3d
 
     void CameraPath::_DeFix()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CameraPath::_Fix()
@@ -587,12 +587,12 @@ namespace m3d
 
     bool Cinematic::SkipCinematic()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Cinematic::RenderDebugInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Cinematic::bMustBeNextCinematic() const
@@ -602,7 +602,7 @@ namespace m3d
 
     void Cinematic::SetCurrentDebugPointNum(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Cinematic::GetFadePeriodForState(CinematicState state) const
@@ -649,37 +649,37 @@ namespace m3d
 
     void Cinematic::SaveToXml(cmn::XmlFile*, cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Cinematic::~Cinematic()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::SetCameraStates(std::vector<CameraPathState, std::allocator<CameraPathState>> const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::SetDebugMode(bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Cinematic::GetDebugMode() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::SetPathFromPos(CVector const&, Quaternion const&, char const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::DumpCurrentPath(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Cinematic::InPlay() const
@@ -689,7 +689,7 @@ namespace m3d
 
     CinematicType Cinematic::GetPlayType() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::SetLookTo(bool value)
@@ -699,12 +699,12 @@ namespace m3d
 
     void Cinematic::UpdateCameraRotation(CCamera&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::InsertPointToCurrentPath(CVector const&, Quaternion const&, float, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Cinematic::Load(char const* fileName)
@@ -776,22 +776,22 @@ namespace m3d
 
     void Cinematic::SetAim(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::SetAimToID(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr Cinematic::GetNextFlyPathName() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::AddPointToCurrentPath(CVector const&, Quaternion const&, float, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::Play(float playTime)
@@ -814,12 +814,12 @@ namespace m3d
 
     void Cinematic::RemoveCurrentDebugPoint()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::FlyAround(float, float, float, float, CVector const&, char const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Cinematic::GetTimeToTheEnd() const
@@ -837,7 +837,7 @@ namespace m3d
 
     void Cinematic::SetFromPos(CVector const&, Quaternion const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::SetRelativeRotations(bool value)
@@ -948,7 +948,7 @@ namespace m3d
         else if (this->m_curItem.m_playType == CINEMATIC_FLY_AROUND)
         {
 
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         // Handle cinematic completion
@@ -973,37 +973,37 @@ namespace m3d
 
     CinematicItem const& Cinematic::GetCurItem() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Cinematic::_GetPointToLookAt() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Cinematic::_GetBasePoint() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Quaternion Cinematic::_GetBaseRotation() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::CameraPathState Cinematic::_GetPathState(float curTime) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::_PushCinematicItem()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Cinematic::_bIsFirstItemPlayingNow() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Cinematic::_TakeNextCinematicItem()
@@ -1048,22 +1048,22 @@ namespace m3d
 
     char const* Cinematic::GetFolder() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::LoadFromXml(cmn::XmlFile*, cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::SetBaseToId(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* Cinematic::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Cinematic::SetPath(char const* pathName)
@@ -1095,18 +1095,18 @@ namespace m3d
 
     CameraPath const& Cinematic::GetPathByName(CStr const&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::LoadDefaults()
     {
         m_cinematicItems.clear();
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Cinematic::MoveCurrentDebugPoint(CVector const&, Quaternion const&, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Cinematic::Cinematic() :

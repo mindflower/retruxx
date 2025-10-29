@@ -55,17 +55,17 @@ namespace m3d
 
         int FileServer::RemoveFile(char const*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void FileServer::EnableMapping(bool)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FileServer::Reinitialize(char const*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FileServer::Shutdown()
@@ -119,17 +119,17 @@ namespace m3d
 
         int FileServer::AddPackage(char const*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FileServer::AddFile(char const*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FileServer::RemoveFolder(char const*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FileServer::Initialize(char const* dataSource)
@@ -205,7 +205,7 @@ namespace m3d
 
         int FileServer::AddFolder(char const*, char const*, bool)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void FileServer::SetCurrentWorkDir(char const* currentDirectory)
@@ -232,12 +232,12 @@ namespace m3d
 
         int FileServer::InternalAddPackage(CStr const&)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FileServer::EnumDataFolderFiles(char const*)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         char const* FileServer::GetCurrentWorkDir() const

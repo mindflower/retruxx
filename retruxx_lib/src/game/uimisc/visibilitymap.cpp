@@ -10,27 +10,27 @@ VisibilityMap::AuxInfo::AuxInfo() :
 
 CStr const& VisibilityMap::GetLevelName() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::ShowArea(BoundsBase<float> const&)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::ShowArea(CVector const&, float)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::SetUpForLevel(CStr const& levelName)
@@ -56,7 +56,7 @@ int VisibilityMap::SetUpForLevel(CStr const& levelName)
 
 void VisibilityMap::UpdateGrid()
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 VisibilityMap::VisibilityMap()
@@ -66,27 +66,27 @@ VisibilityMap::VisibilityMap()
 
 VisibilityMap::~VisibilityMap()
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::rend::TexHandle VisibilityMap::GetBg() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool VisibilityMap::IsWorldPositionVisible(CVector const&) const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VisibilityMap::UpdateBg()
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 BoundsBase<int> VisibilityMap::GetCellBounds(int) const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::CreateEmptyBg()
@@ -119,52 +119,52 @@ int VisibilityMap::CreateEmptyBg()
 
 PointBase<int> VisibilityMap::GetCellCoordByWorldPos(CVector const&) const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 CVector VisibilityMap::GetWorldPosByCellId(int) const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::GetCellIdByWorldPos(CVector const&) const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VisibilityMap::ClearStatic()
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::GameUnitToVisibilityPixel(int) const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::SetCellValue(int, CellValue)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::InitStructures()
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::IntVector2CellsVector(std::vector<int> const&, std::vector<CellValue>&) const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::MarkCell(int)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::DrawCircle(int)
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VisibilityMap::ClearBg()
@@ -192,7 +192,7 @@ int VisibilityMap::InitStatic()
 
 VisibilityMap::CellValue VisibilityMap::GetCellValue(int) const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VisibilityMap::Clear()
@@ -231,5 +231,5 @@ int VisibilityMap::CreateCircle()
 
 bool VisibilityMap::IsValid() const
 {
-	throw std::logic_error("Not implemented");
+	RETRUXX_NOT_IMPLEMENTED;
 }

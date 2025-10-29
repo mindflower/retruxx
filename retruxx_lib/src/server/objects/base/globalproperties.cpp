@@ -20,7 +20,7 @@ namespace ai
 
     GlobalProperties::CoeffsForDifficultyLevel const& GlobalProperties::GetCoeffsForCurrentDifficultyLevel() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GlobalProperties::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

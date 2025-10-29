@@ -11,7 +11,7 @@ namespace m3d
 
         Object* SgNodeArrayWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* SgNodeArrayWnd::GetBaseClass()
@@ -21,97 +21,97 @@ namespace m3d
 
         int SgNodeArrayWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CVector& SgNodeArrayWnd::Translation()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void SgNodeArrayWnd::AddSgNode(SgNode*, CMatrix const&, bool)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Quaternion& SgNodeArrayWnd::Rotation()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* SgNodeArrayWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         SgNodeArrayWnd::~SgNodeArrayWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void SgNodeArrayWnd::SetClassesToRender(std::vector<Class*> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void SgNodeArrayWnd::ClearSgNodes()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int SgNodeArrayWnd::OnPaint(DrawInfo const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* SgNodeArrayWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         rend::TexHandle SgNodeArrayWnd::GetTargetTexture() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int SgNodeArrayWnd::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int SgNodeArrayWnd::CreateSgNodeArrayWnd(CStr const&, unsigned, BoundsBase<float> const&, unsigned, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int SgNodeArrayWnd::CreateSgNodeArrayWnd(rend::TexHandle, unsigned, BoundsBase<float> const&, unsigned, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int SgNodeArrayWnd::SetTargetTexture(rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int SgNodeArrayWnd::CreateImageWnd(BoundsBase<float> const&, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int SgNodeArrayWnd::CreateImageWnd(BoundsBase<float> const&, CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         SgNodeArrayWnd::SgNodeArrayWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         SgNodeArrayWnd::SgNodeArrayWnd(SgNodeArrayWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

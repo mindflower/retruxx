@@ -6,52 +6,52 @@ RT_CLASS_DEFINE(MotherPanelTabButton);
 
 m3d::rend::TexHandle MotherPanelTabButton::PerModeInfo::GetUnselTex() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MotherPanelTabButton::PerModeInfo::PerModeInfo(m3d::rend::TexHandle, m3d::rend::TexHandle)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::rend::TexHandle MotherPanelTabButton::PerModeInfo::GetSelTex() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MotherPanelTabButton::PerModeInfo::~PerModeInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* MotherPanelTabButton::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MotherPanel::Tab MotherPanelTabButton::GetTabId() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MotherPanelTabButton::Select(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool MotherPanelTabButton::IsSelected() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* MotherPanelTabButton::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MotherPanelTabButton::Mode MotherPanelTabButton::GetMode() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* MotherPanelTabButton::GetBaseClass()
@@ -61,75 +61,75 @@ m3d::Class* MotherPanelTabButton::GetBaseClass()
 
 MotherPanelTabButton::~MotherPanelTabButton()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MotherPanelTabButton::CreateFromPattern(m3d::ui::Wnd*, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MotherPanelTabButton::SetupForTab(MotherPanel::Tab)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MotherPanelTabButton::SetMode(Mode)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* MotherPanelTabButton::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MotherPanelTabButton::UpdateTex()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MotherPanelTabButton::ClearInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr MotherPanelTabButton::Mode2Str(Mode)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MotherPanelTabButton::MotherPanelTabButton(MotherPanelTabButton const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MotherPanelTabButton::MotherPanelTabButton()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MotherPanelTabButton::UpdateTooltip()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool MotherPanelTabButton::CanApplyMode(Mode) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool MotherPanelTabButton::HasMode(Mode) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MotherPanelTabButton::InitInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::Building const* MotherPanelTabButton::GetBuilding(Mode) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

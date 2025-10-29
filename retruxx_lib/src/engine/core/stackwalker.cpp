@@ -37,7 +37,7 @@ RTL_CRITICAL_SECTION g_csFileOpenClose;
 
 LONG WINAPI CrashHandlerExceptionFilter(PEXCEPTION_POINTERS pe)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
     //TODO: ....
     //char tmp_1[0x400] = { 0 };
     //::GetCurrentDirectoryA(0x400, tmp_1);
@@ -97,7 +97,7 @@ int InitStackWalk()
 int InitAllocCheck(eAllocCheckOutput eOutput, int bSetUnhandledExeptionFilter, unsigned long ulShowStackAtAlloc)
 {
     //TODO: check correctness
-    //throw std::logic_error("Not implemented");
+    //RETRUXX_NOT_IMPLEMENTED;
     auto const* workDir = m3d::g_Kernel->GetFileServer().GetCurrentWorkDir();
     TCHAR szModName[MAX_PATH + 1] = { 0 };
     if (::GetModuleFileName(NULL, szModName, MAX_PATH) != 0)

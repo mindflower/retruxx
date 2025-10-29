@@ -11,42 +11,42 @@ namespace m3d
 
     void DecalsList::ReleaseShaders()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecalsList::~DecalsList()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned DecalsList::GetNumDecals()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecalsList::RecalcDecalsForMesh(GeometryInfo const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecalsList::DecalsList()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecalInfo const& DecalsList::GetDecal(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecalsList::Render(rend::TexHandle)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecalsList::AddDecal(DecalSource const&, GeometryInfo const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecalsList::LoadShaders()
@@ -82,6 +82,6 @@ namespace m3d
 
     short DecalsList::GetMatrixId(CMatrix*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

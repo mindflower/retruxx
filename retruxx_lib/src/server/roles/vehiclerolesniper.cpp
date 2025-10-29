@@ -10,7 +10,7 @@ namespace ai
 
     Obj* VehicleRoleSniperPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRoleSniperPrototypeInfo::VehicleRoleSniperPrototypeInfo()
@@ -19,12 +19,12 @@ namespace ai
 
     float VehicleRoleSniperPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float VehicleRoleSniperPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool VehicleRoleSniperPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -34,37 +34,37 @@ namespace ai
 
     float VehicleRoleSniperPrototypeInfo::FitAgainstObj(Vehicle const*, Obj const*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleSniper::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* VehicleRoleSniper::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool VehicleRoleSniper::UpdateVehicle(float, Vehicle*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRoleSniperPrototypeInfo const* VehicleRoleSniper::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleSniper::setTargetObj(Obj const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleSniper::setTargetTeam(Team const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* VehicleRoleSniper::GetBaseClass()
@@ -74,62 +74,62 @@ namespace ai
 
     void VehicleRoleSniper::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleSniper::setTargetVehicle(Vehicle const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRoleSniper::VehicleRoleSniper(VehicleRoleSniperPrototypeInfo const& prototype) : VehicleRole(prototype)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehicleRoleSniper::~VehicleRoleSniper()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool VehicleRoleSniper::CurrentPositionIsBad(Vehicle const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* VehicleRoleSniper::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     PointBase<float> VehicleRoleSniper::getPeakPositionInt(Vehicle const*, PointBase<float> const&,
         PointBase<float> const&, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* VehicleRoleSniper::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector VehicleRoleSniper::getPeakPosition(Vehicle*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     std::vector<int, std::allocator<int>> VehicleRoleSniper::getTargetObjs() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRoleSniper::_LookAndFireToEnemy(Vehicle*, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool VehicleRoleSniper::PositionIsBad(Vehicle const*, CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

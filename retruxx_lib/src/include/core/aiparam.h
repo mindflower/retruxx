@@ -2,9 +2,9 @@
 #include "stringm3d.h"
 #include "thirdparty/containers.h"
 
-class CVector;
-class CVector2;
-class Quaternion;
+struct CVector;
+struct CVector2;
+struct Quaternion;
 
 namespace m3d
 {

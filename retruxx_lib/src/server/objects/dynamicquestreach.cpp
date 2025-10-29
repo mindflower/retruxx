@@ -16,7 +16,7 @@ namespace ai
 
     ai::DynamicQuest* DynamicQuestReachPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool DynamicQuestReachPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -32,27 +32,27 @@ namespace ai
 
     m3d::Class* DynamicQuestReach::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DynamicQuestReachPrototypeInfo const* DynamicQuestReach::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DynamicQuestReach::OnEvent(Event const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DynamicQuestManager::QuestType DynamicQuestReach::GetQuestType() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DynamicQuestReach::Update(float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* DynamicQuestReach::GetBaseClass()
@@ -62,36 +62,36 @@ namespace ai
 
     DynamicQuestReach::DynamicQuestReach(DynamicQuestReachPrototypeInfo const& prototype) : DynamicQuest(prototype)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DynamicQuestReach::_OnCreate()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DynamicQuestReach::_CalcReward()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DynamicQuestReach::~DynamicQuestReach()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* DynamicQuestReach::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* DynamicQuestReach::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DynamicQuestReach::_OnObjectEntersLocation(Event const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

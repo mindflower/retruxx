@@ -6,27 +6,27 @@ RT_CLASS_DEFINE(HealthIndicatorInMainInterfaceWnd);
 
 m3d::Object* HealthIndicatorInMainInterfaceWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void HealthIndicatorInMainInterfaceWnd::SetType(Type)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd*, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* HealthIndicatorInMainInterfaceWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* HealthIndicatorInMainInterfaceWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* HealthIndicatorInMainInterfaceWnd::GetBaseClass()
@@ -36,70 +36,70 @@ m3d::Class* HealthIndicatorInMainInterfaceWnd::GetBaseClass()
 
 HealthIndicatorInMainInterfaceWnd::~HealthIndicatorInMainInterfaceWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void HealthIndicatorInMainInterfaceWnd::SetVehicleId(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void HealthIndicatorInMainInterfaceWnd::UpdateTooltip(float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::Vehicle const* HealthIndicatorInMainInterfaceWnd::GetVehicle() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int HealthIndicatorInMainInterfaceWnd::GameDataClear(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void HealthIndicatorInMainInterfaceWnd::UpdateLowHpLamp(float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int HealthIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd(HealthIndicatorInMainInterfaceWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void HealthIndicatorInMainInterfaceWnd::GetHp(float&, float&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void HealthIndicatorInMainInterfaceWnd::OnNewFrame()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void HealthIndicatorInMainInterfaceWnd::UpdateProgressBar(float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void HealthIndicatorInMainInterfaceWnd::UpdateValueWnd(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void HealthIndicatorInMainInterfaceWnd::FullUpdate(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

@@ -41,7 +41,7 @@ namespace m3d
             
             //Handle<T>& operator=(Handle<T> const&)
             //{
-            //    throw std::logic_error("Not implemented");
+            //    RETRUXX_NOT_IMPLEMENTED;
             //}
         };
 

@@ -7,7 +7,7 @@ namespace m3d
 {
     CVar::CVar(CVar const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVar::CVar()
@@ -187,7 +187,7 @@ namespace m3d
 
     void CVar::ResetToDefault()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     IConHandler* CVar::GetHandler() const
@@ -202,7 +202,7 @@ namespace m3d
 
     bool CVar::operator==(CVar const& rhs) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVar::eFlags CVar::GetFlags() const

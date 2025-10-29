@@ -6,37 +6,37 @@ RT_CLASS_DEFINE(BuyServiceSlider);
 
 void BuyServiceSlider::SetNotch(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void BuyServiceSlider::SetMinMax(int, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 BuyServiceSlider::~BuyServiceSlider()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* BuyServiceSlider::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int BuyServiceSlider::GetMaxPossible() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void BuyServiceSlider::SetMaxPossible(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* BuyServiceSlider::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* BuyServiceSlider::GetBaseClass()
@@ -46,20 +46,20 @@ m3d::Class* BuyServiceSlider::GetBaseClass()
 
 m3d::Object* BuyServiceSlider::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int BuyServiceSlider::OnPaint(m3d::ui::DrawInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 BuyServiceSlider::BuyServiceSlider(BuyServiceSlider const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 BuyServiceSlider::BuyServiceSlider()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

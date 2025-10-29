@@ -23,17 +23,17 @@ namespace m3d
 
     Object* SgGameUnitNode::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgGameUnitNode::~SgGameUnitNode()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgGameUnitNode::SgGameUnitNode(m3d::SgGameUnitNode const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgGameUnitNode::SgGameUnitNode()

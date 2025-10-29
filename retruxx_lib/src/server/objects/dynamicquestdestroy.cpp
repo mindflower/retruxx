@@ -27,18 +27,18 @@ namespace ai
 
     DynamicQuest* DynamicQuestDestroyPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DynamicQuestDestroy::DynamicQuestDestroy(DynamicQuestDestroyPrototypeInfo const& prototype) : DynamicQuest(prototype)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DynamicQuestDestroy::LoadNamesForTargetsFromXml(m3d::cmn::XmlNode const*)
     {
         // TODO: implement DynamicQuestDestroy::LoadNamesForTargetsFromXml
-        //throw std::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* DynamicQuestDestroy::GetBaseClass()
@@ -48,71 +48,71 @@ namespace ai
 
     m3d::Class* DynamicQuestDestroy::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool DynamicQuestDestroy::FreeNameForTargetExists()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DynamicQuestDestroyPrototypeInfo const* DynamicQuestDestroy::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DynamicQuestDestroy::Update(float, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DynamicQuestDestroy::SaveNamesForTargetsToXml(m3d::cmn::XmlNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DynamicQuestManager::QuestType DynamicQuestDestroy::GetQuestType() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DynamicQuestDestroy::OnEvent(Event const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr DynamicQuestDestroy::GetRandomNameForTarget()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DynamicQuestDestroy::_CalcReward()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DynamicQuestDestroy::_OnCreate()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DynamicQuestDestroy::~DynamicQuestDestroy()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* DynamicQuestDestroy::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DynamicQuestDestroy::_OnObjectDie(Event const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* DynamicQuestDestroy::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

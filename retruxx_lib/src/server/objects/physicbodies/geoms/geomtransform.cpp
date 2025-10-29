@@ -17,7 +17,7 @@ namespace ai
 
     const ai::Geom* GeomTransform::GetGeom() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ai::Geom* GeomTransform::GetGeom()

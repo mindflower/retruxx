@@ -41,17 +41,17 @@ m3d::Class* CinemaFadePanel::GetBaseClass()
 
 CinemaFadePanel::~CinemaFadePanel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* CinemaFadePanel::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CinemaFadePanel::StartFadeCinematicUnrelated(float, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float CinemaFadePanel::GetAlpha()
@@ -130,5 +130,5 @@ CinemaFadePanel::CinemaFadePanel()
 
 CinemaFadePanel::CinemaFadePanel(CinemaFadePanel const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

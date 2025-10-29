@@ -63,17 +63,17 @@ namespace m3d
 
         int LineWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void LineWnd::SetDirection(LineWndDirection)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* LineWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int LineWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
@@ -136,7 +136,7 @@ namespace m3d
 
         LineWnd::LineWnd(LineWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         LineWnd::LineWnd()

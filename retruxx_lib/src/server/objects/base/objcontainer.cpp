@@ -21,7 +21,7 @@
 
 void ShowCurrentStack()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, CreateNewObject)
@@ -42,7 +42,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetEntityByObjId)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, size)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetEntityByObjName)
@@ -69,72 +69,72 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetPrototypeId)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, MessageBox)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, SetTolerance)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetTolerance)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, IncTolerance)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, SetGameTime)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetGameTime)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, Get24HourTime)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, PauseGameTime)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, UnpauseGameTime)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetHeight)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, Dump)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, DumpPhysicInfo)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, AllowSave)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, IsSaveAllowed)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 namespace ai
@@ -169,12 +169,12 @@ namespace ai
 
     long long GameTime::asInt64() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GameTime::operator+=(float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::AIParam GameTime::asAIParam() const
@@ -220,17 +220,17 @@ namespace ai
 
     float GameTime::GameDiff(ObjContainer const*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GameTime::GameTime(int, int, int, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GameTime::GameTime(long long)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GameTime::GameTime()
@@ -239,12 +239,12 @@ namespace ai
 
     void GameTime::setInt64(long long)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GameTime::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GameTime::setExpanded(int hour, int minute, int day, int month, int year)
@@ -257,17 +257,17 @@ namespace ai
 
     float GameTime::Diff() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::AIParam GameTime::asAIParam24Hour() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GameTime::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ObjContainer::Node::Node()
@@ -398,12 +398,12 @@ namespace ai
         M3D_ASSERT(id >= 0);
 
 
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ObjContainer::InnerContainer::empty() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* ObjContainer::InnerContainer::GetObjById(int objId)
@@ -422,12 +422,12 @@ namespace ai
 
     void ObjContainer::InnerContainer::Clear()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned ObjContainer::InnerContainer::size() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ObjContainer::Node* ObjContainer::InnerContainer::_GetNodeById(int id)
@@ -447,22 +447,22 @@ namespace ai
 
     void ObjContainer::const_iterator::_Inc()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj const* ObjContainer::const_iterator::operator*() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj const* ObjContainer::const_iterator::operator->() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ObjContainer::const_iterator::operator==(const_iterator const&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ObjContainer::const_iterator::operator!=(const_iterator const& rhs) const
@@ -472,7 +472,7 @@ namespace ai
 
     ObjContainer::const_iterator& ObjContainer::const_iterator::operator++()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ObjContainer::iterator::iterator(retruxx::vector<Node>* pRecords, int nodeId) :
@@ -487,7 +487,7 @@ namespace ai
 
     ObjContainer::iterator ObjContainer::iterator::operator++(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ObjContainer::iterator& ObjContainer::iterator::operator++()
@@ -578,17 +578,17 @@ namespace ai
 
     ObjContainer::~ObjContainer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr ObjContainer::GetObjectFullName(CStr const&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::RelinkGeomsToCollisionCells()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::AddObjToUpdate(Obj* obj)
@@ -605,12 +605,12 @@ namespace ai
 
     m3d::Object* ObjContainer::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::PermitCreation()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ObjContainer::CreateNewObjectWithSuspendedPostLoad(int prototypeId, char const* name, int parentId, int belongId)
@@ -639,32 +639,32 @@ namespace ai
 
     void ObjContainer::LoadNodeStatesFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ObjContainer::IsSaveAllowed() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::PauseGameTime()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::DeleteAll()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::PassToMap(CStr const&, CStr const&, int, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float ObjContainer::GetHeight(float, float) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* ObjContainer::GetBaseClass()
@@ -674,17 +674,17 @@ namespace ai
 
     int ObjContainer::GetPrototypeId(char const*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::Dump()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::SetGameTimeInt64(long long)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ObjContainer::GetObjIdByObjName(CStr const& name)
@@ -704,12 +704,12 @@ namespace ai
 
     float ObjContainer::GetTolerance(int, int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::SetGameTime(int, int, int, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* ObjContainer::CreateObject()
@@ -719,22 +719,22 @@ namespace ai
 
     void ObjContainer::TransferPhysicParamsToSceneGraph()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::UnpauseGameTime()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::UnlinkGeomsFromCollisionCells()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::SetTolerance(int, int, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ObjContainer::AddWithOwnObjId(Obj* pObj)
@@ -786,22 +786,22 @@ namespace ai
 
     void ObjContainer::AddObjToPostCollideList(Obj*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::DumpPhysicInfo(CStr const&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     long long ObjContainer::GetGameTimeInt64() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned ObjContainer::GetNumUpdatingObjects() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ObjContainer::empty() const
@@ -816,18 +816,18 @@ namespace ai
 
     void ObjContainer::DenyCreation()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::LoadObjectNamesFromXML(CStr const&)
     {
         // TODO: implement ObjContainer::LoadObjectNamesFromXML
-        //throw retruxx::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::AIParam ObjContainer::Get24HourTime() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ObjContainer::CreateEntityForLoad(int prototypeId, char const* name, int parentId, int objId)
@@ -868,7 +868,7 @@ namespace ai
 
     void ObjContainer::MessageBoxA(int, int, Obj*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::AllowSave(bool allow)
@@ -878,7 +878,7 @@ namespace ai
 
     float ObjContainer::GetGameTimeDiff() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ObjContainer::iterator ObjContainer::begin()
@@ -888,12 +888,12 @@ namespace ai
 
     ObjContainer::const_iterator ObjContainer::begin() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ObjContainer::GetNumRemovalsLastFrame() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::Update(float elapsedTime, unsigned workTime, bool bCinematic)
@@ -986,7 +986,7 @@ namespace ai
 
     void ObjContainer::Clear(bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* ObjContainer::GetClass() const
@@ -996,17 +996,17 @@ namespace ai
 
     void ObjContainer::SaveNodeStatesToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ObjContainer::const_iterator ObjContainer::end() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ObjContainer::iterator ObjContainer::end()
@@ -1016,7 +1016,7 @@ namespace ai
 
     void ObjContainer::LinkGeomsToCollisionCells()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::RelinkSceneGraphNodes()
@@ -1041,22 +1041,22 @@ namespace ai
 
     unsigned ObjContainer::size() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::AIParam ObjContainer::GetObjList(char const*, CVector const&, float) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::IncTolerance(int, int, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::AddObjToNotUpdate(Obj*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::PostCollide()
@@ -1085,7 +1085,7 @@ namespace ai
 
     ObjContainer::ObjContainer(ObjContainer const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::_SetObjNotUpdating(int objId)
@@ -1135,17 +1135,17 @@ namespace ai
 
     void ObjContainer::_PassToMapAfterFading()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::_SetObjUpdating(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ObjContainer::_DeleteObj(Obj*&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SetObjects(ObjContainer* objects)

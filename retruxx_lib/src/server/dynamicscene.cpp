@@ -263,22 +263,22 @@ namespace ai
 
 	void DynamicScene::SoilProps::LoadFromXml(m3d::cmn::XmlNode const*)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	DynamicScene::SoilProps::SoilProps()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	short DynamicScene::GetBoEffectTypeByName(CStr const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::DeleteAll()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::PurgeBodies()
@@ -300,7 +300,7 @@ namespace ai
 
 	CStr const& DynamicScene::GetBoEffectTypeName(unsigned short)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* DynamicScene::Clone()
@@ -324,7 +324,7 @@ namespace ai
 
 	int DynamicScene::ProcessShellAndBody(Shell*, PhysicBody*, dContact*, unsigned&, bool)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::InitClashDecalId()
@@ -335,12 +335,12 @@ namespace ai
 	void DynamicScene::ReadSoilProps(char const*)
 	{
         // TODO: implement DynamicScene::ReadSoilProps
-        // throw std::logic_error("Not implemented");
+        // RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& DynamicScene::GetShellWaterEffectName(unsigned short) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool DynamicScene::LoadSceneFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* rootNode, retruxx::vector<m3d::Class*> const& allowedClasses)
@@ -522,28 +522,28 @@ namespace ai
 
 	bool DynamicScene::SaveSceneToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	DynamicScene::SoilProps const& DynamicScene::GetSoilProps(unsigned, unsigned) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& DynamicScene::GetShellStaticsEffectName(unsigned short) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& DynamicScene::GetSoilEffectName(unsigned, unsigned short, bool) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::RenderDebugInfo()
 	{
 		// TODO: implement DynamicScene::RenderDebugInfo
-        // throw retruxx::logic_error("Not implemented");
+        // RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* DynamicScene::CreateObject()
@@ -553,7 +553,7 @@ namespace ai
 
 	CStr const& DynamicScene::GetBoVehicleEffectName(unsigned short) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::CollideScene(float elapsedTime)
@@ -573,17 +573,17 @@ namespace ai
 
 	CStr const& DynamicScene::GetShellVehicleEffectName(unsigned short) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::CreateBoShellEffectNames()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& DynamicScene::GetVehicleSoilEffectName(unsigned short) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* DynamicScene::GetBaseClass()
@@ -593,17 +593,17 @@ namespace ai
 
 	CStr const& DynamicScene::GetDecalName(int)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::ClearOnce()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int DynamicScene::GetNumNearCallbacksLastFrame()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int DynamicScene::AddDecalName(CStr const& name)
@@ -621,7 +621,7 @@ namespace ai
 
 	int DynamicScene::GetClashDecalId()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::InitOnce()
@@ -656,22 +656,22 @@ namespace ai
 
 	DynamicScene::~DynamicScene()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	unsigned DynamicScene::GetWheelTypeByName(CStr const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& DynamicScene::GetBoShellEffectName(unsigned short, unsigned short)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::CollideBullet(Bullet const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool DynamicScene::LoadSceneFromFile(char const* fileName, retruxx::vector<m3d::Class*> const& allowedClasses)
@@ -706,7 +706,7 @@ namespace ai
 
         if (!allowedClasses.empty())
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int objId = -1;
@@ -749,12 +749,12 @@ namespace ai
 
 	short DynamicScene::GetExplosionType(CStr const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool DynamicScene::SaveSceneToFile(char const*)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Vehicle* DynamicScene::GetVehicleControlledByPlayer() const
@@ -768,17 +768,17 @@ namespace ai
 
 	CStr const& DynamicScene::GetRoadEffectName(unsigned, bool) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& DynamicScene::GetShellRoadEffectName(unsigned short) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::Clear()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* DynamicScene::GetClass() const
@@ -788,17 +788,17 @@ namespace ai
 
 	CStr const& DynamicScene::GetShellEffectName(unsigned short, unsigned short) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::UpdateSceneItems(float)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	DynamicScene::DynamicScene(DynamicScene const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	DynamicScene::DynamicScene()
@@ -1026,16 +1026,16 @@ namespace ai
 
 	void DynamicScene::_InitWheelTraces()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::_RecalcWheelEffectNames()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::_AddSoilEffectNameForWheelTypeName(CStr const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

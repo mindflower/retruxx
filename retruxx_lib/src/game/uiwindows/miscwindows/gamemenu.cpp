@@ -36,12 +36,12 @@ MenuItem::~MenuItem()
 
 MenuItem* MenuItem::GetMenuItemViaName(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MenuItem const* MenuItem::GetMenuItemViaName(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* GameMenuWnd::GetBaseClass()
@@ -51,17 +51,17 @@ m3d::Class* GameMenuWnd::GetBaseClass()
 
 CStr GameMenuWnd::GetCurrentLevelName() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* GameMenuWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr GameMenuWnd::GetCurrentRootLevelName() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 GameMenuWnd::~GameMenuWnd()
@@ -75,12 +75,12 @@ m3d::Object* GameMenuWnd::CreateObject()
 
 m3d::Class* GameMenuWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool GameMenuWnd::SetMenuLevel(CStr const&, CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 GameMenuWnd::GameMenuWnd() : MenuItem(ROOT_LEVEL_NAME, 101, CT_BUTTON)
@@ -90,12 +90,12 @@ GameMenuWnd::GameMenuWnd() : MenuItem(ROOT_LEVEL_NAME, 101, CT_BUTTON)
 
 GameMenuWnd::GameMenuWnd(GameMenuWnd const&) : MenuItem(ROOT_LEVEL_NAME, 101, CT_BUTTON)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameMenuWnd::OnInitModal()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MenuItem* GameMenuWnd::CreateBlankSpaceMenuItem() const
@@ -106,12 +106,12 @@ MenuItem* GameMenuWnd::CreateBlankSpaceMenuItem() const
 
 void GameMenuWnd::RecalcLayout()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameMenuWnd::OnKey(unsigned short, unsigned char, unsigned)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MenuItem* GameMenuWnd::CreateTextLabelMenuItem(CStr const& name) const
@@ -122,17 +122,17 @@ MenuItem* GameMenuWnd::CreateTextLabelMenuItem(CStr const& name) const
 
 int GameMenuWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameMenuWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameMenuWnd::OnActivate(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int GameMenuWnd::CreateGameMenuWnd()
@@ -220,5 +220,5 @@ MenuItem* GameMenuWnd::CreateLineMenuItem() const
 
 void GameMenuWnd::CloseCurrentMenuLevel(bool, bool, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

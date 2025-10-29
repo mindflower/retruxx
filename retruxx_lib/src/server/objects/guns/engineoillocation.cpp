@@ -8,32 +8,32 @@ namespace ai
 
     EngineOilLocationPrototypeInfo::EngineOilLocationPrototypeInfo()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* EngineOilLocationPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     EngineOilLocation::~EngineOilLocation()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     EngineOilLocation::EngineOilLocation(const EngineOilLocationPrototypeInfo& prototypeInfo) : TemporaryLocation(prototypeInfo)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* EngineOilLocation::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* __fastcall EngineOilLocation::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* __fastcall EngineOilLocation::GetBaseClass()
@@ -43,21 +43,21 @@ namespace ai
 
     m3d::Class* EngineOilLocation::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     const EngineOilLocationPrototypeInfo* EngineOilLocation::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void EngineOilLocation::OnObjectIn(Obj* object)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void EngineOilLocation::OnObjectOut(Obj* object)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

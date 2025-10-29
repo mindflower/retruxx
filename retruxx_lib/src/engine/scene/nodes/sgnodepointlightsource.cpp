@@ -20,7 +20,7 @@ namespace m3d
 
     Object* SgPointLightSourceNode::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DataServer* SgPointLightSourceNode::GetServer() const
@@ -30,12 +30,12 @@ namespace m3d
 
     int SgPointLightSourceNode::GetProperty(unsigned, void*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgPointLightSourceNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgPointLightSourceNode::SetProperty(unsigned propId, void* property)
@@ -56,7 +56,7 @@ namespace m3d
 
     int SgPointLightSourceNode::GetPropertiesList(retruxx::set<unsigned>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* SgPointLightSourceNode::GetClass() const
@@ -66,7 +66,7 @@ namespace m3d
 
     SgPointLightSourceNode::~SgPointLightSourceNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgPointLightSourceNode::SgPointLightSourceNode()
@@ -79,11 +79,11 @@ namespace m3d
 
     SgPointLightSourceNode::SgPointLightSourceNode(SgPointLightSourceNode const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SgPointLightSourceNode::UpdateOwnBoundingBox()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

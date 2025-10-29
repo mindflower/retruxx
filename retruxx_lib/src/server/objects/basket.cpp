@@ -58,7 +58,7 @@ namespace ai
 
 	int BasketPrototypeInfo::GetRepositoryCapacity() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	BoundsBase<int> BasketPrototypeInfo::GetSlotBounds(CStr const& gunPartName, bool bWithEmptyBorders) const
@@ -114,7 +114,7 @@ namespace ai
 
 	void BasketPrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* Basket::GetClass() const
@@ -138,16 +138,16 @@ namespace ai
 
 	Basket::~Basket()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* Basket::CreateObject()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* Basket::Clone()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

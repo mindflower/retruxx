@@ -73,7 +73,7 @@ namespace m3d
 
     m3d::Object* SgAnimatedModelNode::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgAnimatedModelNode::Think(int dt, int curTime)
@@ -146,12 +146,12 @@ namespace m3d
 
     int SgAnimatedModelNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgAnimatedModelNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgAnimatedModelNode::SetProperty(unsigned propId, void* property)
@@ -185,9 +185,9 @@ namespace m3d
             return 1;
         }
         case 8711u:
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         case 8712u:
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         case 8710:
         {
             m_effectActions = *(decltype(m_effectActions)*)property;
@@ -241,7 +241,7 @@ namespace m3d
             return 1;
 
         case 0x220Cu:
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
             return 1;
         }
 
@@ -285,7 +285,7 @@ namespace m3d
 
     int SgAnimatedModelNode::GetPropertiesList(retruxx::set<unsigned>&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SgAnimatedModelNode::GetProperty(unsigned propId, void* property) const
@@ -348,7 +348,7 @@ namespace m3d
 
     SgAnimatedModelNode::~SgAnimatedModelNode()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SgAnimatedModelNode::UpdateOwnBoundingBox()
@@ -391,6 +391,6 @@ namespace m3d
 
     SgAnimatedModelNode::SgAnimatedModelNode(SgAnimatedModelNode const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

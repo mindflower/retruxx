@@ -21,7 +21,7 @@ m3d::Class* ControlOptionsWnd::GetBaseClass()
 
 int ControlOptionsWnd::ApplyChanges(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* ControlOptionsWnd::GetClass() const
@@ -36,32 +36,32 @@ m3d::Object* ControlOptionsWnd::CreateObject()
 
 ControlOptionsWnd::~ControlOptionsWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* ControlOptionsWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ControlOptionsWnd::OnCheckMouseFlipYClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ControlOptionsWnd::OnCheckMouseFlipXClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ControlOptionsWnd::UpdateControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ControlOptionsWnd::UpdateMouseFlipYControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ControlOptionsWnd::InitMouseSensitivityControls()
@@ -77,32 +77,32 @@ void ControlOptionsWnd::InitMouseSensitivityControls()
 
 void ControlOptionsWnd::UpdateMouseFlipXControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ControlOptionsWnd::ApplyMouseFlipY()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ControlOptionsWnd::ApplyMouseFlipX()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ControlOptionsWnd::InitMouseFlipXControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ControlOptionsWnd::InitMouseFlipYControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ControlOptionsWnd::ControlOptionsWnd(ControlOptionsWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ControlOptionsWnd::ControlOptionsWnd()
@@ -111,7 +111,7 @@ ControlOptionsWnd::ControlOptionsWnd()
 
 void ControlOptionsWnd::OnBtnMouseSensitivityNextClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ControlOptionsWnd::GameDataSetup()
@@ -199,7 +199,7 @@ int ControlOptionsWnd::GameDataSetup()
 
 void ControlOptionsWnd::OnBtnMouseSensitivityPrevClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ControlOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
@@ -250,12 +250,12 @@ int ControlOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg
 
 void ControlOptionsWnd::UpdateMouseSensitivityControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ControlOptionsWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
     //TODO: implement ControlOptionsWnd::OnBeforeAddToWndStation
     //ControlOptionsWnd::UpdateControls(this);
     return Wnd::OnBeforeAddToWndStation();
@@ -263,7 +263,7 @@ int ControlOptionsWnd::OnBeforeAddToWndStation()
 
 void ControlOptionsWnd::ApplyMouseSensitivity()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ControlOptionsWnd::UpdateMouseSensitivityPrevNextButtonsState()
@@ -278,7 +278,7 @@ void ControlOptionsWnd::UpdateMouseSensitivityPrevNextButtonsState()
 
 void ControlOptionsWnd::InitControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ControlOptionsWnd::OnSliderMouseSensitivityChange(m3d::AIParam const&)

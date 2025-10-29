@@ -6,12 +6,12 @@ RT_CLASS_DEFINE(TargetCapturedCursorWnd);
 
 m3d::Object* TargetCapturedCursorWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* TargetCapturedCursorWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* TargetCapturedCursorWnd::GetBaseClass()
@@ -21,55 +21,55 @@ m3d::Class* TargetCapturedCursorWnd::GetBaseClass()
 
 m3d::Object* TargetCapturedCursorWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TargetCapturedCursorWnd::~TargetCapturedCursorWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TargetCapturedCursorWnd::OnNewFrame()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TargetCapturedCursorWnd::TargetCapturedCursorWnd(TargetCapturedCursorWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TargetCapturedCursorWnd::TargetCapturedCursorWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool TargetCapturedCursorWnd::bVisible() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TargetCapturedCursorWnd::GetTargetObjId() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TargetCapturedCursorWnd::UpdateTexAngle()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TargetCapturedCursorWnd::UpdateCaptureTex()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TargetCapturedCursorWnd::Show(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TargetCapturedCursorWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

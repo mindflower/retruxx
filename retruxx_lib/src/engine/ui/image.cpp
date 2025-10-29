@@ -23,7 +23,7 @@ namespace m3d
 
         int ImageWnd::SetImage(CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ImageWnd::SetImage(rend::TexHandle tex)
@@ -58,7 +58,7 @@ namespace m3d
 
         Object* ImageWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ImageWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
@@ -80,17 +80,17 @@ namespace m3d
 
         int ImageWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ImageWnd::CreateImageWnd(BoundsBase<float> const&, CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ImageWnd::CreateImageWnd(BoundsBase<float> const&, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ImageWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -125,7 +125,7 @@ namespace m3d
 
         ImageWnd::ImageWnd(ImageWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

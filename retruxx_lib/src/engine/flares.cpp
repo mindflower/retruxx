@@ -10,7 +10,7 @@ namespace m3d
 
     CFlare::~CFlare()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int CFlare::Init()
@@ -26,7 +26,7 @@ namespace m3d
 
     void CFlare::Release()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CFlare::CFlare()
@@ -38,6 +38,6 @@ namespace m3d
 
     int CFlare::Render(FlareMode, CVector const&, float, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

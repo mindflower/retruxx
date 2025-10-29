@@ -133,12 +133,12 @@ void CMiracle3d::CurGameMode::Set(GameState mode)
 
 void CMiracle3d::Player::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::Player::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
@@ -260,37 +260,37 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
 
 void CMiracle3d::SkipCinematicMessage()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::OnGameDrag(m3d::AuxImpulseInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float CMiracle3d::GetMinTimeScale() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::OnFinishVideoPlaying()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::SetMinTimeScale(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CMiracle3d::LoadSavedGame(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CMiracle3d::GetMouseHitPoint(CVector&, m3d::SgNode*&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 //Verified: CMiracle3d::OnFinishIntroVideoPlaying
@@ -319,7 +319,7 @@ int CMiracle3d::GameDone()
 
 int CMiracle3d::OnFlyMouse(m3d::AuxImpulseInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::GameInit()
@@ -344,7 +344,7 @@ bool CMiracle3d::GetCursorShow() const
 
 bool CMiracle3d::GetCursorShow0() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::SetCursorShow(bool state)
@@ -640,12 +640,12 @@ bool CMiracle3d::CinematicFade()
 
 m3d::Class* CMiracle3d::GetBaseClass()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::TownMusicManager* CMiracle3d::GetTownMusicManager()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CMiracle3d::AddPostEffect(CStr const& effectName, float effParam)
@@ -705,23 +705,23 @@ int CMiracle3d::HandleCinematic(float dT)
 
 m3d::Object* CMiracle3d::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::OnChangeProfile()
 {
     // TODO: implement CMiracle3d::OnChangeProfile
-    //throw std::logic_error("Not implemented");
+    //RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::CleanMainMenuLevel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::BeginModalDlg(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::ui::MbRetCodes CMiracle3d::RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned flags, bool bPause)
@@ -731,12 +731,12 @@ m3d::ui::MbRetCodes CMiracle3d::RunMsgBoxDlg(CStr const& caption, CStr const& me
 
 int CMiracle3d::CleanLevel(bool, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::OnGameZoom(m3d::AuxImpulseInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::PutSplash(int proc, char const* text)
@@ -746,17 +746,17 @@ void CMiracle3d::PutSplash(int proc, char const* text)
 
 bool CMiracle3d::bIsMousePointing() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::ClearSomeGameElementsBeforeModal()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::ChangeLanguage()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float CMiracle3d::getZoom()
@@ -795,7 +795,7 @@ int CMiracle3d::CinematicClear()
 
 void CMiracle3d::OnBeforeDeviceReset()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::CinematicInterrupt()
@@ -842,17 +842,17 @@ void CMiracle3d::setZoom(float zoom)
 
 void CMiracle3d::OnAfterDeviceReset()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::OnSkipCinematic(m3d::AuxImpulseInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::RenderAsBackground(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
@@ -864,7 +864,7 @@ void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
     {
     case 1: // First camera mode
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
         //if (trackedObj && trackedObj->GetClass() == &ai::Vehicle::m_classVehicle)
         //{
         //    auto vehicle = RT_DYNCAST(trackedObj, ai::Vehicle);
@@ -1032,7 +1032,7 @@ void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
     case 3: // Third camera mode (fly camera)
     {
 
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
         //// Create rotation matrix for fly camera
         //CMatrix sightLine;
         //CMatrix::rotYPR(&sightLine, this->m_curCamera.m_rotYaw, this->m_curCamera.m_rotPitch, this->m_curCamera.m_rotRoll);
@@ -1060,12 +1060,12 @@ void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
 
 float CMiracle3d::GetMaxTimeScale() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::SetMaxTimeScale(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::OnObtainingFocus()
@@ -1158,17 +1158,17 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
 
 void CMiracle3d::FullSystyemAndUserUnpause()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CMiracle3d::GetPostEffectParam(CStr const&, float&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CMiracle3d::SetPostEffectParam(CStr const&, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 //Verified: CMiracle3d::StartMainMenu
@@ -1187,12 +1187,12 @@ void CMiracle3d::StartMainMenu()
 
 void CMiracle3d::SetMouseSensitivity(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::UpdateCinematicCameraRotation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::SetCurHackedMusicType(HackedMusicType musicType)
@@ -1210,42 +1210,42 @@ void CMiracle3d::SetCurHackedMusicType(HackedMusicType musicType)
 
 HackedMusicType CMiracle3d::GetCurHackedMusicType() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::ValidateCameraOrigin(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::OnGameSwitchCamera(m3d::AuxImpulseInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::OnGameMouse(m3d::AuxImpulseInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::EndModalDlg()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CMiracle3d::CanLaunchIfaceWindow()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::LoadMainMenuLevel()
@@ -1285,12 +1285,12 @@ int CMiracle3d::LoadMainMenuLevel()
 
 int CMiracle3d::OnDebug(m3d::AuxImpulseInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CMiracle3d::LoadMapFromConsole(m3d::CConsoleParams const&, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::StartPlayingVideo(char const* videoFile, int(CMiracle3d::* onFinishCallback)())
@@ -1332,27 +1332,27 @@ int CMiracle3d::StartPlayingVideo(char const* videoFile, int(CMiracle3d::* onFin
 
 CMiracle3d::~CMiracle3d()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float CMiracle3d::GetNormalTimeScale() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::SetNormalTimeScale(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CMiracle3d::SaveGame(CStr const&, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CMiracle3d::LoadMap(CStr const&, bool, m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, ai::ObjContainer::eSAVE_TYPES)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::ValidateCameraAngles()
@@ -1428,13 +1428,13 @@ m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
 int CMiracle3d::CollideCamera(CVector&, float&, CVector const&, CVector const&)
 {
     // TODO: implement CMiracle3d::CollideCamera
-    //throw std::logic_error("Not implemented");
+    //RETRUXX_NOT_IMPLEMENTED;
     return 0;
 }
 
 int CMiracle3d::OnSkipCinematicMessage(m3d::AuxImpulseInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::BlockMusicManager* CMiracle3d::GetBlockMusicManager()
@@ -1444,12 +1444,12 @@ m3d::BlockMusicManager* CMiracle3d::GetBlockMusicManager()
 
 bool CMiracle3d::IsRenderAsBackground() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::EmergencyRedrawAllObjs()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::Controls(double t0, double tlen)
@@ -1586,37 +1586,37 @@ int CMiracle3d::Controls(double t0, double tlen)
 
 float CMiracle3d::GetMeanHigh(float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float CMiracle3d::GetMaxHigh(float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float CMiracle3d::getFov() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::initZoom()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::CreateInterfaceManager()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::DrawBackground()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMiracle3d::CaptureBackground()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CMiracle3d::CMiracle3d() :
@@ -1890,7 +1890,7 @@ int CMiracle3d::AddChild(m3d::Object* node)
 
 int CMiracle3d::RemoveChildForce(m3d::Object* object)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CMiracle3d::Render(bool needToRedrawAllObjs)
@@ -1992,12 +1992,12 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
 
         if (M3D_ENGINE_CFG.m_camInfo.GetB() && m3d::pClient)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         if (M3D_ENGINE_CFG.m_ai_vehicle_stats.GetB() && m3d::pClient)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 
@@ -2193,7 +2193,7 @@ int CMiracle3d::FrameMove()
 
 void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool CMiracle3d::HandleCVar(m3d::CVar const* cvar, m3d::CConsoleParams const& params)

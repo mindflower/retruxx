@@ -8,63 +8,63 @@ namespace ai
     void TeamRoleManager::GetRolePrototypeIds(const ai::TeamTacticWithRoles* tactic, const ai::Team* team,
         retruxx::vector<int, retruxx::allocator<int>>& prototypeIds)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     retruxx::vector<int, retruxx::allocator<int>> TeamRoleManager::getAgainstVehicle(
         const retruxx::vector<int, retruxx::allocator<int>>& rolePrototypeIds, const ai::TeamTacticWithRoles* tactic,
         const ai::Team* team, const ai::Vehicle* target, float& value)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     retruxx::vector<int, retruxx::allocator<int>> TeamRoleManager::getAgainstTeam(
         const retruxx::vector<int, retruxx::allocator<int>>& rolePrototypeIds, const ai::TeamTacticWithRoles* tactic,
         const ai::Team* team, const ai::Team* target, float& value)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     retruxx::vector<int, retruxx::allocator<int>> TeamRoleManager::getAgainstObj(
         const retruxx::vector<int, retruxx::allocator<int>>& rolePrototypeIds, const ai::TeamTacticWithRoles* tactic,
         const ai::Team* team, const ai::Obj* target, float& value)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TeamRoleManager::AssignAgainstVehicle(const ai::TeamTacticWithRoles* tactic, ai::Team* team,
         const ai::Vehicle* target)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TeamRoleManager::AssignAgainstTeam(const ai::TeamTacticWithRoles* tactic, ai::Team* team,
         const ai::Team* target)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TeamRoleManager::AssignAgainstObj(const ai::TeamTacticWithRoles* tactic, ai::Team* team, const ai::Obj* target)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float TeamRoleManager::FitAgainstVehicle(const ai::TeamTacticWithRoles* tactic, const ai::Team* team,
         const ai::Vehicle* target)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float TeamRoleManager::FitAgainstTeam(const ai::TeamTacticWithRoles* tactic, const ai::Team* team,
         const ai::Team* target)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float TeamRoleManager::FitAgainstObj(const ai::TeamTacticWithRoles* tactic, const ai::Team* team,
         const ai::Obj* target)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TeamRoleManager::ClearRoles(const ai::Team* team)
@@ -84,6 +84,6 @@ namespace ai
     void TeamRoleManager::GetTargetsPositions(const ai::Team* team,
         retruxx::vector<CVector, retruxx::allocator<CVector>>& positions)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

@@ -139,12 +139,12 @@ OptionsWnd::OptionsWnd() :
 
 OptionsWnd::OptionsWnd(OptionsWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void OptionsWnd::UpdateTabButtonsStates()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int OptionsWnd::SetCurTab(Tab tabId)
@@ -175,7 +175,7 @@ void OptionsWnd::SelectTabButton(Tab tabId)
 
 int OptionsWnd::ApplyTabChanges(Tab tab)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int OptionsWnd::OnAfterRemoveFromWndStation()
@@ -257,7 +257,7 @@ int OptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::
 
 int OptionsWnd::GetOptionWindowGuiIdByTabId(Tab) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int OptionsWnd::CanClose()
@@ -382,17 +382,17 @@ int OptionTabButton::SetupForTab(OptionsWnd::Tab tab)
 
 m3d::Object* OptionTabButton::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 OptionTabButton::~OptionTabButton()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool OptionTabButton::IsSelected() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* OptionTabButton::GetBaseClass()
@@ -402,7 +402,7 @@ m3d::Class* OptionTabButton::GetBaseClass()
 
 OptionTabButton::OptionTabButton(OptionTabButton const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 OptionTabButton::OptionTabButton()
@@ -411,5 +411,5 @@ OptionTabButton::OptionTabButton()
 
 void OptionTabButton::UpdatePane()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

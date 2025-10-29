@@ -28,7 +28,7 @@ namespace ai
 
     AIFunc::AIFunc()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr const& AIFunc::GetName() const
@@ -38,6 +38,6 @@ namespace ai
 
     m3d::AIParam AIFunc::Action(Obj*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

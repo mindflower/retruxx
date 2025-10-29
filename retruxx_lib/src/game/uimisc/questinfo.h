@@ -11,7 +11,7 @@ namespace m3d {
     }
 }
 
-class CVector;
+struct CVector;
 
 class QuestInfo
 {

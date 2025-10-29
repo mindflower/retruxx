@@ -11,7 +11,7 @@ namespace m3d
 
         Object* ModelArrayWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* ModelArrayWnd::GetBaseClass()
@@ -21,97 +21,97 @@ namespace m3d
 
         rend::TexHandle ModelArrayWnd::GetTargetTexture() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelArrayWnd::SetTargetTexture(rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* ModelArrayWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelArrayWnd::OnPaint(DrawInfo const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelArrayWnd::CreateModelArrayWnd(rend::TexHandle, unsigned, BoundsBase<float> const&, unsigned, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelArrayWnd::CreateModelArrayWnd(CStr const&, unsigned, BoundsBase<float> const&, unsigned, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ModelArrayWnd::ClearModels()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ModelArrayWnd::~ModelArrayWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelArrayWnd::GetSkinNum(int) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ModelArrayWnd::SetSkinNum(int, int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ModelArrayWnd::AddModel(AnimatedModel*, CMatrix const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelArrayWnd::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ModelArrayWnd::SetCfgNum(unsigned, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* ModelArrayWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelArrayWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ModelArrayWnd::ModelArrayWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ModelArrayWnd::ModelArrayWnd(ModelArrayWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelArrayWnd::CreateImageWnd(BoundsBase<float> const&, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelArrayWnd::CreateImageWnd(BoundsBase<float> const&, CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

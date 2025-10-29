@@ -79,7 +79,7 @@ namespace
 
 int TruxxImpulse::HandleImpulse(m3d::AuxImpulseInfo const&, m3d::ui::Wnd*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int TruxxImpulse::GetImpulseIdByName(CStr const& impName)
@@ -111,12 +111,12 @@ int TruxxImpulse::GetGameModeIdByName(CStr const& modeName)
 
 CStr TruxxImpulse::GetImpulseNameById(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr TruxxImpulse::GetGameModeNameById(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* TruxxImpulse::GetClass() const
@@ -126,12 +126,12 @@ m3d::Class* TruxxImpulse::GetClass() const
 
 m3d::Object* TruxxImpulse::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TruxxImpulse::~TruxxImpulse()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* TruxxImpulse::CreateObject()
@@ -146,7 +146,7 @@ m3d::Class* TruxxImpulse::GetBaseClass()
 
 CStr TruxxImpulse::GetProfileFolder()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 TruxxImpulse::TruxxImpulse()
@@ -155,5 +155,5 @@ TruxxImpulse::TruxxImpulse()
 
 TruxxImpulse::TruxxImpulse(TruxxImpulse const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

@@ -10,7 +10,7 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SavesManager, AutoSave)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORTS_BEGIN(SavesManager)
@@ -24,22 +24,22 @@ SavesManager::ConstantSaveInfo::ConstantSaveInfo()
 
 SavesManager::~SavesManager()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::QuickLoad()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr SavesManager::GetNewSaveDefaultName() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* SavesManager::Clone()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr SavesManager::GetPathForTemporaryMaps() const
@@ -61,12 +61,12 @@ CStr SavesManager::GetPathForTemporaryMaps() const
 
 CStr SavesManager::GetSaveFolderPathByFolderName(CStr const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::AutoSave(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* SavesManager::GetBaseClass()
@@ -76,12 +76,12 @@ m3d::Class* SavesManager::GetBaseClass()
 
 m3d::rend::TexHandle SavesManager::GetCurGameScreenshot() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr SavesManager::GetNewSaveFolderName() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* SavesManager::CreateObject()
@@ -91,92 +91,92 @@ m3d::Object* SavesManager::CreateObject()
 
 int SavesManager::LoadGame(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 SavesManager::SaveInfo const* SavesManager::GetSaveInfoByFolderName(CStr const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::SaveGame(CStr const&, CStr const&, bool)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* SavesManager::GetClass() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::GetSaveFolderNames(retruxx::vector<CStr>&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::DeleteSaveGame(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr SavesManager::GetNewAutoSaveFolderName() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr SavesManager::GetNewQuickSaveFolderName() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::SaveScreenshot(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr SavesManager::GetFirstUsedSaveFolderName(retruxx::vector<CStr> const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void SavesManager::GetSaveFoldersByPattern(CStr const&, retruxx::vector<CStr>&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr SavesManager::GetLastUsedSaveFolderName(retruxx::vector<CStr> const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr SavesManager::GetAutoSaveName(CStr const&, CStr const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr SavesManager::GetQuickSaveName(CStr const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 _FILETIME SavesManager::GetSaveFileModifyTime(CStr const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::SaveInfos(CStr const&, CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::MakeCurGameScreenshot()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::LastLoad()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::GameDataUpdate(void* data, int dataType)
@@ -194,33 +194,33 @@ int SavesManager::GameDataUpdate(void* data, int dataType)
         return 1;
     }
     }
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::QuickSave()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::Init()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 SavesManager::ConstantSaveInfo const& SavesManager::GetConstatntSaveInfo() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void SavesManager::Clear()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SavesManager::LoadInfos()
 {
     // TODO: implement SavesManager::LoadInfos
-    //throw retruxx::logic_error("Not implemented");
+    //RETRUXX_NOT_IMPLEMENTED;
     return 0;
 }
 
@@ -230,17 +230,17 @@ SavesManager::SavesManager()
 
 SavesManager::SavesManager(SavesManager const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void SavesManager::CheckAndHandleDelayedQuickSave(bool)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void SavesManager::OnCurProfileChanged()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void SavesManager::OnNewFrameForce()
@@ -261,5 +261,5 @@ void SavesManager::OnNewFrameForce()
 
 int SavesManager::AddSaveInfo(SaveInfo*)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

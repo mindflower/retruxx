@@ -6,17 +6,17 @@ RT_CLASS_DEFINE(FuelIndicatorInMainInterfaceWnd);
 
 void FuelIndicatorInMainInterfaceWnd::SetType(Type)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* FuelIndicatorInMainInterfaceWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* FuelIndicatorInMainInterfaceWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* FuelIndicatorInMainInterfaceWnd::GetBaseClass()
@@ -26,80 +26,80 @@ m3d::Class* FuelIndicatorInMainInterfaceWnd::GetBaseClass()
 
 m3d::Object* FuelIndicatorInMainInterfaceWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FuelIndicatorInMainInterfaceWnd::SetVehicleId(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 FuelIndicatorInMainInterfaceWnd::~FuelIndicatorInMainInterfaceWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd*, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FuelIndicatorInMainInterfaceWnd::UpdateProgressBar(float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FuelIndicatorInMainInterfaceWnd::GetFuel(float&, float&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FuelIndicatorInMainInterfaceWnd::OnNewFrame()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FuelIndicatorInMainInterfaceWnd::FullUpdate(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FuelIndicatorInMainInterfaceWnd::UpdateValueWnd(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::Vehicle const* FuelIndicatorInMainInterfaceWnd::GetVehicle() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FuelIndicatorInMainInterfaceWnd::UpdateTooltip(float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 FuelIndicatorInMainInterfaceWnd::FuelIndicatorInMainInterfaceWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 FuelIndicatorInMainInterfaceWnd::FuelIndicatorInMainInterfaceWnd(FuelIndicatorInMainInterfaceWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int FuelIndicatorInMainInterfaceWnd::GameDataClear(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int FuelIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FuelIndicatorInMainInterfaceWnd::UpdateLowFuelLamp(float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

@@ -39,7 +39,7 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetListBounds() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ComboBoxWnd::SetCurSel(int idx)
@@ -60,7 +60,7 @@ namespace m3d
 
         unsigned ComboBoxWnd::GetComboStyle() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ComboBoxWnd::Close()
@@ -70,7 +70,7 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetFullBounds() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ComboBoxWnd::Open()
@@ -89,7 +89,7 @@ namespace m3d
 
         float ComboBoxWnd::GetSelTextFixedHeight() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* ComboBoxWnd::GetClass() const
@@ -105,7 +105,7 @@ namespace m3d
 
         ComboBoxWnd::~ComboBoxWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ComboBoxWnd::SetBounds(BoundsBase<float> const& rect, bool bUpdateBaseOrigin)
@@ -217,12 +217,12 @@ namespace m3d
 
         void ComboBoxWnd::SetToggleButtonPane(CStr const&, CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr ComboBoxWnd::GetItem(int) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ComboBoxWnd::SetListMaxHeight(float listMaxH)
@@ -252,7 +252,7 @@ namespace m3d
 
         Object* ComboBoxWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ComboBoxWnd::AddItem(CStr const& item)
@@ -306,17 +306,17 @@ namespace m3d
 
         CStr ComboBoxWnd::GetText() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ComboBoxWnd::SetItem(int, CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         float ComboBoxWnd::GetMaxListHeight() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         BoundsBase<float> ComboBoxWnd::GetSelTextBounds() const
@@ -331,7 +331,7 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetFullMaxBounds() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ComboBoxWnd::SetTextColor(unsigned color)
@@ -346,12 +346,12 @@ namespace m3d
 
         unsigned ComboBoxWnd::GetDrawFlags() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ComboBoxWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ComboBoxWnd::SetTextColorDisabled(unsigned color)
@@ -366,7 +366,7 @@ namespace m3d
 
         void ComboBoxWnd::SetDefaultFont(CStr const&, float, FontType, FontParams)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ComboBoxWnd::SetDefaultFont(int uiFont)
@@ -382,12 +382,12 @@ namespace m3d
 
         int ComboBoxWnd::RemoveItem(int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         BoundsBase<float> ComboBoxWnd::GetListMaxBounds() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* ComboBoxWnd::CreateObject()
@@ -397,12 +397,12 @@ namespace m3d
 
         void ComboBoxWnd::SetDrawFlags(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ComboBoxWnd::InsertItem(CStr const&, int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ComboBoxWnd::SetScrollPane(CStr const& scrollPaneName)
@@ -421,22 +421,22 @@ namespace m3d
 
         int ComboBoxWnd::ItemFromPoint(PointBase<float> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ComboBoxWnd::RemoveAllItems()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool ComboBoxWnd::IsOpen() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ComboBoxWnd::ComboBoxWnd(ComboBoxWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ComboBoxWnd::ComboBoxWnd()

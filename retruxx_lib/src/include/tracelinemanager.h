@@ -1,6 +1,6 @@
 #pragma once
 
-class CVector;
+struct CVector;
 
 namespace ai
 {

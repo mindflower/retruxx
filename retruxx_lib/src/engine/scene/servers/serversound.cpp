@@ -34,17 +34,17 @@ namespace m3d
 
     int Sound3DServer::RemoveItem(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Sound3DServer::~Sound3DServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Sound3DServer::AddItem(char const*, char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Sound3DServer::PostLoad()
@@ -53,7 +53,7 @@ namespace m3d
 
     int Sound3DServer::GetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Sound3DServer::RegisterNode(m3d::SgNode*)
@@ -62,7 +62,7 @@ namespace m3d
 
     int Sound3DServer::SaveAllLoadedEntities(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Sound3DServer::RenderItem(int id, void* params)
@@ -86,7 +86,7 @@ namespace m3d
                 }
                 if (id != -4)
                 {
-                    throw retruxx::logic_error("Not implemented");
+                    RETRUXX_NOT_IMPLEMENTED;
                 }
             }
         }
@@ -94,7 +94,7 @@ namespace m3d
 
     int Sound3DServer::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Sound3DServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemsList)
@@ -286,7 +286,7 @@ namespace m3d
 
     int Sound3DServer::_AddTripleItem(CStr, CStr, CStr, char const*, char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Sound3DServer::SoundItem::SoundItem()
@@ -327,6 +327,6 @@ namespace m3d
 
     int Sound3DServer::_AddDoubleItem(CStr, CStr, char const*, char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

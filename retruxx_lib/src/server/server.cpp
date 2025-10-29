@@ -146,32 +146,32 @@ namespace ai
 
     int n_AddToCinematic(m3d::sArgStack& scriptStack)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int n_EndCinematic(m3d::sArgStack& scriptStack)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int n_CreateObjectByClassName(m3d::sArgStack& scriptStack)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::AddToCinematic(Obj*, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::AddToCinematic(int, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::SetPause(bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Profiler* CServer::GetTmpProfiler()
@@ -181,7 +181,7 @@ namespace ai
 
     m3d::Profiler* CServer::GetBulletProfiler()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Profiler* CServer::GetCollideProfiler()
@@ -191,7 +191,7 @@ namespace ai
 
     m3d::Profiler* CServer::GetObjectsUpdateProfiler()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ExternalPaths const* CServer::GetExternalPaths() const
@@ -201,7 +201,7 @@ namespace ai
 
     PlayerPassMap const* CServer::GetPlayerPassMap() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::SetLastId(int id)
@@ -306,12 +306,12 @@ namespace ai
 
     bool CServer::GetPause() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int CServer::GetPrototypeId(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     PrototypeInfo* CServer::CreatePrototypeInfoByClassName(CStr const& className)
@@ -447,7 +447,7 @@ namespace ai
 
     void CServer::LoadVisitedMap(CStr const&, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::Register()
@@ -574,12 +574,12 @@ namespace ai
 
     m3d::Level* CServer::GetLevel() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Profiler* CServer::GetPathFindingProfiler()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::RelinkSceneGraphNodes()
@@ -722,17 +722,17 @@ namespace ai
 
     int CServer::GetLastId()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr CServer::GetPrototypeFullName(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr CServer::GetPrototypeFullName(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::Update(float elapsedTime)
@@ -896,12 +896,12 @@ namespace ai
 
     void CServer::LoadGlobalMapFromRawFile(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::ClearOnce()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::EndCinematic()
@@ -911,37 +911,37 @@ namespace ai
 
     void CServer::GetControlData()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned CServer::GetGlobalMapValue(long, long)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int CServer::GetPathFindQuant()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr CServer::GetFullNameByObjID(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::Clear()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::ResetCinematicObjects()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     PrototypeInfo const* CServer::GetPrototypeInfo(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::InitOnce()
@@ -974,13 +974,13 @@ namespace ai
 
     eTolerance CServer::CheckTolerance(int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::LoadPrototypeNamesFromXML(CStr const&)
     {
         // TODO: implement CServer::LoadPrototypeNamesFromXML
-        //throw retruxx::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::LoadGlobalPropertiesFromXML(CStr const& fileName)
@@ -1005,7 +1005,7 @@ namespace ai
 
     AffixManager* CServer::GetAffixManager() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::StartCinematic()
@@ -1105,27 +1105,27 @@ namespace ai
 
     void CServer::PutGameData()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::HandleCommand(int, m3d::CConsoleParams const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CServer::~CServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool CServer::HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::SaveVisitedMap(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::_PostProcessConsoleCommands()
@@ -1134,23 +1134,23 @@ namespace ai
         {
             auto command = m_consoleCommandsToPostProcess.front();
             m_consoleCommandsToPostProcess.pop();
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 
     void CServer::_RegisterConsoleCommands()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::RestorePrevCinematicState()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::SavePrevCinematicState()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CServer::_SetLevel(m3d::Level* newLevel)
@@ -1173,6 +1173,6 @@ namespace ai
     void UpdateLights()
     {
         // TODO: implement UpdateLights
-        //throw std::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 }

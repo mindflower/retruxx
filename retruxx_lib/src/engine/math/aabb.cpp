@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 #include "math/vector.h"
+#include "thirdparty/containers.h"
 
 void Aabb::Create(const CVector& min, const CVector& max)
 {
@@ -16,42 +17,42 @@ void Aabb::Create(const CVector& min, const CVector& max)
 
 void Aabb::Offset(const CVector& ofs)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Aabb::Scale(const CVector& sc)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float Aabb::GetSz() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float Aabb::GetSy() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float Aabb::GetSx() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Aabb::Inflate(float sz)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Aabb::StartEmbracing()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Aabb::EmbracePoint(const CVector& v)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Aabb::EmbraceBox(const Aabb& box)
@@ -84,30 +85,30 @@ void Aabb::EmbraceBox(const Aabb& box)
 
 CVector Aabb::Min() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CVector Aabb::Max() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float Aabb::MaximumComponent() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool Aabb::IsPtInside(const CVector&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool Aabb::IsPtInside2(const CVector& pt) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Aabb::Draw(unsigned int clr)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

@@ -3,12 +3,12 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(RepliesManager, SetConditionValue)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(RepliesManager, Init)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORTS_BEGIN(RepliesManager)
@@ -19,17 +19,17 @@ RT_CLASS_DEFINE(RepliesManager);
 
 void RepliesManager::SetConditionValue(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RepliesManager::Init()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Reply* RepliesManager::GetFirstFitReply(std::vector<CStr> const&, Reply::Role, ai::Npc*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* RepliesManager::GetClass() const
@@ -39,52 +39,52 @@ m3d::Class* RepliesManager::GetClass() const
 
 RepliesManager::~RepliesManager()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 std::vector<Reply*> RepliesManager::GetNextPlayerReplies(Reply const*, ai::Npc*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 std::vector<CStr> RepliesManager::GetAllHelloReplyNamesForDynamicNpc()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void RepliesManager::Clear()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Reply* RepliesManager::GetPlayerRequestForDynamicQuest(ai::Npc*, ai::DynamicQuest const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RepliesManager::ExecuteScript(CStr const&, ai::Npc*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RepliesManager::LoadFromXml(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Reply* RepliesManager::GetReplyByName(CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* RepliesManager::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 std::vector<Reply*> RepliesManager::GetAllFitReplies(std::vector<CStr> const&, Reply::Role, ai::Npc*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* RepliesManager::CreateObject()
@@ -94,12 +94,12 @@ m3d::Object* RepliesManager::CreateObject()
 
 Reply* RepliesManager::GetRandomFitReply(std::vector<CStr, std::allocator<CStr>> const&, Reply::Role, ai::Npc*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Reply* RepliesManager::GetNextNpcReply(Reply const*, ai::Npc*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* RepliesManager::GetBaseClass()
@@ -109,12 +109,12 @@ m3d::Class* RepliesManager::GetBaseClass()
 
 Reply* RepliesManager::GetFirstNpcReply(ai::Npc*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RepliesManager::RepliesManager(RepliesManager const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RepliesManager::RepliesManager()

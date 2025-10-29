@@ -8,27 +8,27 @@ Vivisector* g_Vivisector = nullptr;
 
 bool Vivisector::init()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Vivisector::HandleCommand(int, m3d::CConsoleParams const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool Vivisector::HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Vivisector::~Vivisector()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool Vivisector::shutdown()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool initVivisectionBlock()

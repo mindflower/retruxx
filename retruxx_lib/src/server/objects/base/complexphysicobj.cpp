@@ -20,27 +20,27 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, SetPartByName)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, SetNewPart)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, TakeOffPart)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, GetPartByName)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 const CStr NO_LP("NO_LP");
@@ -62,7 +62,7 @@ namespace ai
 
 	m3d::Class* ComplexPhysicObjPartDescription::GetClass() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* ComplexPhysicObjPartDescription::CreateObject()
@@ -77,7 +77,7 @@ namespace ai
 
 	unsigned ComplexPhysicObjPartDescription::GetNumLps() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void ComplexPhysicObjPartDescription::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>& partNames) const
@@ -159,7 +159,7 @@ namespace ai
 
 	m3d::Object* ComplexPhysicObjPartDescription::Clone()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	ComplexPhysicObjPartDescription* ComplexPhysicObjPartDescription::GetParent() const
@@ -184,7 +184,7 @@ namespace ai
 
 	ComplexPhysicObjPartDescription::ComplexPhysicObjPartDescription(ComplexPhysicObjPartDescription const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	ComplexPhysicObjPrototypeInfo::MassShapes ComplexPhysicObjPrototypeInfo::GetMassShape() const
@@ -199,7 +199,7 @@ namespace ai
 
 	Obj* ComplexPhysicObjPrototypeInfo::CreateRandomTargetObject() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool ComplexPhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -251,12 +251,12 @@ namespace ai
 
 	void ComplexPhysicObjPrototypeInfo::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	ComplexPhysicObjPrototypeInfo::~ComplexPhysicObjPrototypeInfo()
 	{
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	retruxx::vector<CStr, retruxx::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
@@ -276,7 +276,7 @@ namespace ai
 
 	unsigned ComplexPhysicObjPrototypeInfo::GetBasePrice() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void ComplexPhysicObjPrototypeInfo::PostLoad()
@@ -297,12 +297,12 @@ namespace ai
 
     void ComplexPhysicObj::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::SetPassedToAnotherMapStatus()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::EnableGeometry(bool changePhysicState)
@@ -322,17 +322,17 @@ namespace ai
 
     void ComplexPhysicObj::RenderDebugInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     retruxx::vector<CStr, retruxx::allocator<CStr>> ComplexPhysicObj::GetAttachedPartNames() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::SetPartByName(CStr const& partName, VehiclePart* vehiclePart, bool bUnsafe)
@@ -420,12 +420,12 @@ namespace ai
 
     void ComplexPhysicObj::PutContour()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ComplexPhysicObj::IsVisible()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::SetSkin(int skin)
@@ -490,7 +490,7 @@ namespace ai
 
     void ComplexPhysicObj::ClearSavedStatus()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VehiclePart const* ComplexPhysicObj::GetPartByName(CStr const& partName) const
@@ -544,12 +544,12 @@ namespace ai
 
     void ComplexPhysicObj::SetVisible()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::EnablePhysics()
@@ -559,27 +559,27 @@ namespace ai
 
     VehiclePart* ComplexPhysicObj::TakeOffPart(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::AddChild(Obj*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned ComplexPhysicObj::GetPrice(IPriceCoeffProvider const*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::RemoveContour()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::RelinkGeomsToCollisionCells()
@@ -589,32 +589,32 @@ namespace ai
 
     ComplexPhysicObjPrototypeInfo const* ComplexPhysicObj::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::DisableGeometry(bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::SetContourWidth(float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned ComplexPhysicObj::size() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::TransferToSpace(dxSpace*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ComplexPhysicObj::bIsContoured() const
@@ -624,7 +624,7 @@ namespace ai
 
     void ComplexPhysicObj::DisablePhysics()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::LinkGeomsToCollisionCells()
@@ -634,17 +634,17 @@ namespace ai
 
     void ComplexPhysicObj::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Obj* ComplexPhysicObj::CloneObj()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::SetRandomSkin()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::SetBelong(int newBelong)
@@ -658,62 +658,62 @@ namespace ai
 
     void ComplexPhysicObj::SetInvisible()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* ComplexPhysicObj::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Geom::CellAabb ComplexPhysicObj::GetCollisionCellAabb() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::SetContourColor(unsigned)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ComplexPhysicObj::GetNumPhysicBodies() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ComplexPhysicObj::RemoveChild(Obj*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ComplexPhysicObj::CanPartBeAttached(CStr const&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ComplexPhysicObj::GetGunHorizontalStopAngles(CStr const&, int, float&, float&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::Blow(Obj*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::Flow(Obj*, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned ComplexPhysicObj::GetRepairPrice() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::RefreshMass()
@@ -745,27 +745,27 @@ namespace ai
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006BCC10, ComplexPhysicObj::GetSmoothTargetPointForObj)
     CVector ComplexPhysicObj::GetSmoothTargetPointForObj(Obj const*, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::FlowUnattachableParts(float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ComplexPhysicObj::SetNewPart(CStr const&, CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::RemoveComponent(Obj*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::_DestroyHierarchy()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::_LinkBodyToGeoms()
@@ -775,7 +775,7 @@ namespace ai
 
     void ComplexPhysicObj::_UnlinkBodyFromGeoms()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::_SetCorrectBoundSphereRadius()
@@ -822,7 +822,7 @@ namespace ai
 
     void ComplexPhysicObj::_RemoveContour()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::_InternalCreateVisualPart()
@@ -844,7 +844,7 @@ namespace ai
 
     void ComplexPhysicObj::_SetPositionToGeoms(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::_ConstructVehiclePart(CStr const& name, VehiclePart* vehiclePart, int index, bool bForAnimation)
@@ -931,7 +931,7 @@ namespace ai
                             parent = it->second;
                             if (IS_KIND_OF(parent, Gun))
                             {
-                                throw std::logic_error("Not implemented");
+                                RETRUXX_NOT_IMPLEMENTED;
                             }
                         }
                         res *= parentMat;
@@ -972,12 +972,12 @@ namespace ai
 
     void ComplexPhysicObj::_PutContour()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::_SetRotationToGeoms(Quaternion const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::_Construct(bool bForAnimation)
@@ -1029,21 +1029,21 @@ namespace ai
 
     m3d::Object* ComplexPhysicObj::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* ComplexPhysicObj::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::_CreateSplinterFromSgNode(VehiclePart*, int, CVector const&, float, m3d::SgNode*, CollisionInfo const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ComplexPhysicObj::_TearOffPart(VehiclePart*, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

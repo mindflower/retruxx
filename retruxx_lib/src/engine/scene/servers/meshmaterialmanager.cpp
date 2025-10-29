@@ -14,7 +14,7 @@ namespace m3d
 {
     MeshMaterialManager::~MeshMaterialManager()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void MeshMaterialManager::Init(CStr const& logoFileName, CStr const& belongsToLogoFileName)
@@ -67,7 +67,7 @@ namespace m3d
 
     void MeshMaterialManager::Release()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DSurfaceMaterial& MeshMaterialManager::GetMaterial(SgNode& node, AnimatedModel::Mesh& mh)

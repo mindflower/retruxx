@@ -1,7 +1,7 @@
 #pragma once
 #include <core/stringm3d.h>
 
-class CVector;
+struct CVector;
 
 struct IBase
 {

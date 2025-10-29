@@ -3,6 +3,8 @@
 
 #include <stdexcept>
 
+#include "thirdparty/containers.h"
+
 namespace ai
 {
     AIMatrix::AIMatrix(CStr const& name, DecisionMatrix* pDM) :
@@ -23,6 +25,6 @@ namespace ai
 
     void AIMatrix::Set(CStr const&, DecisionMatrix*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

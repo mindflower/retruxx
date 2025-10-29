@@ -27,7 +27,7 @@ namespace m3d
 
         Object* StringsListBoxWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         StringsListBoxWnd::~StringsListBoxWnd()
@@ -41,7 +41,7 @@ namespace m3d
 
         int StringsListBoxWnd::RenderItem(int, PointBase<float> const&, DrawInfo const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int StringsListBoxWnd::MeasureItem(int itemIdx, BoundsBase<float>& bounds) const
@@ -57,7 +57,7 @@ namespace m3d
 
         int StringsListBoxWnd::DeleteItem(int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         StringsListBoxWnd::StringsListBoxWnd()
@@ -71,17 +71,17 @@ namespace m3d
 
         StringsListBoxWnd::StringsListBoxWnd(StringsListBoxWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int StringsListBoxWnd::CompareItem(int, int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* FormattedStringsListBoxWnd::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* FormattedStringsListBoxWnd::GetBaseClass()
@@ -91,57 +91,57 @@ namespace m3d
 
         FormattedStringsListBoxWnd::~FormattedStringsListBoxWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* FormattedStringsListBoxWnd::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void FormattedStringsListBoxWnd::SetTextColor(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* FormattedStringsListBoxWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void FormattedStringsListBoxWnd::SetFormatMode(TextFormatFlags)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FormattedStringsListBoxWnd::CompareItem(int, int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FormattedStringsListBoxWnd::MeasureItem(int, BoundsBase<float>&) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FormattedStringsListBoxWnd::DeleteItem(int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FormattedStringsListBoxWnd::RenderItem(int, PointBase<float> const&, DrawInfo const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FormattedStringsListBoxWnd::FormattedStringsListBoxWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FormattedStringsListBoxWnd::FormattedStringsListBoxWnd(FormattedStringsListBoxWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

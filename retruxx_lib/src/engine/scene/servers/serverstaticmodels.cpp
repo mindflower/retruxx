@@ -11,7 +11,7 @@
 
 int ModelsRenderHandleCommon(int, void*)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 namespace m3d
@@ -28,17 +28,17 @@ namespace m3d
 
     int StaticModelsServer::GetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int StaticModelsServer::SaveAllLoadedEntities(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void StaticModelsServer::ReleaseBuffers()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void StaticModelsServer::RenderItem(int id, void* params)
@@ -141,7 +141,7 @@ namespace m3d
             }
 
 
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
 
             //int v14 = params;
             //
@@ -195,17 +195,17 @@ namespace m3d
 
     int StaticModelsServer::SetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int StaticModelsServer::RemoveItem(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int StaticModelsServer::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     StaticModelsServer::StaticModelsServer()
@@ -229,12 +229,12 @@ namespace m3d
 
     StaticModelsServer::~StaticModelsServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int StaticModelsServer::AddItem(char const*, char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void StaticModelsServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)
@@ -388,6 +388,6 @@ namespace m3d
 
     int StaticModelsServer::PrepareToRender()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

@@ -25,7 +25,7 @@ namespace ai
 
 	int Resource::GetParentId() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr Resource::GetName() const
@@ -160,7 +160,7 @@ namespace ai
 
 	ResourceManager::~ResourceManager()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void ResourceManager::_ReadResourceFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode, Resource const* parent)

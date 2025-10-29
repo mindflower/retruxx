@@ -39,17 +39,17 @@ namespace m3d
 
     int AnimatedModelsServer::AddItem(char const* params, char const* id)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModelsServer::RemoveItem(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool AnimatedModelsServer::IsBonePresentsInModel(char const*, char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModelsServer::RenderItem(int, void*)
@@ -78,7 +78,7 @@ namespace m3d
 
     bool AnimatedModelsServer::ReportServerInfo(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModelsServer::Init()
@@ -122,17 +122,17 @@ namespace m3d
 
     int AnimatedModelsServer::GetBoneMatrixByNameFromModelName(char const*, CStr const&, CMatrix&, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModelsServer::SaveAllLoadedEntities(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModelsServer::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AnimatedModelsServer::AnimatedModelsServer()
@@ -258,7 +258,7 @@ namespace m3d
             return 1;
         }
         }
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     namespace
@@ -480,13 +480,13 @@ namespace m3d
             }
             else
             {
-                throw retruxx::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
         }
 
         if (!rni.rnt && numMeshesImpostered != 0)
         {
-           // throw retruxx::logic_error("Not implemented");
+           // RETRUXX_NOT_IMPLEMENTED;
             // TODO: implement impostored mesh rendering
         }
 
@@ -497,17 +497,17 @@ namespace m3d
     void AnimatedModelsServer::RenderTransparents(SgNode**, unsigned)
     {
         // TODO: implement AnimatedModelsServer::RenderTransparents
-        //throw retruxx::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModelsServer::RenderShadowVolumesSet(SgNode**, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AnimatedModelsServer::~AnimatedModelsServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModelsServer::GenerateImpostorsIfNeeded()
@@ -696,7 +696,7 @@ namespace m3d
             }
             return 1;
         }
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModelsServer::RegisterNode(SgNode* node)
@@ -1215,7 +1215,7 @@ namespace m3d
             break;
         }
         default:
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         if (shader)
@@ -1510,13 +1510,13 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
     retruxx::vector<ModelEffectList::tEffect, retruxx::allocator<ModelEffectList::tEffect>>& newEffectList)
 {
     // TODO: implement ModelEffectList::adjustModelEffects
-    //throw std::logic_error("Not implemented");
+    //RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
     const retruxx::vector<ActionType, retruxx::allocator<ActionType>>& newActions)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel, ActionType newAction)
@@ -1559,7 +1559,7 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel, ActionType newA
 
 bool ModelEffectList::SortPred::operator()(const ModelEffectList::tEffect& a, const ModelEffectList::tEffect& b)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 DynamicModel::DynamicModel()
@@ -1663,7 +1663,7 @@ void DynamicModel::_createImpostorShit()
 
 void DynamicModel::_releaseImpostorShit()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 DynamicModel::auxActionEffectsDesc::auxActionEffectsDesc()

@@ -6,12 +6,12 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(WeaponGroupManager, SaveWeaponGroups)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(WeaponGroupManager, RestoreWeaponGroups)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORTS_BEGIN(WeaponGroupManager)
@@ -26,39 +26,39 @@ RT_CLASS_DEFINE(WeaponGroup);
 
 int WeaponGroupManager::DeleteWeaponGroup(int)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroupManager::ClearSavedGroups()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroupManager::ValidateWeaponGroups()
 {
     // TODO: implement WeaponGroupManager::ValidateWeaponGroups
-    //throw retruxx::logic_error("Not implemented");
+    //RETRUXX_NOT_IMPLEMENTED;
     return 1;
 }
 
 void WeaponGroupManager::GetAllWeapons(retruxx::set<CStr>&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroupManager::SaveWeaponGroups()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* WeaponGroupManager::Clone()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponGroup* WeaponGroupManager::GetWeaponGroupById(int) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroupManager::KeepFire()
@@ -102,22 +102,22 @@ int WeaponGroupManager::GameDataUpdate(void* data, int dataType)
 
 WeaponGroup* WeaponGroupManager::CreateWeaponGroup(int)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroupManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroupManager::GetWeaponGroupsMaxCount()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroupManager::GetDefaultWeaponGroupIdForWeapon(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* WeaponGroupManager::CreateObject()
@@ -132,72 +132,72 @@ m3d::Class* WeaponGroupManager::GetBaseClass()
 
 int WeaponGroupManager::AddWeaponGroup(WeaponGroup*)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroupManager::ReloadAllWeapon()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroupManager::OnPlayerVehicleChanged()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroupManager::Init()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroupManager::AddWeaponToWeaponGroup(CStr const&, int)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroupManager::AddWeaponToWeaponGroup(int, int)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr WeaponGroupManager::GetGunPartNameByGunId(int)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroupManager::RestoreWeaponGroups()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponGroupManager::~WeaponGroupManager()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroupManager::OnVehiclePartChanged(void*)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroupManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroupManager::ClearGroups()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroupManager::RemoveWeaponFromWeaponGroup(int)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroupManager::RemoveWeaponFromWeaponGroup(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* WeaponGroupManager::GetClass() const
@@ -207,17 +207,17 @@ m3d::Class* WeaponGroupManager::GetClass() const
 
 int WeaponGroupManager::GetWeaponGroupIdForWeapon(CStr const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroupManager::Clear()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponGroupManager::WeaponGroupManager(WeaponGroupManager const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponGroupManager::WeaponGroupManager()
@@ -226,32 +226,32 @@ WeaponGroupManager::WeaponGroupManager()
 
 void WeaponGroup::Reload()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool WeaponGroup::IsEmpty() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroup::ClearWeapons()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool WeaponGroup::IsValid() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroup::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool WeaponGroup::CanFire() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* WeaponGroup::GetBaseClass()
@@ -261,90 +261,90 @@ m3d::Class* WeaponGroup::GetBaseClass()
 
 m3d::Object* WeaponGroup::Clone()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Impulse WeaponGroup::GetImpulseByGroupId(int)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* WeaponGroup::CreateObject()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroup::AddWeapon(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroup::Clear()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroup::GetGroupId() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* WeaponGroup::GetClass() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Impulse WeaponGroup::GetImpulseId() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroup::KeepFire()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroup::RemoveWeapon(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int WeaponGroup::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool WeaponGroup::IncludesWeapon(CStr const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponGroup& WeaponGroup::operator=(WeaponGroup const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponGroup::SetGroupId(int)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponGroup::~WeaponGroup()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>> const& WeaponGroup::GetWeapons() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponGroup::WeaponGroup()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 WeaponGroup::WeaponGroup(WeaponGroup const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

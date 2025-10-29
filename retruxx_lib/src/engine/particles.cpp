@@ -10,17 +10,17 @@ namespace m3d
 {
     void Particle::Step(float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Particle::Particle()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Particle::~Particle()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ParticlesList::~ParticlesList()
@@ -89,32 +89,32 @@ namespace m3d
 
     void ParticlesList::SetAutoMeshEmitterPoints(int, int, float, CVector, CVector)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticlesList::SetMeshEmitterPoints(CMatrix** mat, int numMeshes, void** verts, int* numVerts, retruxx::vector<m3d::rend::VertexType>& VertexTypes, retruxx::vector<unsigned int>& VertexTypeSizes, int numSkinMesh)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticlesList::Step(float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticlesList::SetMeshEmitterInds(int**, int*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::SetPsVolume(int, float, float, ForceType, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::SetPsVolume(CoordinatesSystemType)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ParticleSystem* ParticleSystem::New(CStr const& className)
@@ -173,17 +173,17 @@ namespace m3d
 
     int ParticleSystem::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::SetScaleParts(float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     cmn::XmlNode* ParticleSystem::Write(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*, CStr)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ParticleSystem* ParticleSystem::Factory(PSProps const& psprops, retruxx::vector<AttrProps> const& AttrProtos)
@@ -195,7 +195,7 @@ namespace m3d
 
     ParticleSystem* ParticleSystem::Factory(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::ReadFromProtos(PSProps const& psprops, retruxx::vector<AttrProps> const& AttrProtos)
@@ -309,72 +309,72 @@ namespace m3d
 
     ParticleSystem* ParticleSystem::CreateCopy(ParticleSystem&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::SetPsColor(float, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ParticleSystem::GetTimeDiscretion() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::SetParticleColor(Particle*, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::SetPsTrailLen(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::MoveParticles(ParticlesList*, retruxx::vector<CVector> const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::InterpolateColors()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ParticleSystem::ReadRenderParams(ref_ptr<cmn::XmlNode>&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::SetPsBlendMode(PBlendMode)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::setParticleSize(Particle*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::WriteToProtos(PSProps&, retruxx::vector<AttrProps>&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::SetPsMesh(float, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::SetInterpolateColorsOnLoad(bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ParticleSystem::IsLocal()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ParticleSystem::ParticleSystem()
@@ -460,32 +460,32 @@ namespace m3d
 
     int ParticleSystem::ReadVolumeParams(ref_ptr<cmn::XmlNode>&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::SetPsSize(float, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ParticleSystem::ReadMeshParams(ref_ptr<cmn::XmlNode>&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ParticleSystem::Read(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float ParticleSystem::GetBoundRadius() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ParticleSystem::~ParticleSystem()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::SetTextureName(CStr const& name)
@@ -514,32 +514,32 @@ namespace m3d
 
     void ParticleSystem::Reset(ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::AddParticles(ParticlesList*, retruxx::vector<CVector> const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::AddParticle(ParticlesList*, CVector const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ParticleSystem::ApplyBlending()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ParticleSystem::Update(ParticlesList*, float, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int StripOnePS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     StripOnePS::StripOnePS()
@@ -549,12 +549,12 @@ namespace m3d
 
     void StripOnePS::ReleaseIb()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool StripOnePS::IsLocal()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     rend::IbPoolField StripOnePS::m_IbPoolField;
@@ -582,27 +582,27 @@ namespace m3d
 
     int PhysicModelPS::Update(ParticlesList*, float, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     cmn::XmlNode* PhysicModelPS::Write(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*, CStr)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicModelPS::WriteToProtos(PSProps&, retruxx::vector<AttrProps>&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int PhysicModelPS::Read(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int PhysicModelPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicModelPS::ReadFromProtos(PSProps const& Prototype, retruxx::vector<AttrProps> const& AttrProtos)
@@ -613,7 +613,7 @@ namespace m3d
 
     void PolyPS::ReleaseIb()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     rend::IbPoolField PolyPS::m_IbPoolField;
@@ -639,39 +639,39 @@ namespace m3d
 
     int PolyPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SkinPS::~SkinPS()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SkinPS::Reset(ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SkinPS::Update(ParticlesList*, float, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SkinPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SkinPS::SkinPS()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     rend::IbPoolField Poly1PS::m_IbPoolField;
 
     void Poly1PS::ReleaseIb()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Poly1PS::CreateIb()
@@ -695,12 +695,12 @@ namespace m3d
 
     int Poly1PS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int StripAllPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     StripAllPS::StripAllPS()
@@ -733,32 +733,32 @@ namespace m3d
 
     bool StripAllPS::IsLocal()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void StripAllPS::ReleaseIb()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float LandSpritePS::GetBoundRadius() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool LandSpritePS::IsLocal()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int LandSpritePS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SpritePS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     rend::IbPoolField SpritePS::m_IbPoolField;
@@ -786,37 +786,37 @@ namespace m3d
 
     float SpritePS::GetBoundRadius() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SpritePS::ReleaseIb()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ModelPS::~ModelPS()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ModelPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     cmn::XmlNode* ModelPS::Write(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*, CStr)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ModelPS::Read(fs::FileStream&, cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ModelPS::WriteToProtos(PSProps&, retruxx::vector<AttrProps>&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ModelPS::ReadFromProtos(PSProps const& Prototype, retruxx::vector<AttrProps> const& AttrProtos)
@@ -845,7 +845,7 @@ namespace m3d
 
     int GlowQuadPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     rend::IbPoolField GlowQuadPS::m_IbPoolField;
@@ -873,12 +873,12 @@ namespace m3d
 
     float GlowQuadPS::GetBoundRadius() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GlowQuadPS::ReleaseIb()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     rend::IbPoolField RainPS::m_IbPoolField;
@@ -901,19 +901,19 @@ namespace m3d
 
     void RainPS::ReleaseIb()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int RainPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     rend::IbPoolField QuadPS::m_IbPoolField;
 
     int QuadPS::Render(CMatrix const*, ParticlesList*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void QuadPS::CreateIb()
@@ -939,11 +939,11 @@ namespace m3d
 
     void QuadPS::ReleaseIb()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float QuadPS::GetBoundRadius() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

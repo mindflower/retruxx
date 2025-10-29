@@ -144,7 +144,7 @@ namespace ai
 
 	void ColliderKrnl::Release()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int ColliderKrnl::CollideObjs(m3d::Object* obj1, m3d::Object* obj2, dContact* contact, unsigned& numContacts)

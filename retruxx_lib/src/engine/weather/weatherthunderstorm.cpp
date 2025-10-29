@@ -44,22 +44,22 @@ namespace m3d
 
     int WeatherThunderstorm::Update(float, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* WeatherThunderstorm::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WeatherThunderstorm::~WeatherThunderstorm()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WeatherThunderstorm::Render()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* WeatherThunderstorm::GetBaseClass()
@@ -74,17 +74,17 @@ namespace m3d
 
     int WeatherThunderstorm::UpdateColors(ColorItems, ColorTypes)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WeatherThunderstorm::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WeatherThunderstorm::TurnOffEffects()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WeatherThunderstorm::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
@@ -131,12 +131,12 @@ namespace m3d
 
     void WeatherThunderstorm::SetUp()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* WeatherThunderstorm::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WeatherThunderstorm::WeatherThunderstorm()
@@ -145,6 +145,6 @@ namespace m3d
 
     WeatherThunderstorm::WeatherThunderstorm(WeatherThunderstorm const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

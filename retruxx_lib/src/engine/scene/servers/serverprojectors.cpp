@@ -10,7 +10,7 @@ struct ProjectorStats
 
     void Zero()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ProjectorStats()
@@ -26,22 +26,22 @@ namespace m3d
 {
     ProjectorsServer::~ProjectorsServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ProjectorsServer::GetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ProjectorsServer::SetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ProjectorsServer::SaveAllLoadedEntities(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ProjectorsServer::Init()
@@ -129,12 +129,12 @@ namespace m3d
 
     int ProjectorsServer::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ProjectorsServer::AddItem(char const*, char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ProjectorsServer::RenderItem(int id, void* params)
@@ -148,14 +148,14 @@ namespace m3d
             break;
         }
         default:
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         m_profiler->EndCountdown();
     }
 
     int ProjectorsServer::RemoveItem(int id)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ProjectorsServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)
@@ -163,7 +163,7 @@ namespace m3d
         // TODO: implement ProjectorsServer::AddItemsList
         //for (auto& item : itemslist)
         //{
-        //    throw retruxx::logic_error("Not implemented");
+        //    RETRUXX_NOT_IMPLEMENTED;
         //}
     }
 }

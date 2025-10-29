@@ -41,115 +41,115 @@ public:
 template <class T>
 BoundsBase<T> BoundsBase<T>::SizeRect() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 int BoundsBase<T>::IsPtInBounds(PointBase<T> const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 T BoundsBase<T>::Height() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 T BoundsBase<T>::Width() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 PointBase<T> BoundsBase<T>::BottomLeft() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 void BoundsBase<T>::Inflate(T, T)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 T BoundsBase<T>::Bottom() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 T BoundsBase<T>::Top() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 int BoundsBase<T>::Empty() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 void BoundsBase<T>::Offset(PointBase<T> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 void BoundsBase<T>::Zero()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 T BoundsBase<T>::Right() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 T BoundsBase<T>::CenterX() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 T BoundsBase<T>::Left() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 void BoundsBase<T>::CenterIn(BoundsBase<T> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 PointBase<T> BoundsBase<T>::BottomRight() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 T BoundsBase<T>::CenterY() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 PointBase<T> BoundsBase<T>::TopLeft() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
 BoundsBase<T>::BoundsBase(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
@@ -182,7 +182,7 @@ BoundsBase<T>::BoundsBase(T x, T y, T xx, T yy)
 template <class T>
 BoundsBase<T>::BoundsBase(PointBase<T> const&, PointBase<T> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 template <class T>
@@ -231,5 +231,5 @@ BoundsBase<T> BoundsBase<T>::Intersect(BoundsBase<T> const& b) const
 template <class T>
 PointBase<T> BoundsBase<T>::TopRight() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

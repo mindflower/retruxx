@@ -76,7 +76,7 @@ namespace ai
 
     void AIManager::Dump()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* AIManager::GetBaseClass()
@@ -98,7 +98,7 @@ namespace ai
 
     void AIManager::LogDump()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AIManager::GetSchemeNum(CStr const& word) const
@@ -115,7 +115,7 @@ namespace ai
 
     CStr AIManager::GetMatrixName(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecisionMatrix* AIManager::GetDecisionMatrixPtr(int MatrixNum) const
@@ -135,12 +135,12 @@ namespace ai
 
     AIManager::~AIManager()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::AIParam AIManager::AIAction(int, Obj*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AIManager::GetFuncNum(CStr const& name) const
@@ -157,12 +157,12 @@ namespace ai
 
     m3d::Object* AIManager::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecisionMatrix* AIManager::CreateNewDecisionMatrix()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AIManager::AIManager() :
@@ -172,7 +172,7 @@ namespace ai
 
     AIManager::AIManager(AIManager const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecisionMatrix* AIManager::ReadNewMatrix(char const* fileName)

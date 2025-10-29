@@ -3,6 +3,8 @@
 #include <math/vector.h>
 #include <stdexcept>
 
+#include "thirdparty/containers.h"
+
 const int nxt[3] = { 1,2,0 };
 
 void Quaternion::FromMatrix(CMatrix const& m)
@@ -35,17 +37,17 @@ void Quaternion::FromMatrix(CMatrix const& m)
 
 void Quaternion::Normalize()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Quaternion::ToAxisAngle(CVector&, float&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Quaternion::fromYPR(float, float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Quaternion Quaternion::operator*(float v) const
@@ -77,7 +79,7 @@ Quaternion Quaternion::operator+(Quaternion const& q) const
 
 Quaternion::Quaternion(CMatrix const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Quaternion::Quaternion(float qx, float qy, float qz, float qw) :
@@ -137,7 +139,7 @@ CMatrix Quaternion::ToMatrix() const
 
 Quaternion Quaternion::getConjugated() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Quaternion::Zero()
@@ -194,52 +196,52 @@ float Quaternion::operator[](unsigned int i) const
 
 void Quaternion::Lerp(Quaternion const&, Quaternion const&, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Quaternion::RotZ(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Quaternion::FromAxisAngle(CVector const&, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Quaternion::RotX(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Quaternion::RotY(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CVector Quaternion::vecRot(CVector const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Quaternion::Identity()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float Quaternion::Norm() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Quaternion& Quaternion::operator+=(Quaternion const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Quaternion& Quaternion::operator*=(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void Quaternion::operator*=(Quaternion const& b)

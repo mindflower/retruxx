@@ -62,6 +62,8 @@ namespace retruxx
 #include <stack>
 #include <queue>
 
+#define RETRUXX_NOT_IMPLEMENTED __debugbreak(); std::abort()
+
 namespace retruxx
 {
     using logic_error = std::logic_error;

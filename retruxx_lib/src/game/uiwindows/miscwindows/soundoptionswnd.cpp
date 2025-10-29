@@ -26,7 +26,7 @@ m3d::Object* SoundOptionsWnd::CreateObject()
 
 m3d::Object* SoundOptionsWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* SoundOptionsWnd::GetBaseClass()
@@ -36,7 +36,7 @@ m3d::Class* SoundOptionsWnd::GetBaseClass()
 
 SoundOptionsWnd::~SoundOptionsWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SoundOptionsWnd::OnBeforeAddToWndStation()
@@ -66,7 +66,7 @@ void SoundOptionsWnd::InitControls()
 
 void SoundOptionsWnd::InitEffectsVolumeControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void SoundOptionsWnd::ApplyEffectsVolume()
@@ -234,7 +234,7 @@ void SoundOptionsWnd::OnBtnEffectsVolumeNextClick(m3d::AIParam const&)
 
 void SoundOptionsWnd::UpdateMusicVolumeControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void SoundOptionsWnd::UpdateMusicVolumePrevNextButtonsState()
@@ -262,7 +262,7 @@ void SoundOptionsWnd::OnSliderSpeakVolumeChange(m3d::AIParam const&)
 
 void SoundOptionsWnd::UpdateSpeakVolumeControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void SoundOptionsWnd::OnSliderMusicVolumeChange(m3d::AIParam const&)
@@ -330,7 +330,7 @@ void SoundOptionsWnd::UpdateEffectsVolumePrevNextButtonsState()
 
 void SoundOptionsWnd::InitMusicVolumeControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void SoundOptionsWnd::OnSliderEffectsVolumeChange(m3d::AIParam const&)
@@ -348,7 +348,7 @@ void SoundOptionsWnd::OnSliderEffectsVolumeChange(m3d::AIParam const&)
 
 void SoundOptionsWnd::InitSpeakVolumeControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int SoundOptionsWnd::GameDataSetup()
@@ -470,7 +470,7 @@ int SoundOptionsWnd::GameDataSetup()
 
 SoundOptionsWnd::SoundOptionsWnd(SoundOptionsWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 SoundOptionsWnd::SoundOptionsWnd()
@@ -479,5 +479,5 @@ SoundOptionsWnd::SoundOptionsWnd()
 
 void SoundOptionsWnd::UpdateEffectsVolumeControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

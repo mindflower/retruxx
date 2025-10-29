@@ -56,12 +56,12 @@ namespace ai
 
 	eGObjPropertySaveStatus DummyObject::GetPropertySaveStatus(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int DummyObject::GetPropertyId(char const*) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DummyObject::SetModelName(char const* modelName)
@@ -86,7 +86,7 @@ namespace ai
 
 	bool DummyObject::SetPropertyById(int, m3d::AIParam const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* DummyObject::GetBaseClass()
@@ -101,7 +101,7 @@ namespace ai
 
 	CStr DummyObject::GetPropertyName(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	DummyObjectPrototypeInfo const* DummyObject::GetPrototypeInfo() const
@@ -111,22 +111,22 @@ namespace ai
 
 	void DummyObject::SetModelNameUnsafe(CStr const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DummyObject::SetSgNodeAndCollision(m3d::SgNode*, CollisionInfo const*)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DummyObject::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DummyObject::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	DummyObject::DummyObject(DummyObjectPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
@@ -146,36 +146,36 @@ namespace ai
 
 	bool DummyObject::CanChildBeAdded(m3d::Class*) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool DummyObject::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool DummyObject::_GetPropertyInternal(int, m3d::AIParam&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DummyObject::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	DummyObject::~DummyObject()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* DummyObject::Clone()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* DummyObject::CreateObject()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

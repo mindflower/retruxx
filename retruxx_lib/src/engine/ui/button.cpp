@@ -30,12 +30,12 @@ namespace m3d
 
         int ButtonWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         rend::TexHandle ButtonWnd::GetImageDown() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* ButtonWnd::GetClass() const
@@ -50,17 +50,17 @@ namespace m3d
 
         int ButtonWnd::SetImaged(rend::TexHandle, rend::TexHandle, rend::TexHandle, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         rend::TexHandle ButtonWnd::GetImageRegular() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* ButtonWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool ButtonWnd::IsImaged() const
@@ -133,12 +133,12 @@ namespace m3d
 
         rend::TexHandle ButtonWnd::GetImageDisabled() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         rend::TexHandle ButtonWnd::GetImageIn() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         float ButtonWnd::GetFrameWidth() const
@@ -169,7 +169,7 @@ namespace m3d
 
         int ButtonWnd::OnLoosingFocus()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ButtonWnd::OnMouseIn()
@@ -180,7 +180,7 @@ namespace m3d
 
         ButtonWnd::ButtonWnd(ButtonWnd const&)
         {
-            //throw std::logic_error("Not implemented");
+            //RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ButtonWnd::ReleaseTextures()
@@ -315,7 +315,7 @@ namespace m3d
 
         int ButtonWnd::OnKey(unsigned short, unsigned char, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ButtonWnd::ButtonWnd()
@@ -329,7 +329,7 @@ namespace m3d
 
         int ButtonWnd::OnObtainingFocus()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         RT_CLASS_EXPORTS_BEGIN(CheckWnd)
@@ -360,17 +360,17 @@ namespace m3d
 
         CheckWnd::~CheckWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr const& CheckWnd::GetCheckedPaneName() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* CheckWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int CheckWnd::GetCheck() const
@@ -380,7 +380,7 @@ namespace m3d
 
         void CheckWnd::SetUncheckedPane(CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int CheckWnd::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
@@ -404,17 +404,17 @@ namespace m3d
 
         CStr const& CheckWnd::GetUncheckedPaneName() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void CheckWnd::SetCheckedPane(CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int CheckWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int CheckWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -443,12 +443,12 @@ namespace m3d
 
         void CheckWnd::DrawWndText(DrawInfo const& di)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         BoundsBase<float> CheckWnd::GetIcoBounds() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void CheckWnd::OnNcPaint(DrawInfo const& di, unsigned clr)
@@ -469,7 +469,7 @@ namespace m3d
 
         CheckWnd::CheckWnd(CheckWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

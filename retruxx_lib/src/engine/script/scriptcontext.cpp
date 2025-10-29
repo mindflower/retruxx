@@ -118,7 +118,7 @@ namespace m3d
 
 	int LuaContext::countArgs()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float LuaContext::asFloat(int i)
@@ -222,7 +222,7 @@ namespace m3d
 
 	void LuaContext::pushQuaternion(Quaternion const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void LuaContext::pushInt(int x)
@@ -233,7 +233,7 @@ namespace m3d
 
 	void LuaContext::pushFloat(float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Quaternion& LuaContext::asQuaternion(int i)
@@ -250,7 +250,7 @@ namespace m3d
 
 	void LuaContext::pushString(char const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector& LuaContext::asVector(int i)
@@ -274,6 +274,6 @@ namespace m3d
 
 	int LuaContext::_validateArg(int)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

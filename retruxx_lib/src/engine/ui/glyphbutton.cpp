@@ -10,7 +10,7 @@ namespace m3d
 
         Object* GlyphButton::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* GlyphButton::GetBaseClass()
@@ -20,82 +20,82 @@ namespace m3d
 
         void GlyphButton::SetGlyphHeight(float)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* GlyphButton::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         float GlyphButton::GetGlyphHeight()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void GlyphButton::AdjustBoundsToFit(float)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int GlyphButton::SetGlyphTexture(CStr const&, CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void GlyphButton::SetGlyphTexture(rend::TexHandle, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         GlyphButton::~GlyphButton()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         rend::TexHandle GlyphButton::GetGlyphTexture() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         rend::TexHandle GlyphButton::GetGlyphTextureDisabled() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int GlyphButton::CreateGlyphButton(BoundsBase<float> const&, GlyphButtonType)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int GlyphButton::CreateGlyphButton(unsigned, BoundsBase<float> const&, GlyphButtonType, CStr const&, unsigned, CStr, CStr)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int GlyphButton::CreateGlyphButton(unsigned, BoundsBase<float> const&, GlyphButtonType, CStr const&, unsigned, rend::TexHandle, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* GlyphButton::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int GlyphButton::OnPaint(DrawInfo const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         GlyphButton::GlyphButton(GlyphButton const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         GlyphButton::GlyphButton()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

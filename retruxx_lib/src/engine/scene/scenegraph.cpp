@@ -35,17 +35,17 @@ namespace m3d
 {
     float IsNodeTransparent::getTransparentRadius()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool IsNodeTransparent::setPermanentTransparency(SgNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool IsNodeTransparent::test(SgNode*, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::LinkNode(SgNode* toLink)
@@ -188,7 +188,7 @@ namespace m3d
 
     void SceneGraph::UnlinkAndDeleteAll()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::UnlinkThinkNode(SgNode* toThink)
@@ -198,7 +198,7 @@ namespace m3d
 
     float SceneGraph::GetAlphaForNode(SgNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::UpdateThinkNodes()
@@ -223,7 +223,7 @@ namespace m3d
 
     void SceneGraph::DumpRenderingNodesInfoForClass(const Class*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgNode* SceneGraph::GetRootNode()
@@ -233,7 +233,7 @@ namespace m3d
 
     SgNode const* SceneGraph::GetRootNode() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::RelinkNode(SgNode* toRelink, bool bForceRelink)
@@ -247,12 +247,12 @@ namespace m3d
 
     void SceneGraph::CollectNodesLight(retruxx::set<SgNode*>&, unsigned, unsigned, CVector const&, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::InsertInRemoveIfFree(SgNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool SceneGraph::SortedCellsStartFetching(int radius0, int radius1)
@@ -265,7 +265,7 @@ namespace m3d
 
     void SceneGraph::RefreshObjectsInRect(int, int, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SceneGraph::SortedCellsFetch(int& cellX, int& cellY, int& vis, int& radius)
@@ -307,22 +307,22 @@ namespace m3d
 
     int SceneGraph::SortedCellsFetch(int&, int&, int&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::LightSwitchOffAllLights()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::UnlinkNode(SgNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgNode* SceneGraph::GetNodeByName(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool SceneGraph::IsLinkedNode(SgNode* toCheck)
@@ -335,17 +335,17 @@ namespace m3d
 
     bool SceneGraph::IsCellVisible(int, int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::DeleteFromRemoveIfFree(SgNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgNode* SceneGraph::TraceLine(CVector&, CVector const&, CVector const&, retruxx::set<Class*> const&, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::LightSetupLightsForNode(SgNode* node)
@@ -390,7 +390,7 @@ namespace m3d
     {
         void CheckNodeValidity(m3d::SgNode *node, const char *debugStr)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 
@@ -494,13 +494,13 @@ namespace m3d
 
     void SceneGraph::RenderDebugForNode(SgNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::RenderContouredNodes()
     {
         // TODO: implement SceneGraph::RenderContouredNodes
-        // throw retruxx::logic_error("Not implemented");
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::UpdateAllXForms()
@@ -514,17 +514,17 @@ namespace m3d
 
     void SceneGraph::DeleteFromTtlList(SgNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SceneGraph::IsCellEnabled(int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::RenderNode(SgNode*, CMatrix const&, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::Render(SgRenderFlags flags)
@@ -636,7 +636,7 @@ namespace m3d
 
     void SceneGraph::GetNodeNamesHierarchy(SgNode*, retruxx::vector<CStr>&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SceneGraph::SceneGraph()
@@ -809,12 +809,12 @@ namespace m3d
 
     void SceneGraph::DeleteFromContourList(SgNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgNode* SceneGraph::GetNodeByNamesHierarchy(retruxx::vector<CStr> const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::InsertInUpdateXFormList(SgNode* toInsert)
@@ -829,27 +829,27 @@ namespace m3d
 
     bool SceneGraph::IsInUnlinkAndDeleteAll() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::DeleteAllTtledNodes()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::SetModelForceNoCull(bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ObjectsContainer const& SceneGraph::GetCellObjs(int, int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::CollectNodesProjector(retruxx::set<SgNode*>&, unsigned, unsigned, CClipper const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::EnableVisibleCells(CClipper& frusta, unsigned or)
@@ -864,32 +864,32 @@ namespace m3d
         m_owner->GetLandscape().getMinMaxHeightForBox(box, 0.0);
         frusta.enableAll();
         enableVisibleCells_r(frusta, box, or );
-        //throw retruxx::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::RemoveNode(SgNode*&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::DeleteAllRemoveIfFreeNodes()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::DumpToFile(CStr const&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::LightSetupSunForWorld()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::UpdateTexShadowSizes()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::SetOwner(CWorld* world)
@@ -899,7 +899,7 @@ namespace m3d
 
     SceneGraph::~SceneGraph()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::SetTransparencyTest(IsNodeTransparent* t)
@@ -913,17 +913,17 @@ namespace m3d
 
     void SceneGraph::InsertInContourList(SgNode*, unsigned, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::CheckNodeIsNotInAnyList(SgNode*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::InsertInTtlList(SgNode*, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::LinkThinkNode(SgNode* toThink)
@@ -933,32 +933,32 @@ namespace m3d
 
     void SceneGraph::DeleteFromUpdateXFormList(SgNode*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::GetCellsStatistic(retruxx::vector<CellInfo>*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SceneGraph::CellItems& SceneGraph::GetCellItems(int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SceneGraph::CellItems const& SceneGraph::GetCellItems(int, int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::CollectShadowingNodesStencil(retruxx::set<SgNode*>&, Class*, int, int, unsigned, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::CollectShadowingNodes(retruxx::set<SgNode*>&, Class*, int, int, int, unsigned, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SceneGraph::AddOneNodeToRender(SgNode* n, CClipper const& frusta, int curFrame)
@@ -1019,23 +1019,23 @@ namespace m3d
 
     void SceneGraph::RemoveNodeExceptRemoveIfFree(SgNode*&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SceneGraph::getYOfs(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::EnsureEverythingIsUnlinked() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::DrawShadows()
     {
         // TODO: implement SceneGraph::DrawShadow
-        //throw retruxx::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::enableCellsSetRect(int* rc, unsigned orValue, unsigned andValue)
@@ -1087,7 +1087,7 @@ namespace m3d
 
     SgNode* SceneGraph::TraceLineThruCellNodesForClass(float&, int, int, CVector const&, CVector const&, Class*, retruxx::set<SgNode*>&, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int SceneGraph::AddNodeAndItsChildrenToRender(SgNode* n, CClipper const& frusta, int curFrame)
@@ -1137,7 +1137,7 @@ namespace m3d
 
     void SceneGraph::DrawStencilShadows()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool SceneGraph::IsTransparent(SgNode* n)
@@ -1263,17 +1263,17 @@ namespace m3d
 
     void ObjectsContainer::RemoveObject(m3d::Object* obj)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* ObjectsContainer::GetObjectsByClass(m3d::Class* cl)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     const retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* ObjectsContainer::GetObjects() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* ObjectsContainer::GetObjects()
@@ -1283,6 +1283,6 @@ namespace m3d
 
     bool ObjectsContainer::empty() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

@@ -53,7 +53,7 @@ namespace m3d
 
     AnimatedModel::Bone::Bone(Bone const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AnimatedModel::Bone::Bone()
@@ -62,7 +62,7 @@ namespace m3d
 
     AnimatedModel::Animation::~Animation()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AnimatedModel::Animation::Animation()
@@ -79,12 +79,12 @@ namespace m3d
 
     void AnimatedModel::Mesh::ComputeShadowsRelatedStuff()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AnimatedModel::Mesh::~Mesh()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AnimatedModel::Mesh::Mesh()
@@ -150,7 +150,7 @@ namespace m3d
 
     DRAFT_HierGeom const* AnimatedModel::GetHierGeom(unsigned) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AnimatedModel::AnimatedModel()
@@ -182,7 +182,7 @@ namespace m3d
 
     DRAFT_BoneBounds const& AnimatedModel::GetBoneBounds(unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CMatrix AnimatedModel::GetBoneMatrix(int boneIndex) const
@@ -736,7 +736,7 @@ namespace m3d
 
     bool AnimatedModel::LoadSAM(CStr const&, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AnimatedModel::Bone& AnimatedModel::GetBone(unsigned N) const
@@ -751,17 +751,17 @@ namespace m3d
 
     void AnimatedModel::DeleteSkin(unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::UnloadSkin(unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::UpdateTexturesFilter()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::SetComposite(bool isComposite)
@@ -798,7 +798,7 @@ namespace m3d
 
     rend::TexHandle AnimatedModel::GetTexHandle(unsigned, unsigned, unsigned) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool AnimatedModel::Load(CStr const& FileName, bool bForceNextAnimation)
@@ -816,17 +816,17 @@ namespace m3d
 
     int AnimatedModel::GetFrames(int, int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::RenderNormals(CMatrix const&, AnimInfo*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::AddSkin(unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModel::GetLoadPointIdByName(char const* lpName) const
@@ -854,7 +854,7 @@ namespace m3d
 
     int AnimatedModel::ChangeShader(CStr const&, unsigned, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool AnimatedModel::bIsPassable() const
@@ -864,7 +864,7 @@ namespace m3d
 
     void AnimatedModel::FromGroupVariants(Configuration&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::ReloadSkins(LoadSkins const& skinsToLoad)
@@ -878,7 +878,7 @@ namespace m3d
         {
             
         }
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::CalculateMeshes(Configuration& cfg) const
@@ -903,52 +903,52 @@ namespace m3d
 
     void AnimatedModel::RenderHierGeoms(CMatrix const&, AnimInfo*, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModel::ChangeTexture(CStr const&, unsigned, unsigned, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModel::Render(CMatrix const&, AnimInfo*, unsigned, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModel::Render(CMatrix const&, AnimInfo*, Configuration const&, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModel::Render(CMatrix const&, AnimInfo*, Configuration const&, retruxx::vector<DSurfaceMaterial*, retruxx::allocator<DSurfaceMaterial*>> const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModel::GetFps(int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::SetFps(int, short)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::RenderLoadPoints(CMatrix const&, AnimInfo*, Configuration const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DSurfaceMaterial& AnimatedModel::GetMeshMaterial(unsigned, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::AddTexture(unsigned, unsigned, CStr const&, DRAFT_TextureType, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DCollisionData const& AnimatedModel::GetCollisionTrimesh() const
@@ -958,7 +958,7 @@ namespace m3d
 
     int AnimatedModel::GetBoneMatrixByName(CStr const&, CMatrix&, bool) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::FromCfgNum(Configuration& cfg) const
@@ -989,7 +989,7 @@ namespace m3d
 
     Aabb& AnimatedModel::GetAabb()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimatedModel::Update(AnimInfo* ai, bool notFirstTime, Configuration* cfg)
@@ -1011,7 +1011,7 @@ namespace m3d
     {
         if (m_hasCubemap)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 
@@ -1103,17 +1103,17 @@ namespace m3d
 
     rend::IEffect* AnimatedModel::ApplyMaterial(unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool AnimatedModel::Save(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned AnimatedModel::GetNumBones() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::UpdateVertices(AnimInfo* ai, bool notFirstTime, Configuration* cfg)
@@ -1143,27 +1143,27 @@ namespace m3d
 
     void AnimatedModel::RenderMesh(unsigned, AnimInfo*, rend::IEffect*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::RenderCollisions(CMatrix const&, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned AnimatedModel::GetNumMaterials() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned AnimatedModel::GetNumHierGeoms() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool AnimatedModel::SaveGAM(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::SetCubeMapTexName(CStr const& texName)
@@ -1175,12 +1175,12 @@ namespace m3d
 
     void AnimatedModel::LoadSkin(unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::SetNextForAnimation(ActionType, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::AnimatedModel::ModelInfo& AnimatedModel::GetHeader()
@@ -1195,12 +1195,12 @@ namespace m3d
 
     void AnimatedModel::CalculateCfgSize()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool AnimatedModel::Convert(CStr const&, bool, retruxx::vector<DRAFT_Bone, retruxx::allocator<DRAFT_Bone>> const&, retruxx::vector<DMesh, retruxx::allocator<DMesh>> const&, retruxx::vector<DAnimation, retruxx::allocator<DAnimation>> const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::MatrixForBone(AnimInfo* ai, int curFrame, int boneIndex)
@@ -1315,7 +1315,7 @@ namespace m3d
 
     void AnimatedModel::CreateVariants()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::SetTexture(CStr const& path, DRAFT_TextureType type, rend::TexHandle& texHandle)
@@ -1361,7 +1361,7 @@ namespace m3d
 
     void AnimatedModel::ReadMaterial(DSurfaceMaterial&, unsigned char*&, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::VertsForSkinmesh(AnimInfo* ai, Mesh& mesh, void* dstVerts, bool onlyXYZN)
@@ -1428,12 +1428,12 @@ namespace m3d
 
     void AnimatedModel::DrawBones(AnimInfo*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::CheckConfigurations()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr AnimatedModel::DefinePathToTexture(CStr const& fileName)
@@ -1455,19 +1455,19 @@ namespace m3d
 
     bool AnimInfo::IsAnimation(ActionType)
     {
-	    throw retruxx::logic_error("Not implemented");
+	    RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimInfo::CreateCopyMesh(int&, void**&, int*&, unsigned short**&, int*&, bool*&, CMatrix**&,
 	    retruxx::vector<rend::VertexType, retruxx::allocator<rend::VertexType>>&,
 	    retruxx::vector<unsigned, retruxx::allocator<unsigned>>&, int*)
     {
-	    throw retruxx::logic_error("Not implemented");
+	    RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimInfo::SetEmpty()
     {
-	    throw retruxx::logic_error("Not implemented");
+	    RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimInfo::InterpolateBones(int curUpdateFrame)
@@ -1574,13 +1574,13 @@ namespace m3d
     int AnimInfo::SetAnimationIdx(int)
     {
         // // TODO: implement AnimInfo::SetAnimationIdx
-	    //throw retruxx::logic_error("Not implemented");
+	    //RETRUXX_NOT_IMPLEMENTED;
         return 0;
     }
 
     AnimatedModel::Mesh const& AnimInfo::GetMesh(unsigned) const
     {
-	    throw retruxx::logic_error("Not implemented");
+	    RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimInfo::CreateFor(AnimatedModel* am)
@@ -1633,7 +1633,7 @@ namespace m3d
 
     void AnimInfo::SetBoneCurMatrix(unsigned, CMatrix const&)
     {
-	    throw retruxx::logic_error("Not implemented");
+	    RETRUXX_NOT_IMPLEMENTED;
     }
 
     CMatrix const& AnimInfo::GetCurrentLoadpointMatrix(int lpId) const
@@ -1646,7 +1646,7 @@ namespace m3d
 
     int AnimInfo::SetCurFrame(float)
     {
-	    throw retruxx::logic_error("Not implemented");
+	    RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimInfo::Release()
@@ -1665,7 +1665,7 @@ namespace m3d
 
     AnimatedModel::Animation const* AnimInfo::GetCurAnimation() const
     {
-	    throw retruxx::logic_error("Not implemented");
+	    RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AnimInfo::GetStickToLastFrame() const
@@ -1675,7 +1675,7 @@ namespace m3d
 
     void AnimInfo::RemoveCopyMesh(void**&, int*&, unsigned short**&, int*&, CMatrix**&)
     {
-	    throw retruxx::logic_error("Not implemented");
+	    RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool AnimInfo::IsEmpty()
@@ -1685,7 +1685,7 @@ namespace m3d
 
     int& AnimInfo::CurAnimFrame()
     {
-	    throw retruxx::logic_error("Not implemented");
+	    RETRUXX_NOT_IMPLEMENTED;
     }
 
     AnimInfo::~AnimInfo()

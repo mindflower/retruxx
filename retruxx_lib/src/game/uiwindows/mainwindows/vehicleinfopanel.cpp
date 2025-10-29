@@ -8,7 +8,7 @@ RT_CLASS_DEFINE(VehicleInfoPanel);
 
 VehicleInfoPanel::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* VehicleInfoPanel::GetBaseClass()
@@ -18,45 +18,45 @@ m3d::Class* VehicleInfoPanel::GetBaseClass()
 
 VehicleInfoPanel::~VehicleInfoPanel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* VehicleInfoPanel::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* VehicleInfoPanel::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* VehicleInfoPanel::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 VehicleInfoPanel::VehicleInfoPanel(VehicleInfoPanel const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 VehicleInfoPanel::VehicleInfoPanel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VehicleInfoPanel::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VehicleInfoPanel::OnPlayerVehicleChanged()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VehicleInfoPanel::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

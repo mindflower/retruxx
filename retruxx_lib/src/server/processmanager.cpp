@@ -15,7 +15,7 @@ namespace ai
 
     int ProcessManager::GetNumProcessedEvents() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ProcessManager::Update(float elapsedTime, unsigned framesPassed, unsigned workTime)
@@ -83,22 +83,22 @@ namespace ai
 
     void ProcessManager::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ProcessManager::Clear()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ProcessManager::~ProcessManager()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ProcessManager::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     eGameEvent ProcessManager::GetEventId(CStr const& eventName) const
@@ -115,12 +115,12 @@ namespace ai
 
     int ProcessManager::GetNumEventsInQueue() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ProcessManager::UpdateDieEvents()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ProcessManager::PostMessageA(ai::Event const& evn)

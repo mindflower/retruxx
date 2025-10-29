@@ -14,12 +14,12 @@ namespace m3d
 
         unsigned ProgressBarWnd::GetBarColor() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         float ProgressBarWnd::GetMaxValue() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ProgressBarWnd::SetCurValue(float curValue)
@@ -37,17 +37,17 @@ namespace m3d
 
         rend::TexHandle ProgressBarWnd::GetBarTexture() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ProgressBarWnd::SetTextStyle(TextStyle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ProgressBarWnd::SetOrientation(Orientation)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ProgressBarWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
@@ -94,12 +94,12 @@ namespace m3d
 
         int ProgressBarWnd::GetNumOfSteps() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ProgressBarWnd::SetBarColor(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ProgressBarWnd::SetMaxValue(float maxValue)
@@ -117,12 +117,12 @@ namespace m3d
 
         Object* ProgressBarWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         float ProgressBarWnd::GetCurValue() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ProgressBarWnd::SetBarTexture(rend::TexHandle barTexture)
@@ -149,7 +149,7 @@ namespace m3d
 
         ProgressBarWnd::TextStyle ProgressBarWnd::GetTextStyle() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* ProgressBarWnd::GetBaseClass()
@@ -159,7 +159,7 @@ namespace m3d
 
         ProgressBarWnd::Orientation ProgressBarWnd::GetOrientation() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ProgressBarWnd::SetNumOfSteps(int numOfSteps)
@@ -178,7 +178,7 @@ namespace m3d
 
         ProgressBarWnd::TextureStyle ProgressBarWnd::GetTextureStyle() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* ProgressBarWnd::CreateObject()
@@ -188,22 +188,22 @@ namespace m3d
 
         float ProgressBarWnd::GetMinValue() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ProgressBarWnd::~ProgressBarWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ProgressBarWnd::SetTextureStyle(TextureStyle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ProgressBarWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ProgressBarWnd::SetMinValue(float minValue)
@@ -221,17 +221,17 @@ namespace m3d
 
         float ProgressBarWnd::GetSizeOfStepInPixel() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ProgressBarWnd::GetCurNumOfSteps() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr ProgressBarWnd::GetStringValue() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         BoundsBase<float> ProgressBarWnd::GetBarRect() const
@@ -292,7 +292,7 @@ namespace m3d
 
         bool ProgressBarWnd::IsInversed() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ProgressBarWnd::CalcTexCoordinates(float& u0, float& v0, float& u1, float& v1) const
@@ -407,12 +407,12 @@ namespace m3d
 
         float ProgressBarWnd::GetMaxValueInPixel() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool ProgressBarWnd::IsHorizontal() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         float ProgressBarWnd::GetValueInPixel() const
@@ -455,7 +455,7 @@ namespace m3d
 
         ProgressBarWnd::ProgressBarWnd(ProgressBarWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ProgressBarWnd::ProgressBarWnd()

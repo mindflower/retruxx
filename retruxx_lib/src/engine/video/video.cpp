@@ -231,7 +231,7 @@ namespace m3d
 
     void CTextureRenderer::GetVideoDims(int&, int&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     long CTextureRenderer::DoRenderSample(IMediaSample* pSample)
@@ -250,7 +250,7 @@ namespace m3d
 
         int retaddr = 0;
         auto texLock = static_cast<char*>(M3D_APP->m_renderer->LockTexture(g_pTexture, rend::TM_DTF_RGBA8888_VIDEOFRAME, retaddr, 0));
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
 
 
         M3D_APP->m_renderer->UnlockTexture(g_pTexture);
@@ -270,12 +270,12 @@ namespace m3d
 
     CTextureRenderer::~CTextureRenderer()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CTextureRenderer::GetTextureDims(int&, int&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     mVideoPlayer::~mVideoPlayer()

@@ -48,47 +48,47 @@ RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetRotation)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetRotation)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetDirection)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetDirection)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetLinearVelocity)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetLinearVelocity)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetAngularVelocity)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetAngularVelocity)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetUpdatingByODE)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetSkin)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetSkin)
@@ -101,7 +101,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetSkin)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, IsVisible)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 namespace ai
@@ -179,12 +179,12 @@ namespace ai
 
     void PhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool PhysicObj::GetBodyEnabledBit() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Quaternion PhysicObj::GetRotation() const
@@ -205,12 +205,12 @@ namespace ai
 
     void PhysicObj::SetPostDisablePhysicsWithAutoEnable()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector PhysicObj::GetMassCenter() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool PhysicObj::bIsUpdatingByODE() const
@@ -220,22 +220,22 @@ namespace ai
 
     void PhysicObj::RelinkToSpace(dxSpace*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool PhysicObj::IsVisible()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Quaternion PhysicObj::GetPostRotation() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     dxSpace* PhysicObj::GetSpaceId() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetSkin(int skin)
@@ -255,7 +255,7 @@ namespace ai
 
     bool PhysicObj::CanPhysicsBeEnabled() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float PhysicObj::GetMass() const
@@ -269,7 +269,7 @@ namespace ai
 
     void PhysicObj::DisablePhysicsAndGeometry()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool PhysicObj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
@@ -281,9 +281,9 @@ namespace ai
             return true;
 
         case 5:
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         case 45:
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         default:
             return ai::Obj::SetPropertyById(propertyId, newValue);
         }
@@ -291,32 +291,32 @@ namespace ai
 
     void PhysicObj::SetPostEnablePhysicsIfPossible()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector PhysicObj::GetMassCenterPosition() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::TransferToSpace(dxSpace*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetVisible()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::AddTorque(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::CheckCollisionCells()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::Registration()
@@ -332,12 +332,12 @@ namespace ai
 
     void PhysicObj::AddImpulseAtRelPos(CVector const&, CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::TransferToNewSpace()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetRotation(Quaternion const& rot)
@@ -347,17 +347,17 @@ namespace ai
 
     bool PhysicObj::CanCreateCollisionEffect() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::AddImpulse(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetPositionSelf(CVector const& pos)
@@ -432,27 +432,27 @@ namespace ai
 
     void PhysicObj::SetPostRotation(Quaternion const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetAutoDisabling(bool, float, float, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::IncEnabledCellsCount()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetTorque(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned PhysicObj::GetSkin() const
@@ -462,22 +462,22 @@ namespace ai
 
     void PhysicObj::EnablePhysicsIfPossible()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector PhysicObj::GetGeometricCenter() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetPassedToAnotherMapStatus()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetCollisionEffectCreated()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::DisableGeometry(bool changePhysicState)
@@ -498,12 +498,12 @@ namespace ai
 
     float PhysicObj::GetIntersectionRadius() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetPostEnablePhysics()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     dBody* PhysicObj::GetBody()
@@ -549,7 +549,7 @@ namespace ai
 
     void PhysicObj::SetMassCenterPosition(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::EnablePhysics()
@@ -567,17 +567,17 @@ namespace ai
 
     void PhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::AddForceAtPos(CVector const&, CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::DecEnabledCellsCount()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005FC410, PhysicObj::GetPosition)
@@ -659,7 +659,7 @@ namespace ai
 
     void PhysicObj::PostCollide()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::DisablePhysics()
@@ -676,22 +676,22 @@ namespace ai
 
     void PhysicObj::SetDisablePhysicsWhenBodyDisabled()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetForce(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector PhysicObj::GetPostPosition() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetAngularVelocity(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int PhysicObj::GetPhysicState() const
@@ -701,17 +701,17 @@ namespace ai
 
     void PhysicObj::RenderDebugInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::AddRelTorque(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetPostDisablePhysics()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::Remove()
@@ -722,7 +722,7 @@ namespace ai
 
     void PhysicObj::SetDirection(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Geom::CellAabb PhysicObj::GetCollisionCellAabb() const
@@ -732,47 +732,47 @@ namespace ai
 
     void PhysicObj::RenderObstacleDebugInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool PhysicObj::bIsStatic() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetLinearVelocity(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::AddForce(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::AddForceAtRelPos(CVector const&, CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::AddImpulseAtPos(CVector const&, CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetInvisible()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::AIParam PhysicObj::AIGetCurPos(Obj*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector PhysicObj::GetPositionAtRelPoint(CVector) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetPosition(CVector const& pos)
@@ -822,7 +822,7 @@ namespace ai
 
     void PhysicObj::EnablePhysicsAndGeometry()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     const ai::SphereForIntersection* PhysicObj::GetIntersectionSphere() const
@@ -832,17 +832,17 @@ namespace ai
 
     bool PhysicObj::bIsBodyDisabledGeomEnabled() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::DisablePhysicsWithAutoEnable()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetRotationSelf(Quaternion const& rot)
@@ -861,17 +861,17 @@ namespace ai
 
     void PhysicObj::SetPostPosition(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* PhysicObj::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector PhysicObj::GetAngularVelocity() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::RelinkGeomsToCollisionCells()
@@ -881,7 +881,7 @@ namespace ai
 
     void PhysicObj::AddRelativeRotation(Quaternion const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector PhysicObj::GetDirection() const
@@ -961,7 +961,7 @@ namespace ai
 
     bool PhysicObj::GetGeomEnabledBit() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::LinkGeomsToCollisionCells()
@@ -971,17 +971,17 @@ namespace ai
 
     CStr PhysicObj::GetPropertyName(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     eGObjPropertySaveStatus PhysicObj::GetPropertySaveStatus(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::ZeroEnabledCellsCount()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::SetCorrectEnabledCellsCounter()
@@ -1059,7 +1059,7 @@ namespace ai
 
     void PhysicObj::_SetSimpleCollision()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_AdjustMassCenter()
@@ -1089,12 +1089,12 @@ namespace ai
 
     void PhysicObj::_SetRotationToGeoms(Quaternion const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_EnableIntersections(bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_SetBoundSphereRadius(float radius)
@@ -1107,7 +1107,7 @@ namespace ai
 
     void PhysicObj::_SetBodyEnabledBit(bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_CreateSpace(bool bForUntransfer)
@@ -1125,22 +1125,22 @@ namespace ai
 
     bool PhysicObj::_GetPropertyInternal(int, m3d::AIParam&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool PhysicObj::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_UpdateOwnPhysics(float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_SetPositionToGeoms(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_UnlinkBodyFromGeoms()
@@ -1151,12 +1151,12 @@ namespace ai
 
     void PhysicObj::_SetStaticCollision()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_SetStatic()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_SetMassCenter(CVector const& massCenter)
@@ -1173,7 +1173,7 @@ namespace ai
 
     PhysicObj::~PhysicObj()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_InternalPostLoad()
@@ -1191,17 +1191,17 @@ namespace ai
 
     void PhysicObj::_SetGeomEnabledBit(bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool PhysicObj::_UpdateMustBeRelinked()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_LinkBodyToGeoms()
@@ -1212,23 +1212,23 @@ namespace ai
 
     m3d::Object* PhysicObj::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* PhysicObj::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_CommonBodyChangeEnabledStateCallback(dxBody*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005FB1E0, getPhysicObjOrPhysicBodyGeometricCenter)
     CVector getPhysicObjOrPhysicBodyGeometricCenter(ai::Obj const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
         return CVector();
     }
 }

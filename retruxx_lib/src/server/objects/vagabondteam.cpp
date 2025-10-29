@@ -12,7 +12,7 @@ namespace ai
 
     std::vector<CStr, std::allocator<CStr>> const& VagabondTeamPrototypeInfo::GetWaresPrototypes() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VagabondTeamPrototypeInfo::VagabondTeamPrototypeInfo()
@@ -22,17 +22,17 @@ namespace ai
 
     Obj* VagabondTeamPrototypeInfo::CreateTargetObject() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr const& VagabondTeamPrototypeInfo::GetVehiclesGeneratorPrototypeName() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool VagabondTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
         auto result = ai::TeamPrototypeInfo::LoadFromXML( xmlFile, xmlNode);
         if (result)
         {
@@ -48,17 +48,17 @@ namespace ai
 
     VagabondTeam::VagabondTeam(VagabondTeamPrototypeInfo const& prototype) : Team(prototype)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VagabondTeamPrototypeInfo const* VagabondTeam::GetPrototypeInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VagabondTeam::GenerateAndPlace(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* VagabondTeam::GetBaseClass()
@@ -68,36 +68,36 @@ namespace ai
 
     void VagabondTeam::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VagabondTeam::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* VagabondTeam::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     VagabondTeam::~VagabondTeam()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* VagabondTeam::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* VagabondTeam::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VagabondTeam::_DoNoticeEnemy(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

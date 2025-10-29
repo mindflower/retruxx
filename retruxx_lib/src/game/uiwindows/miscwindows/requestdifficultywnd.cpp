@@ -18,12 +18,12 @@ m3d::Class* RequestDifficultyWnd::GetClass() const
 
 m3d::Object* RequestDifficultyWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RequestDifficultyWnd::~RequestDifficultyWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* RequestDifficultyWnd::CreateObject()
@@ -38,7 +38,7 @@ m3d::Class* RequestDifficultyWnd::GetBaseClass()
 
 RequestDifficultyWnd::RequestDifficultyWnd(RequestDifficultyWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RequestDifficultyWnd::RequestDifficultyWnd()
@@ -47,32 +47,32 @@ RequestDifficultyWnd::RequestDifficultyWnd()
 
 void RequestDifficultyWnd::FillDifficultyLevelsList()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RequestDifficultyWnd::OnKey(unsigned short, unsigned char, unsigned)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RequestDifficultyWnd::OnBeforeRemoveFromWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void RequestDifficultyWnd::Clear()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void RequestDifficultyWnd::ApplyDifficultyLevel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RequestDifficultyWnd::OnBeforeAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RequestDifficultyWnd::GameDataSetup()

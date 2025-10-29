@@ -2,6 +2,7 @@
 #include <math/camera.h>
 
 #include "math/matrix.h"
+#include "thirdparty/containers.h"
 
 CAffineXForm::CAffineXForm() :
     m_worldOrigin(0.0, 0.0, 0.0),
@@ -13,7 +14,7 @@ CAffineXForm::CAffineXForm() :
 
 void CAffineXForm::createRotationMatrix(CMatrix&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CAffineXForm::createViewMatrix(CMatrix& viewMatrix) const
@@ -54,12 +55,12 @@ void CAffineXForm::createViewMatrix(CMatrix& viewMatrix) const
 
 void CAffineXForm::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CAffineXForm::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CCamera::createProjectionMatrix(CMatrix& vv, float f) const
@@ -88,7 +89,7 @@ CCamera::CCamera() :
 
 void CCamera::lookAt(CVector const&, CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CCamera::lookAt(CVector const& aim)
@@ -105,12 +106,12 @@ void CCamera::lookAt(CVector const& aim)
 
 void CCamera::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CCamera::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CCamera::setFov(float fov, float w, float h)

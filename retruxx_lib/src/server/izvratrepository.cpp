@@ -58,7 +58,7 @@ namespace ai
 
     std::vector<int, std::allocator<int>> const& IzvratRepository::GetCells() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     IzvratRepository::~IzvratRepository()
@@ -67,12 +67,12 @@ namespace ai
 
     int IzvratRepository::CanAddThingToPlace(GeomRepositoryItem const&, PointBase<int> const&, int*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* IzvratRepository::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* IzvratRepository::GetBaseClass()
@@ -82,7 +82,7 @@ namespace ai
 
     bool IzvratRepository::AddThingToPlace(GeomRepositoryItem&, PointBase<int> const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* IzvratRepository::CreateObject()
@@ -122,12 +122,12 @@ namespace ai
 
     BoundsBase<int> IzvratRepository::ToMaxSzRelative(BoundsBase<int>) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     PointBase<int> IzvratRepository::ToMaxSzRelative(PointBase<int>) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int IzvratRepository::SnapPiece(BoundsBase<int> const& piece)
@@ -202,7 +202,7 @@ namespace ai
 
     m3d::Class* IzvratRepository::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void IzvratRepository::Clear(bool bUnsafe)
@@ -219,27 +219,27 @@ namespace ai
 
     IzvratRepository& IzvratRepository::operator=(IzvratRepository const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     PointBase<int> const& IzvratRepository::GetMaxGeomSize() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     PointBase<int> IzvratRepository::ToGeomSzRelative(PointBase<int>) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     BoundsBase<int> IzvratRepository::ToGeomSzRelative(BoundsBase<int>) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     IzvratRepository::IzvratRepository(IzvratRepository const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     IzvratRepository::IzvratRepository()
@@ -249,7 +249,7 @@ namespace ai
 
     int IzvratRepository::GetUnifyCellValueFromPiece(BoundsBase<int> const&, int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void IzvratRepository::MarkCellPieceByValue(int value, BoundsBase<int> const& piece)
@@ -318,6 +318,6 @@ namespace ai
 
     bool IzvratRepository::IsValueAnItemId(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

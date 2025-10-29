@@ -8,17 +8,17 @@
 
 ObjectCollection::~ObjectCollection()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ObjectCollection::RemoveObject(ai::Obj*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 std::set<int> const* ObjectCollection::GetObjectsByClass(m3d::Class const*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ObjectCollection::ObjectCollection()
@@ -45,7 +45,7 @@ bool ObjectCollection::IsClassCollected(m3d::Class const* cl) const
 
 void ObjectCollection::ClearObjects()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ObjectCollection::AddObject(ai::Obj* obj)
@@ -66,7 +66,7 @@ int ObjectCollection::AddObject(ai::Obj* obj)
 
 void ObjectCollection::ClearClasses()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ObjectCollection::InitClasses()

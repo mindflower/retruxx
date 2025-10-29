@@ -16,7 +16,7 @@ char const* PostEffectManager::GetCallbackName() const
 
 void PostEffectManager::OnBeforeDeviceReset()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void PostEffectManager::OnAfterDeviceReset()
@@ -60,7 +60,7 @@ void PostEffectManager::OnAfterDeviceReset()
 
 PostEffectManager::~PostEffectManager()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 PostEffectManager::PostEffectManager()
@@ -69,12 +69,12 @@ PostEffectManager::PostEffectManager()
 
 bool PostEffectManager::GetParam(CStr const&, float&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void PostEffectManager::UnregisterEffect(PostEffect*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool PostEffectManager::Initialize()
@@ -212,13 +212,13 @@ bool PostEffectManager::Initialize()
 
 bool PostEffectManager::SetParam(CStr const&, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void PostEffectManager::Render(bool)
 {
     // TODO: implement PostEffectManager::Render
-    // throw retruxx::logic_error("Not implemented");
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool PostEffectManager::AddEffect(CStr const& effName, float, unsigned)
@@ -228,12 +228,12 @@ bool PostEffectManager::AddEffect(CStr const& effName, float, unsigned)
     {
         return false;
     }
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool PostEffectManager::KillEffect(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void PostEffectManager::Destroy()

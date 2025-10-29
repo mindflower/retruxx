@@ -25,7 +25,7 @@ namespace m3d
 
         rend::TexHandle ModelWnd::CreateTextureAsRenderTarget(PointBase<int> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         PointBase<int> ModelWnd::GetFitTargetTextureSize(BoundsBase<float> const& wndBounds)
@@ -98,12 +98,12 @@ namespace m3d
 
         int ModelWnd::SetTargetTexture(rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         AnimInfo* ModelWnd::Animation()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CVector& ModelWnd::Scale()
@@ -118,12 +118,12 @@ namespace m3d
 
         int ModelWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelWnd::OnPaint(DrawInfo const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Quaternion& ModelWnd::Rotation()
@@ -138,7 +138,7 @@ namespace m3d
 
         int ModelWnd::SetModel(AnimatedModel*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ModelWnd::~ModelWnd()
@@ -149,22 +149,22 @@ namespace m3d
 
         void ModelWnd::SetCfgNum(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* ModelWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned& ModelWnd::SkinNum()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         AnimatedModel* ModelWnd::GetModel()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CVector& ModelWnd::Translation()
@@ -202,22 +202,22 @@ namespace m3d
 
         int ModelWnd::CreateModelWnd(CStr const&, unsigned, BoundsBase<float> const&, unsigned, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelWnd::CreateImageWnd(BoundsBase<float> const&, CStr const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModelWnd::CreateImageWnd(BoundsBase<float> const&, rend::TexHandle)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ModelWnd::ModelWnd(ModelWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ModelWnd::ModelWnd()

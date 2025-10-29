@@ -13,7 +13,7 @@ namespace m3d
 
     unsigned const& Log::logMask() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     RETRUXX_DLL_INJECT_DTOR(0x00613050, Log);
@@ -65,7 +65,7 @@ namespace m3d
     RETRUXX_DLL_INJECT_FUNCTION(0x00612B80, Log::logStarted)
     bool Log::logStarted() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     RETRUXX_DLL_INJECT_FUNCTION(0x00612EF0, Log::endLog)
@@ -99,22 +99,22 @@ namespace m3d
 
     bool const& Log::lineCharsFlag() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool& Log::lineCharsFlag()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Log::logRaw(char const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Log::logHex(char const*, unsigned, eLogFlags)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned& Log::sourceLine()

@@ -80,7 +80,7 @@ namespace ai
 
     bool IntersectionManager::SpheresIntersect(const CVector&, float, const CVector, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void IntersectionManager::GetIntersectedObjects(
@@ -104,12 +104,12 @@ namespace ai
         const retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>>& targetClasses,
         bool bCheckBoxes)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool IntersectionManager::IsSphereValid(Sphere const*, retruxx::set<m3d::Class*> const&, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void IntersectionManager::Registration()
@@ -162,7 +162,7 @@ namespace ai
 
     void IntersectionManager::RemoveLookingSphere(SphereForIntersection*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void IntersectionManager::_GetIntersectedObjectsCustom(

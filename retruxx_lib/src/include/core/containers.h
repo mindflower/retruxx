@@ -35,7 +35,7 @@ namespace m3d
 
         void remove(const CStr&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         using tStrHash = retruxx::map<CStr, T>;

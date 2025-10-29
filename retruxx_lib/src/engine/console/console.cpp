@@ -23,13 +23,13 @@ namespace
 
     void Gfx_PrintFixed(float,float,int,char const *,unsigned int,unsigned int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, Clear)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, PrintF)
@@ -42,7 +42,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, PrintF)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, InputLine)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, executeCommand)
@@ -55,12 +55,12 @@ RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, executeCommand)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, Toggle)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, SetScreenSize)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 namespace m3d
@@ -112,17 +112,17 @@ namespace m3d
 
     CConsoleParams& CConsoleParams::operator=(char const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int CConsoleParams::IntToken(int, char) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CConsoleParams::CConsoleParams(CConsoleParams const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CConsoleParams::CConsoleParams(char const* buf)
@@ -132,7 +132,7 @@ namespace m3d
 
     CConsoleParams::CConsoleParams(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int CConsoleParams::NumOfTokens(char delim) const
@@ -240,12 +240,12 @@ namespace m3d
 
     float CConsoleParams::FloatToken(int, char) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     IConsole::IConsole(IConsole const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     IConsole::IConsole()
@@ -254,7 +254,7 @@ namespace m3d
 
     Class* IConsole::GetRtClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* IConsole::GetBaseClass()
@@ -293,14 +293,14 @@ void ConsoleImp::Render()
         }
         else
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }
 
 int ConsoleImp::InputLine(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ConsoleImp::ConsoleImp()
@@ -309,37 +309,37 @@ ConsoleImp::ConsoleImp()
 
 ConsoleImp::ConsoleImp(ConsoleImp const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ConsoleImp::~ConsoleImp()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* ConsoleImp::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::UnregisterCVar(m3d::CVar*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ConsoleImp::HandleEvent(m3d::Event const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ConsoleImp::Save(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ConsoleImp::isActive() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::RegisterCommand(char const* cmdname, int id, m3d::IConHandler* handler)
@@ -349,7 +349,7 @@ void ConsoleImp::RegisterCommand(char const* cmdname, int id, m3d::IConHandler* 
 
 m3d::Object* ConsoleImp::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::executeCommand(CStr const& command)
@@ -429,7 +429,7 @@ m3d::Class* ConsoleImp::GetBaseClass()
 
 void ConsoleImp::ScrollDown(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::Init(int width, int height)
@@ -503,7 +503,7 @@ int ConsoleImp::Load(CStr const& fname)
 
 void ConsoleImp::SetScreenSize(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::PrintF(CStr const& s)
@@ -514,7 +514,7 @@ void ConsoleImp::PrintF(CStr const& s)
 
 void ConsoleImp::ScrollUp(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::CheckResize(int newWidth, int newHeight)
@@ -575,22 +575,22 @@ void ConsoleImp::RegisterCVar(m3d::CVar* var, IConHandler* handler)
 
 void ConsoleImp::NotifyMode(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::ForceRender()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::setNumNotifyLines(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ConsoleImp::DumpToFile(char const*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* ConsoleImp::GetClass() const
@@ -600,22 +600,22 @@ m3d::Class* ConsoleImp::GetClass() const
 
 void ConsoleImp::ProcessInputChar(unsigned short)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ConsoleImp::Toggle(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ConsoleImp::Toggle()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::Clear()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::RegisterConsoleCommands()
@@ -628,37 +628,37 @@ void ConsoleImp::RegisterConsoleCommands()
 
 void ConsoleImp::executeCmdFile(char const*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::executeScriptCommand(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::Linefeed()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::DrawInput()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::CompleteInput()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr ConsoleImp::getFormatedScriptErrorDesc(m3d::eScriptError) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::RenderNotify()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
     auto v2 = this->m_FontSizeY * this->m_nNumNotify;
     auto v3 = this->m_con.height;
     auto v4 = (v3 * this->m_screensize);
@@ -693,12 +693,12 @@ void ConsoleImp::RenderNotify()
         M3D_RENDERER->PopZbState();
         M3D_RENDERER->PopFog();
     }
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::CompleteScriptCommand()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::HandleCommand(int cmdId, m3d::CConsoleParams const& params)
@@ -748,14 +748,14 @@ void ConsoleImp::HandleCommand(int cmdId, m3d::CConsoleParams const& params)
 	    }
     default:
 	    {
-			throw std::logic_error("Not implemented");
+			RETRUXX_NOT_IMPLEMENTED;
 	    }
     }
 }
 
 bool ConsoleImp::HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ConsoleImp::Print(char const* txt)

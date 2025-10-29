@@ -7,12 +7,12 @@ namespace m3d
 {
     int DecalsServer::AddItem(char const*, char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DecalsServer::RemoveItem(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecalsServer::RenderItem(int id, void* params)
@@ -20,17 +20,17 @@ namespace m3d
         m_profiler->StartCountdown();
         if (id == -2)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         else if (id == -3)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         else
         {
             if (id != -4)
             {
-                throw retruxx::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
         }
         m_profiler->EndCountdown();
@@ -44,22 +44,22 @@ namespace m3d
 
     int DecalsServer::SaveAllLoadedEntities(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecalsServer::~DecalsServer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DecalsServer::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DecalsServer::SetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DecalsServer::DecalsServer()
@@ -74,7 +74,7 @@ namespace m3d
 
     int DecalsServer::GetItemProperty(int, int, void*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DecalsServer::AddItemsList(retruxx::vector<ServerItem>& itemsList)
@@ -82,7 +82,7 @@ namespace m3d
         // TODO: implement DecalsServer::AddItemsList
         //for (const auto& item : itemsList)
         //{
-        //    throw retruxx::logic_error("Not implemented");
+        //    RETRUXX_NOT_IMPLEMENTED;
         //}
     }
 }

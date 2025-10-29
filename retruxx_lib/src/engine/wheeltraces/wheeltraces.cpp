@@ -20,32 +20,32 @@ namespace m3d
 
     void WheelTraceMgr::Release()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WheelTraceMgr::Render()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WheelTraceMgr::~WheelTraceMgr()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WheelTraceMgr::EndSkidding(void*, bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WheelTraceMgr::StartSkidding(void*, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WheelTraceMgr::ClearTraces()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     WheelTraceMgr::WheelTraceMgr()
@@ -71,21 +71,21 @@ namespace m3d
 
     void WheelTraceMgr::Init(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool WheelTraceMgr::IsSkiddingStarted(void*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WheelTraceMgr::AddTrace(CVector const&, Quaternion const&, float, void*, int, bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WheelTraceMgr::AddTextureBySoilType(int, CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

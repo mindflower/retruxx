@@ -14,27 +14,27 @@ namespace m3d
 
         MsgBoxDlg::~MsgBoxDlg()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* MsgBoxDlg::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* MsgBoxDlg::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int MsgBoxDlg::CreateMsgBoxDlg(CStr const&, CStr const&, BoundsBase<float> const&, unsigned, float)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* MsgBoxDlg::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* MsgBoxDlg::GetBaseClass()
@@ -44,57 +44,57 @@ namespace m3d
 
         MsgBoxDlg::MsgBoxDlg(MsgBoxDlg const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         MsgBoxDlg::MsgBoxDlg()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int MsgBoxDlg::CloseModal(int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int MsgBoxDlg::OnInitModal()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int MsgBoxDlg::OnWndNotify(Wnd*, unsigned, unsigned, AIParam const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* ArtDlg::GetClass() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ArtDlg::~ArtDlg()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* ArtDlg::CreateObject()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ArtDlg::CreateArtDlg(CStr const&, CStr const&, CStr const&, CStr const&, BoundsBase<float> const&, unsigned, float)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ArtDlg::OnInitModal()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* ArtDlg::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* ArtDlg::GetBaseClass()
@@ -104,12 +104,12 @@ namespace m3d
 
         ArtDlg::ArtDlg()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ArtDlg::ArtDlg(ArtDlg const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

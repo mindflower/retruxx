@@ -12,27 +12,27 @@ namespace m3d
 
     DbgCounter::eType DbgCounter::GetType() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DbgCounter::GetI() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool DbgCounter::GetB() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float DbgCounter::GetF() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     char const* DbgCounter::GetS() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     char const* DbgCounter::GetName() const
@@ -97,17 +97,17 @@ namespace m3d
 
     DbgCounter* DbgCounterStack::GetCounterByName(char const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     char const* DbgCounterStack::GetString(unsigned) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     char const* DbgCounterStack::GetName(unsigned) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DbgCounterStack::DbgCounterStack()
@@ -119,7 +119,7 @@ namespace m3d
 
     unsigned DbgCounterStack::GetNumStrings() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DbgCounterStack::Clear()

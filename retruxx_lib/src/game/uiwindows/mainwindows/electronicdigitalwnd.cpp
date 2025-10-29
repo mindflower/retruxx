@@ -6,52 +6,52 @@ RT_CLASS_DEFINE(ElectronicDigitalWnd);
 
 void ElectronicDigitalWnd::Digital::SetSymbol(ElectronicDigitalWnd::Symbol, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ElectronicDigitalWnd::Digital::Digital(m3d::ui::ImageWnd*, ElectronicDigitalWnd::DigitalSize, ElectronicDigitalWnd::Symbol)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ElectronicDigitalWnd::Digital::Digital()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ElectronicDigitalWnd::Digital::IsFree() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::ui::ImageWnd* ElectronicDigitalWnd::Digital::GetWnd() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ElectronicDigitalWnd::Symbol ElectronicDigitalWnd::Digital::GetSymbol() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ElectronicDigitalWnd::Digital::SetDigitalSize(ElectronicDigitalWnd::DigitalSize)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ElectronicDigitalWnd::Digital::UpdateTexture()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ElectronicDigitalWnd::Digital::Show(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* ElectronicDigitalWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* ElectronicDigitalWnd::GetBaseClass()
@@ -61,65 +61,65 @@ m3d::Class* ElectronicDigitalWnd::GetBaseClass()
 
 ElectronicDigitalWnd::~ElectronicDigitalWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ElectronicDigitalWnd::SetDigitalColor(unsigned)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ElectronicDigitalWnd::CreateFromPattern(m3d::ui::Wnd*, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* ElectronicDigitalWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ElectronicDigitalWnd::ShowNumber(int, bool, unsigned, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ElectronicDigitalWnd::ShowSymbol(Symbol, bool, unsigned, bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ElectronicDigitalWnd::SetDigitalSize(DigitalSize)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* ElectronicDigitalWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ElectronicDigitalWnd::Clear()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ElectronicDigitalWnd::GetFirstFreeSlot() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ElectronicDigitalWnd::ElectronicDigitalWnd(ElectronicDigitalWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ElectronicDigitalWnd::ElectronicDigitalWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ElectronicDigitalWnd::GameDataClear(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

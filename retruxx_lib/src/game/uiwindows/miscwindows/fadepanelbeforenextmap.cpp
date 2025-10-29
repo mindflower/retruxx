@@ -6,17 +6,17 @@ RT_CLASS_DEFINE(FadePanelBeforeNextMap);
 
 m3d::Class* FadePanelBeforeNextMap::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 FadePanelBeforeNextMap::~FadePanelBeforeNextMap()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* FadePanelBeforeNextMap::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* FadePanelBeforeNextMap::GetBaseClass()
@@ -26,50 +26,50 @@ m3d::Class* FadePanelBeforeNextMap::GetBaseClass()
 
 m3d::Object* FadePanelBeforeNextMap::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 FadePanelBeforeNextMap::FadePanelBeforeNextMap(FadePanelBeforeNextMap const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 FadePanelBeforeNextMap::FadePanelBeforeNextMap()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 unsigned FadePanelBeforeNextMap::CalcCurColor() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FadePanelBeforeNextMap::OnPlayerPassToMapFading()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FadePanelBeforeNextMap::UpdateAlpha()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FadePanelBeforeNextMap::StartFading()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void FadePanelBeforeNextMap::OnNewFrame()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int FadePanelBeforeNextMap::OnPaint(m3d::ui::DrawInfo const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int FadePanelBeforeNextMap::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

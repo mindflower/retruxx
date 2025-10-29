@@ -4,6 +4,7 @@
 #include <math/vector4.h>
 
 #include "math/quaternion.h"
+#include "thirdparty/containers.h"
 
 CMatrix::CMatrix(CMatrix const& vv)
 {
@@ -16,12 +17,12 @@ CMatrix::CMatrix()
 
 CVector CMatrix::vecRot(CVector const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CMatrix CMatrix::getInverseRotTranslate() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::zero()
@@ -31,22 +32,22 @@ void CMatrix::zero()
 
 CMatrix CMatrix::getTransposed() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float CMatrix::GetScaleZ() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CMatrix CMatrix::getInverseRot() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::FromInvBasis(CVector const&, CVector const&, CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::DecomposeScale(float& x, float& y, float& z)
@@ -64,37 +65,37 @@ void CMatrix::DecomposeScale(float& x, float& y, float& z)
 
 float CMatrix::GetScaleX() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::shadow(CVector4 const&, CPlane const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::GetInvBasis(CVector&, CVector&, CVector&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::composeSRT(CVector const&, CMatrix const&, CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::reflect(CPlane const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::translation(CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::translation(float, float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::getYPR(float& y, float& p, float& r) const
@@ -200,17 +201,17 @@ void CMatrix::GetNormalizedBasis(CVector& x, CVector& y , CVector& z) const
 
 CVector CMatrix::vecMul(CVector const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CVector4 CMatrix::vecMul(CVector4 const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::GetBasis(CVector&, CVector&, CVector&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CVector CMatrix::getOrg() const
@@ -221,12 +222,12 @@ CVector CMatrix::getOrg() const
 
 CVector CMatrix::vecRotBack(CVector const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::FromBasis(CVector const&, CVector const&, CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CMatrix CMatrix::getInverse() const
@@ -367,27 +368,27 @@ CVector CMatrix::getOrgInv() const
 
 void CMatrix::perspectiveFovLH(float, float, float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::rotZ(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::rotY(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::rotX(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::orthoLH(float, float, float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::rotYPR(float y, float p, float r)
@@ -510,27 +511,27 @@ void CMatrix::rotYPR(float y, float p, float r)
 
 float CMatrix::operator()(int, int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float& CMatrix::operator()(int, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::setOrg(CVector const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::scaling(float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::scaling(float, float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CMatrix::identity()
@@ -588,5 +589,5 @@ void CMatrix::lookAtLH(CVector const& eye, CVector const& at, CVector const& up)
 
 void CMatrix::shear(float, float, float, float, float, float)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

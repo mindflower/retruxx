@@ -18,7 +18,7 @@ namespace ai
 
 	CVector const& VehiclePartPrototypeInfo::GetSize() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	VehiclePartPrototypeInfo::VehiclePartPrototypeInfo()
@@ -36,7 +36,7 @@ namespace ai
 
 	Obj* VehiclePartPrototypeInfo::CreateTargetObject() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePartPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -52,7 +52,7 @@ namespace ai
 
 	VehiclePartPrototypeInfo::~VehiclePartPrototypeInfo()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool VehiclePartPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -184,12 +184,12 @@ namespace ai
 
 	VehiclePart::BreakData::BreakData()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	VehiclePart::BreakModelData::BreakModelData()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	VehiclePart::ModelPart::ModelPart()
@@ -200,17 +200,17 @@ namespace ai
 
 	void VehiclePart::RenderDebugInfo() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& VehiclePart::GetPartName() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::TransferPhysicParamsToSceneGraphNode()
@@ -225,32 +225,32 @@ namespace ai
 
 	CompoundVehiclePart* VehiclePart::GetOwnerCompoundVehiclePart()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CompoundVehiclePart const* VehiclePart::GetOwnerCompoundVehiclePart() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float VehiclePart::GetDurabilityCoeffForDamageType(DamageType) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& VehiclePart::GetBlowEffectName() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	unsigned VehiclePart::GetRepairPrice() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* VehiclePart::GetClass() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector VehiclePart::GetSize() const
@@ -267,17 +267,17 @@ namespace ai
 
 	CStr VehiclePart::GetPropertyName(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	VehiclePartPrototypeInfo const* VehiclePart::GetPrototypeInfo() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::SetPartName(CStr const& newName)
@@ -287,12 +287,12 @@ namespace ai
 
 	bool VehiclePart::ApplyModifier(Modifier const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::SetOwnerCompoundVehiclePart(CompoundVehiclePart*)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::DefineSuppressedLPs()
@@ -384,12 +384,12 @@ namespace ai
 
 	void VehiclePart::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::Update(float elapsedTime, unsigned workTime)
@@ -434,7 +434,7 @@ namespace ai
 
 	void VehiclePart::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::Remove()
@@ -444,7 +444,7 @@ namespace ai
 
 	bool VehiclePart::SetPropertyById(int, m3d::AIParam const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* VehiclePart::GetBaseClass()
@@ -454,22 +454,22 @@ namespace ai
 
 	float VehiclePart::GetRepairPriceForOneUnit() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	unsigned VehiclePart::GetPrice(IPriceCoeffProvider const*) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector const& VehiclePart::GetLastHitPos() const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::SetPassedToAnotherMapStatus()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::Registration()
@@ -481,17 +481,17 @@ namespace ai
 
 	eGObjPropertySaveStatus VehiclePart::GetPropertySaveStatus(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int VehiclePart::GetPropertyId(char const*) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::BreakModel(BreakData const&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	VehiclePart::VehiclePart(VehiclePartPrototypeInfo const& prototypeInfo) :
@@ -536,32 +536,32 @@ namespace ai
 
 	void VehiclePart::_SetAllPropertiesToMax()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool VehiclePart::_OnDurabilityValueBeforeApplyModifier(Modifier const&, float&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool VehiclePart::_GetPropertyInternal(int, m3d::AIParam&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	float VehiclePart::_GetModelPartHealth(int) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::_OnDurabilityValueAfterChange(float)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::_InternalCreateVisualPart()
@@ -572,7 +572,7 @@ namespace ai
 		{
 		    if (GetPassedToAnotherMapStatus())
 		    {
-				throw retruxx::logic_error("Not implemented");
+				RETRUXX_NOT_IMPLEMENTED;
 				M3D_ASSERT(m_passToAnotherMapData);
                 for (int i = 0; i < m_passToAnotherMapData->jadedEffects.size(); ++i)
                 {
@@ -617,46 +617,46 @@ namespace ai
 
 	bool VehiclePart::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	VehiclePart::~VehiclePart()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* VehiclePart::CreateObject()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::SaveDecalsRuntime(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::_CalcMeshToBreak(BreakModelData&)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::_AddDecal(CVector const&, CVector const&, CVector const&, unsigned, int)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* VehiclePart::Clone()
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::_RecalcDecals(unsigned, unsigned)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void VehiclePart::LoadDecalsRuntime(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw retruxx::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-class CVector;
+struct CVector;
 class CVector4;
 
 namespace m3d

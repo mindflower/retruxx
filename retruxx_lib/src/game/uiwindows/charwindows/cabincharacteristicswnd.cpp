@@ -6,27 +6,27 @@ RT_CLASS_DEFINE(CabinCharacteristicsWnd);
 
 CabinCharacteristicsWnd::CabinAuxInfo::CabinAuxInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CabinCharacteristicsWnd::SetupForCabin(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* CabinCharacteristicsWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* CabinCharacteristicsWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* CabinCharacteristicsWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* CabinCharacteristicsWnd::GetBaseClass()
@@ -36,40 +36,40 @@ m3d::Class* CabinCharacteristicsWnd::GetBaseClass()
 
 CabinCharacteristicsWnd::~CabinCharacteristicsWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CabinCharacteristicsWnd::SetupForCB(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::Cabin const* CabinCharacteristicsWnd::GetCabin() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CabinCharacteristicsWnd::CabinCharacteristicsWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CabinCharacteristicsWnd::CabinCharacteristicsWnd(CabinCharacteristicsWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CabinCharacteristicsWnd::ClearCharacteristics()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CabinCharacteristicsWnd::UpdateCharacteristics()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CabinCharacteristicsWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

@@ -50,27 +50,27 @@ namespace m3d
 
         Wnd::AnimationInfo::AnimationType Wnd::AnimationInfo::Str2AnimationType(CStr const&) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::AnimationInfo::Invalidate()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool Wnd::AnimationInfo::IsValid() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::AnimationInfo::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr Wnd::AnimationInfo::AnimationType2Str(AnimationType) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool Wnd::AnimationInfo::CanAnimate() const
@@ -80,17 +80,17 @@ namespace m3d
 
         int Wnd::AnimationInfo::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::AnimationInfo::SetupDefaultOnHide()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::AnimationInfo::SetupDefaultOnShow()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* Wnd::GetBaseClass()
@@ -105,12 +105,12 @@ namespace m3d
 
         int Wnd::GetUniqueId() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool Wnd::IsVisible() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::ShowWindow(bool show)
@@ -149,7 +149,7 @@ namespace m3d
 
         int Wnd::GetGuiId() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::GetDefaultFont() const
@@ -198,7 +198,7 @@ namespace m3d
 
         BoundsBase<float> Wnd::ToParent(BoundsBase<float> const&) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         PointBase<float> Wnd::ToParent(PointBase<float> const& pt) const
@@ -235,7 +235,7 @@ namespace m3d
 
         int Wnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool Wnd::GetCursorShow() const
@@ -272,12 +272,12 @@ namespace m3d
 
         PointBase<float> Wnd::GetOrigin() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::StartAnimation(AnimationInfo const&, bool)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned Wnd::GetColor() const
@@ -287,7 +287,7 @@ namespace m3d
 
         ScrollWnd* Wnd::GetScrollVWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         CStr Wnd::GetText() const
@@ -387,7 +387,7 @@ namespace m3d
 
         unsigned Wnd::GetInt() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::SetStyle(unsigned style)
@@ -397,17 +397,17 @@ namespace m3d
 
         int Wnd::GameDataSave(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* Wnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::RemoveChildForce(Object*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::SetBackground(rend::TexHandle bgTex)
@@ -451,7 +451,7 @@ namespace m3d
 
         void Wnd::SetOrigin(PointBase<float> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::SetColor(unsigned color)
@@ -475,7 +475,7 @@ namespace m3d
 
         void Wnd::SetInt(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::EnableWindow(bool bEnable)
@@ -488,7 +488,7 @@ namespace m3d
 
         void Wnd::EnableOnShowAnimation(bool)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::AddChild(Object* w)
@@ -503,7 +503,7 @@ namespace m3d
                 wnd->m_bSuspendedUnlink = false;
                 retruxx::vector<Object*> stack;
                 stack.push_back(w);
-                throw std::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
             else
             {
@@ -533,12 +533,12 @@ namespace m3d
 
         bool Wnd::IsEnabled() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::EnableOnHideAnimation(bool)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned Wnd::GetId() const
@@ -563,7 +563,7 @@ namespace m3d
 
         void Wnd::SetOnShowAnimationImmediate(bool)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::SetBounds(BoundsBase<float> const& rect, bool bUpdateBaseOrigin)
@@ -578,7 +578,7 @@ namespace m3d
 
         void Wnd::Centralize()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* Wnd::GetClass() const
@@ -588,12 +588,12 @@ namespace m3d
 
         Wnd::AnimationInfo const& Wnd::GetCurrentAnimation() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::GameDataLoad(cmn::XmlFile*, cmn::XmlNode*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::SetId(unsigned id)
@@ -603,22 +603,22 @@ namespace m3d
 
         void Wnd::StopAnimation(bool)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         PointBase<float> Wnd::ToWindow(PointBase<float> const&) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         BoundsBase<float> Wnd::ToWindow(BoundsBase<float> const&) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::AdjustForWndTextToFit(unsigned, float)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::GetPaneFlags() const
@@ -628,7 +628,7 @@ namespace m3d
 
         void Wnd::SetOnHideAnimationImmediate(bool)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         PointBase<float> Wnd::ToScreen(PointBase<float> const& pt) const
@@ -671,7 +671,7 @@ namespace m3d
 
         int Wnd::GameDataUpdate(void*, int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         BoundsBase<float> Wnd::GetClientBounds() const
@@ -758,12 +758,12 @@ namespace m3d
 
         void Wnd::AdjustToFitChildren()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         PointBase<float> const& Wnd::GetBaseOrigin() const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::SetOnShowAnimation(AnimationInfo const& info)
@@ -917,7 +917,7 @@ namespace m3d
 
         int Wnd::GetPropertiesList(retruxx::set<unsigned>&) const
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::SetWrapMode(TextWrapFlags wrap)
@@ -1055,17 +1055,17 @@ namespace m3d
 
         int Wnd::ProcessAnimation(int, int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Wnd* Wnd::CreateTooltipWnd()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::OnEndAnimation(bool)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::OnObtainingFocus()
@@ -1103,7 +1103,7 @@ namespace m3d
 
         Wnd::Wnd(Wnd const&)
         {
-            //throw std::logic_error("Not implemented");
+            //RETRUXX_NOT_IMPLEMENTED;
         }
 
         PointBase<float> Wnd::GetOriginPoint() const
@@ -1206,7 +1206,7 @@ namespace m3d
 
         void Wnd::Unregister()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::Register()
@@ -1237,12 +1237,12 @@ namespace m3d
 
         void Wnd::FinishDragMove(int, PointBase<float> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::StartDragMove(PointBase<float> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int LoadExistingDialog(Wnd* destWnd, CStr const& name)
@@ -1418,7 +1418,7 @@ namespace m3d
 
         int Wnd::ReflectChildNotifyToParent(Wnd*, unsigned, unsigned, AIParam const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::OnMouseIn()
@@ -1456,7 +1456,7 @@ namespace m3d
 
         int Wnd::OnMouseClick(PointBase<float> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::OnPaintOverChildren(DrawInfo const& clipToIt)
@@ -1465,12 +1465,12 @@ namespace m3d
 
         int Wnd::OnMouseButton2(unsigned int, PointBase<float> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::OnMouseButton1(unsigned, PointBase<float> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int Wnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
@@ -1547,7 +1547,7 @@ namespace m3d
 
         int Wnd::OnMouseWheel(int, PointBase<float> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void Wnd::OnDisplayChanged()
@@ -1697,7 +1697,7 @@ namespace m3d
 
         void Wnd::DoDragMove(PointBase<float> const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         RT_CLASS_EXPORTS_BEGIN(ModalWnd)
@@ -1716,7 +1716,7 @@ namespace m3d
 
         int ModalWnd::DoModal()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModalWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -1731,7 +1731,7 @@ namespace m3d
 
         int ModalWnd::IsModal()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Class* ModalWnd::GetClass() const
@@ -1741,12 +1741,12 @@ namespace m3d
 
         Wnd* ModalWnd::GetDlgItem(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* ModalWnd::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ModalWnd::~ModalWnd()
@@ -1759,7 +1759,7 @@ namespace m3d
 
         int ModalWnd::OnInitDlgItem(Wnd*, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         void ModalWnd::OnCloseModal(int)
@@ -1797,7 +1797,7 @@ namespace m3d
 
         int ModalWnd::OnKey(unsigned short, unsigned char, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int ModalWnd::OnWndNotify(Wnd* from, unsigned idFrom, unsigned msg, AIParam const& data)
@@ -1823,7 +1823,7 @@ namespace m3d
 
         ModalWnd::ModalWnd(ModalWnd const&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ModalWnd::ModalWnd()

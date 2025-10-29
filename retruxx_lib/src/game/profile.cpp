@@ -155,7 +155,7 @@ void Profile::SetFolder(CStr const& folder)
 
 m3d::Object* Profile::Clone()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int Profile::GetParam(ProfileParam paramId, m3d::AIParam& param) const
@@ -182,12 +182,12 @@ m3d::Class* Profile::GetBaseClass()
 
 void Profile::SetName(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int Profile::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool Profile::IsValid() const
@@ -213,7 +213,7 @@ int Profile::SetParam(ProfileParam paramId, m3d::AIParam const& paramVal)
 
 Profile::~Profile()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr const& Profile::GetName() const
@@ -311,7 +311,7 @@ void Profile::Clear()
 
 Profile::Profile(Profile const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Profile::Profile()
@@ -336,7 +336,7 @@ ProfileParam Profile::ParamName2Id(CStr const& name) const
 
 CStr Profile::ParamId2Name(ProfileParam) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORTS_BEGIN(ProfileManager)
@@ -374,17 +374,17 @@ int ProfileManager::SetCurProfile(CStr const& profileName)
 
 CStr ProfileManager::GetDefaultProfileName() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* ProfileManager::GetClass() const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ProfileManager::DeleteProfile(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 retruxx::vector<CStr> ProfileManager::GetProfilesNames() const
@@ -400,7 +400,7 @@ retruxx::vector<CStr> ProfileManager::GetProfilesNames() const
 
 int ProfileManager::Done()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ProfileManager::Init()
@@ -426,7 +426,7 @@ int ProfileManager::Init()
 
 Profile const* ProfileManager::CreateNewProfile(CStr const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* ProfileManager::GetBaseClass()
@@ -436,7 +436,7 @@ m3d::Class* ProfileManager::GetBaseClass()
 
 ProfileManager::~ProfileManager()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* ProfileManager::CreateObject()
@@ -508,12 +508,12 @@ int ProfileManager::LoadProfiles()
 
 Profile* ProfileManager::GetProfileByName(CStr const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* ProfileManager::Clone()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 //Verified: ProfileManager::Clear
@@ -529,12 +529,12 @@ void ProfileManager::Clear()
 
 CStr ProfileManager::GetProfileOwnFolderName(CStr const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 Profile const* ProfileManager::CreateDefaultProfile()
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ProfileManager::AddProfile(Profile* profile)
@@ -556,7 +556,7 @@ int ProfileManager::AddProfile(Profile* profile)
 
 ProfileManager::ProfileManager(ProfileManager const&)
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ProfileManager::ProfileManager() :
@@ -599,19 +599,19 @@ int ProfileManager::GetProfileFiles(retruxx::vector<CStr, retruxx::allocator<CSt
 
 CStr ProfileManager::GetProfileFolderName(CStr const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr ProfileManager::GetProfileFilePath(CStr const&) const
 {
-    throw retruxx::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ProfileManager::SaveProfile(Profile const* profile) const
 {
     if (profile && profile->IsValid())
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
     else
     {

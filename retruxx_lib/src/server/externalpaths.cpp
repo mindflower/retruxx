@@ -5,41 +5,41 @@ namespace ai
     bool ExternalPaths::Load(const CStr& fileName)
     {
         // TODO: implement ExternalPaths::Load
-        //throw std::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
         return false;
     }
 
     bool ExternalPaths::Save(const CStr& filename)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     const retruxx::vector<CVector2, retruxx::allocator<CVector2>>& ExternalPaths::GetPath(const CStr& pathName) const
     {
         // TODO: implement ExternalPaths::GetPath
         return m_emptyPath;
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ExternalPaths::SetPath(const CStr& pathName,
         const retruxx::vector<CVector2, retruxx::allocator<CVector2>>& thePath)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ExternalPaths::AddPath(const CStr& pathName,
         const retruxx::vector<CVector2, retruxx::allocator<CVector2>>& thePath)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool ExternalPaths::DelPath(const CStr& pathName)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     const retruxx::vector<CStr, retruxx::allocator<CStr>>& ExternalPaths::GetPathNames() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

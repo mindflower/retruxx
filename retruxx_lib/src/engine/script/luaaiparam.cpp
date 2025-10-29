@@ -14,7 +14,7 @@ extern "C"
 
 void SetParams(m3d::AIParam* p, lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_AIParamDestructor(lua_State* L)
@@ -26,7 +26,7 @@ int ext_AIParamDestructor(lua_State* L)
 
 int ext_AIParamCmp(lua_State* L)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ext_AIParamGet(lua_State* L)

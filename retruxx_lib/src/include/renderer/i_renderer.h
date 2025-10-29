@@ -9,7 +9,7 @@
 
 #include "i_renderer_query.h"
 
-class CVector2;
+struct CVector2;
 class CPlane;
 class CMatrix;
 

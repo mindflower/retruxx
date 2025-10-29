@@ -40,7 +40,7 @@ m3d::rend::TexHandle ObjectsIcons::Icon::GetIco(int mode) const
 
 ObjectsIcons::Icon::~Icon()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ObjectsIcons::ObjectsIcons()
@@ -50,7 +50,7 @@ ObjectsIcons::ObjectsIcons()
 void ObjectsIcons::Clear(bool)
 {
     // TODO: implement ObjectsIcons::Clear
-    // throw std::logic_error("Not implemented");
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::rend::TexHandle ObjectsIcons::GetIcoByName(CStr const& name, int mode) const
@@ -69,7 +69,7 @@ m3d::rend::TexHandle ObjectsIcons::GetIcoByName(CStr const& name, int mode) cons
 
 ObjectsIcons::~ObjectsIcons()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ObjectsIcons::Load(CStr const& fileName, bool bGlobal)

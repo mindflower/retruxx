@@ -7,7 +7,7 @@ namespace ai
     RETRUXX_DLL_INJECT_FUNCTION(0x007C3370, WeaponFirer::AimAndFireFromWeapons)
     void WeaponFirer::AimAndFireFromWeapons(ComplexPhysicObj* obj, bool enable, float elapsedTime, Obj* target)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
         CVector enemyPos;
         if (enable)
         {
@@ -42,20 +42,20 @@ namespace ai
     void WeaponFirer::FireFromWeaponsIfPossible(ComplexPhysicObj*, bool, CVector const&, Obj*)
     {
         // TODO: implement WeaponFirer::FireFromWeaponsIfPossible
-        //throw std::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x007C3210, WeaponFirer::WeaponLookAtPoint)
     void WeaponFirer::WeaponLookAtPoint(ComplexPhysicObj*, CVector const&, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x007C2EA0, WeaponFirer::GetMaxFiringRange)
     float WeaponFirer::GetMaxFiringRange(ComplexPhysicObj const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
         return 0.0f;
     }
 }

@@ -6,92 +6,92 @@ RT_CLASS_DEFINE(ZnayuKakProdatWnd);
 
 ZnayuKakProdatWnd::AuxInfo::AuxInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::CurValues::Clear()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ZnayuKakProdatWnd::CurValues::CurValues()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ItemSaveInfo::SetupAsGadget(int, Belong, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ItemSaveInfo::GetGadgetSlotId() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ZnayuKakProdatWnd::Belong ZnayuKakProdatWnd::ItemSaveInfo::GetBelong() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ZnayuKakProdatWnd::ItemType ZnayuKakProdatWnd::ItemSaveInfo::GetItemType() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ZnayuKakProdatWnd::ItemSaveInfo::ItemSaveInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 PointBase<int> ZnayuKakProdatWnd::ItemSaveInfo::GetRepositoryPos() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ZnayuKakProdatWnd::ItemSaveInfo::~ItemSaveInfo()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ItemSaveInfo::GetObjId() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ItemSaveInfo::SetupAsVehiclePart(int, Belong, CStr const&, CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ZnayuKakProdatWnd::ItemSaveInfo::IsValid() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ItemSaveInfo::SetupAsMainItem(int, Belong)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::ItemSaveInfo::Invalidate()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ItemSaveInfo::SetupAsRepositoryItem(int, Belong, PointBase<int> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr ZnayuKakProdatWnd::ItemSaveInfo::GetVehiclePartName() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::GetWorkshopItemsCostToBuy() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* ZnayuKakProdatWnd::GetBaseClass()
@@ -101,450 +101,450 @@ m3d::Class* ZnayuKakProdatWnd::GetBaseClass()
 
 ZnayuKakProdatWnd::Belong ZnayuKakProdatWnd::GetItemBelong(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::GetPlayerItemsCostToSell() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::Vehicle* ZnayuKakProdatWnd::GetWorkshopVehicle() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ZnayuKakProdatWnd::TradeType ZnayuKakProdatWnd::GetTradeType() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* ZnayuKakProdatWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::SetupForTrade(int, int, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::GetItemCost(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ZnayuKakProdatWnd::~ZnayuKakProdatWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::GetCurTradeCost() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* ZnayuKakProdatWnd::CreateObject()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* ZnayuKakProdatWnd::GetClass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ClearCabinFromItems(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::SaveGadgetsState(int, Belong, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>>&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::OnRepositoryChanged(void*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ZnayuKakProdatWnd::CabinHasItems(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::RestoreCurValues(int, CurValues const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::UpdateItemsCost()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ClearVehicleFromItems(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::BuyCabin()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ZnayuKakProdatWnd::IsItemRelevantForCurTradeState(ItemSaveInfo const*) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::Buy()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::SaveVehicleItemsState(Belong, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>>&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::ClearSaveInfo(std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>>&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::GetVehicleId(Belong) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::UpdateOnCurTradeStateChanged()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::TransferBasketItems(int, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::FinishTrade(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::RestoreTradeState()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::BuyVehicle()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::SaveCurValues(int, CurValues&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::GetBasketId(Belong) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::TransferVehicleParts(int, int, CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::SaveMainObject(int, Belong, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>>&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::CalcOneItemCost(int, ai::Workshop const*, Belong) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::RestoreGadgetsState(int, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::OnAfterAddToWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ClearTradeState()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ai::Workshop* ZnayuKakProdatWnd::GetWorkshop() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ClearBasketFromItems(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ZnayuKakProdatWnd::BasketHasItems(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ClearFromRepositoryItems(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ZnayuKakProdatWnd::IsValid() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::UpdateTransferButtonsTooltips()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::SaveBasketItemsState(Belong, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>>&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::AddItemToWorkshop(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ZnayuKakProdatWnd::VehicleHasItems(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::RestoreVehicleItemsState(int, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 bool ZnayuKakProdatWnd::RemoveItemFromWorkshop(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::TransferAll(Belong, Belong)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::SaveTradeState(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::CheckLeftItems()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ZnayuKakProdatWnd::Belong ZnayuKakProdatWnd::GetBelongByVehicleId(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::TransferGadgets(int, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::RestoreRepositoryItemsState(int, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::TransferRepositoryItems(int, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::OnVehiclePartChanged(void*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::GetCabinId(Belong) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::UpdatePlayerItemsCostWnd(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::OnGadgetChanged(void*)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ReplaceParentPart(CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::RestoreBasketItemsState(int, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ClearFromVehicleParts(int, CStr const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::OnAfterRemoveFromWndStation()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 std::vector<CStr, std::allocator<CStr>> ZnayuKakProdatWnd::GetChildVehiclePartNamesByParentPart(int, CStr const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::UpdateTradeCostWnd(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::RepairThing(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::RestoreVehiclePartsState(int, CStr const&, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::CancelTradeState()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::ClearFromGadgets(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::Cancel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::SellRepository()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::TransferVehicleItems(int, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ZnayuKakProdatWnd::ZnayuKakProdatWnd(ZnayuKakProdatWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ZnayuKakProdatWnd::ZnayuKakProdatWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::RestoreCabinItemsState(int, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>> const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::GameDataClear(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void ZnayuKakProdatWnd::UpdateWorkshopItemsCostWnd(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::CheckGold(int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::SaveCabinItemsState(Belong, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>>&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::GameDataUpdate(void*, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::MakeBottomPanel()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::TransferCabinItems(int, int)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::GameDataSetup()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::SaveVehiclePartsState(int, CStr const&, Belong, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>>&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ZnayuKakProdatWnd::TradeType ZnayuKakProdatWnd::GetTradeTypeByObjectId(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::BuyBasket()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::AddItem(ItemSaveInfo*, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>>&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::SaveRepositoryItemsState(int, Belong, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>>&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ZnayuKakProdatWnd::CalcItemsCostByBelong(Belong) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

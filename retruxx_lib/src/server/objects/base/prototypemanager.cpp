@@ -17,12 +17,12 @@ namespace ai
 
     void PrototypeManager::Clear()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned PrototypeManager::GetPrototypeFullNameLocalizedForm(int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PrototypeManager::LoadFromXmlFile(CStr const& fileName)
@@ -38,7 +38,7 @@ namespace ai
 
     int PrototypeManager::GetMatrixNum(int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PrototypeManager::RefreshFromXmlFile(CStr const& fileName)
@@ -48,17 +48,17 @@ namespace ai
 
     CStr PrototypeManager::GetPrototypeFullName(CStr const&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr PrototypeManager::GetPrototypeFullName(int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr PrototypeManager::GetPrototypeName(int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int PrototypeManager::GetPrototypeId(CStr const& prototypeName) const
@@ -78,7 +78,7 @@ namespace ai
 
     PrototypeManager::~PrototypeManager()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PrototypeManager::GetPrototypeIdsByResourceId(int resourceId,  retruxx::vector<int, retruxx::allocator<int>>& prototypeIds) const
@@ -96,7 +96,7 @@ namespace ai
 
     PrototypeInfo const* PrototypeManager::GetPrototypeInfo(CStr const&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     PrototypeInfo const* PrototypeManager::GetPrototypeInfo(int id) const

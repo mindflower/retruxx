@@ -95,7 +95,7 @@ namespace ai
 
 	int PhysicBody::GetNodeAnimAction() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::SetNodeAnimAction(int action, bool forceRestartAction)
@@ -150,7 +150,7 @@ namespace ai
 
 	void PhysicBody::SetNextForAnimation(int, int)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::ChangePhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const& collisionInfos)
@@ -226,17 +226,17 @@ namespace ai
 
 	void PhysicBody::SetSgNode(m3d::SgNode*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector PhysicBody::GetPosition() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::SetPosition(CVector const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::UpdateGeomsByCollisionInfo(retruxx::vector<CollisionInfo> const& collisionInfos)
@@ -274,12 +274,12 @@ namespace ai
 
 	void PhysicBody::SetNodeAction(int, bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::SgNode* PhysicBody::CreateNode(CStr const& modelname, int action, CVector const& scale, PhysicBody* owner, bool addToRoot)
@@ -371,22 +371,22 @@ namespace ai
 
 	CVector PhysicBody::GetDirection() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	unsigned PhysicBody::GetNumGeoms() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::SgNode* PhysicBody::CreateEffectNode(CStr const&, CVector const&, Quaternion const&, bool, float)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Quaternion PhysicBody::GetRotation() const
@@ -414,12 +414,12 @@ namespace ai
 
 	void PhysicBody::SetRotation(Quaternion const*)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::SetRotation(Quaternion const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::UnlinkGeomsFromBody()
@@ -432,7 +432,7 @@ namespace ai
 
 	void PhysicBody::SetAnimationStopped(bool)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::DbgCounter* PhysicBody::GetCountNodeRelinks()
@@ -442,7 +442,7 @@ namespace ai
 
 	Geom* PhysicBody::GetGeom(unsigned) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::RelinkSceneGraphNode()
@@ -505,12 +505,12 @@ namespace ai
 
 	void PhysicBody::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int PhysicBody::GetNodeEffectAction() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::LinkGeomToCollisionCells()
@@ -534,7 +534,7 @@ namespace ai
 
 	void PhysicBody::SetNodeAbsolutePosition(CVector const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector PhysicBody::GetNodeAbsolutePosition() const
@@ -597,7 +597,7 @@ namespace ai
 
 	PhysicBody::~PhysicBody()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::SetBelong(int newBelong)
@@ -609,12 +609,12 @@ namespace ai
 
 	void PhysicBody::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int PhysicBody::GetSkin() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::SetSkin(int skin)
@@ -625,12 +625,12 @@ namespace ai
 
 	int PhysicBody::GetNodeCfgNum() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::RenderDebugInfo() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::SetNodeCfgNum(int cfgNum)
@@ -642,7 +642,7 @@ namespace ai
 
 	void PhysicBody::SetPassedToAnotherMapStatus()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::ApplyCurrentModelCollision()
@@ -663,22 +663,22 @@ namespace ai
 
 	CVector PhysicBody::GetNodeAbsoluteDirection() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Geom::CellAabb PhysicBody::GetCollisionCellAabb() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::SetNodeAbsoluteDirection(CVector const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Class* PhysicBody::GetRtClass() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::SetOwnerBodyToGeoms()
@@ -714,7 +714,7 @@ namespace ai
 
 	int PhysicBody::GetNodeRealAnimAction() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::SetCollisionTrimeshAllowed(bool bCollisionTrimeshAllowed)
@@ -773,12 +773,12 @@ namespace ai
 
 	int PhysicBody::GetNodeRealAction() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool PhysicBody::bNeedToRelinkNode() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::SetVisible()
@@ -823,7 +823,7 @@ namespace ai
 
 	void PhysicBody::SetInvisible()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::ReceiveNodesToLink(retruxx::list<m3d::SgNode*>& nodes) const
@@ -836,7 +836,7 @@ namespace ai
 
 	void PhysicBody::SetNodeAbsoluteRotation(Quaternion const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	Quaternion PhysicBody::GetNodeAbsoluteRotation() const
@@ -866,12 +866,12 @@ namespace ai
 
 	bool PhysicBody::CanChildBeAdded(m3d::Class*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector PhysicBody::GetNodeRelativeDirection() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::AnimatedModel* PhysicBody::GetModel() const
@@ -940,7 +940,7 @@ namespace ai
 
 	void PhysicBody::DisableGeometry()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::RelinkToSpace(dxSpace* newSpace)
@@ -958,12 +958,12 @@ namespace ai
 
 	int PhysicBody::GetOwnerId() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int PhysicBody::_GetCurAnimationFrame() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::_SetScenegraphNode(CVector const& pos, Quaternion const& rot)
@@ -1009,7 +1009,7 @@ namespace ai
 
 	int PhysicBody::_GetNodeRealAnimAction() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PhysicBody::_InternalCreateVisualPart()
@@ -1095,6 +1095,6 @@ namespace ai
 
 	void PhysicBody::_DeleteNode()
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

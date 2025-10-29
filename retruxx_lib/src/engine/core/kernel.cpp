@@ -131,7 +131,7 @@ namespace m3d
 
     unsigned Kernel::debugMemUsed() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     cmn::Timer& Kernel::GetTimer()
@@ -167,12 +167,12 @@ namespace m3d
 
     void Kernel::DumpMem(char const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned Kernel::debugMemAllocated() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Kernel::AddClass(Class* rtClass)
@@ -194,22 +194,22 @@ namespace m3d
 
     unsigned Kernel::debugMemOverhead() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Kernel::SetClipboardData(char const*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Kernel::KernelLog(char const*, ...)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Kernel::TurnAggressiveMemoryDebugMode(bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* Kernel::RegisterGlobal(Object* object, char const* name)
@@ -255,22 +255,22 @@ namespace m3d
 
     CStr Kernel::GetClipboardData() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Kernel::debugMemLastAllocSize() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Kernel::UnRegisterGlobalObject(Object const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Kernel::RemoveClass(Class*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Kernel::GetListOfClasses(Class**& classList, unsigned& numOfClasses)

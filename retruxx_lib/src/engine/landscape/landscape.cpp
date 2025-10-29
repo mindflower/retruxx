@@ -52,12 +52,12 @@ namespace m3d
 
     void Landscape::LinkObstacleToCells(ai::Obstacle*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::SaveShoreLine(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Landscape::GetTileSize() const
@@ -67,7 +67,7 @@ namespace m3d
 
     void Landscape::SetOverlayShader(rend::IEffect*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::LinkNodeAndChildrenCollisionGeomsToCell(SgNode* node)
@@ -312,12 +312,12 @@ namespace m3d
 
     void Landscape::SetAllTexturesLoading(bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::FreeShoresStuff()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::BuildSolidLandscape()
@@ -427,7 +427,7 @@ namespace m3d
 
     void Landscape::DrawCellsOverlayedEditor(cmn::vector<unsigned> const&, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DrawSolidLandscape(LandRenderMode landMode, int lod)
@@ -541,7 +541,7 @@ namespace m3d
             break;
         }
         default:
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         M3D_RENDERER->SetToStream0(m_solidVb);
@@ -608,12 +608,12 @@ namespace m3d
 
     void Landscape::RemoveGrassInstance(unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::QueryWaterVisibility()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DrawLandScapeTextures(VisibilityMode visMode, bool drawMinimap, bool roadMap)
@@ -631,7 +631,7 @@ namespace m3d
         
         if (drawMinimap)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         else
         {
@@ -677,7 +677,7 @@ namespace m3d
                         }
                         if (m3d::Landscape::m_renderMode == RM_EDITOR)
                         {
-                            throw retruxx::logic_error("Not implemented");
+                            RETRUXX_NOT_IMPLEMENTED;
                         }
                         ++v16;
                         v24 = v131-- == 1;
@@ -706,7 +706,7 @@ namespace m3d
 
             if (m3d::Landscape::m_renderMode == RM_EDITOR)
             {
-                throw retruxx::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
         }
 
@@ -735,7 +735,7 @@ namespace m3d
             M3D_RENDERER->SetFogMode(rend::M3DFOG_LINEAR, false);
             if (m3d::Landscape::m_renderMode == RM_EDITOR)
             {
-                throw retruxx::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
             else
             {
@@ -787,7 +787,7 @@ namespace m3d
                 M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
                 if (m3d::Landscape::m_renderMode != RM_GAME)
                 {
-                    throw retruxx::logic_error("Not implemented");
+                    RETRUXX_NOT_IMPLEMENTED;
                 }
                 else
                 {
@@ -850,11 +850,11 @@ namespace m3d
 
         if (m3d::Landscape::m_renderMode == RM_EDITOR)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         if (drawMinimap && m3d::Landscape::m_renderMode == RM_EDITOR)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         M3D_RENDERER->LightEnable(0, 0);
@@ -868,7 +868,7 @@ namespace m3d
 
     void Landscape::RemoveGrassRectangle(CVector2 const&, CVector2 const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::ChangedNumberOfUsedTextures(unsigned numTexs)
@@ -1017,7 +1017,7 @@ namespace m3d
 
     Class* Landscape::GetClass() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Landscape::CollisionCellItem::CollisionCellItem()
@@ -1027,7 +1027,7 @@ namespace m3d
 
     Landscape::CollisionCellItem::~CollisionCellItem()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::CollisionCellItem::InsertPhysicObjId(int objId)
@@ -1044,24 +1044,24 @@ namespace m3d
 
     void Landscape::CollisionCellItem::InsertObstacle(ai::Obstacle* ob)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::CollisionCellItem::EraseObstacle(ai::Obstacle* ob)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     const retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Landscape::CollisionCellItem::
     GetPhysicObjIds() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     const retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle>>, retruxx::allocator<ref_ptr<ai::
     Obstacle>>>& Landscape::CollisionCellItem::GetObstacles() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Landscape::CollisionInfo::~CollisionInfo()
@@ -1070,12 +1070,12 @@ namespace m3d
 
     CStr const& Landscape::GetPathToTiles() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::SetEditorRenderMode()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::LinkNodeObstacleToCells(SgNode* node)
@@ -1234,32 +1234,32 @@ namespace m3d
 
     void Landscape::_dbgGenerateGrass()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DrawJoint(dxJoint*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Landscape::~Landscape()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::UnlinkNodeCollisionGeomsFromCell(SgNode*, int, int, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Landscape::New(float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::HandleCVar(CVar const*, CConsoleParams const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Landscape::AddOneTexture(CStr const& name)
@@ -1285,37 +1285,37 @@ namespace m3d
 
     void Landscape::HandleCommand(int, CConsoleParams const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::AddCollisionTris(int, int, CVector*, int, unsigned short*, CMatrix const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DrawShoreLine()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::ReloadWaterTextures()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::SaveNormalMap(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::SaveColorMap(CStr const&, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::SetLsHeight(float, float, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Landscape::GetLsHeight(float x, float y) const
@@ -1350,12 +1350,12 @@ namespace m3d
 
     unsigned Landscape::GetNumGrassModels() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::setHgtAtHfPoint(int, int, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Landscape::getHgtAtHfPoint(int x, int y) const
@@ -1368,12 +1368,12 @@ namespace m3d
 
     rend::TexHandle Landscape::GetTexHandleFromList(unsigned) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::SaveTileInfo()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005BDC00, Landscape::Load)
@@ -1543,7 +1543,7 @@ namespace m3d
             }
             else
             {
-                throw retruxx::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
                 // Process water data with conversion
                 unsigned char* tempData = new unsigned char[waterDataSize];
                 stream->ReadBytes(tempData, waterDataSize);
@@ -1630,17 +1630,17 @@ namespace m3d
 
     void Landscape::RenderGrass(unsigned, GrassInstance**, int*, RenderGrassType)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::RenderGrass(retruxx::deque<retruxx::pair<int, int>> const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Landscape::GetLsSize() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::RecalcUV()
@@ -1810,7 +1810,7 @@ namespace m3d
 
     void Landscape::ScaleGrassRadius(CVector const&, float, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::LinkNodeCollisionGeomsToCell(SgNode* node, int startX, int endX, int startY, int endY)
@@ -1984,42 +1984,42 @@ namespace m3d
 
     void Landscape::DrawShoresLayer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::drawCellOverlayedShader(int, int, rend::IEffect*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Landscape::TileInfo const& Landscape::GetTileInfo(int, int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::Invalidate()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned Landscape::AddGrassInstance(int, CVector const&, float, float, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::EndWaterQuery()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::SetNodeCollisionGeomsEnabled(SgNode*, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::Save16bitDisplace(CStr const&, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DrawCollisionGeoms(bool allGeoms)
@@ -2065,37 +2065,37 @@ namespace m3d
 
     void Landscape::ClearCollisionCellsMap()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::AddGrassModel(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::GenerateOneDPVSCellMesh(int, int, CVector*, int*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Landscape::GetFloatToShortScale() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::drawSpriteOverlayed2(float, float, float, float, unsigned, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Landscape::RecalcNormalMap(int, int, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::ChangeShoreState(int, int, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Landscape::GetHeight(float x, float y, int excludeTag, bool notForCamera)
@@ -2111,7 +2111,7 @@ namespace m3d
 
     void Landscape::CheckLandscapeCollisionTriMeshesForObjId(int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObject* Landscape::GetTerrainGeomObject() const
@@ -2121,17 +2121,17 @@ namespace m3d
 
     void Landscape::GetDPVSCollisionInfo(int, int, int&, int&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::RemoveGrassRadius(CVector const&, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DisableShoreRegion(int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::UpdateVis(bool vp)
@@ -2148,11 +2148,11 @@ namespace m3d
             if (M3D_KERNEL->GetEngineCfg().m_g_drawWater.GetB())
             {
                 // TODO: implement this!!!
-                //throw retruxx::logic_error("Not implemented");
+                //RETRUXX_NOT_IMPLEMENTED;
             }
             if (m_numWaterCells)
             {
-                //throw retruxx::logic_error("Not implemented");
+                //RETRUXX_NOT_IMPLEMENTED;
             }
         }
         m_profilerUpdateVis->EndCountdown();
@@ -2174,12 +2174,12 @@ namespace m3d
 
     int Landscape::GenerateShoreLine()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::ReleaseOdeCollisionData()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::LoadNormalMap(CStr const& fileName)
@@ -2237,19 +2237,19 @@ namespace m3d
 
     float Landscape::GetScaleForTile() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::SwitchDrawMode()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::RemoveCollisionTris(int tag)
     {
         if (tag >= 0)
         {
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         else
         {
@@ -2268,7 +2268,7 @@ namespace m3d
 
     Object* Landscape::CreateObject()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::getMinMaxHeightForBox(float* box, float buldgeY)
@@ -2322,17 +2322,17 @@ namespace m3d
 
     void Landscape::SetGameRenderMode()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::CollectGrassCell(int, int, unsigned&, GrassInstance**, int*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DrawGeom(dxGeom*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::Update()
@@ -2341,7 +2341,7 @@ namespace m3d
 
     void Landscape::DrawWaterLayer()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::CreateHelperStructures()
@@ -2351,7 +2351,7 @@ namespace m3d
 
     void Landscape::drawSpriteOverlayed2Projected(float, float, float, float, unsigned, bool, CClipper const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* Landscape::GetBaseClass()
@@ -2367,22 +2367,22 @@ namespace m3d
 
     void Landscape::RemoveGrassTile(int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DrawCells(cmn::vector<unsigned> const&, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::GetVisCellHeights(float&, float&, int, int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::CreateIndicesTriLists(int*, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::UpdateNodeCollisionGeoms(SgNode* node)
@@ -2471,12 +2471,12 @@ namespace m3d
 
     void Landscape::ReleaseLod()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DrawMassBox(dMass*, CVector const&, Quaternion const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::InitGrass()
@@ -2501,62 +2501,62 @@ namespace m3d
 
     void Landscape::StartWaterQuery()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::PutGrassToLandscape(CVector2 const&, CVector2 const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Landscape::GetNumTiles() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::setDrawRadius(int, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::GetDrawedCellHeights(float&, float&, int, int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned Landscape::GetNearestGrassInstance(CVector const&) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DoneGrass()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Landscape::getCameraHeight(float, float) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Landscape::getGrassModelIdByName(char const*) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Landscape::SaveCameraMap(CStr const&, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::Release()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::EnableShoreRegion(int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned int frame = 0;
@@ -2609,7 +2609,7 @@ namespace m3d
         if (m_numWaterCells != 0 && m_isWaterVisible)
         {
             // TODO: implement water rendering
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         m_profilerDraw->StartCountdown();
@@ -2712,7 +2712,7 @@ namespace m3d
         if (m_numWaterCells /* && HIBYTE(v97) */)
         {
             // TODO: implement water rendering
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         if ((M3D_KERNEL->GetEngineCfg().m_g_drawShores.GetB()))
@@ -2744,25 +2744,25 @@ namespace m3d
         if ((M3D_KERNEL->GetEngineCfg().m_g_showReflRefrMaps.GetB()))
         {
             // TODO: implement reflections rendering
-            throw retruxx::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         m_profilerDraw->EndCountdown();
     }
 
     int Landscape::Render(SgNodeRenderFlags, void*, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::ReadGrassFromXmlFile(char const*)
     {
         // TODO: implement Landscape::ReadGrassFromXmlFile
-        // throw retruxx::logic_error("Not implemented");
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::WriteGrassToXmlFile(char const*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Landscape::getNormal(float worldX, float worldZ)
@@ -2856,22 +2856,22 @@ namespace m3d
 
     unsigned char Landscape::GetColor(float, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::SetPresenceOnCollisionMap(int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::IsThisVisCellHasWater(int, int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::drawSpriteOverlayed(unsigned, CVector const&, CVector const&, float)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::ReloadLightmapTexture(CStr const& fileName)
@@ -2897,13 +2897,13 @@ namespace m3d
 
     Object* Landscape::Clone()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::LoadShoreLine(CStr const&)
     {
         // TODO: implement Landscape::LoadShoreLine
-        //throw retruxx::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
         return true;
     }
 
@@ -2941,7 +2941,7 @@ namespace m3d
 
     int Landscape::GetNumAlphas() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::CreateLod()
@@ -2960,7 +2960,7 @@ namespace m3d
 
     void Landscape::drawSpriteOverlayedProjected(unsigned, CVector const&, CMatrix const&, CClipper const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::CreateHeights(CellParams* dest, int ls, int cellSize)
@@ -3050,12 +3050,12 @@ namespace m3d
 
     int Landscape::isWaterCell(int, int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::Restore()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float Landscape::getWaterHeight(int x, int z) const
@@ -3126,7 +3126,7 @@ namespace m3d
 
     char const* Landscape::GetGrassModelName(unsigned) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::renderZGuard()
@@ -3333,23 +3333,23 @@ namespace m3d
 
     void Landscape::GetWaterCellHeights(float&, float&, int, int) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::ManageLandScapeCollisionTriMeshes()
     {
         // TODO: implement Landscape::ManageLandScapeCollisionTriMeshes
-        //throw retruxx::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::LinkPassMapCellToCollisionCell(PointBase<int> const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::ReBuildShoresVb()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Landscape::LoadTiles(CStr const& filename)
@@ -3489,17 +3489,17 @@ namespace m3d
 
     bool Landscape::traceLineThruCellLs(float&, int, int, CVector const&, CVector const&, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::RecursiveDisableShore(unsigned char*, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Landscape::Landscape(Landscape const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int CreateIndices(uint16_t* indices, int sizeIndex, int sizeVertex, int step)
@@ -4375,22 +4375,22 @@ namespace m3d
 
     void Landscape::RecursiveEnableShore(unsigned char*, int, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Landscape::traceLineThruCellLs0(float&, int, int, CVector const&, CVector const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DrawCells0(cmn::vector<unsigned> const&, RenderTypes)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int Landscape::IsBackfaced(int, int, rend::Cull)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::FreeTiles()
@@ -4456,23 +4456,23 @@ namespace m3d
 
     Landscape::VisibilityMode Landscape::GetCurVisMode() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::SetCurVisMode(VisibilityMode)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::DrawNonTransformGeom(dxGeom*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::RenderRoads()
     {
         // TODO: implement Landscape::RenderRoads
-        //throw retruxx::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::Register()

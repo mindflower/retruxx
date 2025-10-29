@@ -11,8 +11,8 @@ namespace m3d
     }
 }
 
-class CVector;
-class CVector2;
+struct CVector;
+struct CVector2;
 
 namespace ai
 {

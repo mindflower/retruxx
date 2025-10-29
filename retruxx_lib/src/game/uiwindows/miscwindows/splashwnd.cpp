@@ -72,7 +72,7 @@ void SplashWnd::ShowSplash(int processStatus, CStr const& text)
 
 SplashWnd::~SplashWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void SplashWnd::StartSplashing(int numSplashes)
@@ -165,7 +165,7 @@ SplashWnd::SplashWnd()
 
 SplashWnd::SplashWnd(SplashWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::rend::TexHandle SplashWnd::GetRandomImage(std::vector<m3d::rend::TexHandle> const& images) const

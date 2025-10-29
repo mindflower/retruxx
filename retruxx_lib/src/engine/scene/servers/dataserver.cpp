@@ -46,17 +46,17 @@ namespace m3d
 
     int DataServer::RenderShadowVolumesSet(SgNode**, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DataServer::RenderNodeSet(SgNode**, unsigned, RenderNodeInfo)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DataServer::RenderTransparents(SgNode**, unsigned)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DataServer::PostLoad()
@@ -65,37 +65,37 @@ namespace m3d
 
     CStr const& DataServer::GetNameByItem(int) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool DataServer::ReportServerInfo(char const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DataServer::WriteItemToXmlNode(int, cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DataServer::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DataServer::UpdateItem(int, void*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DataServer::Release()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DataServer::GenerateImpostorsIfNeeded()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DataServer::Init()
@@ -106,12 +106,12 @@ namespace m3d
 
     void DataServer::Restore()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DataServer::UnregisterNode(SgNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DataServer::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* root)
@@ -181,12 +181,12 @@ namespace m3d
 
     CStr DataServer::GetOriginalFileName(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     DataServer::~DataServer()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DataServer::RegisterNode(SgNode*)
@@ -195,7 +195,7 @@ namespace m3d
 
     void DataServer::Invalidate()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DataServer::GetItemProperty(int id, int prop, void* dest)
@@ -226,12 +226,12 @@ namespace m3d
 
     int DataServer::GetNumItems() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void DataServer::SetError(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool DataServer::IsValid() const

@@ -15,7 +15,7 @@ namespace ai
 
 	unsigned PrototypeInfo::GetBasePrice() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	PrototypeInfo::PrototypeInfo()
@@ -77,7 +77,7 @@ namespace ai
 
 	CStr PrototypeInfo::GetDebugDescription() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	PrototypeInfo::~PrototypeInfo()
@@ -86,16 +86,16 @@ namespace ai
 
 	bool PrototypeInfo::IsPrototypeOf(m3d::Class const*) const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CStr const& PrototypeInfo::GetParentPrototypeName() const
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void PrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
 	{
-		throw std::logic_error("Not implemented");
+		RETRUXX_NOT_IMPLEMENTED;
 	}
 }

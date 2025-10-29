@@ -13,12 +13,12 @@ namespace m3d
 
         IStream* FileReader::Clone()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FileReader::ReadLine(CStr&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FileReader::Close()
@@ -39,12 +39,12 @@ namespace m3d
 
         unsigned FileReader::PeekBytes(void*, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FileReader::Flush()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FileReader::FSeek(long offset, int origin)
@@ -79,7 +79,7 @@ namespace m3d
 
         unsigned FileReader::WriteBytes(void const* dst, unsigned numBytes)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FILETIME FileReader::GetDate() const
@@ -94,12 +94,12 @@ namespace m3d
 
         bool FileReader::IsOpen()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& FileReader::operator<<(char const*)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& FileReader::operator<<(float k)
@@ -114,12 +114,12 @@ namespace m3d
 
         FileStream& FileReader::operator<<(unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& FileReader::operator<<(int)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileReader::~FileReader()
@@ -129,32 +129,32 @@ namespace m3d
 
         FileStream& FileReader::operator>>(CStr&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& FileReader::operator>>(float&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& FileReader::operator>>(int&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         FileStream& FileReader::operator>>(unsigned&)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         int FileReader::Eof()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned FileReader::FRead(void*, unsigned, unsigned)
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         unsigned FileReader::GetSize() const
@@ -169,7 +169,7 @@ namespace m3d
 
         int FileReader::Error()
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 }

@@ -38,12 +38,12 @@ m3d::Class* VideoOptionsWnd::GetBaseClass()
 
 int VideoOptionsWnd::ApplyChanges(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* VideoOptionsWnd::Clone()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* VideoOptionsWnd::CreateObject()
@@ -58,12 +58,12 @@ m3d::Class* VideoOptionsWnd::GetClass() const
 
 VideoOptionsWnd::~VideoOptionsWnd()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::WaterQualityEnum2Val(WaterQuality) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::OnCbBlumChange(m3d::AIParam const&)
@@ -110,7 +110,7 @@ void VideoOptionsWnd::UpdateAntialiasingControls(GraphicQuality graphicQuality)
             }
             else
             {
-                throw std::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
             ++m_cbAntialiasingBlocked;
             m_cbAntialiasing->SetCurSel(-1);
@@ -143,7 +143,7 @@ void VideoOptionsWnd::UpdateAntialiasingControls(GraphicQuality graphicQuality)
 
 VideoOptionsWnd::ShadowSettings const& VideoOptionsWnd::GetShadowSettings(GraphicQuality) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr VideoOptionsWnd::GraphicQuality2Str(GraphicQuality graphicQuality) const
@@ -177,27 +177,27 @@ void VideoOptionsWnd::ApplyGamma()
 
 int VideoOptionsWnd::GetWaterShaderVersionByWaterQualityVal(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::GetDefaultAntialiasingForGraphicQuality(GraphicQuality) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::InitFarDistanceControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::BlumQualityEnum2Val(BlumQuality) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::GetCurrentBlum() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr VideoOptionsWnd::BlumQuality2Str(BlumQuality blumQuality) const
@@ -420,7 +420,7 @@ CStr VideoOptionsWnd::ShadowsQuality2Str(ShadowsQuality shadowsQuality) const
 
 m3d::ui::MbRetCodes VideoOptionsWnd::RunChangeWarningDlg()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateShadowsControls(GraphicQuality graphicQuality)
@@ -490,7 +490,7 @@ void VideoOptionsWnd::UpdateFiltrationControls(GraphicQuality graphicQuality)
             }
             else
             {
-                throw std::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
             ++m_cbFiltrationBlocked;
             m_cbFiltration->SetCurSel(-1);
@@ -551,7 +551,7 @@ void VideoOptionsWnd::OnCbResolutionChange(m3d::AIParam const&)
 
 void VideoOptionsWnd::SetChanged(bool)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::InitShadowsControls()
@@ -571,7 +571,7 @@ void VideoOptionsWnd::InitShadowsControls()
 
 int VideoOptionsWnd::GetCurrentAntialiasing() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::OnCbShadowsChange(m3d::AIParam const&)
@@ -629,7 +629,7 @@ void VideoOptionsWnd::OnBtnGammaNextClick(m3d::AIParam const&)
 
 VideoOptionsWnd::Filtration VideoOptionsWnd::FiltrationVal2Enum(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::OnGraphicQualityDependendControlChanged()
@@ -650,7 +650,7 @@ void VideoOptionsWnd::OnGraphicQualityDependendControlChanged()
 
 void VideoOptionsWnd::ApplyFiltration()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateGammaControls()
@@ -730,22 +730,22 @@ void VideoOptionsWnd::OnCbFiltrationChange(m3d::AIParam const&)
 
 VideoOptionsWnd::Antialiasing VideoOptionsWnd::AntialiasingVal2Enum(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::GetCurrentFiltration() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 VideoOptionsWnd::Resolution VideoOptionsWnd::ScreenWH2Resolution(PointBase<int> const&) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float VideoOptionsWnd::GetDefaultGrassForGraphicQuality(GraphicQuality) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::OnBtnFarDistancePrevClick(m3d::AIParam const&)
@@ -758,7 +758,7 @@ void VideoOptionsWnd::OnBtnFarDistancePrevClick(m3d::AIParam const&)
 
 int VideoOptionsWnd::FiltrationEnum2Val(Filtration) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::OnSliderGammaChange(m3d::AIParam const&)
@@ -782,17 +782,17 @@ void VideoOptionsWnd::UpdateGammaPrevNextButtonsState()
 
 VideoOptionsWnd::GraphicQuality VideoOptionsWnd::DetectCurrentGraphicQuality() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::GetDefaultBlumForGraphicQuality(GraphicQuality) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateFarDistanceControls(GraphicQuality)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::InitGraphicQualityControls()
@@ -812,12 +812,12 @@ void VideoOptionsWnd::InitGraphicQualityControls()
 
 void VideoOptionsWnd::ApplyResolution()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateGraphicQualityDependendControls(GraphicQuality)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::OnBtnGammaPrevClick(m3d::AIParam const&)
@@ -852,7 +852,7 @@ void VideoOptionsWnd::UpdateFarDistancePrevNextButtonsState()
 
 float VideoOptionsWnd::GetCurrentFarDistance() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateBlumControls(GraphicQuality graphicQuality)
@@ -868,7 +868,7 @@ void VideoOptionsWnd::UpdateBlumControls(GraphicQuality graphicQuality)
             }
             else
             {
-                throw std::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
             ++m_cbBlumBlocked;
             m_cbBlum->SetCurSel(-1);
@@ -909,12 +909,12 @@ void VideoOptionsWnd::OnBtnFarDistanceNextClick(m3d::AIParam const&)
 
 PointBase<int> VideoOptionsWnd::Resolution2ScreenWH(Resolution) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::ApplyWaterQuality()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::ValidateWaterQualityVal(int& waterQualityVal) const
@@ -952,7 +952,7 @@ VideoOptionsWnd::ShadowSettings VideoOptionsWnd::GetCurrentShadowSettings() cons
 
 float VideoOptionsWnd::GetDefaultFarDistanceForGraphicQuality(GraphicQuality) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateGrassControls(GraphicQuality graphicQuality)
@@ -968,7 +968,7 @@ void VideoOptionsWnd::UpdateGrassControls(GraphicQuality graphicQuality)
             }
             else
             {
-                throw std::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
             ++m_cbGrassBlocked;
             m_cbGrass->SetCurSel(-1);
@@ -1001,17 +1001,17 @@ void VideoOptionsWnd::UpdateGrassControls(GraphicQuality graphicQuality)
 
 void VideoOptionsWnd::InitGammaControls()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::ApplyFarDistance()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::GetDefaultFiltrationForGraphicQuality(GraphicQuality) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateControls()
@@ -1046,7 +1046,7 @@ void VideoOptionsWnd::OnCbWaterQualityChange(m3d::AIParam const&)
 
 int VideoOptionsWnd::GetCurrentWaterQuality() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr VideoOptionsWnd::ScreenWH2Str(PointBase<int> const& wh) const
@@ -1056,7 +1056,7 @@ CStr VideoOptionsWnd::ScreenWH2Str(PointBase<int> const& wh) const
 
 float VideoOptionsWnd::GetCurrentGrass() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateGraphicQualityControls()
@@ -1098,7 +1098,7 @@ CStr VideoOptionsWnd::Filtration2Str(Filtration filtration) const
 
 void VideoOptionsWnd::SetDefaultParamsForGraphicQuality(GraphicQuality)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::InitWaterQualityControls()
@@ -1124,7 +1124,7 @@ void VideoOptionsWnd::InitWaterQualityControls()
 
 VideoOptionsWnd::BlumQuality VideoOptionsWnd::BlumQualityVal2Enum(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::InitResolutionControls()
@@ -1154,22 +1154,22 @@ void VideoOptionsWnd::InitResolutionControls()
 
 void VideoOptionsWnd::ApplyAntialiasing()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 VideoOptionsWnd::WaterQuality VideoOptionsWnd::WaterQualityVal2Enum(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::OnBtnApplyClick(m3d::AIParam const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::ApplyBlum()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr VideoOptionsWnd::WaterQuality2Str(WaterQuality waterQuality) const
@@ -1188,17 +1188,17 @@ CStr VideoOptionsWnd::WaterQuality2Str(WaterQuality waterQuality) const
 
 bool VideoOptionsWnd::IsChanged() const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::ApplyGrass()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 VideoOptionsWnd::GrassDistance VideoOptionsWnd::GrassDistanceVal2Enum(float) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
@@ -1317,7 +1317,7 @@ int VideoOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, 
     default:
         return 0;
     }
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::InitFiltrationControls()
@@ -1337,17 +1337,17 @@ void VideoOptionsWnd::InitFiltrationControls()
 
 bool VideoOptionsWnd::IsWaterQualitySupported(WaterQuality)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 float VideoOptionsWnd::GrassDistanceEnum2Val(GrassDistance) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::ApplyShadows()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr VideoOptionsWnd::GrassDistance2Str(GrassDistance grassDistance) const
@@ -1395,7 +1395,7 @@ void VideoOptionsWnd::InitControls()
 
 int VideoOptionsWnd::AntialiasingEnum2Val(Antialiasing) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::OnCbGraphicQualityChange(m3d::AIParam const&)
@@ -1431,7 +1431,7 @@ void VideoOptionsWnd::OnCbGraphicQualityChange(m3d::AIParam const&)
 
 int VideoOptionsWnd::GetWaterQualityValByWaterShaderVersion(int) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::OnBeforeAddToWndStation()
@@ -1458,7 +1458,7 @@ VideoOptionsWnd::VideoOptionsWnd()
 
 VideoOptionsWnd::VideoOptionsWnd(VideoOptionsWnd const&)
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateWaterQualityControls(GraphicQuality graphicQuality)
@@ -1474,7 +1474,7 @@ void VideoOptionsWnd::UpdateWaterQualityControls(GraphicQuality graphicQuality)
             }
             else
             {
-                throw std::logic_error("Not implemented");
+                RETRUXX_NOT_IMPLEMENTED;
             }
             ++m_cbWaterQualityBlocked;
             m_cbWaterQuality->SetCurSel(-1);
@@ -1507,10 +1507,10 @@ void VideoOptionsWnd::UpdateWaterQualityControls(GraphicQuality graphicQuality)
 
 void VideoOptionsWnd::ApplyGraphicQuality()
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::GetDefaultWaterQualityForGraphicQuality(GraphicQuality) const
 {
-    throw std::logic_error("Not implemented");
+    RETRUXX_NOT_IMPLEMENTED;
 }

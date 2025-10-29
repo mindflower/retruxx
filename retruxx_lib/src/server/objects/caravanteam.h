@@ -1,7 +1,7 @@
 #pragma once
 #include "team.h"
 
-class CVector;
+struct CVector;
 
 namespace ai
 {

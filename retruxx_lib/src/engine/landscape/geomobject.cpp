@@ -34,7 +34,7 @@ namespace m3d
 
     void GeomObject::IncEnabledCellsCount()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomObject::SetBounds(PointBase<int> const& startCell, PointBase<int> const& endCell)
@@ -45,17 +45,17 @@ namespace m3d
 
     Object* GeomObject::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     PointBase<int> const& GeomObject::GetEndCell()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     PointBase<int> const& GeomObject::GetStartCell()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GeomObject::GetBaseClass()
@@ -65,17 +65,17 @@ namespace m3d
 
     GeomObject::~GeomObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GeomObject::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* GeomObject::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomObject::SetGeom(dxGeom* geom)
@@ -92,17 +92,17 @@ namespace m3d
 
     void GeomObject::SetEnabled(bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomObject::DecEnabledCellsCount()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomObject::Release()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     dxGeom* GeomObject::GetGeom() const
@@ -112,7 +112,7 @@ namespace m3d
 
     void GeomObject::SetMayBeEnabled(bool)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObject::GeomObject()
@@ -132,12 +132,12 @@ namespace m3d
 
     GeomObject::GeomObject(GeomObject const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObjectLandscape::~GeomObjectLandscape()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GeomObjectLandscape::GetClass() const
@@ -147,7 +147,7 @@ namespace m3d
 
     Object* GeomObjectLandscape::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* GeomObjectLandscape::CreateObject()
@@ -166,7 +166,7 @@ namespace m3d
 
     GeomObjectLandscape::GeomObjectLandscape(GeomObjectLandscape const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GeomObjectStatics::GetClass() const
@@ -176,7 +176,7 @@ namespace m3d
 
     GeomObjectStatics::~GeomObjectStatics()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GeomObjectStatics::GetBaseClass()
@@ -191,7 +191,7 @@ namespace m3d
 
     Object* GeomObjectStatics::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObjectStatics::GeomObjectStatics()
@@ -200,32 +200,32 @@ namespace m3d
 
     GeomObjectStatics::GeomObjectStatics(GeomObjectStatics const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObjectRoad::~GeomObjectRoad()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* GeomObjectRoad::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomObjectRoad::SetRoadNode(RoadNode*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GeomObjectRoad::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     RoadNode* GeomObjectRoad::GetRoadNode() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GeomObjectRoad::GetBaseClass()
@@ -235,22 +235,22 @@ namespace m3d
 
     Object* GeomObjectRoad::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObjectRoad::GeomObjectRoad(GeomObjectRoad const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObjectRoad::GeomObjectRoad()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObjectWater::~GeomObjectWater()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GeomObjectWater::GetBaseClass()
@@ -265,7 +265,7 @@ namespace m3d
 
     Object* GeomObjectWater::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GeomObjectWater::GetClass() const
@@ -279,17 +279,17 @@ namespace m3d
 
     GeomObjectWater::GeomObjectWater(GeomObjectWater const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* GeomObjectPassCell::CreateObject()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GeomObjectPassCell::GetClass() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     Class* GeomObjectPassCell::GetBaseClass()
@@ -299,21 +299,21 @@ namespace m3d
 
     Object* GeomObjectPassCell::Clone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObjectPassCell::~GeomObjectPassCell()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObjectPassCell::GeomObjectPassCell(GeomObjectPassCell const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObjectPassCell::GeomObjectPassCell()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

@@ -185,7 +185,7 @@ namespace help
 
     int CreateWindowsDir(CStr const&)
     {
-	    throw std::logic_error("Not implemented");
+	    RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr GetMapNameFromFileName(CStr const& fileName)

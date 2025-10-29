@@ -15,7 +15,7 @@ namespace m3d
 
     Quaternion sArg::GetQ() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     char const* sArg::GetS() const
@@ -51,7 +51,7 @@ namespace m3d
 
     int sArg::GetI() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     sArg::sArg()
@@ -60,12 +60,12 @@ namespace m3d
 
     CVector sArg::GetV() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void sArg::SetV(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void sArg::SetS(char const* s)
@@ -87,7 +87,7 @@ namespace m3d
 
     void sArg::SetQ(Quaternion const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void sArg::SetF(float f)

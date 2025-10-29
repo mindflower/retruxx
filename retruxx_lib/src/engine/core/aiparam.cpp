@@ -10,12 +10,12 @@ namespace m3d
 {
     int AIParam::CompareInt(void const*, void const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int AIParam::CompareStr(void const*, void const*)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AIParam::AIParam(AIParam const& param)
@@ -111,12 +111,12 @@ namespace m3d
         {
             return *m_NumList;
         }
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector2 AIParam::GetAsRange() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr AIParam::GetAsStr() const
@@ -157,11 +157,11 @@ namespace m3d
         }
         case AIPARAM_ID_LIST:
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         case AIPARAM_STRING_LIST:
         {
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
         case AIPARAM_RANGE:
         {
@@ -210,52 +210,52 @@ namespace m3d
 
     void AIParam::SaveToXML(cmn::XmlFile*, cmn::XmlNode*) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     retruxx::vector<CStr> AIParam::GetAsStringList() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AIParam::Clear()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AIParam::ReadFromString(CStr const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool AIParam::operator==(AIParam const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool AIParam::operator<=(AIParam const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool AIParam::operator!=(AIParam const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool AIParam::operator<(AIParam const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AIParam& AIParam::operator=(CVector2 const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AIParam& AIParam::operator=(CVector const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AIParam& AIParam::operator=(CStr const& str)
@@ -282,7 +282,7 @@ namespace m3d
 
     AIParam& AIParam::operator=(retruxx::vector<CStr> const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AIParam& AIParam::operator=(float const& f)
@@ -298,17 +298,17 @@ namespace m3d
 
     AIParam& AIParam::operator=(retruxx::vector<int> const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AIParam& AIParam::operator=(unsigned const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AIParam& AIParam::operator=(Quaternion const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     AIParam& AIParam::operator=(int const& i)
@@ -324,12 +324,12 @@ namespace m3d
 
     bool AIParam::operator>(AIParam const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AIParam::Init()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AIParam::LoadFromXML(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
@@ -418,12 +418,12 @@ namespace m3d
 
     Quaternion AIParam::GetAsQuaternion() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr AIParam::ToStr() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AIParam::SetType(eAIParamType ParamType)
@@ -489,7 +489,7 @@ namespace m3d
         }
 
         default:
-            throw std::logic_error("Not implemented");
+            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 

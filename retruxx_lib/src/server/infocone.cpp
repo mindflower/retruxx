@@ -9,7 +9,7 @@ namespace ai
 {
     InfoCone::InfoCone(const ai::InfoCone&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     InfoCone::InfoCone()
@@ -28,28 +28,28 @@ namespace ai
 
     InfoCone::~InfoCone()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool InfoCone::SetVehicleId(int vehicleId)
     {
         // TODO: implement InfoCone::SetVehicleId
-        //throw std::logic_error("Not implemented");
+        //RETRUXX_NOT_IMPLEMENTED;
         return false;
     }
 
     int InfoCone::GetInfoObjId() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void InfoCone::RenderDebugInfo() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool InfoCone::TraceTo(const CVector& dst, CVector& newDst, float length) const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

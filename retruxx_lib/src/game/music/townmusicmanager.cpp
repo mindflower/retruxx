@@ -12,17 +12,17 @@ namespace m3d
 {
     void TownMusicManager::Activate()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int TownMusicManager::LaunchAmbientWorkshop()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TownMusicManager::StopAmbient()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void TownMusicManager::Init()
@@ -65,6 +65,6 @@ namespace m3d
 
     int TownMusicManager::LaunchAmbientShop()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

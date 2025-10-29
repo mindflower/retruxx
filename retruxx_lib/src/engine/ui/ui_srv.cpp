@@ -11,7 +11,7 @@ namespace m3d
 {
     ui::FormattedLine::FormattedLine(CStr text)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ui::FormattedLine::FormattedLine()
@@ -31,12 +31,12 @@ namespace m3d
 
     int ui::GfxServer::GetSliderHeight()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ui::GfxServer::SetTexture(rend::TexHandle)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     rend::TexHandle ui::GfxServer::GetTexture(ThemeTexture tex)
@@ -67,12 +67,12 @@ namespace m3d
 
     float ui::GfxServer::GetTabButtonHeight() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ui::GfxServer::SetColor(unsigned, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned ui::GfxServer::GetColor(unsigned c) const
@@ -87,12 +87,12 @@ namespace m3d
 
     void ui::GfxServer::AddLineFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned, int)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ui::GfxServer::AddRect(DrawInfo const&, BoundsBase<float> const&, unsigned)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ui::GfxServer::ReadFrames()
@@ -265,27 +265,27 @@ namespace m3d
 
     float ui::GfxServer::GetGlyphHeight()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float ui::GfxServer::GetTabButtonMaxWidth() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ui::GfxServer::AddTabWndPaneNormal(DrawInfo const&, BoundsBase<float> const&, unsigned, TabButtonInfo const&, retruxx::vector<BoundsBase<float>> const&, int, int, CStr const&, PaneFlagBg)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ui::GfxServer::AddChkButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float ui::GfxServer::GetTabButtonSpace() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ui::Pane* ui::GfxServer::GetPane(CStr const& paneName)
@@ -297,7 +297,7 @@ namespace m3d
 
     int ui::GfxServer::GetCornerSz() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ui::GfxServer::SetSchema(CStr const& name)
@@ -529,7 +529,7 @@ namespace m3d
 
     void ui::GfxServer::AddButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned, bool)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ui::GfxServer::AddFlatAxialPane0(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, int drawFlags, CStr const& paneName, PaneFlagBg bgFlags)
@@ -646,7 +646,7 @@ namespace m3d
                         auto scale = rect.height;
                         if (pane->m_frame[flag]->m_barRepeat)
                         {
-                            throw retruxx::logic_error("Not implemented");
+                            RETRUXX_NOT_IMPLEMENTED;
                             int sx = 0;
                             int sy = 0;
                             M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
@@ -669,13 +669,13 @@ namespace m3d
 
                             if (pane->m_frame[flag]->m_barRepeat)
                             {
-                                throw retruxx::logic_error("Not implemented");
+                                RETRUXX_NOT_IMPLEMENTED;
                             }
                             AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
                         }
                         else
                         {
-                            throw retruxx::logic_error("Not implemented");
+                            RETRUXX_NOT_IMPLEMENTED;
                             AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
                         }
                     }
@@ -692,7 +692,7 @@ namespace m3d
                         auto scale = rect.width;
                         if (pane->m_frame[flag]->m_barRepeat)
                         {
-                            throw retruxx::logic_error("Not implemented");
+                            RETRUXX_NOT_IMPLEMENTED;
                             int sx = 0;
                             int sy = 0;
                             M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
@@ -715,13 +715,13 @@ namespace m3d
 
                             if (pane->m_frame[flag]->m_barRepeat)
                             {
-                                throw retruxx::logic_error("Not implemented");
+                                RETRUXX_NOT_IMPLEMENTED;
                             }
                             AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, tv0 / scale, 1.0);
                         }
                         else
                         {
-                            throw retruxx::logic_error("Not implemented");
+                            RETRUXX_NOT_IMPLEMENTED;
                             AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv0 / scale);
                         }
                     }
@@ -823,7 +823,7 @@ namespace m3d
 
     rend::TexHandle ui::GfxServer::GetGlyph(CStr const&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ui::GfxServer::GfxServer()
@@ -854,17 +854,17 @@ namespace m3d
 
     int ui::GfxServer::GetBtnHeight()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ui::GfxServer::GetFontId(CStr const&, float, FontType, FontParams) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ui::GfxServer::GetBtnWidth()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ui::GfxServer::AddFlatAxialQuad(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr)
@@ -892,17 +892,17 @@ namespace m3d
 
     int ui::GfxServer::SetFont(int&)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ui::GfxServer::SetFont(Font*)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ui::GfxServer::SetFont(CStr const&, float, FontType, FontParams)
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ui::GfxServer::AddImagedRectGeneral(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, rend::TexHandle tex, float u0, float v0, float u1, float v1)
@@ -933,17 +933,17 @@ namespace m3d
 
     void ui::GfxServer::ClearFonts()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float ui::GfxServer::GetTabButtonMinWidth() const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     ui::Font* ui::GfxServer::GetFontById(unsigned) const
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int ui::GfxServer::LoadSoundsFromXml(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
@@ -993,7 +993,7 @@ namespace m3d
 
     void ui::GfxServer::ReleaseSchema()
     {
-        throw retruxx::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void ui::GfxServer::ClearSounds()

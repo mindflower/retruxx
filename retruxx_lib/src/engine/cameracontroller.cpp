@@ -5,6 +5,7 @@
 #include "core/kernel.h"
 #include "core/timer.h"
 #include "math/camera.h"
+#include "thirdparty/containers.h"
 
 float GetFloatUnit()
 {
@@ -20,7 +21,7 @@ namespace m3d
 
     void CameraController::EnableShaking()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void CameraController::Update()
@@ -74,7 +75,7 @@ namespace m3d
 
     void CameraController::DisableShaking()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector const& CameraController::GetShakingTranslation() const
@@ -84,6 +85,6 @@ namespace m3d
 
     void CameraController::DoTouch(CVector const&, float, float)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

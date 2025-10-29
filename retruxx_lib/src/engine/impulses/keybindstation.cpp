@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <impulses/keybindstation.h>
 
+#include "thirdparty/containers.h"
+
 namespace m3d
 {
     KeysSet::KeysSet()
@@ -10,7 +12,7 @@ namespace m3d
 
     KeysSet::KeysSet(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void KeysSet::clear()
@@ -25,12 +27,12 @@ namespace m3d
 
     bool KeysSet::empty() const
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     KeysSet& KeysSet::operator-=(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     KeysSet& KeysSet::operator+=(int k)
@@ -41,21 +43,22 @@ namespace m3d
 
     bool KeysSet::IsThere(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     KeyBindStation::KeyBindStation()
     {
+        m_longestComboLen = 0;
     }
 
     KeyBindStation::~KeyBindStation()
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void KeyBindStation::UnbindImpulse(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void KeyBindStation::UnbindAll()
@@ -65,12 +68,12 @@ namespace m3d
 
     void KeyBindStation::UnbindImpulseFromKeyset(int, KeysSet const&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int KeyBindStation::FindImpulseByLongestSetPossible(m3d::KeysSet const&, int, KeysSet&)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     KeyBindStation::BindKey* KeyBindStation::GetBindByKey(KeysSet const& ks)
@@ -121,12 +124,12 @@ namespace m3d
 
     KeyBindStation::BindKey* KeyBindStation::GetBindByImpulse(int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     KeyBindStation::BindKey* KeyBindStation::FindImpulseBySet_r(KeysSet const&, int)
     {
-        throw std::logic_error("Not implemented");
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool operator==(const KeysSet& lhd, const KeysSet& rhd)
