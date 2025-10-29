@@ -198,9 +198,49 @@ namespace ai
         m_TeamTacticShouldBeAssigned = true;
     }
 
-    bool Team::RemoveChild(Obj*)
+    bool Team::RemoveChild(Obj* pChild)
     {
-        throw retruxx::logic_error("Not implemented");
+        Obj::RemoveChild(pChild);
+        if (!pChild || !IS_KIND_OF(pChild, Vehicle))
+        {
+            return false;
+        }
+
+        auto* vehicle = RT_DYNCAST(pChild, Vehicle);
+        auto it = std::find(m_vehicles.begin(), m_vehicles.end(), vehicle);
+        if (it == m_vehicles.end())
+        {
+            return false;
+        }
+
+        m_needAdjustBehaviour = true;
+        vehicle->SetParentInvalid();
+        vehicle->SetIndexInTeam(-1);
+        if (m_formation)
+        {
+            m_formation->RemoveVehicle(vehicle);
+        }
+
+        m_vehicles.erase(it);
+
+        for (int i =0; i < m_vehicles.size(); ++i)
+        {
+            m_vehicles[i]->SetIndexInTeam(i);
+        }
+
+        if (m_formation)
+        {
+            auto velocity = _GetTeamVelocity();
+            m_formation->SetLinearVelocity(velocity);
+        }
+
+        if (m_vehicles.empty() && !m_bRemoveWhenChildrenDead && m_bUseStandardUpdatingBehavior)
+        {
+            theObjects->AddObjToNotUpdate(this);
+            theObjects->AddObjToNotUpdate(m_formation);
+        }
+
+        return true;
     }
 
     bool Team::bIsEqualToPrototype() const
@@ -614,7 +654,15 @@ namespace ai
 
     Team::~Team()
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: check formation
+        delete m_combatMastermind;
+
+        if (m_formation)
+        {
+            m_formation->SetPath(0, 1);
+        }
+
+        delete m_pPath;
     }
 
     void Team::_OnPlayerVehicleChanged(Event const&)

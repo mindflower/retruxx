@@ -10,7 +10,6 @@ namespace ai
 
     public:
         CombatMastermind(int teamId);
-        ~CombatMastermind();
         void GenerateLineOfFireAvoidanceSteeringForces(retruxx::map<int, CVector>& steeringForces);
 
     private:

@@ -14,7 +14,10 @@ namespace ai
 {
     SphereForIntersection::~SphereForIntersection()
     {
-        throw std::logic_error("Not implemented");
+        if (m_purpose == LOOKING)
+        {
+            IntersectionManager::RemoveLookingSphere(this);
+        }
     }
 
     ai::SphereForIntersection* SphereForIntersection::CreateObject(float radius,

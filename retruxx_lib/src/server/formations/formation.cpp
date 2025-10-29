@@ -251,7 +251,16 @@ namespace ai
 
     void Formation::SetPath(ai::Path* pPath, bool bForceResetPathNum)
     {
-        throw std::logic_error("Not implemented");
+        this->m_pPath = pPath;
+        if (pPath && pPath->GetSize() > 1)
+        {
+            if (bForceResetPathNum || this->m_numPathPoint == -1)
+                this->m_numPathPoint = 1;
+        }
+        else
+        {
+            this->m_numPathPoint = -1;
+        }
     }
 
     bool Formation::bIsMoving() const

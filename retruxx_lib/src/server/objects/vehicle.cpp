@@ -42,6 +42,7 @@
 
 #include "gadget.h"
 #include "vehiclerecollection.h"
+#include "engine/ode/sources/joint.h"
 #include "guns/compoundgun.h"
 #include "guns/rocketlauncher.h"
 #include "guns/rocketvolleylauncher.h"
@@ -3032,6 +3033,18 @@ namespace ai
 
 	Vehicle::~Vehicle()
 	{
+		if (m_bIsControlledByPlayer)
+		{
+			SetHorn(false);
+		}
+
+		// TODO: check this
+		delete m_pPath;
+		delete m_takingSphere;
+		delete m_repository;
+		delete m_groundRepository;
+		delete m_ownUpdater;
+		delete m_trailerJoint;
 	}
 
 	void Vehicle::RegisterProperty(char const*, int, eGObjPropertySaveStatus)

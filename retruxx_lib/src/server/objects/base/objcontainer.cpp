@@ -295,9 +295,67 @@ namespace ai
         }
     }
 
-    void ObjContainer::InnerContainer::EraseNode(Node&, bool)
+    void ObjContainer::InnerContainer::EraseNode(Node& node, bool deleteObj)
     {
-        throw retruxx::logic_error("Not implemented");
+        if (node.m_totalObjects < 0x1FFFF)
+        {
+            m_freePlaces.push_back(node.m_id);
+        }
+
+        Node* prevNode = nullptr;
+        auto prevId = node.m_prevId;
+        if (prevId == -1)
+        {
+            prevNode = nullptr;
+        }
+        else
+        {
+            prevNode = &m_records[prevId];
+        }
+
+        Node* nextNode = nullptr;
+        auto nextId = node.m_nextId;
+        if (nextId == -1)
+        {
+            nextNode = nullptr;
+        }
+        else
+        {
+            nextNode = &m_records[nextId];
+        }
+
+        if (prevNode)
+        {
+            prevNode->m_nextId = nextId;
+        }
+        else
+        {
+            m_firstNodeId = nextId;
+        }
+
+        if (nextNode)
+        {
+            nextNode->m_prevId = node.m_prevId;
+        }
+        else
+        {
+            m_lastNodeId = node.m_prevId;
+        }
+
+        if (deleteObj)
+        {
+            if (node.m_value)
+            {
+                // TODO: check this
+                delete node.m_value;
+            }
+        }
+        node.m_value = nullptr;
+        ++node.m_totalObjects;
+        node.m_nextId = -1;
+        node.m_prevId = -1;
+        node.m_isValid = false;
+        --m_size;
     }
 
     int ObjContainer::InnerContainer::Add(Obj* pObj)
@@ -374,7 +432,7 @@ namespace ai
 
     ObjContainer::Node* ObjContainer::InnerContainer::_GetNodeById(int id)
     {
-        if (id == -1)
+        if (id == -1 && id >= m_records.size())
         {
             return nullptr;
         }
@@ -461,7 +519,56 @@ namespace ai
 
     void ObjContainer::Purge()
     {
-        throw retruxx::logic_error("Not implemented");
+        m_inPurge = true;
+        m_numRemovalsLastFrame = 0;
+
+        for (const auto objId : m_objIdsToRemove)
+        {
+            auto* node = m_allObjects._GetNodeById(objId);
+            if (node && node->m_isValid && node->m_value)
+            {
+                auto* obj = node->m_value;
+
+                ++m_numRemovalsLastFrame;;
+                auto* parent = obj->GetParent();
+                if (parent)
+                {
+                    if (obj->m_hierarchyType)
+                    {
+                        parent->RemoveComponent(obj);
+                    }
+                    else
+                    {
+                        parent->RemoveChild(obj);
+                    }
+                }
+                else
+                {
+                    obj->SetParentInvalid();
+                }
+            
+                m_nameToIdMap.erase(obj->GetName());
+                m_allObjects.EraseNode(*node, true);
+                _SetObjNotUpdating(obj->m_updatingObjId);
+            }
+        }
+
+        m_inPurge = false;
+        m_objIdsToRemove.clear();
+
+        for (const auto objId : m_objIdsToUpdate)
+        {
+            AddObjToUpdate(GetEntityByObjId(objId));
+        }
+
+        m_objIdsToUpdate.clear();
+
+        for (const auto objId : m_objIdsToNotUpdate)
+        {
+            _SetObjNotUpdating(objId);
+        }
+
+        m_objIdsToNotUpdate.clear();
     }
 
     ObjContainer::iterator ObjContainer::updatingEnd()
@@ -981,9 +1088,27 @@ namespace ai
         throw retruxx::logic_error("Not implemented");
     }
 
-    void ObjContainer::_SetObjNotUpdating(int)
+    void ObjContainer::_SetObjNotUpdating(int objId)
     {
-        throw retruxx::logic_error("Not implemented");
+        // TODO: check this
+        auto* node = m_allObjects._GetNodeById(objId & 0x3FFF);
+        if (node && node->m_isValid && node->m_value)
+        {
+            auto* obj = node->m_value;
+            if (!obj->m_bMustBeUpdating && obj->m_updatingObjId != -1)
+            {
+                auto* updatingNode = m_updatingObjects._GetNodeById(obj->m_updatingObjId & 0x3FFF);
+                if (updatingNode)
+                {
+                    if (updatingNode->m_isValid)
+                    {
+                        m_updatingObjects.EraseNode(*updatingNode, false);
+                    }
+                    obj->m_updatingObjId = -1;
+                    obj->m_bIsUpdating = false;
+                }
+            }
+        }
     }
 
     int ObjContainer::_Add(Obj* pObj)
