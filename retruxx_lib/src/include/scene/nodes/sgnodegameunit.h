@@ -8,7 +8,6 @@ namespace m3d
     protected:
         SgGameUnitNode();
         SgGameUnitNode(const m3d::SgGameUnitNode& node);
-        virtual  ~SgGameUnitNode() override /* 0x00 */;
 
     public:
         virtual m3d::Object* Clone() override /* 0x04 */;

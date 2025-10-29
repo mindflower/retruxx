@@ -970,7 +970,75 @@ namespace m3d
 
     SgNode::~SgNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check all this stuff
+        auto obj = this;
+        SceneGraph* sg = GetGraph();
+        while (true)
+        {
+            auto child = RT_DYNCAST(obj->GetFirstChild(), SgNode);
+            if (!child)
+            {
+                break;
+            }
+
+            obj->UnlinkChild(child);
+            if (child->m_removeImmediateAfterParent || sg && sg->IsInUnlinkAndDeleteAll())
+            {
+                if (child->m_isInRemoveIfFree)
+                {
+                    M3D_LOG_WARN("Warning: deleting node which is in RemoveIfFree, name = '" + CStr(child->GetName()) + "', parent name = '" + CStr(obj->GetName()) + "'");
+                }
+                // TODO: check this
+                child->DecRef();
+            }
+            else
+            {
+                sg->LinkThinkNode(child);
+                child->m_initedWithRitual = (Ritual)((int)child->m_initedWithRitual | 1u);
+                sg->GetRootNode()->AddChild(child);
+                sg->InsertInUpdateXFormList(child);
+                child->SetOriginAbs(child->m_currentWorldOrigin);
+                child->SetRotation(child->m_currentWorldRotation);
+                sg->LinkNode(child);
+
+                std::vector<m3d::Object*> stack;
+                stack.push_back(dynamic_cast<m3d::Object*>(child));
+
+                while (!stack.empty())
+                {
+                    m3d::Object* current = stack.back();
+                    stack.pop_back();
+
+                    // Process all siblings of the current node
+                    m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
+                    while (sibling)
+                    {
+                        sibling->CanBeFree();
+
+                        // If this sibling has children, add to stack for processing
+                        if (sibling->GetFirstChild()) {
+                            stack.push_back(sibling->GetFirstChild());
+                        }
+
+                        // Move to next sibling
+                        sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
+                    }
+                }
+
+                sg->InsertInRemoveIfFree(child);
+                if (m_isInRemoveIfFree)
+                {
+                    M3D_LOG_WARN("Adding child in RemoveIfFree in destructor, child name = '" + CStr(child->GetName()) + "'");
+                }
+            }
+        }
+
+        if (m_isContoured)
+        {
+            sg->DeleteFromContourList(this);
+        }
+
+        RitualInDestructor();
     }
 
     SgNode::SgNode(SgNode const& node) : Object(node)
@@ -1079,7 +1147,15 @@ namespace m3d
 
     void SgNode::RitualInDestructor()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if ((this->m_initedWithRitual & 2) != 0)
+        {
+            GetServer()->UnregisterNode(this);
+        }
+        if ((this->m_initedWithRitual & 1) != 0)
+        {
+            m3d::pClient->GetWorld().GetGraph().UnlinkThinkNode(this);
+        }
+        this->m_initedWithRitual = RITUAL_NONE;
     }
 
     void SgNode::InternalInit()

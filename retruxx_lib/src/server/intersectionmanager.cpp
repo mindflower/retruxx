@@ -160,9 +160,17 @@ namespace ai
         cntObjectsSatisfied->SetI(0);
     }
 
-    void IntersectionManager::RemoveLookingSphere(SphereForIntersection*)
+    void IntersectionManager::RemoveLookingSphere(SphereForIntersection* lookingSphere)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto prev = lookingSphere->m_prev;
+        if (prev)
+            prev->m_next = lookingSphere->m_next;
+        else
+            m_firstLookingSphere = lookingSphere->m_next;
+
+        auto next = lookingSphere->m_next;
+        if (next)
+            next->m_prev = lookingSphere->m_prev;
     }
 
     void IntersectionManager::_GetIntersectedObjectsCustom(

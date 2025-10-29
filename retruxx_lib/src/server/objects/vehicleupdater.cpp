@@ -26,7 +26,6 @@ namespace ai
 
     VehicleUpdater::~VehicleUpdater()
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleUpdater::Update(float elapsedTime)

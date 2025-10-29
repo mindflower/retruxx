@@ -1173,7 +1173,15 @@ namespace ai
 
     PhysicObj::~PhysicObj()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        delete m_lookSphere;
+        if (m_intersectionObstacle)
+        {
+            m_intersectionObstacle->UnlinkFromOwner();
+        }
+        delete m_boundSphere;
+        delete m_body;
+        if (m_spaceId && this->m_bIsSpaceOwner)
+            dSpaceDestroy(m_spaceId);
     }
 
     void PhysicObj::_InternalPostLoad()

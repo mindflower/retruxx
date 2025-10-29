@@ -138,7 +138,6 @@ namespace ai
 
 	Basket::~Basket()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	m3d::Object* Basket::CreateObject()

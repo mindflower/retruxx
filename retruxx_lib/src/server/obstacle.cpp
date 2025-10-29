@@ -8,18 +8,21 @@
 #include "objects/base/physicobj.h"
 #include "ode/odecpp.h"
 #include "objects/base/objcontainer.h"
+#include "objects/physicbodies/geoms/box.h"
 #include "scene/nodes/sgnode.h"
 
 namespace ai
 {
     void Obstacle::UnlinkFromOwner()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_ownerPhysicObjId = -1;
+        this->m_ownerSgNode = 0;
     }
 
     Obstacle::~Obstacle()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        delete m_intersectionSphere;
+        delete m_intersectionBox;
     }
 
     Quaternion Obstacle::GetRotation() const

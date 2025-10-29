@@ -597,7 +597,12 @@ namespace ai
 
 	PhysicBody::~PhysicBody()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		_ClearGeoms();
+		if (m_Node)
+		{
+			m_Node->GetGraph()->RemoveNode(this->m_Node);
+			m_Node = 0;
+		}
 	}
 
 	void PhysicBody::SetBelong(int newBelong)

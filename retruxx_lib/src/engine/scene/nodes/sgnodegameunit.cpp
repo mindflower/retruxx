@@ -26,11 +26,6 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    SgGameUnitNode::~SgGameUnitNode()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
     SgGameUnitNode::SgGameUnitNode(m3d::SgGameUnitNode const&)
     {
         RETRUXX_NOT_IMPLEMENTED;

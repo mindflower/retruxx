@@ -348,7 +348,13 @@ namespace m3d
 
     SgAnimatedModelNode::~SgAnimatedModelNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_obstacle)
+        {
+            m_obstacle->UnlinkFromOwner();
+            m_obstacle->DecRef();
+        }
+
+        RitualInDestructor();
     }
 
     void SgAnimatedModelNode::UpdateOwnBoundingBox()

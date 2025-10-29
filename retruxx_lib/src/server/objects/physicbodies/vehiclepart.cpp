@@ -622,7 +622,37 @@ namespace ai
 
 	VehiclePart::~VehiclePart()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (m_SplashEffect)
+		{
+			// TODO: check this
+			// Process children using iterative DFS
+			std::vector<m3d::Object*> stack;
+			stack.push_back(dynamic_cast<m3d::Object*>(m_SplashEffect));
+
+			while (!stack.empty())
+			{
+				m3d::Object* current = stack.back();
+				stack.pop_back();
+
+				// Process all siblings of the current node
+				m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
+				while (sibling)
+				{
+					sibling->CanBeFree();
+
+					// If this sibling has children, add to stack for processing
+					if (sibling->GetFirstChild()) {
+						stack.push_back(sibling->GetFirstChild());
+					}
+
+					// Move to next sibling
+					sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
+				}
+			}
+
+			m_SplashEffect->GetGraph()->InsertInRemoveIfFree(m_SplashEffect);
+			m_SplashEffect = nullptr;
+		}
 	}
 
 	m3d::Object* VehiclePart::CreateObject()

@@ -9,6 +9,7 @@
 #include "core/timer.h"
 #include "world.h"
 #include "level.h"
+#include "core/log.h"
 #include "scene/nodes/sgnodeanimatedmodel.h"
 #include "scene/nodes/sgnodedecals.h"
 #include "scene/nodes/sgnodegameunit.h"
@@ -315,9 +316,88 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void SceneGraph::UnlinkNode(SgNode*)
+    void SceneGraph::UnlinkNode(SgNode* toUnlink)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code
+        if (!toUnlink || !toUnlink->m_forGraph)
+        {
+            return;
+        }
+
+        m3d::GraphItemsForSgNode* graphItems = toUnlink->m_forGraph;
+        toUnlink->m_forGraph = nullptr;
+
+        // Process all cells covered by this node
+        for (int x = graphItems->m_cellsCoveredPoint0.x; x <= graphItems->m_cellsCoveredPoint1.x; ++x)
+        {
+            for (int y = graphItems->m_cellsCoveredPoint0.y; y <= graphItems->m_cellsCoveredPoint1.y; ++y)
+            {
+                CellItems& cellItems = m_cellItems[64 * y + x];
+
+                // Remove node from direct links in this cell
+                cellItems.m_nodesLinkedDirect.RemoveObject(toUnlink);
+
+                // Determine if this is the last cell (for cleanup purposes)
+                bool isLastCell = (x == graphItems->m_cellsCoveredPoint1.x &&
+                                   y == graphItems->m_cellsCoveredPoint1.y);
+
+                // Unlink collision geometries from landscape
+                m_owner->GetLandscape().UnlinkNodeCollisionGeomsFromCell(
+                    toUnlink, x, y, isLastCell);
+
+                // Process child nodes recursively using a stack
+                std::vector<m3d::Object*> stack;
+                stack.push_back(toUnlink);
+
+                while (!stack.empty()) {
+                    m3d::Object* current = stack.back();
+                    stack.pop_back();
+
+                    // Process all children of current node
+                    m3d::SgNode* childNode = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
+                    while (childNode) {
+                        // Unlink child's collision geometries
+                        m_owner->GetLandscape().UnlinkNodeCollisionGeomsFromCell(
+                            childNode, x, y, isLastCell);
+
+                        // If child has children, add to stack for processing
+                        if (childNode->GetFirstChild())
+                        {
+                            stack.push_back(childNode);
+                        }
+
+                        childNode = dynamic_cast<m3d::SgNode*>(childNode->GetNextSibling());
+                    }
+                }
+            }
+        }
+
+        // Remove from shadow coverage
+        for (auto it = graphItems->m_cellsShadowCovered.begin();
+             it != graphItems->m_cellsShadowCovered.end(); ++it)
+        {
+            uint32_t cellKey = *it;
+            int cellX = cellKey & 0xFFFF;
+            int cellY = (cellKey >> 16) & 0xFFFF;
+
+            m3d::SceneGraph::CellItems& cellItems = m_cellItems[64 * cellY + cellX];
+
+            // Remove node from shadowing direct set
+            auto shadowIt = cellItems.m_nodesShadowingDirect.find(toUnlink);
+            if (shadowIt != cellItems.m_nodesShadowingDirect.end())
+            {
+                cellItems.m_nodesShadowingDirect.erase(shadowIt);
+            }
+        }
+
+        // Clean up graph items
+        graphItems->m_cellsCoveredPoint0 = { 0, 0 };
+        graphItems->m_cellsCoveredPoint1 = { -1, -1 };
+
+        graphItems->m_cellsShadowCovered.clear();
+
+        // Free the graph items memory
+        delete graphItems;
     }
 
     SgNode* SceneGraph::GetNodeByName(CStr const&)
@@ -867,9 +947,13 @@ namespace m3d
         //RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void SceneGraph::RemoveNode(SgNode*&)
+    void SceneGraph::RemoveNode(SgNode*& toRemove)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (toRemove)
+        {
+            m_RemoveIfFreeList.erase(toRemove);
+            RemoveNodeExceptRemoveIfFree(toRemove);
+        }
     }
 
     void SceneGraph::DeleteAllRemoveIfFreeNodes()
@@ -1017,9 +1101,26 @@ namespace m3d
         return 1;
     }
 
-    void SceneGraph::RemoveNodeExceptRemoveIfFree(SgNode*&)
+    void SceneGraph::RemoveNodeExceptRemoveIfFree(SgNode*& toRemove)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto forGraph = toRemove->m_forGraph;
+        if (forGraph
+            && forGraph->m_cellsCoveredPoint0.x <= forGraph->m_cellsCoveredPoint1.x
+            && forGraph->m_cellsCoveredPoint0.y <= forGraph->m_cellsCoveredPoint1.y)
+        {
+            UnlinkNode(toRemove);
+        }
+
+        auto parent = toRemove->GetParent();
+        if (parent)
+            parent->RemoveChild(toRemove);
+
+        DeleteFromUpdateXFormList(toRemove);
+        CheckNodeValidity(toRemove, "Check Two");
+
+        // TODO: check this
+        delete toRemove;
+        toRemove = 0;
     }
 
     int SceneGraph::getYOfs(int)
@@ -1263,7 +1364,19 @@ namespace m3d
 
     void ObjectsContainer::RemoveObject(m3d::Object* obj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        auto cls = obj->GetClass();
+        auto objs = m_objectsByClassIdx[cls->m_index];
+        auto it = std::find(objs.begin(), objs.end(), obj);
+        if (it != objs.end())
+        {
+            objs.erase(it);
+            delete obj;
+        }
+        else
+        {
+            M3D_LOG_INFO("Warning, object not found: " + CStr(obj->GetName()));
+        }
     }
 
     retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* ObjectsContainer::GetObjectsByClass(m3d::Class* cl)
