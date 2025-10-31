@@ -559,7 +559,7 @@ namespace ai
                     theProcessManager->PostMessageA(2, GetId(), m_radioManager->GetId(), 0.0, { 65 }, {}, 1);
                 }
             }
-            LinkToParent(GetId(), HIERARCHY_CHILD);
+            obj->LinkToParent(GetId(), HIERARCHY_CHILD);
         }
     }
 
@@ -581,17 +581,26 @@ namespace ai
             return false;
         }
 
-        if (!IS_KIND_OF(pChild, Vehicle) || pChild->GetId() != m_vehicleObjId)
+        if (IS_KIND_OF(pChild, RadioManager) && pChild == m_radioManager)
         {
-            if (IS_KIND_OF(pChild, RadioManager) && pChild == m_radioManager)
-            {
-                m_radioManager = nullptr;
-                return true;
-            }
-            return false;
+            m_radioManager = nullptr;
+            return true;
         }
 
-        RETRUXX_NOT_IMPLEMENTED;
+        if (IS_KIND_OF(pChild, Vehicle) && pChild->GetId() == m_vehicleObjId)
+        {
+            auto* vehicle = RT_DYNCAST(pChild, Vehicle);
+            vehicle->SetHorn(false);
+            vehicle->m_bIsControlledByPlayer = false;
+            vehicle->UnsubscribeRadioManagerFromAllNearbyObjIds();
+            m_vehicleObjId = -1;
+
+            M3D_APP->ImmediateMessage(66544, 0, 0, 0, 0, {}, {});
+            CauseEvent(GE_PLAYER_VEHICLE_CHANGED, 0.0, {}, {});
+            return true;
+        }
+
+        return false;
 
     }
 

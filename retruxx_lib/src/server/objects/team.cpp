@@ -464,7 +464,7 @@ namespace ai
                 theObjects->AddObjToUpdate(m_formation);
             }
             theObjects->AddObjToUpdate(this);
-            LinkToParent(GetId(), HIERARCHY_CHILD);
+            pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
         }
     }
 
