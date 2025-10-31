@@ -470,7 +470,8 @@ namespace m3d
     {
         void CheckNodeValidity(m3d::SgNode *node, const char *debugStr)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement CheckNodeValidity
+           // RETRUXX_NOT_IMPLEMENTED;
         }
     }
 
@@ -1015,9 +1016,35 @@ namespace m3d
         m_thinkList.insert(toThink);
     }
 
-    void SceneGraph::DeleteFromUpdateXFormList(SgNode*)
+    void SceneGraph::DeleteFromUpdateXFormList(SgNode* toDelete)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        m_updateXFormList.erase(toDelete);
+
+        // Process child nodes recursively using a stack
+        std::vector<m3d::Object*> stack;
+        stack.push_back(toDelete);
+
+        while (!stack.empty())
+        {
+            m3d::Object* current = stack.back();
+            stack.pop_back();
+
+            // Process all children of current node
+            m3d::SgNode* childNode = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
+            while (childNode)
+            {
+                m_updateXFormList.erase(childNode);
+
+                // If child has children, add to stack for processing
+                if (childNode->GetFirstChild())
+                {
+                    stack.push_back(childNode);
+                }
+
+                childNode = dynamic_cast<m3d::SgNode*>(childNode->GetNextSibling());
+            }
+        }
     }
 
     void SceneGraph::GetCellsStatistic(retruxx::vector<CellInfo>*)
@@ -1119,8 +1146,7 @@ namespace m3d
         CheckNodeValidity(toRemove, "Check Two");
 
         // TODO: check this
-        delete toRemove;
-        toRemove = 0;
+        toRemove->DecRef();
     }
 
     int SceneGraph::getYOfs(int)
@@ -1366,12 +1392,13 @@ namespace m3d
     {
         // TODO: check this
         auto cls = obj->GetClass();
-        auto objs = m_objectsByClassIdx[cls->m_index];
+        auto& objs = m_objectsByClassIdx[cls->m_index];
         auto it = std::find(objs.begin(), objs.end(), obj);
         if (it != objs.end())
         {
             objs.erase(it);
-            delete obj;
+
+            //delete obj;
         }
         else
         {

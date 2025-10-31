@@ -1247,9 +1247,14 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Landscape::UnlinkNodeCollisionGeomsFromCell(SgNode*, int, int, bool)
+    void Landscape::UnlinkNodeCollisionGeomsFromCell(SgNode* node, int x, int y, bool deleteList)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        std::set<m3d::GeomObject*>* t = nullptr;
+        node->GetProperty(4357u, &t);
+        if (t)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
     }
 
     int Landscape::New(float)

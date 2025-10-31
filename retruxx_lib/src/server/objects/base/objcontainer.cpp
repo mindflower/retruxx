@@ -519,6 +519,7 @@ namespace ai
 
     void ObjContainer::Purge()
     {
+        // TODO: check this
         m_inPurge = true;
         m_numRemovalsLastFrame = 0;
 
@@ -546,10 +547,16 @@ namespace ai
                 {
                     obj->SetParentInvalid();
                 }
-            
+
+                    
                 m_nameToIdMap.erase(obj->GetName());
+                auto updatingObjId = node->m_value->m_updatingObjId;
                 m_allObjects.EraseNode(*node, true);
-                _SetObjNotUpdating(obj->m_updatingObjId);
+                auto* updatingNode = m_updatingObjects._GetNodeById(updatingObjId & 0x3fff);
+                if (updatingNode)
+                {
+                    m_updatingObjects.EraseNode(*updatingNode, false);
+                }
             }
         }
 

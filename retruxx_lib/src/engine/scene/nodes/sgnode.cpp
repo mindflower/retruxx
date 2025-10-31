@@ -157,9 +157,11 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int SgNode::RemoveChild(Object*)
+    int SgNode::RemoveChild(Object* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        assert(node);
+        UnlinkChild(node);
+        return 1;
     }
 
     int SgNode::GetNextThinkTime() const

@@ -141,10 +141,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Chassis::~Chassis()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    Chassis::~Chassis() = default;
 
     m3d::Object* Chassis::Clone()
     {

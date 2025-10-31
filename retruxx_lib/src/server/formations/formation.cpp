@@ -126,10 +126,7 @@ namespace ai
         }
     }
 
-    Formation::~Formation()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    Formation::~Formation() = default;
 
     Formation::Formation(const ai::FormationPrototypeInfo& prototypeInfo) : Obj(prototypeInfo),
         m_maxVehicles(prototypeInfo.GetMaxVehicles())

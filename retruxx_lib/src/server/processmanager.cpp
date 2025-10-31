@@ -55,7 +55,10 @@ namespace ai
                 // Send event to specific object
                 int objId = it->m_recipientObjId;
                 auto* node = ai::theObjects->GetEntityByObjId(objId);
-                node->OnEvent(*it);
+                if (node)
+                {
+                    node->OnEvent(*it);
+                }
             }
 
             // Remove processed event

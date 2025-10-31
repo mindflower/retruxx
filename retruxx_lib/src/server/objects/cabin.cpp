@@ -197,10 +197,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Cabin::~Cabin()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    Cabin::~Cabin() = default;
 
     m3d::Object* Cabin::Clone()
     {

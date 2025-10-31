@@ -132,7 +132,7 @@ namespace m3d
 
     SgSoundSourceNode::~SgSoundSourceNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        RitualInDestructor();
     }
 
     SgSoundSourceNode::SgSoundSourceNode()
