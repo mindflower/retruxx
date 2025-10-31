@@ -689,9 +689,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void PhysicObj::SetAngularVelocity(CVector const&)
+    void PhysicObj::SetAngularVelocity(CVector const& angularVel)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        dBodySetAngularVel(this->m_body->id(), angularVel.x, angularVel.y, angularVel.z);
     }
 
     int PhysicObj::GetPhysicState() const
@@ -740,9 +740,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void PhysicObj::SetLinearVelocity(CVector const&)
+    void PhysicObj::SetLinearVelocity(CVector const& linearVel)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        dBodySetLinearVel(this->m_body->id(), linearVel.x, linearVel.y, linearVel.z);
     }
 
     void PhysicObj::AddForce(CVector const&)

@@ -375,6 +375,10 @@ namespace m3d
         for (unsigned int nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
             m3d::SgNode* currentNode = nodes[nodeIndex];
+            if (currentNode->GetServerHandle() > 50 && currentNode->GetServerHandle() < 76)
+            {
+                bool asd = true;
+            }
             DynamicModel* modelData = (DynamicModel*)this->m_models[currentNode->GetServerHandle()].m_ptr;
 
             // Calculate distance squared to view position

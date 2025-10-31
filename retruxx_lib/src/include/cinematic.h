@@ -87,7 +87,7 @@ namespace m3d
         bool m_bLookTo = false;
         int m_idToLookAt = -1;
         CVector m_pointToLookAt{0.0, 0.0, 0.0};
-        int m_baseId = -1;
+        mutable int m_baseId = -1;
         bool m_bRelativeRotations = false;
         bool m_bRelativePoints = false;
         m3d::CinematicType m_playType = CINEMATIC_OFF;

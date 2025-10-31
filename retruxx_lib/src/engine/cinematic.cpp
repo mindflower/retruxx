@@ -2,8 +2,6 @@
 #include <stdexcept>
 
 #include "config.h"
-#include "landscape.h"
-#include "m3dapp.h"
 #include "core/ini.h"
 #include "core/kernel.h"
 #include "core/log.h"
@@ -11,11 +9,15 @@
 #include "core/scoped_ptr.h"
 #include "file/fileserver.h"
 #include "file/filestream.h"
+#include "landscape.h"
+#include "m3dapp.h"
 #include "math/coremath.h"
 #include "math/matrix.h"
 #include <client.h>
 
 #include "world.h"
+#include <server/objects/base/objcontainer.h>
+#include <server/objects/base/physicobj.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, StartCinematic)
 {
@@ -72,7 +74,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetAim)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetAimToID)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
+    auto id = context->asInt(1);
+    cinematic->SetAimToID(id);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetRelativePoints)
@@ -93,7 +98,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetRelativeRotations)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetBaseToId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto cinematic = (m3d::Cinematic*)context->asObject(0, "Cinematic");
+    auto id = context->asInt(1);
+    cinematic->SetBaseToId(id);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Cinematic, SetLookTo)
@@ -203,7 +211,6 @@ namespace m3d
             zoom = this->m_cameraPathStates.back().m_zoom;
             return;
         }
-
         // Adjust segment index to ensure we have enough points for interpolation
         if (segmentIndex > 1)
             segmentIndex--;
@@ -558,6 +565,10 @@ namespace m3d
             if (m_cameraPathStates.size() < 4)
             {
                 m_cameraPathStates.push_back(this->m_cameraPathStates.back());
+                if (m_cameraPathStates.size() < 4)
+                {
+                    m_cameraPathStates.push_back(this->m_cameraPathStates.back());
+                }
             }
         }
 
@@ -697,9 +708,21 @@ namespace m3d
         m_curItem.m_bLookTo = value;
     }
 
-    void Cinematic::UpdateCameraRotation(CCamera&)
+    void Cinematic::UpdateCameraRotation(CCamera& cam)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (this->m_curItem.m_playType == CINEMATIC_PLAY_PATH)
+        {
+            if (!this->m_curItem.m_bLerpFromPreviousItem && this->m_curItem.m_bLookTo)
+            {
+                auto pointToLookAt = _GetPointToLookAt();
+                cam.lookAt(pointToLookAt);
+            }
+        }
+        else if (this->m_curItem.m_playType == CINEMATIC_FLY_AROUND)
+        {
+            auto pointToLookAt = _GetPointToLookAt();
+            cam.lookAt(pointToLookAt);
+        }
     }
 
     void Cinematic::InsertPointToCurrentPath(CVector const&, Quaternion const&, float, float)
@@ -779,9 +802,9 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Cinematic::SetAimToID(int)
+    void Cinematic::SetAimToID(int objId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_curItem.m_idToLookAt = objId;
     }
 
     CStr Cinematic::GetNextFlyPathName() const
@@ -978,17 +1001,55 @@ namespace m3d
 
     CVector Cinematic::_GetPointToLookAt() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        using namespace ai;
+
+        if (m_curItem.m_idToLookAt != -1)
+        {
+            auto obj = theObjects->GetEntityByObjId(m_curItem.m_idToLookAt);
+
+            if (obj && IS_KIND_OF(obj, PhysicObj))
+            {
+                auto* physObj = RT_DYNCAST(obj, PhysicObj);
+                return physObj->GetPosition();
+            }
+        }
+        return m_curItem.m_pointToLookAt;
     }
 
     CVector Cinematic::_GetBasePoint() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        using namespace ai;
+
+        if (m_curItem.m_baseId != -1)
+        {
+            auto obj = theObjects->GetEntityByObjId(m_curItem.m_baseId);
+
+            if (obj && IS_KIND_OF(obj, PhysicObj))
+            {
+                auto* physObj = RT_DYNCAST(obj, PhysicObj);
+                return physObj->GetPosition();
+            }
+            m_curItem.m_baseId = -1;
+        }
+        return { 0.0, 0.0, 0.0 };
     }
 
     Quaternion Cinematic::_GetBaseRotation() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        using namespace ai;
+
+        if (m_curItem.m_baseId != -1)
+        {
+            auto obj = theObjects->GetEntityByObjId(m_curItem.m_baseId);
+
+            if (obj && IS_KIND_OF(obj, PhysicObj))
+            {
+                auto* physObj = RT_DYNCAST(obj, PhysicObj);
+                return physObj->GetRotation();
+            }
+            m_curItem.m_baseId = -1;
+        }
+        return { 0.0, 0.0, 0.0, 1.0 };
     }
 
     m3d::CameraPathState Cinematic::_GetPathState(float curTime) const
@@ -1056,9 +1117,9 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Cinematic::SetBaseToId(int)
+    void Cinematic::SetBaseToId(int objId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_curItem.m_baseId = objId;
     }
 
     Object* Cinematic::Clone()

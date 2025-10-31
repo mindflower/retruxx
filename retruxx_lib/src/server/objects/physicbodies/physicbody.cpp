@@ -1069,7 +1069,7 @@ namespace ai
                 m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(serverControlledNode);
 
                 // Set properties
-                serverControlledNode->SetProperty(PROPERTY_BELONG, this); // 4356u appears to be a property ID
+                serverControlledNode->SetProperty(4356u, this); // 4356u appears to be a property ID
                 serverControlledNode->SetScale(scale);
                 serverControlledNode->SetPersistance(false);
                 serverControlledNode->UpdateXForm(false, true);

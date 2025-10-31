@@ -1909,11 +1909,11 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
         if (viewport.m_width <= viewport.m_height)
         {
             m_curCamera.m_fovX = fov;
-            m_curCamera.m_fovY = (viewport.m_width / viewport.m_height) * fov;
+            m_curCamera.m_fovY = ((float)viewport.m_width / viewport.m_height) * fov;
         }
         else
         {
-            m_curCamera.m_fovX = (viewport.m_width / viewport.m_height) * fov;
+            m_curCamera.m_fovX = ((float)viewport.m_width / viewport.m_height) * fov;
             m_curCamera.m_fovY = fov;
         }
 
@@ -1925,25 +1925,29 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
         CMatrix addRotZ;
         addRotZ.zero();
 
+        CMatrix vv;
+        vv.zero();
+
         const auto shakingRolling = GetCameraController()->GetShakingRolling();
         const float shakeSin = sin(shakingRolling);
         const float shakeCos = cos(shakingRolling);
-        addRotZ._11 = (((addRotZ._41 * rotationMatrix._14) + (addRotZ._31 * rotationMatrix._13)) + (rotationMatrix._12 * (0.0 - shakeSin))) + (rotationMatrix._11 * shakeCos);
-        addRotZ._12 = addRotZ._42 * rotationMatrix._14 + addRotZ._32 * rotationMatrix._13 + rotationMatrix._12 * shakeCos + rotationMatrix._11 * shakeSin;
-        addRotZ._13 = (((addRotZ._43 * rotationMatrix._14) + (addRotZ._23 * rotationMatrix._12)) + (addRotZ._13 * rotationMatrix._11)) + rotationMatrix._13;
-        addRotZ._14 = (((addRotZ._34 * rotationMatrix._13) + (addRotZ._24 * rotationMatrix._12)) + (addRotZ._14 * rotationMatrix._11)) + rotationMatrix._14;
-        addRotZ._21 = (((rotationMatrix._24 * addRotZ._41) + (rotationMatrix._23 * addRotZ._31)) + (rotationMatrix._22 * (0.0 - shakeSin))) + (rotationMatrix._21 * shakeCos);
-        addRotZ._22 = rotationMatrix._24 * addRotZ._42 + rotationMatrix._23 * addRotZ._32 + rotationMatrix._22 * shakeCos + rotationMatrix._21 * shakeSin;
-        addRotZ._23 = (((rotationMatrix._24 * addRotZ._43) + (rotationMatrix._22 * addRotZ._23)) + (rotationMatrix._21 * addRotZ._13)) + rotationMatrix._23;
-        addRotZ._24 = (((rotationMatrix._23 * addRotZ._34) + (rotationMatrix._22 * addRotZ._24)) + (rotationMatrix._21 * addRotZ._14)) + rotationMatrix._24;
-        addRotZ._31 = (((addRotZ._41 * rotationMatrix._34) + (addRotZ._31 * rotationMatrix._33)) + ((0.0 - shakeSin) * rotationMatrix._32)) + (shakeCos * rotationMatrix._31);
-        addRotZ._32 = (((addRotZ._42 * rotationMatrix._34) + (addRotZ._32 * rotationMatrix._33)) + (shakeCos * rotationMatrix._32)) + (shakeSin * rotationMatrix._31);
-        addRotZ._33 = (((addRotZ._43 * rotationMatrix._34) + (addRotZ._23 * rotationMatrix._32)) + (addRotZ._13 * rotationMatrix._31)) + rotationMatrix._33;
-        addRotZ._34 = (((addRotZ._24 * rotationMatrix._32) + (addRotZ._14 * rotationMatrix._31)) + (addRotZ._34 * rotationMatrix._33)) + rotationMatrix._34;
-        addRotZ._41 = (((addRotZ._31 * rotationMatrix._43) + ((0.0 - shakeSin) * rotationMatrix._42)) + (shakeCos * rotationMatrix._41)) + (addRotZ._41 * rotationMatrix._44);
-        addRotZ._42 = (((shakeCos * rotationMatrix._42) + (shakeSin * rotationMatrix._41)) + (addRotZ._42 * rotationMatrix._44)) + (addRotZ._32 * rotationMatrix._43);
-        addRotZ._43 = (((addRotZ._43 * rotationMatrix._44) + (addRotZ._23 * rotationMatrix._42)) + (addRotZ._13 * rotationMatrix._41)) + rotationMatrix._43;
-        addRotZ._44 = (((addRotZ._34 * rotationMatrix._43) + (addRotZ._24 * rotationMatrix._42)) + (addRotZ._14 * rotationMatrix._41)) + rotationMatrix._44;
+        vv._11 = (((addRotZ._41 * rotationMatrix._14) + (addRotZ._31 * rotationMatrix._13)) + (rotationMatrix._12 * (0.0 - shakeSin))) + (rotationMatrix._11 * shakeCos);
+        vv._12 = addRotZ._42 * rotationMatrix._14 + addRotZ._32 * rotationMatrix._13 + rotationMatrix._12 * shakeCos + rotationMatrix._11 * shakeSin;
+        vv._13 = (((addRotZ._43 * rotationMatrix._14) + (addRotZ._23 * rotationMatrix._12)) + (addRotZ._13 * rotationMatrix._11)) + rotationMatrix._13;
+        vv._14 = (((addRotZ._34 * rotationMatrix._13) + (addRotZ._24 * rotationMatrix._12)) + (addRotZ._14 * rotationMatrix._11)) + rotationMatrix._14;
+        vv._21 = (((rotationMatrix._24 * addRotZ._41) + (rotationMatrix._23 * addRotZ._31)) + (rotationMatrix._22 * (0.0 - shakeSin))) + (rotationMatrix._21 * shakeCos);
+        vv._22 = rotationMatrix._24 * addRotZ._42 + rotationMatrix._23 * addRotZ._32 + rotationMatrix._22 * shakeCos + rotationMatrix._21 * shakeSin;
+        vv._23 = (((rotationMatrix._24 * addRotZ._43) + (rotationMatrix._22 * addRotZ._23)) + (rotationMatrix._21 * addRotZ._13)) + rotationMatrix._23;
+        vv._24 = (((rotationMatrix._23 * addRotZ._34) + (rotationMatrix._22 * addRotZ._24)) + (rotationMatrix._21 * addRotZ._14)) + rotationMatrix._24;
+        vv._31 = (((addRotZ._41 * rotationMatrix._34) + (addRotZ._31 * rotationMatrix._33)) + ((0.0 - shakeSin) * rotationMatrix._32)) + (shakeCos * rotationMatrix._31);
+        vv._32 = (((addRotZ._42 * rotationMatrix._34) + (addRotZ._32 * rotationMatrix._33)) + (shakeCos * rotationMatrix._32)) + (shakeSin * rotationMatrix._31);
+        vv._33 = (((addRotZ._43 * rotationMatrix._34) + (addRotZ._23 * rotationMatrix._32)) + (addRotZ._13 * rotationMatrix._31)) + rotationMatrix._33;
+        vv._34 = (((addRotZ._24 * rotationMatrix._32) + (addRotZ._14 * rotationMatrix._31)) + (addRotZ._34 * rotationMatrix._33)) + rotationMatrix._34;
+        vv._41 = (((addRotZ._31 * rotationMatrix._43) + ((0.0 - shakeSin) * rotationMatrix._42)) + (shakeCos * rotationMatrix._41)) + (addRotZ._41 * rotationMatrix._44);
+        vv._42 = (((shakeCos * rotationMatrix._42) + (shakeSin * rotationMatrix._41)) + (addRotZ._42 * rotationMatrix._44)) + (addRotZ._32 * rotationMatrix._43);
+        vv._43 = (((addRotZ._43 * rotationMatrix._44) + (addRotZ._23 * rotationMatrix._42)) + (addRotZ._13 * rotationMatrix._41)) + rotationMatrix._43;
+        vv._44 = (((addRotZ._34 * rotationMatrix._43) + (addRotZ._24 * rotationMatrix._42)) + (addRotZ._14 * rotationMatrix._41)) + rotationMatrix._44;
+        addRotZ = vv;
         addRotZ.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
 
         const auto shakingTranslation = GetCameraController()->GetShakingTranslation();
@@ -2165,6 +2169,7 @@ int CMiracle3d::FrameMove()
             if (m_cinematic->m_state != m3d::CinematicState::CINEMATIC_NOT_INITED)
             {
                 HandleCinematic(0.0);
+                m_cinematic->UpdateCameraRotation(this->m_curCamera);
             }
             if (this->m_curGameMode.m_mode != GS_CINEMATIC)
             {

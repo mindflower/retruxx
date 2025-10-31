@@ -2,6 +2,7 @@
 #include <math/matrix.h>
 #include <math/vector.h>
 #include <math/vector4.h>
+#include <ode/common.h>
 
 #include "math/quaternion.h"
 #include "thirdparty/containers.h"
@@ -15,9 +16,13 @@ CMatrix::CMatrix()
 {
 }
 
-CVector CMatrix::vecRot(CVector const&) const
+CVector CMatrix::vecRot(CVector const& v) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    CVector result;
+    result.x = (float)((float)(this->_31 * v.z) + (float)(this->_21 * v.y)) + (float)(v.x * this->_11);
+    result.y = (float)((float)(this->_32 * v.z) + (float)(this->_22 * v.y)) + (float)(this->_12 * v.x);
+    result.z = (float)((float)(this->_33 * v.z) + (float)(this->_23 * v.y)) + (float)(this->_13 * v.x);
+    return result;
 }
 
 CMatrix CMatrix::getInverseRotTranslate() const
@@ -93,11 +98,6 @@ void CMatrix::translation(CVector const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void CMatrix::translation(float, float, float)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
 void CMatrix::getYPR(float& y, float& p, float& r) const
 {
     //TODO: check this and refactor
@@ -112,12 +112,13 @@ void CMatrix::getYPR(float& y, float& p, float& r) const
     v4 = asin(this->_23);
     thetaX = v4;
     v5 = thetaX;
-    if (v4 >= 1.5707964)
+
+    if (v4 >= M_PI / 2)
     {
         v7 = atan2(this->_12, this->_11);
         goto LABEL_6;
     }
-    if (thetaX <= -1.5707964)
+    if (thetaX <= -M_PI / 2)
     {
         v7 = -atan2(this->_12, this->_11);
     LABEL_6:
@@ -334,27 +335,92 @@ CMatrix CMatrix::getInverse() const
     return minv;
 }
 
-CMatrix& CMatrix::operator*=(CMatrix const& other)
+CMatrix& CMatrix::operator*=(CMatrix const& lhs)
 {
-    _11 = _11 * other._11 + _12 * other._21 + _13 * other._31 + _14 * other._41;
-    _12 = _11 * other._12 + _12 * other._22 + _13 * other._32 + _14 * other._42;
-    _13 = _11 * other._13 + _12 * other._23 + _13 * other._33 + _14 * other._43;
-    _14 = _11 * other._14 + _12 * other._24 + _13 * other._34 + _14 * other._44;
+    float _13; // xmm2_4
+    float _14; // xmm3_4
+    float _11; // xmm1_4
+    float _12; // xmm0_4
+    float v7; // xmm4_4
+    float _24; // xmm3_4
+    float v9; // xmm2_4
+    float _21; // xmm1_4
+    float v11; // xmm4_4
+    float _23; // xmm2_4
+    float v13; // xmm4_4
+    float _22; // xmm0_4
+    float v15; // xmm4_4
+    float _34; // xmm3_4
+    float v17; // xmm2_4
+    float _31; // xmm1_4
+    float v19; // xmm4_4
+    float _33; // xmm2_4
+    float _32; // xmm0_4
+    float v22; // xmm4_4
+    float _44; // xmm3_4
+    float v24; // xmm2_4
+    float _41; // xmm1_4
+    float v26; // xmm4_4
+    float _43; // xmm2_4
+    float v28; // xmm4_4
+    float _42; // xmm0_4
 
-    _21 = _21 * other._11 + _22 * other._21 + _23 * other._31 + _24 * other._41;
-    _22 = _21 * other._12 + _22 * other._22 + _23 * other._32 + _24 * other._42;
-    _23 = _21 * other._13 + _22 * other._23 + _23 * other._33 + _24 * other._43;
-    _24 = _21 * other._14 + _22 * other._24 + _23 * other._34 + _24 * other._44;
-
-    _31 = _31 * other._11 + _32 * other._21 + _33 * other._31 + _34 * other._41;
-    _32 = _31 * other._12 + _32 * other._22 + _33 * other._32 + _34 * other._42;
-    _33 = _31 * other._13 + _32 * other._23 + _33 * other._33 + _34 * other._43;
-    _34 = _31 * other._14 + _32 * other._24 + _33 * other._34 + _34 * other._44;
-
-    _41 = _41 * other._11 + _42 * other._21 + _43 * other._31 + _44 * other._41;
-    _42 = _41 * other._12 + _42 * other._22 + _43 * other._32 + _44 * other._42;
-    _43 = _41 * other._13 + _42 * other._23 + _43 * other._33 + _44 * other._43;
-    _44 = _41 * other._14 + _42 * other._24 + _43 * other._34 + _44 * other._44;
+    _13 = this->_13;
+    _14 = this->_14;
+    _11 = this->_11;
+    _12 = this->_12;
+    this->_11 = (float)((float)((float)(lhs._41 * _14) + (float)(lhs._31 * _13)) + (float)(lhs._11 * this->_11))
+        + (float)(_12 * lhs._21);
+    this->_12 = (float)((float)((float)(lhs._12 * _11) + (float)(lhs._22 * _12)) + (float)(lhs._42 * _14))
+        + (float)(lhs._32 * _13);
+    this->_13 = (float)((float)((float)(lhs._13 * _11) + (float)(lhs._23 * _12)) + (float)(_14 * lhs._43))
+        + (float)(_13 * lhs._33);
+    v7 = (float)(lhs._44 * _14) + (float)(lhs._34 * _13);
+    _24 = this->_24;
+    v9 = lhs._14 * _11;
+    _21 = this->_21;
+    v11 = v7 + v9;
+    _23 = this->_23;
+    v13 = v11 + (float)(_12 * lhs._24);
+    _22 = this->_22;
+    this->_14 = v13;
+    this->_21 = (float)((float)((float)(lhs._41 * _24) + (float)(lhs._31 * _23)) + (float)(lhs._11 * _21))
+        + (float)(_22 * lhs._21);
+    this->_22 = (float)((float)((float)(lhs._12 * _21) + (float)(lhs._22 * _22)) + (float)(lhs._42 * _24))
+        + (float)(lhs._32 * _23);
+    this->_23 = (float)((float)((float)(lhs._13 * _21) + (float)(lhs._23 * _22)) + (float)(_24 * lhs._43))
+        + (float)(_23 * lhs._33);
+    v15 = (float)(lhs._44 * _24) + (float)(lhs._34 * _23);
+    _34 = this->_34;
+    v17 = lhs._14 * _21;
+    _31 = this->_31;
+    v19 = v15 + v17;
+    _33 = this->_33;
+    this->_24 = v19 + (float)(_22 * lhs._24);
+    _32 = this->_32;
+    this->_31 = (float)((float)((float)(lhs._41 * _34) + (float)(lhs._31 * _33)) + (float)(lhs._11 * _31))
+        + (float)(_32 * lhs._21);
+    this->_32 = (float)((float)((float)(lhs._12 * _31) + (float)(lhs._22 * _32)) + (float)(lhs._42 * _34))
+        + (float)(lhs._32 * _33);
+    this->_33 = (float)((float)((float)(lhs._13 * _31) + (float)(lhs._23 * _32)) + (float)(_34 * lhs._43))
+        + (float)(_33 * lhs._33);
+    v22 = (float)(lhs._44 * _34) + (float)(lhs._34 * _33);
+    _44 = this->_44;
+    v24 = lhs._14 * _31;
+    _41 = this->_41;
+    v26 = v22 + v24;
+    _43 = this->_43;
+    v28 = v26 + (float)(_32 * lhs._24);
+    _42 = this->_42;
+    this->_34 = v28;
+    this->_41 = (float)((float)((float)(lhs._41 * _44) + (float)(lhs._31 * _43)) + (float)(lhs._11 * _41))
+        + (float)(_42 * lhs._21);
+    this->_42 = (float)((float)((float)(lhs._12 * _41) + (float)(lhs._22 * _42)) + (float)(lhs._42 * _44))
+        + (float)(lhs._32 * _43);
+    this->_43 = (float)((float)((float)(lhs._13 * _41) + (float)(lhs._23 * _42)) + (float)(_44 * lhs._43))
+        + (float)(_43 * lhs._33);
+    this->_44 = (float)((float)((float)(lhs._44 * _44) + (float)(lhs._34 * _43)) + (float)(lhs._14 * _41))
+        + (float)(_42 * lhs._24);
 
     return *this;
 }

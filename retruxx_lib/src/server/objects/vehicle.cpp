@@ -128,7 +128,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, PlaceToEndOfPath)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetThrottle)
 {
-	RETRUXX_NOT_IMPLEMENTED;
+	auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+	auto throttle = context->asFloat(1);
+	auto autoBreak = context->asBool(2);
+	vehicle->SetThrottle(throttle, autoBreak);
+	return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetThrottle)
@@ -201,7 +205,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCustomControlWeaponsTargetObj)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomLinearVelocity)
 {
-	RETRUXX_NOT_IMPLEMENTED;
+	auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+	auto velocity = context->asFloat(1);
+	vehicle->SetCustomLinearVelocity(velocity);
+	return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, AddItemsToRepository)
@@ -731,9 +738,23 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::SetLinearVelocity(CVector const&)
+	void Vehicle::SetLinearVelocity(CVector const& linearVel)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		PhysicObj::SetLinearVelocity(linearVel);
+
+		for (auto& wheelInfo : m_wheels)
+		{
+			if (auto* wheel = wheelInfo.GetWheel())
+			{
+				wheel->SetLinearVelocity(linearVel);
+			}
+		}
+
+		if (auto* trailer = theObjects->GetEntityByObjId(m_trailerObjId))
+		{
+			auto* trailerVehicle = RT_DYNCAST(trailer, Vehicle);
+			trailerVehicle->SetLinearVelocity(linearVel);
+		}
 	}
 
 	Vehicle::CustomWeaponControlType Vehicle::GetCustomControlWeapons() const
@@ -2591,9 +2612,32 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::SetCustomLinearVelocity(float)
+	void Vehicle::SetCustomLinearVelocity(float velocityValue)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		auto direction = GetDirection();
+		auto value = 1.0 / sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z + 0.00000011920929);
+
+		CVector velocity;
+		velocity.x = (direction.x * value) * velocityValue;
+		velocity.y = (direction.y * value) * velocityValue;
+		velocity.z = (direction.z * value) * velocityValue;
+
+		SetLinearVelocity(velocity);
+		SetAngularVelocity({ 0.0, 0.0, 0.0 });
+		for (auto& wheelInfo : m_wheels)
+		{
+			if (auto* wheel = wheelInfo.GetWheel())
+			{
+				wheel->SetLinearVelocity(velocity);
+				wheel->SetAngularVelocity({ 0.0, 0.0, 0.0 });
+			}
+		}
+
+		if (auto* trailer = theObjects->GetEntityByObjId(m_trailerObjId))
+		{
+			auto* trailerVehicle = RT_DYNCAST(trailer, Vehicle);
+			trailerVehicle->SetCustomLinearVelocity(velocityValue);
+		}
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA00, Vehicle::GetBasket, Basket* (Vehicle::*)())

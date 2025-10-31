@@ -92,49 +92,40 @@ Quaternion::Quaternion(float qx, float qy, float qz, float qw) :
 
 CMatrix Quaternion::ToMatrix() const
 {
-    float x = this->x;
-    float y = this->y;
-    float z = this->z;
-    float w = this->w;
+    float v2; // xmm5_4
+    float v3; // xmm3_4
+    float v4; // xmm4_4
+    float v5; // xmm2_4
+    float v6; // xmm1_4
+    float wy; // [esp+4h] [ebp-50h]
+    float xy; // [esp+8h] [ebp-4Ch]
+    float xx; // [esp+Ch] [ebp-48h]
+    float yz; // [esp+10h] [ebp-44h]
+    CMatrix m; // [esp+14h] [ebp-40h] BYREF
 
-    // Precompute common terms
-    float x2 = x * x;
-    float y2 = y * y;
-    float z2 = z * z;
-    float xy = x * y;
-    float xz = x * z;
-    float yz = y * z;
-    float wx = w * x;
-    float wy = w * y;
-    float wz = w * z;
-
-    // Compute the rotation matrix from quaternion
-    // First row
-    CMatrix result;
-    result._11 = 1.0f - 2.0f * (y2 + z2);
-    result._12 = 2.0f * (xy + wz);
-    result._13 = 2.0f * (xz - wy);
-    result._14 = 0.0f;
-
-    // Second row
-    result._21 = 2.0f * (xy - wz);
-    result._22 = 1.0f - 2.0f * (x2 + z2);
-    result._23 = 2.0f * (yz + wx);
-    result._24 = 0.0f;
-
-    // Third row
-    result._31 = 2.0f * (xz + wy);
-    result._32 = 2.0f * (yz - wx);
-    result._33 = 1.0f - 2.0f * (x2 + y2);
-    result._34 = 0.0f;
-
-    // Fourth row (homogeneous coordinates)
-    result._41 = 0.0f;
-    result._42 = 0.0f;
-    result._43 = 0.0f;
-    result._44 = 1.0f;
-
-    return result;
+    v2 = this->z * this->w;
+    v3 = this->z * this->x;
+    xx = this->x * this->x;
+    v4 = this->w * this->x;
+    xy = this->y * this->x;
+    yz = this->z * this->y;
+    wy = this->y * this->w;
+    v5 = this->z * this->z;
+    v6 = this->y * this->y;
+    m._11 = 1.0 - (float)((float)(v5 + v6) * 2.0);
+    m._21 = (float)(xy - v2) * 2.0;
+    m._31 = (float)(wy + v3) * 2.0;
+    m._12 = (float)(v2 + xy) * 2.0;
+    m._22 = 1.0 - (float)((float)(v5 + xx) * 2.0);
+    m._33 = 1.0 - (float)((float)(v6 + xx) * 2.0);
+    m._32 = (float)(yz - v4) * 2.0;
+    m.m[0][2] = ((float)(v3 - wy) * 2.0);
+    m.m[0][3] = 0.0;
+    m.m[1][2] = ((float)(v4 + yz) * 2.0);
+    m.m[1][3] = 0.0;
+    memset(&m.m[2][3], 0, 16);
+    m._44 = 1.0;
+    return m;
 }
 
 Quaternion Quaternion::getConjugated() const
@@ -194,9 +185,41 @@ float Quaternion::operator[](unsigned int i) const
     return *(float*)(this + i);
 }
 
-void Quaternion::Lerp(Quaternion const&, Quaternion const&, float)
+void Quaternion::Lerp(Quaternion const& q1, Quaternion const& q2, float k2)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto v6 = 0;
+    auto q1a = (float)((float)((float)(q1.z * q2.z) + (float)(q1.y * q2.y)) + (float)(q2.w * q1.w))
+        + (float)(q1.x * q2.x);
+    auto v5 = q1a;
+    if (q1a < 0.0)
+    {
+        v5 = 0.0 - q1a;
+        q1a = 0.0 - q1a;
+        v6 = 1;
+    }
+    float v7, v8;
+    if ((float)(1.0 - v5) >= 0.001)
+    {
+        auto v9 = acos(q1a);
+        auto v14 = v9 * k2;
+        auto v10 = v9;
+        auto v11 = 1.0 / sqrt(1.0 - q1a * q1a);
+        auto q1b = sin(v10 - v14) * v11;
+        v8 = q1b;
+        auto v15 = sin(v14) * v11;
+        v7 = v15;
+    }
+    else
+    {
+        v7 = k2;
+        v8 = 1.0 - k2;
+    }
+    if (v6)
+        v7 = 0.0 - v7;
+    this->x = (float)(q1.x * v8) + (float)(q2.x * v7);
+    this->y = (float)(q1.y * v8) + (float)(v7 * q2.y);
+    this->z = (float)(q1.z * v8) + (float)(v7 * q2.z);
+    this->w = (float)(q2.w * v7) + (float)(v8 * q1.w);
 }
 
 void Quaternion::RotZ(float)

@@ -26,6 +26,14 @@
 #include "game/m3dgame.h"
 #include "server/dynamicscene.h"
 
+RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetId)
+{
+    auto* obj = (ai::Obj*)context->asObject(0, "Obj");
+    auto id = obj->GetId();
+    context->pushInt(id);
+    return 1;
+}
+
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, Remove)
 {
     auto* obj = (ai::Obj*)context->asObject(0, "Obj");
@@ -142,6 +150,7 @@ namespace ai
     //std::map<int, eGObjPropertySaveStatus> Obj::m_propertiesSaveStatesMap;
 
     RT_CLASS_EXPORTS_BEGIN(Obj)
+        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetId, "", "", "")
         RT_CLASS_EXPORT(Obj, m3d::METHOD, Remove, "", "", "")
         RT_CLASS_EXPORT(Obj, m3d::METHOD, IsAlive, "", "", "")
         RT_CLASS_EXPORT(Obj, m3d::METHOD, GetChild, "", "", "")
