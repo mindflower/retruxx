@@ -1,6 +1,7 @@
 #include "wheel.h"
 
 #include <stdexcept>
+#include "base/prototypemanager.h"
 
 namespace ai
 {
@@ -45,14 +46,24 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Wheel::Wheel(WheelPrototypeInfo const& prototype) : SimplePhysicObj(prototype)
+    Wheel::Wheel(WheelPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_jointID = 0;
+        this->m_driven = 1;
+        this->m_steering = STEERING_NO;
+        this->m_SplashEffect = 0;
+        this->m_SplashType = 0;
+        this->m_MakeSplash = 0;
+        this->m_wheelType = ai::gDynamicScene->GetWheelTypeByName(prototypeInfo.m_typeName);
+        this->m_bModelBroken = 0;
+        this->m_suspensionNode = 0;
+        this->m_curAngle = 0.0;
+        this->m_initialRotation = {0.0, 0.0, 0.0, 1.0};
     }
 
     WheelPrototypeInfo const* Wheel::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return dynamic_cast<WheelPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     void Wheel::RelinkGeomsToCollisionCells()
@@ -67,12 +78,12 @@ namespace ai
 
     m3d::Class* Wheel::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(Wheel);
     }
 
     void Wheel::LinkGeomsToCollisionCells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::LinkGeomsToCollisionCells();
     }
 
     bool Wheel::AttachToPhysicObj(PhysicObj const*)
@@ -168,7 +179,9 @@ namespace ai
 
     void Wheel::_InternalCreateVisualPart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::SimplePhysicObj::_InternalCreateVisualPart();
+        if (this->m_bModelBroken)
+            ai::Wheel::BreakModel();
     }
 
     Wheel::~Wheel()

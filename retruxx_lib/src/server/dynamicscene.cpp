@@ -659,9 +659,20 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	unsigned DynamicScene::GetWheelTypeByName(CStr const&)
+	unsigned DynamicScene::GetWheelTypeByName(CStr const& wheelTypeName)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		int i = 0;
+		for (; i < m_wheelTypeNames.size(); ++i)
+		{
+		    if (m_wheelTypeNames[i] == wheelTypeName)
+		    {
+				return i;
+		    }
+		}
+
+		m_wheelTypeNames.push_back(wheelTypeName);
+		_AddSoilEffectNameForWheelTypeName(wheelTypeName);
+		return m_wheelTypeNames.size() - 1;
 	}
 
 	CStr const& DynamicScene::GetBoShellEffectName(unsigned short, unsigned short)
@@ -1036,6 +1047,7 @@ namespace ai
 
 	void DynamicScene::_AddSoilEffectNameForWheelTypeName(CStr const&)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: implement DynamicScene::_AddSoilEffectNameForWheelTypeName
+		//RETRUXX_NOT_IMPLEMENTED;
 	}
 }

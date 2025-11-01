@@ -669,12 +669,15 @@ namespace ai
 
 	Wheel* Vehicle::WheelRuntimeInfo::GetWheel()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return m_wheel;
 	}
 
-	Vehicle::WheelRuntimeInfo::WheelRuntimeInfo(Wheel*)
+	Vehicle::WheelRuntimeInfo::WheelRuntimeInfo(Wheel* wheel)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		this->m_initialPos = {0.0, 0.0, 0.0};
+		this->m_initialRot = { 0.0, 0.0, 0.0, 1.0};
+		this->m_bWheelPresent = wheel != 0;
+		this->m_wheel = wheel;
 	}
 
 	bool Vehicle::WheelRuntimeInfo::IsWheelPresent() const

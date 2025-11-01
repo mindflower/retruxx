@@ -34,9 +34,17 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    SphericBody::SphericBody(std::vector<CollisionInfo, std::allocator<CollisionInfo>> const&, float)
+    SphericBody::SphericBody(std::vector<CollisionInfo, std::allocator<CollisionInfo>> const& collisionInfos, float massValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* obj = ai::Sphere::CreateObject(0, collisionInfos.front().m_radius, 0);
+        auto* innerGeom = m_pGeoms.front()->GetGeom();
+        delete innerGeom;
+
+        dGeomTransformSetGeom(m_pGeoms.front()->GetGeomId(), obj->GetGeomId());
+        m_pGeoms.front()->SetGeom(obj);
+
+        UpdateGeomsByCollisionInfo(collisionInfos);
+        dMassSetSphereTotal(&this->m_mass, massValue, collisionInfos.front().m_radius);
     }
 
     SphericBody::SphericBody(SphericBodyPrototypeInfo const&)
@@ -56,7 +64,7 @@ namespace ai
 
     m3d::Class* SphericBody::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(SphericBody);
     }
 
     m3d::Object* SphericBody::CreateObject()
