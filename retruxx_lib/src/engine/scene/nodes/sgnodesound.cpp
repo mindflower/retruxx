@@ -67,7 +67,9 @@ namespace m3d
 
     int SgSoundSourceNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement SgSoundSourceNode::Render
+        return 1;
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     Object* SgSoundSourceNode::Clone()

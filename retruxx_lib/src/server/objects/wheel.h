@@ -25,12 +25,12 @@ namespace ai
 
     class Wheel : public ai::SimplePhysicObj
     {
+        friend class WheelPrototypeInfo;
     protected:
         virtual  ~Wheel() override /* 0x00 */;
 
     private:
         Wheel(const ai::WheelPrototypeInfo& prototypeInfo);
-        Wheel(const ai::Wheel&);
         virtual m3d::Object* Clone() override /* 0x00 */;
         static m3d::Object* __fastcall CreateObject();
 

@@ -435,10 +435,10 @@ namespace m3d
         }
 
         float v18 = 0.0f;
+        CVector origin = m_origin;
         if (m_isXFormDirty)
         {
             m_isXFormDirty = false;
-            CVector origin = m_origin;
 
             if (m_isOriginRelative)
             {
@@ -495,8 +495,6 @@ namespace m3d
             this->m_ownXForm._44 = 1.0;
             parentDirty = true;
         }
-        else
-        {
             if (!parentDirty)
             {
             }
@@ -720,7 +718,6 @@ namespace m3d
 
                 m3d::pClient->GetWorld().GetLandscape().UpdateNodeCollisionGeoms(this);
             }
-        }
 
         if (onlyVis)
         {
@@ -788,7 +785,6 @@ namespace m3d
             auto v91 = this->m_boundingBox.m_box[5];
             auto v92 = this->m_boundingBox.m_box[1];
             auto v93 = this->m_boundingBox.m_box[4];
-            CVector origin;
             origin.x = this->m_boundingBox.m_box[3] - this->m_boundingBox.m_box[0];
             origin.z = v91 - v90;
             origin.y = v93 - v92;
@@ -799,7 +795,6 @@ namespace m3d
                 * 0.5;
         }
 
-        CVector origin; 
         auto v94 = this->m_boundingBox.m_box[5];
         auto v95 = this->m_boundingBox.m_box[4];
         auto v96 = this->m_boundingBox.m_box[2];

@@ -20,7 +20,7 @@ namespace ai
 
     ai::Obj* WheelPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new Wheel(*this);
     }
 
     bool WheelPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

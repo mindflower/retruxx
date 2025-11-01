@@ -527,7 +527,7 @@ namespace ai
 
 	void VehiclePrototypeInfo::WheelInfo::PostLoad()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		m_wheelPrototypeId = thePrototypeManager->GetPrototypeId(m_wheelPrototypeName);
 	}
 
 	VehiclePrototypeInfo::VehiclePrototypeInfo()
@@ -593,6 +593,7 @@ namespace ai
             }
 
             ref_ptr wheelsNode = xmlFile->CreateNode();
+			xmlNode->GetFirstChild(wheelsNode, "Wheels");
             if (!wheelsNode->IsEmpty())
             {
                 if (!m_parentPrototypeName.empty())
@@ -603,7 +604,7 @@ namespace ai
 
                 m_wheelInfos.clear();
                 ref_ptr wheelNode = xmlFile->CreateNode();
-                for (wheelsNode->GetFirstChild(wheelNode, "Wheel"); wheelNode->IsEmpty(); wheelNode->GetNextSibling(wheelNode, "Wheel"))
+                for (wheelsNode->GetFirstChild(wheelNode, "Wheel"); !wheelNode->IsEmpty(); wheelNode->GetNextSibling(wheelNode, "Wheel"))
                 {
                     CStr wheelPrototypeName;
                     m3d::SafeStrAttrib(wheelPrototypeName, wheelNode, "Prototype");

@@ -67,6 +67,7 @@ namespace m3d
 
     void Sound3DServer::RenderItem(int id, void* params)
     {
+        // TODO: implement Sound3DServer::RenderItem
         if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
         {
             if (id != 2)
@@ -86,7 +87,7 @@ namespace m3d
                 }
                 if (id != -4)
                 {
-                    RETRUXX_NOT_IMPLEMENTED;
+                    //RETRUXX_NOT_IMPLEMENTED;
                 }
             }
         }
