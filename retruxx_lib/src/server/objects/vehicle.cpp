@@ -664,7 +664,7 @@ namespace ai
 
 	Wheel const* Vehicle::WheelRuntimeInfo::GetWheel() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return m_wheel;
 	}
 
 	Wheel* Vehicle::WheelRuntimeInfo::GetWheel()

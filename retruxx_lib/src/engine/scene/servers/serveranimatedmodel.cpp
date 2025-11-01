@@ -120,9 +120,20 @@ namespace m3d
         return result;
     }
 
-    int AnimatedModelsServer::GetBoneMatrixByNameFromModelName(char const*, CStr const&, CMatrix&, bool)
+    int AnimatedModelsServer::GetBoneMatrixByNameFromModelName(char const* modelname, CStr const& boneName, CMatrix& res, bool theLastOneOnly)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto itemByName = m3d::DataServer::GetItemByName(modelname, 1);
+        if (itemByName != -1)
+        {
+            auto* dynamicModel = (DynamicModel*)m_models[itemByName].m_ptr;
+            auto* animatedModel = dynamicModel->m_mdl[0];
+            return animatedModel->GetBoneMatrixByName(
+                    boneName,
+                    res,
+                    theLastOneOnly);
+        }
+        return 0;
+        
     }
 
     int AnimatedModelsServer::SaveAllLoadedEntities(char const*)
