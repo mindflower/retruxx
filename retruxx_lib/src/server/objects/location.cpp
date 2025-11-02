@@ -318,7 +318,6 @@ namespace ai
 
     void Location::OnObjectOut(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Location::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
@@ -500,7 +499,15 @@ namespace ai
 
         for (auto& id : m_idsWasInside)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto obj = theObjects->GetEntityByObjId(id);
+            if (obj)
+            {
+                if (_MustCheckObject(obj))
+                {
+                    CauseEvent(GE_OBJECT_LEAVES_LOCATION, 0.0, { obj->GetId() }, {});
+                    OnObjectOut(obj);
+                }
+            }
         }
 
         m_idsWasInside.clear();

@@ -29,7 +29,17 @@ namespace ai
             m_minValue(minValue),
             m_maxValue(maxValue)
         {
-            //throw std::runtime_error("not implemented");
+            m_value.m_AfterChange = new ThisAfterChangeCallback(*this, &NumericInRange<T>::_OnAfterValueChange);
+            m_minValue.m_AfterChange = new ThisAfterChangeCallback(*this, &NumericInRange<T>::_OnAfterMinValueChange);
+            m_maxValue.m_AfterChange = new ThisAfterChangeCallback(*this, &NumericInRange<T>::_OnAfterMaxValueChange);
+
+            m_value.m_BeforeChange = new ThisBeforeChangeCallback(*this, &NumericInRange<T>::_OnBeforeValueChange);
+            m_minValue.m_BeforeChange = new ThisBeforeChangeCallback(*this, &NumericInRange<T>::_OnBeforeMinValueChange);
+            m_maxValue.m_BeforeChange = new ThisBeforeChangeCallback(*this, &NumericInRange<T>::_OnBeforeMaxValueChange);
+
+            m_value.m_BeforeApplyModifier = new ThisBeforeApplyModifierCallback(*this, &NumericInRange<T>::_OnBeforeValueApplyModifier);
+            m_minValue.m_BeforeApplyModifier = new ThisBeforeApplyModifierCallback(*this, &NumericInRange<T>::_OnBeforeMinValueApplyModifier);
+            m_maxValue.m_BeforeApplyModifier = new ThisBeforeApplyModifierCallback(*this, &NumericInRange<T>::_OnBeforeMaxValueApplyModifier);
         }
 
         const ai::Numeric<T>& value() const
@@ -62,9 +72,20 @@ namespace ai
             return m_maxValue;
         }
 
-        void assign(const ai::NumericInRange<T>&);
-        void setToMax();
-        bool bIsMax() const;
+        void assign(const ai::NumericInRange<T>&)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        void setToMax()
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        bool bIsMax() const
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
 
         void setToMin()
         {
@@ -72,21 +93,83 @@ namespace ai
             m_value.set(m_minValue.get());
         }
 
-        bool bIsMin() const;
+        bool bIsMin() const
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
 
     protected:
-        void _AssignUnsafe(const ai::NumericInRange<T>&);
+        void _AssignUnsafe(const ai::NumericInRange<T>&)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
 
     private:
-        void _OnAfterValueChange(T oldValue);
-        void _OnAfterMinValueChange(T oldValue);
-        void _OnAfterMaxValueChange(T oldValue);
-        bool _OnBeforeValueChange(T& newValue);
-        bool _OnBeforeMinValueChange(T& newValue);
-        bool _OnBeforeMaxValueChange(T& newValue);
-        bool _OnBeforeValueApplyModifier(const ai::Modifier& modifier, T& newValue);
-        bool _OnBeforeMinValueApplyModifier(const ai::Modifier& modifier, T& newValue);
-        bool _OnBeforeMaxValueApplyModifier(const ai::Modifier& modifier, T& newValue);
+        void _OnAfterValueChange(T oldValue)
+        {
+            if (m_minValue.get() <= m_value.get())
+            {
+                if (m_value.get() > m_maxValue.get())
+                    m_value.SetUnsafe(m_maxValue.get());
+            }
+            else
+            {
+                m_value.SetUnsafe(m_minValue.get());
+            }
+            m_AfterValueChange(oldValue);
+        }
+
+        void _OnAfterMinValueChange(T oldValue)
+        {
+            if (m_minValue.get() > m_value.get())
+            {
+                if (m_minValue.get() > m_maxValue.get())
+                    m_minValue.SetUnsafe(m_maxValue.get());
+                m_value.SetUnsafe(m_minValue.get());
+            }
+            m_AfterMinValueChange(oldValue);
+        }
+
+        void _OnAfterMaxValueChange(T oldValue)
+        {
+            if (m_value.get() > m_maxValue.get())
+            {
+                if (m_minValue.get() > m_maxValue.get())
+                    m_maxValue.SetUnsafe(m_minValue.get());
+                m_value.SetUnsafe(m_maxValue.get());
+            }
+            m_AfterMaxValueChange(oldValue);
+        }
+
+        bool _OnBeforeValueChange(T& newValue)
+        {
+            return m_BeforeValueChange(newValue);
+        }
+
+        bool _OnBeforeMinValueChange(T& newValue)
+        {
+            return m_BeforeMinValueChange(newValue);
+        }
+
+        bool _OnBeforeMaxValueChange(T& newValue)
+        {
+            return m_BeforeMaxValueChange(newValue);
+        }
+
+        bool _OnBeforeValueApplyModifier(const ai::Modifier& modifier, T& newValue)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        bool _OnBeforeMinValueApplyModifier(const ai::Modifier& modifier, T& newValue)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        bool _OnBeforeMaxValueApplyModifier(const ai::Modifier& modifier, T& newValue)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
         /* 0x0058 */ ai::Numeric<T> m_value;
         /* 0x0074 */ ai::Numeric<T> m_minValue;
         /* 0x0090 */ ai::Numeric<T> m_maxValue;

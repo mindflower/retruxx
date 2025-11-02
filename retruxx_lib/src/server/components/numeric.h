@@ -12,9 +12,9 @@ namespace ai
     public:
         /* 0x0010 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeApplyModifier;
         Numeric(T value) :
+            m_value(value),
             m_BeforeApplyModifier(nullptr)
         {
-            //throw std::runtime_error("not implemented");
         }
 
         T get() const

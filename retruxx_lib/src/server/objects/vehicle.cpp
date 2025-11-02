@@ -47,6 +47,7 @@
 #include "level.h"
 #include "team.h"
 #include "vehiclerecollection.h"
+#include "core/timer.h"
 #include "engine/ode/sources/joint.h"
 #include "guns/compoundgun.h"
 #include "guns/rocketlauncher.h"
@@ -1976,8 +1977,8 @@ namespace ai
 
 	float Vehicle::GetMaxSpeed() const
 	{
-		auto cabin = GetPartByName(CABIN);
-		float maxSpeed = (cabin && cabin->IsKindOf(RT_CLASS_LOCAL(Cabin))) ? dynamic_cast<const Cabin*>(cabin)->GetMaxSpeed() : 0.0;
+		auto cabin = GetCabin();
+		float maxSpeed = cabin ? cabin->GetMaxSpeed() : 0.0;
 
 		if (m_maxSpeedLimited)
 		{
@@ -2704,7 +2705,7 @@ namespace ai
 					_ApplyStabilizingForces();
 					_KeepThrottle(1);
 					_KeepGearBox(elapsedTime);
-					//_KeepSteer(elapsedTime);
+					_KeepSteer(elapsedTime);
 					_KeepSuspension();
 					_AdjustTrailer();
 					if (!m_bIsControlledByPlayer)
@@ -2792,7 +2793,7 @@ namespace ai
 				_ApplyStabilizingForces();
 				_KeepThrottle(1);
 				_KeepGearBox(elapsedTime);
-				//_KeepSteer(elapsedTime);
+				_KeepSteer(elapsedTime);
 				_KeepSuspension();
 				_AdjustTrailer();
 				if (!m_bIsControlledByPlayer)
@@ -2813,7 +2814,7 @@ namespace ai
 			_ApplyStabilizingForces();
 			_KeepThrottle(1);
 			_KeepGearBox(elapsedTime);
-			//_KeepSteer(elapsedTime);
+			_KeepSteer(elapsedTime);
 			_KeepSuspension();
 			_AdjustTrailer();
 			if (!m_bIsControlledByPlayer)
@@ -3677,9 +3678,35 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::_DeadActions(float)
+	void Vehicle::_DeadActions(float elapsedTime)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		m_timeAfterDeath = elapsedTime + m_timeAfterDeath;
+		m_timeAfterLastBlow = elapsedTime + m_timeAfterLastBlow;
+
+		if (m_timeAfterDeath > 60.0)
+		{
+		    if (!m_vehicleParts.empty())
+		    {
+				auto* part = m_vehicleParts.begin()->second;
+				if (part->m_Node->m_frameVisible != M3D_KERNEL->GetTimer().GetCurFrame() - 1)
+				{
+					Remove();
+				}
+		    }
+			else
+			{
+				Remove();
+			}
+		}
+		if (m_deathDamage == DAMAGE_ENERGY)
+		{
+			RETRUXX_NOT_IMPLEMENTED;
+		}
+		SetThrottle(0.0, 1);
+		_KeepThrottle(0);
+		_KeepGearBox(elapsedTime);
+		_KeepSteer(elapsedTime);
+		_KeepSuspension();
 	}
 
 	void Vehicle::_OnChangeCabin()
@@ -4032,90 +4059,63 @@ namespace ai
 	void Vehicle::_TurnWheelByAngle(Wheel* pWheel, float angle)
 	{
 		// TODO: generated code
-		// Calculate half angle for quaternion creation (common in rotation operations)
-		float halfAngle = -angle * 0.5f;
-		float sinHalfAngle = sin(halfAngle);
-		float cosHalfAngle = cos(halfAngle);
+		auto anglea = (float)(0.0 - angle) * 0.5;
+		auto wheelRelativeRot_4 = sin(anglea);
+		auto wheelRelativeRot_12 = cos(anglea);
+		auto Rotation = ai::PhysicObj::GetRotation();
+		auto v5 = wheelRelativeRot_4;
+		auto v6 = Rotation.w * 0.0;
+		auto v7 = Rotation.y * 0.0;
+		auto v8 = Rotation.x * 0.0;
+		auto wheelRelativeRot = (float)((float)((float)(Rotation.x * wheelRelativeRot_12) + v6) + v7)
+			- (float)(Rotation.z * wheelRelativeRot_4);
+		auto v9 = Rotation.z * 0.0;
+		auto wheelRelativeRot_4a = (float)((float)((float)(Rotation.y * wheelRelativeRot_12)
+											  + (float)(Rotation.w * wheelRelativeRot_4))
+									  + v9)
+			- v8;
+		auto wheelRelativeRot_8 = (float)((float)((float)(Rotation.z * wheelRelativeRot_12) + (float)(Rotation.x * v5)) + v6)
+			- v7;
+		auto wheelRelativeRot_12a = (float)((float)((float)(Rotation.w * wheelRelativeRot_12) - v8) - (float)(Rotation.y * v5))
+			- v9;
+		auto v10 = ai::PhysicObj::GetRotation();
+		auto Inversed = v10.getInversed();
+		auto v12 = wheelRelativeRot_4a;
+		auto v13 = wheelRelativeRot;
+		auto wheelRelativeRota = (float)((float)((float)(Inversed.x * wheelRelativeRot_12a)
+											+ (float)(wheelRelativeRot_4a * Inversed.z))
+									+ (float)(wheelRelativeRot * Inversed.w))
+			- (float)(Inversed.y * wheelRelativeRot_8);
+		auto wheelRelativeRot_4b = (float)((float)((float)(Inversed.x * wheelRelativeRot_8)
+											  + (float)(Inversed.y * wheelRelativeRot_12a))
+									  + (float)(wheelRelativeRot_4a * Inversed.w))
+			- (float)(v13 * Inversed.z);
+		auto v14 = wheelRelativeRot_8 * Inversed.z;
+		auto wheelRelativeRot_8a = (float)((float)((float)(Inversed.y * v13) + (float)(wheelRelativeRot_12a * Inversed.z))
+									  + (float)(wheelRelativeRot_8 * Inversed.w))
+			- (float)(Inversed.x * v12);
+		auto wheelRelativeRot_12b = (float)((float)((float)(wheelRelativeRot_12a * Inversed.w) - (float)(Inversed.x * v13))
+									   - (float)(Inversed.y * v12))
+			- v14;
+		auto v15 = pWheel->GetRotation();
+		auto v16 = (float)((float)((float)(wheelRelativeRot_8a * v15.x) + (float)(v15.y * wheelRelativeRot_12b))
+					  + (float)(v15.w * wheelRelativeRot_4b))
+			- (float)(wheelRelativeRota * v15.z);
+		auto v17 = (float)((float)((float)(wheelRelativeRot_12b * v15.z) + (float)(v15.w * wheelRelativeRot_8a))
+					  + (float)(v15.y * wheelRelativeRota))
+			- (float)(wheelRelativeRot_4b * v15.x);
+		auto v18 = (float)((float)((float)(v15.w * wheelRelativeRot_12b) - (float)(wheelRelativeRota * v15.x))
+					  - (float)(v15.y * wheelRelativeRot_4b))
+			- (float)(wheelRelativeRot_8a * v15.z);
 
-		// Get vehicle rotation
-		Quaternion vehicleRot= GetRotation();
-
-		// Create rotation quaternion for the wheel turn around vehicle's up vector
-		// The rotation axis is (0, 0, 1) in vehicle local space (Z-up)
-		Quaternion wheelTurnQuat;
-		wheelTurnQuat.x = vehicleRot.x * cosHalfAngle +
-			vehicleRot.w * 0.0f +
-			vehicleRot.y * 0.0f -
-			vehicleRot.z * sinHalfAngle;
-
-		wheelTurnQuat.y = vehicleRot.y * cosHalfAngle +
-			vehicleRot.w * sinHalfAngle +
-			vehicleRot.z * 0.0f -
-			vehicleRot.x * 0.0f;
-
-		wheelTurnQuat.z = vehicleRot.z * cosHalfAngle +
-			vehicleRot.x * sinHalfAngle +
-			vehicleRot.w * 0.0f -
-			vehicleRot.y * 0.0f;
-
-		wheelTurnQuat.w = vehicleRot.w * cosHalfAngle -
-			vehicleRot.x * 0.0f -
-			vehicleRot.y * sinHalfAngle -
-			vehicleRot.z * 0.0f;
-
-		// Get inverse of vehicle rotation to transform from world to vehicle space
-		auto vehicleRotTemp = GetRotation();
-		auto vehicleRotInv = vehicleRotTemp.getInversed();
-
-		// Transform the wheel turn quaternion to vehicle local space
-		Quaternion localWheelTurnQuat;
-		localWheelTurnQuat.x = (vehicleRotInv.x * wheelTurnQuat.w +
-								wheelTurnQuat.y * vehicleRotInv.z +
-								wheelTurnQuat.x * vehicleRotInv.w) -
-			(vehicleRotInv.y * wheelTurnQuat.z);
-
-		localWheelTurnQuat.y = (vehicleRotInv.x * wheelTurnQuat.z +
-								vehicleRotInv.y * wheelTurnQuat.w +
-								wheelTurnQuat.y * vehicleRotInv.w) -
-			(wheelTurnQuat.x * vehicleRotInv.z);
-
-		localWheelTurnQuat.z = (vehicleRotInv.y * wheelTurnQuat.x +
-								wheelTurnQuat.w * vehicleRotInv.z +
-								wheelTurnQuat.z * vehicleRotInv.w) -
-			(vehicleRotInv.x * wheelTurnQuat.y);
-
-		localWheelTurnQuat.w = (wheelTurnQuat.w * vehicleRotInv.w -
-								vehicleRotInv.x * wheelTurnQuat.x -
-								vehicleRotInv.y * wheelTurnQuat.y) -
-			(wheelTurnQuat.z * vehicleRotInv.z);
-
-		// Get current wheel rotation
-		Quaternion currentWheelRot = pWheel->GetRotation();
-
-		// Combine the wheel turn rotation with current wheel rotation
-		Quaternion newWheelRot;
-		newWheelRot.x = (localWheelTurnQuat.z * currentWheelRot.x +
-						 localWheelTurnQuat.w * currentWheelRot.y +
-						 currentWheelRot.w * localWheelTurnQuat.y) -
-			(localWheelTurnQuat.x * currentWheelRot.z);
-
-		newWheelRot.y = (localWheelTurnQuat.w * currentWheelRot.x +
-						 localWheelTurnQuat.x * currentWheelRot.z +
-						 currentWheelRot.w * localWheelTurnQuat.z) -
-			(localWheelTurnQuat.y * currentWheelRot.y);
-
-		newWheelRot.z = (localWheelTurnQuat.x * currentWheelRot.y +
-						 localWheelTurnQuat.y * currentWheelRot.x +
-						 currentWheelRot.w * localWheelTurnQuat.w) -
-			(localWheelTurnQuat.z * currentWheelRot.z);
-
-		newWheelRot.w = (currentWheelRot.w * localWheelTurnQuat.w -
-						 localWheelTurnQuat.x * currentWheelRot.x -
-						 localWheelTurnQuat.y * currentWheelRot.y) -
-			(localWheelTurnQuat.z * currentWheelRot.z);
-
-		// Apply the new rotation to the wheel
-		pWheel->SetRotation(newWheelRot);
+		Quaternion v30;
+		v30.x = (float)((float)((float)(wheelRelativeRot_12b * v15.x) + (float)(wheelRelativeRot_4b * v15.z))
+						 + (float)(v15.w * wheelRelativeRota))
+			- (float)(v15.y * wheelRelativeRot_8a);
+		v30.y = v16;
+		v30.z = v17;
+		v30.w = v18;
+		pWheel->SetRotation(v30);
 	}
 
 	CVector Vehicle::_GetCustomWeaponTargetPoint() const
@@ -4781,6 +4781,8 @@ namespace ai
 
 	void Vehicle::_AdjustWheel(WheelRuntimeInfo& wheelInfo)
 	{
+		// TODO: implement Vehicle::_AdjustWheel
+		return;
 		// TODO: generated code
 		ai::Wheel* wheel = wheelInfo.GetWheel();
 
@@ -4789,196 +4791,153 @@ namespace ai
 
 		Quaternion vehicleRot= GetRotation();
 
-		// Calculate inverse of vehicle rotation
+		// Get inverse of vehicle rotation
 		Quaternion invVehicleRot = vehicleRot.getInversed();
 
-		// Get wheel direction vector
-		CVector wheelDirection = wheel->GetDirection();
+		// Get wheel direction
+		CVector wheelDir = wheel->GetDirection();
 
-		// Convert inverse vehicle rotation quaternion to matrix
-		float x = invVehicleRot.x;
-		float y = invVehicleRot.y;
-		float z = invVehicleRot.z;
-		float w = invVehicleRot.w;
+		// Build rotation matrix from inverse vehicle rotation
+		float xx = invVehicleRot.x * invVehicleRot.x;
+		float yy = invVehicleRot.y * invVehicleRot.y;
+		float zz = invVehicleRot.z * invVehicleRot.z;
+		float xy = invVehicleRot.x * invVehicleRot.y;
+		float xz = invVehicleRot.x * invVehicleRot.z;
+		float yz = invVehicleRot.y * invVehicleRot.z;
+		float wx = invVehicleRot.w * invVehicleRot.x;
+		float wy = invVehicleRot.w * invVehicleRot.y;
+		float wz = invVehicleRot.w * invVehicleRot.z;
 
-		float x2 = x * x;
-		float y2 = y * y;
-		float z2 = z * z;
-		float xy = x * y;
-		float xz = x * z;
-		float yz = y * z;
-		float wx = w * x;
-		float wy = w * y;
-		float wz = w * z;
+		CMatrix invRotMatrix;
+		invRotMatrix._11 = 1.0f - 2.0f * (yy + zz);
+		invRotMatrix._12 = 2.0f * (xy + wz);
+		invRotMatrix._13 = 2.0f * (xz - wy);
+		invRotMatrix._14 = 0.0f;
+		invRotMatrix._21 = 2.0f * (xy - wz);
+		invRotMatrix._22 = 1.0f - 2.0f * (xx + zz);
+		invRotMatrix._23 = 2.0f * (yz + wx);
+		invRotMatrix._24 = 0.0f;
+		invRotMatrix._31 = 2.0f * (xz + wy);
+		invRotMatrix._32 = 2.0f * (yz - wx);
+		invRotMatrix._33 = 1.0f - 2.0f * (xx + yy);
+		invRotMatrix._34 = 0.0f;
+		invRotMatrix._41 = 0.0f;
+		invRotMatrix._42 = 0.0f;
+		invRotMatrix._43 = 0.0f;
+		invRotMatrix._44 = 1.0f;
 
-		CMatrix invVehicleRotMatrix;
-		invVehicleRotMatrix._11 = 1.0f - 2.0f * (y2 + z2);
-		invVehicleRotMatrix._12 = 2.0f * (xy + wz);
-		invVehicleRotMatrix._13 = 2.0f * (xz - wy);
-		invVehicleRotMatrix._14 = 0.0f;
-
-		invVehicleRotMatrix._21 = 2.0f * (xy - wz);
-		invVehicleRotMatrix._22 = 1.0f - 2.0f * (x2 + z2);
-		invVehicleRotMatrix._23 = 2.0f * (yz + wx);
-		invVehicleRotMatrix._24 = 0.0f;
-
-		invVehicleRotMatrix._31 = 2.0f * (xz + wy);
-		invVehicleRotMatrix._32 = 2.0f * (yz - wx);
-		invVehicleRotMatrix._33 = 1.0f - 2.0f * (x2 + y2);
-		invVehicleRotMatrix._34 = 0.0f;
-
-		invVehicleRotMatrix._41 = 0.0f;
-		invVehicleRotMatrix._42 = 0.0f;
-		invVehicleRotMatrix._43 = 0.0f;
-		invVehicleRotMatrix._44 = 1.0f;
-
-		// Transform wheel direction from world space to vehicle local space
+		// Transform wheel direction to vehicle local space
 		CVector localWheelDir;
-		localWheelDir.x = wheelDirection.x * invVehicleRotMatrix._11 +
-			wheelDirection.y * invVehicleRotMatrix._21 +
-			wheelDirection.z * invVehicleRotMatrix._31;
-		localWheelDir.y = wheelDirection.x * invVehicleRotMatrix._12 +
-			wheelDirection.y * invVehicleRotMatrix._22 +
-			wheelDirection.z * invVehicleRotMatrix._32;
-		localWheelDir.z = wheelDirection.x * invVehicleRotMatrix._13 +
-			wheelDirection.y * invVehicleRotMatrix._23 +
-			wheelDirection.z * invVehicleRotMatrix._33;
+		localWheelDir.x = invRotMatrix._11 * wheelDir.x + invRotMatrix._21 * wheelDir.y + invRotMatrix._31 * wheelDir.z;
+		localWheelDir.y = invRotMatrix._12 * wheelDir.x + invRotMatrix._22 * wheelDir.y + invRotMatrix._32 * wheelDir.z;
+		localWheelDir.z = invRotMatrix._13 * wheelDir.x + invRotMatrix._23 * wheelDir.y + invRotMatrix._33 * wheelDir.z;
 
-		// Calculate alignment correction angle
-		// This keeps the wheel properly aligned with the vehicle's orientation
-		float forwardComponent = localWheelDir.x;
-		float lateralMagnitude = sqrt(localWheelDir.y * localWheelDir.y + localWheelDir.z * localWheelDir.z);
-		float alignmentAngle = atan2(forwardComponent, lateralMagnitude) * 0.5f;
+		// Calculate wheel orientation correction
+		float projX = localWheelDir.x;
+		float projY = localWheelDir.y;
+		float projZ = localWheelDir.z;
 
-		// Create alignment correction quaternion
-		float sinAngle = sin(alignmentAngle);
-		float cosAngle = cos(alignmentAngle);
+		float length = sqrt(projX * projX + projY * projY);
+		float invLength = (length > 0.0001f) ? (1.0f / length) : 0.0f;
 
-		// Normalize the rotation axis
-		float axisLength = sqrt(localWheelDir.x * localWheelDir.x + localWheelDir.y * localWheelDir.y + localWheelDir.z * localWheelDir.z);
-		float invAxisLength = 1.0f / (axisLength + 0.00000011920929f);
+		float angle = atan2(projZ, sqrt(projX * projX + projY * projY)) * 0.5f;
+		float sinHalfAngle = sin(angle);
+		float cosHalfAngle = cos(angle);
 
 		Quaternion correctionQuat;
-		correctionQuat.x = localWheelDir.y * invAxisLength * sinAngle;
-		correctionQuat.y = localWheelDir.z * invAxisLength * sinAngle;
-		correctionQuat.z = localWheelDir.x * invAxisLength * sinAngle;
-		correctionQuat.w = cosAngle;
-
-		// Get current wheel rotation
-		Quaternion currentWheelRot = wheel->GetRotation();
+		correctionQuat.x = projY * invLength * sinHalfAngle;
+		correctionQuat.y = 0.0f;
+		correctionQuat.z = -projX * invLength * sinHalfAngle;
+		correctionQuat.w = cosHalfAngle;
 
 		// Apply correction to wheel rotation
-		Quaternion correctedWheelRot;
-		correctedWheelRot.x = (correctionQuat.w * currentWheelRot.x) + (correctionQuat.x * currentWheelRot.w) +
-			(correctionQuat.y * currentWheelRot.z) - (correctionQuat.z * currentWheelRot.y);
-		correctedWheelRot.y = (correctionQuat.w * currentWheelRot.y) - (correctionQuat.x * currentWheelRot.z) +
-			(correctionQuat.y * currentWheelRot.w) + (correctionQuat.z * currentWheelRot.x);
-		correctedWheelRot.z = (correctionQuat.w * currentWheelRot.z) + (correctionQuat.x * currentWheelRot.y) -
-			(correctionQuat.y * currentWheelRot.x) + (correctionQuat.z * currentWheelRot.w);
-		correctedWheelRot.w = (correctionQuat.w * currentWheelRot.w) - (correctionQuat.x * currentWheelRot.x) -
-			(correctionQuat.y * currentWheelRot.y) - (correctionQuat.z * currentWheelRot.z);
-
-		// Apply initial rotation offset (from wheel setup)
-		Quaternion initialRotInv= wheelInfo.m_initialRot.getInversed();
+		Quaternion combinedRot;
+		combinedRot.x = vehicleRot.w * correctionQuat.x + vehicleRot.x * correctionQuat.w +
+			vehicleRot.y * correctionQuat.z - vehicleRot.z * correctionQuat.y;
+		combinedRot.y = vehicleRot.w * correctionQuat.y + vehicleRot.y * correctionQuat.w +
+			vehicleRot.z * correctionQuat.x - vehicleRot.x * correctionQuat.z;
+		combinedRot.z = vehicleRot.w * correctionQuat.z + vehicleRot.z * correctionQuat.w +
+			vehicleRot.x * correctionQuat.y - vehicleRot.y * correctionQuat.x;
+		combinedRot.w = vehicleRot.w * correctionQuat.w - vehicleRot.x * correctionQuat.x -
+			vehicleRot.y * correctionQuat.y - vehicleRot.z * correctionQuat.z;
 
 		Quaternion finalWheelRot;
-		finalWheelRot.x = (correctedWheelRot.w * initialRotInv.x) + (correctedWheelRot.x * initialRotInv.w) +
-			(correctedWheelRot.y * initialRotInv.z) - (correctedWheelRot.z * initialRotInv.y);
-		finalWheelRot.y = (correctedWheelRot.w * initialRotInv.y) - (correctedWheelRot.x * initialRotInv.z) +
-			(correctedWheelRot.y * initialRotInv.w) + (correctedWheelRot.z * initialRotInv.x);
-		finalWheelRot.z = (correctedWheelRot.w * initialRotInv.z) + (correctedWheelRot.x * initialRotInv.y) -
-			(correctedWheelRot.y * initialRotInv.x) + (correctedWheelRot.z * initialRotInv.w);
-		finalWheelRot.w = (correctedWheelRot.w * initialRotInv.w) - (correctedWheelRot.x * initialRotInv.x) -
-			(correctedWheelRot.y * initialRotInv.y) - (correctedWheelRot.z * initialRotInv.z);
+		finalWheelRot.x = combinedRot.w * wheelInfo.m_initialRot.x + combinedRot.x * wheelInfo.m_initialRot.w +
+			combinedRot.y * wheelInfo.m_initialRot.z - combinedRot.z * wheelInfo.m_initialRot.y;
+		finalWheelRot.y = combinedRot.w * wheelInfo.m_initialRot.y + combinedRot.y * wheelInfo.m_initialRot.w +
+			combinedRot.z * wheelInfo.m_initialRot.x - combinedRot.x * wheelInfo.m_initialRot.z;
+		finalWheelRot.z = combinedRot.w * wheelInfo.m_initialRot.z + combinedRot.z * wheelInfo.m_initialRot.w +
+			combinedRot.x * wheelInfo.m_initialRot.y - combinedRot.y * wheelInfo.m_initialRot.x;
+		finalWheelRot.w = combinedRot.w * wheelInfo.m_initialRot.w - combinedRot.x * wheelInfo.m_initialRot.x -
+			combinedRot.y * wheelInfo.m_initialRot.y - combinedRot.z * wheelInfo.m_initialRot.z;
 
-		// Set the corrected wheel rotation
 		wheel->SetRotation(finalWheelRot);
 
-		// Adjust wheel position to maintain proper attachment to vehicle
-		CVector currentWheelPos = wheel->GetPosition();
+		// Adjust wheel position
+		CVector wheelWorldPos = wheel->GetPosition();
 
-		// Calculate offset from vehicle to wheel
-		CVector wheelOffset;
-		wheelOffset.x = currentWheelPos.x - vehiclePos.x;
-		wheelOffset.y = currentWheelPos.y - vehiclePos.y;
-		wheelOffset.z = currentWheelPos.z - vehiclePos.z;
+		CVector relativePos = wheelWorldPos - vehiclePos;
 
-		// Transform offset to vehicle local space
-		CVector localOffset;
-		localOffset.x = wheelOffset.x * invVehicleRotMatrix._11 +
-			wheelOffset.y * invVehicleRotMatrix._21 +
-			wheelOffset.z * invVehicleRotMatrix._31;
-		localOffset.y = wheelOffset.x * invVehicleRotMatrix._12 +
-			wheelOffset.y * invVehicleRotMatrix._22 +
-			wheelOffset.z * invVehicleRotMatrix._32;
-		localOffset.z = wheelOffset.x * invVehicleRotMatrix._13 +
-			wheelOffset.y * invVehicleRotMatrix._23 +
-			wheelOffset.z * invVehicleRotMatrix._33;
+		// Transform relative position using inverse vehicle rotation
+		CVector localRelativePos;
+		localRelativePos.x = invRotMatrix._11 * relativePos.x + invRotMatrix._21 * relativePos.y + invRotMatrix._31 * relativePos.z;
+		localRelativePos.y = invRotMatrix._12 * relativePos.x + invRotMatrix._22 * relativePos.y + invRotMatrix._32 * relativePos.z;
+		localRelativePos.z = invRotMatrix._13 * relativePos.x + invRotMatrix._23 * relativePos.y + invRotMatrix._33 * relativePos.z;
 
-		// Convert vehicle rotation to matrix for world space transformation
-		CMatrix vehicleRotMatrix;
-		vehicleRotMatrix._11 = 1.0f - 2.0f * (vehicleRot.y * vehicleRot.y + vehicleRot.z * vehicleRot.z);
-		vehicleRotMatrix._12 = 2.0f * (vehicleRot.x * vehicleRot.y + vehicleRot.z * vehicleRot.w);
-		vehicleRotMatrix._13 = 2.0f * (vehicleRot.x * vehicleRot.z - vehicleRot.y * vehicleRot.w);
-		vehicleRotMatrix._14 = 0.0f;
+		// Apply initial position offset
+		CVector targetLocalPos = wheelInfo.m_initialPos;
 
-		vehicleRotMatrix._21 = 2.0f * (vehicleRot.x * vehicleRot.y - vehicleRot.z * vehicleRot.w);
-		vehicleRotMatrix._22 = 1.0f - 2.0f * (vehicleRot.x * vehicleRot.x + vehicleRot.z * vehicleRot.z);
-		vehicleRotMatrix._23 = 2.0f * (vehicleRot.y * vehicleRot.z + vehicleRot.x * vehicleRot.w);
-		vehicleRotMatrix._24 = 0.0f;
+		// Build rotation matrix from vehicle rotation
+		float vxx = vehicleRot.x * vehicleRot.x;
+		float vyy = vehicleRot.y * vehicleRot.y;
+		float vzz = vehicleRot.z * vehicleRot.z;
+		float vxy = vehicleRot.x * vehicleRot.y;
+		float vxz = vehicleRot.x * vehicleRot.z;
+		float vyz = vehicleRot.y * vehicleRot.z;
+		float vwx = vehicleRot.w * vehicleRot.x;
+		float vwy = vehicleRot.w * vehicleRot.y;
+		float vwz = vehicleRot.w * vehicleRot.z;
 
-		vehicleRotMatrix._31 = 2.0f * (vehicleRot.x * vehicleRot.z + vehicleRot.y * vehicleRot.w);
-		vehicleRotMatrix._32 = 2.0f * (vehicleRot.y * vehicleRot.z - vehicleRot.x * vehicleRot.w);
-		vehicleRotMatrix._33 = 1.0f - 2.0f * (vehicleRot.x * vehicleRot.x + vehicleRot.y * vehicleRot.y);
-		vehicleRotMatrix._34 = 0.0f;
+		CMatrix rotMatrix;
+		rotMatrix._11 = 1.0f - 2.0f * (vyy + vzz);
+		rotMatrix._12 = 2.0f * (vxy + vwz);
+		rotMatrix._13 = 2.0f * (vxz - vwy);
+		rotMatrix._14 = 0.0f;
+		rotMatrix._21 = 2.0f * (vxy - vwz);
+		rotMatrix._22 = 1.0f - 2.0f * (vxx + vzz);
+		rotMatrix._23 = 2.0f * (vyz + vwx);
+		rotMatrix._24 = 0.0f;
+		rotMatrix._31 = 2.0f * (vxz + vwy);
+		rotMatrix._32 = 2.0f * (vyz - vwx);
+		rotMatrix._33 = 1.0f - 2.0f * (vxx + vyy);
+		rotMatrix._34 = 0.0f;
+		rotMatrix._41 = 0.0f;
+		rotMatrix._42 = 0.0f;
+		rotMatrix._43 = 0.0f;
+		rotMatrix._44 = 1.0f;
 
-		vehicleRotMatrix._41 = 0.0f;
-		vehicleRotMatrix._42 = 0.0f;
-		vehicleRotMatrix._43 = 0.0f;
-		vehicleRotMatrix._44 = 1.0f;
-
-		// Calculate target world position using initial local position and vehicle transform
+		// Transform target position back to world space
 		CVector targetWorldPos;
-		targetWorldPos.x = vehiclePos.x +
-			wheelInfo.m_initialPos.x * vehicleRotMatrix._11 +
-			localOffset.y * vehicleRotMatrix._21 +
-			localOffset.z * vehicleRotMatrix._31;
-		targetWorldPos.y = vehiclePos.y +
-			wheelInfo.m_initialPos.x * vehicleRotMatrix._12 +
-			localOffset.y * vehicleRotMatrix._22 +
-			localOffset.z * vehicleRotMatrix._32;
-		targetWorldPos.z = vehiclePos.z +
-			wheelInfo.m_initialPos.x * vehicleRotMatrix._13 +
-			localOffset.y * vehicleRotMatrix._23 +
-			localOffset.z * vehicleRotMatrix._33;
+		targetWorldPos.x = rotMatrix._11 * targetLocalPos.x + rotMatrix._21 * targetLocalPos.y + rotMatrix._31 * targetLocalPos.z + vehiclePos.x;
+		targetWorldPos.y = rotMatrix._12 * targetLocalPos.x + rotMatrix._22 * targetLocalPos.y + rotMatrix._32 * targetLocalPos.z + vehiclePos.y;
+		targetWorldPos.z = rotMatrix._13 * targetLocalPos.x + rotMatrix._23 * targetLocalPos.y + rotMatrix._33 * targetLocalPos.z + vehiclePos.z;
 
-		// Set the corrected wheel position
 		wheel->SetPosition(targetWorldPos);
 
-		// Final steering angle adjustment to synchronize with current steering input
-		CVector currentWheelDirection= wheel->GetDirection();
+		// Calculate and apply wheel turning angle
+		CVector currentWheelDir = wheel->GetDirection();
 
 		// Transform current wheel direction to vehicle local space
-		CVector localCurrentDir;
-		localCurrentDir.x = currentWheelDirection.x * invVehicleRotMatrix._11 +
-			currentWheelDirection.y * invVehicleRotMatrix._21 +
-			currentWheelDirection.z * invVehicleRotMatrix._31;
-		localCurrentDir.y = currentWheelDirection.x * invVehicleRotMatrix._12 +
-			currentWheelDirection.y * invVehicleRotMatrix._22 +
-			currentWheelDirection.z * invVehicleRotMatrix._32;
-		localCurrentDir.z = currentWheelDirection.x * invVehicleRotMatrix._13 +
-			currentWheelDirection.y * invVehicleRotMatrix._23 +
-			currentWheelDirection.z * invVehicleRotMatrix._33;
+		CVector localCurrentWheelDir;
+		localCurrentWheelDir.x = invRotMatrix._11 * currentWheelDir.x + invRotMatrix._21 * currentWheelDir.y + invRotMatrix._31 * currentWheelDir.z;
+		localCurrentWheelDir.y = invRotMatrix._12 * currentWheelDir.x + invRotMatrix._22 * currentWheelDir.y + invRotMatrix._32 * currentWheelDir.z;
+		localCurrentWheelDir.z = invRotMatrix._13 * currentWheelDir.x + invRotMatrix._23 * currentWheelDir.y + invRotMatrix._33 * currentWheelDir.z;
 
-		// Calculate current steering angle from local direction
-		// Using atan2 with -Z and -X components to get proper wheel orientation
-		float currentSteeringAngle = atan2(-localCurrentDir.z, -localCurrentDir.x);
+		// Calculate turning angle based on wheel direction in local space
+		float turnAngle = wheel->m_curAngle - atan2(-localCurrentWheelDir.z, -localCurrentWheelDir.x);
 
-		// Calculate correction needed to match the desired steering angle
-		float angleCorrection = wheel->m_curAngle - currentSteeringAngle;
-
-		// Apply the final steering correction
-		_TurnWheelByAngle(wheel, angleCorrection);
+		// Apply the turning angle
+		ai::Vehicle::_TurnWheelByAngle(wheel, turnAngle);
 	}
 
 	m3d::Object* Vehicle::CreateObject()

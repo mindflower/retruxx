@@ -56,7 +56,11 @@ namespace ai
 
         virtual RetType Execute(T1& arg) override /* 0x04 */
         {
-            throw std::runtime_error("not implemented");
+            if (m_pT)
+            {
+                return (m_pT->*m_func)(arg);
+            }
+            return RetType();
         }
 
     private:
