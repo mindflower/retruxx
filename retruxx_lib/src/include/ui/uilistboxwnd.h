@@ -58,15 +58,48 @@ namespace m3d
             }
             //ItemFromPoint(PointBase<float> const &);
             //GetTopVisibleItemId();
-            //GetItemBounds(int);
+
+            BoundsBase<float> GetItemBounds(int idx) const
+            {
+                BoundsBase<float> b(0.0, 0.0, 0.0, 0.0);
+                if (idx < 0 || idx >= m_items.size())
+                {
+                    return b;
+                }
+
+                MeasureItem(idx, b);
+
+                float curPosV = 0.0;
+                if (m_scrollVWnd)
+                {
+                    curPosV = m_scrollVWnd->GetCurPos();
+                }
+
+                float curPosH = 0.0;
+                if (m_scrollHWnd)
+                {
+                    curPosH = m_scrollHWnd->GetCurPos();
+                }
+
+                const auto& item = m_items[idx];
+                BoundsBase<float> result;
+                result.x0 = item.m_origin.x - curPosH + b.x0;
+                result.width = b.width;
+                result.y0 = item.m_origin.y - curPosV + b.y0;
+                result.height = b.height;
+                return result;
+            }
+
             T GetItem(int idx) const
             {
                 return m_items[idx].m_item;
             }
+
             //ScrollList(bool);
             //SetClientEdges(float,float,float,float);
             //SetClientEdges(float,float,float,float);
             //SetBounds(BoundsBase<float> const &,bool);
+
             int RemoveAllItems()
             {
                 while (!m_items.empty())

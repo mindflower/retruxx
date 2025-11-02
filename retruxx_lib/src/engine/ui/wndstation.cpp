@@ -793,9 +793,29 @@ namespace m3d
             }
         }
 
-        void WndStation::OnOpenComboBox(ComboBoxWnd*)
+        void WndStation::OnOpenComboBox(ComboBoxWnd* combo)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!combo || m_wndOpenedComboBox == combo)
+            {
+                return;
+            }
+
+            int val = -1;
+            const auto res = m_allWindows.getValueByKey(reinterpret_cast<unsigned>(combo), val);
+            if (res)
+            {
+                if (combo->IsChildOf(this))
+                {
+                    if (m_wndOpenedComboBox
+                        && IsWndAlive(m_wndOpenedComboBox, -1)
+                        && m_wndOpenedComboBox->IsChildOf(this)
+                        && m_wndOpenedComboBox->IsOpen())
+                    {
+                        m_wndOpenedComboBox->Close();
+                    }
+                    m_wndOpenedComboBox = combo;
+                }
+            }
         }
 
         void WndStation::ForEachChild(Wnd*, void(Wnd::*)())

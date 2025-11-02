@@ -39,7 +39,40 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetListBounds() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                float h = 0.0;
+                float w = 0.0;
+                for (int i = 0; i < m_wndStringList->GetCount(); ++i)
+                {
+                    const auto& bounds = m_wndStringList->GetItemBounds(i);
+                    if (h + bounds.height > m_maxListH)
+                    {
+                        break;
+                    }
+                    h += bounds.height;
+                }
+
+                auto* pane = GetStation()->GetGfxServer()->GetPane(m_wndStringList->GetPaneName());
+                if (pane)
+                {
+                    auto& frame = pane->m_frame[0];
+                    if (frame)
+                    {
+                        w = frame->m_barUsedWidth;
+                    }
+                }
+
+                const auto selBounds = GetSelTextBounds();
+                BoundsBase<float> result;
+                result.x0 = selBounds.x0;
+                result.y0 = selBounds.height + selBounds.y0;
+                result.width = selBounds.width + selBounds.x0 - selBounds.x0;
+                result.height = ((((w * 2.0) + h) + selBounds.height) + selBounds.y0) - (selBounds.height + selBounds.y0);
+                return result;
+
+            }
+            return { 0.0, 0.0, 0.0, 0.0 };
         }
 
         void ComboBoxWnd::SetCurSel(int idx)
@@ -426,7 +459,11 @@ namespace m3d
 
         int ComboBoxWnd::RemoveAllItems()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                return m_wndStringList->RemoveAllItems();
+            }
+            return 0;
         }
 
         bool ComboBoxWnd::IsOpen() const

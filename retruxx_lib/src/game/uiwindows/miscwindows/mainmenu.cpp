@@ -60,7 +60,16 @@ MainMenuUI::MainMenuUI(MainMenuUI const&)
 
 void MainMenuUI::OnNewGame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    M3D_APP->m_pInterfaceManager->ShowWindow(
+        172,
+        true,
+        true,
+        true,
+        true,
+        nullptr);
+
+    const auto cmd = "/map " + CStr(M3D_ENGINE_CFG.m_firstLevel.GetS());
+    M3D_ENGINE_CFG.m_console->executeCommand(cmd);
 }
 
 int MainMenuUI::OnAfterRemoveFromWndStation()

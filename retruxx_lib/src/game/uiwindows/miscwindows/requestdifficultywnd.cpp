@@ -1,6 +1,8 @@
 #include "requestdifficultywnd.h"
 
+#include "m3dapp.h"
 #include "core/log.h"
+#include "server/objects/base/globalproperties.h"
 #include "ui/comboboxwnd.h"
 
 RT_CLASS_EXPORTS_BEGIN(RequestDifficultyWnd)
@@ -47,7 +49,30 @@ RequestDifficultyWnd::RequestDifficultyWnd()
 
 void RequestDifficultyWnd::FillDifficultyLevelsList()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        Clear();
+        for (int i = 0; i < ai::theGlobProp.m_difficultyLevelCoeffs.size(); ++i)
+        {
+            auto id = m_cbDifficultyLevels->AddItem(M3D_APP->GetStringByStringId0(ai::theGlobProp.m_difficultyLevelCoeffs[i].m_name));
+            if (id != -1)
+            {
+                m_cbDifficultyLevels->SetItemData(id, i);
+            }
+        }
+
+        m_cbDifficultyLevels->SetCurSel(-1);
+        const auto level = M3D_APP->GetCurDifficultyLevel();
+        for (int i = 0; i < m_cbDifficultyLevels->GetCount(); ++i)
+        {
+            if (m_cbDifficultyLevels->GetItemData(i) == level)
+            {
+                m_cbDifficultyLevels->SetCurSel(i);
+                return;
+            }
+        }
+        m_cbDifficultyLevels->SetCurSel(0);
+    }
 }
 
 int RequestDifficultyWnd::OnKey(unsigned short, unsigned char, unsigned)
@@ -62,7 +87,11 @@ int RequestDifficultyWnd::OnBeforeRemoveFromWndStation()
 
 void RequestDifficultyWnd::Clear()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_cbDifficultyLevels->RemoveAllItems();
+        m_cbDifficultyLevels->SetText({});
+    }
 }
 
 void RequestDifficultyWnd::ApplyDifficultyLevel()
@@ -72,7 +101,8 @@ void RequestDifficultyWnd::ApplyDifficultyLevel()
 
 int RequestDifficultyWnd::OnBeforeAddToWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    FillDifficultyLevelsList();
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 int RequestDifficultyWnd::GameDataSetup()
