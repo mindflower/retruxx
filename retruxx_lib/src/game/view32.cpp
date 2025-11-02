@@ -746,7 +746,7 @@ void CMiracle3d::PutSplash(int proc, char const* text)
 
 bool CMiracle3d::bIsMousePointing() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_curGameMode.m_mode == GS_GAME;
 }
 
 void CMiracle3d::ClearSomeGameElementsBeforeModal()

@@ -86,12 +86,12 @@ namespace ai
 
     float Cabin::GetFuelConsumption() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return this->m_fuelConsumption;
     }
 
     float Cabin::GetMaxTorque() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return this->m_maxTorque;
     }
 
     Cabin::Cabin(CabinPrototypeInfo const& prototypeInfo) : VehiclePart(prototypeInfo)

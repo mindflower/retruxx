@@ -56,9 +56,14 @@ namespace ai
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006A9D60, GetPathItem)
-    bool GetPathItem(Path const*, unsigned int, CVector&)
+    bool GetPathItem(Path const* pPath, unsigned int itemNum, CVector& point)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!pPath || pPath->GetSearchStatus())
+        {
+            return false;
+        }
+        pPath->GetItem(itemNum, &point.x, &point.z);
+        return true;
     }
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006AAB20, DebugCircle)

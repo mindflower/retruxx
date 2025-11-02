@@ -579,7 +579,7 @@ namespace ai
 
     m3d::Profiler* CServer::GetPathFindingProfiler()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_pathFindingProfiler;
     }
 
     void CServer::RelinkSceneGraphNodes()

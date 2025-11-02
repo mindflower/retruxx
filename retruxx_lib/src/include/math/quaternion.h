@@ -39,3 +39,5 @@ struct Quaternion
 }; /* size: 0x0010 */
 
 static_assert(sizeof(Quaternion) == 0x0010);
+
+inline Quaternion IdentityQuaternion(0.0, 0.0, 0.0, 1.0);

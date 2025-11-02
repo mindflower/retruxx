@@ -30,3 +30,5 @@ struct CVector
 }; /* size: 0x000c */
 
 static_assert(sizeof(CVector) == 0x000c);
+
+inline CVector ZeroVector(0.0, 0.0, 0.0);

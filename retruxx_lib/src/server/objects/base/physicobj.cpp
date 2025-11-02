@@ -876,7 +876,13 @@ namespace ai
 
     CVector PhysicObj::GetAngularVelocity() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto angularVel = dBodyGetAngularVel(this->m_body->id());
+
+        CVector result;
+        result.x = angularVel[0];
+        result.y = angularVel[1];
+        result.z = angularVel[2];
+        return result;
     }
 
     void PhysicObj::RelinkGeomsToCollisionCells()

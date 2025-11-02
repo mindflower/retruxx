@@ -119,7 +119,7 @@ namespace ai
 
     bool Path::GetSearchStatus() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return this->m_bSearching;
     }
 
     ai::eSearchResult Path::GetResult() const
@@ -134,7 +134,12 @@ namespace ai
 
     void Path::GetItem(unsigned int ItemNum, float* PathCoordx, float* PathCoordy) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (ItemNum < m_size)
+        {
+            const auto& coord = m_pPath[ItemNum];
+            *PathCoordx = coord.x;
+            *PathCoordy = coord.y;
+        }
     }
 
     bool Path::IsStraightPathValid(ai::Map* pMap, const CVector2& startPoint, const CVector2& endPoint, float radius,

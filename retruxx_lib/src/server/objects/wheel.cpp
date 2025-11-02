@@ -179,7 +179,93 @@ namespace ai
 
     CVector Wheel::GetDirection() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code
+        // Get the inverse of the wheel's initial rotation
+        Quaternion initialRotInv = m_initialRotation.getInversed();
+
+        // Get the wheel's current rotation
+        Quaternion currentRot = GetRotation();
+
+        // Calculate the relative rotation: currentRot * initialRotInv
+        // This gives the rotation from initial orientation to current orientation
+        Quaternion relativeRot;
+        relativeRot.x = (currentRot.x * initialRotInv.w) +
+            (currentRot.y * initialRotInv.z) +
+            (currentRot.w * initialRotInv.x) -
+            (currentRot.z * initialRotInv.y);
+
+        relativeRot.y = (initialRotInv.x * currentRot.z) +
+            (currentRot.y * initialRotInv.w) +
+            (currentRot.w * initialRotInv.y) -
+            (currentRot.x * initialRotInv.z);
+
+        relativeRot.z = (currentRot.w * initialRotInv.z) +
+            (currentRot.z * initialRotInv.w) +
+            (currentRot.x * initialRotInv.y) -
+            (initialRotInv.x * currentRot.y);
+
+        relativeRot.w = (currentRot.w * initialRotInv.w) -
+            (currentRot.x * initialRotInv.x) -
+            (currentRot.y * initialRotInv.y) -
+            (currentRot.z * initialRotInv.z);
+
+        // Convert the relative rotation quaternion to a rotation matrix
+        float x = relativeRot.x;
+        float y = relativeRot.y;
+        float z = relativeRot.z;
+        float w = relativeRot.w;
+
+        // Precompute squared components for matrix calculation
+        float x2 = x * x;
+        float y2 = y * y;
+        float z2 = z * z;
+        float xy = x * y;
+        float xz = x * z;
+        float yz = y * z;
+        float wx = w * x;
+        float wy = w * y;
+        float wz = w * z;
+
+        // Build rotation matrix from quaternion
+        CMatrix rotationMatrix;
+        rotationMatrix._11 = 1.0f - 2.0f * (y2 + z2);
+        rotationMatrix._12 = 2.0f * (xy + wz);
+        rotationMatrix._13 = 2.0f * (xz - wy);
+        rotationMatrix._14 = 0.0f;
+
+        rotationMatrix._21 = 2.0f * (xy - wz);
+        rotationMatrix._22 = 1.0f - 2.0f * (x2 + z2);
+        rotationMatrix._23 = 2.0f * (yz + wx);
+        rotationMatrix._24 = 0.0f;
+
+        rotationMatrix._31 = 2.0f * (xz + wy);
+        rotationMatrix._32 = 2.0f * (yz - wx);
+        rotationMatrix._33 = 1.0f - 2.0f * (x2 + y2);
+        rotationMatrix._34 = 0.0f;
+
+        rotationMatrix._41 = 0.0f;
+        rotationMatrix._42 = 0.0f;
+        rotationMatrix._43 = 0.0f;
+        rotationMatrix._44 = 1.0f;
+
+        // Transform the wheel's forward axis by the rotation matrix
+        // This gives the current direction vector in world space
+        CVector wheelForwardAxis = ai::Wheel::AXIS_FOR_WHEEL; // Typically (1, 0, 0) or (0, 0, -1) depending on coordinate system
+
+        CVector result;
+        result.x = wheelForwardAxis.x * rotationMatrix._11 +
+            wheelForwardAxis.y * rotationMatrix._21 +
+            wheelForwardAxis.z * rotationMatrix._31;
+
+        result.y = wheelForwardAxis.x * rotationMatrix._12 +
+            wheelForwardAxis.y * rotationMatrix._22 +
+            wheelForwardAxis.z * rotationMatrix._32;
+
+        result.z = wheelForwardAxis.x * rotationMatrix._13 +
+            wheelForwardAxis.y * rotationMatrix._23 +
+            wheelForwardAxis.z * rotationMatrix._33;
+
+        return result;
     }
 
     void Wheel::CreateSuspensionNode()

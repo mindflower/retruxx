@@ -143,9 +143,9 @@ namespace ai
         };
 
     private:
-        static const int NUM_GEARS;
-        static const float GEAR_RATIOS[5];
-        static const float TRANSFERBOX_RATIO;
+        static inline const int NUM_GEARS = 5;
+        static inline const float GEAR_RATIOS[5] = {4.0, 2.5, 1.5, 1.0, 0.7};
+        static inline const float TRANSFERBOX_RATIO = 1.8;
 
         using IntGadgetMap = retruxx::map<int, ai::Gadget*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Gadget*> > >;
 

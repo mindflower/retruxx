@@ -664,7 +664,7 @@ namespace ai
 
     bool Obj::_GetDeadStatus() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return (this->m_flags & 8) != 0;
     }
 
     int Obj::GetLastDamageSource() const

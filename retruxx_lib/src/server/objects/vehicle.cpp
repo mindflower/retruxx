@@ -1,6 +1,9 @@
 #define NOMINMAX
 
 #include "vehicle.h"
+
+#include <algorithm>
+
 #include "physicbodies/geoms/box.h"
 #include <stdexcept>
 #include <core/aiparam.h>
@@ -41,16 +44,22 @@
 #include <server/server.h>
 
 #include "gadget.h"
+#include "level.h"
+#include "team.h"
 #include "vehiclerecollection.h"
 #include "engine/ode/sources/joint.h"
 #include "guns/compoundgun.h"
 #include "guns/rocketlauncher.h"
 #include "guns/rocketvolleylauncher.h"
+#include "scene/nodes/sgnodesound.h"
 #include "server/externalpaths.h"
 #include "server/intersectionmanager.h"
 #include "server/path.h"
 #include "server/weaponfirer.h"
+#include "server/formations/formation.h"
 #include "server/roles/VehicleRole.h"
+#include "server/statistic/floatstatistic.h"
+#include "server/statistic/statisticmanager.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
@@ -1050,7 +1059,15 @@ namespace ai
 
 	float Vehicle::GetMass() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		float res = PhysicObj::GetMass();
+		for (const auto& wheelInfo : m_wheels)
+		{
+		    if (const auto* wheel = wheelInfo.GetWheel())
+		    {
+				res += wheel->GetMass();
+		    }
+		}
+		return res;
 	}
 
 	unsigned Vehicle::GetPrice(IPriceCoeffProvider const*) const
@@ -1362,12 +1379,26 @@ namespace ai
 
 	NumericInRangeRegenerating<float> const& Vehicle::Health() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		const auto chassis = RT_DYNCAST(GetPartByName(CHASSIS), const Chassis);
+		if (chassis)
+		{
+			return chassis->Health();
+		}
+
+		static NumericInRangeRegenerating<float> dummy{ 0.0, 0.0, 0.0, 0.0 };
+		return dummy;
 	}
 
 	NumericInRangeRegenerating<float>& Vehicle::Health()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		auto chassis = RT_DYNCAST(GetPartByName(CHASSIS), Chassis);
+		if (chassis)
+		{
+			return chassis->Health();
+		}
+
+		static NumericInRangeRegenerating<float> dummy{0.0, 0.0, 0.0, 0.0};
+		return dummy;
 	}
 
 	bool Vehicle::GetOnOilMode() const
@@ -1598,7 +1629,17 @@ namespace ai
 
 	float Vehicle::GetMaxTorque() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (this->m_maxTorqueForced)
+		{
+			return this->m_maxTorqueForcedValue;
+		}
+
+		const auto cabin = RT_DYNCAST(GetPartByName(CABIN), const Cabin);
+		if (cabin)
+		{
+			return cabin->GetMaxTorque();
+		}
+		return 0.0;
 	}
 
 	void Vehicle::SetAttackStatus(VehicleAttackStatus attackStatus)
@@ -1801,12 +1842,26 @@ namespace ai
 
 	NumericInRangeRegenerating<float>& Vehicle::Fuel()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		auto chassis = RT_DYNCAST(GetPartByName(CHASSIS), Chassis);
+		if (chassis)
+		{
+			return chassis->Fuel();
+		}
+
+		static NumericInRangeRegenerating<float> dummy{ 0.0, 0.0, 0.0, 0.0 };
+		return dummy;
 	}
 
 	NumericInRangeRegenerating<float> const& Vehicle::Fuel() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		const auto chassis = RT_DYNCAST(GetPartByName(CHASSIS), const Chassis);
+		if (chassis)
+		{
+			return chassis->Fuel();
+		}
+
+		static NumericInRangeRegenerating<float> dummy{ 0.0, 0.0, 0.0, 0.0 };
+		return dummy;
 	}
 
 	float Vehicle::GetFuel() const
@@ -2007,13 +2062,13 @@ namespace ai
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA60, Vehicle::GetCabin, Cabin const* (Vehicle::*)()const)
 	Cabin const* Vehicle::GetCabin() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return RT_DYNCAST(GetPartByName(CABIN), const Cabin);
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CB9D0, Vehicle::GetCabin, Cabin* (Vehicle::*)())
 	Cabin* Vehicle::GetCabin()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return RT_DYNCAST(GetPartByName(CABIN), Cabin);
 	}
 
 	float Vehicle::GetTurboThrottleValue() const
@@ -2452,8 +2507,15 @@ namespace ai
 		class LocalProfiler
 		{
 		public:
-			LocalProfiler(m3d::Profiler*);
-			~LocalProfiler();
+			LocalProfiler(m3d::Profiler* profiler) : m_profiler(profiler)
+			{
+				m_profiler->StartCountdown();
+			}
+
+			~LocalProfiler()
+			{
+				m_profiler->EndCountdown();
+			}
 
 		private:
 			/* 0x0000 */ m3d::Profiler* m_profiler;
@@ -2462,6 +2524,7 @@ namespace ai
 
 	void Vehicle::Update(float elapsedTime, unsigned workTime)
 	{
+		// TODO: check this
 		if (!GetParentRepository() && (GetFlags() & 1) != 0)
 		{
 			ai::LocalProfiler prof(pServer->GetPathFindingProfiler());
@@ -2498,7 +2561,215 @@ namespace ai
 			}
 
 			const auto* prototypeInfo = GetPrototypeInfo();
-			RETRUXX_NOT_IMPLEMENTED;
+			if (prototypeInfo)
+			{
+			    if (prototypeInfo->m_healthRegeneration != 0.0)
+			    {
+					heath.regenerate(elapsedTime);
+			    }
+				if (prototypeInfo->m_durabilityRegeneration != 0.0)
+				{
+				    for (auto& [name, part] : m_vehicleParts)
+				    {
+				        if (IS_KIND_OF(part, CompoundVehiclePart))
+				        {
+							auto compoundPart = RT_DYNCAST(part, CompoundVehiclePart);
+							compoundPart->RegenerateDurability(elapsedTime);
+				        }
+						else
+						{
+							part->Durability().regenerate(elapsedTime);
+						}
+				    }
+				}
+			}
+			if (m_bCustomControl && m_customControlWeapons)
+			{
+				auto target = _GetCustomWeaponTargetPoint();
+				WeaponFirer::WeaponLookAtPoint(this, target, elapsedTime);
+				_CauseCustomGunPointedEvents();
+			}
+			if (m_bIsControlledByPlayer)
+			{
+				if (m_bMustGetOutOfDifficultPlace)
+				{
+					_GetOutOfDifficlultPlaceInternal();
+					m_bMustGetOutOfDifficultPlace = false;
+				}
+
+				auto* cabin = GetCabin();
+				if (cabin)
+				{
+					auto time = GetMass() * fabs(m_engineRpm) * cabin->GetFuelConsumption() * elapsedTime * 0.000001;
+					Fuel().regenerate(time);
+				}
+
+				auto* globalStatistic = (FloatStatistic*)theStatisticManager->GetStatistic(STATISTIC_PATH_ELAPSED, "FloatStatistic");
+				globalStatistic->m_bGlobalFlag = true;
+
+				const auto linearVelocity = GetLinearVelocity();
+				const auto len = linearVelocity.length() * elapsedTime;
+				globalStatistic->Increase(len);
+
+				auto* levelStatistic = (FloatStatistic*)theStatisticManager->GetStatistic(STATISTIC_PATH_ELAPSED + pServer->GetWorld()->m_level->m_levelName, "FloatStatistic");
+				levelStatistic->m_bGlobalFlag = false;
+				levelStatistic->Increase(len);
+				_CheckForNearbyChests();
+			}
+			if (!m_bIsTrailer)
+			{
+				auto* role = GetRole();
+				if (role && (!m_bIsMovingAlongExternalPath || m_bCanBeDistractedFromMoving))
+				{
+					role->UpdateVehicle(elapsedTime, this);
+				}
+
+				m_timeOutForNextIntersectionWithWorld.regenerate(elapsedTime);
+				if (this->m_timeOutForNextIntersectionWithWorld.value().get() == this->m_timeOutForNextIntersectionWithWorld.minValue().get())
+				{
+					auto time = _GetTimeOutForNextIntersectionWithWorld();
+					m_timeOutForNextIntersectionWithWorld.value().set(time);
+					IntersectWithWorld();
+				}
+				if (!m_bIsControlledByPlayer || m_bIsMovingAlongExternalPath)
+				{
+					if (!m_bCustomControl)
+					{
+						SetThrottle(0.0, 1);
+						m_steerRadians = 0.0;
+					}
+				}
+				else if (!m_bCustomControl)
+				{
+					_UpdateSeenObjAndWeapons(elapsedTime);
+					_UpdateAlarmStatus();
+					_UpdateLockedObj(elapsedTime);
+					_TakeWaterIntoAccount(elapsedTime);
+					_ApplyStabilizingForces();
+					_KeepThrottle(1);
+					_KeepGearBox(elapsedTime);
+					_KeepSteer(elapsedTime);
+					_KeepSuspension();
+					_AdjustTrailer();
+					if (!m_bIsControlledByPlayer)
+					{
+						ActivateHeadLights(m3d::pClient->GetWorld().GetWeatherManager().GetCurrentDayTime() == m3d::GTP_NIGHT_TIME);
+					}
+					if (m_stoppageMode)
+					{
+						SetLinearVelocity(ZeroVector);
+						SetAngularVelocity(ZeroVector);
+					}
+				    return;
+				}
+				if (!m_moveStatus)
+				{
+					SetThrottle(0.0, 1);
+					if (m_pPath)
+					{
+						delete m_pPath;
+					}
+					m_pPath = 0;
+					m_pathNum = -1;
+				}
+				if (m_moveStatus == 2)
+				{
+					const auto steerForce = _CalcSteeringForce(elapsedTime);
+					_DriveBySteeringForce(steerForce);
+					auto* parent = RT_DYNCAST(GetParent(), Team);
+					auto formation = parent->GetFormation();
+					if (!formation->bIsMoving())
+					{
+						auto direction = formation->GetDirection();
+
+						CVector nextPoint;
+						nextPoint.x = m_externalDestination.x + direction.x;
+						nextPoint.y = m_externalDestination.y + direction.y;
+						nextPoint.z = m_externalDestination.z + direction.z;
+						if (_bPassedPathPoint(m_externalDestination, nextPoint, true))
+						{
+							m_moveStatus = MOVE_IDLE;
+						}
+					}
+				}
+				else
+				{
+					if (m_pPath && m_pathNum >= 0)
+					{
+						CVector curPoint;
+						ai::GetPathItem(m_pPath, m_pathNum, curPoint);
+
+						CVector nextPoint = _GetNextPathPoint();
+						
+						const bool isLastPath = m_pathNum == m_pPath->GetSize() - 1;
+						const auto force = _CalcSteeringForce(elapsedTime);
+						_DriveBySteeringForce(force);
+						if (_bPassedPathPoint(curPoint, nextPoint, elapsedTime))
+						{
+							++m_pathNum;
+						}
+						if (m_pathNum >= m_pPath->GetSize() && m_moveStatus == MOVE_MOVING_ALONG_PATH)
+						{
+							_SetIdleMoveStatusAndCauseTargetReached();
+						}
+					}
+					else if (!m_bCustomControl)
+					{
+						SetThrottle(0.0, 1);
+						m_steerRadians = 0.0;
+					}
+				}
+				if (!m_attackStatus)
+				{
+					for (auto& obstacle : m_currentNearbyObstacles)
+					{
+						auto owner = RT_DYNCAST(obstacle->GetOwner(), Obj);
+						if (owner && owner->GetClass() == &ai::Vehicle::m_classVehicle && owner->bIsEnemyWith(this))
+						{
+							CauseEvent(GE_NOTICE_ENEMY, 0.0, owner->GetId(), {});
+						}
+					}
+				}
+
+				// TODO: remove code duplication
+				_TakeWaterIntoAccount(elapsedTime);
+				_ApplyStabilizingForces();
+				_KeepThrottle(1);
+				_KeepGearBox(elapsedTime);
+				_KeepSteer(elapsedTime);
+				_KeepSuspension();
+				_AdjustTrailer();
+				if (!m_bIsControlledByPlayer)
+				{
+					ActivateHeadLights(m3d::pClient->GetWorld().GetWeatherManager().GetCurrentDayTime() == m3d::GTP_NIGHT_TIME);
+				}
+				if (m_stoppageMode)
+				{
+					SetLinearVelocity(ZeroVector);
+					SetAngularVelocity(ZeroVector);
+				}
+				return;
+			}
+
+			SetThrottle(0.0, 0);
+			// TODO: remove code duplication
+			_TakeWaterIntoAccount(elapsedTime);
+			_ApplyStabilizingForces();
+			_KeepThrottle(1);
+			_KeepGearBox(elapsedTime);
+			_KeepSteer(elapsedTime);
+			_KeepSuspension();
+			_AdjustTrailer();
+			if (!m_bIsControlledByPlayer)
+			{
+				ActivateHeadLights(m3d::pClient->GetWorld().GetWeatherManager().GetCurrentDayTime() == m3d::GTP_NIGHT_TIME);
+			}
+			if (m_stoppageMode)
+			{
+				SetLinearVelocity(ZeroVector);
+				SetAngularVelocity(ZeroVector);
+			}
+			return;
 		}
 	}
 
@@ -3155,9 +3426,95 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::_KeepSteer(float)
+	void Vehicle::_KeepSteer(float elapsedTime)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code
+		for (auto& wheelInfo : m_wheels)
+		{
+			ai::Wheel* wheel = wheelInfo.GetWheel();
+			if (!wheel)
+				continue;
+
+			// Adjust wheel parameters
+			_AdjustWheel(wheelInfo);
+
+			// Calculate target steering angle based on wheel's steering ratio
+			float targetAngle = static_cast<float>(wheel->m_steering) * m_steerRadians;
+			float currentAngle = wheel->m_curAngle;
+
+			// Determine if we need to adjust steering speed based on current position
+			float angleDifference = targetAngle - currentAngle;
+			float steeringSpeed = m_steeringSpeed;
+
+			// Check if we're close to the target (using dot product-like check)
+			float proximityCheck = angleDifference * currentAngle;
+
+			// If we're not very close to target, use dynamic steering speed
+			if (fabs(proximityCheck) > 0.000001f)
+			{
+				// Use base steering speed
+				steeringSpeed = m_steeringSpeed;
+			}
+			else
+			{
+				// Use dynamic steering speed that increases with current angle
+				// This helps with centering and makes steering more responsive at larger angles
+				float absCurrentAngle = fabs(currentAngle);
+				steeringSpeed = (2.0f * absCurrentAngle + 1.0f) * m_steeringSpeed;
+			}
+
+			// Determine steering direction (1 for positive, -1 for negative)
+			int steeringDirection = (angleDifference >= 0.0f) ? 1 : -1;
+
+			// Calculate new steering angle based on steering speed and time
+			float angleChange = steeringDirection * steeringSpeed * elapsedTime;
+			float newAngle = currentAngle + angleChange;
+
+			// Check if we would overshoot the target
+			float newAngleDifference = newAngle - targetAngle;
+			int newDirection;
+			if (newAngleDifference > 0.000001f)
+			{
+				newDirection = 1;
+			}
+			else if (newAngleDifference < -0.000001f)
+			{
+				newDirection = -1;
+			}
+			else
+			{
+				newDirection = 0;
+			}
+
+			// Check original direction
+			float originalDifference = currentAngle - targetAngle;
+			int originalDirection;
+			if (originalDifference > 0.000001f)
+			{
+				originalDirection = 1;
+			}
+			else if (originalDifference < -0.000001f)
+			{
+				originalDirection = -1;
+			}
+			else
+			{
+				originalDirection = 0;
+			}
+
+			// If we're changing direction (overshooting), clamp to target angle
+			if (newDirection * originalDirection <= 0)
+			{
+				newAngle = targetAngle;
+			}
+
+			// Apply the steering angle change to the wheel
+			float angleDelta = newAngle - currentAngle;
+			_TurnWheelByAngle(wheel, angleDelta);
+
+			// Update wheel's current angle
+			wheel->m_curAngle = newAngle;
+		}
 	}
 
 	void Vehicle::_UpdateOwnPhysics(float)
@@ -3193,17 +3550,35 @@ namespace ai
 
 	float Vehicle::_GetTimeOutForNextIntersectionWithWorld() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (ai::PhysicObj::bIsUpdatingByODE())
+			return (float)rand() * 0.000030518509 * 0.1;
+		else
+			return (float)rand() * 0.000030518509 * 0.30000001 + 0.2;
 	}
 
 	void Vehicle::_ApplyStabilizingForces()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		M3D_ASSERT(IsAlive());
+
+		const auto linearVelocity = GetLinearVelocity();
+		if (m_numWheelsTouchingGround > 0)
+		{
+			RETRUXX_NOT_IMPLEMENTED;
+		}
+
+		if (m_numWheelsTouchingGround > 0)
+		{
+			RETRUXX_NOT_IMPLEMENTED;
+		}
+
 	}
 
 	void Vehicle::_UpdateAlarmStatus()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		for (auto& obstacle : m_currentNearbyObstacles)
+		{
+			RETRUXX_NOT_IMPLEMENTED;
+		}
 	}
 
 	m3d::Object* Vehicle::Clone()
@@ -3254,7 +3629,8 @@ namespace ai
 
 	void Vehicle::_KeepSuspension()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: implement Vehicle::_KeepSuspension
+		//RETRUXX_NOT_IMPLEMENTED;
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(0x005CCF40, Vehicle, _GetNextPathPoint)
@@ -3385,9 +3761,93 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::_TurnWheelByAngle(Wheel*, float)
+	void Vehicle::_TurnWheelByAngle(Wheel* pWheel, float angle)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code
+		// Calculate half angle for quaternion creation (common in rotation operations)
+		float halfAngle = -angle * 0.5f;
+		float sinHalfAngle = sin(halfAngle);
+		float cosHalfAngle = cos(halfAngle);
+
+		// Get vehicle rotation
+		Quaternion vehicleRot= GetRotation();
+
+		// Create rotation quaternion for the wheel turn around vehicle's up vector
+		// The rotation axis is (0, 0, 1) in vehicle local space (Z-up)
+		Quaternion wheelTurnQuat;
+		wheelTurnQuat.x = vehicleRot.x * cosHalfAngle +
+			vehicleRot.w * 0.0f +
+			vehicleRot.y * 0.0f -
+			vehicleRot.z * sinHalfAngle;
+
+		wheelTurnQuat.y = vehicleRot.y * cosHalfAngle +
+			vehicleRot.w * sinHalfAngle +
+			vehicleRot.z * 0.0f -
+			vehicleRot.x * 0.0f;
+
+		wheelTurnQuat.z = vehicleRot.z * cosHalfAngle +
+			vehicleRot.x * sinHalfAngle +
+			vehicleRot.w * 0.0f -
+			vehicleRot.y * 0.0f;
+
+		wheelTurnQuat.w = vehicleRot.w * cosHalfAngle -
+			vehicleRot.x * 0.0f -
+			vehicleRot.y * sinHalfAngle -
+			vehicleRot.z * 0.0f;
+
+		// Get inverse of vehicle rotation to transform from world to vehicle space
+		auto vehicleRotTemp = GetRotation();
+		auto vehicleRotInv = vehicleRotTemp.getInversed();
+
+		// Transform the wheel turn quaternion to vehicle local space
+		Quaternion localWheelTurnQuat;
+		localWheelTurnQuat.x = (vehicleRotInv.x * wheelTurnQuat.w +
+								wheelTurnQuat.y * vehicleRotInv.z +
+								wheelTurnQuat.x * vehicleRotInv.w) -
+			(vehicleRotInv.y * wheelTurnQuat.z);
+
+		localWheelTurnQuat.y = (vehicleRotInv.x * wheelTurnQuat.z +
+								vehicleRotInv.y * wheelTurnQuat.w +
+								wheelTurnQuat.y * vehicleRotInv.w) -
+			(wheelTurnQuat.x * vehicleRotInv.z);
+
+		localWheelTurnQuat.z = (vehicleRotInv.y * wheelTurnQuat.x +
+								wheelTurnQuat.w * vehicleRotInv.z +
+								wheelTurnQuat.z * vehicleRotInv.w) -
+			(vehicleRotInv.x * wheelTurnQuat.y);
+
+		localWheelTurnQuat.w = (wheelTurnQuat.w * vehicleRotInv.w -
+								vehicleRotInv.x * wheelTurnQuat.x -
+								vehicleRotInv.y * wheelTurnQuat.y) -
+			(wheelTurnQuat.z * vehicleRotInv.z);
+
+		// Get current wheel rotation
+		Quaternion currentWheelRot = pWheel->GetRotation();
+
+		// Combine the wheel turn rotation with current wheel rotation
+		Quaternion newWheelRot;
+		newWheelRot.x = (localWheelTurnQuat.z * currentWheelRot.x +
+						 localWheelTurnQuat.w * currentWheelRot.y +
+						 currentWheelRot.w * localWheelTurnQuat.y) -
+			(localWheelTurnQuat.x * currentWheelRot.z);
+
+		newWheelRot.y = (localWheelTurnQuat.w * currentWheelRot.x +
+						 localWheelTurnQuat.x * currentWheelRot.z +
+						 currentWheelRot.w * localWheelTurnQuat.z) -
+			(localWheelTurnQuat.y * currentWheelRot.y);
+
+		newWheelRot.z = (localWheelTurnQuat.x * currentWheelRot.y +
+						 localWheelTurnQuat.y * currentWheelRot.x +
+						 currentWheelRot.w * localWheelTurnQuat.w) -
+			(localWheelTurnQuat.z * currentWheelRot.z);
+
+		newWheelRot.w = (currentWheelRot.w * localWheelTurnQuat.w -
+						 localWheelTurnQuat.x * currentWheelRot.x -
+						 localWheelTurnQuat.y * currentWheelRot.y) -
+			(localWheelTurnQuat.z * currentWheelRot.z);
+
+		// Apply the new rotation to the wheel
+		pWheel->SetRotation(newWheelRot);
 	}
 
 	CVector Vehicle::_GetCustomWeaponTargetPoint() const
@@ -3422,6 +3882,13 @@ namespace ai
 
 	void Vehicle::_UpdateLockedObj(float)
 	{
+		if (!m_bRocketLaunchersPresent)
+		{
+			m_toBeLockedObjId = -1;
+			m_lockedObjId = -1;
+			m_timeToLockTarget = 0.0;
+			return;
+		}
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
@@ -3456,14 +3923,183 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::_TakeWaterIntoAccount(float)
+	void Vehicle::_TakeWaterIntoAccount(float elapsedTime)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		const auto pos = GetPosition();
+		const auto waterHeight = m3d::pClient->GetWorld().GetLandscape().getWaterHeight(pos.x * 0.03125, pos.z * 0.03125);
+		if (waterHeight > m_size.y + pos.y)
+		{
+			RETRUXX_NOT_IMPLEMENTED;
+		}
 	}
 
-	void Vehicle::_KeepGearBox(float)
+	void Vehicle::_KeepGearBox(float elapsedTime)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code
+		// Calculate engine RPMs based on wheel rotation
+		_CalcRpms();
+
+		// Find first valid wheel
+		auto wheelIter = std::find_if(m_wheels.begin(), m_wheels.end(),
+									  [](const WheelRuntimeInfo& wheelInfo) { return wheelInfo.GetWheel() != nullptr; });
+
+		if (wheelIter == m_wheels.end())
+		{
+			return;
+		}
+
+		ai::Wheel* referenceWheel = wheelIter->GetWheel();
+
+		// Get wheel radius for calculations
+		float etalonRadius = referenceWheel->GetRadius();
+		float currentSpeed = fabs(m_averageWheelAVel) * etalonRadius;
+
+		// Calculate torque based on throttle
+		float throttleMagnitude = fabs(m_realThrottle);
+		float maxTorque = GetMaxTorque();
+		float torque = maxTorque * throttleMagnitude;
+
+		// Update turbo throttle timer
+		m_turboThrottleTime -= elapsedTime;
+		if (m_turboThrottleTime < 0.0f)
+		{
+			m_turboThrottleTime = 0.0f;
+		}
+
+		// Apply turbo boost if active
+		if (m_turboThrottleTime > 0.0f)
+		{
+			torque *= m_turboThrottleValue;
+		}
+
+		// Determine target speed (cruising speed or max speed)
+		float targetSpeed;
+		if (m_bIsControlledByPlayer || m_attackStatus == 1)
+		{
+			targetSpeed = GetMaxSpeed();
+		}
+		else
+		{
+			targetSpeed = m_cruisingSpeed;
+		}
+
+		// Apply turbo to target speed
+		if (m_turboThrottleTime > 0.0f)
+		{
+			targetSpeed *= m_turboThrottleValue;
+		}
+
+		// Cut torque if we're going too fast and not braking
+		float speedDifference = currentSpeed - targetSpeed;
+		float brakeThreshold = GetPrototypeInfo()->m_selfBrakingCoeff + 0.0001f;
+
+		if (speedDifference > 0.1f && m_brake <= brakeThreshold)
+		{
+			torque = 0.0f;
+		}
+
+		// Maintain recent RPMs history (sliding window of 10 values)
+		if (m_recentEngineRpms.size() >= 10)
+		{
+			if (!m_recentEngineRpms.empty())
+			{
+				m_recentEngineRpms.pop_front();
+			}
+		}
+		m_recentEngineRpms.push_back(m_engineRpm);
+
+		// Calculate average RPM over the window
+		m_averageEngineRpm = 0.0f;
+		if (m_recentEngineRpms.size() == 10)
+		{
+			for (float rpm : m_recentEngineRpms)
+			{
+				m_averageEngineRpm += rpm;
+			}
+			m_averageEngineRpm *= 0.1f; // Divide by 10
+		}
+
+		// Update engine sound based on RPM
+		if (m_engineHighSoundNode)
+		{
+			float rpmAbs = fabs(m_averageEngineRpm);
+			float soundPitch;
+
+			if (rpmAbs <= 500.0f)
+			{
+				soundPitch = 0.5f;
+			}
+			else
+			{
+				soundPitch = ((rpmAbs - 500.0f) * 0.0002f) + 0.5f;
+			}
+
+			m_engineHighSoundNode->SetProperty(9732u, &soundPitch);
+		}
+
+		// Automatic gear shifting based on RPM limits
+		if (m_engineRpm < m_lowGearShiftLimit)
+		{
+			--m_currentGear;
+		}
+
+		if (m_engineRpm > m_highGearShiftLimit)
+		{
+			++m_currentGear;
+		}
+
+		// Clamp gear to valid range [0, 4]
+		m_currentGear = std::clamp(m_currentGear, 0, 4);
+
+		// Determine target RPM based on throttle input
+		float targetRpm;
+		if (m_throttle > 0.000001f)
+		{
+			targetRpm = m_maxEngineRpm;
+		}
+		else if (m_throttle < -0.000001f)
+		{
+			targetRpm = -4000.0f;
+		}
+		else
+		{
+			targetRpm = 0.0f;
+		}
+
+		// Apply turbo to target RPM
+		if (m_turboThrottleTime > 0.0f)
+		{
+			targetRpm *= m_turboThrottleValue;
+		}
+
+		// Apply torque to all driven wheels
+		for (auto& wheelInfo : m_wheels)
+		{
+			ai::Wheel* wheel = wheelInfo.GetWheel();
+			if (!wheel || !wheel->m_driven)
+			{
+				continue;
+			}
+
+			dxJointHinge2* joint = static_cast<dxJointHinge2*>(wheel->m_jointID);
+			if (!joint)
+				continue;
+
+			// Calculate gear ratio for this wheel
+			float wheelRadius = wheel->GetRadius();
+			float gearRatio = GEAR_RATIOS[m_currentGear] * m_diffRatio * wheelRadius;
+
+			// Calculate wheel torque distribution
+			float wheelTorque = (gearRatio * torque * 1.8f) / (m_numOfDrivenWheels * etalonRadius);
+
+			// Convert target RPM to angular velocity for the joint
+			float angularVelocity = (targetRpm * etalonRadius * 6.2831855f) / (gearRatio * 108.0f);
+
+			// Apply parameters to physics joint
+			dJointSetHinge2Param(joint, dParamVel2, angularVelocity);
+			dJointSetHinge2Param(joint, dParamFMax2, wheelTorque);
+		}
+
 	}
 
 	void Vehicle::_SetIdleMoveStatusAndCauseTargetReached()
@@ -3473,7 +4109,112 @@ namespace ai
 
 	void Vehicle::_CalcRpms()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code
+		if (bIsUpdatingByODE())
+		{
+			m_averageWheelAVel = 0.0f;
+
+			// Get vehicle rotation and its inverse
+			Quaternion vehicleRot = GetRotation();
+			Quaternion invVehicleRot = vehicleRot.getInversed();
+
+			int wheelCount = 0;
+
+			// Process each wheel to calculate average angular velocity
+			for (auto& wheelInfo : m_wheels)
+			{
+				ai::Wheel* wheel = wheelInfo.GetWheel();
+				if (!wheel)
+					continue;
+
+				wheelCount++;
+
+				// Get wheel's angular velocity in world space
+				CVector wheelAngularVelWorld = wheel->GetAngularVelocity();
+
+				// Convert quaternion to rotation matrix for transformation
+				CMatrix rotMatrix;
+
+				// Calculate rotation matrix from inverse quaternion
+				float x = invVehicleRot.x;
+				float y = invVehicleRot.y;
+				float z = invVehicleRot.z;
+				float w = invVehicleRot.w;
+
+				float x2 = x * x;
+				float y2 = y * y;
+				float z2 = z * z;
+				float xy = x * y;
+				float xz = x * z;
+				float yz = y * z;
+				float wx = w * x;
+				float wy = w * y;
+				float wz = w * z;
+
+				// Build rotation matrix from quaternion
+				rotMatrix._11 = 1.0f - 2.0f * (y2 + z2);
+				rotMatrix._12 = 2.0f * (xy + wz);
+				rotMatrix._13 = 2.0f * (xz - wy);
+				rotMatrix._14 = 0.0f;
+
+				rotMatrix._21 = 2.0f * (xy - wz);
+				rotMatrix._22 = 1.0f - 2.0f * (x2 + z2);
+				rotMatrix._23 = 2.0f * (yz + wx);
+				rotMatrix._24 = 0.0f;
+
+				rotMatrix._31 = 2.0f * (xz + wy);
+				rotMatrix._32 = 2.0f * (yz - wx);
+				rotMatrix._33 = 1.0f - 2.0f * (x2 + y2);
+				rotMatrix._34 = 0.0f;
+
+				rotMatrix._41 = 0.0f;
+				rotMatrix._42 = 0.0f;
+				rotMatrix._43 = 0.0f;
+				rotMatrix._44 = 1.0f;
+
+				// Transform angular velocity from world space to vehicle local space
+				float localVelX = wheelAngularVelWorld.x * rotMatrix._11 +
+					wheelAngularVelWorld.y * rotMatrix._21 +
+					wheelAngularVelWorld.z * rotMatrix._31;
+
+				float localVelY = wheelAngularVelWorld.x * rotMatrix._12 +
+					wheelAngularVelWorld.y * rotMatrix._22 +
+					wheelAngularVelWorld.z * rotMatrix._32;
+
+				float localVelZ = wheelAngularVelWorld.x * rotMatrix._13 +
+					wheelAngularVelWorld.y * rotMatrix._23 +
+					wheelAngularVelWorld.z * rotMatrix._33;
+
+				// We're interested in the angular velocity in the vehicle's forward direction
+				// Assuming X is forward, Z is up in vehicle space
+				float forwardAngularVel = localVelX;  // X component in vehicle space
+
+				// Calculate magnitude and preserve sign
+				float angularVelMagnitude = fabs(forwardAngularVel);
+				int directionSign = (forwardAngularVel >= 0.0f) ? 1 : -1;
+
+				// Accumulate for average calculation
+				m_averageWheelAVel += angularVelMagnitude * directionSign;
+			}
+
+			// Calculate average angular velocity
+			if (wheelCount > 0)
+			{
+				m_averageWheelAVel /= static_cast<float>(wheelCount);
+			}
+
+			// Convert wheel angular velocity to engine RPM
+			// Formula: RPM = (gear_ratio * diff_ratio * 108.0 * angular_velocity) / (2 * PI)
+			// The constant 0.15915494 is 1/(2*PI) for conversion from radians to revolutions
+			float gearRatio = GEAR_RATIOS[m_currentGear];
+			m_engineRpm = (gearRatio * m_diffRatio * 108.0f * m_averageWheelAVel) * 0.15915494f;
+		}
+		else
+		{
+			// Use external updater for RPM calculation
+			int dummy = 0;
+			m_ownUpdater->CalcRpmsAndGear(m_averageWheelAVel, m_engineRpm, dummy);
+		}
 	}
 
 	int Vehicle::_UpdateRepositoryOnChangeBasket()
@@ -3524,7 +4265,11 @@ namespace ai
 
 	void Vehicle::_UpdatePhysicsUpdater()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		auto* playerVehicle = gDynamicScene->GetVehicleControlledByPlayer();
+		if (playerVehicle && playerVehicle != this)
+		{
+			RETRUXX_NOT_IMPLEMENTED;
+		}
 	}
 
 	void Vehicle::_AdjustSizeAndBumperPoint()
@@ -3682,9 +4427,206 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::_AdjustWheel(WheelRuntimeInfo&)
+	void Vehicle::_AdjustWheel(WheelRuntimeInfo& wheelInfo)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code
+		ai::Wheel* wheel = wheelInfo.GetWheel();
+
+		// Get vehicle position and rotation
+		CVector vehiclePos = GetPosition();
+
+		Quaternion vehicleRot= GetRotation();
+
+		// Calculate inverse of vehicle rotation
+		Quaternion invVehicleRot = vehicleRot.getInversed();
+
+		// Get wheel direction vector
+		CVector wheelDirection = wheel->GetDirection();
+
+		// Convert inverse vehicle rotation quaternion to matrix
+		float x = invVehicleRot.x;
+		float y = invVehicleRot.y;
+		float z = invVehicleRot.z;
+		float w = invVehicleRot.w;
+
+		float x2 = x * x;
+		float y2 = y * y;
+		float z2 = z * z;
+		float xy = x * y;
+		float xz = x * z;
+		float yz = y * z;
+		float wx = w * x;
+		float wy = w * y;
+		float wz = w * z;
+
+		CMatrix invVehicleRotMatrix;
+		invVehicleRotMatrix._11 = 1.0f - 2.0f * (y2 + z2);
+		invVehicleRotMatrix._12 = 2.0f * (xy + wz);
+		invVehicleRotMatrix._13 = 2.0f * (xz - wy);
+		invVehicleRotMatrix._14 = 0.0f;
+
+		invVehicleRotMatrix._21 = 2.0f * (xy - wz);
+		invVehicleRotMatrix._22 = 1.0f - 2.0f * (x2 + z2);
+		invVehicleRotMatrix._23 = 2.0f * (yz + wx);
+		invVehicleRotMatrix._24 = 0.0f;
+
+		invVehicleRotMatrix._31 = 2.0f * (xz + wy);
+		invVehicleRotMatrix._32 = 2.0f * (yz - wx);
+		invVehicleRotMatrix._33 = 1.0f - 2.0f * (x2 + y2);
+		invVehicleRotMatrix._34 = 0.0f;
+
+		invVehicleRotMatrix._41 = 0.0f;
+		invVehicleRotMatrix._42 = 0.0f;
+		invVehicleRotMatrix._43 = 0.0f;
+		invVehicleRotMatrix._44 = 1.0f;
+
+		// Transform wheel direction from world space to vehicle local space
+		CVector localWheelDir;
+		localWheelDir.x = wheelDirection.x * invVehicleRotMatrix._11 +
+			wheelDirection.y * invVehicleRotMatrix._21 +
+			wheelDirection.z * invVehicleRotMatrix._31;
+		localWheelDir.y = wheelDirection.x * invVehicleRotMatrix._12 +
+			wheelDirection.y * invVehicleRotMatrix._22 +
+			wheelDirection.z * invVehicleRotMatrix._32;
+		localWheelDir.z = wheelDirection.x * invVehicleRotMatrix._13 +
+			wheelDirection.y * invVehicleRotMatrix._23 +
+			wheelDirection.z * invVehicleRotMatrix._33;
+
+		// Calculate alignment correction angle
+		// This keeps the wheel properly aligned with the vehicle's orientation
+		float forwardComponent = localWheelDir.x;
+		float lateralMagnitude = sqrt(localWheelDir.y * localWheelDir.y + localWheelDir.z * localWheelDir.z);
+		float alignmentAngle = atan2(forwardComponent, lateralMagnitude) * 0.5f;
+
+		// Create alignment correction quaternion
+		float sinAngle = sin(alignmentAngle);
+		float cosAngle = cos(alignmentAngle);
+
+		// Normalize the rotation axis
+		float axisLength = sqrt(localWheelDir.x * localWheelDir.x + localWheelDir.y * localWheelDir.y + localWheelDir.z * localWheelDir.z);
+		float invAxisLength = 1.0f / (axisLength + 0.00000011920929f);
+
+		Quaternion correctionQuat;
+		correctionQuat.x = localWheelDir.y * invAxisLength * sinAngle;
+		correctionQuat.y = localWheelDir.z * invAxisLength * sinAngle;
+		correctionQuat.z = localWheelDir.x * invAxisLength * sinAngle;
+		correctionQuat.w = cosAngle;
+
+		// Get current wheel rotation
+		Quaternion currentWheelRot = wheel->GetRotation();
+
+		// Apply correction to wheel rotation
+		Quaternion correctedWheelRot;
+		correctedWheelRot.x = (correctionQuat.w * currentWheelRot.x) + (correctionQuat.x * currentWheelRot.w) +
+			(correctionQuat.y * currentWheelRot.z) - (correctionQuat.z * currentWheelRot.y);
+		correctedWheelRot.y = (correctionQuat.w * currentWheelRot.y) - (correctionQuat.x * currentWheelRot.z) +
+			(correctionQuat.y * currentWheelRot.w) + (correctionQuat.z * currentWheelRot.x);
+		correctedWheelRot.z = (correctionQuat.w * currentWheelRot.z) + (correctionQuat.x * currentWheelRot.y) -
+			(correctionQuat.y * currentWheelRot.x) + (correctionQuat.z * currentWheelRot.w);
+		correctedWheelRot.w = (correctionQuat.w * currentWheelRot.w) - (correctionQuat.x * currentWheelRot.x) -
+			(correctionQuat.y * currentWheelRot.y) - (correctionQuat.z * currentWheelRot.z);
+
+		// Apply initial rotation offset (from wheel setup)
+		Quaternion initialRotInv= wheelInfo.m_initialRot.getInversed();
+
+		Quaternion finalWheelRot;
+		finalWheelRot.x = (correctedWheelRot.w * initialRotInv.x) + (correctedWheelRot.x * initialRotInv.w) +
+			(correctedWheelRot.y * initialRotInv.z) - (correctedWheelRot.z * initialRotInv.y);
+		finalWheelRot.y = (correctedWheelRot.w * initialRotInv.y) - (correctedWheelRot.x * initialRotInv.z) +
+			(correctedWheelRot.y * initialRotInv.w) + (correctedWheelRot.z * initialRotInv.x);
+		finalWheelRot.z = (correctedWheelRot.w * initialRotInv.z) + (correctedWheelRot.x * initialRotInv.y) -
+			(correctedWheelRot.y * initialRotInv.x) + (correctedWheelRot.z * initialRotInv.w);
+		finalWheelRot.w = (correctedWheelRot.w * initialRotInv.w) - (correctedWheelRot.x * initialRotInv.x) -
+			(correctedWheelRot.y * initialRotInv.y) - (correctedWheelRot.z * initialRotInv.z);
+
+		// Set the corrected wheel rotation
+		wheel->SetRotation(finalWheelRot);
+
+		// Adjust wheel position to maintain proper attachment to vehicle
+		CVector currentWheelPos = wheel->GetPosition();
+
+		// Calculate offset from vehicle to wheel
+		CVector wheelOffset;
+		wheelOffset.x = currentWheelPos.x - vehiclePos.x;
+		wheelOffset.y = currentWheelPos.y - vehiclePos.y;
+		wheelOffset.z = currentWheelPos.z - vehiclePos.z;
+
+		// Transform offset to vehicle local space
+		CVector localOffset;
+		localOffset.x = wheelOffset.x * invVehicleRotMatrix._11 +
+			wheelOffset.y * invVehicleRotMatrix._21 +
+			wheelOffset.z * invVehicleRotMatrix._31;
+		localOffset.y = wheelOffset.x * invVehicleRotMatrix._12 +
+			wheelOffset.y * invVehicleRotMatrix._22 +
+			wheelOffset.z * invVehicleRotMatrix._32;
+		localOffset.z = wheelOffset.x * invVehicleRotMatrix._13 +
+			wheelOffset.y * invVehicleRotMatrix._23 +
+			wheelOffset.z * invVehicleRotMatrix._33;
+
+		// Convert vehicle rotation to matrix for world space transformation
+		CMatrix vehicleRotMatrix;
+		vehicleRotMatrix._11 = 1.0f - 2.0f * (vehicleRot.y * vehicleRot.y + vehicleRot.z * vehicleRot.z);
+		vehicleRotMatrix._12 = 2.0f * (vehicleRot.x * vehicleRot.y + vehicleRot.z * vehicleRot.w);
+		vehicleRotMatrix._13 = 2.0f * (vehicleRot.x * vehicleRot.z - vehicleRot.y * vehicleRot.w);
+		vehicleRotMatrix._14 = 0.0f;
+
+		vehicleRotMatrix._21 = 2.0f * (vehicleRot.x * vehicleRot.y - vehicleRot.z * vehicleRot.w);
+		vehicleRotMatrix._22 = 1.0f - 2.0f * (vehicleRot.x * vehicleRot.x + vehicleRot.z * vehicleRot.z);
+		vehicleRotMatrix._23 = 2.0f * (vehicleRot.y * vehicleRot.z + vehicleRot.x * vehicleRot.w);
+		vehicleRotMatrix._24 = 0.0f;
+
+		vehicleRotMatrix._31 = 2.0f * (vehicleRot.x * vehicleRot.z + vehicleRot.y * vehicleRot.w);
+		vehicleRotMatrix._32 = 2.0f * (vehicleRot.y * vehicleRot.z - vehicleRot.x * vehicleRot.w);
+		vehicleRotMatrix._33 = 1.0f - 2.0f * (vehicleRot.x * vehicleRot.x + vehicleRot.y * vehicleRot.y);
+		vehicleRotMatrix._34 = 0.0f;
+
+		vehicleRotMatrix._41 = 0.0f;
+		vehicleRotMatrix._42 = 0.0f;
+		vehicleRotMatrix._43 = 0.0f;
+		vehicleRotMatrix._44 = 1.0f;
+
+		// Calculate target world position using initial local position and vehicle transform
+		CVector targetWorldPos;
+		targetWorldPos.x = vehiclePos.x +
+			wheelInfo.m_initialPos.x * vehicleRotMatrix._11 +
+			localOffset.y * vehicleRotMatrix._21 +
+			localOffset.z * vehicleRotMatrix._31;
+		targetWorldPos.y = vehiclePos.y +
+			wheelInfo.m_initialPos.x * vehicleRotMatrix._12 +
+			localOffset.y * vehicleRotMatrix._22 +
+			localOffset.z * vehicleRotMatrix._32;
+		targetWorldPos.z = vehiclePos.z +
+			wheelInfo.m_initialPos.x * vehicleRotMatrix._13 +
+			localOffset.y * vehicleRotMatrix._23 +
+			localOffset.z * vehicleRotMatrix._33;
+
+		// Set the corrected wheel position
+		wheel->SetPosition(targetWorldPos);
+
+		// Final steering angle adjustment to synchronize with current steering input
+		CVector currentWheelDirection= wheel->GetDirection();
+
+		// Transform current wheel direction to vehicle local space
+		CVector localCurrentDir;
+		localCurrentDir.x = currentWheelDirection.x * invVehicleRotMatrix._11 +
+			currentWheelDirection.y * invVehicleRotMatrix._21 +
+			currentWheelDirection.z * invVehicleRotMatrix._31;
+		localCurrentDir.y = currentWheelDirection.x * invVehicleRotMatrix._12 +
+			currentWheelDirection.y * invVehicleRotMatrix._22 +
+			currentWheelDirection.z * invVehicleRotMatrix._32;
+		localCurrentDir.z = currentWheelDirection.x * invVehicleRotMatrix._13 +
+			currentWheelDirection.y * invVehicleRotMatrix._23 +
+			currentWheelDirection.z * invVehicleRotMatrix._33;
+
+		// Calculate current steering angle from local direction
+		// Using atan2 with -Z and -X components to get proper wheel orientation
+		float currentSteeringAngle = atan2(-localCurrentDir.z, -localCurrentDir.x);
+
+		// Calculate correction needed to match the desired steering angle
+		float angleCorrection = wheel->m_curAngle - currentSteeringAngle;
+
+		// Apply the final steering correction
+		_TurnWheelByAngle(wheel, angleCorrection);
 	}
 
 	m3d::Object* Vehicle::CreateObject()
@@ -3694,16 +4636,39 @@ namespace ai
 
 	void Vehicle::_CheckForNearbyChests() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (m_bAllowPickUpMessage)
+		{
+			if (m_currentNumNearbyChests)
+			{
+				RETRUXX_NOT_IMPLEMENTED;
+			}
+			else
+			{
+				if (!m_pastNumNearbyChests)
+				{
+					return;
+				}
+				RETRUXX_NOT_IMPLEMENTED;
+			}
+
+			//M3D_APP->EnqueueMessage()
+		}
 	}
 
 	void Vehicle::_AdjustTrailer()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (m_trailerObjId >= 0)
+		{
+			RETRUXX_NOT_IMPLEMENTED;
+		}
 	}
 
 	void Vehicle::_UpdateSeenObjAndWeapons(float)
 	{
+		if (!M3D_APP->bIsMousePointing())
+		{
+			return;
+		}
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 

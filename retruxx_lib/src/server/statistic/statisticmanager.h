@@ -46,4 +46,6 @@ namespace ai
     };
 
     inline StatisticManager* theStatisticManager = nullptr;
+
+    inline const CStr STATISTIC_PATH_ELAPSED = "PathElapsed";
 }

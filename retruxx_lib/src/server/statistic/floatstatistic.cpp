@@ -15,9 +15,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void FloatStatistic::Increase(float)
+    void FloatStatistic::Increase(float delta)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_value = delta + this->m_value;
     }
 
     m3d::Object* FloatStatistic::Clone()
@@ -32,7 +32,7 @@ namespace ai
 
     m3d::Object* FloatStatistic::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new FloatStatistic;
     }
 
     FloatStatistic::~FloatStatistic()
@@ -62,7 +62,7 @@ namespace ai
 
     m3d::Class* FloatStatistic::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(FloatStatistic);
     }
 
     FloatStatistic::FloatStatistic(FloatStatistic const&)
@@ -72,6 +72,6 @@ namespace ai
 
     FloatStatistic::FloatStatistic()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_value = 0.0;
     }
 }
