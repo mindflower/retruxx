@@ -251,10 +251,10 @@ namespace ai
                 dGeomSetPosition(geom->GetGeomId(), m_collisionInfos[i].m_relTranslation.x, m_collisionInfos[i].m_relTranslation.y, m_collisionInfos[i].m_relTranslation.z);
 
                 dQuaternion quat;
-                quat[0] = m_collisionInfos[i].m_relRotation.x;
-                quat[1] = m_collisionInfos[i].m_relRotation.y;
-                quat[2] = m_collisionInfos[i].m_relRotation.z;
-                quat[3] = m_collisionInfos[i].m_relRotation.w;
+                quat[0] = m_collisionInfos[i].m_relRotation.w;
+                quat[1] = m_collisionInfos[i].m_relRotation.x;
+                quat[2] = m_collisionInfos[i].m_relRotation.y;
+                quat[3] = m_collisionInfos[i].m_relRotation.z;
                 dGeomSetQuaternion(geom->GetGeomId(), quat);
 
                 auto cl = dGeomGetClass(geom->GetGeomId());

@@ -29,16 +29,12 @@ namespace ai
 
         // TODO: check order
         dGeomGetQuaternion(this->m_geomId, dq);
-        auto q_12 = dq[0];
-        auto v3 = dq[2];
 
         Quaternion result;
         result.x = dq[1];
-        auto v4 = v3;
-        auto v5 = dq[3];
-        result.y = v4;
-        result.z = v5;
-        result.w = q_12;
+        result.y = dq[2];
+        result.z = dq[3];
+        result.w = dq[0];
         return result;
     }
 

@@ -2978,7 +2978,7 @@ namespace ai
 			// Determine wheel position name (LP_WHL0L, LP_WHL0R, etc.)
 			CStr wheelSide = (i % 2 == 0) ? "L" : "R";
 			int wheelNumber = (i / 2) + 1;
-			CStr boneName = "LP_WHL" + CStr(wheelNumber) + wheelSide;
+			CStr boneName = "LP_WHL" + CStr("0") + CStr(wheelNumber) + wheelSide;
 
 			// Get wheel position from bone matrix
 			CMatrix boneMatrix;
