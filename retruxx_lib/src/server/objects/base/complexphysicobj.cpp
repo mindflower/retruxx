@@ -1011,6 +1011,7 @@ namespace ai
         _SetMassCenter(prototypeInfo->m_massTranslation);
         _SetCorrectBoundSphereRadius();
         SetPosition(pos);
+        SetRotation(rot);
 
         for (const auto& [name, part] : m_vehicleParts)
         {

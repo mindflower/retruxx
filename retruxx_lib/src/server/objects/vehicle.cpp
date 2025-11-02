@@ -2447,10 +2447,59 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::Update(float, unsigned)
+	namespace
 	{
-		// TODO: implement Vehicle::Update
-		//RETRUXX_NOT_IMPLEMENTED;
+		class LocalProfiler
+		{
+		public:
+			LocalProfiler(m3d::Profiler*);
+			~LocalProfiler();
+
+		private:
+			/* 0x0000 */ m3d::Profiler* m_profiler;
+		}; /* size: 0x0004 */
+	}
+
+	void Vehicle::Update(float elapsedTime, unsigned workTime)
+	{
+		if (!GetParentRepository() && (GetFlags() & 1) != 0)
+		{
+			ai::LocalProfiler prof(pServer->GetPathFindingProfiler());
+			PhysicObj::Update(elapsedTime, workTime);
+			if (GetPassedToAnotherMapStatus())
+			{
+				return;
+			}
+
+			m_bCurSteeringForceValid = false;
+			_EnsureRecollection();
+			if (_GetDeadStatus())
+			{
+				_DeadActions(elapsedTime);
+				return;
+			}
+
+			if (elapsedTime < 0.000099999997)
+			{
+				return;
+			}
+
+			_UpdatePhysicsUpdater();
+			auto& heath = Health();
+			if (heath.minValue().get() >= heath.value().get())
+			{
+			    if (!m_bImmortalMode)
+			    {
+					_EvaluateToDead();
+					return;
+			    }
+
+				CauseEvent(GE_VEHICLE_WITHOUT_HEALTH, 0.0, { GetId() }, {});
+			}
+
+			const auto* prototypeInfo = GetPrototypeInfo();
+			RETRUXX_NOT_IMPLEMENTED;
+		}
 	}
 
 	float Vehicle::GetCollisionRadius() const

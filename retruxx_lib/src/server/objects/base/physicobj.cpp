@@ -190,16 +190,12 @@ namespace ai
     Quaternion PhysicObj::GetRotation() const
     {
         auto quat = dBodyGetQuaternion(this->m_body->id());
-        auto dq = *quat;
-        auto v3 = quat[2];
-        auto dq_4 = quat[1];
-        auto v4 = quat[3];
 
         Quaternion result;
-        result.x = dq_4;
-        result.y = v3;
-        result.z = v4;
-        result.w = dq;
+        result.x = quat[1];
+        result.y = quat[2];
+        result.z = quat[3];
+        result.w = quat[0];
         return result;
     }
 

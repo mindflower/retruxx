@@ -397,16 +397,12 @@ namespace ai
 
             float quat[4];
             dGeomGetQuaternion(first->GetGeomId(), quat);
-            auto v7 = quat[0];
-            auto v4 = quat[2];
 
             Quaternion result;
             result.x = quat[1];
-            auto v5 = v4;
-            auto v6 = quat[3];
-            result.y = v5;
-            result.z = v6;
-            result.w = v7;
+            result.y = quat[2];
+            result.z = quat[3];
+            result.w = quat[0];
             return result;
         }
         return { 0.0, 0.0, 0.0, 1.0 };
@@ -763,14 +759,19 @@ namespace ai
 		auto& colInfoRotation = m_collisionInfos.front().m_relRotation;
 		for (auto& geom : m_pGeoms)
 		{
+			auto p_y = &this->m_collisionInfos.front().m_relRotation.y;
 		    if (auto* inner = geom->GetGeom())
 		    {
 				// TODO: check this 
 				float quat[4];
-				quat[0] = (((q.w * colInfoRotation.w) - (colInfoRotation.x * q.x)) - (q.y * colInfoRotation.y)) - (colInfoRotation.z * q.z);
-				quat[1] = (((colInfoRotation.w * q.x) + (q.y * colInfoRotation.z)) + (q.w * (colInfoRotation.x))) - (colInfoRotation.y * q.z);
-				quat[2] = (((q.w * colInfoRotation.y) + (q.y * colInfoRotation.w)) + ((colInfoRotation.y - 1) * q.z)) - (colInfoRotation.z * q.x);
-				quat[3] = (((q.w * colInfoRotation.z) + (q.x * colInfoRotation.y)) + (colInfoRotation.z * q.z)) - (q.y * colInfoRotation.x);
+				quat[0] = (float)((float)((float)(q.w * p_y[2]) - (float)(*(p_y - 1) * q.x)) - (float)(q.y * *p_y))
+					- (float)(p_y[1] * q.z);
+				quat[1] = (float)((float)((float)(p_y[2] * q.x) + (float)(q.y * p_y[1])) + (float)(q.w * *(p_y - 1)))
+					- (float)(*p_y * q.z);
+				quat[2] = (float)((float)((float)(q.w * *p_y) + (float)(q.y * p_y[2])) + (float)(*(p_y - 1) * q.z))
+					- (float)(p_y[1] * q.x);
+				quat[3] = (float)((float)((float)(q.w * p_y[1]) + (float)(q.x * *p_y)) + (float)(p_y[2] * q.z))
+					- (float)(q.y * *(p_y - 1));
 				dGeomSetQuaternion(inner->GetGeomId(), quat);
 		    }
 		}
