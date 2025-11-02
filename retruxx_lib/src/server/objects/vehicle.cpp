@@ -2704,7 +2704,7 @@ namespace ai
 					_ApplyStabilizingForces();
 					_KeepThrottle(1);
 					_KeepGearBox(elapsedTime);
-					_KeepSteer(elapsedTime);
+					//_KeepSteer(elapsedTime);
 					_KeepSuspension();
 					_AdjustTrailer();
 					if (!m_bIsControlledByPlayer)
@@ -2792,7 +2792,7 @@ namespace ai
 				_ApplyStabilizingForces();
 				_KeepThrottle(1);
 				_KeepGearBox(elapsedTime);
-				_KeepSteer(elapsedTime);
+				//_KeepSteer(elapsedTime);
 				_KeepSuspension();
 				_AdjustTrailer();
 				if (!m_bIsControlledByPlayer)
@@ -2813,7 +2813,7 @@ namespace ai
 			_ApplyStabilizingForces();
 			_KeepThrottle(1);
 			_KeepGearBox(elapsedTime);
-			_KeepSteer(elapsedTime);
+			//_KeepSteer(elapsedTime);
 			_KeepSuspension();
 			_AdjustTrailer();
 			if (!m_bIsControlledByPlayer)

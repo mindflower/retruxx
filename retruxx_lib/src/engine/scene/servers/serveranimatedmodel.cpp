@@ -1574,7 +1574,7 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel, ActionType newA
 
 bool ModelEffectList::SortPred::operator()(const ModelEffectList::tEffect& a, const ModelEffectList::tEffect& b)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return a.m_desc->m_lpId < b.m_desc->m_lpId || a.m_desc->m_effectId < b.m_desc->m_effectId;
 }
 
 DynamicModel::DynamicModel()
