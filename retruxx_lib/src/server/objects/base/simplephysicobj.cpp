@@ -262,12 +262,12 @@ namespace ai
 
 	SimplePhysicBody* SimplePhysicObj::GetPhysicBody()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return this->m_physicBody;
 	}
 
 	SimplePhysicBody const* SimplePhysicObj::GetPhysicBody() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return this->m_physicBody;
 	}
 
 	void SimplePhysicObj::SetMass(float mass)
@@ -302,7 +302,9 @@ namespace ai
 
 	void SimplePhysicObj::Remove()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        ai::PhysicObj::Remove();
+        if (this->m_physicBody)
+            this->m_physicBody->Remove();
 	}
 
 	void SimplePhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>&) const
@@ -326,9 +328,11 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void SimplePhysicObj::TransferToSpace(dxSpace*)
+	void SimplePhysicObj::TransferToSpace(dxSpace* newSpace)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (this->m_physicBody)
+            this->m_physicBody->RelinkToSpace(newSpace);
+        ai::PhysicObj::TransferToSpace(newSpace);
 	}
 
 	void SimplePhysicObj::SetNodeAction(int, bool)
@@ -402,9 +406,14 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void SimplePhysicObj::EnableGeometry(bool)
+	void SimplePhysicObj::EnableGeometry(bool changePhysicState)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        ai::PhysicObj::EnableGeometry(changePhysicState);
+        if (!this->m_spaceId || !this->m_bIsSpaceOwner)
+        {
+            if (this->m_physicBody)
+                this->m_physicBody->EnableGeometry();
+        }
 	}
 
 	void SimplePhysicObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
@@ -491,12 +500,14 @@ namespace ai
 
 	void SimplePhysicObj::UnlinkGeomsFromCollisionCells()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (this->m_physicBody)
+            this->m_physicBody->UnlinkGeomFromCollisionCells();
 	}
 
 	void SimplePhysicObj::TransferPhysicParamsToSceneGraphNode()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (this->m_physicBody)
+            this->m_physicBody->TransferPhysicParamsToSceneGraphNode();
 	}
 
 	void SimplePhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -506,7 +517,9 @@ namespace ai
 
 	void SimplePhysicObj::SetVisible()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        ai::PhysicObj::SetVisible();
+        if (this->m_physicBody)
+            this->m_physicBody->SetVisible();
 	}
 
 	void SimplePhysicObj::RenderDebugInfo() const
@@ -612,7 +625,7 @@ namespace ai
 
 	void SimplePhysicObj::_LinkBodyToGeoms()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        PhysicObj::_LinkBodyToGeoms();
 	}
 
 	void SimplePhysicObj::_UpdateFullPhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const&)
@@ -627,7 +640,8 @@ namespace ai
 
 	SimplePhysicObj::~SimplePhysicObj()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        delete m_physicBody;
 	}
 
 	void SimplePhysicObj::_UnlinkBodyFromGeoms()

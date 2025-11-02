@@ -68,6 +68,88 @@ void CMatrix::DecomposeScale(float& x, float& y, float& z)
     z = sqrt(vz_8 * vz_8 + vz_4 * vz_4 + vz * vz);
 }
 
+CMatrix operator*(const CMatrix& a, const CMatrix& b)
+{
+    // TODO: check and refactor this
+    float v4; // xmm1_4
+    float v5; // xmm0_4
+    float v6; // xmm1_4
+    float v7; // xmm0_4
+    float v8; // xmm1_4
+    float v9; // xmm0_4
+    float v10; // xmm1_4
+    float v11; // xmm0_4
+    float v12; // xmm1_4
+    float v13; // xmm0_4
+    float v14; // xmm1_4
+    float v15; // xmm1_4
+    float v16; // xmm0_4
+    float v17; // xmm1_4
+    float v18; // xmm0_4
+    float v19; // xmm1_4
+    float v20; // xmm0_4
+    float v21; // xmm1_4
+    float v22; // xmm0_4
+    float v23; // xmm1_4
+    float v24; // xmm0_4
+    float _12; // xmm1_4
+    float v26; // xmm0_4
+    float v27; // xmm1_4
+    float v28; // xmm0_4
+    float v29; // xmm1_4
+
+
+    CMatrix res; // [esp+4h] [ebp-40h] BYREF
+
+    v4 = a._12 * b._22;
+    res._11 = (float)((float)((float)(b._31 * a._13) + (float)(a._12 * b._21)) + (float)(a._11 * b._11))
+        + (float)(a._14 * b._41);
+    v5 = (float)((float)((float)(b._42 * a._14) + v4) + (float)(b._32 * a._13)) + (float)(b._12 * a._11);
+    v6 = a._14 * b._43;
+    res._12 = v5;
+    v7 = (float)((float)((float)(a._12 * b._23) + v6) + (float)(b._33 * a._13)) + (float)(b._13 * a._11);
+    v8 = b._14 * a._11;
+    res._13 = v7;
+    v9 = (float)((float)((float)(b._34 * a._13) + v8) + (float)(a._12 * b._24)) + (float)(b._44 * a._14);
+    v10 = b._31 * a._23;
+    res._14 = v9;
+    v11 = (float)((float)((float)(a._22 * b._21) + v10) + (float)(a._24 * b._41)) + (float)(b._11 * a._21);
+    v12 = b._12 * a._21;
+    res._21 = v11;
+    v13 = (float)((float)((float)(a._22 * b._22) + v12) + (float)(a._24 * b._42)) + (float)(a._23 * b._32);
+    v14 = a._24 * b._43;
+    res._22 = v13;
+    res._23 = (float)((float)((float)(a._23 * b._33) + v14) + (float)(b._13 * a._21)) + (float)(a._22 * b._23);
+    v15 = b._31 * a._33;
+    res._24 = (float)((float)((float)(b._44 * a._24) + (float)(b._34 * a._23)) + (float)(a._22 * b._24))
+        + (float)(b._14 * a._21);
+    v16 = (float)((float)((float)(a._32 * b._21) + v15) + (float)(a._34 * b._41)) + (float)(b._11 * a._31);
+    v17 = b._12 * a._31;
+    res._31 = v16;
+    v18 = (float)((float)((float)(a._32 * b._22) + v17) + (float)(a._34 * b._42)) + (float)(a._33 * b._32);
+    v19 = a._33 * b._33;
+    res._32 = v18;
+    v20 = (float)((float)((float)(a._34 * b._43) + v19) + (float)(b._13 * a._31)) + (float)(a._32 * b._23);
+    v21 = b._44 * a._34;
+    res._33 = v20;
+    v22 = (float)((float)((float)(a._32 * b._24) + v21) + (float)(b._34 * a._33)) + (float)(b._14 * a._31);
+    v23 = b._31 * a._43;
+    res._34 = v22;
+    v24 = (float)((float)((float)(a._42 * b._21) + v23) + (float)(a._44 * b._41)) + (float)(b._11 * a._41);
+    _12 = b._12;
+    res._41 = v24;
+    v26 = (float)((float)((float)(a._42 * b._22) + (float)(_12 * a._41)) + (float)(a._44 * b._42))
+        + (float)(a._43 * b._32);
+    v27 = a._43 * b._33;
+    res._42 = v26;
+    v28 = (float)((float)((float)(a._44 * b._43) + v27) + (float)(b._13 * a._41)) + (float)(a._42 * b._23);
+    v29 = b._44 * a._44;
+    res._43 = v28;
+    res._44 = (float)((float)((float)(a._42 * b._24) + v29) + (float)(b._34 * a._43)) + (float)(b._14 * a._41);
+
+    return res;
+}
+
 float CMatrix::GetScaleX() const
 {
     RETRUXX_NOT_IMPLEMENTED;

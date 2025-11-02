@@ -1,7 +1,11 @@
 #include "wheel.h"
 
 #include <stdexcept>
+#include <ode/objects.h>
+
 #include "base/prototypemanager.h"
+#include "core/log.h"
+#include "ode/odecpp.h"
 
 namespace ai
 {
@@ -68,7 +72,7 @@ namespace ai
 
     void Wheel::RelinkGeomsToCollisionCells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::RelinkGeomsToCollisionCells();
     }
 
     SphericBody const* Wheel::_SphericBody() const
@@ -86,9 +90,86 @@ namespace ai
         SimplePhysicObj::LinkGeomsToCollisionCells();
     }
 
-    bool Wheel::AttachToPhysicObj(PhysicObj const*)
+    bool Wheel::AttachToPhysicObj(PhysicObj const* physicObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check and refactor this
+        if (!physicObj)
+            return 0;
+
+        auto protoInfo = this->GetPrototypeInfo();
+        LinkToParent(physicObj->GetId(), HIERARCHY_CHILD);
+        auto hinge = dJointCreateHinge2(ai::gGlobalWorld, 0);
+
+        this->m_jointID = hinge;
+        dJointAttach(hinge, physicObj->GetBody()->id(), m_body->id());
+
+        auto anchorPos = GetPosition();
+        auto rot = GetRotation();
+
+        CMatrix vv;
+        vv._11 = 1.0 - (float)((float)((float)(rot.z * rot.z) + (float)(rot.y * rot.y)) * 2.0);
+        vv._21 = (float)((float)(rot.x * rot.y) - (float)(rot.w * rot.z)) * 2.0;
+        vv._31 = (float)((float)(rot.w * rot.y) + (float)(rot.z * rot.x)) * 2.0;
+        vv._12 = (float)((float)(rot.w * rot.z) + (float)(rot.x * rot.y)) * 2.0;
+        vv._22 = 1.0 - (float)((float)((float)(rot.z * rot.z) + (float)(rot.x * rot.x)) * 2.0);
+        vv._33 = 1.0 - (float)((float)((float)(rot.y * rot.y) + (float)(rot.x * rot.x)) * 2.0);
+        vv._32 = (float)((float)(rot.z * rot.y) - (float)(rot.w * rot.x)) * 2.0;
+        vv._13 = (float)((float)(rot.z * rot.x) - (float)(rot.w * rot.y)) * 2.0;
+        vv._23 = (float)((float)(rot.w * rot.x) + (float)(rot.z * rot.y)) * 2.0;
+        vv._14 = 0.0;
+        vv._24 = 0.0;
+        memset(&vv.m[2][3], 0, 16);
+        vv._44 = 1.0;
+
+        auto x = (vv._31 + vv._11) * 0.0 + vv._21;
+        auto y = (vv._32 + vv._12) * 0.0 + vv._22;
+        auto z = (vv._33 + vv._13) * 0.0 + vv._23;
+
+        dJointSetHinge2Axis1(this->m_jointID, x, y, z);
+
+        auto v6 = rot.z;
+        vv._11 = 1.0 - (float)((float)((float)(v6 * v6) + (float)(rot.y * rot.y)) * 2.0);
+        vv._21 = (float)((float)(rot.x * rot.y) - (float)(rot.w * rot.z)) * 2.0;
+        vv._31 = (float)((float)(rot.w * rot.y) + (float)(rot.z * rot.x)) * 2.0;
+        vv._12 = (float)((float)(rot.w * rot.z) + (float)(rot.x * rot.y)) * 2.0;
+        vv._22 = 1.0 - (float)((float)((float)(v6 * v6) + (float)(rot.x * rot.x)) * 2.0);
+        vv._33 = 1.0 - (float)((float)((float)(rot.y * rot.y) + (float)(rot.x * rot.x)) * 2.0);
+        vv._32 = (float)((float)(rot.z * rot.y) - (float)(rot.w * rot.x)) * 2.0;
+        vv._13 = (float)((float)(rot.z * rot.x) - (float)(rot.w * rot.y)) * 2.0;
+        vv._23 = (float)((float)(rot.w * rot.x) + (float)(rot.z * rot.y)) * 2.0;
+        vv._14 = 0.0;
+        vv._24 = 0.0;
+        memset(&vv.m[2][3], 0, 16);
+        vv._44 = 1.0;
+
+        auto xa = vv._31 * ai::Wheel::AXIS_FOR_WHEEL.z
+            + vv._21 * ai::Wheel::AXIS_FOR_WHEEL.y
+            + vv._11 * ai::Wheel::AXIS_FOR_WHEEL.x;
+        auto ya = vv._32 * ai::Wheel::AXIS_FOR_WHEEL.z
+            + vv._22 * ai::Wheel::AXIS_FOR_WHEEL.y
+            + vv._12 * ai::Wheel::AXIS_FOR_WHEEL.x;
+        auto za = vv._33 * ai::Wheel::AXIS_FOR_WHEEL.z
+            + vv._23 * ai::Wheel::AXIS_FOR_WHEEL.y
+            + vv._13 * ai::Wheel::AXIS_FOR_WHEEL.x;
+
+        dJointSetHinge2Axis2(this->m_jointID, xa, ya, za);
+        dJointSetHinge2Anchor(this->m_jointID, anchorPos.x, anchorPos.y, anchorPos.z);
+        dJointSetHinge2Param(this->m_jointID, 10, protoInfo->m_suspensionCFM);
+        dJointSetHinge2Param(this->m_jointID, 9, protoInfo->m_suspensionERP);
+        dJointSetHinge2Param(this->m_jointID, 3, 1000000.0);
+
+        if (this->m_steering)
+        {
+            dJointSetHinge2Param(m_jointID, 0, -3.1415927);
+            dJointSetHinge2Param(this->m_jointID, 1, 3.1415927);
+        }
+        else
+        {
+            dJointSetHinge2Param(m_jointID, 0, 0.0);
+            dJointSetHinge2Param(this->m_jointID, 1, 0.0);
+        }
+        return 1;
+
     }
 
     float Wheel::GetWidth() const
@@ -103,7 +184,24 @@ namespace ai
 
     void Wheel::CreateSuspensionNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto* protoInfo = GetPrototypeInfo();
+        if (!protoInfo->m_suspensionModelName.empty())
+        {
+            CVector scale;
+            scale.x = 1.0;
+            scale.y = 1.0;
+            scale.z = 1.0;
+
+            m_suspensionNode = ai::PhysicBody::CreateNode(protoInfo->m_suspensionModelName, 0, scale, 0, 0);
+
+            int mac = 1;
+            m_suspensionNode->SetProperty(8716u, &mac);
+        }
+        else
+        {
+            M3D_LOG_INFO("Suspension model name not specified");
+            M3D_ASSERT(0);
+        }
     }
 
     void Wheel::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -121,9 +219,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Wheel::SetInitialRotation(Quaternion const&)
+    void Wheel::SetInitialRotation(Quaternion const& rot)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_initialRotation = rot;
     }
 
     void Wheel::RenderDebugInfo() const
@@ -133,12 +231,26 @@ namespace ai
 
     void Wheel::Remove()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (this->GetParentId() == -1)
+        {
+            ai::SimplePhysicObj::Remove();
+        }
+        else
+        {
+            M3D_LOG_INFO("Warning: attampt to remove " + GetDebugDescription() + ": it's attached to vehicle.");
+        }
     }
 
-    void Wheel::Update(float, unsigned)
+    void Wheel::Update(float elapsedTime, unsigned workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::Update(elapsedTime, workTime);
+
+        auto angualarVel = dBodyGetAngularVel(m_body->id());
+        if (!m_MakeSplash && m_SplashEffect)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+        m_MakeSplash = 0;
     }
 
     void Wheel::HealModel()
@@ -148,7 +260,12 @@ namespace ai
 
     void Wheel::DetachFromPhysicObj()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_jointID)
+        {
+            dJointDestroy(m_jointID);
+            this->m_jointID = 0;
+            SetParentInvalid();
+        }
     }
 
     void Wheel::SetPassedToAnotherMapStatus()
@@ -163,7 +280,7 @@ namespace ai
 
     void Wheel::UnlinkGeomsFromCollisionCells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::UnlinkGeomsFromCollisionCells();
     }
 
     m3d::Class* Wheel::GetBaseClass()
@@ -186,7 +303,15 @@ namespace ai
 
     Wheel::~Wheel()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_jointID)
+        {
+            dJointDestroy(m_jointID);
+            m_jointID = nullptr;
+        }
+        if (m_SplashEffect)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
     }
 
     m3d::Object* Wheel::CreateObject()

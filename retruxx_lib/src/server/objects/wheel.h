@@ -83,7 +83,7 @@ namespace ai
         void HealModel();
         const Quaternion& GetInitialRotation() const;
         void SetInitialRotation(const Quaternion& rot);
-        static const CVector AXIS_FOR_WHEEL;
+        static inline const CVector AXIS_FOR_WHEEL = {-1.0, 0.0, 0.0};
         static const float STEERING_LIMIT;
 
     protected:

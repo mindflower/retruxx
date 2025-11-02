@@ -96,4 +96,6 @@ struct CMatrix
     void transformPlane(CVector4&);
 }; /* size: 0x0040 */
 
+CMatrix operator*(const CMatrix& a, const CMatrix& b);
+
 static_assert(sizeof(CMatrix) == 0x0040);

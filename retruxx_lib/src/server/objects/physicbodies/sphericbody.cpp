@@ -57,10 +57,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    SphericBody::~SphericBody()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    SphericBody::~SphericBody() = default;
 
     m3d::Class* SphericBody::GetClass() const
     {

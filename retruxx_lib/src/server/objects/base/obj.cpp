@@ -319,7 +319,7 @@ namespace ai
 
     PrototypeInfo const* Obj::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return thePrototypeManager->GetPrototypeInfo(m_prototypeId);
     }
 
     void Obj::CreateChildren()
@@ -568,7 +568,7 @@ namespace ai
 
     int Obj::GetParentId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return this->m_parentId;
     }
 
     void Obj::SetAffixesApplied(bool)

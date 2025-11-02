@@ -2794,14 +2794,50 @@ namespace ai
 		SetPosition({ 0.0, 0.0, 0.0 });
 		SetRotation({ 0.0, 0.0, 0.0, 1.0 });
 
+		auto* animatedModelsServer = (m3d::AnimatedModelsServer*)&M3D_APP->GetAnimatedModelsServer();
+
 		for (int i =0; i < m_wheels.size(); ++i)
 		{
 		    if (auto* wheel = m_wheels[i].GetWheel())
 		    {
 				wheel->CreateSuspensionNode();
 
+				if (!wheel->m_suspensionNode) continue;
 
-				RETRUXX_NOT_IMPLEMENTED;
+				// Generate suspension load point name
+				const char* side = (i % 2 == 0) ? "L" : "R";
+				int wheelNumber = (i / 2) + 1;
+
+				CStr suspensionLpName = "LP_SSP" + CStr(0) + CStr(wheelNumber) + side;
+
+				// Add suspension node to chassis
+				chassis->m_Node->AddChild(wheel->m_suspensionNode);
+
+				// Get bone matrix for suspension point
+				CMatrix boneMatrix;
+				if (animatedModelsServer->GetBoneMatrixByNameFromModelName(
+					chassis->m_modelname.c_str(),
+					suspensionLpName,
+					boneMatrix,
+					false))
+				{
+					// Set suspension node transform from bone matrix
+					CVector origin(boneMatrix.m[3][0], boneMatrix.m[3][1], boneMatrix.m[3][2]);
+					Quaternion rotation;
+					rotation.FromMatrix(boneMatrix);
+
+					wheel->m_suspensionNode->SetOriginAbs(origin);
+					wheel->m_suspensionNode->SetRotation(rotation);
+					wheel->m_suspensionNode->UpdateXForm(false, true);
+				}
+				else
+				{
+					// Load point not found - set to zero and log error
+					wheel->m_suspensionNode->SetOriginAbs({0.0, 0.0, 0.0});
+
+					M3D_LOG_ERR("Error: LoadPoint not found: '" + suspensionLpName +
+								"' for model '" + chassis->m_modelname + "'");
+				}
 		    }
 		}
 
@@ -2809,7 +2845,13 @@ namespace ai
 		SetRotation(oldRotation);
 		for (int i = 0; i < m_wheels.size(); ++i)
 		{
-			RETRUXX_NOT_IMPLEMENTED;
+			if (auto* wheel = m_wheels[i].GetWheel())
+			{
+				wheel->CreateVisualPart();
+				wheel->TransferPhysicParamsToSceneGraphNode();
+				wheel->GetPhysicBody()->m_Node->UpdateXForm(false, true);
+				wheel->m_suspensionNode->UpdateXForm(false, true);
+			}
 		}
 
 		TransferPhysicParamsToSceneGraphNode();

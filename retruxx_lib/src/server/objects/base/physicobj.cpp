@@ -299,14 +299,23 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void PhysicObj::TransferToSpace(dxSpace*)
+    void PhysicObj::TransferToSpace(dxSpace* newSpace)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_spaceId)
+        {
+            if (this->m_bIsSpaceOwner)
+            {
+                dSpaceDestroy(m_spaceId);
+                this->m_spaceId = newSpace;
+                this->m_bIsSpaceOwner = 0;
+            }
+        }
     }
 
     void PhysicObj::SetVisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::Obj::SetVisible();
+        this->EnablePhysics();
     }
 
     void PhysicObj::AddTorque(CVector const&)

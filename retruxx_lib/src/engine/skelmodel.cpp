@@ -956,9 +956,153 @@ namespace m3d
         return this->m_Collision;
     }
 
-    int AnimatedModel::GetBoneMatrixByName(CStr const&, CMatrix&, bool) const
+    int AnimatedModel::GetBoneMatrixByName(CStr const& boneName, CMatrix& res, bool theLastOneOnly) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code
+        // Initialize result matrix to identity
+        res.identity();
+
+        int numNodes = m_header.m_numNodes;
+        if (numNodes <= 0)
+            return false;
+
+        // Find bone by name
+        int boneIndex = -1;
+        for (int i = 0; i < numNodes; i++)
+        {
+            if (m_boneInitialPos[i].m_boneName == boneName)
+            {
+                boneIndex = i;
+                break;
+            }
+        }
+
+        if (boneIndex == -1)
+            return false;
+
+        // Get the bone data
+        const Bone& bone = m_boneInitialPos[boneIndex];
+
+        // Convert quaternion to rotation matrix
+        float x = bone.m_quaternion0.x;
+        float y = bone.m_quaternion0.y;
+        float z = bone.m_quaternion0.z;
+        float w = bone.m_quaternion0.w;
+
+        float x2 = x * x;
+        float y2 = y * y;
+        float z2 = z * z;
+        float xy = x * y;
+        float xz = x * z;
+        float yz = y * z;
+        float wx = w * x;
+        float wy = w * y;
+        float wz = w * z;
+
+        // Set rotation matrix from quaternion
+        res._11 = 1.0f - 2.0f * (y2 + z2);
+        res._12 = 2.0f * (xy + wz);
+        res._13 = 2.0f * (xz - wy);
+        res._14 = 0.0f;
+
+        res._21 = 2.0f * (xy - wz);
+        res._22 = 1.0f - 2.0f * (x2 + z2);
+        res._23 = 2.0f * (yz + wx);
+        res._24 = 0.0f;
+
+        res._31 = 2.0f * (xz + wy);
+        res._32 = 2.0f * (yz - wx);
+        res._33 = 1.0f - 2.0f * (x2 + y2);
+        res._34 = 0.0f;
+
+        res._41 = bone.m_translation0.x;
+        res._42 = bone.m_translation0.y;
+        res._43 = bone.m_translation0.z;
+        res._44 = 1.0f;
+
+        // If we only want this bone, return now
+        if (theLastOneOnly)
+            return true;
+
+        // Apply parent transformations up the hierarchy
+        int parentIndex = bone.m_parentIdx;
+        while (parentIndex >= 0)
+        {
+            const Bone& parentBone = m_boneInitialPos[parentIndex];
+
+            // Convert parent quaternion to rotation matrix
+            float px = parentBone.m_quaternion0.x;
+            float py = parentBone.m_quaternion0.y;
+            float pz = parentBone.m_quaternion0.z;
+            float pw = parentBone.m_quaternion0.w;
+
+            float px2 = px * px;
+            float py2 = py * py;
+            float pz2 = pz * pz;
+            float pxy = px * py;
+            float pxz = px * pz;
+            float pyz = py * pz;
+            float pwx = pw * px;
+            float pwy = pw * py;
+            float pwz = pw * pz;
+
+            // Create parent rotation matrix
+            CMatrix parentRot;
+            parentRot._11 = 1.0f - 2.0f * (py2 + pz2);
+            parentRot._12 = 2.0f * (pxy + pwz);
+            parentRot._13 = 2.0f * (pxz - pwy);
+            parentRot._14 = 0.0f;
+
+            parentRot._21 = 2.0f * (pxy - pwz);
+            parentRot._22 = 1.0f - 2.0f * (px2 + pz2);
+            parentRot._23 = 2.0f * (pyz + pwx);
+            parentRot._24 = 0.0f;
+
+            parentRot._31 = 2.0f * (pxz + pwy);
+            parentRot._32 = 2.0f * (pyz - pwx);
+            parentRot._33 = 1.0f - 2.0f * (px2 + py2);
+            parentRot._34 = 0.0f;
+
+            parentRot._41 = parentBone.m_translation0.x;
+            parentRot._42 = parentBone.m_translation0.y;
+            parentRot._43 = parentBone.m_translation0.z;
+            parentRot._44 = 1.0f;
+
+            // Combine matrices: result = parentRot * currentResult
+            CMatrix tempResult;
+
+            // Row 1
+            tempResult._11 = parentRot._11 * res._11 + parentRot._12 * res._21 + parentRot._13 * res._31 + parentRot._14 * res._41;
+            tempResult._12 = parentRot._11 * res._12 + parentRot._12 * res._22 + parentRot._13 * res._32 + parentRot._14 * res._42;
+            tempResult._13 = parentRot._11 * res._13 + parentRot._12 * res._23 + parentRot._13 * res._33 + parentRot._14 * res._43;
+            tempResult._14 = parentRot._11 * res._14 + parentRot._12 * res._24 + parentRot._13 * res._34 + parentRot._14 * res._44;
+
+            // Row 2
+            tempResult._21 = parentRot._21 * res._11 + parentRot._22 * res._21 + parentRot._23 * res._31 + parentRot._24 * res._41;
+            tempResult._22 = parentRot._21 * res._12 + parentRot._22 * res._22 + parentRot._23 * res._32 + parentRot._24 * res._42;
+            tempResult._23 = parentRot._21 * res._13 + parentRot._22 * res._23 + parentRot._23 * res._33 + parentRot._24 * res._43;
+            tempResult._24 = parentRot._21 * res._14 + parentRot._22 * res._24 + parentRot._23 * res._34 + parentRot._24 * res._44;
+
+            // Row 3
+            tempResult._31 = parentRot._31 * res._11 + parentRot._32 * res._21 + parentRot._33 * res._31 + parentRot._34 * res._41;
+            tempResult._32 = parentRot._31 * res._12 + parentRot._32 * res._22 + parentRot._33 * res._32 + parentRot._34 * res._42;
+            tempResult._33 = parentRot._31 * res._13 + parentRot._32 * res._23 + parentRot._33 * res._33 + parentRot._34 * res._43;
+            tempResult._34 = parentRot._31 * res._14 + parentRot._32 * res._24 + parentRot._33 * res._34 + parentRot._34 * res._44;
+
+            // Row 4
+            tempResult._41 = parentRot._41 * res._11 + parentRot._42 * res._21 + parentRot._43 * res._31 + parentRot._44 * res._41;
+            tempResult._42 = parentRot._41 * res._12 + parentRot._42 * res._22 + parentRot._43 * res._32 + parentRot._44 * res._42;
+            tempResult._43 = parentRot._41 * res._13 + parentRot._42 * res._23 + parentRot._43 * res._33 + parentRot._44 * res._43;
+            tempResult._44 = parentRot._41 * res._14 + parentRot._42 * res._24 + parentRot._43 * res._34 + parentRot._44 * res._44;
+
+            // Copy temp result back to result
+            res = tempResult;
+
+            // Move up hierarchy
+            parentIndex = parentBone.m_parentIdx;
+        }
+
+        return true;
     }
 
     void AnimatedModel::FromCfgNum(Configuration& cfg) const

@@ -25,10 +25,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    SimplePhysicBody::~SimplePhysicBody()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    SimplePhysicBody::~SimplePhysicBody() = default;
 
     m3d::Class* SimplePhysicBody::GetBaseClass()
     {

@@ -240,8 +240,8 @@ namespace m3d
             m_suppressedLPs = (decltype(m_suppressedLPs))property;
             return 1;
 
-        case 0x220Cu:
-            RETRUXX_NOT_IMPLEMENTED;
+        case 8716:
+            this->m_manualAnimControl = *(int*)property != 0;
             return 1;
         }
 
