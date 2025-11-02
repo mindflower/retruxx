@@ -344,7 +344,7 @@ namespace m3d
             M3D_RENDERER->SetBlend(rend::BM_ALPHA, 0);
 
             // Set culling based on parameter
-            if (numNodes)
+            if (rni.isCullInverted)
                 M3D_RENDERER->SetCull(rend::M3DCULL_CW, 0);
             else
                 M3D_RENDERER->SetCull(rend::M3DCULL_CCW, 0);

@@ -439,6 +439,21 @@ namespace ai
             /* 0x000c */ CVector origin;
             static FlatLine* CreateOrthogonal(FlatLine*, const CVector&, const CVector&);
 
+			FlatLine()
+			{
+				auto z = this->normal.z;
+				this->normal.x = 1.0;
+				this->normal.y = 1.0;
+				auto v3 = 1.0 / sqrt(z * z + 2.0);
+				auto v2 = this->normal.z;
+				this->normal.x = v3;
+				this->normal.y = v3;
+				this->normal.z = v2 * v3;
+				this->origin.y = 0.0;
+				this->origin.z = 0.0;
+				this->origin.x = 0.0;
+			}
+
             bool IsPointInFront(const CVector&)
             {
                 RETRUXX_NOT_IMPLEMENTED;
@@ -452,9 +467,22 @@ namespace ai
 
 
         RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D5680, FlatLine::CreateOrthogonal)
-        FlatLine* FlatLine::CreateOrthogonal(FlatLine* ,const CVector&, const CVector&)
+        FlatLine* FlatLine::CreateOrthogonal(FlatLine* a1,const CVector& p1, const CVector& p2)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+			auto result = a1;
+			auto v7 = p2.x - p1.x;
+			auto v4 = p2.z - p1.z;
+			auto p2a = 1.0 / sqrt(v4 * v4 + v7 * v7 + 0.00000011920929);
+			auto res_12 = p1.x;
+			auto y = p1.y;
+			auto z = p1.z;
+			result->normal.x = p2a * v7;
+			result->normal.y = p2a * 0.0;
+			result->normal.z = p2a * v4;
+			result->origin.x = res_12;
+			result->origin.y = y;
+			result->origin.z = z;
+			return result;
         }
 
         struct DrivingValues
@@ -466,9 +494,36 @@ namespace ai
         }; /* size: 0x0024 */
 
 
-        float GetAngleBetween(CVector const&, CVector const&, CVector const&)
+        float GetAngleBetween(CVector const& vehiclePos, CVector const& point, CVector const& nextPoint)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+			// TODO: check and refactor this
+			auto v4 = point.z - nextPoint.z;
+			auto v5 = point.y - nextPoint.y;
+			auto v6 = v4 * v4 + v5 * v5;
+			auto v7 = point.x - nextPoint.x;
+			if (sqrt(v6 + v7 * v7) < 0.0099999998)
+				return 3.1415927;
+			auto y = vehiclePos.y;
+			auto v18 = point.z - vehiclePos.z;
+			auto v16 = point.x - vehiclePos.x;
+			auto nextPointb = 1.0 / sqrt(v18 * v18 + (float)(y - y) * (float)(y - y) + v16 * v16 + 0.00000011920929);
+			auto v20 = (float)(y - y) * nextPointb;
+			auto v10 = nextPointb * v16;
+			auto v11 = v18 * nextPointb;
+			auto v19 = nextPoint.z - point.z;
+			auto v17 = nextPoint.x - point.x;
+			auto nextPointc = 1.0 / sqrt(v19 * v19 + (float)(y - y) * (float)(y - y) + v17 * v17 + 0.00000011920929);
+			auto v12 = nextPointc * v17;
+			auto v13 = v19 * nextPointc;
+			auto v14 = -0.99999899;
+			auto nextPointa = (float)((float)((float)(v19 * nextPointc) * v11) + (float)((float)((float)(y - y) * nextPointc) * v20))
+				+ (float)((float)(nextPointc * v17) * v10);
+			if (nextPointa < -0.99999899 || (v14 = 0.99999899, nextPointa > 0.99999899))
+				nextPointa = v14;
+			auto v15 = -1;
+			if ((float)((float)(v12 * v11) - (float)(v13 * v10)) >= 0.0)
+				v15 = 1;
+			return acos(nextPointa) * (double)v15;
         }
         RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D07A0, GetAngleBetween)
 
@@ -514,6 +569,7 @@ namespace ai
 
             // bots logic fix
             //if (!bPrecisely)
+			if (!bPrecisely)
             {
                 dv.checkCircleRadius = dv.checkCircleRadius * 3.0;
             }
@@ -2967,13 +3023,13 @@ namespace ai
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA00, Vehicle::GetBasket, Basket* (Vehicle::*)())
 	Basket* Vehicle::GetBasket()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return RT_DYNCAST(GetPartByName(BASKET), Basket);
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA90, Vehicle::GetBasket, Basket const*(Vehicle::*)()const)
 	Basket const* Vehicle::GetBasket() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return RT_DYNCAST(GetPartByName(BASKET), const Basket);
 	}
 
 	void Vehicle::SetCabin(VehiclePart*)
@@ -3598,7 +3654,21 @@ namespace ai
 
 	bool Vehicle::_SetIdleMoveStatus()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (!this->m_moveStatus)
+		{
+			return 0;
+		}
+		this->m_bIsMovingAlongExternalPath = 0;
+		this->m_moveStatus = MOVE_IDLE;
+
+		SetThrottle( 0.0, 1);
+		if (m_pPath)
+		{
+			delete m_pPath;
+		}
+		this->m_pPath = 0;
+		this->m_pathNum = -1;
+		return 1;
 	}
 
 	CVector Vehicle::_CalcRepulsionForNearbyObjects(CVector const&, CVector const&, CVector const&, CVector const&,
@@ -3617,9 +3687,17 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	bool Vehicle::_bPassedPathPoint(CVector const&, CVector const&, bool) const
+	bool Vehicle::_bPassedPathPoint(CVector const& point, CVector const& nextPoint, bool bPrecisely) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		const auto vehiclePos =  GetPosition();
+
+		ai::DrivingValues dv;
+		CalcDrivingValues(*this, point, nextPoint, bPrecisely, dv);
+			return dv.checkCircleRadius > sqrt(
+				(float)(point.z - vehiclePos.z) * (float)(point.z - vehiclePos.z)
+				+ 0.0 * 0.0
+				+ (float)(point.x - vehiclePos.x) * (float)(point.x - vehiclePos.x))
+			&& (float)((float)(vehiclePos.z * dv.checkLine.normal.z) + (float)(vehiclePos.x * dv.checkLine.normal.x)) > (float)((float)(dv.checkLine.origin.z * dv.checkLine.normal.z) + (float)(dv.checkLine.origin.x * dv.checkLine.normal.x));
 	}
 
 	void Vehicle::_CauseCustomGunPointedEvents()
@@ -3636,7 +3714,66 @@ namespace ai
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(0x005CCF40, Vehicle, _GetNextPathPoint)
 	CVector Vehicle::_GetNextPathPoint() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code
+		// Get current path point
+		CVector curPoint;
+		if (!ai::GetPathItem(m_pPath, m_pathNum, curPoint))
+		{
+			// No valid path point found, return zero vector
+			return ZeroVector;
+		}
+
+		CVector nextPoint;
+		int pathSize = m_pPath->GetSize();
+
+		// Determine the next point based on current position in path
+		if (m_pathNum < pathSize - 1)
+		{
+			// Normal case: get next point in path
+			ai::GetPathItem(m_pPath, m_pathNum + 1, nextPoint);
+		}
+		else if (m_pathNum > 0)
+		{
+			// At end of path: extrapolate from previous point
+			CVector prevPoint;
+			ai::GetPathItem(m_pPath, m_pathNum - 1, prevPoint);
+
+			// Calculate direction from previous to current point
+			CVector direction;
+			direction.x = curPoint.x - prevPoint.x;
+			direction.y = curPoint.y - prevPoint.y;
+			direction.z = curPoint.z - prevPoint.z;
+
+			// Normalize the direction vector
+			CVector normalizedDir = direction.getNormalized();
+
+			// Extrapolate next point by continuing in the same direction
+			nextPoint.x = curPoint.x + normalizedDir.x;
+			nextPoint.y = curPoint.y + normalizedDir.y;
+			nextPoint.z = curPoint.z + normalizedDir.z;
+		}
+		else
+		{
+			// At start of path with no previous point, use current point
+			nextPoint = curPoint;
+		}
+
+		// Check if next point is too close to current point (degenerate case)
+		float distanceSq = (curPoint.x - nextPoint.x) * (curPoint.x - nextPoint.x) +
+			(curPoint.y - nextPoint.y) * (curPoint.y - nextPoint.y) +
+			(curPoint.z - nextPoint.z) * (curPoint.z - nextPoint.z);
+
+		float distance = sqrt(distanceSq);
+
+		if (distance < 0.01f)
+		{
+			// Points are too close, create an artificial offset
+			nextPoint.x = curPoint.x + 1.0f;
+			nextPoint.y = curPoint.y + 1.0f;
+			nextPoint.z = curPoint.z + 1.0f;
+		}
+
+		return nextPoint;
 	}
 
     RETRUXX_DLL_INJECT_CLASS_METHOD(0x005DAAE0, Vehicle, _KeepThrottle)
@@ -3756,9 +3893,140 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::_DriveBySteeringForce(CVector const&)
+	void Vehicle::_DriveBySteeringForce(CVector const& steeringForce)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (!m_inSmokeScreenMode || m_bIsControlledByPlayer)
+		{
+			const auto vehiclePos = GetPosition();
+			const auto velocity = GetLinearVelocity();
+			const auto direction = GetDirection();
+
+
+			auto speed = (float)((float)((float)(direction.y * velocity.y) + (float)(direction.z * velocity.z)) + (float)(direction.x * velocity.x)) > 0.0;
+
+			CVector point;
+			point.x = steeringForce.x + vehiclePos.x;
+			point.y = steeringForce.y + vehiclePos.y;
+			point.z = steeringForce.z + vehiclePos.z;
+
+
+			const auto angleTo = _GetAngleTo(point);
+			auto steer = angleTo;
+			auto throttle = fabs(angleTo);
+			if (throttle < 2.5132742
+				&& speed
+				&& sqrt(velocity.y * velocity.y + velocity.z * velocity.z + velocity.x * velocity.x) > 8.333334)
+			{
+				m_turningBackStatus = TURN_BACK_DISABLED;
+			}
+			else
+			{
+
+				switch (m_turningBackStatus)
+				{
+				case TURN_BACK_NONE:
+				{
+					m_turningBackStatus = TURN_BACK_DISABLED;
+					if (throttle >= 1.5707964)
+					{
+						m_turningBackStatus = TURN_BACK_ENABLED_ACCELERATING;
+					}
+					m_turningBackStatus = m_turningBackStatus;
+					break;
+				}
+				case TURN_BACK_ENABLED_ACCELERATING:
+				{
+					if (throttle < 0.94247788)
+					{
+						m_turningBackStatus = TURN_BACK_ENABLED_BRAKING;
+					}
+					break;
+				}
+				case TURN_BACK_ENABLED_BRAKING:
+				{
+				    if ((float)((float)((float)(velocity.y * velocity.y) + (float)(velocity.z * velocity.z))
+                               + (float)(velocity.x * velocity.x)) < 1.0
+                       && 0.0 != fabs((double)(m_steerRadians < 0.1)))
+				    {
+				        m_turningBackStatus = TURN_BACK_DISABLED;
+				    }
+				    break;
+				}
+				case TURN_BACK_DISABLED:
+				{
+				    if (throttle > 1.8849558)
+				    {
+				        this->m_turningBackStatus = TURN_BACK_ENABLED_ACCELERATING;
+				    }
+				    break;
+				}
+				default:
+					break;
+				}
+			}
+
+			if (m_turningBackStatus == TURN_BACK_DISABLED)
+			{
+				if (throttle > 0.52359879)
+				{
+					int dir = 0;
+					if (steer >= 0.0)
+						dir = 1;
+					else
+						dir = -1;
+					steer = (float)dir * 0.52359879;
+				}
+				steer = steer * 1.9098593;
+				throttle = sqrt(
+					steeringForce.x * steeringForce.x
+					+ steeringForce.y * steeringForce.y
+					+ steeringForce.z * steeringForce.z)
+					* (4.0 - fabs(steer) * 2.7)
+					* 0.25;
+			}
+			else
+			{
+				throttle = 0.0;
+				if (m_turningBackStatus == TURN_BACK_ENABLED_ACCELERATING)
+				{
+					int dir = 0;
+					if (steer >= 0.0)
+						dir = 1;
+					else
+						dir = -1;
+					steer = 0.0 - (float)dir;
+					throttle = -1.0;
+				}
+				else
+				{
+					steer = 0.0;
+				}
+			}
+			if (fabs(steer) >= 1.000001)
+			{
+				M3D_LOG_INFO("Error: steer of " + GetDebugDescription() + "is invalid: " + CStr(steer));
+				M3D_ASSERT(0);
+			}
+
+
+			auto v20 = -1.0;
+			if (!m_bWasStuck)
+				v20 = 1.0;
+			auto v21 = 0.0;
+			m_steerRadians = (float)(0.0 - (float)(0.78539819 * steer)) * v20;
+			auto v22 = sqrt(
+				steeringForce.x * steeringForce.x
+				+ steeringForce.y * steeringForce.y
+				+ steeringForce.z * steeringForce.z);
+			if (v22 >= 0.0)
+			{
+				v21 = v22;
+				auto absAngle = v22;
+				if (absAngle > 1.0)
+					v21 = 1.0;
+			}
+			SetThrottle((float)(v21 * v20) * throttle, 1);
+		}
 	}
 
 	void Vehicle::_TurnWheelByAngle(Wheel* pWheel, float angle)
@@ -3918,9 +4186,43 @@ namespace ai
 	}
 
     RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(0x005D62E0, Vehicle, _CalcSteeringForceToPathPoint)
-	CVector Vehicle::_CalcSteeringForceToPathPoint(CVector const&, CVector const&) const
+	CVector Vehicle::_CalcSteeringForceToPathPoint(CVector const& point, CVector const& nextPoint) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: check and refactor this
+		const auto vehiclePos = GetPosition();
+
+		ai::DrivingValues dv;
+		auto v8 = 1.0 / sqrt(dv.checkLine.normal.z * dv.checkLine.normal.z + 2.0);
+		dv.checkLine.normal.x = v8;
+		dv.checkLine.normal.y = v8;
+		dv.checkLine.normal.z = dv.checkLine.normal.z * v8;
+		memset(&dv.checkLine.origin, 0, sizeof(dv.checkLine.origin));
+
+		CalcDrivingValues(*this, point, nextPoint, 1, dv);
+
+	    auto v5 = point.z - vehiclePos.z;
+		float v6 = 0.0;
+		if (fabs(dv.nextAngle) <= 0.1570796370506287
+			|| (
+				dv.brakingCircleRadius <= sqrt(
+					(float)(point.z - vehiclePos.z) * (float)(point.z - vehiclePos.z)
+					+ 0.0 * 0.0
+					+ (float)(point.x - vehiclePos.x) * (float)(point.x - vehiclePos.x))))
+		{
+			v6 = 1.0;
+		}
+		auto nextPointa = 1.0
+			/ sqrt(
+				v5 * v5
+				+ 0.0 * 0.0
+				+ (float)(point.x - vehiclePos.x) * (float)(point.x - vehiclePos.x)
+				+ 0.00000011920929);
+
+		CVector result;
+		result.x = (float)(nextPointa * (float)(point.x - vehiclePos.x)) * v6;
+		result.y = (float)(0.0 * nextPointa) * v6;
+		result.z = (float)(v5 * nextPointa) * v6;
+		return result;
 	}
 
 	void Vehicle::_TakeWaterIntoAccount(float elapsedTime)
@@ -4104,7 +4406,10 @@ namespace ai
 
 	void Vehicle::_SetIdleMoveStatusAndCauseTargetReached()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (_SetIdleMoveStatus())
+		{
+			CauseEvent(GE_TARGET_REACHED, 0.0, m_pathIndex, {});
+		}
 	}
 
 	void Vehicle::_CalcRpms()
@@ -4422,9 +4727,56 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	float Vehicle::_GetAngleTo(CVector const&) const
+	float Vehicle::_GetAngleTo(CVector const& point) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: check this and refactor
+		const auto vehiclePos = GetPosition();
+		auto v3 = point.z - vehiclePos.z;
+		auto v4 = point.y - vehiclePos.y;
+		auto v5 = point.x - vehiclePos.x;
+		if (sqrt(v3 * v3 + v4 * v4 + v5 * v5) < 0.0099999998)
+			return 0.0;
+		auto v21 = 1.0 / sqrt(v3 * v3 + v4 * v4 + v5 * v5 + 0.00000011920929);
+		auto v16 = v21 * v5;
+		auto v17 = v4 * v21;
+		auto v18 = v3 * v21;
+		auto Rotation = ai::PhysicObj::GetRotation();
+		auto Inversed = Rotation.getInversed();
+		auto v9 = Inversed.w * Inversed.z;
+		auto v10 = Inversed.x * Inversed.z;
+		auto v11 = Inversed.w * Inversed.x;
+		auto v24 = Inversed.x * Inversed.x;
+		auto v22 = Inversed.x * Inversed.y;
+		auto v25 = Inversed.z * Inversed.y;
+		auto v12 = Inversed.z * Inversed.z;
+		auto v19 = Inversed.w * Inversed.y;
+		auto v13 = Inversed.y * Inversed.y;
+
+		CMatrix vv;
+		vv._11 = 1.0 - (float)((float)(v12 + v13) * 2.0);
+		vv._21 = (float)(v22 - v9) * 2.0;
+		vv._31 = (float)(v19 + v10) * 2.0;
+		vv._12 = (float)(v9 + v22) * 2.0;
+		vv._22 = 1.0 - (float)((float)(v12 + v24) * 2.0);
+		vv._33 = 1.0 - (float)((float)(v13 + v24) * 2.0);
+		vv._32 = (float)(v25 - v11) * 2.0;
+		vv.m[0][2] = ((float)(v10 - v19) * 2.0);
+		vv.m[0][3] = 0.0;
+		vv.m[1][2] = ((float)(v11 + v25) * 2.0);
+		vv.m[1][3] = 0.0;
+		memset(&vv.m[2][3], 0, 16);
+		vv._44 = 1.0;
+
+
+		auto v14 = -0.99999899;
+		auto v15 = (float)((float)(vv._33 * v18) + (float)(vv._23 * v17)) + (float)(vv._13 * v16);
+		auto v20 = v15;
+		if (v15 < -0.99999899 || (v14 = 0.99999899, v15 > 0.99999899))
+			v20 = v14;
+		auto v23 = -1;
+		if ((float)((float)((float)(vv._31 * v18) + (float)(vv._21 * v17)) + (float)(vv._11 * v16)) >= 0.0)
+			v23 = 1;
+		return acos(v20) * (double)v23;
 	}
 
 	void Vehicle::_AdjustWheel(WheelRuntimeInfo& wheelInfo)
@@ -4672,9 +5024,146 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	CVector Vehicle::_CalcSteeringForce(float) const
+	CVector Vehicle::_CalcSteeringForce(float elapsedTime)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code
+		// Return cached steering force if valid
+		if (m_bCurSteeringForceValid)
+		{
+			return m_curSteeringForce;
+		}
+
+		// Get current position and velocity
+		CVector pos = GetPosition();
+		CVector vel = GetLinearVelocity();
+
+		// Determine guide direction (use current direction if moving slowly, otherwise use velocity)
+		CVector guide;
+		if (vel.lengthSq() <= 1.0f)
+		{
+			guide = GetDirection(); // Use facing direction when moving slowly
+		}
+		else
+		{
+			guide = vel; // Use velocity direction when moving fast
+		}
+
+		// Initialize steering forces
+		CVector attraction = ZeroVector; // Force towards target
+		CVector repulsion = ZeroVector;  // Force away from obstacles
+
+		// Calculate path following attraction force
+		CVector curPoint;
+		if (ai::GetPathItem(m_pPath, m_pathNum, curPoint))
+		{
+			CVector nextPoint = _GetNextPathPoint();
+			CVector pathForce = _CalcSteeringForceToPathPoint(curPoint, nextPoint);
+			attraction += pathForce;
+		}
+
+		// Add external destination force if in specific move status
+		if (m_moveStatus == 2)
+		{
+			curPoint = ai::GetGroundPos(m_externalDestination, false, false);
+			CVector destForce = _CalcSteeringForceToPathPoint(m_externalDestination, m_externalDestination);
+			attraction += destForce;
+		}
+
+		// Add team-based steering forces if attacking
+		if (m_attackStatus == 1)
+		{
+			ai::Team* team = static_cast<ai::Team*>(GetParent());
+			if (team)
+			{
+				auto& steeringForceMap = team->GetSteeringForceMap();
+				auto it = steeringForceMap.find(GetId());
+				if (it != steeringForceMap.end())
+				{
+					attraction += it->second;
+				}
+			}
+		}
+
+		// Calculate obstacle avoidance repulsion force if not on external path
+		if (!m_bIsMovingAlongExternalPath)
+		{
+			// Predict future position
+			CVector predictedPos;
+			predictedPos.x = pos.x + vel.x * ai::theGlobProp.m_predictionTime;
+			predictedPos.y = pos.y + vel.y * ai::theGlobProp.m_predictionTime;
+			predictedPos.z = pos.z + vel.z * ai::theGlobProp.m_predictionTime;
+
+			// Calculate repulsion forces for different look directions
+			_AdjustLookBox(true, pos, curPoint, guide);
+			CVector repulsion1 = _CalcRepulsionForNearbyObjects(pos, predictedPos, vel, guide, true, attraction);
+
+			_AdjustLookBox(false, pos, curPoint, guide);
+			CVector repulsion2 = _CalcRepulsionForNearbyObjects(pos, predictedPos, vel, guide, false, attraction);
+
+			repulsion = repulsion1 + repulsion2;
+		}
+
+		// Combine all steering forces
+		CVector totalForce = attraction + repulsion;
+
+		// Normalize and clamp the total force
+		float forceMagnitude = totalForce.length();
+		float clampedMagnitude = std::clamp(forceMagnitude, 0.0f, 1.0f);
+
+		if (forceMagnitude > 0.0f)
+		{
+			totalForce.normalizeInplace();
+			totalForce *= clampedMagnitude;
+		}
+
+		// Store the previous steering force for comparison
+		CVector prevSteeringForce = m_curSteeringForce;
+
+		// Update current steering force
+		m_curSteeringForce = totalForce;
+
+		// Handle stuck detection
+		m_timeOutToCheckStuck -= elapsedTime;
+
+		if (m_bWasStuck || (float)((float)((float)(this->m_curSteeringForce.z * prevSteeringForce.z)
+										   + (float)(this->m_curSteeringForce.y * prevSteeringForce.y))
+								   + (float)(prevSteeringForce.x * m_curSteeringForce.x)) >= 0.0)
+		{
+			// Not stuck or consistent steering direction
+			// Reset timeout if we were previously stuck but now have consistent steering
+			if (!m_bWasStuck)
+			{
+				m_timeOutToCheckStuck = 1.0f;
+			}
+		}
+		else
+		{
+			// Inconsistent steering direction, reset stuck timer
+			m_timeOutToCheckStuck = 1.0f;
+		}
+
+		// Check if vehicle is stuck (not moving significantly)
+		if (m_timeOutToCheckStuck < 0.0f)
+		{
+			float moveDistanceSq = (pos - m_prevPosToCheckStuck).lengthSq();
+
+			if (moveDistanceSq >= 0.1f)
+			{
+				// Vehicle has moved enough, not stuck
+				m_prevPosToCheckStuck = pos;
+				m_timeOutToCheckStuck = 1.0f;
+			}
+			else
+			{
+				// Vehicle is stuck
+				m_bWasStuck = true;
+				m_timeOutToCheckStuck = 2.0f; // Longer timeout when stuck
+			}
+		}
+
+		// Mark steering force as valid and return result
+		m_bCurSteeringForceValid = true;
+		return m_curSteeringForce;
 	}
 
 	CVector Vehicle::_GetEtalonWheelAVel() const

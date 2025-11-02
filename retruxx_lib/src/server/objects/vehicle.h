@@ -553,7 +553,7 @@ namespace ai
         void _KeepGearBox(float elapsedTime);
         void _KeepSuspension();
         void _ApplyStabilizingForces();
-        CVector _CalcSteeringForce(float elapsedTime) const;
+        CVector _CalcSteeringForce(float elapsedTime);
         CVector _CalcSteeringForceToPathPoint(const CVector& point, const CVector& nextPoint) const;
         CVector _CalcRepulsionForNearbyObjects(const CVector& myPos, const CVector& myPredictedPos, const CVector& myVel, const CVector& guide, bool bIsLookObstacle, CVector& attraction) const;
         CVector _CalcRepulsionForObstacle(const ai::Obstacle* ob, const CVector& myPos, const CVector& myPredictedPos, const CVector& myVel, const CVector& guide, bool bIsLookObstacle, CVector& attraction) const;

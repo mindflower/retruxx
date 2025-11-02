@@ -104,7 +104,7 @@ namespace ai
         dJointAttach(hinge, physicObj->GetBody()->id(), m_body->id());
 
         auto anchorPos = GetPosition();
-        auto rot = GetRotation();
+        auto rot = physicObj->GetRotation();
 
         CMatrix vv;
         vv._11 = 1.0 - (float)((float)((float)(rot.z * rot.z) + (float)(rot.y * rot.y)) * 2.0);

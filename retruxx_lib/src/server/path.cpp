@@ -6,6 +6,11 @@
 
 namespace ai
 {
+    DHeap::~DHeap()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
     void Path::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode, ai::Map* pMap)
     {
         RETRUXX_NOT_IMPLEMENTED;
@@ -129,7 +134,7 @@ namespace ai
 
     unsigned int Path::GetSize() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return this->m_size;
     }
 
     void Path::GetItem(unsigned int ItemNum, float* PathCoordx, float* PathCoordy) const
@@ -160,7 +165,23 @@ namespace ai
 
     void Path::ClearHelpers()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        delete pHeap;
+        pHeap = nullptr;
+
+        delete pDist;
+        pDist = nullptr;
+
+        delete pHInverse;
+        pHInverse = nullptr;
+
+        delete pParent;
+        pParent = nullptr;
+
+        delete pFlag;
+        pFlag = nullptr;
+
+        delete pLength;
+        pLength = nullptr;
     }
 
     unsigned int Path::MapIndexToId(const ai::MapIndex& v) const

@@ -934,7 +934,7 @@ namespace ai
                                 RETRUXX_NOT_IMPLEMENTED;
                             }
                         }
-                        res *= parentMat;
+                        res = res * parentMat;
                         parentPartDescription = parentPartDescription->GetParent();
                     }
                 }
