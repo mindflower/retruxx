@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 
+#include "decisionmatrix.h"
 #include "thirdparty/containers.h"
 
 namespace ai
@@ -16,6 +17,12 @@ namespace ai
     CStr const& AIMatrix::GetName() const
     {
         return m_name;
+    }
+
+    void AIMatrix::Delete()
+    {
+        delete m_pDM;
+        m_pDM = nullptr;
     }
 
     DecisionMatrix* AIMatrix::GetPtr() const

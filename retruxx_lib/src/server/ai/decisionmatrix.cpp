@@ -398,10 +398,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    DecisionMatrix::~DecisionMatrix()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    DecisionMatrix::~DecisionMatrix() = default;
 
     void DecisionMatrix::AddDefaultStateParam(char const* functionName)
     {

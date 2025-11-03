@@ -144,7 +144,11 @@ namespace ai
 
 	void ColliderKrnl::Release()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		delete g_collidersMap;
+		g_collidersMap = nullptr;
+
+		delete g_allClasses;
+		g_allClasses = nullptr;
 	}
 
 	int ColliderKrnl::CollideObjs(m3d::Object* obj1, m3d::Object* obj2, dContact* contact, unsigned& numContacts)

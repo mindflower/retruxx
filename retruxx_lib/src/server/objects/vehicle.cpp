@@ -713,10 +713,8 @@ namespace ai
         m_blastWavePrototypeId = thePrototypeManager->GetPrototypeId(m_blastWavePrototypeName);
 	}
 
-	VehiclePrototypeInfo::~VehiclePrototypeInfo()
-	{
-        RETRUXX_NOT_IMPLEMENTED;
-	}
+	// TODO: check this
+	VehiclePrototypeInfo::~VehiclePrototypeInfo() = default;
 
 	ai::Obj* VehiclePrototypeInfo::CreateTargetObject() const
 	{

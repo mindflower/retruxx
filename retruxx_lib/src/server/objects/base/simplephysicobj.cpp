@@ -43,10 +43,7 @@ namespace ai
 	RT_CLASS_EXPORTS_END;
 	RT_CLASS_DEFINE(SimplePhysicObj);
 
-	SimplePhysicObjPrototypeInfo::~SimplePhysicObjPrototypeInfo()
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    SimplePhysicObjPrototypeInfo::~SimplePhysicObjPrototypeInfo() = default;
 
 	CStr const& SimplePhysicObjPrototypeInfo::GetEngineModelName() const
 	{

@@ -17,7 +17,15 @@ namespace ai
 
     void PrototypeManager::Clear()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_prototypeFullNames.clear();
+        m_prototypeFullNamesLocalizedForms.clear();
+        m_prototypeNamesToIds.clear();
+
+        for (auto& proto : m_prototypes)
+        {
+            delete proto;
+        }
+        m_prototypes.clear();
     }
 
     unsigned PrototypeManager::GetPrototypeFullNameLocalizedForm(int) const
@@ -78,7 +86,7 @@ namespace ai
 
     PrototypeManager::~PrototypeManager()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Clear();
     }
 
     void PrototypeManager::GetPrototypeIdsByResourceId(int resourceId,  retruxx::vector<int, retruxx::allocator<int>>& prototypeIds) const

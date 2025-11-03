@@ -52,7 +52,20 @@ namespace ai
 
 	VehiclePartPrototypeInfo::~VehiclePartPrototypeInfo()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		for (auto& ind : m_inds)
+		{
+			delete[] ind;
+		}
+
+		for (auto& mesh : m_modelMeshes)
+		{
+			delete mesh;
+		}
+
+		for (auto& bound : m_boundsForMeshes)
+		{
+			delete bound;
+		}
 	}
 
 	bool VehiclePartPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

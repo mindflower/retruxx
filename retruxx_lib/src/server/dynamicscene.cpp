@@ -598,7 +598,27 @@ namespace ai
 
 	void DynamicScene::ClearOnce()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (contactGroup)
+			dJointGroupDestroy(contactGroup);
+		contactGroup = 0;
+		if (ai::gGlobalWorld)
+			dWorldDestroy(ai::gGlobalWorld);
+		ai::gGlobalWorld = 0;
+		if (ai::gBulletSpace)
+			dSpaceDestroy(ai::gBulletSpace);
+		if (ai::gGlobalSpace)
+			dSpaceDestroy(ai::gGlobalSpace);
+		if (ai::gTempSpace)
+			dSpaceDestroy(ai::gTempSpace);
+		if (ai::gIntersectionSpace)
+			dSpaceDestroy(ai::gIntersectionSpace);
+		if (ai::gSpaceForAllPhysicParticles)
+			dSpaceDestroy(ai::gSpaceForAllPhysicParticles);
+		ai::gBulletSpace = 0;
+		ai::gGlobalSpace = 0;
+		ai::gTempSpace = 0;
+		ai::gIntersectionSpace = 0;
+		ai::gSpaceForAllPhysicParticles = 0;
 	}
 
 	int DynamicScene::GetNumNearCallbacksLastFrame()
@@ -656,7 +676,7 @@ namespace ai
 
 	DynamicScene::~DynamicScene()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		ColliderKrnl::Release();
 	}
 
 	unsigned DynamicScene::GetWheelTypeByName(CStr const& wheelTypeName)

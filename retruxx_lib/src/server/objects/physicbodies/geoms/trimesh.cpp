@@ -5,7 +5,7 @@ namespace ai
 {
     TriMesh::~TriMesh()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        dGeomTriMeshDataDestroy(m_trimeshDataId);
     }
 
     ai::TriMesh* TriMesh::CreateObject(dxSpace* space, const void* trimeshVertices, int numVertices,
@@ -19,8 +19,10 @@ namespace ai
 
         dGeomTriMeshDataBuildSingle(trimeshData, trimeshVertices, vertexStride, numVertices, trimeshIndices, numIndices, 12);
 
-        auto trimesh = dCreateTriMesh(space, trimeshData, nullptr, nullptr, nullptr);
-        return new TriMesh(trimesh, movedCallback);
+        auto geom = dCreateTriMesh(space, trimeshData, nullptr, nullptr, nullptr);
+        auto trimesh = new TriMesh(geom, movedCallback);
+        trimesh->m_trimeshDataId = trimeshData;
+        return trimesh;
     }
 
     TriMesh::TriMesh(dxGeom* const geomId, void(*movedCalback)(dxGeom*)) : Geom(geomId, movedCalback)

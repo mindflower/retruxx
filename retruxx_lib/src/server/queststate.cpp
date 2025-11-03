@@ -275,7 +275,7 @@ namespace ai
 
     QuestStateManager::~QuestStateManager()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        _Clear();
     }
 
     m3d::Class* QuestStateManager::GetBaseClass()
@@ -334,6 +334,10 @@ namespace ai
 
     void QuestStateManager::_Clear()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto& state : m_questStates)
+        {
+            delete state;
+        }
+        m_questStates.clear();
     }
 }

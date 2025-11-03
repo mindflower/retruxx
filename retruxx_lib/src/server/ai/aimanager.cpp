@@ -135,7 +135,10 @@ namespace ai
 
     AIManager::~AIManager()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto& mat : m_Matrix)
+        {
+            mat.Delete();
+        }
     }
 
     m3d::AIParam AIManager::AIAction(int, Obj*)

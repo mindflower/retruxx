@@ -254,10 +254,7 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	ComplexPhysicObjPrototypeInfo::~ComplexPhysicObjPrototypeInfo()
-	{
-        RETRUXX_NOT_IMPLEMENTED;
-	}
+    ComplexPhysicObjPrototypeInfo::~ComplexPhysicObjPrototypeInfo() = default;
 
 	retruxx::vector<CStr, retruxx::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
 	{
