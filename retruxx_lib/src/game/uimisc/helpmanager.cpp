@@ -178,7 +178,12 @@ void HelpManager::ShowHelpEnumered(HelpId, bool)
 
 void HelpManager::HideCurrentHelpWindow()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    std::vector<int> helpWndGuiIds;
+    GetAllHelpWndGuiIds(helpWndGuiIds);
+    for (auto& wnd : helpWndGuiIds)
+    {
+        M3D_APP->m_pInterfaceManager->ShowWindow(wnd, false, false, false, false, nullptr);
+    }
 }
 
 void HelpManager::MarkHelpAsShown(HelpId)
@@ -201,9 +206,10 @@ int HelpManager::GetCurHelpWndGuiId() const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void HelpManager::GetAllHelpWndGuiIds(std::vector<int>&) const
+void HelpManager::GetAllHelpWndGuiIds(std::vector<int>& guidIds) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    guidIds.clear();
+    // TODO: implement HelpManager::GetAllHelpWndGuiIds
 }
 
 void HelpManager::OnHelpImpulse()

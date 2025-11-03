@@ -56,10 +56,10 @@ namespace ai
         static m3d::Class m_classObjContainer;
 
     private:
-        static const int BITS_IN_MAX_OBJECTS;
-        static const int MAX_OBJECTS;
-        static const int MAX_OBJECTS_MASK;
-        static const int MAX_OBJECTS_IN_CELL;
+        static inline const int BITS_IN_MAX_OBJECTS = 0xE;
+        static inline const int MAX_OBJECTS = 0x4000;
+        static inline const int MAX_OBJECTS_MASK = 0x3FFF;
+        static inline const int MAX_OBJECTS_IN_CELL = 0x1FFFF;
 
         struct Node
         {
@@ -109,6 +109,7 @@ namespace ai
 
         class const_iterator : public retruxx::_Bidit<ai::ObjContainer::Node, int, ai::ObjContainer::Node const*, ai::ObjContainer::Node const&>
         {
+            friend class ObjContainer;
         public:
             using iterator_category = retruxx::bidirectional_iterator_tag;
             using BaseType = retruxx::_Bidit<ai::ObjContainer::Node, int, ai::ObjContainer::Node const*, ai::ObjContainer::Node const&>;

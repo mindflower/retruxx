@@ -14,19 +14,17 @@ namespace m3d
 
 class VideoOptionsWnd :  public m3d::ui::Wnd
 {
+    friend class OptionsWnd;
 public:
-    class ShadowSettings
+    struct ShadowSettings
     {
-    public:
-        bool operator==(ShadowSettings const&) const;
-        ShadowSettings(int texSize, int detTexSize, float blurCoeff, float radius);
-
-    private:
-        int shadowTexSize;
-        int detShadowTexSize;
-        float shadowBlurCoeff;
-        float detailRadius;
-    };
+        /* 0x0000 */ int shadowTexSize;
+        /* 0x0004 */ int detShadowTexSize;
+        /* 0x0008 */ float shadowBlurCoeff;
+        /* 0x000c */ float detailRadius;
+        ShadowSettings(int sts, int dsts, float sbc, float dr);
+        bool operator==(const VideoOptionsWnd::ShadowSettings& shs) const;
+    }; /* size: 0x0010 */
 
     class AuxInfo
     {

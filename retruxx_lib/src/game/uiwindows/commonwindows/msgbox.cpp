@@ -74,10 +74,42 @@ m3d::Object* MsgBox::CreateObject()
 
 void MsgBox::SetIdioticEmbossesBounds(PointBase<float> const&)
 {
+    // TODO: check this!!!!!!
     if ((m_gameDataFlags & 1) != 0 && (m_msgBoxFlags & 3) != 0)
     {
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+        CStr buttonName1 = m_aif.m_buttonName + CStr(1);
+        m3d::ui::Wnd* patternButton1 = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(buttonName1));
+        auto button1Bounds = patternButton1->GetBounds();
+
+        //CStr buttonName0 = m_aif.m_buttonName + CStr(0);
+        //m3d::ui::Wnd* patternButton0 = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(buttonName0));
+        //auto button0Bounds = patternButton0->GetBounds();
+
+        auto downLineBounds = m_wndDownLine->GetBounds();
+        for (int i = 0; i < 3; ++i)
+        {
+            if (IsDirectChild(m_buttons[i]))
+            {
+                auto btnBounds = m_buttons[i]->GetBounds();
+                btnBounds.x0 = button1Bounds.x0;
+                button1Bounds.x0 += downLineBounds.x0;
+
+                m3d::ui::Wnd* buttonWnd = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(m_buttons[i]->GetName()));
+                m3d::ui::Wnd* downLineNameWnd = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(m_aif.m_wndDownLineName));
+
+                auto actualBtnBounds = buttonWnd->GetBounds();
+                auto downLineNameBounds = downLineNameWnd->GetBounds();
+
+                auto y0 = actualBtnBounds.y0;
+                auto v22 = y0 - (float)(downLineNameBounds.height + downLineNameBounds.y0);
+
+                btnBounds.y0 = (downLineBounds.height + btnBounds.y0) + v22;
+
+                m_buttons[i]->SetBounds(btnBounds, true);
+
+            }
+        }
+    }
 }
 
 MsgBox::MsgBox(MsgBox const&)
@@ -220,10 +252,77 @@ void MsgBox::AddLines()
 
 void MsgBox::SetDownLineBounds()
 {
-    if ((m_gameDataFlags & 1) != 0 && IsDirectChild(m_wndDownLine))
+    // TODO: generated code
+    // Check if we need to update the down line bounds and if the down line is a direct child
+    if ((m_gameDataFlags & 1) != 0 && m3d::Object::IsDirectChild(m_wndDownLine))
     {
-        //auto patternChild = m_pattern->GetChildByName(m_aif.m_wndDownLineName);
-        RETRUXX_NOT_IMPLEMENTED;
+        // Get the pattern reference for the down line
+        m3d::ui::Wnd* patternDownLine = static_cast<m3d::ui::Wnd*>(
+            m_pattern->GetChildByName(m_aif.m_wndDownLineName));
+
+        // Get the pattern's down line bounds to use as reference
+        BoundsBase<float> patternBounds = patternDownLine->GetBounds();
+
+        // Calculate the width for the down line (full width minus margins)
+        float downLineWidth = m_bounds.width - (patternBounds.x0 * 2.0f);
+
+        // Get the current down line height from the pattern
+        float downLineHeight = m_wndDownLine->GetBounds().height;
+
+        // Initialize line bounds structure
+        BoundsBase<float> lineBounds;
+        lineBounds.x0 = patternBounds.x0;  // Left margin
+        lineBounds.y0 = 0.0f;              // Will be calculated based on content
+        lineBounds.width = downLineWidth;   // Calculated width
+        lineBounds.height = downLineHeight; // Height from pattern
+
+        // Calculate vertical position based on whether message window is present
+        if (m3d::Object::IsDirectChild(m_wndMsg))
+        {
+            // Message window is present - position down line below it
+            BoundsBase<float> msgBounds = m_wndMsg->GetBounds();
+
+            // Get pattern references for positioning
+            m3d::ui::Wnd* patternMsg = static_cast<m3d::ui::Wnd*>(
+                m_pattern->GetChildByName(m_aif.m_wndMsgName));
+
+            // Get pattern positions to calculate proper spacing
+            BoundsBase<float> patternMsgBounds = patternMsg->GetBounds();
+
+            BoundsBase<float> patternDownLinePos = patternDownLine->GetBounds();
+
+            // Calculate Y position: below message with proper spacing from pattern
+            lineBounds.y0 = patternDownLinePos.y0 - (patternMsgBounds.height + patternMsgBounds.y0)
+                + msgBounds.height + patternMsgBounds.height;
+        }
+        else
+        {
+            // No message window - position down line below title and up line
+            //m3d::Object::IsDirectChild(m_wndTitle);
+            //m3d::Object::IsDirectChild(m_wndUpLine);
+
+            // Get title bounds
+            BoundsBase<float> titleBounds = m_wndTitle->GetBounds();
+
+            // Get pattern references for positioning
+            m3d::ui::Wnd* patternUpLine = static_cast<m3d::ui::Wnd*>(
+                m_pattern->GetChildByName(m_aif.m_wndUpLineName));
+
+            m3d::ui::Wnd* patternTitle = static_cast<m3d::ui::Wnd*>(
+                m_pattern->GetChildByName(m_aif.m_wndTitleName));
+
+            // Get pattern positions to calculate proper spacing
+            BoundsBase<float> patternUpLinePos = patternUpLine->GetBounds();
+
+            BoundsBase<float> patternTitleBounds = patternTitle->GetBounds();
+
+            // Calculate Y position: below title/up-line with proper spacing from pattern
+            lineBounds.y0 = patternUpLinePos.y0 - (patternTitleBounds.height + patternTitleBounds.y0)
+                + titleBounds.height + patternTitleBounds.height;
+        }
+
+        // Apply the calculated bounds to the down line
+        m_wndDownLine->SetBounds(lineBounds, true);
     }
 }
 
@@ -568,11 +667,43 @@ int MsgBox::LoadPattern()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void MsgBox::SetButtonsBounds(PointBase<float> const& buttonsSza)
+void MsgBox::SetButtonsBounds(PointBase<float> const& buttonsSz)
 {
+    // TODO: check this!!!!!!
     if ((m_gameDataFlags & 1) != 0 && (m_msgBoxFlags & 3) != 0)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CStr buttonName1 = m_aif.m_buttonName + CStr(1);
+        m3d::ui::Wnd* patternButton1 = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(buttonName1));
+        auto button1Bounds = patternButton1->GetBounds();
+
+        //CStr buttonName0 = m_aif.m_buttonName + CStr(0);
+        //m3d::ui::Wnd* patternButton0 = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(buttonName0));
+        //auto button0Bounds = patternButton0->GetBounds();
+
+        auto downLineBounds = m_wndDownLine->GetBounds();
+        for (int i = 0; i < 3; ++i)
+        {
+            if (IsDirectChild(m_buttons[i]))
+            {
+                auto btnBounds = m_buttons[i]->GetBounds();
+                btnBounds.x0 = button1Bounds.x0;
+                button1Bounds.x0 += downLineBounds.x0;
+
+                m3d::ui::Wnd* buttonWnd = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(m_buttons[i]->GetName()));
+                m3d::ui::Wnd* downLineNameWnd = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(m_aif.m_wndDownLineName));
+
+                auto actualBtnBounds = buttonWnd->GetBounds();
+                auto downLineNameBounds = downLineNameWnd->GetBounds();
+
+                auto y0 = actualBtnBounds.y0;
+                auto v22 = y0 - (float)(downLineNameBounds.height + downLineNameBounds.y0);
+
+                btnBounds.y0 = (downLineBounds.height + btnBounds.y0) + v22;
+
+                m_buttons[i]->SetBounds(btnBounds, true);
+
+            }
+        }
     }
 }
 

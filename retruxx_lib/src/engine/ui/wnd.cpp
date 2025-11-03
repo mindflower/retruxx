@@ -601,9 +601,14 @@ namespace m3d
             m_id = id;
         }
 
-        void Wnd::StopAnimation(bool)
+        void Wnd::StopAnimation(bool returnToBaseOrigin)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (returnToBaseOrigin)
+            {
+                m_bounds.x0 = m_baseOrigin.x;
+                m_bounds.y0 = m_baseOrigin.y;
+            }
+            OnEndAnimation(true);
         }
 
         PointBase<float> Wnd::ToWindow(PointBase<float> const&) const
@@ -1063,9 +1068,41 @@ namespace m3d
             RETRUXX_NOT_IMPLEMENTED;
         }
 
-        void Wnd::OnEndAnimation(bool)
+        void Wnd::OnEndAnimation(bool bUrgent)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (m_currentAnimation.m_animationType != AnimationInfo::ANIMATIONTYPE_INVALID)
+            {
+                if (m_animationSoundMoveChannelId != -1)
+                {
+                    if (M3D_APP->m_sound)
+                    {
+                        M3D_APP->m_sound->StopChannel(
+                            m_animationSoundMoveChannelId);
+                    }
+                    m_animationSoundMoveChannelId = -1;
+                }
+                if (m_currentAnimation.m_bSoundStopEnabled)
+                {
+                    CStr stopName = m_currentAnimation.m_soundStopName;
+                    if (stopName.empty())
+                    {
+                        stopName = "CONTROL_SOUND_ANIMATION_STOP_DEFAULT";
+                    }
+
+                    bool bLooped = false;
+                    GetGfxServer()->PlayControlSound(stopName, &bLooped);
+                }
+                m_currentAnimation.m_animationType = AnimationInfo::ANIMATIONTYPE_INVALID;
+                m_currentAnimation.m_purpose = AnimationInfo::PURPOSE_UNKNOWN;
+                if (bUrgent)
+                {
+                    M3D_APP->ImmediateMessage(42, (int)this, 0, 0, 0,{}, {});
+                }
+                else
+                {
+                    M3D_APP->EnqueueMessage( 42, (int)this, 0, 0, 0, {}, {});
+                }
+            }
         }
 
         int Wnd::OnObtainingFocus()

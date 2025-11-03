@@ -4,14 +4,20 @@
 #include "game/m3dgame.h"
 #include "server/quest.h"
 
+QuestInfo::AuxLevelInfo::~AuxLevelInfo()
+{
+    // TODO: check this
+    delete m_coordinate;
+}
+
+QuestInfo::~QuestInfo() = default;
+
 int QuestInfoManager::SaveModifiedQuestInfosToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-QuestInfoManager::QuestInfoManager()
-{
-}
+QuestInfoManager::QuestInfoManager() = default;
 
 QuestInfo const* QuestInfoManager::GetQuestInfoByQuestInfoName(CStr const&) const
 {
@@ -119,7 +125,12 @@ void QuestInfoManager::OnEndLevel()
 
 void QuestInfoManager::ClearQuestInfos()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto& questInfo : m_questInfos)
+    {
+        delete questInfo.second;
+    }
+
+    m_questInfos.clear();
 }
 
 QuestInfo* QuestInfoManager::CreateQuestInfoForDynamicQuest(int) const
@@ -164,7 +175,12 @@ QuestInfo const* QuestInfoManager::AddQuestInfoForDynamicQuest(int)
 
 void QuestInfoManager::ClearDynamicQuestInfos()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto& questInfo : m_dynamicQuestInfos)
+    {
+        delete questInfo.second;
+    }
+
+    m_dynamicQuestInfos.clear();
 }
 
 void QuestInfoManager::OnEndLevelBeforeContinuousLevel()

@@ -1,6 +1,8 @@
 #include "optionswnd.h"
 
+#include "controloptionswnd.h"
 #include "gamemenu.h"
+#include "videooptionswnd.h"
 #include "core/kernel.h"
 #include "core/log.h"
 #include "game/m3dgame.h"
@@ -173,9 +175,82 @@ void OptionsWnd::SelectTabButton(Tab tabId)
     }
 }
 
-int OptionsWnd::ApplyTabChanges(Tab tab)
+int OptionsWnd::ApplyTabChanges(Tab tabId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code
+    // Check if there are any game data changes that need to be applied
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        switch (tabId)
+        {
+        case TAB_VIDEO:
+        {
+            // Get the video options window
+            ref_ptr<m3d::ui::Wnd>& videoWindowRef = m_optionWindows[0];
+            if (videoWindowRef && videoWindowRef->IsKindOf(&VideoOptionsWnd::m_classVideoOptionsWnd))
+            {
+                VideoOptionsWnd* videoWnd = static_cast<VideoOptionsWnd*>(&*videoWindowRef);
+
+                // Check if video settings have been modified
+                if (videoWnd->IsChanged())
+                {
+                    // TOD: check this!
+                    // Show warning dialog about potential performance impact
+                    auto warningResult = videoWnd->RunChangeWarningDlg();
+
+                    switch (warningResult)
+                    {
+                    case m3d::ui::MBX_RET_CANCEL:
+                        // User canceled - don't apply changes
+                        break;
+
+                    case m3d::ui::MBX_RET_USER:
+                    {
+                        // User confirmed - apply all video changes
+                        videoWnd->ApplyResolution();
+                        videoWnd->ApplyGamma();
+                        videoWnd->ApplyFarDistance();
+                        videoWnd->ApplyGrass();
+                        videoWnd->ApplyShadows();
+                        videoWnd->ApplyWaterQuality();
+                        videoWnd->ApplyAntialiasing();
+                        videoWnd->ApplyFiltration();
+                        videoWnd->ApplyBlum();
+
+                        // Reset modified flag
+                        videoWnd->m_bVideoOptionsChanged = false;
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+
+        case TAB_CONTROL:
+        {
+            // Get the control options window
+            ref_ptr<m3d::ui::Wnd> controlWindowRef = m_optionWindows[2];
+            if (controlWindowRef && controlWindowRef->IsKindOf(&ControlOptionsWnd::m_classControlOptionsWnd))
+            {
+                ControlOptionsWnd* controlWnd = static_cast<ControlOptionsWnd*>(&*controlWindowRef);
+
+                // Apply control changes (no confirmation needed)
+                return controlWnd->ApplyChanges(false);
+            }
+            break;
+        }
+
+        default:
+            // Other tabs (audio, game, etc.) - no special handling needed
+            break;
+        }
+    }
+
+    // Changes applied successfully or no changes to apply
+    return 1;
 }
 
 int OptionsWnd::OnAfterRemoveFromWndStation()

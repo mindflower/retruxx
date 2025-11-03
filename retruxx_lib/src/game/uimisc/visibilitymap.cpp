@@ -66,7 +66,8 @@ VisibilityMap::VisibilityMap()
 
 VisibilityMap::~VisibilityMap()
 {
-	RETRUXX_NOT_IMPLEMENTED;
+	Clear();
+	M3D_RENDERER->ReleaseTexture(m_circlePatternTex);
 }
 
 m3d::rend::TexHandle VisibilityMap::GetBg() const

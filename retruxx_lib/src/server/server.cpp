@@ -931,7 +931,22 @@ namespace ai
 
     void CServer::Clear()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::DynamicScene::Clear();
+        m_pObjects->Clear(0);
+        ai::thePlayer = 0;
+
+        delete m_pExternalPaths;
+        m_pExternalPaths = 0;
+
+        delete m_pPlayerPassMap;
+        m_pPlayerPassMap = 0;
+
+        delete theProcessManager;
+        theProcessManager = 0;
+
+        delete pGlobalMap;
+        pGlobalMap = 0;
+        m_level = 0;
     }
 
     void CServer::ResetCinematicObjects()

@@ -1,4 +1,7 @@
 #include "videooptionswnd.h"
+
+#include <cassert>
+
 #include "ui/comboboxwnd.h"
 #include "ui/slider.h"
 #include "ui/button.h"
@@ -782,7 +785,163 @@ void VideoOptionsWnd::UpdateGammaPrevNextButtonsState()
 
 VideoOptionsWnd::GraphicQuality VideoOptionsWnd::DetectCurrentGraphicQuality() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code
+    // Create a set to track possible graphic quality levels that match current settings
+    std::set<VideoOptionsWnd::GraphicQuality> possibleGraphicQualities;
+
+    // Check all three graphic quality levels: LOW, MEDIUM, MAX
+    for (int qualityLevel = GRAPHIC_QUALITY_LOW; qualityLevel <= GRAPHIC_QUALITY_MAX; qualityLevel++)
+    {
+        GraphicQuality currentQuality = static_cast<GraphicQuality>(qualityLevel);
+
+        // Add this quality level to our set of possibilities
+        possibleGraphicQualities.insert(currentQuality);
+
+        // Get expected view distance divider for this quality level
+        float expectedViewDistanceDivider = 0.0f;
+        switch (currentQuality)
+        {
+        case GRAPHIC_QUALITY_LOW:
+            expectedViewDistanceDivider = 0.5f;
+            break;
+        case GRAPHIC_QUALITY_MEDIUM:
+        case GRAPHIC_QUALITY_MAX:
+            expectedViewDistanceDivider = 1.0f;
+            break;
+        default:
+            assert(false);
+        }
+
+        // Check if actual view distance divider matches expected
+        float actualViewDistanceDivider = m3d::g_Kernel->GetEngineCfg().m_lsViewDistanceDivider.GetF();
+        if (expectedViewDistanceDivider != actualViewDistanceDivider)
+        {
+            possibleGraphicQualities.erase(currentQuality);
+            continue;
+        }
+
+        // Get expected grass draw distance for this quality level
+        float expectedGrassDistance = 0.0f;
+        switch (currentQuality)
+        {
+        case GRAPHIC_QUALITY_LOW:
+            expectedGrassDistance = VideoOptionsWnd::m_grassDistances[0];
+            break;
+        case GRAPHIC_QUALITY_MEDIUM:
+            expectedGrassDistance = VideoOptionsWnd::m_grassDistances[1];
+            break;
+        case GRAPHIC_QUALITY_MAX:
+            expectedGrassDistance = VideoOptionsWnd::m_grassDistances[2];
+            break;
+            default:
+                assert(false);
+        }
+
+        // Check if actual grass draw distance matches expected
+        float actualGrassDistance = m3d::g_Kernel->GetEngineCfg().m_g_grassDrawDist.GetF();
+        if (expectedGrassDistance != actualGrassDistance)
+        {
+            possibleGraphicQualities.erase(currentQuality);
+            continue;
+        }
+
+        // Get expected shadow settings for this quality level
+        const VideoOptionsWnd::ShadowSettings* expectedShadowSettings = nullptr;
+        switch (currentQuality)
+        {
+        case GRAPHIC_QUALITY_LOW:
+            expectedShadowSettings = &VideoOptionsWnd::m_shadowSettings[0];
+            break;
+        case GRAPHIC_QUALITY_MEDIUM:
+            expectedShadowSettings = &VideoOptionsWnd::m_shadowSettings[1];
+            break;
+        case GRAPHIC_QUALITY_MAX:
+            expectedShadowSettings = &VideoOptionsWnd::m_shadowSettings[2];
+            break;
+        default:
+            assert(false);
+        }
+
+        // Check if actual shadow settings match expected
+        const VideoOptionsWnd::ShadowSettings actualShadowSettings = GetCurrentShadowSettings();
+        if (!(*expectedShadowSettings == actualShadowSettings))
+        {
+            possibleGraphicQualities.erase(currentQuality);
+            continue;
+        }
+
+        // Check water quality setting
+        int expectedWaterQuality = GetDefaultWaterQualityForGraphicQuality(currentQuality);
+        int actualWaterQuality = m3d::g_Kernel->GetEngineCfg().m_r_waterQuality.GetI();
+        if (expectedWaterQuality != actualWaterQuality)
+        {
+            possibleGraphicQualities.erase(currentQuality);
+            continue;
+        }
+
+        // Check anti-aliasing (multisampling) setting
+        int expectedAntiAliasing = VideoOptionsWnd::m_antialiasings[0]; // Assuming index 0 for basic check
+        int actualAntiAliasing = m3d::g_Kernel->GetEngineCfg().m_r_multiSamplesNum.GetI();
+        if (expectedAntiAliasing != actualAntiAliasing)
+        {
+            possibleGraphicQualities.erase(currentQuality);
+            continue;
+        }
+
+        // Check texture filtration setting
+        int expectedTextureFiltration = VideoOptionsWnd::m_filtrations[0]; // Default to lowest
+        switch (currentQuality)
+        {
+        case GRAPHIC_QUALITY_MEDIUM:
+            expectedTextureFiltration = VideoOptionsWnd::m_filtrations[1];
+            break;
+        case GRAPHIC_QUALITY_MAX:
+            expectedTextureFiltration = VideoOptionsWnd::m_filtrations[2];
+            break;
+        default:
+            assert(false);
+        }
+
+        int actualTextureFiltration = m3d::g_Kernel->GetEngineCfg().m_g_texturesFilter.GetI();
+        if (expectedTextureFiltration != actualTextureFiltration)
+        {
+            possibleGraphicQualities.erase(currentQuality);
+            continue;
+        }
+
+        // Check bloom quality setting
+        int expectedBloomQuality = VideoOptionsWnd::m_blumQualities[0]; // Default to lowest
+        switch (currentQuality)
+        {
+        case GRAPHIC_QUALITY_MEDIUM:
+            expectedBloomQuality = VideoOptionsWnd::m_blumQualities[1];
+            break;
+        case GRAPHIC_QUALITY_MAX:
+            expectedBloomQuality = VideoOptionsWnd::m_blumQualities[2];
+            break;
+        default:
+                assert(false);
+        }
+
+        int actualBloomQuality = m3d::g_Kernel->GetEngineCfg().m_g_postEffectBloom.GetI();
+        if (expectedBloomQuality != actualBloomQuality)
+        {
+            possibleGraphicQualities.erase(currentQuality);
+            continue;
+        }
+    }
+
+    // Determine the result based on which quality levels matched
+    if (!possibleGraphicQualities.empty())
+    {
+        // Return the highest matching quality level (since set is ordered)
+        return *possibleGraphicQualities.rbegin();
+    }
+    else
+    {
+        // No preset matches - return CUSTOM quality level
+        return GRAPHIC_QUALITY_CUSTOM;
+    }
 }
 
 int VideoOptionsWnd::GetDefaultBlumForGraphicQuality(GraphicQuality) const
@@ -1188,7 +1347,7 @@ CStr VideoOptionsWnd::WaterQuality2Str(WaterQuality waterQuality) const
 
 bool VideoOptionsWnd::IsChanged() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_bVideoOptionsChanged;
 }
 
 void VideoOptionsWnd::ApplyGrass()
@@ -1510,7 +1669,29 @@ void VideoOptionsWnd::ApplyGraphicQuality()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int VideoOptionsWnd::GetDefaultWaterQualityForGraphicQuality(GraphicQuality) const
+int VideoOptionsWnd::GetDefaultWaterQualityForGraphicQuality(GraphicQuality graphicQuality) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    int defaultVal = 1;
+    if (graphicQuality)
+    {
+        auto v3 = graphicQuality - 1;
+        if (!v3)
+        {
+            defaultVal = 2;
+            VideoOptionsWnd::ValidateWaterQualityVal(defaultVal);
+            return defaultVal;
+        }
+        if (v3 == 1)
+        {
+            defaultVal = 3;
+            VideoOptionsWnd::ValidateWaterQualityVal(defaultVal);
+            return defaultVal;
+        }
+    }
+    else
+    {
+        defaultVal = VideoOptionsWnd::m_waterQualities[0];
+    }
+    ValidateWaterQualityVal(defaultVal);
+    return defaultVal;
 }

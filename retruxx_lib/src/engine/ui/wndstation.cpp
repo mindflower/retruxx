@@ -473,7 +473,30 @@ namespace m3d
 
         void WndStation::StopAllAnimations()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // Process children using iterative DFS
+            std::vector<m3d::Object*> stack;
+            stack.push_back(this);
+
+            while (!stack.empty())
+            {
+                auto* current = stack.back();
+                stack.pop_back();
+
+                // Process all siblings of the current node
+                auto* sibling = dynamic_cast<Wnd*>(current);
+                while (sibling)
+                {
+                    sibling->StopAnimation(true);
+                    // If this sibling has children, add to stack for processing
+                    if (sibling->GetFirstChild())
+                    {
+                        stack.push_back(sibling->GetFirstChild());
+                    }
+
+                    // Move to next sibling
+                    sibling = dynamic_cast<Wnd*>(sibling->GetNextSibling());
+                }
+            }
         }
 
         Wnd* WndStation::GetFocus() const

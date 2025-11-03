@@ -515,9 +515,22 @@ RepliesManager* TruxxUiManager::GetRepliesManager() const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int TruxxUiManager::Reset(bool)
+int TruxxUiManager::Reset(bool beforeContinuousLevel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto clearRes = GUI_Clear(beforeContinuousLevel);
+    // TODO: check this
+    m_msgManager->Clear(true);
+    m_helpManager->HideCurrentHelpWindow();
+    if (!beforeContinuousLevel)
+    {
+        m_takenQuestIds.clear();
+        m_navPointManager->Clear();
+        m_weaponGroupManager->Clear();
+    }
+    m_currentTownId = -1;
+    m_bInGameMenuMode = false;
+    m_bIsPlayerDead = false;
+    return clearRes != 0;
 }
 
 WeaponGroupManager* TruxxUiManager::GetWeaponGroupManager() const
@@ -1185,6 +1198,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     switch (guiEventId)
     {
     case 17:
+    case 30:
     case 37:
     case 41:
     case 42:

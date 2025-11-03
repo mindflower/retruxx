@@ -35,7 +35,12 @@ int NavPointManager::RemoveNavPointById(int)
 
 void NavPointManager::Clear()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto& point : m_navPoints)
+    {
+        RemoveNavPointById(point.first);
+    }
+    m_navPoints.clear();
+    m_nextNavPointId = 0;
 }
 
 bool NavPointManager::CanNavPointOfTypeBeAdded(CStr const&, NavPoint::NavPointType, bool) const

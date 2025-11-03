@@ -38,7 +38,7 @@ int MsgManager::Init(bool bGlobal)
     return LoadFromXml(fileName, bGlobal);
 }
 
-void MsgManager::Clear(bool)
+void MsgManager::Clear(bool bGlobal)
 {
     // TODO: implement MsgManager::Clear
     //RETRUXX_NOT_IMPLEMENTED;

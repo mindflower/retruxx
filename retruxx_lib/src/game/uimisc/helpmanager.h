@@ -1,102 +1,101 @@
 #pragma once
 #include <game/profile.h>
 
-class HelpManager :  public m3d::Object
+class HelpManager : public m3d::Object
 {
+    friend class TruxxUiManager;
 public:
     enum HelpId
     {
-        HELP_ID_MAIN_GAME_INTERFACE = 0x0,
-        HELP_ID_INVENTORY = 0x1,
-        HELP_ID_VEHICLE_CHARACTERISTICS = 0x2,
-        HELP_ID_QUESTLOG_QUESTS = 0x3,
-        HELP_ID_QUESTLOG_QUEST_ITEMS = 0x4,
-        HELP_ID_LOCAL_MAP = 0x5,
-        HELP_ID_GLOBAL_MAP = 0x6,
-        HELP_ID_HISTORY = 0x7,
-        HELP_ID_BOOKS = 0x8,
-        HELP_ID_RELATIONS = 0x9,
-        HELP_ID_STATS = 0xA,
-        HELP_ID_ENCYCLOPAEDIA = 0xB,
-        HELP_ID_SHOP_GUNS = 0xC,
-        HELP_ID_SHOP_GOODS = 0xD,
-        HELP_ID_WORKSHOP = 0xE,
-        HELP_ID_WORKSHOP_CABINS = 0xF,
-        HELP_ID_WORKSHOP_BASKETS = 0x10,
-        HELP_ID_WORKSHOP_VEHICLE = 0x11,
-        HELP_ID_WORKSHOP_SKIN = 0x12,
-        HELP_ID_WORKSHOP_REFUEL = 0x13,
-        HELP_ID_WORKSHOP_REPAIR = 0x14,
-        HELP_ID_WORKSHOP_RECHARGE = 0x15,
-        HELP_ID_BUY_CABIN = 0x16,
-        HELP_ID_BUY_BASKET = 0x17,
-        HELP_ID_BUY_VEHICLE = 0x18,
-        HELP_ID_TOWN = 0x19,
-        HELP_ID_BAR = 0x1A,
-        HELP_ID_TALK_WITH_NPC = 0x1B,
-        HELP_ID_RADAR = 0x1C,
-        HELP_ID_SPEEDOMETER = 0x1D,
-        HELP_ID_HP = 0x1E,
-        HELP_ID_FUEL = 0x1F,
-        HELP_ID_DURABILITY = 0x20,
-        HELP_ID_TIMER = 0x21,
-        HELP_ID_WEAPON = 0x22,
-        HELP_ID_FADING_MESSAGES = 0x23,
-        HELP_ID_IMPORTANT_FADING_MESSAGES = 0x24,
-        HELP_ID_TARGET_INFO = 0x25,
-        HELP_ID_TARGET_CAPTURE = 0x26,
-        HELP_ID_ACTION_ICONS = 0x27,
-        HELP_ID_HOW_TO_USE_MAIN_GAME_INTERFACE_HELP = 0x28,
-        NUM_HELP_IDS = 0x29,
-        HELP_ID_INVALID = 0x29,
-    };
-
-    class AuxInfo
-    {
-    public:
-        AuxInfo();
-
-    public:
-        CStr m_strTitleSuffix = "_title";
+        HELP_ID_MAIN_GAME_INTERFACE = 0,
+        HELP_ID_INVENTORY = 1,
+        HELP_ID_VEHICLE_CHARACTERISTICS = 2,
+        HELP_ID_QUESTLOG_QUESTS = 3,
+        HELP_ID_QUESTLOG_QUEST_ITEMS = 4,
+        HELP_ID_LOCAL_MAP = 5,
+        HELP_ID_GLOBAL_MAP = 6,
+        HELP_ID_HISTORY = 7,
+        HELP_ID_BOOKS = 8,
+        HELP_ID_RELATIONS = 9,
+        HELP_ID_STATS = 10,
+        HELP_ID_ENCYCLOPAEDIA = 11,
+        HELP_ID_SHOP_GUNS = 12,
+        HELP_ID_SHOP_GOODS = 13,
+        HELP_ID_WORKSHOP = 14,
+        HELP_ID_WORKSHOP_CABINS = 15,
+        HELP_ID_WORKSHOP_BASKETS = 16,
+        HELP_ID_WORKSHOP_VEHICLE = 17,
+        HELP_ID_WORKSHOP_SKIN = 18,
+        HELP_ID_WORKSHOP_REFUEL = 19,
+        HELP_ID_WORKSHOP_REPAIR = 20,
+        HELP_ID_WORKSHOP_RECHARGE = 21,
+        HELP_ID_BUY_CABIN = 22,
+        HELP_ID_BUY_BASKET = 23,
+        HELP_ID_BUY_VEHICLE = 24,
+        HELP_ID_TOWN = 25,
+        HELP_ID_BAR = 26,
+        HELP_ID_TALK_WITH_NPC = 27,
+        HELP_ID_RADAR = 28,
+        HELP_ID_SPEEDOMETER = 29,
+        HELP_ID_HP = 30,
+        HELP_ID_FUEL = 31,
+        HELP_ID_DURABILITY = 32,
+        HELP_ID_TIMER = 33,
+        HELP_ID_WEAPON = 34,
+        HELP_ID_FADING_MESSAGES = 35,
+        HELP_ID_IMPORTANT_FADING_MESSAGES = 36,
+        HELP_ID_TARGET_INFO = 37,
+        HELP_ID_TARGET_CAPTURE = 38,
+        HELP_ID_ACTION_ICONS = 39,
+        HELP_ID_HOW_TO_USE_MAIN_GAME_INTERFACE_HELP = 40,
+        NUM_HELP_IDS = 41,
+        HELP_ID_INVALID = 41,
     };
 
 public:
-    CStr GetHelpMsgByHelpId(CStr const &) const ;
-    static CStr __fastcall Enumered2StrHelpId(HelpId);
-    void ShowHelp(CStr const &,bool);
-    static m3d::Object * CreateObject();
-    static HelpId __fastcall Str2EnumeredHelpId(CStr const &);
+    void ShowHelp(const CStr& strHelpId, bool bAllowDisableAutoHelp);
+    int GameDataUpdate(void* data, int dataType);
     void Clear();
-    virtual m3d::Class * GetClass() const ;
+    void EnableAutoHelp(bool bEnable);
+    bool IsAutoHelpEnabled() const;
+    CStr GetHelpMsgByHelpId(const CStr& strHelpId) const;
+    CStr GetHelpTitleByHelpId(const CStr& strHelpId) const;
+    static HelpManager::HelpId __fastcall Str2EnumeredHelpId(const CStr& strHelpId);
+    static CStr __fastcall Enumered2StrHelpId(HelpManager::HelpId helpId);
     void ResetAutoHelp();
-    static m3d::Class * GetBaseClass();
-    void EnableAutoHelp(bool);
-    virtual m3d::Object * Clone();
-    CStr GetHelpTitleByHelpId(CStr const &) const ;
-    virtual ~HelpManager();
-    bool IsAutoHelpEnabled() const ;
-    int GameDataUpdate(void *,int);
+
+    using PredefinedHelpWindowsMap = std::map<enum HelpManager::HelpId, int, std::less<enum HelpManager::HelpId>, std::allocator<std::pair<enum HelpManager::HelpId const, int> > >;
+    using PredefinedHelpWindowsPair = std::pair<enum HelpManager::HelpId, int>;
+    struct AuxInfo
+    {
+        /* 0x0000 */ CStr m_strTitleSuffix;
+        AuxInfo(const HelpManager::AuxInfo&);
+        AuxInfo();
+    }; /* size: 0x000c */
 
 protected:
-    HelpManager();
-    HelpManager(HelpManager const &);
-    void ShowHelpEnumered(HelpId,bool);
-    void HideCurrentHelpWindow();
-    void MarkHelpAsShown(HelpId);
-    ProfileParam GetProfileParamIdByHelpId(HelpId) const ;
-    int GetPredefinedWndGuiIdByHelpId(HelpId) const ;
-    int GetCurHelpWndGuiId() const ;
-    void GetAllHelpWndGuiIds(std::vector<int> &) const ;
+    void ShowHelpEnumered(HelpManager::HelpId helpId, bool bAllowDisableAutoHelp);
+    int GetPredefinedWndGuiIdByHelpId(HelpManager::HelpId helpId) const;
     void OnHelpImpulse();
-    HelpId CalcHelpIdForCurrentInterfaceState() const ;
-    bool IsHelpIdValidForCurrentInterfaceState(HelpId) const ;
-    bool WasHelpShown(HelpId) const ;
-    void OnHelpEvent(void *);
+    void OnHelpEvent(void* data);
+    HelpManager::HelpId CalcHelpIdForCurrentInterfaceState() const;
+    bool IsHelpIdValidForCurrentInterfaceState(HelpManager::HelpId helpId) const;
+    void HideCurrentHelpWindow();
+    int GetCurHelpWndGuiId() const;
+    void GetAllHelpWndGuiIds(std::vector<int, std::allocator<int> >& guiIds) const;
+    bool WasHelpShown(HelpManager::HelpId helpId) const;
+    ProfileParam GetProfileParamIdByHelpId(HelpManager::HelpId helpId) const;
+    void MarkHelpAsShown(HelpManager::HelpId helpId);
+    /* 0x0034 */ std::map<enum HelpManager::HelpId, int, std::less<enum HelpManager::HelpId>, std::allocator<std::pair<enum HelpManager::HelpId const, int> > > m_predefinedHelpWindows;
+    /* 0x0040 */ HelpManager::AuxInfo m_aif;
+    HelpManager();
+    HelpManager(const HelpManager& rhs);
 
 public:
-    RT_CLASS_DECLARE(HelpManager);
-
-private:
-    std::map<HelpId,int> m_predefinedHelpWindows;
-    AuxInfo m_aif;
-};
+    virtual  ~HelpManager() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classHelpManager;
+}; /* size: 0x004c */

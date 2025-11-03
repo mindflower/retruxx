@@ -789,7 +789,10 @@ namespace ai
 
 	void DynamicScene::Clear()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (contactGroup)
+		{
+			dJointGroupEmpty(contactGroup);
+		}
 	}
 
 	m3d::Class* DynamicScene::GetClass() const

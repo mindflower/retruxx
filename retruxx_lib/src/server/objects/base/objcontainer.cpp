@@ -991,8 +991,14 @@ namespace ai
         return objId;
     }
 
-    void ObjContainer::Clear(bool)
+    void ObjContainer::Clear(bool bDeleteObjectsPassedToAnotherMap)
     {
+        for (auto iter = begin(); iter != end(); ++iter)
+        {
+            M3D_ASSERT(*iter);
+            M3D_ASSERT(GetEntityByObjId(iter.m_nodeId + (m_allObjects.m_records[iter.m_nodeId].m_totalObjects << BITS_IN_MAX_OBJECTS)));
+
+        }
         RETRUXX_NOT_IMPLEMENTED;
     }
 

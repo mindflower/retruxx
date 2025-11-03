@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <server/objects/player.h>
 
+#include "m3dapp.h"
 #include "server/objects/vehicle.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(WeaponGroupManager, SaveWeaponGroups)
@@ -212,7 +213,17 @@ int WeaponGroupManager::GetWeaponGroupIdForWeapon(CStr const&) const
 
 void WeaponGroupManager::Clear()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto& group : m_weaponGroups)
+    {
+        auto* weaponGroup = group.second;
+        if (weaponGroup)
+        {
+            weaponGroup->ClearWeapons();
+        }
+    }
+    // TODO: clear?
+
+    M3D_APP->ImmediateMessage(65668, -1, 0, 0, 0, {}, {});
 }
 
 WeaponGroupManager::WeaponGroupManager(WeaponGroupManager const&)
