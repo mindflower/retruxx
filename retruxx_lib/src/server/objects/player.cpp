@@ -664,7 +664,12 @@ namespace ai
 
     void Player::Remove()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::Remove();
+        auto vehicle = GetVehicle();
+        if (vehicle)
+        {
+            vehicle->Remove();
+        }
     }
 
     void Player::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -733,7 +738,9 @@ namespace ai
 
     Player::~Player()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        delete m_infoCone;
+
     }
 
     bool Player::_GetPropertyDefaultInternal(int, m3d::AIParam&) const

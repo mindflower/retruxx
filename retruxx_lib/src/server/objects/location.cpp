@@ -14,6 +14,7 @@
 #include <server/server.h>
 
 #include "level.h"
+#include "npc.h"
 #include "world.h"
 
 namespace ai
@@ -122,7 +123,20 @@ namespace ai
 
     void Location::Remove()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::Remove();
+        for (auto& npc :m_npcs)
+        {
+            npc->Remove();
+        }
+
+        for (auto id : m_idsWasInside)
+        {
+            auto obj = theObjects->GetEntityByObjId(id);
+            if (obj)
+            {
+                OnObjectOut(obj);
+            }
+        }
     }
 
     CStr Location::GetLevelNameFromPassageAddress(CStr const& passageAddress)
@@ -387,10 +401,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Location::~Location()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    Location::~Location() = default;
 
     void Location::_OnGameStart(Event const& evn)
     {

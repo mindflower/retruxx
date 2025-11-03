@@ -94,10 +94,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    ProcessManager::~ProcessManager()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    ProcessManager::~ProcessManager() = default;
 
     void ProcessManager::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {

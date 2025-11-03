@@ -282,17 +282,7 @@ namespace ai
 
     ObjContainer::InnerContainer::InnerContainer()
     {
-        this->m_firstNodeId = -1;
-        this->m_lastNodeId = -1;
-        this->m_size = 0;
-
-        m_records.resize(ObjContainerSize, {});
-        m_freePlaces.reserve(ObjContainerSize);
-        for (int i = m_records.size() - 1; i!=0; --i)
-        {
-            m_records[i].m_id = i;
-            m_freePlaces.push_back(i);
-        }
+        Clear();
     }
 
     void ObjContainer::InnerContainer::EraseNode(Node& node, bool deleteObj)
@@ -422,7 +412,19 @@ namespace ai
 
     void ObjContainer::InnerContainer::Clear()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_records.clear();
+        m_freePlaces.clear();
+
+        m_firstNodeId = -1;
+        m_lastNodeId = -1;
+        m_size = 0;
+
+        m_records.resize(MAX_OBJECTS, {});
+        for (int i = m_records.size() - 1; i != 0; --i)
+        {
+            m_records[i].m_id = i;
+            m_freePlaces.push_back(i);
+        }
     }
 
     unsigned ObjContainer::InnerContainer::size() const
@@ -997,9 +999,26 @@ namespace ai
         {
             M3D_ASSERT(*iter);
             M3D_ASSERT(GetEntityByObjId(iter.m_nodeId + (m_allObjects.m_records[iter.m_nodeId].m_totalObjects << BITS_IN_MAX_OBJECTS)));
+            if (!bDeleteObjectsPassedToAnotherMap)
+            {
+                if (iter->m_bPassedToAnotherMap)
+                    continue;
+            }
 
+            iter->Remove();
         }
-        RETRUXX_NOT_IMPLEMENTED;
+       
+        Purge();
+        m_allObjects.Clear();
+        m_updatingObjects.Clear();
+        m_nameToIdMap.clear();
+        m_ObjectFullNames.clear();
+        m_objIdsToUpdate.clear();
+        m_objIdsToNotUpdate.clear();
+        m_objectsToPostCollide.clear();
+        m_objIdsToRelinkSceneGraphNode.clear();
+        m_objIdsToRemove.clear();
+        M3D_APP->ImmediateMessage(66543, 0, 0, 0, 0, {}, {});
     }
 
     m3d::Class* ObjContainer::GetClass() const

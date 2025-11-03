@@ -234,7 +234,7 @@ namespace ai
 
     Map::~Map()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        delete[] pField;
     }
 
     void Map::IncCircle(CVector2 const&, float, unsigned char)

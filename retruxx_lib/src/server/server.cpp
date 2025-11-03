@@ -901,8 +901,48 @@ namespace ai
 
     void CServer::ClearOnce()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m3d::TraceLineManager::InitTraceLineRay(false);
+        if (m_pDynamicScene)
+        {
+            m_pDynamicScene->DecRef();
+            m_pDynamicScene = nullptr;
+            ai::SetDynamicScene(m_pDynamicScene);
+        }
+
+        if (pAIManager)
+        {
+            pAIManager->DecRef();
+            pAIManager = nullptr;
+            ai::SetAIManager(pAIManager);
+        }
+
+        DynamicScene::ClearOnce();
+
+        delete ai::thePrototypeManager;
+        thePrototypeManager = nullptr;
+
+        delete ai::theQuestStateManager;
+        theQuestStateManager = nullptr;
+
+        delete m_pAffixManager;
+        m_pAffixManager = nullptr;
+
+        delete ai::theResourceManager;
+        theResourceManager = nullptr;
+
+        delete ai::theStatisticManager;
+        theStatisticManager = nullptr;
+
+        delete pAIManager;
+        pAIManager = nullptr;
+
+        delete theRelationship;
+        theRelationship = nullptr;
+
+        delete theVehiclesGeneratorInfoCache;
+        theVehiclesGeneratorInfoCache = nullptr;
     }
+
 
     void CServer::EndCinematic()
     {

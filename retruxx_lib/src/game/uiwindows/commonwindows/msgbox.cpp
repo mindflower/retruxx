@@ -676,9 +676,9 @@ void MsgBox::SetButtonsBounds(PointBase<float> const& buttonsSz)
         m3d::ui::Wnd* patternButton1 = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(buttonName1));
         auto button1Bounds = patternButton1->GetBounds();
 
-        //CStr buttonName0 = m_aif.m_buttonName + CStr(0);
-        //m3d::ui::Wnd* patternButton0 = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(buttonName0));
-        //auto button0Bounds = patternButton0->GetBounds();
+        CStr buttonName0 = m_aif.m_buttonName + CStr(0);
+        m3d::ui::Wnd* patternButton0 = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(buttonName0));
+        auto button0Bounds = patternButton0->GetBounds();
 
         auto downLineBounds = m_wndDownLine->GetBounds();
         for (int i = 0; i < 3; ++i)

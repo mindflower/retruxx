@@ -483,10 +483,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Trigger::~Trigger()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    Trigger::~Trigger() = default;
 
     void Trigger::_LoadTriggerRuntimesFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {

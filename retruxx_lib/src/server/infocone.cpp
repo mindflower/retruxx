@@ -28,7 +28,8 @@ namespace ai
 
     InfoCone::~InfoCone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        delete m_sphere;
+        delete m_ray;
     }
 
     bool InfoCone::SetVehicleId(int vehicleId)

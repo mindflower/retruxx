@@ -164,10 +164,7 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	DummyObject::~DummyObject()
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+	DummyObject::~DummyObject() = default;
 
 	m3d::Object* DummyObject::Clone()
 	{

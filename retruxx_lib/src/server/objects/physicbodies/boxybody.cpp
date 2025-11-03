@@ -53,10 +53,7 @@ namespace ai
         return RT_CLASS_LOCAL(SimplePhysicBody);
     }
 
-    BoxyBody::~BoxyBody()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    BoxyBody::~BoxyBody() = default;
 
     CVector BoxyBody::GetSize() const
     {

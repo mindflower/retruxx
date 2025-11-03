@@ -22,10 +22,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    GenericBody::~GenericBody()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    GenericBody::~GenericBody() = default;
 
     m3d::Object* GenericBody::Clone()
     {

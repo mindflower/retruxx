@@ -45,7 +45,7 @@ bool ObjectCollection::IsClassCollected(m3d::Class const* cl) const
 
 void ObjectCollection::ClearObjects()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_objects.clear();
 }
 
 int ObjectCollection::AddObject(ai::Obj* obj)

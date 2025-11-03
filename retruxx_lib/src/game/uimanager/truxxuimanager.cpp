@@ -1235,6 +1235,12 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         m_objectCollection.AddObject(entityByObjId);
         return 1;
     }
+    case 63:
+    {
+        m_objectCollection.ClearObjects();
+        M3D_APP->ImmediateMessage(66544, 0, 0, 0, 0, {}, {});
+        return 1;
+    }
     case 64:
     {
         //RETRUXX_NOT_IMPLEMENTED;
