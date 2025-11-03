@@ -71,6 +71,7 @@ namespace m3d
         virtual void ScrollDown(int) = 0;
         virtual bool isActive() const = 0;
         virtual bool Toggle() = 0;
+        virtual bool Toggle(bool) = 0;
         virtual void SetScreenSize(float) = 0;
         virtual int InputLine(CStr const&) = 0;
         virtual void executeCommand(CStr const&) = 0;

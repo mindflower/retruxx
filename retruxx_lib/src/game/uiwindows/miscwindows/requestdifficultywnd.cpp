@@ -1,7 +1,8 @@
 #include "requestdifficultywnd.h"
 
-#include "m3dapp.h"
+#include "game/m3dgame.h"
 #include "core/log.h"
+#include "game/profile.h"
 #include "server/objects/base/globalproperties.h"
 #include "ui/comboboxwnd.h"
 
@@ -82,7 +83,9 @@ int RequestDifficultyWnd::OnKey(unsigned short, unsigned char, unsigned)
 
 int RequestDifficultyWnd::OnBeforeRemoveFromWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto res = Wnd::OnBeforeRemoveFromWndStation();
+    ApplyDifficultyLevel();
+    return res;
 }
 
 void RequestDifficultyWnd::Clear()
@@ -96,7 +99,18 @@ void RequestDifficultyWnd::Clear()
 
 void RequestDifficultyWnd::ApplyDifficultyLevel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto curSel = m_cbDifficultyLevels->GetCurSel();
+        if (curSel != -1)
+        {
+            auto diffLevel = m_cbDifficultyLevels->GetItemData(curSel);
+            if (auto* profile = M3D_APP->GetProfileManager()->GetCurProfile())
+            {
+                profile->SetParam(PP_DIFFICULTY_LEVEL, diffLevel);
+            }
+        }
+    }
 }
 
 int RequestDifficultyWnd::OnBeforeAddToWndStation()

@@ -3032,8 +3032,12 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Application::HandleCommand(int, CConsoleParams const&)
+    void Application::HandleCommand(int cmdId, CConsoleParams const&)
     {
+        if (cmdId > 21)
+        {
+            return;
+        }
         RETRUXX_NOT_IMPLEMENTED;
     }
 

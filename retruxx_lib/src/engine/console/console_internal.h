@@ -35,8 +35,8 @@ public:
     virtual void ScrollUp(int);
     virtual void ScrollDown(int);
     virtual bool isActive() const;
-    virtual bool Toggle(bool);
     virtual bool Toggle();
+    virtual bool Toggle(bool);
     void ProcessInputChar(unsigned short);
     virtual void SetScreenSize(float);
     virtual int InputLine(CStr const&);

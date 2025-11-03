@@ -996,7 +996,7 @@ namespace m3d
 
     CinematicItem const& Cinematic::GetCurItem() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_curItem;
     }
 
     CVector Cinematic::_GetPointToLookAt() const
@@ -1161,8 +1161,13 @@ namespace m3d
 
     void Cinematic::LoadDefaults()
     {
+        // TODO: check this
         m_cinematicItems.clear();
-        RETRUXX_NOT_IMPLEMENTED;
+        m3d::CinematicItem item;
+        m_cinematicItems.push_back(std::move(item));
+        _TakeNextCinematicItem();
+        m_numConsecutiveItemPlayingNow = 0;
+        m_state = CINEMATIC_NOT_INITED;
     }
 
     void Cinematic::MoveCurrentDebugPoint(CVector const&, Quaternion const&, float)

@@ -729,9 +729,51 @@ m3d::ui::MbRetCodes CMiracle3d::RunMsgBoxDlg(CStr const& caption, CStr const& me
     return M3D_APP->m_pInterfaceManager->RunMsgBoxDlg(caption, message, flags, bPause);
 }
 
-int CMiracle3d::CleanLevel(bool, bool)
+int CMiracle3d::CleanLevel(bool beforeContinuousMap, bool releaseWorld)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    ClearViewportToBlack();
+    CinematicClear();
+    if (beforeContinuousMap && releaseWorld)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    else
+    {
+        auto* savesManager = M3D_APP->m_pInterfaceManager->GetSavesManager();
+        auto path = savesManager->GetPathForTemporaryMaps();
+        help::DeleteAllFilesInDirectory(path.c_str());
+    }
+
+    if (m3d::pClient)
+    {
+        ProcessAllEvents();
+        M3D_APP->m_pInterfaceManager->ShowWindow(166, false, false, false, false, nullptr);
+        if (beforeContinuousMap && releaseWorld)
+        {
+            M3D_APP->m_pInterfaceManager->LaunchEvent(87, GUI_EVENT_CUSTOM, nullptr);
+        }
+        else
+        {
+            M3D_APP->m_pInterfaceManager->LaunchEvent(86, GUI_EVENT_CUSTOM, nullptr);
+        }
+
+        ai::pServer->Clear();
+        if (!beforeContinuousMap)
+        {
+            ai::pServer->ClearOnce();
+        }
+        m3d::pClient->Reset();
+        if (releaseWorld)
+        {
+            m3d::pClient->GetWorld().Release();
+        }
+        DiscardAllEvents();
+        M3D_APP->m_pImpulses->ResetAllImpulses(true);
+
+        m_bRenderAsBackground = false;
+        m_bBackgroundTextureIsValid = false;
+    }
+    return true;
 }
 
 int CMiracle3d::OnGameZoom(m3d::AuxImpulseInfo const&)
@@ -1288,9 +1330,28 @@ int CMiracle3d::OnDebug(m3d::AuxImpulseInfo const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-bool CMiracle3d::LoadMapFromConsole(m3d::CConsoleParams const&, bool)
+bool CMiracle3d::LoadMapFromConsole(m3d::CConsoleParams const& params, bool isContinuousMap)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (params.NumOfTokens(32) == 2)
+    {
+        M3D_APP->m_pInterfaceManager->StartSplashing(11);
+        CStr mapName = params.UnsafeStringToken(1, 32);
+
+        auto res = LoadMap(mapName, isContinuousMap, nullptr, nullptr, ai::ObjContainer::SAVE_LEVEL);
+        return res;
+    }
+    CStr usageString;
+    if (isContinuousMap)
+    {
+        usageString = "Usage: /map <map_name>\n";
+    }
+    else
+    {
+        usageString = "Usage: /nextmap <map_name>\n";
+    }
+
+    M3D_ENGINE_CFG.m_console->PrintF(usageString);
+    return false;
 }
 
 int CMiracle3d::StartPlayingVideo(char const* videoFile, int(CMiracle3d::* onFinishCallback)())
@@ -1350,9 +1411,51 @@ bool CMiracle3d::SaveGame(CStr const&, bool)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-bool CMiracle3d::LoadMap(CStr const&, bool, m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, ai::ObjContainer::eSAVE_TYPES)
+bool CMiracle3d::LoadMap(CStr const& mapname, bool isContinuousMap, m3d::cmn::XmlFile* dynamicSceneXmlFile, m3d::cmn::XmlNode const* dynamicSceneXmlNode, ai::ObjContainer::eSAVE_TYPES saveType)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    CStr fullMapName = mapname;
+    auto strres = strstr(mapname.c_str(), ".ssl");
+    if (!strres || strres - mapname.c_str() == -1)
+    {
+        fullMapName = "data\\maps\\" + fullMapName + ".ssl";
+    }
+
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+    if (!stream->Open(fullMapName.c_str(), m3d::fs::IStream::OPEN_READ))
+    {
+        CStr error = "Map " + fullMapName + " not found\n";
+        M3D_ENGINE_CFG.m_console->PrintF(error);
+        return false;
+    }
+    stream->Close();
+
+    m_curGameMode.Set(GS_GAME);
+    M3D_APP->m_pInterfaceManager->ShowWindow(72, false, true, false, false, nullptr);
+    CaptureMouse(this);
+
+    if (!m_gameInited)
+    {
+        GameInit();
+    }
+
+    if (m_gameInited)
+    {
+        CleanLevel(isContinuousMap, true);
+        LoadLevel(fullMapName, {}, false, true, isContinuousMap, dynamicSceneXmlFile, dynamicSceneXmlNode, saveType);
+    }
+
+    if (M3D_ENGINE_CFG.m_mus_Enable.GetB())
+    {
+        if (M3D_APP->m_hackedMusicType != HACKMUSIC_GAME)
+        {
+            M3D_APP->m_bMustStartNewMusic = true;
+            M3D_APP->m_hackedMusicType = HACKMUSIC_GAME;
+        }
+    }
+
+    M3D_ENGINE_CFG.m_console->Toggle(false);
+    SetKeyboardFocus(this);
+    return true;
 }
 
 int CMiracle3d::ValidateCameraAngles()
@@ -2198,7 +2301,17 @@ int CMiracle3d::FrameMove()
 
 void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Application::HandleCommand(i, consoleParams);
+    switch (i)
+    {
+    case 4096:
+    {
+        LoadMapFromConsole(consoleParams, false);
+        break;
+    }
+    default:
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 }
 
 bool CMiracle3d::HandleCVar(m3d::CVar const* cvar, m3d::CConsoleParams const& params)

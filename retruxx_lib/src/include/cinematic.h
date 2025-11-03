@@ -80,9 +80,9 @@ namespace m3d
         CINEMATIC_PLAY_PATH = 0x1,
         CINEMATIC_FLY_AROUND = 0x2,
     };
-    class CinematicItem
+
+    struct CinematicItem
     {
-    public:
         int m_flags = 0;
         bool m_bLookTo = false;
         int m_idToLookAt = -1;

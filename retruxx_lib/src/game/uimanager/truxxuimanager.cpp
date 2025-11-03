@@ -1246,6 +1246,14 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         OnStartLevel(data);
         return 0;
     }
+    case 86:
+    {
+        m_levelInfoManager->GameDataUpdate(data, guiEventId);
+        m_questInfoManager->GameDataUpdate(data, guiEventId);
+        Show(false, false);
+        Reset(false);
+        return 0;
+    }
     case 89:
     {
         return 0;
