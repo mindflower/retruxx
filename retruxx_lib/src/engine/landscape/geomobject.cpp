@@ -102,7 +102,20 @@ namespace m3d
 
     void GeomObject::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_needToDeleteInUnlink)
+        {
+            if (m_TriData)
+            {
+                dGeomTriMeshDataDestroy(m_TriData);
+            }
+            dGeomDestroy(m_geom);
+        }
+
+        delete[] m_Vertices;
+        m_Vertices = nullptr;
+        
+        delete[] m_Indices;
+        m_Indices = nullptr;
     }
 
     dxGeom* GeomObject::GetGeom() const

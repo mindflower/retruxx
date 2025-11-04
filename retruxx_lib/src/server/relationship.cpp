@@ -80,7 +80,8 @@ namespace ai
 
     Relationship::~Relationship()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        delete[] m_pTolerance;
+        delete[] m_pDefaultTolerance;
     }
 
     int Relationship::GetMaxBelong() const

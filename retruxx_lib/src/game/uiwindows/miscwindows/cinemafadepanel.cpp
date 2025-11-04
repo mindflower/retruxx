@@ -91,7 +91,9 @@ int CinemaFadePanel::OnPaint(m3d::ui::DrawInfo const& di)
     }
 
     auto curTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
-    this->m_curAlpha = GetAlpha();
+
+    // TODO: check this but and in the game looks ok (when starting main menu)
+    m_curAlpha = 255.0 - GetAlpha();
     if (m_curAlpha > 1.0 && m_curAlpha < 255.0
         || curTime == fadeStartTime
         || (this->m_isFading = 0, m_curAlpha > 1.0)

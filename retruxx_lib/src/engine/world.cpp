@@ -315,7 +315,21 @@ namespace m3d
 
     void CWorld::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_landscape.Release();
+        m_wheelTracesMgr.Release();
+        M3D_RENDERER->ReleaseTexture(m_texMiniMap);
+        ReleasePrefabs();
+        m_weatherManager.DoneSky();
+        for (auto& geom : m_borderWallGeoms)
+        {
+            if (geom)
+            {
+                dGeomDestroy(geom);
+                geom = nullptr;
+            }
+        }
+        m_roadManager.Release();
+        m_sceneGraph.UnlinkAndDeleteAll();
     }
 
     unsigned CWorld::GetWeatherSpecularColor() const

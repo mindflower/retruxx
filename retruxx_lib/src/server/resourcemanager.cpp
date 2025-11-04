@@ -160,7 +160,10 @@ namespace ai
 
 	ResourceManager::~ResourceManager()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		for (auto& res : m_resourceVector)
+		{
+			delete res;
+		}
 	}
 
 	void ResourceManager::_ReadResourceFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode, Resource const* parent)

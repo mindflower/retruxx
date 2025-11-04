@@ -45,7 +45,8 @@ namespace m3d
 
     void CClient::Reset()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        GetWorld().GetGraph().DeleteAllTtledNodes();
+        GetWorld().GetGraph().DeleteAllRemoveIfFreeNodes();
     }
 
     char const* CClient::GetCallbackName() const

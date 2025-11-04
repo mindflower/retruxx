@@ -317,7 +317,15 @@ namespace m3d
 
     void Landscape::FreeShoresStuff()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+       if (m_shoresVb.IsValid())
+       {
+           M3D_RENDERER->ReleaseVb(m_shoresVb);
+       }
+
+       if (m_shoresIb.IsValid())
+       {
+           M3D_RENDERER->ReleaseIb(m_shoresIb);
+       }
     }
 
     void Landscape::BuildSolidLandscape()
@@ -1027,7 +1035,7 @@ namespace m3d
 
     Landscape::CollisionCellItem::~CollisionCellItem()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        delete m_obstacles;
     }
 
     void Landscape::CollisionCellItem::InsertPhysicObjId(int objId)
@@ -1066,6 +1074,8 @@ namespace m3d
 
     Landscape::CollisionInfo::~CollisionInfo()
     {
+        delete[] m_verts;
+        delete[] m_tris;
     }
 
     CStr const& Landscape::GetPathToTiles() const
@@ -2184,7 +2194,44 @@ namespace m3d
 
     void Landscape::ReleaseOdeCollisionData()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        if (m_oCollisionitems)
+        {
+            m_owner->m_roadManager.ReleaseCollision();
+
+            const auto landSize = m_owner->m_level->land_size;
+            for (int y = 0; y < landSize; ++y)
+            {
+                for (int x = 0; x < landSize; ++x)
+                {
+                    auto* item = m_oCollisionitems[x + y * landSize];
+                    for (auto it = item->m_geomsList.begin(); it != item->m_geomsList.end();)
+                    {
+                        if (!(*it)->m_needToDeleteInUnlink)
+                        {
+                            (*it)->m_needToDeleteInUnlink = true;
+                            (*it)->Release();
+                            delete (*it);
+                            it = item->m_geomsList.erase(it);
+                        }
+                        else
+                        {
+                            ++it;
+                        }
+                    }
+                    delete item;
+                }
+            }
+            delete[] m_oCollisionitems;
+            m_oCollisionitems = nullptr;
+            if (m_terrainObject)
+            {
+                m_terrainObject->m_needToDeleteInUnlink = true;
+                m_terrainObject->Release();
+                delete m_terrainObject;
+                m_terrainObject = nullptr;
+            }
+        }
     }
 
     bool Landscape::LoadNormalMap(CStr const& fileName)
@@ -2262,8 +2309,6 @@ namespace m3d
             {
                 if (collision)
                 {
-                    delete[] collision->m_verts;
-                    delete[] collision->m_tris;
                     delete collision;
                 }
             }
@@ -2536,7 +2581,10 @@ namespace m3d
 
     void Landscape::DoneGrass()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_grassArray)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
     }
 
     float Landscape::getCameraHeight(float, float) const
@@ -2556,7 +2604,58 @@ namespace m3d
 
     void Landscape::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        DoneGrass();
+        M3D_RENDERER->ReleaseVb(m_solidVb);
+        for (auto& ib : m_solidIb)
+        {
+            M3D_RENDERER->ReleaseIb(ib);
+        }
+
+        delete[] m_heightMap;
+        m_heightMap = nullptr;
+
+        delete[] m_waterMap;
+        m_waterMap = nullptr;
+
+        delete[] m_cliffHeightMap;
+        m_cliffHeightMap = nullptr;
+
+        delete[] m_colormap;
+        m_colormap = nullptr;
+
+        delete[] m_texSetsmap;
+        m_heightMap = nullptr;
+
+        FreeShoresStuff();
+        ReleaseReflectionRefractionTextures();
+
+        delete[] m_cellParams;
+        m_cellParams = nullptr;
+
+        delete[] m_drawedCellParams;
+        m_drawedCellParams = nullptr;
+
+        RemoveCollisionTris(-1);
+        ReleaseOdeCollisionData();
+        FreeTiles();
+
+        for (auto& wave : m_waves)
+        {
+            M3D_RENDERER->ReleaseTexture(wave.m_texHandle);
+        }
+        m_waves.clear();
+
+        for (auto& col : m_collisions)
+        {
+            delete col;
+        }
+        m_collisions.clear();
+
+        delete[] m_normalMap;
+        m_normalMap = nullptr;
+
+        delete[] m_vnormal;
+        m_vnormal = nullptr;
     }
 
     void Landscape::EnableShoreRegion(int, int)

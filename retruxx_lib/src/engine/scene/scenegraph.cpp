@@ -915,7 +915,27 @@ namespace m3d
 
     void SceneGraph::DeleteAllTtledNodes()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        for (auto& ttl : m_ttledList)
+        {
+            if (ttl)
+            {
+                m_RemoveIfFreeList.erase(ttl);
+                if (IsLinkedNode(ttl))
+                {
+                    UnlinkNode(ttl);
+                }
+                if (auto* parent = ttl->GetParent())
+                {
+                    parent->RemoveChild(ttl);
+                }
+                DeleteFromUpdateXFormList(ttl);
+                CheckNodeValidity(ttl, "Check Two");
+                delete ttl;
+            }
+        }
+
+        m_ttledList.clear();
     }
 
     void SceneGraph::SetModelForceNoCull(bool)
@@ -959,7 +979,11 @@ namespace m3d
 
     void SceneGraph::DeleteAllRemoveIfFreeNodes()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto* node : m_RemoveIfFreeList)
+        {
+            RemoveNodeExceptRemoveIfFree(node);
+        }
+        m_RemoveIfFreeList.clear();
     }
 
     void SceneGraph::DumpToFile(CStr const&) const

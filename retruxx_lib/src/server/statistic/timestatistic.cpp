@@ -45,10 +45,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    TimeStatistic::~TimeStatistic()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    TimeStatistic::~TimeStatistic() = default;
 
     void TimeStatistic::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {

@@ -73,7 +73,15 @@ namespace ai
 
 	AffixManager::~AffixManager()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		for (auto& group : m_affixGroups)
+		{
+			delete group;
+		}
+
+		for (auto& affix : m_affixes)
+		{
+			delete affix;
+		}
 	}
 
 	AffixManager::AffixManager()

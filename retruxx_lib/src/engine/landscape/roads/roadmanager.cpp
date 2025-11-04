@@ -6,6 +6,8 @@
 #include <core/timer.h>
 #include <world.h>
 #include <level.h>
+
+#include "geomobject.h"
 #include "road.h"
 
 namespace m3d
@@ -159,7 +161,16 @@ namespace m3d
 
     void RoadManager::ReleaseCollision()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+       for (auto* child = dynamic_cast<m3d::RoadNode*>(m_roadRoot->GetFirstChild()); child; child = dynamic_cast<m3d::RoadNode*>(child->GetNextSibling()))
+       {
+           auto& geom = child->m_geomObject;
+           if (geom)
+           {
+               geom->Release();
+               delete geom;
+               geom = nullptr;
+           }
+       }
     }
 
     void RoadManager::RecalcCoveredCells()

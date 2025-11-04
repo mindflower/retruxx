@@ -35,23 +35,16 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Statistic::~Statistic()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+	Statistic::~Statistic() = default;
 
     void Statistic::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Statistic::Statistic()
-    {
-    }
+	Statistic::Statistic() = default;
 
-	StatisticManager::StatisticManager()
-	{
-	}
+	StatisticManager::StatisticManager() = default;
 
 	CStr StatisticManager::GetAllStatisticsDescription() const
 	{
@@ -65,7 +58,7 @@ namespace ai
 
 	StatisticManager::~StatisticManager()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		Clear();
 	}
 
 	void StatisticManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -75,7 +68,11 @@ namespace ai
 
 	void StatisticManager::Clear()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		for (auto& stat : m_statistics)
+		{
+			delete stat.second;
+		}
+		m_statistics.clear();
 	}
 
 	void StatisticManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

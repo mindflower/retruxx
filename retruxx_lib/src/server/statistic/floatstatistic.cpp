@@ -35,10 +35,7 @@ namespace ai
         return new FloatStatistic;
     }
 
-    FloatStatistic::~FloatStatistic()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    FloatStatistic::~FloatStatistic() = default;
 
     m3d::Class* FloatStatistic::GetBaseClass()
     {
