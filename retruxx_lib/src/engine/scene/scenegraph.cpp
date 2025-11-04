@@ -189,7 +189,21 @@ namespace m3d
 
     void SceneGraph::UnlinkAndDeleteAll()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_bIsInUnlinkAndDeleteAll = true;
+        for (auto* node = dynamic_cast<m3d::SgNode*>(m_rootNode.GetFirstChild()); node != nullptr; node = dynamic_cast<m3d::SgNode*>(node->GetNextSibling()))
+        {
+            UnlinkNode(node);
+        }
+
+        m_rootNode.RemoveAllChildren();
+
+        m_thinkList.clear();
+        m_ttledList.clear();
+        m_RemoveIfFreeList.clear();
+        m_contourList.clear();
+        m_updateXFormList.clear();
+
+        m_bIsInUnlinkAndDeleteAll = false;
     }
 
     void SceneGraph::UnlinkThinkNode(SgNode* toThink)

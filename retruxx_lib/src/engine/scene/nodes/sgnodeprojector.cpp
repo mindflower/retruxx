@@ -66,7 +66,7 @@ namespace m3d
 
     SgProjectorNode::~SgProjectorNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        RitualInDestructor();
     }
 
     void SgProjectorNode::UpdateOwnBoundingBox()

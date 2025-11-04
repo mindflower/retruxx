@@ -583,7 +583,19 @@ namespace m3d
 
     void WeatherManager::DoneSky()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        M3D_RENDERER->ReleaseVb(m_vbSky);
+        M3D_RENDERER->ReleaseIb(m_ibSky);
+
+        for (auto& weather : m_weatherStorage)
+        {
+            weather->Release();
+            delete weather;
+        }
+        m_weatherStorage.clear();
+        m_currentWeather = nullptr;
+
+        M3D_RENDERER->ReleaseTexture(m_cloudTextureHandle);
+        M3D_RENDERER->ReleaseTexture(m_starsTexture);
     }
 
     void WeatherManager::AddWeather(CStr const&, CStr const&)

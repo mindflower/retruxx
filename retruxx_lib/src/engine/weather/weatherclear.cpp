@@ -17,10 +17,7 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    WeatherClear::~WeatherClear()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    WeatherClear::~WeatherClear() = default;
 
     Class* WeatherClear::GetClass() const
     {

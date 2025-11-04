@@ -144,10 +144,8 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Weather::~Weather()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    // TODO: check this
+    Weather::~Weather() = default;
 
     float Weather::GetWaveHBig() const
     {
@@ -406,7 +404,7 @@ namespace m3d
 
     void Weather::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // default
     }
 
     int Weather::Render()

@@ -66,7 +66,7 @@ namespace m3d
 
     SgPointLightSourceNode::~SgPointLightSourceNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        RitualInDestructor();
     }
 
     SgPointLightSourceNode::SgPointLightSourceNode()

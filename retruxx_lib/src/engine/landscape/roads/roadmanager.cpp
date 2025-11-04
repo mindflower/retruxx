@@ -105,6 +105,11 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
+    RoadSet::~RoadSet()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
     RoadManager::RoadManager()
     {
         this->m_owner = 0;
@@ -143,7 +148,18 @@ namespace m3d
 
     void RoadManager::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_roadRoot)
+        {
+            m_roadRoot->RemoveAllChildren();
+        }
+
+        ClearRoadSets();
+
+        delete m_roadRoot;
+        m_roadRoot = nullptr;
+
+        delete m_coveredCells;
+        m_coveredCells = nullptr;
     }
 
     void RoadManager::Init()
@@ -156,7 +172,12 @@ namespace m3d
 
     void RoadManager::ClearRoadSets()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto& roadSet : m_roadSets)
+        {
+            delete roadSet;
+        }
+
+        m_roadSets.clear();
     }
 
     void RoadManager::ReleaseCollision()

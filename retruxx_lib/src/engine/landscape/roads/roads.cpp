@@ -1,3 +1,4 @@
+#include "m3dapp.h"
 #include "road.h"
 
 namespace m3d
@@ -23,7 +24,14 @@ namespace m3d
 
     RoadNode::~RoadNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_VbPoolField.Vb.IsValid())
+        {
+            M3D_RENDERER->ReleaseVb(m_VbPoolField.Vb);
+        }
+        if (m_IbPoolField.Ib.IsValid())
+        {
+            M3D_RENDERER->ReleaseIb(m_IbPoolField.Ib);
+        }
     }
 
     int RoadNode::GetSoilType()

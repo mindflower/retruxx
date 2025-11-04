@@ -174,7 +174,7 @@ namespace m3d
 
     SgParticlesNode::~SgParticlesNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        RitualInDestructor();
     }
 
     SgParticlesNode::SgParticlesNode(SgParticlesNode const&)
@@ -220,10 +220,7 @@ namespace m3d
         return new SgParticlesOpaqueNode;
     }
 
-    SgParticlesOpaqueNode::~SgParticlesOpaqueNode()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    SgParticlesOpaqueNode::~SgParticlesOpaqueNode() = default;
 
     Class* SgParticlesOpaqueNode::GetClass() const
     {
