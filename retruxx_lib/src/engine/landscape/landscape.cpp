@@ -4525,7 +4525,7 @@ namespace m3d
         for (size_t i = 0; i < textureCount; ++i)
         {
             TIVChunk* texture = m_tilesTextures[i];
-            delete[] texture;
+            delete texture;
         }
 
         // Free textures array

@@ -290,7 +290,24 @@ namespace m3d
 
     void CWorld::ReleasePrefabs()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto& data : m_effectsFactory)
+        {
+            if (data.onlyOne)
+            {
+                m_sceneGraph.RemoveNode(data.effect);
+            }
+            else
+            {
+                for (auto& effect : data.effects)
+                {
+                    m_sceneGraph.RemoveNode(effect);
+                }
+            }
+        }
+
+        m_effectsFactory.clear();
+        fxNames.clear();
+        fxRemap.clear();
     }
 
     int CWorld::CreateGeomsRepresentingSceneNodes()

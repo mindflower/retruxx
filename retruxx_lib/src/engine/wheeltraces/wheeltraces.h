@@ -16,22 +16,21 @@ namespace m3d
         CVector p2;
     };
 
-    class SkidStrip
+    struct SkidStrip
     {
-    public:
+        /* 0x0000 */ int m_stripSize;
+        /* 0x0004 */ m3d::SkidQuad m_last[2];
+        /* 0x0034 */ bool m_binUse;
+        /* 0x0035 */ char Padding_87[3];
+        /* 0x0038 */ int m_timeStamp;
+        /* 0x003c */ int m_lastFramestamp;
+        /* 0x0040 */ int m_soilType;
+        /* 0x0044 */ float m_texCoord;
+        /* 0x0048 */ CVector m_boundCenter;
+        /* 0x0054 */ float m_boundRadius;
+        SkidStrip(const m3d::SkidStrip&);
         SkidStrip();
-
-    private:
-        int m_stripSize;
-        SkidQuad m_last[2];
-        bool m_binUse;
-        int m_timeStamp;
-        int m_lastFramestamp;
-        int m_soilType;
-        float m_texCoord;
-        CVector m_boundCenter;
-        float m_boundRadius;
-    };
+    }; /* size: 0x0058 */
 
     class WheelTraceMgr
     {

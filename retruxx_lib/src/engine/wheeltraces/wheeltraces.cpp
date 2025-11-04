@@ -14,13 +14,23 @@ namespace m3d
         this->m_soilType = 0;
         this->m_stripSize = 0;
         this->m_texCoord = 0.0;
-        this->m_boundCenter = {0.0, 0.0, 0.0};
+        this->m_boundCenter = ZeroVector;
         this->m_boundRadius = 0.0;
     }
 
     void WheelTraceMgr::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (int i = 0; i < 512; ++i)
+        {
+            m_skidStrips[i] = {};
+        }
+
+        for (auto& handle : m_texHandles)
+        {
+            M3D_RENDERER->ReleaseTexture(handle);
+        }
+
+        m_texHandles.clear();
     }
 
     void WheelTraceMgr::Render()
@@ -51,7 +61,7 @@ namespace m3d
     WheelTraceMgr::WheelTraceMgr()
     {
         //TODO: check this
-        m_skidStrips = new SkidStrip;
+        m_skidStrips = new SkidStrip[512];
         this->m_vb = M3D_RENDERER->AddVb(
             rend::VERTEX_XYZCT1,
             0x10000,

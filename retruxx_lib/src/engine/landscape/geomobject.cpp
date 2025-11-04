@@ -63,10 +63,7 @@ namespace m3d
         return RT_CLASS_LOCAL(Object);
     }
 
-    GeomObject::~GeomObject()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    GeomObject::~GeomObject() = default;
 
     Class* GeomObject::GetClass() const
     {
@@ -148,10 +145,7 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    GeomObjectLandscape::~GeomObjectLandscape()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    GeomObjectLandscape::~GeomObjectLandscape() = default;
 
     Class* GeomObjectLandscape::GetClass() const
     {
@@ -261,10 +255,7 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    GeomObjectWater::~GeomObjectWater()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    GeomObjectWater::~GeomObjectWater() = default;
 
     Class* GeomObjectWater::GetBaseClass()
     {
