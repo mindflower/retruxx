@@ -181,10 +181,7 @@ namespace m3d
         return RT_CLASS_LOCAL(GeomObjectStatics);
     }
 
-    GeomObjectStatics::~GeomObjectStatics()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    GeomObjectStatics::~GeomObjectStatics() = default;
 
     Class* GeomObjectStatics::GetBaseClass()
     {

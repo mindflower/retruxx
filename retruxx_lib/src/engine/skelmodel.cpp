@@ -754,9 +754,27 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void AnimatedModel::UnloadSkin(unsigned)
+    void AnimatedModel::UnloadSkin(unsigned j)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (j < m_Skins.size())
+        {
+            auto& mats = m_Skins[j];
+            for (auto& mat : mats)
+            {
+                if (mat.Shader.Handle)
+                {
+                    mat.Shader.Handle->Release();
+                    mat.Shader.Handle = nullptr;
+                }
+
+                for (auto& tex : mat.Textures)
+                {
+                    M3D_RENDERER->ReleaseTexture(tex.Handle);
+                    tex.Handle.SetInvalid();
+                }
+            }
+        }
+        
     }
 
     void AnimatedModel::UpdateTexturesFilter()
@@ -874,11 +892,32 @@ namespace m3d
             return;
         }
 
-        for (auto& skin : m_Skins)
+        for (int i= 0; i < m_Skins.size(); ++i)
         {
-            
+            // TODO: check this!!
+            bool loadNewSkin = skinsToLoad.loadSkins.find(i) != skinsToLoad.loadSkins.end();
+            bool unloadOldSkin = m_loadSkins.loadSkins.find(i) != m_loadSkins.loadSkins.end();
+
+            if (skinsToLoad.loadAllSkins)
+                loadNewSkin = true;
+
+            if (this->m_loadSkins.loadAllSkins)
+                unloadOldSkin = true;
+
+            if (loadNewSkin)
+            {
+                if (!unloadOldSkin)
+                {
+                    LoadSkin(i);
+                }
+            }
+            else if (unloadOldSkin)
+            {
+                UnloadSkin(i);
+            }
         }
-        RETRUXX_NOT_IMPLEMENTED;
+        
+        m_loadSkins.loadSkins = skinsToLoad.loadSkins;
     }
 
     void AnimatedModel::CalculateMeshes(Configuration& cfg) const

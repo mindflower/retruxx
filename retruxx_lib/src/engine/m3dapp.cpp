@@ -3660,7 +3660,21 @@ namespace m3d
 
     void Application::DiscardAllEvents()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        while (true)
+        {
+            if (m_eventsQueueTail == m_eventsQueueHead)
+            {
+                break;
+            }
+
+            m_eventsQueue[m_eventsQueueTail] = {};
+
+            auto v3 = m_eventsQueueTail + 1;
+            if (v3 >= 5000)
+                v3 = 0;
+            m_eventsQueueTail = v3;
+        }
     }
 
     unsigned long Application::GetStyleForRenderWindow(bool bFullScreen) const

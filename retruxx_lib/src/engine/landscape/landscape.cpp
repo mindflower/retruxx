@@ -1263,7 +1263,28 @@ namespace m3d
         node->GetProperty(4357u, &t);
         if (t)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (m_oCollisionitems)
+            {
+                RETRUXX_NOT_IMPLEMENTED;
+            }
+
+            if (deleteList)
+            {
+                for (auto& elem : *t)
+                {
+                    if (m_oCollisionitems)
+                    {
+                        RETRUXX_NOT_IMPLEMENTED;
+                    }
+                    elem->Release();
+                    delete elem;
+                }
+
+                t->clear();
+                delete t;
+                t = nullptr;
+                node->SetProperty(4357u, &t);
+            }
         }
     }
 
@@ -2624,7 +2645,7 @@ namespace m3d
         m_colormap = nullptr;
 
         delete[] m_texSetsmap;
-        m_heightMap = nullptr;
+        m_texSetsmap = nullptr;
 
         FreeShoresStuff();
         ReleaseReflectionRefractionTextures();
@@ -4502,6 +4523,7 @@ namespace m3d
         // TODO: generated code (looks ok)
         // Free tile data array
         delete[] m_tiles;
+        m_tiles = nullptr;
 
         // Release textures and vertex buffers
         const size_t textureCount = m_tilesTextures.size();
@@ -4542,6 +4564,7 @@ namespace m3d
 
         // Free passed cells array
         delete[] m_passedCells;
+        m_passedCells = nullptr;
     }
 
     void Landscape::BuildUVSet()

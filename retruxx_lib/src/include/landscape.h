@@ -43,6 +43,7 @@ namespace m3d
             void Deallocate()
             {
                 delete[] m_data;
+                m_data = nullptr;
                 m_maxItems = 0;
                 m_numItems = 0;
             }

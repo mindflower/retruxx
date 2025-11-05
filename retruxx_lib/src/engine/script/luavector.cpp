@@ -106,7 +106,7 @@ void ext_initVector(lua_State* L)
 
 int ext_vecDestructor(lua_State* L)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int ext_vecNormalize(lua_State* L)

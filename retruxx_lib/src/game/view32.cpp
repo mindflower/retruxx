@@ -1137,7 +1137,7 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
         ai::pServer->InitOnce();
     }
     //TODO: check this
-    if (!bQuiet && !m3d::pClient->GetWorld().Load(name, m_curCamera, bQuiet))
+    if (!bContinuousMap && !m3d::pClient->GetWorld().Load(name, m_curCamera, bQuiet))
     {
 	    M3D_LOG_INFO("Level file " + name + " not found");
         EnqueueMessage(1, 0, 0, 0, 0, {}, {});
@@ -1153,7 +1153,7 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
     auto levelFullPath = m3d::pClient->GetWorld().m_level->GetFullPathNameA({});
     m_cinematic->SetFolder(levelFullPath.c_str());
     app->m_pInterfaceManager->LaunchEvent(84, GUI_EVENT_CUSTOM, nullptr);
-    if (bContinuousMap)
+    if (!bContinuousMap)
     {
         auto xmlName = help::GetMapNameFromFileName(name);
         auto tempMapsPath = app->m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps();
@@ -1170,7 +1170,7 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
     }
     else
     {
-        ai::pServer->Load(ai::LOCAL_GAME, dynamicSceneXmlFile, dynamicSceneXmlNode, false, saveType);
+        ai::pServer->Load(ai::LOCAL_GAME, dynamicSceneXmlFile, dynamicSceneXmlNode, true, saveType);
     }
     M3D_LOG_INFO("Load Server end");
     if (!bContinuousMap)
@@ -1441,7 +1441,7 @@ bool CMiracle3d::LoadMap(CStr const& mapname, bool isContinuousMap, m3d::cmn::Xm
     if (m_gameInited)
     {
         CleanLevel(isContinuousMap, true);
-        LoadLevel(fullMapName, {}, false, true, isContinuousMap, dynamicSceneXmlFile, dynamicSceneXmlNode, saveType);
+        LoadLevel(fullMapName, {}, true, false, isContinuousMap, dynamicSceneXmlFile, dynamicSceneXmlNode, saveType);
     }
 
     if (M3D_ENGINE_CFG.m_mus_Enable.GetB())
