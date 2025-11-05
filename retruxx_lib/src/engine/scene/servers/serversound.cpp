@@ -51,9 +51,27 @@ namespace m3d
     {
     }
 
-    int Sound3DServer::GetItemProperty(int, int, void*)
+    int Sound3DServer::GetItemProperty(int id, int prop, void* dest)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (id == -1)
+            return 0;
+        if (m3d::DataServer::GetItemProperty(id, prop, dest))
+            return 1;
+        
+        switch (prop)
+        {
+        case 12320:
+            RETRUXX_NOT_IMPLEMENTED;
+        case 12321:
+            RETRUXX_NOT_IMPLEMENTED;
+        case 12322:
+            RETRUXX_NOT_IMPLEMENTED;
+        case 12323:
+            RETRUXX_NOT_IMPLEMENTED;
+        default:
+            return 0;
+        }
+        return 0;
     }
 
     void Sound3DServer::RegisterNode(m3d::SgNode*)
@@ -285,9 +303,48 @@ namespace m3d
         return -1;
     }
 
-    int Sound3DServer::_AddTripleItem(CStr, CStr, CStr, char const*, char const*)
+    int Sound3DServer::_AddTripleItem(CStr f1, CStr f2, CStr f3, char const* id, char const* groupName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        {
+            return 0;
+        }
+
+        auto item = GetItemByName(id, false);
+        if (item != -1)
+        {
+            return item;
+        }
+
+        auto soundId1 = M3D_APP->m_sound->AddSound(f1.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        if (soundId1 == -1)
+        {
+            M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(f1));
+            return -1;
+        }
+
+        auto soundId2 = M3D_APP->m_sound->AddSound(f2.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        if (soundId2 == -1)
+        {
+            M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(f2));
+            return -1;
+        }
+
+        auto soundId3 = M3D_APP->m_sound->AddSound(f3.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        if (soundId3 == -1)
+        {
+            M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(f3));
+            return -1;
+        }
+
+        auto soundItem = new SoundItem();
+        soundItem->type = SOUND_TYPE_DOUBLE;
+        soundItem->soundIds[0] = soundId1;
+        soundItem->soundIds[1] = soundId2;
+        soundItem->soundIds[2] = soundId3;
+        Model model(soundItem, f1.c_str(), f1.c_str(), id);
+        m_models.push_back(std::move(model));
+        return m_models.size() - 1;
     }
 
     Sound3DServer::SoundItem::SoundItem()
@@ -326,8 +383,39 @@ namespace m3d
         return m_models.size() - 1;
     }
 
-    int Sound3DServer::_AddDoubleItem(CStr, CStr, char const*, char const*)
+    int Sound3DServer::_AddDoubleItem(CStr f1, CStr f2, char const* id, char const* groupName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        {
+            return 0;
+        }
+
+        auto item = GetItemByName(id, false);
+        if (item  != -1)
+        {
+            return item;
+        }
+
+        auto soundId1 = M3D_APP->m_sound->AddSound(f1.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        if (soundId1 == -1)
+        {
+            M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(f1));
+            return -1;
+        }
+
+        auto soundId2 = M3D_APP->m_sound->AddSound(f2.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        if (soundId2 == -1)
+        {
+            M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(f2));
+            return -1;
+        }
+
+        auto soundItem = new SoundItem();
+        soundItem->type = SOUND_TYPE_DOUBLE;
+        soundItem->soundIds[0] = soundId1;
+        soundItem->soundIds[1] = soundId2;
+        Model model(soundItem, f1.c_str(), f1.c_str(), id);
+        m_models.push_back(std::move(model));
+        return m_models.size() - 1;
     }
 }

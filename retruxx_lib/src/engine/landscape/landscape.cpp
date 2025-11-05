@@ -50,9 +50,44 @@ namespace m3d
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Landscape);
 
-    void Landscape::LinkObstacleToCells(ai::Obstacle*)
+    void Landscape::LinkObstacleToCells(ai::Obstacle* obstacle)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code
+        // Get the obstacle's bounding box
+        Aabb box = obstacle->GetAabb();
+
+        const float VISCELL_EDGE_LENGTH_8 = 128.0;
+
+        // Convert world coordinates to grid coordinates
+        const float cellSizeInv = 1.0f / VISCELL_EDGE_LENGTH_8;
+        int x0 = static_cast<int>(box.m_box[0] * cellSizeInv);
+        int x1 = static_cast<int>(box.m_box[3] * cellSizeInv);
+        int z0 = static_cast<int>(box.m_box[2] * cellSizeInv);
+        int z1 = static_cast<int>(box.m_box[5] * cellSizeInv);
+
+        // Get landscape bounds
+        int land_size = this->m_owner->m_level->land_size;
+        int max_index = land_size - 1;
+
+        // Clamp coordinates to valid range
+        x0 = std::clamp(x0, 0, max_index);
+        x1 = std::clamp(x1, 0, max_index);
+        z0 = std::clamp(z0, 0, max_index);
+        z1 = std::clamp(z1, 0, max_index);
+
+        // Iterate through all affected cells
+        for (int z = z0; z <= z1; ++z)
+        {
+            for (int x = x0; x <= x1; ++x)
+            {
+                // Get the collision items container for this cell
+                if (x >= 0 && x < land_size && z >= 0 && z < land_size)
+                {
+                    auto& collisionItems = this->m_oCollisionitems[x + z * land_size];
+                    collisionItems->m_obstacles->insert(obstacle);
+                }
+            }
+        }
     }
 
     bool Landscape::SaveShoreLine(CStr const&)
@@ -108,7 +143,7 @@ namespace m3d
 
             // Process children using iterative DFS
             std::vector<m3d::Object*> stack;
-            stack.push_back(dynamic_cast<m3d::Object*>(node));
+            stack.push_back(dynamic_cast<m3d::Object*>(node->GetFirstChild()));
 
             while (!stack.empty())
             {
@@ -1849,6 +1884,8 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
+    //static std::set<CStr> nen;
+
     void Landscape::LinkNodeCollisionGeomsToCell(SgNode* node, int startX, int endX, int startY, int endY)
     {
         // TODO: generated code
@@ -1869,6 +1906,13 @@ namespace m3d
         auto* geomObjsList = new retruxx::set<m3d::GeomObject*>();
 
         // Process collision points and triangles
+
+        //if (nen.find(mdl->GetName()) != nen.end())
+        //{
+        //    bool asd = true;
+        //}
+        //nen.insert(mdl->GetName());
+
         if (!mdl->GetCollisionTrimesh().Points.empty())
         {
             // Create GeomObjectStatics
@@ -3469,7 +3513,8 @@ namespace m3d
 
     void Landscape::LinkPassMapCellToCollisionCell(PointBase<int> const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement LinkPassMapCellToCollisionCell
+       // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Landscape::ReBuildShoresVb()

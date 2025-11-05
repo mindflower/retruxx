@@ -33,9 +33,11 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void PlayerPassMap::Create(unsigned, bool)
+    void PlayerPassMap::Create(unsigned sideLength, bool bDefaultValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        M3D_ASSERT(sideLength > 0 && IsEmpty());
+        m_container.resize(((sideLength * sideLength) >> 5) + 1, -bDefaultValue);
+        m_sideSize = sideLength;
     }
 
     void PlayerPassMap::Fill(bool)

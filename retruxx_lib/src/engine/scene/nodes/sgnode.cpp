@@ -176,7 +176,7 @@ namespace m3d
 
     Quaternion const& SgNode::GetRotation() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return this->m_rotation;
     }
 
     int SgNode::GetProperty(unsigned propId, void* prop) const

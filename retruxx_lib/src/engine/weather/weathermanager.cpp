@@ -592,6 +592,7 @@ namespace m3d
             delete weather;
         }
         m_weatherStorage.clear();
+        m_curWeatherStorage.clear();
         m_currentWeather = nullptr;
 
         M3D_RENDERER->ReleaseTexture(m_cloudTextureHandle);

@@ -32,7 +32,7 @@ namespace m3d
 
     void WeatherInclement::SetUp()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        RecreateEffect();
     }
 
     void WeatherInclement::RecreateEffect()

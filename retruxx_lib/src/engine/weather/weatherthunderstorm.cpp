@@ -131,7 +131,8 @@ namespace m3d
 
     void WeatherThunderstorm::SetUp()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        WeatherInclement::SetUp();
+        this->m_thunderTimeOut = 0;
     }
 
     Object* WeatherThunderstorm::Clone()
