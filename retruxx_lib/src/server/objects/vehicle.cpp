@@ -980,9 +980,22 @@ namespace ai
 		return this->m_cameraMaxDist;
 	}
 
-	bool Vehicle::SetPropertyById(int, m3d::AIParam const&)
+	bool Vehicle::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (propertyId == 12)
+		{
+			this->m_driftCoeff = newValue.GetAsFloat();
+			return 1;
+		}
+		else if (propertyId == 13)
+		{
+			this->m_antiMissileGadgetSavingRadius = newValue.GetAsFloat();
+			return 1;
+		}
+		else
+		{
+			return ai::PhysicObj::SetPropertyById(propertyId, newValue);
+		}
 	}
 
 	void Vehicle::DecOnOilMode()
@@ -1407,9 +1420,14 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	int Vehicle::GetPropertyId(char const*) const
+	int Vehicle::GetPropertyId(char const* name) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		auto it = m_propertiesMap.find(name);
+		if (it != m_propertiesMap.end())
+		{
+			return it->second;
+		}
+		return PhysicObj::GetPropertyId(name);
 	}
 
 	float Vehicle::EstimateDamageAI(CVector const&, retruxx::vector<int, retruxx::allocator<int>>) const
@@ -1934,9 +1952,37 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+	void Vehicle::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		ComplexPhysicObj::LoadFromXML(xmlFile, xmlNode);
+		_UpdateRepositoryOnChangeBasket();
+
+		ref_ptr node = xmlFile->CreateNode();
+
+		xmlNode->GetFirstChild(node, "Repository");
+		if (!node->IsEmpty())
+		{
+		    if (m_repository)
+		    {
+				m_repository->LoadFromXML(xmlFile, node);
+				RefreshMass();
+		    }
+		}
+
+		xmlNode->GetFirstChild(node, "Trailer");
+		if (!node->IsEmpty())
+		{
+			auto objId = gDynamicScene->ReadNewObjectFromXml(xmlFile, node, {});
+			auto obj = theObjects->GetEntityByObjId(objId);
+			if (IS_KIND_OF(obj, Vehicle))
+			{
+				_AttachExistingTrailer(RT_DYNCAST(obj, Vehicle), false);
+			}
+			else
+			{
+				M3D_LOG_ERR("Error: loading trailer which is not a vehicle: " + obj->GetDebugDescription());
+			}
+		}
 	}
 
 	bool Vehicle::bIsControlledByPlayer() const

@@ -693,9 +693,21 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ComplexPhysicObj::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void ComplexPhysicObj::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::Obj::LoadFromXML(xmlFile, xmlNode);
+
+        // TODO: implement ComplexPhysicObj::LoadFromXML
+        const auto prototypeInfo = GetPrototypeInfo();
+
+        ref_ptr node = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(node, "Parts");
+        for (auto& partName : prototypeInfo->GetAllPartNames())
+        {
+            // auto partId = prototypeInfo->m_partPrototypeIds.at(partName);
+
+        }
+
     }
 
     void ComplexPhysicObj::Blow(Obj*)

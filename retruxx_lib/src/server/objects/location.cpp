@@ -161,24 +161,37 @@ namespace ai
             return true;
 
         case 52:
-            RETRUXX_NOT_IMPLEMENTED;
-            break;
+            m_lookingTimeOut = newValue.GetAsFloat();
+            return true;
 
         case 53:
             RETRUXX_NOT_IMPLEMENTED;
             break;
 
         case 54:
-            RETRUXX_NOT_IMPLEMENTED;
-            break;
+        {
+            m_passageAddress = newValue.GetAsStr();
+            if (m_passageAddress.empty())
+            {
+                return true;
+            }
+            std::vector<CStr> tokens;
+            m3d::Tokenize(m_passageAddress, tokens, "(), ;\t");
+            if (tokens.size() != 2)
+            {
+                M3D_LOG_ERR("Error: Invalid passage address '" + m_passageAddress + "' for location '" + CStr(GetName()));
+                m_passageAddress = {};
+            }
+            return true;
+        }
 
         case 55:
-            RETRUXX_NOT_IMPLEMENTED;
-            break;
+            m_correspondingPassageLocationName = newValue.GetAsStr();
+            return true;
 
         case 56:
-            RETRUXX_NOT_IMPLEMENTED;
-            break;
+            m_bPassageActive = (newValue.GetAsID() != 0);
+            return true;
 
         default:
             return ai::SimplePhysicObj::SetPropertyById(propertyId, newValue);

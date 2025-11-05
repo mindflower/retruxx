@@ -42,9 +42,10 @@ namespace m3d
             m_effectId.push_back(id);
     }
 
-    int WeatherThunderstorm::Update(float, int)
+    int WeatherThunderstorm::Update(float amount, int curServerTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Weather::Update(amount, curServerTime);
+        return 1;
     }
 
     Class* WeatherThunderstorm::GetClass() const
@@ -72,9 +73,17 @@ namespace m3d
         return new WeatherThunderstorm;
     }
 
-    int WeatherThunderstorm::UpdateColors(ColorItems, ColorTypes)
+    int WeatherThunderstorm::UpdateColors(ColorItems colorItem, ColorTypes curTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Weather::UpdateColors(colorItem, curTime);
+        if (this->m_thunderActive)
+        {
+            auto& vec = m_currentColors[colorItem];
+            vec.x = ((vec.x - 255.0) * m_thunderLerpValue) + 255.0;
+            vec.y = ((vec.y - 255.0) * m_thunderLerpValue) + 255.0;
+            vec.z = ((vec.z - 255.0) * m_thunderLerpValue) + 255.0;
+        }
+        return 1;
     }
 
     int WeatherThunderstorm::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)

@@ -39,7 +39,7 @@ namespace ai
     public:
         ComplexPhysicObjPrototypeInfo();
         virtual  ~ComplexPhysicObjPrototypeInfo() override = 0 /* 0x00 */;
-        /* 0x0048 */ retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > > m_partPrototypeIds;
+        /* 0x0048 */ retruxx::map<CStr, int> m_partPrototypeIds;
         /* 0x0054 */ CVector m_massSize;
         /* 0x0060 */ CVector m_massTranslation;
         virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;

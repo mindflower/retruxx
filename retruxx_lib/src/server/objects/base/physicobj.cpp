@@ -277,7 +277,9 @@ namespace ai
             return true;
 
         case 5:
-            RETRUXX_NOT_IMPLEMENTED;
+            SetRotationSelf(newValue.GetAsQuaternion());
+            return true;
+
         case 45:
             RETRUXX_NOT_IMPLEMENTED;
         default:

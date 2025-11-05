@@ -63,33 +63,34 @@ namespace ai
 
         void _OnAfterValueChange(T oldValue)
         {
-            throw std::runtime_error("not implemented");
+            m_AfterValueChange(oldValue);
         }
 
         void _OnAfterMinValueChange(T oldValue)
         {
-            throw std::runtime_error("not implemented");
+            m_AfterMinValueChange(oldValue);
         }
 
         bool _OnBeforeValueChange(T& oldValue)
         {
-            throw std::runtime_error("not implemented");
+            return m_BeforeValueChange(oldValue);
         }
 
         bool _OnBeforeMinValueChange(T& oldValue)
         {
-            throw std::runtime_error("not implemented");
+            return m_BeforeMinValueChange(oldValue);
         }
 
         bool _OnBeforeValueApplyModifier(const ai::Modifier& modifier, T& oldValue)
         {
-            throw std::runtime_error("not implemented");
+            return m_BeforeValueApplyModifier(modifier, oldValue);
         }
 
         bool _OnBeforeMinValueApplyModifier(const ai::Modifier& modifier, T& oldValue)
         {
-            throw std::runtime_error("not implemented");
+            return m_BeforeMinValueApplyModifier(modifier, oldValue);
         }
+
         /* 0x0040 */ ai::Numeric<T> m_value;
         /* 0x005c */ ai::Numeric<T> m_minValue;
     }; /* size: 0x0078 */

@@ -796,9 +796,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Player::_OnMoneyValueAfterChange(int)
+    void Player::_OnMoneyValueAfterChange(int oldMoneyValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        M3D_APP->EnqueueMessage(66559, m_money.value().get(), oldMoneyValue, 0, 0, {}, {});
     }
 
     void Player::_OnNoticeEnemy(Event const&)

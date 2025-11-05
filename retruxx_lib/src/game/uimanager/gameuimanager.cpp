@@ -582,9 +582,20 @@ int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void
     return 0;
 }
 
-void GameUiManager::GUI_GetIconsResourceInfoByLevel(CStr const&, retruxx::vector<ResourceInfo*, retruxx::allocator<ResourceInfo*>>&) const
+void GameUiManager::GUI_GetIconsResourceInfoByLevel(CStr const& levelName, retruxx::vector<ResourceInfo*, retruxx::allocator<ResourceInfo*>>& dstResourceInfos) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    dstResourceInfos.clear();
+    for (const auto& info : m_resourceInfoIcons)
+    {
+        if (info && IS_KIND_OF(info, IcoResourceInfo))
+        {
+            auto* icoInfo = RT_DYNCAST(info, IcoResourceInfo);
+            if (icoInfo->m_levelName == levelName)
+            {
+                dstResourceInfos.push_back(info);
+            }
+        }
+    }
 }
 
 int GameUiManager::GUI_LoadResources(ResourceInfo::ResourceLoadType loadType)

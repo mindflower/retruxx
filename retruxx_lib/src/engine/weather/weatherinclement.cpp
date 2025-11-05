@@ -37,7 +37,8 @@ namespace m3d
 
     void WeatherInclement::RecreateEffect()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement WeatherInclement::RecreateEffect
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     int WeatherInclement::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)

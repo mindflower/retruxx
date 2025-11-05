@@ -418,7 +418,25 @@ namespace m3d
 
     Quaternion AIParam::GetAsQuaternion() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Quaternion res;
+        res.Identity();
+
+        switch (Type)
+        {
+        case AIPARAM_STRING:
+            ConvertFromString(&res, AIPARAM_QUATERNION);
+            return res;
+
+        case AIPARAM_QUATERNION:
+            res.x = x;
+            res.y = y;
+            res.z = z;
+            res.w = w;
+            return res;
+
+        default:
+            return res;
+        }
     }
 
     CStr AIParam::ToStr() const
@@ -484,6 +502,31 @@ namespace m3d
             if (size > 2)
             {
                 vec->z = atof(tokens[2].c_str());
+            }
+            return;
+        }
+
+        case AIPARAM_QUATERNION:
+        {
+            std::vector<CStr> tokens;
+            m3d::Tokenize(m_Str, tokens, "(), ;\t");
+            const auto size = tokens.size();
+            auto vec = (Quaternion*)retVal;
+            if (size > 0)
+            {
+                vec->x = atof(tokens[0].c_str());
+            }
+            if (size > 1)
+            {
+                vec->y = atof(tokens[1].c_str());
+            }
+            if (size > 2)
+            {
+                vec->z = atof(tokens[2].c_str());
+            }
+            if (size > 3)
+            {
+                vec->w = atof(tokens[3].c_str());
             }
             return;
         }

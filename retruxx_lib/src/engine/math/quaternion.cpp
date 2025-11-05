@@ -249,7 +249,10 @@ CVector Quaternion::vecRot(CVector const&) const
 
 void Quaternion::Identity()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    this->x = 0.0;
+    this->y = 0.0;
+    this->z = 0.0;
+    this->w = 1.0;
 }
 
 float Quaternion::Norm() const
