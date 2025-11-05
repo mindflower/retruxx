@@ -1358,7 +1358,8 @@ namespace m3d
 
     void AnimatedModel::LoadSkin(unsigned)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement AnimatedModel::LoadSkin
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::SetNextForAnimation(ActionType, int)

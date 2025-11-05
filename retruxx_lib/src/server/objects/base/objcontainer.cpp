@@ -89,7 +89,17 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, IncTolerance)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, SetGameTime)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+
+    int hour = context->asInt(1);
+    int minute = context->asInt(2);
+    int day = context->asInt(3);
+    int month = context->asInt(4);
+    int year = context->asInt(5);
+
+    objContainer->SetGameTime(hour, minute, day, month, year);
+
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetGameTime)
@@ -716,9 +726,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ObjContainer::SetGameTime(int, int, int, int, int)
+    void ObjContainer::SetGameTime(int hour, int minute, int day, int month, int year)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_GameTime.setExpanded(hour, minute, day, month, year);
     }
 
     m3d::Object* ObjContainer::CreateObject()

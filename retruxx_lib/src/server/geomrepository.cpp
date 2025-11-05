@@ -309,7 +309,8 @@ namespace ai
 
     void GeomRepository::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement GeomRepository::LoadFromXML
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     void GeomRepository::TransferToRepository(GeomRepository* targetRepository)

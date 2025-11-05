@@ -398,7 +398,11 @@ namespace ai
 
         if (!m_correspondingPassageLocationName.empty())
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto obj = theObjects->GetEntityByObjName(m_correspondingPassageLocationName);
+            if (!obj || !IS_KIND_OF(obj, Location))
+            {
+                M3D_LOG_ERR("Error: PassageLocation '" + m_correspondingPassageLocationName + "' does not exist for " + GetDebugDescription());
+            }
         }
 
         if (thePlayer)

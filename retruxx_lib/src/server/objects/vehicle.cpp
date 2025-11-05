@@ -5024,7 +5024,8 @@ namespace ai
 		{
 			return;
 		}
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: implement Vehicle::_UpdateSeenObjAndWeapons
+		//RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	CVector Vehicle::_CalcSteeringForce(float elapsedTime)

@@ -695,19 +695,90 @@ namespace ai
 
     void ComplexPhysicObj::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
+        // TODO: generated code
         ai::Obj::LoadFromXML(xmlFile, xmlNode);
 
         // TODO: implement ComplexPhysicObj::LoadFromXML
         const auto prototypeInfo = GetPrototypeInfo();
 
-        ref_ptr node = xmlFile->CreateNode();
-        xmlNode->GetFirstChild(node, "Parts");
+        ref_ptr partsNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(partsNode, "Parts");
         for (auto& partName : prototypeInfo->GetAllPartNames())
         {
-            // auto partId = prototypeInfo->m_partPrototypeIds.at(partName);
 
+            // Create temporary node for this part
+            ref_ptr<m3d::cmn::XmlNode> partNode(xmlFile->CreateNode());
+
+            // Find the prototype ID for this part
+            auto partPrototypeIt = prototypeInfo->m_partPrototypeIds.find(partName);
+            bool partPresent = (partPrototypeIt != prototypeInfo->m_partPrototypeIds.end());
+
+            // Check if part is present in XML
+            if (!partsNode->IsEmpty())
+            {
+                partsNode->GetFirstChild(partNode, partName.c_str());
+                if (!partNode->IsEmpty())
+                {
+                    m3d::SafeBoolAttrib(partPresent, partNode, "present");
+                }
+            }
+
+            // If part doesn't exist in prototype or isn't present in XML, skip
+            if (!partPresent)
+            {
+                continue;
+            }
+
+            int objectId = -1;
+
+            if (partNode->IsEmpty())
+            {
+                // Create new object if we're doing a full save
+                if (ai::theObjects->m_SaveType == ObjContainer::SAVE_FULL)
+                {
+                    continue;
+                }
+
+                objectId = theObjects->CreateNewObjectWithSuspendedPostLoad(
+                    partPrototypeIt->second,
+                    {},
+                    -1,
+                    -1);
+            }
+            else
+            {
+                // Read object from XML
+                objectId = gDynamicScene->ReadNewObjectFromXml(
+                    xmlFile,
+                    partNode,
+                    {});
+
+            }
+
+            if (objectId == -1)
+            {
+                M3D_LOG_ERR("Error: could not read object part from XML, part name = '" + partName + "'");
+                continue;
+            }
+
+            // Get the object from the container
+            m3d::Object* partObject = theObjects->GetEntityByObjId(objectId);
+
+
+            // Verify it's a VehiclePart and set it
+            if (IS_KIND_OF(partObject, VehiclePart))
+            {
+                SetPartByName(partName, RT_DYNCAST(partObject, VehiclePart), true);
+            }
+            else
+            {
+                CStr errorMsg = "Error: the part '" + partName + "' isn't a VehiclePart";
+                M3D_LOG_ERR("Error: could not read object part from XML, part name = '" + partName + "'");
+            }
         }
 
+        // Final construction
+        _Construct(nullptr);
     }
 
     void ComplexPhysicObj::Blow(Obj*)
