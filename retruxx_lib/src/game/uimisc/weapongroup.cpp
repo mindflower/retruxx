@@ -148,7 +148,9 @@ void WeaponGroupManager::OnPlayerVehicleChanged()
 
 int WeaponGroupManager::Init()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement WeaponGroupManager::Init
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int WeaponGroupManager::AddWeaponToWeaponGroup(CStr const&, int)

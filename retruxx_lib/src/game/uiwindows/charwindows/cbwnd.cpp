@@ -7,7 +7,9 @@ RT_CLASS_DEFINE(CBWnd);
 
 CBWnd::CBAuxInfo::CBAuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehiclePartPaneName = "PaneGun";
+    m_wndHidePictureBgName = "wndHidePictureBg";
+    m_wndDisabledBgName = "wndDisabledBg";
 }
 
 void CBWnd::SetPartId(int)
@@ -102,7 +104,10 @@ void CBWnd::FullUpdate()
 
 CBWnd::CBWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndHidePictureBg = 0;
+    m_wndDisabledBg = 0;
+    m_vehicleType = InventoryWnd::VEHICLETYPE_INVALID;
+    m_mainPartId = -1;
 }
 
 void CBWnd::SetDisabledLook(bool)

@@ -712,7 +712,30 @@ void TruxxUiManager::OnBeforeStartLevel()
     bool bOldFirstLevelResourcesLoaded = m_bFirstLevelResourcesLoaded;
     if (!m_bFirstLevelResourcesLoaded && !GUI_IsCurrentLevelMainMenuLevel())
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_repliesManager)
+        {
+            m_repliesManager->Init();
+        }
+
+        if (m_navPointManager)
+        {
+            m_navPointManager->Init();
+        }
+
+        if (m_weaponGroupManager)
+        {
+            m_weaponGroupManager->Init();
+        }
+
+        if (m_savesManager)
+        {
+            m_savesManager->Init();
+        }
+
+        if (m_msgManager)
+        {
+            m_msgManager->Init(true);
+        }
     }
     auto res = 1;
     if (GUI_IsCurrentLevelMainMenuLevel())

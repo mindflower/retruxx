@@ -7,7 +7,12 @@ RT_CLASS_DEFINE(CabinWnd);
 
 CabinWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_cabinFirstGunOrigin.x = 368.0;
+    m_cabinFirstGunOrigin.y = 70.0;
+    m_cabinSecondGunOrigin.x = 144.0;
+    m_cabinSecondGunOrigin.y = 112.0;
+    m_gadgetCommonName = "wndGadgetCommonBg";
+    m_gadgetWeaponName = "wndGadgetWeaponBg";
 }
 
 m3d::Object* CabinWnd::Clone()
@@ -17,7 +22,7 @@ m3d::Object* CabinWnd::Clone()
 
 m3d::Object* CabinWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new CabinWnd;
 }
 
 m3d::Class* CabinWnd::GetBaseClass()
@@ -32,12 +37,13 @@ CabinWnd::~CabinWnd()
 
 m3d::Class* CabinWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(CabinWnd);
 }
 
 CabinWnd::CabinWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_mainPartName = "CABIN";
+    m_wndGadgets.resize(0xA);
 }
 
 CabinWnd::CabinWnd(CabinWnd const&)

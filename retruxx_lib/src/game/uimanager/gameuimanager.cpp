@@ -639,7 +639,7 @@ int GameUiManager::GUI_Init(bool reloadResources)
                 res = 0;
             }
             m_oneTimeStuffIsInited = true;
-            m_bFirstLevelResourcesLoaded = true;
+            m_bFirstLevelResourcesLoaded = false;
         }
     }
     else

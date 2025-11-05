@@ -51,7 +51,8 @@ void ChildPanel::OnRestoreStyles()
 
 ChildPanel::ChildPanel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleId = -1;
+    m_guiId = -1;
 }
 
 ChildPanel::ChildPanel(ChildPanel const&)

@@ -10,7 +10,8 @@ std::vector<int> NavPointManager::GetNavPointsByType(CStr const&, NavPoint::NavP
 
 int NavPointManager::Init()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Clear();
+    return 1;
 }
 
 int NavPointManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

@@ -24,7 +24,9 @@ void RepliesManager::SetConditionValue(int)
 
 int RepliesManager::Init()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement RepliesManager::Init
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 Reply* RepliesManager::GetFirstFitReply(std::vector<CStr> const&, Reply::Role, ai::Npc*)

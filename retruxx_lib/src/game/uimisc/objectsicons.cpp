@@ -40,7 +40,10 @@ m3d::rend::TexHandle ObjectsIcons::Icon::GetIco(int mode) const
 
 ObjectsIcons::Icon::~Icon()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto& tex : m_ico)
+    {
+        M3D_RENDERER->ReleaseTexture(tex);
+    }
 }
 
 ObjectsIcons::ObjectsIcons()

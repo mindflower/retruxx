@@ -204,7 +204,9 @@ int SavesManager::QuickSave()
 
 int SavesManager::Init()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement SavesManager::Init
+    //RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 SavesManager::ConstantSaveInfo const& SavesManager::GetConstatntSaveInfo() const

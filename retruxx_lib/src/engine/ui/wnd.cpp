@@ -25,6 +25,35 @@ namespace m3d
     	RT_CLASS_EXPORTS_END;
         RT_CLASS_DEFINE(Wnd);
 
+        namespace
+        {
+            struct _AnimationType2Str
+            {
+                /* 0x0000 */ m3d::ui::Wnd::AnimationInfo::AnimationType m_type;
+                /* 0x0004 */ const char* m_name;
+            }; /* size: 0x0008 */
+
+            _AnimationType2Str l_animationType2Str[17] = {
+                {Wnd::AnimationInfo::ANIMATIONTYPE_USER, "USER"},
+                {Wnd::AnimationInfo::ANIMATIONTYPE_TO_LEFT, "TO_LEFT"              },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFT, "TO_BEYOND_LEFT"              },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_RIGHT, "TO_RIGHT"                          },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHT,"TO_BEYOND_RIGHT"             },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_TOP, "TO_TOP"                              },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_BEYOND_TOP, "TO_BEYOND_TOP"                },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_BOTTOM, "TO_BOTTOM"                        },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_BEYOND_BOTTOM, "TO_BEYOND_BOTTOM"          },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_LEFTTOP, "TO_LEFTTOP"                      },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTTOP, "TO_BEYOND_LEFTTOP"        },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_LEFTBOTTOM, "TO_LEFTBOTTOM"                },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTBOTTOM, "TO_BEYOND_LEFTBOTTOM"  },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_RIGHTTOP, "TO_RIGHTTOP"                    },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTTOP, "TO_BEYOND_RIGHTTOP"      },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_RIGHTBOTTOM,"TO_RIGHTBOTTOM"               },
+                    {Wnd::AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTBOTTOM, "TO_BEYOND_RIGHTBOTTOM"},
+            };
+        }
+
         Wnd::AnimationInfo::AnimationInfo()
         {
             this->m_bEnabled = 1;
@@ -48,9 +77,16 @@ namespace m3d
         {
         }
 
-        Wnd::AnimationInfo::AnimationType Wnd::AnimationInfo::Str2AnimationType(CStr const&) const
+        Wnd::AnimationInfo::AnimationType Wnd::AnimationInfo::Str2AnimationType(CStr const& str) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            for (auto& anim : l_animationType2Str)
+            {
+                if (str == anim.m_name)
+                {
+                    return anim.m_type;
+                }
+            }
+            return ANIMATIONTYPE_INVALID;
         }
 
         void Wnd::AnimationInfo::Invalidate()
@@ -63,9 +99,40 @@ namespace m3d
             RETRUXX_NOT_IMPLEMENTED;
         }
 
-        int Wnd::AnimationInfo::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int Wnd::AnimationInfo::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!file || !node)
+                return 0;
+            m3d::SafeBoolAttrib(this->m_bEnabled, node, "animationEnabled");
+            
+            CStr strAnimationType;
+            m3d::SafeStrAttrib(strAnimationType, node, "animationType");
+            this->m_animationType = Str2AnimationType(strAnimationType);
+            if (m_animationType == ANIMATIONTYPE_INVALID)
+            {
+                return 0;
+            }
+            if (m_animationType == ANIMATIONTYPE_USER)
+            {
+                CVector2 vStartPt;
+                CVector2 vEndPt;
+                m3d::SafeVector2Attrib(vStartPt, node, "animationStartPt");
+                m3d::SafeVector2Attrib(vEndPt, node, "animationEndPt");
+                this->m_startPt.x = vStartPt.x;
+                this->m_startPt.y = vStartPt.y;
+                this->m_endPt.x = vEndPt.x;
+                this->m_endPt.y = vEndPt.y;
+            }
+            m3d::SafeFloatAttrib(this->m_startSpeed, node, "animationSpeed");
+            m3d::SafeFloatAttrib(this->m_acceleration, node, "animationAccel");
+            m3d::SafeUintAttrib(this->m_delayTime, node, "animationDelayTime");
+            m3d::SafeBoolAttrib(this->m_bImmediate, node, "Immediate");
+            m3d::SafeStrAttrib(this->m_soundMoveName, node, "soundMoveName");
+            m3d::SafeStrAttrib(this->m_soundStopName, node, "soundStopName");
+            m3d::SafeBoolAttrib(this->m_bSoundMoveEnabled, node, "soundMoveEnabled");
+            m3d::SafeBoolAttrib(this->m_bSoundStopEnabled, node, "soundStopEnabled");
+
+            return 1;
         }
 
         CStr Wnd::AnimationInfo::AnimationType2Str(AnimationType) const
