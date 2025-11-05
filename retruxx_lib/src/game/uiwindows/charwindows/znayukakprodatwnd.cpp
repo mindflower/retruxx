@@ -6,7 +6,21 @@ RT_CLASS_DEFINE(ZnayuKakProdatWnd);
 
 ZnayuKakProdatWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndTradeCostName = "wndTradeCost";
+    m_wndPlayerItemsCostName = "wndPlayerItemsCost";
+    m_wndWorkshopItemsCostName = "wndWorkshopItemsCost";
+    m_wndBottomPanelName = "wndBottomPanel";
+    m_btnTransferItemsFromPlayerToWorkshopName = "btnMoveAllFromPlayerToWorkshop";
+    m_btnTransferItemsFromWorkshopToPlayerName = "LeftItemsInCabin";
+    m_strIdLeftItemsInCabin = "LeftItemsInBasket";
+    m_strIdLeftItemsInBasket = "LeftItemsInVehicle";
+    m_strIdLeftItemsInVehicle = "MoveVehicleItemsFromPlayer";
+    m_strIdTooltipTransferItemsFromPlayerToWorkshop[0] = "MoveCabinItemsFromPlayer";
+    m_strIdTooltipTransferItemsFromPlayerToWorkshop[1] = "MoveBasketItemsFromPlayer";
+    m_strIdTooltipTransferItemsFromPlayerToWorkshop[2] = "MoveVehicleItemsToPlayer";
+    m_strIdTooltipTransferItemsFromWorkshopToPlayer[0] = "MoveCabinItemsToPlayer";
+    m_strIdTooltipTransferItemsFromWorkshopToPlayer[1] = "MoveBasketItemsToPlayer";
+    m_strIdTooltipTransferItemsFromWorkshopToPlayer[2] = "MoveBasketItemsToPlayer";
 }
 
 void ZnayuKakProdatWnd::CurValues::Clear()
@@ -16,7 +30,8 @@ void ZnayuKakProdatWnd::CurValues::Clear()
 
 ZnayuKakProdatWnd::CurValues::CurValues()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_hp = 0.0;
+    m_fuel = 0.0;
 }
 
 int ZnayuKakProdatWnd::ItemSaveInfo::SetupAsGadget(int, Belong, int)
@@ -146,12 +161,12 @@ int ZnayuKakProdatWnd::GetCurTradeCost() const
 
 m3d::Object* ZnayuKakProdatWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new ZnayuKakProdatWnd;
 }
 
 m3d::Class* ZnayuKakProdatWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(ZnayuKakProdatWnd);
 }
 
 int ZnayuKakProdatWnd::ClearCabinFromItems(int)
@@ -471,7 +486,16 @@ ZnayuKakProdatWnd::ZnayuKakProdatWnd(ZnayuKakProdatWnd const&)
 
 ZnayuKakProdatWnd::ZnayuKakProdatWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndTradeCost = 0;
+    m_wndPlayerItemsCost = 0;
+    m_wndWorkshopItemsCost = 0;
+    m_btnTransferItemsFromPlayerToWorkshop = 0;
+    m_btnTransferItemsFromWorkshopToPlayer = 0;
+    m_objectToTradeId = -1;
+    m_workshopId = -1;
+    m_playerItemsCostToSell = -1;
+    m_workshopItemsCostToBuy = -1;
+    m_tradeType = TRADETYPE_NUM_TRADETYPES;
 }
 
 int ZnayuKakProdatWnd::RestoreCabinItemsState(int, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>> const&)
@@ -516,7 +540,9 @@ int ZnayuKakProdatWnd::TransferCabinItems(int, int)
 
 int ZnayuKakProdatWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement ZnayuKakProdatWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int ZnayuKakProdatWnd::SaveVehiclePartsState(int, CStr const&, Belong, std::map<int, ItemSaveInfo*, std::less<int>, std::allocator<std::pair<int const, ItemSaveInfo*>>>&)

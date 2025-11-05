@@ -6,7 +6,7 @@ RT_CLASS_DEFINE(BarDlg);
 
 BarDlg::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_lstNPCsPatternName = "wndNpcList";
 }
 
 m3d::Object* BarDlg::Clone()
@@ -21,7 +21,7 @@ ai::Bar* BarDlg::GetBar() const
 
 m3d::Object* BarDlg::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new BarDlg;
 }
 
 m3d::Class* BarDlg::GetBaseClass()
@@ -36,7 +36,7 @@ int BarDlg::SetUpForBar(int)
 
 m3d::Class* BarDlg::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(BarDlg);
 }
 
 BarDlg::~BarDlg()
@@ -51,7 +51,8 @@ BarDlg::BarDlg(BarDlg const&)
 
 BarDlg::BarDlg()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_barId = -1;
+    m_lstNPCs = 0;
 }
 
 int BarDlg::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
@@ -66,7 +67,9 @@ void BarDlg::FullUpdate()
 
 int BarDlg::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement BarDlg::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int BarDlg::GameDataClear(bool)

@@ -7,7 +7,7 @@ RT_CLASS_DEFINE(BasketWnd);
 
 BasketWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndInventoryName = "wndInventory";
 }
 
 m3d::Object* BasketWnd::Clone()
@@ -17,12 +17,12 @@ m3d::Object* BasketWnd::Clone()
 
 m3d::Object* BasketWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new BasketWnd;
 }
 
 m3d::Class* BasketWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(BasketWnd);
 }
 
 m3d::Class* BasketWnd::GetBaseClass()
@@ -62,7 +62,9 @@ void BasketWnd::SetupChildVehicleParts()
 
 int BasketWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement BasketWnd::GameDataSetup
+    //RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int BasketWnd::GameDataUpdate(void*, int)
@@ -72,7 +74,7 @@ int BasketWnd::GameDataUpdate(void*, int)
 
 BasketWnd::BasketWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_mainPartName = "BASKET";
 }
 
 BasketWnd::BasketWnd(BasketWnd const&)

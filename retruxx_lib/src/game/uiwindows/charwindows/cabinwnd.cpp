@@ -1,8 +1,9 @@
 #include "cabinwnd.h"
 #include "gadgetwnd.h"
+#include "core/log.h"
 
 RT_CLASS_EXPORTS_BEGIN(CabinWnd)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CabinWnd);
 
 CabinWnd::AuxInfo::AuxInfo()
@@ -53,7 +54,9 @@ CabinWnd::CabinWnd(CabinWnd const&)
 
 int CabinWnd::CreateGadgetWnd(int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CabinWnd::CabinWnd
+    //RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 InventoryWnd::VehicleType CabinWnd::GetVehicleTypeByGuiId(int) const
@@ -63,7 +66,22 @@ InventoryWnd::VehicleType CabinWnd::GetVehicleTypeByGuiId(int) const
 
 int CabinWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (CBWnd::GameDataSetup())
+    {
+        auto res = 1;
+        if ((this->m_gameDataFlags & 2) == 0)
+        {
+            for (int i = 0; i < 10; ++i)
+                res &= CabinWnd::CreateGadgetWnd(i);
+            if (!res)
+                this->m_gameDataFlags &= ~1u;
+        }
+        if ((this->m_gameDataFlags & 1) != 0)
+            return 1;
+
+        M3D_LOG_ERR("CabinWnd: error - fail to init because of a bad resource");
+    }
+    return 0;
 }
 
 ref_ptr<GadgetWnd> CabinWnd::GetGadgetWndByGadgetSlotId(int) const

@@ -1,8 +1,9 @@
 #include "cbwnd.h"
 #include "vehiclepartwnd.h"
+#include "core/log.h"
 
 RT_CLASS_EXPORTS_BEGIN(CBWnd)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CBWnd);
 
 CBWnd::CBAuxInfo::CBAuxInfo()
@@ -69,7 +70,17 @@ int CBWnd::GameDataClear(bool)
 
 int CBWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((this->m_gameDataFlags & 2) == 0)
+    {
+        // TODO: implement CBWnd::GameDataSetup
+        //RETRUXX_NOT_IMPLEMENTED;
+        return 1;
+    }
+    if ((this->m_gameDataFlags & 1) != 0)
+        return 1;
+
+    M3D_LOG_ERR("CBWnd: error - fail to init because of a bad resource");
+    return 0;
 }
 
 void CBWnd::ClearChildVehicleParts()

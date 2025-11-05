@@ -6,22 +6,28 @@ RT_CLASS_DEFINE(DevideDlg);
 
 DevideDlg::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_lblOriginalAmountName = "lblOriginalAmount";
+    m_lblDragAmountName = "lblDragAmount";
+    m_sliderName = "sldAmount";
+    m_btnPlusName = "btnPlus";
+    m_btnMinusName = "btnMinus";
 }
 
 m3d::Class* DevideDlg::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(DevideDlg);
 }
 
 m3d::Object* DevideDlg::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new DevideDlg;
 }
 
 int DevideDlg::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement DevideDlg::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void DevideDlg::UpdateLabels()
@@ -71,5 +77,11 @@ DevideDlg::DevideDlg(DevideDlg const&)
 
 DevideDlg::DevideDlg()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_maxAmount = 0;
+    m_lblOriginalAmount = 0;
+    m_lblDragAmount = 0;
+    m_slider = 0;
+    m_btnPlus = 0;
+    m_btnMinus = 0;
+    m_isInited = 0;
 }

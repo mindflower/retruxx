@@ -8,17 +8,29 @@ RT_CLASS_DEFINE(InventoryWnd);
 
 InventoryWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndCabinName = "wndCabin";
+    m_wndBasketName = "wndBasket";
 }
 
 InventoryWnd::ChildSaveInfo::ChildSaveInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bBasketOnShowAnimationEnabled = 0;
+    m_bBasketOnHideAnimationEnabled = 0;
+    m_bCabinOnShowAnimationEnabled = 0;
+    m_bCabinOnHideAnimationEnabled = 0;
+    m_basketB.x0 = 0.0;
+    m_basketB.y0 = 0.0;
+    m_basketB.width = 0.0;
+    m_basketB.height = 0.0;
+    m_cabinB.x0 = 0.0;
+    m_cabinB.y0 = 0.0;
+    m_cabinB.width = 0.0;
+    m_cabinB.height = 0.0;
 }
 
 m3d::Class* InventoryWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(InventoryWnd);
 }
 
 InventoryWnd::~InventoryWnd()
@@ -38,7 +50,7 @@ m3d::Class* InventoryWnd::GetBaseClass()
 
 m3d::Object* InventoryWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new InventoryWnd;
 }
 
 void InventoryWnd::SetTradeVehicleId(int, ZnayuKakProdatWnd::TradeType)
@@ -53,7 +65,8 @@ m3d::Object* InventoryWnd::Clone()
 
 InventoryWnd::InventoryWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleType = VEHICLETYPE_INVALID;
+    m_tradeType = ZnayuKakProdatWnd::TRADETYPE_NUM_TRADETYPES;
 }
 
 InventoryWnd::InventoryWnd(InventoryWnd const&)
@@ -78,7 +91,9 @@ InventoryWnd::VehicleType InventoryWnd::GetVehicleTypeByGuiId(int) const
 
 int InventoryWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement InventoryWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int InventoryWnd::OnBeforeAddToWndStation()

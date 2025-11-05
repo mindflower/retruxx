@@ -136,7 +136,10 @@ namespace m3d
 
         FormattedStringsListBoxWnd::FormattedStringsListBoxWnd()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            this->m_drawFlags = 0;
+            this->m_curSel = -1;
+            this->m_clientEdges[2] = 2.0;
+            this->m_defFont = 1;
         }
 
         FormattedStringsListBoxWnd::FormattedStringsListBoxWnd(FormattedStringsListBoxWnd const&)

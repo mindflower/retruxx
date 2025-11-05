@@ -15,12 +15,14 @@ namespace m3d
 
         Object* TextBoxWnd::CreateObject()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new TextBoxWnd;
         }
 
-        int TextBoxWnd::SetText(CStr const&)
+        int TextBoxWnd::SetText(CStr const& caption)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto res = Wnd::SetText(caption);
+            RecalcLayout();
+            return res;
         }
 
         CStr TextBoxWnd::GetText() const
@@ -40,7 +42,7 @@ namespace m3d
 
         Class* TextBoxWnd::GetClass() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return RT_CLASS_LOCAL(TextBoxWnd);
         }
 
         int TextBoxWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
@@ -60,7 +62,8 @@ namespace m3d
 
         void TextBoxWnd::RecalcLayout()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement TextBoxWnd::RecalcLayout
+            //RETRUXX_NOT_IMPLEMENTED;
         }
 
         int TextBoxWnd::OnPaint(DrawInfo const&)
@@ -75,7 +78,7 @@ namespace m3d
 
         TextBoxWnd::TextBoxWnd()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_textFormat = TF_FULL;
         }
     }
 }
