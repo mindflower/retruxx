@@ -1,12 +1,15 @@
 #include "characteristicswnd.h"
 
+#include "game/uimisc/guihelper.h"
+
 RT_CLASS_EXPORTS_BEGIN(CharacteristicsWnd)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CharacteristicsWnd);
 
 CharacteristicsWnd::CAuxInfo::CAuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_redColor = help::Color2Str(0x0FF904040);
+    m_greenColor = help::Color2Str(0x0FF23961B);
 }
 
 CharacteristicsWnd::~CharacteristicsWnd()
@@ -31,7 +34,8 @@ CStr CharacteristicsWnd::GetDiffValPrefix(int, bool) const
 
 CharacteristicsWnd::CharacteristicsWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleType = VehicleWnd::VEHICLE_NORMAL;
+    m_vehicleId = -1;
 }
 
 void CharacteristicsWnd::UpdateValue(m3d::ui::Wnd*, int, int, bool)

@@ -369,7 +369,8 @@ namespace m3d
 
                     // Process all children of current node
                     m3d::SgNode* childNode = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
-                    while (childNode) {
+                    while (childNode)
+                    {
                         // Unlink child's collision geometries
                         m_owner->GetLandscape().UnlinkNodeCollisionGeomsFromCell(
                             childNode, x, y, isLastCell);

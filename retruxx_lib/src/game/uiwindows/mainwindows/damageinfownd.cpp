@@ -9,7 +9,10 @@ RT_CLASS_DEFINE(DamageInfoWnd);
 
 DamageInfoWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndHealthName = "wndHealth";
+    m_wndCabinDurabilityName = "wndCabinDurability";
+    m_wndBasketDurabilityName = "wndBasketDurability";
+    m_wndFuelName = "wndFuel";
 }
 
 m3d::Object* DamageInfoWnd::Clone()
@@ -19,12 +22,12 @@ m3d::Object* DamageInfoWnd::Clone()
 
 m3d::Class* DamageInfoWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(DamageInfoWnd);
 }
 
 m3d::Object* DamageInfoWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new DamageInfoWnd;
 }
 
 m3d::Class* DamageInfoWnd::GetBaseClass()
@@ -49,13 +52,12 @@ int DamageInfoWnd::GameDataUpdate(void*, int)
 
 int DamageInfoWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement DamageInfoWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
-DamageInfoWnd::DamageInfoWnd()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+DamageInfoWnd::DamageInfoWnd() = default;
 
 DamageInfoWnd::DamageInfoWnd(DamageInfoWnd const&)
 {

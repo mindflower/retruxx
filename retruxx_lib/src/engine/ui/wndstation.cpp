@@ -483,7 +483,7 @@ namespace m3d
                 stack.pop_back();
 
                 // Process all siblings of the current node
-                auto* sibling = dynamic_cast<Wnd*>(current);
+                auto* sibling = dynamic_cast<Wnd*>(current->GetFirstChild());
                 while (sibling)
                 {
                     sibling->StopAnimation(true);

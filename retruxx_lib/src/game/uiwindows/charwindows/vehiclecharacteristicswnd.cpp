@@ -6,7 +6,17 @@ RT_CLASS_DEFINE(VehicleCharacteristicsWnd);
 
 VehicleCharacteristicsWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndMaxHealthValName = "wndMaxHealthVal";
+    m_wndMaxFuelValName = "wndMaxFuelVal";
+    m_wndPiercingValName = "wndPiercingVal";
+    m_wndBlastValName = "wndBlastVal";
+    m_wndEnergyValName = "wndEnergyVal";
+    m_wndMaxDurabilityValName = "wndMaxDurabilityVal";
+    m_wndBasketCapacityValName = "wndBasketCapacityVal";
+    m_wndMaxSpeedValName = "wndMaxSpeedVal";
+    m_wndTorqueValName = "wndTorqueVal";
+    m_wndWeightValName = "wndWeightVal";
+    m_wndControlValName = "wndControlVal";
 }
 
 m3d::Object* VehicleCharacteristicsWnd::Clone()
@@ -16,12 +26,12 @@ m3d::Object* VehicleCharacteristicsWnd::Clone()
 
 m3d::Object* VehicleCharacteristicsWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new VehicleCharacteristicsWnd;
 }
 
 m3d::Class* VehicleCharacteristicsWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(VehicleCharacteristicsWnd);
 }
 
 m3d::Class* VehicleCharacteristicsWnd::GetBaseClass()
@@ -41,7 +51,9 @@ void VehicleCharacteristicsWnd::UpdateCharacteristics()
 
 int VehicleCharacteristicsWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement VehicleCharacteristicsWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void VehicleCharacteristicsWnd::ClearCharacteristics()
@@ -51,7 +63,17 @@ void VehicleCharacteristicsWnd::ClearCharacteristics()
 
 VehicleCharacteristicsWnd::VehicleCharacteristicsWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndMaxHealthVal = 0;
+    m_wndMaxFuelVal = 0;
+    m_wndPiercingVal = 0;
+    m_wndBlastVal = 0;
+    m_wndEnergyVal = 0;
+    m_wndMaxDurabilityVal = 0;
+    m_wndBasketCapacityVal = 0;
+    m_wndMaxSpeedVal = 0;
+    m_wndTorqueVal = 0;
+    m_wndWeightVal = 0;
+    m_wndControlVal = 0;
 }
 
 VehicleCharacteristicsWnd::VehicleCharacteristicsWnd(VehicleCharacteristicsWnd const&)

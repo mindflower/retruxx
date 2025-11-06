@@ -56,7 +56,10 @@ int SaleWnd::OnBeforeAddToWndStation()
 
 SaleWnd::SaleWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndTab = 0;
+    m_wndTownPicture = 0;
+    m_workshopId = -1;
+    m_buildingType = ai::NUM_BUILDINGTYPES;
 }
 
 int SaleWnd::LaunchTownDlg()

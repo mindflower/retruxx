@@ -46,7 +46,7 @@ void MsgManager::Clear(bool bGlobal)
 
 m3d::Class* MsgManager::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(MsgManager);
 }
 
 m3d::Class* MsgManager::GetBaseClass()

@@ -21,7 +21,11 @@ SpeedometerWnd::ArrowPointer::~ArrowPointer()
 
 SpeedometerWnd::ArrowPointer::ArrowPointer()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_coords.x = 0.0;
+    m_coords.y = 0.0;
+    m_angle = 0.0;
+    m_size.x = 0.0;
+    m_size.y = 0.0;
 }
 
 void SpeedometerWnd::ArrowPointer::Draw(m3d::ui::DrawInfo const&)
@@ -31,12 +35,23 @@ void SpeedometerWnd::ArrowPointer::Draw(m3d::ui::DrawInfo const&)
 
 SpeedometerWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndSpeedNumberName = ("wndSpeedNumber");
+    m_speedPointerTextureName = ("SpeedPointer");
+
+    m_speedPointerSize = { 8.0f, 64.0f };
+    m_speedPointerCenter = { 62.0f, 65.0f };
+    m_speedPointerMinAngle = -0.78539819f;
+    m_speedPointerMaxAngle = 1.5707964f;
+    m_speedPointerMaxAngleBackward = -1.5707964f;
+    m_speedPointerRadius = 27.0f;
+
+    m_colorForvard = 0xFF8CD618;  // Green color
+    m_colorBackward = 0xFFFF0000; // Red color
 }
 
 m3d::Class* SpeedometerWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(SpeedometerWnd);
 }
 
 m3d::Object* SpeedometerWnd::Clone()
@@ -46,7 +61,7 @@ m3d::Object* SpeedometerWnd::Clone()
 
 m3d::Object* SpeedometerWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new SpeedometerWnd;
 }
 
 SpeedometerWnd::~SpeedometerWnd()
@@ -71,7 +86,7 @@ SpeedometerWnd::SpeedometerWnd(SpeedometerWnd const&)
 
 SpeedometerWnd::SpeedometerWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndSpeedNumber = 0;
 }
 
 void SpeedometerWnd::UpdateSpeedNumber(float, MotionDir)
@@ -111,7 +126,9 @@ void SpeedometerWnd::UpdateSpeedPointer(float, MotionDir)
 
 int SpeedometerWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement SpeedometerWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 ai::Vehicle const* SpeedometerWnd::GetVehicle() const

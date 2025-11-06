@@ -16,12 +16,12 @@ m3d::Object* ShopWnd::Clone()
 
 m3d::Object* ShopWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new ShopWnd;
 }
 
 m3d::Class* ShopWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(ShopWnd);
 }
 
 ShopWnd::~ShopWnd()
@@ -36,7 +36,9 @@ void ShopWnd::OnDDItemQuickDrop(void*)
 
 int ShopWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement ShopWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int ShopWnd::GameDataUpdate(void*, int)
@@ -61,7 +63,7 @@ int ShopWnd::SetUpForWorkshop(int)
 
 ShopWnd::ShopWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_buildingType = ai::SHOP;
 }
 
 ShopWnd::ShopWnd(ShopWnd const&)

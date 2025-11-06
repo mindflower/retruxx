@@ -1,5 +1,9 @@
 #include "radarwnd.h"
 
+#include "config.h"
+#include "core/kernel.h"
+#include "core/console/console.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, AllowNavPoints)
 {
     RETRUXX_NOT_IMPLEMENTED;
@@ -142,7 +146,65 @@ m3d::rend::TexHandle RadarWnd::RadarItem::GetTexture() const
 
 RadarWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code
+    // Initialize radar icon names
+    const char* iconNames[] = {
+        "RadarVehicleOwnSmall", "RadarVehicleOwnLarge",
+        "RadarVehicleEnemySmall", "RadarVehicleEnemyLarge",
+        "RadarVehicleNeutralSmall", "RadarVehicleNeutralLarge",
+        "RadarVehicleAllySmall", "RadarVehicleAllyLarge",
+        "RadarTurretOwnSmall", "RadarTurretOwnLarge",
+        "RadarTurretEnemySmall", "RadarTurretEnemyLarge",
+        "RadarTurretNeutralSmall", "RadarTurretNeutralLarge",
+        "RadarTurretAllySmall", "RadarTurretAllyLarge",
+        "RadarQuestMainFar", "RadarQuestMainNear",
+        "RadarQuestUserFar", "RadarQuestUserNear",
+        "RadarNavPointFar", "RadarNavPointNear",
+        "RadarWorldsideNord", "RadarWorldsideSouth"
+    };
+
+    for (int i = 0; i < 24; ++i) {
+        m_icoNames[i] = iconNames[i];
+    }
+
+    // Initialize icon sizes
+    m_icoSizeVehicleSmall = { 12.0f, 12.0f };
+    m_icoSizeVehicleLarge = { 16.0f, 16.0f };
+    m_icoSizeTurretSmall = { 14.0f, 14.0f };
+    m_icoSizeTurretLarge = { 14.0f, 14.0f };
+    m_icoSizeMainQuestFar = { 16.0f, 16.0f };
+    m_icoSizeMainQuestNear = { 12.0f, 12.0f };
+    m_icoSizeUserQuestFar = { 16.0f, 16.0f };
+    m_icoSizeUserQuestNear = { 12.0f, 12.0f };
+    m_icoSizeUserLocationFar = { 16.0f, 16.0f };
+    m_icoSizeUserLocationNear = { 12.0f, 12.0f };
+    m_icoSizeWorldside = { 8.0f, 16.0f };
+
+    // Initialize radar geometry
+    m_rotationCenter = { 65.0f, 65.0f };
+    m_innerRadius = 49.0f;
+    m_outerRadius = 49.0f;
+
+    // Initialize texture names
+    m_cameraSightTexName =("CameraSight");
+    m_cameraSightSz = { 128.0f, 64.0f };
+
+    m_playerVehicleTexName = ("RadarPlayerVehicle");
+    m_playerVehicleSz = { 16.0f, 16.0f };
+
+    m_highlightTexName = ("RadarHighlight");
+    m_highlightB = { 5.0f, 5.0f, 123.0f, 123.0f };
+
+    // Initialize window distance names
+    const char* distanceNames[] = {
+        "wndDistance_MainQuest",
+        "wndDistance_UserQuest",
+        "wndDistance_UserLocation"
+    };
+
+    for (int i = 0; i < 3; ++i) {
+        m_wndsDistancesNames[i] = (distanceNames[i]);
+    }
 }
 
 int RadarWnd::UpdateWorldsidesOnNewFrame()
@@ -302,7 +364,7 @@ int RadarWnd::AddTurret(int)
 
 m3d::Class* RadarWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(RadarWnd);
 }
 
 int RadarWnd::AddVehicle(int)
@@ -422,7 +484,7 @@ int RadarWnd::UpdateOnNewFrame()
 
 m3d::Object* RadarWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new RadarWnd;
 }
 
 int RadarWnd::UpdateTurretsOnNewFrame()
@@ -442,7 +504,9 @@ void RadarWnd::SetScanRadius(float)
 
 int RadarWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement RadarWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 CVector RadarWnd::GetWorldsideCoords(Worldside) const
@@ -491,8 +555,19 @@ m3d::Class* RadarWnd::GetBaseClass()
 }
 
 RadarWnd::RadarWnd()
+    : m_cvDefaultRadarScanRadius("defaultRadarScanRadius", "500", m3d::CVar::CVAR_FLOAT, m3d::CVar::CVAR_ARCHIVE)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_cvDefaultRadarScanRadius, 0);
+    m_test = 0;
+    m_bNavPointsAllowed = 1;
+    m_bVehiclesAllowed = 0;
+    m_bTurretsAllowed = 0;
+    m_bDistancesAllowed = 0;
+    m_bNavPointsEnabled = 1;
+    m_bVehiclesEnabled = 1;
+    m_bTurretsEnabled = 1;
+    m_bDistancesEnabled = 1;
+    m_scanRadius = m_cvDefaultRadarScanRadius.GetF();
 }
 
 RadarWnd::RadarWnd(RadarWnd const&)

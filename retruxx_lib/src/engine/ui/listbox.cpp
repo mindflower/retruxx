@@ -99,9 +99,13 @@ namespace m3d
             RETRUXX_NOT_IMPLEMENTED;
         }
 
-        void FormattedStringsListBoxWnd::SetTextColor(unsigned)
+        void FormattedStringsListBoxWnd::SetTextColor(unsigned textColor)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            Wnd::SetTextColor(textColor);
+            for (auto& item : m_items)
+            {
+                item.m_item.m_color = textColor;
+            }
         }
 
         Object* FormattedStringsListBoxWnd::Clone()

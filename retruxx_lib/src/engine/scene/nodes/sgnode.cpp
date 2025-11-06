@@ -1007,13 +1007,14 @@ namespace m3d
                     stack.pop_back();
 
                     // Process all siblings of the current node
-                    m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
+                    m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
                     while (sibling)
                     {
                         sibling->CanBeFree();
 
                         // If this sibling has children, add to stack for processing
-                        if (sibling->GetFirstChild()) {
+                        if (sibling->GetFirstChild())
+                        {
                             stack.push_back(sibling->GetFirstChild());
                         }
 

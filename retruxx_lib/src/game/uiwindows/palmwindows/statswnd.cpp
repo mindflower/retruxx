@@ -180,12 +180,14 @@ RT_CLASS_DEFINE(StatsWnd);
 
 StatsWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_statsListName = "statsList";
+    m_wndPlayerDizName = "wndPlayerDiz";
+    m_wndPlayerPortraitName = "wndPlayerPortrait";
 }
 
 m3d::Class* StatsWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(StatsWnd);
 }
 
 m3d::Object* StatsWnd::Clone()
@@ -200,7 +202,7 @@ StatsWnd::~StatsWnd()
 
 m3d::Object* StatsWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new StatsWnd;
 }
 
 m3d::Class* StatsWnd::GetBaseClass()
@@ -215,7 +217,8 @@ StatsWnd::StatsWnd(StatsWnd const&)
 
 StatsWnd::StatsWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_statsList = 0;
+    m_wndPlayerDiz = 0;
 }
 
 void StatsWnd::OnNewFrame()
@@ -260,7 +263,9 @@ int StatsWnd::OnAfterAddToWndStation()
 
 int StatsWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement StatsWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void StatsWnd::UpdateStats()

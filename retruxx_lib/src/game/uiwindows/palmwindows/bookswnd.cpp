@@ -6,7 +6,8 @@ RT_CLASS_DEFINE(BooksWnd);
 
 BooksWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndBookTextName = "wndBookText";
+    m_bookListName = "bookList";
 }
 
 bool BooksWnd::BookExists(CStr const&) const
@@ -16,7 +17,7 @@ bool BooksWnd::BookExists(CStr const&) const
 
 m3d::Class* BooksWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(BooksWnd);
 }
 
 BooksWnd::~BooksWnd()
@@ -26,7 +27,7 @@ BooksWnd::~BooksWnd()
 
 m3d::Object* BooksWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new BooksWnd;
 }
 
 m3d::Class* BooksWnd::GetBaseClass()
@@ -56,7 +57,8 @@ int BooksWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&
 
 BooksWnd::BooksWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndBookText = 0;
+    m_bookList = 0;
 }
 
 BooksWnd::BooksWnd(BooksWnd const&)
@@ -76,7 +78,9 @@ int BooksWnd::GameDataClear(bool)
 
 int BooksWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement BooksWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int BooksWnd::OnAfterAddToWndStation()

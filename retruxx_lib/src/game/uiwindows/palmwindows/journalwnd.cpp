@@ -42,7 +42,13 @@ RT_CLASS_DEFINE(JournalWnd);
 
 JournalWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_tabButtonNames[0] = "btnHistory";
+    m_tabButtonNames[1] = "btnBooks";
+    m_tabButtonNames[2] = "btnRelations";
+    m_tabButtonNames[3] = "btnStats";
+    m_tabButtonNames[4] = "btnEncyclopaedia";
+    m_tabBtnPaneNameUnselected = "PaneBtnGray1";
+    m_tabBtnPaneNameSelected = "PaneBtnGray1Selected";
 }
 
 void JournalWnd::ShowAllInEncyclopaedia()
@@ -57,7 +63,7 @@ bool JournalWnd::BookExists(CStr const&) const
 
 m3d::Object* JournalWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new JournalWnd;
 }
 
 m3d::Class* JournalWnd::GetBaseClass()
@@ -77,7 +83,7 @@ int JournalWnd::AddHistory(CStr const&, m3d::AIParam const&)
 
 m3d::Class* JournalWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(ScreenWnd);
 }
 
 int JournalWnd::AddClanToEncyclopaedia(int)
@@ -122,7 +128,7 @@ int JournalWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam cons
 
 JournalWnd::JournalWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_curTab = TAB_HISTORY;
 }
 
 JournalWnd::JournalWnd(JournalWnd const&)
@@ -132,7 +138,9 @@ JournalWnd::JournalWnd(JournalWnd const&)
 
 int JournalWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement JournalWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int JournalWnd::GameDataSave(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)

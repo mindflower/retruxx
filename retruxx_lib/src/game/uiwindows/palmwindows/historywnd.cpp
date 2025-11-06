@@ -6,7 +6,8 @@ RT_CLASS_DEFINE(HistoryWnd);
 
 HistoryWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_txtName = "txt";
+    m_timeColor = 0x88FF0000;
 }
 
 m3d::Class* HistoryWnd::GetBaseClass()
@@ -16,7 +17,7 @@ m3d::Class* HistoryWnd::GetBaseClass()
 
 m3d::Object* HistoryWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new HistoryWnd;
 }
 
 m3d::Object* HistoryWnd::Clone()
@@ -31,7 +32,7 @@ int HistoryWnd::AddRecord(CStr const&, m3d::AIParam const&)
 
 m3d::Class* HistoryWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(HistoryWnd);
 }
 
 HistoryWnd::~HistoryWnd()
@@ -41,12 +42,14 @@ HistoryWnd::~HistoryWnd()
 
 int HistoryWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement HistoryWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 HistoryWnd::HistoryWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_txt = 0;
 }
 
 HistoryWnd::HistoryWnd(HistoryWnd const&)

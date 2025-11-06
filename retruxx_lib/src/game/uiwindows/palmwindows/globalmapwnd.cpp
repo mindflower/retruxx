@@ -26,12 +26,12 @@ m3d::Class* LevelConnectionsWnd::GetBaseClass()
 
 m3d::Class* LevelConnectionsWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(LevelConnectionsWnd);
 }
 
 m3d::Object* LevelConnectionsWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new LevelConnectionsWnd;
 }
 
 void LevelConnectionsWnd::SetDrawInfo(std::vector<ConnectionDrawInfo, std::allocator<ConnectionDrawInfo>> const&)
@@ -70,7 +70,8 @@ RT_CLASS_DEFINE(GlobalMapWnd);
 
 GlobalMapWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_levelIcoName = "_ico";
+    m_wndChartName = "wndChart";
 }
 
 m3d::Object* GlobalMapWnd::Clone()
@@ -85,7 +86,7 @@ m3d::Class* GlobalMapWnd::GetBaseClass()
 
 m3d::Object* GlobalMapWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new GlobalMapWnd;
 }
 
 GlobalMapWnd::~GlobalMapWnd()
@@ -95,7 +96,7 @@ GlobalMapWnd::~GlobalMapWnd()
 
 m3d::Class* GlobalMapWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(GlobalMapWnd);
 }
 
 void GlobalMapWnd::UpdateConnectionsDrawInfo()
@@ -105,7 +106,7 @@ void GlobalMapWnd::UpdateConnectionsDrawInfo()
 
 GlobalMapWnd::GlobalMapWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndConnections = 0;
 }
 
 GlobalMapWnd::GlobalMapWnd(GlobalMapWnd const&)
@@ -125,7 +126,9 @@ bool GlobalMapWnd::ConnectionExists(CStr const&, CStr const&) const
 
 int GlobalMapWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GlobalMapWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int GlobalMapWnd::OnAfterAddToWndStation()

@@ -17,14 +17,16 @@ void MotherPanel::AuxSuspendedShow::Reset()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-MotherPanel::AuxSuspendedShow::AuxSuspendedShow()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+MotherPanel::AuxSuspendedShow::AuxSuspendedShow() = default;
 
 MotherPanel::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_tabBtnName = "tabBtn_";
+    m_wndDecorName = "wndDecor";
+    m_wndDecorBarName = "wndDecorBar";
+    m_btnExitName = "btnExit";
+    m_wndTopPanelName = "wndTopPanel";
+    m_pickUpSoundName = "SOUND_PICKUP_ITEMS_FROM_GROUND";
 }
 
 void MotherPanel::LeaveTown(bool)
@@ -34,12 +36,12 @@ void MotherPanel::LeaveTown(bool)
 
 m3d::Class* MotherPanel::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(MotherPanel);
 }
 
 m3d::Object* MotherPanel::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new MotherPanel;
 }
 
 m3d::Object* MotherPanel::Clone()
@@ -294,7 +296,9 @@ void MotherPanel::AdjustChildOrder()
 
 int MotherPanel::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement MotherPanel::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void MotherPanel::OnTown()
@@ -309,7 +313,17 @@ MotherPanel::MotherPanel(MotherPanel const&)
 
 MotherPanel::MotherPanel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_secondPanelLevel.push_back(PANEL_TRADE_RIGHT);
+    m_secondPanelLevel.push_back(PANEL_TRADE_LEFT);
+    m_secondPanelLevel.push_back(PANEL_TRADE_COMMON);
+    m_hackedWorkshopVehicleId = -1;
+    m_curTabId = TAB_NUM_TABS;
+    m_lastTabId = TAB_NUM_TABS;
+    m_wndDecor = 0;
+    m_wndDecorBar = 0;
+    m_btnExit = 0;
+    m_wndTopPanel = 0;
+    m_bCurMapLocal = 1;
 }
 
 int MotherPanel::GameDataUpdate(void*, int)

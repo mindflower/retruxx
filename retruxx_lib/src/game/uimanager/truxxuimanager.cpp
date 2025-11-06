@@ -1616,5 +1616,98 @@ int TruxxUiManager::GUI_BeginModalDlg(bool forcePause, bool forceModal)
 
 int TruxxUiManager::GUI_RegisterScriptGlobals()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    int res = 1;
+    const auto registerWindow = [this, &res](const m3d::Class* cls, const char* objName, int wndId)
+    {
+        auto wnd = GetWindow(wndId);
+        if (wnd)
+        {
+            auto* wndPtr = &*wnd;
+            if (wndPtr->IsKindOf(cls))
+            {
+                M3D_KERNEL->RegisterGlobal(wndPtr, objName);
+                return;
+            }
+        }
+        M3D_LOG_ERR("TruxxUiManager::GUI_RegisterScriptGlobals error - cannot register " + CStr(objName));
+        res = 0;
+    };
+
+    registerWindow(RT_CLASS_LOCAL(CinemaPanel), "g_CinemaPanel", 18);
+    registerWindow(RT_CLASS_LOCAL(ConversationWnd), "ConversationWnd", 37);
+    registerWindow(RT_CLASS_LOCAL(TalkWithNpcDlg), "TalkWithNpcDlg", 88);
+    registerWindow(RT_CLASS_LOCAL(JournalWnd), "Journal", 16);
+    registerWindow(RT_CLASS_LOCAL(RadarWnd), "Radar", 17);
+    registerWindow(RT_CLASS_LOCAL(TownDlg), "TownDlg", 4);
+    registerWindow(RT_CLASS_LOCAL(MotherPanel), "MotherPanel", 7);
+    registerWindow(RT_CLASS_LOCAL(MainGameInterfaceWnd), "MainGameInterface", 155);
+
+    if (m_repliesManager)
+    {
+        M3D_KERNEL->RegisterGlobal(m_repliesManager, "RepliesManager");
+    }
+    else
+    {
+        M3D_LOG_ERR("TruxxUiManager::GUI_RegisterScriptGlobals error - cannot register RepliesManager");
+        res = 0;
+    }
+
+    if (m_levelInfoManager)
+    {
+        M3D_KERNEL->RegisterGlobal(m_levelInfoManager, "LevelInfoManager");
+    }
+    else
+    {
+        M3D_LOG_ERR("TruxxUiManager::GUI_RegisterScriptGlobals error - cannot register LevelInfoManager");
+        res = 0;
+    }
+
+    if (m_savesManager)
+    {
+        M3D_KERNEL->RegisterGlobal(m_savesManager, "SavesManager");
+    }
+    else
+    {
+        M3D_LOG_ERR("TruxxUiManager::GUI_RegisterScriptGlobals error - cannot register SavesManager");
+        res = 0;
+    }
+
+    if (m_msgManager)
+    {
+        M3D_KERNEL->RegisterGlobal(m_msgManager, "MsgManager");
+    }
+    else
+    {
+        M3D_LOG_ERR("TruxxUiManager::GUI_RegisterScriptGlobals error - cannot register MsgManager");
+        res = 0;
+    }
+
+    if (m_weaponGroupManager)
+    {
+        M3D_KERNEL->RegisterGlobal(m_weaponGroupManager, "WeaponGroupManager");
+    }
+    else
+    {
+        M3D_LOG_ERR("TruxxUiManager::GUI_RegisterScriptGlobals error - cannot register WeaponGroupManager");
+        res = 0;
+    }
+
+    if (m_helpManager)
+    {
+        M3D_KERNEL->RegisterGlobal(m_helpManager, "HelpManager");
+    }
+    else
+    {
+        M3D_LOG_ERR("TruxxUiManager::GUI_RegisterScriptGlobals error - cannot register HelpManager");
+        res = 0;
+    }
+
+    if (res == 0)
+    {
+        M3D_LOG_ERR("Interface: errors while register script globals");
+    }
+
+    M3D_KERNEL->GetEngineCfg().m_console->executeCommand("/conScript data\\scripts\\GuiObjects.lua");
+
+    return res;
 }

@@ -7,7 +7,11 @@ RT_CLASS_DEFINE(GroundWnd);
 
 GroundWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndPictureName = "wndPicture";
+    m_wndRepositoryName = "wndRepository";
+    m_btnPickUpAllName = "btnPickUpAll";
+    m_wndGroundPictureName = "wndGroundPicture";
+    m_groundPictureTexName = "InventoryGround";
 }
 
 void GroundWnd::SetVehicleId(int)
@@ -27,12 +31,12 @@ void GroundWnd::PickUpAll()
 
 m3d::Class* GroundWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(GroundWnd);
 }
 
 m3d::Object* GroundWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new GroundWnd;
 }
 
 m3d::Object* GroundWnd::Clone()
@@ -77,7 +81,8 @@ int GroundWnd::GameDataClear(bool)
 
 GroundWnd::GroundWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_btnPickUpAll = 0;
+    m_wndGroundPicture = 0;
 }
 
 GroundWnd::GroundWnd(GroundWnd const&)
@@ -97,7 +102,9 @@ int GroundWnd::GameDataUpdate(void*, int)
 
 int GroundWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GroundWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int GroundWnd::OnAfterRemoveFromWndStation()

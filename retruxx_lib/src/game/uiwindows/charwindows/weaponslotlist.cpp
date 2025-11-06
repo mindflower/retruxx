@@ -7,12 +7,12 @@ RT_CLASS_DEFINE(WeaponSlotList);
 
 WeaponSlotList::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_space = -2.0;
 }
 
 m3d::Class* WeaponSlotList::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(WeaponSlotList);
 }
 
 WeaponSlotList::~WeaponSlotList()
@@ -32,7 +32,7 @@ m3d::Class* WeaponSlotList::GetBaseClass()
 
 m3d::Object* WeaponSlotList::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new WeaponSlotList;
 }
 
 m3d::Object* WeaponSlotList::Clone()
@@ -52,7 +52,7 @@ int WeaponSlotList::OnBeforeAddToWndStation()
 
 WeaponSlotList::WeaponSlotList()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleId = -1;
 }
 
 WeaponSlotList::WeaponSlotList(WeaponSlotList const&)
@@ -102,7 +102,9 @@ void WeaponSlotList::SortGunPartNames(std::vector<CStr, std::allocator<CStr>>&, 
 
 int WeaponSlotList::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement WeaponSlotList::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void WeaponSlotList::FullUpdate()

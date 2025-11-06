@@ -1,5 +1,7 @@
 #include <ui/tabwnd.h>
 
+#include "ui/ui_srv.h"
+
 namespace m3d
 {
     namespace ui
@@ -10,7 +12,11 @@ namespace m3d
 
         TabButtonInfo::TabButtonInfo()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_minWidth = 0.0;
+            m_maxWidth = 0.0;
+            m_height = 0.0;
+            m_spaceBetweenButtons = 0.0;
+            m_glyphSz = 0.0;
         }
 
         void TabButtonInfo::SetIzvrat(float, float, float, Alignment)
@@ -25,12 +31,14 @@ namespace m3d
 
         TabWnd::AuxInfo::AuxInfo()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_dizSpace = 5.0;
+            m_clientEdge = 10.0;
+            m_btnClientEdge = 5.0;
         }
 
         Object* TabWnd::CreateObject()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new TabWnd;
         }
 
         int TabWnd::SetCurSel(int)
@@ -45,7 +53,7 @@ namespace m3d
 
         Class* TabWnd::GetClass() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return RT_CLASS_LOCAL(TabWnd);
         }
 
         int TabWnd::AddItem(ref_ptr<Wnd>, TabItemInfo const&)
@@ -65,7 +73,9 @@ namespace m3d
 
         int TabWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement TabWnd::Create
+            // RETRUXX_NOT_IMPLEMENTED;
+            return 1;
         }
 
         TabButtonInfo const& TabWnd::GetTabButtonInfo() const
@@ -90,12 +100,14 @@ namespace m3d
 
         void TabWnd::SetClientEdges(float, float, float, float)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement TabWnd::SetClientEdges
+            // RETRUXX_NOT_IMPLEMENTED;
         }
 
         void TabWnd::SetTabButtonInfo(TabButtonInfo const&)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement TabWnd::SetTabButtonInfo
+            // RETRUXX_NOT_IMPLEMENTED;
         }
 
         Object* TabWnd::Clone()
@@ -175,7 +187,17 @@ namespace m3d
 
         TabWnd::TabWnd()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            this->m_curSel = -1;
+
+            TabButtonInfo info;
+            info.m_minWidth = m3d::ui::Wnd::m_gfx->GetTabButtonMinWidth();
+            info.m_maxWidth = m3d::ui::Wnd::m_gfx->GetTabButtonMaxWidth();
+            info.m_height = m3d::ui::Wnd::m_gfx->GetTabButtonHeight();
+            info.m_spaceBetweenButtons = m3d::ui::Wnd::m_gfx->GetTabButtonSpace();
+            info.m_drawStyle = TabButtonInfo::DRAWSTYLE_NORMAL;
+            info.m_alignment = TabButtonInfo::ALIGNMENT_LEFT;
+            info.m_glyphSz = m_gfx->GetGlyphHeight();
+            SetTabButtonInfo(info);
         }
 
         TabWnd::TabWnd(TabWnd const&)

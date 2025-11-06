@@ -6,17 +6,18 @@ RT_CLASS_DEFINE(PlayerMoneyWnd);
 
 PlayerMoneyWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndValueName = "wndValue";
+    m_strIdMoney = "Money";
 }
 
 m3d::Class* PlayerMoneyWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(PlayerMoneyWnd);
 }
 
 m3d::Object* PlayerMoneyWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new PlayerMoneyWnd;
 }
 
 m3d::Class* PlayerMoneyWnd::GetBaseClass()
@@ -41,7 +42,7 @@ void PlayerMoneyWnd::OnStartLevel()
 
 PlayerMoneyWnd::PlayerMoneyWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndValue = 0;
 }
 
 PlayerMoneyWnd::PlayerMoneyWnd(PlayerMoneyWnd const&)
@@ -56,7 +57,9 @@ void PlayerMoneyWnd::UpdateValue()
 
 int PlayerMoneyWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement PlayerMoneyWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int PlayerMoneyWnd::GameDataUpdate(void*, int)

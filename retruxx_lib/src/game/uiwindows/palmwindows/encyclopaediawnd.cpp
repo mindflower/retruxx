@@ -6,12 +6,15 @@ RT_CLASS_DEFINE(EncyclopaediaWnd);
 
 EncyclopaediaWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_subjectListName = "subjectList";
+    m_wndDizName = "wndDiz";
+    m_wndModelName = "wndModel";
+    m_comboThemesName = "comboThemes";
 }
 
 m3d::Class* EncyclopaediaWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(EncyclopaediaWnd);
 }
 
 retruxx::vector<int> const* EncyclopaediaWnd::GetClans() const
@@ -56,7 +59,7 @@ m3d::Class* EncyclopaediaWnd::GetBaseClass()
 
 m3d::Object* EncyclopaediaWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new EncyclopaediaWnd;
 }
 
 bool EncyclopaediaWnd::IsPrototypeVisible(int) const
@@ -116,7 +119,14 @@ int EncyclopaediaWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIPara
 
 EncyclopaediaWnd::EncyclopaediaWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_subjectList = 0;
+    m_wndDiz = 0;
+    m_comboThemes = 0;
+    m_wndModel = 0;
+    m_bInitedOnce = 0;
+    m_prevInfoObjId = -1;
+    m_prevCapturingObjId = -1;
+    m_prevCapturedObjId = -1;
 }
 
 EncyclopaediaWnd::EncyclopaediaWnd(EncyclopaediaWnd const&)
@@ -226,7 +236,9 @@ int EncyclopaediaWnd::OnAfterAddToWndStation()
 
 int EncyclopaediaWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement EncyclopaediaWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void EncyclopaediaWnd::OnGadgetChanged(void*)

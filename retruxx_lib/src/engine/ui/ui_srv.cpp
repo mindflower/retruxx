@@ -67,7 +67,7 @@ namespace m3d
 
     float ui::GfxServer::GetTabButtonHeight() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_tabButtonHeight;
     }
 
     void ui::GfxServer::SetColor(unsigned, unsigned)
@@ -265,12 +265,12 @@ namespace m3d
 
     float ui::GfxServer::GetGlyphHeight()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_glyphHeight;
     }
 
     float ui::GfxServer::GetTabButtonMaxWidth() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_tabButtonMaxWidth;
     }
 
     void ui::GfxServer::AddTabWndPaneNormal(DrawInfo const&, BoundsBase<float> const&, unsigned, TabButtonInfo const&, retruxx::vector<BoundsBase<float>> const&, int, int, CStr const&, PaneFlagBg)
@@ -285,7 +285,7 @@ namespace m3d
 
     float ui::GfxServer::GetTabButtonSpace() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_tabButtonSpace;
     }
 
     ui::Pane* ui::GfxServer::GetPane(CStr const& paneName)
@@ -938,7 +938,7 @@ namespace m3d
 
     float ui::GfxServer::GetTabButtonMinWidth() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_tabButtonMinWidth;
     }
 
     ui::Font* ui::GfxServer::GetFontById(unsigned) const

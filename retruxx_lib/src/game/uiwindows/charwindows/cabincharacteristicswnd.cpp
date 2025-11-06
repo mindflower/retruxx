@@ -6,7 +6,9 @@ RT_CLASS_DEFINE(CabinCharacteristicsWnd);
 
 CabinCharacteristicsWnd::CabinAuxInfo::CabinAuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndMaxSpeedValName = "wndMaxSpeedVal";
+    m_wndTorqueValName = "wndTorqueVal";
+    m_wndControlValName = "wndControlVal";
 }
 
 void CabinCharacteristicsWnd::SetupForCabin(int)
@@ -16,12 +18,12 @@ void CabinCharacteristicsWnd::SetupForCabin(int)
 
 m3d::Object* CabinCharacteristicsWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new CabinCharacteristicsWnd;
 }
 
 m3d::Class* CabinCharacteristicsWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(CabinCharacteristicsWnd);
 }
 
 m3d::Object* CabinCharacteristicsWnd::Clone()
@@ -51,7 +53,9 @@ ai::Cabin const* CabinCharacteristicsWnd::GetCabin() const
 
 CabinCharacteristicsWnd::CabinCharacteristicsWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndMaxSpeedVal = 0;
+    m_wndTorqueVal = 0;
+    m_wndControlVal = 0;
 }
 
 CabinCharacteristicsWnd::CabinCharacteristicsWnd(CabinCharacteristicsWnd const&)
@@ -71,5 +75,7 @@ void CabinCharacteristicsWnd::UpdateCharacteristics()
 
 int CabinCharacteristicsWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CabinCharacteristicsWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }

@@ -106,7 +106,7 @@ int SavesManager::SaveGame(CStr const&, CStr const&, bool)
 
 m3d::Class* SavesManager::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(SavesManager);
 }
 
 int SavesManager::GetSaveFolderNames(retruxx::vector<CStr>&) const

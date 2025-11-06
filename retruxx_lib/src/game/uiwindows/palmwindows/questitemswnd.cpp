@@ -6,7 +6,9 @@ RT_CLASS_DEFINE(QuestItemsWnd);
 
 QuestItemsWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndPictureName = "wndPicture";
+    m_wndDizName = "wndDiz";
+    m_wndItemsListName = "wndItemsList";
 }
 
 m3d::Class* QuestItemsWnd::GetBaseClass()
@@ -16,12 +18,12 @@ m3d::Class* QuestItemsWnd::GetBaseClass()
 
 m3d::Object* QuestItemsWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new QuestItemsWnd;
 }
 
 m3d::Class* QuestItemsWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(QuestItemsWnd);
 }
 
 QuestItemsWnd::~QuestItemsWnd()
@@ -56,7 +58,9 @@ void QuestItemsWnd::FullUpdate()
 
 int QuestItemsWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: QuestItemsWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void QuestItemsWnd::OnQuestItemsChanged()
@@ -81,7 +85,9 @@ QuestItemsWnd::QuestItemsWnd(QuestItemsWnd const&)
 
 QuestItemsWnd::QuestItemsWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndPicture = 0;
+    m_wndDiz = 0;
+    m_wndItemsList = 0;
 }
 
 void QuestItemsWnd::OnItemsListSelChanged(m3d::AIParam const&)

@@ -10,7 +10,33 @@ RT_CLASS_DEFINE(LocalMapWnd);
 
 LocalMapWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_cbMapsName = "cbMaps";
+    m_wndChartName = "wndChart";
+    m_wndInfoName = "wndInfo";
+    m_wndSaveSellListName = "wndSaveSellList";
+    m_wndChartBgName = "wndChartBg";
+    m_addNpDlgStr = "AddNavPointMsg";
+    m_deleteNpDlgStr = "DeleteNavPointMsg";
+    m_btnNavPointName = "btnNavPoint";
+    m_btnEnableObjectNamesName = "btnEnableObjectNames";
+    m_btnAddTownToSavedListName = "btnSaveList";
+    m_wndEmbossBtnNavPointName = "emboss_btnNavPoint";
+    m_wndEmbossBtnEnableObjectNamesName = "emboss_btnEnableObjectNames";
+    m_wndEmbossBtnAddTownToSavedListName = "emboss_btnSaveList";
+    m_strBtnAddTownToSavedList = "BtnSavePrices";
+    m_strActive = "active";
+    m_strInactive = "inactive";
+    m_strOut = "out";
+    m_strIn = "in";
+    m_strDown = "down";
+    m_strIdTooltipSavePrices = "SavePrices";
+    m_strIdTooltipRemovePrices = "RemovePrices";
+    m_strIdTooltipAddNavPoint = "AddNavPoint";
+    m_strIdTooltipDeleteNavPoint = "DeleteNavPoint";
+    m_strBtnNavPoint = "NavPointBtn_userLocation";
+    m_strEnableObjectNames = "BtnEnableObjectNames";
+    m_strIdTooltipShowObjectNames = "ShowObjectNames";
+    m_strIdTooltipHideObjectNames = "HideObjectNames";
 }
 
 int LocalMapWnd::SetUpForLevel(CStr const&)
@@ -35,7 +61,7 @@ m3d::Class* LocalMapWnd::GetBaseClass()
 
 m3d::Class* LocalMapWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(LocalMapWnd);
 }
 
 bool LocalMapWnd::IsObjectInfoValidForPrices(ObjectInfo*)
@@ -45,7 +71,7 @@ bool LocalMapWnd::IsObjectInfoValidForPrices(ObjectInfo*)
 
 m3d::Object* LocalMapWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new LocalMapWnd;
 }
 
 LocalMapWnd::~LocalMapWnd()
@@ -70,7 +96,9 @@ int LocalMapWnd::GameDataUpdate(void*, int)
 
 int LocalMapWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement LocalMapWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void LocalMapWnd::OnBtnEnableObjectNamesClick(m3d::ui::Wnd*, unsigned, m3d::AIParam const&)
@@ -225,7 +253,12 @@ LocalMapWnd::LocalMapWnd(LocalMapWnd const&)
 
 LocalMapWnd::LocalMapWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_btnAddTownToSavedList = 0;
+    m_btnNavPoint = 0;
+    m_btnEnableObjectNames = 0;
+    m_wndEmbossBtnAddTownToSavedList = 0;
+    m_wndEmbossBtnNavPoint = 0;
+    m_wndEmbossBtnEnableObjectNames = 0;
 }
 
 void LocalMapWnd::OnBtnAddTownToSavedListClick(m3d::ui::Wnd*, unsigned, m3d::AIParam const&)

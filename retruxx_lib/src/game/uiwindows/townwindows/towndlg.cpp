@@ -18,7 +18,9 @@ RT_CLASS_DEFINE(TownDlg);
 
 TownDlg::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_lblTownNameName = "lblTownName";
+    m_lstBuildingsName = "lstBuildingPattern";
+    m_wndClanPictureName = "wndClanPicture";
 }
 
 int TownDlg::GameDataLoad(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
@@ -33,7 +35,7 @@ TownDlg::ConditionalClosingInfo* TownDlg::GetConditionalClosingInfoForTown(CStr 
 
 m3d::Object* TownDlg::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new TownDlg;
 }
 
 void TownDlg::FullUpdate()
@@ -48,7 +50,7 @@ void TownDlg::ClearConditionalClosingInfo()
 
 m3d::Class* TownDlg::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(TownDlg);
 }
 
 int TownDlg::OnAfterAddToWndStation()
@@ -93,7 +95,9 @@ void TownDlg::AddConditionalClosingInfo(CStr const&, CStr const&)
 
 int TownDlg::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement TownDlg::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void TownDlg::OnLeaveBar()
@@ -148,7 +152,9 @@ TownDlg::~TownDlg()
 
 TownDlg::TownDlg()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_lblTownName = 0;
+    m_wndClanPicture = 0;
+    m_townId = -1;
 }
 
 TownDlg::TownDlg(TownDlg const&)

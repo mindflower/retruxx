@@ -107,7 +107,7 @@ void HelpManager::Clear()
 
 m3d::Class* HelpManager::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(HelpManager);
 }
 
 void HelpManager::ResetAutoHelp()

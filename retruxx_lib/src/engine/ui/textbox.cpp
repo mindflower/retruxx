@@ -45,14 +45,26 @@ namespace m3d
             return RT_CLASS_LOCAL(TextBoxWnd);
         }
 
-        int TextBoxWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        int TextBoxWnd::Create(CStr const& capt, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!ListBoxWnd<m3d::ui::FormattedLine>::Create(rc, style, id))
+                return 0;
+            m_drawFlags |= 5u;
+            RecalcLayout();
+            SetText(capt);
+            return 1;
         }
 
-        int TextBoxWnd::Create(BoundsBase<float> const&, unsigned, int)
+        int TextBoxWnd::Create(BoundsBase<float> const& rc, unsigned flags, int id)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto result = ListBoxWnd<m3d::ui::FormattedLine>::Create(rc, flags, id);
+            if (result)
+            {
+                m_drawFlags |= 5u;
+                RecalcLayout();
+                return 1;
+            }
+            return result;
         }
 
         TextBoxWnd::~TextBoxWnd()

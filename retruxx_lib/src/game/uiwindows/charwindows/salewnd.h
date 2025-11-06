@@ -17,54 +17,67 @@ namespace m3d
 class SaleWnd : public ChildPanel
 {
 public:
+    /* 0x0000 */ ChildPanel ChildPanel;
+
+    enum
+    {
+        _Multi = 0,
+    };
+
     enum WorkshopTabType
     {
-        TABTYPE_GUNS_AND_GADGETS = 0x0,
-        TABTYPE_GOODS = 0x1,
-        TABTYPE_NUM_TABTYPES = 0x2,
-        TABTYPE_INVALID = 0x2,
+        TABTYPE_GUNS_AND_GADGETS = 0,
+        TABTYPE_GOODS = 1,
+        TABTYPE_NUM_TABTYPES = 2,
+        TABTYPE_INVALID = 2,
     };
 
 public:
-    virtual m3d::Class* GetRtClass() const;
-    static m3d::Class* GetBaseClass();
-    static std::vector<int> GetResourceIdsForTabItem(WorkshopTabType);
-    virtual int SetUpForWorkshop(int);
-    virtual ~SaleWnd();
-    ai::Workshop* GetWorkshop(void) const;
+    virtual int SetUpForWorkshop(int workshopId) /* 0x128 */;
+    ai::Workshop* GetWorkshop() const;
+    static std::vector<int, std::allocator<int> > __fastcall GetResourceIdsForTabItem(SaleWnd::WorkshopTabType tabType);
+
+    struct AuxInfo;
+    using TabItemsMap = std::map<enum SaleWnd::WorkshopTabType, ref_ptr<m3d::ui::Wnd>, std::less<enum SaleWnd::WorkshopTabType>, std::allocator<std::pair<enum SaleWnd::WorkshopTabType const, ref_ptr<m3d::ui::Wnd> > > >;
+    using TabItemsPair = std::pair<enum SaleWnd::WorkshopTabType, ref_ptr<m3d::ui::Wnd> >;
+    using TabTypeVector = std::vector<enum SaleWnd::WorkshopTabType, std::allocator<enum SaleWnd::WorkshopTabType> >;
 
 protected:
-    ref_ptr<m3d::ui::Wnd> GetWorkWndForTabItem(int) const;
-    virtual int OnWndNotify(m3d::ui::Wnd*, unsigned int, unsigned int, m3d::AIParam const&);
-    void AddTabItem(WorkshopTabType);
-    virtual int OnBeforeAddToWndStation();
-    SaleWnd();
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, const m3d::AIParam& data) override /* 0xc8 */;
     int LaunchTownDlg();
-    int SetupTabInfo(m3d::ui::Wnd*, WorkshopTabType);
-    virtual int SetupTabItem(m3d::ui::Wnd*, WorkshopTabType);
-    virtual void SetupListOfTabTypes();
-    int GetTabIdByTabType(WorkshopTabType) const;
-    virtual void ClearTabItems();
-    bool IsTabCreatedFromRepositorySource(WorkshopTabType) const;
-    virtual m3d::ui::Wnd* CreateTabItem(WorkshopTabType);
+    virtual void UpdateOnChangeTabSel(int newTabIdx, int oldTabIdx, m3d::ui::TabWnd::SelectionType selectionType) /* 0x12c */;
+    virtual m3d::ui::Wnd* CreateTabItem(SaleWnd::WorkshopTabType type) /* 0x130 */;
+    virtual int SetupTabItem(m3d::ui::Wnd* tabItem, SaleWnd::WorkshopTabType tabType) /* 0x134 */;
+    int SetupTabInfo(m3d::ui::Wnd* itemWnd, SaleWnd::WorkshopTabType type);
+    void AddTabItem(SaleWnd::WorkshopTabType tabType);
     void CreateTabItems();
-    WorkshopTabType GetTabTypeByTabId(int) const;
-    virtual int GameDataClear(bool);
-    static ai::WorkshopRepositoryType GetWorkshopRepositoryType(WorkshopTabType);
-    virtual void UpdateTownPicture();
-    virtual int GameDataSetup();
-    virtual void UpdateOnChangeTabSel(int, int, m3d::ui::TabWnd::SelectionType);
-    virtual int GameDataUpdate(void*, int);
+    virtual void ClearTabItems() /* 0x138 */;
+    virtual void SetupListOfTabTypes() = 0 /* 0x13c */;
+    bool IsTabCreatedFromRepositorySource(SaleWnd::WorkshopTabType tabType) const;
+    static ai::WorkshopRepositoryType __fastcall GetWorkshopRepositoryType(SaleWnd::WorkshopTabType);
+    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
+    virtual ai::BuildingType GetBuildingType() = 0 /* 0x140 */;
+    ref_ptr<m3d::ui::Wnd> GetWorkWndForTabItem(int tabId) const;
+    virtual void UpdateTownPicture() /* 0x144 */;
+    int GetTabIdByTabType(SaleWnd::WorkshopTabType tabType) const;
+    SaleWnd::WorkshopTabType GetTabTypeByTabId(int tabId) const;
+    /* 0x0224 */ m3d::ui::TabWnd* m_wndTab;
+    /* 0x0228 */ std::map<enum SaleWnd::WorkshopTabType, ref_ptr<m3d::ui::Wnd>, std::less<enum SaleWnd::WorkshopTabType>, std::allocator<std::pair<enum SaleWnd::WorkshopTabType const, ref_ptr<m3d::ui::Wnd> > > > m_wndTabItems;
+    /* 0x0234 */ std::map<enum SaleWnd::WorkshopTabType, ref_ptr<m3d::ui::Wnd>, std::less<enum SaleWnd::WorkshopTabType>, std::allocator<std::pair<enum SaleWnd::WorkshopTabType const, ref_ptr<m3d::ui::Wnd> > > > m_allTabItems;
+    static SaleWnd::AuxInfo m_aif;
+    /* 0x0240 */ int m_workshopId;
+    /* 0x0244 */ std::vector<enum SaleWnd::WorkshopTabType, std::allocator<enum SaleWnd::WorkshopTabType> > m_tabTypes;
+    /* 0x0254 */ ai::BuildingType m_buildingType;
+    /* 0x0258 */ m3d::ui::ImageWnd* m_wndTownPicture;
+    SaleWnd(const SaleWnd&);
+    SaleWnd();
 
 public:
-    RT_CLASS_DECLARE(SaleWnd);
-
-private:
-    m3d::ui::TabWnd* m_wndTab;
-    std::map<SaleWnd::WorkshopTabType, ref_ptr<m3d::ui::Wnd>> m_wndTabItems;
-    std::map<SaleWnd::WorkshopTabType, ref_ptr<m3d::ui::Wnd>> m_allTabItems;
-    int m_workshopId;
-    std::vector<enum SaleWnd::WorkshopTabType> m_tabTypes;
-    ai::BuildingType m_buildingType;
-    m3d::ui::ImageWnd* m_wndTownPicture;
-};
+    virtual  ~SaleWnd() override /* 0x00 */;
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetRtClass() const /* 0x148 */;
+    static m3d::Class m_classSaleWnd;
+}; /* size: 0x025c */

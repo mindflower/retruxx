@@ -423,7 +423,7 @@ namespace ai
 					stack.pop_back();
 
 					// Process all siblings of the current node
-					m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
+					m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
 					while (sibling)
 					{
 						sibling->CanBeFree();
@@ -648,7 +648,7 @@ namespace ai
 				stack.pop_back();
 
 				// Process all siblings of the current node
-				m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
+				m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
 				while (sibling)
 				{
 					sibling->CanBeFree();

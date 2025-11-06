@@ -10,7 +10,26 @@ RT_CLASS_DEFINE(TakSebeQuestLogWnd);
 
 TakSebeQuestLogWnd::TsqlAuxInfo::TsqlAuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_cbMapsName = "cbMaps";
+    m_lstQuestsName = "lstQuests";
+    m_wndQuestDizName = "wndQuestDiz";
+    m_btnFilterName = "btnFilter";
+    m_btnShowQuestItemsName = "btnShowQuestItemsList";
+    m_icoIdFilterShowAll_out = "QuestFilterShowAll_out";
+    m_icoIdFilterShowAll_in = "QuestFilterShowAll_int";
+    m_icoIdFilterShowAll_down = "QuestFilterShowAll_down";
+    m_icoIdFilterShowNoncompleted_out = "QuestFilterShowNoncompleted_out";
+    m_icoIdFilterShowNoncompleted_in = "QuestFilterShowNoncompleted_in";
+    m_icoIdFilterShowNoncompleted_down = "QuestFilterShowNoncompleted_down";
+    m_strIdFilterShowAll = "ShowAllQuests";
+    m_strIdFilterShowNoncompleted = "ShowNoncompletedQuests";
+    m_strIdShowQuestItems = "ShowQuestItems";
+    m_strIdShowQuests = "ShowQuests";
+    m_strIdQuestItems = "QuestItems";
+    m_strIdQuests = "Quests";
+    m_wndLstQuestsFrameName = "lstQuestsFrame";
+    m_wndEmbossCbMapsName = "emboss_cbMaps";
+    m_wndEmbossBtnFilterName = "emboss_btnFilter";
 }
 
 TakSebeQuestLogWnd::~TakSebeQuestLogWnd()
@@ -25,7 +44,7 @@ m3d::Class* TakSebeQuestLogWnd::GetBaseClass()
 
 m3d::Object* TakSebeQuestLogWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new TakSebeQuestLogWnd;
 }
 
 m3d::Object* TakSebeQuestLogWnd::Clone()
@@ -35,7 +54,7 @@ m3d::Object* TakSebeQuestLogWnd::Clone()
 
 m3d::Class* TakSebeQuestLogWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(TakSebeQuestLogWnd);
 }
 
 bool TakSebeQuestLogWnd::CanQuestBeShown(help::QuestType, int) const
@@ -45,7 +64,9 @@ bool TakSebeQuestLogWnd::CanQuestBeShown(help::QuestType, int) const
 
 int TakSebeQuestLogWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement TakSebeQuestLogWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 bool TakSebeQuestLogWnd::IsInQuestItemMode()
@@ -70,7 +91,10 @@ TakSebeQuestLogWnd::TakSebeQuestLogWnd(TakSebeQuestLogWnd const&)
 
 TakSebeQuestLogWnd::TakSebeQuestLogWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_btnShowQuestItems = 0;
+    m_wndLstQuestsFrame = 0;
+    m_wndEmbossCbMaps = 0;
+    m_wndEmbossBtnFilter = 0;
 }
 
 int TakSebeQuestLogWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)

@@ -229,7 +229,7 @@ RT_CLASS_DEFINE(ReputationWnd);
 
 ReputationWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_reputationListName = "reputationList";
 }
 
 m3d::Object* ReputationWnd::Clone()
@@ -239,12 +239,12 @@ m3d::Object* ReputationWnd::Clone()
 
 m3d::Class* ReputationWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(ReputationWnd);
 }
 
 m3d::Object* ReputationWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new ReputationWnd;
 }
 
 m3d::Class* ReputationWnd::GetBaseClass()
@@ -264,7 +264,7 @@ ReputationWnd::ReputationWnd(ReputationWnd const&)
 
 ReputationWnd::ReputationWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_reputationList = 0;
 }
 
 void ReputationWnd::OnKnownClansChanged()
@@ -284,7 +284,9 @@ int ReputationWnd::GameDataUpdate(void*, int)
 
 int ReputationWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement ReputationWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int ReputationWnd::OnAfterAddToWndStation()

@@ -49,36 +49,31 @@ namespace m3d
             TabItemInfo m_info;
         };
 
-        class TabButtonInfo
+        struct TabButtonInfo
         {
-        public:
-            enum Alignment
-            {
-                ALIGNMENT_LEFT = 0x0,
-                ALIGNMENT_RIGHT = 0x1,
-            };
-
-            /* 153 */
             enum DrawStyle
             {
-                DRAWSTYLE_NORMAL = 0x0,
-                DRAWSTYLE_IZVRAT = 0x1,
+                DRAWSTYLE_NORMAL = 0,
+                DRAWSTYLE_IZVRAT = 1,
             };
 
-        public:
-            TabButtonInfo();
-            void SetIzvrat(float, float, float, Alignment);
-            void SetNormal(float, float, float, float, Alignment, float);
+            enum Alignment
+            {
+                ALIGNMENT_LEFT = 0,
+                ALIGNMENT_RIGHT = 1,
+            };
 
-        private:
-            float m_minWidth;
-            float m_maxWidth;
-            float m_height;
-            float m_spaceBetweenButtons;
-            float m_glyphSz;
-            DrawStyle m_drawStyle;
-            Alignment m_alignment;
-        };
+            /* 0x0000 */ float m_minWidth;
+            /* 0x0004 */ float m_maxWidth;
+            /* 0x0008 */ float m_height;
+            /* 0x000c */ float m_spaceBetweenButtons;
+            /* 0x0010 */ float m_glyphSz;
+            /* 0x0014 */ m3d::ui::TabButtonInfo::DrawStyle m_drawStyle;
+            /* 0x0018 */ m3d::ui::TabButtonInfo::Alignment m_alignment;
+            TabButtonInfo();
+            void SetNormal(float minW, float maxW, float h, float space, m3d::ui::TabButtonInfo::Alignment alignment, float glyphSz);
+            void SetIzvrat(float w, float h, float space, m3d::ui::TabButtonInfo::Alignment alignment);
+        }; /* size: 0x001c */
 
         class TabWnd : public Wnd
         {
