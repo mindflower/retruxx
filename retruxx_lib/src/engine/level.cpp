@@ -20,7 +20,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Level, GetLandSize)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Level, GetLevelName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto const level = dynamic_cast<m3d::Level*>(context->asObject(0, "Level"));
+    auto levelName = level->GetLevelName();
+    context->pushString(levelName);
+    return 1;
 }
 
 namespace m3d

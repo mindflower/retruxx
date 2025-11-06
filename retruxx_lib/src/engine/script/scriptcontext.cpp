@@ -248,9 +248,10 @@ namespace m3d
 		return *(Quaternion*)lua_touserdata(this->L, pos);
 	}
 
-	void LuaContext::pushString(char const*)
+	void LuaContext::pushString(char const* x)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		lua_pushstring(this->L, x);
+		++this->m_numOutputs;
 	}
 
 	CVector& LuaContext::asVector(int i)

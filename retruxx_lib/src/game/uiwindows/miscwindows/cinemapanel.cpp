@@ -1,13 +1,23 @@
 #include "cinemapanel.h"
 
+#include "autoscrolltextwnd.h"
+#include "core/log.h"
+#include "ui/image.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(CinemaPanel, AddMessage)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto panel = (CinemaPanel*)context->asObject(0, "CinemaPanel");
+    int msgId = context->asInt(1);
+    float delay = context->asFloat(2);
+    panel->AddMessage(msgId, delay);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(CinemaPanel, ClearMessages)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto panel = (CinemaPanel*)context->asObject(0, "CinemaPanel");
+    panel->ClearMessages();
+    return 1;
 }
 
 RT_CLASS_EXPORTS_BEGIN(CinemaPanel)
@@ -46,7 +56,8 @@ m3d::Object* CinemaPanel::Clone()
 
 void CinemaPanel::AddMessage(int, float)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CinemaPanel::AddMessage
+    //RETRUXX_NOT_IMPLEMENTED;
 }
 
 unsigned CinemaPanel::GetTimeToTheEndOfMsg()
@@ -76,7 +87,8 @@ bool CinemaPanel::HasMsg()
 
 void CinemaPanel::ClearMessages()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CinemaPanel::ClearMessages
+    //RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* CinemaPanel::CreateObject()
@@ -96,7 +108,8 @@ m3d::Class* CinemaPanel::GetClass() const
 
 void CinemaPanel::Clear()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CinemaPanel::Clear
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CinemaPanel::ClearNormal()
@@ -166,7 +179,105 @@ void CinemaPanel::DeleteAllControls()
 
 int CinemaPanel::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CinemaPanel::GameDataSetup
+    return 1;
+    if ((m_gameDataFlags & 2) == 0)
+    {
+        auto child = GetChildByName(m_aif.m_wndTextName);
+        if (child && child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
+        {
+            m_wndText = dynamic_cast<Wnd*>(child);
+        }
+        else
+        {
+            M3D_LOG_ERR("Get control error: control " + m_aif.m_wndTextName + " is not found or incorrect type");
+        }
+
+        child = GetChildByName(m_aif.m_wndUpPanelName);
+        if (child && child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
+        {
+            m_wndUpPanel = dynamic_cast<Wnd*>(child);
+        }
+        else
+        {
+            M3D_LOG_ERR("Get control error: control " + m_aif.m_wndUpPanelName + " is not found or incorrect type");
+        }
+
+        child = GetChildByName(m_aif.m_wndDownPanelName);
+        if (child && child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
+        {
+            m_wndDownPanel = dynamic_cast<Wnd*>(child);
+        }
+        else
+        {
+            M3D_LOG_ERR("Get control error: control " + m_aif.m_wndDownPanelName + " is not found or incorrect type");
+        }
+
+        child = GetChildByName(m_aif.m_wndScrollImageName);
+        if (child && child->IsKindOf(&m3d::ui::ImageWnd::m_classWnd))
+        {
+            m_wndScrollImage = dynamic_cast<m3d::ui::ImageWnd*>(child);
+        }
+        else
+        {
+            M3D_LOG_ERR("Get control error: control " + m_aif.m_wndScrollImageName + " is not found or incorrect type");
+        }
+
+        child = GetChildByName(m_aif.m_wndScrollImageUpOverlayName);
+        if (child && child->IsKindOf(&m3d::ui::ImageWnd::m_classWnd))
+        {
+            m_wndScrollImageUpOverlay = dynamic_cast<m3d::ui::ImageWnd*>(child);
+        }
+        else
+        {
+            M3D_LOG_ERR("Get control error: control " + m_aif.m_wndScrollImageUpOverlayName + " is not found or incorrect type");
+        }
+
+        child = GetChildByName(m_aif.m_wndScrollImageDownOverlayName);
+        if (child && child->IsKindOf(&m3d::ui::ImageWnd::m_classWnd))
+        {
+            m_wndScrollImageDownOverlay = dynamic_cast<m3d::ui::ImageWnd*>(child);
+        }
+        else
+        {
+            M3D_LOG_ERR("Get control error: control " + m_aif.m_wndScrollImageDownOverlayName + " is not found or incorrect type");
+        }
+
+        child = GetChildByName(m_aif.m_wndPortraitOverlayName);
+        if (child && child->IsKindOf(&m3d::ui::ImageWnd::m_classWnd))
+        {
+            m_wndPortraitOverlay = dynamic_cast<m3d::ui::ImageWnd*>(child);
+        }
+        else
+        {
+            M3D_LOG_ERR("Get control error: control " + m_aif.m_wndPortraitOverlayName + " is not found or incorrect type");
+        }
+
+        child = GetChildByName(m_aif.m_wndScrollTextName);
+        if (child && child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
+        {
+            auto autoScroll = (AutoScrollTextWnd*)M3D_KERNEL->New("AutoScrollTextWnd");
+            if (autoScroll)
+            {
+                if (!autoScroll->CreateFromPattern(dynamic_cast<m3d::ui::Wnd*>(child), true))
+                {
+                    M3D_LOG_ERR("Make control error: cannot create " + m_aif.m_wndScrollTextName + " from pattern class");
+                }
+            }
+            else
+            {
+                M3D_LOG_ERR("Make control error: cannot create " + m_aif.m_wndScrollTextName + " - cannot find rtti class AutoScrollTextWnd");
+            }
+        }
+        else
+        {
+            M3D_LOG_ERR("Make control error: control " + m_aif.m_wndScrollTextName + " is not found or incorrect type");
+        }
+
+        // ....
+    }
+
+    return 1;
 }
 
 void CinemaPanel::SetupTextNormal(MsgInfo const*)

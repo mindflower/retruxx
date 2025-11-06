@@ -219,7 +219,48 @@ int ext_vecGet(lua_State* L)
 
 int ext_vecSet(lua_State* L)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code
+    // Get the userdata (CVector pointer) from Lua stack
+    CVector* vector = static_cast<CVector*>(lua_touserdata(L, 1));
+
+    // Get the field name from Lua stack
+    const char* fieldName = luaL_checkstring(L, 2);
+
+    // Get the new value from Lua stack
+    float value = static_cast<float>(luaL_checknumber(L, 3));
+
+    // Check if field name is exactly one character
+    if (!fieldName || strlen(fieldName) != 1)
+    {
+        // Invalid field name - return 0
+        lua_pushnumber(L, 0.0);
+        return 1;
+    }
+
+    // Set the appropriate vector component based on field name
+    switch (fieldName[0])
+    {
+    case 'x':
+        vector->x = value;
+        break;
+
+    case 'y':
+        vector->y = value;
+        break;
+
+    case 'z':
+        vector->z = value;
+        break;
+
+    default:
+        // Invalid field name - return 0
+        lua_pushnumber(L, 0.0);
+        return 1;
+    }
+
+    // Return 1 to indicate success (Lua expects the number of return values)
+    lua_pushnumber(L, 1.0);
+    return 1;
 }
 
 int ext_vecAdd(lua_State* L)

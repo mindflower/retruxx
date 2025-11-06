@@ -33,6 +33,8 @@ namespace ai
         this->m_radius = info.m_radius;
         this->m_trimeshVertices = info.m_trimeshVertices;
         this->m_trimeshIndices = info.m_trimeshIndices;
+        m_numTrimeshVertices = info.m_numTrimeshVertices;
+        m_numTrimeshIndices = info.m_numTrimeshIndices;
     }
 
     CollisionInfo::CollisionInfo()
@@ -56,7 +58,10 @@ namespace ai
         this->m_radius = 0.0;
 
         m_trimeshVertices = {};
+        m_numTrimeshVertices = 0;
         m_trimeshIndices = {};
+        m_numTrimeshIndices = 0;
+
     }
 
     int ai::RoughSign(float value)

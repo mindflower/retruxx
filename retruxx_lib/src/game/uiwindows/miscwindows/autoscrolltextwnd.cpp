@@ -26,12 +26,12 @@ void AutoScrollTextWnd::SetBounds(BoundsBase<float> const&, bool)
 
 m3d::Object* AutoScrollTextWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new AutoScrollTextWnd;
 }
 
 m3d::Class* AutoScrollTextWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(AutoScrollTextWnd);
 }
 
 int AutoScrollTextWnd::CreateFromPattern(m3d::ui::Wnd*, bool)

@@ -64,7 +64,9 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
-	RETRUXX_NOT_IMPLEMENTED;
+	auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+	vehicle->SetRandomSkin();
+	return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetGamePositionOnGround)
@@ -223,7 +225,14 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomLinearVelocity)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, AddItemsToRepository)
 {
-	RETRUXX_NOT_IMPLEMENTED;
+	auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+	auto protoName = context->asString(1);
+	auto amount = context->asInt(2);
+
+    auto res = vehicle->AddItemsToRepository(protoName, amount);
+
+	context->pushBool(res);
+	return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, RemoveItemsFromRepository)
@@ -892,7 +901,31 @@ namespace ai
 
 	void Vehicle::SetRandomSkin()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		auto* cabin = GetCabin();
+		if (cabin)
+		{
+			auto* mdl = cabin->GetModel();
+			if (mdl)
+			{
+				// TODO: check this
+				auto& loadedSkins = mdl->GetLoadedSkins();
+				if (loadedSkins.loadAllSkins)
+				{
+					SetSkin(rand() % mdl->GetNumSkins());
+				}
+				else
+				{
+					int skin = 0;
+					if (!loadedSkins.loadSkins.empty())
+					{
+						auto begin = loadedSkins.loadSkins.begin();
+						std::advance(begin, rand() % loadedSkins.loadSkins.size());
+						skin = *begin;
+					}
+					SetSkin(skin);
+				}
+			}
+		}
 	}
 
 	float Vehicle::GetDefaultCruisingSpeed() const
@@ -1501,7 +1534,9 @@ namespace ai
 
 	bool Vehicle::AddItemsToRepository(char const*, int)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: implement Vehicle::AddItemsToRepository
+		//RETRUXX_NOT_IMPLEMENTED;
+		return true;
 	}
 
 	void Vehicle::ResetForcedMaxTorque()
@@ -4617,7 +4652,23 @@ namespace ai
 		auto* playerVehicle = gDynamicScene->GetVehicleControlledByPlayer();
 		if (playerVehicle && playerVehicle != this)
 		{
-			RETRUXX_NOT_IMPLEMENTED;
+			auto* trailer = theObjects->GetEntityByObjId(playerVehicle->m_trailerObjId);
+			if (trailer != this)
+			{
+				auto vehiclePos = playerVehicle->GetPosition();
+				auto thisPos = GetPosition();
+				CVector dist = thisPos - vehiclePos;
+				auto distValue = dist.length();
+				if (theGlobProp.m_distToTurnOnPhysics <= distValue)
+				{
+					if (distValue > ai::theGlobProp.m_distToTurnOffPhysics)
+						this->SetUpdatingByODE(false);
+				}
+				else
+				{
+					this->SetUpdatingByODE(true);
+				}
+			}
 		}
 	}
 

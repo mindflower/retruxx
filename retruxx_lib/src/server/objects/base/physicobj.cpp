@@ -323,7 +323,7 @@ namespace ai
 
     void PhysicObj::CheckCollisionCells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_boundSphere->CheckCollisionCells();
     }
 
     void PhysicObj::Registration()

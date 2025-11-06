@@ -60,7 +60,9 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, IsActivated)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, Activate)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* trigger = (ai::Trigger*)context->asObject(0, "Trigger");
+    trigger->Activate();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, Deactivate)

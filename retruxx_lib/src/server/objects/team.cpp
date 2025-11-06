@@ -15,7 +15,10 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, SetDestination)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* team = (ai::Team*)context->asObject(0, "Team");
+    auto& dest = context->asVector(1);
+    team->SetDestination(dest);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, AdjustBehaviour)
@@ -127,9 +130,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Team::SetDestination(CVector const&)
+    void Team::SetDestination(CVector const& destination)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_AI.PutCommand(1, destination, {}, {});
     }
 
     CVector Team::_GetAggregatedTargetsPos() const
@@ -602,7 +605,7 @@ namespace ai
 
     AI* Team::GetAIPtr()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return &m_AI;
     }
 
     void Team::_DoNoticeEnemy(int)

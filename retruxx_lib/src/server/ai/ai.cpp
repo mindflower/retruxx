@@ -26,12 +26,12 @@ namespace ai
 
     void AI::CommandStackOpen()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_CommandStackOpen = true;
     }
 
     void AI::CommandStackClose()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_CommandStackOpen = false;
     }
 
     m3d::AIParam AI::GetMessage2Param(unsigned)
@@ -91,9 +91,18 @@ namespace ai
         this->m_pDM = ai::theAIManager->GetDecisionMatrixPtr(MatrixNum);
     }
 
-    void AI::PutCommand(int, m3d::AIParam const&, m3d::AIParam const&, m3d::AIParam const&)
+    void AI::PutCommand(int Num, m3d::AIParam const& Param1, m3d::AIParam const& Param2, m3d::AIParam const& Param3)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_CommandStackOpen)
+        {
+            return;
+        }
+
+        m_numCurCommand = 0;
+        m_CommandProcessed = 0;
+
+        ai::AIMessage val(Num, Param1, Param2, Param3);
+        m_Commands.push_back(std::move(val));
     }
 
     void AI::PutCommand(AIMessage const&)
@@ -108,7 +117,8 @@ namespace ai
 
     void AI::AIUpdate(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement AI::AIUpdate
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AI::Dump()

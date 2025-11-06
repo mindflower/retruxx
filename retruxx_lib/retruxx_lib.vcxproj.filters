@@ -2081,6 +2081,9 @@
     <ClCompile Include="src\engine\math\coremath.cpp">
       <Filter>engine\math</Filter>
     </ClCompile>
+    <ClCompile Include="src\server\ai\aimessage.cpp">
+      <Filter>server\ai</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\console\console_internal.h">

@@ -81,17 +81,23 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetBelong)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, StackOpen)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* obj = (ai::Obj*)context->asObject(0, "Obj");
+    obj->StackOpen();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, StackClose)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* obj = (ai::Obj*)context->asObject(0, "Obj");
+    obj->StackClose();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, StackLoop)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* obj = (ai::Obj*)context->asObject(0, "Obj");
+    obj->StackLoop();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetProperty)
@@ -453,7 +459,9 @@ namespace ai
 
     void Obj::StackOpen()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto ai = GetAIPtr();
+        if (ai)
+            ai->CommandStackOpen();
     }
 
     void Obj::SetPassedToAnotherMapStatus()

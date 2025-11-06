@@ -601,6 +601,7 @@
     <ClCompile Include="src\server\ai\aifunc.cpp" />
     <ClCompile Include="src\server\ai\aimanager.cpp" />
     <ClCompile Include="src\server\ai\aimatrix.cpp" />
+    <ClCompile Include="src\server\ai\aimessage.cpp" />
     <ClCompile Include="src\server\ai\aipassagecommand.cpp" />
     <ClCompile Include="src\server\ai\aisignal.cpp" />
     <ClCompile Include="src\server\ai\aistate.cpp" />
