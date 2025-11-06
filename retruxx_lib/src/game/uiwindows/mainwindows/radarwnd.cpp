@@ -6,27 +6,42 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, AllowNavPoints)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto radar = (RadarWnd*)context->asObject(0, "RadarWnd");
+    bool allow = context->asBool(1);
+    radar->AllowNavPoints(allow);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, AllowVehicles)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto radar = (RadarWnd*)context->asObject(0, "RadarWnd");
+    bool allow = context->asBool(1);
+    radar->AllowVehicles(allow);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, AllowTurrets)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto radar = (RadarWnd*)context->asObject(0, "RadarWnd");
+    bool allow = context->asBool(1);
+    radar->AllowTurrets(allow);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, AllowDistances)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto radar = (RadarWnd*)context->asObject(0, "RadarWnd");
+    bool allow = context->asBool(1);
+    radar->AllowDistances(allow);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, SetScanRadius)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto radar = (RadarWnd*)context->asObject(0, "RadarWnd");
+    bool radius = context->asFloat(1);
+    radar->SetScanRadius(radius);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, SetTest)
@@ -269,7 +284,8 @@ int RadarWnd::GameDataClear(bool)
 
 void RadarWnd::AllowVehicles(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement RadarWnd::AllowVehicles
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 void RadarWnd::CreateWorldSides()
@@ -349,7 +365,8 @@ int RadarWnd::RemoveVehicle(int)
 
 void RadarWnd::AllowDistances(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement RadarWnd::AllowDistances
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 void RadarWnd::GetIcoForNavPoint(NavPoint::NavPointType, CVector const&, m3d::rend::TexHandle&, PointBase<float>&) const
@@ -379,7 +396,8 @@ int RadarWnd::AddNavPoint(int)
 
 void RadarWnd::AllowTurrets(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement RadarWnd::AllowTurrets
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 void RadarWnd::CreateNavPoints()
@@ -394,7 +412,8 @@ int RadarWnd::RemoveDistance(int)
 
 void RadarWnd::AllowNavPoints(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement RadarWnd::AllowNavPoints
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RadarWnd::UpdateNavPoint(int)
@@ -499,7 +518,8 @@ void RadarWnd::ClearVehicleItems()
 
 void RadarWnd::SetScanRadius(float)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement RadarWnd::SetScanRadius
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RadarWnd::GameDataSetup()

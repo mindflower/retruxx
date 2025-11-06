@@ -23,7 +23,15 @@ CinemaPanel::MessageTimeInfo::MessageTimeInfo(int, float)
 
 CinemaPanel::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndPortraitName = "wndPortrait_";
+    m_wndTextName = "wndText";
+    m_wndPortraitOverlayName = "wndPortraitOverlay";
+    m_wndUpPanelName = "UpPanel";
+    m_wndDownPanelName = "DownPanel";
+    m_wndScrollImageName = "wndScrollImage";
+    m_wndScrollImageUpOverlayName = "wndScrollImageUpOverlay";
+    m_wndScrollImageDownOverlayName = "wndScrollImageDownOverlay";
+    m_wndScrollTextName = "wndScrollText";
 }
 
 m3d::Class* CinemaPanel::GetBaseClass()
@@ -73,7 +81,7 @@ void CinemaPanel::ClearMessages()
 
 m3d::Object* CinemaPanel::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new CinemaPanel;
 }
 
 CinemaPanel::~CinemaPanel()
@@ -83,7 +91,7 @@ CinemaPanel::~CinemaPanel()
 
 m3d::Class* CinemaPanel::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(CinemaPanel);
 }
 
 void CinemaPanel::Clear()
@@ -173,7 +181,23 @@ CinemaPanel::CinemaPanel(CinemaPanel const&)
 
 CinemaPanel::CinemaPanel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_soundTableId = -1;
+    m_soundChannelId = -1;
+    m_curMessageStartTime = 0;
+    m_curMessageEndTime = 0;
+    m_bIsShowingMessage = 0;
+    m_bSkipMessage = 0;
+    m_wndText = 0;
+    m_panelType = PANELTYPE_NORMAL;
+    m_wndUpPanel = 0;
+    m_wndDownPanel = 0;
+    m_wndScrollImage = 0;
+    m_wndScrollImageUpOverlay = 0;
+    m_wndScrollImageDownOverlay = 0;
+    m_wndPortraitOverlay = 0;
+    m_minTimeToExists = 10;
+    m_wndsPortraits[0] = 0;
+    m_wndsPortraits[1] = 0;
 }
 
 void CinemaPanel::InitControlsForMsgScroll(MsgInfo const*)

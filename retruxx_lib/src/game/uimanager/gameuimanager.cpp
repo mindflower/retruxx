@@ -287,9 +287,13 @@ int GameUiManager::GUI_LoadWindowsResources(ResourceInfo::ResourceLoadType loadT
         if (info && info->IsKindOf(RT_CLASS_LOCAL(WindowResourceInfo)))
         {
             // TODO: implement GameUiManager::GUI_LoadWindowsResources
-            if (dynamic_cast<WindowResourceInfo*>(info)->m_wndGuiId == 159)
+
+            std::set<int> clses = { 17, 18
+            };
+            auto inf = dynamic_cast<WindowResourceInfo*>(info);
+            if (loadType == ResourceInfo::LOADTYPE_AT_FIRST_LEVEL_START && (!inf || clses.find(inf->m_wndGuiId) == clses.end()))
             {
-                break;
+                continue;
             }
             res &= GUI_LoadWindowFromResourceInfo(dynamic_cast<WindowResourceInfo*>(info));
         }
