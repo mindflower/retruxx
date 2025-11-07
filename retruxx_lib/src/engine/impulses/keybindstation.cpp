@@ -30,9 +30,10 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    KeysSet& KeysSet::operator-=(int)
+    KeysSet& KeysSet::operator-=(int key)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_set.erase(key);
+        return *this;
     }
 
     KeysSet& KeysSet::operator+=(int k)
@@ -41,9 +42,39 @@ namespace m3d
         return *this;
     }
 
-    bool KeysSet::IsThere(int)
+    bool KeysSet::IsThere(int k)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_set.find(k) != m_set.end();
+    }
+
+    std::set<int>::iterator KeysSet::begin()
+    {
+        return m_set.begin();
+    }
+
+    std::set<int>::iterator KeysSet::end()
+    {
+        return m_set.end();
+    }
+
+    std::set<int>::const_iterator KeysSet::begin() const
+    {
+        return m_set.begin();
+    }
+
+    std::set<int>::const_iterator KeysSet::end() const
+    {
+        return m_set.end();
+    }
+
+    std::set<int>::reverse_iterator KeysSet::rbegin() const
+    {
+        return m_set.rbegin();
+    }
+
+    std::set<int>::reverse_iterator KeysSet::rend() const
+    {
+        return m_set.rend();
     }
 
     KeyBindStation::KeyBindStation()
@@ -71,9 +102,38 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int KeyBindStation::FindImpulseByLongestSetPossible(m3d::KeysSet const&, int, KeysSet&)
+    int KeyBindStation::FindImpulseByLongestSetPossible(m3d::KeysSet const& setToSearchFrom, int keyToSearchWith, KeysSet& impulseSet)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this!!!!!
+        impulseSet.clear();
+        if (keyToSearchWith == -1)
+        {
+            for (auto it = setToSearchFrom.rbegin(); it != setToSearchFrom.rend(); ++it)
+            {
+                KeysSet subset = setToSearchFrom;
+                subset -= *it;
+
+                auto* bindKey = FindImpulseBySet_r(subset, *it);
+
+                if (bindKey)
+                {
+                    impulseSet = *m_ks;
+                    return bindKey->m_impulse;
+                }
+            }
+        }
+
+        KeysSet subset = setToSearchFrom;
+        subset -= keyToSearchWith;
+
+        auto* bindKey = FindImpulseBySet_r(subset, keyToSearchWith);
+        if (bindKey)
+        {
+            impulseSet = *m_ks;
+            return bindKey->m_impulse;
+        }
+
+        return -1;
     }
 
     KeyBindStation::BindKey* KeyBindStation::GetBindByKey(KeysSet const& ks)
@@ -127,9 +187,85 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    KeyBindStation::BindKey* KeyBindStation::FindImpulseBySet_r(KeysSet const&, int)
+    KeyBindStation::BindKey* KeyBindStation::FindImpulseBySet_r(KeysSet const& ks, int key)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code
+        size_t keySetSize = ks.size();
+
+        // Check if key set exceeds maximum combination length
+        if (keySetSize > m_longestComboLen)
+        {
+            // Try excluding each key one by one and search recursively
+            for (auto it = ks.begin(); it != ks.end(); ++it) {
+                int excludedKey = *it;
+
+                // Create set without the excluded key
+                KeysSet reducedSet = ks;
+                reducedSet -= excludedKey;
+
+                // Recursively search with reduced set
+                BindKey* binding = FindImpulseBySet_r(reducedSet, key);
+                if (binding) {
+                    return binding;
+                }
+            }
+            return nullptr;
+        }
+
+        // Handle small key sets (size <= 1)
+        if (keySetSize <= 1)
+        {
+            // Try combination of existing keys + new key
+            KeysSet combinedSet = ks;
+            combinedSet += key;
+            BindKey* binding = GetBindByKey(combinedSet);
+
+            if (binding) {
+                return binding;
+            }
+
+            // If combination not found, try just the single key
+            if (keySetSize == 0) {
+                KeysSet singleKeySet;
+                singleKeySet += key;
+                binding = GetBindByKey(singleKeySet);
+                return binding;
+            }
+
+            return nullptr;
+        }
+
+        // For medium-sized key sets, try replacing each key with the new key
+        for (auto it = ks.begin(); it != ks.end(); ++it) {
+            int existingKey = *it;
+
+            // Create set with one key replaced by the new key
+            KeysSet modifiedSet = ks;
+            modifiedSet -= existingKey;
+            modifiedSet += key;
+
+            BindKey* binding = GetBindByKey(modifiedSet);
+            if (binding) {
+                return binding;
+            }
+        }
+
+        // If replacement strategy fails, try the exclusion strategy
+        for (auto it = ks.begin(); it != ks.end(); ++it) {
+            int excludedKey = *it;
+
+            // Create set without the excluded key
+            KeysSet reducedSet = ks;
+            reducedSet -= excludedKey;
+
+            // Recursively search with reduced set
+            BindKey* binding = FindImpulseBySet_r(reducedSet, key);
+            if (binding) {
+                return binding;
+            }
+        }
+
+        return nullptr;
     }
 
     bool operator==(const KeysSet& lhd, const KeysSet& rhd)

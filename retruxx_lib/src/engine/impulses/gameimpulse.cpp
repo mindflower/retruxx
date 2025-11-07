@@ -514,12 +514,278 @@ namespace m3d
 
     int GameImpulse::HandleKeyboardMouseEvent(Event const& ev, ui::Wnd* causeWnd)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!m_isInited)
+        {
+            return 0;
+        }
+
+        auto curGameMode = M3D_APP->GetCurGameMode();
+        auto it = m_bindings.find(curGameMode);
+        if (it == m_bindings.end())
+        {
+            return 0;
+        }
+
+        auto& bindStation = it->second;
+
+        int keyToSearchBy = 0;
+        bool state = false;
+        bool onlyDown = false;
+        unsigned i0 = 0;
+        unsigned i1 = 0;
+
+        switch (ev.m_eventType)
+        {
+        case EV_KEY_DOWN:
+        case EV_KEY_UP:
+        {
+            keyToSearchBy = ev.m_byteEv[3];
+            state = (ev.m_eventType == EV_KEY_DOWN);
+            break;
+        }
+
+        case EV_MOUSE_MOVE:
+        {
+            keyToSearchBy = 259;
+            state = true;
+            onlyDown = true;
+            i0 = ev.m_uintEv[0];
+            i1 = ev.m_ushortEv[2] | (ev.m_ushortEv[3] << 16);
+            break;
+        }
+
+        case EV_MOUSE_LBTN:
+        {
+            keyToSearchBy = 256;
+            state = ev.m_ushortEv[2] != 0;
+            i0 = ev.m_ushortEv[0] | (ev.m_ushortEv[1] << 16);
+            break;
+        }
+        
+        case EV_MOUSE_RBTN:
+        {
+            keyToSearchBy = 257;
+            state = ev.m_ushortEv[2] != 0;
+            i0 = ev.m_ushortEv[0] | (ev.m_ushortEv[1] << 16);
+            break;
+        }
+        
+        case EV_MOUSE_MBTN:
+        {
+            keyToSearchBy = 258;
+            state = ev.m_ushortEv[2] != 0;
+            i0 = ev.m_ushortEv[0] | (ev.m_ushortEv[1] << 16);
+            break;
+        }
+
+        case EV_MOUSE_WHEEL:
+        {
+            keyToSearchBy = 260;
+            state = true;
+            onlyDown = true;
+            i0 = ev.m_ushortEv[0] | (ev.m_ushortEv[1] << 16);
+            i1 = ev.m_ushortEv[2];
+            break;
+        }
+
+        case EV_JOYSTICK_BTN0:
+        case EV_JOYSTICK_BTN1:
+        case EV_JOYSTICK_BTN2:
+        case EV_JOYSTICK_BTN3:
+        case EV_JOYSTICK_BTN4:
+        case EV_JOYSTICK_BTN5:
+        case EV_JOYSTICK_BTN6:
+        case EV_JOYSTICK_BTN7:
+        case EV_JOYSTICK_BTN8:
+        case EV_JOYSTICK_BTN9:
+        {
+            keyToSearchBy = ev.m_eventType + 249;
+            state = ev.m_ushortEv[2] != 0;
+            break;
+        }
+
+        case EV_MOUSE_MOVE_ON_UI:
+        {
+            keyToSearchBy = 264;
+            state = true;
+            onlyDown = true;
+            i0 = ev.m_uintEv[0];
+            i1 = ev.m_ushortEv[2] | (ev.m_ushortEv[3] << 16);
+            break;
+        }
+
+        default:
+            break;
+        }
+
+        // TODO: check this
+        if (FilterShifts(keyToSearchBy, state))
+        {
+            if (state)
+            {
+                if (!m_curKeys.IsThere(keyToSearchBy))
+                {
+                    m_curKeys += keyToSearchBy;
+
+                    KeysSet impSet;
+                    auto impulse = bindStation.FindImpulseByLongestSetPossible(m_curKeys, keyToSearchBy, impSet);
+                    if (impulse != -1)
+                    {
+                        impSet -= keyToSearchBy;
+                        SetImpulsesStateBySet(impulse, false, curGameMode, causeWnd);
+                        AuxImpulseInfo info(impulse, true, curGameMode, i0, i1);
+                        SetImpulseState(info, causeWnd);
+                    }
+                    if (onlyDown)
+                    {
+                        state = false;
+                    }
+                }
+            }
+            if (!state)
+            {
+                if (m_curKeys.IsThere(keyToSearchBy))
+                {
+                    KeysSet impSet;
+                    auto impulse = bindStation.FindImpulseByLongestSetPossible(m_curKeys, keyToSearchBy, impSet);
+                    if (impulse != -1)
+                    {
+                        AuxImpulseInfo info(impulse, state, curGameMode, i0, i1);
+                        SetImpulseState(info, causeWnd);
+                        impSet -= keyToSearchBy;
+                        SetImpulsesStateBySet(impSet, true, curGameMode, causeWnd);
+                    }
+                    m_curKeys -= keyToSearchBy;
+                }
+            }
+        }
+        return 1;
     }
 
-    int GameImpulse::FilterShifts(int&, bool&)
+    // TODO: generated code
+    // Key code constants
+    namespace KeyCodes {
+        const int KEY_LSHIFT = 42;
+        const int KEY_RSHIFT = 54;
+        const int KEY_SHIFT = 263;  // Combined shift
+
+        const int KEY_LALT = 56;
+        const int KEY_RALT = 184;
+        const int KEY_ALT = 262;    // Combined alt
+
+        const int KEY_LCTRL = 29;
+        const int KEY_RCTRL = 157;
+        const int KEY_CTRL = 261;   // Combined control
+
+        const int INVALID_KEY = -1;
+    }
+
+    int GameImpulse::FilterShifts(int& keyToSearchBy, bool& state)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code
+        using namespace KeyCodes;
+        if (!m_isInited)
+        {
+            return false;
+        }
+
+        // Shift key states
+        static bool downL_1 = false;    // Left Shift
+        static bool downR_1 = false;    // Right Shift  
+        static bool prevS_1 = false;    // Previous Shift state
+
+        static bool downL_0 = false;    // Left Alt
+        static bool downR_0 = false;    // Right Alt
+        static bool prevS_0 = false;    // Previous Alt state
+
+        static bool downL = false;      // Left Control
+        static bool downR = false;      // Right Control
+        static bool prevS = false;      // Previous Control state
+
+        int keyCode = keyToSearchBy;
+
+        // Check for invalid key
+        if (keyCode == INVALID_KEY) {
+            return false;
+        }
+
+        // Handle Shift keys (left and right)
+        if (keyCode == KEY_LSHIFT || keyCode == KEY_RSHIFT) {
+            // Update individual shift key state
+            if (keyCode == KEY_LSHIFT) {
+                downL_1 = state;
+            }
+            else if (keyCode == KEY_RSHIFT) {
+                downR_1 = state;
+            }
+
+            // Calculate combined shift state
+            bool currentShiftState = downL_1 || downR_1;
+
+            // Only process if state changed
+            if (currentShiftState == prevS_1) {
+                return false;
+            }
+
+            // Update previous state and modify output
+            prevS_1 = currentShiftState;
+            keyToSearchBy = KEY_SHIFT;
+            state = currentShiftState;
+            return true;
+        }
+
+        // Handle Alt keys (left and right)
+        if (keyCode == KEY_LALT || keyCode == KEY_RALT) {
+            // Update individual alt key state
+            if (keyCode == KEY_LALT) {
+                downL_0 = state;
+            }
+            else if (keyCode == KEY_RALT) {
+                downR_0 = state;
+            }
+
+            // Calculate combined alt state
+            bool currentAltState = downL_0 || downR_0;
+
+            // Only process if state changed
+            if (currentAltState == prevS_0) {
+                return false;
+            }
+
+            // Update previous state and modify output
+            prevS_0 = currentAltState;
+            keyToSearchBy = KEY_ALT;
+            state = currentAltState;
+            return true;
+        }
+
+        // Handle Control keys (left and right)
+        if (keyCode == KEY_LCTRL || keyCode == KEY_RCTRL) {
+            // Update individual control key state
+            if (keyCode == KEY_LCTRL) {
+                downL = state;
+            }
+            else if (keyCode == KEY_RCTRL) {
+                downR = state;
+            }
+
+            // Calculate combined control state
+            bool currentControlState = downL || downR;
+
+            // Only process if state changed
+            if (currentControlState != prevS) {
+                // Update previous state and modify output
+                keyToSearchBy = KEY_CTRL;
+                prevS = currentControlState;
+                state = currentControlState;
+                return true;
+            }
+
+            return false;
+        }
+
+        // For all other keys, allow processing
+        return true;
     }
 
     int GameImpulse::BindKey2(CStr const& strGameMode, CStr const& strKey1, CStr const& strKey2, CStr const& strImp)

@@ -533,6 +533,7 @@ namespace m3d
                     key |= 4;
                 }
                 ev.m_byteEv[3] = param2;
+                ev.m_eventType = 8 - (param3 != 0);
                 auto oldHead = m_eventsQueueHead;
                 auto head = m_eventsQueueHead + 1;
                 if (head >= 0x1388)
@@ -1035,6 +1036,8 @@ namespace m3d
 
     int Application::HandleEvent(Event const& ev)
     {
+        static bool bAltEnterActive = false;
+        static bool bCtrlShiftActive = false;
         //TODO: imlement Application::HandleEvent
         switch (ev.m_eventType)
         {
@@ -1089,13 +1092,91 @@ namespace m3d
         {
             auto viewport = m_renderer->GetViewport();
             M3D_KERNEL->GetEngineCfg().m_console->CheckResize(viewport.m_width, viewport.m_height);
-            m_appNeedToRedraw = true;
+            m_appNeedToRedraw = 1;
             break;
         }
         case 7:
+        {
+            int res = 0;
+            if (ev.m_byteEv[0] == 19)
+            {
+                if (this->m_screenShotPendingAlways)
+                {
+                    this->m_screenShotPendingAlways = 0;
+                }
+                else
+                {
+                    if (M3D_ENGINE_CFG.m_debugMode.GetB())
+                    {
+                        this->m_screenShotPendingAlways = 1;
+                        this->m_screenShotPending = 1;
+                    }
+                }
+                res = 1;
+            }
+            else if (ev.m_byteEv[0] == 20)
+            {
+                this->m_screenShotPending = 1;
+                res = 1;
+            }
+            else
+            {
+                if (this->m_waitForAnykey)
+                {
+                    m_timeFromLevelLoaded = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+                    res = 1;
+                }
+            }
+            if (ev.m_ushortEv[0] == 2052)
+            {
+                if (M3D_ENGINE_CFG.m_g_altEnterAllow.GetB() && !bAltEnterActive)
+                {
+                    RETRUXX_NOT_IMPLEMENTED;
+                }
+                res = 1;
+            }
+            if ((ev.m_ushortEv[0] & 0x8000u) == 0 || (ev.m_ushortEv[0] & 0x2000) == 0)
+            {
+                if (res)
+                {
+                    return res;
+                }
+                if (ev.m_byteEv[3] != 41)
+                {
+                    break;
+                }
+            }
             RETRUXX_NOT_IMPLEMENTED;
+        }
         case 8:
-            RETRUXX_NOT_IMPLEMENTED;
+        {
+            int res = 0;
+            if (M3dVideoPlayer->IsVideoPlaing() && ev.m_ushortEv[0] == 1)
+            {
+                M3dVideoPlayer->Stop();
+                res = 1;
+            }
+            if (m_waitForAnykey)
+            {
+                RETRUXX_NOT_IMPLEMENTED;
+            }
+
+            if (bAltEnterActive && (ev.m_ushortEv[0] == 4 || ev.m_ushortEv[0] == 2048 || ev.m_ushortEv[0] == 2052))
+            {
+                bAltEnterActive = 0;
+                res = 1;
+            }
+            if (bCtrlShiftActive && (ev.m_ushortEv[0] & 0xA000u) != 0)
+            {
+                bCtrlShiftActive = 0;
+                return 1;
+            }
+            if (!res)
+            {
+                break;
+            }
+            return res;
+        }
         case 0xA:
         case 0xB:
         case 0xC:
@@ -1116,7 +1197,7 @@ namespace m3d
         }
         if ((ev.m_eventType == 7 || ev.m_eventType == 8) && m_focusKbdEntity != nullptr)
         {
-            return m_focusKbdEntity->HandleEvent(ev) != 0;
+            return ProcessEvent(ev);
         }
         //TODO: check this
         if (ev.m_eventType != 15)
@@ -1147,7 +1228,6 @@ namespace m3d
                 return 1;
             }
         }
-        static bool bCtrlShiftActive = false;
         if (bCtrlShiftActive)
         {
             return 1;
