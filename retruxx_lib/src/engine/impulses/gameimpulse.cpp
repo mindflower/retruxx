@@ -492,13 +492,15 @@ namespace m3d
 
         if (m_impulseResetAfterRead[impId])
         {
-            m3d::AuxImpulseInfo impInfo(impId, false, -1, 0, 0);
-            auto v6 = !M3D_APP->HasChildModalRunning() ? M3D_APP : 0;
-            SetImpulseState(impInfo, v6);
+            if (it->second)
+            {
+                m3d::AuxImpulseInfo impInfo(impId, false, -1, 0, 0);
+                auto v6 = !M3D_APP->HasChildModalRunning() ? M3D_APP : 0;
+                SetImpulseState(impInfo, v6);
+            }
             m_impulseResetAfterRead[impId] = false;
-            return true;
         }
-        return false;
+        return it->second;
     }
 
     int GameImpulse::GetImpulseForKeys(std::vector<int, std::allocator<int>>, int)
