@@ -2,11 +2,16 @@
 
 #include <stdexcept>
 
+#include "quest.h"
 #include "core/log.h"
+#include "objects/base/objcontainer.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(QuestStateManager, TakeQuest)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto manager = (ai::QuestStateManager*)context->asObject(0, "QuestStateManager");
+    auto* quest = context->asString(1);
+    manager->TakeQuest(quest);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(QuestStateManager, CompleteQuest)
@@ -40,7 +45,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(QuestStateManager, IsQuestTaken)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(QuestStateManager, IsQuestComplete)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto manager = (ai::QuestStateManager*)context->asObject(0, "QuestStateManager");
+    auto* quest = context->asString(1);
+    bool res = manager->IsQuestComplete(quest);
+    context->pushBool(res);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(QuestStateManager, IsQuestFailed)
@@ -71,7 +80,7 @@ namespace ai
 
     int QuestState::GetQuestId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_questId;
     }
 
     long long QuestState::getTakeTime() const
@@ -126,7 +135,7 @@ namespace ai
 
     QuestState::CompleteStatus QuestState::GetCompleteStatus() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_completeStatus;
     }
 
     bool QuestState::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -141,12 +150,23 @@ namespace ai
 
     bool QuestState::bIsTaken() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_bIsTaken;
     }
 
     bool QuestState::Take()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!m_bIsTaken)
+        {
+            if (m_bCanBeGiven)
+            {
+                m_bIsTaken = true;
+                m_TakeTime = theObjects->GetGameTimeInt64();
+                theQuestStateManager->OnQuestTaken(m_questId);
+                return true;
+            }
+            M3D_LOG_ERR("Error: attempt to take a quest which cannot be given: '" + theQuestManager->GetQuestById(m_questId)->GetName() + "'");
+        }
+        return false;
     }
 
     bool QuestState::LessByTakeTime(QuestState const*, QuestState const*)
@@ -231,14 +251,32 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void QuestStateManager::TakeQuest(char const*)
+    void QuestStateManager::TakeQuest(char const* questName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* quest = _GetQuestStateByName(questName);
+        if (quest)
+        {
+            if (quest->Take())
+            {
+                _RecalcStates(quest->GetQuestId());
+            }
+        }
+        else
+        {
+            M3D_LOG_ERR("Error in TakeQuest(): invalid quest name: '" + CStr(questName) + "'");
+        }
     }
 
-    bool QuestStateManager::IsQuestComplete(char const*) const
+    bool QuestStateManager::IsQuestComplete(char const* questName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* quest = _GetQuestStateByName(questName);
+        if (quest)
+        {
+            return quest->GetCompleteStatus() == QuestState::COMPLETE;
+        }
+
+        M3D_LOG_ERR("Error in IsQuestComplete(): invalid quest name: '" + CStr(questName) + "'");
+        return false;
     }
 
     bool QuestStateManager::IsQuestTaken(char const* questName) const
@@ -340,9 +378,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    QuestState* QuestStateManager::_GetQuestStateByName(char const*) const
+    QuestState* QuestStateManager::_GetQuestStateByName(char const* questName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto id = theQuestManager->GetQuestIdByName(questName);
+        if (id < 0 || id >= m_questStates.size())
+        {
+            return nullptr;
+        }
+        return m_questStates[id];
     }
 
     void QuestStateManager::_Clear()

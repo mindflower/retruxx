@@ -1362,9 +1362,17 @@ namespace m3d
         // RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void AnimatedModel::SetNextForAnimation(ActionType, int)
+    void AnimatedModel::SetNextForAnimation(ActionType Action, int NextAction)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (this->m_header.m_numAnimations)
+        {
+            auto v3 = this->m_animRemap[Action];
+            auto v4 = -1;
+            if (NextAction >= 0)
+                v4 = this->m_animRemap[NextAction];
+            if (v3 >= 0)
+                this->m_animations[v3].m_nextAnimation = v4;
+        }
     }
 
     m3d::AnimatedModel::ModelInfo& AnimatedModel::GetHeader()

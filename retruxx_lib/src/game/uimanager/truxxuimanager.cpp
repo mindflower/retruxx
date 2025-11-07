@@ -500,7 +500,8 @@ ai::Workshop* TruxxUiManager::GetCurrentShop() const
 
 void TruxxUiManager::AddFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO implement TruxxUiManager::AddFadingMsgByStrId
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 NavPointManager* TruxxUiManager::GetNavPointManager() const

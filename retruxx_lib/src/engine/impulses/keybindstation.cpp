@@ -280,6 +280,8 @@ namespace m3d
 
     KeysSet operator-(const KeysSet& lhd, const KeysSet& rhd)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto res = lhd;
+        res.m_set.erase(rhd.begin(), rhd.end());
+        return res;
     }
 }

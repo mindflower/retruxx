@@ -135,7 +135,9 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCanBeDistractedFromMoving)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, PlaceToEndOfPath)
 {
-	RETRUXX_NOT_IMPLEMENTED;
+	auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+	vehicle->PlaceToEndOfPath();
+	return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetThrottle)
@@ -2561,7 +2563,34 @@ namespace ai
 
 	void Vehicle::PlaceToEndOfPath()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: check this
+		SetLinearVelocity(ZeroVector);
+		if (m_pPath)
+		{
+			auto pathSize = m_pPath->GetSize();
+			m_pathNum = pathSize;
+			CVector pos;
+			if (ai::GetPathItem(m_pPath, pathSize - 1, pos))
+			{
+				pos.y = M3D_ENGINE_CFG.GetHeight(pos.x, pos.z);
+
+				CVector prevPos;
+				if (ai::GetPathItem(m_pPath, pathSize - 2, prevPos))
+				{
+					prevPos.y = M3D_ENGINE_CFG.GetHeight(prevPos.x, prevPos.z);
+					auto vec = pos - prevPos;
+					auto len = vec.length();
+					if (len > 0.01)
+					{
+						auto res = vec.getNormalized();
+						SetDirection(res);
+					}
+				}
+				SetGamePositionOnGround(pos, true, false);
+				_SetIdleMoveStatusAndCauseTargetReached();
+
+			}
+		}
 	}
 
 	int Vehicle::GetIndexInTeam() const

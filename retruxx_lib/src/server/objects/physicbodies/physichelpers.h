@@ -39,4 +39,34 @@ namespace ai
     bool TraceLine(ai::Ray const&, dContact&, bool, bool, bool, bool, ai::TraceLineCallback*, bool, bool);
     bool GetValidPosition(CVector const&, float, unsigned char, CVector&, bool, bool, std::set<m3d::Class* > const&);
     m3d::AnimInfo* GetNodeAnimInfo(m3d::SgNode const*);
+
+    template <class T>
+    void SetDirectionToObject(T& obj, CVector const& direction)
+    {
+        // TODO: generated code
+        // Calculate horizontal rotation (around Y-axis)
+        float horizontalAngle = std::atan2(direction.x, direction.z) * 0.5f;
+
+        Quaternion quatHorizRotation;
+        quatHorizRotation.y = std::sin(horizontalAngle);
+        quatHorizRotation.w = std::cos(horizontalAngle);
+        quatHorizRotation.x = 0.0f;
+        quatHorizRotation.z = 0.0f;
+
+        // Calculate elevation rotation (around X-axis)
+        float elevationAngle = -std::asin(direction.y) * 0.5f;
+        float sinElevation = std::sin(elevationAngle);
+        float cosElevation = std::cos(elevationAngle);
+
+        // Combine the rotations: elevation first, then horizontal
+        // This is equivalent to quatHorizRotation * quatElevation
+        Quaternion finalRotation;
+        finalRotation.x = quatHorizRotation.w * sinElevation + cosElevation * quatHorizRotation.x + quatHorizRotation.y * quatHorizRotation.z;
+        finalRotation.y = quatHorizRotation.w * quatHorizRotation.z + cosElevation * quatHorizRotation.y - quatHorizRotation.x * sinElevation;
+        finalRotation.z = quatHorizRotation.w * cosElevation - quatHorizRotation.y * sinElevation - quatHorizRotation.x * quatHorizRotation.z;
+        finalRotation.w = quatHorizRotation.w * cosElevation - quatHorizRotation.x * sinElevation - quatHorizRotation.y * quatHorizRotation.z;
+
+        // Apply the final rotation to the object
+        obj.SetRotation(finalRotation);
+    }
 }

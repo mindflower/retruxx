@@ -1,8 +1,15 @@
 #include "journalwnd.h"
 
+#include "core/aiparam.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, AddHistory)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* journal = (JournalWnd*)context->asObject(0, "JournalWnd");
+    auto history = context->asString(1);
+    auto param = context->asAIParam(2);
+    auto res = journal->AddHistory(history, param);
+    context->pushInt(res);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, AddBook)
@@ -78,12 +85,14 @@ m3d::Object* JournalWnd::Clone()
 
 int JournalWnd::AddHistory(CStr const&, m3d::AIParam const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement JournalWnd::AddHistory
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 m3d::Class* JournalWnd::GetClass() const
 {
-    return RT_CLASS_LOCAL(ScreenWnd);
+    return RT_CLASS_LOCAL(JournalWnd);
 }
 
 int JournalWnd::AddClanToEncyclopaedia(int)

@@ -45,12 +45,19 @@ namespace
 
 RT_CLASS_EXPORT_METHOD_DEFINE(HelpManager, ShowHelp)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto helpManager = (HelpManager*)context->asObject(0, "HelpManager");
+    auto helpId = context->asString(1);
+    auto allowDisable = context->asBool(2);
+    helpManager->ShowHelp(helpId, allowDisable);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(HelpManager, EnableAutoHelp)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto helpManager = (HelpManager*)context->asObject(0, "HelpManager");
+    auto enable = context->asBool(1);
+    helpManager->EnableAutoHelp(enable);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(HelpManager, IsAutoHelpEnabled)
@@ -87,7 +94,8 @@ CStr HelpManager::Enumered2StrHelpId(HelpId)
 
 void HelpManager::ShowHelp(CStr const&, bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement HelpManager::ShowHelp
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* HelpManager::CreateObject()

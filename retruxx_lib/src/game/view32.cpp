@@ -1987,19 +1987,28 @@ int CMiracle3d::AddChild(m3d::Object* node)
     {
         return result;
     }
-    if (node->IsKindOf(RT_CLASS_LOCAL(MotherPanel)) == false)
+    if (node->IsKindOf(RT_CLASS_LOCAL(MotherPanel)))
     {
-        return result;
+        // TODO: whats this??
+        //*(&this->m_playingVideo + 1) = 1;
+        //this->m_playingVideo = 0;
     }
-    //TODO: what here?
-    //*(&this->m_playingVideo + 1) = 1;
-    //this->m_playingVideo = 0;
     return result;
 }
 
 int CMiracle3d::RemoveChildForce(m3d::Object* object)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto result = Wnd::RemoveChildForce(object);
+    if (object)
+    {
+        if (object->IsKindOf(&MotherPanel::m_classMotherPanel))
+        {
+            // TODO: whats this??
+            //*(&this->m_playingVideo + 1) = 0;
+            //this->m_playingVideo = 0;
+        }
+    }
+    return result;
 }
 
 int CMiracle3d::Render(bool needToRedrawAllObjs)

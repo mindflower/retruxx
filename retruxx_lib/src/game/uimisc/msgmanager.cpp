@@ -9,7 +9,12 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MsgManager, ShowMsgBox)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto manager = (MsgManager*)context->asObject(0, "MsgManager");
+    auto msg = context->asInt(1);
+    auto pause = context->asBool(2);
+    auto res = manager->ShowMsgBox(msg, pause);
+    context->pushInt(res);
+    return 1;
 }
 
 RT_CLASS_EXPORTS_BEGIN(MsgManager)
@@ -19,7 +24,9 @@ RT_CLASS_DEFINE(MsgManager);
 
 int MsgManager::ShowMsgBox(int, bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement MsgManager::ShowMsgBox
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int MsgManager::Init(bool bGlobal)

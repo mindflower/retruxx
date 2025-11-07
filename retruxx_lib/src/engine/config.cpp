@@ -18,9 +18,9 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    float EngineConfig::GetHeight(float, float)
+    float EngineConfig::GetHeight(float x, float y)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return pClient->GetWorld().GetLandscape().GetHeight(x, y, -1, true);
     }
 
     int EngineConfig::Save(CStr const&)

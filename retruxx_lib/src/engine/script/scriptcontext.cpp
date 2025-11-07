@@ -231,9 +231,10 @@ namespace m3d
 		++m_numOutputs;
 	}
 
-	void LuaContext::pushFloat(float)
+	void LuaContext::pushFloat(float x)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		lua_pushnumber(this->L, x);
+		++this->m_numOutputs;
 	}
 
 	Quaternion& LuaContext::asQuaternion(int i)

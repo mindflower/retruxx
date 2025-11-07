@@ -148,9 +148,26 @@ namespace ai
 		}
 	}
 
-	void PhysicBody::SetNextForAnimation(int, int)
+	void PhysicBody::SetNextForAnimation(int action, int nextAction)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (m_Node)
+		{
+		    if (action < 0x20)
+		    {
+		        if (nextAction >= -1 && nextAction < 32)
+		        {
+					auto& server = M3D_APP->GetAnimatedModelsServer();
+					int sh = -1;
+					m_Node->GetProperty(4360u, &sh);
+					if (sh != -1)
+					{
+						m3d::AnimatedModel* animModel = nullptr;
+						server.GetItemProperty(sh, 16394, &animModel);
+						animModel->SetNextForAnimation((ActionType)action, nextAction);
+					}
+		        }
+		    }
+		}
 	}
 
 	void PhysicBody::ChangePhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const& collisionInfos)
@@ -272,9 +289,61 @@ namespace ai
         SetNodeRelativePosition(pos);
 	}
 
-	void PhysicBody::SetNodeAction(int, bool)
+	void PhysicBody::SetNodeAction(int action, bool forceRestartAction)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code
+		// Store the action
+		this->m_animAction = action;
+		this->m_effectAction = action;
+
+		// Check if we should apply the action to the node hierarchy
+		bool shouldApplyAction = forceRestartAction;
+
+		if (!shouldApplyAction) {
+			// Check if the current animation action doesn't match the new action
+			m3d::AnimInfo* animInfo = ai::GetNodeAnimInfo(this->m_Node);
+			if (animInfo != nullptr) {
+				int currentAction = -1;
+				if (!animInfo->GetStickToLastFrame() && animInfo->GetCurAnimation() != nullptr) {
+					currentAction = animInfo->GetCurAnimation()->m_action;
+				}
+				shouldApplyAction = (currentAction != this->m_animAction);
+			}
+			else {
+				shouldApplyAction = true; // No anim info, so apply the action
+			}
+		}
+
+		// Apply the action to the node hierarchy if needed
+		if (shouldApplyAction && this->m_Node != nullptr) {
+			// Set property on the root node
+			this->m_Node->SetProperty(8704, &action);
+
+			// Use stack for iterative depth-first traversal of node hierarchy
+			std::vector<m3d::SgNode*> nodeStack;
+			nodeStack.push_back(this->m_Node);
+
+			while (!nodeStack.empty()) {
+				// Pop the last node from stack
+				m3d::SgNode* currentNode = nodeStack.back();
+				nodeStack.pop_back();
+
+				// Process all children of current node
+				m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
+				while (child != nullptr) {
+					// Set the action property on this child node
+					child->SetProperty(8704, &action);
+
+					// If this child has children, add it to stack for processing
+					if (child->GetFirstChild() != nullptr) {
+						nodeStack.push_back(child);
+					}
+
+					// Move to next sibling
+					child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
+				}
+			}
+		}
 	}
 
 	void PhysicBody::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const

@@ -26,12 +26,20 @@ RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetMass)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetNodeAction)
 {
-	RETRUXX_NOT_IMPLEMENTED;
+    auto obj = (ai::SimplePhysicObj*)context->asObject(0, "SimplePhysicObj");
+    auto action = context->asInt(1);
+    auto restart = context->asBool(2);
+    obj->SetNodeAction(action, restart);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetNextForAnimation)
 {
-	RETRUXX_NOT_IMPLEMENTED;
+    auto obj = (ai::SimplePhysicObj*)context->asObject(0, "SimplePhysicObj");
+    auto action = context->asInt(1);
+    auto next = context->asInt(2);
+    obj->SetNextForAnimation(action, next);
+    return 1;
 }
 
 namespace ai
@@ -332,9 +340,10 @@ namespace ai
         ai::PhysicObj::TransferToSpace(newSpace);
 	}
 
-	void SimplePhysicObj::SetNodeAction(int, bool)
+	void SimplePhysicObj::SetNodeAction(int action, bool forceRestartAction)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (this->m_physicBody)
+            this->m_physicBody->SetNodeAction(action, forceRestartAction);
 	}
 
 	void SimplePhysicObj::SetSkin(int skin)
@@ -370,9 +379,10 @@ namespace ai
             this->m_physicBody->RelinkGeomToCollisionCells();
 	}
 
-	void SimplePhysicObj::SetNextForAnimation(int, int)
+	void SimplePhysicObj::SetNextForAnimation(int action, int nextAction)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (this->m_physicBody)
+            this->m_physicBody->SetNextForAnimation(action, nextAction);
 	}
 
 	void SimplePhysicObj::SetInvisible()

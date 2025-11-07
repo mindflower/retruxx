@@ -83,7 +83,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Player, IsQuestItemPresent)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Player, AddQuestItem)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* player = (ai::Player*)context->asObject(0, "Player");
+    auto name = context->asString(1);
+    auto res = player->AddQuestItem(name);
+    context->pushInt(res);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Player, RemoveQuestItem)
@@ -659,7 +663,9 @@ namespace ai
 
     int Player::AddQuestItem(CStr const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Player::AddQuestItem
+        //RETRUXX_NOT_IMPLEMENTED;
+        return 1;
     }
 
     void Player::Remove()

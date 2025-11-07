@@ -9,6 +9,7 @@
 #include "game/m3dgame.h"
 #include "server/dynamicscene.h"
 #include "server/ai/aimanager.h"
+#include "server/objects/physicbodies/physichelpers.h"
 
 #include "thirdparty/injecttools.h"
 
@@ -727,9 +728,9 @@ namespace ai
         this->UnlinkGeomsFromCollisionCells();
     }
 
-    void PhysicObj::SetDirection(CVector const&)
+    void PhysicObj::SetDirection(CVector const& direction)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::SetDirectionToObject<ai::PhysicObj>(*this, direction);
     }
 
     Geom::CellAabb PhysicObj::GetCollisionCellAabb() const

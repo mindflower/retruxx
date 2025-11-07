@@ -472,9 +472,53 @@ namespace m3d
             RETRUXX_NOT_IMPLEMENTED;
         }
 
-        int Wnd::RemoveChildForce(Object*)
+        int Wnd::RemoveChildForce(Object* obj)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: generated code
+            auto* w = dynamic_cast<Wnd*>(obj);
+            // Reset suspension flags
+            w->m_bSuspendedUnlink = false;
+            w->m_bSuspendedParentUnlink = false;
+
+            // Create a stack for depth-first traversal of child hierarchy
+            std::vector<m3d::ui::Wnd*> childStack;
+            childStack.push_back(w);
+
+            // Process all children in depth-first order
+            while (!childStack.empty()) {
+                // Get the next window from stack
+                m3d::ui::Wnd* currentWnd = childStack.back();
+                childStack.pop_back();
+
+                // Traverse all siblings of current window
+                m3d::ui::Wnd* child = dynamic_cast<Wnd*>(currentWnd->GetFirstChild());
+                while (child != nullptr) {
+                    // Reset parent unlink suspension flag
+                    child->m_bSuspendedParentUnlink = false;
+
+                    // If this child has children, add it to stack for processing
+                    if (child->GetFirstChild() != nullptr) {
+                        childStack.push_back(child);
+                    }
+
+                    // Move to next sibling
+                    child = dynamic_cast<Wnd*>(child->GetNextSibling());
+                }
+            }
+
+            // Notify window station about removal
+            m_wndStation->OnRemoveWnd(this, w);
+
+            // Actually unlink the child from parent
+            UnlinkChild(w);
+
+            // If this window is part of the window station hierarchy,
+            // notify the removed window about being removed from station
+            if (this == m_wndStation || IsChildOf(m_wndStation)) {
+                w->OnAfterRemoveFromWndStation();
+            }
+
+            return 1;
         }
 
         int Wnd::SetBackground(rend::TexHandle bgTex)

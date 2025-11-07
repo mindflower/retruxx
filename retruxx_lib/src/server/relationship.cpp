@@ -108,9 +108,19 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Relationship::SetTolerance(int, int, float)
+    void Relationship::SetTolerance(int belongId1, int belongId2, float value)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (belongId1 != belongId2)
+        {
+            if (belongId1 >= this->m_MinID)
+            {
+                if (belongId1 <= m_MaxID && belongId2 >= m_MinID && belongId2 <= m_MaxID)
+                {
+                    this->m_pTolerance[belongId1 + (belongId2 - m_MinID) * (m_MaxID - m_MinID + 1) - m_MinID] = value;
+                    this->m_pTolerance[belongId2 + (belongId1 - this->m_MinID) * (this->m_MaxID - this->m_MinID + 1) - this->m_MinID] = value;
+                }
+            }
+        }
     }
 
     void Relationship::SetTolerance(CStr const&, CStr const&, float)
@@ -123,9 +133,17 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    float Relationship::GetTolerance(int, int) const
+    float Relationship::GetTolerance(int belongId1, int belongId2) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (belongId1 == belongId2)
+            return 4.0;
+        if (belongId1 < this->m_MinID)
+            return (double)(int)this->m_defaultTolerance;
+
+        if (belongId1 > m_MaxID || belongId2 < m_MinID || belongId2 > m_MaxID)
+            return (double)(int)this->m_defaultTolerance;
+        else
+            return this->m_pTolerance[belongId1 + (belongId2 - m_MinID) * (m_MaxID - m_MinID + 1) - m_MinID];
     }
 
     void Relationship::_LoadFormat1(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

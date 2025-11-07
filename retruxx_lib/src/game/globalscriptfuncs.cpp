@@ -52,7 +52,7 @@ namespace
 
         msg = arg->GetS();
         //TODO: check args count
-        while(scriptStack.getNumInArgs() > 0)
+        while(scriptStack.m_curInArg < scriptStack.m_numInArgs)
         {
             arg = scriptStack.popIn();
             switch (arg->GetType())

@@ -74,12 +74,22 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, MessageBox)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, SetTolerance)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    context->asObject(0, "ObjContainer");
+    auto first = context->asInt(1);
+    auto second = context->asInt(2);
+    auto tolerance = context->asFloat(3);
+    ai::theRelationship->SetTolerance(first, second, tolerance);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetTolerance)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    context->asObject(0, "ObjContainer");
+    auto first = context->asInt(1);
+    auto second = context->asInt(2);
+    auto res = ai::theRelationship->GetTolerance(first, second);
+    context->pushFloat(res);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, IncTolerance)
@@ -104,7 +114,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, SetGameTime)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetGameTime)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    auto time = objContainer->getGameTime().asAIParam();
+    context->pushAIParam(time);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, Get24HourTime)
