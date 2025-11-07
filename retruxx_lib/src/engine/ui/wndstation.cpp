@@ -882,9 +882,32 @@ namespace m3d
             }
         }
 
-        int WndStation::DispatchKey(Event const&)
+        int WndStation::DispatchKey(Event const& ev)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            int res = 0;
+            if (m_wndKbdCapture)
+            {
+                auto wnd = ModalOverride(m_wndKbdCapture);
+                auto parent = wnd;
+                while(parent)
+                {
+                    res = parent->OnKey(ev.m_ushortEv[0], ev.m_byteEv[3], ev.m_eventType == 7);
+                    if (res)
+                    {
+                        break;
+                    }
+                    parent = dynamic_cast<Wnd*>(parent->GetParent());
+                }
+                if (this == m_wndKbdCapture)
+                {
+                    if (m_wndModalStack.empty())
+                    {
+                        res = OnEvent(ev);
+                    }
+                }
+                M3D_APP->m_pImpulses->HandleKeyboardMouseEvent(ev, wnd);
+            }
+            return res;
         }
 
         int WndStation::Done()

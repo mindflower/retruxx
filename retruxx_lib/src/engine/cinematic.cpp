@@ -598,7 +598,12 @@ namespace m3d
 
     bool Cinematic::SkipCinematic()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_cinematicItems.empty())
+        {
+            return false;
+        }
+        _TakeNextCinematicItem();
+        return true;
     }
 
     bool Cinematic::RenderDebugInfo() const

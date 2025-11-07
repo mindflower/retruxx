@@ -412,9 +412,37 @@ namespace m3d
         }
     }
 
-    int GameImpulse::SetImpulsesStateBySet(KeysSet, bool, int, ui::Wnd*)
+    int GameImpulse::SetImpulsesStateBySet(KeysSet impSet, bool state, int curGameMode, ui::Wnd* causeWnd)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!m_isInited || impSet.empty())
+        {
+            return 0;
+        }
+
+        auto it = m_bindings.find(curGameMode);
+        if (it == m_bindings.end())
+        {
+            return 0;
+        }
+
+        // TODO: check this!!!
+
+        auto& bindStation = it->second;
+        while(!impSet.empty())
+        {
+            KeysSet ks;
+            auto imp = bindStation.FindImpulseByLongestSetPossible(impSet, 0xFFFFFFFF, ks);
+            if (imp == -1)
+            {
+                break;
+            }
+
+            AuxImpulseInfo info(imp, state, curGameMode, 0, 0);
+            SetImpulseState(info, causeWnd);
+
+            impSet = impSet - ks;
+        }
+        return 1;
     }
 
     int GameImpulse::SetImpulseState(AuxImpulseInfo const& impInfo, ui::Wnd* causeWnd)

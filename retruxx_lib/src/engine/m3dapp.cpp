@@ -114,6 +114,10 @@ namespace ai
 
 namespace m3d
 {
+    RT_CLASS_EXPORTS_BEGIN(Application)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(Application);
+
     Application* Application::g_pApp = nullptr;
 
     int Application::init(HINSTANCE hInstance, HICON hIcon, CStr const& configName, HWND forcedWnd, CStr const& cmdLine)

@@ -137,6 +137,7 @@
 #include "game/m3dgame.h"
 #include "game/uimisc/objectsicons.h"
 #include "impulses/i_impulses.h"
+#include "ui/edit.h"
 
 namespace
 {
@@ -302,9 +303,44 @@ CStr TruxxUiManager::GetPathToQuestInfoFileGlobal() const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int TruxxUiManager::HandleImpulse(m3d::AuxImpulseInfo const&, m3d::ui::Wnd*)
+int TruxxUiManager::HandleImpulse(m3d::AuxImpulseInfo const& impInfo, m3d::ui::Wnd* causeWnd)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: check this and refactor
+    if ((this->IsWindowVisible(166) || this->IsWindowVisible(19))
+        && !this->GUI_IsModalEqualWndRunning())
+    {
+        return 0;
+    }
+
+    m3d::ui::Wnd* v5 = 0;
+    if (causeWnd)
+    {
+        auto Station = M3D_APP->GetStation();
+        if (Station->HasChildModalRunning())
+        {
+            auto TopModal = Station->GetTopModal();
+            if (TopModal)
+                v5 = TopModal;
+        }
+        else if (this->GUI_IsWndModalEqual(causeWnd)
+                 || causeWnd->IsKindOf(&m3d::ui::EditWnd::m_classEditWnd))
+        {
+            v5 = causeWnd;
+        }
+    }
+
+    int v9 = 0;
+    if (impInfo.m_state)
+    {
+        auto Station = M3D_APP->GetStation();
+        if (!Station->HasChildModalRunning() || v5)
+            v9 = this->GUI_ProcessEvent(GUI_EVENT_FROM_IMPULSE, impInfo.m_impId, (void*)&impInfo, v5);
+    }
+
+    auto v11 = !this->GUI_IsModalEqualWndRunning();
+    if (v11)
+        return v9;
+    return 1;
 }
 
 TruxxUiManager::TruxxUiManager()

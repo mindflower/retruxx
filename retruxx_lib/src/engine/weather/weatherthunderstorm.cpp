@@ -95,7 +95,8 @@ namespace m3d
 
     int WeatherThunderstorm::TurnOffEffects()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        WeatherInclement::TurnOffEffects();
+        return 1;
     }
 
     int WeatherThunderstorm::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)

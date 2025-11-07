@@ -3,6 +3,7 @@
 #include <core/log.h>
 
 #include "config.h"
+#include "video.h"
 #include "game/profile.h"
 
 RT_CLASS_EXPORTS_BEGIN(MainMenuUI)
@@ -79,9 +80,14 @@ int MainMenuUI::OnAfterRemoveFromWndStation()
     return res;
 }
 
-int MainMenuUI::OnKey(unsigned short, unsigned char, unsigned)
+int MainMenuUI::OnKey(unsigned short key, unsigned char scanCode, unsigned state)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!state || key != 1 || M3D_APP->M3dVideoPlayer->IsVideoPlaing())
+    {
+        return m3d::ui::Wnd::OnKey(key, scanCode, state);
+    }
+    MainMenuUI::QuitToWindows();
+    return 1;
 }
 
 int MainMenuUI::GameDataSetup()

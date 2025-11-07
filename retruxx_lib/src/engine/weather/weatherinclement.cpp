@@ -88,7 +88,9 @@ namespace m3d
 
     int WeatherInclement::TurnOffEffects()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement WeatherInclement::TurnOffEffects
+        // RETRUXX_NOT_IMPLEMENTED;
+        return 1;
     }
 
     WeatherInclement::WeatherInclement(WeatherInclement const&)

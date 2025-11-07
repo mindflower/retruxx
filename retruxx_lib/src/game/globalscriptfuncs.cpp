@@ -826,8 +826,39 @@ int n_ResetFogOfWarFC(m3d::sArgStack& scriptStack)
 
 int n_SetWeather(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    if (!m3d::pClient)
+    {
+        return -1;
+    }
+
+    if (scriptStack.getNumInArgs() == 0)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    int value = 0;
+    if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        value = arg->GetF();
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+    {
+        value = arg->GetI();
+    }
+
+    auto& manager = m3d::pClient->GetWorld().GetWeatherManager();
+    if (value >= manager.GetNumWeathers())
+    {
+        M3D_ENGINE_CFG.m_console->PrintF("error: bad weather id\n");
+    }
+    else
+    {
+        manager.SetActiveWeather(value);
+        manager.UpdateDayTime();
+    }
+
+    return 1;
 }
 
 int n_IsPlayingCampaign(m3d::sArgStack& scriptStack)

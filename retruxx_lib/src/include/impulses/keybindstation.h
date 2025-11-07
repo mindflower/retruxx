@@ -25,6 +25,7 @@ namespace m3d
         std::set<int>::reverse_iterator rend() const;
 
         friend bool operator==(const KeysSet& lhd, const KeysSet& rhd);
+        friend KeysSet operator-(const KeysSet& lhd, const KeysSet& rhd);
 
     private:
         std::set<int> m_set;

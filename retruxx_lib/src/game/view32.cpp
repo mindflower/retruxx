@@ -640,7 +640,7 @@ bool CMiracle3d::CinematicFade()
 
 m3d::Class* CMiracle3d::GetBaseClass()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(Application);
 }
 
 m3d::TownMusicManager* CMiracle3d::GetTownMusicManager()
@@ -887,9 +887,15 @@ void CMiracle3d::OnAfterDeviceReset()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int CMiracle3d::OnSkipCinematic(m3d::AuxImpulseInfo const&)
+int CMiracle3d::OnSkipCinematic(m3d::AuxImpulseInfo const& impInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (impInfo.m_state)
+    {
+        this->m_cinematic->m_bWasSkipped = true;
+        m3d::AuxImpulseInfo info(3, 1, this->m_curGameMode.m_mode, 0, 0);
+        OnChangeMode(info);
+    }
+    return 1;
 }
 
 void CMiracle3d::RenderAsBackground(bool)

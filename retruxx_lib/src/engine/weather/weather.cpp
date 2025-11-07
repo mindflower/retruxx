@@ -189,7 +189,7 @@ namespace m3d
 
     int Weather::TurnOffEffects()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return 1;
     }
 
     int Weather::WriteDetailToXmlNode(cmn::XmlFile*, cmn::XmlNode*)

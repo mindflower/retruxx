@@ -4,6 +4,7 @@
 #include <core/console/cvar.h>
 #include <server/objects/base/objcontainer.h>
 #include <ui/msgbox.h>
+#include "impulses/i_impulses.h"
 
 class PostEffectManager;
 class ProfileManager;
@@ -17,7 +18,6 @@ namespace m3d
     class RadioEngine;
     class BlockMusicManager;
     class TownMusicManager;
-    class AuxImpulseInfo;
 }
 
 enum HackedMusicType

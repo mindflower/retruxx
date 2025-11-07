@@ -1,7 +1,9 @@
 #include "cinemapanel.h"
 
 #include "autoscrolltextwnd.h"
+#include "game/m3dgame.h"
 #include "core/log.h"
+#include "core/timer.h"
 #include "ui/image.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(CinemaPanel, AddMessage)
@@ -72,7 +74,30 @@ bool CinemaPanel::MessageQueueIsEmpty() const
 
 void CinemaPanel::OnHide()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_msgInfos.clear();
+    M3D_APP->m_pInterfaceManager->ShowWindow(
+        18,
+        0,
+        0,
+        0,
+        0,
+        0);
+
+    m_panelType = PANELTYPE_NORMAL;
+    ShowControlsForPanelType(PANELTYPE_NORMAL);
+    if (m_panelType)
+    {
+        if (m_panelType == PANELTYPE_SCROLL)
+        {
+            StopSound();
+            m_bIsShowingMessage = false;
+            m_curMessageEndTime = M3D_KERNEL->GetTimer().GetCurTime();
+        }
+    }
+    else
+    {
+        ClearNormal();
+    }
 }
 
 void CinemaPanel::SkipMessage()
@@ -114,7 +139,8 @@ void CinemaPanel::Clear()
 
 void CinemaPanel::ClearNormal()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CinemaPanel::ClearNormal
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 int CinemaPanel::OnPaint(m3d::ui::DrawInfo const&)
@@ -335,7 +361,8 @@ void CinemaPanel::SetupTime(MsgInfo const*)
 
 void CinemaPanel::ShowControlsForPanelType(PanelType)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CinemaPanel::ShowControlsForPanelType
+    //RETRUXX_NOT_IMPLEMENTED;
 }
 
 void CinemaPanel::ClearScroll()

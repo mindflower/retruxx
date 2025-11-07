@@ -606,7 +606,11 @@ namespace m3d
 
     unsigned WeatherManager::GetNumWeathers() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_bEdit)
+        {
+            return m_weatherStorage.size();
+        }
+        return m_curWeatherStorage.size();
     }
 
     char const* WeatherManager::GetGlobalTimeParamName(unsigned) const

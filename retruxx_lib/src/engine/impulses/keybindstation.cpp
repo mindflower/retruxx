@@ -10,9 +10,9 @@ namespace m3d
     {
     }
 
-    KeysSet::KeysSet(int)
+    KeysSet::KeysSet(int key)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_set.insert(key);
     }
 
     void KeysSet::clear()
@@ -27,7 +27,7 @@ namespace m3d
 
     bool KeysSet::empty() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_set.empty();
     }
 
     KeysSet& KeysSet::operator-=(int key)
@@ -144,6 +144,7 @@ namespace m3d
             auto it = std::find(bind.m_keys.begin(), bind.m_keys.end(), ks);
             if (it != bind.m_keys.end())
             {
+                m_ks = &*it;
                 return &bind;
             }
         }
@@ -275,5 +276,10 @@ namespace m3d
             return std::mismatch(lhd.m_set.begin(), lhd.m_set.end(), rhd.m_set.begin()).first == lhd.m_set.end();
         }
         return false;
+    }
+
+    KeysSet operator-(const KeysSet& lhd, const KeysSet& rhd)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }

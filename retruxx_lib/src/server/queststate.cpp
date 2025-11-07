@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "core/log.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(QuestStateManager, TakeQuest)
 {
     RETRUXX_NOT_IMPLEMENTED;
@@ -29,7 +31,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(QuestStateManager, FailQuestIfTaken)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(QuestStateManager, IsQuestTaken)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto manager = (ai::QuestStateManager*)context->asObject(0, "QuestStateManager");
+    auto* quest = context->asString(1);
+    bool res = manager->IsQuestTaken(quest);
+    context->pushBool(res);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(QuestStateManager, IsQuestComplete)
@@ -235,9 +241,16 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool QuestStateManager::IsQuestTaken(char const*) const
+    bool QuestStateManager::IsQuestTaken(char const* questName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* quest = _GetQuestStateByName(questName);
+        if (quest)
+        {
+            return quest->bIsTaken();
+        }
+
+        M3D_LOG_ERR("Error in IsQuestTaken(): invalid quest name: '" + CStr(questName) + "'");
+        return false;
     }
 
     void QuestStateManager::Update(float elapsedTime)

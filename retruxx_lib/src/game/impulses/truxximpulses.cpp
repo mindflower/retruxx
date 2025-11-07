@@ -1,8 +1,10 @@
 #include "truxximpulses.h"
 #include <stdexcept>
 
+#include "game/m3dgame.h"
+
 RT_CLASS_EXPORTS_BEGIN(TruxxImpulse)
-RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TruxxImpulse);
 
 namespace
@@ -77,9 +79,73 @@ namespace
     };
 }
 
-int TruxxImpulse::HandleImpulse(m3d::AuxImpulseInfo const&, m3d::ui::Wnd*)
+int TruxxImpulse::HandleImpulse(m3d::AuxImpulseInfo const& impInfo, m3d::ui::Wnd* causeWnd)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (impInfo.m_impId >= 0x38u)
+    {
+        return 0;
+    }
+
+    int res = 1;
+    if (M3D_APP->m_pInterfaceManager->HandleImpulse(impInfo, causeWnd))
+    {
+        M3D_APP->m_pImpulses->ResetImpulseWithoutNotification(impInfo.m_impId);
+    }
+    else
+    {
+        if (causeWnd == M3D_APP)
+        {
+            switch (impInfo.m_impId)
+            {
+            case m3d::EV_KEY_UP:
+                res = M3D_APP->OnGameZoom(impInfo);
+                break;
+
+            case m3d::EV_MOUSE_MOVE:
+                res = M3D_APP->OnGameDrag(impInfo);
+                break;
+
+            case m3d::EV_MOUSE_LBTN:
+            case m3d::EV_MOUSE_RBTN:
+                res = M3D_APP->OnGameMouse(impInfo);
+                break;
+
+            case m3d::EV_MOUSE_MBTN:
+            case m3d::EV_MOUSE_DBLCLICK:
+            case m3d::EV_MOUSE_CLICK:
+            case m3d::EV_MOUSE_WHEEL:
+            case m3d::EV_JOYSTICK_BTN0:
+            case m3d::EV_JOYSTICK_BTN1:
+            case m3d::EV_JOYSTICK_BTN2:
+            case m3d::EV_JOYSTICK_BTN3:
+            case m3d::EV_JOYSTICK_BTN4:
+            case m3d::EV_JOYSTICK_BTN5:
+            case m3d::EV_JOYSTICK_BTN6:
+                res = M3D_APP->OnDebug(impInfo);
+                break;
+
+            case m3d::EV_JOYSTICK_Z_AXIS_PLUS:
+                res = M3D_APP->OnGameSwitchCamera(impInfo);
+                break;
+
+            case m3d::EV_UI_NOTIFY_WND:
+                res = M3D_APP->OnSkipCinematic(impInfo);
+                break;
+
+            case m3d::EV_UI_MODAL_WND_IS_CLOSED:
+                res = M3D_APP->OnSkipCinematicMessage(impInfo);
+                break;
+
+            default:
+                break;
+            }
+        }
+        else
+        {
+            res = 0;
+        }
+    }
+    return res;
 }
 
 int TruxxImpulse::GetImpulseIdByName(CStr const& impName)
