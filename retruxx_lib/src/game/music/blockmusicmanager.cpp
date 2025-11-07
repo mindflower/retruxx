@@ -105,7 +105,30 @@ namespace m3d
 
     int BlockMusicManager::PlayCurrentMusic()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!m_bMustPlayNewMusic)
+        {
+            return m_curChannelId;
+        }
+        if (m_curBlockNum == -1)
+        {
+            return -1;
+        }
+        if (m_curMusicType >= NUM_MUSIC_TYPES)
+        {
+            return -1;
+        }
+
+        if (!M3D_ENGINE_CFG.m_mus_Enable.GetB())
+        {
+            return -1;
+        }
+
+        auto& block = m_blocks[m_curBlockNum][m_curMusicType];
+        M3D_LOG_INFO("BlockMusicManager: start playing new music: blockNum = " + CStr(m_curBlockNum) + ", musicType = " + CStr(m_curMusicType) + ", name = '" + block + "'");
+        M3D_APP->StartPlayingMusic(block.c_str(), true, m_curMusicType != DRIVING);
+
+        m_bMustPlayNewMusic = false;
+        return m_curChannelId;
     }
 
     void BlockMusicManager::_MusicEndCallback(int)

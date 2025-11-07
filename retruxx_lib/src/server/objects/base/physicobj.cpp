@@ -1148,7 +1148,6 @@ namespace ai
 
     void PhysicObj::_UpdateOwnPhysics(float)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void PhysicObj::_SetPositionToGeoms(CVector const&)

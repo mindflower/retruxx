@@ -603,9 +603,23 @@ void ConsoleImp::ProcessInputChar(unsigned short)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-bool ConsoleImp::Toggle(bool)
+bool ConsoleImp::Toggle(bool bOpen)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_csCurState == CONSOLE_ERROR)
+        return false;
+    if (bOpen)
+    {
+        if (m_csCurState != CONSOLE_OPENED)
+        {
+            m_csCurState = CONSOLE_OPENED;
+            return true;
+        }
+    }
+    else if (m_csCurState != CONSOLE_CLOSED)
+    {
+        m_csCurState = CONSOLE_CLOSED;
+    }
+    return true;
 }
 
 bool ConsoleImp::Toggle()

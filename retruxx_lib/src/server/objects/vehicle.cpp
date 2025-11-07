@@ -846,7 +846,8 @@ namespace ai
 
 	void Vehicle::ActivateHeadLights(bool)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: implement Vehicle::ActivateHeadLights
+		// RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::Flow(Obj*, float)
@@ -1332,7 +1333,17 @@ namespace ai
 
 	float Vehicle::GetCurrentSteerAngle() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		for (auto& wheelInfo : m_wheels)
+		{
+		    if (const auto& wheel = wheelInfo.GetWheel())
+		    {
+		        if (wheel->m_steering)
+		        {
+		            return wheel->m_steering * wheel->m_curAngle;
+		        }
+		    }
+		}
+		return 0.0;
 	}
 
 	int Vehicle::GetCurrentGear() const
@@ -1561,7 +1572,7 @@ namespace ai
 
 	bool Vehicle::bIsBraking() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return m_brake > ((GetPrototypeInfo())->m_selfBrakingCoeff + 0.000099999997);
 	}
 
 	m3d::AIParam Vehicle::VehicleAIOnMove(Obj*)
@@ -3653,9 +3664,14 @@ namespace ai
 		}
 	}
 
-	void Vehicle::_UpdateOwnPhysics(float)
+	void Vehicle::_UpdateOwnPhysics(float elapsedTime)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		PhysicObj::_UpdateOwnPhysics(elapsedTime);
+		const auto flags = GetFlags();
+		if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository())
+		{
+			m_ownUpdater->Update(elapsedTime);
+		}
 	}
 
 	AI* Vehicle::GetAIPtr()

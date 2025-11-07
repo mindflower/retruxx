@@ -119,7 +119,9 @@ void CinemaPanel::ClearNormal()
 
 int CinemaPanel::OnPaint(m3d::ui::DrawInfo const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CinemaPanel::OnPaint
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void CinemaPanel::SetPanelTypeForMsg(int)

@@ -514,9 +514,7 @@ namespace m3d
 
     int GameImpulse::HandleKeyboardMouseEvent(Event const& ev, ui::Wnd* causeWnd)
     {
-        // TODO implement GameImpulse::HandleKeyboardMouseEvent
-        //RETRUXX_NOT_IMPLEMENTED;
-        return 1;
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int GameImpulse::FilterShifts(int&, bool&)

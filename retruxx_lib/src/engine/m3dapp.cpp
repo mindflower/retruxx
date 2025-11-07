@@ -2647,9 +2647,24 @@ namespace m3d
         m3d::Application::PutSprite2Abs(x1, y1, tu1, tv1, x2, y2, tu2, tv2, c);
     }
 
-    void Application::SetKeyboardFocus(IEventHandler*)
+    void Application::SetKeyboardFocus(IEventHandler* entity)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_focusKbdEntity)
+        {
+            m3d::Event ev;
+            ev.m_eventType = 5;
+            ev.m_void[0] = entity;
+            m_focusKbdEntity->HandleEvent(ev);
+        }
+
+        m_focusKbdEntity = entity;
+        if (m_focusKbdEntity)
+        {
+            m3d::Event ev;
+            ev.m_eventType = 6;
+            ev.m_void[0] = entity;
+            m_focusKbdEntity->HandleEvent(ev);
+        }
     }
 
     int Application::OnChangeMode(AuxImpulseInfo const&)

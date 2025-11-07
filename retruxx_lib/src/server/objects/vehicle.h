@@ -83,6 +83,7 @@ namespace ai
 
     class Vehicle : public ComplexPhysicObj
     {
+        friend class VehicleUpdater;
         friend class Player;
 
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Vehicle, float, void>;

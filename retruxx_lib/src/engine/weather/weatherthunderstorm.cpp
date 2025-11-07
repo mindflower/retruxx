@@ -60,7 +60,9 @@ namespace m3d
 
     int WeatherThunderstorm::Render()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement WeatherThunderstorm::Render
+        // RETRUXX_NOT_IMPLEMENTED;
+        return 1;
     }
 
     Class* WeatherThunderstorm::GetBaseClass()

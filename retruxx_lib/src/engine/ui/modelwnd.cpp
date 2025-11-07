@@ -123,7 +123,9 @@ namespace m3d
 
         int ModelWnd::OnPaint(DrawInfo const&)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement ModelWnd::OnPaint
+            // RETRUXX_NOT_IMPLEMENTED;
+            return 1;
         }
 
         Quaternion& ModelWnd::Rotation()

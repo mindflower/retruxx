@@ -315,7 +315,9 @@ void RadarWnd::DrawWorldsides(m3d::ui::DrawInfo const&) const
 
 int RadarWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement RadarWnd::GameDataUpdate
+    //RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int RadarWnd::UpdateDistance(NavPoint::NavPointType)

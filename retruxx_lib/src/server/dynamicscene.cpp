@@ -5,6 +5,7 @@
 #include <ode/collision_space.h>
 #include <ode/objects.h>
 
+#include "config.h"
 #include "geomobject.h"
 #include "passagedata.h"
 #include "colliders/breakableobjectcolliders.h"
@@ -268,7 +269,11 @@ namespace ai
 
 	DynamicScene::SoilProps::SoilProps()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		m_wheelTraceTextureName = M3D_ENGINE_CFG.m_skidTexName.GetS();
+		m_friction = 1.0;
+		m_resistance = 0;
+		m_idx = 0;
+
 	}
 
 	short DynamicScene::GetBoEffectTypeByName(CStr const&)
@@ -525,9 +530,15 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	DynamicScene::SoilProps const& DynamicScene::GetSoilProps(unsigned, unsigned) const
+	DynamicScene::SoilProps const& DynamicScene::GetSoilProps(unsigned x, unsigned z) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		if (x < m_soilPropsIdx.size() && z < m_soilPropsIdx[x].size())
+		{
+			return m_soilProps[m_soilPropsIdx[x][z]];
+		}
+
+		static const DynamicScene::SoilProps dummy;
+		return dummy;
 	}
 
 	CStr const& DynamicScene::GetShellStaticsEffectName(unsigned short) const
