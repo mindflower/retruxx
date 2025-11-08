@@ -1,0 +1,820 @@
+#include <stdexcept>
+#include <core/ini.h>
+#include <core/kernel.h>
+#include <core/scoped_ptr.h>
+#include <file/fileserver.h>
+#include <file/filestream.h>
+
+#include "math/vector.h"
+
+#include <sstream>
+
+namespace m3d
+{
+    cmn::XmlFile* ReadXmlFile(char const* filename, CStr* errorStr)
+    {
+        scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+        if (fileStream->Open(filename, fs::IStream::OPEN_READ))
+        {
+
+            auto* xmlFile = g_Kernel->CreateXmlFile();
+            xmlFile->Read(*fileStream);
+            fileStream->Close();
+            if (xmlFile->GetError() != nullptr)
+            {
+                xmlFile->DecRef();
+                xmlFile = nullptr;
+                if (errorStr != nullptr)
+                {
+                    *errorStr = CStr("ReadXmlFile: Cannot parse file ") + filename;
+                }
+            }
+            return xmlFile;
+        }
+        if (errorStr != nullptr)
+        {
+            *errorStr = CStr("ReadXmlFile: Cannot open file ") + filename;
+        }
+        return nullptr;
+    }
+
+    int SafeStrAttrib(CStr& v, cmn::XmlNode const* node, char const* attrName)
+    {
+        if (node->IsEmpty())
+        {
+            return 0;
+        }
+        auto const* attr = node->GetAttribute(attrName);
+        if (attr == nullptr)
+        {
+            return 0;
+        }
+        v = attr;
+        return 1;
+    }
+
+    bool SafeClrAttrib(unsigned& clr, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        CStr str;
+        if (SafeStrAttrib(str, node, attrib) && !str.empty())
+        {
+            clr = std::stoul(str.c_str(), nullptr, 16);;
+            return true;;
+        }
+        return false;
+    }
+
+    bool SafeIntAttrib(int& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        if (!node->IsEmpty())
+        {
+            auto attr = node->GetAttribute(attrib);
+            if (attr)
+            {
+                v = atoi(attr);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool SafeInt64Attrib(long long& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        CStr str;
+        if (SafeStrAttrib(str, node, attrib) && !str.empty())
+        {
+            std::istringstream iss(str.c_str());
+            iss >> v;
+            return true;
+        }
+        return false;
+    }
+
+    bool SafeUintAttrib(unsigned& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        CStr str;
+        if (SafeStrAttrib(str, node, attrib) && !str.empty())
+        {
+            std::istringstream iss(str.c_str());
+            iss >> v;
+            return true;
+        }
+        return false;
+    }
+
+    bool SafeFloatAttrib(float& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        if (!node->IsEmpty())
+        {
+            auto attr = node->GetAttribute(attrib);
+            if (attr)
+            {
+                v = atof(attr);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool SafeBoolAttrib(bool& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        if (node->IsEmpty())
+        {
+            return 0;
+        }
+        auto attrValue = node->GetAttribute(attrib);
+        if (!attrValue)
+        {
+            return 0;
+        }
+        auto trueVal =
+            !stricmp(attrValue, "yes") ||
+            !stricmp(attrValue, "yeah") ||
+            !stricmp(attrValue, "yep") ||
+            !stricmp(attrValue, "1") ||
+            !stricmp(attrValue, "true");
+        auto falseVal =
+            !stricmp(attrValue, "false") ||
+            !stricmp(attrValue, "0") ||
+            !stricmp(attrValue, "no") ||
+            !stricmp(attrValue, "nope") ||
+            !stricmp(attrValue, "none");
+        if (!trueVal && !falseVal)
+        {
+            return 0;
+        }
+        v = trueVal;
+        return 1;
+    }
+
+    bool SafeVector2Attrib(CVector2& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        if (node->IsEmpty())
+        {
+            return 0;
+        }
+        auto val = node->GetAttribute(attrib);
+        if (!val)
+        {
+            return 0;
+        }
+        v = strToVec2(val);
+        return 1;
+    }
+
+    bool SafeVectorAttrib(CVector& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        if (node->IsEmpty())
+        {
+            return 0;
+        }
+        auto val = node->GetAttribute(attrib);
+        if (!val)
+        {
+            return 0;
+        }
+        v = strToVec(val);
+        return 1;
+    }
+
+    bool SafeQuaternionAttrib(Quaternion& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    {
+        if (node->IsEmpty())
+        {
+            return 0;
+        }
+        auto val = node->GetAttribute(attrib);
+        if (!val)
+        {
+            return 0;
+        }
+        v = strToQuat(val);
+        return 1;
+    }
+
+    void Tokenize(CStr const& str, retruxx::vector<CStr>& tokens, char const* chars)
+    {
+        if (!str.empty())
+        {
+            tokens.clear();
+            auto temp = new char[str.length() + 1];
+            strncpy(temp, str.c_str(), str.length() +1);
+            for (auto i = strtok(temp, chars); i; i = strtok(nullptr, chars))
+            {
+                tokens.push_back(i);
+            }
+            delete[] temp;
+        }
+    }
+
+    void Tokenize(CStr const* str, retruxx::vector<CStr>& tokens, char const* chars)
+    {
+        if (!str || str->empty()) 
+        {
+            return;
+        }
+
+        // Clear existing tokens
+        tokens.clear();
+
+        // Calculate string length
+        auto strLen = str->length();
+
+        // Allocate memory for copy
+        char* buffer = new char[strLen + 1];
+
+        // Copy the string
+        std::strcpy(buffer, str->c_str());
+
+        // Tokenize the copied string
+        char* token = strtok(buffer, chars);
+        while (token != nullptr)
+        {
+
+            tokens.push_back(token);
+            token = strtok(nullptr, chars);
+        }
+
+        // Free the buffer
+        delete[] buffer;
+    }
+}
+
+bool XmlFileImpl::AddBeforeChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+void XmlFileImpl::SetHeader(char const*, char const*, char const*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+bool XmlFileImpl::AddAfterChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int XmlFileImpl::Write(m3d::fs::IStream&)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+void XmlFileImpl::GetHeader(char**, char**, char**)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+bool XmlFileImpl::AddChild(m3d::cmn::XmlNode*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+bool XmlFileImpl::RemoveChild(m3d::cmn::XmlNode*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+char const* XmlFileImpl::GetError()
+{
+    if (Error())
+    {
+        return ErrorDesc().c_str();
+    }
+    return nullptr;
+}
+
+bool XmlFileImpl::GetFirstChild(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
+{
+    auto child = wantValue ? FirstChild(wantValue) : FirstChild();
+    auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
+    writeToCasted->m_node = child;
+    return child != nullptr;
+}
+
+XmlFileImpl::~XmlFileImpl()
+{
+}
+
+int XmlFileImpl::Read(m3d::fs::IStream& in)
+{
+    auto const size = in.GetSize();
+    retruxx::vector<char> buffer(size + 1, 0);
+    buffer[in.ReadBytes(&buffer[0], size)] = '\0';
+    Parse(&buffer[0]);
+    //TODO: check this;
+    return !Error();
+}
+
+m3d::cmn::XmlNode* XmlFileImpl::CreateNode(m3d::cmn::XmlNodeType type, char const* nodeName) const
+{
+    return new XmlNodeImpl(type, nodeName);
+}
+
+bool XmlFileImpl::GetLastChild_(m3d::cmn::XmlNode* node, char const* nodeName)  const
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int XmlFileImpl::IncRef()
+{
+    if (m_parent)
+    {
+        m_parent->IncRef();
+    }
+    return ++m_refCount;
+}
+
+void* XmlFileImpl::QueryIface(char const*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+XmlFileImpl::XmlFileImpl()
+{
+    this->m_parent = 0;
+    this->m_refCount = 0;
+    SetCondenseWhiteSpace(0);
+}
+
+int XmlFileImpl::DecRef()
+{
+    --m_refCount;
+    auto const ret = m_refCount;
+    if (m_parent)
+    {
+        m_parent->DecRef();
+    }
+    if (m_refCount <= 0)
+    {
+        delete this;
+    }
+    return ret;
+}
+
+TiXmlNode* XmlFileImpl::GetDeclarationNode()
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+IniFileImpl::IniFileImpl() : m_file(m3d::g_Kernel->CreateXmlFile())
+{
+}
+
+int IniFileImpl::Write(m3d::fs::IStream&)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+char const* IniFileImpl::GetError()
+{
+    return m_file->GetError();
+}
+
+unsigned IniFileImpl::GetHex(CStr const&, CStr const&)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+void IniFileImpl::SetString(CStr const&, CStr const&, CStr const&)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int IniFileImpl::GetInteger(CStr const& section, CStr const& key)
+{
+    return atoi(GetString(section, key));
+}
+
+float IniFileImpl::GetFloat(CStr const& section, CStr const& key)
+{
+    return strtof(GetString(section, key), nullptr);
+}
+
+IniFileImpl::~IniFileImpl()
+{
+    if (m_file)
+    {
+        m_file->DecRef();
+    }
+}
+
+char const* IniFileImpl::GetString(CStr const& section, CStr const& key)
+{
+    ref_ptr node = m_file->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    FindKey(node, section, key);
+    if (node->IsEmpty())
+    {
+        return "";
+    }
+    return node->GetValue();
+
+}
+
+int IniFileImpl::Read(m3d::fs::IStream& in)
+{
+    return m_file->Read(in);
+}
+
+void IniFileImpl::SetInteger(CStr const&, CStr const&, int)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+void IniFileImpl::SetFloat(CStr const&, CStr const&, float)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int IniFileImpl::IncRef()
+{
+    if (m_parent)
+    {
+        m_parent->IncRef();
+    }
+    return ++m_refCount;
+}
+
+bool IniFileImpl::FindSection(m3d::cmn::XmlNode* writeTo, CStr const& section)
+{
+    ref_ptr node = m_file->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    if (m_file->GetFirstChild(node, "Ini"))
+    {
+        node->GetFirstChild(writeTo, "Section");
+        while (!writeTo->IsEmpty())
+        {
+            if (writeTo->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
+            {
+                auto attr = writeTo->GetAttribute("name");
+                if (attr)
+                {
+                    if (section == attr)
+                    {
+                        break;
+                    }
+                }
+            }
+            writeTo->GetNextSibling(writeTo, "Section");
+        }
+    }
+    return !writeTo->IsEmpty();
+}
+
+bool IniFileImpl::AddKey(m3d::cmn::XmlNode*, CStr const&, CStr const&, CStr const&)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int IniFileImpl::DecRef()
+{
+    --m_refCount;
+    auto const ret = m_refCount;
+    if (m_parent)
+    {
+        m_parent->DecRef();
+    }
+    if (m_refCount <= 0)
+    {
+        delete this;
+    }
+    return ret;
+}
+
+void* IniFileImpl::QueryIface(char const*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+bool IniFileImpl::FindKey(m3d::cmn::XmlNode* writeTo, CStr const& section, CStr const& key)
+{
+    if (!FindSection(writeTo, section))
+    {
+        return false;
+    }
+    writeTo->GetFirstChild(writeTo, "Key");
+    while (!writeTo->IsEmpty())
+    {
+        if (writeTo->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
+        {
+            auto attr = writeTo->GetAttribute("name");
+            if (attr)
+            {
+                if (attr == key)
+                {
+                    break;
+                }
+            }
+        }
+        writeTo->GetNextSibling(writeTo, "Key");
+    }
+    if (writeTo->IsEmpty())
+    {
+        return false;
+    }
+    writeTo->GetFirstChild(writeTo, nullptr);
+    while (!writeTo->IsEmpty())
+    {
+        if (writeTo->IsOfType(m3d::cmn::XML_NODE_TEXT))
+        {
+            break;
+        }
+        writeTo->GetNextSibling(writeTo, nullptr);
+    }
+    return !writeTo->IsEmpty();
+}
+
+bool XmlNodeImpl::HasChildOrAttribute() const
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+bool XmlNodeImpl::AddBeforeChild(m3d::cmn::XmlNode const* addBefore, m3d::cmn::XmlNode* child)
+{
+    auto addBeforeCasted = dynamic_cast<XmlNodeImpl const*>(addBefore);
+    auto childCasted = dynamic_cast<XmlNodeImpl*>(child);
+    return m_node->LinkBeforeChild(addBeforeCasted->m_node, childCasted->m_node) != 0;
+}
+
+char const* XmlNodeImpl::GetValue() const
+{
+    return m_node->Value().c_str();
+}
+
+bool XmlNodeImpl::GetFirstAttribute(m3d::cmn::XmlAttrib* writeTo) const
+{
+    if (m_node && m_node->Type() == TiXmlNode::ELEMENT)
+    {
+        auto element = dynamic_cast<TiXmlElement*>(m_node);
+        auto writeToCasted = dynamic_cast<XmlAttribImpl*>(writeTo);
+        auto attr = element->FirstAttribute();
+        writeToCasted->m_attrib = attr;
+        return attr != nullptr;
+    }
+    return false;
+}
+
+bool XmlNodeImpl::RemoveAttribute(char const*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+bool XmlNodeImpl::IsEmpty() const
+{
+    return m_node == nullptr;
+}
+
+XmlNodeImpl::XmlNodeImpl(m3d::cmn::XmlNodeType type, char const* nodeName)
+{
+    //TODO: check this
+    switch(type)
+    {
+    case m3d::cmn::XML_NODE_ELEMENT:
+    {
+        m_node = new TiXmlElement(nodeName);
+        m_nodeOwned = true;
+        break;
+    }
+    case m3d::cmn::XML_NODE_COMMENT:
+    {
+        m_node = new TiXmlComment;
+        m_nodeOwned = true;
+        break;
+    }
+    case m3d::cmn::XML_NODE_UNKNOWN:
+    {
+        m_node = new TiXmlUnknown;
+        m_nodeOwned = true;
+        break;
+    }
+    case m3d::cmn::XML_NODE_TEXT:
+    {
+        m_node = new TiXmlText(nodeName);
+        m_nodeOwned = true;
+        break;
+    }
+    default:
+    {
+        m_nodeOwned = false;
+        break;
+    }
+    }
+}
+
+XmlNodeImpl::XmlNodeImpl(TiXmlNode* fromNode) :
+    m_node(fromNode)
+{
+}
+
+bool XmlNodeImpl::GetPrevSibling(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
+{
+    auto sibling = wantValue ? m_node->PreviousSibling(wantValue) : m_node->PreviousSibling();
+    auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
+    *writeToCasted = XmlNodeImpl(sibling);
+    return sibling != nullptr;
+}
+
+bool XmlNodeImpl::IsOfType(m3d::cmn::XmlNodeType castTo) const
+{
+    if (m_node == nullptr)
+    {
+        return m_node != nullptr;
+    }
+    switch (castTo)
+    {
+    case m3d::cmn::XML_NODE_DOCUMENT: return m_node->Type() == TiXmlNode::DOCUMENT;
+    case m3d::cmn::XML_NODE_ELEMENT: return m_node->Type() == TiXmlNode::ELEMENT;
+    case m3d::cmn::XML_NODE_COMMENT: return m_node->Type() == TiXmlNode::COMMENT;
+    case m3d::cmn::XML_NODE_UNKNOWN: return m_node->Type() == TiXmlNode::UNKNOWN;
+    case m3d::cmn::XML_NODE_TEXT: return m_node->Type() == TiXmlNode::TEXT;
+    case m3d::cmn::XML_NODE_DECLARATION: return m_node->Type() == TiXmlNode::DECLARATION;
+    default: return m_node != nullptr;
+    }
+}
+
+bool XmlNodeImpl::AddAfterChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+void XmlNodeImpl::SetValue(char const*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+bool XmlNodeImpl::GetNextSibling(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
+{
+    auto sibling = wantValue ? m_node->NextSibling(wantValue) : m_node->NextSibling();
+    auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
+    writeToCasted->m_node = sibling;
+    return sibling != nullptr;
+}
+
+bool XmlNodeImpl::GetParent(m3d::cmn::XmlNode*) const
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+void XmlNodeImpl::GetAttributeMbcsSafe(char const*, char**, int*) const
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+bool XmlNodeImpl::AddChild(m3d::cmn::XmlNode*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+bool XmlNodeImpl::SetAttribute(char const*, char const*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+bool XmlNodeImpl::RemoveChild(m3d::cmn::XmlNode*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+m3d::cmn::XmlAttrib* XmlNodeImpl::CreateAttribute() const
+{
+    return new XmlAttribImpl;
+}
+
+bool XmlNodeImpl::GetFirstChild(m3d::cmn::XmlNode* writeTo, char const* wantValue) const
+{
+    auto child = wantValue ? m_node->FirstChild(wantValue) : m_node->FirstChild();
+    auto writeToCasted = dynamic_cast<XmlNodeImpl*>(writeTo);
+    writeToCasted->m_node = child;
+    return child != nullptr;
+}
+
+XmlNodeImpl::~XmlNodeImpl()
+{
+    if (m_nodeOwned)
+    {
+        delete m_node;
+    }
+}
+
+char const* XmlNodeImpl::GetAttribute(char const* name) const
+{
+    if (!IsOfType(m3d::cmn::XML_NODE_ELEMENT))
+    {
+        return nullptr;
+    }
+    auto element = dynamic_cast<TiXmlElement*>(m_node);
+    auto attr = element->Attribute(name);
+    return attr ? attr->c_str() : nullptr;
+}
+
+bool XmlNodeImpl::GetLastChild(m3d::cmn::XmlNode*, char const*) const
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int XmlNodeImpl::IncRef()
+{
+    if (m_parent)
+    {
+        m_parent->IncRef();
+    }
+    return ++m_refCount;
+}
+
+XmlNodeImpl::XmlNodeImpl()
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+void* XmlNodeImpl::QueryIface(char const*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+XmlNodeImpl::XmlNodeImpl(XmlNodeImpl const&)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int XmlNodeImpl::DecRef()
+{
+    --m_refCount;
+    auto const ret = m_refCount;
+    if (m_parent)
+    {
+        m_parent->DecRef();
+    }
+    if (m_refCount <= 0)
+    {
+        delete this;
+    }
+    return ret;
+}
+
+bool XmlAttribImpl::GetNextSibling(m3d::cmn::XmlAttrib* writeTo)
+{
+    auto writeToCasted = dynamic_cast<XmlAttribImpl*>(writeTo);
+    auto attr = m_attrib->Next();
+    writeToCasted->m_attrib = attr;
+    return attr != nullptr;
+}
+
+bool XmlAttribImpl::IsEmpty()
+{
+    return m_attrib == nullptr;
+}
+
+XmlAttribImpl::~XmlAttribImpl()
+{
+    if (m_attribOwned)
+    {
+        delete m_attrib;
+    }
+}
+
+XmlAttribImpl::XmlAttribImpl(XmlAttribImpl const&)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+XmlAttribImpl::XmlAttribImpl()
+{
+}
+
+char const* XmlAttribImpl::GetValue()
+{
+    return m_attrib->Value().c_str();
+}
+
+char const* XmlAttribImpl::GetName()
+{
+    return m_attrib->Name().c_str();
+}
+
+int XmlAttribImpl::IncRef()
+{
+    if (m_parent)
+    {
+        m_parent->IncRef();
+    }
+    return ++m_refCount;
+}
+
+int XmlAttribImpl::DecRef()
+{
+    --m_refCount;
+    auto const ret = m_refCount;
+    if (m_parent)
+    {
+        m_parent->DecRef();
+    }
+    if (m_refCount <= 0)
+    {
+        delete this;
+    }
+    return ret;
+}
+
+void* XmlAttribImpl::QueryIface(char const*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}

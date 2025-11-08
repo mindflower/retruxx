@@ -1,0 +1,1356 @@
+#include "globalscriptfuncs.h"
+#include "m3dgame.h"
+#include "profile.h"
+#include "uimisc/questinfo.h"
+#include <cinematic.h>
+#include <config.h>
+#include <m3dapp.h>
+#include <core/kernel.h>
+#include <script/scriptserver.h>
+#include <server/objects/base/objcontainer.h>
+#include <client.h>
+#include <stdexcept>
+#include <world.h>
+#include <core/log.h>
+#include <core/timer.h>
+#include <file/fileserver.h>
+#include <impulses/i_impulses.h>
+#include <scene/nodes/sgnodesound.h>
+#include <server/relationship.h>
+#include <server/objects/infectionteam.h>
+#include <server/objects/player.h>
+#include <server/objects/vehicle.h>
+
+namespace m3d
+{
+    extern CClient* pClient;
+}
+
+namespace ai
+{
+    extern ObjContainer* theObjects;
+    extern Player* thePlayer;
+    extern Relationship* theRelationship;
+}
+
+namespace
+{
+    int GetFadingMsgParams(m3d::sArgStack& scriptStack, CStr& msg, std::vector<m3d::AIParam>& params)
+    {
+        if (scriptStack.getNumInArgs() < 1)
+        {
+            M3D_LOG_INFO("GetFadingMsgParams error: at least one argument must be specified");
+            return -1;
+        }
+
+        auto* arg = scriptStack.popIn();
+        if  (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+        {
+            M3D_LOG_INFO("GetFadingMsgParams error: first argument must be of string type");
+            return -1;
+        }
+
+        msg = arg->GetS();
+        //TODO: check args count
+        while(scriptStack.m_curInArg < scriptStack.m_numInArgs)
+        {
+            arg = scriptStack.popIn();
+            switch (arg->GetType())
+            {
+            case m3d::sArg::ARGTYPE_INT:
+            {
+                params.emplace_back(arg->GetI());
+                break;
+            }
+            case m3d::sArg::ARGTYPE_FLOAT:
+            {
+                params.emplace_back(arg->GetF());
+                break;
+            }
+            case m3d::sArg::ARGTYPE_BOOL:
+            {
+                params.emplace_back(arg->GetB() ? "true" : "false");
+                break;
+            }
+            case m3d::sArg::ARGTYPE_STRING:
+            {
+                params.emplace_back(arg->GetS());
+                break;
+            }
+            case m3d::sArg::ARGTYPE_VECTOR:
+            {
+                params.emplace_back(arg->GetV());
+                break;
+            }
+            case m3d::sArg::ARGTYPE_QUATERNION:
+            {
+                params.emplace_back(arg->GetQ());
+                break;
+            }
+            default:
+            {
+                M3D_LOG_INFO("GetFadingMsgParams error: invalid param type");
+                return -1;
+            }
+            }
+        }
+        return 1;
+    }
+
+    m3d::SgNode* CreateNode(CStr const& modelName, CVector const& pos, Quaternion const& rot, int TTL, bool bInsertInRemoveIfFree, bool LinkToCells)
+    {
+        auto const modelId = m3d::g_Kernel->GetEngineCfg().GetModelIdByName(modelName);
+        auto* controlledNode = m3d::pClient->CreateServerControlledNode(modelId);
+        if (!controlledNode)
+        {
+            return nullptr;
+        }
+
+        if (TTL > 0)
+        {
+            controlledNode->GetGraph()->InsertInTtlList(controlledNode, m3d::g_Kernel->GetTimer().GetCurTime() + TTL);
+        }
+
+        m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(controlledNode);
+        if (LinkToCells)
+        {
+            m3d::pClient->GetWorld().GetLandscape().LinkNodeAndChildrenCollisionGeomsToCell(controlledNode);
+        }
+        //TODO: check this
+        controlledNode->SetProperty(8704, nullptr);
+
+        CVector scale;
+        scale.one();
+        controlledNode->SetScale(scale);
+        controlledNode->SetPersistance(false);
+        if (bInsertInRemoveIfFree)
+        {
+            controlledNode->GetGraph()->InsertInRemoveIfFree(controlledNode);
+        }
+        controlledNode->SetOriginAbs(pos);
+        controlledNode->SetRotation(rot);
+        controlledNode->UpdateXForm(true, false);
+        m3d::pClient->GetWorld().GetGraph().LinkNode(controlledNode);
+        return controlledNode;
+    }
+}
+
+void RegisterGlobalNatives()
+{
+    auto& scriptServer = m3d::g_Kernel->GetScriptServer();
+    scriptServer.registerGlobalFunction(&n_SetCameraPos, "SetCameraPos", "void", "const CVector& cameraPos, float yaw, float pitch, float roll, [optional] GPlayer* player");
+    scriptServer.registerGlobalFunction(&n_GetCameraPos, "GetCameraPos", "CVector cameraPos, Quaternion rotation, CVector lookAt");
+    scriptServer.registerGlobalFunction(&n_SetCameraZoom, "SetCameraZoom", "void", "float zoom");
+    scriptServer.registerGlobalFunction(&n_GetCameraZoom, "GetCameraZoom", "float", "void");
+    scriptServer.registerGlobalFunction(&n_SetCameraAngle, "SetCameraAngle", "void", "float angle");
+    scriptServer.registerGlobalFunction(&n_SetCameraDirectionToObj, "SetCameraDirectionToObj", "void", "int targetObjId");
+    scriptServer.registerGlobalFunction(&n_SetCameraBehindPlayerVehicle, "SetCameraBehindPlayerVehicle", "void", "void");
+    scriptServer.registerGlobalFunction(&n_MinimapAddMark, "MinimapAddMark", "void");
+    scriptServer.registerGlobalFunction(&n_MinimapDelMark, "MinimapDelMark", "void");
+    scriptServer.registerGlobalFunction(&n_GetCinematic, "GetCinematic", "void");
+    scriptServer.registerGlobalFunction(&n_ChangeMode, "ChangeMode", "void");
+    scriptServer.registerGlobalFunction(&n_SetGameSpeed, "SetGameSpeed");
+    scriptServer.registerGlobalFunction(&n_GetGameSpeed, "GetGameSpeed");
+    scriptServer.registerGlobalFunction(&n_GetMaxTimescale, "GetMaxTimescale", "float", "returns current max timescale value");
+    scriptServer.registerGlobalFunction(&n_SetMaxTimescale, "SetMaxTimescale", "void", "float newMaxTimescale", "sets new max timescale value");
+    scriptServer.registerGlobalFunction(&n_GetMinTimescale, "GetMinTimescale", "float", "returns current min timescale value");
+    scriptServer.registerGlobalFunction(&n_SetMinTimescale, "SetMinTimescale", "void", "float newMinTimescale", "sets new min timescale value");
+    scriptServer.registerGlobalFunction(&n_GetNormalTimescale, "GetNormalTimescale", "float", "returns current normal timescale value");
+    scriptServer.registerGlobalFunction(&n_SetNormalTimescale, "SetNormalTimescale", "void", "float newNormalTimescale", "sets new normal timescale value");
+    scriptServer.registerGlobalFunction(&n_StartRendering, "StartRendering", "void", "[optional] GPlayer* player", "client does not render anything until this function is called");
+    scriptServer.registerGlobalFunction(&n_IsPlayingCampaign, "IsPlayingCampaign", "bool", "void", "are we currently playing campaign?");
+    scriptServer.registerGlobalFunction(&n_SetCinematicFadeParams, "SetCinematicFadeParams", "void", "bool StartFade, bool EndFade", "set if fading out or(and) up must be done by cinematic mode");
+    scriptServer.registerGlobalFunction(&n_SetCinematicCinemaPanel, "SetCinematicCinemaPanel", "void", "bool VisiblePanel", "set if no need has cinematic panel (two black border) in cinematic mode");
+    scriptServer.registerGlobalFunction(&n_ResetFogOfWarFC, "ResetFogOfWar", "void");
+    scriptServer.registerGlobalFunction(&n_SetBelongColor, "SetBelongColor", "void", "float StartFade, float EndFade", "remaps given belong to new index");
+    scriptServer.registerGlobalFunction(&n_SetSpellBookCheated, "SetSpellBookCheated", "void");
+    scriptServer.registerGlobalFunction(&n_UpdateCinematic, "UpdateCinematic", "void", "float time", "Updates current cinematic by given time");
+    scriptServer.registerGlobalFunction(&n_PlayVideo, "PlayVideo", "void", "string videoName", "Playing video with given name");
+    scriptServer.registerGlobalFunction(&n_CreateEffectTTLed, "CreateEffectTTLed", "Obj*", "string modelname, CVector pos, Quaternion rot, int TTL", "Creates Effect");
+    scriptServer.registerGlobalFunction(&n_CreateEffectInsertedInRemove, "CreateEffectInsertedInRemove", "Obj*", "string modelname, CVector pos, Quaternion rot, int bInsertInRemoveIfFree", "Creates Effect");
+    scriptServer.registerGlobalFunction(&n_CreateNodeTTLed, "CreateNodeTTLed", "Obj*", "const char* modelname, CVector pos, Quaternion rot, int TTL", "Creates Node");
+    scriptServer.registerGlobalFunction(&n_CreateNodeInsertedInRemove, "CreateNodeInsertedInRemove", "Obj*", "const char* modelname, CVector pos, Quaternion rot, int bInsertInRemoveIfFree", "Creates Node");
+    scriptServer.registerGlobalFunction(&n_RemoveNode, "RemoveNode", "void", "Obj* node", "Removes Node");
+    scriptServer.registerGlobalFunction(&n_PauseRadio, "PauseRadio", "void", "void", "Pause Radio Manager");
+    scriptServer.registerGlobalFunction(&n_ResumeRadio, "ResumeRadio", "void", "void", "Resume Radio Manager");
+    scriptServer.registerGlobalFunction(&n_EnableCinematicDebug, "EnableCinematicDebug", "void", "string filename, string pathname", "Enables cinematic debug mode");
+    scriptServer.registerGlobalFunction(&n_CinematicPathDump, "CinematicPathDump", "void", "string filename", "Dump current cinematic path");
+    scriptServer.registerGlobalFunction(&n_AddCurrentPointToCinematicPath, "AddCurrentPointToCinematicPath", "void", "void", "Add camera position and rotation at the end of current cinematic path");
+    scriptServer.registerGlobalFunction(&n_InsertCurrentPointToCinematicPath, "InsertCurrentPointToCinematicPath", "void", "void", "Add camera position and rotation to current cinematic path after current point and sets it to current");
+    scriptServer.registerGlobalFunction(&n_DisableCinematicDebug, "DisableCinematicDebug", "void", "void", "Disables cinematic debug mode");
+    scriptServer.registerGlobalFunction(&n_SetCinematicPoint, "SetCinematicPoint", "void", "void", "Sets current point number to work with");
+    scriptServer.registerGlobalFunction(&n_MoveCurrentCinematicPointToCamera, "MoveCurrentCinematicPointToCamera", "void", "void", "Moves current cinematic point to camera");
+    scriptServer.registerGlobalFunction(&n_RemoveCurrentCinematicPoint, "RemoveCurrentCinematicPoint", "void", "void", "Removes current cinematic point from path");
+    scriptServer.registerGlobalFunction(&n_DumpSceneGraph, "DumpSceneGraph", "void", "string filename", "Dump current scene into file");
+    scriptServer.registerGlobalFunction(&n_DumpPhysicInfo, "DumpPhysicInfo", "void", "string filename", "Dump current physic scene into file");
+    scriptServer.registerGlobalFunction(&n_GetNodeByName, "GetNodeByName", "void", "const char* name", "Get scene node by name");
+    scriptServer.registerGlobalFunction(&n_GetProfileMotionBlur, "GetProfileMotionBlur", "bool", "void", "Returns motionBlur value from player's profile");
+    scriptServer.registerGlobalFunction(&n_GetProfileMotionBlurAlpha, "GetProfileMotionBlurAlpha", "float", "Returns motionBlurAlpha value from player's profile");
+    scriptServer.registerGlobalFunction(&n_GetProfileBloom, "GetProfileBloom", "bool", "Returns bloom value from player's profile");
+    scriptServer.registerGlobalFunction(&n_SetProfileMotionBlur, "SetProfileMotionBlur", "bool bMotionBlur", "Puts new motionBlur value in player's profile");
+    scriptServer.registerGlobalFunction(&n_SetProfileMotionBlurAlpha, "SetProfileMotionBlurAlpha", "float fMotionBlurAlpha", "Puts new motionBlurAlpha value in player's profile");
+    scriptServer.registerGlobalFunction(&n_SetProfileBloom, "SetProfileBloom", "bool bBloom", "Puts new motionBlur value in player's profile");
+    scriptServer.registerGlobalFunction(&n_VTuneResume, "VTuneResume", "Activates VTune data collection");
+    scriptServer.registerGlobalFunction(&n_VTunePause, "VTunePause", "bool bBloom", "Pauses VTune data collection");
+    scriptServer.registerGlobalFunction(&n_ShowHostileVehicles, "ShowHostileVehicles", "void", "bool", "Shows/hides infection zones vehicles");
+    scriptServer.registerGlobalFunction(&n_PassToMap, "PassToMap", "void", "string mapName, CStr locationName, float angle, bool bImmediate", "Passes player vehicle to another map");
+    scriptServer.registerGlobalFunction(&n_UpdateWeather, "UpdateWeather", "void", "void", "Set world param according to current time");
+    scriptServer.registerGlobalFunction(&n_SetWeather, "SetWeather", "void", "int weatherId", "Set and apply weather");
+    scriptServer.registerGlobalFunction(&n_Assert, "Assert", "void", "bool expression", "Crashes if expression is false");
+    scriptServer.registerGlobalFunction(&n_ShowDeathMenu, "ShowDeathMenu", "void", "void", "Show menu on player death");
+    scriptServer.registerGlobalFunction(&n_AddFadingMsgFormatted, "AddFadingMsgFormatted", "void", "string msg, any number of args of any type", "Add a message to fading list. String parameter is the message itself. AIParams parameters used for formatting pattern string.");
+    scriptServer.registerGlobalFunction(&n_AddFadingMsgByStrIdFormatted, "AddFadingMsgByStrIdFormatted", "void", "string msg, any number of args of any type", "Add a message to fading list. String parameter is a string identifier of the message. AIParams parameters used for formatting pattern string.");
+    scriptServer.registerGlobalFunction(&n_AddImportantFadingMsgFormatted, "AddImportantFadingMsgFormatted", "void", "string msg, any number of args of any type", "Add a message to 'important' fading list. String parameter is the message itself. AIParams parameters used for formatting pattern string.");
+    scriptServer.registerGlobalFunction(&n_AddImportantFadingMsgByStrIdFormatted, "AddImportantFadingMsgByStrIdFormatted", "void", "string msg, any number of args of any type", "Add a message to 'important' fading list. String parameter is a string identifier of the message. AIParams parameters used for formatting pattern string.");
+    scriptServer.registerGlobalFunction(&n_PlayCustomMusic, "PlayCustomMusic", "void", "string musicName", "Plays music with given name");
+    scriptServer.registerGlobalFunction(&n_StopPlayingCustomMusic, "StopPlayingCustomMusic", "void", "Stops playing custom music");
+    scriptServer.registerGlobalFunction(&n_SetCoordinateForQuest, "SetCoordinateForQuest", "void", "string questName, CVector point, string levelName", "Sets coordinate for quest navpoint");
+    scriptServer.registerGlobalFunction(&n_DumpSoundInfo, "DumpSoundInfo", "void", "Dumps some info about currently playing sounds to log");
+    scriptServer.registerGlobalFunction(&n_DumpOpenFiles, "DumpOpenFiles", "void", "Dumps names of open files");
+}
+
+int n_ShowHostileVehicles(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    auto const type = arg->GetType();
+    if (type != m3d::sArg::ARGTYPE_BOOL && type != m3d::sArg::ARGTYPE_FLOAT && type != m3d::sArg::ARGTYPE_INT)
+    {
+        return -1;
+    }
+
+    //TODO: check correctness
+    for (auto* obj : *ai::theObjects)
+    {
+        if (!obj->IsKindOf(&ai::InfectionTeam::m_classInfectionTeam))
+        {
+            if (obj->IsKindOf(&ai::Vehicle::m_classVehicle) && ai::theRelationship->CheckTolerance(obj->GetBelong(), ai::thePlayer->GetBelong()) <= ai::RS_ENEMY)
+            {
+                auto* vehicle = dynamic_cast<ai::Vehicle*>(obj);
+                auto* team = vehicle->GetTeam();
+                if (team)
+                {
+                    team->SetTeamFrozen(!arg->GetB());
+                }
+            }
+        }
+        else
+        {
+            auto* team = dynamic_cast<ai::InfectionTeam*>(obj);
+            team->SetTeamFrozen(!arg->GetB());
+        }
+    }
+    return 1;
+}
+
+int n_SetProfileMotionBlur(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    if (profile == nullptr)
+    {
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_BOOL)
+    {
+        return -1;
+    }
+
+    m3d::AIParam param = arg->GetB() ? "yes" : "no";
+    profile->SetParam(PP_MOTION_BLUR, param);
+    return 1;
+}
+
+int n_SetProfileMotionBlurAlpha(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    if (profile == nullptr)
+    {
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_BOOL)
+    {
+        return -1;
+    }
+
+    m3d::AIParam param = arg->GetB() ? "yes" : "no";
+    profile->SetParam(PP_MOTION_BLUR_ALPHA, param);
+    return 1;
+}
+
+int n_GetCinematic(m3d::sArgStack& scriptStack)
+{
+    scriptStack.newOut()->SetO(m3d::Application::g_pApp->m_cinematic);
+    return 1;
+}
+
+int n_SetBelongColor(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 2)
+    {
+        return -1;
+    }
+    auto const* firstArg = scriptStack.popIn();
+    auto const firstArgType = firstArg->GetType();
+    if (firstArgType != m3d::sArg::ARGTYPE_INT && firstArgType != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+
+    auto const* secondArg = scriptStack.popIn();
+    auto const secondArgType = secondArg->GetType();
+    if (secondArgType != m3d::sArg::ARGTYPE_INT && secondArgType != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+
+    //TODO: further implementation not found
+    return 1;
+}
+
+int n_DisableCinematicDebug(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    m3d::Application::g_pApp->m_cinematic->SetDebugMode(0);
+    return 1;
+}
+
+int n_AddImportantFadingMsgByStrIdFormatted(m3d::sArgStack& scriptStack)
+{
+    CStr msgId;
+    std::vector<m3d::AIParam> params;
+    if (GetFadingMsgParams(scriptStack, msgId, params) == -1)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->m_pInterfaceManager->AddImportantFadingMsgByStrId(msgId, params);
+    return 1;
+}
+
+int n_AddFadingMsgByStrIdFormatted(m3d::sArgStack& scriptStack)
+{
+    CStr msgId;
+    std::vector<m3d::AIParam> params;
+    if (GetFadingMsgParams(scriptStack, msgId, params) == -1)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->m_pInterfaceManager->AddFadingMsgByStrId(msgId, params);
+    return 1;
+}
+
+int n_AddFadingMsgFormatted(m3d::sArgStack& scriptStack)
+{
+    CStr msg;
+    std::vector<m3d::AIParam> params;
+    if (GetFadingMsgParams(scriptStack, msg, params) == -1)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->m_pInterfaceManager->AddFadingMsg(msg, params);
+    return 1;
+}
+
+int n_GetProfileMotionBlur(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    if (profile == nullptr)
+    {
+        return -1;
+    }
+
+    m3d::AIParam param;
+    profile->GetParam(PP_MOTION_BLUR, param);
+    //TODO: check this
+    scriptStack.newOut()->SetB(param.GetAsStr() == "yes" ? true : false);
+    return 1;
+}
+
+int n_CinematicPathDump(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        m3d::g_Kernel->GetEngineCfg().m_console->PrintF("Usage: CinematicPathDump( <fileName> )\n");
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    auto const* filename = arg->GetS();
+    m3d::Application::g_pApp->m_cinematic->DumpCurrentPath(filename);
+    return 1;
+}
+
+int n_PlayVideo(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->StartPlayingVideo(arg->GetS(), &CMiracle3d::OnFinishVideoPlaying);
+    return 1;
+}
+
+int n_SetCameraAngle(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    m3d::Application::g_pApp->m_curCamera.m_rotYaw = arg->GetF() * 0.017453292;
+    return 1;
+}
+
+int n_UpdateWeather(m3d::sArgStack& scriptStack)
+{
+    if (m3d::pClient == nullptr)
+    {
+        return -11;
+    }
+    m3d::pClient->GetWorld().GetWeatherManager().UpdateDayTime();
+    return 1;
+}
+
+int n_SetCinematicCinemaPanel(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto const* arg = scriptStack.popIn();
+    bool res = false;
+    if (arg->GetType() == m3d::sArg::ARGTYPE_BOOL)
+    {
+        res = arg->GetB();
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+    {
+        res = arg->GetI() != 0;
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        res = arg->GetF() != 0.0;
+    }
+    else
+    {
+        return -1;
+    }
+    auto flags = m3d::Application::g_pApp->m_cinematic->GetFlags();
+    if (res)
+    {
+        flags &= 0xFB;
+    }
+    else
+    {
+        flags |= 4;
+    }
+    m3d::Application::g_pApp->m_cinematic->SetFlags(flags);
+    return 1;
+}
+
+int n_RemoveCurrentCinematicPoint(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    m3d::Application::g_pApp->m_cinematic->RemoveCurrentDebugPoint();
+    return 1;
+}
+
+int n_SetCameraBehindPlayerVehicle(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    if (pGame->m_player.m_cameraMode != CM_FOLLOWMODE)
+    {
+        return -1;
+    }
+    auto const* vehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer();
+    if (vehicle == nullptr)
+    {
+        return -1;
+    }
+    auto const playerDir = vehicle->GetDirection();
+    pGame->m_curCamera.m_rotYaw = atan2(-playerDir.x, playerDir.y);
+    return 1;
+}
+
+int n_DumpPhysicInfo(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    auto const* filename = arg->GetS();
+    ai::theObjects->DumpPhysicInfo(filename);
+    return 1;
+}
+
+int n_AddCurrentPointToCinematicPath(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    scriptStack.newOut()->SetV(m3d::Application::g_pApp->m_curCamera.m_worldOrigin);
+    Quaternion q;
+    q.fromYPR(m3d::Application::g_pApp->m_curCamera.m_rotYaw, m3d::Application::g_pApp->m_curCamera.m_rotPitch, m3d::Application::g_pApp->m_curCamera.m_rotRoll);
+    m3d::Application::g_pApp->m_cinematic->AddPointToCurrentPath(m3d::Application::g_pApp->m_curCamera.m_worldOrigin, q, 1.0, 1.0);
+    return 1;
+
+}
+
+int n_GetNormalTimescale(m3d::sArgStack& scriptStack)
+{
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto const timeScale = pGame->GetNormalTimeScale();
+    scriptStack.newOut()->SetF(timeScale);
+    return 1;
+}
+
+int n_CreateNodeInsertedInRemove(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() < 4)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    CStr const modelName = arg->GetS();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_VECTOR)
+    {
+        return -1;
+    }
+    auto const pos = arg->GetV();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_QUATERNION)
+    {
+        return -1;
+    }
+    auto const rot = arg->GetQ();
+
+
+    bool bInsertInRemoveIfFree = false;
+    arg = scriptStack.popIn();
+    auto const type = arg->GetType();
+    if (type == m3d::sArg::ARGTYPE_INT)
+    {
+        bInsertInRemoveIfFree = arg->GetI();
+    }
+    else if (type == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        bInsertInRemoveIfFree = arg->GetF();
+    }
+    else if (type == m3d::sArg::ARGTYPE_BOOL)
+    {
+        bInsertInRemoveIfFree = arg->GetB();
+    }
+
+    M3D_LOG_INFO("Creating inserted in RemoveIfFree node from script");
+    auto node = CreateNode(modelName, pos, rot, -1, bInsertInRemoveIfFree, true);
+    if (scriptStack.getNumInArgs() > 4)
+    {
+        arg = scriptStack.popIn();
+        if (arg->GetType() == m3d::sArg::ARGTYPE_STRING)
+        {
+            node->SetName(arg->GetS());
+        }
+    }
+
+    scriptStack.newOut()->SetO(node);
+    return node != nullptr;
+}
+
+int n_StopPlayingCustomMusic(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->SetCurHackedMusicType(HACKMUSIC_GAME);
+    return 1;
+}
+
+int n_VTuneResume(m3d::sArgStack& scriptStack)
+{
+    return 2 * (scriptStack.getNumInArgs() == 0) - 1;
+}
+
+int n_CreateNodeTTLed(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_DumpOpenFiles(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+
+    M3D_LOG_INFO("********** DUMPING OPEN FILES ********************");
+    retruxx::vector<CStr> fileList;
+    m3d::g_Kernel->GetFileServer().GetOpenFilesList(fileList);
+    for (auto const& file : fileList)
+    {
+        M3D_LOG_INFO(file);
+    }
+    M3D_LOG_INFO("********** END DUMPING OPEN FILES ****************");
+    return 1;
+}
+
+int n_RemoveNode(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_OBJECT)
+    {
+        return -1;
+    }
+    auto* obj = arg->GetO();
+    if (!obj->IsKindOf(&m3d::SgNode::m_classSgNode))
+    {
+        return 0;
+    }
+    auto* sgNode = dynamic_cast<m3d::SgNode*>(obj);
+    sgNode->GetGraph()->RemoveNode(sgNode);
+    return 1;
+}
+
+int n_SetNormalTimescale(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto const* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->SetNormalTimeScale(arg->GetF());
+    return 1;
+}
+
+int n_SetCoordinateForQuest(m3d::sArgStack& scriptStack)
+{
+    auto const numInArgs = scriptStack.getNumInArgs();
+    if (numInArgs != 2 && numInArgs !=3)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    CStr const questName(arg->GetS());
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_VECTOR)
+    {
+        return -1;
+    }
+    CVector const pos(arg->GetV());
+
+    CStr levelName;
+    if (numInArgs == 3)
+    {
+        auto const* arg = scriptStack.popIn();
+        if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+        {
+            return -1;
+        }
+        levelName = arg->GetS();
+    }
+    else
+    {
+        levelName = help::GetCurrentLevelName();
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto* infoManager = pGame->m_pInterfaceManager->GetQuestInfoManager();
+    infoManager->SetCoordinateForQuest(questName, levelName, pos);
+    return 1;
+}
+
+int n_SetSpellBookCheated(m3d::sArgStack& scriptStack)
+{
+    return 1;
+}
+
+int n_MoveCurrentCinematicPointToCamera(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    scriptStack.newOut()->SetV(m3d::Application::g_pApp->m_curCamera.m_worldOrigin);
+    Quaternion q;
+    q.fromYPR(m3d::Application::g_pApp->m_curCamera.m_rotYaw, m3d::Application::g_pApp->m_curCamera.m_rotPitch, m3d::Application::g_pApp->m_curCamera.m_rotRoll);
+    m3d::Application::g_pApp->m_cinematic->MoveCurrentDebugPoint(m3d::Application::g_pApp->m_curCamera.m_worldOrigin, q, 1.0);
+    return 1;
+}
+
+int n_PassToMap(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_MinimapAddMark(m3d::sArgStack& scriptStack)
+{
+    auto const numOfArgs = scriptStack.getNumInArgs();
+    if (numOfArgs < 2 || numOfArgs > 4)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_VECTOR)
+    {
+        return -1;
+    }
+    //TODO: check this
+    arg->GetV();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    arg->GetF();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    arg->GetF();
+    return 1;
+}
+
+int n_UpdateCinematic(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    float value = 0.0;
+    if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        value = arg->GetF();
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+    {
+        value = static_cast<float>(arg->GetI());
+    }
+    m3d::Application::g_pApp->HandleCinematic(value);
+    return 1;
+}
+
+int n_ResetFogOfWarFC(m3d::sArgStack& scriptStack)
+{
+    return 1;
+}
+
+int n_SetWeather(m3d::sArgStack& scriptStack)
+{
+    if (!m3d::pClient)
+    {
+        return -1;
+    }
+
+    if (scriptStack.getNumInArgs() == 0)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    int value = 0;
+    if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        value = arg->GetF();
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+    {
+        value = arg->GetI();
+    }
+
+    auto& manager = m3d::pClient->GetWorld().GetWeatherManager();
+    if (value >= manager.GetNumWeathers())
+    {
+        M3D_ENGINE_CFG.m_console->PrintF("error: bad weather id\n");
+    }
+    else
+    {
+        manager.SetActiveWeather(value);
+        manager.UpdateDayTime();
+    }
+
+    return 1;
+}
+
+int n_IsPlayingCampaign(m3d::sArgStack& scriptStack)
+{
+    return 1;
+}
+
+int n_GetMaxTimescale(m3d::sArgStack& scriptStack)
+{
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    scriptStack.newOut()->SetF(pGame->GetMaxTimeScale());
+    return 1;
+}
+
+int n_VTunePause(m3d::sArgStack& scriptStack)
+{
+    return 2 * (scriptStack.getNumInArgs() == 0) - 1;
+}
+
+int n_SetCinematicPoint(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_CreateEffectInsertedInRemove(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_GetCameraPos(m3d::sArgStack& scriptStack)
+{
+    scriptStack.newOut()->SetV(m3d::Application::g_pApp->m_curCamera.m_worldOrigin);
+
+    Quaternion q;
+    q.fromYPR(m3d::Application::g_pApp->m_curCamera.m_rotYaw, m3d::Application::g_pApp->m_curCamera.m_rotPitch, m3d::Application::g_pApp->m_curCamera.m_rotRoll);
+    scriptStack.newOut()->SetQ(q);
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    scriptStack.newOut()->SetV(pGame->m_hitPoint);
+    return 1;
+}
+
+int n_ChangeMode(m3d::sArgStack& scriptStack)
+{
+    //TODO: check and refactor this shit
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    auto const type = arg->GetType();
+    if (type == m3d::sArg::ARGTYPE_VOID)
+    {
+        return -1;
+    }
+
+    float value = 0.0;
+    switch (type)
+    {
+    case m3d::sArg::ARGTYPE_INT: [[fallthrough]];
+    case m3d::sArg::ARGTYPE_FLOAT:
+    {
+        value = arg->GetF();
+        if (value < 0 || value >= 4)
+        {
+            return -1;
+        }
+        break;
+    }
+    case m3d::sArg::ARGTYPE_STRING:
+    {
+        auto const stateName = arg->GetS();
+        if (stateName == CStr("GS_GAME"))
+        {
+            value = 0;
+        }
+        else if(stateName == CStr("GS_CINEMATIC"))
+        {
+            value = 1;
+        }
+        else
+        {
+            return -1;
+        }
+        break;
+    }
+    default:
+        return -1;
+    }
+    auto res = 0;
+    if (value == 0.0)
+    {
+        res = 3;
+    }
+    else if (value != 1)
+    {
+        return -1;
+    }
+    else
+    {
+        res = 2;
+    }
+    m3d::Application::g_pApp->OnChangeMode(m3d::AuxImpulseInfo(res, true, -1, 0, 0));
+    return 1;
+
+}
+
+int n_DumpSoundInfo(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    M3D_LOG_INFO("********** DUMPING SOUND INFO ********************");
+    if (m3d::Application::g_pApp->m_sound)
+    {
+        m3d::Application::g_pApp->m_sound->DumpSoundInfo();
+    }
+    M3D_LOG_INFO("Current sound nodes rendering: ");
+    m3d::pClient->GetWorld().GetGraph().DumpRenderingNodesInfoForClass(&m3d::SgSoundSourceNode::m_classSgSoundSourceNode);
+    M3D_LOG_INFO("********** END DUMPING SOUND INFO ****************");
+    return 1;
+}
+
+int n_MinimapDelMark(m3d::sArgStack& scriptStack)
+{
+    auto const numOfArgs = scriptStack.getNumInArgs();
+    if (numOfArgs == 0 || numOfArgs > 2)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    //TODO: check this
+    arg->GetF();
+    return 1;
+}
+
+int n_SetCameraPos(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() < 4 || scriptStack.getNumInArgs() > 5)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_VECTOR)
+    {
+        return -1;
+    }
+    arg->GetV();
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    arg->GetF();
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    arg->GetF();
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    arg->GetF();
+    return 1;
+}
+
+int n_Assert(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    switch (auto const type = arg->GetType(); type)
+    {
+    case m3d::sArg::ARGTYPE_VOID:
+    {
+        SYS_ERROR("exprValue");
+        break;
+    }
+    case m3d::sArg::ARGTYPE_INT: [[fallthrough]];
+    case m3d::sArg::ARGTYPE_FLOAT:
+    {
+        if (arg->GetF() <= 0.000099999997)
+        {
+            SYS_ERROR("exprValue");
+        }
+        break;
+    }
+    case m3d::sArg::ARGTYPE_BOOL:
+    {
+        if (arg->GetB() == false)
+        {
+            SYS_ERROR("exprValue");
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    return 1;
+}
+
+int n_PauseRadio(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_SetMaxTimescale(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->SetMaxTimeScale(arg->GetF());
+    return 1;
+}
+
+int n_CreateEffectTTLed(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_StartRendering(m3d::sArgStack& scriptStack)
+{
+    return 1;
+}
+
+int n_AddImportantFadingMsgFormatted(m3d::sArgStack& scriptStack)
+{
+    CStr msg;
+    std::vector<m3d::AIParam> params;
+    if (GetFadingMsgParams(scriptStack, msg, params) == -1)
+    {
+        return -1;
+    }
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->m_pInterfaceManager->AddImportantFadingMsg(msg, params);
+    return 1;
+}
+
+int n_GetGameSpeed(m3d::sArgStack& scriptStack)
+{
+    scriptStack.newOut()->SetF(m3d::g_Kernel->GetTimer().GetTimeScale());
+    return 1;
+}
+
+int n_GetProfileBloom(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs())
+    {
+        return -1;
+    }
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    if (profile == nullptr)
+    {
+        return -1;
+    }
+
+    m3d::AIParam param;
+    profile->GetParam(PP_BLOOM, param);
+    auto const showMotionBlur = param.GetAsStr();
+    scriptStack.newOut()->SetB(showMotionBlur == "yes");
+    return 1;
+}
+
+int n_SetMinTimescale(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->SetMinTimeScale(arg->GetF());
+    return 1;
+}
+
+int n_InsertCurrentPointToCinematicPath(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_ResumeRadio(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_DumpSceneGraph(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    m3d::pClient->GetWorld().GetGraph().DumpToFile(arg->GetS());
+    return 1;
+}
+
+int n_SetCameraZoom(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_EnableCinematicDebug(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        m3d::g_Kernel->GetEngineCfg().m_console->PrintF("Usage: EnableCinematicDebug( <pathName> )\n");
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+
+    CStr const pathName = arg->GetS();
+    if (m3d::Application::g_pApp->m_cinematic->Load("camera_paths.xml"))
+    {
+        if (m3d::Application::g_pApp->m_cinematic->SetPath(pathName.c_str()))
+        {
+            m3d::Application::g_pApp->m_cinematic->SetDebugMode(true);
+        }
+        else
+        {
+            m3d::g_Kernel->GetEngineCfg().m_console->PrintF("Path " + pathName + " not found\n");
+        }
+    }
+    else
+    {
+        m3d::g_Kernel->GetEngineCfg().m_console->PrintF("File camera_paths.xml not found\n");
+    }
+    return 1;
+}
+
+int n_ShowDeathMenu(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_SetCinematicFadeParams(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 2)
+        return -1;
+
+    auto v2 = scriptStack.popIn();
+    if (v2->m_type != m3d::sArg::ARGTYPE_FLOAT)
+        return -1;
+
+    int Flags = 0;
+    if (v2->GetF())
+    {
+        Flags = M3D_APP->m_cinematic->GetFlags();
+        Flags = Flags | 1;
+    }
+    else
+    {
+        Flags = M3D_APP->m_cinematic->GetFlags();
+        Flags = Flags & 0xFE;
+    }
+
+    M3D_APP->m_cinematic->SetFlags(Flags);
+
+    auto v4 = scriptStack.popIn();
+    if (v4->m_type != m3d::sArg::ARGTYPE_FLOAT)
+        return -1;
+
+    int v5 = 0;
+    if (v4->GetF())
+    {
+        v5 = M3D_APP->m_cinematic->GetFlags();
+        v5 = v5 | 2;
+    }
+    else
+    {
+        v5 = M3D_APP->m_cinematic->GetFlags();
+        v5 = v5 & 0xFD;
+    }
+
+    M3D_APP->m_cinematic->SetFlags(v5);
+    return 1;
+}
+
+int n_SetGameSpeed(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() == m3d::sArg::ARGTYPE_VOID || arg->GetType() > m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    m3d::g_Kernel->GetTimer().SetTimeScale(arg->GetF());
+    return 1;
+}
+
+int n_SetProfileBloom(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_GetMinTimescale(m3d::sArgStack& scriptStack)
+{
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    scriptStack.newOut()->SetF(pGame->GetMinTimeScale());
+    return 1;
+}
+
+int n_GetProfileMotionBlurAlpha(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_GetNodeByName(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_SetCameraDirectionToObj(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int n_PlayCustomMusic(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING || !m3d::Application::g_pApp->StartPlayingMusic(arg->GetS(), true, false))
+    {
+        return -1;
+    }
+    //TODO: check this
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    pGame->SetCurHackedMusicType(HACKMUSIC_CUSTOM);
+    return 1;
+}
+
+int n_GetCameraZoom(m3d::sArgStack& scriptStack)
+{
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+    scriptStack.newOut()->SetF(m3d::Application::g_pApp->getZoom());
+    return 1;
+}
+
+int n_GetComputerName(m3d::sArgStack& scriptStack)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+

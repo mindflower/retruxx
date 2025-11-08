@@ -1,0 +1,367 @@
+#include "memoryman.h"
+#include <atomic>
+#include <cassert>
+#include <config.h>
+#include <m3dapp.h>
+#include "core/clazz.h"
+#include <map>
+#include <stdexcept>
+#include <core/kernel.h>
+#include <core/timer.h>
+#include <core/log.h>
+#include "core/ini.h"
+#include <file/fileserver.h>
+#include <ode/odememory.h>
+#include <script/scriptserver.h>
+#include "thirdparty/injecttools.h"
+
+
+namespace
+{
+    retruxx::map<CStr, m3d::Class*>* m_classes = nullptr;
+    retruxx::map<CStr, m3d::Object*>* m_lGlobals = nullptr;
+    m3d::MemoryManager* mm = nullptr;
+
+    void* __fastcall AllocateMemory(unsigned int sz, char const* file, int linenum)
+    {
+        //return mm->Malloc(sz, file, linenum);
+        return malloc(sz);
+    }
+
+    void* __fastcall ReallocateMemory(void* mem, unsigned int sz, char const* file, int linenum)
+    {
+        //return mm->Realloc(mem, sz, file, linenum);
+        return realloc(mem, sz);
+    }
+
+    void __fastcall FreeMemory(void* p, char const* file , int linenum)
+    {
+        //return mm->Free(p);
+        return free(p);
+    }
+}
+
+namespace m3d
+{
+    Kernel* g_Kernel = nullptr;
+    Kernel kernelObject;
+}
+
+//void* __cdecl operator new(std::size_t count)
+//{
+//    return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
+//}
+//
+//void* __cdecl operator new(std::size_t count, std::nothrow_t const&) noexcept
+//{
+//    try
+//    {
+//        return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
+//    }
+//    catch (...)
+//    {
+//        return nullptr;
+//    }
+//}
+//
+//void* __cdecl operator new[](std::size_t sz)
+//{
+//    return M3D_KERNEL->g_mar.AllocMem(sz, nullptr, 0);
+//}
+//
+//void __cdecl operator delete(void* p)
+//{
+//    if (p)
+//    {
+//        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
+//    }
+//}
+//
+//void __cdecl operator delete[](void* p)
+//{
+//    if (p)
+//    {
+//        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
+//    }
+//}
+
+
+namespace m3d
+{
+
+    void Kernel::UnRegisterGlobal(char const* name)
+    {
+        m_lGlobals->erase(name);
+    }
+
+    void Kernel::SysError(CStr const& whence, CStr const& descr)
+    {
+        if (Application::g_pApp)
+        {
+            Application::g_pApp->sysError(whence, descr);
+        }
+        ::MessageBox(0, (descr + ":" + whence).c_str(), TEXT("Error"), MB_ICONHAND);
+    }
+
+    ScriptServer& Kernel::GetScriptServer()
+    {
+        return *m_scriptServer;
+    }
+
+    int Kernel::MessageBoxA(HWND hWnd, char const* pszText, char const* pszCaption, unsigned uType)
+    {
+        return ::MessageBoxA(hWnd, pszText, pszCaption, uType);
+    }
+
+    Kernel::auxLogFlow::auxLogFlow(const char* functionName) :
+        m_str(functionName)
+    {
+        M3D_KERNEL->m_Log->indent("Enter function: " + CStr(functionName), LOG_FLOW);
+    }
+
+    Kernel::auxLogFlow::~auxLogFlow()
+    {
+        M3D_KERNEL->m_Log->undent("Exit function: " + CStr(m_str), LOG_FLOW);
+    }
+
+    EngineConfig& Kernel::GetEngineCfg()
+    {
+        return *m_engineConfig;
+    }
+
+    unsigned Kernel::debugMemUsed() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    cmn::Timer& Kernel::GetTimer()
+    {
+        return *m_timer;
+    }
+
+    Class* Kernel::FindClass(char const* className)
+    {
+        //TODO: check correctness
+        const auto it = m_classes->find(className);
+        if (it != m_classes->end())
+        {
+            return it->second;
+        }
+        return nullptr;
+    }
+
+    Kernel::~Kernel()
+    {
+        delete m_engineConfig;
+        m_fileMan->Shutdown();
+        delete m_fileMan;
+        delete m_timer;
+        m_scriptServer->done();
+        m_scriptServer->DecRef();
+        delete m_lGlobals;
+        delete m_classes;
+        delete m_Log;
+        delete m_memMan;
+
+    }
+
+    void Kernel::DumpMem(char const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    unsigned Kernel::debugMemAllocated() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Kernel::AddClass(Class* rtClass)
+    {
+        assert(nullptr == FindClass(rtClass->m_className));
+        rtClass->m_index = m_classes->size();
+        m_classes->insert(retruxx::pair<CStr, m3d::Class*>(rtClass->m_className, rtClass));
+    }
+
+    fs::FileServer& Kernel::GetFileServer()
+    {
+        return *m_fileMan;
+    }
+
+    cmn::IniFile* Kernel::CreateIniFile()
+    {
+        return new IniFileImpl;
+    }
+
+    unsigned Kernel::debugMemOverhead() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Kernel::SetClipboardData(char const*) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Kernel::KernelLog(char const*, ...)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Kernel::TurnAggressiveMemoryDebugMode(bool)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    Object* Kernel::RegisterGlobal(Object* object, char const* name)
+    {
+        //TODO: check this
+        auto const it = m_lGlobals->find(name);
+        if (it != m_lGlobals->end())
+        {
+            return it->second;
+        }
+        return (*m_lGlobals)[name] = object;
+    }
+
+    Object* Kernel::New(char const* className)
+    {
+        if (auto* cls = FindClass(className))
+        {
+            return New(cls);
+        }
+        M3D_LOG_INFO("Kernel::New -- class " + CStr(className) + " is not registered ");
+        return nullptr;
+    }
+
+    Object* Kernel::New(Class* cls)
+    {
+        return cls->NewInstance();
+    }
+
+    Object* Kernel::FindGlobal(char const* name)
+    {
+        auto it = m_lGlobals->find(name);
+        if (it != m_lGlobals->end())
+        {
+            return it->second;
+        }
+        return nullptr;
+    }
+
+    cmn::XmlFile* Kernel::CreateXmlFile()
+    {
+        return new XmlFileImpl;
+    }
+
+    CStr Kernel::GetClipboardData() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int Kernel::debugMemLastAllocSize() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Kernel::UnRegisterGlobalObject(Object const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Kernel::RemoveClass(Class*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Kernel::GetListOfClasses(Class**& classList, unsigned& numOfClasses)
+    {
+        numOfClasses = m_classes->size();
+        classList = new Class*[numOfClasses];
+        size_t idx = 0;
+        for (auto const& cls : *m_classes)
+        {
+            classList[idx] = cls.second;
+            ++idx;
+        }
+    }
+
+    Kernel::Kernel()
+    {
+        assert(nullptr == g_Kernel);
+        g_Kernel = this;
+
+        //TODO: operator new
+        m_memMan = new MemoryManager;
+        g_mar.AllocMem = AllocateMemory;
+        g_mar.ReallocMem = ReallocateMemory;
+        g_mar.FreeMem = FreeMemory;
+        mm = m_memMan;
+
+        m_classes = new retruxx::map<CStr, m3d::Class*>;
+        AddClass(RT_CLASS_LOCAL(Object));
+
+        m_lGlobals = new retruxx::map<CStr, m3d::Object*>;
+
+        m_engineConfig = new EngineConfig;
+        m_fileMan = new fs::FileServer;
+        m_fileMan->Initialize("data\\datasources.txt");
+
+        char workingDirectory[MAX_PATH] = { 0 };
+        if (::GetCurrentDirectoryA(0x100, workingDirectory))
+        {
+            m_fileMan->SetCurrentWorkDir(workingDirectory);
+        }
+        m_timer = new cmn::Timer;
+
+        AddClass(RT_CLASS_LOCAL(ScriptServer));
+        auto scriptServer = dynamic_cast<ScriptServer*>(ScriptServer::m_classScriptServer.NewInstance());
+        if (scriptServer)
+        {
+            scriptServer->m_scriptHandle = 0;
+        }
+        m_scriptServer = scriptServer;
+        m_scriptServer->IncRef();
+        m_scriptServer->init();
+        RegisterGlobal(m_scriptServer, "script server");
+        OdeSetMemoryHandlers();
+    }
+
+
+    //RETRUXX_DLL_INJECT_FUNCTION(0x005894B0, Kernel::OpenLog)
+    bool Kernel::OpenLog(char const* logFileName)
+    {
+        assert(m_Log == nullptr);
+        m_Log = new Log;
+        return m_Log->startLog(logFileName, true);
+    }
+
+    int Kernel::GetUniqueId()
+    {
+        static std::atomic_int g_uniqueId = 0;
+        if (g_uniqueId < 0)
+        {
+            g_uniqueId = 0;
+        }
+        return g_uniqueId++;
+    }
+
+    Kernel* Kernel::instance()
+    {
+        if (g_Kernel == nullptr)
+        {
+            static Kernel kernelObject;
+            g_Kernel = &kernelObject;
+        }
+        return g_Kernel;
+    }
+
+    //bool insss()
+    //{
+    //    inject::InjectAddresses.push_back(std::make_pair(inject::cast<uint32_t>(0x00A0988C), inject::cast<uint32_t>(g_Kernel)));
+    //    return true;
+    //}
+    //
+    //namespace {
+    //    auto _injected355 = insss();
+    //};
+}

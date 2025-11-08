@@ -1,26 +1,42 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31205.134
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34003.232
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "retruxx", "retruxx.vcxproj", "{5E19117D-BF24-4375-A403-062EC6DA6EFC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "retruxx", "retruxx\retruxx.vcxproj", "{5E19117D-BF24-4375-A403-062EC6DA6EFC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "retruxx_dll", "retruxx_dll\retruxx_dll.vcxproj", "{0B24ACF1-D933-475A-9606-F0676B271041}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "retruxx_lib", "retruxx_lib\retruxx_lib.vcxproj", "{1153CAA6-28F2-49A9-850E-3D73092ED007}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
+		Debug_Retruxx|x86 = Debug_Retruxx|x86
+		Debug_RetruxxDLL|x86 = Debug_RetruxxDLL|x86
+		Release_Retruxx|x86 = Release_Retruxx|x86
+		Release_RetruxxDLL|x86 = Release_RetruxxDLL|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Debug|x64.ActiveCfg = Debug|x64
-		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Debug|x64.Build.0 = Debug|x64
-		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Debug|x86.ActiveCfg = Debug|Win32
-		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Debug|x86.Build.0 = Debug|Win32
-		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Release|x64.ActiveCfg = Release|x64
-		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Release|x64.Build.0 = Release|x64
-		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Release|x86.ActiveCfg = Release|Win32
-		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Release|x86.Build.0 = Release|Win32
+		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Debug_Retruxx|x86.ActiveCfg = Debug_Retruxx|Win32
+		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Debug_Retruxx|x86.Build.0 = Debug_Retruxx|Win32
+		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Debug_RetruxxDLL|x86.ActiveCfg = Debug_RetruxxDLL|Win32
+		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Release_Retruxx|x86.ActiveCfg = Release_Retruxx|Win32
+		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Release_Retruxx|x86.Build.0 = Release_Retruxx|Win32
+		{5E19117D-BF24-4375-A403-062EC6DA6EFC}.Release_RetruxxDLL|x86.ActiveCfg = Release_RetruxxDLL|Win32
+		{0B24ACF1-D933-475A-9606-F0676B271041}.Debug_Retruxx|x86.ActiveCfg = Debug_Retruxx|Win32
+		{0B24ACF1-D933-475A-9606-F0676B271041}.Debug_RetruxxDLL|x86.ActiveCfg = Debug_RetruxxDLL|Win32
+		{0B24ACF1-D933-475A-9606-F0676B271041}.Debug_RetruxxDLL|x86.Build.0 = Debug_RetruxxDLL|Win32
+		{0B24ACF1-D933-475A-9606-F0676B271041}.Release_Retruxx|x86.ActiveCfg = Release_Retruxx|Win32
+		{0B24ACF1-D933-475A-9606-F0676B271041}.Release_RetruxxDLL|x86.ActiveCfg = Release_RetruxxDLL|Win32
+		{0B24ACF1-D933-475A-9606-F0676B271041}.Release_RetruxxDLL|x86.Build.0 = Release_RetruxxDLL|Win32
+		{1153CAA6-28F2-49A9-850E-3D73092ED007}.Debug_Retruxx|x86.ActiveCfg = Debug_Retruxx|Win32
+		{1153CAA6-28F2-49A9-850E-3D73092ED007}.Debug_Retruxx|x86.Build.0 = Debug_Retruxx|Win32
+		{1153CAA6-28F2-49A9-850E-3D73092ED007}.Debug_RetruxxDLL|x86.ActiveCfg = Debug_RetruxxDLL|Win32
+		{1153CAA6-28F2-49A9-850E-3D73092ED007}.Debug_RetruxxDLL|x86.Build.0 = Debug_RetruxxDLL|Win32
+		{1153CAA6-28F2-49A9-850E-3D73092ED007}.Release_Retruxx|x86.ActiveCfg = Release_Retruxx|Win32
+		{1153CAA6-28F2-49A9-850E-3D73092ED007}.Release_Retruxx|x86.Build.0 = Release_Retruxx|Win32
+		{1153CAA6-28F2-49A9-850E-3D73092ED007}.Release_RetruxxDLL|x86.ActiveCfg = Release_RetruxxDLL|Win32
+		{1153CAA6-28F2-49A9-850E-3D73092ED007}.Release_RetruxxDLL|x86.Build.0 = Release_RetruxxDLL|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

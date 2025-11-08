@@ -1,0 +1,313 @@
+#include <m3dapp.h>
+#include <particles.h>
+#include <stdexcept>
+#include <scene/servers/serverparticles.h>
+#include <poolmanager.h>
+#include <scene/nodes/sgnodegameunit.h>
+#include <core/scoped_ptr.h>
+#include <core/ini.h>
+#include <core/kernel.h>
+#include <file/fileserver.h>
+#include <file/filestream.h>
+
+bool loadedViaBPS = false;
+
+namespace m3d
+{
+    struct PropInternalGetMeshPoints
+    {
+        /* 0x0000 */ int m_numMesh;
+        /* 0x0004 */ m3d::SgNode* m_node;
+        /* 0x0008 */ void** m_verts;
+        retruxx::vector<m3d::rend::VertexType> m_VertexTypes;
+        retruxx::vector<unsigned int> m_VertexTypeSizes;
+        /* 0x002c */ int* m_numVerts;
+        /* 0x0030 */ unsigned short** m_indxs;
+        /* 0x0034 */ int* m_numIndxs;
+        /* 0x0038 */ bool* m_strips;
+        /* 0x003c */ CMatrix** m_localmatr;
+        /* 0x0040 */ int m_numSkinMesh;
+    }; /* size: 0x0044 */
+
+    int ParticlesServer::SetItemProperty(int, int, void*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    ParticlesServer::~ParticlesServer()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int ParticlesServer::RenderNodeSet(SgNode**, unsigned, m3d::RenderNodeInfo)
+    {
+        // TODO: implement ParticlesServer::RenderNodeSet
+        //RETRUXX_NOT_IMPLEMENTED;
+        return 0;
+    }
+
+    void ParticlesServer::UpdateItem(int, void*)
+    {
+        // TODO: implement ParticlesServer::UpdateItem
+        //RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int ParticlesServer::GetItemProperty(int id, int prop, void* dest)
+    {
+        if (prop == 12288)
+        {
+            m3d::PropSrvBoundingBox* destConverted = (m3d::PropSrvBoundingBox*)dest;
+            auto srvId = destConverted->m_node->GetServerHandle();
+            if (srvId >= 0 && srvId < m_models.size())
+            {
+                ParticleSystem* system = (ParticleSystem*)m_models[srvId].m_ptr;
+                *destConverted->m_destBox = system->m_bBox;
+                return 1;
+            }
+            else
+            {
+                (destConverted->m_destBox->m_box)[0] = 0.0;
+                (destConverted->m_destBox->m_box)[1] = 0.0;
+                (destConverted->m_destBox->m_box)[2] = 0.0;
+                (destConverted->m_destBox->m_box)[3] = 0.0;
+                (destConverted->m_destBox->m_box)[4] = 0.0;
+                (destConverted->m_destBox->m_box)[5] = 0.0;
+                return 1;
+            }
+        }
+        else
+        {
+            if (prop == 12293)
+            {
+                RETRUXX_NOT_IMPLEMENTED;
+            }
+            return m3d::DataServer::GetItemProperty(id, prop, dest);
+        }
+    }
+
+    ParticlesServer::ParticlesServer()
+    {
+        auto id = Application::g_pApp->GetProfilerStack().AddProfiler("particles", 0x1E);
+        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        {
+            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+        }
+        id = Application::g_pApp->GetProfilerStack().AddProfiler("particles update", 0x1E);
+        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        {
+            m_profilerUpdate = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+        }
+        QuadPS::CreateIb();
+        SpritePS::CreateIb();
+        GlowQuadPS::CreateIb();
+        PolyPS::CreateIb();
+        Poly1PS::CreateIb();
+        RainPS::CreateIb();
+        StripAllPS::CreateIb();
+        StripOnePS::CreateIb();
+    }
+
+    void ParticlesServer::MoveParticles(m3d::SgNode*, retruxx::vector<CVector> const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int ParticlesServer::Init()
+    {
+        m_valid = true;
+        return true;
+    }
+
+    int ParticlesServer::Release()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void ParticlesServer::RenderItem(int, void*)
+    {
+    }
+
+    void ParticlesServer::SaveAllLoadedEntitiesToBPS()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int ParticlesServer::RemoveItem(int)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void ParticlesServer::ResetItem(m3d::SgNode*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void ParticlesServer::UnregisterNode(m3d::SgNode* node)
+    {
+        PsInfoForNode* info = nullptr;
+        node->GetProperty(1u, &info);
+        if (info->m_list->m_meshEmitterVerts)
+        {
+            m3d::PropInternalGetMeshPoints prop;
+            prop.m_node = info->m_nodeForMesh;
+            prop.m_numMesh = info->m_numMesh;
+            prop.m_verts = info->m_list->m_meshEmitterVerts;
+            prop.m_numVerts = info->m_list->m_numMeshEmitterVerts;
+            prop.m_indxs = (unsigned short**)info->m_list->m_meshEmitterInds;
+            prop.m_numIndxs = info->m_list->m_numMeshEmitterInds;
+            prop.m_localmatr = info->m_list->m_local;
+            if (info->m_serverForMesh)
+            {
+                info->m_serverForMesh->SetItemProperty(info->m_itemForMesh, 16392, &prop);
+            }
+        }
+
+        PL_PoolManager.Delete(info->m_list);
+        Info_PoolManager.Delete(info);
+        node->SetProperty(1u, &info);
+    }
+
+    void ParticlesServer::AddParticle(m3d::SgNode*, CVector const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int ParticlesServer::AddItem(char const*, char const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int ParticlesServer::SaveAllLoadedEntities(char const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void ParticlesServer::RegisterNode(m3d::SgNode* node)
+    {
+        // TODO: check this!!
+        auto* info = Info_PoolManager.New();
+        auto* particlesList = PL_PoolManager.New();
+        info->m_list = particlesList;
+        memcpy(&info->m_list->m_curXFormToWorld, &node->GetCurrentMatrix(), sizeof(info->m_list->m_curXFormToWorld));
+        info->m_serverForMesh = 0;
+        info->m_nodeForMesh = 0;
+        info->m_itemForMesh = -1;
+        info->m_numMesh = -1;
+        node->SetProperty(1u, &info);
+        info->m_list->m_TLM.SetTransparentBody(node);
+
+        int numMesh = -1;
+        node->GetProperty(9472, &numMesh);
+        if (numMesh >= 0)
+        {
+            SgNode* m_parent = dynamic_cast<SgNode*>(node->GetParent());
+            if (m_parent)
+            {
+                while (m_parent->GetClass() != &m3d::SgGameUnitNode::m_classSgGameUnitNode)
+                {
+                    m_parent = dynamic_cast<SgNode*>(m_parent->GetParent());
+                    if (!m_parent)
+                        return;
+                }
+                if (m_parent->GetClass() == &m3d::SgGameUnitNode::m_classSgGameUnitNode)
+                {
+                    info->m_nodeForMesh = m_parent;
+                    info->m_serverForMesh = m_parent->GetServer();
+                    info->m_numMesh = numMesh;
+                    info->m_itemForMesh = -1;
+                    m_parent->GetProperty(4360u, &info->m_itemForMesh);
+                    if (info->m_itemForMesh != -1)
+                    {
+                        m3d::PropInternalGetMeshPoints prop;
+                        prop.m_node = m_parent;
+                        prop.m_numMesh = numMesh;
+                        prop.m_verts = 0;
+                        prop.m_strips = 0;
+                        info->m_serverForMesh->GetItemProperty(info->m_itemForMesh, 16391, &prop);
+
+                        if (prop.m_strips)
+                            delete[] prop.m_strips;
+                        prop.m_strips = 0;
+
+                        info->m_list->SetMeshEmitterPoints(
+                            prop.m_localmatr,
+                            prop.m_numMesh,
+                            prop.m_verts,
+                            prop.m_numVerts,
+                            prop.m_VertexTypes,
+                            prop.m_VertexTypeSizes,
+                            prop.m_numSkinMesh);
+
+                        auto m_list = info->m_list;
+                        auto m_indxs = prop.m_indxs;
+                        m_list->m_numMeshEmitterInds = prop.m_numIndxs;
+                        m_list->m_meshEmitterInds = (int**)m_indxs;
+                    }
+                    info->m_serverForMesh = m_parent->GetServer();
+                }
+            }
+        }
+    }
+
+    void ParticlesServer::AddParticles(m3d::SgNode*, retruxx::vector<CVector> const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void ParticlesServer::AddItemsByOne(retruxx::vector<m3d::DataServer::ServerItem>&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void ParticlesServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)
+    {
+        if (!loadedViaBPS)
+        {
+            scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
+            if (fileStream->Open("data\\models\\effects.bps", fs::IStream::OPEN_READ))
+            {
+                unsigned version = 0;
+                fileStream->ReadBytes(&version, 4u);
+                if (version != 2)
+                {
+                    AddItemsByOne(itemslist);
+                    fileStream->Close();
+                    return;
+                }
+
+                retruxx::vector<AttrProps> m_Attractors;
+                char buffer[52];
+                PSProps psProps;
+                unsigned psNum = 0;
+                fileStream->ReadBytes(&psNum, 4u);
+                for (int i = 0; i < psNum; ++i)
+                {
+                    fileStream->ReadBytes(buffer, 50);
+                    buffer[50] = 0;
+                    fileStream->ReadBytes(&psProps, sizeof(PSProps));
+
+                    unsigned attrNum = 0;
+                    fileStream->ReadBytes(&attrNum, 4u);
+                    
+                    AttrProps attrProps;
+                    m_Attractors.resize(attrNum, attrProps);
+
+                    for (int j = 0; j < attrNum; ++j)
+                    {
+                        fileStream->ReadBytes(&m_Attractors[j], sizeof(AttrProps));
+                    }
+
+                    auto* system = m3d::ParticleSystem::Factory(psProps, m_Attractors);
+                    m3d::DataServer::Model model(system, buffer, buffer, buffer);
+                    m_models.push_back(std::move(model));
+                }
+                fileStream->Close();
+                loadedViaBPS = true;
+            }
+            else
+            {
+                AddItemsByOne(itemslist);
+            }
+        }
+    }
+}

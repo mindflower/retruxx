@@ -1,0 +1,101 @@
+#include "wheeltraces.h"
+#include <stdexcept>
+
+#include "m3dapp.h"
+#include "core/kernel.h"
+
+namespace m3d
+{
+    SkidStrip::SkidStrip()
+    {
+        this->m_lastFramestamp = 0;
+        this->m_binUse = 0;
+        this->m_timeStamp = 0;
+        this->m_soilType = 0;
+        this->m_stripSize = 0;
+        this->m_texCoord = 0.0;
+        this->m_boundCenter = ZeroVector;
+        this->m_boundRadius = 0.0;
+    }
+
+    void WheelTraceMgr::Release()
+    {
+        for (int i = 0; i < 512; ++i)
+        {
+            m_skidStrips[i] = {};
+        }
+
+        for (auto& handle : m_texHandles)
+        {
+            M3D_RENDERER->ReleaseTexture(handle);
+        }
+
+        m_texHandles.clear();
+    }
+
+    void WheelTraceMgr::Render()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    WheelTraceMgr::~WheelTraceMgr()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int WheelTraceMgr::EndSkidding(void*, bool)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int WheelTraceMgr::StartSkidding(void*, int)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void WheelTraceMgr::ClearTraces()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    WheelTraceMgr::WheelTraceMgr()
+    {
+        //TODO: check this
+        m_skidStrips = new SkidStrip[512];
+        this->m_vb = M3D_RENDERER->AddVb(
+            rend::VERTEX_XYZCT1,
+            0x10000,
+            "WheelTrace",
+            0);
+        this->m_ib = M3D_RENDERER->AddIb(130, 0);
+        //TODO: check this
+        auto ibPtr = static_cast<WORD*>(M3D_RENDERER->LockIb(this->m_ib, 0, 0, 0));
+        for (int i = 0; i < 130; ++i)
+            ibPtr[i] = i;
+        M3D_RENDERER->UnlockIb(this->m_ib);
+        this->m_shader = M3D_RENDERER->NewEffect("data/shaders/wheeltrace.fx", true);
+        M3D_ASSERT(m_shader);
+        this->m_shader->SetDefaultTechnique(true);
+        m_profiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(m3d::Application::g_pApp->GetProfilerStack().AddProfiler("wheeltraces", 0x1Eu));
+    }
+
+    void WheelTraceMgr::Init(int)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    bool WheelTraceMgr::IsSkiddingStarted(void*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void WheelTraceMgr::AddTrace(CVector const&, Quaternion const&, float, void*, int, bool)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void WheelTraceMgr::AddTextureBySoilType(int, CStr const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+}

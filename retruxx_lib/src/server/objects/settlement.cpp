@@ -1,0 +1,234 @@
+#include "settlement.h"
+
+#include <stdexcept>
+
+#include "core/ini.h"
+
+namespace ai
+{
+    RT_CLASS_EXPORTS_BEGIN(Settlement)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(Settlement);
+
+    SettlementPrototypeInfo::auxZoneInfo::auxZoneInfo(auxZoneInfo const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    SettlementPrototypeInfo::auxZoneInfo::auxZoneInfo()
+    {
+        m_offset.x = 0.0;
+        m_offset.y = 0.0;
+        m_offset.z = 0.0;
+        m_radius = 10.0;
+    }
+
+    bool SettlementPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    {
+        auto result = ai::SimplePhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            ref_ptr node = xmlFile->CreateNode();
+            for (xmlNode->GetFirstChild(node, "zone"); !node->IsEmpty(); node->GetNextSibling(node, "zone"))
+            {
+                ai::SettlementPrototypeInfo::auxZoneInfo ZI;
+                m3d::SafeStrAttrib(ZI.m_action, node, "action");
+                m3d::SafeVectorAttrib(ZI.m_offset, node, "offset");
+                m3d::SafeFloatAttrib(ZI.m_radius, node, "radius");
+                m_zoneInfos.push_back(std::move(ZI));
+            }
+            m3d::SafeStrAttrib(m_vehiclesPrototypeName, xmlNode, "Vehicles");
+        }
+        return result;
+    }
+
+    void SettlementPrototypeInfo::PostLoad()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    SettlementPrototypeInfo::SettlementPrototypeInfo()
+    {
+    }
+
+    m3d::Class* Settlement::GetClass() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::Registration()
+    {
+    }
+
+    void Settlement::Remove()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    Settlement::Settlement(SettlementPrototypeInfo const& prototype) :
+        SimplePhysicObj(prototype),
+        m_population(5, 0, 5)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::CreateChildren()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    CVector Settlement::GetDeployPos() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    CVector Settlement::GetDefendPos() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    Location* Settlement::GetLocation(Location::LocationType) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    bool Settlement::CanChildBeAdded(m3d::Class*) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::SetRotationSelf(Quaternion const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    CVector Settlement::GetCaravanArrivePos() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    m3d::Class* Settlement::GetBaseClass()
+    {
+        return RT_CLASS_LOCAL(SimplePhysicObj);
+    }
+
+    int Settlement::OnEvent(Event const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::SetPosition(CVector const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    Team* Settlement::GetTeamByType(CStr const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::SetTeamByType(CStr const&, Team*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::SetPositionSelf(CVector const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    SettlementPrototypeInfo const* Settlement::GetPrototypeInfo() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    bool Settlement::RemoveChild(Obj*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::SetRotation(Quaternion const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    CVector Settlement::GetAttackPos() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::AddChild(Obj*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    CVector Settlement::GetEnterPos() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    Vehicle* Settlement::_SpawnVehicle()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int Settlement::_GetNumSpawnedVehicles()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int Settlement::_GetOverallPopulation()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::CreateChildLocation(Location::LocationType, CStr const&, CVector const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int Settlement::_GetMaxOverallPopulaition()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::_InternalPostLoad()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int Settlement::_GetMaxSpawnedVehicles()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    Settlement::~Settlement()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    m3d::Object* Settlement::CreateObject()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void Settlement::FillingFeedBackParam()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    m3d::Object* Settlement::Clone()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+}

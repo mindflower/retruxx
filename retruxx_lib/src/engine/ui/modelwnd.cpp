@@ -1,0 +1,230 @@
+#include <ui/modelwnd.h>
+
+#include "m3dapp.h"
+#include "core/kernel.h"
+#include "core/timer.h"
+#include "core/ini.h"
+
+namespace m3d
+{
+    namespace ui
+    {
+        RT_CLASS_EXPORTS_BEGIN(ModelWnd)
+    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_DEFINE(ModelWnd);
+
+        Class* ModelWnd::GetBaseClass()
+        {
+            return RT_CLASS_LOCAL(ImageWnd);
+        }
+
+        Object* ModelWnd::CreateObject()
+        {
+            return new ModelWnd;
+        }
+
+        rend::TexHandle ModelWnd::CreateTextureAsRenderTarget(PointBase<int> const&)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        PointBase<int> ModelWnd::GetFitTargetTextureSize(BoundsBase<float> const& wndBounds)
+        {
+            //TODO: check this and refactor
+            PointBase<int> result; // eax
+            float v3; // xmm0_4
+            int* v4; // ecx
+            int v5; // edx
+            bool v6; // cc
+            char v7; // cl
+            int v8; // edx
+            int v9; // [esp+4h] [ebp-8h] BYREF
+            int v10; // [esp+8h] [ebp-4h] BYREF
+
+            v9 = wndBounds.height;
+            v3 = wndBounds.width;
+            v10 = v9;
+            v9 = v3;
+            v4 = &v10;
+            if (v9 >= v10)
+                v4 = &v9;
+            v5 = *v4;
+            v6 = *v4 < 4;
+            v7 = 2;
+            if (!v6)
+            {
+                do
+                    ++v7;
+                while (1 << v7 <= v5);
+            }
+            v8 = 1 << v7;
+            if (1 << v7 >= 32)
+            {
+                if (v8 > 512)
+                    v8 = 512;
+                result.x = v8;
+                result.y = v8;
+            }
+            else
+            {
+                result.x = 32;
+                result.y = 32;
+            }
+            return result;
+        }
+
+        int ModelWnd::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
+        {
+            auto result = ImageWnd::ReadFromXmlNode(file, node);
+            if (result)
+            {
+                //CVector rot;
+                //CMatrix rotMatr;
+                //m3d::SafeVectorAttrib(rot, node, "ModelRotation");
+            	//rotMatr.rotYPR(rot.y, rot.x, rot.z);
+                //m_Rotation.FromMatrix(rotMatr);
+                //TODO: check this!!!
+                m3d::SafeQuaternionAttrib(m_Rotation, node, "ModelRotation");
+                m3d::SafeVectorAttrib(m_Translation, node, "ModelTranslation");
+                m3d::SafeVectorAttrib(m_Scale, node, "ModelScale");
+
+                //TODO: check this!!!!!Q
+                m_renderTexture = M3D_RENDERER->GetBufferedTargetTexture(GetFitTargetTextureSize(m_bounds).x);
+                M3D_RENDERER->ReferenceTexture(m_renderTexture);
+                result = 1;
+            }
+            return result;
+        }
+
+        int ModelWnd::SetTargetTexture(rend::TexHandle)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        AnimInfo* ModelWnd::Animation()
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        CVector& ModelWnd::Scale()
+        {
+            return m_Scale;
+        }
+
+        rend::TexHandle ModelWnd::GetTargetTexture() const
+        {
+            return m_renderTexture;
+        }
+
+        int ModelWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        int ModelWnd::OnPaint(DrawInfo const&)
+        {
+            // TODO: implement ModelWnd::OnPaint
+            // RETRUXX_NOT_IMPLEMENTED;
+            return 1;
+        }
+
+        Quaternion& ModelWnd::Rotation()
+        {
+            return m_Rotation;
+        }
+
+        Class* ModelWnd::GetClass() const
+        {
+            return RT_CLASS_LOCAL(ModelWnd);
+        }
+
+        int ModelWnd::SetModel(AnimatedModel*)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        ModelWnd::~ModelWnd()
+        {
+            delete m_Animation;
+            M3D_RENDERER->ReleaseTexture(m_renderTexture);
+        }
+
+        void ModelWnd::SetCfgNum(unsigned)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        Object* ModelWnd::Clone()
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        unsigned& ModelWnd::SkinNum()
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        AnimatedModel* ModelWnd::GetModel()
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        CVector& ModelWnd::Translation()
+        {
+            return m_Translation;
+        }
+
+        int ModelWnd::CreateModelWnd(rend::TexHandle imageTex, unsigned style, BoundsBase<float> const& rc, unsigned id , rend::TexHandle targetTex)
+        {
+            if (!style)
+            {
+                style = 832;
+            }
+            if (Wnd::Create({}, style, rc, id) == 0)
+            {
+                return 0;
+            }
+            m_texture = imageTex;
+            M3D_RENDERER->ReferenceTexture(m_texture);
+            if (m_texture.IsValid())
+            {
+                m_renderTexture = targetTex;
+                M3D_RENDERER->ReferenceTexture(m_renderTexture);
+            }
+            else
+            {
+                m_renderTexture = M3D_RENDERER->GetBufferedTargetTexture(GetFitTargetTextureSize(GetBounds()).x);
+                if ((style & 0x80000000) != 0)
+                {
+                    return 0;
+                }
+            }
+            return 1;
+        }
+
+        int ModelWnd::CreateModelWnd(CStr const&, unsigned, BoundsBase<float> const&, unsigned, rend::TexHandle)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        int ModelWnd::CreateImageWnd(BoundsBase<float> const&, CStr const&)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        int ModelWnd::CreateImageWnd(BoundsBase<float> const&, rend::TexHandle)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        ModelWnd::ModelWnd(ModelWnd const&)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        ModelWnd::ModelWnd()
+        {
+            m_LastTimeCalled = m3d::g_Kernel->GetTimer().GetCurTimeUnscaled();
+        }
+    }
+}
