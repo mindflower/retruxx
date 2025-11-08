@@ -1,7 +1,7 @@
 #include "navpoint.h"
 #include <stdexcept>
 
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 std::vector<int> NavPointManager::GetNavPointsByType(CStr const&, NavPoint::NavPointType) const
 {

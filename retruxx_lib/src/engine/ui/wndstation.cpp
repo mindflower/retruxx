@@ -13,8 +13,6 @@
 #include "impulses/i_impulses.h"
 #include "ui/button.h"
 
-#include "thirdparty/injecttools.h"
-
 char const STR_OK[] = "ok";
 char const STR_CANCEL[] = "cancel";
 char const STR_YES[] = "yes";
@@ -416,8 +414,6 @@ namespace m3d
             return 1;
         }
 
-
-        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00593210, WndStation::CheckForMouseDblClick);
         int WndStation::CheckForMouseDblClick(Wnd*, PointBase<float> const&, unsigned, PointBase<float>&)
         {
             RETRUXX_NOT_IMPLEMENTED;

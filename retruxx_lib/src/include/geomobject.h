@@ -4,7 +4,7 @@
 #include <math/quaternion.h>
 #include <math/vector.h>
 
-class CMatrix;
+struct CMatrix;
 struct dxTriMeshData;
 struct dxGeom;
 

@@ -4,7 +4,7 @@
 #include <core/stringm3d.h>
 #include <math/vector.h>
 
-class CMatrix;
+struct CMatrix;
 
 namespace m3d
 {

@@ -10,7 +10,7 @@ namespace m3d
     }
 }
 
-class CMatrix;
+struct CMatrix;
 
 class CAffineXForm
 {

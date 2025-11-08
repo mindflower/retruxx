@@ -1,7 +1,6 @@
 #pragma once
 #include "stringm3d.h"
-#include "thirdparty/injecttools.h"
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 #define RT_CLASS_LOCAL(cl) &cl::m_class##cl
 #define RT_CLASS_DECLARE(cl) static m3d::Class m_class##cl
@@ -14,7 +13,7 @@
 #define RT_CLASS_EXPORT_METHOD_DEFINE(cl, funcName) int _export_##cl##_##funcName##(m3d::Context* context)
 
 #define IS_KIND_OF(obj, className) ((obj) != nullptr && (obj)->IsKindOf(RT_CLASS_LOCAL(className)))
-#define RT_DYNCAST(obj, className) dynamic_cast<className*>(obj)
+#define RT_DYNCAST(obj, className) (dynamic_cast<className*>(obj))
 
 #undef GetFirstChild
 #undef GetFirstSibling

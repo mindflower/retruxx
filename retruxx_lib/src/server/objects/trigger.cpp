@@ -442,7 +442,6 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_INJECT_VIRTUAL_FUNCITON_NAMESPACED(0x008569A0, ai, Trigger, Update)
     void Trigger::Update(float elapsedTime, unsigned int workTime)
     {
         if (elapsedTime > 0.001)

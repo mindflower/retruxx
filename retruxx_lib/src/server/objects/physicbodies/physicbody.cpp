@@ -13,7 +13,6 @@
 #include "scene/scenegraph.h"
 #include "scene/nodes/sgnode.h"
 #include "scene/servers/DataServer.h"
-#include "thirdparty/injecttools.h"
 #include <client.h>
 
 #include "compoundvehiclepart.h"
@@ -64,7 +63,6 @@ namespace ai
 		this->m_bCollisionTrimeshAllowed = 0;
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x0061D180, PhysicBody::SetEffectActions)
     void PhysicBody::SetEffectActions(retruxx::vector<ActionType>& actions)
 	{
 		if (m_Node != nullptr)

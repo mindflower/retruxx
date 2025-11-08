@@ -474,7 +474,6 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006216F0, ScriptServer::callScriptFunc)
     eScriptError ScriptServer::callScriptFunc(char const* funcName, sArgStack& stack, int nresults)
     {
         // TODO: generated code
@@ -705,7 +704,6 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00621500, ScriptServer::getFormatedScriptErrorDesc)
     CStr ScriptServer::getFormatedScriptErrorDesc(eScriptError err) const
     {
         // TODO: implement ScriptServer::getFormatedScriptErrorDes

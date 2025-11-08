@@ -2,8 +2,7 @@
 #include "stringm3d.h"
 #include "threadsync.h"
 #include "kernel.h"
-#include "thirdparty/containers.h"
-#include "thirdparty/injecttools.h"
+#include "retruxx/common.h"
 
 #define M3D_LOG_INFO(msg) M3D_KERNEL->m_Log->sourceLine() = __LINE__; M3D_KERNEL->m_Log->setSourceFile(__FILE__); M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_INFO)
 #define M3D_LOG_ERR(msg)  M3D_KERNEL->m_Log->sourceLine() = __LINE__; M3D_KERNEL->m_Log->setSourceFile(__FILE__); M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_ERR)
@@ -30,8 +29,6 @@ namespace m3d
 
     class m3d::Log
     {
-        RETRUXX_DLL_FRIEND_CLASS(Log);
-
     public:
         Log();
         ~Log();

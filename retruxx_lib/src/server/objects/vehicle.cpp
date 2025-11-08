@@ -478,7 +478,6 @@ namespace ai
         }; /* size: 0x0018 */
 
 
-        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D5680, FlatLine::CreateOrthogonal)
         FlatLine* FlatLine::CreateOrthogonal(FlatLine* a1,const CVector& p1, const CVector& p2)
         {
 			auto result = a1;
@@ -537,7 +536,6 @@ namespace ai
 				v15 = 1;
 			return acos(nextPointa) * (double)v15;
         }
-        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D07A0, GetAngleBetween)
 
         void CalcDrivingValues(Vehicle const& vehicle, CVector const& point, CVector const& nextPoint, bool bPrecisely, DrivingValues& dv)
         {           
@@ -590,7 +588,6 @@ namespace ai
             auto const scalVelocity = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
             dv.brakingCircleRadius = fabs(dv.nextAngle) * (scalVelocity * log2(scalVelocity) * 0.04);
         }
-        RETRUXX_DLL_INJECT_FUNCTION(0x005D57A0, CalcDrivingValues);
     }
 
 	extern AIManager* theAIManager;
@@ -1049,7 +1046,6 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x005DCFD0, Vehicle::GetRecollectionPosition)
 	CVector Vehicle::GetRecollectionPosition(float) const
 	{
         RETRUXX_NOT_IMPLEMENTED;
@@ -1913,7 +1909,6 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-    RETRUXX_DLL_INJECT_VIRTUAL_FUNCITON_NAMESPACED(0x005EAEE0, ai, Vehicle, RenderDebugInfo)
 	void Vehicle::RenderDebugInfo() const
 	{
         CVector curPoint;
@@ -2043,7 +2038,6 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x005D1210, Vehicle::SetThrottle)
 	void Vehicle::SetThrottle(float throttle, bool autoBrake)
 	{
         if (fabs(throttle) <= 1.1)
@@ -2208,13 +2202,11 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA60, Vehicle::GetCabin, Cabin const* (Vehicle::*)()const)
 	Cabin const* Vehicle::GetCabin() const
 	{
 		return RT_DYNCAST(GetPartByName(CABIN), const Cabin);
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CB9D0, Vehicle::GetCabin, Cabin* (Vehicle::*)())
 	Cabin* Vehicle::GetCabin()
 	{
 		return RT_DYNCAST(GetPartByName(CABIN), Cabin);
@@ -2403,7 +2395,6 @@ namespace ai
         return RT_CLASS_LOCAL(Vehicle);
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005CC1C0, Vehicle::GetSize)
 	CVector Vehicle::GetSize() const
 	{
 		return m_size;
@@ -3140,13 +3131,11 @@ namespace ai
 		}
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA00, Vehicle::GetBasket, Basket* (Vehicle::*)())
 	Basket* Vehicle::GetBasket()
 	{
 		return RT_DYNCAST(GetPartByName(BASKET), Basket);
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA90, Vehicle::GetBasket, Basket const*(Vehicle::*)()const)
 	Basket const* Vehicle::GetBasket() const
 	{
 		return RT_DYNCAST(GetPartByName(BASKET), const Basket);
@@ -3862,7 +3851,6 @@ namespace ai
 		//RETRUXX_NOT_IMPLEMENTED;
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(0x005CCF40, Vehicle, _GetNextPathPoint)
 	CVector Vehicle::_GetNextPathPoint() const
 	{
 		// TODO: generated code
@@ -3927,7 +3915,6 @@ namespace ai
 		return nextPoint;
 	}
 
-    RETRUXX_DLL_INJECT_CLASS_METHOD(0x005DAAE0, Vehicle, _KeepThrottle)
 	void Vehicle::_KeepThrottle(bool applyActions)
 	{
         auto const wheelRpm = fabs(m_averageWheelAVel) * 9.5492964;
@@ -4309,7 +4296,6 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(0x005D62E0, Vehicle, _CalcSteeringForceToPathPoint)
 	CVector Vehicle::_CalcSteeringForceToPathPoint(CVector const& point, CVector const& nextPoint) const
 	{
 		// TODO: check and refactor this

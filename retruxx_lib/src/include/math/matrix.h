@@ -1,6 +1,6 @@
 #pragma once
 
-struct CPlane;
+class CPlane;
 struct CVector4;
 struct CVector;
 struct Quaternion;

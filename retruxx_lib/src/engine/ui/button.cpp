@@ -6,7 +6,6 @@
 #include "core/kernel.h"
 #include "ui/frame.h"
 
-#include "thirdparty/injecttools.h"
 #include <thread>
 
 namespace m3d

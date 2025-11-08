@@ -4,7 +4,7 @@
 namespace Graph
 {
     template<class T>
-    class CMatrix
+    struct CMatrix
     {
     public:
         CMatrix(CMatrix<T> const&);

@@ -1,10 +1,8 @@
 #include "weaponfirer.h"
-#include "thirdparty/injecttools.h"
 #include <stdexcept>
 
 namespace ai
 {
-    RETRUXX_DLL_INJECT_FUNCTION(0x007C3370, WeaponFirer::AimAndFireFromWeapons)
     void WeaponFirer::AimAndFireFromWeapons(ComplexPhysicObj* obj, bool enable, float elapsedTime, Obj* target)
     {
         RETRUXX_NOT_IMPLEMENTED;
@@ -38,21 +36,17 @@ namespace ai
         FireFromWeaponsIfPossible(obj, enable, enemyPos, target);
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x007C2FC0, WeaponFirer::FireFromWeaponsIfPossible)
     void WeaponFirer::FireFromWeaponsIfPossible(ComplexPhysicObj*, bool, CVector const&, Obj*)
     {
         // TODO: implement WeaponFirer::FireFromWeaponsIfPossible
         //RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x007C3210, WeaponFirer::WeaponLookAtPoint)
     void WeaponFirer::WeaponLookAtPoint(ComplexPhysicObj*, CVector const&, float)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x007C2EA0, WeaponFirer::GetMaxFiringRange)
     float WeaponFirer::GetMaxFiringRange(ComplexPhysicObj const*)
     {
         RETRUXX_NOT_IMPLEMENTED;

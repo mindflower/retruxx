@@ -2,9 +2,9 @@
 #include <core/stringm3d.h>
 #include <math/vector.h>
 #include <math/vector2.h>
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
-struct CClipper;
+class CClipper;
 
 namespace m3d
 {

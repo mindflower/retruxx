@@ -11,7 +11,7 @@
 
 struct CVector2;
 class CPlane;
-class CMatrix;
+struct CMatrix;
 
 namespace m3d
 {

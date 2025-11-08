@@ -52,19 +52,16 @@ namespace m3d
 
 namespace m3d
 {
-    RETRUXX_DLL_INJECT_CTOR(0x00616270, RefCountedBase)
     RefCountedBase::RefCountedBase() :
         m_refCount(0)
     {
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x00437010, RefCountedBase::IncRef)
     int RefCountedBase::IncRef()
     {
         return ++m_refCount;
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x004047B0, RefCountedBase::DecRef)
     int RefCountedBase::DecRef()
     {
         const auto result = --m_refCount;
@@ -75,7 +72,6 @@ namespace m3d
         return result;
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x00435580, RefCountedBase::GetRefCount)
     int RefCountedBase::GetRefCount() const
     {
         return m_refCount;
@@ -622,7 +618,6 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0X0041DD60, Object::IsChildOf)
     bool Object::IsChildOf(Object const* wnd) const
     {
         assert(wnd);

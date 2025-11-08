@@ -2,7 +2,7 @@
 #include <server/damageinfo.h>
 #include <server/objects/physicbodies/vehiclepart.h>
 
-class CMatrix;
+struct CMatrix;
 
 namespace ai
 {

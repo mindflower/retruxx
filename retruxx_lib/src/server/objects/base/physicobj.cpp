@@ -11,8 +11,6 @@
 #include "server/ai/aimanager.h"
 #include "server/objects/physicbodies/physichelpers.h"
 
-#include "thirdparty/injecttools.h"
-
 extern "C"
 {
 #include "ode/collision.h"
@@ -588,7 +586,6 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005FC410, PhysicObj::GetPosition)
     CVector PhysicObj::GetPosition() const
     {
         // TODO: generated code
@@ -1246,7 +1243,6 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005FB1E0, getPhysicObjOrPhysicBodyGeometricCenter)
     CVector getPhysicObjOrPhysicBodyGeometricCenter(ai::Obj const*)
     {
         RETRUXX_NOT_IMPLEMENTED;

@@ -1447,7 +1447,6 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005BDC00, Landscape::Load)
     int Landscape::Load()
     {
         M3D_LOG_FLOW();
@@ -3729,8 +3728,6 @@ namespace m3d
 
     Landscape::Landscape()
     {
-       RETRUXX_DLL_JMP_TO_CTOR(0x005B8950, Landscape::Landscape);
-
         // Set up lockVis CVar
         m_lockVis = CVar("lockVis", "0", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE);
 

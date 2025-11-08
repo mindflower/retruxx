@@ -46,10 +46,5 @@ namespace ai
 
     static_assert(sizeof(ProcessManager) == 0x0024);
 
-#ifdef RETRUXX_DLL
-    //inline ProcessManager* theProcessManager = (*inject::cast<ai::ProcessManager**>(0x00A17990));
     inline ProcessManager* theProcessManager = nullptr;
-#else
-    inline ProcessManager* theProcessManager = nullptr;
-#endif
 }

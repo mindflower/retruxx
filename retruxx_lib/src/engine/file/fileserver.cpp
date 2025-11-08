@@ -6,7 +6,7 @@
 #include <file/memoryfile.h>
 #include <file/package.h>
 #include <file/rawfile.h>
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 namespace m3d
 {

@@ -1,5 +1,5 @@
 #include "ps_attractors.h"
-#include <thirdparty/containers.h>
+#include "retruxx/common.h"
 #include <core/log.h>
 
 m3d::Attr::Attr(const m3d::Attr&)

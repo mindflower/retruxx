@@ -1,5 +1,4 @@
 #include "player.h"
-#include "thirdparty/injecttools.h"
 #include <stdexcept>
 #include <client.h>
 
@@ -199,7 +198,6 @@ namespace ai
         return RT_CLASS_LOCAL(Obj);
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x0064FA80, Player::GetMoney)
     int Player::GetMoney() const
     {
         return m_money.value().get();

@@ -2,11 +2,9 @@
 #include <sstream>
 #include <stdexcept>
 #include <core/log.h>
-#include "thirdparty/injecttools.h"
 
 namespace m3d
 {
-    RETRUXX_DLL_INJECT_CTOR(0x00612C50, Log);
     Log::Log()
     {
     }
@@ -16,13 +14,11 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_INJECT_DTOR(0x00613050, Log);
     Log::~Log()
     {
         endLog();
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x00613590, Log::logTex)
     void Log::logTex(CStr const& s, eLogFlags logFlags)
     {
         AutoLock guard(m_cs);
@@ -44,31 +40,26 @@ namespace m3d
         }
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x00612B30, Log::getSourceFile)
     char const* Log::getSourceFile() const
     {
         return m_fileName.c_str();
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION_TYPED(0x00612BA0, Log::logMask, unsigned&(Log::*)())
     unsigned& Log::logMask()
     {
         return m_logMask;
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x00613560, Log::setSourceFile)
     void Log::setSourceFile(char const* file)
     {
         m_sourceFile = file;
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x00612B80, Log::logStarted)
     bool Log::logStarted() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x00612EF0, Log::endLog)
     bool Log::endLog()
     {
         AutoLock guard(m_cs);
@@ -127,7 +118,6 @@ namespace m3d
         return m_sourceLine;
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x006138B0, Log::indent)
     void Log::indent(CStr const& s, eLogFlags logBits)
     {
         AutoLock guard(m_cs);
@@ -147,7 +137,6 @@ namespace m3d
         }
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x006139B0, Log::undent)
     void Log::undent(CStr const& s, eLogFlags logBits)
     {
         AutoLock guard(m_cs);
@@ -172,7 +161,6 @@ namespace m3d
         }
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x00612CA0, Log::startLog)
     bool Log::startLog(char const* fileName, bool flush)
     {
         AutoLock guard(m_cs);
@@ -210,7 +198,6 @@ namespace m3d
         return false;
     }
 
-    RETRUXX_DLL_INJECT_CLASS_METHOD(0x00613110, Log, headerString)
     CStr const& Log::headerString(eLogFlags logFlags) const
     {
         AutoLock guard(m_cs);

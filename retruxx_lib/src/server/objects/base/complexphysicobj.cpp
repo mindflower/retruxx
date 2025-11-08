@@ -5,7 +5,6 @@
 #include "core/ini.h"
 #include "core/kernel.h"
 #include "core/log.h"
-#include "thirdparty/injecttools.h"
 #include <server/resourcemanager.h>
 
 #include "config.h"
@@ -822,7 +821,6 @@ namespace ai
         dBodySetMass(this->GetBody()->id(), &mass);
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006BCC10, ComplexPhysicObj::GetSmoothTargetPointForObj)
     CVector ComplexPhysicObj::GetSmoothTargetPointForObj(Obj const*, float)
     {
         RETRUXX_NOT_IMPLEMENTED;

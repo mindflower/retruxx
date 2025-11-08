@@ -1,5 +1,5 @@
 #pragma once
-#include <thirdparty/containers.h>
+#include "retruxx/common.h"
 #include <psprops.h>
 #include <ps_attractors.h>
 #include <tracelinemanager.h>

@@ -2,7 +2,7 @@
 #include <core/stringm3d.h>
 
 #include "aiparamref.h"
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 namespace ai
 {

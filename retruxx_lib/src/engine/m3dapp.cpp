@@ -1534,7 +1534,6 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006A6FC0, Application::LoadServers)
     bool Application::LoadServers(CStr const& filename, bool bQuiet)
     {
         struct {
@@ -3003,7 +3002,6 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x007B0010, Application::DrawLine, void(Application::*)(CVector const&, CVector const&, unsigned))
     void Application::DrawLine(CVector const&, CVector const&, unsigned)
     {
         RETRUXX_NOT_IMPLEMENTED;

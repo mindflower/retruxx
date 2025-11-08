@@ -17,7 +17,6 @@
 
 #include "core/ini.h"
 #include "core/ref_ptr.h"
-#include "thirdparty/injecttools.h"
 #include <server/server.h>
 
 #include "server/affix.h"
@@ -527,7 +526,6 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00602610, Obj::GetFlags)
     unsigned Obj::GetFlags() const
     {
         return m_flags;
@@ -1072,7 +1070,6 @@ namespace ai
         }
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006894A0, Obj::GetParentRepository)
     GeomRepository* Obj::GetParentRepository() const
     {
         return m_parentRepository;

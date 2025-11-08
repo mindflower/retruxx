@@ -5,7 +5,7 @@
 
 struct dxJoint;
 struct dxSpace;
-class CMatrix;
+struct CMatrix;
 
 namespace m3d
 {

@@ -1,7 +1,7 @@
 #include "stringparser.h"
 #include <stdexcept>
 
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 FormatParam::ParamType FormatParam::GetType() const
 {
