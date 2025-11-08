@@ -1276,9 +1276,49 @@ int CMiracle3d::OnGameSwitchCamera(m3d::AuxImpulseInfo const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int CMiracle3d::OnGameMouse(m3d::AuxImpulseInfo const&)
+int CMiracle3d::OnGameMouse(m3d::AuxImpulseInfo const& impInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_gameSlideAuto = ZeroVector;
+
+    float x = 0.0;
+    float y = 0.0;
+    float dx = 0.0;
+    float dy = 0.0;
+    impInfo.UnpackXy(&x, &y, &dx, &dy);
+
+    int res = 0;
+    if (m_curGameMode.Get() == GS_GAME)
+    {
+        const auto cameraMode = m_player.m_cameraMode;
+        if (cameraMode == CM_FOLLOWMODE || cameraMode == CM_FLYCAMERA)
+        {
+            res = 1;
+        }
+    }
+
+    if (M3D_APP->m_pImpulses->GetImpulseState(9) || !HasChildModalRunning() && res)
+    {
+        if (GetCapture() != this)
+        {
+            const auto mouseSense = GetMouseSensitivity();
+            m_flyCamTurn.x= dx * mouseSense * 0.003;
+            m_flyCamTurn.y = dy * mouseSense * 0.003;
+            if (IsMouseYAxisFlipped())
+            {
+                m_flyCamTurn.y = 0.0 - m_flyCamTurn.y;
+            }
+            if (IsMouseXAxisFlipped())
+            {
+                m_flyCamTurn.x = 0.0 - m_flyCamTurn.x;
+            }
+
+            float x = 512.0;
+            float y = 384.0;
+            M3D_RENDERER->RelToAbs(x, y);
+            SetMouseXy(x, y);
+        }
+    }
+    return 1;
 }
 
 void CMiracle3d::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -1654,10 +1694,14 @@ int CMiracle3d::Controls(double t0, double tlen)
     m_flyCamMove = { 0.0f, 0.0f, 0.0f };
     auto* impulses = M3D_APP->m_pImpulses;
 
-    if (impulses->GetImpulseState(4)) m_flyCamMove.z += 1.0f;
-    if (impulses->GetImpulseState(5)) m_flyCamMove.z -= 1.0f;
-    if (impulses->GetImpulseState(7)) m_flyCamMove.x += 1.0f;
-    if (impulses->GetImpulseState(6)) m_flyCamMove.x -= 1.0f;
+    if (impulses->GetImpulseState(4)) 
+        m_flyCamMove.z += 1.0f;
+    if (impulses->GetImpulseState(5))
+        m_flyCamMove.z -= 1.0f;
+    if (impulses->GetImpulseState(7))
+        m_flyCamMove.x += 1.0f;
+    if (impulses->GetImpulseState(6)) 
+        m_flyCamMove.x -= 1.0f;
 
     // Apply camera speed and time delta
     float cameraSpeed = m_cameraSpeed.GetF();

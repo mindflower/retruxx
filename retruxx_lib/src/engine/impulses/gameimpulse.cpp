@@ -282,9 +282,21 @@ namespace m3d
 
     RT_CLASS_DEFINE(GameImpulse);
 
-    void AuxImpulseInfo::UnpackXy(float*, float*, float*, float*) const
+    void AuxImpulseInfo::UnpackXy(float* x, float* y, float* dx, float* dy) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code
+        if (x) {
+            *x = static_cast<float>(static_cast<int16_t>(m_info0 & 0xFFFF));
+        }
+        if (y) {
+            *y = static_cast<float>(static_cast<int16_t>((m_info0 >> 16) & 0xFFFF));
+        }
+        if (dx) {
+            *dx = static_cast<float>(static_cast<int16_t>(m_info1 & 0xFFFF));
+        }
+        if (dy) {
+            *dy = static_cast<float>(static_cast<int16_t>((m_info1 >> 16) & 0xFFFF));
+        }
     }
 
     AuxImpulseInfo::AuxImpulseInfo(int impId, bool state, int gameMode, unsigned i0, unsigned i1)

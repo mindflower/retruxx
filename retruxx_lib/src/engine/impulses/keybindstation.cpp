@@ -225,15 +225,9 @@ namespace m3d
                 return binding;
             }
 
-            // If combination not found, try just the single key
-            if (keySetSize == 0) {
-                KeysSet singleKeySet;
-                singleKeySet += key;
-                binding = GetBindByKey(singleKeySet);
-                return binding;
-            }
-
-            return nullptr;
+            KeysSet singleKeySet(key);
+            binding = GetBindByKey(singleKeySet);
+            return binding;
         }
 
         // For medium-sized key sets, try replacing each key with the new key

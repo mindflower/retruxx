@@ -512,14 +512,14 @@ namespace m3d
 
     int Application::FillEngineMessages()
     {
-        if (m_input)
-        {
-            NewFrame();
-        }
         if (!m_input)
         {
             return 1;
         }
+
+        
+        m_input->NewFrame();
+
         unsigned short key = 0;
         unsigned char param2 = 0;
         bool param3 = false;
