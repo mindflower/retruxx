@@ -1,4 +1,7 @@
 #include "truxxuimanager.h"
+
+#include "uidefs.h"
+
 #include <config.h>
 #include <stdexcept>
 #include <renderer/i_renderer.h>
@@ -148,110 +151,110 @@ namespace
     };
 
     _Str2GuiId l_str2GuiId[] = {
-        {"IW_DLG_BINDKEYS", 0},
-        {"IW_WND_PLAYER_INVENTORY", 64},
-        {"IW_WND_WORKSHOP_INVENTORY", 65},
-        {"IW_DLG_DEVIDE", 1},
-        {"IW_DLG_BAR", 2},
-        {"IW_DLG_ADDITIONAL_BUILDING", 3},
-        {"IW_DLG_TOWN", 4},
-        {"IW_DLG_PALMBOARD", 5},
-        {"IW_WND_WORKSHOP", 67},
-        {"IW_DLG_ADMINISTRATION", 6},
-        {"IW_WND_SHOP", 66},
-        {"IW_WND_RADAR", 17},
-        {"IW_WND_CINEMA_PANEL", 18},
-        {"IW_WND_CINEMA_FADE_PANEL", 19},
-        {"IW_WND_DAMAGEINFO", 26},
-        {"IW_WND_DAMAGEINFO_IN_CHARACTERISTIC_WND_LEFT", 27},
-        {"IW_WND_DAMAGEINFO_IN_CHARACTERISTIC_WND_RIGHT", 28},
-        {"IW_WND_WEAPON_INFO_LIST", 38},
-        {"IW_WND_WEAPON_INFO_LIST_IN_FIGNYA_WND", 42},
-        {"IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_LEFT", 39},
-        {"IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_RIGHT", 40},
-        {"IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_WORKSHOP", 41},
-        {"IW_WND_GROUND", 63},
-        {"IW_DLG_MOTHER_PANEL", 7},
-        {"IW_WND_CHARACTERISTICS_LEFT", 68},
-        {"IW_WND_CHARACTERISTICS_RIGHT", 69},
-        {"IW_WND_PLAYER_MONEY", 70},
-        {"IW_WND_PLAYER_MONEY_IN_NPC_DIALOG", 71},
-        {"IW_WND_MAINMENU", 72},
-        {"IW_WND_BUY_VEHICLE", 73},
-        {"IW_WND_VIDEO", 77},
-        {"IW_WND_QUESTLOG", 15},
-        {"IW_WND_LOCAL_MAP", 82},
-        {"IW_WND_GLOBAL_MAP", 84},
-        {"IW_DLG_TALK_WITH_NPC", 88},
-        {"IW_DLG_WEAPON_GROUP_CHOICE", 89},
-        {"IW_WND_PLAYER_CABIN", 90},
-        {"IW_WND_PLAYER_BASKET", 92},
-        {"IW_WND_WORKSHOP_CABIN", 91},
-        {"IW_WND_WORKSHOP_BASKET", 93},
-        {"IW_WND_ZNAYU_KAK_PRODAT", 94},
-        {"IW_WND_JOURNAL", 16},
-        {"IW_WND_HISTORY", 95},
-        {"IW_WND_BOOKS", 96},
-        {"IW_WND_ENCYCLOPAEDIA", 97},
-        {"IW_WND_PLAYER", 104},
-        {"IW_WND_STATS", 105},
-        {"IW_WND_REPUTATION", 106},
-        {"IW_WND_PERKS", 107},
-        {"IW_WND_SPLASH", 108},
-        {"IW_WND_NEW_PROFILE", 109},
-        {"IW_WND_NEW_PROFILE_ALONE", 110},
-        {"IW_WND_CHANGE_PROFILE", 111},
-        {"IW_WND_LOAD", 112},
-        {"IW_WND_SAVE", 113},
-        {"IW_WND_FIGNYA_V_CENTRE", 114},
-        {"IW_WND_FIGNYA_V_CENTRE_INACTIVE", 115},
-        {"IW_WND_TARGET_INFO_IN_MAIN_INTERFACE", 116},
-        {"IW_WND_TARGET_INFO_IN_FIGNYA_WND", 117},
-        {"IW_WND_CURSOR_MAIN", 118},
-        {"IW_WND_CURSOR_TARGET_CAPTURING", 119},
-        {"IW_WND_CURSOR_TARGET_CAPTURED", 120},
-        {"IW_WND_CURSOR_TARGET_INFO", 121},
-        {"IW_WND_VEHICLE_INFO_PANEL", 124},
-        {"IW_WND_SPEEDOMETER", 30},
-        {"IW_WND_FADING_MSG_LIST", 125},
-        {"IW_WND_IMPORTANT_FADING_MSG_LIST", 126},
-        {"IW_WND_GARAGE", 127},
-        {"IW_WND_REFUEL_LIST", 128},
-        {"IW_WND_REPAIR_LIST", 129},
-        {"IW_WND_RECHARGE_LIST", 130},
-        {"IW_WND_CABIN_BUTTON_PATTERN", 131},
-        {"IW_WND_BASKET_BUTTON_PATTERN", 132},
-        {"IW_WND_CABIN_LIST", 133},
-        {"IW_WND_BASKET_LIST", 134},
-        {"IW_WND_SKINS", 144},
-        {"IW_WND_IGROKA_MOCHAT", 145},
-        {"IW_WND_QUEST_ITEMS", 146},
-        {"IW_WND_COUNTER", 147},
-        {"IW_WND_OPTIONS", 148},
-        {"IW_WND_OPTIONS_VIDEO", 149},
-        {"IW_WND_OPTIONS_SOUND", 150},
-        {"IW_WND_OPTIONS_CONTROL", 151},
-        {"IW_WND_OPTIONS_GAME", 152},
-        {"IW_WND_MAIN_GAME_INTERFACE", 155},
-        {"IW_WND_PLAYER_VEHICLE_CHARACTERISTICS_LEFT", 156},
-        {"IW_WND_PLAYER_VEHICLE_CHARACTERISTICS_RIGHT", 157},
-        {"IW_WND_WORKSHOP_VEHICLE_CHARACTERISTICS", 158},
-        {"IW_WND_PLAYER_CABIN_CHARACTERISTICS_LEFT", 159},
-        {"IW_WND_PLAYER_CABIN_CHARACTERISTICS_RIGHT", 160},
-        {"IW_WND_WORKSHOP_CABIN_CHARACTERISTICS", 161},
-        {"IW_WND_PLAYER_BASKET_CHARACTERISTICS_LEFT", 162},
-        {"IW_WND_PLAYER_BASKET_CHARACTERISTICS_RIGHT", 163},
-        {"IW_WND_WORKSHOP_BASKET_CHARACTERISTICS", 164},
-        {"IW_WND_DEMO_SPLASH", 167},
-        {"IW_WND_CREDITS", 165},
-        {"IW_WND_FADE_PANEL_BEFORE_NEXT_MAP", 166},
-        {"IW_WND_HELP_SIMPLE_MSG", 168},
-        {"IW_WND_HELP_MAIN_GAME_INTERFACE", 169},
-        {"IW_WND_MSG_BOX", 170},
-        {"IW_WND_BOSS_INDICATOR", 171},
-        {"IW_WND_REQUEST_DIFFICULTY_LEVEL", 172},
+        {"IW_DLG_BINDKEYS", IW_DLG_BINDKEYS},
+        {"IW_WND_PLAYER_INVENTORY", IW_WND_PLAYER_INVENTORY},
+        {"IW_WND_WORKSHOP_INVENTORY", IW_WND_WORKSHOP_INVENTORY},
+        {"IW_DLG_DEVIDE", IW_DLG_DEVIDE},
+        {"IW_DLG_BAR", IW_DLG_BAR},
+        {"IW_DLG_ADDITIONAL_BUILDING", IW_DLG_ADDITIONAL_BUILDING},
+        {"IW_DLG_TOWN", IW_DLG_TOWN},
+        {"IW_DLG_PALMBOARD", IW_DLG_PALMBOARD},
+        {"IW_WND_WORKSHOP", IW_WND_WORKSHOP},
+        {"IW_DLG_ADMINISTRATION", IW_DLG_ADMINISTRATION},
+        {"IW_WND_SHOP", IW_WND_SHOP},
+        {"IW_WND_RADAR", IW_WND_RADAR},
+        {"IW_WND_CINEMA_PANEL", IW_WND_CINEMA_PANEL},
+        {"IW_WND_CINEMA_FADE_PANEL", IW_WND_CINEMA_FADE_PANEL},
+        {"IW_WND_DAMAGEINFO", IW_WND_DAMAGEINFO},
+        {"IW_WND_DAMAGEINFO_IN_CHARACTERISTIC_WND_LEFT", IW_WND_DAMAGEINFO_IN_CHARACTERISTIC_WND_LEFT},
+        {"IW_WND_DAMAGEINFO_IN_CHARACTERISTIC_WND_RIGHT", IW_WND_DAMAGEINFO_IN_CHARACTERISTIC_WND_RIGHT},
+        {"IW_WND_WEAPON_INFO_LIST", IW_WND_WEAPON_INFO_LIST},
+        {"IW_WND_WEAPON_INFO_LIST_IN_FIGNYA_WND", IW_WND_WEAPON_INFO_LIST_IN_FIGNYA_WND},
+        {"IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_LEFT", IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_LEFT},
+        {"IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_RIGHT", IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_RIGHT},
+        {"IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_WORKSHOP", IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_WORKSHOP},
+        {"IW_WND_GROUND", IW_WND_GROUND},
+        {"IW_DLG_MOTHER_PANEL", IW_DLG_MOTHER_PANEL},
+        {"IW_WND_CHARACTERISTICS_LEFT", IW_WND_CHARACTERISTICS_LEFT},
+        {"IW_WND_CHARACTERISTICS_RIGHT", IW_WND_CHARACTERISTICS_RIGHT},
+        {"IW_WND_PLAYER_MONEY", IW_WND_PLAYER_MONEY},
+        {"IW_WND_PLAYER_MONEY_IN_NPC_DIALOG", IW_WND_PLAYER_MONEY_IN_NPC_DIALOG},
+        {"IW_WND_MAINMENU", IW_WND_MAINMENU},
+        {"IW_WND_BUY_VEHICLE", IW_WND_BUY_VEHICLE},
+        {"IW_WND_VIDEO", IW_WND_VIDEO},
+        {"IW_WND_QUESTLOG", IW_WND_QUESTLOG},
+        {"IW_WND_LOCAL_MAP", IW_WND_LOCAL_MAP},
+        {"IW_WND_GLOBAL_MAP", IW_WND_GLOBAL_MAP},
+        {"IW_DLG_TALK_WITH_NPC", IW_DLG_TALK_WITH_NPC},
+        {"IW_DLG_WEAPON_GROUP_CHOICE", IW_DLG_WEAPON_GROUP_CHOICE},
+        {"IW_WND_PLAYER_CABIN", IW_WND_PLAYER_CABIN},
+        {"IW_WND_PLAYER_BASKET", IW_WND_PLAYER_BASKET},
+        {"IW_WND_WORKSHOP_CABIN", IW_WND_WORKSHOP_CABIN},
+        {"IW_WND_WORKSHOP_BASKET", IW_WND_WORKSHOP_BASKET},
+        {"IW_WND_ZNAYU_KAK_PRODAT", IW_WND_ZNAYU_KAK_PRODAT},
+        {"IW_WND_JOURNAL", IW_WND_JOURNAL},
+        {"IW_WND_HISTORY", IW_WND_HISTORY},
+        {"IW_WND_BOOKS", IW_WND_BOOKS},
+        {"IW_WND_ENCYCLOPAEDIA", IW_WND_ENCYCLOPAEDIA},
+        {"IW_WND_PLAYER", IW_WND_PLAYER},
+        {"IW_WND_STATS", IW_WND_STATS},
+        {"IW_WND_REPUTATION", IW_WND_REPUTATION},
+        {"IW_WND_PERKS", IW_WND_PERKS},
+        {"IW_WND_SPLASH", IW_WND_SPLASH},
+        {"IW_WND_NEW_PROFILE", IW_WND_NEW_PROFILE},
+        {"IW_WND_NEW_PROFILE_ALONE", IW_WND_NEW_PROFILE_ALONE},
+        {"IW_WND_CHANGE_PROFILE", IW_WND_CHANGE_PROFILE},
+        {"IW_WND_LOAD", IW_WND_LOAD},
+        {"IW_WND_SAVE", IW_WND_SAVE},
+        {"IW_WND_FIGNYA_V_CENTRE", IW_WND_FIGNYA_V_CENTRE},
+        {"IW_WND_FIGNYA_V_CENTRE_INACTIVE", IW_WND_FIGNYA_V_CENTRE_INACTIVE},
+        {"IW_WND_TARGET_INFO_IN_MAIN_INTERFACE", IW_WND_TARGET_INFO_IN_MAIN_INTERFACE},
+        {"IW_WND_TARGET_INFO_IN_FIGNYA_WND", IW_WND_TARGET_INFO_IN_FIGNYA_WND},
+        {"IW_WND_CURSOR_MAIN", IW_WND_CURSOR_MAIN},
+        {"IW_WND_CURSOR_TARGET_CAPTURING", IW_WND_CURSOR_TARGET_CAPTURING},
+        {"IW_WND_CURSOR_TARGET_CAPTURED", IW_WND_CURSOR_TARGET_CAPTURED},
+        {"IW_WND_CURSOR_TARGET_INFO", IW_WND_CURSOR_TARGET_INFO},
+        {"IW_WND_VEHICLE_INFO_PANEL", IW_WND_VEHICLE_INFO_PANEL},
+        {"IW_WND_SPEEDOMETER", IW_WND_SPEEDOMETER},
+        {"IW_WND_FADING_MSG_LIST", IW_WND_FADING_MSG_LIST},
+        {"IW_WND_IMPORTANT_FADING_MSG_LIST", IW_WND_IMPORTANT_FADING_MSG_LIST},
+        {"IW_WND_GARAGE", IW_WND_GARAGE},
+        {"IW_WND_REFUEL_LIST", IW_WND_REFUEL_LIST},
+        {"IW_WND_REPAIR_LIST", IW_WND_REPAIR_LIST},
+        {"IW_WND_RECHARGE_LIST", IW_WND_RECHARGE_LIST},
+        {"IW_WND_CABIN_BUTTON_PATTERN", IW_WND_CABIN_BUTTON_PATTERN},
+        {"IW_WND_BASKET_BUTTON_PATTERN", IW_WND_BASKET_BUTTON_PATTERN},
+        {"IW_WND_CABIN_LIST", IW_WND_CABIN_LIST},
+        {"IW_WND_BASKET_LIST", IW_WND_BASKET_LIST},
+        {"IW_WND_SKINS", IW_WND_SKINS},
+        {"IW_WND_IGROKA_MOCHAT", IW_WND_IGROKA_MOCHAT},
+        {"IW_WND_QUEST_ITEMS", IW_WND_QUEST_ITEMS},
+        {"IW_WND_COUNTER", IW_WND_COUNTER},
+        {"IW_WND_OPTIONS", IW_WND_OPTIONS},
+        {"IW_WND_OPTIONS_VIDEO", IW_WND_OPTIONS_VIDEO},
+        {"IW_WND_OPTIONS_SOUND", IW_WND_OPTIONS_SOUND},
+        {"IW_WND_OPTIONS_CONTROL", IW_WND_OPTIONS_CONTROL},
+        {"IW_WND_OPTIONS_GAME", IW_WND_OPTIONS_GAME},
+        {"IW_WND_MAIN_GAME_INTERFACE", IW_WND_MAIN_GAME_INTERFACE},
+        {"IW_WND_PLAYER_VEHICLE_CHARACTERISTICS_LEFT", IW_WND_PLAYER_VEHICLE_CHARACTERISTICS_LEFT},
+        {"IW_WND_PLAYER_VEHICLE_CHARACTERISTICS_RIGHT", IW_WND_PLAYER_VEHICLE_CHARACTERISTICS_RIGHT},
+        {"IW_WND_WORKSHOP_VEHICLE_CHARACTERISTICS", IW_WND_WORKSHOP_VEHICLE_CHARACTERISTICS},
+        {"IW_WND_PLAYER_CABIN_CHARACTERISTICS_LEFT", IW_WND_PLAYER_CABIN_CHARACTERISTICS_LEFT},
+        {"IW_WND_PLAYER_CABIN_CHARACTERISTICS_RIGHT", IW_WND_PLAYER_CABIN_CHARACTERISTICS_RIGHT},
+        {"IW_WND_WORKSHOP_CABIN_CHARACTERISTICS", IW_WND_WORKSHOP_CABIN_CHARACTERISTICS},
+        {"IW_WND_PLAYER_BASKET_CHARACTERISTICS_LEFT", IW_WND_PLAYER_BASKET_CHARACTERISTICS_LEFT},
+        {"IW_WND_PLAYER_BASKET_CHARACTERISTICS_RIGHT", IW_WND_PLAYER_BASKET_CHARACTERISTICS_RIGHT},
+        {"IW_WND_WORKSHOP_BASKET_CHARACTERISTICS", IW_WND_WORKSHOP_BASKET_CHARACTERISTICS},
+        {"IW_WND_DEMO_SPLASH", IW_WND_DEMO_SPLASH},
+        {"IW_WND_CREDITS", IW_WND_CREDITS},
+        {"IW_WND_FADE_PANEL_BEFORE_NEXT_MAP", IW_WND_FADE_PANEL_BEFORE_NEXT_MAP},
+        {"IW_WND_HELP_SIMPLE_MSG", IW_WND_HELP_SIMPLE_MSG},
+        {"IW_WND_HELP_MAIN_GAME_INTERFACE", IW_WND_HELP_MAIN_GAME_INTERFACE},
+        {"IW_WND_MSG_BOX", IW_WND_MSG_BOX},
+        {"IW_WND_BOSS_INDICATOR", IW_WND_BOSS_INDICATOR},
+        {"IW_WND_REQUEST_DIFFICULTY_LEVEL", IW_WND_REQUEST_DIFFICULTY_LEVEL},
     };
-}
+}  // namespace
 
 CStr TruxxUiManager::GetPathToDialogsFileGlobal() const
 {
@@ -300,14 +303,13 @@ int TruxxUiManager::AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool isPer
 
 CStr TruxxUiManager::GetPathToQuestInfoFileGlobal() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_cvPathToQuestInfo.GetS();
 }
 
 int TruxxUiManager::HandleImpulse(m3d::AuxImpulseInfo const& impInfo, m3d::ui::Wnd* causeWnd)
 {
     // TODO: check this and refactor
-    if ((this->IsWindowVisible(166) || this->IsWindowVisible(19))
-        && !this->GUI_IsModalEqualWndRunning())
+    if ((this->IsWindowVisible(166) || this->IsWindowVisible(19)) && !this->GUI_IsModalEqualWndRunning())
     {
         return 0;
     }
@@ -322,8 +324,7 @@ int TruxxUiManager::HandleImpulse(m3d::AuxImpulseInfo const& impInfo, m3d::ui::W
             if (TopModal)
                 v5 = TopModal;
         }
-        else if (this->GUI_IsWndModalEqual(causeWnd)
-                 || causeWnd->IsKindOf(&m3d::ui::EditWnd::m_classEditWnd))
+        else if (this->GUI_IsWndModalEqual(causeWnd) || causeWnd->IsKindOf(&m3d::ui::EditWnd::m_classEditWnd))
         {
             v5 = causeWnd;
         }
@@ -521,11 +522,10 @@ void TruxxUiManager::AddFadingMsg(CStr const&, std::vector<m3d::AIParam, std::al
 
 bool TruxxUiManager::IsGameModeValidForSmartCursor(GameState mode) const
 {
-    static const std::set<GameState> modes { GS_GAME, GS_CINEMATIC };
-    return modes.find(mode) != modes.end();
+    return mode == GS_GAME || mode == GS_CINEMATIC;
 }
 
-int TruxxUiManager::Str2WndGuiId(CStr const& strId) const
+int TruxxUiManager::Str2WndGuiId(const CStr& strId) const
 {
     for (auto const& str2GuiId : l_str2GuiId)
     {
@@ -594,7 +594,8 @@ m3d::ui::MbRetCodes TruxxUiManager::RunMsgBoxDlg(CStr const& caption, CStr const
     int guiId = -1;
     AddWindow(&*box, guiId, false, false);
 
-    int retVal = m3d::ui::MBX_RET_CANCEL;;
+    int retVal = m3d::ui::MBX_RET_CANCEL;
+    ;
     ShowWindow(guiId, true, true, true, bPause, &retVal);
     RemoveWindow(guiId);
     GUI_EndModalDlg();
@@ -637,8 +638,8 @@ CStr TruxxUiManager::GetPathToSplashes() const
 
 int TruxxUiManager::Update()
 {
-    auto v2 = this->LaunchEvent(89, GUI_EVENT_CUSTOM, 0) & 1;
-    return v2 & this->LaunchEvent(90, GUI_EVENT_CUSTOM, 0);
+    const auto res = LaunchEvent(IE_CUST_NEW_FRAME, GUI_EVENT_CUSTOM, nullptr) & 1;
+    return res & LaunchEvent(IE_CUST_NEW_FRAME_FORCE, GUI_EVENT_CUSTOM, nullptr);
 }
 
 int TruxxUiManager::LaunchEvent(int eventId, GuiEventType type, void* data)
@@ -664,14 +665,14 @@ int TruxxUiManager::Save(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
 void TruxxUiManager::StartSplashing(int numSplashes) const
 {
     auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-	auto wnd = app->m_pInterfaceManager->GetWindow(108);
+    auto wnd = app->m_pInterfaceManager->GetWindow(108);
     if (wnd)
     {
-	    if (wnd->IsKindOf(RT_CLASS_LOCAL(SplashWnd)))
-	    {
+        if (wnd->IsKindOf(RT_CLASS_LOCAL(SplashWnd)))
+        {
             auto splashWnd = dynamic_cast<SplashWnd*>(&*wnd);
             splashWnd->StartSplashing(11);
-	    }
+        }
     }
 }
 
@@ -807,358 +808,339 @@ void TruxxUiManager::GUI_EndModalDlg()
     }
 }
 
-namespace
-{
-    //TODO: get rid of this
-    retruxx::vector<int> convert(std::initializer_list<int> list)
-    {
-        retruxx::vector<int> result;
-        result.reserve(list.size());
-        for (const auto elem : list)
-        {
-            result.push_back(elem);
-        }
-        return result;
-    }
-}
-
 int TruxxUiManager::GUI_BindWindowsToEvents()
 {
-    int res = 0;
-    retruxx::vector<int> events;
+    int res = 1;
 
-    events = convert({ 17 });
-    res = GUI_SetEventsForWindow(0, events) & 1;
+    res &= GUI_SetEventsForWindow(IW_DLG_BINDKEYS, {IE_EV_EV_KEYBINDINGS_CHANGED});
 
-    events = convert({ 64 });
-    res = GUI_SetEventsForWindow(64, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_INVENTORY, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
 
-    events = convert({ 65, 32, 31, 34 });
-    res = GUI_SetEventsForWindow(90, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_CABIN, {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_UM_GLOBAL_MAP, IE_EV_UM_GADGET_DEACTIVATE, IE_EV_UM_FINISH_TRADE});
 
-    events = convert({ 65, 32, 31, 34 });
-    res = GUI_SetEventsForWindow(90, events) & res;
+    res &=
+        GUI_SetEventsForWindow(IW_WND_WORKSHOP_CABIN, {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_UM_GLOBAL_MAP, IE_EV_UM_GADGET_DEACTIVATE, IE_EV_UM_FINISH_TRADE});
 
-    events = convert({ 65, 32, 31, 34 });
-    res = GUI_SetEventsForWindow(91, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_BASKET, {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_UM_GLOBAL_MAP, IE_CUST_SALETAB_CHANGED, IE_EV_UM_FINISH_TRADE});
 
-    events = convert({ 65, 32, 102, 34 });
-    res = GUI_SetEventsForWindow(92, events) & res;
+    res &=
+        GUI_SetEventsForWindow(IW_WND_WORKSHOP_BASKET, {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_UM_GLOBAL_MAP, IE_EV_UM_GADGET_DEACTIVATE, IE_EV_UM_FINISH_TRADE});
 
-    events = convert({ 65, 32, 31, 34 });
-    res = GUI_SetEventsForWindow(93, events) & res;
+    res &=
+        GUI_SetEventsForWindow(IW_WND_WORKSHOP_BASKET, {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_UM_GLOBAL_MAP, IE_EV_UM_GADGET_DEACTIVATE, IE_EV_UM_FINISH_TRADE});
 
-    events = convert({ 65, 32, 31, 34 });
-    res = GUI_SetEventsForWindow(93, events) & res;
+    res &= GUI_SetEventsForWindow(
+        IW_WND_PLAYERVEHICLE_INVENTORY,
+        {IE_CUST_DD_DRAGITEM_MOVE,
+         IE_EV_SM_REPOSITORY_CHANGED,
+         IE_CUST_DD_DROP,
+         IE_CUST_DD_ITEM_QUICK_DROP,
+         IE_CUST_DD_DRAGITEM_ACCEPTED,
+         IE_EV_SM_VEHICLEPART_CHANGED,
+         IE_EV_SM_PLAYER_MONEY_CHANGED,
+         IE_CUST_NEW_FRAME});
 
-    events = convert({ 91, 58, 97, 98, 99, 65, 75, 89 });
-    res = GUI_SetEventsForWindow(8, events) & res;
+    res &= GUI_SetEventsForWindow(
+        IW_WND_WORKSHOPVEHICLE_INVENTORY,
+        {IE_CUST_DD_DRAGITEM_MOVE,
+         IE_EV_SM_REPOSITORY_CHANGED,
+         IE_CUST_DD_DROP,
+         IE_CUST_DD_ITEM_QUICK_DROP,
+         IE_CUST_DD_DRAGITEM_ACCEPTED,
+         IE_EV_SM_VEHICLEPART_CHANGED,
+         IE_EV_SM_PLAYER_MONEY_CHANGED,
+         IE_CUST_NEW_FRAME});
 
-    events = convert({ 91, 58, 97, 98, 99, 65, 75, 89 });
-    res = GUI_SetEventsForWindow(9, events) & res;
+    res &= GUI_SetEventsForWindow(
+        IW_WND_GROUND_INVENTORY,
+        {IE_CUST_DD_DRAGITEM_MOVE,
+         IE_EV_SM_REPOSITORY_CHANGED,
+         IE_CUST_DD_DROP,
+         IE_CUST_DD_ITEM_QUICK_DROP,
+         IE_CUST_DD_DRAGITEM_ACCEPTED,
+         IE_EV_SM_VEHICLEPART_CHANGED,
+         IE_EV_SM_PLAYER_MONEY_CHANGED,
+         IE_CUST_NEW_FRAME});
 
-    events = convert({ 91, 58, 97, 98, 99, 65, 75, 89 });
-    res = GUI_SetEventsForWindow(10, events) & res;
+    res &= GUI_SetEventsForWindow(
+        IW_WND_SALE_CABINS_AND_BASKETS,
+        {IE_CUST_DD_DRAGITEM_MOVE,
+         IE_EV_SM_REPOSITORY_CHANGED,
+         IE_CUST_DD_DROP,
+         IE_CUST_DD_ITEM_QUICK_DROP,
+         IE_CUST_DD_DRAGITEM_ACCEPTED,
+         IE_EV_SM_VEHICLEPART_CHANGED,
+         IE_EV_SM_PLAYER_MONEY_CHANGED,
+         IE_CUST_NEW_FRAME});
 
-    events = convert({ 91, 58, 97, 98, 99, 65, 75, 89 });
-    res = GUI_SetEventsForWindow(32, events) & res;
+    res &= GUI_SetEventsForWindow(
+        IW_WND_VEHICLEPART_CABIN,
+        {IE_CUST_DD_DRAGITEM_MOVE,
+         IE_CUST_DD_START_DRAG,
+         IE_CUST_DD_END_DRAG,
+         IE_CUST_DD_MOUSE_IN,
+         IE_CUST_DD_MOUSE_OUT,
+         IE_CUST_DD_DRAGITEM_ACCEPTED,
+         IE_CUST_DD_ITEM_QUICK_DROP,
+         IE_CUST_DD_DROP,
+         IE_EV_SM_VEHICLEPART_CHANGED});
 
-    events = convert({ 91, 92, 93, 94, 95, 96, 97, 98, 65 });
-    res = GUI_SetEventsForWindow(11, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_SHOP, {IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_DD_DRAGITEM_ACCEPTED, IE_CUST_DD_DROP});
 
-    events = convert({ 64, 99, 100 });
-    res = GUI_SetEventsForWindow(66, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_RADAR, {IE_CUST_NEW_FRAME, IE_CUST_START_LEVEL, IE_EV_UM_NAVPOINT_ADDED, IE_EV_UM_NAVPOINT_DELETED});
 
-    events = convert({ 89, 85, 28, 29 });
-    res = GUI_SetEventsForWindow(17, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_HEALTH, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(20, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_HEALTH_IN_FIGNYA_WND, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(23, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_HEALTH_IN_CHARACTERISTIC_WND_LEFT, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(135, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_HEALTH_IN_CHARACTERISTIC_WND_RIGHT, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(136, events) & res;
-
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(137, events) & res;
-
-    //TODO: check this
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(21, events) & res;
-
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(22, events) & res;
-
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(24, events) & res;
-
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(25, events) & res;
-
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(138, events) & res;
-
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(139, events) & res;
-
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(140, events) & res;
-
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(141, events) & res;
-
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(142, events) & res;
-
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(143, events) & res;
-
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(29, events) & res;
-
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(30, events) & res;
-
-    events = convert({ 64 });
-    res = GUI_SetEventsForWindow(26, events) & res;
-
-    events = convert({ 64 });
-    res = GUI_SetEventsForWindow(27, events) & res;
-
-    events = convert({ 64 });
-    res = GUI_SetEventsForWindow(28, events) & res;
-
-    events = convert({ 89, 58 });
-    res = GUI_SetEventsForWindow(36, events) & res;
-
-    events = convert({ 89, 99, 98, 91, 95, 94, 40, 42 });
-    res = GUI_SetEventsForWindow(35, events) & res;
-
-    events = convert({ 101, 27, 26 });
-    res = GUI_SetEventsForWindow(37, events) & res;
-
-    events = convert({ 64, 65, 30, 17 });
-    res = GUI_SetEventsForWindow(38, events) & res;
-
-    events = convert({ 65 });
-    res = GUI_SetEventsForWindow(39, events) & res;
-
-    events = convert({ 65 });
-    res = GUI_SetEventsForWindow(40, events) & res;
-
-    events = convert({ 65 });
-    res = GUI_SetEventsForWindow(41, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_HEALTH_IN_WORKSHOP_VEHICLE_WND, {IE_CUST_NEW_FRAME});
 
     //TODO: check this
-    for (int i = 43; i <= 62; ++i)
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_CABIN_DURABILITY, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_BASKET_DURABILITY, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_CABIN_DURABILITY_IN_FIGNYA_WND, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_BASKET_DURABILITY_IN_FIGNYA_WND, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_CABIN_DURABILITY_IN_CHARACTERISTIC_WND_LEFT, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_CABIN_DURABILITY_IN_CHARACTERISTIC_WND_RIGHT, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_CABIN_DURABILITY_IN_WORKSHOP_VEHICLE_WND, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_BASKET_DURABILITY_IN_CHARACTERISTIC_WND_LEFT, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_BASKET_DURABILITY_IN_CHARACTERISTIC_WND_RIGHT, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_BASKET_DURABILITY_IN_WORKSHOP_VEHICLE_WND, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_FUEL, {IE_CUST_NEW_FRAME});
+
+    res &= GUI_SetEventsForWindow(IW_WND_SPEEDOMETER, {IE_CUST_NEW_FRAME});
+
+    res &= GUI_SetEventsForWindow(IW_WND_DAMAGEINFO, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_DAMAGEINFO_IN_CHARACTERISTIC_WND_LEFT, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_DAMAGEINFO_IN_CHARACTERISTIC_WND_RIGHT, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_ITEM_INFO, {IE_CUST_NEW_FRAME, IE_EV_SM_REPOSITORY_CHANGED});
+
+    res &= GUI_SetEventsForWindow(
+        IW_WND_SALE_GOODS,
+        {IE_CUST_NEW_FRAME,
+         IE_CUST_DD_DRAGITEM_ACCEPTED,
+         IE_CUST_DD_ITEM_QUICK_DROP,
+         IE_CUST_DD_DRAGITEM_MOVE,
+         IE_CUST_DD_MOUSE_OUT,
+         IE_CUST_DD_MOUSE_IN,
+         IE_EV_UM_CUR_PROFILE_CHANGED,
+         IE_EV_UM_CUR_PROFILE_PARAM_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_CONVERSATION, {IE_CUST_REPLIES_REINIT, IE_EV_UM_END_CONVERSATION, IE_EV_UM_START_CONVERSATION});
+
+    res &= GUI_SetEventsForWindow(
+        IW_WND_WEAPON_INFO_LIST, {IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_UM_WEAPONGROUP_CHANGED, IE_EV_EV_KEYBINDINGS_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_LEFT, {IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_RIGHT, {IE_EV_SM_VEHICLEPART_CHANGED});
+
+    res &= GUI_SetEventsForWindow(IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_WORKSHOP, {IE_EV_SM_VEHICLEPART_CHANGED});
+
+    //TODO: check this
+    for (int i = IW_WND_PLAYER_GADGET_MIN; i <= IW_WND_PLAYER_GADGET_MAX; ++i)
     {
-        events = convert({ 91, 92, 93, 94, 95, 96, 97, 98, 69 });
-        res = GUI_SetEventsForWindow(i, events) & res;
+        res &= GUI_SetEventsForWindow(
+            i,
+            {IE_CUST_DD_DRAGITEM_MOVE,
+             IE_CUST_DD_START_DRAG,
+             IE_CUST_DD_END_DRAG,
+             IE_CUST_DD_MOUSE_IN,
+             IE_CUST_DD_MOUSE_OUT,
+             IE_CUST_DD_DRAGITEM_ACCEPTED,
+             IE_CUST_DD_ITEM_QUICK_DROP,
+             IE_CUST_DD_DROP,
+             IE_EV_SM_GADGET_CHANGED});
     }
 
-    events = convert({ 64, 58, 85 });
-    res = GUI_SetEventsForWindow(63, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_GROUND, {IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_EV_SM_REPOSITORY_CHANGED, IE_CUST_START_LEVEL});
 
-    events = convert({ 2, 7, 4, 6, 5, 3, 12, 13, 21, 24, 20, 18, 33, 34, 35, 36, 38, 39, 14 });
-    res = GUI_SetEventsForWindow(7, events) & res;
+    res &= GUI_SetEventsForWindow(
+        IW_DLG_MOTHER_PANEL,
+        {IE_IMP_IM_UI_INVENTORY,
+         IE_IMP_IM_UI_VEHICLE_INFO,
+         IE_IMP_IM_UI_QUESTLOG,
+         IE_IMP_IM_UI_MAP,
+         IE_IMP_IM_UI_JOURNAL,
+         IE_IMP_IM_UI_MENUBOOK,
+         IE_IMP_IM_UI_QUESTLOG,
+         IE_IMP_IM_UI_JOURNAL,
+         IE_EV_UM_WORKSHOP,
+         IE_EV_UM_SHOP,
+         IE_EV_UM_BAR,
+         IE_EV_UM_END_CONVERSATION,
+         IE_EV_UM_START_TRADE,
+         IE_EV_UM_FINISH_TRADE,
+         IE_EV_UM_SHOW_PANEL,
+         IE_EV_UM_HIDE_PANEL,
+         IE_EV_UM_LOCAL_MAP,
+         IE_EV_UM_GLOBAL_MAP,
+         IE_IMP_IM_UI_PICKUP_ALL});
 
-    events = convert({ 64, 107, 65, 55 });
-    res = GUI_SetEventsForWindow(68, events) & res;
+    res &= GUI_SetEventsForWindow(
+        IW_WND_CHARACTERISTICS_LEFT,
+        {IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_SHOW_VEHICLEPART, IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_UM_CHARACTERISTIC_TAB_SEL_CHANGED});
 
-    events = convert({ 64, 107, 65, 55 });
-    res = GUI_SetEventsForWindow(69, events) & res;
+    res &= GUI_SetEventsForWindow(
+        IW_WND_CHARACTERISTICS_RIGHT,
+        {IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_SHOW_VEHICLEPART, IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_UM_CHARACTERISTIC_TAB_SEL_CHANGED});
 
-    events = convert({ 75, 85 });
-    res = GUI_SetEventsForWindow(70, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_MONEY, {IE_EV_SM_PLAYER_MONEY_CHANGED, IE_CUST_START_LEVEL});
 
-    events = convert({ 75, 85 });
-    res = GUI_SetEventsForWindow(71, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_MONEY_IN_NPC_DIALOG, {IE_EV_SM_PLAYER_MONEY_CHANGED, IE_CUST_START_LEVEL});
 
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(74, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_VEHICLE_MODEL_LEFT, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    events = convert({ 75, 85 });
-    res = GUI_SetEventsForWindow(75, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_VEHICLE_MODEL_RIGHT, {IE_EV_SM_PLAYER_MONEY_CHANGED, IE_CUST_START_LEVEL});
 
-    events = convert({ 75, 85 });
-    res = GUI_SetEventsForWindow(76, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_WORKSHOP_VEHICLE_MODEL, {IE_EV_SM_PLAYER_MONEY_CHANGED, IE_CUST_START_LEVEL});
 
-    events = convert({ 67, 60, 59, 28, 29 });
-    res = GUI_SetEventsForWindow(78, events) & res;
+    res &= GUI_SetEventsForWindow(
+        IW_WND_QUEST_LIST,
+        {IE_EV_SM_DYNAMIC_QUESTSTATE_CHANGED, IE_EV_SM_QUESTSTATE_CHANGED, IE_EV_SM_QUEST_WAS_TAKEN, IE_EV_UM_NAVPOINT_ADDED, IE_EV_UM_NAVPOINT_DELETED});
 
-    events = convert({ 85 });
-    res = GUI_SetEventsForWindow(80, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_MAP_LIST_IN_QUESTS, {IE_CUST_START_LEVEL});
 
-    events = convert({ 85 });
-    res = GUI_SetEventsForWindow(81, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_MAP_LIST_IN_MAP, {IE_CUST_START_LEVEL});
 
-    events = convert({ 25, 70 });
-    res = GUI_SetEventsForWindow(88, events) & res;
+    res &= GUI_SetEventsForWindow(IW_DLG_WEAPON_GROUP_CHOICE, {IE_EV_UM_BAR_NPC, IE_EV_SM_LOCATION_NPC});
 
-    events = convert({ 23, 89 });
-    res = GUI_SetEventsForWindow(87, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_NPC_IMAGE_IN_CONVERSATION, {IE_EV_UM_NPC_REPLY_SHOWN, IE_CUST_NEW_FRAME});
 
-    events = convert({ 28, 29, 40 });
-    res = GUI_SetEventsForWindow(83, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_LOCAL_CHART, {IE_EV_UM_NAVPOINT_ADDED, IE_EV_UM_NAVPOINT_DELETED, IE_EV_UM_CUR_PROFILE_CHANGED});
 
-    events = convert({ 17 });
-    res = GUI_SetEventsForWindow(89, events) & res;
+    res &= GUI_SetEventsForWindow(IW_DLG_WEAPON_GROUP_CHOICE, {IE_EV_EV_KEYBINDINGS_CHANGED});
 
-    events = convert({ 65, 69, 58 });
-    res = GUI_SetEventsForWindow(94, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_ZNAYU_KAK_PRODAT, {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_SM_GADGET_CHANGED, IE_EV_SM_REPOSITORY_CHANGED});
 
-    events = convert({ 58, 34, 65, 55 });
-    res = GUI_SetEventsForWindow(73, events) & res;
+    res &= GUI_SetEventsForWindow(
+        IW_WND_BUY_VEHICLE, {IE_EV_SM_REPOSITORY_CHANGED, IE_EV_UM_FINISH_TRADE, IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_UM_CHARACTERISTIC_TAB_SEL_CHANGED});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(98, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_2D_MODEL, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(99, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_3D_SIMPLE_MODEL, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(101, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_ENCYCLOPAEDIA_2D_MODEL, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(102, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_ENCYCLOPAEDIA_3D_SIMPLE_MODEL, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(100, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_3D_COMPLEX_MODEL, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    events = convert({ 89, 65 });
-    res = GUI_SetEventsForWindow(103, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_ENCYCLOPAEDIA_3D_COMPLEX_MODEL, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(77, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_VIDEO, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 57, 104, 105 });
-    res = GUI_SetEventsForWindow(4, events) & res;
+    res &= GUI_SetEventsForWindow(IW_DLG_TOWN, {IE_EV_SM_TOWN, IE_CUST_ENTER_BAR, IE_CUST_LEAVE_BAR});
 
-    events = convert({ 85, 64, 69, 72, 73, 76, 77, 90, 51 });
-    res = GUI_SetEventsForWindow(97, events) & res;
+    res &= GUI_SetEventsForWindow(
+        IW_WND_ENCYCLOPAEDIA,
+        {IE_CUST_START_LEVEL,
+         IE_EV_SM_PLAYER_VEHICLE_CHANGED,
+         IE_EV_SM_GADGET_CHANGED,
+         IE_EV_SM_OBJ_MET,
+         IE_EV_SM_PROTOTYPE_MET,
+         IE_EV_SM_PLAYER_VEHICLE_DAMAGED,
+         IE_EV_SM_QUEST_ITEMS_CHANGED,
+         IE_CUST_NEW_FRAME_FORCE,
+         IE_EV_UM_BELONG_MET});
 
-    events = convert({ 85, 71 });
-    res = GUI_SetEventsForWindow(84, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_GLOBAL_MAP, {IE_CUST_START_LEVEL, IE_EV_SM_LOCATION_STATE_CHANGED});
 
-    events = convert({ 89, 85 });
-    res = GUI_SetEventsForWindow(105, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_STATS, {IE_CUST_NEW_FRAME, IE_CUST_START_LEVEL});
 
-    events = convert({ 52 });
-    res = GUI_SetEventsForWindow(106, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_REPUTATION, {IE_EV_UM_KNOWN_CLANS_CHANGED});
 
-    events = convert({ 41, 40 });
-    res = GUI_SetEventsForWindow(111, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_CHANGE_PROFILE, {IE_EV_UM_PROFILES_LIST_CHANGED, IE_EV_UM_CUR_PROFILE_CHANGED});
 
-    events = convert({ 40 });
-    res = GUI_SetEventsForWindow(72, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_MAINMENU, {IE_EV_UM_CUR_PROFILE_CHANGED});
 
-    events = convert({ 44, 42, 40, 46 });
-    res = GUI_SetEventsForWindow(112, events) & res;
+    res &=
+        GUI_SetEventsForWindow(IW_WND_LOAD, {IE_EV_UM_LOADGAME, IE_EV_UM_CUR_PROFILE_PARAM_CHANGED, IE_EV_UM_CUR_PROFILE_CHANGED, IE_EV_UM_SCREENSHOT_RELEASE});
 
-    events = convert({ 43, 42, 40, 46 });
-    res = GUI_SetEventsForWindow(113, events) & res;
+    res &=
+        GUI_SetEventsForWindow(IW_WND_SAVE, {IE_EV_UM_SAVEGAME, IE_EV_UM_CUR_PROFILE_PARAM_CHANGED, IE_EV_UM_CUR_PROFILE_CHANGED, IE_EV_UM_SCREENSHOT_RELEASE});
 
-    events = convert({ 90 });
-    res = GUI_SetEventsForWindow(117, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_TARGET_INFO_IN_FIGNYA_WND, {IE_CUST_NEW_FRAME_FORCE});
 
-    events = convert({ 90 });
-    res = GUI_SetEventsForWindow(116, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_TARGET_INFO_IN_MAIN_INTERFACE, {IE_CUST_NEW_FRAME_FORCE});
 
     //TODO: check this! 118
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(118, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_CURSOR_MAIN, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 47, 48 });
-    res = GUI_SetEventsForWindow(118, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_CURSOR_MAIN, {IE_EV_UM_SHOW_CURSOR, IE_EV_UM_GAME_MODE_CHANGED});
 
-    events = convert({ 64 });
-    res = GUI_SetEventsForWindow(124, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_VEHICLE_INFO_PANEL, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
 
-    events = convert({ 89, 79 });
-    res = GUI_SetEventsForWindow(125, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_FADING_MSG_LIST, {IE_CUST_NEW_FRAME, IE_EV_SM_FADING_MESSAGE});
 
-    events = convert({ 89, 80 });
-    res = GUI_SetEventsForWindow(126, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_IMPORTANT_FADING_MSG_LIST, {IE_CUST_NEW_FRAME, IE_EV_SM_IMPORTANT_FADING_MESSAGE});
 
-    events = convert({ 42, 40 });
-    res = GUI_SetEventsForWindow(15, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_QUESTLOG, {IE_EV_UM_CUR_PROFILE_PARAM_CHANGED, IE_EV_UM_CUR_PROFILE_CHANGED});
 
-    events = convert({ 28, 29 });
-    res = GUI_SetEventsForWindow(82, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_LOCAL_MAP, {IE_EV_UM_NAVPOINT_ADDED, IE_EV_UM_NAVPOINT_DELETED});
 
-    events = convert({ 64, 89, 58, 34 });
-    res = GUI_SetEventsForWindow(67, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_WORKSHOP, {IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_NEW_FRAME, IE_EV_SM_REPOSITORY_CHANGED, IE_EV_UM_FINISH_TRADE});
 
-    events = convert({ 65, 64, 89 });
-    res = GUI_SetEventsForWindow(128, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_REFUEL_LIST, {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_NEW_FRAME});
 
-    events = convert({ 65, 64, 89 });
-    res = GUI_SetEventsForWindow(129, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_REPAIR_LIST, {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_NEW_FRAME});
 
-    events = convert({ 65, 64, 89 });
-    res = GUI_SetEventsForWindow(130, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_RECHARGE_LIST, {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_NEW_FRAME});
 
-    events = convert({ 58 });
-    res = GUI_SetEventsForWindow(133, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_CABIN_LIST, {IE_EV_SM_REPOSITORY_CHANGED});
 
-    events = convert({ 58 });
-    res = GUI_SetEventsForWindow(134, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_BASKET_LIST, {IE_EV_SM_REPOSITORY_CHANGED});
 
-    events = convert({ 76, 89 });
-    res = GUI_SetEventsForWindow(145, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_IGROKA_MOCHAT, {IE_EV_SM_PLAYER_VEHICLE_DAMAGED, IE_CUST_NEW_FRAME});
 
-    events = convert({ 77 });
-    res = GUI_SetEventsForWindow(146, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_QUEST_ITEMS, {IE_EV_SM_QUEST_ITEMS_CHANGED});
 
-    events = convert({ 89, 67, 85 });
-    res = GUI_SetEventsForWindow(147, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_COUNTER, {IE_CUST_NEW_FRAME, IE_EV_SM_DYNAMIC_QUESTSTATE_CHANGED, IE_CUST_START_LEVEL});
 
-    events = convert({ 28, 29 });
-    res = GUI_SetEventsForWindow(153, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_QUEST_DIZ, {IE_EV_UM_NAVPOINT_ADDED, IE_EV_UM_NAVPOINT_DELETED});
 
-    events = convert({ 89, 82, 83, 78 });
-    res = GUI_SetEventsForWindow(155, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_MAIN_GAME_INTERFACE, {IE_CUST_NEW_FRAME, IE_EV_SM_NEARBY_CHESTS, IE_EV_SM_APPROACH_TOWN, IE_EV_SM_TOWN_RUINED});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(156, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_VEHICLE_CHARACTERISTICS_LEFT, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(157, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_VEHICLE_CHARACTERISTICS_RIGHT, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(158, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_WORKSHOP_VEHICLE_CHARACTERISTICS, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(159, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_CABIN_CHARACTERISTICS_LEFT, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(160, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_CABIN_CHARACTERISTICS_RIGHT, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(161, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_WORKSHOP_CABIN_CHARACTERISTICS, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(162, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_BASKET_CHARACTERISTICS_LEFT, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(163, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_BASKET_CHARACTERISTICS_RIGHT, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(164, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_WORKSHOP_BASKET_CHARACTERISTICS, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(165, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_CREDITS, {IE_CUST_NEW_FRAME});
 
-    events = convert({ 89, 81 });
-    res = GUI_SetEventsForWindow(166, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_FADE_PANEL_BEFORE_NEXT_MAP, {IE_CUST_NEW_FRAME, IE_EV_SM_PLAYER_PASS_TO_MAP_FADING});
 
-    events = convert({ 89 });
-    res = GUI_SetEventsForWindow(171, events) & res;
+    res &= GUI_SetEventsForWindow(IW_WND_BOSS_INDICATOR, {IE_CUST_NEW_FRAME});
 
     if (!res)
     {
@@ -1290,7 +1272,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         if (!entityByObjId)
             return 1;
 
-        auto* cls= entityByObjId->GetClass();
+        auto* cls = entityByObjId->GetClass();
         if (!m_objectCollection.IsClassCollected(cls))
             return 1;
         m_objectCollection.AddObject(entityByObjId);
@@ -1345,8 +1327,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         m_savesManager->GameDataUpdate(data, guiEventId);
         return 0;
     }
-    default:
-        RETRUXX_NOT_IMPLEMENTED;
+    default: RETRUXX_NOT_IMPLEMENTED;
     }
 }
 
@@ -1504,13 +1485,13 @@ void TruxxUiManager::GUI_RegisterClasses()
     m3d::g_Kernel->AddClass(&LocalChartWnd::m_classLocalChartWnd);
     m3d::g_Kernel->AddClass(&MapMarkWnd::m_classMapMarkWnd);
     m3d::g_Kernel->AddClass(&MapMarkIcoWnd::m_classMapMarkIcoWnd);
-    m3d::g_Kernel->AddClass(&MapMarkNameWnd::m_classMapMarkNameWnd); 
+    m3d::g_Kernel->AddClass(&MapMarkNameWnd::m_classMapMarkNameWnd);
     m3d::g_Kernel->AddClass(&PlayerMarkWnd::m_classPlayerMarkWnd);
     m3d::g_Kernel->AddClass(&MapInfoPanel::m_classMapInfoPanel);
     m3d::g_Kernel->AddClass(&MapSellItem::m_classMapSellItem);
     m3d::g_Kernel->AddClass(&MapSellList::m_classMapSellList);
     m3d::g_Kernel->AddClass(&SaveSellList::m_classSaveSellList);
-    m3d::g_Kernel->AddClass(&SaveSellButton::m_classSaveSellButton); 
+    m3d::g_Kernel->AddClass(&SaveSellButton::m_classSaveSellButton);
     m3d::g_Kernel->AddClass(&TalkWithNpcDlg::m_classTalkWithNpcDlg);
     m3d::g_Kernel->AddClass(&NpcModelWnd::m_classNpcModelWnd);
     m3d::g_Kernel->AddClass(&NavPointMarkWnd::m_classNavPointMarkWnd);

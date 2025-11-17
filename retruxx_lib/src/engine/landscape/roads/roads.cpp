@@ -1,11 +1,20 @@
 #include "m3dapp.h"
 #include "road.h"
+#include "skelmodel.h"
+#include "world.h"
+#include "core/ini.h"
+#include <client.h>
 
 namespace m3d
 {
     RT_CLASS_EXPORTS_BEGIN(RoadNode)
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(RoadNode);
+
+    namespace
+    {
+        constexpr char* const RDL_NAMES[] = {"FwdZLink", "BackZLink", "FwdXLink", "BackXLink"};
+    }
 
     int RoadNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
@@ -39,9 +48,37 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int RoadNode::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int RoadNode::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (int i = 0; i < 4; ++i)
+        {
+            SafeStrAttrib(m_linkedNames[i], node, RDL_NAMES[i]);
+        }
+
+        SafeStrAttrib(m_name, node, "name");
+        SafeStrAttrib(m_roadSetName, node, "roadset");
+        SafeUintAttrib(m_skinNumber, node, "skinNumber");
+        SafeVectorAttrib(m_origin, node, "org");
+        SafeBoolAttrib(m_asCliff, node, "AsCliff");
+        SafeUintAttrib(m_modelNum, node, "ModelNum");
+
+        if (m_asCliff)
+        {
+            if (fabs(m_origin.y) < 0.1)
+            {
+                auto& roadManager = m3d::pClient->GetWorld().GetRoadManager();
+                auto* roadSet = roadManager.m_roadSets[roadManager.GetRoadSetHandleByName(m_roadSetName)];
+                auto* model = roadSet->m_roadModels[0][m_modelNum];
+
+                const auto modelHeight = model->m_box.m_box[4] - model->m_box.m_box[1];
+                m_origin.y = pClient->GetWorld().GetLandscape().GetLsHeight(m_origin.x, m_origin.y) - (modelHeight * 0.5);
+            }
+        }
+        else
+        {
+            m_origin.y = 0.0;
+        }
+        return 1;
     }
 
     void RoadNode::SetOwner(RoadManager*)
@@ -118,4 +155,4 @@ namespace m3d
         this->m_boundRadius = 0.0;
         this->m_cachedVertices = 0;
     }
-}
+}  // namespace m3d

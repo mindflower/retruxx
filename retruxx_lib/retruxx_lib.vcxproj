@@ -445,7 +445,7 @@
     <ClCompile Include="src\game\profile.cpp" />
     <ClCompile Include="src\game\uimanager\gameuimanager.cpp" />
     <ClCompile Include="src\game\uimanager\truxxuimanager.cpp" />
-    <ClCompile Include="src\game\uimanager\uiregistration.cpp" />
+    <ClCompile Include="src\game\uimanager\uidefs.h" />
     <ClCompile Include="src\game\uimisc\fadingmsgmanager.cpp" />
     <ClCompile Include="src\game\uimisc\guihelper.cpp" />
     <ClCompile Include="src\game\uimisc\helpmanager.cpp" />

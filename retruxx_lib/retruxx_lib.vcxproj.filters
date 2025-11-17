@@ -915,9 +915,6 @@
     <ClCompile Include="src\game\uimanager\truxxuimanager.cpp">
       <Filter>game\uimanager</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\uimanager\uiregistration.cpp">
-      <Filter>game\uimanager</Filter>
-    </ClCompile>
     <ClCompile Include="src\game\uimisc\fadingmsgmanager.cpp">
       <Filter>game\uimisc</Filter>
     </ClCompile>
@@ -2078,6 +2075,9 @@
     </ClCompile>
     <ClCompile Include="src\include\renderer\i_renderer_colors.cpp">
       <Filter>include\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\uimanager\uidefs.h">
+      <Filter>game\uimanager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

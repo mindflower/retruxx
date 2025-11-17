@@ -2461,6 +2461,70 @@ namespace m3d
     void Landscape::CreateHelperStructures()
     {
         // TODO: implement Landscape::CreateHelperStructures
+        /* const auto landSize = m_owner->m_level->GetLandSize();
+        const auto vertexStride = landSize * 4;
+        constexpr int cornerFlags[] = {1, 2, 4, 8};
+
+        CIntHash<unsigned> maskHash;
+        retruxx::set<unsigned> setofTexs;
+
+        for (int y = 0; y < landSize; ++y)
+        {
+            const auto baseOffset = 4 * (vertexStride - 1) * y;
+
+            for (int x = 0; x < landSize; ++x)
+            {
+                for (int subY = 0; subY < 4; ++subY)
+                {
+                    auto currentOffset = baseOffset;
+
+                    for (int subX = 0; subX < 4; ++subX)
+                    {
+                        const int tileX = subX + 4 * x;
+                        const int tileY = subY + 4 * y;
+
+                        auto& currentTile = m_tiles[currentOffset + 4 * x];
+
+                        const int clampedX = std::clamp(tileX, 0, vertexStride - 1);
+                        const int clampedY = std::clamp(tileY, 0, vertexStride - 1);
+
+                        int cornerTextures[4];
+                        cornerTextures[0] = m_tiles[clampedX + 4 * landSize * clampedY].m_texIndex0;
+                        cornerTextures[1] = m_tiles[clampedX + 1 + 4 * landSize * clampedY].m_texIndex0;
+                        cornerTextures[2] = m_tiles[clampedX + 4 * landSize * (clampedY + 1)].m_texIndex0;
+                        cornerTextures[3] = m_tiles[clampedX + 1 + 4 * landSize * (clampedY + 1)].m_texIndex0;
+
+                        currentTile.m_numTexs = 0;
+                        std::vector<int> processedCorners(4, 0);
+                        for (int corner = 0; corner < 4; ++corner)
+                        {
+                            if (!processedCorners[corner])
+                            {
+                                int cornerMask = cornerFlags[corner];
+
+                                // Check other corners for same texture
+                                for (int otherCorner = corner + 1; otherCorner < 4; ++otherCorner)
+                                {
+                                    if (!processedCorners[otherCorner] && cornerTextures[corner] == cornerTextures[otherCorner])
+                                    {
+                                        cornerMask |= cornerFlags[otherCorner];
+                                        processedCorners[otherCorner] = 1;
+                                    }
+                                }
+
+                                // Add unique texture to tile
+                                const int texIndex = currentTile.m_numTexs;
+                                currentTile.m_texFlags[texIndex] = cornerMask;
+                                currentTile.m_texIndices[texIndex] = cornerTextures[corner];
+                                currentTile.m_numTexs++;
+                                processedCorners[corner] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        */
     }
 
     void Landscape::drawSpriteOverlayed2Projected(float, float, float, float, unsigned, bool, CClipper const&)

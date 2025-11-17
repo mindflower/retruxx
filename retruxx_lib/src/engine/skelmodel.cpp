@@ -84,7 +84,27 @@ namespace m3d
 
     AnimatedModel::Mesh::~Mesh()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_drawVerts != m_verts)
+        {
+            delete[] static_cast<uint8_t*>(m_drawVerts);
+        }
+
+        delete[] static_cast<uint8_t*>(m_verts);
+        delete[] m_tris;
+        delete[] m_vertsInfluences;
+        delete[] m_vertsRemap;
+        
+        if (m_IbPoolField.Ib.IsValid())
+        {
+            M3D_RENDERER->ReleaseIbPoolField(m_IbPoolField);
+            if ((m_meshType == 4 || m_meshType == 1) && m_VbPoolField.Vb.IsValid())
+            {
+                M3D_RENDERER->ReleaseVbPoolField(m_VbPoolField);
+            }
+        }
+
+        delete[] m_trisWelded;
+        delete[] m_faceNormals;
     }
 
     AnimatedModel::Mesh::Mesh()
