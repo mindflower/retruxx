@@ -31,7 +31,7 @@ namespace
         {ResourceInfo::LOADTYPE_AT_LEVEL_START, "AT_LEVEL_START"},
         {ResourceInfo::LOADTYPE_BY_DEMAND, "BY_DEMAND"},
     };
-}
+}  // namespace
 
 RT_CLASS_EXPORTS_BEGIN(ResourceInfo)
 RT_CLASS_EXPORTS_END;
@@ -39,7 +39,7 @@ RT_CLASS_DEFINE(ResourceInfo);
 
 m3d::Class* ResourceInfo::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(ResourceInfo);
 }
 
 m3d::Object* ResourceInfo::CreateObject()
@@ -70,13 +70,16 @@ int ResourceInfo::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode cons
     {
         return 0;
     }
+
     m3d::SafeStrAttrib(m_fileName, xmlNode, "file");
+
     CStr strLoadType;
     m3d::SafeStrAttrib(strLoadType, xmlNode, "loadType");
     if (!strLoadType.empty())
     {
         m_loadType = Str2ResourceLoadType(strLoadType);
     }
+
     return IsValid();
 }
 
@@ -85,19 +88,8 @@ bool ResourceInfo::IsValid() const
     return m_loadType != LOADTYPE_NUM_LOAD_TYPES && !m_fileName.empty();
 }
 
-ResourceInfo::~ResourceInfo()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-ResourceInfo::ResourceInfo()
-{
-}
-
-ResourceInfo::ResourceInfo(ResourceInfo const&)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+ResourceInfo::~ResourceInfo() = default;
+ResourceInfo::ResourceInfo() = default;
 
 RT_CLASS_EXPORTS_BEGIN(WindowResourceInfo)
 RT_CLASS_EXPORTS_END;
@@ -108,10 +100,7 @@ m3d::Class* WindowResourceInfo::GetClass() const
     return RT_CLASS_LOCAL(WindowResourceInfo);
 }
 
-WindowResourceInfo::~WindowResourceInfo()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+WindowResourceInfo::~WindowResourceInfo() = default;
 
 m3d::Object* WindowResourceInfo::CreateObject()
 {
@@ -127,17 +116,17 @@ int WindowResourceInfo::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNod
 {
     m3d::SafeStrAttrib(m_className, xmlNode, "class");
     m3d::SafeBoolAttrib(m_bShowImmediate, xmlNode, "showImmediate");
+
     CStr strWndGuiId;
     m3d::SafeStrAttrib(strWndGuiId, xmlNode, "id");
-    m_wndGuiId = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp)->m_pInterfaceManager->Str2WndGuiId(strWndGuiId);
+
+    m_wndGuiId = M3D_APP->m_pInterfaceManager->Str2WndGuiId(strWndGuiId);
     return ResourceInfo::LoadFromXml(xmlFile, xmlNode);
 }
 
 bool WindowResourceInfo::IsValid() const
 {
-    return m_loadType != LOADTYPE_NUM_LOAD_TYPES
-        && m3d::g_Kernel->FindClass(m_className.c_str())
-        && m_wndGuiId != -1;
+    return m_loadType != LOADTYPE_NUM_LOAD_TYPES && M3D_KERNEL->FindClass(m_className.c_str()) && m_wndGuiId != -1;
 }
 
 m3d::Object* WindowResourceInfo::Clone()
@@ -145,14 +134,7 @@ m3d::Object* WindowResourceInfo::Clone()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-WindowResourceInfo::WindowResourceInfo(WindowResourceInfo const&)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-WindowResourceInfo::WindowResourceInfo()
-{
-}
+WindowResourceInfo::WindowResourceInfo() = default;
 
 RT_CLASS_EXPORTS_BEGIN(IcoResourceInfo)
 RT_CLASS_EXPORTS_END;
@@ -179,10 +161,7 @@ m3d::Class* IcoResourceInfo::GetBaseClass()
     return RT_CLASS_LOCAL(ResourceInfo);
 }
 
-IcoResourceInfo::~IcoResourceInfo()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+IcoResourceInfo::~IcoResourceInfo() = default;
 
 m3d::Object* IcoResourceInfo::Clone()
 {
@@ -210,14 +189,7 @@ bool IcoResourceInfo::IsValid() const
     return true;
 }
 
-IcoResourceInfo::IcoResourceInfo(IcoResourceInfo const&)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-IcoResourceInfo::IcoResourceInfo()
-{
-}
+IcoResourceInfo::IcoResourceInfo() = default;
 
 int GameUiManager::GUI_SetNextDynamicId(int)
 {
@@ -240,8 +212,9 @@ int GameUiManager::GUI_LoadIconsResources(ResourceInfo::ResourceLoadType loadTyp
     {
         return 0;
     }
+
     retruxx::vector<ResourceInfo*> resourceInfos;
-    if (loadType==ResourceInfo::LOADTYPE_AT_LEVEL_START)
+    if (loadType == ResourceInfo::LOADTYPE_AT_LEVEL_START)
     {
         CStr levelName;
         if (m3d::pClient && m3d::pClient->GetWorld().m_level != nullptr)
@@ -279,6 +252,7 @@ int GameUiManager::GUI_LoadWindowsResources(ResourceInfo::ResourceLoadType loadT
     {
         return 0;
     }
+
     retruxx::vector<ResourceInfo*> resourceInfos;
     GUI_GetResourceInfosByLoadType(loadType, m_resourceInfoWindows, resourceInfos);
     auto res = 1;
@@ -287,14 +261,13 @@ int GameUiManager::GUI_LoadWindowsResources(ResourceInfo::ResourceLoadType loadT
         if (info && info->IsKindOf(RT_CLASS_LOCAL(WindowResourceInfo)))
         {
             // TODO: implement GameUiManager::GUI_LoadWindowsResources
-
-            std::set<int> clses = { 16, 17, 18
-            };
-            auto inf = dynamic_cast<WindowResourceInfo*>(info);
-            if (loadType == ResourceInfo::LOADTYPE_AT_FIRST_LEVEL_START && (!inf || clses.find(inf->m_wndGuiId) == clses.end()))
-            {
-                continue;
-            }
+            //std::set<int> clses = { 16, 17, 18
+            //};
+            //auto inf = dynamic_cast<WindowResourceInfo*>(info);
+            //if (loadType == ResourceInfo::LOADTYPE_AT_FIRST_LEVEL_START && (!inf || clses.find(inf->m_wndGuiId) == clses.end()))
+            //{
+            //    continue;
+            //}
             res &= GUI_LoadWindowFromResourceInfo(dynamic_cast<WindowResourceInfo*>(info));
         }
         else
@@ -314,10 +287,10 @@ int GameUiManager::GUI_SetMinDynamicId(int)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int GameUiManager::GUI_SetEventsForWindow(int wndId, retruxx::vector<int> const& events)
+int GameUiManager::GUI_SetEventsForWindow(int wndId, const retruxx::vector<int>& events)
 {
     //TODO: check this
-    for (auto const ev : events)
+    for (const auto ev : events)
     {
         m_eventMap[ev].insert(wndId);
     }
@@ -331,17 +304,18 @@ int GameUiManager::GUI_UpdateWindowsOnEvent(int eventId, m3d::ui::Wnd* forceWnd,
     {
         m_isEventMapValide = true;
     }
+
     bool valid = m_isEventMapValide;
-    auto const evIt = m_eventMap.find(eventId);
+    const auto evIt = m_eventMap.find(eventId);
     if (evIt == m_eventMap.end())
     {
         --entries;
         return 0;
     }
     auto res = 1;
-    for (auto const& ev : evIt->second)
+    for (const auto& ev : evIt->second)
     {
-        auto const it = m_windows.find(ev);
+        const auto it = m_windows.find(ev);
         if (it != m_windows.end())
         {
             auto wnd = it->second;
@@ -383,17 +357,20 @@ int GameUiManager::GUI_LoadResourceInfosFromFile(CStr const& fileName, retruxx::
     {
         return 0;
     }
+
     GUI_ClearResourceInfos(resourceInfos);
     if (fileName.empty())
     {
         M3D_LOG_INFO("Interface: error - resource file is not specified");
         return 0;
     }
-    auto cls = m3d::g_Kernel->FindClass(className.c_str());
+
+    auto cls = M3D_KERNEL->FindClass(className.c_str());
     if (!cls || !cls->IsKindOf(RT_CLASS_LOCAL(ResourceInfo)))
     {
         return 0;
     }
+
     CStr err;
     ref_ptr xmlFile = m3d::ReadXmlFile(fileName.c_str(), &err);
     if (xmlFile)
@@ -405,9 +382,10 @@ int GameUiManager::GUI_LoadResourceInfosFromFile(CStr const& fileName, retruxx::
             M3D_LOG_INFO("Interface: error - cannot find root node GuiResourceInfo in file " + fileName);
             return 0;
         }
+
         ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
         auto res = 1;
-        for(rootNode->GetFirstChild(node, "Item");!node->IsEmpty(); node->GetNextSibling(node, "Item"))
+        for (rootNode->GetFirstChild(node, "Item"); !node->IsEmpty(); node->GetNextSibling(node, "Item"))
         {
             auto info = dynamic_cast<ResourceInfo*>(m3d::g_Kernel->New(className.c_str()));
             if (!info)
@@ -434,7 +412,10 @@ int GameUiManager::GUI_LoadResourceInfosFromFile(CStr const& fileName, retruxx::
     return 0;
 }
 
-void GameUiManager::GUI_GetResourceInfosByLoadType(ResourceInfo::ResourceLoadType loadType, retruxx::vector<ResourceInfo*> const& srcInfos, retruxx::vector<ResourceInfo*>& dstInfos) const
+void GameUiManager::GUI_GetResourceInfosByLoadType(
+    ResourceInfo::ResourceLoadType loadType,
+    retruxx::vector<ResourceInfo*> const& srcInfos,
+    retruxx::vector<ResourceInfo*>& dstInfos) const
 {
     //TODO: check this
     dstInfos.clear();
@@ -452,7 +433,7 @@ int GameUiManager::GUI_Save(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNod
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int GameUiManager::GUI_CreateWindow(int wndId, CStr const& className, bool needShow, CStr const& fileName)
+int GameUiManager::GUI_CreateWindow(int wndId, const CStr& className, bool needShow, const CStr& fileName)
 {
     if (wndId >= m_minDynamicId)
     {
@@ -493,9 +474,7 @@ int GameUiManager::GUI_CreateWindow(int wndId, CStr const& className, bool needS
     return 0;
 }
 
-GameUiManager::GameUiManager()
-{
-}
+GameUiManager::GameUiManager() = default;
 
 bool GameUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd*) const
 {
@@ -523,13 +502,13 @@ WindowResourceInfo* GameUiManager::GUI_GetResourceInfoByWndGuiId(int) const
 
 bool GameUiManager::GUI_IsModalEqualWndRunning() const
 {
-    if (m3d::Application::g_pApp->HasChildModalRunning())
+    if (M3D_APP->HasChildModalRunning())
     {
         return true;
     }
-    for (auto id : m_onScreenWindows)
+    for (const auto id : m_onScreenWindows)
     {
-        auto wnd = GUI_GetWindow(id);
+        const auto wnd = GUI_GetWindow(id);
         if (wnd && GUI_IsWndModalEqual(wnd))
         {
             return true;
@@ -541,8 +520,8 @@ bool GameUiManager::GUI_IsModalEqualWndRunning() const
 int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void* data, m3d::ui::Wnd* forceWnd)
 {
     auto id = -1;
-	switch (eventType)
-	{
+    switch (eventType)
+    {
     case GUI_EVENT_FROM_PACKET:
     {
         auto it = m_packToEvent.find(appEventId);
@@ -563,7 +542,7 @@ int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void
         }
         return 0;
     }
-	case GUI_EVENT_FROM_APPEVENT:
+    case GUI_EVENT_FROM_APPEVENT:
     {
         auto it = m_eventToEvent.find(appEventId);
         if (it != m_eventToEvent.end())
@@ -578,20 +557,20 @@ int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void
         id = appEventId;
         break;
     }
-	default:
-        return 0;
-	}
-    if (id !=-1)
+    default: return 0;
+    }
+    if (id != -1)
     {
-	    if (!GUI_HandleEvent(id, forceWnd, data))
-	    {
+        if (!GUI_HandleEvent(id, forceWnd, data))
+        {
             GUI_UpdateWindowsOnEvent(id, forceWnd, data);
-	    }
+        }
     }
     return 0;
 }
 
-void GameUiManager::GUI_GetIconsResourceInfoByLevel(CStr const& levelName, retruxx::vector<ResourceInfo*, retruxx::allocator<ResourceInfo*>>& dstResourceInfos) const
+void GameUiManager::GUI_GetIconsResourceInfoByLevel(CStr const& levelName, retruxx::vector<ResourceInfo*, retruxx::allocator<ResourceInfo*>>& dstResourceInfos)
+    const
 {
     dstResourceInfos.clear();
     for (const auto& info : m_resourceInfoIcons)
@@ -639,7 +618,7 @@ int GameUiManager::GUI_Init(bool reloadResources)
             {
                 res = 0;
             }
-             if (!GUI_LoadResources(ResourceInfo::LOADTYPE_AT_APP_START))
+            if (!GUI_LoadResources(ResourceInfo::LOADTYPE_AT_APP_START))
             {
                 res = 0;
             }
@@ -933,7 +912,7 @@ int GameUiManager::GUI_LoadWindowFromResourceInfo(WindowResourceInfo const* info
 
 void GameUiManager::GUI_ClearResourceInfos(retruxx::vector<ResourceInfo*>& resourceInfos)
 {
-    for (auto* info: resourceInfos)
+    for (auto* info : resourceInfos)
     {
         delete info;
     }
@@ -948,14 +927,16 @@ int GameUiManager::GUI_HideWindow(int wndId, bool canBeShownAgain, int* modalRet
     {
         return 0;
     }
+
     auto wndParent = wnd->GetParent();
     if (wndParent && wndParent != M3D_APP)
     {
         return 0;
     }
+
     if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
     {
-        auto modalWnd = dynamic_cast<ModalWnd*>(&*wnd);
+        auto* modalWnd = dynamic_cast<ModalWnd*>(&*wnd);
         if (wnd->GetStation()->IsModal(modalWnd))
         {
             auto retVal = 0;
@@ -963,7 +944,7 @@ int GameUiManager::GUI_HideWindow(int wndId, bool canBeShownAgain, int* modalRet
             {
                 retVal = *modalRetVal;
             }
-            M3D_APP->EnqueueMessage(39, reinterpret_cast<int>(modalWnd), retVal, 0, 0, {}, {});
+            M3D_APP->EnqueueMessage(m3d::EV_UI_CLOSE_MODAL_WND, reinterpret_cast<int>(modalWnd), retVal, 0, 0, {}, {});
         }
     }
     else
@@ -984,6 +965,7 @@ int GameUiManager::GUI_HideWindow(int wndId, bool canBeShownAgain, int* modalRet
             }
         }
     }
+
     if (!canBeShownAgain || wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
     {
         m_onScreenWindows.erase(wndId);
@@ -1062,36 +1044,36 @@ int GameUiManager::GUI_ShowWindow(int wndId, bool forceShow, bool forceModal, bo
     }
     if (!m_isHidden || forceShow)
     {
-	    if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
-	    {
+        if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+        {
             auto modalWnd = dynamic_cast<ModalWnd*>(&*wnd);
-		    if (!modalWnd->GetStation()->IsModal(modalWnd))
-		    {
-			    if (GUI_BeginModalDlg(pause, forceModal))
-			    {
-				    if (m_onScreenWindows.find(wndId) == m_onScreenWindows.end())
-				    {
+            if (!modalWnd->GetStation()->IsModal(modalWnd))
+            {
+                if (GUI_BeginModalDlg(pause, forceModal))
+                {
+                    if (m_onScreenWindows.find(wndId) == m_onScreenWindows.end())
+                    {
                         m_onScreenWindows.insert(wndId);
-				    }
+                    }
                     auto modalRes = modalWnd->GetStation()->DoModal(modalWnd);
                     if (modalRetVal)
                     {
                         *modalRetVal = modalRes;
                     }
-			    }
+                }
                 else
                 {
                     res = 0;
                 }
-		    }
-	    }
+            }
+        }
         else
         {
-	        if (!wnd->GetParent())
-	        {
+            if (!wnd->GetParent())
+            {
                 //TODP: check this
                 m3d::Application::g_pApp->AddChild(wnd);
-	        }
+            }
             if (GUI_IsWndModalEqual(wnd))
             {
                 GUI_BeginModalDlg(pause, forceModal);
@@ -1115,18 +1097,18 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool is
     {
         return 0;
     }
-    if (wndId < 0 || wndId>= m_minDynamicId)
+    if (wndId < 0 || wndId >= m_minDynamicId)
     {
         return 0;
     }
     auto it = m_windows.find(wndId);
     if (it == m_windows.end())
     {
-	    if (isPersistent)
-	    {
+        if (isPersistent)
+        {
             w->SetGameDataFlags(w->GetGameDataFlags() | 8);
             //w->m_gameDataFlags |= 8;
-	    }
+        }
         else
         {
             w->SetGameDataFlags(w->GetGameDataFlags() & 0xFFFFFFF7);
@@ -1139,10 +1121,10 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool is
     }
     else
     {
-	    if (&it->second != &w)
-	    {
+        if (&it->second != &w)
+        {
             return 0;
-	    }
+        }
         if (isPersistent)
         {
             w->SetGameDataFlags(w->GetGameDataFlags() | 8);

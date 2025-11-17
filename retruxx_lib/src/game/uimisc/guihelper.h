@@ -1,14 +1,14 @@
 #pragma once
-#include <core/stringm3d.h>
+#include "core/stringm3d.h"
 #include "retruxx/common.h"
 
 namespace m3d
 {
-	namespace ui
-	{
-		class Wnd;
-	}
-}
+    namespace ui
+    {
+        class Wnd;
+    }
+}  // namespace m3d
 
 namespace help
 {
@@ -67,4 +67,4 @@ namespace help
     int CreateWindowsDir(CStr const&);
     CStr GetMapNameFromFileName(CStr const&);
     CStr Color2Str(unsigned);
-}
+}  // namespace help
