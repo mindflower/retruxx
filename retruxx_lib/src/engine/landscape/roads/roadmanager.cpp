@@ -451,14 +451,14 @@ namespace m3d
 
     RoadSet::~RoadSet()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Clear();
     }
 
     RoadManager::RoadManager()
     {
-        this->m_owner = 0;
-        this->m_coveredCells = 0;
-        this->m_roadRoot = 0;
+        m_owner = nullptr;
+        m_coveredCells = nullptr;
+        m_roadRoot = nullptr;
     }
 
     int RoadManager::WriteRoadsToXmlFile(char const*)

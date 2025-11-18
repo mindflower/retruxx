@@ -4,6 +4,41 @@
 
 namespace ai
 {
+    enum ServerMessage
+    {
+        SM_REPOSITORY_CHANGED = 0x103e9,
+        SM_QUEST_WAS_TAKEN = 0x103ea,
+        SM_QUESTSTATE_CHANGED = 0x103eb,
+        SM_TOWN = 0x103ec,
+        SM_OBJECT_CREATED = 0x103ed,
+        SM_OBJECT_DESTROYED = 0x103ee,
+        SM_OBJECTS_CLEARED = 0x103ef,
+        SM_PLAYER_VEHICLE_CHANGED = 0x103f0,
+        SM_VEHICLEPART_CHANGED = 0x103f1,
+        SM_DYNAMIC_QUEST_CREATED = 0x103f2,
+        SM_DYNAMIC_QUESTSTATE_CHANGED = 0x103f3,
+        SM_PLAYER_GOLD_CHANGED = 0x103f4,
+        SM_PLAYER_PASS_TO_MAP = 0x103f5,
+        SM_MESSAGE_BOX = 0x103f6,
+        SM_GADGET_CHANGED = 0x103f7,
+        SM_TARGET_CAPTURED = 0x103f9,
+        SM_LOCATION_NPC = 0x103fa,
+        SM_PLAYER_FIGHT_STATE_CHANGED = 0x103fb,
+        SM_LOCATION_STATE_CHANGED = 0x103fc,
+        SM_OBJ_MET = 0x103fd,
+        SM_PROTOTYPE_MET = 0x103fe,
+        SM_PLAYER_MONEY_CHANGED = 0x103ff,
+        SM_SOUND_MESSAGE = 0x10400,
+        SM_PLAYER_VEHICLE_DAMAGED = 0x10401,
+        SM_QUEST_ITEMS_CHANGED = 0x10402,
+        SM_FADING_MESSAGE = 0x10403,
+        SM_IMPORTANT_FADING_MESSAGE = 0x10404,
+        SM_TOWN_RUINED = 0x10405,
+        SM_PLAYER_PASS_TO_MAP_FADING = 0x10406,
+        SM_NEARBY_CHESTS = 0x10407,
+        SM_APPROACH_TOWN = 0x10408,
+    };
+
     class ProcessManager
     {
         struct auxEventInfo

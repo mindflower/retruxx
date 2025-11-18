@@ -42,7 +42,6 @@ public:
 
 protected:
     CBCharacteristicsWnd();
-    CBCharacteristicsWnd(CBCharacteristicsWnd const &);
     void UpdateOnCBChanged();
     virtual void ClearCharacteristics();
     void UpdateCBName();
