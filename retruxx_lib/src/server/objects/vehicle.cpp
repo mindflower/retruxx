@@ -4907,163 +4907,212 @@ namespace ai
 
 	void Vehicle::_AdjustWheel(WheelRuntimeInfo& wheelInfo)
 	{
-		// TODO: implement Vehicle::_AdjustWheel
-		return;
-		// TODO: generated code
-		ai::Wheel* wheel = wheelInfo.GetWheel();
+        auto m_wheel = wheelInfo.GetWheel();
 
-		// Get vehicle position and rotation
-		CVector vehiclePos = GetPosition();
+        auto pos = GetPosition();
+        auto rot = GetRotation();
+        auto invRot = rot.getInversed();
 
-		Quaternion vehicleRot= GetRotation();
+        auto v5 = m_wheel->GetDirection();
+        auto xy = invRot.y * invRot.x;
+        auto xy_2 = invRot.y * invRot.x;
+        auto yz = invRot.z * invRot.y;
+        auto yz_2 = invRot.z * invRot.y;
+        auto xx = invRot.x * invRot.x;
+        auto xx_2 = invRot.x * invRot.x;
+        auto wy = invRot.w * invRot.y;
 
-		// Get inverse of vehicle rotation
-		Quaternion invVehicleRot = vehicleRot.getInversed();
+		CMatrix vv;
+        vv._11 = 1.0 - (float)((float)((float)(invRot.z * invRot.z) + (float)(invRot.y * invRot.y)) * 2.0);
+        vv._21 = (float)((float)(invRot.y * invRot.x) - (float)(invRot.w * invRot.z)) * 2.0;
+        auto wz = invRot.w * invRot.z;
+        auto zz = invRot.z * invRot.z;
+        auto& v6 = v5;
+        auto yy = invRot.y * invRot.y;
+        auto xz = invRot.z * invRot.x;
+        auto wx = invRot.w * invRot.x;
+        vv._31 = (float)((float)(invRot.w * invRot.y) + (float)(invRot.z * invRot.x)) * 2.0;
+        vv._12 = (float)((float)(invRot.w * invRot.z) + (float)(invRot.y * invRot.x)) * 2.0;
+        vv._22 = 1.0 - (float)((float)((float)(invRot.z * invRot.z) + (float)(invRot.x * invRot.x)) * 2.0);
+        vv._33 = 1.0 - (float)((float)((float)(invRot.y * invRot.y) + (float)(invRot.x * invRot.x)) * 2.0);
+        vv._32 = (float)((float)(invRot.z * invRot.y) - (float)(invRot.w * invRot.x)) * 2.0;
+        vv._13 = (float)((float)(invRot.z * invRot.x) - (float)(invRot.w * invRot.y)) * 2.0;
+        vv._23 = (float)((float)(invRot.w * invRot.x) + (float)(invRot.z * invRot.y)) * 2.0;
+        vv._14 = 0.0;
+        vv._24 = 0.0;
+        memset(&vv.m[2][3], 0, 16);
+        vv._44 = 1.0;
 
-		// Get wheel direction
-		CVector wheelDir = wheel->GetDirection();
+        auto v66 = vv;
+        auto v7 = v66._22 * v6.y + v66._32 * v6.z + v66._12 * v6.x;
+        auto v8 = (float)(v6.y * v66._23) + (float)(v6.z * v66._33);
+        auto v9 = v66._13 * v6.x;
 
-		// Build rotation matrix from inverse vehicle rotation
-		float xx = invVehicleRot.x * invVehicleRot.x;
-		float yy = invVehicleRot.y * invVehicleRot.y;
-		float zz = invVehicleRot.z * invVehicleRot.z;
-		float xy = invVehicleRot.x * invVehicleRot.y;
-		float xz = invVehicleRot.x * invVehicleRot.z;
-		float yz = invVehicleRot.y * invVehicleRot.z;
-		float wx = invVehicleRot.w * invVehicleRot.x;
-		float wy = invVehicleRot.w * invVehicleRot.y;
-		float wz = invVehicleRot.w * invVehicleRot.z;
+		CVector axis;
+        axis.x = (float)((float)(v6.y * v66._21) + (float)(v6.z * v66._31)) + (float)(v6.x * v66._11);
+        auto v10 = v8 + v9;
+        yz_2 = 1.0 / sqrt((float)(0.0 - axis.x) * (float)(0.0 - axis.x) + (float)(v10 * v10) + 0.00000011920929);
+        auto v11 = atan2(v7, sqrt(axis.x * axis.x + (float)(v10 * v10))) * 0.5;
+        auto v12 = (float)(0.0 - axis.x) * yz_2;
+        auto v13 = yz_2 * v10;
+        auto v14 = yz_2 * 0.0;
+        yz_2 = sin(v11);
 
-		CMatrix invRotMatrix;
-		invRotMatrix._11 = 1.0f - 2.0f * (yy + zz);
-		invRotMatrix._12 = 2.0f * (xy + wz);
-		invRotMatrix._13 = 2.0f * (xz - wy);
-		invRotMatrix._14 = 0.0f;
-		invRotMatrix._21 = 2.0f * (xy - wz);
-		invRotMatrix._22 = 1.0f - 2.0f * (xx + zz);
-		invRotMatrix._23 = 2.0f * (yz + wx);
-		invRotMatrix._24 = 0.0f;
-		invRotMatrix._31 = 2.0f * (xz + wy);
-		invRotMatrix._32 = 2.0f * (yz - wx);
-		invRotMatrix._33 = 1.0f - 2.0f * (xx + yy);
-		invRotMatrix._34 = 0.0f;
-		invRotMatrix._41 = 0.0f;
-		invRotMatrix._42 = 0.0f;
-		invRotMatrix._43 = 0.0f;
-		invRotMatrix._44 = 1.0f;
+		CVector wheelDir;
+        wheelDir.z = v12 * yz_2;
+        wheelDir.y = v14 * yz_2;
+        wheelDir.x = yz_2 * v13;
 
-		// Transform wheel direction to vehicle local space
-		CVector localWheelDir;
-		localWheelDir.x = invRotMatrix._11 * wheelDir.x + invRotMatrix._21 * wheelDir.y + invRotMatrix._31 * wheelDir.z;
-		localWheelDir.y = invRotMatrix._12 * wheelDir.x + invRotMatrix._22 * wheelDir.y + invRotMatrix._32 * wheelDir.z;
-		localWheelDir.z = invRotMatrix._13 * wheelDir.x + invRotMatrix._23 * wheelDir.y + invRotMatrix._33 * wheelDir.z;
+		Quaternion v50;
+        v50.x = (float)((float)(invRot.x + (float)(invRot.z * 0.0)) + (float)(invRot.w * 0.0)) - (float)(invRot.y * 0.0);
+        v50.y = (float)((float)(invRot.y + (float)(invRot.x * 0.0)) + (float)(invRot.w * 0.0)) - (float)(invRot.z * 0.0);
+        axis.y = v50.y;
+        v50.z = (float)((float)(invRot.z + (float)(invRot.y * 0.0)) + (float)(invRot.w * 0.0)) - (float)(invRot.x * 0.0);
+        v50.w = (float)((float)(invRot.w - (float)(invRot.x * 0.0)) - (float)(invRot.y * 0.0)) - (float)(invRot.z * 0.0);
+        axis.x = v50.x;
+        axis.z = v50.z;
+        auto w = v50.w;
+        auto v48 = cos(v11);
+        auto Rotation = m_wheel->GetRotation();
+        v50.x = (float)((float)((float)(Rotation.x * w) + (float)(axis.y * Rotation.z)) + (float)(axis.x * Rotation.w)) - (float)(axis.z * Rotation.y);
+        v50.y = (float)((float)((float)(Rotation.x * axis.z) + (float)(axis.y * Rotation.w)) + (float)(w * Rotation.y)) - (float)(axis.x * Rotation.z);
+        auto v16 = w * Rotation.w;
+        auto v17 = axis.z * Rotation.z;
+        auto v18 = axis.y * Rotation.y;
+        v50.z = (float)((float)((float)(Rotation.y * axis.x) + (float)(w * Rotation.z)) + (float)(axis.z * Rotation.w)) - (float)(Rotation.x * axis.y);
+        auto v19 = (float)((float)(v16 - (float)(Rotation.x * axis.x)) - v18) - v17;
+        axis.y = v50.y;
+        v50.w = v19;
+        axis.x = v50.x;
+        axis.z = v50.z;
+        w = v19;
+        auto Inversed = wheelInfo.m_initialRot.getInversed();
+        v50.x = (float)((float)((float)(axis.y * Inversed.z) + (float)(v19 * Inversed.x)) + (float)(axis.x * Inversed.w)) - (float)(axis.z * Inversed.y);
+        v50.y = (float)((float)((float)(axis.y * Inversed.w) + (float)(axis.z * Inversed.x)) + (float)(v19 * Inversed.y)) - (float)(axis.x * Inversed.z);
+        auto v21 = axis.z * Inversed.z;
+        auto v22 = v19 * Inversed.w;
+        auto v23 = axis.y * Inversed.y;
+        v50.z = (float)((float)((float)(Inversed.y * axis.x) + (float)(w * Inversed.z)) + (float)(axis.z * Inversed.w)) - (float)(axis.y * Inversed.x);
+        v50.w = (float)((float)(v22 - (float)(Inversed.x * axis.x)) - v23) - v21;
+        auto v24 = (float)((float)((float)(rot.y * wheelDir.z) + (float)(v48 * rot.x)) + (float)(rot.w * wheelDir.x)) - (float)(rot.z * wheelDir.y);
+        auto v25 = (float)((float)((float)(rot.y * v48) + (float)(rot.w * wheelDir.y)) + (float)(rot.z * wheelDir.x)) - (float)(wheelDir.z * rot.x);
+        axis.x = v50.x;
+        w = v50.w;
+        axis.z = v50.z;
+        auto v26 = (float)((float)((float)(rot.z * v48) + (float)(rot.w * wheelDir.z)) + (float)(wheelDir.y * rot.x)) - (float)(rot.y * wheelDir.x);
+        axis.y = v50.y;
+        auto v27 = (float)((float)((float)(v25 * v50.z) + (float)(v50.w * v24)) +
+                      (float)((float)((float)((float)((float)(rot.w * v48) - (float)(rot.x * wheelDir.x)) - (float)(rot.y * wheelDir.y)) -
+                                      (float)(rot.z * wheelDir.z)) *
+                              v50.x)) -
+            (float)(v26 * v50.y);
+        auto v28 = (float)((float)((float)(v25 * v50.w) +
+                              (float)((float)((float)((float)((float)(rot.w * v48) - (float)(rot.x * wheelDir.x)) - (float)(rot.y * wheelDir.y)) -
+                                              (float)(rot.z * wheelDir.z)) *
+                                      v50.y)) +
+                      (float)(v26 * v50.x)) -
+            (float)(v50.z * v24);
+        auto v29 = (float)((float)((float)((float)((float)((float)((float)(rot.w * v48) - (float)(rot.x * wheelDir.x)) - (float)(rot.y * wheelDir.y)) -
+                                              (float)(rot.z * wheelDir.z)) *
+                                      v50.w) -
+                              (float)(v24 * v50.x)) -
+                      (float)(v25 * v50.y)) -
+            (float)(v26 * v50.z);
+        auto v30 = (float)((float)((float)(v26 * v50.w) +
+                              (float)((float)((float)((float)((float)(rot.w * v48) - (float)(rot.x * wheelDir.x)) - (float)(rot.y * wheelDir.y)) -
+                                              (float)(rot.z * wheelDir.z)) *
+                                      v50.z)) +
+                      (float)(v50.y * v24)) -
+            (float)(v25 * v50.x);
+        v50.x =
+            (float)((float)((float)(v29 * wheelInfo.m_initialRot.x) + (float)(wheelInfo.m_initialRot.w * v27)) + (float)(wheelInfo.m_initialRot.z * v28)) -
+            (float)(v30 * wheelInfo.m_initialRot.y);
+        auto z = wheelInfo.m_initialRot.z;
+        v50.y =
+            (float)((float)((float)(v29 * wheelInfo.m_initialRot.y) + (float)(v30 * wheelInfo.m_initialRot.x)) + (float)(wheelInfo.m_initialRot.w * v28)) -
+            (float)(wheelInfo.m_initialRot.z * v27);
+        auto v32 = (float)((float)(v27 * wheelInfo.m_initialRot.y) + (float)(z * v29)) + (float)(wheelInfo.m_initialRot.w * v30);
+        auto v33 = v28 * wheelInfo.m_initialRot.x;
+        auto v34 = v28 * wheelInfo.m_initialRot.y;
+        auto v35 = v32 - v33;
+        auto x = wheelInfo.m_initialRot.x;
+        v50.z = v35;
+        v50.w = (float)((float)((float)(wheelInfo.m_initialRot.w * v29) - (float)(x * v27)) - v34) - (float)(wheelInfo.m_initialRot.z * v30);
+        m_wheel->SetRotation(v50);
 
-		// Calculate wheel orientation correction
-		float projX = localWheelDir.x;
-		float projY = localWheelDir.y;
-		float projZ = localWheelDir.z;
+        auto Position = m_wheel->GetPosition();
+        wheelDir.x = Position.x - pos.x;
+        wheelDir.y = Position.y - pos.y;
+        wheelDir.z = Position.z - pos.z;
+        vv._11 = 1.0 - (float)((float)(zz + yy) * 2.0);
+        vv._21 = (float)(xy_2 - wz) * 2.0;
+        vv._31 = (float)(wy + xz) * 2.0;
+        vv._12 = (float)(wz + xy_2) * 2.0;
+        vv._22 = 1.0 - (float)((float)(zz + xx_2) * 2.0);
+        vv._32 = (float)(yz - wx) * 2.0;
+        vv._33 = 1.0 - (float)((float)(yy + xx_2) * 2.0);
+        vv._13 = (float)(xz - wy) * 2.0;
+        vv._23 = (float)(wx + yz) * 2.0;
+        vv._14 = 0.0;
+        vv._24 = 0.0;
+        memset(&vv.m[2][3], 0, 16);
+        vv._44 = 1.0;
 
-		float length = sqrt(projX * projX + projY * projY);
-		float invLength = (length > 0.0001f) ? (1.0f / length) : 0.0f;
+		v66 = vv;
+        wheelDir.y = (float)((float)(v66._32 * wheelDir.z) + (float)(v66._22 * wheelDir.y)) + (float)(v66._12 * wheelDir.x);
+        wheelDir.x = wheelInfo.m_initialPos.x;
+        wheelDir.z = wheelInfo.m_initialPos.z;
+        xx = rot.x * rot.x;
+        auto y = rot.y;
+        yz_2 = rot.y * rot.x;
+        xy = rot.z * rot.y;
+        vv._11 = 1.0 - (float)((float)((float)(rot.z * rot.z) + (float)(y * y)) * 2.0);
+        vv._21 = (float)((float)(rot.y * rot.x) - (float)(rot.z * rot.w)) * 2.0;
+        vv._31 = (float)((float)(rot.y * rot.w) + (float)(rot.z * rot.x)) * 2.0;
+        vv._12 = (float)((float)(rot.z * rot.w) + (float)(rot.y * rot.x)) * 2.0;
+        vv._22 = 1.0 - (float)((float)((float)(rot.z * rot.z) + (float)(rot.x * rot.x)) * 2.0);
+        vv._33 = 1.0 - (float)((float)((float)(y * y) + (float)(rot.x * rot.x)) * 2.0);
+        vv._32 = (float)((float)(rot.z * rot.y) - (float)(rot.w * rot.x)) * 2.0;
+        vv._13 = (float)((float)(rot.z * rot.x) - (float)(rot.y * rot.w)) * 2.0;
+        vv._23 = (float)((float)(rot.w * rot.x) + (float)(rot.z * rot.y)) * 2.0;
+        vv._14 = 0.0;
+        vv._24 = 0.0;
+        memset(&vv.m[2][3], 0, 16);
+        vv._44 = 1.0;
 
-		float angle = atan2(projZ, sqrt(projX * projX + projY * projY)) * 0.5f;
-		float sinHalfAngle = sin(angle);
-		float cosHalfAngle = cos(angle);
+		v66 = vv;
+        axis.x = (float)((float)((float)(v66._21 * wheelDir.y) + (float)(v66._31 * wheelDir.z)) + (float)(v66._11 * wheelDir.x)) + pos.x;
+        axis.y = pos.y + (float)((float)((float)(v66._22 * wheelDir.y) + (float)(v66._32 * wheelDir.z)) + (float)(v66._12 * wheelDir.x));
+        axis.z = pos.z + (float)((float)((float)(v66._23 * wheelDir.y) + (float)(v66._33 * wheelDir.z)) + (float)(v66._13 * wheelDir.x));
+        m_wheel->SetPosition(axis);
 
-		Quaternion correctionQuat;
-		correctionQuat.x = projY * invLength * sinHalfAngle;
-		correctionQuat.y = 0.0f;
-		correctionQuat.z = -projX * invLength * sinHalfAngle;
-		correctionQuat.w = cosHalfAngle;
+        auto v40 = m_wheel->GetDirection();
+        vv._11 = 1.0 - (float)((float)(zz + yy) * 2.0);
+        vv._21 = (float)(xy_2 - wz) * 2.0;
+        vv._12 = (float)(wz + xy_2) * 2.0;
+        auto& v41 = v40;
+        vv._31 = (float)(wy + xz) * 2.0;
+        vv._22 = 1.0 - (float)((float)(zz + xx_2) * 2.0);
+        vv._32 = (float)(yz - wx) * 2.0;
+        vv._33 = 1.0 - (float)((float)(yy + xx_2) * 2.0);
+        vv._13 = (float)(xz - wy) * 2.0;
+        vv._23 = (float)(wx + yz) * 2.0;
+        vv._14 = 0.0;
+        vv._24 = 0.0;
+        memset(&vv.m[2][3], 0, 16);
+        vv._44 = 1.0;
 
-		// Apply correction to wheel rotation
-		Quaternion combinedRot;
-		combinedRot.x = vehicleRot.w * correctionQuat.x + vehicleRot.x * correctionQuat.w +
-			vehicleRot.y * correctionQuat.z - vehicleRot.z * correctionQuat.y;
-		combinedRot.y = vehicleRot.w * correctionQuat.y + vehicleRot.y * correctionQuat.w +
-			vehicleRot.z * correctionQuat.x - vehicleRot.x * correctionQuat.z;
-		combinedRot.z = vehicleRot.w * correctionQuat.z + vehicleRot.z * correctionQuat.w +
-			vehicleRot.x * correctionQuat.y - vehicleRot.y * correctionQuat.x;
-		combinedRot.w = vehicleRot.w * correctionQuat.w - vehicleRot.x * correctionQuat.x -
-			vehicleRot.y * correctionQuat.y - vehicleRot.z * correctionQuat.z;
-
-		Quaternion finalWheelRot;
-		finalWheelRot.x = combinedRot.w * wheelInfo.m_initialRot.x + combinedRot.x * wheelInfo.m_initialRot.w +
-			combinedRot.y * wheelInfo.m_initialRot.z - combinedRot.z * wheelInfo.m_initialRot.y;
-		finalWheelRot.y = combinedRot.w * wheelInfo.m_initialRot.y + combinedRot.y * wheelInfo.m_initialRot.w +
-			combinedRot.z * wheelInfo.m_initialRot.x - combinedRot.x * wheelInfo.m_initialRot.z;
-		finalWheelRot.z = combinedRot.w * wheelInfo.m_initialRot.z + combinedRot.z * wheelInfo.m_initialRot.w +
-			combinedRot.x * wheelInfo.m_initialRot.y - combinedRot.y * wheelInfo.m_initialRot.x;
-		finalWheelRot.w = combinedRot.w * wheelInfo.m_initialRot.w - combinedRot.x * wheelInfo.m_initialRot.x -
-			combinedRot.y * wheelInfo.m_initialRot.y - combinedRot.z * wheelInfo.m_initialRot.z;
-
-		wheel->SetRotation(finalWheelRot);
-
-		// Adjust wheel position
-		CVector wheelWorldPos = wheel->GetPosition();
-
-		CVector relativePos = wheelWorldPos - vehiclePos;
-
-		// Transform relative position using inverse vehicle rotation
-		CVector localRelativePos;
-		localRelativePos.x = invRotMatrix._11 * relativePos.x + invRotMatrix._21 * relativePos.y + invRotMatrix._31 * relativePos.z;
-		localRelativePos.y = invRotMatrix._12 * relativePos.x + invRotMatrix._22 * relativePos.y + invRotMatrix._32 * relativePos.z;
-		localRelativePos.z = invRotMatrix._13 * relativePos.x + invRotMatrix._23 * relativePos.y + invRotMatrix._33 * relativePos.z;
-
-		// Apply initial position offset
-		CVector targetLocalPos = wheelInfo.m_initialPos;
-
-		// Build rotation matrix from vehicle rotation
-		float vxx = vehicleRot.x * vehicleRot.x;
-		float vyy = vehicleRot.y * vehicleRot.y;
-		float vzz = vehicleRot.z * vehicleRot.z;
-		float vxy = vehicleRot.x * vehicleRot.y;
-		float vxz = vehicleRot.x * vehicleRot.z;
-		float vyz = vehicleRot.y * vehicleRot.z;
-		float vwx = vehicleRot.w * vehicleRot.x;
-		float vwy = vehicleRot.w * vehicleRot.y;
-		float vwz = vehicleRot.w * vehicleRot.z;
-
-		CMatrix rotMatrix;
-		rotMatrix._11 = 1.0f - 2.0f * (vyy + vzz);
-		rotMatrix._12 = 2.0f * (vxy + vwz);
-		rotMatrix._13 = 2.0f * (vxz - vwy);
-		rotMatrix._14 = 0.0f;
-		rotMatrix._21 = 2.0f * (vxy - vwz);
-		rotMatrix._22 = 1.0f - 2.0f * (vxx + vzz);
-		rotMatrix._23 = 2.0f * (vyz + vwx);
-		rotMatrix._24 = 0.0f;
-		rotMatrix._31 = 2.0f * (vxz + vwy);
-		rotMatrix._32 = 2.0f * (vyz - vwx);
-		rotMatrix._33 = 1.0f - 2.0f * (vxx + vyy);
-		rotMatrix._34 = 0.0f;
-		rotMatrix._41 = 0.0f;
-		rotMatrix._42 = 0.0f;
-		rotMatrix._43 = 0.0f;
-		rotMatrix._44 = 1.0f;
-
-		// Transform target position back to world space
-		CVector targetWorldPos;
-		targetWorldPos.x = rotMatrix._11 * targetLocalPos.x + rotMatrix._21 * targetLocalPos.y + rotMatrix._31 * targetLocalPos.z + vehiclePos.x;
-		targetWorldPos.y = rotMatrix._12 * targetLocalPos.x + rotMatrix._22 * targetLocalPos.y + rotMatrix._32 * targetLocalPos.z + vehiclePos.y;
-		targetWorldPos.z = rotMatrix._13 * targetLocalPos.x + rotMatrix._23 * targetLocalPos.y + rotMatrix._33 * targetLocalPos.z + vehiclePos.z;
-
-		wheel->SetPosition(targetWorldPos);
-
-		// Calculate and apply wheel turning angle
-		CVector currentWheelDir = wheel->GetDirection();
-
-		// Transform current wheel direction to vehicle local space
-		CVector localCurrentWheelDir;
-		localCurrentWheelDir.x = invRotMatrix._11 * currentWheelDir.x + invRotMatrix._21 * currentWheelDir.y + invRotMatrix._31 * currentWheelDir.z;
-		localCurrentWheelDir.y = invRotMatrix._12 * currentWheelDir.x + invRotMatrix._22 * currentWheelDir.y + invRotMatrix._32 * currentWheelDir.z;
-		localCurrentWheelDir.z = invRotMatrix._13 * currentWheelDir.x + invRotMatrix._23 * currentWheelDir.y + invRotMatrix._33 * currentWheelDir.z;
-
-		// Calculate turning angle based on wheel direction in local space
-		float turnAngle = wheel->m_curAngle - atan2(-localCurrentWheelDir.z, -localCurrentWheelDir.x);
-
-		// Apply the turning angle
-		ai::Vehicle::_TurnWheelByAngle(wheel, turnAngle);
+		v66 = vv;
+        auto v42 = (float)((float)(v41[0] * v66._11) + (float)(v66._21 * v41[1])) + (float)(v66._31 * v41[2]);
+        auto v43 = (float)((float)(v66._12 * v41[0]) + (float)(v66._22 * v41[1])) + (float)(v66._32 * v41[2]);
+        wheelDir.z = (float)((float)(v66._13 * v41[0]) + (float)(v66._23 * v41[1])) + (float)(v66._33 * v41[2]);
+        axis.z = wheelDir.z;
+        wheelDir.x = v42;
+        axis.x = v42;
+        wheelDir.y = v43;
+        axis.y = v43;
+        auto angle = m_wheel->m_curAngle - atan2(-wheelDir.z, -v42);
+        _TurnWheelByAngle(m_wheel, angle);
 	}
 
 	m3d::Object* Vehicle::CreateObject()

@@ -76,6 +76,7 @@ int CBCharacteristicsWnd::GameDataSetup()
 {
     // TODO: implement CBCharacteristicsWnd::GameDataSetup
     // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void CBCharacteristicsWnd::UpdateCharacteristics()

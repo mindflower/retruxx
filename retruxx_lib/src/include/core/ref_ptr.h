@@ -7,8 +7,7 @@ class ref_ptr
 public:
     ref_ptr() = default;
 
-    ref_ptr(T* ptr) :
-        m_ptr(ptr)
+    ref_ptr(T* ptr) : m_ptr(ptr)
     {
         if (m_ptr)
         {
@@ -16,8 +15,7 @@ public:
         }
     }
 
-    ref_ptr(ref_ptr<T> const& rhs) :
-        m_ptr(rhs.m_ptr)
+    ref_ptr(const ref_ptr<T>& rhs) : m_ptr(rhs.m_ptr)
     {
         if (m_ptr)
         {
@@ -25,13 +23,12 @@ public:
         }
     }
 
-    ref_ptr(ref_ptr<T>&& rhs) noexcept :
-        m_ptr(rhs.m_ptr)
+    ref_ptr(ref_ptr<T>&& rhs) noexcept : m_ptr(rhs.m_ptr)
     {
         rhs.m_ptr = nullptr;
     }
 
-    ref_ptr& operator=(ref_ptr<T> const& rhs)
+    ref_ptr& operator=(const ref_ptr<T>& rhs)
     {
         if (m_ptr == rhs.m_ptr)
         {
@@ -71,31 +68,51 @@ public:
         }
     }
 
-    operator bool()
+    const T* get() const
     {
-        return m_ptr != nullptr;
+        return m_ptr;
+    }
+
+    T* get()
+    {
+        return m_ptr;
+    }
+
+    operator const T*() const
+    {
+        return m_ptr;
+    }
+
+    operator T*()
+    {
+        return m_ptr;
+    }
+
+    const T* operator->() const
+    {
+        assert(nullptr != m_ptr);
+        return m_ptr;
+    }
+
+    T* operator->()
+    {
+        assert(nullptr != m_ptr);
+        return m_ptr;
+    }
+
+    bool operator==(const T* rhs) const
+    {
+        return m_ptr == rhs;
+    }
+
+    bool operator==(const ref_ptr<T>& rhs) const
+    {
+        return m_ptr == rhs.m_ptr;
     }
 
     bool operator!() const
     {
         return m_ptr == nullptr;
-    }
-
-    operator T*() const
-    {
-        assert(nullptr != m_ptr);
-        return m_ptr;
-    }
-
-    bool operator==(ref_ptr<T> const& rhs) const
-    {
-        return m_ptr == rhs.m_ptr;
-    }
-
-    T* operator->() const
-    {
-        assert(nullptr != m_ptr);
-        return m_ptr;
     }
 
 private:

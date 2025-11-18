@@ -1610,12 +1610,11 @@ int TruxxUiManager::GUI_RegisterScriptGlobals()
     int res = 1;
     const auto registerWindow = [this, &res](const m3d::Class* cls, const char* objName, const int wndId)
     {
-        if (const auto wnd = GetWindow(wndId))
+        if (auto wnd = GetWindow(wndId))
         {
-            auto* wndPtr = &*wnd;
-            if (wndPtr->IsKindOf(cls))
+            if (wnd->IsKindOf(cls))
             {
-                M3D_KERNEL->RegisterGlobal(wndPtr, objName);
+                M3D_KERNEL->RegisterGlobal(wnd, objName);
                 return;
             }
         }

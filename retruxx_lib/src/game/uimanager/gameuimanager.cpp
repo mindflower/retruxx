@@ -507,7 +507,7 @@ bool GameUiManager::GUI_IsModalEqualWndRunning() const
     }
     for (const auto id : m_onScreenWindows)
     {
-        const auto wnd = GUI_GetWindow(id);
+        auto wnd = GUI_GetWindow(id);
         if (wnd && GUI_IsWndModalEqual(wnd))
         {
             return true;
@@ -865,10 +865,10 @@ int GameUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void*
     }
     if (data)
     {
-        auto ev = static_cast<m3d::Event*>(data);
-        for (auto const& window : m_windows)
+        const auto ev = static_cast<m3d::Event*>(data);
+        for (const auto& window : m_windows)
         {
-            if (ev->m_void[0] == window.second)
+            if (ev->m_void[0] == window.second.get())
             {
                 m_onScreenWindows.erase(window.first);
                 GUI_EndModalDlg();

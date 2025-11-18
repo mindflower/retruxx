@@ -38,7 +38,7 @@ namespace m3d
             {
                 return true;
             }
-            for (auto const& package : m_Packages)
+            for (auto& package : m_Packages)
             {
                 if (package->HaveFile(fullFilename.c_str()))
                 {
@@ -97,7 +97,7 @@ namespace m3d
 
             if (flags == IStream::OPEN_READ)
             {
-                for (auto const& package : m_Packages)
+                for (auto& package : m_Packages)
                 {
                     if (package->HaveFile(fullFilename.c_str()))
                     {
