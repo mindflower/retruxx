@@ -46,7 +46,7 @@ namespace ai
 			auto it = g_collidersMap->find(merged);
 			if (it != g_collidersMap->end())
 			{
-				it->second;
+				return it->second;
 			}
 
 			return defaultCollider;
@@ -72,7 +72,7 @@ namespace ai
 			else
 			{
 				v3 = 0xFFFF;
-				v4 = -65536;
+                v4 = 0xFFFF0000;
 			}
 			if (c2)
 			{

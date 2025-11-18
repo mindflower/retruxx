@@ -21,18 +21,6 @@
 #include <server/objects/player.h>
 #include <server/objects/vehicle.h>
 
-namespace m3d
-{
-    extern CClient* pClient;
-}
-
-namespace ai
-{
-    extern ObjContainer* theObjects;
-    extern Player* thePlayer;
-    extern Relationship* theRelationship;
-}
-
 namespace
 {
     int GetFadingMsgParams(m3d::sArgStack& scriptStack, CStr& msg, std::vector<m3d::AIParam>& params)

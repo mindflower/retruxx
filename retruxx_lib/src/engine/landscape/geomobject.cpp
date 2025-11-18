@@ -34,7 +34,11 @@ namespace m3d
 
     void GeomObject::IncEnabledCellsCount()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!m_enabledCellsCount && m_bMayBeEnabled)
+        {
+            dGeomEnable(m_geom);
+        }
+        ++m_enabledCellsCount;
     }
 
     void GeomObject::SetBounds(PointBase<int> const& startCell, PointBase<int> const& endCell)
@@ -94,7 +98,10 @@ namespace m3d
 
     void GeomObject::DecEnabledCellsCount()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_enabledCellsCount-- == 1)
+        {
+            dGeomDisable(m_geom);
+        }
     }
 
     void GeomObject::Release()

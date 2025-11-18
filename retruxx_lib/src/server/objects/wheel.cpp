@@ -1,5 +1,7 @@
 #include "wheel.h"
 
+#include "vehicle.h"
+
 #include <stdexcept>
 #include <ode/objects.h>
 
@@ -302,7 +304,7 @@ namespace ai
 
     Vehicle* Wheel::GetVehicle() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(GetParent(), Vehicle);
     }
 
     void Wheel::SetInitialRotation(Quaternion const& rot)

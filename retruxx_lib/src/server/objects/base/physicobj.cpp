@@ -453,7 +453,11 @@ namespace ai
 
     void PhysicObj::IncEnabledCellsCount()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if ((m_physicState & 1) == 0 && (m_physicState & 2) != 0 && !m_enabledCellsCount)
+        {
+            EnableGeometry(false);
+        }
+        ++m_enabledCellsCount;
     }
 
     void PhysicObj::SetTorque(CVector const&)
@@ -583,7 +587,11 @@ namespace ai
 
     void PhysicObj::DecEnabledCellsCount()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        --m_enabledCellsCount;
+        if ((m_physicState & 1) == 0 && (m_physicState & 2) != 0 && !m_enabledCellsCount)
+        {
+            DisableGeometry(false);
+        }
     }
 
     CVector PhysicObj::GetPosition() const
@@ -709,9 +717,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void PhysicObj::AddRelTorque(CVector const&)
+    void PhysicObj::AddRelTorque(const CVector& relTorque)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        dBodyAddRelTorque(m_body->id(), relTorque.x, relTorque.y, relTorque.z);
     }
 
     void PhysicObj::SetPostDisablePhysics()
@@ -747,12 +755,12 @@ namespace ai
 
     void PhysicObj::SetLinearVelocity(CVector const& linearVel)
     {
-        dBodySetLinearVel(this->m_body->id(), linearVel.x, linearVel.y, linearVel.z);
+        dBodySetLinearVel(m_body->id(), linearVel.x, linearVel.y, linearVel.z);
     }
 
-    void PhysicObj::AddForce(CVector const&)
+    void PhysicObj::AddForce(CVector const& force)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        dBodyAddForce(m_body->id(), force.x, force.y, force.z);
     }
 
     void PhysicObj::AddForceAtRelPos(CVector const&, CVector const&)
@@ -921,26 +929,23 @@ namespace ai
         float zw = z * w;
 
         // Construct rotation matrix from quaternion
-        // This is the standard conversion: R = [1-2(y²+z²)  2(xy-zw)    2(xz+yw)   ]
-        //                                     [2(xy+zw)     1-2(x²+z²)  2(yz-xw)   ]
-        //                                     [2(xz-yw)     2(yz+xw)    1-2(x²+y²) ]
         CMatrix rotationMatrix;
 
         // First row
         rotationMatrix._11 = 1.0f - 2.0f * (y2 + z2);
-        rotationMatrix._12 = 2.0f * (xy - zw);
-        rotationMatrix._13 = 2.0f * (xz + yw);
+        rotationMatrix._12 = 2.0f * (xy + zw);
+        rotationMatrix._13 = 2.0f * (xz - yw);
         rotationMatrix._14 = 0.0f;
 
         // Second row
-        rotationMatrix._21 = 2.0f * (xy + zw);
+        rotationMatrix._21 = 2.0f * (xy - zw);
         rotationMatrix._22 = 1.0f - 2.0f * (x2 + z2);
-        rotationMatrix._23 = 2.0f * (yz - xw);
+        rotationMatrix._23 = 2.0f * (yz + xw);
         rotationMatrix._24 = 0.0f;
 
         // Third row
-        rotationMatrix._31 = 2.0f * (xz - yw);
-        rotationMatrix._32 = 2.0f * (yz + xw);
+        rotationMatrix._31 = 2.0f * (xz + yw);
+        rotationMatrix._32 = 2.0f * (yz - xw);
         rotationMatrix._33 = 1.0f - 2.0f * (x2 + y2);
         rotationMatrix._34 = 0.0f;
 

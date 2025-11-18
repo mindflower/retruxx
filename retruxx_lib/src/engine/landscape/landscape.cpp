@@ -22,10 +22,13 @@
 #include <algorithm>
 #include "scene/servers/dataserver.h"
 #include "skelmodel.h"
+#include "server/objects/base/physicobj.h"
+
 #include <draftstructures.h>
 
 #include "server/objects/physicbodies/physichelpers.h"
 #include "server/objects/physicbodies/geoms/ray.h"
+#include <server/objects/base/objcontainer.h>
 
 extern "C" {
 #include <ode/collision.h>
@@ -83,7 +86,7 @@ namespace m3d
                 // Get the collision items container for this cell
                 if (x >= 0 && x < land_size && z >= 0 && z < land_size)
                 {
-                    auto& collisionItems = this->m_oCollisionitems[x + z * land_size];
+                    auto& collisionItems = m_oCollisionitems[x + z * land_size];
                     collisionItems->m_obstacles->insert(obstacle);
                 }
             }
@@ -3570,14 +3573,106 @@ namespace m3d
 
     void Landscape::ManageLandScapeCollisionTriMeshes()
     {
-        // TODO: implement Landscape::ManageLandScapeCollisionTriMeshes
-        //RETRUXX_NOT_IMPLEMENTED;
+        using namespace ai;
+
+        const auto landSize = m_owner->m_level->land_size;
+        retruxx::set<ai::PhysicObj*> allPhysicObjs;
+
+        // TODO: check this
+        for (int y = 0; y < landSize; ++y)
+        {
+            for (int x = 0; x < landSize; ++x)
+            {
+                auto* collisionItem = m_oCollisionitems[x + y * landSize];
+                const auto mustCheck = collisionItem->m_bMustCheck;
+                collisionItem->m_bMustCheck = false;
+                if (mustCheck)
+                {
+                    bool isCellEnabled = false;
+                    for (const auto objId : collisionItem->m_physicObjIds)
+                    {
+                        auto* obj = theObjects->GetEntityByObjId(objId);
+                        if (obj)
+                        {
+                            if (IS_KIND_OF(obj, PhysicObj))
+                            {
+                                auto* physObj = RT_DYNCAST(obj, PhysicObj);
+                                allPhysicObjs.insert(physObj);
+                                if (physObj->bIsUpdatingByODE())
+                                {
+                                    isCellEnabled = true;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                M3D_LOG_INFO("Error: not PhysicObj is linked to collision cell x = " + CStr(x) + ", y = " + CStr(y) + ", id = " + CStr(objId));
+                            }
+                        }
+                    }
+
+                    if (isCellEnabled != collisionItem->m_wasEnabledLastFrame)
+                    {
+                        if (isCellEnabled)
+                        {
+                            for (auto* geom : collisionItem->m_geomsList)
+                            {
+                                geom->IncEnabledCellsCount();
+                            }
+
+                            for (const auto objId : collisionItem->m_physicObjIds)
+                            {
+                                auto* physObj = RT_DYNCAST(theObjects->GetEntityByObjId(objId), PhysicObj);
+                                const auto physicState = physObj->GetPhysicState();
+                                if ((physicState & 1) == 0 && (physicState & 2) != 0)
+                                {
+                                    physObj->IncEnabledCellsCount();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for (auto* geom : collisionItem->m_geomsList)
+                            {
+                                geom->DecEnabledCellsCount();
+                            }
+
+                            for (const auto objId : collisionItem->m_physicObjIds)
+                            {
+                                auto* physObj = RT_DYNCAST(theObjects->GetEntityByObjId(objId), PhysicObj);
+                                const auto physicState = physObj->GetPhysicState();
+                                if ((physicState & 1) == 0 && (physicState & 2) != 0)
+                                {
+                                    physObj->DecEnabledCellsCount();
+                                }
+                            }
+                        }
+                        collisionItem->m_wasEnabledLastFrame = isCellEnabled;
+                    }
+                }
+            }
+        }
+
+        m_countPhysicObjsInCells->SetI(allPhysicObjs.size());
     }
 
-    void Landscape::LinkPassMapCellToCollisionCell(PointBase<int> const&)
+    void Landscape::LinkPassMapCellToCollisionCell(const PointBase<int>& cellPos)
     {
-        // TODO: implement LinkPassMapCellToCollisionCell
-       // RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Landscape::LinkPassMapCellToCollisionCell
+        // RETRUXX_NOT_IMPLEMENTED;
+        //const auto landSize = m_owner->m_level->land_size;
+        //const auto v7 = ((landSize * 128.0) / (4 * landSize)) * 0.5;
+        //const auto x = (cellPos.x + 0.5) * v7;
+        //const auto z = (cellPos.y + 0.5) * v7;
+        //const auto lsHeight = GetLsHeight(x, z);
+        //
+        //const float VISCELL_EDGE_LENGTH = 128.0;
+        //auto v8 = (int)((z - (v7 * 0.5)) * (1.0 / VISCELL_EDGE_LENGTH));
+        //v8 = std::clamp(v8, 0, landSize - 1);
+        //
+        //auto* passCell = M3D_KERNEL->New("GeomObjectPassCell");
+        //auto* odeSpace = m_owner->GetOdeSpace();
+        //auto* box = dCreateBox(odeSpace, lsHeight, 50.0, lsHeight);
     }
 
     void Landscape::ReBuildShoresVb()

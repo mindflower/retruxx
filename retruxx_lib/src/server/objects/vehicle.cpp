@@ -16,6 +16,7 @@
 #include <server/objects/physicbodies/physichelpers.h>
 
 #include "chassis.h"
+#include "chest.h"
 #include "landscape.h"
 #include "player.h"
 #include "vehicleupdater.h"
@@ -1061,7 +1062,7 @@ namespace ai
 
 	void Vehicle::IncNumWheelsTouchingGround()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        ++m_numWheelsTouchingGround;
 	}
 
 	void Vehicle::CreateChildren()
@@ -1381,7 +1382,8 @@ namespace ai
 
 	void Vehicle::UnsubscribeRadioManagerFromNearbyObjId(int) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Vehicle::UnsubscribeRadioManagerFromNearbyObjId
+		// RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::Blow(Obj*)
@@ -1709,7 +1711,8 @@ namespace ai
 
 	void Vehicle::SubscribeRadioManagerOnNearbyObjId(int) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: implement Vehicle::SubscribeRadioManagerOnNearbyObjId
+		// RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::GetValidSlotIdForGadget(Gadget const*) const
@@ -3170,14 +3173,45 @@ namespace ai
 
 		if (m_bIsControlledByPlayer)
 		{
-			for (auto& obstacle : m_currentNearbyObstacles)
+			// TODO: check this
+			for (const auto& obstacle : m_currentNearbyObstacles)
 			{
-				RETRUXX_NOT_IMPLEMENTED;
+                auto* ownerObj = obstacle->GetOwnerPhysicObj();
+                if (!ownerObj)
+                {
+                    continue;
+                }
+
+				if (IS_KIND_OF(ownerObj, Vehicle))
+				{
+                    if (m_pastNearbyObstacles.find(obstacle) == m_pastNearbyObstacles.end())
+                    {
+                        auto* vehicle = RT_DYNCAST(ownerObj, Vehicle);
+                        vehicle->SubscribeRadioManagerOnNearbyObjId(GetId());
+                    }
+				}
+                if (IS_KIND_OF(ownerObj, Chest))
+                {
+                    RETRUXX_NOT_IMPLEMENTED;
+                }
 			}
 
-			for (auto& obstacle : m_pastNearbyObstacles)
+			for (const auto& obstacle : m_pastNearbyObstacles)
 			{
-				RETRUXX_NOT_IMPLEMENTED;
+                auto* ownerObj = obstacle->GetOwnerPhysicObj();
+                if (!ownerObj)
+                {
+                    continue;
+                }
+
+                if (IS_KIND_OF(ownerObj, Vehicle))
+                {
+                    if (m_currentNearbyObstacles.find(obstacle) == m_currentNearbyObstacles.end())
+                    {
+                        auto* vehicle = RT_DYNCAST(ownerObj, Vehicle);
+                        vehicle->UnsubscribeRadioManagerFromNearbyObjId(GetId());
+                    }
+                }
 			}
 		}
 	}
@@ -3729,25 +3763,71 @@ namespace ai
 	void Vehicle::_ApplyStabilizingForces()
 	{
 		M3D_ASSERT(IsAlive());
-
+		
+		// TODO: check this!!
 		const auto linearVelocity = GetLinearVelocity();
 		if (m_numWheelsTouchingGround > 0)
 		{
-			RETRUXX_NOT_IMPLEMENTED;
+            const auto horizVel = sqrt(linearVelocity.z * linearVelocity.z + linearVelocity.x * linearVelocity.x);
+            if (horizVel > 5.0)
+            {
+                const auto pressingForce = GetPrototypeInfo()->m_pressingForce;
+                const auto mass = GetMass();
+
+				CVector force;
+                force.x = 0.0;
+                force.y = mass * pressingForce * horizVel * -0.1962;
+                force.z = 0.0;
+                AddForce(force);
+            }
 		}
 
+		const auto velocity = sqrt(linearVelocity.y * linearVelocity.y + linearVelocity.z * linearVelocity.z + linearVelocity.x * linearVelocity.x);
 		if (m_numWheelsTouchingGround > 0)
 		{
-			RETRUXX_NOT_IMPLEMENTED;
+                if (const auto* wheel = GetFirstExistingWheel())
+                {
+                    const auto dir = GetDirection();
+                    auto throttle = m_throttle * 0.5;
+					auto direction = -1;
+                    if ((((dir.y * linearVelocity.y) + (dir.z * linearVelocity.z)) + (dir.x * linearVelocity.x)) >= 0.0)
+                    {
+                        direction = 1;
+                    }
+
+					const CVector INITIAL_UP_DIRECTION = {0.0, 1.0, 0.0};
+
+					CVector relDir;
+                    relDir.x = (0.0 - INITIAL_UP_DIRECTION.x) * wheel->m_curAngle;
+                    relDir.y = (0.0 - INITIAL_UP_DIRECTION.y) * wheel->m_curAngle;
+                    relDir.z = (0.0 - INITIAL_UP_DIRECTION.z) * wheel->m_curAngle;
+
+                    const auto mass = GetMass();
+                    relDir.x = ((relDir.x * mass) * velocity) * m_driftCoeff;
+                    relDir.y = ((relDir.y * mass) * velocity) * m_driftCoeff;
+                    relDir.z = ((relDir.z * mass) * velocity) * m_driftCoeff;
+
+                    const auto cabinControlCoeff = _GetCabinControlCoeff();
+
+                    auto v21 = fabs(throttle) + 0.5;
+
+					CVector force;
+                    force.x = ((relDir.x * cabinControlCoeff) * direction) * v21;
+                    force.y = ((relDir.y * cabinControlCoeff) * direction) * v21;
+                    force.z = ((relDir.z * cabinControlCoeff) * direction) * v21;
+                    AddRelTorque(force);
+                }
 		}
 
+        m_numWheelsTouchingGround = 0;
 	}
 
 	void Vehicle::_UpdateAlarmStatus()
 	{
+		// TODO: implement Vehicle::_UpdateAlarmStatus
 		for (auto& obstacle : m_currentNearbyObstacles)
 		{
-			RETRUXX_NOT_IMPLEMENTED;
+			// RETRUXX_NOT_IMPLEMENTED;
 		}
 	}
 
@@ -4283,7 +4363,17 @@ namespace ai
 
 	float Vehicle::_GetCabinControlCoeff() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        auto* cabin = GetCabin();
+
+		float coeff = 50.0;
+		if (cabin)
+		{
+            coeff = cabin->GetControl();
+		}
+
+		coeff = std::clamp(coeff, 0.0f, 100.0f);
+
+		return 1.5 - coeff * 0.0099999998;
 	}
 
 	void Vehicle::_ValidateVehicleParts()

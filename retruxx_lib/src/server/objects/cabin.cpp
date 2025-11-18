@@ -141,7 +141,7 @@ namespace ai
 
     float Cabin::GetControl() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_control;
     }
 
     void Cabin::SetMaxTorque(float)

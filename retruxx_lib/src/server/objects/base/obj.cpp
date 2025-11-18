@@ -146,11 +146,6 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetSchwarz)
 
 namespace ai
 {
-    extern ObjContainer* theObjects;
-    extern AIManager* theAIManager;
-    extern ProcessManager* theProcessManager;
-    extern PrototypeManager* thePrototypeManager;
-
     //std::map<CStr, int> Obj::m_propertiesMap;
     //std::map<int, eGObjPropertySaveStatus> Obj::m_propertiesSaveStatesMap;
 
@@ -494,9 +489,23 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Obj::bIsEnemyWith(Obj const*) const
+    bool Obj::bIsEnemyWith(const Obj* pObj) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool result = false;
+        if (pObj)
+        {
+            const auto flags = pObj->GetFlags();
+            if ((flags & 8) == 0 && (flags & 2) == 0 && !pObj->GetParentRepository())
+            {
+                auto v3 = m_flags;
+                if ((v3 & 8) == 0 && (v3 & 2) == 0 && !this->m_parentRepository && (pObj->m_flags & 1) != 0 && (this->m_flags & 1) != 0 &&
+                    theRelationship->CheckTolerance(this->m_belong, pObj->m_belong) <= RS_ENEMY)
+                {
+                    return true;
+                }
+            }
+        }
+        return result;
     }
 
     CStr Obj::GetDebugDescription() const
