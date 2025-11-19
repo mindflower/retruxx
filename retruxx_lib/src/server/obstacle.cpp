@@ -62,33 +62,30 @@ namespace ai
             // TODO: check this and refactor
             m3d::AnimatedModel* mdl = nullptr;
             M3D_APP->GetAnimatedModelsServer().GetItemProperty(sh, 16394, &mdl);
-            
-            auto v4 = mdl->m_box.m_box[1];
-            auto v5 = mdl->m_box.m_box[2];
+
             auto center = (float)(mdl->m_box.m_box[3] + mdl->m_box.m_box[0]) * 0.5;
-            auto center_4 = (float)(mdl->m_box.m_box[4] + v4) * 0.5;
-            auto center_8 = (float)(mdl->m_box.m_box[5] + v5) * 0.5;
-            auto v6 = mdl->m_box.m_box[4] - v4;
-            auto v7 = mdl->m_box.m_box[5] - v5;
+            auto center_4 = (float)(mdl->m_box.m_box[4] + mdl->m_box.m_box[1]) * 0.5;
+            auto center_8 = (float)(mdl->m_box.m_box[5] + mdl->m_box.m_box[2]) * 0.5;
 
             CVector size;
             size.x = mdl->m_box.m_box[3] - mdl->m_box.m_box[0];
-            size.y = v6;
-            size.z = v7;
+            size.y = mdl->m_box.m_box[4] - mdl->m_box.m_box[1];
+            size.z = mdl->m_box.m_box[5] - mdl->m_box.m_box[2];
 
             m_intersectionBox = Box::CreateObject(nullptr, size, nullptr);
 
+            const auto ownerRotation = m_ownerSgNode->GetRotation();
             CMatrix vv;
-            auto z = m_ownerSgNode->GetRotation().z;
-            auto y = m_ownerSgNode->GetRotation().y;
-            auto v13 = z * m_ownerSgNode->GetRotation().w;
-            auto v14 = m_ownerSgNode->GetRotation().x * z;
-            auto v15 = m_ownerSgNode->GetRotation().x * m_ownerSgNode->GetRotation().w;
-            auto v33 = m_ownerSgNode->GetRotation().x * m_ownerSgNode->GetRotation().x;
-            auto v34 = m_ownerSgNode->GetRotation().x * m_ownerSgNode->GetRotation().y;
-            auto v27 = m_ownerSgNode->GetRotation().z * m_ownerSgNode->GetRotation().y;
+            auto z = ownerRotation.z;
+            auto y = ownerRotation.y;
+            auto v13 = z * ownerRotation.w;
+            auto v14 = ownerRotation.x * z;
+            auto v15 = ownerRotation.x * ownerRotation.w;
+            auto v33 = ownerRotation.x * ownerRotation.x;
+            auto v34 = ownerRotation.x * ownerRotation.y;
+            auto v27 = ownerRotation.z * ownerRotation.y;
             auto v16 = z * z;
-            auto v28 = m_ownerSgNode->GetRotation().y * m_ownerSgNode->GetRotation().w;
+            auto v28 = ownerRotation.y * ownerRotation.w;
             auto v17 = y * y;
             vv._11 = 1.0 - (float)((float)(v16 + v17) * 2.0);
             vv._21 = (float)(v34 - v13) * 2.0;
@@ -104,13 +101,14 @@ namespace ai
             memset(&vv.m[2][3], 0, 16);
             vv._44 = 1.0;
 
+            const auto ownerWorldAbs = m_ownerSgNode->GetOriginWorldAbs();
             dGeomSetPosition(
                 m_intersectionBox->GetGeomId(),
-                m_ownerSgNode->GetOriginWorldAbs().x + (((vv._31 * center_8) + (vv._21 * center_4)) + (vv._11 * center)),
-                m_ownerSgNode->GetOriginWorldAbs().y + (((vv._32 * center_8) + (vv._22 * center_4)) + (vv._12 * center)),
-                m_ownerSgNode->GetOriginWorldAbs().z + (((vv._33 * center_8) + (vv._23 * center_4)) + (vv._13 * center)));
+                ownerWorldAbs.x + (((vv._31 * center_8) + (vv._21 * center_4)) + (vv._11 * center)),
+                ownerWorldAbs.y + (((vv._32 * center_8) + (vv._22 * center_4)) + (vv._12 * center)),
+                ownerWorldAbs.z + (((vv._33 * center_8) + (vv._23 * center_4)) + (vv._13 * center)));
 
-            auto rot = m_ownerSgNode->GetRotation();
+            auto rot = ownerRotation;
             float quat[4] = {rot.w, rot.x, rot.y, rot.z};
             dGeomSetQuaternion(m_intersectionBox->GetGeomId(), quat);
 

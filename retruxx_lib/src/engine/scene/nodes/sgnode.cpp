@@ -49,13 +49,15 @@ namespace m3d
         CVector max;
         CVector min;
 
-        max = *(CVector*)&this->m_boundingBox.m_box[3];
         min.x = this->m_boundingBox.m_box[0];
         min.y = this->m_boundingBox.m_box[1];
         min.z = this->m_boundingBox.m_box[2];
+        max.x = this->m_boundingBox.m_box[3];
+        max.y = this->m_boundingBox.m_box[4];
+        max.z = this->m_boundingBox.m_box[5];
 
         Obb obb;
-        obb.Create(min, max, this->m_currentXForm, 1);
+        obb.Create(min, max, m_currentXForm, true);
         return obb;
     }
 

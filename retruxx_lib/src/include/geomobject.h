@@ -96,10 +96,8 @@ namespace m3d
 
     class GeomObjectStatics : public m3d::GeomObject
     {
-
     protected:
         GeomObjectStatics();
-        GeomObjectStatics(const m3d::GeomObjectStatics& rhs);
 
     public:
         virtual  ~GeomObjectStatics() override /* 0x00 */;

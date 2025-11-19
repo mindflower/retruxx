@@ -84,11 +84,8 @@ namespace m3d
             for (int x = x0; x <= x1; ++x)
             {
                 // Get the collision items container for this cell
-                if (x >= 0 && x < land_size && z >= 0 && z < land_size)
-                {
-                    auto& collisionItems = m_oCollisionitems[x + z * land_size];
-                    collisionItems->m_obstacles->insert(obstacle);
-                }
+                auto& collisionItems = m_oCollisionitems[x + z * land_size];
+                collisionItems->m_obstacles->insert(obstacle);
             }
         }
     }
