@@ -1,8 +1,11 @@
 #include "bulletlauncher.h"
 
+#include "core/kernel.h"
+
 #include <stdexcept>
 
 #include "math/matrix.h"
+#include "server/objects/base/globalproperties.h"
 
 namespace ai
 {
@@ -12,7 +15,7 @@ namespace ai
 
     void BulletLauncherPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        GunPrototypeInfo::PostLoad();
     }
 
     float BulletLauncherPrototypeInfo::GetDamageForOneShell() const
@@ -20,9 +23,21 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool BulletLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool BulletLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto res = GunPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (res)
+        {
+            m3d::SafeIntAttrib(m_numBulletsInShot, xmlNode, "NumBulletsInShot");
+            m3d::SafeFloatAttrib(m_groupingAngle, xmlNode, "GroupingAngle");
+            m3d::SafeStrAttrib(m_BlastWavePrototypeName, xmlNode, "BlastWavePrototype");
+            m3d::SafeIntAttrib(m_tracerRange, xmlNode, "TracerRange");
+            m3d::SafeStrAttrib(m_tracerEffectName, xmlNode, "TracerEffect");
+
+            m_groupingAngle = m_groupingAngle * 0.017453292 * 0.5;
+            M3D_ASSERT(m_groupingAngle >= 0.f && m_groupingAngle <= ai::theGlobProp.m_maxGroupingAngle);
+        }
+        return res;
     }
 
     Obj* BulletLauncherPrototypeInfo::CreateTargetObject() const
@@ -32,7 +47,10 @@ namespace ai
 
     BulletLauncherPrototypeInfo::BulletLauncherPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_groupingAngle = 0.0;
+        this->m_numBulletsInShot = 1;
+        this->m_tracerRange = 1;
+        this->m_damageType = DAMAGE_PIERCING;
     }
 
     float BulletLauncher::GetAccuracyClamped() const

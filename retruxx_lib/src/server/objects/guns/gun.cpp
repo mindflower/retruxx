@@ -1,8 +1,11 @@
 #include "gun.h"
 
+#include "core/log.h"
+
 #include <stdexcept>
 
 #include "math/matrix.h"
+#include <server/objects/base/prototypemanager.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, GetShellsInCurrentCharge)
 {
@@ -36,6 +39,46 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Gun, SetChargeState)
 
 namespace ai
 {
+    namespace
+    {
+        const float DEFAULT_TURNING_SPEED = 180.0;
+
+        struct _FiringType2Str
+        {
+            /* 0x0000 */ FiringTypes m_type;
+            /* 0x0004 */ CStr m_name;
+        }; /* size: 0x0010 */
+
+        const _FiringType2Str l_firingType2Str[] = {
+            {FT_MACHINE_GUN, "MachineGun"},
+            {FT_CANNON, "Cannon"},
+            {FT_SHOT_GUN, "ShotGun"},
+            {FT_LASER, "Laser"},
+            {FT_PLASMA, "Plasma"},
+            {FT_ROCKET, "Rocket"},
+            {FT_ARTILLERY, "Artillery"},
+            {FT_THUNDERBOLT, "Thunderbolt"},
+            {FT_MINE, "Mine"},
+            {FT_NAIL, "Nail"},
+            {FT_TURBO, "Turbo"},
+            {FT_OIL, "Oil"},
+            {FT_SMOKE, "Type_Smoke"},
+        };
+
+        struct _DamageType2Str
+        {
+            /* 0x0000 */ DamageType m_type;
+            /* 0x0004 */ CStr m_name;
+        }; /* size: 0x0010 */
+
+        const _DamageType2Str l_damageType2Str[] = {
+            {DAMAGE_PIERCING, "PIERCING"},
+            {DAMAGE_BLAST, "BLAST"},
+            {DAMAGE_ENERGY, "ENERGY"},
+            {DAMAGE_WATER, "WATER"},
+        };
+    }
+
     RT_CLASS_EXPORTS_BEGIN(Gun)
         RT_CLASS_EXPORT(Gun, m3d::METHOD, GetShellsInCurrentCharge, "", "", "")
         RT_CLASS_EXPORT(Gun, m3d::METHOD, SetShellsInCurrentCharge, "", "", "")
@@ -58,7 +101,26 @@ namespace ai
 
     GunPrototypeInfo::GunPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_WithCharging = 1;
+        this->m_WithShellsPoolLimit = 1;
+        this->m_shellPrototypeId = -1;
+        this->m_damage = 1.0;
+        this->m_damageType = DAMAGE_PIERCING;
+        this->m_firingRate = 1.0;
+        this->m_firingRange = 1.0;
+        this->m_lowStopAngle = 0.0;
+        this->m_highStopAngle = 0.0;
+        this->m_ignoreStopAnglesWhenFire = 0;
+        this->m_decalId = -1;
+        this->m_recoilForce = 0.0;
+        this->m_turningSpeed = DEFAULT_TURNING_SPEED;
+        this->m_ChargeSize = 20;
+        this->m_ReChargingTime = 1.0;
+        this->m_ReChargingTimePerShell = 0.0;
+        this->m_ShellsPoolSize = 12;
+        this->m_blastWavePrototypeId = -1;
+        this->m_firingType = FT_MACHINE_GUN;
+        this->m_explosionTypeName = "BIG";
     }
 
     void GunPrototypeInfo::CreateBlastWave(CVector const&, int) const
@@ -71,19 +133,81 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    FiringTypes GunPrototypeInfo::Str2FiringType(CStr const&)
+    FiringTypes GunPrototypeInfo::Str2FiringType(const CStr& firingTypeStr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (const auto& firingType : l_firingType2Str)
+        {
+            if (firingType.m_name == firingTypeStr)
+            {
+                return firingType.m_type;
+            }
+        }
+        return FT_NUM_FIRING_TYPES;
     }
 
-    DamageType GunPrototypeInfo::Str2DamageType(CStr const&)
+    DamageType GunPrototypeInfo::Str2DamageType(const CStr& damageTypeStr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (const auto& damageType : l_damageType2Str)
+        {
+            if (damageType.m_name == damageTypeStr)
+            {
+                return damageType.m_type;
+            }
+        }
+        return DAMAGE_NUM_TYPES;
     }
 
-    bool GunPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool GunPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto res = VehiclePartPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (res)
+        {
+            m3d::SafeStrAttrib(m_shellPrototypeName, xmlNode, "BulletPrototype");
+            m3d::SafeStrAttrib(m_blastWavePrototypeName, xmlNode, "BlastWavePrototype");
+            m3d::SafeFloatAttrib(m_damage, xmlNode, "Damage");
+            m3d::SafeFloatAttrib(m_firingRate, xmlNode, "FiringRate");
+            m3d::SafeFloatAttrib(m_firingRange, xmlNode, "FiringRange");
+            m3d::SafeStrAttrib(m_explosionTypeName, xmlNode, "ExplosionType");
+            m3d::SafeFloatAttrib(m_recoilForce, xmlNode, "RecoilForce");
+
+            CStr decal;
+            m3d::SafeStrAttrib(decal, xmlNode, "Decal");
+            m_decalId = gDynamicScene->AddDecalName(decal);
+
+            CStr firingTypeName;
+            m3d::SafeStrAttrib(firingTypeName, xmlNode, "FiringType");
+            m_firingType = Str2FiringType(firingTypeName);
+            if (m_firingType == FT_NUM_FIRING_TYPES)
+            {
+                M3D_LOG_INFO("Warning: Unknown firing type: '" + CStr(m_firingType) + "' for " + GetDebugDescription());
+            }
+
+            CStr damageType;
+            m3d::SafeStrAttrib(damageType, xmlNode, "DamageType");
+            if (!damageType.empty())
+            {
+                m_damageType = Str2DamageType(damageType);
+            }
+            if (m_damageType == DAMAGE_NUM_TYPES)
+            {
+                M3D_LOG_INFO("Warning: Unknown damage type: '" + CStr(m_damageType) + "' for " + GetDebugDescription());
+            }
+
+            m3d::SafeBoolAttrib(m_WithCharging, xmlNode, "WithCharging");
+            m3d::SafeUintAttrib(m_ChargeSize, xmlNode, "ChargeSize");
+            m3d::SafeFloatAttrib(m_ReChargingTime, xmlNode, "RechargingTime");
+            m3d::SafeFloatAttrib(m_ReChargingTimePerShell, xmlNode, "ReChargingTimePerShell");
+            m3d::SafeUintAttrib(m_ShellsPoolSize, xmlNode, "ShellsPoolSize");
+            m3d::SafeBoolAttrib(m_WithShellsPoolLimit, xmlNode, "WithShellsPoolLimit");
+
+            m3d::SafeFloatAttrib(m_turningSpeed, xmlNode, "TurningSpeed");
+            m_turningSpeed = m_turningSpeed * 0.017453292;
+
+            m_barrelModelName = m_engineModelName + "Gun";
+            
+            m3d::SafeBoolAttrib(m_ignoreStopAnglesWhenFire, xmlNode, "IgnoreStopAnglesWhenFire");
+        }
+        return res;
     }
 
     float GunPrototypeInfo::GetDamageForOneShell() const
@@ -93,7 +217,21 @@ namespace ai
 
     void GunPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_explosionType = gDynamicScene->GetExplosionType(m_explosionTypeName);
+        m_shellPrototypeId = thePrototypeManager->GetPrototypeId(m_shellPrototypeName);
+        if (m_shellPrototypeId == -1 && !m_shellPrototypeName.empty())
+        {
+            M3D_CRITICAL_ERROR("shell prototype '" + m_shellPrototypeName + "' is invalid for '" + GetDebugDescription());
+        }
+
+        if (!m_blastWavePrototypeName.empty())
+        {
+            m_blastWavePrototypeId = thePrototypeManager->GetPrototypeId(m_blastWavePrototypeName);
+            if (m_blastWavePrototypeId == -1)
+            {
+                M3D_LOG_INFO("Unknown blastwave prototype " + m_blastWavePrototypeName);
+            }
+        }
     }
 
     short GunPrototypeInfo::GetExplosionType() const

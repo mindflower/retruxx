@@ -8,15 +8,12 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Shell);
 
-    bool ShellPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool ShellPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return SimplePhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
-    ShellPrototypeInfo::ShellPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    ShellPrototypeInfo::ShellPrototypeInfo() = default;
 
     Gun* Shell::GetGun() const
     {

@@ -330,8 +330,10 @@ namespace ai
             "Cabin",
             "Basket",
             "Wheel",
-            "CompoundVehiclePart"
-
+            "CompoundVehiclePart",
+            "VehicleRecollection",
+            "Bullet",
+            "BulletLauncher"
         };
 
         if (classes.find(className) == classes.end())

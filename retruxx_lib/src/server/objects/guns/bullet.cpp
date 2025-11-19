@@ -8,15 +8,17 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Bullet);
 
-    bool BulletPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool BulletPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto res = ShellPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (res)
+        {
+            _SetGeomType(GEOM_TYPE_RAY);
+        }
+        return res;
     }
 
-    BulletPrototypeInfo::BulletPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    BulletPrototypeInfo::BulletPrototypeInfo() = default;
 
     Obj* BulletPrototypeInfo::CreateTargetObject() const
     {
