@@ -1993,7 +1993,7 @@ namespace ai
 
 	int Vehicle::GetSeenObjId() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_seenObjId;
 	}
 
 	void Vehicle::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
@@ -2036,7 +2036,7 @@ namespace ai
 
 	bool Vehicle::bIsControlledByPlayer() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_bIsControlledByPlayer;
 	}
 
 	m3d::AIParam Vehicle::TakeOffAllGuns()
@@ -2424,7 +2424,7 @@ namespace ai
 
 	bool Vehicle::GetInSmokeScreenMode() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_inSmokeScreenMode != 0;
 	}
 
 	void Vehicle::PlaySoundOnRechargeWeapon()

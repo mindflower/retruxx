@@ -338,9 +338,15 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Gun::Fire(bool)
+    bool Gun::Fire(bool enable)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool doFire = enable;
+        if (enable && !CanFire())
+        {
+            doFire = false;
+        }
+        m_bIsFiring = doFire;
+        return doFire && _DoFire();
     }
 
     GunPrototypeInfo const* Gun::GetPrototypeInfo() const
@@ -516,9 +522,9 @@ namespace ai
         return result;
     }
 
-    void Gun::SetTargetId(int)
+    void Gun::SetTargetId(int targetObjId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_targetObjId = targetObjId;
     }
 
     unsigned Gun::GetChargeSize() const
@@ -663,7 +669,9 @@ namespace ai
 
     bool Gun::CanFire() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_ChargeState == csReady && m_ShellsInCurrentCharge &&
+            (GetPrototypeInfo()->m_ignoreStopAnglesWhenFire || CanLookAtTarget()) &&
+            IsDurabilityEnoughForFiring();
     }
 
     unsigned Gun::GetPrice(IPriceCoeffProvider const*) const
