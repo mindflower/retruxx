@@ -3,6 +3,9 @@
 #include <server/objects/player.h>
 
 #include "m3dapp.h"
+#include "core/kernel.h"
+#include "game/uiwindows/miscwindows/bindkeyswnd.h"
+#include "impulses/i_impulses.h"
 #include "server/objects/vehicle.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(WeaponGroupManager, SaveWeaponGroups)
@@ -38,7 +41,7 @@ void WeaponGroupManager::ClearSavedGroups()
 int WeaponGroupManager::ValidateWeaponGroups()
 {
     // TODO: implement WeaponGroupManager::ValidateWeaponGroups
-    //RETRUXX_NOT_IMPLEMENTED;
+    RETRUXX_NOT_IMPLEMENTED;
     return 1;
 }
 
@@ -131,9 +134,27 @@ m3d::Class* WeaponGroupManager::GetBaseClass()
     return RT_CLASS_LOCAL(Object);
 }
 
-int WeaponGroupManager::AddWeaponGroup(WeaponGroup*)
+int WeaponGroupManager::AddWeaponGroup(WeaponGroup* wg)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!wg)
+    {
+        return 0;
+    }
+
+    const auto id = wg->GetGroupId();
+    if (id > 4 || wg->GetImpulseId() == IM_ERROR)
+    {
+        return 0;
+    }
+
+    auto it = m_weaponGroups.find(id);
+    if (it != m_weaponGroups.end())
+    {
+        return it->second == wg;
+    }
+
+    m_weaponGroups.emplace(id, wg);
+    return 1;
 }
 
 void WeaponGroupManager::ReloadAllWeapon()
@@ -148,8 +169,21 @@ void WeaponGroupManager::OnPlayerVehicleChanged()
 
 int WeaponGroupManager::Init()
 {
-    // TODO: implement WeaponGroupManager::Init
-    // RETRUXX_NOT_IMPLEMENTED;
+    ClearGroups();
+    for (int i = 0; i < 5; ++i)
+    {
+        auto* group = M3D_KERNEL->New("WeaponGroup");
+        if (group)
+        {
+            auto* weaponGroup = static_cast<WeaponGroup*>(group);
+            weaponGroup->SetGroupId(i);
+            if (!AddWeaponGroup(weaponGroup))
+            {
+                // TODO: check this
+                delete group;
+            }
+        }
+    }
     return 1;
 }
 
@@ -190,7 +224,13 @@ int WeaponGroupManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 
 void WeaponGroupManager::ClearGroups()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto& group : m_weaponGroups)
+    {
+        delete group.second;
+    }
+    m_weaponGroups.clear();
+
+    M3D_APP->ImmediateMessage(UM_WEAPONGROUP_CHANGED, -1, 0, 0, 0, {}, {});
 }
 
 int WeaponGroupManager::RemoveWeaponFromWeaponGroup(int)
@@ -233,9 +273,7 @@ WeaponGroupManager::WeaponGroupManager(WeaponGroupManager const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-WeaponGroupManager::WeaponGroupManager()
-{
-}
+WeaponGroupManager::WeaponGroupManager() = default;
 
 void WeaponGroup::Reload()
 {
@@ -264,7 +302,15 @@ int WeaponGroup::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 
 bool WeaponGroup::CanFire() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_groupId <= 4)
+    {
+        if (m_impulseId != IM_ERROR &&
+            (M3D_APP->m_pImpulses->GetImpulseState(m_impulseId) || M3D_APP->m_pImpulses->GetImpulseState(IM_CAR_FIRE_ALL)))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 m3d::Class* WeaponGroup::GetBaseClass()
@@ -284,7 +330,7 @@ Impulse WeaponGroup::GetImpulseByGroupId(int)
 
 m3d::Object* WeaponGroup::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new WeaponGroup;
 }
 
 int WeaponGroup::AddWeapon(CStr const&)
@@ -299,7 +345,7 @@ void WeaponGroup::Clear()
 
 int WeaponGroup::GetGroupId() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_groupId;
 }
 
 m3d::Class* WeaponGroup::GetClass() const
@@ -309,12 +355,20 @@ m3d::Class* WeaponGroup::GetClass() const
 
 Impulse WeaponGroup::GetImpulseId() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_impulseId;
 }
 
 void WeaponGroup::KeepFire()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* vehicle = ai::thePlayer->GetVehicle();
+    if (vehicle)
+    {
+        const auto canFire = CanFire();
+        for (const auto& gunName : m_gunPartNames)
+        {
+            vehicle->FireFromWeaponByGunPartName(gunName, canFire);
+        }
+    }
 }
 
 int WeaponGroup::RemoveWeapon(CStr const&)
@@ -337,9 +391,18 @@ WeaponGroup& WeaponGroup::operator=(WeaponGroup const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void WeaponGroup::SetGroupId(int)
+void WeaponGroup::SetGroupId(int groupId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_groupId = groupId;
+    switch (groupId)
+    {
+    case 0u: m_impulseId = IM_CAR_FIRE_0; break;
+    case 1u: m_impulseId = IM_CAR_FIRE_1; break;
+    case 2u: m_impulseId = IM_CAR_FIRE_2; break;
+    case 3u: m_impulseId = IM_CAR_FIRE_3; break;
+    case 4u: m_impulseId = IM_CAR_FIRE_4; break;
+    default: m_impulseId = IM_ERROR; break;
+    }
 }
 
 WeaponGroup::~WeaponGroup()
@@ -354,7 +417,8 @@ retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>> const& WeaponG
 
 WeaponGroup::WeaponGroup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_groupId = -1;
+    m_impulseId = IM_ERROR;
 }
 
 WeaponGroup::WeaponGroup(WeaponGroup const&)

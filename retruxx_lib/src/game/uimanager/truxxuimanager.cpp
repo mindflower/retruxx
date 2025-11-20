@@ -1248,7 +1248,6 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     case IE_EV_UM_LOADGAME:
     case IE_EV_UM_SHOW_CURSOR:
     case IE_EV_SM_REPOSITORY_CHANGED:
-    case IE_EV_SM_VEHICLEPART_CHANGED:
     case IE_EV_SM_PLAYER_MONEY_CHANGED:
     {
         return 0;
@@ -1299,6 +1298,11 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
             return 1;
         }
         m_bIsHiddenByUser = true;
+        return 1;
+    }
+    case IE_EV_SM_VEHICLEPART_CHANGED:
+    {
+        m_weaponGroupManager->GameDataUpdate(data, guiEventId);
         return 1;
     }
     case IE_CUST_BEFORE_START_LEVEL:

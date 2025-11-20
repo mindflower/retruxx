@@ -1419,9 +1419,45 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	bool Vehicle::FireFromWeaponByGunPartName(CStr const&, bool)
+	bool Vehicle::FireFromWeaponByGunPartName(const CStr& gunPartName, bool enable)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (gunPartName.empty())
+        {
+            return false;
+        }
+
+        auto* obj = GetPartByName(gunPartName);
+        if (!obj)
+        {
+            return false;
+        }
+
+        if (IS_KIND_OF(obj, CompoundGun))
+        {
+            auto* gun = RT_DYNCAST(obj, CompoundGun);
+            gun->SetProperTargetId(m_seenObjId, m_lockedObjId);
+            gun->Fire(enable);
+            return true;
+        }
+
+        if (IS_KIND_OF(obj, RocketLauncher))
+        {
+            auto* gun = RT_DYNCAST(obj, RocketLauncher);
+            gun->SetTargetId(m_lockedObjId);
+            gun->Fire(enable);
+            return true;
+        }
+
+        if (IS_KIND_OF(obj, Gun))
+        {
+            auto* gun = RT_DYNCAST(obj, Gun);
+            gun->SetTargetId(m_seenObjId);
+            if (!enable || gun->isLookAtPoint(m_curLookAt, 0.050000001))
+            {
+                gun->Fire(enable);
+            }
+        }
+        return true;
 	}
 
 	void Vehicle::SetUpdatingByODE(bool byODE)
