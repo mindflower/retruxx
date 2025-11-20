@@ -3343,6 +3343,7 @@ namespace ai
 				CVector scale = { 1.0, 1.0, 1.0 };
 				// TODO: check this;
 				auto node = PhysicBody::CreateNode(cabinPrototypeInfo->m_engineHighSoundName, 0, scale, nullptr, false);
+                m_engineHighSoundNode = (m3d::SgSoundSourceNode*)node;
 				cabin->m_Node->AddChild(node);
 			}
 		}
@@ -4575,7 +4576,7 @@ namespace ai
 				soundPitch = ((rpmAbs - 500.0f) * 0.0002f) + 0.5f;
 			}
 
-			m_engineHighSoundNode->SetProperty(9732u, &soundPitch);
+			m_engineHighSoundNode->SetProperty(m3d::PROP_SND_PLAYBACK_COEFF, &soundPitch);
 		}
 
 		// Automatic gear shifting based on RPM limits
