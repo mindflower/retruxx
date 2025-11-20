@@ -7,6 +7,8 @@
 #include "aistate.h"
 #include "decisionmatrix.h"
 
+#include <cassert>
+
 namespace ai
 {
     namespace
@@ -160,9 +162,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void AI::InsCommand(int, m3d::AIParam const&, m3d::AIParam const&, m3d::AIParam const&)
+    void AI::InsCommand(int Num, const m3d::AIParam& Param1, const m3d::AIParam& Param2, const m3d::AIParam& Param3)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        assert(m_numCurCommand >= 0);
+
+        ai::AIMessage command(Num, Param1, Param2, Param3);
+        command.m_RemoveAfterFinishing = 1;
+        m_CommandProcessed = false;
+        m_Commands.push_back(std::move(command));
     }
 
     void AI::SetState2Param(int, m3d::AIParam const&)

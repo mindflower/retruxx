@@ -1574,7 +1574,13 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel, ActionType newA
 
 bool ModelEffectList::SortPred::operator()(const ModelEffectList::tEffect& a, const ModelEffectList::tEffect& b)
 {
-    return a.m_desc->m_lpId < b.m_desc->m_lpId || a.m_desc->m_effectId < b.m_desc->m_effectId;
+    // TODO: check this
+    if (a.m_desc->m_lpId == b.m_desc->m_lpId)
+    {
+        return a.m_desc->m_effectId < b.m_desc->m_effectId;
+    }
+    return a.m_desc->m_lpId < b.m_desc->m_lpId;
+    //return a.m_desc->m_lpId < b.m_desc->m_lpId || a.m_desc->m_effectId < b.m_desc->m_effectId;
 }
 
 DynamicModel::DynamicModel()

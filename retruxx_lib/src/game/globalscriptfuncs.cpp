@@ -1306,8 +1306,49 @@ int n_GetNodeByName(m3d::sArgStack& scriptStack)
 
 int n_SetCameraDirectionToObj(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // TODO: check this
+    using namespace ai;
+    if (scriptStack.m_numInArgs != 1 || M3D_APP->m_player.m_cameraMode != CM_FOLLOWMODE)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+
+    int id = -1;
+    if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        id = arg->GetF();
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+    {
+        id = arg->GetI();
+    }
+    else
+    {
+        return -1;
+    }
+
+    auto* obj = ai::theObjects->GetEntityByObjId(id);
+    if (!obj || !IS_KIND_OF(obj, PhysicObj))
+    {
+        return -1;
+    }
+
+    auto* vehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer();
+    if (!vehicle)
+    {
+        return -1;
+    }
+
+    auto* physObj = RT_DYNCAST(obj, PhysicObj);
+    const auto objPos = physObj->GetGeometricCenter();
+    const auto vehPos = vehicle->GetPosition();
+
+    const auto a = -(objPos.x - vehPos.x);
+    const auto b = objPos.z - vehPos.z;
+    M3D_APP->m_curCamera.m_rotYaw = atan2(a, b);
+    return 1;
 }
 
 int n_PlayCustomMusic(m3d::sArgStack& scriptStack)

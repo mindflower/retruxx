@@ -347,9 +347,34 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int Team::OnEvent(Event const&)
+    int Team::OnEvent(const Event& evn)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto result = Obj::OnEvent(evn);
+        switch (evn.m_eventId)
+        {
+        case GE_OBJECT_DIE:
+            _OnObjectDie(evn);
+            result = 1;
+            break;
+
+        case GE_UNDER_ATTACK:
+            _OnUnderAttack(evn);
+            result = 1;
+            break;
+
+        case GE_NOTICE_ENEMY:
+            _DoNoticeEnemy(evn.m_param1.GetAsID());
+            result = 1;
+            break;
+
+        case GE_PLAYER_VEHICLE_CHANGED:
+            m_needAdjustBehaviour = true;
+            result = 1;
+            break;
+
+        default: return result;
+        }
+        return result;
     }
 
     void Team::HoldFire(int)
@@ -608,9 +633,14 @@ namespace ai
         return &m_AI;
     }
 
-    void Team::_DoNoticeEnemy(int)
+    void Team::_DoNoticeEnemy(int objId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto& curStateName = m_AI.GetCurState2Name();
+        if (curStateName != "Attack")
+        {
+            m_AI.InsCommand(2, objId, {}, {});
+        }
+        m_needAdjustBehaviour = true;
     }
 
     bool Team::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
