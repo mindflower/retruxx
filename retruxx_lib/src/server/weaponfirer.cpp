@@ -1,17 +1,20 @@
 #include "weaponfirer.h"
 #include <stdexcept>
+#include "resourcemanager.h"
+#include "objects/guns/compoundgun.h"
+#include "objects/guns/gun.h"
+#include "objects/physicbodies/vehiclepart.h"
 
 namespace ai
 {
     void WeaponFirer::AimAndFireFromWeapons(ComplexPhysicObj* obj, bool enable, float elapsedTime, Obj* target)
     {
-        RETRUXX_NOT_IMPLEMENTED;
-        CVector enemyPos;
+        CVector enemyPos = ZeroVector;
         if (enable)
         {
             if (target)
             {
-                auto const flags = target->GetFlags();
+                const auto flags = target->GetFlags();
                 if ((flags & 8) == 0 && (flags & 2) == 0 && !target->GetParentRepository())
                 {
                     enemyPos = obj->GetSmoothTargetPointForObj(target, elapsedTime);
@@ -21,7 +24,7 @@ namespace ai
                     objPos.y = enemyPos.y - objPos.y;
                     objPos.z = enemyPos.z - objPos.z;
 
-                    auto const range = sqrt(objPos.x * objPos.x + objPos.y * objPos.y + objPos.z * objPos.z);
+                    const auto range = objPos.length();
                     if (GetMaxFiringRange(obj) > range)
                     {
                         WeaponLookAtPoint(obj, enemyPos, elapsedTime);
@@ -42,9 +45,29 @@ namespace ai
         //RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WeaponFirer::WeaponLookAtPoint(ComplexPhysicObj*, CVector const&, float)
+    void WeaponFirer::WeaponLookAtPoint(ComplexPhysicObj* obj, CVector const& lookAt, float elapsedTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto gunResourceId = theResourceManager->GetResourceId("GUN");
+        const auto specialWeaponResourceId = theResourceManager->GetResourceId("SPECIAL_WEAPON");
+
+        for (auto& [name, vehiclePart] : obj->m_vehicleParts)
+        {
+            const auto* prototypeInfo = vehiclePart->GetPrototypeInfo();
+            const auto resId = prototypeInfo->m_resourceId;
+            if (resId != specialWeaponResourceId && theResourceManager->bResourceIsKindOf(resId, gunResourceId))
+            {
+                if (IS_KIND_OF(vehiclePart, Gun))
+                {
+                    auto* gun = RT_DYNCAST(vehiclePart, Gun);
+                    gun->LookAtPoint(lookAt, elapsedTime); 
+                }
+                else if (IS_KIND_OF(vehiclePart, CompoundGun))
+                {
+                    auto* gun = RT_DYNCAST(vehiclePart, CompoundGun);
+                    gun->LookAtPoint(lookAt, elapsedTime);
+                }
+            }
+        }
     }
 
     float WeaponFirer::GetMaxFiringRange(ComplexPhysicObj const*)

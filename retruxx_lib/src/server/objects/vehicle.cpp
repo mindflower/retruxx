@@ -46,6 +46,7 @@
 
 #include "gadget.h"
 #include "level.h"
+#include "staticautogun.h"
 #include "team.h"
 #include "vehiclerecollection.h"
 #include "core/timer.h"
@@ -1764,9 +1765,11 @@ namespace ai
 
 	void Vehicle::SetAttackStatus(VehicleAttackStatus attackStatus)
 	{
-		this->m_attackStatus = attackStatus;
+		m_attackStatus = attackStatus;
 		if (!attackStatus)
-			ai::WeaponFirer::FireFromWeaponsIfPossible(this, 0, {0.0, 0.0, 0.0}, 0);
+		{
+			WeaponFirer::FireFromWeaponsIfPossible(this, 0, {0.0, 0.0, 0.0}, 0);
+		}
 	}
 
 	Vehicle::Vehicle(VehiclePrototypeInfo const& prototypeInfo) :
@@ -5239,14 +5242,75 @@ namespace ai
 		}
 	}
 
-	void Vehicle::_UpdateSeenObjAndWeapons(float)
+	void Vehicle::_UpdateSeenObjAndWeapons(float elapsedTime)
 	{
 		if (!M3D_APP->bIsMousePointing())
 		{
 			return;
 		}
-		// TODO: implement Vehicle::_UpdateSeenObjAndWeapons
-		//RETRUXX_NOT_IMPLEMENTED;
+
+		m_seenObjId = -1;
+
+		CVector lookAt;
+        m3d::SgNode* seenNode = nullptr;
+        if (M3D_APP->GetMouseHitPoint(lookAt, seenNode))
+        {
+            PhysicBody* body = nullptr;
+			if (seenNode)
+			{
+                seenNode->GetProperty(m3d::PROP_NODE_PHYSICBODY, &body);
+                if (body)
+                {
+                    m_seenObjId = body->GetOwnerId();
+                }
+			}
+        }
+
+		auto* seenObj = theObjects->GetEntityByObjId(m_seenObjId);
+        if (seenObj && IS_KIND_OF(seenObj, Wheel))
+        {
+            auto* wheel = RT_DYNCAST(seenObj, Wheel);
+            auto* vehicle = wheel->GetVehicle();
+            if (vehicle)
+            {
+                m_seenObjId = vehicle->GetId();
+            }
+			else
+            {
+                m_seenObjId = -1;
+			}
+        }
+
+        if (m_seenObjId == GetId())
+        {
+            m_seenObjId = -1;
+            seenNode = nullptr;
+        }
+		// TODO: check this
+        if (!seenNode)
+        {
+            CMatrix mat;
+            mat.rotYPR(M3D_APP->m_curCamera.m_rotYaw, M3D_APP->m_curCamera.m_rotPitch, M3D_APP->m_curCamera.m_rotRoll);
+
+			const CVector INITIAL_OBJECTS_DIRECTION_4(0.0, 0.0, 1.0);
+			lookAt.x = (((mat._13 * INITIAL_OBJECTS_DIRECTION_4.z) + (mat._11 * INITIAL_OBJECTS_DIRECTION_4.x)) + (INITIAL_OBJECTS_DIRECTION_4.y * mat._12)) *
+                1000000.0;
+            lookAt.y = (((mat._23 * INITIAL_OBJECTS_DIRECTION_4.z) + (mat._22 * INITIAL_OBJECTS_DIRECTION_4.y)) + (mat._21 * INITIAL_OBJECTS_DIRECTION_4.x)) *
+                1000000.0;
+            lookAt.z = (((mat._33 * INITIAL_OBJECTS_DIRECTION_4.z) + (mat._32 * INITIAL_OBJECTS_DIRECTION_4.y)) + (mat._31 * INITIAL_OBJECTS_DIRECTION_4.x)) *
+                1000000.0;
+        }
+
+		if (!seenObj || !IS_KIND_OF(seenObj, Vehicle) && !IS_KIND_OF(seenObj, StaticAutoGun))
+		{
+            m_seenObjId = -1;
+            seenNode = nullptr;
+		}
+
+		WeaponFirer::WeaponLookAtPoint(this, lookAt, elapsedTime);
+        m_curLookAt.x = lookAt.x;
+        m_curLookAt.y = lookAt.y;
+        m_curLookAt.z = lookAt.z;
 	}
 
 	CVector Vehicle::_CalcSteeringForce(float elapsedTime)

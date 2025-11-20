@@ -1,3 +1,4 @@
+#include "geomobject.h"
 #include "globalscriptfuncs.h"
 #include "m3dgame.h"
 #include "profile.h"
@@ -33,6 +34,7 @@
 #include "server/dynamicscene.h"
 #include "server/passagedata.h"
 #include "server/objects/vehicle.h"
+#include "server/objects/base/geomobj.h"
 #include "uimisc/questinfo.h"
 #include "uiwindows/miscwindows/cinemapanel.h"
 #include <algorithm>
@@ -288,9 +290,59 @@ bool CMiracle3d::LoadSavedGame(CStr const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-bool CMiracle3d::GetMouseHitPoint(CVector&, m3d::SgNode*&)
+bool CMiracle3d::GetMouseHitPoint(CVector& hitPoint, m3d::SgNode*& sgNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    using namespace ai;
+    using namespace m3d;
+
+    static scoped_ptr mouseRay = ai::Ray::CreateObject(nullptr, 1.0, nullptr);
+    mouseRay->SetLength(10000.0);
+
+    dGeomSetPosition(mouseRay->GetGeomId(), m_curCamera.m_worldOrigin.x, m_curCamera.m_worldOrigin.y, m_curCamera.m_worldOrigin.z);
+
+    CMatrix viewMatrix;
+    viewMatrix.rotYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
+
+    CVector viewDir;
+    viewDir.x = viewMatrix._13;
+    viewDir.y = viewMatrix._23;
+    viewDir.z = viewMatrix._33;
+
+    mouseRay->SetDirection(viewDir);
+
+    sgNode = nullptr;
+
+    static dContact contact;
+    if (TraceLine(*mouseRay, contact, false, false, true, false, nullptr, false, false))
+    {
+        hitPoint.x = contact.geom.pos[0];
+        hitPoint.y = contact.geom.pos[1];
+        hitPoint.z = contact.geom.pos[2];
+        
+        auto* obj = static_cast<m3d::Object*>(dGeomGetData(contact.geom.g2));
+        if (!obj)
+        {
+            return true;
+        }
+
+        if (IS_KIND_OF(obj, PhysicBody))
+        {
+            auto* physBody = RT_DYNCAST(obj, PhysicBody);
+            sgNode = physBody->m_Node;
+            return true;;
+        }
+
+        if (IS_KIND_OF(obj, GeomObjectLandscape) || IS_KIND_OF(obj, GeomObjectStatics) ||
+            IS_KIND_OF(obj, GeomObjectWater) || IS_KIND_OF(obj, GeomObjectRoad) ||
+            IS_KIND_OF(obj, GeomObj))
+        {
+            sgNode = &m3d::pClient->GetWorld().GetLandscape();
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 //Verified: CMiracle3d::OnFinishIntroVideoPlaying

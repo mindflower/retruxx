@@ -546,9 +546,34 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Gun::LookAtPoint(CVector const&, float)
+    void Gun::LookAtPoint(CVector const& lookAt, float elapsedTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        float alpha = 0.0;
+        float beta = 0.0;
+        _GetOffsetAngles(lookAt, elapsedTime, alpha, beta);
+
+        auto v4 = alpha * 0.5;
+
+        Quaternion quatHorizRotation;
+        quatHorizRotation.x = 0.0;
+        quatHorizRotation.z = 0.0;
+        quatHorizRotation.y = sin(v4);
+        quatHorizRotation.w = cos(v4);
+        SetNodeRelativeRotation(quatHorizRotation);
+
+
+        auto v5 = (0.0 - beta) * 0.5;
+
+        Quaternion quatElevation;
+        quatElevation.y = 0.0;
+        quatElevation.z = 0.0;
+        quatElevation.x = sin(v5);
+        quatElevation.w = cos(v5);
+        if (m_barrelNode)
+        {
+            m_barrelNode->SetRotation(quatElevation);
+        }
+        ai::CommonGeomMovedCallback(m_pGeoms[0]->GetGeomId());
     }
 
     void Gun::Recharge()
@@ -879,9 +904,326 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Gun::_GetOffsetAngles(CVector const&, float, float&, float&)
+    void Gun::_GetOffsetAngles(const CVector& lookAt, float elapsedTime, float& alpha, float& beta)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Gun::_GetOffsetAngles
+        // Get the gun's world position
+        CVector gunPosition;
+        if (m_barrelNode)
+        {
+            gunPosition = m_barrelNode->GetOriginWorldAbs();
+        }
+        else
+        {
+            gunPosition = GetNodeAbsolutePosition();
+        }
+
+        // Calculate direction to target and normalize it
+        CVector targetDir = lookAt - gunPosition;
+        float invLength = 1.0f / std::sqrt(targetDir.x * targetDir.x + targetDir.y * targetDir.y + targetDir.z * targetDir.z + 1.1920929e-7f);
+        targetDir.x *= invLength;
+        targetDir.y *= invLength;
+        targetDir.z *= invLength;
+
+        // Get owner's inverse rotation to transform to local space
+        ai::PhysicObj* owner = GetOwner();
+        Quaternion ownerRot = owner->GetRotation();
+        Quaternion invOwnerRot = ownerRot.getInversed();
+
+        // Convert inverse owner rotation to matrix
+        CMatrix ownerMat;
+        float xx = invOwnerRot.x * invOwnerRot.x;
+        float yy = invOwnerRot.y * invOwnerRot.y;
+        float zz = invOwnerRot.z * invOwnerRot.z;
+        float xy = invOwnerRot.x * invOwnerRot.y;
+        float xz = invOwnerRot.x * invOwnerRot.z;
+        float yz = invOwnerRot.y * invOwnerRot.z;
+        float wx = invOwnerRot.w * invOwnerRot.x;
+        float wy = invOwnerRot.w * invOwnerRot.y;
+        float wz = invOwnerRot.w * invOwnerRot.z;
+
+        ownerMat._11 = 1.0f - 2.0f * (yy + zz);
+        ownerMat._12 = 2.0f * (xy + wz);
+        ownerMat._13 = 2.0f * (xz - wy);
+        ownerMat._14 = 0.0f;
+
+        ownerMat._21 = 2.0f * (xy - wz);
+        ownerMat._22 = 1.0f - 2.0f * (xx + zz);
+        ownerMat._23 = 2.0f * (yz + wx);
+        ownerMat._24 = 0.0f;
+
+        ownerMat._31 = 2.0f * (xz + wy);
+        ownerMat._32 = 2.0f * (yz - wx);
+        ownerMat._33 = 1.0f - 2.0f * (xx + yy);
+        ownerMat._34 = 0.0f;
+
+        ownerMat._41 = 0.0f;
+        ownerMat._42 = 0.0f;
+        ownerMat._43 = 0.0f;
+        ownerMat._44 = 1.0f;
+
+        // Transform target direction to local space
+        CVector localTargetDir;
+        localTargetDir.x = ownerMat._11 * targetDir.x + ownerMat._21 * targetDir.y + ownerMat._31 * targetDir.z;
+        localTargetDir.y = ownerMat._12 * targetDir.x + ownerMat._22 * targetDir.y + ownerMat._32 * targetDir.z;
+        localTargetDir.z = ownerMat._13 * targetDir.x + ownerMat._23 * targetDir.y + ownerMat._33 * targetDir.z;
+
+        // Get current gun rotation and convert to matrix
+        Quaternion gunRot = GetNodeRelativeRotation();
+        CMatrix gunMat;
+
+        xx = gunRot.x * gunRot.x;
+        yy = gunRot.y * gunRot.y;
+        zz = gunRot.z * gunRot.z;
+        xy = gunRot.x * gunRot.y;
+        xz = gunRot.x * gunRot.z;
+        yz = gunRot.y * gunRot.z;
+        wx = gunRot.w * gunRot.x;
+        wy = gunRot.w * gunRot.y;
+        wz = gunRot.w * gunRot.z;
+
+        gunMat._11 = 1.0f - 2.0f * (yy + zz);
+        gunMat._12 = 2.0f * (xy + wz);
+        gunMat._13 = 2.0f * (xz - wy);
+        gunMat._14 = 0.0f;
+
+        gunMat._21 = 2.0f * (xy - wz);
+        gunMat._22 = 1.0f - 2.0f * (xx + zz);
+        gunMat._23 = 2.0f * (yz + wx);
+        gunMat._24 = 0.0f;
+
+        gunMat._31 = 2.0f * (xz + wy);
+        gunMat._32 = 2.0f * (yz - wx);
+        gunMat._33 = 1.0f - 2.0f * (xx + yy);
+        gunMat._34 = 0.0f;
+
+        gunMat._41 = 0.0f;
+        gunMat._42 = 0.0f;
+        gunMat._43 = 0.0f;
+        gunMat._44 = 1.0f;
+
+        // Extract yaw, pitch, roll from gun matrix
+        float currentYaw, currentPitch, roll;
+        gunMat.getYPR(currentYaw, currentPitch, roll);
+
+        currentYaw += m_initialHorizAngle;
+        // Normalize angle to [-PI, PI]
+        if (currentYaw > M_PI)
+        {
+            currentYaw -= 2.0f * M_PI;
+        }
+        else if (currentYaw < -M_PI)
+        {
+            currentYaw += 2.0f * M_PI;
+        }
+
+        // Get barrel pitch if barrel node exists
+        float barrelPitch = 0.0f;
+        if (m_barrelNode)
+        {
+            CMatrix barrelMat;
+            const Quaternion& barrelRot = m_barrelNode->GetRotation();
+
+            xx = barrelRot.x * barrelRot.x;
+            yy = barrelRot.y * barrelRot.y;
+            zz = barrelRot.z * barrelRot.z;
+            xy = barrelRot.x * barrelRot.y;
+            xz = barrelRot.x * barrelRot.z;
+            yz = barrelRot.y * barrelRot.z;
+            wx = barrelRot.w * barrelRot.x;
+            wy = barrelRot.w * barrelRot.y;
+            wz = barrelRot.w * barrelRot.z;
+
+            barrelMat._11 = 1.0f - 2.0f * (yy + zz);
+            barrelMat._12 = 2.0f * (xy + wz);
+            barrelMat._13 = 2.0f * (xz - wy);
+            barrelMat._14 = 0.0f;
+
+            barrelMat._21 = 2.0f * (xy - wz);
+            barrelMat._22 = 1.0f - 2.0f * (xx + zz);
+            barrelMat._23 = 2.0f * (yz + wx);
+            barrelMat._24 = 0.0f;
+
+            barrelMat._31 = 2.0f * (xz + wy);
+            barrelMat._32 = 2.0f * (yz - wx);
+            barrelMat._33 = 1.0f - 2.0f * (xx + yy);
+            barrelMat._34 = 0.0f;
+
+            barrelMat._41 = 0.0f;
+            barrelMat._42 = 0.0f;
+            barrelMat._43 = 0.0f;
+            barrelMat._44 = 1.0f;
+
+            float barrelYaw, pitch, barrelRoll;
+            barrelMat.getYPR(barrelYaw, pitch, barrelRoll);
+            barrelPitch = -pitch;
+        }
+
+        // Get current relative direction for comparison
+        CVector oldRelDir = GetNodeRelativeDirection();
+
+        // Calculate desired alpha angle
+        float desiredAlpha = std::atan2(localTargetDir.x, localTargetDir.z) + m_initialHorizAngle;
+        // Normalize desired alpha
+        if (desiredAlpha > M_PI)
+        {
+            desiredAlpha -= 2.0f * M_PI;
+        }
+        else if (desiredAlpha < -M_PI)
+        {
+            desiredAlpha += 2.0f * M_PI;
+        }
+
+        m_currentDesiredAlpha = desiredAlpha;
+
+        // Handle alpha movement with constraints
+        if (m_rightStopAngle - m_leftStopAngle > 2.0f * M_PI)
+        {
+            // Unconstrained movement
+            float cross = localTargetDir.z * oldRelDir.x - localTargetDir.x * oldRelDir.z;
+            int direction;
+            if (cross > 1e-6f)
+            {
+                direction = 1;
+            }
+            else if (cross < -1e-6f)
+            {
+                direction = -1;
+            }
+            else
+            {
+                direction = 0;
+            }
+
+            alpha = currentYaw - (direction * m_turningSpeed * elapsedTime);
+
+            // Check if we should stop at target
+            float alphaDiff = alpha - desiredAlpha;
+            float currentDiff = currentYaw - desiredAlpha;
+
+            int alphaSign = (alphaDiff > 1e-6f) ? 1 : ((alphaDiff < -1e-6f) ? -1 : 0);
+            int currentSign = (currentDiff > 1e-6f) ? 1 : ((currentDiff < -1e-6f) ? -1 : 0);
+
+            if (alphaSign * currentSign <= 0)
+            {
+                alpha = desiredAlpha;
+            }
+        }
+        else
+        {
+            // Constrained movement
+            float oldAlpha = std::atan2(oldRelDir.x, oldRelDir.z) + m_initialHorizAngle;
+            if (oldAlpha > M_PI)
+            {
+                oldAlpha -= 2.0f * M_PI;
+            }
+            else if (oldAlpha < -M_PI)
+            {
+                oldAlpha += 2.0f * M_PI;
+            }
+
+            // Clamp desired alpha to stop angles
+            float clampedDesiredAlpha = desiredAlpha;
+            if (m_leftStopAngle > desiredAlpha)
+            {
+                clampedDesiredAlpha = m_leftStopAngle;
+            }
+            if (clampedDesiredAlpha > m_rightStopAngle)
+            {
+                clampedDesiredAlpha = m_rightStopAngle;
+            }
+
+            // Determine movement direction
+            float diff = oldAlpha - clampedDesiredAlpha;
+            int direction;
+            if (diff > 1e-6f)
+            {
+                direction = 1;
+            }
+            else if (diff < -1e-6f)
+            {
+                direction = -1;
+            }
+            else
+            {
+                direction = 0;
+            }
+
+            alpha = currentYaw - (direction * m_turningSpeed * elapsedTime);
+
+            // Check if we should stop at target
+            float alphaDiff = alpha - clampedDesiredAlpha;
+            float currentDiff = currentYaw - clampedDesiredAlpha;
+
+            int alphaSign = (alphaDiff > 1e-6f) ? 1 : ((alphaDiff < -1e-6f) ? -1 : 0);
+            int currentSign = (currentDiff > 1e-6f) ? 1 : ((currentDiff < -1e-6f) ? -1 : 0);
+
+            if (alphaSign * currentSign <= 0)
+            {
+                alpha = clampedDesiredAlpha;
+            }
+
+            // Clamp to stop angles
+            if (m_leftStopAngle > alpha)
+            {
+                alpha = m_leftStopAngle;
+            }
+            if (alpha > m_rightStopAngle)
+            {
+                alpha = m_rightStopAngle;
+            }
+        }
+
+        // Final alpha normalization
+        alpha -= m_initialHorizAngle;
+        if (alpha > M_PI)
+        {
+            alpha -= 2.0f * M_PI;
+        }
+        else if (alpha < -M_PI)
+        {
+            alpha += 2.0f * M_PI;
+        }
+
+        // Calculate beta angle
+        float desiredBeta = std::asin(localTargetDir.y);
+
+        // Apply beta constraints
+        float clampedDesiredBeta = desiredBeta;
+        if (m_lowStopAngle > desiredBeta)
+        {
+            clampedDesiredBeta = m_lowStopAngle;
+        }
+        if (clampedDesiredBeta > m_highStopAngle)
+        {
+            clampedDesiredBeta = m_highStopAngle;
+        }
+
+        // Smooth beta movement
+        int betaDirection = (clampedDesiredBeta - barrelPitch >= 0.0f) ? 1 : -1;
+        beta = barrelPitch + (betaDirection * m_turningSpeed * elapsedTime);
+
+        // Check if we should stop at target beta
+        float betaDiff = beta - clampedDesiredBeta;
+        float currentBetaDiff = barrelPitch - clampedDesiredBeta;
+
+        int betaSign = (betaDiff > 1e-6f) ? 1 : ((betaDiff < -1e-6f) ? -1 : 0);
+        int currentBetaSign = (currentBetaDiff > 1e-6f) ? 1 : ((currentBetaDiff < -1e-6f) ? -1 : 0);
+
+        if (betaSign * currentBetaSign <= 0)
+        {
+            beta = clampedDesiredBeta;
+        }
+
+        // Clamp beta to constraints
+        if (m_lowStopAngle > beta)
+        {
+            beta = m_lowStopAngle;
+        }
+        if (beta > m_highStopAngle)
+        {
+            beta = m_highStopAngle;
+        }
     }
 
     bool Gun::_bIsRapidFiring() const

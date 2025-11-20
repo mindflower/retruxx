@@ -75,6 +75,7 @@ namespace ai
 
     class ComplexPhysicObj : public PhysicObj
     {
+        friend class WeaponFirer;
     protected:
         virtual ~ComplexPhysicObj() override /* 0x00 */;
 

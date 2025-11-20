@@ -33,9 +33,9 @@ namespace ai
         return new Ray(dCreateRay(space, length), movedCallback);
     }
 
-    void Ray::SetLength(float)
+    void Ray::SetLength(float length)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        dGeomRaySetLength(m_geomId, length);
     }
 
     Ray::Ray(dxGeom* const geomId, void(*movedCallback)(dxGeom*)) : Geom(geomId, movedCallback)
