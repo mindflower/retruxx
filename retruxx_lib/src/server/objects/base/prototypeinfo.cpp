@@ -15,7 +15,7 @@ namespace ai
 
 	unsigned PrototypeInfo::GetBasePrice() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_price;
 	}
 
 	PrototypeInfo::PrototypeInfo()

@@ -6,6 +6,7 @@
 
 #include "math/matrix.h"
 #include "server/objects/base/globalproperties.h"
+#include <server/objects/base/prototypemanager.h>
 
 namespace ai
 {
@@ -42,7 +43,7 @@ namespace ai
 
     Obj* BulletLauncherPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new BulletLauncher(*this);
     }
 
     BulletLauncherPrototypeInfo::BulletLauncherPrototypeInfo()
@@ -68,9 +69,11 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    BulletLauncher::BulletLauncher(BulletLauncherPrototypeInfo const& prototype) : Gun(prototype)
+    BulletLauncher::BulletLauncher(BulletLauncherPrototypeInfo const& prototypeInfo) : Gun(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_numBulletsInShot = prototypeInfo.m_numBulletsInShot;
+        m_groupingAngle = prototypeInfo.m_groupingAngle;
+        m_numBulletsToTracer = 0;
     }
 
     float BulletLauncher::Accuracy2GroupingAngle(float)
@@ -95,7 +98,7 @@ namespace ai
 
     m3d::Class* BulletLauncher::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(BulletLauncher);
     }
 
     void BulletLauncher::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
@@ -110,7 +113,7 @@ namespace ai
 
     BulletLauncherPrototypeInfo const* BulletLauncher::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const BulletLauncherPrototypeInfo);
     }
 
     bool BulletLauncher::SetPropertyById(int, m3d::AIParam const&)
@@ -158,10 +161,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    BulletLauncher::~BulletLauncher()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    BulletLauncher::~BulletLauncher() = default;
 
     bool BulletLauncher::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
     {

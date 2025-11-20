@@ -687,9 +687,59 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int ComplexPhysicObj::GetGunHorizontalStopAngles(CStr const&, int, float&, float&) const
+    int ComplexPhysicObj::GetGunHorizontalStopAngles(const CStr& gunPartName, int index, float& leftStopAngle, float& rightStopAngle) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        leftStopAngle = 0.0;
+        rightStopAngle = 0.0;
+
+        const auto* prototypeInfo = GetPrototypeInfo();
+        if (prototypeInfo)
+        {
+            const auto* partDesc = prototypeInfo->GetPartDescriptionByName(gunPartName);
+            if (!partDesc)
+            {
+                return 0;
+            }
+
+            const auto resourceId = theResourceManager->GetResourceId("GUN");
+            if (!theResourceManager->bResourceIsKindOf(partDesc->GetPartResourceId(), resourceId))
+            {
+                return 0;
+            }
+
+            const auto* parent = partDesc->GetParent();
+            if (!parent)
+            {
+                return 0;
+            }
+
+            const auto* partByName = GetPartByName(parent->GetName());
+            if (!partByName)
+            {
+                return 0;
+            }
+
+            auto& animatedModelsServer = M3D_APP->GetAnimatedModelsServer();
+            const auto item = animatedModelsServer.GetItemByName(partByName->m_modelname.c_str(), true);
+            if (item == -1)
+            {
+                return 0;
+            }
+
+            m3d::AnimatedModel* model = nullptr;
+            animatedModelsServer.GetItemProperty(item, m3d::PROP_INTERNAL_GETMODEL, &model);
+            if (!model)
+            {
+                return 0;
+            }
+
+            const auto loadPoint = model->GetLoadPointIdByName(partDesc->GetLpName(index).c_str());
+            const auto& boneBounds = model->GetBoneBounds(loadPoint);
+            leftStopAngle = 0.0 - boneBounds.MaxRot.y;
+            rightStopAngle = 0.0 - boneBounds.MinRot.y;
+            return 1;
+        }
+        return 0;
     }
 
     void ComplexPhysicObj::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -1004,16 +1054,53 @@ namespace ai
                             }
                         }
 
+                        index = 0;
                         if (!parent)
                         {
                             parent = it->second;
-                            if (IS_KIND_OF(parent, Gun))
+                            if (IS_KIND_OF(vehiclePart, Gun))
                             {
-                                RETRUXX_NOT_IMPLEMENTED;
+                                // TODO: check this
+                                float leftStopAngle = 0.0;
+                                float rightStopAngle = 0.0;
+                                GetGunHorizontalStopAngles(name, 0, leftStopAngle, rightStopAngle);
+
+                                CVector org = parentMat.getOrg();
+                                Quaternion gunRotation;
+                                gunRotation.FromMatrix(parentMat);
+
+                                auto gunInitAngle = (rightStopAngle + leftStopAngle) * 0.5;
+
+                                const CVector INITIAL_UP_DIRECTION_15(0.0, 1.0, 0.0);
+                                gunRotation.FromAxisAngle(INITIAL_UP_DIRECTION_15, gunInitAngle);
+
+                                CMatrix vv;
+                                vv._11 = 1.0 - (((gunRotation.z * gunRotation.z) + (gunRotation.y * gunRotation.y)) * 2.0);
+                                vv._21 = ((gunRotation.y * gunRotation.x) - (gunRotation.z * gunRotation.w)) * 2.0;
+                                vv._12 = ((gunRotation.z * gunRotation.w) + (gunRotation.y * gunRotation.x)) * 2.0;
+                                vv._31 = ((gunRotation.y * gunRotation.w) + (gunRotation.z * gunRotation.x)) * 2.0;
+                                vv._22 = 1.0 - (((gunRotation.z * gunRotation.z) + (gunRotation.x * gunRotation.x)) * 2.0);
+                                vv._33 = 1.0 - (((gunRotation.y * gunRotation.y) + (gunRotation.x * gunRotation.x)) * 2.0);
+                                vv._32 = ((gunRotation.z * gunRotation.y) - (gunRotation.x * gunRotation.w)) * 2.0;
+                                vv._13 = ((gunRotation.z * gunRotation.x) - (gunRotation.y * gunRotation.w)) * 2.0;
+                                vv._23 = ((gunRotation.x * gunRotation.w) + (gunRotation.z * gunRotation.y)) * 2.0;
+                                vv._14 = 0.0;
+                                vv._24 = 0.0;
+                                memset(&vv.m[2][3], 0, 16);
+                                vv._44 = 1.0;
+
+                                parentMat = vv;
+                                parentMat.setOrg(org);
+
+                                auto* gun = RT_DYNCAST(vehiclePart, Gun);
+                                gun->SetHorizontalStopAngles(leftStopAngle - gunInitAngle, rightStopAngle - gunInitAngle);
+                                gun->SetInitialHorizAngle(gunInitAngle);
                             }
                         }
                         res = res * parentMat;
+                        partDesc = parentPartDescription;
                         parentPartDescription = parentPartDescription->GetParent();
+
                     }
                 }
                 else

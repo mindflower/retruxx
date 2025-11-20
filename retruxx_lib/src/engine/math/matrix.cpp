@@ -453,9 +453,11 @@ float& CMatrix::operator()(int, int)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void CMatrix::setOrg(CVector const&)
+void CMatrix::setOrg(const CVector& org)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    _41 = org.x;
+    _42 = org.y;
+    _43 = org.z;
 }
 
 void CMatrix::scaling(float)

@@ -510,9 +510,8 @@ namespace ai
 
     CStr Obj::GetDebugDescription() const
     {
-        // TODO: implement Obj::GetDebugDescription
-        //RETRUXX_NOT_IMPLEMENTED;
-        return {};
+        const auto* prototypeInfo = GetPrototypeInfo();
+        return "name = '" + CStr(GetName()) + "', prototype name = '" + prototypeInfo->m_prototypeName + "', class name = '" + CStr(GetClassNameA()) + "', id = '" + CStr(GetId()) + "'";
     }
 
     void Obj::ValidateEventRecipientsList()

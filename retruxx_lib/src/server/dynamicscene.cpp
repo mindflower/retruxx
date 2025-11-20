@@ -589,7 +589,37 @@ namespace ai
 
 	void DynamicScene::CreateBoShellEffectNames()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code
+        // Clear existing effect names
+        m_BoShellEffectNames.clear();
+
+        // For each effect type
+        for (size_t effectTypeIndex = 0; effectTypeIndex < m_BoEffectTypeNames.size(); ++effectTypeIndex)
+        {
+            const CStr& effectType = m_BoEffectTypeNames[effectTypeIndex];
+
+            // Create a new vector for this effect type with the same size as shell types
+            std::vector<CStr> effectNames;
+            effectNames.resize(m_shellTypesNames.size());
+
+            // Add the new vector to the main container
+            m_BoShellEffectNames.push_back(effectNames);
+
+            // For each shell type, generate the effect name
+            for (size_t shellTypeIndex = 0; shellTypeIndex < m_shellTypesNames.size(); ++shellTypeIndex)
+            {
+                const CStr& shellType = m_shellTypesNames[shellTypeIndex];
+
+                // Build effect name: "ET_PS_" + shellTypeName + effectTypeName + "HIT"
+                CStr effectName = "ET_PS_";
+                effectName += shellType;
+                effectName += effectType;
+                effectName += "HIT";
+
+                // Store the generated effect name
+                m_BoShellEffectNames[effectTypeIndex][shellTypeIndex] = effectName;
+            }
+        }
 	}
 
 	CStr const& DynamicScene::GetVehicleSoilEffectName(unsigned short) const
@@ -789,9 +819,71 @@ namespace ai
         return obj->GetId();
 	}
 
-	short DynamicScene::GetExplosionType(CStr const&)
+	short DynamicScene::GetExplosionType(const CStr& shellTypeName)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code
+        // Check if shell type already exists
+        for (size_t i = 0; i < m_shellTypesNames.size(); ++i)
+        {
+            if (m_shellTypesNames[i] == shellTypeName)
+            {
+                return static_cast<int>(i);
+            }
+        }
+
+        // If not found, add new shell type
+        m_shellTypesNames.push_back(shellTypeName);
+
+        // Add new empty effects vector for this shell type
+        std::vector<CStr> newEffects;
+        size_t soilPropsCount = m_soilProps.size();
+        newEffects.resize(soilPropsCount);
+        m_shellsEffectsNames.push_back(newEffects);
+
+        // Generate effect names for each soil type
+        for (size_t i = 0; i < m_soilProps.size(); ++i)
+        {
+            const SoilProps& soilProp = m_soilProps[i];
+
+            // Build effect name: "ET_PS_" + shellTypeName + soilSplashTypeName + "EXPLOSION"
+            CStr effectName = "ET_PS_";
+            effectName += shellTypeName;
+            effectName += soilProp.m_splashTypeName;
+            effectName += "EXPLOSION";
+
+            // Store in the effects vector
+            m_shellsEffectsNames.back()[i] = effectName;
+        }
+
+        // Generate water splash effect name
+        CStr waterEffectName = "ET_PS_";
+        waterEffectName += shellTypeName;
+        waterEffectName += "WATERSPLASH";
+        m_shellWaterEffectNames.push_back(waterEffectName);
+
+        // Generate road explosion effect name
+        CStr roadEffectName = "ET_PS_";
+        roadEffectName += shellTypeName;
+        roadEffectName += "ROADEXPLOSION";
+        m_shellsRoadEffNames.push_back(roadEffectName);
+
+        // Generate statics explosion effect name
+        CStr staticsEffectName = "ET_PS_";
+        staticsEffectName += shellTypeName;
+        staticsEffectName += "STATICSEXPLOSION";
+        m_shellsStaticsEffNames.push_back(staticsEffectName);
+
+        // Generate vehicle explosion effect name
+        CStr vehicleEffectName = "ET_PS_";
+        vehicleEffectName += shellTypeName;
+        vehicleEffectName += "VEHICLEEXPLOSION";
+        m_shellsVehiclesEffNames.push_back(vehicleEffectName);
+
+        // Create additional shell effect names
+        CreateBoShellEffectNames();
+
+        // Return the index of the newly added shell type
+        return static_cast<int>(m_shellTypesNames.size() - 1);
 	}
 
 	bool DynamicScene::SaveSceneToFile(char const*)

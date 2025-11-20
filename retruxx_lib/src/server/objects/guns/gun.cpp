@@ -1,11 +1,17 @@
 #include "gun.h"
 
+#include "m3dapp.h"
 #include "core/log.h"
 
 #include <stdexcept>
 
 #include "math/matrix.h"
+#include "scene/servers/dataserver.h"
+#include "scene/servers/serveranimatedmodel.h"
+
 #include <server/objects/base/prototypemanager.h>
+#include <server/objects/player.h>
+#include <server/processmanager.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, GetShellsInCurrentCharge)
 {
@@ -77,21 +83,104 @@ namespace ai
             {DAMAGE_ENERGY, "ENERGY"},
             {DAMAGE_WATER, "WATER"},
         };
-    }
+
+        CStr GetFireLp(int i)
+        {
+            CStr res = i >= 10 ? "LP_FIRE" : "LP_FIRE0";
+            res += CStr(i);
+            return res;
+        }
+    }  // namespace
 
     RT_CLASS_EXPORTS_BEGIN(Gun)
-        RT_CLASS_EXPORT(Gun, m3d::METHOD, GetShellsInCurrentCharge, "", "", "")
-        RT_CLASS_EXPORT(Gun, m3d::METHOD, SetShellsInCurrentCharge, "", "", "")
-        RT_CLASS_EXPORT(Gun, m3d::METHOD, GetShellsInPool, "", "", "")
-        RT_CLASS_EXPORT(Gun, m3d::METHOD, SetShellsInPool, "", "", "")
-        RT_CLASS_EXPORT(Gun, m3d::METHOD, GetChargeState, "", "", "")
-        RT_CLASS_EXPORT(Gun, m3d::METHOD, SetChargeState, "", "", "")
+    RT_CLASS_EXPORT(Gun, m3d::METHOD, GetShellsInCurrentCharge, "", "", "")
+    RT_CLASS_EXPORT(Gun, m3d::METHOD, SetShellsInCurrentCharge, "", "", "")
+    RT_CLASS_EXPORT(Gun, m3d::METHOD, GetShellsInPool, "", "", "")
+    RT_CLASS_EXPORT(Gun, m3d::METHOD, SetShellsInPool, "", "", "")
+    RT_CLASS_EXPORT(Gun, m3d::METHOD, GetChargeState, "", "", "")
+    RT_CLASS_EXPORT(Gun, m3d::METHOD, SetChargeState, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Gun);
 
-    void GunPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void GunPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        VehiclePartPrototypeInfo::RefreshFromXml(xmlFile, xmlNode);
+
+        m_lowStopAngle = 0.0;
+        m_highStopAngle = 0.0;
+
+        auto* animatedModelsServer = reinterpret_cast<m3d::AnimatedModelsServer*>(&M3D_APP->GetAnimatedModelsServer());
+        const auto item = animatedModelsServer->GetItemByName(m_engineModelName.c_str(), true);
+        m3d::AnimatedModel* model = nullptr;
+        if (item != -1)
+        {
+            animatedModelsServer->GetItemProperty(item, m3d::PROP_INTERNAL_GETMODEL, &model);
+
+            const auto loadPointId = model->GetLoadPointIdByName("LP_GUN");
+            const auto& loadPoint = model->GetBoneBounds(loadPointId);
+            m_lowStopAngle = 0.0 - loadPoint.MaxRot.x;
+            m_highStopAngle = 0.0 - loadPoint.MinRot.x;
+        }
+
+        if (m3d::SafeFloatAttrib(m_lowStopAngle, xmlNode, "LowStop"))
+        {
+            m_lowStopAngle = m_lowStopAngle * 0.017453292;
+        }
+
+        if (m3d::SafeFloatAttrib(m_highStopAngle, xmlNode, "HighStop"))
+        {
+            m_highStopAngle = m_highStopAngle * 0.017453292;
+        }
+
+        if (m_lowStopAngle < -3.1415927)
+        {
+            m_lowStopAngle = -1.0461504;
+        }
+        if (m_highStopAngle > 3.1415927)
+        {
+            m_highStopAngle = 1.0461504;
+        }
+
+        m_fireLpMatrices.clear();
+
+        int i = 1;
+        while (true)
+        {
+            CMatrix boneMatrix;
+            const auto res = animatedModelsServer->GetBoneMatrixByNameFromModelName(m_barrelModelName.c_str(), GetFireLp(i), boneMatrix, false);
+            if (!res)
+            {
+                break;
+            }
+
+            m_fireLpMatrices.push_back(std::move(boneMatrix));
+            ++i;
+        }
+
+        if (m_fireLpMatrices.empty())
+        {
+            CMatrix mat;
+            mat.identity();
+            m_fireLpMatrices.push_back(std::move(mat));
+        }
+
+        if (m_firingRate <= 299.89999)
+        {
+            if (model)
+            {
+                model->SetNextForAnimation(AT_MOVE1, 0);
+                const auto barrelItem = animatedModelsServer->GetItemByName(m_barrelModelName.c_str(), true);
+                if (barrelItem != -1)
+                {
+                    m3d::AnimatedModel* barrelModel = nullptr;
+                    animatedModelsServer->GetItemProperty(barrelItem, m3d::PROP_INTERNAL_GETMODEL, &barrelModel);
+                    if (barrelModel)
+                    {
+                        barrelModel->SetNextForAnimation(AT_MOVE1, 0);
+                    }
+                }
+            }
+        }
     }
 
     CStr GunPrototypeInfo::DamageType2Str(DamageType)
@@ -204,7 +293,7 @@ namespace ai
             m_turningSpeed = m_turningSpeed * 0.017453292;
 
             m_barrelModelName = m_engineModelName + "Gun";
-            
+
             m3d::SafeBoolAttrib(m_ignoreStopAnglesWhenFire, xmlNode, "IgnoreStopAnglesWhenFire");
         }
         return res;
@@ -256,7 +345,7 @@ namespace ai
 
     GunPrototypeInfo const* Gun::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const GunPrototypeInfo);
     }
 
     void Gun::SetShellsInPool(unsigned)
@@ -319,9 +408,38 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Gun::Update(float, unsigned)
+    void Gun::Update(float elapsedTime, unsigned workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        VehiclePart::Update(elapsedTime, workTime);
+        if (elapsedTime >= 0.001)
+        {
+            m_timeFromLastShot = m_timeFromLastShot + elapsedTime;
+            _UpdateNodeFiringAction();
+            const auto* protoInfo = GetPrototypeInfo();
+            if (m_ChargeState == csInCharging)
+            {
+                m_CurrentReChargingTime = m_CurrentReChargingTime + elapsedTime;
+                if (m_CurrentReChargingTime > GetRechargingTime())
+                {
+                    if (protoInfo->m_WithShellsPoolLimit)
+                    {
+                        if (m_ShellsInPool)
+                        {
+                            const auto shellsForRecharge = getShellsForRecharge();
+                            m_ShellsInPool -= shellsForRecharge;
+                            m_ShellsInCurrentCharge += shellsForRecharge;
+                            m_ChargeState = csReady;
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        m_ShellsInCurrentCharge = m_ChargeSize;
+                    }
+                    m_ChargeState = csReady;
+                }
+            }
+        }
     }
 
     float Gun::GetDamageForOneShell() const
@@ -379,9 +497,23 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int Gun::OnEvent(Event const&)
+    int Gun::OnEvent(Event const& evn)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto result = Obj::OnEvent(evn);
+        if (evn.m_eventId == GE_CINEMATIC_ENTER_FADE_IN)
+        {
+            if (m_Node)
+            {
+                int action = 0;
+                m_Node->GetProperty(m3d::PROP_DM_ACTION, &action);
+                if (action)
+                {
+                    SetNodeAction(0, 1);
+                    m_bIsFiring = false;
+                }
+            }
+        }
+        return result;
     }
 
     void Gun::SetTargetId(int)
@@ -454,9 +586,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Gun::SetInitialHorizAngle(float)
+    void Gun::SetInitialHorizAngle(float angle)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_initialHorizAngle = angle;
     }
 
     int Gun::GetShellPrototypeId() const
@@ -514,9 +646,35 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Gun::Gun(GunPrototypeInfo const& prototype) : VehiclePart(prototype)
+    Gun::Gun(GunPrototypeInfo const& prototypeInfo) : VehiclePart(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_lowStopAngle = prototypeInfo.m_lowStopAngle;
+        m_highStopAngle = prototypeInfo.m_highStopAngle;
+        m_damage = prototypeInfo.m_damage;
+        m_shellPrototypeId = prototypeInfo.m_shellPrototypeId;
+        m_damageType = prototypeInfo.m_damageType;
+        m_firingRate = prototypeInfo.m_firingRate;
+        m_firingRange = prototypeInfo.m_firingRange;
+        m_recoilForce = prototypeInfo.m_recoilForce;
+        m_turningSpeed = prototypeInfo.m_turningSpeed;
+        m_ChargeSize = prototypeInfo.m_ChargeSize;
+        m_ReChargingTime = prototypeInfo.m_ReChargingTime;
+        m_ReChargingTimePerShell = prototypeInfo.m_ReChargingTimePerShell;
+        m_ShellsInPool = prototypeInfo.m_ShellsPoolSize;
+        m_currentDesiredAlpha = 1000000.0;
+        m_curBarrelIndex = 0;
+        m_bIsFiring = 0;
+        m_ChargeState = csReady;
+        m_barrelNode = 0;
+        m_bWasShot = 0;
+        m_bJustShot = 0;
+        m_leftStopAngle = 0.0;
+        m_rightStopAngle = 0.0;
+        m_targetObjId = -1;
+        m_timeFromLastShot = 1000.0;
+        m_CurrentReChargingTime = 0.0;
+        m_ShellsInCurrentCharge = m_ChargeSize;
+        m_initialHorizAngle = 0.0;
     }
 
     float Gun::GetInitialHorizAngle() const
@@ -534,9 +692,31 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Gun::SetHorizontalStopAngles(float, float)
+    void Gun::SetHorizontalStopAngles(float leftStopAngle, float rightStopAngle)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto v3 = leftStopAngle;
+        if (leftStopAngle >= -3.1425927)
+        {
+            if (leftStopAngle > 0.0)
+                v3 = 0.0;
+        }
+        else
+        {
+            v3 = -3.1425927;
+        }
+        this->m_leftStopAngle = v3;
+
+        auto v4 = rightStopAngle;
+        if (rightStopAngle >= 0.0)
+        {
+            if (rightStopAngle > 3.1425927)
+                v4 = 3.1425927;
+            this->m_rightStopAngle = v4;
+        }
+        else
+        {
+            this->m_rightStopAngle = 0.0;
+        }
     }
 
     m3d::Class* Gun::GetBaseClass()
@@ -571,12 +751,13 @@ namespace ai
 
     void Gun::_InternalCreateVisualPart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        VehiclePart::_InternalCreateVisualPart();
+        _CreateBarrelNode();
     }
 
     bool Gun::_bIsUsingVolley() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return false;
     }
 
     unsigned Gun::GetBarrelsNum()
@@ -596,7 +777,11 @@ namespace ai
 
     void Gun::_InternalPostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (thePlayer)
+        {
+            // TODO: check IE_EV_SM_OBJECT_CREATED
+            theProcessManager->PostMessageA(GE_SUBSCRIBE, thePlayer->GetId(), GetId(), 0.0, IE_EV_SM_OBJECT_CREATED, {}, 1);
+        }
     }
 
     CVector Gun::_CalcRoughPosForNextShot() const
@@ -609,10 +794,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Gun::~Gun()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    Gun::~Gun() = default;
 
     CVector Gun::_CalcPosForNextShot() const
     {
@@ -626,7 +808,45 @@ namespace ai
 
     void Gun::_CreateBarrelNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Gun::_CreateBarrelNode
+        if (!m_modelname.empty())
+        {
+            const auto* prototypeInfo = GetPrototypeInfo();
+            CVector scale(1.0, 1.0, 1.0);
+
+            m_barrelNode = CreateNode(prototypeInfo->m_barrelModelName.c_str(), 0, scale, this, false);
+            if (!m_barrelNode)
+            {
+                M3D_CRITICAL_ERROR("Couldn't create barrel for " + GetDebugDescription());
+            }
+
+            m_Node->AddChild(m_barrelNode);
+
+            auto* serverAnimatedModels = static_cast<m3d::AnimatedModelsServer*>(&M3D_APP->GetAnimatedModelsServer());
+
+            CMatrix boneMat;
+            const auto boneRes = serverAnimatedModels->GetBoneMatrixByNameFromModelName(m_modelname.c_str(), "LP_GUN", boneMat, false);
+            if (!boneRes)
+            {
+                M3D_LOG_ERR("Error: LoadPoint not found: LP_GUN for " + GetDebugDescription());
+                boneMat.identity();
+            }
+
+            Quaternion rot;
+            rot.FromMatrix(boneMat);
+            m_barrelNode->SetRotation(rot);
+
+            const CVector origin = boneMat.getOrg();
+            m_barrelNode->SetOriginAbs(origin);
+
+            m_barrelNode->UpdateXForm(false, true);
+            m_barrelNode->SetName(m_Node->GetName() + CStr("Brl"));
+
+            if (fabs(prototypeInfo->m_highStopAngle - prototypeInfo->m_lowStopAngle) < 0.0099999998)
+            {
+                RETRUXX_NOT_IMPLEMENTED;
+            }
+        }
     }
 
     void Gun::_OnCinematic(Event const&)
@@ -671,11 +891,43 @@ namespace ai
 
     void Gun::_UpdateNodeFiringAction()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        if (m_Node)
+        {
+            int action = 0;
+            m_Node->GetProperty(m3d::PROP_DM_ACTION, &action);
+            if (_bIsUsingVolley())
+            {
+                if (_bIsVolleyFiring())
+                {
+                    if (action == 2)
+                        return;
+                    SetNodeAction(2, 1);
+                }
+                if (action)
+                    SetNodeAction(0, 1);
+            }
+            else if (m_bIsFiring)
+            {
+                if (m_bJustShot)
+                {
+                    m_bJustShot = 0;
+                    if (m_firingRate <= 299.89999)
+                        SetNodeAction(0, 1);
+                    if (action != 2 || !_bIsRapidFiring())
+                        SetNodeAction(2, 1);
+                }
+            }
+            else if (m_bWasShot && (m_timeFromLastShot >= (float)(60.0 / m_firingRate) || m_ChargeState == csInCharging))
+            {
+                m_bWasShot = 0;
+                SetNodeAction(0, 1);
+            }
+        }
     }
 
     m3d::Object* Gun::Clone()
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

@@ -280,7 +280,7 @@ namespace ai
 
     float GameTime::Diff() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return (m_milliSeconds - m_milliSeconds0) * 0.001;
     }
 
     m3d::AIParam GameTime::asAIParam24Hour() const
@@ -908,7 +908,7 @@ namespace ai
 
     float ObjContainer::GetGameTimeDiff() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_GameTime.Diff();
     }
 
     ObjContainer::iterator ObjContainer::begin()

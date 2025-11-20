@@ -608,7 +608,7 @@ namespace ai
 
     PlayerPrototypeInfo const* Player::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const PlayerPrototypeInfo);
     }
 
     bool Player::AddItemsToRepository(char const*, int)

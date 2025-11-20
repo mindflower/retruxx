@@ -200,9 +200,9 @@ namespace m3d
         return this->m_meshes[MeshNum];
     }
 
-    DRAFT_BoneBounds const& AnimatedModel::GetBoneBounds(unsigned)
+    DRAFT_BoneBounds const& AnimatedModel::GetBoneBounds(unsigned n)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_BonesBounds[n];
     }
 
     CMatrix AnimatedModel::GetBoneMatrix(int boneIndex) const
@@ -869,16 +869,14 @@ namespace m3d
 
     int AnimatedModel::GetLoadPointIdByName(char const* lpName) const
     {
-        auto m_numNodes = this->m_header.m_numNodes;
-        auto v3 = 0;
-        if (m_numNodes <= 0)
-            return -1;
-        for (auto i = this->m_boneInitialPos; strcmp(i->m_boneName, lpName); ++i)
+        for (int i = 0; i < m_header.m_numNodes; ++i)
         {
-            if (++v3 >= m_numNodes)
-                return -1;
+            if (CStr(m_boneInitialPos[i].m_boneName) == lpName)
+            {
+                return m_boneInitialPos[i].m_ownIdx;
+            }
         }
-        return this->m_boneInitialPos[v3].m_ownIdx;
+        return -1;
     }
 
     DRAFT_Geom const* AnimatedModel::GetGeom(unsigned num) const

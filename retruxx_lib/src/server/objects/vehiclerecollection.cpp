@@ -13,26 +13,20 @@ namespace ai
 
     ai::Obj* VehicleRecollectionPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new VehicleRecollection(*this);
     }
 
-    VehicleRecollectionPrototypeInfo::VehicleRecollectionPrototypeInfo()
-    {
-    }
+    VehicleRecollectionPrototypeInfo::VehicleRecollectionPrototypeInfo() = default;
 
     bool VehicleRecollectionPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         return ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode) != 0;
     }
 
-    VehicleRecollection::ReollectionItem::ReollectionItem(ReollectionItem const&)
+    VehicleRecollection::ReollectionItem::ReollectionItem(CVector const& _pos, float _time)
     {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    VehicleRecollection::ReollectionItem::ReollectionItem(CVector const&, float)
-    {
-        RETRUXX_NOT_IMPLEMENTED;
+        pos = _pos;
+        time = _time;
     }
 
     void VehicleRecollection::ReollectionItem::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -57,38 +51,49 @@ namespace ai
 
     void VehicleRecollection::Update(float, unsigned)
     {
-        //const auto timeDiff = GetObjects()->GetGameTimeDiff();
-        //const auto mult = GetGlobProp().m_gameTimeMult * 3.0;
-        //
-        //
-        //if (!m_recollectionItems.empty() && m_recollectionItems.back().time > timeDiff + mult)
-        //{
-        //    m_recollectionItems.clear();
-        //}
-        //
-        //bool addNew = true;
-        //if (!m_recollectionItems.empty())
-        //{
-        //    const auto& lastItem = m_recollectionItems.back();
-        //    if (timeDiff - mult <= lastItem.time && lastItem.time >= timeDiff + mult)
-        //    {
-        //        addNew = false;
-        //    }
-        //}
-        //
-        //
-        //if (addNew)
-        //{
-        //    if (auto* vehicle = dynamic_cast<Vehicle*>(GetObjects()->GetEntityByObjId(m_vehicleId)))
-        //    {
-        //        m_recollectionItems.push_back(ReollectionItem{ vehicle->GetPosition(), timeDiff });
-        //    }
-        //    else
-        //    {
-        //        Remove();
-        //    }
-        //}
-        RETRUXX_NOT_IMPLEMENTED;
+        const float currentTime = theObjects->GetGameTimeDiff();
+        const float removalThreshold = currentTime - (theGlobProp.m_gameTimeMult * 3.0f);
+
+        if (!m_recollectionItems.empty() && m_recollectionItems.back().time > currentTime)
+        {
+            m_recollectionItems.clear();
+        }
+
+        // Remove old entries that exceed the time threshold
+        while (!m_recollectionItems.empty())
+        {
+            const auto& oldestItem = m_recollectionItems.front();
+            if (removalThreshold <= oldestItem.time)
+            {
+                break;
+            }
+
+            // Remove the oldest item
+            m_recollectionItems.erase(m_recollectionItems.begin());
+        }
+
+        // Check if we should add a new recollection entry
+        const bool shouldAddNewEntry =
+            m_recollectionItems.empty() || (currentTime > (m_recollectionItems.back().time + theGlobProp.m_gameTimeMult * 0.3f));
+
+        if (shouldAddNewEntry)
+        {
+            if (m_vehicleId >= 0)
+            {
+                // Get the object record for the vehicle
+                auto* vehicleObj = RT_DYNCAST(theObjects->GetEntityByObjId(m_vehicleId), Vehicle);
+                if (vehicleObj != nullptr)
+                {
+                    // Create new recollection item with current position
+                    ReollectionItem newItem(vehicleObj->GetGeometricCenter(), currentTime);
+                    m_recollectionItems.push_back(std::move(newItem));
+                    return;
+                }
+            }
+
+            // If we get here, the vehicle is no longer valid - remove this recollection
+            Remove();
+        }
     }
 
     void VehicleRecollection::Clear()
@@ -106,9 +111,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    VehicleRecollection::VehicleRecollection(ai::VehicleRecollectionPrototypeInfo const&)
+    VehicleRecollection::VehicleRecollection(ai::VehicleRecollectionPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_vehicleId = -1;
     }
 
     CVector VehicleRecollection::GetRecollectionPosition(float time) const
@@ -131,19 +136,16 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void VehicleRecollection::SetVehicle(Vehicle const*)
+    void VehicleRecollection::SetVehicle(Vehicle const* vehicle)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_vehicleId = vehicle->GetId();
     }
 
-    VehicleRecollection::~VehicleRecollection()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    VehicleRecollection::~VehicleRecollection() = default;
 
     void VehicleRecollection::_InternalCreateVisualPart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_recollectionItems.clear();
     }
 
     m3d::Object* VehicleRecollection::CreateObject()
