@@ -67,9 +67,7 @@ namespace m3d
 
     int SgSoundSourceNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        // TODO: implement SgSoundSourceNode::Render
-        return 1;
-        //RETRUXX_NOT_IMPLEMENTED;
+        return _InternalRender();
     }
 
     Object* SgSoundSourceNode::Clone()
@@ -129,7 +127,18 @@ namespace m3d
 
     bool SgSoundSourceNode::IsFree() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!M3D_ENGINE_CFG.m_snd_Enable.GetB())
+        {
+            return true;
+        }
+        if (++m_framesPassed >= 2)
+        {
+            int channelId = -1;
+            GetProperty(PROP_SND_CHANNELID, &channelId);
+            auto isPlay = M3D_APP->m_sound->IsChannelPlaying(channelId);
+            return channelId == -1 || !isPlay;
+        }
+        return false;
     }
 
     SgSoundSourceNode::~SgSoundSourceNode()
@@ -180,6 +189,23 @@ namespace m3d
 
     int SgSoundSourceNode::_InternalRender()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_srvId == -1)
+        {
+            return 0;
+        }
+
+        struct RenderInfo
+        {
+            /* 0x0000 */ m3d::SgNode* m_node;
+            /* 0x0004 */ int m_currentSoundNum;
+        }; /* size: 0x0008 */
+
+        RenderInfo ri;
+        ri.m_node = this;
+        ri.m_currentSoundNum = m_currentSoundNum;
+
+        GetServer()->RenderItem(m_srvId, &ri);
+        IsFree();
+        return 1;
     }
 }

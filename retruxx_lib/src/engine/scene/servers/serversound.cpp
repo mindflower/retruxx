@@ -85,10 +85,9 @@ namespace m3d
 
     void Sound3DServer::RenderItem(int id, void* params)
     {
-        // TODO: implement Sound3DServer::RenderItem
         if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
         {
-            if (id != 2)
+            if (id != -2)
             {
                 if (id == -3)
                 {
@@ -105,7 +104,80 @@ namespace m3d
                 }
                 if (id != -4)
                 {
-                    //RETRUXX_NOT_IMPLEMENTED;
+                    // TODO: check and refactor this
+                    struct RenderInfo
+                    {
+                        /* 0x0000 */ m3d::SgNode* m_node;
+                        /* 0x0004 */ int m_currentSoundNum;
+                    };
+                    /* size: 0x0008 */
+
+                    auto* renderInfo = (RenderInfo*)(params);
+
+                    int channelId;
+                    int looped;
+                    int soundEnabled;
+                    int maxvolume;
+
+                    renderInfo->m_node->GetProperty(PROP_SND_CHANNELID, &channelId);
+                    renderInfo->m_node->GetProperty(PROP_SND_LOOPED, &looped);
+                    renderInfo->m_node->GetProperty(PROP_SND_MAXVOLUME, &maxvolume);
+                    renderInfo->m_node->GetProperty(PROP_SND_SOUND_ENABLED, &soundEnabled);
+
+                    auto soundId = ((SoundItem*)m_models[id].m_ptr)->soundIds[renderInfo->m_currentSoundNum];
+                    if (soundEnabled)
+                    {
+                        if (maxvolume)
+                        {
+                            if (channelId != -1)
+                            {
+                                return;
+                            }
+                            channelId = M3D_APP->m_sound->PlaySound2D(soundId, looped != 0);
+                            renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
+
+                            auto freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
+                            renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
+                            return;
+                        }
+
+                        const auto& org = renderInfo->m_node->GetOriginWorldAbs();
+                        if (channelId == -1)
+                        {
+                            channelId = M3D_APP->m_sound->PlaySound3D(soundId, org, {}, looped != 0);
+                            renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
+
+                            auto freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
+                            renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
+                            return;
+                        }
+
+                        if (!looped)
+                        {
+                            return;
+                        }
+
+                        if (!M3D_APP->m_sound->IsChannelPlaying(channelId))
+                        {
+                            channelId = M3D_APP->m_sound->PlaySound3D(soundId, org, {}, looped != 0);
+                            renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
+
+                            auto freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
+                            renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
+                            return;
+                        }
+
+                        if (looped)
+                        {
+                            M3D_APP->m_sound->SetPosition(channelId, org, {});
+                        }
+                    }
+                    else if (channelId != -1)
+                    {
+                        M3D_APP->m_sound->StopChannel(channelId);
+                        channelId = -1;
+                        renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
+                    }
                 }
             }
         }
