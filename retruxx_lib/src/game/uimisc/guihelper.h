@@ -2,6 +2,10 @@
 #include "core/stringm3d.h"
 #include "retruxx/common.h"
 
+namespace ai
+{
+    class Obj;
+}
 namespace m3d
 {
     namespace ui
@@ -67,4 +71,5 @@ namespace help
     int CreateWindowsDir(CStr const&);
     CStr GetMapNameFromFileName(CStr const&);
     CStr Color2Str(unsigned);
+    void GetGunsForVehicle(int, retruxx::vector<ai::Obj*>&);
 }  // namespace help

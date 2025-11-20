@@ -108,7 +108,7 @@ namespace ai
 
     m3d::Class* VehicleRecollection::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(VehicleRecollection);
     }
 
     VehicleRecollection::VehicleRecollection(ai::VehicleRecollectionPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)

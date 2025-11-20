@@ -339,7 +339,7 @@ int ConsoleImp::Save(CStr const&)
 
 bool ConsoleImp::isActive() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_csCurState && m_csCurState != CONSOLE_CLOSED;
 }
 
 void ConsoleImp::RegisterCommand(char const* cmdname, int id, m3d::IConHandler* handler)

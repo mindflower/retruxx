@@ -7,12 +7,16 @@
 #include "core/log.h"
 #include "file/fileenum.h"
 #include "file/fileserver.h"
+#include "server/objects/vehicle.h"
+#include "server/objects/base/objcontainer.h"
+#include "server/objects/physicbodies/vehiclepart.h"
 #include "ui/ui.h"
 #include "ui/button.h"
 #include "ui/image.h"
 #include "ui/ui_srv.h"
 
 #include <sstream>
+#include <server/resourcemanager.h>
 
 namespace m3d
 {
@@ -203,4 +207,31 @@ namespace help
         ss << std::hex << clr;
         return CStr("@") + ss.str().c_str();
     }
-}
+
+    void GetGunsForVehicle(int vehicleId, retruxx::vector<ai::Obj*>& guns)
+    {
+        using namespace ai;
+
+        guns.clear();
+        auto* obj = ai::theObjects->GetEntityByObjId(vehicleId);
+        if (obj && IS_KIND_OF(obj, Vehicle))
+        {
+            auto* veh = RT_DYNCAST(obj, Vehicle);
+            for (auto it = veh->begin(); it != veh->end(); ++it)
+            {
+                const auto& [name, part] = *it;
+                if (part)
+                {
+                    const auto* protoInfo = part->GetPrototypeInfo();
+                    if (protoInfo)
+                    {
+                        if (ai::theResourceManager->bResourceIsKindOf(protoInfo->m_resourceId, theResourceManager->GetResourceId("GUN")))
+                        {
+                            guns.push_back(part);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}  // namespace help

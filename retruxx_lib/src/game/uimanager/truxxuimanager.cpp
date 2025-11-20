@@ -1252,6 +1252,12 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     {
         return 0;
     }
+    case IE_IMP_IM_MODE_GAME_MENU:
+    {
+        const auto* impInfo = static_cast<m3d::AuxImpulseInfo*>(data);
+        M3D_APP->OnChangeMode(*impInfo);
+        return 0;
+    }
     case IE_EV_UM_CUR_PROFILE_CHANGED:
     {
         m_savesManager->GameDataUpdate(data, guiEventId);
@@ -1347,57 +1353,89 @@ void* TruxxUiManager::QueryIface(char const*)
 void TruxxUiManager::GUI_RegisterEvents()
 {
     // TODO: check this
-    m_eventToEvent[m3d::EV_UI_MODAL_WND_IS_CLOSED] = 0;
-    m_eventToEvent[m3d::EV_KEYBINDINGS_CHANGED] = IE_EV_EV_KEYBINDINGS_CHANGED;
-    m_eventToEvent[m3d::EV_UI_END_WND_ANIMATION] = IE_EV_EV_UI_END_WND_ANIMATION;
-
-    m_impulseToEvent[IM_UI_INVENTORY] = IE_IMP_IM_UI_INVENTORY;
-    m_impulseToEvent[IM_UI_MENUBOOK] = IE_IMP_IM_UI_MENUBOOK;
-    m_impulseToEvent[IM_UI_QUESTLOG] = IE_IMP_IM_UI_QUESTLOG;
-    m_impulseToEvent[IM_UI_JOURNAL] = IE_IMP_IM_UI_JOURNAL;
-    m_impulseToEvent[IM_UI_MAP] = IE_IMP_IM_UI_MAP;
-    m_impulseToEvent[IM_UI_VEHICLE_INFO] = IE_IMP_IM_UI_VEHICLE_INFO;
-    m_impulseToEvent[IM_UI_TOGGLE_INTERFACE] = IE_IMP_IM_UI_TOGGLE_INTERFACE;
-    m_impulseToEvent[IM_QUICK_SAVE] = IE_IMP_IM_QUICK_SAVE;
-    m_impulseToEvent[IM_QUICK_LOAD] = IE_IMP_IM_QUICK_LOAD;
-    m_impulseToEvent[IM_RELOAD_WEAPON] = IE_IMP_IM_RELOAD_WEAPON;
-    m_impulseToEvent[IM_UI_BAR] = IE_IMP_IM_UI_BAR;
-    m_impulseToEvent[IM_UI_ADDITIONAL_BUILDING] = IE_IMP_IM_UI_ADDITIONAL_BUILDING;
-    m_impulseToEvent[IM_UI_PICKUP_ALL] = IE_IMP_IM_UI_PICKUP_ALL;
-    m_impulseToEvent[IM_MODE_GAME_MENU] = IE_IMP_IM_MODE_GAME_MENU;
-    m_impulseToEvent[IM_UI_HELP] = IE_IMP_IM_UI_HELP;
-
-    m_eventToEvent[UM_NPC_REPLY_SHOWN] = IE_EV_UM_NPC_REPLY_SHOWN;
-    m_eventToEvent[UM_SHOP] = IE_EV_UM_SHOP;
-    m_eventToEvent[UM_BAR_NPC] = IE_EV_UM_BAR_NPC;
-    m_eventToEvent[UM_START_CONVERSATION] = IE_EV_UM_START_CONVERSATION;
-    m_eventToEvent[UM_END_CONVERSATION] = IE_EV_UM_END_CONVERSATION;
-    m_eventToEvent[UM_NAVPOINT_ADDED] = IE_EV_UM_NAVPOINT_ADDED;
-    m_eventToEvent[UM_NAVPOINT_DELETED] = IE_EV_UM_NAVPOINT_DELETED;
-    m_eventToEvent[UM_WEAPONGROUP_CHANGED] = IE_EV_UM_WEAPONGROUP_CHANGED;
-    m_eventToEvent[UM_GADGET_DEACTIVATE] = IE_EV_UM_GADGET_DEACTIVATE;
-    m_eventToEvent[UM_VEHICLEPART_DEACTIVATE] = IE_EV_UM_VEHICLEPART_DEACTIVATE;
-    m_eventToEvent[UM_START_TRADE] = IE_EV_UM_START_TRADE;
-    m_eventToEvent[UM_FINISH_TRADE] = IE_EV_UM_FINISH_TRADE;
-    m_eventToEvent[UM_HIDE_PANEL] = IE_EV_UM_HIDE_PANEL;
-    m_eventToEvent[UM_SHOW_PANEL] = IE_EV_UM_SHOW_PANEL;
-    m_eventToEvent[UM_KNOWN_LEVEL_ADDED] = IE_EV_UM_KNOWN_LEVEL_ADDED;
-    m_eventToEvent[UM_LOCAL_MAP] = IE_EV_UM_LOCAL_MAP;
-    m_eventToEvent[UM_GLOBAL_MAP] = IE_EV_UM_GLOBAL_MAP;
-    m_eventToEvent[UM_CUR_PROFILE_CHANGED] = IE_EV_UM_CUR_PROFILE_CHANGED;
-    m_eventToEvent[UM_PROFILES_LIST_CHANGED] = IE_EV_UM_PROFILES_LIST_CHANGED;
-    m_eventToEvent[UM_CUR_PROFILE_PARAM_CHANGED] = IE_EV_UM_CUR_PROFILE_PARAM_CHANGED;
-    m_eventToEvent[UM_SCREENSHOT_RELEASE] = IE_EV_UM_SCREENSHOT_RELEASE;
-    m_eventToEvent[UM_SHOW_CURSOR] = IE_EV_UM_SHOW_CURSOR;
-    m_eventToEvent[UM_GAME_MODE_CHANGED] = IE_EV_UM_GAME_MODE_CHANGED;
-    m_eventToEvent[UM_LOAD_LAST_GAME] = IE_EV_UM_LOAD_LAST_GAME;
-    m_eventToEvent[UM_OPTIONS] = IE_EV_UM_OPTIONS;
-    m_eventToEvent[UM_BELONG_MET] = IE_EV_UM_BELONG_MET;
-    m_eventToEvent[UM_KNOWN_CLANS_CHANGED] = IE_EV_UM_KNOWN_CLANS_CHANGED;
-    m_eventToEvent[UM_GAME_MENU_MODE_ENTER] = IE_EV_UM_GAME_MENU_MODE_ENTER;
-    m_eventToEvent[UM_GAME_MENU_MODE_EXIT] = IE_EV_UM_GAME_MENU_MODE_EXIT;
-    m_eventToEvent[UM_CHARACTERISTIC_TAB_SEL_CHANGED] = IE_EV_UM_CHARACTERISTIC_TAB_SEL_CHANGED;
-    m_eventToEvent[UM_HELP] = IE_EV_UM_HELP;
+    m_eventToEvent[41] = 0;
+    m_impulseToEvent[42] = 2;
+    m_impulseToEvent[43] = 3;
+    m_impulseToEvent[44] = 4;
+    m_impulseToEvent[45] = 5;
+    m_impulseToEvent[46] = 6;
+    m_impulseToEvent[47] = 7;
+    m_impulseToEvent[52] = 8;
+    m_impulseToEvent[53] = 9;
+    m_impulseToEvent[54] = 10;
+    m_impulseToEvent[39] = 11;
+    m_impulseToEvent[48] = 12;
+    m_impulseToEvent[49] = 13;
+    m_impulseToEvent[55] = 14;
+    m_impulseToEvent[0] = 15;
+    m_impulseToEvent[50] = 16;
+    m_eventToEvent[46] = 17;
+    m_eventToEvent[42] = 18;
+    m_eventToEvent[65653] = 19;
+    m_eventToEvent[65657] = 20;
+    m_eventToEvent[65658] = 21;
+    m_eventToEvent[65659] = 22;
+    m_eventToEvent[65660] = 23;
+    m_eventToEvent[65661] = 24;
+    m_eventToEvent[65663] = 25;
+    m_eventToEvent[65665] = 26;
+    m_eventToEvent[65664] = 27;
+    m_eventToEvent[65666] = 28;
+    m_eventToEvent[65667] = 29;
+    m_eventToEvent[65668] = 30;
+    m_eventToEvent[65669] = 31;
+    m_eventToEvent[65670] = 32;
+    m_eventToEvent[65671] = 33;
+    m_eventToEvent[65672] = 34;
+    m_eventToEvent[65673] = 35;
+    m_eventToEvent[65674] = 36;
+    m_eventToEvent[65675] = 37;
+    m_eventToEvent[65676] = 38;
+    m_eventToEvent[65677] = 39;
+    m_eventToEvent[65678] = 40;
+    m_eventToEvent[65679] = 41;
+    m_eventToEvent[65680] = 42;
+    m_eventToEvent[65644] = 43;
+    m_eventToEvent[65645] = 44;
+    m_eventToEvent[65684] = 45;
+    m_eventToEvent[65681] = 46;
+    m_eventToEvent[65682] = 47;
+    m_eventToEvent[65683] = 48;
+    m_eventToEvent[65656] = 49;
+    m_eventToEvent[65685] = 50;
+    m_eventToEvent[65686] = 51;
+    m_eventToEvent[65687] = 52;
+    m_eventToEvent[65688] = 53;
+    m_eventToEvent[65689] = 54;
+    m_eventToEvent[65690] = 55;
+    m_eventToEvent[65691] = 56;
+    m_eventToEvent[66540] = 57;
+    m_eventToEvent[66537] = 58;
+    m_eventToEvent[66538] = 59;
+    m_eventToEvent[66539] = 60;
+    m_eventToEvent[66541] = 61;
+    m_eventToEvent[66542] = 62;
+    m_eventToEvent[66543] = 63;
+    m_eventToEvent[66544] = 64;
+    m_eventToEvent[66545] = 65;
+    m_eventToEvent[66546] = 66;
+    m_eventToEvent[66547] = 67;
+    m_eventToEvent[66548] = 68;
+    m_eventToEvent[66551] = 69;
+    m_eventToEvent[66554] = 70;
+    m_eventToEvent[66556] = 71;
+    m_eventToEvent[66557] = 72;
+    m_eventToEvent[66558] = 73;
+    m_eventToEvent[66553] = 74;
+    m_eventToEvent[66559] = 75;
+    m_eventToEvent[66561] = 76;
+    m_eventToEvent[66562] = 77;
+    m_eventToEvent[66565] = 78;
+    m_eventToEvent[66563] = 79;
+    m_eventToEvent[66564] = 80;
+    m_eventToEvent[66566] = 81;
+    m_eventToEvent[66567] = 82;
+    m_eventToEvent[66568] = 83;
 }
 
 void TruxxUiManager::GUI_RegisterClasses()

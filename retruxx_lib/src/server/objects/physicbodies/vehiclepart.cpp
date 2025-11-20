@@ -223,7 +223,7 @@ namespace ai
 
 	CStr const& VehiclePart::GetPartName() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_partName;
 	}
 
 	void VehiclePart::TransferPhysicParamsToSceneGraphNode()
@@ -243,7 +243,7 @@ namespace ai
 
 	CompoundVehiclePart const* VehiclePart::GetOwnerCompoundVehiclePart() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_ownerCompoundPart;
 	}
 
 	float VehiclePart::GetDurabilityCoeffForDamageType(DamageType) const

@@ -1,5 +1,6 @@
 #include "gun.h"
 
+#include "compoundgun.h"
 #include "m3dapp.h"
 #include "core/log.h"
 
@@ -386,7 +387,8 @@ namespace ai
 
     bool Gun::CanLookAtTarget() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_rightStopAngle - m_leftStopAngle > 6.283184482025146 ||
+            (m_rightStopAngle + 0.1) > m_currentDesiredAlpha && m_currentDesiredAlpha > (m_leftStopAngle - 0.1);
     }
 
     float Gun::GetRechargingTime() const
@@ -399,9 +401,69 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Gun::isLookAtPoint(CVector const&, float) const
+    bool Gun::isLookAtPoint(const CVector& lookAt, float eps) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Gun::isLookAtPoint
+        CVector gunPosition;
+
+        // Get the gun's world position from either barrel node, main node, or physics body
+        if (m_barrelNode != nullptr)
+        {
+            gunPosition = m_barrelNode->GetOriginWorldAbs();
+        }
+        else if (m_Node != nullptr)
+        {
+            gunPosition = m_Node->GetOriginWorldAbs();
+        }
+        else
+        {
+            gunPosition = GetPosition();
+        }
+
+        // Calculate direction vector from gun to target
+        CVector targetDir;
+        targetDir.x = lookAt.x - gunPosition.x;
+        targetDir.y = lookAt.y - gunPosition.y;
+        targetDir.z = lookAt.z - gunPosition.z;
+
+        // Normalize the target direction vector
+        float invTargetLength = 1.0f / std::sqrt(targetDir.x * targetDir.x + targetDir.y * targetDir.y + targetDir.z * targetDir.z + 1.1920929e-7f);
+        CVector normalizedTargetDir;
+        normalizedTargetDir.x = targetDir.x * invTargetLength;
+        normalizedTargetDir.y = targetDir.y * invTargetLength;
+        normalizedTargetDir.z = targetDir.z * invTargetLength;
+
+        // Get the gun's transformation matrix for the current barrel
+        CMatrix gunMatrix = GetMatrixForShot(m_curBarrelIndex);
+
+        // Calculate the gun's forward direction from the matrix
+        // The forward vector appears to be calculated as a combination of matrix columns
+        CVector gunForwardDir;
+        gunForwardDir.x = gunMatrix._21;  // Combination of _31 + _11 * 0.0 + _21 = _21
+        gunForwardDir.y = gunMatrix._22;  // Combination of _32 + _12 * 0.0 + _22 = _22
+        gunForwardDir.z = gunMatrix._23;  // Combination of _33 + _13 * 0.0 + _23 = _23
+
+        // Normalize the gun's forward direction vector
+        float invGunLength =
+            1.0f / std::sqrt(gunForwardDir.x * gunForwardDir.x + gunForwardDir.y * gunForwardDir.y + gunForwardDir.z * gunForwardDir.z + 1.1920929e-7f);
+        CVector normalizedGunForwardDir;
+        normalizedGunForwardDir.x = gunForwardDir.x * invGunLength;
+        normalizedGunForwardDir.y = gunForwardDir.y * invGunLength;
+        normalizedGunForwardDir.z = gunForwardDir.z * invGunLength;
+
+        // Calculate the cross product between gun direction and target direction
+        // This gives us the "error" vector - its magnitude indicates how misaligned we are
+        CVector crossProduct;
+        crossProduct.x = normalizedGunForwardDir.y * normalizedTargetDir.z - normalizedGunForwardDir.z * normalizedTargetDir.y;
+        crossProduct.y = normalizedGunForwardDir.z * normalizedTargetDir.x - normalizedGunForwardDir.x * normalizedTargetDir.z;
+        crossProduct.z = normalizedGunForwardDir.x * normalizedTargetDir.y - normalizedGunForwardDir.y * normalizedTargetDir.x;
+
+        // Calculate the magnitude of the cross product (alignment error)
+        float alignmentError = std::sqrt(crossProduct.x * crossProduct.x + crossProduct.y * crossProduct.y + crossProduct.z * crossProduct.z);
+
+        // Return true if the alignment error is within the epsilon tolerance
+        // This means the gun is pointing close enough to the target
+        return eps > std::fabs(alignmentError);
     }
 
     void Gun::SetInvisible()
@@ -490,7 +552,63 @@ namespace ai
 
     CMatrix Gun::GetMatrixForShot(unsigned) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Gun::GetMatrixForShot
+        // Get the prototype information for this gun
+        const ai::GunPrototypeInfo* prototypeInfo = this->GetPrototypeInfo();
+
+        // Create the base fire matrix from prototype data
+        CMatrix fireMat = prototypeInfo->m_fireLpMatrices[m_curBarrelIndex];
+
+        // If we have a barrel node, transform the fire matrix by the barrel's current world transform
+        if (m_barrelNode != nullptr)
+        {
+            const CMatrix& barrelXForm = m_barrelNode->GetCurrentMatrix();
+
+            // Store original matrix values before transformation
+            float orig_11 = fireMat._11;
+            float orig_12 = fireMat._12;
+            float orig_13 = fireMat._13;
+            float orig_14 = fireMat._14;
+            float orig_21 = fireMat._21;
+            float orig_22 = fireMat._22;
+            float orig_23 = fireMat._23;
+            float orig_24 = fireMat._24;
+            float orig_31 = fireMat._31;
+            float orig_32 = fireMat._32;
+            float orig_33 = fireMat._33;
+            float orig_34 = fireMat._34;
+            float orig_41 = fireMat._41;
+            float orig_42 = fireMat._42;
+            float orig_43 = fireMat._43;
+            float orig_44 = fireMat._44;
+
+            // Transform first row [11, 12, 13, 14]
+            fireMat._11 = barrelXForm._11 * orig_11 + barrelXForm._21 * orig_12 + barrelXForm._31 * orig_13 + barrelXForm._41 * orig_14;
+            fireMat._12 = barrelXForm._12 * orig_11 + barrelXForm._22 * orig_12 + barrelXForm._32 * orig_13 + barrelXForm._42 * orig_14;
+            fireMat._13 = barrelXForm._13 * orig_11 + barrelXForm._23 * orig_12 + barrelXForm._33 * orig_13 + barrelXForm._43 * orig_14;
+            fireMat._14 = barrelXForm._14 * orig_11 + barrelXForm._24 * orig_12 + barrelXForm._34 * orig_13 + barrelXForm._44 * orig_14;
+
+            // Transform second row [21, 22, 23, 24]
+            fireMat._21 = barrelXForm._11 * orig_21 + barrelXForm._21 * orig_22 + barrelXForm._31 * orig_23 + barrelXForm._41 * orig_24;
+            fireMat._22 = barrelXForm._12 * orig_21 + barrelXForm._22 * orig_22 + barrelXForm._32 * orig_23 + barrelXForm._42 * orig_24;
+            fireMat._23 = barrelXForm._13 * orig_21 + barrelXForm._23 * orig_22 + barrelXForm._33 * orig_23 + barrelXForm._43 * orig_24;
+            fireMat._24 = barrelXForm._14 * orig_21 + barrelXForm._24 * orig_22 + barrelXForm._34 * orig_23 + barrelXForm._44 * orig_24;
+
+            // Transform third row [31, 32, 33, 34]
+            fireMat._31 = barrelXForm._11 * orig_31 + barrelXForm._21 * orig_32 + barrelXForm._31 * orig_33 + barrelXForm._41 * orig_34;
+            fireMat._32 = barrelXForm._12 * orig_31 + barrelXForm._22 * orig_32 + barrelXForm._32 * orig_33 + barrelXForm._42 * orig_34;
+            fireMat._33 = barrelXForm._13 * orig_31 + barrelXForm._23 * orig_32 + barrelXForm._33 * orig_33 + barrelXForm._43 * orig_34;
+            fireMat._34 = barrelXForm._14 * orig_31 + barrelXForm._24 * orig_32 + barrelXForm._34 * orig_33 + barrelXForm._44 * orig_34;
+
+            // Transform fourth row [41, 42, 43, 44]
+            fireMat._41 = barrelXForm._11 * orig_41 + barrelXForm._21 * orig_42 + barrelXForm._31 * orig_43 + barrelXForm._41 * orig_44;
+            fireMat._42 = barrelXForm._12 * orig_41 + barrelXForm._22 * orig_42 + barrelXForm._32 * orig_43 + barrelXForm._42 * orig_44;
+            fireMat._43 = barrelXForm._13 * orig_41 + barrelXForm._23 * orig_42 + barrelXForm._33 * orig_43 + barrelXForm._43 * orig_44;
+            fireMat._44 = barrelXForm._14 * orig_41 + barrelXForm._24 * orig_42 + barrelXForm._34 * orig_43 + barrelXForm._44 * orig_44;
+        }
+
+        // Copy the final matrix to the result
+        return fireMat;
     }
 
     float Gun::GetCurrentRechargingTime() const
@@ -566,7 +684,6 @@ namespace ai
         quatHorizRotation.y = sin(v4);
         quatHorizRotation.w = cos(v4);
         SetNodeRelativeRotation(quatHorizRotation);
-
 
         auto v5 = (0.0 - beta) * 0.5;
 
@@ -654,7 +771,13 @@ namespace ai
 
     bool Gun::IsDurabilityEnoughForFiring() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* ownerCompoundVehiclePart = GetOwnerCompoundVehiclePart();
+        if (ownerCompoundVehiclePart && IS_KIND_OF(ownerCompoundVehiclePart, CompoundGun))
+        {
+            auto* gun = RT_DYNCAST(ownerCompoundVehiclePart, const CompoundGun);
+            return gun->IsDurabilityEnoughForFiring();
+        }
+        return Durability().value().get() > 0;
     }
 
     bool Gun::IsWithShellsPoolLimit() const
@@ -669,8 +792,7 @@ namespace ai
 
     bool Gun::CanFire() const
     {
-        return m_ChargeState == csReady && m_ShellsInCurrentCharge &&
-            (GetPrototypeInfo()->m_ignoreStopAnglesWhenFire || CanLookAtTarget()) &&
+        return m_ChargeState == csReady && m_ShellsInCurrentCharge && (GetPrototypeInfo()->m_ignoreStopAnglesWhenFire || CanLookAtTarget()) &&
             IsDurabilityEnoughForFiring();
     }
 
@@ -769,7 +891,32 @@ namespace ai
 
     bool Gun::_DoFire()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if ((60.0 / m_firingRate) > m_timeFromLastShot)
+        {
+            return false;
+        }
+
+        if (m_ShellsInCurrentCharge-- == 1)
+        {
+            BeginReCharge();
+        }
+        _LaunchShells();
+
+        m_timeFromLastShot = 0.0;
+        m_bWasShot = true;
+        m_bJustShot = true;
+
+        const auto* protoInfo = GetPrototypeInfo();
+        ++m_curBarrelIndex;
+
+        // TODO: check this
+        int barrelCount = protoInfo->m_fireLpMatrices.size();
+        if (m_curBarrelIndex == barrelCount)
+        {
+            m_curBarrelIndex = 0;
+        }
+        DoRecoil();
+        return true;
     }
 
     bool Gun::_IsDirVerticallyReachable(CVector const&) const

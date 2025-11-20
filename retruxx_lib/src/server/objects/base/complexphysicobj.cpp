@@ -1212,4 +1212,24 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+
+    std::map<CStr, VehiclePart*>::const_iterator ComplexPhysicObj::begin() const
+    {
+        return m_vehicleParts.begin();
+    }
+
+    std::map<CStr, VehiclePart*>::iterator ComplexPhysicObj::begin()
+    {
+        return m_vehicleParts.begin();
+    }
+
+    std::map<CStr, VehiclePart*>::const_iterator ComplexPhysicObj::end() const
+    {
+        return m_vehicleParts.end();
+    }
+
+    std::map<CStr, VehiclePart*>::iterator ComplexPhysicObj::end()
+    {
+        return m_vehicleParts.end();
+    }
+}  // namespace ai
