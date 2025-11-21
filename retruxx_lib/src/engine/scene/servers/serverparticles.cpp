@@ -249,9 +249,12 @@ namespace m3d
         }
     }
 
-    void ParticlesServer::AddParticles(m3d::SgNode*, retruxx::vector<CVector> const*)
+    void ParticlesServer::AddParticles(m3d::SgNode* node, retruxx::vector<CVector> const* newPoses)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto& pos : *newPoses)
+        {
+            AddParticle(node, &pos);
+        }
     }
 
     void ParticlesServer::AddItemsByOne(retruxx::vector<m3d::DataServer::ServerItem>&)

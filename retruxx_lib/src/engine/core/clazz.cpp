@@ -97,9 +97,9 @@ namespace m3d
         m_persistant(clazz.m_persistant),
         m_isChildDirty(clazz.m_isChildDirty)
     {
-        for (auto* it = GetFirstChild(); it; it = it->GetNextSibling())
+        for (auto* it = clazz.m_firstChild; it; it = it->m_nextSibling)
         {
-            AddChild(it->Clone());
+            Object::AddChild(it->Clone());
         }
     }
 

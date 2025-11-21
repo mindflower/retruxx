@@ -63,7 +63,7 @@ namespace m3d
 
     Object* SgParticlesNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgParticlesNode(*this);
     }
 
     int SgParticlesNode::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
@@ -177,9 +177,12 @@ namespace m3d
         RitualInDestructor();
     }
 
-    SgParticlesNode::SgParticlesNode(SgParticlesNode const&)
+    SgParticlesNode::SgParticlesNode(SgParticlesNode const& node) : SgNode(node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_numMesh = -1;
+        this->m_Parts0Times = 0;
+        this->m_lastTimeUpdated = -1000;
+        RitualInConstructor(RITUAL_THINK_AND_REGISTERED_NODE);
     }
 
     SgParticlesNode::SgParticlesNode()
