@@ -506,9 +506,15 @@ namespace ai
         return ai::Obj::CanChildBeAdded(pClass) || pClass->IsKindOf(&ai::Vehicle::m_classVehicle);
     }
 
-    int Team::GetPropertyId(char const*) const
+    int Team::GetPropertyId(char const* propName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = Team::m_propertiesMap.find(propName);
+        if (it != Team::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return ai::Obj::GetPropertyId(propName);
     }
 
     void Team::CreateChildren()

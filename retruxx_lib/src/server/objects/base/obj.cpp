@@ -116,7 +116,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetPropertyById)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, SetProperty)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* obj = (ai::Obj*)context->asObject(0, "Obj");
+    const auto* prop = context->asString(1);
+    const auto& aiParam = context->asAIParam(2);
+    obj->SetProperty(prop, aiParam);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, SetPropertyById)
@@ -410,15 +414,17 @@ namespace ai
 
     void Obj::Remove()
     {
-        ai::Obj::_SetDeadStatus();
-        this->m_flags |= 2u;
+        _SetDeadStatus();
+        m_flags |= 2u;
         if (m_objId != -1)
+        {
             ai::theObjects->AddObjIdToRemove(m_objId);
+        }
     }
 
     bool Obj::NeedCinematicUpdate()
     {
-        return (this->m_flags >> 4) & 1;
+        return (m_flags >> 4) & 1;
     }
 
     m3d::AIParam Obj::GetPropertyDefault(char const*) const
@@ -453,9 +459,10 @@ namespace ai
 
     void Obj::StackOpen()
     {
-        auto ai = GetAIPtr();
-        if (ai)
+        if (auto ai = GetAIPtr())
+        {
             ai->CommandStackOpen();
+        }
     }
 
     void Obj::SetPassedToAnotherMapStatus()
@@ -645,9 +652,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Obj::SetProperty(char const*, m3d::AIParam const&)
+    bool Obj::SetProperty(char const* PropertyName, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto propFromObj = GetPropertyId(PropertyName);
+        if (propFromObj != -1)
+        {
+            return SetPropertyById(propFromObj, newValue);
+        }
+        return false;
     }
 
     retruxx::map<int, Obj*>& Obj::getAllChildren()

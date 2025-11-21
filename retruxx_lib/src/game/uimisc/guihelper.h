@@ -1,7 +1,12 @@
 #pragma once
+#include "skelmodel.h"
 #include "core/stringm3d.h"
 #include "retruxx/common.h"
 
+namespace m3d
+{
+    class AnimatedModel;
+}
 namespace ai
 {
     class Obj;
@@ -72,4 +77,5 @@ namespace help
     CStr GetMapNameFromFileName(CStr const&);
     CStr Color2Str(unsigned);
     void GetGunsForVehicle(int, retruxx::vector<ai::Obj*>&);
+    ActionType GetRandomMoveAnimation(m3d::AnimatedModel*);
 }  // namespace help

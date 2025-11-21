@@ -12,6 +12,11 @@ namespace m3d
     class AIParam;
 }
 
+enum
+{
+    PROP_WND_TOOLTIP = 16384,
+};
+
 namespace m3d
 {
     enum TextFormatFlags

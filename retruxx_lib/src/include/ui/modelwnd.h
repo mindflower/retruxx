@@ -43,7 +43,7 @@ namespace m3d
         public:
             RT_CLASS_DECLARE(ModelWnd);
 
-        private:
+        protected:
             rend::TexHandle m_renderTexture;
             AnimatedModel* m_Model = nullptr;
             AnimInfo* m_Animation = nullptr;

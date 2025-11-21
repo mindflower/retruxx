@@ -234,4 +234,8 @@ namespace help
             }
         }
     }
+    ActionType GetRandomMoveAnimation(m3d::AnimatedModel*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 }  // namespace help
