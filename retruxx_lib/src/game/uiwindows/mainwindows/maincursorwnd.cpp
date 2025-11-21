@@ -20,7 +20,8 @@ MainCursorWnd::AuxInfo::AuxInfo()
 
 bool MainCursorWnd::NeedShow() const
 {
-    return M3D_APP->GetCursorShow();
+    const auto gameMode = (GameState)M3D_APP->GetCurGameMode();
+    return M3D_APP->m_pInterfaceManager->IsGameModeValidForSmartCursor(gameMode) && M3D_APP->GetCursorShow0();
 }
 
 m3d::Class* MainCursorWnd::GetBaseClass()
