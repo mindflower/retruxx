@@ -279,7 +279,7 @@ int TruxxUiManager::GetDefaultFloatPrecision() const
 
 MsgManager* TruxxUiManager::GetMsgManager() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_msgManager;
 }
 
 ObjectCollection const& TruxxUiManager::GetObjectCollection() const

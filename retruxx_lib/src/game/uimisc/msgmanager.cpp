@@ -22,6 +22,16 @@ RT_CLASS_EXPORTS_BEGIN(MsgManager)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MsgManager);
 
+MsgInfo::~MsgInfo()
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+MsgInfo::MsgType MsgInfo::GetMsgType() const
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
 int MsgManager::ShowMsgBox(int, bool)
 {
     // TODO: implement MsgManager::ShowMsgBox
@@ -47,8 +57,20 @@ int MsgManager::Init(bool bGlobal)
 
 void MsgManager::Clear(bool bGlobal)
 {
-    // TODO: implement MsgManager::Clear
-    //RETRUXX_NOT_IMPLEMENTED;
+    for (auto& info : m_levelMsgs)
+    {
+        delete info.second;
+    }
+    m_levelMsgs.clear();
+
+    if (bGlobal)
+    {
+        for (auto& info : m_globalMsgs)
+        {
+            delete info.second;
+        }
+        m_globalMsgs.clear();
+    }
 }
 
 m3d::Class* MsgManager::GetClass() const
@@ -61,9 +83,20 @@ m3d::Class* MsgManager::GetBaseClass()
     return RT_CLASS_LOCAL(Object);
 }
 
-MsgInfo const* MsgManager::GetMsgInfo(int) const
+const MsgInfo* MsgManager::GetMsgInfo(int msgId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto it = m_levelMsgs.find(msgId);
+    if (it != m_levelMsgs.end())
+    {
+        return it->second;
+    }
+
+    auto globalIt = m_globalMsgs.find(msgId);
+    if (globalIt != m_globalMsgs.end())
+    {
+        return globalIt->second;
+    }
+    return nullptr;
 }
 
 m3d::Object* MsgManager::CreateObject()

@@ -10,6 +10,7 @@
 #include "game/uiwindows/commonwindows/itemmodelwnd.h"
 #include "ui/image.h"
 #include "ui/modelwnd.h"
+#include <server/objects/player.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(CinemaPanel, AddMessage)
 {
@@ -218,14 +219,51 @@ int CinemaPanel::OnPaint(const m3d::ui::DrawInfo& di)
     return Wnd::OnPaint(di);
 }
 
-void CinemaPanel::SetPanelTypeForMsg(int)
+void CinemaPanel::SetPanelTypeForMsg(int msgId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_panelType = PANELTYPE_NORMAL;
+    auto* msgManager = M3D_APP->m_pInterfaceManager->GetMsgManager();
+    const auto* msgInfo = msgManager->GetMsgInfo(msgId);
+    if (msgInfo)
+    {
+        m_panelType = msgInfo->GetMsgType() == MsgInfo::MSGTYPE_SCROLL ? PANELTYPE_SCROLL : PANELTYPE_NORMAL;
+    }
+    ShowControlsForPanelType(m_panelType);
 }
 
 int CinemaPanel::_SetMsg(int msgId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    SetPanelTypeForMsg(msgId);
+    Clear();
+
+    auto* msgManager = M3D_APP->m_pInterfaceManager->GetMsgManager();
+    const auto* msgInfo = msgManager->GetMsgInfo(msgId);
+    if (!msgInfo)
+    {
+        return 0;
+    }
+
+    if (m_panelType)
+    {
+        if (m_panelType == PANELTYPE_SCROLL)
+        {
+            InitControlsForMsgScroll(msgInfo);
+        }
+    }
+    else
+    {
+        InitControlsForMsgNormal(msgInfo);
+    }
+    if (ai::thePlayer)
+    {
+        ai::thePlayer->CauseEvent(ai::GE_START_CINEMATIC_MSG, 0.0, msgId, {});
+    }
+    return 1;
 }
 
 void CinemaPanel::SetupPortrait(MsgInfo const*)

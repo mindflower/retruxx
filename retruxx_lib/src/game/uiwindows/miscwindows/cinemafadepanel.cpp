@@ -75,7 +75,7 @@ float CinemaFadePanel::GetAlpha()
     {
         playTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
     }
-    return (double)(unsigned int)(playTime - fadeStartTime) / (m_fadePeriod * 1000.0) * 255.0;
+    return (double)(playTime - fadeStartTime) / (m_fadePeriod * 1000.0) * 255.0;
 }
 
 int CinemaFadePanel::OnPaint(m3d::ui::DrawInfo const& di)
@@ -92,12 +92,21 @@ int CinemaFadePanel::OnPaint(m3d::ui::DrawInfo const& di)
 
     auto curTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
 
-    // TODO: check this but and in the game looks ok (when starting main menu)
-    m_curAlpha = 255.0 - GetAlpha();
+    m_curAlpha = GetAlpha();
     if (m_curAlpha > 1.0 && m_curAlpha < 255.0
-        || curTime == fadeStartTime
-        || (this->m_isFading = 0, m_curAlpha > 1.0)
-        || this->m_isCinematicRelated)
+        || curTime == fadeStartTime)
+    {
+        BoundsBase<float> rect;
+        rect.x0 = 0.0;
+        rect.y0 = 0.0;
+        rect.width = this->m_bounds.width;
+        rect.height = this->m_bounds.height;
+        GetGfxServer()->AddFlatAxialQuad(di, rect, (int)m_curAlpha << 24);
+        return 1;
+    }
+
+    m_isFading = false;
+    if (m_curAlpha > 1.0 || m_isCinematicRelated)
     {
         BoundsBase<float> rect;
         rect.x0 = 0.0;
