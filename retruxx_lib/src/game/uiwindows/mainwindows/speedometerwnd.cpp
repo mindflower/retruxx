@@ -1,5 +1,10 @@
 #include "speedometerwnd.h"
 
+#include "config.h"
+#include "m3dapp.h"
+#include "core/kernel.h"
+#include "server/objects/player.h"
+
 RT_CLASS_EXPORTS_BEGIN(SpeedometerWnd)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SpeedometerWnd);
@@ -28,9 +33,23 @@ SpeedometerWnd::ArrowPointer::ArrowPointer()
     m_size.y = 0.0;
 }
 
-void SpeedometerWnd::ArrowPointer::Draw(m3d::ui::DrawInfo const&)
+void SpeedometerWnd::ArrowPointer::Draw(m3d::ui::DrawInfo const& di)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto halfW = m_size.x * 0.5;
+    auto xEdge = di.m_originalRect.x0;
+    auto halfH = m_size.y * 0.5;
+    auto yEdge = di.m_originalRect.y0;
+
+    if (!m_texture.IsValid())
+    {
+        M3D_RENDERER->SetWhiteTexture(0);
+    }
+    else
+    {
+        M3D_RENDERER->SetTexture(0, m_texture, -1.0);
+    }
+
+    M3D_APP->PutSpriteRelRot(m_coords.x + xEdge, m_coords.y + yEdge, halfW, halfH, 0xFFFFFFFF, this->m_angle, 0.0, 0.0, 0.0, 0.0, 0.0);
 }
 
 SpeedometerWnd::AuxInfo::AuxInfo()
@@ -109,9 +128,26 @@ void SpeedometerWnd::UpdateSpeedNumberBgColor(MotionDir)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int SpeedometerWnd::OnPaint(m3d::ui::DrawInfo const&)
+int SpeedometerWnd::OnPaint(m3d::ui::DrawInfo const& di)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m3d::ui::Wnd::OnPaint(di);
+    if (ai::thePlayer && ai::thePlayer->GetVehicle())
+    {
+        M3D_RENDERER->SetAlphaTest(M3D_ENGINE_CFG.m_alphaTestInterface.GetI());
+        M3D_RENDERER->SetStageState(0, m3d::rend::BM_COLOR, m3d::rend::TS_MODULATE);
+        M3D_RENDERER->SetStageState(0, m3d::rend::BM_ALPHA, m3d::rend::TS_MODULATE);
+        M3D_RENDERER->SetStageState(1, m3d::rend::BM_COLOR, m3d::rend::TS_NONE);
+        M3D_RENDERER->SetStageState(1, m3d::rend::BM_COLOR, m3d::rend::TS_NONE);
+        M3D_RENDERER->PushBlend(m3d::rend::BM_ALPHA);
+        M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
+
+        m_speedPointer.Draw(di);
+
+        M3D_RENDERER->SetAlphaTest(0);
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopZbState();
+    }
+    return 1;
 }
 
 void SpeedometerWnd::GetVelocity(float&, MotionDir&) const

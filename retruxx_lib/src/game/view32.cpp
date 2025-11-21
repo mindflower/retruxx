@@ -396,7 +396,7 @@ bool CMiracle3d::GetCursorShow() const
 
 bool CMiracle3d::GetCursorShow0() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return Wnd::GetCursorShow();
 }
 
 void CMiracle3d::SetCursorShow(bool state)

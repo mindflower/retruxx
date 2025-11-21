@@ -470,7 +470,8 @@ bool RadarWnd::IsPositionOutsideScanRadius(CVector const&) const
 
 void RadarWnd::OnPaintOverChildren(m3d::ui::DrawInfo const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement RadarWnd::OnPaintOverChildren
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RadarWnd::RemoveWorldside(Worldside)

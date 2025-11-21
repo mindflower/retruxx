@@ -9,7 +9,7 @@ public:
     public:
         AuxInfo();
 
-    private:
+    public:
         CStr m_texCapturingName;
         PointBase<float> m_texCapturingSz;
         float m_capturingRadius;

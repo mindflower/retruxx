@@ -1694,9 +1694,109 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Application::PutSpriteRelRot(float, float, float, float, unsigned, float, float, float, float, float, float)
+    void Application::PutSpriteRelRot(
+        float centerX,
+        float centerY,
+        float sizeX,
+        float sizeY,
+        unsigned int color,
+        float vertexAngle,
+        float vertexRotationCenterX,
+        float vertexRotationCenterY,
+        float imageAngle,
+        float imageRotationCenterX,
+        float imageRotationCenterY)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Application::PutSpriteRelRot
+        // Initialize vertex positions (unrotated quad centered at origin)
+        float x0 = -sizeX;
+        float y0 = -sizeY;
+        float x1 = sizeX;
+        float y1 = -sizeY;
+        float x2 = sizeX;
+        float y2 = sizeY;
+        float x3 = -sizeX;
+        float y3 = sizeY;
+
+        // Apply vertex rotation if needed
+        if (vertexAngle != 0.0f)
+        {
+            float sinVert = std::sin(vertexAngle);
+            float cosVert = std::cos(vertexAngle);
+
+            // Rotate each vertex around the vertex rotation center
+            auto rotatePoint = [&](float& x, float& y)
+            {
+                float dx = x - vertexRotationCenterX;
+                float dy = y - vertexRotationCenterY;
+                x = dx * cosVert - dy * sinVert + vertexRotationCenterX;
+                y = dy * cosVert + dx * sinVert + vertexRotationCenterY;
+            };
+
+            rotatePoint(x0, y0);
+            rotatePoint(x1, y1);
+            rotatePoint(x2, y2);
+            rotatePoint(x3, y3);
+        }
+
+        // Initialize texture coordinates (unrotated)
+        float u0 = 0.0f, v0 = 0.0f;  // top-left
+        float u1 = 1.0f, v1 = 0.0f;  // top-right
+        float u2 = 1.0f, v2 = 1.0f;  // bottom-right
+        float u3 = 0.0f, v3 = 1.0f;  // bottom-left
+
+        // Convert all coordinates from relative to absolute
+        m_renderer->RelToAbs(centerX, centerY);
+        m_renderer->RelToAbs(sizeX, sizeY);  // Note: sizeX/sizeY not used after this
+        m_renderer->RelToAbs(x0, y0);
+        m_renderer->RelToAbs(x1, y1);
+        m_renderer->RelToAbs(x2, y2);
+        m_renderer->RelToAbs(x3, y3);
+        m_renderer->RelToAbs(vertexRotationCenterX, vertexRotationCenterY);
+        m_renderer->RelToAbs(imageRotationCenterX, imageRotationCenterY);
+
+        // Apply texture rotation if needed
+        if (imageAngle != 0.0f)
+        {
+            float sinImg = std::sin(imageAngle);
+            float cosImg = std::cos(imageAngle);
+
+            // Rotate each texture coordinate around the image rotation center
+            auto rotateTexCoord = [&](float& u, float& v)
+            {
+                float du = u - imageRotationCenterX;
+                float dv = v - imageRotationCenterY;
+                u = du * cosImg - dv * sinImg + imageRotationCenterX;
+                v = dv * cosImg + du * sinImg + imageRotationCenterY;
+            };
+
+            rotateTexCoord(u0, v0);
+            rotateTexCoord(u1, v1);
+            rotateTexCoord(u2, v2);
+            rotateTexCoord(u3, v3);
+        }
+
+        // Call the absolute positioning function with translated vertices
+        PutSprite2Abs(
+            x0 + centerX,
+            y0 + centerY,  // vertex 0
+            x1 + centerX,
+            y1 + centerY,  // vertex 1
+            x3 + centerX,
+            y3 + centerY,  // vertex 3
+            x2 + centerX,
+            y2 + centerY,  // vertex 2
+            u0,
+            v0,  // texcoord 0
+            u1,
+            v1,  // texcoord 1
+            u3,
+            v3,  // texcoord 3
+            u2,
+            v2,    // texcoord 2
+            0.0f,  // unknown parameter (possibly z-coordinate)
+            color  // color
+        );
     }
 
     void Application::SetMouseXAxisFlipped(bool)

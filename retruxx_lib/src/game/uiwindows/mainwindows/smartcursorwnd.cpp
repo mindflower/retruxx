@@ -46,7 +46,7 @@ SmartCursorWnd::~SmartCursorWnd()
 
 m3d::Class* SmartCursorWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(SmartCursorWnd);
 }
 
 SmartCursorWnd::SmartCursorWnd(SmartCursorWnd const&)
@@ -54,10 +54,7 @@ SmartCursorWnd::SmartCursorWnd(SmartCursorWnd const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-SmartCursorWnd::SmartCursorWnd()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+SmartCursorWnd::SmartCursorWnd() = default;
 
 void SmartCursorWnd::OnNewFrame()
 {
