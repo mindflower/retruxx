@@ -660,5 +660,144 @@ namespace ai
         node->GetProperty(1u, &anim);
         return anim;
     }
+
+    CVector GetRandomDeviatedVector(CVector const& axis, float maxDeviationAngle)
+    {
+        // TODO: generated code GetRandomDeviatedVector
+        // Generate random deviation angles
+        float minAngle = 0.0f;
+        float maxAngle = maxDeviationAngle;
+
+        // Determine the range for random angle generation
+        float* angleRangeStart = (maxDeviationAngle >= 0.0f) ? &minAngle : &maxAngle;
+        float* angleRangeEnd = (maxDeviationAngle <= 0.0f) ? &minAngle : &maxAngle;
+        float* actualStart = (maxDeviationAngle >= 0.0f) ? &minAngle : &maxAngle;
+
+        // Generate random deviation angle
+        float deviationAngle = ((rand() * (*angleRangeEnd - *angleRangeStart)) * 0.000030518509f + *actualStart) * 0.5f;
+
+        // Create quaternion for deviation rotation
+        Quaternion quatDeviation;
+        quatDeviation.y = sin(deviationAngle);
+        quatDeviation.w = cos(deviationAngle);
+
+        // Generate random rotation angle
+        float rotationAngle = (rand() * 0.00019175345f) * 0.5f;
+
+        // Create rotation quaternion components
+        float sinRot = sin(rotationAngle);
+        float cosRot = cos(rotationAngle);
+
+        // Calculate quaternion components for the deviation
+        float qx = (quatDeviation.w * 0.0f) + (cosRot * 0.0f) - (sinRot * quatDeviation.y);
+        float qy = (cosRot * quatDeviation.y) + (sinRot * 0.0f) + (quatDeviation.w * 0.0f);
+        float qz = (sinRot * quatDeviation.w) + (quatDeviation.y * 0.0f) + (cosRot * 0.0f);
+        float qw = (cosRot * quatDeviation.w) - (quatDeviation.y * 0.0f) - (sinRot * 0.0f);
+
+        // Calculate intermediate values for matrix construction
+        float temp1 = qz * qy;
+        float temp2 = qw * qy;
+        float temp3 = qw * qz;
+
+        // Build rotation matrix for deviation
+        CMatrix deviationMatrix;
+        deviationMatrix._11 = 1.0f - ((qz * qz + qy * qy) * 2.0f);
+        deviationMatrix._21 = ((qy * qx) - (qw * qz)) * 2.0f;
+        deviationMatrix._31 = ((qw * qy) + (qz * qx)) * 2.0f;
+        deviationMatrix._12 = ((qw * qz) + (qy * qx)) * 2.0f;
+        deviationMatrix._22 = 1.0f - ((qz * qz + qx * qx) * 2.0f);
+        deviationMatrix._32 = ((qz * qy) - (qw * qx)) * 2.0f;
+        deviationMatrix._13 = ((qz * qx) - (qw * qy)) * 2.0f;
+        deviationMatrix._23 = ((qw * qx) + (qz * qy)) * 2.0f;
+        deviationMatrix._33 = 1.0f - ((qy * qy + qx * qx) * 2.0f);
+
+        // Set translation components to identity
+        deviationMatrix._14 = 0.0f;
+        deviationMatrix._24 = 0.0f;
+        deviationMatrix._34 = 0.0f;
+        deviationMatrix._41 = 0.0f;
+        deviationMatrix._42 = 0.0f;
+        deviationMatrix._43 = 0.0f;
+        deviationMatrix._44 = 1.0f;
+
+        // Apply deviation to initial direction
+        CMatrix tempMatrix(deviationMatrix);
+        CVector deviatedDir;
+
+        CVector INITIAL_OBJECTS_DIRECTION_36(0.0, 0.0, 1.0);
+        deviatedDir.x = (tempMatrix._11 * INITIAL_OBJECTS_DIRECTION_36.x) + (tempMatrix._21 * INITIAL_OBJECTS_DIRECTION_36.y) +
+            (tempMatrix._31 * INITIAL_OBJECTS_DIRECTION_36.z);
+        deviatedDir.y = (tempMatrix._12 * INITIAL_OBJECTS_DIRECTION_36.x) + (tempMatrix._22 * INITIAL_OBJECTS_DIRECTION_36.y) +
+            (tempMatrix._32 * INITIAL_OBJECTS_DIRECTION_36.z);
+        deviatedDir.z = (tempMatrix._13 * INITIAL_OBJECTS_DIRECTION_36.x) + (tempMatrix._23 * INITIAL_OBJECTS_DIRECTION_36.y) +
+            (tempMatrix._33 * INITIAL_OBJECTS_DIRECTION_36.z);
+
+        // Calculate axis correction if needed
+        float crossX = (INITIAL_OBJECTS_DIRECTION_36.y * axis.z) - (INITIAL_OBJECTS_DIRECTION_36.z * axis.y);
+        float crossY = (axis.x * INITIAL_OBJECTS_DIRECTION_36.z) - (INITIAL_OBJECTS_DIRECTION_36.x * axis.z);
+        float crossZ = (INITIAL_OBJECTS_DIRECTION_36.x * axis.y) - (axis.x * INITIAL_OBJECTS_DIRECTION_36.y);
+
+        float crossLengthSq = (crossX * crossX) + (crossY * crossY) + (crossZ * crossZ);
+
+        // Calculate angle between initial direction and target axis
+        float dotProduct = INITIAL_OBJECTS_DIRECTION_36.x * axis.x + INITIAL_OBJECTS_DIRECTION_36.y * axis.y + INITIAL_OBJECTS_DIRECTION_36.z * axis.z;
+        float angleBetween = atan2(sqrt(crossLengthSq), dotProduct);
+
+        // Apply axis correction if significant misalignment
+        if (crossLengthSq > 0.0001f)
+        {
+            // Normalize cross product
+            float invLength = 1.0f / sqrt(crossLengthSq + 1.1920929e-7f);
+            float normX = crossX * invLength;
+            float normY = crossY * invLength;
+            float normZ = crossZ * invLength;
+
+            // Re-normalize to ensure unit length
+            float renormalize = 1.0f / sqrt(normX * normX + normY * normY + normZ * normZ + 1.1920929e-7f);
+            normX *= renormalize;
+            normY *= renormalize;
+            normZ *= renormalize;
+
+            // Create correction quaternion
+            float halfAngle = angleBetween * 0.5f;
+            float sinHalf = sin(halfAngle);
+            float cosHalf = cos(halfAngle);
+
+            float qxCorr = sinHalf * normX;
+            float qyCorr = sinHalf * normY;
+            float qzCorr = sinHalf * normZ;
+            float qwCorr = cosHalf;
+
+            // Build correction matrix
+            CMatrix correctionMatrix;
+            correctionMatrix._11 = 1.0f - ((qzCorr * qzCorr + qyCorr * qyCorr) * 2.0f);
+            correctionMatrix._21 = ((qyCorr * qxCorr) - (qwCorr * qzCorr)) * 2.0f;
+            correctionMatrix._31 = ((qwCorr * qyCorr) + (qzCorr * qxCorr)) * 2.0f;
+            correctionMatrix._12 = ((qwCorr * qzCorr) + (qyCorr * qxCorr)) * 2.0f;
+            correctionMatrix._22 = 1.0f - ((qzCorr * qzCorr + qxCorr * qxCorr) * 2.0f);
+            correctionMatrix._32 = ((qzCorr * qyCorr) - (qwCorr * qxCorr)) * 2.0f;
+            correctionMatrix._13 = ((qzCorr * qxCorr) - (qwCorr * qyCorr)) * 2.0f;
+            correctionMatrix._23 = ((qwCorr * qxCorr) + (qzCorr * qyCorr)) * 2.0f;
+            correctionMatrix._33 = 1.0f - ((qyCorr * qyCorr + qxCorr * qxCorr) * 2.0f);
+
+            // Set translation components to identity
+            correctionMatrix._14 = 0.0f;
+            correctionMatrix._24 = 0.0f;
+            correctionMatrix._34 = 0.0f;
+            correctionMatrix._41 = 0.0f;
+            correctionMatrix._42 = 0.0f;
+            correctionMatrix._43 = 0.0f;
+            correctionMatrix._44 = 1.0f;
+
+            // Apply correction to deviated direction
+            CMatrix finalMatrix(correctionMatrix);
+            float originalX = deviatedDir.x;
+            deviatedDir.x = (finalMatrix._11 * deviatedDir.x) + (finalMatrix._21 * deviatedDir.y) + (finalMatrix._31 * deviatedDir.z);
+            deviatedDir.y = (finalMatrix._12 * originalX) + (finalMatrix._22 * deviatedDir.y) + (finalMatrix._32 * deviatedDir.z);
+            deviatedDir.z = (finalMatrix._13 * originalX) + (finalMatrix._23 * deviatedDir.y) + (finalMatrix._33 * deviatedDir.z);
+        }
+
+        return deviatedDir;
+    }
 }
 

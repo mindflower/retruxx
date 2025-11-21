@@ -260,7 +260,7 @@ namespace m3d
 
     Object* SgNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgNode(*this);
     }
 
     int SgNode::ReadFromXmlNodeAfterAdd(cmn::XmlFile* file, cmn::XmlNode* node)
@@ -303,9 +303,9 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void SgNode::RemoveImmediateAfterParent(bool)
+    void SgNode::RemoveImmediateAfterParent(bool YesOrNo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_removeImmediateAfterParent = YesOrNo;
     }
 
     unsigned SgNode::GetContourColor()

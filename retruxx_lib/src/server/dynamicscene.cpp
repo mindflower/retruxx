@@ -56,6 +56,31 @@ namespace ai
 	    int numNearCallbacksLastFrame = 0;
 	}
 
+	class ShellTraceLineCallback : public TraceLineCallback
+    {
+    private:
+        /* 0x0004 */ const ai::Bullet& m_Bullet;
+
+    public:
+        ShellTraceLineCallback(const ai::Bullet& bullet) : m_Bullet(bullet)
+        {
+        }
+
+        virtual bool CollideId(int objId) const override /* 0x04 */
+        {
+            return objId != m_Bullet.GetEmittedObjId();
+        }
+        virtual bool CollidePhysicObj(const ai::PhysicObj* physicObj) const override /* 0x08 */
+        {
+            if (IS_KIND_OF(physicObj, Shell))
+            {
+                auto* shell = RT_DYNCAST(physicObj, const Shell);
+                return shell->GetEmittedObjId() != m_Bullet.GetEmittedObjId();
+            }
+            return true;
+        }
+    }; /* size: 0x0008 */
+
 	int FillDefaultContactParameters(dContact* contacts, unsigned int numContacts)
 	{
 		// TODO: check and refactor this
@@ -741,9 +766,59 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void DynamicScene::CollideBullet(Bullet const&)
+	void DynamicScene::CollideBullet(Bullet const& bullet)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: check this
+        static scoped_ptr bulletCollideRay = ai::Ray::CreateObject(nullptr, 1.0, nullptr);
+
+	    auto* ray = bullet._Ray();
+
+        const auto pos = bullet.GetPosition();
+        dGeomSetPosition(ray->GetGeomId(), pos.x, pos.y, pos.z);
+
+		bulletCollideRay->SetLength(ray->GetLength());
+        bulletCollideRay->SetDirection(ray->GetDirection());
+
+		auto* data = dGeomGetData(ray->GetGeomId());
+        dGeomSetData(bulletCollideRay->GetGeomId(), data);
+
+		ShellTraceLineCallback shellTraceLineCallback(bullet);
+        dContact closestContact;
+        if (ai::TraceLine(*bulletCollideRay, closestContact, 0, 0, 0, 0, &shellTraceLineCallback, 0, 0))
+        {
+            auto g1 = closestContact.geom.g1;
+            auto IsEnabled = dGeomIsEnabled(closestContact.geom.g1);
+            auto g2 = closestContact.geom.g2;
+            auto wasEnabled1 = IsEnabled;
+            auto wasEnabled2 = dGeomIsEnabled(closestContact.geom.g2);
+            auto Body = dGeomGetBody(g1);
+            auto v14 = dGeomGetBody(g1);
+            int wasBodyEnabled1 = 0;
+            int wasBodyEnabled2 = 0;
+            if (Body)
+                wasBodyEnabled1 = dBodyIsEnabled(Body);
+            else
+                wasBodyEnabled1 = 0;
+            if (v14)
+                wasBodyEnabled2 = dBodyIsEnabled(v14);
+            else
+                wasBodyEnabled2 = 0;
+            if (Body)
+                dBodyEnable(Body);
+            if (v14)
+                dBodyEnable(v14);
+            dGeomEnable(g1);
+            dGeomEnable(g2);
+            ai::NearCallback(0, g1, g2);
+            if (Body && !wasBodyEnabled1)
+                dBodyDisable(Body);
+            if (v14 && !wasBodyEnabled2)
+                dBodyDisable(v14);
+            if (!wasEnabled1)
+                dGeomDisable(g1);
+            if (!wasEnabled2)
+                dGeomDisable(g2);
+        }
 	}
 
 	bool DynamicScene::LoadSceneFromFile(char const* fileName, retruxx::vector<m3d::Class*> const& allowedClasses)
@@ -934,11 +1009,13 @@ namespace ai
 	}
 
 	DynamicScene::DynamicScene(DynamicScene const&)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	DynamicScene::DynamicScene()
+    TraceLineCallback::~TraceLineCallback() = default;
+
+    DynamicScene::DynamicScene()
 	{
 		using namespace m3d;
 

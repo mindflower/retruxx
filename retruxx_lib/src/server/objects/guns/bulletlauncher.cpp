@@ -1,11 +1,15 @@
 #include "bulletlauncher.h"
 
+#include "bullet.h"
 #include "core/kernel.h"
 
 #include <stdexcept>
 
 #include "math/matrix.h"
 #include "server/objects/base/globalproperties.h"
+#include "server/objects/base/objcontainer.h"
+#include "server/objects/base/shell.h"
+
 #include <server/objects/base/prototypemanager.h>
 
 namespace ai
@@ -158,7 +162,101 @@ namespace ai
 
     void BulletLauncher::_LaunchShells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Gun::_LaunchShells();
+        for (int i = 0; i < m_numBulletsInShot; ++i)
+        {
+            const auto shellPrototypeId = GetShellPrototypeId();
+            const auto objId = theObjects->CreateNewObject(shellPrototypeId, {}, -1, -1);
+            auto* shellObj = (Bullet*)theObjects->GetEntityByObjId(objId);
+            shellObj->SetGunObjId(GetId());
+
+            auto* owner = GetOwner();
+            shellObj->SetBelong(owner->GetBelong());
+
+            const auto pos = _CalcPosForNextShot();
+            shellObj->SetPosition(pos);
+
+            auto angle = m_groupingAngle;
+            if (angle < 0.0)
+            {
+                angle = 0.0;
+            }
+            if (angle > theGlobProp.m_maxGroupingAngle)
+            {
+                angle = theGlobProp.m_maxGroupingAngle;
+            }
+
+            const auto dirForNextShot = _CalcDirForNextShot();
+            const auto deviatedVector = GetRandomDeviatedVector(dirForNextShot, angle);
+            shellObj->SetDirection(deviatedVector);
+
+            const auto range = GetFiringRange();
+            shellObj->SetRange(range);
+            shellObj->SetParentBarrel(m_curBarrelIndex);
+            shellObj->RelinkToSpace(owner->GetSpaceId());
+
+            const auto* protoInfo = GetPrototypeInfo();
+
+            // TODO: generated code BulletLauncher::_LaunchShells
+            // Check if tracer is enabled
+            if (protoInfo->m_tracerRange > 0 && !protoInfo->m_tracerEffectName.empty())
+            {
+                // Check if we have a valid barrel node
+                auto* barrelNode = GetBarrelNode();
+                if (barrelNode)
+                {
+                    // Update tracer counter
+                    ++m_numBulletsToTracer;
+
+                    // Check if it's time to create a tracer
+                    if (m_numBulletsToTracer >= protoInfo->m_tracerRange)
+                    {
+                        m_numBulletsToTracer = 0;
+
+                        // Create tracer node
+                        auto* tracerNode = CreateNode(protoInfo->m_tracerEffectName, 0, {1.0, 1.0, 1.0}, nullptr, false);
+                        M3D_ASSERT(tracerNode);
+                        
+                        tracerNode->RemoveImmediateAfterParent(false);
+
+                        // Attach tracer to barrel
+                        barrelNode->AddChild(tracerNode);
+
+                        // Calculate tracer position along bullet trajectory
+                        auto* bulletRay = shellObj->_Ray();
+
+                        auto bulletDir = bulletRay->GetDirection();
+                        auto bulletPos = shellObj->GetPosition();
+
+                        // Calculate tracer position (20 units ahead of bullet)
+                        CVector tracerWorldPos;
+                        tracerWorldPos.x = bulletPos.x + (bulletDir.x * 20.0f);
+                        tracerWorldPos.y = bulletPos.y + (bulletDir.y * 20.0f);
+                        tracerWorldPos.z = bulletPos.z + (bulletDir.z * 20.0f);
+
+                        // Convert to barrel-relative coordinates
+                        auto barrelInverse = barrelNode->GetCurrentMatrix().getInverse();
+
+                        CVector tracerLocalPos;
+                        tracerLocalPos.x = (barrelInverse._11 * tracerWorldPos.x) + (barrelInverse._21 * tracerWorldPos.y) +
+                            (barrelInverse._31 * tracerWorldPos.z) + barrelInverse._41;
+                        tracerLocalPos.y = (barrelInverse._12 * tracerWorldPos.x) + (barrelInverse._22 * tracerWorldPos.y) +
+                            (barrelInverse._32 * tracerWorldPos.z) + barrelInverse._42;
+                        tracerLocalPos.z = (barrelInverse._13 * tracerWorldPos.x) + (barrelInverse._23 * tracerWorldPos.y) +
+                            (barrelInverse._33 * tracerWorldPos.z) + barrelInverse._43;
+
+                        // Set tracer position
+                        tracerNode->SetOriginAbs(tracerLocalPos);
+
+                        // Update transformations
+                        tracerNode->UpdateXForm(false, true);
+
+                        // Associate tracer with bullet
+                        shellObj->SetTracer(tracerNode);
+                    }
+                }
+            }
+        }
     }
 
     BulletLauncher::~BulletLauncher() = default;

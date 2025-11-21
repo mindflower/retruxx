@@ -30,7 +30,16 @@ namespace
     CVector camOrg;
     float transparentRadius = 0.0;
     bool inTransparencyRadius = false;
-}
+}  // namespace
+
+namespace
+{
+    void CheckNodeValidity(m3d::SgNode* node, const char* debugStr)
+    {
+        // TODO: implement CheckNodeValidity
+        // RETRUXX_NOT_IMPLEMENTED;
+    }
+}  // namespace
 
 namespace m3d
 {
@@ -265,9 +274,49 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void SceneGraph::InsertInRemoveIfFree(SgNode*)
+    void SceneGraph::InsertInRemoveIfFree(SgNode* toInsert)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        if (toInsert)
+        {
+            CheckNodeValidity(toInsert, "Check from InsertInRemoveIfFree");
+            if (m_bIsPurgingRemoveIfFree)
+            {
+                M3D_LOG_WARN(
+                    "Warning: inserting node in RemoveIfFree when it is being purged! node name = '" + CStr(toInsert->GetName()) + "', class = '" +
+                    CStr(toInsert->GetClassNameA()));
+            }
+
+            toInsert->RemoveImmediateAfterParent(false);
+            m_RemoveIfFreeList.insert(toInsert);
+            toInsert->m_persistant = 0;
+            toInsert->m_isInRemoveIfFree = 1;
+            toInsert->m_isRemoveIfFree = 1;
+
+            std::vector<m3d::Object*> stack;
+            stack.push_back(toInsert);
+
+            while (!stack.empty())
+            {
+                m3d::Object* current = stack.back();
+                stack.pop_back();
+
+                // Process all children of current node
+                m3d::SgNode* childNode = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
+                while (childNode)
+                {
+                    childNode->m_isRemoveIfFree = true;
+
+                    // If child has children, add to stack for processing
+                    if (childNode->GetFirstChild())
+                    {
+                        stack.push_back(childNode);
+                    }
+
+                    childNode = dynamic_cast<m3d::SgNode*>(childNode->GetNextSibling());
+                }
+            }
+        }
     }
 
     bool SceneGraph::SortedCellsStartFetching(int radius0, int radius1)
@@ -479,15 +528,6 @@ namespace m3d
         // Apply the light to the renderer
         M3D_RENDERER->LightSet(0, light);
         M3D_RENDERER->LightEnable(0, true);
-    }
-
-    namespace
-    {
-        void CheckNodeValidity(m3d::SgNode *node, const char *debugStr)
-        {
-            // TODO: implement CheckNodeValidity
-           // RETRUXX_NOT_IMPLEMENTED;
-        }
     }
 
     void SceneGraph::Update()

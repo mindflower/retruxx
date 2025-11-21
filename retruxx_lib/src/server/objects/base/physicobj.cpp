@@ -6,6 +6,7 @@
 #include "landscape.h"
 #include "world.h"
 #include "core/ini.h"
+#include "core/log.h"
 #include "game/m3dgame.h"
 #include "server/dynamicscene.h"
 #include "server/ai/aimanager.h"
@@ -213,9 +214,19 @@ namespace ai
         return this->m_bIsUpdatingByODE != 0;
     }
 
-    void PhysicObj::RelinkToSpace(dxSpace*)
+    void PhysicObj::RelinkToSpace(dxSpace* newSpace)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_spaceId && this->m_bIsSpaceOwner)
+        {
+            auto space = dGeomGetSpace(m_spaceId);
+            if (space)
+                dSpaceRemove(space, m_spaceId);
+            dSpaceAdd(newSpace, m_spaceId);
+        }
+        else
+        {
+            M3D_LOG_ERR("Error: attempt to relink " + GetDebugDescription() + " which is transferred to another space");
+        }
     }
 
     bool PhysicObj::IsVisible()
@@ -230,7 +241,7 @@ namespace ai
 
     dxSpace* PhysicObj::GetSpaceId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_spaceId;
     }
 
     void PhysicObj::SetSkin(int skin)

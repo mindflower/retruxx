@@ -14,6 +14,12 @@
 #include <server/objects/player.h>
 #include <server/processmanager.h>
 
+extern "C"
+{
+#include <ode/objects.h>
+}
+#include "ode/odecpp.h"
+
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, GetShellsInCurrentCharge)
 {
     RETRUXX_NOT_IMPLEMENTED;
@@ -336,7 +342,7 @@ namespace ai
 
     m3d::SgNode* Gun::GetBarrelNode() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_barrelNode;
     }
 
     bool Gun::Fire(bool enable)
@@ -652,7 +658,7 @@ namespace ai
 
     float Gun::GetFiringRange() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_firingRange;
     }
 
     float Gun::EstimateDamageFromPosition(CVector const&, CVector const&, retruxx::vector<int, retruxx::allocator<int>> const&)
@@ -741,7 +747,7 @@ namespace ai
 
     int Gun::GetShellPrototypeId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_shellPrototypeId;
     }
 
     Gun::ChargeState Gun::GetChargeState() const
@@ -881,7 +887,29 @@ namespace ai
 
     void Gun::DoRecoil()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_recoilForce > 0.0)
+        {
+            auto* owner = GetOwner();
+            if (owner)
+            {
+                const auto mat = GetMatrixForShot(m_curBarrelIndex);
+
+                Quaternion rot;
+                rot.FromMatrix(mat);
+
+                CVector fireDir;
+                float angle = 0.0;
+
+                CVector force;
+                force.x = (float)(0.0 - fireDir.x) * m_recoilForce;
+                force.z = (float)(0.0 - fireDir.z) * m_recoilForce;
+                force.y = (float)((float)(0.0 - fireDir.y) * m_recoilForce) - (float)(m_recoilForce * 0.30000001);
+
+
+                const auto pos = GetNodeRelativePosition();
+                dBodyAddForceAtRelPos(owner->GetBody()->id(), force.x, force.y, force.z, pos.x, pos.y, pos.z);
+            }
+        }
     }
 
     void Gun::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
@@ -947,12 +975,18 @@ namespace ai
 
     void Gun::_LaunchShells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Gun::_LaunchShells
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector Gun::_CalcDirForNextShot() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto mat = GetMatrixForShot(m_curBarrelIndex);
+        CVector result;
+        result.x = (float)((float)(mat._31 + mat._11) * 0.0) + mat._21;
+        result.y = (float)((float)(mat._32 + mat._12) * 0.0) + mat._22;
+        result.z = (float)((float)(mat._33 + mat._13) * 0.0) + mat._23;
+        return result;
     }
 
     void Gun::_InternalPostLoad()
@@ -978,7 +1012,8 @@ namespace ai
 
     CVector Gun::_CalcPosForNextShot() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto mat = GetMatrixForShot(m_curBarrelIndex);
+        return mat.getOrg();
     }
 
     bool Gun::_GetPropertyInternal(int, m3d::AIParam&) const
@@ -1383,7 +1418,7 @@ namespace ai
 
     bool Gun::_bIsRapidFiring() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_firingRate > 299.89999;
     }
 
     void Gun::_UpdateNodeFiringAction()

@@ -181,7 +181,7 @@ namespace ai
 
     m3d::Profiler* CServer::GetBulletProfiler()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_bulletProfiler;
     }
 
     m3d::Profiler* CServer::GetCollideProfiler()

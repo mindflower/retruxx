@@ -256,7 +256,7 @@ void SavesManager::OnNewFrameForce()
         {
             m_bDelayedQuickSave = 0;
             m_delayedQuickSaveFrame = 0;
-            SavesManager::QuickSave();
+            QuickSave();
         }
     }
 }

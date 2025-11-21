@@ -1065,7 +1065,10 @@ namespace ai
 
 	int PhysicBody::GetOwnerId() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (m_ownerPhysicObj)
+            return m_ownerPhysicObj->GetId();
+        else
+            return -1;
 	}
 
 	int PhysicBody::_GetCurAnimationFrame() const

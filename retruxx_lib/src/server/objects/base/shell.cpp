@@ -1,6 +1,11 @@
 #include "shell.h"
 
+#include "objcontainer.h"
+
 #include <stdexcept>
+#include "prototypemanager.h"
+#include "core/kernel.h"
+#include "server/objects/guns/gun.h"
 
 namespace ai
 {
@@ -47,7 +52,7 @@ namespace ai
 
     int Shell::GetEmittedObjId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_emittedObjId;
     }
 
     ShellPrototypeInfo const* Shell::GetPrototypeInfo() const
@@ -60,14 +65,29 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Shell::SetGunObjId(int)
+    void Shell::SetGunObjId(int gunObjId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_gunObjId = gunObjId;
+        if (gunObjId == -1)
+        {
+            m_emittedObjId = -1;
+            m_gunPrototypeId = -1;
+            return;
+        }
+
+        auto* obj = (PhysicBody*)theObjects->GetEntityByObjId(gunObjId);
+        m_emittedObjId = obj->GetOwnerId();
+        m_gunPrototypeId = obj->GetPrototypeId();
+
+        auto gunPrototypeInfo = thePrototypeManager->GetPrototypeInfo(m_gunPrototypeId);
+        M3D_ASSERT(gunPrototypeInfo);
+        M3D_ASSERT(gunPrototypeInfo->IsPrototypeOf(RT_CLASS_LOCAL(Gun)));
     }
 
     Shell::Shell(ShellPrototypeInfo const& prototype) : SimplePhysicObj(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_gunObjId = -1;
+        m_emittedObjId = -1;
     }
 
     Obj* Shell::GetEmittedObj() const
@@ -75,10 +95,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Shell::~Shell()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    Shell::~Shell() = default;
 
     m3d::Object* Shell::CreateObject()
     {
