@@ -614,6 +614,8 @@ namespace m3d
                 CheckNodeValidity(currentNode, "Check Two");
 
                 // Delete the node
+
+                // TODO: DecRef
                 delete currentNode;
 
                 removeIt = nextIt;
@@ -965,7 +967,7 @@ namespace m3d
 
     bool SceneGraph::IsInUnlinkAndDeleteAll() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_bIsInUnlinkAndDeleteAll;
     }
 
     void SceneGraph::DeleteAllTtledNodes()
@@ -1236,7 +1238,9 @@ namespace m3d
         CheckNodeValidity(toRemove, "Check Two");
 
         // TODO: check this
+        // TODO: DecRef
         toRemove->DecRef();
+        toRemove = nullptr;
     }
 
     int SceneGraph::getYOfs(int)

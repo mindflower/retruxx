@@ -24,7 +24,51 @@ namespace m3d
 
     void SgSoundSourceNode::CanBeFree()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
+        {
+            int channelId = -1;
+
+            int looped = 0;
+            GetProperty(PROP_SND_LOOPED, &looped);
+
+            int bIsTripleSound = 0;
+            GetServer()->GetItemProperty(m_srvId, PROP_SRV_SND_TRIPLE, &bIsTripleSound);
+
+            int bIsDoubleSound = 0;
+            GetServer()->GetItemProperty(m_srvId, PROP_SRV_SND_DOUBLE, &bIsTripleSound);
+
+            // TODO: check all this!!!
+            if (bIsTripleSound && m_currentSoundNum < 2)
+            {
+                m_currentSoundNum = 2;
+                Restart();
+
+                GetProperty(PROP_SND_CHANNELID, &channelId);
+
+                looped = 0;
+                SetProperty(PROP_SND_LOOPED, &looped);
+            }
+            else
+            {
+                if (bIsDoubleSound && m_currentSoundNum < 1)
+                {
+                    m_currentSoundNum = 1;
+                    Restart();
+                    GetProperty(PROP_SND_CHANNELID, &channelId);
+                }
+                else
+                {
+                    GetProperty(PROP_SND_CHANNELID, &channelId);
+                }
+
+                int newLooped = 0;
+                SetProperty(PROP_SND_LOOPED, &newLooped);
+            }
+            if (channelId != -1)
+            {
+                M3D_APP->m_sound->SetChannelLoopMode(channelId, 0);
+            }
+        }
     }
 
     int SgSoundSourceNode::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)

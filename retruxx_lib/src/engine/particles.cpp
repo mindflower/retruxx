@@ -315,10 +315,10 @@ namespace m3d
 
             if (this->m_meshEmitterVerts && *this->m_meshEmitterVerts)
             {
-                delete[] m_meshEmitterVerts;
+                delete[] (float*)*m_meshEmitterVerts;
             }
 
-            delete[] m_meshEmitterVerts;
+            delete m_meshEmitterVerts;
 
             this->m_numMeshEmitterVerts = nullptr;
             this->m_meshEmitterVerts = nullptr;
@@ -911,9 +911,13 @@ namespace m3d
         parts->m_accel = ZeroVector;
         parts->m_rotaccel = ZeroVector;
         parts->m_origin = ZeroVector;
+
         for (int i = 0; i < parts->m_numParticles; ++i)
         {
-            ParticlesPool.Delete((&parts->m_particles)[i]);
+            // TODO: check this!!!
+            auto temp = parts->m_particles;
+            parts->m_particles = temp->m_next;
+            ParticlesPool.Delete(temp);
         }
         parts->m_numParticles = 0;
 
@@ -1718,9 +1722,210 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int StripAllPS::Render(CMatrix const*, ParticlesList*)
+    int StripAllPS::Render(CMatrix const* local, ParticlesList* parts)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code StripAllPS::Render
+        m3d::rend::IRenderer* renderer = M3D_RENDERER;
+
+        // Get camera position for billboarding
+        CVector camOrg = renderer->MatGetOrgInv();
+
+        CVector localOrigin = *(CVector*)&local->m[3][0];  // Extract position from matrix
+        parts->m_renderCalled = true;
+
+        // Early out if not in valid phase or no particles
+        if (parts->m_start1 > parts->m_PhaseTime || !parts->m_numParticles)
+            return 1;
+
+        // Create local copy of transformation matrix
+        CMatrix renderMatrix(*local);
+
+        // Set up rendering state
+        ApplyBlending();
+        M3D_APP->SetFlushQuadsShader(m_shader);
+        renderer->SetTexture(0, m_texAdd, -1.0f);
+        renderer->SetCull(rend::M3DCULL_CW, 0);
+
+        // Start quad batch rendering
+        M3D_APP->StartQuads(rend::VERTEX_XYZCT1);
+
+        if (m_trailLen == 10)
+        {
+            // Render particles as simple strips (no trails)
+            for (m3d::Particle* particle = parts->m_particles; particle; particle = particle->m_next)
+            {
+                if (m_updateXForm)
+                {
+                    // Transform particle positions using the render matrix
+                    CVector transformedPos;
+                    transformedPos.x = (renderMatrix._11 * particle->m_locorigin.x) + (renderMatrix._21 * particle->m_locorigin.y) +
+                        (renderMatrix._31 * particle->m_locorigin.z);
+                    transformedPos.y = (renderMatrix._12 * particle->m_locorigin.x) + (renderMatrix._22 * particle->m_locorigin.y) +
+                        (renderMatrix._32 * particle->m_locorigin.z);
+                    transformedPos.z = (renderMatrix._13 * particle->m_locorigin.x) + (renderMatrix._23 * particle->m_locorigin.y) +
+                        (renderMatrix._33 * particle->m_locorigin.z);
+
+                    // Transform forward origin
+                    CVector transformedForward;
+                    transformedForward.x = (renderMatrix._11 * particle->m_forigin.x) + (renderMatrix._21 * particle->m_forigin.y) +
+                        (renderMatrix._31 * particle->m_forigin.z) + localOrigin.x;
+                    transformedForward.y = (renderMatrix._12 * particle->m_forigin.x) + (renderMatrix._22 * particle->m_forigin.y) +
+                        (renderMatrix._32 * particle->m_forigin.z) + localOrigin.y;
+                    transformedForward.z = (renderMatrix._13 * particle->m_forigin.x) + (renderMatrix._23 * particle->m_forigin.y) +
+                        (renderMatrix._33 * particle->m_forigin.z) + localOrigin.z;
+
+                    // Add transformed position
+                    transformedPos.x += localOrigin.x;
+                    transformedPos.y += localOrigin.y;
+                    transformedPos.z += localOrigin.z;
+
+                    // Add stripe part for this particle
+                    addStripePart(
+                        particle->m_origin,  // startPos1
+                        particle->m_origin,  // startPos2
+                        transformedPos,      // endPos1
+                        transformedForward,  // endPos2
+                        particle->m_size,     // startSize
+                        particle->m_size,     // endSize
+                        particle->m_curClr,   // startColor
+                        particle->m_curClr,   // endColor
+                        camOrg,              // camera position
+                        0,                    // texture coordinate U
+                        0,                    // texture coordinate V
+                        1.0f,                 // texture scale U
+                        1.0f,                 // texture scale V
+                        0                     // flags
+                    );
+                }
+                else
+                {
+                    // Use world coordinates directly
+                    CVector worldPos;
+                    worldPos.x = particle->m_origin.x + particle->m_locorigin.x;
+                    worldPos.y = particle->m_origin.y + particle->m_locorigin.y;
+                    worldPos.z = particle->m_origin.z + particle->m_locorigin.z;
+
+                    CVector worldForward;
+                    worldForward.x = particle->m_origin.x + particle->m_forigin.x;
+                    worldForward.y = particle->m_origin.y + particle->m_forigin.y;
+                    worldForward.z = particle->m_origin.z + particle->m_forigin.z;
+
+                    // Add stripe part for this particle
+                    addStripePart(
+                        worldPos,           // startPos1
+                        worldPos,           // startPos2
+                        worldPos,           // endPos1
+                        worldForward,       // endPos2
+                        particle->m_size,    // startSize
+                        particle->m_size,    // endSize
+                        particle->m_curClr,  // startColor
+                        particle->m_curClr,  // endColor
+                        camOrg,             // camera position
+                        0,                   // texture coordinate U
+                        0,                   // texture coordinate V
+                        1.0f,                // texture scale U
+                        1.0f,                // texture scale V
+                        0                    // flags
+                    );
+                }
+            }
+        }
+        else
+        {
+            // Render particles with trails
+            for (m3d::Particle* particle = parts->m_particles; particle; particle = particle->m_next)
+            {
+                int trailSize = particle->m_trailSize;
+                if (trailSize >= 1)
+                {
+                    float textureIncrement = 1.0f / (trailSize + 1);
+                    float currentTexCoord = 1.0f;
+
+                    // Render trail segments
+                    for (int segment = 0; segment < trailSize; segment++)
+                    {
+                        int trailIndex = trailSize - 1 - segment;
+                        auto* trail = &particle->m_trail[trailIndex];
+
+                        if (m_updateXForm)
+                        {
+                            // Transform trail positions
+                            CVector transformedCurrent;
+                            transformedCurrent.x = (renderMatrix._11 * particle->m_locorigin.x) + (renderMatrix._21 * particle->m_locorigin.y) +
+                                (renderMatrix._31 * particle->m_locorigin.z) + localOrigin.x;
+                            transformedCurrent.y = (renderMatrix._12 * particle->m_locorigin.x) + (renderMatrix._22 * particle->m_locorigin.y) +
+                                (renderMatrix._32 * particle->m_locorigin.z) + localOrigin.y;
+                            transformedCurrent.z = (renderMatrix._13 * particle->m_locorigin.x) + (renderMatrix._23 * particle->m_locorigin.y) +
+                                (renderMatrix._33 * particle->m_locorigin.z) + localOrigin.z;
+
+                            // Transform trail position
+                            CVector transformedTrail;
+                            transformedTrail.x = (renderMatrix._11 * trail->m_locorigin.x) + (renderMatrix._21 * trail->m_locorigin.y) +
+                                (renderMatrix._31 * trail->m_locorigin.z) + localOrigin.x;
+                            transformedTrail.y = (renderMatrix._12 * trail->m_locorigin.x) + (renderMatrix._22 * trail->m_locorigin.y) +
+                                (renderMatrix._32 * trail->m_locorigin.z) + localOrigin.y;
+                            transformedTrail.z = (renderMatrix._13 * trail->m_locorigin.x) + (renderMatrix._23 * trail->m_locorigin.y) +
+                                (renderMatrix._33 * trail->m_locorigin.z) + localOrigin.z;
+
+                            addStripePart(
+                                transformedCurrent,                 // startPos1
+                                transformedTrail,                   // startPos2
+                                transformedCurrent,                 // endPos1
+                                transformedTrail,                   // endPos2
+                                particle->m_size,                    // startSize
+                                trail->m_size,                         // endSize
+                                particle->m_curClr,                  // startColor
+                                trail->m_curClr,                        // endColor
+                                camOrg,                             // camera position
+                                0,                                   // texture coordinate U
+                                currentTexCoord + textureIncrement,  // texture coordinate V
+                                1.0f,                                // texture scale U
+                                currentTexCoord,                     // texture scale V
+                                segment                              // segment index
+                            );
+                        }
+                        else
+                        {
+                            // Use world coordinates directly for trail
+                            CVector worldCurrent;
+                            worldCurrent.x = particle->m_origin.x + particle->m_locorigin.x;
+                            worldCurrent.y = particle->m_origin.y + particle->m_locorigin.y;
+                            worldCurrent.z = particle->m_origin.z + particle->m_locorigin.z;
+
+                            CVector worldTrail;
+                            worldTrail.x = particle->m_origin.x + trail->m_locorigin.x;
+                            worldTrail.y = particle->m_origin.y + trail->m_locorigin.y;
+                            worldTrail.z = particle->m_origin.z + trail->m_locorigin.z;
+
+                            addStripePart(
+                                worldCurrent,                       // startPos1
+                                worldTrail,                         // startPos2
+                                worldCurrent,                       // endPos1
+                                worldTrail,                         // endPos2
+                                particle->m_size,                    // startSize
+                                trail->m_size,                         // endSize
+                                particle->m_curClr,                  // startColor
+                                trail->m_curClr,                        // endColor
+                                camOrg,                             // camera position
+                                0,                                   // texture coordinate U
+                                currentTexCoord + textureIncrement,  // texture coordinate V
+                                1.0f,                                // texture scale U
+                                currentTexCoord,                     // texture scale V
+                                segment                              // segment index
+                            );
+                        }
+
+                        currentTexCoord -= textureIncrement;
+                    }
+                }
+            }
+        }
+
+        // Finish quad batch rendering
+        M3D_APP->FinishQuads();
+        M3D_APP->SetFlushQuadsShader(nullptr);
+
+        return 1;
     }
 
     StripAllPS::StripAllPS()
@@ -1863,9 +2068,144 @@ namespace m3d
         this->m_Anim = 0;
     }
 
-    int GlowQuadPS::Render(CMatrix const*, ParticlesList*)
+    int GlowQuadPS::Render(CMatrix const* local, ParticlesList* parts)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code GlowQuadPS::Render
+        parts->m_renderCalled = true;
+
+        // Early out if not in valid phase or no particles
+        if (parts->m_start1 > parts->m_PhaseTime || !parts->m_numParticles)
+            return 1;
+
+        m3d::rend::IRenderer* renderer = M3D_RENDERER;
+
+        // Apply transformation if needed
+        if (m_updateXForm)
+        {
+            renderer->MatPush(*local);
+        }
+
+        // Get basis vectors from current matrix
+        CVector right, up, forward;
+        renderer->MatGetBasis(right, up, forward);
+
+        // Create quad vertices in local space
+        CVector quad[4];
+
+        // Calculate quad corners relative to particle position
+        quad[0] = (-up - right);  // Bottom-left
+        quad[1] = (-up + right);  // Bottom-right
+        quad[2] = (up + right);   // Top-right
+        quad[3] = (up - right);   // Top-left
+
+        float DirScale = 1.0f;
+
+        // Handle directional scaling for certain effects
+        if (m_forv)
+        {
+            CVector cameraOrg = renderer->MatGetOrgInv();
+
+            CVector viewDir = cameraOrg.getNormalized();
+            DirScale = viewDir.y;  // Scale based on view direction
+
+            if (DirScale <= 0.0f)
+            {
+                if (m_updateXForm)
+                    renderer->MatPop(1);
+                return 1;
+            }
+        }
+
+        // Check if particle system is visible via line trace
+        CVector localPos(local->_41, local->_42, local->_43);
+        if (parts->m_TLM.TraceLine(localPos, M3D_APP->m_curCamera.m_worldOrigin))
+        {
+            if (m_updateXForm)
+                renderer->MatPop(1);
+            return 1;
+        }
+
+        // Set up rendering state
+        ApplyBlending();
+        renderer->SetTexture(0, m_texAdd, -1.0f);
+        renderer->SetCull(rend::M3DCULL_CW, 0);
+        renderer->PushZbState();
+
+        // Lock vertex buffer for particle data
+        m3d::rend::VbHandle vb = renderer->GetVbStreaming(rend::VERTEX_XYZCT1);
+
+        int totalVertices = 4 * parts->m_numParticles;
+        int vbOffset = 0;
+
+        // Lock vertex buffer for writing
+        char* vtxData = (char*)renderer->LockVbStreaming(vb, totalVertices, vbOffset, 0);
+
+        // Fill vertex buffer with particle data
+        m3d::Particle* particle = parts->m_particles;
+        float* vtxPtr = (float*)(vtxData + 32);  // Skip some initial data
+
+        while (particle)
+        {
+            CVector particlePos;
+
+            if (m_updateXForm)
+            {
+                // Use local origin directly
+                particlePos = particle->m_locorigin;
+            }
+            else
+            {
+                // Combine world and local origin
+                particlePos = particle->m_origin + particle->m_locorigin;
+            }
+
+            float scaledSize = particle->m_size * DirScale;
+
+            // Generate quad vertices for this particle
+            for (int i = 0; i < 4; i++)
+            {
+                // Calculate vertex position
+                vtxPtr[0] = particlePos.x + quad[i].x * scaledSize;  // x
+                vtxPtr[1] = particlePos.y + quad[i].y * scaledSize;  // y
+                vtxPtr[2] = particlePos.z + quad[i].z * scaledSize;  // z
+
+                // Set vertex color (particle color)
+                vtxPtr[3] = *(float*)&particle->m_curClr;
+
+                // Set texture coordinates
+                static const float texCoords[4][2] = {
+                    {0.0f, 0.0f},  // Bottom-left
+                    {1.0f, 0.0f},  // Bottom-right
+                    {1.0f, 1.0f},  // Top-right
+                    {0.0f, 1.0f}   // Top-left
+                };
+
+                vtxPtr[4] = texCoords[i][0];
+                vtxPtr[5] = texCoords[i][1];
+
+                vtxPtr += 6;  // Move to next vertex (XYZ + Color + TexCoord)
+            }
+
+            particle = particle->m_next;
+        }
+
+        // Unlock and render
+        renderer->UnlockVb(vb);
+        renderer->SetToStream0(vb);
+        renderer->SetIndices(m_IbPoolField, vbOffset);
+
+        // Draw the particles as quads (2 triangles per particle)
+        renderer->DrawIndexedPrimitiveEffect(rend::M3DPT_TRIANGLELIST, m_shader, 0, totalVertices, m_IbPoolField.RealOffset, 2 * parts->m_numParticles);
+
+        // Restore render state
+        renderer->PopZbState();
+
+        if (m_updateXForm)
+        {
+            renderer->MatPop(1);
+        }
+
+        return 1;
     }
 
     rend::IbPoolField GlowQuadPS::m_IbPoolField;

@@ -141,7 +141,8 @@ namespace m3d
 
     int SgNode::Think(int, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_nextThinkTime = 0;
+        return 1;
     }
 
     int SgNode::GetTtl() const
@@ -151,7 +152,6 @@ namespace m3d
 
     void SgNode::CanBeFree()
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector const& SgNode::GetOriginWorldAbsForSphere() const
@@ -240,7 +240,7 @@ namespace m3d
 
     bool SgNode::IsFree() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return true;
     }
 
     DataServer* SgNode::GetServer() const
@@ -987,7 +987,7 @@ namespace m3d
                 {
                     M3D_LOG_WARN("Warning: deleting node which is in RemoveIfFree, name = '" + CStr(child->GetName()) + "', parent name = '" + CStr(obj->GetName()) + "'");
                 }
-                // TODO: check this
+                // TODO: check this DecRef
                 child->DecRef();
             }
             else

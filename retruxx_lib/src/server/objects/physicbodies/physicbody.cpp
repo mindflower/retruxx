@@ -318,29 +318,31 @@ namespace ai
 			this->m_Node->SetProperty(8704, &action);
 
 			// Use stack for iterative depth-first traversal of node hierarchy
-			std::vector<m3d::SgNode*> nodeStack;
-			nodeStack.push_back(this->m_Node);
+            // Process children using iterative DFS
+            std::vector<m3d::Object*> stack;
+            stack.push_back(dynamic_cast<m3d::Object*>(m_Node->GetFirstChild()));
 
-			while (!nodeStack.empty()) {
-				// Pop the last node from stack
-				m3d::SgNode* currentNode = nodeStack.back();
-				nodeStack.pop_back();
+            while (!stack.empty())
+            {
+                m3d::Object* current = stack.back();
+                stack.pop_back();
 
-				// Process all children of current node
-				m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
-				while (child != nullptr) {
-					// Set the action property on this child node
-					child->SetProperty(8704, &action);
+                // Process all siblings of the current node
+                m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
+                while (sibling)
+                {
+                    sibling->SetProperty(8704, &action);
 
-					// If this child has children, add it to stack for processing
-					if (child->GetFirstChild() != nullptr) {
-						nodeStack.push_back(child);
-					}
+                    // If this sibling has children, add to stack for processing
+                    if (sibling->GetFirstChild())
+                    {
+                        stack.push_back(sibling->GetFirstChild());
+                    }
 
-					// Move to next sibling
-					child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
-				}
-			}
+                    // Move to next sibling
+                    sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
+                }
+            }
 		}
 	}
 

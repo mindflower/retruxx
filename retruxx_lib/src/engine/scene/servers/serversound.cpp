@@ -57,19 +57,23 @@ namespace m3d
             return 0;
         if (m3d::DataServer::GetItemProperty(id, prop, dest))
             return 1;
-        
+
+        auto item = (SoundItem*)this->m_models[id].m_ptr;
         switch (prop)
         {
-        case 12320:
-            RETRUXX_NOT_IMPLEMENTED;
-        case 12321:
-            RETRUXX_NOT_IMPLEMENTED;
-        case 12322:
-            RETRUXX_NOT_IMPLEMENTED;
-        case 12323:
-            RETRUXX_NOT_IMPLEMENTED;
-        default:
-            return 0;
+        case PROP_SRV_SND_ID:
+            *(int*)dest = item->soundIds[0]; return 1;
+
+        case PROP_SRV_SND_SIMPLE:
+            *(int*)dest = item->type == SOUND_TYPE_SIMPLE; return 1;
+
+        case PROP_SRV_SND_DOUBLE:
+            *(int*)dest = item->type == SOUND_TYPE_DOUBLE; return 1;
+
+        case PROP_SRV_SND_TRIPLE:
+            *(int*)dest = item->type == SOUND_TYPE_TRIPLE; return 1;
+
+        default: break;
         }
         return 0;
     }

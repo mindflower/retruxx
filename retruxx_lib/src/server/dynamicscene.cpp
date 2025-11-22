@@ -1249,8 +1249,27 @@ namespace ai
 	}
 
 	void DynamicScene::_AddSoilEffectNameForWheelTypeName(CStr const&)
-	{
-		// TODO: implement DynamicScene::_AddSoilEffectNameForWheelTypeName
-		//RETRUXX_NOT_IMPLEMENTED;
-	}
-}
+    {
+        // TODO: implement DynamicScene::_AddSoilEffectNameForWheelTypeName
+        //RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    ObjIdExceptionalTraceLineCallback::ObjIdExceptionalTraceLineCallback(const ai::ObjIdExceptionalTraceLineCallback&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    ObjIdExceptionalTraceLineCallback::ObjIdExceptionalTraceLineCallback(const std::vector<int, std::allocator<int>>& Exceptions) : m_Exceptions(Exceptions)
+    {
+    }
+
+    bool ObjIdExceptionalTraceLineCallback::CollideId(int objId) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    bool ObjIdExceptionalTraceLineCallback::CollidePhysicObj(const ai::PhysicObj* physicObj) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+}  // namespace ai

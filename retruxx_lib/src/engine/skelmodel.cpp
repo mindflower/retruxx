@@ -1187,6 +1187,10 @@ namespace m3d
     {
         return m_Name.c_str();
     }
+    const char* AnimatedModel::GetPath() const
+    {
+        return m_PathToFile.c_str();
+    }
 
     Aabb& AnimatedModel::GetAabb()
     {
