@@ -1048,7 +1048,18 @@ namespace m3d
 
     void SceneGraph::LightSetupSunForWorld()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m3d::rend::LightSource ls;
+        ls.m_type = rend::M3DLIGHT_DIRECTIONAL;
+        ls.m_direction.x = 0.0 - m_owner->GetSun(0.0).x;
+        ls.m_direction.y = 0.0 - m_owner->GetSun(0.0).y;
+        ls.m_direction.z = 0.0 - m_owner->GetSun(0.0).z;
+        ls.m_origin = ls.m_direction;
+        ls.m_range = 1000.0;
+        ls.m_diffuse = m_owner->GetWeatherDiffuseColor();
+        ls.m_ambient = m_owner->GetWeatherAmbientColor();
+
+        M3D_RENDERER->LightSet(0, ls);
+        M3D_RENDERER->LightEnable(0, 1);
     }
 
     void SceneGraph::UpdateTexShadowSizes()

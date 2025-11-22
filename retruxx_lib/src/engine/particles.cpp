@@ -911,9 +911,135 @@ namespace m3d
 
     rend::IbPoolField QuadPS::m_IbPoolField;
 
-    int QuadPS::Render(CMatrix const*, ParticlesList*)
+    int QuadPS::Render(CMatrix const* local, ParticlesList* parts)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code QuadPS::Render
+        parts->m_renderCalled = true;
+        // Check if particles should be rendered based on timing
+        if (parts->m_start1 > parts->m_PhaseTime || parts->m_numParticles == 0)
+        {
+            return 1;
+        }
+
+        // Apply transformation if needed
+        if (m_updateXForm)
+        {
+            M3D_RENDERER->MatPush(*local);
+        }
+
+        // Get camera basis vectors for billboarding
+        CVector right, up, forward;
+        Application::g_pApp->m_renderer->MatGetBasis(right, up, forward);
+
+        // Create quad vertices for billboarded particles
+        CVector quad[4];
+
+        // Initialize quad vertices
+        quad[0] = CVector(-up.x - right.x, -up.y - right.y, -up.z - right.z);
+        quad[1] = CVector(-up.x + right.x, -up.y + right.y, -up.z + right.z);
+        quad[2] = CVector(right.x + up.x, right.y + up.y, right.z + up.z);
+        quad[3] = CVector(up.x - right.x, up.y - right.y, up.z - right.z);
+
+        // Set up rendering states
+        ApplyBlending();
+        M3D_RENDERER->SetTexture(0, m_texAdd, -1.0f);
+        M3D_RENDERER->SetCull(rend::M3DCULL_CW, 0);
+
+        // Get vertex buffer for streaming particle data
+        m3d::rend::VbHandle vbHandle = Application::g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1);
+
+        int vertexCount = 4 * parts->m_numParticles;
+        int lockOffset;
+        char* vertexData = (char*)M3D_RENDERER->LockVbStreaming(vbHandle, vertexCount, lockOffset, 0);
+
+        // Fill vertex buffer with particle data
+        Particle* currentParticle = parts->m_particles;
+        if (currentParticle)
+        {
+            float* vertexPtr = (float*)(vertexData + 32);  // Start after some header
+
+            do
+            {
+                float orgX, orgY, orgZ;
+
+                // Calculate particle position
+                if (this->m_updateXForm)
+                {
+                    orgX = currentParticle->m_locorigin.x;
+                    orgY = currentParticle->m_locorigin.y;
+                    orgZ = currentParticle->m_locorigin.z;
+                }
+                else
+                {
+                    orgX = currentParticle->m_origin.x + currentParticle->m_locorigin.x;
+                    orgY = currentParticle->m_origin.y + currentParticle->m_locorigin.y;
+                    orgZ = currentParticle->m_origin.z + currentParticle->m_locorigin.z;
+                }
+
+                float particleSize = currentParticle->m_size;
+                uint32_t particleColor = currentParticle->m_curClr;
+
+                // Vertex 0 (bottom-left)
+                vertexPtr[0] = orgX + quad[0].x * particleSize;  // x
+                vertexPtr[1] = orgY + quad[0].y * particleSize;  // y
+                vertexPtr[2] = orgZ + quad[0].z * particleSize;  // z
+                vertexPtr[3] = *(float*)&particleColor;          // color
+                vertexPtr[4] = 0.0f;                             // tu
+                vertexPtr[5] = 0.0f;                             // tv
+
+                // Vertex 1 (bottom-right)
+                vertexPtr[6] = orgX + quad[1].x * particleSize;  // x
+                vertexPtr[7] = orgY + quad[1].y * particleSize;  // y
+                vertexPtr[8] = orgZ + quad[1].z * particleSize;  // z
+                vertexPtr[9] = *(float*)&particleColor;          // color
+                vertexPtr[10] = 1.0f;                            // tu
+                vertexPtr[11] = 0.0f;                            // tv
+
+                // Vertex 2 (top-right)
+                vertexPtr[12] = orgX + quad[2].x * particleSize;  // x
+                vertexPtr[13] = orgY + quad[2].y * particleSize;  // y
+                vertexPtr[14] = orgZ + quad[2].z * particleSize;  // z
+                vertexPtr[15] = *(float*)&particleColor;          // color
+                vertexPtr[16] = 1.0f;                             // tu
+                vertexPtr[17] = 1.0f;                             // tv
+
+                // Vertex 3 (top-left)
+                vertexPtr[18] = orgX + quad[3].x * particleSize;  // x
+                vertexPtr[19] = orgY + quad[3].y * particleSize;  // y
+                vertexPtr[20] = orgZ + quad[3].z * particleSize;  // z
+                vertexPtr[21] = *(float*)&particleColor;          // color
+                vertexPtr[22] = 0.0f;                             // tu
+                vertexPtr[23] = 1.0f;                             // tv
+
+                currentParticle = currentParticle->m_next;
+                vertexPtr += 24;  // Advance 24 floats (6 per vertex * 4 vertices)
+
+            } while (currentParticle);
+        }
+
+        // Unlock and render the vertex buffer
+        M3D_RENDERER->UnlockVb(vbHandle);
+        M3D_RENDERER->SetToStream0(vbHandle);
+
+        // Draw the particles using indexed primitives
+        M3D_RENDERER->SetIndices(m_IbPoolField, lockOffset);
+
+        M3D_RENDERER->DrawIndexedPrimitiveEffect(
+            rend::M3DPT_TRIANGLELIST,
+            m_shader,
+            0,                                 // start vertex
+            vertexCount,                       // vertex count
+            m_IbPoolField.RealOffset,  // start index
+            2 * parts->m_numParticles  // primitive count (2 triangles per quad)
+        );
+
+        // Restore transformation if needed
+        if (m_updateXForm)
+        {
+            M3D_RENDERER->MatPop(true);
+        }
+
+        return 1;
     }
 
     void QuadPS::CreateIb()

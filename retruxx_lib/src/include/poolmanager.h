@@ -42,7 +42,6 @@ namespace m3d
             {
                 auto block = (Block*)(pData);
                 Free.push(block->BlockNumber);
-                delete pData;
                 pData = nullptr;
             }
         }
