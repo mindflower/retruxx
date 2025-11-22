@@ -234,9 +234,27 @@ namespace m3d
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
+
     void Emitter::LocalStop(m3d::Particle* pParticle, float Time)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!this->m_localStop && Time >= this->m_stopTime && this->m_stopTime != 0.0)
+        {
+            pParticle->m_vel.x = 0.0;
+            pParticle->m_vel.y = 0.0;
+            pParticle->m_vel.z = 0.0;
+            pParticle->m_rotvel.x = 0.0;
+            pParticle->m_rotvel.y = 0.0;
+            pParticle->m_rotvel.z = 0.0;
+        }
+        if (this->m_localStop && (float)(Time - pParticle->m_time0) >= this->m_stopTime && this->m_stopTime != 0.0)
+        {
+            pParticle->m_vel.x = 0.0;
+            pParticle->m_vel.y = 0.0;
+            pParticle->m_vel.z = 0.0;
+            pParticle->m_rotvel.x = 0.0;
+            pParticle->m_rotvel.y = 0.0;
+            pParticle->m_rotvel.z = 0.0;
+        }
     }
 
     unsigned int Emitter::Emit(double time, float lastFrameSecs)
@@ -410,7 +428,40 @@ namespace m3d
 
     void SAttractor::InitParticle(Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_State = this->m_State;
+        if (m_State != SPEED || this->m_emitterOn)
+        {
+            if (m_State == WMPOSITION && !this->m_emitterOn)
+            {
+                auto forces = m3d::CalcForces(m_csType, m_force, Time, pParticle->m_dir);
+                if (Orient)
+                {
+                    auto v15 = (float)((float)(Local._22 * forces.y) + (float)(Local._32 * forces.z)) + (float)(Local._12 * forces.x);
+                    auto v11 = (float)((float)(Local._23 * forces.y) + (float)(Local._33 * forces.z)) + (float)(Local._13 * forces.x);
+                    forces.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) + (float)(Local._11 * forces.x);
+                    forces.y = v15;
+                    forces.z = v11;
+                }
+                pParticle->m_locorigin.x = pParticle->m_locorigin.x + (float)(forces.x * ForceCoeff);
+                pParticle->m_locorigin.y = (float)(forces.y * ForceCoeff) + pParticle->m_locorigin.y;
+                pParticle->m_locorigin.z = (float)(forces.z * ForceCoeff) + pParticle->m_locorigin.z;
+            }
+        }
+        else
+        {
+            auto forces = m3d::CalcForces(m_csType, m_force, Time, pParticle->m_dir);
+            if (Orient)
+            {
+                auto v7 = (float)((float)(Local._22 * forces.y) + (float)(Local._12 * forces.x)) + (float)(Local._32 * forces.z);
+                auto v8 = (float)((float)(Local._23 * forces.y) + (float)(Local._13 * forces.x)) + (float)(Local._33 * forces.z);
+                forces.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) + (float)(Local._11 * forces.x);
+                forces.y = v7;
+                forces.z = v8;
+            }
+            pParticle->m_vel.y = pParticle->m_vel.y + (float)(forces.y * ForceCoeff);
+            pParticle->m_vel.x = pParticle->m_vel.x + (float)(forces.x * ForceCoeff);
+            pParticle->m_vel.z = pParticle->m_vel.z + (float)(forces.z * ForceCoeff);
+        }
     }
 
     void SAttractor::InitParticlesList(ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
@@ -442,7 +493,21 @@ namespace m3d
 
     void SAttractor::AffectParticle(Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (this->m_State == ACCELERATION && !this->m_emitterOn)
+        {
+            auto forces = m3d::CalcForces(this->m_csType, m_force, Time, pParticle->m_dir);
+            if (Orient)
+            {
+                auto v6 = (float)((float)(Local._22 * forces.y) + (float)(Local._32 * forces.z)) + (float)(Local._12 * forces.x);
+                auto v7 = (float)((float)(Local._23 * forces.y) + (float)(Local._33 * forces.z)) + (float)(Local._13 * forces.x);
+                forces.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) + (float)(Local._11 * forces.x);
+                forces.y = v6;
+                forces.z = v7;
+            }
+            pParticle->m_accel.y = pParticle->m_accel.y + (float)(forces.y * ForceCoeff);
+            pParticle->m_accel.x = pParticle->m_accel.x + (float)(forces.x * ForceCoeff);
+            pParticle->m_accel.z = pParticle->m_accel.z + (float)(forces.z * ForceCoeff);
+        }
     }
 
     void SAttractor::AffectParticlesList(ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
@@ -607,8 +672,20 @@ namespace m3d
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-    CVector CalcForces(CoordinatesSystemType, Force const (&)[3], float, CVector const&)
+    CVector CalcForces(CoordinatesSystemType cst, Force const (&forces)[3], float time, CVector const& dir)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CVector v;
+        if (cst)
+        {
+            if (cst == PS_CST_POLAR)
+                m3d::CalcForcesPolar(v, forces, time);
+            else
+                m3d::CalcForcesPolarOrg(v, forces, dir, time);
+        }
+        else
+        {
+            m3d::CalcForcesCarthesian(v, forces, time);
+        }
+        return v;
     }
 }  // namespace m3d

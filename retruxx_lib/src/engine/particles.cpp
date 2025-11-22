@@ -1,4 +1,6 @@
 #include "particles.h"
+
+#include <algorithm>
 #include <m3dapp.h>
 #include <scene/servers/serverparticles.h>
 #include <core/log.h>
@@ -8,9 +10,132 @@ bool interpolateColorsOnLoad = false;
 
 namespace m3d
 {
-    void Particle::Step(float)
+    namespace
     {
-        RETRUXX_NOT_IMPLEMENTED;
+
+        void addStripePart(
+            CVector const&,
+            CVector const&,
+            CVector const&,
+            CVector const&,
+            float,
+            float,
+            unsigned int,
+            unsigned int,
+            CVector const&,
+            float,
+            float,
+            float,
+            float,
+            int)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+    }
+    void Particle::Step(float dt)
+    {
+        // TODO: generated code Particle::Step
+        // Update velocity with acceleration
+        m_vel.x += m_accel.x * dt;
+        m_vel.y += m_accel.y * dt;
+        m_vel.z += m_accel.z * dt;
+
+        // Update position with velocity
+        m_locorigin.x += m_vel.x * dt;
+        m_locorigin.y += m_vel.y * dt;
+        m_locorigin.z += m_vel.z * dt;
+
+        // Update rotational velocity with rotational acceleration
+        m_rotvel.x += m_rotaccel.x * dt;
+        m_rotvel.y += m_rotaccel.y * dt;
+        m_rotvel.z += m_rotaccel.z * dt;
+
+        // Apply rotation if rotational velocity is significant
+        float rotSpeedSquared = m_rotvel.x * m_rotvel.x + m_rotvel.y * m_rotvel.y + m_rotvel.z * m_rotvel.z;
+
+        if (rotSpeedSquared > 0.0000001f)
+        {
+            CMatrix matX, matY, matZ;
+
+            // Initialize matrices as identity
+            std::memset(&matX, 0, sizeof(matX));
+            std::memset(&matY, 0, sizeof(matY));
+            std::memset(&matZ, 0, sizeof(matZ));
+
+            matX._11 = matX._22 = matX._33 = matX._44 = 1.0f;
+            matY._11 = matY._22 = matY._33 = matY._44 = 1.0f;
+            matZ._11 = matZ._22 = matZ._33 = matZ._44 = 1.0f;
+
+            // Create rotation matrices for each axis
+            float rotX = dt * m_rotvel.x;
+            float rotY = dt * m_rotvel.y;
+            float rotZ = dt * m_rotvel.z;
+
+            float sinX = std::sin(rotX);
+            float cosX = std::cos(rotX);
+            float sinY = std::sin(rotY);
+            float cosY = std::cos(rotY);
+            float sinZ = std::sin(rotZ);
+            float cosZ = std::cos(rotZ);
+
+            // X-axis rotation matrix
+            matX._22 = cosX;
+            matX._23 = -sinX;
+            matX._32 = sinX;
+            matX._33 = cosX;
+
+            // Y-axis rotation matrix
+            matY._11 = cosY;
+            matY._13 = sinY;
+            matY._31 = -sinY;
+            matY._33 = cosY;
+
+            // Z-axis rotation matrix
+            matZ._11 = cosZ;
+            matZ._12 = -sinZ;
+            matZ._21 = sinZ;
+            matZ._22 = cosZ;
+
+            // Combine rotations: result = matZ * matY * matX
+            CMatrix result;
+
+            result._11 = matZ._11 * matY._11 * matX._11 + matZ._12 * matY._21 * matX._11 + matZ._13 * matY._31 * matX._11;
+            result._12 = matZ._11 * matY._11 * matX._12 + matZ._12 * matY._21 * matX._12 + matZ._13 * matY._31 * matX._12;
+            result._13 = matZ._11 * matY._11 * matX._13 + matZ._12 * matY._21 * matX._13 + matZ._13 * matY._31 * matX._13;
+            result._14 = matZ._11 * matY._11 * matX._14 + matZ._12 * matY._21 * matX._14 + matZ._13 * matY._31 * matX._14;
+
+            result._21 = matZ._21 * matY._11 * matX._11 + matZ._22 * matY._21 * matX._11 + matZ._23 * matY._31 * matX._11;
+            result._22 = matZ._21 * matY._11 * matX._12 + matZ._22 * matY._21 * matX._12 + matZ._23 * matY._31 * matX._12;
+            result._23 = matZ._21 * matY._11 * matX._13 + matZ._22 * matY._21 * matX._13 + matZ._23 * matY._31 * matX._13;
+            result._24 = matZ._21 * matY._11 * matX._14 + matZ._22 * matY._21 * matX._14 + matZ._23 * matY._31 * matX._14;
+
+            result._31 = matZ._31 * matY._11 * matX._11 + matZ._32 * matY._21 * matX._11 + matZ._33 * matY._31 * matX._11;
+            result._32 = matZ._31 * matY._11 * matX._12 + matZ._32 * matY._21 * matX._12 + matZ._33 * matY._31 * matX._12;
+            result._33 = matZ._31 * matY._11 * matX._13 + matZ._32 * matY._21 * matX._13 + matZ._33 * matY._31 * matX._13;
+            result._34 = matZ._31 * matY._11 * matX._14 + matZ._32 * matY._21 * matX._14 + matZ._33 * matY._31 * matX._14;
+
+            result._41 = matZ._41 * matY._11 * matX._11 + matZ._42 * matY._21 * matX._11 + matZ._43 * matY._31 * matX._11;
+            result._42 = matZ._41 * matY._11 * matX._12 + matZ._42 * matY._21 * matX._12 + matZ._43 * matY._31 * matX._12;
+            result._43 = matZ._41 * matY._11 * matX._13 + matZ._42 * matY._21 * matX._13 + matZ._43 * matY._31 * matX._13;
+            result._44 = matZ._41 * matY._11 * matX._14 + matZ._42 * matY._21 * matX._14 + matZ._43 * matY._31 * matX._14;
+
+            // Apply rotation to position
+            float newX = result._11 * m_locorigin.x + result._21 * m_locorigin.y + result._31 * m_locorigin.z;
+            float newY = result._12 * m_locorigin.x + result._22 * m_locorigin.y + result._32 * m_locorigin.z;
+            float newZ = result._13 * m_locorigin.x + result._23 * m_locorigin.y + result._33 * m_locorigin.z;
+
+            m_locorigin.x = newX;
+            m_locorigin.y = newY;
+            m_locorigin.z = newZ;
+        }
+
+        // Reset accelerations for next frame
+        m_accel.x = 0.0f;
+        m_accel.y = 0.0f;
+        m_accel.z = 0.0f;
+        m_rotaccel.x = 0.0f;
+        m_rotaccel.y = 0.0f;
+        m_rotaccel.z = 0.0f;
     }
 
     Particle::Particle()
@@ -20,7 +145,12 @@ namespace m3d
 
     Particle::~Particle()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_trail)
+        {
+            auto* bases = (ParticleBases*)m_trail;
+            TrailsPool.Delete(bases);
+            m_trail = nullptr;
+        }
     }
 
     ParticlesList::~ParticlesList()
@@ -336,9 +466,85 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ParticleSystem::SetParticleColor(Particle*, float)
+    void ParticleSystem::SetParticleColor(Particle* pParticle, float fader)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code ParticleSystem::SetParticleColor
+        // Calculate normalized lifetime (0.0 = just born, 1.0 = about to die)
+        float normalizedLifetime = (pParticle->m_ttl - pParticle->m_fade) / pParticle->m_ttl;
+
+        // Convert to discrete color table index (0-19)
+        int colorIndex = static_cast<int>(normalizedLifetime * 20.0f);
+        colorIndex = std::clamp(colorIndex, 0, 19);
+
+        // Check if the color at this index is defined (not -1)
+        uint32_t colorValue = m_colors[colorIndex];
+
+        if (colorValue == 0xFFFFFFFF)  // Undefined color
+        {
+            // Find the nearest defined colors before and after this index
+            int prevIndex = colorIndex;
+            int nextIndex = colorIndex;
+
+            // Search backwards for defined color
+            while (prevIndex >= 0 && m_colors[prevIndex] == 0xFFFFFFFF)
+            {
+                --prevIndex;
+            }
+
+            // Search forwards for defined color
+            while (nextIndex <= 19 && m_colors[nextIndex] == 0xFFFFFFFF)
+            {
+                ++nextIndex;
+            }
+
+            // If we found valid color boundaries, interpolate between them
+            if (prevIndex >= 0 && nextIndex <= 19)
+            {
+                const float INV_DISCRETION = 1.0f / 20.0f;  // Assuming this constant
+
+                float prevTime = static_cast<float>(prevIndex) * INV_DISCRETION;
+                float nextTime = static_cast<float>(nextIndex) * INV_DISCRETION;
+
+                // Calculate interpolation factor between the two colors
+                float t = (normalizedLifetime - prevTime) / (nextTime - prevTime);
+                t = std::clamp(t, 0.0f, 1.0f);
+
+                // Get the two colors to interpolate between
+                uint32_t prevColor = m_colors[prevIndex];
+                uint32_t nextColor = m_colors[nextIndex];
+
+                // Interpolate RGBA components
+                m3d::rend::Colori interpolatedColor;
+
+                interpolatedColor.r = static_cast<uint8_t>(
+                    (static_cast<float>((nextColor >> 0) & 0xFF) - static_cast<float>((prevColor >> 0) & 0xFF)) * t +
+                    static_cast<float>((prevColor >> 0) & 0xFF) * fader);
+
+                interpolatedColor.g = static_cast<uint8_t>(
+                    (static_cast<float>((nextColor >> 8) & 0xFF) - static_cast<float>((prevColor >> 8) & 0xFF)) * t +
+                    static_cast<float>((prevColor >> 8) & 0xFF) * fader);
+
+                interpolatedColor.b = static_cast<uint8_t>(
+                    (static_cast<float>((nextColor >> 16) & 0xFF) - static_cast<float>((prevColor >> 16) & 0xFF)) * t +
+                    static_cast<float>((prevColor >> 16) & 0xFF) * fader);
+
+                interpolatedColor.a = static_cast<uint8_t>(
+                    (static_cast<float>((nextColor >> 24) & 0xFF) - static_cast<float>((prevColor >> 24) & 0xFF)) * t +
+                    static_cast<float>((prevColor >> 24) & 0xFF) * fader);
+
+                pParticle->m_curClr = interpolatedColor.rgba;
+            }
+            else
+            {
+                // Fallback: use the original color index if interpolation fails
+                pParticle->m_curClr = colorValue;
+            }
+        }
+        else
+        {
+            // Use the exact color from the table
+            pParticle->m_curClr = colorValue;
+        }
     }
 
     void ParticleSystem::SetPsTrailLen(int)
@@ -616,7 +822,26 @@ namespace m3d
 
     void ParticleSystem::ApplyBlending()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (this->m_blendMode == PS_ADD)
+        {
+            M3D_RENDERER->SetAlphaTest(0);
+            M3D_RENDERER->SetBlend(rend::BM_1_1, 0);
+        }
+        if (this->m_blendMode == PS_ADDSMOOTH)
+        {
+            M3D_RENDERER->SetAlphaTest(0);
+            M3D_RENDERER->SetBlend(rend::BM_1_ISCOLOR, 0);
+        }
+        if (this->m_blendMode == PS_ALPHA)
+        {
+            M3D_RENDERER->SetAlphaTest(1);
+            M3D_RENDERER->SetBlend(rend::BM_ALPHA, 0);
+        }
+        if (this->m_blendMode == PS_ADDSIGNED)
+        {
+            M3D_RENDERER->SetAlphaTest(0);
+            M3D_RENDERER->SetBlend(rend::BM_SCOLOR_1, 0);
+        }
     }
 
     int ParticleSystem::Update(ParticlesList* parts, float lastFrameSecs, float fader)
@@ -935,9 +1160,138 @@ namespace m3d
         return 1;
     }
 
-    int StripOnePS::Render(CMatrix const*, ParticlesList*)
+    int StripOnePS::Render(CMatrix const* local, ParticlesList* parts)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        parts->m_renderCalled = 1;
+
+        if (parts->m_start1 <= parts->m_PhaseTime && parts->m_numParticles > 0)
+        {
+            // Apply blending and setup rendering state
+            ApplyBlending();
+            M3D_APP->SetFlushQuadsShader(m_shader);
+            M3D_RENDERER->SetTexture(0, m_texAdd, -1.0f);
+            M3D_RENDERER->SetCull(rend::M3DCULL_CW, 0);
+            M3D_APP->StartQuads(rend::VERTEX_XYZCT1);
+
+            // Initialize rendering variables
+            int numSegments = parts->m_numParticles - 1;
+            float tu = 0.0f;
+            Particle* currentParticle = parts->m_particles;
+            float tadd = 1.0f / static_cast<float>(parts->m_numParticles);
+
+            // Extract transformation matrix components
+            CMatrix rmat(*local);
+            float local_11 = local->_11;
+            float local_21 = local->_21;
+            float local_31 = local->_31;
+            float local_41 = local->_41;
+            float local_42 = local->_42;
+            float local_43 = local->_43;
+
+            // Calculate scale factor
+            float scx = std::sqrt(local_31 * local_31 + local_21 * local_21 + local_11 * local_11);
+
+            // Get camera origin for billboarding
+            CVector camOrg = M3D_RENDERER->MatGetOrgInv();
+
+            // Render each particle segment
+            for (int segmentIndex = 0; segmentIndex < numSegments; segmentIndex++)
+            {
+                Particle* nextParticle = currentParticle->m_next;
+                CVector org, org1;
+
+                if (this->m_updateXForm)
+                {
+                    // Transform current particle position
+                    org.x =
+                        (rmat._11 * currentParticle->m_locorigin.x + rmat._21 * currentParticle->m_locorigin.y + rmat._31 * currentParticle->m_locorigin.z) +
+                        local_41;
+
+                    org.y =
+                        (rmat._12 * currentParticle->m_locorigin.x + rmat._22 * currentParticle->m_locorigin.y + rmat._32 * currentParticle->m_locorigin.z) +
+                        local_42;
+
+                    org.z =
+                        (rmat._13 * currentParticle->m_locorigin.x + rmat._23 * currentParticle->m_locorigin.y + rmat._33 * currentParticle->m_locorigin.z) +
+                        local_43;
+
+                    // Transform next particle position
+                    org1.x =
+                        (rmat._11 * nextParticle->m_locorigin.x + rmat._21 * nextParticle->m_locorigin.y + rmat._31 * nextParticle->m_locorigin.z) + local_41;
+
+                    org1.y =
+                        (rmat._12 * nextParticle->m_locorigin.x + rmat._22 * nextParticle->m_locorigin.y + rmat._32 * nextParticle->m_locorigin.z) + local_42;
+
+                    org1.z =
+                        (rmat._13 * nextParticle->m_locorigin.x + rmat._23 * nextParticle->m_locorigin.y + rmat._33 * nextParticle->m_locorigin.z) + local_43;
+                }
+                else
+                {
+                    // Use local origin directly (no transformation)
+                    org.x = currentParticle->m_origin.x + currentParticle->m_locorigin.x;
+                    org.y = currentParticle->m_origin.y + currentParticle->m_locorigin.y;
+                    org.z = currentParticle->m_origin.z + currentParticle->m_locorigin.z;
+
+                    org1.x = nextParticle->m_origin.x + nextParticle->m_locorigin.x;
+                    org1.y = nextParticle->m_origin.y + nextParticle->m_locorigin.y;
+                    org1.z = nextParticle->m_origin.z + nextParticle->m_locorigin.z;
+                }
+
+                // Calculate sizes
+                float currentSize = currentParticle->m_size * scx;
+                float nextSize = nextParticle->m_size * scx;
+
+                // Add stripe segment to render queue
+                if (this->m_TexTiling == 0)
+                {
+                    // Tiled texture coordinates
+                    addStripePart(
+                        currentParticle->m_origin,
+                        nextParticle->m_origin,
+                        org,
+                        org1,
+                        currentSize,
+                        nextSize,
+                        currentParticle->m_curClr,
+                        nextParticle->m_curClr,
+                        camOrg,
+                        0,
+                        tu,
+                        1.0f,
+                        tu + tadd,
+                        segmentIndex);
+                    tu += tadd;
+                }
+                else
+                {
+                    // Non-tiled texture coordinates
+                    addStripePart(
+                        currentParticle->m_origin,
+                        nextParticle->m_origin,
+                        org,
+                        org1,
+                        currentSize,
+                        nextSize,
+                        currentParticle->m_curClr,
+                        nextParticle->m_curClr,
+                        camOrg,
+                        0,
+                        0.0f,
+                        1.0f,
+                        1.0f,
+                        segmentIndex);
+                }
+
+                // Move to next particle
+                currentParticle = currentParticle->m_next;
+            }
+
+            // Finish rendering
+            M3D_APP->FinishQuads();
+            M3D_APP->SetFlushQuadsShader(nullptr);
+        }
+
+        return 1;
     }
 
     StripOnePS::StripOnePS()
