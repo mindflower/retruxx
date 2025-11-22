@@ -1809,9 +1809,9 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Application::SetFlushQuadsShader(rend::IEffect*)
+    void Application::SetFlushQuadsShader(rend::IEffect* shader)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_flushQuadsShader = shader;
     }
 
     int Application::AppActive() const
@@ -1821,7 +1821,11 @@ namespace m3d
 
     rend::VertexXYZCT1* Application::RenderQuadXyzct1GetNextPtr()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        if ((unsigned int)(this->m_numPointsVerts + 4) >= 0xFA0)
+            FlushQuads();
+        this->m_numPointsVerts = m_numPointsVerts + 4;
+        return &this->m_pointsVertsCt1[m_numPointsVerts];
     }
 
     void Application::LoadFromXml(cmn::XmlFile*, cmn::XmlNode const*)

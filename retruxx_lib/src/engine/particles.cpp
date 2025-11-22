@@ -14,22 +14,110 @@ namespace m3d
     {
 
         void addStripePart(
-            CVector const&,
-            CVector const&,
-            CVector const&,
-            CVector const&,
-            float,
-            float,
-            unsigned int,
-            unsigned int,
-            CVector const&,
-            float,
-            float,
-            float,
-            float,
-            int)
+            const CVector& gorg0,
+            const CVector& gorg1,
+            const CVector& org0,
+            const CVector& org1,
+            float sz0,
+            float sz1,
+            unsigned int clr0,
+            unsigned int clr1,
+            const CVector& camOrg,
+            unsigned int u0,
+            unsigned int v0,
+            float u1,
+            float v1,
+            int ptIdx)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: generated code addStripePart
+            static CVector prevUp;
+            // Calculate direction vector between the two segment points
+            CVector segmentDir = org1 - org0;
+
+            // Calculate vector from camera to second global origin
+            CVector camToGorg1 = gorg1 - camOrg;
+
+            // Calculate up vector for the second point using cross product
+            CVector up1;
+            up1.x = (segmentDir.z * camToGorg1.y) - (segmentDir.y * camToGorg1.z);
+            up1.y = (segmentDir.x * camToGorg1.z) - (segmentDir.z * camToGorg1.x);
+            up1.z = (segmentDir.y * camToGorg1.x) - (segmentDir.x * camToGorg1.y);
+
+            // Normalize and scale the up vector for second point
+            float invLength1 = 1.0f / sqrtf(up1.x * up1.x + up1.y * up1.y + up1.z * up1.z + 1.1920929e-7f);
+            up1 = up1 * invLength1 * sz1;
+
+            CVector up0;
+
+            // Calculate up vector for first point
+            if (ptIdx != 0)
+            {
+                // Use previous up vector (stored in global)
+                up0 = prevUp;
+            }
+            else
+            {
+                // Calculate up vector for first point from scratch
+                CVector camToGorg0 = gorg0 - camOrg;
+
+                up0.x = (camToGorg0.z * segmentDir.y) - (camToGorg0.y * segmentDir.z);
+                up0.y = (camToGorg0.x * segmentDir.z) - (camToGorg0.z * segmentDir.x);
+                up0.z = (camToGorg0.y * segmentDir.x) - (camToGorg0.x * segmentDir.y);
+
+                // Normalize and scale the up vector for first point
+                float invLength0 = 1.0f / sqrtf(up0.x * up0.x + up0.y * up0.y + up0.z * up0.z + 1.1920929e-7f);
+                up0 = up0 * invLength0 * sz0;
+            }
+
+            // Store current up vector for next iteration
+            prevUp = up1;
+
+            // Calculate quad vertices
+            CVector quadVertices[4];
+
+            // First point - left side
+            quadVertices[0] = org0 - up0;
+            // First point - right side
+            quadVertices[1] = org0 + up0;
+            // Second point - right side
+            quadVertices[2] = org1 + up1;
+            // Second point - left side
+            quadVertices[3] = org1 - up1;
+
+            // Get render buffer and set up quad
+            m3d::rend::VertexXYZCT1* vertices = M3D_APP->RenderQuadXyzct1GetNextPtr();
+
+            // Vertex 0: First point, left side
+            vertices[0].x = quadVertices[0].x;
+            vertices[0].y = quadVertices[0].y;
+            vertices[0].z = quadVertices[0].z;
+            vertices[0].c = clr0;
+            vertices[0].tu = static_cast<float>(u0);
+            vertices[0].tv = static_cast<float>(v0);
+
+            // Vertex 1: First point, right side
+            vertices[1].x = quadVertices[1].x;
+            vertices[1].y = quadVertices[1].y;
+            vertices[1].z = quadVertices[1].z;
+            vertices[1].c = clr0;
+            vertices[1].tu = u1;
+            vertices[1].tv = static_cast<float>(v0);
+
+            // Vertex 2: Second point, right side
+            vertices[2].x = quadVertices[2].x;
+            vertices[2].y = quadVertices[2].y;
+            vertices[2].z = quadVertices[2].z;
+            vertices[2].c = clr1;
+            vertices[2].tu = u1;
+            vertices[2].tv = v1;
+
+            // Vertex 3: Second point, left side
+            vertices[3].x = quadVertices[3].x;
+            vertices[3].y = quadVertices[3].y;
+            vertices[3].z = quadVertices[3].z;
+            vertices[3].c = clr1;
+            vertices[3].tu = static_cast<float>(u0);
+            vertices[3].tv = v1;
         }
     }
     void Particle::Step(float dt)
@@ -217,9 +305,91 @@ namespace m3d
         this->m_start1 = 0.0;
     }
 
-    void ParticlesList::SetAutoMeshEmitterPoints(int, int, float, CVector, CVector)
+    void ParticlesList::SetAutoMeshEmitterPoints(int mode, int numVerts, float radius, CVector point1, CVector point2)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code ParticlesList::SetAutoMeshEmitterPoints check this!!!!
+        // Clean up existing mesh emitter data if auto-emitted
+        if (this->m_meshAutoEmitted)
+        {
+            delete m_numMeshEmitterVerts;
+
+            if (this->m_meshEmitterVerts && *this->m_meshEmitterVerts)
+            {
+                delete[] m_meshEmitterVerts;
+            }
+
+            delete[] m_meshEmitterVerts;
+
+            this->m_numMeshEmitterVerts = nullptr;
+            this->m_meshEmitterVerts = nullptr;
+        }
+
+        // Mark as auto-emitted and allocate new memory
+        this->m_meshAutoEmitted = true;
+        this->m_numMeshes = 1;
+
+        // Allocate memory for vertex count and vertex data
+        this->m_numMeshEmitterVerts = new int;
+        *m_numMeshEmitterVerts = numVerts;
+        this->m_meshEmitterVerts = new void*;
+
+        // Allocate memory for vertices (32 bytes per vertex)
+        int vertexSize = 32;
+        *this->m_meshEmitterVerts = new float[numVerts * 8];
+        *this->m_numMeshEmitterVerts = numVerts;
+
+        // Set up vertex types
+        this->m_VertexTypes.clear();
+
+        rend::VertexType vertexType = rend::VERTEX_XYZNT1;
+        this->m_VertexTypes.push_back(vertexType);
+
+        // Set up vertex type sizes
+        this->m_VertexTypeSizes.clear();
+
+        unsigned int typeSize = vertexSize;
+        this->m_VertexTypeSizes.push_back(typeSize);
+
+        // Generate vertices based on mode and radius
+        if (radius == 0.0f)
+        {
+            // Linear interpolation between point1 and point2
+            CVector* vertices = static_cast<CVector*>(*this->m_meshEmitterVerts);
+
+            // Set first vertex to point1
+            vertices[0] = point1;
+
+            if (numVerts > 1)
+            {
+                // Calculate step size for interpolation
+                float step = 1.0f / static_cast<float>(numVerts - 1);
+                CVector direction = point2 - point1;
+                CVector stepVector = direction * step;
+
+                // Generate intermediate vertices
+                for (int i = 1; i < numVerts - 1; i++)
+                {
+                    float t = static_cast<float>(i) * step;
+                    vertices[i] = point1 + (direction * t);
+                }
+
+                // Set last vertex to point2
+                vertices[numVerts - 1] = point2;
+            }
+        }
+        else
+        {
+            // Circular arrangement around origin
+            CVector* vertices = static_cast<CVector*>(*this->m_meshEmitterVerts);
+
+            for (int i = 0; i < numVerts; i++)
+            {
+                float angle = static_cast<float>(i) * (2.0f * 3.14159265f) / static_cast<float>(numVerts);
+                vertices[i].x = std::cos(angle) * radius;
+                vertices[i].y = 0.0f;
+                vertices[i].z = std::sin(angle) * radius;
+            }
+        }
     }
 
     void ParticlesList::SetMeshEmitterPoints(CMatrix** mat, int numMeshes, void** verts, int* numVerts, retruxx::vector<m3d::rend::VertexType>& VertexTypes, retruxx::vector<unsigned int>& VertexTypeSizes, int numSkinMesh)
@@ -815,9 +985,107 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ParticleSystem::AddParticle(ParticlesList*, CVector const*)
+    void ParticleSystem::AddParticle(ParticlesList* parts, CVector const* pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code ParticleSystem::AddParticle
+        // Get a free particle from the pool
+        m3d::Particle* particle = ParticlesPool.New();
+
+        // Add particle to the list
+        particle->m_next = parts->m_particles;
+        parts->m_particles = particle;
+        ++parts->m_numParticles;
+
+        // Generate random TTL (time to live)
+        float randomFactor = static_cast<float>(HIWORD(rndGet())) * 0.000015259022f;
+        particle->m_fade = (this->m_Emitter.m_ttlMax - this->m_Emitter.m_ttlMin) * randomFactor + this->m_Emitter.m_ttlMin;
+        particle->m_time0 = parts->m_time;
+
+        // Calculate particle direction and origin
+        if (!this->m_updateXForm)
+        {
+            // Simple world space calculation
+            CVector diff = *pos - CVector(parts->m_curXFormToWorld._41, parts->m_curXFormToWorld._42, parts->m_curXFormToWorld._43);
+            float invLength = 1.0f / sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z + 1.1920929e-7f);
+
+            particle->m_dir = diff * invLength;
+            particle->m_locorigin = diff;
+            particle->m_forigin = diff;
+        }
+        else
+        {
+            // Transform position to local space
+            CMatrix inverse = parts->m_curXFormToWorld.getInverse();
+            CVector localPos;
+            localPos.x = inverse._11 * pos->x + inverse._21 * pos->y + inverse._31 * pos->z + inverse._41;
+            localPos.y = inverse._12 * pos->x + inverse._22 * pos->y + inverse._32 * pos->z + inverse._42;
+            localPos.z = inverse._13 * pos->x + inverse._23 * pos->y + inverse._33 * pos->z + inverse._43;
+
+            float invLength = 1.0f / sqrtf(localPos.x * localPos.x + localPos.y * localPos.y + localPos.z * localPos.z + 1.1920929e-7f);
+
+            particle->m_dir = localPos * invLength;
+            particle->m_locorigin = localPos;
+            particle->m_forigin = localPos;
+        }
+
+        // Initialize particle physics properties
+        CMatrix Local(parts->m_curXFormToWorld);
+        memset(Local.m[3], 0, 12);  // Zero out translation
+
+        particle->m_vel = CVector(0.0f, 0.0f, 0.0f);
+        particle->m_rotvel = CVector(0.0f, 0.0f, 0.0f);
+
+        // Apply attractors
+        for (size_t i = 0; i < this->m_Attractors.size(); ++i)
+        {
+            this->m_Attractors[i]->InitParticle(particle, parts->m_time, Local, this->m_orient, this->m_scaleparts);
+        }
+
+        // Add world velocity if not updating transform
+        if (!this->m_updateXForm)
+        {
+            CVector worldVelContribution = parts->m_worldVel * this->m_parentDependency;
+            particle->m_vel += worldVelContribution;
+        }
+
+        // Initialize remaining properties
+        particle->m_accel = CVector(0.0f, 0.0f, 0.0f);
+        particle->m_rotaccel = CVector(0.0f, 0.0f, 0.0f);
+        particle->m_ttl = particle->m_fade;
+
+        // Initialize trail if needed
+        if (this->m_HaveTrail)
+        {
+            particle->m_trail = (m3d::ParticleBase*)(TrailsPool.New());
+            particle->m_trailSize = 0;
+        }
+
+        // Set initial position
+        particle->m_origin = CVector(parts->m_curXFormToWorld._41, parts->m_curXFormToWorld._42, parts->m_curXFormToWorld._43);
+
+        // Calculate initial size based on lifetime
+        float lifeRatio = (particle->m_ttl - particle->m_fade) / particle->m_ttl;
+        int sizeIndex = static_cast<int>(lifeRatio * 20.0f);
+        float interpolationFactor = (lifeRatio - static_cast<float>(sizeIndex) * 0.05f) * 20.0f;
+
+        if (sizeIndex < 0)
+        {
+            sizeIndex = 0;
+        }
+        else if (sizeIndex > 18)
+        {
+            particle->m_size = this->m_sizes[19];
+        }
+        else
+        {
+            particle->m_size = this->m_sizes[sizeIndex] + (this->m_sizes[sizeIndex + 1] - this->m_sizes[sizeIndex]) * interpolationFactor;
+        }
+
+        // Apply scale
+        particle->m_size *= this->m_scaleparts;
+
+        // Set initial color
+        SetParticleColor(particle, 1.0f);
     }
 
     void ParticleSystem::ApplyBlending()

@@ -85,7 +85,18 @@ namespace m3d
 
     bool SgParticlesNode::IsFree() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        PsInfoForNode* info = nullptr;
+        GetProperty(1u, &info);
+        if (!info)
+        {
+            return true;
+        }
+
+        if (!info->m_list->m_numParticles)
+        {
+            ++this->m_Parts0Times;
+        }
+        return this->m_Parts0Times > 2;
     }
 
     int SgParticlesNode::GetProperty(unsigned propId, void* property) const
@@ -169,7 +180,12 @@ namespace m3d
 
     void SgParticlesNode::CanBeFree()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        PsInfoForNode* info = nullptr;
+        GetProperty(1u, &info);
+        if (info)
+        {
+            info->m_list->m_maxParticles = 0;
+        }
     }
 
     SgParticlesNode::~SgParticlesNode()

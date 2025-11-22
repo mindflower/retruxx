@@ -36,7 +36,7 @@ namespace m3d
     private:
         int m_lastTimeUpdated;
         int m_numMesh;
-        unsigned int m_Parts0Times;
+        mutable unsigned int m_Parts0Times;
     };
 
     class SgParticlesOpaqueNode : public SgParticlesNode
