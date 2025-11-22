@@ -15,7 +15,7 @@ namespace m3d
 
     Particle::Particle()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_trail = 0;
     }
 
     Particle::~Particle()
@@ -97,9 +97,23 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ParticlesList::Step(float)
+    void ParticlesList::Step(float dt)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code ParticlesList::Step
+        // Linear motion integration
+        CVector linearAcceleration = m_accel;
+        m_vel += linearAcceleration * dt;
+        m_origin += m_vel * dt;
+
+        // Rotational motion integration
+        CVector angularAcceleration = m_rotaccel;
+        m_mrotvel += angularAcceleration * dt;
+        m_rotvel += m_mrotvel * dt;
+
+        // Clear accumulated forces for next frame
+        // (forces will be re-applied based on physics simulation)
+        m_accel = ZeroVector;
+        m_rotaccel = ZeroVector;
     }
 
     void ParticlesList::SetMeshEmitterInds(int**, int*)
@@ -512,9 +526,82 @@ namespace m3d
         this->m_texName = name;
     }
 
-    void ParticleSystem::Reset(ParticlesList*)
+    void ParticleSystem::Reset(ParticlesList* parts)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code ParticleSystem::Reset
+        parts->m_vel = ZeroVector;
+        parts->m_rotvel = ZeroVector;
+        parts->m_mrotvel = ZeroVector;
+        parts->m_accel = ZeroVector;
+        parts->m_rotaccel = ZeroVector;
+        parts->m_origin = ZeroVector;
+        for (int i = 0; i < parts->m_numParticles; ++i)
+        {
+            ParticlesPool.Delete((&parts->m_particles)[i]);
+        }
+        parts->m_numParticles = 0;
+
+        // Generate random point2Max using linear congruential generator
+        float randomX = static_cast<float>(rndGet() >> 16) * 0.000015259022f;  // 1.0f / 65536.0f
+        parts->m_point2Max.x = (m_point2Max.x - m_point2.x) * randomX + m_point2.x;
+
+        float randomY = static_cast<float>(rndGet() >> 16) * 0.000015259022f;
+        parts->m_point2Max.y = (m_point2Max.y - m_point2.y) * randomY + m_point2.y;
+
+        float randomZ = static_cast<float>(rndGet() >> 16) * 0.000015259022f;
+        parts->m_point2Max.z = (m_point2Max.z - m_point2.z) * randomZ + m_point2.z;
+
+        // Setup auto mesh emitter if enabled
+        if (m_autoMeshEmitter)
+        {
+            parts->SetAutoMeshEmitterPoints(0, m_points, m_meshradius, m_point1, parts->m_point2Max);
+        }
+
+        parts->m_time = 0.0f;
+
+        // Calculate initial forces
+        CVector dest;
+        m3d::CalcForcesCarthesian(dest, m_pos, 0.0f);
+
+        // Handle mesh emitter vertex selection
+        int* numMeshVerts = parts->m_numMeshEmitterVerts;
+        if (numMeshVerts)
+        {
+            if (!m_forv && !m_back)
+            {
+                m_numvert = numMeshVerts[parts->m_numSkinMesh] - 1;
+                m_backflag = true;
+            }
+            else if (m_forv)
+            {
+                m_numvert = 0;
+                m_backflag = false;
+            }
+            else if (m_back)
+            {
+                m_numvert = numMeshVerts[parts->m_numSkinMesh] - 1;
+                m_backflag = true;
+            }
+        }
+
+        // Calculate random start time
+        float randomStart = static_cast<float>(rndGet() >> 16) * 0.000015259022f;
+        parts->m_start1 = (m_Emitter.m_wtime.m_start - m_Emitter.m_start) * randomStart + m_Emitter.m_start;
+
+        // Initialize transformation matrix
+        CMatrix Local(parts->m_curXFormToWorld);
+        Local.m[3][0] = 0.0f;
+        Local.m[3][1] = 0.0f;
+        Local.m[3][2] = 0.0f;
+
+        // Initialize attractors
+        for (size_t i = 0; i < m_Attractors.size(); ++i)
+            {
+                m_Attractors[i]->InitParticlesList(parts, Local, m_orient, m_scaleparts);
+            }
+
+        // Apply initial forces to origin
+        parts->m_origin += dest;
     }
 
     void ParticleSystem::AddParticles(ParticlesList*, retruxx::vector<CVector> const*)
@@ -532,9 +619,320 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int ParticleSystem::Update(ParticlesList*, float, float)
+    int ParticleSystem::Update(ParticlesList* parts, float lastFrameSecs, float fader)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code ParticleSystem::Update
+        // Early return if phase time not reached
+        if (parts->m_start1 > parts->m_PhaseTime)
+        {
+            parts->m_updateCalled = true;
+            parts->m_PhaseTime += lastFrameSecs;
+            return 1;
+        }
+
+        parts->m_updateCalled = true;
+
+        // Handle reset timing
+        if (m_Emitter.m_resettime != 0.0f)
+        {
+            if (parts->m_time <= m_Emitter.m_resettime)
+            {
+                if (parts->m_time == 0.0f)
+                {
+                    Reset(parts);
+                    parts->m_RandShader = m3d::rnd(0.0f, 1.0f);
+                }
+            }
+            else
+            {
+                Reset(parts);
+                parts->m_PhaseTime = 0.0f;
+                parts->m_RandShader = rndGet();
+            }
+        }
+
+        // Set up local coordinate system
+        CMatrix Local = parts->m_curXFormToWorld;
+        Local.m[3][0] = 0.0f;
+        Local.m[3][1] = 0.0f;
+        Local.m[3][2] = 0.0f;
+
+        // Update attractors
+        for (unsigned int i = 0; i < this->m_Attractors.size(); i++)
+        {
+            m_Attractors[i]->SetState(parts->m_time);
+        }
+
+        // Process existing particles
+        m3d::Particle** ppParticle = &parts->m_particles;
+
+        while (*ppParticle)
+        {
+            m3d::Particle* current = *ppParticle;
+
+            // Apply attractors to current particle
+            for (unsigned int j = 0; j < this->m_Attractors.size(); j++)
+                {
+                    this->m_Attractors[j]->AffectParticle(current, parts->m_time, Local, this->m_orient, this->m_scaleparts);
+                }
+
+            // Apply emitter stop conditions
+            this->m_Emitter.LocalStop(current, parts->m_time);
+
+            // Update fade time
+            current->m_fade -= lastFrameSecs;
+
+            if (current->m_fade > 0.0f)
+            {
+                // Handle trail updates
+                if (this->m_HaveTrail)
+                {
+                    int trailIndex = (int)((1.0f - (current->m_fade / current->m_ttl)) * (this->m_trailLen - 1));
+                    if (trailIndex < 0)
+                        trailIndex = 0;
+                    if (trailIndex > this->m_trailLen - 1)
+                        trailIndex = this->m_trailLen - 1;
+
+                    if (trailIndex >= current->m_trailSize)
+                    {
+                        // Update trail point
+                        m3d::ParticleBase* trailPoint = &current->m_trail[current->m_trailSize];
+                        trailPoint->m_origin = current->m_origin;
+                        trailPoint->m_locorigin = current->m_locorigin;
+                        trailPoint->m_size = current->m_size;
+                        trailPoint->m_curClr = current->m_curClr;
+                        current->m_trailSize++;
+                    }
+                }
+
+                // Step particle physics
+                current->Step(lastFrameSecs);
+
+                // Update world position if needed
+                if (this->m_updateXForm)
+                {
+                    current->m_origin.x = parts->m_curXFormToWorld._41;
+                    current->m_origin.y = parts->m_curXFormToWorld._42;
+                    current->m_origin.z = parts->m_curXFormToWorld._43;
+                }
+
+                ppParticle = &current->m_next;
+            }
+            else
+            {
+                // Remove dead particle
+                *ppParticle = current->m_next;
+                ParticlesPool.Delete(current);
+
+                // Return particle to pool
+                --parts->m_numParticles;
+            }
+        }
+
+        // Affect particles list with attractors
+        for (unsigned int k = 0; k < this->m_Attractors.size(); k++)
+            {
+                this->m_Attractors[k]->AffectParticlesList(parts, Local, this->m_orient, this->m_scaleparts);
+            }
+
+        // Step particle list and emit new particles
+        parts->Step(lastFrameSecs);
+        unsigned int particlesToEmit = m_Emitter.Emit(parts->m_time, lastFrameSecs);
+        unsigned int dwParticlesEmit = parts->m_numParticles + particlesToEmit;
+
+        // Emit new particles
+        if (parts->m_numParticles < parts->m_maxParticles)
+        {
+            do
+            {
+                if (parts->m_numParticles >= dwParticlesEmit)
+                    break;
+
+                // Handle mesh emitter vertex traversal
+                if (parts->m_numMeshEmitterVerts)
+                {
+                    int numVerts = parts->m_numMeshEmitterVerts[parts->m_numSkinMesh];
+                    int maxIndex = numVerts - 1;
+
+                    // Complex vertex index update logic (matches assembly)
+                    if (this->m_numvert > maxIndex && this->m_forv && !this->m_back)
+                    {
+                        this->m_numvert = 0;
+                        this->m_backflag = 0;
+                    }
+                    else if (this->m_numvert < 0 && !this->m_forv && !this->m_back)
+                    {
+                        this->m_numvert = maxIndex;
+                        this->m_backflag = 1;
+                    }
+                    else if (this->m_numvert < 0 && !this->m_forv && this->m_back)
+                    {
+                        this->m_numvert = 1;
+                        this->m_backflag = 0;
+                    }
+                    else if (this->m_numvert > maxIndex && this->m_forv && this->m_back)
+                    {
+                        this->m_numvert = maxIndex - 1;
+                        this->m_backflag = 1;
+                    }
+                    else if (this->m_numvert < 0 && this->m_forv && this->m_back)
+                    {
+                        this->m_numvert = 1;
+                        this->m_backflag = 0;
+                    }
+                    else if (this->m_numvert > maxIndex && !this->m_forv && this->m_back)
+                    {
+                        this->m_numvert = maxIndex - 1;
+                        this->m_backflag = 0;
+                    }
+                }
+
+                // Get new particle from pool
+                m3d::Particle* newParticle = ParticlesPool.New();
+
+                // Initialize particle linked list
+                newParticle->m_next = parts->m_particles;
+                parts->m_particles = newParticle;
+                ++parts->m_numParticles;
+
+                // Set particle lifetime
+                unsigned int seed = rndGet();
+                newParticle->m_fade =
+                    ((this->m_Emitter.m_ttlMax - this->m_Emitter.m_ttlMin) * (float)(seed >> 16) * 0.000015259022f) + this->m_Emitter.m_ttlMin;
+                newParticle->m_time0 = parts->m_time;
+
+                // Calculate initial forces and direction
+                CVector dest;
+                if (this->m_x0Cst != PS_CST_CARTHESIAN)
+                {
+                    m3d::CalcForcesPolar(dest, m_x0, parts->m_time);
+                }
+                else
+                {
+                    m3d::CalcForcesCarthesian(dest, m_x0, parts->m_time);
+                }
+
+                // Calculate normalized direction
+                CVector org;
+                org.x = parts->m_origin.x + dest.x;
+                org.y = parts->m_origin.y + dest.y;
+                org.z = parts->m_origin.z + dest.z;
+
+                float invLength = 1.0f / sqrtf(org.z * org.z + org.y * org.y + org.x * org.x + 1.1920929e-7f);
+                newParticle->m_dir.x = invLength * org.x;
+                newParticle->m_dir.y = invLength * org.y;
+                newParticle->m_dir.z = invLength * org.z;
+
+                // Calculate initial position
+                float posX = parts->m_origin.x;
+                float posY = parts->m_origin.y;
+                float posZ = parts->m_origin.z;
+
+                if (parts->m_meshEmitterVerts)
+                {
+                    float* vertexData = (float*)((char*)parts->m_meshEmitterVerts[parts->m_numSkinMesh] +
+                                                 parts->m_VertexTypeSizes[parts->m_numSkinMesh] * this->m_numvert);
+                    posX += vertexData[0];
+                    posY += vertexData[1];
+                    posZ += vertexData[2];
+                }
+
+                // Set scaled positions
+                newParticle->m_locorigin.x = this->m_scaleparts * posX;
+                newParticle->m_locorigin.y = this->m_scaleparts * posY;
+                newParticle->m_locorigin.z = this->m_scaleparts * posZ;
+                newParticle->m_forigin = newParticle->m_locorigin;
+
+                // Initialize velocities and accelerations to zero
+                newParticle->m_vel.x = 0.0f;
+                newParticle->m_vel.y = 0.0f;
+                newParticle->m_vel.z = 0.0f;
+                newParticle->m_accel.x = 0.0f;
+                newParticle->m_accel.y = 0.0f;
+                newParticle->m_accel.z = 0.0f;
+                newParticle->m_rotvel.x = 0.0f;
+                newParticle->m_rotvel.y = 0.0f;
+                newParticle->m_rotvel.z = 0.0f;
+                newParticle->m_rotaccel.x = 0.0f;
+                newParticle->m_rotaccel.y = 0.0f;
+                newParticle->m_rotaccel.z = 0.0f;
+
+                // Apply attractor initialization
+                for (unsigned int m = 0; m < this->m_Attractors.size(); m++)
+                    {
+                        this->m_Attractors[m]->InitParticle(newParticle, parts->m_time, Local, this->m_orient, this->m_scaleparts);
+                    }
+
+                // Apply parent velocity if not updating transform
+                if (!this->m_updateXForm)
+                {
+                    newParticle->m_vel.x += parts->m_worldVel.x * this->m_parentDependency;
+                    newParticle->m_vel.y += parts->m_worldVel.y * this->m_parentDependency;
+                    newParticle->m_vel.z += parts->m_worldVel.z * this->m_parentDependency;
+                }
+
+                // Set initial world position
+                newParticle->m_origin.x = parts->m_curXFormToWorld._41;
+                newParticle->m_origin.y = parts->m_curXFormToWorld._42;
+                newParticle->m_origin.z = parts->m_curXFormToWorld._43;
+
+                // Initialize trail if enabled
+                if (this->m_HaveTrail)
+                {
+                    newParticle->m_trail = (m3d::ParticleBase*)TrailsPool.New();
+                    newParticle->m_trailSize = 0;
+                }
+
+                // Update total lifetime
+                newParticle->m_ttl = newParticle->m_fade;
+
+                // Update vertex index
+                if (this->m_backflag)
+                {
+                    --this->m_numvert;
+                }
+                else
+                {
+                    ++this->m_numvert;
+                }
+            } while ((!this->m_CreateOne || this->m_Emitter.m_wtime.m_length == 0.1f) && parts->m_numParticles < parts->m_maxParticles);
+        }
+
+        // Update particle colors and sizes
+        for (m3d::Particle* particle = parts->m_particles; particle; particle = particle->m_next)
+        {
+            this->SetParticleColor(particle, fader);
+
+            // Interpolate particle size based on lifetime
+            float lifeRatio = (particle->m_ttl - particle->m_fade) / particle->m_ttl;
+            int sizeIndex = (int)(lifeRatio * 20.0f);
+            float interpolationFactor = (lifeRatio - ((float)sizeIndex * (1.0f / 20.0f))) * 20.0f;
+
+            if (sizeIndex >= 0)
+            {
+                if (sizeIndex > 18)
+                {
+                    particle->m_size = this->m_sizes[19];
+                }
+                else
+                {
+                    particle->m_size = (this->m_sizes[sizeIndex + 1] - this->m_sizes[sizeIndex]) * interpolationFactor + this->m_sizes[sizeIndex];
+                }
+            }
+            else
+            {
+                sizeIndex = 0;
+                particle->m_size = (this->m_sizes[sizeIndex + 1] - this->m_sizes[sizeIndex]) * interpolationFactor + this->m_sizes[sizeIndex];
+            }
+
+            particle->m_size *= this->m_scaleparts;
+        }
+
+        // Update timing
+        parts->m_time += lastFrameSecs;
+        parts->m_spriteAngle += this->m_SpriteAngle * lastFrameSecs;
+
+        return 1;
     }
 
     int StripOnePS::Render(CMatrix const*, ParticlesList*)

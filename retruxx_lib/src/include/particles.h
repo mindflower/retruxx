@@ -34,7 +34,6 @@ namespace m3d
 
     struct Particle : public m3d::ParticleBase
     {
-        m3d::ParticleBase m3d::ParticleBase;
         /* 0x0068 */ int m_trailSize;
         /* 0x006c */ m3d::ParticleBase* m_trail;
         /* 0x0070 */ float m_time0;

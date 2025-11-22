@@ -1,4 +1,5 @@
 #pragma once
+
 #include <psprops.h>
 #include <core/ref_ptr.h>
 #include <core/stringm3d.h>
@@ -9,14 +10,12 @@ struct CMatrix;
 namespace m3d
 {
     class ParticlesList;
-    class Particle;
-
+    struct Particle;
     namespace cmn
     {
-        class XmlFile;
         struct XmlNode;
+        class XmlFile;
     }
-
     class Attr
     {
     public:
@@ -31,14 +30,14 @@ namespace m3d
         void On(bool);
         bool IsWork(float time);
         void SetState(float Time);
-        virtual void ReadFromXmlNode(m3d::cmn::XmlFile*, ref_ptr<m3d::cmn::XmlNode>&) = 0 /* 0x04 */;
-        virtual void WriteToXmlNode(m3d::cmn::XmlFile*, ref_ptr<m3d::cmn::XmlNode>&) = 0 /* 0x08 */;
+        virtual void ReadFromXmlNode(m3d::cmn::XmlFile*, ref_ptr<m3d::cmn::XmlNode>&) /* 0x04 */;
+        virtual void WriteToXmlNode(m3d::cmn::XmlFile*, ref_ptr<m3d::cmn::XmlNode>&) /* 0x08 */;
         virtual void ReadFromProto(const AttrProps& props) /* 0x0c */;
         virtual void WriteToProto(AttrProps& props) /* 0x10 */;
-        virtual void InitParticle(m3d::Particle*, float, CMatrix&, bool, float) = 0 /* 0x14 */;
-        virtual void InitParticlesList(m3d::ParticlesList*, CMatrix&, bool, float) = 0 /* 0x18 */;
-        virtual void AffectParticle(m3d::Particle*, float, CMatrix&, bool, float) = 0 /* 0x1c */;
-        virtual void AffectParticlesList(m3d::ParticlesList*, CMatrix&, bool, float) = 0 /* 0x20 */;
+        virtual void InitParticle(m3d::Particle*, float, CMatrix&, bool, float) /* 0x14 */;
+        virtual void InitParticlesList(m3d::ParticlesList*, CMatrix&, bool, float) /* 0x18 */;
+        virtual void AffectParticle(m3d::Particle*, float, CMatrix&, bool, float) /* 0x1c */;
+        virtual void AffectParticlesList(m3d::ParticlesList*, CMatrix&, bool, float) /* 0x20 */;
         CStr m_Name;
         CStr m_ClassName;
         /* 0x001c */ bool m_On;
@@ -145,5 +144,14 @@ namespace m3d
         void GetForce(bool& target) const;
         void GetForce(ForceMode& mode, CoordinatesSystemType& system) const;
     }; /* size: 0x0080 */
+
+
+    unsigned int rndGet();
+    float rnd(float, float);
+
+    void CalcForcesCarthesian(CVector&, Force const (&)[3], float);
+    void CalcForcesPolar(CVector&, Force const (&)[3], float);
+    void CalcForcesPolarOrg(CVector&, Force const (&)[3], CVector const&, float);
+    CVector CalcForces(CoordinatesSystemType, Force const (&)[3], float, CVector const&);
 }
 
