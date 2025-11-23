@@ -746,6 +746,8 @@ namespace m3d
                             server->RenderItem(-2, 0);
                             renderStart = true;
 
+                            auto slots = &m_visSlots[effIdx];
+
                             for (int i = 0; i < m_visNumSlots[clsIdx]; i++)
                             {
                                 if (renderStart)
@@ -754,7 +756,7 @@ namespace m3d
                                 }
                                 server->RenderItem(-2, 0);
                                 renderStart = true;
-                                m_visSlots[effIdx]->Render(NRF_DEFAULT, nullptr, lastFrameTime, frameStart);
+                                slots[i]->Render(NRF_DEFAULT, nullptr, lastFrameTime, frameStart);
                             }
                             if (renderStart)
                             {

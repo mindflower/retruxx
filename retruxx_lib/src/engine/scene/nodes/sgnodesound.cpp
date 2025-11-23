@@ -166,7 +166,11 @@ namespace m3d
 
     void SgSoundSourceNode::Restart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int soundEnabled = 0;
+        SetProperty(PROP_SND_SOUND_ENABLED, &soundEnabled);
+
+        soundEnabled = 1;
+        SetProperty(PROP_SND_SOUND_ENABLED, &soundEnabled);
     }
 
     bool SgSoundSourceNode::IsFree() const
@@ -207,6 +211,7 @@ namespace m3d
     {
         this->m_currentSoundNum = 0;
         this->m_framesPassed = 0;
+
         RitualInConstructor(RITUAL_REGISTERED_NODE);
         this->m_props[0] = node.m_props[0];
         this->m_props[1] = node.m_props[1];

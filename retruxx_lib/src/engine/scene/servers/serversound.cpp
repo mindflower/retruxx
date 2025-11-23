@@ -321,7 +321,7 @@ namespace m3d
             m3d::SafeStrAttrib(fileStart, xmlNode, "file_start");
 
             CStr fileEnd;
-            m3d::SafeStrAttrib(fileStart, xmlNode, "file_end");
+            m3d::SafeStrAttrib(fileEnd, xmlNode, "file_end");
 
             if (_AddDoubleItem(fileStart, fileEnd, id.c_str(), group) == -1)
             {
@@ -335,10 +335,10 @@ namespace m3d
             m3d::SafeStrAttrib(fileStart, xmlNode, "file_start");
 
             CStr fileLoop;
-            m3d::SafeStrAttrib(fileStart, xmlNode, "file_loop");
+            m3d::SafeStrAttrib(fileLoop, xmlNode, "file_loop");
 
             CStr fileEnd;
-            m3d::SafeStrAttrib(fileStart, xmlNode, "file_end");
+            m3d::SafeStrAttrib(fileEnd, xmlNode, "file_end");
 
             if (_AddTripleItem(fileStart, fileLoop, fileEnd, id.c_str(), group) == -1)
             {
