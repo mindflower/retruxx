@@ -549,8 +549,8 @@ namespace m3d
         {
             const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
             // TODO: enable when DrawLandscapeTextures is implemented
-            //m_owner->GetGraph().SortedCellsStartFetching(m_drawRadius * transitionDivider + 1, m_drawRadius + 1);
-            m_owner->GetGraph().SortedCellsStartFetching(0, m_drawRadius);
+            m_owner->GetGraph().SortedCellsStartFetching(m_drawRadius * transitionDivider + 1, m_drawRadius + 1);
+            //m_owner->GetGraph().SortedCellsStartFetching(0, m_drawRadius);
             m_solidPs->Apply();
             m_solidVs->Apply();
 
@@ -678,72 +678,91 @@ namespace m3d
         }
         else
         {
-            int x = 0;
-            int y = 0;
-            int xx = 0;
-            int yy = 0;
-            while (sceneGraph.SortedCellsFetch(x, y, xx, yy))
+            int landSize = this->m_owner->m_level->land_size;
+            int gridSize = 4 * landSize;
+            // Normal rendering - process visible cells from scene graph
+            int cellX, cellY, vis, radius;
+            while (sceneGraph.SortedCellsFetch(cellX, cellY, vis, radius))
             {
-                if (!xx)
-                {
+                if (vis == 0)
                     continue;
-                }
 
-                auto v14 = 0;
-                bool isFullyUnderwater = 1;
-                bool v129 = 0;
-                for (int i = 0; i < 4; v14 = ++i)
+                bool isFullyUnderwater = true;
+                bool hasUnderwaterParts = false;
+
+                // Process 4x4 block of cells
+                for (int subY = 0; subY < 4; subY++)
                 {
-                    auto v15 = v14 + 4 * y;
-                    auto v16 = 4 * x;
-                    yy = v15;
-                    auto v122 = 4 * x;
-                    auto v131 = 4;
-                    int v24 = 0;
-                    do
+                    for (int subX = 0; subX < 4; subX++)
                     {
-                        auto v17 = v16 + 4 * v15 * this->m_owner->m_level->land_size;
-                        if (this->m_waterMap[v17])
+                        int worldX = 4 * cellX + subX;
+                        int worldY = 4 * cellY + subY;
+
+                        // Check water status
+                        if (this->m_waterMap[worldX + worldY * landSize])
                         {
-                            m_drawedCellParams = this->m_drawedCellParams;
-                            auto h0 = m_drawedCellParams[v17].m_h0;
-                            auto h1 = m_drawedCellParams[v17].m_h1;
-                            auto height = m3d::Landscape::getWaterHeight(v16, v15);
-                            if (h1 > height)
-                                isFullyUnderwater = 0;
-                            if (height > h0)
-                                v129 = 1;
+                            const Landscape::CellParams& cellParams = this->m_drawedCellParams[worldX + worldY * landSize];
+                            float waterHeight = m3d::Landscape::getWaterHeight(worldX, worldY);
+
+                            if (cellParams.m_h1 > waterHeight)
+                            {
+                                isFullyUnderwater = false;
+                            }
+                            if (waterHeight > cellParams.m_h0)
+                            {
+                                hasUnderwaterParts = true;
+                            }
                         }
                         else
                         {
-                            isFullyUnderwater = 0;
+                            isFullyUnderwater = false;
                         }
+
+                        // In editor mode, collect cells per texture
                         if (m3d::Landscape::m_renderMode == RM_EDITOR)
                         {
-                            RETRUXX_NOT_IMPLEMENTED;
+                            const Landscape::TileInfo& tileInfo = m3d::Landscape::GetTileInfo(worldX, worldY);
+                            if (tileInfo.m_numTexs > 0)
+                            {
+                                for (int texIndex = 0; texIndex < tileInfo.m_numTexs; texIndex++)
+                                {
+                                    cmn::vector<unsigned int>* cellsPerTex = &this->m_cellsPerTex.m_data[tileInfo.m_texFlags[texIndex]];
+                                    cellsPerTex->push_back(worldX + ((worldY + ((tileInfo.m_angle + (tileInfo.m_texFlags[texIndex] << 8)) << 8)) << 8));
+                                }
+                            }
                         }
-                        ++v16;
-                        v24 = v131-- == 1;
-                        v122 = v16;
-                    } while (!v24);
+                    }
                 }
 
-                if (m_renderMode)
+                // Skip cells based on visibility mode
+                if (m3d::Landscape::m_renderMode)
                 {
                     continue;
                 }
-
-                // check this
-                if (visMode != VIS_DIRECT && !(visMode == VIS_REFLECTION && isFullyUnderwater) && !(visMode == VIS_REFRACTION && v129))
+                if (visMode == VIS_DIRECT)
                 {
-                    continue;
+                    // Always render in direct mode
+                }
+                else if (visMode == VIS_REFLECTION)
+                {
+                    if (!isFullyUnderwater)
+                        continue;
+                }
+                else if (visMode == VIS_REFRACTION)
+                {
+                    if (!hasUnderwaterParts)
+                        continue;
                 }
 
-                auto& texSetMap = m_texSetsmap[x + m_owner->m_level->land_size * y];
-                for (const auto tex : texSetMap)
+                // Collect texture sets for this cell
+                int cellIndex = cellX + landSize * cellY;
+                std::set<unsigned int>& textureSets = this->m_texSetsmap[cellIndex];
+
+                for (auto it = textureSets.begin(); it != textureSets.end(); ++it)
                 {
-                    auto& cells = m_cellsPerTex[tex];
-                    cells.push_back(x + (y << 8));
+                    cmn::vector<unsigned int>& cellsPerTex = m_cellsPerTex[*it];
+                    unsigned int cellData = cellX + (cellY << 8);
+                    cellsPerTex.push_back(cellData);
                 }
             }
 
@@ -764,8 +783,8 @@ namespace m3d
         m_otherpasscounter = 0;
 
         // TODO: implement landscape textures rendering
-        if (false)
-        //if (M3D_ENGINE_CFG.m_lsShadows.GetB())
+        //if (false)
+        if (M3D_ENGINE_CFG.m_lsShadows.GetB())
         {
             // TODO: check this
             M3D_RENDERER->SetToStream(1, m_landUVVb);
@@ -796,8 +815,7 @@ namespace m3d
                 const auto projMat = M3D_RENDERER->MatGetProj();
                 const auto matWorld = M3D_RENDERER->MatGetWorld();
 
-                auto resultMat = mat;
-                resultMat *= projMat;
+                auto resultMat = mat * projMat;
 
                 const auto viewProjHandle = m_landscapeVs->GetParamHandleByName("mViewProj");
                 m_landscapeVs->SetMatrix(viewProjHandle, resultMat);
@@ -824,8 +842,15 @@ namespace m3d
 
                 M3D_RENDERER->SetTexture(1, m_tilesTextures[i]->m_texHandle, -1.0);
 
-                m_CurAlphaSet = 0;
-                m_hashIdxToLandType.getValueByKey(m_CurAlphaSet, i);
+                int alphaSetNum = 0;
+                if (m_hashIdxToLandType.getValueByKey(i, alphaSetNum))
+                {
+                    m_CurAlphaSet = m_Lands[alphaSetNum].m_alphaset;
+                }
+                else
+                {
+                    m_CurAlphaSet = 0;
+                }
 
                 M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
                 if (m3d::Landscape::m_renderMode != RM_GAME)
@@ -838,37 +863,10 @@ namespace m3d
                     DrawCellsFast0(m_cellsPerTex[i], *m_tilesTextures[i], RT_FIRSTPASSLIGHT);
 
                     M3D_RENDERER->SetZbState(rend::ZB_NOWRITE, false);
-                    M3D_RENDERER->SetBlend(rend::BM_ALPHA, 0);
-                    M3D_RENDERER->SetAlphaTest(1);
-                    m_landscapePsSP->Apply();
-                    m_lastState = RT_OTHERPASSES;
-
-                    const float land_scale_27 = 8.0;
-                    for (int j = 0; j < m_cellsPerTex[i].size(); ++i)
-                    {
-                        CVector vsFloatConst;
-                        vsFloatConst.x = m_cellsPerTex[i][j] * 128.0;
-                        vsFloatConst.y = m_cellsPerTex[i][j] * 128.0;
-                        vsFloatConst.z = land_scale_27;
-                        M3D_RENDERER->SetVsFloatConst(10u, (float*)& vsFloatConst, 1u);
-
-                        const auto v105 = m_tilesTextures[i]->m_offsetsmap[m_cellsPerTex[i][j]];
-                        const auto v106 = m_tilesTextures[i]->m_numCellsPerCellMap[64 * m_cellsPerTex[i][j] + m_cellsPerTex[i][j]];
-                        const auto bankNum = m_tilesTextures[i]->m_banknumber[m_cellsPerTex[i][j]];
-                        if (v105 != 0xFFFF && v106)
-                        {
-                            M3D_RENDERER->SetIndices(m_landIbConst.front(), v105);
-                            M3D_RENDERER->SetToStream0(m_tilesTextures[i]->m_vbHandle[bankNum]);
-                            M3D_RENDERER->DrawIndexedPrimitiveShader(
-                                rend::M3DPT_TRIANGLESTRIP,
-                                0,
-                                25 * v106,
-                                0,
-                                106 * this->m_lsNumIndices.front() - 3);
-                        }
-
-                    }
+                    DrawCellsFast0(m_cellsPerTex[i], *m_tilesTextures[i], RT_OTHERPASSES);
                 }
+
+                m_cellsPerTex[i].clear();
             }
         }
         else
@@ -877,10 +875,7 @@ namespace m3d
             // TODO: check this
             for (int i = 0; i < m_tilesTextures.size(); ++i)
             {
-                if (m_cellsPerTex[i].empty())
-                {
-                    m_cellsPerTex[i].clear();
-                }
+                m_cellsPerTex[i].clear();
             }
         }
 
@@ -2460,71 +2455,238 @@ namespace m3d
 
     void Landscape::CreateHelperStructures()
     {
-        // TODO: implement Landscape::CreateHelperStructures
-        /* const auto landSize = m_owner->m_level->GetLandSize();
-        const auto vertexStride = landSize * 4;
-        constexpr int cornerFlags[] = {1, 2, 4, 8};
+        // TODO: generated code Landscape::CreateHelperStructures
+        const int landSize = this->m_owner->m_level->land_size;
+        const int sizeInCells = landSize;
+        const int stride = 4 * landSize;
 
-        CIntHash<unsigned> maskHash;
-        retruxx::set<unsigned> setofTexs;
+        // Initialize flags for the four corners of a tile
+        int cornerFlags[4] = {1, 2, 4, 8};
 
+        // Initialize maskHash
+        m3d::CIntHash<unsigned int> maskHash;
+
+        // Process each tile in the landscape
         for (int y = 0; y < landSize; ++y)
         {
-            const auto baseOffset = 4 * (vertexStride - 1) * y;
-
-            for (int x = 0; x < landSize; ++x)
+            for (int xOffset = 0; xOffset < landSize; ++xOffset)
             {
+                const unsigned int baseOffset = 4 * stride * y;
+
+                // Process 4x4 subtile grid
                 for (int subY = 0; subY < 4; ++subY)
                 {
-                    auto currentOffset = baseOffset;
+                    const int globalY = subY + 4 * y;
+                    unsigned int currentOffset = baseOffset;
 
                     for (int subX = 0; subX < 4; ++subX)
                     {
-                        const int tileX = subX + 4 * x;
-                        const int tileY = subY + 4 * y;
+                        const int globalX = 4 * xOffset + subX;
 
-                        auto& currentTile = m_tiles[currentOffset + 4 * x];
+                        // Get the current tile info
+                        m3d::Landscape::TileInfo* currentTile = &m_tiles[currentOffset + globalX];
 
-                        const int clampedX = std::clamp(tileX, 0, vertexStride - 1);
-                        const int clampedY = std::clamp(tileY, 0, vertexStride - 1);
+                        // Clamp coordinates to valid range
+                        const int clampedX = std::clamp(globalX, 0, stride - 1);
+                        const int clampedY = std::clamp(globalY, 0, stride - 1);
 
-                        int cornerTextures[4];
-                        cornerTextures[0] = m_tiles[clampedX + 4 * landSize * clampedY].m_texIndex0;
-                        cornerTextures[1] = m_tiles[clampedX + 1 + 4 * landSize * clampedY].m_texIndex0;
-                        cornerTextures[2] = m_tiles[clampedX + 4 * landSize * (clampedY + 1)].m_texIndex0;
-                        cornerTextures[3] = m_tiles[clampedX + 1 + 4 * landSize * (clampedY + 1)].m_texIndex0;
+                        // Get texture indices for the four corners of this subtile
+                        int textureIndices[4];
+                        textureIndices[0] = m_tiles[clampedX + stride * clampedY].m_texIndex0;
+                        textureIndices[1] = m_tiles[std::clamp(globalX + 1, 0, stride - 1) + stride * clampedY].m_texIndex0;
+                        textureIndices[2] = m_tiles[clampedX + stride * std::clamp(globalY + 1, 0, stride - 1)].m_texIndex0;
+                        textureIndices[3] = m_tiles[std::clamp(globalX + 1, 0, stride - 1) + stride * std::clamp(globalY + 1, 0, stride - 1)].m_texIndex0;
 
-                        currentTile.m_numTexs = 0;
+                        // Reset tile texture count
+                        currentTile->m_numTexs = 0;
                         std::vector<int> processedCorners(4, 0);
+
+                        // Process each corner to determine unique textures and their coverage
                         for (int corner = 0; corner < 4; ++corner)
                         {
                             if (!processedCorners[corner])
                             {
-                                int cornerMask = cornerFlags[corner];
+                                int coverageFlags = cornerFlags[corner];
 
-                                // Check other corners for same texture
+                                // Check if other corners share the same texture
                                 for (int otherCorner = corner + 1; otherCorner < 4; ++otherCorner)
                                 {
-                                    if (!processedCorners[otherCorner] && cornerTextures[corner] == cornerTextures[otherCorner])
+                                    if (!processedCorners[otherCorner] && textureIndices[corner] == textureIndices[otherCorner])
                                     {
-                                        cornerMask |= cornerFlags[otherCorner];
+                                        coverageFlags |= cornerFlags[otherCorner];
                                         processedCorners[otherCorner] = 1;
                                     }
                                 }
 
-                                // Add unique texture to tile
-                                const int texIndex = currentTile.m_numTexs;
-                                currentTile.m_texFlags[texIndex] = cornerMask;
-                                currentTile.m_texIndices[texIndex] = cornerTextures[corner];
-                                currentTile.m_numTexs++;
+                                // Add unique texture with its coverage
+                                currentTile->m_texFlags[currentTile->m_numTexs] = coverageFlags;
+                                currentTile->m_texIndices[currentTile->m_numTexs] = textureIndices[corner];
+                                ++currentTile->m_numTexs;
                                 processedCorners[corner] = 1;
                             }
                         }
+
+                        // Check if this is a uniform tile (all corners same texture)
+                        bool isUniformTile = true;
+                        int baseLandType = -1;
+
+                        // Look up land type for the first texture
+                        int landTypeIter = 0;
+                        if (m_hashIdxToLandType.getValueByKey(textureIndices[0], landTypeIter))
+                        {
+                            baseLandType = landTypeIter;
+
+                            // Check surrounding tiles for consistency
+                            for (int checkY = globalY - 1; checkY <= globalY + 1; ++checkY)
+                            {
+                                for (int checkX = globalX - 1; checkX <= globalX + 1; ++checkX)
+                                {
+                                    if (checkX >= 0 && checkX < stride && checkY >= 0 && checkY < stride)
+                                    {
+                                        unsigned int neighborTex = m_tiles[checkX + stride * checkY].m_texIndex0;
+
+                                        int neighborLandTypeIter = 0;
+                                        if (m_hashIdxToLandType.getValueByKey(neighborTex, neighborLandTypeIter))
+                                        {
+                                            if (baseLandType != neighborLandTypeIter)
+                                            {
+                                                isUniformTile = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (!isUniformTile)
+                                    break;
+                            }
+                        }
+
+                        // Simplify texture data for uniform tiles
+                        if (currentTile->m_numTexs == 1 || isUniformTile)
+                        {
+                            currentTile->m_texFlags[0] = 0;  // Full coverage
+                            currentTile->m_numTexs = 1;
+                        }
+
+                        // Sort textures by some criteria (appears to be by angle or priority)
+                        for (int i = currentTile->m_numTexs - 1; i > 0; --i)
+                        {
+                            // Sorting logic based on some tile property
+                            if (currentTile->m_texIndices[i] < currentTile->m_texIndices[i - 1])
+                            {
+                                std::swap(currentTile->m_texFlags[i], currentTile->m_texFlags[i - 1]);
+                                std::swap(currentTile->m_texIndices[i], currentTile->m_texIndices[i - 1]);
+                            }
+                        }
+
+                        // Set full coverage flag for multi-texture tiles
+                        if (currentTile->m_numTexs != 1)
+                        {
+                            currentTile->m_texFlags[0] = 15;  // All corners covered
+                        }
+
+                        // Update rendering data structures for game mode
+                        if (m3d::Landscape::m_renderMode == RM_GAME)
+                        {
+                            for (int texIdx = 0; texIdx < currentTile->m_numTexs; ++texIdx)
+                            {
+                                unsigned int textureId = currentTile->m_texIndices[texIdx];
+
+                                // Add to cells per texture
+                                m3d::cmn::vector<unsigned int>& cells = m_cellsPerTex[textureId];
+                                if (cells.size() < cells.m_maxItems)
+                                {
+                                    // Encode tile position and properties
+                                    unsigned int encodedPos =
+                                        (globalX + ((globalY + ((currentTile->m_angle + (currentTile->m_texFlags[texIdx] << 8)) << 8)) << 8));
+                                    cells.push_back(encodedPos);
+                                }
+
+                                // Add to texture set mapping
+                                int cellIndex = xOffset + landSize * y;
+                                m_texSetsmap[cellIndex].insert(textureId);
+                            }
+                        }
+
+                        currentOffset += stride;
                     }
                 }
             }
         }
-        */
+
+        if (m3d::Landscape::m_renderMode == RM_GAME)
+        {
+            // Build vertex buffers and process textures
+            int maxCells = 0;
+
+            // Find maximum number of cells
+            for (size_t i = 0; i < this->m_tilesTextures.size(); ++i)
+            {
+                if (this->m_cellsPerTex[i].size() > maxCells)
+                {
+                    maxCells = this->m_cellsPerTex[i].size();
+                }
+            }
+
+            if (maxCells > 0)
+            {
+                m3d::rend::VertexLandscape* v46 =
+                    new rend::VertexLandscape[25 * maxCells];
+
+                for (size_t textureIndex = 0; textureIndex < this->m_tilesTextures.size(); ++textureIndex)
+                {
+                    m3d::Landscape::TIVChunk* v48 = this->m_tilesTextures[textureIndex];
+
+                    if (this->m_cellsPerTex[textureIndex].size() > 0)
+                    {
+                        // Reset chunk data
+                        memset(v48->m_offsetsmap, 0, sizeof(v48->m_offsetsmap));
+                        memset(v48->m_banknumber, 0, sizeof(v48->m_banknumber));
+                        memset(v48->m_numCellsPerCellMap, 0, sizeof(v48->m_numCellsPerCellMap));
+                        v48->iotherPassOffset = 0;
+                        v48->iotherPassBankNumber = 0;
+
+                        int vofs = 0;
+                        std::vector<int> bankSwitchingMap;
+
+                        // Build cells for different render types
+                       BuildCells0(v46, *v48, vofs, this->m_cellsPerTex[textureIndex], RT_FIRSTPASSLIGHT, bankSwitchingMap);
+
+                        BuildCells0(
+                            &v46[v48->iotherPassOffset], *v48, vofs, this->m_cellsPerTex[textureIndex], RT_OTHERPASSES, bankSwitchingMap);
+
+                        // Reset cell count
+                        this->m_cellsPerTex[textureIndex].clear();
+
+                        bankSwitchingMap.push_back(vofs);
+
+                        // Create vertex buffers
+                        char* vertexDataPtr = reinterpret_cast<char*>(v46);
+
+                        for (size_t bufferIndex = 0; bufferIndex < bankSwitchingMap.size(); ++bufferIndex)
+                        {
+                            int vertexCount = bankSwitchingMap[bufferIndex];
+
+                            // Create vertex buffer
+                            m3d::rend::VbHandle vb = M3D_RENDERER->AddVb(rend::VERTEX_XYZNCT1_UV2_S1, vertexCount, "Landscape", 0);
+
+                            // Copy vertex data
+                            void* lockedBuffer = M3D_RENDERER->LockVb(vb, vertexCount, 0, 0);
+                            memcpy(lockedBuffer, vertexDataPtr, 8 * vertexCount);
+                            M3D_RENDERER->UnlockVb(vb);
+
+                            vertexDataPtr += 8 * vertexCount;
+
+                            // Store vertex buffer handle
+                            v48->m_vbHandle.push_back(vb);
+                        }
+                    }
+                }
+
+                // Build UV set
+               BuildUVSet();
+            }
+        }
     }
 
     void Landscape::drawSpriteOverlayed2Projected(float, float, float, float, unsigned, bool, CClipper const&)
@@ -3827,51 +3989,48 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int CreateIndices(uint16_t* indices, int sizeIndex, int sizeVertex, int step)
+    int CreateIndices(uint16_t* idxes, int szindex, int szvertex, int step)
     {
         // looks ok
-        const int vertexPlusOne = sizeVertex + 1;
-        uint16_t* currentIndex = indices;
-        int vertexOffset = 0;
-        const int stepVertexOffset = step * vertexPlusOne;
-        const int loopLimit = 64;
-        int loopCounter = loopLimit;
-
+        auto v5 = szvertex + 1;
+        auto v6 = idxes;
+        auto v7 = 0;
+        auto v8 = step * (szvertex + 1);
+        auto v14 = szindex;
+        auto v15 = 64;
+        bool v12 = false;
         do
         {
-            if (sizeIndex > 0)
+            if (szindex > 0)
             {
-                int remainingIndices = sizeIndex;
-                do {
-                    for (int i = 0; i <= sizeIndex; i++)
+                auto v9 = szindex + 1;
+                auto szvertexa = szindex;
+                do
+                {
+                    for (int i = 0; i < v9; v6 += 2)
                     {
-                        *currentIndex = stepVertexOffset + vertexOffset;
-                        currentIndex[1] = vertexOffset;
-
-                        if (i == sizeIndex) {
-                            vertexOffset += stepVertexOffset - sizeVertex;
-                        }
-                        else {
-                            vertexOffset += step;
-                        }
-                        currentIndex += 2;
+                        *v6 = v8 + v7;
+                        v6[1] = v7;
+                        if (i == v14)
+                            v7 += v8 - szvertex;
+                        else
+                            v7 += step;
+                        ++i;
                     }
-
-                    *currentIndex = sizeVertex + vertexOffset - stepVertexOffset;
-                    currentIndex[1] = vertexPlusOne + vertexOffset;
-                    currentIndex += 2;
-                    remainingIndices--;
-                } while (remainingIndices > 0);
+                    *v6 = szvertex + v7 - v8;
+                    v5 = szvertex + 1;
+                    v6[1] = szvertex + 1 + v7;
+                    v6 += 2;
+                    --szvertexa;
+                } while (szvertexa);
+                szindex = v14;
             }
-
-            const uint16_t finalIndex = vertexOffset + stepVertexOffset + vertexPlusOne;
-            vertexOffset += vertexPlusOne;
-            loopCounter--;
-
-            *(currentIndex - 1) = finalIndex;
-        } while (loopCounter != 1);
-
-        return (currentIndex - indices) / loopLimit;
+            auto v11 = v7 + v8 + szvertex + 1;
+            v7 += v5;
+            v12 = v15-- == 1;
+            *(v6 - 1) = v11;
+        } while (!v12);
+        return (v6 - idxes) / 64;
     }
 
     struct VertexWaterTest
@@ -4418,200 +4577,266 @@ namespace m3d
         m_waterDumbPs = nullptr;
     }
 
-    void Landscape::BuildCells0(rend::VertexLandscape* vert, TIVChunk& chunk, int& vofs, cmn::vector<unsigned> const& cellsPerTex, RenderTypes RenderType, retruxx::vector<int, retruxx::allocator<int>>& bankSwitchingMap)
+    void Landscape::BuildCells0(
+        rend::VertexLandscape* vertices,
+        TIVChunk& chunk,
+        int& vertexOffset,
+        cmn::vector<unsigned> const& cellsPerTexture,
+        RenderTypes renderType,
+        retruxx::vector<int, retruxx::allocator<int>>& bankSwitchingMap)
     {
         // TODO: generated code
-        const int numCells = cellsPerTex.size();
+        const int numCells = cellsPerTexture.size();
+        const unsigned int* currentCell = &cellsPerTexture[0];
+
         if (numCells == 0)
         {
-            chunk.iotherPassOffset = vofs;
+            chunk.iotherPassBankNumber = chunk.iotherPassBankNumber;
+            chunk.iotherPassOffset = vertexOffset;
             return;
         }
 
-        const uint32_t* curCell = cellsPerTex.m_data;
-        int banknumber = chunk.iotherPassBankNumber;
-        int numCellsToDrawPerPass = 0;
+        // State tracking variables
         int lastSquareX = -1;
         int lastSquareY = -1;
-        int ofsToStore = vofs;
-        int vertProcessed = vofs;
+        int currentBank = chunk.iotherPassBankNumber;
+        int cellsInCurrentPass = 0;
+        int offsetToStore = vertexOffset;
+        int totalVerticesProcessed = vertexOffset;
+
+        const int CELLS_PER_TILE = 4;
+        const int VERTICES_PER_CELL = 25;  // 5x5 grid
+        const int MAX_VERTICES = 65535;    // 16-bit limit
 
         int remainingCells = numCells;
+
         while (remainingCells > 0)
         {
-            int numCellsToDraw = (remainingCells > 1) ? 1 : remainingCells;
-            int cellsProcessed = numCellsToDraw;
-
-            for (int i = 0; i < numCellsToDraw; i++)
+            // Determine how many cells to process in this batch
+            int cellsToProcess = remainingCells;
+            if (remainingCells < 0)
             {
-                uint32_t cellData = *curCell;
-                uint8_t x = cellData & 0xFF;
-                uint8_t y = (cellData >> 8) & 0xFF;
-                int ang = (cellData >> 16) & 3;
-                int corner = (cellData >> 24) & 0xF;
+                cellsToProcess = 0;
+            }
+            else if (remainingCells > 1)
+            {
+                cellsToProcess = 1;
+            }
 
-                // Filter cells based on RenderType and corner
+            int processedInBatch = cellsToProcess;
+
+            // Process each cell in the current batch
+            while (processedInBatch > 0)
+            {
+                const unsigned int cellData = *currentCell;
+
+                // Extract cell information from packed data
+                const unsigned char tileX = cellData & 0xFF;
+                const unsigned char tileY = (cellData >> 8) & 0xFF;
+                const int angle = (cellData >> 16) & 0x3;
+                const int cornerType = (cellData >> 24) & 0xF;
+
+                // Determine if we should process this cell based on render type
                 bool shouldProcess = true;
-                if (RenderType)
+                if (renderType != 0)
                 {
-                    if (corner == 0 || specialMapper[corner].m_maskindex == 0)
+                    // Alpha pass - only process if it's a special corner
+                    if (cornerType == 0 || !specialMapper[cornerType].m_maskindex)
                     {
                         shouldProcess = false;
                     }
                 }
                 else
                 {
-                    if (corner != 0 && specialMapper[corner].m_maskindex != 0)
+                    // Base pass - skip special corners
+                    if (cornerType != 0 && specialMapper[cornerType].m_maskindex)
                     {
                         shouldProcess = false;
                     }
                 }
 
-                if (!shouldProcess)
+                if (shouldProcess)
                 {
-                    curCell++;
-                    cellsProcessed--;
-                    continue;
-                }
+                    const int squareX = tileX / CELLS_PER_TILE;
+                    const int squareY = tileY / CELLS_PER_TILE;
+                    const int localX = tileX % CELLS_PER_TILE;
+                    const int localY = tileY % CELLS_PER_TILE;
 
-                int tileX = x / 4;
-                int tileY = y / 4;
-                int subX = x % 4;
-                int subY = y % 4;
-
-                // Check if we're starting a new square
-                if (tileX != lastSquareX || tileY != lastSquareY)
-                {
-                    // Store previous square data if valid
-                    if (lastSquareX != -1 && lastSquareY != -1)
+                    // Check if we're starting a new tile
+                    if (squareX != lastSquareX || squareY != lastSquareY)
                     {
-                        int shift = (RenderType != 0) ? 4 : 0;
+                        // Store previous tile data if we have a valid previous tile
+                        if (lastSquareX != -1 && lastSquareY != -1)
+                        {
+                            const int storageShift = (renderType != 0) ? 4 : 0;
+                            const int bitShift = (renderType != 0) ? 2 : 0;
 
-                        // Bounds checking
-                        assert(lastSquareX >= 0 && lastSquareX < 64);
-                        assert(lastSquareY >= 0 && lastSquareY < 64);
+                            // Bounds checking
+                            if (lastSquareX < 0 || lastSquareX >= 64)
+                            {
+                                // Handle error - would call __assert in original
+                            }
+                            if (lastSquareY < 0 || lastSquareY >= 64)
+                            {
+                                // Handle error - would call __assert in original
+                            }
 
-                        int mapIndex = 64 * lastSquareY + lastSquareX;
-                        chunk.m_numCellsPerCellMap[mapIndex] |= (numCellsToDrawPerPass << (2 * shift));
+                            const int tileIndex = lastSquareY * 64 + lastSquareX;
 
-                        int offsetIndex = lastSquareX + (lastSquareY << 8);
-                        chunk.m_offsetsmap[offsetIndex] |= (ofsToStore << (4 * shift));
-                        chunk.m_banknumber[offsetIndex] |= (banknumber << (2 * shift));
+                            // Store cell count for this tile
+                            chunk.m_numCellsPerCellMap[tileIndex] |= (cellsInCurrentPass << storageShift);
+
+                            // Store vertex offset
+                            chunk.m_offsetsmap[tileIndex] |= (offsetToStore << (4 * bitShift));
+
+                            // Store bank number
+                            chunk.m_banknumber[tileIndex] |= (currentBank << (2 * bitShift));
+                        }
+
+                        // Start new tile
+                        lastSquareX = squareX;
+                        lastSquareY = squareY;
+                        cellsInCurrentPass = 0;
+                        offsetToStore = vertexOffset;
                     }
 
-                    // Start new square
-                    lastSquareX = tileX;
-                    lastSquareY = tileY;
-                    numCellsToDrawPerPass = 0;
-                    ofsToStore = vofs;
-                }
+                    ++cellsInCurrentPass;
 
-                numCellsToDrawPerPass++;
+                    // Get UV coordinates for the current angle
+                    float* baseUVs = m_uvForAngles[angle][0];
+                    float* alphaUVs = nullptr;
 
-                // Get UV coordinates based on angle
-                float* srcUv = m_uvForAngles[ang][0];
-                float* srcUv2 = nullptr;
-
-                if (RenderType == 1) {
-                    int setIndex = m_CurAlphaSet;
-                    int cornerIndex = specialMapper[corner].m_maskindex;
-                    int angleIndex = specialMapper[corner].m_rotate;
-                    srcUv2 = m_setAndUVs.m_sets[setIndex][cornerIndex].m_uvForAngles[angleIndex][0];
-                }
-
-                // Process vertices (5x5 grid)
-                int mapStride = m_mapSize + 1;
-                int heightMapOffset = 4 * x + 4 * y * mapStride;
-
-                for (int k = 0; k < 5; k++)
-                {
-                    int verticesProcessed = 0;
-
-                    if (RenderType == 1)
+                    if (renderType == 1)
                     {
-                        // Process with secondary UVs
-                        float* uvPtr = srcUv2;
-                        for (int j = 0; j <= 4; j++)
+                        alphaUVs = m_setAndUVs.m_sets[m_CurAlphaSet][specialMapper[cornerType].m_maskindex].m_uvForAngles[specialMapper[cornerType].m_rotate][0];
+                    }
+
+                    const int mapStride = m_mapSize + 1;
+                    const int heightMapBaseOffset = 4 * tileX + 4 * tileY * mapStride;
+
+                    // Generate 5x5 grid of vertices (25 vertices total)
+                    for (int row = 0; row < 5; ++row)
+                    {
+                        int verticesGenerated = 0;
+
+                        if (renderType == 1)
                         {
-                            uint16_t vertexIndex = k + 4 * (subY + 32 * (j + 4 * subX));
-                            vert[verticesProcessed].xz = vertexIndex;
-                            vert[verticesProcessed].y = m_heightMap[heightMapOffset + j];
+                            // Alpha pass rendering
+                            float* uvPtr = alphaUVs + 1;
+                            auto vertexOffsetCalc = reinterpret_cast<char*>(vertices) - reinterpret_cast<char*>(alphaUVs);
 
-                            // Calculate UV (simplified from original)
-                            int u = static_cast<int>(uvPtr[0] * 64.0f);
-                            int v = static_cast<int>(uvPtr[1] * -64.0f);
-                            vert[verticesProcessed].uv = u - (v << 9);
+                            for (int col = 0; col < 5; ++col)
+                            {
+                                // Calculate vertex index within the 32x32 vertex grid per tile
+                                const short vertexIndex = localY + 32 * (col + 4 * localX);
 
-                            verticesProcessed++;
-                            uvPtr += 2;
+                                // Store vertex index
+                                vertices[verticesGenerated].xz = row + 4 * vertexIndex;
+
+                                // Set vertex height from heightmap
+                                vertices[verticesGenerated].y = m_heightMap[heightMapBaseOffset + col + row * mapStride];
+
+                                // Pack UV coordinates
+                                const float u = *uvPtr;
+                                const float v = *(uvPtr - 1);
+                                vertices[verticesGenerated].uv = static_cast<int>(u * 64.0f) - (static_cast<int>(v * -64.0f) << 9);
+
+                                uvPtr += 2;
+                                ++verticesGenerated;
+                            }
+                        }
+                        else
+                        {
+                            // Base pass rendering
+                            float* uvPtr = baseUVs + 1;
+                            auto vertexOffsetCalc = reinterpret_cast<char*>(vertices) - reinterpret_cast<char*>(baseUVs);
+
+                            for (int col = 0; col < 5; ++col)
+                            {
+                                // Calculate vertex index within the 32x32 vertex grid per tile
+                                const short vertexIndex = localY + 32 * (col + 4 * localX);
+
+                                // Store vertex index
+                                vertices[verticesGenerated].xz = row + 4 * vertexIndex;
+
+                                // Set vertex height from heightmap
+                                vertices[verticesGenerated].y = m_heightMap[heightMapBaseOffset + col + row * mapStride];
+
+                                // Pack UV coordinates
+                                const float u = *uvPtr;
+                                const float v = *(uvPtr - 1);
+                                vertices[verticesGenerated].uv = static_cast<int>(u * 64.0f) - (static_cast<int>(v * -64.0f) << 9);
+
+                                uvPtr += 2;
+                                ++verticesGenerated;
+                            }
+                        }
+
+                        // Move to next row
+                        vertices += verticesGenerated;
+                        baseUVs += 10;  // Move to next row in UV array (5 vertices * 2 floats)
+                        if (alphaUVs)
+                        {
+                            alphaUVs += 10;
                         }
                     }
-                    else
+
+                    vertexOffset += VERTICES_PER_CELL;
+                    totalVerticesProcessed += VERTICES_PER_CELL;
+
+                    // Handle vertex buffer bank switching if we exceed 16-bit limit
+                    if (vertexOffset > MAX_VERTICES)
                     {
-                        // Process with primary UVs
-                        float* uvPtr = srcUv;
-                        for (int j = 0; j <= 4; j++)
-                        {
-                            uint16_t vertexIndex = k + 4 * (subY + 32 * (j + 4 * subX));
-                            vert[verticesProcessed].xz = vertexIndex;
-                            vert[verticesProcessed].y = m_heightMap[heightMapOffset + j];
+                        // Add to bank switching map
+                        bankSwitchingMap.push_back(offsetToStore);
 
-                            // Calculate UV (simplified from original)
-                            int u = static_cast<int>(uvPtr[0] * 64.0f);
-                            int v = static_cast<int>(uvPtr[1] * -64.0f);
-                            vert[verticesProcessed].uv = u - (v << 9);
-
-                            verticesProcessed++;
-                            uvPtr += 2;
-                        }
+                        vertexOffset -= offsetToStore;
+                        ++currentBank;
+                        offsetToStore = 0;
                     }
-
-                    heightMapOffset += 4 * mapStride;
-                    srcUv += 10;
-                    if (srcUv2) srcUv2 += 10;
-                    vert += verticesProcessed;
                 }
 
-                vofs += 25;
-                vertProcessed += 25;
-
-                // Handle bank switching if vertex offset exceeds 16-bit limit
-                if (vofs > 0xFFFF)
-                {
-                    bankSwitchingMap.push_back(ofsToStore);
-                    vofs -= ofsToStore;
-                    banknumber++;
-                    ofsToStore = 0;
-                }
-
-                curCell++;
+                ++currentCell;
+                --processedInBatch;
             }
 
-            remainingCells -= cellsProcessed;
+            remainingCells -= cellsToProcess;
         }
 
-        // Store final square data if we have pending cells
-        if (numCellsToDrawPerPass > 0)
+        // Store final tile data if we have pending cells
+        if (cellsInCurrentPass > 0)
         {
-            int shift = (RenderType != 0) ? 4 : 0;
+            const int storageShift = (renderType != 0) ? 4 : 0;
+            const int bitShift = (renderType != 0) ? 2 : 0;
 
-            assert(lastSquareX >= 0 && lastSquareX < 64);
-            assert(lastSquareY >= 0 && lastSquareY < 64);
+            // Bounds checking
+            if (lastSquareX < 0 || lastSquareX >= 64)
+            {
+                // Handle error - would call __assert in original
+            }
+            if (lastSquareY < 0 || lastSquareY >= 64)
+            {
+                // Handle error - would call __assert in original
+            }
 
-            int mapIndex = 64 * lastSquareY + lastSquareX;
-            chunk.m_numCellsPerCellMap[mapIndex] |= (numCellsToDrawPerPass << (2 * shift));
+            const int tileIndex = lastSquareY * 64 + lastSquareX;
 
-            int offsetIndex = lastSquareX + (lastSquareY << 8);
-            chunk.m_offsetsmap[offsetIndex] |= (ofsToStore << (4 * shift));
-            chunk.m_banknumber[offsetIndex] |= (banknumber << (2 * shift));
+            // Store cell count for this tile
+            chunk.m_numCellsPerCellMap[tileIndex] |= (cellsInCurrentPass << storageShift);
 
-            chunk.iotherPassBankNumber = banknumber;
-            chunk.iotherPassOffset = vertProcessed;
+            // Store vertex offset
+            chunk.m_offsetsmap[tileIndex] |= (offsetToStore << (4 * bitShift));
+
+            // Store bank number
+            chunk.m_banknumber[tileIndex] |= (currentBank << (2 * bitShift));
+
+            chunk.iotherPassBankNumber = currentBank;
+            chunk.iotherPassOffset = totalVerticesProcessed;
         }
         else
         {
-            chunk.iotherPassBankNumber = banknumber;
-            chunk.iotherPassOffset = vertProcessed;
+            chunk.iotherPassBankNumber = currentBank;
+            chunk.iotherPassOffset = totalVerticesProcessed;
         }
     }
 
@@ -4686,7 +4911,7 @@ namespace m3d
                 M3D_RENDERER->SetToStream0(tivchunk.m_vbHandle[bankNumber]);
 
                 // Draw the geometry
-                m3d::Application::g_pApp->m_renderer->DrawIndexedPrimitiveShader(
+                M3D_RENDERER->DrawIndexedPrimitiveShader(
                     rend::M3DPT_TRIANGLESTRIP,
                     0,
                     vertexCount,
