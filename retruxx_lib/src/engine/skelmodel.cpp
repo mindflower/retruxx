@@ -1785,11 +1785,86 @@ namespace m3d
         }
     }
 
-    int AnimInfo::SetAnimationIdx(int)
+    int AnimInfo::SetAnimationIdx(int num)
     {
-        // // TODO: implement AnimInfo::SetAnimationIdx
-	    //RETRUXX_NOT_IMPLEMENTED;
-        return 0;
+        // TODO: check and refactor this
+        const auto numAnimations = m_forModel->m_header.m_numAnimations;
+        int v5 = 0;
+        if (!numAnimations)
+            return 0;
+        if (num >= numAnimations)
+            return 0;
+        if (num < 0)
+            return 0;
+
+        auto v7 = &m_forModel->m_animations[num];
+        if (!v7)
+            return 0;
+        m_curAnimation = this->m_curAnimation;
+        if (!m_curAnimation || this->m_lastInterpolationUpdate == -1)
+        {
+            this->m_isBlending = 0;
+        }
+        else
+        {
+            this->m_curAnimationPrev = m_curAnimation;
+            this->m_curAnimFramePrev = m_curAnimFrame;
+            memcpy(m_bonesAnimPrev, this->m_bonesAnim, sizeof(BoneAnim) * m_forModel->m_header.m_numNodes);
+
+            this->m_timeOutToNextFramePrev = this->m_timeOutToNextFrame;
+            this->m_lastInterpolationUpdatePrev = m_lastInterpolationUpdate;
+            this->m_stickToLastFramePrev = m_stickToLastFrame;
+            this->m_blendFramesNum = 7;
+            this->m_isBlending = true;
+            v5 = 0;
+        }
+
+        auto v13 = this->m_forModel;
+        this->m_curAnimation = v7;
+        this->m_curAnimFrame = 0;
+        this->m_stickToLastFrame = 0;
+        this->m_timeOutToNextFrame = 0;
+        this->m_lastInterpolationUpdate = -1;
+        int v14 = 0;
+        if (v13->m_header.m_numNodes > 0)
+        {
+            int v15 = 0;
+            do
+            {
+                this->m_bonesAnim[v15].m_parentIdx = this->m_forModel->m_boneInitialPos[v5].m_parentIdx;
+                this->m_bonesAnim[v15].m_lastUpdatedFrame = -1000;
+                auto p_m_quaternion0 = &this->m_forModel->m_boneInitialPos[v5].m_quaternion0;
+                auto p_m_rotation = &this->m_bonesAnim[v15].m_rotation;
+                p_m_rotation->x = p_m_quaternion0->x;
+                p_m_rotation->y = p_m_quaternion0->y;
+                p_m_rotation->z = p_m_quaternion0->z;
+                p_m_rotation->w = p_m_quaternion0->w;
+
+                auto p_m_translation0 = &this->m_forModel->m_boneInitialPos[v5].m_translation0;
+                auto p_m_translation = &this->m_bonesAnim[v15].m_translation;
+                p_m_translation->x = p_m_translation0->x;
+                p_m_translation->y = p_m_translation0->y;
+                p_m_translation->z = p_m_translation0->z;
+                ++v14;
+                ++v5;
+                ++v15;
+            } while (v14 < this->m_forModel->m_header.m_numNodes);
+        }
+        auto v20 = this->m_curAnimation;
+        if (v20 && v20->m_numChanges > 0)
+        {
+            auto m_hierChanges = v20->m_hierChanges;
+            auto v22 = 0;
+            do
+            {
+                if (m_hierChanges->changeType == NEW_PARENT)
+                    this->m_bonesAnim[m_hierChanges->ownIdx].m_parentIdx = m_hierChanges->newParentIdx;
+                ++v22;
+                ++m_hierChanges;
+            } while (v22 < this->m_curAnimation->m_numChanges);
+        }
+        this->m_timeOutToNextFrame = this->m_curAnimation->m_fps;
+        return 1;
     }
 
     AnimatedModel::Mesh const& AnimInfo::GetMesh(unsigned) const

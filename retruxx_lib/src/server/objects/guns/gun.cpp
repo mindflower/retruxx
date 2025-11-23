@@ -9,6 +9,7 @@
 #include "math/matrix.h"
 #include "scene/servers/dataserver.h"
 #include "scene/servers/serveranimatedmodel.h"
+#include "server/objects/vehicle.h"
 
 #include <server/objects/base/prototypemanager.h>
 #include <server/objects/player.h>
@@ -1086,7 +1087,39 @@ namespace ai
 
     void Gun::BeginReCharge()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto* prototypeInfo = GetPrototypeInfo();
+        if (prototypeInfo->m_WithCharging)
+        {
+            if (!prototypeInfo->m_WithShellsPoolLimit || m_ShellsInPool)
+            {
+                m_ChargeState = csInCharging;
+                m_CurrentReChargingTime = 0.0;
+
+                Obj* parentObj = this;
+                while (!IS_KIND_OF(parentObj, Vehicle))
+                {
+                    parentObj = parentObj->GetParent();
+                    if (!parentObj)
+                        return;
+                }
+                if (parentObj)
+                {
+                    auto* vehicle = RT_DYNCAST(parentObj, Vehicle);
+                    if (vehicle->bIsControlledByPlayer())
+                    {
+                        vehicle->PlaySoundOnRechargeWeapon();
+                    }
+                }
+            }
+            else
+            {
+                m_ChargeState = csReady;
+            }
+        }
+        else
+        {
+            m_ShellsInCurrentCharge = m_ChargeSize;
+        }
     }
 
     unsigned Gun::getShellsForRecharge() const
