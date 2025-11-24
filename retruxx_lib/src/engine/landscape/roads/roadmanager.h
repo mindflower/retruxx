@@ -65,8 +65,8 @@ namespace m3d
 
     class RoadTestCallBack
     {
-    private:
-        //m3d::RoadTestCallBack_vtbl* __vftable /*VFT*/;
+    public:
+        virtual bool TestRoadNode(m3d::RoadNode*) const = 0 /* 0x00 */;
     };
 
     class RoadInRadius3dTest : public RoadTestCallBack

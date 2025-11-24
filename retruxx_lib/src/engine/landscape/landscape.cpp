@@ -5018,8 +5018,37 @@ namespace m3d
 
     void Landscape::RenderRoads()
     {
-        // TODO: implement Landscape::RenderRoads
-        //RETRUXX_NOT_IMPLEMENTED;
+        if (M3D_ENGINE_CFG.m_g_drawRoads.GetB())
+        {
+            std::vector<unsigned int> visList;
+            visList.reserve(0x3E8u);
+
+            auto& graph = m_owner->GetGraph();
+            graph.SortedCellsStartFetching(0, m_drawRadius);
+
+            int x = 0;
+            int y = 0;
+            int vis = 0;
+            int radius = 0;
+            while (graph.SortedCellsFetch(x, y, vis, radius))
+            {
+                if (!vis)
+                {
+                    continue;
+                }
+
+                visList.push_back(x + (y << 16));
+            }
+
+            M3D_RENDERER->PushBlend(rend::BlendMode::BM_NONE);
+            m_owner->GetRoadManager().RenderRoads(visList, RRT_SIMPLE, nullptr, false);
+            M3D_RENDERER->PopBlend();
+        }
+
+        if (M3D_ENGINE_CFG.m_g_drawWheelTraces.GetB())
+        {
+            m_owner->GetWheelTracesMgr().Render();
+        }
     }
 
     void Landscape::Register()

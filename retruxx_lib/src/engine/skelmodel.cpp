@@ -811,6 +811,10 @@ namespace m3d
     {
         return m_Skins.size();
     }
+    retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial>>& AnimatedModel::GetSkin(unsigned int)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
     AnimatedModel::~AnimatedModel()
     {

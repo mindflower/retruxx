@@ -2,7 +2,9 @@
 #include <stdexcept>
 
 #include "m3dapp.h"
+#include "world.h"
 #include "core/kernel.h"
+#include <client.h>
 
 namespace m3d
 {
@@ -35,7 +37,71 @@ namespace m3d
 
     void WheelTraceMgr::Render()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code WheelTraceMgr::Render
+        m_profiler->StartCountdown();
+
+        // Save render states
+        M3D_RENDERER->PushCull(rend::M3DCULL_NONE);
+        M3D_RENDERER->PushZbState(rend::ZB_NOWRITE);
+        M3D_RENDERER->PushBlend(rend::BM_ALPHA);
+        M3D_RENDERER->PushFog(true);
+
+        // Configure render states for wheel traces
+        M3D_RENDERER->TgDisable(0);
+        M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 0);
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE2X);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+        M3D_RENDERER->SetAlphaTest(1);
+        M3D_RENDERER->DisableTextureStages(1);
+
+        // Set vertex buffer
+        M3D_RENDERER->SetToStream0(m_vb);
+
+        auto* viewFrustum = &m3d::pClient->GetWorld().GetLandscape().m_frustumCull;
+        uint32_t baseIndex = 0;
+
+        // Render all skid strips
+        for (int i = 0; i < 512; ++i)
+        {
+            SkidStrip& strip = m_skidStrips[i];
+
+            // Skip if strip has insufficient vertices or is outside view frustum
+            if (strip.m_stripSize >= 2 && viewFrustum->testSphere(strip.m_boundCenter, strip.m_boundRadius))
+            {
+                // Set appropriate texture based on soil type
+                if (strip.m_soilType >= 0 && strip.m_soilType < static_cast<int>(m_texHandles.size()))
+                {
+                    M3D_RENDERER->SetTexture(0, m_texHandles[strip.m_soilType], -1.0f);
+                }
+                else
+                {
+                    // Use white texture as fallback
+                    if (!m_texHandles.empty())
+                    {
+                        M3D_RENDERER->SetTexture(0, m_texHandles.back(), -1.0f);
+                    }
+                    else
+                    {
+                        M3D_RENDERER->SetWhiteTexture(0);
+                    }
+                }
+
+                // Render the strip
+                uint32_t vertexCount = 2 * strip.m_stripSize;
+                M3D_RENDERER->SetIndices(m_ib, baseIndex);
+                M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLESTRIP, 0, vertexCount, 0, vertexCount - 2);
+            }
+
+            baseIndex += 128;
+        }
+
+        // Restore render states
+        M3D_RENDERER->PopFog();
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopCull();
+        M3D_RENDERER->PopZbState();
+
+        m_profiler->EndCountdown();
     }
 
     WheelTraceMgr::~WheelTraceMgr()

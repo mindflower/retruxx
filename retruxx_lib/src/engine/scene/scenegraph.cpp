@@ -481,6 +481,70 @@ namespace m3d
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
+    m3d::rend::IEffect* SceneGraph::GetRoadProjectorShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetLsProjectorShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetObjProjectorShader(m3d::rend::IEffect* objShader)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetObjProjectorShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetTreeProjectorShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetLsLightShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetRoadLightShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetObjectLightShader(m3d::rend::IEffect* objShader)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetObjectLightShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetTreeLightShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetRoadSpriteShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetShadowShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetRoadShadowShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetLsDetShadowShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetRoadDetShadowShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetContourShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
     void SceneGraph::DeleteFromRemoveIfFree(SgNode*)
     {
@@ -494,6 +558,7 @@ namespace m3d
 
     void SceneGraph::LightSetupLightsForNode(SgNode* node)
     {
+        // TODO: generated code SceneGraph::LightSetupLightsForNode
         if (!node || !m_owner) return;
 
         // Transform the sun direction by the node's inverse transpose (for normal transformation)

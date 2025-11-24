@@ -9,6 +9,7 @@
 #include <level.h>
 
 #include "geomobject.h"
+#include "m3dapp.h"
 #include "road.h"
 #include "skelmodel.h"
 #include "core/ini.h"
@@ -16,6 +17,7 @@
 #include "core/scoped_ptr.h"
 #include "file/fileserver.h"
 #include "file/filestream.h"
+#include <client.h>
 
 namespace m3d
 {
@@ -135,9 +137,194 @@ namespace m3d
         m_owner = landscape;
     }
 
-    int RoadManager::RenderRoads(retruxx::vector<unsigned>&, RenderRoadType, RoadTestCallBack const*, bool)
+    int RoadManager::RenderRoads(retruxx::vector<unsigned>& visList, RenderRoadType rrt, RoadTestCallBack const* rnTest, bool bForRoadMap)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code RoadManager::RenderRoads
+
+        // Early exits if no roads to render
+        if (m_coveredCells == 0)
+            return 0;
+
+        if (m_roadSets.empty())
+            return 0;
+
+
+        // Initialize rendering data
+        std::vector<m3d::RoadNode*> roadsToDraw;
+        roadsToDraw.reserve(400);  // 0x190 = 400
+
+        int curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        int numRoadPolys = 0;
+
+        // Get weather and lighting information
+        m3d::CWorld* world = m_owner->m_owner;
+
+        rend::Colorf ambientColor = world->GetWeatherAmbientColor();
+        CVector colorAmbient;
+        colorAmbient.x = ambientColor.r;
+        colorAmbient.y = ambientColor.g;
+        colorAmbient.z = ambientColor.b;
+
+        rend::Colorf diffuseColor = world->GetWeatherDiffuseColor();
+        CVector colorDiffuse;
+        colorDiffuse.x = diffuseColor.r;
+        colorDiffuse.y = diffuseColor.g;
+        colorDiffuse.z = diffuseColor.b;
+
+        // Get fog parameters
+        float fogStart, fogEnd;
+        world->GetLandscape().GetFogStartAndEnd(fogStart, fogEnd);
+
+        float fogReduceFactor = world->GetWeatherManager().GetFogReduceFactorFromWeather();
+        CVector fogTerm;
+        fogTerm.x = fogReduceFactor * fogEnd;
+        fogTerm.z = fogReduceFactor * fogStart;
+        fogTerm.y = 1.0f / (fogTerm.x - fogTerm.z);
+
+        const float VISCELL_EDGE_LENGTH_30 = 128.0;
+
+        // Setup lighting
+        m3d::pClient->GetWorld().GetGraph().LightSetupSunForWorld();
+
+        // Process visible cells
+        for (unsigned int i = 0; i < visList.size(); ++i)
+        {
+            unsigned int cellIndex = visList[i];
+            unsigned short xCoord = static_cast<unsigned short>(cellIndex);
+            unsigned short yCoord = static_cast<unsigned short>(cellIndex >> 16);
+
+            std::vector<m3d::RoadNode*>* cellRoads = &m_coveredCells[xCoord + m_owner->m_owner->m_level->land_size * yCoord];
+
+            // Process each road node in the cell
+            for (unsigned int j = 0; j < cellRoads->size(); ++j)
+            {
+                m3d::RoadNode* roadNode = (*cellRoads)[j];
+
+                // Check if road node should be rendered
+                if (!roadNode->m_bRoadDrawn && roadNode->m_frameVisible == curFrame && (!rnTest || rnTest->TestRoadNode(roadNode)))
+                {
+                    roadNode->m_bRoadDrawn = true;
+                    roadsToDraw.push_back(roadNode);
+
+                    // Get the road model for this node
+                    m3d::RoadSet* roadSet = m_roadSets[roadNode->m_roadSetHandle];
+                    m3d::AnimatedModel* roadModel = roadSet->m_roadModels[roadNode->m_type][roadNode->m_modelNum];
+
+                    // Setup render states for simple road rendering
+                    if (rrt == RRT_SIMPLE)
+                    {
+                        M3D_RENDERER->SetFog(1, 0);
+                        M3D_RENDERER->SetCull(rend::M3DCULL_CCW, 0);
+                        M3D_RENDERER->SetFillMode(rend::M3DFILL_SOLID, 0);
+                        M3D_RENDERER->SetBlend(rend::BM_ALPHA, 0);
+                        M3D_RENDERER->SetAlphaTest(10);
+                        M3D_RENDERER->PushZbState(rend::ZB_ENABLE);
+                    }
+
+                    // Special rendering for road map
+                    if (bForRoadMap)
+                    {
+                        M3D_RENDERER->SetFog(0, 0);
+                        M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
+                        M3D_RENDERER->SetAlphaTest(0);
+                    }
+
+                    // Render all meshes in the road model
+                    if (roadModel->GetNumMeshes() > 0)
+                    {
+                        for (unsigned int meshIndex = 0; meshIndex < roadModel->GetNumMeshes(); ++meshIndex)
+                        {
+                            auto& mesh = roadModel->GetMesh(meshIndex);
+
+                            // Set vertex and index buffers
+                            M3D_RENDERER->SetIndices(roadNode->m_IbPoolField, roadNode->m_VbPoolField.RealOffset);
+                            M3D_RENDERER->SetToStream0(roadNode->m_VbPoolField);
+
+                            // Select appropriate shader based on rendering mode
+                            m3d::rend::IEffect* effect = nullptr;
+
+                            auto& graph = m3d::pClient->GetWorld().GetGraph();
+                            switch (rrt)
+                            {
+                            case 1: effect = graph.GetRoadShadowShader(); break;
+                            case 2: effect = graph.GetRoadProjectorShader(); break;
+                            case 3: effect = graph.GetRoadDetShadowShader(); break;
+                            case 4: effect = graph.GetRoadLightShader(); break;
+                            case 5: effect = graph.GetRoadSpriteShader(); break;
+                            default:
+                                // Use material-based shader
+                                if (roadNode->m_skinNumber < roadModel->GetNumSkins())
+                                {
+                                    std::vector<m3d::DSurfaceMaterial>& skin = roadModel->GetSkin(roadNode->m_skinNumber);
+                                    int materialIndex = mesh.m_MaterialNumber;
+                                    effect = roadModel->ApplyMaterial(skin[materialIndex]);
+                                }
+                                else
+                                {
+                                    std::vector<m3d::DSurfaceMaterial>& defaultSkin = roadModel->GetSkin(0);
+                                    int materialIndex = mesh.m_MaterialNumber;
+                                    effect = roadModel->ApplyMaterial(defaultSkin[materialIndex]);
+                                }
+                                break;
+                            }
+
+                            if (!effect)
+                            {
+                                // Handle error - drawing road without shader
+                                continue;
+                            }
+
+                            // Set shader parameters
+                            if (effect->IsParameterUsed(rend::IEffect::LightAmbient))
+                                effect->SetVector3(rend::IEffect::LightAmbient, colorAmbient);
+
+                            if (effect->IsParameterUsed(rend::IEffect::LightDiffuse))
+                                effect->SetVector3(rend::IEffect::LightDiffuse, colorDiffuse);
+
+                            if (effect->IsParameterUsed(rend::IEffect::FogTerm))
+                                effect->SetVector3(rend::IEffect::FogTerm, fogTerm);
+
+                            // Set lightmap if needed
+                            if (effect->IsParameterUsed(rend::IEffect::LightMap0))
+                            {
+                                float scale = 1.0f / (m_owner->m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_30);
+                                CVector lightmapScale(-scale, scale, 0.0f);
+                                effect->SetVector3(rend::IEffect::User_float3_param, lightmapScale);
+
+                                m3d::rend::TexHandle lightmap = m_owner->GetLightmapTexture();
+                                effect->SetTexture(rend::IEffect::LightMap0, &lightmap);
+                            }
+
+                            // Draw the mesh
+                            M3D_RENDERER->DrawIndexedPrimitiveEffect(
+                                rend::M3DPT_TRIANGLELIST, effect, 0, mesh.m_numDrawVerts, roadNode->m_IbPoolField.RealOffset, mesh.m_numFaces);
+
+                            numRoadPolys += mesh.m_numFaces;
+                        }
+                    }
+
+                    // Restore render states for simple road rendering
+                    if (rrt == RRT_SIMPLE)
+                    {
+                        M3D_RENDERER->PopZbState();
+                    }
+                }
+            }
+        }
+
+        // Display debug information for simple road rendering
+        if (rrt == RRT_SIMPLE)
+        {
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("# road tris = " + CStr(numRoadPolys)).c_str());
+        }
+
+        // Reset visibility flags for rendered road nodes
+        for (m3d::RoadNode* roadNode : roadsToDraw)
+        {
+            roadNode->m_bRoadDrawn = false;
+        }
+
+        return 1;
     }
 
     void RoadManager::GetRoadMinMaxZByHandle(int, int, float&, float&)
@@ -835,6 +1022,6 @@ namespace m3d
     void RoadManager::CalcNodeData(RoadNode*)
     {
         // TODO: implement RoadManager::CalcNodeData
-        // RETRUXX_NOT_IMPLEMENTED;
+        //RETRUXX_NOT_IMPLEMENTED;
     }
 }  // namespace m3d
