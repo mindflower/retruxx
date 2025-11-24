@@ -342,7 +342,9 @@ namespace m3d
 
         int Wnd::StartAnimation(AnimationInfo const&, bool)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement Wnd::StartAnimation
+            // RETRUXX_NOT_IMPLEMENTED;
+            return 1;
         }
 
         unsigned Wnd::GetColor() const

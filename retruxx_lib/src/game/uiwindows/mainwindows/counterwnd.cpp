@@ -12,7 +12,7 @@ CounterWnd::AuxInfo::AuxInfo()
 
 m3d::Class* CounterWnd::GetClass() const
 {
-    return RT_CLASS_LOCAL(Wnd);
+    return RT_CLASS_LOCAL(CounterWnd);
 }
 
 m3d::Class* CounterWnd::GetBaseClass()
@@ -27,7 +27,7 @@ m3d::Object* CounterWnd::CreateObject()
 
 bool CounterWnd::NeedShow() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_counterType != COUNTERTYPE_NUM_COUNTER_TYPES;
 }
 
 CounterWnd::~CounterWnd()

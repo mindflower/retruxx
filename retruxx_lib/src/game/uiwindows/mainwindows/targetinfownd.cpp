@@ -46,7 +46,7 @@ m3d::Object* TargetInfoWnd::Clone()
 
 int TargetInfoWnd::GetTargetObjId() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_targetObjId;
 }
 
 bool TargetInfoWnd::NeedShow() const

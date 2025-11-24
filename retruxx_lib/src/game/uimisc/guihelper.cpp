@@ -238,4 +238,9 @@ namespace help
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
+
+    bool IsBoss(ai::Obj const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 }  // namespace help

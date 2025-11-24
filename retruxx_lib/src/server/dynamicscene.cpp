@@ -1265,7 +1265,15 @@ namespace ai
 
     bool ObjIdExceptionalTraceLineCallback::CollideId(int objId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+		// TODO: check this
+        for (auto const& exception : m_Exceptions)
+        {
+            if (exception == objId)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     bool ObjIdExceptionalTraceLineCallback::CollidePhysicObj(const ai::PhysicObj* physicObj) const

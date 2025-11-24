@@ -47,10 +47,33 @@ int MainGameInterfaceWnd::GetBossId() const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void MainGameInterfaceWnd::CheckAndShowTargetInfoWnd(bool)
+void MainGameInterfaceWnd::CheckAndShowTargetInfoWnd(bool bForceRemove)
 {
-    // TODO: implement MainGameInterfaceWnd::CheckAndShowTargetInfoWnd
-    // RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (m_wndTargetInfo->GetTargetObjId() == -1)
+        {
+            if (IsDirectChild(m_wndTargetInfo))
+            {
+                if (bForceRemove)
+                {
+                    RemoveChildForce(m_wndTargetInfo);
+                }
+                else
+                {
+                    RemoveChild(m_wndTargetInfo);
+                }
+            }
+        }
+        else
+        {
+            if (!IsDirectChild(m_wndTargetInfo))
+            {
+                AddChild(m_wndTargetInfo);
+            }
+            MoveChildToFirstPosition(m_wndTargetInfo);
+        }
+    }
 }
 
 m3d::Object* MainGameInterfaceWnd::Clone()
@@ -70,8 +93,23 @@ ai::Obj const* MainGameInterfaceWnd::GetBoss() const
 
 void MainGameInterfaceWnd::CheckAndShowCounterWnd()
 {
-    // TODO: implement MainGameInterfaceWnd::CheckAndShowCounterWnd
-    // RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (!m_wndCounter->NeedShow())
+        {
+            if (IsDirectChild(m_wndCounter))
+            {
+                RemoveChild(m_wndCounter);
+            }
+        }
+        else
+        {
+            if (!IsDirectChild(m_wndCounter))
+            {
+                AddChild(m_wndCounter);
+            }
+        }
+    }
 }
 
 void MainGameInterfaceWnd::CheckAndShowMainCursorWnd()
@@ -308,8 +346,7 @@ int MainGameInterfaceWnd::GameDataSetup()
         res = 0;
     }
 
-    // TODO: implement MainGameInterfaceWnd::GameDataSetup
-    //if (res)
+    if (res)
     {
         m_gameDataFlags |= 1u;
         CheckAndShowNearbyChestsIco();
@@ -452,8 +489,26 @@ void MainGameInterfaceWnd::ClearContours()
 
 void MainGameInterfaceWnd::CheckAndShowBossIndicator()
 {
-    // TODO: implement MainGameInterfaceWnd::CheckAndShowBossIndicator
-    // RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (m_bossId == -1)
+        {
+            if (m_wndBossIndicator)
+            {
+                if (IsDirectChild(m_wndBossIndicator))
+                {
+                    RemoveChild(m_wndBossIndicator);
+                }
+            }
+        }
+        else if (m_wndBossIndicator)
+        {
+            if (!m_wndBossIndicator->GetParent())
+            {
+                AddChild(m_wndBossIndicator);
+            }
+        }
+    }
 }
 
 int MainGameInterfaceWnd::GameDataLoad(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)

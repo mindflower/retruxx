@@ -78,4 +78,5 @@ namespace help
     CStr Color2Str(unsigned);
     void GetGunsForVehicle(int, retruxx::vector<ai::Obj*>&);
     ActionType GetRandomMoveAnimation(m3d::AnimatedModel*);
+    bool IsBoss(ai::Obj const*);
 }  // namespace help
