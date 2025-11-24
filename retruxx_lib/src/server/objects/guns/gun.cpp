@@ -400,7 +400,24 @@ namespace ai
 
     float Gun::GetRechargingTime() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Gun::GetRechargingTime
+        const GunPrototypeInfo* prototypeInfo = GetPrototypeInfo();
+        unsigned int shellsNeeded = m_ChargeSize - m_ShellsInCurrentCharge;
+
+        unsigned int shellsToRecharge;
+
+        if (!prototypeInfo->m_WithShellsPoolLimit)
+        {
+            // No shell pool limit - recharge all needed shells
+            shellsToRecharge = shellsNeeded;
+        }
+        else
+        {
+            // With shell pool limit - recharge up to available shells in pool
+            shellsToRecharge = (shellsNeeded < m_ShellsInPool) ? shellsNeeded : m_ShellsInPool;
+        }
+
+        return (shellsToRecharge * m_ReChargingTimePerShell) + m_ReChargingTime;
     }
 
     m3d::Class* Gun::GetClass() const
@@ -1124,7 +1141,18 @@ namespace ai
 
     unsigned Gun::getShellsForRecharge() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Gun::getShellsForRecharge
+        const GunPrototypeInfo* prototypeInfo = GetPrototypeInfo();
+        unsigned int shellsNeeded = m_ChargeSize - m_ShellsInCurrentCharge;
+
+        if (!prototypeInfo->m_WithShellsPoolLimit)
+        {
+            // No shell pool limit - can replenish all needed shells
+            return shellsNeeded;
+        }
+
+        // With shell pool limit - can only replenish up to available shells in pool
+        return (shellsNeeded < m_ShellsInPool) ? shellsNeeded : m_ShellsInPool;
     }
 
     void Gun::_GetOffsetAngles(const CVector& lookAt, float elapsedTime, float& alpha, float& beta)

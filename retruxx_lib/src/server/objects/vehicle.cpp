@@ -2086,10 +2086,10 @@ namespace ai
         {
             m_throttle = throttle;
             m_brake = 0.0;
-            m_bAutoBrake = false;
+            m_bAutoBrake = autoBrake;
             if (fabs(throttle) > 0.001)
             {
-                m_bHandBrake = 0;
+                m_bHandBrake = false;
             }
         }
 		else
@@ -2465,7 +2465,26 @@ namespace ai
 
 	void Vehicle::PlaySoundOnRechargeWeapon()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (m_bIsControlledByPlayer)
+        {
+            if (M3D_ENGINE_CFG.m_snd_Enable.GetB() &&
+                (m_soundRechargeChannelId == -1 || !M3D_APP->m_sound->IsChannelPlaying(m_soundRechargeChannelId)))
+            {
+                m_soundRechargeChannelId = -1;
+                auto& serverSound = M3D_APP->GetSoundServer();
+
+                auto itemByName = serverSound.GetItemByName("S_RECHARGE_WEAPON", 1);
+                if (itemByName != -1)
+                {
+                    int soundId = -1;
+                    serverSound.GetItemProperty(itemByName, m3d::PROP_SRV_SND_ID, &soundId);
+                    if (soundId != -1)
+                    {
+                        m_soundRechargeChannelId = M3D_APP->m_sound->PlaySound2D(soundId, 0);
+                    }
+                }
+            }
+        }
 	}
 
 	Vehicle* Vehicle::GetTrailer() const
@@ -4039,50 +4058,25 @@ namespace ai
 	{
         auto const wheelRpm = fabs(m_averageWheelAVel) * 9.5492964;
         auto const velocity = GetLinearVelocity();
-        if (m_bAutoBrake) 
+        if (m_bAutoBrake)
         {
-            CVector curPoint;
             auto const direction = GetDirection();
-            auto const directionState = RoughSign(m_engineRpm);
-            auto const isWrongWay =
-                (direction.z * velocity.z + direction.y * velocity.y + direction.x * velocity.x) < -0.1 &&
-                RoughSign(m_throttle) == 0;
+            auto const isWrongWay = (wheelRpm > 5.0 && (RoughSign(m_engineRpm) * RoughSign(m_throttle) <= 0)) ||
+                (wheelRpm <= 5.0 && ((direction.z * velocity.z + direction.y * velocity.y + direction.x * velocity.x) < -0.1 || RoughSign(m_throttle) == 0));
 
             if (isWrongWay)
             {
+                m_throttle = 0.0;
                 m_brake = 1.0;
-            }
-            else if (GetPathItem(m_pPath, m_pathNum, curPoint))
-            {
-                auto tempPoint = curPoint;
-                tempPoint.y = M3D_KERNEL->GetEngineCfg().GetHeight(tempPoint.x, tempPoint.z);
-
-                auto pos = GetPosition();
-                pos.x = tempPoint.x - pos.x;
-                pos.y = tempPoint.y - pos.y;
-                pos.z = tempPoint.z - pos.z;
-
-                auto const nextPoint = _GetNextPathPoint();
-                auto const distanceToPoint = sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
-                auto const scalVelocity = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
-                auto const offsetBase = 500;
-
-                DrivingValues dv;
-                CalcDrivingValues(*this, curPoint, nextPoint, true, dv);
-                if (offsetBase / scalVelocity + distanceToPoint < dv.brakingCircleRadius)
-                {
-                    auto const steeringForce = _CalcSteeringForceToPathPoint(curPoint, nextPoint);
-                    auto const scalSteeringForce = sqrt(steeringForce.x * steeringForce.x + steeringForce.y * steeringForce.y + steeringForce.z * steeringForce.z);
-                    m_brake = 1 - pow(((scalSteeringForce * 0.5) + 0.5), 2);
-                }
             }
         }
 
         if (RoughSign(m_throttle) == 0 &&
             sqrt(velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) < 0.5)
         {
-            m_bHandBrake = 1;
+            m_bHandBrake = true;
         }
+
         if (m_bHandBrake)
         {
             m_throttle = 0.0;

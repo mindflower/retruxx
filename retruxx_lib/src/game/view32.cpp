@@ -1671,18 +1671,18 @@ int CMiracle3d::Controls(double t0, double tlen)
         weaponManager->KeepFire();
 
         // Horn control
-        bool hornState = M3D_APP->m_pImpulses->GetImpulseState(28);
+        bool hornState = M3D_APP->m_pImpulses->GetImpulseState(IM_CAR_HORN);
         vehicle->SetHorn(hornState);
 
         // Steering
         auto* impulses = M3D_APP->m_pImpulses;
         auto* input = M3D_APP->m_input;
 
-        if (impulses->GetImpulseState(26) || input->GetParam(m3d::input::DeviceParam::DP_JOY_X) < -300)
+        if (impulses->GetImpulseState(IM_CAR_LEFT) || input->GetParam(m3d::input::DeviceParam::DP_JOY_X) < -300)
         {
             vehicle->SetSteer(0.78539819f);
         }
-        else if (impulses->GetImpulseState(27) || input->GetParam(m3d::input::DeviceParam::DP_JOY_X) > 300)
+        else if (impulses->GetImpulseState(IM_CAR_RIGHT) || input->GetParam(m3d::input::DeviceParam::DP_JOY_X) > 300)
         {
             vehicle->SetSteer(-0.78539819f);
         }
@@ -1691,11 +1691,11 @@ int CMiracle3d::Controls(double t0, double tlen)
         }
 
         // Throttle and braking
-        if (impulses->GetImpulseState(23))
+        if (impulses->GetImpulseState(IM_CAR_ACC))
         {
             vehicle->SetThrottle(1.0f, true);
         }
-        else if (impulses->GetImpulseState(24))
+        else if (impulses->GetImpulseState(IM_CAR_BREAK))
         {
             vehicle->SetThrottle(-1.0f, true);
         }
@@ -1703,13 +1703,13 @@ int CMiracle3d::Controls(double t0, double tlen)
             vehicle->ReleaseAllPedals();
         }
 
-        if (impulses->GetImpulseState(25))
+        if (impulses->GetImpulseState(IM_CAR_HAND_BREAK))
         {
             vehicle->SetHandBrake();
         }
 
         // Special controls
-        if (impulses->GetImpulseState(29))
+        if (impulses->GetImpulseState(IM_CAR_TURNTOWHEELS))
         {
             auto turnToWheelsAllowed = m3d::g_Kernel->GetEngineCfg().m_ai_turntowheels_allowed;
             if (turnToWheelsAllowed.GetB())
@@ -1721,23 +1721,22 @@ int CMiracle3d::Controls(double t0, double tlen)
             }
         }
 
-        if (impulses->GetImpulseState(31))
+        if (impulses->GetImpulseState(IM_CAR_LIGHTS))
         {
-            impulses->ResetImpulseWithoutNotification(31);
+            impulses->ResetImpulseWithoutNotification(IM_CAR_LIGHTS);
             LightActivated = !LightActivated;
             vehicle->ActivateHeadLights(LightActivated);
         }
 
-        if (impulses->GetImpulseState(32))
+        if (impulses->GetImpulseState(IM_CAR_GET_OUT_OF_DIFFICULT_PLACE))
         {
-            impulses->ResetImpulseWithoutNotification(32);
+            impulses->ResetImpulseWithoutNotification(IM_CAR_GET_OUT_OF_DIFFICULT_PLACE);
             vehicle->GetOutOfDifficultPlace();
         }
     }
 
     // Game pause toggle
-    if (m_curGameMode.m_mode == GS_GAME &&
-        M3D_APP->m_pImpulses->GetImpulseStateAndReset(51))
+    if (m_curGameMode.m_mode == GS_GAME && M3D_APP->m_pImpulses->GetImpulseStateAndReset(IM_PAUSE))
     {
         ai::pServer->SetPause(!ai::pServer->GetPause());
     }
@@ -1746,13 +1745,13 @@ int CMiracle3d::Controls(double t0, double tlen)
     m_flyCamMove = { 0.0f, 0.0f, 0.0f };
     auto* impulses = M3D_APP->m_pImpulses;
 
-    if (impulses->GetImpulseState(4)) 
+    if (impulses->GetImpulseState(IM_FWD)) 
         m_flyCamMove.z += 1.0f;
-    if (impulses->GetImpulseState(5))
+    if (impulses->GetImpulseState(IM_BK))
         m_flyCamMove.z -= 1.0f;
-    if (impulses->GetImpulseState(7))
+    if (impulses->GetImpulseState(IM_RIGHT))
         m_flyCamMove.x += 1.0f;
-    if (impulses->GetImpulseState(6)) 
+    if (impulses->GetImpulseState(IM_LEFT)) 
         m_flyCamMove.x -= 1.0f;
 
     // Apply camera speed and time delta
