@@ -6,7 +6,11 @@ RT_CLASS_DEFINE(WorkshopVehicleWnd);
 
 WorkshopVehicleWnd::WAuxInfo::WAuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_btnPrevName = "btnPrev";
+    m_btnNextName = "btnNext";
+    m_btnSkinNextName = "btnSkinNext";
+    m_btnSkinPrevName = "btnSkinPrev";
+    m_wndPriceName = "wndPrice";
 }
 
 ai::Workshop* WorkshopVehicleWnd::GetWorkshop() const
@@ -31,7 +35,7 @@ int WorkshopVehicleWnd::GetWorkshopId() const
 
 m3d::Object* WorkshopVehicleWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new WorkshopVehicleWnd;
 }
 
 void WorkshopVehicleWnd::OnRestoreStyles()
@@ -46,7 +50,7 @@ int WorkshopVehicleWnd::SetupForWorkshop(int)
 
 m3d::Class* WorkshopVehicleWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(WorkshopVehicleWnd);
 }
 
 m3d::Object* WorkshopVehicleWnd::Clone()
@@ -61,7 +65,9 @@ int WorkshopVehicleWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIPa
 
 int WorkshopVehicleWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implememnt WorkshopVehicleWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 WorkshopVehicleWnd::WorkshopVehicleWnd(WorkshopVehicleWnd const&)
@@ -71,7 +77,13 @@ WorkshopVehicleWnd::WorkshopVehicleWnd(WorkshopVehicleWnd const&)
 
 WorkshopVehicleWnd::WorkshopVehicleWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_btnPrev = 0;
+    m_btnNext = 0;
+    m_btnSkinNext = 0;
+    m_btnSkinPrev = 0;
+    m_skinSwitcher = 0;
+    m_wndPrice = 0;
+    m_workshopId = -1;
 }
 
 void WorkshopVehicleWnd::LaunchNewVehicleInventoryWnd()

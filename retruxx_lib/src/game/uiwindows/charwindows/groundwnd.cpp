@@ -97,7 +97,9 @@ void GroundWnd::UpdatePickupButtonState()
 
 int GroundWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GroundWnd::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int GroundWnd::GameDataSetup()

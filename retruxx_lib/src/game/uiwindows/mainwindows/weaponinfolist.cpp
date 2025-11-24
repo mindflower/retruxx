@@ -445,7 +445,7 @@ RT_CLASS_DEFINE(WeaponGroupChoiceDlg);
 
 WeaponGroupChoiceDlg::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_groupButtonName = "btnGroup";
 }
 
 m3d::Object* WeaponGroupChoiceDlg::Clone()
@@ -460,7 +460,7 @@ CStr WeaponGroupChoiceDlg::CreateTooltipForWeaponGroup(int)
 
 m3d::Object* WeaponGroupChoiceDlg::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new WeaponGroupChoiceDlg;
 }
 
 m3d::Class* WeaponGroupChoiceDlg::GetBaseClass()
@@ -475,13 +475,10 @@ WeaponGroupChoiceDlg::~WeaponGroupChoiceDlg()
 
 m3d::Class* WeaponGroupChoiceDlg::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(WeaponGroupChoiceDlg);
 }
 
-WeaponGroupChoiceDlg::WeaponGroupChoiceDlg()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+WeaponGroupChoiceDlg::WeaponGroupChoiceDlg() = default;
 
 WeaponGroupChoiceDlg::WeaponGroupChoiceDlg(WeaponGroupChoiceDlg const&)
 {
@@ -490,7 +487,9 @@ WeaponGroupChoiceDlg::WeaponGroupChoiceDlg(WeaponGroupChoiceDlg const&)
 
 int WeaponGroupChoiceDlg::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement WeaponGroupChoiceDlg::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void WeaponGroupChoiceDlg::SelectButton(int)

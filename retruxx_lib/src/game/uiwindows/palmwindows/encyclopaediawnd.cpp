@@ -186,7 +186,9 @@ int EncyclopaediaWnd::InitOnce()
 
 int EncyclopaediaWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement EncyclopaediaWnd::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void EncyclopaediaWnd::OnPlayerVehicleDamaged(void*)

@@ -11,7 +11,7 @@ m3d::Class* HelpInMainGameInterfaceWnd::GetBaseClass()
 
 m3d::Object* HelpInMainGameInterfaceWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new HelpInMainGameInterfaceWnd;
 }
 
 m3d::Object* HelpInMainGameInterfaceWnd::Clone()
@@ -21,7 +21,7 @@ m3d::Object* HelpInMainGameInterfaceWnd::Clone()
 
 m3d::Class* HelpInMainGameInterfaceWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(HelpInMainGameInterfaceWnd);
 }
 
 HelpInMainGameInterfaceWnd::~HelpInMainGameInterfaceWnd()
@@ -31,7 +31,9 @@ HelpInMainGameInterfaceWnd::~HelpInMainGameInterfaceWnd()
 
 int HelpInMainGameInterfaceWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement HelpInMainGameInterfaceWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 HelpInMainGameInterfaceWnd::HelpInMainGameInterfaceWnd(HelpInMainGameInterfaceWnd const&)
@@ -39,10 +41,7 @@ HelpInMainGameInterfaceWnd::HelpInMainGameInterfaceWnd(HelpInMainGameInterfaceWn
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-HelpInMainGameInterfaceWnd::HelpInMainGameInterfaceWnd()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+HelpInMainGameInterfaceWnd::HelpInMainGameInterfaceWnd() = default;
 
 int HelpInMainGameInterfaceWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
 {

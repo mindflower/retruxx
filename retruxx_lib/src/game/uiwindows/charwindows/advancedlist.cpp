@@ -220,7 +220,7 @@ RT_CLASS_DEFINE(AdvancedList);
 
 AdvancedList::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_space = 6.0;
 }
 
 void AdvancedList::SetSwitchWndBounds(BoundsBase<float> const&)
@@ -255,7 +255,10 @@ void AdvancedList::OnVehiclePartChanged(void*)
 
 AdvancedList::AdvancedList()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_switchB.x0 = 0.0;
+    m_switchB.y0 = 0.0;
+    m_switchB.width = 0.0;
+    m_switchB.height = 0.0;
 }
 
 int AdvancedList::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
@@ -305,7 +308,9 @@ void AdvancedList::OnAdvancedModeChanged(m3d::ui::Wnd*, m3d::AIParam const&)
 
 int AdvancedList::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement AdvancedList::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int AdvancedList::AddItem(int)

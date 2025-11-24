@@ -6,12 +6,13 @@ RT_CLASS_DEFINE(CounterWnd);
 
 CounterWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndCounterName = "wndCounter";
+    m_strHuntTime = "HuntTime";
 }
 
 m3d::Class* CounterWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(Wnd);
 }
 
 m3d::Class* CounterWnd::GetBaseClass()
@@ -21,7 +22,7 @@ m3d::Class* CounterWnd::GetBaseClass()
 
 m3d::Object* CounterWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new CounterWnd;
 }
 
 bool CounterWnd::NeedShow() const
@@ -51,7 +52,9 @@ CounterWnd::CounterWnd(CounterWnd const&)
 
 CounterWnd::CounterWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndCounter = 0;
+    m_counterType = COUNTERTYPE_NUM_COUNTER_TYPES;
+    m_dQuestId = -1;
 }
 
 void CounterWnd::OnStartLevel(void*)
@@ -81,7 +84,9 @@ ai::DynamicQuestHunt const* CounterWnd::GetQuestHunt() const
 
 int CounterWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CounterWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void CounterWnd::OnDynamicQuestStateChanged(void*)

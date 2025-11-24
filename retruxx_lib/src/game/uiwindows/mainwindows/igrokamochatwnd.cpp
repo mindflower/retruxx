@@ -6,7 +6,10 @@ RT_CLASS_DEFINE(IgrokaMochatWnd);
 
 IgrokaMochatWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_boderNames[0] = "borderLeft";
+    m_boderNames[1] = "borderTop";
+    m_boderNames[2] = "borderRight";
+    m_boderNames[3] = "borderBottom";
 }
 
 m3d::Class* IgrokaMochatWnd::GetBaseClass()
@@ -21,12 +24,12 @@ m3d::Object* IgrokaMochatWnd::Clone()
 
 m3d::Object* IgrokaMochatWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new IgrokaMochatWnd;
 }
 
 m3d::Class* IgrokaMochatWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(IgrokaMochatWnd);
 }
 
 IgrokaMochatWnd::~IgrokaMochatWnd()
@@ -41,7 +44,9 @@ int IgrokaMochatWnd::GameDataClear(bool)
 
 int IgrokaMochatWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement IgrokaMochatWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int IgrokaMochatWnd::GameDataUpdate(void*, int)
@@ -51,7 +56,9 @@ int IgrokaMochatWnd::GameDataUpdate(void*, int)
 
 int IgrokaMochatWnd::OnPaint(m3d::ui::DrawInfo const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement IgrokaMochatWnd::OnPaint
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void IgrokaMochatWnd::HideBorders()
@@ -81,7 +88,22 @@ IgrokaMochatWnd::IgrokaMochatWnd(IgrokaMochatWnd const&)
 
 IgrokaMochatWnd::IgrokaMochatWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // Initialize integrated damage
+    m_integratedDamage = 0.0f;
+
+    // Initialize border arrays
+    for (int i = 0; i < 4; ++i)
+    {
+        // Initialize border bounds
+        m_borderBounds[i].x0 = 0.0f;
+        m_borderBounds[i].y0 = 0.0f;
+        m_borderBounds[i].width = 0.0f;
+        m_borderBounds[i].height = 0.0f;
+
+        // Initialize border alpha and timing
+        m_borderAlpha[i] = -1;
+        m_borderStartTime[i] = 0;
+    }
 }
 
 void IgrokaMochatWnd::OnNewFrame()
@@ -101,5 +123,7 @@ std::vector<int, std::allocator<int>> IgrokaMochatWnd::GetBordersByAttackerId(in
 
 int IgrokaMochatWnd::OnBeforeAddToWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement IgrokaMochatWnd::OnBeforeAddToWndStation
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }

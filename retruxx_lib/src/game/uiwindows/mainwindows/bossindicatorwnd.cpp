@@ -6,7 +6,9 @@ RT_CLASS_DEFINE(BossIndicatorWnd);
 
 BossIndicatorWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndBossImageName = "wndBossImage";
+    m_wndBossNameName = "wndBossName";
+    m_pbBossHealthName = "pbBossHealth";
 }
 
 BossIndicatorWnd::~BossIndicatorWnd()
@@ -16,7 +18,7 @@ BossIndicatorWnd::~BossIndicatorWnd()
 
 m3d::Class* BossIndicatorWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(BossIndicatorWnd);
 }
 
 ai::Obj const* BossIndicatorWnd::GetBoss() const
@@ -31,7 +33,7 @@ int BossIndicatorWnd::SetupForBoss(int)
 
 m3d::Object* BossIndicatorWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new BossIndicatorWnd;
 }
 
 m3d::Class* BossIndicatorWnd::GetBaseClass()
@@ -61,7 +63,10 @@ BossIndicatorWnd::BossIndicatorWnd(BossIndicatorWnd const&)
 
 BossIndicatorWnd::BossIndicatorWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndBossImage = 0;
+    m_wndBossName = 0;
+    m_pbBossHealth = 0;
+    m_bossId = -1;
 }
 
 void BossIndicatorWnd::FullUpdate()
@@ -91,12 +96,16 @@ int BossIndicatorWnd::GameDataClear(bool)
 
 int BossIndicatorWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement BossIndicatorWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int BossIndicatorWnd::OnBeforeAddToWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement BossIndicatorWnd::OnBeforeAddToWndStation
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void BossIndicatorWnd::UpdateHealth(bool)

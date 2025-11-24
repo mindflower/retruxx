@@ -119,7 +119,9 @@ void TakSebeQuestLogWnd::OnCurProfileChanged()
 
 int TakSebeQuestLogWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement TakSebeQuestLogWnd::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void TakSebeQuestLogWnd::ToggleQuestItemsWnd()

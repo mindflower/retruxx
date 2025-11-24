@@ -96,7 +96,13 @@ int CBButton::LoadPattern(ref_ptr<m3d::ui::Wnd>, Type)
 
 CBList::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_btnNextName = "btnNext";
+    m_btnPrevName = "btnPrev";
+    m_wndListBgName = "wndList";
+
+    // Set default layout values
+    m_space = -2.0f;
+    m_edge = 4.0f;
 }
 
 CBList::~CBList()
@@ -136,7 +142,18 @@ int CBList::OnBeforeAddToWndStation()
 
 CBList::CBList()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_btnNext = 0;
+    m_btnPrev = 0;
+    m_wndListBg = 0;
+    m_listBounds.x0 = 0.0;
+    m_listBounds.y0 = 0.0;
+    m_listBounds.width = 0.0;
+    m_listBounds.height = 0.0;
+    m_firstItemId = -1;
+    m_lastItemId = -1;
+    m_workshopId = -1;
+    m_selItemId = -1;
+    m_type = CBButton::NUM_TYPES;
 }
 
 int CBList::OnAfterAddToWndStation()
@@ -211,7 +228,9 @@ void CBList::SelectItem(CBButton*)
 
 int CBList::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CBList::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void CBList::GetCBIds(std::vector<int, std::allocator<int>>&) const

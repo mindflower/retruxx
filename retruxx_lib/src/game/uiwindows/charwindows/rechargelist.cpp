@@ -15,7 +15,7 @@ m3d::Class* RechargeList::GetBaseClass()
 
 m3d::Object* RechargeList::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new RechargeList;
 }
 
 m3d::Object* RechargeList::Clone()
@@ -25,7 +25,7 @@ m3d::Object* RechargeList::Clone()
 
 m3d::Class* RechargeList::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(AdvancedList);
 }
 
 RechargeList::~RechargeList()
@@ -33,10 +33,7 @@ RechargeList::~RechargeList()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-RechargeList::RechargeList()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+RechargeList::RechargeList() = default;
 
 RechargeList::RechargeList(RechargeList const&)
 {

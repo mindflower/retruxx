@@ -95,7 +95,7 @@ m3d::Object* RepairList::Clone()
 
 m3d::Object* RepairList::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new RepairList;
 }
 
 m3d::Class* RepairList::GetBaseClass()
@@ -110,7 +110,7 @@ RepairList::~RepairList()
 
 m3d::Class* RepairList::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(RepairList);
 }
 
 RepairList::RepairList(RepairList const&)
@@ -118,10 +118,7 @@ RepairList::RepairList(RepairList const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-RepairList::RepairList()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+RepairList::RepairList() = default;
 
 void RepairList::BuyService(AdvancedButton const*)
 {

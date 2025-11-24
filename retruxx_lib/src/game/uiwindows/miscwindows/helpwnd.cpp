@@ -6,17 +6,19 @@ RT_CLASS_DEFINE(HelpWnd);
 
 HelpWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_checkDisableAutoHelpName = "checkDisableAutoHelp";
+    m_wndCheckDisableAutoHelpEmbossName = "checkDisableAutoHelp_emboss";
+    m_lblDisableAutoHelpName = "lblDisableAutoHelp";
 }
 
 m3d::Object* HelpWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new HelpWnd;
 }
 
 m3d::Class* HelpWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(HelpWnd);
 }
 
 m3d::Class* HelpWnd::GetBaseClass()
@@ -61,7 +63,10 @@ void HelpWnd::CheckAndShowAutoHelpControls()
 
 HelpWnd::HelpWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_checkDisableAutoHelp = 0;
+    m_wndCheckDisableAutoHelpEmboss = 0;
+    m_lblDisableAutoHelp = 0;
+    m_bAllowDisableAutoHelp = 0;
 }
 
 HelpWnd::HelpWnd(HelpWnd const&)
@@ -71,5 +76,7 @@ HelpWnd::HelpWnd(HelpWnd const&)
 
 int HelpWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement HelpWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }

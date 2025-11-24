@@ -55,12 +55,12 @@ int CabinButton::CreateChildren()
 
 m3d::Class* CabinList::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(CabinList);
 }
 
 m3d::Object* CabinList::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new CabinList;
 }
 
 m3d::Object* CabinList::Clone()
@@ -85,7 +85,7 @@ CabinList::CabinList(CabinList const&)
 
 CabinList::CabinList()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_type = CBButton::TYPE_CABIN;
 }
 
 int CabinList::GetCBResourceId() const

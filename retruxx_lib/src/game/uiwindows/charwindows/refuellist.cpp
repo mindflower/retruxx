@@ -90,7 +90,7 @@ CStr const& RefuelButton::GetStrIdTooltipBuyUnavailable() const
 
 m3d::Class* RefuelList::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(RefuelList);
 }
 
 m3d::Object* RefuelList::Clone()
@@ -105,7 +105,7 @@ RefuelList::~RefuelList()
 
 m3d::Object* RefuelList::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new RefuelList;
 }
 
 m3d::Class* RefuelList::GetBaseClass()
@@ -123,10 +123,7 @@ RefuelList::RefuelList(RefuelList const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-RefuelList::RefuelList()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+RefuelList::RefuelList() = default;
 
 std::vector<int, std::allocator<int>> RefuelList::GetObjIds() const
 {

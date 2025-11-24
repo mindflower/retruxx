@@ -6,12 +6,12 @@ RT_CLASS_DEFINE(BasketCharacteristicsWnd);
 
 BasketCharacteristicsWnd::BasketAuxInfo::BasketAuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndBasketCapacityValName = "wndBasketCapacityVal";
 }
 
 m3d::Object* BasketCharacteristicsWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new BasketCharacteristicsWnd;
 }
 
 m3d::Class* BasketCharacteristicsWnd::GetBaseClass()
@@ -36,7 +36,7 @@ BasketCharacteristicsWnd::~BasketCharacteristicsWnd()
 
 m3d::Class* BasketCharacteristicsWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(BasketCharacteristicsWnd);
 }
 
 void BasketCharacteristicsWnd::SetupForCB(int)
@@ -46,7 +46,9 @@ void BasketCharacteristicsWnd::SetupForCB(int)
 
 int BasketCharacteristicsWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement BasketCharacteristicsWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void BasketCharacteristicsWnd::UpdateCharacteristics()
@@ -61,7 +63,7 @@ BasketCharacteristicsWnd::BasketCharacteristicsWnd(BasketCharacteristicsWnd cons
 
 BasketCharacteristicsWnd::BasketCharacteristicsWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndBasketCapacityVal = nullptr;
 }
 
 void BasketCharacteristicsWnd::ClearCharacteristics()

@@ -91,7 +91,10 @@ void SkinSwitcher::UpdateSkinButtonsStates()
 
 SkinsWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_btnPrevName = "btnPrev";
+    m_btnNextName = "btnNext";
+    m_btnBuyName = "btnBuy";
+    m_wndPriceName = "wndPrice";
 }
 
 int SkinsWnd::SetupForVehicle(int)
@@ -106,12 +109,12 @@ SkinsWnd::~SkinsWnd()
 
 m3d::Class* SkinsWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(SkinsWnd);
 }
 
 m3d::Object* SkinsWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new SkinsWnd;
 }
 
 m3d::Class* SkinsWnd::GetBaseClass()
@@ -131,7 +134,13 @@ SkinsWnd::SkinsWnd(SkinsWnd const&)
 
 SkinsWnd::SkinsWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_skinSwitcher = 0;
+    m_btnPrev = 0;
+    m_btnNext = 0;
+    m_btnBuy = 0;
+    m_wndPrice = 0;
+    m_vehicleId = -1;
+    m_savedSkinId = -1;
 }
 
 void SkinsWnd::FullUpdate()
@@ -171,7 +180,9 @@ void SkinsWnd::BuySkin()
 
 int SkinsWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement SkinsWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int SkinsWnd::OnBeforeAddToWndStation()

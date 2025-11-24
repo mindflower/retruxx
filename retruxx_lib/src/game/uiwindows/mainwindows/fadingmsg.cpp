@@ -6,7 +6,11 @@ RT_CLASS_DEFINE(FadingMsgList);
 
 FadingMsgList::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_space = 8.0;
+    m_unimportantExtraH = 40.0;
+    m_importantExtraH = 46.0;
+    m_unimportantMaxNumOfMsgs = 3;
+    m_importantMaxNumOfMsgs = 1;
 }
 
 m3d::Class* FadingMsgList::GetBaseClass()
@@ -41,12 +45,12 @@ FadingMsgList::~FadingMsgList()
 
 m3d::Class* FadingMsgList::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(FadingMsgList);
 }
 
 m3d::Object* FadingMsgList::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new FadingMsgList;
 }
 
 void FadingMsgList::OnNewFrame()
@@ -96,7 +100,10 @@ void FadingMsgList::OnFadingMessage(void*)
 
 FadingMsgList::FadingMsgList()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_direction = DIR_UP;
+    m_msgType = MSGTYPE_INVALID;
+    m_maxSummaryH = 0.0;
+    m_extraH = 0.0;
 }
 
 FadingMsgList::FadingMsgList(FadingMsgList const&)
@@ -121,7 +128,9 @@ int FadingMsgList::GameDataUpdate(void*, int)
 
 int FadingMsgList::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement FadingMsgList::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int FadingMsgList::GameDataClear(bool)
