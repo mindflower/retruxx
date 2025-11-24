@@ -957,6 +957,7 @@ namespace m3d
 
     void SgNode::RitualInConstructor(Ritual rt)
     {
+        m_initedWithRitual = rt;
         if ((rt & 2) != 0)
         {
             GetServer()->RegisterNode(this);
@@ -969,73 +970,85 @@ namespace m3d
 
     SgNode::~SgNode()
     {
+        // TODO: generated code SgNode::~SgNode
         // TODO: check all this stuff
-        auto obj = this;
-        SceneGraph* sg = GetGraph();
-        while (true)
-        {
-            auto child = RT_DYNCAST(obj->GetFirstChild(), SgNode);
-            if (!child)
-            {
-                break;
-            }
+        SceneGraph& sceneGraph = pClient->GetWorld().GetGraph();
 
-            obj->UnlinkChild(child);
-            if (child->m_removeImmediateAfterParent || sg && sg->IsInUnlinkAndDeleteAll())
+        // Remove and process all children
+        while (GetFirstChild())
+        {
+            SgNode* child = static_cast<SgNode*>(GetFirstChild());
+            UnlinkChild(child);
+
+            if (child->m_removeImmediateAfterParent || (sceneGraph.IsInUnlinkAndDeleteAll()))
             {
+                // Immediate deletion case
                 if (child->m_isInRemoveIfFree)
                 {
-                    M3D_LOG_WARN("Warning: deleting node which is in RemoveIfFree, name = '" + CStr(child->GetName()) + "', parent name = '" + CStr(obj->GetName()) + "'");
+                    M3D_LOG_WARN("Warning: deleting node which is in RemoveIfFree, name = '" + CStr(child->GetName()) + ", parent name = '" + CStr(GetName()) + "'");
                 }
                 // TODO: check this DecRef
-                child->DecRef();
+                delete child;  // Calls child's destructor
             }
             else
             {
-                sg->LinkThinkNode(child);
-                child->m_initedWithRitual = (Ritual)((int)child->m_initedWithRitual | 1u);
-                sg->GetRootNode()->AddChild(child);
-                sg->InsertInUpdateXFormList(child);
-                child->SetOriginAbs(child->m_currentWorldOrigin);
-                child->SetRotation(child->m_currentWorldRotation);
-                sg->LinkNode(child);
+                // Re-parent child to scene graph root
+  
+                    // Add to think list
+                    sceneGraph.LinkThinkNode(child);
+                    child->m_initedWithRitual = static_cast<Ritual>(child->m_initedWithRitual | 1u);
 
-                std::vector<m3d::Object*> stack;
-                stack.push_back(dynamic_cast<m3d::Object*>(child));
+                    // Re-parent to scene graph root
+                    sceneGraph.GetRootNode()->AddChild(child);
+                    sceneGraph.InsertInUpdateXFormList(child);
 
-                while (!stack.empty())
-                {
-                    m3d::Object* current = stack.back();
-                    stack.pop_back();
+                    // Preserve world transform
+                    child->SetOriginAbs(child->m_currentWorldOrigin);
+                    child->SetRotation(child->m_currentWorldRotation);
 
-                    // Process all siblings of the current node
-                    m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
-                    while (sibling)
+                    // Link node into scene graph
+                    sceneGraph.LinkNode(child);
+
+                    // Process child hierarchy using stack
+                    std::vector<SgNode*> stack;
+                    stack.push_back(child);
+
+                    while (!stack.empty())
                     {
-                        sibling->CanBeFree();
+                        SgNode* current = stack.back();
+                        stack.pop_back();
 
-                        // If this sibling has children, add to stack for processing
-                        if (sibling->GetFirstChild())
+                        // Process all children of current node
+                        SgNode* grandChild = static_cast<SgNode*>(current->GetFirstChild());
+                        while (grandChild)
                         {
-                            stack.push_back(sibling->GetFirstChild());
+                            grandChild->CanBeFree();
+
+                            // If grandchild has children, add to stack for processing
+                            if (grandChild->GetFirstChild())
+                            {
+                                stack.push_back(grandChild);
+                            }
+
+                            grandChild = static_cast<SgNode*>(grandChild->GetNextSibling());
                         }
-
-                        // Move to next sibling
-                        sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
                     }
-                }
 
-                sg->InsertInRemoveIfFree(child);
-                if (m_isInRemoveIfFree)
-                {
-                    M3D_LOG_WARN("Adding child in RemoveIfFree in destructor, child name = '" + CStr(child->GetName()) + "'");
-                }
+                    // Schedule for deferred removal
+                    sceneGraph.InsertInRemoveIfFree(child);
+
+                    if (m_isInRemoveIfFree)
+                    {
+                        M3D_LOG_WARN(
+                            "Adding child in RemoveIfFree in destructor, child name = '" + CStr(child->GetName()) + ", parent name = '" + CStr(GetName()) + "'");
+                    }
             }
         }
 
+        // Remove from contour list if contoured
         if (m_isContoured)
         {
-            sg->DeleteFromContourList(this);
+            sceneGraph.DeleteFromContourList(this);
         }
 
         RitualInDestructor();

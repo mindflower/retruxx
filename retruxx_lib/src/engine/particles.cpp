@@ -243,10 +243,14 @@ namespace m3d
 
     ParticlesList::~ParticlesList()
     {
-        for (auto particle = m_particles; particle != nullptr; particle = particle->m_next)
+        auto particle = m_particles;
+        while (particle != nullptr)
         {
+            auto particleNext = particle->m_next;
             ParticlesPool.Delete(particle);
+            particle = particleNext;
         }
+
         if (this->m_skinIb)
         {
             for (unsigned i = 0; i < this->m_numIb; ++i)
