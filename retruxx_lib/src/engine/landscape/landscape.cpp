@@ -2672,16 +2672,18 @@ namespace m3d
 
                             // Copy vertex data
                             void* lockedBuffer = M3D_RENDERER->LockVb(vb, vertexCount, 0, 0);
-                            memcpy(lockedBuffer, vertexDataPtr, 8 * vertexCount);
+                            memcpy(lockedBuffer, vertexDataPtr, sizeof(rend::VertexLandscape) * vertexCount);
                             M3D_RENDERER->UnlockVb(vb);
 
-                            vertexDataPtr += 8 * vertexCount;
+                            vertexDataPtr += sizeof(rend::VertexLandscape) * vertexCount;
 
                             // Store vertex buffer handle
                             v48->m_vbHandle.push_back(vb);
                         }
                     }
                 }
+
+                delete[] v46;
 
                 // Build UV set
                BuildUVSet();
@@ -4591,7 +4593,6 @@ namespace m3d
 
         if (numCells == 0)
         {
-            chunk.iotherPassBankNumber = chunk.iotherPassBankNumber;
             chunk.iotherPassOffset = vertexOffset;
             return;
         }
@@ -4669,28 +4670,25 @@ namespace m3d
                         if (lastSquareX != -1 && lastSquareY != -1)
                         {
                             const int storageShift = (renderType != 0) ? 4 : 0;
-                            const int bitShift = (renderType != 0) ? 2 : 0;
 
-                            // Bounds checking
-                            if (lastSquareX < 0 || lastSquareX >= 64)
-                            {
-                                // Handle error - would call __assert in original
-                            }
-                            if (lastSquareY < 0 || lastSquareY >= 64)
-                            {
-                                // Handle error - would call __assert in original
-                            }
+                            const char offsetShift = (4 * storageShift);
+                            const char bankShift = (2 * storageShift);
 
-                            const int tileIndex = lastSquareY * 64 + lastSquareX;
+                            assert(lastSquareX >= 0);
+                            assert(lastSquareX < 64);
+                            assert(lastSquareY >= 0);
+                            assert(lastSquareY < 64);
 
                             // Store cell count for this tile
-                            chunk.m_numCellsPerCellMap[tileIndex] |= (cellsInCurrentPass << storageShift);
+                            chunk.m_numCellsPerCellMap[lastSquareX + (lastSquareY * 64)] |= (cellsInCurrentPass << (2 *  storageShift));
+
+                            const int tileIndex = lastSquareX  + (lastSquareY << 8);
 
                             // Store vertex offset
-                            chunk.m_offsetsmap[tileIndex] |= (offsetToStore << (4 * bitShift));
+                            chunk.m_offsetsmap[tileIndex] |= (offsetToStore << offsetShift);
 
                             // Store bank number
-                            chunk.m_banknumber[tileIndex] |= (currentBank << (2 * bitShift));
+                            chunk.m_banknumber[tileIndex] |= (currentBank << bankShift);
                         }
 
                         // Start new tile
@@ -4807,28 +4805,27 @@ namespace m3d
         if (cellsInCurrentPass > 0)
         {
             const int storageShift = (renderType != 0) ? 4 : 0;
-            const int bitShift = (renderType != 0) ? 2 : 0;
+            const char offsetShift = (4 * storageShift);
+            const char bankShift = (2 * storageShift);
 
-            // Bounds checking
-            if (lastSquareX < 0 || lastSquareX >= 64)
-            {
-                // Handle error - would call __assert in original
-            }
-            if (lastSquareY < 0 || lastSquareY >= 64)
-            {
-                // Handle error - would call __assert in original
-            }
+            assert(lastSquareX >= 0);
+            assert(lastSquareX < 64);
+            assert(lastSquareY >= 0);
+            assert(lastSquareY < 64);
 
-            const int tileIndex = lastSquareY * 64 + lastSquareX;
+            //const int tileIndex = lastSquareY * 64 + lastSquareX;
 
             // Store cell count for this tile
-            chunk.m_numCellsPerCellMap[tileIndex] |= (cellsInCurrentPass << storageShift);
+            chunk.m_numCellsPerCellMap[lastSquareY * 64 + lastSquareX] |= (cellsInCurrentPass << (2 * storageShift));
+
+            const int tileIndex = lastSquareX + (lastSquareY << 8);
 
             // Store vertex offset
-            chunk.m_offsetsmap[tileIndex] |= (offsetToStore << (4 * bitShift));
+            chunk.m_offsetsmap[tileIndex] |= (offsetToStore << offsetShift);
 
             // Store bank number
-            chunk.m_banknumber[tileIndex] |= (currentBank << (2 * bitShift));
+            chunk.m_banknumber[tileIndex] |= (currentBank << bankShift);
+
 
             chunk.iotherPassBankNumber = currentBank;
             chunk.iotherPassOffset = totalVerticesProcessed;
