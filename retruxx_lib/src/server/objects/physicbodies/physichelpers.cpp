@@ -333,7 +333,12 @@ namespace ai
         // TODO: generated code
 
         // Get ray start position and direction
-        CVector start = *dGeomGetPosition(ray.GetGeomId());
+        auto* geomPos = dGeomGetPosition(ray.GetGeomId());
+        CVector start;
+        start.x = geomPos[0];
+        start.y = geomPos[1];
+        start.z = geomPos[2];
+
         CVector dir = ray.GetDirection();
         float rayLength = ray.GetLength();
 

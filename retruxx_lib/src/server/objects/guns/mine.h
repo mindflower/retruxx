@@ -33,7 +33,11 @@ namespace ai
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
         virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
 
-        enum MineState;
+        enum MineState
+        {
+            msActivation = 0,
+            msWaiting = 1,
+        };
 
     public:
         MineState getState();

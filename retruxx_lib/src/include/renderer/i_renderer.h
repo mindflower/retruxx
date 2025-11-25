@@ -873,7 +873,7 @@ namespace m3d
             virtual void MatPushProj() = 0;
             virtual void MatPopProj() = 0;
             virtual const CMatrix* GetModelViewProjMatrix() = 0;
-            virtual CVector* Unproject(CVector* result, const CVector2*) = 0;
+            virtual CVector& Unproject(const CVector2&) = 0;
             virtual CVector Project(const CVector&) = 0;
             virtual CVector* ProjectWorldAbs(CVector* result, const CVector*) = 0;
             virtual void TgEnableSetLinearSt(int, float, float, float, float, float, bool, float, float, float, float) = 0;
