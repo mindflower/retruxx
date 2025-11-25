@@ -39,12 +39,16 @@
 #include "core/log.h"
 #include "core/profilerstack.h"
 #include "game/m3dgame.h"
+#include "objects/chassis.h"
 #include "objects/dynamicquestdestroy.h"
 #include "objects/vehicle.h"
 #include "objects/base/globalproperties.h"
 #include "objects/base/jointedobj.h"
 #include "objects/base/prototypemanager.h"
 #include "objects/guns/bullet.h"
+#include "objects/guns/gun.h"
+#include "objects/guns/mine.h"
+#include "objects/guns/mortarshell.h"
 
 namespace ai
 {
@@ -352,9 +356,9 @@ namespace ai
 		}
 	}
 
-	int DynamicScene::ProcessShellAndBody(Shell*, PhysicBody*, dContact*, unsigned&, bool)
+	int DynamicScene::ProcessShellAndBody(Shell* shell, PhysicBody* body, dContact* contact, unsigned& numContacts, bool reverse)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void DynamicScene::InitClashDecalId()
@@ -774,7 +778,7 @@ namespace ai
 	    auto* ray = bullet._Ray();
 
         const auto pos = bullet.GetPosition();
-        dGeomSetPosition(ray->GetGeomId(), pos.x, pos.y, pos.z);
+        dGeomSetPosition(bulletCollideRay->GetGeomId(), pos.x, pos.y, pos.z);
 
 		bulletCollideRay->SetLength(ray->GetLength());
         bulletCollideRay->SetDirection(ray->GetDirection());
@@ -1278,6 +1282,6 @@ namespace ai
 
     bool ObjIdExceptionalTraceLineCallback::CollidePhysicObj(const ai::PhysicObj* physicObj) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return true;
     }
 }  // namespace ai
