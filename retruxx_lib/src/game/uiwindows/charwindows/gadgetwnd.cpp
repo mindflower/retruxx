@@ -136,7 +136,9 @@ bool GadgetWnd::SetItemObjId(int)
 
 int GadgetWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 bool GadgetWnd::NeedUpdateInfoWnd(ItemInfoWnd*) const

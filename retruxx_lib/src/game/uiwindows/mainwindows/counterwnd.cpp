@@ -106,7 +106,9 @@ float CounterWnd::GetHuntTimeLeft() const
 
 int CounterWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CounterWnd::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void CounterWnd::UpdateCounter()

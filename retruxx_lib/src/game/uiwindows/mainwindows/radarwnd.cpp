@@ -317,7 +317,7 @@ int RadarWnd::GameDataUpdate(void*, int)
 {
     // TODO: implement RadarWnd::GameDataUpdate
     //RETRUXX_NOT_IMPLEMENTED;
-    return 1;
+    return 0;
 }
 
 int RadarWnd::UpdateDistance(NavPoint::NavPointType)

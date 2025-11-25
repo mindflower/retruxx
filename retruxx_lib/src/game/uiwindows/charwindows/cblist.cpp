@@ -270,5 +270,7 @@ void CBList::OnRepositoryChanged()
 
 int CBList::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement CBList::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }

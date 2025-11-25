@@ -146,7 +146,9 @@ bool ItemWnd::IsEmpty() const
 
 int ItemWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 bool ItemWnd::IsHidden() const

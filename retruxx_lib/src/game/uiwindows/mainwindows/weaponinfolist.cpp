@@ -394,7 +394,9 @@ m3d::rend::TexHandle WeaponInfoWnd::GetBarTexture(bool) const
 
 int WeaponInfoWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 int WeaponInfoWnd::GameDataClear(bool)
@@ -509,7 +511,9 @@ void WeaponGroupChoiceDlg::OnKeyBindingsChanged()
 
 int WeaponGroupChoiceDlg::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 int WeaponGroupChoiceDlg::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)

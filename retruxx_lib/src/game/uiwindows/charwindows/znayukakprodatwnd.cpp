@@ -525,7 +525,9 @@ int ZnayuKakProdatWnd::SaveCabinItemsState(Belong, std::map<int, ItemSaveInfo*, 
 
 int ZnayuKakProdatWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement ZnayuKakProdatWnd::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 int ZnayuKakProdatWnd::MakeBottomPanel()

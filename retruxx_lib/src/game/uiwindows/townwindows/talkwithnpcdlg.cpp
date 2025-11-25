@@ -139,7 +139,9 @@ bool TalkWithNpcDlg::IsBarDlgShowingNow() const
 
 int TalkWithNpcDlg::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 ref_ptr<BarDlg> TalkWithNpcDlg::GetBarDlg() const

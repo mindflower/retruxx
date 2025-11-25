@@ -388,7 +388,9 @@ int GarageWnd::GameDataSetup()
 
 int GarageWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GarageWnd::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void GarageWnd::UpdateCabinsActiveState()

@@ -24,7 +24,7 @@
 
 namespace ai
 {
-    CollisionInfo::CollisionInfo(const ai::CollisionInfo& info)
+    CollisionInfo::CollisionInfo(ai::CollisionInfo const& info)
     {
         this->m_geomType = info.m_geomType;
         this->m_relTranslation = info.m_relTranslation;
@@ -61,7 +61,6 @@ namespace ai
         m_numTrimeshVertices = 0;
         m_trimeshIndices = {};
         m_numTrimeshIndices = 0;
-
     }
 
     int ai::RoughSign(float value)
@@ -98,7 +97,7 @@ namespace ai
                 return false;
 
             // Process collision trimesh data if available and allowed
-            const auto& collisionTrimesh = model->GetCollisionTrimesh();
+            auto const& collisionTrimesh = model->GetCollisionTrimesh();
 
             if (!collisionTrimesh.Points.empty() && bTrimeshAllowed)
             {
@@ -125,8 +124,7 @@ namespace ai
                 {
                     for (unsigned int vertexIndex = 0; vertexIndex < 3; ++vertexIndex)
                     {
-                        collisionInfo.m_trimeshIndices->GetObjectA()[indexOffset++] =
-                            collisionTrimesh.Triangles[triIndex].I[vertexIndex];
+                        collisionInfo.m_trimeshIndices->GetObjectA()[indexOffset++] = collisionTrimesh.Triangles[triIndex].I[vertexIndex];
                     }
                 }
 
@@ -137,7 +135,7 @@ namespace ai
             unsigned int geomCount = model->GetNumGeoms();
             for (unsigned int geomIndex = 0; geomIndex < geomCount; ++geomIndex)
             {
-                const auto* geom = model->GetGeom(geomIndex);
+                auto const* geom = model->GetGeom(geomIndex);
                 if (!geom)
                     continue;
 
@@ -169,18 +167,14 @@ namespace ai
 
                     // Apply 45-degree rotation for cylinder
                     Quaternion rotationAdjust;
-                    rotationAdjust.y = sin(0.7853981852531433f); // sin(45°)
-                    float cos45 = cos(0.7853981852531433f);      // cos(45°)
+                    rotationAdjust.y = sin(0.7853981852531433f);  // sin(45°)
+                    float cos45 = cos(0.7853981852531433f);       // cos(45°)
 
                     Quaternion adjustedRotation;
-                    adjustedRotation.x = (cos45 * collisionInfo.m_relRotation.x) +
-                        (collisionInfo.m_relRotation.w * rotationAdjust.y);
-                    adjustedRotation.y = (collisionInfo.m_relRotation.y * cos45) +
-                        (collisionInfo.m_relRotation.z * rotationAdjust.y);
-                    adjustedRotation.z = (collisionInfo.m_relRotation.z * cos45) -
-                        (collisionInfo.m_relRotation.y * rotationAdjust.y);
-                    adjustedRotation.w = (collisionInfo.m_relRotation.w * cos45) -
-                        (collisionInfo.m_relRotation.x * rotationAdjust.y);
+                    adjustedRotation.x = (cos45 * collisionInfo.m_relRotation.x) + (collisionInfo.m_relRotation.w * rotationAdjust.y);
+                    adjustedRotation.y = (collisionInfo.m_relRotation.y * cos45) + (collisionInfo.m_relRotation.z * rotationAdjust.y);
+                    adjustedRotation.z = (collisionInfo.m_relRotation.z * cos45) - (collisionInfo.m_relRotation.y * rotationAdjust.y);
+                    adjustedRotation.w = (collisionInfo.m_relRotation.w * cos45) - (collisionInfo.m_relRotation.x * rotationAdjust.y);
 
                     collisionInfo.m_relRotation = adjustedRotation;
                     break;
@@ -224,9 +218,7 @@ namespace ai
             {
             case GEOM_TYPE_BOX:
             {
-                float boxSizeSq = collInfo.m_size.x * collInfo.m_size.x +
-                    collInfo.m_size.y * collInfo.m_size.y +
-                    collInfo.m_size.z * collInfo.m_size.z;
+                float boxSizeSq = collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y + collInfo.m_size.z * collInfo.m_size.z;
 
                 if (boxSizeSq < 0.0001f)
                 {
@@ -248,9 +240,7 @@ namespace ai
 
             case GEOM_TYPE_CYLINDER:
             {
-                float cylinderSizeSq = collInfo.m_size.x * collInfo.m_size.x +
-                    collInfo.m_size.y * collInfo.m_size.y +
-                    collInfo.m_size.z * collInfo.m_size.z;
+                float cylinderSizeSq = collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y + collInfo.m_size.z * collInfo.m_size.z;
 
                 if (collInfo.m_radius < 0.0001f || cylinderSizeSq < 0.0001f)
                 {
@@ -323,13 +313,22 @@ namespace ai
 
     namespace
     {
-        bool IsLittle(dxGeom *)
+        bool IsLittle(dxGeom*)
         {
             RETRUXX_NOT_IMPLEMENTED;
         }
-    }
+    }  // namespace
 
-    bool TraceLine(ai::Ray const& ray, dContact& closestContact, bool dontCollideWithDynamic, bool dontCollideWithLittle, bool dontCollideWithPlayer, bool dontCollideWithWater, ai::TraceLineCallback* callback, bool dontCollideWithShells, bool smartCollideWithTowns)
+    bool TraceLine(
+        ai::Ray const& ray,
+        dContact& closestContact,
+        bool dontCollideWithDynamic,
+        bool dontCollideWithLittle,
+        bool dontCollideWithPlayer,
+        bool dontCollideWithWater,
+        ai::TraceLineCallback* callback,
+        bool dontCollideWithShells,
+        bool smartCollideWithTowns)
     {
         // TODO: generated code
 
@@ -391,7 +390,7 @@ namespace ai
             }
 
             // Convert to collision cell coordinates
-            int collisionCellX = cellX >> 7; // Divide by 128
+            int collisionCellX = cellX >> 7;  // Divide by 128
             int collisionCellZ = cellZ >> 7;
 
             // Only process if we moved to a new collision cell
@@ -401,30 +400,27 @@ namespace ai
                 prevCellZ = collisionCellZ;
 
                 // Get collision cell from landscape
-                m3d::Landscape::CollisionCellItem* cellItem =
-                    landscape->GetCollisionCellItem(collisionCellX, collisionCellZ);
+                m3d::Landscape::CollisionCellItem* cellItem = landscape->GetCollisionCellItem(collisionCellX, collisionCellZ);
 
                 if (!cellItem)
                 {
                     // Log warning about missing collision cell
-                    M3D_LOG_INFO("Warning: null collision cell item, cellX = " +
-                                 CStr(collisionCellX) +
-                                 ", cellZ = " + CStr(collisionCellZ));
+                    M3D_LOG_INFO("Warning: null collision cell item, cellX = " + CStr(collisionCellX) + ", cellZ = " + CStr(collisionCellZ));
                     continue;
                 }
 
                 // Process static geometry in this cell
                 for (auto* geomObject : cellItem->m_geomsList)
                 {
-                    if (!geomObject) continue;
+                    if (!geomObject)
+                        continue;
 
                     // Apply collision filters
                     if (dontCollideWithLittle && IsLittle(geomObject->GetGeom()))
                     {
                         continue;
                     }
-                    if (dontCollideWithWater &&
-                        geomObject->IsKindOf(&m3d::GeomObjectWater::m_classGeomObjectWater))
+                    if (dontCollideWithWater && geomObject->IsKindOf(&m3d::GeomObjectWater::m_classGeomObjectWater))
                     {
                         continue;
                     }
@@ -434,13 +430,12 @@ namespace ai
                     }
 
                     // Perform collision detection
-                    int contactCount = dCollide(ray.GetGeomId(), geomObject->GetGeom(),
-                                                8, &contacts[0].geom, sizeof(dContact));
+                    int contactCount = dCollide(ray.GetGeomId(), geomObject->GetGeom(), 8, &contacts[0].geom, sizeof(dContact));
 
                     // Process contacts
                     for (int i = 0; i < contactCount; i++)
                     {
-                        const dContact& contact = contacts[i];
+                        dContact const& contact = contacts[i];
                         CVector contactPos(contact.geom.pos[0], contact.geom.pos[1], contact.geom.pos[2]);
 
                         // Verify contact is in the current cell
@@ -476,13 +471,11 @@ namespace ai
                     if (!object)
                     {
                         // Log error about invalid object reference
-                        M3D_LOG_ERR("Error: NULL object is linked to collision cell x = " +
-                                    CStr(collisionCellX) + ", y = " +
-                                    CStr(collisionCellZ) + ", id = " +
-                                    CStr(objId));
+                        M3D_LOG_ERR(
+                            "Error: NULL object is linked to collision cell x = " + CStr(collisionCellX) + ", y = " + CStr(collisionCellZ) +
+                            ", id = " + CStr(objId));
                         continue;
                     }
-
 
                     // Apply various filters
                     if (callback && !callback->CollidePhysicObj(object))
@@ -497,8 +490,7 @@ namespace ai
                     {
                         continue;
                     }
-                    if (dontCollideWithShells &&
-                        object->IsKindOf(&ai::Shell::m_classShell))
+                    if (dontCollideWithShells && object->IsKindOf(&ai::Shell::m_classShell))
                     {
                         continue;
                     }
@@ -508,8 +500,10 @@ namespace ai
                     }
                     if (dontCollideWithPlayer)
                     {
-                        if (object == playerVehicle) continue;
-                        if (object->GetParent() == playerVehicle) continue;
+                        if (object == playerVehicle)
+                            continue;
+                        if (object->GetParent() == playerVehicle)
+                            continue;
                     }
                     if (object->IsKindOf(&ai::BlastWave::m_classBlastWave))
                     {
@@ -549,11 +543,13 @@ namespace ai
                             // Sort contacts by distance and use only the farthest ones (town optimization)
                             if (!contactPoints.empty())
                             {
-                                std::sort(contactPoints.begin(), contactPoints.end(),
-                                          [&](const CVector& a, const CVector& b)
-                                {
-                                    return (start - a).lengthSq() < (start - b).lengthSq();
-                                });
+                                std::sort(
+                                    contactPoints.begin(),
+                                    contactPoints.end(),
+                                    [&](CVector const& a, CVector const& b)
+                                    {
+                                        return (start - a).lengthSq() < (start - b).lengthSq();
+                                    });
 
                                 // Use only the most distant contacts (town optimization)
                                 size_t startIndex = 0;
@@ -562,7 +558,8 @@ namespace ai
                                     startIndex = contactPoints.size() - maxContacts;
                                 }
 
-                                for (size_t i = startIndex; i < contactPoints.size(); i++) {
+                                for (size_t i = startIndex; i < contactPoints.size(); i++)
+                                {
                                     CVector delta = start - contactPoints[i];
                                     float distanceSq = delta.lengthSq();
 
@@ -585,19 +582,23 @@ namespace ai
                     {
                         // Regular object collision processing
                         dxGeom* geom = dBodyGetFirstGeom(object->GetBody()->id());
-                        while (geom) {
+                        while (geom)
+                        {
                             if (!dontCollideWithLittle || !IsLittle(geom))
                             {
                                 dxSpace* space = dGeomGetSpace(geom);
-                                if (space && space != ai::gIntersectionSpace && space != dGeomGetSpace(ray.GetGeomId())) {
+                                if (space && space != ai::gIntersectionSpace && space != dGeomGetSpace(ray.GetGeomId()))
+                                {
                                     int contactCount = dCollide(ray.GetGeomId(), geom, 8, &contacts[0].geom, sizeof(dContact));
 
-                                    for (int i = 0; i < contactCount; i++) {
+                                    for (int i = 0; i < contactCount; i++)
+                                    {
                                         CVector contactPos(contacts[i].geom.pos[0], contacts[i].geom.pos[1], contacts[i].geom.pos[2]);
                                         CVector delta = start - contactPos;
                                         float distanceSq = delta.lengthSq();
 
-                                        if (distanceSq < minDistanceSq) {
+                                        if (distanceSq < minDistanceSq)
+                                        {
                                             minDistanceSq = distanceSq;
                                             closestContact = contacts[i];
                                             closestContact.geom.g1 = ray.GetGeomId();
@@ -799,5 +800,4 @@ namespace ai
 
         return deviatedDir;
     }
-}
-
+}  // namespace ai

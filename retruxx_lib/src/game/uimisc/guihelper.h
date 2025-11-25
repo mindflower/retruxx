@@ -79,4 +79,15 @@ namespace help
     void GetGunsForVehicle(int, retruxx::vector<ai::Obj*>&);
     ActionType GetRandomMoveAnimation(m3d::AnimatedModel*);
     bool IsBoss(ai::Obj const*);
+    CStr GetClanAbbreviationByName(CStr const&);
+    CStr GetClanFullNameByName(CStr const&);
+    CStr GetClanNameByBelong(int);
+    CStr GetCurrentLevelName();
+    CStr GetKeysForImpulse(int);
+    CStr GetMapNameFromFileName(CStr const&);
+    CStr GetServiceSymbols();
+    CStr GetServiceSymbolsForVisualisation();
+    CStr GetVehiclePartNameByResourceId(int);
+
+    void SetWndTextAlpha(m3d::ui::Wnd*, unsigned char);
 }  // namespace help

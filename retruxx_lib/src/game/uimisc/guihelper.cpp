@@ -243,4 +243,38 @@ namespace help
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
+    CStr GetClanAbbreviationByName(CStr const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    CStr GetClanFullNameByName(CStr const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    CStr GetClanNameByBelong(int)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    CStr GetKeysForImpulse(int)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    CStr GetServiceSymbols()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    CStr GetServiceSymbolsForVisualisation()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    CStr GetVehiclePartNameByResourceId(int)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void SetWndTextAlpha(m3d::ui::Wnd*, unsigned char)
+    {
+        // TODO: implement SetWndTextAlpha
+        // RETRUXX_NOT_IMPLEMENTED;
+    }
 }  // namespace help

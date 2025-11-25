@@ -88,7 +88,9 @@ int PlayerVehicleWnd::CreateHackedVehicle()
 
 int PlayerVehicleWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void PlayerVehicleWnd::OnTabBtnWeaponGroupsClick()

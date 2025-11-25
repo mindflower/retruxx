@@ -72,7 +72,9 @@ int ChildPanel::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam cons
 
 int ChildPanel::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void ChildPanel::OnExit()

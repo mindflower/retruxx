@@ -93,12 +93,15 @@ int SmartCursorWnd::OnPaint(m3d::ui::DrawInfo const& di)
 
 int SmartCursorWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void SmartCursorWnd::ClearDrawInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement SmartCursorWnd::ClearDrawInfo
+    //  RETRUXX_NOT_IMPLEMENTED;
 }
 
 void SmartCursorWnd::DrawTexture(m3d::ui::DrawInfo const& di, AuxDrawInfo const* texInfo) const

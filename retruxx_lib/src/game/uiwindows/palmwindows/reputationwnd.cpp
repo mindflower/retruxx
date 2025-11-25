@@ -279,7 +279,9 @@ int ReputationWnd::GameDataClear(bool)
 
 int ReputationWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 int ReputationWnd::GameDataSetup()

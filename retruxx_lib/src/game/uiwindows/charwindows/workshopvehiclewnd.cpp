@@ -153,7 +153,9 @@ void WorkshopVehicleWnd::Hide()
 
 int WorkshopVehicleWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GarageWnd::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void WorkshopVehicleWnd::SetVehicleId(int)

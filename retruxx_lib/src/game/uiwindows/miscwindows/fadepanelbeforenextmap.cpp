@@ -76,5 +76,7 @@ int FadePanelBeforeNextMap::OnPaint(m3d::ui::DrawInfo const&)
 
 int FadePanelBeforeNextMap::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }

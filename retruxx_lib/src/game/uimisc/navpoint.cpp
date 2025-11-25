@@ -85,7 +85,9 @@ int NavPointManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 
 int NavPointManager::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 NavPointManager::~NavPointManager()

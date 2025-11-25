@@ -338,8 +338,6 @@ int GameUiManager::GUI_UpdateWindowsOnEvent(int eventId, m3d::ui::Wnd* forceWnd,
                     return res;
                 }
             }
-            --entries;
-            return res;
         }
         else
         {

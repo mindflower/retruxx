@@ -114,7 +114,9 @@ void VideoWnd::UpdateBgModel(BgMode)
 
 int VideoWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 VideoWnd::BgMode VideoWnd::DetectBgMode() const

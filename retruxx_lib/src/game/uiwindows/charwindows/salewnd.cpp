@@ -139,5 +139,7 @@ void SaleWnd::UpdateOnChangeTabSel(int, int, m3d::ui::TabWnd::SelectionType)
 
 int SaleWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }

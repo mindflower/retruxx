@@ -793,7 +793,8 @@ namespace ai
 
 	int Vehicle::GetInfoObjId() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		auto* player = RT_DYNCAST(GetParent(), Player);
+		return player->GetInfoObjId();
 	}
 
 	bool Vehicle::bRocketLaunchersPresent() const

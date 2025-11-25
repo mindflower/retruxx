@@ -150,7 +150,9 @@ int WeaponGroupButtonList::CreateFromPattern()
 
 int WeaponGroupButtonList::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void WeaponGroupButtonList::OnBtnWeaponGroupClick(m3d::ui::Wnd*, int, m3d::AIParam const&)

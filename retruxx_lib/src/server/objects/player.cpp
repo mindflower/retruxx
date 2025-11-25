@@ -698,7 +698,7 @@ namespace ai
 
     int Player::GetInfoObjId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_infoObjId;
     }
 
     eGObjPropertySaveStatus Player::GetPropertySaveStatus(int) const

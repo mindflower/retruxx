@@ -226,7 +226,7 @@ m3d::Class* SaveList::GetBaseClass()
 
 SaveList::SortDir SaveList::GetCurSortDir() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_curSortDir;
 }
 
 m3d::Object* SaveList::CreateObject()
@@ -300,7 +300,7 @@ SaveList::ListType SaveList::GetListType() const
 
 SaveList::SortArg SaveList::GetCurSortArg() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_curSortArg;
 }
 
 m3d::Class* SaveList::GetClass() const
@@ -310,7 +310,33 @@ m3d::Class* SaveList::GetClass() const
 
 int SaveList::FullUpdate()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    RemoveAllItems();
+
+    auto* profile = M3D_APP->GetProfileManager()->GetCurProfile();
+    if (!profile)
+    {
+        return 0;
+    }
+
+    m3d::AIParam saveSortArg;
+    m3d::AIParam saveSortDir;
+    if (!profile->GetParam(PP_SAVE_SORT_ARG, saveSortArg) || !profile->GetParam(PP_SAVE_SORT_DIR, saveSortDir))
+    {
+        return 0;
+    }
+
+    m_curSortArg = static_cast<SortArg>(saveSortArg.GetAsID());
+    m_curSortDir = static_cast<SortDir>(saveSortDir.GetAsID());
+
+    if (IsChildOf(M3D_APP))
+    {
+        return CreateItems();
+    }
+    return 1;
 }
 
 void SaveList::SetListType(ListType)
@@ -420,7 +446,11 @@ m3d::Class* LSWnd::GetBaseClass()
 
 void LSWnd::OnCurProfileChanged()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndSaveList->FullUpdate();
+        UpdateSortButtonStates();
+    }
 }
 
 void LSWnd::OnEnter()
@@ -649,12 +679,51 @@ int LSWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIPar
 
 void LSWnd::UpdateSortButtonStates()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto textColor = m_textColor;
+        if (m_wndSaveList->GetCurSortArg())
+        {
+            textColor = m_textColorDisabled;
+        }
+        m_btnSortByName->SetTextColor(textColor);
+
+        textColor = m_textColorDisabled;
+        if (m_wndSaveList->GetCurSortArg() == SaveList::ARG_TIME)
+        {
+            textColor = m_textColor;
+        }
+        m_btnSortByTime->SetTextColor(textColor);
+        UpdateSortArrowsState();
+    }
 }
 
 void LSWnd::UpdateSortArrowsState()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto curSortArg = m_wndSaveList->GetCurSortArg();
+        auto curSortDir = m_wndSaveList->GetCurSortDir();
+
+        m_wndSortByNameArrow->ShowWindow(curSortArg == SaveList::ARG_NAME);
+        m_wndSortByTimeArrow->ShowWindow(curSortArg == SaveList::ARG_TIME);
+
+        auto wndSort = m_wndSortByNameArrow;
+        if (curSortArg)
+        {
+            if (curSortArg != SaveList::ARG_TIME)
+            {
+                return;
+            }
+            wndSort = m_wndSortByTimeArrow;
+        }
+
+        if (wndSort)
+        {
+            auto const icoHandle = M3D_APP->m_pInterfaceManager->GetIcoByName(m_aif.m_texIdSortArrow, curSortDir != SaveList::DIR_INCREASE);
+            wndSort->SetImage(icoHandle);
+        }
+    }
 }
 
 void LSWnd::OnScreenshotRelease(void*)

@@ -99,7 +99,7 @@ int GroundWnd::GameDataUpdate(void*, int)
 {
     // TODO: implement GroundWnd::GameDataUpdate
     // RETRUXX_NOT_IMPLEMENTED;
-    return 1;
+    return 0;
 }
 
 int GroundWnd::GameDataSetup()

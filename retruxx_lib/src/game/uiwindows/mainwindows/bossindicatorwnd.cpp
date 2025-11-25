@@ -138,7 +138,9 @@ void BossIndicatorWnd::OnNewFrame()
 
 int BossIndicatorWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void BossIndicatorWnd::GetBossHealth(ai::Obj const* boss, float& maxHealth, float& curHealth) const

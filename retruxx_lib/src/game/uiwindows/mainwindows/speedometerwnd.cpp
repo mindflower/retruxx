@@ -120,7 +120,9 @@ void SpeedometerWnd::OnNewFrame()
 
 int SpeedometerWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void SpeedometerWnd::UpdateSpeedNumberBgColor(MotionDir)

@@ -314,7 +314,9 @@ int CreditsWnd::OnPaint(m3d::ui::DrawInfo const&)
 
 int CreditsWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void CreditsWnd::StopMusic()

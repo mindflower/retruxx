@@ -81,12 +81,14 @@ void MainCursorWnd::OnGameModeChanged(void*)
 
 void MainCursorWnd::UpdateCapturingTex()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement MainCursorWnd::UpdateCapturingTex
+    //  RETRUXX_NOT_IMPLEMENTED;
 }
 
 void MainCursorWnd::OnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    ClearDrawInfo();
+    UpdateCapturingTex();
 }
 
 int MainCursorWnd::GameDataSetup()
