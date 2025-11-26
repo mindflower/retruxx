@@ -649,7 +649,8 @@ namespace ai
 
     void Obj::StopTimeOut()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_flags &= ~4u;
+        m_timeOut = -1.0;
     }
 
     bool Obj::SetProperty(char const* PropertyName, m3d::AIParam const& newValue)

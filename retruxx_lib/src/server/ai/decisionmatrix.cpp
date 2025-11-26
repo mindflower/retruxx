@@ -38,7 +38,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetRetValueInterpretation)
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, SetDefaultState)
 {
     auto decisionMatrix = (ai::DecisionMatrix*)context->asObject(0, "DecisionMatrix");
-    auto state= context->asString(1);
+    auto state = context->asString(1);
     decisionMatrix->SetDefaultState(state);
     return 1;
 }
@@ -112,18 +112,18 @@ RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddSublevel)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(DecisionMatrix)
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddSignal, "", "", "")
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddState, "", "", "")
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, SetRetValueInterpretation, "", "", "")
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, SetDefaultState, "", "", "")
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddDefaultStateParam, "", "", "")
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, SetExitState, "", "", "")
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, FitMatrix, "", "", "")
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, SetSaveStackFlag, "", "", "")
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, ClearTemporaryParams, "", "", "")
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddTemporaryParam, "", "", "")
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddCommand, "", "", "")
-        RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddSublevel, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddSignal, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddState, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, SetRetValueInterpretation, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, SetDefaultState, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddDefaultStateParam, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, SetExitState, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, FitMatrix, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, SetSaveStackFlag, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, ClearTemporaryParams, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddTemporaryParam, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddCommand, "", "", "")
+    RT_CLASS_EXPORT(DecisionMatrix, m3d::METHOD, AddSublevel, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(DecisionMatrix);
 
@@ -146,13 +146,13 @@ namespace ai
     {
         m_numStates = m_States.size();
         m_numSignals = m_Signals.size();
-        
+
         m_Elements.resize(m_numStates * m_numSignals);
     }
 
-    int DecisionMatrix::GetExternSignalMapping(int) const
+    int DecisionMatrix::GetExternSignalMapping(int numExternSignal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_ExternSignalMappings[numExternSignal];
     }
 
     void DecisionMatrix::AddTemporaryParam(char const* functionName)
@@ -256,7 +256,10 @@ namespace ai
         ClearTemporaryParams();
     }
 
-    void DecisionMatrix::AddCommand(unsigned StateID, unsigned SignalID, unsigned PassStateID,
+    void DecisionMatrix::AddCommand(
+        unsigned StateID,
+        unsigned SignalID,
+        unsigned PassStateID,
         std::vector<AIParamRef, std::allocator<AIParamRef>> const& ParamRefList)
     {
         if (StateID == 0xFFFF || SignalID == 0xFFFF || PassStateID == 0xFFFF)
@@ -280,12 +283,12 @@ namespace ai
 
     int DecisionMatrix::GetExitStateNum() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_ExitStateNum;
     }
 
     int DecisionMatrix::NumStates() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_numStates;
     }
 
     void DecisionMatrix::AddState(char const* stateName, char const* functionName)
@@ -393,9 +396,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    AISignal const& DecisionMatrix::GetSignal(int) const
+    AISignal const& DecisionMatrix::GetSignal(int signalNum) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_Signals[signalNum];
     }
 
     DecisionMatrix::~DecisionMatrix() = default;
@@ -413,9 +416,9 @@ namespace ai
         }
     }
 
-    AIState const& DecisionMatrix::GetState(int) const
+    AIState const& DecisionMatrix::GetState(int stateNum) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_States[stateNum];
     }
 
     DecisionMatrix const* DecisionMatrix::GetSubmatrix(int) const
@@ -425,7 +428,7 @@ namespace ai
 
     AIPassageCommand const& DecisionMatrix::GetDefault() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_Default;
     }
 
     m3d::Class* DecisionMatrix::GetClass() const
@@ -433,7 +436,7 @@ namespace ai
         return RT_CLASS_LOCAL(DecisionMatrix);
     }
 
-    void DecisionMatrix::SetRetValueInterpretation(const char* stateName, const char* schemeName, const char* signalName)
+    void DecisionMatrix::SetRetValueInterpretation(char const* stateName, char const* schemeName, char const* signalName)
     {
         unsigned signalNum = 0xFFFF;
         auto stateNum = GetStateNum(stateName);
@@ -509,9 +512,9 @@ namespace ai
         M3D_LOG_ERR("Error: Unexpected object in AddSublevel");
     }
 
-    DecisionMatrixElement const* DecisionMatrix::UnsafeGetDecision(int, int) const
+    DecisionMatrixElement const* DecisionMatrix::UnsafeGetDecision(int stateNum, int signalNum) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return &m_Elements[stateNum + signalNum * m_numStates];
     }
 
     int DecisionMatrix::GetStateNum(CStr const& stateName) const
@@ -567,4 +570,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

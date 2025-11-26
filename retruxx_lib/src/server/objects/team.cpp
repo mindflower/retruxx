@@ -172,7 +172,7 @@ namespace ai
 
     m3d::AIParam Team::TeamAIOnAttack(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m3d::AIParam(0);
     }
 
     void Team::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -253,7 +253,7 @@ namespace ai
 
     m3d::AIParam Team::TeamAIOnIdle(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m3d::AIParam(0);
     }
 
     m3d::AIParam Team::TeamAIOnStartAttack(Obj*)
@@ -451,14 +451,26 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    m3d::AIParam Team::TeamAIOnDefend(Obj*)
+    m3d::AIParam Team::TeamAIOnDefend(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* team = RT_DYNCAST(pObj, Team);
+        if (theObjects->GetEntityByObjId(team->m_TeamTacticId))
+        {
+            team->m_needAdjustBehaviour = true;
+        }
+        return m3d::AIParam(0);
     }
 
-    m3d::AIParam Team::TeamAIGetCurPos(Obj*)
+    m3d::AIParam Team::TeamAIGetCurPos(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* team = RT_DYNCAST(pObj, Team);
+        if (!team->m_vehicles.empty())
+        {
+            Vehicle const* vehicle = team->m_vehicles.front();
+            CVector pos = vehicle->GetPosition();
+            return m3d::AIParam(pos);
+        }
+        return m3d::AIParam(ZeroVector);
     }
 
     m3d::AIParam Team::TeamAIOnTargetUnreachable(Obj*)
@@ -564,9 +576,10 @@ namespace ai
         }
     }
 
-    m3d::AIParam Team::TeamAIOnStartDefend(Obj*)
+    m3d::AIParam Team::TeamAIOnStartDefend(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        pObj->CauseEvent(GE_ENEMY_DESTROYED, 0.0, {}, {});
+        return m3d::AIParam(1);
     }
 
     void Team::RenderDebugInfo() const
