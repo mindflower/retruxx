@@ -251,11 +251,6 @@ namespace m3d
             // PS1.1 shaders
             waterPs = M3D_RENDERER->NewAsmShader("data/shaders/waterTest_ps11.asm", m3d::rend::IAsmShader::Type::PIXEL_SHADER);
             m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps11.vs", "WaterVS", m3d::rend::IHlslShader::VS_1_1);
-
-            // Load wave bump texture
-            m_waveBumpTex = M3D_RENDERER->AddTexture("data/textures/water_dsdt.shader", 2);
-            M3D_RENDERER->SetTextureParameter(m_waveBumpTex, m3d::rend::TexParam::TM_WRAP_S, 3);
-            M3D_RENDERER->SetTextureParameter(m_waveBumpTex, m3d::rend::TexParam::TM_WRAP_T, 1);
         }
         else
         {
@@ -320,6 +315,11 @@ namespace m3d
             M3D_RENDERER->SetTextureParameter(m_fresnelTex, m3d::rend::TexParam::TM_WRAP_S, 3);
             M3D_RENDERER->SetTextureParameter(m_fresnelTex, m3d::rend::TexParam::TM_WRAP_T, 3);
         }
+
+        // Load wave bump texture
+        m_waveBumpTex = M3D_RENDERER->AddTexture("data/textures/water_dsdt.shader", 2);
+        M3D_RENDERER->SetTextureParameter(m_waveBumpTex, m3d::rend::TexParam::TM_WRAP_S, 3);
+        M3D_RENDERER->SetTextureParameter(m_waveBumpTex, m3d::rend::TexParam::TM_WRAP_T, 1);
 
         // Load simple water shaders
         m_waterDumbPs = M3D_RENDERER->NewHlslShader("data/shaders/water_dumb.ps", "WaterPS", m3d::rend::IHlslShader::PS_1_1);
@@ -2612,8 +2612,8 @@ namespace m3d
         }
 
         CMatrix const mat = M3D_RENDERER->MatGet();
-        CMatrix const viewMat = M3D_RENDERER->MatGetProj();
-        CMatrix const resultViewMat = mat * viewMat;
+        CMatrix const projMat = M3D_RENDERER->MatGetProj();
+        CMatrix const resultViewMat = mat * projMat;
         CMatrix const textureMat = resultViewMat * m_matScale;
 
         unsigned const viewProjHandle = m_waterVs->GetParamHandleByName("mViewProj");
@@ -2622,25 +2622,26 @@ namespace m3d
         unsigned const textureHandle = m_waterVs->GetParamHandleByName("mTexture");
         m_waterVs->SetMatrix(textureHandle, textureMat);
 
+        
         rend::Colorf const reflectionTint = m_owner->m_level->m_reflectionTint;
         rend::Colorf const refractionTint = m_owner->m_level->m_refractionTint;
 
         if (m_waterShaderVersion == 20)
         {
-            rend::Colorf const weatherSpecularColor = m_owner->GetWeatherSpecularColor();
             Weather const* currentWeather = m_owner->GetWeatherManager().GetActiveWeather();
 
+            auto const colorSpec = (uint8_t)m_owner->GetWeatherSpecularColor();
             CVector4 waveHeightSpecular(
                 currentWeather->m_waterHeightSmall,
                 currentWeather->m_waterHeightBig,
-                currentWeather->m_waterSpecularS * weatherSpecularColor.a,
+                currentWeather->m_waterSpecularS * (float)colorSpec * 0.0039215689,
                 currentWeather->m_waterSpecularM);
 
             unsigned const waveHeightSpecularHandle = m_waterPs->GetParamHandleByName("waveHeightSpecular");
             m_waterPs->SetVector4(waveHeightSpecularHandle, waveHeightSpecular);
 
              // Set view position
-            CMatrix invView = resultViewMat.getInverse();
+            CMatrix invView = mat.getInverse();
             CVector viewPos = invView.getOrg();
 
             unsigned const viewPosHandle = m_waterVs->GetParamHandleByName("viewPos");
@@ -2656,8 +2657,7 @@ namespace m3d
             CVector sunDir = m_owner->m_sunDir * 20000.0f;
             M3D_RENDERER->SetVsFloatConst(15, reinterpret_cast<float const*>(&sunDir), 1);
 
-            CVector fogColor = currentWeather->m_currentColors[4];
-            M3D_RENDERER->SetPsFloatConst(4, reinterpret_cast<float const*>(&fogColor), 1);
+            M3D_RENDERER->SetPsFloatConst(4, &currentWeather->m_currentColors[4][0], 1);
 
         }
         else
@@ -2700,7 +2700,7 @@ namespace m3d
         }
 
         // Collect visible water cells
-        CMatrix invView = resultViewMat.getInverse();
+        CMatrix invView = mat.getInverse();
         int landSize = m_owner->m_level->land_size;
 
         for (int x = 0; x < landSize; ++x)
@@ -2753,12 +2753,7 @@ namespace m3d
 
                                 // Calculate angle from camera to cell relative to reference vector (1,1)
                                 CVector2 referenceVec(1.0f, 1.0f);
-                                float dotProduct = cellPos.x * referenceVec.x + cellPos.y * referenceVec.y;
-                                float magCell = std::sqrt(cellPos.x * cellPos.x + cellPos.y * cellPos.y);
-                                float magRef = std::sqrt(referenceVec.x * referenceVec.x + referenceVec.y * referenceVec.y);
-                                float cosAngle = dotProduct / (magCell * magRef);
-                                cosAngle = std::max(-1.0f, std::min(1.0f, cosAngle));  // Clamp to avoid precision issues
-                                float angle = -std::acos(cosAngle);
+                                float angle = -CalculateAngle(cellPos, referenceVec);
 
                                 // Normalize angle to 0-2PI range
                                 if (angle <= 0.0f)
@@ -2887,7 +2882,7 @@ namespace m3d
                             std::pair<unsigned int, float> cellData(encodedCoords, waterHeight);
 
                             // Add to the water cells vector for this LOD level
-                            std::vector<std::pair<unsigned int, float>>& lodBucket = this->waterCellsToDraw[lodLevel];
+                            std::vector<std::pair<unsigned int, float>>& lodBucket = this->waterCellsToDraw[0];
                             lodBucket.push_back(cellData);
                         }
                     }
@@ -2897,17 +2892,17 @@ namespace m3d
         }
 
         // Set time-based parameters
-        unsigned int currentTime = m3d::g_Kernel->GetTimer().GetCurTime();
+        float const currentTime = static_cast<float>(M3D_KERNEL->GetTimer().GetCurTime()) * 0.001;
 
         if (this->m_waterShaderVersion == 20)
         {
             unsigned const timeValHandle = m_waterVs->GetParamHandleByName("timeVal");
-            m_waterVs->SetFloat(timeValHandle, *reinterpret_cast<float*>(&currentTime));
+            m_waterVs->SetFloat(timeValHandle, currentTime);
         }
         else
         {
             unsigned const timeValHandle = m_waterVs->GetParamHandleByName("timeVal");
-            m_waterVs->SetFloat(timeValHandle, *reinterpret_cast<float*>(&currentTime));
+            m_waterVs->SetFloat(timeValHandle, currentTime);
 
             
             unsigned const numVertsInWaterTileEdgeRecHandle = m_waterVs->GetParamHandleByName("numVertsInWaterTileEdgeRec");
@@ -3555,8 +3550,169 @@ namespace m3d
         M3D_RENDERER->PushFog(M3D_KERNEL->GetEngineCfg().m_r_enableFog.GetB());
         if (m_numWaterCells != 0 && m_isWaterVisible)
         {
+            // TODO: generated code
             // TODO: implement water reflection refraction rendering
-            // RETRUXX_NOT_IMPLEMENTED;
+            m_profilerDrawWater->StartCountdown();
+
+            bool const drawReflectedTerrain = M3D_ENGINE_CFG.m_g_drawReflectedTerrain.GetB();
+            bool const drawReflectedModels = M3D_ENGINE_CFG.m_g_drawReflectedModels.GetB();
+            // If reflection needs updating
+            if (m_dirtyReflection)
+            {
+                m_dirtyReflection = false;
+                m_curVisMode = VIS_REFLECTION;
+
+                // Start rendering to reflection texture
+                M3D_RENDERER->RenderToTexStart(m_texRtReflection, true);
+
+                // Clear with fog color
+                unsigned int fogColor = m_owner->GetWeatherFogColor();
+                M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, fogColor);
+
+                // Create reflection matrix from water plane
+                CMatrix matReflect;
+                matReflect.reflect(m_waterPlane);
+
+                // Save current view and projection matrices
+                CMatrix const currentView = M3D_RENDERER->GetViewMatrix();
+                CMatrix saveView(currentView);
+
+                CMatrix const currentProj = M3D_RENDERER->MatGetProj();
+                CMatrix saveProj(currentProj);
+
+                // Apply reflection matrix to view
+                M3D_RENDERER->MatPush(matReflect);
+
+                // Calculate reflected view-projection matrix
+                CMatrix reflectedViewProj = saveView * matReflect;
+                M3D_RENDERER->SetViewMatrix(reflectedViewProj);
+
+                // Set up reflection projection matrix
+                int screenWidth = M3D_ENGINE_CFG.m_r_width.GetI();
+                int screenHeight = M3D_ENGINE_CFG.m_r_height.GetI();
+                float aspectRatio = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
+
+                float baseFov = 0.3926990926265717f;  // ~22.5 degrees
+                float fovX = std::atan2(std::tan(baseFov) * 1.1f, 1.0f);
+                float fovY = fovX + fovX;
+
+                CMatrix reflectionProj;
+                reflectionProj.perspectiveFovLH(fovY, aspectRatio, 1.0f, 5000.0f);
+                M3D_RENDERER->MatSetProj(reflectionProj);
+
+                // Disable fog for reflection pass
+                M3D_RENDERER->SetFog(false, 0);
+
+                // Render sky to reflection if enabled
+                bool drawSky = M3D_ENGINE_CFG.m_g_drawSky.GetB();
+
+                if (drawSky)
+                {
+                    M3D_RENDERER->PushZbState(rend::ZB_DISABLE);
+                    m_owner->RenderSky(LRM_REFLECTION);
+                    M3D_RENDERER->PopZbState();
+                }
+
+                // Render lens flares if enabled
+                bool drawFlares = M3D_ENGINE_CFG.m_lgtFlares.GetB();
+
+                if (drawFlares)
+                {
+                    m_flares.Render(FLARE_SUN, this->m_owner->m_sunDir, 1.0f, 1.0f);
+                }
+
+                // Re-enable fog based on settings
+                bool enableFog = M3D_ENGINE_CFG.m_r_enableFog.GetB();
+
+                M3D_RENDERER->SetFog(enableFog, 0);
+
+                // Enable depth testing for main reflection rendering
+                M3D_RENDERER->PushZbState(rend::ZB_ENABLE);
+
+                // Render terrain and models to reflection (for advanced shaders)
+                if (m_waterShaderVersion != 11 && (drawReflectedTerrain || drawReflectedModels))
+                {
+                    // Calculate reflection draw distance
+                    float viewDistanceDivider = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
+
+                    int originalDrawRadius = this->m_drawRadius;
+                    float saveDistDivider = viewDistanceDivider;
+
+                    float reflectionModifier = M3D_ENGINE_CFG.m_g_reflectionDrawDistModifier.GetF();
+
+                    float reflectionDistanceScale = viewDistanceDivider / reflectionModifier;
+                    m_drawRadius = static_cast<int>((reflectionDistanceScale * 8.0f) + 4.0f);
+
+                    // Temporarily modify view distance for reflection
+                    M3D_ENGINE_CFG.m_lsViewDistanceDivider.SetF(reflectionDistanceScale, false);
+
+                    // Set up clipping plane below water surface
+                    m3d::CWorld* world = this->m_owner;
+                    m3d::Weather const* weather = world->m_weatherManager.GetActiveWeather();
+                    m3d::Level* level = world->m_level;
+
+                    float averageWaterHeight = (weather->m_waterHeightSmall + weather->m_waterHeightBig) * 2.0f;
+                    float clipPlaneHeight = level->waterlevel - averageWaterHeight - 0.5f;
+
+                    CPlane waterClipPlane;
+                    waterClipPlane.m_normal = CVector(0.0f, 0.0f, 1.0f);  // Z-up
+                    waterClipPlane.m_dist = clipPlaneHeight;
+
+                    // Enable clipping plane if supported
+                    if (M3D_RENDERER->GetMaxClipPlanes() > 0)
+                    {
+                        M3D_RENDERER->SetClipPlane(0, &waterClipPlane);
+                        M3D_RENDERER->EnableClipPlane(0, true);
+                    }
+
+                    // Set visibility mask for reflection and cull clockwise
+                    this->m_owner->m_sceneGraph.SetVisMask(2);
+                    M3D_RENDERER->SetCull(rend::M3DCULL_CW, false);
+
+                    // Render terrain to reflection
+                    if (drawReflectedTerrain)
+                    {
+                        DrawSolidLandscape(LRM_REFLECTION, true);
+                    }
+
+                    // Update clipping plane for models
+                    waterClipPlane.m_dist = level->waterlevel;
+
+                    if (M3D_RENDERER->GetMaxClipPlanes() > 0)
+                    {
+                        M3D_RENDERER->SetClipPlane(0, &waterClipPlane);
+                        M3D_RENDERER->EnableClipPlane(0, true);
+                    }
+
+                    M3D_RENDERER->SetCull(rend::M3DCULL_CW, false);
+
+                    // Render models to reflection
+                    if (drawReflectedModels)
+                    {
+                        m_owner->m_sceneGraph.UpdateVis(false, this->m_reflectedFrustum, false);
+                        m_owner->m_sceneGraph.Render(SGRF_LOW_DETAIL);
+                    }
+
+                    // Disable clipping plane
+                    if (M3D_RENDERER->GetMaxClipPlanes() > 0)
+                    {
+                        M3D_RENDERER->EnableClipPlane(0, false);
+                    }
+
+                    // Restore original view distance settings
+                    M3D_ENGINE_CFG.m_lsViewDistanceDivider.SetF(saveDistDivider, false);
+                    m_drawRadius = originalDrawRadius;
+                }
+
+                // Finish reflection rendering and restore state
+                M3D_RENDERER->RenderToTexFinish();
+                M3D_RENDERER->PopZbState();
+                M3D_RENDERER->MatPop(false);
+                M3D_RENDERER->SetViewMatrix(saveView);
+                M3D_RENDERER->MatSetProj(saveProj);
+                this->m_owner->m_sceneGraph.SetVisMask(1);
+            }
+            m_profilerDrawWater->EndCountdown();
         }
 
         m_profilerDraw->StartCountdown();
@@ -3658,9 +3814,10 @@ namespace m3d
 
         if (m_numWaterCells && m_isWaterVisible)
         {
-            // TODO: implement water rendering
             m_profilerDrawWater->StartCountdown();
-            if (m_waterShaderVersion == 20 /* &&  (waterQ == 3 || waterQ == 2) */)
+
+            int const waterQ = M3D_ENGINE_CFG.m_r_waterQuality.GetI();
+            if (m_waterShaderVersion == 20  &&  (waterQ == 3 || waterQ == 2))
             {
                 auto fullFrameTexture = M3D_RENDERER->GetFullFrameFrameBufferTexture();
                 M3D_RENDERER->CopyRenderTargetToTexture(fullFrameTexture);

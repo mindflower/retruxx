@@ -1,6 +1,8 @@
 #define _USE_MATH_DEFINES
 
 #include "math/matrix.h"
+
+#include "math/plane.h"
 #include "math/quaternion.h"
 #include "math/vector.h"
 #include "math/vector4.h"
@@ -110,9 +112,24 @@ void CMatrix::composeSRT(CVector const&, CMatrix const&, CVector const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void CMatrix::reflect(CPlane const&)
+void CMatrix::reflect(CPlane const& p)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    this->_11 = 1.0 - (float)((float)(p.m_normal.x * p.m_normal.x) * 2.0);
+    this->_21 = (float)(p.m_normal.y * p.m_normal.x) * -2.0;
+    this->_31 = (float)(p.m_normal.z * p.m_normal.x) * -2.0;
+    this->_12 = (float)(p.m_normal.y * p.m_normal.x) * -2.0;
+    this->_22 = 1.0 - (float)((float)(p.m_normal.y * p.m_normal.y) * 2.0);
+    this->_32 = (float)(p.m_normal.y * p.m_normal.z) * -2.0;
+    this->_13 = (float)(p.m_normal.z * p.m_normal.x) * -2.0;
+    this->_23 = (float)(p.m_normal.y * p.m_normal.z) * -2.0;
+    this->_33 = 1.0 - (float)((float)(p.m_normal.z * p.m_normal.z) * 2.0);
+    this->_41 = (float)(p.m_normal.x * p.m_dist) * 2.0;
+    this->_42 = (float)(p.m_normal.y * p.m_dist) * 2.0;
+    this->_43 = (float)(p.m_normal.z * p.m_dist) * 2.0;
+    this->_34 = 0.0;
+    this->_24 = 0.0;
+    this->_14 = 0.0;
+    this->_44 = 1.0;
 }
 
 void CMatrix::translation(CVector const&)
@@ -376,9 +393,15 @@ CVector CMatrix::getOrgInv() const
     return {im._41, im._42, im._43};
 }
 
-void CMatrix::perspectiveFovLH(float, float, float, float)
+void CMatrix::perspectiveFovLH(float fovY, float aspect, float z0, float z1)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    memset(this, 0, sizeof(CMatrix));
+    auto v5 = z1 / (float)(z1 - z0);
+    this->_33 = v5;
+    this->_43 = 0.0 - (float)(v5 * z0);
+    this->_34 = 1.0;
+    this->_11 = 1.0 / tan(fovY * aspect * 0.5);
+    this->_22 = 1.0 / tan(fovY * 0.5);
 }
 
 void CMatrix::rotZ(float)
