@@ -193,137 +193,133 @@ namespace m3d
     void Landscape::InitReflectionRefractionTextures()
     {
         // TODO: generated code
-        // Release any existing textures
+        // Release any existing textures first
         ReleaseReflectionRefractionTextures();
 
         // Determine texture size based on water quality setting
-        int waterQuality = M3D_KERNEL->GetEngineCfg().m_r_waterQuality.GetI();
-        int textureSize = (waterQuality >= 2 && waterQuality <= 3) ? 512 : 256;
+        int textureSize = 256;
+        int waterQuality = M3D_ENGINE_CFG.m_r_waterQuality.GetI();
+        if (waterQuality >= 2 && waterQuality <= 3)
+        {
+            textureSize = 512;
+        }
 
         // Create reflection texture
-        m_texRtReflection = m3d::Application::g_pApp->m_renderer->AddDynamicTexture(
-            "$RtReflection",
-            textureSize,
-            textureSize,
-            0);
+        m_texRtReflection = M3D_RENDERER->AddDynamicTexture("$RtReflection", textureSize, textureSize, 0);
 
-        // Set reflection texture parameters
-        M3D_RENDERER->SetTextureParameter(m_texRtReflection, m3d::rend::TexParam::TM_WRAP_S, 3);
-        M3D_RENDERER->SetTextureParameter(m_texRtReflection, m3d::rend::TexParam::TM_WRAP_T, 3);
-        M3D_RENDERER->SetTextureParameter(m_texRtReflection, m3d::rend::TexParam::TM_TEX_FILTER, 2);
+        M3D_RENDERER->SetTextureParameter(m_texRtReflection, rend::TM_WRAP_S, 3u);
+        M3D_RENDERER->SetTextureParameter(m_texRtReflection, rend::TM_WRAP_T, 3u);
+        M3D_RENDERER->SetTextureParameter(m_texRtReflection, rend::TM_TEX_FILTER, 2u);
 
         // Create refraction texture
-        m_texRtRefraction = M3D_RENDERER->AddDynamicTexture(
-            "$RtRefraction",
-            textureSize,
-            textureSize,
-            0);
+        m_texRtRefraction = M3D_RENDERER->AddDynamicTexture("$RtRefraction", textureSize, textureSize, 0);
 
-        // Set refraction texture parameters
-        M3D_RENDERER->SetTextureParameter(m_texRtRefraction, m3d::rend::TexParam::TM_WRAP_S, 3);
-        M3D_RENDERER->SetTextureParameter(m_texRtRefraction, m3d::rend::TexParam::TM_WRAP_T, 3);
-        M3D_RENDERER->SetTextureParameter(m_texRtRefraction, m3d::rend::TexParam::TM_TEX_FILTER, 2);
+        M3D_RENDERER->SetTextureParameter(m_texRtRefraction, rend::TM_WRAP_S, 3u);
+        M3D_RENDERER->SetTextureParameter(m_texRtRefraction, rend::TM_WRAP_T, 3u);
+        M3D_RENDERER->SetTextureParameter(m_texRtRefraction, rend::TM_TEX_FILTER, 2u);
 
-        // Determine shader version to use
-        int forcedVersion = M3D_KERNEL->GetEngineCfg().m_g_forceWaterPSVersion.GetI();
-        m_waterShaderVersion = (forcedVersion == 11 || forcedVersion == 14 || forcedVersion == 20)
-            ? forcedVersion
-            : 20;
+        // Determine water shader version
+        int forcedVersion = M3D_ENGINE_CFG.m_g_forceWaterPSVersion.GetI();
+        m_waterShaderVersion = forcedVersion;
 
-        // Downgrade shader version if hardware doesn't support it
+        // Validate shader version
+        if (forcedVersion != 11 && forcedVersion != 14 && forcedVersion != 20)
+        {
+            m_waterShaderVersion = 20;
+        }
+
+        // Check PS2.0 support
         if (m_waterShaderVersion == 20)
         {
-            bool allowPS20 = M3D_KERNEL->GetEngineCfg().m_r_allowPS20.GetB();
-            if (!allowPS20 || !M3D_RENDERER->IsFeatureSupported(m3d::rend::DeviceFeature::FEATURE_PS_2_0))
+            bool allowPS20 = M3D_ENGINE_CFG.m_r_allowPS20.GetB();
+            if (!allowPS20 || !M3D_RENDERER->IsFeatureSupported(rend::FEATURE_PS_2_0))
             {
                 m_waterShaderVersion = 14;
             }
         }
 
-        if (m_waterShaderVersion == 14 && !M3D_RENDERER->IsFeatureSupported(m3d::rend::DeviceFeature::FEATURE_PS_1_4))
+        // Check PS1.4 support
+        if (m_waterShaderVersion == 14 && !M3D_RENDERER->IsFeatureSupported(rend::FEATURE_PS_1_4))
         {
             m_waterShaderVersion = 11;
         }
 
         // Load appropriate shaders based on version
-        if (m_waterShaderVersion == 11)
+        switch (m_waterShaderVersion)
         {
+        case 11:
             // PS1.1 shaders
-            waterPs = M3D_RENDERER->NewAsmShader("data/shaders/waterTest_ps11.asm", m3d::rend::IAsmShader::Type::PIXEL_SHADER);
-            m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps11.vs", "WaterVS", m3d::rend::IHlslShader::VS_1_1);
-        }
-        else
-        {
-            // PS1.4 or PS2.0 shaders
-            if (m_waterShaderVersion == 14)
+            waterPs = M3D_RENDERER->NewAsmShader("data/shaders/waterTest_ps11.asm", rend::IAsmShader::PIXEL_SHADER);
+            m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps11.vs", "WaterVS", rend::IHlslShader::VS_1_1);
+            break;
+
+        case 14:
+            // PS1.4 shaders
+            waterPs = M3D_RENDERER->NewAsmShader("data/shaders/waterTest_ps14.asm", rend::IAsmShader::PIXEL_SHADER);
+            m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps14.vs", "WaterVS", rend::IHlslShader::VS_1_1);
+            break;
+
+        case 20:
+        default:
+            // PS2.0 shaders with quality variations
+            int waterQualityLevel = M3D_ENGINE_CFG.m_r_waterQuality.GetI() - 2;
+
+            switch (waterQualityLevel)
             {
-                // PS1.4 shaders
-                waterPs = M3D_RENDERER->NewAsmShader("data/shaders/waterTest_ps14.asm", m3d::rend::IAsmShader::Type::PIXEL_SHADER);
-                m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps11.vs", "WaterVS", m3d::rend::IHlslShader::VS_1_1);
-            }
-            else
-            {
+            case 0:  // Medium quality
+                m_waterVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTestMed_ps20.vs", "WaterVS", rend::IHlslShader::VS_2_0);
+                m_waterPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTestMed_ps20.ps", "WaterPS", rend::IHlslShader::PS_2_0);
+                break;
+
+            case 1:  // High quality
+                m_waterVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTest_ps20.vs", "WaterVS", rend::IHlslShader::VS_2_0);
+                m_waterPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTest_ps20.ps", "WaterPS", rend::IHlslShader::PS_2_0);
+                break;
+
+            default:  // Low quality
+                // Clean up existing shaders
                 if (m_solidDeepVs)
                 {
                     m_solidDeepVs->Release();
                     m_solidDeepVs = nullptr;
                 }
-
                 if (m_solidDeepPs)
                 {
                     m_solidDeepPs->Release();
                     m_solidDeepPs = nullptr;
                 }
 
-                // PS2.0 shaders - select quality level
-                if (waterQuality == 2)
-                {
-                    m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTestMed_ps20.vs", "WaterVS", m3d::rend::IHlslShader::VS_2_0);
-                    m_waterPs = M3D_RENDERER->NewHlslShader("data/shaders/waterTestMed_ps20.ps", "WaterPS", m3d::rend::IHlslShader::PS_2_0);
-
-                    // Load deep shaders
-                    m_solidDeepVs = M3D_RENDERER->NewHlslShader(
-                        "data/shaders/landscapeDeep_ps20.vs", "LandscapeVS", m3d::rend::IHlslShader::VS_2_0);
-                    m_solidDeepPs = M3D_RENDERER->NewHlslShader(
-                        "data/shaders/landscapeDeep_ps20.ps", "LandscapePS", m3d::rend::IHlslShader::PS_2_0);
-                }
-                else if (waterQuality == 3)
-                {
-                    m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps20.vs", "WaterVS", m3d::rend::IHlslShader::VS_2_0);
-                    m_waterPs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps20.ps", "WaterPS", m3d::rend::IHlslShader::PS_2_0);
-
-                    // Load deep shaders
-                    m_solidDeepVs = M3D_RENDERER->NewHlslShader(
-                        "data/shaders/landscapeDeep_ps20.vs", "LandscapeVS", m3d::rend::IHlslShader::VS_2_0);
-                    m_solidDeepPs = M3D_RENDERER->NewHlslShader(
-                        "data/shaders/landscapeDeep_ps20.ps", "LandscapePS", m3d::rend::IHlslShader::PS_2_0);
-                }
-                else
-                {
-                    m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTestLow_ps20.vs", "WaterVS", m3d::rend::IHlslShader::VS_2_0);
-                    m_waterPs = M3D_RENDERER->NewHlslShader("data/shaders/waterTestLow_ps20.ps", "WaterPS", m3d::rend::IHlslShader::PS_2_0);
-
-                    // Load deep shaders
-                    m_solidDeepVs = M3D_RENDERER->NewHlslShader(
-                        "data/shaders/landscapeDeep_ps20.vs", "LandscapeVS", m3d::rend::IHlslShader::VS_2_0);
-                    m_solidDeepPs = M3D_RENDERER->NewHlslShader(
-                        "data/shaders/landscapeDeep_ps20.ps", "LandscapePS", m3d::rend::IHlslShader::PS_2_0);
-                }
+                m_waterVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTestLow_ps20.vs", "WaterVS", rend::IHlslShader::VS_2_0);
+                m_waterPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTestLow_ps20.ps", "WaterPS", rend::IHlslShader::PS_2_0);
+                break;
             }
-            // Load fresnel texture
-            m_fresnelTex = M3D_RENDERER->AddTexture("data/textures/fresnel.dds", 0);
-            M3D_RENDERER->SetTextureParameter(m_fresnelTex, m3d::rend::TexParam::TM_WRAP_S, 3);
-            M3D_RENDERER->SetTextureParameter(m_fresnelTex, m3d::rend::TexParam::TM_WRAP_T, 3);
+
+            // Load deep water shaders for PS2.0
+            m_solidDeepVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/landscapeDeep_ps20.vs", "LandscapeVS", rend::IHlslShader::VS_2_0);
+            m_solidDeepPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/landscapeDeep_ps20.ps", "LandscapePS", rend::IHlslShader::PS_2_0);
+
+            // Load water textures and fresnel map
+            ReloadWaterTextures();
+
+            m_fresnelTex = m3d::Application::g_pApp->m_renderer->AddTexture("data/textures/fresnel.dds", 0);
+
+            m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_fresnelTex, rend::TM_WRAP_S, 3u);
+            m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_fresnelTex, rend::TM_WRAP_T, 3u);
+            break;
         }
 
-        // Load wave bump texture
-        m_waveBumpTex = M3D_RENDERER->AddTexture("data/textures/water_dsdt.shader", 2);
-        M3D_RENDERER->SetTextureParameter(m_waveBumpTex, m3d::rend::TexParam::TM_WRAP_S, 3);
-        M3D_RENDERER->SetTextureParameter(m_waveBumpTex, m3d::rend::TexParam::TM_WRAP_T, 1);
+        // For PS1.1/1.4, load wave bump texture
+        if (m_waterShaderVersion == 11 || m_waterShaderVersion == 14)
+        {
+            m_waveBumpTex = m3d::Application::g_pApp->m_renderer->AddTexture("data/textures/water_dsdt.shader", 2);
+
+            m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpTex, rend::TM_WRAP_S, 3u);
+            m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpTex, rend::TM_WRAP_T, 1u);
+        }
 
         // Load simple water shaders
-        m_waterDumbPs = M3D_RENDERER->NewHlslShader("data/shaders/water_dumb.ps", "WaterPS", m3d::rend::IHlslShader::PS_1_1);
-        m_waterDumbVs = M3D_RENDERER->NewHlslShader("data/shaders/water_dumb.vs", "WaterVS", m3d::rend::IHlslShader::VS_1_1);
+        m_waterDumbPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/water_dumb.ps", "WaterPS", rend::IHlslShader::PS_1_1);
+        m_waterDumbVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/water_dumb.vs", "WaterVS", rend::IHlslShader::VS_1_1);
 
         // Initialize scale matrix
         m_matScale._12 = 0.0;
@@ -1397,7 +1393,47 @@ namespace m3d
 
     void Landscape::ReloadWaterTextures()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Landscape::ReloadWaterTextures
+        // Only reload textures for PS2.0 shader version
+        if (m_waterShaderVersion != 20)
+        {
+            return;
+        }
+
+        // Release and reload the large wave bump texture
+        if (m_waveBumpTex.IsValid())
+        {
+            m3d::Application::g_pApp->m_renderer->ReleaseTexture(m_waveBumpTex);
+        }
+
+        // Build path for large water texture
+        CStr basePath = M3D_ENGINE_CFG.m_weather_PathToTextures.GetS();
+        CStr bigTexturePath = basePath + pClient->GetWorld().m_level->m_waterTexBig;
+
+        // Load the large wave bump texture
+        m_waveBumpTex = m3d::Application::g_pApp->m_renderer->AddTexture(bigTexturePath, 6);
+
+        // Set texture parameters for large texture
+        m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpTex, rend::TM_WRAP_S, 1u);
+        m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpTex, rend::TM_WRAP_T, 1u);
+        m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpTex, rend::TM_TEX_FILTER, 5u);
+
+        // Release and reload the small wave bump texture
+        if (m_waveBumpSmTex.IsValid())
+        {
+            m3d::Application::g_pApp->m_renderer->ReleaseTexture(m_waveBumpSmTex);
+        }
+
+        // Build path for small water texture
+        CStr smallTexturePath = basePath + pClient->GetWorld().m_level->m_waterTexSmall;
+
+        // Load the small wave bump texture
+        m_waveBumpSmTex = m3d::Application::g_pApp->m_renderer->AddTexture(smallTexturePath, 6);
+
+        // Set texture parameters for small texture
+        m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpSmTex, rend::TM_WRAP_S, 1u);
+        m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpSmTex, rend::TM_WRAP_T, 1u);
+        m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpSmTex, rend::TM_TEX_FILTER, 5u);
     }
 
     bool Landscape::SaveNormalMap(CStr const&)
@@ -2882,7 +2918,7 @@ namespace m3d
                             std::pair<unsigned int, float> cellData(encodedCoords, waterHeight);
 
                             // Add to the water cells vector for this LOD level
-                            std::vector<std::pair<unsigned int, float>>& lodBucket = this->waterCellsToDraw[0];
+                            std::vector<std::pair<unsigned int, float>>& lodBucket = this->waterCellsToDraw[lodLevel];
                             lodBucket.push_back(cellData);
                         }
                     }
@@ -2892,7 +2928,8 @@ namespace m3d
         }
 
         // Set time-based parameters
-        float const currentTime = static_cast<float>(M3D_KERNEL->GetTimer().GetCurTime()) * 0.001;
+        // TODO: water flow coeff
+        float const currentTime = static_cast<float>(M3D_KERNEL->GetTimer().GetCurTime()) * 0.0001;
 
         if (this->m_waterShaderVersion == 20)
         {
