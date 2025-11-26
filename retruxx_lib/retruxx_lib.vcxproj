@@ -1374,6 +1374,7 @@
     <ClInclude Include="src\server\roles\combatmastermind.h" />
     <ClInclude Include="src\server\roles\teamrolemanager.h" />
     <ClInclude Include="src\server\roles\teamtactic.h" />
+    <ClInclude Include="src\server\roles\teamtacticmanager.h" />
     <ClInclude Include="src\server\roles\vehiclerole.h" />
     <ClInclude Include="src\server\roles\vehiclerolebarrier.h" />
     <ClInclude Include="src\server\roles\vehiclerolecheater.h" />

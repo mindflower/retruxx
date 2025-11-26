@@ -3914,6 +3914,9 @@
     <ClInclude Include="src\retruxx\common.h">
       <Filter>retruxx</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\roles\teamtacticmanager.h">
+      <Filter>server\roles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">

@@ -566,9 +566,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    m3d::AIParam AI::GetState2Param(unsigned)
+    m3d::AIParam AI::GetState2Param(unsigned paramNum)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!m_StateStack2.empty() && paramNum < m_StateStack2.back().m_ParamList.size())
+        {
+            return m3d::AIParam(m_StateStack2.back().m_ParamList[paramNum]);
+        }
+
+        return m3d::AIParam(0);
     }
 
     m3d::AIParam AI::GetState1Param(unsigned)
