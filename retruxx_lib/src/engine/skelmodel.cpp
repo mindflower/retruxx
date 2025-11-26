@@ -1947,7 +1947,7 @@ namespace m3d
         m_forModel = 0;
         for (auto& vert : m_meshesVerts)
         {
-            delete vert;
+            delete[] (uint8_t*)vert;
         }
         m_meshesVerts.clear();
         delete m_bonesAnim;
@@ -1958,12 +1958,12 @@ namespace m3d
 
     AnimatedModel::Animation const* AnimInfo::GetCurAnimation() const
     {
-	    RETRUXX_NOT_IMPLEMENTED;
+        return m_curAnimation;
     }
 
     int AnimInfo::GetStickToLastFrame() const
     {
-        return this->m_stickToLastFrame;
+        return m_stickToLastFrame;
     }
 
     void AnimInfo::RemoveCopyMesh(void**&, int*&, unsigned short**&, int*&, CMatrix**&)

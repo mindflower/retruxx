@@ -1,5 +1,7 @@
 #include "math/coremath.h"
 
+#include "math/vector2.h"
+
 #include <stdexcept>
 
 int CBrezLine::start(int srcx, int srcy, int dstx, int dsty)
@@ -169,7 +171,7 @@ Quaternion getTangent(Quaternion const& q1, Quaternion const& q2, Quaternion con
     q.z = v17;
     q.w = (((v13.w * q1.w) - v18) - (v13.y * q1.y)) - (v13.z * q1.z);
 
-    auto e =Ln(q);
+    auto e = Ln(q);
     q.x = (e.x + l1.x) * -0.25;
     q.y = (e.y + l1.y) * -0.25;
     q.z = (e.z + l1.z) * -0.25;
@@ -186,6 +188,46 @@ Quaternion getTangent(Quaternion const& q1, Quaternion const& q2, Quaternion con
     a1.z = v21;
     a1.w = v22;
     return a1;
+}
+float CalculateAngle(CVector2 const& a, CVector2 const& b)
+{
+    // TODO: check and refactor this
+    long double v2;  // st7
+    long double v3;  // st7
+    float angle;     // [esp+0h] [ebp-10h]
+    float anglea;    // [esp+0h] [ebp-10h]
+    float angleb;    // [esp+0h] [ebp-10h]
+    float v8;        // [esp+4h] [ebp-Ch]
+    float v9;        // [esp+8h] [ebp-8h]
+    float v10;       // [esp+Ch] [ebp-4h]
+
+    if ((float)((float)(b.x * b.x) + (float)(b.y * b.y)) <= 0.0000099999997)
+    {
+        v10 = 0.0;
+        v9 = 0.0;
+    }
+    else
+    {
+        v2 = 1.0 / sqrt((float)((float)(b.x * b.x) + (float)(b.y * b.y)));
+        v9 = v2 * b.x;
+        v10 = v2 * b.y;
+    }
+    angle = (float)(a.x * a.x) + (float)(a.y * a.y);
+    if (angle <= 0.0000099999997)
+    {
+        v8 = 0.0;
+        anglea = 0.0;
+    }
+    else
+    {
+        v3 = 1.0 / sqrt(angle);
+        anglea = v3 * a.x;
+        v8 = v3 * a.y;
+    }
+    angleb = acos(v8 * v10 + anglea * v9);
+    if ((float)((float)(a.x * b.y) - (float)(a.y * b.x)) < 0.0)
+        return (float)(0.0 - angleb);
+    return angleb;
 }
 
 Quaternion SLerpAcc(Quaternion const& a, Quaternion const& b, float t)

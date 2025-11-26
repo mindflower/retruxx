@@ -336,22 +336,50 @@ namespace m3d
 
     void RotAttractor::InitParticle(Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_State == SPEED && !m_emitterOn)
+        {
+            CVector dest;
+            m3d::CalcForcesCarthesian(dest, m_force, Time);
+            pParticle->m_rotvel.x = pParticle->m_rotvel.x + dest.x;
+            pParticle->m_rotvel.y = pParticle->m_rotvel.y + dest.y;
+            pParticle->m_rotvel.z = pParticle->m_rotvel.z + dest.z;
+        }
     }
 
     void RotAttractor::InitParticlesList(ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_State == SPEED && m_emitterOn)
+        {
+            CVector dest;
+            m3d::CalcForcesCarthesian(dest, m_force, parts->m_time);
+            parts->m_rotvel.x = parts->m_rotvel.x + dest.x;
+            parts->m_rotvel.y = dest.y + parts->m_rotvel.y;
+            parts->m_rotvel.z = dest.z + parts->m_rotvel.z;
+        }
     }
 
     void RotAttractor::AffectParticle(Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (this->m_State == ACCELERATION && !this->m_emitterOn)
+        {
+            CVector dest;
+            m3d::CalcForcesCarthesian(dest, m_force, Time);
+            pParticle->m_rotaccel.x = pParticle->m_rotaccel.x + dest.x;
+            pParticle->m_rotaccel.y = pParticle->m_rotaccel.y + dest.y;
+            pParticle->m_rotaccel.z = pParticle->m_rotaccel.z + dest.z;
+        }
     }
 
     void RotAttractor::AffectParticlesList(ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_State == ACCELERATION && m_emitterOn)
+        {
+            CVector dest;
+            m3d::CalcForcesCarthesian(dest, m_force, parts->m_time);
+            parts->m_rotaccel.x = parts->m_rotaccel.x + dest.x;
+            parts->m_rotaccel.y = dest.y + parts->m_rotaccel.y;
+            parts->m_rotaccel.z = dest.z + parts->m_rotaccel.z;
+        }
     }
     void RotAttractor::SetEmitter(TimeMode mode, float emitSt, float emitFin, float emitRpt)
     {

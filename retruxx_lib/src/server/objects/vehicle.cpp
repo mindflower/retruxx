@@ -814,7 +814,7 @@ namespace ai
 
 	VehicleRecollection* Vehicle::GetRecollection() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(theObjects->GetEntityByObjId(m_recollectionId), VehicleRecollection);
 	}
 
 	void Vehicle::SetLinearVelocity(CVector const& linearVel)

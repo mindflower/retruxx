@@ -1987,7 +1987,9 @@ namespace m3d
 
     int SpritePS::Render(CMatrix const*, ParticlesList*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO implement SpritePS::Render
+        // RETRUXX_NOT_IMPLEMENTED;
+        return 1;
     }
 
     rend::IbPoolField SpritePS::m_IbPoolField;

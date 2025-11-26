@@ -180,7 +180,7 @@ namespace m3d
 
     Weather const* WeatherManager::GetActiveWeather() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_currentWeather;
     }
 
     unsigned WeatherManager::GetWeatherColor(ColorItems ci) const

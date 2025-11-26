@@ -404,9 +404,20 @@ int WeaponGroupManager::RemoveWeaponFromWeaponGroup(int)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int WeaponGroupManager::RemoveWeaponFromWeaponGroup(CStr const&)
+int WeaponGroupManager::RemoveWeaponFromWeaponGroup(CStr const& gunPartName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto const id = GetWeaponGroupIdForWeapon(gunPartName);
+    if (id == -1)
+    {
+        return 0;
+    }
+
+    auto const it = m_weaponGroups.find(id);
+    if (it != m_weaponGroups.end())
+    {
+        return it->second->RemoveWeapon(gunPartName);
+    }
+    return 0;
 }
 
 m3d::Class* WeaponGroupManager::GetClass() const
@@ -580,9 +591,22 @@ void WeaponGroup::KeepFire()
     }
 }
 
-int WeaponGroup::RemoveWeapon(CStr const&)
+int WeaponGroup::RemoveWeapon(CStr const& gunPartName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (gunPartName.empty())
+    {
+        return 0;
+    }
+
+    auto const it = m_gunPartNames.find(gunPartName);
+    if (it == m_gunPartNames.end())
+    {
+        return 0;
+    }
+
+    m_gunPartNames.erase(it);
+    M3D_APP->ImmediateMessage(UM_WEAPONGROUP_CHANGED, m_groupId, 0, 0, 0, {}, {});
+    return 1;
 }
 
 int WeaponGroup::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

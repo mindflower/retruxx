@@ -720,9 +720,9 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int SceneGraph::IsCellEnabled(int, int)
+    int SceneGraph::IsCellEnabled(int x, int y)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return (this->m_enableVisSpaceMask & this->m_enableMap[256 * y + x]) != 0;
     }
 
     void SceneGraph::RenderNode(SgNode*, CMatrix const&, bool)

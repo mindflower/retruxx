@@ -22,6 +22,7 @@
 #include <algorithm>
 #include "scene/servers/dataserver.h"
 #include "skelmodel.h"
+#include "math/coremath.h"
 #include "server/objects/base/physicobj.h"
 
 #include <draftstructures.h>
@@ -554,7 +555,7 @@ namespace m3d
             m_solidPs->Apply();
             m_solidVs->Apply();
 
-            int projMatrixHandle = m_solidVs->GetParamHandleByName("mViewProj");
+            unsigned projMatrixHandle = m_solidVs->GetParamHandleByName("mViewProj");
             m_solidVs->SetMatrix(projMatrixHandle, du);
 
             auto lightmapTexture = GetLightmapTexture();
@@ -568,10 +569,10 @@ namespace m3d
             m_solidBindPs->Apply();
             m_solidBindVs->Apply();
 
-            int projMatrixHandle = m_solidBindVs->GetParamHandleByName("mViewProj");
+            unsigned projMatrixHandle = m_solidBindVs->GetParamHandleByName("mViewProj");
             m_solidBindVs->SetMatrix(projMatrixHandle, du);
 
-            int viewPosHandle = m_solidBindVs->GetParamHandleByName("ViewPos");
+            unsigned viewPosHandle = m_solidBindVs->GetParamHandleByName("ViewPos");
             m_solidBindVs->SetVector3(viewPosHandle, du.getOrgInv());
 
             const auto transitionCFatror = M3D_ENGINE_CFG.m_lsTransitionCFactor.GetF();
@@ -581,6 +582,36 @@ namespace m3d
 
             auto lightmapTexture = GetLightmapTexture();
             M3D_RENDERER->SetTexture(0, lightmapTexture, -1.0);
+            break;
+        }
+        case LRM_DEEPMAP:
+        {
+            m_owner->GetGraph().SortedCellsStartFetching(0, m_drawRadius + 1);
+            m_solidDeepVs->Apply();
+            m_solidDeepPs->Apply();
+
+            unsigned projMatrixHandle = m_solidDeepVs->GetParamHandleByName("mViewProj");
+            m_solidDeepVs->SetMatrix(projMatrixHandle, du);
+
+            CMatrix const textureMat = du * m_matScale;
+            unsigned mTextureHandle = m_solidDeepVs->GetParamHandleByName("mTexture");
+            m_solidDeepVs->SetMatrix(mTextureHandle, textureMat);
+
+            CVector const viewPos = M3D_RENDERER->MatGet().getOrgInv();
+            unsigned viewPosHandle = m_solidDeepVs->GetParamHandleByName("viewPos");
+            m_solidDeepVs->SetVector3(viewPosHandle, viewPos);
+
+            auto const* level = pClient->GetWorld().m_level;
+            CVector waterDye;
+            waterDye.x = level->m_waterAbsorptionRed;
+            waterDye.y = level->m_waterAbsorptionGreen;
+            waterDye.z = level->m_waterAbsorptionBlue;
+            M3D_RENDERER->SetVsFloatConst(15u, (float*)&waterDye, 1u);
+
+            auto const tex = M3D_RENDERER->GetFullFrameFrameBufferTexture();
+            M3D_RENDERER->SetTextureParameter(tex, rend::TM_TEX_FILTER, 5u);
+            M3D_RENDERER->SetTexture(0, tex, -1.0);
+            M3D_RENDERER->SetFog(0, 0);
             break;
         }
         default:
@@ -2219,14 +2250,104 @@ namespace m3d
             m_owner->GetGraph().EnableVisibleCells(m_frustumCull, 1u);
             m_owner->GetRoadManager().UpdateVis();
             m_numWaterCells = 0;
+
             if (M3D_KERNEL->GetEngineCfg().m_g_drawWater.GetB())
             {
-                // TODO: implement this!!!
-                //RETRUXX_NOT_IMPLEMENTED;
+                auto& graph = m_owner->GetGraph();
+                graph.SortedCellsStartFetching(0, m_drawRadius);
+                int x, y, vis, radius;
+                while (graph.SortedCellsFetch(x, y, vis, radius))
+                {
+                    if (!vis)
+                    {
+                        continue;
+                    }
+
+                    for (int yy = 0; yy < 4; ++yy)
+                    {
+                        if (m_numWaterCells)
+                        {
+                            break;
+                        }
+
+                        for (int xx = 0; xx < 4; ++xx)
+                        {
+                            if (m_waterMap[4 * x + 4 * m_owner->m_level->land_size * (yy + 4 * y) + xx])
+                            {
+                                m_numWaterCells = 1;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
             if (m_numWaterCells)
             {
-                //RETRUXX_NOT_IMPLEMENTED;
+                // TODO: check this!!!
+                // Create reflection matrix for water plane
+                CMatrix mirror;
+                CVector const& normal = m_waterPlane.m_normal;
+                float dist = m_waterPlane.m_dist;
+
+                mirror._11 = 1.0f - 2.0f * normal.x * normal.x;
+                mirror._12 = -2.0f * normal.x * normal.y;
+                mirror._13 = -2.0f * normal.x * normal.z;
+                mirror._14 = 0.0f;
+
+                mirror._21 = -2.0f * normal.x * normal.y;
+                mirror._22 = 1.0f - 2.0f * normal.y * normal.y;
+                mirror._23 = -2.0f * normal.y * normal.z;
+                mirror._24 = 0.0f;
+
+                mirror._31 = -2.0f * normal.x * normal.z;
+                mirror._32 = -2.0f * normal.y * normal.z;
+                mirror._33 = 1.0f - 2.0f * normal.z * normal.z;
+                mirror._34 = 0.0f;
+
+                mirror._41 = 2.0f * dist * normal.x;
+                mirror._42 = 2.0f * dist * normal.y;
+                mirror._43 = 2.0f * dist * normal.z;
+                mirror._44 = 1.0f;
+
+                // Get current view matrix and apply reflection
+                CMatrix viewMatrix = M3D_RENDERER->MatGet();
+                CMatrix im = mirror * viewMatrix;
+
+
+                // Get viewport dimensions
+                m3d::rend::Viewport viewport = M3D_RENDERER->GetViewport();
+                float width = static_cast<float>(viewport.m_width);
+                float height = static_cast<float>(viewport.m_height);
+
+                // Calculate FOV based on aspect ratio
+                float fovX, fovY;
+                if (width <= height)
+                {
+                    fovX = 0.78539819f;
+                    fovY = (width / height) * 0.78539819f;
+                }
+                else
+                {
+                    fovX = (width / height) * 0.78539819f;
+                    fovY = 0.78539819f;
+                }
+
+                // Calculate reflection draw distance
+                float distanceDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
+                float reflectionModifier = M3D_ENGINE_CFG.m_g_reflectionDrawDistModifier.GetF();
+
+                float reflectionDistance = (distanceDivider / reflectionModifier) * 8.0f + 4.0f;
+
+                // Create reflected frustum
+                CMatrix inverseMatrix = im.getInverse();
+                CVector origin = inverseMatrix.getOrg();
+
+                float const VISCELL_EDGE_LENGTH_24 = 128.0f;
+
+                m_reflectedFrustum.createScreenFrustums(origin, im, fovX, fovY, 1.0f, reflectionDistance * VISCELL_EDGE_LENGTH_24);
+
+                // Enable visible cells for reflection
+                m_owner->m_sceneGraph.EnableVisibleCells(m_reflectedFrustum, 2);
             }
         }
         m_profilerUpdateVis->EndCountdown();
@@ -2450,7 +2571,437 @@ namespace m3d
 
     void Landscape::DrawWaterLayer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Landscape::DrawWaterLayer
+        M3D_RENDERER->TgSetTcSource(0, rend::TC_FROM_VERTEX, 0);
+        M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
+        M3D_RENDERER->TgSetTcSource(2, rend::TC_FROM_VERTEX, 2);
+        M3D_RENDERER->TgSetTcSource(3, rend::TC_FROM_VERTEX, 3);
+        M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
+        if (M3D_ENGINE_CFG.m_r_enableFog.GetB())
+        {
+            M3D_RENDERER->PushFog(true);
+        }
+        M3D_RENDERER->SetAlphaTest(0);
+        M3D_RENDERER->SetLighting(0, 0);
+
+        if (M3D_ENGINE_CFG.m_r_waterInQuery.GetB())
+        {
+            m_currWaterQuery = (m_currWaterQuery + 1) % 3;
+            m_waterQueries[m_currWaterQuery]->Begin();
+        }
+
+        switch (m_waterShaderVersion)
+        {
+        case 14:
+            RETRUXX_NOT_IMPLEMENTED;
+
+        case 11:
+            RETRUXX_NOT_IMPLEMENTED;
+
+        case 20:
+            M3D_RENDERER->SetTexture(0, m_waveBumpTex, -1.0);
+            M3D_RENDERER->SetTexture(1, m_waveBumpSmTex, -1.0);
+            M3D_RENDERER->SetTexture(2, m_fresnelTex, -1.0);
+            M3D_RENDERER->SetTexture(3, m_texRtReflection, -1.0);
+            M3D_RENDERER->SetTexture(4, m_texRtRefraction, -1.0);
+            break;
+
+        default:
+            RETRUXX_NOT_IMPLEMENTED;
+
+        }
+
+        CMatrix const mat = M3D_RENDERER->MatGet();
+        CMatrix const viewMat = M3D_RENDERER->MatGetProj();
+        CMatrix const resultViewMat = mat * viewMat;
+        CMatrix const textureMat = resultViewMat * m_matScale;
+
+        unsigned const viewProjHandle = m_waterVs->GetParamHandleByName("mViewProj");
+        m_waterVs->SetMatrix(viewProjHandle, resultViewMat);
+
+        unsigned const textureHandle = m_waterVs->GetParamHandleByName("mTexture");
+        m_waterVs->SetMatrix(textureHandle, textureMat);
+
+        rend::Colorf const reflectionTint = m_owner->m_level->m_reflectionTint;
+        rend::Colorf const refractionTint = m_owner->m_level->m_refractionTint;
+
+        if (m_waterShaderVersion == 20)
+        {
+            rend::Colorf const weatherSpecularColor = m_owner->GetWeatherSpecularColor();
+            Weather const* currentWeather = m_owner->GetWeatherManager().GetActiveWeather();
+
+            CVector4 waveHeightSpecular(
+                currentWeather->m_waterHeightSmall,
+                currentWeather->m_waterHeightBig,
+                currentWeather->m_waterSpecularS * weatherSpecularColor.a,
+                currentWeather->m_waterSpecularM);
+
+            unsigned const waveHeightSpecularHandle = m_waterPs->GetParamHandleByName("waveHeightSpecular");
+            m_waterPs->SetVector4(waveHeightSpecularHandle, waveHeightSpecular);
+
+             // Set view position
+            CMatrix invView = resultViewMat.getInverse();
+            CVector viewPos = invView.getOrg();
+
+            unsigned const viewPosHandle = m_waterVs->GetParamHandleByName("viewPos");
+            m_waterVs->SetVector3(viewPosHandle, viewPos);
+
+            // Set wave parameters
+            CVector4 waveSize(
+                currentWeather->m_waterSizeSmall, currentWeather->m_waterSizeBig, cos(currentWeather->m_waterCourseAng), sin(currentWeather->m_waterCourseAng));
+            unsigned const waveSizeHandle = m_waterVs->GetParamHandleByName("waveSize");
+            m_waterVs->SetVector4(waveSizeHandle, waveSize);
+
+            // Set sun direction and fog color
+            CVector sunDir = m_owner->m_sunDir * 20000.0f;
+            M3D_RENDERER->SetVsFloatConst(15, reinterpret_cast<float const*>(&sunDir), 1);
+
+            CVector fogColor = currentWeather->m_currentColors[4];
+            M3D_RENDERER->SetPsFloatConst(4, reinterpret_cast<float const*>(&fogColor), 1);
+
+        }
+        else
+        {
+            /* // Standard shader parameters for versions 11/14
+            waterVs->SetFloat("fresnelBias", 0.0f);
+            waterVs->SetFloat("fresnelScale", 1.0f);
+            waterVs->SetFloat("fresnelPower", 4.0f);
+            
+            // Set view position
+            CMatrix invView = viewMatrix->getInverse();
+            CVector viewPos = invView.getTranslation();
+            waterVs->SetVector3("ViewPos", &viewPos);
+            
+            // Set reflection and refraction tints
+            unsigned int constRegister = (this->m_waterShaderVersion == 14) ? 5 : 0;
+            unsigned int constRegister2 = (this->m_waterShaderVersion == 14) ? 6 : 1;
+            
+            renderer->SetPsFloatConst(constRegister, reinterpret_cast<const float*>(&reflectionTint), 1);
+            renderer->SetPsFloatConst(constRegister2, reinterpret_cast<const float*>(&refractionTint), 1);
+            */
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+         // Set fog parameters
+        float fogStart, fogEnd;
+        GetFogStartAndEnd(fogStart, fogEnd);
+
+        float fogReduceFactor = m_owner->GetFogReduceFactorFromWeather();
+        CVector fogTerm(fogReduceFactor * fogEnd, 1.0f / (fogReduceFactor * fogEnd - fogReduceFactor * fogStart), fogReduceFactor * fogStart);
+
+        
+        unsigned const gFogTermHandle = m_waterVs->GetParamHandleByName("g_FogTerm");
+        m_waterVs->SetVector3(gFogTermHandle, fogTerm);
+
+        // Clear water cells to draw
+        for (int i = 0; i < 16; ++i)
+        {
+            waterCellsToDraw[i].clear();
+        }
+
+        // Collect visible water cells
+        CMatrix invView = resultViewMat.getInverse();
+        int landSize = m_owner->m_level->land_size;
+
+        for (int x = 0; x < landSize; ++x)
+        {
+            for (int y = 0; y < landSize; ++y)
+            {
+                // Check if cell is enabled in scene graph
+                if (m_owner->m_sceneGraph.IsCellEnabled(x, y) == 0)
+                {
+                    continue;
+                }
+
+                // Process sub-cells (4x4 grid within each cell)
+                for (int subY = 0; subY < 4; subY++)
+                {
+                    int waterMapY = subY + 4 * y;
+
+                    for (int subX = 0; subX < 4; subX++)
+                    {
+                        int waterMapX = subX + 4 * x;
+
+                         // Check if this cell has water
+                        if (m_waterMap[4 * waterMapY * landSize + waterMapX])
+                        {
+                            int waterMapStride = 4 * landSize;
+
+                            // Default to highest LOD (most detailed)
+                            int lodLevel = 3;
+
+                            // Get water height with bounds checking
+                            float waterHeight = 0.0f;
+                            if (waterMapX >= 0 && waterMapX < waterMapStride && waterMapY >= 0 && waterMapY < waterMapStride)
+                            {
+                                waterHeight = static_cast<float>(m_waterMap[waterMapX + waterMapStride * waterMapY]) * 0.12f;
+                            }
+
+                            bool isShaderVersion14 = (this->m_waterShaderVersion == 14);
+
+                            // Only calculate advanced LOD if not using shader version 14 and water quality is not low
+                            if (!isShaderVersion14 && m3d::g_Kernel->GetEngineCfg().m_r_waterQuality.GetI() != 1)
+                            {
+                                // Calculate world position of this water cell (center of cell)
+                                float worldX = (static_cast<float>(waterMapX) + 0.5f) * 32.0f;
+                                float worldY = (static_cast<float>(waterMapY) + 0.5f) * 32.0f;
+
+                                // Calculate position relative to camera
+                                CVector2 cellPos;
+                                cellPos.x = invView._41 - worldX;  // Camera X - cell X
+                                cellPos.y = invView._43 - worldY;  // Camera Z - cell Y
+
+                                // Calculate angle from camera to cell relative to reference vector (1,1)
+                                CVector2 referenceVec(1.0f, 1.0f);
+                                float dotProduct = cellPos.x * referenceVec.x + cellPos.y * referenceVec.y;
+                                float magCell = std::sqrt(cellPos.x * cellPos.x + cellPos.y * cellPos.y);
+                                float magRef = std::sqrt(referenceVec.x * referenceVec.x + referenceVec.y * referenceVec.y);
+                                float cosAngle = dotProduct / (magCell * magRef);
+                                cosAngle = std::max(-1.0f, std::min(1.0f, cosAngle));  // Clamp to avoid precision issues
+                                float angle = -std::acos(cosAngle);
+
+                                // Normalize angle to 0-2PI range
+                                if (angle <= 0.0f)
+                                {
+                                    angle += 6.2831855f;  // 2 * PI
+                                }
+
+                                // Convert angle to quadrant (0-3)
+                                int quadrant = static_cast<int>(angle * 0.63661975f);  // Multiply by 2/PI
+
+                                // Calculate distance to this cell (using max of absolute X/Y distances)
+                                float distanceX = std::abs(cellPos.x);
+                                float distanceY = std::abs(cellPos.y);
+                                float distanceToCell = (distanceY <= distanceX) ? distanceX : distanceY;
+
+                                // Determine neighbor position based on quadrant for edge detection
+                                CVector2 neighborPos(worldX, worldY);
+                                switch (quadrant)
+                                {
+                                case 0:  // Right quadrant - check neighbor above
+                                    neighborPos.y += 32.0f;
+                                    break;
+                                case 1:  // Left quadrant - check neighbor to the left
+                                    neighborPos.x -= 32.0f;
+                                    break;
+                                case 2:  // Down quadrant - check neighbor below
+                                    neighborPos.y -= 32.0f;
+                                    break;
+                                case 3:  // Up quadrant - check neighbor to the right
+                                    neighborPos.x += 32.0f;
+                                    break;
+                                }
+
+                                // Calculate distance to neighbor
+                                float neighborDeltaX = neighborPos.x - invView._41;
+                                float neighborDeltaY = neighborPos.y - invView._43;
+                                float neighborDistX = std::abs(neighborDeltaX);
+                                float neighborDistY = std::abs(neighborDeltaY);
+                                float distanceToNeighbor = (neighborDistY <= neighborDistX) ? neighborDistX : neighborDistY;
+
+                                // Determine LOD level based on shader version and distances
+                                if (this->m_waterShaderVersion == 20)
+                                {
+                                    // Shader version 20 LOD thresholds
+                                    if (distanceToCell >= 60.0f)
+                                    {
+                                        lodLevel = 2;  // Medium detail
+                                        if (distanceToCell >= 150.0f)
+                                        {
+                                            lodLevel = 3;  // Low detail
+                                        }
+                                    }
+                                    else
+                                    {
+                                        lodLevel = 1;  // High detail
+                                    }
+
+                                    // Determine neighbor LOD for edge detection
+                                    int neighborLOD = 1;
+                                    if (distanceToNeighbor >= 60.0f)
+                                    {
+                                        neighborLOD = 2;
+                                        if (distanceToNeighbor >= 150.0f)
+                                        {
+                                            neighborLOD = 3;
+                                        }
+                                    }
+
+                                    // If LOD levels differ, encode quadrant information
+                                    if (lodLevel != neighborLOD)
+                                    {
+                                        lodLevel = quadrant + 4 * lodLevel;
+                                    }
+                                }
+                                else
+                                {
+                                    // Older shader versions LOD thresholds
+                                    if (distanceToCell >= 100.0f)
+                                    {
+                                        if (distanceToCell >= 200.0f)
+                                        {
+                                            lodLevel = 2;  // Medium detail
+                                            if (distanceToCell >= 400.0f)
+                                            {
+                                                lodLevel = 3;  // Low detail
+                                            }
+                                        }
+                                        else
+                                        {
+                                            lodLevel = 1;  // High detail
+                                        }
+                                    }
+                                    else
+                                    {
+                                        lodLevel = 0;  // Highest detail
+                                    }
+
+                                    // Determine neighbor LOD for edge detection
+                                    int neighborLOD = 0;
+                                    if (distanceToNeighbor >= 100.0f)
+                                    {
+                                        if (distanceToNeighbor >= 200.0f)
+                                        {
+                                            neighborLOD = 2;
+                                            if (distanceToNeighbor >= 400.0f)
+                                            {
+                                                neighborLOD = 3;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            neighborLOD = 1;
+                                        }
+                                    }
+
+                                    // If LOD levels differ, encode quadrant information
+                                    if (lodLevel != neighborLOD)
+                                    {
+                                        lodLevel = quadrant + 4 * lodLevel;
+                                    }
+                                }
+                            }
+
+                            // Add cell to appropriate LOD bucket
+                            unsigned int encodedCoords = static_cast<unsigned int>((waterMapY & 0xFF) << 8) | (waterMapX & 0xFF);
+                            std::pair<unsigned int, float> cellData(encodedCoords, waterHeight);
+
+                            // Add to the water cells vector for this LOD level
+                            std::vector<std::pair<unsigned int, float>>& lodBucket = this->waterCellsToDraw[lodLevel];
+                            lodBucket.push_back(cellData);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        // Set time-based parameters
+        unsigned int currentTime = m3d::g_Kernel->GetTimer().GetCurTime();
+
+        if (this->m_waterShaderVersion == 20)
+        {
+            unsigned const timeValHandle = m_waterVs->GetParamHandleByName("timeVal");
+            m_waterVs->SetFloat(timeValHandle, *reinterpret_cast<float*>(&currentTime));
+        }
+        else
+        {
+            unsigned const timeValHandle = m_waterVs->GetParamHandleByName("timeVal");
+            m_waterVs->SetFloat(timeValHandle, *reinterpret_cast<float*>(&currentTime));
+
+            
+            unsigned const numVertsInWaterTileEdgeRecHandle = m_waterVs->GetParamHandleByName("numVertsInWaterTileEdgeRec");
+            m_waterVs->SetFloat(numVertsInWaterTileEdgeRecHandle, 4.0f);
+        }
+
+        // Setup rendering
+        M3D_RENDERER->SetToStream0(m_waterVb);
+        m_waterVs->Apply();
+
+        if (this->m_waterShaderVersion == 20)
+        {
+            this->m_waterPs->Apply();
+        }
+        else
+        {
+            // Apply appropriate pixel shader for older versions
+            // (Note: 'waterPs' variable was not properly defined in decompiled code)
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+
+        // Render water cells by LOD
+        float distBetwVert = 4.0f;
+        M3D_RENDERER->SetVsFloatConst(17, &distBetwVert, 1);
+
+        int totalTris = 0;
+        int totalDrawCalls = 0;
+
+        for (int lod = 0; lod < 16; ++lod)
+        {
+            std::vector<std::pair<unsigned int, float>>& lodCells = this->waterCellsToDraw[lod];
+
+            if (!lodCells.empty())
+            {
+                M3D_RENDERER->SetIndices(m_waterIb[lod], 0);
+
+                auto cellIt = lodCells.begin();
+                while (cellIt != lodCells.end())
+                {
+                    int cellsThisBatch = 0;
+                    int maxCellsPerPass = this->m_maxWaterCellPerPass;
+
+                    // Prepare batch of cells
+                    while (cellsThisBatch < maxCellsPerPass && cellIt != lodCells.end())
+                    {
+                        unsigned int cellCoords = cellIt->first;
+                        float height = cellIt->second;
+
+                        // Decode coordinates and setup water tile info
+                        int cellX = static_cast<int>(cellCoords & 0xFF);
+                        int cellY = static_cast<int>((cellCoords >> 8) & 0xFF);
+
+                        this->waterTileInfo[cellsThisBatch].x = static_cast<float>(cellX) * 32.0f;
+                        this->waterTileInfo[cellsThisBatch].y = height;
+                        this->waterTileInfo[cellsThisBatch].z = static_cast<float>(cellY) * 32.0f;
+                        this->waterTileInfo[cellsThisBatch].w = 0.0f;
+
+                        ++cellsThisBatch;
+                        ++cellIt;
+                    }
+
+                    // Render batch
+                    M3D_RENDERER->SetVsFloatConst(20, reinterpret_cast<float const*>(this->waterTileInfo), cellsThisBatch);
+
+                    int trisThisBatch = cellsThisBatch * this->m_wtNumTris[lod];
+                    M3D_RENDERER->DrawIndexedPrimitiveShader(rend::M3DPT_TRIANGLESTRIP, 0, 81 * cellsThisBatch, 0, trisThisBatch - 4);
+
+                    totalTris += trisThisBatch - 4;
+                    totalDrawCalls++;
+                }
+            }
+        }
+
+        // Update performance counters
+        CStr triCountStr = "waterTris = " + CStr(totalTris);
+        CStr dipCountStr = "waterDip = " + CStr(totalDrawCalls);
+        M3D_APP->GetDbgCounterStack().DrawStringThisFrame(triCountStr.c_str());
+        M3D_APP->GetDbgCounterStack().DrawStringThisFrame(dipCountStr.c_str());
+
+
+        // Cleanup render states
+        M3D_RENDERER->SetWhiteTexture(0);
+        M3D_RENDERER->SetWhiteTexture(1);
+        M3D_RENDERER->SetWhiteTexture(2);
+        M3D_RENDERER->SetWhiteTexture(3);
+        M3D_RENDERER->SetWhiteTexture(4);
+
+        M3D_RENDERER->PopFog();
+
+        // End occlusion query if active
+        if (M3D_ENGINE_CFG.m_r_waterInQuery.GetB())
+        {
+            m_waterQueries[this->m_currWaterQuery]->End();
+        }
     }
 
     void Landscape::CreateHelperStructures()
@@ -3004,8 +3555,8 @@ namespace m3d
         M3D_RENDERER->PushFog(M3D_KERNEL->GetEngineCfg().m_r_enableFog.GetB());
         if (m_numWaterCells != 0 && m_isWaterVisible)
         {
-            // TODO: implement water rendering
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement water reflection refraction rendering
+            // RETRUXX_NOT_IMPLEMENTED;
         }
 
         m_profilerDraw->StartCountdown();
@@ -3105,10 +3656,44 @@ namespace m3d
             RenderGrass({});
         }
 
-        if (m_numWaterCells /* && HIBYTE(v97) */)
+        if (m_numWaterCells && m_isWaterVisible)
         {
             // TODO: implement water rendering
-            RETRUXX_NOT_IMPLEMENTED;
+            m_profilerDrawWater->StartCountdown();
+            if (m_waterShaderVersion == 20 /* &&  (waterQ == 3 || waterQ == 2) */)
+            {
+                auto fullFrameTexture = M3D_RENDERER->GetFullFrameFrameBufferTexture();
+                M3D_RENDERER->CopyRenderTargetToTexture(fullFrameTexture);
+                M3D_RENDERER->RenderToTexStart(m_texRtRefraction, true);
+
+                auto const fogColor = m_owner->GetWeatherFogColor();
+                M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, fogColor & 0xFF000000);
+                M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
+                M3D_RENDERER->PushZbState(rend::ZB_ENABLE);
+                M3D_RENDERER->PushBlend(rend::BM_NONE);
+
+                DrawSolidLandscape(LRM_DEEPMAP, 0);
+
+                M3D_RENDERER->PopZbState();
+                M3D_RENDERER->PopCull();
+                M3D_RENDERER->PopBlend();
+                M3D_RENDERER->RenderToTexFinish();
+            }
+            else
+            {
+                M3D_RENDERER->CopyRenderTargetToTexture(m_texRtRefraction);
+            }
+
+            
+            M3D_RENDERER->PushCull(rend::M3DCULL_NONE);
+            M3D_RENDERER->PushZbState(rend::ZB_NOWRITE);
+
+            DrawWaterLayer();
+
+            M3D_RENDERER->PopZbState();
+            M3D_RENDERER->PopCull();
+
+            m_profilerDrawWater->EndCountdown();
         }
 
         if ((M3D_KERNEL->GetEngineCfg().m_g_drawShores.GetB()))
@@ -4382,7 +4967,7 @@ namespace m3d
             {
                 auto v86 = (unsigned __int16)v82 >> 1;
                 int v206 = 8 - v83;
-                i = 9 * v82;
+                int i = 9 * v82;
                 int v208 = 9 * v82 + v86;
                 int v207 = 10 * v82;
                 while (1)

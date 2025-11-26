@@ -886,7 +886,7 @@ namespace m3d
             virtual void Set2x2BumpMatrix(int, float, float, float, float) = 0;
             virtual int RenderToTexStart(const m3d::rend::TexHandle&, bool) = 0;
             virtual void RenderToTexFinish() = 0;
-            virtual void CopyRenderTargetToTexture(const m3d::rend::TexHandle*) = 0;
+            virtual void CopyRenderTargetToTexture(const m3d::rend::TexHandle&) = 0;
             virtual int CanRender() = 0;
             virtual int SetActiveState(int) = 0;
             virtual int BeginScene() = 0;
