@@ -15,37 +15,42 @@ namespace ai
         virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
     };
 
-    class TeamTactic : public Obj
+    class TeamTactic : public ai::Obj
     {
-    public:
-        static m3d::Class* GetBaseClass();
-        TeamTactic(TeamTacticPrototypeInfo const&);
-        virtual TeamTacticPrototypeInfo const* GetPrototypeInfo() const;
-        virtual m3d::Class* GetClass() const;
-
-    public:
-        RT_CLASS_DECLARE(TeamTactic);
-
     protected:
-        virtual ~TeamTactic();
-    private:
-        static m3d::Object* CreateObject();
-        virtual m3d::Object* Clone();
-    };
+        virtual ~TeamTactic() override = 0 /* 0x00 */;
 
-    class TeamTacticWithRolesPrototypeInfo : public TeamTacticPrototypeInfo
+        TeamTactic(ai::TeamTacticPrototypeInfo const& prototypeInfo);
+        TeamTactic(ai::TeamTactic const&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
+
+    public:
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classTeamTactic;
+        virtual ai::TeamTacticPrototypeInfo const* GetPrototypeInfo() const override /* 0x4c */;
+        virtual float FitAgainstVehicle(ai::Team const*, ai::Vehicle const*) = 0 /* 0x110 */;
+        virtual float FitAgainstTeam(ai::Team const*, ai::Team const*) = 0 /* 0x114 */;
+        virtual float FitAgainstObj(ai::Team const*, ai::Obj const*) = 0 /* 0x118 */;
+        virtual void AssignAgainstVehicle(ai::Team*, ai::Vehicle const*) = 0 /* 0x11c */;
+        virtual void AssignAgainstTeam(ai::Team*, ai::Team const*) = 0 /* 0x120 */;
+        virtual void AssignAgainstObj(ai::Team*, ai::Obj const*) = 0 /* 0x124 */;
+    }; /* size: 0x00c0 */
+
+   class TeamTacticWithRolesPrototypeInfo : public ai::TeamTacticPrototypeInfo
     {
     public:
         TeamTacticWithRolesPrototypeInfo();
-        virtual Obj* CreateTargetObject() const;
-        std::vector<int> const& GetPrototypeIds() const;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual void PostLoad();
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override /* 0x04 */;
+        virtual void PostLoad() override /* 0x00 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+        std::vector<int, std::allocator<int>> const& GetPrototypeIds() const;
 
     private:
-        std::vector<CStr> m_rolePrototypeNames;
-        std::vector<int> m_rolePrototypeIds;
-    };
+        /* 0x0040 */ std::vector<CStr, std::allocator<CStr>> m_rolePrototypeNames;
+        /* 0x0050 */ std::vector<int, std::allocator<int>> m_rolePrototypeIds;
+    }; /* size: 0x0060 */
 
     class TeamTacticWithRoles : public TeamTactic
     {

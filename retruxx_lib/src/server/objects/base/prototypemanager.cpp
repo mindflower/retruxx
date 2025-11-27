@@ -97,7 +97,7 @@ namespace ai
         {
             if (theResourceManager->bResourceIsKindOf(proto->m_resourceId, resourceId))
             {
-                prototypeIds.push_back(proto->m_resourceId);
+                prototypeIds.push_back(proto->m_prototypeId);
             }
         }
     }

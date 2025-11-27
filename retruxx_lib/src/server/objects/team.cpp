@@ -410,7 +410,7 @@ namespace ai
 
     unsigned Team::GetNumVehicles() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_vehicles.size();
     }
 
     bool Team::GetTeamFrozen() const

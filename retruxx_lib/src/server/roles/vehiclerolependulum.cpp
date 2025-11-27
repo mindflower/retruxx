@@ -10,9 +10,7 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(VehicleRolePendulum);
 
-    VehicleRolePendulumPrototypeInfo::VehicleRolePendulumPrototypeInfo()
-    {
-    }
+    VehicleRolePendulumPrototypeInfo::VehicleRolePendulumPrototypeInfo() = default;
 
     Obj* VehicleRolePendulumPrototypeInfo::CreateTargetObject() const
     {
