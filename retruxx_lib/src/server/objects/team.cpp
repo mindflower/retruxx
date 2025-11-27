@@ -285,9 +285,13 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Vehicle* Team::GetVehicle(unsigned) const
+    Vehicle* Team::GetVehicle(unsigned index) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (index < m_vehicles.size())
+        {
+            return m_vehicles[index];
+        }
+        return nullptr;
     }
 
     void Team::Registration()

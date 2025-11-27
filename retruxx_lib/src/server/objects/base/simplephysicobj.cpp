@@ -155,7 +155,7 @@ namespace ai
 
 	CVector SimplePhysicObjPrototypeInfo::GetSize() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_size;
 	}
 
 	float SimplePhysicObjPrototypeInfo::GetMassValue() const

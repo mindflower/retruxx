@@ -9,9 +9,8 @@ namespace m3d
 {
     class Profiler;
 
-    class SkidQuad
+    struct SkidQuad
     {
-    private:
         CVector p1;
         CVector p2;
     };

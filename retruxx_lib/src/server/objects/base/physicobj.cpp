@@ -364,7 +364,7 @@ namespace ai
 
     bool PhysicObj::CanCreateCollisionEffect() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_timeFromLastCollisionEffect > 0.1 || !IsUpdating();
     }
 
     void PhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
@@ -498,7 +498,7 @@ namespace ai
 
     void PhysicObj::SetCollisionEffectCreated()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_timeFromLastCollisionEffect = 0.0;
     }
 
     void PhysicObj::DisableGeometry(bool changePhysicState)

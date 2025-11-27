@@ -1558,7 +1558,7 @@ namespace ai
 
 	bool Vehicle::GetOnOilMode() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_onOilMode != 0;
 	}
 
 	bool Vehicle::bIsMovingAlongExternalPath() const
@@ -2137,7 +2137,7 @@ namespace ai
 
 	float Vehicle::GetTurboThrottleTime() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_turboThrottleTime;
 	}
 
 	float Vehicle::GetFullDurabilityCoeffForDamageType(DamageType) const

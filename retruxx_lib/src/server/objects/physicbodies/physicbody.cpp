@@ -453,9 +453,33 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	m3d::SgNode* PhysicBody::CreateEffectNode(CStr const&, CVector const&, Quaternion const&, bool, float)
+	m3d::SgNode* PhysicBody::CreateEffectNode(CStr const& modelname, CVector const& pos, Quaternion const& rot, bool bInsertInRemoveIfFree, float scale)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        auto const modelId = M3D_ENGINE_CFG.GetModelIdByName(modelname);
+        auto* node = m3d::pClient->CreateServerControlledNode(modelId);
+		if ( node)
+		{
+            m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(node);
+
+			// TODO: check this!!!!!
+            int nullValue = 0;
+		    node->SetProperty(m3d::PROP_DM_ACTION, &nullValue);
+		    node->SetProperty(m3d::PROP_NODE_PHYSICBODY, &nullValue);
+
+		    node->SetScale(scale);
+            node->SetPersistance(false);
+            node->UpdateXForm(0, 1);
+
+            if (bInsertInRemoveIfFree)
+            {
+                node->GetGraph()->InsertInRemoveIfFree(node);
+            }
+            node->SetOriginAbs(pos);
+            node->SetRotation(rot);
+            node->UpdateXForm(0, 1);
+            m3d::pClient->GetWorld().GetGraph().LinkNode(node);
+		}
+        return node;
 	}
 
 	Quaternion PhysicBody::GetRotation() const

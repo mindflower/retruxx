@@ -46,7 +46,7 @@ namespace m3d
 
     WheelTraceMgr& CWorld::GetWheelTracesMgr()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_wheelTracesMgr;
     }
 
     void CWorld::Render()

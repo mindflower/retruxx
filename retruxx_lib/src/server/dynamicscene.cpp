@@ -575,9 +575,21 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	CStr const& DynamicScene::GetSoilEffectName(unsigned, unsigned short, bool) const
+	CStr const STANDARD_GROUNDSPLASH = "ET_PS_GROUNDSPLASH";
+
+	CStr const& DynamicScene::GetSoilEffectName(unsigned wheelType, unsigned short soilType, bool bVehicleIsBraking) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (m_soilEffectNames.empty())
+        {
+            return STANDARD_GROUNDSPLASH;
+        }
+
+		auto const idx = 2 * soilType + bVehicleIsBraking;
+		if (wheelType < m_soilEffectNames.size() && idx < m_soilEffectNames[wheelType].size())
+		{
+            return m_soilEffectNames[wheelType][idx];
+		}
+        return STANDARD_GROUNDSPLASH;
 	}
 
 	void DynamicScene::RenderDebugInfo()

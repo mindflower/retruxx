@@ -545,9 +545,20 @@ namespace m3d
         case LRM_DIRECT:
         {
             const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-            // TODO: enable when DrawLandscapeTextures is implemented
             m_owner->GetGraph().SortedCellsStartFetching(m_drawRadius * transitionDivider + 1, m_drawRadius + 1);
-            //m_owner->GetGraph().SortedCellsStartFetching(0, m_drawRadius);
+            m_solidPs->Apply();
+            m_solidVs->Apply();
+
+            unsigned projMatrixHandle = m_solidVs->GetParamHandleByName("mViewProj");
+            m_solidVs->SetMatrix(projMatrixHandle, du);
+
+            auto lightmapTexture = GetLightmapTexture();
+            M3D_RENDERER->SetTexture(0, lightmapTexture, -1.0);
+            break;
+        }
+        case LRM_REFLECTION:
+        {
+            m_owner->GetGraph().SortedCellsStartFetching(0, m_drawRadius + 1);
             m_solidPs->Apply();
             m_solidVs->Apply();
 
@@ -1063,7 +1074,7 @@ namespace m3d
             heightData,
             this->m_mapSize * 8.0f,  // terrain width
             this->m_mapSize,         // grid size
-            1.0f,                    // vertical scale
+            1,                    // vertical scale
             0                        // flags
         );
 

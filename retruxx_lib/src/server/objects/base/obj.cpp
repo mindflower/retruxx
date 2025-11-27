@@ -624,7 +624,7 @@ namespace ai
 
     void Obj::SetParentInvalid()
     {
-        this->m_parentId = -1;
+        m_parentId = -1;
     }
 
     void Obj::SetNameFromScript(CStr const&)
@@ -634,12 +634,12 @@ namespace ai
 
     bool Obj::IsUpdating() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_bIsUpdating;
     }
 
     bool Obj::GetPassedToAnotherMapStatus() const
     {
-        return this->m_bPassedToAnotherMap;
+        return m_bPassedToAnotherMap;
     }
 
     void Obj::AddToCinematic()
