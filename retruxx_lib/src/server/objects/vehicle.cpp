@@ -1041,7 +1041,7 @@ namespace ai
 
 	unsigned Vehicle::GetNumWheels() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return m_wheels.size();
 	}
 
 	void Vehicle::SetHandBrake()
@@ -1049,12 +1049,16 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	CVector Vehicle::GetRecollectionPosition(float) const
+	CVector Vehicle::GetRecollectionPosition(float recollectionRange) const
 	{
-        RETRUXX_NOT_IMPLEMENTED;
-        //TODO: implement recollection logic
-        auto center = GetGeometricCenter();
-        return center;
+		auto* recollection = RT_DYNCAST(theObjects->GetEntityByObjId(m_recollectionId), VehicleRecollection);
+		if (recollection)
+		{
+            auto range = (double)rand() * 0.000030518509 * recollectionRange;
+            auto time = theObjects->GetGameTimeDiff() - ai::theGlobProp.m_gameTimeMult * range;
+            return recollection->GetRecollectionPosition(time);
+		}
+		return GetGeometricCenter();
 	}
 
 	float Vehicle::GetSteer() const
@@ -1638,10 +1642,31 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::FireFromWeaponAI(bool, float, Obj*)
+	void Vehicle::FireFromWeaponAI(bool enable, float elapsedTime, Obj* target)
 	{
-		// TODO: implement Vehicle::FireFromWeaponAI
-		// RETRUXX_NOT_IMPLEMENTED;
+        if (!enable)
+        {
+            ai::WeaponFirer::AimAndFireFromWeapons(this, 0, elapsedTime, target);
+			return;
+        }
+
+        auto const curTime = M3D_KERNEL->GetTimer().GetCurTime();
+        if (curTime - m_shootTypeChangeTime > m_shootTimeToWait)
+        {
+            bool const isShooting = m_bIsShooting;
+            m_shootTypeChangeTime = curTime;
+            m_bIsShooting = !isShooting;
+            float timeBetweenBursts = 0.0;
+            if (!isShooting)
+                timeBetweenBursts = ai::theGlobProp.m_minBurstTime + rand() % (ai::theGlobProp.m_maxBurstTime - ai::theGlobProp.m_minBurstTime);
+            else
+                timeBetweenBursts = ai::theGlobProp.m_timeBetweenBursts;
+            m_shootTimeToWait = timeBetweenBursts;
+        }
+        if (m_bIsShooting)
+            ai::WeaponFirer::AimAndFireFromWeapons(this, 1, elapsedTime, target);
+        else
+            ai::WeaponFirer::AimAndFireFromWeapons(this, 0, elapsedTime, target);
 	}
 
 	bool Vehicle::AddGadget(Gadget*)
@@ -2698,14 +2723,14 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	Wheel* Vehicle::GetWheel(unsigned)
+	Wheel* Vehicle::GetWheel(unsigned num)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_wheels[num].GetWheel();
 	}
 
-	Wheel const* Vehicle::GetWheel(unsigned) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
+	Wheel const* Vehicle::GetWheel(unsigned num) const
+    {
+        return m_wheels[num].GetWheel();
 	}
 
 	float Vehicle::GetThrottle() const

@@ -116,9 +116,158 @@ namespace ai
         m_vehicleId = -1;
     }
 
+    // Helper function to check if time is within an interval (with epsilon tolerance)
+    bool IsTimeInInterval(float time, float startTime, float endTime, float epsilon)
+    {
+        if (endTime <= startTime)
+        {
+            return (time >= (endTime - epsilon)) && (time <= (startTime + epsilon));
+        }
+        else
+        {
+            return (time >= (startTime - epsilon)) && (time <= (endTime + epsilon));
+        }
+    }
+
     CVector VehicleRecollection::GetRecollectionPosition(float time) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code VehicleRecollection::GetRecollectionPosition
+        if (m_recollectionItems.empty())
+        {
+            auto* physObj = RT_DYNCAST(theObjects->GetEntityByObjId(m_vehicleId), PhysicObj);
+            if (physObj)
+            {
+                return physObj->GetPosition();
+            }
+            return ZeroVector;
+        }
+
+        // Get recollection items array info
+        ai::VehicleRecollection::ReollectionItem const* firstItem = &this->m_recollectionItems.front();
+        int itemCount = this->m_recollectionItems.size();
+
+        // Handle single item case
+        if (itemCount == 1)
+        {
+            return firstItem->pos;
+        }
+
+        // Search for the appropriate time interval
+        unsigned int foundIndex = 1;
+        float const epsilon = 0.0001f;  // 0.000099999997
+
+        // Optimized search through recollection items
+        if (itemCount >= 4)
+        {
+            float const* timePtr = &firstItem[1].time;
+
+            for (unsigned int i = 1; i <= itemCount - 4; i += 4)
+            {
+                // Check first interval in this block
+                float time1 = timePtr[0];
+                float prevTime1 = timePtr[-5];
+
+                if (!IsTimeInInterval(time, prevTime1, time1, epsilon))
+                {
+                    // Check second interval
+                    float time2 = timePtr[5];
+                    float prevTime2 = timePtr[0];
+
+                    if (!IsTimeInInterval(time, prevTime2, time2, epsilon))
+                    {
+                        // Check third interval
+                        float time3 = timePtr[10];
+                        float prevTime3 = timePtr[5];
+
+                        if (!IsTimeInInterval(time, prevTime3, time3, epsilon))
+                        {
+                            // Check fourth interval
+                            float time4 = timePtr[15];
+                            float prevTime4 = timePtr[10];
+
+                            if (!IsTimeInInterval(time, prevTime4, time4, epsilon))
+                            {
+                                timePtr += 20;
+                                foundIndex += 4;
+                                continue;
+                            }
+                            foundIndex += 3;
+                            break;
+                        }
+                        foundIndex += 2;
+                        break;
+                    }
+                    foundIndex += 1;
+                    break;
+                }
+                break;
+            }
+        }
+
+        // Linear search for remaining items
+        for (; foundIndex < (unsigned int)itemCount; foundIndex++)
+        {
+            float currentTime = firstItem[foundIndex].time;
+            float prevTime = firstItem[foundIndex - 1].time;
+
+            if (IsTimeInInterval(time, prevTime, currentTime, epsilon))
+            {
+                break;
+            }
+        }
+
+        CVector result;
+
+        // Handle different interpolation cases
+        if (foundIndex == (unsigned int)itemCount)
+        {
+            // Time is before first item or after last item
+            if (time < firstItem->time)
+            {
+                // Extrapolate backwards from first interval
+                float timeDiff = time - firstItem->time;
+                float intervalDuration = firstItem[1].time - firstItem->time;
+                float invDuration = 1.0f / intervalDuration;
+
+                result.x = firstItem->pos.x + ((firstItem[1].pos.x - firstItem->pos.x) * invDuration * timeDiff);
+                result.y = firstItem->pos.y + ((firstItem[1].pos.y - firstItem->pos.y) * invDuration * timeDiff);
+                result.z = firstItem->pos.z + ((firstItem[1].pos.z - firstItem->pos.z) * invDuration * timeDiff);
+            }
+            else if (time > firstItem[itemCount - 1].time)
+            {
+                // Extrapolate forwards from last interval
+                float timeDiff = time - firstItem[itemCount - 1].time;
+                float intervalDuration = firstItem[itemCount - 1].time - firstItem[itemCount - 2].time;
+                float invDuration = 1.0f / intervalDuration;
+
+                result.x = firstItem[itemCount - 1].pos.x + ((firstItem[itemCount - 1].pos.x - firstItem[itemCount - 2].pos.x) * invDuration * timeDiff);
+                result.y = firstItem[itemCount - 1].pos.y + ((firstItem[itemCount - 1].pos.y - firstItem[itemCount - 2].pos.y) * invDuration * timeDiff);
+                result.z = firstItem[itemCount - 1].pos.z + ((firstItem[itemCount - 1].pos.z - firstItem[itemCount - 2].pos.z) * invDuration * timeDiff);
+            }
+            else
+            {
+                // Should not happen if search is correct
+                result = ZeroVector;
+            }
+        }
+        else
+        {
+            // Normal interpolation between two recollection items
+            ai::VehicleRecollection::ReollectionItem const* prevItem = &firstItem[foundIndex - 1];
+            ai::VehicleRecollection::ReollectionItem const* currItem = &firstItem[foundIndex];
+
+            float timeDiff = time - prevItem->time;
+            float intervalDuration = currItem->time - prevItem->time;
+            float invDuration = 1.0f / intervalDuration;
+            float t = timeDiff * invDuration;
+
+            // Linear interpolation
+            result.x = prevItem->pos.x + (currItem->pos.x - prevItem->pos.x) * t;
+            result.y = prevItem->pos.y + (currItem->pos.y - prevItem->pos.y) * t;
+            result.z = prevItem->pos.z + (currItem->pos.z - prevItem->pos.z) * t;
+        }
+
+        return result;
     }
 
     m3d::Class* VehicleRecollection::GetBaseClass()

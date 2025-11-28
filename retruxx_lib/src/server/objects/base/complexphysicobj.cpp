@@ -8,12 +8,14 @@
 #include <server/resourcemanager.h>
 
 #include "config.h"
+#include "globalproperties.h"
 #include "m3dapp.h"
 #include "prototypemanager.h"
 #include "server/objects/physicbodies/vehiclepart.h"
 #include "objcontainer.h"
 #include "ode/odecpp.h"
 #include "scene/servers/dataserver.h"
+#include "server/objects/vehicle.h"
 #include "server/objects/guns/gun.h"
 #include "server/objects/physicbodies/compoundvehiclepart.h"
 
@@ -871,9 +873,120 @@ namespace ai
         dBodySetMass(this->GetBody()->id(), &mass);
     }
 
-    CVector ComplexPhysicObj::GetSmoothTargetPointForObj(Obj const*, float)
+    CVector ComplexPhysicObj::GetSmoothTargetPointForObj(Obj const* target, float elapsedTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code ComplexPhysicObj::GetSmoothTargetPointForObj
+        CVector* currentTargetPosPtr = &this->m_currentTargetPos;
+
+        if (target)
+        {
+            // Get target's geometric center
+            CVector targetPos = ai::getPhysicObjOrPhysicBodyGeometricCenter(target);
+
+            // Check if target is a Vehicle and handle targeting logic
+            if (IS_KIND_OF(target, Vehicle))
+            {
+                // Update target ID and timeout
+                if (target->GetId() == m_targetId)
+                {
+                    this->m_timeoutForReAimGuns -= elapsedTime;
+                }
+                else
+                {
+                    this->m_timeoutForReAimGuns = -1.0f;
+                    this->m_targetId = target->GetId();
+                }
+
+                // Return current target if timeout hasn't expired
+                if (this->m_timeoutForReAimGuns >= 0.0f)
+                {
+                    return this->m_currentTargetPos;
+                }
+
+                // Reset timeout and calculate new target position
+                this->m_timeoutForReAimGuns = ai::theGlobProp.m_timeOutForReAimGuns;
+
+                // Get recollection position with prediction
+                ai::GlobalProperties::CoeffsForDifficultyLevel const& difficultyCoeffs = ai::theGlobProp.GetCoeffsForCurrentDifficultyLevel();
+
+                auto* vehicle = RT_DYNCAST(target, Vehicle const);
+                CVector recollectionPos = vehicle->GetRecollectionPosition(difficultyCoeffs.m_enemiesShootingDelay);
+
+                targetPos = recollectionPos;
+
+                // Get velocities for both objects
+                CVector targetVel = vehicle->GetLinearVelocity();
+                CVector sourcePos = GetGeometricCenter();
+                CVector sourceVel = GetLinearVelocity();
+
+                // Calculate relative speed and distance
+                float relativeSpeed = sqrtf(
+                    (targetVel.x - sourceVel.x) * (targetVel.x - sourceVel.x) + (targetVel.y - sourceVel.y) * (targetVel.y - sourceVel.y) +
+                    (targetVel.z - sourceVel.z) * (targetVel.z - sourceVel.z));
+
+                float distance = sqrtf(
+                    (targetPos.x - sourcePos.x) * (targetPos.x - sourcePos.x) + (targetPos.y - sourcePos.y) * (targetPos.y - sourcePos.y) +
+                    (targetPos.z - sourcePos.z) * (targetPos.z - sourcePos.z));
+
+                // Calculate randomY using exponential distribution - FIXED VERSION
+                double exponentValue = -sqrtf(relativeSpeed * 0.1f + distance * 0.033333335f) * 1.442695040888963407;
+
+                // This replicates: _ST6 = v11; __asm { frndint }
+                double integerPart = floor(exponentValue + 0.5);  // Round to nearest integer
+                double fractionalPart = exponentValue - integerPart;
+
+                // This replicates: __FSCALE__(__F2XM1__(v11 - _ST6) + 1.0, _ST6)
+                // __F2XM1__ calculates 2^x - 1 for x in [-0.5, 0.5]
+                // __FSCALE__ scales by 2^integerPart
+                double temp = pow(2.0, fractionalPart) - 1.0 + 1.0;  // 2^fractionalPart
+                double scaledValue = ldexp(temp, (int)integerPart);  // Multiply by 2^integerPart
+
+                float randomY = (float)(1.0 - scaledValue + 0.2);
+
+                // Get target vehicle size
+                CVector vehicleSize = vehicle->GetSize();
+
+                // Apply random offset to Y coordinate
+                float yRandomSum = 0.0f;
+                for (int i = 0; i < 5; i++)
+                {
+                    yRandomSum += (float)rand() * 0.000030518509f;
+                }
+                targetPos.y += ((yRandomSum * 0.4f - 1.0f) * (float)randomY * vehicleSize.y);
+
+                // Determine largest dimension (X or Z)
+                float linSize = (vehicleSize.z <= vehicleSize.x) ? vehicleSize.x : vehicleSize.z;
+
+                // Apply random offset to X coordinate
+                float xRandomSum = 0.0f;
+                for (int i = 0; i < 5; i++)
+                {
+                    xRandomSum += (float)rand() * 0.000030518509f;
+                }
+                targetPos.x += ((xRandomSum * 0.4f - 1.0f) * (float)randomY * linSize);
+
+                // Apply random offset to Z coordinate
+                float zRandomSum = 0.0f;
+                for (int i = 0; i < 5; i++)
+                {
+                    zRandomSum += (float)rand() * 0.000030518509f;
+                }
+                targetPos.z += ((zRandomSum * 0.4f - 1.0f) * (float)randomY * linSize);
+
+                // Update current target position
+                this->m_currentTargetPos = targetPos;
+                currentTargetPosPtr = &this->m_currentTargetPos;
+            }
+        }
+        else
+        {
+            // No target - reset to zero vector
+            this->m_targetId = -1;
+            this->m_currentTargetPos = ZeroVector;
+            currentTargetPosPtr = &this->m_currentTargetPos;
+        }
+
+        return *currentTargetPosPtr;
     }
 
     void ComplexPhysicObj::FlowUnattachableParts(float)

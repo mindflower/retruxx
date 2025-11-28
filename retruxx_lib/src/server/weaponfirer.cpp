@@ -2,9 +2,11 @@
 #include <stdexcept>
 #include "resourcemanager.h"
 #include "objects/vehicle.h"
+#include "objects/base/globalproperties.h"
 #include "objects/guns/compoundgun.h"
 #include "objects/guns/gun.h"
 #include "objects/physicbodies/vehiclepart.h"
+#include "roles/vehiclerole.h"
 
 namespace ai
 {
@@ -60,10 +62,33 @@ namespace ai
             if (IS_KIND_OF(vehiclePart, Gun))
             {
                 auto* gun = RT_DYNCAST(vehiclePart, Gun);
-                
-                if (enable)
+
+                std::vector<int> exceptions;
+                if (enable && target)
                 {
-                    RETRUXX_NOT_IMPLEMENTED;
+                    exceptions.push_back(target->GetId());
+                    if (IS_KIND_OF(target, Vehicle))
+                    {
+                        auto* targetVehicle = RT_DYNCAST(obj, Vehicle);
+                        for (size_t i = 0; i < targetVehicle->GetNumWheels(); ++i)
+                        {
+                            if (auto* wheel = targetVehicle->GetWheel(i))
+                            {
+                                exceptions.push_back(wheel->GetId());
+                            }
+                        }
+                    }
+
+                    bool isLookAtPoint = gun->PointIsReachable(targetPoint, exceptions);
+                    if (isLookAtPoint)
+                    {
+                        isLookAtPoint = gun->isLookAtPoint(targetPoint, 0.02);
+                    }
+                    if (!isLookAtPoint)
+                    {
+                        gun->Fire(false);
+                        continue;
+                    }
                 }
 
                 // Set target ID for the gun
@@ -125,9 +150,42 @@ namespace ai
         }
     }
 
-    float WeaponFirer::GetMaxFiringRange(ComplexPhysicObj const*)
+    float WeaponFirer::GetMaxFiringRange(ComplexPhysicObj const* obj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
-        return 0.0f;
+        // TODO: check this
+        float res = 0.0;
+        for (auto const& [name, vehiclePart] : *obj)
+        {
+            if (IS_KIND_OF(vehiclePart, Gun))
+            {
+                auto* gun = RT_DYNCAST(vehiclePart, Gun);
+                float range = gun->GetFiringRange();
+                if (range > res)
+                {
+                    res = range;
+                }
+            }
+            else if (IS_KIND_OF(vehiclePart, CompoundGun))
+            {
+                auto* gun = RT_DYNCAST(vehiclePart, CompoundGun);
+                float range = gun->GetFiringRange();
+                if (range > res)
+                {
+                    res = range;
+                }
+            }
+        }
+
+        if (IS_KIND_OF(obj, Vehicle))
+        {
+            auto* vehicle = RT_DYNCAST(obj, Vehicle const);
+            if (auto* role = vehicle->GetRole())
+            {
+                auto* protoInfo = role->GetPrototypeInfo();
+                res *= protoInfo->m_vehicleFiringRangeCoeff;
+            }
+            return res * ai::theGlobProp.m_vehicleAiFiringRangeMult;
+        }
+        return res;
     }
 }

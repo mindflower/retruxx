@@ -100,6 +100,35 @@ namespace ai
             res += CStr(i);
             return res;
         }
+
+        bool PointIsReachable(
+            CVector const& src,
+            CVector const& dir,
+            CVector const& dst, std::vector<int> const& exceptions)
+        {
+            // TODO: check this
+            static scoped_ptr Ray = ai::Ray::CreateObject(nullptr, 1000.0, nullptr);
+            Ray->SetPosition(src);
+            Ray->SetDirection(dir.getNormalized());
+            Ray->SetLength(dir.length());
+
+            bool res = true;
+            ai::ObjIdExceptionalTraceLineCallback callback(exceptions);
+            dContact closestContact;
+            if (ai::TraceLine(*Ray, closestContact, 0, 0, 0, 0, &callback, 1, 0))
+            {
+                auto v9 = src.y - dst.y;
+                auto v10 = src.z - dst.z;
+                if ((float)((float)((float)((float)((float)(src.z - closestContact.geom.pos[2]) * (float)(src.z - closestContact.geom.pos[2])) +
+                                            (float)((float)(src.y - closestContact.geom.pos[1]) * (float)(src.y - closestContact.geom.pos[1]))) +
+                                    (float)((float)(src.x - closestContact.geom.pos[0]) * (float)(src.x - closestContact.geom.pos[0]))) +
+                            0.0099999998) <= (float)((float)((float)(v10 * v10) + (float)(v9 * v9)) + (float)((float)(src.x - dst.x) * (float)(src.x - dst.x))))
+                {
+                    res = false;
+                }
+            }
+            return res;
+        }
     }  // namespace
 
     RT_CLASS_EXPORTS_BEGIN(Gun)
@@ -702,9 +731,50 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Gun::PointIsReachable(CVector const&, retruxx::vector<int, retruxx::allocator<int>>) const
+    bool Gun::PointIsReachable(CVector const& pos, retruxx::vector<int, retruxx::allocator<int>> exceptions) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Gun::PointIsReachable
+        // Add all parent objects to exceptions list (to avoid hitting ourselves)
+        ai::Gun const* currentObj = this;
+        while (currentObj != nullptr)
+        {
+            int objId = currentObj->GetId();
+            exceptions.push_back(objId);
+            currentObj = (ai::Gun*)currentObj->GetParent();
+        }
+
+        // Get the gun's firing position and orientation
+        CMatrix gunMatrix = GetMatrixForShot(m_curBarrelIndex);
+
+        // Calculate direction from gun to target
+        CVector gunPos;
+        gunPos.x = gunMatrix._41;
+        gunPos.y = gunMatrix._42;
+        gunPos.z = gunMatrix._43;
+
+        CVector direction;
+        direction.x = pos.x - gunPos.x;
+        direction.y = pos.y - gunPos.y;
+        direction.z = pos.z - gunPos.z;
+
+        // Calculate distance to target
+        float distance = sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+
+        bool isReachable = false;
+
+        // Check if target is within firing range
+        if (distance <= m_firingRange)
+        {
+            // Check if there's a clear line of sight to the target
+            isReachable = ai::PointIsReachable(gunPos, direction, pos, exceptions);
+        }
+        else
+        {
+            // Target is out of range
+            isReachable = false;
+        }
+
+        return isReachable;
     }
 
     unsigned Gun::GetShellsInCurrentCharge() const

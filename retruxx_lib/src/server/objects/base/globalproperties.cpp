@@ -1,4 +1,7 @@
 #include "globalproperties.h"
+
+#include "game/m3dgame.h"
+
 #include <stdexcept>
 #include <core/ini.h>
 #include <core/kernel.h>
@@ -20,7 +23,17 @@ namespace ai
 
     GlobalProperties::CoeffsForDifficultyLevel const& GlobalProperties::GetCoeffsForCurrentDifficultyLevel() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        auto curLevel = M3D_APP->GetCurDifficultyLevel();
+        if (curLevel < 0)
+        {
+            curLevel = 0;
+        }
+        if (curLevel > m_difficultyLevelCoeffs.size() - 1)
+        {
+            curLevel = m_difficultyLevelCoeffs.size() - 1;
+        }
+        return m_difficultyLevelCoeffs[curLevel];
     }
 
     void GlobalProperties::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

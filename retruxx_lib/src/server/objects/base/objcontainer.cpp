@@ -195,9 +195,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void GameTime::operator+=(float)
+    void GameTime::operator+=(float gameTimeSeconds)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_milliSeconds += (unsigned __int64)(gameTimeSeconds * 1000.0);
     }
 
     m3d::AIParam GameTime::asAIParam() const
@@ -1128,12 +1128,18 @@ namespace ai
 
     ObjContainer::ObjContainer()
     {
+        m_SaveType = SAVE_LEVEL;
+        m_GameTimePaused = false;
         m_GameTime.setExpanded(8, 0, 14, 9, 1211);
+        m_denyCreationCount = 0;
         m_objIdsToUpdate.reserve(0x3E8);
         m_objIdsToNotUpdate.reserve(0x3E8);
         m_objectsToPostCollide.reserve(0x3E8);
         m_objIdsToRelinkSceneGraphNode.reserve(0x3E8);
         m_objIdsToRemove.reserve(0x3E8);
+        m_inPurge = false;
+        m_inUpdate = false;
+        m_bSaveAllowed = true;
     }
 
     ObjContainer::ObjContainer(ObjContainer const&)

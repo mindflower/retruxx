@@ -238,9 +238,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Geom::SetPosition(CVector const&)
+    void Geom::SetPosition(CVector const& vec)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        dGeomSetPosition(m_geomId, vec.x, vec.y, vec.z);
     }
 
     void Geom::Enable()
