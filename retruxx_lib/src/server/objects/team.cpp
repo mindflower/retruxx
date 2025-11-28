@@ -122,12 +122,12 @@ namespace ai
 
     bool TeamPrototypeInfo::GetOverridesDistBetweenVehicles() const
     {
-        return this->m_overridesDistBetweenVehicles;
+        return m_overridesDistBetweenVehicles;
     }
 
     retruxx::map<int, CVector> const& Team::GetSteeringForceMap() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_steeringForceMap;
     }
 
     void Team::SetDestination(CVector const& destination)
@@ -552,7 +552,7 @@ namespace ai
 
     Formation* Team::GetFormation() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_formation;
     }
 
     m3d::Class* Team::GetBaseClass()

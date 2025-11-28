@@ -96,4 +96,19 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+    PointBase<float> clampIntoLandscape(PointBase<float> const& point)
+    {
+        auto result = point;
+        auto v4 = pServer->GetLevelSize() - 5.0;
+        if (result.x < 5.0)
+            result.x = 5.0;
+        if (result.x > v4)
+            result.x = v4;
+        auto v5 = ai::pServer->GetLevelSize() - 5.0;
+        if (result.y < 5.0)
+            result.y = 5.0;
+        if (result.y > v5)
+            result.y = v5;
+        return result;
+    }
+}  // namespace ai

@@ -3,7 +3,9 @@
 #include <stdexcept>
 
 #include "core/ini.h"
+#include "server/objects/team.h"
 #include "server/objects/vehicle.h"
+#include "server/objects/base/objcontainer.h"
 
 namespace ai
 {
@@ -36,9 +38,19 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool VehicleRole::UpdateVehicle(float, Vehicle*)
+    bool VehicleRole::UpdateVehicle(float, Vehicle* v)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* obj = theObjects->GetEntityByObjId(m_TargetObjId);
+        if (obj && obj->bIsEnemyWith(v))
+        {
+            return true;
+        }
+        
+        v->SetMoveStatus(Vehicle::MOVE_IDLE);
+        v->SetAttackStatus(Vehicle::ATTACK_IDLE);
+        auto* team = v->GetTeam();
+        team->SetTeamTactic(nullptr);
+        return false;
     }
 
     float VehicleRole::FitAgainstVehicle(Vehicle const*, Vehicle const*)
@@ -116,7 +128,7 @@ namespace ai
 
     Obj* VehicleRole::getTargetObj() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return theObjects->GetEntityByObjId(m_TargetObjId);
     }
 
     void VehicleRole::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -124,9 +136,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void VehicleRole::_LookAndFireToEnemy(Vehicle*, float)
+    void VehicleRole::_LookAndFireToEnemy(Vehicle* v, float elapsedTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* obj = RT_DYNCAST(theObjects->GetEntityByObjId(m_TargetObjId), Vehicle);
+        v->FireFromWeaponAI(true, elapsedTime, obj);
     }
 
     Vehicle* VehicleRole::getBestOpponentFromTeam(Vehicle const*, Team const*)
@@ -134,10 +147,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    VehicleRole::~VehicleRole()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    VehicleRole::~VehicleRole() = default;
 
     m3d::Object* VehicleRole::Clone()
     {

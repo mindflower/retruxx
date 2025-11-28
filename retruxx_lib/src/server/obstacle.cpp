@@ -214,7 +214,13 @@ namespace ai
 
     CVector Obstacle::GetPosition() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto position = dGeomGetPosition(m_intersectionSphere->GetGeomId());
+
+        CVector result;
+        result.x = position[0];
+        result.y = position[1];
+        result.z = position[2];
+        return result;
     }
 
     int Obstacle::IncRef()
@@ -229,7 +235,12 @@ namespace ai
 
     CVector Obstacle::GetLinearVelocity() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* obj = RT_DYNCAST(theObjects->GetEntityByObjId(m_ownerPhysicObjId), PhysicObj);
+        if (obj)
+        {
+            return obj->GetLinearVelocity();
+        }
+        return ZeroVector;
     }
 
     Box const* Obstacle::GetBox() const
@@ -254,7 +265,7 @@ namespace ai
 
     float Obstacle::GetIntersectionRadius() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_intersectionSphere->GetRadius();
     }
 
     PhysicObj* Obstacle::GetOwnerPhysicObj() const

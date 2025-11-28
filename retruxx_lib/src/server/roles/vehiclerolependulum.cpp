@@ -3,7 +3,9 @@
 #include <stdexcept>
 
 #include "core/ini.h"
+#include "server/utils.h"
 #include "server/objects/vehicle.h"
+#include <server/objects/base/prototypemanager.h>
 
 namespace ai
 {
@@ -60,7 +62,7 @@ namespace ai
 
     VehicleRolePendulumPrototypeInfo const* VehicleRolePendulum::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), VehicleRolePendulumPrototypeInfo const);
     }
 
     m3d::Class* VehicleRolePendulum::GetClass() const
@@ -99,22 +101,73 @@ namespace ai
         auto updated = ai::VehicleRole::UpdateVehicle(elapsedTime, v);
         if (updated)
         {
-            auto PendulumPosition = getPendulumPosition(v, elapsedTime);
-            v->SetExternalDestination(PendulumPosition);
-            this->_LookAndFireToEnemy(v, elapsedTime);
-            return 1;
+            auto const pendulumPosition = getPendulumPosition(v, elapsedTime);
+            v->SetExternalDestination(pendulumPosition);
+            _LookAndFireToEnemy(v, elapsedTime);
         }
         return updated;
     }
 
-    VehicleRolePendulum::~VehicleRolePendulum()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    VehicleRolePendulum::~VehicleRolePendulum() = default;
 
-    CVector VehicleRolePendulum::getPendulumPosition(Vehicle*, float)
+    CVector VehicleRolePendulum::getPendulumPosition(Vehicle* vehicle, float elapsedTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code VehicleRolePendulum::getPendulumPosition
+        ai::VehicleRolePendulumPrototypeInfo const* prototype = GetPrototypeInfo();
+        ai::Obj const* targetObj = getTargetObj();
+
+        if (!targetObj)
+        {
+            // No target object, return vehicle's current position
+            return vehicle->GetPosition();;
+        }
+
+        // Get target object position
+        CVector targetPos = ai::getPhysicObjOrPhysicBodyPosition(targetObj);
+
+        // Calculate pendulum offset using elliptical motion
+        float sinAngle = std::sin(this->m_angle);
+        float cosAngle = std::cos(this->m_angle);
+
+        float offsetX = sinAngle * prototype->m_A * this->m_Direction.x - cosAngle * prototype->m_B * this->m_Direction.y;
+
+        float offsetZ = cosAngle * prototype->m_B * this->m_Direction.x + sinAngle * prototype->m_A * this->m_Direction.y;
+
+        // Update pendulum angle based on vehicle speed and time
+        float speedFactor = std::sqrt(prototype->m_B * prototype->m_B + prototype->m_A * prototype->m_A);
+        float timeScale = elapsedTime / speedFactor;
+        float angleDelta = vehicle->GetMaxSpeed() * timeScale * 0.3f;
+
+        this->m_angle += angleDelta;
+
+        // Reset angle if it exceeds 6pi (3 full rotations) and randomize direction
+        if (this->m_angle > 6.283185307f * 3.0f)
+        {  // 18.849556f = 6pi
+            this->m_angle = 0.0f;
+
+            // Generate random direction vector
+            this->m_Direction.x = static_cast<float>(std::rand()) / RAND_MAX * 32767.0f - 16383.5f;
+            this->m_Direction.y = static_cast<float>(std::rand()) / RAND_MAX * 32767.0f - 16383.5f;
+
+            // Normalize the direction
+            m_Direction = m_Direction.normalize();
+        }
+
+        // Calculate final position with pendulum offset
+        CVector pendulumPos;
+        pendulumPos.x = targetPos.x + offsetX;
+        pendulumPos.z = targetPos.z + offsetZ;  // Using Z for the second coordinate
+        pendulumPos.y = targetPos.y;            // Keep original Y (height)
+
+        // Clamp position to stay within landscape boundaries
+        PointBase<float> clampedPos = ai::clampIntoLandscape(PointBase<float>(pendulumPos.x, pendulumPos.z));
+
+        CVector result;
+        result.x = clampedPos.x;
+        result.y = pendulumPos.y;  // Maintain original height
+        result.z = clampedPos.y;   // clampedPos.y contains the clamped Z coordinate
+
+        return result;
     }
 
     m3d::Object* VehicleRolePendulum::CreateObject()

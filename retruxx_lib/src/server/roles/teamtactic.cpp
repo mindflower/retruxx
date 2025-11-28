@@ -54,10 +54,7 @@ namespace ai
         return RT_CLASS_LOCAL(TeamTactic);
     }
 
-    TeamTactic::~TeamTactic()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    TeamTactic::~TeamTactic() = default;
 
     m3d::Object* TeamTactic::CreateObject()
     {
@@ -193,10 +190,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    TeamTacticWithRoles::~TeamTacticWithRoles()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    TeamTacticWithRoles::~TeamTacticWithRoles() = default;
 
     m3d::Object* TeamTacticWithRoles::CreateObject()
     {

@@ -10,6 +10,7 @@
 #include "game/m3dgame.h"
 #include "server/dynamicscene.h"
 #include "server/ai/aimanager.h"
+#include "server/objects/physicbodies/physicbody.h"
 #include "server/objects/physicbodies/physichelpers.h"
 
 extern "C"
@@ -519,7 +520,10 @@ namespace ai
 
     float PhysicObj::GetIntersectionRadius() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_intersectionObstacle)
+            return m_intersectionObstacle->GetIntersectionRadius();
+        else
+            return 0.0;
     }
 
     void PhysicObj::SetPostEnablePhysics()
@@ -1259,9 +1263,33 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    CVector getPhysicObjOrPhysicBodyGeometricCenter(ai::Obj const*)
+    CVector getPhysicObjOrPhysicBodyGeometricCenter(ai::Obj const* obj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
-        return CVector();
+        if (IS_KIND_OF(obj, PhysicBody))
+        {
+            auto* body = RT_DYNCAST(obj, PhysicBody const);
+            return body->GetPosition();
+        }
+        if (IS_KIND_OF(obj, PhysicObj))
+        {
+            auto* phys = RT_DYNCAST(obj, PhysicObj const);
+            return phys->GetGeometricCenter();
+        }
+        return ZeroVector;
+    }
+
+    CVector getPhysicObjOrPhysicBodyPosition(ai::Obj const* obj)
+    {
+        if (IS_KIND_OF(obj, PhysicBody))
+        {
+            auto* body = RT_DYNCAST(obj, PhysicBody const);
+            return body->GetPosition();
+        }
+        if (IS_KIND_OF(obj, PhysicObj))
+        {
+            auto* phys = RT_DYNCAST(obj, PhysicObj const);
+            return phys->GetPosition();
+        }
+        return ZeroVector;
     }
 }

@@ -1203,9 +1203,10 @@ namespace ai
 		this->m_cruisingSpeed = cruisingSpeed;
 	}
 
-	void Vehicle::SetExternalDestination(CVector const&)
+	void Vehicle::SetExternalDestination(CVector const& destination)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        this->m_externalDestination = destination;
+        this->m_moveStatus = Vehicle::MOVE_MOVING_BY_STEERING_FORCE;
 	}
 
 	void Vehicle::Registration()
@@ -1639,7 +1640,8 @@ namespace ai
 
 	void Vehicle::FireFromWeaponAI(bool, float, Obj*)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: implement Vehicle::FireFromWeaponAI
+		// RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	bool Vehicle::AddGadget(Gadget*)
@@ -3950,10 +3952,20 @@ namespace ai
 		return 1;
 	}
 
-	CVector Vehicle::_CalcRepulsionForNearbyObjects(CVector const&, CVector const&, CVector const&, CVector const&,
-		bool, CVector&) const
+	CVector Vehicle::_CalcRepulsionForNearbyObjects(CVector const& myPos, CVector const& myPredictedPos, CVector const& myVel, CVector const& guide,
+        bool bIsLookObstacle,
+        CVector& attraction) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		CVector repulsion = ZeroVector;
+		for (auto const& obstacle : m_currentNearbyObstacles)
+		{
+		    auto const* owner = obstacle->GetOwnerPhysicObj();
+            if (owner != this && (!owner || (owner->GetFlags() & 1) != 0))
+            {
+                repulsion += _CalcRepulsionForObstacle(obstacle, myPos, myPredictedPos, myVel, guide, bIsLookObstacle, attraction);
+            }
+		}
+        return repulsion;
 	}
 
 	void Vehicle::_DeadActions(float elapsedTime)
@@ -4165,10 +4177,300 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	CVector Vehicle::_CalcRepulsionForObstacle(Obstacle const*, CVector const&, CVector const&, CVector const&,
-		CVector const&, bool, CVector&) const
+	CVector Vehicle::_CalcRepulsionForObstacle(
+        Obstacle const* ob,
+        CVector const& myPos,
+        CVector const& myPredictedPos,
+        CVector const& myVel,
+        CVector const& guide,
+        bool bIsLookObstacle,
+        CVector& attraction)
+        const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code Vehicle::_CalcRepulsionForObstacle
+        // Early return if not a look obstacle and attraction force is negligible
+        if (!bIsLookObstacle && (attraction.x * attraction.x + attraction.y * attraction.y + attraction.z * attraction.z) < 0.001f)
+        {
+            return ZeroVector;
+        }
+
+        // Get obstacle position and velocity
+        CVector obPos = ob->GetPosition();
+        CVector obVel = ob->GetLinearVelocity();
+
+        // Calculate predicted obstacle position
+        CVector vehiclePredictedPos;
+        vehiclePredictedPos.x = obPos.x + (obVel.x * ai::theGlobProp.m_predictionTime);
+        vehiclePredictedPos.y = obPos.y + (obVel.y * ai::theGlobProp.m_predictionTime);
+        vehiclePredictedPos.z = obPos.z + (obVel.z * ai::theGlobProp.m_predictionTime);
+
+        // Calculate current position difference and distance
+        CVector deltaPos;
+        deltaPos.x = myPos.x - obPos.x;
+        deltaPos.y = myPos.y - obPos.y;
+        deltaPos.z = myPos.z - obPos.z;
+
+        float currentDistanceSq = deltaPos.x * deltaPos.x + deltaPos.y * deltaPos.y + deltaPos.z * deltaPos.z;
+        float currentDistance = sqrtf(currentDistanceSq);
+
+        // Get intersection radii
+        float myIntersectionRadius = GetIntersectionRadius();
+
+        float obIntersectionRadius = ob->GetIntersectionRadius();
+        float dist = currentDistance - (obIntersectionRadius + myIntersectionRadius);
+
+        // Calculate predicted position difference and distance
+        CVector predictedDeltaPos;
+        predictedDeltaPos.x = myPredictedPos.x - vehiclePredictedPos.x;
+        predictedDeltaPos.y = myPredictedPos.y - vehiclePredictedPos.y;
+        predictedDeltaPos.z = myPredictedPos.z - vehiclePredictedPos.z;
+
+        float predictedDistanceSq =
+            predictedDeltaPos.x * predictedDeltaPos.x + predictedDeltaPos.y * predictedDeltaPos.y + predictedDeltaPos.z * predictedDeltaPos.z;
+        float predictedDist = sqrtf(predictedDistanceSq);
+
+        float myIntersectionRadiusPred = GetIntersectionRadius();
+
+        float obIntersectionRadiusPred = ob->GetIntersectionRadius();
+        predictedDist = predictedDist - (obIntersectionRadiusPred + myIntersectionRadiusPred);
+
+        // Get the appropriate collision geometry
+        Geom const* obstacleGeom = ob->GetBox();
+        if (!obstacleGeom)
+        {
+            obstacleGeom = ob->GetSphere();
+        }
+
+        // Get the appropriate vehicle box (look or target)
+        scoped_ptr<ai::Box> const& vehicleBox = bIsLookObstacle ? m_lookBox : m_targetBox;
+
+
+        CVector repulsion = ZeroVector;
+        CVector right = predictedDeltaPos;
+	    CVector up;
+
+        // Determine the guide direction
+        if (!bIsLookObstacle)
+        {
+            right = attraction;
+        }
+        else
+        {
+            right.x = guide.x;
+            right.z = guide.z;
+        }
+
+        CVector INITIAL_UP_DIRECTION_4 = {0.0, 1.0, 0.0};
+        // Check if we should calculate complex repulsion
+        if ((predictedDist >= -2.0f && dist >= -1.0f) || ob->GetBox())
+        {
+            dContact contact;
+
+            // Check for collision between obstacle and vehicle geometry
+            if (dCollide(obstacleGeom->GetGeomId(), vehicleBox->GetGeomId(), 1, &contact.geom, sizeof(dContact)) > 0)
+            {
+                // Calculate normalized delta position
+                float invCurrentDist = 1.0f / sqrtf(currentDistanceSq + 1.19e-7f);
+                CVector normalizedDeltaPos;
+                normalizedDeltaPos.x = deltaPos.x * invCurrentDist;
+                normalizedDeltaPos.y = deltaPos.y * invCurrentDist;
+                normalizedDeltaPos.z = deltaPos.z * invCurrentDist;
+
+                // Calculate orthogonal vector
+                up.x = normalizedDeltaPos.z * 0.0f - (deltaPos.z * invCurrentDist) * 0.0f;
+                up.y = (deltaPos.z * invCurrentDist) * normalizedDeltaPos.x - normalizedDeltaPos.z * (deltaPos.x * invCurrentDist);
+                up.z = (deltaPos.x * invCurrentDist) * 0.0f - (invCurrentDist * 0.0f) * normalizedDeltaPos.x;
+
+                if ((up.x * up.x + up.y * up.y + up.z * up.z) < 0.001f)
+                {
+                    // Handle degenerate case where vectors are parallel
+                    CVector contactDelta;
+                    contactDelta.x = myPos.x - contact.geom.pos[0];
+                    contactDelta.y = myPos.y - contact.geom.pos[1];
+                    contactDelta.z = myPos.z - contact.geom.pos[2];
+
+                    float contactDistanceSq = contactDelta.x * contactDelta.x + contactDelta.y * contactDelta.y + contactDelta.z * contactDelta.z;
+
+                    if (predictedDistanceSq > contactDistanceSq)
+                    {
+                        predictedDeltaPos = contactDelta;
+                        predictedDist = sqrtf(contactDistanceSq) - myIntersectionRadiusPred;
+                    }
+
+                    // Calculate relative velocity
+                    CVector deltaVel;
+                    deltaVel.x = myVel.x - obVel.x;
+                    deltaVel.y = myVel.y - obVel.y;
+                    deltaVel.z = myVel.z - obVel.z;
+
+                    if ((predictedDeltaPos.x * predictedDeltaPos.x + predictedDeltaPos.z * predictedDeltaPos.z + predictedDeltaPos.y * predictedDeltaPos.y) >
+                        0.01f)
+                    {
+                        float deltaVelLength = sqrtf(deltaVel.x * deltaVel.x + deltaVel.y * deltaVel.y + deltaVel.z * deltaVel.z);
+                        CVector normalizedPredictedPos = predictedDeltaPos.getNormalized();
+                        predictedDeltaPos.x = deltaVelLength * normalizedPredictedPos.x;
+                        predictedDeltaPos.y = deltaVelLength * normalizedPredictedPos.y;
+                        predictedDeltaPos.z = deltaVelLength * normalizedPredictedPos.z;
+                    }
+
+                    // Check if we need to zero out attraction
+                    float deltaVelLength = sqrtf(deltaVel.x * deltaVel.x + deltaVel.y * deltaVel.y + deltaVel.z * deltaVel.z);
+                    bool shouldZeroAttraction = !(deltaVelLength * deltaVelLength * 0.050968397f <= predictedDist);
+
+                    if (shouldZeroAttraction)
+                    {
+                        attraction.x = 0.0f;
+                        attraction.y = 0.0f;
+                        attraction.z = 0.0f;
+                    }
+
+                    // Calculate base repulsion force
+                    float predictedDistSq = predictedDist * predictedDist;
+                    float invDistFactor = (predictedDistSq >= 1.0f) ? 1.0f / predictedDistSq : 1.0f;
+
+                    CVector normalizedPredictedDelta = predictedDeltaPos.getNormalized();
+                    repulsion.x = normalizedPredictedDelta.x * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                    repulsion.y = normalizedPredictedDelta.y * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                    repulsion.z = normalizedPredictedDelta.z * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+
+                    // Calculate perpendicular component
+                    up = INITIAL_UP_DIRECTION_4;
+                    CVector perpendicular;
+                    perpendicular.x = (up.z * right.x) - (right.z * up.x);
+                    perpendicular.y = (up.x * 0.0f) - (up.y * right.x);
+                    perpendicular.z = (up.y * right.z) - (up.z * 0.0f);
+                    perpendicular = perpendicular.getNormalized();
+
+                    float repulsionMagnitude = sqrtf(repulsion.x * repulsion.x + repulsion.y * repulsion.y + repulsion.z * repulsion.z);
+                    float perpendicularScale = shouldZeroAttraction ? 0.1f : 0.5f;
+
+                    repulsion.x += (perpendicular.x * repulsionMagnitude) * perpendicularScale;
+                    repulsion.y += (perpendicular.y * repulsionMagnitude) * perpendicularScale;
+                    repulsion.z += (perpendicular.z * repulsionMagnitude) * perpendicularScale;
+                }
+                else
+                {
+                    // Normal case with good orthogonal vectors
+                    up = up.getNormalized();
+
+                    if (!bIsLookObstacle)
+                    {
+                        CVector normalizedAttraction = attraction.getNormalized();
+                        float dotProduct = normalizedAttraction.x * up.x + normalizedAttraction.y * up.y + normalizedAttraction.z * up.z;
+
+                        if ((attraction.x * attraction.x + attraction.y * attraction.y + attraction.z * attraction.z) > 0.0001f && bIsLookObstacle &&
+                            fabsf(dotProduct) > 0.1f)
+                        {
+                            int direction = (dotProduct < 0.0f) ? -1 : 1;
+                            CVector sideDir;
+                            sideDir.x = (float)direction * up.x;
+                            sideDir.y = (float)direction * up.y;
+                            sideDir.z = (float)direction * up.z;
+
+                            if (bIsLookObstacle)
+                            {
+                                float invDistFactor = (predictedDist >= 1.0f) ? 1.0f / predictedDist : 1.0f;
+                                repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                                repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                                repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                            }
+                            else
+                            {
+                                repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff;
+                                repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff;
+                                repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff;
+                            }
+                        }
+                        else
+                        {
+                            float velocityDot = up.x * deltaPos.x + up.z * deltaPos.z + up.y * 0.0f;
+                            int direction = (velocityDot < 0.0f) ? -1 : 1;
+                            CVector sideDir;
+                            sideDir.x = (float)direction * up.x;
+                            sideDir.y = (float)direction * up.y;
+                            sideDir.z = (float)direction * up.z;
+
+                            if (bIsLookObstacle)
+                            {
+                                float invDistFactor = (predictedDist >= 1.0f) ? 1.0f / predictedDist : 1.0f;
+                                repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                                repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                                repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                            }
+                            else
+                            {
+                                repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff;
+                                repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff;
+                                repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        float velocityDot = up.x * deltaPos.x + up.z * deltaPos.z + up.y * 0.0f;
+                        int direction = (velocityDot < 0.0f) ? -1 : 1;
+                        CVector sideDir;
+                        sideDir.x = (float)direction * up.x;
+                        sideDir.y = (float)direction * up.y;
+                        sideDir.z = (float)direction * up.z;
+
+                        if (bIsLookObstacle)
+                        {
+                            float invDistFactor = (predictedDist >= 1.0f) ? 1.0f / predictedDist : 1.0f;
+                            repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                            repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                            repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                        }
+                        else
+                        {
+                            repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff;
+                            repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff;
+                            repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Simple repulsion calculation for non-colliding case
+            attraction.x = 0.0f;
+            attraction.y = 0.0f;
+            attraction.z = 0.0f;
+
+            // Calculate normalized predicted delta
+            float invPredictedDist = 1.0f / sqrtf(predictedDistanceSq + 1.19e-7f);
+            CVector normalizedPredictedDelta;
+            normalizedPredictedDelta.x = predictedDeltaPos.x * invPredictedDist;
+            normalizedPredictedDelta.y = predictedDeltaPos.y * invPredictedDist;
+            normalizedPredictedDelta.z = predictedDeltaPos.z * invPredictedDist;
+
+            // Base repulsion
+            repulsion.x = normalizedPredictedDelta.x * ai::theGlobProp.m_repulsiveCoeff;
+            repulsion.y = normalizedPredictedDelta.y * ai::theGlobProp.m_repulsiveCoeff;
+            repulsion.z = normalizedPredictedDelta.z * ai::theGlobProp.m_repulsiveCoeff;
+
+            // Calculate perpendicular component
+            up = INITIAL_UP_DIRECTION_4;
+            CVector perpendicular;
+            perpendicular.x = (up.z * guide.x) - (guide.z * up.y);
+            perpendicular.y = (guide.x * up.z) - (guide.z * up.x);
+            perpendicular.z = (guide.z * up.y) - (up.z * guide.x);
+
+            float perpendicularLength = sqrtf(perpendicular.x * perpendicular.x + perpendicular.y * perpendicular.y + perpendicular.z * perpendicular.z);
+            float invPerpendicularLength = 1.0f / (perpendicularLength + 1.19e-7f);
+            perpendicular.x *= invPerpendicularLength;
+            perpendicular.y *= invPerpendicularLength;
+            perpendicular.z *= invPerpendicularLength;
+
+            float repulsionMagnitude = sqrtf(repulsion.x * repulsion.x + repulsion.y * repulsion.y + repulsion.z * repulsion.z);
+
+            repulsion.x += (perpendicular.x * repulsionMagnitude) * 0.1f;
+            repulsion.y += (perpendicular.y * repulsionMagnitude) * 0.1f;
+            repulsion.z += (perpendicular.z * repulsionMagnitude) * 0.1f;
+        }
+
+        return repulsion;
 	}
 
 	void Vehicle::_DriveBySteeringForce(CVector const& steeringForce)
@@ -4441,9 +4743,51 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::_AdjustLookBox(bool, CVector const&, CVector const&, CVector const&) const
+	void Vehicle::_AdjustLookBox(bool bForLooking, CVector const& myPos, CVector const& pathPoint, CVector const& guide) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code Vehicle::_AdjustLookBox
+        // Calculate direction vector from current position to path point
+        CVector dir = pathPoint - myPos;
+        float distanceToPathPoint = dir.length();
+
+        float boxLength;
+        CVector normalizedDir;
+
+        if (bForLooking)
+        {
+            // For look box: use guide direction with default look box length
+            boxLength = ai::theGlobProp.m_defaultLookBoxLength;
+            normalizedDir = guide.getNormalized();
+        }
+        else
+        {
+            // For target box: use path direction with default target box length
+            boxLength = ai::theGlobProp.m_defaultTargetBoxLength;
+            normalizedDir = dir.getNormalized();
+        }
+
+        // Use the shorter of calculated distance or default box length
+        float actualLength = std::min(distanceToPathPoint, boxLength);
+
+        // Select the appropriate box (look box or target box)
+        scoped_ptr<ai::Box> const& targetBox = bForLooking ? this->m_lookBox : this->m_targetBox;
+
+        // Set box size (width, height, length)
+        CVector size;
+        size.x = this->m_size.x * 1.5f;  // Width: 1.5x vehicle width
+        size.y = this->m_size.y * 2.0f;  // Height: 2x vehicle height
+        size.z = actualLength;           // Length: dynamic based on distance
+
+        targetBox->SetSize(size);
+
+        // Orient the box in the calculated direction
+        ai::SetDirectionToObject(*targetBox, normalizedDir);
+
+        // Position the box halfway between current position and target point
+        CVector boxCenter = myPos + (normalizedDir * (actualLength * 0.5f));
+
+        // Update physics geometry position
+        dGeomSetPosition(targetBox->GetGeomId(), boxCenter.x, boxCenter.y, boxCenter.z);
 	}
 
 	CVector Vehicle::_CalcSteeringForceToPathPoint(CVector const& point, CVector const& nextPoint) const

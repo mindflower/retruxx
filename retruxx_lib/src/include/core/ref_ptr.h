@@ -15,7 +15,7 @@ public:
         }
     }
 
-    ref_ptr(const ref_ptr<T>& rhs) : m_ptr(rhs.m_ptr)
+    ref_ptr(ref_ptr<T> const& rhs) : m_ptr(rhs.m_ptr)
     {
         if (m_ptr)
         {
@@ -28,7 +28,7 @@ public:
         rhs.m_ptr = nullptr;
     }
 
-    ref_ptr& operator=(const ref_ptr<T>& rhs)
+    ref_ptr& operator=(ref_ptr<T> const& rhs)
     {
         if (m_ptr == rhs.m_ptr)
         {
@@ -68,7 +68,7 @@ public:
         }
     }
 
-    const T* get() const
+    T const* get() const
     {
         return m_ptr;
     }
@@ -78,7 +78,7 @@ public:
         return m_ptr;
     }
 
-    operator const T*() const
+    operator T const*() const
     {
         return m_ptr;
     }
@@ -88,7 +88,7 @@ public:
         return m_ptr;
     }
 
-    const T* operator->() const
+    T const* operator->() const
     {
         assert(nullptr != m_ptr);
         return m_ptr;
@@ -100,12 +100,12 @@ public:
         return m_ptr;
     }
 
-    bool operator==(const T* rhs) const
+    bool operator==(T const* rhs) const
     {
         return m_ptr == rhs;
     }
 
-    bool operator==(const ref_ptr<T>& rhs) const
+    bool operator==(ref_ptr<T> const& rhs) const
     {
         return m_ptr == rhs.m_ptr;
     }

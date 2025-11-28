@@ -70,9 +70,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Geom::SetRotation(Quaternion const&)
+    void Geom::SetRotation(Quaternion const& q)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        float dq[4];
+        dq[0] = q.w;
+        dq[1] = q.x;
+        dq[2] = q.y;
+        dq[3] = q.z;
+        dGeomSetQuaternion(m_geomId, dq);
     }
 
     Geom::~Geom()
