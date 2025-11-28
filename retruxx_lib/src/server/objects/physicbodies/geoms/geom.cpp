@@ -122,7 +122,13 @@ namespace ai
 
     CVector Geom::GetPosition() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* pos = dGeomGetPosition(m_geomId);
+
+        CVector result;
+        result.x = pos[0];
+        result.y = pos[1];
+        result.z = pos[2];
+        return result;
     }
 
     Geom::CellAabb Geom::GetCollisionCellAabb() const
