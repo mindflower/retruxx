@@ -2294,9 +2294,20 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::SetRole(VehicleRole*)
+	void Vehicle::SetRole(VehicleRole* role)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (auto* currRole = RT_DYNCAST(theObjects->GetEntityByObjId(m_roleId), VehicleRole))
+		{
+            currRole->Remove();
+		}
+		if (role)
+		{
+            m_roleId = role->GetId();
+		}
+		else
+		{
+		    m_roleId = -1;
+		}
 	}
 
 	retruxx::set<ref_ptr<Obstacle>, retruxx::less<ref_ptr<Obstacle>>, retruxx::allocator<ref_ptr<Obstacle>>> const& Vehicle::

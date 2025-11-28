@@ -3,6 +3,8 @@
 #include "VehicleRole.h"
 #include "graph/hungarianalgo.h"
 #include "server/objects/team.h"
+#include "server/objects/base/objcontainer.h"
+
 #include <server/objects/base/prototypemanager.h>
 
 namespace ai
@@ -94,7 +96,18 @@ namespace ai
 
     void TeamRoleManager::AssignAgainstVehicle(ai::TeamTacticWithRoles const* tactic, ai::Team* team, ai::Vehicle const* target)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        std::vector<int> rolePrototypeIds;
+        tactic->GetRolePrototypeIdsEx(team->GetNumVehicles(), rolePrototypeIds);
+
+        float v = 0.0;
+        std::vector<int> matching = getAgainstVehicle(rolePrototypeIds, tactic, team, target, v);
+        for (int i =0; i < team->GetNumVehicles(); ++i)
+        {
+            auto const objId = theObjects->CreateNewObject(rolePrototypeIds[i], "", -1, -1);
+            auto* role = RT_DYNCAST(theObjects->GetEntityByObjId(objId), VehicleRole);
+            role->setTargetVehicle(target);
+            team->GetVehicle(i)->SetRole(role);
+        }
     }
 
     void TeamRoleManager::AssignAgainstTeam(ai::TeamTacticWithRoles const* tactic, ai::Team* team, ai::Team const* target)

@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 #include "core/ini.h"
+#include "server/objects/vehicle.h"
 
 namespace ai
 {
@@ -50,9 +51,12 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void VehicleRole::setTargetVehicle(Vehicle const*)
+    void VehicleRole::setTargetVehicle(Vehicle const* vehicle)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (vehicle)
+            this->m_TargetVehicleId = vehicle->GetId();
+        else
+            this->m_TargetVehicleId = -1;
     }
 
     m3d::Class* VehicleRole::GetBaseClass()
@@ -87,12 +91,15 @@ namespace ai
 
     m3d::Class* VehicleRole::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(VehicleRole);
     }
 
-    void VehicleRole::setTargetObj(Obj const*)
+    void VehicleRole::setTargetObj(Obj const* obj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (obj)
+            this->m_TargetObjId = obj->GetId();
+        else
+            this->m_TargetObjId = -1;
     }
 
     VehicleRolePrototypeInfo const* VehicleRole::GetPrototypeInfo() const
@@ -102,7 +109,9 @@ namespace ai
 
     VehicleRole::VehicleRole(VehicleRolePrototypeInfo const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_TargetVehicleId = -1;
+        this->m_TargetTeamId = -1;
+        this->m_TargetObjId = -1;
     }
 
     Obj* VehicleRole::getTargetObj() const

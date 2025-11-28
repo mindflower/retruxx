@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 #include "core/ini.h"
+#include "server/objects/vehicle.h"
 
 namespace ai
 {
@@ -14,7 +15,7 @@ namespace ai
 
     Obj* VehicleRolePendulumPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new VehicleRolePendulum(*this);
     }
 
     float VehicleRolePendulumPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const
@@ -47,7 +48,9 @@ namespace ai
 
     VehicleRolePendulum::VehicleRolePendulum(VehicleRolePendulumPrototypeInfo const& prototype) : VehicleRole(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_Direction.x = 1.0;
+        this->m_Direction.y = 0.0;
+        this->m_angle = 0.0;
     }
 
     void VehicleRolePendulum::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -62,12 +65,12 @@ namespace ai
 
     m3d::Class* VehicleRolePendulum::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(VehicleRolePendulum);
     }
 
-    void VehicleRolePendulum::setTargetObj(Obj const*)
+    void VehicleRolePendulum::setTargetObj(Obj const* obj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        VehicleRole::setTargetObj(obj);
     }
 
     void VehicleRolePendulum::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -80,9 +83,10 @@ namespace ai
         return RT_CLASS_LOCAL(VehicleRole);
     }
 
-    void VehicleRolePendulum::setTargetVehicle(Vehicle const*)
+    void VehicleRolePendulum::setTargetVehicle(Vehicle const* vehicle)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        VehicleRole::setTargetVehicle(vehicle);
+        this->setTargetObj(vehicle);
     }
 
     void VehicleRolePendulum::setTargetTeam(Team const*)
@@ -90,9 +94,17 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool VehicleRolePendulum::UpdateVehicle(float, Vehicle*)
+    bool VehicleRolePendulum::UpdateVehicle(float elapsedTime, Vehicle* v)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto updated = ai::VehicleRole::UpdateVehicle(elapsedTime, v);
+        if (updated)
+        {
+            auto PendulumPosition = getPendulumPosition(v, elapsedTime);
+            v->SetExternalDestination(PendulumPosition);
+            this->_LookAndFireToEnemy(v, elapsedTime);
+            return 1;
+        }
+        return updated;
     }
 
     VehicleRolePendulum::~VehicleRolePendulum()
