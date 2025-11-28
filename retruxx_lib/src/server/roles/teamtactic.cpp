@@ -132,9 +132,9 @@ namespace ai
         return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), TeamTacticWithRolesPrototypeInfo const);
     }
 
-    void TeamTacticWithRoles::AssignAgainstVehicle(Team*, Vehicle const*)
+    void TeamTacticWithRoles::AssignAgainstVehicle(Team* v, Vehicle const* target)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::TeamRoleManager::AssignAgainstVehicle(this, v, target);
     }
 
     void TeamTacticWithRoles::AssignAgainstTeam(Team*, Team const*)

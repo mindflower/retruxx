@@ -29,7 +29,7 @@ namespace ai
 
     float VehicleRolePendulumPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return 2.0;
     }
 
     bool VehicleRolePendulumPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

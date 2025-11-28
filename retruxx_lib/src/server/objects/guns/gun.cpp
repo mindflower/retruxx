@@ -9,7 +9,9 @@
 #include "math/matrix.h"
 #include "scene/servers/dataserver.h"
 #include "scene/servers/serveranimatedmodel.h"
+#include "server/objects/blastwave.h"
 #include "server/objects/vehicle.h"
+#include "server/objects/base/objcontainer.h"
 
 #include <server/objects/base/prototypemanager.h>
 #include <server/objects/player.h>
@@ -220,9 +222,25 @@ namespace ai
         this->m_explosionTypeName = "BIG";
     }
 
-    void GunPrototypeInfo::CreateBlastWave(CVector const&, int) const
+    void GunPrototypeInfo::CreateBlastWave(CVector const& pos, int gunId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_blastWavePrototypeId != -1)
+        {
+            auto const objId = theObjects->CreateNewObject(m_blastWavePrototypeId, "", -1, -1);
+            auto* obj = theObjects->GetEntityByObjId(objId);
+            if (obj)
+            {
+                auto* blastWave = RT_DYNCAST(obj, BlastWave);
+                blastWave->SetPosition(pos);
+                blastWave->SetEmitterId(gunId);
+                blastWave->SetRocketExplosionType(m_explosionType);
+                auto* gun = theObjects->GetEntityByObjId(gunId);
+                if (gun)
+                {
+                    blastWave->SetBelong(gun->GetBelong());
+                }
+            }
+        }
     }
 
     CStr GunPrototypeInfo::FiringType2Str(FiringTypes)
@@ -379,7 +397,7 @@ namespace ai
 
     float Gun::EstimateDamage() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_damage;
     }
 
     bool Gun::bIs360DegreesHoriz() const

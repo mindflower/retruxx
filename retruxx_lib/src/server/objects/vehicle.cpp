@@ -1519,7 +1519,21 @@ namespace ai
 
 	float Vehicle::EstimateDamageAI() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        float result = 0.0;
+        for (auto const&[name, part] : m_vehicleParts)
+        {
+            if (IS_KIND_OF(part, CompoundGun))
+            {
+                auto* compoundGun = RT_DYNCAST(part, CompoundGun);
+                result += compoundGun->EstimateDamage();
+            }
+            else if (IS_KIND_OF(part, Gun))
+            {
+                auto* gun = RT_DYNCAST(part, Gun);
+                result += gun->EstimateDamage();
+            }
+        }
+		return result;
 	}
 
 	void Vehicle::PickUpNearbyObjects(bool, unsigned&, retruxx::vector<int, retruxx::allocator<int>>&)

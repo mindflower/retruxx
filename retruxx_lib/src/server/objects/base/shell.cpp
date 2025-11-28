@@ -22,12 +22,12 @@ namespace ai
 
     Gun* Shell::GetGun() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(theObjects->GetEntityByObjId(m_gunObjId), Gun);
     }
 
     GunPrototypeInfo const* Shell::GetGunPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(m_gunPrototypeId), GunPrototypeInfo const);
     }
 
     void Shell::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -42,7 +42,7 @@ namespace ai
 
     int Shell::GetGunObjId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_gunObjId;
     }
 
     m3d::Class* Shell::GetClass() const

@@ -7,6 +7,7 @@
 
 #include "config.h"
 #include "geomobject.h"
+#include "level.h"
 #include "passagedata.h"
 #include "colliders/breakableobjectcolliders.h"
 #include "colliders/bulletcolliders.h"
@@ -58,6 +59,7 @@ namespace ai
 	{
 		dxJointGroup* contactGroup = nullptr;
 	    int numNearCallbacksLastFrame = 0;
+        CStr const STANDARD_EXPLOSION = "ET_PS_EXPLOSION";
 	}
 
 	class ShellTraceLineCallback : public TraceLineCallback
@@ -358,7 +360,235 @@ namespace ai
 
 	int DynamicScene::ProcessShellAndBody(Shell* shell, PhysicBody* body, dContact* contact, unsigned& numContacts, bool reverse)
 	{
-        RETRUXX_NOT_IMPLEMENTED;
+		// TODO: check all this shit!!!
+		using namespace m3d;
+
+        if (!numContacts)
+        {
+            return 0;
+        }
+
+        contact->geom.depth = 0.0;
+
+		if (!shell || !shell->IsAlive())
+        {
+            return 0;
+        }
+
+		auto const* gunPrototypeInfo = shell->GetGunPrototypeInfo();
+        auto const* gun = shell->GetGun();
+        auto const attackerId = shell->GetEmittedObjId();
+        auto* attackerObj = RT_DYNCAST(theObjects->GetEntityByObjId(attackerId), PhysicObj);
+
+		if (!gunPrototypeInfo || IS_KIND_OF(shell, Mine))
+        {
+            auto* mine = RT_DYNCAST(shell, Mine);
+            if (mine->getState() == Mine::msActivation || IS_KIND_OF(body, GeomObject))
+            {
+                return 0;
+            }
+        }
+        if (IS_KIND_OF(shell, Rocket))
+        {
+            auto* rocket = RT_DYNCAST(shell, Rocket);
+            rocket->CreateBlastWave();
+        }
+        else if (IS_KIND_OF(shell, MortarShell))
+        {
+            auto* mortarShell = RT_DYNCAST(shell, MortarShell);
+            mortarShell->CreateBlastWave();
+        }
+        else if (IS_KIND_OF(shell, Bullet))
+        {
+            auto* bullet = RT_DYNCAST(shell, Bullet);
+            CVector pos;
+            pos.x = contact->geom.pos[0];
+            pos.y = contact->geom.pos[1];
+            pos.z = contact->geom.pos[2];
+            bullet->SpecifyTracer(pos);
+        }
+
+		bool isShellHit = false;
+		PhysicObj* hitPhysicObj = nullptr;
+		if (body && IS_KIND_OF(body, PhysicBody))
+        {
+            auto* physBody = RT_DYNCAST(body, PhysicBody);
+            hitPhysicObj = physBody->GetOwner();
+
+		}
+        else
+        {
+            isShellHit = true;
+            if (body && IS_KIND_OF(body, PhysicObj))
+            {
+                hitPhysicObj = RT_DYNCAST(body, PhysicObj);
+                if (IS_KIND_OF(body, Wheel))
+                {
+                    auto* wheel = RT_DYNCAST(body, Wheel);
+                    auto* vehicle = wheel->GetVehicle();
+                    if (vehicle)
+                    {
+                        hitPhysicObj = vehicle;
+                        body = vehicle->GetChassis();
+                    }
+                    wheel->BreakModel();
+                }
+            }
+        }
+
+		auto const gunObjId = shell->GetGunObjId();
+        CVector contactPos;
+        contactPos.x = contact->geom.pos[0];
+        contactPos.y = contact->geom.pos[1];
+        contactPos.z = contact->geom.pos[2];
+
+		gunPrototypeInfo->CreateBlastWave(contactPos, gunObjId);
+        if (hitPhysicObj && (hitPhysicObj->GetId() != shell->GetEmittedObjId() || IS_KIND_OF(shell, Mine)))
+        {
+            if (hitPhysicObj->GetBelong() != shell->GetBelong())
+            {
+                CStr partName;
+                if (IS_KIND_OF(hitPhysicObj, ComplexPhysicObj))
+                {
+                    auto* chassis = RT_DYNCAST(body, Chassis);
+                    partName = chassis->GetPartName();
+
+                    auto* vehicle = RT_DYNCAST(chassis->GetOwner(), Vehicle);
+                    M3D_ASSERT(hitPhysicObj == vehicle);
+                    M3D_ASSERT(vehicle->GetPartByName(partName));
+
+					auto* gun = shell->GetGun();
+					if (gun)
+					{
+					    // TODO: increase statistics
+					}
+                }
+
+				DamageInfo info;
+                info.hitDir = shell->GetDirection().getNormalized();
+                info.attackingAgentId = shell->GetId();
+                info.attackerId = shell->GetEmittedObjId();
+                info.damageType = gunPrototypeInfo->m_damageType;
+                info.decalId = gunPrototypeInfo->m_decalId;
+                info.gunPrototypeId = gunPrototypeInfo->m_prototypeId;
+                info.damagedPartName = partName;
+
+
+				float damage = 0.0;
+                auto* gun = shell->GetGun();
+				if (gun)
+				{
+                    damage = gun->GetDamageForOneShell();
+				}
+                else
+                {
+                    damage = gunPrototypeInfo->GetDamageForOneShell();
+                }
+
+				if (IS_KIND_OF(shell, Bullet) || !IS_KIND_OF(body, PhysicBody))
+                {
+                    info.hitPos.x = contact->geom.pos[0];
+                    info.hitPos.y = contact->geom.pos[1];
+                    info.hitPos.z = contact->geom.pos[2];
+
+					info.normal.x = contact->geom.normal[0];
+                    info.normal.y = contact->geom.normal[1];
+                    info.normal.z = contact->geom.normal[2];
+                }
+                else
+                {
+                    RETRUXX_NOT_IMPLEMENTED;
+                }
+                hitPhysicObj->InflictDamage(info);
+            }
+        }
+		// TODO: check this!!!!
+        else if (!isShellHit)
+        {
+            return 0;
+        }
+
+		shell->Remove();
+
+		if (IS_KIND_OF(shell, Rocket))
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+		}
+		// TODO: check this!!!
+        if (body && (!hitPhysicObj || hitPhysicObj->bIsUpdatingByODE()) && (!attackerObj || attackerObj->bIsUpdatingByODE()))
+        {
+            if (IS_KIND_OF(body, GeomObjectLandscape))
+            {
+                auto const landSize = 4 * ai::pServer->GetWorld()->m_level->land_size;
+                auto const levelSize = pServer->GetLevelSize();
+                auto const scale = levelSize / landSize;
+
+				int gridX = static_cast<int>((contact->geom.pos[0] * (1.0 / scale)) + 0.5f);
+                int gridZ = static_cast<int>((contact->geom.pos[2] * (1.0 / scale)) + 0.5f);
+
+                SoilProps const& soilProps = ai::gDynamicScene->GetSoilProps(gridX, gridZ);
+                unsigned short splashType = soilProps.m_splashType;
+                unsigned short explosionType = gunPrototypeInfo->m_explosionType;
+
+				CVector pos;
+                pos.x = contact->geom.pos[0];
+                pos.y = contact->geom.pos[1];
+                pos.z = contact->geom.pos[2];
+
+                CStr const& effectName = ai::gDynamicScene->GetShellEffectName(explosionType, splashType);
+                PhysicBody::CreateEffectNode(
+                    effectName, pos,
+                    IdentityQuaternion,
+                    true,
+                    1.0f);
+            }
+            else if (IS_KIND_OF(body, VehiclePart))
+            {
+                auto* part = RT_DYNCAST(body, VehiclePart);
+                // Vehicle part impact effect
+                if (part->m_Node)
+                {
+                    CStr const& vehicleEffectName = ai::gDynamicScene->GetShellVehicleEffectName(gunPrototypeInfo->m_explosionType);
+
+                    CVector scale(1.0f, 1.0f, 1.0f);
+                    m3d::SgNode* effectNode = PhysicBody::CreateNode(vehicleEffectName, 0, scale, 0, 0);
+
+                    part->m_Node->AddChild(effectNode);
+                    effectNode->SetOriginAbs(part->GetLastHitPos());
+                    effectNode->UpdateXForm(0, true);
+                    effectNode->GetGraph()->InsertInRemoveIfFree(effectNode);
+                }
+            }
+            else
+            {
+                // Other object types impact effects
+                CStr effectName;
+                if (IS_KIND_OF(body,GeomObjectRoad))
+                {
+                    effectName = ai::gDynamicScene->GetShellRoadEffectName(gunPrototypeInfo->m_explosionType);
+                }
+                else if (IS_KIND_OF(body, GeomObjectStatics))
+                {
+                    effectName = ai::gDynamicScene->GetShellStaticsEffectName(gunPrototypeInfo->m_explosionType);
+                }
+                else if (IS_KIND_OF(body, SimplePhysicObj))
+                {
+                    effectName = ai::gDynamicScene->GetShellVehicleEffectName(gunPrototypeInfo->m_explosionType);
+                }
+
+				CVector pos;
+                pos.x = contact->geom.pos[0];
+                pos.y = contact->geom.pos[1];
+                pos.z = contact->geom.pos[2];
+
+                PhysicBody::CreateEffectNode(
+                    effectName, pos,
+                    IdentityQuaternion,
+                    true,
+                    1.0f);
+            }
+        }
+        return 1;
 	}
 
 	void DynamicScene::InitClashDecalId()
@@ -1014,9 +1244,13 @@ namespace ai
 		return Object::GetClass();
 	}
 
-	CStr const& DynamicScene::GetShellEffectName(unsigned short, unsigned short) const
+	CStr const& DynamicScene::GetShellEffectName(unsigned short shellType, unsigned short soilType) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (shellType < m_shellsEffectsNames.size() && soilType < m_shellsEffectsNames[shellType].size())
+        {
+            return m_shellsEffectsNames[shellType][soilType];
+        }
+        return STANDARD_EXPLOSION;
 	}
 
 	void DynamicScene::UpdateSceneItems(float)

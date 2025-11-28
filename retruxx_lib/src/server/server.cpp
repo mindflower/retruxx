@@ -335,7 +335,14 @@ namespace ai
             "Bullet",
             "BulletLauncher",
             "TeamTacticWithRoles",
-            "VehicleRolePendulum"};
+            "VehicleRolePendulum",
+            "VehicleRoleMeat",
+            "VehicleRoleSniper",
+            "VehicleRoleOppressor",
+            "VehicleRoleBarrier",
+            "VehicleRoleCoward",
+            "VehicleRoleCheater",
+        };
 
         if (classes.find(className) == classes.end())
         {

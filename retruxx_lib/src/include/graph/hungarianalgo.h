@@ -3,6 +3,14 @@
 
 namespace Graph
 {
+    struct TQueueVertex
+    {
+        /* 0x0000 */ bool inFirstPartite;
+        /* 0x0001 */ char Padding_146[3];
+        /* 0x0004 */ int index;
+        TQueueVertex(bool inFirstPartite_, int index_);
+    }; /* size: 0x0008 */
+
     template<class T>
     class CMatrix
     {
@@ -25,12 +33,12 @@ namespace Graph
 
         T const& operator()(unsigned int i, unsigned int j) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_Data[i][j];
         }
 
         T& operator()(unsigned int i, unsigned int j)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_Data[i][j];
         }
     }; /* size: 0x0010 */
 
@@ -44,7 +52,7 @@ namespace Graph
 
         unsigned int getSize() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_Data.size();
         }
 
         void Input(_iobuf*)

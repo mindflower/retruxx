@@ -100,9 +100,37 @@ namespace ai
     {
     }
 
-    void Bullet::SpecifyTracer(CVector const&)
+    void Bullet::SpecifyTracer(CVector const& endPos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        static retruxx::vector<CVector> trace(2);
+
+        trace[0] = GetPosition();
+        trace[1] = endPos;
+
+        std::vector<m3d::Object*> stack;
+        stack.push_back(m_tracer);
+
+        while (!stack.empty())
+        {
+            m3d::Object* current = stack.back();
+            stack.pop_back();
+
+            // Process all siblings of the current node
+            m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
+            while (sibling)
+            {
+                sibling->SetProperty(m3d::PROP_PS_MOVE_PARTICLES, &trace);
+
+                // If this sibling has children, add to stack for processing
+                if (sibling->GetFirstChild())
+                {
+                    stack.push_back(sibling->GetFirstChild());
+                }
+
+                // Move to next sibling
+                sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
+            }
+        }
     }
 
     void Bullet::SetDirection(CVector const& newDirection)

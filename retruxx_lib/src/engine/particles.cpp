@@ -726,9 +726,60 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ParticleSystem::MoveParticles(ParticlesList*, retruxx::vector<CVector> const*)
+    void ParticleSystem::MoveParticles(ParticlesList* parts, retruxx::vector<CVector> const* newPoses)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code ParticleSystem::MoveParticles
+        if (!parts || newPoses->empty())
+        {
+            return;
+        }
+
+        m3d::Particle* currentParticle = parts->m_particles;
+        unsigned int particleIndex = 0;
+
+        if (this->m_updateXForm)
+        {
+            // Use inverse transformation
+            CMatrix fromWorld = parts->m_curXFormToWorld.getInverse();
+
+            while (currentParticle && particleIndex < newPoses->size())
+            {
+                CVector const& newPos = (*newPoses)[particleIndex];
+
+                // Transform the new position from world space to local space
+                float x = (newPos.x * fromWorld._11 + newPos.y * fromWorld._21 + newPos.z * fromWorld._31) + fromWorld._41;
+                float y = (newPos.x * fromWorld._12 + newPos.y * fromWorld._22 + newPos.z * fromWorld._32) + fromWorld._42;
+                float z = (newPos.x * fromWorld._13 + newPos.y * fromWorld._23 + newPos.z * fromWorld._33) + fromWorld._43;
+
+                // Update particle's local origin
+                currentParticle->m_locorigin.x = x;
+                currentParticle->m_locorigin.y = y;
+                currentParticle->m_locorigin.z = z;
+
+                currentParticle = currentParticle->m_next;
+                particleIndex++;
+            }
+        }
+        else
+        {
+            // Direct position update (relative to origin)
+            while (currentParticle && particleIndex < newPoses->size())
+            {
+                CVector const& newPos = (*newPoses)[particleIndex];
+
+                // Calculate relative position from origin
+                CVector relativePos;
+                relativePos.x = newPos.x - currentParticle->m_origin.x;
+                relativePos.y = newPos.y - currentParticle->m_origin.y;
+                relativePos.z = newPos.z - currentParticle->m_origin.z;
+
+                // Update particle's local origin
+                currentParticle->m_locorigin = relativePos;
+
+                currentParticle = currentParticle->m_next;
+                particleIndex++;
+            }
+        }
     }
 
     void ParticleSystem::InterpolateColors()

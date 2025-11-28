@@ -337,9 +337,15 @@ namespace m3d
         StripOnePS::CreateIb();
     }
 
-    void ParticlesServer::MoveParticles(m3d::SgNode*, retruxx::vector<CVector> const*)
+    void ParticlesServer::MoveParticles(m3d::SgNode* node, retruxx::vector<CVector> const* newPoses)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* system = (ParticleSystem*)&m_models[node->GetServerHandle()];
+        m3d::ParticlesList* list = nullptr;
+        node->GetProperty(1, &list);
+        if (list)
+        {
+            system->MoveParticles(list, newPoses);
+        }
     }
 
     int ParticlesServer::Init()

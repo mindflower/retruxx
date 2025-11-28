@@ -1,5 +1,7 @@
 #include "vehiclerolemeat.h"
 
+#include "server/objects/vehicle.h"
+
 #include <stdexcept>
 
 namespace ai
@@ -12,9 +14,12 @@ namespace ai
     {
     }
 
-    float VehicleRoleMeatPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
+    float VehicleRoleMeatPrototypeInfo::FitAgainstVehicle(Vehicle const* v, Vehicle const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!v)
+            return 0.0;
+        auto va = v->GetMaxSpeed();
+        return v->EstimateDamageAI() + va;
     }
 
     bool VehicleRoleMeatPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
