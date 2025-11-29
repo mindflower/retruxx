@@ -1,10 +1,13 @@
 #include "particles.h"
 
+#include "world.h"
+
 #include <algorithm>
 #include <m3dapp.h>
 #include <scene/servers/serverparticles.h>
 #include <core/log.h>
 #include <skelmodel.h>
+#include <client.h>
 
 bool interpolateColorsOnLoad = false;
 
@@ -2036,11 +2039,174 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int SpritePS::Render(CMatrix const*, ParticlesList*)
+    int SpritePS::Render(CMatrix const* local, ParticlesList* parts)
     {
-        // TODO implement SpritePS::Render
-        // RETRUXX_NOT_IMPLEMENTED;
-        return 1;
+        // TODO generated code SpritePS::Render
+        // Early return if particles shouldn't be rendered
+        if (parts->m_start1 > parts->m_PhaseTime || parts->m_numParticles == 0)
+        {
+            parts->m_renderCalled = true;
+            return true;
+        }
+
+        parts->m_renderCalled = true;
+
+        // Set up rendering state
+        if (m_updateXForm)
+        {
+            m3d::Application::g_pApp->m_renderer->MatPush(*local);
+        }
+
+        ApplyBlending();
+        m3d::Application::g_pApp->m_renderer->SetTexture(0, m_texAdd, -1.0f);
+        m3d::Application::g_pApp->m_renderer->SetCull(rend::M3DCULL_NONE, 0);
+
+        // Get vertex buffer for streaming
+        int vertexOffset = 0;
+
+        m3d::rend::VbHandle vbHandle = m3d::Application::g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1);
+
+        // Lock vertex buffer for writing
+        int vertexCount = 4 * parts->m_numParticles;  // 4 vertices per particle (quad)
+        m3d::rend::VertexXYZCT1* vertices =
+            static_cast<m3d::rend::VertexXYZCT1*>(m3d::Application::g_pApp->m_renderer->LockVbStreaming(vbHandle, vertexCount, vertexOffset, 0));
+
+        if (!vertices)
+        {
+            if (m_updateXForm)
+            {
+                m3d::Application::g_pApp->m_renderer->MatPop(1);
+            }
+            return false;
+        }
+
+        // Calculate sprite rotation matrix
+        float sinAngle = sin(parts->m_spriteAngle);
+        float cosAngle = cos(parts->m_spriteAngle);
+
+        // Define quad corners (before rotation)
+        CVector quadCorners[4];
+        quadCorners[0] = CVector(-1.0f, -1.0f, 0.0f);  // bottom-left
+        quadCorners[1] = CVector(1.0f, -1.0f, 0.0f);   // bottom-right
+        quadCorners[2] = CVector(1.0f, 1.0f, 0.0f);    // top-right
+        quadCorners[3] = CVector(-1.0f, 1.0f, 0.0f);   // top-left
+
+        // Apply rotation to quad corners
+        for (int i = 0; i < 4; ++i)
+        {
+            float x = quadCorners[i].x;
+            float y = quadCorners[i].y;
+            quadCorners[i].x = x * cosAngle - y * sinAngle;
+            quadCorners[i].y = x * sinAngle + y * cosAngle;
+        }
+
+        // Get inverse matrix if needed for water height calculation
+        CMatrix inverseMatrix;
+        if (m_updateXForm && m_Specific)
+        {
+            inverseMatrix = local->getInverseRotTranslate();
+        }
+
+        // Process each particle
+        m3d::Particle* currentParticle = parts->m_particles;
+        m3d::rend::VertexXYZCT1* currentVertex = vertices;
+
+        while (currentParticle)
+        {
+            // Calculate particle position
+            CVector particlePos;
+            if (m_updateXForm)
+            {
+                particlePos = currentParticle->m_locorigin;
+            }
+            else
+            {
+                particlePos = currentParticle->m_origin + currentParticle->m_locorigin;
+            }
+
+            // Handle water height for specific particles
+            if (m_Specific)
+            {
+                if (m_updateXForm)
+                {
+                    // Transform to world space for water height lookup
+                    CVector worldPos = local->vecMul(particlePos);
+                    float waterHeight =
+                        m3d::pClient->GetWorld().GetLandscape().getWaterHeight(static_cast<int>(worldPos.x * 0.03125f), static_cast<int>(worldPos.z * 0.03125f));
+
+                    // Apply water height and transform back
+                    CVector waterAdjustedPos(worldPos.x, waterHeight, worldPos.z);
+                    particlePos = inverseMatrix.vecMul(waterAdjustedPos);
+                }
+                else
+                {
+                    // Simple water height adjustment
+                    particlePos.y = m3d::pClient->GetWorld().GetLandscape().getWaterHeight(static_cast<int>(particlePos.x * 0.03125f), static_cast<int>(particlePos.z * 0.03125f));
+                }
+            }
+
+            // Generate quad vertices for this particle
+            for (int corner = 0; corner < 4; ++corner)
+            {
+                // Calculate vertex position (particle center + scaled quad corner)
+                CVector vertexPos = particlePos + quadCorners[corner] * currentParticle->m_size;
+
+                currentVertex->x = vertexPos.x;
+                currentVertex->y = vertexPos.y;
+                currentVertex->z = vertexPos.z;
+
+                // Set vertex color (particle color)
+                currentVertex->c = currentParticle->m_curClr;
+
+                // Set texture coordinates for quad corners
+                switch (corner)
+                {
+                case 0:  // bottom-left
+                    currentVertex->tu = 0.0f;
+                    currentVertex->tv = 0.0f;
+                    break;
+                case 1:  // bottom-right
+                    currentVertex->tu = 1.0f;
+                    currentVertex->tv = 0.0f;
+                    break;
+                case 2:  // top-right
+                    currentVertex->tu = 1.0f;
+                    currentVertex->tv = 1.0f;
+                    break;
+                case 3:  // top-left
+                    currentVertex->tu = 0.0f;
+                    currentVertex->tv = 1.0f;
+                    break;
+                }
+
+                ++currentVertex;
+            }
+
+            currentParticle = currentParticle->m_next;
+        }
+
+        // Unlock and render
+        m3d::Application::g_pApp->m_renderer->UnlockVb(vbHandle);
+        m3d::Application::g_pApp->m_renderer->SetToStream0(vbHandle);
+        m3d::Application::g_pApp->m_renderer->SetIndices(m_IbPoolField, vertexOffset);
+
+        // Draw the particles
+        m3d::Application::g_pApp->m_renderer->DrawIndexedPrimitiveEffect(
+            rend::M3DPT_TRIANGLELIST,
+            m_shader,
+            0,
+            vertexCount,
+            m_IbPoolField.RealOffset,
+            2 * parts->m_numParticles  // 2 triangles per particle
+        );
+
+        // Clean up
+        if (m_updateXForm)
+        {
+            m3d::Application::g_pApp->m_renderer->MatPop(1);
+        }
+
+        return true;
     }
 
     rend::IbPoolField SpritePS::m_IbPoolField;
