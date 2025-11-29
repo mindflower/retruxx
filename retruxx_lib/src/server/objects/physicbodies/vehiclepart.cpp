@@ -246,9 +246,9 @@ namespace ai
         return m_ownerCompoundPart;
 	}
 
-	float VehiclePart::GetDurabilityCoeffForDamageType(DamageType) const
+	float VehiclePart::GetDurabilityCoeffForDamageType(DamageType damageType) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_durabilityCoeffsForDamageTypes[damageType];
 	}
 
 	CStr const& VehiclePart::GetBlowEffectName() const

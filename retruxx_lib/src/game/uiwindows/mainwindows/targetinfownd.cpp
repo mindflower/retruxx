@@ -45,9 +45,10 @@ m3d::Class* TargetInfoWnd::GetClass() const
     return RT_CLASS_LOCAL(TargetInfoWnd);
 }
 
-bool TargetInfoWnd::IsObjClassValidForInfo(m3d::Class const*)
+bool TargetInfoWnd::IsObjClassValidForInfo(m3d::Class const* cl)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    CStr className = cl->m_className;
+    return className == "Vehicle" || className == "StaticAutoGun" || className == "Boss04Drone";
 }
 
 m3d::Object* TargetInfoWnd::Clone()
@@ -98,7 +99,13 @@ void TargetInfoWnd::UpdateName()
 
 void TargetInfoWnd::UpdateControlsOnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        UpdateHealth();
+        UpdateDurability();
+        UpdateDistance();
+        UpdateToleranceColor();
+    }
 }
 
 int TargetInfoWnd::OnBeforeRemoveFromWndStation()

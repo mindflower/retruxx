@@ -1070,9 +1070,19 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    CStr CServer::GetFullNameByObjID(int)
+    CStr CServer::GetFullNameByObjID(int objId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* obj = theObjects->GetEntityByObjId(objId);
+        if (obj)
+        {
+            auto fullName = theObjects->GetObjectFullName(obj->GetName());
+            if (!fullName.empty())
+            {
+                return fullName;
+            }
+            return thePrototypeManager->GetPrototypeFullName(obj->GetPrototypeInfo()->m_prototypeName);
+        }
+        return "Model Unknown";
     }
 
     void CServer::Clear()

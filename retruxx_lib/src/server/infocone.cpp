@@ -1,5 +1,6 @@
 #include "infocone.h"
 
+#include "config.h"
 #include "m3dapp.h"
 #include "math/matrix.h"
 #include "objects/physicbodies/physichelpers.h"
@@ -8,6 +9,24 @@
 
 #include "objects/physicbodies/geoms/ray.h"
 #include "objects/physicbodies/geoms/sphere.h"
+#include "server.h"
+#include "world.h"
+#include "core/kernel.h"
+#include "core/log.h"
+#include "core/timer.h"
+#include "objects/staticautogun.h"
+#include "objects/vehicle.h"
+#include "objects/monsters/boss02.h"
+#include "objects/monsters/boss03.h"
+#include "objects/monsters/boss04.h"
+#include "objects/monsters/boss04drone.h"
+#include "objects/monsters/bossmetalarm.h"
+#include "objects/physicbodies/vehiclepart.h"
+
+#include <algorithm>
+#include <client.h>
+#include <ode/objects.h>
+#include "ode/odecpp.h"
 
 namespace ai
 {
@@ -158,7 +177,152 @@ namespace ai
 
     int InfoCone::GetInfoObjId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this!!
+        auto& landscape = pServer->GetWorld()->GetLandscape();
+        auto& graph = m3d::pClient->GetWorld().GetGraph();
+
+        int const prevFrame = M3D_KERNEL->GetTimer().GetCurFrame() - 1;
+        float const distanceDivider = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
+        float const endRadius = std::clamp(distanceDivider * 8.0 + 4.0, 4.0, 12.0);
+
+        if (!graph.SortedCellsStartFetching(0, endRadius))
+        {
+            return -1;
+        }
+
+        int infoObjId = -1;
+        float maxAngleCosFromContact = 0.0f;
+
+        int cellX = 0;
+        int cellZ = 0;
+        int vis = 0;
+        int radius = 0;
+        while (graph.SortedCellsFetch(cellX, cellZ, vis, radius))
+        {
+            if (vis == 0)
+            {
+                continue;
+            }
+
+            auto* collisionItem = landscape.GetCollisionCellItem(cellX, cellZ);
+            if (collisionItem == nullptr)
+            {
+                M3D_LOG_INFO("Warning: null collision cell item, cellX = " + CStr(cellX) + ", cellZ = " + CStr(cellZ));
+                continue;
+            }
+
+            for (int const objId : collisionItem->m_physicObjIds)
+            {
+                auto* obj = theObjects->GetEntityByObjId(objId);
+                if (auto* vehicle = RT_DYNCAST(obj, Vehicle); vehicle && vehicle->IsTrailer())
+                {
+                    auto* parent = vehicle->GetParent();
+                    if (!parent || !IS_KIND_OF(parent, PhysicObj))
+                    {
+                        continue;
+                    }
+                    obj = parent;
+                }
+
+                auto* physicObj = RT_DYNCAST(obj, PhysicObj);
+                if (physicObj->GetId() == m_vehicleId || !physicObj->GetBody() ||
+                    !(IS_KIND_OF(physicObj, Vehicle) || IS_KIND_OF(physicObj, StaticAutoGun) || IS_KIND_OF(physicObj, BossMetalArm) ||
+                      IS_KIND_OF(physicObj, Boss02) || IS_KIND_OF(physicObj, Boss03) || IS_KIND_OF(physicObj, Boss04) || IS_KIND_OF(physicObj, Boss04Drone)))
+                {
+                    continue;
+                }
+                m3d::SgNode* node = nullptr;
+                if (auto* complexPhysObj = RT_DYNCAST(physicObj, ComplexPhysicObj))
+                {
+                    node = complexPhysObj->begin()->second->m_Node;
+                }
+                else if (auto* simplePhysObj = RT_DYNCAST(physicObj, SimplePhysicObj))
+                {
+                    node = simplePhysObj->GetPhysicBody()->m_Node;
+                }
+
+                if (!node || node->m_frameVisible != prevFrame)
+                {
+                    continue;
+                }
+
+                // TODO: generated code
+                // Check collision with each geometry in the vehicle body
+                for (dxGeom* geom = dBodyGetFirstGeom(physicObj->GetBody()->id()); geom; geom = dGeomGetBodyNext(geom))
+                {
+                    if (!dGeomIsEnabled(geom))
+                    {
+                        continue;
+                    }
+
+                    dxSpace* space = dGeomGetSpace(geom);
+                    if (!space || space == ai::gIntersectionSpace)
+                    {
+                        continue;
+                    }
+
+                    // Get geometry position and calculate direction to it
+                    float const* geomPos = dGeomGetPosition(geom);
+                    CVector objDirection(geomPos[0] - m_cameraPos.x, geomPos[1] - m_cameraPos.y, geomPos[2] - m_cameraPos.z);
+
+                    // Calculate projection onto look vector
+                    float projection = (objDirection.x * m_lookVector.x + objDirection.y * m_lookVector.y + objDirection.z * m_lookVector.z) / m_lookDistance;
+
+                    // Check if object is within the view cone
+                    if (projection >= 0.0f && projection <= m_lookDistance)
+                    {
+                        // Calculate sphere position along look direction
+                        CVector spherePos(
+                            m_cameraPos.x + m_lookDir.x * projection, m_cameraPos.y + m_lookDir.y * projection, m_cameraPos.z + m_lookDir.z * projection);
+
+                        // Set up collision sphere
+                        float sphereRadius = projection * m_sphereRadiusCoef;
+                        m_sphere->SetPosition(spherePos);
+                        m_sphere->SetRadius(sphereRadius);
+
+                        // Check collision between object geometry and our sphere
+                        dContact contact;
+                        if (dCollide(geom, m_sphere->GetGeomId(), 1, &contact.geom, sizeof(dContact)))
+                        {
+                            // Calculate intersection point and direction
+                            CVector toIntersection(
+                                contact.geom.pos[0] - m_cameraPos.x, contact.geom.pos[1] - m_cameraPos.y, contact.geom.pos[2] - m_cameraPos.z);
+
+                            float intersectionDistance = toIntersection.length() - 5.0f;
+                            float scaleFactor = (intersectionDistance >= 1.0f) ? intersectionDistance : 1.0f;
+
+                            // Create destination point for line-of-sight check
+                            CVector normalizedDir = toIntersection.getNormalized();
+                            CVector dst = m_cameraPos + normalizedDir * scaleFactor;
+
+                            // Check if there's clear line of sight
+                            CVector hitPoint;
+                            if (!TraceTo(dst, hitPoint, 0.0f))
+                            {
+                                // Calculate angle between look direction and object direction
+                                CVector lookDirNormalized = m_lookVector.getNormalized();
+                                CVector objDirNormalized = objDirection.getNormalized();
+                                float angleCos =
+                                    lookDirNormalized.z * objDirNormalized.z + lookDirNormalized.y * objDirNormalized.y +
+                                    lookDirNormalized.x * objDirNormalized.x;
+
+                                // Update best candidate if this object has better alignment
+                                if (angleCos > maxAngleCosFromContact)
+                                {
+                                    maxAngleCosFromContact = angleCos;
+                                    infoObjId = physicObj->GetId();
+                                }
+                            }
+                            else
+                            {
+                                bool asd = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return infoObjId;
     }
 
     void InfoCone::RenderDebugInfo() const

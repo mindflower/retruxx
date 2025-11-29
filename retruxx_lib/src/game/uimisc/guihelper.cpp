@@ -243,17 +243,17 @@ namespace help
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-    CStr GetClanAbbreviationByName(CStr const&)
+    CStr GetClanAbbreviationByName(CStr const& clanName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return clanName + "_abb";
     }
     CStr GetClanFullNameByName(CStr const&)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-    CStr GetClanNameByBelong(int)
+    CStr GetClanNameByBelong(int clanBelong)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return "Belong_" + CStr(clanBelong);
     }
     CStr GetKeysForImpulse(int)
     {

@@ -612,9 +612,11 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    CStr ObjContainer::GetObjectFullName(CStr const&) const
+    CStr ObjContainer::GetObjectFullName(CStr const& ObjectName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CStr res;
+        m_ObjectFullNames.get(ObjectName, res);
+        return res;
     }
 
     void ObjContainer::RelinkGeomsToCollisionCells()

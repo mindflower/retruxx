@@ -231,9 +231,16 @@ void CMatrix::GetNormalizedBasis(CVector& x, CVector& y, CVector& z) const
     z.z = 1.0 / scaleZ * z.z;
 }
 
-CVector CMatrix::vecMul(CVector const&) const
+CVector CMatrix::vecMul(CVector const& v) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto v3 = (((_32 * v.z) + (_22 * v.y)) + (_12 * v.x)) + _42;
+    auto v5 = (((_33 * v.z) + (_23 * v.y)) + (_13 * v.x)) + _43;
+
+    CVector result;
+    result.x = (((_31 * v.z) + (_21 * v.y)) + (v.x * _11)) + _41;
+    result.y = v3;
+    result.z = v5;
+    return result;
 }
 
 CVector4 CMatrix::vecMul(CVector4 const&) const

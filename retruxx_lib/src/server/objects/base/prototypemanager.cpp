@@ -54,9 +54,11 @@ namespace ai
         ai::PrototypeManager::_LoadGameObjectsFolderFromXML(fileName, ai::PrototypeManager::_RefreshPrototype);
     }
 
-    CStr PrototypeManager::GetPrototypeFullName(CStr const&) const
+    CStr PrototypeManager::GetPrototypeFullName(CStr const& prototypeName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CStr res;
+        m_prototypeFullNames.get(prototypeName, res);
+        return res;
     }
 
     CStr PrototypeManager::GetPrototypeFullName(int) const

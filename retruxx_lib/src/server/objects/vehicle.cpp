@@ -879,12 +879,12 @@ namespace ai
 
 	bool Vehicle::IsTrailer() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_bIsTrailer;
 	}
 
 	float Vehicle::GetCameraHeight() const
 	{
-		return this->m_cameraHeight;
+		return m_cameraHeight;
 	}
 
 	int Vehicle::GetLockedObjId() const
@@ -2181,9 +2181,24 @@ namespace ai
         return m_turboThrottleTime;
 	}
 
-	float Vehicle::GetFullDurabilityCoeffForDamageType(DamageType) const
+	float Vehicle::GetFullDurabilityCoeffForDamageType(DamageType damageType) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        float res = 0.0;
+
+		auto* cabin = GetCabin();
+		if (cabin)
+		{
+            res += cabin->GetDurabilityCoeffForDamageType(damageType);
+		}
+
+		auto* basket = GetBasket();
+        if (basket)
+        {
+            res += basket->GetDurabilityCoeffForDamageType(damageType);
+        }
+
+		return res;
+
 	}
 
 	Obj* Vehicle::CloneObj()
