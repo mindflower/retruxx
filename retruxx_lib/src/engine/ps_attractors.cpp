@@ -184,22 +184,157 @@ namespace m3d
 
     void Attractor::InitParticle(Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Attractor::InitParticle
+        WorkMode state = m_State;
+
+        if (state == SPEED && m_max != 0.0f && m_min != 0.0f)
+        {
+            // Calculate vector from particle to attractor
+            CVector toAttractor;
+            toAttractor.x = pParticle->m_locorigin.x - m_org.x;
+            toAttractor.y = pParticle->m_locorigin.y - m_org.y;
+            toAttractor.z = pParticle->m_locorigin.z - m_org.z;
+
+            // Calculate distance
+            float distance = sqrt(toAttractor.x * toAttractor.x + toAttractor.y * toAttractor.y + toAttractor.z * toAttractor.z);
+
+            // If too close, fade out particle
+            if (distance < 0.1f)
+            {
+                pParticle->m_fade = 0.0f;
+                return;
+            }
+
+            // Calculate force magnitude based on force type
+            float forceMagnitude;
+            if (m_type == PS_FORCE_RANDOM)
+            {
+                forceMagnitude = m3d::rnd(m_min, m_max);
+            }
+            else if (m_type == PS_FORCE_SINE)
+            {
+                forceMagnitude = fabs(sin(Time * m_freq)) * (m_max - m_min) + m_min;
+            }
+            else
+            {
+                forceMagnitude = 1.0f;  // Default force
+            }
+
+            // Normalize direction vector and apply force
+            CVector normalizedDir = toAttractor.getNormalized();
+
+            pParticle->m_vel.x += normalizedDir.x * forceMagnitude * ForceCoeff;
+            pParticle->m_vel.y += normalizedDir.y * forceMagnitude * ForceCoeff;
+            pParticle->m_vel.z += normalizedDir.z * forceMagnitude * ForceCoeff;
+        }
+        else if (state == WMPOSITION)
+        {
+            // Calculate vector from particle to attractor
+            CVector toAttractor;
+            toAttractor.x = pParticle->m_locorigin.x - m_org.x;
+            toAttractor.y = pParticle->m_locorigin.y - m_org.y;
+            toAttractor.z = pParticle->m_locorigin.z - m_org.z;
+
+            // Calculate squared distance
+            float distanceSq = toAttractor.x * toAttractor.x + toAttractor.y * toAttractor.y + toAttractor.z * toAttractor.z;
+
+            // Calculate actual distance
+            float distance = sqrt(distanceSq);
+
+            // If too close, fade out particle
+            if (distance < 0.1f)
+            {
+                pParticle->m_fade = 0.0f;
+                return;
+            }
+
+            // Calculate force magnitude based on force type
+            float forceMagnitude;
+            if (m_type == PS_FORCE_RANDOM)
+            {
+                forceMagnitude = m3d::rnd(m_min, m_max);
+            }
+            else if (m_type == PS_FORCE_SINE)
+            {
+                forceMagnitude = fabs(sin(Time * m_freq)) * (m_max - m_min) + m_min;
+            }
+            else
+            {
+                forceMagnitude = 1.0f;  // Default force
+            }
+
+            // Normalize direction vector (with epsilon to avoid division by zero)
+            float invDistance = 1.0f / sqrt(distanceSq + 1.1920929e-7f);
+            CVector normalizedDir;
+            normalizedDir.x = toAttractor.x * invDistance;
+            normalizedDir.y = toAttractor.y * invDistance;
+            normalizedDir.z = toAttractor.z * invDistance;
+
+            // Apply position-based force
+            pParticle->m_locorigin.x += normalizedDir.x * Time * forceMagnitude * ForceCoeff;
+            pParticle->m_locorigin.y += normalizedDir.y * Time * forceMagnitude * ForceCoeff;
+            pParticle->m_locorigin.z += normalizedDir.z * Time * forceMagnitude * ForceCoeff;
+        }
     }
 
     void Attractor::InitParticlesList(ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Attractor::AffectParticle(Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Attractor::InitParticle
+        // Only process if in ACCELERATION mode with valid force range
+        if (m_State != ACCELERATION || m_max == 0.0f || m_min == 0.0f)
+        {
+            return;
+        }
+
+        // Calculate vector from particle to attractor
+        CVector toAttractor;
+        toAttractor.x = pParticle->m_locorigin.x - m_org.x;
+        toAttractor.y = pParticle->m_locorigin.y - m_org.y;
+        toAttractor.z = pParticle->m_locorigin.z - m_org.z;
+
+        // Calculate distance to attractor
+        float distance = sqrt(toAttractor.x * toAttractor.x + toAttractor.y * toAttractor.y + toAttractor.z * toAttractor.z);
+
+        // If particle is too close to attractor, kill it
+        if (distance < 0.1f)
+        {
+            pParticle->m_fade = 0.0f;
+            return;
+        }
+
+        // Calculate force magnitude based on force type
+        float forceMagnitude;
+        if (m_type == PS_FORCE_RANDOM)
+        {
+            forceMagnitude = m3d::rnd(m_min, m_max);
+        }
+        else if (m_type == PS_FORCE_SINE)
+        {
+            forceMagnitude = fabs(sin(Time * m_freq)) * (m_max - m_min) + m_min;
+        }
+        else
+        {
+            forceMagnitude = 1.0f;  // Default force magnitude
+        }
+
+        // Calculate inverse square law force (gravity-like)
+        float inverseSquareForce = forceMagnitude / (distance * distance);
+
+        // Normalize direction vector
+        CVector normalizedDir = toAttractor.getNormalized();
+
+        // Apply force to particle acceleration (inverse square law)
+        pParticle->m_accel.x += normalizedDir.x * inverseSquareForce * ForceCoeff;
+        pParticle->m_accel.y += normalizedDir.y * inverseSquareForce * ForceCoeff;
+        pParticle->m_accel.z += normalizedDir.z * inverseSquareForce * ForceCoeff;
     }
 
     void Attractor::AffectParticlesList(ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
     void Attractor::SetEmitter(TimeMode mode, float emitSt, float emitFin, float emitRpt)
     {

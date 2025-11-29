@@ -46,7 +46,6 @@ namespace ai
             /* 0x001c */ float m_friction;
             /* 0x0020 */ float m_resistance;
             /* 0x0024 */ int m_idx;
-            SoilProps(const ai::DynamicScene::SoilProps& __that);
             SoilProps();
             void LoadFromXml(const m3d::cmn::XmlNode* xmlNode);
         }; /* size: 0x0028 */

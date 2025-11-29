@@ -39,6 +39,8 @@
 #include "core/ini.h"
 #include "core/log.h"
 #include "core/profilerstack.h"
+#include "file/fileserver.h"
+#include "file/filestream.h"
 #include "game/m3dgame.h"
 #include "objects/chassis.h"
 #include "objects/dynamicquestdestroy.h"
@@ -50,6 +52,8 @@
 #include "objects/guns/gun.h"
 #include "objects/guns/mine.h"
 #include "objects/guns/mortarshell.h"
+#include <algorithm>
+#include <client.h>
 
 namespace ai
 {
@@ -293,9 +297,12 @@ namespace ai
 	RT_CLASS_EXPORTS_END;
 	RT_CLASS_DEFINE(DynamicScene);
 
-	void DynamicScene::SoilProps::LoadFromXml(m3d::cmn::XmlNode const*)
+	void DynamicScene::SoilProps::LoadFromXml(m3d::cmn::XmlNode const* xmlNode)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        m3d::SafeStrAttrib(m_splashTypeName, xmlNode, "splash");
+        m3d::SafeFloatAttrib(m_friction, xmlNode, "friction");
+        m3d::SafeFloatAttrib(m_resistance, xmlNode, "resistance");
+        m3d::SafeStrAttrib(m_wheelTraceTextureName, xmlNode, "wheeltracetexture");
 	}
 
 	DynamicScene::SoilProps::SoilProps()
@@ -304,7 +311,6 @@ namespace ai
 		m_friction = 1.0;
 		m_resistance = 0;
 		m_idx = 0;
-
 	}
 
 	short DynamicScene::GetBoEffectTypeByName(CStr const&)
@@ -596,10 +602,151 @@ namespace ai
 		m_clashDecalId = AddDecalName("DC_CLASH");
 	}
 
-	void DynamicScene::ReadSoilProps(char const*)
+	void DynamicScene::ReadSoilProps(char const* fileName)
 	{
-        // TODO: implement DynamicScene::ReadSoilProps
-        // RETRUXX_NOT_IMPLEMENTED;
+		// TODO: check this!!!
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        if (!stream->Open(fileName, m3d::fs::IStream::OPEN_READ))
+        {
+            M3D_LOG_ERR("[Error] DynamicScene::ReadSoilProps : Can't open file " + CStr(fileName));
+            return;
+        }
+
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
+        if (!xmlFile->Read(*stream))
+        {
+            M3D_LOG_ERR("[Error] DynamicScene::ReadSoilProps : Can't read file " + CStr(fileName));
+            return;
+        }
+
+        ref_ptr tilepropsNode = xmlFile->CreateNode();
+        xmlFile->GetFirstChild(tilepropsNode, "tileprops");
+        if (tilepropsNode->IsEmpty())
+        {
+            return;
+        }
+
+		std::map<CStr, SoilProps> soilProps;
+        ref_ptr typesNode = xmlFile->CreateNode();
+        tilepropsNode->GetFirstChild(typesNode, "types");
+        if (!typesNode->IsEmpty())
+		{
+			ref_ptr typeNode = xmlFile->CreateNode();
+			typesNode->GetFirstChild(typeNode, "type");
+			while (!typeNode->IsEmpty())
+			{
+                CStr typeName = typeNode->GetAttribute("name");
+				SoilProps props;
+				props.LoadFromXml(typeNode);
+                soilProps[typeName] = props;
+				typeNode->GetNextSibling(typeNode, "type");
+			}
+        }
+
+		m_soilSplashTypeNames.clear();
+
+		auto& landscape = ai::pServer->GetWorld()->GetLandscape();
+        auto const numTiles = landscape.GetNumTiles();
+        m_soilSplashTypeNames.resize(numTiles);
+        m_soilProps.resize(numTiles);
+
+		ref_ptr tilesNode = xmlFile->CreateNode();
+        tilepropsNode->GetFirstChild(tilesNode, "tiles");
+        ref_ptr texPropsNode = xmlFile->CreateNode();
+        for (int i = 0; i < numTiles; ++i)
+		{
+            CStr texName;
+            auto texHandle = landscape.GetTexHandleFromList(i);
+            if (texHandle.IsValid())
+            {
+                CStr texFileName;
+                M3D_RENDERER->GetTextureName(texHandle, texFileName);
+
+                CStr const texFullName = NameFromFileName(texFileName);
+                texName = texFullName.substr(0, texFullName.find('.'));
+            }
+
+			CStr tileType;
+			tilesNode->GetFirstChild(texPropsNode, texName.c_str());
+            if (texPropsNode->IsEmpty())
+            {
+                M3D_LOG_ERR("Error: couldn't load tile props for tile '" + texName + "'");
+                tileType = "GRASS_GENERAL";
+            }
+			else
+			{
+                m3d::SafeStrAttrib(tileType, texPropsNode, "type");
+			}
+
+			auto const soilIt = soilProps.find(tileType);
+            if (soilIt == soilProps.end())
+            {
+                M3D_LOG_ERR("Error: invalid tile type: '" + tileType + "'" + "' for texture '" + texName + "'");
+                M3D_ASSERT(!"Error reading tileprops, see log");
+            }
+
+			auto const& soilProp = soilIt->second;
+			m_soilProps[i] = soilProp;
+            m_soilProps[i].LoadFromXml(texPropsNode);
+            m_soilProps[i].m_idx = i;
+            m_soilSplashTypeNames[i] = m_soilProps[i].m_splashTypeName;
+        }
+
+		std::sort(
+			m_soilSplashTypeNames.begin(), m_soilSplashTypeNames.end());
+        auto const last = std::unique(m_soilSplashTypeNames.begin(), m_soilSplashTypeNames.end());
+        m_soilSplashTypeNames.erase(last, m_soilSplashTypeNames.end());
+
+
+		// TODO: check this!!!
+		// Update splash type indices
+        for (size_t i = 0; i < m_soilProps.size(); ++i)
+        {
+            auto it = std::find(m_soilSplashTypeNames.begin(), m_soilSplashTypeNames.end(), m_soilProps[i].m_splashTypeName);
+            if (it != m_soilSplashTypeNames.end())
+            {
+                m_soilProps[i].m_splashType = static_cast<int>(std::distance(m_soilSplashTypeNames.begin(), it));
+            }
+        }
+
+        // Initialize wheel traces
+        _InitWheelTraces();
+
+        // Build soil properties index map
+        size_t tileSize = landscape.GetTileSize();
+        m_soilPropsIdx.resize(tileSize);
+
+        for (size_t y = 0; y < tileSize; ++y)
+        {
+            for (size_t x = 0; x < tileSize; ++x)
+            {
+                m3d::Landscape::TileInfo const& tileInfo = landscape.GetTileInfo(static_cast<int>(y), static_cast<int>(x));
+                uint16_t texIndex = tileInfo.m_texIndex0;
+
+                size_t index = y * tileSize + x;
+                if (index < m_soilPropsIdx.size())
+                {
+                    m_soilPropsIdx[index].push_back(texIndex);
+                }
+            }
+        }
+
+        // Generate vehicle soil effect names
+        m_vehicleSoilEffectNames.resize(m_soilProps.size());
+        for (size_t i = 0; i < m_soilProps.size(); ++i)
+        {
+            CStr effectName = "ET_PS_" + m_soilProps[i].m_splashTypeName + "SPARKLE";
+            m_vehicleSoilEffectNames[i] = effectName;
+        }
+
+        // Initialize effect names
+        m_soilEffectNames.clear();
+        m_roadEffectNames.clear();
+
+        for (CStr const& wheelTypeName : m_wheelTypeNames)
+        {
+            _AddSoilEffectNameForWheelTypeName(wheelTypeName);
+        }
 	}
 
 	CStr const& DynamicScene::GetShellWaterEffectName(unsigned short) const
@@ -1490,7 +1637,51 @@ namespace ai
 
 	void DynamicScene::_InitWheelTraces()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code DynamicScene::_InitWheelTraces
+        m3d::RoadManager& roadManager = m3d::pClient->GetWorld().GetRoadManager();
+        m3d::WheelTraceMgr& wheelTraceMgr = pServer->GetWorld()->GetWheelTracesMgr();
+
+        // Collect all unique wheel trace texture names from road sets
+        std::set<CStr> roadWheelTraces;
+
+        for (size_t i = 0; i < roadManager.m_roadSets.size(); ++i)
+        {
+            roadWheelTraces.insert(roadManager.m_roadSets[i]->m_wheeltraceTexName);
+        }
+
+        // Calculate total number of soil types (soil props + road wheel traces)
+        size_t soilPropsCount = m_soilProps.size();
+        size_t totalTypes = soilPropsCount + roadWheelTraces.size();
+
+        // Initialize wheel trace manager with the total number of types
+        wheelTraceMgr.Init(totalTypes);
+
+        // Add soil properties textures to wheel trace manager
+        for (size_t i = 0; i < soilPropsCount; ++i)
+        {
+            wheelTraceMgr.AddTextureBySoilType(m_soilProps[i].m_idx, m_soilProps[i].m_wheelTraceTextureName);
+        }
+
+        // Add road wheel trace textures and update road set soil types
+        int roadTypeIndex = 0;
+        for (auto it = roadWheelTraces.begin(); it != roadWheelTraces.end(); ++it, ++roadTypeIndex)
+        {
+            CStr const& wheelTraceName = *it;
+
+            // Add to wheel trace manager
+            wheelTraceMgr.AddTextureBySoilType(static_cast<int>(soilPropsCount + roadTypeIndex), wheelTraceName);
+
+            // Update road sets that use this wheel trace texture
+            for (size_t j = 0; j < roadManager.m_roadSets.size(); ++j)
+            {
+                m3d::RoadSet* roadSet = roadManager.m_roadSets[j];
+
+                if (roadSet->m_wheeltraceTexName == wheelTraceName)
+                {
+                    roadSet->m_soilType = static_cast<int>(soilPropsCount + roadTypeIndex);
+                }
+            }
+        }
 	}
 
 	void DynamicScene::_RecalcWheelEffectNames()

@@ -1510,9 +1510,13 @@ namespace m3d
             return this->m_heightMap[x + y * (m_mapSize + 1)];
     }
 
-    rend::TexHandle Landscape::GetTexHandleFromList(unsigned) const
+    rend::TexHandle Landscape::GetTexHandleFromList(unsigned num) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (num < this->m_tilesTextures.size())
+        {
+            return m_tilesTextures[num]->m_texHandle;
+        }
+        return {};
     }
 
     void Landscape::SaveTileInfo()
@@ -2144,9 +2148,9 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Landscape::TileInfo const& Landscape::GetTileInfo(int, int) const
+    Landscape::TileInfo const& Landscape::GetTileInfo(int x, int y) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_tiles[4 * y * m_owner->m_level->land_size + x];
     }
 
     void Landscape::Invalidate()
@@ -3447,7 +3451,7 @@ namespace m3d
 
     int Landscape::GetNumTiles() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_tilesTextures.size();
     }
 
     void Landscape::setDrawRadius(int, int, int)

@@ -261,9 +261,11 @@ namespace m3d
         m_profiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(m3d::Application::g_pApp->GetProfilerStack().AddProfiler("wheeltraces", 0x1Eu));
     }
 
-    void WheelTraceMgr::Init(int)
+    void WheelTraceMgr::Init(int numSoilTypes)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_texHandles.resize(numSoilTypes);
+        for (size_t i = 0; i < 512; ++i)
+            m_skidStrips[i].m_stripSize = 0;
     }
 
     bool WheelTraceMgr::IsSkiddingStarted(void* owner)
@@ -443,8 +445,17 @@ namespace m3d
         }
     }
 
-    void WheelTraceMgr::AddTextureBySoilType(int, CStr const&)
+    void WheelTraceMgr::AddTextureBySoilType(int soilType, CStr const& textureName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (soilType < m_texHandles.size())
+        {
+            auto& texHandle = m_texHandles[soilType];
+            if (!texHandle.IsValid())
+            {
+                texHandle = M3D_RENDERER->AddTexture(textureName, 2);
+                M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_S, 1u);
+                M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_T, 1u);
+            }
+        }
     }
 }
