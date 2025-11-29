@@ -313,9 +313,25 @@ namespace ai
 
     namespace
     {
-        bool IsLittle(dxGeom*)
+        bool IsLittle(dxGeom* geom)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto v1 = geom;
+            if (dGeomGetClass(geom) == 6)
+                v1 = dGeomTransformGetGeom(v1);
+            auto cls = dGeomGetClass(v1);
+            if (!cls)
+                return dGeomSphereGetRadius(v1) <= 2.0;
+            if (cls != 1)
+                return 0;
+
+            float size[4];
+            dGeomBoxGetLengths(v1, size);
+            int v4 = size[0] <= 2.0;
+            if (size[1] <= 2.0)
+                ++v4;
+            if (size[2] <= 2.0)
+                ++v4;
+            return v4 >= 2;
         }
     }  // namespace
 

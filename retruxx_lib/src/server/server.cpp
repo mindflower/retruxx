@@ -351,197 +351,197 @@ namespace ai
 
         if (className == "Vehicle")
             return new VehiclePrototypeInfo;
-        else if (className == "ArticulatedVehicle")
+        if (className == "ArticulatedVehicle")
             return new ArticulatedVehiclePrototypeInfo;
-        else if (className == "VehiclePart")
+        if (className == "VehiclePart")
             return new VehiclePartPrototypeInfo;
-        else if (className == "CompoundVehiclePart")
+        if (className == "CompoundVehiclePart")
             return new CompoundVehiclePartPrototypeInfo;
-        else if (className == "Chassis")
+        if (className == "Chassis")
             return new ChassisPrototypeInfo;
-        else if (className == "Cabin")
+        if (className == "Cabin")
             return new CabinPrototypeInfo;
-        else if (className == "Basket")
+        if (className == "Basket")
             return new BasketPrototypeInfo;
-        else if (className == "Trigger")
+        if (className == "Trigger")
             return new TriggerPrototypeInfo;
-        else if (className == "DynamicQuestDestroy")
+        if (className == "DynamicQuestDestroy")
             return new DynamicQuestDestroyPrototypeInfo;
-        else if (className == "DynamicQuestReach")
+        if (className == "DynamicQuestReach")
             return new DynamicQuestReachPrototypeInfo;
-        else if (className == "DynamicQuestConvoy")
+        if (className == "DynamicQuestConvoy")
             return new DynamicQuestConvoyPrototypeInfo;
-        else if (className == "DynamicQuestPeace")
+        if (className == "DynamicQuestPeace")
             return new DynamicQuestPeacePrototypeInfo;
-        else if (className == "DynamicQuestHunt")
+        if (className == "DynamicQuestHunt")
             return new DynamicQuestHuntPrototypeInfo;
-        else if (className == "Wheel")
+        if (className == "Wheel")
             return new WheelPrototypeInfo;
-        else if (className == "StaticAutoGun")
+        if (className == "StaticAutoGun")
             return new StaticAutoGunPrototypeInfo;
-        else if (className == "Town")
+        if (className == "Town")
             return new TownPrototypeInfo;
-        else if (className == "Building")
+        if (className == "Building")
             return new BuildingPrototypeInfo;
-        else if (className == "Workshop")
+        if (className == "Workshop")
             return new WorkshopPrototypeInfo;
-        else if (className == "Bar")
+        if (className == "Bar")
             return new BarPrototypeInfo;
-        else if (className == "Npc")
+        if (className == "Npc")
             return new NpcPrototypeInfo;
-        else if (className == "Lair")
+        if (className == "Lair")
             return new LairPrototypeInfo;
-        else if (className == "Location")
+        if (className == "Location")
             return new LocationPrototypeInfo;
-        else if (className == "Chest")
+        if (className == "Chest")
             return new ChestPrototypeInfo;
-        else if (className == "Team")
+        if (className == "Team")
             return new TeamPrototypeInfo;
-        else if (className == "CaravanTeam")
+        if (className == "CaravanTeam")
             return new CaravanTeamPrototypeInfo;
-        else if (className == "VagabondTeam")
+        if (className == "VagabondTeam")
             return new VagabondTeamPrototypeInfo;
-        else if (className == "BreakableObject")
+        if (className == "BreakableObject")
             return new BreakableObjectPrototypeInfo;
-        else if (className == "RopeObj")
+        if (className == "RopeObj")
             return new RopeObjPrototypeInfo;
-        else if (className == "DummyObject")
+        if (className == "DummyObject")
             return new DummyObjectPrototypeInfo;
-        else if (className == "Ware")
+        if (className == "Ware")
             return new WarePrototypeInfo;
-        else if (className == "Gadget")
+        if (className == "Gadget")
             return new GadgetPrototypeInfo;
-        else if (className == "PhysicUnit")
+        if (className == "PhysicUnit")
             return new PhysicUnitPrototypeInfo;
-        else if (className == "JointedObj")
+        if (className == "JointedObj")
             return new JointedObjPrototypeInfo;
-        else if (className == "CompositeObj")
+        if (className == "CompositeObj")
             return new CompositeObjPrototypeInfo;
-        else if (className == "GeomObj")
+        if (className == "GeomObj")
             return new GeomObjPrototypeInfo;
-        else if (className == "VehicleSplinter")
+        if (className == "VehicleSplinter")
             return new VehicleSplinterPrototypeInfo;
-        else if (className == "ParticleSplinter")
+        if (className == "ParticleSplinter")
             return new ParticleSplinterPrototypeInfo;
-        else if (className == "Player")
+        if (className == "Player")
             return new PlayerPrototypeInfo;
-        else if (className == "ObjPrefab")
+        if (className == "ObjPrefab")
             return new ObjPrefabPrototypeInfo;
-        else if (className == "Barricade")
+        if (className == "Barricade")
             return new BarricadePrototypeInfo;
-        else if (className == "SgNodeObj")
+        if (className == "SgNodeObj")
             return new SgNodeObjPrototypeInfo;
-        else if (className == "LightObj")
+        if (className == "LightObj")
             return new LightObjPrototypeInfo;
-        else if (className == "InfectionTeam")
+        if (className == "InfectionTeam")
             return new InfectionTeamPrototypeInfo;
-        else if (className == "InfectionZone")
+        if (className == "InfectionZone")
             return new InfectionZonePrototypeInfo;
-        else if (className == "InfectionLair")
+        if (className == "InfectionLair")
             return new InfectionLairPrototypeInfo;
-        else if (className == "BlastWave")
+        if (className == "BlastWave")
             return new BlastWavePrototypeInfo;
-        else if (className == "RepositoryObjectsGenerator")
+        if (className == "RepositoryObjectsGenerator")
             return new RepositoryObjectsGeneratorPrototypeInfo;
-        else if (className == "AffixGenerator")
+        if (className == "AffixGenerator")
             return new AffixGeneratorPrototypeInfo;
-        else if (className == "VehicleRecollection")
+        if (className == "VehicleRecollection")
             return new VehicleRecollectionPrototypeInfo;
-        else if (className == "VehiclesGenerator")
+        if (className == "VehiclesGenerator")
             return new VehiclesGeneratorPrototypeInfo;
-        else if (className == "WanderersGenerator")
+        if (className == "WanderersGenerator")
             return new WanderersGeneratorPrototypeInfo;
-        else if (className == "WanderersManager")
+        if (className == "WanderersManager")
             return new WanderersManagerPrototypeInfo;
-        else if (className == "BossMetalArm")
+        if (className == "BossMetalArm")
             return new BossMetalArmPrototypeInfo;
-        else if (className == "BossMetalArmLoad")
+        if (className == "BossMetalArmLoad")
             return new BossMetalArmLoadPrototypeInfo;
-        else if (className == "Boss02")
+        if (className == "Boss02")
             return new Boss02PrototypeInfo;
-        else if (className == "Boss02Arm")
+        if (className == "Boss02Arm")
             return new Boss02ArmPrototypeInfo;
-        else if (className == "Boss03")
+        if (className == "Boss03")
             return new Boss03PrototypeInfo;
-        else if (className == "Boss03Part")
+        if (className == "Boss03Part")
             return new Boss03PartPrototypeInfo;
-        else if (className == "Boss04")
+        if (className == "Boss04")
             return new Boss04PrototypeInfo;
-        else if (className == "Boss04Part")
+        if (className == "Boss04Part")
             return new Boss04PartPrototypeInfo;
-        else if (className == "Boss04Station")
+        if (className == "Boss04Station")
             return new Boss04StationPrototypeInfo;
-        else if (className == "Boss04StationPart")
+        if (className == "Boss04StationPart")
             return new Boss04StationPartPrototypeInfo;
-        else if (className == "Boss04Drone")
+        if (className == "Boss04Drone")
             return new Boss04DronePrototypeInfo;
-        else if (className == "Submarine")
+        if (className == "Submarine")
             return new SubmarinePrototypeInfo;
-        else if (className == "TeamTacticWithRoles")
+        if (className == "TeamTacticWithRoles")
             return new TeamTacticWithRolesPrototypeInfo;
-        else if (className == "VehicleRoleMeat")
+        if (className == "VehicleRoleMeat")
             return new VehicleRoleMeatPrototypeInfo;
-        else if (className == "VehicleRoleSniper")
+        if (className == "VehicleRoleSniper")
             return new VehicleRoleSniperPrototypeInfo;
-        else if (className == "VehicleRoleOppressor")
+        if (className == "VehicleRoleOppressor")
             return new VehicleRoleOppressorPrototypeInfo;
-        else if (className == "VehicleRoleBarrier")
+        if (className == "VehicleRoleBarrier")
             return new VehicleRoleBarrierPrototypeInfo;
-        else if (className == "VehicleRoleCoward")
+        if (className == "VehicleRoleCoward")
             return new VehicleRoleCowardPrototypeInfo;
-        else if (className == "VehicleRolePendulum")
+        if (className == "VehicleRolePendulum")
             return new VehicleRolePendulumPrototypeInfo;
-        else if (className == "VehicleRoleCheater")
+        if (className == "VehicleRoleCheater")
             return new VehicleRoleCheaterPrototypeInfo;
-        else if (className == "NPCMotionController")
+        if (className == "NPCMotionController")
             return new NPCMotionControllerPrototypeInfo;
-        else if (className == "CinematicMover")
+        if (className == "CinematicMover")
             return new CinematicMoverPrototypeInfo;
-        else if (className == "Bullet")
+        if (className == "Bullet")
             return new BulletPrototypeInfo;
-        else if (className == "Rocket")
+        if (className == "Rocket")
             return new RocketPrototypeInfo;
-        else if (className == "BulletLauncher")
+        if (className == "BulletLauncher")
             return new BulletLauncherPrototypeInfo;
-        else if (className == "RocketLauncher")
+        if (className == "RocketLauncher")
             return new RocketLauncherPrototypeInfo;
-        else if (className == "CompoundGun")
+        if (className == "CompoundGun")
             return new CompoundGunPrototypeInfo;
-        else if (className == "PlasmaBunch")
+        if (className == "PlasmaBunch")
             return new PlasmaBunchPrototypeInfo;
-        else if (className == "PlasmaBunchLauncher")
+        if (className == "PlasmaBunchLauncher")
             return new PlasmaBunchLauncherPrototypeInfo;
-        else if (className == "RocketVolleyLauncher")
+        if (className == "RocketVolleyLauncher")
             return new RocketVolleyLauncherPrototypeInfo;
-        else if (className == "Thunderbolt")
+        if (className == "Thunderbolt")
             return new ThunderboltPrototypeInfo;
-        else if (className == "ThunderboltLauncher")
+        if (className == "ThunderboltLauncher")
             return new ThunderboltLauncherPrototypeInfo;
-        else if (className == "MortarShell")
+        if (className == "MortarShell")
             return new MortarShellPrototypeInfo;
-        else if (className == "Mortar")
+        if (className == "Mortar")
             return new MortarPrototypeInfo;
-        else if (className == "MortarVolleyLauncher")
+        if (className == "MortarVolleyLauncher")
             return new MortarVolleyLauncherPrototypeInfo;
-        else if (className == "Mine")
+        if (className == "Mine")
             return new MinePrototypeInfo;
-        else if (className == "MinePusher")
+        if (className == "MinePusher")
             return new MinePusherPrototypeInfo;
-        else if (className == "LocationPusher")
+        if (className == "LocationPusher")
             return new LocationPusherPrototypeInfo;
-        else if (className == "EngineOilLocation")
+        if (className == "EngineOilLocation")
             return new EngineOilLocationPrototypeInfo;
-        else if (className == "NailLocation")
+        if (className == "NailLocation")
             return new NailLocationPrototypeInfo;
-        else if (className == "SmokeScreenLocation")
+        if (className == "SmokeScreenLocation")
             return new SmokeScreenLocationPrototypeInfo;
-        else if (className == "TurboAccelerationPusher")
+        if (className == "TurboAccelerationPusher")
             return new TurboAccelerationPusherPrototypeInfo;
-        else if (className == "RadioManager")
+        if (className == "RadioManager")
             return new RadioManagerPrototypeInfo;
-        else if (className == "Formation")
+        if (className == "Formation")
             return new FormationPrototypeInfo;
-        else if (className == "QuestItem")
+        if (className == "QuestItem")
             return new QuestItemPrototypeInfo;
 
         return nullptr;

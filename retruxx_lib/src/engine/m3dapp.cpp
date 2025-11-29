@@ -3220,7 +3220,7 @@ namespace m3d
 
     bool Application::bIsMousePointing() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return false;
     }
 
     DbgCounter* Application::CreateCounter(char const*)
