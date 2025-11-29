@@ -2,6 +2,10 @@
 
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(RayBody)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(RayBody);
+
     RayBody::RayBody(const ai::RayBodyPrototypeInfo& prototypeInfo)
     {
         RETRUXX_NOT_IMPLEMENTED;
@@ -9,7 +13,10 @@ namespace ai
 
     RayBody::RayBody(float length)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* geom = m_pGeoms[0];
+        auto* obj = ai::Ray::CreateObject(0, length, ai::CommonGeomMovedCallback);
+        m_pGeoms[0]->SetGeom(obj);
+        dMassSetSphereTotal(&m_mass, 1.0, 1.0);
     }
 
     RayBody::RayBody()
@@ -22,10 +29,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RayBody::~RayBody()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    RayBody::~RayBody() = default;
 
     m3d::Object* RayBody::Clone()
     {
@@ -39,12 +43,12 @@ namespace ai
 
     m3d::Class* RayBody::GetBaseClass()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(SimplePhysicBody);
     }
 
     m3d::Class* RayBody::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(RayBody);
     }
 
     float RayBody::GetLength() const

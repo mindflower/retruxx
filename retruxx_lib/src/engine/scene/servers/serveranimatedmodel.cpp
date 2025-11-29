@@ -83,8 +83,7 @@ namespace m3d
 
     int AnimatedModelsServer::Init()
     {
-        auto const logoFileName = g_Kernel->GetEngineCfg().m_loadFromGAM.GetB() ?
-            "data\\models\\Logos\\Logos.gam" : "data\\models\\Logos\\Logos.sam";
+        auto const logoFileName = g_Kernel->GetEngineCfg().m_loadFromGAM.GetB() ? "data\\models\\Logos\\Logos.gam" : "data\\models\\Logos\\Logos.sam";
         m_MeshMaterialManager.Init(logoFileName, g_Kernel->GetEngineCfg().m_pathToBelongsToLogos.GetS());
 
         m_impostorVs = Application::g_pApp->m_renderer->NewHlslShader("data/shaders/impostorTest_vs11.vs", "ImpostorVS", rend::IHlslShader::VS_1_1);
@@ -127,13 +126,9 @@ namespace m3d
         {
             auto* dynamicModel = (DynamicModel*)m_models[itemByName].m_ptr;
             auto* animatedModel = dynamicModel->m_mdl[0];
-            return animatedModel->GetBoneMatrixByName(
-                    boneName,
-                    res,
-                    theLastOneOnly);
+            return animatedModel->GetBoneMatrixByName(boneName, res, theLastOneOnly);
         }
         return 0;
-        
     }
 
     int AnimatedModelsServer::SaveAllLoadedEntities(char const*)
@@ -187,12 +182,12 @@ namespace m3d
             node->GetProperty(2, &list);
             list->adjustModelEffects(node, node->m_action);
 
-            auto* dynamicModel = (DynamicModel*)m_models.front().m_ptr;
+            auto* dynamicModel = (DynamicModel*)m_models[id].m_ptr;
             auto* animatedModel = dynamicModel->m_mdl[0];
 
             for (int i = 0; i < list->m_curEffectList.size(); ++i)
             {
-                auto mat = animatedModel->GetBoneMatrix(i);
+                auto mat = animatedModel->GetBoneMatrix(list->m_curEffectList[i].m_desc->m_lpId);
                 CVector pos;
                 pos.x = (float)((float)((float)(mat._11 + mat._21) + mat._31) * 0.0) + mat._41;
                 pos.y = (float)((float)((float)(mat._12 + mat._22) + mat._32) * 0.0) + mat._42;
@@ -206,7 +201,7 @@ namespace m3d
 
             auto skinNum = dynamicModel->m_effects[node->m_action].skinNum;
             auto cfgNum = dynamicModel->m_effects[node->m_action].cfgNum;
-            if (skinNum >=0)
+            if (skinNum >= 0)
             {
                 node->SetProperty(8706u, &skinNum);
             }
@@ -232,12 +227,12 @@ namespace m3d
             node->GetProperty(2, &list);
             list->adjustModelEffects(node, node->m_action);
 
-            auto* dynamicModel = (DynamicModel*)m_models.front().m_ptr;
+            auto* dynamicModel = (DynamicModel*)m_models[id].m_ptr;
             auto* animatedModel = dynamicModel->m_mdl[0];
 
             for (int i = 0; i < list->m_curEffectList.size(); ++i)
             {
-                auto mat = animatedModel->GetBoneMatrix(i);
+                auto mat = animatedModel->GetBoneMatrix(list->m_curEffectList[i].m_desc->m_lpId);
                 CVector pos;
                 pos.x = (float)((float)((float)(mat._11 + mat._21) + mat._31) * 0.0) + mat._41;
                 pos.y = (float)((float)((float)(mat._12 + mat._22) + mat._32) * 0.0) + mat._42;
@@ -320,7 +315,7 @@ namespace m3d
             }
             /* 0x0000 */ const MeshInfo* m_meshes;
         }; /* size: 0x0004 */
-    }
+    }  // namespace
 
     int AnimatedModelsServer::RenderNodeSet(SgNode** nodes, unsigned numNodes, RenderNodeInfo rni)
     {
@@ -378,7 +373,7 @@ namespace m3d
 
         // Arrays for sorting meshes
         unsigned int meshesShifts[5000] = {0};
-        unsigned int meshesShiftsImpostered[5000] = { 0 };
+        unsigned int meshesShiftsImpostered[5000] = {0};
         MeshInfo meshes[5000];
         ImpostoredMeshInfo meshesImpostered[5000];
 
@@ -393,11 +388,10 @@ namespace m3d
             DynamicModel* modelData = (DynamicModel*)this->m_models[currentNode->GetServerHandle()].m_ptr;
 
             // Calculate distance squared to view position
-            distSq = (
-                (currentNode->GetOriginWorldAbs().x - viewPos.x) * (currentNode->GetOriginWorldAbs().x - viewPos.x) +
-                (currentNode->GetOriginWorldAbs().y - viewPos.y) * (currentNode->GetOriginWorldAbs().y - viewPos.y) +
-                (currentNode->GetOriginWorldAbs().z - viewPos.z) * (currentNode->GetOriginWorldAbs().z - viewPos.z)
-                );
+            distSq =
+                ((currentNode->GetOriginWorldAbs().x - viewPos.x) * (currentNode->GetOriginWorldAbs().x - viewPos.x) +
+                 (currentNode->GetOriginWorldAbs().y - viewPos.y) * (currentNode->GetOriginWorldAbs().y - viewPos.y) +
+                 (currentNode->GetOriginWorldAbs().z - viewPos.z) * (currentNode->GetOriginWorldAbs().z - viewPos.z));
 
             // Determine LOD level based on distance
             unsigned int lodLevel = false;
@@ -490,8 +484,6 @@ namespace m3d
                 M3D_RENDERER->MatPush(mesh.nodeLookup->GetCurrentMatrix());
                 RenderMesh(mesh.nodeLookup, *mesh.mesh, shader);
                 M3D_RENDERER->MatPop(1);
-
-                
             }
             else
             {
@@ -501,7 +493,7 @@ namespace m3d
 
         if (!rni.rnt && numMeshesImpostered != 0)
         {
-           // RETRUXX_NOT_IMPLEMENTED;
+            // RETRUXX_NOT_IMPLEMENTED;
             // TODO: implement impostored mesh rendering
         }
 
@@ -621,29 +613,12 @@ namespace m3d
                     M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, 0);
 
                     // Render model from 25 different angles (5x5 grid)
-                    float angles[] = {
-                        0.0f, 14.4f, 28.8f, 43.2f, 57.6f,
-                        72.0f, 86.4f, 100.8f, 115.2f, 129.6f,
-                        144.0f, 158.4f, 172.8f, 187.2f, 201.6f,
-                        216.0f, 230.4f, 244.8f, 259.2f, 273.6f,
-                        288.0f, 302.4f, 316.8f, 331.2f, 345.6f
-                    };
+                    float angles[] = {0.0f,   14.4f,  28.8f,  43.2f,  57.6f,  72.0f,  86.4f,  100.8f, 115.2f, 129.6f, 144.0f, 158.4f, 172.8f,
+                                      187.2f, 201.6f, 216.0f, 230.4f, 244.8f, 259.2f, 273.6f, 288.0f, 302.4f, 316.8f, 331.2f, 345.6f};
 
-                    int offsetsX[] = {
-                        0, 51, 102, 153, 204,
-                        0, 51, 102, 153, 204,
-                        0, 51, 102, 153, 204,
-                        0, 51, 102, 153, 204,
-                        0, 51, 102, 153, 204
-                    };
+                    int offsetsX[] = {0, 51, 102, 153, 204, 0, 51, 102, 153, 204, 0, 51, 102, 153, 204, 0, 51, 102, 153, 204, 0, 51, 102, 153, 204};
 
-                    int offsetsY[] = {
-                        0, 0, 0, 0, 0,
-                        51, 51, 51, 51, 51,
-                        102, 102, 102, 102, 102,
-                        153, 153, 153, 153, 153,
-                        204, 204, 204, 204, 204
-                    };
+                    int offsetsY[] = {0, 0, 0, 0, 0, 51, 51, 51, 51, 51, 102, 102, 102, 102, 102, 153, 153, 153, 153, 153, 204, 204, 204, 204, 204};
 
                     for (int j = 0; j < 25; j++)
                     {
@@ -805,7 +780,7 @@ namespace m3d
         {
             auto& effectNode = effectDesc.m_effectNode;
             auto currentLoadpointMatrix = anim->GetCurrentLoadpointMatrix(effectDesc.m_desc->m_lpId);
-            effectNode->SetOriginAbs({ currentLoadpointMatrix._41, currentLoadpointMatrix._42 , currentLoadpointMatrix._43 });
+            effectNode->SetOriginAbs({currentLoadpointMatrix._41, currentLoadpointMatrix._42, currentLoadpointMatrix._43});
 
             Quaternion q;
             q.FromMatrix(currentLoadpointMatrix);
@@ -839,7 +814,7 @@ namespace m3d
             }
         }
 
-    }
+    }  // namespace
 
     void AnimatedModelsServer::AddItemsList(retruxx::vector<ServerItem>& itemslist)
     {
@@ -855,8 +830,10 @@ namespace m3d
         retruxx::vector<LoadSkins> skinsToLoad(itemslist.size());
 
         // Pre-define skins to load from item parameters
-        for (int i = 0; i < skinsToLoad.size(); ++i) {
-            if (!itemslist[i].m_params.empty()) {
+        for (int i = 0; i < skinsToLoad.size(); ++i)
+        {
+            if (!itemslist[i].m_params.empty())
+            {
                 DefineSkinsToLoad(skinsToLoad[i], itemslist[i].m_params);
             }
         }
@@ -865,19 +842,25 @@ namespace m3d
         int iterNode = 0;
 
         // First pass: update existing models
-        for (auto it = m_models.begin(); it != m_models.end(); ) {
-            if (iterNode < numitems) {
+        for (auto it = m_models.begin(); it != m_models.end();)
+        {
+            if (iterNode < numitems)
+            {
                 bool found = false;
-                for (size_t i = 0; i < itemslist.size(); i++) {
-                    if (itemslist[i].m_id == it->m_name) {
+                for (size_t i = 0; i < itemslist.size(); i++)
+                {
+                    if (itemslist[i].m_id == it->m_name)
+                    {
                         // Update existing model
                         itemslist[i].m_fileWasRead = true;
                         iterNode++;
 
                         DynamicModel* dynamicModel = reinterpret_cast<DynamicModel*>(it->m_ptr);
                         // Cache sound IDs
-                        for (int j = 0; j < 32; j++) {
-                            if (!dynamicModel->m_soundIds[j].empty()) {
+                        for (int j = 0; j < 32; j++)
+                        {
+                            if (!dynamicModel->m_soundIds[j].empty())
+                            {
                                 m3d::Application::g_pApp->m_cachedSoundIDs.insert(dynamicModel->m_soundIds[j]);
                             }
                         }
@@ -891,14 +874,16 @@ namespace m3d
                     }
                 }
 
-                if (found) {
+                if (found)
+                {
                     ++it;
                     continue;
                 }
             }
 
             // Remove model that's no longer in the list
-            if (it->m_ptr) {
+            if (it->m_ptr)
+            {
                 delete it->m_ptr;
                 it->m_ptr = nullptr;
             }
@@ -906,8 +891,9 @@ namespace m3d
         }
 
         numitems -= iterNode;
-        if (numitems <= 0) {
-            return; // All items were existing models
+        if (numitems <= 0)
+        {
+            return;  // All items were existing models
         }
 
         // Parse protocol from first item
@@ -915,7 +901,8 @@ namespace m3d
         int protoPos;
         ParseProto(itemslist.front().m_filename.c_str(), &proto, &protoPos);
 
-        if (proto != PROTO_FILE) {
+        if (proto != PROTO_FILE)
+        {
             M3D_LOG_ERR("Error protocol: " + CStr(proto));
             return;
         }
@@ -925,7 +912,8 @@ namespace m3d
         CStr xmlContent;
 
         ref_ptr xmlFile = m3d::ReadXmlFile(xmlFilename.c_str(), &xmlContent);
-        if (!xmlFile) {
+        if (!xmlFile)
+        {
             M3D_LOG_ERR("ServerAnimatedModel: " + xmlFilename);
             return;
         }
@@ -934,7 +922,8 @@ namespace m3d
         ref_ptr modelsNode = xmlFile->CreateNode();
         xmlFile->GetFirstChild(modelsNode, "AnimatedModels");
 
-        if (modelsNode->IsEmpty()) {
+        if (modelsNode->IsEmpty())
+        {
             return;
         }
 
@@ -947,8 +936,10 @@ namespace m3d
 
             // Check if this model is in our items list
             int itemIndex = -1;
-            for (size_t i = 0; i < itemslist.size(); i++) {
-                if (itemslist[i].m_id == modelId && !itemslist[i].m_fileWasRead) {
+            for (size_t i = 0; i < itemslist.size(); i++)
+            {
+                if (itemslist[i].m_id == modelId && !itemslist[i].m_fileWasRead)
+                {
                     itemIndex = i;
                     break;
                 }
@@ -1009,14 +1000,17 @@ namespace m3d
             bool loadFromGAM = M3D_KERNEL->GetEngineCfg().m_loadFromGAM.GetB();
             bool loadSuccess = false;
 
-            if (loadFromGAM) {
+            if (loadFromGAM)
+            {
                 loadSuccess = mainModel->LoadGAM(modelFile.c_str(), true);
             }
-            else {
+            else
+            {
                 loadSuccess = mainModel->LoadSAM(modelFile.c_str(), true);
             }
 
-            if (!loadSuccess) {
+            if (!loadSuccess)
+            {
                 delete dynamicModel;
                 delete mainModel;
                 continue;
@@ -1024,7 +1018,8 @@ namespace m3d
 
             dwGamTime += GetTickCount() - loadStart;
 
-            if (hasBBox) {
+            if (hasBBox)
+            {
                 mainModel->m_box.Create(bBoxMin, bBoxMax);
             }
 
@@ -1040,22 +1035,28 @@ namespace m3d
                 baseFilename.del(pos, 4);
             }
 
-            for (unsigned int lod = 1; lod < 5; lod++) {
+            for (unsigned int lod = 1; lod < 5; lod++)
+            {
                 CStr lodFilename;
-                if (loadFromGAM) {
+                if (loadFromGAM)
+                {
                     lodFilename = baseFilename + "_lod" + CStr(lod) + ".gam";
                 }
-                else {
+                else
+                {
                     lodFilename = baseFilename + "_lod" + CStr(lod) + ".sam";
                 }
 
-                if (M3D_KERNEL->GetFileServer().FileExists(lodFilename.c_str())) {
+                if (M3D_KERNEL->GetFileServer().FileExists(lodFilename.c_str()))
+                {
                     m3d::AnimatedModel* lodModel = new m3d::AnimatedModel();
-                    if (lodModel->Load(lodFilename.c_str(), true)) {
+                    if (lodModel->Load(lodFilename.c_str(), true))
+                    {
                         dynamicModel->m_mdl[lod] = lodModel;
                         dynamicModel->m_numLods++;
                     }
-                    else {
+                    else
+                    {
                         delete lodModel;
                     }
                 }
@@ -1066,7 +1067,8 @@ namespace m3d
             modelNode->GetFirstChild(soundNode, "sound");
 
             const auto actions = GetAnimActions();
-            while (!soundNode->IsEmpty()) {
+            while (!soundNode->IsEmpty())
+            {
                 CStr action;
                 SafeStrAttrib(action, soundNode, "action");
 
@@ -1077,8 +1079,10 @@ namespace m3d
                 SafeBoolAttrib(looped, soundNode, "looped");
 
                 // Find action index and assign sound
-                for (size_t i = 0; i < AT_NUMTYPES; i++) {
-                    if (actions[i].m_name == action) {
+                for (size_t i = 0; i < AT_NUMTYPES; i++)
+                {
+                    if (actions[i].m_name == action)
+                    {
                         dynamicModel->m_soundIds[i] = soundId;
                         dynamicModel->m_soundsLooped[i] = looped;
                         m3d::Application::g_pApp->m_cachedSoundIDs.insert(soundId);
@@ -1092,7 +1096,8 @@ namespace m3d
             // Process action effects
             ref_ptr<m3d::cmn::XmlNode> actionNode = xmlFile->CreateNode();
             modelNode->GetFirstChild(actionNode, "action");
-            while (!actionNode->IsEmpty()) {
+            while (!actionNode->IsEmpty())
+            {
                 CStr actionName;
                 SafeStrAttrib(actionName, actionNode, "name");
 
@@ -1110,18 +1115,22 @@ namespace m3d
 
                 // Find action index
                 size_t actionIndex = -1;
-                for (size_t i = 0; i < AT_NUMTYPES; i++) {
-                    if (actions[i].m_name == actionName) {
+                for (size_t i = 0; i < AT_NUMTYPES; i++)
+                {
+                    if (actions[i].m_name == actionName)
+                    {
                         actionIndex = i;
                         break;
                     }
                 }
 
-                if (actionIndex != -1) {
+                if (actionIndex != -1)
+                {
                     // Process load points for this action
                     ref_ptr<m3d::cmn::XmlNode> lpNode = xmlFile->CreateNode();
                     actionNode->GetFirstChild(lpNode, "lp");
-                    while (!lpNode->IsEmpty()) {
+                    while (!lpNode->IsEmpty())
+                    {
                         CStr lpId;
                         SafeStrAttrib(lpId, lpNode, "id");
 
@@ -1155,7 +1164,8 @@ namespace m3d
             }
 
             // Create impostors if needed
-            if (useImpostors) {
+            if (useImpostors)
+            {
                 dynamicModel->_createImpostorShit();
             }
 
@@ -1176,8 +1186,10 @@ namespace m3d
         }
 
         // Log unread files
-        for (const auto& item : itemslist) {
-            if (!item.m_fileWasRead) {
+        for (const auto& item : itemslist)
+        {
+            if (!item.m_fileWasRead)
+            {
                 M3D_LOG_ERR("ServerAnimatedModels: cannot read file: " + item.m_filename + " id = " + item.m_id);
             }
         }
@@ -1229,8 +1241,7 @@ namespace m3d
             M3D_RENDERER->SetIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
             break;
         }
-        default:
-            RETRUXX_NOT_IMPLEMENTED;
+        default: RETRUXX_NOT_IMPLEMENTED;
         }
 
         if (shader)
@@ -1273,21 +1284,11 @@ namespace m3d
             }
 
             M3D_RENDERER->DrawIndexedPrimitiveEffect(
-                rend::M3DPT_TRIANGLELIST,
-                shader,
-                0,
-                mh.m_numVertices,
-                mh.m_IbPoolField.RealOffset,
-                mh.m_numDrawIndices / 3);
+                rend::M3DPT_TRIANGLELIST, shader, 0, mh.m_numVertices, mh.m_IbPoolField.RealOffset, mh.m_numDrawIndices / 3);
         }
         else
         {
-            M3D_RENDERER->DrawIndexedPrimitive(
-                rend::M3DPT_TRIANGLELIST,
-                0,
-                mh.m_numVertices,
-                mh.m_IbPoolField.RealOffset,
-                mh.m_numDrawIndices / 3);
+            M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST, 0, mh.m_numVertices, mh.m_IbPoolField.RealOffset, mh.m_numDrawIndices / 3);
         }
 
         if (mh.m_meshType == 1)
@@ -1383,20 +1384,12 @@ namespace m3d
                 shader->SetVector3(rend::IEffect::Tree_Bend_Term, m_treeBendTerm);
                 this->m_globalFxParamTreeBendTermNotActuated = 0;
             }
-            M3D_RENDERER->DrawIndexedPrimitiveEffect(rend::M3DPT_TRIANGLELIST,
-                shader,
-                0,
-                mh.m_numVertices,
-                mh.m_IbPoolField.RealOffset,
-                mh.m_numDrawIndices / 3);
+            M3D_RENDERER->DrawIndexedPrimitiveEffect(
+                rend::M3DPT_TRIANGLELIST, shader, 0, mh.m_numVertices, mh.m_IbPoolField.RealOffset, mh.m_numDrawIndices / 3);
         }
         else
         {
-            M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST,
-                0,
-                mh.m_numVertices,
-                mh.m_IbPoolField.RealOffset,
-                mh.m_numDrawIndices / 3);
+            M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST, 0, mh.m_numVertices, mh.m_IbPoolField.RealOffset, mh.m_numDrawIndices / 3);
         }
 
         if (mh.m_meshType == 1)
@@ -1414,11 +1407,11 @@ namespace m3d
         {
             if (ai->m_forModel)
             {
-                M3D_LOG_INFO("Critical render time for mesh of impostor '" + CStr(ai->m_forModel->GetName()) + "': " + CStr(curTimeUnscaled - beginRenderTime) + " ms");
+                M3D_LOG_INFO(
+                    "Critical render time for mesh of impostor '" + CStr(ai->m_forModel->GetName()) + "': " + CStr(curTimeUnscaled - beginRenderTime) + " ms");
             }
             else
             {
-
                 M3D_LOG_INFO("Critical render time for mesh of unknown impostor: " + CStr(curTimeUnscaled - beginRenderTime) + " ms");
             }
         }
@@ -1437,7 +1430,6 @@ namespace m3d
         port.m_zMax = 1.0;
         M3D_RENDERER->SetViewport(port);
 
-
         CMatrix m;
         memset(&m, 0, sizeof(CMatrix));
         auto v7 = *(float*)&offY * 0.017453292;
@@ -1454,7 +1446,7 @@ namespace m3d
         animInfo->CreateFor(mdl);
         animInfo->SetAnimation(AT_STAND1);
         M3D_RENDERER->MatPush(m);
-        for (int i =0; i < mdl->m_numMeshes; ++i)
+        for (int i = 0; i < mdl->m_numMeshes; ++i)
         {
             auto& mesh = mdl->m_meshes[i];
             if (mesh.m_numNode >= 0)
@@ -1480,12 +1472,10 @@ namespace m3d
         this->m_colorDiffuse.y = diffuseColor.g;
         this->m_colorDiffuse.z = diffuseColor.b;
 
-
         auto specularColor = rend::Colorf(pClient->GetWorld().GetWeatherSpecularColor());
         this->m_colorSpecular.x = specularColor.r;
         this->m_colorSpecular.y = specularColor.g;
         this->m_colorSpecular.z = specularColor.b;
-
 
         auto plantColor = rend::Colorf(pClient->GetWorld().GetWeatherPlantColor());
         this->m_colorPlant.x = plantColor.r;
@@ -1514,6 +1504,11 @@ namespace m3d
         this->m_treeBendTerm.x = sin(v10) * 0.0099999998;
         this->m_treeBendTerm.y = cos(v10) * 0.0099999998;
     }
+}  // namespace m3d
+
+bool ModelEffectList::tEffect::IsValid() const
+{
+    return m_effectNode != 0;
 }
 
 ModelEffectList::ModelEffectList(DynamicModel* meta) :
@@ -1521,11 +1516,234 @@ ModelEffectList::ModelEffectList(DynamicModel* meta) :
 {
 }
 
+void DeleteEffectNode(m3d::SgNode* parent, m3d::SgNode* node, bool immediateRemove)
+{
+    // TODO: generated code
+    if (immediateRemove)
+    {
+        // Immediate removal from scene graph
+        m3d::SceneGraph* graph = node->GetGraph();
+        graph->RemoveNode(node);
+    }
+    else
+    {
+        // Deferred removal - mark for later cleanup
+        node->RemoveImmediateAfterParent(false);
+
+        // Use stack to traverse and mark all children as free-able
+        std::vector<m3d::SgNode*> nodeStack;
+        nodeStack.push_back(node);
+
+        while (!nodeStack.empty())
+        {
+            m3d::SgNode* currentNode = nodeStack.back();
+            nodeStack.pop_back();
+
+            // Mark current node as free-able
+            currentNode->CanBeFree();
+
+            // Process all children
+            m3d::SgNode* child = static_cast<m3d::SgNode*>(currentNode->GetFirstChild());
+            while (child)
+            {
+                // Recursively mark children as free-able
+                child->CanBeFree();
+
+                // If child has children, add to stack for processing
+                if (child->GetFirstChild())
+                {
+                    nodeStack.push_back(child);
+                }
+
+                child = static_cast<m3d::SgNode*>(child->GetNextSibling());
+            }
+        }
+
+        // Schedule node for deferred removal
+        m3d::SceneGraph* graph = node->GetGraph();
+        graph->InsertInRemoveIfFree(node);
+    }
+}
+
 void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
     retruxx::vector<ModelEffectList::tEffect, retruxx::allocator<ModelEffectList::tEffect>>& newEffectList)
 {
-    // TODO: implement ModelEffectList::adjustModelEffects
-    //RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code ModelEffectList::adjustModelEffects
+    std::vector<ModelEffectList::tEffect>& currentEffects = m_curEffectList;
+    size_t currentSize = currentEffects.size();
+    size_t newSize = newEffectList.size();
+
+    size_t currentIdx = 0;
+    size_t newIdx = 0;
+
+    // Process both lists in order (sorted by lpId and effectId)
+    while (currentIdx < currentSize && newIdx < newSize)
+    {
+        ModelEffectList::tEffect& currentEffect = currentEffects[currentIdx];
+        ModelEffectList::tEffect& newEffect = (newEffectList)[newIdx];
+
+        int currentLpId = currentEffect.m_desc->m_lpId;
+        int newLpId = newEffect.m_desc->m_lpId;
+
+        if (newLpId < currentLpId)
+        {
+            // Add new effect with lower lpId
+            if (newEffect.m_desc->m_effectId == -1)
+            {
+                newEffect.m_effectNode = nullptr;
+            }
+            else
+            {
+                m3d::SgNode* effectNode = m3d::pClient->CreateServerControlledNode(newEffect.m_desc->m_effectId);
+                newEffect.m_effectNode = effectNode;
+                realModel->AddChild(effectNode);
+                effectNode->RemoveImmediateAfterParent(newEffect.m_desc->m_immediateRemove);
+                effectNode->SetPersistance(false);
+            }
+            newIdx++;
+        }
+        else if (newLpId > currentLpId)
+        {
+            // Remove current effect with lower lpId
+            DeleteEffectNode(realModel, currentEffect.m_effectNode, currentEffect.m_desc->m_immediateRemove);
+            currentIdx++;
+        }
+        else
+        {
+            // Same lpId - process by effectId
+            int currentLpId = newLpId;  // Store for later use
+
+            while (currentIdx < currentSize && newIdx < newSize)
+            {
+                ModelEffectList::tEffect& currentEffect = currentEffects[currentIdx];
+                ModelEffectList::tEffect& newEffect = (newEffectList)[newIdx];
+
+                // Check if we're still processing the same lpId
+                if (currentEffect.m_desc->m_lpId != currentLpId || newEffect.m_desc->m_lpId != currentLpId)
+                {
+                    break;
+                }
+
+                int currentEffectId = currentEffect.m_desc->m_effectId;
+                int newEffectId = newEffect.m_desc->m_effectId;
+
+                if (newEffectId < currentEffectId)
+                {
+                    // Add new effect with lower effectId
+                    if (newEffect.m_desc->m_effectId == -1)
+                    {
+                        newEffect.m_effectNode = nullptr;
+                    }
+                    else
+                    {
+                        m3d::SgNode* effectNode = m3d::pClient->CreateServerControlledNode(newEffect.m_desc->m_effectId);
+                        newEffect.m_effectNode = effectNode;
+                        realModel->AddChild(effectNode);
+                        effectNode->RemoveImmediateAfterParent(newEffect.m_desc->m_immediateRemove);
+                        effectNode->SetPersistance(false);
+                    }
+                    newIdx++;
+                }
+                else if (newEffectId > currentEffectId)
+                {
+                    // Remove current effect with lower effectId
+                    DeleteEffectNode(realModel, currentEffect.m_effectNode, currentEffect.m_desc->m_immediateRemove);
+                    currentIdx++;
+                }
+                else
+                {
+                    // Same effectId - reuse existing node
+                    newEffect.m_effectNode = currentEffect.m_effectNode;
+
+                    // Restart animation if needed
+                    if (currentEffect.m_desc->m_restartOnAnimChange && currentEffect.m_effectNode)
+                    {
+                        std::vector<m3d::SgNode*> nodeStack;
+                        nodeStack.push_back(currentEffect.m_effectNode);
+
+                        while (!nodeStack.empty())
+                        {
+                            m3d::SgNode* currentNode = nodeStack.back();
+                            nodeStack.pop_back();
+
+                            // Restart current node animation
+                            currentNode->Restart();
+
+                            // Process children
+                            m3d::SgNode* child = static_cast<m3d::SgNode*>(currentNode->GetFirstChild());
+                            while (child)
+                            {
+                                nodeStack.push_back(child);
+                                child = static_cast<m3d::SgNode*>(child->GetNextSibling());
+                            }
+                        }
+                    }
+
+                    currentIdx++;
+                    newIdx++;
+                }
+            }
+
+            // Remove any remaining current effects with this lpId
+            while (currentIdx < currentSize && currentEffects[currentIdx].m_desc->m_lpId == currentLpId)
+            {
+                DeleteEffectNode(realModel, currentEffects[currentIdx].m_effectNode, currentEffects[currentIdx].m_desc->m_immediateRemove);
+                currentIdx++;
+            }
+
+            // Add any remaining new effects with this lpId
+            while (newIdx < newSize && (newEffectList)[newIdx].m_desc->m_lpId == currentLpId)
+            {
+                ModelEffectList::tEffect& newEffect = (newEffectList)[newIdx];
+                if (newEffect.m_desc->m_effectId == -1)
+                {
+                    newEffect.m_effectNode = nullptr;
+                }
+                else
+                {
+                    m3d::SgNode* effectNode = m3d::pClient->CreateServerControlledNode(newEffect.m_desc->m_effectId);
+                    newEffect.m_effectNode = effectNode;
+                    realModel->AddChild(effectNode);
+                    effectNode->RemoveImmediateAfterParent(newEffect.m_desc->m_immediateRemove);
+                    effectNode->SetPersistance(false);
+                }
+                newIdx++;
+            }
+        }
+    }
+
+    // Remove any remaining current effects
+    while (currentIdx < currentSize)
+    {
+        DeleteEffectNode(realModel, currentEffects[currentIdx].m_effectNode, currentEffects[currentIdx].m_desc->m_immediateRemove);
+        currentIdx++;
+    }
+
+    // Add any remaining new effects
+    while (newIdx < newSize)
+    {
+        ModelEffectList::tEffect& newEffect = (newEffectList)[newIdx];
+        if (newEffect.m_desc->m_effectId == -1)
+        {
+            newEffect.m_effectNode = nullptr;
+        }
+        else
+        {
+            m3d::SgNode* effectNode = m3d::pClient->CreateServerControlledNode(newEffect.m_desc->m_effectId);
+            newEffect.m_effectNode = effectNode;
+            realModel->AddChild(effectNode);
+            effectNode->RemoveImmediateAfterParent(newEffect.m_desc->m_immediateRemove);
+            effectNode->SetPersistance(false);
+        }
+        newIdx++;
+    }
+
+    // Filter out invalid effects from the new list
+    auto newEnd = std::remove_if(newEffectList.begin(), newEffectList.end(), [](const ModelEffectList::tEffect& effect) { return !effect.IsValid(); });
+    newEffectList.erase(newEnd, newEffectList.end());
+
+    // Update current effect list
+    m_curEffectList = newEffectList;
 }
 
 void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
@@ -1574,7 +1792,13 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel, ActionType newA
 
 bool ModelEffectList::SortPred::operator()(const ModelEffectList::tEffect& a, const ModelEffectList::tEffect& b)
 {
-    return a.m_desc->m_lpId < b.m_desc->m_lpId || a.m_desc->m_effectId < b.m_desc->m_effectId;
+    // TODO: check this
+    if (a.m_desc->m_lpId == b.m_desc->m_lpId)
+    {
+        return a.m_desc->m_effectId < b.m_desc->m_effectId;
+    }
+    return a.m_desc->m_lpId < b.m_desc->m_lpId;
+    //return a.m_desc->m_lpId < b.m_desc->m_lpId || a.m_desc->m_effectId < b.m_desc->m_effectId;
 }
 
 DynamicModel::DynamicModel()

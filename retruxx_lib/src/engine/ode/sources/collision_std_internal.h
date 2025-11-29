@@ -57,10 +57,12 @@ struct dxTerrainY : public dxGeom {
   dReal m_vMinHeight;
   dReal m_vMaxHeight;
   dReal m_vNodeLength;
+  dReal m_vNodeLengthInv;
   int	m_nNumNodesPerSide;
   int	m_nNumNodesPerSideShift;
   int	m_nNumNodesPerSideMask;
   int	m_bFinite;
+  dxRay* m_subdivisionRay;
   dxTerrainY(dSpaceID space, dReal *pHeights,dReal vLength,int nNumNodesPerSide, int bFinite, int bPlaceable);
   ~dxTerrainY();
   void computeAABB();

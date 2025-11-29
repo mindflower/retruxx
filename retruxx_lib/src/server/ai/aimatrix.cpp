@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 #include "decisionmatrix.h"
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 namespace ai
 {

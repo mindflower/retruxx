@@ -1,5 +1,7 @@
 #include "vehiclerolecheater.h"
 
+#include "server/objects/vehicle.h"
+
 #include <stdexcept>
 
 namespace ai
@@ -27,9 +29,12 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    float VehicleRoleCheaterPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
+    float VehicleRoleCheaterPrototypeInfo::FitAgainstVehicle(Vehicle const* v, Vehicle const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!v)
+            return 0.0;
+        auto va = v->GetMaxSpeed();
+        return v->EstimateDamageAI() + va;
     }
 
     bool VehicleRoleCheaterPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

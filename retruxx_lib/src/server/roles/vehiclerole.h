@@ -23,7 +23,7 @@ namespace ai
     class VehicleRole : public ai::Obj
     {
     protected:
-        virtual  ~VehicleRole() override = 0 /* 0x00 */;
+        virtual  ~VehicleRole() override /* 0x00 */;
         VehicleRole(const ai::VehicleRolePrototypeInfo& prototypeInfo);
         VehicleRole(const ai::VehicleRole&);
         virtual m3d::Object* Clone() override /* 0x00 */;

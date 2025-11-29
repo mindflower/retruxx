@@ -111,7 +111,6 @@ namespace m3d
 
     void DataServer::UnregisterNode(SgNode*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     int DataServer::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* root)

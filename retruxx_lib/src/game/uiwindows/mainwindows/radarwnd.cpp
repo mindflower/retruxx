@@ -317,7 +317,7 @@ int RadarWnd::GameDataUpdate(void*, int)
 {
     // TODO: implement RadarWnd::GameDataUpdate
     //RETRUXX_NOT_IMPLEMENTED;
-    return 1;
+    return 0;
 }
 
 int RadarWnd::UpdateDistance(NavPoint::NavPointType)
@@ -470,7 +470,8 @@ bool RadarWnd::IsPositionOutsideScanRadius(CVector const&) const
 
 void RadarWnd::OnPaintOverChildren(m3d::ui::DrawInfo const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement RadarWnd::OnPaintOverChildren
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 int RadarWnd::RemoveWorldside(Worldside)

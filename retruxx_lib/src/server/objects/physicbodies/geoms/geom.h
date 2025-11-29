@@ -21,7 +21,7 @@ namespace ai
     class Geom
     {
     private:
-        Geom(const ai::Geom&);
+        Geom(ai::Geom const&);
 
     public:
         struct CellAabb
@@ -31,16 +31,16 @@ namespace ai
             /* 0x0008 */ int x1;
             /* 0x000c */ int z1;
             CellAabb();
-            ai::Geom::CellAabb& operator+=(const ai::Geom::CellAabb&);
+            ai::Geom::CellAabb& operator+=(ai::Geom::CellAabb const&);
         }; /* size: 0x0010 */
 
-        virtual  ~Geom() /* 0x00 */;
+        virtual ~Geom() /* 0x00 */;
         dxGeom* GetGeomId() const;
         CVector GetPosition() const;
         Quaternion GetRotation() const;
-        void SetPosition(const CVector& vec);
-        void SetRotation(const Quaternion& q);
-        void SetDirection(const CVector& direction);
+        void SetPosition(CVector const& vec);
+        void SetRotation(Quaternion const& q);
+        void SetDirection(CVector const& direction);
         void* GetData() const;
         void SetData(void* ptr);
         void SetBody(dxBody* const body);
@@ -67,4 +67,4 @@ namespace ai
     private:
         /* 0x0008 */ ai::Geom::CellAabb m_curAabb;
     }; /* size: 0x0018 */
-}
+}  // namespace ai

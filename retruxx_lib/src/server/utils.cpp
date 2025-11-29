@@ -4,7 +4,6 @@
 
 #include "landscape.h"
 #include "math/vector.h"
-#include "thirdparty/injecttools.h"
 #include "server.h"
 #include "world.h"
 
@@ -55,7 +54,6 @@ namespace ai
         }
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006A9D60, GetPathItem)
     bool GetPathItem(Path const* pPath, unsigned int itemNum, CVector& point)
     {
         if (!pPath || pPath->GetSearchStatus())
@@ -66,9 +64,9 @@ namespace ai
         return true;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006AAB20, DebugCircle)
     void DebugCircle(CVector const&, float, unsigned int)
     {
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CVector GetGroundPos(CVector const& pos, bool withCollisions, bool forVehicle)
@@ -98,4 +96,19 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+    PointBase<float> clampIntoLandscape(PointBase<float> const& point)
+    {
+        auto result = point;
+        auto v4 = pServer->GetLevelSize() - 5.0;
+        if (result.x < 5.0)
+            result.x = 5.0;
+        if (result.x > v4)
+            result.x = v4;
+        auto v5 = ai::pServer->GetLevelSize() - 5.0;
+        if (result.y < 5.0)
+            result.y = 5.0;
+        if (result.y > v5)
+            result.y = v5;
+        return result;
+    }
+}  // namespace ai

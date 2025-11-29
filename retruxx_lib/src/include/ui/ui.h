@@ -1,5 +1,5 @@
 #pragma once
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 #include <math/point2d.h>
 #include <core/stringm3d.h>
 #include <math/bounds2d.h>
@@ -11,6 +11,11 @@ namespace m3d
 {
     class AIParam;
 }
+
+enum
+{
+    PROP_WND_TOOLTIP = 16384,
+};
 
 namespace m3d
 {

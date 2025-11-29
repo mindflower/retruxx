@@ -3,7 +3,7 @@
 #include <math/vector.h>
 #include <stdexcept>
 
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 const int nxt[3] = { 1,2,0 };
 
@@ -227,9 +227,14 @@ void Quaternion::RotZ(float)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void Quaternion::FromAxisAngle(CVector const&, float)
+void Quaternion::FromAxisAngle(const CVector& axis, float radians)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto v3 = radians * 0.5;
+    auto v4 = sin(v3);
+    x = v4 * axis.x;
+    y = v4 * axis.y;
+    z = v4 * axis.z;
+    w = cos(v3);
 }
 
 void Quaternion::RotX(float)

@@ -1,3 +1,5 @@
+#include "scene/nodes/sgnodeanimatedmodel.h"
+
 #include <ui/sgnodearraywnd.h>
 #include <math/matrix.h>
 
@@ -11,7 +13,7 @@ namespace m3d
 
         Object* SgNodeArrayWnd::CreateObject()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new SgNodeArrayWnd;
         }
 
         Class* SgNodeArrayWnd::GetBaseClass()
@@ -41,7 +43,7 @@ namespace m3d
 
         Class* SgNodeArrayWnd::GetClass() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return RT_CLASS_LOCAL(SgNodeArrayWnd);
         }
 
         SgNodeArrayWnd::~SgNodeArrayWnd()
@@ -76,7 +78,9 @@ namespace m3d
 
         int SgNodeArrayWnd::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement SgNodeArrayWnd::ReadFromXmlNode
+            // RETRUXX_NOT_IMPLEMENTED;
+            return 1;
         }
 
         int SgNodeArrayWnd::CreateSgNodeArrayWnd(CStr const&, unsigned, BoundsBase<float> const&, unsigned, rend::TexHandle)
@@ -106,7 +110,20 @@ namespace m3d
 
         SgNodeArrayWnd::SgNodeArrayWnd()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            using namespace m3d;
+
+            this->m_Scale.x = 1.0;
+            this->m_Scale.y = 1.0;
+            this->m_Scale.z = 1.0;
+            this->m_Translation.x = 0.0;
+            this->m_Translation.y = 0.0;
+            this->m_Translation.z = 0.0;
+            this->m_Rotation.x = 0.0;
+            this->m_Rotation.y = 0.0;
+            this->m_Rotation.z = 0.0;
+            this->m_Rotation.w = 1.0;
+
+            m_classesToRender.push_back(RT_CLASS_LOCAL(SgAnimatedModelNode));
         }
 
         SgNodeArrayWnd::SgNodeArrayWnd(SgNodeArrayWnd const&)

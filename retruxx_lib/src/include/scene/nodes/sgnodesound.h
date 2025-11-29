@@ -40,6 +40,6 @@ namespace m3d
     private:
         unsigned int m_props[6];
         int m_currentSoundNum;
-        int m_framesPassed;
+        mutable int m_framesPassed;
     };
 }

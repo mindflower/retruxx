@@ -1,7 +1,7 @@
 #pragma once
 #include <math/vector.h>
 #include <renderer/i_renderer.h>
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 struct Quaternion;
 
@@ -9,9 +9,8 @@ namespace m3d
 {
     class Profiler;
 
-    class SkidQuad
+    struct SkidQuad
     {
-    private:
         CVector p1;
         CVector p2;
     };

@@ -3,6 +3,7 @@
 
 //TODO: add static functions
 
+struct CVector2;
 class CBrezLine
 {
 public:
@@ -34,6 +35,8 @@ Quaternion SLerp(Quaternion const&, Quaternion const&, float);
 Quaternion SLerpAcc(Quaternion const&, Quaternion const&, float);
 Quaternion SQuad(float, Quaternion const&, Quaternion const&, Quaternion const&, Quaternion const&);
 Quaternion getTangent(Quaternion const& prevQuat, Quaternion const& currentQuat, Quaternion const& nextQuat);
+
+float CalculateAngle(CVector2 const&, CVector2 const&);
 
 template<class T>
 T lerp(const T& a, const T& b, float s)

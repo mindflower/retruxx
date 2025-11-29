@@ -2,7 +2,7 @@
 #include <server/damageinfo.h>
 #include <server/objects/physicbodies/vehiclepart.h>
 
-class CMatrix;
+struct CMatrix;
 
 namespace ai
 {
@@ -118,7 +118,11 @@ namespace ai
         /* 0x02d0 */ float m_lowStopAngle;
         /* 0x02d4 */ float m_highStopAngle;
 
-        enum ChargeState;
+        enum ChargeState
+        {
+            csReady = 0,
+            csInCharging = 1,
+        };
 
     public:
         virtual void LookAtPoint(const CVector& lookAt, float elapsedTime) /* 0x168 */;

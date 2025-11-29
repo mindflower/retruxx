@@ -208,7 +208,7 @@ namespace ai
 
     CVector Formation::GetDirection() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_direction;
     }
 
     void Formation::SetDirection(const CVector& direction)
@@ -262,7 +262,14 @@ namespace ai
 
     bool Formation::bIsMoving() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_pPath)
+        {
+            if (m_numPathPoint < m_pPath->GetSize() && m_numPathPoint > 0)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     void Formation::AddVehicle(ai::Vehicle* vehicle)

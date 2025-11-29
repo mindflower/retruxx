@@ -70,9 +70,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Geom::SetRotation(Quaternion const&)
+    void Geom::SetRotation(Quaternion const& q)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        float dq[4];
+        dq[0] = q.w;
+        dq[1] = q.x;
+        dq[2] = q.y;
+        dq[3] = q.z;
+        dGeomSetQuaternion(m_geomId, dq);
     }
 
     Geom::~Geom()
@@ -122,7 +127,13 @@ namespace ai
 
     CVector Geom::GetPosition() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* pos = dGeomGetPosition(m_geomId);
+
+        CVector result;
+        result.x = pos[0];
+        result.y = pos[1];
+        result.z = pos[2];
+        return result;
     }
 
     Geom::CellAabb Geom::GetCollisionCellAabb() const
@@ -227,9 +238,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Geom::SetPosition(CVector const&)
+    void Geom::SetPosition(CVector const& vec)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        dGeomSetPosition(m_geomId, vec.x, vec.y, vec.z);
     }
 
     void Geom::Enable()

@@ -13,7 +13,6 @@
 #include "scene/scenegraph.h"
 #include "scene/nodes/sgnode.h"
 #include "scene/servers/DataServer.h"
-#include "thirdparty/injecttools.h"
 #include <client.h>
 
 #include "compoundvehiclepart.h"
@@ -64,7 +63,6 @@ namespace ai
 		this->m_bCollisionTrimeshAllowed = 0;
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x0061D180, PhysicBody::SetEffectActions)
     void PhysicBody::SetEffectActions(retruxx::vector<ActionType>& actions)
 	{
 		if (m_Node != nullptr)
@@ -320,29 +318,31 @@ namespace ai
 			this->m_Node->SetProperty(8704, &action);
 
 			// Use stack for iterative depth-first traversal of node hierarchy
-			std::vector<m3d::SgNode*> nodeStack;
-			nodeStack.push_back(this->m_Node);
+            // Process children using iterative DFS
+            std::vector<m3d::Object*> stack;
+            stack.push_back(dynamic_cast<m3d::Object*>(m_Node->GetFirstChild()));
 
-			while (!nodeStack.empty()) {
-				// Pop the last node from stack
-				m3d::SgNode* currentNode = nodeStack.back();
-				nodeStack.pop_back();
+            while (!stack.empty())
+            {
+                m3d::Object* current = stack.back();
+                stack.pop_back();
 
-				// Process all children of current node
-				m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
-				while (child != nullptr) {
-					// Set the action property on this child node
-					child->SetProperty(8704, &action);
+                // Process all siblings of the current node
+                m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
+                while (sibling)
+                {
+                    sibling->SetProperty(8704, &action);
 
-					// If this child has children, add it to stack for processing
-					if (child->GetFirstChild() != nullptr) {
-						nodeStack.push_back(child);
-					}
+                    // If this sibling has children, add to stack for processing
+                    if (sibling->GetFirstChild())
+                    {
+                        stack.push_back(sibling->GetFirstChild());
+                    }
 
-					// Move to next sibling
-					child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
-				}
-			}
+                    // Move to next sibling
+                    sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
+                }
+            }
 		}
 	}
 
@@ -453,9 +453,33 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	m3d::SgNode* PhysicBody::CreateEffectNode(CStr const&, CVector const&, Quaternion const&, bool, float)
+	m3d::SgNode* PhysicBody::CreateEffectNode(CStr const& modelname, CVector const& pos, Quaternion const& rot, bool bInsertInRemoveIfFree, float scale)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        auto const modelId = M3D_ENGINE_CFG.GetModelIdByName(modelname);
+        auto* node = m3d::pClient->CreateServerControlledNode(modelId);
+		if ( node)
+		{
+            m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(node);
+
+			// TODO: check this!!!!!
+            int nullValue = 0;
+		    node->SetProperty(m3d::PROP_DM_ACTION, &nullValue);
+		    node->SetProperty(m3d::PROP_NODE_PHYSICBODY, &nullValue);
+
+		    node->SetScale(scale);
+            node->SetPersistance(false);
+            node->UpdateXForm(0, 1);
+
+            if (bInsertInRemoveIfFree)
+            {
+                node->GetGraph()->InsertInRemoveIfFree(node);
+            }
+            node->SetOriginAbs(pos);
+            node->SetRotation(rot);
+            node->UpdateXForm(0, 1);
+            m3d::pClient->GetWorld().GetGraph().LinkNode(node);
+		}
+        return node;
 	}
 
 	Quaternion PhysicBody::GetRotation() const
@@ -946,7 +970,41 @@ namespace ai
 
 	CVector PhysicBody::GetNodeRelativeDirection() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        auto NodeRelativeRotation = GetNodeRelativeRotation();
+        auto v3 = NodeRelativeRotation.z * NodeRelativeRotation.w;
+        auto v4 = NodeRelativeRotation.z * NodeRelativeRotation.x;
+        auto v14 = NodeRelativeRotation.x * NodeRelativeRotation.x;
+        auto v5 = NodeRelativeRotation.w * NodeRelativeRotation.x;
+        auto v13 = NodeRelativeRotation.y * NodeRelativeRotation.x;
+        auto v12 = NodeRelativeRotation.z * NodeRelativeRotation.y;
+        auto v11 = NodeRelativeRotation.y * NodeRelativeRotation.w;
+        auto v6 = NodeRelativeRotation.z * NodeRelativeRotation.z;
+        auto v7 = NodeRelativeRotation.y * NodeRelativeRotation.y;
+
+		CMatrix vv;
+        vv._11 = 1.0 - ((v6 + v7) * 2.0);
+        vv._21 = (v13 - v3) * 2.0;
+        vv._31 = (v11 + v4) * 2.0;
+        vv._12 = (v3 + v13) * 2.0;
+        vv._22 = 1.0 - ((v6 + v14) * 2.0);
+        vv._33 = 1.0 - ((v7 + v14) * 2.0);
+        vv._32 = (v12 - v5) * 2.0;
+        vv.m[0][2] = ((v4 - v11) * 2.0);
+        vv.m[0][3] = 0.0;
+        vv.m[1][2] = ((v5 + v12) * 2.0);
+        vv.m[1][3] = 0.0;
+        memset(&vv.m[2][3], 0, 16);
+        vv._44 = 1.0;
+
+		const CVector INITIAL_OBJECTS_DIRECTION_6(0.0, 0.0, 1.0);
+        auto v9 = ((vv._32 * INITIAL_OBJECTS_DIRECTION_6.z) + (vv._22 * INITIAL_OBJECTS_DIRECTION_6.y)) + (vv._12 * INITIAL_OBJECTS_DIRECTION_6.x);
+        auto v10 = ((vv._33 * INITIAL_OBJECTS_DIRECTION_6.z) + (vv._23 * INITIAL_OBJECTS_DIRECTION_6.y)) + (vv._13 * INITIAL_OBJECTS_DIRECTION_6.x);
+
+		CVector result;
+        result.x = ((vv._31 * INITIAL_OBJECTS_DIRECTION_6.z) + (vv._11 * INITIAL_OBJECTS_DIRECTION_6.x)) + (INITIAL_OBJECTS_DIRECTION_6.y * vv._21);
+        result.y = v9;
+        result.z = v10;
+        return result;
 	}
 
 	m3d::AnimatedModel* PhysicBody::GetModel() const
@@ -1033,7 +1091,10 @@ namespace ai
 
 	int PhysicBody::GetOwnerId() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (m_ownerPhysicObj)
+            return m_ownerPhysicObj->GetId();
+        else
+            return -1;
 	}
 
 	int PhysicBody::_GetCurAnimationFrame() const

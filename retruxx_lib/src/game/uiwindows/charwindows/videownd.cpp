@@ -6,12 +6,12 @@ RT_CLASS_DEFINE(VideoWnd);
 
 VideoWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndModelName = "wndModel";
 }
 
 m3d::Object* VideoWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new VideoWnd;
 }
 
 int VideoWnd::ShowModelByPrototypeId(int, ref_ptr<m3d::ui::Wnd>)
@@ -41,7 +41,7 @@ int VideoWnd::HideModel(ref_ptr<m3d::ui::Wnd>)
 
 m3d::Class* VideoWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(VideoWnd);
 }
 
 int VideoWnd::GetObjId() const
@@ -66,12 +66,15 @@ VideoWnd::~VideoWnd()
 
 int VideoWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement VideoWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 VideoWnd::VideoWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndModel = 0;
+    m_bgMode = BGMODE_NUM_BGMODES;
 }
 
 VideoWnd::VideoWnd(VideoWnd const&)
@@ -111,7 +114,9 @@ void VideoWnd::UpdateBgModel(BgMode)
 
 int VideoWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 VideoWnd::BgMode VideoWnd::DetectBgMode() const

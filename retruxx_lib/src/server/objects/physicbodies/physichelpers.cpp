@@ -24,7 +24,7 @@
 
 namespace ai
 {
-    CollisionInfo::CollisionInfo(const ai::CollisionInfo& info)
+    CollisionInfo::CollisionInfo(ai::CollisionInfo const& info)
     {
         this->m_geomType = info.m_geomType;
         this->m_relTranslation = info.m_relTranslation;
@@ -61,7 +61,6 @@ namespace ai
         m_numTrimeshVertices = 0;
         m_trimeshIndices = {};
         m_numTrimeshIndices = 0;
-
     }
 
     int ai::RoughSign(float value)
@@ -98,7 +97,7 @@ namespace ai
                 return false;
 
             // Process collision trimesh data if available and allowed
-            const auto& collisionTrimesh = model->GetCollisionTrimesh();
+            auto const& collisionTrimesh = model->GetCollisionTrimesh();
 
             if (!collisionTrimesh.Points.empty() && bTrimeshAllowed)
             {
@@ -125,8 +124,7 @@ namespace ai
                 {
                     for (unsigned int vertexIndex = 0; vertexIndex < 3; ++vertexIndex)
                     {
-                        collisionInfo.m_trimeshIndices->GetObjectA()[indexOffset++] =
-                            collisionTrimesh.Triangles[triIndex].I[vertexIndex];
+                        collisionInfo.m_trimeshIndices->GetObjectA()[indexOffset++] = collisionTrimesh.Triangles[triIndex].I[vertexIndex];
                     }
                 }
 
@@ -137,7 +135,7 @@ namespace ai
             unsigned int geomCount = model->GetNumGeoms();
             for (unsigned int geomIndex = 0; geomIndex < geomCount; ++geomIndex)
             {
-                const auto* geom = model->GetGeom(geomIndex);
+                auto const* geom = model->GetGeom(geomIndex);
                 if (!geom)
                     continue;
 
@@ -169,18 +167,14 @@ namespace ai
 
                     // Apply 45-degree rotation for cylinder
                     Quaternion rotationAdjust;
-                    rotationAdjust.y = sin(0.7853981852531433f); // sin(45°)
-                    float cos45 = cos(0.7853981852531433f);      // cos(45°)
+                    rotationAdjust.y = sin(0.7853981852531433f);  // sin(45°)
+                    float cos45 = cos(0.7853981852531433f);       // cos(45°)
 
                     Quaternion adjustedRotation;
-                    adjustedRotation.x = (cos45 * collisionInfo.m_relRotation.x) +
-                        (collisionInfo.m_relRotation.w * rotationAdjust.y);
-                    adjustedRotation.y = (collisionInfo.m_relRotation.y * cos45) +
-                        (collisionInfo.m_relRotation.z * rotationAdjust.y);
-                    adjustedRotation.z = (collisionInfo.m_relRotation.z * cos45) -
-                        (collisionInfo.m_relRotation.y * rotationAdjust.y);
-                    adjustedRotation.w = (collisionInfo.m_relRotation.w * cos45) -
-                        (collisionInfo.m_relRotation.x * rotationAdjust.y);
+                    adjustedRotation.x = (cos45 * collisionInfo.m_relRotation.x) + (collisionInfo.m_relRotation.w * rotationAdjust.y);
+                    adjustedRotation.y = (collisionInfo.m_relRotation.y * cos45) + (collisionInfo.m_relRotation.z * rotationAdjust.y);
+                    adjustedRotation.z = (collisionInfo.m_relRotation.z * cos45) - (collisionInfo.m_relRotation.y * rotationAdjust.y);
+                    adjustedRotation.w = (collisionInfo.m_relRotation.w * cos45) - (collisionInfo.m_relRotation.x * rotationAdjust.y);
 
                     collisionInfo.m_relRotation = adjustedRotation;
                     break;
@@ -224,9 +218,7 @@ namespace ai
             {
             case GEOM_TYPE_BOX:
             {
-                float boxSizeSq = collInfo.m_size.x * collInfo.m_size.x +
-                    collInfo.m_size.y * collInfo.m_size.y +
-                    collInfo.m_size.z * collInfo.m_size.z;
+                float boxSizeSq = collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y + collInfo.m_size.z * collInfo.m_size.z;
 
                 if (boxSizeSq < 0.0001f)
                 {
@@ -248,9 +240,7 @@ namespace ai
 
             case GEOM_TYPE_CYLINDER:
             {
-                float cylinderSizeSq = collInfo.m_size.x * collInfo.m_size.x +
-                    collInfo.m_size.y * collInfo.m_size.y +
-                    collInfo.m_size.z * collInfo.m_size.z;
+                float cylinderSizeSq = collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y + collInfo.m_size.z * collInfo.m_size.z;
 
                 if (collInfo.m_radius < 0.0001f || cylinderSizeSq < 0.0001f)
                 {
@@ -323,18 +313,32 @@ namespace ai
 
     namespace
     {
-        bool IsLittle(dxGeom *)
+        bool IsLittle(dxGeom*)
         {
             RETRUXX_NOT_IMPLEMENTED;
         }
-    }
+    }  // namespace
 
-    bool TraceLine(ai::Ray const& ray, dContact& closestContact, bool dontCollideWithDynamic, bool dontCollideWithLittle, bool dontCollideWithPlayer, bool dontCollideWithWater, ai::TraceLineCallback* callback, bool dontCollideWithShells, bool smartCollideWithTowns)
+    bool TraceLine(
+        ai::Ray const& ray,
+        dContact& closestContact,
+        bool dontCollideWithDynamic,
+        bool dontCollideWithLittle,
+        bool dontCollideWithPlayer,
+        bool dontCollideWithWater,
+        ai::TraceLineCallback* callback,
+        bool dontCollideWithShells,
+        bool smartCollideWithTowns)
     {
         // TODO: generated code
 
         // Get ray start position and direction
-        CVector start = *dGeomGetPosition(ray.GetGeomId());
+        auto* geomPos = dGeomGetPosition(ray.GetGeomId());
+        CVector start;
+        start.x = geomPos[0];
+        start.y = geomPos[1];
+        start.z = geomPos[2];
+
         CVector dir = ray.GetDirection();
         float rayLength = ray.GetLength();
 
@@ -391,7 +395,7 @@ namespace ai
             }
 
             // Convert to collision cell coordinates
-            int collisionCellX = cellX >> 7; // Divide by 128
+            int collisionCellX = cellX >> 7;  // Divide by 128
             int collisionCellZ = cellZ >> 7;
 
             // Only process if we moved to a new collision cell
@@ -401,30 +405,27 @@ namespace ai
                 prevCellZ = collisionCellZ;
 
                 // Get collision cell from landscape
-                m3d::Landscape::CollisionCellItem* cellItem =
-                    landscape->GetCollisionCellItem(collisionCellX, collisionCellZ);
+                m3d::Landscape::CollisionCellItem* cellItem = landscape->GetCollisionCellItem(collisionCellX, collisionCellZ);
 
                 if (!cellItem)
                 {
                     // Log warning about missing collision cell
-                    M3D_LOG_INFO("Warning: null collision cell item, cellX = " +
-                                 CStr(collisionCellX) +
-                                 ", cellZ = " + CStr(collisionCellZ));
+                    M3D_LOG_INFO("Warning: null collision cell item, cellX = " + CStr(collisionCellX) + ", cellZ = " + CStr(collisionCellZ));
                     continue;
                 }
 
                 // Process static geometry in this cell
                 for (auto* geomObject : cellItem->m_geomsList)
                 {
-                    if (!geomObject) continue;
+                    if (!geomObject)
+                        continue;
 
                     // Apply collision filters
                     if (dontCollideWithLittle && IsLittle(geomObject->GetGeom()))
                     {
                         continue;
                     }
-                    if (dontCollideWithWater &&
-                        geomObject->IsKindOf(&m3d::GeomObjectWater::m_classGeomObjectWater))
+                    if (dontCollideWithWater && geomObject->IsKindOf(&m3d::GeomObjectWater::m_classGeomObjectWater))
                     {
                         continue;
                     }
@@ -434,13 +435,12 @@ namespace ai
                     }
 
                     // Perform collision detection
-                    int contactCount = dCollide(ray.GetGeomId(), geomObject->GetGeom(),
-                                                8, &contacts[0].geom, sizeof(dContact));
+                    int contactCount = dCollide(ray.GetGeomId(), geomObject->GetGeom(), 8, &contacts[0].geom, sizeof(dContact));
 
                     // Process contacts
                     for (int i = 0; i < contactCount; i++)
                     {
-                        const dContact& contact = contacts[i];
+                        dContact const& contact = contacts[i];
                         CVector contactPos(contact.geom.pos[0], contact.geom.pos[1], contact.geom.pos[2]);
 
                         // Verify contact is in the current cell
@@ -476,13 +476,11 @@ namespace ai
                     if (!object)
                     {
                         // Log error about invalid object reference
-                        M3D_LOG_ERR("Error: NULL object is linked to collision cell x = " +
-                                    CStr(collisionCellX) + ", y = " +
-                                    CStr(collisionCellZ) + ", id = " +
-                                    CStr(objId));
+                        M3D_LOG_ERR(
+                            "Error: NULL object is linked to collision cell x = " + CStr(collisionCellX) + ", y = " + CStr(collisionCellZ) +
+                            ", id = " + CStr(objId));
                         continue;
                     }
-
 
                     // Apply various filters
                     if (callback && !callback->CollidePhysicObj(object))
@@ -497,8 +495,7 @@ namespace ai
                     {
                         continue;
                     }
-                    if (dontCollideWithShells &&
-                        object->IsKindOf(&ai::Shell::m_classShell))
+                    if (dontCollideWithShells && object->IsKindOf(&ai::Shell::m_classShell))
                     {
                         continue;
                     }
@@ -508,8 +505,10 @@ namespace ai
                     }
                     if (dontCollideWithPlayer)
                     {
-                        if (object == playerVehicle) continue;
-                        if (object->GetParent() == playerVehicle) continue;
+                        if (object == playerVehicle)
+                            continue;
+                        if (object->GetParent() == playerVehicle)
+                            continue;
                     }
                     if (object->IsKindOf(&ai::BlastWave::m_classBlastWave))
                     {
@@ -549,11 +548,13 @@ namespace ai
                             // Sort contacts by distance and use only the farthest ones (town optimization)
                             if (!contactPoints.empty())
                             {
-                                std::sort(contactPoints.begin(), contactPoints.end(),
-                                          [&](const CVector& a, const CVector& b)
-                                {
-                                    return (start - a).lengthSq() < (start - b).lengthSq();
-                                });
+                                std::sort(
+                                    contactPoints.begin(),
+                                    contactPoints.end(),
+                                    [&](CVector const& a, CVector const& b)
+                                    {
+                                        return (start - a).lengthSq() < (start - b).lengthSq();
+                                    });
 
                                 // Use only the most distant contacts (town optimization)
                                 size_t startIndex = 0;
@@ -562,7 +563,8 @@ namespace ai
                                     startIndex = contactPoints.size() - maxContacts;
                                 }
 
-                                for (size_t i = startIndex; i < contactPoints.size(); i++) {
+                                for (size_t i = startIndex; i < contactPoints.size(); i++)
+                                {
                                     CVector delta = start - contactPoints[i];
                                     float distanceSq = delta.lengthSq();
 
@@ -585,19 +587,23 @@ namespace ai
                     {
                         // Regular object collision processing
                         dxGeom* geom = dBodyGetFirstGeom(object->GetBody()->id());
-                        while (geom) {
+                        while (geom)
+                        {
                             if (!dontCollideWithLittle || !IsLittle(geom))
                             {
                                 dxSpace* space = dGeomGetSpace(geom);
-                                if (space && space != ai::gIntersectionSpace && space != dGeomGetSpace(ray.GetGeomId())) {
+                                if (space && space != ai::gIntersectionSpace && space != dGeomGetSpace(ray.GetGeomId()))
+                                {
                                     int contactCount = dCollide(ray.GetGeomId(), geom, 8, &contacts[0].geom, sizeof(dContact));
 
-                                    for (int i = 0; i < contactCount; i++) {
+                                    for (int i = 0; i < contactCount; i++)
+                                    {
                                         CVector contactPos(contacts[i].geom.pos[0], contacts[i].geom.pos[1], contacts[i].geom.pos[2]);
                                         CVector delta = start - contactPos;
                                         float distanceSq = delta.lengthSq();
 
-                                        if (distanceSq < minDistanceSq) {
+                                        if (distanceSq < minDistanceSq)
+                                        {
                                             minDistanceSq = distanceSq;
                                             closestContact = contacts[i];
                                             closestContact.geom.g1 = ray.GetGeomId();
@@ -660,5 +666,143 @@ namespace ai
         node->GetProperty(1u, &anim);
         return anim;
     }
-}
 
+    CVector GetRandomDeviatedVector(CVector const& axis, float maxDeviationAngle)
+    {
+        // TODO: generated code GetRandomDeviatedVector
+        // Generate random deviation angles
+        float minAngle = 0.0f;
+        float maxAngle = maxDeviationAngle;
+
+        // Determine the range for random angle generation
+        float* angleRangeStart = (maxDeviationAngle >= 0.0f) ? &minAngle : &maxAngle;
+        float* angleRangeEnd = (maxDeviationAngle <= 0.0f) ? &minAngle : &maxAngle;
+        float* actualStart = (maxDeviationAngle >= 0.0f) ? &minAngle : &maxAngle;
+
+        // Generate random deviation angle
+        float deviationAngle = ((rand() * (*angleRangeEnd - *angleRangeStart)) * 0.000030518509f + *actualStart) * 0.5f;
+
+        // Create quaternion for deviation rotation
+        Quaternion quatDeviation;
+        quatDeviation.y = sin(deviationAngle);
+        quatDeviation.w = cos(deviationAngle);
+
+        // Generate random rotation angle
+        float rotationAngle = (rand() * 0.00019175345f) * 0.5f;
+
+        // Create rotation quaternion components
+        float sinRot = sin(rotationAngle);
+        float cosRot = cos(rotationAngle);
+
+        // Calculate quaternion components for the deviation
+        float qx = (quatDeviation.w * 0.0f) + (cosRot * 0.0f) - (sinRot * quatDeviation.y);
+        float qy = (cosRot * quatDeviation.y) + (sinRot * 0.0f) + (quatDeviation.w * 0.0f);
+        float qz = (sinRot * quatDeviation.w) + (quatDeviation.y * 0.0f) + (cosRot * 0.0f);
+        float qw = (cosRot * quatDeviation.w) - (quatDeviation.y * 0.0f) - (sinRot * 0.0f);
+
+        // Calculate intermediate values for matrix construction
+        float temp1 = qz * qy;
+        float temp2 = qw * qy;
+        float temp3 = qw * qz;
+
+        // Build rotation matrix for deviation
+        CMatrix deviationMatrix;
+        deviationMatrix._11 = 1.0f - ((qz * qz + qy * qy) * 2.0f);
+        deviationMatrix._21 = ((qy * qx) - (qw * qz)) * 2.0f;
+        deviationMatrix._31 = ((qw * qy) + (qz * qx)) * 2.0f;
+        deviationMatrix._12 = ((qw * qz) + (qy * qx)) * 2.0f;
+        deviationMatrix._22 = 1.0f - ((qz * qz + qx * qx) * 2.0f);
+        deviationMatrix._32 = ((qz * qy) - (qw * qx)) * 2.0f;
+        deviationMatrix._13 = ((qz * qx) - (qw * qy)) * 2.0f;
+        deviationMatrix._23 = ((qw * qx) + (qz * qy)) * 2.0f;
+        deviationMatrix._33 = 1.0f - ((qy * qy + qx * qx) * 2.0f);
+
+        // Set translation components to identity
+        deviationMatrix._14 = 0.0f;
+        deviationMatrix._24 = 0.0f;
+        deviationMatrix._34 = 0.0f;
+        deviationMatrix._41 = 0.0f;
+        deviationMatrix._42 = 0.0f;
+        deviationMatrix._43 = 0.0f;
+        deviationMatrix._44 = 1.0f;
+
+        // Apply deviation to initial direction
+        CMatrix tempMatrix(deviationMatrix);
+        CVector deviatedDir;
+
+        CVector INITIAL_OBJECTS_DIRECTION_36(0.0, 0.0, 1.0);
+        deviatedDir.x = (tempMatrix._11 * INITIAL_OBJECTS_DIRECTION_36.x) + (tempMatrix._21 * INITIAL_OBJECTS_DIRECTION_36.y) +
+            (tempMatrix._31 * INITIAL_OBJECTS_DIRECTION_36.z);
+        deviatedDir.y = (tempMatrix._12 * INITIAL_OBJECTS_DIRECTION_36.x) + (tempMatrix._22 * INITIAL_OBJECTS_DIRECTION_36.y) +
+            (tempMatrix._32 * INITIAL_OBJECTS_DIRECTION_36.z);
+        deviatedDir.z = (tempMatrix._13 * INITIAL_OBJECTS_DIRECTION_36.x) + (tempMatrix._23 * INITIAL_OBJECTS_DIRECTION_36.y) +
+            (tempMatrix._33 * INITIAL_OBJECTS_DIRECTION_36.z);
+
+        // Calculate axis correction if needed
+        float crossX = (INITIAL_OBJECTS_DIRECTION_36.y * axis.z) - (INITIAL_OBJECTS_DIRECTION_36.z * axis.y);
+        float crossY = (axis.x * INITIAL_OBJECTS_DIRECTION_36.z) - (INITIAL_OBJECTS_DIRECTION_36.x * axis.z);
+        float crossZ = (INITIAL_OBJECTS_DIRECTION_36.x * axis.y) - (axis.x * INITIAL_OBJECTS_DIRECTION_36.y);
+
+        float crossLengthSq = (crossX * crossX) + (crossY * crossY) + (crossZ * crossZ);
+
+        // Calculate angle between initial direction and target axis
+        float dotProduct = INITIAL_OBJECTS_DIRECTION_36.x * axis.x + INITIAL_OBJECTS_DIRECTION_36.y * axis.y + INITIAL_OBJECTS_DIRECTION_36.z * axis.z;
+        float angleBetween = atan2(sqrt(crossLengthSq), dotProduct);
+
+        // Apply axis correction if significant misalignment
+        if (crossLengthSq > 0.0001f)
+        {
+            // Normalize cross product
+            float invLength = 1.0f / sqrt(crossLengthSq + 1.1920929e-7f);
+            float normX = crossX * invLength;
+            float normY = crossY * invLength;
+            float normZ = crossZ * invLength;
+
+            // Re-normalize to ensure unit length
+            float renormalize = 1.0f / sqrt(normX * normX + normY * normY + normZ * normZ + 1.1920929e-7f);
+            normX *= renormalize;
+            normY *= renormalize;
+            normZ *= renormalize;
+
+            // Create correction quaternion
+            float halfAngle = angleBetween * 0.5f;
+            float sinHalf = sin(halfAngle);
+            float cosHalf = cos(halfAngle);
+
+            float qxCorr = sinHalf * normX;
+            float qyCorr = sinHalf * normY;
+            float qzCorr = sinHalf * normZ;
+            float qwCorr = cosHalf;
+
+            // Build correction matrix
+            CMatrix correctionMatrix;
+            correctionMatrix._11 = 1.0f - ((qzCorr * qzCorr + qyCorr * qyCorr) * 2.0f);
+            correctionMatrix._21 = ((qyCorr * qxCorr) - (qwCorr * qzCorr)) * 2.0f;
+            correctionMatrix._31 = ((qwCorr * qyCorr) + (qzCorr * qxCorr)) * 2.0f;
+            correctionMatrix._12 = ((qwCorr * qzCorr) + (qyCorr * qxCorr)) * 2.0f;
+            correctionMatrix._22 = 1.0f - ((qzCorr * qzCorr + qxCorr * qxCorr) * 2.0f);
+            correctionMatrix._32 = ((qzCorr * qyCorr) - (qwCorr * qxCorr)) * 2.0f;
+            correctionMatrix._13 = ((qzCorr * qxCorr) - (qwCorr * qyCorr)) * 2.0f;
+            correctionMatrix._23 = ((qwCorr * qxCorr) + (qzCorr * qyCorr)) * 2.0f;
+            correctionMatrix._33 = 1.0f - ((qyCorr * qyCorr + qxCorr * qxCorr) * 2.0f);
+
+            // Set translation components to identity
+            correctionMatrix._14 = 0.0f;
+            correctionMatrix._24 = 0.0f;
+            correctionMatrix._34 = 0.0f;
+            correctionMatrix._41 = 0.0f;
+            correctionMatrix._42 = 0.0f;
+            correctionMatrix._43 = 0.0f;
+            correctionMatrix._44 = 1.0f;
+
+            // Apply correction to deviated direction
+            CMatrix finalMatrix(correctionMatrix);
+            float originalX = deviatedDir.x;
+            deviatedDir.x = (finalMatrix._11 * deviatedDir.x) + (finalMatrix._21 * deviatedDir.y) + (finalMatrix._31 * deviatedDir.z);
+            deviatedDir.y = (finalMatrix._12 * originalX) + (finalMatrix._22 * deviatedDir.y) + (finalMatrix._32 * deviatedDir.z);
+            deviatedDir.z = (finalMatrix._13 * originalX) + (finalMatrix._23 * deviatedDir.y) + (finalMatrix._33 * deviatedDir.z);
+        }
+
+        return deviatedDir;
+    }
+}  // namespace ai

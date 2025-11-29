@@ -46,7 +46,6 @@ namespace ai
             /* 0x001c */ float m_friction;
             /* 0x0020 */ float m_resistance;
             /* 0x0024 */ int m_idx;
-            SoilProps(const ai::DynamicScene::SoilProps& __that);
             SoilProps();
             void LoadFromXml(const m3d::cmn::XmlNode* xmlNode);
         }; /* size: 0x0028 */
@@ -128,4 +127,16 @@ namespace ai
     inline dxSpace* gSpaceForAllPhysicParticles = nullptr;
     inline dxWorld* gGlobalWorld = nullptr;
     inline DynamicScene* gDynamicScene = nullptr;
+
+    class ObjIdExceptionalTraceLineCallback : public ai::TraceLineCallback
+    {
+    private:
+        /* 0x0004 */ std::vector<int, std::allocator<int>> m_Exceptions;
+
+    public:
+        ObjIdExceptionalTraceLineCallback(const ai::ObjIdExceptionalTraceLineCallback&);
+        ObjIdExceptionalTraceLineCallback(const std::vector<int, std::allocator<int>>& Exceptions);
+        virtual bool CollideId(int objId) const override /* 0x04 */;
+        virtual bool CollidePhysicObj(const ai::PhysicObj* physicObj) const override /* 0x08 */;
+    }; /* size: 0x0014 */
 }

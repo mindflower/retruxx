@@ -4,6 +4,8 @@
 #include "basketcharacteristicswnd.h"
 #include "cabincharacteristicswnd.h"
 #include "vehiclecharacteristicswnd.h"
+#include "game/uimisc/guihelper.h"
+
 #include <game/uiwindows/commonwindows/complexmodelwnd.h>
 
 RT_CLASS_EXPORTS_BEGIN(VehicleWnd)
@@ -12,7 +14,14 @@ RT_CLASS_DEFINE(VehicleWnd);
 
 VehicleWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // Set default window and label names
+    m_wndTruckPictureName = "wndTruckPicture";
+    m_lblNameName = "lblName";
+    m_wndCBCharacteristicsName = "wndCBCharacteristics";
+
+    // Set default colors using Color2Str helper
+    m_redColor = help::Color2Str(0xFF9C2621);    // Assuming red color value
+    m_greenColor = help::Color2Str(0xFF23781B);  // Assuming green color value
 }
 
 void VehicleWnd::SetVehicleId(int)
@@ -32,7 +41,8 @@ VehicleWnd::VehicleWnd(VehicleWnd const&)
 
 VehicleWnd::VehicleWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleType = VEHICLE_NORMAL;
+    m_curTab = TAB_ID_NUM_TAB_IDS;
 }
 
 void VehicleWnd::UpdateVehicleName()

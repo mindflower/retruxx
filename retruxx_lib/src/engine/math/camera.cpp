@@ -2,7 +2,7 @@
 #include <math/camera.h>
 
 #include "math/matrix.h"
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 CAffineXForm::CAffineXForm() :
     m_worldOrigin(0.0, 0.0, 0.0),

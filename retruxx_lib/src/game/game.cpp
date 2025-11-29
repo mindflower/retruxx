@@ -17,25 +17,12 @@ namespace
         }
         return mutex;
     }
-
-    void injectRetruxxAddresses()
-    {
-#ifdef RETRUXX_DLL
-        for (const auto& [address, newAddress] : inject::InjectAddresses)
-        {
-            inject::injectMemoryAddress(address, newAddress);
-        }
-#endif
-    }
 }
 
-//RETRUXX_DLL_INJECT_FUNCTION(0x00414C80, mainImpl)
 int APIENTRY mainImpl(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(nCmdShow);
-
-    injectRetruxxAddresses();
 
     g_SentinelMutex = CreateSentinelMutex(TEXT("TargemExMachina_SentinelMutex"));
     if (g_SentinelMutex != NULL)

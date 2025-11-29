@@ -1,4 +1,6 @@
 #pragma once
+#include "game/uiwindows/miscwindows/bindkeyswnd.h"
+
 #include <map>
 #include <core/clazz.h>
 
@@ -49,42 +51,42 @@ private:
     retruxx::map<int,WeaponGroup *> m_savedWeaponGroups;
 };
 
-class WeaponGroup :  public m3d::Object
+class WeaponGroup : public m3d::Object
 {
 public:
-    void Reload();
-    bool IsEmpty() const ;
-    void ClearWeapons();
-    bool IsValid() const ;
-    int SaveToXml(m3d::cmn::XmlFile *, m3d::cmn::XmlNode *) const ;
-    bool CanFire() const ;
-    static m3d::Class * GetBaseClass();
-    virtual m3d::Object * Clone();
-    static enum Impulse __fastcall GetImpulseByGroupId(int);
-    static m3d::Object * CreateObject();
-    int AddWeapon(CStr const &);
+    using GunPartNamesSet = std::set<CStr, std::less<CStr>, std::allocator<CStr>>;
+
+public:
+    int GetGroupId() const;
+    Impulse GetImpulseId() const;
+    const std::set<CStr, std::less<CStr>, std::allocator<CStr>>& GetWeapons() const;
+    bool IncludesWeapon(const CStr& gunPartName) const;
+    int AddWeapon(const CStr& gunPartName);
+    int RemoveWeapon(const CStr& gunPartName);
     void Clear();
-    int GetGroupId() const ;
-    virtual m3d::Class * GetClass() const ;
-    Impulse GetImpulseId() const ;
+    bool IsValid() const;
+    bool IsEmpty() const;
+    bool CanFire() const;
     void KeepFire();
-    int RemoveWeapon(CStr const &);
-    int LoadFromXml(m3d::cmn::XmlFile *, m3d::cmn::XmlNode const *);
-    bool IncludesWeapon(CStr const &) const ;
-    WeaponGroup & operator=(WeaponGroup const &);
-    void SetGroupId(int);
-    virtual ~WeaponGroup();
-    retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > const & GetWeapons() const ;
+    void Reload();
+    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+    int SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
 
 protected:
     WeaponGroup();
-    WeaponGroup(WeaponGroup const &);
+    WeaponGroup(const WeaponGroup& rhs);
 
 public:
-    RT_CLASS_DECLARE(WeaponGroup);
-
-private:
-    int m_groupId;
-    Impulse m_impulseId;
-    retruxx::set<CStr> m_gunPartNames;
-};
+    virtual ~WeaponGroup() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classWeaponGroup;
+    void SetGroupId(int groupId);
+    static Impulse __fastcall GetImpulseByGroupId(int groupId);
+    void ClearWeapons();
+    /* 0x0034 */ int m_groupId;
+    /* 0x0038 */ Impulse m_impulseId;
+    /* 0x003c */ std::set<CStr, std::less<CStr>, std::allocator<CStr>> m_gunPartNames;
+}; /* size: 0x0048 */

@@ -1,7 +1,7 @@
 #include <stdexcept>
 #include <math/plane.h>
 
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 void CPlane::buildplane(CPlane*, CVector*)
 {

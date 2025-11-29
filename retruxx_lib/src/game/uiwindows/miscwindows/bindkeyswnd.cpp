@@ -271,11 +271,6 @@ void BindKeysWnd::LoadDefaultBindings()
 
 int BindKeysWnd::GameDataSetup()
 {
-    //auto game1 = (*inject::cast<m3d::Kernel**>(0x00A0988C));
-    //auto game2 = m3d::g_Kernel;
-    //auto game3 = m3d::g_Kernel;
-    RETRUXX_DLL_JMP_TO_FUNCTION(0x004A5FC0, BindKeysWnd::GameDataSetup);
-    
     using namespace m3d::ui;
     if (m_isInited)
     {

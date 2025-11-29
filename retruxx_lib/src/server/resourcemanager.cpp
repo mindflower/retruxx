@@ -185,7 +185,7 @@ namespace ai
 			ref_ptr typeNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
 			for (xmlNode->GetFirstChild(typeNode, "Type"); !typeNode->IsEmpty(); typeNode->GetNextSibling(typeNode, "Type"))
 			{
-				_ReadResourceFromXml(xmlFile, typeNode, nullptr);
+                _ReadResourceFromXml(xmlFile, typeNode, resource);
 			}
 		}
 	}

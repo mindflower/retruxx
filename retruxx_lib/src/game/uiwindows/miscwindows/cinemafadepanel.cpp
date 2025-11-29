@@ -1,4 +1,6 @@
 #include "cinemafadepanel.h"
+
+#include <algorithm>
 #include <cinematic.h>
 #include <m3dapp.h>
 #include <core/kernel.h>
@@ -56,30 +58,72 @@ void CinemaFadePanel::StartFadeCinematicUnrelated(float, int)
 
 float CinemaFadePanel::GetAlpha()
 {
+    // TODO: check this!!!
     int fadeStartTime = 0;
-    if (m_isCinematicRelated)
-    {
-        fadeStartTime = M3D_APP->m_cinematic->m_fadeStartTime;
-    }
-    else
-    {
-        fadeStartTime = m_fadeStart;
-    }
-
     int playTime = 0;
     if (m_isCinematicRelated)
     {
+        fadeStartTime = M3D_APP->m_cinematic->m_fadeStartTime;
         playTime = m3d::Application::g_pApp->m_cinematic->m_playTime;
     }
     else
     {
+        fadeStartTime = m_fadeStart;
         playTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
     }
-    return (double)(unsigned int)(playTime - fadeStartTime) / (m_fadePeriod * 1000.0) * 255.0;
+
+    // Calculate time difference
+    int timeDiff = playTime - fadeStartTime;
+
+    // Convert to float and handle negative values
+    float timeDiffFloat = (float)timeDiff;
+    if (timeDiff < 0)
+    {
+        timeDiffFloat += 4294967296.0f;
+    }
+
+    // Calculate alpha based on duration
+    float duration = m_fadePeriod;
+    float calculatedAlpha = (timeDiffFloat) / (duration * 1000.0f);
+
+    calculatedAlpha *= 255.0f;
+
+    float alpha = 0.0;
+    // Apply inversion logic based on conditions
+    if (m_isCinematicRelated)
+    {
+        // Using application timer path
+        int state = M3D_APP->m_cinematic->m_state;
+        if (state == 1 || state == 4)
+        {
+            alpha = 255.0f - calculatedAlpha;  // Invert alpha
+        }
+        else
+        {
+            alpha = calculatedAlpha;
+        }
+    }
+    else
+    {
+        // Using internal timer path
+        if (m_state == 0)
+        {
+            alpha = 255.0f - calculatedAlpha;  // Invert alpha
+        }
+        else
+        {
+            alpha = calculatedAlpha;
+        }
+    }
+
+    alpha = std::clamp(alpha, 0.0f, 255.0f);
+
+    return alpha;
 }
 
 int CinemaFadePanel::OnPaint(m3d::ui::DrawInfo const& di)
 {
+    // TODO: check this!!!
     int fadeStartTime = 0;
     if (m_isCinematicRelated)
     {
@@ -92,26 +136,22 @@ int CinemaFadePanel::OnPaint(m3d::ui::DrawInfo const& di)
 
     auto curTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
 
-    // TODO: check this but and in the game looks ok (when starting main menu)
-    m_curAlpha = 255.0 - GetAlpha();
-    if (m_curAlpha > 1.0 && m_curAlpha < 255.0
-        || curTime == fadeStartTime
-        || (this->m_isFading = 0, m_curAlpha > 1.0)
-        || this->m_isCinematicRelated)
+    m_curAlpha = GetAlpha();
+    if (m_curAlpha <= 1.0f && m_curAlpha >= 255.0 && curTime != fadeStartTime && !m_isCinematicRelated)
     {
-        BoundsBase<float> rect;
-        rect.x0 = 0.0;
-        rect.y0 = 0.0;
-        rect.width = this->m_bounds.width;
-        rect.height = this->m_bounds.height;
-        GetGfxServer()->AddFlatAxialQuad(di, rect, (int)m_curAlpha << 24);
-    }
-    else
-    {
+        m_isFading = false;
         M3D_APP->m_pInterfaceManager->ShowWindow(19, false, false, false, false, nullptr);
         GetStation()->SetCursorShow(true);
         GetStation()->CaptureMouse(nullptr);
+        return 1;
     }
+
+    BoundsBase<float> rect;
+    rect.x0 = 0.0;
+    rect.y0 = 0.0;
+    rect.width = this->m_bounds.width;
+    rect.height = this->m_bounds.height;
+    GetGfxServer()->AddFlatAxialQuad(di, rect, (int)m_curAlpha << 24);
     return 1;
 }
 

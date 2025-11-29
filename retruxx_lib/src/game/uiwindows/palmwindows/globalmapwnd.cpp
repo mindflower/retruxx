@@ -148,7 +148,9 @@ int GlobalMapWnd::InitLevelIcons()
 
 int GlobalMapWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GlobalMapWnd::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 int GlobalMapWnd::GameDataClear(bool)
@@ -247,7 +249,9 @@ int LevelIco::OnPaint(m3d::ui::DrawInfo const&)
 
 int LevelIco::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void LevelIco::SetState(State)

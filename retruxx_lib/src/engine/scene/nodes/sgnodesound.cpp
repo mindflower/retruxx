@@ -24,7 +24,51 @@ namespace m3d
 
     void SgSoundSourceNode::CanBeFree()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
+        {
+            int channelId = -1;
+
+            int looped = 0;
+            GetProperty(PROP_SND_LOOPED, &looped);
+
+            int bIsTripleSound = 0;
+            GetServer()->GetItemProperty(m_srvId, PROP_SRV_SND_TRIPLE, &bIsTripleSound);
+
+            int bIsDoubleSound = 0;
+            GetServer()->GetItemProperty(m_srvId, PROP_SRV_SND_DOUBLE, &bIsTripleSound);
+
+            // TODO: check all this!!!
+            if (bIsTripleSound && m_currentSoundNum < 2)
+            {
+                m_currentSoundNum = 2;
+                Restart();
+
+                GetProperty(PROP_SND_CHANNELID, &channelId);
+
+                looped = 0;
+                SetProperty(PROP_SND_LOOPED, &looped);
+            }
+            else
+            {
+                if (bIsDoubleSound && m_currentSoundNum < 1)
+                {
+                    m_currentSoundNum = 1;
+                    Restart();
+                    GetProperty(PROP_SND_CHANNELID, &channelId);
+                }
+                else
+                {
+                    GetProperty(PROP_SND_CHANNELID, &channelId);
+                }
+
+                int newLooped = 0;
+                SetProperty(PROP_SND_LOOPED, &newLooped);
+            }
+            if (channelId != -1)
+            {
+                M3D_APP->m_sound->SetChannelLoopMode(channelId, 0);
+            }
+        }
     }
 
     int SgSoundSourceNode::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
@@ -67,9 +111,7 @@ namespace m3d
 
     int SgSoundSourceNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        // TODO: implement SgSoundSourceNode::Render
-        return 1;
-        //RETRUXX_NOT_IMPLEMENTED;
+        return _InternalRender();
     }
 
     Object* SgSoundSourceNode::Clone()
@@ -124,12 +166,27 @@ namespace m3d
 
     void SgSoundSourceNode::Restart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int soundEnabled = 0;
+        SetProperty(PROP_SND_SOUND_ENABLED, &soundEnabled);
+
+        soundEnabled = 1;
+        SetProperty(PROP_SND_SOUND_ENABLED, &soundEnabled);
     }
 
     bool SgSoundSourceNode::IsFree() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!M3D_ENGINE_CFG.m_snd_Enable.GetB())
+        {
+            return true;
+        }
+        if (++m_framesPassed >= 2)
+        {
+            int channelId = -1;
+            GetProperty(PROP_SND_CHANNELID, &channelId);
+            auto isPlay = M3D_APP->m_sound->IsChannelPlaying(channelId);
+            return channelId == -1 || !isPlay;
+        }
+        return false;
     }
 
     SgSoundSourceNode::~SgSoundSourceNode()
@@ -154,6 +211,7 @@ namespace m3d
     {
         this->m_currentSoundNum = 0;
         this->m_framesPassed = 0;
+
         RitualInConstructor(RITUAL_REGISTERED_NODE);
         this->m_props[0] = node.m_props[0];
         this->m_props[1] = node.m_props[1];
@@ -180,6 +238,23 @@ namespace m3d
 
     int SgSoundSourceNode::_InternalRender()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_srvId == -1)
+        {
+            return 0;
+        }
+
+        struct RenderInfo
+        {
+            /* 0x0000 */ m3d::SgNode* m_node;
+            /* 0x0004 */ int m_currentSoundNum;
+        }; /* size: 0x0008 */
+
+        RenderInfo ri;
+        ri.m_node = this;
+        ri.m_currentSoundNum = m_currentSoundNum;
+
+        GetServer()->RenderItem(m_srvId, &ri);
+        IsFree();
+        return 1;
     }
 }

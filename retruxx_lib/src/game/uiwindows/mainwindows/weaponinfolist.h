@@ -35,7 +35,7 @@ public:
     public:
         AuxInfo();
 
-    private:
+    public:
         float m_smallSpace;
         float m_bigSpace;
         float m_bottom;
@@ -100,55 +100,97 @@ private:
     m3d::ui::ImageWnd* m_wndDecorBottom;
 };
 
-class WeaponInfoWnd :  public m3d::ui::Wnd
+class WeaponInfoWnd : public m3d::ui::Wnd
 {
+    friend class WeaponInfoList;
+
 public:
-    int GetGroupId() const ;
-    ai::Obj const * GetGun() const ;
-    static m3d::Object * CreateObject();
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Class * GetBaseClass();
-    virtual ~WeaponInfoWnd();
-    int SetupForGun(int,int,WeaponInfoList::Type);
-    virtual m3d::Object * Clone();
+    int SetupForGun(int gunId, int groupId, WeaponInfoList::Type type);
+    const ai::Obj* GetGun() const;
+    int GetGroupId() const;
+
+    struct AuxInfo
+    {
+        /* 0x0000 */ CStr m_wndPatternName;
+        /* 0x000c */ CStr m_wndPatternIcoName;
+        /* 0x0018 */ CStr m_wndPatternChargeName;
+        /* 0x0024 */ CStr m_wndPatternNameName;
+        /* 0x0030 */ CStr m_wndPatternAmmoName;
+        /* 0x003c */ CStr m_wndPatternFrame0Name;
+        /* 0x0048 */ CStr m_wndPatternFrame1Name;
+        /* 0x0054 */ CStr m_wndPatternBgName;
+        /* 0x0060 */ CStr m_wndPatternCanShotBgName;
+        /* 0x006c */ CStr m_wndPatternGroupName;
+        /* 0x0078 */ float m_height;
+        /* 0x007c */ CStr m_paneName;
+        /* 0x0088 */ float m_space;
+        /* 0x008c */ float m_chargeBarW;
+        /* 0x0090 */ CStr m_chargeBarTexName;
+        /* 0x009c */ float m_lblReloadsW;
+        /* 0x00a0 */ CStr m_weaponTypeTexNames[13];
+        AuxInfo(const WeaponInfoWnd::AuxInfo&);
+        AuxInfo();
+    }; /* size: 0x013c */
+
+    struct Pattern
+    {
+        /* 0x0000 */ m3d::ui::Wnd* m_wndPattern;
+        /* 0x0004 */ m3d::ui::ImageWnd* m_wndPatternIco;
+        /* 0x0008 */ m3d::ui::Wnd* m_wndPatternName;
+        /* 0x000c */ m3d::ui::ProgressBarWnd* m_wndPatternCharge;
+        /* 0x0010 */ m3d::ui::Wnd* m_wndPatternAmmo;
+        /* 0x0014 */ m3d::ui::Wnd* m_wndPatternFrame0;
+        /* 0x0018 */ m3d::ui::Wnd* m_wndPatternFrame1;
+        /* 0x001c */ m3d::ui::ImageWnd* m_wndPatternBg;
+        /* 0x0020 */ m3d::ui::ImageWnd* m_wndPatternCanShotBg;
+        /* 0x0024 */ m3d::ui::Wnd* m_wndPatternGroup;
+        Pattern();
+    }; /* size: 0x0028 */
 
 protected:
-    WeaponInfoWnd();
-    WeaponInfoWnd(WeaponInfoWnd const &);
-    m3d::rend::TexHandle GetIco() const ;
-    int GetAmmo() const ;
-    void UpdateAmmo();
-    void UpdateCanShotBg();
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
     void UpdateOnNewFrame();
-    int CreateFromPattern(WeaponInfoList::Type);
-    m3d::rend::TexHandle GetBarTexture(bool) const ;
-    virtual int GameDataUpdate(void *,int);
-    virtual int GameDataClear(bool);
-    ai::DamageType GetWeaponTypeForGun(class ai::Obj const *) const ;
     void UpdateCharge();
-    static void  ClearPattern(WeaponInfoList::Type);
-    static int LoadPattern(m3d::ui::Wnd *,WeaponInfoList::Type);
+    void UpdateAmmo();
     void UpdateIco();
-    bool IsGunReady() const ;
-    int CreateChildren(WeaponInfoList::Type);
+    void UpdateCanShotBg();
+    ai::DamageType GetWeaponTypeForGun(const ai::Obj* gun) const;
+    int CreateFromPattern(WeaponInfoList::Type type);
+    int CreateChildren(WeaponInfoList::Type type);
+    static int __fastcall LoadPattern(m3d::ui::Wnd* pattern, WeaponInfoList::Type type);
+    static void __fastcall ClearPattern(WeaponInfoList::Type type);
+    m3d::rend::TexHandle GetIco() const;
+    m3d::rend::TexHandle GetBarTexture(bool bReady) const;
+    bool IsGunReady() const;
+    int GetAmmo() const;
+    /* 0x0220 */ int m_gunId;
+    /* 0x0224 */ m3d::ui::ProgressBarWnd* m_wndCharge;
+    /* 0x0228 */ m3d::ui::ImageWnd* m_wndIco;
+    /* 0x022c */ m3d::ui::Wnd* m_wndName;
+    /* 0x0230 */ m3d::ui::Wnd* m_wndAmmo;
+    /* 0x0234 */ m3d::ui::Wnd* m_wndFrame0;
+    /* 0x0238 */ m3d::ui::Wnd* m_wndFrame1;
+    /* 0x023c */ m3d::ui::ImageWnd* m_wndBg;
+    /* 0x0240 */ m3d::ui::ImageWnd* m_wndCanShotBg;
+    /* 0x0244 */ m3d::ui::Wnd* m_wndGroup;
+    static WeaponInfoWnd::AuxInfo m_aif;
+    static WeaponInfoWnd::Pattern m_patterns[2];
+    /* 0x0248 */ int m_groupId;
+    /* 0x024c */ WeaponInfoList::Type m_type;
+    static m3d::rend::TexHandle m_pbChargeTextureReady;
+    static m3d::rend::TexHandle m_pbChargeTextureRecharging;
+    WeaponInfoWnd();
+    WeaponInfoWnd(const WeaponInfoWnd& rhs);
 
 public:
-    RT_CLASS_DECLARE(WeaponInfoWnd);
-
-private:
-    int m_gunId;
-    m3d::ui::ProgressBarWnd *m_wndCharge;
-    m3d::ui::ImageWnd *m_wndIco;
-    m3d::ui::Wnd *m_wndName;
-    m3d::ui::Wnd *m_wndAmmo;
-    m3d::ui::Wnd *m_wndFrame0;
-    m3d::ui::Wnd *m_wndFrame1;
-    m3d::ui::ImageWnd *m_wndBg;
-    m3d::ui::ImageWnd *m_wndCanShotBg;
-    m3d::ui::Wnd *m_wndGroup;
-    int m_groupId;
-    WeaponInfoList::Type m_type;
-};
+    virtual ~WeaponInfoWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classWeaponInfoWnd;
+}; /* size: 0x0250 */
 
 class WeaponGroupChoiceDlg :  public m3d::ui::ModalWnd
 {

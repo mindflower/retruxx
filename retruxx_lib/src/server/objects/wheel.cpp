@@ -1,11 +1,14 @@
 #include "wheel.h"
 
+#include "vehicle.h"
+
 #include <stdexcept>
 #include <ode/objects.h>
 
 #include "base/prototypemanager.h"
 #include "core/log.h"
 #include "ode/odecpp.h"
+#include "scene/scenegraph.h"
 
 namespace ai
 {
@@ -174,7 +177,7 @@ namespace ai
 
     float Wheel::GetWidth() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return GetPrototypeInfo()->GetSize().x;
     }
 
     CVector Wheel::GetDirection() const
@@ -302,7 +305,7 @@ namespace ai
 
     Vehicle* Wheel::GetVehicle() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(GetParent(), Vehicle);
     }
 
     void Wheel::SetInitialRotation(Quaternion const& rot)
@@ -334,7 +337,33 @@ namespace ai
         auto angualarVel = dBodyGetAngularVel(m_body->id());
         if (!m_MakeSplash && m_SplashEffect)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // Process child hierarchy using stack
+            std::vector<m3d::SgNode*> stack;
+            stack.push_back(m_SplashEffect);
+
+            while (!stack.empty())
+            {
+                m3d::SgNode* current = stack.back();
+                stack.pop_back();
+
+                // Process all children of current node
+                m3d::SgNode* grandChild = static_cast<m3d::SgNode*>(current->GetFirstChild());
+                while (grandChild)
+                {
+                    grandChild->CanBeFree();
+
+                    // If grandchild has children, add to stack for processing
+                    if (grandChild->GetFirstChild())
+                    {
+                        stack.push_back(grandChild);
+                    }
+
+                    grandChild = static_cast<m3d::SgNode*>(grandChild->GetNextSibling());
+                }
+            }
+
+            m_SplashEffect->GetGraph()->InsertInRemoveIfFree(m_SplashEffect);
+            m_SplashEffect = nullptr;
         }
         m_MakeSplash = 0;
     }
@@ -396,7 +425,33 @@ namespace ai
         }
         if (m_SplashEffect)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // Process child hierarchy using stack
+            std::vector<m3d::SgNode*> stack;
+            stack.push_back(m_SplashEffect);
+
+            while (!stack.empty())
+            {
+                m3d::SgNode* current = stack.back();
+                stack.pop_back();
+
+                // Process all children of current node
+                m3d::SgNode* grandChild = static_cast<m3d::SgNode*>(current->GetFirstChild());
+                while (grandChild)
+                {
+                    grandChild->CanBeFree();
+
+                    // If grandchild has children, add to stack for processing
+                    if (grandChild->GetFirstChild())
+                    {
+                        stack.push_back(grandChild);
+                    }
+
+                    grandChild = static_cast<m3d::SgNode*>(grandChild->GetNextSibling());
+                }
+            }
+
+            m_SplashEffect->GetGraph()->InsertInRemoveIfFree(m_SplashEffect);
+            m_SplashEffect = nullptr;
         }
     }
 

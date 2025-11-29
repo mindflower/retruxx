@@ -30,7 +30,16 @@ namespace
     CVector camOrg;
     float transparentRadius = 0.0;
     bool inTransparencyRadius = false;
-}
+}  // namespace
+
+namespace
+{
+    void CheckNodeValidity(m3d::SgNode* node, const char* debugStr)
+    {
+        // TODO: implement CheckNodeValidity
+        // RETRUXX_NOT_IMPLEMENTED;
+    }
+}  // namespace
 
 namespace m3d
 {
@@ -265,9 +274,49 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void SceneGraph::InsertInRemoveIfFree(SgNode*)
+    void SceneGraph::InsertInRemoveIfFree(SgNode* toInsert)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        if (toInsert)
+        {
+            CheckNodeValidity(toInsert, "Check from InsertInRemoveIfFree");
+            if (m_bIsPurgingRemoveIfFree)
+            {
+                M3D_LOG_WARN(
+                    "Warning: inserting node in RemoveIfFree when it is being purged! node name = '" + CStr(toInsert->GetName()) + "', class = '" +
+                    CStr(toInsert->GetClassNameA()));
+            }
+
+            toInsert->RemoveImmediateAfterParent(false);
+            m_RemoveIfFreeList.insert(toInsert);
+            toInsert->m_persistant = 0;
+            toInsert->m_isInRemoveIfFree = 1;
+            toInsert->m_isRemoveIfFree = 1;
+
+            std::vector<m3d::Object*> stack;
+            stack.push_back(toInsert);
+
+            while (!stack.empty())
+            {
+                m3d::Object* current = stack.back();
+                stack.pop_back();
+
+                // Process all children of current node
+                m3d::SgNode* childNode = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
+                while (childNode)
+                {
+                    childNode->m_isRemoveIfFree = true;
+
+                    // If child has children, add to stack for processing
+                    if (childNode->GetFirstChild())
+                    {
+                        stack.push_back(childNode);
+                    }
+
+                    childNode = dynamic_cast<m3d::SgNode*>(childNode->GetNextSibling());
+                }
+            }
+        }
     }
 
     bool SceneGraph::SortedCellsStartFetching(int radius0, int radius1)
@@ -432,6 +481,70 @@ namespace m3d
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
+    m3d::rend::IEffect* SceneGraph::GetRoadProjectorShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetLsProjectorShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetObjProjectorShader(m3d::rend::IEffect* objShader)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetObjProjectorShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetTreeProjectorShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetLsLightShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetRoadLightShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetObjectLightShader(m3d::rend::IEffect* objShader)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetObjectLightShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetTreeLightShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetRoadSpriteShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetShadowShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetRoadShadowShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetLsDetShadowShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetRoadDetShadowShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+    m3d::rend::IEffect* SceneGraph::GetContourShader()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
     void SceneGraph::DeleteFromRemoveIfFree(SgNode*)
     {
@@ -445,6 +558,7 @@ namespace m3d
 
     void SceneGraph::LightSetupLightsForNode(SgNode* node)
     {
+        // TODO: generated code SceneGraph::LightSetupLightsForNode
         if (!node || !m_owner) return;
 
         // Transform the sun direction by the node's inverse transpose (for normal transformation)
@@ -479,15 +593,6 @@ namespace m3d
         // Apply the light to the renderer
         M3D_RENDERER->LightSet(0, light);
         M3D_RENDERER->LightEnable(0, true);
-    }
-
-    namespace
-    {
-        void CheckNodeValidity(m3d::SgNode *node, const char *debugStr)
-        {
-            // TODO: implement CheckNodeValidity
-           // RETRUXX_NOT_IMPLEMENTED;
-        }
     }
 
     void SceneGraph::Update()
@@ -574,6 +679,8 @@ namespace m3d
                 CheckNodeValidity(currentNode, "Check Two");
 
                 // Delete the node
+
+                // TODO: DecRef
                 delete currentNode;
 
                 removeIt = nextIt;
@@ -613,9 +720,9 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int SceneGraph::IsCellEnabled(int, int)
+    int SceneGraph::IsCellEnabled(int x, int y)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return (this->m_enableVisSpaceMask & this->m_enableMap[256 * y + x]) != 0;
     }
 
     void SceneGraph::RenderNode(SgNode*, CMatrix const&, bool)
@@ -704,6 +811,8 @@ namespace m3d
                             server->RenderItem(-2, 0);
                             renderStart = true;
 
+                            auto slots = &m_visSlots[effIdx];
+
                             for (int i = 0; i < m_visNumSlots[clsIdx]; i++)
                             {
                                 if (renderStart)
@@ -712,7 +821,7 @@ namespace m3d
                                 }
                                 server->RenderItem(-2, 0);
                                 renderStart = true;
-                                m_visSlots[effIdx]->Render(NRF_DEFAULT, nullptr, lastFrameTime, frameStart);
+                                slots[i]->Render(NRF_DEFAULT, nullptr, lastFrameTime, frameStart);
                             }
                             if (renderStart)
                             {
@@ -925,7 +1034,7 @@ namespace m3d
 
     bool SceneGraph::IsInUnlinkAndDeleteAll() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_bIsInUnlinkAndDeleteAll;
     }
 
     void SceneGraph::DeleteAllTtledNodes()
@@ -1008,7 +1117,18 @@ namespace m3d
 
     void SceneGraph::LightSetupSunForWorld()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m3d::rend::LightSource ls;
+        ls.m_type = rend::M3DLIGHT_DIRECTIONAL;
+        ls.m_direction.x = 0.0 - m_owner->GetSun(0.0).x;
+        ls.m_direction.y = 0.0 - m_owner->GetSun(0.0).y;
+        ls.m_direction.z = 0.0 - m_owner->GetSun(0.0).z;
+        ls.m_origin = ls.m_direction;
+        ls.m_range = 1000.0;
+        ls.m_diffuse = m_owner->GetWeatherDiffuseColor();
+        ls.m_ambient = m_owner->GetWeatherAmbientColor();
+
+        M3D_RENDERER->LightSet(0, ls);
+        M3D_RENDERER->LightEnable(0, 1);
     }
 
     void SceneGraph::UpdateTexShadowSizes()
@@ -1185,7 +1305,9 @@ namespace m3d
         CheckNodeValidity(toRemove, "Check Two");
 
         // TODO: check this
+        // TODO: DecRef
         toRemove->DecRef();
+        toRemove = nullptr;
     }
 
     int SceneGraph::getYOfs(int)

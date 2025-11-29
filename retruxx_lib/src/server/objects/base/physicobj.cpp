@@ -6,12 +6,12 @@
 #include "landscape.h"
 #include "world.h"
 #include "core/ini.h"
+#include "core/log.h"
 #include "game/m3dgame.h"
 #include "server/dynamicscene.h"
 #include "server/ai/aimanager.h"
+#include "server/objects/physicbodies/physicbody.h"
 #include "server/objects/physicbodies/physichelpers.h"
-
-#include "thirdparty/injecttools.h"
 
 extern "C"
 {
@@ -215,9 +215,19 @@ namespace ai
         return this->m_bIsUpdatingByODE != 0;
     }
 
-    void PhysicObj::RelinkToSpace(dxSpace*)
+    void PhysicObj::RelinkToSpace(dxSpace* newSpace)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_spaceId && this->m_bIsSpaceOwner)
+        {
+            auto space = dGeomGetSpace(m_spaceId);
+            if (space)
+                dSpaceRemove(space, m_spaceId);
+            dSpaceAdd(newSpace, m_spaceId);
+        }
+        else
+        {
+            M3D_LOG_ERR("Error: attempt to relink " + GetDebugDescription() + " which is transferred to another space");
+        }
     }
 
     bool PhysicObj::IsVisible()
@@ -232,7 +242,7 @@ namespace ai
 
     dxSpace* PhysicObj::GetSpaceId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_spaceId;
     }
 
     void PhysicObj::SetSkin(int skin)
@@ -355,7 +365,7 @@ namespace ai
 
     bool PhysicObj::CanCreateCollisionEffect() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_timeFromLastCollisionEffect > 0.1 || !IsUpdating();
     }
 
     void PhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
@@ -455,7 +465,11 @@ namespace ai
 
     void PhysicObj::IncEnabledCellsCount()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if ((m_physicState & 1) == 0 && (m_physicState & 2) != 0 && !m_enabledCellsCount)
+        {
+            EnableGeometry(false);
+        }
+        ++m_enabledCellsCount;
     }
 
     void PhysicObj::SetTorque(CVector const&)
@@ -485,7 +499,7 @@ namespace ai
 
     void PhysicObj::SetCollisionEffectCreated()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_timeFromLastCollisionEffect = 0.0;
     }
 
     void PhysicObj::DisableGeometry(bool changePhysicState)
@@ -506,7 +520,10 @@ namespace ai
 
     float PhysicObj::GetIntersectionRadius() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_intersectionObstacle)
+            return m_intersectionObstacle->GetIntersectionRadius();
+        else
+            return 0.0;
     }
 
     void PhysicObj::SetPostEnablePhysics()
@@ -585,10 +602,13 @@ namespace ai
 
     void PhysicObj::DecEnabledCellsCount()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        --m_enabledCellsCount;
+        if ((m_physicState & 1) == 0 && (m_physicState & 2) != 0 && !m_enabledCellsCount)
+        {
+            DisableGeometry(false);
+        }
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005FC410, PhysicObj::GetPosition)
     CVector PhysicObj::GetPosition() const
     {
         // TODO: generated code
@@ -712,9 +732,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void PhysicObj::AddRelTorque(CVector const&)
+    void PhysicObj::AddRelTorque(const CVector& relTorque)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        dBodyAddRelTorque(m_body->id(), relTorque.x, relTorque.y, relTorque.z);
     }
 
     void PhysicObj::SetPostDisablePhysics()
@@ -750,12 +770,12 @@ namespace ai
 
     void PhysicObj::SetLinearVelocity(CVector const& linearVel)
     {
-        dBodySetLinearVel(this->m_body->id(), linearVel.x, linearVel.y, linearVel.z);
+        dBodySetLinearVel(m_body->id(), linearVel.x, linearVel.y, linearVel.z);
     }
 
-    void PhysicObj::AddForce(CVector const&)
+    void PhysicObj::AddForce(CVector const& force)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        dBodyAddForce(m_body->id(), force.x, force.y, force.z);
     }
 
     void PhysicObj::AddForceAtRelPos(CVector const&, CVector const&)
@@ -924,26 +944,23 @@ namespace ai
         float zw = z * w;
 
         // Construct rotation matrix from quaternion
-        // This is the standard conversion: R = [1-2(y²+z²)  2(xy-zw)    2(xz+yw)   ]
-        //                                     [2(xy+zw)     1-2(x²+z²)  2(yz-xw)   ]
-        //                                     [2(xz-yw)     2(yz+xw)    1-2(x²+y²) ]
         CMatrix rotationMatrix;
 
         // First row
         rotationMatrix._11 = 1.0f - 2.0f * (y2 + z2);
-        rotationMatrix._12 = 2.0f * (xy - zw);
-        rotationMatrix._13 = 2.0f * (xz + yw);
+        rotationMatrix._12 = 2.0f * (xy + zw);
+        rotationMatrix._13 = 2.0f * (xz - yw);
         rotationMatrix._14 = 0.0f;
 
         // Second row
-        rotationMatrix._21 = 2.0f * (xy + zw);
+        rotationMatrix._21 = 2.0f * (xy - zw);
         rotationMatrix._22 = 1.0f - 2.0f * (x2 + z2);
-        rotationMatrix._23 = 2.0f * (yz - xw);
+        rotationMatrix._23 = 2.0f * (yz + xw);
         rotationMatrix._24 = 0.0f;
 
         // Third row
-        rotationMatrix._31 = 2.0f * (xz - yw);
-        rotationMatrix._32 = 2.0f * (yz + xw);
+        rotationMatrix._31 = 2.0f * (xz + yw);
+        rotationMatrix._32 = 2.0f * (yz - xw);
         rotationMatrix._33 = 1.0f - 2.0f * (x2 + y2);
         rotationMatrix._34 = 0.0f;
 
@@ -1246,10 +1263,33 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005FB1E0, getPhysicObjOrPhysicBodyGeometricCenter)
-    CVector getPhysicObjOrPhysicBodyGeometricCenter(ai::Obj const*)
+    CVector getPhysicObjOrPhysicBodyGeometricCenter(ai::Obj const* obj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
-        return CVector();
+        if (IS_KIND_OF(obj, PhysicBody))
+        {
+            auto* body = RT_DYNCAST(obj, PhysicBody const);
+            return body->GetPosition();
+        }
+        if (IS_KIND_OF(obj, PhysicObj))
+        {
+            auto* phys = RT_DYNCAST(obj, PhysicObj const);
+            return phys->GetGeometricCenter();
+        }
+        return ZeroVector;
+    }
+
+    CVector getPhysicObjOrPhysicBodyPosition(ai::Obj const* obj)
+    {
+        if (IS_KIND_OF(obj, PhysicBody))
+        {
+            auto* body = RT_DYNCAST(obj, PhysicBody const);
+            return body->GetPosition();
+        }
+        if (IS_KIND_OF(obj, PhysicObj))
+        {
+            auto* phys = RT_DYNCAST(obj, PhysicObj const);
+            return phys->GetPosition();
+        }
+        return ZeroVector;
     }
 }

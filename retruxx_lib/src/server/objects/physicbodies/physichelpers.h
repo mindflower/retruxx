@@ -39,6 +39,7 @@ namespace ai
     bool TraceLine(ai::Ray const&, dContact&, bool, bool, bool, bool, ai::TraceLineCallback*, bool, bool);
     bool GetValidPosition(CVector const&, float, unsigned char, CVector&, bool, bool, std::set<m3d::Class* > const&);
     m3d::AnimInfo* GetNodeAnimInfo(m3d::SgNode const*);
+    CVector GetRandomDeviatedVector(CVector const&, float);
 
     template <class T>
     void SetDirectionToObject(T& obj, CVector const& direction)

@@ -1,5 +1,7 @@
 #include "vehiclerolesniper.h"
 
+#include "server/objects/vehicle.h"
+
 #include <stdexcept>
 
 namespace ai
@@ -17,9 +19,12 @@ namespace ai
     {
     }
 
-    float VehicleRoleSniperPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
+    float VehicleRoleSniperPrototypeInfo::FitAgainstVehicle(Vehicle const* v, Vehicle const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (v)
+            return v->EstimateDamageAI();
+        else
+            return 0.0;
     }
 
     float VehicleRoleSniperPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const

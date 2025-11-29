@@ -52,19 +52,16 @@ namespace m3d
 
 namespace m3d
 {
-    RETRUXX_DLL_INJECT_CTOR(0x00616270, RefCountedBase)
     RefCountedBase::RefCountedBase() :
         m_refCount(0)
     {
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x00437010, RefCountedBase::IncRef)
     int RefCountedBase::IncRef()
     {
         return ++m_refCount;
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x004047B0, RefCountedBase::DecRef)
     int RefCountedBase::DecRef()
     {
         const auto result = --m_refCount;
@@ -75,7 +72,6 @@ namespace m3d
         return result;
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x00435580, RefCountedBase::GetRefCount)
     int RefCountedBase::GetRefCount() const
     {
         return m_refCount;
@@ -101,9 +97,9 @@ namespace m3d
         m_persistant(clazz.m_persistant),
         m_isChildDirty(clazz.m_isChildDirty)
     {
-        for (auto* it = GetFirstChild(); it; it = it->GetNextSibling())
+        for (auto* it = clazz.m_firstChild; it; it = it->m_nextSibling)
         {
-            AddChild(it->Clone());
+            Object::AddChild(it->Clone());
         }
     }
 
@@ -421,68 +417,52 @@ namespace m3d
 
     int Object::UnlinkChild(Object* node)
     {
-        //TODO: check this and refactor!!!!!!!!!!!
-        m3d::Object* v2; // edx
-        int result; // eax
-        m3d::Object* v4; // edx
+        // TODO: generated code Object::UnlinkChild
+        if (!node)
+        {
+            return m_numChildren;  // Or throw an exception
+        }
 
-        v2 = this->m_firstChild;
-        if (v2 != node)
+        // Case 1: Only child
+        if (m_firstChild == node && m_lastChild == node)
         {
-            v4 = this->m_lastChild;
-            if (v4 == node)
-            {
-                v4->m_prevSibling->m_nextSibling = 0;
-                this->m_lastChild = this->m_lastChild->m_prevSibling;
-            }
-            else
-            {
-                node->m_nextSibling->m_prevSibling = node->m_prevSibling;
-                node->m_prevSibling->m_nextSibling = node->m_nextSibling;
-            }
-            node->m_parent = 0;
-            node->m_nextSibling = 0;
-            node->m_prevSibling = 0;
-            result = --this->m_numChildren;
-            return result;
+            m_firstChild = nullptr;
+            m_lastChild = nullptr;
+            node->m_parent = nullptr;
+            node->m_nextSibling = nullptr;
+            node->m_prevSibling = nullptr;
+            return --m_numChildren;
         }
-        if (this->m_lastChild == node)
+
+        // Case 2: First child (but not only child)
+        if (m_firstChild == node)
         {
-            this->m_firstChild = 0;
-            this->m_lastChild = 0;
-            node->m_parent = 0;
-            node->m_nextSibling = 0;
-            node->m_prevSibling = 0;
-            return --this->m_numChildren;
+            m_firstChild->m_nextSibling->m_prevSibling = nullptr;
+            m_firstChild = m_firstChild->m_nextSibling;
+            node->m_parent = nullptr;
+            node->m_nextSibling = nullptr;
+            node->m_prevSibling = nullptr;
+            return --m_numChildren;
         }
-        if (v2 == node)
+
+        // Case 3: Last child (but not only child)
+        if (m_lastChild == node)
         {
-            v2->m_nextSibling->m_prevSibling = 0;
-            this->m_firstChild = this->m_firstChild->m_nextSibling;
-            node->m_parent = 0;
-            node->m_nextSibling = 0;
-            node->m_prevSibling = 0;
-            result = --this->m_numChildren;
+            m_lastChild->m_prevSibling->m_nextSibling = nullptr;
+            m_lastChild = m_lastChild->m_prevSibling;
+            node->m_parent = nullptr;
+            node->m_nextSibling = nullptr;
+            node->m_prevSibling = nullptr;
+            return --m_numChildren;
         }
-        else
-        {
-            v4 = this->m_lastChild;
-            if (v4 == node)
-            {
-                v4->m_prevSibling->m_nextSibling = 0;
-                this->m_lastChild = this->m_lastChild->m_prevSibling;
-            }
-            else
-            {
-                node->m_nextSibling->m_prevSibling = node->m_prevSibling;
-                node->m_prevSibling->m_nextSibling = node->m_nextSibling;
-            }
-            node->m_parent = 0;
-            node->m_nextSibling = 0;
-            node->m_prevSibling = 0;
-            result = --this->m_numChildren;
-        }
-        return result;
+
+        // Case 4: Middle child
+        node->m_nextSibling->m_prevSibling = node->m_prevSibling;
+        node->m_prevSibling->m_nextSibling = node->m_nextSibling;
+        node->m_parent = nullptr;
+        node->m_nextSibling = nullptr;
+        node->m_prevSibling = nullptr;
+        return --m_numChildren;
     }
 
     void Object::MoveChildToFirstPosition(Object* wnd)
@@ -622,7 +602,6 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0X0041DD60, Object::IsChildOf)
     bool Object::IsChildOf(Object const* wnd) const
     {
         assert(wnd);

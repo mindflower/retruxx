@@ -40,39 +40,47 @@ namespace ai
                 return;
             }
 
-            auto ownerCls = owner->GetClass();
-            auto it = tmpTargetClasses->find(ownerCls);
-            if (it != tmpTargetClasses->end())
+            if (tmpTargetClasses->empty())
             {
                 tmpObstacles->emplace(pOb);
+            }
+            else
+            {
+                auto ownerCls = owner->GetClass();
+                auto it = tmpTargetClasses->find(ownerCls);
+                if (it != tmpTargetClasses->end())
+                {
+                    tmpObstacles->emplace(pOb);
+                }
             }
         }
 
         void IntersectionCallback(void* data,dxGeom* o1,dxGeom* o2)
         {
-            // TODO: implement IntersectionCallback
             if ((dGeomIsSpace(o1) || dGeomIsSpace(o2)) && o1 != o2)
             {
                 dSpaceCollide2(o1, o2, data, IntersectionCallback);
             }
             else
             {
-                auto v5 = (ai::SphereForIntersection*)dGeomGetData(o1);
-                auto v6 = (ai::SphereForIntersection*)dGeomGetData(o2);
+                auto sphere1 = static_cast<SphereForIntersection*>(dGeomGetData(o1));
+                auto sphere2 = static_cast<SphereForIntersection*>(dGeomGetData(o2));
             
-                ai::Obstacle* id = 0;
-                if (v5)
-                    id = v5->GetOwner();
-                if (v6)
+                ai::Obstacle* id = nullptr;
+                if (sphere1)
                 {
-                    auto otherId = v6->GetOwner();
+                    id = sphere1->GetOwner();
+                }
+                if (sphere2)
+                {
+                    auto otherId = sphere2->GetOwner();
                     PushObstacle(id);
                     PushObstacle(otherId);
                 }
                 else
                 {
                     PushObstacle(id);
-                    PushObstacle(0);
+                    PushObstacle(nullptr);
                 }
             }
         }
@@ -174,9 +182,8 @@ namespace ai
     }
 
     void IntersectionManager::_GetIntersectedObjectsCustom(
-        retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle>>, retruxx::allocator<ref_ptr<ai::
-        Obstacle>>>& objIds, const ai::Sphere* pLookSphere,
-        const retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>>& targetClasses,
+        retruxx::set<ref_ptr<ai::Obstacle>>& objIds, const ai::Sphere* pLookSphere,
+        const retruxx::set<m3d::Class*>& targetClasses,
         void(*nearCallback)(void*, dxGeom*, dxGeom*), bool bCheckBoxes, bool bCheckPlayerPassmap)
     {
         // TODO: generated code
@@ -189,24 +196,26 @@ namespace ai
         tmpTargetClasses = &targetClasses;
         bPlayerPassCellCollided = false;
 
+        cntIntersectionCalls->IncI();
+
         // Clear the result set
         objIds.clear();
 
         // Get sphere properties
         CVector lookCenter = (float*)dGeomGetPosition(pLookSphere->GetGeomId());
-        float lookRadius = pLookSphere->GetRadius();
+        const float lookRadius = pLookSphere->GetRadius();
 
         // Calculate grid cells to check
-        ai::Geom::CellAabb cellAabb = pLookSphere->CountCellAabb();
+        const auto cellAabb = pLookSphere->CountCellAabb();
 
-        m3d::Landscape* landscape = &ai::pServer->GetWorld()->GetLandscape();
+        m3d::Landscape& landscape = pServer->GetWorld()->GetLandscape();
 
         // Iterate through grid cells
         for (int x = cellAabb.x0; x <= cellAabb.x1; ++x)
         {
             for (int z = cellAabb.z0; z <= cellAabb.z1; ++z)
             {
-                m3d::Landscape::CollisionCellItem* cellItem = landscape->GetCollisionCellItem(x, z);
+                auto* cellItem = landscape.GetCollisionCellItem(x, z);
                 if (!cellItem)
                 {
                     continue;
@@ -215,8 +224,9 @@ namespace ai
                 // Check physic objects in this cell
                 for (int objId : cellItem->m_physicObjIds)
                 {
-                    ai::cntObjectsChecked->IncI();
-                    m3d::Object* obj = ai::theObjects->GetEntityByObjId(objId);
+                    cntObjectsChecked->IncI();
+
+                    auto* obj = theObjects->GetEntityByObjId(objId);
                     if (obj)
                     {
                         if (obj->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
@@ -227,7 +237,7 @@ namespace ai
                             {
                                 if (object->m_intersectionObstacle->bIsEnabled())
                                 {
-                                    auto objSphere = object->m_intersectionObstacle->GetSphere();
+                                    auto* objSphere = object->m_intersectionObstacle->GetSphere();
                                     CVector sphereCenter = (float*)dGeomGetPosition(objSphere->GetGeomId());
                                     float sphereRadius = objSphere->GetRadius();
 
@@ -241,7 +251,7 @@ namespace ai
 
                                     cntIntersectingObjectsChecked->IncI();
 
-                                    if (distanceSq <= (combinedRadius * combinedRadius))
+                                    if ((combinedRadius * combinedRadius) > distanceSq)
                                     {
                                         cntObjectsSatisfied->IncI();
                                         nearCallback(nullptr, pLookSphere->GetGeomId(), objSphere->m_geomId);
@@ -261,7 +271,7 @@ namespace ai
                 }
 
                 // Check obstacles in this cell
-                for (const auto& obstacle : (*cellItem->m_obstacles))
+                for (const auto& obstacle : *cellItem->m_obstacles)
                 {
                     cntObjectsChecked->IncI();
 
@@ -288,14 +298,14 @@ namespace ai
 
                         cntIntersectingObjectsChecked->IncI();
 
-                        if (distanceSq <= (combinedRadius * combinedRadius))
+                        if ((combinedRadius * combinedRadius) > distanceSq)
                         {
                             cntObjectsSatisfied->IncI();
 
                             auto* obstacleBox = obstacle->GetBox();
 
-                            if (!bCheckBoxes || !obstacleBox ||
-                                dCollide(pLookSphere->GetGeomId(), obstacleBox->GetGeomId(), 1, nullptr, 104))
+                            dContact contact;
+                            if (!bCheckBoxes || !obstacleBox || dCollide(pLookSphere->GetGeomId(), obstacleBox->GetGeomId(), 1, &contact.geom, 104))
                             {
                                 nearCallback(nullptr, pLookSphere->GetGeomId(), obstacleSphere->GetGeomId());
                             }
@@ -308,8 +318,9 @@ namespace ai
                 {
                     for (auto* geomObject : cellItem->m_geomsList)
                     {
+                        dContact contact;
                         if (geomObject->IsKindOf(&m3d::GeomObjectPassCell::m_classGeomObjectPassCell) &&
-                            dCollide(pLookSphere->GetGeomId(), geomObject->GetGeom(), 1, nullptr, 104))
+                            dCollide(pLookSphere->GetGeomId(), geomObject->GetGeom(), 1, &contact.geom, 104))
                         {
                             bPlayerPassCellCollided = true;
                             break;

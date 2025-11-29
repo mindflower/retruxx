@@ -1,9 +1,18 @@
 #include "weapongroup.h"
+
+#include "guihelper.h"
+
 #include <stdexcept>
 #include <server/objects/player.h>
 
 #include "m3dapp.h"
+#include "core/kernel.h"
+#include "game/uiwindows/miscwindows/bindkeyswnd.h"
+#include "impulses/i_impulses.h"
 #include "server/objects/vehicle.h"
+#include "server/objects/guns/compoundgun.h"
+#include "server/objects/physicbodies/vehiclepart.h"
+#include <server/resourcemanager.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(WeaponGroupManager, SaveWeaponGroups)
 {
@@ -37,14 +46,59 @@ void WeaponGroupManager::ClearSavedGroups()
 
 int WeaponGroupManager::ValidateWeaponGroups()
 {
-    // TODO: implement WeaponGroupManager::ValidateWeaponGroups
-    //RETRUXX_NOT_IMPLEMENTED;
-    return 1;
+    using namespace ai;
+
+    if (!ai::thePlayer)
+    {
+        return 0;
+    }
+
+    auto* vehicle = ai::thePlayer->GetVehicle();
+    if (!vehicle)
+    {
+        return 0;
+    }
+
+    int res = 1;
+
+    retruxx::set<CStr> allWeapons;
+    GetAllWeapons(allWeapons);
+    for (auto& weapon : allWeapons)
+    {
+        if (!vehicle->GetPartByName(weapon))
+        {
+            RemoveWeaponFromWeaponGroup(weapon);
+            res = 0;
+        }
+    }
+
+    std::vector<ai::Obj*> curWeapon;
+    help::GetGunsForVehicle(vehicle->GetId(), curWeapon);
+
+    for (auto& gun : curWeapon)
+    {
+        if (IS_KIND_OF(gun, VehiclePart))
+        {
+            auto* vehPart = RT_DYNCAST(gun, VehiclePart);
+            const auto& partName = vehPart->GetPartName();
+            AddWeaponToWeaponGroup(partName, GetWeaponGroupIdForWeapon(partName));
+            res = 0;
+        }
+    }
+
+    return res;
 }
 
-void WeaponGroupManager::GetAllWeapons(retruxx::set<CStr>&) const
+void WeaponGroupManager::GetAllWeapons(retruxx::set<CStr>& allWeapons) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    allWeapons.clear();
+    for (const auto& group : m_weaponGroups)
+    {
+        if (group.second)
+        {
+            allWeapons.insert(group.second->m_gunPartNames.begin(), group.second->m_gunPartNames.end());
+        }
+    }
 }
 
 void WeaponGroupManager::SaveWeaponGroups()
@@ -101,9 +155,27 @@ int WeaponGroupManager::GameDataUpdate(void* data, int dataType)
     return 1;
 }
 
-WeaponGroup* WeaponGroupManager::CreateWeaponGroup(int)
+WeaponGroup* WeaponGroupManager::CreateWeaponGroup(int groupId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (groupId > 4)
+    {
+        return nullptr;
+    }
+
+    auto* group = (WeaponGroup*)M3D_KERNEL->New("WeaponGroup");
+    if (!group)
+    {
+        return nullptr;
+    }
+
+    group->SetGroupId(groupId);
+    if (!AddWeaponGroup(group))
+    {
+        // TODO: check this
+        delete group;
+        return nullptr;
+    }
+    return group;
 }
 
 int WeaponGroupManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -116,9 +188,51 @@ int WeaponGroupManager::GetWeaponGroupsMaxCount()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int WeaponGroupManager::GetDefaultWeaponGroupIdForWeapon(CStr const&)
+int WeaponGroupManager::GetDefaultWeaponGroupIdForWeapon(const CStr& gunPartName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (gunPartName.empty())
+    {
+        return -1;
+    }
+
+    const auto gunResName = ai::theResourceManager->GetResourceNameByVehiclePartName(gunPartName);
+    const auto gunResId = ai::theResourceManager->GetResourceId(gunResName);
+    if (gunResId == -1)
+    {
+        return -1;
+    }
+
+    if (!ai::theResourceManager->bResourceIsKindOf(gunResId, ai::theResourceManager->GetResourceId("GUN")))
+    {
+        return -1;
+    }
+
+    if (ai::theResourceManager->bResourceIsKindOf(gunResId, ai::theResourceManager->GetResourceId("SMALL_GUN")))
+    {
+        return 0;
+    }
+
+    if (ai::theResourceManager->bResourceIsKindOf(gunResId, ai::theResourceManager->GetResourceId("BIG_GUN")))
+    {
+        return 1;
+    }
+
+    if (ai::theResourceManager->bResourceIsKindOf(gunResId, ai::theResourceManager->GetResourceId("GIANT_GUN")))
+    {
+        return 2;
+    }
+
+    if (ai::theResourceManager->bResourceIsKindOf(gunResId, ai::theResourceManager->GetResourceId("SIDE_GUN")))
+    {
+        return 3;
+    }
+
+    if (ai::theResourceManager->bResourceIsKindOf(gunResId, ai::theResourceManager->GetResourceId("SPECIAL_WEAPON")))
+    {
+        return 4;
+    }
+
+    return -1;
 }
 
 m3d::Object* WeaponGroupManager::CreateObject()
@@ -131,9 +245,27 @@ m3d::Class* WeaponGroupManager::GetBaseClass()
     return RT_CLASS_LOCAL(Object);
 }
 
-int WeaponGroupManager::AddWeaponGroup(WeaponGroup*)
+int WeaponGroupManager::AddWeaponGroup(WeaponGroup* wg)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!wg)
+    {
+        return 0;
+    }
+
+    const auto id = wg->GetGroupId();
+    if (id > 4 || wg->GetImpulseId() == IM_ERROR)
+    {
+        return 0;
+    }
+
+    auto it = m_weaponGroups.find(id);
+    if (it != m_weaponGroups.end())
+    {
+        return it->second == wg;
+    }
+
+    m_weaponGroups.emplace(id, wg);
+    return 1;
 }
 
 void WeaponGroupManager::ReloadAllWeapon()
@@ -148,14 +280,62 @@ void WeaponGroupManager::OnPlayerVehicleChanged()
 
 int WeaponGroupManager::Init()
 {
-    // TODO: implement WeaponGroupManager::Init
-    // RETRUXX_NOT_IMPLEMENTED;
+    ClearGroups();
+    for (int i = 0; i < 5; ++i)
+    {
+        auto* group = M3D_KERNEL->New("WeaponGroup");
+        if (group)
+        {
+            auto* weaponGroup = static_cast<WeaponGroup*>(group);
+            weaponGroup->SetGroupId(i);
+            if (!AddWeaponGroup(weaponGroup))
+            {
+                // TODO: check this
+                delete group;
+            }
+        }
+    }
     return 1;
 }
 
-int WeaponGroupManager::AddWeaponToWeaponGroup(CStr const&, int)
+int WeaponGroupManager::AddWeaponToWeaponGroup(const CStr& gunPartName, int groupId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TOOD: check this
+    if (groupId == -1)
+    {
+        groupId = GetDefaultWeaponGroupIdForWeapon(gunPartName);
+        if (groupId == -1)
+        {
+            return 0;
+        }
+    }
+
+    auto weaponGroup = GetWeaponGroupIdForWeapon(gunPartName);
+    if (weaponGroup != -1)
+    {
+        if (weaponGroup == groupId)
+        {
+            return 1;
+        }
+        RemoveWeaponFromWeaponGroup(gunPartName);
+    }
+
+    auto it = m_weaponGroups.find(groupId);
+    if (it != m_weaponGroups.end())
+    {
+        return it->second->AddWeapon(gunPartName);
+    }
+    else
+    {
+        auto* group = CreateWeaponGroup(groupId);
+        if (group)
+        {
+            return group->AddWeapon(gunPartName);
+        }
+        return 0;
+    }
+
+    return 1;
 }
 
 int WeaponGroupManager::AddWeaponToWeaponGroup(int, int)
@@ -178,9 +358,29 @@ WeaponGroupManager::~WeaponGroupManager()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void WeaponGroupManager::OnVehiclePartChanged(void*)
+void WeaponGroupManager::OnVehiclePartChanged(void* data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    const auto event = static_cast<m3d::Event*>(data);
+    if (ai::thePlayer)
+    {
+        auto* vehicle = ai::thePlayer->GetVehicle();
+        if (vehicle && event->m_uintEv[0] == vehicle->GetId())
+        {
+            CStr& partName = event->m_strEv;
+            if (!partName.empty())
+            {
+                if (vehicle->GetPartByName(partName))
+                {
+                    const auto weaponGroup = GetWeaponGroupIdForWeapon(partName);
+                    AddWeaponToWeaponGroup(partName, weaponGroup);
+                }
+                else
+                {
+                    RemoveWeaponFromWeaponGroup(partName);
+                }
+            }
+        }
+    }
 }
 
 int WeaponGroupManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -190,7 +390,13 @@ int WeaponGroupManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 
 void WeaponGroupManager::ClearGroups()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto& group : m_weaponGroups)
+    {
+        delete group.second;
+    }
+    m_weaponGroups.clear();
+
+    M3D_APP->ImmediateMessage(UM_WEAPONGROUP_CHANGED, -1, 0, 0, 0, {}, {});
 }
 
 int WeaponGroupManager::RemoveWeaponFromWeaponGroup(int)
@@ -198,9 +404,20 @@ int WeaponGroupManager::RemoveWeaponFromWeaponGroup(int)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int WeaponGroupManager::RemoveWeaponFromWeaponGroup(CStr const&)
+int WeaponGroupManager::RemoveWeaponFromWeaponGroup(CStr const& gunPartName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto const id = GetWeaponGroupIdForWeapon(gunPartName);
+    if (id == -1)
+    {
+        return 0;
+    }
+
+    auto const it = m_weaponGroups.find(id);
+    if (it != m_weaponGroups.end())
+    {
+        return it->second->RemoveWeapon(gunPartName);
+    }
+    return 0;
 }
 
 m3d::Class* WeaponGroupManager::GetClass() const
@@ -208,9 +425,27 @@ m3d::Class* WeaponGroupManager::GetClass() const
     return RT_CLASS_LOCAL(WeaponGroupManager);
 }
 
-int WeaponGroupManager::GetWeaponGroupIdForWeapon(CStr const&) const
+int WeaponGroupManager::GetWeaponGroupIdForWeapon(const CStr& gunPartName) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (gunPartName.empty())
+    {
+        return -1;
+    }
+
+    for (auto& group : m_weaponGroups)
+    {
+        auto* weaponGroup = group.second;
+        if (weaponGroup)
+        {
+            const auto& weapons = weaponGroup->GetWeapons();
+            const auto it = weapons.find(gunPartName);
+            if (it != weapons.end())
+            {
+                return weaponGroup->GetGroupId();
+            }
+        }
+    }
+    return -1;
 }
 
 void WeaponGroupManager::Clear()
@@ -233,9 +468,7 @@ WeaponGroupManager::WeaponGroupManager(WeaponGroupManager const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-WeaponGroupManager::WeaponGroupManager()
-{
-}
+WeaponGroupManager::WeaponGroupManager() = default;
 
 void WeaponGroup::Reload()
 {
@@ -249,7 +482,7 @@ bool WeaponGroup::IsEmpty() const
 
 void WeaponGroup::ClearWeapons()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_gunPartNames.clear();
 }
 
 bool WeaponGroup::IsValid() const
@@ -264,7 +497,15 @@ int WeaponGroup::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 
 bool WeaponGroup::CanFire() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_groupId <= 4)
+    {
+        if (m_impulseId != IM_ERROR &&
+            (M3D_APP->m_pImpulses->GetImpulseState(m_impulseId) || M3D_APP->m_pImpulses->GetImpulseState(IM_CAR_FIRE_ALL)))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 m3d::Class* WeaponGroup::GetBaseClass()
@@ -284,12 +525,37 @@ Impulse WeaponGroup::GetImpulseByGroupId(int)
 
 m3d::Object* WeaponGroup::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new WeaponGroup;
 }
 
-int WeaponGroup::AddWeapon(CStr const&)
+int WeaponGroup::AddWeapon(const CStr& gunPartName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    using namespace ai;
+
+    if (gunPartName.empty())
+    {
+        return 0;
+    }
+
+    auto* vehicle = ai::thePlayer->GetVehicle();
+    if (!vehicle)
+    {
+        return 0;
+    }
+
+    auto* part = vehicle->GetPartByName(gunPartName);
+    if (!part || (!IS_KIND_OF(part, Gun) && !IS_KIND_OF(part, CompoundGun)))
+    {
+        return 0;
+    }
+
+    auto it = m_gunPartNames.find(gunPartName);
+    if (it == m_gunPartNames.end())
+    {
+        m_gunPartNames.insert(gunPartName);
+        M3D_APP->EnqueueMessage(UM_WEAPONGROUP_CHANGED, m_groupId, 0, 0, 0, {}, {});
+    }
+    return 1;
 }
 
 void WeaponGroup::Clear()
@@ -299,7 +565,7 @@ void WeaponGroup::Clear()
 
 int WeaponGroup::GetGroupId() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_groupId;
 }
 
 m3d::Class* WeaponGroup::GetClass() const
@@ -309,17 +575,38 @@ m3d::Class* WeaponGroup::GetClass() const
 
 Impulse WeaponGroup::GetImpulseId() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_impulseId;
 }
 
 void WeaponGroup::KeepFire()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* vehicle = ai::thePlayer->GetVehicle();
+    if (vehicle)
+    {
+        const auto canFire = CanFire();
+        for (const auto& gunName : m_gunPartNames)
+        {
+            vehicle->FireFromWeaponByGunPartName(gunName, canFire);
+        }
+    }
 }
 
-int WeaponGroup::RemoveWeapon(CStr const&)
+int WeaponGroup::RemoveWeapon(CStr const& gunPartName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (gunPartName.empty())
+    {
+        return 0;
+    }
+
+    auto const it = m_gunPartNames.find(gunPartName);
+    if (it == m_gunPartNames.end())
+    {
+        return 0;
+    }
+
+    m_gunPartNames.erase(it);
+    M3D_APP->ImmediateMessage(UM_WEAPONGROUP_CHANGED, m_groupId, 0, 0, 0, {}, {});
+    return 1;
 }
 
 int WeaponGroup::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -332,29 +619,31 @@ bool WeaponGroup::IncludesWeapon(CStr const&) const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-WeaponGroup& WeaponGroup::operator=(WeaponGroup const&)
+void WeaponGroup::SetGroupId(int groupId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_groupId = groupId;
+    switch (groupId)
+    {
+    case 0u: m_impulseId = IM_CAR_FIRE_0; break;
+    case 1u: m_impulseId = IM_CAR_FIRE_1; break;
+    case 2u: m_impulseId = IM_CAR_FIRE_2; break;
+    case 3u: m_impulseId = IM_CAR_FIRE_3; break;
+    case 4u: m_impulseId = IM_CAR_FIRE_4; break;
+    default: m_impulseId = IM_ERROR; break;
+    }
 }
 
-void WeaponGroup::SetGroupId(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-WeaponGroup::~WeaponGroup()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+WeaponGroup::~WeaponGroup() = default;
 
 retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>> const& WeaponGroup::GetWeapons() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_gunPartNames;
 }
 
 WeaponGroup::WeaponGroup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_groupId = -1;
+    m_impulseId = IM_ERROR;
 }
 
 WeaponGroup::WeaponGroup(WeaponGroup const&)

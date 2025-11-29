@@ -62,9 +62,17 @@ int PlayerMoneyWnd::GameDataSetup()
     return 1;
 }
 
-int PlayerMoneyWnd::GameDataUpdate(void*, int)
+int PlayerMoneyWnd::GameDataUpdate(void*, int dataType)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (dataType == 75 || dataType == 85)
+    {
+        UpdateValue();
+    }
+    return 1;
 }
 
 void PlayerMoneyWnd::OnPlayerMoneyChanged()

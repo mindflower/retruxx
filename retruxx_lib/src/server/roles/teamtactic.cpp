@@ -1,9 +1,15 @@
 #include "teamtactic.h"
 
+#include "teamrolemanager.h"
+
 #include <stdexcept>
 
 #include "core/ini.h"
+#include "core/log.h"
 #include "core/ref_ptr.h"
+#include <server/objects/base/prototypemanager.h>
+#include <algorithm>
+#include <random>
 
 namespace ai
 {
@@ -34,9 +40,8 @@ namespace ai
         return RT_CLASS_LOCAL(Obj);
     }
 
-    TeamTactic::TeamTactic(TeamTacticPrototypeInfo const&)
+    TeamTactic::TeamTactic(TeamTacticPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     TeamTacticPrototypeInfo const* TeamTactic::GetPrototypeInfo() const
@@ -46,13 +51,10 @@ namespace ai
 
     m3d::Class* TeamTactic::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(TeamTactic);
     }
 
-    TeamTactic::~TeamTactic()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    TeamTactic::~TeamTactic() = default;
 
     m3d::Object* TeamTactic::CreateObject()
     {
@@ -64,18 +66,16 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    TeamTacticWithRolesPrototypeInfo::TeamTacticWithRolesPrototypeInfo()
-    {
-    }
+    TeamTacticWithRolesPrototypeInfo::TeamTacticWithRolesPrototypeInfo() = default;
 
     Obj* TeamTacticWithRolesPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new TeamTacticWithRoles(*this);
     }
 
     std::vector<int> const& TeamTacticWithRolesPrototypeInfo::GetPrototypeIds() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_rolePrototypeIds;
     }
 
     bool TeamTacticWithRolesPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -96,7 +96,18 @@ namespace ai
 
     void TeamTacticWithRolesPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto const& roleName :m_rolePrototypeNames)
+        {
+            auto const id = thePrototypeManager->GetPrototypeId(roleName);
+            if (id != -1)
+            {
+                m_rolePrototypeIds.push_back(id);
+            }
+            else
+            {
+                M3D_LOG_INFO("Unknown role prototype: " + roleName);
+            }
+        }
     }
 
     void TeamTacticWithRoles::AssignAgainstObj(Team*, Obj const*)
@@ -106,22 +117,21 @@ namespace ai
 
     TeamTacticWithRoles::TeamTacticWithRoles(TeamTacticWithRolesPrototypeInfo const& prototype) : TeamTactic(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* TeamTacticWithRoles::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(TeamTacticWithRoles);
     }
 
     TeamTacticWithRolesPrototypeInfo const* TeamTacticWithRoles::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), TeamTacticWithRolesPrototypeInfo const);
     }
 
-    void TeamTacticWithRoles::AssignAgainstVehicle(Team*, Vehicle const*)
+    void TeamTacticWithRoles::AssignAgainstVehicle(Team* v, Vehicle const* target)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::TeamRoleManager::AssignAgainstVehicle(this, v, target);
     }
 
     void TeamTacticWithRoles::AssignAgainstTeam(Team*, Team const*)
@@ -129,14 +139,40 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    float TeamTacticWithRoles::FitAgainstVehicle(Team const*, Vehicle const*)
+    float TeamTacticWithRoles::FitAgainstVehicle(Team const* v, Vehicle const* target)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return ai::TeamRoleManager::FitAgainstVehicle(this, v, target);
     }
 
-    void TeamTacticWithRoles::GetRolePrototypeIdsEx(int, std::vector<int, std::allocator<int>>&) const
+    void TeamTacticWithRoles::GetRolePrototypeIdsEx(int vehicleNum, std::vector<int, std::allocator<int>>& prototypeIds) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code TeamTacticWithRoles::GetRolePrototypeIdsEx
+        // Get role prototype IDs (returns a vector reference)
+        std::vector<int> const& rolePrototypeIds = this->GetRolePrototypeIds();
+
+        // Clear the output vector using the allocator
+        prototypeIds.clear();
+
+        // Fill the vector until it has at least vehicleNum elements
+        while (prototypeIds.size() <= static_cast<size_t>(vehicleNum))
+        {
+            // Insert the entire rolePrototypeIds vector at the end
+            prototypeIds.insert(prototypeIds.end(), rolePrototypeIds.begin(), rolePrototypeIds.end());
+        }
+
+        // If we have more elements than needed
+        if (static_cast<size_t>(vehicleNum) < prototypeIds.size())
+        {
+            if (!prototypeIds.empty())
+            {
+                std::random_device rd;
+                std::mt19937 g(rd());
+                std::shuffle(prototypeIds.begin(), prototypeIds.end(), g);
+
+                // Remove excess elements beyond vehicleNum
+                prototypeIds.resize(vehicleNum);
+            }
+        }
     }
 
     m3d::Class* TeamTacticWithRoles::GetBaseClass()
@@ -154,10 +190,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    TeamTacticWithRoles::~TeamTacticWithRoles()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    TeamTacticWithRoles::~TeamTacticWithRoles() = default;
 
     m3d::Object* TeamTacticWithRoles::CreateObject()
     {
@@ -166,7 +199,9 @@ namespace ai
 
     std::vector<int, std::allocator<int>> const& TeamTacticWithRoles::GetRolePrototypeIds() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto const* prototypeInfo = GetPrototypeInfo();
+        M3D_ASSERT(prototypeInfo);
+        return prototypeInfo->GetPrototypeIds();
     }
 
     m3d::Object* TeamTacticWithRoles::Clone()

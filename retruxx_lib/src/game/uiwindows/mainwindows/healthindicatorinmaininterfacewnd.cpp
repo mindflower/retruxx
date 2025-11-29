@@ -66,7 +66,9 @@ void HealthIndicatorInMainInterfaceWnd::UpdateLowHpLamp(float, float)
 
 int HealthIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd()

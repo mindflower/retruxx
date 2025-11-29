@@ -21,8 +21,6 @@ public:
     {
     public:
         AuxInfo();
-
-    private:
         CStr m_pbHealthName;
         CStr m_lblHealthName;
         CStr m_pbDurabilityName;

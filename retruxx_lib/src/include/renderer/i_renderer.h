@@ -11,7 +11,7 @@
 
 struct CVector2;
 class CPlane;
-class CMatrix;
+struct CMatrix;
 
 namespace m3d
 {
@@ -873,7 +873,7 @@ namespace m3d
             virtual void MatPushProj() = 0;
             virtual void MatPopProj() = 0;
             virtual const CMatrix* GetModelViewProjMatrix() = 0;
-            virtual CVector* Unproject(CVector* result, const CVector2*) = 0;
+            virtual CVector& Unproject(const CVector2&) = 0;
             virtual CVector Project(const CVector&) = 0;
             virtual CVector* ProjectWorldAbs(CVector* result, const CVector*) = 0;
             virtual void TgEnableSetLinearSt(int, float, float, float, float, float, bool, float, float, float, float) = 0;
@@ -886,7 +886,7 @@ namespace m3d
             virtual void Set2x2BumpMatrix(int, float, float, float, float) = 0;
             virtual int RenderToTexStart(const m3d::rend::TexHandle&, bool) = 0;
             virtual void RenderToTexFinish() = 0;
-            virtual void CopyRenderTargetToTexture(const m3d::rend::TexHandle*) = 0;
+            virtual void CopyRenderTargetToTexture(const m3d::rend::TexHandle&) = 0;
             virtual int CanRender() = 0;
             virtual int SetActiveState(int) = 0;
             virtual int BeginScene() = 0;
@@ -921,7 +921,7 @@ namespace m3d
             virtual int ReferenceTexture(m3d::rend::TexHandle const&) = 0;
             virtual int ReleaseTexture(m3d::rend::TexHandle&) = 0;
             virtual void SetTextureParameter(m3d::rend::TexHandle const&, m3d::rend::TexParam, unsigned int) = 0;
-            virtual int GetTextureName(const m3d::rend::TexHandle*, CStr*) = 0;
+            virtual int GetTextureName(const m3d::rend::TexHandle&, CStr&) = 0;
             virtual int UploadTexImage(const m3d::rend::TexHandle&, unsigned int, unsigned int, unsigned __int8*, m3d::rend::TexDynFormat, int) = 0;
             virtual void* LockTexture(const m3d::rend::TexHandle&, m3d::rend::TexDynFormat, int&, int) = 0;
             virtual void UnlockTexture(const m3d::rend::TexHandle&) = 0;
@@ -941,7 +941,7 @@ namespace m3d
             virtual int ReleaseIb(m3d::rend::IbHandle&) = 0;
             virtual int ReferenceIb(const m3d::rend::IbHandle*) = 0;
             virtual m3d::rend::IbPoolField AddIbPoolField(unsigned int) = 0;
-            virtual void ReleaseIbPoolField(m3d::rend::IbPoolField*) = 0;
+            virtual void ReleaseIbPoolField(m3d::rend::IbPoolField&) = 0;
             virtual void* LockIbPoolField(m3d::rend::IbPoolField const&) = 0;
             virtual void UnlockIbPoolField(m3d::rend::IbPoolField const&) = 0;
             virtual bool ReportIbsInfo(const char*) = 0;
@@ -957,7 +957,7 @@ namespace m3d
             virtual int ReleaseVb(m3d::rend::VbHandle&) = 0;
             virtual bool ReportVbsInfo(const char*) = 0;
             virtual m3d::rend::VbPoolField AddVbPoolField(m3d::rend::VertexType, unsigned int) = 0;
-            virtual void ReleaseVbPoolField(m3d::rend::VbPoolField*) = 0;
+            virtual void ReleaseVbPoolField(m3d::rend::VbPoolField&) = 0;
             virtual void* LockVbPoolField(const m3d::rend::VbPoolField&) = 0;
             virtual void UnlockVbPoolField(const m3d::rend::VbPoolField&) = 0;
             virtual m3d::rend::VbHandle GetVbStreaming(m3d::rend::VertexType) = 0;

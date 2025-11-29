@@ -46,7 +46,9 @@ m3d::Class* HealthIndicatorWnd::GetClass() const
 
 int HealthIndicatorWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void HealthIndicatorWnd::UpdateBarTexture()

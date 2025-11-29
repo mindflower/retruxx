@@ -17,11 +17,11 @@ namespace ai
 
     class VehicleRecollection : public Obj
     {
+        friend class VehicleRecollectionPrototypeInfo;
     public:
         class ReollectionItem
         {
         public:
-            ReollectionItem(ReollectionItem const&);
             ReollectionItem(CVector const&, float);
 
             virtual void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);

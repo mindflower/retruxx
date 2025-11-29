@@ -208,14 +208,11 @@
     <Filter Include="include\script\lua">
       <UniqueIdentifier>{6960ddcb-6260-4c1b-a393-137a7584eb42}</UniqueIdentifier>
     </Filter>
-    <Filter Include="thirdparty">
-      <UniqueIdentifier>{b58d90cf-6b3a-4128-9fa6-f8723a57f408}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="thirdparty\stl">
-      <UniqueIdentifier>{5a01cf1a-1b47-4385-b32e-86f43c17643c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="natvis">
       <UniqueIdentifier>{bba7d7d3-981b-4684-964d-50b9204db2f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="retruxx">
+      <UniqueIdentifier>{b58d90cf-6b3a-4128-9fa6-f8723a57f408}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -916,9 +913,6 @@
       <Filter>game\uimanager</Filter>
     </ClCompile>
     <ClCompile Include="src\game\uimanager\truxxuimanager.cpp">
-      <Filter>game\uimanager</Filter>
-    </ClCompile>
-    <ClCompile Include="src\game\uimanager\uiregistration.cpp">
       <Filter>game\uimanager</Filter>
     </ClCompile>
     <ClCompile Include="src\game\uimisc\fadingmsgmanager.cpp">
@@ -2067,11 +2061,6 @@
     <ClCompile Include="src\server\ai\aimatrix.cpp">
       <Filter>server\ai</Filter>
     </ClCompile>
-    <ClCompile Include="src\thirdparty\injecttools.cpp">
-      <Filter>thirdparty</Filter>
-    </ClCompile>
-    <ClCompile Include="src\thirdparty\allocator.cpp" />
-    <ClCompile Include="src\include\renderer\i_renderer_colors.cpp" />
     <ClCompile Include="src\engine\math\obb.cpp">
       <Filter>engine\math</Filter>
     </ClCompile>
@@ -2083,6 +2072,12 @@
     </ClCompile>
     <ClCompile Include="src\server\ai\aimessage.cpp">
       <Filter>server\ai</Filter>
+    </ClCompile>
+    <ClCompile Include="src\include\renderer\i_renderer_colors.cpp">
+      <Filter>include\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\uimanager\uidefs.h">
+      <Filter>game\uimanager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3895,100 +3890,8 @@
     <ClInclude Include="src\server\colliders\physicunitcolliders.h">
       <Filter>server\colliders</Filter>
     </ClInclude>
-    <ClInclude Include="src\thirdparty\injecttools.h">
-      <Filter>thirdparty</Filter>
-    </ClInclude>
     <ClInclude Include="src\server\weaponfirer.h">
       <Filter>server</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\functionscrapper.h">
-      <Filter>thirdparty</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\functional.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\xstddef.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\yvals.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\memory.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\stddef.h">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\iterator.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\xmemory.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\utility.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\climits.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\iosfwd.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\stdexcept.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\cstring.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\string.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\cstdio.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\stdio.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\cwchar.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\wchar.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\exception.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\new.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\xstring.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\cstdlib.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\stdlib.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\vector.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\list.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\set.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\deque.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\allocator.h" />
-    <ClInclude Include="src\thirdparty\containers.h" />
-    <ClInclude Include="src\thirdparty\stl\hash_map.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\thirdparty\stl\xhash.hpp">
-      <Filter>thirdparty\stl</Filter>
     </ClInclude>
     <ClInclude Include="src\game\game.h">
       <Filter>game</Filter>
@@ -4008,22 +3911,16 @@
     <ClInclude Include="src\server\roles\teamrolemanager.h">
       <Filter>server\roles</Filter>
     </ClInclude>
+    <ClInclude Include="src\retruxx\common.h">
+      <Filter>retruxx</Filter>
+    </ClInclude>
+    <ClInclude Include="src\server\roles\teamtacticmanager.h">
+      <Filter>server\roles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\include\ui\uilistboxwnd.h">
       <Filter>include\ui</Filter>
-    </None>
-    <None Include="src\thirdparty\stl\xtree.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </None>
-    <None Include="src\thirdparty\stl\map.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </None>
-    <None Include="src\thirdparty\stl\cstddef.hpp">
-      <Filter>thirdparty\stl</Filter>
-    </None>
-    <None Include="src\thirdparty\stl\xutility.hpp">
-      <Filter>thirdparty\stl</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

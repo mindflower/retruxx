@@ -1,5 +1,4 @@
 #include "player.h"
-#include "thirdparty/injecttools.h"
 #include <stdexcept>
 #include <client.h>
 
@@ -199,7 +198,6 @@ namespace ai
         return RT_CLASS_LOCAL(Obj);
     }
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x0064FA80, Player::GetMoney)
     int Player::GetMoney() const
     {
         return m_money.value().get();
@@ -610,7 +608,7 @@ namespace ai
 
     PlayerPrototypeInfo const* Player::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const PlayerPrototypeInfo);
     }
 
     bool Player::AddItemsToRepository(char const*, int)
@@ -700,7 +698,7 @@ namespace ai
 
     int Player::GetInfoObjId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_infoObjId;
     }
 
     eGObjPropertySaveStatus Player::GetPropertySaveStatus(int) const

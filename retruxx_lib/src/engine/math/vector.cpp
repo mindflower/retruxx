@@ -144,8 +144,10 @@ float CVector::lengthSq() const
 
 void CVector::normalizeInplace()
 {
-    const auto normalize = sqrt(lengthSq() + FLT_EPSILON);
-    operator/=(normalize);
+    const auto scale = sqrt(x * x + y * y + z * z + FLT_EPSILON);
+    x = 1.0 / scale * x;
+    y = 1.0 / scale * y;
+    z = 1.0 / scale * z;
 }
 
 void CVector::one()

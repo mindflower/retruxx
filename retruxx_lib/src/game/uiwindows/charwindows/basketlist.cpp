@@ -10,7 +10,7 @@ RT_CLASS_DEFINE(BasketList);
 
 m3d::Class* BasketList::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(BasketList);
 }
 
 m3d::Object* BasketList::Clone()
@@ -25,7 +25,7 @@ BasketList::~BasketList()
 
 m3d::Object* BasketList::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new BasketList;
 }
 
 m3d::Class* BasketList::GetBaseClass()
@@ -40,7 +40,7 @@ int BasketList::GetCBResourceId() const
 
 BasketList::BasketList()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_type = CBButton::TYPE_BASKET;
 }
 
 BasketList::BasketList(BasketList const&)

@@ -1,14 +1,23 @@
 #pragma once
-#include <core/stringm3d.h>
-#include "thirdparty/containers.h"
+#include "skelmodel.h"
+#include "core/stringm3d.h"
+#include "retruxx/common.h"
 
 namespace m3d
 {
-	namespace ui
-	{
-		class Wnd;
-	}
+    class AnimatedModel;
 }
+namespace ai
+{
+    class Obj;
+}
+namespace m3d
+{
+    namespace ui
+    {
+        class Wnd;
+    }
+}  // namespace m3d
 
 namespace help
 {
@@ -67,4 +76,18 @@ namespace help
     int CreateWindowsDir(CStr const&);
     CStr GetMapNameFromFileName(CStr const&);
     CStr Color2Str(unsigned);
-}
+    void GetGunsForVehicle(int, retruxx::vector<ai::Obj*>&);
+    ActionType GetRandomMoveAnimation(m3d::AnimatedModel*);
+    bool IsBoss(ai::Obj const*);
+    CStr GetClanAbbreviationByName(CStr const&);
+    CStr GetClanFullNameByName(CStr const&);
+    CStr GetClanNameByBelong(int);
+    CStr GetCurrentLevelName();
+    CStr GetKeysForImpulse(int);
+    CStr GetMapNameFromFileName(CStr const&);
+    CStr GetServiceSymbols();
+    CStr GetServiceSymbolsForVisualisation();
+    CStr GetVehiclePartNameByResourceId(int);
+
+    void SetWndTextAlpha(m3d::ui::Wnd*, unsigned char);
+}  // namespace help

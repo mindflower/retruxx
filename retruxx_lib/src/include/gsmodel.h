@@ -4,7 +4,7 @@
 #include <renderer/i_renderer_vertex.h>
 #include <draftstructures.h>
 
-class CMatrix;
+struct CMatrix;
 
 namespace m3d
 {

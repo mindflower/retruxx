@@ -84,7 +84,27 @@ namespace m3d
 
     AnimatedModel::Mesh::~Mesh()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_drawVerts != m_verts)
+        {
+            delete[] static_cast<uint8_t*>(m_drawVerts);
+        }
+
+        delete[] static_cast<uint8_t*>(m_verts);
+        delete[] m_tris;
+        delete[] m_vertsInfluences;
+        delete[] m_vertsRemap;
+        
+        if (m_IbPoolField.Ib.IsValid())
+        {
+            M3D_RENDERER->ReleaseIbPoolField(m_IbPoolField);
+            if ((m_meshType == 4 || m_meshType == 1) && m_VbPoolField.Vb.IsValid())
+            {
+                M3D_RENDERER->ReleaseVbPoolField(m_VbPoolField);
+            }
+        }
+
+        delete[] m_trisWelded;
+        delete[] m_faceNormals;
     }
 
     AnimatedModel::Mesh::Mesh()
@@ -180,9 +200,9 @@ namespace m3d
         return this->m_meshes[MeshNum];
     }
 
-    DRAFT_BoneBounds const& AnimatedModel::GetBoneBounds(unsigned)
+    DRAFT_BoneBounds const& AnimatedModel::GetBoneBounds(unsigned n)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_BonesBounds[n];
     }
 
     CMatrix AnimatedModel::GetBoneMatrix(int boneIndex) const
@@ -791,6 +811,10 @@ namespace m3d
     {
         return m_Skins.size();
     }
+    retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial>>& AnimatedModel::GetSkin(unsigned int)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
     AnimatedModel::~AnimatedModel()
     {
@@ -849,16 +873,14 @@ namespace m3d
 
     int AnimatedModel::GetLoadPointIdByName(char const* lpName) const
     {
-        auto m_numNodes = this->m_header.m_numNodes;
-        auto v3 = 0;
-        if (m_numNodes <= 0)
-            return -1;
-        for (auto i = this->m_boneInitialPos; strcmp(i->m_boneName, lpName); ++i)
+        for (int i = 0; i < m_header.m_numNodes; ++i)
         {
-            if (++v3 >= m_numNodes)
-                return -1;
+            if (CStr(m_boneInitialPos[i].m_boneName) == lpName)
+            {
+                return m_boneInitialPos[i].m_ownIdx;
+            }
         }
-        return this->m_boneInitialPos[v3].m_ownIdx;
+        return -1;
     }
 
     DRAFT_Geom const* AnimatedModel::GetGeom(unsigned num) const
@@ -1168,6 +1190,10 @@ namespace m3d
     char const* AnimatedModel::GetName() const
     {
         return m_Name.c_str();
+    }
+    const char* AnimatedModel::GetPath() const
+    {
+        return m_PathToFile.c_str();
     }
 
     Aabb& AnimatedModel::GetAabb()
@@ -1763,11 +1789,86 @@ namespace m3d
         }
     }
 
-    int AnimInfo::SetAnimationIdx(int)
+    int AnimInfo::SetAnimationIdx(int num)
     {
-        // // TODO: implement AnimInfo::SetAnimationIdx
-	    //RETRUXX_NOT_IMPLEMENTED;
-        return 0;
+        // TODO: check and refactor this
+        const auto numAnimations = m_forModel->m_header.m_numAnimations;
+        int v5 = 0;
+        if (!numAnimations)
+            return 0;
+        if (num >= numAnimations)
+            return 0;
+        if (num < 0)
+            return 0;
+
+        auto v7 = &m_forModel->m_animations[num];
+        if (!v7)
+            return 0;
+        m_curAnimation = this->m_curAnimation;
+        if (!m_curAnimation || this->m_lastInterpolationUpdate == -1)
+        {
+            this->m_isBlending = 0;
+        }
+        else
+        {
+            this->m_curAnimationPrev = m_curAnimation;
+            this->m_curAnimFramePrev = m_curAnimFrame;
+            memcpy(m_bonesAnimPrev, this->m_bonesAnim, sizeof(BoneAnim) * m_forModel->m_header.m_numNodes);
+
+            this->m_timeOutToNextFramePrev = this->m_timeOutToNextFrame;
+            this->m_lastInterpolationUpdatePrev = m_lastInterpolationUpdate;
+            this->m_stickToLastFramePrev = m_stickToLastFrame;
+            this->m_blendFramesNum = 7;
+            this->m_isBlending = true;
+            v5 = 0;
+        }
+
+        auto v13 = this->m_forModel;
+        this->m_curAnimation = v7;
+        this->m_curAnimFrame = 0;
+        this->m_stickToLastFrame = 0;
+        this->m_timeOutToNextFrame = 0;
+        this->m_lastInterpolationUpdate = -1;
+        int v14 = 0;
+        if (v13->m_header.m_numNodes > 0)
+        {
+            int v15 = 0;
+            do
+            {
+                this->m_bonesAnim[v15].m_parentIdx = this->m_forModel->m_boneInitialPos[v5].m_parentIdx;
+                this->m_bonesAnim[v15].m_lastUpdatedFrame = -1000;
+                auto p_m_quaternion0 = &this->m_forModel->m_boneInitialPos[v5].m_quaternion0;
+                auto p_m_rotation = &this->m_bonesAnim[v15].m_rotation;
+                p_m_rotation->x = p_m_quaternion0->x;
+                p_m_rotation->y = p_m_quaternion0->y;
+                p_m_rotation->z = p_m_quaternion0->z;
+                p_m_rotation->w = p_m_quaternion0->w;
+
+                auto p_m_translation0 = &this->m_forModel->m_boneInitialPos[v5].m_translation0;
+                auto p_m_translation = &this->m_bonesAnim[v15].m_translation;
+                p_m_translation->x = p_m_translation0->x;
+                p_m_translation->y = p_m_translation0->y;
+                p_m_translation->z = p_m_translation0->z;
+                ++v14;
+                ++v5;
+                ++v15;
+            } while (v14 < this->m_forModel->m_header.m_numNodes);
+        }
+        auto v20 = this->m_curAnimation;
+        if (v20 && v20->m_numChanges > 0)
+        {
+            auto m_hierChanges = v20->m_hierChanges;
+            auto v22 = 0;
+            do
+            {
+                if (m_hierChanges->changeType == NEW_PARENT)
+                    this->m_bonesAnim[m_hierChanges->ownIdx].m_parentIdx = m_hierChanges->newParentIdx;
+                ++v22;
+                ++m_hierChanges;
+            } while (v22 < this->m_curAnimation->m_numChanges);
+        }
+        this->m_timeOutToNextFrame = this->m_curAnimation->m_fps;
+        return 1;
     }
 
     AnimatedModel::Mesh const& AnimInfo::GetMesh(unsigned) const
@@ -1846,7 +1947,7 @@ namespace m3d
         m_forModel = 0;
         for (auto& vert : m_meshesVerts)
         {
-            delete vert;
+            delete[] (uint8_t*)vert;
         }
         m_meshesVerts.clear();
         delete m_bonesAnim;
@@ -1857,12 +1958,12 @@ namespace m3d
 
     AnimatedModel::Animation const* AnimInfo::GetCurAnimation() const
     {
-	    RETRUXX_NOT_IMPLEMENTED;
+        return m_curAnimation;
     }
 
     int AnimInfo::GetStickToLastFrame() const
     {
-        return this->m_stickToLastFrame;
+        return m_stickToLastFrame;
     }
 
     void AnimInfo::RemoveCopyMesh(void**&, int*&, unsigned short**&, int*&, CMatrix**&)

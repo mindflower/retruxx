@@ -36,8 +36,8 @@ namespace ai
         return m_name;
     }
 
-    m3d::AIParam AIFunc::Action(Obj*)
+    m3d::AIParam AIFunc::Action(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_funcAction(pObj);
     }
 }

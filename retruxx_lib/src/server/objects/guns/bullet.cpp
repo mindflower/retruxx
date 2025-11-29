@@ -1,6 +1,12 @@
 #include "bullet.h"
 
+#include "core/profilerstack.h"
+#include "scene/scenegraph.h"
+#include "scene/servers/dataserver.h"
+
 #include <stdexcept>
+#include <server/objects/base/prototypemanager.h>
+#include <server/server.h>
 
 namespace ai
 {
@@ -8,49 +14,62 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Bullet);
 
-    bool BulletPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool BulletPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto res = ShellPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (res)
+        {
+            _SetGeomType(GEOM_TYPE_RAY);
+        }
+        return res;
     }
 
-    BulletPrototypeInfo::BulletPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    BulletPrototypeInfo::BulletPrototypeInfo() = default;
 
     Obj* BulletPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new Bullet(*this);
     }
 
     void Bullet::LinkGeomsToCollisionCells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Bullet::SetParentBarrel(unsigned)
+    void Bullet::SetParentBarrel(unsigned idx)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_parentBarrel = idx;
     }
 
-    void Bullet::SetTracer(m3d::SgNode*)
+    void Bullet::SetTracer(m3d::SgNode* tracer)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_tracer = tracer;
     }
 
     m3d::Class* Bullet::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(Bullet);
     }
 
     Bullet::Bullet(BulletPrototypeInfo const& prototype) : Shell(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_tracer = nullptr;
+        m_parentBarrel = 0;
+
+        dGeomSetData(m_physicBody->m_pGeoms[0]->GetGeom()->GetGeomId(), this);
+
+        DisablePhysics();
+        DisableGeometry(1);
+        m_framesToLive = 1;
     }
 
     Geom::CellAabb Bullet::GetCollisionCellAabb() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Geom::CellAabb result;
+        result.x0 = 0;
+        result.z0 = 0;
+        result.x1 = -1;
+        result.z1 = -1;
+        return result;
     }
 
     void Bullet::RenderDebugInfo() const
@@ -60,47 +79,116 @@ namespace ai
 
     Ray* Bullet::_Ray()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return dynamic_cast<Ray*>(m_physicBody->m_pGeoms[0]->GetGeom());
     }
 
     Ray const* Bullet::_Ray() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return dynamic_cast<Ray*>(m_physicBody->m_pGeoms[0]->GetGeom());
     }
 
     void Bullet::RelinkGeomsToCollisionCells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Bullet::SetRange(float)
+    void Bullet::SetRange(float range)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        _Ray()->SetLength(range);
     }
 
     void Bullet::UnlinkGeomsFromCollisionCells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Bullet::SpecifyTracer(CVector const&)
+    void Bullet::SpecifyTracer(CVector const& endPos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        static retruxx::vector<CVector> trace(2);
+
+        trace[0] = GetPosition();
+        trace[1] = endPos;
+
+        std::vector<m3d::Object*> stack;
+        stack.push_back(m_tracer);
+
+        while (!stack.empty())
+        {
+            m3d::Object* current = stack.back();
+            stack.pop_back();
+
+            // Process all siblings of the current node
+            m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
+            while (sibling)
+            {
+                sibling->SetProperty(m3d::PROP_PS_MOVE_PARTICLES, &trace);
+
+                // If this sibling has children, add to stack for processing
+                if (sibling->GetFirstChild())
+                {
+                    stack.push_back(sibling->GetFirstChild());
+                }
+
+                // Move to next sibling
+                sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
+            }
+        }
     }
 
-    void Bullet::SetDirection(CVector const&)
+    void Bullet::SetDirection(CVector const& newDirection)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        _Ray()->SetDirection(newDirection);
     }
 
     CVector Bullet::GetDirection() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return _Ray()->GetDirection();
     }
 
-    void Bullet::Update(float, unsigned)
+    void Bullet::Update(float elapsedTime, unsigned workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::Update(elapsedTime, workTime);
+        pServer->GetBulletProfiler()->StartCountdown();
+        if (m_tracer)
+        {
+            static retruxx::vector<CVector> trace(2);
+
+            auto* ray = _Ray();
+            const auto len = ray->GetLength();
+            const auto dir = ray->GetDirection();
+
+            trace[0] = GetPosition();
+            trace[1].x = (len * dir.x) + trace[0].x;
+            trace[1].y = (len * dir.y) + trace[0].y;
+            trace[1].z = (len * dir.z) + trace[0].z;
+
+            std::vector<m3d::Object*> stack;
+            stack.push_back(m_tracer);
+
+            while (!stack.empty())
+            {
+                m3d::Object* current = stack.back();
+                stack.pop_back();
+
+                // Process all siblings of the current node
+                m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
+                while (sibling)
+                {
+                    sibling->SetProperty(m3d::PROP_PS_ADD_PARTICLES, &trace);
+
+                    // If this sibling has children, add to stack for processing
+                    if (sibling->GetFirstChild())
+                    {
+                        stack.push_back(sibling->GetFirstChild());
+                    }
+
+                    // Move to next sibling
+                    sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
+                }
+            }
+        }
+
+        DynamicScene::CollideBullet(*this);
+        Remove();
+        pServer->GetBulletProfiler()->EndCountdown();
     }
 
     void Bullet::TransferPhysicParamsToSceneGraphNode()
@@ -115,12 +203,42 @@ namespace ai
 
     BulletPrototypeInfo const* Bullet::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const BulletPrototypeInfo);
     }
 
     Bullet::~Bullet()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_tracer)
+        {
+            std::vector<m3d::Object*> stack;
+            stack.push_back(m_tracer);
+
+            while (!stack.empty())
+            {
+                m3d::Object* current = stack.back();
+                stack.pop_back();
+
+                // Process all siblings of the current node
+                m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
+                while (sibling)
+                {
+                    sibling->CanBeFree();
+
+                    // If this sibling has children, add to stack for processing
+                    if (sibling->GetFirstChild())
+                    {
+                        stack.push_back(sibling->GetFirstChild());
+                    }
+
+                    // Move to next sibling
+                    sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
+                }
+            }
+
+            auto* graph = m_tracer->GetGraph();
+            graph->InsertInRemoveIfFree(m_tracer);
+            m_tracer = nullptr;
+        }
     }
 
     m3d::Object* Bullet::CreateObject()

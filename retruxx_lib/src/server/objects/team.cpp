@@ -12,6 +12,7 @@
 #include <server/processmanager.h>
 #include "player.h"
 #include "server/roles/teamrolemanager.h"
+#include "server/roles/teamtacticmanager.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, SetDestination)
 {
@@ -44,11 +45,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Team, GetVehicle)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(Team)
-        RT_CLASS_EXPORT(Team, m3d::METHOD, SetDestination, "", "", "")
-        RT_CLASS_EXPORT(Team, m3d::METHOD, AdjustBehaviour, "", "", "")
-        RT_CLASS_EXPORT(Team, m3d::METHOD, HoldFire, "", "", "")
-        RT_CLASS_EXPORT(Team, m3d::METHOD, GetNumVehicles, "", "", "")
-        RT_CLASS_EXPORT(Team, m3d::METHOD, GetVehicle, "", "", "")
+    RT_CLASS_EXPORT(Team, m3d::METHOD, SetDestination, "", "", "")
+    RT_CLASS_EXPORT(Team, m3d::METHOD, AdjustBehaviour, "", "", "")
+    RT_CLASS_EXPORT(Team, m3d::METHOD, HoldFire, "", "", "")
+    RT_CLASS_EXPORT(Team, m3d::METHOD, GetNumVehicles, "", "", "")
+    RT_CLASS_EXPORT(Team, m3d::METHOD, GetVehicle, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Team);
 
@@ -56,10 +57,10 @@ namespace ai
 
     namespace
     {
-        const char* TEAM_DEFAULT_FORMATION_PROTOTYPE = "caravanFormation";
-        const float TEAM_LINEAR_VELOCITY = 100.f;
-        const float TIMEOUT_FOR_ADJUSTING_VEHICLES = 0.30000001f;
-    }
+        char const* TEAM_DEFAULT_FORMATION_PROTOTYPE = "caravanFormation";
+        float const TEAM_LINEAR_VELOCITY = 100.f;
+        float const TIMEOUT_FOR_ADJUSTING_VEHICLES = 0.30000001f;
+    }  // namespace
 
     void TeamPrototypeInfo::PostLoad()
     {
@@ -78,28 +79,27 @@ namespace ai
         {
             CStr decisionMatrixName;
             m3d::SafeStrAttrib(decisionMatrixName, xmlNode, "DecisionMatrix");
-        
+
             ai::theAIManager->LoadMatrix(decisionMatrixName.c_str());
             m_decisionMatrixNum = theAIManager->GetMatrixNum(decisionMatrixName);
-        
+
             m3d::SafeBoolAttrib(this->m_bRemoveWhenChildrenDead, xmlNode, "RemoveWhenChildrenDead");
-        
+
             ref_ptr node = xmlFile->CreateNode();
             xmlNode->GetFirstChild(node, "Formation");
-        
+
             if (!node->IsEmpty())
             {
                 m3d::SafeStrAttrib(m_formationPrototypeName, node, "Prototype");
-        
+
                 ref_ptr protoNode = node->CreateAttribute();
                 node->GetFirstAttribute(protoNode);
-        
+
                 if (!protoNode->IsEmpty())
                 {
                     m_overridesDistBetweenVehicles = 1;
                     m3d::SafeFloatAttrib(m_formationDistBetweenVehicles, node, "DistBetweenVehicles");
                 }
-        
             }
         }
         return result;
@@ -122,12 +122,12 @@ namespace ai
 
     bool TeamPrototypeInfo::GetOverridesDistBetweenVehicles() const
     {
-        return this->m_overridesDistBetweenVehicles;
+        return m_overridesDistBetweenVehicles;
     }
 
     retruxx::map<int, CVector> const& Team::GetSteeringForceMap() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_steeringForceMap;
     }
 
     void Team::SetDestination(CVector const& destination)
@@ -172,7 +172,7 @@ namespace ai
 
     m3d::AIParam Team::TeamAIOnAttack(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m3d::AIParam(0);
     }
 
     void Team::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -226,7 +226,7 @@ namespace ai
 
         m_vehicles.erase(it);
 
-        for (int i =0; i < m_vehicles.size(); ++i)
+        for (int i = 0; i < m_vehicles.size(); ++i)
         {
             m_vehicles[i]->SetIndexInTeam(i);
         }
@@ -253,12 +253,21 @@ namespace ai
 
     m3d::AIParam Team::TeamAIOnIdle(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m3d::AIParam(0);
     }
 
-    m3d::AIParam Team::TeamAIOnStartAttack(Obj*)
+    m3d::AIParam Team::TeamAIOnStartAttack(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* team = RT_DYNCAST(pObj, Team);
+        if (team->m_formation)
+        {
+            team->m_formation->SetPath(nullptr, true);
+        }
+        delete team->m_pPath;
+        team->m_pPath = nullptr;
+
+        team->_AdjustBehaviour();
+        return m3d::AIParam(0);
     }
 
     m3d::Class* Team::GetClass() const
@@ -268,7 +277,7 @@ namespace ai
 
     retruxx::vector<Vehicle*> const& Team::GetVehicles() const
     {
-        return this->m_vehicles;
+        return m_vehicles;
     }
 
     void Team::SetTeamFrozen(bool)
@@ -276,9 +285,13 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Vehicle* Team::GetVehicle(unsigned) const
+    Vehicle* Team::GetVehicle(unsigned index) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (index < m_vehicles.size())
+        {
+            return m_vehicles[index];
+        }
+        return nullptr;
     }
 
     void Team::Registration()
@@ -306,8 +319,7 @@ namespace ai
 
     void Team::SetTeamTactic(TeamTactic* tactic)
     {
-        auto curTactic = theObjects->GetEntityByObjId(m_TeamTacticId);
-        if (curTactic)
+        if (auto curTactic = theObjects->GetEntityByObjId(m_TeamTacticId))
         {
             curTactic->Remove();
         }
@@ -324,11 +336,13 @@ namespace ai
 
     void Team::Update(float elapsedTime, unsigned workTime)
     {
-        if (!this->m_bFrozen)
+        if (!m_bFrozen)
         {
             ai::Obj::Update(elapsedTime, workTime);
             if (elapsedTime >= 0.001)
+            {
                 _TeamUpdate(elapsedTime, workTime);
+            }
         }
     }
 
@@ -347,9 +361,35 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int Team::OnEvent(Event const&)
+    int Team::OnEvent(Event const& evn)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int result = Obj::OnEvent(evn);
+        switch (evn.m_eventId)
+        {
+        case GE_OBJECT_DIE:
+            _OnObjectDie(evn);
+            result = 1;
+            break;
+
+        case GE_UNDER_ATTACK:
+            _OnUnderAttack(evn);
+            result = 1;
+            break;
+
+        case GE_NOTICE_ENEMY:
+            _DoNoticeEnemy(evn.m_param1.GetAsID());
+            result = 1;
+            break;
+
+        case GE_PLAYER_VEHICLE_CHANGED:
+            m_needAdjustBehaviour = true;
+            result = 1;
+            break;
+
+        default:
+            return result;
+        }
+        return result;
     }
 
     void Team::HoldFire(int)
@@ -374,7 +414,7 @@ namespace ai
 
     unsigned Team::GetNumVehicles() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_vehicles.size();
     }
 
     bool Team::GetTeamFrozen() const
@@ -394,10 +434,10 @@ namespace ai
 
     void Team::_AdjustBehaviour()
     {
-        const auto state = m_AI.GetCurState2Name();
+        auto const state = m_AI.GetCurState2Name();
         if (state == "Attack")
         {
-            auto id= AIGetState2Param1(this).GetAsID();
+            auto id = AIGetState2Param1(this).GetAsID();
             _AdjustRoles(id);
         }
         else
@@ -413,7 +453,7 @@ namespace ai
 
     TeamPrototypeInfo const* Team::GetPrototypeInfo() const
     {
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const TeamPrototypeInfo);
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), TeamPrototypeInfo const);
     }
 
     CStr Team::GetPropertyName(int) const
@@ -426,14 +466,26 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    m3d::AIParam Team::TeamAIOnDefend(Obj*)
+    m3d::AIParam Team::TeamAIOnDefend(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* team = RT_DYNCAST(pObj, Team);
+        if (theObjects->GetEntityByObjId(team->m_TeamTacticId))
+        {
+            team->m_needAdjustBehaviour = true;
+        }
+        return m3d::AIParam(0);
     }
 
-    m3d::AIParam Team::TeamAIGetCurPos(Obj*)
+    m3d::AIParam Team::TeamAIGetCurPos(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* team = RT_DYNCAST(pObj, Team);
+        if (!team->m_vehicles.empty())
+        {
+            Vehicle const* vehicle = team->m_vehicles.front();
+            CVector pos = vehicle->GetPosition();
+            return m3d::AIParam(pos);
+        }
+        return m3d::AIParam(ZeroVector);
     }
 
     m3d::AIParam Team::TeamAIOnTargetUnreachable(Obj*)
@@ -481,9 +533,15 @@ namespace ai
         return ai::Obj::CanChildBeAdded(pClass) || pClass->IsKindOf(&ai::Vehicle::m_classVehicle);
     }
 
-    int Team::GetPropertyId(char const*) const
+    int Team::GetPropertyId(char const* propName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = Team::m_propertiesMap.find(propName);
+        if (it != Team::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return ai::Obj::GetPropertyId(propName);
     }
 
     void Team::CreateChildren()
@@ -494,7 +552,7 @@ namespace ai
 
     Formation* Team::GetFormation() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_formation;
     }
 
     m3d::Class* Team::GetBaseClass()
@@ -533,9 +591,10 @@ namespace ai
         }
     }
 
-    m3d::AIParam Team::TeamAIOnStartDefend(Obj*)
+    m3d::AIParam Team::TeamAIOnStartDefend(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        pObj->CauseEvent(GE_ENEMY_DESTROYED, 0.0, {}, {});
+        return m3d::AIParam(1);
     }
 
     void Team::RenderDebugInfo() const
@@ -567,7 +626,7 @@ namespace ai
     {
         m_combatMastermind = new CombatMastermind(GetId());
         m_needAdjustBehaviour = true;
-        theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0, { 65 }, {}, 1);
+        theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0, {65}, {}, 1);
         if (!m_formation)
         {
             _CreateFormation();
@@ -608,9 +667,14 @@ namespace ai
         return &m_AI;
     }
 
-    void Team::_DoNoticeEnemy(int)
+    void Team::_DoNoticeEnemy(int objId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto const& curStateName = m_AI.GetCurState2Name();
+        if (curStateName != "Attack")
+        {
+            m_AI.InsCommand(2, objId, {}, {});
+        }
+        m_needAdjustBehaviour = true;
     }
 
     bool Team::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
@@ -641,7 +705,7 @@ namespace ai
             Remove();
         }
 
-        const auto flags = GetFlags();
+        auto const flags = GetFlags();
         if ((flags & 8) == 0 && (flags & 2) == 0 && !GetParentRepository() && TimeOutFinished())
         {
             m_AI.AIUpdate(this);
@@ -650,7 +714,7 @@ namespace ai
             {
                 m_bMustMoveToTarget = false;
                 auto pos = _GetAggregatedTargetsPos();
-                m_AI.InsCommand(1, pos , {}, {});
+                m_AI.InsCommand(1, pos, {}, {});
             }
         }
     }
@@ -712,7 +776,7 @@ namespace ai
     float Team::_GetTeamVelocity() const
     {
         float speed = TEAM_LINEAR_VELOCITY;
-        for (const auto& vehicle : m_vehicles)
+        for (auto const& vehicle : m_vehicles)
         {
             auto vehicleSpeed = vehicle->GetCruisingSpeed();
             if (vehicleSpeed < speed)
@@ -733,9 +797,71 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Team::_AdjustRoles(int)
+    void Team::_AdjustRoles(int targetId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Team::_AdjustRoles
+        if (!m_TeamTacticShouldBeAssigned)
+        {
+            SetTeamTactic(nullptr);
+            return;
+        }
+
+        Vehicle::VehicleAttackStatus attackStatus = Vehicle::VehicleAttackStatus::ATTACK_IDLE;
+
+        // Resolve target object from ID
+        auto* target = theObjects->GetEntityByObjId(targetId);
+
+        // Check if target is valid and an enemy
+        if (target && target->bIsEnemyWith(this))
+        {
+            attackStatus = Vehicle::VehicleAttackStatus::ATTACK_ATTACKING;
+
+            TeamTacticManager manager;
+
+            // Assign team tactic based on target type
+            if (m_TeamTacticName.empty())
+            {
+                // Auto-assign best tactic
+                if (IS_KIND_OF(target, Vehicle))
+                {
+                    auto* vehicle = RT_DYNCAST(target, Vehicle);
+                    manager.AssignBestTacticAgainstVehicle(this, vehicle);
+                }
+                else if (IS_KIND_OF(target, Team))
+                {
+                    auto* team = RT_DYNCAST(target, Team);
+                    manager.AssignBestTacticAgainstTeam(this, team);
+                }
+                else
+                {
+                    manager.AssignBestTacticAgainstObj(this, target);
+                }
+            }
+            else
+            {
+                // Use predefined tactic
+                if (IS_KIND_OF(target, Vehicle))
+                {
+                    auto* vehicle = RT_DYNCAST(target, Vehicle);
+                    manager.AssignTacticAgainstVehicle(this, vehicle, m_TeamTacticName);
+                }
+                else if (IS_KIND_OF(target, Team))
+                {
+                    auto* team = RT_DYNCAST(target, Team);
+                    manager.AssignTacticAgainstTeam(this, team, m_TeamTacticName);
+                }
+                else
+                {
+                    manager.AssignTacticAgainstObj(this, target, m_TeamTacticName);
+                }
+            }
+        }
+
+        // Update attack status for all vehicles in the team
+        for (auto* vehicle : m_vehicles)
+        {
+            vehicle->SetAttackStatus(attackStatus);
+        }
     }
 
     void Team::_OnNoticeEnemy(Event const&)
@@ -747,4 +873,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

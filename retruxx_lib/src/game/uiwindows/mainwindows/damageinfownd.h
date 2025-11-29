@@ -13,8 +13,6 @@ public:
     {
     public:
         AuxInfo();
-
-    private:
         CStr m_wndHealthName;
         CStr m_wndCabinDurabilityName;
         CStr m_wndBasketDurabilityName;

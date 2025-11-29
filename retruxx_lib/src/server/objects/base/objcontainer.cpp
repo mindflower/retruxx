@@ -168,26 +168,26 @@ namespace ai
     }
 
     RT_CLASS_EXPORTS_BEGIN(ObjContainer)
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, CreateNewObject, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetEntityByObjId, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, size, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetEntityByObjName, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetPrototypeId, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, MessageBox, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, SetTolerance, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetTolerance, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, IncTolerance, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, SetGameTime, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetGameTime, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, Get24HourTime, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, PauseGameTime, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, UnpauseGameTime, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetHeight, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, Dump, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, DumpPhysicInfo, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, AllowSave, "", "", "")
-        RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, IsSaveAllowed, "", "", "")
-	RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, CreateNewObject, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetEntityByObjId, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, size, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetEntityByObjName, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetPrototypeId, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, MessageBox, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, SetTolerance, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetTolerance, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, IncTolerance, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, SetGameTime, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetGameTime, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, Get24HourTime, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, PauseGameTime, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, UnpauseGameTime, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, GetHeight, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, Dump, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, DumpPhysicInfo, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, AllowSave, "", "", "")
+    RT_CLASS_EXPORT(ObjContainer, m3d::METHOD, IsSaveAllowed, "", "", "")
+    RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(ObjContainer);
 
     long long GameTime::asInt64() const
@@ -195,9 +195,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void GameTime::operator+=(float)
+    void GameTime::operator+=(float gameTimeSeconds)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_milliSeconds += (unsigned __int64)(gameTimeSeconds * 1000.0);
     }
 
     m3d::AIParam GameTime::asAIParam() const
@@ -207,8 +207,8 @@ namespace ai
         const int64_t totalMilliseconds = m_milliSeconds;
 
         // Constants for time calculations
-        const int64_t MILLISECONDS_PER_YEAR = 32140800000LL;   // 372 * 24 * 60 * 60 * 1000
-        const int64_t MILLISECONDS_PER_MONTH = 2678400000LL;   // 31 * 24 * 60 * 60 * 1000
+        const int64_t MILLISECONDS_PER_YEAR = 32140800000LL;  // 372 * 24 * 60 * 60 * 1000
+        const int64_t MILLISECONDS_PER_MONTH = 2678400000LL;  // 31 * 24 * 60 * 60 * 1000
         const int64_t MILLISECONDS_PER_DAY = 86400000LL;
         const int64_t MILLISECONDS_PER_HOUR = 3600000LL;
         const int64_t MILLISECONDS_PER_MINUTE = 60000LL;
@@ -238,7 +238,7 @@ namespace ai
         timeComponents.push_back(month);
         timeComponents.push_back(year);
 
-        return { timeComponents };
+        return {timeComponents};
     }
 
     float GameTime::GameDiff(ObjContainer const*) const
@@ -280,7 +280,7 @@ namespace ai
 
     float GameTime::Diff() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return (m_milliSeconds - m_milliSeconds0) * 0.001;
     }
 
     m3d::AIParam GameTime::asAIParam24Hour() const
@@ -295,12 +295,12 @@ namespace ai
 
     ObjContainer::Node::Node()
     {
-        this->m_id = -1;
-        this->m_prevId = -1;
-        this->m_nextId = -1;
-        this->m_value = 0;
-        this->m_isValid = 0;
-        this->m_totalObjects = 0;
+        m_id = -1;
+        m_prevId = -1;
+        m_nextId = -1;
+        m_value = nullptr;
+        m_isValid = false;
+        m_totalObjects = 0;
     }
 
     ObjContainer::InnerContainer::InnerContainer()
@@ -310,13 +310,13 @@ namespace ai
 
     void ObjContainer::InnerContainer::EraseNode(Node& node, bool deleteObj)
     {
-        if (node.m_totalObjects < 0x1FFFF)
+        if (node.m_totalObjects < MAX_OBJECTS_IN_CELL)
         {
             m_freePlaces.push_back(node.m_id);
         }
 
         Node* prevNode = nullptr;
-        auto prevId = node.m_prevId;
+        const auto prevId = node.m_prevId;
         if (prevId == -1)
         {
             prevNode = nullptr;
@@ -327,7 +327,7 @@ namespace ai
         }
 
         Node* nextNode = nullptr;
-        auto nextId = node.m_nextId;
+        const auto nextId = node.m_nextId;
         if (nextId == -1)
         {
             nextNode = nullptr;
@@ -381,7 +381,8 @@ namespace ai
         }
         else
         {
-            auto msg = "Error: maximum objects count exceeded: " + CStr(ObjContainerSize) + " when attempting to add " + pObj->GetDebugDescription() + " to ObjContainer";
+            auto msg = "Error: maximum objects count exceeded: " + CStr(ObjContainerSize) + " when attempting to add " + pObj->GetDebugDescription() +
+                " to ObjContainer";
             M3D_LOG_CRIT(msg);
             ShowCurrentStack();
             theObjects->Dump();
@@ -403,13 +404,13 @@ namespace ai
 
         m_lastNodeId = nodeId;
         ++m_size;
-        return (record.m_totalObjects << 14) + nodeId;
+
+        return (record.m_totalObjects << BITS_IN_MAX_OBJECTS) + nodeId;
     }
 
     bool ObjContainer::InnerContainer::AddWithOwnObjId(Obj* pObj, int id)
     {
         M3D_ASSERT(id >= 0);
-
 
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -424,8 +425,8 @@ namespace ai
         if (objId >= 0)
         {
             // TODO: check this
-            const auto& record = m_records[objId & 0x3FFF];
-            if (objId >> 14 == record.m_totalObjects && record.m_isValid)
+            const auto& record = m_records[objId & MAX_OBJECTS_MASK];
+            if (objId >> BITS_IN_MAX_OBJECTS == record.m_totalObjects && record.m_isValid)
             {
                 return record.m_value;
             }
@@ -457,7 +458,7 @@ namespace ai
 
     ObjContainer::Node* ObjContainer::InnerContainer::_GetNodeById(int id)
     {
-        if (id == -1 && id >= m_records.size())
+        if (id == -1)
         {
             return nullptr;
         }
@@ -492,7 +493,7 @@ namespace ai
 
     bool ObjContainer::const_iterator::operator!=(const_iterator const& rhs) const
     {
-        return this->m_nodeId != rhs.m_nodeId;
+        return m_nodeId != rhs.m_nodeId;
     }
 
     ObjContainer::const_iterator& ObjContainer::const_iterator::operator++()
@@ -500,14 +501,13 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    ObjContainer::iterator::iterator(retruxx::vector<Node>* pRecords, int nodeId) :
-        ObjContainer::const_iterator(pRecords, nodeId)
+    ObjContainer::iterator::iterator(retruxx::vector<Node>* pRecords, int nodeId) : ObjContainer::const_iterator(pRecords, nodeId)
     {
     }
 
     Obj* ObjContainer::iterator::operator->() const
     {
-        return (*this->m_pRecords)[this->m_nodeId].m_value;
+        return (*m_pRecords)[m_nodeId].m_value;
     }
 
     ObjContainer::iterator ObjContainer::iterator::operator++(int)
@@ -517,24 +517,23 @@ namespace ai
 
     ObjContainer::iterator& ObjContainer::iterator::operator++()
     {
-        auto result = this;
-        this->m_nodeId = (*this->m_pRecords)[this->m_nodeId].m_nextId;
-        return *result;
+        m_nodeId = (*m_pRecords)[m_nodeId].m_nextId;
+        return *this;
     }
 
     Obj* ObjContainer::iterator::operator*() const
     {
-        return (*this->m_pRecords)[this->m_nodeId].m_value;
+        return (*m_pRecords)[m_nodeId].m_value;
     }
 
-    Obj* ObjContainer::GetEntityByObjName(CStr const& name)
+    Obj* ObjContainer::GetEntityByObjName(const CStr& name)
     {
         if (name.empty())
         {
             return nullptr;
         }
 
-        auto objId = GetObjIdByObjName(name);
+        const auto objId = GetObjIdByObjName(name);
         if (objId >= 0)
         {
             return m_allObjects.GetObjById(objId);
@@ -555,7 +554,8 @@ namespace ai
             {
                 auto* obj = node->m_value;
 
-                ++m_numRemovalsLastFrame;;
+                ++m_numRemovalsLastFrame;
+                ;
                 auto* parent = obj->GetParent();
                 if (parent)
                 {
@@ -573,7 +573,6 @@ namespace ai
                     obj->SetParentInvalid();
                 }
 
-                    
                 m_nameToIdMap.erase(obj->GetName());
                 auto updatingObjId = node->m_value->m_updatingObjId;
                 m_allObjects.EraseNode(*node, true);
@@ -647,17 +646,16 @@ namespace ai
 
     int ObjContainer::CreateNewObjectWithSuspendedPostLoad(int prototypeId, char const* name, int parentId, int belongId)
     {
-        auto objId = CreateEntityForLoad(prototypeId, name, parentId, -1);
+        const auto objId = CreateEntityForLoad(prototypeId, name, parentId, -1);
         if (objId >= 0)
         {
-            auto* node = m_allObjects._GetNodeById(objId);
-            // TODO: check this
-            if (objId >> 14 == node->m_totalObjects && node->m_isValid)
+            auto& node = m_allObjects.m_records[objId & MAX_OBJECTS_MASK];
+            if (objId >> BITS_IN_MAX_OBJECTS == node.m_totalObjects && node.m_isValid)
             {
-                if (node->m_value)
+                if (node.m_value)
                 {
-                    node->m_value->SetBelong(belongId);
-                    node->m_value->CreateChildren();
+                    node.m_value->SetBelong(belongId);
+                    node.m_value->CreateChildren();
                 }
             }
         }
@@ -726,7 +724,7 @@ namespace ai
             return -1;
         }
 
-        auto it = m_nameToIdMap.find(name);
+        const auto it = m_nameToIdMap.find(name);
         if (it != m_nameToIdMap.end())
         {
             return it->second;
@@ -773,21 +771,21 @@ namespace ai
     {
         M3D_ASSERT(pObj);
 
-        auto result = m_allObjects.AddWithOwnObjId(pObj, pObj->GetId());
+        const auto result = m_allObjects.AddWithOwnObjId(pObj, pObj->GetId());
         if (result)
         {
             if (pObj->m_bIsUpdating)
             {
                 pObj->m_updatingObjId = m_updatingObjects.Add(pObj);
             }
-            CStr name = pObj->GetName();
+
+            const CStr name = pObj->GetName();
             if (!name.empty())
             {
                 m_nameToIdMap[name] = pObj->GetId();
             }
 
             M3D_APP->ImmediateMessage(66541, pObj->GetId(), 0, 0, 0, {}, {});
-            return 1;
         }
         return result;
     }
@@ -808,7 +806,7 @@ namespace ai
 
     GameTime& ObjContainer::getGameTime()
     {
-        return this->m_GameTime;
+        return m_GameTime;
     }
 
     m3d::AIParam ObjContainer::GetGameTime() const
@@ -910,7 +908,7 @@ namespace ai
 
     float ObjContainer::GetGameTimeDiff() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_GameTime.Diff();
     }
 
     ObjContainer::iterator ObjContainer::begin()
@@ -967,7 +965,7 @@ namespace ai
             gameTimeStat->IncreaseByMilliseconds(ai::theGlobProp.m_gameTimeMult * elapsedTime * 1000.0);
 
             // Update level-specific game time statistic
-            auto levelStatName = "GameTime"+ ai::pServer->GetWorld()->m_level->m_levelName;
+            auto levelStatName = "GameTime" + ai::pServer->GetWorld()->m_level->m_levelName;
             auto* levelGameTimeStat = dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic(levelStatName, "TimeStatistic"));
 
             levelGameTimeStat->m_bGlobalFlag = false;
@@ -985,8 +983,8 @@ namespace ai
         levelRealTimeName += ai::pServer->GetWorld()->m_level->m_levelName;
         TimeStatistic* levelRealTimeStat = dynamic_cast<ai::TimeStatistic*>(ai::theStatisticManager->GetStatistic(levelRealTimeName, "TimeStatistic"));
 
-       levelRealTimeStat->m_bGlobalFlag = false;
-       levelRealTimeStat->IncreaseByMilliseconds(elapsedTime * 1000.0);
+        levelRealTimeStat->m_bGlobalFlag = false;
+        levelRealTimeStat->IncreaseByMilliseconds(elapsedTime * 1000.0);
 
         // Handle map transition after fading
         if (ai::thePassageData)
@@ -1030,7 +1028,7 @@ namespace ai
 
             iter->Remove();
         }
-       
+
         Purge();
         m_allObjects.Clear();
         m_updatingObjects.Clear();
@@ -1090,7 +1088,7 @@ namespace ai
 
     void ObjContainer::AddObjIdToRemove(int objId)
     {
-        objId = objId & 0x3FFF;
+        objId = objId & MAX_OBJECTS_MASK;
         m_objIdsToRemove.push_back(objId);
     }
 
@@ -1130,12 +1128,18 @@ namespace ai
 
     ObjContainer::ObjContainer()
     {
+        m_SaveType = SAVE_LEVEL;
+        m_GameTimePaused = false;
         m_GameTime.setExpanded(8, 0, 14, 9, 1211);
+        m_denyCreationCount = 0;
         m_objIdsToUpdate.reserve(0x3E8);
         m_objIdsToNotUpdate.reserve(0x3E8);
         m_objectsToPostCollide.reserve(0x3E8);
         m_objIdsToRelinkSceneGraphNode.reserve(0x3E8);
         m_objIdsToRemove.reserve(0x3E8);
+        m_inPurge = false;
+        m_inUpdate = false;
+        m_bSaveAllowed = true;
     }
 
     ObjContainer::ObjContainer(ObjContainer const&)
@@ -1146,21 +1150,28 @@ namespace ai
     void ObjContainer::_SetObjNotUpdating(int objId)
     {
         // TODO: check this
-        auto* node = m_allObjects._GetNodeById(objId & 0x3FFF);
-        if (node && node->m_isValid && node->m_value)
+        if (objId >= 0)
         {
-            auto* obj = node->m_value;
-            if (!obj->m_bMustBeUpdating && obj->m_updatingObjId != -1)
+            const auto& node = m_allObjects.m_records[objId & MAX_OBJECTS_MASK];
+            if (objId >> BITS_IN_MAX_OBJECTS == node.m_totalObjects && node.m_isValid)
             {
-                auto* updatingNode = m_updatingObjects._GetNodeById(obj->m_updatingObjId & 0x3FFF);
-                if (updatingNode)
+                auto* value = node.m_value;
+                if (value)
                 {
-                    if (updatingNode->m_isValid)
+                    if (!value->m_bMustBeUpdating && value->m_updatingObjId != -1)
                     {
-                        m_updatingObjects.EraseNode(*updatingNode, false);
+                        const auto updatingId = value->m_updatingObjId & MAX_OBJECTS_MASK;
+                        if (updatingId < m_updatingObjects.m_records.size())
+                        {
+                            auto& updatingNode = m_updatingObjects.m_records[updatingId];
+                            if (updatingNode.m_isValid)
+                            {
+                                m_updatingObjects.EraseNode(updatingNode, false);
+                            }
+                            value->m_updatingObjId = -1;
+                            value->m_bIsUpdating = false;
+                        }
                     }
-                    obj->m_updatingObjId = -1;
-                    obj->m_bIsUpdating = false;
                 }
             }
         }
@@ -1207,4 +1218,4 @@ namespace ai
     {
         theObjects = objects;
     }
-}
+}  // namespace ai

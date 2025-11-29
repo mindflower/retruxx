@@ -514,7 +514,9 @@ void WareWnd::OnUpdateWhileNoDrag(PointBase<float> const&)
 
 int WareWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 bool WareWnd::IsItemCompatibleByResourceType(ai::GeomRepositoryItem const&) const

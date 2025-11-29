@@ -4,8 +4,7 @@
 #include <windows.h>
 
 #include "math/vector.h"
-#include "thirdparty/containers.h"
-#include "thirdparty/injecttools.h"
+#include "retruxx/common.h"
 
 void UnifyFileName(CStr& fileName)
 {

@@ -5,16 +5,17 @@
 #include "core/ini.h"
 #include "core/kernel.h"
 #include "core/log.h"
-#include "thirdparty/injecttools.h"
 #include <server/resourcemanager.h>
 
 #include "config.h"
+#include "globalproperties.h"
 #include "m3dapp.h"
 #include "prototypemanager.h"
 #include "server/objects/physicbodies/vehiclepart.h"
 #include "objcontainer.h"
 #include "ode/odecpp.h"
 #include "scene/servers/dataserver.h"
+#include "server/objects/vehicle.h"
 #include "server/objects/guns/gun.h"
 #include "server/objects/physicbodies/compoundvehiclepart.h"
 
@@ -688,9 +689,59 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int ComplexPhysicObj::GetGunHorizontalStopAngles(CStr const&, int, float&, float&) const
+    int ComplexPhysicObj::GetGunHorizontalStopAngles(const CStr& gunPartName, int index, float& leftStopAngle, float& rightStopAngle) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        leftStopAngle = 0.0;
+        rightStopAngle = 0.0;
+
+        const auto* prototypeInfo = GetPrototypeInfo();
+        if (prototypeInfo)
+        {
+            const auto* partDesc = prototypeInfo->GetPartDescriptionByName(gunPartName);
+            if (!partDesc)
+            {
+                return 0;
+            }
+
+            const auto resourceId = theResourceManager->GetResourceId("GUN");
+            if (!theResourceManager->bResourceIsKindOf(partDesc->GetPartResourceId(), resourceId))
+            {
+                return 0;
+            }
+
+            const auto* parent = partDesc->GetParent();
+            if (!parent)
+            {
+                return 0;
+            }
+
+            const auto* partByName = GetPartByName(parent->GetName());
+            if (!partByName)
+            {
+                return 0;
+            }
+
+            auto& animatedModelsServer = M3D_APP->GetAnimatedModelsServer();
+            const auto item = animatedModelsServer.GetItemByName(partByName->m_modelname.c_str(), true);
+            if (item == -1)
+            {
+                return 0;
+            }
+
+            m3d::AnimatedModel* model = nullptr;
+            animatedModelsServer.GetItemProperty(item, m3d::PROP_INTERNAL_GETMODEL, &model);
+            if (!model)
+            {
+                return 0;
+            }
+
+            const auto loadPoint = model->GetLoadPointIdByName(partDesc->GetLpName(index).c_str());
+            const auto& boneBounds = model->GetBoneBounds(loadPoint);
+            leftStopAngle = 0.0 - boneBounds.MaxRot.y;
+            rightStopAngle = 0.0 - boneBounds.MinRot.y;
+            return 1;
+        }
+        return 0;
     }
 
     void ComplexPhysicObj::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -822,10 +873,120 @@ namespace ai
         dBodySetMass(this->GetBody()->id(), &mass);
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006BCC10, ComplexPhysicObj::GetSmoothTargetPointForObj)
-    CVector ComplexPhysicObj::GetSmoothTargetPointForObj(Obj const*, float)
+    CVector ComplexPhysicObj::GetSmoothTargetPointForObj(Obj const* target, float elapsedTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code ComplexPhysicObj::GetSmoothTargetPointForObj
+        CVector* currentTargetPosPtr = &this->m_currentTargetPos;
+
+        if (target)
+        {
+            // Get target's geometric center
+            CVector targetPos = ai::getPhysicObjOrPhysicBodyGeometricCenter(target);
+
+            // Check if target is a Vehicle and handle targeting logic
+            if (IS_KIND_OF(target, Vehicle))
+            {
+                // Update target ID and timeout
+                if (target->GetId() == m_targetId)
+                {
+                    this->m_timeoutForReAimGuns -= elapsedTime;
+                }
+                else
+                {
+                    this->m_timeoutForReAimGuns = -1.0f;
+                    this->m_targetId = target->GetId();
+                }
+
+                // Return current target if timeout hasn't expired
+                if (this->m_timeoutForReAimGuns >= 0.0f)
+                {
+                    return this->m_currentTargetPos;
+                }
+
+                // Reset timeout and calculate new target position
+                this->m_timeoutForReAimGuns = ai::theGlobProp.m_timeOutForReAimGuns;
+
+                // Get recollection position with prediction
+                ai::GlobalProperties::CoeffsForDifficultyLevel const& difficultyCoeffs = ai::theGlobProp.GetCoeffsForCurrentDifficultyLevel();
+
+                auto* vehicle = RT_DYNCAST(target, Vehicle const);
+                CVector recollectionPos = vehicle->GetRecollectionPosition(difficultyCoeffs.m_enemiesShootingDelay);
+
+                targetPos = recollectionPos;
+
+                // Get velocities for both objects
+                CVector targetVel = vehicle->GetLinearVelocity();
+                CVector sourcePos = GetGeometricCenter();
+                CVector sourceVel = GetLinearVelocity();
+
+                // Calculate relative speed and distance
+                float relativeSpeed = sqrtf(
+                    (targetVel.x - sourceVel.x) * (targetVel.x - sourceVel.x) + (targetVel.y - sourceVel.y) * (targetVel.y - sourceVel.y) +
+                    (targetVel.z - sourceVel.z) * (targetVel.z - sourceVel.z));
+
+                float distance = sqrtf(
+                    (targetPos.x - sourcePos.x) * (targetPos.x - sourcePos.x) + (targetPos.y - sourcePos.y) * (targetPos.y - sourcePos.y) +
+                    (targetPos.z - sourcePos.z) * (targetPos.z - sourcePos.z));
+
+                // Calculate randomY using exponential distribution - FIXED VERSION
+                double exponentValue = -sqrtf(relativeSpeed * 0.1f + distance * 0.033333335f) * 1.442695040888963407;
+
+                // This replicates: _ST6 = v11; __asm { frndint }
+                double integerPart = floor(exponentValue + 0.5);  // Round to nearest integer
+                double fractionalPart = exponentValue - integerPart;
+
+                // This replicates: __FSCALE__(__F2XM1__(v11 - _ST6) + 1.0, _ST6)
+                // __F2XM1__ calculates 2^x - 1 for x in [-0.5, 0.5]
+                // __FSCALE__ scales by 2^integerPart
+                double temp = pow(2.0, fractionalPart) - 1.0 + 1.0;  // 2^fractionalPart
+                double scaledValue = ldexp(temp, (int)integerPart);  // Multiply by 2^integerPart
+
+                float randomY = (float)(1.0 - scaledValue + 0.2);
+
+                // Get target vehicle size
+                CVector vehicleSize = vehicle->GetSize();
+
+                // Apply random offset to Y coordinate
+                float yRandomSum = 0.0f;
+                for (int i = 0; i < 5; i++)
+                {
+                    yRandomSum += (float)rand() * 0.000030518509f;
+                }
+                targetPos.y += ((yRandomSum * 0.4f - 1.0f) * (float)randomY * vehicleSize.y);
+
+                // Determine largest dimension (X or Z)
+                float linSize = (vehicleSize.z <= vehicleSize.x) ? vehicleSize.x : vehicleSize.z;
+
+                // Apply random offset to X coordinate
+                float xRandomSum = 0.0f;
+                for (int i = 0; i < 5; i++)
+                {
+                    xRandomSum += (float)rand() * 0.000030518509f;
+                }
+                targetPos.x += ((xRandomSum * 0.4f - 1.0f) * (float)randomY * linSize);
+
+                // Apply random offset to Z coordinate
+                float zRandomSum = 0.0f;
+                for (int i = 0; i < 5; i++)
+                {
+                    zRandomSum += (float)rand() * 0.000030518509f;
+                }
+                targetPos.z += ((zRandomSum * 0.4f - 1.0f) * (float)randomY * linSize);
+
+                // Update current target position
+                this->m_currentTargetPos = targetPos;
+                currentTargetPosPtr = &this->m_currentTargetPos;
+            }
+        }
+        else
+        {
+            // No target - reset to zero vector
+            this->m_targetId = -1;
+            this->m_currentTargetPos = ZeroVector;
+            currentTargetPosPtr = &this->m_currentTargetPos;
+        }
+
+        return *currentTargetPosPtr;
     }
 
     void ComplexPhysicObj::FlowUnattachableParts(float)
@@ -1006,16 +1167,53 @@ namespace ai
                             }
                         }
 
+                        index = 0;
                         if (!parent)
                         {
                             parent = it->second;
-                            if (IS_KIND_OF(parent, Gun))
+                            if (IS_KIND_OF(vehiclePart, Gun))
                             {
-                                RETRUXX_NOT_IMPLEMENTED;
+                                // TODO: check this
+                                float leftStopAngle = 0.0;
+                                float rightStopAngle = 0.0;
+                                GetGunHorizontalStopAngles(name, 0, leftStopAngle, rightStopAngle);
+
+                                CVector org = parentMat.getOrg();
+                                Quaternion gunRotation;
+                                gunRotation.FromMatrix(parentMat);
+
+                                auto gunInitAngle = (rightStopAngle + leftStopAngle) * 0.5;
+
+                                const CVector INITIAL_UP_DIRECTION_15(0.0, 1.0, 0.0);
+                                gunRotation.FromAxisAngle(INITIAL_UP_DIRECTION_15, gunInitAngle);
+
+                                CMatrix vv;
+                                vv._11 = 1.0 - (((gunRotation.z * gunRotation.z) + (gunRotation.y * gunRotation.y)) * 2.0);
+                                vv._21 = ((gunRotation.y * gunRotation.x) - (gunRotation.z * gunRotation.w)) * 2.0;
+                                vv._12 = ((gunRotation.z * gunRotation.w) + (gunRotation.y * gunRotation.x)) * 2.0;
+                                vv._31 = ((gunRotation.y * gunRotation.w) + (gunRotation.z * gunRotation.x)) * 2.0;
+                                vv._22 = 1.0 - (((gunRotation.z * gunRotation.z) + (gunRotation.x * gunRotation.x)) * 2.0);
+                                vv._33 = 1.0 - (((gunRotation.y * gunRotation.y) + (gunRotation.x * gunRotation.x)) * 2.0);
+                                vv._32 = ((gunRotation.z * gunRotation.y) - (gunRotation.x * gunRotation.w)) * 2.0;
+                                vv._13 = ((gunRotation.z * gunRotation.x) - (gunRotation.y * gunRotation.w)) * 2.0;
+                                vv._23 = ((gunRotation.x * gunRotation.w) + (gunRotation.z * gunRotation.y)) * 2.0;
+                                vv._14 = 0.0;
+                                vv._24 = 0.0;
+                                memset(&vv.m[2][3], 0, 16);
+                                vv._44 = 1.0;
+
+                                parentMat = vv;
+                                parentMat.setOrg(org);
+
+                                auto* gun = RT_DYNCAST(vehiclePart, Gun);
+                                gun->SetHorizontalStopAngles(leftStopAngle - gunInitAngle, rightStopAngle - gunInitAngle);
+                                gun->SetInitialHorizAngle(gunInitAngle);
                             }
                         }
                         res = res * parentMat;
+                        partDesc = parentPartDescription;
                         parentPartDescription = parentPartDescription->GetParent();
+
                     }
                 }
                 else
@@ -1127,4 +1325,24 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+
+    std::map<CStr, VehiclePart*>::const_iterator ComplexPhysicObj::begin() const
+    {
+        return m_vehicleParts.begin();
+    }
+
+    std::map<CStr, VehiclePart*>::iterator ComplexPhysicObj::begin()
+    {
+        return m_vehicleParts.begin();
+    }
+
+    std::map<CStr, VehiclePart*>::const_iterator ComplexPhysicObj::end() const
+    {
+        return m_vehicleParts.end();
+    }
+
+    std::map<CStr, VehiclePart*>::iterator ComplexPhysicObj::end()
+    {
+        return m_vehicleParts.end();
+    }
+}  // namespace ai

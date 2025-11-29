@@ -2,7 +2,7 @@
 #include "vector.h"
 #include "math/matrix.h"
 
-struct Aabb;
+class Aabb;
 
 class Obb
 {

@@ -53,12 +53,12 @@ GarageWnd::~GarageWnd()
 
 m3d::Object* GarageWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new GarageWnd;
 }
 
 m3d::Class* GarageWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(GarageWnd);
 }
 
 void GarageWnd::OnNewFrame()
@@ -248,7 +248,40 @@ GarageWnd::GarageWnd(GarageWnd const&)
 
 GarageWnd::GarageWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_btnCabins = 0;
+    m_btnBaskets = 0;
+    m_btnNewVehicle = 0;
+    m_btnSkin = 0;
+    m_btnRefuelAll = 0;
+    m_btnRefuelList = 0;
+    m_wndRefuelPrice = 0;
+    m_btnRepairAll = 0;
+    m_btnRepairList = 0;
+    m_wndRepairPrice = 0;
+    m_btnRechargeAll = 0;
+    m_btnRechargeList = 0;
+    m_wndRechargePrice = 0;
+    m_curListButton = 0;
+    m_curAllButton = 0;
+    m_unitsToRepair = 0;
+    m_maxPossibleUnitsToRepair = 0;
+    m_repairPrice = 0;
+    m_prevUnitsToRepair = 0;
+    m_prevMaxPossibleUnitsToRepair = 0;
+    m_prevRepairPrice = 0;
+    m_unitsToRefuel = 0;
+    m_maxPossibleUnitsToRefuel = 0;
+    m_refuelPrice = 0;
+    m_prevUnitsToRefuel = 0;
+    m_prevMaxPossibleUnitsToRefuel = 0;
+    m_prevRefuelPrice = 0;
+    m_unitsToRecharge = 0;
+    m_maxPossibleUnitsToRecharge = 0;
+    m_rechargePrice = 0;
+    m_prevUnitsToRecharge = 0;
+    m_prevMaxPossibleUnitsToRecharge = 0;
+    m_prevRechargePrice = 0;
+    m_workshopId = -1;
 }
 
 int GarageWnd::OnAfterRemoveFromWndStation()
@@ -348,12 +381,16 @@ void GarageWnd::UpdateRechargeAllPriceControls(bool)
 
 int GarageWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GarageWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int GarageWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GarageWnd::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void GarageWnd::UpdateCabinsActiveState()

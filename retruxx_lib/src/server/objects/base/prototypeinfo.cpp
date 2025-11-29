@@ -1,5 +1,7 @@
 #include "prototypeinfo.h"
 
+#include "core/clazz.h"
+
 #include <stdexcept>
 
 #include "core/ini.h"
@@ -15,7 +17,7 @@ namespace ai
 
 	unsigned PrototypeInfo::GetBasePrice() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_price;
 	}
 
 	PrototypeInfo::PrototypeInfo()
@@ -84,9 +86,9 @@ namespace ai
 	{
 	}
 
-	bool PrototypeInfo::IsPrototypeOf(m3d::Class const*) const
+	bool PrototypeInfo::IsPrototypeOf(m3d::Class const* cl) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_protoClassObject && m_protoClassObject->IsKindOf(cl);
 	}
 
 	CStr const& PrototypeInfo::GetParentPrototypeName() const

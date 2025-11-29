@@ -1,5 +1,7 @@
+#include "math/point2d.h"
+
 #include <core/stringm3d.h>
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 namespace ai
 {
@@ -12,4 +14,5 @@ namespace ai
     void DebugCircle(CVector const&, float, unsigned int);
     CVector GetGroundPos(CVector const&, bool, bool);
     CVector GetGroundPos(CVector2 const&, bool);
+    PointBase<float> clampIntoLandscape(PointBase<float> const&);
 }

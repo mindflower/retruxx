@@ -150,6 +150,7 @@ namespace ai
 
         using IntGadgetMap = retruxx::map<int, ai::Gadget*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Gadget*> > >;
 
+    public:
         enum VehicleMoveStatus
         {
             MOVE_IDLE = 0,

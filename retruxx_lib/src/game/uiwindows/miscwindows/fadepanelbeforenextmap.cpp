@@ -1,12 +1,15 @@
 #include "fadepanelbeforenextmap.h"
 
+#include "config.h"
+#include "core/kernel.h"
+
 RT_CLASS_EXPORTS_BEGIN(FadePanelBeforeNextMap)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(FadePanelBeforeNextMap);
 
 m3d::Class* FadePanelBeforeNextMap::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(FadePanelBeforeNextMap);
 }
 
 FadePanelBeforeNextMap::~FadePanelBeforeNextMap()
@@ -16,7 +19,7 @@ FadePanelBeforeNextMap::~FadePanelBeforeNextMap()
 
 m3d::Object* FadePanelBeforeNextMap::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new FadePanelBeforeNextMap;
 }
 
 m3d::Class* FadePanelBeforeNextMap::GetBaseClass()
@@ -36,7 +39,9 @@ FadePanelBeforeNextMap::FadePanelBeforeNextMap(FadePanelBeforeNextMap const&)
 
 FadePanelBeforeNextMap::FadePanelBeforeNextMap()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_alpha = 0.0;
+    m_fadePeriod = M3D_ENGINE_CFG.m_fadingTimeBeforeNextMap.GetF();;
+    m_blackColor = 0xFF000000;
 }
 
 unsigned FadePanelBeforeNextMap::CalcCurColor() const
@@ -71,5 +76,7 @@ int FadePanelBeforeNextMap::OnPaint(m3d::ui::DrawInfo const&)
 
 int FadePanelBeforeNextMap::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }

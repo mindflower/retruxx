@@ -131,7 +131,9 @@ int QuestItemList::MeasureItem(int, BoundsBase<float>&) const
 
 int QuestItemList::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 int QuestItemList::GetQuestItemIdxByQuestId(help::QuestType, int) const

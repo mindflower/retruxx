@@ -46,7 +46,7 @@ namespace m3d
 
     WheelTraceMgr& CWorld::GetWheelTracesMgr()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_wheelTracesMgr;
     }
 
     void CWorld::Render()
@@ -686,7 +686,7 @@ namespace m3d
     SgNode* CWorld::ReadPrefab(ref_ptr<cmn::XmlFile> file, ref_ptr<cmn::XmlNode> pnode)
     {
         // TODO: generated code
-
+       // RETRUXX_NOT_IMPLEMENTED;
         // Get node attributes
         const char* name = pnode->GetAttribute("name");
         const char* className = pnode->GetAttribute("class");
@@ -700,35 +700,34 @@ namespace m3d
         {
             // Successfully loaded - process the node hierarchy
             m3d::SceneGraph* graph = loader->GetGraph();
-            std::set<m3d::SgNode*>& thinkList = graph->m_thinkList;
 
             // Remove loader from think list temporarily
-            thinkList.erase(loader);
+            graph->UnlinkThinkNode(loader);
 
-            // Process node hierarchy using a stack
+            // Process children using iterative DFS
             std::vector<m3d::Object*> stack;
-            stack.push_back(loader);
+            stack.push_back(dynamic_cast<m3d::Object*>(loader->GetFirstChild()));
 
             while (!stack.empty())
             {
                 m3d::Object* current = stack.back();
                 stack.pop_back();
 
-                // Process children
-                m3d::SgNode* child = static_cast<m3d::SgNode*>(current->GetFirstChild());
-                while (child)
+                // Process all siblings of the current node
+                m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
+                while (sibling)
                 {
-                    // Remove child from think list
-                    auto range = thinkList.equal_range(child);
-                    thinkList.erase(range.first, range.second);
+                    // Link the sibling node
+                    graph->UnlinkThinkNode(sibling);
 
-                    // If this child has children, add to stack for processing
-                    if (child->GetFirstChild())
+                    // If this sibling has children, add to stack for processing
+                    if (sibling->GetFirstChild())
                     {
-                        stack.push_back(child);
+                        stack.push_back(sibling->GetFirstChild());
                     }
 
-                    child = static_cast<m3d::SgNode*>(child->GetNextSibling());
+                    // Move to next sibling
+                    sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
                 }
             }
         }

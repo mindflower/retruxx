@@ -1,17 +1,24 @@
 #include "autoscrolltextwnd.h"
 
+#include "core/log.h"
+#include "ui/ui_srv.h"
+
 RT_CLASS_EXPORTS_BEGIN(AutoScrollTextWnd)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(AutoScrollTextWnd);
 
-int AutoScrollTextWnd::SetBackground(m3d::rend::TexHandle)
+int AutoScrollTextWnd::SetBackground(m3d::rend::TexHandle bgTex)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto res = Wnd::SetBackground(bgTex);
+    PrecalcTextBounds();
+    return res;
 }
 
-int AutoScrollTextWnd::SetBackground(CStr const&)
+int AutoScrollTextWnd::SetBackground(CStr const& bgTextureName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto res = Wnd::SetBackground(bgTextureName);
+    PrecalcTextBounds();
+    return res;
 }
 
 void AutoScrollTextWnd::StartScroll(bool)
@@ -19,9 +26,15 @@ void AutoScrollTextWnd::StartScroll(bool)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void AutoScrollTextWnd::SetBounds(BoundsBase<float> const&, bool)
+void AutoScrollTextWnd::SetBounds(const BoundsBase<float>& rect, bool bUpdateBaseOrigin)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bounds = rect;
+    if (bUpdateBaseOrigin)
+    {
+        m_baseOrigin.x = m_bounds.x0;
+        m_baseOrigin.y = m_bounds.y0;
+    }
+    PrecalcTextBounds();
 }
 
 m3d::Object* AutoScrollTextWnd::CreateObject()
@@ -34,14 +47,71 @@ m3d::Class* AutoScrollTextWnd::GetClass() const
     return RT_CLASS_LOCAL(AutoScrollTextWnd);
 }
 
-int AutoScrollTextWnd::CreateFromPattern(m3d::ui::Wnd*, bool)
+int AutoScrollTextWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!patternWnd)
+    {
+        M3D_LOG_INFO("AutoScrollTextWnd::CreateFromPattern error - null patternWnd");
+        return 0;
+    }
+
+    auto res = Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId());
+    if (res == 0)
+    {
+        M3D_LOG_INFO("AutoScrollTextWnd::CreateFromPattern error - cannot create window");
+        return 0;
+    }
+
+    SetStyle(patternWnd->GetStyle());
+    SetText(patternWnd->GetText());
+    SetId(patternWnd->GetId());
+    SetName(patternWnd->GetName());
+    SetBounds(patternWnd->GetBounds(), true);
+    SetDefaultFont(patternWnd->GetDefaultFont());
+    SetWrapMode(patternWnd->GetWrapMode());
+
+    PrecalcTextBounds();
+
+    SetFormatMode(patternWnd->GetFormatMode());
+    SetColor(patternWnd->GetColor());
+    SetTextColor(patternWnd->GetColor());
+    SetTextColorDisabled(patternWnd->GetTextColorDisabled());
+    SetClientEdges(patternWnd->GetClientEdges());
+    SetPane(patternWnd->GetPaneName());
+    SetPaneFlags(patternWnd->GetPaneFlags());
+    SetScrollPane(patternWnd->GetScrollPaneName());
+    SetBackground(patternWnd->GetBackground());
+
+    CStr tooltip;
+    patternWnd->GetProperty(PROP_WND_TOOLTIP, &tooltip);
+    SetProperty(PROP_WND_TOOLTIP, &tooltip);
+
+    SetOnShowAnimation(patternWnd->GetOnShowAnimation());
+    SetOnHideAnimation(patternWnd->GetOnHideAnimation());
+
+    auto* parent = patternWnd->GetParent();
+    if (!parent || !IS_KIND_OF(parent, Wnd))
+    {
+        M3D_LOG_INFO("AutoScrollTextWnd::CreateFromPattern error - null parent for paternWnd");
+        return 0;
+    }
+
+    parent->AddChild(this);
+    if (deleteSrc)
+    {
+        parent->RemoveChild(patternWnd);
+        // TODO: check this obj delete
+        patternWnd->DecRef();
+    }
+
+    m_gameDataFlags |= 1u;
+    return 1;
 }
 
-void AutoScrollTextWnd::SetClientEdges(std::vector<float, std::allocator<float>> const&)
+void AutoScrollTextWnd::SetClientEdges(std::vector<float, std::allocator<float>> const& clientEdges)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Wnd::SetClientEdges(clientEdges);
+    PrecalcTextBounds();
 }
 
 void AutoScrollTextWnd::SetClientEdges(float, float, float, float)
@@ -64,14 +134,17 @@ float AutoScrollTextWnd::GetScrollSpeed() const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void AutoScrollTextWnd::SetWrapMode(m3d::TextWrapFlags)
+void AutoScrollTextWnd::SetWrapMode(m3d::TextWrapFlags flags)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Wnd::SetWrapMode(flags);
+    PrecalcTextBounds();
 }
 
-int AutoScrollTextWnd::SetText(CStr const&)
+int AutoScrollTextWnd::SetText(CStr const& caption)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto res = Wnd::SetText(caption);
+    PrecalcTextBounds();
+    return res;
 }
 
 void AutoScrollTextWnd::SetDefaultFont(CStr const&, float, m3d::ui::FontType, m3d::ui::FontParams)
@@ -79,9 +152,11 @@ void AutoScrollTextWnd::SetDefaultFont(CStr const&, float, m3d::ui::FontType, m3
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void AutoScrollTextWnd::SetDefaultFont(int)
+void AutoScrollTextWnd::SetDefaultFont(int uiFont)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Wnd::SetDefaultFont(uiFont);
+    PrecalcTextBounds();
+    PrecalcScrollPixelSpeed();
 }
 
 AutoScrollTextWnd::~AutoScrollTextWnd()
@@ -94,14 +169,16 @@ bool AutoScrollTextWnd::IsScrolling() const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void AutoScrollTextWnd::SetPaneFlags(int)
+void AutoScrollTextWnd::SetPaneFlags(int flags)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Wnd::SetPaneFlags(flags);
+    PrecalcTextBounds();
 }
 
-void AutoScrollTextWnd::SetPane(CStr const&)
+void AutoScrollTextWnd::SetPane(const CStr& name)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Wnd::SetPane(name);
+    PrecalcTextBounds();
 }
 
 void AutoScrollTextWnd::SetScrollSpeed(float)
@@ -131,7 +208,13 @@ void AutoScrollTextWnd::HandleScroll()
 
 AutoScrollTextWnd::AutoScrollTextWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_scrollLineSpeed = 2.0;
+    m_textBounds.x0 = 0.0;
+    m_textBounds.y0 = 0.0;
+    m_textBounds.width = 0.0;
+    m_bScrollingEnabled = true;
+    m_textBounds.height = 0.0;
+    PrecalcScrollPixelSpeed();
 }
 
 AutoScrollTextWnd::AutoScrollTextWnd(AutoScrollTextWnd const&)
@@ -146,7 +229,14 @@ void AutoScrollTextWnd::SetZeroTextOrigin()
 
 void AutoScrollTextWnd::PrecalcTextBounds()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    const auto bounds = GetClientBounds();
+    const auto textMeasure = GetGfxServer()->MeasureText(m_caption, m_defFont, m_textWrap, bounds.width);
+
+    // TODO: check this
+    m_textBounds.x0 = bounds.x0;
+    m_textBounds.y0 = bounds.y0;
+    m_textBounds.width = (bounds.width + bounds.x0) - bounds.x0;
+    m_textBounds.height = (textMeasure.y + bounds.y0) - bounds.y0;
 }
 
 void AutoScrollTextWnd::ScrollTextOrigin()
@@ -156,7 +246,8 @@ void AutoScrollTextWnd::ScrollTextOrigin()
 
 void AutoScrollTextWnd::PrecalcScrollPixelSpeed()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    const auto averageLineH = GetGfxServer()->MeasureText("Ag", m_defFont, m3d::TW_NOWRAP, 1024.0).y;
+    m_scrollPixelSpeed = m_scrollLineSpeed * averageLineH;
 }
 
 bool AutoScrollTextWnd::TextOrignReachedFinalPosition() const

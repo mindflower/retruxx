@@ -5,6 +5,7 @@
 #include "defaultcollider.h"
 #include "core/kernel.h"
 #include "core/clazz.h"
+#include "server/objects/wheel.h"
 #include "server/objects/base/obj.h"
 #include <server/ai/aimanager.h>
 
@@ -46,7 +47,7 @@ namespace ai
 			auto it = g_collidersMap->find(merged);
 			if (it != g_collidersMap->end())
 			{
-				it->second;
+				return it->second;
 			}
 
 			return defaultCollider;
@@ -72,7 +73,7 @@ namespace ai
 			else
 			{
 				v3 = 0xFFFF;
-				v4 = -65536;
+                v4 = 0xFFFF0000;
 			}
 			if (c2)
 			{
@@ -88,8 +89,26 @@ namespace ai
 			mergedRev = v7;
 			merged = v6;
 
-			g_collidersMap->emplace(merged, ColliderEntry{ fn, 0 });
-			g_collidersMap->emplace(mergedRev, ColliderEntry{ fn, 1 });
+
+			auto it = g_collidersMap->find(merged);
+            if (it != g_collidersMap->end())
+            {
+                it->second = ColliderEntry{fn, 0};
+            }
+            else
+            {
+                g_collidersMap->emplace(merged, ColliderEntry{fn, 0});
+            }
+
+			it = g_collidersMap->find(mergedRev);
+            if (it != g_collidersMap->end())
+            {
+                it->second = ColliderEntry{fn, 1};
+            }
+            else
+            {
+                g_collidersMap->emplace(mergedRev, ColliderEntry{fn, 0});
+            }
 		}
 
 		void RegisterColliderForAllDescendants(m3d::Class *c1,m3d::Class *c2,int (*fn)(m3d::Object *,m3d::Object *,dContact *,unsigned int &,bool))

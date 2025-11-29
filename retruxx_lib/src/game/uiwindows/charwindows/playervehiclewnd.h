@@ -10,8 +10,6 @@ public:
     {
     public:
         PAuxInfo(void);
-    protected:
-    private:
         CStr m_wndTabName;
         PointBase<float> m_tabBtnSz;
         float m_tabBtnSpace;

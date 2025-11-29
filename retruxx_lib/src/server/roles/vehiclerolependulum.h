@@ -5,21 +5,19 @@
 
 namespace ai
 {
-    class VehicleRolePendulumPrototypeInfo : public VehicleRolePrototypeInfo
+    class VehicleRolePendulumPrototypeInfo : public ai::VehicleRolePrototypeInfo
     {
     public:
         VehicleRolePendulumPrototypeInfo();
-        virtual Obj* CreateTargetObject() const;
-        virtual float FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const;
-        virtual float FitAgainstObj(Vehicle const*, Obj const*) const;
-        virtual float FitAgainstVehicle(Vehicle const*, Vehicle const*) const;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-
-    private:
-        CVector2 m_oppressionShift;
-        float m_A;
-        float m_B;
-    };
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+        virtual float FitAgainstVehicle(ai::Vehicle const* v, ai::Vehicle const* target) const override /* 0x1c */;
+        virtual float FitAgainstTeam(ai::Vehicle const* v, ai::Team const* target, ai::Vehicle** targetVehicle) const override /* 0x20 */;
+        virtual float FitAgainstObj(ai::Vehicle const* v, ai::Obj const* obj) const override /* 0x24 */;
+        /* 0x0044 */ CVector2 m_oppressionShift;
+        /* 0x004c */ float m_A;
+        /* 0x0050 */ float m_B;
+    }; /* size: 0x0054 */
 
     class VehicleRolePendulum : public VehicleRole
     {

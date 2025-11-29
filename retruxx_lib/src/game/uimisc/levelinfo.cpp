@@ -57,16 +57,6 @@ RT_CLASS_EXPORTS_BEGIN(LevelInfoManager)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(LevelInfoManager);
 
-namespace m3d
-{
-    extern CClient* pClient;
-}
-
-namespace ai
-{
-    extern ObjContainer* theObjects;
-}
-
 CStr const& LevelInfo::GetName() const
 {
     return m_name;

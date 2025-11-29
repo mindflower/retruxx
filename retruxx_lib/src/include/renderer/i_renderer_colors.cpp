@@ -1,5 +1,5 @@
 #include "i_renderer_colors.h"
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 m3d::rend::Colorf::Colorf(unsigned int clr)
 {
@@ -19,4 +19,36 @@ m3d::rend::Colorf::Colorf(float _r, float _g, float _b, float _a)
 
 m3d::rend::Colorf::Colorf()
 {
+}
+void m3d::rend::Colorf::init(unsigned int clr)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+void m3d::rend::Colorf::init(float _r, float _g, float _b, float _a)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+unsigned int m3d::rend::Colorf::ToRgba() const
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+m3d::rend::Colori::Colori(unsigned int)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+m3d::rend::Colori::Colori(unsigned char, unsigned char, unsigned char, unsigned char)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+m3d::rend::Colori::Colori()
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+void m3d::rend::Colori::init(unsigned char, unsigned char, unsigned char, unsigned char)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+void m3d::rend::Colori::AddSat(const m3d::rend::Colori&)
+{
+    RETRUXX_NOT_IMPLEMENTED;
 }

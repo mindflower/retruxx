@@ -106,10 +106,4 @@ namespace m3d
 #define SYS_ERROR(msg)              m3d::g_Kernel->SysError((__FILE__ ":") + CStr(__LINE__), (msg))
 #define M3D_ASSERT(cond)            if (!(cond)) SYS_ERROR(#cond)
 #define M3D_CRITICAL_ERROR(msg)     M3D_LOG_ERR(CStr("Error: ") + (msg)); SYS_ERROR("!\"Critical error, see log\"");
-
-#ifdef RETRUXX_DLL
-//#define M3D_KERNEL (*inject::cast<m3d::Kernel**>(0x00A0988C))
-#define M3D_KERNEL                  m3d::Kernel::instance()
-#else
 #define M3D_KERNEL                  m3d::g_Kernel
-#endif

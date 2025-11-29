@@ -7,12 +7,20 @@ RT_CLASS_DEFINE(PlayerVehicleWnd);
 
 PlayerVehicleWnd::PAuxInfo::PAuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // Set default button size and spacing
+    m_tabBtnSz.x = 158.0f;
+    m_tabBtnSz.y = 32.0f;
+    m_tabBtnSpace = 0.0f;
+
+    // Set default tab button names
+    m_tabButtonNames[0] = "tabBtnVehicleCharacteristics";
+    m_tabButtonNames[1] = "tabBtnCBCharacteristics";
+    m_tabButtonNames[2] = "tabBtnWeaponGroups";
 }
 
 m3d::Class* PlayerVehicleWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(PlayerVehicleWnd);
 }
 
 PlayerVehicleWnd::~PlayerVehicleWnd()
@@ -22,7 +30,7 @@ PlayerVehicleWnd::~PlayerVehicleWnd()
 
 m3d::Object* PlayerVehicleWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new PlayerVehicleWnd;
 }
 
 m3d::Object* PlayerVehicleWnd::Clone()
@@ -42,7 +50,10 @@ void PlayerVehicleWnd::UpdateTabButtonsState()
 
 PlayerVehicleWnd::PlayerVehicleWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_hackedVehicleId = -1;
+    m_tabButtons[0] = 0;
+    m_tabButtons[1] = 0;
+    m_tabButtons[2] = 0;
 }
 
 PlayerVehicleWnd::PlayerVehicleWnd(PlayerVehicleWnd const&)
@@ -77,7 +88,9 @@ int PlayerVehicleWnd::CreateHackedVehicle()
 
 int PlayerVehicleWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void PlayerVehicleWnd::OnTabBtnWeaponGroupsClick()
@@ -122,7 +135,9 @@ void PlayerVehicleWnd::OnTabBtnVehicleCharacteristicsClick()
 
 int PlayerVehicleWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement PlayerVehicleWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int PlayerVehicleWnd::SetupForHackedVehiclePart(int)

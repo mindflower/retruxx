@@ -103,7 +103,7 @@ namespace m3d
 
         AnimInfo* ModelWnd::Animation()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_Animation;
         }
 
         CVector& ModelWnd::Scale()
@@ -123,9 +123,7 @@ namespace m3d
 
         int ModelWnd::OnPaint(DrawInfo const&)
         {
-            // TODO: implement ModelWnd::OnPaint
-            // RETRUXX_NOT_IMPLEMENTED;
-            return 1;
+            RETRUXX_NOT_IMPLEMENTED;
         }
 
         Quaternion& ModelWnd::Rotation()
@@ -166,7 +164,7 @@ namespace m3d
 
         AnimatedModel* ModelWnd::GetModel()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_Model;
         }
 
         CVector& ModelWnd::Translation()

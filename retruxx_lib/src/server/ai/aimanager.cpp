@@ -141,9 +141,9 @@ namespace ai
         }
     }
 
-    m3d::AIParam AIManager::AIAction(int, Obj*)
+    m3d::AIParam AIManager::AIAction(int FuncNum, Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_Actions[FuncNum].Action(pObj);
     }
 
     int AIManager::GetFuncNum(CStr const& name) const

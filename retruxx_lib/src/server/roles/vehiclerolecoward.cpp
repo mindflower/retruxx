@@ -35,7 +35,7 @@ namespace ai
 
     float VehicleRoleCowardPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return 0.0;
     }
 
     VehicleRoleCoward::VehicleRoleCoward(VehicleRoleCowardPrototypeInfo const& prototype) : VehicleRole(prototype)

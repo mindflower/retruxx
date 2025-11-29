@@ -17,7 +17,6 @@
 
 #include "core/ini.h"
 #include "core/ref_ptr.h"
-#include "thirdparty/injecttools.h"
 #include <server/server.h>
 
 #include "server/affix.h"
@@ -117,7 +116,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetPropertyById)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, SetProperty)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* obj = (ai::Obj*)context->asObject(0, "Obj");
+    const auto* prop = context->asString(1);
+    const auto& aiParam = context->asAIParam(2);
+    obj->SetProperty(prop, aiParam);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, SetPropertyById)
@@ -147,11 +150,6 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetSchwarz)
 
 namespace ai
 {
-    extern ObjContainer* theObjects;
-    extern AIManager* theAIManager;
-    extern ProcessManager* theProcessManager;
-    extern PrototypeManager* thePrototypeManager;
-
     //std::map<CStr, int> Obj::m_propertiesMap;
     //std::map<int, eGObjPropertySaveStatus> Obj::m_propertiesSaveStatesMap;
 
@@ -416,15 +414,17 @@ namespace ai
 
     void Obj::Remove()
     {
-        ai::Obj::_SetDeadStatus();
-        this->m_flags |= 2u;
+        _SetDeadStatus();
+        m_flags |= 2u;
         if (m_objId != -1)
+        {
             ai::theObjects->AddObjIdToRemove(m_objId);
+        }
     }
 
     bool Obj::NeedCinematicUpdate()
     {
-        return (this->m_flags >> 4) & 1;
+        return (m_flags >> 4) & 1;
     }
 
     m3d::AIParam Obj::GetPropertyDefault(char const*) const
@@ -459,9 +459,10 @@ namespace ai
 
     void Obj::StackOpen()
     {
-        auto ai = GetAIPtr();
-        if (ai)
+        if (auto ai = GetAIPtr())
+        {
             ai->CommandStackOpen();
+        }
     }
 
     void Obj::SetPassedToAnotherMapStatus()
@@ -495,16 +496,29 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Obj::bIsEnemyWith(Obj const*) const
+    bool Obj::bIsEnemyWith(const Obj* pObj) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool result = false;
+        if (pObj)
+        {
+            const auto flags = pObj->GetFlags();
+            if ((flags & 8) == 0 && (flags & 2) == 0 && !pObj->GetParentRepository())
+            {
+                auto v3 = m_flags;
+                if ((v3 & 8) == 0 && (v3 & 2) == 0 && !this->m_parentRepository && (pObj->m_flags & 1) != 0 && (this->m_flags & 1) != 0 &&
+                    theRelationship->CheckTolerance(this->m_belong, pObj->m_belong) <= RS_ENEMY)
+                {
+                    return true;
+                }
+            }
+        }
+        return result;
     }
 
     CStr Obj::GetDebugDescription() const
     {
-        // TODO: implement Obj::GetDebugDescription
-        //RETRUXX_NOT_IMPLEMENTED;
-        return {};
+        const auto* prototypeInfo = GetPrototypeInfo();
+        return "name = '" + CStr(GetName()) + "', prototype name = '" + prototypeInfo->m_prototypeName + "', class name = '" + CStr(GetClassNameA()) + "', id = '" + CStr(GetId()) + "'";
     }
 
     void Obj::ValidateEventRecipientsList()
@@ -527,7 +541,6 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x00602610, Obj::GetFlags)
     unsigned Obj::GetFlags() const
     {
         return m_flags;
@@ -611,7 +624,7 @@ namespace ai
 
     void Obj::SetParentInvalid()
     {
-        this->m_parentId = -1;
+        m_parentId = -1;
     }
 
     void Obj::SetNameFromScript(CStr const&)
@@ -621,12 +634,12 @@ namespace ai
 
     bool Obj::IsUpdating() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_bIsUpdating;
     }
 
     bool Obj::GetPassedToAnotherMapStatus() const
     {
-        return this->m_bPassedToAnotherMap;
+        return m_bPassedToAnotherMap;
     }
 
     void Obj::AddToCinematic()
@@ -636,12 +649,18 @@ namespace ai
 
     void Obj::StopTimeOut()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_flags &= ~4u;
+        m_timeOut = -1.0;
     }
 
-    bool Obj::SetProperty(char const*, m3d::AIParam const&)
+    bool Obj::SetProperty(char const* PropertyName, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const auto propFromObj = GetPropertyId(PropertyName);
+        if (propFromObj != -1)
+        {
+            return SetPropertyById(propFromObj, newValue);
+        }
+        return false;
     }
 
     retruxx::map<int, Obj*>& Obj::getAllChildren()
@@ -1072,7 +1091,6 @@ namespace ai
         }
     }
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x006894A0, Obj::GetParentRepository)
     GeomRepository* Obj::GetParentRepository() const
     {
         return m_parentRepository;

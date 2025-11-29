@@ -3,7 +3,7 @@
 #include "stringm3d.h"
 #include <iface.h>
 #include <engine/tinyxml/tinyxml.h>
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 #include <sstream>
 

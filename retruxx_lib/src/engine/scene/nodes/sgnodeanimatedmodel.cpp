@@ -263,8 +263,8 @@ namespace m3d
             return 1;
         }
 
-        this->m_passable = *(bool*)property;
-        if (!this->m_passable || m_obstacle)
+        m_passable = *(bool*)property;
+        if (m_passable || m_obstacle)
         {
             if (m_obstacle)
             {

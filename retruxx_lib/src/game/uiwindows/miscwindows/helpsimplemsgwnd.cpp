@@ -21,7 +21,7 @@ m3d::Class* HelpSimpleMsgWnd::GetBaseClass()
 
 m3d::Object* HelpSimpleMsgWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new HelpSimpleMsgWnd;
 }
 
 HelpSimpleMsgWnd::~HelpSimpleMsgWnd()
@@ -31,12 +31,13 @@ HelpSimpleMsgWnd::~HelpSimpleMsgWnd()
 
 m3d::Class* HelpSimpleMsgWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(HelpSimpleMsgWnd);
 }
 
 HelpSimpleMsgWnd::HelpSimpleMsgWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndHelpText = 0;
+    m_wndTitle = 0;
 }
 
 HelpSimpleMsgWnd::HelpSimpleMsgWnd(HelpSimpleMsgWnd const&)
@@ -46,7 +47,9 @@ HelpSimpleMsgWnd::HelpSimpleMsgWnd(HelpSimpleMsgWnd const&)
 
 int HelpSimpleMsgWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement HelpSimpleMsgWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int HelpSimpleMsgWnd::GameDataClear(bool)

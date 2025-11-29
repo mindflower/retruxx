@@ -1,5 +1,5 @@
 #pragma once
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 namespace m3d
 {
@@ -19,6 +19,11 @@ namespace m3d
     public:
         T* New()
         {
+            return GetFree();
+        }
+
+        T* GetFree()
+        {
             if (Free.empty())
             {
                 auto block = new Block;
@@ -30,11 +35,12 @@ namespace m3d
             {
                 auto top = Free.top();
                 Free.pop();
-                return &Pool[top]->Data;
+
+                auto* block = Pool[top];
+                auto* res = new (&block->Data) T(); 
+                return res;
             }
         }
-
-        T* GetFree();
 
         void Delete(T*& pData)
         {
@@ -42,7 +48,7 @@ namespace m3d
             {
                 auto block = (Block*)(pData);
                 Free.push(block->BlockNumber);
-                delete pData;
+                block->Data.~T();
                 pData = nullptr;
             }
         }

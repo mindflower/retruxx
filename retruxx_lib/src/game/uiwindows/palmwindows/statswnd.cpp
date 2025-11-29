@@ -233,7 +233,9 @@ int StatsWnd::GameDataClear(bool)
 
 int StatsWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement StatsWnd::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 void StatsWnd::OnStartLevel()

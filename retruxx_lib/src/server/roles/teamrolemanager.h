@@ -1,6 +1,6 @@
 #pragma once
 #include "teamtactic.h"
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
 namespace ai
 {

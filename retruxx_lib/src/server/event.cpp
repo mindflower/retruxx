@@ -37,7 +37,6 @@ namespace ai
     }
 
     // TODO: check impl
-    RETRUXX_DLL_INJECT_FUNCTION(0x008BA100, Event::LoadFromXML)
     void Event::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode)
     {
         CStr eventAttr = OwnNode->GetAttribute("EventID");
@@ -73,7 +72,6 @@ namespace ai
     }
 
     // TODO: check impl
-    RETRUXX_DLL_INJECT_FUNCTION(0x008BA2D0, Event::SaveToXML)
     void Event::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const
     {
         OwnNode->SetAttribute("EventID", theProcessManager->GetEventName(m_eventId).c_str());

@@ -273,11 +273,11 @@ int OptionsWnd::ShowOptionWindowForTab(Tab tabId)
 {
     if (m_curTabId != TAB_NUM_TABS)
     {
-        if (auto const& wnd = m_optionWindows[m_curTabId])
+        if (auto& wnd = m_optionWindows[m_curTabId])
         {
             if (IsDirectChild(wnd))
             {
-                auto const res = ApplyTabChanges(m_curTabId);
+                const auto res = ApplyTabChanges(m_curTabId);
                 if (!res)
                 {
                     return res;
@@ -290,7 +290,7 @@ int OptionsWnd::ShowOptionWindowForTab(Tab tabId)
     {
         return 1;
     }
-    auto const& wnd = m_optionWindows[tabId];
+    auto& wnd = m_optionWindows[tabId];
     if (!wnd)
     {
         return 1;

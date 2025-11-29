@@ -44,7 +44,6 @@ public:
 
 protected:
     ResourceInfo();
-    ResourceInfo(ResourceInfo const&);
 
 public:
     RT_CLASS_DECLARE(ResourceInfo);
@@ -66,7 +65,6 @@ public:
     virtual m3d::Object* Clone();
 
 protected:
-    WindowResourceInfo(WindowResourceInfo const &);
     WindowResourceInfo();
 
 public:
@@ -90,7 +88,6 @@ public:
     virtual bool IsValid() const ;
 
 protected:
-    IcoResourceInfo(IcoResourceInfo const &);
     IcoResourceInfo();
 
 public:
@@ -166,7 +163,7 @@ protected:
     retruxx::vector<ResourceInfo*> m_resourceInfoWindows;
     retruxx::vector<ResourceInfo*> m_resourceInfoStrings;
     retruxx::vector<ResourceInfo*> m_resourceInfoIcons;
-    bool m_bFirstLevelResourcesLoaded;
+    bool m_bFirstLevelResourcesLoaded = false;
     ObjectsIcons* m_icons = nullptr;
     bool m_isInited = false;
     bool m_oneTimeStuffIsInited = false;

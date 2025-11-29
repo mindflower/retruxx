@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 #include "core/ini.h"
+#include "server/objects/vehicle.h"
 
 namespace ai
 {
@@ -35,9 +36,12 @@ namespace ai
     {
     }
 
-    float VehicleRoleOppressorPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
+    float VehicleRoleOppressorPrototypeInfo::FitAgainstVehicle(Vehicle const* v, Vehicle const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!v)
+            return 0.0;
+        auto va = v->GetMaxSpeed();
+        return v->EstimateDamageAI() + va;
     }
 
     Obj* VehicleRoleOppressorPrototypeInfo::CreateTargetObject() const

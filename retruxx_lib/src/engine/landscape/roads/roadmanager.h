@@ -2,9 +2,9 @@
 #include <core/stringm3d.h>
 #include <math/vector.h>
 #include <math/vector2.h>
-#include "thirdparty/containers.h"
+#include "retruxx/common.h"
 
-struct CClipper;
+class CClipper;
 
 namespace m3d
 {
@@ -28,35 +28,45 @@ namespace m3d
         RRT_FOR_SPRITE = 0x5,
     };
 
-    class RoadSet
+    struct RoadSet
     {
-    public:
+        /* 0x0000 */ CStr m_name;
+        /* 0x000c */ std::vector<m3d::AnimatedModel*, std::allocator<m3d::AnimatedModel*>> m_roadModels[4];
+        /* 0x004c */ std::vector<
+            std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
+            std::allocator<
+                std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
+            m_boundVerts[4];
+        /* 0x008c */ std::vector<
+            std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
+            std::allocator<
+                std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
+            m_fakeBoundVerts[4];
+        /* 0x00cc */ std::vector<
+            std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
+            std::allocator<
+                std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
+            m_cliffBorders[4];
+        /* 0x010c */ float m_minX[4];
+        /* 0x011c */ float m_minZ[4];
+        /* 0x012c */ float m_maxX[4];
+        /* 0x013c */ float m_maxZ[4];
+        /* 0x014c */ float m_sizeZ[4];
+        /* 0x015c */ float m_sizeX[4];
+        /* 0x016c */ CVector m_scale;
+        /* 0x0178 */ CStr m_wheeltraceTexName;
+        /* 0x0184 */ int m_soilType;
         void Clear();
-        ~RoadSet();
+        int ReadFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node);
+        RoadSet(const m3d::RoadSet&);
         RoadSet();
-        int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-
-    private:
-        CStr m_name;
-        retruxx::vector<AnimatedModel*> m_roadModels[4];
-        retruxx::vector<retruxx::vector<retruxx::vector<unsigned int>>> m_boundVerts[4];
-        retruxx::vector<retruxx::vector<retruxx::vector<unsigned int>>> m_fakeBoundVerts[4];
-        retruxx::vector<retruxx::vector<retruxx::vector<unsigned int>>> m_cliffBorders[4];
-        float m_minX[4];
-        float m_minZ[4];
-        float m_maxX[4];
-        float m_maxZ[4];
-        float m_sizeZ[4];
-        float m_sizeX[4];
-        CVector m_scale;
-        CStr m_wheeltraceTexName;
-        int m_soilType;
-    };
+        ~RoadSet();
+    }; /* size: 0x0188 */
 
     class RoadTestCallBack
     {
-    private:
-        //m3d::RoadTestCallBack_vtbl* __vftable /*VFT*/;
+    public:
+        virtual bool TestRoadNode(m3d::RoadNode*) const = 0 /* 0x00 */;
     };
 
     class RoadInRadius3dTest : public RoadTestCallBack

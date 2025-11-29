@@ -2,6 +2,10 @@
 
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(Chest)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(Chest);
+
     ChestPrototypeInfo::ChestPrototypeInfo()
     {
         RETRUXX_NOT_IMPLEMENTED;

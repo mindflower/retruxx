@@ -221,12 +221,28 @@ namespace m3d
 
         float ProgressBarWnd::GetSizeOfStepInPixel() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (m_orientation == ORIENTATION_LEFT_TO_RIGHT || m_orientation == ORIENTATION_RIGHT_TO_LEFT)
+                return GetMaxBarRect().width / (double)m_numOfSteps;
+            else
+                return GetMaxBarRect().height / (double)m_numOfSteps;
         }
 
         int ProgressBarWnd::GetCurNumOfSteps() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (m_minValue == m_maxValue)
+            {
+                return 0;
+            }
+            auto fSteps = (float)(this->m_curValue - this->m_minValue) / (float)((float)(this->m_maxValue - this->m_minValue) / (float)this->m_numOfSteps);
+            if (fSteps <= 0.001)
+            {
+                return 0;
+            }
+
+            auto result = (int)fSteps;
+            if (!result)
+                return 1;
+            return result;
         }
 
         CStr ProgressBarWnd::GetStringValue() const

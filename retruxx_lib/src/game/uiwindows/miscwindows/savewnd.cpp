@@ -6,17 +6,19 @@ RT_CLASS_DEFINE(SaveWnd);
 
 SaveWnd::SAuxInfo::SAuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_btnSaveName = "btnSave";
+    m_btnDeleteName = "btnDelete";
+    m_editSaveName = "editSaveName";
 }
 
 m3d::Class* SaveWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(SaveWnd);
 }
 
 m3d::Object* SaveWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new SaveWnd;
 }
 
 m3d::Object* SaveWnd::Clone()
@@ -71,12 +73,16 @@ void SaveWnd::OnDelete()
 
 int SaveWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement SaveWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int SaveWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 SaveWnd::SaveWnd(SaveWnd const&)
@@ -86,5 +92,8 @@ SaveWnd::SaveWnd(SaveWnd const&)
 
 SaveWnd::SaveWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_btnSave = 0;
+    m_btnDelete = 0;
+    m_editSaveName = 0;
+    m_bNeedScreenshot = 0;
 }

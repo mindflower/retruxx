@@ -21,7 +21,11 @@ RT_CLASS_DEFINE(TalkWithNpcDlg);
 
 TalkWithNpcDlg::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndConversationName = "wndConversation";
+    m_wndNpcImageName = "wndNpcImage";
+    m_wndTopPanelName = "wndTopPanel";
+    m_wndBottomPanelName = "wndBottomPanel";
+    m_lblNpcNameName = "lblNpcName";
 }
 
 TalkWithNpcDlg::~TalkWithNpcDlg()
@@ -41,7 +45,7 @@ void TalkWithNpcDlg::Hide(bool)
 
 m3d::Class* TalkWithNpcDlg::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(TalkWithNpcDlg);
 }
 
 int TalkWithNpcDlg::SetupForNpc(int)
@@ -66,7 +70,7 @@ m3d::Class* TalkWithNpcDlg::GetBaseClass()
 
 m3d::Object* TalkWithNpcDlg::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new TalkWithNpcDlg;
 }
 
 bool TalkWithNpcDlg::IsValid() const
@@ -91,7 +95,11 @@ void TalkWithNpcDlg::OnBarNpc(void*)
 
 TalkWithNpcDlg::TalkWithNpcDlg()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndTopPanel = 0;
+    m_wndBottomPanel = 0;
+    m_lblNpcName = 0;
+    m_showType = SHOWTYPE_UNDEFINED;
+    m_npcId = -1;
 }
 
 TalkWithNpcDlg::TalkWithNpcDlg(TalkWithNpcDlg const&)
@@ -131,7 +139,9 @@ bool TalkWithNpcDlg::IsBarDlgShowingNow() const
 
 int TalkWithNpcDlg::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 ref_ptr<BarDlg> TalkWithNpcDlg::GetBarDlg() const
@@ -156,7 +166,9 @@ m3d::rend::TexHandle TalkWithNpcDlg::GetNpcBg(int) const
 
 int TalkWithNpcDlg::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement TalkWithNpcDlg::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 void TalkWithNpcDlg::UpdateOnStartConversation()

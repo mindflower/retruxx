@@ -220,4 +220,7 @@ namespace ai
     }; /* size: 0x0120 */
 
     static_assert(sizeof(PhysicObj) == 0x0120);
+
+    
+    CVector getPhysicObjOrPhysicBodyPosition(ai::Obj const*);
 }

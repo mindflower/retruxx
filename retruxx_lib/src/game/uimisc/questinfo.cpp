@@ -1,4 +1,7 @@
 #include "questinfo.h"
+
+#include "core/log.h"
+
 #include <stdexcept>
 
 #include "game/m3dgame.h"
@@ -51,18 +54,27 @@ QuestInfoManager::~QuestInfoManager()
 
 int QuestInfoManager::Init()
 {
-    // TODO: implement QuestInfoManager::Init
-    return 0;
-    //RETRUXX_NOT_IMPLEMENTED;
     if (m_isInited)
     {
         ClearQuestInfos();
         ClearDynamicQuestInfos();
         m_isInited = false;
     }
-    //M3D_APP->m_pInterfaceManager->GetPathToDialogsFileGlobal()
+
+    const auto pathToDlg = M3D_APP->m_pInterfaceManager->GetPathToQuestInfoFileGlobal();
+    const auto res = LoadFromFile(pathToDlg);
+
+    m_isInited = true;
+    if (res)
+    {
+        M3D_LOG_INFO("QuestInfo manager was inited successfully");
+    }
+    else
+    {
+        M3D_LOG_INFO("QuestInfo manager was inited with errors");
+    }
+
     return 1;
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int QuestInfoManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -165,7 +177,9 @@ void QuestInfoManager::GetAllQuestInfosByNamePattern(CStr const&, std::vector<CS
 
 int QuestInfoManager::LoadFromFile(CStr const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement QuestInfoManager::LoadFromFile
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 QuestInfo const* QuestInfoManager::AddQuestInfoForDynamicQuest(int)

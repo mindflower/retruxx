@@ -37,7 +37,9 @@ m3d::Class* WeaponSlotWnd::GetBaseClass()
 
 int WeaponSlotWnd::GameDataUpdate(void*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameDataUpdate
+    //  RETRUXX_NOT_IMPLEMENTED;
+    return 0;
 }
 
 bool WeaponSlotWnd::IsSetForGunPart() const

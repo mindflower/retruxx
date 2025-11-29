@@ -1,5 +1,7 @@
 #include "vehiclerolebarrier.h"
 
+#include "server/objects/vehicle.h"
+
 #include <stdexcept>
 
 namespace ai
@@ -32,9 +34,12 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    float VehicleRoleBarrierPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
+    float VehicleRoleBarrierPrototypeInfo::FitAgainstVehicle(Vehicle const* v, Vehicle const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (v)
+            return v->GetMaxSpeed() * 0.1;
+        else
+            return 0.0;
     }
 
     m3d::Class* VehicleRoleBarrier::GetClass() const

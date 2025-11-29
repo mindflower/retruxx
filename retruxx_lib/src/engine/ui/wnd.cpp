@@ -15,8 +15,6 @@
 #include <ui/wndstation.h>
 #include <ui/wnd.h>
 
-#include "thirdparty/injecttools.h"
-
 namespace m3d
 {
     namespace ui
@@ -344,7 +342,9 @@ namespace m3d
 
         int Wnd::StartAnimation(AnimationInfo const&, bool)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement Wnd::StartAnimation
+            // RETRUXX_NOT_IMPLEMENTED;
+            return 1;
         }
 
         unsigned Wnd::GetColor() const
@@ -1488,12 +1488,7 @@ namespace m3d
 
         WndStation* Wnd::GetStation() const
         {
-#ifdef RETRUXX_DLL
-            //return inject::cast<WndStation*>(0x00A0A2D4);
             return m_wndStation;
-#else
-            return m_wndStation;
-#endif
         }
 
         int Wnd::IsPtInBounds(PointBase<float> const& pt) const

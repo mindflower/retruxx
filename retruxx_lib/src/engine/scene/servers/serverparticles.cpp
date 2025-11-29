@@ -1,3 +1,6 @@
+#include "config.h"
+#include "world.h"
+
 #include <m3dapp.h>
 #include <particles.h>
 #include <stdexcept>
@@ -9,8 +12,54 @@
 #include <core/kernel.h>
 #include <file/fileserver.h>
 #include <file/filestream.h>
+#include <client.h>
+#include <algorithm>
 
 bool loadedViaBPS = false;
+
+namespace
+{
+    constexpr int MAX_NODES_PER_CLASS = 0x7D0;
+
+    
+    struct ParticlesInfo
+    {
+        /* 0x0000 */ m3d::SgNode* pNode = nullptr;
+        /* 0x0004 */ m3d::ParticlesList* pList = nullptr;
+        /* 0x0008 */ m3d::ParticleSystem* pSystem = nullptr;
+    }; /* size: 0x000c */
+
+    struct FxParamsSet
+    {
+        /* 0x0000 */ CVector cAmbient = ZeroVector;
+        /* 0x000c */ CVector cDiffuse = ZeroVector;
+        /* 0x0018 */ CVector fogTerm = ZeroVector;
+        /* 0x0024 */ bool ambientNotSet = true;
+        /* 0x0025 */ bool diffuseNotSet = true;
+        /* 0x0026 */ bool fogNotSet = true;
+        void Clear();
+    }; /* size: 0x0028 */
+
+    struct ParticlesSortPred
+    {
+        ParticlesSortPred(ParticlesInfo* parts) : m_particles(parts){}
+
+        bool operator()(unsigned int partIdx1, unsigned int partIdx2) const
+        {
+            // TODO: check and refactor this
+            auto pSystem = this->m_particles[partIdx1].pSystem;
+            auto v4 = this->m_particles[partIdx2].pSystem;
+            auto m_shader = pSystem->m_shader;
+            auto v6 = v4->m_shader;
+            if (m_shader < v6)
+                return true;
+            if (m_shader == v6)
+                return &pSystem->m_texAdd < &v4->m_texAdd;
+            return false;
+        }
+        /* 0x0000 */ ParticlesInfo* m_particles;
+    }; /* size: 0x0004 */
+}
 
 namespace m3d
 {
@@ -39,17 +88,198 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int ParticlesServer::RenderNodeSet(SgNode**, unsigned, m3d::RenderNodeInfo)
+    int ParticlesServer::RenderNodeSet(SgNode** nodes, unsigned numNodes, m3d::RenderNodeInfo rni)
     {
-        // TODO: implement ParticlesServer::RenderNodeSet
-        //RETRUXX_NOT_IMPLEMENTED;
-        return 0;
+        m_profiler->StartCountdown();
+        assert(numNodes < MAX_NODES_PER_CLASS);
+        if (!numNodes || rni.rnt)
+        {
+            m_profiler->EndCountdown();
+            return 0;
+        }
+
+        M3D_RENDERER->PushCull(rend::M3DCULL_CW);
+        M3D_RENDERER->PushZbState(rend::ZB_NOWRITE);
+        M3D_RENDERER->PushBlend(rend::BM_NONE);
+        M3D_RENDERER->PushFog(false);
+        M3D_RENDERER->PushLighting(false);
+        M3D_RENDERER->SetAlphaTest (0);
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+        M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+        M3D_RENDERER->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+        M3D_RENDERER->TgDisable(0);
+        M3D_RENDERER->TgDisable(1);
+        M3D_RENDERER->TgDisable(2);
+        M3D_RENDERER->TgDisable(3);
+        M3D_RENDERER->TgDisable(4);
+        M3D_RENDERER->TgDisable(5);
+        M3D_RENDERER->TgDisable(6);
+        M3D_RENDERER->TgDisable(7);
+
+        if (M3D_ENGINE_CFG.m_lsWireframe.GetB())
+        {
+            M3D_RENDERER->SetFillMode(rend::M3DFILL_WIREFRAME, false);
+        }
+
+        
+        // TODO: check this!!!!
+        pClient->GetWorld().GetGraph().LightSetupSunForWorld();
+        rend::Colorf ambientColor = pClient->GetWorld().GetWeatherAmbientColor();
+        rend::Colorf diffuseColor = pClient->GetWorld().GetWeatherDiffuseColor();
+
+        float fogStart = 0.0;
+        float fogEnd = 0.0;
+        pClient->GetWorld().GetLandscape().GetFogStartAndEnd(fogStart, fogEnd);
+
+        // Initialize effect parameters
+        FxParamsSet fxParams;
+
+        // Get ambient color and convert from 0-255 to 0.0-1.0
+        fxParams.cAmbient.x = ambientColor.r;
+        fxParams.cAmbient.y = ambientColor.g;
+        fxParams.cAmbient.z = ambientColor.b;
+
+        // Get diffuse color
+        fxParams.cDiffuse.x = diffuseColor.r;
+        fxParams.cDiffuse.y = diffuseColor.g;
+        fxParams.cDiffuse.z = diffuseColor.b;
+
+
+        float fogReduceFactor = pClient->GetWorld().GetWeatherManager().GetFogReduceFactorFromWeather();
+        fxParams.fogTerm.z = fogReduceFactor * fogStart;                        // fogStart
+        fxParams.fogTerm.x = fogReduceFactor * fogEnd;                          // fogEnd
+        fxParams.fogTerm.y = 1.0f / (fxParams.fogTerm.x - fxParams.fogTerm.z);  // fogInvRange
+
+        // Prepare particle data arrays
+        unsigned int nodeIndices[MAX_NODES_PER_CLASS] = {};
+        ParticlesInfo nodeData[MAX_NODES_PER_CLASS] = {};
+
+        // Extract particle data from each node
+        for (unsigned int i = 0; i < numNodes; i++)
+        {
+            SgNode* node = nodes[i];
+
+            // Get particle system info from node property (property ID 1)
+            PsInfoForNode* propertyData = nullptr;
+            node->GetProperty(1, &propertyData);
+
+            // Get particle system instance from models array
+            auto* particleSystem = (ParticleSystem*)m_models[node->GetServerHandle()].m_ptr;
+
+            nodeIndices[i] = i;
+            nodeData[i].pNode = node;
+            nodeData[i].pList = propertyData->m_list;
+            nodeData[i].pSystem = particleSystem;
+        }
+
+        // Sort particles for proper rendering order (back-to-front for alpha blending)
+        if (numNodes > 0)
+        {
+            std::stable_sort(nodeIndices, nodeIndices + numNodes, ParticlesSortPred(nodeData));
+        }
+
+        // Render sorted particle systems
+        for (unsigned int i = 0; i < numNodes; i++)
+        {
+            unsigned int sortedIndex = nodeIndices[i];
+            ParticlesInfo& data = nodeData[sortedIndex];
+            ParticleSystem* particleSystem = data.pSystem;
+
+            // Apply shader parameters if particle system has a shader
+            if (particleSystem && particleSystem->m_shader)
+            {
+                auto* shader = particleSystem->m_shader;
+
+                // Apply ambient color to first particle system that supports it
+                if (fxParams.ambientNotSet && shader->IsParameterUsed(rend::IEffect::LightAmbient))
+                {
+                    shader->SetVector3(rend::IEffect::LightAmbient, fxParams.cAmbient);
+                    fxParams.ambientNotSet = false;
+                }
+
+                // Apply diffuse color to first particle system that supports it
+                if (fxParams.diffuseNotSet && shader->IsParameterUsed(rend::IEffect::LightDiffuse))
+                {
+                    shader->SetVector3(rend::IEffect::LightDiffuse, fxParams.cDiffuse);
+                    fxParams.diffuseNotSet = false;
+                }
+
+                // Apply fog parameters to first particle system that supports it
+                if (fxParams.fogNotSet && shader->IsParameterUsed(rend::IEffect::FogTerm))
+                {
+                    shader->SetVector3(rend::IEffect::FogTerm, fxParams.fogTerm);
+                    fxParams.fogNotSet = false;
+                }
+            }
+
+            // Render the particle system
+            // Parameters: transform matrix (from particle system colors array) and particles list
+            particleSystem->Render(&data.pNode->GetCurrentMatrix(), data.pList);
+        }
+
+        M3D_RENDERER->PopCull();
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopFog();
+        M3D_RENDERER->PopLighting();
+        M3D_RENDERER->SetAlphaTest(0);
+
+        m_profiler->EndCountdown();
+        return 1;
     }
 
-    void ParticlesServer::UpdateItem(int, void*)
+    void ParticlesServer::UpdateItem(int id, void* params)
     {
-        // TODO: implement ParticlesServer::UpdateItem
-        //RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code ParticlesServer::UpdateItem
+
+        struct RenderInfo
+        {
+            m3d::SgNode* m_node;
+            unsigned int m_dt;
+        };
+
+        m_profiler->StartCountdown();
+
+        RenderInfo* ri = (RenderInfo*)params;
+        SgNode* node = ri->m_node;
+
+        // Get particle system info from node property
+        PsInfoForNode* particleInfo = nullptr;
+        node->GetProperty(1, &particleInfo);
+
+        // Convert delta time from milliseconds to seconds
+        float deltaTime = (float)ri->m_dt * 0.001f;
+
+        // Get particle system instance
+        ParticleSystem* particleSystem = (ParticleSystem*)m_models[id].m_ptr;
+        ParticlesList* particlesList = particleInfo->m_list;
+
+        // Calculate world velocity if this is not the first update
+        if (particlesList->m_updateCalled)
+        {
+            // Extract position from current transform matrices
+            const auto currentPos = ri->m_node->GetCurrentMatrix().getOrg();
+            const auto prevPos = particlesList->m_curXFormToWorld.getOrg();
+
+            // Calculate velocity as (current_pos - previous_pos) / delta_time
+            particlesList->m_worldVel.x = (currentPos.x - prevPos.x) / deltaTime;
+            particlesList->m_worldVel.y = (currentPos.y - prevPos.y) / deltaTime;
+            particlesList->m_worldVel.z = (currentPos.z - prevPos.z) / deltaTime;
+        }
+        else
+        {
+            // First update - zero out velocity
+            particlesList->m_worldVel = ZeroVector;
+        }
+
+        // Store current transform for next frame's velocity calculation
+        memcpy(&particlesList->m_curXFormToWorld, &ri->m_node->GetCurrentMatrix(), sizeof(particlesList->m_curXFormToWorld));
+
+        // Update the particle system
+        particleSystem->Update(particlesList, deltaTime, 1.0f);
+
+        m_profiler->EndCountdown();
     }
 
     int ParticlesServer::GetItemProperty(int id, int prop, void* dest)
@@ -107,9 +337,15 @@ namespace m3d
         StripOnePS::CreateIb();
     }
 
-    void ParticlesServer::MoveParticles(m3d::SgNode*, retruxx::vector<CVector> const*)
+    void ParticlesServer::MoveParticles(m3d::SgNode* node, retruxx::vector<CVector> const* newPoses)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* system = (ParticleSystem*)&m_models[node->GetServerHandle()];
+        m3d::ParticlesList* list = nullptr;
+        node->GetProperty(1, &list);
+        if (list)
+        {
+            system->MoveParticles(list, newPoses);
+        }
     }
 
     int ParticlesServer::Init()
@@ -167,9 +403,22 @@ namespace m3d
         node->SetProperty(1u, &info);
     }
 
-    void ParticlesServer::AddParticle(m3d::SgNode*, CVector const*)
+    void ParticlesServer::AddParticle(m3d::SgNode* node, CVector const* pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* system = static_cast<ParticleSystem*>(m_models[node->GetServerHandle()].m_ptr);
+
+        PsInfoForNode* info = nullptr;
+        node->GetProperty(PROP_SERVER_SLOT, &info);
+        if (info)
+        {
+            if (!info->m_list->m_updateCalled)
+            {
+                info->m_list->m_curXFormToWorld = node->GetCurrentMatrix();
+                info->m_list->m_worldVel = ZeroVector;
+                system->Update(info->m_list, 0.001, 1.0);
+            }
+            system->AddParticle(info->m_list, pos);
+        }
     }
 
     int ParticlesServer::AddItem(char const*, char const*)
@@ -197,7 +446,7 @@ namespace m3d
         info->m_list->m_TLM.SetTransparentBody(node);
 
         int numMesh = -1;
-        node->GetProperty(9472, &numMesh);
+        node->GetProperty(PROP_PS_NUM_EMITTER_MESH, &numMesh);
         if (numMesh >= 0)
         {
             SgNode* m_parent = dynamic_cast<SgNode*>(node->GetParent());
@@ -249,9 +498,12 @@ namespace m3d
         }
     }
 
-    void ParticlesServer::AddParticles(m3d::SgNode*, retruxx::vector<CVector> const*)
+    void ParticlesServer::AddParticles(m3d::SgNode* node, retruxx::vector<CVector> const* newPoses)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto& pos : *newPoses)
+        {
+            AddParticle(node, &pos);
+        }
     }
 
     void ParticlesServer::AddItemsByOne(retruxx::vector<m3d::DataServer::ServerItem>&)

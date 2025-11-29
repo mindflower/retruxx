@@ -9,59 +9,60 @@ class MsgInfo
 public:
     enum MsgType
     {
-        MSGTYPE_NORMAL = 0x0,
-        MSGTYPE_SCROLL = 0x1,
+        MSGTYPE_NORMAL = 0,
+        MSGTYPE_SCROLL = 1,
     };
 
 public:
-    int GetModelSlot(void) const;
-    class m3d::rend::TexHandle GetImageDownOverlay(void) const;
-    float GetScrollSpeed(void) const;
-    float GetFontSize(void) const;
-    int GetTime(void) const;
-    int GetId(void) const;
-    CStr const& GetMsg(void) const;
-    CStr const& GetSoundFileName(void) const;
-    MsgInfo(void);
-    m3d::rend::TexHandle GetImage(void) const;
-    bool IsModelAutosized(void) const;
-    CStr const& GetImageUpOverlayFileName(void) const;
-    unsigned int GetModelSkin(void) const;
-    int LoadFromXml(struct m3d::cmn::XmlFile*, struct m3d::cmn::XmlNode const*);
-    m3d::ui::MbFlags GetMbFlags(void) const;
-    MsgType GetMsgType(void) const;
-    unsigned int GetModelCfg(void) const;
-    CStr const& GetImageDownOverlayFileName(void) const;
-    CStr const& GetImageFileName(void) const;
-    ~MsgInfo(void);
-    CStr const& GetModelName(void) const;
-    class m3d::rend::TexHandle GetImageUpOverlay(void) const;
-protected:
-private:
-    enum MsgType Str2MsgType(CStr const&) const;
-    void AddImage(CStr const&, class m3d::rend::TexHandle&);
+    MsgInfo(const MsgInfo&);
+    MsgInfo();
+    ~MsgInfo();
+    int GetId() const;
+    int GetParentId() const;
+    const CStr& GetMsg() const;
+    const CStr& GetImageFileName() const;
+    const CStr& GetImageUpOverlayFileName() const;
+    const CStr& GetImageDownOverlayFileName() const;
+    m3d::rend::TexHandle GetImage() const;
+    m3d::rend::TexHandle GetImageUpOverlay() const;
+    m3d::rend::TexHandle GetImageDownOverlay() const;
+    const CStr& GetSoundFileName() const;
+    int GetTime() const;
+    m3d::ui::MbFlags GetMbFlags() const;
+    const CStr& GetModelName() const;
+    unsigned int GetModelSkin() const;
+    unsigned int GetModelCfg() const;
+    int GetModelSlot() const;
+    bool IsModelAutosized() const;
+    MsgType GetMsgType() const;
+    float GetFontSize() const;
+    float GetScrollSpeed() const;
+    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
 
 private:
-    int m_id;
-    CStr m_msg;
-    CStr m_imageFileName;
-    CStr m_imageUpOverlayFileName;
-    CStr m_imageDownOverlayFileName;
-    m3d::rend::TexHandle m_image;
-    m3d::rend::TexHandle m_imageUpOverlay;
-    m3d::rend::TexHandle m_imageDownOverlay;
-    CStr m_soundFileName;
-    int m_time;
-    m3d::ui::MbFlags m_mbFlags;
-    CStr m_modelName;
-    unsigned int m_modelSkin;
-    unsigned int m_modelCfg;
-    int m_modelSlot;
-    bool m_bModelAutosized;
-    MsgInfo::MsgType m_msgType;
-    float m_fontSize;
-    float m_scrollSpeed;
-};
+    MsgInfo::MsgType Str2MsgType(const CStr& str) const;
+    void AddImage(const CStr& fileName, m3d::rend::TexHandle& tex);
+    /* 0x0000 */ int m_id;
+    /* 0x0004 */ CStr m_msg;
+    /* 0x0010 */ CStr m_imageFileName;
+    /* 0x001c */ CStr m_imageUpOverlayFileName;
+    /* 0x0028 */ CStr m_imageDownOverlayFileName;
+    /* 0x0034 */ m3d::rend::TexHandle m_image;
+    /* 0x0038 */ m3d::rend::TexHandle m_imageUpOverlay;
+    /* 0x003c */ m3d::rend::TexHandle m_imageDownOverlay;
+    /* 0x0040 */ CStr m_soundFileName;
+    /* 0x004c */ int m_time;
+    /* 0x0050 */ m3d::ui::MbFlags m_mbFlags;
+    /* 0x0054 */ CStr m_modelName;
+    /* 0x0060 */ unsigned int m_modelSkin;
+    /* 0x0064 */ unsigned int m_modelCfg;
+    /* 0x0068 */ int m_modelSlot;
+    /* 0x006c */ bool m_bModelAutosized;
+    /* 0x006d */ char Padding_235[3];
+    /* 0x0070 */ MsgInfo::MsgType m_msgType;
+    /* 0x0074 */ float m_fontSize;
+    /* 0x0078 */ float m_scrollSpeed;
+}; /* size: 0x007c */
 
 class MsgManager :  public m3d::Object
 {

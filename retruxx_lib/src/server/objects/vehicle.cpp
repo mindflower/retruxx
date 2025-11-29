@@ -16,6 +16,7 @@
 #include <server/objects/physicbodies/physichelpers.h>
 
 #include "chassis.h"
+#include "chest.h"
 #include "landscape.h"
 #include "player.h"
 #include "vehicleupdater.h"
@@ -45,6 +46,7 @@
 
 #include "gadget.h"
 #include "level.h"
+#include "staticautogun.h"
 #include "team.h"
 #include "vehiclerecollection.h"
 #include "core/timer.h"
@@ -478,7 +480,6 @@ namespace ai
         }; /* size: 0x0018 */
 
 
-        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D5680, FlatLine::CreateOrthogonal)
         FlatLine* FlatLine::CreateOrthogonal(FlatLine* a1,const CVector& p1, const CVector& p2)
         {
 			auto result = a1;
@@ -537,7 +538,6 @@ namespace ai
 				v15 = 1;
 			return acos(nextPointa) * (double)v15;
         }
-        RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005D07A0, GetAngleBetween)
 
         void CalcDrivingValues(Vehicle const& vehicle, CVector const& point, CVector const& nextPoint, bool bPrecisely, DrivingValues& dv)
         {           
@@ -590,7 +590,6 @@ namespace ai
             auto const scalVelocity = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
             dv.brakingCircleRadius = fabs(dv.nextAngle) * (scalVelocity * log2(scalVelocity) * 0.04);
         }
-        RETRUXX_DLL_INJECT_FUNCTION(0x005D57A0, CalcDrivingValues);
     }
 
 	extern AIManager* theAIManager;
@@ -794,7 +793,8 @@ namespace ai
 
 	int Vehicle::GetInfoObjId() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		auto* player = RT_DYNCAST(GetParent(), Player);
+		return player->GetInfoObjId();
 	}
 
 	bool Vehicle::bRocketLaunchersPresent() const
@@ -814,7 +814,7 @@ namespace ai
 
 	VehicleRecollection* Vehicle::GetRecollection() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(theObjects->GetEntityByObjId(m_recollectionId), VehicleRecollection);
 	}
 
 	void Vehicle::SetLinearVelocity(CVector const& linearVel)
@@ -1041,7 +1041,7 @@ namespace ai
 
 	unsigned Vehicle::GetNumWheels() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return m_wheels.size();
 	}
 
 	void Vehicle::SetHandBrake()
@@ -1049,13 +1049,16 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x005DCFD0, Vehicle::GetRecollectionPosition)
-	CVector Vehicle::GetRecollectionPosition(float) const
+	CVector Vehicle::GetRecollectionPosition(float recollectionRange) const
 	{
-        RETRUXX_NOT_IMPLEMENTED;
-        //TODO: implement recollection logic
-        auto center = GetGeometricCenter();
-        return center;
+		auto* recollection = RT_DYNCAST(theObjects->GetEntityByObjId(m_recollectionId), VehicleRecollection);
+		if (recollection)
+		{
+            auto range = (double)rand() * 0.000030518509 * recollectionRange;
+            auto time = theObjects->GetGameTimeDiff() - ai::theGlobProp.m_gameTimeMult * range;
+            return recollection->GetRecollectionPosition(time);
+		}
+		return GetGeometricCenter();
 	}
 
 	float Vehicle::GetSteer() const
@@ -1065,7 +1068,7 @@ namespace ai
 
 	void Vehicle::IncNumWheelsTouchingGround()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        ++m_numWheelsTouchingGround;
 	}
 
 	void Vehicle::CreateChildren()
@@ -1204,9 +1207,10 @@ namespace ai
 		this->m_cruisingSpeed = cruisingSpeed;
 	}
 
-	void Vehicle::SetExternalDestination(CVector const&)
+	void Vehicle::SetExternalDestination(CVector const& destination)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        this->m_externalDestination = destination;
+        this->m_moveStatus = Vehicle::MOVE_MOVING_BY_STEERING_FORCE;
 	}
 
 	void Vehicle::Registration()
@@ -1385,7 +1389,8 @@ namespace ai
 
 	void Vehicle::UnsubscribeRadioManagerFromNearbyObjId(int) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Vehicle::UnsubscribeRadioManagerFromNearbyObjId
+		// RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	void Vehicle::Blow(Obj*)
@@ -1420,9 +1425,45 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	bool Vehicle::FireFromWeaponByGunPartName(CStr const&, bool)
+	bool Vehicle::FireFromWeaponByGunPartName(const CStr& gunPartName, bool enable)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (gunPartName.empty())
+        {
+            return false;
+        }
+
+        auto* obj = GetPartByName(gunPartName);
+        if (!obj)
+        {
+            return false;
+        }
+
+        if (IS_KIND_OF(obj, CompoundGun))
+        {
+            auto* gun = RT_DYNCAST(obj, CompoundGun);
+            gun->SetProperTargetId(m_seenObjId, m_lockedObjId);
+            gun->Fire(enable);
+            return true;
+        }
+
+        if (IS_KIND_OF(obj, RocketLauncher))
+        {
+            auto* gun = RT_DYNCAST(obj, RocketLauncher);
+            gun->SetTargetId(m_lockedObjId);
+            gun->Fire(enable);
+            return true;
+        }
+
+        if (IS_KIND_OF(obj, Gun))
+        {
+            auto* gun = RT_DYNCAST(obj, Gun);
+            gun->SetTargetId(m_seenObjId);
+            if (!enable || gun->isLookAtPoint(m_curLookAt, 0.050000001))
+            {
+                gun->Fire(enable);
+            }
+        }
+        return true;
 	}
 
 	void Vehicle::SetUpdatingByODE(bool byODE)
@@ -1483,7 +1524,21 @@ namespace ai
 
 	float Vehicle::EstimateDamageAI() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        float result = 0.0;
+        for (auto const&[name, part] : m_vehicleParts)
+        {
+            if (IS_KIND_OF(part, CompoundGun))
+            {
+                auto* compoundGun = RT_DYNCAST(part, CompoundGun);
+                result += compoundGun->EstimateDamage();
+            }
+            else if (IS_KIND_OF(part, Gun))
+            {
+                auto* gun = RT_DYNCAST(part, Gun);
+                result += gun->EstimateDamage();
+            }
+        }
+		return result;
 	}
 
 	void Vehicle::PickUpNearbyObjects(bool, unsigned&, retruxx::vector<int, retruxx::allocator<int>>&)
@@ -1522,7 +1577,7 @@ namespace ai
 
 	bool Vehicle::GetOnOilMode() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_onOilMode != 0;
 	}
 
 	bool Vehicle::bIsMovingAlongExternalPath() const
@@ -1587,9 +1642,31 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::FireFromWeaponAI(bool, float, Obj*)
+	void Vehicle::FireFromWeaponAI(bool enable, float elapsedTime, Obj* target)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (!enable)
+        {
+            ai::WeaponFirer::AimAndFireFromWeapons(this, 0, elapsedTime, target);
+			return;
+        }
+
+        auto const curTime = M3D_KERNEL->GetTimer().GetCurTime();
+        if (curTime - m_shootTypeChangeTime > m_shootTimeToWait)
+        {
+            bool const isShooting = m_bIsShooting;
+            m_shootTypeChangeTime = curTime;
+            m_bIsShooting = !isShooting;
+            float timeBetweenBursts = 0.0;
+            if (!isShooting)
+                timeBetweenBursts = ai::theGlobProp.m_minBurstTime + rand() % (ai::theGlobProp.m_maxBurstTime - ai::theGlobProp.m_minBurstTime);
+            else
+                timeBetweenBursts = ai::theGlobProp.m_timeBetweenBursts;
+            m_shootTimeToWait = timeBetweenBursts;
+        }
+        if (m_bIsShooting)
+            ai::WeaponFirer::AimAndFireFromWeapons(this, 1, elapsedTime, target);
+        else
+            ai::WeaponFirer::AimAndFireFromWeapons(this, 0, elapsedTime, target);
 	}
 
 	bool Vehicle::AddGadget(Gadget*)
@@ -1713,7 +1790,8 @@ namespace ai
 
 	void Vehicle::SubscribeRadioManagerOnNearbyObjId(int) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: implement Vehicle::SubscribeRadioManagerOnNearbyObjId
+		// RETRUXX_NOT_IMPLEMENTED;
 	}
 
 	int Vehicle::GetValidSlotIdForGadget(Gadget const*) const
@@ -1765,9 +1843,11 @@ namespace ai
 
 	void Vehicle::SetAttackStatus(VehicleAttackStatus attackStatus)
 	{
-		this->m_attackStatus = attackStatus;
+		m_attackStatus = attackStatus;
 		if (!attackStatus)
-			ai::WeaponFirer::FireFromWeaponsIfPossible(this, 0, {0.0, 0.0, 0.0}, 0);
+		{
+			WeaponFirer::FireFromWeaponsIfPossible(this, 0, {0.0, 0.0, 0.0}, 0);
+		}
 	}
 
 	Vehicle::Vehicle(VehiclePrototypeInfo const& prototypeInfo) :
@@ -1913,7 +1993,6 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-    RETRUXX_DLL_INJECT_VIRTUAL_FUNCITON_NAMESPACED(0x005EAEE0, ai, Vehicle, RenderDebugInfo)
 	void Vehicle::RenderDebugInfo() const
 	{
         CVector curPoint;
@@ -1992,7 +2071,7 @@ namespace ai
 
 	int Vehicle::GetSeenObjId() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_seenObjId;
 	}
 
 	void Vehicle::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
@@ -2035,7 +2114,7 @@ namespace ai
 
 	bool Vehicle::bIsControlledByPlayer() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_bIsControlledByPlayer;
 	}
 
 	m3d::AIParam Vehicle::TakeOffAllGuns()
@@ -2043,17 +2122,16 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-    RETRUXX_DLL_INJECT_FUNCTION(0x005D1210, Vehicle::SetThrottle)
 	void Vehicle::SetThrottle(float throttle, bool autoBrake)
 	{
         if (fabs(throttle) <= 1.1)
         {
             m_throttle = throttle;
             m_brake = 0.0;
-            m_bAutoBrake = false;
+            m_bAutoBrake = autoBrake;
             if (fabs(throttle) > 0.001)
             {
-                m_bHandBrake = 0;
+                m_bHandBrake = false;
             }
         }
 		else
@@ -2100,7 +2178,7 @@ namespace ai
 
 	float Vehicle::GetTurboThrottleTime() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_turboThrottleTime;
 	}
 
 	float Vehicle::GetFullDurabilityCoeffForDamageType(DamageType) const
@@ -2208,13 +2286,11 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA60, Vehicle::GetCabin, Cabin const* (Vehicle::*)()const)
 	Cabin const* Vehicle::GetCabin() const
 	{
 		return RT_DYNCAST(GetPartByName(CABIN), const Cabin);
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CB9D0, Vehicle::GetCabin, Cabin* (Vehicle::*)())
 	Cabin* Vehicle::GetCabin()
 	{
 		return RT_DYNCAST(GetPartByName(CABIN), Cabin);
@@ -2245,9 +2321,20 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::SetRole(VehicleRole*)
+	void Vehicle::SetRole(VehicleRole* role)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (auto* currRole = RT_DYNCAST(theObjects->GetEntityByObjId(m_roleId), VehicleRole))
+		{
+            currRole->Remove();
+		}
+		if (role)
+		{
+            m_roleId = role->GetId();
+		}
+		else
+		{
+		    m_roleId = -1;
+		}
 	}
 
 	retruxx::set<ref_ptr<Obstacle>, retruxx::less<ref_ptr<Obstacle>>, retruxx::allocator<ref_ptr<Obstacle>>> const& Vehicle::
@@ -2403,7 +2490,6 @@ namespace ai
         return RT_CLASS_LOCAL(Vehicle);
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION(0x005CC1C0, Vehicle::GetSize)
 	CVector Vehicle::GetSize() const
 	{
 		return m_size;
@@ -2427,12 +2513,31 @@ namespace ai
 
 	bool Vehicle::GetInSmokeScreenMode() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_inSmokeScreenMode != 0;
 	}
 
 	void Vehicle::PlaySoundOnRechargeWeapon()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (m_bIsControlledByPlayer)
+        {
+            if (M3D_ENGINE_CFG.m_snd_Enable.GetB() &&
+                (m_soundRechargeChannelId == -1 || !M3D_APP->m_sound->IsChannelPlaying(m_soundRechargeChannelId)))
+            {
+                m_soundRechargeChannelId = -1;
+                auto& serverSound = M3D_APP->GetSoundServer();
+
+                auto itemByName = serverSound.GetItemByName("S_RECHARGE_WEAPON", 1);
+                if (itemByName != -1)
+                {
+                    int soundId = -1;
+                    serverSound.GetItemProperty(itemByName, m3d::PROP_SRV_SND_ID, &soundId);
+                    if (soundId != -1)
+                    {
+                        m_soundRechargeChannelId = M3D_APP->m_sound->PlaySound2D(soundId, 0);
+                    }
+                }
+            }
+        }
 	}
 
 	Vehicle* Vehicle::GetTrailer() const
@@ -2618,14 +2723,14 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	Wheel* Vehicle::GetWheel(unsigned)
+	Wheel* Vehicle::GetWheel(unsigned num)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_wheels[num].GetWheel();
 	}
 
-	Wheel const* Vehicle::GetWheel(unsigned) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
+	Wheel const* Vehicle::GetWheel(unsigned num) const
+    {
+        return m_wheels[num].GetWheel();
 	}
 
 	float Vehicle::GetThrottle() const
@@ -3140,13 +3245,11 @@ namespace ai
 		}
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA00, Vehicle::GetBasket, Basket* (Vehicle::*)())
 	Basket* Vehicle::GetBasket()
 	{
 		return RT_DYNCAST(GetPartByName(BASKET), Basket);
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_FUNCTION_TYPED(0x005CBA90, Vehicle::GetBasket, Basket const*(Vehicle::*)()const)
 	Basket const* Vehicle::GetBasket() const
 	{
 		return RT_DYNCAST(GetPartByName(BASKET), const Basket);
@@ -3181,14 +3284,45 @@ namespace ai
 
 		if (m_bIsControlledByPlayer)
 		{
-			for (auto& obstacle : m_currentNearbyObstacles)
+			// TODO: check this
+			for (const auto& obstacle : m_currentNearbyObstacles)
 			{
-				RETRUXX_NOT_IMPLEMENTED;
+                auto* ownerObj = obstacle->GetOwnerPhysicObj();
+                if (!ownerObj)
+                {
+                    continue;
+                }
+
+				if (IS_KIND_OF(ownerObj, Vehicle))
+				{
+                    if (m_pastNearbyObstacles.find(obstacle) == m_pastNearbyObstacles.end())
+                    {
+                        auto* vehicle = RT_DYNCAST(ownerObj, Vehicle);
+                        vehicle->SubscribeRadioManagerOnNearbyObjId(GetId());
+                    }
+				}
+                if (IS_KIND_OF(ownerObj, Chest))
+                {
+                    RETRUXX_NOT_IMPLEMENTED;
+                }
 			}
 
-			for (auto& obstacle : m_pastNearbyObstacles)
+			for (const auto& obstacle : m_pastNearbyObstacles)
 			{
-				RETRUXX_NOT_IMPLEMENTED;
+                auto* ownerObj = obstacle->GetOwnerPhysicObj();
+                if (!ownerObj)
+                {
+                    continue;
+                }
+
+                if (IS_KIND_OF(ownerObj, Vehicle))
+                {
+                    if (m_currentNearbyObstacles.find(obstacle) == m_currentNearbyObstacles.end())
+                    {
+                        auto* vehicle = RT_DYNCAST(ownerObj, Vehicle);
+                        vehicle->UnsubscribeRadioManagerFromNearbyObjId(GetId());
+                    }
+                }
 			}
 		}
 	}
@@ -3281,6 +3415,7 @@ namespace ai
 				CVector scale = { 1.0, 1.0, 1.0 };
 				// TODO: check this;
 				auto node = PhysicBody::CreateNode(cabinPrototypeInfo->m_engineHighSoundName, 0, scale, nullptr, false);
+                m_engineHighSoundNode = (m3d::SgSoundSourceNode*)node;
 				cabin->m_Node->AddChild(node);
 			}
 		}
@@ -3740,25 +3875,71 @@ namespace ai
 	void Vehicle::_ApplyStabilizingForces()
 	{
 		M3D_ASSERT(IsAlive());
-
+		
+		// TODO: check this!!
 		const auto linearVelocity = GetLinearVelocity();
 		if (m_numWheelsTouchingGround > 0)
 		{
-			RETRUXX_NOT_IMPLEMENTED;
+            const auto horizVel = sqrt(linearVelocity.z * linearVelocity.z + linearVelocity.x * linearVelocity.x);
+            if (horizVel > 5.0)
+            {
+                const auto pressingForce = GetPrototypeInfo()->m_pressingForce;
+                const auto mass = GetMass();
+
+				CVector force;
+                force.x = 0.0;
+                force.y = mass * pressingForce * horizVel * -0.1962;
+                force.z = 0.0;
+                AddForce(force);
+            }
 		}
 
+		const auto velocity = sqrt(linearVelocity.y * linearVelocity.y + linearVelocity.z * linearVelocity.z + linearVelocity.x * linearVelocity.x);
 		if (m_numWheelsTouchingGround > 0)
 		{
-			RETRUXX_NOT_IMPLEMENTED;
+                if (const auto* wheel = GetFirstExistingWheel())
+                {
+                    const auto dir = GetDirection();
+                    auto throttle = m_throttle * 0.5;
+					auto direction = -1;
+                    if ((((dir.y * linearVelocity.y) + (dir.z * linearVelocity.z)) + (dir.x * linearVelocity.x)) >= 0.0)
+                    {
+                        direction = 1;
+                    }
+
+					const CVector INITIAL_UP_DIRECTION = {0.0, 1.0, 0.0};
+
+					CVector relDir;
+                    relDir.x = (0.0 - INITIAL_UP_DIRECTION.x) * wheel->m_curAngle;
+                    relDir.y = (0.0 - INITIAL_UP_DIRECTION.y) * wheel->m_curAngle;
+                    relDir.z = (0.0 - INITIAL_UP_DIRECTION.z) * wheel->m_curAngle;
+
+                    const auto mass = GetMass();
+                    relDir.x = ((relDir.x * mass) * velocity) * m_driftCoeff;
+                    relDir.y = ((relDir.y * mass) * velocity) * m_driftCoeff;
+                    relDir.z = ((relDir.z * mass) * velocity) * m_driftCoeff;
+
+                    const auto cabinControlCoeff = _GetCabinControlCoeff();
+
+                    auto v21 = fabs(throttle) + 0.5;
+
+					CVector force;
+                    force.x = ((relDir.x * cabinControlCoeff) * direction) * v21;
+                    force.y = ((relDir.y * cabinControlCoeff) * direction) * v21;
+                    force.z = ((relDir.z * cabinControlCoeff) * direction) * v21;
+                    AddRelTorque(force);
+                }
 		}
 
+        m_numWheelsTouchingGround = 0;
 	}
 
 	void Vehicle::_UpdateAlarmStatus()
 	{
+		// TODO: implement Vehicle::_UpdateAlarmStatus
 		for (auto& obstacle : m_currentNearbyObstacles)
 		{
-			RETRUXX_NOT_IMPLEMENTED;
+			// RETRUXX_NOT_IMPLEMENTED;
 		}
 	}
 
@@ -3796,10 +3977,20 @@ namespace ai
 		return 1;
 	}
 
-	CVector Vehicle::_CalcRepulsionForNearbyObjects(CVector const&, CVector const&, CVector const&, CVector const&,
-		bool, CVector&) const
+	CVector Vehicle::_CalcRepulsionForNearbyObjects(CVector const& myPos, CVector const& myPredictedPos, CVector const& myVel, CVector const& guide,
+        bool bIsLookObstacle,
+        CVector& attraction) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		CVector repulsion = ZeroVector;
+		for (auto const& obstacle : m_currentNearbyObstacles)
+		{
+		    auto const* owner = obstacle->GetOwnerPhysicObj();
+            if (owner != this && (!owner || (owner->GetFlags() & 1) != 0))
+            {
+                repulsion += _CalcRepulsionForObstacle(obstacle, myPos, myPredictedPos, myVel, guide, bIsLookObstacle, attraction);
+            }
+		}
+        return repulsion;
 	}
 
 	void Vehicle::_DeadActions(float elapsedTime)
@@ -3862,7 +4053,6 @@ namespace ai
 		//RETRUXX_NOT_IMPLEMENTED;
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(0x005CCF40, Vehicle, _GetNextPathPoint)
 	CVector Vehicle::_GetNextPathPoint() const
 	{
 		// TODO: generated code
@@ -3927,55 +4117,29 @@ namespace ai
 		return nextPoint;
 	}
 
-    RETRUXX_DLL_INJECT_CLASS_METHOD(0x005DAAE0, Vehicle, _KeepThrottle)
 	void Vehicle::_KeepThrottle(bool applyActions)
 	{
         auto const wheelRpm = fabs(m_averageWheelAVel) * 9.5492964;
         auto const velocity = GetLinearVelocity();
-        if (m_bAutoBrake) 
+        if (m_bAutoBrake)
         {
-            CVector curPoint;
             auto const direction = GetDirection();
-            auto const directionState = RoughSign(m_engineRpm);
-            auto const isWrongWay =
-                (direction.z * velocity.z + direction.y * velocity.y + direction.x * velocity.x) < -0.1 &&
-                RoughSign(m_throttle) == 0;
+            auto const isWrongWay = (wheelRpm > 5.0 && (RoughSign(m_engineRpm) * RoughSign(m_throttle) <= 0)) ||
+                (wheelRpm <= 5.0 && ((direction.z * velocity.z + direction.y * velocity.y + direction.x * velocity.x) < -0.1 || RoughSign(m_throttle) == 0));
 
             if (isWrongWay)
             {
+                m_throttle = 0.0;
                 m_brake = 1.0;
-            }
-            else if (GetPathItem(m_pPath, m_pathNum, curPoint))
-            {
-                auto tempPoint = curPoint;
-                tempPoint.y = M3D_KERNEL->GetEngineCfg().GetHeight(tempPoint.x, tempPoint.z);
-
-                auto pos = GetPosition();
-                pos.x = tempPoint.x - pos.x;
-                pos.y = tempPoint.y - pos.y;
-                pos.z = tempPoint.z - pos.z;
-
-                auto const nextPoint = _GetNextPathPoint();
-                auto const distanceToPoint = sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
-                auto const scalVelocity = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
-                auto const offsetBase = 500;
-
-                DrivingValues dv;
-                CalcDrivingValues(*this, curPoint, nextPoint, true, dv);
-                if (offsetBase / scalVelocity + distanceToPoint < dv.brakingCircleRadius)
-                {
-                    auto const steeringForce = _CalcSteeringForceToPathPoint(curPoint, nextPoint);
-                    auto const scalSteeringForce = sqrt(steeringForce.x * steeringForce.x + steeringForce.y * steeringForce.y + steeringForce.z * steeringForce.z);
-                    m_brake = 1 - pow(((scalSteeringForce * 0.5) + 0.5), 2);
-                }
             }
         }
 
         if (RoughSign(m_throttle) == 0 &&
             sqrt(velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) < 0.5)
         {
-            m_bHandBrake = 1;
+            m_bHandBrake = true;
         }
+
         if (m_bHandBrake)
         {
             m_throttle = 0.0;
@@ -4038,10 +4202,300 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	CVector Vehicle::_CalcRepulsionForObstacle(Obstacle const*, CVector const&, CVector const&, CVector const&,
-		CVector const&, bool, CVector&) const
+	CVector Vehicle::_CalcRepulsionForObstacle(
+        Obstacle const* ob,
+        CVector const& myPos,
+        CVector const& myPredictedPos,
+        CVector const& myVel,
+        CVector const& guide,
+        bool bIsLookObstacle,
+        CVector& attraction)
+        const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code Vehicle::_CalcRepulsionForObstacle
+        // Early return if not a look obstacle and attraction force is negligible
+        if (!bIsLookObstacle && (attraction.x * attraction.x + attraction.y * attraction.y + attraction.z * attraction.z) < 0.001f)
+        {
+            return ZeroVector;
+        }
+
+        // Get obstacle position and velocity
+        CVector obPos = ob->GetPosition();
+        CVector obVel = ob->GetLinearVelocity();
+
+        // Calculate predicted obstacle position
+        CVector vehiclePredictedPos;
+        vehiclePredictedPos.x = obPos.x + (obVel.x * ai::theGlobProp.m_predictionTime);
+        vehiclePredictedPos.y = obPos.y + (obVel.y * ai::theGlobProp.m_predictionTime);
+        vehiclePredictedPos.z = obPos.z + (obVel.z * ai::theGlobProp.m_predictionTime);
+
+        // Calculate current position difference and distance
+        CVector deltaPos;
+        deltaPos.x = myPos.x - obPos.x;
+        deltaPos.y = myPos.y - obPos.y;
+        deltaPos.z = myPos.z - obPos.z;
+
+        float currentDistanceSq = deltaPos.x * deltaPos.x + deltaPos.y * deltaPos.y + deltaPos.z * deltaPos.z;
+        float currentDistance = sqrtf(currentDistanceSq);
+
+        // Get intersection radii
+        float myIntersectionRadius = GetIntersectionRadius();
+
+        float obIntersectionRadius = ob->GetIntersectionRadius();
+        float dist = currentDistance - (obIntersectionRadius + myIntersectionRadius);
+
+        // Calculate predicted position difference and distance
+        CVector predictedDeltaPos;
+        predictedDeltaPos.x = myPredictedPos.x - vehiclePredictedPos.x;
+        predictedDeltaPos.y = myPredictedPos.y - vehiclePredictedPos.y;
+        predictedDeltaPos.z = myPredictedPos.z - vehiclePredictedPos.z;
+
+        float predictedDistanceSq =
+            predictedDeltaPos.x * predictedDeltaPos.x + predictedDeltaPos.y * predictedDeltaPos.y + predictedDeltaPos.z * predictedDeltaPos.z;
+        float predictedDist = sqrtf(predictedDistanceSq);
+
+        float myIntersectionRadiusPred = GetIntersectionRadius();
+
+        float obIntersectionRadiusPred = ob->GetIntersectionRadius();
+        predictedDist = predictedDist - (obIntersectionRadiusPred + myIntersectionRadiusPred);
+
+        // Get the appropriate collision geometry
+        Geom const* obstacleGeom = ob->GetBox();
+        if (!obstacleGeom)
+        {
+            obstacleGeom = ob->GetSphere();
+        }
+
+        // Get the appropriate vehicle box (look or target)
+        scoped_ptr<ai::Box> const& vehicleBox = bIsLookObstacle ? m_lookBox : m_targetBox;
+
+
+        CVector repulsion = ZeroVector;
+        CVector right = predictedDeltaPos;
+	    CVector up;
+
+        // Determine the guide direction
+        if (!bIsLookObstacle)
+        {
+            right = attraction;
+        }
+        else
+        {
+            right.x = guide.x;
+            right.z = guide.z;
+        }
+
+        CVector INITIAL_UP_DIRECTION_4 = {0.0, 1.0, 0.0};
+        // Check if we should calculate complex repulsion
+        if ((predictedDist >= -2.0f && dist >= -1.0f) || ob->GetBox())
+        {
+            dContact contact;
+
+            // Check for collision between obstacle and vehicle geometry
+            if (dCollide(obstacleGeom->GetGeomId(), vehicleBox->GetGeomId(), 1, &contact.geom, sizeof(dContact)) > 0)
+            {
+                // Calculate normalized delta position
+                float invCurrentDist = 1.0f / sqrtf(currentDistanceSq + 1.19e-7f);
+                CVector normalizedDeltaPos;
+                normalizedDeltaPos.x = deltaPos.x * invCurrentDist;
+                normalizedDeltaPos.y = deltaPos.y * invCurrentDist;
+                normalizedDeltaPos.z = deltaPos.z * invCurrentDist;
+
+                // Calculate orthogonal vector
+                up.x = normalizedDeltaPos.z * 0.0f - (deltaPos.z * invCurrentDist) * 0.0f;
+                up.y = (deltaPos.z * invCurrentDist) * normalizedDeltaPos.x - normalizedDeltaPos.z * (deltaPos.x * invCurrentDist);
+                up.z = (deltaPos.x * invCurrentDist) * 0.0f - (invCurrentDist * 0.0f) * normalizedDeltaPos.x;
+
+                if ((up.x * up.x + up.y * up.y + up.z * up.z) < 0.001f)
+                {
+                    // Handle degenerate case where vectors are parallel
+                    CVector contactDelta;
+                    contactDelta.x = myPos.x - contact.geom.pos[0];
+                    contactDelta.y = myPos.y - contact.geom.pos[1];
+                    contactDelta.z = myPos.z - contact.geom.pos[2];
+
+                    float contactDistanceSq = contactDelta.x * contactDelta.x + contactDelta.y * contactDelta.y + contactDelta.z * contactDelta.z;
+
+                    if (predictedDistanceSq > contactDistanceSq)
+                    {
+                        predictedDeltaPos = contactDelta;
+                        predictedDist = sqrtf(contactDistanceSq) - myIntersectionRadiusPred;
+                    }
+
+                    // Calculate relative velocity
+                    CVector deltaVel;
+                    deltaVel.x = myVel.x - obVel.x;
+                    deltaVel.y = myVel.y - obVel.y;
+                    deltaVel.z = myVel.z - obVel.z;
+
+                    if ((predictedDeltaPos.x * predictedDeltaPos.x + predictedDeltaPos.z * predictedDeltaPos.z + predictedDeltaPos.y * predictedDeltaPos.y) >
+                        0.01f)
+                    {
+                        float deltaVelLength = sqrtf(deltaVel.x * deltaVel.x + deltaVel.y * deltaVel.y + deltaVel.z * deltaVel.z);
+                        CVector normalizedPredictedPos = predictedDeltaPos.getNormalized();
+                        predictedDeltaPos.x = deltaVelLength * normalizedPredictedPos.x;
+                        predictedDeltaPos.y = deltaVelLength * normalizedPredictedPos.y;
+                        predictedDeltaPos.z = deltaVelLength * normalizedPredictedPos.z;
+                    }
+
+                    // Check if we need to zero out attraction
+                    float deltaVelLength = sqrtf(deltaVel.x * deltaVel.x + deltaVel.y * deltaVel.y + deltaVel.z * deltaVel.z);
+                    bool shouldZeroAttraction = !(deltaVelLength * deltaVelLength * 0.050968397f <= predictedDist);
+
+                    if (shouldZeroAttraction)
+                    {
+                        attraction.x = 0.0f;
+                        attraction.y = 0.0f;
+                        attraction.z = 0.0f;
+                    }
+
+                    // Calculate base repulsion force
+                    float predictedDistSq = predictedDist * predictedDist;
+                    float invDistFactor = (predictedDistSq >= 1.0f) ? 1.0f / predictedDistSq : 1.0f;
+
+                    CVector normalizedPredictedDelta = predictedDeltaPos.getNormalized();
+                    repulsion.x = normalizedPredictedDelta.x * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                    repulsion.y = normalizedPredictedDelta.y * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                    repulsion.z = normalizedPredictedDelta.z * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+
+                    // Calculate perpendicular component
+                    up = INITIAL_UP_DIRECTION_4;
+                    CVector perpendicular;
+                    perpendicular.x = (up.z * right.x) - (right.z * up.x);
+                    perpendicular.y = (up.x * 0.0f) - (up.y * right.x);
+                    perpendicular.z = (up.y * right.z) - (up.z * 0.0f);
+                    perpendicular = perpendicular.getNormalized();
+
+                    float repulsionMagnitude = sqrtf(repulsion.x * repulsion.x + repulsion.y * repulsion.y + repulsion.z * repulsion.z);
+                    float perpendicularScale = shouldZeroAttraction ? 0.1f : 0.5f;
+
+                    repulsion.x += (perpendicular.x * repulsionMagnitude) * perpendicularScale;
+                    repulsion.y += (perpendicular.y * repulsionMagnitude) * perpendicularScale;
+                    repulsion.z += (perpendicular.z * repulsionMagnitude) * perpendicularScale;
+                }
+                else
+                {
+                    // Normal case with good orthogonal vectors
+                    up = up.getNormalized();
+
+                    if (!bIsLookObstacle)
+                    {
+                        CVector normalizedAttraction = attraction.getNormalized();
+                        float dotProduct = normalizedAttraction.x * up.x + normalizedAttraction.y * up.y + normalizedAttraction.z * up.z;
+
+                        if ((attraction.x * attraction.x + attraction.y * attraction.y + attraction.z * attraction.z) > 0.0001f && bIsLookObstacle &&
+                            fabsf(dotProduct) > 0.1f)
+                        {
+                            int direction = (dotProduct < 0.0f) ? -1 : 1;
+                            CVector sideDir;
+                            sideDir.x = (float)direction * up.x;
+                            sideDir.y = (float)direction * up.y;
+                            sideDir.z = (float)direction * up.z;
+
+                            if (bIsLookObstacle)
+                            {
+                                float invDistFactor = (predictedDist >= 1.0f) ? 1.0f / predictedDist : 1.0f;
+                                repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                                repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                                repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                            }
+                            else
+                            {
+                                repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff;
+                                repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff;
+                                repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff;
+                            }
+                        }
+                        else
+                        {
+                            float velocityDot = up.x * deltaPos.x + up.z * deltaPos.z + up.y * 0.0f;
+                            int direction = (velocityDot < 0.0f) ? -1 : 1;
+                            CVector sideDir;
+                            sideDir.x = (float)direction * up.x;
+                            sideDir.y = (float)direction * up.y;
+                            sideDir.z = (float)direction * up.z;
+
+                            if (bIsLookObstacle)
+                            {
+                                float invDistFactor = (predictedDist >= 1.0f) ? 1.0f / predictedDist : 1.0f;
+                                repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                                repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                                repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                            }
+                            else
+                            {
+                                repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff;
+                                repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff;
+                                repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        float velocityDot = up.x * deltaPos.x + up.z * deltaPos.z + up.y * 0.0f;
+                        int direction = (velocityDot < 0.0f) ? -1 : 1;
+                        CVector sideDir;
+                        sideDir.x = (float)direction * up.x;
+                        sideDir.y = (float)direction * up.y;
+                        sideDir.z = (float)direction * up.z;
+
+                        if (bIsLookObstacle)
+                        {
+                            float invDistFactor = (predictedDist >= 1.0f) ? 1.0f / predictedDist : 1.0f;
+                            repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                            repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                            repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff * invDistFactor;
+                        }
+                        else
+                        {
+                            repulsion.x = sideDir.x * ai::theGlobProp.m_repulsiveCoeff;
+                            repulsion.y = sideDir.y * ai::theGlobProp.m_repulsiveCoeff;
+                            repulsion.z = sideDir.z * ai::theGlobProp.m_repulsiveCoeff;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Simple repulsion calculation for non-colliding case
+            attraction.x = 0.0f;
+            attraction.y = 0.0f;
+            attraction.z = 0.0f;
+
+            // Calculate normalized predicted delta
+            float invPredictedDist = 1.0f / sqrtf(predictedDistanceSq + 1.19e-7f);
+            CVector normalizedPredictedDelta;
+            normalizedPredictedDelta.x = predictedDeltaPos.x * invPredictedDist;
+            normalizedPredictedDelta.y = predictedDeltaPos.y * invPredictedDist;
+            normalizedPredictedDelta.z = predictedDeltaPos.z * invPredictedDist;
+
+            // Base repulsion
+            repulsion.x = normalizedPredictedDelta.x * ai::theGlobProp.m_repulsiveCoeff;
+            repulsion.y = normalizedPredictedDelta.y * ai::theGlobProp.m_repulsiveCoeff;
+            repulsion.z = normalizedPredictedDelta.z * ai::theGlobProp.m_repulsiveCoeff;
+
+            // Calculate perpendicular component
+            up = INITIAL_UP_DIRECTION_4;
+            CVector perpendicular;
+            perpendicular.x = (up.z * guide.x) - (guide.z * up.y);
+            perpendicular.y = (guide.x * up.z) - (guide.z * up.x);
+            perpendicular.z = (guide.z * up.y) - (up.z * guide.x);
+
+            float perpendicularLength = sqrtf(perpendicular.x * perpendicular.x + perpendicular.y * perpendicular.y + perpendicular.z * perpendicular.z);
+            float invPerpendicularLength = 1.0f / (perpendicularLength + 1.19e-7f);
+            perpendicular.x *= invPerpendicularLength;
+            perpendicular.y *= invPerpendicularLength;
+            perpendicular.z *= invPerpendicularLength;
+
+            float repulsionMagnitude = sqrtf(repulsion.x * repulsion.x + repulsion.y * repulsion.y + repulsion.z * repulsion.z);
+
+            repulsion.x += (perpendicular.x * repulsionMagnitude) * 0.1f;
+            repulsion.y += (perpendicular.y * repulsionMagnitude) * 0.1f;
+            repulsion.z += (perpendicular.z * repulsionMagnitude) * 0.1f;
+        }
+
+        return repulsion;
 	}
 
 	void Vehicle::_DriveBySteeringForce(CVector const& steeringForce)
@@ -4296,7 +4750,17 @@ namespace ai
 
 	float Vehicle::_GetCabinControlCoeff() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        auto* cabin = GetCabin();
+
+		float coeff = 50.0;
+		if (cabin)
+		{
+            coeff = cabin->GetControl();
+		}
+
+		coeff = std::clamp(coeff, 0.0f, 100.0f);
+
+		return 1.5 - coeff * 0.0099999998;
 	}
 
 	void Vehicle::_ValidateVehicleParts()
@@ -4304,12 +4768,53 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::_AdjustLookBox(bool, CVector const&, CVector const&, CVector const&) const
+	void Vehicle::_AdjustLookBox(bool bForLooking, CVector const& myPos, CVector const& pathPoint, CVector const& guide) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: generated code Vehicle::_AdjustLookBox
+        // Calculate direction vector from current position to path point
+        CVector dir = pathPoint - myPos;
+        float distanceToPathPoint = dir.length();
+
+        float boxLength;
+        CVector normalizedDir;
+
+        if (bForLooking)
+        {
+            // For look box: use guide direction with default look box length
+            boxLength = ai::theGlobProp.m_defaultLookBoxLength;
+            normalizedDir = guide.getNormalized();
+        }
+        else
+        {
+            // For target box: use path direction with default target box length
+            boxLength = ai::theGlobProp.m_defaultTargetBoxLength;
+            normalizedDir = dir.getNormalized();
+        }
+
+        // Use the shorter of calculated distance or default box length
+        float actualLength = std::min(distanceToPathPoint, boxLength);
+
+        // Select the appropriate box (look box or target box)
+        scoped_ptr<ai::Box> const& targetBox = bForLooking ? this->m_lookBox : this->m_targetBox;
+
+        // Set box size (width, height, length)
+        CVector size;
+        size.x = this->m_size.x * 1.5f;  // Width: 1.5x vehicle width
+        size.y = this->m_size.y * 2.0f;  // Height: 2x vehicle height
+        size.z = actualLength;           // Length: dynamic based on distance
+
+        targetBox->SetSize(size);
+
+        // Orient the box in the calculated direction
+        ai::SetDirectionToObject(*targetBox, normalizedDir);
+
+        // Position the box halfway between current position and target point
+        CVector boxCenter = myPos + (normalizedDir * (actualLength * 0.5f));
+
+        // Update physics geometry position
+        dGeomSetPosition(targetBox->GetGeomId(), boxCenter.x, boxCenter.y, boxCenter.z);
 	}
 
-    RETRUXX_DLL_OVERWRITE_BY_ORIGINAL_CLASS_METHOD(0x005D62E0, Vehicle, _CalcSteeringForceToPathPoint)
 	CVector Vehicle::_CalcSteeringForceToPathPoint(CVector const& point, CVector const& nextPoint) const
 	{
 		// TODO: check and refactor this
@@ -4460,7 +4965,7 @@ namespace ai
 				soundPitch = ((rpmAbs - 500.0f) * 0.0002f) + 0.5f;
 			}
 
-			m_engineHighSoundNode->SetProperty(9732u, &soundPitch);
+			m_engineHighSoundNode->SetProperty(m3d::PROP_SND_PLAYBACK_COEFF, &soundPitch);
 		}
 
 		// Automatic gear shifting based on RPM limits
@@ -4921,163 +5426,212 @@ namespace ai
 
 	void Vehicle::_AdjustWheel(WheelRuntimeInfo& wheelInfo)
 	{
-		// TODO: implement Vehicle::_AdjustWheel
-		return;
-		// TODO: generated code
-		ai::Wheel* wheel = wheelInfo.GetWheel();
+        auto m_wheel = wheelInfo.GetWheel();
 
-		// Get vehicle position and rotation
-		CVector vehiclePos = GetPosition();
+        auto pos = GetPosition();
+        auto rot = GetRotation();
+        auto invRot = rot.getInversed();
 
-		Quaternion vehicleRot= GetRotation();
+        auto v5 = m_wheel->GetDirection();
+        auto xy = invRot.y * invRot.x;
+        auto xy_2 = invRot.y * invRot.x;
+        auto yz = invRot.z * invRot.y;
+        auto yz_2 = invRot.z * invRot.y;
+        auto xx = invRot.x * invRot.x;
+        auto xx_2 = invRot.x * invRot.x;
+        auto wy = invRot.w * invRot.y;
 
-		// Get inverse of vehicle rotation
-		Quaternion invVehicleRot = vehicleRot.getInversed();
+		CMatrix vv;
+        vv._11 = 1.0 - (float)((float)((float)(invRot.z * invRot.z) + (float)(invRot.y * invRot.y)) * 2.0);
+        vv._21 = (float)((float)(invRot.y * invRot.x) - (float)(invRot.w * invRot.z)) * 2.0;
+        auto wz = invRot.w * invRot.z;
+        auto zz = invRot.z * invRot.z;
+        auto& v6 = v5;
+        auto yy = invRot.y * invRot.y;
+        auto xz = invRot.z * invRot.x;
+        auto wx = invRot.w * invRot.x;
+        vv._31 = (float)((float)(invRot.w * invRot.y) + (float)(invRot.z * invRot.x)) * 2.0;
+        vv._12 = (float)((float)(invRot.w * invRot.z) + (float)(invRot.y * invRot.x)) * 2.0;
+        vv._22 = 1.0 - (float)((float)((float)(invRot.z * invRot.z) + (float)(invRot.x * invRot.x)) * 2.0);
+        vv._33 = 1.0 - (float)((float)((float)(invRot.y * invRot.y) + (float)(invRot.x * invRot.x)) * 2.0);
+        vv._32 = (float)((float)(invRot.z * invRot.y) - (float)(invRot.w * invRot.x)) * 2.0;
+        vv._13 = (float)((float)(invRot.z * invRot.x) - (float)(invRot.w * invRot.y)) * 2.0;
+        vv._23 = (float)((float)(invRot.w * invRot.x) + (float)(invRot.z * invRot.y)) * 2.0;
+        vv._14 = 0.0;
+        vv._24 = 0.0;
+        memset(&vv.m[2][3], 0, 16);
+        vv._44 = 1.0;
 
-		// Get wheel direction
-		CVector wheelDir = wheel->GetDirection();
+        auto v66 = vv;
+        auto v7 = v66._22 * v6.y + v66._32 * v6.z + v66._12 * v6.x;
+        auto v8 = (float)(v6.y * v66._23) + (float)(v6.z * v66._33);
+        auto v9 = v66._13 * v6.x;
 
-		// Build rotation matrix from inverse vehicle rotation
-		float xx = invVehicleRot.x * invVehicleRot.x;
-		float yy = invVehicleRot.y * invVehicleRot.y;
-		float zz = invVehicleRot.z * invVehicleRot.z;
-		float xy = invVehicleRot.x * invVehicleRot.y;
-		float xz = invVehicleRot.x * invVehicleRot.z;
-		float yz = invVehicleRot.y * invVehicleRot.z;
-		float wx = invVehicleRot.w * invVehicleRot.x;
-		float wy = invVehicleRot.w * invVehicleRot.y;
-		float wz = invVehicleRot.w * invVehicleRot.z;
+		CVector axis;
+        axis.x = (float)((float)(v6.y * v66._21) + (float)(v6.z * v66._31)) + (float)(v6.x * v66._11);
+        auto v10 = v8 + v9;
+        yz_2 = 1.0 / sqrt((float)(0.0 - axis.x) * (float)(0.0 - axis.x) + (float)(v10 * v10) + 0.00000011920929);
+        auto v11 = atan2(v7, sqrt(axis.x * axis.x + (float)(v10 * v10))) * 0.5;
+        auto v12 = (float)(0.0 - axis.x) * yz_2;
+        auto v13 = yz_2 * v10;
+        auto v14 = yz_2 * 0.0;
+        yz_2 = sin(v11);
 
-		CMatrix invRotMatrix;
-		invRotMatrix._11 = 1.0f - 2.0f * (yy + zz);
-		invRotMatrix._12 = 2.0f * (xy + wz);
-		invRotMatrix._13 = 2.0f * (xz - wy);
-		invRotMatrix._14 = 0.0f;
-		invRotMatrix._21 = 2.0f * (xy - wz);
-		invRotMatrix._22 = 1.0f - 2.0f * (xx + zz);
-		invRotMatrix._23 = 2.0f * (yz + wx);
-		invRotMatrix._24 = 0.0f;
-		invRotMatrix._31 = 2.0f * (xz + wy);
-		invRotMatrix._32 = 2.0f * (yz - wx);
-		invRotMatrix._33 = 1.0f - 2.0f * (xx + yy);
-		invRotMatrix._34 = 0.0f;
-		invRotMatrix._41 = 0.0f;
-		invRotMatrix._42 = 0.0f;
-		invRotMatrix._43 = 0.0f;
-		invRotMatrix._44 = 1.0f;
+		CVector wheelDir;
+        wheelDir.z = v12 * yz_2;
+        wheelDir.y = v14 * yz_2;
+        wheelDir.x = yz_2 * v13;
 
-		// Transform wheel direction to vehicle local space
-		CVector localWheelDir;
-		localWheelDir.x = invRotMatrix._11 * wheelDir.x + invRotMatrix._21 * wheelDir.y + invRotMatrix._31 * wheelDir.z;
-		localWheelDir.y = invRotMatrix._12 * wheelDir.x + invRotMatrix._22 * wheelDir.y + invRotMatrix._32 * wheelDir.z;
-		localWheelDir.z = invRotMatrix._13 * wheelDir.x + invRotMatrix._23 * wheelDir.y + invRotMatrix._33 * wheelDir.z;
+		Quaternion v50;
+        v50.x = (float)((float)(invRot.x + (float)(invRot.z * 0.0)) + (float)(invRot.w * 0.0)) - (float)(invRot.y * 0.0);
+        v50.y = (float)((float)(invRot.y + (float)(invRot.x * 0.0)) + (float)(invRot.w * 0.0)) - (float)(invRot.z * 0.0);
+        axis.y = v50.y;
+        v50.z = (float)((float)(invRot.z + (float)(invRot.y * 0.0)) + (float)(invRot.w * 0.0)) - (float)(invRot.x * 0.0);
+        v50.w = (float)((float)(invRot.w - (float)(invRot.x * 0.0)) - (float)(invRot.y * 0.0)) - (float)(invRot.z * 0.0);
+        axis.x = v50.x;
+        axis.z = v50.z;
+        auto w = v50.w;
+        auto v48 = cos(v11);
+        auto Rotation = m_wheel->GetRotation();
+        v50.x = (float)((float)((float)(Rotation.x * w) + (float)(axis.y * Rotation.z)) + (float)(axis.x * Rotation.w)) - (float)(axis.z * Rotation.y);
+        v50.y = (float)((float)((float)(Rotation.x * axis.z) + (float)(axis.y * Rotation.w)) + (float)(w * Rotation.y)) - (float)(axis.x * Rotation.z);
+        auto v16 = w * Rotation.w;
+        auto v17 = axis.z * Rotation.z;
+        auto v18 = axis.y * Rotation.y;
+        v50.z = (float)((float)((float)(Rotation.y * axis.x) + (float)(w * Rotation.z)) + (float)(axis.z * Rotation.w)) - (float)(Rotation.x * axis.y);
+        auto v19 = (float)((float)(v16 - (float)(Rotation.x * axis.x)) - v18) - v17;
+        axis.y = v50.y;
+        v50.w = v19;
+        axis.x = v50.x;
+        axis.z = v50.z;
+        w = v19;
+        auto Inversed = wheelInfo.m_initialRot.getInversed();
+        v50.x = (float)((float)((float)(axis.y * Inversed.z) + (float)(v19 * Inversed.x)) + (float)(axis.x * Inversed.w)) - (float)(axis.z * Inversed.y);
+        v50.y = (float)((float)((float)(axis.y * Inversed.w) + (float)(axis.z * Inversed.x)) + (float)(v19 * Inversed.y)) - (float)(axis.x * Inversed.z);
+        auto v21 = axis.z * Inversed.z;
+        auto v22 = v19 * Inversed.w;
+        auto v23 = axis.y * Inversed.y;
+        v50.z = (float)((float)((float)(Inversed.y * axis.x) + (float)(w * Inversed.z)) + (float)(axis.z * Inversed.w)) - (float)(axis.y * Inversed.x);
+        v50.w = (float)((float)(v22 - (float)(Inversed.x * axis.x)) - v23) - v21;
+        auto v24 = (float)((float)((float)(rot.y * wheelDir.z) + (float)(v48 * rot.x)) + (float)(rot.w * wheelDir.x)) - (float)(rot.z * wheelDir.y);
+        auto v25 = (float)((float)((float)(rot.y * v48) + (float)(rot.w * wheelDir.y)) + (float)(rot.z * wheelDir.x)) - (float)(wheelDir.z * rot.x);
+        axis.x = v50.x;
+        w = v50.w;
+        axis.z = v50.z;
+        auto v26 = (float)((float)((float)(rot.z * v48) + (float)(rot.w * wheelDir.z)) + (float)(wheelDir.y * rot.x)) - (float)(rot.y * wheelDir.x);
+        axis.y = v50.y;
+        auto v27 = (float)((float)((float)(v25 * v50.z) + (float)(v50.w * v24)) +
+                      (float)((float)((float)((float)((float)(rot.w * v48) - (float)(rot.x * wheelDir.x)) - (float)(rot.y * wheelDir.y)) -
+                                      (float)(rot.z * wheelDir.z)) *
+                              v50.x)) -
+            (float)(v26 * v50.y);
+        auto v28 = (float)((float)((float)(v25 * v50.w) +
+                              (float)((float)((float)((float)((float)(rot.w * v48) - (float)(rot.x * wheelDir.x)) - (float)(rot.y * wheelDir.y)) -
+                                              (float)(rot.z * wheelDir.z)) *
+                                      v50.y)) +
+                      (float)(v26 * v50.x)) -
+            (float)(v50.z * v24);
+        auto v29 = (float)((float)((float)((float)((float)((float)((float)(rot.w * v48) - (float)(rot.x * wheelDir.x)) - (float)(rot.y * wheelDir.y)) -
+                                              (float)(rot.z * wheelDir.z)) *
+                                      v50.w) -
+                              (float)(v24 * v50.x)) -
+                      (float)(v25 * v50.y)) -
+            (float)(v26 * v50.z);
+        auto v30 = (float)((float)((float)(v26 * v50.w) +
+                              (float)((float)((float)((float)((float)(rot.w * v48) - (float)(rot.x * wheelDir.x)) - (float)(rot.y * wheelDir.y)) -
+                                              (float)(rot.z * wheelDir.z)) *
+                                      v50.z)) +
+                      (float)(v50.y * v24)) -
+            (float)(v25 * v50.x);
+        v50.x =
+            (float)((float)((float)(v29 * wheelInfo.m_initialRot.x) + (float)(wheelInfo.m_initialRot.w * v27)) + (float)(wheelInfo.m_initialRot.z * v28)) -
+            (float)(v30 * wheelInfo.m_initialRot.y);
+        auto z = wheelInfo.m_initialRot.z;
+        v50.y =
+            (float)((float)((float)(v29 * wheelInfo.m_initialRot.y) + (float)(v30 * wheelInfo.m_initialRot.x)) + (float)(wheelInfo.m_initialRot.w * v28)) -
+            (float)(wheelInfo.m_initialRot.z * v27);
+        auto v32 = (float)((float)(v27 * wheelInfo.m_initialRot.y) + (float)(z * v29)) + (float)(wheelInfo.m_initialRot.w * v30);
+        auto v33 = v28 * wheelInfo.m_initialRot.x;
+        auto v34 = v28 * wheelInfo.m_initialRot.y;
+        auto v35 = v32 - v33;
+        auto x = wheelInfo.m_initialRot.x;
+        v50.z = v35;
+        v50.w = (float)((float)((float)(wheelInfo.m_initialRot.w * v29) - (float)(x * v27)) - v34) - (float)(wheelInfo.m_initialRot.z * v30);
+        m_wheel->SetRotation(v50);
 
-		// Calculate wheel orientation correction
-		float projX = localWheelDir.x;
-		float projY = localWheelDir.y;
-		float projZ = localWheelDir.z;
+        auto Position = m_wheel->GetPosition();
+        wheelDir.x = Position.x - pos.x;
+        wheelDir.y = Position.y - pos.y;
+        wheelDir.z = Position.z - pos.z;
+        vv._11 = 1.0 - (float)((float)(zz + yy) * 2.0);
+        vv._21 = (float)(xy_2 - wz) * 2.0;
+        vv._31 = (float)(wy + xz) * 2.0;
+        vv._12 = (float)(wz + xy_2) * 2.0;
+        vv._22 = 1.0 - (float)((float)(zz + xx_2) * 2.0);
+        vv._32 = (float)(yz - wx) * 2.0;
+        vv._33 = 1.0 - (float)((float)(yy + xx_2) * 2.0);
+        vv._13 = (float)(xz - wy) * 2.0;
+        vv._23 = (float)(wx + yz) * 2.0;
+        vv._14 = 0.0;
+        vv._24 = 0.0;
+        memset(&vv.m[2][3], 0, 16);
+        vv._44 = 1.0;
 
-		float length = sqrt(projX * projX + projY * projY);
-		float invLength = (length > 0.0001f) ? (1.0f / length) : 0.0f;
+		v66 = vv;
+        wheelDir.y = (float)((float)(v66._32 * wheelDir.z) + (float)(v66._22 * wheelDir.y)) + (float)(v66._12 * wheelDir.x);
+        wheelDir.x = wheelInfo.m_initialPos.x;
+        wheelDir.z = wheelInfo.m_initialPos.z;
+        xx = rot.x * rot.x;
+        auto y = rot.y;
+        yz_2 = rot.y * rot.x;
+        xy = rot.z * rot.y;
+        vv._11 = 1.0 - (float)((float)((float)(rot.z * rot.z) + (float)(y * y)) * 2.0);
+        vv._21 = (float)((float)(rot.y * rot.x) - (float)(rot.z * rot.w)) * 2.0;
+        vv._31 = (float)((float)(rot.y * rot.w) + (float)(rot.z * rot.x)) * 2.0;
+        vv._12 = (float)((float)(rot.z * rot.w) + (float)(rot.y * rot.x)) * 2.0;
+        vv._22 = 1.0 - (float)((float)((float)(rot.z * rot.z) + (float)(rot.x * rot.x)) * 2.0);
+        vv._33 = 1.0 - (float)((float)((float)(y * y) + (float)(rot.x * rot.x)) * 2.0);
+        vv._32 = (float)((float)(rot.z * rot.y) - (float)(rot.w * rot.x)) * 2.0;
+        vv._13 = (float)((float)(rot.z * rot.x) - (float)(rot.y * rot.w)) * 2.0;
+        vv._23 = (float)((float)(rot.w * rot.x) + (float)(rot.z * rot.y)) * 2.0;
+        vv._14 = 0.0;
+        vv._24 = 0.0;
+        memset(&vv.m[2][3], 0, 16);
+        vv._44 = 1.0;
 
-		float angle = atan2(projZ, sqrt(projX * projX + projY * projY)) * 0.5f;
-		float sinHalfAngle = sin(angle);
-		float cosHalfAngle = cos(angle);
+		v66 = vv;
+        axis.x = (float)((float)((float)(v66._21 * wheelDir.y) + (float)(v66._31 * wheelDir.z)) + (float)(v66._11 * wheelDir.x)) + pos.x;
+        axis.y = pos.y + (float)((float)((float)(v66._22 * wheelDir.y) + (float)(v66._32 * wheelDir.z)) + (float)(v66._12 * wheelDir.x));
+        axis.z = pos.z + (float)((float)((float)(v66._23 * wheelDir.y) + (float)(v66._33 * wheelDir.z)) + (float)(v66._13 * wheelDir.x));
+        m_wheel->SetPosition(axis);
 
-		Quaternion correctionQuat;
-		correctionQuat.x = projY * invLength * sinHalfAngle;
-		correctionQuat.y = 0.0f;
-		correctionQuat.z = -projX * invLength * sinHalfAngle;
-		correctionQuat.w = cosHalfAngle;
+        auto v40 = m_wheel->GetDirection();
+        vv._11 = 1.0 - (float)((float)(zz + yy) * 2.0);
+        vv._21 = (float)(xy_2 - wz) * 2.0;
+        vv._12 = (float)(wz + xy_2) * 2.0;
+        auto& v41 = v40;
+        vv._31 = (float)(wy + xz) * 2.0;
+        vv._22 = 1.0 - (float)((float)(zz + xx_2) * 2.0);
+        vv._32 = (float)(yz - wx) * 2.0;
+        vv._33 = 1.0 - (float)((float)(yy + xx_2) * 2.0);
+        vv._13 = (float)(xz - wy) * 2.0;
+        vv._23 = (float)(wx + yz) * 2.0;
+        vv._14 = 0.0;
+        vv._24 = 0.0;
+        memset(&vv.m[2][3], 0, 16);
+        vv._44 = 1.0;
 
-		// Apply correction to wheel rotation
-		Quaternion combinedRot;
-		combinedRot.x = vehicleRot.w * correctionQuat.x + vehicleRot.x * correctionQuat.w +
-			vehicleRot.y * correctionQuat.z - vehicleRot.z * correctionQuat.y;
-		combinedRot.y = vehicleRot.w * correctionQuat.y + vehicleRot.y * correctionQuat.w +
-			vehicleRot.z * correctionQuat.x - vehicleRot.x * correctionQuat.z;
-		combinedRot.z = vehicleRot.w * correctionQuat.z + vehicleRot.z * correctionQuat.w +
-			vehicleRot.x * correctionQuat.y - vehicleRot.y * correctionQuat.x;
-		combinedRot.w = vehicleRot.w * correctionQuat.w - vehicleRot.x * correctionQuat.x -
-			vehicleRot.y * correctionQuat.y - vehicleRot.z * correctionQuat.z;
-
-		Quaternion finalWheelRot;
-		finalWheelRot.x = combinedRot.w * wheelInfo.m_initialRot.x + combinedRot.x * wheelInfo.m_initialRot.w +
-			combinedRot.y * wheelInfo.m_initialRot.z - combinedRot.z * wheelInfo.m_initialRot.y;
-		finalWheelRot.y = combinedRot.w * wheelInfo.m_initialRot.y + combinedRot.y * wheelInfo.m_initialRot.w +
-			combinedRot.z * wheelInfo.m_initialRot.x - combinedRot.x * wheelInfo.m_initialRot.z;
-		finalWheelRot.z = combinedRot.w * wheelInfo.m_initialRot.z + combinedRot.z * wheelInfo.m_initialRot.w +
-			combinedRot.x * wheelInfo.m_initialRot.y - combinedRot.y * wheelInfo.m_initialRot.x;
-		finalWheelRot.w = combinedRot.w * wheelInfo.m_initialRot.w - combinedRot.x * wheelInfo.m_initialRot.x -
-			combinedRot.y * wheelInfo.m_initialRot.y - combinedRot.z * wheelInfo.m_initialRot.z;
-
-		wheel->SetRotation(finalWheelRot);
-
-		// Adjust wheel position
-		CVector wheelWorldPos = wheel->GetPosition();
-
-		CVector relativePos = wheelWorldPos - vehiclePos;
-
-		// Transform relative position using inverse vehicle rotation
-		CVector localRelativePos;
-		localRelativePos.x = invRotMatrix._11 * relativePos.x + invRotMatrix._21 * relativePos.y + invRotMatrix._31 * relativePos.z;
-		localRelativePos.y = invRotMatrix._12 * relativePos.x + invRotMatrix._22 * relativePos.y + invRotMatrix._32 * relativePos.z;
-		localRelativePos.z = invRotMatrix._13 * relativePos.x + invRotMatrix._23 * relativePos.y + invRotMatrix._33 * relativePos.z;
-
-		// Apply initial position offset
-		CVector targetLocalPos = wheelInfo.m_initialPos;
-
-		// Build rotation matrix from vehicle rotation
-		float vxx = vehicleRot.x * vehicleRot.x;
-		float vyy = vehicleRot.y * vehicleRot.y;
-		float vzz = vehicleRot.z * vehicleRot.z;
-		float vxy = vehicleRot.x * vehicleRot.y;
-		float vxz = vehicleRot.x * vehicleRot.z;
-		float vyz = vehicleRot.y * vehicleRot.z;
-		float vwx = vehicleRot.w * vehicleRot.x;
-		float vwy = vehicleRot.w * vehicleRot.y;
-		float vwz = vehicleRot.w * vehicleRot.z;
-
-		CMatrix rotMatrix;
-		rotMatrix._11 = 1.0f - 2.0f * (vyy + vzz);
-		rotMatrix._12 = 2.0f * (vxy + vwz);
-		rotMatrix._13 = 2.0f * (vxz - vwy);
-		rotMatrix._14 = 0.0f;
-		rotMatrix._21 = 2.0f * (vxy - vwz);
-		rotMatrix._22 = 1.0f - 2.0f * (vxx + vzz);
-		rotMatrix._23 = 2.0f * (vyz + vwx);
-		rotMatrix._24 = 0.0f;
-		rotMatrix._31 = 2.0f * (vxz + vwy);
-		rotMatrix._32 = 2.0f * (vyz - vwx);
-		rotMatrix._33 = 1.0f - 2.0f * (vxx + vyy);
-		rotMatrix._34 = 0.0f;
-		rotMatrix._41 = 0.0f;
-		rotMatrix._42 = 0.0f;
-		rotMatrix._43 = 0.0f;
-		rotMatrix._44 = 1.0f;
-
-		// Transform target position back to world space
-		CVector targetWorldPos;
-		targetWorldPos.x = rotMatrix._11 * targetLocalPos.x + rotMatrix._21 * targetLocalPos.y + rotMatrix._31 * targetLocalPos.z + vehiclePos.x;
-		targetWorldPos.y = rotMatrix._12 * targetLocalPos.x + rotMatrix._22 * targetLocalPos.y + rotMatrix._32 * targetLocalPos.z + vehiclePos.y;
-		targetWorldPos.z = rotMatrix._13 * targetLocalPos.x + rotMatrix._23 * targetLocalPos.y + rotMatrix._33 * targetLocalPos.z + vehiclePos.z;
-
-		wheel->SetPosition(targetWorldPos);
-
-		// Calculate and apply wheel turning angle
-		CVector currentWheelDir = wheel->GetDirection();
-
-		// Transform current wheel direction to vehicle local space
-		CVector localCurrentWheelDir;
-		localCurrentWheelDir.x = invRotMatrix._11 * currentWheelDir.x + invRotMatrix._21 * currentWheelDir.y + invRotMatrix._31 * currentWheelDir.z;
-		localCurrentWheelDir.y = invRotMatrix._12 * currentWheelDir.x + invRotMatrix._22 * currentWheelDir.y + invRotMatrix._32 * currentWheelDir.z;
-		localCurrentWheelDir.z = invRotMatrix._13 * currentWheelDir.x + invRotMatrix._23 * currentWheelDir.y + invRotMatrix._33 * currentWheelDir.z;
-
-		// Calculate turning angle based on wheel direction in local space
-		float turnAngle = wheel->m_curAngle - atan2(-localCurrentWheelDir.z, -localCurrentWheelDir.x);
-
-		// Apply the turning angle
-		ai::Vehicle::_TurnWheelByAngle(wheel, turnAngle);
+		v66 = vv;
+        auto v42 = (float)((float)(v41[0] * v66._11) + (float)(v66._21 * v41[1])) + (float)(v66._31 * v41[2]);
+        auto v43 = (float)((float)(v66._12 * v41[0]) + (float)(v66._22 * v41[1])) + (float)(v66._32 * v41[2]);
+        wheelDir.z = (float)((float)(v66._13 * v41[0]) + (float)(v66._23 * v41[1])) + (float)(v66._33 * v41[2]);
+        axis.z = wheelDir.z;
+        wheelDir.x = v42;
+        axis.x = v42;
+        wheelDir.y = v43;
+        axis.y = v43;
+        auto angle = m_wheel->m_curAngle - atan2(-wheelDir.z, -v42);
+        _TurnWheelByAngle(m_wheel, angle);
 	}
 
 	m3d::Object* Vehicle::CreateObject()
@@ -5114,14 +5668,75 @@ namespace ai
 		}
 	}
 
-	void Vehicle::_UpdateSeenObjAndWeapons(float)
+	void Vehicle::_UpdateSeenObjAndWeapons(float elapsedTime)
 	{
 		if (!M3D_APP->bIsMousePointing())
 		{
 			return;
 		}
-		// TODO: implement Vehicle::_UpdateSeenObjAndWeapons
-		//RETRUXX_NOT_IMPLEMENTED;
+
+		m_seenObjId = -1;
+
+		CVector lookAt;
+        m3d::SgNode* seenNode = nullptr;
+        if (M3D_APP->GetMouseHitPoint(lookAt, seenNode))
+        {
+            PhysicBody* body = nullptr;
+			if (seenNode)
+			{
+                seenNode->GetProperty(m3d::PROP_NODE_PHYSICBODY, &body);
+                if (body)
+                {
+                    m_seenObjId = body->GetOwnerId();
+                }
+			}
+        }
+
+		auto* seenObj = theObjects->GetEntityByObjId(m_seenObjId);
+        if (seenObj && IS_KIND_OF(seenObj, Wheel))
+        {
+            auto* wheel = RT_DYNCAST(seenObj, Wheel);
+            auto* vehicle = wheel->GetVehicle();
+            if (vehicle)
+            {
+                m_seenObjId = vehicle->GetId();
+            }
+			else
+            {
+                m_seenObjId = -1;
+			}
+        }
+
+        if (m_seenObjId == GetId())
+        {
+            m_seenObjId = -1;
+            seenNode = nullptr;
+        }
+		// TODO: check this
+        if (!seenNode)
+        {
+            CMatrix mat;
+            mat.rotYPR(M3D_APP->m_curCamera.m_rotYaw, M3D_APP->m_curCamera.m_rotPitch, M3D_APP->m_curCamera.m_rotRoll);
+
+			const CVector INITIAL_OBJECTS_DIRECTION_4(0.0, 0.0, 1.0);
+			lookAt.x = (((mat._13 * INITIAL_OBJECTS_DIRECTION_4.z) + (mat._11 * INITIAL_OBJECTS_DIRECTION_4.x)) + (INITIAL_OBJECTS_DIRECTION_4.y * mat._12)) *
+                1000000.0;
+            lookAt.y = (((mat._23 * INITIAL_OBJECTS_DIRECTION_4.z) + (mat._22 * INITIAL_OBJECTS_DIRECTION_4.y)) + (mat._21 * INITIAL_OBJECTS_DIRECTION_4.x)) *
+                1000000.0;
+            lookAt.z = (((mat._33 * INITIAL_OBJECTS_DIRECTION_4.z) + (mat._32 * INITIAL_OBJECTS_DIRECTION_4.y)) + (mat._31 * INITIAL_OBJECTS_DIRECTION_4.x)) *
+                1000000.0;
+        }
+
+		if (!seenObj || !IS_KIND_OF(seenObj, Vehicle) && !IS_KIND_OF(seenObj, StaticAutoGun))
+		{
+            m_seenObjId = -1;
+            seenNode = nullptr;
+		}
+
+		WeaponFirer::WeaponLookAtPoint(this, lookAt, elapsedTime);
+        m_curLookAt.x = lookAt.x;
+        m_curLookAt.y = lookAt.y;
+        m_curLookAt.z = lookAt.z;
 	}
 
 	CVector Vehicle::_CalcSteeringForce(float elapsedTime)
