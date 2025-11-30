@@ -88,6 +88,7 @@ namespace help
     CStr GetServiceSymbols();
     CStr GetServiceSymbolsForVisualisation();
     CStr GetVehiclePartNameByResourceId(int);
+    int RoundHealth(float);
 
     void SetWndTextAlpha(m3d::ui::Wnd*, unsigned char);
 }  // namespace help

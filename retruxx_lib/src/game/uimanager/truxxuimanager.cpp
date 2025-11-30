@@ -1241,6 +1241,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     switch (guiEventId)
     {
     case IE_EV_EV_KEYBINDINGS_CHANGED:
+    case IE_EV_EV_UI_END_WND_ANIMATION:
     case IE_EV_UM_WEAPONGROUP_CHANGED:
     case IE_EV_UM_KNOWN_LEVEL_ADDED:
     case IE_EV_UM_PROFILES_LIST_CHANGED:

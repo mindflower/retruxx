@@ -1548,7 +1548,21 @@ namespace ai
 
 	float Vehicle::GetFullDurability() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		float res = 0.0;
+
+		auto* cabin = GetCabin();
+		if (cabin)
+		{
+            res += cabin->Durability().value().get();
+		}
+
+		auto* basket = GetBasket();
+        if (basket)
+        {
+            res += basket->Durability().value().get();
+        }
+
+		return res;
 	}
 
 	NumericInRangeRegenerating<float> const& Vehicle::Health() const
@@ -3224,7 +3238,21 @@ namespace ai
 
 	float Vehicle::GetMaxFullDurability() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        float res = 0.0;
+
+        auto* cabin = GetCabin();
+        if (cabin)
+        {
+            res += cabin->Durability().maxValue().get();
+        }
+
+        auto* basket = GetBasket();
+        if (basket)
+        {
+            res += basket->Durability().maxValue().get();
+        }
+
+        return res;
 	}
 
 	void Vehicle::SetInvisible()

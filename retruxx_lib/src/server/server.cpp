@@ -1143,9 +1143,9 @@ namespace ai
         theVehiclesGeneratorInfoCache = new VehiclesGeneratorInfoCache;
     }
 
-    eTolerance CServer::CheckTolerance(int, int)
+    eTolerance CServer::CheckTolerance(int PlayerID1, int PlayerID2)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return ai::theRelationship->CheckTolerance(PlayerID1, PlayerID2);
     }
 
     void CServer::LoadPrototypeNamesFromXML(CStr const&)

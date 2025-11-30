@@ -271,6 +271,14 @@ namespace help
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
+    int RoundHealth(float val)
+    {
+        if (val <= 0.0)
+            return 0;
+        if (val >= 1.0)
+            return (int)val;
+        return 1;
+    }
 
     void SetWndTextAlpha(m3d::ui::Wnd*, unsigned char)
     {
