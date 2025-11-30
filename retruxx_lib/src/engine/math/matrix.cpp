@@ -10,7 +10,7 @@
 
 #include <cmath>
 
-CVector CMatrix::vecRot(const CVector& v) const
+CVector CMatrix::vecRot(CVector const& v) const
 {
     CVector result;
     result.x = ((_31 * v.z) + (_21 * v.y)) + (_11 * v.x);
@@ -233,13 +233,10 @@ void CMatrix::GetNormalizedBasis(CVector& x, CVector& y, CVector& z) const
 
 CVector CMatrix::vecMul(CVector const& v) const
 {
-    auto v3 = (((_32 * v.z) + (_22 * v.y)) + (_12 * v.x)) + _42;
-    auto v5 = (((_33 * v.z) + (_23 * v.y)) + (_13 * v.x)) + _43;
-
     CVector result;
     result.x = (((_31 * v.z) + (_21 * v.y)) + (v.x * _11)) + _41;
-    result.y = v3;
-    result.z = v5;
+    result.y = (((_32 * v.z) + (_22 * v.y)) + (_12 * v.x)) + _42;
+    result.z = (((_33 * v.z) + (_23 * v.y)) + (_13 * v.x)) + _43;
     return result;
 }
 

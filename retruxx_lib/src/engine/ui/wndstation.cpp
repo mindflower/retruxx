@@ -656,7 +656,8 @@ namespace m3d
 
         void WndStation::OnEndAnimation(Wnd*)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement WndStation::OnEndAnimation
+            // RETRUXX_NOT_IMPLEMENTED;
         }
 
         bool WndStation::IsAnimationEnabled() const

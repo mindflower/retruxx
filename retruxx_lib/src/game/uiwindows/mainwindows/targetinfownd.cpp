@@ -2,6 +2,7 @@
 
 #include "maingameinterfacewnd.h"
 #include "core/log.h"
+#include "core/timer.h"
 #include "game/m3dgame.h"
 #include "game/uimanager/uidefs.h"
 #include "game/uimisc/guihelper.h"
@@ -99,6 +100,8 @@ void TargetInfoWnd::UpdateName()
 
 void TargetInfoWnd::UpdateControlsOnNewFrame()
 {
+    // TODO: implement TargetInfoWnd::UpdateControlsOnNewFrame
+    return;
     if ((m_gameDataFlags & 1) != 0)
     {
         UpdateHealth();
@@ -110,7 +113,14 @@ void TargetInfoWnd::UpdateControlsOnNewFrame()
 
 int TargetInfoWnd::OnBeforeRemoveFromWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Wnd::OnBeforeRemoveFromWndStation();
+    if (!m_fadeStartTime)
+    {
+        m_fadeStartTime = 0;
+        SetAlpha(0xFFu);
+        m_fadeStartTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+    }
+    return 0;
 }
 
 int TargetInfoWnd::GameDataSetup()
@@ -256,7 +266,10 @@ TargetInfoWnd::TargetInfoWnd(TargetInfoWnd const&)
 
 void TargetInfoWnd::StopFade()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_fadeStartTime)
+    {
+        M3D_APP->EnqueueMessage(42, (int)this, 0, 0, 0, {}, {});
+    }
 }
 
 void TargetInfoWnd::SetTargetObj(int objId)
@@ -362,7 +375,19 @@ void TargetInfoWnd::OnNewFrameForce()
 
 unsigned char TargetInfoWnd::CalcAlpha() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO check and refactor
+    if (m_fadeStartTime)
+    {
+        auto const alpha = 255.0 - (m3d::g_Kernel->GetTimer().GetCurTimeUnscaled() - m_fadeStartTime) * 0.001 * 254.0;
+        if (alpha >= 1.0)
+        {
+            if (alpha > 255.0)
+                return (unsigned __int64)255.0;
+            return (unsigned __int64)alpha;
+        }
+        return (unsigned __int64)1.0;
+    }
+    return (__int64)-1;
 }
 
 bool TargetInfoWnd::NeedUpdate() const
@@ -453,7 +478,20 @@ bool TargetInfoWnd::IsFading() const
 
 void TargetInfoWnd::ProcessFade()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_fadeStartTime)
+    {
+        auto const curTimeUnscaled = m3d::g_Kernel->GetTimer().GetCurTimeUnscaled();
+        auto const fadeDelta = m_fadeStartTime + 1000;
+        if (curTimeUnscaled < fadeDelta)
+        {
+            auto const alpha = CalcAlpha();
+            SetAlpha(alpha);
+        }
+        else
+        {
+            StopFade();
+        }
+    }
 }
 
 void TargetInfoWnd::RestoreFromFade()
