@@ -371,8 +371,9 @@ int TargetInfoWnd::OnAfterRemoveFromWndStation()
     m_fadeStartTime = 0;
     SetAlpha(0xFFu);
 
+    auto oldTarget = m_targetObjId;
     m_targetObjId = -1;
-    if (m_targetObjId != -1)
+    if (oldTarget != -1)
     {
         CheckAndShow();
         if (!m_fadeStartTime)

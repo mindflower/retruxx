@@ -956,7 +956,9 @@ namespace ai
 
 	CStr const& DynamicScene::GetShellStaticsEffectName(unsigned short) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement DynamicScene::GetShellStaticsEffectName
+		// RETRUXX_NOT_IMPLEMENTED;
+        return {};
 	}
 
 	CStr const STANDARD_GROUNDSPLASH = "ET_PS_GROUNDSPLASH";
