@@ -306,7 +306,7 @@ namespace ai
 
     void InfoCone::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::pServer->GetWorld()->GetLandscape().DrawGeom(m_sphere->GetGeomId());
     }
 
     bool InfoCone::TraceTo(CVector const& dst, CVector& newDst, float length) const
@@ -316,20 +316,10 @@ namespace ai
         dGeomSetPosition(m_ray->GetGeomId(), m_cameraPos.x, m_cameraPos.y, m_cameraPos.z);
 
         // Calculate direction vector from camera to destination
-        CVector direction = dst - m_cameraPos;
+        CVector directionOriginal = dst - m_cameraPos;
 
         // Normalize direction vector
-        float directionLength = direction.length();
-        if (directionLength > 0.0f)
-        {
-            direction = direction * (1.0f / directionLength);
-        }
-        else
-        {
-            // If direction is zero, use a default forward direction
-            direction = CVector(0.0f, 0.0f, 1.0f);
-            directionLength = 0.0f;
-        }
+        CVector direction = directionOriginal.getNormalized();
 
         // Set ray direction
         m_ray->SetDirection(direction);
@@ -343,7 +333,7 @@ namespace ai
         else
         {
             // Use actual distance to destination
-            m_ray->SetLength(directionLength);
+            m_ray->SetLength(directionOriginal.length());
         }
 
         // Perform ray trace

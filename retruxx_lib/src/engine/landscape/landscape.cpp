@@ -2611,9 +2611,87 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Landscape::DrawGeom(dxGeom*)
+    void Landscape::DrawGeom(dxGeom* geom)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Landscape::DrawGeom
+        dxGeom* currentGeom = geom;
+        int geomClass = dGeomGetClass(geom);
+
+        if (geomClass >= 0)
+        {
+            if (geomClass <= 2)  // Simple geometry types (0, 1, 2)
+            {
+                // Get position
+                float const* positionData = dGeomGetPosition(geom);
+                CVector const pos(positionData[0], positionData[1], positionData[2]);
+
+                // Get quaternion orientation
+                float quat[4];
+                dGeomGetQuaternion(geom, quat);
+                Quaternion rot(quat[1], quat[2], quat[3], quat[0]);
+
+                CMatrix const mat1 = rot.ToMatrix();
+                CMatrix mat2;
+                mat2.setOrg(pos);
+
+                CMatrix const worldMatrix = (mat1 * mat2)  + mat1;
+                
+                m3d::Application::g_pApp->m_renderer->MatPushWorld();
+                m3d::Application::g_pApp->m_renderer->MatSetWorld(worldMatrix);
+            }
+            else if (geomClass == 6)  // Transform geometry
+            {
+                // Get position
+                float const* positionData = dGeomGetPosition(geom);
+                CVector const pos(positionData[0], positionData[1], positionData[2]);
+
+                // Get quaternion orientation
+                float quat[4];
+                dGeomGetQuaternion(geom, quat);
+                Quaternion rot(quat[1], quat[2], quat[3], quat[0]);
+
+                // Convert transform's quaternion to matrix
+                CMatrix rotMat = rot.ToMatrix();
+                CMatrix posMat;
+                posMat.setOrg(pos);
+
+                CMatrix const geomMatrix = (rotMat * posMat) + rotMat;
+
+                // Now get the encapsulated geometry
+                currentGeom = dGeomTransformGetGeom(geom);
+
+               // Get position
+                float const* transformPositionData = dGeomGetPosition(currentGeom);
+                CVector const transformPos(transformPositionData[0], transformPositionData[1], transformPositionData[2]);
+
+                // Get quaternion orientation
+                dGeomGetQuaternion(currentGeom, quat);
+                Quaternion transformRot(quat[1], quat[2], quat[3], quat[0]);
+
+                // Convert transform's quaternion to matrix
+                CMatrix transformRotMat = transformRot.ToMatrix();
+                CMatrix transformPosMat;
+                transformPosMat.setOrg(transformPos);
+
+                CMatrix const transformMatrix = (transformRotMat * transformPosMat) + transformRotMat;
+
+                // Combine matrices
+                CMatrix combinedMatrix = transformMatrix * geomMatrix;
+
+                // Apply combined matrix to renderer
+                m3d::Application::g_pApp->m_renderer->MatPushWorld();
+                m3d::Application::g_pApp->m_renderer->MatSetWorld(combinedMatrix);
+            }
+        }
+
+        // Draw the actual geometry
+        DrawNonTransformGeom(currentGeom);
+
+        // Restore world matrix unless it's class 7
+        if (geomClass != 7)
+        {
+            m3d::Application::g_pApp->m_renderer->MatPopWorld();
+        }
     }
 
     void Landscape::Update()
@@ -3414,9 +3492,37 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Landscape::DrawMassBox(dMass*, CVector const&, Quaternion const&)
+    void Landscape::DrawMassBox(dMass* mass, CVector const& pos, Quaternion const& rot)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CMatrix tr;
+        tr.zero();
+        tr.rotTranslate(rot, pos);
+
+        CMatrix const worldMat = tr * tr;
+
+        M3D_RENDERER->MatPushWorld();
+        M3D_RENDERER->MatSetWorld(worldMat);
+
+        // TODO: check and refactor
+        auto v11 = 1.0 / mass->mass;
+        auto aa = (float)(mass->I[0] * v11) * 12.0;
+        auto ba = (float)(mass->I[5] * v11) * 12.0;
+        auto ca = (float)(mass->I[10] * v11) * 12.0;
+        CVector size;
+        size.x = sqrt((ca + ba - aa) * 0.5);
+        size.y = sqrt((ca + aa - ba) * 0.5);
+        size.z = sqrt((ba + aa - ca) * 0.5);
+
+        Aabb aabb;
+        aabb.m_box[0] = 0.0 - (float)(size.x * 0.5);
+        aabb.m_box[1] = 0.0 - (float)(size.y * 0.5);
+        aabb.m_box[2] = 0.0 - (float)(size.z * 0.5);
+        aabb.m_box[3] = size.x * 0.5;
+        aabb.m_box[4] = size.y * 0.5;
+        aabb.m_box[5] = size.z * 0.5;
+
+        aabb.Draw((unsigned int)mass | 0xFF000000);
+        M3D_RENDERER->MatPopWorld();
     }
 
     bool Landscape::InitGrass()
@@ -5805,9 +5911,238 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Landscape::DrawNonTransformGeom(dxGeom*)
+    void Landscape::DrawNonTransformGeom(dxGeom* geom)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Landscape::DrawNonTransformGeom
+        unsigned int color = reinterpret_cast<unsigned int>(geom) | 0xFF000000;
+        int geomClass = dGeomGetClass(geom);
+
+        switch (geomClass)
+        {
+        case 0:  // Sphere geometry
+        {
+            float radius = dGeomSphereGetRadius(geom);
+
+            // Initialize vertex buffer
+            CVector vertices[4];
+
+            // Subdivision parameters
+            int h = 0;  // Horizontal subdivisions
+            int l = 0;  // Vertical subdivisions
+
+            // Create sphere through subdivision
+            for (h = 0; h < 8; ++h)
+            {
+                for (l = 0; l < 8; ++l)
+                {
+                    // Generate 4 vertices for this patch
+                    for (int v = 0; v <= 1; ++v)
+                    {
+                        for (int u = 0; u <= 1; ++u)
+                        {
+                            // Calculate spherical coordinates
+                            double theta = ((double)(v + l) * 0.39269909 - 1.5707964) * 0.5;  // pi/8 steps
+                            double phi = (double)(u + h) * 0.78539819 * 0.5;                  //pi/4 steps
+
+                            // Calculate quaternion rotation
+                            float q1 = sin(theta);
+                            float q3 = cos(theta);
+                            float q4 = sin(phi);
+                            float q5 = cos(phi);
+
+                            // Rotate base vector
+                            CVector rotatedVec;
+                            rotatedVec.x = (q1 * q4) + (q3 * 0.0f) + (q5 * 0.0f);
+                            rotatedVec.y = (q3 * q4) + (q5 * 0.0f) - (q1 * 0.0f);
+                            rotatedVec.z = (q1 * q5) + (q3 * 0.0f) - (q4 * 0.0f);
+
+                            // Create rotation matrix from quaternion
+                            CMatrix rotationMatrix;
+                            float w = (q3 * q5) - (q4 * 0.0f) - (q1 * 0.0f);
+
+                            // Calculate rotation matrix components
+                            float xx = rotatedVec.x * rotatedVec.x;
+                            float yy = rotatedVec.y * rotatedVec.y;
+                            float zz = rotatedVec.z * rotatedVec.z;
+                            float xy = rotatedVec.x * rotatedVec.y;
+                            float xz = rotatedVec.x * rotatedVec.z;
+                            float yz = rotatedVec.y * rotatedVec.z;
+                            float wx = w * rotatedVec.x;
+                            float wy = w * rotatedVec.y;
+                            float wz = w * rotatedVec.z;
+
+                            rotationMatrix._11 = 1.0f - 2.0f * (yy + zz);
+                            rotationMatrix._12 = 2.0f * (xy + wz);
+                            rotationMatrix._13 = 2.0f * (xz - wy);
+
+                            rotationMatrix._21 = 2.0f * (xy - wz);
+                            rotationMatrix._22 = 1.0f - 2.0f * (xx + zz);
+                            rotationMatrix._23 = 2.0f * (yz + wx);
+
+                            rotationMatrix._31 = 2.0f * (xz + wy);
+                            rotationMatrix._32 = 2.0f * (yz - wx);
+                            rotationMatrix._33 = 1.0f - 2.0f * (xx + yy);
+
+                            // Apply rotation and scale by radius
+                            int vertexIndex = v * 2 + u;
+                            vertices[vertexIndex].x = (rotationMatrix._11 * 0.0f) + (rotationMatrix._12 * 0.0f) + (rotationMatrix._13 * radius);
+                            vertices[vertexIndex].y = (rotationMatrix._21 * 0.0f) + (rotationMatrix._22 * 0.0f) + (rotationMatrix._23 * radius);
+                            vertices[vertexIndex].z = (rotationMatrix._31 * 0.0f) + (rotationMatrix._32 * 0.0f) + (rotationMatrix._33 * radius);
+                        }
+                    }
+
+                    // Create first triangle
+                    CVector triangle1[3];
+                    triangle1[0] = vertices[0];
+                    triangle1[1] = vertices[1];
+                    triangle1[2] = vertices[2];
+
+                    // Draw first triangle
+                    M3D_APP->DrawTri(triangle1, color);
+
+                    // Create second triangle
+                    CVector triangle2[3];
+                    triangle2[0] = vertices[2];
+                    triangle2[1] = vertices[1];
+                    triangle2[2] = vertices[3];
+
+                    // Draw second triangle
+                    M3D_APP->DrawTri(triangle2, color);
+                }
+            }
+            break;
+        }
+
+        case 1:  // Box
+        {
+            float lengths[3];
+            dGeomBoxGetLengths(geom, lengths);
+
+            Aabb aabb;
+            aabb.m_box[0] = -lengths[0] * 0.5f;
+            aabb.m_box[1] = -lengths[1] * 0.5f;
+            aabb.m_box[2] = -lengths[2] * 0.5f;
+            aabb.m_box[3] = lengths[0] * 0.5f;
+            aabb.m_box[4] = lengths[1] * 0.5f;
+            aabb.m_box[5] = lengths[2] * 0.5f;
+
+            aabb.Draw(color);
+            break;
+        }
+
+        case 2:  // Capsule/Cylinder
+        {
+            float radius, length;
+            dGeomCCylinderGetParams(geom, &radius, &length);
+
+            // Draw top and bottom caps
+            for (int segment = 0; segment < 8; ++segment)
+            {
+                CVector vertices[3];
+
+                // Top triangle
+                vertices[0] = CVector(0.0f, 0.0f, length * 0.5f);
+
+                for (int i = 0; i <= 1; ++i)
+                {
+                    double angle = (segment + i) * 0.78539819 * 0.5;
+                    float sinAngle = sin(angle);
+                    float cosAngle = cos(angle);
+
+                    // Build rotation matrix
+                    float m11 = 1.0f - 2.0f * sinAngle * sinAngle;
+                    float m12 = 2.0f * cosAngle * sinAngle;
+                    float m13 = 0.0f;
+
+                    float m21 = -2.0f * cosAngle * sinAngle;
+                    float m22 = m11;
+                    float m23 = 0.0f;
+
+                    float m31 = 0.0f;
+                    float m32 = 0.0f;
+                    float m33 = 1.0f;
+
+                    // Calculate vertex position
+                    vertices[i + 1].x = m11 * radius;
+                    vertices[i + 1].y = m12 * radius;
+                    vertices[i + 1].z = length * 0.5f;
+                }
+
+                M3D_APP->DrawTri(vertices, color);
+
+                // Bottom triangle (same vertices but with negative Z)
+                vertices[0].z = -length * 0.5f;
+                vertices[1].z = -length * 0.5f;
+                vertices[2].z = -length * 0.5f;
+
+                M3D_APP->DrawTri(vertices, color);
+            }
+
+            // Draw side quads
+            for (int segment = 0; segment < 8; ++segment)
+            {
+                CVector vertices[4];
+
+                for (int i = 0; i <= 1; ++i)
+                {
+                    double angle = (segment + i) * 0.78539819 * 0.5;
+                    float sinAngle = sin(angle);
+                    float cosAngle = cos(angle);
+
+                    // Build rotation matrix
+                    float m11 = 1.0f - 2.0f * sinAngle * sinAngle;
+                    float m12 = 2.0f * cosAngle * sinAngle;
+
+                    float m21 = -2.0f * cosAngle * sinAngle;
+                    float m22 = m11;
+
+                    // Top vertex
+                    vertices[i].x = m11 * radius;
+                    vertices[i].y = m12 * radius;
+                    vertices[i].z = length * 0.5f;
+
+                    // Bottom vertex
+                    vertices[i + 2].x = m11 * radius;
+                    vertices[i + 2].y = m12 * radius;
+                    vertices[i + 2].z = -length * 0.5f;
+                }
+
+                // Draw two triangles for the quad
+                CVector tri1[3] = {vertices[0], vertices[1], vertices[2]};
+                CVector tri2[3] = {vertices[1], vertices[3], vertices[2]};
+
+                M3D_APP->DrawTri(tri1, color);
+                M3D_APP->DrawTri(tri2, color);
+            }
+            break;
+        }
+
+        case 7:  // Triangle Mesh
+        {
+            int numTriangles, numVertices;
+            dGeomTriMeshGetInfo(geom, &numTriangles, &numVertices);
+
+            for (int triIndex = 0; triIndex < numTriangles; ++triIndex)
+            {
+                float triangle[3][4];
+                dGeomTriMeshGetTriangle(geom, triIndex, &triangle[0], &triangle[1], &triangle[2]);
+
+                CVector vertices[3];
+                vertices[0] = CVector(triangle[0][0], triangle[0][1], triangle[0][2]);
+                vertices[1] = CVector(triangle[1][0], triangle[1][1], triangle[1][2]);
+                vertices[2] = CVector(triangle[2][0], triangle[2][1], triangle[2][2]);
+
+                M3D_APP->DrawTri(vertices, color);
+            }
+            break;
+        }
+
+        default:  // Invalid geometry class
+        {
+            M3D_LOG_ERR("Error: invalid geom class: " + CStr(geomClass));
+            break;
+        }
+        }
     }
 
     void Landscape::RenderRoads()

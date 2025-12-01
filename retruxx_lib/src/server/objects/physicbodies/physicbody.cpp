@@ -18,9 +18,11 @@
 #include "compoundvehiclepart.h"
 #include "world.h"
 #include "core/log.h"
+#include "core/timer.h"
 #include "geoms/cylinder.h"
 #include "geoms/trimesh.h"
 #include "server/dynamicscene.h"
+#include <server/server.h>
 
 namespace ai
 {
@@ -724,7 +726,16 @@ namespace ai
 
 	void PhysicBody::RenderDebugInfo() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (!m_Node || m_Node->m_frameVisible == M3D_KERNEL->GetTimer().GetCurFrame())
+        {
+            for (auto const& geom : m_pGeoms)
+            {
+                if (dGeomIsEnabled(geom->GetGeomId()))
+                {
+                    pServer->GetWorld()->GetLandscape().DrawGeom(geom->GetGeomId());
+                }
+            }
+        }
 	}
 
 	void PhysicBody::SetNodeCfgNum(int cfgNum)

@@ -13,6 +13,7 @@
 #include "prototypemanager.h"
 #include "server/objects/physicbodies/vehiclepart.h"
 #include "objcontainer.h"
+#include "core/timer.h"
 #include "ode/odecpp.h"
 #include "scene/servers/dataserver.h"
 #include "server/objects/vehicle.h"
@@ -320,7 +321,20 @@ namespace ai
 
     void ComplexPhysicObj::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_vehicleParts.empty() || !m_vehicleParts.begin()->second->m_Node || m_vehicleParts.begin()->second->m_Node->m_frameVisible == M3D_KERNEL->GetTimer().GetCurFrame())
+        {
+            PhysicObj::RenderDebugInfo();
+            if (!m_spaceId || !m_bIsSpaceOwner || dGeomIsEnabled(m_spaceId))
+            {
+                for (auto const& [name, part] : m_vehicleParts)
+                {
+                    if (part)
+                    {
+                        part->RenderDebugInfo();
+                    }
+                }
+            }
+        }
     }
 
     retruxx::vector<CStr, retruxx::allocator<CStr>> ComplexPhysicObj::GetAttachedPartNames() const

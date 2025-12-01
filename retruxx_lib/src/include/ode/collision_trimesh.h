@@ -146,6 +146,9 @@ dTriMeshDataID dGeomTriMeshGetTriMeshDataID(dGeomID g);
  */
 void dGeomTriMeshGetTriangle(dGeomID g, int Index, dVector3* v0, dVector3* v1, dVector3* v2);
 
+  
+void dGeomTriMeshGetInfo(dGeomID g, int *numTriangles, int *numVertices);
+
 /*
  * Gets the point on the requested triangle and the given barycentric
  * coordinates.

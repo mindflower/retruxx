@@ -1353,9 +1353,32 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Application::DrawTri(CVector*, unsigned)
+    void Application::DrawTri(CVector* tri, unsigned clr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto vb = m3d::Application::g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1);
+        int vofs = 0;
+        auto v3 = (m3d::rend::VertexXYZCT1*)m3d::Application::g_pApp->m_renderer->LockVbStreaming(vb, 3, vofs, 0);
+        v3->x = tri->x;
+        v3->y = tri->y;
+        v3->z = tri->z;
+        v3->c = clr;
+        v3->tu = 0.0;
+        v3->tv = 0.0;
+        v3[1].x = tri[1].x;
+        v3[1].y = tri[1].y;
+        v3[1].z = tri[1].z;
+        v3[1].c = clr;
+        v3[1].tu = 1.0;
+        v3[1].tv = 0.0;
+        v3[2].x = tri[2].x;
+        v3[2].y = tri[2].y;
+        v3[2].z = tri[2].z;
+        v3[2].c = clr;
+        v3[2].tu = 1.0;
+        v3[2].tv = 1.0;
+        m3d::Application::g_pApp->m_renderer->UnlockVb(vb);
+        m3d::Application::g_pApp->m_renderer->SetToStream0(vb);
+        m3d::Application::g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLELIST, vofs, 1u);
     }
 
     void Application::ForbidRendering()
@@ -1373,9 +1396,44 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Application::DrawCross(CVector const&, float, unsigned)
+    void Application::DrawCross(CVector const& org, float size, unsigned color)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Application::DrawCross
+        // Draw a 3D cross centered at 'org' with arms of length 'size' in each axis
+
+        // Loop through each axis (X, Y, Z)
+        for (int axis = 0; axis < 3; ++axis)
+        {
+            // Create vectors for the positive and negative ends of this axis
+            CVector positiveEnd = ZeroVector;
+            CVector negativeEnd = ZeroVector;
+
+            // Set the appropriate component for this axis
+            switch (axis)
+            {
+            case 0:  // X-axis
+                positiveEnd.x = size;
+                negativeEnd.x = -size;
+                break;
+
+            case 1:  // Y-axis
+                positiveEnd.y = size;
+                negativeEnd.y = -size;
+                break;
+
+            case 2:  // Z-axis
+                positiveEnd.z = size;
+                negativeEnd.z = -size;
+                break;
+            }
+
+            // Calculate the actual world positions
+            CVector from = org + negativeEnd;
+            CVector to = org + positiveEnd;
+
+            // Draw the line for this axis
+            DrawLine(from, to, color);
+        }
     }
 
     CStr const& Application::GetImageName() const
@@ -3106,9 +3164,25 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Application::DrawLine(CVector const&, CVector const&, unsigned)
+    void Application::DrawLine(CVector const& from, CVector const& to, unsigned color)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto vb = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC);
+
+        int vofs = 0;
+        auto* stream = (m3d::rend::VertexXYZC*)M3D_RENDERER->LockVbStreaming(vb, 2, vofs, nullptr);
+        stream[0].x = from.x;
+        stream[0].y = from.y;
+        stream[0].z = from.z;
+        stream[0].c = color;
+
+        stream[1].x = to.x;
+        stream[1].y = to.y;
+        stream[1].z = to.z;
+        stream[1].c = color;
+
+        M3D_RENDERER->UnlockVb(vb);
+        M3D_RENDERER->SetToStream0(vb);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_LINELIST, vofs, 1u);
     }
 
     void Application::Pause()

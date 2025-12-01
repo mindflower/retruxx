@@ -209,7 +209,7 @@ namespace ai
         void CollectNearbyObjectsToGroundRepository();
         ai::GeomRepository* GetGroundRepository() const;
         void PickUpNearbyObjects(bool bNeedCollectFromGround, unsigned int& originalNumItems, retruxx::vector<int, retruxx::allocator<int> >& addedObjIds);
-        void IntersectWithWorld();
+        void IntersectWithWorld() const;
         const retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > >& GetNearbyObstacles() const;
         void GetEnemiesInNeighborhood(float radius, retruxx::vector<int, retruxx::allocator<int> >& enemiesIds) const;
         void SubscribeRadioManagerOnNearbyObjId(const int objId) const;
@@ -455,13 +455,13 @@ namespace ai
         /* 0x0268 */ int m_seenObjId;
         /* 0x026c */ CVector m_curLookAt;
         /* 0x0278 */ int m_npcMotionControllerId;
-        /* 0x027c */ retruxx::set<ref_ptr<ai::Obstacle>> m_currentNearbyObstacles;
-        /* 0x0288 */ retruxx::set<ref_ptr<ai::Obstacle>> m_pastNearbyObstacles;
-        /* 0x0294 */ CVector m_pastTakingSpherePosition;
-        /* 0x02a0 */ bool m_bAllowPickUpMessage;
+        /* 0x027c */ mutable retruxx::set<ref_ptr<ai::Obstacle>> m_currentNearbyObstacles;
+        /* 0x0288 */ mutable retruxx::set<ref_ptr<ai::Obstacle>> m_pastNearbyObstacles;
+        /* 0x0294 */ mutable CVector m_pastTakingSpherePosition;
+        /* 0x02a0 */ mutable bool m_bAllowPickUpMessage;
         /* 0x02a1 */ char Padding_183[3];
-        /* 0x02a4 */ int m_pastNumNearbyChests;
-        /* 0x02a8 */ int m_currentNumNearbyChests;
+        /* 0x02a4 */ mutable int m_pastNumNearbyChests;
+        /* 0x02a8 */ mutable int m_currentNumNearbyChests;
         /* 0x02ac */ scoped_ptr<ai::Box> m_lookBox;
         /* 0x02b0 */ scoped_ptr<ai::Box> m_targetBox;
         /* 0x02b4 */ retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*> > m_targetClasses;
@@ -524,12 +524,12 @@ namespace ai
         /* 0x04c4 */ int m_toBeLockedObjId;
         /* 0x04c8 */ float m_timeToLockTarget;
         /* 0x04cc */ bool m_bMustGetOutOfDifficultPlace;
-        /* 0x04cd */ bool m_bWasStuck;
+        /* 0x04cd */ mutable bool m_bWasStuck;
         /* 0x04ce */ char Padding_189[2];
-        /* 0x04d0 */ CVector m_prevPosToCheckStuck;
-        /* 0x04dc */ float m_timeOutToCheckStuck;
-        /* 0x04e0 */ CVector m_curSteeringForce;
-        /* 0x04ec */ bool m_bCurSteeringForceValid;
+        /* 0x04d0 */ mutable CVector m_prevPosToCheckStuck;
+        /* 0x04dc */ mutable float m_timeOutToCheckStuck;
+        /* 0x04e0 */ mutable CVector m_curSteeringForce;
+        /* 0x04ec */ mutable bool m_bCurSteeringForceValid;
 
         float _GetTimeOutForNextIntersectionWithWorld() const;
         void _DropChests();
@@ -555,7 +555,7 @@ namespace ai
         void _KeepGearBox(float elapsedTime);
         void _KeepSuspension();
         void _ApplyStabilizingForces();
-        CVector _CalcSteeringForce(float elapsedTime);
+        CVector _CalcSteeringForce(float elapsedTime) const;
         CVector _CalcSteeringForceToPathPoint(const CVector& point, const CVector& nextPoint) const;
         CVector _CalcRepulsionForNearbyObjects(const CVector& myPos, const CVector& myPredictedPos, const CVector& myVel, const CVector& guide, bool bIsLookObstacle, CVector& attraction) const;
         CVector _CalcRepulsionForObstacle(const ai::Obstacle* ob, const CVector& myPos, const CVector& myPredictedPos, const CVector& myVel, const CVector& guide, bool bIsLookObstacle, CVector& attraction) const;

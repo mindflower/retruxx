@@ -82,6 +82,37 @@ CMatrix operator*(const CMatrix& a, const CMatrix& b)
     return res;
 }
 
+CMatrix operator+(CMatrix const& a, CMatrix const& b)
+{
+    CMatrix res;
+
+    // Row 1
+    res._11 = a._11 + b._11;
+    res._12 = a._12 + b._12;
+    res._13 = a._13 + b._13;
+    res._14 = a._14 + b._14;
+
+    // Row 2
+    res._21 = a._21 + b._21;
+    res._22 = a._22 + b._22;
+    res._23 = a._23 + b._23;
+    res._24 = a._24 + b._24;
+
+    // Row 3
+    res._31 = a._31 + b._31;
+    res._32 = a._32 + b._32;
+    res._33 = a._33 + b._33;
+    res._34 = a._34 + b._34;
+
+    // Row 4
+    res._41 = a._41 + b._41;
+    res._42 = a._42 + b._42;
+    res._43 = a._43 + b._43;
+    res._44 = a._44 + b._44;
+
+    return res;
+}
+
 float CMatrix::GetScaleX() const
 {
     return sqrt(_31 * _31 + _21 * _21 + _11 * _11);

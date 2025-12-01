@@ -213,7 +213,7 @@ namespace ai
 
 	void VehiclePart::RenderDebugInfo() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        PhysicBody::RenderDebugInfo();
 	}
 
 	void VehiclePart::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

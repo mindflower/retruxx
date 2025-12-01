@@ -119,4 +119,5 @@ struct CMatrix
     void transformPlane(CVector4&);
 };
 
-CMatrix operator*(const CMatrix& a, const CMatrix& b);
+CMatrix operator*(CMatrix const& a, CMatrix const& b);
+CMatrix operator+(CMatrix const& a, CMatrix const& b);

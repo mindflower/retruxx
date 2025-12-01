@@ -315,7 +315,7 @@ namespace ai
 
     void Wheel::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::RenderDebugInfo();
     }
 
     void Wheel::Remove()

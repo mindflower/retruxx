@@ -2,6 +2,10 @@
 
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(Thunderbolt)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(Thunderbolt);
+
     ThunderboltPrototypeInfo::ThunderboltPrototypeInfo()
     {
         RETRUXX_NOT_IMPLEMENTED;
