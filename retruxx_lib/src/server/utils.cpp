@@ -110,6 +110,11 @@ namespace ai
         return 1;
     }
 
+    void DebugLine(CVector const& pp1, CVector const& pp2, unsigned int color)
+    {
+        M3D_APP->DrawLine(pp1, pp2, color);
+    }
+
     void DebugLineOnGround(CVector const& p1, CVector const& p2, float hover, unsigned int color)
     {
         // TODO: check and refactor

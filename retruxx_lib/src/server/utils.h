@@ -13,6 +13,8 @@ namespace ai
     bool GetPathItem(Path const*, unsigned int, CVector&);
     void DebugCircle(CVector const&, float, unsigned int);
     int DebugText(CVector const&, float, float, unsigned int, CStr const&);
+    int DebugText(CVector const&, float, float, unsigned int, CStr const&);
+    void DebugLine(CVector const&, CVector const&, unsigned int);
     void DebugLineOnGround(CVector const&, CVector const&, float, unsigned int);
     CVector GetGroundPos(CVector const&, bool, bool);
     CVector GetGroundPos(CVector2 const&, bool);

@@ -621,6 +621,10 @@ void TargetInfoWnd::UpdateHealth()
             {
                 if (ai::thePlayer && ai::thePlayer->GetVehicle())
                 {
+                    if (IsDirectChild(m_pbHealth))
+                    {
+                        bool asd = true;
+                    }
                     float health = 0.0;
                     float maxHealth = 0.0;
                     if (auto* vehicle = RT_DYNCAST(targetObj, Vehicle const))

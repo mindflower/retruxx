@@ -3,6 +3,7 @@
 #include "core/profilerstack.h"
 #include "scene/scenegraph.h"
 #include "scene/servers/dataserver.h"
+#include "server/utils.h"
 
 #include <stdexcept>
 #include <server/objects/base/prototypemanager.h>
@@ -74,7 +75,21 @@ namespace ai
 
     void Bullet::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* ray = _Ray();
+        auto Length = ray->GetLength();
+        auto Direction = ray->GetDirection();
+        auto v9 = Direction.x * Length;
+        auto v10 = Direction.y * Length;
+        auto v11 = Direction.z * Length;
+
+        auto Position = GetPosition();
+
+        CVector p2;
+        p2.x = Position.x + v9;
+        p2.y = Position.y + v10;
+        p2.z = Position.z + v11;
+
+        ai::DebugLine(Position, p2, 0xFFFFFFFF);
     }
 
     Ray* Bullet::_Ray()

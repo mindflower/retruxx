@@ -181,9 +181,9 @@ namespace m3d
         void Wnd::ShowWindow(bool show)
         {
             if (show)
-                this->m_style |= 2u;
+                this->m_style |= WS_IS_VISIBLE;
             else
-                this->m_style &= 0xFDu;
+                this->m_style &= ~WS_IS_VISIBLE;
         }
 
         unsigned Wnd::GetTextColor() const
@@ -592,9 +592,9 @@ namespace m3d
         void Wnd::EnableWindow(bool bEnable)
         {
             if (bEnable)
-                this->m_style &= 0xFFFFFFFD;
+                this->m_style &= ~WS_DISABLE;
             else
-                this->m_style |= 2u;
+                this->m_style |= WS_DISABLE;
         }
 
         void Wnd::EnableOnShowAnimation(bool)

@@ -228,6 +228,10 @@ namespace m3d
             }
             for (auto const& wnd : wnds)
             {
+                if (wnd->GetName() == CStr("pbHealth"))
+                {
+                    bool wer = true;
+                }
                 DispatchPaint(wnd, childBounds);
             }
 
