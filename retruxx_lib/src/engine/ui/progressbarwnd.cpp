@@ -416,7 +416,7 @@ namespace m3d
 
             if (reverseDirection)
             {
-                *v11 = 1.0f - *v20;
+                *p_u0 = 1.0f - *v20;
                 *v20 = 1.0f;
             }
         }

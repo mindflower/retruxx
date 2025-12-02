@@ -228,6 +228,10 @@ namespace m3d
             }
             for (auto const& wnd : wnds)
             {
+                if (wnd->GetName() == CStr("lblHealth"))
+                {
+                    bool asd = true;
+                }
                 DispatchPaint(wnd, childBounds);
             }
 
@@ -654,9 +658,83 @@ namespace m3d
             return false;
         }
 
-        void WndStation::OnEndAnimation(Wnd*)
+        void WndStation::OnEndAnimation(Wnd* wnd)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!wnd)
+            {
+                return;
+            }
+
+            int res = 0;
+            if (!m_allWindows.getValueByKey(reinterpret_cast<int>(wnd), res))
+            {
+                return;
+            }
+
+            // TODO: generated code WndStation::OnEndAnimation
+            // Traverse up the parent hierarchy
+            m3d::ui::Wnd* currentWnd = wnd;
+            while (currentWnd)
+            {
+                m3d::Object* parentWnd = currentWnd->GetParent();
+
+                // Check if this is a suspended window that needs cleanup
+                if (currentWnd->IsKindOf(&m3d::ui::Wnd::m_classWnd) && currentWnd->m_bSuspendedUnlink)
+                {
+                    bool canRemove = true;
+
+                    // Use a stack to perform depth-first traversal of children
+                    std::vector<m3d::Object*> stack;
+                    stack.push_back(currentWnd);
+
+                    while (!stack.empty())
+                    {
+                        m3d::Object* obj = stack.back();
+                        stack.pop_back();
+
+                        // Check all children of this object
+                        for (m3d::Object* child = obj->GetFirstChild(); child != nullptr; child = child->GetNextSibling())
+                        {
+                            // If any child window is still animating, we cannot remove yet
+                            if (child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
+                            {
+                                m3d::ui::Wnd* childWnd = static_cast<m3d::ui::Wnd*>(child);
+                                if (childWnd->IsAnimatingNow())
+                                {
+                                    canRemove = false;
+                                    break;
+                                }
+                            }
+
+                            // Add child to stack for further processing
+                            if (child->GetFirstChild())
+                            {
+                                stack.push_back(child);
+                            }
+                        }
+
+                        if (!canRemove)
+                            break;
+                    }
+
+                    // Clear the stack
+                    stack.clear();
+
+                    // If we can remove this window and it has a parent, detach it
+                    if (canRemove && parentWnd && parentWnd->IsKindOf(&m3d::ui::Wnd::m_classWnd))
+                    {
+                        auto* parentWndCasted = RT_DYNCAST(parentWnd, Wnd);
+                        parentWndCasted->RemoveChildForce(currentWnd);
+                    }
+
+                    if (!canRemove)
+                        return;
+                }
+
+                // Move up to parent
+                currentWnd = RT_DYNCAST(parentWnd, Wnd);
+            }
+
         }
 
         bool WndStation::IsAnimationEnabled() const

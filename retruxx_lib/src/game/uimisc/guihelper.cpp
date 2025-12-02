@@ -243,17 +243,17 @@ namespace help
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-    CStr GetClanAbbreviationByName(CStr const&)
+    CStr GetClanAbbreviationByName(CStr const& clanName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return clanName + "_abb";
     }
     CStr GetClanFullNameByName(CStr const&)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-    CStr GetClanNameByBelong(int)
+    CStr GetClanNameByBelong(int clanBelong)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return "Belong_" + CStr(clanBelong);
     }
     CStr GetKeysForImpulse(int)
     {
@@ -270,6 +270,14 @@ namespace help
     CStr GetVehiclePartNameByResourceId(int)
     {
         RETRUXX_NOT_IMPLEMENTED;
+    }
+    int RoundHealth(float val)
+    {
+        if (val <= 0.0)
+            return 0;
+        if (val >= 1.0)
+            return (int)val;
+        return 1;
     }
 
     void SetWndTextAlpha(m3d::ui::Wnd*, unsigned char)

@@ -477,6 +477,15 @@ void dGeomTriMeshGetTriangle(dGeomID g, int Index, dVector3* v0, dVector3* v1, d
 	}
 }
 
+void dGeomTriMeshGetInfo(dGeomID g, int *numTriangles, int *numVertices){
+    dUASSERT(g && g->type == dTriMeshClass, "argument not a trimesh");
+
+	dxTriMesh* Geom = (dxTriMesh*)g;
+
+	*numTriangles = Geom->Data->Mesh.GetNbTriangles();
+    *numVertices = Geom->Data->Mesh.GetNbVertices();
+}
+
 void dGeomTriMeshGetPoint(dGeomID g, int Index, dReal u, dReal v, dVector3 Out){
 	dUASSERT(g && g->type == dTriMeshClass, "argument not a trimesh");
 

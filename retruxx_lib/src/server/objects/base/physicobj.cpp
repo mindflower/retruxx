@@ -729,7 +729,24 @@ namespace ai
 
     void PhysicObj::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (IsAlive())
+        {
+            dMass mass;
+            dMassSetZero(&mass);
+            dBodyGetMass(m_body->id(), &mass);
+            if (mass.mass > 0.001)
+            {
+                auto const posArray = dBodyGetPosition(m_body->id());
+                CVector pos;
+                pos.x = posArray[0];
+                pos.y = posArray[1];
+                pos.z = posArray[2];
+
+                auto rotation = GetRotation();
+
+                ai::pServer->GetWorld()->GetLandscape().DrawMassBox(&mass, pos, rotation);
+            }
+        }
     }
 
     void PhysicObj::AddRelTorque(const CVector& relTorque)

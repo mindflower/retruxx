@@ -213,7 +213,7 @@ namespace ai
 
 	void VehiclePart::RenderDebugInfo() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        PhysicBody::RenderDebugInfo();
 	}
 
 	void VehiclePart::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -246,9 +246,9 @@ namespace ai
         return m_ownerCompoundPart;
 	}
 
-	float VehiclePart::GetDurabilityCoeffForDamageType(DamageType) const
+	float VehiclePart::GetDurabilityCoeffForDamageType(DamageType damageType) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_durabilityCoeffsForDamageTypes[damageType];
 	}
 
 	CStr const& VehiclePart::GetBlowEffectName() const

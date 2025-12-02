@@ -46,7 +46,8 @@ namespace ai
 
     void VehicleRecollection::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement VehicleRecollection::RenderDebugInfo
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehicleRecollection::Update(float, unsigned)

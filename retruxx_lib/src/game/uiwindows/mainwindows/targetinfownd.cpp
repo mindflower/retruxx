@@ -2,12 +2,15 @@
 
 #include "maingameinterfacewnd.h"
 #include "core/log.h"
+#include "core/timer.h"
 #include "game/m3dgame.h"
 #include "game/uimanager/uidefs.h"
 #include "game/uimisc/guihelper.h"
 #include "server/server.h"
 #include "server/objects/player.h"
+#include "server/objects/staticautogun.h"
 #include "server/objects/vehicle.h"
+#include "server/objects/monsters/boss04drone.h"
 #include "ui/image.h"
 #include "ui/progressbarwnd.h"
 
@@ -45,9 +48,10 @@ m3d::Class* TargetInfoWnd::GetClass() const
     return RT_CLASS_LOCAL(TargetInfoWnd);
 }
 
-bool TargetInfoWnd::IsObjClassValidForInfo(m3d::Class const*)
+bool TargetInfoWnd::IsObjClassValidForInfo(m3d::Class const* cl)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    CStr className = cl->m_className;
+    return className == "Vehicle" || className == "StaticAutoGun" || className == "Boss04Drone";
 }
 
 m3d::Object* TargetInfoWnd::Clone()
@@ -98,12 +102,25 @@ void TargetInfoWnd::UpdateName()
 
 void TargetInfoWnd::UpdateControlsOnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        UpdateHealth();
+        UpdateDurability();
+        UpdateDistance();
+        UpdateToleranceColor();
+    }
 }
 
 int TargetInfoWnd::OnBeforeRemoveFromWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Wnd::OnBeforeRemoveFromWndStation();
+    if (!m_fadeStartTime)
+    {
+        m_fadeStartTime = 0;
+        SetAlpha(0xFFu);
+        m_fadeStartTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+    }
+    return 0;
 }
 
 int TargetInfoWnd::GameDataSetup()
@@ -249,7 +266,10 @@ TargetInfoWnd::TargetInfoWnd(TargetInfoWnd const&)
 
 void TargetInfoWnd::StopFade()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_fadeStartTime)
+    {
+        M3D_APP->EnqueueMessage(42, (int)this, 0, 0, 0, {}, {});
+    }
 }
 
 void TargetInfoWnd::SetTargetObj(int objId)
@@ -269,12 +289,75 @@ void TargetInfoWnd::SetTargetObj(int objId)
 
 void TargetInfoWnd::UpdateToleranceColor()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code TargetInfoWnd::UpdateToleranceColor
+    // Early returns for invalid states
+    if ((m_gameDataFlags & 1) == 0)
+        return;
+
+    if (m_targetObjId == -1)
+        return;
+
+    // Get the target object
+    ai::Obj const* targetObj = GetTargetObj();
+    if (!targetObj)
+        return;
+
+    // Determine relationship and set appropriate color
+    unsigned int textColor = 5;  // Default to enemy color
+
+    if (ai::thePlayer)
+    {
+        ai::eTolerance tolerance = ai::pServer->CheckTolerance(ai::thePlayer->GetBelong(), targetObj->GetBelong());
+
+        switch (tolerance)
+        {
+        case ai::RS_ENEMY:
+            textColor = m_aif.m_colorEnemy;
+            break;
+
+        case ai::RS_OWN:
+            textColor = m_aif.m_colorFriend;
+            break;
+
+        default:
+            textColor = 5;  // Use default enemy color for neutral/unknown
+            break;
+        }
+    }
+
+    // Apply the color to the name window
+    m_wndName->SetTextColor(textColor);
 }
 
 void TargetInfoWnd::UpdateDurability()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    using namespace ai;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_pbDurability->ShowWindow(0);
+        m_lblDurability->SetText({});
+        if (m_targetObjId != -1)
+        {
+            auto* targetObj = GetTargetObj();
+            if (targetObj)
+            {
+                if (ai::thePlayer && ai::thePlayer->GetVehicle())
+                {
+                    if (auto* vehicle = RT_DYNCAST(targetObj, Vehicle const))
+                    {
+                        float const dur = vehicle->GetFullDurability();
+                        float const maxDur = vehicle->GetMaxFullDurability();
+                        m_pbDurability->ShowWindow(true);
+                        m_pbDurability->SetMaxValue(maxDur);
+                        m_pbDurability->SetCurValue(dur);
+
+                        int const roundDur = help::RoundHealth(dur);
+                        m_lblDurability->SetText(CStr(roundDur));
+                    }
+                }
+            }
+        }
+    }
 }
 
 void TargetInfoWnd::UpdateOnChangeTargetObj(int, int)
@@ -288,8 +371,9 @@ int TargetInfoWnd::OnAfterRemoveFromWndStation()
     m_fadeStartTime = 0;
     SetAlpha(0xFFu);
 
+    auto oldTarget = m_targetObjId;
     m_targetObjId = -1;
-    if (m_targetObjId != -1)
+    if (oldTarget != -1)
     {
         CheckAndShow();
         if (!m_fadeStartTime)
@@ -355,7 +439,19 @@ void TargetInfoWnd::OnNewFrameForce()
 
 unsigned char TargetInfoWnd::CalcAlpha() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO check and refactor
+    if (m_fadeStartTime)
+    {
+        auto const alpha = 255.0 - (m3d::g_Kernel->GetTimer().GetCurTimeUnscaled() - m_fadeStartTime) * 0.001 * 254.0;
+        if (alpha >= 1.0)
+        {
+            if (alpha > 255.0)
+                return (unsigned __int64)255.0;
+            return (unsigned __int64)alpha;
+        }
+        return (unsigned __int64)1.0;
+    }
+    return (__int64)-1;
 }
 
 bool TargetInfoWnd::NeedUpdate() const
@@ -446,7 +542,20 @@ bool TargetInfoWnd::IsFading() const
 
 void TargetInfoWnd::ProcessFade()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_fadeStartTime)
+    {
+        auto const curTimeUnscaled = m3d::g_Kernel->GetTimer().GetCurTimeUnscaled();
+        auto const fadeDelta = m_fadeStartTime + 1000;
+        if (curTimeUnscaled < fadeDelta)
+        {
+            auto const alpha = CalcAlpha();
+            SetAlpha(alpha);
+        }
+        else
+        {
+            StopFade();
+        }
+    }
 }
 
 void TargetInfoWnd::RestoreFromFade()
@@ -499,12 +608,56 @@ void TargetInfoWnd::SetAlpha(unsigned char alpha)
 
 void TargetInfoWnd::UpdateHealth()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    using namespace ai;
+
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_pbHealth->ShowWindow(0);
+        m_lblHealth->SetText({});
+        if (m_targetObjId != -1)
+        {
+            auto* targetObj = GetTargetObj();
+            if (targetObj)
+            {
+                if (ai::thePlayer && ai::thePlayer->GetVehicle())
+                {
+                    float health = 0.0;
+                    float maxHealth = 0.0;
+                    if (auto* vehicle = RT_DYNCAST(targetObj, Vehicle const))
+                    {
+                        health = vehicle->Health().value().get();
+                        maxHealth = vehicle->Health().maxValue().get();
+                    }
+                    else if (auto* autoGun = RT_DYNCAST(targetObj, StaticAutoGun const))
+                    {
+                        health = autoGun->Health().value().get();
+                        maxHealth = autoGun->Health().maxValue().get();
+                    }
+                    else if (auto* drone = RT_DYNCAST(targetObj, Boss04Drone const))
+                    {
+                        health = drone->GetHealth();
+                        maxHealth = drone->GetMaxHealth();
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                    m_pbHealth->ShowWindow(true);
+                    m_pbHealth->SetMaxValue(maxHealth);
+                    m_pbHealth->SetCurValue(health);
+
+                    int const roundHealth = help::RoundHealth(health);
+                    m_lblHealth->SetText(CStr(roundHealth));
+                }
+            }
+        }
+    }
 }
 
 void TargetInfoWnd::UpdateDistance()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement TargetInfoWnd::UpdateDistance
 }
 
 void TargetInfoWnd::UpdateTargetObj()

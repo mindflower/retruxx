@@ -194,9 +194,16 @@ CStr::CStr(double)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-CStr::CStr(float)
+CStr::CStr(float v)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    char buf[136] = {0};
+
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
+    sprintf(buf, "%.3f", v);
+    realloc(strlen(buf) + 1);
+    strcpy(m_charPtr, buf);
 }
 
 CStr::CStr(uint64_t)

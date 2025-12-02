@@ -56,6 +56,7 @@
 #include "guns/rocketvolleylauncher.h"
 #include "scene/nodes/sgnodesound.h"
 #include "server/externalpaths.h"
+#include "server/infocone.h"
 #include "server/intersectionmanager.h"
 #include "server/path.h"
 #include "server/weaponfirer.h"
@@ -473,9 +474,23 @@ namespace ai
                 RETRUXX_NOT_IMPLEMENTED;
             }
 
-            void RenderDebugInfo(unsigned int)
+            void RenderDebugInfo(unsigned int color)
             {
-                RETRUXX_NOT_IMPLEMENTED;
+                auto v2 = (float)(0.0 - this->normal.z) * 20.0;
+                auto v3 = this->normal.y * 20.0;
+                auto v4 = this->normal.x * 20.0;
+
+                CVector p1;
+				CVector p2;
+                p2.x = this->origin.x + v2;
+                p2.y = this->origin.y + v3;
+                p2.z = this->origin.z + v4;
+                auto v5 = this->origin.x - v2;
+                p1.y = this->origin.y - v3;
+                auto v6 = this->origin.z - v4;
+                p1.x = v5;
+                p1.z = v6;
+                ai::DebugLineOnGround(p1, p2, 0.5, color);
             }
         }; /* size: 0x0018 */
 
@@ -879,12 +894,12 @@ namespace ai
 
 	bool Vehicle::IsTrailer() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        return m_bIsTrailer;
 	}
 
 	float Vehicle::GetCameraHeight() const
 	{
-		return this->m_cameraHeight;
+		return m_cameraHeight;
 	}
 
 	int Vehicle::GetLockedObjId() const
@@ -1548,7 +1563,21 @@ namespace ai
 
 	float Vehicle::GetFullDurability() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		float res = 0.0;
+
+		auto* cabin = GetCabin();
+		if (cabin)
+		{
+            res += cabin->Durability().value().get();
+		}
+
+		auto* basket = GetBasket();
+        if (basket)
+        {
+            res += basket->Durability().value().get();
+        }
+
+		return res;
 	}
 
 	NumericInRangeRegenerating<float> const& Vehicle::Health() const
@@ -1995,34 +2024,131 @@ namespace ai
 
 	void Vehicle::RenderDebugInfo() const
 	{
-        CVector curPoint;
-        if (GetPathItem(m_pPath, m_pathNum, curPoint))
+		ComplexPhysicObj::RenderDebugInfo();
+        if (!IsAlive())
         {
-            auto const nextPoint = _GetNextPathPoint();
-
-            DrivingValues dv;
-            CalcDrivingValues(*this, curPoint, nextPoint, true, dv);
-
-            DebugCircle(curPoint, dv.brakingCircleRadius, 0xFF00FF00);
-            auto curPoint1 = curPoint;
-
-            auto pos = GetPosition();
-            //pos.y += 10;
-            curPoint1.y = M3D_KERNEL->GetEngineCfg().GetHeight(curPoint1.x, curPoint1.z);
-            pos.x = curPoint1.x - pos.x;
-            pos.y = curPoint1.y - pos.y;
-            pos.z = curPoint1.z - pos.z;
-            auto scal = sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
-
-            auto velocity = GetLinearVelocity();
-            auto smth = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
-
-            //M3D_APP->DrawLine(pos, curPoint, 0xFF00FFFF);
-
-            DebugCircle(curPoint, scal + 500/smth, 0xFFFF0000);
-            DebugCircle(curPoint, dv.checkCircleRadius, 0xFFFFFF00);
+            return;
         }
-		//RETRUXX_NOT_IMPLEMENTED;
+
+        ai::pServer->GetWorld()->GetLandscape().DrawGeom(m_lookBox->GetGeomId());
+        ai::pServer->GetWorld()->GetLandscape().DrawGeom(m_targetBox->GetGeomId());
+
+		// Get current position
+        CVector pos = GetPosition();
+        pos.y += 10.0f;  // Offset slightly above ground
+
+        // Draw path if it exists and has points
+        if (m_pPath && m_pPath->GetSize() > 0)
+        {
+            CVector previousPoint = pos;
+            CVector currentPoint;
+
+            // Draw all path points
+            unsigned int pathSize = m_pPath->GetSize();
+            unsigned int pathColor = 0xFFFF0000;  // Start with red
+
+            for (unsigned int i = 0; i < pathSize; ++i)
+            {
+                ai::GetPathItem(m_pPath, i, currentPoint);
+
+                // Adjust point height slightly above terrain
+                currentPoint.y = M3D_ENGINE_CFG.GetHeight(currentPoint.x, currentPoint.z) + 10.0f;
+
+                // Draw cross at path point
+                M3D_APP->DrawCross(currentPoint, 2.0f, pathColor);
+
+                // Draw line from previous point (except for points before current position)
+                if (i >= m_pathNum)
+                {
+                    M3D_APP->DrawLine(previousPoint, currentPoint, 0xFF00FFFF);
+                    previousPoint = currentPoint;
+                }
+
+                // Cycle through colors
+                pathColor += 0x505;
+            }
+
+            // Draw navigation debug info if we have a valid current path point
+            if (m_pathNum >= 0 && m_pathNum < static_cast<int>(pathSize))
+            {
+                CVector pathPoint;
+                ai::GetPathItem(m_pPath, m_pathNum, pathPoint);
+
+                CVector nextPathPoint = _GetNextPathPoint();
+
+                // Calculate driving values
+                ai::DrivingValues dv;
+                ai::CalcDrivingValues(*this, pathPoint, nextPathPoint, (m_pathNum == static_cast<int>(pathSize) - 1), dv);
+
+                // Draw check line and circle
+                dv.checkLine.RenderDebugInfo(0xFF00FF00);
+                ai::DebugCircle(pathPoint, dv.checkCircleRadius, 0xFF00FF00);
+
+                // Draw braking circle
+                ai::DebugCircle(pathPoint, dv.brakingCircleRadius, 0xFF00FFFF);
+            }
+        }
+		else if (m_moveStatus == 2)
+		{
+               // Get formation-based destination
+               ai::Team* team = reinterpret_cast<ai::Team*>(GetParent());
+               ai::Formation* formation = team->GetFormation();
+
+               ai::DrivingValues dv;
+               CVector formationDirection = formation->GetDirection();
+
+               // Calculate target point
+               CVector targetPoint = m_externalDestination + formationDirection;
+
+               // Calculate driving values
+               ai::CalcDrivingValues(*this, m_externalDestination, targetPoint, true, dv);
+
+               // Draw check line and circle
+               dv.checkLine.RenderDebugInfo(0xFF00FF00);
+               ai::DebugCircle(m_externalDestination, dv.checkCircleRadius, 0xFF00FF00);
+
+               // Draw braking circle
+               ai::DebugCircle(m_externalDestination, dv.brakingCircleRadius, 0xFF00FFFF);
+		}
+
+		// Draw steering force if not player-controlled or on external path
+        if (!m_bIsControlledByPlayer || m_bIsMovingAlongExternalPath)
+        {
+            // Calculate intersection with world
+            IntersectWithWorld();
+
+            // Calculate and draw steering force
+            CVector steeringForce = _CalcSteeringForce(0.0f);
+
+            CVector forceEndPoint;
+            forceEndPoint.x = pos.x + (steeringForce.x * 100.0f);
+            forceEndPoint.y = pos.y + (steeringForce.y * 100.0f);
+            forceEndPoint.z = pos.z + (steeringForce.z * 100.0f);
+
+            M3D_APP->DrawLine(pos, forceEndPoint, 0xFFFF0000);
+        }
+
+        // Draw player info cone if player-controlled
+        if (m_bIsControlledByPlayer)
+        {
+            ai::Player* player = reinterpret_cast<ai::Player*>(GetParent());
+            ai::InfoCone const& infoCone = player->GetInfoCone();
+            infoCone.RenderDebugInfo();
+        }
+
+        // Draw vehicle name
+        CStr name(GetName());
+        if (name.empty())
+        {
+            name = "No name";
+        }
+
+        // Calculate text position (above vehicle)
+        CVector textPos = GetPosition();
+        textPos.y += m_size.y;
+
+        // Draw debug text
+        ai::DebugText(textPos, 11.0f, 0.0f, reinterpret_cast<uint32_t>(this) | 0xFF000000, name);
 	}
 
 	void Vehicle::SetVisible()
@@ -2181,9 +2307,24 @@ namespace ai
         return m_turboThrottleTime;
 	}
 
-	float Vehicle::GetFullDurabilityCoeffForDamageType(DamageType) const
+	float Vehicle::GetFullDurabilityCoeffForDamageType(DamageType damageType) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        float res = 0.0;
+
+		auto* cabin = GetCabin();
+		if (cabin)
+		{
+            res += cabin->GetDurabilityCoeffForDamageType(damageType);
+		}
+
+		auto* basket = GetBasket();
+        if (basket)
+        {
+            res += basket->GetDurabilityCoeffForDamageType(damageType);
+        }
+
+		return res;
+
 	}
 
 	Obj* Vehicle::CloneObj()
@@ -3209,7 +3350,21 @@ namespace ai
 
 	float Vehicle::GetMaxFullDurability() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        float res = 0.0;
+
+        auto* cabin = GetCabin();
+        if (cabin)
+        {
+            res += cabin->Durability().maxValue().get();
+        }
+
+        auto* basket = GetBasket();
+        if (basket)
+        {
+            res += basket->Durability().maxValue().get();
+        }
+
+        return res;
 	}
 
 	void Vehicle::SetInvisible()
@@ -3265,7 +3420,7 @@ namespace ai
 		RETRUXX_NOT_IMPLEMENTED;
 	}
 
-	void Vehicle::IntersectWithWorld()
+	void Vehicle::IntersectWithWorld() const
 	{
 		if (m_bIsControlledByPlayer)
 		{
@@ -5739,7 +5894,7 @@ namespace ai
         m_curLookAt.z = lookAt.z;
 	}
 
-	CVector Vehicle::_CalcSteeringForce(float elapsedTime)
+	CVector Vehicle::_CalcSteeringForce(float elapsedTime) const
 	{
 		// TODO: generated code
 		// Return cached steering force if valid

@@ -68,6 +68,36 @@ namespace m3d
             MBX_SOUNDLOOP = 0x10,
         };
 
+        enum
+        {
+            WS_EMPTY = 0,
+            WS_USE_DEFAULT = 0,
+            WS_NODRAW = 1,
+            WS_DISABLE = 2,
+            WS_RESIZABLE = 4,
+            WS_MOVABLE = 8,
+            WS_ALWAYS_INSIDE = 16,
+            WS_REFLECT_MS_AND_KEYS_TO_PARENT = 32,
+            WS_NOFRAME = 64,
+            WS_EDIT_NUMERIC = 128,
+            WS_TRANSPARENT = 256,
+            WS_IS_VISIBLE = 512,
+            WS_TEXT_CENTERED_X = 1024,
+            WS_TEXT_CENTERED_Y = 2048,
+            WS_TEXT_CENTERED = 3072,
+            WS_ACTIVATION_CAPTURES_FOCUS = 4096,
+            WS_ACTIVATABLE = 8192,
+            WS_ACTIVATION_REFLECT_TO_CHILDREN = 16384,
+            WS_DROPSHADOW = 0xffff8000,
+            WS_DEFAULT = 0x10000,
+            WS_DBLCLICK_REACT = 0x20000,
+            WS_SEND_NOTIFY_MESSAGES = 0x40000,
+            WS_GRAYED = 0x80000,
+            WS_REFLECT_NOTIFY_MESSAGES_TO_PARENT = 0x100000,
+            WS_EDIT_QUICK_ERASE_ON_ACTIVATION = 0x200000,
+            WS_NOTIFY_MESSAGES_FORCE_IMMEDIATE = 0x400000,
+        };
+
         class Wnd : public m3d::Object
         {
             friend class WndStation;

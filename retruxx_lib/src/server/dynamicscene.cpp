@@ -44,7 +44,12 @@
 #include "game/m3dgame.h"
 #include "objects/chassis.h"
 #include "objects/dynamicquestdestroy.h"
+#include "objects/infectionzone.h"
+#include "objects/npcmotioncontroller.h"
+#include "objects/team.h"
 #include "objects/vehicle.h"
+#include "objects/vehiclerecollection.h"
+#include "objects/base/compositeobj.h"
 #include "objects/base/globalproperties.h"
 #include "objects/base/jointedobj.h"
 #include "objects/base/prototypemanager.h"
@@ -52,6 +57,8 @@
 #include "objects/guns/gun.h"
 #include "objects/guns/mine.h"
 #include "objects/guns/mortarshell.h"
+#include "objects/guns/thunderbolt.h"
+
 #include <algorithm>
 #include <client.h>
 
@@ -949,7 +956,9 @@ namespace ai
 
 	CStr const& DynamicScene::GetShellStaticsEffectName(unsigned short) const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement DynamicScene::GetShellStaticsEffectName
+		// RETRUXX_NOT_IMPLEMENTED;
+        return {};
 	}
 
 	CStr const STANDARD_GROUNDSPLASH = "ET_PS_GROUNDSPLASH";
@@ -971,8 +980,84 @@ namespace ai
 
 	void DynamicScene::RenderDebugInfo()
 	{
-		// TODO: implement DynamicScene::RenderDebugInfo
-        // RETRUXX_NOT_IMPLEMENTED;
+        bool const bWaypointDebug = M3D_ENGINE_CFG.m_ai_waypoint_debug.GetB();
+        bool const bDebugPhysicObjects = M3D_ENGINE_CFG.m_ai_physicobject_debug.GetB();
+        bool const bDebugTeams = M3D_ENGINE_CFG.m_ai_team_debug.GetB();
+        bool const bDebugPassmap = M3D_ENGINE_CFG.m_ai_passmap_debug.GetB();
+        bool const bDebugPlayerPassmap = M3D_ENGINE_CFG.m_ai_playerpassmap_debug.GetB();
+        bool const bDebugLocations = M3D_ENGINE_CFG.m_ai_location_debug.GetB();
+        bool const bDebugMouse = M3D_ENGINE_CFG.m_ai_mouse_debug.GetB();
+        bool const bDebugInfections = M3D_ENGINE_CFG.m_ai_infection_debug.GetB();
+        bool const bDebugObstacles = M3D_ENGINE_CFG.m_ai_obstacles_debug.GetB();
+        bool const bDebugCompositeObjs = M3D_ENGINE_CFG.m_ai_compositeobj_debug.GetB();
+        bool const bDebugGuns = M3D_ENGINE_CFG.m_ai_guns_debug.GetB();
+
+		bool debugAnything = false;
+
+		if (bWaypointDebug || bDebugPhysicObjects || bDebugTeams || bDebugPassmap || bDebugPlayerPassmap || bDebugLocations || bDebugMouse ||
+                bDebugInfections || bDebugObstacles || bDebugCompositeObjs || bDebugGuns)
+		{
+            debugAnything = true;
+            M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
+            M3D_RENDERER->PushCull(m3d::rend::M3DCULL_NONE);
+            M3D_RENDERER->PushFog(0);
+            M3D_RENDERER->PushBlend(m3d::rend::BM_NONE);
+            M3D_RENDERER->SetAlphaTest(0);
+            M3D_RENDERER->PushLighting(0);
+            M3D_RENDERER->PushFillMode(m3d::rend::M3DFILL_WIREFRAME);
+            M3D_RENDERER->TgDisable(0);
+            M3D_RENDERER->TgDisable(1);
+            M3D_RENDERER->TgDisable(2);
+            M3D_RENDERER->TgDisable(3);
+            M3D_RENDERER->TgDisable(4);
+            M3D_RENDERER->TgDisable(5);
+            M3D_RENDERER->TgDisable(6);
+            M3D_RENDERER->TgDisable(7);
+            M3D_RENDERER->SetStageState(0, m3d::rend::BM_COLOR, m3d::rend::TS_TEXTURE);
+            M3D_RENDERER->SetStageState(0, m3d::rend::BM_ALPHA, m3d::rend::TS_TEXTURE);
+            M3D_RENDERER->SetStageState(1, m3d::rend::BM_COLOR, m3d::rend::TS_NONE);
+            M3D_RENDERER->SetStageState(1, m3d::rend::BM_ALPHA, m3d::rend::TS_NONE);
+            M3D_RENDERER->SetTexture(0, {}, -1.0);
+
+			CMatrix mat;
+            mat.identity();
+            M3D_RENDERER->MatMul(mat);
+
+            if (bDebugPhysicObjects || bDebugTeams || bDebugLocations || bDebugInfections || bDebugObstacles || bDebugCompositeObjs || bDebugGuns)
+            {
+                for (auto const* obj : *theObjects)
+                {
+                    if (bDebugPhysicObjects &&
+                            (IS_KIND_OF(obj, PhysicObj) || IS_KIND_OF(obj, VehicleRecollection) ||
+                             IS_KIND_OF(obj, NPCMotionController) ||
+                             IS_KIND_OF(obj, Thunderbolt) ||
+                             IS_KIND_OF(obj, JointedObj)) &&
+                            !IS_KIND_OF(obj, Location) ||
+                        bDebugTeams && IS_KIND_OF(obj, Team) || bDebugLocations && IS_KIND_OF(obj, Location) ||
+                        bDebugInfections && IS_KIND_OF(obj, InfectionZone) ||
+                        bDebugCompositeObjs && IS_KIND_OF(obj, CompositeObj))
+                    {
+                        obj->RenderDebugInfo();
+                    }
+                    if (bDebugGuns && IS_KIND_OF(obj, Gun))
+                    {
+                        auto* gun = RT_DYNCAST(obj, Gun const);
+                        gun->RenderGunDebugInfo();
+                    }
+                }
+            }
+            // TODO: implement other debug info
+		}
+
+        if (debugAnything)
+        {
+            M3D_RENDERER->PopFillMode();
+            M3D_RENDERER->PopLighting();
+            M3D_RENDERER->PopFog();
+            M3D_RENDERER->PopBlend();
+            M3D_RENDERER->PopZbState();
+            M3D_RENDERER->PopCull();
+        }
 	}
 
 	m3d::Object* DynamicScene::CreateObject()

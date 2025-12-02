@@ -1,5 +1,7 @@
 #include "math/aabb.h"
 
+#include "m3dapp.h"
+
 #include <stdexcept>
 
 #include "math/vector.h"
@@ -110,5 +112,59 @@ bool Aabb::IsPtInside2(const CVector& pt) const
 
 void Aabb::Draw(unsigned int clr)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    CVector a;
+    a.x = this->m_box[0];
+    a.y = this->m_box[1];
+    a.z = this->m_box[2];
+
+    
+    CVector b;
+    b.x = this->m_box[0];
+    b.y = this->m_box[1];
+    b.z = this->m_box[5];
+    
+    CVector c;
+    c.x = this->m_box[3];
+    c.y = this->m_box[1];
+    c.z = this->m_box[5];
+
+    CVector d;
+    d.x = this->m_box[3];
+    d.y = this->m_box[1];
+    d.z = this->m_box[2];
+
+    CVector e;
+    e.x = this->m_box[0];
+    e.y = this->m_box[4];
+    e.z = this->m_box[2];
+
+    CVector f;
+    f.x = this->m_box[0];
+    f.y = this->m_box[4];
+    f.z = this->m_box[5];
+
+    CVector g;
+    g.x = this->m_box[3];
+    g.y = this->m_box[4];
+    g.z = this->m_box[5];
+
+    CVector h;
+    h.x = this->m_box[3];
+    h.y = this->m_box[4];
+    h.z = this->m_box[2];
+
+    M3D_RENDERER->SetTexture(0, {}, -1.0);
+    M3D_RENDERER->SetTexture(1, {}, -1.0);
+    M3D_APP->DrawLine(a, b, clr);
+    M3D_APP->DrawLine(b, c, clr);
+    M3D_APP->DrawLine(c, d, clr);
+    M3D_APP->DrawLine(d, a, clr);
+    M3D_APP->DrawLine(e, f, clr);
+    M3D_APP->DrawLine(f, g, clr);
+    M3D_APP->DrawLine(g, h, clr);
+    M3D_APP->DrawLine(h, e, clr);
+    M3D_APP->DrawLine(a, e, clr);
+    M3D_APP->DrawLine(b, f, clr);
+    M3D_APP->DrawLine(c, g, clr);
+    M3D_APP->DrawLine(d, h, clr);
 }

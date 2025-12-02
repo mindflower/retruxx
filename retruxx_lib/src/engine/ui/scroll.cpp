@@ -179,7 +179,7 @@ namespace m3d
         void ScrollWnd::ShowWindow(bool bShow)
         {
             if (bShow)
-                this->m_style |= 2u;
+                this->m_style |= 0x200u;
             else
                 this->m_style &= 0xFDu;
             if (m_btn0)

@@ -10,7 +10,7 @@
 
 #include <cmath>
 
-CVector CMatrix::vecRot(const CVector& v) const
+CVector CMatrix::vecRot(CVector const& v) const
 {
     CVector result;
     result.x = ((_31 * v.z) + (_21 * v.y)) + (_11 * v.x);
@@ -78,6 +78,37 @@ CMatrix operator*(const CMatrix& a, const CMatrix& b)
     res._42 = a._41 * b._12 + a._42 * b._22 + a._43 * b._32 + a._44 * b._42;
     res._43 = a._41 * b._13 + a._42 * b._23 + a._43 * b._33 + a._44 * b._43;
     res._44 = a._41 * b._14 + a._42 * b._24 + a._43 * b._34 + a._44 * b._44;
+
+    return res;
+}
+
+CMatrix operator+(CMatrix const& a, CMatrix const& b)
+{
+    CMatrix res;
+
+    // Row 1
+    res._11 = a._11 + b._11;
+    res._12 = a._12 + b._12;
+    res._13 = a._13 + b._13;
+    res._14 = a._14 + b._14;
+
+    // Row 2
+    res._21 = a._21 + b._21;
+    res._22 = a._22 + b._22;
+    res._23 = a._23 + b._23;
+    res._24 = a._24 + b._24;
+
+    // Row 3
+    res._31 = a._31 + b._31;
+    res._32 = a._32 + b._32;
+    res._33 = a._33 + b._33;
+    res._34 = a._34 + b._34;
+
+    // Row 4
+    res._41 = a._41 + b._41;
+    res._42 = a._42 + b._42;
+    res._43 = a._43 + b._43;
+    res._44 = a._44 + b._44;
 
     return res;
 }
@@ -231,9 +262,13 @@ void CMatrix::GetNormalizedBasis(CVector& x, CVector& y, CVector& z) const
     z.z = 1.0 / scaleZ * z.z;
 }
 
-CVector CMatrix::vecMul(CVector const&) const
+CVector CMatrix::vecMul(CVector const& v) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    CVector result;
+    result.x = (((_31 * v.z) + (_21 * v.y)) + (v.x * _11)) + _41;
+    result.y = (((_32 * v.z) + (_22 * v.y)) + (_12 * v.x)) + _42;
+    result.z = (((_33 * v.z) + (_23 * v.y)) + (_13 * v.x)) + _43;
+    return result;
 }
 
 CVector4 CMatrix::vecMul(CVector4 const&) const

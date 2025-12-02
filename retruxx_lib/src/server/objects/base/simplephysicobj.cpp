@@ -531,7 +531,15 @@ namespace ai
 
 	void SimplePhysicObj::RenderDebugInfo() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+        if (!m_physicBody->m_Node || m_physicBody->m_Node->m_frameVisible == m3d::g_Kernel->GetTimer().GetCurFrame())
+        {
+            PhysicObj::RenderDebugInfo();
+            if (!m_spaceId || !m_bIsSpaceOwner || dGeomIsEnabled(m_spaceId))
+            {
+                if (m_physicBody)
+                    m_physicBody->RenderDebugInfo();
+            }
+        }
 	}
 
 	void SimplePhysicObj::SetBelong(int newBelong)

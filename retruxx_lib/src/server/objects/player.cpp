@@ -651,7 +651,7 @@ namespace ai
 
     InfoCone const& Player::GetInfoCone() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return *m_infoCone;
     }
 
     void Player::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
