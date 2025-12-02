@@ -2343,16 +2343,19 @@ namespace m3d
 
     int Application::GetTextExtent(CStr const& str, PointBase<float>& size, int fid, BoundsBase<float>* csz, int* minc, int* maxc, CStr* leftInvisibleSubstr, CStr* rightInvisibleSubstr)
     {
-        // Initialize output parameters
-        if (leftInvisibleSubstr && !leftInvisibleSubstr->empty()) {
-            leftInvisibleSubstr->erase();
+        // Initialize output parameters if provided
+        if (leftInvisibleSubstr && !leftInvisibleSubstr->empty())
+        {
+            *leftInvisibleSubstr = {};
         }
-        if (rightInvisibleSubstr && !rightInvisibleSubstr->empty()) {
-            rightInvisibleSubstr->erase();
+        if (rightInvisibleSubstr && !rightInvisibleSubstr->empty())
+        {
+            *rightInvisibleSubstr = {};
         }
 
-        // Check for empty string
-        if (str.empty()) {
+        // Handle empty string case
+        if (str.empty())
+        {
             size.x = 0.0f;
             size.y = 0.0f;
             return 0;
@@ -2360,12 +2363,13 @@ namespace m3d
 
         // Get font
         ui::Font* font = nullptr;
-        if (fid == -1)
-        {
-            font = GetGfxServer()->GetCurFont();
+        if (fid == 0xFFFFFFFF)
+        {  // NAN check (decompiler interpreted as NAN)
+            font = ui::Wnd::m_gfx->GetCurFont();
         }
-        else {
-            font = GetGfxServer()->GetFontById(fid);
+        else
+        {
+            font = ui::Wnd::m_gfx->GetFontById(fid);
         }
 
         if (!font)
@@ -2373,152 +2377,128 @@ namespace m3d
             return 0;
         }
 
-        const char* text = str.c_str();
+        char const* text = str.c_str();
+        int textLength = strlen(text);
+
         float totalWidth = 0.0f;
         float maxHeight = 0.0f;
-        float scaledWidth = 0.0f;
-        int numChars = 0;
-        int len = strlen(text);
+        int visibleCharCount = 0;
 
-        bool inColorCode = false;  // For '#' sequences
-        bool inSpecialMode = false; // For '&' sequences
-        int charIndex = 0;
+        bool inHashMode = false;       // For '#' escape sequences
+        bool inAmpersandMode = false;  // For '&' sequences
 
         // Process each character
-        for (int i = 0; i < len; i++)
+        for (int i = 0; i < textLength; ++i)
         {
-            unsigned char ch = text[i];
-            if (ch == '\0') break;
+            unsigned char currentChar = text[i];
 
-            // Handle control characters and special sequences
-            if (ch < ' ')
+            if (!currentChar)
             {
-                inColorCode = false;
-                continue;
+                break;
             }
 
-            switch (ch)
+            // Handle escape sequences
+            if (!inHashMode)
             {
-            case '#':
-                if (!inColorCode)
+                switch (currentChar)
                 {
-                    inColorCode = true;
+                case '#':
+                    inHashMode = true;
                     continue;
-                }
-                break;
-
-            case '&':
-                if (!inColorCode)
-                {
-                    inSpecialMode = true;
+                case '&':
+                    inAmpersandMode = true;
                     continue;
-                }
-                break;
-
-            case '|':
-                if (!inColorCode)
-                {
-                    if (inSpecialMode)
+                case '|':
+                    if (inAmpersandMode)
                     {
-                        inSpecialMode = false;
-                        continue;
+                        inAmpersandMode = false;
                     }
-                }
-                break;
-
-            case '@':
-                if (!inColorCode)
-                {
-                    // Skip 8 characters (probably a special sequence)
+                    continue;
+                case '@':
+                    // Skip 8 characters (probably a special code)
                     i += 8;
                     continue;
+                case '$':
+                    continue;  // Skip '$' character
                 }
-                break;
-
-            case '$':
-                if (!inColorCode)
-                {
-                    continue; // Skip '$' character
-                }
-                break;
-
-            default:
-                break;
+            }
+            else
+            {
+                inHashMode = false;
             }
 
-            // Reset color code flag for non-special characters
-            if (ch != '#' && inColorCode)
+            // Skip control characters
+            if (currentChar < ' ')
             {
-                inColorCode = false;
-            }
-
-            // Skip processing if we're in a color code or special mode
-            if (inColorCode || inSpecialMode)
-            {
+                inHashMode = false;
                 continue;
             }
 
-            // Check right boundary for invisible text
+            // Check if text exceeds right clip boundary
             if (csz && maxc)
             {
-                float scaledTotalWidth = scaledWidth / (font->m_heightScaled / font->m_heightUnscaled);
-                if (scaledTotalWidth > (csz->width + csz->x0))
+                float scaledWidth = totalWidth / (font->m_heightScaled / font->m_heightUnscaled);
+                if (scaledWidth > (csz->width + csz->x0))
                 {
-                    *maxc = charIndex;
-                    if (rightInvisibleSubstr) {
-                        CStr charStr(std::string(1, ch).c_str());
-                        *rightInvisibleSubstr += charStr;
+                    *maxc = i;
+                    if (rightInvisibleSubstr)
+                    {
+                        CStr temp(&text[i], 1);
+                        *rightInvisibleSubstr += temp;
                     }
                     break;
                 }
             }
 
-            // Calculate character metrics
-            float charWidth = font->GetCharWidthAdvanced(ch);
+            // Get character metrics
+            float charWidth = font->GetCharWidthAdvanced(currentChar);
             totalWidth += charWidth;
-            scaledWidth = totalWidth;
 
-            PointBase<float> glyphSize = font->GetGlyphSz(ch);
+            PointBase<float> glyphSize = font->GetGlyphSz(currentChar);
 
             if (glyphSize.y > maxHeight)
             {
                 maxHeight = glyphSize.y;
             }
 
-            // Check left boundary for invisible text
+            // Check if text starts after left clip boundary
             if (csz && minc)
             {
-                float currentScaledWidth = totalWidth / (font->m_heightScaled / font->m_heightUnscaled);
-                if (csz->x0 > currentScaledWidth)
+                float scaledCurrentWidth = totalWidth / (font->m_heightScaled / font->m_heightUnscaled);
+                if (csz->x0 > scaledCurrentWidth)
                 {
-                    *minc = charIndex;
+                    *minc = i;
                     if (leftInvisibleSubstr)
                     {
-                        CStr charStr(std::string(1, ch).c_str());
-                        *leftInvisibleSubstr += charStr;
+                        CStr temp(&text[i], 1);
+                        *leftInvisibleSubstr += temp;
                     }
                 }
             }
 
-            numChars++;
-            charIndex++;
+            ++visibleCharCount;
         }
 
-        // If no characters were processed, use 'A' as reference
-        if (numChars == 0)
+        // Handle case with no visible characters
+        if (visibleCharCount == 0)
         {
-            if (font->m_symbols['A'])
+            // Use 'A' glyph height as default if available
+            if (font->m_symbols.size() > 'A' && font->m_symbols['A'])
             {
                 maxHeight = font->m_symbols['A']->m_precalcedGlyphSz.y;
             }
+            else
+            {
+                maxHeight = 0.0f;
+            }
         }
 
-        // Convert to scaled coordinates
+        // Apply scaling and return results
         float scaleFactor = font->m_heightScaled / font->m_heightUnscaled;
-        size.x = scaledWidth / scaleFactor;
+        size.x = totalWidth / scaleFactor;
         size.y = maxHeight / scaleFactor;
 
-        return numChars;
+        return visibleCharCount;
     }
 
     int Application::DrawTextRelT(float, float, unsigned, CStr const&, unsigned, int)
@@ -3548,19 +3528,19 @@ namespace m3d
             switch (fl.m_format)
             {
             case TF_CENTER:
-                textSpaceClip.x0 = visibleBounds.x0 - (fl.m_origin.x - (sz.x * 0.5f));
-                textSpaceClip.y0 = visibleBounds.y0 - fl.m_origin.y;
+                textSpaceClip.x0 -= (fl.m_origin.x - (sz.x * 0.5f));
+                textSpaceClip.y0 -= fl.m_origin.y;
                 break;
 
             case TF_LEFT:
             case TF_FULL:
-                textSpaceClip.x0 = visibleBounds.x0 - fl.m_origin.x;
-                textSpaceClip.y0 = visibleBounds.y0 - fl.m_origin.y;
+                textSpaceClip.x0 -= fl.m_origin.x;
+                textSpaceClip.y0 -= fl.m_origin.y;
                 break;
 
             case TF_RIGHT:
-                textSpaceClip.x0 = visibleBounds.x0 - (fl.m_origin.x - sz.x);
-                textSpaceClip.y0 = visibleBounds.y0 - fl.m_origin.y;
+                textSpaceClip.x0 -= (fl.m_origin.x - sz.x);
+                textSpaceClip.y0 -= fl.m_origin.y;
                 break;
 
             default:
@@ -3687,12 +3667,21 @@ namespace m3d
             if (ch == '@' && !inColorCode)
             {
                 // Command prefix
+                // Parse color code
+                if (charIndex + 9 <= textLen)
+                {
+                    char colorStr[9];
+                    strncpy(colorStr, text.c_str() + charIndex + 1, 8);
+                    colorStr[8] = '\0';
+                    sscanf(colorStr, "%x", &clr);
+                }
                 charIndex+=9;
                 continue;
             }
 
             if (ch == '#' && !inColorCode)
             {
+                RETRUXX_NOT_IMPLEMENTED;
                 // Color code start
                 inColorCode = true;
                 charIndex++;
@@ -3701,6 +3690,7 @@ namespace m3d
 
             if ((ch == '$' || ch == '&') && !inColorCode)
             {
+                RETRUXX_NOT_IMPLEMENTED;
                 // Other special characters
                 charIndex++;
                 continue;
@@ -3708,6 +3698,7 @@ namespace m3d
 
             if (inColorCode)
             {
+                RETRUXX_NOT_IMPLEMENTED;
                 // Parse color code
                 if (charIndex + 8 <= textLen)
                 {
@@ -3742,8 +3733,8 @@ namespace m3d
             }
 
             // Calculate character position
-            float x0 = at.x + curX + sym->m_abc.m_A + 0.5;
-            float y0 = at.y + 0.5;
+            float x0 = floorf(at.x + curX + sym->m_abc.m_A) + 0.5;
+            float y0 = floorf(at.y) + 0.5;
             float x1 = x0 + glyphWidth;
             float y1 = y0 + glyphHeight;
 
@@ -3770,14 +3761,14 @@ namespace m3d
                 {
                     float clipRatio = (absClip.x0 - x0) / glyphWidth;
                     clippedX0 = absClip.x0;
-                    clippedTx0 = tx0 + (tx1 - tx0) * clipRatio;
+                    clippedTx0 += (tx1 - tx0) * clipRatio;
                 }
 
                 if (charIndex == firstInvisibleChar - 1 && x1 > absClip.x0 + absClip.width)
                 {
                     float clipRatio = (x1 - (absClip.x0 + absClip.width)) / glyphWidth;
                     clippedX1 = absClip.x0 + absClip.width;
-                    clippedTx1 = tx1 - (tx1 - tx0) * clipRatio;
+                    clippedTx1 -= (tx1 - tx0) * clipRatio;
                 }
 
                 // Vertical clipping
@@ -3785,14 +3776,14 @@ namespace m3d
                 {
                     float clipRatio = (absClip.y0 - y0) / glyphHeight;
                     clippedY0 = absClip.y0;
-                    clippedTy0 = ty0 + (ty1 - ty0) * clipRatio;
+                    clippedTy0 += (ty1 - ty0) * clipRatio;
                 }
 
                 if (y1 > absClip.y0 + absClip.height)
                 {
                     float clipRatio = (y1 - (absClip.y0 + absClip.height)) / glyphHeight;
                     clippedY1 = absClip.y0 + absClip.height;
-                    clippedTy1 = ty1 - (ty1 - ty0) * clipRatio;
+                    clippedTy1 -= (ty1 - ty0) * clipRatio;
                 }
             }
 

@@ -1,5 +1,8 @@
 #include "healthindicatorinmaininterfacewnd.h"
 
+#include "core/log.h"
+#include "server/dynamicquestmanager.h"
+
 RT_CLASS_EXPORTS_BEGIN(HealthIndicatorInMainInterfaceWnd)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(HealthIndicatorInMainInterfaceWnd);
@@ -14,19 +17,74 @@ void HealthIndicatorInMainInterfaceWnd::SetType(Type)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd*, bool)
+int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
+    if (!patternWnd)
+    {
+        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null patternWnd");
+        return 0;
+    }
+
+    auto res = Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId());
+    if (res == 0)
+    {
+        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - cannot create window");
+        return 0;
+    }
+
+    SetStyle(patternWnd->GetStyle());
+    SetText(patternWnd->GetText());
+    SetId(patternWnd->GetId());
+    SetName(patternWnd->GetName());
+    SetBounds(patternWnd->GetBounds(), true);
+    SetDefaultFont(patternWnd->GetDefaultFont());
+    SetWrapMode(patternWnd->GetWrapMode());
+
+    SetFormatMode(patternWnd->GetFormatMode());
+    SetColor(patternWnd->GetColor());
+    SetTextColor(patternWnd->GetColor());
+    SetTextColorDisabled(patternWnd->GetTextColorDisabled());
+    SetClientEdges(patternWnd->GetClientEdges());
+    SetPane(patternWnd->GetPaneName());
+    SetPaneFlags(patternWnd->GetPaneFlags());
+    SetScrollPane(patternWnd->GetScrollPaneName());
+    SetBackground(patternWnd->GetBackground());
+
+    CStr tooltip;
+    patternWnd->GetProperty(PROP_WND_TOOLTIP, &tooltip);
+    SetProperty(PROP_WND_TOOLTIP, &tooltip);
+
+    SetOnShowAnimation(patternWnd->GetOnShowAnimation());
+    SetOnHideAnimation(patternWnd->GetOnHideAnimation());
+
     RETRUXX_NOT_IMPLEMENTED;
+    auto* parent = patternWnd->GetParent();
+    if (!parent || !IS_KIND_OF(parent, Wnd))
+    {
+        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null parent for paternWnd");
+        return 0;
+    }
+
+    parent->AddChild(this);
+    if (deleteSrc)
+    {
+        parent->RemoveChild(patternWnd);
+        // TODO: check this obj delete
+        patternWnd->DecRef();
+    }
+
+    m_gameDataFlags |= 1u;
+    return 1;
 }
 
 m3d::Object* HealthIndicatorInMainInterfaceWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new HealthIndicatorInMainInterfaceWnd;
 }
 
 m3d::Class* HealthIndicatorInMainInterfaceWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(HealthIndicatorInMainInterfaceWnd);
 }
 
 m3d::Class* HealthIndicatorInMainInterfaceWnd::GetBaseClass()
@@ -73,7 +131,13 @@ int HealthIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int)
 
 HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleId = -1;
+    m_wndLowHpLamp = 0;
+    m_wndProgressBar = 0;
+    m_wndValue = 0;
+    m_type = TYPE_NUM_TYPES;
+    m_prevCurVal = 0.0;
+    m_prevMaxVal = 0.0;
 }
 
 HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd(HealthIndicatorInMainInterfaceWnd const&)

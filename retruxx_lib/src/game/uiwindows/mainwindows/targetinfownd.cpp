@@ -351,7 +351,7 @@ void TargetInfoWnd::UpdateDurability()
                         m_pbDurability->SetMaxValue(maxDur);
                         m_pbDurability->SetCurValue(dur);
 
-                        float const roundDur = help::RoundHealth(dur);
+                        int const roundDur = help::RoundHealth(dur);
                         m_lblDurability->SetText(CStr(roundDur));
                     }
                 }
@@ -621,10 +621,6 @@ void TargetInfoWnd::UpdateHealth()
             {
                 if (ai::thePlayer && ai::thePlayer->GetVehicle())
                 {
-                    if (IsDirectChild(m_pbHealth))
-                    {
-                        bool asd = true;
-                    }
                     float health = 0.0;
                     float maxHealth = 0.0;
                     if (auto* vehicle = RT_DYNCAST(targetObj, Vehicle const))
@@ -651,7 +647,7 @@ void TargetInfoWnd::UpdateHealth()
                     m_pbHealth->SetMaxValue(maxHealth);
                     m_pbHealth->SetCurValue(health);
 
-                    float roundHealth = help::RoundHealth(health);
+                    int const roundHealth = help::RoundHealth(health);
                     m_lblHealth->SetText(CStr(roundHealth));
                 }
             }
