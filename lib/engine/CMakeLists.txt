@@ -1,0 +1,55 @@
+cmake_minimum_required(VERSION 3.13)
+
+add_subdirectory(console)
+add_subdirectory(core)
+add_subdirectory(file)
+add_subdirectory(graph)
+add_subdirectory(impulses)
+add_subdirectory(landscape)
+add_subdirectory(math)
+add_subdirectory(ode)
+add_subdirectory(opcode)
+add_subdirectory(posteffects)
+add_subdirectory(scene)
+add_subdirectory(script)
+add_subdirectory(tinyxml)
+add_subdirectory(ui)
+add_subdirectory(video)
+add_subdirectory(weather)
+add_subdirectory(wheeltraces)
+
+target_sources(retruxx_lib PRIVATE
+    benchmark.cpp
+    cameracontroller.cpp
+    cinematic.cpp
+    client.cpp
+    clientpredict.cpp
+    clipper.cpp
+    config.cpp
+    configurations.cpp
+    decals.cpp
+    draftmodel.cpp
+    exportdesc.cpp
+    flares.cpp
+    fontformat.cpp
+    gamparser.cpp
+    gsmodel.cpp
+    landscapeoverlays.cpp
+    level.cpp
+    m3dapp.cpp
+    m3dapp_console.cpp
+    m3dfont.cpp
+    particles.cpp
+    prefabs.cpp
+    ps_attractors.cpp
+    ps_serialization.cpp
+    psprops.cpp
+    renderhelpers.cpp
+    serialization.cpp
+    skelmodel.cpp
+    soundconhandler.cpp
+    sprite.cpp
+    texgen.cpp
+    tracelinemanager.cpp
+    utilit.cpp
+    world.cpp)

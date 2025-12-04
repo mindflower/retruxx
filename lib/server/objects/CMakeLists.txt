@@ -1,0 +1,62 @@
+cmake_minimum_required(VERSION 3.13)
+
+add_subdirectory(base)
+add_subdirectory(guns)
+add_subdirectory(monsters)
+add_subdirectory(physicbodies)
+
+target_sources(retruxx_lib PRIVATE
+    affixgenerator.cpp
+    article.cpp
+    articulatedvehicle.cpp
+    bar.cpp
+    barricade.cpp
+    basket.cpp
+    blastwave.cpp
+    breakableobject.cpp
+    building.cpp
+    cabin.cpp
+    caravanteam.cpp
+    chassis.cpp
+    chest.cpp
+    cinematicmover.cpp
+    dummyobject.cpp
+    dynamicquest.cpp
+    dynamicquestconvoy.cpp
+    dynamicquestdestroy.cpp
+    dynamicquesthunt.cpp
+    dynamicquestpeace.cpp
+    dynamicquestreach.cpp
+    gadget.cpp
+    infectionlair.cpp
+    infectionteam.cpp
+    infectionzone.cpp
+    lair.cpp
+    lightobj.cpp
+    location.cpp
+    npc.cpp
+    npcmotioncontroller.cpp
+    particlesplinter.cpp
+    physicunit.cpp
+    player.cpp
+    radiomanager.cpp
+    repositoryobjectsgenerator.cpp
+    ropeobj.cpp
+    settlement.cpp
+    sgnodeobj.cpp
+    staticautogun.cpp
+    team.cpp
+    temporarylocation.cpp
+    town.cpp
+    trigger.cpp
+    vagabondteam.cpp
+    vehicle.cpp
+    vehiclerecollection.cpp
+    vehiclesgenerator.cpp
+    vehiclesplinter.cpp
+    vehicleupdater.cpp
+    wanderersgenerator.cpp
+    wanderersmanager.cpp
+    ware.cpp
+    wheel.cpp
+    workshop.cpp)
