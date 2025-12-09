@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.13)
+
+add_subdirectory(core)
+add_subdirectory(drawstuff)
+add_subdirectory(file)
+add_subdirectory(graph)
+add_subdirectory(impulses)
+add_subdirectory(math)
+add_subdirectory(ode)
+add_subdirectory(posteffects)
+add_subdirectory(renderer)
+add_subdirectory(scene)
+add_subdirectory(script)
+add_subdirectory(ui)
+

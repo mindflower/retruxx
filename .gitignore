@@ -37,3 +37,4 @@ Release_Retruxx*
 Debug_Retruxx*
 *.bin
 *.vcxproj.user
+build
