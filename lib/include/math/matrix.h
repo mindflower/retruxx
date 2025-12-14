@@ -37,7 +37,7 @@ struct CMatrix
     void zero();
     void identity();
 
-    void translation(const CVector& t);
+    void translation(CVector const& t);
     void translation(float x, float y, float z);
 
     void scaling(float x);
@@ -55,30 +55,30 @@ struct CMatrix
     CMatrix getInverseRotTranslate() const;
     CMatrix getInverseSimple() const;
 
-    void rotAxis(const CVector&, float);
-    void rotTranslate(const Quaternion& rot, const CVector& pos);
+    void rotAxis(CVector const&, float);
+    void rotTranslate(Quaternion const& rot, CVector const& pos);
 
     void rotYPR(float y, float p, float r);
     void getYPR(float& y, float& p, float& r) const;
 
     void GetBasis(CVector& x, CVector& y, CVector& z) const;
-    void FromBasis(const CVector& x, const CVector& y, const CVector& z);
+    void FromBasis(CVector const& x, CVector const& y, CVector const& z);
     void GetNormalizedBasis(CVector& x, CVector& y, CVector& z) const;
     void GetInvBasis(CVector& x, CVector& y, CVector& z) const;
-    void FromInvBasis(const CVector& x, const CVector& y, const CVector& z);
+    void FromInvBasis(CVector const& x, CVector const& y, CVector const& z);
     void GetInvNormalizedBasis(CVector&, CVector&, CVector&) const;
 
     CVector getOrg() const;
-    void setOrg(const CVector& t);
+    void setOrg(CVector const& t);
     CVector getOrgInv() const;
 
-    void composeSRT(const CVector& s, const CMatrix& rot, const CVector& t);
+    void composeSRT(CVector const& s, CMatrix const& rot, CVector const& t);
 
     float GetScaleX() const;
     float GetScaleY() const;
     float GetScaleZ() const;
 
-    void lookAtLH(const CVector& eye, const CVector& at, const CVector& up);
+    void lookAtLH(CVector const& eye, CVector const& at, CVector const& up);
 
     CMatrix getTransposed() const;
     void transposeInplace();
@@ -87,31 +87,31 @@ struct CMatrix
     void perspectiveFovLH(float fovY, float aspect, float z0, float z1);
     void perspectiveLH(float, float, float, float);
 
-    void reflect(const CPlane& p);
-    void shadow(const CVector4& light, const CPlane& plane);
+    void reflect(CPlane const& p);
+    void shadow(CVector4 const& light, CPlane const& plane);
 
     void shearXbyYZ(float, float);
     void shearYbyXZ(float, float);
     void shearZbyXY(float, float);
     void shear(float sxy, float sxz, float syx, float syz, float szx, float szy);
 
-    CVector vecRotBack(const CVector& v) const;
-    CVector vecRot(const CVector& v) const;
-    CVector vecMulBack(const CVector&) const;
-    CVector4 vecMul(const CVector4& v) const;
-    CVector vecMul(const CVector& v) const;
+    CVector vecRotBack(CVector const& v) const;
+    CVector vecRot(CVector const& v) const;
+    CVector vecMulBack(CVector const&) const;
+    CVector4 vecMul(CVector4 const& v) const;
+    CVector vecMul(CVector const& v) const;
 
-    void vecRotBackInplace(const CVector&, CVector&) const;
-    void vecRotInplace(const CVector&, CVector&) const;
-    void vecMulBackInplace(const CVector&, CVector&) const;
-    void vecMulInplace(const CVector4&, CVector4&) const;
-    void vecMulInplace(const CVector&, CVector&) const;
+    void vecRotBackInplace(CVector const&, CVector&) const;
+    void vecRotInplace(CVector const&, CVector&) const;
+    void vecMulBackInplace(CVector const&, CVector&) const;
+    void vecMulInplace(CVector4 const&, CVector4&) const;
+    void vecMulInplace(CVector const&, CVector&) const;
 
-    void DiagMatrixMul(const CVector&);
+    void DiagMatrixMul(CVector const&);
 
     float& operator()(int i, int j);
     float operator()(int i, int j) const;
-    CMatrix& operator*=(const CMatrix& lhs);
+    CMatrix& operator*=(CMatrix const& lhs);
 
     void DecomposeScale(float& x, float& y, float& z);
 

@@ -1,7 +1,6 @@
 #define _USE_MATH_DEFINES
 
 #include "math/matrix.h"
-
 #include "math/plane.h"
 #include "math/quaternion.h"
 #include "math/vector.h"
@@ -13,9 +12,9 @@
 CVector CMatrix::vecRot(CVector const& v) const
 {
     CVector result;
-    result.x = ((_31 * v.z) + (_21 * v.y)) + (_11 * v.x);
-    result.y = ((_32 * v.z) + (_22 * v.y)) + (_12 * v.x);
-    result.z = ((_33 * v.z) + (_23 * v.y)) + (_13 * v.x);
+    result.x = _11 * v.x + _21 * v.y + _31 * v.z;
+    result.y = _12 * v.x + _22 * v.y + _32 * v.z;
+    result.z = _13 * v.x + _23 * v.y + _33 * v.z;
     return result;
 }
 
@@ -51,7 +50,7 @@ void CMatrix::DecomposeScale(float& x, float& y, float& z)
     z = GetScaleZ();
 }
 
-CMatrix operator*(const CMatrix& a, const CMatrix& b)
+CMatrix operator*(CMatrix const& a, CMatrix const& b)
 {
     CMatrix res;
 
@@ -145,22 +144,26 @@ void CMatrix::composeSRT(CVector const&, CMatrix const&, CVector const&)
 
 void CMatrix::reflect(CPlane const& p)
 {
-    this->_11 = 1.0 - (float)((float)(p.m_normal.x * p.m_normal.x) * 2.0);
-    this->_21 = (float)(p.m_normal.y * p.m_normal.x) * -2.0;
-    this->_31 = (float)(p.m_normal.z * p.m_normal.x) * -2.0;
-    this->_12 = (float)(p.m_normal.y * p.m_normal.x) * -2.0;
-    this->_22 = 1.0 - (float)((float)(p.m_normal.y * p.m_normal.y) * 2.0);
-    this->_32 = (float)(p.m_normal.y * p.m_normal.z) * -2.0;
-    this->_13 = (float)(p.m_normal.z * p.m_normal.x) * -2.0;
-    this->_23 = (float)(p.m_normal.y * p.m_normal.z) * -2.0;
-    this->_33 = 1.0 - (float)((float)(p.m_normal.z * p.m_normal.z) * 2.0);
-    this->_41 = (float)(p.m_normal.x * p.m_dist) * 2.0;
-    this->_42 = (float)(p.m_normal.y * p.m_dist) * 2.0;
-    this->_43 = (float)(p.m_normal.z * p.m_dist) * 2.0;
-    this->_34 = 0.0;
-    this->_24 = 0.0;
-    this->_14 = 0.0;
-    this->_44 = 1.0;
+    identity();
+
+    float const nx2 = p.m_normal.x * p.m_normal.x * 2.0f;
+    float const ny2 = p.m_normal.y * p.m_normal.y * 2.0f;
+    float const nz2 = p.m_normal.z * p.m_normal.z * 2.0f;
+    float const nxy2 = p.m_normal.x * p.m_normal.y * 2.0f;
+    float const nxz2 = p.m_normal.x * p.m_normal.z * 2.0f;
+    float const nyz2 = p.m_normal.y * p.m_normal.z * 2.0f;
+
+    _11 = 1.0f - nx2;
+    _22 = 1.0f - ny2;
+    _33 = 1.0f - nz2;
+
+    _12 = _21 = -nxy2;
+    _13 = _31 = -nxz2;
+    _23 = _32 = -nyz2;
+
+    _41 = p.m_normal.x * p.m_dist * 2.0f;
+    _42 = p.m_normal.y * p.m_dist * 2.0f;
+    _43 = p.m_normal.z * p.m_dist * 2.0f;
 }
 
 void CMatrix::translation(CVector const&)
@@ -171,26 +174,26 @@ void CMatrix::translation(CVector const&)
 void CMatrix::getYPR(float& y, float& p, float& r) const
 {
     // Calculate pitch from _23 element (sin(pitch))
-    p = asin(this->_23);
+    p = asin(_23);
 
     // Handle gimbal lock cases (pitch near +-90 degrees)
     if (p >= M_PI_2)
     {
         // Gimbal lock at +90 degrees
-        y = atan2(this->_12, this->_11);
+        y = atan2(_12, _11);
         r = 0.0f;
     }
     else if (p <= -M_PI_2)
     {
         // Gimbal lock at -90 degrees
-        y = -atan2(this->_12, this->_11);
+        y = -atan2(_12, _11);
         r = 0.0f;
     }
     else
     {
         // Normal case - no gimbal lock
-        y = atan2(-this->_13, this->_33);
-        r = atan2(-this->_21, this->_22);
+        y = atan2(-_13, _33);
+        r = atan2(-_21, _22);
     }
 }
 
@@ -198,15 +201,15 @@ void CMatrix::rotTranslate(Quaternion const& rot, CVector const& pos)
 {
     // TODO: generated code
     // Calculate intermediate values for the rotation matrix
-    const auto xx = rot.x * rot.x;
-    const auto yy = rot.y * rot.y;
-    const auto zz = rot.z * rot.z;
-    const auto xy = rot.x * rot.y;
-    const auto xz = rot.x * rot.z;
-    const auto yz = rot.y * rot.z;
-    const auto xw = rot.x * rot.w;
-    const auto yw = rot.y * rot.w;
-    const auto zw = rot.z * rot.w;
+    float const xx = rot.x * rot.x;
+    float const yy = rot.y * rot.y;
+    float const zz = rot.z * rot.z;
+    float const xy = rot.x * rot.y;
+    float const xz = rot.x * rot.z;
+    float const yz = rot.y * rot.z;
+    float const xw = rot.x * rot.w;
+    float const yw = rot.y * rot.w;
+    float const zw = rot.z * rot.w;
 
     // Build the rotation matrix from quaternion
     // First row
@@ -246,17 +249,17 @@ void CMatrix::GetNormalizedBasis(CVector& x, CVector& y, CVector& z) const
     z.y = _23;
     z.z = _33;
 
-    const auto scaleX = sqrt(x.x * x.x + x.y * x.y + x.z * x.z + FLT_EPSILON);
+    float const scaleX = sqrt(x.x * x.x + x.y * x.y + x.z * x.z + FLT_EPSILON);
     x.x = 1.0 / scaleX * x.x;
     x.y = 1.0 / scaleX * x.y;
     x.z = 1.0 / scaleX * x.z;
 
-    const auto scaleY = sqrt(y.x * y.x + y.y * y.y + y.z * y.z + FLT_EPSILON);
+    float const scaleY = sqrt(y.x * y.x + y.y * y.y + y.z * y.z + FLT_EPSILON);
     y.x = 1.0 / scaleY * y.x;
     y.y = 1.0 / scaleY * y.y;
     y.z = 1.0 / scaleY * y.z;
 
-    const auto scaleZ = sqrt(z.x * z.x + z.y * z.y + z.z * z.z + FLT_EPSILON);
+    float const scaleZ = sqrt(z.x * z.x + z.y * z.y + z.z * z.z + FLT_EPSILON);
     z.x = 1.0 / scaleZ * z.x;
     z.y = 1.0 / scaleZ * z.y;
     z.z = 1.0 / scaleZ * z.z;
@@ -416,7 +419,7 @@ CMatrix CMatrix::getInverse() const
     return minv;
 }
 
-CMatrix& CMatrix::operator*=(const CMatrix& lhs)
+CMatrix& CMatrix::operator*=(CMatrix const& lhs)
 {
     *this = *this * lhs;
     return *this;
@@ -470,8 +473,8 @@ void CMatrix::rotYPR(float y, float p, float r)
     // Yaw rotation around Y axis
     matYaw.identity();
 
-    const auto cosY = cos(y);
-    const auto sinY = sin(y);
+    auto const cosY = cos(y);
+    auto const sinY = sin(y);
     matYaw._11 = cosY;
     matYaw._13 = -sinY;
     matYaw._31 = sinY;
@@ -480,8 +483,8 @@ void CMatrix::rotYPR(float y, float p, float r)
     // Pitch rotation around X axis
     matPitch.identity();
 
-    const auto cosP = cos(p);
-    const auto sinP = sin(p);
+    auto const cosP = cos(p);
+    auto const sinP = sin(p);
     matPitch._22 = cosP;
     matPitch._23 = sinP;
     matPitch._32 = -sinP;
@@ -490,8 +493,8 @@ void CMatrix::rotYPR(float y, float p, float r)
     // Roll rotation around Z axis
     matRoll.identity();
 
-    const auto cosR = cos(r);
-    const auto sinR = sin(r);
+    auto const cosR = cos(r);
+    auto const sinR = sin(r);
     matRoll._11 = cosR;
     matRoll._12 = sinR;
     matRoll._21 = -sinR;
@@ -511,7 +514,7 @@ float& CMatrix::operator()(int, int)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void CMatrix::setOrg(const CVector& org)
+void CMatrix::setOrg(CVector const& org)
 {
     _41 = org.x;
     _42 = org.y;
@@ -537,7 +540,7 @@ void CMatrix::identity()
     _11 = 1.0;
 }
 
-void CMatrix::lookAtLH(const CVector& eye, const CVector& at, const CVector& up)
+void CMatrix::lookAtLH(CVector const& eye, CVector const& at, CVector const& up)
 {
     // Calculate forward vector (z-axis)
     CVector forward;

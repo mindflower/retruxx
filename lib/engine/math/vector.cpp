@@ -1,24 +1,24 @@
-#include <math/vector.h>
+#include "math/vector.h"
 #include <stdexcept>
-#include <algorithm>
-#include <ctime>
 
 namespace
 {
-    auto const THRESHOLD_EPS = 0.0000099999997;
+    float constexpr THRESHOLD_EPS = 0.0000099999997;
 }
 
 CVector::CVector(float* xx)
 {
-    *this = *(CVector*)xx;
+    x = xx[0];
+    y = xx[1];
+    z = xx[2];
 }
 
-CVector::CVector(float xx)
+CVector::CVector(float const xx)
 {
     x = xx;
 }
 
-CVector::CVector(float xx, float yy, float zz)
+CVector::CVector(float const xx, float const yy, float const zz)
 {
     x = xx;
     y = yy;
@@ -27,31 +27,31 @@ CVector::CVector(float xx, float yy, float zz)
 
 CVector CVector::operator-() const
 {
-    return { -x, -y, -z };
+    return {-x, -y, -z};
 }
 
-CVector CVector::operator-(const CVector& rhs) const
+CVector CVector::operator-(CVector const& rhs) const
 {
     CVector res = *this;
     res -= rhs;
     return res;
 }
 
-CVector CVector::operator*(float v) const
+CVector CVector::operator*(float const v) const
 {
     CVector res = *this;
     res *= v;
     return res;
 }
 
-CVector CVector::operator+(const CVector& rhs) const
+CVector CVector::operator+(CVector const& rhs) const
 {
     CVector res = *this;
     res += rhs;
     return res;
 }
 
-CVector& CVector::operator*=(float v)
+CVector& CVector::operator*=(float const v)
 {
     x *= v;
     y *= v;
@@ -75,7 +75,7 @@ CVector& CVector::operator-=(CVector const& a)
     return *this;
 }
 
-CVector& CVector::operator/=(float v)
+CVector& CVector::operator/=(float const v)
 {
     x /= v;
     y /= v;
@@ -83,34 +83,41 @@ CVector& CVector::operator/=(float v)
     return *this;
 }
 
-float& CVector::operator[](int index)
+float& CVector::operator[](int const index)
 {
     switch (index)
     {
-    case 0: return x;
-    case 1: return y;
-    case 2: return z;
+    case 0:
+        return x;
+    case 1:
+        return y;
+    case 2:
+        return z;
     default:
         throw std::runtime_error("bad CVector access");
     }
 }
 
-const float& CVector::operator[](int index) const
+float const& CVector::operator[](int const index) const
 {
     switch (index)
     {
-    case 0: return x;
-    case 1: return y;
-    case 2: return z;
+    case 0:
+        return x;
+    case 1:
+        return y;
+    case 2:
+        return z;
     default:
         throw std::runtime_error("bad CVector access");
     }
 }
 
-CVector CVector::clampLength(float clampTo) const
+CVector CVector::clampLength(float const clampTo) const
 {
-    auto res = *this;
-    auto const len = length();
+    CVector res = *this;
+    float const len = length();
+
     if (len <= THRESHOLD_EPS)
     {
         res.zero();
@@ -127,7 +134,7 @@ CVector CVector::clampLength(float clampTo) const
 
 CVector CVector::getNormalized() const
 {
-    CVector vec(*this);
+    CVector vec = *this;
     vec.normalizeInplace();
     return vec;
 }
@@ -144,7 +151,7 @@ float CVector::lengthSq() const
 
 void CVector::normalizeInplace()
 {
-    const auto scale = sqrt(x * x + y * y + z * z + FLT_EPSILON);
+    float const scale = sqrt(x * x + y * y + z * z + FLT_EPSILON);
     x = 1.0 / scale * x;
     y = 1.0 / scale * y;
     z = 1.0 / scale * z;

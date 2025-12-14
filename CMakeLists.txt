@@ -17,6 +17,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(BUILD_GMOCK OFF CACHE BOOL "Build only googletest")
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
+enable_testing()
+
 set(RETRUXX_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/lib")
 
 add_subdirectory(app)
