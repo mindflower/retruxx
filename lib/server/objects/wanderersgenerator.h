@@ -1,6 +1,5 @@
 #pragma once
 #include "vehicle.h"
-#include "base/prototypeinfo.h"
 #include "retruxx/common.h"
 
 namespace ai
@@ -11,44 +10,46 @@ namespace ai
         class VehiclePartDescription
         {
         public:
-            VehiclePartDescription(const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& __that);
             VehiclePartDescription();
-            void LoadFromXML(m3d::cmn::XmlFile* xmlfile, const m3d::cmn::XmlNode* xmlNode);
+            void LoadFromXML(m3d::cmn::XmlFile* xmlfile, m3d::cmn::XmlNode const* xmlNode);
             void PostLoad();
             bool HasPrototypes() const;
             bool DoesPresent() const;
-            const CStr& GetRandomPrototypeName() const;
+            CStr const& GetRandomPrototypeName() const;
             int GetRandomPrototypeId() const;
 
         private:
-            /* 0x0000 */ bool m_present;
-            /* 0x0001 */ char Padding_158[3];
-            retruxx::vector<CStr, retruxx::allocator<CStr> > m_prototypeNames;
-            retruxx::vector<int, retruxx::allocator<int> > m_prototypeIds;
-        }; /* size: 0x0024 */
+            bool m_present;
+            retruxx::vector<CStr, retruxx::allocator<CStr>> m_prototypeNames;
+            retruxx::vector<int, retruxx::allocator<int>> m_prototypeIds;
+        };
 
         class VehicleDescription
         {
         public:
-            void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
-            static void __fastcall LoadPartFromXML(ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& part, const char* partName, m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+            void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
+            static void __fastcall LoadPartFromXML(
+                ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& part,
+                char const* partName,
+                m3d::cmn::XmlFile* xmlFile,
+                m3d::cmn::XmlNode const* xmlNode);
             void PostLoad();
-            const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& GetCabinDescription() const;
-            const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& GetBasketDescription() const;
-            const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& GetCabinSmallGunDescription() const;
-            const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& GetCabinBigGunDescription() const;
-            const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& GetCabinSpecialWeaponDescription() const;
-            const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& GetBasketSmallGun0Description() const;
-            const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& GetBasketSmallGun1Description() const;
-            const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& GetBasketBigGun0Description() const;
-            const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& GetBasketBigGun1Description() const;
-            const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& GetBasketSideGunDescription() const;
-            const CStr& GetPrototypeName() const;
+            ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& GetCabinDescription() const;
+            ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& GetBasketDescription() const;
+            ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& GetCabinSmallGunDescription() const;
+            ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& GetCabinBigGunDescription() const;
+            ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& GetCabinSpecialWeaponDescription() const;
+            ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& GetBasketSmallGun0Description() const;
+            ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& GetBasketSmallGun1Description() const;
+            ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& GetBasketBigGun0Description() const;
+            ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& GetBasketBigGun1Description() const;
+            ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& GetBasketSideGunDescription() const;
+            CStr const& GetPrototypeName() const;
             int GetPrototypeId() const;
 
         private:
             CStr m_prototype;
-            /* 0x000c */ int m_prototypeId;
+            int m_prototypeId;
             ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription m_cabin;
             ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription m_basket;
             ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription m_cabinSmallGun;
@@ -59,26 +60,29 @@ namespace ai
             ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription m_basketBigGun0;
             ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription m_basketBigGun1;
             ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription m_basketSideGun;
-        }; /* size: 0x0178 */
+        };
 
-        using VehicleDescriptions = retruxx::vector<ai::WanderersGeneratorPrototypeInfo::VehicleDescription, retruxx::allocator<ai::WanderersGeneratorPrototypeInfo::VehicleDescription> >;
+        using VehicleDescriptions = retruxx::
+            vector<ai::WanderersGeneratorPrototypeInfo::VehicleDescription, retruxx::allocator<ai::WanderersGeneratorPrototypeInfo::VehicleDescription>>;
 
     public:
         WanderersGeneratorPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        retruxx::vector<int, retruxx::allocator<int> > Generate(int count) const;
-        retruxx::vector<int, retruxx::allocator<int> > GenerateAndPlace(const CVector& pos, int count) const;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
-        virtual void PostLoad() override /* 0x08 */;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        retruxx::vector<int, retruxx::allocator<int>> Generate(int count) const;
+        retruxx::vector<int, retruxx::allocator<int>> GenerateAndPlace(CVector const& pos, int count) const;
+        virtual ai::Obj* CreateTargetObject() const override;
+        virtual void PostLoad() override;
 
     private:
-        void _GenerateIndexes(retruxx::vector<int, retruxx::allocator<int> >& indexes, int count) const;
-        void _TuneVehicleParts(ai::Vehicle* vehicle, const ai::WanderersGeneratorPrototypeInfo::VehicleDescription& vehicleDescription) const;
-        void _TunePart(ai::Vehicle* vehicle, const CStr& partName, const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& partDescription) const;
-        void _ChangePartByName(ai::Vehicle* vehicle, const CStr& partName, int partPrototypeId) const;
-        void _RemovePartByName(ai::Vehicle* vehicle, const CStr& partName) const;
-        retruxx::vector<ai::WanderersGeneratorPrototypeInfo::VehicleDescription, retruxx::allocator<ai::WanderersGeneratorPrototypeInfo::VehicleDescription> > m_vehicleDescriptions;
-        /* 0x0050 */ int m_desiredCountLow;
-        /* 0x0054 */ int m_desiredCountHigh;
-    }; /* size: 0x0058 */
-}
+        void _GenerateIndexes(retruxx::vector<int, retruxx::allocator<int>>& indexes, int count) const;
+        void _TuneVehicleParts(ai::Vehicle* vehicle, ai::WanderersGeneratorPrototypeInfo::VehicleDescription const& vehicleDescription) const;
+        void _TunePart(ai::Vehicle* vehicle, CStr const& partName, ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& partDescription) const;
+        void _ChangePartByName(ai::Vehicle* vehicle, CStr const& partName, int partPrototypeId) const;
+        void _RemovePartByName(ai::Vehicle* vehicle, CStr const& partName) const;
+
+        retruxx::vector<ai::WanderersGeneratorPrototypeInfo::VehicleDescription, retruxx::allocator<ai::WanderersGeneratorPrototypeInfo::VehicleDescription>>
+            m_vehicleDescriptions;
+        int m_desiredCountLow;
+        int m_desiredCountHigh;
+    };
+}  // namespace ai

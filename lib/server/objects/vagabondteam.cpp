@@ -32,16 +32,14 @@ namespace ai
 
     bool VagabondTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
-        auto result = ai::TeamPrototypeInfo::LoadFromXML( xmlFile, xmlNode);
+        bool const result = TeamPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
-            m3d::SafeStrAttrib(this->m_vehiclesGeneratorPrototype, xmlNode, "VehicleGeneratorPrototype");
+            m3d::SafeStrAttrib(m_vehiclesGeneratorPrototype, xmlNode, "VehicleGeneratorPrototype");
 
             CStr strWares;
             m3d::SafeStrAttrib(strWares, xmlNode, "WaresPrototypes");
-            m3d::Tokenize(strWares, this->m_waresPrototypes, "(), ;\t");
-            return 1;
+            m3d::Tokenize(strWares, m_waresPrototypes, "(), ;\t");
         }
         return result;
     }
@@ -100,4 +98,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

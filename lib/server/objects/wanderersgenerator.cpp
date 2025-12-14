@@ -1,22 +1,14 @@
 #include "wanderersgenerator.h"
-
-#include <stdexcept>
+#include "core/log.h"
 
 namespace ai
 {
-    WanderersGeneratorPrototypeInfo::VehiclePartDescription::VehiclePartDescription(
-        const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& __that)
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
     WanderersGeneratorPrototypeInfo::VehiclePartDescription::VehiclePartDescription()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_present = true;
     }
 
-    void WanderersGeneratorPrototypeInfo::VehiclePartDescription::LoadFromXML(m3d::cmn::XmlFile* xmlfile,
-        const m3d::cmn::XmlNode* xmlNode)
+    void WanderersGeneratorPrototypeInfo::VehiclePartDescription::LoadFromXML(m3d::cmn::XmlFile* xmlfile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -36,7 +28,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const CStr& WanderersGeneratorPrototypeInfo::VehiclePartDescription::GetRandomPrototypeName() const
+    CStr const& WanderersGeneratorPrototypeInfo::VehiclePartDescription::GetRandomPrototypeName() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -46,15 +38,16 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersGeneratorPrototypeInfo::VehicleDescription::LoadFromXML(m3d::cmn::XmlFile* xmlFile,
-        const m3d::cmn::XmlNode* xmlNode)
+    void WanderersGeneratorPrototypeInfo::VehicleDescription::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WanderersGeneratorPrototypeInfo::VehicleDescription::LoadPartFromXML(
-        ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& part, const char* partName,
-        m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+        ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& part,
+        char const* partName,
+        m3d::cmn::XmlFile* xmlFile,
+        m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -64,67 +57,60 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& WanderersGeneratorPrototypeInfo::
-    VehicleDescription::GetCabinDescription() const
+    ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetCabinDescription() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& WanderersGeneratorPrototypeInfo::
-    VehicleDescription::GetBasketDescription() const
+    ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetBasketDescription() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& WanderersGeneratorPrototypeInfo::
-    VehicleDescription::GetCabinSmallGunDescription() const
+    ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetCabinSmallGunDescription() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& WanderersGeneratorPrototypeInfo::
-    VehicleDescription::GetCabinBigGunDescription() const
+    ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetCabinBigGunDescription() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& WanderersGeneratorPrototypeInfo::
-    VehicleDescription::GetCabinSpecialWeaponDescription() const
+    ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetCabinSpecialWeaponDescription()
+        const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& WanderersGeneratorPrototypeInfo::
-    VehicleDescription::GetBasketSmallGun0Description() const
+    ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetBasketSmallGun0Description()
+        const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& WanderersGeneratorPrototypeInfo::
-    VehicleDescription::GetBasketSmallGun1Description() const
+    ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetBasketSmallGun1Description()
+        const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& WanderersGeneratorPrototypeInfo::
-    VehicleDescription::GetBasketBigGun0Description() const
+    ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetBasketBigGun0Description() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& WanderersGeneratorPrototypeInfo::
-    VehicleDescription::GetBasketBigGun1Description() const
+    ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetBasketBigGun1Description() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& WanderersGeneratorPrototypeInfo::
-    VehicleDescription::GetBasketSideGunDescription() const
+    ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetBasketSideGunDescription() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const CStr& WanderersGeneratorPrototypeInfo::VehicleDescription::GetPrototypeName() const
+    CStr const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetPrototypeName() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -136,13 +122,49 @@ namespace ai
 
     WanderersGeneratorPrototypeInfo::WanderersGeneratorPrototypeInfo()
     {
-        this->m_desiredCountLow = -1;
-        this->m_desiredCountHigh = -1;
+        m_desiredCountLow = -1;
+        m_desiredCountHigh = -1;
     }
 
-    bool WanderersGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    bool WanderersGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m_desiredCountLow = -1;
+            m_desiredCountHigh = -1;
+
+            CStr desiredCount;
+            m3d::SafeStrAttrib(desiredCount, xmlNode, "DesiredCount");
+
+            retruxx::vector<CStr> tknsDesiredCount;
+            m3d::Tokenize(desiredCount, tknsDesiredCount, "-");
+
+            if (!tknsDesiredCount.empty())
+            {
+                m_desiredCountLow = std::atoi(tknsDesiredCount.front().c_str());
+            }
+            m_desiredCountHigh = m_desiredCountLow;
+
+            if (tknsDesiredCount.size() > 1)
+            {
+                m_desiredCountHigh = std::atoi(tknsDesiredCount.back().c_str());
+            }
+
+            if (m_desiredCountHigh < m_desiredCountLow)
+            {
+                m_desiredCountHigh = m_desiredCountLow;
+            }
+
+            ref_ptr vehiclesNode = xmlFile->CreateNode();
+            for (xmlNode->GetFirstChild(vehiclesNode, "Vehicles"); !vehiclesNode->IsEmpty(); vehiclesNode->GetNextSibling(vehiclesNode, "Vehicles"))
+            {
+                VehicleDescription desc;
+                desc.LoadFromXML(xmlFile, vehiclesNode);
+                m_vehicleDescriptions.push_back(std::move(desc));
+            }
+        }
+        return result;
     }
 
     ai::Obj* WanderersGeneratorPrototypeInfo::CreateTargetObject() const
@@ -154,4 +176,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

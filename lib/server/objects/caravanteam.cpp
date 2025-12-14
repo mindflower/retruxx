@@ -1,6 +1,6 @@
 #include "caravanteam.h"
-
-#include <stdexcept>
+#include "core/log.h"
+#include "core/kernel.h"
 
 namespace ai
 {
@@ -31,7 +31,22 @@ namespace ai
 
     bool CaravanTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = TeamPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeStrAttrib(m_tradersGeneratorPrototypeName, xmlNode, "TradersVehiclesGeneratorName");
+            m3d::SafeStrAttrib(m_guardsGeneratorPrototypeName, xmlNode, "GuardVehiclesGeneratorName");
+
+            CStr strWares;
+            m3d::SafeStrAttrib(strWares, xmlNode, "WaresPrototypes");
+            m3d::Tokenize(strWares, m_waresPrototypes, "(), ;\t");
+
+            if (!m_tradersGeneratorPrototypeName.empty() && m_waresPrototypes.empty())
+            {
+                M3D_CRITICAL_ERROR("no wares for caravan with traders: " + m_prototypeName + "'");
+            }
+        }
+        return result;
     }
 
     void CaravanTeam::SetWaitingPlayerToMoveout()
@@ -158,4 +173,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai
