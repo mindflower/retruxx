@@ -1,18 +1,7 @@
-#include <stdexcept>
-#include <math/plane.h>
-
+#include "math/plane.h"
 #include "retruxx/common.h"
 
 void CPlane::buildplane(CPlane*, CVector*)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-CPlane::CPlane()
-{
-}
-
-CPlane::CPlane(CPlane const&)
 {
     RETRUXX_NOT_IMPLEMENTED;
 }

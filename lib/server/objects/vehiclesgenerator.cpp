@@ -1,53 +1,131 @@
 #include "vehiclesgenerator.h"
 
-#include <stdexcept>
-#include <server/resourcemanager.h>
+#include "core/log.h"
+#include "server/resourcemanager.h"
 #include "base/prototypemanager.h"
+
 #include <algorithm>
 
 namespace ai
 {
-	retruxx::vector<VehiclesGeneratorInfoCache::WareInfo> const& VehiclesGeneratorInfoCache::GetWareInfos() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
-
-    bool VehiclesGeneratorInfoCache::VehiclePartInfo::operator<(
-        const ai::VehiclesGeneratorInfoCache::VehiclePartInfo& rhs) const
+    namespace
     {
-        return this->price < rhs.price;
+        int constexpr MAX_VEHICLES_IN_TEAM = 5;
     }
 
-    bool VehiclesGeneratorInfoCache::WareInfo::operator<(const ai::VehiclesGeneratorInfoCache::WareInfo& rhs) const
-    {
-        return this->price < rhs.price;
-    }
-
-    VehiclesGeneratorInfoCache::VehiclesGeneratorInfoCache(const VehiclesGeneratorInfoCache&)
+    retruxx::vector<VehiclesGeneratorInfoCache::WareInfo> const& VehiclesGeneratorInfoCache::GetWareInfos() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const retruxx::map<CStr, retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<
-    VehiclesGeneratorInfoCache::VehiclePartInfo>>, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const,
-    retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache::
-    VehiclePartInfo>>>>>& VehiclesGeneratorInfoCache::GetGunInfos() const
+    bool VehiclesGeneratorInfoCache::VehiclePartInfo::operator<(ai::VehiclesGeneratorInfoCache::VehiclePartInfo const& rhs) const
+    {
+        return this->price < rhs.price;
+    }
+
+    bool VehiclesGeneratorInfoCache::WareInfo::operator<(ai::VehiclesGeneratorInfoCache::WareInfo const& rhs) const
+    {
+        return this->price < rhs.price;
+    }
+
+    VehiclesGeneratorInfoCache::VehiclesGeneratorInfoCache(VehiclesGeneratorInfoCache const&)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    VehiclesGeneratorPrototypeInfo::VehiclesGeneratorPrototypeInfo()
+    retruxx::map<
+        CStr,
+        retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>>,
+        retruxx::less<CStr>,
+        retruxx::allocator<retruxx::pair<
+            CStr const,
+            retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>>>>> const&
+        VehiclesGeneratorInfoCache::GetGunInfos() const
     {
+        RETRUXX_NOT_IMPLEMENTED;
     }
+
+    VehiclesGeneratorPrototypeInfo::VehicleDescription::VehicleDescription(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    {
+        LoadFromXML(xmlFile, xmlNode);
+    }
+
+    void VehiclesGeneratorPrototypeInfo::VehicleDescription::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    {
+        partOfSchwartz = -1.0f;
+        m3d::SafeFloatAttrib(partOfSchwartz, xmlNode, "PartOfSchwartz");
+
+        bTuningBySchwartz = partOfSchwartz > 0.0;
+
+        CStr strVehiclesPrototypes;
+        m3d::SafeStrAttrib(strVehiclesPrototypes, xmlNode, "VehiclesPrototypes");
+        m3d::Tokenize(strVehiclesPrototypes, vehiclePrototypeNames, "(), ;\t");
+
+        CStr wares;
+        m3d::SafeStrAttrib(wares, xmlNode, "WaresPrototypes");
+        m3d::Tokenize(wares, waresPrototypesNames, "(), ;\t");
+
+        m3d::SafeStrAttrib(gunAffixGeneratorPrototypeName, xmlNode, "GunAffixGeneratorPrototype");
+    }
+
+    VehiclesGeneratorPrototypeInfo::VehiclesGeneratorPrototypeInfo() = default;
 
     Obj* VehiclesGeneratorPrototypeInfo::CreateTargetObject() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool VehiclesGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    bool VehiclesGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m_desiredCountLow = -1;
+            m_desiredCountHigh = -1;
+
+            CStr desiredCount;
+            m3d::SafeStrAttrib(desiredCount, xmlNode, "DesiredCount");
+
+            retruxx::vector<CStr> tknsDesiredCount;
+            m3d::Tokenize(desiredCount, tknsDesiredCount, "-");
+
+            if (!tknsDesiredCount.empty())
+            {
+                m_desiredCountLow = std::atoi(tknsDesiredCount.front().c_str());
+            }
+            m_desiredCountHigh = m_desiredCountLow;
+
+            if (tknsDesiredCount.size() > 1)
+            {
+                m_desiredCountHigh = std::atoi(tknsDesiredCount.back().c_str());
+            }
+
+            if (m_desiredCountHigh < m_desiredCountLow)
+            {
+                M3D_LOG_WARN("Warning: high desired count is less than low desired count in VehiclesGenerator '" + m_prototypeName + "'");
+                m_desiredCountHigh = m_desiredCountLow;
+            }
+
+            M3D_ASSERT(m_desiredCountHigh <= MAX_VEHICLES_IN_TEAM);
+            ref_ptr descriptionNode = xmlFile->CreateNode();
+            for (xmlNode->GetFirstChild(descriptionNode, "Description"); !descriptionNode->IsEmpty();
+                 descriptionNode->GetNextSibling(descriptionNode, "Description"))
+            {
+                VehicleDescription desc(xmlFile, descriptionNode);
+                m_vehicleDescriptions.push_back(std::move(desc));
+            }
+
+            m_partOfSchwartzForCabin = 0.25f;
+            m_partOfSchwartzForBasket = 0.25f;
+            m_partOfSchwartzForGuns = 0.5f;
+            m_partOfSchwartzForWares = 0.0f;
+
+            m3d::SafeFloatAttrib(m_partOfSchwartzForCabin, xmlNode, "partOfSchwartzForCabin");
+            m3d::SafeFloatAttrib(m_partOfSchwartzForBasket, xmlNode, "partOfSchwartzForBasket");
+            m3d::SafeFloatAttrib(m_partOfSchwartzForGuns, xmlNode, "partOfSchwartzForGuns");
+            m3d::SafeFloatAttrib(m_partOfSchwartzForWares, xmlNode, "partOfSchwartzForWares");
+        }
+        return result;
     }
 
     void VehiclesGeneratorPrototypeInfo::PostLoad()
@@ -55,83 +133,80 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void VehiclesGeneratorPrototypeInfo::Generate(unsigned int restSchwarz,
-        retruxx::vector<int, retruxx::allocator<int>>& generatedVehicleIds) const
+    void VehiclesGeneratorPrototypeInfo::Generate(unsigned int restSchwarz, retruxx::vector<int, retruxx::allocator<int>>& generatedVehicleIds) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehiclesGeneratorPrototypeInfo::GenerateAndPlace(
-        const retruxx::vector<CVector, retruxx::allocator<CVector>>& points, unsigned int restSchwarz,
+        retruxx::vector<CVector, retruxx::allocator<CVector>> const& points,
+        unsigned int restSchwarz,
         retruxx::vector<int, retruxx::allocator<int>>& generatedVehicleIds) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void VehiclesGeneratorPrototypeInfo::TuneVehicleBySchwarz(Vehicle* v, float desiredSchwarz,
-        const VehicleDescription* vd) const
+    void VehiclesGeneratorPrototypeInfo::TuneVehicleBySchwarz(Vehicle* v, float desiredSchwarz, VehicleDescription const* vd) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetBestPrototypeByMoney(
-        const retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache
-        ::VehiclePartInfo>>& partInfos, float money)
+        retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache ::VehiclePartInfo>> const& partInfos,
+        float money)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetBestPrototypeByMoneyEconomy(
-        const retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache
-        ::VehiclePartInfo>>& partInfos, float money)
+        retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache ::VehiclePartInfo>> const& partInfos,
+        float money)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetRandomPrototypeByMoney(
-        const retruxx::vector<VehiclesGeneratorInfoCache::WareInfo, retruxx::allocator<VehiclesGeneratorInfoCache::
-        WareInfo>>& wareInfos, float money)
+        retruxx::vector<VehiclesGeneratorInfoCache::WareInfo, retruxx::allocator<VehiclesGeneratorInfoCache::WareInfo>> const& wareInfos,
+        float money)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetRandomPrototypeByMoney(
-        const retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache
-        ::VehiclePartInfo>>& partInfos, float money)
+        retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache ::VehiclePartInfo>> const& partInfos,
+        float money)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    unsigned int VehiclesGeneratorPrototypeInfo::_ChangeVehiclePart(Vehicle* v, const CStr& partName,
-        int newPartProtoId, int affixGenetatorProtoId)
+    unsigned int VehiclesGeneratorPrototypeInfo::_ChangeVehiclePart(Vehicle* v, CStr const& partName, int newPartProtoId, int affixGenetatorProtoId)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-	VehiclesGeneratorInfoCache::VehiclesGeneratorInfoCache()
-	{
+    VehiclesGeneratorInfoCache::VehiclesGeneratorInfoCache()
+    {
         this->m_bInited = 0;
-	}
+    }
 
-	retruxx::map<CStr, VehiclesGeneratorInfoCache::VehicleGroupInfo> const& VehiclesGeneratorInfoCache::
-	GetVehicleGroupInfos() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    retruxx::map<CStr, VehiclesGeneratorInfoCache::VehicleGroupInfo> const& VehiclesGeneratorInfoCache::GetVehicleGroupInfos() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void VehiclesGeneratorInfoCache::EnsureInitialized()
-	{
-        if (!this->m_bInited)
+    void VehiclesGeneratorInfoCache::EnsureInitialized()
+    {
+        if (!m_bInited)
         {
             _InitializeVehicleParts();
             _InitializeWares();
             _InitializeGuns();
-            this->m_bInited = true;
+            m_bInited = true;
         }
-	}
+    }
 
-	void VehiclesGeneratorInfoCache::_GetVehiclePartInfos(retruxx::vector<int> const& prototypes, retruxx::vector<VehiclePartInfo>& vehiclePartInfos)
-	{
+    void VehiclesGeneratorInfoCache::_GetVehiclePartInfos(retruxx::vector<int> const& prototypes, retruxx::vector<VehiclePartInfo>& vehiclePartInfos)
+    {
         vehiclePartInfos.clear();
         for (auto& protoId : prototypes)
         {
@@ -145,11 +220,13 @@ namespace ai
             vehiclePartInfos.push_back(std::move(partInfo));
         }
         std::sort(vehiclePartInfos.begin(), vehiclePartInfos.end());
-	}
+    }
 
-	void VehiclesGeneratorInfoCache::_GetVehiclePartInfosForVehicle(VehiclePrototypeInfo const* protoV, CStr const& partName,
-		retruxx::vector<VehiclePartInfo>& vehiclePartInfos)
-	{
+    void VehiclesGeneratorInfoCache::_GetVehiclePartInfosForVehicle(
+        VehiclePrototypeInfo const* protoV,
+        CStr const& partName,
+        retruxx::vector<VehiclePartInfo>& vehiclePartInfos)
+    {
         if (auto partInfo = protoV->GetPartDescriptionByName(partName))
         {
             retruxx::vector<int> goodParts;
@@ -161,15 +238,15 @@ namespace ai
         {
             vehiclePartInfos.clear();
         }
-	}
+    }
 
-	void VehiclesGeneratorInfoCache::_Initialize()
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void VehiclesGeneratorInfoCache::_Initialize()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void VehiclesGeneratorInfoCache::_InitializeGuns()
-	{
+    void VehiclesGeneratorInfoCache::_InitializeGuns()
+    {
         retruxx::vector<int> gunsTypes;
         theResourceManager->GetResourceDescendants(theResourceManager->GetResourceId("GUN"), gunsTypes);
 
@@ -183,10 +260,10 @@ namespace ai
 
             m_gunInfos[theResourceManager->GetResourceName(gun)] = std::move(gunPartInfos);
         }
-	}
+    }
 
-	void VehiclesGeneratorInfoCache::_GetWareInfos(retruxx::vector<int> const& prototypes, retruxx::vector<WareInfo>& wareInfos)
-	{
+    void VehiclesGeneratorInfoCache::_GetWareInfos(retruxx::vector<int> const& prototypes, retruxx::vector<WareInfo>& wareInfos)
+    {
         wareInfos.clear();
         for (auto& id : prototypes)
         {
@@ -198,20 +275,20 @@ namespace ai
         }
 
         std::sort(wareInfos.begin(), wareInfos.end());
-	}
+    }
 
-	VehiclesGeneratorInfoCache::WareInfo VehiclesGeneratorInfoCache::_GetWareInfo(int) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    VehiclesGeneratorInfoCache::WareInfo VehiclesGeneratorInfoCache::_GetWareInfo(int) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	VehiclesGeneratorInfoCache::VehiclePartInfo VehiclesGeneratorInfoCache::_GetVehiclePartInfo(int) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    VehiclesGeneratorInfoCache::VehiclePartInfo VehiclesGeneratorInfoCache::_GetVehiclePartInfo(int) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void VehiclesGeneratorInfoCache::_GetAbstractVehiclesPrototypeIds(retruxx::vector<int, retruxx::allocator<int>>& abstractVehiclesPrototypeIds)
-	{
+    void VehiclesGeneratorInfoCache::_GetAbstractVehiclesPrototypeIds(retruxx::vector<int, retruxx::allocator<int>>& abstractVehiclesPrototypeIds)
+    {
         auto id = theResourceManager->GetResourceId("VEHICLE");
 
         retruxx::vector<int> vehiclesPrototypesIds;
@@ -226,10 +303,10 @@ namespace ai
                 abstractVehiclesPrototypeIds.push_back(protoId);
             }
         }
-	}
+    }
 
-	void VehiclesGeneratorInfoCache::_InitializeWares()
-	{
+    void VehiclesGeneratorInfoCache::_InitializeWares()
+    {
         retruxx::vector<int> goodsTypes;
         theResourceManager->GetResourceDescendants(theResourceManager->GetResourceId("GOODS"), goodsTypes);
 
@@ -250,55 +327,53 @@ namespace ai
         }
 
         _GetWareInfos(allGoods, m_wareInfos);
-	}
+    }
 
-	void VehiclesGeneratorInfoCache::_InitializeVehicleParts()
-	{
+    void VehiclesGeneratorInfoCache::_InitializeVehicleParts()
+    {
         retruxx::vector<int> vehiclePrototypeIds;
         _GetAbstractVehiclesPrototypeIds(vehiclePrototypeIds);
-        
+
         auto gunsId = theResourceManager->GetResourceId("GUN");
-        
+
         for (auto toVehicleId = vehiclePrototypeIds.begin(); toVehicleId != vehiclePrototypeIds.end(); ++toVehicleId)
         {
             unsigned int prototypeId = *toVehicleId;
-            const ai::VehiclePrototypeInfo* vehicleProto = nullptr;
-        
+            ai::VehiclePrototypeInfo const* vehicleProto = nullptr;
+
             // Get the vehicle prototype info
-             vehicleProto = dynamic_cast<const ai::VehiclePrototypeInfo*>(ai::thePrototypeManager->GetPrototypeInfo(prototypeId));
-        
-             if (!vehicleProto)
-             {
-                 continue;
-             }
-        
+            vehicleProto = dynamic_cast<ai::VehiclePrototypeInfo const*>(ai::thePrototypeManager->GetPrototypeInfo(prototypeId));
+
+            if (!vehicleProto)
+            {
+                continue;
+            }
+
             // Initialize new group info
             VehicleGroupInfo newGroupInfo;
-        
+
             // Get basket parts
             _GetVehiclePartInfosForVehicle(vehicleProto, "BASKET", newGroupInfo.baskets);
-        
+
             // Get chassis parts
             _GetVehiclePartInfosForVehicle(vehicleProto, "CHASSIS", newGroupInfo.chassises);
-        
+
             // Get cabin parts
             _GetVehiclePartInfosForVehicle(vehicleProto, "CABIN", newGroupInfo.cabins);
-        
+
             // Find gun parts
-            for (auto partNameIter = vehicleProto->GetAllPartNames().begin();
-                partNameIter != vehicleProto->GetAllPartNames().end();
-                ++partNameIter)
+            for (auto partNameIter = vehicleProto->GetAllPartNames().begin(); partNameIter != vehicleProto->GetAllPartNames().end(); ++partNameIter)
             {
                 // Get the part description
                 auto* partDesc = vehicleProto->GetPartDescriptionByName((*partNameIter));
-        
+
                 if (!partDesc)
                     continue;
-        
+
                 // Get resource ID and check if it's a gun
                 int partResourceId = partDesc->GetPartResourceId();
                 ai::Resource* resource = ai::theResourceManager->GetResource(partResourceId);
-        
+
                 if (resource && resource->bIsKindOf(gunsId))
                 {
                     newGroupInfo.gunPartNames.push_back(*partNameIter);
@@ -307,5 +382,5 @@ namespace ai
             // Insert into the map (assuming m_vehicleGroupInfos is a std::map)
             auto result = this->m_vehicleGroupInfos.emplace(vehicleProto->m_prototypeName, std::move(newGroupInfo));
         }
-	}
-}
+    }
+}  // namespace ai
