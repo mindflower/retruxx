@@ -11,7 +11,8 @@ namespace ai
 
     PlasmaBunchLauncherPrototypeInfo::PlasmaBunchLauncherPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_damageType = DAMAGE_ENERGY;
+        m_WithShellsPoolLimit = true;
     }
 
     Obj* PlasmaBunchLauncherPrototypeInfo::CreateTargetObject() const
@@ -19,9 +20,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool PlasmaBunchLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool PlasmaBunchLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return GunPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
     void PlasmaBunchLauncherPrototypeInfo::PostLoad()
@@ -68,4 +69,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

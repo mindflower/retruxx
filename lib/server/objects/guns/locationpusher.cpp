@@ -9,10 +9,7 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(LocationPusher);
 
-    LocationPusherPrototypeInfo::LocationPusherPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    LocationPusherPrototypeInfo::LocationPusherPrototypeInfo() = default;
 
     Obj* LocationPusherPrototypeInfo::CreateTargetObject() const
     {
@@ -63,4 +60,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

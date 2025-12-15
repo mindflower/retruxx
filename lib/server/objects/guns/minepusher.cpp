@@ -11,7 +11,7 @@ namespace ai
 
     MinePusherPrototypeInfo::MinePusherPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_damageType = DAMAGE_BLAST;
     }
 
     Obj* MinePusherPrototypeInfo::CreateTargetObject() const
@@ -63,4 +63,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

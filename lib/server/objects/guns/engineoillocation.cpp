@@ -2,14 +2,11 @@
 
 namespace ai
 {
-	RT_CLASS_EXPORTS_BEGIN(EngineOilLocation)
+    RT_CLASS_EXPORTS_BEGIN(EngineOilLocation)
     RT_CLASS_EXPORTS_END;
-	RT_CLASS_DEFINE(EngineOilLocation);
+    RT_CLASS_DEFINE(EngineOilLocation);
 
-    EngineOilLocationPrototypeInfo::EngineOilLocationPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    EngineOilLocationPrototypeInfo::EngineOilLocationPrototypeInfo() = default;
 
     Obj* EngineOilLocationPrototypeInfo::CreateTargetObject() const
     {
@@ -21,7 +18,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    EngineOilLocation::EngineOilLocation(const EngineOilLocationPrototypeInfo& prototypeInfo) : TemporaryLocation(prototypeInfo)
+    EngineOilLocation::EngineOilLocation(EngineOilLocationPrototypeInfo const& prototypeInfo) : TemporaryLocation(prototypeInfo)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -46,7 +43,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const EngineOilLocationPrototypeInfo* EngineOilLocation::GetPrototypeInfo() const
+    EngineOilLocationPrototypeInfo const* EngineOilLocation::GetPrototypeInfo() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -60,4 +57,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

@@ -10,12 +10,22 @@ namespace ai
 
     MortarShellPrototypeInfo::MortarShellPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_velocity = 1.0f;
+        m_acceleration = 1.0f;
+        m_flyTime = 1.0f;
+        m_blastWavePrototypeId = -1;
     }
 
-    bool MortarShellPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool MortarShellPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = ShellPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            ai::SimplePhysicObjPrototypeInfo::_SetGeomType(GEOM_TYPE_BOX);
+            m3d::SafeFloatAttrib(m_flyTime, xmlNode, "FlyTime");
+            m3d::SafeStrAttrib(m_blastWavePrototypeName, xmlNode, "BlastWavePrototype");
+        }
+        return result;
     }
 
     void MortarShellPrototypeInfo::PostLoad()
@@ -102,4 +112,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

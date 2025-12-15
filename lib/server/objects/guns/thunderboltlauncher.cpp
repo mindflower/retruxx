@@ -16,12 +16,18 @@ namespace ai
 
     ThunderboltLauncherPrototypeInfo::ThunderboltLauncherPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_damageType = DAMAGE_ENERGY;
+        m_WithShellsPoolLimit = true;
     }
 
-    bool ThunderboltLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool ThunderboltLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = GunPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_ActionDist, xmlNode, "ActionDist");
+        }
+        return result;
     }
 
     void ThunderboltLauncherPrototypeInfo::PostLoad()
@@ -73,4 +79,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

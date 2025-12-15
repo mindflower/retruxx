@@ -4,15 +4,16 @@
 
 namespace ai
 {
-    RepositoryObjectsGeneratorPrototypeInfo::RepositoryObjectsGeneratorPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    RepositoryObjectsGeneratorPrototypeInfo::RepositoryObjectsGeneratorPrototypeInfo() = default;
 
-    bool RepositoryObjectsGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile,
-        const m3d::cmn::XmlNode* xmlNode)
+    bool RepositoryObjectsGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            // TODO: implement RepositoryObjectsGeneratorPrototypeInfo::LoadFromXML
+        }
+        return result;
     }
 
     void RepositoryObjectsGeneratorPrototypeInfo::PostLoad()
@@ -24,4 +25,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

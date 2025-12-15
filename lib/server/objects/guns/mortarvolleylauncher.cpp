@@ -8,10 +8,7 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(MortarVolleyLauncher);
 
-    MortarVolleyLauncherPrototypeInfo::MortarVolleyLauncherPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    MortarVolleyLauncherPrototypeInfo::MortarVolleyLauncherPrototypeInfo() = default;
 
     Obj* MortarVolleyLauncherPrototypeInfo::CreateTargetObject() const
     {
@@ -57,4 +54,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

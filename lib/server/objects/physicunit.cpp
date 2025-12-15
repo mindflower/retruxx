@@ -13,14 +13,23 @@ RT_CLASS_EXPORT_METHOD_DEFINE(PhysicUnit, SetWalkPathByName)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(PhysicUnit)
-        RT_CLASS_EXPORT(PhysicUnit, m3d::METHOD, AddWalkPathByName, "", "", "")
-        RT_CLASS_EXPORT(PhysicUnit, m3d::METHOD, SetWalkPathByName, "", "", "")
+    RT_CLASS_EXPORT(PhysicUnit, m3d::METHOD, AddWalkPathByName, "", "", "")
+    RT_CLASS_EXPORT(PhysicUnit, m3d::METHOD, SetWalkPathByName, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(PhysicUnit);
 
-    bool PhysicUnitPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool PhysicUnitPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = SimplePhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            _SetGeomType(GEOM_TYPE_FROM_MODEL);
+            m3d::SafeFloatAttrib(m_walkSpeed, xmlNode, "WalkSpeed");
+            m3d::SafeFloatAttrib(m_maxStandTime, xmlNode, "MaxStandTime");
+            m3d::SafeFloatAttrib(m_turnSpeed, xmlNode, "TurnSpeed");
+            m_turnSpeed *= 0.017453292;
+        }
+        return result;
     }
 
     Obj* PhysicUnitPrototypeInfo::CreateTargetObject() const
@@ -30,7 +39,9 @@ namespace ai
 
     PhysicUnitPrototypeInfo::PhysicUnitPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_walkSpeed = 1.0f;
+        m_turnSpeed = 1.0f;
+        m_maxStandTime = 1.0f;
     }
 
     void PhysicUnit::SetCauseForce(float)
@@ -200,4 +211,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

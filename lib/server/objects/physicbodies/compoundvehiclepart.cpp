@@ -8,19 +8,21 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(CompoundVehiclePart);
 
-    CompoundVehiclePartPrototypeInfo::CompoundVehiclePartPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    CompoundVehiclePartPrototypeInfo::CompoundVehiclePartPrototypeInfo() = default;
 
     void CompoundVehiclePartPrototypeInfo::PostLoad()
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool CompoundVehiclePartPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool CompoundVehiclePartPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = ai::VehiclePartPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            // TODO: implement CompoundVehiclePartPrototypeInfo::LoadFromXML
+        }
+        return result;
     }
 
     CompoundVehiclePart::TVehiclePart::TVehiclePart(ai::VehiclePart*, unsigned)
@@ -33,7 +35,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    CompoundVehiclePart::CompoundVehiclePart(const CompoundVehiclePartPrototypeInfo& prototype) : VehiclePart(prototype)
+    CompoundVehiclePart::CompoundVehiclePart(CompoundVehiclePartPrototypeInfo const& prototype) : VehiclePart(prototype)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -58,7 +60,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::CompoundVehiclePartPrototypeInfo* CompoundVehiclePart::GetPrototypeInfo() const
+    ai::CompoundVehiclePartPrototypeInfo const* CompoundVehiclePart::GetPrototypeInfo() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -124,7 +126,7 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-    unsigned int CompoundVehiclePart::GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const
+    unsigned int CompoundVehiclePart::GetPrice(ai::IPriceCoeffProvider const* priceCoeffProvider) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -156,17 +158,17 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
         return VehiclePartsMap::iterator();
     }
-    CompoundVehiclePart::VehiclePartsMap::const_iterator CompoundVehiclePart::find(const CStr&) const
+    CompoundVehiclePart::VehiclePartsMap::const_iterator CompoundVehiclePart::find(CStr const&) const
     {
         RETRUXX_NOT_IMPLEMENTED;
         return VehiclePartsMap::const_iterator();
     }
-    CompoundVehiclePart::VehiclePartsMap::iterator CompoundVehiclePart::find(const CStr& s)
+    CompoundVehiclePart::VehiclePartsMap::iterator CompoundVehiclePart::find(CStr const& s)
     {
         RETRUXX_NOT_IMPLEMENTED;
         return VehiclePartsMap::iterator();
     }
-    void CompoundVehiclePart::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void CompoundVehiclePart::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -196,4 +198,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

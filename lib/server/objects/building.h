@@ -62,7 +62,7 @@ namespace ai
         static ai::BuildingType __fastcall GetBuildingTypeByName(const CStr& buildingTypeName);
 
     private:
-        static const CStr m_buildingTypeNames[5];
+        static inline const CStr m_buildingTypeNames[5] = {"Administration", "Bar", "Shop", "Workshop", "Garage"};
         /* 0x00c0 */ retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*> > m_npcs;
     }; /* size: 0x00d0 */
 

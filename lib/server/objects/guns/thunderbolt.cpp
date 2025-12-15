@@ -1,4 +1,5 @@
 #include "thunderbolt.h"
+#include "core/ini.h"
 
 namespace ai
 {
@@ -8,12 +9,22 @@ namespace ai
 
     ThunderboltPrototypeInfo::ThunderboltPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_flyTime = 1.0f;
+        m_Damage = 0.0f;
+        m_AverageSegmentLength = 0.1f;
     }
 
-    bool ThunderboltPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    bool ThunderboltPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_flyTime, xmlNode, "FlyTime");
+            m3d::SafeFloatAttrib(m_Damage, xmlNode, "Damage");
+            m3d::SafeFloatAttrib(m_AverageSegmentLength, xmlNode, "AverageSegmentLength");
+            m3d::SafeStrAttrib(m_EffectName, xmlNode, "Effect");
+        }
+        return result;
     }
 
     void ThunderboltPrototypeInfo::PostLoad()
@@ -31,9 +42,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Thunderbolt::Thunderbolt(const ai::ThunderboltPrototypeInfo& prototypeInfo) :
-        Obj(prototypeInfo),
-        m_lifeTime(0.0, 0.0,prototypeInfo.m_flyTime, 1.0)
+    Thunderbolt::Thunderbolt(ai::ThunderboltPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo), m_lifeTime(0.0, 0.0, prototypeInfo.m_flyTime, 1.0)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -58,22 +67,22 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::ThunderboltPrototypeInfo* Thunderbolt::GetPrototypeInfo() const
+    ai::ThunderboltPrototypeInfo const* Thunderbolt::GetPrototypeInfo() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Thunderbolt::ThunderboltPoint::ThunderboltPoint(const ai::Thunderbolt::ThunderboltPoint& __that)
+    Thunderbolt::ThunderboltPoint::ThunderboltPoint(ai::Thunderbolt::ThunderboltPoint const& __that)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Thunderbolt::ThunderboltPoint::ThunderboltPoint(const CVector& point)
+    Thunderbolt::ThunderboltPoint::ThunderboltPoint(CVector const& point)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Thunderbolt::ThunderboltPoint::ThunderboltPoint(const int& objId, bool launcher)
+    Thunderbolt::ThunderboltPoint::ThunderboltPoint(int const& objId, bool launcher)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -93,41 +102,41 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const CVector& Thunderbolt::ThunderboltPoint::getPoint() const
+    CVector const& Thunderbolt::ThunderboltPoint::getPoint() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Thunderbolt::ThunderboltPoint::setPoint(const CVector& point)
+    void Thunderbolt::ThunderboltPoint::setPoint(CVector const& point)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Thunderbolt::ThunderboltPoint::setDependencies(
-        const retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>>&
-        dependencies)
+        retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>> const& dependencies)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const CVector& Thunderbolt::ThunderboltPoint::getThunderboltPoint()
+    CVector const& Thunderbolt::ThunderboltPoint::getThunderboltPoint()
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const retruxx::vector<CVector, retruxx::allocator<CVector>>& Thunderbolt::ThunderboltSegment::SegmentFinding(
-        const Segment& seg) const
+    retruxx::vector<CVector, retruxx::allocator<CVector>> const& Thunderbolt::ThunderboltSegment::SegmentFinding(Segment const& seg) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Thunderbolt::ThunderboltSegment::ThunderboltSegment(const ai::Thunderbolt::ThunderboltSegment& __that)
+    Thunderbolt::ThunderboltSegment::ThunderboltSegment(ai::Thunderbolt::ThunderboltSegment const& __that)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Thunderbolt::ThunderboltSegment::ThunderboltSegment(const ai::ThunderboltPrototypeInfo* thunderboltPrototype,
-        const ai::Thunderbolt::ThunderboltPoint& Start, const ai::Thunderbolt::ThunderboltPoint& Finish)
+    Thunderbolt::ThunderboltSegment::ThunderboltSegment(
+        ai::ThunderboltPrototypeInfo const* thunderboltPrototype,
+        ai::Thunderbolt::ThunderboltPoint const& Start,
+        ai::Thunderbolt::ThunderboltPoint const& Finish)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -137,22 +146,22 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const retruxx::vector<CVector, retruxx::allocator<CVector>>& Thunderbolt::ThunderboltSegment::getThunderboltPoints()
+    retruxx::vector<CVector, retruxx::allocator<CVector>> const& Thunderbolt::ThunderboltSegment::getThunderboltPoints()
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Thunderbolt::ThunderboltSegment::Render(const ai::ThunderboltPrototypeInfo* thunderboltPrototype)
+    void Thunderbolt::ThunderboltSegment::Render(ai::ThunderboltPrototypeInfo const* thunderboltPrototype)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const CVector& Thunderbolt::ThunderboltSegment::getStartPoint()
+    CVector const& Thunderbolt::ThunderboltSegment::getStartPoint()
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const CVector& Thunderbolt::ThunderboltSegment::getFinishPoint()
+    CVector const& Thunderbolt::ThunderboltSegment::getFinishPoint()
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -182,12 +191,12 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Thunderbolt::setTargets(const retruxx::vector<CVector, retruxx::allocator<CVector>>& targets)
+    void Thunderbolt::setTargets(retruxx::vector<CVector, retruxx::allocator<CVector>> const& targets)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Thunderbolt::setTargets(const retruxx::vector<int, retruxx::allocator<int>>& targets)
+    void Thunderbolt::setTargets(retruxx::vector<int, retruxx::allocator<int>> const& targets)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -197,12 +206,12 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Thunderbolt::setOrigin(const CVector& Origin)
+    void Thunderbolt::setOrigin(CVector const& Origin)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const CVector& Thunderbolt::getOrigin() const
+    CVector const& Thunderbolt::getOrigin() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -217,7 +226,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Thunderbolt::isLookAtPoint(const CVector& lookAt, float eps) const
+    bool Thunderbolt::isLookAtPoint(CVector const& lookAt, float eps) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -227,10 +236,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    retruxx::vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment>>
-    Thunderbolt::getThunderboltSegmentsInt(ai::Thunderbolt::ThunderboltPoint& org,
-        retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>>&
-        targets)
+    retruxx::vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment>> Thunderbolt::getThunderboltSegmentsInt(
+        ai::Thunderbolt::ThunderboltPoint& org,
+        retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>>& targets)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -244,4 +252,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

@@ -25,16 +25,16 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Npc, HasNotTakenDynamicQuests)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(Npc)
-        RT_CLASS_EXPORT(Npc, m3d::METHOD, GetSpokenCount, "", "", "")
-        RT_CLASS_EXPORT(Npc, m3d::METHOD, SetSpokenCount, "", "", "")
-        RT_CLASS_EXPORT(Npc, m3d::METHOD, HasDynamicQuests, "", "", "")
-        RT_CLASS_EXPORT(Npc, m3d::METHOD, HasNotTakenDynamicQuests, "", "", "")
+    RT_CLASS_EXPORT(Npc, m3d::METHOD, GetSpokenCount, "", "", "")
+    RT_CLASS_EXPORT(Npc, m3d::METHOD, SetSpokenCount, "", "", "")
+    RT_CLASS_EXPORT(Npc, m3d::METHOD, HasDynamicQuests, "", "", "")
+    RT_CLASS_EXPORT(Npc, m3d::METHOD, HasNotTakenDynamicQuests, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Npc);
 
     NpcPrototypeInfo::NpcPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_bIsUpdating = false;
     }
 
     Obj* NpcPrototypeInfo::CreateTargetObject() const
@@ -42,9 +42,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool NpcPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool NpcPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
     bool Npc::HasDynamicQuests() const
@@ -220,4 +220,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

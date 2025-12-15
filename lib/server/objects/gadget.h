@@ -2,14 +2,14 @@
 #include "base/obj.h"
 #include "base/prototypeinfo.h"
 #include "guns/gun.h"
-#include <core/aiparam.h>
+#include "core/aiparam.h"
 
 namespace ai
 {
     class VehiclePart;
     class Vehicle;
 
-    class GadgetPrototypeInfo : public ai::PrototypeInfo
+    class GadgetPrototypeInfo : public PrototypeInfo
     {
     public:
         enum GadgetAppliers
@@ -21,77 +21,84 @@ namespace ai
 
         struct GadgetApplicationInfo
         {
-            /* 0x0000 */ ai::GadgetPrototypeInfo::GadgetAppliers applierType;
-            /* 0x0004 */ int targetResourceId;
-            /* 0x0008 */ ai::FiringTypes targetFiringType;
+            GadgetAppliers applierType;
+            int targetResourceId;
+            FiringTypes targetFiringType;
+
             GadgetApplicationInfo();
-        }; /* size: 0x000c */
+        };
 
         struct ModificationInfo
         {
-            enum ModificationType;
-            /* 0x0000 */ ai::GadgetPrototypeInfo::GadgetApplicationInfo m_applierInfo;
-            /* 0x000c */ CStr m_propertyName;
-            /* 0x0018 */ ai::GadgetPrototypeInfo::ModificationInfo::ModificationType m_modificationType;
-            /* 0x001c */ m3d::AIParam m_value;
-            ModificationInfo(const ai::GadgetPrototypeInfo::ModificationInfo& __that);
-            ModificationInfo(const CStr& str, const ai::GadgetPrototypeInfo* gadgetPrototype);
-            bool ApplyToObj(ai::Obj* pObj, bool enable) const;
-        }; /* size: 0x0038 */
+            enum ModificationType
+            {
+                MULTIPLY = 0,
+                ADD = 1,
+            };
 
-        using ModificationInfoVector = retruxx::vector<ai::GadgetPrototypeInfo::ModificationInfo, retruxx::allocator<ai::GadgetPrototypeInfo::ModificationInfo> >;
+            GadgetApplicationInfo m_applierInfo;
+            CStr m_propertyName;
+            ModificationType m_modificationType;
+            m3d::AIParam m_value;
+
+            ModificationInfo(CStr const& str, GadgetPrototypeInfo const* gadgetPrototype);
+            bool ApplyToObj(ai::Obj* pObj, bool enable) const;
+        };
+
+        using ModificationInfoVector = retruxx::vector<GadgetPrototypeInfo::ModificationInfo>;
 
     public:
         GadgetPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
-        virtual bool ApplyToVehicle(ai::Vehicle* pVehicle, bool enable) const /* 0x1c */;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual ai::Obj* CreateTargetObject() const override;
+        virtual bool ApplyToVehicle(ai::Vehicle* pVehicle, bool enable) const;
         bool ApplyToVp(ai::VehiclePart* vp, bool enable) const;
-        const CStr& GetModelName() const;
+        CStr const& GetModelName() const;
         int GetSkinNum() const;
-        const retruxx::vector<ai::GadgetPrototypeInfo::ModificationInfo, retruxx::allocator<ai::GadgetPrototypeInfo::ModificationInfo> >& GetModifications() const;
+        ModificationInfoVector const& GetModifications() const;
 
     private:
-        /* 0x0040 */ retruxx::vector<ai::GadgetPrototypeInfo::ModificationInfo, retruxx::allocator<ai::GadgetPrototypeInfo::ModificationInfo> > m_modifications;
-        /* 0x0050 */ CStr m_modelName;
-        /* 0x005c */ int m_skinNum;
-    }; /* size: 0x0060 */
+        ModificationInfoVector m_modifications;
+        CStr m_modelName;
+        int m_skinNum;
+    };
 
     static_assert(sizeof(GadgetPrototypeInfo) == 0x0060);
 
-    class Gadget : public ai::Obj
+    class Gadget : public Obj
     {
     protected:
-        virtual  ~Gadget() override /* 0x00 */;
+        virtual ~Gadget() override;
 
     private:
-        Gadget(const ai::GadgetPrototypeInfo& prototypeInfo);
-        Gadget(const ai::Gadget&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        Gadget(GadgetPrototypeInfo const& prototypeInfo);
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classGadget;
-        virtual const ai::GadgetPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual ai::GadgetPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void __fastcall RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus);
 
     public:
-        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x5c */;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x60 */;
-        virtual CStr GetPropertyName(int id) const override /* 0x78 */;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
-        virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const override;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const override;
+        virtual CStr GetPropertyName(int id) const override;
+        virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) override;
+        virtual int GetPropertyId(char const* PropertyName) const override;
 
     protected:
-        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
-        static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
-        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
-        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
+        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int>>> m_propertiesMap;
+        static inline retruxx::
+            map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus>>>
+                m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
     public:
         int GetSlotNum() const;
@@ -101,8 +108,8 @@ namespace ai
         static void __fastcall Registration();
 
     private:
-        /* 0x00c0 */ int m_slotNum;
-    }; /* size: 0x00c4 */
+        int m_slotNum;
+    };
 
     static_assert(sizeof(Gadget) == 0x00c4);
-}
+}  // namespace ai

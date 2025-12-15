@@ -15,8 +15,8 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Workshop, GetRepositoryByTypename)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(Workshop)
-        RT_CLASS_EXPORT(Workshop, m3d::METHOD, GetRepositoryByType, "", "", "")
-        RT_CLASS_EXPORT(Workshop, m3d::METHOD, GetRepositoryByTypename, "", "", "")
+    RT_CLASS_EXPORT(Workshop, m3d::METHOD, GetRepositoryByType, "", "", "")
+    RT_CLASS_EXPORT(Workshop, m3d::METHOD, GetRepositoryByTypename, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Workshop);
 
@@ -30,14 +30,11 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    WorkshopPrototypeInfo::WorkshopPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    WorkshopPrototypeInfo::WorkshopPrototypeInfo() = default;
 
-    bool WorkshopPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool WorkshopPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return BuildingPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
     ai::Obj* WorkshopPrototypeInfo::CreateTargetObject() const
@@ -284,4 +281,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

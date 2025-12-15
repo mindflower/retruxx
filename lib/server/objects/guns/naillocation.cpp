@@ -4,10 +4,7 @@
 
 namespace ai
 {
-    NailLocationPrototypeInfo::NailLocationPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    NailLocationPrototypeInfo::NailLocationPrototypeInfo() = default;
 
     ai::Obj* NailLocationPrototypeInfo::CreateTargetObject() const
     {
@@ -49,13 +46,13 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    NailLocation::NailLocation(const ai::NailLocationPrototypeInfo& prototypeInfo) : TemporaryLocation(prototypeInfo)
+    NailLocation::NailLocation(ai::NailLocationPrototypeInfo const& prototypeInfo) : TemporaryLocation(prototypeInfo)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::NailLocationPrototypeInfo* NailLocation::GetPrototypeInfo() const
+    ai::NailLocationPrototypeInfo const* NailLocation::GetPrototypeInfo() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

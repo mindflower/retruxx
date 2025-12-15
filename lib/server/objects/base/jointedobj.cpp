@@ -13,14 +13,11 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    JointedObjPrototypeInfo::JointedObjPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    JointedObjPrototypeInfo::JointedObjPrototypeInfo() = default;
 
-    bool JointedObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool JointedObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
     ai::Obj* JointedObjPrototypeInfo::CreateTargetObject() const
@@ -167,4 +164,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

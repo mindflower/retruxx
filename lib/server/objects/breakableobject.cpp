@@ -12,12 +12,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(BreakableObject, SetDestroyed)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(BreakableObject)
-        RT_CLASS_EXPORT(BreakableObject, m3d::METHOD, SetEnabled, "", "", "")
-        RT_CLASS_EXPORT(BreakableObject, m3d::METHOD, SetDestroyed, "", "", "")
+    RT_CLASS_EXPORT(BreakableObject, m3d::METHOD, SetEnabled, "", "", "")
+    RT_CLASS_EXPORT(BreakableObject, m3d::METHOD, SetDestroyed, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(BreakableObject);
 
@@ -28,7 +27,13 @@ namespace ai
 
     BreakableObjectPrototypeInfo::BreakableObjectPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_destroyable = 0;
+        m_effectType = "WOOD";
+        m_destroyEffectType = "BLOW";
+        m_brokenModelName = "brokenTest";
+        m_destroyedModelName = "brokenTest";
+        m_BlastWavePrototypeId = -1;
+        m_bIsUpdating = false;
     }
 
     void BreakableObjectPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -41,9 +46,22 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool BreakableObjectPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool BreakableObjectPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = SimplePhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            _SetGeomType(GEOM_TYPE_BOX);
+            m3d::SafeIntAttrib(m_destroyable, xmlNode, "Destroyable");
+            m3d::SafeFloatAttrib(m_criticalHitEnergy, xmlNode, "CriticalHitEnergy");
+            m3d::SafeStrAttrib(m_effectType, xmlNode, "EffectType");
+            m3d::SafeStrAttrib(m_destroyEffectType, xmlNode, "DestroyEffectType");
+            m3d::SafeStrAttrib(m_brokenModelName, xmlNode, "BrokenModel");
+            m3d::SafeStrAttrib(m_destroyedModelName, xmlNode, "DestroyedModel");
+            m3d::SafeStrAttrib(m_breakEffect, xmlNode, "BreakEffect");
+            m3d::SafeStrAttrib(m_BlastWavePrototypeName, xmlNode, "BlastWave");
+        }
+        return result;
     }
 
     BreakableObject::BreakableObject(BreakableObjectPrototypeInfo const& prototype) : SimplePhysicObj(prototype)
@@ -245,4 +263,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

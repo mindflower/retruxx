@@ -1,6 +1,6 @@
 #include "ware.h"
-
-#include <stdexcept>
+#include "core/ini.h"
+#include "core/kernel.h"
 
 namespace ai
 {
@@ -15,7 +15,11 @@ namespace ai
 
     WarePrototypeInfo::WarePrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_maxDurability = 1.0f;
+        m_maxItems = 1;
+        m_priceDispersion = 0.0f;
+        m_minCount = 0;
+        m_maxCount = 50;
     }
 
     int WarePrototypeInfo::GetMinCount() const
@@ -33,9 +37,21 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool WarePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool WarePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeUintAttrib(m_maxItems, xmlNode, "MaxItems");
+            m3d::SafeFloatAttrib(m_maxDurability, xmlNode, "Durability");
+            m3d::SafeFloatAttrib(m_priceDispersion, xmlNode, "PriceDispersion");
+            M3D_ASSERT(m_priceDispersion >= 0.0f && m_priceDispersion <= 100.0f);
+
+            m3d::SafeStrAttrib(m_modelName, xmlNode, "ModelFile");
+            m3d::SafeIntAttrib(m_minCount, xmlNode, "MinCount");
+            m3d::SafeIntAttrib(m_maxCount, xmlNode, "MaxCount");
+        }
+        return result;
     }
 
     Obj* WarePrototypeInfo::CreateTargetObject() const
@@ -43,9 +59,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Ware::Ware(WarePrototypeInfo const& prototype) :
-        Obj(prototype),
-        m_durability(prototype.m_maxDurability, 0.0, prototype.m_maxDurability)
+    Ware::Ware(WarePrototypeInfo const& prototype) : Obj(prototype), m_durability(prototype.m_maxDurability, 0.0, prototype.m_maxDurability)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -154,4 +168,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

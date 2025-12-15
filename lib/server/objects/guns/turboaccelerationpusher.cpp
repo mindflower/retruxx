@@ -11,12 +11,19 @@ namespace ai
 
     TurboAccelerationPusherPrototypeInfo::TurboAccelerationPusherPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_AccelerationValue = 1.0f;
+        m_AccelerationTime = 0.0f;
     }
 
-    bool TurboAccelerationPusherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool TurboAccelerationPusherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = GunPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_AccelerationValue, xmlNode, "AccelerationValue");
+            m3d::SafeFloatAttrib(m_AccelerationTime, xmlNode, "AccelerationTime");
+        }
+        return result;
     }
 
     Obj* TurboAccelerationPusherPrototypeInfo::CreateTargetObject() const
@@ -68,4 +75,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

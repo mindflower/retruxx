@@ -2,13 +2,14 @@
 
 namespace ai
 {
-	RT_CLASS_EXPORTS_BEGIN(Mine)
+    RT_CLASS_EXPORTS_BEGIN(Mine)
     RT_CLASS_EXPORTS_END;
-	RT_CLASS_DEFINE(Mine);
+    RT_CLASS_DEFINE(Mine);
 
     MinePrototypeInfo::MinePrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_TTL = 100.0f;
+        m_TimeForActivation = 0.0f;
     }
 
     Obj* MinePrototypeInfo::CreateTargetObject() const
@@ -16,9 +17,15 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool MinePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    bool MinePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = RocketPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_TTL, xmlNode, "TTL");
+            m3d::SafeFloatAttrib(m_TimeForActivation, xmlNode, "TimeForActivation");
+        }
+        return result;
     }
 
     Mine::~Mine()
@@ -26,12 +33,12 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Mine::Mine(const MinePrototypeInfo& prototypeInfo) : Rocket(prototypeInfo)
+    Mine::Mine(MinePrototypeInfo const& prototypeInfo) : Rocket(prototypeInfo)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Mine::Mine(const Mine& mine) : Rocket(mine)
+    Mine::Mine(Mine const& mine) : Rocket(mine)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -56,12 +63,12 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const MinePrototypeInfo* Mine::GetPrototypeInfo() const
+    MinePrototypeInfo const* Mine::GetPrototypeInfo() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Mine::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void Mine::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -80,4 +87,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

@@ -9,9 +9,14 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(RocketVolleyLauncher);
 
-    bool RocketVolleyLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool RocketVolleyLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = RocketLauncherPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_actionDist, xmlNode, "ActionDist");
+        }
+        return result;
     }
 
     Obj* RocketVolleyLauncherPrototypeInfo::CreateTargetObject() const
@@ -21,7 +26,8 @@ namespace ai
 
     RocketVolleyLauncherPrototypeInfo::RocketVolleyLauncherPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_actionDist = 0.0f;
+        m_WithShellsPoolLimit = 1;
     }
 
     void RocketVolleyLauncher::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -98,4 +104,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

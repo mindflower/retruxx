@@ -31,17 +31,22 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Town, IsRuined)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(Town)
-        RT_CLASS_EXPORT(Town, m3d::METHOD, SpawnCaravanToLocation, "", "", "")
-        RT_CLASS_EXPORT(Town, m3d::METHOD, GetOpenGateToPlayer, "", "", "")
-        RT_CLASS_EXPORT(Town, m3d::METHOD, SetOpenGateToPlayer, "", "", "")
-        RT_CLASS_EXPORT(Town, m3d::METHOD, SetRuined, "", "", "")
-        RT_CLASS_EXPORT(Town, m3d::METHOD, IsRuined, "", "", "")
+    RT_CLASS_EXPORT(Town, m3d::METHOD, SpawnCaravanToLocation, "", "", "")
+    RT_CLASS_EXPORT(Town, m3d::METHOD, GetOpenGateToPlayer, "", "", "")
+    RT_CLASS_EXPORT(Town, m3d::METHOD, SetOpenGateToPlayer, "", "", "")
+    RT_CLASS_EXPORT(Town, m3d::METHOD, SetRuined, "", "", "")
+    RT_CLASS_EXPORT(Town, m3d::METHOD, IsRuined, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Town);
 
     TownPrototypeInfo::TownPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_maxDefenders = 1;
+        m_DesiredGunsInWorkshop = 0;
+        m_GunAffixesCount = 0;
+        m_CabinsAndBasketsAffixesCount = 0;
+        m_numCollisionLayersBelowVehicle = 2;
+        m_bCollisionTrimeshAllowed = true;
     }
 
     Obj* TownPrototypeInfo::CreateTargetObject() const
@@ -59,9 +64,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool TownPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool TownPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = ai::SettlementPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            // TODO: implement TownPrototypeInfo::LoadFromXML
+        }
+        return result;
     }
 
     void TownPrototypeInfo::_LoadFromXmlResourceIdToRandomCoeffMap(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -99,9 +109,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Town::Town(TownPrototypeInfo const& prototype) :
-        Settlement(prototype),
-        m_gateTime(0.0, 0.0)
+    Town::Town(TownPrototypeInfo const& prototype) : Settlement(prototype), m_gateTime(0.0, 0.0)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -386,4 +394,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

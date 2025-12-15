@@ -8,15 +8,12 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(CompositeObj);
 
-    bool CompositeObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool CompositeObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
-    CompositeObjPrototypeInfo::CompositeObjPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    CompositeObjPrototypeInfo::CompositeObjPrototypeInfo() = default;
 
     ai::Obj* CompositeObjPrototypeInfo::CreateTargetObject() const
     {
@@ -152,4 +149,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

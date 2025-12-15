@@ -1,7 +1,5 @@
 #include "geomobj.h"
 
-#include <stdexcept>
-
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(GeomObj)
@@ -13,19 +11,16 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    GeomObjPrototypeInfo::GeomObjPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    GeomObjPrototypeInfo::GeomObjPrototypeInfo() = default;
 
     GeomObjPrototypeInfo::~GeomObjPrototypeInfo()
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool GeomObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool GeomObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return PhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
     void GeomObj::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
@@ -157,4 +152,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

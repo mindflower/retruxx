@@ -4,10 +4,7 @@
 
 namespace ai
 {
-    SmokeScreenLocationPrototypeInfo::SmokeScreenLocationPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    SmokeScreenLocationPrototypeInfo::SmokeScreenLocationPrototypeInfo() = default;
 
     ai::Obj* SmokeScreenLocationPrototypeInfo::CreateTargetObject() const
     {
@@ -49,13 +46,13 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    SmokeScreenLocation::SmokeScreenLocation(const ai::SmokeScreenLocationPrototypeInfo& prototypeInfo) : TemporaryLocation(prototypeInfo)
+    SmokeScreenLocation::SmokeScreenLocation(ai::SmokeScreenLocationPrototypeInfo const& prototypeInfo) : TemporaryLocation(prototypeInfo)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::SmokeScreenLocationPrototypeInfo* SmokeScreenLocation::GetPrototypeInfo() const
+    ai::SmokeScreenLocationPrototypeInfo const* SmokeScreenLocation::GetPrototypeInfo() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

@@ -4,12 +4,18 @@ namespace ai
 {
     RopeObjPrototypeInfo::RopeObjPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_bIsUpdating = false;
     }
 
-    bool RopeObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    bool RopeObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = SimplePhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            _SetGeomType(GEOM_TYPE_BOX);
+            m3d::SafeStrAttrib(m_brokenModel, xmlNode, "BrokenModel");
+        }
+        return result;
     }
 
     ai::Obj* RopeObjPrototypeInfo::CreateTargetObject() const
@@ -22,7 +28,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RopeObj::RopeObj(const ai::RopeObjPrototypeInfo& prototypeInfo) : SimplePhysicObj(prototypeInfo)
+    RopeObj::RopeObj(ai::RopeObjPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -47,12 +53,12 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::RopeObjPrototypeInfo* RopeObj::GetPrototypeInfo() const
+    ai::RopeObjPrototypeInfo const* RopeObj::GetPrototypeInfo() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void RopeObj::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void RopeObj::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -72,7 +78,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    m3d::SgNode* RopeObj::GetTiedSgNodeNearPos(const CVector& tiePos, bool simpleSearch) const
+    m3d::SgNode* RopeObj::GetTiedSgNodeNearPos(CVector const& tiePos, bool simpleSearch) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -87,7 +93,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    RopeObj::Post::Post(const ai::RopeObj::Post& __that)
+    RopeObj::Post::Post(ai::RopeObj::Post const& __that)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -97,12 +103,12 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::RopeObj::Post& RopeObj::GetPost(ai::RopeObj::HangPoints)
+    ai::RopeObj::Post const& RopeObj::GetPost(ai::RopeObj::HangPoints)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void RopeObj::SetPost(ai::RopeObj::HangPoints hp, const ai::RopeObj::Post& post)
+    void RopeObj::SetPost(ai::RopeObj::HangPoints hp, ai::RopeObj::Post const& post)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -111,4 +117,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

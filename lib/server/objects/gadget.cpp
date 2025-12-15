@@ -1,6 +1,7 @@
 #include "gadget.h"
-
-#include <stdexcept>
+#include "core/kernel.h"
+#include <server/resourcemanager.h>
+#include <core/log.h>
 
 namespace ai
 {
@@ -10,7 +11,9 @@ namespace ai
 
     GadgetPrototypeInfo::GadgetApplicationInfo::GadgetApplicationInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        applierType = GA_VEHICLE;
+        targetResourceId = -1;
+        targetFiringType = FT_MACHINE_GUN;
     }
 
     bool GadgetPrototypeInfo::ModificationInfo::ApplyToObj(ai::Obj*, bool) const
@@ -18,9 +21,60 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    GadgetPrototypeInfo::ModificationInfo::ModificationInfo(CStr const&, ai::GadgetPrototypeInfo const*)
+    GadgetPrototypeInfo::ModificationInfo::ModificationInfo(CStr const& str, ai::GadgetPrototypeInfo const* gadgetPrototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this function
+        static CStr const PLUS("+=");
+
+        retruxx::vector<CStr> tokens;
+        m3d::Tokenize(str, tokens, "(), ;\t");
+        M3D_ASSERT(tokens.size() == 3 || tokens.size() == 4);
+
+        int idx = 2;
+        m_modificationType = MULTIPLY;
+        if (tokens.size() == 4)
+        {
+            M3D_ASSERT(tokens[2] == PLUS);
+            m_modificationType = ADD;
+            idx = 3;
+        }
+
+        CStr const& firstToken = tokens.front();
+        if (firstToken == "VEHICLE")
+        {
+            m_applierInfo.applierType = GA_VEHICLE;
+        }
+        else if (theResourceManager->GetResourceId(firstToken) == -1)
+        {
+            m_applierInfo.applierType = GA_GUN_BY_TYPE;
+            m_applierInfo.targetFiringType = GunPrototypeInfo::Str2FiringType(firstToken);
+            if (m_applierInfo.targetFiringType == 13)
+            {
+                M3D_LOG_INFO("Warning: Unknown firing type: '" + gadgetPrototype->GetDebugDescription() + "'");
+            }
+        }
+        else
+        {
+            m_applierInfo.applierType = GA_OBJECT_BY_RESOURCE;
+            m_applierInfo.targetResourceId = theResourceManager->GetResourceId(firstToken);
+        }
+
+        m_propertyName = tokens[1];
+        if (m_modificationType)
+        {
+            if (m_modificationType == ADD)
+            {
+                m_value = tokens[idx];
+            }
+            else
+            {
+                M3D_ASSERT(0);
+            }
+        }
+        else
+        {
+            m_value = strToFloat(tokens[idx]) * 0.0099999998f;
+        }
     }
 
     ai::Obj* GadgetPrototypeInfo::CreateTargetObject() const
@@ -35,7 +89,8 @@ namespace ai
 
     GadgetPrototypeInfo::GadgetPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_skinNum = 0;
+        m_bIsUpdating = false;
     }
 
     int GadgetPrototypeInfo::GetSkinNum() const
@@ -53,13 +108,31 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool GadgetPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool GadgetPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            CStr strModifications;
+            m3d::SafeStrAttrib(strModifications, xmlNode, "Modifications");
+
+            std::vector<CStr> tokens;
+            m3d::Tokenize(strModifications, tokens, ";");
+
+            for (CStr const& token : tokens)
+            {
+                ModificationInfo info(token, this);
+                m_modifications.push_back(std::move(info));
+            }
+
+            m3d::SafeStrAttrib(m_modelName, xmlNode, "ModelFile");
+            m3d::SafeIntAttrib(m_skinNum, xmlNode, "SkinNum");
+        }
+        return result;
     }
 
     retruxx::vector<GadgetPrototypeInfo::ModificationInfo, retruxx::allocator<GadgetPrototypeInfo::ModificationInfo>> const&
-    GadgetPrototypeInfo::GetModifications() const
+        GadgetPrototypeInfo::GetModifications() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -168,4 +241,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

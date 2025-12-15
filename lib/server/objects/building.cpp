@@ -59,9 +59,16 @@ namespace ai
         return RT_CLASS_LOCAL(Obj);
     }
 
-    BuildingType Building::GetBuildingTypeByName(CStr const&)
+    BuildingType Building::GetBuildingTypeByName(CStr const& buildingTypeName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (int i = 0; i < 5; ++i)
+        {
+            if (m_buildingTypeNames[i] == buildingTypeName)
+            {
+                return static_cast<BuildingType>(i);
+            }
+        }
+        return INVALID_BUILDINGTYPE;
     }
 
     bool Building::CanChildBeAdded(m3d::Class*) const

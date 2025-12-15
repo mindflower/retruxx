@@ -6,12 +6,12 @@ namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(TemporaryLocation)
     RT_CLASS_EXPORTS_END;
-
     RT_CLASS_DEFINE(TemporaryLocation);
 
     TemporaryLocationPrototypeInfo::TemporaryLocationPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_TTL = 0.0;
+        m_TimeForActivation = 0.0;
     }
 
     Obj* TemporaryLocationPrototypeInfo::CreateTargetObject() const
@@ -19,9 +19,16 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool TemporaryLocationPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool TemporaryLocationPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = LocationPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_TTL, xmlNode, "TTL");
+            m3d::SafeFloatAttrib(m_TimeForActivation, xmlNode, "ActivateTime");
+            m3d::SafeStrAttrib(m_EffectName, xmlNode, "Effect");
+        }
+        return result;
     }
 
     void TemporaryLocation::CreateEffectNode()
@@ -88,4 +95,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

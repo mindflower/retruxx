@@ -16,12 +16,19 @@ namespace ai
 
     MortarPrototypeInfo::MortarPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_damageType = DAMAGE_BLAST;
+        m_WithShellsPoolLimit = 1;
+        m_initialVelocity = 50.0f;
     }
 
-    bool MortarPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool MortarPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = GunPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_initialVelocity, xmlNode, "InitialVelocity");
+        }
+        return result;
     }
 
     Obj* MortarPrototypeInfo::CreateTargetObject() const
@@ -123,4 +130,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai
