@@ -1,19 +1,30 @@
 #include "affixgenerator.h"
+#include "core/ini.h"
+#include "core/ref_ptr.h"
 
 namespace ai
 {
-    void AffixGeneratorPrototypeInfo::_InternalCopyFrom(const PrototypeInfo& rhs)
+    void AffixGeneratorPrototypeInfo::_InternalCopyFrom(PrototypeInfo const& rhs)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    AffixGeneratorPrototypeInfo::AffixGeneratorPrototypeInfo()
-    {
-    }
+    AffixGeneratorPrototypeInfo::AffixGeneratorPrototypeInfo() = default;
 
-    bool AffixGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    bool AffixGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            ref_ptr affixNode = xmlFile->CreateNode();
+            for (xmlNode->GetFirstChild(affixNode, "Affix"); !affixNode->IsEmpty(); affixNode->GetNextSibling(affixNode, "Affix"))
+            {
+                AffixDescription newDescription;
+                m3d::SafeStrAttrib(newDescription.m_affixName, affixNode, "AffixName");
+                m_affixDescriptions.push_back(std::move(newDescription));
+            }
+        }
+        return result;
     }
 
     void AffixGeneratorPrototypeInfo::PostLoad()
@@ -30,4 +41,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

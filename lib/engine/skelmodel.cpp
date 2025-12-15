@@ -2063,4 +2063,16 @@ namespace m3d
     {
         return actions;
     }
+
+    ActionType GetActionByName(char const* name)
+    {
+        for (auto const& action : actions)
+        {
+            if (!strcmp(action.m_name, name))
+            {
+                return action.m_action;
+            }
+        }
+	    return AT_STAND1;
+    }
 }

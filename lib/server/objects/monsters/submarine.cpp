@@ -15,16 +15,16 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Submarine, StartMotionToPort)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(Submarine)
-        RT_CLASS_EXPORT(Submarine, m3d::METHOD, InitPosition, "", "", "")
-        RT_CLASS_EXPORT(Submarine, m3d::METHOD, StartMotionToPort, "", "", "")
+    RT_CLASS_EXPORT(Submarine, m3d::METHOD, InitPosition, "", "", "")
+    RT_CLASS_EXPORT(Submarine, m3d::METHOD, StartMotionToPort, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Submarine);
 
     namespace
     {
-        const char* STR_PLACE_POSITION = "PlacePosition";
-        const char* STR_PORT_POSITION = "PortPosition";
-    }
+        char const* STR_PLACE_POSITION = "PlacePosition";
+        char const* STR_PORT_POSITION = "PortPosition";
+    }  // namespace
 
     void SubmarinePrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
@@ -33,7 +33,12 @@ namespace ai
 
     SubmarinePrototypeInfo::SubmarinePrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_maxLinearVelocity = 0.0f;
+        m_linearAcceleration = 0.0f;
+        m_platformOpenFps = 2;
+        m_vehicleMaxSpeed = 72.0f;
+        m_vehicleRelativePosition = ZeroVector;
+        m_bIsUpdating = true;
     }
 
     SubmarinePrototypeInfo::~SubmarinePrototypeInfo()
@@ -46,9 +51,20 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool SubmarinePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool SubmarinePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = DummyObjectPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeFloatAttrib(m_maxLinearVelocity, xmlNode, "MaxLinearVelocity");
+            m3d::SafeFloatAttrib(m_linearAcceleration, xmlNode, "LinearAcceleration");
+            m3d::SafeIntAttrib(m_platformOpenFps, xmlNode, "PlatformOpenFps");
+            m3d::SafeFloatAttrib(m_vehicleMaxSpeed, xmlNode, "VehicleMaxSpeed");
+            m3d::SafeFloatAttrib(m_maxLinearVelocity, xmlNode, "MaxLinearVelocity");
+            m_maxLinearVelocity *= 0.27777779;
+            m_vehicleMaxSpeed *= 0.27777779;
+        }
+        return result;
     }
 
     void Submarine::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
@@ -197,8 +213,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Submarine::_FillCameraStates(retruxx::vector<m3d::CameraPathState, retruxx::allocator<m3d::CameraPathState>>&,
-        CVector const&) const
+    void Submarine::_FillCameraStates(retruxx::vector<m3d::CameraPathState, retruxx::allocator<m3d::CameraPathState>>&, CVector const&) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -207,4 +222,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

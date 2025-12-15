@@ -15,7 +15,11 @@ namespace ai
 
     RocketPrototypeInfo::RocketPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_velocity = 1.0f;
+        m_acceleration = 1.0f;
+        m_minTurningRadius = 1.0f;
+        m_flyTime = 1.0f;
+        m_BlastWavePrototypeId = -1;
     }
 
     void RocketPrototypeInfo::PostLoad()
@@ -23,9 +27,19 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool RocketPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool RocketPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = ShellPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            _SetGeomType(GEOM_TYPE_BOX);
+            m3d::SafeFloatAttrib(m_velocity, xmlNode, "Velocity");
+            m3d::SafeFloatAttrib(m_acceleration, xmlNode, "Acceleration");
+            m3d::SafeFloatAttrib(m_minTurningRadius, xmlNode, "MinTurningRadius");
+            m3d::SafeFloatAttrib(m_flyTime, xmlNode, "FlyTime");
+            m3d::SafeStrAttrib(m_BlastWavePrototypeName, xmlNode, "BlastWavePrototype");
+        }
+        return result;
     }
 
     RocketPrototypeInfo const* Rocket::GetPrototypeInfo() const
@@ -107,4 +121,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

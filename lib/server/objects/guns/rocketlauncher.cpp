@@ -14,14 +14,21 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool RocketLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool RocketLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = GunPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            m3d::SafeBoolAttrib(m_withAngleLimit, xmlNode, "WithAngleLimit");
+        }
+        return result;
     }
 
     RocketLauncherPrototypeInfo::RocketLauncherPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_withAngleLimit = true;
+        m_damageType = DAMAGE_BLAST;
+        m_WithShellsPoolLimit = true;
     }
 
     void RocketLauncherPrototypeInfo::PostLoad()
@@ -123,4 +130,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

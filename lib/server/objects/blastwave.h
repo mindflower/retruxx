@@ -19,7 +19,6 @@ namespace ai
     }; /* size: 0x0094 */
     static_assert(sizeof(BlastWavePrototypeInfo) == 0x0094);
 
-
     class BlastWave : public ai::SimplePhysicObj
     {
     protected:

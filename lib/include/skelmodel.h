@@ -397,4 +397,6 @@ namespace m3d
     }; /* size: 0x0088 */
 
     static_assert(sizeof(AnimInfo) == 0x0088);
+
+    ActionType GetActionByName(char const *);
 }

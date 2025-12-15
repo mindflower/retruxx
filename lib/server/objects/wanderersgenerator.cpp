@@ -10,7 +10,11 @@ namespace ai
 
     void WanderersGeneratorPrototypeInfo::VehiclePartDescription::LoadFromXML(m3d::cmn::XmlFile* xmlfile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m3d::SafeBoolAttrib(m_present, xmlNode, "Present");
+
+        CStr strPrototypes;
+        m3d::SafeStrAttrib(strPrototypes, xmlNode, "Prototypes");
+        m3d::Tokenize(strPrototypes, m_prototypeNames, "(), ;\t");
     }
 
     void WanderersGeneratorPrototypeInfo::VehiclePartDescription::PostLoad()
@@ -40,7 +44,17 @@ namespace ai
 
     void WanderersGeneratorPrototypeInfo::VehicleDescription::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m3d::SafeStrAttrib(m_prototype, xmlNode, "Prototype");
+        LoadPartFromXML(m_cabin, "Cabin", xmlFile, xmlNode);
+        LoadPartFromXML(m_basket, "Basket", xmlFile, xmlNode);
+        LoadPartFromXML(m_cabinSmallGun, "CabinSmallGun", xmlFile, xmlNode);
+        LoadPartFromXML(m_cabinBigGun, "CabinBigGun", xmlFile, xmlNode);
+        LoadPartFromXML(m_cabinSpecialWeapon, "CabinSpecialWeapon", xmlFile, xmlNode);
+        LoadPartFromXML(m_basketSmallGun0, "BasketSmallGun0", xmlFile, xmlNode);
+        LoadPartFromXML(m_basketSmallGun1, "BasketSmallGun1", xmlFile, xmlNode);
+        LoadPartFromXML(m_basketBigGun0, "BasketBigGun0", xmlFile, xmlNode);
+        LoadPartFromXML(m_basketBigGun1, "BasketBigGun1", xmlFile, xmlNode);
+        LoadPartFromXML(m_basketSideGun, "BasketSideGun", xmlFile, xmlNode);
     }
 
     void WanderersGeneratorPrototypeInfo::VehicleDescription::LoadPartFromXML(
@@ -49,7 +63,12 @@ namespace ai
         m3d::cmn::XmlFile* xmlFile,
         m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ref_ptr partNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(partNode, partName);
+        if (!partNode->IsEmpty())
+        {
+            part.LoadFromXML(xmlFile, partNode);
+        }
     }
 
     void WanderersGeneratorPrototypeInfo::VehicleDescription::PostLoad()
