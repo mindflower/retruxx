@@ -19,7 +19,7 @@ namespace ai
 
     void WanderersGeneratorPrototypeInfo::VehiclePartDescription::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     bool WanderersGeneratorPrototypeInfo::VehiclePartDescription::HasPrototypes() const
@@ -73,7 +73,7 @@ namespace ai
 
     void WanderersGeneratorPrototypeInfo::VehicleDescription::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& WanderersGeneratorPrototypeInfo::VehicleDescription::GetCabinDescription() const
@@ -193,6 +193,6 @@ namespace ai
 
     void WanderersGeneratorPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 }  // namespace ai

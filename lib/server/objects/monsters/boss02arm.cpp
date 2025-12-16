@@ -42,12 +42,12 @@ namespace ai
 
     void Boss02ArmPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::RefreshFromXml
     }
 
     void Boss02ArmPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     Obj* Boss02ArmPrototypeInfo::CreateTargetObject() const

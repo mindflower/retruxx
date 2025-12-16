@@ -29,7 +29,7 @@ namespace ai
 
     void ThunderboltPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     ai::Obj* ThunderboltPrototypeInfo::CreateTargetObject() const

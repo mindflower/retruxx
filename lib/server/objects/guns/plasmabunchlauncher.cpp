@@ -27,7 +27,7 @@ namespace ai
 
     void PlasmaBunchLauncherPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     m3d::Class* PlasmaBunchLauncher::GetClass() const

@@ -56,12 +56,12 @@ namespace ai
 
     void TownPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     void TownPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::RefreshFromXml
     }
 
     bool TownPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

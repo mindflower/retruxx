@@ -34,7 +34,7 @@ namespace ai
 
     void BossMetalArmLoadPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     bool BossMetalArmLoad::ApplyModifier(Modifier const&)

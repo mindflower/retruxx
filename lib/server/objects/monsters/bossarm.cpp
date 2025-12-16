@@ -18,7 +18,7 @@ namespace ai
 
     void BossArmPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::RefreshFromXml
     }
 
     BossArmPrototypeInfo::BossArmPrototypeInfo()

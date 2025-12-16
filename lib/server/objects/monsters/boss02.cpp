@@ -25,7 +25,7 @@ namespace ai
 
     void Boss02PrototypeInfo::StateInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     Boss02PrototypeInfo::StateInfo::StateInfo(StateInfo const&)
@@ -50,7 +50,7 @@ namespace ai
 
     void Boss02PrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     Boss02PrototypeInfo::Boss02PrototypeInfo()
@@ -64,7 +64,7 @@ namespace ai
 
     void Boss02PrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::RefreshFromXml
     }
 
     Obj* Boss02PrototypeInfo::CreateTargetObject() const

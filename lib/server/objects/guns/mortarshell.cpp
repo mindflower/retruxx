@@ -30,7 +30,7 @@ namespace ai
 
     void MortarShellPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     Obj* MortarShellPrototypeInfo::CreateTargetObject() const

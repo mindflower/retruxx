@@ -18,7 +18,7 @@ namespace ai
 
     void RepositoryObjectsGeneratorPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     ai::Obj* RepositoryObjectsGeneratorPrototypeInfo::CreateTargetObject() const

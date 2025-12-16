@@ -17,7 +17,7 @@ namespace ai
 
     void Boss04StationPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     Obj* Boss04StationPrototypeInfo::CreateTargetObject() const

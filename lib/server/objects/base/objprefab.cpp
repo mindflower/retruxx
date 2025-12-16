@@ -15,7 +15,7 @@ namespace ai
 
     void ObjPrefabPrototypeInfo::ObjInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     ObjPrefabPrototypeInfo::ObjPrefabPrototypeInfo()
@@ -25,7 +25,7 @@ namespace ai
 
     void ObjPrefabPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     ai::Obj* ObjPrefabPrototypeInfo::CreateTargetObject() const

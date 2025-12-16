@@ -98,7 +98,7 @@ namespace ai
     {
         TeamPrototypeInfo::PostLoad();
         m_vehiclesGeneratorProtoId = thePrototypeManager->GetPrototypeId(m_vehiclesGeneratorProtoName);
-        if (m_vehiclesGeneratorProtoId == -1 && !m_items.empty())
+        if (m_vehiclesGeneratorProtoId == -1 && m_items.empty())
         {
             if (m_vehiclesGeneratorProtoName.empty())
             {

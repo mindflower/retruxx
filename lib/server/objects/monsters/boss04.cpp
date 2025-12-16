@@ -16,7 +16,7 @@ namespace ai
 
     void Boss04PrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     Boss04PrototypeInfo::Boss04PrototypeInfo()
@@ -45,7 +45,7 @@ namespace ai
 
     void Boss04PrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::RefreshFromXml
     }
 
     eGObjPropertySaveStatus Boss04::GetPropertySaveStatus(int) const

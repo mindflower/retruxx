@@ -30,7 +30,7 @@ namespace ai
 
     m3d::Class* ParticleSplinter::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(ParticleSplinter);
     }
 
     void ParticleSplinter::Update(float, unsigned)

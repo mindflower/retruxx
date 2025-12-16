@@ -29,7 +29,7 @@ namespace ai
 
     void AffixGeneratorPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     Obj* AffixGeneratorPrototypeInfo::CreateTargetObject() const

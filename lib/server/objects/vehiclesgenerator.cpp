@@ -1,5 +1,6 @@
 #include "vehiclesgenerator.h"
 #include "team.h"
+#include "ware.h"
 #include "core/log.h"
 #include "server/resourcemanager.h"
 #include "base/prototypemanager.h"
@@ -47,7 +48,39 @@ namespace ai
 
     void VehiclesGeneratorPrototypeInfo::VehicleDescription::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        vehiclePrototypeIds.resize(vehiclePrototypeNames.size());
+        for (size_t i = 0; i < vehiclePrototypeIds.size(); ++i)
+        {
+            vehiclePrototypeIds[i] = thePrototypeManager->GetPrototypeId(vehiclePrototypeNames[i]);
+            if (vehiclePrototypeIds[i] == -1)
+            {
+                M3D_CRITICAL_ERROR("Unknown vehicle prototype name '" + vehiclePrototypeNames[i] + "' for vehicle generator");
+            }
+
+            auto* prototypeInfo = thePrototypeManager->GetPrototypeInfo(vehiclePrototypeIds[i]);
+            M3D_ASSERT(prototypeInfo->IsPrototypeOf(RT_CLASS_LOCAL(Vehicle)));
+        }
+
+        for (size_t i = 0; i < waresPrototypesNames.size(); ++i)
+        {
+            int const prId = thePrototypeManager->GetPrototypeId(waresPrototypesNames[i]);
+            M3D_ASSERT(prId != -1);
+            waresPrototypesIds.push_back(prId);
+
+            auto* prototypeInfo = thePrototypeManager->GetPrototypeInfo(waresPrototypesIds[i]);
+            M3D_ASSERT(prototypeInfo->IsPrototypeOf(RT_CLASS_LOCAL(Ware)));
+        }
+
+        if (!gunAffixGeneratorPrototypeName.empty())
+        {
+            int const prId = thePrototypeManager->GetPrototypeId(gunAffixGeneratorPrototypeName);
+            M3D_ASSERT(prId != -1);
+            gunAffixGeneratorPrototypeId = prId;
+        }
+        else
+        {
+            gunAffixGeneratorPrototypeId = -1;
+        }
     }
 
     void VehiclesGeneratorPrototypeInfo::VehicleDescription::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

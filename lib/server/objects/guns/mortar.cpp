@@ -11,7 +11,7 @@ namespace ai
 
     void MortarPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     MortarPrototypeInfo::MortarPrototypeInfo()

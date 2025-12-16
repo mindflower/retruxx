@@ -32,7 +32,7 @@ namespace ai
 
     void ThunderboltLauncherPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::PostLoad
     }
 
     m3d::Class* ThunderboltLauncher::GetClass() const

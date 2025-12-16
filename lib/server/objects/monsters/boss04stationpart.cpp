@@ -16,7 +16,7 @@ namespace ai
 
     void Boss04StationPartPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement ::RefreshFromXml
     }
 
     Obj* Boss04StationPartPrototypeInfo::CreateTargetObject() const
