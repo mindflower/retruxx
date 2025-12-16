@@ -2,6 +2,9 @@
 #include <stdexcept>
 
 #include "core/ini.h"
+#include "base/prototypemanager.h"
+#include <core/kernel.h>
+#include <core/log.h>
 
 namespace ai
 {
@@ -59,7 +62,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    InfectionTeamPrototypeInfo::Item::Item(const CStr& protoName, int count) : m_protoName(protoName), m_count(count)
+    InfectionTeamPrototypeInfo::Item::Item(CStr const& protoName, int count) : m_protoName(protoName), m_count(count)
     {
     }
 
@@ -67,7 +70,7 @@ namespace ai
     {
     }
 
-    bool InfectionTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    bool InfectionTeamPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         auto result = ai::TeamPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
@@ -93,7 +96,19 @@ namespace ai
 
     void InfectionTeamPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        TeamPrototypeInfo::PostLoad();
+        m_vehiclesGeneratorProtoId = thePrototypeManager->GetPrototypeId(m_vehiclesGeneratorProtoName);
+        if (m_vehiclesGeneratorProtoId == -1 && !m_items.empty())
+        {
+            if (m_vehiclesGeneratorProtoName.empty())
+            {
+                M3D_CRITICAL_ERROR("no vehicle generator and no vehicles for InfectionTeam '" + m_prototypeName + "'");
+            }
+            else
+            {
+                M3D_CRITICAL_ERROR("Unknown VehiclesGenerator: '" + m_vehiclesGeneratorProtoName + "' for infection team '" + m_prototypeName + "'");
+            }
+        }
     }
 
     ai::Obj* InfectionTeamPrototypeInfo::CreateTargetObject() const
@@ -120,4 +135,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

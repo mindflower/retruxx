@@ -1,5 +1,5 @@
 #include "vehiclesgenerator.h"
-
+#include "team.h"
 #include "core/log.h"
 #include "server/resourcemanager.h"
 #include "base/prototypemanager.h"
@@ -8,11 +8,6 @@
 
 namespace ai
 {
-    namespace
-    {
-        int constexpr MAX_VEHICLES_IN_TEAM = 5;
-    }
-
     retruxx::vector<VehiclesGeneratorInfoCache::WareInfo> const& VehiclesGeneratorInfoCache::GetWareInfos() const
     {
         RETRUXX_NOT_IMPLEMENTED;
@@ -48,6 +43,11 @@ namespace ai
     VehiclesGeneratorPrototypeInfo::VehicleDescription::VehicleDescription(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         LoadFromXML(xmlFile, xmlNode);
+    }
+
+    void VehiclesGeneratorPrototypeInfo::VehicleDescription::PostLoad()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void VehiclesGeneratorPrototypeInfo::VehicleDescription::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -130,7 +130,10 @@ namespace ai
 
     void VehiclesGeneratorPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto& descr : m_vehicleDescriptions)
+        {
+            descr.PostLoad();
+        }
     }
 
     void VehiclesGeneratorPrototypeInfo::Generate(unsigned int restSchwarz, retruxx::vector<int, retruxx::allocator<int>>& generatedVehicleIds) const

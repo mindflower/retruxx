@@ -6,14 +6,19 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Chest);
 
-    ChestPrototypeInfo::ChestPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    ChestPrototypeInfo::ChestPrototypeInfo() = default;
 
-    bool ChestPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    bool ChestPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = SimplePhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            _SetGeomType(GEOM_TYPE_BOX);
+            m_LifeTime = -1.0f;
+            m3d::SafeFloatAttrib(m_LifeTime, xmlNode, "LifeTime");
+            m_WithLifeTime = m_LifeTime > 0.0;
+        }
+        return result;
     }
 
     ai::Obj* ChestPrototypeInfo::CreateTargetObject() const
@@ -26,7 +31,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Chest::Chest(const ai::ChestPrototypeInfo& prototypeInfo) : SimplePhysicObj(prototypeInfo)
+    Chest::Chest(ai::ChestPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -51,7 +56,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::ChestPrototypeInfo* Chest::GetPrototypeInfo() const
+    ai::ChestPrototypeInfo const* Chest::GetPrototypeInfo() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -61,7 +66,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Chest::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void Chest::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -81,7 +86,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Chest::SetPositionSelf(const CVector& pos)
+    void Chest::SetPositionSelf(CVector const& pos)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -110,4 +115,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

@@ -1,7 +1,5 @@
 #include "staticautogun.h"
 
-#include <stdexcept>
-
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(StaticAutoGun)
@@ -10,7 +8,7 @@ namespace ai
 
     StaticAutoGunPrototypeInfo::StaticAutoGunPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_maxHealth = 1.0f;
     }
 
     Obj* StaticAutoGunPrototypeInfo::CreateTargetObject() const
@@ -18,9 +16,18 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool StaticAutoGunPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool StaticAutoGunPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = ComplexPhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            if (m_parentPrototypeName.empty())
+            {
+                m3d::SafeFloatAttrib(m_maxHealth, xmlNode, "MaxHealth");
+                m3d::SafeStrAttrib(m_destroyedModelName, xmlNode, "DestroyedModel");
+            }
+        }
+        return result;
     }
 
     void StaticAutoGunPrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
@@ -215,4 +222,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

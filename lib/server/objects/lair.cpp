@@ -1,6 +1,6 @@
 #include "lair.h"
-
-#include <stdexcept>
+#include "team.h"
+#include "core/kernel.h"
 
 namespace ai
 {
@@ -10,7 +10,8 @@ namespace ai
 
     LairPrototypeInfo::LairPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_maxAttackers = 1;
+        m_maxDefenders = 1;
     }
 
     Obj* LairPrototypeInfo::CreateTargetObject() const
@@ -18,9 +19,20 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool LairPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool LairPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const result = SettlementPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            _SetGeomType(GEOM_TYPE_BOX);
+
+            m3d::SafeIntAttrib(m_maxAttackers, xmlNode, "MaxAttackers");
+            M3D_ASSERT(m_maxAttackers <= MAX_VEHICLES_IN_TEAM);
+
+            m3d::SafeIntAttrib(m_maxDefenders, xmlNode, "MaxDefenders");
+            M3D_ASSERT(m_maxDefenders <= MAX_VEHICLES_IN_TEAM);
+        }
+        return result;
     }
 
     Lair::Lair(LairPrototypeInfo const& prototype) : Settlement(prototype)
@@ -148,4 +160,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

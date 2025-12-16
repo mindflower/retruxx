@@ -3,6 +3,8 @@
 #include <stdexcept>
 
 #include "core/ini.h"
+#include "base/prototypemanager.h"
+#include <core/log.h>
 
 namespace ai
 {
@@ -44,7 +46,14 @@ namespace ai
 
     void SettlementPrototypeInfo::PostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!m_vehiclesPrototypeName.empty())
+        {
+            m_vehiclesPrototypeId = thePrototypeManager->GetPrototypeId(m_vehiclesPrototypeName);
+            if (m_vehiclesPrototypeId == -1)
+            {
+                M3D_LOG_ERR("Error: invalid vehicles prototype '" + m_vehiclesPrototypeName + "' for settlement prototype '" + m_prototypeName + "'");
+            }
+        }
     }
 
     SettlementPrototypeInfo::SettlementPrototypeInfo()
@@ -65,9 +74,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Settlement::Settlement(SettlementPrototypeInfo const& prototype) :
-        SimplePhysicObj(prototype),
-        m_population(5, 0, 5)
+    Settlement::Settlement(SettlementPrototypeInfo const& prototype) : SimplePhysicObj(prototype), m_population(5, 0, 5)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -231,4 +238,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

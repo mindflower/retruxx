@@ -13,6 +13,8 @@ namespace ai
     class Vehicle;
     class CombatMastermind;
 
+    int constexpr MAX_VEHICLES_IN_TEAM = 5;
+
     class TeamPrototypeInfo : public ai::PrototypeInfo
     {
     public:
