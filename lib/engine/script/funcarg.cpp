@@ -2,6 +2,7 @@
 #include <script/funcarg.h>
 #include <math/vector.h>
 #include <stdexcept>
+#include <Windows.h>
 
 namespace m3d
 {
@@ -15,12 +16,14 @@ namespace m3d
 
     Quaternion sArg::GetQ() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        assert(m_type == ARGTYPE_VECTOR);
+
+        return Quaternion(m_q[0], m_q[1], m_q[2], m_q[3]);
     }
 
     char const* sArg::GetS() const
     {
-        return  m_s;
+        return m_s;
     }
 
     float sArg::GetF() const
@@ -35,6 +38,7 @@ namespace m3d
     bool sArg::GetB() const
     {
         assert(m_type == ARGTYPE_BOOL || m_type == ARGTYPE_OBJECT || m_type == ARGTYPE_FLOAT || m_type == ARGTYPE_INT);
+        
         if (this->m_type == ARGTYPE_BOOL)
             return this->m_b;
 
@@ -51,7 +55,8 @@ namespace m3d
 
     int sArg::GetI() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        assert(m_type == ARGTYPE_INT);
+        return this->m_i;
     }
 
     sArg::sArg()
@@ -60,12 +65,15 @@ namespace m3d
 
     CVector sArg::GetV() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        assert(m_type == ARGTYPE_VECTOR);
+
+        return CVector(m_v[0], m_v[1], m_v[2]);
     }
 
-    void sArg::SetV(CVector const&)
+    void sArg::SetV(CVector const& v)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_type = ARGTYPE_VECTOR;
+        *(CVector*)&this->m_i = v;
     }
 
     void sArg::SetS(char const* s)
@@ -85,9 +93,10 @@ namespace m3d
         }
     }
 
-    void sArg::SetQ(Quaternion const&)
+    void sArg::SetQ(Quaternion const& q)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_type = ARGTYPE_QUATERNION;
+        *(Quaternion*)&this->m_i = q;
     }
 
     void sArg::SetF(float f)

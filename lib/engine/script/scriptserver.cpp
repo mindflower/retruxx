@@ -379,19 +379,41 @@ namespace m3d
 
     eScriptError Scriptlet::compile()
     {
-	    RETRUXX_NOT_IMPLEMENTED;
+        /* // code from IDA
+        int v1; // eax
+        v1 = -this->m_bLoaded;
+        LOBYTE(v1) = v1 & 0xFA;
+        return v1 + 6;
+        */
+
+#ifndef lobyte
+#define lobyte(x) (*((unsigned char*)&(x)))
+#endif
+
+        int v1 = -m_bLoaded;
+        lobyte(v1) = v1 & 0xFA;
+        return (eScriptError)(lobyte(v1) + OTHER_ERROR);
     }
 
-    Scriptlet::~Scriptlet()
-    {
-        delete[] m_data;
-    }
+    //Scriptlet::~Scriptlet()
+    //{
+    //    if (m_data)
+    //    {
+    //        delete[] m_data;
+    //        m_data = nullptr;
+    //        m_bLoaded = false;
+    //    }
+    //}
 
     eScriptError Scriptlet::loadFromFile(char const* fileName)
     {
-        delete[] m_data;
-        m_data = nullptr;
-        m_bLoaded = false;
+        if (m_data)
+        {
+            delete[] m_data;
+            m_data = nullptr;
+            m_bLoaded = false;
+        }
+
         scoped_ptr stream = g_Kernel->GetFileServer().CreateFileStream();
         if (stream->Open(fileName, fs::IStream::OPEN_READ))
         {
@@ -429,16 +451,12 @@ namespace m3d
         g_scriptServer->executeBuffer(m_data, m_dataLen, nameAs);
     }
 
-    Scriptlet::Scriptlet()
-    {
-    }
-
-    Class* ScriptServer::GetBaseClass()
+    Class* __fastcall ScriptServer::GetBaseClass()
     {
         return RT_CLASS_LOCAL(Object);
     }
 
-    Object* ScriptServer::CreateObject()
+    Object* __fastcall ScriptServer::CreateObject()
     {
         return new ScriptServer;
     }

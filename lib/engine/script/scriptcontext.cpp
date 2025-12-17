@@ -8,6 +8,7 @@
 #include "script/luaaiparam.h"
 #include "script/luavector.h"
 #include "script/scriptserver.h"
+#include "script/luaquaternion.h"
 
 extern "C"{
 #include "lauxlib.h"
@@ -21,7 +22,6 @@ namespace m3d
         {
             auto scriptObject = ScriptServer::_getScriptObject(x);
             lua_rawgeti(this->L, -10000, scriptObject);
-
         }
         else
         {
@@ -118,7 +118,7 @@ namespace m3d
 
 	int LuaContext::countArgs()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return this->m_numInputs;;
 	}
 
 	float LuaContext::asFloat(int i)
@@ -220,9 +220,10 @@ namespace m3d
 		return lua_tostring(this->L, v3);
 	}
 
-	void LuaContext::pushQuaternion(Quaternion const&)
+	void LuaContext::pushQuaternion(Quaternion const& x)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		*ext_createQuaternion(this->L) = x;
+		++this->m_numOutputs;
 	}
 
 	void LuaContext::pushInt(int x)
@@ -274,8 +275,5 @@ namespace m3d
         ++m_numOutputs;
 	}
 
-	int LuaContext::_validateArg(int)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+
 }

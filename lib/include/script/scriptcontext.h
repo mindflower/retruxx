@@ -22,13 +22,22 @@ namespace m3d
         virtual void pushBool(bool);
         virtual char const* asString(int);
         virtual void pushQuaternion(Quaternion const&);
-        virtual void pushInt(int);
-        virtual void pushFloat(float);
+        virtual void pushInt(int x);
+        virtual void pushFloat(float x);
         virtual Quaternion& asQuaternion(int);
-        virtual void pushString(char const*);
-        virtual CVector& asVector(int);
+        virtual void pushString(char const* x);
+        virtual CVector& asVector(int i);
         virtual void pushVector(CVector const&);
-        int _validateArg(int);
+
+        inline int _validateArg(int i)
+        {
+            if (i < 0)
+            {
+                lua_pushstring(this->L, "not enough arguments");
+                lua_error(this->L);
+            }
+            return i + this->m_stackStart;
+        }
 
     public:
         lua_State* L;
