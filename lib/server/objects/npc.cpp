@@ -39,7 +39,7 @@ namespace ai
 
     Obj* NpcPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new Npc(*this);
     }
 
     bool NpcPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

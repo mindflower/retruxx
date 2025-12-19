@@ -1,7 +1,12 @@
 #include "ropeobj.h"
+#include "base/prototypemanager.h"
 
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(RopeObj)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(RopeObj);
+
     RopeObjPrototypeInfo::RopeObjPrototypeInfo()
     {
         m_bIsUpdating = false;
@@ -20,17 +25,16 @@ namespace ai
 
     ai::Obj* RopeObjPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new RopeObj(*this);
     }
 
-    RopeObj::~RopeObj()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    RopeObj::~RopeObj() = default;
 
     RopeObj::RopeObj(ai::RopeObjPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_strech = 1.0f;
+        DisablePhysics();
+        DisableGeometry(true);
     }
 
     m3d::Object* RopeObj::Clone()
@@ -45,22 +49,24 @@ namespace ai
 
     m3d::Class* RopeObj::GetBaseClass()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(SimplePhysicObj);
     }
 
     m3d::Class* RopeObj::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(RopeObj);
     }
 
     ai::RopeObjPrototypeInfo const* RopeObj::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), RopeObjPrototypeInfo const);
     }
 
     void RopeObj::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::LoadFromXML(xmlFile, xmlNode);
+        // TODO: implement RopeObj::LoadFromXML
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RopeObj::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
@@ -75,7 +81,8 @@ namespace ai
 
     void RopeObj::SetPosFromTies()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement RopeObj::SetPosFromTies
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::SgNode* RopeObj::GetTiedSgNodeNearPos(CVector const& tiePos, bool simpleSearch) const
@@ -85,7 +92,8 @@ namespace ai
 
     void RopeObj::HangToPosts()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement RopeObj::SetPosFromTies
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void RopeObj::BreakOff(int breakObj, bool createJointForBreakObj)
@@ -100,7 +108,9 @@ namespace ai
 
     RopeObj::Post::Post()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_postNode = nullptr;
+        m_postObj = nullptr;
+        m_postTiePos = ZeroVector;
     }
 
     ai::RopeObj::Post const& RopeObj::GetPost(ai::RopeObj::HangPoints)
@@ -115,6 +125,8 @@ namespace ai
 
     void RopeObj::_InternalCreateVisualPart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::_InternalCreateVisualPart();
+        SetPosFromTies();
+        HangToPosts();
     }
 }  // namespace ai

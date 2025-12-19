@@ -21,7 +21,7 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetMass)
 {
-	RETRUXX_NOT_IMPLEMENTED;
+    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetNodeAction)
@@ -44,49 +44,48 @@ RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetNextForAnimation)
 
 namespace ai
 {
-	RT_CLASS_EXPORTS_BEGIN(SimplePhysicObj)
-		RT_CLASS_EXPORT(SimplePhysicObj, m3d::METHOD, SetMass, "", "", "")
-		RT_CLASS_EXPORT(SimplePhysicObj, m3d::METHOD, SetNodeAction, "", "", "")
-		RT_CLASS_EXPORT(SimplePhysicObj, m3d::METHOD, SetNextForAnimation, "", "", "")
-	RT_CLASS_EXPORTS_END;
-	RT_CLASS_DEFINE(SimplePhysicObj);
+    RT_CLASS_EXPORTS_BEGIN(SimplePhysicObj)
+    RT_CLASS_EXPORT(SimplePhysicObj, m3d::METHOD, SetMass, "", "", "")
+    RT_CLASS_EXPORT(SimplePhysicObj, m3d::METHOD, SetNodeAction, "", "", "")
+    RT_CLASS_EXPORT(SimplePhysicObj, m3d::METHOD, SetNextForAnimation, "", "", "")
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(SimplePhysicObj);
 
     SimplePhysicObjPrototypeInfo::~SimplePhysicObjPrototypeInfo() = default;
 
-	CStr const& SimplePhysicObjPrototypeInfo::GetEngineModelName() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    CStr const& SimplePhysicObjPrototypeInfo::GetEngineModelName() const
+    {
+        return m_engineModelName;
+    }
 
-	bool SimplePhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
-	{
-        auto result = ai::PhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+    bool SimplePhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    {
+        int const result = ai::PhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
             m3d::SafeFloatAttrib(m_massValue, xmlNode, "Mass");
             m3d::SafeStrAttrib(m_engineModelName, xmlNode, "ModelFile");
             m3d::SafeBoolAttrib(m_bCollisionTrimeshAllowed, xmlNode, "CollisionTrimeshAllowed");
-            return 1;
         }
         return result;
-	}
+    }
 
-	SimplePhysicObjPrototypeInfo::SimplePhysicObjPrototypeInfo()
-	{
+    SimplePhysicObjPrototypeInfo::SimplePhysicObjPrototypeInfo()
+    {
         this->m_bCollisionTrimeshAllowed = 0;
         this->m_geomType = GEOM_TYPE_NONE;
         this->m_size = CVector(0.0, 0.0, 0.0);
         this->m_radius = 1.0;
         this->m_massValue = 1.0;
-	}
+    }
 
-	float SimplePhysicObjPrototypeInfo::GetRadius() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    float SimplePhysicObjPrototypeInfo::GetRadius() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	SimplePhysicBody* SimplePhysicObjPrototypeInfo::CreatePhysicBody() const
-	{
+    SimplePhysicBody* SimplePhysicObjPrototypeInfo::CreatePhysicBody() const
+    {
         SimplePhysicBody* body = nullptr;
         switch (this->m_geomType)
         {
@@ -113,7 +112,7 @@ namespace ai
             body->SetMass(m_massValue);
             break;
         }
-            
+
         default:
             break;
         }
@@ -135,13 +134,13 @@ namespace ai
             dGeomSetData(geom->GetGeomId(), body);
         }
         return body;
-	}
+    }
 
-	void SimplePhysicObjPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
-	{
+    void SimplePhysicObjPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    {
         auto* serverAnimatedModels = (m3d::AnimatedModelsServer*)&M3D_APP->GetAnimatedModelsServer();
-        const auto sizes = serverAnimatedModels->GetBoundSizes(m_engineModelName.c_str());
-        const auto item = serverAnimatedModels->GetItemByName(m_engineModelName.c_str(), true);
+        auto const sizes = serverAnimatedModels->GetBoundSizes(m_engineModelName.c_str());
+        auto const item = serverAnimatedModels->GetItemByName(m_engineModelName.c_str(), true);
         GetCollisionInfoByServerHandle(item, m_collisionInfos, m_bCollisionTrimeshAllowed);
         m_size = m_collisionInfos[0].m_size;
         m3d::SafeVectorAttrib(m_size, xmlNode, "Size");
@@ -151,20 +150,20 @@ namespace ai
         {
             _SetGeomType(m_geomType);
         }
-	}
+    }
 
-	CVector SimplePhysicObjPrototypeInfo::GetSize() const
-	{
+    CVector SimplePhysicObjPrototypeInfo::GetSize() const
+    {
         return m_size;
-	}
+    }
 
-	float SimplePhysicObjPrototypeInfo::GetMassValue() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    float SimplePhysicObjPrototypeInfo::GetMassValue() const
+    {
+        return m_massValue;
+    }
 
-	void SimplePhysicObjPrototypeInfo::_SetGeomType(GeomType geomType)
-	{
+    void SimplePhysicObjPrototypeInfo::_SetGeomType(GeomType geomType)
+    {
         m_geomType = geomType;
         if (geomType == GEOM_TYPE_FROM_MODEL)
             return;
@@ -198,26 +197,26 @@ namespace ai
             }
         }
         m_collisionInfos.push_back(ci);
-	}
+    }
 
-	eGObjPropertySaveStatus SimplePhysicObj::GetPropertySaveStatus(int) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    eGObjPropertySaveStatus SimplePhysicObj::GetPropertySaveStatus(int) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void SimplePhysicObj::Registration()
-	{
-		m_propertiesMap["Mass"] = 6;
-		m_propertiesMap["NodeScale"] = 7;
-	}
+    void SimplePhysicObj::Registration()
+    {
+        m_propertiesMap["Mass"] = 6;
+        m_propertiesMap["NodeScale"] = 7;
+    }
 
-	void SimplePhysicObj::SetPassedToAnotherMapStatus()
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::SetPassedToAnotherMapStatus()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	SimplePhysicObj::SimplePhysicObj(SimplePhysicObjPrototypeInfo const& prototypeInfo) : PhysicObj(prototypeInfo)
-	{
+    SimplePhysicObj::SimplePhysicObj(SimplePhysicObjPrototypeInfo const& prototypeInfo) : PhysicObj(prototypeInfo)
+    {
         this->m_collisionInfos = prototypeInfo.m_collisionInfos;
         this->m_scale = 1.0;
         this->m_physicBody = prototypeInfo.CreatePhysicBody();
@@ -226,7 +225,7 @@ namespace ai
         this->m_deadTimer = 0.0;
         this->m_testVisibility = 0;
         ai::SimplePhysicObj::_Construct();
-	}
+    }
 
     float SimplePhysicObj::GetScale()
     {
@@ -239,7 +238,7 @@ namespace ai
     }
 
     int SimplePhysicObj::GetPropertyId(char const* propName) const
-	{
+    {
         auto it = SimplePhysicObj::m_propertiesMap.find(propName);
         if (it != SimplePhysicObj::m_propertiesMap.end())
         {
@@ -247,199 +246,201 @@ namespace ai
         }
 
         return ai::PhysicObj::GetPropertyId(propName);
-	}
+    }
 
-	void SimplePhysicObj::LinkGeomsToCollisionCells()
-	{
+    void SimplePhysicObj::LinkGeomsToCollisionCells()
+    {
         if (this->m_physicBody)
             this->m_physicBody->LinkGeomToCollisionCells();
-	}
+    }
 
-	void SimplePhysicObj::DisableGeometry(bool changePhysicState)
-	{
+    void SimplePhysicObj::DisableGeometry(bool changePhysicState)
+    {
         ai::PhysicObj::DisableGeometry(changePhysicState);
         if (!this->m_spaceId || !this->m_bIsSpaceOwner)
         {
             if (this->m_physicBody)
                 this->m_physicBody->DisableGeometry();
         }
-	}
+    }
 
-	SimplePhysicBody* SimplePhysicObj::GetPhysicBody()
-	{
+    SimplePhysicBody* SimplePhysicObj::GetPhysicBody()
+    {
         return this->m_physicBody;
-	}
+    }
 
-	SimplePhysicBody const* SimplePhysicObj::GetPhysicBody() const
-	{
+    SimplePhysicBody const* SimplePhysicObj::GetPhysicBody() const
+    {
         return this->m_physicBody;
-	}
+    }
 
-	void SimplePhysicObj::SetMass(float mass)
-	{
+    void SimplePhysicObj::SetMass(float mass)
+    {
         if (m_physicBody)
         {
             m_physicBody->SetMass(mass);
             _Construct();
         }
-	}
+    }
 
-	void SimplePhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	bool SimplePhysicObj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
-	{
+    bool SimplePhysicObj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
+    {
         if (propertyId == 6)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (m_physicBody)
+            {
+                m_physicBody->SetMass(newValue.GetAsFloat());
+                _Construct();
+            }
+            return 1;
         }
         else if (propertyId == 7)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_scale = newValue.GetAsFloat();
+            SetScale(m_scale, 1);
+            return 1;
         }
-        else
-        {
-            return ai::PhysicObj::SetPropertyById(propertyId, newValue);
-        }
-	}
+        return ai::PhysicObj::SetPropertyById(propertyId, newValue);
+    }
 
-	void SimplePhysicObj::Remove()
-	{
+    void SimplePhysicObj::Remove()
+    {
         ai::PhysicObj::Remove();
         if (this->m_physicBody)
             this->m_physicBody->Remove();
-	}
+    }
 
-	void SimplePhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>&) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>&) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	m3d::Class* SimplePhysicObj::GetBaseClass()
-	{
-		return RT_CLASS_LOCAL(PhysicObj);
-	}
+    m3d::Class* SimplePhysicObj::GetBaseClass()
+    {
+        return RT_CLASS_LOCAL(PhysicObj);
+    }
 
-	void SimplePhysicObj::RelinkSceneGraphNode()
-	{
+    void SimplePhysicObj::RelinkSceneGraphNode()
+    {
         if (this->m_physicBody)
             this->m_physicBody->RelinkSceneGraphNode();
-	}
+    }
 
-	void SimplePhysicObj::SetDeadTimer(int, bool)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::SetDeadTimer(int, bool)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void SimplePhysicObj::TransferToSpace(dxSpace* newSpace)
-	{
+    void SimplePhysicObj::TransferToSpace(dxSpace* newSpace)
+    {
         if (this->m_physicBody)
             this->m_physicBody->RelinkToSpace(newSpace);
         ai::PhysicObj::TransferToSpace(newSpace);
-	}
+    }
 
-	void SimplePhysicObj::SetNodeAction(int action, bool forceRestartAction)
-	{
+    void SimplePhysicObj::SetNodeAction(int action, bool forceRestartAction)
+    {
         if (this->m_physicBody)
             this->m_physicBody->SetNodeAction(action, forceRestartAction);
-	}
+    }
 
-	void SimplePhysicObj::SetSkin(int skin)
-	{
+    void SimplePhysicObj::SetSkin(int skin)
+    {
         PhysicObj::SetSkin(skin);
         if (m_physicBody)
             m_physicBody->SetSkin(skin);
-	}
+    }
 
-	CStr SimplePhysicObj::GetPropertyName(int) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    CStr SimplePhysicObj::GetPropertyName(int) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	m3d::Class* SimplePhysicObj::GetClass() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    m3d::Class* SimplePhysicObj::GetClass() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	SimplePhysicObjPrototypeInfo const* SimplePhysicObj::GetPrototypeInfo() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    SimplePhysicObjPrototypeInfo const* SimplePhysicObj::GetPrototypeInfo() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	CVector SimplePhysicObj::GetGeometricCenter() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    CVector SimplePhysicObj::GetGeometricCenter() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void SimplePhysicObj::RelinkGeomsToCollisionCells()
-	{
+    void SimplePhysicObj::RelinkGeomsToCollisionCells()
+    {
         if (this->m_physicBody)
             this->m_physicBody->RelinkGeomToCollisionCells();
-	}
+    }
 
-	void SimplePhysicObj::SetNextForAnimation(int action, int nextAction)
-	{
+    void SimplePhysicObj::SetNextForAnimation(int action, int nextAction)
+    {
         if (this->m_physicBody)
             this->m_physicBody->SetNextForAnimation(action, nextAction);
-	}
+    }
 
-	void SimplePhysicObj::SetInvisible()
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::SetInvisible()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void SimplePhysicObj::Update(float elapsedTime, unsigned workTime)
-	{
+    void SimplePhysicObj::Update(float elapsedTime, unsigned workTime)
+    {
         ai::PhysicObj::Update(elapsedTime, workTime);
         if (this->m_deadTimerActive)
         {
             auto v4 = this->m_deadTimer - elapsedTime;
             this->m_deadTimer = v4;
-            if (v4 <= 0.0
-                && (!this->m_testVisibility
-                    || m_physicBody == 0
-                    || !m_physicBody->m_Node
-                    || m_physicBody->m_Node->m_frameVisible != m3d::g_Kernel->GetTimer().GetCurFrame() - 1))
+            if (v4 <= 0.0 &&
+                (!this->m_testVisibility || m_physicBody == 0 || !m_physicBody->m_Node ||
+                 m_physicBody->m_Node->m_frameVisible != m3d::g_Kernel->GetTimer().GetCurFrame() - 1))
             {
                 Remove();
             }
         }
-	}
+    }
 
-	void SimplePhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void SimplePhysicObj::EnableGeometry(bool changePhysicState)
-	{
+    void SimplePhysicObj::EnableGeometry(bool changePhysicState)
+    {
         ai::PhysicObj::EnableGeometry(changePhysicState);
         if (!this->m_spaceId || !this->m_bIsSpaceOwner)
         {
             if (this->m_physicBody)
                 this->m_physicBody->EnableGeometry();
         }
-	}
+    }
 
-	void SimplePhysicObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	bool SimplePhysicObj::IsVisible()
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    bool SimplePhysicObj::IsVisible()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	Geom::CellAabb SimplePhysicObj::GetCollisionCellAabb() const
-	{
-		return PhysicObj::GetCollisionCellAabb();
-	}
+    Geom::CellAabb SimplePhysicObj::GetCollisionCellAabb() const
+    {
+        return PhysicObj::GetCollisionCellAabb();
+    }
 
-	void SimplePhysicObj::SetScale(float scale, bool recalcMass)
-	{
+    void SimplePhysicObj::SetScale(float scale, bool recalcMass)
+    {
         // TODO: generated code
         if (!m_physicBody || !m_physicBody->m_Node)
             return;
@@ -487,7 +488,7 @@ namespace ai
             float currentMass = GetMass();
             float newMass = currentMass * deltaScale * deltaScale * deltaScale;
             m_physicBody->SetMass(newMass);
-            _Construct(); // Reconstruct physics object with new mass
+            _Construct();  // Reconstruct physics object with new mass
         }
 
         // Update visual node scale
@@ -503,34 +504,34 @@ namespace ai
 
         // Store new scale
         m_scale = scale;
-	}
+    }
 
-	void SimplePhysicObj::UnlinkGeomsFromCollisionCells()
-	{
+    void SimplePhysicObj::UnlinkGeomsFromCollisionCells()
+    {
         if (this->m_physicBody)
             this->m_physicBody->UnlinkGeomFromCollisionCells();
-	}
+    }
 
-	void SimplePhysicObj::TransferPhysicParamsToSceneGraphNode()
-	{
+    void SimplePhysicObj::TransferPhysicParamsToSceneGraphNode()
+    {
         if (this->m_physicBody)
             this->m_physicBody->TransferPhysicParamsToSceneGraphNode();
-	}
+    }
 
-	void SimplePhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void SimplePhysicObj::SetVisible()
-	{
+    void SimplePhysicObj::SetVisible()
+    {
         ai::PhysicObj::SetVisible();
         if (this->m_physicBody)
             this->m_physicBody->SetVisible();
-	}
+    }
 
-	void SimplePhysicObj::RenderDebugInfo() const
-	{
+    void SimplePhysicObj::RenderDebugInfo() const
+    {
         if (!m_physicBody->m_Node || m_physicBody->m_Node->m_frameVisible == m3d::g_Kernel->GetTimer().GetCurFrame())
         {
             PhysicObj::RenderDebugInfo();
@@ -540,51 +541,51 @@ namespace ai
                     m_physicBody->RenderDebugInfo();
             }
         }
-	}
+    }
 
-	void SimplePhysicObj::SetBelong(int newBelong)
-	{
+    void SimplePhysicObj::SetBelong(int newBelong)
+    {
         ai::Obj::SetBelong(newBelong);
         if (this->m_physicBody)
             this->m_physicBody->SetBelong(newBelong);
-	}
+    }
 
-	void SimplePhysicObj::_InternalCreateVisualPart()
-	{
+    void SimplePhysicObj::_InternalCreateVisualPart()
+    {
         ai::PhysicObj::_InternalCreateVisualPart();
         if (m_physicBody)
             m_physicBody->CreateVisualPart();
         this->SetSkin(GetSkin());
         SetScale(this->m_scale, false);
-	}
+    }
 
-	bool SimplePhysicObj::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    bool SimplePhysicObj::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void SimplePhysicObj::_UpdateCollisionInfoFromPhysicBody()
-	{
+    void SimplePhysicObj::_UpdateCollisionInfoFromPhysicBody()
+    {
         if (m_physicBody)
         {
             m_collisionInfos = m_physicBody->GetCollisionInfo();
             _SetMassCenter(m_collisionInfos.front().m_relTranslation);
         }
-	}
+    }
 
-	void SimplePhysicObj::_InternalPostLoad()
-	{
+    void SimplePhysicObj::_InternalPostLoad()
+    {
         ai::PhysicObj::_InternalPostLoad();
         this->_Construct();
-	}
+    }
 
-	void SimplePhysicObj::_SetPositionToGeoms(CVector const&)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::_SetPositionToGeoms(CVector const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void SimplePhysicObj::_Construct()
-	{
+    void SimplePhysicObj::_Construct()
+    {
         if (this->m_physicBody)
         {
             ai::PhysicObj::_CreateSpace(0);
@@ -600,7 +601,7 @@ namespace ai
                 dMassSetSphereTotal(&mass, 1.0, 1.0);
             }
             dBodySetMass(this->m_body->id(), &mass);
-            
+
             auto v6 = this->m_physicBody->GetModel();
             if (v6)
             {
@@ -621,56 +622,56 @@ namespace ai
                 ai::PhysicObj::_SetBoundSphereRadius(15.0);
             }
         }
-	}
+    }
 
-	void SimplePhysicObj::_SetRotationToGeoms(Quaternion const&)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::_SetRotationToGeoms(Quaternion const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	bool SimplePhysicObj::_GetPropertyInternal(int, m3d::AIParam&) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    bool SimplePhysicObj::_GetPropertyInternal(int, m3d::AIParam&) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void SimplePhysicObj::_UpdatePhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const&)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::_UpdatePhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void SimplePhysicObj::_LinkBodyToGeoms()
-	{
+    void SimplePhysicObj::_LinkBodyToGeoms()
+    {
         PhysicObj::_LinkBodyToGeoms();
-	}
+    }
 
-	void SimplePhysicObj::_UpdateFullPhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const&)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::_UpdateFullPhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void SimplePhysicObj::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void SimplePhysicObj::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	SimplePhysicObj::~SimplePhysicObj()
-	{
+    SimplePhysicObj::~SimplePhysicObj()
+    {
         // TODO: check this
         delete m_physicBody;
-	}
+    }
 
-	void SimplePhysicObj::_UnlinkBodyFromGeoms()
-	{
+    void SimplePhysicObj::_UnlinkBodyFromGeoms()
+    {
         ai::PhysicObj::_UnlinkBodyFromGeoms();
-	}
+    }
 
-	m3d::Object* SimplePhysicObj::Clone()
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    m3d::Object* SimplePhysicObj::Clone()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	m3d::Object* SimplePhysicObj::CreateObject()
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
-}
+    m3d::Object* SimplePhysicObj::CreateObject()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+}  // namespace ai

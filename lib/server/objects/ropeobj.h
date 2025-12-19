@@ -14,6 +14,7 @@ namespace ai
 
     class RopeObj : public ai::SimplePhysicObj
     {
+        friend class RopeObjPrototypeInfo;
     protected:
         virtual  ~RopeObj() override /* 0x00 */;
 

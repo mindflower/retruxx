@@ -16,6 +16,7 @@ namespace ai
 
     class Npc : public ai::Obj
     {
+        friend class NpcPrototypeInfo;
     protected:
         virtual  ~Npc() override /* 0x00 */;
 

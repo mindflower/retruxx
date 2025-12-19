@@ -40,7 +40,8 @@ namespace m3d
                             m_soundIdName[id] = textAttr;
 
                             auto soundAttr = sample->GetAttribute("sound");
-                            auto snd = Application::g_pApp->m_sound->AddSound(soundAttr, snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_NORMAL);
+                            auto snd =
+                                Application::g_pApp->m_sound->AddSound(soundAttr, snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_NORMAL);
                             m_soundIdSound[id] = snd;
                         }
                     }
@@ -64,10 +65,10 @@ namespace m3d
                         ai::StrToIntVector(belongsAttr, belongs);
                         for (auto belong : belongs)
                         {
-	                        if (m_groupNameByBelong.find(belong) != m_groupNameByBelong.end())
-	                        {
+                            if (m_groupNameByBelong.find(belong) != m_groupNameByBelong.end())
+                            {
                                 SYS_ERROR("Error: duplicate belong " + CStr(belong));
-	                        }
+                            }
                             m_groupNameByBelong[belong] = nameAttr;
                         }
 
@@ -118,7 +119,6 @@ namespace m3d
             {
                 M3D_LOG_ERR("Error reading RadioSamples file '" + CStr(pathToSamples));
             }
-
         }
     }
 
@@ -143,6 +143,7 @@ namespace m3d
 
     void RadioEngine::PlaySoundMessage(int, int, CStr const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implmement RadioEngine::PlaySoundMessage
+        // RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace m3d

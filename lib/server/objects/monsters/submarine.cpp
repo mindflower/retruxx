@@ -41,10 +41,7 @@ namespace ai
         m_bIsUpdating = true;
     }
 
-    SubmarinePrototypeInfo::~SubmarinePrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    SubmarinePrototypeInfo::~SubmarinePrototypeInfo() = default;
 
     Obj* SubmarinePrototypeInfo::CreateTargetObject() const
     {
@@ -213,7 +210,8 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Submarine::_FillCameraStates(retruxx::vector<m3d::CameraPathState, retruxx::allocator<m3d::CameraPathState>>&, CVector const&) const
+    void Submarine::_FillCameraStates(retruxx::vector<m3d::CameraPathState, retruxx::allocator<m3d::CameraPathState>>&, CVector const&)
+        const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }

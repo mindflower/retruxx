@@ -108,21 +108,21 @@ RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, IsVisible)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(PhysicObj)
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetPosition, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetPosition, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetRotation, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetRotation, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetDirection, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetDirection, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetLinearVelocity, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetLinearVelocity, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetAngularVelocity, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetAngularVelocity, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetUpdatingByODE, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetSkin, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetSkin, "", "", "")
-        RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, IsVisible, "", "", "")
-        RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetPosition, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetPosition, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetRotation, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetRotation, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetDirection, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetDirection, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetLinearVelocity, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetLinearVelocity, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetAngularVelocity, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetAngularVelocity, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetUpdatingByODE, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, GetSkin, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, SetSkin, "", "", "")
+    RT_CLASS_EXPORT(PhysicObj, m3d::METHOD, IsVisible, "", "", "")
+    RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(PhysicObj);
 
     namespace
@@ -132,14 +132,14 @@ namespace ai
 
     extern AIManager* theAIManager;
 
-	PhysicObjPrototypeInfo::PhysicObjPrototypeInfo()
-	{
+    PhysicObjPrototypeInfo::PhysicObjPrototypeInfo()
+    {
         this->m_intersectionRadius = 0.0;
         this->m_lookRadius = 0.0;
-	}
+    }
 
-	bool PhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
-	{
+    bool PhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    {
         auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
@@ -148,7 +148,7 @@ namespace ai
             return 1;
         }
         return result;
-	}
+    }
 
     void PhysicObj::SetDirections(CVector const& forward, CVector const& up)
     {
@@ -159,7 +159,7 @@ namespace ai
 
         // Calculate the right vector (x-axis) as cross product of up and forward
         mat.m[0][0] = up.y * forward.z - up.z * forward.y;  // right.x
-        mat.m[0][1] = up.z * forward.x - up.x * forward.z;  // right.y  
+        mat.m[0][1] = up.z * forward.x - up.x * forward.z;  // right.y
         mat.m[0][2] = up.x * forward.y - up.y * forward.x;  // right.z
 
         // Use provided up vector for y-axis
@@ -292,7 +292,9 @@ namespace ai
             return true;
 
         case 45:
-            RETRUXX_NOT_IMPLEMENTED;
+            SetSkin(newValue.GetAsID());
+            return true;
+
         default:
             return ai::Obj::SetPropertyById(propertyId, newValue);
         }
@@ -344,7 +346,8 @@ namespace ai
         m_propertiesMap["Pos"] = 4;
         m_propertiesMap["Rot"] = 5;
         m_propertiesMap["Skin"] = 45;
-        m_countRelinksToCollisionCells = M3D_APP->GetDbgCounterStack().GetCounter(M3D_APP->GetDbgCounterStack().AddCounter("relinks to collision cells"));
+        m_countRelinksToCollisionCells =
+            M3D_APP->GetDbgCounterStack().GetCounter(M3D_APP->GetDbgCounterStack().AddCounter("relinks to collision cells"));
         m_countRelinksToCollisionCells->SetI(0);
     }
 
@@ -423,16 +426,13 @@ namespace ai
         rotationMatrix._44 = 1.0f;
 
         // Transform mass center by rotation matrix
-        float transformedX = (this->m_massCenter.x * rotationMatrix._11) +
-            (this->m_massCenter.y * rotationMatrix._21) +
+        float transformedX = (this->m_massCenter.x * rotationMatrix._11) + (this->m_massCenter.y * rotationMatrix._21) +
             (this->m_massCenter.z * rotationMatrix._31);
 
-        float transformedY = (this->m_massCenter.x * rotationMatrix._12) +
-            (this->m_massCenter.y * rotationMatrix._22) +
+        float transformedY = (this->m_massCenter.x * rotationMatrix._12) + (this->m_massCenter.y * rotationMatrix._22) +
             (this->m_massCenter.z * rotationMatrix._32);
 
-        float transformedZ = (this->m_massCenter.x * rotationMatrix._13) +
-            (this->m_massCenter.y * rotationMatrix._23) +
+        float transformedZ = (this->m_massCenter.x * rotationMatrix._13) + (this->m_massCenter.y * rotationMatrix._23) +
             (this->m_massCenter.z * rotationMatrix._33);
 
         // Calculate final position (position + transformed mass center)
@@ -615,23 +615,23 @@ namespace ai
         Quaternion rotation = GetRotation();
 
         // Extract quaternion components for clarity
-        const float x = rotation.x;
-        const float y = rotation.y;
-        const float z = rotation.z;
-        const float w = rotation.w;
+        float const x = rotation.x;
+        float const y = rotation.y;
+        float const z = rotation.z;
+        float const w = rotation.w;
 
         // Calculate quaternion products
-        const float xx = x * x;
-        const float xy = x * y;
-        const float xz = x * z;
-        const float xw = x * w;
+        float const xx = x * x;
+        float const xy = x * y;
+        float const xz = x * z;
+        float const xw = x * w;
 
-        const float yy = y * y;
-        const float yz = y * z;
-        const float yw = y * w;
+        float const yy = y * y;
+        float const yz = y * z;
+        float const yw = y * w;
 
-        const float zz = z * z;
-        const float zw = z * w;
+        float const zz = z * z;
+        float const zw = z * w;
 
         // Build rotation matrix from quaternion
         CMatrix rotationMatrix;
@@ -661,20 +661,17 @@ namespace ai
         rotationMatrix._44 = 1.0f;
 
         // Transform mass center by rotation matrix
-        const float transformedX = m_massCenter.x * rotationMatrix._11 +
-            m_massCenter.y * rotationMatrix._21 +
-            m_massCenter.z * rotationMatrix._31;
+        float const transformedX =
+            m_massCenter.x * rotationMatrix._11 + m_massCenter.y * rotationMatrix._21 + m_massCenter.z * rotationMatrix._31;
 
-        const float transformedY = m_massCenter.x * rotationMatrix._12 +
-            m_massCenter.y * rotationMatrix._22 +
-            m_massCenter.z * rotationMatrix._32;
+        float const transformedY =
+            m_massCenter.x * rotationMatrix._12 + m_massCenter.y * rotationMatrix._22 + m_massCenter.z * rotationMatrix._32;
 
-        const float transformedZ = m_massCenter.x * rotationMatrix._13 +
-            m_massCenter.y * rotationMatrix._23 +
-            m_massCenter.z * rotationMatrix._33;
+        float const transformedZ =
+            m_massCenter.x * rotationMatrix._13 + m_massCenter.y * rotationMatrix._23 + m_massCenter.z * rotationMatrix._33;
 
         // Get body position (assuming dBodyGetPosition returns a pointer to 3 floats)
-        const float* bodyPosition = dBodyGetPosition(m_body->id());
+        float const* bodyPosition = dBodyGetPosition(m_body->id());
 
         // Calculate final position: body position - transformed mass center
         CVector result;
@@ -749,7 +746,7 @@ namespace ai
         }
     }
 
-    void PhysicObj::AddRelTorque(const CVector& relTorque)
+    void PhysicObj::AddRelTorque(CVector const& relTorque)
     {
         dBodyAddRelTorque(m_body->id(), relTorque.x, relTorque.y, relTorque.z);
     }
@@ -855,7 +852,8 @@ namespace ai
             dGeomSetBody(m_lookSphere->GetGeomId(), m_body->id());
             m_lookSphere->SetTargetClasses(standardTargetClasses);
         }
-        this->m_boundSphere = ai::Sphere::CreateObject(0, 1.0, 0);;
+        this->m_boundSphere = ai::Sphere::CreateObject(0, 1.0, 0);
+        ;
         dGeomSetBody(m_boundSphere->GetGeomId(), this->m_body->id());
         this->m_bIsUpdatingByODE = 1;
         this->m_enabledCellsCount = 0;
@@ -870,7 +868,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::SphereForIntersection* PhysicObj::GetIntersectionSphere() const
+    ai::SphereForIntersection const* PhysicObj::GetIntersectionSphere() const
     {
         return m_lookSphere;
     }
@@ -887,7 +885,13 @@ namespace ai
 
     void PhysicObj::DisablePhysicsWithAutoEnable()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_body)
+            dBodyDisable(m_body->id());
+        m_physicState &= ~1u;
+        SetCorrectEnabledCellsCounter();
+        m_bBodyEnabledLastFrame = 0;
+        SetCorrectEnabledCellsCounter();
+        dBodyDetachAllContactJoints(m_body->id());
     }
 
     void PhysicObj::SetRotationSelf(Quaternion const& rot)
@@ -992,16 +996,13 @@ namespace ai
         // Transform the initial forward direction by the rotation matrix
         // This gives us the object's current forward direction in world space
         CVector result;
-        result.x = rotationMatrix._11 * INITIAL_OBJECTS_DIRECTION_5.x +
-            rotationMatrix._21 * INITIAL_OBJECTS_DIRECTION_5.y +
+        result.x = rotationMatrix._11 * INITIAL_OBJECTS_DIRECTION_5.x + rotationMatrix._21 * INITIAL_OBJECTS_DIRECTION_5.y +
             rotationMatrix._31 * INITIAL_OBJECTS_DIRECTION_5.z;
 
-        result.y = rotationMatrix._12 * INITIAL_OBJECTS_DIRECTION_5.x +
-            rotationMatrix._22 * INITIAL_OBJECTS_DIRECTION_5.y +
+        result.y = rotationMatrix._12 * INITIAL_OBJECTS_DIRECTION_5.x + rotationMatrix._22 * INITIAL_OBJECTS_DIRECTION_5.y +
             rotationMatrix._32 * INITIAL_OBJECTS_DIRECTION_5.z;
 
-        result.z = rotationMatrix._13 * INITIAL_OBJECTS_DIRECTION_5.x +
-            rotationMatrix._23 * INITIAL_OBJECTS_DIRECTION_5.y +
+        result.z = rotationMatrix._13 * INITIAL_OBJECTS_DIRECTION_5.x + rotationMatrix._23 * INITIAL_OBJECTS_DIRECTION_5.y +
             rotationMatrix._33 * INITIAL_OBJECTS_DIRECTION_5.z;
 
         return result;
@@ -1121,10 +1122,7 @@ namespace ai
                 {
                     auto position = dGeomGetPosition(geom);
                     dGeomSetPosition(
-                        geom,
-                        position[0] - this->m_massCenter.x,
-                        position[1] - this->m_massCenter.y,
-                        position[2] - this->m_massCenter.z);
+                        geom, position[0] - this->m_massCenter.x, position[1] - this->m_massCenter.y, position[2] - this->m_massCenter.z);
                 }
             }
         }
@@ -1198,7 +1196,14 @@ namespace ai
 
     void PhysicObj::_SetStaticCollision()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto* i = dBodyGetFirstGeom(m_body->id()); i = nullptr; i = dGeomGetBodyNext(i))
+        {
+            if (dGeomGetClass(i) == 6)
+            {
+                dGeomSetCategoryBits(i, 1u);
+                dGeomSetCollideBits(i, 0xFFFFFFFE);
+            }
+        }
     }
 
     void PhysicObj::_SetStatic()
@@ -1208,13 +1213,15 @@ namespace ai
 
     void PhysicObj::_SetMassCenter(CVector const& massCenter)
     {
-        const auto pos = GetPosition();
-        this->m_massCenter.x = 0.0 - this->m_massCenter.x;
-        this->m_massCenter.y = 0.0 - this->m_massCenter.y;
-        this->m_massCenter.z = 0.0 - this->m_massCenter.z;
+        auto const pos = GetPosition();
+        m_massCenter.x = 0.0 - m_massCenter.x;
+        m_massCenter.y = 0.0 - m_massCenter.y;
+        m_massCenter.z = 0.0 - m_massCenter.z;
+
         _AdjustMassCenter();
         m_massCenter = massCenter;
         _AdjustMassCenter();
+
         SetPositionSelf(pos);
     }
 
@@ -1244,9 +1251,16 @@ namespace ai
         this->LinkGeomsToCollisionCells();
     }
 
-    void PhysicObj::_SetGeomEnabledBit(bool)
+    void PhysicObj::_SetGeomEnabledBit(bool enabled)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (enabled)
+        {
+            m_physicState |= 2u;
+        }
+        else
+        {
+            m_physicState &= ~2u;
+        }
     }
 
     void PhysicObj::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
@@ -1309,4 +1323,4 @@ namespace ai
         }
         return ZeroVector;
     }
-}
+}  // namespace ai

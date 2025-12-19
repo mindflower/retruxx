@@ -12,11 +12,7 @@ namespace ai
     }
 
     GeomObjPrototypeInfo::GeomObjPrototypeInfo() = default;
-
-    GeomObjPrototypeInfo::~GeomObjPrototypeInfo()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    GeomObjPrototypeInfo::~GeomObjPrototypeInfo() = default;
 
     bool GeomObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {

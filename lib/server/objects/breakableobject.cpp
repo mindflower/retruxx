@@ -1,6 +1,9 @@
 #include "breakableobject.h"
 
+#include "base/prototypemanager.h"
 #include <stdexcept>
+#include <server/utils.h>
+#include "ode/objects.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(BreakableObject, SetEnabled)
 {
@@ -22,7 +25,7 @@ namespace ai
 
     Obj* BreakableObjectPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new BreakableObject(*this);
     }
 
     BreakableObjectPrototypeInfo::BreakableObjectPrototypeInfo()
@@ -64,9 +67,20 @@ namespace ai
         return result;
     }
 
-    BreakableObject::BreakableObject(BreakableObjectPrototypeInfo const& prototype) : SimplePhysicObj(prototype)
+    BreakableObject::BreakableObject(BreakableObjectPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        DisablePhysics();
+        m_state = DISABLED;
+        m_destroyable = prototypeInfo.m_destroyable;
+        m_criticalHitEnergy = prototypeInfo.m_criticalHitEnergy;
+        m_effectType = gDynamicScene->GetBoEffectTypeByName(prototypeInfo.m_effectType);
+        m_destroyEffectType = ai::gDynamicScene->GetBoEffectTypeByName(prototypeInfo.m_destroyEffectType);
+        m_jointId = 0;
+        m_bPositioningOnGround = true;
+        m_causePos = ZeroVector;
+        m_causeForce = 0.0;
+        m_initVelocities = 0;
+        _SetStaticCollision();
     }
 
     bool BreakableObject::CanChildBeAdded(m3d::Class*) const
@@ -81,7 +95,8 @@ namespace ai
 
     void BreakableObject::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement BreakableObject::RenderDebugInfo
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void BreakableObject::SetRemovingEffectName(CStr const&)
@@ -126,7 +141,7 @@ namespace ai
 
     BreakableObjectPrototypeInfo const* BreakableObject::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), BreakableObjectPrototypeInfo const);
     }
 
     void BreakableObject::SetCausePos(CVector const&)
@@ -151,7 +166,7 @@ namespace ai
 
     m3d::Class* BreakableObject::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(BreakableObject);
     }
 
     BreakableObject::STATES BreakableObject::GetState()
@@ -199,9 +214,27 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void BreakableObject::SetPositionSelf(CVector const&)
+    void BreakableObject::SetPositionSelf(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int const physicState = GetPhysicState();
+        if ((physicState & 1) != 0 || !m_bPositioningOnGround)
+        {
+            PhysicObj::SetPositionSelf(pos);
+        }
+        else
+        {
+            bool const enabled = (physicState & 2) != 0;
+            if (enabled)
+            {
+                _SetGeomEnabledBit(false);
+            }
+
+            PhysicObj::SetPositionSelf(GetGroundPos(pos, 1, 0));
+            if (enabled)
+            {
+                _SetGeomEnabledBit(true);
+            }
+        }
     }
 
     void BreakableObject::SetState(STATES)
@@ -246,12 +279,21 @@ namespace ai
 
     void BreakableObject::_Construct()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::_Construct();
+        CVector massCenter;
+        massCenter.x = 0.0;
+        massCenter.y = m_collisionInfos.front().m_relTranslation.y * 0.5;
+        massCenter.z = 0.0;
+        _SetMassCenter(massCenter);
     }
 
     BreakableObject::~BreakableObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_jointId)
+        {
+            dJointDestroy(m_jointId);
+            m_jointId = nullptr;
+        }
     }
 
     m3d::Object* BreakableObject::CreateObject()

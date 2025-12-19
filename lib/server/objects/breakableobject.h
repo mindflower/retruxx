@@ -31,6 +31,7 @@ namespace ai
 
     class BreakableObject : public ai::SimplePhysicObj
     {
+        friend class BreakableObjectPrototypeInfo;
     protected:
         virtual  ~BreakableObject() override /* 0x00 */;
 
@@ -46,7 +47,12 @@ namespace ai
         static m3d::Class m_classBreakableObject;
         virtual const ai::BreakableObjectPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
 
-        enum STATES;
+        enum STATES
+        {
+            DISABLED = 0,
+            ENABLED = 1,
+            REMOVED = 2,
+        };
 
     private:
         /* 0x0144 */ int m_destroyable;
