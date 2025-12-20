@@ -253,7 +253,9 @@ namespace ai
 
     bool GeomRepository::AddThing(GeomRepositoryItem const&, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement GeomRepository::AddThing
+        // RETRUXX_NOT_IMPLEMENTED;
+        return true;
     }
 
     unsigned GeomRepository::GetNumItems() const

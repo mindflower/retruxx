@@ -30,7 +30,7 @@ namespace ai
 
     bool BulletLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        const auto res = GunPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        auto const res = GunPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (res)
         {
             m3d::SafeIntAttrib(m_numBulletsInShot, xmlNode, "NumBulletsInShot");
@@ -117,17 +117,27 @@ namespace ai
 
     BulletLauncherPrototypeInfo const* BulletLauncher::GetPrototypeInfo() const
     {
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const BulletLauncherPrototypeInfo);
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), BulletLauncherPrototypeInfo const);
     }
 
-    bool BulletLauncher::SetPropertyById(int, m3d::AIParam const&)
+    bool BulletLauncher::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (propertyId != 31)
+            return Gun::SetPropertyById(propertyId, newValue);
+
+        m_groupingAngle = -ai::theGlobProp.m_maxGroupingAngle * newValue.GetAsFloat() * 0.0099999998 + ai::theGlobProp.m_maxGroupingAngle;
+        return 1;
     }
 
-    int BulletLauncher::GetPropertyId(char const*) const
+    int BulletLauncher::GetPropertyId(char const* propName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = BulletLauncher::m_propertiesMap.find(propName);
+        if (it != BulletLauncher::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return Gun::GetPropertyId(propName);
     }
 
     void BulletLauncher::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
@@ -165,15 +175,15 @@ namespace ai
         Gun::_LaunchShells();
         for (int i = 0; i < m_numBulletsInShot; ++i)
         {
-            const auto shellPrototypeId = GetShellPrototypeId();
-            const auto objId = theObjects->CreateNewObject(shellPrototypeId, {}, -1, -1);
+            auto const shellPrototypeId = GetShellPrototypeId();
+            auto const objId = theObjects->CreateNewObject(shellPrototypeId, {}, -1, -1);
             auto* shellObj = (Bullet*)theObjects->GetEntityByObjId(objId);
             shellObj->SetGunObjId(GetId());
 
             auto* owner = GetOwner();
             shellObj->SetBelong(owner->GetBelong());
 
-            const auto pos = _CalcPosForNextShot();
+            auto const pos = _CalcPosForNextShot();
             shellObj->SetPosition(pos);
 
             auto angle = m_groupingAngle;
@@ -186,16 +196,16 @@ namespace ai
                 angle = theGlobProp.m_maxGroupingAngle;
             }
 
-            const auto dirForNextShot = _CalcDirForNextShot();
-            const auto deviatedVector = GetRandomDeviatedVector(dirForNextShot, angle);
+            auto const dirForNextShot = _CalcDirForNextShot();
+            auto const deviatedVector = GetRandomDeviatedVector(dirForNextShot, angle);
             shellObj->SetDirection(deviatedVector);
 
-            const auto range = GetFiringRange();
+            auto const range = GetFiringRange();
             shellObj->SetRange(range);
             shellObj->SetParentBarrel(m_curBarrelIndex);
             shellObj->RelinkToSpace(owner->GetSpaceId());
 
-            const auto* protoInfo = GetPrototypeInfo();
+            auto const* protoInfo = GetPrototypeInfo();
 
             // TODO: generated code BulletLauncher::_LaunchShells
             // Check if tracer is enabled
@@ -216,7 +226,7 @@ namespace ai
                         // Create tracer node
                         auto* tracerNode = CreateNode(protoInfo->m_tracerEffectName, 0, {1.0, 1.0, 1.0}, nullptr, false);
                         M3D_ASSERT(tracerNode);
-                        
+
                         tracerNode->RemoveImmediateAfterParent(false);
 
                         // Attach tracer to barrel
@@ -275,4 +285,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

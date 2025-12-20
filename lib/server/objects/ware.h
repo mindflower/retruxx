@@ -29,6 +29,7 @@ namespace ai
 
     class Ware : public ai::Obj
     {
+        friend class WarePrototypeInfo;
     protected:
         virtual  ~Ware() override /* 0x00 */;
 

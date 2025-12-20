@@ -1,6 +1,8 @@
 #include "chest.h"
 #include <core/kernel.h>
 #include "server/geomrepository.h"
+#include "server/geomrepositoryitem.h"
+#include <server/utils.h>
 
 namespace ai
 {
@@ -100,7 +102,12 @@ namespace ai
 
     void Chest::SetPositionSelf(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CVector realPos = pos;
+        if ((GetPhysicState() & 1) == 0)
+        {
+            realPos = ai::GetGroundPos(pos, 1, 0);
+        }
+        PhysicObj::SetPositionSelf(realPos);
     }
 
     void Chest::RenderDebugInfo() const
@@ -110,12 +117,21 @@ namespace ai
 
     bool Chest::CanChildBeAdded(m3d::Class* pClass) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return true;
     }
 
     void Chest::AddChild(ai::Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::AddChild(pObj);
+        if (pObj)
+        {
+            pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
+            if (m_repository)
+            {
+                ai::GeomRepositoryItem item(pObj->GetId());
+                m_repository->AddThing(item, 0);
+            }
+        }
     }
 
     bool Chest::RemoveChild(ai::Obj* pObj)

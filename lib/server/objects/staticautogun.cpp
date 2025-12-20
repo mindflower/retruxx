@@ -1,4 +1,5 @@
 #include "staticautogun.h"
+#include "vehicle.h"
 
 namespace ai
 {
@@ -13,7 +14,7 @@ namespace ai
 
     Obj* StaticAutoGunPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new StaticAutoGun(*this);
     }
 
     bool StaticAutoGunPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -145,7 +146,16 @@ namespace ai
         m_health(prototype.m_maxHealth, 0.0, prototype.m_maxHealth),
         m_timeForNextCheck(0.1, 0.0, 10.0, -1.0)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_destroyedModelName = prototype.m_destroyedModelName;
+
+        m_health.m_BeforeValueApplyModifier = new ai::MemberFunctionTwoArgsRef<ai::StaticAutoGun, ai::Modifier, float, bool>(
+            *this, &StaticAutoGun::_OnHealthValueBeforeApplyModifier);
+        m_health.m_AfterValueChange =
+            new ai::MemberFunctionOneArg<ai::StaticAutoGun, float, void>(*this, &StaticAutoGun::_OnHealthValueAfterChange);
+
+        m_targetClasses.insert(RT_CLASS_LOCAL(Vehicle));
+        m_currentEnemyId = -1;
+        DisablePhysics();
     }
 
     void StaticAutoGun::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

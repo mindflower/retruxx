@@ -1,6 +1,7 @@
 #include "objprefab.h"
 
 #include <stdexcept>
+#include <server/utils.h>
 
 namespace ai
 {
@@ -38,6 +39,7 @@ namespace ai
         bool const result = ai::SimplePhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
+            _SetGeomType(GEOM_TYPE_BOX);
             // TODO: implement ObjPrefabPrototypeInfo::LoadFromXML
         }
         return result;
@@ -65,7 +67,9 @@ namespace ai
 
     ObjPrefab::ObjPrefab(ai::ObjPrefabPrototypeInfo const& prototype) : SimplePhysicObj(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_team = 0;
+        DisablePhysics();
+        DisableGeometry(1);
     }
 
     void ObjPrefab::Remove()
@@ -83,9 +87,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ObjPrefab::SetPositionSelf(CVector const&)
+    void ObjPrefab::SetPositionSelf(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        PhysicObj::SetPositionSelf(ai::GetGroundPos(pos, 0, 0));
     }
 
     void ObjPrefab::SetRotation(Quaternion const&)

@@ -45,54 +45,55 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, GetPartByName)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-const CStr NO_LP("NO_LP");
+CStr const NO_LP("NO_LP");
 
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(ComplexPhysicObj)
-        RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, CanPartBeAttached, "", "", "")
-        RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, SetPartByName, "", "", "")
-        RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, SetNewPart, "", "", "")
-        RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, TakeOffPart, "", "", "")
-        RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, GetPartByName, "", "", "")
-	RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, CanPartBeAttached, "", "", "")
+    RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, SetPartByName, "", "", "")
+    RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, SetNewPart, "", "", "")
+    RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, TakeOffPart, "", "", "")
+    RT_CLASS_EXPORT(ComplexPhysicObj, m3d::METHOD, GetPartByName, "", "", "")
+    RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(ComplexPhysicObj);
 
     RT_CLASS_EXPORTS_BEGIN(ComplexPhysicObjPartDescription)
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(ComplexPhysicObjPartDescription);
 
-	m3d::Class* ComplexPhysicObjPartDescription::GetClass() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    m3d::Class* ComplexPhysicObjPartDescription::GetClass() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	m3d::Object* ComplexPhysicObjPartDescription::CreateObject()
-	{
+    m3d::Object* ComplexPhysicObjPartDescription::CreateObject()
+    {
         return new ComplexPhysicObjPartDescription;
-	}
+    }
 
-	int ComplexPhysicObjPartDescription::GetPartResourceId() const
-	{
+    int ComplexPhysicObjPartDescription::GetPartResourceId() const
+    {
         return m_partResourceId;
-	}
+    }
 
-	unsigned ComplexPhysicObjPartDescription::GetNumLps() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    unsigned ComplexPhysicObjPartDescription::GetNumLps() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void ComplexPhysicObjPartDescription::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>& partNames) const
-	{
+    void ComplexPhysicObjPartDescription::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>& partNames) const
+    {
         partNames.push_back(m_name);
-        for (auto child = dynamic_cast<ComplexPhysicObjPartDescription*>(GetFirstChild()); child; child = dynamic_cast<ComplexPhysicObjPartDescription*>(child->GetNextSibling()))
+        for (auto child = dynamic_cast<ComplexPhysicObjPartDescription*>(GetFirstChild()); child;
+             child = dynamic_cast<ComplexPhysicObjPartDescription*>(child->GetNextSibling()))
         {
             child->GetPartNames(partNames);
         }
-	}
+    }
 
-	void ComplexPhysicObjPartDescription::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
-	{
+    void ComplexPhysicObjPartDescription::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    {
         m3d::SafeStrAttrib(m_name, xmlNode, "id");
         if (GetParent())
         {
@@ -122,22 +123,23 @@ namespace ai
         }
 
         ref_ptr descNode = xmlFile->CreateNode();
-        for (xmlNode->GetFirstChild(descNode, "PartDescription"); !descNode->IsEmpty(); descNode->GetNextSibling(descNode, "PartDescription"))
+        for (xmlNode->GetFirstChild(descNode, "PartDescription"); !descNode->IsEmpty();
+             descNode->GetNextSibling(descNode, "PartDescription"))
         {
             auto desc = (ComplexPhysicObjPartDescription*)M3D_KERNEL->New("ComplexPhysicObjPartDescription");
             AddChild(desc);
             desc->LoadFromXML(xmlFile, descNode);
         }
-	}
+    }
 
-	ComplexPhysicObjPartDescription const* ComplexPhysicObjPartDescription::GetChildByNameDeep(CStr const& childName) const
-	{
+    ComplexPhysicObjPartDescription const* ComplexPhysicObjPartDescription::GetChildByNameDeep(CStr const& childName) const
+    {
         if (m_name == childName)
         {
             return this;
         }
 
-	    auto child = dynamic_cast<ai::ComplexPhysicObjPartDescription*>(GetFirstChild());
+        auto child = dynamic_cast<ai::ComplexPhysicObjPartDescription*>(GetFirstChild());
         if (!child)
             return nullptr;
 
@@ -152,60 +154,60 @@ namespace ai
                 return nullptr;
         }
         return nullptr;
-	}
+    }
 
-	CStr const& ComplexPhysicObjPartDescription::GetLpName(unsigned index) const
-	{
+    CStr const& ComplexPhysicObjPartDescription::GetLpName(unsigned index) const
+    {
         return this->m_lpNames[index];
-	}
+    }
 
-	m3d::Object* ComplexPhysicObjPartDescription::Clone()
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    m3d::Object* ComplexPhysicObjPartDescription::Clone()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	ComplexPhysicObjPartDescription* ComplexPhysicObjPartDescription::GetParent() const
-	{
+    ComplexPhysicObjPartDescription* ComplexPhysicObjPartDescription::GetParent() const
+    {
         return dynamic_cast<ComplexPhysicObjPartDescription*>(Object::GetParent());
-	}
+    }
 
-	ComplexPhysicObjPartDescription::~ComplexPhysicObjPartDescription()
-	{
+    ComplexPhysicObjPartDescription::~ComplexPhysicObjPartDescription()
+    {
         RemoveAllChildren();
-	}
+    }
 
-	m3d::Class* ComplexPhysicObjPartDescription::GetBaseClass()
-	{
+    m3d::Class* ComplexPhysicObjPartDescription::GetBaseClass()
+    {
         return RT_CLASS_LOCAL(Object);
-	}
+    }
 
-	ComplexPhysicObjPartDescription::ComplexPhysicObjPartDescription()
-	{
+    ComplexPhysicObjPartDescription::ComplexPhysicObjPartDescription()
+    {
         this->m_partResourceId = -1;
-	}
+    }
 
-	ComplexPhysicObjPartDescription::ComplexPhysicObjPartDescription(ComplexPhysicObjPartDescription const&)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    ComplexPhysicObjPartDescription::ComplexPhysicObjPartDescription(ComplexPhysicObjPartDescription const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	ComplexPhysicObjPrototypeInfo::MassShapes ComplexPhysicObjPrototypeInfo::GetMassShape() const
-	{
+    ComplexPhysicObjPrototypeInfo::MassShapes ComplexPhysicObjPrototypeInfo::GetMassShape() const
+    {
         return this->m_massShape;
-	}
+    }
 
-	ComplexPhysicObjPartDescription const* ComplexPhysicObjPrototypeInfo::GetPartDescriptionByName(CStr const& partName) const
-	{
+    ComplexPhysicObjPartDescription const* ComplexPhysicObjPrototypeInfo::GetPartDescriptionByName(CStr const& partName) const
+    {
         return m_partDescription->GetChildByNameDeep(partName);
-	}
+    }
 
-	Obj* ComplexPhysicObjPrototypeInfo::CreateRandomTargetObject() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    Obj* ComplexPhysicObjPrototypeInfo::CreateRandomTargetObject() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	bool ComplexPhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
-	{
+    bool ComplexPhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    {
         auto result = ai::PhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
@@ -249,37 +251,37 @@ namespace ai
             m3d::SafeEnumAttrib(m_massShape, xmlNode, "MassShape");
         }
         return result;
-	}
+    }
 
-	void ComplexPhysicObjPrototypeInfo::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>&) const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    void ComplexPhysicObjPrototypeInfo::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>&) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
     ComplexPhysicObjPrototypeInfo::~ComplexPhysicObjPrototypeInfo() = default;
 
-	retruxx::vector<CStr, retruxx::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
-	{
+    retruxx::vector<CStr, retruxx::allocator<CStr>> const& ComplexPhysicObjPrototypeInfo::GetAllPartNames() const
+    {
         return m_allPartNames;
-	}
+    }
 
-	ComplexPhysicObjPrototypeInfo::ComplexPhysicObjPrototypeInfo()
-	{
+    ComplexPhysicObjPrototypeInfo::ComplexPhysicObjPrototypeInfo()
+    {
         this->m_massSize.x = 1.0;
         this->m_massSize.y = 1.0;
         this->m_massSize.z = 1.0;
         this->m_massTranslation = {0.0, 0.0, 0.0};
         m_partDescription = (ComplexPhysicObjPartDescription*)M3D_KERNEL->New("ComplexPhysicObjPartDescription");
         this->m_massShape = MS_BOX;
-	}
+    }
 
-	unsigned ComplexPhysicObjPrototypeInfo::GetBasePrice() const
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    unsigned ComplexPhysicObjPrototypeInfo::GetBasePrice() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 
-	void ComplexPhysicObjPrototypeInfo::PostLoad()
-	{
+    void ComplexPhysicObjPrototypeInfo::PostLoad()
+    {
         for (auto& name : m_partPrototypeNames)
         {
             m_partPrototypeIds[name.first] = thePrototypeManager->GetPrototypeId(name.second);
@@ -287,7 +289,7 @@ namespace ai
 
         m_allPartNames.clear();
         m_partDescription->GetPartNames(m_allPartNames);
-	}
+    }
 
     void ComplexPhysicObj::UnlinkGeomsFromCollisionCells()
     {
@@ -321,7 +323,8 @@ namespace ai
 
     void ComplexPhysicObj::RenderDebugInfo() const
     {
-        if (m_vehicleParts.empty() || !m_vehicleParts.begin()->second->m_Node || m_vehicleParts.begin()->second->m_Node->m_frameVisible == M3D_KERNEL->GetTimer().GetCurFrame())
+        if (m_vehicleParts.empty() || !m_vehicleParts.begin()->second->m_Node ||
+            m_vehicleParts.begin()->second->m_Node->m_frameVisible == M3D_KERNEL->GetTimer().GetCurFrame())
         {
             PhysicObj::RenderDebugInfo();
             if (!m_spaceId || !m_bIsSpaceOwner || dGeomIsEnabled(m_spaceId))
@@ -353,7 +356,9 @@ namespace ai
         {
             if (!bUnsafe && !ai::ComplexPhysicObj::CanPartBeAttached(partName))
             {
-                M3D_LOG_ERR("Warning: attaching a physic object part that can't be attached. Object desc: " + GetDebugDescription() + ", part name = '" + partName + "'");
+                M3D_LOG_ERR(
+                    "Warning: attaching a physic object part that can't be attached. Object desc: " + GetDebugDescription() +
+                    ", part name = '" + partName + "'");
             }
 
             auto it = m_vehicleParts.find(partName);
@@ -454,7 +459,7 @@ namespace ai
         Obj::CreateChildren();
 
         auto* prototypeInfo = GetPrototypeInfo();
-        for (const auto& [name, protoId] : prototypeInfo->m_partPrototypeIds)
+        for (auto const& [name, protoId] : prototypeInfo->m_partPrototypeIds)
         {
             auto objId = theObjects->CreateNewObject(protoId, {}, -1, -1);
             if (objId >= 0)
@@ -466,14 +471,16 @@ namespace ai
                     continue;
                 }
             }
-            M3D_LOG_ERR("Error: couldn't create part for " + GetDebugDescription() + " part name = " + name + ", part prototype id = " + CStr(protoId));
+            M3D_LOG_ERR(
+                "Error: couldn't create part for " + GetDebugDescription() + " part name = " + name +
+                ", part prototype id = " + CStr(protoId));
             //M3D_CRITICAL_ERROR("");
         }
 
         _Construct(false);
 
         // TODO: check this
-        for (const auto& [name, part] : m_vehicleParts)
+        for (auto const& [name, part] : m_vehicleParts)
         {
             part->TransferPhysicParamsToSceneGraphNode();
             if (part->m_Node)
@@ -484,7 +491,7 @@ namespace ai
             if (part->IsKindOf(&ai::CompoundVehiclePart::m_classCompoundVehiclePart))
             {
                 auto* compoundVehiclePart = dynamic_cast<CompoundVehiclePart*>(part);
-                for (const auto& [vehPartName, vehPart] : *compoundVehiclePart)
+                for (auto const& [vehPartName, vehPart] : *compoundVehiclePart)
                 {
                     vehPart.vp->TransferPhysicParamsToSceneGraphNode();
                     if (vehPart.vp->m_Node)
@@ -533,7 +540,7 @@ namespace ai
             return it->second;
         }
 
-        for (const auto& pair : m_vehicleParts)
+        for (auto const& pair : m_vehicleParts)
         {
             VehiclePart* part = pair.second;
 
@@ -636,7 +643,7 @@ namespace ai
 
     void ComplexPhysicObj::DisablePhysics()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        PhysicObj::DisablePhysics();
     }
 
     void ComplexPhysicObj::LinkGeomsToCollisionCells()
@@ -680,7 +687,7 @@ namespace ai
 
     Geom::CellAabb ComplexPhysicObj::GetCollisionCellAabb() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return PhysicObj::GetCollisionCellAabb();
     }
 
     void ComplexPhysicObj::SetContourColor(unsigned)
@@ -703,40 +710,40 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int ComplexPhysicObj::GetGunHorizontalStopAngles(const CStr& gunPartName, int index, float& leftStopAngle, float& rightStopAngle) const
+    int ComplexPhysicObj::GetGunHorizontalStopAngles(CStr const& gunPartName, int index, float& leftStopAngle, float& rightStopAngle) const
     {
         leftStopAngle = 0.0;
         rightStopAngle = 0.0;
 
-        const auto* prototypeInfo = GetPrototypeInfo();
+        auto const* prototypeInfo = GetPrototypeInfo();
         if (prototypeInfo)
         {
-            const auto* partDesc = prototypeInfo->GetPartDescriptionByName(gunPartName);
+            auto const* partDesc = prototypeInfo->GetPartDescriptionByName(gunPartName);
             if (!partDesc)
             {
                 return 0;
             }
 
-            const auto resourceId = theResourceManager->GetResourceId("GUN");
+            auto const resourceId = theResourceManager->GetResourceId("GUN");
             if (!theResourceManager->bResourceIsKindOf(partDesc->GetPartResourceId(), resourceId))
             {
                 return 0;
             }
 
-            const auto* parent = partDesc->GetParent();
+            auto const* parent = partDesc->GetParent();
             if (!parent)
             {
                 return 0;
             }
 
-            const auto* partByName = GetPartByName(parent->GetName());
+            auto const* partByName = GetPartByName(parent->GetName());
             if (!partByName)
             {
                 return 0;
             }
 
             auto& animatedModelsServer = M3D_APP->GetAnimatedModelsServer();
-            const auto item = animatedModelsServer.GetItemByName(partByName->m_modelname.c_str(), true);
+            auto const item = animatedModelsServer.GetItemByName(partByName->m_modelname.c_str(), true);
             if (item == -1)
             {
                 return 0;
@@ -749,8 +756,8 @@ namespace ai
                 return 0;
             }
 
-            const auto loadPoint = model->GetLoadPointIdByName(partDesc->GetLpName(index).c_str());
-            const auto& boneBounds = model->GetBoneBounds(loadPoint);
+            auto const loadPoint = model->GetLoadPointIdByName(partDesc->GetLpName(index).c_str());
+            auto const& boneBounds = model->GetBoneBounds(loadPoint);
             leftStopAngle = 0.0 - boneBounds.MaxRot.y;
             rightStopAngle = 0.0 - boneBounds.MinRot.y;
             return 1;
@@ -764,13 +771,12 @@ namespace ai
         ai::Obj::LoadFromXML(xmlFile, xmlNode);
 
         // TODO: implement ComplexPhysicObj::LoadFromXML
-        const auto prototypeInfo = GetPrototypeInfo();
+        auto const prototypeInfo = GetPrototypeInfo();
 
         ref_ptr partsNode = xmlFile->CreateNode();
         xmlNode->GetFirstChild(partsNode, "Parts");
         for (auto& partName : prototypeInfo->GetAllPartNames())
         {
-
             // Create temporary node for this part
             ref_ptr<m3d::cmn::XmlNode> partNode(xmlFile->CreateNode());
 
@@ -804,20 +810,12 @@ namespace ai
                     continue;
                 }
 
-                objectId = theObjects->CreateNewObjectWithSuspendedPostLoad(
-                    partPrototypeIt->second,
-                    {},
-                    -1,
-                    -1);
+                objectId = theObjects->CreateNewObjectWithSuspendedPostLoad(partPrototypeIt->second, {}, -1, -1);
             }
             else
             {
                 // Read object from XML
-                objectId = gDynamicScene->ReadNewObjectFromXml(
-                    xmlFile,
-                    partNode,
-                    {});
-
+                objectId = gDynamicScene->ReadNewObjectFromXml(xmlFile, partNode, {});
             }
 
             if (objectId == -1)
@@ -828,7 +826,6 @@ namespace ai
 
             // Get the object from the container
             m3d::Object* partObject = theObjects->GetEntityByObjId(objectId);
-
 
             // Verify it's a VehiclePart and set it
             if (IS_KIND_OF(partObject, VehiclePart))
@@ -921,7 +918,8 @@ namespace ai
                 this->m_timeoutForReAimGuns = ai::theGlobProp.m_timeOutForReAimGuns;
 
                 // Get recollection position with prediction
-                ai::GlobalProperties::CoeffsForDifficultyLevel const& difficultyCoeffs = ai::theGlobProp.GetCoeffsForCurrentDifficultyLevel();
+                ai::GlobalProperties::CoeffsForDifficultyLevel const& difficultyCoeffs =
+                    ai::theGlobProp.GetCoeffsForCurrentDifficultyLevel();
 
                 auto* vehicle = RT_DYNCAST(target, Vehicle const);
                 CVector recollectionPos = vehicle->GetRecollectionPosition(difficultyCoeffs.m_enemiesShootingDelay);
@@ -1043,35 +1041,35 @@ namespace ai
         aabb.m_box[2] = 10000.0;
         aabb.m_box[5] = -10000.0;
 
-        for (const auto& [name, part] : m_vehicleParts)
+        for (auto const& [name, part] : m_vehicleParts)
         {
             if (part->IsKindOf(&ai::CompoundVehiclePart::m_classCompoundVehiclePart))
             {
                 auto* compoundVehiclePart = dynamic_cast<CompoundVehiclePart*>(part);
-                for (const auto& [vehPartName, vehPart] : *compoundVehiclePart)
+                for (auto const& [vehPartName, vehPart] : *compoundVehiclePart)
                 {
-                    for (const auto& geom : vehPart.vp->m_pGeoms)
+                    for (auto const& geom : vehPart.vp->m_pGeoms)
                     {
-                        const auto geomAabb = geom->GetAabb();
+                        auto const geomAabb = geom->GetAabb();
                         aabb.EmbraceBox(geomAabb);
                     }
                 }
             }
             else
             {
-                for (const auto& geom : part->m_pGeoms)
+                for (auto const& geom : part->m_pGeoms)
                 {
-                    const auto geomAabb = geom->GetAabb();
+                    auto const geomAabb = geom->GetAabb();
                     aabb.EmbraceBox(geomAabb);
                 }
             }
         }
 
         float radius = sqrt(
-            (aabb.m_box[5] - aabb.m_box[2]) * (aabb.m_box[5] - aabb.m_box[2])
-            + (aabb.m_box[4] - aabb.m_box[1]) * (aabb.m_box[4] - aabb.m_box[1])
-            + (aabb.m_box[3] - aabb.m_box[0]) * (aabb.m_box[3] - aabb.m_box[0]))
-            * 0.75;
+                           (aabb.m_box[5] - aabb.m_box[2]) * (aabb.m_box[5] - aabb.m_box[2]) +
+                           (aabb.m_box[4] - aabb.m_box[1]) * (aabb.m_box[4] - aabb.m_box[1]) +
+                           (aabb.m_box[3] - aabb.m_box[0]) * (aabb.m_box[3] - aabb.m_box[0])) *
+            0.75;
         _SetBoundSphereRadius(radius);
     }
 
@@ -1172,12 +1170,16 @@ namespace ai
                                 }
                                 else
                                 {
-                                    M3D_LOG_ERR("Error: LoadPoint not found! Model = '" + GetDebugDescription() + "', lp = " + lpName + " for " + it->second->m_modelname);
+                                    M3D_LOG_ERR(
+                                        "Error: LoadPoint not found! Model = '" + GetDebugDescription() + "', lp = " + lpName + " for " +
+                                        it->second->m_modelname);
                                 }
                             }
                             else
                             {
-                                M3D_LOG_ERR("Error: LoadPoint not found! Model = '" + GetDebugDescription() + "', lp = " + lpName + " for " + it->second->m_modelname);
+                                M3D_LOG_ERR(
+                                    "Error: LoadPoint not found! Model = '" + GetDebugDescription() + "', lp = " + lpName + " for " +
+                                    it->second->m_modelname);
                             }
                         }
 
@@ -1198,7 +1200,7 @@ namespace ai
 
                                 auto gunInitAngle = (rightStopAngle + leftStopAngle) * 0.5;
 
-                                const CVector INITIAL_UP_DIRECTION_15(0.0, 1.0, 0.0);
+                                CVector const INITIAL_UP_DIRECTION_15(0.0, 1.0, 0.0);
                                 gunRotation.FromAxisAngle(INITIAL_UP_DIRECTION_15, gunInitAngle);
 
                                 CMatrix vv;
@@ -1227,7 +1229,6 @@ namespace ai
                         res = res * parentMat;
                         partDesc = parentPartDescription;
                         parentPartDescription = parentPartDescription->GetParent();
-
                     }
                 }
                 else
@@ -1251,7 +1252,7 @@ namespace ai
     float ComplexPhysicObj::_CalcMassForBody() const
     {
         float mass = 0.0;
-        for (const auto& part : m_vehicleParts)
+        for (auto const& part : m_vehicleParts)
         {
             mass += part.second->GetMass();
         }
@@ -1274,16 +1275,16 @@ namespace ai
 
     void ComplexPhysicObj::_Construct(bool bForAnimation)
     {
-        const auto pos = GetPosition();
-        const auto rot = GetRotation();
+        auto const pos = GetPosition();
+        auto const rot = GetRotation();
         _CreateSpace(false);
-        for (const auto&[name, part] : m_vehicleParts)
+        for (auto const& [name, part] : m_vehicleParts)
         {
             if (part->IsKindOf(&ai::CompoundVehiclePart::m_classCompoundVehiclePart))
             {
                 auto* compoundVehiclePart = dynamic_cast<CompoundVehiclePart*>(part);
                 _ConstructVehiclePart(name, part, 0, bForAnimation);
-                for (const auto& [vehPartName, vehPart] : *compoundVehiclePart)
+                for (auto const& [vehPartName, vehPart] : *compoundVehiclePart)
                 {
                     _ConstructVehiclePart(vehPartName, vehPart.vp, vehPart.index, bForAnimation);
                 }
@@ -1297,15 +1298,14 @@ namespace ai
         RefreshMass();
 
         auto* prototypeInfo = GetPrototypeInfo();
-        this->m_massCenter = { 0.0, 0.0, 0.0 };
-        
+        this->m_massCenter = {0.0, 0.0, 0.0};
 
         _SetMassCenter(prototypeInfo->m_massTranslation);
         _SetCorrectBoundSphereRadius();
         SetPosition(pos);
         SetRotation(rot);
 
-        for (const auto& [name, part] : m_vehicleParts)
+        for (auto const& [name, part] : m_vehicleParts)
         {
             part->TransferPhysicParamsToSceneGraphNode();
             if (part->m_Node)
