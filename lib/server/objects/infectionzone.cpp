@@ -3,6 +3,8 @@
 #include <stdexcept>
 
 #include "core/ini.h"
+#include "core/aiparam.h"
+#include "base/objcontainer.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(InfectionZone, ResetTimeOut)
 {
@@ -14,12 +16,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(InfectionZone, IsPlayerInside)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(InfectionZone)
-        RT_CLASS_EXPORT(InfectionZone, m3d::METHOD, ResetTimeOut, "", "", "")
-        RT_CLASS_EXPORT(InfectionZone, m3d::METHOD, IsPlayerInside, "", "", "")
+    RT_CLASS_EXPORT(InfectionZone, m3d::METHOD, ResetTimeOut, "", "", "")
+    RT_CLASS_EXPORT(InfectionZone, m3d::METHOD, IsPlayerInside, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(InfectionZone);
 
@@ -51,7 +52,7 @@ namespace ai
 
     Obj* InfectionZonePrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new InfectionZone(*this);
     }
 
     void InfectionZone::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
@@ -93,9 +94,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void InfectionZone::SetBelong(int)
+    void InfectionZone::SetBelong(int newBelong)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::Obj::SetBelong(newBelong);
+        auto* infectionTeam = theObjects->GetEntityByObjId(m_infectionTeamId);
+        if (infectionTeam)
+        {
+            infectionTeam->SetBelong(newBelong);
+        }
     }
 
     void InfectionZone::SetPolygonPoint(float, float, unsigned)
@@ -118,14 +124,61 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool InfectionZone::SetPropertyById(int, m3d::AIParam const&)
+    bool InfectionZone::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int res = 1;
+        switch (propertyId)
+        {
+        case 70:
+            m_minDistToPlayer = newValue.GetAsFloat();
+            res = 1;
+            break;
+
+        case 71:
+            m_criticalTeamDist = newValue.GetAsFloat();
+            res = 1;
+            break;
+
+        case 72:
+            m_criticalTeamTime = newValue.GetAsFloat();
+            res = 1;
+            break;
+
+        case 73:
+            m_infectionTeamPrototypeName = newValue.GetAsStr();
+            res = 1;
+            break;
+
+        case 74:
+            m_baseTimeoutForRespawn = newValue.GetAsFloat();
+            m_timeoutForRespawn = newValue.GetAsFloat();
+            res = 1;
+            break;
+
+        default:
+            res = ai::Obj::SetPropertyById(propertyId, newValue);
+            break;
+        }
+        return res;
     }
 
-    InfectionZone::InfectionZone(InfectionZonePrototypeInfo const&)
+    InfectionZone::InfectionZone(InfectionZonePrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_minDistToPlayer = prototypeInfo.m_minDistToPlayer;
+        m_criticalTeamDist = prototypeInfo.m_criticalTeamDist;
+        m_criticalTeamTime = prototypeInfo.m_criticalTeamTime;
+        m_blindTeamDist = prototypeInfo.m_blindTeamDist;
+        m_blindTeamTime = prototypeInfo.m_blindTeamTime;
+        m_hadPlayerInside = false;
+        m_infectionTeamId = -1;
+        m_infectionLairId = -1;
+        m_baseTimeoutForRespawn = 30.0f;
+        m_timeoutForRespawn = 30.0f;
+        m_dropOutCos = 0.0f;
+        m_timeForRespawn = 0.0f;
+        m_dropOutTimeOut = 0.0f;
+        m_lastFramePlayerInsideWithoutEnemies = 0.0f;
+        m_dropOutCos = cos((double)(prototypeInfo.m_dropOutSegmentAngle / 2) * 0.017453292);
     }
 
     void InfectionZone::AddChild(Obj*)
@@ -155,7 +208,7 @@ namespace ai
 
     m3d::Class* InfectionZone::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(InfectionZone);
     }
 
     void InfectionZone::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -163,9 +216,15 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int InfectionZone::GetPropertyId(char const*) const
+    int InfectionZone::GetPropertyId(char const* propName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = InfectionZone::m_propertiesMap.find(propName);
+        if (it != InfectionZone::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return ai::Obj::GetPropertyId(propName);
     }
 
     InfectionZonePrototypeInfo const* InfectionZone::GetPrototypeInfo() const
@@ -203,9 +262,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void InfectionZone::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void InfectionZone::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::LoadFromXML(xmlFile, xmlNode);
+        // TODO: implement InfectionZone::LoadFromXML
     }
 
     bool InfectionZone::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
@@ -287,4 +347,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

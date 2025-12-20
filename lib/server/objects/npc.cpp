@@ -1,6 +1,10 @@
 #include "npc.h"
 
 #include <stdexcept>
+#include "base/globalproperties.h"
+#include <core/ini.h>
+#include <core/aiparam.h>
+#include <server/utils.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Npc, GetSpokenCount)
 {
@@ -24,6 +28,27 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Npc, HasNotTakenDynamicQuests)
 
 namespace ai
 {
+    namespace
+    {
+        struct
+        {
+            CStr str;
+            Npc::NpcType type;
+        } l_str2Type[] = {{"BARMAN", Npc::NpcType::NPC_BARMAN}, {"CLIENT", Npc::NpcType::NPC_CLIENT}};
+
+        Npc::NpcType Str2NpcType(CStr const& npcTypeStr)
+        {
+            for (auto const& [str, type] : l_str2Type)
+            {
+                if (str == npcTypeStr)
+                {
+                    return type;
+                }
+            }
+            return Npc::NpcType::NPC_CLIENT;
+        }
+    }  // namespace
+
     RT_CLASS_EXPORTS_BEGIN(Npc)
     RT_CLASS_EXPORT(Npc, m3d::METHOD, GetSpokenCount, "", "", "")
     RT_CLASS_EXPORT(Npc, m3d::METHOD, SetSpokenCount, "", "", "")
@@ -72,9 +97,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Npc::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Npc::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::LoadFromXML(xmlFile, xmlNode);
+        m3d::SafeIntAttrib(m_spokenCount, xmlNode, "SpokenCount");
     }
 
     void Npc::SetSpokenCount(int)
@@ -89,7 +115,7 @@ namespace ai
 
     m3d::Class* Npc::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(Npc);
     }
 
     CStr Npc::GetPropertyName(int) const
@@ -117,9 +143,31 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Npc::SetPropertyById(int, m3d::AIParam const&)
+    bool Npc::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int res = 1;
+        switch (propertyId)
+        {
+        case 44:
+            m_ModelName = newValue.GetAsStr();
+            break;
+        case 45:
+            m_SkinNumber = newValue.GetAsID();
+            break;
+        case 46:
+            m_CfgNumber = newValue.GetAsID();
+            break;
+        case 47:
+            ai::StrToStringVector(newValue.GetAsStr(), m_helloReplyNames);
+            break;
+        case 48:
+            m_npcType = Str2NpcType(newValue.GetAsStr());
+            break;
+        default:
+            res = Obj::SetPropertyById(propertyId, newValue);
+            break;
+        }
+        return res;
     }
 
     void Npc::SetHelloReplyNames(retruxx::vector<CStr, retruxx::allocator<CStr>> const&)
@@ -142,9 +190,15 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int Npc::GetPropertyId(char const*) const
+    int Npc::GetPropertyId(char const* propName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = Npc::m_propertiesMap.find(propName);
+        if (it != Npc::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return ai::Obj::GetPropertyId(propName);
     }
 
     bool Npc::HasNotTakenDynamicQuests() const
@@ -178,12 +232,16 @@ namespace ai
 
     Npc::NpcType Npc::GetNpcType() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_npcType;
     }
 
-    Npc::Npc(NpcPrototypeInfo const&)
+    Npc::Npc(NpcPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_npcType = NPC_CLIENT;
+        m_SkinNumber = 0;
+        m_CfgNumber = 0;
+        m_spokenCount = 0;
+        m_ModelName = ai::theGlobProp.m_barmenModelName;
     }
 
     void Npc::RegisterProperty(char const*, int, eGObjPropertySaveStatus)

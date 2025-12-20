@@ -49,8 +49,13 @@ namespace ai
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
 
-        enum NpcType;
-
+    public:
+        enum NpcType
+        {
+          NPC_BARMAN = 0,
+          NPC_CLIENT = 1,
+        };
+        
     public:
         const retruxx::vector<CStr, retruxx::allocator<CStr> >& GetHelloReplyNames() const;
         void SetHelloReplyNames(const retruxx::vector<CStr, retruxx::allocator<CStr> >& replyNames);

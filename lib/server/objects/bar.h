@@ -19,6 +19,7 @@ namespace ai
 
     class Bar : public ai::Building
     {
+        friend class BarPrototypeInfo;
     protected:
         virtual  ~Bar() override /* 0x00 */;
 

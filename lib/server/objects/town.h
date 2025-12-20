@@ -48,8 +48,16 @@ namespace ai
 
     class Town : public ai::Settlement
     {
+        friend class TownPrototypeInfo;
     public:
-        enum GateState;
+        enum GateState
+        {
+          GATE_CLOSED = 0,
+          GATE_OPENING = 1,
+          GATE_OPEN = 2,
+          GATE_CLOSING = 3,
+          GATE_NUM_STATES = 4,
+        };
 
     protected:
         virtual  ~Town() override /* 0x00 */;

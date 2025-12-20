@@ -28,14 +28,13 @@ RT_CLASS_EXPORT_METHOD_DEFINE(GeomRepository, CanPlaceItems)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(GeomRepository)
-        RT_CLASS_EXPORT(GeomRepository, m3d::METHOD, AddItems, "", "", "")
-        RT_CLASS_EXPORT(GeomRepository, m3d::METHOD, RemoveItems, "", "", "")
-        RT_CLASS_EXPORT(GeomRepository, m3d::METHOD, HasAmountOfItems, "", "", "")
-        RT_CLASS_EXPORT(GeomRepository, m3d::METHOD, CanPlaceItems, "", "", "")
+    RT_CLASS_EXPORT(GeomRepository, m3d::METHOD, AddItems, "", "", "")
+    RT_CLASS_EXPORT(GeomRepository, m3d::METHOD, RemoveItems, "", "", "")
+    RT_CLASS_EXPORT(GeomRepository, m3d::METHOD, HasAmountOfItems, "", "", "")
+    RT_CLASS_EXPORT(GeomRepository, m3d::METHOD, CanPlaceItems, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(GeomRepository);
 
@@ -67,7 +66,7 @@ namespace ai
     {
         Purge();
         m_Changed = true;
-        if (m_vehicleId >=0)
+        if (m_vehicleId >= 0)
         {
             auto* obj = dynamic_cast<Vehicle*>(theObjects->GetEntityByObjId(m_vehicleId));
             if (obj)
@@ -197,7 +196,7 @@ namespace ai
     float GeomRepository::GetMass() const
     {
         float mass = 0.0;
-        for (const auto& slot : m_slots)
+        for (auto const& slot : m_slots)
         {
             auto* obj = slot.GetObj();
             if (obj)
@@ -362,7 +361,22 @@ namespace ai
 
     void GeomRepository::Purge()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = m_slots.begin();
+        while (it != m_slots.end())
+        {
+            if (it->IsValid() && (it->m_repositoryItemType || it->m_amount))
+            {
+                ++it;
+                continue;
+            }
+            it = m_slots.erase(it);
+        }
+
+        if (!m_slots.empty())
+        {
+            if (m_sortStyle)
+                _RepackItems(m_sortStyle);
+        }
     }
 
     void GeomRepository::FlushInReferenceChests(CVector const&)
@@ -397,13 +411,11 @@ namespace ai
 
     namespace
     {
-        bool LessByResourceId(
-            const ai::GeomRepositoryItem &item1,
-            const ai::GeomRepositoryItem& item2)
+        bool LessByResourceId(ai::GeomRepositoryItem const& item1, ai::GeomRepositoryItem const& item2)
         {
             return item1.m_resourceId < item2.m_resourceId;
         }
-    }
+    }  // namespace
 
     bool GeomRepository::_RepackItems(SortStyle sortStyle)
     {
@@ -428,7 +440,7 @@ namespace ai
             SortStyle originalSortStyle = m_sortStyle;
             SetSortStyle(SORT_NONE, false);
 
-            for (const auto& item : tempSlots)
+            for (auto const& item : tempSlots)
             {
                 if (!AddThing(item, false))
                 {
@@ -448,7 +460,7 @@ namespace ai
             int currentResourceId = -1;
             int minEmptyY = 0;
 
-            for (const auto& item : tempSlots)
+            for (auto const& item : tempSlots)
             {
                 // Reset item position
                 GeomRepositoryItem newItem = item;
@@ -513,4 +525,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

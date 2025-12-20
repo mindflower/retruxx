@@ -458,9 +458,20 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void PhysicObj::SetAutoDisabling(bool, float, float, int)
+    void PhysicObj::SetAutoDisabling(bool bIsAutoDisabling, float linearThreshold, float angularThreshold, int steps)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (bIsAutoDisabling)
+        {
+            dBodySetAutoDisableFlag(m_body->id(), 1);
+            dBodySetAutoDisableLinearThreshold(m_body->id(), linearThreshold);
+            dBodySetAutoDisableAngularThreshold(m_body->id(), angularThreshold);
+            dBodySetAutoDisableSteps(m_body->id(), steps);
+            dBodySetAutoDisableTime(m_body->id(), 0.0);
+        }
+        else
+        {
+            dBodySetAutoDisableFlag(m_body->id(), 0);
+        }
     }
 
     void PhysicObj::IncEnabledCellsCount()
@@ -1208,7 +1219,8 @@ namespace ai
 
     void PhysicObj::_SetStatic()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_physicState |= 4u;
+        _SetStaticCollision();
     }
 
     void PhysicObj::_SetMassCenter(CVector const& massCenter)

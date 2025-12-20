@@ -1,5 +1,6 @@
 #include "building.h"
 #include "core/ini.h"
+#include "npc.h"
 
 namespace ai
 {
@@ -29,9 +30,8 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Building::Building(BuildingPrototypeInfo const&)
+    Building::Building(BuildingPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Class* Building::GetClass() const
@@ -71,9 +71,9 @@ namespace ai
         return INVALID_BUILDINGTYPE;
     }
 
-    bool Building::CanChildBeAdded(m3d::Class*) const
+    bool Building::CanChildBeAdded(m3d::Class* pClass) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return Obj::CanChildBeAdded(pClass) || pClass->IsKindOf(&ai::Npc::m_classNpc);
     }
 
     retruxx::vector<Npc*> const& Building::GetNpcs() const
@@ -81,9 +81,17 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Building::AddChild(Obj*)
+    void Building::AddChild(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::AddChild(pObj);
+        if (pObj)
+        {
+            if (pObj->IsKindOf(&ai::Npc::m_classNpc))
+            {
+                pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
+                m_npcs.push_back((ai::Npc*)pObj);
+            }
+        }
     }
 
     CStr Building::GetBuildingTypeName(BuildingType)

@@ -1,4 +1,6 @@
 #include "chest.h"
+#include <core/kernel.h>
+#include "server/geomrepository.h"
 
 namespace ai
 {
@@ -23,7 +25,7 @@ namespace ai
 
     ai::Obj* ChestPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new Chest(*this);
     }
 
     Chest::~Chest()
@@ -33,7 +35,17 @@ namespace ai
 
     Chest::Chest(ai::ChestPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_LifeTime = prototypeInfo.m_LifeTime;
+        m_repository = (ai::GeomRepository*)M3D_KERNEL->New("GeomRepository");
+        if (m_repository)
+        {
+            m_repository->Clear(0);
+            PointBase<int> size;
+            size.x = 200;
+            size.y = 2000;
+            m_repository->SetGeomSize(size);
+        }
+        SetAutoDisabling(1, 0.1f, 0.1f, 5);
     }
 
     m3d::Object* Chest::Clone()
@@ -48,12 +60,12 @@ namespace ai
 
     m3d::Class* Chest::GetBaseClass()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(SimplePhysicObj);
     }
 
     m3d::Class* Chest::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(Chest);
     }
 
     ai::ChestPrototypeInfo const* Chest::GetPrototypeInfo() const

@@ -28,6 +28,7 @@ namespace ai
 
     class InfectionZone : public ai::Obj
     {
+        friend class InfectionZonePrototypeInfo;
     protected:
         virtual  ~InfectionZone() override /* 0x00 */;
 
