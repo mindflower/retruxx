@@ -150,9 +150,22 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Team::SetPropertyById(int, m3d::AIParam const&)
+    bool Team::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (propertyId == 14)
+        {
+            m_bRemoveWhenChildrenDead = newValue.GetAsID() != 0;
+            return 1;
+        }
+        if (propertyId == 15)
+        {
+            m_TeamTacticName = newValue.GetAsStr();
+            return 1;
+        }
+        if (propertyId != 16)
+            return ai::Obj::SetPropertyById(propertyId, newValue);
+        m_TeamTacticShouldBeAssigned = newValue.GetAsID() != 0;
+        return 1;
     }
 
     void Team::AttackNow(int)
@@ -175,9 +188,11 @@ namespace ai
         return m3d::AIParam(0);
     }
 
-    void Team::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Team::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::LoadFromXML(xmlFile, xmlNode);
+        // TODO: implement Team::LoadFromXML
+        // RETRUXX_NOT_IMPLEMENTED;;
     }
 
     eGObjPropertySaveStatus Team::GetPropertySaveStatus(int) const

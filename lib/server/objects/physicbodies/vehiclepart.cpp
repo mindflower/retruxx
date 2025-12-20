@@ -9,6 +9,7 @@
 #include "scene/scenegraph.h"
 #include "scene/servers/dataserver.h"
 #include "server/objects/basket.h"
+#include "server/objects/base/prototypemanager.h"
 
 namespace ai
 {
@@ -36,7 +37,7 @@ namespace ai
 
     Obj* VehiclePartPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new VehiclePart(*this);
     }
 
     void VehiclePartPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -255,7 +256,7 @@ namespace ai
 
     m3d::Class* VehiclePart::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(VehiclePart);
     }
 
     CVector VehiclePart::GetSize() const
@@ -282,7 +283,7 @@ namespace ai
 
     VehiclePartPrototypeInfo const* VehiclePart::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), VehiclePartPrototypeInfo const);
     }
 
     void VehiclePart::SetPartName(CStr const& newName)
@@ -450,7 +451,7 @@ namespace ai
 
     bool VehiclePart::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-		// TODO: check and refactor
+        // TODO: check and refactor
         if (propertyId == 19)
         {
             m_durability.value().SetUnsafe(newValue.GetAsFloat());

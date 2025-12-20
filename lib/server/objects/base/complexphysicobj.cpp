@@ -611,9 +611,19 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ComplexPhysicObj::DisableGeometry(bool)
+    void ComplexPhysicObj::DisableGeometry(bool changePhysicState)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        PhysicObj::DisableGeometry(changePhysicState);
+        if (!m_spaceId || !m_bIsSpaceOwner)
+        {
+            for (auto& [name, part] : m_vehicleParts)
+            {
+                if (part)
+                {
+                    part->DisableGeometry();
+                }
+            }
+        }
     }
 
     void ComplexPhysicObj::SetContourWidth(float)
@@ -1028,7 +1038,7 @@ namespace ai
 
     void ComplexPhysicObj::_UnlinkBodyFromGeoms()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        PhysicObj::_UnlinkBodyFromGeoms();
     }
 
     void ComplexPhysicObj::_SetCorrectBoundSphereRadius()

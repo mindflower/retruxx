@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <server/utils.h>
 #include "ode/objects.h"
+#include "lightobj.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(BreakableObject, SetEnabled)
 {
@@ -83,9 +84,9 @@ namespace ai
         _SetStaticCollision();
     }
 
-    bool BreakableObject::CanChildBeAdded(m3d::Class*) const
+    bool BreakableObject::CanChildBeAdded(m3d::Class* pClass) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return ai::Obj::CanChildBeAdded(pClass) || pClass->IsKindOf(&ai::LightObj::m_classLightObj);
     }
 
     int BreakableObject::IsDestroyable()
@@ -204,9 +205,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void BreakableObject::AddChild(Obj*)
+    void BreakableObject::AddChild(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::AddChild(pObj);
+        if (pObj)
+        {
+            if (pObj->IsKindOf(&ai::LightObj::m_classLightObj))
+                pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
+        }
     }
 
     void BreakableObject::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const

@@ -259,7 +259,7 @@ namespace ai
 
     void Settlement::_InternalPostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::_InternalPostLoad();
     }
 
     int Settlement::_GetMaxSpawnedVehicles()

@@ -49,6 +49,7 @@ namespace ai
 
     class VehiclePart : public ai::PhysicBody
     {
+        friend class VehiclePartPrototypeInfo;
     public:
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::VehiclePart, float, void>;
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::VehiclePart, ai::Modifier, float, bool>;

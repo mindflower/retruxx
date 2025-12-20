@@ -1,8 +1,7 @@
 #include "sgnodeobj.h"
-
-#include <stdexcept>
-
 #include "core/ini.h"
+#include "core/aiparam.h"
+#include "scene/nodes/sgnode.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNodeObj, SetPosition)
 {
@@ -42,13 +41,13 @@ RT_CLASS_EXPORT_METHOD_DEFINE(SgNodeObj, GetScale)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(SgNodeObj)
-        RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, SetPosition, "", "", "")
-        RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, GetPosition, "", "", "")
-        RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, SetRotation, "", "", "")
-        RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, GetRotation, "", "", "")
-        RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, SetSgNode, "", "", "")
-        RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, SetScale, "", "", "")
-        RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, GetScale, "", "", "")
+    RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, SetPosition, "", "", "")
+    RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, GetPosition, "", "", "")
+    RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, SetRotation, "", "", "")
+    RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, GetRotation, "", "", "")
+    RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, SetSgNode, "", "", "")
+    RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, SetScale, "", "", "")
+    RT_CLASS_EXPORT(SgNodeObj, m3d::METHOD, GetScale, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(SgNodeObj);
 
@@ -69,7 +68,7 @@ namespace ai
 
     CStr const& SgNodeObjPrototypeInfo::GetEngineModelName() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_engineModelName;
     }
 
     ai::Obj* SgNodeObjPrototypeInfo::CreateTargetObject() const
@@ -77,9 +76,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    SgNodeObj::SgNodeObj(SgNodeObjPrototypeInfo const&)
+    SgNodeObj::SgNodeObj(SgNodeObjPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_node = 0;
+        m_modelName = prototypeInfo.GetEngineModelName();
+        m_position = ZeroVector;
+        m_rotation = IdentityQuaternion;
+        m_scale = 1.0f;
+        m_needToRelink = 0;
     }
 
     void SgNodeObj::Update(float, unsigned)
@@ -92,9 +96,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void SgNodeObj::SetRotation(Quaternion const&)
+    void SgNodeObj::SetRotation(Quaternion const& rot)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_rotation = rot;
+        if (m_node)
+        {
+            m_node->SetRotation(rot);
+            m_needToRelink = 1;
+        }
     }
 
     void SgNodeObj::Registration()
@@ -105,9 +114,33 @@ namespace ai
         m_propertiesMap["NodeScale"] = 7;
     }
 
-    bool SgNodeObj::SetPropertyById(int, m3d::AIParam const&)
+    bool SgNodeObj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool res = true;
+        switch (propertyId)
+        {
+        case 4:
+            SetPosition(newValue.GetAsVector());
+            break;
+
+        case 5:
+            SetRotation(newValue.GetAsQuaternion());
+            break;
+
+        case 7:
+            SetScale(newValue.GetAsFloat());
+            break;
+
+        case 44:
+            m_modelName = newValue.GetAsStr();
+            SetSgNode();
+            break;
+
+        default:
+            res = Obj::SetPropertyById(propertyId, newValue);
+            break;
+        }
+        return res;
     }
 
     void SgNodeObj::SetSgNode(CStr const&)
@@ -130,9 +163,15 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int SgNodeObj::GetPropertyId(char const*) const
+    int SgNodeObj::GetPropertyId(char const* propName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = SgNodeObj::m_propertiesMap.find(propName);
+        if (it != SgNodeObj::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return Obj::GetPropertyId(propName);
     }
 
     SgNodeObjPrototypeInfo const* SgNodeObj::GetPrototypeInfo() const
@@ -165,9 +204,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void SgNodeObj::SetPosition(CVector const&)
+    void SgNodeObj::SetPosition(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_position = pos;
+        if (m_node)
+        {
+            m_node->SetOriginAbs(pos);
+            m_needToRelink = true;
+        }
     }
 
     float SgNodeObj::GetScale() const
@@ -219,4 +263,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

@@ -118,10 +118,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Barricade::~Barricade()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    Barricade::~Barricade() = default;
 
     bool Barricade::_GetPropertyInternal(int, m3d::AIParam&) const
     {

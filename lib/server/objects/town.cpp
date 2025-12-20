@@ -5,6 +5,8 @@
 #include "team.h"
 #include <stdexcept>
 #include <core/kernel.h>
+#include <server/processmanager.h>
+#include "player.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Town, SpawnCaravanToLocation)
 {
@@ -357,7 +359,10 @@ namespace ai
 
     void Town::_InternalPostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Settlement::_InternalPostLoad();
+        ai::theProcessManager->PostMessageA(2, ai::thePlayer->GetId(), GetId(), 0.0f, {60}, {}, 1);
+        ai::theProcessManager->PostMessageA(2, ai::thePlayer->GetId(), GetId(), 0.0f, {61}, {}, 1);
+        ai::theProcessManager->PostMessageA(2, ai::thePlayer->GetId(), GetId(), 0.0f, {64}, {}, 1);
     }
 
     void Town::RegisterProperty(char const*, int, eGObjPropertySaveStatus)

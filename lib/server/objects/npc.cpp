@@ -266,7 +266,6 @@ namespace ai
 
     void Npc::_InternalPostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Npc::CreateObject()

@@ -204,29 +204,29 @@ namespace ai
     {
         // TODO: generated code
         // Extract time components from milliseconds
-        const int64_t totalMilliseconds = m_milliSeconds;
+        int64_t const totalMilliseconds = m_milliSeconds;
 
         // Constants for time calculations
-        const int64_t MILLISECONDS_PER_YEAR = 32140800000LL;  // 372 * 24 * 60 * 60 * 1000
-        const int64_t MILLISECONDS_PER_MONTH = 2678400000LL;  // 31 * 24 * 60 * 60 * 1000
-        const int64_t MILLISECONDS_PER_DAY = 86400000LL;
-        const int64_t MILLISECONDS_PER_HOUR = 3600000LL;
-        const int64_t MILLISECONDS_PER_MINUTE = 60000LL;
+        int64_t const MILLISECONDS_PER_YEAR = 32140800000LL;  // 372 * 24 * 60 * 60 * 1000
+        int64_t const MILLISECONDS_PER_MONTH = 2678400000LL;  // 31 * 24 * 60 * 60 * 1000
+        int64_t const MILLISECONDS_PER_DAY = 86400000LL;
+        int64_t const MILLISECONDS_PER_HOUR = 3600000LL;
+        int64_t const MILLISECONDS_PER_MINUTE = 60000LL;
 
         // Calculate time components
-        const int year = static_cast<int>(totalMilliseconds / MILLISECONDS_PER_YEAR);
-        const int64_t remainderAfterYears = totalMilliseconds % MILLISECONDS_PER_YEAR;
+        int const year = static_cast<int>(totalMilliseconds / MILLISECONDS_PER_YEAR);
+        int64_t const remainderAfterYears = totalMilliseconds % MILLISECONDS_PER_YEAR;
 
-        const int month = static_cast<int>(remainderAfterYears / MILLISECONDS_PER_MONTH) + 1;
-        const int64_t remainderAfterMonths = remainderAfterYears % MILLISECONDS_PER_MONTH;
+        int const month = static_cast<int>(remainderAfterYears / MILLISECONDS_PER_MONTH) + 1;
+        int64_t const remainderAfterMonths = remainderAfterYears % MILLISECONDS_PER_MONTH;
 
-        const int day = static_cast<int>(remainderAfterMonths / MILLISECONDS_PER_DAY) + 1;
-        const int64_t remainderAfterDays = remainderAfterMonths % MILLISECONDS_PER_DAY;
+        int const day = static_cast<int>(remainderAfterMonths / MILLISECONDS_PER_DAY) + 1;
+        int64_t const remainderAfterDays = remainderAfterMonths % MILLISECONDS_PER_DAY;
 
-        const int hour = static_cast<int>(remainderAfterDays / MILLISECONDS_PER_HOUR);
-        const int64_t remainderAfterHours = remainderAfterDays % MILLISECONDS_PER_HOUR;
+        int const hour = static_cast<int>(remainderAfterDays / MILLISECONDS_PER_HOUR);
+        int64_t const remainderAfterHours = remainderAfterDays % MILLISECONDS_PER_HOUR;
 
-        const int minute = static_cast<int>(remainderAfterHours / MILLISECONDS_PER_MINUTE);
+        int const minute = static_cast<int>(remainderAfterHours / MILLISECONDS_PER_MINUTE);
 
         // Create vector with time components in order: hour, minute, day, month, year
         std::vector<int> timeComponents;
@@ -273,7 +273,8 @@ namespace ai
     void GameTime::setExpanded(int hour, int minute, int day, int month, int year)
     {
         //TODO: check this
-        uint64_t res = (uint64_t)60000 * (uint64_t)(minute + 60 * (uint64_t)(hour + 24 * (uint64_t)(day + 31 * (uint64_t)(month + 12 * year) - 32)));
+        uint64_t res =
+            (uint64_t)60000 * (uint64_t)(minute + 60 * (uint64_t)(hour + 24 * (uint64_t)(day + 31 * (uint64_t)(month + 12 * year) - 32)));
         m_milliSeconds = res;
         m_milliSeconds0 = res;
     }
@@ -316,7 +317,7 @@ namespace ai
         }
 
         Node* prevNode = nullptr;
-        const auto prevId = node.m_prevId;
+        auto const prevId = node.m_prevId;
         if (prevId == -1)
         {
             prevNode = nullptr;
@@ -327,7 +328,7 @@ namespace ai
         }
 
         Node* nextNode = nullptr;
-        const auto nextId = node.m_nextId;
+        auto const nextId = node.m_nextId;
         if (nextId == -1)
         {
             nextNode = nullptr;
@@ -381,8 +382,8 @@ namespace ai
         }
         else
         {
-            auto msg = "Error: maximum objects count exceeded: " + CStr(ObjContainerSize) + " when attempting to add " + pObj->GetDebugDescription() +
-                " to ObjContainer";
+            auto msg = "Error: maximum objects count exceeded: " + CStr(ObjContainerSize) + " when attempting to add " +
+                pObj->GetDebugDescription() + " to ObjContainer";
             M3D_LOG_CRIT(msg);
             ShowCurrentStack();
             theObjects->Dump();
@@ -425,7 +426,7 @@ namespace ai
         if (objId >= 0)
         {
             // TODO: check this
-            const auto& record = m_records[objId & MAX_OBJECTS_MASK];
+            auto const& record = m_records[objId & MAX_OBJECTS_MASK];
             if (objId >> BITS_IN_MAX_OBJECTS == record.m_totalObjects && record.m_isValid)
             {
                 return record.m_value;
@@ -526,14 +527,14 @@ namespace ai
         return (*m_pRecords)[m_nodeId].m_value;
     }
 
-    Obj* ObjContainer::GetEntityByObjName(const CStr& name)
+    Obj* ObjContainer::GetEntityByObjName(CStr const& name)
     {
         if (name.empty())
         {
             return nullptr;
         }
 
-        const auto objId = GetObjIdByObjName(name);
+        auto const objId = GetObjIdByObjName(name);
         if (objId >= 0)
         {
             return m_allObjects.GetObjById(objId);
@@ -547,7 +548,7 @@ namespace ai
         m_inPurge = true;
         m_numRemovalsLastFrame = 0;
 
-        for (const auto objId : m_objIdsToRemove)
+        for (auto const objId : m_objIdsToRemove)
         {
             auto* node = m_allObjects._GetNodeById(objId);
             if (node && node->m_isValid && node->m_value)
@@ -587,14 +588,14 @@ namespace ai
         m_inPurge = false;
         m_objIdsToRemove.clear();
 
-        for (const auto objId : m_objIdsToUpdate)
+        for (auto const objId : m_objIdsToUpdate)
         {
             AddObjToUpdate(GetEntityByObjId(objId));
         }
 
         m_objIdsToUpdate.clear();
 
-        for (const auto objId : m_objIdsToNotUpdate)
+        for (auto const objId : m_objIdsToNotUpdate)
         {
             _SetObjNotUpdating(objId);
         }
@@ -648,7 +649,7 @@ namespace ai
 
     int ObjContainer::CreateNewObjectWithSuspendedPostLoad(int prototypeId, char const* name, int parentId, int belongId)
     {
-        const auto objId = CreateEntityForLoad(prototypeId, name, parentId, -1);
+        auto const objId = CreateEntityForLoad(prototypeId, name, parentId, -1);
         if (objId >= 0)
         {
             auto& node = m_allObjects.m_records[objId & MAX_OBJECTS_MASK];
@@ -726,7 +727,7 @@ namespace ai
             return -1;
         }
 
-        const auto it = m_nameToIdMap.find(name);
+        auto const it = m_nameToIdMap.find(name);
         if (it != m_nameToIdMap.end())
         {
             return it->second;
@@ -773,7 +774,7 @@ namespace ai
     {
         M3D_ASSERT(pObj);
 
-        const auto result = m_allObjects.AddWithOwnObjId(pObj, pObj->GetId());
+        auto const result = m_allObjects.AddWithOwnObjId(pObj, pObj->GetId());
         if (result)
         {
             if (pObj->m_bIsUpdating)
@@ -781,7 +782,7 @@ namespace ai
                 pObj->m_updatingObjId = m_updatingObjects.Add(pObj);
             }
 
-            const CStr name = pObj->GetName();
+            CStr const name = pObj->GetName();
             if (!name.empty())
             {
                 m_nameToIdMap[name] = pObj->GetId();
@@ -983,7 +984,8 @@ namespace ai
         // Update level-specific real time statistic
         CStr levelRealTimeName("RealTime");
         levelRealTimeName += ai::pServer->GetWorld()->m_level->m_levelName;
-        TimeStatistic* levelRealTimeStat = dynamic_cast<ai::TimeStatistic*>(ai::theStatisticManager->GetStatistic(levelRealTimeName, "TimeStatistic"));
+        TimeStatistic* levelRealTimeStat =
+            dynamic_cast<ai::TimeStatistic*>(ai::theStatisticManager->GetStatistic(levelRealTimeName, "TimeStatistic"));
 
         levelRealTimeStat->m_bGlobalFlag = false;
         levelRealTimeStat->IncreaseByMilliseconds(elapsedTime * 1000.0);
@@ -1109,9 +1111,16 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ObjContainer::AddObjToNotUpdate(Obj*)
+    void ObjContainer::AddObjToNotUpdate(Obj* obj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (obj)
+        {
+            if (obj->m_objId != -1)
+            {
+                obj->m_bMustBeUpdating = 0;
+                m_objIdsToNotUpdate.push_back(obj->m_objId);
+            }
+        }
     }
 
     void ObjContainer::PostCollide()
@@ -1154,7 +1163,7 @@ namespace ai
         // TODO: check this
         if (objId >= 0)
         {
-            const auto& node = m_allObjects.m_records[objId & MAX_OBJECTS_MASK];
+            auto const& node = m_allObjects.m_records[objId & MAX_OBJECTS_MASK];
             if (objId >> BITS_IN_MAX_OBJECTS == node.m_totalObjects && node.m_isValid)
             {
                 auto* value = node.m_value;
@@ -1162,7 +1171,7 @@ namespace ai
                 {
                     if (!value->m_bMustBeUpdating && value->m_updatingObjId != -1)
                     {
-                        const auto updatingId = value->m_updatingObjId & MAX_OBJECTS_MASK;
+                        auto const updatingId = value->m_updatingObjId & MAX_OBJECTS_MASK;
                         if (updatingId < m_updatingObjects.m_records.size())
                         {
                             auto& updatingNode = m_updatingObjects.m_records[updatingId];

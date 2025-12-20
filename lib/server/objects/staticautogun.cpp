@@ -1,5 +1,11 @@
 #include "staticautogun.h"
 #include "vehicle.h"
+#include <server/utils.h>
+#include "base/prototypemanager.h"
+#include <ode/objects.h>
+#include <ode/odecpp.h>
+#include "physicbodies/vehiclepart.h"
+#include "server/objects/base/objcontainer.h"
 
 namespace ai
 {
@@ -53,7 +59,7 @@ namespace ai
 
     m3d::Class* StaticAutoGun::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(StaticAutoGun);
     }
 
     NumericInRange<float> const& StaticAutoGun::Health() const
@@ -78,12 +84,18 @@ namespace ai
 
     StaticAutoGunPrototypeInfo const* StaticAutoGun::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), StaticAutoGunPrototypeInfo const);
     }
 
-    int StaticAutoGun::GetPropertyId(char const*) const
+    int StaticAutoGun::GetPropertyId(char const* propName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = StaticAutoGun::m_propertiesMap.find(propName);
+        if (it != StaticAutoGun::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return ComplexPhysicObj::GetPropertyId(propName);
     }
 
     void StaticAutoGun::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -126,9 +138,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void StaticAutoGun::SetPositionSelf(CVector const&)
+    void StaticAutoGun::SetPositionSelf(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::PhysicObj::SetPositionSelf(ai::GetGroundPos(pos, 1, 0));
     }
 
     bool StaticAutoGun::ApplyModifier(Modifier const&)
@@ -178,9 +190,12 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool StaticAutoGun::SetPropertyById(int, m3d::AIParam const&)
+    bool StaticAutoGun::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (propertyId != 26)
+            return ai::PhysicObj::SetPropertyById(propertyId, newValue);
+        m_health.value().SetUnsafe(newValue.GetAsFloat());
+        return 1;
     }
 
     void StaticAutoGun::_InternalPostLoad()
@@ -193,9 +208,22 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void StaticAutoGun::_Construct(bool)
+    CStr const STR_DOT = "DOT";
+
+    void StaticAutoGun::_Construct(bool bForAnimation)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ComplexPhysicObj::_Construct(bForAnimation);
+        for (auto* i = dBodyGetFirstGeom(m_body->id()); i; i = dGeomGetBodyNext(i))
+        {
+            dGeomSetCategoryBits(i, 1u);
+            dGeomSetCollideBits(i, 0xFFFFFFFE);
+        }
+
+        auto* partByName = GetPartByName(STR_DOT);
+        if (partByName)
+        {
+            theObjects->AddObjToNotUpdate(partByName);
+        }
     }
 
     bool StaticAutoGun::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
@@ -203,10 +231,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    StaticAutoGun::~StaticAutoGun()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    StaticAutoGun::~StaticAutoGun() = default;
 
     bool StaticAutoGun::_GetPropertyInternal(int, m3d::AIParam&) const
     {
