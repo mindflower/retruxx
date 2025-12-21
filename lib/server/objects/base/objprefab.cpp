@@ -156,7 +156,8 @@ namespace ai
 
     void ObjPrefab::_InternalPostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::_InternalPostLoad();
+        // TODO: implement ObjPrefab::_InternalPostLoad
     }
 
     ObjPrefab::~ObjPrefab() = default;

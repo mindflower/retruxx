@@ -72,7 +72,8 @@ namespace ai
 
     void WanderersManager::Update(float elapsedTime, unsigned int workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement WanderersManager::Update
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WanderersManager::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -118,7 +119,8 @@ namespace ai
 
     void WanderersManager::_InternalPostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement WanderersManager::_InternalPostLoad
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WanderersManager::_LoadWayPointsFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

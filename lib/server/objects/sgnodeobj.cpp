@@ -2,6 +2,8 @@
 #include "core/ini.h"
 #include "core/aiparam.h"
 #include "scene/nodes/sgnode.h"
+#include "scene/scenegraph.h"
+#include "physicbodies/physicbody.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNodeObj, SetPosition)
 {
@@ -86,9 +88,17 @@ namespace ai
         m_needToRelink = 0;
     }
 
-    void SgNodeObj::Update(float, unsigned)
+    void SgNodeObj::Update(float elapsedTime, unsigned workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::Obj::Update(elapsedTime, workTime);
+        if (m_needToRelink)
+        {
+            if (m_node)
+            {
+                m_node->GetGraph()->RelinkNode(m_node, 1);
+                m_needToRelink = m_node->IsXFormUpdateNeeded();
+            }
+        }
     }
 
     void SgNodeObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
@@ -150,7 +160,20 @@ namespace ai
 
     void SgNodeObj::SetSgNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check and refactor
+        auto* p_m_node = &this->m_node;
+        if (m_node)
+        {
+            m_node->GetGraph()->RemoveNode(m_node);
+            *p_m_node = 0;
+        }
+        if (!m_modelName.empty())
+        {
+            auto* effectNode = ai::PhysicBody::CreateEffectNode(m_modelName, m_position, m_rotation, 0, m_scale);
+            *p_m_node = effectNode;
+            auto me = this;
+            effectNode->SetProperty(4361u, &me);
+        }
     }
 
     m3d::Class* SgNodeObj::GetBaseClass()
@@ -246,7 +269,7 @@ namespace ai
 
     void SgNodeObj::_InternalCreateVisualPart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SgNodeObj::SetSgNode();
     }
 
     SgNodeObj::~SgNodeObj()

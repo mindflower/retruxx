@@ -543,7 +543,10 @@ namespace ai
 
     void Gun::SetInvisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::PhysicBody::SetInvisible();
+        m_bIsFiring = 0;
+        m_timeFromLastShot = 1000.0f;
+        _UpdateNodeFiringAction();
     }
 
     void Gun::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const

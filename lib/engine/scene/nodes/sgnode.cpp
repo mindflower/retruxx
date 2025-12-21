@@ -30,7 +30,7 @@ namespace m3d
     extern CClient* pClient;
 
     RT_CLASS_EXPORTS_BEGIN(SgNode)
-        RT_CLASS_EXPORT(SgNode, m3d::METHOD, GetOrigin, "", "", "")
+    RT_CLASS_EXPORT(SgNode, m3d::METHOD, GetOrigin, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(SgNode);
 
@@ -106,7 +106,7 @@ namespace m3d
 
     bool SgNode::IsXFormUpdateNeeded() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return this->m_isXFormDirty || this->m_isOwnBoundingBoxDirty || this->m_isChildDirty;
     }
 
     int SgNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -285,12 +285,13 @@ namespace m3d
             item = 0;
             if (!IsKindOf(&m3d::SgSoundSourceNode::m_classSgSoundSourceNode))
             {
-                M3D_LOG_INFO("ReadFromXmlNode: GetItemByName for name = " + CStr(idAttr) + " failed for node " + CStr(GetName()) + ". Taking a 0 model.");
+                M3D_LOG_INFO(
+                    "ReadFromXmlNode: GetItemByName for name = " + CStr(idAttr) + " failed for node " + CStr(GetName()) +
+                    ". Taking a 0 model.");
             }
         }
         this->SetProperty(4360u, &item);
         return 1;
-
     }
 
     TransparencyParams& SgNode::GetTransparencyParams()
@@ -366,8 +367,7 @@ namespace m3d
     void SgNode::GetVisCellBounds(PointBase<int>& p0, PointBase<int>& p1) const
     {
         auto v3 = 1.0 / 128.0;
-        p0.x = (int)(float)((float)(this->m_originWorldAbsForSphere.x - this->m_boundingRadius)
-            * (float)(1.0 / 128.0));
+        p0.x = (int)(float)((float)(this->m_originWorldAbsForSphere.x - this->m_boundingRadius) * (float)(1.0 / 128.0));
         p0.y = (int)(float)((float)(this->m_originWorldAbsForSphere.z - this->m_boundingRadius) * v3);
         p1.x = (int)(float)((float)(this->m_boundingRadius + this->m_originWorldAbsForSphere.x) * v3);
         p1.y = (int)(float)((float)(this->m_boundingRadius + this->m_originWorldAbsForSphere.z) * v3);
@@ -423,7 +423,7 @@ namespace m3d
 
         auto v138 = m_isChildDirty;
         ++cntChildUpdates;
-        const bool boxWasDirty = m_isOwnBoundingBoxDirty | (m_isXFormDirty & 1);
+        bool const boxWasDirty = m_isOwnBoundingBoxDirty | (m_isXFormDirty & 1);
         if (boxWasDirty)
         {
             UpdateOwnBoundingBox();
@@ -497,236 +497,235 @@ namespace m3d
             this->m_ownXForm._44 = 1.0;
             parentDirty = true;
         }
-            if (!parentDirty)
+        if (!parentDirty)
+        {
+        }
+        else
+        {
+            v18 = 1.0;
+            m3d::SgNode* m_parent = (m3d::SgNode*)this->GetParent();
+            memcpy(&m_currentXForm, &m_ownXForm, sizeof(this->m_currentXForm));
+
+            if (m_parent)
             {
+                auto _13 = this->m_currentXForm._13;
+                auto _14 = this->m_currentXForm._14;
+                auto _11 = this->m_currentXForm._11;
+                auto _12 = this->m_currentXForm._12;
+                this->m_currentXForm._11 =
+                    (float)((float)((float)(_14 * m_parent->m_currentXForm._41) + (float)(_13 * m_parent->m_currentXForm._31)) +
+                            (float)(m_parent->m_currentXForm._11 * _11)) +
+                    (float)(m_parent->m_currentXForm._21 * _12);
+                this->m_currentXForm._12 =
+                    (float)((float)((float)(_11 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _14)) +
+                            (float)(m_parent->m_currentXForm._32 * _13)) +
+                    (float)(_12 * m_parent->m_currentXForm._22);
+                this->m_currentXForm._13 =
+                    (float)((float)((float)(m_parent->m_currentXForm._23 * _12) + (float)(_11 * m_parent->m_currentXForm._13)) +
+                            (float)(m_parent->m_currentXForm._43 * _14)) +
+                    (float)(m_parent->m_currentXForm._33 * _13);
+                auto v24 = (float)(_14 * m_parent->m_currentXForm._44) + (float)(_13 * m_parent->m_currentXForm._34);
+                auto v25 = m_parent->m_currentXForm._14 * _11;
+                auto v26 = this->m_currentXForm._21;
+                auto v27 = v24 + v25;
+                auto v28 = m_parent->m_currentXForm._24 * _12;
+                auto _22 = this->m_currentXForm._22;
+                auto v30 = v27 + v28;
+                auto _23 = this->m_currentXForm._23;
+                this->m_currentXForm._14 = v30;
+                auto _24 = this->m_currentXForm._24;
+                this->m_currentXForm._21 =
+                    (float)((float)((float)(_24 * m_parent->m_currentXForm._41) + (float)(_23 * m_parent->m_currentXForm._31)) +
+                            (float)(m_parent->m_currentXForm._11 * v26)) +
+                    (float)(m_parent->m_currentXForm._21 * _22);
+                this->m_currentXForm._22 =
+                    (float)((float)((float)(v26 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _24)) +
+                            (float)(m_parent->m_currentXForm._32 * _23)) +
+                    (float)(_22 * m_parent->m_currentXForm._22);
+                this->m_currentXForm._23 =
+                    (float)((float)((float)(m_parent->m_currentXForm._23 * _22) + (float)(v26 * m_parent->m_currentXForm._13)) +
+                            (float)(m_parent->m_currentXForm._43 * _24)) +
+                    (float)(m_parent->m_currentXForm._33 * _23);
+                auto v33 = (float)(_24 * m_parent->m_currentXForm._44) + (float)(_23 * m_parent->m_currentXForm._34);
+                auto v34 = m_parent->m_currentXForm._14 * v26;
+                auto _31 = this->m_currentXForm._31;
+                auto v36 = v33 + v34;
+                auto v37 = m_parent->m_currentXForm._24 * _22;
+                auto _32 = this->m_currentXForm._32;
+                auto v39 = v36 + v37;
+                auto _33 = this->m_currentXForm._33;
+                this->m_currentXForm._24 = v39;
+                auto _34 = this->m_currentXForm._34;
+                this->m_currentXForm._31 =
+                    (float)((float)((float)(_34 * m_parent->m_currentXForm._41) + (float)(_33 * m_parent->m_currentXForm._31)) +
+                            (float)(m_parent->m_currentXForm._11 * _31)) +
+                    (float)(m_parent->m_currentXForm._21 * _32);
+                this->m_currentXForm._32 =
+                    (float)((float)((float)(_31 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _34)) +
+                            (float)(m_parent->m_currentXForm._32 * _33)) +
+                    (float)(_32 * m_parent->m_currentXForm._22);
+                this->m_currentXForm._33 =
+                    (float)((float)((float)(m_parent->m_currentXForm._23 * _32) + (float)(_31 * m_parent->m_currentXForm._13)) +
+                            (float)(m_parent->m_currentXForm._43 * _34)) +
+                    (float)(m_parent->m_currentXForm._33 * _33);
+                auto v42 = (float)(_34 * m_parent->m_currentXForm._44) + (float)(_33 * m_parent->m_currentXForm._34);
+                auto v43 = m_parent->m_currentXForm._14 * _31;
+                auto _41 = this->m_currentXForm._41;
+                auto v45 = v42 + v43;
+                auto v46 = m_parent->m_currentXForm._24 * _32;
+                auto _42 = this->m_currentXForm._42;
+                auto v48 = v45 + v46;
+                auto _43 = this->m_currentXForm._43;
+                this->m_currentXForm._34 = v48;
+                auto _44 = this->m_currentXForm._44;
+                this->m_currentXForm._41 =
+                    (float)((float)((float)(_44 * m_parent->m_currentXForm._41) + (float)(_43 * m_parent->m_currentXForm._31)) +
+                            (float)(m_parent->m_currentXForm._11 * _41)) +
+                    (float)(m_parent->m_currentXForm._21 * _42);
+                this->m_currentXForm._42 =
+                    (float)((float)((float)(_41 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _44)) +
+                            (float)(m_parent->m_currentXForm._32 * _43)) +
+                    (float)(_42 * m_parent->m_currentXForm._22);
+                this->m_currentXForm._43 =
+                    (float)((float)((float)(m_parent->m_currentXForm._23 * _42) + (float)(_41 * m_parent->m_currentXForm._13)) +
+                            (float)(m_parent->m_currentXForm._43 * _44)) +
+                    (float)(m_parent->m_currentXForm._33 * _43);
+                this->m_currentXForm._44 =
+                    (float)((float)((float)(_44 * m_parent->m_currentXForm._44) + (float)(_43 * m_parent->m_currentXForm._34)) +
+                            (float)(m_parent->m_currentXForm._14 * _41)) +
+                    (float)(m_parent->m_currentXForm._24 * _42);
+            }
+
+            auto v51 = this->m_currentXForm._42;
+            auto v52 = this->m_currentXForm._43;
+            auto v134 = this->m_currentXForm._41;
+            this->m_currentWorldOrigin.x = v134;
+            auto v135 = v51;
+            this->m_currentWorldOrigin.y = v51;
+            auto v136 = v52;
+            this->m_currentWorldOrigin.z = v52;
+
+            if (m_parent && m_parent->m_isRootNode)
+            {
+                this->m_currentWorldRotation.x = this->m_rotation.x;
+                this->m_currentWorldRotation.y = this->m_rotation.y;
+                auto w = this->m_rotation.w;
+                this->m_currentWorldRotation.z = this->m_rotation.z;
+                this->m_currentWorldRotation.w = w;
             }
             else
             {
-                v18 = 1.0;
-                m3d::SgNode* m_parent = (m3d::SgNode*)this->GetParent();
-                memcpy(&m_currentXForm, &m_ownXForm, sizeof(this->m_currentXForm));
+                CMatrix unScale;
+                unScale.zero();
 
-                if (m_parent)
+                CMatrix rt;
+                auto v54 = v18 / this->m_scaling.x;
+                rt._11 =
+                    (float)((float)((float)(unScale._21 * this->m_currentXForm._12) + (float)(unScale._31 * this->m_currentXForm._13)) +
+                            (float)(unScale._41 * this->m_currentXForm._14)) +
+                    (float)(this->m_currentXForm._11 * v54);
+                auto v55 = v18 / this->m_scaling.y;
+                auto v56 = v18 / this->m_scaling.z;
+                rt._12 = (float)((float)((float)(unScale._32 * this->m_currentXForm._13) + (float)(v55 * this->m_currentXForm._12)) +
+                                 (float)(unScale._42 * this->m_currentXForm._14)) +
+                    (float)(unScale._12 * this->m_currentXForm._11);
+                auto v57 = unScale._24 * this->m_currentXForm._12;
+                rt._13 = (float)((float)((float)(unScale._23 * this->m_currentXForm._12) + (float)(v56 * this->m_currentXForm._13)) +
+                                 (float)(unScale._43 * this->m_currentXForm._14)) +
+                    (float)(unScale._13 * this->m_currentXForm._11);
+                auto v58 = unScale._31 * this->m_currentXForm._23;
+                rt._14 = (float)((float)(v57 + (float)(unScale._34 * this->m_currentXForm._13)) +
+                                 (float)(unScale._14 * this->m_currentXForm._11)) +
+                    this->m_currentXForm._14;
+                auto v59 =
+                    (float)((float)((float)(v54 * this->m_currentXForm._21) + v58) + (float)(unScale._21 * this->m_currentXForm._22)) +
+                    (float)(unScale._41 * this->m_currentXForm._24);
+                auto v60 = unScale._12 * this->m_currentXForm._21;
+                rt._21 = v59;
+                rt._22 = (float)((float)((float)(unScale._32 * this->m_currentXForm._23) + v60) +
+                                 (float)(unScale._42 * this->m_currentXForm._24)) +
+                    (float)(v55 * this->m_currentXForm._22);
+                auto v61 = unScale._14 * this->m_currentXForm._21;
+                rt._23 = (float)((float)((float)(v56 * this->m_currentXForm._23) + (float)(unScale._13 * this->m_currentXForm._21)) +
+                                 (float)(unScale._23 * this->m_currentXForm._22)) +
+                    (float)(unScale._43 * this->m_currentXForm._24);
+                auto v62 = (float)((float)((float)(unScale._34 * this->m_currentXForm._23) + v61) +
+                                   (float)(unScale._24 * this->m_currentXForm._22)) +
+                    this->m_currentXForm._24;
+                auto v63 = unScale._31 * this->m_currentXForm._33;
+                rt._24 = v62;
+                auto v64 =
+                    (float)((float)((float)(v54 * this->m_currentXForm._31) + v63) + (float)(unScale._21 * this->m_currentXForm._32)) +
+                    (float)(unScale._41 * this->m_currentXForm._34);
+                auto v65 = unScale._12 * this->m_currentXForm._31;
+                rt._31 = v64;
+                auto v66 = v54 * this->m_currentXForm._41;
+                auto v67 = unScale._21 * this->m_currentXForm._42;
+                auto v68 = unScale._32 * this->m_currentXForm._43;
+                auto v69 = (float)((float)((float)(unScale._32 * this->m_currentXForm._33) + v65) +
+                                   (float)(unScale._42 * this->m_currentXForm._34)) +
+                    (float)(v55 * this->m_currentXForm._32);
+                auto v70 = unScale._13 * this->m_currentXForm._31;
+                rt._32 = v69;
+                auto v71 =
+                    (float)((float)((float)(v56 * this->m_currentXForm._33) + v70) + (float)(unScale._23 * this->m_currentXForm._32)) +
+                    (float)(unScale._43 * this->m_currentXForm._34);
+                auto v72 = unScale._14 * this->m_currentXForm._31;
+                rt._33 = v71;
+                rt._34 = (float)((float)((float)(unScale._34 * this->m_currentXForm._33) + v72) +
+                                 (float)(unScale._24 * this->m_currentXForm._32)) +
+                    this->m_currentXForm._34;
+                rt._41 = (float)((float)(v66 + (float)(unScale._31 * this->m_currentXForm._43)) + v67) +
+                    (float)(unScale._41 * this->m_currentXForm._44);
+                auto v73 = (float)((float)((float)(v56 * this->m_currentXForm._43) + (float)(unScale._13 * this->m_currentXForm._41)) +
+                                   (float)(unScale._23 * this->m_currentXForm._42)) +
+                    (float)(unScale._43 * this->m_currentXForm._44);
+                auto v74 =
+                    (float)((float)((float)(unScale._34 * this->m_currentXForm._43) + (float)(unScale._14 * this->m_currentXForm._41)) +
+                            (float)(unScale._24 * this->m_currentXForm._42)) +
+                    this->m_currentXForm._44;
+                rt._42 = (float)((float)(v68 + (float)(unScale._12 * this->m_currentXForm._41)) +
+                                 (float)(unScale._42 * this->m_currentXForm._44)) +
+                    (float)(v55 * this->m_currentXForm._42);
+
+                // TODO: check order
+                rt._43 = v74;
+                rt._44 = v73;
+
+                unScale = rt;
+                auto p_m_currentWorldRotation = &this->m_currentWorldRotation;
+                m_currentWorldRotation.FromMatrix(unScale);
+                auto x = (float)((float)((float)(p_m_currentWorldRotation->x * p_m_currentWorldRotation->x) +
+                                         (float)(this->m_currentWorldRotation.y * this->m_currentWorldRotation.y)) +
+                                 (float)(this->m_currentWorldRotation.z * this->m_currentWorldRotation.z)) +
+                    (float)(this->m_currentWorldRotation.w * this->m_currentWorldRotation.w);
+                if (x <= 0.0)
                 {
-                    auto _13 = this->m_currentXForm._13;
-                    auto _14 = this->m_currentXForm._14;
-                    auto _11 = this->m_currentXForm._11;
-                    auto _12 = this->m_currentXForm._12;
-                    this->m_currentXForm._11 = (float)((float)((float)(_14 * m_parent->m_currentXForm._41)
-                                                               + (float)(_13 * m_parent->m_currentXForm._31))
-                                                       + (float)(m_parent->m_currentXForm._11 * _11))
-                        + (float)(m_parent->m_currentXForm._21 * _12);
-                    this->m_currentXForm._12 = (float)((float)((float)(_11 * m_parent->m_currentXForm._12)
-                                                               + (float)(m_parent->m_currentXForm._42 * _14))
-                                                       + (float)(m_parent->m_currentXForm._32 * _13))
-                        + (float)(_12 * m_parent->m_currentXForm._22);
-                    this->m_currentXForm._13 = (float)((float)((float)(m_parent->m_currentXForm._23 * _12)
-                                                               + (float)(_11 * m_parent->m_currentXForm._13))
-                                                       + (float)(m_parent->m_currentXForm._43 * _14))
-                        + (float)(m_parent->m_currentXForm._33 * _13);
-                    auto v24 = (float)(_14 * m_parent->m_currentXForm._44) + (float)(_13 * m_parent->m_currentXForm._34);
-                    auto v25 = m_parent->m_currentXForm._14 * _11;
-                    auto v26 = this->m_currentXForm._21;
-                    auto v27 = v24 + v25;
-                    auto v28 = m_parent->m_currentXForm._24 * _12;
-                    auto _22 = this->m_currentXForm._22;
-                    auto v30 = v27 + v28;
-                    auto _23 = this->m_currentXForm._23;
-                    this->m_currentXForm._14 = v30;
-                    auto _24 = this->m_currentXForm._24;
-                    this->m_currentXForm._21 = (float)((float)((float)(_24 * m_parent->m_currentXForm._41)
-                                                               + (float)(_23 * m_parent->m_currentXForm._31))
-                                                       + (float)(m_parent->m_currentXForm._11 * v26))
-                        + (float)(m_parent->m_currentXForm._21 * _22);
-                    this->m_currentXForm._22 = (float)((float)((float)(v26 * m_parent->m_currentXForm._12)
-                                                               + (float)(m_parent->m_currentXForm._42 * _24))
-                                                       + (float)(m_parent->m_currentXForm._32 * _23))
-                        + (float)(_22 * m_parent->m_currentXForm._22);
-                    this->m_currentXForm._23 = (float)((float)((float)(m_parent->m_currentXForm._23 * _22)
-                                                               + (float)(v26 * m_parent->m_currentXForm._13))
-                                                       + (float)(m_parent->m_currentXForm._43 * _24))
-                        + (float)(m_parent->m_currentXForm._33 * _23);
-                    auto v33 = (float)(_24 * m_parent->m_currentXForm._44) + (float)(_23 * m_parent->m_currentXForm._34);
-                    auto v34 = m_parent->m_currentXForm._14 * v26;
-                    auto _31 = this->m_currentXForm._31;
-                    auto v36 = v33 + v34;
-                    auto v37 = m_parent->m_currentXForm._24 * _22;
-                    auto _32 = this->m_currentXForm._32;
-                    auto v39 = v36 + v37;
-                    auto _33 = this->m_currentXForm._33;
-                    this->m_currentXForm._24 = v39;
-                    auto _34 = this->m_currentXForm._34;
-                    this->m_currentXForm._31 = (float)((float)((float)(_34 * m_parent->m_currentXForm._41)
-                                                               + (float)(_33 * m_parent->m_currentXForm._31))
-                                                       + (float)(m_parent->m_currentXForm._11 * _31))
-                        + (float)(m_parent->m_currentXForm._21 * _32);
-                    this->m_currentXForm._32 = (float)((float)((float)(_31 * m_parent->m_currentXForm._12)
-                                                               + (float)(m_parent->m_currentXForm._42 * _34))
-                                                       + (float)(m_parent->m_currentXForm._32 * _33))
-                        + (float)(_32 * m_parent->m_currentXForm._22);
-                    this->m_currentXForm._33 = (float)((float)((float)(m_parent->m_currentXForm._23 * _32)
-                                                               + (float)(_31 * m_parent->m_currentXForm._13))
-                                                       + (float)(m_parent->m_currentXForm._43 * _34))
-                        + (float)(m_parent->m_currentXForm._33 * _33);
-                    auto v42 = (float)(_34 * m_parent->m_currentXForm._44) + (float)(_33 * m_parent->m_currentXForm._34);
-                    auto v43 = m_parent->m_currentXForm._14 * _31;
-                    auto _41 = this->m_currentXForm._41;
-                    auto v45 = v42 + v43;
-                    auto v46 = m_parent->m_currentXForm._24 * _32;
-                    auto _42 = this->m_currentXForm._42;
-                    auto v48 = v45 + v46;
-                    auto _43 = this->m_currentXForm._43;
-                    this->m_currentXForm._34 = v48;
-                    auto _44 = this->m_currentXForm._44;
-                    this->m_currentXForm._41 = (float)((float)((float)(_44 * m_parent->m_currentXForm._41)
-                                                               + (float)(_43 * m_parent->m_currentXForm._31))
-                                                       + (float)(m_parent->m_currentXForm._11 * _41))
-                        + (float)(m_parent->m_currentXForm._21 * _42);
-                    this->m_currentXForm._42 = (float)((float)((float)(_41 * m_parent->m_currentXForm._12)
-                                                               + (float)(m_parent->m_currentXForm._42 * _44))
-                                                       + (float)(m_parent->m_currentXForm._32 * _43))
-                        + (float)(_42 * m_parent->m_currentXForm._22);
-                    this->m_currentXForm._43 = (float)((float)((float)(m_parent->m_currentXForm._23 * _42)
-                                                               + (float)(_41 * m_parent->m_currentXForm._13))
-                                                       + (float)(m_parent->m_currentXForm._43 * _44))
-                        + (float)(m_parent->m_currentXForm._33 * _43);
-                    this->m_currentXForm._44 = (float)((float)((float)(_44 * m_parent->m_currentXForm._44)
-                                                               + (float)(_43 * m_parent->m_currentXForm._34))
-                                                       + (float)(m_parent->m_currentXForm._14 * _41))
-                        + (float)(m_parent->m_currentXForm._24 * _42);
-                }
-
-                auto v51 = this->m_currentXForm._42;
-                auto v52 = this->m_currentXForm._43;
-                auto v134 = this->m_currentXForm._41;
-                this->m_currentWorldOrigin.x = v134;
-                auto v135 = v51;
-                this->m_currentWorldOrigin.y = v51;
-                auto v136 = v52;
-                this->m_currentWorldOrigin.z = v52;
-
-                if (m_parent && m_parent->m_isRootNode)
-                {
-                    this->m_currentWorldRotation.x = this->m_rotation.x;
-                    this->m_currentWorldRotation.y = this->m_rotation.y;
-                    auto w = this->m_rotation.w;
-                    this->m_currentWorldRotation.z = this->m_rotation.z;
-                    this->m_currentWorldRotation.w = w;
+                    p_m_currentWorldRotation->x = 0.0;
+                    this->m_currentWorldRotation.y = 0.0;
+                    this->m_currentWorldRotation.z = 0.0;
+                    this->m_currentWorldRotation.w = 1.0;
                 }
                 else
                 {
-                    CMatrix unScale;
-                    unScale.zero();
-
-                    CMatrix rt;
-                    auto v54 = v18 / this->m_scaling.x;
-                    rt._11 = (float)((float)((float)(unScale._21 * this->m_currentXForm._12)
-                                             + (float)(unScale._31 * this->m_currentXForm._13))
-                                     + (float)(unScale._41 * this->m_currentXForm._14))
-                        + (float)(this->m_currentXForm._11 * v54);
-                    auto v55 = v18 / this->m_scaling.y;
-                    auto v56 = v18 / this->m_scaling.z;
-                    rt._12 = (float)((float)((float)(unScale._32 * this->m_currentXForm._13) + (float)(v55 * this->m_currentXForm._12))
-                                     + (float)(unScale._42 * this->m_currentXForm._14))
-                        + (float)(unScale._12 * this->m_currentXForm._11);
-                    auto v57 = unScale._24 * this->m_currentXForm._12;
-                    rt._13 = (float)((float)((float)(unScale._23 * this->m_currentXForm._12) + (float)(v56 * this->m_currentXForm._13))
-                                     + (float)(unScale._43 * this->m_currentXForm._14))
-                        + (float)(unScale._13 * this->m_currentXForm._11);
-                    auto v58 = unScale._31 * this->m_currentXForm._23;
-                    rt._14 = (float)((float)(v57 + (float)(unScale._34 * this->m_currentXForm._13))
-                                     + (float)(unScale._14 * this->m_currentXForm._11))
-                        + this->m_currentXForm._14;
-                    auto v59 = (float)((float)((float)(v54 * this->m_currentXForm._21) + v58)
-                                  + (float)(unScale._21 * this->m_currentXForm._22))
-                        + (float)(unScale._41 * this->m_currentXForm._24);
-                    auto v60 = unScale._12 * this->m_currentXForm._21;
-                    rt._21 = v59;
-                    rt._22 = (float)((float)((float)(unScale._32 * this->m_currentXForm._23) + v60)
-                                     + (float)(unScale._42 * this->m_currentXForm._24))
-                        + (float)(v55 * this->m_currentXForm._22);
-                    auto v61 = unScale._14 * this->m_currentXForm._21;
-                    rt._23 = (float)((float)((float)(v56 * this->m_currentXForm._23) + (float)(unScale._13 * this->m_currentXForm._21))
-                                     + (float)(unScale._23 * this->m_currentXForm._22))
-                        + (float)(unScale._43 * this->m_currentXForm._24);
-                    auto v62 = (float)((float)((float)(unScale._34 * this->m_currentXForm._23) + v61)
-                                  + (float)(unScale._24 * this->m_currentXForm._22))
-                        + this->m_currentXForm._24;
-                    auto v63 = unScale._31 * this->m_currentXForm._33;
-                    rt._24 = v62;
-                    auto v64 = (float)((float)((float)(v54 * this->m_currentXForm._31) + v63)
-                                  + (float)(unScale._21 * this->m_currentXForm._32))
-                        + (float)(unScale._41 * this->m_currentXForm._34);
-                    auto v65 = unScale._12 * this->m_currentXForm._31;
-                    rt._31 = v64;
-                    auto v66 = v54 * this->m_currentXForm._41;
-                    auto v67 = unScale._21 * this->m_currentXForm._42;
-                    auto v68 = unScale._32 * this->m_currentXForm._43;
-                    auto v69 = (float)((float)((float)(unScale._32 * this->m_currentXForm._33) + v65)
-                                  + (float)(unScale._42 * this->m_currentXForm._34))
-                        + (float)(v55 * this->m_currentXForm._32);
-                    auto v70 = unScale._13 * this->m_currentXForm._31;
-                    rt._32 = v69;
-                    auto v71 = (float)((float)((float)(v56 * this->m_currentXForm._33) + v70)
-                                  + (float)(unScale._23 * this->m_currentXForm._32))
-                        + (float)(unScale._43 * this->m_currentXForm._34);
-                    auto v72 = unScale._14 * this->m_currentXForm._31;
-                    rt._33 = v71;
-                    rt._34 = (float)((float)((float)(unScale._34 * this->m_currentXForm._33) + v72)
-                                     + (float)(unScale._24 * this->m_currentXForm._32))
-                        + this->m_currentXForm._34;
-                    rt._41 = (float)((float)(v66 + (float)(unScale._31 * this->m_currentXForm._43)) + v67)
-                        + (float)(unScale._41 * this->m_currentXForm._44);
-                    auto v73 = (float)((float)((float)(v56 * this->m_currentXForm._43)
-                                                    + (float)(unScale._13 * this->m_currentXForm._41))
-                                            + (float)(unScale._23 * this->m_currentXForm._42))
-                        + (float)(unScale._43 * this->m_currentXForm._44);
-                    auto v74 = (float)((float)((float)(unScale._34 * this->m_currentXForm._43)
-                                                    + (float)(unScale._14 * this->m_currentXForm._41))
-                                            + (float)(unScale._24 * this->m_currentXForm._42))
-                        + this->m_currentXForm._44;
-                    rt._42 = (float)((float)(v68 + (float)(unScale._12 * this->m_currentXForm._41))
-                                     + (float)(unScale._42 * this->m_currentXForm._44))
-                        + (float)(v55 * this->m_currentXForm._42);
-
-                    // TODO: check order
-                    rt._43 = v74;
-                    rt._44 = v73;
-
-
-                    unScale = rt;
-                    auto p_m_currentWorldRotation = &this->m_currentWorldRotation;
-                    m_currentWorldRotation.FromMatrix(unScale);
-                    auto x = (float)((float)((float)(p_m_currentWorldRotation->x * p_m_currentWorldRotation->x)
-                                        + (float)(this->m_currentWorldRotation.y * this->m_currentWorldRotation.y))
-                                + (float)(this->m_currentWorldRotation.z * this->m_currentWorldRotation.z))
-                        + (float)(this->m_currentWorldRotation.w * this->m_currentWorldRotation.w);
-                    if (x <= 0.0)
-                    {
-                        p_m_currentWorldRotation->x = 0.0;
-                        this->m_currentWorldRotation.y = 0.0;
-                        this->m_currentWorldRotation.z = 0.0;
-                        this->m_currentWorldRotation.w = 1.0;
-                    }
-                    else
-                    {
-                        auto v76 = 1.0 / sqrt(x);
-                        p_m_currentWorldRotation->x = v76 * p_m_currentWorldRotation->x;
-                        this->m_currentWorldRotation.y = v76 * this->m_currentWorldRotation.y;
-                        this->m_currentWorldRotation.z = v76 * this->m_currentWorldRotation.z;
-                        this->m_currentWorldRotation.w = v76 * this->m_currentWorldRotation.w;
-                    }
+                    auto v76 = 1.0 / sqrt(x);
+                    p_m_currentWorldRotation->x = v76 * p_m_currentWorldRotation->x;
+                    this->m_currentWorldRotation.y = v76 * this->m_currentWorldRotation.y;
+                    this->m_currentWorldRotation.z = v76 * this->m_currentWorldRotation.z;
+                    this->m_currentWorldRotation.w = v76 * this->m_currentWorldRotation.w;
                 }
-
-                m3d::pClient->GetWorld().GetLandscape().UpdateNodeCollisionGeoms(this);
             }
+
+            m3d::pClient->GetWorld().GetLandscape().UpdateNodeCollisionGeoms(this);
+        }
 
         if (onlyVis)
         {
             if (parentDirty || this->m_isChildDirty)
             {
                 this->m_isChildDirty = 0;
-                for (m3d::SgNode* firstChild = (m3d::SgNode*)this->GetFirstChild(); firstChild; firstChild = (m3d::SgNode*)firstChild->GetNextSibling())
+                for (m3d::SgNode* firstChild = (m3d::SgNode*)this->GetFirstChild(); firstChild;
+                     firstChild = (m3d::SgNode*)firstChild->GetNextSibling())
                 {
                     ++cntUpdateNeededChecks;
                     firstChild->UpdateXForm(onlyVis, parentDirty);
@@ -735,7 +734,8 @@ namespace m3d
         }
         else
         {
-            for (m3d::SgNode* firstChild = (m3d::SgNode*)this->GetFirstChild(); firstChild; firstChild = (m3d::SgNode*)firstChild->GetNextSibling())
+            for (m3d::SgNode* firstChild = (m3d::SgNode*)this->GetFirstChild(); firstChild;
+                 firstChild = (m3d::SgNode*)firstChild->GetNextSibling())
             {
                 firstChild->UpdateXForm(false, parentDirty);
             }
@@ -755,8 +755,8 @@ namespace m3d
             {
                 for (m3d::SgNode* j = (m3d::SgNode*)this->GetFirstChild(); j; j = (m3d::SgNode*)j->GetNextSibling())
                 {
-                    if (j->GetClass() != &m3d::SgSoundSourceNode::m_classSgSoundSourceNode
-                        && j->GetClass() != &m3d::SgSpriteNode::m_classSgSpriteNode)
+                    if (j->GetClass() != &m3d::SgSoundSourceNode::m_classSgSoundSourceNode &&
+                        j->GetClass() != &m3d::SgSpriteNode::m_classSgSpriteNode)
                     {
                         Aabb box;
                         auto v82 = j->m_boundingBox.m_box[1];
@@ -790,11 +790,8 @@ namespace m3d
             origin.x = this->m_boundingBox.m_box[3] - this->m_boundingBox.m_box[0];
             origin.z = v91 - v90;
             origin.y = v93 - v92;
-            this->m_boundingRadius = sqrt(
-                origin.x * origin.x
-                + (float)(v91 - v90) * (float)(v91 - v90)
-                + (float)(v93 - v92) * (float)(v93 - v92))
-                * 0.5;
+            this->m_boundingRadius =
+                sqrt(origin.x * origin.x + (float)(v91 - v90) * (float)(v91 - v90) + (float)(v93 - v92) * (float)(v93 - v92)) * 0.5;
         }
 
         auto v94 = this->m_boundingBox.m_box[5];
@@ -824,17 +821,16 @@ namespace m3d
         rt._31 = (float)(v105 + v103) * 2.0;
         rt._22 = 1.0 - (float)((float)((float)(v104 * v104) + y) * 2.0);
         rt._23 = (float)(v101 + x) * 2.0;
-        auto v108 = (float)((float)((float)((float)(1.0 - (float)((float)((float)(v104 * v104) + v107) * 2.0)) * origin.x)
-                               + (float)(origin.z * rt._31))
-                       + (float)(origin.y * rt._21))
-            + this->m_currentWorldOrigin.x;
-        auto v109 = (float)((float)((float)((float)(v103 - v105) * 2.0) * origin.x)
-                       + (float)(origin.z * (float)(1.0 - (float)((float)(v107 + y) * 2.0))))
-            + (float)(origin.y * rt._23);
-        auto v135 = this->m_currentWorldOrigin.y
-            + (float)((float)((float)((float)((float)(v99 + v142) * 2.0) * origin.x)
-                              + (float)(origin.z * (float)((float)(x - v101) * 2.0)))
-                      + (float)(origin.y * rt._22));
+        auto v108 = (float)((float)((float)((float)(1.0 - (float)((float)((float)(v104 * v104) + v107) * 2.0)) * origin.x) +
+                                    (float)(origin.z * rt._31)) +
+                            (float)(origin.y * rt._21)) +
+            this->m_currentWorldOrigin.x;
+        auto v109 = (float)((float)((float)((float)(v103 - v105) * 2.0) * origin.x) +
+                            (float)(origin.z * (float)(1.0 - (float)((float)(v107 + y) * 2.0)))) +
+            (float)(origin.y * rt._23);
+        auto v135 = this->m_currentWorldOrigin.y +
+            (float)((float)((float)((float)((float)(v99 + v142) * 2.0) * origin.x) + (float)(origin.z * (float)((float)(x - v101) * 2.0))) +
+                    (float)(origin.y * rt._22));
         auto v110 = this->m_currentWorldOrigin.z;
         auto v111 = v135;
         auto v134 = v108;
@@ -892,10 +888,8 @@ namespace m3d
         PointBase<int> p0;
         PointBase<int> p1;
         m3d::SgNode::GetVisCellBounds(p0, p1);
-        return p0.x != m_forGraph->m_cellsCoveredPoint0.x
-            || p0.y != m_forGraph->m_cellsCoveredPoint0.y
-            || p1.x != m_forGraph->m_cellsCoveredPoint1.x
-            || p1.y != m_forGraph->m_cellsCoveredPoint1.y;
+        return p0.x != m_forGraph->m_cellsCoveredPoint0.x || p0.y != m_forGraph->m_cellsCoveredPoint0.y ||
+            p1.x != m_forGraph->m_cellsCoveredPoint1.x || p1.y != m_forGraph->m_cellsCoveredPoint1.y;
     }
 
     int SgNode::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* node)
@@ -985,7 +979,9 @@ namespace m3d
                 // Immediate deletion case
                 if (child->m_isInRemoveIfFree)
                 {
-                    M3D_LOG_WARN("Warning: deleting node which is in RemoveIfFree, name = '" + CStr(child->GetName()) + ", parent name = '" + CStr(GetName()) + "'");
+                    M3D_LOG_WARN(
+                        "Warning: deleting node which is in RemoveIfFree, name = '" + CStr(child->GetName()) + ", parent name = '" +
+                        CStr(GetName()) + "'");
                 }
                 // TODO: check this DecRef
                 delete child;  // Calls child's destructor
@@ -993,55 +989,56 @@ namespace m3d
             else
             {
                 // Re-parent child to scene graph root
-  
-                    // Add to think list
-                    sceneGraph.LinkThinkNode(child);
-                    child->m_initedWithRitual = static_cast<Ritual>(child->m_initedWithRitual | 1u);
 
-                    // Re-parent to scene graph root
-                    sceneGraph.GetRootNode()->AddChild(child);
-                    sceneGraph.InsertInUpdateXFormList(child);
+                // Add to think list
+                sceneGraph.LinkThinkNode(child);
+                child->m_initedWithRitual = static_cast<Ritual>(child->m_initedWithRitual | 1u);
 
-                    // Preserve world transform
-                    child->SetOriginAbs(child->m_currentWorldOrigin);
-                    child->SetRotation(child->m_currentWorldRotation);
+                // Re-parent to scene graph root
+                sceneGraph.GetRootNode()->AddChild(child);
+                sceneGraph.InsertInUpdateXFormList(child);
 
-                    // Link node into scene graph
-                    sceneGraph.LinkNode(child);
+                // Preserve world transform
+                child->SetOriginAbs(child->m_currentWorldOrigin);
+                child->SetRotation(child->m_currentWorldRotation);
 
-                    // Process child hierarchy using stack
-                    std::vector<SgNode*> stack;
-                    stack.push_back(child);
+                // Link node into scene graph
+                sceneGraph.LinkNode(child);
 
-                    while (!stack.empty())
+                // Process child hierarchy using stack
+                std::vector<SgNode*> stack;
+                stack.push_back(child);
+
+                while (!stack.empty())
+                {
+                    SgNode* current = stack.back();
+                    stack.pop_back();
+
+                    // Process all children of current node
+                    SgNode* grandChild = static_cast<SgNode*>(current->GetFirstChild());
+                    while (grandChild)
                     {
-                        SgNode* current = stack.back();
-                        stack.pop_back();
+                        grandChild->CanBeFree();
 
-                        // Process all children of current node
-                        SgNode* grandChild = static_cast<SgNode*>(current->GetFirstChild());
-                        while (grandChild)
+                        // If grandchild has children, add to stack for processing
+                        if (grandChild->GetFirstChild())
                         {
-                            grandChild->CanBeFree();
-
-                            // If grandchild has children, add to stack for processing
-                            if (grandChild->GetFirstChild())
-                            {
-                                stack.push_back(grandChild);
-                            }
-
-                            grandChild = static_cast<SgNode*>(grandChild->GetNextSibling());
+                            stack.push_back(grandChild);
                         }
-                    }
 
-                    // Schedule for deferred removal
-                    sceneGraph.InsertInRemoveIfFree(child);
-
-                    if (m_isInRemoveIfFree)
-                    {
-                        M3D_LOG_WARN(
-                            "Adding child in RemoveIfFree in destructor, child name = '" + CStr(child->GetName()) + ", parent name = '" + CStr(GetName()) + "'");
+                        grandChild = static_cast<SgNode*>(grandChild->GetNextSibling());
                     }
+                }
+
+                // Schedule for deferred removal
+                sceneGraph.InsertInRemoveIfFree(child);
+
+                if (m_isInRemoveIfFree)
+                {
+                    M3D_LOG_WARN(
+                        "Adding child in RemoveIfFree in destructor, child name = '" + CStr(child->GetName()) + ", parent name = '" +
+                        CStr(GetName()) + "'");
+                }
             }
         }
 
@@ -1175,4 +1172,4 @@ namespace m3d
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace m3d

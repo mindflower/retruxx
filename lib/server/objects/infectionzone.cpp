@@ -5,6 +5,7 @@
 #include "core/ini.h"
 #include "core/aiparam.h"
 #include "base/objcontainer.h"
+#include "infectionteam.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(InfectionZone, ResetTimeOut)
 {
@@ -74,9 +75,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void InfectionZone::Update(float, unsigned)
+    void InfectionZone::Update(float elapsedTime, unsigned)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (elapsedTime >= 0.001)
+        {
+            _WatchPlayerInside();
+            if (m_hadPlayerInside)
+                _WatchRespawn(elapsedTime);
+        }
     }
 
     void InfectionZone::ResetTimeOut()
@@ -188,7 +194,12 @@ namespace ai
 
     void InfectionZone::_InternalPostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* infectionTeam = RT_DYNCAST(theObjects->GetEntityByObjId(m_infectionTeamId), InfectionTeam);
+        if (infectionTeam)
+        {
+            infectionTeam->SetCriticalDistAndTime(m_criticalTeamDist, m_criticalTeamTime);
+            infectionTeam->SetBlindDistAndTime(m_blindTeamDist, m_blindTeamTime);
+        }
     }
 
     void InfectionZone::AddDropOutPoint(float, float)
@@ -325,7 +336,8 @@ namespace ai
 
     void InfectionZone::_WatchPlayerInside()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement InfectionZone::_WatchPlayerInside
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* InfectionZone::CreateObject()

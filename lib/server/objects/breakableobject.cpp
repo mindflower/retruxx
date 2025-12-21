@@ -6,6 +6,9 @@
 #include "ode/objects.h"
 #include "lightobj.h"
 
+#include <m3dapp.h>
+#include <scene/servers/serveranimatedmodel.h>
+
 RT_CLASS_EXPORT_METHOD_DEFINE(BreakableObject, SetEnabled)
 {
     RETRUXX_NOT_IMPLEMENTED;
@@ -26,7 +29,7 @@ namespace ai
 
     Obj* BreakableObjectPrototypeInfo::CreateTargetObject() const
     {
-        return new BreakableObject(*this);
+        // return new BreakableObject(*this);
     }
 
     BreakableObjectPrototypeInfo::BreakableObjectPrototypeInfo()
@@ -40,14 +43,30 @@ namespace ai
         m_bIsUpdating = false;
     }
 
-    void BreakableObjectPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void BreakableObjectPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        // TODO: implement ::RefreshFromXml
+        // TODO: check and refactor
+        ai::SimplePhysicObjPrototypeInfo::RefreshFromXml(xmlFile, xmlNode);
+        auto* serverAnimatedModels = (m3d::AnimatedModelsServer*)&M3D_APP->GetAnimatedModelsServer();
+        auto boundSize = serverAnimatedModels->GetBoundSizes(GetEngineModelName().c_str());
+        auto v4 = boundSize.y * 0.5;
+        auto p_m_relTranslation = &this->m_collisionInfos.front().m_relTranslation;
+        p_m_relTranslation->x = 0.0;
+        p_m_relTranslation->y = v4;
+        p_m_relTranslation->z = 0.0;
+        auto p_m_relRotation = &this->m_collisionInfos.front().m_relRotation;
+        p_m_relRotation->x = 0.0;
+        p_m_relRotation->y = 0.0;
+        p_m_relRotation->z = 0.0;
+        p_m_relRotation->w = 1.0;
     }
 
     void BreakableObjectPrototypeInfo::PostLoad()
     {
-        // TODO: implement ::PostLoad
+        if (!m_BlastWavePrototypeName.empty())
+        {
+            m_BlastWavePrototypeId = ai::thePrototypeManager->GetPrototypeId(m_BlastWavePrototypeName);
+        }
     }
 
     bool BreakableObjectPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -70,7 +89,7 @@ namespace ai
 
     BreakableObject::BreakableObject(BreakableObjectPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
     {
-        DisablePhysics();
+        PhysicObj::DisablePhysics();
         m_state = DISABLED;
         m_destroyable = prototypeInfo.m_destroyable;
         m_criticalHitEnergy = prototypeInfo.m_criticalHitEnergy;

@@ -55,7 +55,7 @@ namespace m3d
             ParseProto(params, &proto, &protoPos);
             if (proto == PROTO_FILE)
             {
-                const auto filename = &params[protoPos];
+                auto const filename = &params[protoPos];
                 CStr err;
                 if (ref_ptr xmlFile = m3d::ReadXmlFile(&params[protoPos], &err))
                 {
@@ -70,7 +70,6 @@ namespace m3d
                     int radius = 0;
                     CVector color;
                     float ttl = 0.0;
-
 
                     SafeIntAttrib(radius, xmlNode, "Radius");
                     SafeVectorAttrib(color, xmlNode, "Color");
@@ -125,9 +124,13 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int LightsServer::GetItemProperty(int, int, void*)
+    int LightsServer::GetItemProperty(int id, int prop, void* dest)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        if (prop != 8449)
+            return m3d::DataServer::GetItemProperty(id, prop, dest);
+        *(float*)dest = ((PointLightModel*)m_models[id].m_ptr)->m_radius;
+        return 1;
     }
 
     LightsServer::LightsServer()
@@ -159,4 +162,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

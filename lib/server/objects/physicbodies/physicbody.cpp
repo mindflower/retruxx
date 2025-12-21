@@ -942,7 +942,27 @@ namespace ai
 
     void PhysicBody::SetInvisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        Obj::SetInvisible();
+        DisableGeometry();
+        for (auto* geom : m_pGeoms)
+            geom->UnlinkFromBody();
+        if (m_Node)
+        {
+            auto* graph = m_Node->GetGraph();
+            if (graph->IsLinkedNode(m_Node))
+            {
+                graph->UnlinkNode(m_Node);
+            }
+
+            m3d::Object* parent = m_Node->GetParent();
+            m3d::SgNode* lastParent = nullptr;
+            m_Node->GetProperty(m3d::PROP_NODE_LASTPARENT, &lastParent);
+            if (!lastParent)
+                m_Node->SetProperty(m3d::PROP_NODE_LASTPARENT, &parent);
+            if (parent)
+                parent->RemoveChild(m_Node);
+        }
     }
 
     void PhysicBody::ReceiveNodesToLink(retruxx::list<m3d::SgNode*>& nodes) const

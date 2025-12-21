@@ -3,6 +3,7 @@
 #include "server/geomrepository.h"
 #include "server/geomrepositoryitem.h"
 #include <server/utils.h>
+#include "base/prototypemanager.h"
 
 namespace ai
 {
@@ -72,12 +73,13 @@ namespace ai
 
     ai::ChestPrototypeInfo const* Chest::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), ChestPrototypeInfo const);
     }
 
     void Chest::Update(float elapsedTime, unsigned int workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::Update(elapsedTime, workTime);
+        // TODO: implement Chest::Update
     }
 
     void Chest::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -112,7 +114,8 @@ namespace ai
 
     void Chest::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Chest::RenderDebugInfo
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Chest::CanChildBeAdded(m3d::Class* pClass) const

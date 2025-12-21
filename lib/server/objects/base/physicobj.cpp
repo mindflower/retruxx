@@ -1207,7 +1207,7 @@ namespace ai
 
     void PhysicObj::_SetStaticCollision()
     {
-        for (auto* i = dBodyGetFirstGeom(m_body->id()); i = nullptr; i = dGeomGetBodyNext(i))
+        for (auto* i = dBodyGetFirstGeom(m_body->id()); i; i = dGeomGetBodyNext(i))
         {
             if (dGeomGetClass(i) == 6)
             {

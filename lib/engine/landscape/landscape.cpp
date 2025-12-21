@@ -1983,12 +1983,6 @@ namespace m3d
 
         // Process collision points and triangles
 
-        //if (nen.find(mdl->GetName()) != nen.end())
-        //{
-        //    bool asd = true;
-        //}
-        //nen.insert(mdl->GetName());
-
         if (!mdl->GetCollisionTrimesh().Points.empty())
         {
             // Create GeomObjectStatics

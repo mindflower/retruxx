@@ -9,6 +9,11 @@
 
 namespace ai
 {
+    namespace
+    {     
+        CStr const STR_DOT = "DOT";
+    }
+
     RT_CLASS_EXPORTS_BEGIN(StaticAutoGun)
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(StaticAutoGun);
@@ -105,7 +110,8 @@ namespace ai
 
     void StaticAutoGun::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement StaticAutoGun::RenderDebugInfo
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void StaticAutoGun::Registration()
@@ -148,9 +154,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void StaticAutoGun::Update(float, unsigned)
+    void StaticAutoGun::Update(float elapsedTime, unsigned workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        PhysicObj::Update(elapsedTime, workTime);
+        // TODO: implement StaticAutoGun::Update
     }
 
     StaticAutoGun::StaticAutoGun(StaticAutoGunPrototypeInfo const& prototype) :
@@ -200,15 +207,22 @@ namespace ai
 
     void StaticAutoGun::_InternalPostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::PhysicObj::_InternalPostLoad();
+        if (!IsAlive())
+        {
+            if (!m_destroyedModelName.empty())
+            {
+                auto* partByName = GetPartByName(STR_DOT);
+                if (partByName)
+                    partByName->SetModelNameUnsafe(m_destroyedModelName);
+            }
+        }
     }
 
     void StaticAutoGun::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-
-    CStr const STR_DOT = "DOT";
 
     void StaticAutoGun::_Construct(bool bForAnimation)
     {

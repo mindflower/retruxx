@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include "base/objcontainer.h"
+#include "base/prototypemanager.h"
 
 namespace ai
 {
@@ -62,7 +63,7 @@ namespace ai
 
     BarricadePrototypeInfo const* Barricade::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), BarricadePrototypeInfo const);
     }
 
     void Barricade::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const

@@ -316,39 +316,6 @@ namespace ai
 
     PrototypeInfo* CServer::CreatePrototypeInfoByClassName(CStr const& className)
     {
-        std::set<CStr> classes = {
-            "Vehicle",
-            "Location",
-            "Player",
-            "Location",
-            "Trigger",
-            "DummyObject",
-            "Team",
-            "Formation",
-            "Chassis",
-            "VehiclePart",
-            "Cabin",
-            "Basket",
-            "Wheel",
-            "CompoundVehiclePart",
-            "VehicleRecollection",
-            "Bullet",
-            "BulletLauncher",
-            "TeamTacticWithRoles",
-            "VehicleRolePendulum",
-            "VehicleRoleMeat",
-            "VehicleRoleSniper",
-            "VehicleRoleOppressor",
-            "VehicleRoleBarrier",
-            "VehicleRoleCoward",
-            "VehicleRoleCheater",
-        };
-
-        if (classes.find(className) == classes.end())
-        {
-            return nullptr;
-        }
-
         if (className == "Vehicle")
             return new VehiclePrototypeInfo;
         if (className == "ArticulatedVehicle")

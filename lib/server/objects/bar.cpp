@@ -55,9 +55,11 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Bar::Update(float, unsigned)
+    void Bar::Update(float elapsedTime, unsigned workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::Obj::Update(elapsedTime, workTime);
+        if (elapsedTime != 0.0)
+            CreateBarman();
     }
 
     m3d::Class* Bar::GetClass() const
@@ -106,7 +108,8 @@ namespace ai
 
     void Bar::CreateBarman()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Bar::CreateBarman
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Bar::CreateObject()

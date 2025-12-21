@@ -133,9 +133,9 @@ namespace ai
         return RT_CLASS_LOCAL(SimplePhysicObj);
     }
 
-    int Settlement::OnEvent(Event const&)
+    int Settlement::OnEvent(Event const& evn)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return Obj::OnEvent(evn);
     }
 
     void Settlement::SetPosition(CVector const&)
@@ -177,7 +177,7 @@ namespace ai
 
     SettlementPrototypeInfo const* Settlement::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), SettlementPrototypeInfo const);
     }
 
     bool Settlement::RemoveChild(Obj*)
