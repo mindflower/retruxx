@@ -118,7 +118,8 @@ struct dxDamping
 
 
 struct dxWorld : public dBase {
-  dxBody *firstbody;		// body linked list
+  dxBody* m_firstEnabledBody;
+  dxBody* m_firstDisabledBody;
   dxJoint *firstjoint;		// joint linked list
   int nb,nj;			// number of bodies and joints in lists
   dVector3 gravity;		// gravity vector (m/s/s)

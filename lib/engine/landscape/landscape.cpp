@@ -4653,7 +4653,7 @@ namespace m3d
                             {
                                 auto* physObj = RT_DYNCAST(obj, PhysicObj);
                                 allPhysicObjs.insert(physObj);
-                                if (physObj->bIsUpdatingByODE())
+                                if (physObj->bIsUpdatingByODE() && (physObj->GetPhysicState() & 1) != 0)
                                 {
                                     isCellEnabled = true;
                                     break;

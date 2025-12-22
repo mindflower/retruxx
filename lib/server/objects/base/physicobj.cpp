@@ -1301,9 +1301,28 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void PhysicObj::_CommonBodyChangeEnabledStateCallback(dxBody*)
+    void PhysicObj::_CommonBodyChangeEnabledStateCallback(dxBody* bodyId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto Data = (ai::PhysicObj*)dBodyGetData(bodyId);
+        if (Data)
+        {
+            auto IsEnabled = dBodyIsEnabled(bodyId);
+            if (IsEnabled != Data->m_bBodyEnabledLastFrame)
+            {
+                if (IsEnabled)
+                {
+                    Data->m_physicState |= 1u;
+                    Data->SetCorrectEnabledCellsCounter();
+                    Data->m_bBodyEnabledLastFrame = IsEnabled;
+                    return;
+                }
+                Data->m_physicState &= ~1u;
+                Data->SetCorrectEnabledCellsCounter();
+                if ((Data->m_physicBehaviorFlags & 1) != 0)
+                    Data->DisablePhysics();
+            }
+            Data->m_bBodyEnabledLastFrame = IsEnabled;
+        }
     }
 
     CVector getPhysicObjOrPhysicBodyGeometricCenter(ai::Obj const* obj)

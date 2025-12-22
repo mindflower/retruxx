@@ -29,7 +29,7 @@ namespace ai
 
     Obj* BreakableObjectPrototypeInfo::CreateTargetObject() const
     {
-        // return new BreakableObject(*this);
+        return new BreakableObject(*this);
     }
 
     BreakableObjectPrototypeInfo::BreakableObjectPrototypeInfo()
@@ -47,13 +47,15 @@ namespace ai
     {
         // TODO: check and refactor
         ai::SimplePhysicObjPrototypeInfo::RefreshFromXml(xmlFile, xmlNode);
+
         auto* serverAnimatedModels = (m3d::AnimatedModelsServer*)&M3D_APP->GetAnimatedModelsServer();
-        auto boundSize = serverAnimatedModels->GetBoundSizes(GetEngineModelName().c_str());
-        auto v4 = boundSize.y * 0.5;
+        auto const boundSize = serverAnimatedModels->GetBoundSizes(GetEngineModelName().c_str());
+
         auto p_m_relTranslation = &this->m_collisionInfos.front().m_relTranslation;
         p_m_relTranslation->x = 0.0;
-        p_m_relTranslation->y = v4;
+        p_m_relTranslation->y = boundSize.y * 0.5;
         p_m_relTranslation->z = 0.0;
+
         auto p_m_relRotation = &this->m_collisionInfos.front().m_relRotation;
         p_m_relRotation->x = 0.0;
         p_m_relRotation->y = 0.0;
