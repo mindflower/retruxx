@@ -250,17 +250,18 @@ namespace ai
         }
         else
         {
-            bool const enabled = (physicState & 2) != 0;
-            if (enabled)
-            {
-                _SetGeomEnabledBit(false);
-            }
+            // TODO: check this incorrect placement
+            //bool const enabled = (physicState & 2) != 0;
+            //if (enabled)
+            //{
+            //    _SetGeomEnabledBit(false);
+            //}
 
             PhysicObj::SetPositionSelf(GetGroundPos(pos, 1, 0));
-            if (enabled)
-            {
-                _SetGeomEnabledBit(true);
-            }
+            //if (enabled)
+            //{
+            //    _SetGeomEnabledBit(true);
+            //}
         }
     }
 
