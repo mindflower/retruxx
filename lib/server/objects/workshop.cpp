@@ -20,9 +20,8 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Workshop);
 
-    WorkshopPriceCoeffProvider::WorkshopPriceCoeffProvider(Workshop const*)
+    WorkshopPriceCoeffProvider::WorkshopPriceCoeffProvider(Workshop const* workshop) : m_workshop(workshop)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     float WorkshopPriceCoeffProvider::GetPriceCoeffForObj(Obj const*) const
@@ -39,7 +38,7 @@ namespace ai
 
     ai::Obj* WorkshopPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new Workshop(*this);
     }
 
     unsigned Workshop::GetArticleBuyPriceByPrototypeId(int) const
@@ -74,7 +73,7 @@ namespace ai
 
     Workshop::Workshop(WorkshopPrototypeInfo const& prototype) : Building(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_priceCoeffProvider = new WorkshopPriceCoeffProvider(this);
     }
 
     void Workshop::AddArticle(Article const&) const
@@ -172,9 +171,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Workshop::Update(float, unsigned)
+    void Workshop::Update(float elapsedTime, unsigned workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::Update(elapsedTime, workTime);
+        // TODO: implement Workshop::Update
     }
 
     bool Workshop::SellArticle(int, unsigned)
@@ -189,7 +189,7 @@ namespace ai
 
     m3d::Class* Workshop::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(Workshop);
     }
 
     unsigned Workshop::GetArticleBuyPriceByObj(Obj const*) const
@@ -207,9 +207,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Workshop::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Workshop::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::LoadFromXML(xmlFile, xmlNode);
+        // TODO: implement Workshop::LoadFromXML
     }
 
     void Workshop::OnSaveVisitedMap()

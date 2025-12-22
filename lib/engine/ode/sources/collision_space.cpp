@@ -264,12 +264,14 @@ void dxSimpleSpace::cleanGeoms()
 {
   // compute the AABBs of all dirty geoms, and clear the dirty flags
   lock_count++;
-  for (dxGeom *g=m_firstEnabled; g && (g->gflags & GEOM_DIRTY); g=g->next) {
-    if (IS_SPACE(g)) {
-      ((dxSpace*)g)->cleanGeoms();
+  for (dxGeom *g=m_firstEnabled; g; g=g->next) {
+    if ((g->gflags & GEOM_DIRTY) != 0) {
+      if (IS_SPACE(g)) {
+        ((dxSpace*)g)->cleanGeoms();
+      }
+      g->recomputeAABB();
+      g->gflags &= (~(GEOM_DIRTY|GEOM_AABB_BAD));
     }
-    g->recomputeAABB();
-    g->gflags &= (~(GEOM_DIRTY|GEOM_AABB_BAD));
   }
   lock_count--;
 }
@@ -437,12 +439,14 @@ void dxHashSpace::cleanGeoms()
 {
   // compute the AABBs of all dirty geoms, and clear the dirty flags
   lock_count++;
-  for (dxGeom *g=m_firstEnabled; g && (g->gflags & GEOM_DIRTY); g=g->next) {
-    if (IS_SPACE(g)) {
-      ((dxSpace*)g)->cleanGeoms();
-    }
-    g->recomputeAABB();
-    g->gflags &= (~(GEOM_DIRTY|GEOM_AABB_BAD));
+  for (dxGeom *g=m_firstEnabled; g; g=g->next) {
+    if ((g->gflags & GEOM_DIRTY) != 0) {
+      if (IS_SPACE(g)) {
+        ((dxSpace*)g)->cleanGeoms();
+      }
+      g->recomputeAABB();
+      g->gflags &= (~(GEOM_DIRTY|GEOM_AABB_BAD));
+  }
   }
   lock_count--;
 }

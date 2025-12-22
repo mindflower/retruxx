@@ -437,7 +437,8 @@ namespace ai
 
     void Town::_OnObjectEntersLocation(Event const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Town::_OnObjectEntersLocation
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Town::_InitializeWorkshops()
@@ -490,7 +491,8 @@ namespace ai
 
     void Town::_OnObjectLeavesLocation(Event const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Town::_OnObjectLeavesLocation
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Town::_SynchronizeGatesState()
