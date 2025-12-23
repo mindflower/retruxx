@@ -3,7 +3,7 @@
 
 #include "script/scriptserver.h"
 
-#include <assert.h>
+#include <cassert>
 
 extern "C"
 {
@@ -105,12 +105,12 @@ int ext_quatIdentity(lua_State* L)
 {
 	assert(ext_checkTag(L, 1, tag_luaQuaternion));
 
-	float* v2 = (float*)lua_touserdata(L, 1);
+	float* quat = static_cast<float*>(lua_touserdata(L, 1));
 
-	*v2 = 0;
-	v2[1] = 0;
-	v2[2] = 0;
-	v2[3] = 1.0f;
+	quat[0] = 0;
+	quat[1] = 0;
+	quat[2] = 0;
+	quat[3] = 1.0f;
 
 	return 1;
 }
@@ -119,52 +119,50 @@ int ext_quatZero(lua_State* L)
 {
 	assert(ext_checkTag(L, 1, tag_luaQuaternion));
 
-	float* v2 = (float*)lua_touserdata(L, 1);
+	float* quat = static_cast<float*>(lua_touserdata(L, 1));
 
-	v2[0] = 0.0f;
-	v2[1] = 0.0f;
-	v2[2] = 0.0f;
-	v2[3] = 0.0f;
+	quat[0] = 0.0f;
+	quat[1] = 0.0f;
+	quat[2] = 0.0f;
+	quat[3] = 0.0f;
 
 	return 1;
 }
 
 int ext_quatNorm(lua_State* L)
 {
-	float* v2; // eax
-
 	assert(ext_checkTag(L, 1, tag_luaQuaternion));
 
-	v2 = (float*)lua_touserdata(L, 1);
-	lua_pushnumber(L, sqrt(*v2 * *v2 + v2[1] * v2[1] + v2[2] * v2[2] + v2[3] * v2[3]));
+	float* quat = static_cast<float*>(lua_touserdata(L, 1));
+    lua_pushnumber(L, sqrt(quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2] + quat[3] * quat[3]));
 	return 1;
 }
 
 int ext_quatNormalize(lua_State* L)
 {
-	float* v2; // eax
-	long double v3; // st7
-	float v5; // [esp+4h] [ebp-4h]
+    float* quat = 0;         // eax
+	long double invLen = 0.0; // st7
+	float quatLen = 0.0f; // [esp+4h] [ebp-4h]
 
 	assert(ext_checkTag(L, 1, tag_luaQuaternion));
 
-	v2 = (float*)lua_touserdata(L, 1);
-	v5 = (v2[0] * v2[0]) + (v2[1] * v2[1]) + (v2[2] * v2[2]) + (v2[3] * v2[3]);
+	quat = static_cast<float*>(lua_touserdata(L, 1));
+    quatLen = (quat[0] * quat[0]) + (quat[1] * quat[1]) + (quat[2] * quat[2]) + (quat[3] * quat[3]);
 
-	if (v5 <= 0.0)
+	if (quatLen <= 0.0)
 	{
-		*v2 = 0.0;
-		v2[1] = 0.0;
-		v2[2] = 0.0;
-		v2[3] = 1.0f;
+        quat[0] = 0.0f;
+		quat[1] = 0.0f;
+		quat[2] = 0.0f;
+		quat[3] = 1.0f;
 	}
 	else
 	{
-		v3 = 1.0 / sqrt(v5);
-		v2[0] = v3 * v2[0];
-		v2[1] = v3 * v2[1];
-		v2[2] = v3 * v2[2];
-		v2[3] = v3 * v2[3];
+        invLen = 1.0 / sqrt(quatLen);
+		quat[0] = invLen * quat[0];
+		quat[1] = invLen * quat[1];
+		quat[2] = invLen * quat[2];
+		quat[3] = invLen * quat[3];
 	}
 	return 1;
 }
@@ -199,7 +197,7 @@ int ext_quatRotY(lua_State* L)
 
 	assert(ext_getTag(L, 1) == tag_luaQuaternion && lua_type(L, 2) == LUA_TNUMBER);
 
-	v4 = (float*)lua_touserdata(L, 1);
+	v4 = static_cast<float*>(lua_touserdata(L, 1));
 	v5 = lua_tonumber(L, 2) * 0.5;
 	*v4 = 0.0f;
 	v4[2] = 0.0f;
@@ -219,7 +217,7 @@ int ext_quatRotZ(lua_State* L)
 
 	assert(ext_getTag(L, 1) == tag_luaQuaternion && lua_type(L, 2) == LUA_TNUMBER);
 
-	v4 = (float*)lua_touserdata(L, 1);
+	v4 = static_cast<float*>(lua_touserdata(L, 1));
 	v5 = lua_tonumber(L, 2) * 0.5;
 	*v4 = 0.0f;
 	v4[1] = 0.0f;
@@ -239,8 +237,8 @@ int ext_quatFromAxisAngle(lua_State* L)
 
 	assert(ext_getTag(L, 1) == tag_luaQuaternion && ext_getTag(L, 2) == tag_luaVector && lua_type(L, 3) == LUA_TNUMBER);
 
-	v5 = (float*)lua_touserdata(L, 1);
-	v6 = (float*)lua_touserdata(L, 2);
+	v5 = static_cast<float*>(lua_touserdata(L, 1));
+    v6 = static_cast<float*>(lua_touserdata(L, 1));
 	v7 = lua_tonumber(L, 3) * 0.5;
 	result = 1;
 	v9 = sinf(v7);
@@ -261,7 +259,7 @@ int ext_quatGetConjugated(lua_State* L)
 
 	assert(ext_checkTag(L, 1, tag_luaQuaternion));
 
-	v2 = (float*)lua_touserdata(L, 1);
+	v2 = static_cast<float*>(lua_touserdata(L, 1));
 	q = ext_createQuaternion(L);
 	v4 = 0.0 - v2[1];
 	v7 = 0.0 - v2[2];
@@ -275,22 +273,21 @@ int ext_quatGetConjugated(lua_State* L)
 
 int ext_quatGetInversed(lua_State* L)
 {
-	Quaternion* v2; // edi
-	Quaternion* q; // esi
-//	Quaternion result; // [esp+8h] [ebp-10h] BYREF
+	Quaternion* srcQuat; // edi
+	Quaternion* resQuat; // esi
 
 	assert(ext_checkTag(L, 1, tag_luaQuaternion));
 
-	v2 = (Quaternion*)lua_touserdata(L, 1);
-	q = ext_createQuaternion(L);
-	*q = q->getInversed();
+	srcQuat = static_cast<Quaternion*>(lua_touserdata(L, 1));
+    resQuat = ext_createQuaternion(L);
+    *resQuat = srcQuat->getInversed();
 
 	return 1;
 }
 
 int ext_quatFromYPR(lua_State* L)
 {
-	Quaternion* v2; // edi
+	Quaternion* quat; // edi
 	float Roll; // [esp+8h] [ebp-Ch]
 	float Pitch; // [esp+Ch] [ebp-8h]
 	float Yaw; // [esp+10h] [ebp-4h]
@@ -298,12 +295,12 @@ int ext_quatFromYPR(lua_State* L)
 	assert(ext_checkTag(L, 1, tag_luaQuaternion));
 	assert(lua_type(L, 2) != 3 && lua_type(L, 3) != 3 && lua_type(L, 4) != 3);
 
-	v2 = (Quaternion*)lua_touserdata(L, 1);
+	quat = static_cast<Quaternion*>(lua_touserdata(L, 1));
 	Yaw = lua_tonumber(L, 2);
 	Pitch = lua_tonumber(L, 3);
 	Roll = lua_tonumber(L, 4);
 
-	v2->fromYPR(Yaw, Pitch, Roll);
+	quat->fromYPR(Yaw, Pitch, Roll);
 
 	return 1;
 }
@@ -405,29 +402,29 @@ int ext_quatGet(lua_State* L)
 
 int ext_quatSet(lua_State* L)
 {
-	float* v2 = (float*)lua_touserdata(L, 1);
-	const char* v3 = luaL_checklstring(L, 2, 0);
-	float a = luaL_checknumber(L, 3);
+    float* q = static_cast<float*>(lua_touserdata(L, 1));
+	const char* field = luaL_checklstring(L, 2, 0);
+	float val = luaL_checknumber(L, 3);
 
-	if (v3[1])
+	if (field[1])
 	{
 		lua_pushnumber(L, 0.0);
 		return 1;
 	}
 
-	switch (*v3)
+	switch (*field)
 	{
 	case 'w':
-		v2[3] = a;
+		q[3] = val;
 		break;
 	case 'x':
-		v2[0] = a;
+		q[0] = val;
 		break;
 	case 'y':
-		v2[1] = a;
+		q[1] = val;
 		break;
 	case 'z':
-		v2[2] = a;
+		q[2] = val;
 		break;
 	default:
 		return 1;
@@ -438,53 +435,48 @@ int ext_quatSet(lua_State* L)
 
 int ext_quatMul(lua_State* L)
 {
-	int v2; // edi
-	int v3; // ebp
-	ext_InternalTags Tag; // esi
-	ext_InternalTags v5; // eax
-	float* v6; // esi
-	float* v7; // edi
-	Quaternion* q; // eax
-	float* v9; // esi
-	float a; // [esp+10h] [ebp-14h]
-	float v12; // [esp+14h] [ebp-10h]
-	float v13; // [esp+18h] [ebp-Ch]
-	float v14; // [esp+1Ch] [ebp-8h]
-	float v15; // [esp+20h] [ebp-4h]
+    int argType1, argType2;
+    ext_InternalTags Tag1, Tag2;
+    Quaternion* q;
+    float x, y, z, w;
 
-	v2 = lua_type(L, 1);
-	v3 = lua_type(L, 2);
-	Tag = ext_getTag(L, 1);
-	v5 = ext_getTag(L, 2);
-	if (v2 == 3 || v3 == 3)
+	argType1 = lua_type(L, 1);
+    argType2 = lua_type(L, 2);
+    Tag1 = ext_getTag(L, 1);
+    Tag2 = ext_getTag(L, 2);
+
+    if (argType1 == LUA_TNUMBER || argType2 == LUA_TNUMBER)
 	{
-		v9 = (float*)lua_touserdata(L, (Tag != tag_luaQuaternion) + 1);
-		a = lua_tonumber(L, (unsigned int)(v2 != 3) + 1);
+        float* srcQuat = static_cast<float*>(lua_touserdata(L, (Tag1 != tag_luaQuaternion) + 1));
+        float mulCoeff = lua_tonumber(L, (unsigned int)(argType1 != LUA_TNUMBER) + 1);
 		q = ext_createQuaternion(L);
-		v12 = v9[0] * a;
-		v13 = v9[1] * a;
-		v14 = v9[2] * a;
-		v15 = v9[3] * a;
+        x = srcQuat[0] * mulCoeff;
+        y = srcQuat[1] * mulCoeff;
+        z = srcQuat[2] * mulCoeff;
+        w = srcQuat[3] * mulCoeff;
 	}
 	else
 	{
-		if (Tag != tag_luaQuaternion || v5 != tag_luaQuaternion)
+        if (Tag1 != tag_luaQuaternion || Tag2 != tag_luaQuaternion)
 		{
 			lua_pushstring(L, "Quaternion: bad multiplier");
 			lua_error(L);
 		}
-		v6 = (float*)lua_touserdata(L, 1);
-		v7 = (float*)lua_touserdata(L, 2);
+
+        float* qa = static_cast<float*>(lua_touserdata(L, 1));
+        float* qb = static_cast<float*>(lua_touserdata(L, 2));
 		q = ext_createQuaternion(L);
-		v12 = v6[1] * v7[2] + v6[3] * v7[0] + v7[3] * v6[0] - v7[1] * v6[2];
-		v13 = v6[1] * v7[3] + v7[0] * v6[2] + v6[3] * v7[1] - v6[0] * v7[2];
-		v14 = v7[1] * v6[0] + v6[3] * v7[2] + v7[3] * v6[2] - v6[1] * v7[0];
-		v15 = v6[3] * v7[3] - v7[0] * v6[0] - v6[1] * v7[1] - v7[2] * v6[2];
+		x = qa[1] * qb[2] + qa[3] * qb[0] + qb[3] * qa[0] - qb[1] * qa[2];
+		y = qa[1] * qb[3] + qb[0] * qa[2] + qa[3] * qb[1] - qa[0] * qb[2];
+		z = qb[1] * qa[0] + qa[3] * qb[2] + qb[3] * qa[2] - qa[1] * qb[0];
+		w = qa[3] * qb[3] - qb[0] * qa[0] - qa[1] * qb[1] - qb[2] * qa[2];
 	}
-	q->x = v12;
-	q->y = v13;
-	q->z = v14;
-	q->w = v15;
+
+	q->x = x;
+	q->y = y;
+	q->z = z;
+	q->w = w;
+
 	return 1;
 }
 
@@ -496,7 +488,7 @@ int ext_quatCall(lua_State* L)
 
 Quaternion* ext_createQuaternion(lua_State* L)
 {
-	auto buff = lua_newuserdata(L, sizeof(Quaternion));
+	void* buff = lua_newuserdata(L, sizeof(Quaternion));
 	lua_newtable(L);
 	lua_pushstring(L, "__index");
 	lua_pushcclosure(L, ext_quatGet, 0);
@@ -512,6 +504,6 @@ Quaternion* ext_createQuaternion(lua_State* L)
 	lua_settable(L, -3);
 	lua_setmetatable(L, -2);
 
-	auto* res = new (buff) Quaternion;
+	Quaternion* res = new (buff) Quaternion;
 	return res;
 }

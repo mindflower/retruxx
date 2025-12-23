@@ -2,7 +2,7 @@
 #include <script/funcarg.h>
 #include <math/vector.h>
 #include <stdexcept>
-#include <Windows.h>
+
 
 namespace m3d
 {
@@ -16,7 +16,7 @@ namespace m3d
 
     Quaternion sArg::GetQ() const
     {
-        assert(m_type == ARGTYPE_VECTOR);
+        assert(m_type == ARGTYPE_QUATERNION);
 
         return Quaternion(m_q[0], m_q[1], m_q[2], m_q[3]);
     }
@@ -29,23 +29,23 @@ namespace m3d
     float sArg::GetF() const
     {
         assert(m_type == ARGTYPE_FLOAT || m_type == ARGTYPE_INT);
-        if (this->m_type == ARGTYPE_FLOAT)
-            return this->m_f;
+        if (m_type == ARGTYPE_FLOAT)
+            return m_f;
         else
-            return (float)this->m_i;
+            return static_cast<float>(m_i);
     }
 
     bool sArg::GetB() const
     {
         assert(m_type == ARGTYPE_BOOL || m_type == ARGTYPE_OBJECT || m_type == ARGTYPE_FLOAT || m_type == ARGTYPE_INT);
         
-        if (this->m_type == ARGTYPE_BOOL)
+        if (m_type == ARGTYPE_BOOL)
             return this->m_b;
 
-        if (this->m_type == ARGTYPE_FLOAT)
-            return fabs(this->m_f) > 0.0000099999997;
+        if (m_type == ARGTYPE_FLOAT)
+            return fabs(m_f) > 0.0000099999997;
 
-        return this->m_i != 0;
+        return m_i != 0;
     }
 
     Object* sArg::GetO() const
@@ -56,7 +56,7 @@ namespace m3d
     int sArg::GetI() const
     {
         assert(m_type == ARGTYPE_INT);
-        return this->m_i;
+        return m_i;
     }
 
     sArg::sArg()
@@ -72,8 +72,10 @@ namespace m3d
 
     void sArg::SetV(CVector const& v)
     {
-        this->m_type = ARGTYPE_VECTOR;
-        *(CVector*)&this->m_i = v;
+        m_type = ARGTYPE_VECTOR;
+        m_v[0] = v.x;
+        m_v[1] = v.y;
+        m_v[2] = v.z;
     }
 
     void sArg::SetS(char const* s)
@@ -96,19 +98,22 @@ namespace m3d
     void sArg::SetQ(Quaternion const& q)
     {
         this->m_type = ARGTYPE_QUATERNION;
-        *(Quaternion*)&this->m_i = q;
+        m_q[0] = q.x;
+        m_q[1] = q.y;
+        m_q[2] = q.z;
+        m_q[3] = q.w;
     }
 
     void sArg::SetF(float f)
     {
-        this->m_type = ARGTYPE_FLOAT;
-        this->m_f = f;
+        m_type = ARGTYPE_FLOAT;
+        m_f = f;
     }
 
     void sArg::SetB(bool b)
     {
-        this->m_type = ARGTYPE_BOOL;
-        this->m_b = b;
+        m_type = ARGTYPE_BOOL;
+        m_b = b;
     }
 
     void sArg::SetO(Object* o)

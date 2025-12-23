@@ -395,24 +395,17 @@ namespace m3d
         return (eScriptError)(lobyte(v1) + OTHER_ERROR);
     }
 
-    //Scriptlet::~Scriptlet()
-    //{
-    //    if (m_data)
-    //    {
-    //        delete[] m_data;
-    //        m_data = nullptr;
-    //        m_bLoaded = false;
-    //    }
-    //}
+    Scriptlet::~Scriptlet()
+    {
+        delete[] m_data;
+        m_data = nullptr;
+    }
 
     eScriptError Scriptlet::loadFromFile(char const* fileName)
     {
-        if (m_data)
-        {
-            delete[] m_data;
-            m_data = nullptr;
-            m_bLoaded = false;
-        }
+        delete[] m_data;
+        m_data = nullptr;
+        m_bLoaded = false;
 
         scoped_ptr stream = g_Kernel->GetFileServer().CreateFileStream();
         if (stream->Open(fileName, fs::IStream::OPEN_READ))

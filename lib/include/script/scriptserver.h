@@ -43,14 +43,7 @@ namespace m3d
 		static inline ScriptServer* g_scriptServer = nullptr;
 
 	public:
-		~Scriptlet()
-		{
-			if (m_data)
-			{
-				delete[] m_data;
-				m_data = nullptr;
-			}
-		}
+        ~Scriptlet();
 
 		eScriptError compile();
 		eScriptError loadFromFile(char const* nameAs);
