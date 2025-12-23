@@ -180,7 +180,9 @@ namespace ai
 
     m3d::AIParam Team::TeamAIOnStartSearch(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Team::TeamAIOnStartSearch
+        // RETRUXX_NOT_IMPLEMENTED;
+        return m3d::AIParam(0);
     }
 
     m3d::AIParam Team::TeamAIOnAttack(Obj*)
@@ -444,7 +446,7 @@ namespace ai
 
     TeamTactic* Team::GetTeamTactic() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(theObjects->GetEntityByObjId(m_TeamTacticId), TeamTactic);
     }
 
     void Team::_AdjustBehaviour()
@@ -622,9 +624,18 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    m3d::AIParam Team::TeamAIOnMove(Obj*)
+    m3d::AIParam Team::TeamAIOnMove(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* team = RT_DYNCAST(pObj, Team);
+        if (team->GetTeamTactic())
+        {
+            team->SetTeamTactic(nullptr);
+            for (auto* vehicle : team->GetVehicles())
+            {
+                vehicle->SetAttackStatus(Vehicle::VehicleAttackStatus::ATTACK_IDLE);
+            }
+        }
+        return {0};
     }
 
     void Team::SetPassedToAnotherMapStatus()

@@ -24,8 +24,6 @@ struct PointLightStats
 
 }; /* size: 0x0010 */
 
-PointLightStats stats_0;
-
 namespace m3d
 {
     int LightsServer::SaveAllLoadedEntities(char const*)
@@ -101,20 +99,15 @@ namespace m3d
 
     void LightsServer::RenderItem(int id, void*)
     {
-        if ((statsInited & 1) == 0)
-        {
-            statsInited |= 1u;
-            stats_0.curFrame = 0;
-            stats_0.numLightModelsRendered = 0;
-            stats_0.numLightsToRender = 0;
-            stats_0.numLightCellsRendered = 0;
-        }
+        static PointLightStats stats_0;
         m_profiler->StartCountdown();
 
-        if (id != -4)
-        {
-            RETRUXX_NOT_IMPLEMENTED;
-        }
+        // TODO: implement LightsServer::RenderItem
+
+        //if (id != -4)
+        //{
+        //    RETRUXX_NOT_IMPLEMENTED;
+        //}
 
         m_profiler->EndCountdown();
     }

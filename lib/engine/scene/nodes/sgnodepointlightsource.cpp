@@ -1,6 +1,7 @@
 #include <scene/nodes/sgnodepointlightsource.h>
 #include <m3dapp.h>
-#include "script/servers/dataserver.h"
+#include "scene/servers/dataserver.h"
+#include <scene/servers/serverlight.h>
 
 namespace m3d
 {
@@ -45,7 +46,15 @@ namespace m3d
 
     int SgPointLightSourceNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        if (m_srvId == -1)
+            return 0;
+
+        m3d::RiForLightsServer ri;
+        ri.m_localXForm = m_currentXForm;
+        ri.m_radius = m_props[1];
+        GetServer()->RenderItem(m_srvId, &ri);
+        return 1;
     }
 
     int SgPointLightSourceNode::SetProperty(unsigned propId, void* property)

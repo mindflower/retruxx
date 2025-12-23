@@ -5,6 +5,12 @@ namespace m3d
 {
     class Profiler;
 
+    struct RiForLightsServer
+    {
+        CMatrix m_localXForm;
+        float m_radius;
+    };
+
     class LightsServer : public m3d::DataServer
     {
     public:
