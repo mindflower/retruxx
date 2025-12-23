@@ -288,19 +288,19 @@ int ext_quatGetInversed(lua_State* L)
 int ext_quatFromYPR(lua_State* L)
 {
 	Quaternion* quat; // edi
-	float Roll; // [esp+8h] [ebp-Ch]
-	float Pitch; // [esp+Ch] [ebp-8h]
-	float Yaw; // [esp+10h] [ebp-4h]
+	float roll; // [esp+8h] [ebp-Ch]
+	float pitch; // [esp+Ch] [ebp-8h]
+	float yaw; // [esp+10h] [ebp-4h]
 
 	assert(ext_checkTag(L, 1, tag_luaQuaternion));
 	assert(lua_type(L, 2) != 3 && lua_type(L, 3) != 3 && lua_type(L, 4) != 3);
 
 	quat = static_cast<Quaternion*>(lua_touserdata(L, 1));
-	Yaw = lua_tonumber(L, 2);
-	Pitch = lua_tonumber(L, 3);
-	Roll = lua_tonumber(L, 4);
+	yaw = lua_tonumber(L, 2);
+	pitch = lua_tonumber(L, 3);
+	roll = lua_tonumber(L, 4);
 
-	quat->fromYPR(Yaw, Pitch, Roll);
+	quat->fromYPR(yaw, pitch, roll);
 
 	return 1;
 }
@@ -436,18 +436,18 @@ int ext_quatSet(lua_State* L)
 int ext_quatMul(lua_State* L)
 {
     int argType1, argType2;
-    ext_InternalTags Tag1, Tag2;
+    ext_InternalTags tag1, tag2;
     Quaternion* q;
     float x, y, z, w;
 
 	argType1 = lua_type(L, 1);
     argType2 = lua_type(L, 2);
-    Tag1 = ext_getTag(L, 1);
-    Tag2 = ext_getTag(L, 2);
+    tag1 = ext_getTag(L, 1);
+    tag2 = ext_getTag(L, 2);
 
     if (argType1 == LUA_TNUMBER || argType2 == LUA_TNUMBER)
 	{
-        float* srcQuat = static_cast<float*>(lua_touserdata(L, (Tag1 != tag_luaQuaternion) + 1));
+        float* srcQuat = static_cast<float*>(lua_touserdata(L, (tag1 != tag_luaQuaternion) + 1));
         float mulCoeff = lua_tonumber(L, (unsigned int)(argType1 != LUA_TNUMBER) + 1);
 		q = ext_createQuaternion(L);
         x = srcQuat[0] * mulCoeff;
@@ -457,7 +457,7 @@ int ext_quatMul(lua_State* L)
 	}
 	else
 	{
-        if (Tag1 != tag_luaQuaternion || Tag2 != tag_luaQuaternion)
+        if (tag1 != tag_luaQuaternion || tag2 != tag_luaQuaternion)
 		{
 			lua_pushstring(L, "Quaternion: bad multiplier");
 			lua_error(L);
