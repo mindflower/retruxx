@@ -16,6 +16,7 @@ namespace ai
 
     class WanderersManager : public ai::Obj
     {
+        friend class WanderersManagerPrototypeInfo;
     protected:
         virtual  ~WanderersManager() override /* 0x00 */;
 

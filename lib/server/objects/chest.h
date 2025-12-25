@@ -15,6 +15,7 @@ namespace ai
 
     class Chest : public ai::SimplePhysicObj
     {
+        friend class ChestPrototypeInfo;
     protected:
         virtual  ~Chest() override /* 0x00 */;
 

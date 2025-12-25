@@ -7,6 +7,8 @@ namespace ai
 {
 	int CollideVehicleAndBreakableObject(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: implement CollideVehicleAndBreakableObject
+		// RETRUXX_NOT_IMPLEMENTED;
+		return 1;
 	}
 }

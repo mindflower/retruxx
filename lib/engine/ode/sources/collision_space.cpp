@@ -79,7 +79,8 @@ void dGeomMoved (dxGeom *geom)
 dxSpace::dxSpace (dSpaceID _space) : dxGeom (_space,0)
 {
   count = 0;
-  first = 0;
+  m_firstEnabled = 0;
+  m_firstDisabled = 0;
   cleanup = 1;
   current_index = 0;
   current_geom = 0;
@@ -93,14 +94,22 @@ dxSpace::~dxSpace()
   if (cleanup) {
     // note that destroying each geom will call remove()
     dxGeom *g,*n;
-    for (g = first; g; g=n) {
+    for (g = m_firstEnabled; g; g=n) {
+      n = g->next;
+      dGeomDestroy (g);
+    }
+    for (g = m_firstDisabled; g; g=n) {
       n = g->next;
       dGeomDestroy (g);
     }
   }
   else {
     dxGeom *g,*n;
-    for (g = first; g; g=n) {
+    for (g = m_firstEnabled; g; g=n) {
+      n = g->next;
+      remove (g);
+    }
+    for (g = m_firstDisabled; g; g=n) {
       n = g->next;
       remove (g);
     }
@@ -110,7 +119,7 @@ dxSpace::~dxSpace()
 
 void dxSpace::computeAABB()
 {
-  if (first) {
+  if (m_firstEnabled) {
     int i;
     dReal a[6];
     a[0] = dInfinity;
@@ -119,7 +128,7 @@ void dxSpace::computeAABB()
     a[3] = -dInfinity;
     a[4] = dInfinity;
     a[5] = -dInfinity;
-    for (dxGeom *g=first; g; g=g->next) {
+    for (dxGeom *g=m_firstEnabled; g; g=g->next) {
       g->recomputeAABB();
       for (i=0; i<6; i += 2) if (g->aabb[i] < a[i]) a[i] = g->aabb[i];
       for (i=1; i<6; i += 2) if (g->aabb[i] > a[i]) a[i] = g->aabb[i];
@@ -161,21 +170,23 @@ int dxSpace::getNumGeoms()
 
 dxGeom *dxSpace::getGeom (int i)
 {
-  dUASSERT (i >= 0 && i < count,"index out of range");
-  if (current_geom && current_index == i-1) {
-    current_geom = current_geom->next;
-    current_index = i;
-    return current_geom;
-  }
-  else {
-    dxGeom *g=first;
-    for (int j=0; j<i; j++) {
-      if (g) g = g->next; else return 0;
-    }
-    current_geom = g;
-    current_index = i;
-    return g;
-  }
+  // TODO: check this!
+  return nullptr;
+  //dUASSERT (i >= 0 && i < count,"index out of range");
+  //if (current_geom && current_index == i-1) {
+  //  current_geom = current_geom->next;
+  //  current_index = i;
+  //  return current_geom;
+  //}
+  //else {
+  //  dxGeom *g=first;
+  //  for (int j=0; j<i; j++) {
+  //    if (g) g = g->next; else return 0;
+  //  }
+  //  current_geom = g;
+  //  current_index = i;
+  //  return g;
+  //}
 }
 
 
@@ -188,7 +199,7 @@ void dxSpace::add (dxGeom *geom)
 
   // add
   geom->parent_space = this;
-  geom->spaceAdd (&first);
+  geom->spaceAdd (dGeomIsEnabled(geom) ? &m_firstEnabled : &m_firstDisabled);
   count++;
 
   // enumerator has been invalidated
@@ -229,7 +240,7 @@ void dxSpace::remove (dxGeom *geom)
 void dxSpace::dirty (dxGeom *geom)
 {
   geom->spaceRemove();
-  geom->spaceAdd (&first);
+  geom->spaceAdd (dGeomIsEnabled(geom) ? &m_firstEnabled : &m_firstDisabled);
 }
 
 //****************************************************************************
@@ -253,12 +264,14 @@ void dxSimpleSpace::cleanGeoms()
 {
   // compute the AABBs of all dirty geoms, and clear the dirty flags
   lock_count++;
-  for (dxGeom *g=first; g && (g->gflags & GEOM_DIRTY); g=g->next) {
-    if (IS_SPACE(g)) {
-      ((dxSpace*)g)->cleanGeoms();
+  for (dxGeom *g=m_firstEnabled; g; g=g->next) {
+    if ((g->gflags & GEOM_DIRTY) != 0) {
+      if (IS_SPACE(g)) {
+        ((dxSpace*)g)->cleanGeoms();
+      }
+      g->recomputeAABB();
+      g->gflags &= (~(GEOM_DIRTY|GEOM_AABB_BAD));
     }
-    g->recomputeAABB();
-    g->gflags &= (~(GEOM_DIRTY|GEOM_AABB_BAD));
   }
   lock_count--;
 }
@@ -272,7 +285,7 @@ void dxSimpleSpace::collide (void *data, dNearCallback *callback)
   cleanGeoms();
 
   // intersect all bounding boxes
-  for (dxGeom *g1=first; g1; g1=g1->next) {
+  for (dxGeom *g1=m_firstEnabled; g1; g1=g1->next) {
     if (GEOM_ENABLED(g1)){
       for (dxGeom *g2=g1->next; g2; g2=g2->next) {
 	if (GEOM_ENABLED(g2)){
@@ -296,7 +309,7 @@ void dxSimpleSpace::collide2 (void *data, dxGeom *geom,
   geom->recomputeAABB();
 
   // intersect bounding boxes
-  for (dxGeom *g=first; g; g=g->next) {
+  for (dxGeom *g=m_firstEnabled; g; g=g->next) {
     if (GEOM_ENABLED(g)){
       collideAABBs (g,geom,data,callback);
     }
@@ -426,12 +439,14 @@ void dxHashSpace::cleanGeoms()
 {
   // compute the AABBs of all dirty geoms, and clear the dirty flags
   lock_count++;
-  for (dxGeom *g=first; g && (g->gflags & GEOM_DIRTY); g=g->next) {
-    if (IS_SPACE(g)) {
-      ((dxSpace*)g)->cleanGeoms();
-    }
-    g->recomputeAABB();
-    g->gflags &= (~(GEOM_DIRTY|GEOM_AABB_BAD));
+  for (dxGeom *g=m_firstEnabled; g; g=g->next) {
+    if ((g->gflags & GEOM_DIRTY) != 0) {
+      if (IS_SPACE(g)) {
+        ((dxSpace*)g)->cleanGeoms();
+      }
+      g->recomputeAABB();
+      g->gflags &= (~(GEOM_DIRTY|GEOM_AABB_BAD));
+  }
   }
   lock_count--;
 }
@@ -460,7 +475,7 @@ void dxHashSpace::collide (void *data, dNearCallback *callback)
   dxAABB *first_aabb = 0;	// list of AABBs in hash table
   dxAABB *big_boxes = 0;	// list of AABBs too big for hash table
   maxlevel = global_minlevel - 1;
-  for (geom = first; geom; geom=geom->next) {
+  for (geom = m_firstEnabled; geom; geom=geom->next) {
     if (!GEOM_ENABLED(geom)){
       continue;
     }
@@ -616,7 +631,7 @@ void dxHashSpace::collide2 (void *data, dxGeom *geom,
   geom->recomputeAABB();
   
   // intersect bounding boxes
-  for (dxGeom *g=first; g; g=g->next) {
+  for (dxGeom *g=m_firstEnabled; g; g=g->next) {
     collideAABBs (g,geom,data,callback);
   }
   
@@ -759,12 +774,12 @@ void dSpaceCollide2 (dxGeom *g1, dxGeom *g2, void *data,
 	// iterate through the space that has the fewest geoms, calling
 	// collide2 in the other space for each one.
 	if (s1->count < s2->count) {
-	  for (dxGeom *g = s1->first; g; g=g->next) {
+	  for (dxGeom *g = s1->m_firstEnabled; g; g=g->next) {
 	    s2->collide2 (data,g,callback);
 	  }
 	}
 	else {
-	  for (dxGeom *g = s2->first; g; g=g->next) {
+	  for (dxGeom *g = s2->m_firstEnabled; g; g=g->next) {
 	    s1->collide2 (data,g,callback);
 	  }
 	}

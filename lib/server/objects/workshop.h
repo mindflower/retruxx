@@ -41,6 +41,7 @@ namespace ai
 
     class Workshop : public ai::Building
     {
+        friend class WorkshopPrototypeInfo;
     protected:
         virtual  ~Workshop() override /* 0x00 */;
 

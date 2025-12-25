@@ -24,6 +24,7 @@
 #include "objects.h"
 #include "joint.h"
 #include "util.h"
+#include "core/log.h"
 
 #define ALLOCA dALLOCA16
 
@@ -33,7 +34,7 @@
 void dInternalHandleAutoDisabling (dxWorld *world, dReal stepsize)
 {
 	dxBody *bb;
-	for (bb=world->firstbody; bb; bb=(dxBody*)bb->next) {
+	for (bb=world->m_firstEnabledBody; bb; bb=(dxBody*)bb->next) {
 		// nothing to do unless this body is currently enabled and has
 		// the auto-disable flag set
 		if ((bb->flags & (dxBodyAutoDisable|dxBodyDisabled)) != dxBodyAutoDisable) continue;
@@ -64,7 +65,7 @@ void dInternalHandleAutoDisabling (dxWorld *world, dReal stepsize)
 
 		// disable the body if it's idle for a long enough time
 		if (bb->adis_stepsleft < 0 && bb->adis_timeleft < 0) {
-			bb->flags |= dxBodyDisabled;
+      dBodyDisable(bb);
 		}
 	}
 }
@@ -195,7 +196,7 @@ void dxProcessIslands (dxWorld *world, dReal stepsize, dstepper_fn_t stepper)
   int jcount = 0;	// number of joints in `joint'
 
   // set all body/joint tags to 0
-  for (b=world->firstbody; b; b=(dxBody*)b->next) b->tag = 0;
+  for (b=world->m_firstEnabledBody; b; b=(dxBody*)b->next) b->tag = 0;
   for (j=world->firstjoint; j; j=(dxJoint*)j->next) j->tag = 0;
 
   // allocate a stack of unvisited bodies in the island. the maximum size of
@@ -205,7 +206,13 @@ void dxProcessIslands (dxWorld *world, dReal stepsize, dstepper_fn_t stepper)
   int stackalloc = (world->nj < world->nb) ? world->nj : world->nb;
   dxBody **stack = (dxBody**) ALLOCA (stackalloc * sizeof(dxBody*));
 
-  for (bb=world->firstbody; bb; bb=(dxBody*)bb->next) {
+  dxBody** allBodiesInIslands = (dxBody**) ALLOCA (world->nb * sizeof(dxBody*));
+  dxJoint** allJointsInIslands = (dxJoint**) ALLOCA (world->nj * sizeof(dxJoint*));
+
+  int allBodiesCount = 0;
+  int allJointsCount = 0;
+
+  for (bb=world->m_firstEnabledBody; bb; bb=(dxBody*)bb->next) {
     // get bb = the next enabled, untagged body, and tag it
     if (bb->tag || (bb->flags & dxBodyDisabled)) continue;
     bb->tag = 1;
@@ -213,29 +220,41 @@ void dxProcessIslands (dxWorld *world, dReal stepsize, dstepper_fn_t stepper)
     // tag all bodies and joints starting from bb.
     int stacksize = 0;
     b = bb;
+
     body[0] = bb;
+    allBodiesInIslands[allBodiesCount++] = bb;
+
     bcount = 1;
     jcount = 0;
     goto quickstart;
     while (stacksize > 0) {
       b = stack[--stacksize];	// pop body off stack
       body[bcount++] = b;	// put body on body list
+      allBodiesInIslands[allBodiesCount++] = b;
       quickstart:
 
       // traverse and tag all body's joints, add untagged connected bodies
       // to stack
       for (dxJointNode *n=b->firstjoint; n; n=n->next) {
-	if (!n->joint->tag) {
-	  n->joint->tag = 1;
-	  joint[jcount++] = n->joint;
-	  if (n->body && !n->body->tag) {
-	    n->body->tag = 1;
-	    stack[stacksize++] = n->body;
-	  }
-	}
+	      if (!n->joint->tag) {
+	        n->joint->tag = 1;
+	        joint[jcount++] = n->joint;
+          allJointsInIslands[allJointsCount++] = n->joint;
+	        if (n->body && !n->body->tag) {
+	          n->body->tag = 1;
+	          stack[stacksize++] = n->body;
+	        }
+	      }
       }
       dIASSERT(stacksize <= world->nb);
       dIASSERT(stacksize <= world->nj);
+    }
+
+    static int maxJointCount = 20;
+    // Log maximum joint count
+    if (jcount > maxJointCount) {
+        maxJointCount = jcount;
+        M3D_LOG_INFO("Maximum joint count reached: " + CStr(jcount));
     }
 
     // now do something with body and joint lists
@@ -247,7 +266,8 @@ void dxProcessIslands (dxWorld *world, dReal stepsize, dstepper_fn_t stepper)
     int i;
     for (i=0; i<bcount; i++) {
       body[i]->tag = 1;
-      body[i]->flags &= ~dxBodyDisabled;
+      dBodyEnable(body[i]);
+      // body[i]->flags &= ~dxBodyDisabled;
     }
     for (i=0; i<jcount; i++) joint[i]->tag = 1;
   }
@@ -255,23 +275,62 @@ void dxProcessIslands (dxWorld *world, dReal stepsize, dstepper_fn_t stepper)
   // if debugging, check that all objects (except for disabled bodies,
   // unconnected joints, and joints that are connected to disabled bodies)
   // were tagged.
-# ifndef dNODEBUG
-  for (b=world->firstbody; b; b=(dxBody*)b->next) {
-    if (b->flags & dxBodyDisabled) {
-      if (b->tag) dDebug (0,"disabled body tagged");
+//# ifndef dNODEBUG
+//  for (b=world->m_firstEnabledBody; b; b=(dxBody*)b->next) {
+//    if (b->flags & dxBodyDisabled) {
+//      if (b->tag) dDebug (0,"disabled body tagged");
+//    }
+//    else {
+//      if (!b->tag) dDebug (0,"enabled body not tagged");
+//    }
+//  }
+//  for (j=world->firstjoint; j; j=(dxJoint*)j->next) {
+//    if ((j->node[0].body && (j->node[0].body->flags & dxBodyDisabled)==0) ||
+//	(j->node[1].body && (j->node[1].body->flags & dxBodyDisabled)==0)) {
+//      if (!j->tag) dDebug (0,"attached enabled joint not tagged");
+//    }
+//    else {
+//      if (j->tag) dDebug (0,"unattached or disabled joint tagged");
+//    }
+//  }
+//# endif
+
+  // Process broken joints
+    dxJoint* currentJoint = world->firstjoint;
+    while (currentJoint != nullptr)
+    {
+        dxJoint* nextJoint = (dxJoint*)currentJoint->next;
+        dxJointBreakInfo* breakInfo = currentJoint->breakInfo;
+        
+        if (breakInfo != nullptr && (breakInfo->flags & 1) != 0)
+        {
+            // Detach the joint from its bodies
+            dJointAttach(currentJoint, nullptr, nullptr);
+            
+            // Call break callback if set
+            if (breakInfo->callback != nullptr)
+            {
+                breakInfo->callback(currentJoint);
+            }
+            
+            // Destroy the joint if flagged
+            if ((breakInfo->flags & 2) != 0)
+            {
+                dJointDestroy(currentJoint);
+            }
+        }
+        
+        currentJoint = nextJoint;
     }
-    else {
-      if (!b->tag) dDebug (0,"enabled body not tagged");
+    
+    // Clear tags on all bodies and joints that were in islands
+    for (int i = 0; i < allBodiesCount; i++)
+    {
+        allBodiesInIslands[i]->tag = 0;
     }
-  }
-  for (j=world->firstjoint; j; j=(dxJoint*)j->next) {
-    if ((j->node[0].body && (j->node[0].body->flags & dxBodyDisabled)==0) ||
-	(j->node[1].body && (j->node[1].body->flags & dxBodyDisabled)==0)) {
-      if (!j->tag) dDebug (0,"attached enabled joint not tagged");
+    
+    for (int i = 0; i < allJointsCount; i++)
+    {
+        allJointsInIslands[i]->tag = 0;
     }
-    else {
-      if (j->tag) dDebug (0,"unattached or disabled joint tagged");
-    }
-  }
-# endif
 }

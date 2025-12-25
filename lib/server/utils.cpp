@@ -23,7 +23,7 @@ namespace ai
         {
             std::istringstream ss(str.c_str());
             std::string s;
-            while(getline(ss, s, ' '))
+            while (getline(ss, s, ' '))
             {
                 stringVector.push_back(s.c_str());
             }
@@ -144,31 +144,23 @@ namespace ai
 
     CVector GetGroundPos(CVector const& pos, bool withCollisions, bool forVehicle)
     {
-        CVector a1;
-        auto m_pWorld = ai::pServer->GetWorld();
-        auto withCollisionsa = pos.z;
+        CVector res = pos;
         if (!withCollisions)
         {
-            auto Height = m_pWorld->GetLandscape().GetHeight(pos.x, pos.z, -1, 1);
-            auto x = pos.x;
-            a1.y = Height;
-            a1.x = x;
+            res.y = ai::pServer->GetWorld()->GetLandscape().GetHeight(pos.x, pos.z, -1, 1);
         }
         else
         {
-            auto HeightWithCollisions = m_pWorld->GetLandscape().GetHeightWithCollisions(pos.x, pos.z, forVehicle);
-            auto v9 = pos.x;
-            a1.y = HeightWithCollisions;
-            a1.x = v9;
+            res.y = ai::pServer->GetWorld()->GetLandscape().GetHeightWithCollisions(pos.x, pos.z, forVehicle);
         }
-        a1.z = withCollisionsa;
-        return a1;
+        return res;
     }
 
     CVector GetGroundPos(CVector2 const&, bool)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
+
     PointBase<float> clampIntoLandscape(PointBase<float> const& point)
     {
         auto result = point;

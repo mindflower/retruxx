@@ -12,6 +12,7 @@ namespace ai
 
     class RadioManager : public ai::Obj
     {
+        friend class RadioManagerPrototypeInfo;
     protected:
         virtual  ~RadioManager() override /* 0x00 */;
 

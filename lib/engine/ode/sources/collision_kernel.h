@@ -162,7 +162,8 @@ struct dxGeom : public dBase {
 
 struct dxSpace : public dxGeom {
   int count;			// number of geoms in this space
-  dxGeom *first;		// first geom in list
+  dxGeom* m_firstEnabled;
+  dxGeom* m_firstDisabled;
   int cleanup;			// cleanup mode, 1=destroy geoms on exit
 
   // cached state for getGeom()

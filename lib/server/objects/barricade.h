@@ -20,6 +20,7 @@ namespace ai
 
     class Barricade : public ai::ObjPrefab
     {
+        friend class BarricadePrototypeInfo;
     protected:
         virtual  ~Barricade() override /* 0x00 */;
 

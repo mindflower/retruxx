@@ -131,13 +131,18 @@ static void checkWorld (dxWorld *w)
   dxJoint *j;
 
   // check there are no loops
-  if (listHasLoops (w->firstbody)) dDebug (0,"body list has loops");
+  if (listHasLoops (w->m_firstEnabledBody)) dDebug (0,"enabled body list has loops");
+  if (listHasLoops (w->m_firstDisabledBody)) dDebug (0,"disabled body list has loops");
   if (listHasLoops (w->firstjoint)) dDebug (0,"joint list has loops");
 
   // check lists are well formed (check `tome' pointers)
-  for (b=w->firstbody; b; b=(dxBody*)b->next) {
+  for (b=w->m_firstEnabledBody; b; b=(dxBody*)b->next) {
     if (b->next && b->next->tome != &b->next)
-      dDebug (0,"bad tome pointer in body list");
+      dDebug (0,"bad tome pointer in enabled body list");
+  }
+  for (b=w->m_firstDisabledBody; b; b=(dxBody*)b->next) {
+    if (b->next && b->next->tome != &b->next)
+      dDebug (0,"bad tome pointer in disabled body list");
   }
   for (j=w->firstjoint; j; j=(dxJoint*)j->next) {
     if (j->next && j->next->tome != &j->next)
@@ -146,7 +151,8 @@ static void checkWorld (dxWorld *w)
 
   // check counts
   int n = 0;
-  for (b=w->firstbody; b; b=(dxBody*)b->next) n++;
+  for (b=w->m_firstEnabledBody; b; b=(dxBody*)b->next) n++;
+  for (b=w->m_firstDisabledBody; b; b=(dxBody*)b->next) n++;
   if (w->nb != n) dDebug (0,"body count incorrect");
   n = 0;
   for (j=w->firstjoint; j; j=(dxJoint*)j->next) n++;
@@ -155,12 +161,15 @@ static void checkWorld (dxWorld *w)
   // set all tag values to a known value
   static int count = 0;
   count++;
-  for (b=w->firstbody; b; b=(dxBody*)b->next) b->tag = count;
+  for (b=w->m_firstEnabledBody; b; b=(dxBody*)b->next) b->tag = count;
+  for (b=w->m_firstDisabledBody; b; b=(dxBody*)b->next) b->tag = count;
   for (j=w->firstjoint; j; j=(dxJoint*)j->next) j->tag = count;
 
   // check all body/joint world pointers are ok
-  for (b=w->firstbody; b; b=(dxBody*)b->next) if (b->world != w)
-    dDebug (0,"bad world pointer in body list");
+  for (b=w->m_firstEnabledBody; b; b=(dxBody*)b->next) if (b->world != w)
+    dDebug (0,"bad world pointer in enabled body list");
+  for (b=w->m_firstDisabledBody; b; b=(dxBody*)b->next) if (b->world != w)
+    dDebug (0,"bad world pointer in disabled body list");
   for (j=w->firstjoint; j; j=(dxJoint*)j->next) if (j->world != w)
     dDebug (0,"bad world pointer in joint list");
 
@@ -189,7 +198,21 @@ static void checkWorld (dxWorld *w)
   }
 
   // check all body joint lists (correct body ptrs)
-  for (b=w->firstbody; b; b=(dxBody*)b->next) {
+  for (b=w->m_firstEnabledBody; b; b=(dxBody*)b->next) {
+    for (dxJointNode *n=b->firstjoint; n; n=n->next) {
+      if (&n->joint->node[0] == n) {
+	if (n->joint->node[1].body != b)
+	  dDebug (0,"bad body pointer in joint node of body list (1)");
+      }
+      else {
+	if (n->joint->node[0].body != b)
+	  dDebug (0,"bad body pointer in joint node of body list (2)");
+      }
+      if (n->joint->tag != count) dDebug (0,"bad joint node pointer in body");
+    }
+  }
+
+  for (b=w->m_firstDisabledBody; b; b=(dxBody*)b->next) {
     for (dxJointNode *n=b->firstjoint; n; n=n->next) {
       if (&n->joint->node[0] == n) {
 	if (n->joint->node[1].body != b)
@@ -245,7 +268,7 @@ dxBody *dBodyCreate (dxWorld *w)
   dSetZero (b->facc,4);
   dSetZero (b->tacc,4);
   dSetZero (b->finite_rot_axis,4);
-  addObjectToList (b,(dObject **) &w->firstbody);
+  addObjectToList (b,(dObject **) &w->m_firstEnabledBody);
   w->nb++;
 
   // set auto-disable parameters
@@ -253,6 +276,8 @@ dxBody *dBodyCreate (dxWorld *w)
   b->adis_stepsleft = b->adis.idle_steps;
   b->adis_timeleft = b->adis.idle_time;
 
+  // b->m_movedCallback = 0;
+  b->m_changeEnabledStateCallback = 0;
   return b;
 }
 
@@ -745,16 +770,78 @@ dJointID dBodyGetJoint (dBodyID b, int index)
 void dBodyEnable (dBodyID b)
 {
   dAASSERT (b);
-  b->flags &= ~dxBodyDisabled;
-  b->adis_stepsleft = b->adis.idle_steps;
-  b->adis_timeleft = b->adis.idle_time;
+  // TODO: generated code
+  // Check if the body is currently disabled (bit 2 = disabled flag)
+    if ((b->flags & dxBodyDisabled) != 0)
+    {
+        // Clear the disabled flag (enable the body)
+        b->flags &= ~dxBodyDisabled;
+        
+        // Reset auto-disable timers
+        b->adis_timeleft = b->adis.idle_time;
+        b->adis_stepsleft = b->adis.idle_steps;
+        
+        // Only process if the body is in a world
+        if (b->world != nullptr)
+        {
+            auto next = b->next;
+            auto p_next = &b->next;
+            if ( next )
+              next->tome = b->tome;
+            *b->tome = *p_next;
+            dxBody** body = &b->world->m_firstEnabledBody;
+            if ( (b->flags & dxBodyDisabled) != 0 )
+              body = &b->world->m_firstDisabledBody;
+            *p_next = *body;
+            b->tome = (dObject **)body;
+            if ( *body )
+              (*body)->tome = p_next;
+            *body = b;
+        }
+        
+        // Call the enabled state change callback if set
+        if (b->m_changeEnabledStateCallback != nullptr)
+        {
+            b->m_changeEnabledStateCallback(b);
+        }
+    }
 }
 
 
 void dBodyDisable (dBodyID b)
 {
   dAASSERT (b);
-  b->flags |= dxBodyDisabled;
+    // TODO: generated code
+    // Check if the body is already disabled (bit 2 = disabled flag)
+    if ((b->flags & dxBodyDisabled) == 0)
+    {
+        // Set the disabled flag
+        b->flags |= dxBodyDisabled;
+        
+        // Only process if the body is in a world
+        if (b->world != nullptr)
+        {
+            auto next = b->next;
+            auto p_next = &b->next;
+            if ( next )
+              next->tome = b->tome;
+            *b->tome = *p_next;
+            dxBody** body = &b->world->m_firstEnabledBody;
+            if ( (b->flags & dxBodyDisabled) != 0 )
+              body = &b->world->m_firstDisabledBody;
+            *p_next = *body;
+            b->tome = (dObject **)body;
+            if ( *body )
+              (*body)->tome = p_next;
+            *body = b;
+        }
+        
+        // Call the enabled state change callback if set
+        if (b->m_changeEnabledStateCallback != nullptr)
+        {
+            b->m_changeEnabledStateCallback(b);
+        }
+    }
 }
 
 
@@ -885,6 +972,7 @@ dxGeom* dBodyGetFirstGeom (dBodyID b)
 void dBodyAddIslandToWorld (dBodyID b, dxWorld* w)
 {
     // TODO: implememnt dBodyAddIslandToWorld
+    dAASSERT(false);
 }
 
 void dBodyRemoveIslandFromWorld (dBodyID b)
@@ -935,6 +1023,7 @@ static dxJoint *createJoint (dWorldID w, dJointGroupID group,
   if (group) j->flags |= dJOINT_INGROUP;
   if (vtable->init) vtable->init (j);
   j->feedback = 0;
+  j->breakInfo = 0;
   return j;
 }
 
@@ -1184,7 +1273,8 @@ int dAreConnectedExcluding (dBodyID b1, dBodyID b2, int joint_type)
 dxWorld * dWorldCreate()
 {
   dxWorld *w = new dxWorld;
-  w->firstbody = 0;
+  w->m_firstEnabledBody = 0;
+  w->m_firstDisabledBody = 0;
   w->firstjoint = 0;
   w->nb = 0;
   w->nj = 0;
@@ -1218,7 +1308,13 @@ void dWorldDestroy (dxWorld *w)
 {
   // delete all bodies and joints
   dAASSERT (w);
-  dxBody *nextb, *b = w->firstbody;
+  dxBody *nextb, *b = w->m_firstEnabledBody;
+  while (b) {
+    nextb = (dxBody*) b->next;
+    delete b;
+    b = nextb;
+  }
+  b = w->m_firstDisabledBody;
   while (b) {
     nextb = (dxBody*) b->next;
     delete b;

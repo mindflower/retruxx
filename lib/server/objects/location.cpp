@@ -58,15 +58,20 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Location::AddChild(Obj*)
+    void Location::AddChild(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::AddChild(pObj);
+        if (pObj)
+        {
+            if (pObj->IsKindOf(&ai::Npc::m_classNpc))
+            {
+                pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
+                m_npcs.push_back((Npc*)pObj);
+            }
+        }
     }
 
-    Location::Location(LocationPrototypeInfo const& prototype) :
-        SimplePhysicObj(prototype),
-        m_timeForNextCheck(0.0, 0.0, 10.0, -1.0)
-        
+    Location::Location(LocationPrototypeInfo const& prototype) : SimplePhysicObj(prototype), m_timeForNextCheck(0.0, 0.0, 10.0, -1.0)
     {
         this->m_locationType = LOCATION_GENERIC;
         this->m_toleranceSet.insert(RS_OWN);
@@ -90,9 +95,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Location::CanChildBeAdded(m3d::Class*) const
+    bool Location::CanChildBeAdded(m3d::Class* pClass) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return ai::Obj::CanChildBeAdded(pClass) || pClass->IsKindOf(&ai::Npc::m_classNpc);
     }
 
     int Location::GetPropertyId(char const* propName) const
@@ -124,7 +129,7 @@ namespace ai
     void Location::Remove()
     {
         SimplePhysicObj::Remove();
-        for (auto& npc :m_npcs)
+        for (auto& npc : m_npcs)
         {
             npc->Remove();
         }
@@ -246,7 +251,7 @@ namespace ai
                     auto obj = ai::theObjects->GetEntityByObjId(id);
                     if (obj && _MustCheckObject(obj))
                     {
-                        CauseEvent(GE_OBJECT_IN_LOCATION, 0.0, { obj->GetId() }, {});
+                        CauseEvent(GE_OBJECT_IN_LOCATION, 0.0, {obj->GetId()}, {});
                     }
                 }
 
@@ -369,7 +374,7 @@ namespace ai
                     {
                         if (m_name.findsubstr("_caravan", 0) == -1)
                         {
-                            SetLocationType(m_passageAddress.empty() ? LOCATION_GENERIC : LOCATION_PASSAGE );
+                            SetLocationType(m_passageAddress.empty() ? LOCATION_GENERIC : LOCATION_PASSAGE);
                         }
                         else
                         {
@@ -401,7 +406,8 @@ namespace ai
             auto obj = theObjects->GetEntityByObjName(m_correspondingPassageLocationName);
             if (!obj || !IS_KIND_OF(obj, Location))
             {
-                M3D_LOG_ERR("Error: PassageLocation '" + m_correspondingPassageLocationName + "' does not exist for " + GetDebugDescription());
+                M3D_LOG_ERR(
+                    "Error: PassageLocation '" + m_correspondingPassageLocationName + "' does not exist for " + GetDebugDescription());
             }
         }
 
@@ -457,7 +463,6 @@ namespace ai
     void Location::_CheckIncomingOutgoingObjects(
         std::set<ref_ptr<Obstacle>, std::less<ref_ptr<Obstacle>>, std::allocator<ref_ptr<Obstacle>>>& seenObstacles)
     {
-
         IntersectionManager::GetIntersectedObjects(seenObstacles, _GetLookSphere(), m_targetClasses, false, false);
         for (auto& obstacle : seenObstacles)
         {
@@ -476,11 +481,12 @@ namespace ai
                     auto scale = ((pos.x * pos.x) + (pos.y * pos.y)) + (pos.z * pos.z);
                     if (std::isnan(sqrt(scale)))
                     {
-                        M3D_LOG_ERR("Error: " + obj->GetDebugDescription() + " is in hyperspace when intersecting with " + GetDebugDescription());
+                        M3D_LOG_ERR(
+                            "Error: " + obj->GetDebugDescription() + " is in hyperspace when intersecting with " + GetDebugDescription());
                         continue;
                     }
 
-                    CauseEvent(GE_OBJECT_ENTERS_LOCATION, 0.0, { obj->GetId() }, {});
+                    CauseEvent(GE_OBJECT_ENTERS_LOCATION, 0.0, {obj->GetId()}, {});
                     OnObjectIn(obj);
 
                     if (!m_npcs.empty())
@@ -488,9 +494,7 @@ namespace ai
                         RETRUXX_NOT_IMPLEMENTED;
                     }
 
-                    if (this->m_locationType != LOCATION_PASSAGE
-                        || obj != thePlayer->GetVehicle()
-                        || !this->m_bPassageActive)
+                    if (this->m_locationType != LOCATION_PASSAGE || obj != thePlayer->GetVehicle() || !this->m_bPassageActive)
                     {
                         continue;
                     }
@@ -510,7 +514,7 @@ namespace ai
                         else
                         {
                             // TODO:
-                           // M3D_LOG_INFO("Log for passage");
+                            // M3D_LOG_INFO("Log for passage");
                             theStatisticManager->ZeroStatisticsForLevel(pServer->GetWorld()->m_level->m_levelName);
                             theObjects->PassToMap(levelName, locationName, -1, false);
                         }
@@ -532,7 +536,7 @@ namespace ai
             {
                 if (_MustCheckObject(obj))
                 {
-                    CauseEvent(GE_OBJECT_LEAVES_LOCATION, 0.0, { obj->GetId() }, {});
+                    CauseEvent(GE_OBJECT_LEAVES_LOCATION, 0.0, {obj->GetId()}, {});
                     OnObjectOut(obj);
                 }
             }
@@ -549,4 +553,4 @@ namespace ai
             }
         }
     }
-}
+}  // namespace ai

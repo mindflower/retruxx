@@ -24,8 +24,6 @@ struct PointLightStats
 
 }; /* size: 0x0010 */
 
-PointLightStats stats_0;
-
 namespace m3d
 {
     int LightsServer::SaveAllLoadedEntities(char const*)
@@ -55,7 +53,7 @@ namespace m3d
             ParseProto(params, &proto, &protoPos);
             if (proto == PROTO_FILE)
             {
-                const auto filename = &params[protoPos];
+                auto const filename = &params[protoPos];
                 CStr err;
                 if (ref_ptr xmlFile = m3d::ReadXmlFile(&params[protoPos], &err))
                 {
@@ -70,7 +68,6 @@ namespace m3d
                     int radius = 0;
                     CVector color;
                     float ttl = 0.0;
-
 
                     SafeIntAttrib(radius, xmlNode, "Radius");
                     SafeVectorAttrib(color, xmlNode, "Color");
@@ -102,20 +99,15 @@ namespace m3d
 
     void LightsServer::RenderItem(int id, void*)
     {
-        if ((statsInited & 1) == 0)
-        {
-            statsInited |= 1u;
-            stats_0.curFrame = 0;
-            stats_0.numLightModelsRendered = 0;
-            stats_0.numLightsToRender = 0;
-            stats_0.numLightCellsRendered = 0;
-        }
+        static PointLightStats stats_0;
         m_profiler->StartCountdown();
 
-        if (id != -4)
-        {
-            RETRUXX_NOT_IMPLEMENTED;
-        }
+        // TODO: implement LightsServer::RenderItem
+
+        //if (id != -4)
+        //{
+        //    RETRUXX_NOT_IMPLEMENTED;
+        //}
 
         m_profiler->EndCountdown();
     }
@@ -125,9 +117,13 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int LightsServer::GetItemProperty(int, int, void*)
+    int LightsServer::GetItemProperty(int id, int prop, void* dest)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        if (prop != 8449)
+            return m3d::DataServer::GetItemProperty(id, prop, dest);
+        *(float*)dest = ((PointLightModel*)m_models[id].m_ptr)->m_radius;
+        return 1;
     }
 
     LightsServer::LightsServer()
@@ -159,4 +155,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

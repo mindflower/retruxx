@@ -2643,7 +2643,7 @@ namespace ai
 
 	Vehicle::VehicleAttackStatus Vehicle::GetAttackStatus() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return m_attackStatus;
 	}
 
 	void Vehicle::ReleaseAllPedals()

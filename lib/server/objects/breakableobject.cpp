@@ -1,6 +1,13 @@
 #include "breakableobject.h"
 
+#include "base/prototypemanager.h"
 #include <stdexcept>
+#include <server/utils.h>
+#include "ode/objects.h"
+#include "lightobj.h"
+
+#include <m3dapp.h>
+#include <scene/servers/serveranimatedmodel.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(BreakableObject, SetEnabled)
 {
@@ -22,7 +29,7 @@ namespace ai
 
     Obj* BreakableObjectPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new BreakableObject(*this);
     }
 
     BreakableObjectPrototypeInfo::BreakableObjectPrototypeInfo()
@@ -36,14 +43,32 @@ namespace ai
         m_bIsUpdating = false;
     }
 
-    void BreakableObjectPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void BreakableObjectPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        // TODO: implement ::RefreshFromXml
+        // TODO: check and refactor
+        ai::SimplePhysicObjPrototypeInfo::RefreshFromXml(xmlFile, xmlNode);
+
+        auto* serverAnimatedModels = (m3d::AnimatedModelsServer*)&M3D_APP->GetAnimatedModelsServer();
+        auto const boundSize = serverAnimatedModels->GetBoundSizes(GetEngineModelName().c_str());
+
+        auto p_m_relTranslation = &this->m_collisionInfos.front().m_relTranslation;
+        p_m_relTranslation->x = 0.0;
+        p_m_relTranslation->y = boundSize.y * 0.5;
+        p_m_relTranslation->z = 0.0;
+
+        auto p_m_relRotation = &this->m_collisionInfos.front().m_relRotation;
+        p_m_relRotation->x = 0.0;
+        p_m_relRotation->y = 0.0;
+        p_m_relRotation->z = 0.0;
+        p_m_relRotation->w = 1.0;
     }
 
     void BreakableObjectPrototypeInfo::PostLoad()
     {
-        // TODO: implement ::PostLoad
+        if (!m_BlastWavePrototypeName.empty())
+        {
+            m_BlastWavePrototypeId = ai::thePrototypeManager->GetPrototypeId(m_BlastWavePrototypeName);
+        }
     }
 
     bool BreakableObjectPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -64,14 +89,25 @@ namespace ai
         return result;
     }
 
-    BreakableObject::BreakableObject(BreakableObjectPrototypeInfo const& prototype) : SimplePhysicObj(prototype)
+    BreakableObject::BreakableObject(BreakableObjectPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        PhysicObj::DisablePhysics();
+        m_state = DISABLED;
+        m_destroyable = prototypeInfo.m_destroyable;
+        m_criticalHitEnergy = prototypeInfo.m_criticalHitEnergy;
+        m_effectType = gDynamicScene->GetBoEffectTypeByName(prototypeInfo.m_effectType);
+        m_destroyEffectType = ai::gDynamicScene->GetBoEffectTypeByName(prototypeInfo.m_destroyEffectType);
+        m_jointId = 0;
+        m_bPositioningOnGround = true;
+        m_causePos = ZeroVector;
+        m_causeForce = 0.0;
+        m_initVelocities = 0;
+        _SetStaticCollision();
     }
 
-    bool BreakableObject::CanChildBeAdded(m3d::Class*) const
+    bool BreakableObject::CanChildBeAdded(m3d::Class* pClass) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return ai::Obj::CanChildBeAdded(pClass) || pClass->IsKindOf(&ai::LightObj::m_classLightObj);
     }
 
     int BreakableObject::IsDestroyable()
@@ -81,7 +117,8 @@ namespace ai
 
     void BreakableObject::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement BreakableObject::RenderDebugInfo
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void BreakableObject::SetRemovingEffectName(CStr const&)
@@ -126,7 +163,7 @@ namespace ai
 
     BreakableObjectPrototypeInfo const* BreakableObject::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), BreakableObjectPrototypeInfo const);
     }
 
     void BreakableObject::SetCausePos(CVector const&)
@@ -151,7 +188,7 @@ namespace ai
 
     m3d::Class* BreakableObject::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(BreakableObject);
     }
 
     BreakableObject::STATES BreakableObject::GetState()
@@ -189,9 +226,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void BreakableObject::AddChild(Obj*)
+    void BreakableObject::AddChild(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::AddChild(pObj);
+        if (pObj)
+        {
+            if (pObj->IsKindOf(&ai::LightObj::m_classLightObj))
+                pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
+        }
     }
 
     void BreakableObject::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -199,9 +241,28 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void BreakableObject::SetPositionSelf(CVector const&)
+    void BreakableObject::SetPositionSelf(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int const physicState = GetPhysicState();
+        if ((physicState & 1) != 0 || !m_bPositioningOnGround)
+        {
+            PhysicObj::SetPositionSelf(pos);
+        }
+        else
+        {
+            // TODO: check this incorrect placement
+            //bool const enabled = (physicState & 2) != 0;
+            //if (enabled)
+            //{
+            //    _SetGeomEnabledBit(false);
+            //}
+
+            PhysicObj::SetPositionSelf(GetGroundPos(pos, 1, 0));
+            //if (enabled)
+            //{
+            //    _SetGeomEnabledBit(true);
+            //}
+        }
     }
 
     void BreakableObject::SetState(STATES)
@@ -246,12 +307,21 @@ namespace ai
 
     void BreakableObject::_Construct()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::_Construct();
+        CVector massCenter;
+        massCenter.x = 0.0;
+        massCenter.y = m_collisionInfos.front().m_relTranslation.y * 0.5;
+        massCenter.z = 0.0;
+        _SetMassCenter(massCenter);
     }
 
     BreakableObject::~BreakableObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_jointId)
+        {
+            dJointDestroy(m_jointId);
+            m_jointId = nullptr;
+        }
     }
 
     m3d::Object* BreakableObject::CreateObject()

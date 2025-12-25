@@ -1,6 +1,7 @@
 #include "ware.h"
 #include "core/ini.h"
 #include "core/kernel.h"
+#include "base/prototypemanager.h"
 
 namespace ai
 {
@@ -56,12 +57,14 @@ namespace ai
 
     Obj* WarePrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new Ware(*this);
     }
 
-    Ware::Ware(WarePrototypeInfo const& prototype) : Obj(prototype), m_durability(prototype.m_maxDurability, 0.0, prototype.m_maxDurability)
+    Ware::Ware(WarePrototypeInfo const& prototypeInfo) :
+        Obj(prototypeInfo),
+        m_durability(prototypeInfo.m_maxDurability, 0.0, prototypeInfo.m_maxDurability)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_maxItems = prototypeInfo.m_maxItems;
     }
 
     bool Ware::ApplyModifier(Modifier const&)
@@ -79,9 +82,15 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int Ware::GetPropertyId(char const*) const
+    int Ware::GetPropertyId(char const* propName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = Ware::m_propertiesMap.find(propName);
+        if (it != Ware::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return ai::Obj::GetPropertyId(propName);
     }
 
     bool Ware::CanChildBeAdded(m3d::Class*) const
@@ -91,7 +100,7 @@ namespace ai
 
     WarePrototypeInfo const* Ware::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), WarePrototypeInfo const);
     }
 
     CStr Ware::GetPropertyName(int) const
@@ -116,7 +125,7 @@ namespace ai
 
     m3d::Class* Ware::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(Ware);
     }
 
     void Ware::Registration()
@@ -134,9 +143,13 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Ware::SetPropertyById(int, m3d::AIParam const&)
+    bool Ware::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (propertyId != 19)
+            return Obj::SetPropertyById(propertyId, newValue);
+
+        m_durability.value().set(newValue.GetAsFloat());
+        return 1;
     }
 
     Ware::~Ware()

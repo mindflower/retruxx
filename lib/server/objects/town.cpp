@@ -1,7 +1,13 @@
 #include "town.h"
 #include "article.h"
 #include "include/math/random.h"
+#include "vehicle.h"
+#include "team.h"
 #include <stdexcept>
+#include <core/kernel.h>
+#include <server/processmanager.h>
+#include "player.h"
+#include "base/prototypemanager.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Town, SpawnCaravanToLocation)
 {
@@ -51,16 +57,18 @@ namespace ai
 
     Obj* TownPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new Town(*this);
     }
 
     void TownPrototypeInfo::PostLoad()
     {
+        SettlementPrototypeInfo::PostLoad();
         // TODO: implement ::PostLoad
     }
 
-    void TownPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void TownPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
+        SettlementPrototypeInfo::RefreshFromXml(xmlFile, xmlNode);
         // TODO: implement ::RefreshFromXml
     }
 
@@ -69,6 +77,7 @@ namespace ai
         bool const result = ai::SettlementPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
+            _SetGeomType(GEOM_TYPE_FROM_MODEL);
             // TODO: implement TownPrototypeInfo::LoadFromXML
         }
         return result;
@@ -89,19 +98,34 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int Town::GetPropertyId(char const*) const
+    int Town::GetPropertyId(char const* propName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = Town::m_propertiesMap.find(propName);
+        if (it != Town::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return ai::Settlement::GetPropertyId(propName);
     }
 
-    bool Town::CanChildBeAdded(m3d::Class*) const
+    bool Town::CanChildBeAdded(m3d::Class* pClass) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return Settlement::CanChildBeAdded(pClass) || pClass->IsKindOf(&ai::Building::m_classBuilding);
     }
 
-    void Town::AddChild(Obj*)
+    void Town::AddChild(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Settlement::AddChild(pObj);
+        if (pObj)
+        {
+            if (pObj->IsKindOf(&ai::Building::m_classBuilding))
+            {
+                pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
+                pObj->SetBelong(GetBelong());
+                m_buildings.push_back((ai::Building*)pObj);
+            }
+        }
     }
 
     void Town::SetRuined(bool)
@@ -111,7 +135,24 @@ namespace ai
 
     Town::Town(TownPrototypeInfo const& prototype) : Settlement(prototype), m_gateTime(0.0, 0.0)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_gateState = GATE_CLOSED;
+        m_PointOfViewInInterface.x = 5.0f;
+        m_PointOfViewInInterface.y = 20.0f;
+        m_PointOfViewInInterface.z = 5.0f;
+
+        m_targetClasses.insert(RT_CLASS_LOCAL(Vehicle));
+        m_gateNode = 0;
+        m_playerEnteringTownCount = 0;
+        m_PlayerPathIndex = -1;
+        m_QuestsGenerated = 0;
+        m_VehicleShouldBeMoved = 0;
+        m_NewPosForVehicle = ZeroVector;
+        m_NewDirForVehicle = {0.0, 0.0, 1.0};
+        m_VehicleToBeMoved = 0;
+        m_bRuined = 0;
+        m_timeFromLastEnterTown = 0.0;
+        m_OldCameraMode = CM_LAST;
+        m_bOpenGateToPlayer = 1;
     }
 
     void Town::SendVehicleOff(Vehicle*, bool)
@@ -141,7 +182,7 @@ namespace ai
 
     TownPrototypeInfo const* Town::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), TownPrototypeInfo const);
     }
 
     float Town::GetObjResourceCoeff(Obj const*) const
@@ -184,9 +225,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Town::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Town::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Settlement::LoadFromXML(xmlFile, xmlNode);
+        // TODO: implement Town::LoadFromXML
     }
 
     void Town::SetPath(TownPath, retruxx::vector<CVector2> const&, retruxx::vector<CVector> const&)
@@ -204,9 +246,20 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Town::SetPropertyById(int, m3d::AIParam const&)
+    bool Town::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (propertyId == 64)
+        {
+            m_maxDefenders = newValue.GetAsID();
+            M3D_ASSERT(m_maxDefenders <= MAX_VEHICLES_IN_TEAM);
+            return 1;
+        }
+        else if (propertyId == 65)
+        {
+            m_bOpenGateToPlayer = newValue.GetAsID() != 0;
+            return 1;
+        }
+        return SimplePhysicObj::SetPropertyById(propertyId, newValue);
     }
 
     void Town::GetPath(TownPath, retruxx::vector<CVector2>&, retruxx::vector<CVector>&) const
@@ -239,9 +292,46 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int Town::OnEvent(Event const&)
+    int Town::OnEvent(Event const& evn)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int result = ai::Settlement::OnEvent(evn);
+        switch (evn.m_eventId)
+        {
+        case GE_OBJECT_ENTERS_LOCATION:
+            _OnObjectEntersLocation(evn);
+            result = 1;
+            break;
+
+        case GE_OBJECT_LEAVES_LOCATION:
+            _OnObjectLeavesLocation(evn);
+            result = 1;
+            break;
+
+        case GE_TARGET_REACHED:
+            _OnTargetReached(evn);
+            result = 1;
+            break;
+
+        case GE_SKIP_CINEMATIC:
+        case GE_END_CINEMATIC:
+            _OnSkipCinematic(evn);
+            result = 1;
+            break;
+        case GE_IN_CINEMATIC:
+        case GE_CINEMATIC_ENTER_FADE_IN:
+            _OnInCinematic(evn);
+            result = 1;
+            break;
+
+        case GE_PLAYER_VEHICLE_HORN:
+            _OnPlayerVehicleHorn(evn);
+            result = 1;
+            break;
+
+        default:
+            return result;
+        }
+        return result;
     }
 
     retruxx::vector<int, retruxx::allocator<int>> Town::GetDynamicQuestIds() const
@@ -264,9 +354,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Town::Update(float, unsigned)
+    void Town::Update(float elapsedTime, unsigned workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::Update(elapsedTime, workTime);
+        // TODO: implement Town::Update
     }
 
     void Town::Registration()
@@ -277,7 +368,7 @@ namespace ai
 
     m3d::Class* Town::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(Town);
     }
 
     void Town::GenerateNewDynamicQuestIfNeeded()
@@ -292,7 +383,8 @@ namespace ai
 
     void Town::_InternalCreateVisualPart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::_InternalCreateVisualPart();
+        // TODO: implement Town::_InternalCreateVisualPart
     }
 
     Town::~Town()
@@ -307,7 +399,10 @@ namespace ai
 
     void Town::_InternalPostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Settlement::_InternalPostLoad();
+        ai::theProcessManager->PostMessageA(2, ai::thePlayer->GetId(), GetId(), 0.0f, {60}, {}, 1);
+        ai::theProcessManager->PostMessageA(2, ai::thePlayer->GetId(), GetId(), 0.0f, {61}, {}, 1);
+        ai::theProcessManager->PostMessageA(2, ai::thePlayer->GetId(), GetId(), 0.0f, {64}, {}, 1);
     }
 
     void Town::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
@@ -342,7 +437,8 @@ namespace ai
 
     void Town::_OnObjectEntersLocation(Event const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Town::_OnObjectEntersLocation
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Town::_InitializeWorkshops()
@@ -357,7 +453,20 @@ namespace ai
 
     void Town::_OnInCinematic(Event const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_VehicleShouldBeMoved)
+        {
+            if (m_VehicleToBeMoved)
+            {
+                if (sqrt(
+                        m_NewDirForVehicle.x * m_NewDirForVehicle.x + m_NewDirForVehicle.y * m_NewDirForVehicle.y +
+                        m_NewDirForVehicle.z * m_NewDirForVehicle.z) > 0.1)
+                    m_VehicleToBeMoved->SetDirection(m_NewDirForVehicle);
+                m_VehicleToBeMoved->SetGamePositionOnGround(m_NewPosForVehicle, 1, 0);
+                m_VehicleToBeMoved->SetLinearVelocity(ZeroVector);
+                m_VehicleToBeMoved->SetAngularVelocity(ZeroVector);
+            }
+            m_VehicleShouldBeMoved = 0;
+        }
     }
 
     void Town::_OpenGates()
@@ -382,7 +491,8 @@ namespace ai
 
     void Town::_OnObjectLeavesLocation(Event const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Town::_OnObjectLeavesLocation
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     void Town::_SynchronizeGatesState()

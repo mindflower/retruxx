@@ -20,6 +20,7 @@ namespace ai
 
     class PhysicUnit : public ai::SimplePhysicObj
     {
+        friend class PhysicUnitPrototypeInfo;
     protected:
         virtual  ~PhysicUnit() override /* 0x00 */;
 
@@ -55,8 +56,18 @@ namespace ai
     public:
         static void __fastcall Registration();
 
-        enum States;
-        enum WalkState;
+        enum States
+        {
+          LIVE = 0,
+          DEAD = 1,
+        };
+
+        enum WalkState
+        {
+          STAND = 0,
+          TURN = 1,
+          WALK = 2,
+        };
 
     public:
         virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;

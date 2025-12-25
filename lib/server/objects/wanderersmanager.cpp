@@ -2,11 +2,13 @@
 
 namespace ai
 {
-    WanderersManagerPrototypeInfo::WanderersManagerPrototypeInfo()
-    {
-    }
+    RT_CLASS_EXPORTS_BEGIN(WanderersManager)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(WanderersManager);
 
-    bool WanderersManagerPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    WanderersManagerPrototypeInfo::WanderersManagerPrototypeInfo() = default;
+
+    bool WanderersManagerPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         return result;
@@ -14,7 +16,7 @@ namespace ai
 
     ai::Obj* WanderersManagerPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new WanderersManager(*this);
     }
 
     WanderersManager::~WanderersManager()
@@ -22,9 +24,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    WanderersManager::WanderersManager(const ai::WanderersManagerPrototypeInfo& prototypeInfo)
+    WanderersManager::WanderersManager(ai::WanderersManagerPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_rebornTimeout = 10.0f;
+        m_timeBeforeReborn = 0.0f;
     }
 
     m3d::Object* WanderersManager::Clone()
@@ -39,20 +42,20 @@ namespace ai
 
     m3d::Class* WanderersManager::GetBaseClass()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(Obj);
     }
 
     m3d::Class* WanderersManager::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(WanderersManager);
     }
 
-    const ai::WanderersManagerPrototypeInfo* WanderersManager::GetPrototypeInfo() const
+    ai::WanderersManagerPrototypeInfo const* WanderersManager::GetPrototypeInfo() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int WanderersManager::OnEvent(const ai::Event& evn)
+    int WanderersManager::OnEvent(ai::Event const& evn)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -69,12 +72,14 @@ namespace ai
 
     void WanderersManager::Update(float elapsedTime, unsigned int workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement WanderersManager::Update
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void WanderersManager::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::LoadFromXML(xmlFile, xmlNode);
+        // TODO: implement WanderersManager::LoadFromXML
     }
 
     void WanderersManager::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
@@ -82,7 +87,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void WanderersManager::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -97,7 +102,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersManager::CaravanInfo& WanderersManager::GetCaravanInfo(unsigned int) const
+    ai::WanderersManager::CaravanInfo const& WanderersManager::GetCaravanInfo(unsigned int) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -107,37 +112,38 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const ai::WanderersManager::WayPoint& WanderersManager::GetWayPoint(unsigned int) const
+    ai::WanderersManager::WayPoint const& WanderersManager::GetWayPoint(unsigned int) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     void WanderersManager::_InternalPostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement WanderersManager::_InternalPostLoad
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::_LoadWayPointsFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void WanderersManager::_LoadWayPointsFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::_LoadPrecisePathsFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void WanderersManager::_LoadPrecisePathsFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::_LoadCaravansInfoFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void WanderersManager::_LoadCaravansInfoFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::_LoadVagabondsInfoFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void WanderersManager::_LoadVagabondsInfoFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::_LoadWanderersStatesFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void WanderersManager::_LoadWanderersStatesFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -182,19 +188,17 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int WanderersManager::_GetWayPointIndex(const CStr& wayPointName) const
+    int WanderersManager::_GetWayPointIndex(CStr const& wayPointName) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::_SetStatePrecisePath(ai::WanderersManager::WandererState& state, int beginIndex,
-        int endIndex)
+    void WanderersManager::_SetStatePrecisePath(ai::WanderersManager::WandererState& state, int beginIndex, int endIndex)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    retruxx::vector<CVector2, retruxx::allocator<CVector2>> WanderersManager::_GetPrecisePath(int beginIndex,
-        int endIndex) const
+    retruxx::vector<CVector2, retruxx::allocator<CVector2>> WanderersManager::_GetPrecisePath(int beginIndex, int endIndex) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -204,23 +208,23 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::_OnTargetReached(const ai::Event& evn)
+    void WanderersManager::_OnTargetReached(ai::Event const& evn)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::_OnObjectDie(const ai::Event& evn)
+    void WanderersManager::_OnObjectDie(ai::Event const& evn)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::_OnObjectEntersLocation(const ai::Event& evn)
+    void WanderersManager::_OnObjectEntersLocation(ai::Event const& evn)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void WanderersManager::_OnLostGuardsNeedDirection(const ai::Event& evn)
+    void WanderersManager::_OnLostGuardsNeedDirection(ai::Event const& evn)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

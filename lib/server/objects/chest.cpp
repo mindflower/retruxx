@@ -1,4 +1,9 @@
 #include "chest.h"
+#include <core/kernel.h>
+#include "server/geomrepository.h"
+#include "server/geomrepositoryitem.h"
+#include <server/utils.h>
+#include "base/prototypemanager.h"
 
 namespace ai
 {
@@ -23,7 +28,7 @@ namespace ai
 
     ai::Obj* ChestPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new Chest(*this);
     }
 
     Chest::~Chest()
@@ -33,7 +38,17 @@ namespace ai
 
     Chest::Chest(ai::ChestPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_LifeTime = prototypeInfo.m_LifeTime;
+        m_repository = (ai::GeomRepository*)M3D_KERNEL->New("GeomRepository");
+        if (m_repository)
+        {
+            m_repository->Clear(0);
+            PointBase<int> size;
+            size.x = 200;
+            size.y = 2000;
+            m_repository->SetGeomSize(size);
+        }
+        SetAutoDisabling(1, 0.1f, 0.1f, 5);
     }
 
     m3d::Object* Chest::Clone()
@@ -48,22 +63,23 @@ namespace ai
 
     m3d::Class* Chest::GetBaseClass()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(SimplePhysicObj);
     }
 
     m3d::Class* Chest::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(Chest);
     }
 
     ai::ChestPrototypeInfo const* Chest::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), ChestPrototypeInfo const);
     }
 
     void Chest::Update(float elapsedTime, unsigned int workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::Update(elapsedTime, workTime);
+        // TODO: implement Chest::Update
     }
 
     void Chest::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -88,22 +104,37 @@ namespace ai
 
     void Chest::SetPositionSelf(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CVector realPos = pos;
+        if ((GetPhysicState() & 1) == 0)
+        {
+            realPos = ai::GetGroundPos(pos, 1, 0);
+        }
+        PhysicObj::SetPositionSelf(realPos);
     }
 
     void Chest::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Chest::RenderDebugInfo
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     bool Chest::CanChildBeAdded(m3d::Class* pClass) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return true;
     }
 
     void Chest::AddChild(ai::Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::AddChild(pObj);
+        if (pObj)
+        {
+            pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
+            if (m_repository)
+            {
+                ai::GeomRepositoryItem item(pObj->GetId());
+                m_repository->AddThing(item, 0);
+            }
+        }
     }
 
     bool Chest::RemoveChild(ai::Obj* pObj)

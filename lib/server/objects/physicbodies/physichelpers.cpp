@@ -72,9 +72,10 @@ namespace ai
         return -1;
     }
 
-    bool GetCollisionInfoByModelName(CStr const&, retruxx::vector<ai::CollisionInfo>&, bool)
+    bool GetCollisionInfoByModelName(CStr const& id, retruxx::vector<ai::CollisionInfo>& collisionInfos, bool bTrimeshAllowed)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int const itemByName = M3D_APP->GetAnimatedModelsServer().GetItemByName(id.c_str(), true);
+        return GetCollisionInfoByServerHandle(itemByName, collisionInfos, bTrimeshAllowed);
     }
 
     bool GetCollisionInfoByServerHandle(int serverHandle, retruxx::vector<CollisionInfo>& collisionInfos, bool bTrimeshAllowed)
@@ -167,8 +168,8 @@ namespace ai
 
                     // Apply 45-degree rotation for cylinder
                     Quaternion rotationAdjust;
-                    rotationAdjust.y = sin(0.7853981852531433f);  // sin(45°)
-                    float cos45 = cos(0.7853981852531433f);       // cos(45°)
+                    rotationAdjust.y = sin(0.7853981852531433f);  // sin(45ï¿½)
+                    float cos45 = cos(0.7853981852531433f);       // cos(45ï¿½)
 
                     Quaternion adjustedRotation;
                     adjustedRotation.x = (cos45 * collisionInfo.m_relRotation.x) + (collisionInfo.m_relRotation.w * rotationAdjust.y);

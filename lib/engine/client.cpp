@@ -30,12 +30,14 @@ namespace m3d
         }
         if ((numModel & 0x800000) != 0)
         {
+            numModel -= 0x800000;
             auto obj = M3D_KERNEL->New("SgPointLightSourceNode");
             obj->SetProperty(4360u, &numModel);
             return RT_DYNCAST(obj, SgNode);
         }
         if ((numModel & 0x1000000) != 0)
         {
+            numModel -= 0x1000000;
             auto obj = M3D_KERNEL->New("SgSpriteNode");
             obj->SetProperty(4360u, &numModel);
             return RT_DYNCAST(obj, SgNode);

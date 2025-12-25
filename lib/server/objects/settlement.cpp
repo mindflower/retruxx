@@ -5,6 +5,9 @@
 #include "core/ini.h"
 #include "base/prototypemanager.h"
 #include <core/log.h>
+#include <server/utils.h>
+#include "staticautogun.h"
+#include "team.h"
 
 namespace ai
 {
@@ -51,7 +54,9 @@ namespace ai
             m_vehiclesPrototypeId = thePrototypeManager->GetPrototypeId(m_vehiclesPrototypeName);
             if (m_vehiclesPrototypeId == -1)
             {
-                M3D_LOG_ERR("Error: invalid vehicles prototype '" + m_vehiclesPrototypeName + "' for settlement prototype '" + m_prototypeName + "'");
+                M3D_LOG_ERR(
+                    "Error: invalid vehicles prototype '" + m_vehiclesPrototypeName + "' for settlement prototype '" + m_prototypeName +
+                    "'");
             }
         }
     }
@@ -76,7 +81,8 @@ namespace ai
 
     Settlement::Settlement(SettlementPrototypeInfo const& prototype) : SimplePhysicObj(prototype), m_population(5, 0, 5)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        DisablePhysics();
+        _SetStatic();
     }
 
     void Settlement::CreateChildren()
@@ -104,14 +110,17 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Settlement::CanChildBeAdded(m3d::Class*) const
+    bool Settlement::CanChildBeAdded(m3d::Class* pClass) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (Obj::CanChildBeAdded(pClass))
+            return 1;
+        return pClass->IsKindOf(&ai::StaticAutoGun::m_classStaticAutoGun) || pClass->IsKindOf(&ai::Location::m_classLocation) ||
+            pClass->IsKindOf(&ai::Team::m_classTeam);
     }
 
-    void Settlement::SetRotationSelf(Quaternion const&)
+    void Settlement::SetRotationSelf(Quaternion const& rot)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        PhysicObj::SetRotationSelf(rot);
     }
 
     CVector Settlement::GetCaravanArrivePos() const
@@ -124,9 +133,9 @@ namespace ai
         return RT_CLASS_LOCAL(SimplePhysicObj);
     }
 
-    int Settlement::OnEvent(Event const&)
+    int Settlement::OnEvent(Event const& evn)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return Obj::OnEvent(evn);
     }
 
     void Settlement::SetPosition(CVector const&)
@@ -144,19 +153,31 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Settlement::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Settlement::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::LoadFromXML(xmlFile, xmlNode);
+        // TODO: implement Settlement::LoadFromXML
     }
 
-    void Settlement::SetPositionSelf(CVector const&)
+    void Settlement::SetPositionSelf(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: check this
+        int const physicState = GetPhysicState();
+        bool const enabled = (physicState & 2) != 0;
+        if (enabled)
+        {
+            _SetGeomEnabledBit(false);
+        }
+        PhysicObj::SetPositionSelf(ai::GetGroundPos(pos, 1, 0));
+        if (enabled)
+        {
+            _SetGeomEnabledBit(true);
+        }
     }
 
     SettlementPrototypeInfo const* Settlement::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), SettlementPrototypeInfo const);
     }
 
     bool Settlement::RemoveChild(Obj*)
@@ -174,9 +195,36 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Settlement::AddChild(Obj*)
+    void Settlement::AddChild(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::AddChild(pObj);
+        if (pObj)
+        {
+            if (pObj->IsKindOf(&ai::StaticAutoGun::m_classStaticAutoGun))
+            {
+                m_staticAutoGuns.insert((StaticAutoGun*)pObj);
+            }
+            else if (pObj->IsKindOf(&ai::Location::m_classLocation))
+            {
+                m_locations.insert((Location*)pObj);
+            }
+            else
+            {
+                if (!pObj->IsKindOf(&ai::Team::m_classTeam))
+                    return;
+
+                CStr name = pObj->GetName();
+                if (name.findsubstr("_Caravan", 0) == -1)
+                {
+                    M3D_ASSERT(0);
+                }
+                else
+                {
+                    m_caravans.push_back((Team*)pObj);
+                }
+            }
+            pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
+        }
     }
 
     CVector Settlement::GetEnterPos() const
@@ -211,7 +259,7 @@ namespace ai
 
     void Settlement::_InternalPostLoad()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SimplePhysicObj::_InternalPostLoad();
     }
 
     int Settlement::_GetMaxSpawnedVehicles()

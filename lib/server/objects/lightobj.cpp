@@ -15,7 +15,7 @@ namespace ai
 
     ai::Obj* LightObjPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new LightObj(*this);
     }
 
     LightObjPrototypeInfo::LightObjPrototypeInfo()
@@ -25,7 +25,7 @@ namespace ai
 
     m3d::Class* LightObj::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(LightObj);
     }
 
     void LightObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
@@ -39,7 +39,6 @@ namespace ai
 
     LightObj::LightObj(LightObjPrototypeInfo const& prototype) : SgNodeObj(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     void LightObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
@@ -47,9 +46,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool LightObj::SetPropertyById(int, m3d::AIParam const&)
+    bool LightObj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return SgNodeObj::SetPropertyById(propertyId, newValue);
     }
 
     eGObjPropertySaveStatus LightObj::GetPropertySaveStatus(int) const
@@ -72,9 +71,15 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int LightObj::GetPropertyId(char const*) const
+    int LightObj::GetPropertyId(char const* propName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = LightObj::m_propertiesMap.find(propName);
+        if (it != LightObj::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return SgNodeObj::GetPropertyId(propName);
     }
 
     bool LightObj::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
@@ -101,4 +106,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

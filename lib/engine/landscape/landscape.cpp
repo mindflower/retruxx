@@ -1983,12 +1983,6 @@ namespace m3d
 
         // Process collision points and triangles
 
-        //if (nen.find(mdl->GetName()) != nen.end())
-        //{
-        //    bool asd = true;
-        //}
-        //nen.insert(mdl->GetName());
-
         if (!mdl->GetCollisionTrimesh().Points.empty())
         {
             // Create GeomObjectStatics
@@ -4659,7 +4653,7 @@ namespace m3d
                             {
                                 auto* physObj = RT_DYNCAST(obj, PhysicObj);
                                 allPhysicObjs.insert(physObj);
-                                if (physObj->bIsUpdatingByODE())
+                                if (physObj->bIsUpdatingByODE() && (physObj->GetPhysicState() & 1) != 0)
                                 {
                                     isCellEnabled = true;
                                     break;

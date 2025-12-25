@@ -1,5 +1,7 @@
 #include "bar.h"
 #include "core/ini.h"
+#include "npc.h"
+#include <core/log.h>
 
 namespace ai
 {
@@ -9,7 +11,7 @@ namespace ai
 
     Obj* BarPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new Bar(*this);
     }
 
     BarPrototypeInfo::BarPrototypeInfo()
@@ -38,14 +40,14 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Bar::CanChildBeAdded(m3d::Class*) const
+    bool Bar::CanChildBeAdded(m3d::Class* pClass) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return Building::CanChildBeAdded(pClass) || pClass->IsKindOf(&ai::Npc::m_classNpc);
     }
 
     Bar::Bar(BarPrototypeInfo const& prototypeInfo) : Building(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_barmanId = -1;
     }
 
     bool Bar::RemoveChild(Obj*)
@@ -53,14 +55,16 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Bar::Update(float, unsigned)
+    void Bar::Update(float elapsedTime, unsigned workTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::Obj::Update(elapsedTime, workTime);
+        if (elapsedTime != 0.0)
+            CreateBarman();
     }
 
     m3d::Class* Bar::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(Bar);
     }
 
     BarPrototypeInfo const* Bar::GetPrototypeInfo() const
@@ -78,9 +82,23 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Bar::AddChild(Obj*)
+    void Bar::AddChild(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Building::AddChild(pObj);
+        if (pObj && pObj->IsKindOf(&ai::Npc::m_classNpc) && ((Npc*)pObj)->GetNpcType() == Npc::NPC_BARMAN)
+        {
+            if (m_barmanId == -1)
+            {
+                m_barmanId = pObj->GetId();
+            }
+            else
+            {
+                M3D_LOG_INFO(
+                    "Bar::AddChild warning - the barman already exists; dublicate barman-npc " + CStr(pObj->GetName()) +
+                    " would be deleted");
+                pObj->Remove();
+            }
+        }
     }
 
     Bar::~Bar()
@@ -90,7 +108,8 @@ namespace ai
 
     void Bar::CreateBarman()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement Bar::CreateBarman
+        // RETRUXX_NOT_IMPLEMENTED;
     }
 
     m3d::Object* Bar::CreateObject()

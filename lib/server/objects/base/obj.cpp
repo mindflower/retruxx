@@ -277,7 +277,7 @@ namespace ai
         }
 
         ref_ptr objNode = xmlFile->CreateNode();
-        for (xmlNode->GetFirstChild(objNode, "Object"); !objNode->IsEmpty(); objNode->GetNextSibling(objNode, "Suffix"))
+        for (xmlNode->GetFirstChild(objNode, "Object"); !objNode->IsEmpty(); objNode->GetNextSibling(objNode, "Object"))
         {
             if (objNode->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
             {

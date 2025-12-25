@@ -24,6 +24,7 @@ namespace ai
 
     class StaticAutoGun : public ai::ComplexPhysicObj
     {
+        friend class StaticAutoGunPrototypeInfo;
     protected:
         virtual  ~StaticAutoGun() override /* 0x00 */;
 
