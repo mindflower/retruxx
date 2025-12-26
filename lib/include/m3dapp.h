@@ -19,7 +19,7 @@ namespace m3d
 {
     class IGeneratedTexture;
     class mVideoPlayer;
-    class AuxImpulseInfo;
+    struct AuxImpulseInfo;
     class SgNode;
     class Log;
 

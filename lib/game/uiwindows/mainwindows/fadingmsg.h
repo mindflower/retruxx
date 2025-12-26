@@ -4,7 +4,7 @@
 
 namespace m3d
 {
-    class Event;
+    struct Event;
 }
 
 class FadingMsgList : public m3d::ui::Wnd

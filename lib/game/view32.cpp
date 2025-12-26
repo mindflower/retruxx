@@ -69,28 +69,28 @@ namespace ai
 namespace
 {
     m3d::CConsoleCommands conCommands[] = {
-    {"map", 0x1000},
-    {"music", 0x1001},
-    {"debug", 0x1002},
-    {"reload", 0x1003},
-    {"noclip", 0x1005},
-    {"goto", 0x1006},
-    {"saveWorld", 0x1007},
-    {"saveServers", 0x1008},
-    {"resetUnits", 0x1009},
-    {"cinematic", 0x1011},
-    {"setProfile", 0x1012},
-    {"netStartStats", 0x1013},
-    {"netPrintStats", 0x1014},
-    {"miniDump", 0x1015},
-    {"nextmap", 0x1016},
-    {"g_rebuildshores", 0x1017},
-    {"showPlayerStats", 0x1019},
-    {"g_postEffectReload", 0x1020},
-    {"g_postEffect", 0x1021},
-    {"g_postEffectSetParam", 0x1022},
-    {"g_postEffectKill", 0x1023},
-    {"dxCursor", 0x1024},
+        {"map", 0x1000},
+        {"music", 0x1001},
+        {"debug", 0x1002},
+        {"reload", 0x1003},
+        {"noclip", 0x1005},
+        {"goto", 0x1006},
+        {"saveWorld", 0x1007},
+        {"saveServers", 0x1008},
+        {"resetUnits", 0x1009},
+        {"cinematic", 0x1011},
+        {"setProfile", 0x1012},
+        {"netStartStats", 0x1013},
+        {"netPrintStats", 0x1014},
+        {"miniDump", 0x1015},
+        {"nextmap", 0x1016},
+        {"g_rebuildshores", 0x1017},
+        {"showPlayerStats", 0x1019},
+        {"g_postEffectReload", 0x1020},
+        {"g_postEffect", 0x1021},
+        {"g_postEffectSetParam", 0x1022},
+        {"g_postEffectKill", 0x1023},
+        {"dxCursor", 0x1024},
     };
 
     int videoNum = 0;
@@ -109,7 +109,7 @@ namespace
         }
         return dynamic_cast<CinemaPanel*>(&*wnd);
     }
-}
+}  // namespace
 
 unsigned m_profiler_Client = 0;
 unsigned m_profiler_GetPackets = 0;
@@ -151,12 +151,12 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
     }
     if (m_curGameMode.Get() == GS_CINEMATIC && impInfo.m_impId != 2)
     {
-	    if (m_cinematic->m_state != 5 && m_cinematic->m_state != 3 && m_cinematic->m_state != 4)
-	    {
+        if (m_cinematic->m_state != 5 && m_cinematic->m_state != 3 && m_cinematic->m_state != 4)
+        {
             CinematicInterrupt();
             HandleCinematic(0.0);
             return 1;
-	    }
+        }
     }
     if (m_curGameMode.Get() != GS_MAINMENU && impInfo.m_impId == 1)
     {
@@ -219,7 +219,15 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
 
         // TODO: check this
         M3D_APP->m_pInterfaceManager->StartSplashing(11);
-        auto v22 = LoadLevel(M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(), {}, true, false, false, nullptr, nullptr, (ai::ObjContainer::eSAVE_TYPES)(ai::ObjContainer::SAVE_EDITOR | ai::ObjContainer::SAVE_FULL | 0x8)) == 0;
+        auto v22 = LoadLevel(
+                       M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(),
+                       {},
+                       true,
+                       false,
+                       false,
+                       nullptr,
+                       nullptr,
+                       (ai::ObjContainer::eSAVE_TYPES)(ai::ObjContainer::SAVE_EDITOR | ai::ObjContainer::SAVE_FULL | 0x8)) == 0;
         if (v22)
         {
             return 0;
@@ -233,13 +241,7 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
         {
             M3D_APP->m_pInterfaceManager->GetSavesManager()->MakeCurGameScreenshot();
         }
-        M3D_APP->EnqueueMessage(65656,
-            0,
-            0,
-            0,
-            0,
-            {},
-            {});
+        M3D_APP->EnqueueMessage(65656, 0, 0, 0, 0, {}, {});
         return 1;
     }
 
@@ -318,7 +320,7 @@ bool CMiracle3d::GetMouseHitPoint(CVector& hitPoint, m3d::SgNode*& sgNode)
         hitPoint.x = contact.geom.pos[0];
         hitPoint.y = contact.geom.pos[1];
         hitPoint.z = contact.geom.pos[2];
-        
+
         auto* obj = static_cast<m3d::Object*>(dGeomGetData(contact.geom.g2));
         if (!obj)
         {
@@ -329,12 +331,12 @@ bool CMiracle3d::GetMouseHitPoint(CVector& hitPoint, m3d::SgNode*& sgNode)
         {
             auto* physBody = RT_DYNCAST(obj, PhysicBody);
             sgNode = physBody->m_Node;
-            return true;;
+            return true;
+            ;
         }
 
-        if (IS_KIND_OF(obj, GeomObjectLandscape) || IS_KIND_OF(obj, GeomObjectStatics) ||
-            IS_KIND_OF(obj, GeomObjectWater) || IS_KIND_OF(obj, GeomObjectRoad) ||
-            IS_KIND_OF(obj, GeomObj))
+        if (IS_KIND_OF(obj, GeomObjectLandscape) || IS_KIND_OF(obj, GeomObjectStatics) || IS_KIND_OF(obj, GeomObjectWater) ||
+            IS_KIND_OF(obj, GeomObjectRoad) || IS_KIND_OF(obj, GeomObj))
         {
             sgNode = &m3d::pClient->GetWorld().GetLandscape();
         }
@@ -377,8 +379,6 @@ int CMiracle3d::OnFlyMouse(m3d::AuxImpulseInfo const&)
 int CMiracle3d::GameInit()
 {
     m3d::pClient = new m3d::CClient;
-    //inject::injectMemoryAddress(0x00A1185C, inject::cast<uint32_t>(m3d::pClient));
-
     m3d::pClient->Init();
     m_gameInited = true;
     return 1;
@@ -461,11 +461,8 @@ void CMiracle3d::PlayHackedMusic(HackedMusicType musicType, bool bForceRestart)
             }
             else
             {
-                if (musicType != HACKMUSIC_CUSTOM
-                    && (m_bMustStartNewMusic || bForceRestart || musicType != this->m_hackedMusicType)
-                    && m3d::Application::g_pApp->m_sound
-                    && musicType >= HACKMUSIC_MENU
-                    && musicType < m_musicNames.size())
+                if (musicType != HACKMUSIC_CUSTOM && (m_bMustStartNewMusic || bForceRestart || musicType != this->m_hackedMusicType) &&
+                    m3d::Application::g_pApp->m_sound && musicType >= HACKMUSIC_MENU && musicType < m_musicNames.size())
                 {
                     m3d::Application::StartPlayingMusic(this->m_musicNames[musicType].c_str(), 1, 1);
                 }
@@ -486,7 +483,7 @@ namespace
         auto cinemaFadePanel = (CinemaFadePanel*)&(*wnd);
         return cinemaFadePanel;
     }
-}
+}  // namespace
 
 bool CMiracle3d::CinematicFade()
 {
@@ -507,7 +504,7 @@ bool CMiracle3d::CinematicFade()
         }
     }
 
-    CinemaPanel* cinemaPanel = GetCinemaPanel(); // Assuming this returns CinemaPanel*
+    CinemaPanel* cinemaPanel = GetCinemaPanel();  // Assuming this returns CinemaPanel*
 
     if (fadeTime < fadePeriod)
     {
@@ -525,8 +522,7 @@ bool CMiracle3d::CinematicFade()
     case m3d::CINEMATIC_ENTER_FADE_OUT:
     {
         // Store GUI state and hide interface
-        m_bGuiWasHiddenBeforeCinematic =
-            M3D_APP->m_pInterfaceManager->IsHiddenByUser();
+        m_bGuiWasHiddenBeforeCinematic = M3D_APP->m_pInterfaceManager->IsHiddenByUser();
 
         ref_ptr wndMainMenu = M3D_APP->m_pInterfaceManager->GetWindow(72);
 
@@ -713,7 +709,7 @@ int CMiracle3d::HandleCinematic(float dT)
     }
     m_cinematic->m_playTime += dT * 1000;
 
-    while(true)
+    while (true)
     {
         switch (this->m_cinematic->m_state)
         {
@@ -905,16 +901,16 @@ void CMiracle3d::CinematicInterrupt()
                 m_cinematic->m_fadeStartTime = (int)playTime;
                 m_cinematic->m_state = m3d::CINEMATIC_EXIT_FADE_OUT;
                 auto cinemaFadePanel = GetCinemaFadePanel();
-                    if (cinemaFadePanel)
-                        cinemaFadePanel->AttachToScreenCinematicRelated();
+                if (cinemaFadePanel)
+                    cinemaFadePanel->AttachToScreenCinematicRelated();
             }
         }
         else
         {
             auto v11 = m_cinematic->m_playTime - m_cinematic->m_fadeStartTime;
             m_cinematic->m_state = m3d::CINEMATIC_EXIT_FADE_OUT;
-            m_cinematic->m_fadeStartTime = v11 + m_cinematic->m_playTime
-                - (int)(m_cinematic->GetFadePeriodForState(m3d::CINEMATIC_ENTER_FADE_IN) * 1000.0);
+            m_cinematic->m_fadeStartTime =
+                v11 + m_cinematic->m_playTime - (int)(m_cinematic->GetFadePeriodForState(m3d::CINEMATIC_ENTER_FADE_IN) * 1000.0);
         }
     }
     else
@@ -962,7 +958,7 @@ void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
 
     switch (m_player.m_cameraMode)
     {
-    case 1: // First camera mode
+    case 1:  // First camera mode
     {
         RETRUXX_NOT_IMPLEMENTED;
         //if (trackedObj && trackedObj->GetClass() == &ai::Vehicle::m_classVehicle)
@@ -1048,17 +1044,17 @@ void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
         break;
     }
 
-    case CM_FOLLOWMODE: // Second camera mode
+    case CM_FOLLOWMODE:  // Second camera mode
     {
         if (trackedObj && trackedObj->GetClass() == &ai::Vehicle::m_classVehicle)
         {
             auto vehicle = RT_DYNCAST(trackedObj, ai::Vehicle);
             // Get vehicle velocity
             CVector velocity = trackedObj->GetLinearVelocity();
-        
+
             // Clamp camera distances
             float maxDist = vehicle->GetCameraMaxDist();
-        
+
             if (this->m_gameCameraRho < 0.0f)
                 this->m_gameCameraRho = 0.0f;
             if (this->m_gameCameraRho > maxDist)
@@ -1068,70 +1064,69 @@ void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
                 this->m_player.m_desiredDistance = 0.0f;
             if (this->m_player.m_desiredDistance > maxDist)
                 this->m_player.m_desiredDistance = maxDist;
-        
+
             // Create rotation matrix
             CMatrix sightLine;
             sightLine.rotYPR(this->m_curCamera.m_rotYaw, this->m_curCamera.m_rotPitch, this->m_curCamera.m_rotRoll);
-        
+
             // Calculate camera offset
             CVector cameraOffset;
             cameraOffset.x = this->m_flyCamTurn.x;
             cameraOffset.y = this->m_flyCamTurn.y;
             cameraOffset.z = this->m_flyCamTurn.z - this->m_gameCameraRho;
-        
+
             // Transform offset by rotation matrix
             CVector transformedOffset;
             transformedOffset.x = (sightLine._11 * cameraOffset.x) + (sightLine._12 * cameraOffset.y) + (sightLine._13 * cameraOffset.z);
             transformedOffset.y = (sightLine._21 * cameraOffset.x) + (sightLine._22 * cameraOffset.y) + (sightLine._23 * cameraOffset.z);
             transformedOffset.z = (sightLine._31 * cameraOffset.x) + (sightLine._32 * cameraOffset.y) + (sightLine._33 * cameraOffset.z);
-        
+
             // Apply auto slide movement
             CVector autoSlide;
             autoSlide.x = this->m_gameSlideAuto.x * deltaTime;
             autoSlide.y = this->m_gameSlideAuto.y * deltaTime;
             autoSlide.z = this->m_gameSlideAuto.z * deltaTime;
-        
+
             CVector slideMovement;
             slideMovement.x = (sightLine._11 * autoSlide.x) + (sightLine._12 * autoSlide.y) + (sightLine._13 * autoSlide.z);
             slideMovement.y = (sightLine._21 * autoSlide.x) + (sightLine._22 * autoSlide.y) + (sightLine._23 * autoSlide.z);
             slideMovement.z = (sightLine._31 * autoSlide.x) + (sightLine._32 * autoSlide.y) + (sightLine._33 * autoSlide.z);
-        
+
             // Get vehicle position and height
-            CVector vehiclePos =  vehicle->GetPosition();
-        
+            CVector vehiclePos = vehicle->GetPosition();
+
             float cameraHeight = vehicle->GetCameraHeight();
-        
+
             // Calculate final camera position
             this->m_curCamera.m_worldOrigin.x = vehiclePos.x + transformedOffset.x + slideMovement.x;
             this->m_curCamera.m_worldOrigin.y = vehiclePos.y + cameraHeight + transformedOffset.y + slideMovement.y;
             this->m_curCamera.m_worldOrigin.z = vehiclePos.z + transformedOffset.z + slideMovement.z;
-        
+
             // Calculate look at point
             CVector lookAtPoint;
             lookAtPoint.x = vehiclePos.x;
             lookAtPoint.y = vehiclePos.y + cameraHeight;
             lookAtPoint.z = vehiclePos.z;
-        
+
             // Calculate direction vector for collision
             CVector direction;
             direction.x = lookAtPoint.x - this->m_curCamera.m_worldOrigin.x;
             direction.y = lookAtPoint.y - this->m_curCamera.m_worldOrigin.y;
             direction.z = lookAtPoint.z - this->m_curCamera.m_worldOrigin.z;
-        
+
             // Perform camera collision detection
             float collisionRho = this->m_gameCameraRho;
             //TODO: check this
             CollideCamera(this->m_curCamera.m_worldOrigin, collisionRho, direction, {});
-        
+
             // Make camera look at the target point
             m_curCamera.lookAt(lookAtPoint);
         }
         break;
     }
 
-    case 3: // Third camera mode (fly camera)
+    case 3:  // Third camera mode (fly camera)
     {
-
         RETRUXX_NOT_IMPLEMENTED;
         //// Create rotation matrix for fly camera
         //CMatrix sightLine;
@@ -1182,7 +1177,15 @@ int CMiracle3d::OnObtainingFocus()
     return 1;
 }
 
-int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServers, bool bQuiet, bool bContinuousMap, m3d::cmn::XmlFile* dynamicSceneXmlFile, m3d::cmn::XmlNode const* dynamicSceneXmlNode, ai::ObjContainer::eSAVE_TYPES saveType)
+int CMiracle3d::LoadLevel(
+    CStr const& name,
+    CStr const& saveDir,
+    bool LoadServers,
+    bool bQuiet,
+    bool bContinuousMap,
+    m3d::cmn::XmlFile* dynamicSceneXmlFile,
+    m3d::cmn::XmlNode const* dynamicSceneXmlNode,
+    ai::ObjContainer::eSAVE_TYPES saveType)
 {
     //TODO: check bQuiet, continiousMap and LoadServers!!!!
     if (!m_gameInited)
@@ -1197,7 +1200,7 @@ int CMiracle3d::LoadLevel(CStr const& name, CStr const& saveDir, bool LoadServer
     //TODO: check this
     if (!bContinuousMap && !m3d::pClient->GetWorld().Load(name, m_curCamera, bQuiet))
     {
-	    M3D_LOG_INFO("Level file " + name + " not found");
+        M3D_LOG_INFO("Level file " + name + " not found");
         EnqueueMessage(1, 0, 0, 0, 0, {}, {});
         return 0;
     }
@@ -1277,7 +1280,7 @@ void CMiracle3d::StartMainMenu()
     if (m_profileManager)
     {
         m_profileManager->Init();
-        OnChangeMode(m3d::AuxImpulseInfo{ 1, true, -1, 0, 0 });
+        OnChangeMode(m3d::AuxImpulseInfo{1, true, -1, 0, 0});
     }
     else
     {
@@ -1341,7 +1344,7 @@ int CMiracle3d::OnGameMouse(m3d::AuxImpulseInfo const& impInfo)
     int res = 0;
     if (m_curGameMode.Get() == GS_GAME)
     {
-        const auto cameraMode = m_player.m_cameraMode;
+        auto const cameraMode = m_player.m_cameraMode;
         if (cameraMode == CM_FOLLOWMODE || cameraMode == CM_FLYCAMERA)
         {
             res = 1;
@@ -1352,8 +1355,8 @@ int CMiracle3d::OnGameMouse(m3d::AuxImpulseInfo const& impInfo)
     {
         if (GetCapture() != this)
         {
-            const auto mouseSense = GetMouseSensitivity();
-            m_flyCamTurn.x= dx * mouseSense * 0.003;
+            auto const mouseSense = GetMouseSensitivity();
+            m_flyCamTurn.x = dx * mouseSense * 0.003;
             m_flyCamTurn.y = dy * mouseSense * 0.003;
             if (IsMouseYAxisFlipped())
             {
@@ -1452,7 +1455,7 @@ bool CMiracle3d::LoadMapFromConsole(m3d::CConsoleParams const& params, bool isCo
     return false;
 }
 
-int CMiracle3d::StartPlayingVideo(char const* videoFile, int(CMiracle3d::* onFinishCallback)())
+int CMiracle3d::StartPlayingVideo(char const* videoFile, int (CMiracle3d::*onFinishCallback)())
 {
     //TODO: check this!!!
     CStr file = videoFile;
@@ -1474,7 +1477,7 @@ int CMiracle3d::StartPlayingVideo(char const* videoFile, int(CMiracle3d::* onFin
         g_pApp->ClearViewportToBlack();
         if (file.empty() || M3dVideoPlayer->Play(videoFile))
         {
-        	res = 0;
+            res = 0;
             m_playingVideo = true;
             m_onFinishVideoPlaying = onFinishCallback;
             return res;
@@ -1509,7 +1512,12 @@ bool CMiracle3d::SaveGame(CStr const&, bool)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-bool CMiracle3d::LoadMap(CStr const& mapname, bool isContinuousMap, m3d::cmn::XmlFile* dynamicSceneXmlFile, m3d::cmn::XmlNode const* dynamicSceneXmlNode, ai::ObjContainer::eSAVE_TYPES saveType)
+bool CMiracle3d::LoadMap(
+    CStr const& mapname,
+    bool isContinuousMap,
+    m3d::cmn::XmlFile* dynamicSceneXmlFile,
+    m3d::cmn::XmlNode const* dynamicSceneXmlNode,
+    ai::ObjContainer::eSAVE_TYPES saveType)
 {
     CStr fullMapName = mapname;
     auto strres = strstr(mapname.c_str(), ".ssl");
@@ -1558,23 +1566,19 @@ bool CMiracle3d::LoadMap(CStr const& mapname, bool isContinuousMap, m3d::cmn::Xm
 
 int CMiracle3d::ValidateCameraAngles()
 {
-    if(m_curCamera.m_rotYaw > 3.1415927)
-        m_curCamera.m_rotYaw = m_curCamera.m_rotYaw
-        - (float)((float)(int)(float)((float)(m_curCamera.m_rotYaw + 3.1415927) * 0.15915494)
-            * 6.2831855);
+    if (m_curCamera.m_rotYaw > 3.1415927)
+        m_curCamera.m_rotYaw =
+            m_curCamera.m_rotYaw - (float)((float)(int)(float)((float)(m_curCamera.m_rotYaw + 3.1415927) * 0.15915494) * 6.2831855);
     if (m_curCamera.m_rotYaw < -3.1415927)
-        m_curCamera.m_rotYaw = (float)((float)(int)(float)((float)(3.1415927 - m_curCamera.m_rotYaw) * 0.15915494)
-            * 6.2831855)
-        + m_curCamera.m_rotYaw;
+        m_curCamera.m_rotYaw =
+            (float)((float)(int)(float)((float)(3.1415927 - m_curCamera.m_rotYaw) * 0.15915494) * 6.2831855) + m_curCamera.m_rotYaw;
 
     auto v2 = m_curCamera.m_rotPitch;
     if (v2 > 3.1415927)
-        m_curCamera.m_rotPitch = m_curCamera.m_rotPitch
-        - (float)((float)(int)(float)((float)(v2 + 3.1415927) * 0.15915494) * 6.2831855);
+        m_curCamera.m_rotPitch = m_curCamera.m_rotPitch - (float)((float)(int)(float)((float)(v2 + 3.1415927) * 0.15915494) * 6.2831855);
     if (m_curCamera.m_rotPitch < -3.1415927)
-        m_curCamera.m_rotPitch = (float)((float)(int)(float)((float)(3.1415927 - m_curCamera.m_rotPitch) * 0.15915494)
-            * 6.2831855)
-        + m_curCamera.m_rotPitch;
+        m_curCamera.m_rotPitch =
+            (float)((float)(int)(float)((float)(3.1415927 - m_curCamera.m_rotPitch) * 0.15915494) * 6.2831855) + m_curCamera.m_rotPitch;
 
     auto v3 = m_minDist.GetF();
     auto v4 = m_maxDist.GetF();
@@ -1657,7 +1661,7 @@ int CMiracle3d::Controls(double t0, double tlen)
 {
     // TODO: generated code
 
-    if(!m3d::pClient)
+    if (!m3d::pClient)
     {
         return 1;
     }
@@ -1686,7 +1690,8 @@ int CMiracle3d::Controls(double t0, double tlen)
         {
             vehicle->SetSteer(-0.78539819f);
         }
-        else {
+        else
+        {
             vehicle->SetSteer(0.0f);
         }
 
@@ -1699,7 +1704,8 @@ int CMiracle3d::Controls(double t0, double tlen)
         {
             vehicle->SetThrottle(-1.0f, true);
         }
-        else {
+        else
+        {
             vehicle->ReleaseAllPedals();
         }
 
@@ -1714,9 +1720,9 @@ int CMiracle3d::Controls(double t0, double tlen)
             auto turnToWheelsAllowed = m3d::g_Kernel->GetEngineCfg().m_ai_turntowheels_allowed;
             if (turnToWheelsAllowed.GetB())
             {
-                CVector torque{ 0.0f, 0.0f, 0.0f };
-                CVector force{ 0.0f, 1.0f, 0.0f };
-                CVector pos{ 1.0f, 0.0f, 0.0f };
+                CVector torque{0.0f, 0.0f, 0.0f};
+                CVector force{0.0f, 1.0f, 0.0f};
+                CVector pos{1.0f, 0.0f, 0.0f};
                 vehicle->SetTurningToGroundForceAndTorque(pos, force, torque);
             }
         }
@@ -1742,16 +1748,16 @@ int CMiracle3d::Controls(double t0, double tlen)
     }
 
     // Fly camera movement
-    m_flyCamMove = { 0.0f, 0.0f, 0.0f };
+    m_flyCamMove = {0.0f, 0.0f, 0.0f};
     auto* impulses = M3D_APP->m_pImpulses;
 
-    if (impulses->GetImpulseState(IM_FWD)) 
+    if (impulses->GetImpulseState(IM_FWD))
         m_flyCamMove.z += 1.0f;
     if (impulses->GetImpulseState(IM_BK))
         m_flyCamMove.z -= 1.0f;
     if (impulses->GetImpulseState(IM_RIGHT))
         m_flyCamMove.x += 1.0f;
-    if (impulses->GetImpulseState(IM_LEFT)) 
+    if (impulses->GetImpulseState(IM_LEFT))
         m_flyCamMove.x -= 1.0f;
 
     // Apply camera speed and time delta
@@ -1763,7 +1769,8 @@ int CMiracle3d::Controls(double t0, double tlen)
     m_flyCamMove.z *= scale;
 
     // Camera rotation
-    if (m_player.m_cameraMode != CM_BUMPER) {
+    if (m_player.m_cameraMode != CM_BUMPER)
+    {
         float mouseSensitivity = GetMouseSensitivity();
 
         m_curCamera.m_rotPitch += (m_gameSlideAuto.z * 0.00015000001f) - m_flyCamTurn.y;
@@ -1780,8 +1787,8 @@ int CMiracle3d::Controls(double t0, double tlen)
     ValidateCameraAngles();
 
     // Update camera position
-    if (m_curGameMode.m_mode == GS_GAME ||
-        (m_curGameMode.m_mode == GS_MAINMENU && !m_bDoNotLoadMainmenuLevel)) {
+    if (m_curGameMode.m_mode == GS_GAME || (m_curGameMode.m_mode == GS_MAINMENU && !m_bDoNotLoadMainmenuLevel))
+    {
         UpdateCameraPosition(vehicle);
     }
 
@@ -2117,8 +2124,8 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
             return 1;
         }
 
-        const auto fov = m_fov.GetF();
-        const auto viewport = M3D_RENDERER->GetViewport();
+        auto const fov = m_fov.GetF();
+        auto const viewport = M3D_RENDERER->GetViewport();
         if (viewport.m_width <= viewport.m_height)
         {
             m_curCamera.m_fovX = fov;
@@ -2130,7 +2137,7 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
             m_curCamera.m_fovY = fov;
         }
 
-        const auto oldWorldOrigin = m_curCamera.m_worldOrigin;
+        auto const oldWorldOrigin = m_curCamera.m_worldOrigin;
 
         CMatrix rotationMatrix;
         rotationMatrix.rotYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
@@ -2141,31 +2148,46 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
         CMatrix vv;
         vv.zero();
 
-        const auto shakingRolling = GetCameraController()->GetShakingRolling();
-        const float shakeSin = sin(shakingRolling);
-        const float shakeCos = cos(shakingRolling);
-        vv._11 = (((addRotZ._41 * rotationMatrix._14) + (addRotZ._31 * rotationMatrix._13)) + (rotationMatrix._12 * (0.0 - shakeSin))) + (rotationMatrix._11 * shakeCos);
-        vv._12 = addRotZ._42 * rotationMatrix._14 + addRotZ._32 * rotationMatrix._13 + rotationMatrix._12 * shakeCos + rotationMatrix._11 * shakeSin;
-        vv._13 = (((addRotZ._43 * rotationMatrix._14) + (addRotZ._23 * rotationMatrix._12)) + (addRotZ._13 * rotationMatrix._11)) + rotationMatrix._13;
-        vv._14 = (((addRotZ._34 * rotationMatrix._13) + (addRotZ._24 * rotationMatrix._12)) + (addRotZ._14 * rotationMatrix._11)) + rotationMatrix._14;
-        vv._21 = (((rotationMatrix._24 * addRotZ._41) + (rotationMatrix._23 * addRotZ._31)) + (rotationMatrix._22 * (0.0 - shakeSin))) + (rotationMatrix._21 * shakeCos);
-        vv._22 = rotationMatrix._24 * addRotZ._42 + rotationMatrix._23 * addRotZ._32 + rotationMatrix._22 * shakeCos + rotationMatrix._21 * shakeSin;
-        vv._23 = (((rotationMatrix._24 * addRotZ._43) + (rotationMatrix._22 * addRotZ._23)) + (rotationMatrix._21 * addRotZ._13)) + rotationMatrix._23;
-        vv._24 = (((rotationMatrix._23 * addRotZ._34) + (rotationMatrix._22 * addRotZ._24)) + (rotationMatrix._21 * addRotZ._14)) + rotationMatrix._24;
-        vv._31 = (((addRotZ._41 * rotationMatrix._34) + (addRotZ._31 * rotationMatrix._33)) + ((0.0 - shakeSin) * rotationMatrix._32)) + (shakeCos * rotationMatrix._31);
-        vv._32 = (((addRotZ._42 * rotationMatrix._34) + (addRotZ._32 * rotationMatrix._33)) + (shakeCos * rotationMatrix._32)) + (shakeSin * rotationMatrix._31);
-        vv._33 = (((addRotZ._43 * rotationMatrix._34) + (addRotZ._23 * rotationMatrix._32)) + (addRotZ._13 * rotationMatrix._31)) + rotationMatrix._33;
-        vv._34 = (((addRotZ._24 * rotationMatrix._32) + (addRotZ._14 * rotationMatrix._31)) + (addRotZ._34 * rotationMatrix._33)) + rotationMatrix._34;
-        vv._41 = (((addRotZ._31 * rotationMatrix._43) + ((0.0 - shakeSin) * rotationMatrix._42)) + (shakeCos * rotationMatrix._41)) + (addRotZ._41 * rotationMatrix._44);
-        vv._42 = (((shakeCos * rotationMatrix._42) + (shakeSin * rotationMatrix._41)) + (addRotZ._42 * rotationMatrix._44)) + (addRotZ._32 * rotationMatrix._43);
-        vv._43 = (((addRotZ._43 * rotationMatrix._44) + (addRotZ._23 * rotationMatrix._42)) + (addRotZ._13 * rotationMatrix._41)) + rotationMatrix._43;
-        vv._44 = (((addRotZ._34 * rotationMatrix._43) + (addRotZ._24 * rotationMatrix._42)) + (addRotZ._14 * rotationMatrix._41)) + rotationMatrix._44;
+        auto const shakingRolling = GetCameraController()->GetShakingRolling();
+        float const shakeSin = sin(shakingRolling);
+        float const shakeCos = cos(shakingRolling);
+        vv._11 = (((addRotZ._41 * rotationMatrix._14) + (addRotZ._31 * rotationMatrix._13)) + (rotationMatrix._12 * (0.0 - shakeSin))) +
+            (rotationMatrix._11 * shakeCos);
+        vv._12 = addRotZ._42 * rotationMatrix._14 + addRotZ._32 * rotationMatrix._13 + rotationMatrix._12 * shakeCos +
+            rotationMatrix._11 * shakeSin;
+        vv._13 = (((addRotZ._43 * rotationMatrix._14) + (addRotZ._23 * rotationMatrix._12)) + (addRotZ._13 * rotationMatrix._11)) +
+            rotationMatrix._13;
+        vv._14 = (((addRotZ._34 * rotationMatrix._13) + (addRotZ._24 * rotationMatrix._12)) + (addRotZ._14 * rotationMatrix._11)) +
+            rotationMatrix._14;
+        vv._21 = (((rotationMatrix._24 * addRotZ._41) + (rotationMatrix._23 * addRotZ._31)) + (rotationMatrix._22 * (0.0 - shakeSin))) +
+            (rotationMatrix._21 * shakeCos);
+        vv._22 = rotationMatrix._24 * addRotZ._42 + rotationMatrix._23 * addRotZ._32 + rotationMatrix._22 * shakeCos +
+            rotationMatrix._21 * shakeSin;
+        vv._23 = (((rotationMatrix._24 * addRotZ._43) + (rotationMatrix._22 * addRotZ._23)) + (rotationMatrix._21 * addRotZ._13)) +
+            rotationMatrix._23;
+        vv._24 = (((rotationMatrix._23 * addRotZ._34) + (rotationMatrix._22 * addRotZ._24)) + (rotationMatrix._21 * addRotZ._14)) +
+            rotationMatrix._24;
+        vv._31 = (((addRotZ._41 * rotationMatrix._34) + (addRotZ._31 * rotationMatrix._33)) + ((0.0 - shakeSin) * rotationMatrix._32)) +
+            (shakeCos * rotationMatrix._31);
+        vv._32 = (((addRotZ._42 * rotationMatrix._34) + (addRotZ._32 * rotationMatrix._33)) + (shakeCos * rotationMatrix._32)) +
+            (shakeSin * rotationMatrix._31);
+        vv._33 = (((addRotZ._43 * rotationMatrix._34) + (addRotZ._23 * rotationMatrix._32)) + (addRotZ._13 * rotationMatrix._31)) +
+            rotationMatrix._33;
+        vv._34 = (((addRotZ._24 * rotationMatrix._32) + (addRotZ._14 * rotationMatrix._31)) + (addRotZ._34 * rotationMatrix._33)) +
+            rotationMatrix._34;
+        vv._41 = (((addRotZ._31 * rotationMatrix._43) + ((0.0 - shakeSin) * rotationMatrix._42)) + (shakeCos * rotationMatrix._41)) +
+            (addRotZ._41 * rotationMatrix._44);
+        vv._42 = (((shakeCos * rotationMatrix._42) + (shakeSin * rotationMatrix._41)) + (addRotZ._42 * rotationMatrix._44)) +
+            (addRotZ._32 * rotationMatrix._43);
+        vv._43 = (((addRotZ._43 * rotationMatrix._44) + (addRotZ._23 * rotationMatrix._42)) + (addRotZ._13 * rotationMatrix._41)) +
+            rotationMatrix._43;
+        vv._44 = (((addRotZ._34 * rotationMatrix._43) + (addRotZ._24 * rotationMatrix._42)) + (addRotZ._14 * rotationMatrix._41)) +
+            rotationMatrix._44;
         addRotZ = vv;
         addRotZ.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
 
-        const auto shakingTranslation = GetCameraController()->GetShakingTranslation();
+        auto const shakingTranslation = GetCameraController()->GetShakingTranslation();
         m_curCamera.m_worldOrigin = m_curCamera.m_worldOrigin + shakingTranslation;
-
 
         CMatrix viewMatrix;
         m_curCamera.createViewMatrix(viewMatrix);
@@ -2291,7 +2313,6 @@ int CMiracle3d::DoneMedia()
     g_pGame->m_renderer->ReleaseTexture(m_backgroundTexture);
     M3D_LOG_INFO("--- Done Media: Ok ---");
     return 1;
-
 }
 
 int CMiracle3d::InitMedia()
@@ -2361,7 +2382,7 @@ int CMiracle3d::FrameMove()
         PlayHackedMusic(m_hackedMusicType, false);
         m3d::RadioEngine::GetInstance()->PlayNextSoundMessage();
         auto startTime = m3d::g_Kernel->GetTimer().GetFrameStartTime();
-        auto lastTime= m3d::g_Kernel->GetTimer().GetLastFrameTime();
+        auto lastTime = m3d::g_Kernel->GetTimer().GetLastFrameTime();
         auto dT = lastTime * 0.001;
         if (m3d::pClient)
         {

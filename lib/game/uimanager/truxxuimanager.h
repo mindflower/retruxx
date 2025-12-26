@@ -44,9 +44,9 @@ namespace m3d
         class TexHandle;
     }
 
-    class AuxImpulseInfo;
+    struct AuxImpulseInfo;
     class AIParam;
-    class Event;
+    struct Event;
 }
 
 enum GameState

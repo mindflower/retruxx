@@ -9,7 +9,8 @@
 class PostEffectManager;
 class ProfileManager;
 
-namespace ai {
+namespace ai
+{
     class PhysicObj;
 }
 
@@ -18,7 +19,7 @@ namespace m3d
     class RadioEngine;
     class BlockMusicManager;
     class TownMusicManager;
-}
+}  // namespace m3d
 
 enum HackedMusicType
 {
@@ -29,7 +30,7 @@ enum HackedMusicType
     HACKMUSIC_LAST = 0x4,
 };
 
-class CMiracle3d :  public m3d::Application
+class CMiracle3d : public m3d::Application
 {
 public:
     class CurGameMode
@@ -40,8 +41,8 @@ public:
 
     public:
         GameState m_mode = GS_GAME;
-
     };
+
     class Player
     {
     public:
@@ -57,38 +58,38 @@ public:
     };
 
 public:
-    virtual int OnChangeMode(m3d::AuxImpulseInfo const &);
+    virtual int OnChangeMode(m3d::AuxImpulseInfo const&);
     void SkipCinematicMessage();
-    int OnGameDrag(m3d::AuxImpulseInfo const &);
-    float GetMinTimeScale() const ;
+    int OnGameDrag(m3d::AuxImpulseInfo const&);
+    float GetMinTimeScale() const;
     int OnFinishVideoPlaying();
     void SetMinTimeScale(float);
-    bool LoadSavedGame(CStr const &);
-    virtual bool GetMouseHitPoint(CVector &,m3d::SgNode * &);
+    bool LoadSavedGame(CStr const&);
+    virtual bool GetMouseHitPoint(CVector&, m3d::SgNode*&);
     int OnFinishIntroVideoPlaying();
     int GameDone();
-    int OnFlyMouse(m3d::AuxImpulseInfo const &);
+    int OnFlyMouse(m3d::AuxImpulseInfo const&);
     int GameInit();
-    virtual bool GetCursorShow() const ;
-    virtual bool GetCursorShow0() const ;
+    virtual bool GetCursorShow() const;
+    virtual bool GetCursorShow0() const;
     virtual void SetCursorShow(bool);
     int CinematicInit();
-    void PlayHackedMusic(HackedMusicType,bool);
+    void PlayHackedMusic(HackedMusicType, bool);
     bool CinematicFade();
     static m3d::Class* GetBaseClass();
     CMiracle3d();
-    m3d::TownMusicManager * GetTownMusicManager();
-    virtual bool AddPostEffect(CStr const &,float);
+    m3d::TownMusicManager* GetTownMusicManager();
+    virtual bool AddPostEffect(CStr const&, float);
     virtual int HandleCinematic(float);
-    static m3d::Object * CreateObject();
+    static m3d::Object* CreateObject();
     void OnChangeProfile();
     void CleanMainMenuLevel();
     void BeginModalDlg(bool);
-    virtual m3d::ui::MbRetCodes RunMsgBoxDlg(CStr const &,CStr const &,unsigned int,bool);
-    int CleanLevel(bool,bool);
-    int OnGameZoom(m3d::AuxImpulseInfo const &);
-    virtual void PutSplash(int,char const *);
-    virtual bool bIsMousePointing() const ;
+    virtual m3d::ui::MbRetCodes RunMsgBoxDlg(CStr const&, CStr const&, unsigned int, bool);
+    int CleanLevel(bool, bool);
+    int OnGameZoom(m3d::AuxImpulseInfo const&);
+    virtual void PutSplash(int, char const*);
+    virtual bool bIsMousePointing() const;
     void ClearSomeGameElementsBeforeModal();
     virtual void ChangeLanguage();
     virtual float getZoom();
@@ -97,73 +98,73 @@ public:
     void CinematicInterrupt();
     virtual void setZoom(float);
     virtual void OnAfterDeviceReset();
-    int OnSkipCinematic(m3d::AuxImpulseInfo const &);
+    int OnSkipCinematic(m3d::AuxImpulseInfo const&);
     void RenderAsBackground(bool);
-    void UpdateCameraPosition(ai::PhysicObj *);
-    float GetMaxTimeScale() const ;
+    void UpdateCameraPosition(ai::PhysicObj*);
+    float GetMaxTimeScale() const;
     void SetMaxTimeScale(float);
     virtual int OnObtainingFocus();
-    int LoadLevel(CStr const &,CStr const &,bool,bool,bool,m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *,ai::ObjContainer::eSAVE_TYPES);
+    int LoadLevel(CStr const&, CStr const&, bool, bool, bool, m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, ai::ObjContainer::eSAVE_TYPES);
     void FullSystyemAndUserUnpause();
-    virtual bool GetPostEffectParam(CStr const &,float &);
-    virtual bool SetPostEffectParam(CStr const &,float);
+    virtual bool GetPostEffectParam(CStr const&, float&);
+    virtual bool SetPostEffectParam(CStr const&, float);
     void StartMainMenu();
     virtual void SetMouseSensitivity(float);
     void UpdateCinematicCameraRotation();
     void SetCurHackedMusicType(HackedMusicType);
-    HackedMusicType GetCurHackedMusicType() const ;
+    HackedMusicType GetCurHackedMusicType() const;
     int ValidateCameraOrigin(bool);
-    virtual void LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
+    virtual void LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
     virtual void Pause();
-    int OnGameSwitchCamera(m3d::AuxImpulseInfo const &);
-    int OnGameMouse(m3d::AuxImpulseInfo const &);
-    virtual void SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
+    int OnGameSwitchCamera(m3d::AuxImpulseInfo const&);
+    int OnGameMouse(m3d::AuxImpulseInfo const&);
+    virtual void SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
     void EndModalDlg();
     bool CanLaunchIfaceWindow();
     virtual void UnPause();
-    virtual int GetCurDifficultyLevel() const ;
+    virtual int GetCurDifficultyLevel() const;
     int LoadMainMenuLevel();
-    int OnDebug(m3d::AuxImpulseInfo const &);
+    int OnDebug(m3d::AuxImpulseInfo const&);
     void UnPauseSound();
-    bool LoadMapFromConsole(m3d::CConsoleParams const &,bool);
-    int StartPlayingVideo(char const *,int (CMiracle3d::*)());
+    bool LoadMapFromConsole(m3d::CConsoleParams const&, bool);
+    int StartPlayingVideo(char const*, int (CMiracle3d::*)());
     virtual ~CMiracle3d();
-    float GetNormalTimeScale() const ;
+    float GetNormalTimeScale() const;
     void SetNormalTimeScale(float);
-    virtual m3d::Class* GetClass() const ;
+    virtual m3d::Class* GetClass() const;
     void PauseSound();
-    bool SaveGame(CStr const &,bool);
-    bool LoadMap(CStr const &,bool,m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *,ai::ObjContainer::eSAVE_TYPES);
+    bool SaveGame(CStr const&, bool);
+    bool LoadMap(CStr const&, bool, m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, ai::ObjContainer::eSAVE_TYPES);
     int ValidateCameraAngles();
-    virtual char const * GetCallbackName() const ;
+    virtual char const* GetCallbackName() const;
     virtual bool KillPostEffect(CStr const& effectName);
-    virtual m3d::ui::Wnd * CaptureMouse(m3d::ui::Wnd *);
-    int CollideCamera(CVector &,float &,CVector const &,CVector const &);
-    int OnSkipCinematicMessage(m3d::AuxImpulseInfo const &);
+    virtual m3d::ui::Wnd* CaptureMouse(m3d::ui::Wnd*);
+    int CollideCamera(CVector&, float&, CVector const&, CVector const&);
+    int OnSkipCinematicMessage(m3d::AuxImpulseInfo const&);
     virtual void ReloadPostEffects();
-    m3d::BlockMusicManager * GetBlockMusicManager();
-    bool IsRenderAsBackground() const ;
+    m3d::BlockMusicManager* GetBlockMusicManager();
+    bool IsRenderAsBackground() const;
     virtual int GetCurGameMode();
     virtual void SetMouseYAxisFlipped(bool bFlip);
     virtual void SetMouseXAxisFlipped(bool bFlip);
-    ProfileManager * GetProfileManager() const ;
+    ProfileManager* GetProfileManager() const;
 
 protected:
-    virtual int OnEvent(m3d::Event const &);
-    virtual int AddChild(m3d::Object *);
-    virtual int RemoveChildForce(m3d::Object *);
+    virtual int OnEvent(m3d::Event const&);
+    virtual int AddChild(m3d::Object*);
+    virtual int RemoveChildForce(m3d::Object*);
     virtual int Render(bool);
-    virtual int RemoveChild(m3d::Object *);
+    virtual int RemoveChild(m3d::Object*);
     void EmergencyRedrawAllObjs();
     virtual int DoneMedia();
-    int Controls(double,double);
+    int Controls(double, double);
     virtual int InitMedia();
-    float GetMeanHigh(float,float);
+    float GetMeanHigh(float, float);
     virtual int FrameMove();
-    virtual void HandleCommand(int,m3d::CConsoleParams const &);
-    virtual bool HandleCVar(m3d::CVar const *,m3d::CConsoleParams const &);
+    virtual void HandleCommand(int, m3d::CConsoleParams const&);
+    virtual bool HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&);
     virtual int NewFrame();
-    float GetMaxHigh(float,float);
+    float GetMaxHigh(float, float);
 
 public:
     RT_CLASS_DECLARE(CMiracle3d);
@@ -175,7 +176,7 @@ public:
     CVector m_gameSlideAuto;
 
 private:
-    float getFov() const ;
+    float getFov() const;
     virtual void setFov(float value);
     void RegisterConsoleCommands();
     virtual int InitImpulses();
@@ -201,10 +202,10 @@ private:
     std::vector<CStr> m_musicNames;
     HackedMusicType m_hackedMusicType;
     bool m_bMustStartNewMusic;
-    m3d::BlockMusicManager *m_blockMusicManager;
-    m3d::TownMusicManager *m_townMusicManager;
-    m3d::RadioEngine *m_radioEngine;
-    int (CMiracle3d::* m_onFinishVideoPlaying)() = nullptr;
+    m3d::BlockMusicManager* m_blockMusicManager;
+    m3d::TownMusicManager* m_townMusicManager;
+    m3d::RadioEngine* m_radioEngine;
+    int (CMiracle3d::*m_onFinishVideoPlaying)() = nullptr;
     m3d::CVar m_minDist;
     m3d::CVar m_maxDist;
     m3d::CVar m_cameraHeight;
@@ -221,9 +222,9 @@ private:
     m3d::CVar m_cvSoundDebug;
     bool zoomInited;
     float m_Fov0;
-    PostEffectManager *m_postEffect;
+    PostEffectManager* m_postEffect;
     bool m_playingVideo;
-    ProfileManager *m_profileManager;
+    ProfileManager* m_profileManager;
     CurGameMode m_curGameMode;
     bool m_bBackgroundTextureIsValid;
     bool m_bRenderAsBackground;

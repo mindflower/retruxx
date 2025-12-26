@@ -17,7 +17,7 @@ namespace ai
     class IPriceCoeffProvider;
     class Modifier;
     class GeomRepository;
-    class Event;
+    struct Event;
 
     enum eGameEvent
     {

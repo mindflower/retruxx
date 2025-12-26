@@ -9,7 +9,7 @@ namespace m3d
         class Wnd;
     }
 
-    class Event;
+    struct Event;
 
     struct AuxImpulseInfo
     {

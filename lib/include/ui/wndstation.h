@@ -6,7 +6,7 @@
 
 namespace ai
 {
-	class Event;
+	struct Event;
 }
 
 namespace m3d
@@ -17,7 +17,7 @@ namespace m3d
     }
 
     class AIParam;
-    class Event;
+    struct Event;
 }
 
 namespace m3d
