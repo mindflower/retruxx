@@ -972,7 +972,6 @@ dxGeom* dBodyGetFirstGeom (dBodyID b)
 void dBodyAddIslandToWorld (dBodyID b, dxWorld* w)
 {
     // TODO: implememnt dBodyAddIslandToWorld
-    dAASSERT(false);
 }
 
 void dBodyRemoveIslandFromWorld (dBodyID b)

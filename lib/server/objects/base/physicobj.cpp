@@ -134,18 +134,17 @@ namespace ai
 
     PhysicObjPrototypeInfo::PhysicObjPrototypeInfo()
     {
-        this->m_intersectionRadius = 0.0;
-        this->m_lookRadius = 0.0;
+        m_intersectionRadius = 0.0;
+        m_lookRadius = 0.0;
     }
 
     bool PhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        bool const result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
             m3d::SafeFloatAttrib(m_intersectionRadius, xmlNode, "IntersectionRadius");
             m3d::SafeFloatAttrib(m_lookRadius, xmlNode, "LookRadius");
-            return 1;
         }
         return result;
     }
@@ -155,7 +154,7 @@ namespace ai
         // TODO: generated code
         // Create rotation matrix directly from forward and up vectors
         CMatrix mat;
-        memset(&mat, 0, sizeof(mat));
+        mat.zero();
 
         // Calculate the right vector (x-axis) as cross product of up and forward
         mat.m[0][0] = up.y * forward.z - up.z * forward.y;  // right.x
@@ -185,12 +184,12 @@ namespace ai
 
     bool PhysicObj::GetBodyEnabledBit() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_physicState & 1;
     }
 
     Quaternion PhysicObj::GetRotation() const
     {
-        auto quat = dBodyGetQuaternion(this->m_body->id());
+        dReal const* quat = dBodyGetQuaternion(m_body->id());
 
         Quaternion result;
         result.x = quat[1];
@@ -202,26 +201,28 @@ namespace ai
 
     void PhysicObj::SetPostDisablePhysicsWithAutoEnable()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_postActionFlags |= 8u;
+        theObjects->AddObjToPostCollideList(this);
     }
 
     CVector PhysicObj::GetMassCenter() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_massCenter;
     }
 
     bool PhysicObj::bIsUpdatingByODE() const
     {
-        return this->m_bIsUpdatingByODE != 0;
+        return m_bIsUpdatingByODE != 0;
     }
 
     void PhysicObj::RelinkToSpace(dxSpace* newSpace)
     {
-        if (m_spaceId && this->m_bIsSpaceOwner)
+        if (m_spaceId && m_bIsSpaceOwner)
         {
-            auto space = dGeomGetSpace(m_spaceId);
-            if (space)
+            if (dSpaceID space = dGeomGetSpace(m_spaceId))
+            {
                 dSpaceRemove(space, m_spaceId);
+            }
             dSpaceAdd(newSpace, m_spaceId);
         }
         else
@@ -247,7 +248,7 @@ namespace ai
 
     void PhysicObj::SetSkin(int skin)
     {
-        this->m_skinNumber = skin;
+        m_skinNumber = skin;
     }
 
     m3d::Class* PhysicObj::GetBaseClass()
@@ -257,7 +258,7 @@ namespace ai
 
     void PhysicObj::UnlinkGeomsFromCollisionCells()
     {
-        this->m_boundSphere->UnlinkFromCollisionCells(GetId());
+        m_boundSphere->UnlinkFromCollisionCells(GetId());
     }
 
     bool PhysicObj::CanPhysicsBeEnabled() const
@@ -268,9 +269,8 @@ namespace ai
     float PhysicObj::GetMass() const
     {
         dMass mass;
-
         dMassSetZero(&mass);
-        dBodyGetMass(this->m_body->id(), &mass);
+        dBodyGetMass(m_body->id(), &mass);
         return mass.mass;
     }
 
@@ -296,7 +296,7 @@ namespace ai
             return true;
 
         default:
-            return ai::Obj::SetPropertyById(propertyId, newValue);
+            return Obj::SetPropertyById(propertyId, newValue);
         }
     }
 
@@ -314,19 +314,19 @@ namespace ai
     {
         if (m_spaceId)
         {
-            if (this->m_bIsSpaceOwner)
+            if (m_bIsSpaceOwner)
             {
                 dSpaceDestroy(m_spaceId);
-                this->m_spaceId = newSpace;
-                this->m_bIsSpaceOwner = 0;
+                m_spaceId = newSpace;
+                m_bIsSpaceOwner = false;
             }
         }
     }
 
     void PhysicObj::SetVisible()
     {
-        ai::Obj::SetVisible();
-        this->EnablePhysics();
+        Obj::SetVisible();
+        EnablePhysics();
     }
 
     void PhysicObj::AddTorque(CVector const&)
@@ -343,9 +343,11 @@ namespace ai
     {
         standardTargetClasses.insert(RT_CLASS_LOCAL(PhysicObj));
         theAIManager->RegisterFunc("AIGetCurPos", &PhysicObj::AIGetCurPos);
+
         m_propertiesMap["Pos"] = 4;
         m_propertiesMap["Rot"] = 5;
         m_propertiesMap["Skin"] = 45;
+
         m_countRelinksToCollisionCells =
             M3D_APP->GetDbgCounterStack().GetCounter(M3D_APP->GetDbgCounterStack().AddCounter("relinks to collision cells"));
         m_countRelinksToCollisionCells->SetI(0);
@@ -363,7 +365,7 @@ namespace ai
 
     void PhysicObj::SetRotation(Quaternion const& rot)
     {
-        this->SetRotationSelf(rot);
+        SetRotationSelf(rot);
     }
 
     bool PhysicObj::CanCreateCollisionEffect() const
@@ -388,14 +390,14 @@ namespace ai
         CMatrix rotationMatrix = rotation.ToMatrix();
 
         // Transform mass center by rotation matrix
-        float transformedX = (m_massCenter.x * rotationMatrix._11) + (m_massCenter.y * rotationMatrix._21) +
-            (m_massCenter.z * rotationMatrix._31);
+        float transformedX =
+            (m_massCenter.x * rotationMatrix._11) + (m_massCenter.y * rotationMatrix._21) + (m_massCenter.z * rotationMatrix._31);
 
-        float transformedY = (m_massCenter.x * rotationMatrix._12) + (m_massCenter.y * rotationMatrix._22) +
-            (m_massCenter.z * rotationMatrix._32);
+        float transformedY =
+            (m_massCenter.x * rotationMatrix._12) + (m_massCenter.y * rotationMatrix._22) + (m_massCenter.z * rotationMatrix._32);
 
-        float transformedZ = (m_massCenter.x * rotationMatrix._13) + (m_massCenter.y * rotationMatrix._23) +
-            (m_massCenter.z * rotationMatrix._33);
+        float transformedZ =
+            (m_massCenter.x * rotationMatrix._13) + (m_massCenter.y * rotationMatrix._23) + (m_massCenter.z * rotationMatrix._33);
 
         // Calculate final position (position + transformed mass center)
         CVector realPos;
@@ -407,7 +409,7 @@ namespace ai
         dBodySetPosition(m_body->id(), realPos.x, realPos.y, realPos.z);
 
         // Update enabled cells counter
-        ai::PhysicObj::SetCorrectEnabledCellsCounter();
+        PhysicObj::SetCorrectEnabledCellsCounter();
     }
 
     void PhysicObj::SetPostRotation(Quaternion const&)
@@ -477,26 +479,35 @@ namespace ai
 
     void PhysicObj::DisableGeometry(bool changePhysicState)
     {
-        if (m_spaceId && this->m_bIsSpaceOwner)
+        if (m_spaceId && m_bIsSpaceOwner)
+        {
             dGeomDisable(m_spaceId);
+        }
         if (changePhysicState)
-            this->m_physicState &= ~2u;
+        {
+            m_physicState &= ~2u;
+        }
     }
 
     void PhysicObj::EnableGeometry(bool changePhysicState)
     {
-        if (m_spaceId && this->m_bIsSpaceOwner)
+        if (m_spaceId && m_bIsSpaceOwner)
+        {
             dGeomEnable(m_spaceId);
+        }
         if (changePhysicState)
-            this->m_physicState |= 2u;
+        {
+            m_physicState |= 2u;
+        }
     }
 
     float PhysicObj::GetIntersectionRadius() const
     {
         if (m_intersectionObstacle)
+        {
             return m_intersectionObstacle->GetIntersectionRadius();
-        else
-            return 0.0;
+        }
+        return 0.0;
     }
 
     void PhysicObj::SetPostEnablePhysics()
@@ -506,41 +517,43 @@ namespace ai
 
     dBody* PhysicObj::GetBody()
     {
-        return this->m_body;
+        return m_body;
     }
 
     dBody const* PhysicObj::GetBody() const
     {
-        return this->m_body;
+        return m_body;
     }
 
     void PhysicObj::Update(float elapsedTime, unsigned workTime)
     {
-        ai::Obj::Update(elapsedTime, workTime);
-        if (!this->m_bIsUpdatingByODE)
-            this->_UpdateOwnPhysics(elapsedTime);
-        this->m_timeFromLastCollisionEffect = this->m_timeFromLastCollisionEffect + elapsedTime;
+        Obj::Update(elapsedTime, workTime);
+        if (!m_bIsUpdatingByODE)
+        {
+            _UpdateOwnPhysics(elapsedTime);
+        }
+        m_timeFromLastCollisionEffect = m_timeFromLastCollisionEffect + elapsedTime;
     }
 
     void PhysicObj::SetUpdatingByODE(bool byODE)
     {
         if (byODE)
         {
-            if (!this->m_bIsUpdatingByODE)
+            if (!m_bIsUpdatingByODE)
             {
-                dBodyAddIslandToWorld(this->m_body->id(), ai::gGlobalWorld);
-                this->m_bIsUpdatingByODE = 1;
+                dBodyAddIslandToWorld(m_body->id(), ai::gGlobalWorld);
+                m_bIsUpdatingByODE = 1;
                 SetLinearVelocity({0.0, 0.0, 0.0});
-                dBodySetAngularVel(this->m_body->id(), 0.0, 0.0, 0.0);
-                dBodySetForce(this->m_body->id(), 0.0, 0.0, 0.0);
-                dBodySetTorque(this->m_body->id(), 0.0, 0.0, 0.0);
-                this->CheckCollisionCells();
+                dBodySetAngularVel(m_body->id(), 0.0, 0.0, 0.0);
+                dBodySetForce(m_body->id(), 0.0, 0.0, 0.0);
+                dBodySetTorque(m_body->id(), 0.0, 0.0, 0.0);
+                CheckCollisionCells();
             }
         }
-        else if (this->m_bIsUpdatingByODE)
+        else if (m_bIsUpdatingByODE)
         {
-            dBodyRemoveIslandFromWorld(this->m_body->id());
-            this->m_bIsUpdatingByODE = 0;
+            dBodyRemoveIslandFromWorld(m_body->id());
+            m_bIsUpdatingByODE = 0;
             CheckCollisionCells();
         }
     }
@@ -553,14 +566,17 @@ namespace ai
     void PhysicObj::EnablePhysics()
     {
         if (m_body)
+        {
             dBodyEnable(m_body->id());
-        this->_LinkBodyToGeoms();
-        this->m_physicState |= 1u;
+        }
+        _LinkBodyToGeoms();
+        m_physicState |= 1u;
         SetCorrectEnabledCellsCounter();
-        auto v3 = (this->m_physicState & 2) == 0;
-        this->m_bBodyEnabledLastFrame = 1;
-        if (!v3)
-            this->EnableGeometry(0);
+        m_bBodyEnabledLastFrame = true;
+        if ((m_physicState & 2) != 0)
+        {
+            EnableGeometry(false);
+        }
     }
 
     void PhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -663,13 +679,18 @@ namespace ai
     void PhysicObj::DisablePhysics()
     {
         if (m_body)
+        {
             dBodyDisable(m_body->id());
-        this->m_physicState &= ~1u;
+        }
+
+        m_physicState &= ~1u;
+
         ai::PhysicObj::SetCorrectEnabledCellsCounter();
-        this->m_bBodyEnabledLastFrame = 0;
+        m_bBodyEnabledLastFrame = false;
         ai::PhysicObj::SetCorrectEnabledCellsCounter();
-        dBodyDetachAllContactJoints(this->m_body->id());
-        this->_UnlinkBodyFromGeoms();
+
+        dBodyDetachAllContactJoints(m_body->id());
+        _UnlinkBodyFromGeoms();
     }
 
     void PhysicObj::SetDisablePhysicsWhenBodyDisabled()
@@ -689,7 +710,7 @@ namespace ai
 
     void PhysicObj::SetAngularVelocity(CVector const& angularVel)
     {
-        dBodySetAngularVel(this->m_body->id(), angularVel.x, angularVel.y, angularVel.z);
+        dBodySetAngularVel(m_body->id(), angularVel.x, angularVel.y, angularVel.z);
     }
 
     int PhysicObj::GetPhysicState() const
@@ -706,14 +727,13 @@ namespace ai
             dBodyGetMass(m_body->id(), &mass);
             if (mass.mass > 0.001)
             {
-                auto const posArray = dBodyGetPosition(m_body->id());
                 CVector pos;
+                dReal const* posArray = dBodyGetPosition(m_body->id());
                 pos.x = posArray[0];
                 pos.y = posArray[1];
                 pos.z = posArray[2];
 
-                auto rotation = GetRotation();
-
+                Quaternion const rotation = GetRotation();
                 ai::pServer->GetWorld()->GetLandscape().DrawMassBox(&mass, pos, rotation);
             }
         }
@@ -731,13 +751,13 @@ namespace ai
 
     void PhysicObj::Remove()
     {
-        ai::Obj::Remove();
-        this->UnlinkGeomsFromCollisionCells();
+        Obj::Remove();
+        UnlinkGeomsFromCollisionCells();
     }
 
     void PhysicObj::SetDirection(CVector const& direction)
     {
-        ai::SetDirectionToObject<ai::PhysicObj>(*this, direction);
+        SetDirectionToObject<ai::PhysicObj>(*this, direction);
     }
 
     Geom::CellAabb PhysicObj::GetCollisionCellAabb() const
@@ -792,48 +812,47 @@ namespace ai
 
     void PhysicObj::SetPosition(CVector const& pos)
     {
-        this->SetPositionSelf(pos);
+        SetPositionSelf(pos);
     }
 
     PhysicObj::PhysicObj(PhysicObjPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
     {
-        this->m_intersectionObstacle = nullptr;
-        this->m_body = 0;
-        this->m_lookSphere = 0;
-        this->m_postActionFlags = 0;
-        this->m_postRotation.x = 0.0;
-        this->m_postRotation.y = 0.0;
-        this->m_postRotation.z = 0.0;
-        this->m_postRotation.w = 1.0;
-        this->m_postPosition.x = 0.0;
-        this->m_postPosition.y = 0.0;
-        this->m_postPosition.z = 0.0;
-        this->m_physicBehaviorFlags = 0;
-        this->m_massCenter.x = 0.0;
-        this->m_massCenter.y = 0.0;
-        this->m_massCenter.y = 0.0;
+        m_intersectionObstacle = nullptr;
+        m_body = 0;
+        m_lookSphere = 0;
+        m_postActionFlags = 0;
+        m_postRotation.x = 0.0;
+        m_postRotation.y = 0.0;
+        m_postRotation.z = 0.0;
+        m_postRotation.w = 1.0;
+        m_postPosition.x = 0.0;
+        m_postPosition.y = 0.0;
+        m_postPosition.z = 0.0;
+        m_physicBehaviorFlags = 0;
+        m_massCenter.x = 0.0;
+        m_massCenter.y = 0.0;
+        m_massCenter.y = 0.0;
 
         m_body = new dBody(gGlobalWorld);
 
         m_body->setData(this);
-        m_body->setChangeEnabledStateCallback(ai::PhysicObj::_CommonBodyChangeEnabledStateCallback);
-        this->m_spaceId = 0;
-        this->m_bIsSpaceOwner = 1;
+        m_body->setChangeEnabledStateCallback(PhysicObj::_CommonBodyChangeEnabledStateCallback);
+        m_spaceId = 0;
+        m_bIsSpaceOwner = 1;
         if (prototypeInfo.m_lookRadius > 0.0099999998)
         {
             m_lookSphere = SphereForIntersection::CreateObject(prototypeInfo.m_lookRadius, SphereForIntersection::LOOKING, nullptr);
             dGeomSetBody(m_lookSphere->GetGeomId(), m_body->id());
             m_lookSphere->SetTargetClasses(standardTargetClasses);
         }
-        this->m_boundSphere = ai::Sphere::CreateObject(0, 1.0, 0);
-        ;
-        dGeomSetBody(m_boundSphere->GetGeomId(), this->m_body->id());
-        this->m_bIsUpdatingByODE = 1;
-        this->m_enabledCellsCount = 0;
-        this->m_bBodyEnabledLastFrame = 1;
-        this->m_skinNumber = 0;
-        this->m_physicState = 3;
-        this->m_timeFromLastCollisionEffect = 1000.0;
+        m_boundSphere = ai::Sphere::CreateObject(0, 1.0, 0);
+        dGeomSetBody(m_boundSphere->GetGeomId(), m_body->id());
+        m_bIsUpdatingByODE = 1;
+        m_enabledCellsCount = 0;
+        m_bBodyEnabledLastFrame = 1;
+        m_skinNumber = 0;
+        m_physicState = 3;
+        m_timeFromLastCollisionEffect = 1000.0;
     }
 
     void PhysicObj::EnablePhysicsAndGeometry()
@@ -859,7 +878,9 @@ namespace ai
     void PhysicObj::DisablePhysicsWithAutoEnable()
     {
         if (m_body)
+        {
             dBodyDisable(m_body->id());
+        }
         m_physicState &= ~1u;
         SetCorrectEnabledCellsCounter();
         m_bBodyEnabledLastFrame = 0;
@@ -869,16 +890,14 @@ namespace ai
 
     void PhysicObj::SetRotationSelf(Quaternion const& rot)
     {
-        CVector pos = GetPosition();
-        m_body = this->m_body;
-
+        CVector const pos = GetPosition();
         float dq[4];
         dq[0] = rot.w;
         dq[1] = rot.x;
         dq[2] = rot.y;
         dq[3] = rot.z;
         dBodySetQuaternion(m_body->id(), dq);
-        ai::PhysicObj::SetPositionSelf(pos);
+        PhysicObj::SetPositionSelf(pos);
     }
 
     void PhysicObj::SetPostPosition(CVector const&)
@@ -893,8 +912,7 @@ namespace ai
 
     CVector PhysicObj::GetAngularVelocity() const
     {
-        auto angularVel = dBodyGetAngularVel(this->m_body->id());
-
+        dReal const* angularVel = dBodyGetAngularVel(m_body->id());
         CVector result;
         result.x = angularVel[0];
         result.y = angularVel[1];
@@ -1028,7 +1046,7 @@ namespace ai
                             {
                                 auto CollisionCellItem = ai::pServer->GetWorld()->GetLandscape().GetCollisionCellItem(z0, x1);
                                 if (CollisionCellItem->m_wasEnabledLastFrame)
-                                    ++this->m_enabledCellsCount;
+                                    ++m_enabledCellsCount;
                                 CollisionCellItem->m_bMustCheck = 1;
                                 v6 = retaddr;
                                 ++x1;
@@ -1038,10 +1056,10 @@ namespace ai
                         ++z0;
                     } while (z0 <= aabb.z1);
                 }
-                if (this->m_enabledCellsCount <= 0)
-                    this->DisableGeometry(0);
+                if (m_enabledCellsCount <= 0)
+                    DisableGeometry(0);
                 else
-                    this->EnableGeometry(0);
+                    EnableGeometry(0);
             }
         }
     }
@@ -1053,7 +1071,7 @@ namespace ai
 
     CVector PhysicObj::GetLinearVelocity() const
     {
-        auto linearVel = dBodyGetLinearVel(this->m_body->id());
+        auto linearVel = dBodyGetLinearVel(m_body->id());
 
         CVector result;
         result.x = linearVel[0];
@@ -1086,7 +1104,7 @@ namespace ai
 
     void PhysicObj::_AdjustMassCenter()
     {
-        for (auto i = dBodyGetFirstGeom(this->m_body->id()); i; i = dGeomGetBodyNext(i))
+        for (auto i = dBodyGetFirstGeom(m_body->id()); i; i = dGeomGetBodyNext(i))
         {
             if (dGeomGetClass(i) == 6)
             {
@@ -1094,8 +1112,7 @@ namespace ai
                 if (geom)
                 {
                     auto position = dGeomGetPosition(geom);
-                    dGeomSetPosition(
-                        geom, position[0] - this->m_massCenter.x, position[1] - this->m_massCenter.y, position[2] - this->m_massCenter.z);
+                    dGeomSetPosition(geom, position[0] - m_massCenter.x, position[1] - m_massCenter.y, position[2] - m_massCenter.z);
                 }
             }
         }
@@ -1103,7 +1120,7 @@ namespace ai
 
     SphereForIntersection* PhysicObj::_GetLookSphere() const
     {
-        return this->m_lookSphere;
+        return m_lookSphere;
     }
 
     void PhysicObj::_SetRotationToGeoms(Quaternion const&)
@@ -1111,9 +1128,19 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void PhysicObj::_EnableIntersections(bool)
+    void PhysicObj::_EnableIntersections(bool enable)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_intersectionObstacle)
+        {
+            if (enable)
+            {
+                m_intersectionObstacle->Enable();
+            }
+            else
+            {
+                m_intersectionObstacle->Disable();
+            }
+        }
     }
 
     void PhysicObj::_SetBoundSphereRadius(float radius)
@@ -1121,7 +1148,7 @@ namespace ai
         auto v2 = 1.0;
         if (radius < 1.0 || (v2 = 1.0e30, radius > 1.0e30))
             radius = v2;
-        this->m_boundSphere->SetRadius(radius);
+        m_boundSphere->SetRadius(radius);
     }
 
     void PhysicObj::_SetBodyEnabledBit(bool)
@@ -1131,13 +1158,13 @@ namespace ai
 
     void PhysicObj::_CreateSpace(bool bForUntransfer)
     {
-        if (!this->m_spaceId && this->m_bIsSpaceOwner || bForUntransfer)
+        if (!m_spaceId && m_bIsSpaceOwner || bForUntransfer)
         {
             auto v3 = ai::gGlobalSpace;
             if (ai::gGlobalSpace->lock_count)
                 v3 = ai::gTempSpace;
             auto v4 = dSimpleSpaceCreate(v3);
-            this->m_spaceId = v4;
+            m_spaceId = v4;
             dSpaceSetCleanup(v4, 0);
         }
     }
@@ -1208,7 +1235,7 @@ namespace ai
         }
         delete m_boundSphere;
         delete m_body;
-        if (m_spaceId && this->m_bIsSpaceOwner)
+        if (m_spaceId && m_bIsSpaceOwner)
             dSpaceDestroy(m_spaceId);
     }
 
@@ -1222,7 +1249,7 @@ namespace ai
 
     void PhysicObj::_InternalCreateVisualPart()
     {
-        this->LinkGeomsToCollisionCells();
+        LinkGeomsToCollisionCells();
     }
 
     void PhysicObj::_SetGeomEnabledBit(bool enabled)
@@ -1249,7 +1276,7 @@ namespace ai
 
     void PhysicObj::_LinkBodyToGeoms()
     {
-        for (auto i = dBodyGetFirstGeom(this->m_body->id()); i; i = dGeomGetBodyNext(i))
+        for (auto i = dBodyGetFirstGeom(m_body->id()); i; i = dGeomGetBodyNext(i))
             dGeomLinkToBody(i);
     }
 

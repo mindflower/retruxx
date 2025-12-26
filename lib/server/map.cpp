@@ -47,9 +47,7 @@ namespace ai
         }
     }
 
-    MapIndex::MapIndex(int xx, int yy) :
-        x(xx),
-        y(yy)
+    MapIndex::MapIndex(int xx, int yy) : x(xx), y(yy)
     {
     }
 
@@ -272,9 +270,7 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    Map::Map() :
-        m_lastIndex(0, 0),
-        m_CurPos(0, 0)
+    Map::Map() : m_lastIndex(0, 0), m_CurPos(0, 0)
     {
         pField = 0;
 
@@ -288,13 +284,12 @@ namespace ai
         m_DirSet[0].AddItem(true, 1, 0);
         m_DirSet[0].AddItem(true, 1, 1);
 
-
         m_DirSet[1].AddItem(false, 0, 0);
         m_DirSet[1].AddItem(false, 2, 0);
         m_DirSet[1].AddItem(false, 2, 1);
         m_DirSet[1].AddItem(false, 2, -1);
         m_DirSet[1].AddItem(false, 1, -2);
-        m_DirSet[1].AddItem(false, 1,2);
+        m_DirSet[1].AddItem(false, 1, 2);
         m_DirSet[1].AddItem(false, 0, -2);
         m_DirSet[1].AddItem(false, 0, 2);
         m_DirSet[1].AddItem(false, 0, -2);
@@ -305,7 +300,6 @@ namespace ai
         m_DirSet[1].AddItem(true, 0, 2);
         m_DirSet[1].AddItem(true, 2, -1);
         m_DirSet[1].AddItem(true, -1, 2);
-
 
         m_DirSet[2].AddItem(false, 0, 0);
         m_DirSet[2].AddItem(false, 3, 0);
@@ -337,13 +331,69 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Map::IsCircleBlocked(CVector2 const&, float, unsigned char)
+    bool Map::IsCircleBlocked(CVector2 const& point, float radius, unsigned char BV)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code Map::IsCircleBlocked
+        // Calculate the grid cell containing the center point
+        int centerX = static_cast<int>(point.x / m_cellSize.x);
+        int centerY = static_cast<int>(point.y / m_cellSize.y);
+
+        // Determine which cell dimension to use for radius calculation
+        // Use the smaller cell dimension to be conservative
+        float effectiveCellSize;
+        if (m_cellSize.x <= m_cellSize.y)
+        {
+            effectiveCellSize = m_cellSize.x;
+        }
+        else
+        {
+            effectiveCellSize = m_cellSize.y;
+        }
+
+        // Calculate search radius in grid cells
+        int searchRadius = static_cast<int>(radius / effectiveCellSize);
+
+        // Early exit if search radius is negative (shouldn't happen)
+        if (searchRadius < 0)
+        {
+            return 0;
+        }
+
+        // Iterate through a square region around the center
+        for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
+        {
+            for (int offsetY = -searchRadius; offsetY <= searchRadius; ++offsetY)
+            {
+                int gridX = centerX + offsetX;
+                int gridY = centerY + offsetY;
+
+                // Check if current cell is within grid bounds
+                if (gridX < 0 || gridX >= m_lastIndex.x || gridY < 0 || gridY >= m_lastIndex.y)
+                {
+                    // Out of bounds - treat as blocked (value -1 > BV)
+                    return 1;
+                }
+
+                // Calculate index in 1D array (row-major order: y * width + x)
+                int index = gridY * m_lastIndex.x + gridX;
+
+                // Get the blocking value for this cell
+                unsigned char cellValue = pField[index];
+
+                // Check if this cell blocks based on the threshold
+                if (cellValue > BV)
+                {
+                    return 1;  // Circle is blocked
+                }
+            }
+        }
+
+        // No blocking cells found within the search radius
+        return 0;
     }
 
     void Map::DecLineTo(CVector2 const&, unsigned char)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

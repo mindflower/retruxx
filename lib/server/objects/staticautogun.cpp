@@ -69,12 +69,12 @@ namespace ai
 
     NumericInRange<float> const& StaticAutoGun::Health() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_health;
     }
 
     NumericInRange<float>& StaticAutoGun::Health()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_health;
     }
 
     eGObjPropertySaveStatus StaticAutoGun::GetPropertySaveStatus(int) const

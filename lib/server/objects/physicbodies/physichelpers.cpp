@@ -12,6 +12,7 @@
 #include "math/coremath.h"
 #include "ode/odecpp.h"
 #include "server/server.h"
+#include "server/map.h"
 #include "server/objects/blastwave.h"
 #include "server/objects/player.h"
 #include "server/objects/town.h"
@@ -21,6 +22,7 @@
 
 #include "m3dapp.h"
 #include "scene/servers/dataserver.h"
+#include <server/intersectionmanager.h>
 
 namespace ai
 {
@@ -219,7 +221,8 @@ namespace ai
             {
             case GEOM_TYPE_BOX:
             {
-                float boxSizeSq = collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y + collInfo.m_size.z * collInfo.m_size.z;
+                float boxSizeSq =
+                    collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y + collInfo.m_size.z * collInfo.m_size.z;
 
                 if (boxSizeSq < 0.0001f)
                 {
@@ -241,7 +244,8 @@ namespace ai
 
             case GEOM_TYPE_CYLINDER:
             {
-                float cylinderSizeSq = collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y + collInfo.m_size.z * collInfo.m_size.z;
+                float cylinderSizeSq =
+                    collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y + collInfo.m_size.z * collInfo.m_size.z;
 
                 if (collInfo.m_radius < 0.0001f || cylinderSizeSq < 0.0001f)
                 {
@@ -427,7 +431,8 @@ namespace ai
                 if (!cellItem)
                 {
                     // Log warning about missing collision cell
-                    M3D_LOG_INFO("Warning: null collision cell item, cellX = " + CStr(collisionCellX) + ", cellZ = " + CStr(collisionCellZ));
+                    M3D_LOG_INFO(
+                        "Warning: null collision cell item, cellX = " + CStr(collisionCellX) + ", cellZ = " + CStr(collisionCellZ));
                     continue;
                 }
 
@@ -667,9 +672,91 @@ namespace ai
         return foundContact;
     }
 
-    bool GetValidPosition(CVector const&, float, unsigned char, CVector&, bool, bool, std::set<m3d::Class*> const&)
+    bool GetValidPosition(
+        CVector const& position,
+        float radius,
+        unsigned char blockingValue,
+        CVector& availablePosition,
+        bool bCheckPassMap,
+        bool bForPlayerVehicle,
+        std::set<m3d::Class*> const& targetClasses)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code GetValidPosition
+        float minDist = 1.0e20f;
+
+        // Create intersection sphere
+        scoped_ptr<ai::SphereForIntersection> sphere = ai::SphereForIntersection::CreateObject(
+            radius, ai::SphereForIntersection::SpherePurpose::LOOKING, 0);  // LOOKING constant assumed to be 0
+
+        // Set initial position
+        dGeomSetPosition(sphere->GetGeomId(), position.x, position.y, position.z);
+
+        // Check if initial position is valid
+        if (!ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle) ||
+            (bCheckPassMap && Map::theGlobalMap->IsCircleBlocked(CVector2{position.x, position.z}, radius, blockingValue)))
+        {
+            // Initial position is invalid, search for a valid one
+            float currentRadius = radius;
+            float dist = radius;
+
+            if (radius <= 100.0f)
+            {
+                while (dist <= 100.0f)
+                {
+                    // Try 8 directions around the circle
+                    for (int i = 0; i < 8; ++i)
+                    {
+                        static CVector const DirOffset[] = {
+                            {1.0, 0.0, 0.0},
+                            {-1.0, 0.0, 0.0},
+                            {0.0, 0.0, 1.0},
+                            {0.0, 0.0, -1.0},
+                            {0.70709997, 0.0, 0.70709997},
+                            {-0.70709997, 0.0, 0.70709997},
+                            {0.70709997, 0.0, -0.70709997},
+                            {-0.70709997, 0.0, -0.70709997},
+                        };
+                        auto const& offset = DirOffset[i];
+
+                        // Calculate new position
+                        float newX = position.x + offset.x * dist;
+                        float newY = position.y + offset.y * dist;
+                        float newZ = position.z + offset.z * dist;
+
+                        // Update sphere position
+                        dGeomSetPosition(sphere->GetGeomId(), newX, newY, newZ);
+
+                        // Check if this position is better than current best
+                        if (minDist > dist && ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle))
+                        {
+                            if (!bCheckPassMap ||
+                                !ai::Map::theGlobalMap->IsCircleBlocked(CVector2{newX, newZ}, radius, blockingValue))
+                            {
+                                minDist = dist;
+                                availablePosition = CVector{newX, newY, newZ};
+                            }
+                        }
+                    }
+
+                    // Increase search radius
+                    dist += radius;
+                    currentRadius = dist;
+                }
+            }
+
+            // Check if we found a valid position
+            if (minDist >= 1.0e19f)
+            {
+                return false;
+            }
+            return true;
+        }
+        else
+        {
+            // Initial position is valid
+            availablePosition = position;
+            return true;
+        }
     }
 
     m3d::AnimInfo* GetNodeAnimInfo(m3d::SgNode const* node)
@@ -763,7 +850,8 @@ namespace ai
         float crossLengthSq = (crossX * crossX) + (crossY * crossY) + (crossZ * crossZ);
 
         // Calculate angle between initial direction and target axis
-        float dotProduct = INITIAL_OBJECTS_DIRECTION_36.x * axis.x + INITIAL_OBJECTS_DIRECTION_36.y * axis.y + INITIAL_OBJECTS_DIRECTION_36.z * axis.z;
+        float dotProduct =
+            INITIAL_OBJECTS_DIRECTION_36.x * axis.x + INITIAL_OBJECTS_DIRECTION_36.y * axis.y + INITIAL_OBJECTS_DIRECTION_36.z * axis.z;
         float angleBetween = atan2(sqrt(crossLengthSq), dotProduct);
 
         // Apply axis correction if significant misalignment

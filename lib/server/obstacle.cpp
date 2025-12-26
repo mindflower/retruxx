@@ -74,7 +74,7 @@ namespace ai
 
             m_intersectionBox = Box::CreateObject(nullptr, size, nullptr);
 
-            const auto ownerRotation = m_ownerSgNode->GetRotation();
+            auto const ownerRotation = m_ownerSgNode->GetRotation();
             CMatrix vv;
             auto z = ownerRotation.z;
             auto y = ownerRotation.y;
@@ -101,7 +101,7 @@ namespace ai
             memset(&vv.m[2][3], 0, 16);
             vv._44 = 1.0;
 
-            const auto ownerWorldAbs = m_ownerSgNode->GetOriginWorldAbs();
+            auto const ownerWorldAbs = m_ownerSgNode->GetOriginWorldAbs();
             dGeomSetPosition(
                 m_intersectionBox->GetGeomId(),
                 ownerWorldAbs.x + (((vv._31 * center_8) + (vv._21 * center_4)) + (vv._11 * center)),
@@ -115,7 +115,7 @@ namespace ai
             auto boxSize = m_intersectionBox->GetSize();
             auto radius = boxSize.length() * 0.5;
             this->m_intersectionSphere = ai::SphereForIntersection::CreateObject(radius, SphereForIntersection::INTERSECTING, this);
-            
+
             auto position = dGeomGetPosition(this->m_intersectionBox->GetGeomId());
             dGeomSetPosition(this->m_intersectionSphere->GetGeomId(), position[0], position[1], position[2]);
         }
@@ -149,7 +149,6 @@ namespace ai
         size.y = obb.m_max.y - obb.m_min.y;
         size.z = obb.m_max.z - obb.m_min.z;
 
-
         this->m_intersectionBox = Box::CreateObject(0, size, 0);
 
         dGeomSetPosition(m_intersectionBox->GetGeomId(), obb.m_origin.x, obb.m_origin.y, obb.m_origin.z);
@@ -182,8 +181,9 @@ namespace ai
         this->m_ownerPhysicObjId = -1;
         this->m_ownerSgNode = 0;
 
-        const auto* protoInfo = physicObj->GetPrototypeInfo();
-        this->m_intersectionSphere = ai::SphereForIntersection::CreateObject(protoInfo->m_intersectionRadius, SphereForIntersection::INTERSECTING, this);
+        auto const* protoInfo = physicObj->GetPrototypeInfo();
+        this->m_intersectionSphere =
+            ai::SphereForIntersection::CreateObject(protoInfo->m_intersectionRadius, SphereForIntersection::INTERSECTING, this);
         dGeomSetBody(this->m_intersectionSphere->GetGeomId(), physicObj->GetBody()->id());
         this->m_ownerPhysicObjId = physicObj->GetId();
     }
@@ -209,7 +209,15 @@ namespace ai
 
     void Obstacle::Disable()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_intersectionSphere)
+        {
+            dGeomDisable(m_intersectionSphere->GetGeomId());
+        }
+        if (m_intersectionBox)
+        {
+            dGeomDisable(m_intersectionBox->GetGeomId());
+        }
+        m_bIsEnabled = false;
     }
 
     CVector Obstacle::GetPosition() const
@@ -230,7 +238,15 @@ namespace ai
 
     void Obstacle::Enable()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_intersectionSphere)
+        {
+            dGeomEnable(m_intersectionSphere->GetGeomId());
+        }
+        if (m_intersectionBox)
+        {
+            dGeomEnable(m_intersectionBox->GetGeomId());
+        }
+        m_bIsEnabled = true;
     }
 
     CVector Obstacle::GetLinearVelocity() const
@@ -277,4 +293,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai
