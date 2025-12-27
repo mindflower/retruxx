@@ -38,19 +38,21 @@ namespace m3d
             float y = ev.m_shortEv[1];
             float x1 = ev.m_shortEv[2];
             float y1 = ev.m_shortEv[3];
+
             M3D_APP->m_renderer->AbsToRel(x, y);
             M3D_APP->m_renderer->AbsToRel(x1, y1);
+
             m_prevMouseCoord.x = x;
             m_prevMouseCoord.y = y;
             PointBase<float> sxy{x, y};
             PointBase<float> sxy1{x1, y1};
-            auto captureWnd = m_wndMouseCapture;
+
+            Wnd* captureWnd = m_wndMouseCapture;
             if (!captureWnd)
             {
-                for (auto* it = GetFirstChild(); it != nullptr; it = it->GetNextSibling())
+                for (auto* wnd = RT_DYNCAST(GetFirstChild(), Wnd); wnd != nullptr; wnd = RT_DYNCAST(wnd->GetNextSibling(), Wnd))
                 {
-                    auto* wnd = reinterpret_cast<Wnd*>(it);
-                    if ((wnd->GetStyle() & 0x200) != 0 && wnd->IsPtInBounds(m_prevMouseCoord))
+                    if (wnd->IsVisible() && wnd->IsPtInBounds(m_prevMouseCoord))
                     {
                         captureWnd = GetWndForMousePoint(wnd, m_prevMouseCoord, false);
                         if (captureWnd != nullptr)
@@ -62,42 +64,48 @@ namespace m3d
                 //TODO: check correctness
                 if (captureWnd == nullptr)
                 {
-                    captureWnd = (GetStyle() & 0x102) == 0 ? this : nullptr;
+                    captureWnd = (GetStyle() & (WS_TRANSPARENT | WS_DISABLE)) == 0 ? this : nullptr;
                 }
             }
-            auto* wnd = ModalOverride(captureWnd);
+
+            Wnd* wnd = ModalOverride(captureWnd);
             float xx = 0.0;
             float yy = 0.0;
-            for (auto* parent = wnd; parent; parent = dynamic_cast<Wnd*>(parent->GetParent()))
+
+            for (Wnd* parent = wnd; parent = nullptr; parent = RT_DYNCAST(parent->GetParent(), Wnd))
             {
-                auto const bounds = parent->GetBounds();
+                BoundsBase<float> const bounds = parent->GetBounds();
                 xx += bounds.x0;
                 yy += bounds.y0;
             }
+
             PointBase<float> lc;
             lc.x = sxy.x - xx;
             lc.y = sxy.y - yy;
+
             UpdateOnMouseInOut(wnd);
-            auto handled = 0;
-            auto state = ev.m_shortEv[2];
-            PointBase<float> firstClickLc{ 0.0, 0.0 };
+
+            int handled = 0;
+            short state = ev.m_shortEv[2];
+            PointBase<float> firstClickLc{0.0, 0.0};
+
             switch (ev.m_eventType)
             {
-            case 9:
+            case EV_MOUSE_MOVE:
             {
                 handled = wnd->OnMouseMove(lc, sxy1);
-                if (wnd!=this)
+                if (wnd != this)
                 {
                     Event newEv = ev;
-                    newEv.m_eventType = 38;
+                    newEv.m_eventType = EV_MOUSE_MOVE_ON_UI;
                     OnEvent(newEv);
                 }
                 break;
             }
-            case 10:
+            case EV_MOUSE_LBTN:
             {
                 handled = wnd->OnMouseButton0(state, lc);
-                if ((wnd->GetStyle() & 0x20000) != 0)
+                if ((wnd->GetStyle() & WS_DBLCLICK_REACT) != 0)
                 {
                     if (CheckForMouseDblClick(wnd, lc, state, firstClickLc))
                     {
@@ -105,26 +113,48 @@ namespace m3d
                         if (wnd == this)
                         {
                             Event newEv = ev;
-                            newEv.m_eventType = 13;
+                            newEv.m_eventType = EV_MOUSE_DBLCLICK;
                             OnEvent(newEv);
                         }
                     }
                 }
                 break;
             }
-            default:
-                RETRUXX_NOT_IMPLEMENTED;
-            }
-            if (ev.m_eventType == 10 || ev.m_eventType == 11 || ev.m_eventType == 12)
+            case EV_MOUSE_RBTN:
             {
-                if (state)
+                handled = wnd->OnMouseButton1(state, lc);
+                break;
+            }
+            case EV_MOUSE_MBTN:
+            {
+                handled = wnd->OnMouseButton2(state, lc);
+                break;
+            }
+            case EV_MOUSE_WHEEL:
+            {
+                handled = wnd->OnMouseWheel(state, lc);
+                break;
+            }
+            default:
+                break;
+            }
+
+            // TODO: check this
+            if ((ev.m_eventType == EV_MOUSE_LBTN || ev.m_eventType == EV_MOUSE_RBTN || ev.m_eventType == EV_MOUSE_MBTN) && state &&
+                m_wndOpenedComboBox)
+            {
+                int comboId = 0;
+                if (m_allWindows.getValueByKey(reinterpret_cast<unsigned>(m_wndOpenedComboBox), comboId))
                 {
-                    if (m_wndOpenedComboBox)
+                    int wndId = 0;
+                    if (m_allWindows.getValueByKey(reinterpret_cast<unsigned>(wnd), wndId) && wnd != m_wndOpenedComboBox &&
+                        !wnd->IsChildOf(m_wndOpenedComboBox))
                     {
-                        RETRUXX_NOT_IMPLEMENTED;
+                        m_wndOpenedComboBox->Close();
                     }
                 }
             }
+
             if (wnd == this)
             {
                 handled = OnEvent(ev);
@@ -202,8 +232,8 @@ namespace m3d
                     info.m_clientRect = curWnd->ToScreen(curWnd->GetClientBounds());
                     info.m_clientClippedRect = clipTo.Intersect(info.m_clientRect);
 
-                    if (info.m_clippedRect.width + info.m_clippedRect.x0 - info.m_clippedRect.x0 != 0.0
-                        || info.m_clippedRect.y0 - (info.m_clippedRect.height + info.m_clippedRect.y0) != 0.0)
+                    if (info.m_clippedRect.width + info.m_clippedRect.x0 - info.m_clippedRect.x0 != 0.0 ||
+                        info.m_clippedRect.y0 - (info.m_clippedRect.height + info.m_clippedRect.y0) != 0.0)
                     {
                         M3D_APP->m_renderer->SetWhiteTexture(0);
                         M3D_APP->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
@@ -238,10 +268,9 @@ namespace m3d
             if ((curWnd->m_bounds.width + curWnd->m_bounds.x0) - curWnd->m_bounds.x0 != 0.0 ||
                 curWnd->m_bounds.y0 - (curWnd->m_bounds.height + curWnd->m_bounds.y0) != 0.0)
             {
-                if ((curWnd->m_style & 1) == 0 &&
-                    (curWnd->m_style & 0x200) != 0 &&
+                if ((curWnd->m_style & 1) == 0 && (curWnd->m_style & 0x200) != 0 &&
                     (info.m_clippedRect.width + info.m_clippedRect.x0 - info.m_clippedRect.x0 != 0.0 ||
-                        info.m_clippedRect.y0 - (info.m_clippedRect.height + info.m_clippedRect.y0) != 0.0))
+                     info.m_clippedRect.y0 - (info.m_clippedRect.height + info.m_clippedRect.y0) != 0.0))
                 {
                     M3D_APP->m_renderer->SetWhiteTexture(0);
                     M3D_APP->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
@@ -506,16 +535,15 @@ namespace m3d
 
         int WndStation::ProcessEvent(Event const& ev)
         {
-            int v3; // ebx
-            m3d::ui::ModalWnd* v6; // ebx
-            m3d::ui::Wnd* v7; // ebp
-            m3d::ui::Wnd* v8; // ebp
-            m3d::ui::WndStation* v9; // eax
-            m3d::ui::WndStation* v10; // eax
-            m3d::ui::Wnd* v11; // [esp-4h] [ebp-34h]
-            void* msg; // [esp+10h] [ebp-20h]
-            m3d::ui::Wnd* eventa; // [esp+34h] [ebp+4h]
-
+            int v3;                    // ebx
+            m3d::ui::ModalWnd* v6;     // ebx
+            m3d::ui::Wnd* v7;          // ebp
+            m3d::ui::Wnd* v8;          // ebp
+            m3d::ui::WndStation* v9;   // eax
+            m3d::ui::WndStation* v10;  // eax
+            m3d::ui::Wnd* v11;         // [esp-4h] [ebp-34h]
+            void* msg;                 // [esp+10h] [ebp-20h]
+            m3d::ui::Wnd* eventa;      // [esp+34h] [ebp+4h]
 
             AIParam data = ev.m_aiParamEv;
 
@@ -563,7 +591,7 @@ namespace m3d
                 eventa = reinterpret_cast<Wnd*>(ev.m_void[1]);
                 if (IsWndAlive(v7, -1) && IsWndAlive(eventa, -1))
                 {
-                    eventa->OnWndNotify( v7, v7->m_id, ev.m_uintEv[2], data);
+                    eventa->OnWndNotify(v7, v7->m_id, ev.m_uintEv[2], data);
                     v3 = 1;
                 }
                 break;
@@ -608,11 +636,10 @@ namespace m3d
             LABEL_3:
                 v3 = 0;
                 break;
-                }
-                if (ev.m_eventType >= 0x10000)
-                    this->OnEvent(ev);
-                return v3;
-
+            }
+            if (ev.m_eventType >= 0x10000)
+                this->OnEvent(ev);
+            return v3;
         }
 
         Wnd* WndStation::GetWndByUniqueId(int) const
@@ -734,7 +761,6 @@ namespace m3d
                 // Move up to parent
                 currentWnd = RT_DYNCAST(parentWnd, Wnd);
             }
-
         }
 
         bool WndStation::IsAnimationEnabled() const
@@ -748,7 +774,7 @@ namespace m3d
             {
                 CStr newStr = src;
                 auto startPos = 0;
-                while(true)
+                while (true)
                 {
                     auto const pos1 = newStr.find('^');
                     if (pos1 == CStr_npos)
@@ -863,7 +889,6 @@ namespace m3d
             this->m_wndForTooltip = 0;
             this->m_wndCandidateForDblClick = 0;
 
-
             BoundsBase<float> const rc(0.0, 0.0, 1024.0, 768.0);
             CreateWnd("WndStation", 1, rc, 0);
             m_bAnimationEnabled = true;
@@ -883,10 +908,10 @@ namespace m3d
         {
             if (combo)
             {
-	            if (m_wndOpenedComboBox == combo)
-	            {
+                if (m_wndOpenedComboBox == combo)
+                {
                     m_wndOpenedComboBox = nullptr;
-	            }
+                }
             }
         }
 
@@ -898,15 +923,13 @@ namespace m3d
             }
 
             int val = -1;
-            const auto res = m_allWindows.getValueByKey(reinterpret_cast<unsigned>(combo), val);
+            auto const res = m_allWindows.getValueByKey(reinterpret_cast<unsigned>(combo), val);
             if (res)
             {
                 if (combo->IsChildOf(this))
                 {
-                    if (m_wndOpenedComboBox
-                        && IsWndAlive(m_wndOpenedComboBox, -1)
-                        && m_wndOpenedComboBox->IsChildOf(this)
-                        && m_wndOpenedComboBox->IsOpen())
+                    if (m_wndOpenedComboBox && IsWndAlive(m_wndOpenedComboBox, -1) && m_wndOpenedComboBox->IsChildOf(this) &&
+                        m_wndOpenedComboBox->IsOpen())
                     {
                         m_wndOpenedComboBox->Close();
                     }
@@ -915,7 +938,7 @@ namespace m3d
             }
         }
 
-        void WndStation::ForEachChild(Wnd*, void(Wnd::*)())
+        void WndStation::ForEachChild(Wnd*, void (Wnd::*)())
         {
             RETRUXX_NOT_IMPLEMENTED;
         }
@@ -942,7 +965,7 @@ namespace m3d
         void WndStation::UnregisterWnd(Wnd* w)
         {
             //TODO: check this and refactor
-            m3d::ui::Wnd* v2; // esi
+            m3d::ui::Wnd* v2;  // esi
 
             v2 = w;
             if (w)
@@ -963,7 +986,7 @@ namespace m3d
             {
                 auto wnd = ModalOverride(m_wndKbdCapture);
                 auto parent = wnd;
-                while(parent)
+                while (parent)
                 {
                     res = parent->OnKey(ev.m_ushortEv[0], ev.m_byteEv[3], ev.m_eventType == 7);
                     if (res)
@@ -990,7 +1013,7 @@ namespace m3d
             RemoveAllChildren();
             GetGfxServer()->Done();
             delete m_curDefault;
-            Application::g_pApp->m_renderer->ReleaseTexture(m_currentCursor.m_tex);   
+            Application::g_pApp->m_renderer->ReleaseTexture(m_currentCursor.m_tex);
             delete GetGfxServer();
             return 1;
         }
@@ -1068,7 +1091,8 @@ namespace m3d
                     else
                     {
                         //TODO: check this
-                        Application::g_pApp->m_renderer->SetupDXCursor(m_currentCursor.m_tex, m_currentCursor.m_spot.x, m_currentCursor.m_spot.y, 0);
+                        Application::g_pApp->m_renderer->SetupDXCursor(
+                            m_currentCursor.m_tex, m_currentCursor.m_spot.x, m_currentCursor.m_spot.y, 0);
                     }
                     Application::g_pApp->m_renderer->ShowDXCursor(true);
                 }
@@ -1078,7 +1102,7 @@ namespace m3d
                     Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
                     Application::g_pApp->m_renderer->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
                     Application::g_pApp->m_renderer->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
-                    Application::g_pApp->m_renderer->SetTexture(0, m_currentCursor.m_tex, -1.0);   //TODO: check this
+                    Application::g_pApp->m_renderer->SetTexture(0, m_currentCursor.m_tex, -1.0);  //TODO: check this
                     auto mouseX = static_cast<float>(Application::g_pApp->GetMouseX());
                     auto mouseY = static_cast<float>(Application::g_pApp->GetMouseY());
                     Application::g_pApp->m_renderer->AbsToRel(mouseX, mouseY);
@@ -1087,11 +1111,10 @@ namespace m3d
                         mouseY - m_currentCursor.m_spot.y,
                         m_currentCursor.m_sz.x + (mouseX - m_currentCursor.m_spot.x),
                         m_currentCursor.m_sz.y + (mouseY - m_currentCursor.m_spot.y),
-                        -1
-                    );
+                        -1);
                 }
             }
-            else if(Application::g_pApp->IsDXCursorEnabled())
+            else if (Application::g_pApp->IsDXCursorEnabled())
             {
                 Application::g_pApp->m_renderer->ShowDXCursor(false);
             }
@@ -1155,7 +1178,8 @@ namespace m3d
                 {
                     m_wndMouseOver->OnMouseOut();
                 }
-                if (m_wndKbdCapture && m_wndKbdCapture != m_wndMouseOver && m_wndKbdCapture != newWnd && !m_wndKbdCapture->IsChildOf(newWnd))
+                if (m_wndKbdCapture && m_wndKbdCapture != m_wndMouseOver && m_wndKbdCapture != newWnd &&
+                    !m_wndKbdCapture->IsChildOf(newWnd))
                 {
                     m_wndKbdCapture->OnMouseOut();
                 }
@@ -1163,5 +1187,5 @@ namespace m3d
                 m_wndMouseOver = newWnd;
             }
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

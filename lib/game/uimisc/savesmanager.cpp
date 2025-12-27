@@ -14,7 +14,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(SavesManager, AutoSave)
 }
 
 RT_CLASS_EXPORTS_BEGIN(SavesManager)
-	RT_CLASS_EXPORT(SavesManager, m3d::METHOD, AutoSave, "", "", "")
+RT_CLASS_EXPORT(SavesManager, m3d::METHOD, AutoSave, "", "", "")
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(SavesManager);
 
@@ -54,7 +54,7 @@ CStr SavesManager::GetPathForTemporaryMaps() const
         {
             return path;
         }
-    	M3D_LOG_INFO("SavesManager::GetPathForTemporaryMaps error - cannot create folder " + path);
+        M3D_LOG_INFO("SavesManager::GetPathForTemporaryMaps error - cannot create folder " + path);
     }
     return {};
 }
@@ -171,7 +171,7 @@ int SavesManager::SaveInfos(CStr const&, CStr const&)
 
 int SavesManager::MakeCurGameScreenshot()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return M3D_RENDERER->AddTextureFromBackBuffer(m_curGameScreenshot);
 }
 
 int SavesManager::LastLoad()
@@ -204,8 +204,16 @@ int SavesManager::QuickSave()
 
 int SavesManager::Init()
 {
-    // TODO: implement SavesManager::Init
-    //RETRUXX_NOT_IMPLEMENTED;
+    m_curGameScreenshot = M3D_RENDERER->AddDynamicTexture(
+        "$GameScreenshot", m_constantSaveInfo.m_screenshotSz.x, m_constantSaveInfo.m_screenshotSz.y, 1);
+
+    if (!m_curGameScreenshot.IsValid())
+    {
+        return 0;
+    }
+
+    M3D_RENDERER->SetTextureParameter(m_curGameScreenshot, m3d::rend::TexParam::TM_WRAP_S, 3u);
+    M3D_RENDERER->SetTextureParameter(m_curGameScreenshot, m3d::rend::TexParam::TM_WRAP_T, 3u);
     return 1;
 }
 
@@ -226,9 +234,7 @@ int SavesManager::LoadInfos()
     return 0;
 }
 
-SavesManager::SavesManager()
-{
-}
+SavesManager::SavesManager() = default;
 
 SavesManager::SavesManager(SavesManager const&)
 {
@@ -249,7 +255,8 @@ void SavesManager::OnNewFrameForce()
 {
     if (m_bDelayedQuickSave)
     {
-        auto curFrame = M3D_KERNEL->GetTimer().GetCurFrame();;
+        auto curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        ;
         auto v4 = curFrame == m_delayedQuickSaveFrame;
         auto v3 = curFrame - m_delayedQuickSaveFrame;
         if (!v4 && v3 != 1)

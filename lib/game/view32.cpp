@@ -39,6 +39,9 @@
 #include "uiwindows/miscwindows/cinemapanel.h"
 #include <algorithm>
 #include <game/uimisc/weapongroup.h>
+#include "uimanager/uidefs.h"
+#include "server/event.h"
+#include "uiwindows/miscwindows/gamemenu.h"
 
 #include "uiwindows/miscwindows/cinemafadepanel.h"
 
@@ -149,58 +152,68 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
     {
         return 1;
     }
+
     if (m_curGameMode.Get() == GS_CINEMATIC && impInfo.m_impId != 2)
     {
-        if (m_cinematic->m_state != 5 && m_cinematic->m_state != 3 && m_cinematic->m_state != 4)
+        if (m_cinematic->m_state != m3d::CINEMATIC_NOT_INITED && m_cinematic->m_state != m3d::CINEMATIC_EXIT_FADE_OUT &&
+            m_cinematic->m_state != m3d::CINEMATIC_EXIT_FADE_IN)
         {
             CinematicInterrupt();
             HandleCinematic(0.0);
             return 1;
         }
     }
+
     if (m_curGameMode.Get() != GS_MAINMENU && impInfo.m_impId == 1)
     {
-        auto app = dynamic_cast<CMiracle3d*>(g_pApp);
         StopPlayingMusic();
         if (m_gameInited)
         {
             ClearViewportToBlack();
             CinematicClear();
-            auto savesManager = app->m_pInterfaceManager->GetSavesManager();
-            auto tempMaps = savesManager->GetPathForTemporaryMaps();
+
+            auto* savesManager = M3D_APP->m_pInterfaceManager->GetSavesManager();
+            CStr const tempMaps = savesManager->GetPathForTemporaryMaps();
             help::DeleteAllFilesInDirectory(tempMaps.c_str());
             if (m3d::pClient)
             {
                 ProcessAllEvents();
-                app->m_pInterfaceManager->ShowWindow(166, false, false, false, false, nullptr);
-                app->m_pInterfaceManager->LaunchEvent(86, GUI_EVENT_CUSTOM, nullptr);
+                M3D_APP->m_pInterfaceManager->ShowWindow(IW_WND_FADE_PANEL_BEFORE_NEXT_MAP, false, false, false, false, nullptr);
+                M3D_APP->m_pInterfaceManager->LaunchEvent(IE_CUST_END_LEVEL, GUI_EVENT_CUSTOM, nullptr);
+
                 ai::pServer->Clear();
                 ai::pServer->ClearOnce();
+
                 m3d::pClient->Reset();
                 m3d::pClient->GetWorld().Release();
+
                 DiscardAllEvents();
-                app->m_pImpulses->ResetAllImpulses(true);
+                M3D_APP->m_pImpulses->ResetAllImpulses(true);
                 m_bRenderAsBackground = false;
                 m_bBackgroundTextureIsValid = false;
             }
         }
         m_curGameMode.Set(GS_MAINMENU);
         //TODO: check this (1.0)
-        m3d::g_Kernel->GetTimer().SetTimeScale(1.0);
-        m_saveTimeScale = m3d::g_Kernel->GetTimer().GetTimeScale();
+        M3D_KERNEL->GetTimer().SetTimeScale(1.0);
+        m_saveTimeScale = M3D_KERNEL->GetTimer().GetTimeScale();
+
         AllowRendering();
         if (!LoadMainMenuLevel())
         {
             GameDone();
         }
-        app->m_pInterfaceManager->Show(false, true);
-        app->m_pInterfaceManager->ShowWindow(72, true, true, false, false, nullptr);
+
+        M3D_APP->m_pInterfaceManager->Show(false, true);
+        M3D_APP->m_pInterfaceManager->ShowWindow(IW_WND_MAINMENU, true, true, false, false, nullptr);
+
         SetCursorShow(true);
         CaptureMouse(nullptr);
+
         if (!m_bDoNotLoadMainmenuLevel)
         {
-            app->m_pInterfaceManager->ShowWindow(19, 1, 1, false, false, nullptr);
-            auto wnd = app->m_pInterfaceManager->GetWindow(19);
+            M3D_APP->m_pInterfaceManager->ShowWindow(IW_WND_CINEMA_FADE_PANEL, 1, 1, false, false, nullptr);
+            ref_ptr<Wnd> wnd = M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_CINEMA_FADE_PANEL);
             if (IsDirectChild(wnd))
             {
                 MoveChildToFirstPosition(wnd);
@@ -208,9 +221,10 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
         }
         return 1;
     }
+
     if (m_curGameMode.Get() == GS_MAINMENU && impInfo.m_impId == 3)
     {
-        M3D_APP->m_pInterfaceManager->ShowWindow(72, false, true, false, false, nullptr);
+        M3D_APP->m_pInterfaceManager->ShowWindow(IW_WND_MAINMENU, false, true, false, false, nullptr);
         CleanMainMenuLevel();
         if (!m_gameInited)
         {
@@ -219,46 +233,47 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
 
         // TODO: check this
         M3D_APP->m_pInterfaceManager->StartSplashing(11);
-        auto v22 = LoadLevel(
-                       M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(),
-                       {},
-                       true,
-                       false,
-                       false,
-                       nullptr,
-                       nullptr,
-                       (ai::ObjContainer::eSAVE_TYPES)(ai::ObjContainer::SAVE_EDITOR | ai::ObjContainer::SAVE_FULL | 0x8)) == 0;
-        if (v22)
+        int loadRes = LoadLevel(
+                          M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(),
+                          {},
+                          true,
+                          false,
+                          false,
+                          nullptr,
+                          nullptr,
+                          (ai::ObjContainer::eSAVE_TYPES)(ai::ObjContainer::SAVE_EDITOR | ai::ObjContainer::SAVE_FULL | 0x8)) == 0;
+        if (loadRes)
         {
             return 0;
         }
-        CaptureMouse(0);
+        CaptureMouse(nullptr);
         m_curGameMode.Set(GS_GAME);
     }
-    if (!impInfo.m_impId)
+    if (impInfo.m_impId == 0)
     {
         if (m_curGameMode.Get() == GS_GAME)
         {
             M3D_APP->m_pInterfaceManager->GetSavesManager()->MakeCurGameScreenshot();
         }
-        M3D_APP->EnqueueMessage(65656, 0, 0, 0, 0, {}, {});
+        M3D_APP->EnqueueMessage(UM_SHOWGAMEMENU, 0, 0, 0, 0, GameMenuWnd::ROOT_LEVEL_NAME, {});
         return 1;
     }
 
     if (impInfo.m_impId == 2)
     {
-        CMiracle3d::CinematicInit();
+        CinematicInit();
         return 1;
     }
-    if (impInfo.m_impId != 3)
-        return 1;
 
-    m_curGameMode.Set(GS_GAME);
-    if (m_curGameMode.Get() != GS_CINEMATIC)
+    if (impInfo.m_impId == 3)
     {
-        SetCursorShow(1);
+        m_curGameMode.Set(GS_GAME);
+        if (m_curGameMode.Get() != GS_CINEMATIC)
+        {
+            SetCursorShow(true);
+        }
+        CaptureMouse(nullptr);
     }
-    CaptureMouse(0);
     return 1;
 }
 

@@ -181,7 +181,7 @@ namespace m3d
 
         bool Wnd::IsVisible() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return (GetStyle() & WS_IS_VISIBLE) != 0;
         }
 
         void Wnd::ShowWindow(bool show)
@@ -240,7 +240,8 @@ namespace m3d
         int Wnd::OnBeforeAddToWndStation()
         {
             int res = 1;
-            for (auto* wnd = RT_DYNCAST(GetFirstChild(), Wnd); wnd != nullptr; wnd = RT_DYNCAST(wnd->GetNextSibling(), Wnd))
+            for (auto* wnd = RT_DYNCAST(GetFirstChild(), Wnd); wnd != nullptr;
+                 wnd = RT_DYNCAST(wnd->GetNextSibling(), Wnd))
             {
                 res &= wnd->OnBeforeAddToWndStation();
             }
@@ -250,12 +251,13 @@ namespace m3d
         int Wnd::OnAfterAddToWndStation()
         {
             int res = 1;
-            for (auto* wnd = RT_DYNCAST(GetFirstChild(), Wnd); wnd != nullptr; wnd = RT_DYNCAST(wnd->GetNextSibling(), Wnd))
+            for (auto* wnd = RT_DYNCAST(GetFirstChild(), Wnd); wnd != nullptr;
+                 wnd = RT_DYNCAST(wnd->GetNextSibling(), Wnd))
             {
                 res &= wnd->OnAfterAddToWndStation();
             }
-            if (IsAnimatingNow() && m_currentAnimation.m_purpose == AnimationInfo::PURPOSE_SHOW || !m_wndStation->IsAnimationEnabled() ||
-                !m_onShowAnimation.CanAnimate())
+            if (IsAnimatingNow() && m_currentAnimation.m_purpose == AnimationInfo::PURPOSE_SHOW ||
+                !m_wndStation->IsAnimationEnabled() || !m_onShowAnimation.CanAnimate())
             {
                 return res;
             }
@@ -811,8 +813,10 @@ namespace m3d
             auto barWidth = GetFrameWidth();
             auto v4 = m_clientEdges[0] + (float)(0.0 - (float)(0.0 - barWidth));
             auto v5 = m_clientEdges[1] + (float)(0.0 - (float)(0.0 - barWidth));
-            auto v6 = (float)((float)((float)(0.0 - barWidth) * 2.0) + m_bounds.width) - (float)(m_clientEdges[0] + m_clientEdges[2]);
-            auto v7 = (float)((float)((float)(0.0 - barWidth) * 2.0) + m_bounds.height) - (float)(m_clientEdges[1] + m_clientEdges[3]);
+            auto v6 = (float)((float)((float)(0.0 - barWidth) * 2.0) + m_bounds.width) -
+                (float)(m_clientEdges[0] + m_clientEdges[2]);
+            auto v7 = (float)((float)((float)(0.0 - barWidth) * 2.0) + m_bounds.height) -
+                (float)(m_clientEdges[1] + m_clientEdges[3]);
             if (v6 < 0.0)
             {
                 v4 = (float)(m_bounds.width * 0.5) + m_bounds.x0;
@@ -1037,7 +1041,8 @@ namespace m3d
 
         bool Wnd::IsAnimatingNow() const
         {
-            return IsChildOf(GetStation()) && m_currentAnimation.m_animationType != AnimationInfo::ANIMATIONTYPE_INVALID &&
+            return IsChildOf(GetStation()) &&
+                m_currentAnimation.m_animationType != AnimationInfo::ANIMATIONTYPE_INVALID &&
                 m_currentAnimation.m_bEnabled;
         }
 
@@ -1408,7 +1413,8 @@ namespace m3d
                 {
                     if (!destWnd->IsKindOf(attr))
                     {
-                        M3D_LOG_INFO("LoadExistingDialog (" + name + "): warning! classes mismatches, existing: " + CStr(attr));
+                        M3D_LOG_INFO(
+                            "LoadExistingDialog (" + name + "): warning! classes mismatches, existing: " + CStr(attr));
                     }
                     destWnd->ReadFromXmlNode(xmlFile, node);
                 }
@@ -1455,7 +1461,8 @@ namespace m3d
 
         void Wnd::SetDefaultFont(int uiFont)
         {
-            if (Application::g_pApp->IsTextHieroglyphic(m_caption) && g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+            if (Application::g_pApp->IsTextHieroglyphic(m_caption) &&
+                g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
             {
                 m_defFont = GetGfxServer()->m_hieroglyphicFontId;
             }
@@ -1467,7 +1474,8 @@ namespace m3d
 
         void Wnd::SetDefaultFont(CStr const& name, float height, FontType type, FontParams params)
         {
-            if (Application::g_pApp->IsTextHieroglyphic(m_caption) && g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+            if (Application::g_pApp->IsTextHieroglyphic(m_caption) &&
+                g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
             {
                 m_defFont = GetGfxServer()->m_hieroglyphicFontId;
             }
@@ -1553,7 +1561,8 @@ namespace m3d
                     m_toolTipTimeOut = 3000;
                 }
             }
-            if (m_currentAnimation.m_animationType != AnimationInfo::ANIMATIONTYPE_INVALID && m_currentAnimation.m_bEnabled)
+            if (m_currentAnimation.m_animationType != AnimationInfo::ANIMATIONTYPE_INVALID &&
+                m_currentAnimation.m_bEnabled)
             {
                 ProcessAnimation(curTime, deltaTime);
             }
@@ -1612,9 +1621,30 @@ namespace m3d
             RETRUXX_NOT_IMPLEMENTED;
         }
 
-        int Wnd::OnMouseButton1(unsigned, PointBase<float> const&)
+        int Wnd::OnMouseButton1(unsigned state, PointBase<float> const& at)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if ((m_style & WS_SEND_NOTIFY_MESSAGES) != 0)
+            {
+                if (state)
+                {
+                    m_mouseDown |= 2u;
+                }
+                else
+                {
+                    if ((m_mouseDown & 2) != 0)
+                    {
+                        AIParam param(CVector2(at.x, at.y));
+                        CallParentNotify(2u, param, 0);
+                    }
+                    m_mouseDown &= ~2u;
+                }
+            }
+            if ((m_style & WS_REFLECT_MS_AND_KEYS_TO_PARENT) != 0 && GetParent())
+            {
+                auto* parentWnd = RT_DYNCAST(GetParent(), Wnd);
+                parentWnd->OnMouseButton1(state, ToParent(at));
+            }
+            return 1;
         }
 
         int Wnd::OnMouseButton0(unsigned state, PointBase<float> const& at)

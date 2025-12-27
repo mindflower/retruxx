@@ -969,8 +969,8 @@ namespace m3d
             virtual void MaterialSet(const m3d::rend::Material&) = 0;
             virtual void RelToAbs(float&, float&) = 0;
             virtual void AbsToRel(float&, float&) = 0;
-            virtual unsigned int AddTextureFromBackBuffer(m3d::rend::TexHandle result) = 0;
             virtual m3d::rend::TexHandle AddTextureFromBackBuffer(int, int) = 0;
+            virtual unsigned int AddTextureFromBackBuffer(m3d::rend::TexHandle result) = 0;
             virtual void ScreenShot(const char*, int, int) = 0;
             virtual int SaveTextureToTgaFile(m3d::rend::TexHandle, const char*) = 0;
             virtual char* GetCurBppStr(int*) = 0;
