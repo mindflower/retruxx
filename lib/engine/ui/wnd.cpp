@@ -1969,9 +1969,80 @@ namespace m3d
             return 1;
         }
 
-        int ModalWnd::OnKey(unsigned short, unsigned char, unsigned)
+        int ModalWnd::OnKey(unsigned short key, unsigned char, unsigned state)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: generated code
+            // Handle style 0x4000 when key is pressed (state == 1)
+            if ((m_style & WS_ACTIVATION_REFLECT_TO_CHILDREN) != 0 && state == 1)
+            {
+                unsigned char keyLow = static_cast<unsigned char>(key & 0xFF);
+                unsigned char keyHigh = static_cast<unsigned char>((key >> 8) & 0xFF);
+
+                // Mask out certain bits from the high byte (likely modifier bits)
+                keyHigh &= 0xCF;  // Clear specific bits
+
+                // Reconstruct the key with masked high byte
+                unsigned short maskedKey = static_cast<unsigned short>(keyLow | (keyHigh << 8));
+
+                // Check if it's the Tab key (key == 3)
+                if (maskedKey == 3)
+                {
+                    WndStation* station = GetStation();
+                    Wnd* activeWnd = station->GetActive();
+
+                    if (activeWnd && activeWnd->IsChildOf(this))
+                    {
+                        Wnd* nextActivatable = GetNextActivatableChild(
+                            activeWnd,
+                            (key & 0x3000) != 0  // Shift key check
+                        );
+
+                        if (nextActivatable && activeWnd != nextActivatable)
+                        {
+                            station->Activate(nextActivatable);
+                        }
+                    }
+                    return 1;  // Key handled
+                }
+            }
+            else if (state == 0)
+            {
+                // Key released - proceed to other checks
+            }
+            else
+            {
+                // State is not 0 or 1, or style doesn't match
+            }
+
+            // Handle key code 4 (likely Enter/OK button)
+            if (key == 4)
+            {
+                auto* firstChild = RT_DYNCAST(GetFirstChild(), Wnd);
+
+                // Look for a child with style 0x10000 (likely a default button)
+                while (firstChild)
+                {
+                    if ((firstChild->GetStyle() & 0x10000) != 0)
+                    {
+                        // Found default button - simulate space key press on it
+                        WndStation* station = GetStation();
+                        Wnd* targetWnd = static_cast<Wnd*>(firstChild);
+                        station->PulseKeyForWindow(targetWnd, 0x20u, 0x39u);
+                        return 1;  // Key handled
+                    }
+                    firstChild = RT_DYNCAST(firstChild->GetNextSibling(), Wnd);
+                }
+            }
+
+            // Handle Escape key (key == 1) for modal window
+            WndStation* station = GetStation();
+            if (station->IsModal(this) && state != 0 && key == 1)
+            {
+                CloseModal(3);  // Close with result code 3 (cancelled)
+                return 1;       // Key handled
+            }
+
+            return 0;  // Key not handled
         }
 
         int ModalWnd::OnWndNotify(Wnd* from, unsigned idFrom, unsigned msg, AIParam const& data)

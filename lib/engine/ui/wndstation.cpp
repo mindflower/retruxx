@@ -208,7 +208,11 @@ namespace m3d
 
         ModalWnd* WndStation::GetTopModal()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!m_wndModalStack.empty())
+            {
+                return m_wndModalStack.back();
+            }
+            return nullptr;
         }
 
         int WndStation::DispatchPaint(Wnd* curWnd, BoundsBase<float> const& clipTo)

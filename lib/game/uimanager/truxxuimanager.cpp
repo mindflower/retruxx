@@ -289,7 +289,7 @@ ObjectCollection const& TruxxUiManager::GetObjectCollection() const
 
 bool TruxxUiManager::IsHidden() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_isHidden;
 }
 
 int TruxxUiManager::AddWindow(ref_ptr<m3d::ui::Wnd> w, int& wndId, bool isPersistent, bool needShow)
@@ -1420,6 +1420,11 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     case IE_EV_UM_GAME_MENU_MODE_ENTER:
     {
         SetGameMenuMode(true);
+        return 1;
+    }
+    case IE_EV_UM_GAME_MENU_MODE_EXIT:
+    {
+        SetGameMenuMode(false);
         return 1;
     }
     case IE_EV_SM_OBJECT_CREATED:
