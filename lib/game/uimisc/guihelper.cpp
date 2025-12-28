@@ -285,4 +285,16 @@ namespace help
         // TODO: implement SetWndTextAlpha
         // RETRUXX_NOT_IMPLEMENTED;
     }
+
+    bool WindowsDirExists(CStr const& dirPath)
+    {
+        DWORD const fileAttributes = GetFileAttributesA(dirPath.c_str());
+        return fileAttributes != -1 && (fileAttributes & 0x10) != 0;
+    }
+
+    bool WindowsFileExists(CStr const& filePath)
+    {
+        DWORD const fileAttributes = GetFileAttributesA(filePath.c_str());
+        return fileAttributes != -1 && (fileAttributes & 0x10) == 0;
+    }
 }  // namespace help

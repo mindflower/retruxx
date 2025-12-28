@@ -178,7 +178,8 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
             if (m3d::pClient)
             {
                 ProcessAllEvents();
-                M3D_APP->m_pInterfaceManager->ShowWindow(IW_WND_FADE_PANEL_BEFORE_NEXT_MAP, false, false, false, false, nullptr);
+                M3D_APP->m_pInterfaceManager->ShowWindow(
+                    IW_WND_FADE_PANEL_BEFORE_NEXT_MAP, false, false, false, false, nullptr);
                 M3D_APP->m_pInterfaceManager->LaunchEvent(IE_CUST_END_LEVEL, GUI_EVENT_CUSTOM, nullptr);
 
                 ai::pServer->Clear();
@@ -233,15 +234,17 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
 
         // TODO: check this
         M3D_APP->m_pInterfaceManager->StartSplashing(11);
-        int loadRes = LoadLevel(
-                          M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(),
-                          {},
-                          true,
-                          false,
-                          false,
-                          nullptr,
-                          nullptr,
-                          (ai::ObjContainer::eSAVE_TYPES)(ai::ObjContainer::SAVE_EDITOR | ai::ObjContainer::SAVE_FULL | 0x8)) == 0;
+        int loadRes =
+            LoadLevel(
+                M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(),
+                {},
+                true,
+                false,
+                false,
+                nullptr,
+                nullptr,
+                (ai::ObjContainer::eSAVE_TYPES)(ai::ObjContainer::SAVE_EDITOR | ai::ObjContainer::SAVE_FULL | 0x8)) ==
+            0;
         if (loadRes)
         {
             return 0;
@@ -315,7 +318,8 @@ bool CMiracle3d::GetMouseHitPoint(CVector& hitPoint, m3d::SgNode*& sgNode)
     static scoped_ptr mouseRay = ai::Ray::CreateObject(nullptr, 1.0, nullptr);
     mouseRay->SetLength(10000.0);
 
-    dGeomSetPosition(mouseRay->GetGeomId(), m_curCamera.m_worldOrigin.x, m_curCamera.m_worldOrigin.y, m_curCamera.m_worldOrigin.z);
+    dGeomSetPosition(
+        mouseRay->GetGeomId(), m_curCamera.m_worldOrigin.x, m_curCamera.m_worldOrigin.y, m_curCamera.m_worldOrigin.z);
 
     CMatrix viewMatrix;
     viewMatrix.rotYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
@@ -350,8 +354,8 @@ bool CMiracle3d::GetMouseHitPoint(CVector& hitPoint, m3d::SgNode*& sgNode)
             ;
         }
 
-        if (IS_KIND_OF(obj, GeomObjectLandscape) || IS_KIND_OF(obj, GeomObjectStatics) || IS_KIND_OF(obj, GeomObjectWater) ||
-            IS_KIND_OF(obj, GeomObjectRoad) || IS_KIND_OF(obj, GeomObj))
+        if (IS_KIND_OF(obj, GeomObjectLandscape) || IS_KIND_OF(obj, GeomObjectStatics) ||
+            IS_KIND_OF(obj, GeomObjectWater) || IS_KIND_OF(obj, GeomObjectRoad) || IS_KIND_OF(obj, GeomObj))
         {
             sgNode = &m3d::pClient->GetWorld().GetLandscape();
         }
@@ -476,7 +480,8 @@ void CMiracle3d::PlayHackedMusic(HackedMusicType musicType, bool bForceRestart)
             }
             else
             {
-                if (musicType != HACKMUSIC_CUSTOM && (m_bMustStartNewMusic || bForceRestart || musicType != this->m_hackedMusicType) &&
+                if (musicType != HACKMUSIC_CUSTOM &&
+                    (m_bMustStartNewMusic || bForceRestart || musicType != this->m_hackedMusicType) &&
                     m3d::Application::g_pApp->m_sound && musicType >= HACKMUSIC_MENU && musicType < m_musicNames.size())
                 {
                     m3d::Application::StartPlayingMusic(this->m_musicNames[musicType].c_str(), 1, 1);
@@ -924,8 +929,8 @@ void CMiracle3d::CinematicInterrupt()
         {
             auto v11 = m_cinematic->m_playTime - m_cinematic->m_fadeStartTime;
             m_cinematic->m_state = m3d::CINEMATIC_EXIT_FADE_OUT;
-            m_cinematic->m_fadeStartTime =
-                v11 + m_cinematic->m_playTime - (int)(m_cinematic->GetFadePeriodForState(m3d::CINEMATIC_ENTER_FADE_IN) * 1000.0);
+            m_cinematic->m_fadeStartTime = v11 + m_cinematic->m_playTime -
+                (int)(m_cinematic->GetFadePeriodForState(m3d::CINEMATIC_ENTER_FADE_IN) * 1000.0);
         }
     }
     else
@@ -961,9 +966,10 @@ int CMiracle3d::OnSkipCinematic(m3d::AuxImpulseInfo const& impInfo)
     return 1;
 }
 
-void CMiracle3d::RenderAsBackground(bool)
+void CMiracle3d::RenderAsBackground(bool bAsBackground)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bRenderAsBackground = bAsBackground;
+    m_bBackgroundTextureIsValid = false;
 }
 
 void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
@@ -1092,9 +1098,12 @@ void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
 
             // Transform offset by rotation matrix
             CVector transformedOffset;
-            transformedOffset.x = (sightLine._11 * cameraOffset.x) + (sightLine._12 * cameraOffset.y) + (sightLine._13 * cameraOffset.z);
-            transformedOffset.y = (sightLine._21 * cameraOffset.x) + (sightLine._22 * cameraOffset.y) + (sightLine._23 * cameraOffset.z);
-            transformedOffset.z = (sightLine._31 * cameraOffset.x) + (sightLine._32 * cameraOffset.y) + (sightLine._33 * cameraOffset.z);
+            transformedOffset.x =
+                (sightLine._11 * cameraOffset.x) + (sightLine._12 * cameraOffset.y) + (sightLine._13 * cameraOffset.z);
+            transformedOffset.y =
+                (sightLine._21 * cameraOffset.x) + (sightLine._22 * cameraOffset.y) + (sightLine._23 * cameraOffset.z);
+            transformedOffset.z =
+                (sightLine._31 * cameraOffset.x) + (sightLine._32 * cameraOffset.y) + (sightLine._33 * cameraOffset.z);
 
             // Apply auto slide movement
             CVector autoSlide;
@@ -1103,9 +1112,12 @@ void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
             autoSlide.z = this->m_gameSlideAuto.z * deltaTime;
 
             CVector slideMovement;
-            slideMovement.x = (sightLine._11 * autoSlide.x) + (sightLine._12 * autoSlide.y) + (sightLine._13 * autoSlide.z);
-            slideMovement.y = (sightLine._21 * autoSlide.x) + (sightLine._22 * autoSlide.y) + (sightLine._23 * autoSlide.z);
-            slideMovement.z = (sightLine._31 * autoSlide.x) + (sightLine._32 * autoSlide.y) + (sightLine._33 * autoSlide.z);
+            slideMovement.x =
+                (sightLine._11 * autoSlide.x) + (sightLine._12 * autoSlide.y) + (sightLine._13 * autoSlide.z);
+            slideMovement.y =
+                (sightLine._21 * autoSlide.x) + (sightLine._22 * autoSlide.y) + (sightLine._23 * autoSlide.z);
+            slideMovement.z =
+                (sightLine._31 * autoSlide.x) + (sightLine._32 * autoSlide.y) + (sightLine._33 * autoSlide.z);
 
             // Get vehicle position and height
             CVector vehiclePos = vehicle->GetPosition();
@@ -1582,18 +1594,21 @@ bool CMiracle3d::LoadMap(
 int CMiracle3d::ValidateCameraAngles()
 {
     if (m_curCamera.m_rotYaw > 3.1415927)
-        m_curCamera.m_rotYaw =
-            m_curCamera.m_rotYaw - (float)((float)(int)(float)((float)(m_curCamera.m_rotYaw + 3.1415927) * 0.15915494) * 6.2831855);
+        m_curCamera.m_rotYaw = m_curCamera.m_rotYaw -
+            (float)((float)(int)(float)((float)(m_curCamera.m_rotYaw + 3.1415927) * 0.15915494) * 6.2831855);
     if (m_curCamera.m_rotYaw < -3.1415927)
         m_curCamera.m_rotYaw =
-            (float)((float)(int)(float)((float)(3.1415927 - m_curCamera.m_rotYaw) * 0.15915494) * 6.2831855) + m_curCamera.m_rotYaw;
+            (float)((float)(int)(float)((float)(3.1415927 - m_curCamera.m_rotYaw) * 0.15915494) * 6.2831855) +
+            m_curCamera.m_rotYaw;
 
     auto v2 = m_curCamera.m_rotPitch;
     if (v2 > 3.1415927)
-        m_curCamera.m_rotPitch = m_curCamera.m_rotPitch - (float)((float)(int)(float)((float)(v2 + 3.1415927) * 0.15915494) * 6.2831855);
+        m_curCamera.m_rotPitch =
+            m_curCamera.m_rotPitch - (float)((float)(int)(float)((float)(v2 + 3.1415927) * 0.15915494) * 6.2831855);
     if (m_curCamera.m_rotPitch < -3.1415927)
         m_curCamera.m_rotPitch =
-            (float)((float)(int)(float)((float)(3.1415927 - m_curCamera.m_rotPitch) * 0.15915494) * 6.2831855) + m_curCamera.m_rotPitch;
+            (float)((float)(int)(float)((float)(3.1415927 - m_curCamera.m_rotPitch) * 0.15915494) * 6.2831855) +
+            m_curCamera.m_rotPitch;
 
     auto v3 = m_minDist.GetF();
     auto v4 = m_maxDist.GetF();
@@ -1837,12 +1852,19 @@ int CMiracle3d::CreateInterfaceManager()
 
 void CMiracle3d::DrawBackground()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    M3D_RENDERER->SetTexture(0, m_backgroundTexture, -1.0);
+    float y2 = 768.0;
+    float x2 = 1024.0;
+    float y1 = 0.0;
+    float x1 = 0.0;
+    M3D_RENDERER->RelToAbs(x1, y1);
+    M3D_RENDERER->RelToAbs(x2, y2);
+    PutSprite2Abs(x1, y1, 0.0, 0.0, x2, y2, 1.0, 1.0, 0xFFFFFFFF);
 }
 
 void CMiracle3d::CaptureBackground()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    M3D_RENDERER->CopyRenderTargetToTexture(m_backgroundTexture);
 }
 
 CMiracle3d::CMiracle3d() :
@@ -2166,37 +2188,51 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
         auto const shakingRolling = GetCameraController()->GetShakingRolling();
         float const shakeSin = sin(shakingRolling);
         float const shakeCos = cos(shakingRolling);
-        vv._11 = (((addRotZ._41 * rotationMatrix._14) + (addRotZ._31 * rotationMatrix._13)) + (rotationMatrix._12 * (0.0 - shakeSin))) +
+        vv._11 = (((addRotZ._41 * rotationMatrix._14) + (addRotZ._31 * rotationMatrix._13)) +
+                  (rotationMatrix._12 * (0.0 - shakeSin))) +
             (rotationMatrix._11 * shakeCos);
         vv._12 = addRotZ._42 * rotationMatrix._14 + addRotZ._32 * rotationMatrix._13 + rotationMatrix._12 * shakeCos +
             rotationMatrix._11 * shakeSin;
-        vv._13 = (((addRotZ._43 * rotationMatrix._14) + (addRotZ._23 * rotationMatrix._12)) + (addRotZ._13 * rotationMatrix._11)) +
+        vv._13 = (((addRotZ._43 * rotationMatrix._14) + (addRotZ._23 * rotationMatrix._12)) +
+                  (addRotZ._13 * rotationMatrix._11)) +
             rotationMatrix._13;
-        vv._14 = (((addRotZ._34 * rotationMatrix._13) + (addRotZ._24 * rotationMatrix._12)) + (addRotZ._14 * rotationMatrix._11)) +
+        vv._14 = (((addRotZ._34 * rotationMatrix._13) + (addRotZ._24 * rotationMatrix._12)) +
+                  (addRotZ._14 * rotationMatrix._11)) +
             rotationMatrix._14;
-        vv._21 = (((rotationMatrix._24 * addRotZ._41) + (rotationMatrix._23 * addRotZ._31)) + (rotationMatrix._22 * (0.0 - shakeSin))) +
+        vv._21 = (((rotationMatrix._24 * addRotZ._41) + (rotationMatrix._23 * addRotZ._31)) +
+                  (rotationMatrix._22 * (0.0 - shakeSin))) +
             (rotationMatrix._21 * shakeCos);
         vv._22 = rotationMatrix._24 * addRotZ._42 + rotationMatrix._23 * addRotZ._32 + rotationMatrix._22 * shakeCos +
             rotationMatrix._21 * shakeSin;
-        vv._23 = (((rotationMatrix._24 * addRotZ._43) + (rotationMatrix._22 * addRotZ._23)) + (rotationMatrix._21 * addRotZ._13)) +
+        vv._23 = (((rotationMatrix._24 * addRotZ._43) + (rotationMatrix._22 * addRotZ._23)) +
+                  (rotationMatrix._21 * addRotZ._13)) +
             rotationMatrix._23;
-        vv._24 = (((rotationMatrix._23 * addRotZ._34) + (rotationMatrix._22 * addRotZ._24)) + (rotationMatrix._21 * addRotZ._14)) +
+        vv._24 = (((rotationMatrix._23 * addRotZ._34) + (rotationMatrix._22 * addRotZ._24)) +
+                  (rotationMatrix._21 * addRotZ._14)) +
             rotationMatrix._24;
-        vv._31 = (((addRotZ._41 * rotationMatrix._34) + (addRotZ._31 * rotationMatrix._33)) + ((0.0 - shakeSin) * rotationMatrix._32)) +
+        vv._31 = (((addRotZ._41 * rotationMatrix._34) + (addRotZ._31 * rotationMatrix._33)) +
+                  ((0.0 - shakeSin) * rotationMatrix._32)) +
             (shakeCos * rotationMatrix._31);
-        vv._32 = (((addRotZ._42 * rotationMatrix._34) + (addRotZ._32 * rotationMatrix._33)) + (shakeCos * rotationMatrix._32)) +
+        vv._32 = (((addRotZ._42 * rotationMatrix._34) + (addRotZ._32 * rotationMatrix._33)) +
+                  (shakeCos * rotationMatrix._32)) +
             (shakeSin * rotationMatrix._31);
-        vv._33 = (((addRotZ._43 * rotationMatrix._34) + (addRotZ._23 * rotationMatrix._32)) + (addRotZ._13 * rotationMatrix._31)) +
+        vv._33 = (((addRotZ._43 * rotationMatrix._34) + (addRotZ._23 * rotationMatrix._32)) +
+                  (addRotZ._13 * rotationMatrix._31)) +
             rotationMatrix._33;
-        vv._34 = (((addRotZ._24 * rotationMatrix._32) + (addRotZ._14 * rotationMatrix._31)) + (addRotZ._34 * rotationMatrix._33)) +
+        vv._34 = (((addRotZ._24 * rotationMatrix._32) + (addRotZ._14 * rotationMatrix._31)) +
+                  (addRotZ._34 * rotationMatrix._33)) +
             rotationMatrix._34;
-        vv._41 = (((addRotZ._31 * rotationMatrix._43) + ((0.0 - shakeSin) * rotationMatrix._42)) + (shakeCos * rotationMatrix._41)) +
+        vv._41 = (((addRotZ._31 * rotationMatrix._43) + ((0.0 - shakeSin) * rotationMatrix._42)) +
+                  (shakeCos * rotationMatrix._41)) +
             (addRotZ._41 * rotationMatrix._44);
-        vv._42 = (((shakeCos * rotationMatrix._42) + (shakeSin * rotationMatrix._41)) + (addRotZ._42 * rotationMatrix._44)) +
+        vv._42 =
+            (((shakeCos * rotationMatrix._42) + (shakeSin * rotationMatrix._41)) + (addRotZ._42 * rotationMatrix._44)) +
             (addRotZ._32 * rotationMatrix._43);
-        vv._43 = (((addRotZ._43 * rotationMatrix._44) + (addRotZ._23 * rotationMatrix._42)) + (addRotZ._13 * rotationMatrix._41)) +
+        vv._43 = (((addRotZ._43 * rotationMatrix._44) + (addRotZ._23 * rotationMatrix._42)) +
+                  (addRotZ._13 * rotationMatrix._41)) +
             rotationMatrix._43;
-        vv._44 = (((addRotZ._34 * rotationMatrix._43) + (addRotZ._24 * rotationMatrix._42)) + (addRotZ._14 * rotationMatrix._41)) +
+        vv._44 = (((addRotZ._34 * rotationMatrix._43) + (addRotZ._24 * rotationMatrix._42)) +
+                  (addRotZ._14 * rotationMatrix._41)) +
             rotationMatrix._44;
         addRotZ = vv;
         addRotZ.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);

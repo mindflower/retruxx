@@ -677,7 +677,7 @@ namespace ai
 
     bool ObjContainer::IsSaveAllowed() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_bSaveAllowed;
     }
 
     void ObjContainer::PauseGameTime()

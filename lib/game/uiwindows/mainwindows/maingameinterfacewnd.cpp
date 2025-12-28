@@ -22,7 +22,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(MainGameInterfaceWnd, SetupForBoss)
 }
 
 RT_CLASS_EXPORTS_BEGIN(MainGameInterfaceWnd)
-	RT_CLASS_EXPORT(MainGameInterfaceWnd, m3d::METHOD, SetupForBoss, "", "", "")
+RT_CLASS_EXPORT(MainGameInterfaceWnd, m3d::METHOD, SetupForBoss, "", "", "")
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MainGameInterfaceWnd);
 
@@ -331,7 +331,8 @@ int MainGameInterfaceWnd::GameDataSetup()
     }
     else
     {
-        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndNearbyChestsIcoName + " is not found or incorrect type");
+        M3D_LOG_INFO(
+            "Get control error: control " + m_aif.m_wndNearbyChestsIcoName + " is not found or incorrect type");
         res = 0;
     }
 
@@ -365,7 +366,6 @@ int MainGameInterfaceWnd::GameDataSetup()
 
 int MainGameInterfaceWnd::OnBeforeAddToWndStation()
 {
-    // TODO: implement MainGameInterfaceWnd::OnBeforeAddToWndStation
     if ((m_gameDataFlags & 1) != 0)
     {
         CheckAndShowCounterWnd();
@@ -374,7 +374,7 @@ int MainGameInterfaceWnd::OnBeforeAddToWndStation()
         CheckAndShowNearbyChestsIco();
         CheckAndShowNearbyTownIco();
         CheckAndShowBossIndicator();
-       //  MoveChildToFirstPosition(m_wndIgrokaMochat);
+        MoveChildToFirstPosition(m_wndIgrokaMochat);
     }
     return Wnd::OnBeforeAddToWndStation();
 }
@@ -525,7 +525,11 @@ int MainGameInterfaceWnd::GameDataUpdate(void*, int)
 
 int MainGameInterfaceWnd::OnBeforeRemoveFromWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_wndTargetInfo && IsDirectChild(m_wndTargetInfo))
+    {
+        RemoveChildForce(m_wndTargetInfo);
+    }
+    return Wnd::OnBeforeRemoveFromWndStation();
 }
 
 void MainGameInterfaceWnd::UpdateBossMode()

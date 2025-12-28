@@ -91,4 +91,7 @@ namespace help
     int RoundHealth(float);
 
     void SetWndTextAlpha(m3d::ui::Wnd*, unsigned char);
+
+    bool WindowsDirExists(CStr const& dirPath);
+    bool WindowsFileExists(CStr const& filePath);
 }  // namespace help

@@ -109,9 +109,35 @@ m3d::Class* SavesManager::GetClass() const
     return RT_CLASS_LOCAL(SavesManager);
 }
 
-int SavesManager::GetSaveFolderNames(retruxx::vector<CStr>&) const
+int SavesManager::GetSaveFolderNames(retruxx::vector<CStr>& folderNames) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    folderNames.clear();
+
+    auto* curProfile = M3D_APP->GetProfileManager()->GetCurProfile();
+    if (curProfile)
+    {
+        if (help::WindowsDirExists(curProfile->GetFolder()))
+        {
+            CStr savePath = curProfile->GetFolder() + "\\" + m_constantSaveInfo.m_saveFolderName;
+            if (help::WindowsDirExists(savePath))
+            {
+                if (help::GetWindowsSubDirs(savePath, folderNames, "*.*") == 0)
+                {
+                    M3D_LOG_INFO("SavesManager::GetSaveFolderNames error - cannot find saves");
+                    return 0;
+                }
+            }
+            return 1;
+        }
+        else
+        {
+            M3D_LOG_INFO(
+                "SavesManager::GetSaveFolderNamest error - folder for profile " + curProfile->GetName() + " not found");
+            return 0;
+        }
+    }
+    M3D_LOG_INFO("SavesManager::GetSaveFolderNames error - invalid profile");
+    return 0;
 }
 
 int SavesManager::DeleteSaveGame(CStr const&)

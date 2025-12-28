@@ -233,7 +233,9 @@ bool PostEffectManager::AddEffect(CStr const& effName, float, unsigned)
 
 bool PostEffectManager::KillEffect(CStr const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement PostEffectManager::KillEffect
+    // RETRUXX_NOT_IMPLEMENTED;
+    return true;
 }
 
 void PostEffectManager::Destroy()
@@ -316,7 +318,7 @@ void PostEffectManager::Destroy()
 void PostEffectManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 {
     ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-    
+
     for (xmlNode->GetFirstChild(node, "Model"); !node->IsEmpty(); node->GetNextSibling(node, "Model"))
     {
         auto postEffectModel = new PostEffectModel(&m_varList);
@@ -333,10 +335,13 @@ void PostEffectManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNod
         {
             CStr tmpName;
             m3d::SafeStrAttrib(tmpName, tmp, "Name");
-            auto it = std::find_if(begin(m_models), end(m_models), [&tmpName](PostEffectModel* model)
-            {
-                return model->FindByName(tmpName);
-            });
+            auto it = std::find_if(
+                begin(m_models),
+                end(m_models),
+                [&tmpName](PostEffectModel* model)
+                {
+                    return model->FindByName(tmpName);
+                });
             M3D_ASSERT(it != end(m_models));
             sequence.m_list.push_back(*it);
         }
@@ -352,46 +357,61 @@ void PostEffectManager::InitShaders()
     if (m3d::g_Kernel->GetEngineCfg().m_r_allowPS20.GetB() &&
         M3D_RENDERER->IsFeatureSupported(m3d::rend::FEATURE_PS_2_0))
     {
-        g_DownsampleVs = M3D_RENDERER->NewHlslShader("data/shaders/post_downsample_vs20.vs", "VS_Downsample", m3d::rend::IHlslShader::VS_2_0);
+        g_DownsampleVs = M3D_RENDERER->NewHlslShader(
+            "data/shaders/post_downsample_vs20.vs", "VS_Downsample", m3d::rend::IHlslShader::VS_2_0);
         M3D_ASSERT(g_DownsampleVs);
-        g_DownsamplePs = M3D_RENDERER->NewHlslShader("data/shaders/post_downsample_ps20.ps", "PS_Downsample", m3d::rend::IHlslShader::PS_2_0);
+        g_DownsamplePs = M3D_RENDERER->NewHlslShader(
+            "data/shaders/post_downsample_ps20.ps", "PS_Downsample", m3d::rend::IHlslShader::PS_2_0);
         M3D_ASSERT(g_DownsamplePs);
-        g_BlurVs = M3D_RENDERER->NewHlslShader("data/shaders/post_blur_vs20.vs", "VS_Blur", m3d::rend::IHlslShader::VS_2_0);
+        g_BlurVs =
+            M3D_RENDERER->NewHlslShader("data/shaders/post_blur_vs20.vs", "VS_Blur", m3d::rend::IHlslShader::VS_2_0);
         M3D_ASSERT(g_BlurVs);
-        g_BlurPs = M3D_RENDERER->NewHlslShader("data/shaders/post_blur_ps20.ps", "PS_Blur7", m3d::rend::IHlslShader::PS_2_0);
+        g_BlurPs =
+            M3D_RENDERER->NewHlslShader("data/shaders/post_blur_ps20.ps", "PS_Blur7", m3d::rend::IHlslShader::PS_2_0);
         M3D_ASSERT(g_BlurPs);
-        g_FinalCompVs = M3D_RENDERER->NewHlslShader("data/shaders/post_composite_vs20.vs", "VS_Quad", m3d::rend::IHlslShader::VS_2_0);
+        g_FinalCompVs = M3D_RENDERER->NewHlslShader(
+            "data/shaders/post_composite_vs20.vs", "VS_Quad", m3d::rend::IHlslShader::VS_2_0);
         M3D_ASSERT(g_FinalCompVs);
-        g_FinalCompPsAsm = M3D_RENDERER->NewAsmShader("data/shaders/post_composite_ps20.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+        g_FinalCompPsAsm =
+            M3D_RENDERER->NewAsmShader("data/shaders/post_composite_ps20.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
         M3D_ASSERT(g_FinalCompPsAsm);
     }
     else
     {
-        g_DownsampleVs = M3D_RENDERER->NewHlslShader("data/shaders/post_downsample_vs11.vs", "VS_Downsample", m3d::rend::IHlslShader::VS_1_1);
+        g_DownsampleVs = M3D_RENDERER->NewHlslShader(
+            "data/shaders/post_downsample_vs11.vs", "VS_Downsample", m3d::rend::IHlslShader::VS_1_1);
         M3D_ASSERT(g_DownsampleVs);
-        g_DownsamplePs = M3D_RENDERER->NewHlslShader("data/shaders/post_downsample_ps11.ps", "PS_Downsample", m3d::rend::IHlslShader::PS_1_1);
+        g_DownsamplePs = M3D_RENDERER->NewHlslShader(
+            "data/shaders/post_downsample_ps11.ps", "PS_Downsample", m3d::rend::IHlslShader::PS_1_1);
         M3D_ASSERT(g_DownsamplePs);
-        g_BlurVs = M3D_RENDERER->NewHlslShader("data/shaders/post_blur_vs11.vs", "VS_Blur", m3d::rend::IHlslShader::VS_1_1);
+        g_BlurVs =
+            M3D_RENDERER->NewHlslShader("data/shaders/post_blur_vs11.vs", "VS_Blur", m3d::rend::IHlslShader::VS_1_1);
         M3D_ASSERT(g_BlurVs);
-        g_BlurPs = M3D_RENDERER->NewHlslShader("data/shaders/post_blur_ps11.ps", "PS_Blur7", m3d::rend::IHlslShader::PS_1_1);
+        g_BlurPs =
+            M3D_RENDERER->NewHlslShader("data/shaders/post_blur_ps11.ps", "PS_Blur7", m3d::rend::IHlslShader::PS_1_1);
         M3D_ASSERT(g_BlurPs);
-        g_FinalCompVs = M3D_RENDERER->NewHlslShader("data/shaders/post_composite_vs11.vs", "VS_Quad", m3d::rend::IHlslShader::VS_1_1);
+        g_FinalCompVs = M3D_RENDERER->NewHlslShader(
+            "data/shaders/post_composite_vs11.vs", "VS_Quad", m3d::rend::IHlslShader::VS_1_1);
         M3D_ASSERT(g_FinalCompVs);
-        g_FinalCompPsAsm = M3D_RENDERER->NewAsmShader("data/shaders/post_composite_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+        g_FinalCompPsAsm =
+            M3D_RENDERER->NewAsmShader("data/shaders/post_composite_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
         M3D_ASSERT(g_FinalCompPsAsm);
     }
     g_FilmVs = M3D_RENDERER->NewHlslShader("data/shaders/post_film_vs11.vs", "VS_Film", m3d::rend::IHlslShader::VS_1_1);
     M3D_ASSERT(g_FilmVs);
     if (M3D_RENDERER->IsFeatureSupported(m3d::rend::FEATURE_NON_POW2_CONDITIONAL))
     {
-        g_FilmPsAsm = M3D_RENDERER->NewAsmShader("data/shaders/post_film_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+        g_FilmPsAsm =
+            M3D_RENDERER->NewAsmShader("data/shaders/post_film_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
     }
     else
     {
-        g_FilmPsAsm = M3D_RENDERER->NewAsmShader("data/shaders/post_film_ps11sp.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
+        g_FilmPsAsm =
+            M3D_RENDERER->NewAsmShader("data/shaders/post_film_ps11sp.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
     }
     M3D_ASSERT(g_FilmPsAsm);
-    g_BlackNWhiteVs = M3D_RENDERER->NewHlslShader("data/shaders/post_bw_ps11.vs", "VS_Quad", m3d::rend::IHlslShader::VS_1_1);
+    g_BlackNWhiteVs =
+        M3D_RENDERER->NewHlslShader("data/shaders/post_bw_ps11.vs", "VS_Quad", m3d::rend::IHlslShader::VS_1_1);
     M3D_ASSERT(g_BlackNWhiteVs);
     g_BlackNWhitePs = M3D_RENDERER->NewAsmShader("data/shaders/post_bw_ps11.asm", m3d::rend::IAsmShader::PIXEL_SHADER);
     M3D_ASSERT(g_BlackNWhitePs);

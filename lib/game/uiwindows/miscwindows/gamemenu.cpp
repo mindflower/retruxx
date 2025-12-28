@@ -1,5 +1,5 @@
 #include "gamemenu.h"
-#include "m3dapp.h"
+#include "game/m3dgame.h"
 #include "core/log.h"
 
 RT_CLASS_EXPORTS_BEGIN(GameMenuWnd)
@@ -34,14 +34,33 @@ MenuItem::~MenuItem()
     }
 }
 
-MenuItem* MenuItem::GetMenuItemViaName(CStr const&)
+MenuItem* MenuItem::GetMenuItemViaName(CStr const& name)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!CStr::my_strcmp(GameMenuWnd::ROOT_LEVEL_NAME.c_str(), name.c_str()))
+    {
+        return this;
+    }
+    for (auto* child : m_children)
+    {
+        if (!CStr::my_strcmp(child->m_name.c_str(), name.c_str()))
+        {
+            return child;
+        }
+    }
+    for (auto* child : m_children)
+    {
+        auto* result = child->GetMenuItemViaName(name);
+        if (result)
+        {
+            return result;
+        }
+    }
+    return nullptr;
 }
 
-MenuItem const* MenuItem::GetMenuItemViaName(CStr const&) const
+MenuItem const* MenuItem::GetMenuItemViaName(CStr const& name) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return const_cast<MenuItem*>(this)->GetMenuItemViaName(name);
 }
 
 m3d::Class* GameMenuWnd::GetBaseClass()
@@ -75,12 +94,37 @@ m3d::Object* GameMenuWnd::CreateObject()
 
 m3d::Class* GameMenuWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(GameMenuWnd);
 }
 
-bool GameMenuWnd::SetMenuLevel(CStr const&, CStr const&)
+bool GameMenuWnd::SetMenuLevel(CStr const& levelName, CStr const& rootLevelName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* menuItemViaName = GetMenuItemViaName(levelName);
+    if (!menuItemViaName)
+    {
+        return false;
+    }
+
+    if (menuItemViaName->m_children.empty())
+    {
+        return false;
+    }
+    MenuItem* minItem = menuItemViaName;
+    if (!rootLevelName.empty())
+    {
+        while (CStr::my_strcmp(minItem->m_name.c_str(), rootLevelName.c_str()))
+        {
+            minItem = minItem->m_parent;
+            if (!minItem)
+            {
+                return false;
+            }
+        }
+    }
+    m_curItem = menuItemViaName;
+    m_minItem = minItem;
+    RecalcLayout();
+    return true;
 }
 
 GameMenuWnd::GameMenuWnd() : MenuItem(ROOT_LEVEL_NAME, 101, CT_BUTTON)
@@ -95,7 +139,9 @@ GameMenuWnd::GameMenuWnd(GameMenuWnd const&) : MenuItem(ROOT_LEVEL_NAME, 101, CT
 
 int GameMenuWnd::OnInitModal()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Valid();
+    RecalcLayout();
+    return 1;
 }
 
 MenuItem* GameMenuWnd::CreateBlankSpaceMenuItem() const
@@ -106,12 +152,30 @@ MenuItem* GameMenuWnd::CreateBlankSpaceMenuItem() const
 
 void GameMenuWnd::RecalcLayout()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement GameMenuWnd::RecalcLayout
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
-int GameMenuWnd::OnKey(unsigned short, unsigned char, unsigned)
+int GameMenuWnd::OnKey(unsigned short key, unsigned char scanCode, unsigned state)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (key != 1 || state != 1)
+    {
+        return ModalWnd::OnKey(key, scanCode, state);
+    }
+
+    if (CStr::my_strcmp(m_curItem->m_name.c_str(), GameMenuWnd::DEATH_LEVEL_NAME.c_str()))
+    {
+        if (m_curItem != m_minItem)
+        {
+            m_curItem = m_curItem->m_parent;
+            RecalcLayout();
+            return 1;
+        }
+
+        M3D_APP->EnqueueMessage(UM_GAME_MENU_MODE_EXIT, 0, 0, 0, 0, {}, {});
+        M3D_APP->m_pInterfaceManager->ShowWindow(m_guiId, 0, 0, 0, 0, 0);
+    }
+    return 1;
 }
 
 MenuItem* GameMenuWnd::CreateTextLabelMenuItem(CStr const& name) const
@@ -127,12 +191,15 @@ int GameMenuWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam con
 
 int GameMenuWnd::OnBeforeAddToWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    M3D_APP->EnqueueMessage(UM_GAME_MENU_MODE_ENTER, 0, 0, 0, 0, {}, {});
+    return Wnd::OnBeforeAddToWndStation();
 }
 
-int GameMenuWnd::OnActivate(bool)
+int GameMenuWnd::OnActivate(bool on)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Valid();
+    GetStation()->CaptureFocus(on ? this : nullptr);
+    return 1;
 }
 
 int GameMenuWnd::CreateGameMenuWnd()

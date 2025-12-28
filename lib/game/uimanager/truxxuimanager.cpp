@@ -1292,9 +1292,54 @@ bool TruxxUiManager::CanLaunchModalEqualWindow()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void TruxxUiManager::PrepareMenuForShow(CStr const&)
+void TruxxUiManager::PrepareMenuForShow(CStr const& levelName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (ref_ptr<m3d::ui::Wnd> wnd = GetWindow(IW_WND_GAME_MENU))
+    {
+        if (auto* menuWnd = RT_DYNCAST(wnd.get(), GameMenuWnd))
+        {
+            if (!menuWnd->SetMenuLevel(levelName, {}))
+            {
+                return;
+            }
+
+            auto* saveGameItem = menuWnd->GetMenuItemViaName(GameMenuWnd::SAVE_GAME_MENUITEM_NAME);
+            if (saveGameItem)
+            {
+                saveGameItem->m_disabled = !ai::theObjects->IsSaveAllowed();
+            }
+            if (CStr::my_strcmp(levelName.c_str(), GameMenuWnd::DEATH_LEVEL_NAME.c_str()))
+            {
+                return;
+            }
+
+            std::vector<CStr> saveFolderNames;
+            m_savesManager->GetSaveFolderNames(saveFolderNames);
+
+            auto* deathItem = menuWnd->GetMenuItemViaName(GameMenuWnd::DEATH_LEVEL_NAME);
+            if (!deathItem)
+            {
+                return;
+            }
+
+            static CStr const loadItemNames[2] = {"Load Game", "Load Last Game"};
+            for (CStr const& itemName : loadItemNames)
+            {
+                auto* item = menuWnd->GetMenuItemViaName(itemName);
+                if (item)
+                {
+                    item->m_visible = !saveFolderNames.empty();
+                }
+            }
+
+            static CStr const startGameItemName = "Start Game From Begin";
+            auto* startGameItem = menuWnd->GetMenuItemViaName(startGameItemName);
+            if (startGameItem)
+            {
+                startGameItem->m_visible = true;
+            }
+        }
+    }
 }
 
 int TruxxUiManager::DecRef()
@@ -1370,6 +1415,11 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         }
         auto const* event = static_cast<m3d::Event*>(data);
         ShowGameMenu(event->m_strEv);
+        return 1;
+    }
+    case IE_EV_UM_GAME_MENU_MODE_ENTER:
+    {
+        SetGameMenuMode(true);
         return 1;
     }
     case IE_EV_SM_OBJECT_CREATED:
@@ -1720,7 +1770,31 @@ void TruxxUiManager::GUI_RegisterClasses()
 
 void TruxxUiManager::OnChangeGameMenuMode()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_bInGameMenuMode)
+    {
+        ShowWindow(IW_WND_MAIN_GAME_INTERFACE, 0, 0, 0, 0, 0);
+    }
+    else if (!IsHidden())
+    {
+        ShowWindow(IW_WND_MAIN_GAME_INTERFACE, 1, 0, 0, 0, 0);
+    }
+
+    M3D_APP->RenderAsBackground(m_bInGameMenuMode);
+    if (!m_bIsPlayerDead)
+    {
+        if (m_bInGameMenuMode)
+        {
+            M3D_APP->KillPostEffect("BWFadeOut");
+            M3D_APP->AddPostEffect("BWFadeIn", 0.0);
+            M3D_APP->AddPostEffect("Shift", 0.0);
+        }
+        else
+        {
+            M3D_APP->KillPostEffect("BWFadeIn");
+            M3D_APP->KillPostEffect("Shift");
+            M3D_APP->AddPostEffect("BWFadeOut", 0.0);
+        }
+    }
 }
 
 void TruxxUiManager::GUI_UnregisterCVars()
@@ -1728,23 +1802,32 @@ void TruxxUiManager::GUI_UnregisterCVars()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void TruxxUiManager::SetGameMenuMode(bool)
+void TruxxUiManager::SetGameMenuMode(bool bState)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_bInGameMenuMode != bState)
+    {
+        m_bInGameMenuMode = bState;
+        OnChangeGameMenuMode();
+    }
 }
 
 int TruxxUiManager::GUI_BeginModalDlg(bool forcePause, bool forceModal)
 {
     if (!forceModal)
     {
-        if (M3D_APP->HasChildModalRunning() || GetLevelInfoManager())
+        if (M3D_APP->GetStation()->HasChildModalRunning() || GUI_IsModalEqualWndRunning())
+        {
             return 0;
+        }
     }
-    auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(72);
+
+    auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_MAINMENU);
     if (!wnd || !wnd->IsChildOf(M3D_APP))
     {
         if (forcePause)
+        {
             M3D_APP->Pause();
+        }
     }
     M3D_APP->m_pImpulses->ResetAllImpulses(false);
     M3D_APP->m_gameSlideAuto.x = 0.0;
