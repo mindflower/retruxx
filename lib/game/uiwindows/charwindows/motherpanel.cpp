@@ -8,7 +8,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(MotherPanel, LeaveTown)
 }
 
 RT_CLASS_EXPORTS_BEGIN(MotherPanel)
-	RT_CLASS_EXPORT(MotherPanel, m3d::METHOD, LeaveTown, "", "", "")
+RT_CLASS_EXPORT(MotherPanel, m3d::METHOD, LeaveTown, "", "", "")
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MotherPanel);
 
@@ -109,7 +109,8 @@ void MotherPanel::ToggleTab(Tab)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void MotherPanel::AdjustAnimationOnShowPanels(std::vector<std::pair<ChildPanelId, int>, std::allocator<std::pair<ChildPanelId, int>>> const&)
+void MotherPanel::AdjustAnimationOnShowPanels(
+    std::vector<std::pair<ChildPanelId, int>, std::allocator<std::pair<ChildPanelId, int>>> const&)
 {
     RETRUXX_NOT_IMPLEMENTED;
 }
@@ -174,7 +175,9 @@ void MotherPanel::OnBuyVehicle()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void MotherPanel::ShowPanels(std::vector<std::pair<ChildPanelId, int>, std::allocator<std::pair<ChildPanelId, int>>>, std::vector<ChildPanelId, std::allocator<ChildPanelId>> const&)
+void MotherPanel::ShowPanels(
+    std::vector<std::pair<ChildPanelId, int>, std::allocator<std::pair<ChildPanelId, int>>>,
+    std::vector<ChildPanelId, std::allocator<ChildPanelId>> const&)
 {
     RETRUXX_NOT_IMPLEMENTED;
 }

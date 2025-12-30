@@ -30,8 +30,7 @@ public:
     {
     public:
         ChildSaveInfo();
-
-    private:
+    public:
         bool m_bBasketOnShowAnimationEnabled;
         bool m_bBasketOnHideAnimationEnabled;
         bool m_bCabinOnShowAnimationEnabled;

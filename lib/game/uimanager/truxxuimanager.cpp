@@ -1378,6 +1378,12 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
 
     switch (guiEventId)
     {
+    case IE_IMP_IM_UI_INVENTORY:
+    case IE_IMP_IM_UI_MENUBOOK:
+    case IE_IMP_IM_UI_QUESTLOG:
+    case IE_IMP_IM_UI_JOURNAL:
+    case IE_IMP_IM_UI_MAP:
+    case IE_IMP_IM_UI_VEHICLE_INFO:
     case IE_EV_EV_KEYBINDINGS_CHANGED:
     case IE_EV_EV_UI_END_WND_ANIMATION:
     case IE_EV_UM_WEAPONGROUP_CHANGED:
