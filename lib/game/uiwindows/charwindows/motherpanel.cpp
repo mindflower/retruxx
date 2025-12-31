@@ -1,6 +1,12 @@
 #include "motherpanel.h"
 #include "playermoneywnd.h"
 #include "childpanel.h"
+#include <core/log.h>
+#include "ui/image.h"
+#include "ui/button.h"
+#include "motherpaneltabbutton.h"
+#include <game/m3dgame.h>
+#include <game/uimanager/uidefs.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MotherPanel, LeaveTown)
 {
@@ -32,6 +38,26 @@ MotherPanel::AuxInfo::AuxInfo()
 void MotherPanel::LeaveTown(bool)
 {
     RETRUXX_NOT_IMPLEMENTED;
+}
+
+CStr MotherPanel::Tab2Str(MotherPanel::Tab tabId)
+{
+    static retruxx::map<Tab, CStr> const converter = {
+        {TAB_QUESTLOG, "Questlog"},
+        {TAB_MAP, "Map"},
+        {TAB_JOURNAL, "Journal"},
+        {TAB_INVENTORY_VS_SHOP, "Inventory"},
+        {TAB_CHARACTERISTIC_VS_WORKSHOP, "Characteristic"},
+        {TAB_BAR, "Bar"},
+        {TAB_ADDITIONAL_BUILDING, "AdditionalBuilding"},
+    };
+
+    auto const it = converter.find(tabId);
+    if (it != converter.end())
+    {
+        return it->second;
+    }
+    return {};
 }
 
 m3d::Class* MotherPanel::GetClass() const
@@ -187,9 +213,39 @@ ai::Building* MotherPanel::GetBuildingForTab(Tab) const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int MotherPanel::RemoveChild(m3d::Object*)
+int MotherPanel::RemoveChild(m3d::Object* w)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    int const res = Wnd::RemoveChild(w);
+    if (res && IS_KIND_OF(w, ChildPanel))
+    {
+        for (auto it = m_panels.begin(); it != m_panels.end(); ++it)
+        {
+            if (it->second == w)
+            {
+                m_panels.erase(it);
+                break;
+            }
+        }
+
+        auto* childPanel = RT_DYNCAST(w, ChildPanel);
+        childPanel->SetOnShowAnimationImmediate(false);
+        childPanel->SetOnHideAnimationImmediate(false);
+
+        // Handle decor bar visibility based on game data flags
+        if ((m_gameDataFlags & 1) != 0)
+        {
+            bool shouldShowDecorBar = false;
+
+            // TODO: check this
+            if (IsPanelPresent(2) || IsPanelPresent(3))
+            {
+                shouldShowDecorBar = true;
+            }
+
+            m_wndDecorBar->ShowWindow(shouldShowDecorBar);
+        }
+    }
+    return res;
 }
 
 void MotherPanel::ShowTabButton(Tab, bool)
@@ -299,8 +355,102 @@ void MotherPanel::AdjustChildOrder()
 
 int MotherPanel::GameDataSetup()
 {
-    // TODO: implement MotherPanel::GameDataSetup
-    // RETRUXX_NOT_IMPLEMENTED;
+    using namespace m3d::ui;
+
+    if ((m_gameDataFlags & 2) == 0)
+    {
+        int res = 1;
+
+        if (auto child = RT_DYNCAST(GetChildByName(m_aif.m_wndDecorName), Wnd))
+        {
+            m_wndDecor = child;
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndDecorName + " is not found or incorrect type");
+            res = 0;
+        }
+
+        if (auto child = RT_DYNCAST(GetChildByName(m_aif.m_wndDecorBarName), ImageWnd))
+        {
+            m_wndDecorBar = child;
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndDecorBarName + " is not found or incorrect type");
+            res = 0;
+        }
+
+        if (auto child = RT_DYNCAST(GetChildByName(m_aif.m_wndTopPanelName), Wnd))
+        {
+            m_wndTopPanel = child;
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndTopPanelName + " is not found or incorrect type");
+            res = 0;
+        }
+
+        if (auto child = RT_DYNCAST(GetChildByName(m_aif.m_btnExitName), ButtonWnd))
+        {
+            m_btnExit = child;
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnExitName + " is not found or incorrect type");
+            res = 0;
+        }
+
+        for (int i = TAB_QUESTLOG; i < TAB_NUM_TABS; ++i)
+        {
+            CStr const name = m_aif.m_tabBtnName + Tab2Str(static_cast<Tab>(i));
+            if (auto child = RT_DYNCAST(GetChildByName(name), ButtonWnd))
+            {
+                m_tabButtons[i] = static_cast<MotherPanelTabButton*>(M3D_KERNEL->New("MotherPanelTabButton"));
+                if (m_tabButtons[i])
+                {
+                    if (!m_tabButtons[i]->CreateFromPattern(child, true))
+                    {
+                        M3D_LOG_INFO("Make control error: cannot create " + name + " from pattern class");
+                        res = 0;
+                    }
+                }
+                else
+                {
+                    M3D_LOG_INFO(
+                        "Make control error: cannot create " + name + " - cannot find rtti class MotherPanelTabButton");
+                    res = 0;
+                }
+            }
+            else
+            {
+                M3D_LOG_INFO("Get control error: control " + name + " is not found or incorrect type");
+                res = 0;
+            }
+
+            if (m_tabButtons[i] != nullptr)
+            {
+                m_tabButtons[i]->SetupForTab(static_cast<Tab>(i));
+                res &= 1u;
+            }
+        }
+
+        ref_ptr<Wnd> moneyWnd = M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_PLAYER_MONEY);
+        if (moneyWnd && moneyWnd->IsKindOf(RT_CLASS_LOCAL(PlayerMoneyWnd)))
+        {
+            AddChild(moneyWnd);
+            if (res)
+            {
+                m_gameDataFlags |= 1u;
+                M3D_APP->m_pInterfaceManager->OnLeaveTown(true);
+                UpdateTabButtonsOnLeaveTown();
+            }
+        }
+    }
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
     return 1;
 }
 
@@ -327,12 +477,13 @@ MotherPanel::MotherPanel()
     m_btnExit = 0;
     m_wndTopPanel = 0;
     m_bCurMapLocal = 1;
+    m_tabButtons.resize(7, nullptr);
 }
 
 int MotherPanel::GameDataUpdate(void*, int)
 {
     // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
+    RETRUXX_NOT_IMPLEMENTED;
     return 0;
 }
 
