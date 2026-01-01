@@ -713,7 +713,7 @@ m3d::Class* CMiracle3d::GetBaseClass()
 
 m3d::TownMusicManager* CMiracle3d::GetTownMusicManager()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_townMusicManager;
 }
 
 bool CMiracle3d::AddPostEffect(CStr const& effectName, float effParam)

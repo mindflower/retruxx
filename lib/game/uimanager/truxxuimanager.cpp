@@ -141,6 +141,7 @@
 #include "game/uimisc/objectsicons.h"
 #include "impulses/i_impulses.h"
 #include "server/processmanager.h"
+#include "server/objects/town.h"
 #include "ui/edit.h"
 
 namespace
@@ -657,7 +658,7 @@ SavesManager* TruxxUiManager::GetSavesManager() const
 
 ai::Town* TruxxUiManager::GetCurrentTown() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_DYNCAST(ai::theObjects->GetEntityByObjId(m_currentTownId), ai::Town);
 }
 
 int TruxxUiManager::Save(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
@@ -685,7 +686,8 @@ int TruxxUiManager::HandleAppEvent(m3d::Event const& appEvent)
 
 void TruxxUiManager::OnLeaveTown(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement TruxxUiManager::OnLeaveTown
+    // RETRUXX_NOT_IMPLEMENTED;
 }
 
 void TruxxUiManager::AddImportantFadingMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&)

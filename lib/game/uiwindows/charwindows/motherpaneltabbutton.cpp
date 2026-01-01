@@ -1,5 +1,6 @@
 #include "motherpaneltabbutton.h"
 #include <core/log.h>
+#include <game/m3dgame.h>
 
 RT_CLASS_EXPORTS_BEGIN(MotherPanelTabButton)
 RT_CLASS_EXPORTS_END;
@@ -32,12 +33,13 @@ m3d::Class* MotherPanelTabButton::GetClass() const
 
 MotherPanel::Tab MotherPanelTabButton::GetTabId() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_tabId;
 }
 
-void MotherPanelTabButton::Select(bool)
+void MotherPanelTabButton::Select(bool bSelect)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bSelected = bSelect;
+    UpdateTex();
 }
 
 bool MotherPanelTabButton::IsSelected() const
@@ -52,7 +54,7 @@ m3d::Object* MotherPanelTabButton::Clone()
 
 MotherPanelTabButton::Mode MotherPanelTabButton::GetMode() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_mode;
 }
 
 m3d::Class* MotherPanelTabButton::GetBaseClass()
@@ -150,9 +152,14 @@ int MotherPanelTabButton::SetupForTab(MotherPanel::Tab tabId)
     return 1;
 }
 
-void MotherPanelTabButton::SetMode(Mode)
+void MotherPanelTabButton::SetMode(Mode mode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_mode != MODE_NUM_MODES && HasMode(mode) && CanApplyMode(mode))
+    {
+        m_mode = mode;
+        UpdateTex();
+        UpdateTooltip();
+    }
 }
 
 m3d::Object* MotherPanelTabButton::CreateObject()
@@ -204,14 +211,41 @@ void MotherPanelTabButton::UpdateTooltip()
     // RETRUXX_NOT_IMPLEMENTED;
 }
 
-bool MotherPanelTabButton::CanApplyMode(Mode) const
+bool MotherPanelTabButton::CanApplyMode(Mode mode) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (mode == MODE_IN_FIELD)
+        return M3D_APP->m_pInterfaceManager->GetCurrentTown() == nullptr;
+    if (mode == MODE_IN_TOWN)
+        return GetBuilding(MODE_IN_TOWN) != nullptr;
+    return false;
 }
 
-bool MotherPanelTabButton::HasMode(Mode) const
+bool MotherPanelTabButton::HasMode(Mode mode) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    bool result = false;
+    switch (m_tabId)
+    {
+    case MotherPanel::TAB_QUESTLOG:
+    case MotherPanel::TAB_MAP:
+    case MotherPanel::TAB_JOURNAL:
+        result = mode == MODE_IN_FIELD;
+        break;
+
+    case MotherPanel::TAB_INVENTORY_VS_SHOP:
+    case MotherPanel::TAB_CHARACTERISTIC_VS_WORKSHOP:
+        result = true;
+        break;
+
+    case MotherPanel::TAB_BAR:
+    case MotherPanel::TAB_ADDITIONAL_BUILDING:
+        result = mode == MODE_IN_TOWN;
+        break;
+
+    default:
+        result = false;
+        break;
+    }
+    return result;
 }
 
 void MotherPanelTabButton::InitInfo()

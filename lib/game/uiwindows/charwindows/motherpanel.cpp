@@ -7,6 +7,7 @@
 #include "motherpaneltabbutton.h"
 #include <game/m3dgame.h>
 #include <game/uimanager/uidefs.h>
+#include <game/music/townmusicmanager.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MotherPanel, LeaveTown)
 {
@@ -130,9 +131,27 @@ void MotherPanel::OnHidePanel(void*)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void MotherPanel::ToggleTab(Tab)
+void MotherPanel::ToggleTab(Tab tabId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: check this
+    if (tabId != TAB_NUM_TABS)
+    {
+        if (m_curTabId == tabId && IsChildOf(M3D_APP))
+        {
+            if (M3D_APP->m_pInterfaceManager->GetCurrentTown())
+            {
+                OnTown();
+            }
+            else
+            {
+                Hide(false, false);
+            }
+        }
+        else
+        {
+            SetCurTab(tabId, true);
+        }
+    }
 }
 
 void MotherPanel::AdjustAnimationOnShowPanels(
@@ -193,7 +212,9 @@ void MotherPanel::OnLeaveTown(bool)
 
 bool MotherPanel::PickUpItemsFromGround()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement MotherPanel::PickUpItemsFromGround
+    // RETRUXX_NOT_IMPLEMENTED;
+    return false;
 }
 
 void MotherPanel::OnBuyVehicle()
@@ -263,9 +284,10 @@ void MotherPanel::OnEndWndAnimation()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-bool MotherPanel::IsPanelPresent(int) const
+bool MotherPanel::IsPanelPresent(int guiId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    ref_ptr wnd = M3D_APP->m_pInterfaceManager->GetWindow(guiId);
+    return wnd && wnd->IsChildOf(this);
 }
 
 void MotherPanel::OnJournal()
@@ -290,7 +312,55 @@ void MotherPanel::AdjustAnimationOnHidePanel(m3d::ui::Wnd*)
 
 void MotherPanel::UpdateTabButtonsOnLeaveTown()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code MotherPanel::UpdateTabButtonsOnLeaveTown
+    // Check if the first game data flag is set
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        // Update tab button modes for specific tabs
+        for (size_t i = 0; i < m_tabButtons.size(); ++i)
+        {
+            MotherPanelTabButton* tabButton = m_tabButtons[i];
+            if (tabButton && tabButton->GetMode() != MotherPanelTabButton::MODE_NUM_MODES)
+            {
+                // Update specific tab types that should change when leaving town
+                switch (tabButton->GetTabId())
+                {
+                case TAB_QUESTLOG:
+                case TAB_MAP:
+                case TAB_JOURNAL:
+                case TAB_INVENTORY_VS_SHOP:
+                case TAB_CHARACTERISTIC_VS_WORKSHOP:
+                {
+                    // Only update if we're not in a town
+                    if (!M3D_APP->m_pInterfaceManager->GetCurrentTown())
+                    {
+                        tabButton->SetMode(MotherPanelTabButton::MODE_IN_FIELD);
+                    }
+                    break;
+                }
+                default:
+                    // Other tab types don't need updating
+                    continue;
+                }
+            }
+        }
+
+        // Additional cleanup logic
+        if ((m_gameDataFlags & 1) != 0)
+        {
+            // Remove specific child tab buttons if they exist as direct children
+            // Note: Index 5 and 6 likely refer to specific tab button indices
+            if (m_tabButtons[5] && IsDirectChild(m_tabButtons[5]))
+            {
+                RemoveChild(m_tabButtons[5]);
+            }
+
+            if ((m_gameDataFlags & 1) != 0 && m_tabButtons[6] && IsDirectChild(m_tabButtons[6]))
+            {
+                RemoveChild(m_tabButtons[6]);
+            }
+        }
+    }
 }
 
 void MotherPanel::OnTalkWithNpc()
@@ -305,7 +375,7 @@ void MotherPanel::OnQuestLog()
 
 bool MotherPanel::InTown() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return M3D_APP->m_pInterfaceManager->GetCurrentTown() != nullptr;
 }
 
 void MotherPanel::OnInventory()
@@ -480,8 +550,22 @@ MotherPanel::MotherPanel()
     m_tabButtons.resize(7, nullptr);
 }
 
-int MotherPanel::GameDataUpdate(void*, int)
+int MotherPanel::GameDataUpdate(void*, int dataType)
 {
+    switch (dataType)
+    {
+    case 2:
+        // TODO: check this
+        if (IsPanelPresent(IW_DLG_TALK_WITH_NPC) || (!IsChildOf(M3D_APP) && PickUpItemsFromGround()))
+        {
+            return 1;
+        }
+        ToggleTab(TAB_INVENTORY_VS_SHOP);
+        return 1;
+
+    default:
+        RETRUXX_NOT_IMPLEMENTED;
+    }
     // TODO: implement GameDataUpdate
     RETRUXX_NOT_IMPLEMENTED;
     return 0;
@@ -527,9 +611,73 @@ void MotherPanel::OnWorkshop()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void MotherPanel::SetCurTab(Tab, bool)
+void MotherPanel::SetCurTab(Tab tabId, bool bUpdatePanels)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_curTabId = tabId;
+    SelectTabButton(tabId);
+    M3D_APP->GetTownMusicManager()->StopAmbient();
+    if (bUpdatePanels)
+    {
+        switch (m_curTabId)
+        {
+        case TAB_QUESTLOG:
+            OnQuestLog();
+            break;
+
+        case TAB_MAP:
+            OnMap();
+            break;
+
+        case TAB_JOURNAL:
+            OnJournal();
+            break;
+
+        case TAB_INVENTORY_VS_SHOP:
+            if (InTown())
+            {
+                if (!GetBuildingForTab(m_curTabId))
+                {
+                    OnCharacteristics();
+                    break;
+                }
+                OnShop();
+            }
+            else
+            {
+                OnInventory();
+            }
+            break;
+
+        case TAB_CHARACTERISTIC_VS_WORKSHOP:
+            if (GetBuildingForTab(TAB_CHARACTERISTIC_VS_WORKSHOP))
+            {
+                OnWorkshop();
+            }
+            else
+            {
+                OnCharacteristics();
+            }
+            break;
+
+        case TAB_BAR:
+            if (GetBuildingForTab(TAB_BAR))
+            {
+                OnBar();
+            }
+            break;
+
+        case TAB_ADDITIONAL_BUILDING:
+            if (GetBuildingForTab(TAB_ADDITIONAL_BUILDING))
+            {
+                OnAdditionalBuilding();
+            }
+            break;
+
+        default:
+            ClearPanels({});
+            break;
+        }
+    }
 }
 
 void MotherPanel::OnEnterTown(ai::Town const*)
@@ -542,9 +690,27 @@ void MotherPanel::OnBar()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void MotherPanel::SelectTabButton(Tab)
+void MotherPanel::SelectTabButton(Tab tabId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code MotherPanel::SelectTabButton
+    // Only process if the first game data flag is set
+    if ((m_gameDataFlags & 1) == 0)
+        return;
+
+    // Iterate through all tab buttons
+    for (size_t i = 0; i < m_tabButtons.size(); ++i)
+    {
+        MotherPanelTabButton* tabButton = m_tabButtons[i];
+
+        // Skip null buttons
+        if (!tabButton)
+            continue;
+
+        // Set selected state based on whether this button's index matches the requested tab
+        // Note: The original code uses (tabId == i), suggesting tabId might actually be an index
+        // rather than a Tab enum value. This is unusual - see analysis below.
+        tabButton->Select(tabId == static_cast<MotherPanel::Tab>(i));
+    }
 }
 
 void MotherPanel::AdjustDecor()
