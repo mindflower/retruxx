@@ -1435,6 +1435,11 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         SetGameMenuMode(false);
         return 1;
     }
+    case IE_EV_UM_HELP:
+    {
+        m_helpManager->GameDataUpdate(data, guiEventId);
+        return 1;
+    }
     case IE_EV_SM_OBJECT_CREATED:
     {
         if (!data)

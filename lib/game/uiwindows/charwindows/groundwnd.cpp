@@ -1,5 +1,6 @@
 #include "groundwnd.h"
 #include "repositorywnd.h"
+#include <game/m3dgame.h>
 
 RT_CLASS_EXPORTS_BEGIN(GroundWnd)
 RT_CLASS_EXPORTS_END;
@@ -51,7 +52,9 @@ GroundWnd::~GroundWnd()
 
 int GroundWnd::OnAfterAddToWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    int const res = m3d::ui::Wnd::OnAfterAddToWndStation();
+    M3D_APP->EnqueueMessage(65691, 0, 0, 0, 0, {}, {});
+    return res;
 }
 
 void GroundWnd::SetupRepository()
@@ -116,7 +119,11 @@ int GroundWnd::OnAfterRemoveFromWndStation()
 
 int GroundWnd::OnBeforeAddToWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        GroundWnd::SetupRepository();
+    }
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 void GroundWnd::UpdateGroundPicture()

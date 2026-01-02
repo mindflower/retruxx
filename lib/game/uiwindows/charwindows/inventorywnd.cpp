@@ -210,7 +210,8 @@ int InventoryWnd::GameDataSetup()
 
 int InventoryWnd::OnBeforeAddToWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    AddCBWindows();
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 int InventoryWnd::OnAfterRemoveFromWndStation()
@@ -225,5 +226,38 @@ void InventoryWnd::OnPlayerVehicleChanged()
 
 void InventoryWnd::AddCBWindows()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TOOD: generated code InventoryWnd::AddCBWindows
+    // Only execute if game data flag 1 is set
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    // Add cabin window if not already a child
+    if (m_wndCabin && !IsChildOf(m_wndCabin))
+    {
+        // Disable animations
+        m_wndCabin->EnableOnShowAnimation(false);
+        m_wndCabin->EnableOnHideAnimation(false);
+
+        // Set bounds from saved info
+        m_wndCabin->SetBounds(m_childSaveInfo.m_cabinB, true);
+
+        // Add as child
+        AddChild(m_wndCabin.get());
+    }
+
+    // Add basket window if not already a child
+    if (m_wndBasket && !IsChildOf(m_wndBasket))
+    {
+        // Disable animations
+        m_wndBasket->EnableOnShowAnimation(false);
+        m_wndBasket->EnableOnHideAnimation(false);
+
+        // Set bounds from saved info
+        m_wndBasket->SetBounds(m_childSaveInfo.m_basketB, true);
+
+        // Add as child
+        AddChild(m_wndBasket.get());
+    }
 }

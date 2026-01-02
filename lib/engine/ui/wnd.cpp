@@ -224,7 +224,7 @@ namespace m3d
 
         int Wnd::GetGuiId() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_guiId;
         }
 
         int Wnd::GetDefaultFont() const
@@ -614,9 +614,9 @@ namespace m3d
                 m_style |= WS_DISABLE;
         }
 
-        void Wnd::EnableOnShowAnimation(bool)
+        void Wnd::EnableOnShowAnimation(bool bEnable)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_onShowAnimation.m_bEnabled = bEnable;
         }
 
         int Wnd::AddChild(Object* w)
@@ -664,9 +664,9 @@ namespace m3d
             RETRUXX_NOT_IMPLEMENTED;
         }
 
-        void Wnd::EnableOnHideAnimation(bool)
+        void Wnd::EnableOnHideAnimation(bool bEnable)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_onHideAnimation.m_bEnabled = bEnable;
         }
 
         unsigned Wnd::GetId() const

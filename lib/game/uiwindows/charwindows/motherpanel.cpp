@@ -9,6 +9,7 @@
 #include <game/uimanager/uidefs.h>
 #include <game/music/townmusicmanager.h>
 #include <server/server.h>
+#include "childpanel.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MotherPanel, LeaveTown)
 {
@@ -99,7 +100,7 @@ void MotherPanel::UpdateTabButtonsOnEnterTown(ai::Town const*)
 
 int MotherPanel::OnBeforeAddToWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 void MotherPanel::OnBtnExitClick(m3d::ui::Wnd*, int)
@@ -107,9 +108,40 @@ void MotherPanel::OnBtnExitClick(m3d::ui::Wnd*, int)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void MotherPanel::ClearPanels(std::vector<ChildPanelId, std::allocator<ChildPanelId>> const&)
+void MotherPanel::ClearPanels(std::vector<ChildPanelId> const& previousPanelsToRemain)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code MotherPanel::ClearPanels
+    // Iterate through all child panels
+    for (auto it = m_panels.begin(); it != m_panels.end();)
+    {
+        ChildPanelId const& currentPanelId = it->first;
+
+        // Check if this panel should be removed
+        bool shouldRemove = true;
+
+        // Look for current panel in the list of panels to keep
+        for (auto const& panelIdToKeep : previousPanelsToRemain)
+        {
+            if (panelIdToKeep == currentPanelId)
+            {
+                shouldRemove = false;
+                break;
+            }
+        }
+
+        if (shouldRemove)
+        {
+            // Remove the child panel
+            RemoveChildPanel(it->second);
+
+            // Erase from map and get next iterator
+            it = m_panels.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }
 
 void MotherPanel::OnEscape()
@@ -122,9 +154,20 @@ int MotherPanel::RemoveChildForce(m3d::Object*)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-MotherPanel::ChildPanelId MotherPanel::GetCurrentPanelIdByGuiId(int) const
+MotherPanel::ChildPanelId MotherPanel::GetCurrentPanelIdByGuiId(int guiId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // Iterate through all panels in the map
+    for (auto const& panelPair : m_panels)
+    {
+        // Check if panel exists and has matching GUI ID
+        if (panelPair.second && panelPair.second->GetGuiId() == guiId)
+        {
+            return panelPair.first;  // Return the panel ID
+        }
+    }
+
+    // No panel found with this GUI ID
+    return ChildPanelId::PANEL_INVALID;
 }
 
 void MotherPanel::OnHidePanel(void*)
@@ -156,9 +199,52 @@ void MotherPanel::ToggleTab(Tab tabId)
 }
 
 void MotherPanel::AdjustAnimationOnShowPanels(
-    std::vector<std::pair<ChildPanelId, int>, std::allocator<std::pair<ChildPanelId, int>>> const&)
+    std::vector<std::pair<ChildPanelId, int>, std::allocator<std::pair<ChildPanelId, int>>> const& panels)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code MotherPanel::AdjustAnimationOnShowPanels
+    // Look for PANEL_PALM in the incoming panels
+    for (auto const& panelInfo : panels)
+    {
+        if (panelInfo.first == PANEL_PALM)
+        {
+            int newGuiId = panelInfo.second;
+
+            // Only process if we're showing a valid GUI ID (not -1)
+            if (newGuiId != -1)
+            {
+                // Check if we currently have a PANEL_PALM panel
+                auto it = m_panels.find(PANEL_PALM);
+                if (it != m_panels.end() && it->second)
+                {
+                    int currentGuiId = it->second->GetGuiId();
+
+                    // If we have a different PANEL_PALM currently showing
+                    if (currentGuiId != -1 && currentGuiId != newGuiId)
+                    {
+                        // Get the new panel window
+                        auto newPalmWnd = M3D_APP->m_pInterfaceManager->GetWindow(newGuiId);
+
+                        // Get the current panel window
+                        auto oldPalmWnd = M3D_APP->m_pInterfaceManager->GetWindow(currentGuiId);
+
+                        // Set immediate animation for transition
+                        if (newPalmWnd)
+                        {
+                            newPalmWnd->SetOnShowAnimationImmediate(true);
+                        }
+
+                        if (oldPalmWnd)
+                        {
+                            oldPalmWnd->SetOnHideAnimationImmediate(true);
+                        }
+                    }
+                }
+            }
+            return;  // Found PANEL_PALM, we're done
+        }
+    }
+
+    // No PANEL_PALM in the panels to show
 }
 
 void MotherPanel::OnMap()
@@ -186,9 +272,48 @@ void MotherPanel::OnShowPanel(void*)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int MotherPanel::AddChildPanel(ref_ptr<ChildPanel>, ChildPanelId)
+int MotherPanel::AddChildPanel(ref_ptr<ChildPanel> childPanel, ChildPanelId panelId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code MotherPanel::AddChildPanel
+    // Validate input
+    if (!childPanel.get())
+    {
+        return false;
+    }
+
+    if (panelId == ChildPanelId::PANEL_INVALID)
+    {
+        return false;
+    }
+
+    // Check if a panel with the same GUI ID already exists
+    ChildPanelId existingPanelId = GetCurrentPanelIdByGuiId(childPanel->GetGuiId());
+    if (existingPanelId == panelId)
+    {
+        // Already have this panel with the same ID
+        return true;
+    }
+
+    // Remove any existing panel with this ID
+    RemoveChildPanelById(panelId);
+
+    // Insert the new panel into our map
+    // Make sure to increment ref count before storing
+    m_panels[panelId] = childPanel;
+
+    // Add as a child window
+    AddChild(childPanel.get());
+
+    // Move to front
+    MoveChildToFirstPosition(childPanel.get());
+
+    // Activate the panel if it has the activation style flag
+    if (childPanel->GetStyle() & m3d::ui::WS_ACTIVATABLE)
+    {
+        GetStation()->Activate(childPanel.get());
+    }
+
+    return true;
 }
 
 void MotherPanel::OnShop()
@@ -224,10 +349,60 @@ void MotherPanel::OnBuyVehicle()
 }
 
 void MotherPanel::ShowPanels(
-    std::vector<std::pair<ChildPanelId, int>, std::allocator<std::pair<ChildPanelId, int>>>,
-    std::vector<ChildPanelId, std::allocator<ChildPanelId>> const&)
+    std::vector<std::pair<ChildPanelId, int>> panels,
+    std::vector<ChildPanelId> const& previousPanelsToRemain)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code MotherPanel::ShowPanels
+    // Check if game data flag 1 is set
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        AdjustAnimationOnShowPanels(panels);
+        ClearPanels(previousPanelsToRemain);
+
+        auto panelIt = panels.begin();
+        auto panelEnd = panels.end();
+
+        // Check if all panels can be launched now
+        for (; panelIt != panelEnd; ++panelIt)
+        {
+            if (!CanChildPanelBeLaunchedNow(panelIt->first))
+            {
+                m_suspendedShow.m_suspendedPanels = std::move(panels);
+                m_suspendedShow.m_previousPanelsToRemain = previousPanelsToRemain;
+                return;
+            }
+        }
+
+        // All panels can be launched - clear suspended state
+        m_suspendedShow.m_suspendedPanels.clear();
+        m_suspendedShow.m_previousPanelsToRemain.clear();
+
+        // Launch each panel
+        for (auto const& panelInfo : panels)
+        {
+            auto window = M3D_APP->m_pInterfaceManager->GetWindow(panelInfo.second);
+            if (auto childPanel = RT_DYNCAST(window.get(), ChildPanel))
+            {
+                AddChildPanel(childPanel, panelInfo.first);
+            }
+        }
+
+        // Update UI based on panel presence
+        if ((m_gameDataFlags & 1) != 0)
+        {
+            bool showDecorBar = IsPanelPresent(PANEL_VIDEO) || IsPanelPresent(PANEL_TRADE_RIGHT);
+            m_wndDecorBar->ShowWindow(showDecorBar);
+        }
+
+        AdjustChildOrder();
+
+        // Handle window station and modal state
+        auto station = GetStation();
+        if (!station->IsModal(this))
+        {
+            M3D_APP->m_pInterfaceManager->ShowWindow(7, 1, 0, 0, 1, 0);
+        }
+    }
 }
 
 ai::Building* MotherPanel::GetBuildingForTab(Tab) const
@@ -296,9 +471,78 @@ void MotherPanel::OnJournal()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-bool MotherPanel::CanChildPanelBeLaunchedNow(ChildPanelId) const
+bool MotherPanel::CanChildPanelBeLaunchedNow(ChildPanelId panelId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code MotherPanel::CanChildPanelBeLaunchedNow(
+    // First check if the panel is already active
+    if (m_panels.find(panelId) != m_panels.end())
+    {
+        return false;
+    }
+
+    // Check specific panel type constraints
+    switch (panelId)
+    {
+    case ChildPanelId::PANEL_LEFT:
+    case ChildPanelId::PANEL_RIGHT:
+    case ChildPanelId::PANEL_VIDEO:
+    case ChildPanelId::PANEL_TRADE_RIGHT:
+    case ChildPanelId::PANEL_TRADE_LEFT:
+    case ChildPanelId::PANEL_TRADE_COMMON:
+        // These panels cannot be launched if PALM or CONVERSATION panels are active
+        if (m_panels.find(ChildPanelId::PANEL_PALM) != m_panels.end() ||
+            m_panels.find(ChildPanelId::PANEL_CONVERSATION) != m_panels.end())
+        {
+            return false;
+        }
+        // These also cannot be launched if FULLSCREEN panel is active
+        if (m_panels.find(ChildPanelId::PANEL_FULLSCREEN) != m_panels.end())
+        {
+            return false;
+        }
+        break;
+
+    case ChildPanelId::PANEL_FULLSCREEN:
+        // FULLSCREEN panel cannot be launched if any other panel is active
+        if (!m_panels.empty())
+        {
+            return false;
+        }
+        break;
+
+    case ChildPanelId::PANEL_TOWN:
+        // TOWN panel cannot be launched if FULLSCREEN panel is active
+        if (m_panels.find(ChildPanelId::PANEL_FULLSCREEN) != m_panels.end())
+        {
+            return false;
+        }
+        break;
+
+    case ChildPanelId::PANEL_PALM:
+    case ChildPanelId::PANEL_CONVERSATION:
+        // These panels cannot be launched if any side panel is active
+        if (m_panels.find(ChildPanelId::PANEL_LEFT) != m_panels.end() ||
+            m_panels.find(ChildPanelId::PANEL_RIGHT) != m_panels.end() ||
+            m_panels.find(ChildPanelId::PANEL_VIDEO) != m_panels.end() ||
+            m_panels.find(ChildPanelId::PANEL_TRADE_RIGHT) != m_panels.end() ||
+            m_panels.find(ChildPanelId::PANEL_TRADE_LEFT) != m_panels.end() ||
+            m_panels.find(ChildPanelId::PANEL_TRADE_COMMON) != m_panels.end())
+        {
+            return false;
+        }
+        // These also cannot be launched if FULLSCREEN panel is active
+        if (m_panels.find(ChildPanelId::PANEL_FULLSCREEN) != m_panels.end())
+        {
+            return false;
+        }
+        break;
+
+    default:
+        // For other panel types, just check if they're not already active
+        break;
+    }
+
+    return true;
 }
 
 MotherPanel::Tab MotherPanel::GetTabForBuilding(ai::Building const*) const
@@ -399,9 +643,15 @@ void MotherPanel::OnInventory()
     }
 }
 
-int MotherPanel::RemoveChildPanelById(ChildPanelId)
+int MotherPanel::RemoveChildPanelById(ChildPanelId panelId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto const it = m_panels.find(panelId);
+    if (it == m_panels.end())
+    {
+        return 1;
+    }
+
+    return RemoveChild(it->second);
 }
 
 int MotherPanel::GetGuiIdByCurrentPanelId(ChildPanelId) const
@@ -436,7 +686,57 @@ ai::Building const* MotherPanel::GetOnlyBuilding() const
 
 void MotherPanel::AdjustChildOrder()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code MotherPanel::AdjustChildOrder
+    // Only adjust order when a specific game data flag is set
+    uint32_t const REORDER_FLAG = 1;  // Bit 0
+    if (!(m_gameDataFlags & REORDER_FLAG))
+    {
+        return;  // No reordering needed
+    }
+
+    // Reorder children to bring specific elements to front (top of z-order)
+    // This ensures they're drawn on top of other elements
+
+    // 1. Move top panel to front
+    MoveChildToFirstPosition(m_wndTopPanel);
+
+    // 2. Move player money display to front
+    if (m_wndPlayerMoney)
+    {
+        MoveChildToFirstPosition(m_wndPlayerMoney.get());
+    }
+
+    // 3. Move exit button to front
+    MoveChildToFirstPosition(m_btnExit);
+
+    // 4. Move decoration elements to front
+    MoveChildToFirstPosition(m_wndDecor);
+    MoveChildToFirstPosition(m_wndDecorBar);
+
+    // 5. Move all tab buttons to front
+    // m_tabButtons appears to be a std::vector<ref_ptr<MotherPanelTabButton>>
+    for (size_t i = 0; i < m_tabButtons.size(); ++i)
+    {
+        auto* button = m_tabButtons[i];
+        if (button && IsDirectChild(button))
+        {
+            MoveChildToFirstPosition(button);
+        }
+    }
+
+    // 6. Special case: If panel with ID 88 (0x58) is present,
+    // also move window ID 88 to front
+    ChildPanelId const SPECIAL_PANEL_ID = static_cast<ChildPanelId>(0x58);  // 88 decimal
+
+    if (IsPanelPresent(SPECIAL_PANEL_ID))
+    {
+        // Get the window from the interface manager
+        ref_ptr<Wnd> specialWindow = M3D_APP->m_pInterfaceManager->GetWindow(88);
+        if (specialWindow)
+        {
+            MoveChildToFirstPosition(specialWindow.get());
+        }
+    }
 }
 
 int MotherPanel::GameDataSetup()

@@ -3,7 +3,7 @@
 #include "core/log.h"
 
 RT_CLASS_EXPORTS_BEGIN(CBWnd)
-    RT_CLASS_EXPORTS_END;
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(CBWnd);
 
 CBWnd::CBAuxInfo::CBAuxInfo()
@@ -55,7 +55,7 @@ void CBWnd::UpdateOnVehiclepartChanged(CStr const&)
 
 void CBWnd::UpdateOnMainPartChanged()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    SetupChildVehicleParts();
 }
 
 void CBWnd::SetupChildVehicleParts()
@@ -97,7 +97,11 @@ int CBWnd::GameDataUpdate(void*, int)
 
 int CBWnd::OnBeforeAddToWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        FullUpdate();
+    }
+    return Wnd::OnBeforeAddToWndStation();
 }
 
 int CBWnd::OnAfterRemoveFromWndStation()
@@ -112,7 +116,7 @@ void CBWnd::OnFinishTrade()
 
 void CBWnd::FullUpdate()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    UpdateOnMainPartChanged();
 }
 
 CBWnd::CBWnd()
