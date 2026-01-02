@@ -6,7 +6,7 @@ namespace m3d
 {
     class SgNode;
     class AIParam;
-}
+}  // namespace m3d
 
 namespace ai
 {
@@ -194,25 +194,30 @@ namespace ai
     class Obj : public m3d::Object
     {
         friend class ObjContainer;
+
     protected:
-        Obj(const ai::PrototypeInfo& prototypeInfo);
+        Obj(PrototypeInfo const& prototypeInfo);
         Obj();
         virtual ~Obj() override /* 0x00 */;
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetRtClass() const /* 0x3c */;
         static m3d::Class m_classObj;
-        virtual int OnEvent(const ai::Event& evn) /* 0x40 */;
+        virtual int OnEvent(Event const& evn) /* 0x40 */;
 
         struct LessNoCaseCStr : public retruxx::binary_function<CStr, CStr, bool>
         {
-            bool operator()(const CStr& a1, const CStr& a2) const
+            bool operator()(CStr const& a1, CStr const& a2) const
             {
                 if (a2.empty())
+                {
                     return false;
+                }
                 if (!a1.empty())
+                {
                     return stricmp(a1.c_str(), a2.c_str()) < 0;
+                }
                 return true;
             }
         }; /* size: 0x0001 */
@@ -230,19 +235,19 @@ namespace ai
         int GetParentId() const;
         int GetPrototypeId() const;
         void SetParentInvalid();
-        retruxx::map<int, ai::Obj*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Obj*> > >& GetChildren();
+        retruxx::map<int, Obj*>& GetChildren();
         void UnlinkFromParent();
-        void LinkToParent(int newParentID, ai::Obj::HierarchyType newHierarchyType);
+        void LinkToParent(int newParentID, Obj::HierarchyType newHierarchyType);
         bool bHasParent() const;
-        void SetName(const CStr& str);
-        void SetNameFromScript(const CStr& str);
-        ai::GeomRepository* GetParentRepository() const;
-        void SetParentRepository(ai::GeomRepository* parentRepository);
-        virtual ai::AI* GetAIPtr() /* 0x44 */;
+        void SetName(CStr const& str);
+        void SetNameFromScript(CStr const& str);
+        GeomRepository* GetParentRepository() const;
+        void SetParentRepository(GeomRepository* parentRepository);
+        virtual AI* GetAIPtr() /* 0x44 */;
         virtual bool NeedCinematicUpdate() /* 0x48 */;
         void AddToCinematic();
         void RemoveFromCinematic();
-        virtual const ai::PrototypeInfo* GetPrototypeInfo() const /* 0x4c */;
+        virtual PrototypeInfo const* GetPrototypeInfo() const /* 0x4c */;
         void SetTimeOut(float TimeOut);
         void StopTimeOut();
         bool GetPassedToAnotherMapStatus() const;
@@ -254,55 +259,55 @@ namespace ai
         bool TimeOutFinished();
         int TimeOutActivated() const;
         static void __fastcall Registration();
-        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const /* 0x58 */;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const /* 0x5c */;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const /* 0x60 */;
+        virtual eGObjPropertySaveStatus GetPropertySaveStatus(int id) const /* 0x58 */;
+        virtual void GetPropertiesNames(retruxx::set<CStr>& Props) const /* 0x5c */;
+        virtual void GetPropertiesIDs(retruxx::set<int>& Props) const /* 0x60 */;
         virtual int GetProperty(unsigned int propId, void* property) const /* 0x64 */;
-        virtual m3d::AIParam GetProperty(const char* PropertyName) const /* 0x64 */;
-        virtual m3d::AIParam GetPropertyDefault(const char* PropertyName) const /* 0x68 */;
+        virtual m3d::AIParam GetProperty(char const* PropertyName) const /* 0x64 */;
+        virtual m3d::AIParam GetPropertyDefault(char const* PropertyName) const /* 0x68 */;
         virtual m3d::AIParam GetPropertyDefaultById(int propertyId) const /* 0x6c */;
         virtual m3d::AIParam GetPropertyById(int propertyId) const /* 0x70 */;
-        virtual int GetPropertyId(const char* PropertyName) const /* 0x74 */;
+        virtual int GetPropertyId(char const* PropertyName) const /* 0x74 */;
         virtual CStr GetPropertyName(int id) const /* 0x78 */;
         int SetProperty(unsigned int propId, void* property);
-        bool SetProperty(const char* PropertyName, const m3d::AIParam& newValue);
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) /* 0x7c */;
+        bool SetProperty(char const* PropertyName, m3d::AIParam const& newValue);
+        virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) /* 0x7c */;
         virtual void Update(float elapsedTime, unsigned int workTime) /* 0x80 */;
         virtual void PostCollide() /* 0x84 */;
-        void AddModifier(const ai::Modifier& modifier);
-        void AddModifier(const char* PropertyName, const char* modification);
-        void Send(ai::Obj* pReceiverObj, const char* PropertyName, const char* modification);
-        virtual bool ApplyModifier(const ai::Modifier& modifier) /* 0x88 */;
-        bool ApplyAffix(const ai::Affix* affix);
+        void AddModifier(Modifier const& modifier);
+        void AddModifier(char const* PropertyName, char const* modification);
+        void Send(Obj* pReceiverObj, char const* PropertyName, char const* modification);
+        virtual bool ApplyModifier(Modifier const& modifier) /* 0x88 */;
+        bool ApplyAffix(Affix const* affix);
         void ApplyRandomAffixes(int numAffixes);
-        bool ApplyAffixByName(const char* affixName);
-        virtual void InflictDamage(const ai::DamageInfo& damageInfo) /* 0x8c */;
+        bool ApplyAffixByName(char const* affixName);
+        virtual void InflictDamage(DamageInfo const& damageInfo) /* 0x8c */;
         CStr GetFullDescriptionWithAffixes() const;
         CStr GetDebugDescription() const;
-        void Subscribe(ai::eGameEvent eventId, int objId);
-        void Unsubscribe(ai::eGameEvent eventId, int objId);
-        void CauseEvent(ai::eGameEvent eventId, float timeOut, m3d::AIParam param1, m3d::AIParam param2) const;
+        void Subscribe(eGameEvent eventId, int objId);
+        void Unsubscribe(eGameEvent eventId, int objId);
+        void CauseEvent(eGameEvent eventId, float timeOut, m3d::AIParam param1, m3d::AIParam param2) const;
         void ValidateEventRecipientsList();
-        virtual ai::Obj* GetChild(int num) const /* 0x90 */;
+        virtual Obj* GetChild(int num) const /* 0x90 */;
         virtual int AddChild(m3d::Object* node) /* 0x94 */;
-        virtual void AddChild(ai::Obj* pObj) /* 0x94 */;
+        virtual void AddChild(Obj* pObj) /* 0x94 */;
         virtual bool CanChildBeAdded(m3d::Class* pClass) const /* 0x98 */;
         virtual int RemoveChild(m3d::Object* node) /* 0x9c */;
-        virtual bool RemoveChild(ai::Obj* pChild) /* 0x9c */;
-        virtual void RemoveComponent(ai::Obj* pComponent) /* 0xa0 */;
+        virtual bool RemoveChild(Obj* pChild) /* 0x9c */;
+        virtual void RemoveComponent(Obj* pComponent) /* 0xa0 */;
         virtual void CreateChildren() /* 0xa4 */;
         virtual void Dump() const /* 0xa8 */;
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) /* 0xac */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) /* 0xb0 */;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) /* 0xac */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) /* 0xb0 */;
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0xb4 */;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0xb8 */;
         virtual bool bIsEqualToPrototype() const /* 0xbc */;
         void PostLoad();
         virtual void SetBelong(int newBelong) /* 0xc0 */;
         int GetBelong() const;
-        virtual ai::Obj* GetParent() const /* 0xc4 */;
+        virtual Obj* GetParent() const /* 0xc4 */;
         bool IsAlive() const;
-        bool bIsEnemyWith(const ai::Obj* pObj) const;
+        bool bIsEnemyWith(Obj const* pObj) const;
         virtual void SetVisible() /* 0xc8 */;
         virtual void SetInvisible() /* 0xcc */;
         bool bIsVisible() const;
@@ -312,18 +317,18 @@ namespace ai
         virtual void TransferPhysicParamsToSceneGraphNode() /* 0xdc */;
         virtual void RelinkSceneGraphNode() /* 0xe0 */;
         virtual void RenderDebugInfo() const /* 0xe4 */;
-        virtual void ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*> >& nodes) const /* 0xe8 */;
+        virtual void ReceiveNodesToLink(retruxx::list<m3d::SgNode*>& nodes) const /* 0xe8 */;
         bool GetDeletedStatus() const;
-        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const /* 0xec */;
-        float GetPriceCoeff(const ai::IPriceCoeffProvider* priceCoeffProvider) const;
+        virtual unsigned int GetPrice(IPriceCoeffProvider const* priceCoeffProvider) const /* 0xec */;
+        float GetPriceCoeff(IPriceCoeffProvider const* priceCoeffProvider) const;
         virtual unsigned int GetSchwarz() const /* 0xf0 */;
-        virtual ai::Obj* CloneObj() /* 0xf4 */;
+        virtual Obj* CloneObj() /* 0xf4 */;
         virtual void ClearSavedStatus() /* 0xf8 */;
         bool IsAffixesApplied() const;
         void SetAffixesApplied(bool bApplied);
 
-        using PropertyMapType = retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > >;
-        using PropertySaveStatesMapType = retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > >;
+        using PropertyMapType = retruxx::map<CStr, int>;
+        using PropertySaveStatesMapType = retruxx::map<int, eGObjPropertySaveStatus>;
         class PropertyMapIterator;
 
     protected:
@@ -333,11 +338,11 @@ namespace ai
         bool _GetDeadStatus() const;
         virtual void _InternalPostLoad() /* 0xfc */;
         virtual void _InternalCreateVisualPart() /* 0x100 */;
-        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus SaveStatus);
+        static void __fastcall RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus SaveStatus);
         virtual void _SetAllPropertiesToMax() /* 0x104 */;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const /* 0x108 */;
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const /* 0x10c */;
-        retruxx::map<int, ai::Obj*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Obj*> > >& getAllChildren();
+        retruxx::map<int, Obj*, retruxx::less<int>>& getAllChildren();
         int GetLastDamageSource() const;
         void SetLastDamageSource(int objId);
 
@@ -357,49 +362,49 @@ namespace ai
         /* 0x0053 */ char Padding_14;
         /* 0x0054 */ int m_belong;
         /* 0x0058 */ int m_parentId;
-        /* 0x005c */ ai::GeomRepository* m_parentRepository;
+        /* 0x005c */ GeomRepository* m_parentRepository;
         /* 0x0060 */ int m_LastDamageSource;
         /* 0x0064 */ bool m_bIsAlreadySaved;
         /* 0x0065 */ char Padding_15[3];
-        /* 0x0068 */ ai::Obj::HierarchyType m_hierarchyType;
+        /* 0x0068 */ Obj::HierarchyType m_hierarchyType;
         /* 0x006c */ int m_prototypeId;
-        /* 0x0070 */ retruxx::map<int, ai::Obj*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Obj*> > > m_allChildren;
-        /* 0x007c */ retruxx::vector<int, retruxx::allocator<int> > m_appliedPrefixIds;
-        /* 0x008c */ retruxx::vector<int, retruxx::allocator<int> > m_appliedSuffixIds;
+        /* 0x0070 */ retruxx::map<int, Obj*> m_allChildren;
+        /* 0x007c */ retruxx::vector<int> m_appliedPrefixIds;
+        /* 0x008c */ retruxx::vector<int> m_appliedSuffixIds;
         /* 0x009c */ bool m_bAffixesWasApplied;
         /* 0x009d */ char Padding_16[3];
-        /* 0x00a0 */ retruxx::vector<ai::Modifier, retruxx::allocator<ai::Modifier> > m_modifiers;
+        /* 0x00a0 */ retruxx::vector<Modifier> m_modifiers;
 
         struct EventRecipientInfo
         {
-            /* 0x0000 */ ai::eGameEvent m_eventId;
+            /* 0x0000 */ eGameEvent m_eventId;
             /* 0x0004 */ retruxx::vector<int> m_objIds;
         }; /* size: 0x0014 */
 
-        using EventRecipientInfoVector = retruxx::vector<ai::Obj::EventRecipientInfo, retruxx::allocator<ai::Obj::EventRecipientInfo> >;
+        using EventRecipientInfoVector = retruxx::vector<Obj::EventRecipientInfo>;
 
     private:
-        /* 0x00b0 */ retruxx::vector<ai::Obj::EventRecipientInfo, retruxx::allocator<ai::Obj::EventRecipientInfo> > m_eventRecipients;
-        int _GetIndexByEventId(ai::eGameEvent eventId) const;
+        /* 0x00b0 */ EventRecipientInfoVector m_eventRecipients;
+        int _GetIndexByEventId(eGameEvent eventId) const;
         void _Init();
-        void OnSubscribe(const ai::Event& evn);
-        void OnUnsubscribe(const ai::Event& evn);
+        void OnSubscribe(Event const& evn);
+        void OnUnsubscribe(Event const& evn);
 
     public:
-        static m3d::AIParam __fastcall AIGetCmdParam1(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetCmdParam2(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetCmdParam3(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetState2Param1(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetState2Param2(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetState2Param3(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetState1Param1(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetState1Param2(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetState1Param3(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetMessage2Param1(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetMessage1Param1(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetParentID(ai::Obj* pObj);
-        static m3d::AIParam __fastcall AIGetOwnerID(ai::Obj* pObj);
+        static m3d::AIParam AIGetCmdParam1(Obj* pObj);
+        static m3d::AIParam AIGetCmdParam2(Obj* pObj);
+        static m3d::AIParam AIGetCmdParam3(Obj* pObj);
+        static m3d::AIParam AIGetState2Param1(Obj* pObj);
+        static m3d::AIParam AIGetState2Param2(Obj* pObj);
+        static m3d::AIParam AIGetState2Param3(Obj* pObj);
+        static m3d::AIParam AIGetState1Param1(Obj* pObj);
+        static m3d::AIParam AIGetState1Param2(Obj* pObj);
+        static m3d::AIParam AIGetState1Param3(Obj* pObj);
+        static m3d::AIParam AIGetMessage2Param1(Obj* pObj);
+        static m3d::AIParam AIGetMessage1Param1(Obj* pObj);
+        static m3d::AIParam AIGetParentID(Obj* pObj);
+        static m3d::AIParam AIGetOwnerID(Obj* pObj);
     }; /* size: 0x00c0 */
 
     static_assert(sizeof(Obj) == 0xc0);
-}
+}  // namespace ai

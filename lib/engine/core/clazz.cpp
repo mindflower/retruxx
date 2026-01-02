@@ -42,18 +42,23 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Object, IsKindOf)
 namespace m3d
 {
     RT_CLASS_EXPORTS_BEGIN(Object)
-        RT_CLASS_EXPORT(Object, METHOD, GetName, "const char*", "", "")
-        RT_CLASS_EXPORT(Object, METHOD, GetRefCount, "int", "", "return the number of references held against this instance")
-        RT_CLASS_EXPORT(Object, METHOD, GetClassName, "void", "", "get object's class name")
-        RT_CLASS_EXPORT(Object, METHOD, IsKindOf, "bool", "const char*", "finds out if objects is of given class")
-	RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORT(Object, METHOD, GetName, "const char*", "", "")
+    RT_CLASS_EXPORT(
+        Object,
+        METHOD,
+        GetRefCount,
+        "int",
+        "",
+        "return the number of references held against this instance")
+    RT_CLASS_EXPORT(Object, METHOD, GetClassName, "void", "", "get object's class name")
+    RT_CLASS_EXPORT(Object, METHOD, IsKindOf, "bool", "const char*", "finds out if objects is of given class")
+    RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Object);
-}
+}  // namespace m3d
 
 namespace m3d
 {
-    RefCountedBase::RefCountedBase() :
-        m_refCount(0)
+    RefCountedBase::RefCountedBase() : m_refCount(0)
     {
     }
 
@@ -64,8 +69,8 @@ namespace m3d
 
     int RefCountedBase::DecRef()
     {
-        const auto result = --m_refCount;
-        if (result <=0)
+        auto const result = --m_refCount;
+        if (result <= 0)
         {
             delete this;
         }
@@ -87,8 +92,7 @@ namespace m3d
         return new Object{};
     }
 
-    Object::Object() :
-        m_name("Object" + CStr(M3D_KERNEL->GetUniqueId()))
+    Object::Object() : m_name("Object" + CStr(M3D_KERNEL->GetUniqueId()))
     {
     }
 
@@ -310,12 +314,12 @@ namespace m3d
 
     Object* Object::GetPrevSibling() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_prevSibling;
     }
 
     int Object::GetNumChildren() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_numChildren;
     }
 
     Object* Object::GetParent() const
@@ -376,7 +380,7 @@ namespace m3d
             }
             isNewObject = true;
         }
-        if(res->ReadFromXmlNode(xmlFile, xmlNode))
+        if (res->ReadFromXmlNode(xmlFile, xmlNode))
         {
             if (isNewObject)
             {
@@ -599,7 +603,7 @@ namespace m3d
 
     bool Object::GetPersistance() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_persistant;
     }
 
     bool Object::IsChildOf(Object const* wnd) const
@@ -637,4 +641,4 @@ namespace m3d
     {
         return GetClass()->IsKindOf(object);
     }
-}
+}  // namespace m3d

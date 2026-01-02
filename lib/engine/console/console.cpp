@@ -6,26 +6,27 @@
 #include <core/log.h>
 #include <core/ref_ptr.h>
 #include <core/console/cvar.h>
+#include "i_event.h"
 
 #include "m3dapp.h"
 
 namespace
 {
     m3d::CConsoleCommands conCommands[] = {
-        {"conClear" , 0},
-        {"conDump" , 1},
-        {"conCVarList" , 2},
-        {"conCmdList" , 3},
-        {"conDebug" , 4},
-        {"conExec" , 5},
-        {"conScript" , 6},
+        {"conClear", 0},
+        {"conDump", 1},
+        {"conCVarList", 2},
+        {"conCmdList", 3},
+        {"conDebug", 4},
+        {"conExec", 5},
+        {"conScript", 6},
     };
 
-    void Gfx_PrintFixed(float,float,int,char const *,unsigned int,unsigned int)
+    void Gfx_PrintFixed(float, float, int, char const*, unsigned int, unsigned int)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace
 
 RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, Clear)
 {
@@ -66,22 +67,22 @@ RT_CLASS_EXPORT_METHOD_DEFINE(IConsole, SetScreenSize)
 namespace m3d
 {
     RT_CLASS_EXPORTS_BEGIN(IConsole)
-        RT_CLASS_EXPORT(IConsole, METHOD, Clear, "", "", "")
-        RT_CLASS_EXPORT(IConsole, METHOD, PrintF, "", "", "")
-        RT_CLASS_EXPORT(IConsole, METHOD, InputLine, "", "", "")
-        RT_CLASS_EXPORT(IConsole, METHOD, executeCommand, "", "", "")
-        RT_CLASS_EXPORT(IConsole, METHOD, Toggle, "", "", "")
-        RT_CLASS_EXPORT(IConsole, METHOD, SetScreenSize, "", "", "")
-	RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORT(IConsole, METHOD, Clear, "", "", "")
+    RT_CLASS_EXPORT(IConsole, METHOD, PrintF, "", "", "")
+    RT_CLASS_EXPORT(IConsole, METHOD, InputLine, "", "", "")
+    RT_CLASS_EXPORT(IConsole, METHOD, executeCommand, "", "", "")
+    RT_CLASS_EXPORT(IConsole, METHOD, Toggle, "", "", "")
+    RT_CLASS_EXPORT(IConsole, METHOD, SetScreenSize, "", "", "")
+    RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(IConsole);
 
     void CConsoleParams::Set(char const* buf)
     {
         //TODO: check this and refactor
-        int v3; // edi
-        char* v4; // edx
-        const char* v5; // ecx
-        char v6; // al
+        int v3;          // edi
+        char* v4;        // edx
+        char const* v5;  // ecx
+        char v6;         // al
 
         v3 = strlen(buf) + 1;
         if (v3 > this->length)
@@ -138,12 +139,12 @@ namespace m3d
     int CConsoleParams::NumOfTokens(char delim) const
     {
         //TODO: check this and refactor
-        int result; // eax
-        char* v3; // esi
-        char v4; // dl
-        char v5; // bl
-        int v6; // edi
-        char i; // al
+        int result;  // eax
+        char* v3;    // esi
+        char v4;     // dl
+        char v5;     // bl
+        int v6;      // edi
+        char i;      // al
 
         result = this->numTokens;
         if (result)
@@ -176,14 +177,14 @@ namespace m3d
 
     char* CConsoleParams::StringToken(int num, char* outString, int stringlen, char delim) const
     {
-        char* v5; // edx
-        char v6; // cl
-        char* v7; // esi
-        char v8; // al
-        int v9; // edi
-        char v10; // bl
-        char* result; // eax
-        char i; // cl
+        char* v5;      // edx
+        char v6;       // cl
+        char* v7;      // esi
+        char v8;       // al
+        int v9;        // edi
+        char v10;      // bl
+        char* result;  // eax
+        char i;        // cl
 
         v5 = this->string;
         v6 = *this->string;
@@ -266,7 +267,7 @@ namespace m3d
     {
         return new ConsoleImp;
     }
-}
+}  // namespace m3d
 
 RT_CLASS_EXPORTS_BEGIN(ConsoleImp)
 RT_CLASS_EXPORTS_END;
@@ -278,7 +279,6 @@ ConsoleImp::auxConsoleCmd::auxConsoleCmd(char const* rname, int rid, IConHandler
     handler(rhandler)
 {
 }
-
 
 void ConsoleImp::Render()
 {
@@ -327,9 +327,46 @@ void ConsoleImp::UnregisterCVar(m3d::CVar*)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int ConsoleImp::HandleEvent(m3d::Event const&)
+int ConsoleImp::HandleEvent(m3d::Event const& ev)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    int result = 0;
+    switch (ev.m_eventType)
+    {
+    case m3d::EV_LOOSING_FOCUS:
+        Toggle(false);
+        result = 1;
+        break;
+
+    case m3d::EV_OBTAINED_FOCUS:
+        Toggle(true);
+        result = 1;
+        break;
+
+    case m3d::EV_KEY_DOWN:
+        ProcessInputChar(ev.m_ushortEv[0]);
+        result = 1;
+        break;
+
+    case m3d::EV_KEY_UP:
+        result = 1;
+        break;
+
+    case m3d::EV_MOUSE_WHEEL:
+        if (ev.m_shortEv[2] <= 0)
+        {
+            ScrollDown(-ev.m_shortEv[2]);
+        }
+        else
+        {
+            ScrollUp(ev.m_shortEv[2]);
+        }
+        result = 1;
+        break;
+
+    default:
+        break;
+    }
+    return result;
 }
 
 int ConsoleImp::Save(CStr const&)
@@ -361,12 +398,12 @@ void ConsoleImp::executeCommand(CStr const& command)
     bool found = false;
     for (auto& cmd : m_lCmds)
     {
-	    if (cmd.name == cmdName)
-	    {
+        if (cmd.name == cmdName)
+        {
             found = true;
             cmd.handler->HandleCommand(cmd.id, params);
             break;
-	    }
+        }
     }
 
     if (!found)
@@ -449,7 +486,6 @@ void ConsoleImp::Init(int width, int height)
     m_screensize = 0.5;
     CheckResize(width, height);
     m_csCurState = CONSOLE_CLOSED;
-
 }
 
 int ConsoleImp::Load(CStr const& fname)
@@ -464,7 +500,7 @@ int ConsoleImp::Load(CStr const& fname)
             M3D_LOG_INFO("Config::cannot find 'config' node");
             return 0;
         }
-        
+
         ref_ptr attrib = node->CreateAttribute();
         for (node->GetFirstAttribute(attrib); !attrib->IsEmpty(); attrib->GetNextSibling(attrib))
         {
@@ -473,19 +509,25 @@ int ConsoleImp::Load(CStr const& fname)
             val.m_stringValue = attrib->GetValue();
 
             //TODO: check this
-            auto itVars = std::find_if(m_lCVars.begin(), m_lCVars.end(), [&val](const auto* elem)
-            {
-                return elem->GetName() == val.m_name;
-            });
+            auto itVars = std::find_if(
+                m_lCVars.begin(),
+                m_lCVars.end(),
+                [&val](auto const* elem)
+                {
+                    return elem->GetName() == val.m_name;
+                });
             if (itVars != m_lCVars.end())
             {
                 (*itVars)->Set(val.m_stringValue.c_str(), true);
             }
 
-            auto itLoaded = std::find_if(m_loadedValues.begin(), m_loadedValues.end(), [&val](const auto& elem)
-            {
-                return elem.m_name == val.m_name;
-            });
+            auto itLoaded = std::find_if(
+                m_loadedValues.begin(),
+                m_loadedValues.end(),
+                [&val](auto const& elem)
+                {
+                    return elem.m_name == val.m_name;
+                });
             if (itLoaded != m_loadedValues.end())
             {
                 *itLoaded = val;
@@ -524,7 +566,7 @@ void ConsoleImp::CheckResize(int newWidth, int newHeight)
     auto newLineWidth = newWidth / m_FontSizeX - 2;
     if (newLineWidth != m_con.linewidth)
     {
-        if (newLineWidth >=1)
+        if (newLineWidth >= 1)
         {
             auto lineWidth = m_con.linewidth;
             auto totalLines = m_con.totallines;
@@ -561,7 +603,7 @@ void ConsoleImp::RegisterCVar(m3d::CVar* var, IConHandler* handler)
     {
         var->SetHandler(handler);
     }
-    
+
     for (auto& value : m_loadedValues)
     {
         if (value.m_name == var->GetName())
@@ -606,7 +648,9 @@ void ConsoleImp::ProcessInputChar(unsigned short)
 bool ConsoleImp::Toggle(bool bOpen)
 {
     if (m_csCurState == CONSOLE_ERROR)
+    {
         return false;
+    }
     if (bOpen)
     {
         if (m_csCurState != CONSOLE_OPENED)
@@ -690,17 +734,18 @@ void ConsoleImp::RenderNotify()
         auto v6 = m_con.display;
         for (int i = 0; i < v4 / m_FontSizeY; ++i)
         {
-	        if (v6 < 0)
-	        {
+            if (v6 < 0)
+            {
                 break;
-	        }
+            }
             auto v7 = m_con.totallines;
             if (m_con.current - v6 >= v7)
             {
                 break;
             }
             //TODO: add Gfx_PrintFixed
-            Gfx_PrintFixed(3.0, v4, m_FontSizeX, &m_con.text[this->m_con.linewidth * (v6 % v7)], 0xFFA0A0A0, m_con.linewidth);
+            Gfx_PrintFixed(
+                3.0, v4, m_FontSizeX, &m_con.text[this->m_con.linewidth * (v6 % v7)], 0xFFA0A0A0, m_con.linewidth);
             v4 -= m_FontSizeY;
             --v6;
         }
@@ -717,53 +762,53 @@ void ConsoleImp::CompleteScriptCommand()
 
 void ConsoleImp::HandleCommand(int cmdId, m3d::CConsoleParams const& params)
 {
-    switch(cmdId)
+    switch (cmdId)
     {
     case 0:
-	    {
-            Clear();
-            break;
-	    }
+    {
+        Clear();
+        break;
+    }
     case 1:
-	    {
-		    if (params.NumOfTokens(' ') == 2)
-		    {
-                auto file = params.UnsafeStringToken(1, ' ');
-                if (DumpToFile(file))
-                {
-                    PrintF("Dumped console text to file " + CStr(file) + "\n");
-                }
-                else
-                {
-                    PrintF("Failed write file " + CStr(file) + "\n");
-                }
-		    }
+    {
+        if (params.NumOfTokens(' ') == 2)
+        {
+            auto file = params.UnsafeStringToken(1, ' ');
+            if (DumpToFile(file))
+            {
+                PrintF("Dumped console text to file " + CStr(file) + "\n");
+            }
             else
             {
-                PrintF("Usage: /conDump <file_name>\n");
+                PrintF("Failed write file " + CStr(file) + "\n");
             }
-            break;
-	    }
+        }
+        else
+        {
+            PrintF("Usage: /conDump <file_name>\n");
+        }
+        break;
+    }
     case 6:
-	    {
-		    if (params.NumOfTokens(' ') == 2)
-		    {
-                auto file = params.UnsafeStringToken(1, ' ');
-                if (auto res = m3d::g_Kernel->GetScriptServer().executeScriptFile(file))
-                {
-                    PrintF(getFormatedScriptErrorDesc(res) + "\n");
-                }
-		    }
-            else
+    {
+        if (params.NumOfTokens(' ') == 2)
+        {
+            auto file = params.UnsafeStringToken(1, ' ');
+            if (auto res = m3d::g_Kernel->GetScriptServer().executeScriptFile(file))
             {
-                PrintF("Usage: /conScript <filename>\n");
+                PrintF(getFormatedScriptErrorDesc(res) + "\n");
             }
-            break;
-	    }
+        }
+        else
+        {
+            PrintF("Usage: /conScript <filename>\n");
+        }
+        break;
+    }
     default:
-	    {
-			RETRUXX_NOT_IMPLEMENTED;
-	    }
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
     }
 }
 
@@ -787,8 +832,8 @@ void ConsoleImp::Print(char const* txt)
         auto token = strtok(text, "\t");
         if (token)
         {
-	        while(1)
-	        {
+            while (1)
+            {
                 str += token;
                 token = strtok(nullptr, "\t");
                 if (!token)
@@ -796,21 +841,21 @@ void ConsoleImp::Print(char const* txt)
                     break;
                 }
                 str += "    ";
-	        }
+            }
         }
 
         delete[] text;
 
         //TODO: check this and refactor!!!
-        const char* v5; // ecx
-        char v6; // bl
-        const char* v7; // ebp
-        int v8; // ecx
-        int v9; // eax
-        int v10; // eax
-        int v11; // edx
-        int v12; // eax
-        CStr v13; // [esp+Ch] [ebp-24h] BYREF
+        char const* v5;  // ecx
+        char v6;         // bl
+        char const* v7;  // ebp
+        int v8;          // ecx
+        int v9;          // eax
+        int v10;         // eax
+        int v11;         // edx
+        int v12;         // eax
+        CStr v13;        // [esp+Ch] [ebp-24h] BYREF
 
         v5 = str.c_str();
         v6 = *str.c_str();
@@ -853,7 +898,9 @@ void ConsoleImp::Print(char const* txt)
                 {
                     if (v6 != 13)
                     {
-                        this->m_con.text[this->m_con.x + this->m_con.linewidth * (this->m_con.current % this->m_con.totallines)] = v6;
+                        this->m_con.text
+                            [this->m_con.x + this->m_con.linewidth * (this->m_con.current % this->m_con.totallines)] =
+                            v6;
                         if (++this->m_con.x >= this->m_con.linewidth)
                             this->m_con.x = 0;
                         goto LABEL_32;
@@ -870,6 +917,5 @@ void ConsoleImp::Print(char const* txt)
                 }
             }
         }
-
     }
 }

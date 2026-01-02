@@ -51,7 +51,7 @@ CStr NameFromFileName(CStr const& source)
     if (pos != CStr_npos)
     {
         //TODO: check this
-        return result.substr(pos+1);
+        return result.substr(pos + 1);
     }
     return result;
 }
@@ -95,8 +95,7 @@ bool strToBool(CStr const& str)
     return v != 0;
 }
 
-CStr::ZeroCharHolder::ZeroCharHolder() :
-    m_zeroChar(0)
+CStr::ZeroCharHolder::ZeroCharHolder() : m_zeroChar(0)
 {
 }
 
@@ -218,7 +217,7 @@ CStr::CStr(int64_t)
 
 CStr::CStr(unsigned long v)
 {
-    char buf[136] = { 0 };
+    char buf[136] = {0};
 
     m_charPtr = ZERO;
     m_allocSz = 0;
@@ -230,7 +229,7 @@ CStr::CStr(unsigned long v)
 
 CStr::CStr(unsigned int v)
 {
-    char buf[136] = { 0 };
+    char buf[136] = {0};
 
     m_charPtr = ZERO;
     m_allocSz = 0;
@@ -242,7 +241,7 @@ CStr::CStr(unsigned int v)
 
 CStr::CStr(int v)
 {
-    char buf[136] = { 0 };
+    char buf[136] = {0};
 
     m_charPtr = ZERO;
     m_allocSz = 0;
@@ -252,9 +251,14 @@ CStr::CStr(int v)
     strcpy(m_charPtr, buf);
 }
 
-CStr::CStr(char)
+CStr::CStr(char v)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
+    realloc(2);
+    m_charPtr[0] = v;
+    m_charPtr[1] = '\0';
 }
 
 CStr::CStr(char const* str, int num)
@@ -297,7 +301,7 @@ CStr::CStr(CStr const& s)
 {
     m_charPtr = ZERO;
     m_allocSz = 0;
-    if (const auto len = s.length(); len > 0)
+    if (auto const len = s.length(); len > 0)
     {
         realloc(len + 1);
         strcpy(m_charPtr, s.c_str());
@@ -346,7 +350,7 @@ char const& CStr::operator[](int i) const
     return m_charPtr[i];
 }
 
-const char* CStr::c_str() const
+char const* CStr::c_str() const
 {
     return m_charPtr;
 }
@@ -363,7 +367,7 @@ CStr& CStr::operator+=(CStr const& a)
     char* newCharPtr = new char[newSize];
     strcpy(newCharPtr, c_str());
     strcat(newCharPtr, a.c_str());
-    
+
     cleanup();
 
     m_charPtr = newCharPtr;
@@ -487,7 +491,7 @@ int CStr::del(int idx, int count)
     char* copySource = deletionStart + count;
 
     // Shift characters to overwrite the deleted portion
-    memmove(deletionStart, copySource, strlen(copySource) + 1); // +1 for null terminator
+    memmove(deletionStart, copySource, strlen(copySource) + 1);  // +1 for null terminator
 
     return strlen(m_charPtr);
 }
@@ -561,7 +565,7 @@ unsigned int strToColor(CStr const& str, unsigned def)
 {
     if (!str.empty())
     {
-        int colorArr[4] = { 0 };
+        int colorArr[4] = {0};
         if (sscanf_s(str.c_str(), "%d %d %d %d", &colorArr[0], &colorArr[1], &colorArr[2], &colorArr[3]) == 4)
         {
             for (auto& elem : colorArr)
@@ -603,4 +607,3 @@ float strToFloat(CStr const& str)
     sscanf(str.c_str(), "%f", &v);
     return v;
 }
-

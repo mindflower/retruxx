@@ -22,7 +22,11 @@ namespace m3d
 
     void TownMusicManager::StopAmbient()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (M3D_ENGINE_CFG.m_mus_Enable.GetB() && m_curAmbientChannelId != -1)
+        {
+            M3D_APP->m_sound->StopChannel(m_curAmbientChannelId);
+            m_curAmbientChannelId = -1;
+        }
     }
 
     void TownMusicManager::Init()
@@ -45,7 +49,8 @@ namespace m3d
             {
                 auto pathAttr = node->GetAttribute("path");
                 //TODO: check this!!
-                auto snd = Application::g_pApp->m_sound->AddSound(pathAttr, snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_NORMAL);
+                auto snd = Application::g_pApp->m_sound->AddSound(
+                    pathAttr, snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_NORMAL);
                 auto typeAttr = node->GetAttribute("type");
                 if (!CStr::my_strcmp(typeAttr, "shop"))
                 {
@@ -67,4 +72,4 @@ namespace m3d
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace m3d

@@ -117,8 +117,8 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetPropertyById)
 RT_CLASS_EXPORT_METHOD_DEFINE(Obj, SetProperty)
 {
     auto* obj = (ai::Obj*)context->asObject(0, "Obj");
-    const auto* prop = context->asString(1);
-    const auto& aiParam = context->asAIParam(2);
+    auto const* prop = context->asString(1);
+    auto const& aiParam = context->asAIParam(2);
     obj->SetProperty(prop, aiParam);
     return 1;
 }
@@ -150,34 +150,30 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Obj, GetSchwarz)
 
 namespace ai
 {
-    //std::map<CStr, int> Obj::m_propertiesMap;
-    //std::map<int, eGObjPropertySaveStatus> Obj::m_propertiesSaveStatesMap;
-
     RT_CLASS_EXPORTS_BEGIN(Obj)
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetId, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, Remove, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, IsAlive, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetChild, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, AddChild, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, AddModifier, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, Send, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetParent, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetBelong, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, StackOpen, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, StackClose, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, StackLoop, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetProperty, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetPropertyId, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetPropertyById, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, SetProperty, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, SetPropertyById, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, ApplyAffixByName, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, SetBelong, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, SetNameFromScript, "", "", "")
-        RT_CLASS_EXPORT(Obj, m3d::METHOD, GetSchwarz, "", "", "")
-	RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, GetId, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, Remove, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, IsAlive, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, GetChild, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, AddChild, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, AddModifier, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, Send, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, GetParent, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, GetBelong, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, StackOpen, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, StackClose, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, StackLoop, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, GetProperty, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, GetPropertyId, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, GetPropertyById, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, SetProperty, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, SetPropertyById, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, ApplyAffixByName, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, SetBelong, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, SetNameFromScript, "", "", "")
+    RT_CLASS_EXPORT(Obj, m3d::METHOD, GetSchwarz, "", "", "")
+    RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Obj);
-
 
     m3d::Class* Obj::GetBaseClass()
     {
@@ -237,7 +233,8 @@ namespace ai
 
         ref_ptr prefixNode = xmlFile->CreateNode();
         m_appliedPrefixIds.clear();
-        for (xmlNode->GetFirstChild(prefixNode, "Prefix"); !prefixNode->IsEmpty(); prefixNode->GetNextSibling(prefixNode, "Prefix"))
+        for (xmlNode->GetFirstChild(prefixNode, "Prefix"); !prefixNode->IsEmpty();
+             prefixNode->GetNextSibling(prefixNode, "Prefix"))
         {
             CStr name;
             m3d::SafeStrAttrib(name, prefixNode, "name");
@@ -245,17 +242,21 @@ namespace ai
             CStr res;
             m3d::SafeStrAttrib(res, prefixNode, "targetResource");
 
-            auto id = pServer->GetAffixManager()->GetAffixIdByNameAndResource(name, theResourceManager->GetResourceId(res));
+            auto id =
+                pServer->GetAffixManager()->GetAffixIdByNameAndResource(name, theResourceManager->GetResourceId(res));
             if (id == -1)
             {
-                M3D_LOG_ERR("Error: trying to apply invalid prefix: name = '" + name + "', resource = '" + res + "' to " + GetDebugDescription());
+                M3D_LOG_ERR(
+                    "Error: trying to apply invalid prefix: name = '" + name + "', resource = '" + res + "' to " +
+                    GetDebugDescription());
             }
             m_appliedPrefixIds.push_back(id);
         }
 
         ref_ptr suffixNode = xmlFile->CreateNode();
         m_appliedSuffixIds.clear();
-        for (xmlNode->GetFirstChild(suffixNode, "Suffix"); !suffixNode->IsEmpty(); suffixNode->GetNextSibling(suffixNode, "Suffix"))
+        for (xmlNode->GetFirstChild(suffixNode, "Suffix"); !suffixNode->IsEmpty();
+             suffixNode->GetNextSibling(suffixNode, "Suffix"))
         {
             CStr name;
             m3d::SafeStrAttrib(name, suffixNode, "name");
@@ -263,10 +264,13 @@ namespace ai
             CStr res;
             m3d::SafeStrAttrib(res, suffixNode, "targetResource");
 
-            auto id = pServer->GetAffixManager()->GetAffixIdByNameAndResource(name, theResourceManager->GetResourceId(res));
+            auto id =
+                pServer->GetAffixManager()->GetAffixIdByNameAndResource(name, theResourceManager->GetResourceId(res));
             if (id == -1)
             {
-                M3D_LOG_ERR("Error: trying to apply invalid suffix: name = '" + name + "', resource = '" + res + "' to " + GetDebugDescription());
+                M3D_LOG_ERR(
+                    "Error: trying to apply invalid suffix: name = '" + name + "', resource = '" + res + "' to " +
+                    GetDebugDescription());
             }
             m_appliedSuffixIds.push_back(id);
         }
@@ -496,16 +500,17 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Obj::bIsEnemyWith(const Obj* pObj) const
+    bool Obj::bIsEnemyWith(Obj const* pObj) const
     {
         bool result = false;
         if (pObj)
         {
-            const auto flags = pObj->GetFlags();
+            auto const flags = pObj->GetFlags();
             if ((flags & 8) == 0 && (flags & 2) == 0 && !pObj->GetParentRepository())
             {
                 auto v3 = m_flags;
-                if ((v3 & 8) == 0 && (v3 & 2) == 0 && !this->m_parentRepository && (pObj->m_flags & 1) != 0 && (this->m_flags & 1) != 0 &&
+                if ((v3 & 8) == 0 && (v3 & 2) == 0 && !this->m_parentRepository && (pObj->m_flags & 1) != 0 &&
+                    (this->m_flags & 1) != 0 &&
                     theRelationship->CheckTolerance(this->m_belong, pObj->m_belong) <= RS_ENEMY)
                 {
                     return true;
@@ -517,8 +522,9 @@ namespace ai
 
     CStr Obj::GetDebugDescription() const
     {
-        const auto* prototypeInfo = GetPrototypeInfo();
-        return "name = '" + CStr(GetName()) + "', prototype name = '" + prototypeInfo->m_prototypeName + "', class name = '" + CStr(GetClassNameA()) + "', id = '" + CStr(GetId()) + "'";
+        auto const* prototypeInfo = GetPrototypeInfo();
+        return "name = '" + CStr(GetName()) + "', prototype name = '" + prototypeInfo->m_prototypeName +
+            "', class name = '" + CStr(GetClassNameA()) + "', id = '" + CStr(GetId()) + "'";
     }
 
     void Obj::ValidateEventRecipientsList()
@@ -655,7 +661,7 @@ namespace ai
 
     bool Obj::SetProperty(char const* PropertyName, m3d::AIParam const& newValue)
     {
-        const auto propFromObj = GetPropertyId(PropertyName);
+        auto const propFromObj = GetPropertyId(PropertyName);
         if (propFromObj != -1)
         {
             return SetPropertyById(propFromObj, newValue);
@@ -705,7 +711,7 @@ namespace ai
         if ((m_flags & 8) == 0)
         {
             M3D_APP->ImmediateMessage(66542, (int)this, 0, 0, 0, {}, {});
-            CauseEvent(GE_OBJECT_DIE, 0.0, { GetId() }, {});
+            CauseEvent(GE_OBJECT_DIE, 0.0, {GetId()}, {});
         }
     }
 
@@ -732,7 +738,6 @@ namespace ai
     m3d::AIParam Obj::AIGetParentID(Obj* obj)
     {
         return m3d::AIParam(obj->GetParentId());
-        
     }
 
     m3d::AIParam Obj::AIGetCmdParam1(Obj* obj)
@@ -958,10 +963,13 @@ namespace ai
     CStr Obj::GetPropertyName(int id) const
     {
         //TODO: check correctness
-        auto const it = std::find_if(std::begin(m_propertiesMap), std::end(m_propertiesMap), [id](auto const& prop)
-        {
-            return prop.second == id;
-        });
+        auto const it = std::find_if(
+            std::begin(m_propertiesMap),
+            std::end(m_propertiesMap),
+            [id](auto const& prop)
+            {
+                return prop.second == id;
+            });
         if (it != std::end(m_propertiesMap))
         {
             return it->first;
@@ -1065,7 +1073,8 @@ namespace ai
             {
                 auto& eventRecipient = m_eventRecipients.at(idx);
                 //TODO: check this
-                if (std::find(std::begin(eventRecipient.m_objIds), std::end(eventRecipient.m_objIds), objId) == std::end(eventRecipient.m_objIds))
+                if (std::find(std::begin(eventRecipient.m_objIds), std::end(eventRecipient.m_objIds), objId) ==
+                    std::end(eventRecipient.m_objIds))
                 {
                     eventRecipient.m_objIds.push_back(objId);
                 }
@@ -1160,10 +1169,7 @@ namespace ai
 
     bool Obj::IsAlive() const
     {
-        return
-            (m_flags & 8) == 0 &&
-            (m_flags & 2) == 0 &&
-            GetParentRepository() == nullptr;
+        return (m_flags & 8) == 0 && (m_flags & 2) == 0 && GetParentRepository() == nullptr;
     }
 
     void Obj::CreateVisualPart()
@@ -1245,10 +1251,7 @@ namespace ai
         }
         case 1:
         {
-            retVal =
-                m_prototypeId != -1 ?
-                thePrototypeManager->GetPrototypeName(m_prototypeId) :
-                m3d::AIParam{};
+            retVal = m_prototypeId != -1 ? thePrototypeManager->GetPrototypeName(m_prototypeId) : m3d::AIParam{};
             return true;
         }
         case 2:
@@ -1279,14 +1282,17 @@ namespace ai
     int Obj::_GetIndexByEventId(eGameEvent eventId) const
     {
         //TODO: check correctness
-        auto const it = std::find_if(std::begin(m_eventRecipients), std::end(m_eventRecipients), [eventId](auto const& info)
-        {
-            return eventId == info.m_eventId;
-        });
+        auto const it = std::find_if(
+            std::begin(m_eventRecipients),
+            std::end(m_eventRecipients),
+            [eventId](auto const& info)
+            {
+                return eventId == info.m_eventId;
+            });
         if (it != std::end(m_eventRecipients))
         {
             return std::distance(std::begin(m_eventRecipients), it);
         }
         return -1;
     }
-}
+}  // namespace ai

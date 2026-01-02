@@ -102,10 +102,10 @@ namespace
         {"s_modelsInfo", 22},
     };
 
-    using CreateIRendererType = m3d::rend::IRenderer* (__cdecl*)(m3d::Kernel*);
-    using CreateIInputType = m3d::input::IInput* (__cdecl*)(m3d::Kernel*);
-    using CreateISoundType = snd::ISound* (__cdecl*)(m3d::Kernel*);
-}
+    using CreateIRendererType = m3d::rend::IRenderer*(__cdecl*)(m3d::Kernel*);
+    using CreateIInputType = m3d::input::IInput*(__cdecl*)(m3d::Kernel*);
+    using CreateISoundType = snd::ISound*(__cdecl*)(m3d::Kernel*);
+}  // namespace
 
 namespace ai
 {
@@ -161,7 +161,7 @@ namespace m3d
                 wndClass.lpfnWndProc = &Application::WndProc;
                 wndClass.cbClsExtra = 0;
                 wndClass.cbWndExtra = 0;
-                wndClass.hInstance = hInstance; //TODO: not sure about hInstance
+                wndClass.hInstance = hInstance;  //TODO: not sure about hInstance
                 wndClass.hIcon = hIcon;
                 wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
                 wndClass.hbrBackground = 0;
@@ -170,7 +170,8 @@ namespace m3d
                 ::RegisterClass(&wndClass);
 
                 RECT rc;
-                ::SetRect(&rc, 0, 0, g_Kernel->GetEngineCfg().m_r_width.GetI(), g_Kernel->GetEngineCfg().m_r_height.GetI());
+                ::SetRect(
+                    &rc, 0, 0, g_Kernel->GetEngineCfg().m_r_width.GetI(), g_Kernel->GetEngineCfg().m_r_height.GetI());
                 auto const windowStyle = GetStyleForRenderWindow(g_Kernel->GetEngineCfg().m_r_fullScreen.GetB());
                 ::AdjustWindowRect(&rc, windowStyle, FALSE);
                 g_Kernel->GetEngineCfg().m_mainWnd = ::CreateWindowEx(
@@ -185,8 +186,7 @@ namespace m3d
                     NULL,
                     NULL,
                     hInstance,
-                    NULL
-                );
+                    NULL);
             }
             m_dwWindowStyle = ::GetWindowLongPtr(g_Kernel->GetEngineCfg().m_mainWnd, GWL_STYLE);
             ::GetWindowRect(g_Kernel->GetEngineCfg().m_mainWnd, &m_rcWindowBounds);
@@ -214,8 +214,7 @@ namespace m3d
                         m_rcWindowBounds.top,
                         m_rcWindowBounds.right - m_rcWindowBounds.left,
                         m_rcWindowBounds.bottom - m_rcWindowBounds.top,
-                        SWP_SHOWWINDOW
-                    );
+                        SWP_SHOWWINDOW);
                 }
 
                 auto const viewport = m_renderer->GetViewport();
@@ -325,7 +324,7 @@ namespace m3d
     {
         Event ev;
         ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime();
-        ev.m_eventType = msg;   //TODO: check this
+        ev.m_eventType = msg;  //TODO: check this
         ev.m_intEv[0] = p0;
         ev.m_intEv[1] = p1;
         ev.m_intEv[2] = p2;
@@ -354,8 +353,7 @@ namespace m3d
         {
             g_Kernel->GetTimer().NewFrame();
             g_pApp->m_renderer->ResetStats();
-            if (g_Kernel->GetEngineCfg().m_snd_Enable.GetB() ||
-                g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+            if (g_Kernel->GetEngineCfg().m_snd_Enable.GetB() || g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
             {
                 auto const lastFrameTime = g_Kernel->GetTimer().GetLastFrameTime() * 0.001;
                 g_pApp->m_sound->Update(lastFrameTime);
@@ -380,7 +378,7 @@ namespace m3d
                             m_renderer->ClearViewport(rend::M3DCLEAR_CZ, m_frameClearColor);
                         }
                         //TODO: check this
-                        if (rend == 2 ||m_appNeedToRedraw)
+                        if (rend == 2 || m_appNeedToRedraw)
                         {
                             Render(true);
                             m_appNeedToRedraw = 0;
@@ -435,7 +433,13 @@ namespace m3d
                     }
                     if (m_screenShotPending)
                     {
-                        RETRUXX_NOT_IMPLEMENTED;
+                        m_renderer->ScreenShot(0, -1, -1);
+                        if (!m_screenShotPendingAlways)
+                        {
+                            m_screenShotPending = 0;
+                            M3D_ENGINE_CFG.m_console->PrintF("Screenshot saved\n");
+                            M3D_LOG_INFO("Screen shot");
+                        }
                     }
                     m_renderer->PresentScene();
                 }
@@ -517,7 +521,6 @@ namespace m3d
             return 1;
         }
 
-        
         m_input->NewFrame();
 
         unsigned short key = 0;
@@ -527,8 +530,8 @@ namespace m3d
 
         if (m_input->GetLastKbdEvent(key, param2, param3, time, true))
         {
-	        do
-	        {
+            do
+            {
                 Event ev;
                 ev.m_timeStamp = time;
                 ev.m_ushortEv[0] = key;
@@ -573,13 +576,13 @@ namespace m3d
                 joystickBtnEvents[2] = EV_MOUSE_MBTN;
                 int gamepadBtnMask = 0;
                 int bits = 0;
-                for (int i =0; ; bits = i)
+                for (int i = 0;; bits = i)
                 {
                     auto btnsMask = 1 << bits;
                     auto mouseB = m_input->GetMouseB(bits);
                     auto prevBtnMask = m_prevBtnsMask;
                     auto mask = mouseB != 0 ? btnsMask : 0;
-                	gamepadBtnMask |= mask;
+                    gamepadBtnMask |= mask;
                     if (mask != (btnsMask & prevBtnMask))
                     {
                         m3d::Event ev;
@@ -618,7 +621,7 @@ namespace m3d
                         head = 0;
                     }
                     ev.m_ushortEv[2] = mouseZ / 120;
-                    if (m_eventsQueueTail !=head)
+                    if (m_eventsQueueTail != head)
                     {
                         m_eventsQueue[m_eventsQueueHead] = ev;
                         m_eventsQueueHead = head;
@@ -641,13 +644,12 @@ namespace m3d
                     for (int j = 0; j < 0xA; ++j)
                     {
                         auto btnsMask = joyB & (1 << j);
-                        if (btnsMask !=((1 <<j) & m_prevJoystickBtnsMask))
+                        if (btnsMask != ((1 << j) & m_prevJoystickBtnsMask))
                         {
                             m3d::Event ev;
                             ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime() * 0.001;
                             ev.m_eventType = joystickBtnEvents[j];
                             ev.m_ushortEv[2] = btnsMask != 0;
-
 
                             auto head = m_eventsQueueHead + 1;
                             if (head >= 0x1388)
@@ -722,7 +724,7 @@ namespace m3d
             }
             m_eventsQueueTail = newTail;
             HandleEvent(ev);
-            
+
         } while (!m_breakLoop);
     }
 
@@ -736,18 +738,15 @@ namespace m3d
         osinfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
         ::GetVersionEx(&osinfo);
         M3D_LOG_INFO(
-            "Windows version: " +
-            CStr(osinfo.dwMajorVersion) + "." +
-            CStr(osinfo.dwMinorVersion) + "." +
-            CStr(osinfo.dwBuildNumber)
-        );
+            "Windows version: " + CStr(osinfo.dwMajorVersion) + "." + CStr(osinfo.dwMinorVersion) + "." +
+            CStr(osinfo.dwBuildNumber));
 
-        TCHAR computerName[MAX_COMPUTERNAME_LENGTH + 1] = { 0 };
+        TCHAR computerName[MAX_COMPUTERNAME_LENGTH + 1] = {0};
         DWORD size = sizeof(computerName);
         ::GetComputerName(computerName, &size);
         M3D_LOG_INFO("Computer name: " + CStr(computerName));
 
-        char cpuInfo[16] = { 0 };
+        char cpuInfo[16] = {0};
         __cpuid(reinterpret_cast<int*>(cpuInfo), 0x80000000);
 
         //TODO: other info...
@@ -758,9 +757,9 @@ namespace m3d
     long Application::MsgProc(HWND hWnd, unsigned uMsg, unsigned wParam, long lParam)
     {
         //TODO: check this and refactor
-        int result; // eax
-        PointBase<int> curMousePos; // [esp+8h] [ebp-30h] BYREF
-        CStr param4; // [esp+10h] [ebp-28h] BYREF
+        int result;                  // eax
+        PointBase<int> curMousePos;  // [esp+8h] [ebp-30h] BYREF
+        CStr param4;                 // [esp+10h] [ebp-28h] BYREF
 
         if (uMsg <= 0x21)
         {
@@ -839,7 +838,9 @@ namespace m3d
         }
         if (::GetCPInfoEx(codePage, 0, &g_pApp->m_codePage) == FALSE)
         {
-            M3D_LOG_INFO("SetCodepage -- code page is not supported : " + codePageName + " forcing ANSI, some chars will be not available");
+            M3D_LOG_INFO(
+                "SetCodepage -- code page is not supported : " + codePageName +
+                " forcing ANSI, some chars will be not available");
             //TODO: handle this
             if (::GetCPInfoEx(0, 0, &g_pApp->m_codePage) == FALSE)
             {
@@ -847,13 +848,13 @@ namespace m3d
             }
         }
         M3D_LOG_INFO(CStr("SetCodepage -- using codepage ") + g_pApp->m_codePage.CodePageName);
-     }
+    }
 
     int Application::createRenderer()
     {
         CStr inputDriverName("dxrender9.dll");
         m_hRenderDll = ::LoadLibrary(inputDriverName.c_str());
-        const auto ee = ::GetLastError();
+        auto const ee = ::GetLastError();
         if (m_hRenderDll == NULL)
         {
             M3D_LOG_ERR("ERROR! Application::CreateRenderer -- cannot locate renderer driver " + inputDriverName);
@@ -1042,38 +1043,41 @@ namespace m3d
     {
         static bool bAltEnterActive = false;
         static bool bCtrlShiftActive = false;
+
+        int res = 0;
         //TODO: imlement Application::HandleEvent
         switch (ev.m_eventType)
         {
-        case 1:
-	    {
-            ::PostMessageA(g_Kernel->GetEngineCfg().m_mainWnd, 0x10, 0, 0);
+        case EV_APP_QUIT:
+        {
+            ::PostMessageA(M3D_ENGINE_CFG.m_mainWnd, 0x10, 0, 0);
             return 1;
-	    }
-        case 2:
-	    {
+        }
+        case EV_ACTIVATE_APP:
+        {
             //TODO: check this
             m_isAppActive = ev.m_intEv[0];
-            if (m_sound)
+            if (m_input)
             {
-                m_sound->PauseAllSounds(m_isAppActive);
+                m_input->SetActiveState(m_isAppActive);
             }
             if (m_renderer)
             {
                 m_renderer->SetActiveState(m_isAppActive);
             }
-            g_Kernel->GetTimer().SetActiveState(m_isAppActive);
+
+            M3D_KERNEL->GetTimer().SetActiveState(m_isAppActive);
             if (m_isAppActive)
             {
-	            if (g_Kernel->GetEngineCfg().m_clipCursorWithinRenderWnd.GetB())
-	            {
+                if (M3D_ENGINE_CFG.m_clipCursorWithinRenderWnd.GetB())
+                {
                     CaptureAndClipSystemCursor(true);
-	            }
+                }
                 //TODO: check this
                 ShowSystemCursor(m_bDXCursorEnabled);
-                if (g_pApp->m_sound)
+                if (M3D_APP->m_sound)
                 {
-                    g_pApp->m_sound->PauseAllSounds(false);
+                    M3D_APP->m_sound->PauseAllSounds(false);
                     return 1;
                 }
             }
@@ -1081,57 +1085,61 @@ namespace m3d
             {
                 ReleaseCapture();
                 ClipCursor(nullptr);
-                while (ShowCursor(1) < 0);
-                g_pApp->m_sound->PauseAllSounds(true);
+                while (ShowCursor(TRUE) < 0)
+                    ;
+                if (M3D_APP->m_sound)
+                {
+                    M3D_APP->m_sound->PauseAllSounds(true);
+                }
             }
             return 1;
-	    }
-        case 3:
-	    {
-            //TODO: check this
-            SwitchDisplayModes(g_Kernel->GetEngineCfg().m_mainWnd, ev.m_intEv[0], ev.m_intEv[1], ev.m_intEv[2] != 0);
-            return 1;
-	    }
-        case 4:
+        }
+        case EV_CHANGE_DISPLAY_MODE:
         {
-            auto viewport = m_renderer->GetViewport();
-            M3D_KERNEL->GetEngineCfg().m_console->CheckResize(viewport.m_width, viewport.m_height);
+            //TODO: check this
+            SwitchDisplayModes(M3D_ENGINE_CFG.m_mainWnd, ev.m_intEv[0], ev.m_intEv[1], ev.m_intEv[2] != 0);
+            return 1;
+        }
+        case EV_DISPLAY_CHANGED:
+        {
+            auto const viewport = m_renderer->GetViewport();
+            M3D_ENGINE_CFG.m_console->CheckResize(viewport.m_width, viewport.m_height);
             m_appNeedToRedraw = 1;
             break;
         }
-        case 7:
+        case EV_KEY_DOWN:
         {
-            int res = 0;
-            if (ev.m_byteEv[0] == 19)
+            if (ev.m_byteEv[0] == KBD_F11)
             {
-                if (this->m_screenShotPendingAlways)
+                if (m_screenShotPendingAlways)
                 {
-                    this->m_screenShotPendingAlways = 0;
+                    m_screenShotPendingAlways = 0;
                 }
                 else
                 {
                     if (M3D_ENGINE_CFG.m_debugMode.GetB())
                     {
-                        this->m_screenShotPendingAlways = 1;
-                        this->m_screenShotPending = 1;
+                        m_screenShotPendingAlways = 1;
+                        m_screenShotPending = 1;
                     }
                 }
                 res = 1;
             }
-            else if (ev.m_byteEv[0] == 20)
+            else if (ev.m_byteEv[0] == KBD_F12)
             {
-                this->m_screenShotPending = 1;
+                m_screenShotPending = 1;
                 res = 1;
             }
             else
             {
-                if (this->m_waitForAnykey)
+                if (m_waitForAnykey)
                 {
                     m_timeFromLevelLoaded = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
                     res = 1;
                 }
             }
-            if (ev.m_ushortEv[0] == 2052)
+
+            if ((ev.m_ushortEv[0] == (KBD_LALT | KBD_ENTER)))
             {
                 if (M3D_ENGINE_CFG.m_g_altEnterAllow.GetB() && !bAltEnterActive)
                 {
@@ -1139,51 +1147,88 @@ namespace m3d
                 }
                 res = 1;
             }
-            if ((ev.m_ushortEv[0] & 0x8000u) == 0 || (ev.m_ushortEv[0] & 0x2000) == 0)
+
+            if ((ev.m_ushortEv[0] & KBD_LCTRL) != 0 && (ev.m_ushortEv[0] & KBD_LSHIFT) != 0)
             {
-                if (res)
+                if (!bCtrlShiftActive)
                 {
-                    return res;
+                    bCtrlShiftActive = true;
+                    ChangeLanguage();
                 }
-                if (ev.m_byteEv[3] != 41)
-                {
-                    break;
-                }
+                return 1;
             }
-            RETRUXX_NOT_IMPLEMENTED;
+
+            if (res)
+            {
+                return res;
+            }
+
+            if (ev.m_byteEv[3] == KEY_GRAVE)
+            {
+                if (M3D_ENGINE_CFG.m_console->isActive())
+                {
+                    if (M3D_APP)
+                    {
+                        SetKeyboardFocus(M3D_APP);
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if (!m_isConsoleAllowed)
+                    {
+                        return 1;
+                    }
+                    if (M3D_ENGINE_CFG.m_console)
+                    {
+                        SetKeyboardFocus(M3D_ENGINE_CFG.m_console);
+                        return 1;
+                    }
+                }
+                SetKeyboardFocus(nullptr);
+                return 1;
+            }
+
+            break;
         }
-        case 8:
+        case EV_KEY_UP:
         {
-            int res = 0;
-            if (M3dVideoPlayer->IsVideoPlaing() && ev.m_ushortEv[0] == 1)
+            if (M3dVideoPlayer->IsVideoPlaing() && ev.m_ushortEv[0] == KBD_ESC)
             {
                 M3dVideoPlayer->Stop();
                 res = 1;
             }
             if (m_waitForAnykey)
             {
-                RETRUXX_NOT_IMPLEMENTED;
+                m_timeFromLevelLoaded = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+                M3D_KERNEL->GetTimer().SetActiveState(1);
+                m_waitForAnykey = false;
+                res = 1;
             }
 
-            if (bAltEnterActive && (ev.m_ushortEv[0] == 4 || ev.m_ushortEv[0] == 2048 || ev.m_ushortEv[0] == 2052))
+            if (bAltEnterActive &&
+                (ev.m_ushortEv[0] == KBD_ENTER || ev.m_ushortEv[0] == KBD_LALT ||
+                 ev.m_ushortEv[0] == (KBD_LALT | KBD_ENTER)))
             {
                 bAltEnterActive = 0;
                 res = 1;
             }
+            // TODO: check this
             if (bCtrlShiftActive && (ev.m_ushortEv[0] & 0xA000u) != 0)
             {
                 bCtrlShiftActive = 0;
                 return 1;
             }
+
             if (!res)
             {
                 break;
             }
             return res;
         }
-        case 0xA:
-        case 0xB:
-        case 0xC:
+        case EV_MOUSE_LBTN:
+        case EV_MOUSE_RBTN:
+        case EV_MOUSE_MBTN:
         {
             if (!m_waitForAnykey)
             {
@@ -1199,7 +1244,33 @@ namespace m3d
             break;
         }
         }
-        if ((ev.m_eventType == 7 || ev.m_eventType == 8) && m_focusKbdEntity != nullptr)
+
+        if (ev.m_eventType != EV_KEY_DOWN && ev.m_eventType != EV_KEY_UP || m_focusKbdEntity == nullptr ||
+            m_focusKbdEntity == this)
+        {
+            if (m_focusKbdEntity && m_focusKbdEntity != this && m_focusKbdEntity->HandleEvent(ev) != 0)
+            {
+                return 1;
+            }
+
+            if (ev.m_eventType != EV_MOUSE_WHEEL)
+            {
+                return WndStation::ProcessEvent(ev);
+            }
+
+            if (m_focusKbdEntity != M3D_ENGINE_CFG.m_console)
+            {
+                return WndStation::ProcessEvent(ev);
+            }
+
+            res = M3D_ENGINE_CFG.m_console->HandleEvent(ev);
+            if (!res)
+                return WndStation::ProcessEvent(ev);
+        }
+        return res;
+
+        /*
+        if ((ev.m_eventType == EV_KEY_DOWN || ev.m_eventType == EV_KEY_UP) && m_focusKbdEntity != nullptr)
         {
             return ProcessEvent(ev);
         }
@@ -1239,6 +1310,7 @@ namespace m3d
         bCtrlShiftActive = true;
         ChangeLanguage();
         return 1;
+        */
     }
 
     void Application::doneProcTexThread()
@@ -1330,9 +1402,7 @@ namespace m3d
         return m_lastPos;
     }
 
-    Application::MouseInfo::MouseInfo() :
-        m_deltaDuringGameFrame(0, 0),
-        m_lastPos(0, 0)
+    Application::MouseInfo::MouseInfo() : m_deltaDuringGameFrame(0, 0), m_lastPos(0, 0)
     {
     }
 
@@ -1466,9 +1536,8 @@ namespace m3d
         CVector myOrg = o;
         CVector camOrg = M3D_RENDERER->MatGetOrgInv();
         auto oa = sqrt(
-            (myOrg.z - camOrg.z) * (myOrg.z - camOrg.z)
-            + (myOrg.y - camOrg.y) * (myOrg.y - camOrg.y)
-            + (myOrg.x - camOrg.x) * (myOrg.x - camOrg.x));
+            (myOrg.z - camOrg.z) * (myOrg.z - camOrg.z) + (myOrg.y - camOrg.y) * (myOrg.y - camOrg.y) +
+            (myOrg.x - camOrg.x) * (myOrg.x - camOrg.x));
 
         CVector r, u, f;
         M3D_RENDERER->MatGetBasis(r, u, f);
@@ -1494,7 +1563,7 @@ namespace m3d
 
     void Application::PutSplashCallBack(int proc, void* data)
     {
-        M3D_APP->PutSplash(proc, *(const char**)data);
+        M3D_APP->PutSplash(proc, *(char const**)data);
     }
 
     void Application::AllowRendering()
@@ -1594,9 +1663,10 @@ namespace m3d
 
     bool Application::LoadServers(CStr const& filename, bool bQuiet)
     {
-        struct {
+        struct
+        {
             m3d::DataServer* m_server;
-            const char* m_name;
+            char const* m_name;
             CStr m_diz;
         } servers[9];
 
@@ -1642,7 +1712,7 @@ namespace m3d
             }
 
             ref_ptr node = xmlFile->CreateNode();
-            for (const auto& server : servers)
+            for (auto const& server : servers)
             {
                 auto loadingSplash = GetStringByStringId0("Loading") + " " + server.m_diz;
                 if (bQuiet)
@@ -1697,9 +1767,10 @@ namespace m3d
 
     void Application::PostLoadServers()
     {
-        struct {
+        struct
+        {
             m3d::DataServer* m_server;
-            const char* m_name;
+            char const* m_name;
             CStr m_diz;
         } servers[9];
 
@@ -1938,10 +2009,11 @@ namespace m3d
             word = "";
             nextWordPos = -1;
 
-            const char* srcStr = src.c_str();
+            char const* srcStr = src.c_str();
             int srcLen = src.length();
 
-            if (i < 0 || i >= srcLen) {
+            if (i < 0 || i >= srcLen)
+            {
                 nextWordPos = -1;
                 return;
             }
@@ -1949,7 +2021,7 @@ namespace m3d
             if (wrapFlags == TW_CHAR_WRAP)
             {
                 // Character-based wrapping
-                nextWordPos = 1; // Default: single character word
+                nextWordPos = 1;  // Default: single character word
 
                 if (!IsEscSymbolBeforeSymbol(src, i))
                 {
@@ -1989,7 +2061,8 @@ namespace m3d
                 // Word-based wrapping (space-separated)
                 int v8 = 0;
 
-                while (true) {
+                while (true)
+                {
                     // Find next space or pipe character
                     int foundPos = src.findOneOf(" |", v8 + i);
 
@@ -2024,7 +2097,7 @@ namespace m3d
                     }
 
                     // Escaped pipe - continue searching
-                    if (foundPos + i+ 1 >= srcLen)
+                    if (foundPos + i + 1 >= srcLen)
                     {
                         nextWordPos = -1;
                         break;
@@ -2043,7 +2116,7 @@ namespace m3d
                     char boundaryChar = srcStr[i + nextWordPos];
                     if (boundaryChar == ' ' && nextWordPos == 0)
                     {
-                        nextWordPos = 1; // Single space word
+                        nextWordPos = 1;  // Single space word
                     }
                 }
             }
@@ -2066,10 +2139,10 @@ namespace m3d
             {
                 // TODO: check this
                 // Extract substring of specified length
-                word = src.substr(i, nextWordPos+i);
+                word = src.substr(i, nextWordPos + i);
             }
         }
-    }
+    }  // namespace
 
     int Application::GetTextFit(CStr const& strText, PointBase<float>& size, float maxX, TextWrapFlags flags)
     {
@@ -2096,7 +2169,7 @@ namespace m3d
         int textLen = src.length();
         int currentPos = 0;
 
-        float availableWidth = maxX + 0.01f; // Small epsilon
+        float availableWidth = maxX + 0.01f;  // Small epsilon
 
         while (currentPos < textLen)
         {
@@ -2131,7 +2204,8 @@ namespace m3d
                 {
                     currentPos = newPos + 1;
                 }
-                else {
+                else
+                {
                     currentPos = newPos;
                 }
             }
@@ -2249,7 +2323,7 @@ namespace m3d
         float maxWidth = 0.0f;
         float totalTextHeight = 0.0f;
 
-        for (const auto& formattedLine : linesOfText)
+        for (auto const& formattedLine : linesOfText)
         {
             PointBase<float> lineSize;
             if (formattedLine.m_text.c_str()[0] != '\0')
@@ -2341,7 +2415,15 @@ namespace m3d
         }
     }
 
-    int Application::GetTextExtent(CStr const& str, PointBase<float>& size, int fid, BoundsBase<float>* csz, int* minc, int* maxc, CStr* leftInvisibleSubstr, CStr* rightInvisibleSubstr)
+    int Application::GetTextExtent(
+        CStr const& str,
+        PointBase<float>& size,
+        int fid,
+        BoundsBase<float>* csz,
+        int* minc,
+        int* maxc,
+        CStr* leftInvisibleSubstr,
+        CStr* rightInvisibleSubstr)
     {
         // Initialize output parameters if provided
         if (leftInvisibleSubstr && !leftInvisibleSubstr->empty())
@@ -2503,10 +2585,16 @@ namespace m3d
 
     int Application::DrawTextRelT(float, float, unsigned, CStr const&, unsigned, int)
     {
-        RETRUXX_NOT_IMPLEMENTED; 
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int Application::FormatText(retruxx::vector<ui::FormattedLine>& linesOfText, PointBase<float> const& at, CStr const& textIn, ui::DrawInfo const& di, TextWrapFlags wrapFlags, TextFormatFlags formatFlags)
+    int Application::FormatText(
+        retruxx::vector<ui::FormattedLine>& linesOfText,
+        PointBase<float> const& at,
+        CStr const& textIn,
+        ui::DrawInfo const& di,
+        TextWrapFlags wrapFlags,
+        TextFormatFlags formatFlags)
     {
         // TODO: generated code
         CStr src = textIn;
@@ -2547,7 +2635,7 @@ namespace m3d
         float maxWidth = availableWidth + 0.01f;
 
         // Get source text length
-        const char* srcText = src.c_str();
+        char const* srcText = src.c_str();
         int textLen = srcText ? strlen(srcText) : 0;
         int currentPos = 0;
 
@@ -2726,7 +2814,8 @@ namespace m3d
         } while (currentPos < textLen);
 
         // Handle any remaining text in the line buffer
-        if (line.c_str()[0] != '\0') {
+        if (line.c_str()[0] != '\0')
+        {
             m3d::ui::FormattedLine formattedLine;
             formattedLine.m_origin = origin;
             formattedLine.m_text = line;
@@ -2767,7 +2856,7 @@ namespace m3d
             m_focusKbdEntity = this;
             m_strWindowTitle = "retruxx - release version build v0.01";
 
-            char buf[0x400] = { 0 };
+            char buf[0x400] = {0};
             ::GetCurrentDirectoryA(sizeof(buf), buf);
             m_startupFolder = buf;
             ::GetModuleFileNameA(GetModuleHandleA(NULL), buf, sizeof(buf));
@@ -2818,7 +2907,12 @@ namespace m3d
             m_profiler_Render = m_profilerStack.AddProfiler("Render", 30);
             m_profiler_UiRender = m_profilerStack.AddProfiler(" - UI Render", 30);
 
-            g_Kernel->GetScriptServer().registerGlobalFunction(n_GetComputerName, "GetComputerName", "const char*", "", "returns network name for the current computer");
+            g_Kernel->GetScriptServer().registerGlobalFunction(
+                n_GetComputerName,
+                "GetComputerName",
+                "const char*",
+                "",
+                "returns network name for the current computer");
 
             m_cameraController = new CameraController;
             m_cinematic = dynamic_cast<Cinematic*>(g_Kernel->New("Cinematic"));
@@ -2831,7 +2925,6 @@ namespace m3d
 
     void Application::sysError(CStr const& whence, CStr const& assertion)
     {
-
         RETRUXX_NOT_IMPLEMENTED;
         auto const description = "Assertion failed at " + whence + "\nexpression: " + assertion;
         M3D_LOG_INFO(description);
@@ -2865,10 +2958,19 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Application::PutSprite2Rel(float x1, float y1, float tu1, float tv1, float x2, float y2, float tu2, float tv2, unsigned c)
+    void Application::PutSprite2Rel(
+        float x1,
+        float y1,
+        float tu1,
+        float tv1,
+        float x2,
+        float y2,
+        float tu2,
+        float tv2,
+        unsigned c)
     {
         this->m_renderer->RelToAbs(x1, y1);
-        this->m_renderer->RelToAbs( x2, y2);
+        this->m_renderer->RelToAbs(x2, y2);
         m3d::Application::PutSprite2Abs(x1, y1, tu1, tv1, x2, y2, tu2, tv2, c);
     }
 
@@ -2950,7 +3052,6 @@ namespace m3d
         int v3 = 0;  // position index
         int v4 = 8;  // some offset counter
 
-
         while (true)
         {
             int v6 = line.length();
@@ -2962,7 +3063,8 @@ namespace m3d
 
             if (v7 == '#')
             {
-                if (bEsc) {
+                if (bEsc)
+                {
                     bEsc = false;
                     v3++;
                     v4++;
@@ -2983,7 +3085,8 @@ namespace m3d
                 }
 
                 int v8 = v6;
-                if (v8 <= v4) {
+                if (v8 <= v4)
+                {
                     v3++;
                     v4++;
                     continue;
@@ -3072,7 +3175,25 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Application::PutSprite2Abs(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float tu1, float tv1, float tu2, float tv2, float tu3, float tv3, float tu4, float tv4, float zval, unsigned c)
+    void Application::PutSprite2Abs(
+        float x1,
+        float y1,
+        float x2,
+        float y2,
+        float x3,
+        float y3,
+        float x4,
+        float y4,
+        float tu1,
+        float tv1,
+        float tu2,
+        float tv2,
+        float tu3,
+        float tv3,
+        float tu4,
+        float tv4,
+        float zval,
+        unsigned c)
     {
         //TODO: check this and refactor!!!
         int vofs = 0;
@@ -3114,7 +3235,16 @@ namespace m3d
         g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLESTRIP, vofs, 2);
     }
 
-    void Application::PutSprite2Abs(float x1, float y1, float tu1, float tv1, float x2, float y2, float tu2, float tv2, unsigned int c)
+    void Application::PutSprite2Abs(
+        float x1,
+        float y1,
+        float tu1,
+        float tv1,
+        float x2,
+        float y2,
+        float tu2,
+        float tv2,
+        unsigned int c)
     {
         PutSprite2Abs(x1, y2, x1, y1, x2, y2, x2, y1, tu1, tv2, tu1, tv1, tu2, tv2, tu2, tv1, 0.0, c);
     }
@@ -3177,9 +3307,9 @@ namespace m3d
 
     void Application::ClearViewportToBlack()
     {
-        //TODO: check this and refactor 
-        int v2; // edi
-        int v3; // esi
+        //TODO: check this and refactor
+        int v2;  // edi
+        int v3;  // esi
 
         auto& config = g_Kernel->GetEngineCfg();
         if (IsWindow(config.m_mainWnd))
@@ -3234,7 +3364,12 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int Application::DrawTextRelClip(PointBase<float> const& at , CStr const& str, ui::DrawInfo const& di, TextWrapFlags wrapFlag, TextFormatFlags formatFlag)
+    int Application::DrawTextRelClip(
+        PointBase<float> const& at,
+        CStr const& str,
+        ui::DrawInfo const& di,
+        TextWrapFlags wrapFlag,
+        TextFormatFlags formatFlag)
     {
         enterFontRender();
         StartQuads(rend::VERTEX_XYZWCT1);
@@ -3305,11 +3440,13 @@ namespace m3d
     {
         if (bShow)
         {
-            while (ShowCursor(1) < 0);
+            while (ShowCursor(1) < 0)
+                ;
         }
         else
         {
-            while (ShowCursor(0) >= 0);
+            while (ShowCursor(0) >= 0)
+                ;
         }
     }
 
@@ -3340,18 +3477,20 @@ namespace m3d
             M3D_RENDERER->SetToStream0(this->m_pointsVertsVb);
             if (m_flushQuadsShader)
             {
-                M3D_RENDERER->DrawIndexedPrimitiveEffect(rend::M3DPT_TRIANGLELIST, m_flushQuadsShader, 0, m_numPointsVerts, 0, 2 * (this->m_numPointsVerts / 4));
-            }
-            else
-            {
-                M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST,
+                M3D_RENDERER->DrawIndexedPrimitiveEffect(
+                    rend::M3DPT_TRIANGLELIST,
+                    m_flushQuadsShader,
                     0,
-                    this->m_numPointsVerts,
+                    m_numPointsVerts,
                     0,
                     2 * (this->m_numPointsVerts / 4));
             }
+            else
+            {
+                M3D_RENDERER->DrawIndexedPrimitive(
+                    rend::M3DPT_TRIANGLELIST, 0, this->m_numPointsVerts, 0, 2 * (this->m_numPointsVerts / 4));
+            }
             this->m_numPointsVerts = 0;
-
         }
     }
 
@@ -3407,7 +3546,7 @@ namespace m3d
         {
             GetGfxServer()->SetFont(GetGfxServer()->m_hieroglyphicFontId);
         }
-        
+
         ui::Font* fnt = GetGfxServer()->GetCurFont();
         if (!fnt)
         {
@@ -3425,13 +3564,14 @@ namespace m3d
             int leadingSpaces = 0;
             if (textLen > 0 && text[0] == '@')
             {
-                leadingSpaces = 9; // Skip command prefix
+                leadingSpaces = 9;  // Skip command prefix
             }
 
             // Count consecutive leading spaces
             for (int i = leadingSpaces; i < textLen; i++)
             {
-                if (text[i] != ' ') break;
+                if (text[i] != ' ')
+                    break;
                 leadingSpaces++;
                 lastLeadingSpacePos = i;
             }
@@ -3440,7 +3580,8 @@ namespace m3d
             int trailingSpaces = 0;
             for (int i = textLen - 1; i >= 0; i--)
             {
-                if (text[i] != ' ') break;
+                if (text[i] != ' ')
+                    break;
                 trailingSpaces++;
             }
 
@@ -3494,10 +3635,8 @@ namespace m3d
         BoundsBase<float> visibleBounds;
 
         // Check if text is completely outside clip region
-        if (textBounds.x0 + textBounds.width < clipRect.x0 ||
-            textBounds.x0 > clipRect.x0 + clipRect.width ||
-            textBounds.y0 + textBounds.height < clipRect.y0 ||
-            textBounds.y0 > clipRect.y0 + clipRect.height)
+        if (textBounds.x0 + textBounds.width < clipRect.x0 || textBounds.x0 > clipRect.x0 + clipRect.width ||
+            textBounds.y0 + textBounds.height < clipRect.y0 || textBounds.y0 > clipRect.y0 + clipRect.height)
         {
             // Text is completely invisible
             return 0;
@@ -3506,13 +3645,14 @@ namespace m3d
         // Calculate visible portion
         visibleBounds.x0 = std::max(textBounds.x0, clipRect.x0);
         visibleBounds.y0 = std::max(textBounds.y0, clipRect.y0);
-        visibleBounds.width = std::min(textBounds.x0 + textBounds.width, clipRect.x0 + clipRect.width) - visibleBounds.x0;
-        visibleBounds.height = std::min(textBounds.y0 + textBounds.height, clipRect.y0 + clipRect.height) - visibleBounds.y0;
+        visibleBounds.width =
+            std::min(textBounds.x0 + textBounds.width, clipRect.x0 + clipRect.width) - visibleBounds.x0;
+        visibleBounds.height =
+            std::min(textBounds.y0 + textBounds.height, clipRect.y0 + clipRect.height) - visibleBounds.y0;
 
-        bool doClip = (textBounds.x0 != visibleBounds.x0 ||
-            textBounds.y0 != visibleBounds.y0 ||
-            textBounds.width != visibleBounds.width ||
-            textBounds.height != visibleBounds.height);
+        bool doClip =
+            (textBounds.x0 != visibleBounds.x0 || textBounds.y0 != visibleBounds.y0 ||
+             textBounds.width != visibleBounds.width || textBounds.height != visibleBounds.height);
 
         // Handle text clipping
         int firstInvisibleChar = textLen;
@@ -3548,8 +3688,15 @@ namespace m3d
             }
 
             // Get clipped text portions
-            GetTextExtent(text, sz, -1, &textSpaceClip, &firstVisibleChar,
-                &firstInvisibleChar, &leftInvisibleSubstr, &rightInvisibleSubstr);
+            GetTextExtent(
+                text,
+                sz,
+                -1,
+                &textSpaceClip,
+                &firstVisibleChar,
+                &firstInvisibleChar,
+                &leftInvisibleSubstr,
+                &rightInvisibleSubstr);
         }
 
         // Calculate starting position
@@ -3560,7 +3707,8 @@ namespace m3d
             for (int i = 0; i < leftInvisibleSubstr.length(); i++)
             {
                 unsigned char ch = leftInvisibleSubstr.c_str()[i];
-                if (ch < 32) continue;
+                if (ch < 32)
+                    continue;
 
                 ui::Font::SymbolInfo* sym = fnt->m_symbols[ch];
                 if (sym)
@@ -3625,14 +3773,16 @@ namespace m3d
         {
             // Count spaces for justification
             int spaceCount = 0;
-            for (int i = lastLeadingSpacePos + 1; i < textLen; i++) {
+            for (int i = lastLeadingSpacePos + 1; i < textLen; i++)
+            {
                 if (text.c_str()[i] == ' ')
                 {
                     spaceCount++;
                 }
             }
 
-            if (spaceCount > 0) {
+            if (spaceCount > 0)
+            {
                 // Calculate extra space to distribute
                 PointBase<float> absSz = sz;
                 M3D_RENDERER->RelToAbs(absSz.x, absSz.y);
@@ -3675,7 +3825,7 @@ namespace m3d
                     colorStr[8] = '\0';
                     sscanf(colorStr, "%x", &clr);
                 }
-                charIndex+=9;
+                charIndex += 9;
                 continue;
             }
 
@@ -3723,7 +3873,6 @@ namespace m3d
             float charWidth = sym->m_precalcedABCWidth;
             float glyphWidth = sym->m_precalcedGlyphSz.x;
             float glyphHeight = sym->m_precalcedGlyphSz.y;
-
 
             // Adjust space width for justified text
             if (ch == ' ' && charIndex > lastLeadingSpacePos)
@@ -3852,7 +4001,6 @@ namespace m3d
         }
 
         return 1;
-
     }
 
     unsigned long Application::texGenThread(void*)
@@ -3887,11 +4035,13 @@ namespace m3d
         {
             auto const& cursor = GetCurrentCursor();
             g_pApp->m_renderer->SetupDXCursor(cursor.m_tex, cursor.m_spot.x, cursor.m_spot.y, 0);
-            while (::ShowCursor(TRUE) < 0);
+            while (::ShowCursor(TRUE) < 0)
+                ;
         }
         else
         {
-            while (::ShowCursor(FALSE) >= 0);
+            while (::ShowCursor(FALSE) >= 0)
+                ;
         }
         return 1;
     }
@@ -3964,7 +4114,14 @@ namespace m3d
         return m_cameraController;
     }
 
-    void Application::EnqueueMessage(int msg, int param0, int param1, int p2, int p3, CStr const& param4, AIParam const& param5)
+    void Application::EnqueueMessage(
+        int msg,
+        int param0,
+        int param1,
+        int p2,
+        int p3,
+        CStr const& param4,
+        AIParam const& param5)
     {
         Event ev;
         ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime() * 0.001;
@@ -3979,7 +4136,7 @@ namespace m3d
 
         auto head = m_eventsQueueHead;
         auto newHead = head + 1;
-        if (newHead >=5000)
+        if (newHead >= 5000)
         {
             newHead = 0;
         }
@@ -3987,7 +4144,7 @@ namespace m3d
         {
             m_eventsQueue[head] = ev;
             m_eventsQueueHead = newHead;
-        }   
+        }
     }
 
     void Application::PutSpriteRel(float x1, float y1, float x2, float y2, unsigned c)
@@ -4021,4 +4178,4 @@ namespace m3d
     {
         return m_mouseX;
     }
-}
+}  // namespace m3d

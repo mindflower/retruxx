@@ -713,29 +713,9 @@ namespace m3d
         return 1;
     }
 
-    // TODO: generated code
-    // Key code constants
-    namespace KeyCodes
-    {
-        int const KEY_LSHIFT = 42;
-        int const KEY_RSHIFT = 54;
-        int const KEY_SHIFT = 263;  // Combined shift
-
-        int const KEY_LALT = 56;
-        int const KEY_RALT = 184;
-        int const KEY_ALT = 262;  // Combined alt
-
-        int const KEY_LCTRL = 29;
-        int const KEY_RCTRL = 157;
-        int const KEY_CTRL = 261;  // Combined control
-
-        int const INVALID_KEY = -1;
-    }  // namespace KeyCodes
-
     int GameImpulse::FilterShifts(int& keyToSearchBy, bool& state)
     {
         // TODO: generated code
-        using namespace KeyCodes;
         if (!m_isInited)
         {
             return false;
@@ -757,7 +737,7 @@ namespace m3d
         int keyCode = keyToSearchBy;
 
         // Check for invalid key
-        if (keyCode == INVALID_KEY)
+        if (keyCode == -1)
         {
             return false;
         }
@@ -786,7 +766,7 @@ namespace m3d
 
             // Update previous state and modify output
             prevS_1 = currentShiftState;
-            keyToSearchBy = KEY_SHIFT;
+            keyToSearchBy = (KEY_RSHIFT | KEY_LSHIFT);
             state = currentShiftState;
             return true;
         }
@@ -815,20 +795,20 @@ namespace m3d
 
             // Update previous state and modify output
             prevS_0 = currentAltState;
-            keyToSearchBy = KEY_ALT;
+            keyToSearchBy = (KEY_RALT | KEY_LALT);
             state = currentAltState;
             return true;
         }
 
         // Handle Control keys (left and right)
-        if (keyCode == KEY_LCTRL || keyCode == KEY_RCTRL)
+        if (keyCode == KEY_LCONTROL || keyCode == KEY_RCONTROL)
         {
             // Update individual control key state
-            if (keyCode == KEY_LCTRL)
+            if (keyCode == KEY_LCONTROL)
             {
                 downL = state;
             }
-            else if (keyCode == KEY_RCTRL)
+            else if (keyCode == KEY_RCONTROL)
             {
                 downR = state;
             }
@@ -840,7 +820,7 @@ namespace m3d
             if (currentControlState != prevS)
             {
                 // Update previous state and modify output
-                keyToSearchBy = KEY_CTRL;
+                keyToSearchBy = (KEY_LCONTROL | KEY_RCONTROL);
                 prevS = currentControlState;
                 state = currentControlState;
                 return true;

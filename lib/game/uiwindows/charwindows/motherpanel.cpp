@@ -8,6 +8,7 @@
 #include <game/m3dgame.h>
 #include <game/uimanager/uidefs.h>
 #include <game/music/townmusicmanager.h>
+#include <server/server.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MotherPanel, LeaveTown)
 {
@@ -380,7 +381,22 @@ bool MotherPanel::InTown() const
 
 void MotherPanel::OnInventory()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        std::vector<std::pair<MotherPanel::ChildPanelId, int>> panels;
+        if (M3D_APP->m_pInterfaceManager->GetCurrentTown() && !IsPanelPresent(4))
+        {
+            panels.push_back({PANEL_TOWN, 4});
+        }
+
+        panels.push_back({PANEL_RIGHT, 63});
+        panels.push_back({PANEL_LEFT, 64});
+        panels.push_back({PANEL_VIDEO, 77});
+
+        // TODO: check this
+        ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_INVENTORY);
+        ShowPanels(panels, {PANEL_TOWN});
+    }
 }
 
 int MotherPanel::RemoveChildPanelById(ChildPanelId)
