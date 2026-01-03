@@ -157,7 +157,20 @@ void GroundWnd::UpdateGroundPicture()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int GroundWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
+int GroundWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned idFrom, unsigned message, m3d::AIParam const& data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (OnWndNotify(from, idFrom, message, data))
+    {
+        return 1;
+    }
+    if (idFrom == 200 && message == 1)
+    {
+        PickUpAll();
+        return 1;
+    }
+    return 0;
 }

@@ -48,7 +48,7 @@ void MotherPanelTabButton::Select(bool bSelect)
 
 bool MotherPanelTabButton::IsSelected() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_bSelected;
 }
 
 m3d::Object* MotherPanelTabButton::Clone()
@@ -242,9 +242,13 @@ void MotherPanelTabButton::UpdateTooltip()
 bool MotherPanelTabButton::CanApplyMode(Mode mode) const
 {
     if (mode == MODE_IN_FIELD)
+    {
         return M3D_APP->m_pInterfaceManager->GetCurrentTown() == nullptr;
+    }
     if (mode == MODE_IN_TOWN)
+    {
         return GetBuilding(MODE_IN_TOWN) != nullptr;
+    }
     return false;
 }
 

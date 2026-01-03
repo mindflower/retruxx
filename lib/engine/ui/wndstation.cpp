@@ -219,7 +219,7 @@ namespace m3d
         {
             auto childBounds = clipTo;
             DrawInfo info{};
-            OnTick(M3D_KERNEL->GetTimer().GetCurTimeUnscaled(), M3D_KERNEL->GetTimer().GetLastFrameTimeUnscaled());
+            curWnd->OnTick(M3D_KERNEL->GetTimer().GetCurTimeUnscaled(), M3D_KERNEL->GetTimer().GetLastFrameTimeUnscaled());
             if (curWnd->m_bounds.width + curWnd->m_bounds.x0 - curWnd->m_bounds.x0 != 0.0 ||
                 curWnd->m_bounds.y0 - (curWnd->m_bounds.height + curWnd->m_bounds.y0) != 0.0)
             {
@@ -288,7 +288,9 @@ namespace m3d
 
         int WndStation::CheckForMouseClick(Wnd*, bool, PointBase<float> const*)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement WndStation::CheckForMouseClick
+            // RETRUXX_NOT_IMPLEMENTED;
+            return 0;
         }
 
         Wnd* WndStation::GetWndForMousePoint(Wnd* curWnd, PointBase<float> const& pt, bool affectAll)

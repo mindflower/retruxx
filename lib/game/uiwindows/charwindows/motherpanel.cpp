@@ -642,7 +642,20 @@ void MotherPanel::OnTalkWithNpc()
 
 void MotherPanel::OnQuestLog()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        std::vector<std::pair<MotherPanel::ChildPanelId, int>> panels;
+        if (M3D_APP->m_pInterfaceManager->GetCurrentTown() && !IsPanelPresent(4))
+        {
+            panels.push_back({PANEL_TOWN, 4});
+        }
+
+        panels.push_back({PANEL_PALM, 15});
+
+        // TODO: check this
+        ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_QUESTLOG);
+        ShowPanels(panels, {PANEL_TOWN});
+    }
 }
 
 bool MotherPanel::InTown() const
@@ -1018,9 +1031,12 @@ void MotherPanel::OnStartTrade(void*)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void MotherPanel::OnTabBtnClick(m3d::ui::Wnd*, int)
+void MotherPanel::OnTabBtnClick(m3d::ui::Wnd* wndFrom, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (auto* tab = RT_DYNCAST(wndFrom, MotherPanelTabButton); tab && !tab->IsSelected())
+    {
+        SetCurTab(tab->GetTabId(), true);
+    }
 }
 
 int MotherPanel::CreateHackedWorkshopVehicle()

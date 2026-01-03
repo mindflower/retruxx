@@ -378,7 +378,6 @@ namespace m3d
                     PURPOSE_UNKNOWN = 2,
                 };
 
-                AnimationInfo(m3d::ui::Wnd::AnimationInfo const& __that);
                 AnimationInfo();
                 ~AnimationInfo();
                 void Setup(PointBase<float> const&, PointBase<float> const&, float, float, unsigned int);

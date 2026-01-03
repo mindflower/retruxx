@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <core/aiparam.h>
 #include <core/kernel.h>
+#include <core/timer.h>
 #include <core/log.h>
 #include "core/ini.h"
 #include <core/ref_ptr.h>
@@ -353,11 +354,339 @@ namespace m3d
             RETRUXX_NOT_IMPLEMENTED;
         }
 
-        int Wnd::StartAnimation(AnimationInfo const&, bool)
+        int Wnd::StartAnimation(AnimationInfo const& animationInfo, bool interpolateWithPrevious)
         {
-            // TODO: implement Wnd::StartAnimation
-            // RETRUXX_NOT_IMPLEMENTED;
-            return 1;
+            // TODO: generated code Wnd::StartAnimation
+            // Create a copy of the current animation before modifying it
+            AnimationInfo prevAnimation = m_currentAnimation;
+
+            // Copy the new animation info
+            m_currentAnimation = animationInfo;
+
+            // Check if current animation is valid and enabled
+            if (m_currentAnimation.m_animationType != AnimationInfo::ANIMATIONTYPE_INVALID &&
+                m_currentAnimation.m_bEnabled)
+            {
+                // Get the station this window belongs to
+                WndStation* station = GetStation();
+
+                // Check if window is a child of the station
+                if (!m3d::Object::IsChildOf(station))
+                {
+                    // Invalid animation - window not attached to station
+                    m_currentAnimation.m_animationType = AnimationInfo::ANIMATIONTYPE_INVALID;
+                    m_currentAnimation.m_purpose = AnimationInfo::PURPOSE_UNKNOWN;
+                    return false;
+                }
+            }
+            else
+            {
+                // Animation is invalid or disabled
+                return false;
+            }
+
+            if (m_currentAnimation.m_bImmediate)
+            {
+                // Immediate animation - jump to end position
+                m_bounds.x0 = m_currentAnimation.m_endPt.x;
+                m_bounds.y0 = m_currentAnimation.m_endPt.y;
+                OnEndAnimation(false);
+            }
+            else
+            {
+                // Animated transition
+                auto* parent = RT_DYNCAST(GetParent(), Wnd);
+                if (!parent)
+                    return false;
+
+                // Initialize animation parameters
+                m_currentAnimation.m_curSpeed = m_currentAnimation.m_startSpeed;
+                m_currentAnimation.m_startTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+
+                // Get parent bounds for relative positioning
+                BoundsBase<float> parentB = parent->GetBounds();
+
+                // Handle different animation types
+                switch (m_currentAnimation.m_animationType)
+                {
+                case AnimationInfo::ANIMATIONTYPE_USER:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_LEFT:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = parentB.width;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
+                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFT:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
+                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
+                    }
+                    m_currentAnimation.m_endPt.x = 0.0f - m_bounds.width;
+                    m_currentAnimation.m_endPt.y = m_bounds.y0;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_RIGHT:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = 0.0f - m_bounds.width;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
+                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHT:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
+                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
+                    }
+                    m_currentAnimation.m_endPt.x = parentB.width;
+                    m_currentAnimation.m_endPt.y = m_bounds.y0;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_TOP:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = parentB.height;
+                    }
+                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
+                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_TOP:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
+                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
+                    }
+                    m_currentAnimation.m_endPt.x = m_bounds.x0;
+                    m_currentAnimation.m_endPt.y = 0.0f - m_bounds.height;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_BOTTOM:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = 0.0f - m_bounds.height;
+                    }
+                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
+                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_BOTTOM:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
+                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
+                    }
+                    m_currentAnimation.m_endPt.x = m_bounds.x0;
+                    m_currentAnimation.m_endPt.y = parentB.height;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_LEFTTOP:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = parentB.width;
+                        m_currentAnimation.m_startPt.y = parentB.height;
+                    }
+                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
+                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTTOP:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
+                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
+                    }
+                    m_currentAnimation.m_endPt.x = 0.0f - m_bounds.width;
+                    m_currentAnimation.m_endPt.y = 0.0f - m_bounds.height;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_LEFTBOTTOM:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = parentB.width;
+                        m_currentAnimation.m_startPt.y = 0.0f - m_bounds.height;
+                    }
+                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
+                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTBOTTOM:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
+                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
+                    }
+                    m_currentAnimation.m_endPt.x = 0.0f - m_bounds.width;
+                    m_currentAnimation.m_endPt.y = parentB.height;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_RIGHTTOP:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = 0.0f - m_bounds.width;
+                        m_currentAnimation.m_startPt.y = parentB.height;
+                    }
+                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
+                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTTOP:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
+                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
+                    }
+                    m_currentAnimation.m_endPt.x = parentB.width;
+                    m_currentAnimation.m_endPt.y = 0.0f - m_bounds.height;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_RIGHTBOTTOM:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = 0.0f - m_bounds.width;
+                        m_currentAnimation.m_startPt.y = 0.0f - m_bounds.height;
+                    }
+                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
+                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
+                    break;
+
+                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTBOTTOM:
+                    if (interpolateWithPrevious)
+                    {
+                        m_currentAnimation.m_startPt.x = m_bounds.x0;
+                        m_currentAnimation.m_startPt.y = m_bounds.y0;
+                    }
+                    else
+                    {
+                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
+                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
+                    }
+                    m_currentAnimation.m_endPt.x = parentB.width;
+                    m_currentAnimation.m_endPt.y = parentB.height;
+                    break;
+
+                default:
+                    break;
+                }
+
+                // Set current position to animation start point
+                m_bounds.x0 = m_currentAnimation.m_startPt.x;
+                m_bounds.y0 = m_currentAnimation.m_startPt.y;
+
+                // Handle animation sound
+                StopAnimationMoveSound();
+                if (m_currentAnimation.m_bSoundMoveEnabled)
+                {
+                    CStr soundName;
+                    CStr const* pSoundName = nullptr;
+
+                    if (m_currentAnimation.m_soundMoveName.empty())
+                    {
+                        soundName = "CONTROL_SOUND_ANIMATION_MOVE_DEFAULT";
+                        pSoundName = &soundName;
+                    }
+                    else
+                    {
+                        pSoundName = &m_currentAnimation.m_soundMoveName;
+                    }
+
+                    m_animationSoundMoveChannelId = m_gfx->PlayControlSound(*pSoundName, 0);
+                }
+            }
+
+            return true;
         }
 
         unsigned Wnd::GetColor() const
@@ -1184,14 +1513,121 @@ namespace m3d
             }
         }
 
-        int Wnd::ProcessAnimation(int, int)
+        int Wnd::ProcessAnimation(int curTime, int deltaTime)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: generated code Wnd::ProcessAnimation
+            // Check if animation is valid and enabled
+            if (m_currentAnimation.m_animationType == AnimationInfo::ANIMATIONTYPE_INVALID ||
+                !m_currentAnimation.m_bEnabled)
+            {
+                return false;
+            }
+
+            // Check if delay time has passed
+            if (curTime - m_currentAnimation.m_startTime >= m_currentAnimation.m_delayTime)
+            {
+                // Get animation points
+                float const endX = m_currentAnimation.m_endPt.x;
+                float const endY = m_currentAnimation.m_endPt.y;
+                float const startX = m_currentAnimation.m_startPt.x;
+                float const startY = m_currentAnimation.m_startPt.y;
+
+                // Calculate current position delta
+                float const deltaX = endX - m_bounds.x0;
+                float const deltaY = endY - m_bounds.y0;
+
+                // Update speed with acceleration
+                float accelerationEffect = (m_currentAnimation.m_acceleration * static_cast<float>(deltaTime)) * 0.001f;
+                m_currentAnimation.m_curSpeed += accelerationEffect;
+
+                // Calculate movement for this frame
+                float const speedFactor = (m_currentAnimation.m_curSpeed * static_cast<float>(deltaTime)) * 0.001f;
+
+                // Normalize movement vector
+                float distance = sqrtf(deltaX * deltaX + deltaY * deltaY + 1.1920929e-7f);
+                if (distance < 1.0e-12f)
+                {
+                    // Already at destination
+                    m_bounds.x0 = endX;
+                    m_bounds.y0 = endY;
+                    OnEndAnimation(false);
+                    return true;
+                }
+
+                float invDistance = 1.0f / distance;
+
+                // Calculate new position
+                float newX = m_bounds.x0 + (deltaX * invDistance) * speedFactor;
+                float newY = m_bounds.y0 + (deltaY * invDistance) * speedFactor;
+
+                // Check if animation should end
+                if (startX == endX && startY == endY)
+                {
+                    // Start and end points are the same
+                    m_bounds.x0 = endX;
+                    m_bounds.y0 = endY;
+                    OnEndAnimation(false);
+                    return true;
+                }
+
+                // Calculate vector from new position to end point
+                float toEndX = endX - newX;
+                float toEndY = endY - newY;
+
+                // Calculate normalized direction vector to end point
+                float toEndDistance = sqrtf(toEndX * toEndX + toEndY * toEndY + 1.1920929e-7f);
+                float invToEndDistance = 1.0f / toEndDistance;
+                float normToEndX = toEndX * invToEndDistance;
+                float normToEndY = toEndY * invToEndDistance;
+
+                // Calculate normalized direction vector from start to end
+                float startToEndX = endX - startX;
+                float startToEndY = endY - startY;
+                float startToEndDistance = sqrtf(startToEndX * startToEndX + startToEndY * startToEndY + 1.1920929e-7f);
+                float invStartToEndDistance = 1.0f / startToEndDistance;
+                float normStartToEndX = startToEndX * invStartToEndDistance;
+                float normStartToEndY = startToEndY * invStartToEndDistance;
+
+                // Check if we've passed the end point or are very close to it
+                float directionDifference = (normStartToEndX - normToEndX) * (normStartToEndX - normToEndX) +
+                    (normStartToEndY - normToEndY) * (normStartToEndY - normToEndY);
+
+                bool shouldEndAnimation = false;
+
+                if (directionDifference > 0.001f)
+                {
+                    // Direction has changed significantly (passed the end point)
+                    shouldEndAnimation = true;
+                }
+                else if (normToEndX * normToEndX + normToEndY * normToEndY <= 0.001f)
+                {
+                    // Very close to the end point
+                    shouldEndAnimation = true;
+                }
+
+                if (shouldEndAnimation)
+                {
+                    // Snap to end point and finish animation
+                    m_bounds.x0 = endX;
+                    m_bounds.y0 = endY;
+                    OnEndAnimation(false);
+                }
+                else
+                {
+                    // Update to interpolated position
+                    m_bounds.x0 = newX;
+                    m_bounds.y0 = newY;
+                }
+            }
+
+            return true;
         }
 
         Wnd* Wnd::CreateTooltipWnd()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // TODO: implement Wnd::CreateTooltipWnd
+            // RETRUXX_NOT_IMPLEMENTED;
+            return nullptr;
         }
 
         void Wnd::OnEndAnimation(bool bUrgent)
