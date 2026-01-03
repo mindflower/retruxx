@@ -9,9 +9,9 @@ m3d::Class* ChildPanel::GetClass() const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void ChildPanel::SetVehicleId(int)
+void ChildPanel::SetVehicleId(int vehicleId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleId = vehicleId;
 }
 
 int ChildPanel::GetVehicleId() const

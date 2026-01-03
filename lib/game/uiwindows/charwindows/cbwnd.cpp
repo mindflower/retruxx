@@ -1,6 +1,7 @@
 #include "cbwnd.h"
 #include "vehiclepartwnd.h"
 #include "core/log.h"
+#include <game/m3dgame.h>
 
 RT_CLASS_EXPORTS_BEGIN(CBWnd)
 RT_CLASS_EXPORTS_END;
@@ -23,9 +24,22 @@ int CBWnd::GetPartId() const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void CBWnd::SetVehicleId(int)
+void CBWnd::SetVehicleId(int vehicleId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: check this
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ChildPanel::SetVehicleId(vehicleId);
+        if (IsChildOf(M3D_APP))
+        {
+            FullUpdate();
+        }
+        if ((m_gameDataFlags & 1) != 0)
+        {
+            m_wndHidePictureBg->ShowWindow(vehicleId == -1);
+            m_wndDisabledBg->ShowWindow(vehicleId == -1);
+        }
+    }
 }
 
 m3d::Class* CBWnd::GetBaseClass()

@@ -152,9 +152,64 @@ void MotherPanel::OnEscape()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int MotherPanel::RemoveChildForce(m3d::Object*)
+int MotherPanel::RemoveChildForce(m3d::Object* wnd)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code MotherPanel::RemoveChildForce
+    // Store the window for later checks
+    // First, try to remove the child from the basic Wnd hierarchy
+    int const removalSuccess = m3d::ui::Wnd::RemoveChildForce(wnd);
+
+    // Check if the removed window is actually a ChildPanel and if removal was successful
+    if (wnd->IsKindOf(&ChildPanel::m_classChildPanel) && removalSuccess)
+    {
+        auto* childWnd = RT_DYNCAST(wnd, ChildPanel);
+        // Need to also remove the child panel from our internal panels map
+        // Search for this panel in our panels map
+        auto panelIter = m_panels.begin();
+        auto panelsEnd = m_panels.end();
+
+        for (; panelIter != panelsEnd; ++panelIter)
+        {
+            // Get the panel reference from the iterator
+            ref_ptr<ChildPanel> panelRef = panelIter->second;
+
+            // Check if this panel matches the one being removed
+            if (panelRef.get() == wnd)
+            {
+                // Found the panel in our map - remove it
+                m_panels.erase(panelIter);
+                break;
+            }
+        }
+
+        // If we found and removed the panel, reset its animations
+        if (wnd)
+        {
+            // Disable any show/hide animations for this panel
+            childWnd->SetOnShowAnimationImmediate(false);
+            childWnd->SetOnHideAnimationImmediate(false);
+        }
+
+        // Update UI state based on game data flags
+        if ((m_gameDataFlags & 1) != 0)  // Check if first flag is set
+        {
+            bool shouldShowDecorBar = false;
+
+            // Check if specific panels are still present
+            if (IsPanelPresent(ChildPanelId::PANEL_VIDEO) || IsPanelPresent(ChildPanelId::PANEL_TRADE_RIGHT))
+            {
+                shouldShowDecorBar = true;
+            }
+
+            // Update the decoration bar visibility
+            if (m_wndDecorBar)
+            {
+                m_wndDecorBar->ShowWindow(shouldShowDecorBar);
+            }
+        }
+    }
+
+    return removalSuccess;
 }
 
 MotherPanel::ChildPanelId MotherPanel::GetCurrentPanelIdByGuiId(int guiId) const

@@ -44,9 +44,14 @@ InventoryWnd::~InventoryWnd()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void InventoryWnd::SetVehicleId(int)
+void InventoryWnd::SetVehicleId(int vehicleId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ChildPanel::SetVehicleId(vehicleId);
+        m_wndCabin->SetVehicleId(vehicleId);
+        m_wndBasket->SetVehicleId(vehicleId);
+    }
 }
 
 m3d::Class* InventoryWnd::GetBaseClass()

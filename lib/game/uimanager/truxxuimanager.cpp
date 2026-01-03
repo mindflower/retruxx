@@ -1380,66 +1380,60 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
 
     switch (guiEventId)
     {
-    case IE_IMP_IM_UI_INVENTORY:
-    case IE_IMP_IM_UI_MENUBOOK:
-    case IE_IMP_IM_UI_QUESTLOG:
-    case IE_IMP_IM_UI_JOURNAL:
-    case IE_IMP_IM_UI_MAP:
-    case IE_IMP_IM_UI_VEHICLE_INFO:
-    case IE_EV_EV_KEYBINDINGS_CHANGED:
-    case IE_EV_EV_UI_END_WND_ANIMATION:
-    case IE_EV_UM_WEAPONGROUP_CHANGED:
-    case IE_EV_UM_KNOWN_LEVEL_ADDED:
-    case IE_EV_UM_PROFILES_LIST_CHANGED:
-    case IE_EV_UM_CUR_PROFILE_PARAM_CHANGED:
-    case IE_EV_UM_LOADGAME:
-    case IE_EV_UM_SHOW_CURSOR:
-    case IE_EV_SM_REPOSITORY_CHANGED:
-    case IE_EV_SM_PLAYER_MONEY_CHANGED:
-    {
-        return 0;
-    }
-    case IE_IMP_IM_MODE_GAME_MENU:
-    {
-        auto const* impInfo = static_cast<m3d::AuxImpulseInfo*>(data);
-        M3D_APP->OnChangeMode(*impInfo);
-        return 0;
-    }
+    case IE_IMP_IM_UI_TOGGLE_INTERFACE:
+        RETRUXX_NOT_IMPLEMENTED;
+
+    case IE_IMP_IM_QUICK_SAVE:
+    case IE_IMP_IM_QUICK_LOAD:
     case IE_EV_UM_CUR_PROFILE_CHANGED:
-    {
+    case IE_EV_UM_LOAD_LAST_GAME:
         m_savesManager->GameDataUpdate(data, guiEventId);
         return 0;
-    }
-    case IE_EV_UM_GAME_MODE_CHANGED:
-    {
-        OnGameModeChanged(data);
+
+    case IE_IMP_IM_RELOAD_WEAPON:
+    case IE_EV_SM_VEHICLEPART_CHANGED:
+        m_weaponGroupManager->GameDataUpdate(data, guiEventId);
         return 0;
-    }
-    case IE_EV_UM_SHOWGAMEMENU:
-    {
-        if (!data)
-        {
-            return 1;
-        }
-        auto const* event = static_cast<m3d::Event*>(data);
-        ShowGameMenu(event->m_strEv);
-        return 1;
-    }
-    case IE_EV_UM_GAME_MENU_MODE_ENTER:
-    {
-        SetGameMenuMode(true);
-        return 1;
-    }
-    case IE_EV_UM_GAME_MENU_MODE_EXIT:
-    {
-        SetGameMenuMode(false);
-        return 1;
-    }
+
+    case IE_IMP_IM_MODE_GAME_MENU:
+        M3D_APP->OnChangeMode(*static_cast<m3d::AuxImpulseInfo*>(data));
+        return 0;
+
+    case IE_IMP_IM_UI_HELP:
     case IE_EV_UM_HELP:
-    {
         m_helpManager->GameDataUpdate(data, guiEventId);
         return 1;
-    }
+
+    case IE_EV_UM_GAME_MODE_CHANGED:
+        OnGameModeChanged(data);
+        return 0;
+
+    case IE_EV_UM_SHOWGAMEMENU:
+        if (!data)
+        {
+            return 0;
+        }
+        ShowGameMenu(static_cast<m3d::Event*>(data)->m_strEv);
+        return 0;
+
+    case IE_EV_UM_OPTIONS:
+        RETRUXX_NOT_IMPLEMENTED;
+
+    case IE_EV_UM_GAME_MENU_MODE_ENTER:
+        SetGameMenuMode(true);
+        return 0;
+
+    case IE_EV_UM_GAME_MENU_MODE_EXIT:
+        SetGameMenuMode(false);
+        return 0;
+
+    case IE_EV_SM_QUEST_WAS_TAKEN:
+        RETRUXX_NOT_IMPLEMENTED;
+
+    case IE_EV_SM_QUESTSTATE_CHANGED:
+        m_navPointManager->GameDataUpdate(data, guiEventId);
+        return 0;
+
     case IE_EV_SM_OBJECT_CREATED:
     {
         if (!data)
@@ -1461,61 +1455,67 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         }
         return 1;
     }
+
+    case IE_EV_SM_OBJECT_DESTROYED:
+        RETRUXX_NOT_IMPLEMENTED;
+
     case IE_EV_SM_OBJECTS_CLEARED:
-    {
         m_objectCollection.ClearObjects();
         M3D_APP->ImmediateMessage(ai::SM_PLAYER_VEHICLE_CHANGED, 0, 0, 0, 0, {}, {});
-        return 1;
-    }
+        return 0;
+
     case IE_EV_SM_PLAYER_VEHICLE_CHANGED:
-    {
         m_weaponGroupManager->GameDataUpdate(data, guiEventId);
-        auto const event = static_cast<m3d::Event*>(data);
-        if (event->m_intEv[0] != 1)
+        if (static_cast<m3d::Event*>(data)->m_intEv[0] != 1)
         {
-            return 1;
+            return 0;
         }
         m_bIsHiddenByUser = true;
-        return 1;
-    }
-    case IE_EV_SM_VEHICLEPART_CHANGED:
-    {
-        m_weaponGroupManager->GameDataUpdate(data, guiEventId);
-        return 1;
-    }
+        return 0;
+
+    case IE_EV_SM_DYNAMIC_QUESTSTATE_CHANGED:
+        m_questInfoManager->GameDataUpdate(data, guiEventId);
+        m_navPointManager->GameDataUpdate(data, guiEventId);
+        return 0;
+
+    case IE_EV_SM_LOCATION_STATE_CHANGED:
+    case IE_EV_SM_TOWN_RUINED:
+        m_levelInfoManager->GameDataUpdate(data, guiEventId);
+        return 0;
+
     case IE_CUST_BEFORE_START_LEVEL:
-    {
         OnBeforeStartLevel();
         return 0;
-    }
+
     case IE_CUST_START_LEVEL:
-    {
         m_levelInfoManager->GameDataUpdate(data, guiEventId);
         m_questInfoManager->GameDataUpdate(data, guiEventId);
         OnStartLevel(data);
         return 0;
-    }
+
     case IE_CUST_END_LEVEL:
-    {
         m_levelInfoManager->GameDataUpdate(data, guiEventId);
         m_questInfoManager->GameDataUpdate(data, guiEventId);
         Show(false, false);
         Reset(false);
         return 0;
-    }
-    case IE_CUST_NEW_FRAME:
-    {
+
+    case IE_CUST_END_LEVEL_BEFORE_CONTINUOUS_LEVEL:
+        m_levelInfoManager->GameDataUpdate(data, guiEventId);
+        m_questInfoManager->GameDataUpdate(data, guiEventId);
+        Show(false, false);
+        Reset(true);
         return 0;
-    }
+
     case IE_CUST_NEW_FRAME_FORCE:
-    {
         m_levelInfoManager->GameDataUpdate(data, guiEventId);
         m_savesManager->GameDataUpdate(data, guiEventId);
         return 0;
-    }
+
     default:
-        RETRUXX_NOT_IMPLEMENTED;
+        break;
     }
+    return 0;
 }
 
 void* TruxxUiManager::QueryIface(char const*)
