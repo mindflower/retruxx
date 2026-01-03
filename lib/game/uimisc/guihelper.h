@@ -82,7 +82,6 @@ namespace help
     CStr GetClanAbbreviationByName(CStr const&);
     CStr GetClanFullNameByName(CStr const&);
     CStr GetClanNameByBelong(int);
-    CStr GetCurrentLevelName();
     CStr GetKeysForImpulse(int);
     CStr GetMapNameFromFileName(CStr const&);
     CStr GetServiceSymbols();
@@ -94,4 +93,6 @@ namespace help
 
     bool WindowsDirExists(CStr const& dirPath);
     bool WindowsFileExists(CStr const& filePath);
+
+    int DestroyVehicle(int);
 }  // namespace help

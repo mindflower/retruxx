@@ -10,6 +10,11 @@
 #include <game/music/townmusicmanager.h>
 #include <server/server.h>
 #include "childpanel.h"
+#include <game/uiwindows/townwindows/towndlg.h>
+#include <game/uimisc/guihelper.h>
+#include <server/objects/town.h>
+#include <server/objects/player.h>
+#include <server/objects/vehicle.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MotherPanel, LeaveTown)
 {
@@ -132,10 +137,8 @@ void MotherPanel::ClearPanels(std::vector<ChildPanelId> const& previousPanelsToR
         if (shouldRemove)
         {
             // Remove the child panel
-            RemoveChildPanel(it->second);
-
-            // Erase from map and get next iterator
-            it = m_panels.erase(it);
+            auto curIt = it++;
+            RemoveChildPanel(curIt->second);
         }
         else
         {
@@ -257,14 +260,38 @@ void MotherPanel::OnAdditionalBuilding()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int MotherPanel::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
+int MotherPanel::OnWndNotify(m3d::ui::Wnd* from, unsigned idFrom, unsigned message, m3d::AIParam const& data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!ModalWnd::OnWndNotify(from, idFrom, message, data))
+    {
+        if (idFrom != 800)
+        {
+            if (idFrom == 801 && message == 1)
+            {
+                OnEscape();
+            }
+            return 0;
+        }
+        if (message != 1)
+        {
+            return 0;
+        }
+        OnTabBtnClick(from, idFrom);
+    }
+    return 1;
 }
 
 int MotherPanel::OnAfterRemoveFromWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    int const res = m3d::ui::Wnd::OnAfterRemoveFromWndStation();
+    m_lastTabId = m_curTabId;
+    SetCurTab(TAB_NUM_TABS, true);
+    if (m_hackedWorkshopVehicleId != -1)
+    {
+        help::DestroyVehicle(m_hackedWorkshopVehicleId);
+        m_hackedWorkshopVehicleId = -1;
+    }
+    return res;
 }
 
 void MotherPanel::OnShowPanel(void*)
@@ -664,9 +691,33 @@ MotherPanel::Tab MotherPanel::ValidateLastTab() const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int MotherPanel::RemoveChildPanel(ref_ptr<ChildPanel>)
+int MotherPanel::RemoveChildPanel(ref_ptr<ChildPanel> childPanel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code MotherPanel::RemoveChildPanel
+    if (!childPanel)
+    {
+        return 0;
+    }
+
+    // TODO: check this!
+    // Find the child panel in our map
+    auto it = std::find_if(
+        m_panels.begin(),
+        m_panels.end(),
+        [&childPanel](std::pair<ChildPanelId, ref_ptr<ChildPanel>> const& entry)
+        {
+            return entry.second.get() == childPanel.get();
+        });
+
+    if (it == m_panels.end())
+    {
+        return 0;  // Panel not found
+    }
+
+    // Remove from UI hierarchy
+    RemoveChild(childPanel);
+
+    return 1;
 }
 
 void MotherPanel::OnGlobalMap()
@@ -887,9 +938,59 @@ int MotherPanel::GameDataUpdate(void*, int dataType)
     return 0;
 }
 
-void MotherPanel::Hide(bool, bool)
+void MotherPanel::Hide(bool bForce, bool bQuickLeaveTown)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TOOD: generated code MotherPanel::Hide
+    // First, handle town conditional closing if applicable
+    if (!bQuickLeaveTown)
+    {
+        auto* currentTown = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+        if (currentTown)
+        {
+            ref_ptr<Wnd> townWnd = M3D_APP->m_pInterfaceManager->GetWindow(4);
+
+            if (auto* townWndCasted = RT_DYNCAST(townWnd.get(), TownDlg))
+            {
+                CStr townName = currentTown->GetName();
+                CStr currentLevel = help::GetCurrentLevelName();
+
+                // Check if town has conditional closing info
+                bool hasConditionalClosing = townWndCasted->GetConditionalClosingInfoForTown(townName, currentLevel);
+
+                if (hasConditionalClosing)
+                {
+                    currentTown->CauseEvent(ai::GE_TOWN_CONDITIONAL_CLOSING, 0.0f, {}, {});
+                    return;  // Early return - town handles the closing
+                }
+            }
+        }
+    }
+
+    // Clear suspended show panels
+    m_suspendedShow.m_suspendedPanels.clear();
+
+    if (GetStation()->IsModal(this))
+    {
+        // Handle town leaving
+        if (M3D_APP->m_pInterfaceManager->GetCurrentTown())
+        {
+            M3D_APP->m_pInterfaceManager->OnLeaveTown(bQuickLeaveTown);
+            UpdateTabButtonsOnLeaveTown();
+        }
+
+        // Re-enable vehicle sounds if player exists
+        if (ai::thePlayer)
+        {
+            auto* vehicle = ai::thePlayer->GetVehicle();
+            if (vehicle)
+            {
+                vehicle->EnableSounds(true);
+            }
+        }
+
+        // Show window with ID 7 (likely game menu or main interface)
+        M3D_APP->m_pInterfaceManager->ShowWindow(7, 0, 0, 0, 0, 0);
+    }
 }
 
 void MotherPanel::DestroyHackedWorkshopVehicle()

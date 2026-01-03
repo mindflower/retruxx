@@ -42,7 +42,13 @@ void BasketWnd::SetupInventory()
 
 int BasketWnd::OnAfterRemoveFromWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement BasketWnd::OnAfterRemoveFromWndStation
+    int const res = m3d::ui::Wnd::OnAfterRemoveFromWndStation();
+    //if (auto* izvrat = m_wndInventory->GetIzvratRepository())
+    //{
+    //    izvrat->DetachAllObjectsFromParents();
+    //}
+    return res;
 }
 
 void BasketWnd::UpdateOnMainPartChanged()

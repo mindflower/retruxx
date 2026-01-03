@@ -106,7 +106,7 @@ int CBWnd::OnBeforeAddToWndStation()
 
 int CBWnd::OnAfterRemoveFromWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m3d::ui::Wnd::OnAfterRemoveFromWndStation();
 }
 
 void CBWnd::OnFinishTrade()

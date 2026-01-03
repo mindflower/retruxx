@@ -99,6 +99,16 @@ int RepositoryWnd::CreateFromPattern(m3d::ui::Wnd const*, bool)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
+ai::GeomRepository* RepositoryWnd::GetRepository() const
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int RepositoryWnd::SetRepository(ai::GeomRepository* repository, RepositoryWnd::RepositoryType type)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
 PointBase<float> RepositoryWnd::GetCellSize() const
 {
     RETRUXX_NOT_IMPLEMENTED;

@@ -689,9 +689,9 @@ namespace m3d
             return m_scrollPaneName;
         }
 
-        void Wnd::SetOnShowAnimationImmediate(bool)
+        void Wnd::SetOnShowAnimationImmediate(bool bImmediate)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_onShowAnimation.m_bImmediate = bImmediate;
         }
 
         void Wnd::SetBounds(BoundsBase<float> const& rect, bool bUpdateBaseOrigin)
@@ -759,9 +759,9 @@ namespace m3d
             return m_paneFlags;
         }
 
-        void Wnd::SetOnHideAnimationImmediate(bool)
+        void Wnd::SetOnHideAnimationImmediate(bool bImmediate)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_onHideAnimation.m_bImmediate = bImmediate;
         }
 
         PointBase<float> Wnd::ToScreen(PointBase<float> const& pt) const

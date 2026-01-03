@@ -8,7 +8,7 @@ RT_CLASS_DEFINE(MotherPanelTabButton);
 
 m3d::rend::TexHandle MotherPanelTabButton::PerModeInfo::GetUnselTex() const
 {
-    return m_selTex;
+    return m_unselTex;
 }
 
 MotherPanelTabButton::PerModeInfo::PerModeInfo(m3d::rend::TexHandle selTex, m3d::rend::TexHandle unselTex)
@@ -21,7 +21,7 @@ MotherPanelTabButton::PerModeInfo::PerModeInfo(m3d::rend::TexHandle selTex, m3d:
 
 m3d::rend::TexHandle MotherPanelTabButton::PerModeInfo::GetSelTex() const
 {
-    return m_unselTex;
+    return m_selTex;
 }
 
 MotherPanelTabButton::PerModeInfo::~PerModeInfo()
@@ -178,9 +178,13 @@ void MotherPanelTabButton::UpdateTex()
         if (m_info[m_mode])
         {
             if (m_bSelected)
+            {
                 SetImaged(m_info[m_mode]->GetSelTex(), {}, {}, {});
+            }
             else
+            {
                 SetImaged(m_info[m_mode]->GetUnselTex(), {}, {}, {});
+            }
         }
     }
 }
@@ -222,7 +226,7 @@ MotherPanelTabButton::MotherPanelTabButton(MotherPanelTabButton const&)
 
 MotherPanelTabButton::MotherPanelTabButton()
 {
-    m_bSelected = 0;
+    m_bSelected = false;
     m_mode = MODE_IN_FIELD;
     m_tabId = MotherPanel::TAB_NUM_TABS;
     m_info[0] = 0;
@@ -321,19 +325,14 @@ void MotherPanelTabButton::InitInfo()
         if (shouldInit)
         {
             // Build the texture name
-            CStr baseName = "TabBtn_";
-            baseName += MotherPanel::Tab2Str(m_tabId);
-            baseName += "_";
-            baseName += Mode2Str(currentMode);
-
-            // Get textures from interface manager
-            CStr selectedTexName = baseName;    // Selected texture
-            CStr unselectedTexName = baseName;  // Unselected texture
+            CStr name = "TabBtn_";
+            name += MotherPanel::Tab2Str(m_tabId);
+            name += "_";
+            name += Mode2Str(currentMode);
 
             // Get textures (the original code seems to pass 0/1 as flags)
-            auto selectedTex = M3D_APP->m_pInterfaceManager->GetIcoByName(selectedTexName, 0);
-
-            auto unselectedTex = M3D_APP->m_pInterfaceManager->GetIcoByName(unselectedTexName, 1);
+            auto selectedTex = M3D_APP->m_pInterfaceManager->GetIcoByName(name, 0);
+            auto unselectedTex = M3D_APP->m_pInterfaceManager->GetIcoByName(name, 1);
 
             // Create and store per-mode info
             m_info[mode] = new PerModeInfo(selectedTex, unselectedTex);

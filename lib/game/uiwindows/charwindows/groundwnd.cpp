@@ -1,6 +1,8 @@
 #include "groundwnd.h"
 #include "repositorywnd.h"
 #include <game/m3dgame.h>
+#include "server/objects/vehicle.h"
+#include <server/objects/player.h>
 
 RT_CLASS_EXPORTS_BEGIN(GroundWnd)
 RT_CLASS_EXPORTS_END;
@@ -114,7 +116,31 @@ int GroundWnd::GameDataSetup()
 
 int GroundWnd::OnAfterRemoveFromWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    int const res = m3d::ui::Wnd::OnAfterRemoveFromWndStation();
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ai::GeomRepository* groundRepository = nullptr;
+        auto* vehicle = GetVehicle();
+        if (vehicle)
+        {
+            groundRepository = vehicle->GetGroundRepository();
+        }
+
+        CVector pos = ZeroVector;
+        if (ai::thePlayer)
+        {
+            auto* playerVehicle = ai::thePlayer->GetVehicle();
+            if (playerVehicle)
+            {
+                pos = playerVehicle->GetPosition();
+            }
+        }
+        if (groundRepository)
+        {
+            groundRepository->FlushInReferenceChests(pos);
+        }
+    }
+    return res;
 }
 
 int GroundWnd::OnBeforeAddToWndStation()

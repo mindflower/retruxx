@@ -82,7 +82,39 @@ InventoryWnd::InventoryWnd(InventoryWnd const&)
 
 void InventoryWnd::RemoveCBWindows()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // Only execute if game data flag 1 is set
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    // Add cabin window if not already a child
+    if (m_wndCabin && m_wndCabin->IsChildOf(this))
+    {
+        // Disable animations
+        m_wndCabin->EnableOnShowAnimation(m_childSaveInfo.m_bCabinOnShowAnimationEnabled);
+        m_wndCabin->EnableOnHideAnimation(m_childSaveInfo.m_bCabinOnHideAnimationEnabled);
+
+        // Set bounds from saved info
+        m_wndCabin->SetBounds(m_childSaveInfo.m_cabinB, true);
+
+        // Add as child
+        RemoveChild(m_wndCabin.get());
+    }
+
+    // Add basket window if not already a child
+    if (m_wndBasket && m_wndBasket->IsChildOf(this))
+    {
+        // Disable animations
+        m_wndBasket->EnableOnShowAnimation(m_childSaveInfo.m_bBasketOnShowAnimationEnabled);
+        m_wndBasket->EnableOnHideAnimation(m_childSaveInfo.m_bBasketOnHideAnimationEnabled);
+
+        // Set bounds from saved info
+        m_wndBasket->SetBounds(m_childSaveInfo.m_basketB, true);
+
+        // Add as child
+        RemoveChild(m_wndBasket.get());
+    }
 }
 
 int InventoryWnd::GameDataUpdate(void*, int dataType)
@@ -216,7 +248,9 @@ int InventoryWnd::OnBeforeAddToWndStation()
 
 int InventoryWnd::OnAfterRemoveFromWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    int const res = m3d::ui::Wnd::OnAfterRemoveFromWndStation();
+    RemoveCBWindows();
+    return res;
 }
 
 void InventoryWnd::OnPlayerVehicleChanged()
@@ -234,7 +268,7 @@ void InventoryWnd::AddCBWindows()
     }
 
     // Add cabin window if not already a child
-    if (m_wndCabin && !IsChildOf(m_wndCabin))
+    if (m_wndCabin && !m_wndCabin->IsChildOf(this))
     {
         // Disable animations
         m_wndCabin->EnableOnShowAnimation(false);
@@ -248,7 +282,7 @@ void InventoryWnd::AddCBWindows()
     }
 
     // Add basket window if not already a child
-    if (m_wndBasket && !IsChildOf(m_wndBasket))
+    if (m_wndBasket && !m_wndBasket->IsChildOf(this))
     {
         // Disable animations
         m_wndBasket->EnableOnShowAnimation(false);

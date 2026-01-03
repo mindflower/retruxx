@@ -36,7 +36,7 @@ m3d::Class* IzvratRepositoryWnd::GetBaseClass()
 
 ai::IzvratRepository* IzvratRepositoryWnd::GetIzvratRepository() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_DYNCAST(GetRepository(), ai::IzvratRepository);
 }
 
 IzvratRepositoryWnd::~IzvratRepositoryWnd()
@@ -79,7 +79,12 @@ void IzvratRepositoryWnd::DrawFrame(m3d::ui::DrawInfo const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int IzvratRepositoryWnd::SetRepository(ai::GeomRepository*, RepositoryType)
+ai::GeomRepository* IzvratRepositoryWnd::GetRepository() const
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int IzvratRepositoryWnd::SetRepository(ai::GeomRepository*, RepositoryWnd::RepositoryType)
 {
     RETRUXX_NOT_IMPLEMENTED;
 }

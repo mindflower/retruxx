@@ -41,28 +41,28 @@ namespace help
         do
         {
             auto fileName = data.cFileName;
-	        if (fileName != "." && fileName != "..")
-	        {
+            if (fileName != "." && fileName != "..")
+            {
                 auto fullName = strDir + fileName;
                 auto attr = GetFileAttributesA(fullName.c_str());
                 SetFileAttributesA(fullName.c_str(), attr & 0xFA);
                 DeleteFileA(fullName.c_str());
                 m3d::g_Kernel->GetFileServer().RemoveFile(fullName.c_str());
-	        }
+            }
         } while (FindNextFileA(file, &data));
         FindClose(file);
     }
 
     CStr GetCurrentLevelName()
     {
-         if (m3d::pClient != nullptr)
-         {
-             if (auto * level = m3d::pClient->GetWorld().m_level; level != nullptr)
-             {
-                 return level->GetLevelName();
-             }
-         }
-         return {};
+        if (m3d::pClient != nullptr)
+        {
+            if (auto* level = m3d::pClient->GetWorld().m_level; level != nullptr)
+            {
+                return level->GetLevelName();
+            }
+        }
+        return {};
     }
 
     int CloneWndWithChildren(m3d::ui::Wnd const* srcWnd, m3d::ui::Wnd* dstWnd)
@@ -70,8 +70,8 @@ namespace help
         using namespace m3d::ui;
         if (srcWnd && dstWnd && !dstWnd->Valid())
         {
-	        if (dstWnd->Create(srcWnd->GetText(), srcWnd->GetStyle(), srcWnd->GetBounds(), srcWnd->GetId()) != 0)
-	        {
+            if (dstWnd->Create(srcWnd->GetText(), srcWnd->GetStyle(), srcWnd->GetBounds(), srcWnd->GetId()) != 0)
+            {
                 dstWnd->SetStyle(srcWnd->GetStyle());
                 dstWnd->SetText(srcWnd->GetText());
                 dstWnd->SetId(srcWnd->GetId());
@@ -97,13 +97,16 @@ namespace help
                 dstWnd->SetOnHideAnimation(srcWnd->GetOnHideAnimation());
 
                 auto child = srcWnd->GetFirstChild();
-                for (child = srcWnd->GetFirstChild(); child && child->IsKindOf(RT_CLASS_LOCAL(Wnd)); child = child->GetNextSibling())
+                for (child = srcWnd->GetFirstChild(); child && child->IsKindOf(RT_CLASS_LOCAL(Wnd));
+                     child = child->GetNextSibling())
                 {
                     auto childWnd = dynamic_cast<Wnd*>(child);
                     auto newObjClass = child->GetClass();
                     auto newObj = m3d::g_Kernel->New(newObjClass);
                     auto newWnd = dynamic_cast<Wnd*>(newObj);
-                    if (!newObj || newWnd->Create(childWnd->GetText(), childWnd->GetStyle(), childWnd->GetBounds(), childWnd->GetId()) == 0)
+                    if (!newObj ||
+                        newWnd->Create(
+                            childWnd->GetText(), childWnd->GetStyle(), childWnd->GetBounds(), childWnd->GetId()) == 0)
                     {
                         break;
                     }
@@ -135,7 +138,11 @@ namespace help
                         auto newObjButton = dynamic_cast<ButtonWnd*>(newObj);
                         if (childButton->IsImaged())
                         {
-                            newObjButton->SetImaged(childButton->GetImageRegular(), childButton->GetImageDown(), childButton->GetImageIn(), childButton->GetImageDisabled());
+                            newObjButton->SetImaged(
+                                childButton->GetImageRegular(),
+                                childButton->GetImageDown(),
+                                childButton->GetImageIn(),
+                                childButton->GetImageDisabled());
                         }
                         else
                         {
@@ -151,7 +158,7 @@ namespace help
                     dstWnd->AddChild(newObj);
                 }
                 return 1;
-	        }
+            }
         }
         return 0;
     }
@@ -171,15 +178,15 @@ namespace help
 
             do
             {
-	            if ((data.attrib & 0x10) != 0)
-	            {
+                if ((data.attrib & 0x10) != 0)
+                {
                     CStr dirName = data.name;
                     if (!dirName.empty() && dirName == "." || dirName == "..")
                     {
                         continue;
                     }
                     subDirs.push_back(dirName);
-	            }
+                }
             } while (fileEnum.GetNextFile(&data));
             return 1;
         }
@@ -189,7 +196,7 @@ namespace help
 
     int CreateWindowsDir(CStr const&)
     {
-	    RETRUXX_NOT_IMPLEMENTED;
+        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr GetMapNameFromFileName(CStr const& fileName)
@@ -219,13 +226,14 @@ namespace help
             auto* veh = RT_DYNCAST(obj, Vehicle);
             for (auto it = veh->begin(); it != veh->end(); ++it)
             {
-                const auto& [name, part] = *it;
+                auto const& [name, part] = *it;
                 if (part)
                 {
-                    const auto* protoInfo = part->GetPrototypeInfo();
+                    auto const* protoInfo = part->GetPrototypeInfo();
                     if (protoInfo)
                     {
-                        if (ai::theResourceManager->bResourceIsKindOf(protoInfo->m_resourceId, theResourceManager->GetResourceId("GUN")))
+                        if (ai::theResourceManager->bResourceIsKindOf(
+                                protoInfo->m_resourceId, theResourceManager->GetResourceId("GUN")))
                         {
                             guns.push_back(part);
                         }
@@ -296,5 +304,10 @@ namespace help
     {
         DWORD const fileAttributes = GetFileAttributesA(filePath.c_str());
         return fileAttributes != -1 && (fileAttributes & 0x10) == 0;
+    }
+
+    int DestroyVehicle(int)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
     }
 }  // namespace help
