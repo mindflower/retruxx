@@ -118,7 +118,7 @@ namespace m3d
                 return 0;
             }
             node->GetFirstChild(node, "Item");
-            while(!node->IsEmpty())
+            while (!node->IsEmpty())
             {
                 auto frame = new Frame;
                 if (frame->ReadFromXmlNode(node))
@@ -273,7 +273,16 @@ namespace m3d
         return m_tabButtonMaxWidth;
     }
 
-    void ui::GfxServer::AddTabWndPaneNormal(DrawInfo const&, BoundsBase<float> const&, unsigned, TabButtonInfo const&, retruxx::vector<BoundsBase<float>> const&, int, int, CStr const&, PaneFlagBg)
+    void ui::GfxServer::AddTabWndPaneNormal(
+        DrawInfo const&,
+        BoundsBase<float> const&,
+        unsigned,
+        TabButtonInfo const&,
+        retruxx::vector<BoundsBase<float>> const&,
+        int,
+        int,
+        CStr const&,
+        PaneFlagBg)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -377,7 +386,7 @@ namespace m3d
 
         struct
         {
-            const char* str = nullptr;
+            char const* str = nullptr;
             unsigned int id = 0;
         } colors[6];
         colors[0].str = "clrDefault";
@@ -422,15 +431,15 @@ namespace m3d
             m_sliderNotchWidthRatio = 0.75;
         }
 
-        char const* fontFaces[] = { "titleFontFace", "wndFontFace", "tooltipFontFace", "miscFontFace"};
-        for (size_t i =0; i<4;++i)
+        char const* fontFaces[] = {"titleFontFace", "wndFontFace", "tooltipFontFace", "miscFontFace"};
+        for (size_t i = 0; i < 4; ++i)
         {
             if (!SafeStrAttrib(m_fontFaces[i], node, fontFaces[i]))
             {
                 m_fontFaces[i] = "Arial";
             }
         }
-        char const* fontSizes[] = { "titleFontSize", "wndFontSize", "tooltipFontSize", "miscFontSize" };
+        char const* fontSizes[] = {"titleFontSize", "wndFontSize", "tooltipFontSize", "miscFontSize"};
         for (size_t i = 0; i < 4; ++i)
         {
             if (!SafeUintAttrib(m_fontSizes[i], node, fontSizes[i]))
@@ -438,7 +447,7 @@ namespace m3d
                 m_fontSizes[i] = 12;
             }
         }
-        char const* fontFlags[] = { "titleFontFlag", "wndFontFlag", "tooltipFontFlag", "miscFontFlag" };
+        char const* fontFlags[] = {"titleFontFlag", "wndFontFlag", "tooltipFontFlag", "miscFontFlag"};
         CStr flag;
         for (size_t i = 0; i < 4; ++i)
         {
@@ -460,7 +469,7 @@ namespace m3d
                 m_fontFlags[i] = 3;
             }
         }
-        char const* fontTypes[] = { "titleFontType", "wndFontType", "tooltipFontType", "miscFontType" };
+        char const* fontTypes[] = {"titleFontType", "wndFontType", "tooltipFontType", "miscFontType"};
         for (size_t i = 0; i < 4; ++i)
         {
             if (!SafeEnumAttrib(m_fontTypes[i], node, fontTypes[i]))
@@ -475,7 +484,7 @@ namespace m3d
         {
             //TODO: chcek this!!!
             FontParams params;
-            if(m_fontTypes[i] == FONT_TYPE_SELFMAKING)
+            if (m_fontTypes[i] == FONT_TYPE_SELFMAKING)
             {
                 params.ttfParams.style = 1;
                 params.ttfParams.codePage = 0;
@@ -532,7 +541,13 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ui::GfxServer::AddFlatAxialPane0(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, int drawFlags, CStr const& paneName, PaneFlagBg bgFlags)
+    void ui::GfxServer::AddFlatAxialPane0(
+        DrawInfo const& di,
+        BoundsBase<float> const& rect,
+        unsigned clr,
+        int drawFlags,
+        CStr const& paneName,
+        PaneFlagBg bgFlags)
     {
         //TODO: check and refactor all this shit!!!
         Pane* pane = nullptr;
@@ -646,18 +661,18 @@ namespace m3d
                         auto scale = rect.height;
                         if (pane->m_frame[flag]->m_barRepeat)
                         {
-                            RETRUXX_NOT_IMPLEMENTED;
+                            //RETRUXX_NOT_IMPLEMENTED;
                             int sx = 0;
                             int sy = 0;
                             M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
                             float fsx = sx;
                             float fsy = sy;
                             M3D_APP->m_renderer->AbsToRel(fsx, fsy);
+                            tv1 = bgRect.height;
                             scale = fsy;
                         }
                         M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[0], -1.0);
                         AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
-
 
                         bgRect.x0 = rect.x0 + rect.width - cornerSize;
                         bgRect.height = (rect.y0 + rect.height - cornerSize) - (rect.y0 + cornerSize);
@@ -669,14 +684,34 @@ namespace m3d
 
                             if (pane->m_frame[flag]->m_barRepeat)
                             {
-                                RETRUXX_NOT_IMPLEMENTED;
+                                int sx = 0;
+                                int sy = 0;
+                                M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
+                                float fsx = sx;
+                                float fsy = sy;
+                                M3D_APP->m_renderer->AbsToRel(fsx, fsy);
+                                tv1 = bgRect.height;
+                                scale = fsy;
+                                //RETRUXX_NOT_IMPLEMENTED;
                             }
                             AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
                         }
                         else
                         {
-                            RETRUXX_NOT_IMPLEMENTED;
-                            AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
+                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[2], -1.0);
+                            if (pane->m_frame[flag]->m_barRepeat)
+                            {
+                                int sx = 0;
+                                int sy = 0;
+                                M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[2], sx, sy);
+                                float fsx = sx;
+                                float fsy = sy;
+                                M3D_APP->m_renderer->AbsToRel(fsx, fsy);
+                                tv1 = bgRect.height;
+                                scale = fsy;
+                            }
+                            //RETRUXX_NOT_IMPLEMENTED;
+                            AddFlatAxialQuad(di, bgRect, clr, 1.0, 0.0, 0.0, tv1 / scale);
                         }
                     }
 
@@ -692,18 +727,18 @@ namespace m3d
                         auto scale = rect.width;
                         if (pane->m_frame[flag]->m_barRepeat)
                         {
-                            RETRUXX_NOT_IMPLEMENTED;
+                            //RETRUXX_NOT_IMPLEMENTED;
                             int sx = 0;
                             int sy = 0;
                             M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
                             float fsx = sx;
                             float fsy = sy;
                             M3D_APP->m_renderer->AbsToRel(fsx, fsy);
-                            scale = fsy;
+                            tv0 = bgRect.width;
+                            scale = fsx;
                         }
                         M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[1], -1.0);
                         AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, tv0 / scale, 1.0);
-
 
                         bgRect.x0 = rect.x0 + cornerSize;
                         bgRect.height = cornerSize;
@@ -715,14 +750,22 @@ namespace m3d
 
                             if (pane->m_frame[flag]->m_barRepeat)
                             {
-                                RETRUXX_NOT_IMPLEMENTED;
+                                //RETRUXX_NOT_IMPLEMENTED;
+                                int sx = 0;
+                                int sy = 0;
+                                M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
+                                float fsx = sx;
+                                float fsy = sy;
+                                M3D_APP->m_renderer->AbsToRel(fsx, fsy);
+                                tv0 = bgRect.width;
+                                scale = fsx;
                             }
                             AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, tv0 / scale, 1.0);
                         }
                         else
                         {
                             RETRUXX_NOT_IMPLEMENTED;
-                            AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv0 / scale);
+                            AddFlatAxialQuad(di, bgRect, clr, 0.0, 1.0, tv0 / scale, 0.0);
                         }
                     }
                 }
@@ -802,7 +845,13 @@ namespace m3d
         }
     }
 
-    void ui::GfxServer::AddText(DrawInfo const& di, PointBase<float> const& at, CStr const& text, int uiFont, TextWrapFlags tw, TextFormatFlags tf)
+    void ui::GfxServer::AddText(
+        DrawInfo const& di,
+        PointBase<float> const& at,
+        CStr const& text,
+        int uiFont,
+        TextWrapFlags tw,
+        TextFormatFlags tf)
     {
         if (m_fontManager->ValidateFontId(uiFont))
         {
@@ -816,7 +865,11 @@ namespace m3d
         M3D_APP->DrawTextRelClip(point, text, di, tw, tf);
     }
 
-    void ui::GfxServer::AddImagedRect(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, rend::TexHandle tex)
+    void ui::GfxServer::AddImagedRect(
+        DrawInfo const& di,
+        BoundsBase<float> const& rect,
+        unsigned clr,
+        rend::TexHandle tex)
     {
         AddImagedRectGeneral(di, rect, clr, tex, 0.0, 0.0, 1.0, 1.0);
     }
@@ -879,7 +932,7 @@ namespace m3d
         auto v5 = clr;
         if ((clr & 0xFF000000) == 0 && clr < 0xFF)
             v5 = this->m_colors[clr];
-        
+
         if ((v5 & 0xFF000000) != 0)
             M3D_RENDERER->SetBlend(m3d::rend::BlendMode::BM_ALPHA, 0);
         else
@@ -905,7 +958,15 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ui::GfxServer::AddImagedRectGeneral(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, rend::TexHandle tex, float u0, float v0, float u1, float v1)
+    void ui::GfxServer::AddImagedRectGeneral(
+        DrawInfo const& di,
+        BoundsBase<float> const& rect,
+        unsigned clr,
+        rend::TexHandle tex,
+        float u0,
+        float v0,
+        float u1,
+        float v1)
     {
         M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
         M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
@@ -915,7 +976,7 @@ namespace m3d
         M3D_RENDERER->SetTexture(0, tex, -1.0);
         auto sx = 0;
         auto sy = 0;
-        M3D_RENDERER->GetDims( tex, sx, sy);
+        M3D_RENDERER->GetDims(tex, sx, sy);
         PointBase<float> s;
         if (u1 >= 0.0)
             s.x = u1;
@@ -956,7 +1017,8 @@ namespace m3d
         ref_ptr soundNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
         CStr soundName;
         CStr fileName;
-        for (xmlNode->GetFirstChild(soundNode, "SoundInfo"); !soundNode->IsEmpty(); soundNode->GetNextSibling(soundNode, "SoundInfo"))
+        for (xmlNode->GetFirstChild(soundNode, "SoundInfo"); !soundNode->IsEmpty();
+             soundNode->GetNextSibling(soundNode, "SoundInfo"))
         {
             SafeStrAttrib(soundName, soundNode, "Name");
             if (soundName.empty())
@@ -966,7 +1028,9 @@ namespace m3d
             }
             if (m_controlSoundInfos.find(soundName) != m_controlSoundInfos.end())
             {
-                M3D_LOG_WARN("GfxServer::LoadSoundsFromXml error - sound with name " + soundName + " already exists. Second sound would be ignored");
+                M3D_LOG_WARN(
+                    "GfxServer::LoadSoundsFromXml error - sound with name " + soundName +
+                    " already exists. Second sound would be ignored");
                 continue;
             }
             SafeStrAttrib(fileName, soundNode, "File");
@@ -975,7 +1039,8 @@ namespace m3d
                 M3D_LOG_WARN("GfxServer::LoadSoundsFromXml error - sound file name is empty for sound " + soundName);
                 continue;
             }
-            auto const id = Application::g_pApp->m_sound->AddSound(fileName.c_str(), snd::SND_TYPE_2DSOUND, 1, 4, snd::SND_PRIORITY_HIGH);
+            auto const id = Application::g_pApp->m_sound->AddSound(
+                fileName.c_str(), snd::SND_TYPE_2DSOUND, 1, 4, snd::SND_PRIORITY_HIGH);
             if (id == -1)
             {
                 M3D_LOG_WARN("GfxServer::LoadSoundsFromXml error - cannot load sound from file " + soundName);
@@ -998,7 +1063,7 @@ namespace m3d
 
     void ui::GfxServer::ClearSounds()
     {
-        for (auto&[name, sound] : m_controlSoundInfos)
+        for (auto& [name, sound] : m_controlSoundInfos)
         {
             if (Application::g_pApp->m_sound && sound)
             {
@@ -1009,7 +1074,14 @@ namespace m3d
         m_controlSoundInfos.clear();
     }
 
-    void ui::GfxServer::AddFlatAxialQuad(DrawInfo const& di, BoundsBase<float> const& rc, unsigned clr, float tu0, float tv0, float tu1, float tv1)
+    void ui::GfxServer::AddFlatAxialQuad(
+        DrawInfo const& di,
+        BoundsBase<float> const& rc,
+        unsigned clr,
+        float tu0,
+        float tv0,
+        float tu1,
+        float tv1)
     {
         //TODO: check this and recator
         auto v8 = rc.width;
@@ -1027,10 +1099,8 @@ namespace m3d
         auto clipped_4 = 0.0;
         auto v17 = 0.0;
         auto clipped_12 = 0.0;
-        if (v11 > (v8 + v10)
-            || v10 > v13
-            || di.m_clippedRect.y0 > (v9 + actual_4)
-            || actual_4 > (di.m_clippedRect.height + di.m_clippedRect.y0))
+        if (v11 > (v8 + v10) || v10 > v13 || di.m_clippedRect.y0 > (v9 + actual_4) ||
+            actual_4 > (di.m_clippedRect.height + di.m_clippedRect.y0))
         {
             v15 = 0.0;
             clipped_4 = 0.0;
@@ -1077,15 +1147,7 @@ namespace m3d
             if ((clr & 0xFF000000) == 0 && clr < 0xFF)
                 v21 = this->m_colors[clr];
             m3d::Application::g_pApp->PutSprite2Rel(
-                v15,
-                clipped_4,
-                u0,
-                tu0a,
-                v20,
-                clipped_12 + clipped_4,
-                tu2,
-                u1,
-                v21);
+                v15, clipped_4, u0, tu0a, v20, clipped_12 + clipped_4, tu2, u1, v21);
         }
     }
 
@@ -1109,4 +1171,4 @@ namespace m3d
         m_created = false;
         return 1;
     }
-}
+}  // namespace m3d

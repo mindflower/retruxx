@@ -902,9 +902,14 @@ void MotherPanel::Show()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int MotherPanel::OnKey(unsigned short, unsigned char, unsigned)
+int MotherPanel::OnKey(unsigned short key, unsigned char scanCode, unsigned state)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (key != 1 || !state)
+    {
+        return ModalWnd::OnKey(key, scanCode, state);
+    }
+    OnEscape();
+    return 1;
 }
 
 void MotherPanel::OnStartTrade(void*)

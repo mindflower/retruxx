@@ -8,22 +8,26 @@ RT_CLASS_DEFINE(MotherPanelTabButton);
 
 m3d::rend::TexHandle MotherPanelTabButton::PerModeInfo::GetUnselTex() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_selTex;
 }
 
-MotherPanelTabButton::PerModeInfo::PerModeInfo(m3d::rend::TexHandle, m3d::rend::TexHandle)
+MotherPanelTabButton::PerModeInfo::PerModeInfo(m3d::rend::TexHandle selTex, m3d::rend::TexHandle unselTex)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_selTex = selTex;
+    m_unselTex = unselTex;
+    M3D_RENDERER->ReferenceTexture(m_selTex);
+    M3D_RENDERER->ReferenceTexture(m_unselTex);
 }
 
 m3d::rend::TexHandle MotherPanelTabButton::PerModeInfo::GetSelTex() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_unselTex;
 }
 
 MotherPanelTabButton::PerModeInfo::~PerModeInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    M3D_RENDERER->ReleaseTexture(m_selTex);
+    M3D_RENDERER->ReleaseTexture(m_unselTex);
 }
 
 m3d::Class* MotherPanelTabButton::GetClass() const
@@ -183,12 +187,32 @@ void MotherPanelTabButton::UpdateTex()
 
 void MotherPanelTabButton::ClearInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto& info : m_info)
+    {
+        if (info)
+        {
+            M3D_RENDERER->ReleaseTexture(info->GetSelTex());
+            M3D_RENDERER->ReleaseTexture(info->GetUnselTex());
+            delete info;
+            info = nullptr;
+        }
+    }
 }
 
-CStr MotherPanelTabButton::Mode2Str(Mode)
+CStr MotherPanelTabButton::Mode2Str(Mode mode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    static retruxx::map<Mode, CStr> const converter = {
+        {MODE_IN_FIELD, "InField"},
+        {MODE_IN_TOWN, "InTown"},
+    };
+
+    auto const it = converter.find(mode);
+    if (it != converter.end())
+    {
+        return it->second;
+    }
+    return "";
+
 }
 
 MotherPanelTabButton::MotherPanelTabButton(MotherPanelTabButton const&)
@@ -250,8 +274,75 @@ bool MotherPanelTabButton::HasMode(Mode mode) const
 
 void MotherPanelTabButton::InitInfo()
 {
-    // TODO: implement MotherPanelTabButton::InitInfo
-    // RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code MotherPanelTabButton::InitInfo
+    // Clear existing info
+    ClearInfo();
+
+    // Check if tab ID is valid
+    if (m_tabId == MotherPanel::TAB_NUM_TABS)
+    {
+        return;
+    }
+
+    // Initialize info for each mode
+    for (int mode = MODE_IN_FIELD; mode < MODE_NUM_MODES; ++mode)
+    {
+        Mode currentMode = static_cast<Mode>(mode);
+
+        // Check if this tab should have info for this mode
+        bool shouldInit = false;
+
+        switch (m_tabId)
+        {
+        case MotherPanel::TAB_QUESTLOG:
+        case MotherPanel::TAB_MAP:
+        case MotherPanel::TAB_JOURNAL:
+            // These tabs only have info in field mode
+            shouldInit = (currentMode == MODE_IN_FIELD);
+            break;
+
+        case MotherPanel::TAB_INVENTORY_VS_SHOP:
+        case MotherPanel::TAB_CHARACTERISTIC_VS_WORKSHOP:
+            // These tabs have info in both modes
+            shouldInit = true;
+            break;
+
+        case MotherPanel::TAB_BAR:
+        case MotherPanel::TAB_ADDITIONAL_BUILDING:
+            // These tabs only have info in town mode
+            shouldInit = (currentMode == MODE_IN_TOWN);
+            break;
+
+        default:
+            // Other tabs don't have per-mode info
+            break;
+        }
+
+        if (shouldInit)
+        {
+            // Build the texture name
+            CStr baseName = "TabBtn_";
+            baseName += MotherPanel::Tab2Str(m_tabId);
+            baseName += "_";
+            baseName += Mode2Str(currentMode);
+
+            // Get textures from interface manager
+            CStr selectedTexName = baseName;    // Selected texture
+            CStr unselectedTexName = baseName;  // Unselected texture
+
+            // Get textures (the original code seems to pass 0/1 as flags)
+            auto selectedTex = M3D_APP->m_pInterfaceManager->GetIcoByName(selectedTexName, 0);
+
+            auto unselectedTex = M3D_APP->m_pInterfaceManager->GetIcoByName(unselectedTexName, 1);
+
+            // Create and store per-mode info
+            m_info[mode] = new PerModeInfo(selectedTex, unselectedTex);
+        }
+        else
+        {
+            m_info[mode] = nullptr;
+        }
+    }
 }
 
 ai::Building const* MotherPanelTabButton::GetBuilding(Mode) const

@@ -13,7 +13,7 @@ namespace m3d
     namespace ui
     {
         RT_CLASS_EXPORTS_BEGIN(ButtonWnd)
-    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
 
         RT_CLASS_DEFINE(ButtonWnd);
 
@@ -47,9 +47,39 @@ namespace m3d
             m_isImaged = 0;
         }
 
-        int ButtonWnd::SetImaged(rend::TexHandle, rend::TexHandle, rend::TexHandle, rend::TexHandle)
+        int ButtonWnd::SetImaged(
+            rend::TexHandle imageRegular,
+            rend::TexHandle imageMouseDown,
+            rend::TexHandle imageMouseIn,
+            rend::TexHandle imageDisabled)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_isImaged = 1;
+            M3D_RENDERER->ReferenceTexture(imageRegular);
+            M3D_RENDERER->ReferenceTexture(imageMouseIn);
+            M3D_RENDERER->ReferenceTexture(imageMouseDown);
+            M3D_RENDERER->ReferenceTexture(imageDisabled);
+
+            ReleaseTextures();
+            m_image = imageRegular;
+            m_imageMouseIn = imageMouseIn;
+            m_imageMouseDown = imageMouseDown;
+            m_imageDisabled = imageDisabled;
+            if (!m_imageMouseDown.IsValid())
+            {
+                m_imageMouseDown = m_image;
+                M3D_RENDERER->ReferenceTexture(m_image);
+            }
+            if (!m_imageMouseIn.IsValid())
+            {
+                m_imageMouseIn = m_image;
+                M3D_RENDERER->ReferenceTexture(m_image);
+            }
+            if (!m_imageDisabled.IsValid())
+            {
+                m_imageDisabled = m_image;
+                M3D_RENDERER->ReferenceTexture(m_image);
+            }
+            return 1;
         }
 
         rend::TexHandle ButtonWnd::GetImageRegular() const
@@ -332,7 +362,7 @@ namespace m3d
         }
 
         RT_CLASS_EXPORTS_BEGIN(CheckWnd)
-    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
 
         RT_CLASS_DEFINE(CheckWnd);
 
@@ -470,5 +500,5 @@ namespace m3d
         {
             RETRUXX_NOT_IMPLEMENTED;
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d
