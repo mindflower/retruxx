@@ -1167,12 +1167,12 @@ namespace m3d
 
         int Wnd::OnBeforeRemoveFromWndStation()
         {
-            auto res = 1;
+            int res = 1;
             for (auto child = GetFirstChild(); child; child = child->GetNextSibling())
             {
                 M3D_ASSERT(child->IsKindOf(RT_CLASS_LOCAL(Wnd)));
                 auto wnd = dynamic_cast<Wnd*>(child);
-                res &= wnd->OnBeforeAddToWndStation();
+                res &= wnd->OnBeforeRemoveFromWndStation();
             }
             if (m_bSuspendedUnlink)
             {
@@ -1191,7 +1191,9 @@ namespace m3d
                 return res;
             }
             if (!res)
+            {
                 return 0;
+            }
             return StartAnimation(m_onHideAnimation, IsAnimatingNow()) == 0;
         }
 
