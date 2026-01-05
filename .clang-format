@@ -25,7 +25,7 @@ BreakBeforeBraces: Allman
 BreakBeforeTernaryOperators: 'false'
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
-ColumnLimit: '160'
+ColumnLimit: '120'
 CompactNamespaces: 'false'
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'true'
 ContinuationIndentWidth: '4'

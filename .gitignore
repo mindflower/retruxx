@@ -32,8 +32,10 @@
 *.app
 
 .vs
+.vscode
 x64
 Release_Retruxx*
 Debug_Retruxx*
 *.bin
 *.vcxproj.user
+build

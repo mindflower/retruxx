@@ -1,0 +1,176 @@
+#include "groundwnd.h"
+#include "repositorywnd.h"
+#include <game/m3dgame.h>
+#include "server/objects/vehicle.h"
+#include <server/objects/player.h>
+
+RT_CLASS_EXPORTS_BEGIN(GroundWnd)
+RT_CLASS_EXPORTS_END;
+RT_CLASS_DEFINE(GroundWnd);
+
+GroundWnd::AuxInfo::AuxInfo()
+{
+    m_wndPictureName = "wndPicture";
+    m_wndRepositoryName = "wndRepository";
+    m_btnPickUpAllName = "btnPickUpAll";
+    m_wndGroundPictureName = "wndGroundPicture";
+    m_groundPictureTexName = "InventoryGround";
+}
+
+void GroundWnd::SetVehicleId(int)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+m3d::Class* GroundWnd::GetBaseClass()
+{
+    return RT_CLASS_LOCAL(ChildPanel);
+}
+
+void GroundWnd::PickUpAll()
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+m3d::Class* GroundWnd::GetClass() const
+{
+    return RT_CLASS_LOCAL(GroundWnd);
+}
+
+m3d::Object* GroundWnd::CreateObject()
+{
+    return new GroundWnd;
+}
+
+m3d::Object* GroundWnd::Clone()
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+GroundWnd::~GroundWnd()
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int GroundWnd::OnAfterAddToWndStation()
+{
+    int const res = m3d::ui::Wnd::OnAfterAddToWndStation();
+    M3D_APP->EnqueueMessage(65691, 0, 0, 0, 0, {}, {});
+    return res;
+}
+
+void GroundWnd::SetupRepository()
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+void GroundWnd::OnRepositoryChanged(void*)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+void GroundWnd::OnStartLevel()
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+ai::GeomRepository* GroundWnd::GetGroundRepository() const
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int GroundWnd::GameDataClear(bool)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+GroundWnd::GroundWnd()
+{
+    m_btnPickUpAll = 0;
+    m_wndGroundPicture = 0;
+}
+
+GroundWnd::GroundWnd(GroundWnd const&)
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+void GroundWnd::UpdatePickupButtonState()
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int GroundWnd::GameDataUpdate(void*, int)
+{
+    // TODO: implement GroundWnd::GameDataUpdate
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 0;
+}
+
+int GroundWnd::GameDataSetup()
+{
+    // TODO: implement GroundWnd::GameDataSetup
+    // RETRUXX_NOT_IMPLEMENTED;
+    return 1;
+}
+
+int GroundWnd::OnAfterRemoveFromWndStation()
+{
+    int const res = m3d::ui::Wnd::OnAfterRemoveFromWndStation();
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ai::GeomRepository* groundRepository = nullptr;
+        auto* vehicle = GetVehicle();
+        if (vehicle)
+        {
+            groundRepository = vehicle->GetGroundRepository();
+        }
+
+        CVector pos = ZeroVector;
+        if (ai::thePlayer)
+        {
+            auto* playerVehicle = ai::thePlayer->GetVehicle();
+            if (playerVehicle)
+            {
+                pos = playerVehicle->GetPosition();
+            }
+        }
+        if (groundRepository)
+        {
+            groundRepository->FlushInReferenceChests(pos);
+        }
+    }
+    return res;
+}
+
+int GroundWnd::OnBeforeAddToWndStation()
+{
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        GroundWnd::SetupRepository();
+    }
+    return Wnd::OnBeforeAddToWndStation();
+}
+
+void GroundWnd::UpdateGroundPicture()
+{
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
+int GroundWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned idFrom, unsigned message, m3d::AIParam const& data)
+{
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (OnWndNotify(from, idFrom, message, data))
+    {
+        return 1;
+    }
+    if (idFrom == 200 && message == 1)
+    {
+        PickUpAll();
+        return 1;
+    }
+    return 0;
+}

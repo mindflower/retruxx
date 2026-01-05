@@ -1,0 +1,274 @@
+#include "staticautogun.h"
+#include "vehicle.h"
+#include <server/utils.h>
+#include "base/prototypemanager.h"
+#include <ode/objects.h>
+#include <ode/odecpp.h>
+#include "physicbodies/vehiclepart.h"
+#include "server/objects/base/objcontainer.h"
+
+namespace ai
+{
+    namespace
+    {     
+        CStr const STR_DOT = "DOT";
+    }
+
+    RT_CLASS_EXPORTS_BEGIN(StaticAutoGun)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(StaticAutoGun);
+
+    StaticAutoGunPrototypeInfo::StaticAutoGunPrototypeInfo()
+    {
+        m_maxHealth = 1.0f;
+    }
+
+    Obj* StaticAutoGunPrototypeInfo::CreateTargetObject() const
+    {
+        return new StaticAutoGun(*this);
+    }
+
+    bool StaticAutoGunPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    {
+        bool const result = ComplexPhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        if (result)
+        {
+            if (m_parentPrototypeName.empty())
+            {
+                m3d::SafeFloatAttrib(m_maxHealth, xmlNode, "MaxHealth");
+                m3d::SafeStrAttrib(m_destroyedModelName, xmlNode, "DestroyedModel");
+            }
+        }
+        return result;
+    }
+
+    void StaticAutoGunPrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::WeaponLookAtPoint(CVector const&, float)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    bool StaticAutoGun::RemoveChild(Obj*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    m3d::Class* StaticAutoGun::GetClass() const
+    {
+        return RT_CLASS_LOCAL(StaticAutoGun);
+    }
+
+    NumericInRange<float> const& StaticAutoGun::Health() const
+    {
+        return m_health;
+    }
+
+    NumericInRange<float>& StaticAutoGun::Health()
+    {
+        return m_health;
+    }
+
+    eGObjPropertySaveStatus StaticAutoGun::GetPropertySaveStatus(int) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    CStr StaticAutoGun::GetPropertyName(int) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    StaticAutoGunPrototypeInfo const* StaticAutoGun::GetPrototypeInfo() const
+    {
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), StaticAutoGunPrototypeInfo const);
+    }
+
+    int StaticAutoGun::GetPropertyId(char const* propName) const
+    {
+        auto it = StaticAutoGun::m_propertiesMap.find(propName);
+        if (it != StaticAutoGun::m_propertiesMap.end())
+        {
+            return it->second;
+        }
+
+        return ComplexPhysicObj::GetPropertyId(propName);
+    }
+
+    void StaticAutoGun::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::RenderDebugInfo() const
+    {
+        // TODO: implement StaticAutoGun::RenderDebugInfo
+        // RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::Registration()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    bool StaticAutoGun::PointIsReachableForGun(CVector const&, retruxx::vector<int, retruxx::allocator<int>> const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    Gun* StaticAutoGun::getGun()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::InflictDamage(DamageInfo const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::FireFromWeapon(bool)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::SetPositionSelf(CVector const& pos)
+    {
+        ai::PhysicObj::SetPositionSelf(ai::GetGroundPos(pos, 1, 0));
+    }
+
+    bool StaticAutoGun::ApplyModifier(Modifier const&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::Update(float elapsedTime, unsigned workTime)
+    {
+        PhysicObj::Update(elapsedTime, workTime);
+        // TODO: implement StaticAutoGun::Update
+    }
+
+    StaticAutoGun::StaticAutoGun(StaticAutoGunPrototypeInfo const& prototype) :
+        ComplexPhysicObj(prototype),
+        m_health(prototype.m_maxHealth, 0.0, prototype.m_maxHealth),
+        m_timeForNextCheck(0.1, 0.0, 10.0, -1.0)
+    {
+        m_destroyedModelName = prototype.m_destroyedModelName;
+
+        m_health.m_BeforeValueApplyModifier = new ai::MemberFunctionTwoArgsRef<ai::StaticAutoGun, ai::Modifier, float, bool>(
+            *this, &StaticAutoGun::_OnHealthValueBeforeApplyModifier);
+        m_health.m_AfterValueChange =
+            new ai::MemberFunctionOneArg<ai::StaticAutoGun, float, void>(*this, &StaticAutoGun::_OnHealthValueAfterChange);
+
+        m_targetClasses.insert(RT_CLASS_LOCAL(Vehicle));
+        m_currentEnemyId = -1;
+        DisablePhysics();
+    }
+
+    void StaticAutoGun::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    m3d::Class* StaticAutoGun::GetBaseClass()
+    {
+        return RT_CLASS_LOCAL(ComplexPhysicObj);
+    }
+
+    float StaticAutoGun::GetMaxFiringRangeAI() const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::AddChild(Obj*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    bool StaticAutoGun::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
+    {
+        if (propertyId != 26)
+            return ai::PhysicObj::SetPropertyById(propertyId, newValue);
+        m_health.value().SetUnsafe(newValue.GetAsFloat());
+        return 1;
+    }
+
+    void StaticAutoGun::_InternalPostLoad()
+    {
+        ai::PhysicObj::_InternalPostLoad();
+        if (!IsAlive())
+        {
+            if (!m_destroyedModelName.empty())
+            {
+                auto* partByName = GetPartByName(STR_DOT);
+                if (partByName)
+                    partByName->SetModelNameUnsafe(m_destroyedModelName);
+            }
+        }
+    }
+
+    void StaticAutoGun::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::_Construct(bool bForAnimation)
+    {
+        ComplexPhysicObj::_Construct(bForAnimation);
+        for (auto* i = dBodyGetFirstGeom(m_body->id()); i; i = dGeomGetBodyNext(i))
+        {
+            dGeomSetCategoryBits(i, 1u);
+            dGeomSetCollideBits(i, 0xFFFFFFFE);
+        }
+
+        auto* partByName = GetPartByName(STR_DOT);
+        if (partByName)
+        {
+            theObjects->AddObjToNotUpdate(partByName);
+        }
+    }
+
+    bool StaticAutoGun::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    StaticAutoGun::~StaticAutoGun() = default;
+
+    bool StaticAutoGun::_GetPropertyInternal(int, m3d::AIParam&) const
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    m3d::Object* StaticAutoGun::CreateObject()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    bool StaticAutoGun::_OnHealthValueBeforeApplyModifier(Modifier const&, float&)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    void StaticAutoGun::_OnHealthValueAfterChange(float)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    m3d::Object* StaticAutoGun::Clone()
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+}  // namespace ai
