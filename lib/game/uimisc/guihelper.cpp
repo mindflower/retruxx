@@ -310,4 +310,14 @@ namespace help
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
+
+    ai::Bar* GetBarWithBarmanForTown(ai::Town const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    ai::Bar* GetBarWithoutBarmanForTown(ai::Town const*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 }  // namespace help

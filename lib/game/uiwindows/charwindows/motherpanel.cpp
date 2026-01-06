@@ -43,9 +43,13 @@ MotherPanel::AuxInfo::AuxInfo()
     m_pickUpSoundName = "SOUND_PICKUP_ITEMS_FROM_GROUND";
 }
 
-void MotherPanel::LeaveTown(bool)
+void MotherPanel::LeaveTown(bool bQuick)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: check this
+    if (M3D_APP->m_pInterfaceManager->GetCurrentTown() && IsInTownRoot())
+    {
+        Hide(true, bQuick);
+    }
 }
 
 CStr MotherPanel::Tab2Str(MotherPanel::Tab tabId)
@@ -90,17 +94,69 @@ m3d::Class* MotherPanel::GetBaseClass()
 
 bool MotherPanel::IsInTownRoot() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return M3D_APP->m_pInterfaceManager->GetCurrentTown() && IsPanelPresent(4) && m_panels.size() == 1;
 }
 
 MotherPanel::~MotherPanel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto* tabBtn : m_tabButtons)
+    {
+        delete tabBtn;
+    }
 }
 
-void MotherPanel::UpdateTabButtonsOnEnterTown(ai::Town const*)
+void MotherPanel::UpdateTabButtonsOnEnterTown(ai::Town const* town)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TOOD: generated code MotherPanel::UpdateTabButtonsOnEnterTown
+    // Only proceed if we have game data flag 1 and a valid town
+    if ((m_gameDataFlags & 1) == 0 || !town)
+    {
+        return;
+    }
+
+    // Update tab buttons based on town availability
+    for (size_t i = 0; i < m_tabButtons.size(); ++i)
+    {
+        MotherPanelTabButton* button = m_tabButtons[i];
+        if (!button || button->GetMode() == MotherPanelTabButton::MODE_NUM_MODES)
+        {
+            continue;
+        }
+
+        // Only process specific tab types
+        switch (button->GetTabId())
+        {
+        case TAB_INVENTORY_VS_SHOP:
+        case TAB_CHARACTERISTIC_VS_WORKSHOP:
+        case TAB_BAR:
+        case TAB_ADDITIONAL_BUILDING:
+            // If this building exists in the town, update button to in-town mode
+            button->SetMode(MotherPanelTabButton::MODE_IN_TOWN);
+            break;
+        default:
+            continue;
+        }
+    }
+
+    // Handle bar with barman
+    if (help::GetBarWithBarmanForTown(town) && (m_gameDataFlags & 1) != 0)
+    {
+        m3d::Object* barWithBarmanButton = reinterpret_cast<m3d::Object*>(m_tabButtons[5]);
+        if (!m3d::Object::IsDirectChild(barWithBarmanButton))
+        {
+            AddChild(barWithBarmanButton);
+        }
+    }
+
+    // Handle bar without barman
+    if (help::GetBarWithoutBarmanForTown(town) && (m_gameDataFlags & 1) != 0)
+    {
+        m3d::Object* barWithoutBarmanButton = reinterpret_cast<m3d::Object*>(m_tabButtons[6]);
+        if (!m3d::Object::IsDirectChild(barWithoutBarmanButton))
+        {
+            AddChild(barWithoutBarmanButton);
+        }
+    }
 }
 
 int MotherPanel::OnBeforeAddToWndStation()
@@ -110,7 +166,7 @@ int MotherPanel::OnBeforeAddToWndStation()
 
 void MotherPanel::OnBtnExitClick(m3d::ui::Wnd*, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    OnEscape();
 }
 
 void MotherPanel::ClearPanels(std::vector<ChildPanelId> const& previousPanelsToRemain)
@@ -307,7 +363,20 @@ void MotherPanel::AdjustAnimationOnShowPanels(
 
 void MotherPanel::OnMap()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        std::vector<std::pair<MotherPanel::ChildPanelId, int>> panels;
+        if (M3D_APP->m_pInterfaceManager->GetCurrentTown() && !IsPanelPresent(4))
+        {
+            panels.push_back({PANEL_TOWN, 4});
+        }
+
+        panels.push_back({PANEL_PALM, 82});
+
+        // TODO: check this
+        ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_MAP);
+        ShowPanels(panels, {PANEL_TOWN});
+    }
 }
 
 void MotherPanel::OnAdditionalBuilding()
@@ -550,7 +619,20 @@ bool MotherPanel::IsPanelPresent(int guiId) const
 
 void MotherPanel::OnJournal()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        std::vector<std::pair<MotherPanel::ChildPanelId, int>> panels;
+        if (M3D_APP->m_pInterfaceManager->GetCurrentTown() && !IsPanelPresent(4))
+        {
+            panels.push_back({PANEL_TOWN, 4});
+        }
+
+        panels.push_back({PANEL_PALM, 16});
+
+        // TODO: check this
+        ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_JOURNAL);
+        ShowPanels(panels, {PANEL_TOWN});
+    }
 }
 
 bool MotherPanel::CanChildPanelBeLaunchedNow(ChildPanelId panelId) const
@@ -795,7 +877,21 @@ void MotherPanel::OnGlobalMap()
 
 void MotherPanel::OnCharacteristics()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        std::vector<std::pair<MotherPanel::ChildPanelId, int>> panels;
+        if (M3D_APP->m_pInterfaceManager->GetCurrentTown() && !IsPanelPresent(4))
+        {
+            panels.push_back({PANEL_TOWN, 4});
+        }
+
+        panels.push_back({PANEL_RIGHT, 64});
+        panels.push_back({PANEL_LEFT, 69});
+
+        // TODO: check this
+        ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_VEHICLE);
+        ShowPanels(panels, {PANEL_TOWN});
+    }
 }
 
 ai::Building const* MotherPanel::GetOnlyBuilding() const

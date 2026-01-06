@@ -10,6 +10,8 @@ namespace m3d
 namespace ai
 {
     class Obj;
+    class Bar;
+    class Town;
 }
 namespace m3d
 {
@@ -95,4 +97,7 @@ namespace help
     bool WindowsFileExists(CStr const& filePath);
 
     int DestroyVehicle(int);
+
+    ai::Bar* GetBarWithBarmanForTown(ai::Town const*);
+    ai::Bar* GetBarWithoutBarmanForTown(ai::Town const*);
 }  // namespace help
