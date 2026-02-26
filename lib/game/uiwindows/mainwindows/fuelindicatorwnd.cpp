@@ -16,7 +16,7 @@ void FuelIndicatorWnd::SetVehicleId(int)
 
 m3d::Class* FuelIndicatorWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(FuelIndicatorWnd);
 }
 
 FuelIndicatorWnd::~FuelIndicatorWnd()
@@ -54,11 +54,18 @@ FuelIndicatorWnd::FuelIndicatorWnd()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int FuelIndicatorWnd::GameDataUpdate(void*, int)
+int FuelIndicatorWnd::GameDataUpdate(void*, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (dataType == 89)
+    {
+        UpdateProgressBar();
+        UpdateLowFuelIco();
+    }
+    return 1;
 }
 
 int FuelIndicatorWnd::UpdateProgressBar()

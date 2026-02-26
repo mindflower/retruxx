@@ -2,10 +2,25 @@
 
 #include "core/log.h"
 #include "server/dynamicquestmanager.h"
+#include <ui/modelwnd.h>
+#include <ui/progressbarwnd.h>
+#include "twinklinglampwnd.h"
+#include "electronicdigitalwnd.h"
+#include "ui/ui_srv.h"
+#include <game/m3dgame.h>
 
 RT_CLASS_EXPORTS_BEGIN(HealthIndicatorInMainInterfaceWnd)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(HealthIndicatorInMainInterfaceWnd);
+
+HealthIndicatorInMainInterfaceWnd::AuxInfo::AuxInfo()
+{
+    m_wndLowHpLampName = "wndLowHpLamp";
+    m_wndProgressBarName = "wndHpProgressBar";
+    m_wndValueName = "wndHpValue";
+    m_wndOverlayName = "wndHpProgressBarOverlay";
+    m_strHealthId = "Construction";
+}
 
 m3d::Object* HealthIndicatorInMainInterfaceWnd::Clone()
 {
@@ -19,9 +34,18 @@ void HealthIndicatorInMainInterfaceWnd::SetType(Type)
 
 int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
+    using namespace m3d::ui;
+
     if (!patternWnd)
     {
         M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null patternWnd");
+        return 0;
+    }
+
+    auto* parent = patternWnd->GetParent();
+    if (!parent || IS_KIND_OF(parent, Wnd))
+    {
+        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null parent");
         return 0;
     }
 
@@ -57,12 +81,99 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
     SetOnShowAnimation(patternWnd->GetOnShowAnimation());
     SetOnHideAnimation(patternWnd->GetOnHideAnimation());
 
-    RETRUXX_NOT_IMPLEMENTED;
-    auto* parent = patternWnd->GetParent();
-    if (!parent || !IS_KIND_OF(parent, Wnd))
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndOverlayName), Wnd))
     {
-        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null parent for paternWnd");
-        return 0;
+        parent->RemoveChild(child);
+        AddChild(child);
+
+        auto bounds = child->GetBounds();
+        auto const parentBounds = GetBounds();
+        bounds.x0 -= parentBounds.x0;
+        bounds.y0 -= parentBounds.y0;
+        child->SetBounds(bounds, false);
+    }
+    else
+    {
+        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndOverlayName + " is not found or incorrect type");
+    }
+
+    if (auto child = RT_DYNCAST(patternWnd->GetChildByName(m_aif.m_wndLowHpLampName), ImageWnd))
+    {
+        m_wndLowHpLamp = (TwinklingLampWnd*)M3D_KERNEL->New("TwinklingLampWnd");
+        if (m_wndLowHpLamp)
+        {
+            if (!m_wndLowHpLamp->CreateFromPattern(child, true))
+            {
+                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndLowHpLampName + " from pattern class");
+            }
+        }
+        else
+        {
+            M3D_LOG_INFO(
+                "Make control error: cannot create " + m_aif.m_wndLowHpLampName +
+                " - cannot find rtti class TwinklingLampWnd");
+        }
+    }
+    else
+    {
+        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndLowHpLampName + " is not found or incorrect type");
+    }
+
+    if (auto child = RT_DYNCAST(patternWnd->GetChildByName(m_aif.m_wndProgressBarName), ProgressBarWnd))
+    {
+        m_wndProgressBar = child;
+    }
+    else
+    {
+        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndProgressBarName + " is not found or incorrect type");
+    }
+
+    if (m_wndProgressBar)
+    {
+        parent->RemoveChild(m_wndProgressBar);
+        AddChild(m_wndProgressBar);
+
+        auto bounds = m_wndProgressBar->GetBounds();
+        auto const parentBounds = GetBounds();
+        bounds.x0 -= parentBounds.x0;
+        bounds.y0 -= parentBounds.y0;
+        m_wndProgressBar->SetBounds(bounds, false);
+    }
+
+    if (auto child = RT_DYNCAST(patternWnd->GetChildByName(m_aif.m_wndValueName), ImageWnd))
+    {
+        m_wndValue = (ElectronicDigitalWnd*)M3D_KERNEL->New("ElectronicDigitalWnd");
+        if (m_wndValue)
+        {
+            if (!m_wndValue->CreateFromPattern(child, true))
+            {
+                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndValueName + " from pattern class");
+            }
+        }
+        else
+        {
+            M3D_LOG_INFO(
+                "Make control error: cannot create " + m_aif.m_wndValueName +
+                " - cannot find rtti class ElectronicDigitalWnd");
+        }
+    }
+    else
+    {
+        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndLowHpLampName + " is not found or incorrect type");
+    }
+
+    if (m_wndValue)
+    {
+        patternWnd->RemoveChild(m_wndValue);
+        AddChild(m_wndValue);
+
+        auto bounds = m_wndValue->GetBounds();
+        auto const parentBounds = GetBounds();
+        bounds.x0 -= parentBounds.x0;
+        bounds.y0 -= parentBounds.y0;
+        m_wndValue->SetBounds(bounds, false);
+
+        m_wndValue->SetDigitalSize(ElectronicDigitalWnd::DIGITAL_SIZE_LARGE);
     }
 
     parent->AddChild(this);
@@ -72,6 +183,9 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
         // TODO: check this obj delete
         patternWnd->DecRef();
     }
+
+    m_strHealth = M3D_APP->GetStringByStringId0(m_aif.m_strHealthId);
+    FullUpdate(true);
 
     m_gameDataFlags |= 1u;
     return 1;

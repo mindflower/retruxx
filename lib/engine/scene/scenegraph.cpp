@@ -22,7 +22,6 @@
 #include "scene/nodes/sgnodestaticmodel.h"
 #include "scene/servers/dataserver.h"
 
-
 namespace
 {
     float const VISCELL_EDGE_LENGTH_6 = 128.0;
@@ -34,7 +33,7 @@ namespace
 
 namespace
 {
-    void CheckNodeValidity(m3d::SgNode* node, const char* debugStr)
+    void CheckNodeValidity(m3d::SgNode* node, char const* debugStr)
     {
         // TODO: implement CheckNodeValidity
         // RETRUXX_NOT_IMPLEMENTED;
@@ -45,17 +44,17 @@ namespace m3d
 {
     float IsNodeTransparent::getTransparentRadius()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return M3D_ENGINE_CFG.m_g_transparentRadius.GetF();
     }
 
     bool IsNodeTransparent::setPermanentTransparency(SgNode*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return false;
     }
 
     bool IsNodeTransparent::test(SgNode*, float)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return true;
     }
 
     void SceneGraph::LinkNode(SgNode* toLink)
@@ -69,14 +68,18 @@ namespace m3d
         toLink->m_forGraph->m_cellsCoveredPoint0 = p0;
         toLink->m_forGraph->m_cellsCoveredPoint1 = p1;
 
-        if (p0.x <= p1.x) {
+        if (p0.x <= p1.x)
+        {
             int y = p0.y;
             int v5 = p1.y;
 
-            for (int x = p0.x; x <= p1.x; x++) {
+            for (int x = p0.x; x <= p1.x; x++)
+            {
                 int j = y;
-                if (y <= v5) {
-                    do {
+                if (y <= v5)
+                {
+                    do
+                    {
                         int cellIndex = x + (j << 6);
                         m3d::SceneGraph::CellItems& v7 = m_cellItems[cellIndex];
                         v7.m_nodesLinkedDirect.AddObject(toLink);
@@ -89,11 +92,13 @@ namespace m3d
         auto v13 = m_owner->m_level->land_size - 1;
         int modelCastShadow = 0;
         toLink->GetServerItemProperty(0, &modelCastShadow);
-        if (modelCastShadow) {
+        if (modelCastShadow)
+        {
             int v35 = 0;
             toLink->GetProperty(8721u, &v35);
 
-            if (v35) {
+            if (v35)
+            {
                 auto v15 = toLink->m_currentWorldOrigin.y;
                 auto x = toLink->m_currentWorldOrigin.x;
                 auto z = toLink->m_currentWorldOrigin.z;
@@ -119,8 +124,10 @@ namespace m3d
                 z0 = std::clamp(v25, 0, v13);
                 z1 = std::clamp(v28, 0, v13);
 
-                for (int xCoord = x0; xCoord <= x1; xCoord++) {
-                    for (int zCoord = z0; zCoord <= z1; zCoord++) {
+                for (int xCoord = x0; xCoord <= x1; xCoord++)
+                {
+                    for (int zCoord = z0; zCoord <= z1; zCoord++)
+                    {
                         int cellIndex = 64 * zCoord + xCoord;
                         m3d::SceneGraph::CellItems& cell = m_cellItems[cellIndex];
 
@@ -153,7 +160,7 @@ namespace m3d
         int currentZ = static_cast<int>(gridScale * origin.z);
 
         // Initialize sorted cells tops (tracking how many cells are at each distance)
-        int SortedCellsTops[256] = { 0 };
+        int SortedCellsTops[256] = {0};
 
         int levelSize = this->m_owner->m_level->land_size;
 
@@ -199,7 +206,8 @@ namespace m3d
     void SceneGraph::UnlinkAndDeleteAll()
     {
         m_bIsInUnlinkAndDeleteAll = true;
-        for (auto* node = dynamic_cast<m3d::SgNode*>(m_rootNode.GetFirstChild()); node != nullptr; node = dynamic_cast<m3d::SgNode*>(node->GetNextSibling()))
+        for (auto* node = dynamic_cast<m3d::SgNode*>(m_rootNode.GetFirstChild()); node != nullptr;
+             node = dynamic_cast<m3d::SgNode*>(node->GetNextSibling()))
         {
             UnlinkNode(node);
         }
@@ -220,9 +228,66 @@ namespace m3d
         m_thinkList.erase(toThink);
     }
 
-    float SceneGraph::GetAlphaForNode(SgNode*)
+    float SceneGraph::GetAlphaForNode(SgNode* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: generated code SceneGraph::GetAlphaForNode
+        // Calculate alpha steps based on engine configuration
+        int const alphaSteps = 256 / (M3D_ENGINE_CFG.m_alphaTestWorld.GetI() + 1);
+        float const alphaStep = 1.0f / static_cast<float>(alphaSteps);
+
+        float maxAlpha = 1.0f;
+        float currentAlpha = 1.0f;
+
+        // Get timer for TTL calculation
+        auto const& timer = M3D_KERNEL->GetTimer();
+
+        // Handle TTL (time to live) - fade in effect for newly spawned nodes
+        if (node->m_ttl > 0)
+        {
+            int timeSinceSpawn = node->m_ttl - timer.GetFrameStartTime();
+            if (timeSinceSpawn >= 0 && timeSinceSpawn < 1500)
+            {
+                maxAlpha = static_cast<float>(timeSinceSpawn) * 0.00066666666f;
+            }
+        }
+
+        // Reduce alpha for small on-screen objects if model culling is enabled
+        if (node->m_onScreenSize < 20.0f && !m_noModelCull)
+        {
+            currentAlpha = node->m_onScreenSize * 0.051282052f;
+        }
+
+        // Handle static model nodes with server-side transparency
+        if (IS_KIND_OF(node, SgStaticModelNode))
+        {
+            float transparency = 0.0f;
+            node->GetServerItemProperty(2, &transparency);
+
+            if (transparency != 0.0f)
+            {
+                // Calculate distance from camera to node
+                auto renderer = Application::g_pApp->m_renderer;
+                CVector cameraPos = renderer->MatGetOrgInv();
+
+                CVector delta = cameraPos - node->m_originWorldAbsForSphere;
+                float distance = delta.length() - 64.0f - node->m_boundingRadius;
+
+                if (distance < 0.0f)
+                {
+                    distance = 0.0f;
+                }
+
+                // Apply distance-based alpha fade
+                if (distance <= 64.0f)
+                {
+                    float distanceFactor = distance * 0.015625f;  // distance / 64
+                    currentAlpha = (maxAlpha - alphaStep) * (distanceFactor * distanceFactor) + alphaStep;
+                }
+            }
+        }
+
+        // Return the minimum of max alpha and current alpha
+        return std::min(maxAlpha, currentAlpha);
     }
 
     void SceneGraph::UpdateThinkNodes()
@@ -245,7 +310,7 @@ namespace m3d
         }
     }
 
-    void SceneGraph::DumpRenderingNodesInfoForClass(const Class*)
+    void SceneGraph::DumpRenderingNodesInfoForClass(Class const*)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -257,15 +322,15 @@ namespace m3d
 
     SgNode const* SceneGraph::GetRootNode() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return &m_rootNode;
     }
 
     void SceneGraph::RelinkNode(SgNode* toRelink, bool bForceRelink)
     {
         if (bForceRelink || toRelink->VisCellBoundsChanged())
         {
-            m3d::SceneGraph::UnlinkNode(toRelink);
-            m3d::SceneGraph::LinkNode(toRelink);
+            UnlinkNode(toRelink);
+            LinkNode(toRelink);
         }
     }
 
@@ -283,8 +348,8 @@ namespace m3d
             if (m_bIsPurgingRemoveIfFree)
             {
                 M3D_LOG_WARN(
-                    "Warning: inserting node in RemoveIfFree when it is being purged! node name = '" + CStr(toInsert->GetName()) + "', class = '" +
-                    CStr(toInsert->GetClassNameA()));
+                    "Warning: inserting node in RemoveIfFree when it is being purged! node name = '" +
+                    CStr(toInsert->GetName()) + "', class = '" + CStr(toInsert->GetClassNameA()));
             }
 
             toInsert->RemoveImmediateAfterParent(false);
@@ -401,18 +466,17 @@ namespace m3d
                 cellItems.m_nodesLinkedDirect.RemoveObject(toUnlink);
 
                 // Determine if this is the last cell (for cleanup purposes)
-                bool isLastCell = (x == graphItems->m_cellsCoveredPoint1.x &&
-                                   y == graphItems->m_cellsCoveredPoint1.y);
+                bool isLastCell = (x == graphItems->m_cellsCoveredPoint1.x && y == graphItems->m_cellsCoveredPoint1.y);
 
                 // Unlink collision geometries from landscape
-                m_owner->GetLandscape().UnlinkNodeCollisionGeomsFromCell(
-                    toUnlink, x, y, isLastCell);
+                m_owner->GetLandscape().UnlinkNodeCollisionGeomsFromCell(toUnlink, x, y, isLastCell);
 
                 // Process child nodes recursively using a stack
                 std::vector<m3d::Object*> stack;
                 stack.push_back(toUnlink);
 
-                while (!stack.empty()) {
+                while (!stack.empty())
+                {
                     m3d::Object* current = stack.back();
                     stack.pop_back();
 
@@ -421,8 +485,7 @@ namespace m3d
                     while (childNode)
                     {
                         // Unlink child's collision geometries
-                        m_owner->GetLandscape().UnlinkNodeCollisionGeomsFromCell(
-                            childNode, x, y, isLastCell);
+                        m_owner->GetLandscape().UnlinkNodeCollisionGeomsFromCell(childNode, x, y, isLastCell);
 
                         // If child has children, add to stack for processing
                         if (childNode->GetFirstChild())
@@ -437,8 +500,7 @@ namespace m3d
         }
 
         // Remove from shadow coverage
-        for (auto it = graphItems->m_cellsShadowCovered.begin();
-             it != graphItems->m_cellsShadowCovered.end(); ++it)
+        for (auto it = graphItems->m_cellsShadowCovered.begin(); it != graphItems->m_cellsShadowCovered.end(); ++it)
         {
             uint32_t cellKey = *it;
             int cellX = cellKey & 0xFFFF;
@@ -455,8 +517,8 @@ namespace m3d
         }
 
         // Clean up graph items
-        graphItems->m_cellsCoveredPoint0 = { 0, 0 };
-        graphItems->m_cellsCoveredPoint1 = { -1, -1 };
+        graphItems->m_cellsCoveredPoint0 = {0, 0};
+        graphItems->m_cellsCoveredPoint1 = {-1, -1};
 
         graphItems->m_cellsShadowCovered.clear();
 
@@ -472,9 +534,8 @@ namespace m3d
     bool SceneGraph::IsLinkedNode(SgNode* toCheck)
     {
         auto* forGraph = toCheck->m_forGraph;
-        return forGraph
-            && forGraph->m_cellsCoveredPoint0.x <= forGraph->m_cellsCoveredPoint1.x
-            && forGraph->m_cellsCoveredPoint0.y <= forGraph->m_cellsCoveredPoint1.y;
+        return forGraph && forGraph->m_cellsCoveredPoint0.x <= forGraph->m_cellsCoveredPoint1.x &&
+            forGraph->m_cellsCoveredPoint0.y <= forGraph->m_cellsCoveredPoint1.y;
     }
 
     bool SceneGraph::IsCellVisible(int, int) const
@@ -559,11 +620,12 @@ namespace m3d
     void SceneGraph::LightSetupLightsForNode(SgNode* node)
     {
         // TODO: generated code SceneGraph::LightSetupLightsForNode
-        if (!node || !m_owner) return;
+        if (!node || !m_owner)
+            return;
 
         // Transform the sun direction by the node's inverse transpose (for normal transformation)
-        const CVector& sunDir = m_owner->GetSun(0.0);
-        const CMatrix& transform = node->m_currentXForm;
+        CVector const& sunDir = m_owner->GetSun(0.0);
+        CMatrix const& transform = node->m_currentXForm;
 
         // Calculate the transformed light direction (applying the node's rotation)
         // This appears to be transforming the sun direction by the upper 3x3 of the matrix
@@ -597,7 +659,7 @@ namespace m3d
 
     void SceneGraph::Update()
     {
-        const auto frameStartTime = M3D_KERNEL->GetTimer().GetFrameStartTime();
+        auto const frameStartTime = M3D_KERNEL->GetTimer().GetFrameStartTime();
         UpdateAllXForms();
         auto ttlIt = m_ttledList.begin();
         while (ttlIt != m_ttledList.end())
@@ -659,8 +721,7 @@ namespace m3d
 
                 // If node is linked in the spatial partitioning, unlink it
                 GraphItemsForSgNode* graphItems = currentNode->m_forGraph;
-                if (graphItems &&
-                    graphItems->m_cellsCoveredPoint0.x <= graphItems->m_cellsCoveredPoint1.x &&
+                if (graphItems && graphItems->m_cellsCoveredPoint0.x <= graphItems->m_cellsCoveredPoint1.x &&
                     graphItems->m_cellsCoveredPoint0.y <= graphItems->m_cellsCoveredPoint1.y)
                 {
                     UnlinkNode(currentNode);
@@ -732,8 +793,8 @@ namespace m3d
 
     void SceneGraph::Render(SgRenderFlags flags)
     {
-        const auto frameStart = M3D_KERNEL->GetTimer().GetFrameStartTime();
-        const auto lastFrameTime = M3D_KERNEL->GetTimer().GetLastFrameTime();
+        auto const frameStart = M3D_KERNEL->GetTimer().GetFrameStartTime();
+        auto const lastFrameTime = M3D_KERNEL->GetTimer().GetLastFrameTime();
         if (flags == SGRF_LOW_DETAIL || flags < SGRF_SHADOWS)
         {
             retruxx::vector<int> effectiveClasses;
@@ -787,7 +848,7 @@ namespace m3d
                 }
             }
 
-            for (const auto clsIdx : effectiveClasses)
+            for (auto const clsIdx : effectiveClasses)
             {
                 if (m_visNumSlots[clsIdx])
                 {
@@ -827,7 +888,6 @@ namespace m3d
                             {
                                 server->RenderItem(-3, 0);
                             }
-
                         }
                     }
                 }
@@ -850,7 +910,7 @@ namespace m3d
         this->m_bIsInUnlinkAndDeleteAll = 0;
         this->m_bIsPurgingRemoveIfFree = 0;
         this->m_easyRelink = 0;
-        this->m_roadProjectorShader = M3D_RENDERER->NewEffect( "data/shaders/roadProjector.fx", true);
+        this->m_roadProjectorShader = M3D_RENDERER->NewEffect("data/shaders/roadProjector.fx", true);
         M3D_ASSERT(m_roadProjectorShader);
         this->m_roadProjectorShader->SetDefaultTechnique(true);
         this->m_lsProjectorShader = M3D_RENDERER->NewEffect("data/shaders/lsProjector.fx", true);
@@ -880,18 +940,19 @@ namespace m3d
         this->m_texShadow = M3D_RENDERER->AddDynamicTexture(
             "$TexShadow",
             g_Kernel->GetEngineCfg().m_lgtShadowTexSz.GetI(),
-            g_Kernel->GetEngineCfg().m_lgtShadowTexSz.GetI(), 6);
+            g_Kernel->GetEngineCfg().m_lgtShadowTexSz.GetI(),
+            6);
         this->m_detTexShadow = M3D_RENDERER->AddDynamicTexture(
             "$DetTexShadow",
             g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
-            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(), 6);
+            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
+            6);
         this->m_texBlurShadow = M3D_RENDERER->AddDynamicTexture(
             "$TexBlurShadow",
             g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
-            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(), 6);
-        M3D_RENDERER->SetTextureParameter(
-            this->m_texBlurShadow,
-            rend::TM_TEX_FILTER, 5u);
+            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
+            6);
+        M3D_RENDERER->SetTextureParameter(this->m_texBlurShadow, rend::TM_TEX_FILTER, 5u);
         this->m_lsShadowShader = M3D_RENDERER->NewEffect("data/shaders/lsShadows.fx", true);
         M3D_ASSERT(m_lsShadowShader);
         this->m_lsShadowShader->SetDefaultTechnique(true);
@@ -910,15 +971,17 @@ namespace m3d
         this->m_blurShadowShader = M3D_RENDERER->NewEffect("data/shaders/blurShadow.fx", true);
         M3D_ASSERT(m_blurShadowShader);
         this->m_blurShadowShader->SetDefaultTechnique(true);
-        this->m_grassShadowVs = M3D_RENDERER->NewHlslShader("data/shaders/grassShadows.vs", "GrassVS", rend::IHlslShader::VS_1_1);
+        this->m_grassShadowVs =
+            M3D_RENDERER->NewHlslShader("data/shaders/grassShadows.vs", "GrassVS", rend::IHlslShader::VS_1_1);
         M3D_ASSERT(m_grassShadowVs);
-        this->m_grassShadowPs = M3D_RENDERER->NewHlslShader("data/shaders/grassShadows.ps", "GrassPS", rend::IHlslShader::PS_1_1);
+        this->m_grassShadowPs =
+            M3D_RENDERER->NewHlslShader("data/shaders/grassShadows.ps", "GrassPS", rend::IHlslShader::PS_1_1);
         M3D_ASSERT(m_grassShadowPs);
         this->m_contourShader = M3D_RENDERER->NewEffect("data/shaders/contour.fx", true);
         M3D_ASSERT(m_contourShader);
         this->m_contourShader->SetDefaultTechnique(true);
         this->m_rootNode.m_isRootNode = 1;
-        this->m_rootNode.UpdateXForm(false , true);
+        this->m_rootNode.UpdateXForm(false, true);
         memset(this->m_enableMap, 0, sizeof(this->m_enableMap));
         this->m_enableVisSpaceMask = 1;
 
@@ -939,7 +1002,7 @@ namespace m3d
         this->m_cellsPrepared = 0;
     }
 
-    void SceneGraph::UpdateVis(bool newFrame, const CClipper& frusta, bool primary)
+    void SceneGraph::UpdateVis(bool newFrame, CClipper const& frusta, bool primary)
     {
         if (newFrame)
         {
@@ -953,8 +1016,7 @@ namespace m3d
             camOrg = M3D_RENDERER->MatGetOrgInv();
             transparentRadius = m_transparencyTest->getTransparentRadius();
 
-            const auto curFrame = M3D_KERNEL->GetTimer().GetCurFrame()
-            ;
+            auto const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
             float lsViewDistanceDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
             lsViewDistanceDivider = ((lsViewDistanceDivider * 8.0) + 4.0);
             if (lsViewDistanceDivider >= 4)
@@ -975,16 +1037,19 @@ namespace m3d
                 inTransparencyRadius = false;
                 if (primary)
                 {
-                    inTransparencyRadius = (((VISCELL_EDGE_LENGTH_6 * 0.70700002)
-                                             + transparentRadius)
-                                             * ((VISCELL_EDGE_LENGTH_6 * 0.70700002)
-                                                + transparentRadius)) > ((((((y + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.z) * (((y + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.z)) + ((camOrg.y - camOrg.y) * (camOrg.y - camOrg.y))) + ((((x + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.x) * (((x + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.x)));
+                    inTransparencyRadius = (((VISCELL_EDGE_LENGTH_6 * 0.70700002) + transparentRadius) *
+                                            ((VISCELL_EDGE_LENGTH_6 * 0.70700002) + transparentRadius)) >
+                        ((((((y + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.z) *
+                           (((y + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.z)) +
+                          ((camOrg.y - camOrg.y) * (camOrg.y - camOrg.y))) +
+                         ((((x + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.x) *
+                          (((x + 0.5) * VISCELL_EDGE_LENGTH_6) - camOrg.x)));
                 }
 
                 auto idx = x + (y << 6);
                 m_cellItems[idx].m_bVisibleInCurrentFrame = true;
                 auto* objects = m_cellItems[idx].m_nodesLinkedDirect.GetObjects();
-                for (int i = 0 ; i < 64; ++i)
+                for (int i = 0; i < 64; ++i)
                 {
                     for (auto& obj : objects[i])
                     {
@@ -1004,7 +1069,7 @@ namespace m3d
                 }
                 v12 += 2000;
             }
-            for (int  k = 0; k < this->m_numTransparentNodes; ++k)
+            for (int k = 0; k < this->m_numTransparentNodes; ++k)
             {
                 auto v18 = this->m_transparentNodes[k];
                 v18->m_isWaitingForRender = 0;
@@ -1088,7 +1153,7 @@ namespace m3d
         box[3] = v5;
         m_owner->GetLandscape().getMinMaxHeightForBox(box, 0.0);
         frusta.enableAll();
-        enableVisibleCells_r(frusta, box, or );
+        enableVisibleCells_r(frusta, box, or);
         //RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -1249,7 +1314,8 @@ namespace m3d
             auto origin = M3D_RENDERER->GetViewOrigin();
             auto v12 = origin.z - n->m_currentWorldOrigin.z;
             auto v13 = origin.y - n->m_currentWorldOrigin.y;
-            if ((((v12 * v12) + (v13 * v13)) + ((origin.x - n->m_currentWorldOrigin.x) * (origin.x - n->m_currentWorldOrigin.x))) <= (prop * prop))
+            if ((((v12 * v12) + (v13 * v13)) +
+                 ((origin.x - n->m_currentWorldOrigin.x) * (origin.x - n->m_currentWorldOrigin.x))) <= (prop * prop))
             {
                 n->m_isWaitingForRender = true;
                 *(&this->m_visSlots[2000 * cls->m_index] + this->m_visNumSlots[cls->m_index]++) = n;
@@ -1261,7 +1327,7 @@ namespace m3d
 
         auto& orgForSphere = n->m_originWorldAbsForSphere;
         auto na = n->m_boundingRadius;
-        if (!frusta.testSphere(orgForSphere, na*2.0))
+        if (!frusta.testSphere(orgForSphere, na * 2.0))
         {
             return 0;
         }
@@ -1290,9 +1356,8 @@ namespace m3d
     void SceneGraph::RemoveNodeExceptRemoveIfFree(SgNode*& toRemove)
     {
         auto forGraph = toRemove->m_forGraph;
-        if (forGraph
-            && forGraph->m_cellsCoveredPoint0.x <= forGraph->m_cellsCoveredPoint1.x
-            && forGraph->m_cellsCoveredPoint0.y <= forGraph->m_cellsCoveredPoint1.y)
+        if (forGraph && forGraph->m_cellsCoveredPoint0.x <= forGraph->m_cellsCoveredPoint1.x &&
+            forGraph->m_cellsCoveredPoint0.y <= forGraph->m_cellsCoveredPoint1.y)
         {
             UnlinkNode(toRemove);
         }
@@ -1373,7 +1438,15 @@ namespace m3d
         enableCellsSetRect(rrc, v0, v1);
     }
 
-    SgNode* SceneGraph::TraceLineThruCellNodesForClass(float&, int, int, CVector const&, CVector const&, Class*, retruxx::set<SgNode*>&, unsigned)
+    SgNode* SceneGraph::TraceLineThruCellNodesForClass(
+        float&,
+        int,
+        int,
+        CVector const&,
+        CVector const&,
+        Class*,
+        retruxx::set<SgNode*>&,
+        unsigned)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -1436,15 +1509,12 @@ namespace m3d
         if (n->m_transparencyType == TT_PERMANENT)
             return this->m_transparencyTest->setPermanentTransparency(n);
 
-        if (!inTransparencyRadius )
+        if (!inTransparencyRadius)
             return 0;
 
-        auto na = (((n->m_originWorldAbsForSphere.z - camOrg.z)
-                    * (n->m_originWorldAbsForSphere.z - camOrg.z))
-                   + ((n->m_originWorldAbsForSphere.x - camOrg.x)
-                      * (n->m_originWorldAbsForSphere.x - camOrg.x)))
-            + ((n->m_originWorldAbsForSphere.y - camOrg.y)
-               * (n->m_originWorldAbsForSphere.y - camOrg.y));
+        auto na = (((n->m_originWorldAbsForSphere.z - camOrg.z) * (n->m_originWorldAbsForSphere.z - camOrg.z)) +
+                   ((n->m_originWorldAbsForSphere.x - camOrg.x) * (n->m_originWorldAbsForSphere.x - camOrg.x))) +
+            ((n->m_originWorldAbsForSphere.y - camOrg.y) * (n->m_originWorldAbsForSphere.y - camOrg.y));
 
         if (na >= (transparentRadius * transparentRadius))
             return 0;
@@ -1456,8 +1526,8 @@ namespace m3d
     void SceneGraph::enableVisibleCells_r(CClipper& frusta, float* box, unsigned int orFlags)
     {
         // TODO: generated code
-        const float VISCELL_EDGE_LENGTH = 128.0f;
-        const float MAX_LAND_SIZE = m_owner->m_level->land_size * VISCELL_EDGE_LENGTH;
+        float const VISCELL_EDGE_LENGTH = 128.0f;
+        float const MAX_LAND_SIZE = m_owner->m_level->land_size * VISCELL_EDGE_LENGTH;
 
         // Test bounding box against frustum
         CVector ofs(0, 0, 0);
@@ -1504,21 +1574,16 @@ namespace m3d
             // Create four sub-boxes
             float newBoxes[4][6] = {
                 // Bottom-left sub-box
-                { box[0],           box[1], box[2],
-                  box[0] + subWidth, box[4], box[2] + subDepth },
+                {box[0], box[1], box[2], box[0] + subWidth, box[4], box[2] + subDepth},
 
-                  // Bottom-right sub-box
-                  { box[0] + subWidth, box[1], box[2],
-                    box[0] + subWidth * 2, box[4], box[2] + subDepth },
+                // Bottom-right sub-box
+                {box[0] + subWidth, box[1], box[2], box[0] + subWidth * 2, box[4], box[2] + subDepth},
 
-                    // Top-right sub-box
-                    { box[0] + subWidth, box[1], box[2] + subDepth,
-                      box[0] + subWidth * 2, box[4], box[2] + subDepth * 2 },
+                // Top-right sub-box
+                {box[0] + subWidth, box[1], box[2] + subDepth, box[0] + subWidth * 2, box[4], box[2] + subDepth * 2},
 
-                      // Top-left sub-box
-                      { box[0],           box[1], box[2] + subDepth,
-                        box[0] + subWidth, box[4], box[2] + subDepth * 2 }
-            };
+                // Top-left sub-box
+                {box[0], box[1], box[2] + subDepth, box[0] + subWidth, box[4], box[2] + subDepth * 2}};
 
             // Process each sub-box
             for (auto& newBox : newBoxes)
@@ -1534,7 +1599,8 @@ namespace m3d
                 enableVisibleCells_r(frusta, newBox, orFlags);
             }
         }
-        else {
+        else
+        {
             // Box is small enough, mark cells
             enableCellsSetRect(box, orFlags, 0xFFFFFFFF);
         }
@@ -1572,7 +1638,7 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    const retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* ObjectsContainer::GetObjects() const
+    retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>> const* ObjectsContainer::GetObjects() const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -1586,4 +1652,4 @@ namespace m3d
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace m3d

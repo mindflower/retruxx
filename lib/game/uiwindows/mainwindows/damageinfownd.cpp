@@ -48,18 +48,21 @@ int DamageInfoWnd::UpdateOnPlayerVehicleChanged()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int DamageInfoWnd::GameDataUpdate(void*, int)
+int DamageInfoWnd::GameDataUpdate(void*, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (dataType == 64)
+    {
+        UpdateOnPlayerVehicleChanged();
+    }
+    return 1;
 }
 
 int DamageInfoWnd::GameDataSetup()
 {
-    // TODO: implement DamageInfoWnd::GameDataSetup
-    return 1;
-
     using namespace m3d::ui;
 
     if ((m_gameDataFlags & 2) == 0)
@@ -68,7 +71,8 @@ int DamageInfoWnd::GameDataSetup()
 
         if (auto child = RT_DYNCAST(GetChildByName(m_aif.m_wndHealthName), Wnd))
         {
-            m_wndHealth = static_cast<HealthIndicatorInMainInterfaceWnd*>(M3D_KERNEL->New("HealthIndicatorInMainInterfaceWnd"));
+            m_wndHealth =
+                static_cast<HealthIndicatorInMainInterfaceWnd*>(M3D_KERNEL->New("HealthIndicatorInMainInterfaceWnd"));
             if (m_wndHealth)
             {
                 if (!m_wndHealth->CreateFromPattern(child, true))
@@ -79,7 +83,9 @@ int DamageInfoWnd::GameDataSetup()
             }
             else
             {
-                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndHealthName + " - cannot find rtti class HealthIndicatorInMainInterfaceWnd");
+                M3D_LOG_INFO(
+                    "Make control error: cannot create " + m_aif.m_wndHealthName +
+                    " - cannot find rtti class HealthIndicatorInMainInterfaceWnd");
                 res = 0;
             }
         }
@@ -91,55 +97,64 @@ int DamageInfoWnd::GameDataSetup()
 
         if (auto child = RT_DYNCAST(GetChildByName(m_aif.m_wndCabinDurabilityName), ImageWnd))
         {
-            m_wndCabinDurability = static_cast<DurabilityIndicatorInMainInterfaceWnd*>(M3D_KERNEL->New("DurabilityIndicatorInMainInterfaceWnd"));
+            m_wndCabinDurability = static_cast<DurabilityIndicatorInMainInterfaceWnd*>(
+                M3D_KERNEL->New("DurabilityIndicatorInMainInterfaceWnd"));
             if (m_wndCabinDurability)
             {
                 if (!m_wndCabinDurability->CreateFromPattern(child, true))
                 {
-                    M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndCabinDurabilityName + " from pattern class");
+                    M3D_LOG_INFO(
+                        "Make control error: cannot create " + m_aif.m_wndCabinDurabilityName + " from pattern class");
                     res = 0;
                 }
             }
             else
             {
                 M3D_LOG_INFO(
-                    "Make control error: cannot create " + m_aif.m_wndCabinDurabilityName + " - cannot find rtti class DurabilityIndicatorInMainInterfaceWnd");
+                    "Make control error: cannot create " + m_aif.m_wndCabinDurabilityName +
+                    " - cannot find rtti class DurabilityIndicatorInMainInterfaceWnd");
                 res = 0;
             }
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndCabinDurabilityName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_wndCabinDurabilityName + " is not found or incorrect type");
             res = 0;
         }
 
         if (auto child = RT_DYNCAST(GetChildByName(m_aif.m_wndBasketDurabilityName), ImageWnd))
         {
-            m_wndBasketDurability = static_cast<DurabilityIndicatorInMainInterfaceWnd*>(M3D_KERNEL->New("DurabilityIndicatorInMainInterfaceWnd"));
+            m_wndBasketDurability = static_cast<DurabilityIndicatorInMainInterfaceWnd*>(
+                M3D_KERNEL->New("DurabilityIndicatorInMainInterfaceWnd"));
             if (m_wndBasketDurability)
             {
                 if (!m_wndBasketDurability->CreateFromPattern(child, true))
                 {
-                    M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndBasketDurabilityName + " from pattern class");
+                    M3D_LOG_INFO(
+                        "Make control error: cannot create " + m_aif.m_wndBasketDurabilityName + " from pattern class");
                     res = 0;
                 }
             }
             else
             {
                 M3D_LOG_INFO(
-                    "Make control error: cannot create " + m_aif.m_wndBasketDurabilityName + " - cannot find rtti class DurabilityIndicatorInMainInterfaceWnd");
+                    "Make control error: cannot create " + m_aif.m_wndBasketDurabilityName +
+                    " - cannot find rtti class DurabilityIndicatorInMainInterfaceWnd");
                 res = 0;
             }
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndBasketDurabilityName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_wndBasketDurabilityName + " is not found or incorrect type");
             res = 0;
         }
 
         if (auto child = RT_DYNCAST(GetChildByName(m_aif.m_wndFuelName), Wnd))
         {
-            m_wndFuel = static_cast<FuelIndicatorInMainInterfaceWnd*>(M3D_KERNEL->New("FuelIndicatorInMainInterfaceWnd"));
+            m_wndFuel =
+                static_cast<FuelIndicatorInMainInterfaceWnd*>(M3D_KERNEL->New("FuelIndicatorInMainInterfaceWnd"));
             if (m_wndFuel)
             {
                 if (!m_wndFuel->CreateFromPattern(child, true))
@@ -150,7 +165,9 @@ int DamageInfoWnd::GameDataSetup()
             }
             else
             {
-                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndFuelName + " - cannot find rtti class FuelIndicatorInMainInterfaceWnd");
+                M3D_LOG_INFO(
+                    "Make control error: cannot create " + m_aif.m_wndFuelName +
+                    " - cannot find rtti class FuelIndicatorInMainInterfaceWnd");
                 res = 0;
             }
         }
@@ -205,7 +222,7 @@ int DamageInfoWnd::GameDataSetup()
         }
     }
 
-   if ((m_gameDataFlags & 1) != 0)
+    if ((m_gameDataFlags & 1) != 0)
     {
         return 1;
     }
