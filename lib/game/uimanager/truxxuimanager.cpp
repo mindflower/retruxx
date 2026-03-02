@@ -625,9 +625,9 @@ bool TruxxUiManager::IsWindowVisible(int wndGuiId) const
     return false;
 }
 
-int TruxxUiManager::SetEventsForWindow(int, std::vector<int, std::allocator<int>> const&)
+int TruxxUiManager::SetEventsForWindow(int wndId, std::vector<int> const& events)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return GUI_SetEventsForWindow(wndId, events);
 }
 
 TruxxUiManager::~TruxxUiManager()

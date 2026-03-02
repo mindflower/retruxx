@@ -27,7 +27,7 @@ int DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patte
         M3D_LOG_INFO("DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern error - null patternWnd");
         return 0;
     }
-     auto* parent = patternWnd->GetParent();
+    auto* parent = patternWnd->GetParent();
     if (!parent || !IS_KIND_OF(parent, Wnd))
     {
         M3D_LOG_INFO("DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern error - null parent for paternWnd");
@@ -77,16 +77,26 @@ int DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patte
         patternWnd->DecRef();
     }
 
-    m_strCabinDurability = M3D_APP->GetStringByStringId0(DurabilityIndicatorInMainInterfaceWnd::m_aif.m_strCabinDurabilityId);
-    m_strBasketDurability = M3D_APP->GetStringByStringId0(DurabilityIndicatorInMainInterfaceWnd::m_aif.m_strBasketDurabilityId);
+    m_strCabinDurability =
+        M3D_APP->GetStringByStringId0(DurabilityIndicatorInMainInterfaceWnd::m_aif.m_strCabinDurabilityId);
+    m_strBasketDurability =
+        M3D_APP->GetStringByStringId0(DurabilityIndicatorInMainInterfaceWnd::m_aif.m_strBasketDurabilityId);
 
     m_gameDataFlags |= 1u;
     return 1;
 }
 
-void DurabilityIndicatorInMainInterfaceWnd::SetType(Type, CStr const&)
+void DurabilityIndicatorInMainInterfaceWnd::SetType(Type type, CStr const& partName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: generated code DurabilityIndicatorInMainInterfaceWnd::SetType
+    m_partName = partName;
+    m_type = type;
+
+    char const* namePtr = m_partName.c_str();  // Assuming c_str() method exists
+    if ((CStr::my_strcmp(namePtr, "CABIN") == 0 || CStr::my_strcmp(namePtr, "BASKET") == 0) && type < TYPE_NUM_TYPES)
+    {
+        FullUpdate(true);  // Assuming the '1' parameter is a bool for some update flag
+    }
 }
 
 m3d::Object* DurabilityIndicatorInMainInterfaceWnd::Clone()
@@ -94,9 +104,10 @@ m3d::Object* DurabilityIndicatorInMainInterfaceWnd::Clone()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void DurabilityIndicatorInMainInterfaceWnd::SetVehicleId(int)
+void DurabilityIndicatorInMainInterfaceWnd::SetVehicleId(int id)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleId = id;
+    FullUpdate(true);
 }
 
 DurabilityIndicatorInMainInterfaceWnd::~DurabilityIndicatorInMainInterfaceWnd()
@@ -163,7 +174,7 @@ void DurabilityIndicatorInMainInterfaceWnd::GetValue(float&, float&) const
 
 void DurabilityIndicatorInMainInterfaceWnd::FullUpdate(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement DurabilityIndicatorInMainInterfaceWnd::FullUpdate
 }
 
 void DurabilityIndicatorInMainInterfaceWnd::OnNewFrame()
@@ -173,7 +184,7 @@ void DurabilityIndicatorInMainInterfaceWnd::OnNewFrame()
 
 void DurabilityIndicatorInMainInterfaceWnd::UpdateColor(float, float)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement DurabilityIndicatorInMainInterfaceWnd::UpdateColor
 }
 
 ai::VehiclePart const* DurabilityIndicatorInMainInterfaceWnd::GetVehiclePart() const

@@ -5,14 +5,16 @@
 #include <ui/modelwnd.h>
 #include <ui/progressbarwnd.h>
 #include <game/m3dgame.h>
+#include "server/objects/vehicle.h"
 
 RT_CLASS_EXPORTS_BEGIN(FuelIndicatorInMainInterfaceWnd)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(FuelIndicatorInMainInterfaceWnd);
 
-void FuelIndicatorInMainInterfaceWnd::SetType(Type)
+void FuelIndicatorInMainInterfaceWnd::SetType(Type t)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_type = t;
+    FullUpdate(true);
 }
 
 m3d::Object* FuelIndicatorInMainInterfaceWnd::CreateObject()
@@ -35,9 +37,10 @@ m3d::Object* FuelIndicatorInMainInterfaceWnd::Clone()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void FuelIndicatorInMainInterfaceWnd::SetVehicleId(int)
+void FuelIndicatorInMainInterfaceWnd::SetVehicleId(int id)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleId = id;
+    FullUpdate(true);
 }
 
 FuelIndicatorInMainInterfaceWnd::~FuelIndicatorInMainInterfaceWnd()
@@ -56,7 +59,7 @@ int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd,
     }
 
     auto* parent = patternWnd->GetParent();
-    if (!parent || IS_KIND_OF(parent, Wnd))
+    if (!parent || !IS_KIND_OF(parent, Wnd))
     {
         M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null parent");
         return 0;
@@ -110,7 +113,7 @@ int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd,
         M3D_LOG_INFO("Get control error: control " + m_aif.m_wndOverlayName + " is not found or incorrect type");
     }
 
-    if (auto child = RT_DYNCAST(patternWnd->GetChildByName(m_aif.m_wndLowFuelLampName), ImageWnd))
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndLowFuelLampName), ImageWnd))
     {
         m_wndLowFuelLamp = (TwinklingLampWnd*)M3D_KERNEL->New("TwinklingLampWnd");
         if (m_wndLowFuelLamp)
@@ -132,7 +135,19 @@ int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd,
         M3D_LOG_INFO("Get control error: control " + m_aif.m_wndLowFuelLampName + " is not found or incorrect type");
     }
 
-    if (auto child = RT_DYNCAST(patternWnd->GetChildByName(m_aif.m_wndProgressBarName), ProgressBarWnd))
+    if (m_wndLowFuelLamp)
+    {
+        parent->RemoveChild(m_wndLowFuelLamp);
+        AddChild(m_wndLowFuelLamp);
+
+        auto bounds = m_wndLowFuelLamp->GetBounds();
+        auto const parentBounds = GetBounds();
+        bounds.x0 -= parentBounds.x0;
+        bounds.y0 -= parentBounds.y0;
+        m_wndLowFuelLamp->SetBounds(bounds, false);
+    }
+
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndProgressBarName), ProgressBarWnd))
     {
         m_wndProgressBar = child;
     }
@@ -153,7 +168,7 @@ int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd,
         m_wndProgressBar->SetBounds(bounds, false);
     }
 
-    if (auto child = RT_DYNCAST(patternWnd->GetChildByName(m_aif.m_wndValueName), ImageWnd))
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndValueName), ImageWnd))
     {
         m_wndValue = (ElectronicDigitalWnd*)M3D_KERNEL->New("ElectronicDigitalWnd");
         if (m_wndValue)
@@ -177,7 +192,7 @@ int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd,
 
     if (m_wndValue)
     {
-        patternWnd->RemoveChild(m_wndValue);
+        parent->RemoveChild(m_wndValue);
         AddChild(m_wndValue);
 
         auto bounds = m_wndValue->GetBounds();
@@ -219,9 +234,38 @@ void FuelIndicatorInMainInterfaceWnd::OnNewFrame()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void FuelIndicatorInMainInterfaceWnd::FullUpdate(bool)
+void FuelIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    float curFuel = 0.0;
+    float maxFuel = 0.0;
+    
+    ai::Vehicle const* vehicle = GetVehicle();
+    if (vehicle)
+    {
+        curFuel = vehicle->Fuel().value().get();
+        maxFuel = vehicle->Fuel().maxValue().get();
+    }
+    if (bForce || curFuel != m_prevCurVal || maxFuel != m_prevMaxVal)
+    {
+        if ((m_gameDataFlags & 1) != 0)
+        {
+            m_wndProgressBar->SetMaxValue(maxFuel);
+            m_wndProgressBar->SetCurValue(curFuel);
+        }
+        if ((m_gameDataFlags & 1) != 0)
+        {
+            m_wndValue->ShowNumber(static_cast<int>(curFuel), false, 4u, false);
+            if ((m_gameDataFlags & 1) != 0)
+            {
+                m_wndLowFuelLamp->SetValue(curFuel, maxFuel);
+            }
+        }
+        if (m_type == TYPE_IN_CHARACTERISTIC_WND)
+            UpdateTooltip(curFuel, maxFuel);
+    }
+    m_prevCurVal = curFuel;
+    m_prevMaxVal = maxFuel;
+
 }
 
 void FuelIndicatorInMainInterfaceWnd::UpdateValueWnd(float)
@@ -231,12 +275,12 @@ void FuelIndicatorInMainInterfaceWnd::UpdateValueWnd(float)
 
 ai::Vehicle const* FuelIndicatorInMainInterfaceWnd::GetVehicle() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_DYNCAST(ai::theObjects->GetEntityByObjId(m_vehicleId), ai::Vehicle const);
 }
 
 void FuelIndicatorInMainInterfaceWnd::UpdateTooltip(float, float)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement FuelIndicatorInMainInterfaceWnd::UpdateTooltip
 }
 
 FuelIndicatorInMainInterfaceWnd::FuelIndicatorInMainInterfaceWnd()

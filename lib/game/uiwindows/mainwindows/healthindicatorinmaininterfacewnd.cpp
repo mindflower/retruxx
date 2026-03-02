@@ -8,6 +8,7 @@
 #include "electronicdigitalwnd.h"
 #include "ui/ui_srv.h"
 #include <game/m3dgame.h>
+#include "server/objects/vehicle.h"
 
 RT_CLASS_EXPORTS_BEGIN(HealthIndicatorInMainInterfaceWnd)
 RT_CLASS_EXPORTS_END;
@@ -27,9 +28,10 @@ m3d::Object* HealthIndicatorInMainInterfaceWnd::Clone()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void HealthIndicatorInMainInterfaceWnd::SetType(Type)
+void HealthIndicatorInMainInterfaceWnd::SetType(Type newType)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_type = newType;
+    FullUpdate(true);
 }
 
 int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
@@ -43,7 +45,7 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
     }
 
     auto* parent = patternWnd->GetParent();
-    if (!parent || IS_KIND_OF(parent, Wnd))
+    if (!parent || !IS_KIND_OF(parent, Wnd))
     {
         M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null parent");
         return 0;
@@ -97,7 +99,7 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
         M3D_LOG_INFO("Get control error: control " + m_aif.m_wndOverlayName + " is not found or incorrect type");
     }
 
-    if (auto child = RT_DYNCAST(patternWnd->GetChildByName(m_aif.m_wndLowHpLampName), ImageWnd))
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndLowHpLampName), ImageWnd))
     {
         m_wndLowHpLamp = (TwinklingLampWnd*)M3D_KERNEL->New("TwinklingLampWnd");
         if (m_wndLowHpLamp)
@@ -119,7 +121,19 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
         M3D_LOG_INFO("Get control error: control " + m_aif.m_wndLowHpLampName + " is not found or incorrect type");
     }
 
-    if (auto child = RT_DYNCAST(patternWnd->GetChildByName(m_aif.m_wndProgressBarName), ProgressBarWnd))
+    if (m_wndLowHpLamp)
+    {
+        parent->RemoveChild(m_wndLowHpLamp);
+        AddChild(m_wndLowHpLamp);
+
+        auto bounds = m_wndLowHpLamp->GetBounds();
+        auto const parentBounds = GetBounds();
+        bounds.x0 -= parentBounds.x0;
+        bounds.y0 -= parentBounds.y0;
+        m_wndLowHpLamp->SetBounds(bounds, false);
+    }
+
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndProgressBarName), ProgressBarWnd))
     {
         m_wndProgressBar = child;
     }
@@ -140,7 +154,7 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
         m_wndProgressBar->SetBounds(bounds, false);
     }
 
-    if (auto child = RT_DYNCAST(patternWnd->GetChildByName(m_aif.m_wndValueName), ImageWnd))
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndValueName), Wnd))
     {
         m_wndValue = (ElectronicDigitalWnd*)M3D_KERNEL->New("ElectronicDigitalWnd");
         if (m_wndValue)
@@ -159,12 +173,12 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
     }
     else
     {
-        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndLowHpLampName + " is not found or incorrect type");
+        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndValueName + " is not found or incorrect type");
     }
 
     if (m_wndValue)
     {
-        patternWnd->RemoveChild(m_wndValue);
+        parent->RemoveChild(m_wndValue);
         AddChild(m_wndValue);
 
         auto bounds = m_wndValue->GetBounds();
@@ -211,19 +225,20 @@ HealthIndicatorInMainInterfaceWnd::~HealthIndicatorInMainInterfaceWnd()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void HealthIndicatorInMainInterfaceWnd::SetVehicleId(int)
+void HealthIndicatorInMainInterfaceWnd::SetVehicleId(int id)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleId = id;
+    FullUpdate(true);
 }
 
 void HealthIndicatorInMainInterfaceWnd::UpdateTooltip(float, float)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement HealthIndicatorInMainInterfaceWnd::UpdateTooltip
 }
 
 ai::Vehicle const* HealthIndicatorInMainInterfaceWnd::GetVehicle() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_DYNCAST(ai::theObjects->GetEntityByObjId(m_vehicleId), ai::Vehicle const);
 }
 
 int HealthIndicatorInMainInterfaceWnd::GameDataClear(bool)
@@ -279,7 +294,35 @@ void HealthIndicatorInMainInterfaceWnd::UpdateValueWnd(float)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void HealthIndicatorInMainInterfaceWnd::FullUpdate(bool)
+void HealthIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    float curHp = 0.0;
+    float maxHp = 0.0;
+    
+    ai::Vehicle const* vehicle = GetVehicle();
+    if (vehicle)
+    {
+        curHp = vehicle->Health().value().get();
+        maxHp = vehicle->Health().maxValue().get();
+    }
+    if (bForce || curHp != m_prevCurVal || maxHp != m_prevMaxVal)
+    {
+        if ((m_gameDataFlags & 1) != 0)
+        {
+            m_wndProgressBar->SetMaxValue(maxHp);
+            m_wndProgressBar->SetCurValue(curHp);
+        }
+        if ((m_gameDataFlags & 1) != 0)
+        {
+            m_wndValue->ShowNumber(static_cast<int>(curHp), false, 4u, false);
+            if ((m_gameDataFlags & 1) != 0)
+            {
+                m_wndLowHpLamp->SetValue(curHp, maxHp);
+            }
+        }
+        if (m_type == TYPE_IN_CHARACTERISTIC_WND)
+            UpdateTooltip(curHp, maxHp);
+    }
+    m_prevCurVal = curHp;
+    m_prevMaxVal = maxHp;
 }

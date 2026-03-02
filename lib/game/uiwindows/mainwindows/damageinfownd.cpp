@@ -5,6 +5,8 @@
 #include "core/log.h"
 #include "game/m3dgame.h"
 #include "game/uimanager/uidefs.h"
+#include <server/objects/player.h>
+#include <server/objects/vehicle.h>
 
 RT_CLASS_EXPORTS_BEGIN(DamageInfoWnd)
 RT_CLASS_EXPORTS_END;
@@ -45,7 +47,36 @@ DamageInfoWnd::~DamageInfoWnd()
 
 int DamageInfoWnd::UpdateOnPlayerVehicleChanged()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // Check if game data flags indicate need for update
+    if (!(m_gameDataFlags & 1))
+    {
+        return 0;
+    }
+
+    // Get current player vehicle ID
+    int vehicleId = -1;
+    if (ai::thePlayer)
+    {
+        ai::Vehicle* vehicle = ai::thePlayer->GetVehicle();
+        if (vehicle)
+        {
+            vehicleId = vehicle->GetId();
+        }
+    }
+
+    // Update health indicator
+    m_wndHealth->SetVehicleId(vehicleId);
+
+    // Update cabin durability indicator
+    m_wndCabinDurability->SetVehicleId(vehicleId);
+
+    // Update basket durability indicator
+    m_wndBasketDurability->SetVehicleId(vehicleId);
+
+    // Update fuel indicator
+    m_wndFuel->SetVehicleId(vehicleId);
+
+    return 1;
 }
 
 int DamageInfoWnd::GameDataUpdate(void*, int dataType)
