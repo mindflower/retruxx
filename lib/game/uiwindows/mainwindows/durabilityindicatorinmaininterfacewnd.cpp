@@ -2,6 +2,8 @@
 #include "healthindicatorinmaininterfacewnd.h"
 #include <core/log.h>
 #include <game/m3dgame.h>
+#include "server/objects/physicbodies/vehiclepart.h"
+#include "server/objects/vehicle.h"
 
 RT_CLASS_EXPORTS_BEGIN(DurabilityIndicatorInMainInterfaceWnd)
 RT_CLASS_EXPORTS_END;
@@ -104,10 +106,35 @@ m3d::Object* DurabilityIndicatorInMainInterfaceWnd::Clone()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void DurabilityIndicatorInMainInterfaceWnd::SetVehicleId(int id)
+void DurabilityIndicatorInMainInterfaceWnd::SetVehicleId(int vehicleId)
 {
-    m_vehicleId = id;
-    FullUpdate(true);
+    m_vehiclePartId = -1;
+    m_vehicleId = vehicleId;
+
+    if (auto const* vehicle = GetVehicle())
+    {
+        if (auto const* partByName = vehicle->GetPartByName(m_partName))
+        {
+            m_vehiclePartId = partByName->GetId();
+        }
+    }
+
+    float curValue = 0.0;
+    float maxValue = 0.0;
+    if (auto const* vehiclePart = GetVehiclePart())
+    {
+        curValue = vehiclePart->Durability().value().get();
+        maxValue = vehiclePart->Durability().maxValue().get();
+    }
+
+    UpdateColor(curValue, maxValue);
+    if (m_type == TYPE_IN_CHARACTERISTIC_WND)
+    {
+        UpdateTooltip(curValue, maxValue);
+    }
+
+    m_prevCurVal = curValue;
+    m_prevMaxVal = maxValue;
 }
 
 DurabilityIndicatorInMainInterfaceWnd::~DurabilityIndicatorInMainInterfaceWnd()
@@ -120,9 +147,36 @@ m3d::Class* DurabilityIndicatorInMainInterfaceWnd::GetBaseClass()
     return RT_CLASS_LOCAL(ImageWnd);
 }
 
-unsigned DurabilityIndicatorInMainInterfaceWnd::GetColorByValue(float, float) const
+unsigned DurabilityIndicatorInMainInterfaceWnd::GetColorByValue(float curVal, float maxVal) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (maxVal == 0.0)
+        return 0xFF666666;
+
+    float const val = curVal / maxVal;
+    if (val < 0.001)
+        return 0xFF666666;
+    if (val <= 0.1)
+        return 0xFFFF3800;
+    if (val <= 0.2)
+        return 0xFFFF5200;
+    if (val <= 0.30000001)
+        return 0xFFFF6E00;
+    if (val <= 0.40000001)
+        return 0xFFFF8F00;
+    if (val <= 0.5)
+        return 0xFFFFA100;
+    if (val <= 0.60000002)
+        return 0xFFF2B200;
+    if (val <= 0.69999999)
+        return 0xFFDDC000;
+    if (val <= 0.80000001)
+        return 0xFFC3CC00;
+    if (val <= 0.89999998)
+        return 0xFFA9D700;
+    if (val > 1.0)
+        return -1;
+
+    return 0xFF87E400;
 }
 
 int DurabilityIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int)
@@ -139,7 +193,7 @@ int DurabilityIndicatorInMainInterfaceWnd::GameDataClear(bool)
 
 ai::Vehicle const* DurabilityIndicatorInMainInterfaceWnd::GetVehicle() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_DYNCAST(ai::theObjects->GetEntityByObjId(m_vehicleId), ai::Vehicle const);
 }
 
 DurabilityIndicatorInMainInterfaceWnd::DurabilityIndicatorInMainInterfaceWnd()
@@ -159,7 +213,7 @@ DurabilityIndicatorInMainInterfaceWnd::DurabilityIndicatorInMainInterfaceWnd(
 
 void DurabilityIndicatorInMainInterfaceWnd::UpdateTooltip(float, float)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: implement DurabilityIndicatorInMainInterfaceWnd::UpdateTooltip
 }
 
 void DurabilityIndicatorInMainInterfaceWnd::OnVehiclePartChanged(void*)
@@ -172,9 +226,28 @@ void DurabilityIndicatorInMainInterfaceWnd::GetValue(float&, float&) const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void DurabilityIndicatorInMainInterfaceWnd::FullUpdate(bool)
+void DurabilityIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
 {
-    // TODO: implement DurabilityIndicatorInMainInterfaceWnd::FullUpdate
+    float curVal = 0.0;
+    float maxVal = 0.0;
+
+    if (auto const* vehiclePart = GetVehiclePart())
+    {
+        curVal = vehiclePart->Durability().value().get();
+        maxVal = vehiclePart->Durability().maxValue().get();
+    }
+
+    if (bForce || curVal != m_prevCurVal || maxVal != m_prevMaxVal)
+    {
+        UpdateColor(curVal, maxVal);
+        if (m_type == TYPE_IN_CHARACTERISTIC_WND)
+        {
+            UpdateTooltip(curVal, maxVal);
+        }
+    }
+
+    m_prevCurVal = curVal;
+    m_prevMaxVal = maxVal;
 }
 
 void DurabilityIndicatorInMainInterfaceWnd::OnNewFrame()
@@ -182,12 +255,13 @@ void DurabilityIndicatorInMainInterfaceWnd::OnNewFrame()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void DurabilityIndicatorInMainInterfaceWnd::UpdateColor(float, float)
+void DurabilityIndicatorInMainInterfaceWnd::UpdateColor(float curVal, float maxVal)
 {
-    // TODO: implement DurabilityIndicatorInMainInterfaceWnd::UpdateColor
+    unsigned const colorByValue = GetColorByValue(curVal, maxVal);
+    SetColor(colorByValue);
 }
 
 ai::VehiclePart const* DurabilityIndicatorInMainInterfaceWnd::GetVehiclePart() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_DYNCAST(ai::theObjects->GetEntityByObjId(m_vehiclePartId), ai::VehiclePart const);
 }
