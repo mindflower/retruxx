@@ -15,6 +15,12 @@ QuestInfo::AuxLevelInfo::~AuxLevelInfo()
 
 QuestInfo::~QuestInfo() = default;
 
+std::vector<CStr, std::allocator<CStr> > QuestInfo::GetMapNames() const
+{
+    // TODO: implement QuestInfo::GetMapNames
+    RETRUXX_NOT_IMPLEMENTED;
+}
+
 int QuestInfoManager::SaveModifiedQuestInfosToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
 {
     RETRUXX_NOT_IMPLEMENTED;

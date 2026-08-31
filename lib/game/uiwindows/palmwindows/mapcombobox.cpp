@@ -26,12 +26,12 @@ m3d::Object* MapComboBox::Clone()
 
 m3d::Object* MapComboBox::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new MapComboBox;
 }
 
 m3d::Class* MapComboBox::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(MapComboBox);
 }
 
 MapComboBox::~MapComboBox()
@@ -47,7 +47,7 @@ int MapComboBox::GameDataClear(bool)
 int MapComboBox::GameDataUpdate(void*, int)
 {
     // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
+    RETRUXX_NOT_IMPLEMENTED;
     return 0;
 }
 
@@ -58,7 +58,6 @@ MapComboBox::MapComboBox(MapComboBox const&)
 
 MapComboBox::MapComboBox()
 {
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MapComboBox::OnStartLevel()

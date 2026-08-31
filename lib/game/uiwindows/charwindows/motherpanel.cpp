@@ -5,7 +5,6 @@
 #include "ui/image.h"
 #include "ui/button.h"
 #include "motherpaneltabbutton.h"
-#include <game/m3dgame.h>
 #include <game/uimanager/uidefs.h>
 #include <game/music/townmusicmanager.h>
 #include <server/server.h>
@@ -15,6 +14,8 @@
 #include <server/objects/town.h>
 #include <server/objects/player.h>
 #include <server/objects/vehicle.h>
+#include <server/objects/bar.h>
+#include <game/m3dgame.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MotherPanel, LeaveTown)
 {
@@ -838,7 +839,17 @@ int MotherPanel::GetGuiIdByCurrentPanelId(ChildPanelId) const
 
 MotherPanel::Tab MotherPanel::ValidateLastTab() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_lastTabId == (TAB_ADDITIONAL_BUILDING | TAB_MAP))
+        return TAB_QUESTLOG;
+    if (!M3D_APP->m_pInterfaceManager->GetCurrentTown() &&
+        ((m_curTabId == TAB_BAR) || m_curTabId == TAB_ADDITIONAL_BUILDING))
+    {
+        return TAB_QUESTLOG;
+    }
+    else
+    {
+        return m_lastTabId;
+    }
 }
 
 int MotherPanel::RemoveChildPanel(ref_ptr<ChildPanel> childPanel)
@@ -1081,25 +1092,102 @@ MotherPanel::MotherPanel()
     m_tabButtons.resize(7, nullptr);
 }
 
-int MotherPanel::GameDataUpdate(void*, int dataType)
+int MotherPanel::GameDataUpdate(void* data, int dataType)
 {
     switch (dataType)
     {
     case 2:
-        // TODO: check this
         if (IsPanelPresent(IW_DLG_TALK_WITH_NPC) || (!IsChildOf(M3D_APP) && PickUpItemsFromGround()))
-        {
             return 1;
-        }
         ToggleTab(TAB_INVENTORY_VS_SHOP);
         return 1;
 
-    default:
-        RETRUXX_NOT_IMPLEMENTED;
+    case 3:
+        if (IsModal())
+        {
+            if (!InTown() && !IsPanelPresent(IW_DLG_TALK_WITH_NPC))
+                Hide(/*bForce*/ false, /*bQuickLeaveTown*/ false);
+        }
+        else
+        {
+            SetCurTab(ValidateLastTab(), true);
+        }
+        return 1;
+
+    case 4:
+        if (!IsPanelPresent(IW_DLG_TALK_WITH_NPC))
+            ToggleTab(TAB_QUESTLOG);
+        return 1;
+    case 5:
+        if (!IsPanelPresent(IW_DLG_TALK_WITH_NPC))
+            ToggleTab(TAB_JOURNAL);
+        return 1;
+    case 6:
+        if (!IsPanelPresent(IW_DLG_TALK_WITH_NPC))
+            ToggleTab(TAB_MAP);
+        return 1;
+    case 7:
+        if (!IsPanelPresent(IW_DLG_TALK_WITH_NPC))
+            ToggleTab(TAB_CHARACTERISTIC_VS_WORKSHOP);
+        return 1;
+    case 12:
+        if (!IsPanelPresent(IW_DLG_TALK_WITH_NPC))
+            ToggleTab(TAB_BAR);
+        return 1;
+    case 13:
+        if (!IsPanelPresent(IW_DLG_TALK_WITH_NPC))
+            ToggleTab(TAB_ADDITIONAL_BUILDING);
+        return 1;
+
+    case 14:
+        OnPickUpAll();
+        return 1;
+
+    case 18:
+        if (IsModal())
+            OnEndWndAnimation();
+        return 1;
+
+    case 20:
+    {
+        if (!data)
+            return 1;
+        int objId = *reinterpret_cast<int*>(static_cast<char*>(data) + 0x34);
+        ai::Obj* e = ai::theObjects->GetEntityByObjId(objId);
+        if (e && e->IsKindOf(&ai::Bar::m_classBar))
+            SetCurTab(static_cast<ai::Bar*>(e)->bWithBarman() ? TAB_BAR : TAB_ADDITIONAL_BUILDING, true);
+        return 1;
     }
-    // TODO: implement GameDataUpdate
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+
+    case 21:
+        SetCurTab(TAB_CHARACTERISTIC_VS_WORKSHOP, true);
+        return 1;
+    case 24:
+        SetCurTab(TAB_INVENTORY_VS_SHOP, true);
+        return 1;
+
+    case 33:
+        OnStartTrade(data);
+        return 1;
+    case 34:
+        OnFinishTrade();
+        return 1;
+    case 35:
+        OnHidePanel(data);
+        return 1;
+    case 36:
+        OnShowPanel(data);
+        return 1;
+    case 38:
+        OnLocalMap(data);
+        return 1;
+    case 39:
+        OnGlobalMap();
+        return 1;
+
+    default:
+        return 1;
+    }
 }
 
 void MotherPanel::Hide(bool bForce, bool bQuickLeaveTown)

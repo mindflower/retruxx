@@ -73,6 +73,9 @@ namespace help
 
     void DeleteAllFilesInDirectory(char const*);
     CStr GetCurrentLevelName();
+    // TODO: implement (ExMachina 1.02 NoCD RVA 0x1555b0). Returns the unified completion
+    // status (QUESTSTATUS_*) of the quest identified by (questType, questId).
+    UnifyQuestStatus GetQuestUnifyStatusByQuestId(help::QuestType questType, int questId);
     int CloneWndWithChildren(m3d::ui::Wnd const*, m3d::ui::Wnd*);
     int GetWindowsSubDirs(CStr const&, retruxx::vector<CStr>&, CStr const&);
     int CreateWindowsDir(CStr const&);

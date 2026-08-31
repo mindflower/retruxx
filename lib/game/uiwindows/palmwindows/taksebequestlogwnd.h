@@ -21,6 +21,8 @@ class TakSebeQuestLogWnd :  public ScreenWnd
 public:
     class TsqlAuxInfo
     {
+        friend class TakSebeQuestLogWnd;
+
     public:
         TsqlAuxInfo();
 

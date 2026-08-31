@@ -21,6 +21,7 @@ public:
     virtual m3d::Class * GetClass() const ;
     int CreateFromPattern(m3d::ui::Wnd const *,bool);
     int SetupForParentQuest(int);
+    int CreateItems();
     virtual m3d::Object * Clone();
     virtual ~QuestItemList();
 
@@ -30,7 +31,6 @@ protected:
     virtual void SetCurSel(int);
     void OnNavPointAdded(void *);
     virtual int OnAfterAddToWndStation();
-    int CreateItems();
     void OnQuestStateChanged(void *);
     int AddQuestItem(help::QuestType,int,bool);
     void OnNavPointDeleted(void *);

@@ -2343,7 +2343,7 @@ namespace m3d
 
         int ModalWnd::IsModal()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return GetStation()->IsModal(this);
         }
 
         Class* ModalWnd::GetClass() const

@@ -65,6 +65,12 @@ namespace help
         return {};
     }
 
+    UnifyQuestStatus GetQuestUnifyStatusByQuestId(help::QuestType /*questType*/, int /*questId*/)
+    {
+        // TODO: implement (ExMachina 1.02 NoCD RVA 0x1555b0).
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
     int CloneWndWithChildren(m3d::ui::Wnd const* srcWnd, m3d::ui::Wnd* dstWnd)
     {
         using namespace m3d::ui;
