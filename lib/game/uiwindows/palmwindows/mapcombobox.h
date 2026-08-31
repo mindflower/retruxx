@@ -13,7 +13,6 @@ protected:
     virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x00 */;
     int OnStartLevel();
     MapComboBox();
-    MapComboBox(MapComboBox const& rhs);
 
 public:
     virtual ~MapComboBox() override /* 0x00 */;

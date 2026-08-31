@@ -93,7 +93,7 @@ namespace m3d
 
         unsigned ComboBoxWnd::GetComboStyle() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_comboStyle;
         }
 
         void ComboBoxWnd::Close()
@@ -122,7 +122,7 @@ namespace m3d
 
         float ComboBoxWnd::GetSelTextFixedHeight() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_selTextFixedH;
         }
 
         Class* ComboBoxWnd::GetClass() const
@@ -138,7 +138,9 @@ namespace m3d
 
         ComboBoxWnd::~ComboBoxWnd()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // The original deletes m_btnToggle / m_wndStringList / m_wndSelText explicitly here.
+            // In retruxx the sub-windows are owned through the child list (released by
+            // ~Wnd -> DestroyWnd -> RemoveAllChildren -> DecRef), so the body stays empty.
         }
 
         void ComboBoxWnd::SetBounds(BoundsBase<float> const& rect, bool bUpdateBaseOrigin)
@@ -248,14 +250,27 @@ namespace m3d
             return 1;
         }
 
-        void ComboBoxWnd::SetToggleButtonPane(CStr const&, CStr const&)
+        void ComboBoxWnd::SetToggleButtonPane(CStr const& openPaneName, CStr const& closePaneName)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                m_toggleButtonOpenPaneName = openPaneName;
+                m_toggleButtonClosePaneName = closePaneName;
+                if (m_btnToggle)
+                {
+                    m_btnToggle->SetPane(
+                        m_state == STATE_OPEN ? m_toggleButtonClosePaneName : m_toggleButtonOpenPaneName);
+                }
+            }
         }
 
-        CStr ComboBoxWnd::GetItem(int) const
+        CStr ComboBoxWnd::GetItem(int idx) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                return m_wndStringList->GetItem(idx);
+            }
+            return {};
         }
 
         void ComboBoxWnd::SetListMaxHeight(float listMaxH)
@@ -285,7 +300,7 @@ namespace m3d
 
         Object* ComboBoxWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new ComboBoxWnd(*this);
         }
 
         int ComboBoxWnd::AddItem(CStr const& item)
@@ -339,17 +354,24 @@ namespace m3d
 
         CStr ComboBoxWnd::GetText() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (m_wndSelText)
+            {
+                return m_wndSelText->GetText();
+            }
+            return {};
         }
 
-        void ComboBoxWnd::SetItem(int, CStr const&)
+        void ComboBoxWnd::SetItem(int idx, CStr const& text)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                m_wndStringList->SetItem(idx, text);
+            }
         }
 
         float ComboBoxWnd::GetMaxListHeight() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_maxListH;
         }
 
         BoundsBase<float> ComboBoxWnd::GetSelTextBounds() const
@@ -379,7 +401,11 @@ namespace m3d
 
         unsigned ComboBoxWnd::GetDrawFlags() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                return m_wndStringList->GetDrawFlags();
+            }
+            return 0;
         }
 
         int ComboBoxWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -397,9 +423,15 @@ namespace m3d
             }
         }
 
-        void ComboBoxWnd::SetDefaultFont(CStr const&, float, FontType, FontParams)
+        void ComboBoxWnd::SetDefaultFont(CStr const& name, float height, FontType type, FontParams params)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            Wnd::SetDefaultFont(name, height, type, params);
+            if (Valid())
+            {
+                m_wndStringList->SetDefaultFont(name, height, type, params);
+                m_wndSelText->SetDefaultFont(name, height, type, params);
+                RecalcLayot();
+            }
         }
 
         void ComboBoxWnd::SetDefaultFont(int uiFont)
@@ -413,14 +445,24 @@ namespace m3d
             }
         }
 
-        int ComboBoxWnd::RemoveItem(int)
+        int ComboBoxWnd::RemoveItem(int idx)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                return m_wndStringList->RemoveItem(idx);
+            }
+            return 0;
         }
 
         BoundsBase<float> ComboBoxWnd::GetListMaxBounds() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto const listBounds = GetListBounds();
+            BoundsBase<float> result;
+            result.x0 = listBounds.x0;
+            result.y0 = listBounds.y0 + listBounds.height;
+            result.width = listBounds.width;
+            result.height = m_maxListH;
+            return result;
         }
 
         Object* ComboBoxWnd::CreateObject()
@@ -428,14 +470,21 @@ namespace m3d
             return new ComboBoxWnd;
         }
 
-        void ComboBoxWnd::SetDrawFlags(unsigned)
+        void ComboBoxWnd::SetDrawFlags(unsigned flags)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                m_wndStringList->SetDrawFlags(flags);
+            }
         }
 
-        int ComboBoxWnd::InsertItem(CStr const&, int)
+        int ComboBoxWnd::InsertItem(CStr const& item, int idx)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                return m_wndStringList->InsertItem(item, idx);
+            }
+            return 0;
         }
 
         void ComboBoxWnd::SetScrollPane(CStr const& scrollPaneName)
@@ -452,9 +501,15 @@ namespace m3d
             return RT_CLASS_LOCAL(Wnd);
         }
 
-        int ComboBoxWnd::ItemFromPoint(PointBase<float> const&)
+        int ComboBoxWnd::ItemFromPoint(PointBase<float> const& at)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!Valid())
+            {
+                return -1;
+            }
+            auto const screen = ToScreen(at);
+            auto const listLocal = m_wndStringList->ToWindow(screen);
+            return m_wndStringList->ItemFromPoint(listLocal);
         }
 
         int ComboBoxWnd::RemoveAllItems()
@@ -468,12 +523,13 @@ namespace m3d
 
         bool ComboBoxWnd::IsOpen() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_state == STATE_OPEN;
         }
 
         ComboBoxWnd::ComboBoxWnd(ComboBoxWnd const&)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // The original copy constructor only runs the default Wnd base setup and leaves
+            // every ComboBoxWnd member at its default; it does not copy from the source.
         }
 
         ComboBoxWnd::ComboBoxWnd()

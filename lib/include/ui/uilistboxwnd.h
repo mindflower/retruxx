@@ -6,6 +6,7 @@
 #include <core/kernel.h>
 
 #include "core/aiparam.h"
+#include "core/ini.h"
 
 namespace m3d
 {
@@ -56,8 +57,6 @@ namespace m3d
             {
                 return Create(rc, style, id);
             }
-            //ItemFromPoint(PointBase<float> const &);
-            //GetTopVisibleItemId();
 
             BoundsBase<float> GetItemBounds(int idx) const
             {
@@ -95,10 +94,246 @@ namespace m3d
                 return m_items[idx].m_item;
             }
 
-            //ScrollList(bool);
-            //SetClientEdges(float,float,float,float);
-            //SetClientEdges(float,float,float,float);
-            //SetBounds(BoundsBase<float> const &,bool);
+            void SetItem(int idx, T const& item)
+            {
+                m_items[idx].m_item = item;
+                m_items[idx].m_rectValid = 0;
+            }
+
+            int ItemFromPoint(PointBase<float> const& pt)
+            {
+                RecalcLayout();
+                float curPosH = 0.0;
+                if (m_scrollHWnd)
+                {
+                    curPosH = m_scrollHWnd->GetCurPos();
+                }
+                float curPosV = 0.0;
+                if (m_scrollVWnd)
+                {
+                    curPosV = m_scrollVWnd->GetCurPos();
+                }
+                float const clientW = GetClientBounds().width;
+                for (int i = 0; i < static_cast<int>(m_items.size()); ++i)
+                {
+                    auto const& item = m_items[i];
+                    BoundsBase<float> hit;
+                    hit.x0 = item.m_origin.x - curPosH + item.m_rect.x0;
+                    hit.y0 = item.m_origin.y - curPosV + item.m_rect.y0;
+                    hit.width = clientW;
+                    hit.height = item.m_rect.height;
+                    if (hit.IsPtInBounds(pt))
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            virtual void SetBounds(BoundsBase<float> const& rc, bool bUpdateBaseOrigin)
+            {
+                m_bounds = rc;
+                if (bUpdateBaseOrigin)
+                {
+                    m_baseOrigin.x = m_bounds.x0;
+                    m_baseOrigin.y = m_bounds.y0;
+                }
+                RecalcNcLayout();
+            }
+
+            virtual void SetClientEdges(retruxx::vector<float> const& clientEdges)
+            {
+                m_clientEdges = clientEdges;
+                RecalcNcLayout();
+            }
+
+            virtual void SetClientEdges(float left, float top, float right, float bottom)
+            {
+                Wnd::SetClientEdges(left, top, right, bottom);
+                RecalcNcLayout();
+            }
+
+            virtual void SetPane(CStr const& name)
+            {
+                if (!name.empty())
+                {
+                    m_paneName = name;
+                }
+                RecalcNcLayout();
+            }
+
+            virtual void SetScrollPane(CStr const& name)
+            {
+                Wnd::SetScrollPane(name);
+                RecalcNcLayout();
+            }
+
+            virtual void SetPaneFlags(int flags)
+            {
+                m_paneFlags = flags;
+                RecalcNcLayout();
+            }
+
+            // Shadows Wnd::GetClientBounds (same vtable slot): temporarily widens the right
+            // client edge by the vertical scrollbar width so the client area excludes it.
+            BoundsBase<float> GetClientBounds() const override
+            {
+                auto* self = const_cast<ListBoxWnd<T>*>(this);
+                retruxx::vector<float> const saved = m_clientEdges;
+                float scrollW = 0.0;
+                if (m_scrollVWnd)
+                {
+                    scrollW = m_scrollVWnd->GetBounds().width;
+                }
+                self->m_clientEdges[2] = saved[0] + saved[2] + scrollW;
+                BoundsBase<float> const r = Wnd::GetClientBounds();
+                self->m_clientEdges = saved;
+                return r;
+            }
+
+            float GetScrollWidth() const
+            {
+                return m_scrollVWnd ? m_scrollVWnd->GetBounds().width : 0.0f;
+            }
+
+            virtual int GetTopVisibleItemId() const
+            {
+                auto const client = GetClientBounds();
+                for (int i = 0; i < static_cast<int>(m_items.size()); ++i)
+                {
+                    if (!client.Intersect(GetItemBounds(i)).Empty())
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            virtual int GetBottomVisibleItemId() const
+            {
+                auto const client = GetClientBounds();
+                for (int i = static_cast<int>(m_items.size()) - 1; i >= 0; --i)
+                {
+                    auto const ib = GetItemBounds(i);
+                    float const ibRight = ib.x0 + ib.width;
+                    float const ibBottom = ib.y0 + ib.height;
+                    float const clientRight = client.x0 + client.width;
+                    float const clientBottom = client.y0 + client.height;
+                    float const xLo = ib.x0 > client.x0 ? ib.x0 : client.x0;
+                    float const xHi = ibRight < clientRight ? ibRight : clientRight;
+                    float const yLo = ib.y0 > client.y0 ? ib.y0 : client.y0;
+                    float const yHi = ibBottom < clientBottom ? ibBottom : clientBottom;
+                    if (xHi - xLo > 0.0f && yHi - yLo > 0.0f)
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            virtual int ScrollList(bool toStart)
+            {
+                if (!m_scrollVWnd)
+                {
+                    return 0;
+                }
+                float delta;
+                if (toStart)
+                {
+                    delta = -GetItemBounds(GetTopVisibleItemId()).height;
+                }
+                else
+                {
+                    delta = GetItemBounds(GetBottomVisibleItemId()).height;
+                }
+                m_scrollVWnd->SetCurPos(m_scrollVWnd->GetCurPos() + delta);
+                return 1;
+            }
+
+            virtual int ScrollSelection(bool toStart)
+            {
+                int const n = static_cast<int>(m_items.size());
+                if (n <= 0)
+                {
+                    return 0;
+                }
+                int idx = toStart ? m_curSel - 1 : m_curSel + 1;
+                if (idx < 0)
+                {
+                    idx = 0;
+                }
+                if (idx > n - 1)
+                {
+                    idx = n - 1;
+                }
+                SetCurSel(idx);
+                return 1;
+            }
+
+            virtual int Scroll(bool toStart)
+            {
+                if ((m_drawFlags & 4) != 0)
+                {
+                    return ScrollList(toStart);
+                }
+                return ScrollSelection(toStart);
+            }
+
+            int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override
+            {
+                unsigned const k = key & 0xff;
+                if (k == 0x1b || k == 0x1c)
+                {
+                    if (state != 0)
+                    {
+                        Scroll(k == 0x1b);
+                    }
+                }
+                return 1;
+            }
+
+            int OnMouseWheel(int ticks, PointBase<float> const& at) override
+            {
+                if (ticks != 0)
+                {
+                    Scroll(ticks > 0);
+                }
+                return Wnd::OnMouseWheel(ticks, at);
+            }
+
+            int OnMouseButton0(unsigned int state, PointBase<float> const& at) override
+            {
+                if (state != 0)
+                {
+                    int const idx = ItemFromPoint(at);
+                    if (idx >= 0)
+                    {
+                        SetCurSel(idx);
+                    }
+                }
+                return Wnd::OnMouseButton0(state, at);
+            }
+
+            int OnMouseDblClick(PointBase<float> const& firstClickPt, PointBase<float> const& secondClickPt) override
+            {
+                int const i1 = ItemFromPoint(firstClickPt);
+                int const i2 = ItemFromPoint(secondClickPt);
+                if (i1 != -1 && i2 != -1 && i1 == i2)
+                {
+                    return Wnd::OnMouseDblClick(firstClickPt, secondClickPt);
+                }
+                return 0;
+            }
+
+            int ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node) override
+            {
+                if (!Wnd::ReadFromXmlNode(file, node))
+                {
+                    return 0;
+                }
+                SafeUintAttrib(m_drawFlags, node, "drawFlags");
+                return 1;
+            }
 
             int RemoveAllItems()
             {
@@ -108,8 +343,6 @@ namespace m3d
                 }
                 return 1;
             }
-            //OnKey(unsigned short,unsigned char, unsigned int);
-            //OnMouseButton0(uint,PointBase<float> const &);
             int AddItem(T const& item)
             {
                 Item ii;
@@ -121,12 +354,26 @@ namespace m3d
                 RecalcLayout();
                 return res;
             }
-            //GetScrollWidth();
-            //Scroll(bool);
-            //GetClientBounds();
-            //SetItem(int,T const &);
-            //GetBottomVisibleItemId();
-            //InsertItem(T const &,int);
+            int InsertItem(T const& item, int idx)
+            {
+                auto const size = static_cast<int>(m_items.size());
+                if (idx < 0 || idx > size)
+                {
+                    idx = size;
+                }
+                Item ii;
+                ii.m_item = item;
+                ii.m_data = 0;
+                ii.m_rectValid = 0;
+                m_items.insert(m_items.begin() + idx, ii);
+                for (int i = idx; i < static_cast<int>(m_items.size()); ++i)
+                {
+                    m_items[i].m_rectValid = 0;
+                }
+                RecalcLayout();
+                return idx;
+            }
+
             int RemoveItem(int idx)
             {
                 DeleteItem(idx);
@@ -151,19 +398,16 @@ namespace m3d
             {
                 return m_curSel;
             }
-            //OnMouseDblClick(PointBase<float> const &,PointBase<float> const &);
-            //SetPane(CStr const &);  //Type??
             void SetDrawFlags(unsigned int flags)
             {
                 m_drawFlags = flags;
             }
-            //SetScrollPane(T const &);
+
             int GetItemData(int idx) const
             {
                 return m_items[idx].m_data;
             }
-            //WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
-            //SetPaneFlags(int);
+
             void RecalcNcLayout()
             {
                 if (m_scrollVWnd)
@@ -177,7 +421,7 @@ namespace m3d
                     auto clientRc = GetClientBounds();
                     BoundsBase<float> res;
                     res.x0 = (rc.width - clientRc.x0) - scrollSz;
-                    res.y0 = clientRc.height;
+                    res.y0 = clientRc.y0;
                     res.width = scrollSz;
                     res.height = clientRc.height;
                     m_scrollVWnd->SetBounds(res, true);
@@ -188,9 +432,6 @@ namespace m3d
             {
                 return m_items.size();
             }
-            //OnPaint(DrawInfo const &);
-            //Create(T const &, unsigned int,BoundsBase<float> const &, unsigned int);
-            //Create(T const &, unsigned int,BoundsBase<float> const &, unsigned int);
             virtual void SetCurSel(int i)
             {
                 if (i >= -1)
@@ -246,25 +487,27 @@ namespace m3d
             {
                 float orgY = 0.0;
                 float maxX = 0.0;
-                int i = 0;
-                for (auto& item : m_items)
+                for (int i = 0; i < static_cast<int>(m_items.size()); ++i)
                 {
-	                if (!item.m_rectValid)
-	                {
+                    auto& item = m_items[i];
+                    if (!item.m_rectValid)
+                    {
                         MeasureItem(i, item.m_rect);
                         item.m_origin.y = orgY;
                         item.m_origin.x = 0.0;
                         item.m_rectValid = 1;
-	                }
+                    }
                     orgY = item.m_rect.height + orgY;
-                    //TODO: check this
-                    maxX = max(maxX, item.m_rect.width);
+                    if (item.m_rect.width > maxX)
+                    {
+                        maxX = item.m_rect.width;
+                    }
                 }
                 if (m_scrollVWnd)
                 {
                     m_scrollVWnd->SetScrollRect(maxX, orgY);
                     auto bounds = m_scrollVWnd->GetBounds();
-                    bool show = (bounds.height + 0.001) < maxX;
+                    bool show = (bounds.height + 0.001) < orgY;
                     if ((m_drawFlags & 2) != 0)
                     {
                         m_scrollVWnd->ShowWindow(show);
@@ -277,16 +520,15 @@ namespace m3d
                 if (m_scrollHWnd)
                 {
                     m_scrollHWnd->SetScrollRect(maxX, orgY);
-                    auto bounds = m_scrollVWnd->GetBounds();
-                    //TODO: check this!!!!!!!!!!
-                    bool show = (bounds.width + 0.001) < orgY;
+                    auto bounds = m_scrollHWnd->GetBounds();
+                    bool show = (bounds.width + 0.001) < maxX;
                     if ((m_drawFlags & 2) != 0)
                     {
-                        m_scrollVWnd->ShowWindow(show);
+                        m_scrollHWnd->ShowWindow(show);
                     }
                     else
                     {
-                        m_scrollVWnd->EnableWindow(show);
+                        m_scrollHWnd->EnableWindow(show);
                     }
                 }
             }
@@ -296,8 +538,6 @@ namespace m3d
                 RETRUXX_NOT_IMPLEMENTED;
             }
 
-            //ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
-            //OnMouseWheel(int,PointBase<float> const &);
             void SetItemData(int idx,int data)
             {
                 m_items[idx].m_data = data;
