@@ -1,8 +1,12 @@
 #include "journalwnd.h"
 
 #include "core/aiparam.h"
+#include "core/ini.h"
 #include "core/log.h"
+#include "core/ref_ptr.h"
 #include "ui/button.h"
+#include <server/server.h>
+#include <server/objects/base/prototypemanager.h>
 #include "game/uiwindows/palmwindows/historywnd.h"
 #include "game/uiwindows/palmwindows/reputationwnd.h"
 #include "game/uiwindows/palmwindows/bookswnd.h"
@@ -22,27 +26,42 @@ RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, AddHistory)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, AddBook)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* journal = (JournalWnd*)context->asObject(0, "JournalWnd");
+    auto bookNameId = context->asString(1);
+    auto bookTextId = context->asString(2);
+    context->pushInt(journal->AddBook(bookNameId, bookTextId));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, BookExists)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* journal = (JournalWnd*)context->asObject(0, "JournalWnd");
+    auto bookNameId = context->asString(1);
+    context->pushInt(journal->BookExists(bookNameId) ? 1 : 0);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, AddPrototypeToEncyclopaedia)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* journal = (JournalWnd*)context->asObject(0, "JournalWnd");
+    auto prototypeName = context->asString(1);
+    context->pushInt(journal->AddPrototypeToEncyclopaedia(prototypeName));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, AddClanToEncyclopaedia)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* journal = (JournalWnd*)context->asObject(0, "JournalWnd");
+    int clanBelong = context->asInt(1);
+    context->pushInt(journal->AddClanToEncyclopaedia(clanBelong));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(JournalWnd, ShowAllInEncyclopaedia)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* journal = (JournalWnd*)context->asObject(0, "JournalWnd");
+    journal->ShowAllInEncyclopaedia();
+    return 1;
 }
 
 RT_CLASS_EXPORTS_BEGIN(JournalWnd)
@@ -68,12 +87,26 @@ JournalWnd::AuxInfo::AuxInfo()
 
 void JournalWnd::ShowAllInEncyclopaedia()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("JournalWnd::ShowAllInEncyclopaedia error - window was not inited");
+        return;
+    }
+    if (auto* ency = RT_DYNCAST(m_tabs[TAB_ENCYCLOPAEDIA].get(), EncyclopaediaWnd))
+    {
+        ency->ShowAll();
+    }
 }
 
-bool JournalWnd::BookExists(CStr const&) const
+bool JournalWnd::BookExists(CStr const& strBookNameId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("JournalWnd::AddBook error - window was not inited");
+        return false;
+    }
+    auto const* booksWnd = RT_DYNCAST(m_tabs[TAB_BOOKS].get(), BooksWnd const);
+    return booksWnd && booksWnd->BookExists(strBookNameId);
 }
 
 m3d::Object* JournalWnd::CreateObject()
@@ -88,14 +121,22 @@ m3d::Class* JournalWnd::GetBaseClass()
 
 m3d::Object* JournalWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new JournalWnd;
 }
 
-int JournalWnd::AddHistory(CStr const&, m3d::AIParam const&)
+int JournalWnd::AddHistory(CStr const& strTextId, m3d::AIParam const& time)
 {
-    // TODO: implement JournalWnd::AddHistory
-    // RETRUXX_NOT_IMPLEMENTED;
-    return 1;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("JournalWnd::AddHistory error - window was not inited");
+        return 0;
+    }
+    auto* historyWnd = RT_DYNCAST(m_tabs[TAB_HISTORY].get(), HistoryWnd);
+    if (!historyWnd)
+    {
+        return 0;
+    }
+    return historyWnd->AddRecord(strTextId, time);
 }
 
 m3d::Class* JournalWnd::GetClass() const
@@ -103,44 +144,142 @@ m3d::Class* JournalWnd::GetClass() const
     return RT_CLASS_LOCAL(JournalWnd);
 }
 
-int JournalWnd::AddClanToEncyclopaedia(int)
+int JournalWnd::AddClanToEncyclopaedia(int clanBelong)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("JournalWnd::AddClanToEncyclopaedia error - window was not inited");
+        return 0;
+    }
+    auto* ency = RT_DYNCAST(m_tabs[TAB_ENCYCLOPAEDIA].get(), EncyclopaediaWnd);
+    if (!ency)
+    {
+        return 0;
+    }
+    if (ency->AddClan(clanBelong))
+    {
+        return 1;
+    }
+    M3D_LOG_INFO("JournalWnd::AddClanToEncyclopaedia - fail to add belong " + CStr(clanBelong));
+    return 0;
 }
 
-JournalWnd::~JournalWnd()
+JournalWnd::~JournalWnd() = default;
+
+int JournalWnd::AddPrototypeToEncyclopaedia(CStr const& prototypeName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("JournalWnd::AddPrototypeToEncyclopaedia error - window was not inited");
+        return 0;
+    }
+    auto* ency = RT_DYNCAST(m_tabs[TAB_ENCYCLOPAEDIA].get(), EncyclopaediaWnd);
+    if (!ency)
+    {
+        return 0;
+    }
+    if (ency->AddPrototype(ai::thePrototypeManager->GetPrototypeId(prototypeName)))
+    {
+        return 1;
+    }
+    M3D_LOG_INFO("JournalWnd::AddPrototypeToEncyclopaedia - fail to add prototype " + prototypeName);
+    return 0;
 }
 
-int JournalWnd::AddPrototypeToEncyclopaedia(CStr const&)
+int JournalWnd::AddBook(CStr const& strBookNameId, CStr const& strBookTextId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int JournalWnd::AddBook(CStr const&, CStr const&)
-{
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("JournalWnd::AddBook error - window was not inited");
+        return 0;
+    }
+    auto* booksWnd = RT_DYNCAST(m_tabs[TAB_BOOKS].get(), BooksWnd);
+    if (!booksWnd)
+    {
+        return 0;
+    }
+    return booksWnd->AddBook(strBookNameId, strBookTextId, true);
 }
 
 void JournalWnd::PostCurrentTabMessage() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    switch (m_curTab)
+    {
+    case TAB_HISTORY:
+        ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_HISTORY);
+        break;
+    case TAB_BOOKS:
+        ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_BOOKS);
+        break;
+    case TAB_RELATIONS:
+        ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_RELATIONS);
+        break;
+    case TAB_STATS:
+        ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_STATS);
+        break;
+    case TAB_ENCYCLOPAEDIA:
+        ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_ENCYCLOPAEDIA);
+        break;
+    default:
+        break;
+    }
 }
 
 int JournalWnd::UpdateButtonsState()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    int result = 1;
+    for (int i = 0; i < NUM_TABS; ++i)
+    {
+        if (!m_tabButtons[i])
+        {
+            result = 0;
+            continue;
+        }
+        m_tabButtons[i]->SetPane(i == m_curTab ? m_aif.m_tabBtnPaneNameSelected : m_aif.m_tabBtnPaneNameUnselected);
+    }
+    return result;
 }
 
-JournalWnd::Tab JournalWnd::CtrlId2TabId(int) const
+JournalWnd::Tab JournalWnd::CtrlId2TabId(int ctrlId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    switch (ctrlId)
+    {
+    case CTRL_ID_BTN_HISTORY:
+        return TAB_HISTORY;
+    case CTRL_ID_BTN_BOOKS:
+        return TAB_BOOKS;
+    case CTRL_ID_BTN_RELATIONS:
+        return TAB_RELATIONS;
+    case CTRL_ID_BTN_STATS:
+        return TAB_STATS;
+    case CTRL_ID_BTN_ENCYCLOPAEDIA:
+        return TAB_ENCYCLOPAEDIA;
+    default:
+        return NUM_TABS;
+    }
 }
 
-int JournalWnd::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
+int JournalWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned idFrom, unsigned message, m3d::AIParam const& data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (ChildPanel::OnWndNotify(from, idFrom, message, data))
+    {
+        return 1;
+    }
+    if (idFrom >= CTRL_ID_BTN_HISTORY && idFrom <= CTRL_ID_BTN_ENCYCLOPAEDIA && message == 1)
+    {
+        SetCurTab(CtrlId2TabId(idFrom), true);
+        return 1;
+    }
+    return 0;
 }
 
 JournalWnd::JournalWnd()
@@ -148,9 +287,8 @@ JournalWnd::JournalWnd()
     m_curTab = TAB_HISTORY;
 }
 
-JournalWnd::JournalWnd(JournalWnd const&)
+JournalWnd::JournalWnd(JournalWnd const&) : JournalWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int JournalWnd::GameDataSetup()
@@ -212,27 +350,116 @@ int JournalWnd::GameDataSetup()
     return 0;
 }
 
-int JournalWnd::GameDataSave(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
+int JournalWnd::GameDataSave(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("JournalWnd::GameDataSave error - journal has been not properly inited");
+        return 0;
+    }
+    if (!xmlFile || !guiNode)
+    {
+        M3D_LOG_INFO("JournalWnd::GameDataSave error - invalid params");
+        return 0;
+    }
+
+    ref_ptr journalNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Journal");
+    guiNode->AddChild(journalNode);
+    journalNode->SetAttribute("CurTab", CStr(static_cast<int>(m_curTab)).c_str());
+    return 1;
 }
 
 int JournalWnd::OnBeforeAddToWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    SetCurTab(m_curTab, true);
+    return m3d::ui::Wnd::OnBeforeAddToWndStation();
 }
 
-int JournalWnd::GameDataLoad(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
+int JournalWnd::GameDataLoad(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("JournalWnd::GameDataLoad error - journal has been not properly inited");
+        return 0;
+    }
+
+    GameDataClear(false);
+
+    if (!xmlFile || !guiNode)
+    {
+        M3D_LOG_INFO("JournalWnd::GameDataLoad error - invalid params");
+        return 0;
+    }
+
+    ref_ptr journalNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    guiNode->GetFirstChild(journalNode, "Journal");
+    if (journalNode->IsEmpty())
+    {
+        M3D_LOG_INFO("JournalWnd::GameDataLoad error - cannot find journal node");
+        return 0;
+    }
+
+    int curTab = NUM_TABS;
+    m3d::SafeIntAttrib(curTab, journalNode, "CurTab");
+    if (static_cast<unsigned int>(curTab) > TAB_ENCYCLOPAEDIA)
+    {
+        M3D_LOG_INFO("JournalWnd::GameDataLoad error - invalid current tab");
+        return 0;
+    }
+
+    m_curTab = static_cast<Tab>(curTab);
+    return 1;
 }
 
-int JournalWnd::SetCurTab(Tab, bool)
+int JournalWnd::SetCurTab(Tab tabId, bool bPostTabMessage)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    Tab const oldTab = m_curTab;
+    m_curTab = tabId;
+
+    int res = 1;
+    for (int i = 0; i < NUM_TABS; ++i)
+    {
+        auto* tabWnd = m_tabs[i].get();
+        if (!tabWnd)
+        {
+            res = 0;
+            continue;
+        }
+
+        bool const isChild = tabWnd->IsChildOf(this);
+        if (tabId == i)
+        {
+            if (!isChild)
+            {
+                AddChild(tabWnd);
+                MoveChildToFirstPosition(tabWnd);
+            }
+        }
+        else if (isChild)
+        {
+            RemoveChild(tabWnd);
+        }
+    }
+
+    int const result = UpdateButtonsState() & res;
+    if (oldTab != m_curTab && bPostTabMessage)
+    {
+        PostCurrentTabMessage();
+    }
+    return result;
 }
 
-int JournalWnd::SelectButton(Tab, bool)
+int JournalWnd::SelectButton(Tab tabId, bool bSelect)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (tabId == NUM_TABS || !m_tabButtons[tabId])
+    {
+        return 0;
+    }
+    m_tabButtons[tabId]->SetPane(bSelect ? m_aif.m_tabBtnPaneNameSelected : m_aif.m_tabBtnPaneNameUnselected);
+    return 1;
 }

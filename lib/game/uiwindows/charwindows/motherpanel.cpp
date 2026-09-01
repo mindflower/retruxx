@@ -5,6 +5,9 @@
 #include "ui/image.h"
 #include "ui/button.h"
 #include "motherpaneltabbutton.h"
+#include "groundwnd.h"
+#include <i_event.h>
+#include <game/uiwindows/palmwindows/localmapwnd.h>
 #include <game/uimanager/uidefs.h>
 #include <game/music/townmusicmanager.h>
 #include <server/server.h>
@@ -29,7 +32,8 @@ RT_CLASS_DEFINE(MotherPanel);
 
 void MotherPanel::AuxSuspendedShow::Reset()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_previousPanelsToRemain.clear();
+    m_suspendedPanels.clear();
 }
 
 MotherPanel::AuxSuspendedShow::AuxSuspendedShow() = default;
@@ -85,7 +89,7 @@ m3d::Object* MotherPanel::CreateObject()
 
 m3d::Object* MotherPanel::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new MotherPanel;
 }
 
 m3d::Class* MotherPanel::GetBaseClass()
@@ -285,9 +289,33 @@ MotherPanel::ChildPanelId MotherPanel::GetCurrentPanelIdByGuiId(int guiId) const
     return ChildPanelId::PANEL_INVALID;
 }
 
-void MotherPanel::OnHidePanel(void*)
+void MotherPanel::OnHidePanel(void* data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!data)
+    {
+        return;
+    }
+
+    int const guiId = static_cast<m3d::Event*>(data)->m_intEv[0];
+    ChildPanelId const panelId = GetCurrentPanelIdByGuiId(guiId);
+    if (panelId == PANEL_INVALID)
+    {
+        return;
+    }
+
+    if (m_panels.size() == 1 || panelId == PANEL_FULLSCREEN || panelId == PANEL_TOWN)
+    {
+        Hide(false, false);
+        return;
+    }
+
+    bool const removed = RemoveChildPanelById(panelId) != 0;
+    if (InTown() && m_panels.size() == (removed ? 1u : 2u) && IsPanelPresent(4))
+    {
+        m_curTabId = TAB_INVALID;
+        SelectTabButton(TAB_INVALID);
+        M3D_APP->GetTownMusicManager()->StopAmbient();
+    }
 }
 
 void MotherPanel::ToggleTab(Tab tabId)
@@ -419,9 +447,42 @@ int MotherPanel::OnAfterRemoveFromWndStation()
     return res;
 }
 
-void MotherPanel::OnShowPanel(void*)
+void MotherPanel::OnShowPanel(void* data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!data)
+    {
+        return;
+    }
+
+    switch (static_cast<m3d::Event*>(data)->m_intEv[0])
+    {
+    case 2:
+        SetCurTab(TAB_BAR, true);
+        break;
+    case 3:
+        SetCurTab(TAB_ADDITIONAL_BUILDING, true);
+        break;
+    case 4:
+        OnTown();
+        break;
+    case 0x40:
+    case 0x42:
+        SetCurTab(TAB_INVENTORY_VS_SHOP, true);
+        break;
+    case 0x43:
+    case 0x44:
+    case 0x45:
+        SetCurTab(TAB_CHARACTERISTIC_VS_WORKSHOP, true);
+        break;
+    case 0x49:
+        OnBuyVehicle();
+        break;
+    case 0x58:
+        OnTalkWithNpc();
+        break;
+    default:
+        break;
+    }
 }
 
 int MotherPanel::AddChildPanel(ref_ptr<ChildPanel> childPanel, ChildPanelId panelId)
@@ -475,17 +536,38 @@ void MotherPanel::OnShop()
 
 void MotherPanel::OnPickUpAll()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_curTabId != TAB_INVENTORY_VS_SHOP || M3D_APP->m_pInterfaceManager->GetCurrentTown())
+    {
+        return;
+    }
+
+    ref_ptr groundWnd = M3D_APP->m_pInterfaceManager->GetWindow(63);
+    if (auto* wnd = RT_DYNCAST(groundWnd.get(), GroundWnd); wnd && wnd->IsChildOf(M3D_APP))
+    {
+        wnd->PickUpAll();
+    }
 }
 
-void MotherPanel::OnLocalMap(void*)
+void MotherPanel::OnLocalMap(void* data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!data)
+    {
+        return;
+    }
+
+    ref_ptr wndLocalMap = M3D_APP->m_pInterfaceManager->GetWindow(82);
+    auto* localMap = RT_DYNCAST(wndLocalMap.get(), LocalMapWnd);
+    if (localMap && localMap->SetUpForLevel(static_cast<m3d::Event*>(data)->m_strEv))
+    {
+        m_bCurMapLocal = true;
+        SetCurTab(TAB_MAP, true);
+    }
 }
 
-void MotherPanel::OnLeaveTown(bool)
+void MotherPanel::OnLeaveTown(bool bQuick)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    M3D_APP->m_pInterfaceManager->OnLeaveTown(bQuick);
+    UpdateTabButtonsOnLeaveTown();
 }
 
 bool MotherPanel::PickUpItemsFromGround()
@@ -597,19 +679,43 @@ int MotherPanel::RemoveChild(m3d::Object* w)
     return res;
 }
 
-void MotherPanel::ShowTabButton(Tab, bool)
+void MotherPanel::ShowTabButton(Tab tabId, bool bShow)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0 || tabId == TAB_INVALID)
+    {
+        return;
+    }
+
+    auto* btn = m_tabButtons[tabId];
+    if (bShow)
+    {
+        if (!IsDirectChild(btn))
+        {
+            AddChild(btn);
+        }
+    }
+    else if (IsDirectChild(btn))
+    {
+        RemoveChild(btn);
+    }
 }
 
 void MotherPanel::OnFinishTrade()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto const panelsToRemove = m_secondPanelLevel;
+    for (auto panelId : panelsToRemove)
+    {
+        RemoveChildPanelById(panelId);
+    }
+    DestroyHackedWorkshopVehicle();
 }
 
 void MotherPanel::OnEndWndAnimation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!m_suspendedShow.m_suspendedPanels.empty())
+    {
+        ShowPanels(m_suspendedShow.m_suspendedPanels, m_suspendedShow.m_previousPanelsToRemain);
+    }
 }
 
 bool MotherPanel::IsPanelPresent(int guiId) const
@@ -715,9 +821,13 @@ MotherPanel::Tab MotherPanel::GetTabForBuilding(ai::Building const*) const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void MotherPanel::AdjustAnimationOnHidePanel(m3d::ui::Wnd*)
+void MotherPanel::AdjustAnimationOnHidePanel(m3d::ui::Wnd* panel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (panel)
+    {
+        panel->SetOnShowAnimationImmediate(false);
+        panel->SetOnHideAnimationImmediate(false);
+    }
 }
 
 void MotherPanel::UpdateTabButtonsOnLeaveTown()
@@ -832,9 +942,14 @@ int MotherPanel::RemoveChildPanelById(ChildPanelId panelId)
     return RemoveChild(it->second);
 }
 
-int MotherPanel::GetGuiIdByCurrentPanelId(ChildPanelId) const
+int MotherPanel::GetGuiIdByCurrentPanelId(ChildPanelId panelId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto it = m_panels.find(panelId);
+    if (it == m_panels.end() || !it->second)
+    {
+        return -1;
+    }
+    return it->second->GetGuiId();
 }
 
 MotherPanel::Tab MotherPanel::ValidateLastTab() const
@@ -883,7 +998,8 @@ int MotherPanel::RemoveChildPanel(ref_ptr<ChildPanel> childPanel)
 
 void MotherPanel::OnGlobalMap()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bCurMapLocal = false;
+    SetCurTab(TAB_MAP, true);
 }
 
 void MotherPanel::OnCharacteristics()
@@ -1247,12 +1363,19 @@ void MotherPanel::Hide(bool bForce, bool bQuickLeaveTown)
 
 void MotherPanel::DestroyHackedWorkshopVehicle()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_hackedWorkshopVehicleId != -1)
+    {
+        help::DestroyVehicle(m_hackedWorkshopVehicleId);
+        m_hackedWorkshopVehicleId = -1;
+    }
 }
 
 void MotherPanel::Show()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!GetStation()->IsModal(this))
+    {
+        M3D_APP->m_pInterfaceManager->ShowWindow(7, true, false, false, true, nullptr);
+    }
 }
 
 int MotherPanel::OnKey(unsigned short key, unsigned char scanCode, unsigned state)
@@ -1357,9 +1480,13 @@ void MotherPanel::SetCurTab(Tab tabId, bool bUpdatePanels)
     }
 }
 
-void MotherPanel::OnEnterTown(ai::Town const*)
+void MotherPanel::OnEnterTown(ai::Town const* town)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (town)
+    {
+        M3D_APP->m_pInterfaceManager->OnEnterTown(town->GetId());
+        UpdateTabButtonsOnEnterTown(town);
+    }
 }
 
 void MotherPanel::OnBar()

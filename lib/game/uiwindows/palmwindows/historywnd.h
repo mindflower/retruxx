@@ -15,6 +15,8 @@ class HistoryWnd :  public m3d::ui::Wnd
 public:
     class AuxInfo
     {
+        friend class HistoryWnd;
+
     public:
         AuxInfo();
 
@@ -25,8 +27,8 @@ public:
 
     class Record
     {
-    public:
-    protected:
+        friend class HistoryWnd;
+
     private:
         CStr m_strTextId;
         m3d::AIParam m_time;

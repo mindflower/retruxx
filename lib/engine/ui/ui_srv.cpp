@@ -943,14 +943,27 @@ namespace m3d
         M3D_RENDERER->PopBlend();
     }
 
-    int ui::GfxServer::SetFont(int&)
+    int ui::GfxServer::SetFont(int& fontId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!m_fontManager->ValidateFontId(fontId))
+        {
+            return 0;
+        }
+
+        auto* fontById = m_fontManager->GetFontById(fontId);
+        if (!fontById)
+        {
+            return 0;
+        }
+
+        m_curFont = fontById;
+        return 1;
     }
 
-    int ui::GfxServer::SetFont(Font*)
+    int ui::GfxServer::SetFont(Font* fnt)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_curFont = fnt;
+        return fnt != nullptr;
     }
 
     int ui::GfxServer::SetFont(CStr const&, float, FontType, FontParams)

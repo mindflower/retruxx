@@ -1,17 +1,18 @@
 #include <ui/listbox.h>
 #include <core/clazz.h>
+#include <cstring>
 
 namespace m3d
 {
     namespace ui
     {
         RT_CLASS_EXPORTS_BEGIN(StringsListBoxWnd)
-    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
 
         RT_CLASS_DEFINE(StringsListBoxWnd);
 
         RT_CLASS_EXPORTS_BEGIN(FormattedStringsListBoxWnd)
-    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
 
         RT_CLASS_DEFINE(FormattedStringsListBoxWnd);
 
@@ -66,7 +67,6 @@ namespace m3d
             m_curSel = -1;
             m_clientEdges[2] = 2.0;
             m_defFont = 1;
-
         }
 
         StringsListBoxWnd::StringsListBoxWnd(StringsListBoxWnd const&)
@@ -81,7 +81,7 @@ namespace m3d
 
         Object* FormattedStringsListBoxWnd::CreateObject()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new FormattedStringsListBoxWnd;
         }
 
         Class* FormattedStringsListBoxWnd::GetBaseClass()
@@ -89,14 +89,11 @@ namespace m3d
             return RT_CLASS_LOCAL(Wnd);
         }
 
-        FormattedStringsListBoxWnd::~FormattedStringsListBoxWnd()
-        {
-            RETRUXX_NOT_IMPLEMENTED;
-        }
+        FormattedStringsListBoxWnd::~FormattedStringsListBoxWnd() = default;
 
         Class* FormattedStringsListBoxWnd::GetClass() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return RT_CLASS_LOCAL(FormattedStringsListBoxWnd);
         }
 
         void FormattedStringsListBoxWnd::SetTextColor(unsigned textColor)
@@ -110,32 +107,66 @@ namespace m3d
 
         Object* FormattedStringsListBoxWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new FormattedStringsListBoxWnd(*this);
         }
 
-        void FormattedStringsListBoxWnd::SetFormatMode(TextFormatFlags)
+        void FormattedStringsListBoxWnd::SetFormatMode(TextFormatFlags format)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_textFormat = format;
+            for (auto& item : m_items)
+            {
+                item.m_item.m_format = format;
+            }
         }
 
-        int FormattedStringsListBoxWnd::CompareItem(int, int)
+        int FormattedStringsListBoxWnd::CompareItem(int itemIdx0, int itemIdx1)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return strcmp(m_items[itemIdx0].m_item.m_text.c_str(), m_items[itemIdx1].m_item.m_text.c_str());
         }
 
-        int FormattedStringsListBoxWnd::MeasureItem(int, BoundsBase<float>&) const
+        int FormattedStringsListBoxWnd::MeasureItem(int itemIdx, BoundsBase<float>& bounds) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto const point =
+                GetGfxServer()->MeasureText(m_items[itemIdx].m_item.m_text, m_defFont, TW_NOWRAP, 10000.0);
+            bounds.x0 = 0.0f;
+            bounds.y0 = 0.0f;
+            bounds.width = point.y;
+            bounds.height = point.x;
+            return 1;
         }
 
         int FormattedStringsListBoxWnd::DeleteItem(int)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return 1;
         }
 
-        int FormattedStringsListBoxWnd::RenderItem(int, PointBase<float> const&, DrawInfo const&)
+        int FormattedStringsListBoxWnd::RenderItem(int itemIdx, PointBase<float> const& pt, DrawInfo const& di)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            FormattedLine const& line = m_items[itemIdx].m_item;
+
+            float const width = di.m_clientRect.width;
+
+            // Measured for side effects only, matching the original (the result is not used further).
+            GetGfxServer()->MeasureText(line.m_text, m_defFont, m_textWrap, width);
+
+            PointBase<float> origin = pt;
+            if (line.m_format == TF_CENTER)
+            {
+                float x = width * 0.5f;
+                if (x < 0.0f)
+                {
+                    x = 0.0f;
+                }
+                origin.x = x > width ? width : x;
+            }
+            else if (line.m_format == TF_RIGHT)
+            {
+                origin.x = width;
+            }
+
+            CStr const text = CStr::format_("@%x", line.m_color) + line.m_text;
+            GetGfxServer()->AddText(di, origin, text, m_defFont, TW_NOWRAP, line.m_format);
+            return 1;
         }
 
         FormattedStringsListBoxWnd::FormattedStringsListBoxWnd()
@@ -146,9 +177,9 @@ namespace m3d
             this->m_defFont = 1;
         }
 
-        FormattedStringsListBoxWnd::FormattedStringsListBoxWnd(FormattedStringsListBoxWnd const&)
+        FormattedStringsListBoxWnd::FormattedStringsListBoxWnd(FormattedStringsListBoxWnd const& w) :
+            ListBoxWnd<FormattedLine>(w)
         {
-            RETRUXX_NOT_IMPLEMENTED;
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

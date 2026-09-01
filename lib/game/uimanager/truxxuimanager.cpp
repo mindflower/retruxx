@@ -285,7 +285,7 @@ MsgManager* TruxxUiManager::GetMsgManager() const
 
 ObjectCollection const& TruxxUiManager::GetObjectCollection() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_objectCollection;
 }
 
 bool TruxxUiManager::IsHidden() const
@@ -546,7 +546,7 @@ ai::Vehicle* TruxxUiManager::GetVehicleSellingInWorkshop() const
 
 std::vector<int, std::allocator<int>> const& TruxxUiManager::GetTakenQuestIds() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_takenQuestIds;
 }
 
 RepliesManager* TruxxUiManager::GetRepliesManager() const

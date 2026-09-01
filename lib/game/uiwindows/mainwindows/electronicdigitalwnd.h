@@ -58,7 +58,7 @@ public:
             ElectronicDigitalWnd::Symbol symbol,
             ElectronicDigitalWnd::DigitalSize digitalSize) const;
         CStr GetTextureStrId(ElectronicDigitalWnd::Symbol symbol, ElectronicDigitalWnd::DigitalSize digitalSize) const;
-        /* 0x0000 */ m3d::rend::TexHandle m_textures[13][2];
+        /* 0x0000 */ m3d::rend::TexHandle m_textures[2][13];
         /* 0x0068 */ int m_refCount;
     }; /* size: 0x006c */
 

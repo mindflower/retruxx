@@ -1,61 +1,101 @@
 #include "electronicdigitalwnd.h"
+
+#include <cstdlib>
+
 #include <core/log.h>
+#include <game/m3dgame.h>
+#include <ui/image.h>
 
 RT_CLASS_EXPORTS_BEGIN(ElectronicDigitalWnd)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ElectronicDigitalWnd);
 
-void ElectronicDigitalWnd::Digital::SetSymbol(ElectronicDigitalWnd::Symbol, bool)
+void ElectronicDigitalWnd::Digital::SetSymbol(ElectronicDigitalWnd::Symbol symbol, bool bReserved)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bReserved = bReserved;
+    m_symbol = symbol;
+    if (m_wnd)
+    {
+        m_wnd->ShowWindow(symbol != SYMBOL_NUM_SYMBOLS);
+    }
+    UpdateTexture();
 }
 
 ElectronicDigitalWnd::Digital::Digital(
-    m3d::ui::ImageWnd*,
-    ElectronicDigitalWnd::DigitalSize,
-    ElectronicDigitalWnd::Symbol)
+    m3d::ui::ImageWnd* wnd,
+    ElectronicDigitalWnd::DigitalSize digitalSize,
+    ElectronicDigitalWnd::Symbol symbol)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wnd = wnd;
+    m_symbol = symbol;
+    m_bReserved = false;
+    m_digitalSize = digitalSize;
+    if (wnd)
+    {
+        wnd->ShowWindow(symbol != SYMBOL_NUM_SYMBOLS);
+    }
 }
 
 ElectronicDigitalWnd::Digital::Digital()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wnd = nullptr;
+    m_symbol = SYMBOL_NUM_SYMBOLS;
+    m_bReserved = false;
+    m_digitalSize = DIGITAL_SIZE_SMALL;
 }
 
 bool ElectronicDigitalWnd::Digital::IsFree() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return !m_bReserved;
 }
 
 m3d::ui::ImageWnd* ElectronicDigitalWnd::Digital::GetWnd() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_wnd;
 }
 
 ElectronicDigitalWnd::Symbol ElectronicDigitalWnd::Digital::GetSymbol() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_symbol;
 }
 
-void ElectronicDigitalWnd::Digital::SetDigitalSize(ElectronicDigitalWnd::DigitalSize)
+void ElectronicDigitalWnd::Digital::SetDigitalSize(ElectronicDigitalWnd::DigitalSize digitalSize)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (digitalSize != DIGITAL_SIZE_NUM_DIGITAL_SIZES)
+    {
+        m_digitalSize = digitalSize;
+        UpdateTexture();
+    }
 }
 
 void ElectronicDigitalWnd::Digital::UpdateTexture()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!m_wnd)
+    {
+        return;
+    }
+
+    if (m_symbol == SYMBOL_NUM_SYMBOLS || m_digitalSize == DIGITAL_SIZE_NUM_DIGITAL_SIZES)
+    {
+        m_wnd->SetImage(m3d::rend::TexHandle{});
+    }
+    else
+    {
+        m_wnd->SetImage(ElectronicDigitalWnd::m_digitalTextures.m_textures[m_digitalSize][m_symbol]);
+    }
 }
 
-void ElectronicDigitalWnd::Digital::Show(bool)
+void ElectronicDigitalWnd::Digital::Show(bool bShow)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_wnd)
+    {
+        m_wnd->ShowWindow(bShow);
+    }
 }
 
 m3d::Object* ElectronicDigitalWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new ElectronicDigitalWnd;
 }
 
 m3d::Class* ElectronicDigitalWnd::GetBaseClass()
@@ -65,34 +105,45 @@ m3d::Class* ElectronicDigitalWnd::GetBaseClass()
 
 ElectronicDigitalWnd::~ElectronicDigitalWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_digitalTextures.Clear();
 }
 
-void ElectronicDigitalWnd::SetDigitalColor(unsigned)
+void ElectronicDigitalWnd::SetDigitalColor(unsigned digitalColor)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_digitalColor = digitalColor;
+    for (Digital& digital : m_digitals)
+    {
+        if (digital.m_wnd)
+        {
+            digital.m_wnd->SetColor(m_digitalColor);
+        }
+    }
 }
 
 int ElectronicDigitalWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
-    // TODO: implement ElectronicDigitalWnd::CreateFromPattern
     using namespace m3d::ui;
+
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        M3D_LOG_INFO("ElectronicDigitalWnd::CreateFromPattern error - window is already inited");
+        return 0;
+    }
 
     if (!patternWnd)
     {
-        M3D_LOG_INFO("ElectronicDigitalWnd::CreateFromPattern error - null patternWnd");
+        M3D_LOG_INFO("ElectronicDigitalWnd::CreateFromPattern error - invalid patternWnd");
         return 0;
     }
 
     auto* parent = patternWnd->GetParent();
     if (!parent || !IS_KIND_OF(parent, Wnd))
     {
-        M3D_LOG_INFO("ElectronicDigitalWnd::CreateFromPattern error - null parent");
+        M3D_LOG_INFO("ElectronicDigitalWnd::CreateFromPattern error - cannot find parent for pattern wnd");
         return 0;
     }
 
-    auto res = Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId());
-    if (res == 0)
+    if (Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId()) == 0)
     {
         M3D_LOG_INFO("ElectronicDigitalWnd::CreateFromPattern error - cannot create window");
         return 0;
@@ -105,10 +156,9 @@ int ElectronicDigitalWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool delet
     SetBounds(patternWnd->GetBounds(), true);
     SetDefaultFont(patternWnd->GetDefaultFont());
     SetWrapMode(patternWnd->GetWrapMode());
-
     SetFormatMode(patternWnd->GetFormatMode());
     SetColor(patternWnd->GetColor());
-    SetTextColor(patternWnd->GetColor());
+    SetTextColor(patternWnd->GetTextColor());
     SetTextColorDisabled(patternWnd->GetTextColorDisabled());
     SetClientEdges(patternWnd->GetClientEdges());
     SetPane(patternWnd->GetPaneName());
@@ -123,13 +173,49 @@ int ElectronicDigitalWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool delet
     SetOnShowAnimation(patternWnd->GetOnShowAnimation());
     SetOnHideAnimation(patternWnd->GetOnHideAnimation());
 
-    // TODO: !!!
+    // Collect the digit image windows: every ImageWnd child of the pattern's parent whose
+    // name contains "<patternName>_". They are gathered into a name-sorted map so the digits
+    // end up ordered left-to-right, then re-parented (with parent-relative bounds) onto this.
+    CStr const baseName = CStr(patternWnd->GetName()) + CStr("_");
+
+    retruxx::map<CStr, m3d::ui::ImageWnd*> digitalWnds;
+    for (m3d::Object* child = parent->GetFirstChild(); child; child = child->GetNextSibling())
+    {
+        if (!IS_KIND_OF(child, ImageWnd))
+        {
+            continue;
+        }
+
+        CStr const childName(child->GetName());
+        if (childName.findsubstr(baseName.c_str()) != -1)
+        {
+            digitalWnds[childName] = static_cast<m3d::ui::ImageWnd*>(child);
+        }
+    }
+
+    BoundsBase<float> const myBounds = GetBounds();
+    for (auto const& kv : digitalWnds)
+    {
+        m3d::ui::ImageWnd* digitWnd = kv.second;
+
+        m_digitals.emplace_back(digitWnd, m_digitalSize, SYMBOL_NUM_SYMBOLS);
+
+        parent->RemoveChild(digitWnd);
+
+        BoundsBase<float> b = digitWnd->GetBounds();
+        b.x0 -= myBounds.x0;
+        b.y0 -= myBounds.y0;
+        digitWnd->SetBounds(b, true);
+
+        AddChild(digitWnd);
+    }
+
+    SetDigitalColor(GetTextColor());
 
     parent->AddChild(this);
     if (deleteSrc)
     {
         parent->RemoveChild(patternWnd);
-        // TODO: check this obj delete
         patternWnd->DecRef();
     }
 
@@ -142,15 +228,92 @@ m3d::Object* ElectronicDigitalWnd::CreateObject()
     return new ElectronicDigitalWnd;
 }
 
-int ElectronicDigitalWnd::ShowNumber(int, bool, unsigned, bool)
+int ElectronicDigitalWnd::ShowNumber(int number, bool bAdd, unsigned int numReservedSlots, bool bPaddFreeSlots)
 {
-    // TODO: implement ElectronicDigitalWnd::ShowNumber
-    return 1;
+    int result = 1;
+    int n = number;
+    if (number < 0)
+    {
+        n = 0;
+        result = 0;
+    }
+
+    if (!bAdd)
+    {
+        Clear();
+    }
+
+    CStr strNumber;
+    int len = strNumber.format("%*d", static_cast<int>(numReservedSlots), n);
+    if (len > static_cast<int>(numReservedSlots))
+    {
+        result = 0;
+        strNumber = strNumber.substr(0, static_cast<int>(numReservedSlots));
+        len = strNumber.length();
+    }
+
+    char const* s = strNumber.c_str();
+    for (int i = 0; i < len; ++i)
+    {
+        Symbol sym = SYMBOL_NUM_SYMBOLS;
+        char c = s[i];
+        if (c == ' ')
+        {
+            if (bPaddFreeSlots)
+            {
+                sym = SYMBOL_0;
+            }
+        }
+        else
+        {
+            char cs[2] = {c, '\0'};
+            unsigned int digit = static_cast<unsigned int>(atoi(cs));
+            if (digit > 9)
+            {
+                result = 0;
+            }
+            else
+            {
+                sym = static_cast<Symbol>(digit);
+            }
+        }
+
+        ShowSymbol(sym, true, 1u, false);
+        s = strNumber.c_str();
+    }
+
+    return result;
 }
 
-int ElectronicDigitalWnd::ShowSymbol(Symbol, bool, unsigned, bool)
+int ElectronicDigitalWnd::ShowSymbol(Symbol symbol, bool bAdd, unsigned int numReservedSlots, bool bPaddFreeSlots)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    unsigned int const reserved = numReservedSlots ? numReservedSlots : 1u;
+
+    if (!bAdd)
+    {
+        Clear();
+    }
+
+    int const firstFree = GetFirstFreeSlot();
+    if (firstFree == -1)
+    {
+        return 0;
+    }
+
+    Symbol const fillSymbol = bPaddFreeSlots ? SYMBOL_0 : SYMBOL_NUM_SYMBOLS;
+    for (int idx = firstFree; idx < firstFree + static_cast<int>(reserved) - 1; ++idx)
+    {
+        m_digitals[idx].SetSymbol(fillSymbol, true);
+    }
+
+    int const slot = GetFirstFreeSlot();
+    if (slot == -1)
+    {
+        return 0;
+    }
+
+    m_digitals[slot].SetSymbol(symbol, true);
+    return 1;
 }
 
 void ElectronicDigitalWnd::SetDigitalSize(DigitalSize digitalSize)
@@ -177,12 +340,28 @@ m3d::Class* ElectronicDigitalWnd::GetClass() const
 
 void ElectronicDigitalWnd::Clear()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (Digital& digital : m_digitals)
+    {
+        digital.m_symbol = SYMBOL_NUM_SYMBOLS;
+        digital.m_bReserved = false;
+        if (digital.GetWnd())
+        {
+            digital.GetWnd()->ShowWindow(false);
+            digital.UpdateTexture();
+        }
+    }
 }
 
 int ElectronicDigitalWnd::GetFirstFreeSlot() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (int i = 0; i < static_cast<int>(m_digitals.size()); ++i)
+    {
+        if (m_digitals[i].IsFree())
+        {
+            return i;
+        }
+    }
+    return -1;
 }
 
 ElectronicDigitalWnd::ElectronicDigitalWnd()
@@ -194,41 +373,123 @@ ElectronicDigitalWnd::ElectronicDigitalWnd()
 
 int ElectronicDigitalWnd::GameDataClear(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Clear();
+    return 1;
 }
 
 ElectronicDigitalWnd::DigitalTextures::DigitalTextures()
 {
-    // ok
+    for (auto& row : m_textures)
+    {
+        for (auto& tex : row)
+        {
+            tex.SetInvalid();
+        }
+    }
+    m_refCount = 0;
 }
 
 ElectronicDigitalWnd::DigitalTextures::~DigitalTextures()
 {
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ElectronicDigitalWnd::DigitalTextures::Init()
 {
-    // TODO: implement ElectronicDigitalWnd::DigitalTextures::Init
-    // RETRUXX_NOT_IMPLEMENTED;
+    if (++m_refCount <= 1)
+    {
+        for (int size = DIGITAL_SIZE_SMALL; size < DIGITAL_SIZE_NUM_DIGITAL_SIZES; ++size)
+        {
+            for (int sym = 0; sym < SYMBOL_NUM_SYMBOLS; ++sym)
+            {
+                m3d::rend::TexHandle& tex = m_textures[size][sym];
+                tex = M3D_APP->m_pInterfaceManager->GetIcoByName(
+                    GetTextureStrId(
+                        static_cast<ElectronicDigitalWnd::Symbol>(sym),
+                        static_cast<ElectronicDigitalWnd::DigitalSize>(size)),
+                    0);
+                M3D_RENDERER->ReferenceTexture(tex);
+            }
+        }
+    }
     return 1;
 }
 
 void ElectronicDigitalWnd::DigitalTextures::Clear()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_refCount == 1)
+    {
+        for (auto& row : m_textures)
+        {
+            for (auto& tex : row)
+            {
+                M3D_RENDERER->ReleaseTexture(tex);
+            }
+        }
+    }
+
+    if (--m_refCount < 0)
+    {
+        m_refCount = 0;
+    }
 }
 
 m3d::rend::TexHandle ElectronicDigitalWnd::DigitalTextures::GetTexture(
     ElectronicDigitalWnd::Symbol symbol,
     ElectronicDigitalWnd::DigitalSize digitalSize) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (symbol == SYMBOL_NUM_SYMBOLS || digitalSize == DIGITAL_SIZE_NUM_DIGITAL_SIZES)
+    {
+        return m3d::rend::TexHandle{};
+    }
+    return m_textures[digitalSize][symbol];
 }
 
 CStr ElectronicDigitalWnd::DigitalTextures::GetTextureStrId(
     ElectronicDigitalWnd::Symbol symbol,
     ElectronicDigitalWnd::DigitalSize digitalSize) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (symbol == SYMBOL_NUM_SYMBOLS || digitalSize == DIGITAL_SIZE_NUM_DIGITAL_SIZES)
+    {
+        return CStr();
+    }
+
+    CStr strSymbol;
+    switch (symbol)
+    {
+    case SYMBOL_0:
+    case SYMBOL_1:
+    case SYMBOL_2:
+    case SYMBOL_3:
+    case SYMBOL_4:
+    case SYMBOL_5:
+    case SYMBOL_6:
+    case SYMBOL_7:
+    case SYMBOL_8:
+    case SYMBOL_9:
+        strSymbol = CStr(static_cast<int>(symbol));
+        break;
+    case SYMBOL_COLON:
+        strSymbol = "Colon";
+        break;
+    case SYMBOL_METER:
+        strSymbol = "Meter";
+        break;
+    case SYMBOL_KILOMETER:
+        strSymbol = "Kilometer";
+        break;
+    default:
+        break;
+    }
+
+    CStr strSize;
+    if (digitalSize == DIGITAL_SIZE_SMALL)
+    {
+        strSize = "Small";
+    }
+    else if (digitalSize == DIGITAL_SIZE_LARGE)
+    {
+        strSize = "Large";
+    }
+
+    return CStr("Symbol_") + strSymbol + CStr("_") + strSize;
 }

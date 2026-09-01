@@ -2,6 +2,8 @@
 #include <ui/frame.h>
 #include <ui/scroll.h>
 #include <ui/ui_srv.h>
+#include <ui/wndstation.h>
+#include <core/aiparam.h>
 
 namespace m3d
 {
@@ -23,7 +25,7 @@ namespace m3d
 
         Object* ScrollWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new ScrollWnd(*this);
         }
 
         float ScrollWnd::GetCurPos() const
@@ -83,9 +85,9 @@ namespace m3d
             return 1;
         }
 
-        int ScrollWnd::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
+        int ScrollWnd::Create(CStr const&, unsigned, BoundsBase<float> const& rc, unsigned)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return Create(rc, 1);
         }
 
         ScrollWnd::~ScrollWnd()
@@ -94,7 +96,7 @@ namespace m3d
 
         float ScrollWnd::GetMaxPos() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_maxPos;
         }
 
         void ScrollWnd::SetScrollPane(CStr const& scrollPaneName)
@@ -276,9 +278,60 @@ namespace m3d
             }
         }
 
-        int ScrollWnd::OnMouseMove(PointBase<float> const&, PointBase<float> const&)
+        int ScrollWnd::OnMouseMove(PointBase<float> const& pt0, PointBase<float> const& deltas)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            Wnd::OnMouseMove(pt0, deltas);
+
+            if (this != GetStation()->GetCapture())
+            {
+                m_tracking = false;
+            }
+            if (!m_tracking)
+            {
+                return 1;
+            }
+
+            BoundsBase<float> const bodyB = GetBodyRect();
+
+            if (deltas.x == 0.0f && deltas.y == 0.0f)
+            {
+                BoundsBase<float> const thumbB = GetThumbRect();
+                m_hitPosInThumb = m_vertical ? (pt0.y - thumbB.y0) : (pt0.x - thumbB.x0);
+                float const maxHit = m_thumbSz - 1.0f;
+                if (m_hitPosInThumb < 0.0f)
+                {
+                    m_hitPosInThumb = 0.0f;
+                }
+                if (m_hitPosInThumb > maxHit)
+                {
+                    m_hitPosInThumb = maxHit;
+                }
+            }
+
+            float const oldPos = m_curPos;
+            if (m_vertical)
+            {
+                m_curPos = ((pt0.y - bodyB.y0) - m_hitPosInThumb) / (bodyB.height - m_thumbSz);
+            }
+            else
+            {
+                m_curPos = ((pt0.x - bodyB.x0) - m_hitPosInThumb) / (bodyB.width - m_thumbSz);
+            }
+
+            if (m_curPos < 0.0f)
+            {
+                m_curPos = 0.0f;
+            }
+            else if (m_curPos > 1.0f)
+            {
+                m_curPos = 1.0f;
+            }
+
+            if (oldPos != m_curPos)
+            {
+                CallParentNotify(5, {}, false);
+            }
+            return 1;
         }
 
         ScrollWnd::ScrollWnd()
@@ -287,14 +340,48 @@ namespace m3d
             m_style = 0x140260;
         }
 
-        ScrollWnd::ScrollWnd(ScrollWnd const&)
+        ScrollWnd::ScrollWnd(ScrollWnd const& sw) : Wnd(sw)
         {
-            RETRUXX_NOT_IMPLEMENTED;
         }
 
-        int ScrollWnd::OnWndNotify(Wnd*, unsigned, unsigned, AIParam const&)
+        int ScrollWnd::OnWndNotify(Wnd* from, unsigned idFrom, unsigned message, AIParam const& data)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if ((m_style & WS_REFLECT_NOTIFY_MESSAGES_TO_PARENT) != 0)
+            {
+                ReflectChildNotifyToParent(from, idFrom, message, data);
+            }
+            if (message != 1)
+            {
+                return 1;
+            }
+
+            float const oldPos = m_curPos;
+            float const boundsDim = m_vertical ? GetBounds().height : GetBounds().width;
+            float const step = boundsDim / m_maxPos;
+
+            if (idFrom == 256)
+            {
+                m_curPos -= step;
+            }
+            else if (idFrom == 257)
+            {
+                m_curPos += step;
+            }
+
+            if (m_curPos < 0.0f)
+            {
+                m_curPos = 0.0f;
+            }
+            else if (m_curPos > 1.0f)
+            {
+                m_curPos = 1.0f;
+            }
+
+            if (oldPos != m_curPos)
+            {
+                CallParentNotify(5, {}, true);
+            }
+            return 1;
         }
 
         BoundsBase<float> ScrollWnd::GetThumbRect() const
@@ -347,9 +434,13 @@ namespace m3d
             return {0.0, 0.0};
         }
 
-        int ScrollWnd::OnMouseButton0(unsigned, PointBase<float> const&)
+        int ScrollWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_tracking = state != 0;
+            GetStation()->CaptureMouse(state != 0 ? this : nullptr);
+            PointBase<float> const noDelta{0.0f, 0.0f};
+            OnMouseMove(at, noDelta);
+            return 1;
         }
 	}
 }
