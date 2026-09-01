@@ -17,7 +17,7 @@ namespace ai
 
         bool operator()(const T1& arg1, T2& arg2)
         {
-            throw std::runtime_error("not implemented");
+            return m_pFunc && m_pFunc->Execute(arg1, arg2);
         }
 
         const ai::FuncPtrTwoArgsRef<T1, T2, RetType>& operator=(BaseFunc* pNewFunc)
@@ -55,7 +55,11 @@ namespace ai
 
         virtual bool Execute(const T1& arg1, T2& arg2) override /* 0x04 */
         {
-            throw std::runtime_error("not implemented");
+            if (m_pT)
+            {
+                return (m_pT->*m_func)(arg1, arg2);
+            }
+            return RetType();
         }
 
     private:

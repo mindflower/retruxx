@@ -50,6 +50,7 @@ namespace ai
         void LoadFromXml(m3d::cmn::XmlFile const*, m3d::cmn::XmlNode const*);
 
     private:
+        Article(m3d::cmn::XmlFile const*, m3d::cmn::XmlNode const*);
         void ReadFromPrototype();
         void ReadDefaultCountFromPrototype();
         void Init1();

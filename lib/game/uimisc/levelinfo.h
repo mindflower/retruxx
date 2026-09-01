@@ -155,6 +155,8 @@ static_assert(sizeof(LevelInfoManager) == 0xac);
 
 class ObjectInfo
 {
+    friend class LevelInfoManager;
+
 public:
     ObjectInfo(const ObjectInfo&);
     ObjectInfo();

@@ -474,9 +474,11 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    m3d::AIParam Obj::GetPropertyById(int) const
+    m3d::AIParam Obj::GetPropertyById(int propertyId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m3d::AIParam res;
+        _GetPropertyInternal(propertyId, res);
+        return res;
     }
 
     int Obj::SetProperty(unsigned, void*)

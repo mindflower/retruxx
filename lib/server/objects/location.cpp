@@ -1,14 +1,18 @@
 #include "location.h"
 
+#include <cstdlib>
 #include <stdexcept>
 
 #include "vehicle.h"
 #include "monsters/boss02.h"
 #include "server/utils.h"
 #include "player.h"
+#include <m3dapp.h>
 #include <server/processmanager.h>
 #include "base/prototypemanager.h"
+#include "core/kernel.h"
 #include "core/log.h"
+#include "core/ref_ptr.h"
 #include "server/intersectionmanager.h"
 #include "server/statistic/statisticmanager.h"
 #include <server/server.h>
@@ -48,14 +52,27 @@ namespace ai
         return dynamic_cast<LocationPrototypeInfo const*>(ai::thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
-    CStr Location::GetPropertyName(int) const
+    CStr Location::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto const& [name, propId] : m_propertiesMap)
+        {
+            if (propId == id)
+            {
+                return name;
+            }
+        }
+        return ai::SimplePhysicObj::GetPropertyName(id);
     }
 
-    CStr Location::GetLocationNameFromPassageAddress(CStr const&)
+    CStr Location::GetLocationNameFromPassageAddress(CStr const& passageAddress)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        retruxx::vector<CStr> tokens;
+        m3d::Tokenize(passageAddress, tokens, "(), ;\t");
+        if (tokens.size() != 2)
+        {
+            return {};
+        }
+        return tokens[1];
     }
 
     void Location::AddChild(Obj* pObj)
@@ -71,7 +88,9 @@ namespace ai
         }
     }
 
-    Location::Location(LocationPrototypeInfo const& prototype) : SimplePhysicObj(prototype), m_timeForNextCheck(0.0, 0.0, 10.0, -1.0)
+    Location::Location(LocationPrototypeInfo const& prototype) :
+        SimplePhysicObj(prototype),
+        m_timeForNextCheck(0.0, 0.0, 10.0, -1.0)
     {
         this->m_locationType = LOCATION_GENERIC;
         this->m_toleranceSet.insert(RS_OWN);
@@ -92,7 +111,7 @@ namespace ai
 
     std::vector<Npc*, std::allocator<Npc*>> const& Location::GetNpcs() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_npcs;
     }
 
     bool Location::CanChildBeAdded(m3d::Class* pClass) const
@@ -111,9 +130,27 @@ namespace ai
         return ai::SimplePhysicObj::GetPropertyId(propName);
     }
 
-    void Location::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Location::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::SimplePhysicObj::LoadRuntimeValues(xmlFile, xmlNode);
+        if (!xmlNode->IsEmpty())
+        {
+            if (char const* framesPassed = xmlNode->GetAttribute("FramesPassed"))
+            {
+                m_numFramesPassed = atoi(framesPassed);
+            }
+        }
+
+        ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+        for (xmlNode->GetFirstChild(node, "InsideId"); !node->IsEmpty(); node->GetNextSibling(node, "InsideId"))
+        {
+            int id = 0;
+            if (char const* idStr = node->GetAttribute("Id"))
+            {
+                id = atoi(idStr);
+            }
+            m_idsWasInside.insert(id);
+        }
     }
 
     m3d::Class* Location::GetBaseClass()
@@ -123,7 +160,13 @@ namespace ai
 
     void Location::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CVector const pos = GetPosition();
+        CVector textPos;
+        textPos.x = pos.x;
+        textPos.y = ai::GetGroundPos(pos, true, false).y + 2.0f;
+        textPos.z = pos.z;
+        ai::DebugCircle(pos, _GetLookSphere()->GetRadius(), 0xFFFFFFFF);
+        ai::DebugText(textPos, 12.0f, 0.0f, 0xFFFFFFFF, CStr(GetName()));
     }
 
     void Location::Remove()
@@ -170,8 +213,16 @@ namespace ai
             return true;
 
         case 53:
-            RETRUXX_NOT_IMPLEMENTED;
-            break;
+        {
+            bool const wasActive = m_bIsActive;
+            m_bIsActive = (newValue.GetAsID() != 0);
+            if (m_locationType == LOCATION_PASSAGE && wasActive != m_bIsActive)
+            {
+                // 66556 = SM location-state-changed app message
+                M3D_APP->EnqueueMessage(66556, GetId(), 0, 0, 0, {}, {});
+            }
+            return true;
+        }
 
         case 54:
         {
@@ -184,7 +235,8 @@ namespace ai
             m3d::Tokenize(m_passageAddress, tokens, "(), ;\t");
             if (tokens.size() != 2)
             {
-                M3D_LOG_ERR("Error: Invalid passage address '" + m_passageAddress + "' for location '" + CStr(GetName()));
+                M3D_LOG_ERR(
+                    "Error: Invalid passage address '" + m_passageAddress + "' for location '" + CStr(GetName()));
                 m_passageAddress = {};
             }
             return true;
@@ -206,7 +258,23 @@ namespace ai
 
     Location* Location::GetCorrespondingPassageLocation() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_correspondingPassageLocationName.empty())
+        {
+            return nullptr;
+        }
+        Obj* obj = theObjects->GetEntityByObjName(m_correspondingPassageLocationName);
+        if (!obj)
+        {
+            M3D_LOG_ERR(
+                "Error: PassageLocation '" + m_correspondingPassageLocationName + "' does not exist for " +
+                GetDebugDescription());
+            return nullptr;
+        }
+        if (!IS_KIND_OF(obj, Location))
+        {
+            SYS_ERROR("pObj->IsKindOf( RT_CLASS_LOCAL( Location ) )");
+        }
+        return static_cast<Location*>(obj);
     }
 
     void Location::SetPositionSelf(CVector const& pos)
@@ -215,14 +283,19 @@ namespace ai
         ai::PhysicObj::SetPositionSelf(groundPos);
     }
 
-    eGObjPropertySaveStatus Location::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus Location::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = m_propertiesSaveStatesMap.find(id);
+        if (it != m_propertiesSaveStatesMap.end())
+        {
+            return it->second;
+        }
+        return ai::SimplePhysicObj::GetPropertySaveStatus(id);
     }
 
-    bool Location::IsObjectInside(int) const
+    bool Location::IsObjectInside(int objId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_idsWasInside.find(objId) != m_idsWasInside.end();
     }
 
     m3d::Class* Location::GetClass() const
@@ -238,7 +311,8 @@ namespace ai
             ++this->m_numFramesPassed;
             m_timeForNextCheck.regenerate(elapsedTime);
             retruxx::set<ref_ptr<ai::Obstacle>> seenObstacles;
-            if (this->m_timeForNextCheck.value().get() == this->m_timeForNextCheck.minValue().get() || this->m_numFramesPassed <= 2)
+            if (this->m_timeForNextCheck.value().get() == this->m_timeForNextCheck.minValue().get() ||
+                this->m_numFramesPassed <= 2)
             {
                 auto newValue = ((rand() * 0.000030518509) * 0.39999998) + 0.30000001;
                 m_timeForNextCheck.value().set(newValue);
@@ -260,14 +334,18 @@ namespace ai
         }
     }
 
-    void Location::GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>&) const
+    void Location::GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::SimplePhysicObj::GetPropertiesNames(Props);
+        for (auto const& [name, id] : m_propertiesMap)
+        {
+            Props.insert(name);
+        }
     }
 
-    void Location::SetActive(bool)
+    void Location::SetActive(bool activate)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_bIsActive = activate;
     }
 
     void Location::SetRadius(float radius)
@@ -311,37 +389,70 @@ namespace ai
 
     CStr const& Location::GetPassageAddress() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_passageAddress;
     }
 
     bool Location::IsPassageActive() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_bPassageActive;
     }
 
-    void Location::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void Location::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::SimplePhysicObj::SaveRuntimeValues(xmlFile, xmlNode);
+        xmlNode->SetAttribute("FramesPassed", CStr(m_numFramesPassed).c_str());
+        for (int id : m_idsWasInside)
+        {
+            ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "InsideId");
+            xmlNode->AddChild(node);
+            node->SetAttribute("Id", CStr(id).c_str());
+        }
     }
 
     Location::LocationType Location::GetLocationType() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_locationType;
     }
 
     float Location::GetRadius() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return _GetLookSphere()->GetRadius();
     }
 
-    void Location::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>&) const
+    void Location::GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::SimplePhysicObj::GetPropertiesIDs(Props);
+        for (auto const& [name, id] : m_propertiesMap)
+        {
+            Props.insert(id);
+        }
     }
 
-    bool Location::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool Location::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        switch (propertyId)
+        {
+        case 49:
+            retVal = _GetLookSphere()->GetRadius();
+            return true;
+        case 52:
+            retVal = m_lookingTimeOut;
+            return true;
+        case 53:
+            retVal = m_bIsActive ? 1 : 0;
+            return true;
+        case 54:
+            retVal = m_passageAddress;
+            return true;
+        case 55:
+            retVal = m_correspondingPassageLocationName;
+            return true;
+        case 56:
+            retVal = m_bPassageActive ? 1 : 0;
+            return true;
+        default:
+            return ai::SimplePhysicObj::_GetPropertyInternal(propertyId, retVal);
+        }
     }
 
     void Location::OnObjectIn(Obj*)
@@ -352,9 +463,13 @@ namespace ai
     {
     }
 
-    void Location::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void Location::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_propertiesMap[Name] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
     void Location::_InternalPostLoad()
@@ -407,7 +522,8 @@ namespace ai
             if (!obj || !IS_KIND_OF(obj, Location))
             {
                 M3D_LOG_ERR(
-                    "Error: PassageLocation '" + m_correspondingPassageLocationName + "' does not exist for " + GetDebugDescription());
+                    "Error: PassageLocation '" + m_correspondingPassageLocationName + "' does not exist for " +
+                    GetDebugDescription());
             }
         }
 
@@ -419,9 +535,27 @@ namespace ai
         }
     }
 
-    bool Location::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool Location::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        switch (propertyId)
+        {
+        case 49:
+            retVal = GetPrototypeInfo() ? GetPrototypeInfo()->GetRadius() : 0.0f;
+            return true;
+        case 52:
+            retVal = 1.0f;
+            return true;
+        case 53:
+        case 56:
+            retVal = 1;
+            return true;
+        case 54:
+        case 55:
+            retVal = CStr();
+            return true;
+        default:
+            return ai::SimplePhysicObj::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
     }
 
     Location::~Location() = default;
@@ -434,12 +568,14 @@ namespace ai
 
     m3d::Object* Location::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     m3d::Object* Location::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     bool Location::_MustCheckObject(Obj const* pObj) const
@@ -482,19 +618,22 @@ namespace ai
                     if (std::isnan(sqrt(scale)))
                     {
                         M3D_LOG_ERR(
-                            "Error: " + obj->GetDebugDescription() + " is in hyperspace when intersecting with " + GetDebugDescription());
+                            "Error: " + obj->GetDebugDescription() + " is in hyperspace when intersecting with " +
+                            GetDebugDescription());
                         continue;
                     }
 
                     CauseEvent(GE_OBJECT_ENTERS_LOCATION, 0.0, {obj->GetId()}, {});
                     OnObjectIn(obj);
 
-                    if (!m_npcs.empty())
+                    if (!m_npcs.empty() && obj == thePlayer->GetVehicle())
                     {
-                        RETRUXX_NOT_IMPLEMENTED;
+                        // 66554 = "player vehicle entered a location that has NPCs" app message
+                        M3D_APP->EnqueueMessage(66554, GetId(), m_npcs.front()->GetId(), 0, 0, {}, {});
                     }
 
-                    if (this->m_locationType != LOCATION_PASSAGE || obj != thePlayer->GetVehicle() || !this->m_bPassageActive)
+                    if (this->m_locationType != LOCATION_PASSAGE || obj != thePlayer->GetVehicle() ||
+                        !this->m_bPassageActive)
                     {
                         continue;
                     }
@@ -503,7 +642,8 @@ namespace ai
                     auto locationName = GetLocationNameFromPassageAddress(m_passageAddress);
                     if (levelName.empty() || locationName.empty())
                     {
-                        M3D_LOG_ERR("Error: invalid pasageAddress: '" + m_passageAddress + "' for location '" + m_name + "'");
+                        M3D_LOG_ERR(
+                            "Error: invalid pasageAddress: '" + m_passageAddress + "' for location '" + m_name + "'");
                     }
                     else
                     {
@@ -513,14 +653,14 @@ namespace ai
                         }
                         else
                         {
-                            // TODO:
-                            // M3D_LOG_INFO("Log for passage");
+                            M3D_LOG_INFO(
+                                obj->GetDebugDescription() + " pos = " + CStr(obj->GetPosition()) + " in location '" +
+                                m_name + "' pos = " + CStr(GetPosition()) + " caused passage to map '" + levelName +
+                                "' to location '" + locationName + "'");
                             theStatisticManager->ZeroStatisticsForLevel(pServer->GetWorld()->m_level->m_levelName);
                             theObjects->PassToMap(levelName, locationName, -1, false);
                         }
                     }
-
-                    RETRUXX_NOT_IMPLEMENTED;
                 }
             }
             else

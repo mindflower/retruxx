@@ -60,6 +60,20 @@ namespace ai
         }
     }
 
+    CStr IntVectorToStr(retruxx::vector<int> const& intVector)
+    {
+        CStr res;
+        for (size_t i = 0; i < intVector.size(); ++i)
+        {
+            if (i != 0)
+            {
+                res += CStr(" ");
+            }
+            res += CStr(intVector[i]);
+        }
+        return res;
+    }
+
     bool GetPathItem(Path const* pPath, unsigned int itemNum, CVector& point)
     {
         if (!pPath || pPath->GetSearchStatus())

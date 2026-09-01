@@ -3,9 +3,13 @@
 class RandomCoeffWithDispersion
 {
 public:
-    RandomCoeffWithDispersion();
+    RandomCoeffWithDispersion() = default;
+    RandomCoeffWithDispersion(float coeff, float dispersion) :
+        baseCoeff(coeff),
+        baseDispersion(dispersion)
+    {
+    }
 
-private:
-    float baseCoeff;
-    float baseDispersion;
+    float baseCoeff = 1.0f;
+    float baseDispersion = 0.0f;
 };

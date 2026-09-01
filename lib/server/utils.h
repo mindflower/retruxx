@@ -10,6 +10,7 @@ namespace ai
     void StrToStringVector(CStr const&, retruxx::vector<CStr>&);
     void StrToFloatVector(CStr const&, retruxx::vector<float>&);
     void StrToIntVector(CStr const&, retruxx::vector<int>&);
+    CStr IntVectorToStr(retruxx::vector<int> const&);
     bool GetPathItem(Path const*, unsigned int, CVector&);
     void DebugCircle(CVector const&, float, unsigned int);
     int DebugText(CVector const&, float, float, unsigned int, CStr const&);

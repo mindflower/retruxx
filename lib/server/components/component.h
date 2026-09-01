@@ -11,16 +11,13 @@ namespace ai
     {
         using ThisType = ai::Component<T>;
 
- //   private:
     public:
-        Component() :
-            m_AfterChange(nullptr),
-            m_BeforeChange(nullptr)
+        Component() : m_AfterChange(nullptr), m_BeforeChange(nullptr)
         {
             //throw std::runtime_error("not implemented");
         }
 
-        Component(const ThisType&)
+        Component(ThisType const&)
         {
             throw std::runtime_error("not implemented");
         }
@@ -36,9 +33,16 @@ namespace ai
     public:
         /* 0x0000 */ ai::FuncPtrOneArg<T, void> m_AfterChange;
         /* 0x0008 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeChange;
-        void assign(const ThisType&);
+
+        void assign(ThisType const&)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
 
     protected:
-        void _AssignUnsafe(const ThisType&);
+        void _AssignUnsafe(ThisType const&)
+        {
+            RETRUXX_NOT_IMPLEMENTED;
+        }
     }; /* size: 0x0010 */
-}
+}  // namespace ai

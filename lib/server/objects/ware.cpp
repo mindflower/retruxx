@@ -1,7 +1,10 @@
 #include "ware.h"
 #include "core/ini.h"
 #include "core/kernel.h"
+#include "core/log.h"
 #include "base/prototypemanager.h"
+#include "base/obj.h"
+#include <server/modifier.h>
 
 namespace ai
 {
@@ -9,9 +12,23 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Ware);
 
+    int GetIntPrice(float price)
+    {
+        return price >= 1.0f ? static_cast<int>(price) : 1;
+    }
+
+    float GetDurabilityPriceCoeff(ai::NumericInRange<float> const& durability)
+    {
+        if (durability.maxValue().get() >= 0.001f)
+        {
+            return durability.value().get() / durability.maxValue().get();
+        }
+        return 0.0f;
+    }
+
     CStr const& WarePrototypeInfo::GetModelName() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_modelName;
     }
 
     WarePrototypeInfo::WarePrototypeInfo()
@@ -25,17 +42,17 @@ namespace ai
 
     int WarePrototypeInfo::GetMinCount() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_minCount;
     }
 
     float WarePrototypeInfo::GetPriceDispersion() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_priceDispersion;
     }
 
     int WarePrototypeInfo::GetMaxCount() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_maxCount;
     }
 
     bool WarePrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -67,9 +84,18 @@ namespace ai
         m_maxItems = prototypeInfo.m_maxItems;
     }
 
-    bool Ware::ApplyModifier(Modifier const&)
+    bool Ware::ApplyModifier(Modifier const& modifier)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (ai::Obj::ApplyModifier(modifier))
+        {
+            return true;
+        }
+        if (modifier.m_PropertyName == "dur")
+        {
+            m_durability.value().ApplyModifier(modifier, m_durability.maxValue().get());
+            return true;
+        }
+        return false;
     }
 
     m3d::Class* Ware::GetBaseClass()
@@ -77,9 +103,13 @@ namespace ai
         return RT_CLASS_LOCAL(Obj);
     }
 
-    unsigned Ware::GetPrice(IPriceCoeffProvider const*) const
+    unsigned Ware::GetPrice(IPriceCoeffProvider const* priceCoeffProvider) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto const* proto = GetPrototypeInfo();
+        float const durabilityCoeff = ai::GetDurabilityPriceCoeff(m_durability);
+        float const coeff = GetPriceCoeff(priceCoeffProvider) * durabilityCoeff;
+        float const price = static_cast<float>(static_cast<double>(proto->GetBasePrice()) * coeff);
+        return ai::GetIntPrice(price);
     }
 
     int Ware::GetPropertyId(char const* propName) const
@@ -95,7 +125,7 @@ namespace ai
 
     bool Ware::CanChildBeAdded(m3d::Class*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return false;
     }
 
     WarePrototypeInfo const* Ware::GetPrototypeInfo() const
@@ -103,24 +133,35 @@ namespace ai
         return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), WarePrototypeInfo const);
     }
 
-    CStr Ware::GetPropertyName(int) const
+    CStr Ware::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto const& [name, propId] : Ware::m_propertiesMap)
+        {
+            if (propId == id)
+            {
+                return name;
+            }
+        }
+        return ai::Obj::GetPropertyName(id);
     }
 
     NumericInRange<float> const& Ware::Durability() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_durability;
     }
 
     NumericInRange<float>& Ware::Durability()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_durability;
     }
 
-    void Ware::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void Ware::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::Obj::GetPropertiesIDs(Props);
+        for (auto const& [name, id] : Ware::m_propertiesMap)
+        {
+            Props.insert(id);
+        }
     }
 
     m3d::Class* Ware::GetClass() const
@@ -133,14 +174,23 @@ namespace ai
         m_propertiesMap["Durability"] = 19;
     }
 
-    void Ware::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void Ware::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::Obj::GetPropertiesNames(Props);
+        for (auto const& [name, id] : Ware::m_propertiesMap)
+        {
+            Props.insert(name);
+        }
     }
 
-    eGObjPropertySaveStatus Ware::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus Ware::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto it = Ware::m_propertiesSaveStatesMap.find(id);
+        if (it != Ware::m_propertiesSaveStatesMap.end())
+        {
+            return it->second;
+        }
+        return ai::Obj::GetPropertySaveStatus(id);
     }
 
     bool Ware::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
@@ -152,33 +202,46 @@ namespace ai
         return 1;
     }
 
-    Ware::~Ware()
+    Ware::~Ware() = default;
+
+    bool Ware::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (propertyId != 19)
+        {
+            return ai::Obj::_GetPropertyInternal(propertyId, retVal);
+        }
+        retVal = m_durability.value().get();
+        return true;
     }
 
-    bool Ware::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool Ware::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (propertyId != 19)
+        {
+            return ai::Obj::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
+        retVal = GetPrototypeInfo() ? GetPrototypeInfo()->m_maxDurability : 0.0f;
+        return true;
     }
 
-    bool Ware::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    void Ware::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    void Ware::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
-    {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_propertiesMap[Name] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
     m3d::Object* Ware::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* Ware::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 }  // namespace ai

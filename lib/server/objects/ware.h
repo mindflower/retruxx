@@ -5,6 +5,12 @@
 
 namespace ai
 {
+    // Rounds a computed price to an integer, never below 1.
+    int GetIntPrice(float price);
+
+    // Fraction of full price a used item fetches: currentDurability / maxDurability (0 when max ~ 0).
+    float GetDurabilityPriceCoeff(const ai::NumericInRange<float>& durability);
+
     class WarePrototypeInfo : public ai::PrototypeInfo
     {
     public:
