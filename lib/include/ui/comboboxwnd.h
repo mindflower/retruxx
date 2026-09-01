@@ -83,7 +83,6 @@ namespace m3d
             bool IsOpen() const ;
 
         protected:
-            ComboBoxWnd(ComboBoxWnd const &);
             ComboBoxWnd();
             void UpdateToggleButtonPane();
             virtual void SetState(State,bool);

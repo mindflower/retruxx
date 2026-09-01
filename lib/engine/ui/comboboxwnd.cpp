@@ -526,15 +526,19 @@ namespace m3d
             return m_state == STATE_OPEN;
         }
 
-        ComboBoxWnd::ComboBoxWnd(ComboBoxWnd const&)
-        {
-            // The original copy constructor only runs the default Wnd base setup and leaves
-            // every ComboBoxWnd member at its default; it does not copy from the source.
-        }
-
         ComboBoxWnd::ComboBoxWnd()
         {
             m_defFont = 1;
+            m_maxListH = 100.0;
+            m_wndStringList = nullptr;
+            m_btnToggle = nullptr;
+            m_wndSelText = nullptr;
+            m_state = STATE_CLOSE;
+            m_selTextFixedH = 35.0;
+            m_defFont = 1;
+            m_comboStyle = 0;
+            m_toggleButtonOpenPaneName = "PaneComboToggleBtnOpenDefault";
+            m_toggleButtonClosePaneName = "PaneComboToggleBtnCloseDefault";
         }
 
         void ComboBoxWnd::UpdateToggleButtonPane()
