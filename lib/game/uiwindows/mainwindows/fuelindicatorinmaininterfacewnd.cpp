@@ -168,7 +168,7 @@ int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd,
         m_wndProgressBar->SetBounds(bounds, false);
     }
 
-    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndValueName), ImageWnd))
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndValueName), Wnd))
     {
         m_wndValue = (ElectronicDigitalWnd*)M3D_KERNEL->New("ElectronicDigitalWnd");
         if (m_wndValue)

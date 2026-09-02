@@ -17,6 +17,8 @@ class RadarWnd :  public m3d::ui::Wnd
 public:
     class NpDistance
     {
+        friend class RadarWnd;
+
     public:
         ~NpDistance();
         int GetNavPointId() const;
@@ -35,6 +37,8 @@ public:
 
     class RadarItem
     {
+        friend class RadarWnd;
+
     public:
         PointBase<float> const& GetCoords() const;
         RadarItem(m3d::rend::TexHandle, PointBase<float> const&, PointBase<float> const&, float);
@@ -58,6 +62,8 @@ public:
 
     class AuxInfo
     {
+        friend class RadarWnd;
+
     public:
         AuxInfo();
 
@@ -179,6 +185,8 @@ public:
     RT_CLASS_DECLARE(RadarWnd);
 
 private:
+    void ClearRadarItemMap(std::map<int, std::vector<RadarWnd::RadarItem*>>& itemsMap);
+
     m3d::CVar m_cvDefaultRadarScanRadius;
     std::map<int,std::vector<RadarWnd::RadarItem *>> m_vehicleItems;
     std::map<int,std::vector<RadarWnd::RadarItem *>> m_turretItems;

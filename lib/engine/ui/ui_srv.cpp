@@ -11,7 +11,12 @@ namespace m3d
 {
     ui::FormattedLine::FormattedLine(CStr text)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_text = text;
+        m_color = 0;
+        m_origin.x = 0.0f;
+        m_origin.y = 0.0f;
+        m_format = TF_LEFT;
+        m_isHieroglyphic = Application::g_pApp->IsTextHieroglyphic(m_text);
     }
 
     ui::FormattedLine::FormattedLine()
@@ -31,12 +36,12 @@ namespace m3d
 
     int ui::GfxServer::GetSliderHeight()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_sliderHeight;
     }
 
-    void ui::GfxServer::SetTexture(rend::TexHandle)
+    void ui::GfxServer::SetTexture(rend::TexHandle tex)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        M3D_RENDERER->SetTexture(0, tex, -1.0);
     }
 
     rend::TexHandle ui::GfxServer::GetTexture(ThemeTexture tex)
@@ -70,9 +75,12 @@ namespace m3d
         return m_tabButtonHeight;
     }
 
-    void ui::GfxServer::SetColor(unsigned, unsigned)
+    void ui::GfxServer::SetColor(unsigned clrEnum, unsigned clr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (clrEnum < 0xFF)
+        {
+            m_colors[clrEnum] = clr;
+        }
     }
 
     unsigned ui::GfxServer::GetColor(unsigned c) const
@@ -85,14 +93,77 @@ namespace m3d
         return res;
     }
 
-    void ui::GfxServer::AddLineFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned, int)
+    void ui::GfxServer::AddLineFlatAxialPane(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr, int dir)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        rend::TexHandle tex = m_texTheme[dir != 0 ? TEX_LINE_VERT : TEX_LINE_HORZ];
+        M3D_RENDERER->SetTexture(0, tex, -1.0);
+
+        int sx = 0;
+        int sy = 0;
+        M3D_RENDERER->GetDims(tex, sx, sy);
+        float fsx = static_cast<float>(sx);
+        float fsy = static_cast<float>(sy);
+        M3D_RENDERER->AbsToRel(fsx, fsy);
+
+        float tu1 = 1.0f;
+        float tv1 = 1.0f;
+        if (dir == 0)
+        {
+            tu1 = rect.width / fsx;
+        }
+        else
+        {
+            tv1 = rect.height / fsy;
+        }
+        AddFlatAxialQuad(di, rect, clr, 0.0, 0.0, tu1, tv1);
     }
 
-    void ui::GfxServer::AddRect(DrawInfo const&, BoundsBase<float> const&, unsigned)
+    void ui::GfxServer::AddRect(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        float const ax0 = di.m_originalRect.x0 + rect.x0;
+        float const ay0 = di.m_originalRect.y0 + rect.y0;
+        float const ax1 = ax0 + rect.width;
+        float const ay1 = ay0 + rect.height;
+
+        float const cx0 = di.m_clippedRect.x0;
+        float const cx1 = di.m_clippedRect.x0 + di.m_clippedRect.width;
+        float const cy0 = di.m_clippedRect.y0;
+        float const cy1 = di.m_clippedRect.y0 + di.m_clippedRect.height;
+
+        BoundsBase<float> clipped;
+        clipped.x0 = 0.0f;
+        clipped.y0 = 0.0f;
+        clipped.width = 0.0f;
+        clipped.height = 0.0f;
+        if (!(cx0 > ax1 || ax0 > cx1 || cy0 > ay1 || ay0 > cy1))
+        {
+            float const x0 = (cx0 <= ax0) ? ax0 : cx0;
+            float const x1 = (ax1 <= cx1) ? ax1 : cx1;
+            float const y0 = (cy0 <= ay0) ? ay0 : cy0;
+            float const y1 = (ay1 > cy1) ? cy1 : ay1;
+            clipped.x0 = x0;
+            clipped.y0 = y0;
+            clipped.width = x1 - x0;
+            clipped.height = y1 - y0;
+        }
+
+        if ((ax1 - ax0) != 0.0f || (ay0 - ay1) != 0.0f)
+        {
+            M3D_RENDERER->SetWhiteTexture(0);
+            M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+            M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+            M3D_RENDERER->DisableTextureStages(1);
+
+            unsigned c = clr;
+            if ((clr & 0xFF000000) == 0 && clr < 0xFF)
+            {
+                c = m_colors[clr];
+            }
+
+            CVector2 const from(clipped.x0, clipped.y0);
+            CVector2 const to(clipped.x0 + clipped.width, clipped.y0 + clipped.height);
+            Application::g_pApp->DrawWireRectRel(from, to, c);
+        }
     }
 
     int ui::GfxServer::ReadFrames()
@@ -287,9 +358,19 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void ui::GfxServer::AddChkButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned, bool)
+    void ui::GfxServer::AddChkButtonFlatAxialPane(
+        DrawInfo const& di,
+        BoundsBase<float> const& rect,
+        unsigned clr,
+        bool down)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        rend::TexHandle const tex = down ? m_texTheme[TEX_CHK_CHECKED] : m_texTheme[TEX_CHK_UNCHECKED];
+        BoundsBase<float> rc;
+        rc.x0 = rect.x0;
+        rc.y0 = rect.y0;
+        rc.height = rect.height;
+        rc.width = rc.height;
+        AddImagedRectGeneral(di, rc, clr, tex, 0.0, 0.0, 1.0, 1.0);
     }
 
     float ui::GfxServer::GetTabButtonSpace() const
@@ -306,7 +387,7 @@ namespace m3d
 
     int ui::GfxServer::GetCornerSz() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_cornerSz;
     }
 
     int ui::GfxServer::SetSchema(CStr const& name)
@@ -536,9 +617,57 @@ namespace m3d
         return 1;
     }
 
-    void ui::GfxServer::AddButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned, bool)
+    void ui::GfxServer::AddButtonFlatAxialPane(
+        DrawInfo const& di,
+        BoundsBase<float> const& rect,
+        unsigned clr,
+        bool down)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+        M3D_RENDERER->PushBlend(rend::BM_ALPHA);
+        M3D_RENDERER->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+        M3D_RENDERER->PushZbState(rend::ZB_DISABLE);
+
+        rend::TexHandle const texC = down ? m_texTheme[TEX_BTN_C_1] : m_texTheme[TEX_BTN_C_0];
+        rend::TexHandle const texR = down ? m_texTheme[TEX_BTN_R_1] : m_texTheme[TEX_BTN_R_0];
+        rend::TexHandle const texL = down ? m_texTheme[TEX_BTN_L_1] : m_texTheme[TEX_BTN_L_0];
+
+        // Left cap: a square of side rect.height.
+        BoundsBase<float> rc;
+        rc.x0 = rect.x0;
+        rc.y0 = rect.y0;
+        rc.height = rect.height;
+        rc.width = rc.height;
+        M3D_RENDERER->SetTexture(0, texL, -1.0);
+        AddFlatAxialQuad(di, rc, clr, 0.0, 0.0, 1.0, 1.0);
+
+        // Right cap.
+        rc.x0 = rect.width - rect.height;
+        rc.y0 = rect.y0;
+        rc.height = rect.height;
+        rc.width = rc.height;
+        M3D_RENDERER->SetTexture(0, texR, -1.0);
+        AddFlatAxialQuad(di, rc, clr, 0.0, 0.0, 1.0, 1.0);
+
+        // Centre: horizontally tiled between the two caps.
+        int sx = 0;
+        int sy = 0;
+        M3D_RENDERER->GetDims(texC, sx, sy);
+        float ssx = static_cast<float>(sx);
+        float ssy = static_cast<float>(sy);
+        M3D_RENDERER->AbsToRel(ssx, ssy);
+
+        rc.x0 = rect.height;
+        rc.y0 = rect.y0;
+        rc.height = rect.height;
+        rc.width = rect.width - rect.height * 2.0f;
+        M3D_RENDERER->SetTexture(0, texC, -1.0);
+        AddFlatAxialQuad(di, rc, clr, 0.0, 0.0, rect.width / ssx, 1.0);
+
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->SetAlphaTest(0);
     }
 
     void ui::GfxServer::AddFlatAxialPane0(
@@ -764,7 +893,19 @@ namespace m3d
                         }
                         else
                         {
-                            RETRUXX_NOT_IMPLEMENTED;
+                            // No dedicated bottom-bar texture: reuse the top-bar texture (still
+                            // bound above) drawn with the V coordinate flipped (1 -> 0).
+                            if (pane->m_frame[flag]->m_barRepeat)
+                            {
+                                int sx = 0;
+                                int sy = 0;
+                                M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[1], sx, sy);
+                                float fsx = sx;
+                                float fsy = sy;
+                                M3D_APP->m_renderer->AbsToRel(fsx, fsy);
+                                tv0 = bgRect.width;
+                                scale = fsx;
+                            }
                             AddFlatAxialQuad(di, bgRect, clr, 0.0, 1.0, tv0 / scale, 0.0);
                         }
                     }
@@ -874,9 +1015,14 @@ namespace m3d
         AddImagedRectGeneral(di, rect, clr, tex, 0.0, 0.0, 1.0, 1.0);
     }
 
-    rend::TexHandle ui::GfxServer::GetGlyph(CStr const&)
+    rend::TexHandle ui::GfxServer::GetGlyph(CStr const& name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto const it = m_glyphButtonTextures.find(name);
+        if (it == m_glyphButtonTextures.end())
+        {
+            return rend::TexHandle{};
+        }
+        return it->second;
     }
 
     ui::GfxServer::GfxServer()
@@ -907,17 +1053,17 @@ namespace m3d
 
     int ui::GfxServer::GetBtnHeight()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_btnHeight;
     }
 
-    int ui::GfxServer::GetFontId(CStr const&, float, FontType, FontParams) const
+    int ui::GfxServer::GetFontId(CStr const& name, float height, FontType type, FontParams params) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_fontManager->GetFontId(name, height, type, params);
     }
 
     int ui::GfxServer::GetBtnWidth()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_btnWidth;
     }
 
     void ui::GfxServer::AddFlatAxialQuad(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr)
@@ -966,9 +1112,24 @@ namespace m3d
         return fnt != nullptr;
     }
 
-    int ui::GfxServer::SetFont(CStr const&, float, FontType, FontParams)
+    int ui::GfxServer::SetFont(CStr const& name, float height, FontType type, FontParams params)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int id = m_fontManager->GetFontId(name, height, type, params);
+        if (id == -1)
+        {
+            return 0;
+        }
+        if (!m_fontManager->ValidateFontId(id))
+        {
+            return 0;
+        }
+        auto* font = m_fontManager->GetFontById(id);
+        if (!font)
+        {
+            return 0;
+        }
+        m_curFont = font;
+        return 1;
     }
 
     void ui::GfxServer::AddImagedRectGeneral(
@@ -1007,7 +1168,10 @@ namespace m3d
 
     void ui::GfxServer::ClearFonts()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_fontManager->Clear();
+        m_curFont = nullptr;
+        m_hieroglyphicFontId = -1;
+        m_curFontTexture.SetInvalid();
     }
 
     float ui::GfxServer::GetTabButtonMinWidth() const
@@ -1015,9 +1179,9 @@ namespace m3d
         return m_tabButtonMinWidth;
     }
 
-    ui::Font* ui::GfxServer::GetFontById(unsigned) const
+    ui::Font* ui::GfxServer::GetFontById(unsigned id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_fontManager->GetFontById(id);
     }
 
     int ui::GfxServer::LoadSoundsFromXml(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
@@ -1071,7 +1235,39 @@ namespace m3d
 
     void ui::GfxServer::ReleaseSchema()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto& tex : m_texTheme)
+        {
+            M3D_RENDERER->ReleaseTexture(tex);
+        }
+        for (auto* frame : m_frames)
+        {
+            delete frame;
+        }
+        for (auto* background : m_backgrounds)
+        {
+            delete background;
+        }
+        for (auto* pane : m_panesVector)
+        {
+            delete pane;
+        }
+        for (auto* scroll : m_scrollPanes)
+        {
+            delete scroll;
+        }
+        for (auto& [name, tex] : m_glyphButtonTextures)
+        {
+            M3D_RENDERER->ReleaseTexture(tex);
+        }
+
+        m_frames.clear();
+        m_backgrounds.clear();
+        m_panes.clear();
+        m_panesVector.clear();
+        m_scrollPanes.clear();
+        m_glyphButtonTextures.clear();
+
+        ClearSounds();
     }
 
     void ui::GfxServer::ClearSounds()

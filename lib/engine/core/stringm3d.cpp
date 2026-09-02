@@ -1,6 +1,10 @@
 #include <cassert>
+#include <cstdarg>
+#include <cstdio>
 #include <stdexcept>
+#include <string>
 #include <core/stringm3d.h>
+#include <file/i_stream.h>
 #include <windows.h>
 
 #include "math/vector.h"
@@ -173,24 +177,52 @@ int CStr::my_stricmp(char const* lhs, char const* rhs)
     return result;
 }
 
-CStr::CStr(Quaternion const&)
+CStr::CStr(Quaternion const& q)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    char buf[136] = {0};
+
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
+    sprintf(buf, "%.4f %.4f %.4f %.4f", q.x, q.y, q.z, q.w);
+    realloc(strlen(buf) + 1);
+    strcpy(m_charPtr, buf);
 }
 
-CStr::CStr(CVector2 const&)
+CStr::CStr(CVector2 const& v)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    char buf[136] = {0};
+
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
+    sprintf(buf, "%.3f %.3f", v.x, v.y);
+    realloc(strlen(buf) + 1);
+    strcpy(m_charPtr, buf);
 }
 
-CStr::CStr(CVector const&)
+CStr::CStr(CVector const& v)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    char buf[136] = {0};
+
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
+    sprintf(buf, "%.3f %.3f %.3f", v.x, v.y, v.z);
+    realloc(strlen(buf) + 1);
+    strcpy(m_charPtr, buf);
 }
 
-CStr::CStr(double)
+CStr::CStr(double v)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    char buf[136] = {0};
+
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
+    sprintf(buf, "%.3f", v);
+    realloc(strlen(buf) + 1);
+    strcpy(m_charPtr, buf);
 }
 
 CStr::CStr(float v)
@@ -205,14 +237,28 @@ CStr::CStr(float v)
     strcpy(m_charPtr, buf);
 }
 
-CStr::CStr(uint64_t)
+CStr::CStr(uint64_t v)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    char buf[136] = {0};
+
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
+    sprintf(buf, "%I64u", v);
+    realloc(strlen(buf) + 1);
+    strcpy(m_charPtr, buf);
 }
 
-CStr::CStr(int64_t)
+CStr::CStr(int64_t v)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    char buf[136] = {0};
+
+    m_charPtr = ZERO;
+    m_allocSz = 0;
+
+    sprintf(buf, "%I64d", v);
+    realloc(strlen(buf) + 1);
+    strcpy(m_charPtr, buf);
 }
 
 CStr::CStr(unsigned long v)
@@ -377,7 +423,18 @@ CStr& CStr::operator+=(CStr const& a)
 
 unsigned int CStr::getHashCode()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // FNV-1a 32-bit. (Not present in the shipped binary - dead-stripped there - and
+    // currently unreferenced in retruxx; kept as a well-defined, stable string hash.)
+    unsigned int hash = 2166136261u;
+    if (m_charPtr)
+    {
+        for (char const* p = m_charPtr; *p; ++p)
+        {
+            hash ^= static_cast<unsigned char>(*p);
+            hash *= 16777619u;
+        }
+    }
+    return hash;
 }
 
 void CStr::toLower(unsigned long locale)
@@ -392,19 +449,40 @@ void CStr::toLower(unsigned long locale)
     }
 }
 
-void CStr::toUpper(unsigned long)
+void CStr::toUpper(unsigned long locale)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (locale == -1)
+    {
+        locale = LOCALE_USER_DEFAULT;
+    }
+    if (!empty())
+    {
+        ::LCMapStringA(locale, LCMAP_UPPERCASE, m_charPtr, length() + 1, m_charPtr, length() + 1);
+    }
 }
 
-void CStr::FirstCharToLower(unsigned long)
+void CStr::FirstCharToLower(unsigned long locale)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (locale == -1)
+    {
+        locale = LOCALE_USER_DEFAULT;
+    }
+    if (!empty())
+    {
+        ::LCMapStringA(locale, LCMAP_LOWERCASE, m_charPtr, 1, m_charPtr, 1);
+    }
 }
 
-void CStr::FirstCharToUpper(unsigned long)
+void CStr::FirstCharToUpper(unsigned long locale)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (locale == -1)
+    {
+        locale = LOCALE_USER_DEFAULT;
+    }
+    if (!empty())
+    {
+        ::LCMapStringA(locale, LCMAP_UPPERCASE, m_charPtr, 1, m_charPtr, 1);
+    }
 }
 
 int CStr::findOneOf(char const* str, int startIdx) const
@@ -496,24 +574,54 @@ int CStr::del(int idx, int count)
     return strlen(m_charPtr);
 }
 
-int CStr::format(char const*, ...)
+int CStr::format(char const* fmt, ...)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    va_list args;
+    va_start(args, fmt);
+    realloc(1024);
+    vsnprintf(m_charPtr, m_allocSz, fmt, args);
+    va_end(args);
+    return length();
 }
 
-CStr CStr::format_(char const*, ...)
+CStr CStr::format_(char const* fmt, ...)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    va_list args;
+    va_start(args, fmt);
+    CStr newStr;
+    newStr.realloc(1024);
+    vsnprintf(newStr.m_charPtr, newStr.m_allocSz, fmt, args);
+    va_end(args);
+    return newStr;
 }
 
-int CStr::Write(m3d::fs::IStream&)
+int CStr::Write(m3d::fs::IStream& stream)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    int const len = length();
+    stream.WriteBytes(&len, sizeof(len));
+    if (len > 0)
+    {
+        stream.WriteBytes(m_charPtr, len);
+    }
+    return 1;
 }
 
-int CStr::Read(m3d::fs::IStream&)
+int CStr::Read(m3d::fs::IStream& stream)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    int len = 0;
+    if (stream.ReadBytes(&len, sizeof(len)) != sizeof(len) || len < 0)
+    {
+        *this = CStr();
+        return 0;
+    }
+
+    realloc(len + 1);
+    if (len > 0)
+    {
+        stream.ReadBytes(m_charPtr, len);
+    }
+    m_charPtr[len] = '\0';
+    return 1;
 }
 
 CStr& CStr::operator=(CStr const& rhs)
