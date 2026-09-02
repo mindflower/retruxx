@@ -10,6 +10,8 @@
 #include <core/ref_ptr.h>
 #include <math/vector2.h>
 #include <server/utils.h>
+#include <core/console/cvar.h>
+#include <ui/cursor.h>
 #include <ui/frame.h>
 #include <ui/scroll.h>
 #include <ui/ui.h>
@@ -90,12 +92,13 @@ namespace m3d
 
         void Wnd::AnimationInfo::Invalidate()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_animationType = ANIMATIONTYPE_INVALID;
+            m_purpose = PURPOSE_UNKNOWN;
         }
 
         bool Wnd::AnimationInfo::IsValid() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_animationType != ANIMATIONTYPE_INVALID;
         }
 
         int Wnd::AnimationInfo::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
@@ -140,9 +143,16 @@ namespace m3d
             return 1;
         }
 
-        CStr Wnd::AnimationInfo::AnimationType2Str(AnimationType) const
+        CStr Wnd::AnimationInfo::AnimationType2Str(AnimationType animationType) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            for (auto const& anim : l_animationType2Str)
+            {
+                if (anim.m_type == animationType)
+                {
+                    return anim.m_name ? CStr(anim.m_name) : CStr();
+                }
+            }
+            return CStr();
         }
 
         bool Wnd::AnimationInfo::CanAnimate() const
@@ -150,19 +160,98 @@ namespace m3d
             return m_animationType != ANIMATIONTYPE_INVALID && m_bEnabled;
         }
 
-        int Wnd::AnimationInfo::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int Wnd::AnimationInfo::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!file || !node || m_animationType == ANIMATIONTYPE_INVALID)
+            {
+                return 0;
+            }
+            node->SetAttribute("animationEnabled", CStr(static_cast<int>(m_bEnabled)).c_str());
+            node->SetAttribute("animationType", AnimationType2Str(m_animationType).c_str());
+            if (m_animationType == ANIMATIONTYPE_USER)
+            {
+                node->SetAttribute("animationStartPt", (CStr(m_startPt.x) + CStr(" ") + CStr(m_startPt.y)).c_str());
+                node->SetAttribute("animationEndPt", (CStr(m_endPt.x) + CStr(" ") + CStr(m_endPt.y)).c_str());
+            }
+            node->SetAttribute("animationSpeed", CStr(m_startSpeed).c_str());
+            node->SetAttribute("animationAccel", CStr(m_acceleration).c_str());
+            node->SetAttribute("animationDelayTime", CStr(m_delayTime).c_str());
+            node->SetAttribute("Immediate", CStr(static_cast<int>(m_bImmediate)).c_str());
+            node->SetAttribute("soundMoveName", m_soundMoveName.c_str());
+            node->SetAttribute("soundStopName", m_soundStopName.c_str());
+            node->SetAttribute("soundMoveEnabled", CStr(static_cast<int>(m_bSoundMoveEnabled)).c_str());
+            node->SetAttribute("soundStopEnabled", CStr(static_cast<int>(m_bSoundStopEnabled)).c_str());
+            return 1;
         }
 
         void Wnd::AnimationInfo::SetupDefaultOnHide()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto const& cfg = g_Kernel->GetEngineCfg();
+            m_bEnabled = 1;
+            m_startPt.x = 0.0;
+            m_startPt.y = 0.0;
+            m_endPt.x = 0.0;
+            m_endPt.y = 0.0;
+            m_animationType = Str2AnimationType(CStr(cfg.m_ui_defaultWndAnimationHideType.GetS()));
+            m_startSpeed = cfg.m_ui_defaultWndAnimationHideSpeed.GetF();
+            m_acceleration = cfg.m_ui_defaultWndAnimationHideAccel.GetF();
+            m_delayTime = 0;
+            m_purpose = PURPOSE_HIDE;
+            m_bImmediate = 0;
         }
 
         void Wnd::AnimationInfo::SetupDefaultOnShow()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto const& cfg = g_Kernel->GetEngineCfg();
+            m_bEnabled = 1;
+            m_startPt.x = 0.0;
+            m_startPt.y = 0.0;
+            m_endPt.x = 0.0;
+            m_endPt.y = 0.0;
+            m_animationType = Str2AnimationType(CStr(cfg.m_ui_defaultWndAnimationShowType.GetS()));
+            m_startSpeed = cfg.m_ui_defaultWndAnimationShowSpeed.GetF();
+            m_acceleration = cfg.m_ui_defaultWndAnimationShowAccel.GetF();
+            m_curSpeed = 0.0;
+            m_delayTime = 0;
+            m_purpose = PURPOSE_SHOW;
+            m_bImmediate = 0;
+        }
+
+        void Wnd::AnimationInfo::Setup(
+            PointBase<float> const& startPt,
+            PointBase<float> const& endPt,
+            float startSpeed,
+            float acceleration,
+            unsigned int delayTime)
+        {
+            // Inlined at every call site in the original; reconstructed from the field
+            // semantics used by StartAnimation / ProcessAnimation.
+            m_bEnabled = 1;
+            m_startPt = startPt;
+            m_endPt = endPt;
+            m_animationType = ANIMATIONTYPE_USER;
+            m_startSpeed = startSpeed;
+            m_acceleration = acceleration;
+            m_curSpeed = startSpeed;
+            m_delayTime = delayTime;
+            m_bImmediate = 0;
+        }
+
+        void Wnd::AnimationInfo::Setup(
+            AnimationType animationType,
+            float startSpeed,
+            float acceleration,
+            unsigned int delayTime)
+        {
+            // Inlined at every call site in the original; reconstructed from the field
+            // semantics used by StartAnimation / ProcessAnimation.
+            m_bEnabled = 1;
+            m_animationType = animationType;
+            m_startSpeed = startSpeed;
+            m_acceleration = acceleration;
+            m_curSpeed = startSpeed;
+            m_delayTime = delayTime;
+            m_bImmediate = 0;
         }
 
         Class* Wnd::GetBaseClass()
@@ -177,7 +266,7 @@ namespace m3d
 
         int Wnd::GetUniqueId() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_uniqueId;
         }
 
         bool Wnd::IsVisible() const
@@ -272,9 +361,17 @@ namespace m3d
             m_guiId = guiId;
         }
 
-        BoundsBase<float> Wnd::ToParent(BoundsBase<float> const&) const
+        BoundsBase<float> Wnd::ToParent(BoundsBase<float> const& b) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            PointBase<float> tl = ToParent(PointBase<float>{b.x0, b.y0});
+            PointBase<float> br = ToParent(PointBase<float>{b.x0 + b.width, b.y0 + b.height});
+
+            BoundsBase<float> res;
+            res.x0 = tl.x;
+            res.y0 = tl.y;
+            res.width = br.x - tl.x;
+            res.height = br.y - tl.y;
+            return res;
         }
 
         PointBase<float> Wnd::ToParent(PointBase<float> const& pt) const
@@ -312,9 +409,56 @@ namespace m3d
             m_strTextColor = CStr("@") + tmp;
         }
 
-        int Wnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int Wnd::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!Object::WriteToXmlNode(file, writeTo))
+            {
+                return 0;
+            }
+
+            writeTo->SetAttribute(
+                "org",
+                CStr::format_("%.3f %.3f %.3f %.3f", m_bounds.x0, m_bounds.y0, m_bounds.width, m_bounds.height)
+                    .c_str());
+            writeTo->SetAttribute("style", CStr(m_style).c_str());
+            writeTo->SetAttribute("order", CStr(m_activationOrder).c_str());
+            writeTo->SetAttribute("id", CStr(m_id).c_str());
+            writeTo->SetAttribute("caption", m_caption.c_str());
+            writeTo->SetAttribute("tip", m_toolTipText.c_str());
+            writeTo->SetAttribute("backimage", m_bgTextureName.c_str());
+            writeTo->SetAttribute("paneName", m_paneName.c_str());
+            writeTo->SetAttribute("scrollPaneName", m_scrollPaneName.c_str());
+            writeTo->SetAttribute("paneFlags", CStr(m_paneFlags).c_str());
+            writeTo->SetAttribute("wrap", CStr(static_cast<int>(m_textWrap)).c_str());
+            writeTo->SetAttribute("format", CStr(static_cast<int>(m_textFormat)).c_str());
+            writeTo->SetAttribute("font", CStr(m_defFont).c_str());
+            writeTo->SetAttribute("clientEdges", ai::FloatVectorToStr(m_clientEdges).c_str());
+
+            CStr clr;
+            clr.format("%08x", m_curClr);
+            writeTo->SetAttribute("wndColor", clr.c_str());
+            CStr textClr;
+            textClr.format("%08x", m_textColor);
+            writeTo->SetAttribute("textColor", textClr.c_str());
+            CStr textClrDisabled;
+            textClrDisabled.format("%08x", m_textColorDisabled);
+            writeTo->SetAttribute("textColorDisabled", textClrDisabled.c_str());
+
+            ref_ptr<cmn::XmlNode> animationsNode = file->CreateNode(cmn::XML_NODE_ELEMENT, "Animations");
+            writeTo->AddChild(animationsNode);
+            if (m_onShowAnimation.IsValid())
+            {
+                ref_ptr<cmn::XmlNode> showNode = file->CreateNode(cmn::XML_NODE_ELEMENT, "AnimationOnShow");
+                animationsNode->AddChild(showNode);
+                m_onShowAnimation.WriteToXmlNode(file, showNode);
+            }
+            if (m_onHideAnimation.IsValid())
+            {
+                ref_ptr<cmn::XmlNode> hideNode = file->CreateNode(cmn::XML_NODE_ELEMENT, "AnimationOnHide");
+                animationsNode->AddChild(hideNode);
+                m_onHideAnimation.WriteToXmlNode(file, hideNode);
+            }
+            return 1;
         }
 
         bool Wnd::GetCursorShow() const
@@ -351,7 +495,7 @@ namespace m3d
 
         PointBase<float> Wnd::GetOrigin() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return PointBase<float>{m_bounds.x0, m_bounds.y0};
         }
 
         int Wnd::StartAnimation(AnimationInfo const& animationInfo, bool interpolateWithPrevious)
@@ -696,7 +840,12 @@ namespace m3d
 
         ScrollWnd* Wnd::GetScrollVWnd()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_scrollVWnd;
+        }
+
+        ScrollWnd* Wnd::GetScrollHWnd()
+        {
+            return m_scrollHWnd;
         }
 
         CStr Wnd::GetText() const
@@ -796,7 +945,7 @@ namespace m3d
 
         unsigned Wnd::GetInt() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_int;
         }
 
         void Wnd::SetStyle(unsigned style)
@@ -806,12 +955,12 @@ namespace m3d
 
         int Wnd::GameDataSave(cmn::XmlFile*, cmn::XmlNode*)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return 1;
         }
 
         Object* Wnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new Wnd(*this);
         }
 
         int Wnd::RemoveChildForce(Object* obj)
@@ -906,9 +1055,25 @@ namespace m3d
             return m_gameDataFlags;
         }
 
-        void Wnd::SetOrigin(PointBase<float> const&)
+        void Wnd::SetOrigin(PointBase<float> const& pt)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_bounds.x0 = pt.x;
+            m_bounds.y0 = pt.y;
+        }
+
+        m3d::ui::PaneFlagBg Wnd::GetBgFlags() const
+        {
+            return m_bgFlags;
+        }
+
+        void Wnd::SetBgFlags(m3d::ui::PaneFlagBg flags)
+        {
+            m_bgFlags = flags;
+        }
+
+        Wnd* Wnd::CaptureMouse()
+        {
+            return GetStation()->CaptureMouse(this);
         }
 
         void Wnd::SetColor(unsigned color)
@@ -960,7 +1125,24 @@ namespace m3d
                 wnd->m_bSuspendedUnlink = false;
                 retruxx::vector<Object*> stack;
                 stack.push_back(w);
-                RETRUXX_NOT_IMPLEMENTED;
+                while (!stack.empty())
+                {
+                    Object* cur = stack.back();
+                    stack.pop_back();
+                    for (auto* child = RT_DYNCAST(cur->GetFirstChild(), Wnd); child;
+                         child = RT_DYNCAST(child->GetNextSibling(), Wnd))
+                    {
+                        child->m_bSuspendedParentUnlink = false;
+                        if (child->GetFirstChild())
+                        {
+                            stack.push_back(child);
+                        }
+                    }
+                }
+                if (m_wndStation->IsAnimationEnabled() && wnd->GetOnShowAnimation().CanAnimate())
+                {
+                    wnd->StartAnimation(wnd->GetOnShowAnimation(), true);
+                }
             }
             else
             {
@@ -990,7 +1172,20 @@ namespace m3d
 
         bool Wnd::IsEnabled() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return (m_style & WS_DISABLE) == 0;
+        }
+
+        void Wnd::GrayWindow(bool bGray)
+        {
+            if (bGray)
+                m_style |= WS_GRAYED;
+            else
+                m_style &= ~WS_GRAYED;
+        }
+
+        bool Wnd::IsGrayed() const
+        {
+            return (m_style & WS_GRAYED) != 0;
         }
 
         void Wnd::EnableOnHideAnimation(bool bEnable)
@@ -1035,7 +1230,16 @@ namespace m3d
 
         void Wnd::Centralize()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto* parentWnd = RT_DYNCAST(GetParent(), Wnd);
+            if (!parentWnd)
+            {
+                return;
+            }
+            auto parentB = parentWnd->GetBounds();
+            auto self = GetBounds();
+            self.x0 = (parentB.width - self.width) * 0.5f;
+            self.y0 = (parentB.height - self.height) * 0.5f;
+            SetBounds(self, true);
         }
 
         Class* Wnd::GetClass() const
@@ -1045,12 +1249,12 @@ namespace m3d
 
         Wnd::AnimationInfo const& Wnd::GetCurrentAnimation() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_currentAnimation;
         }
 
         int Wnd::GameDataLoad(cmn::XmlFile*, cmn::XmlNode*)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return 1;
         }
 
         void Wnd::SetId(unsigned id)
@@ -1068,19 +1272,39 @@ namespace m3d
             OnEndAnimation(true);
         }
 
-        PointBase<float> Wnd::ToWindow(PointBase<float> const&) const
+        PointBase<float> Wnd::ToWindow(PointBase<float> const& pt) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            PointBase<float> tl = ToScreen(PointBase<float>{0.0, 0.0});
+            return PointBase<float>{pt.x - tl.x, pt.y - tl.y};
         }
 
-        BoundsBase<float> Wnd::ToWindow(BoundsBase<float> const&) const
+        BoundsBase<float> Wnd::ToWindow(BoundsBase<float> const& b) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            PointBase<float> tl = ToScreen(PointBase<float>{0.0, 0.0});
+            float x0 = b.x0 - tl.x;
+            float y0 = b.y0 - tl.y;
+            PointBase<float> br = ToScreen(PointBase<float>{0.0, 0.0});
+
+            BoundsBase<float> res;
+            res.x0 = x0;
+            res.y0 = y0;
+            res.width = ((b.x0 + b.width) - br.x) - x0;
+            res.height = ((b.y0 + b.height) - br.y) - y0;
+            return res;
         }
 
-        void Wnd::AdjustForWndTextToFit(unsigned, float)
+        void Wnd::AdjustForWndTextToFit(unsigned uiFont, float maxWidth)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            float x = 0.0f;
+            float y = 0.0f;
+            if (!m_caption.empty())
+            {
+                auto sz = GetGfxServer()->MeasureText(m_caption, static_cast<int>(uiFont), m_textWrap, maxWidth);
+                x = sz.x;
+                y = sz.y;
+            }
+            m_bounds.width = x + 5.0f;
+            m_bounds.height = y + 5.0f;
         }
 
         int Wnd::GetPaneFlags() const
@@ -1133,7 +1357,7 @@ namespace m3d
 
         int Wnd::GameDataUpdate(void*, int)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return 1;
         }
 
         BoundsBase<float> Wnd::GetClientBounds() const
@@ -1222,12 +1446,34 @@ namespace m3d
 
         void Wnd::AdjustToFitChildren()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // NOTE: the original's Hex-Rays output for this method is heavily
+            // garbled (uninitialised stack byrefs); reconstructed from the readable
+            // structure - grow bounds to cover every child plus a corner margin.
+            float const cornerSz = static_cast<float>(GetGfxServer()->GetCornerSz());
+            float w = cornerSz / 4.0f;
+            float h = cornerSz / 4.0f;
+            for (auto* child = RT_DYNCAST(GetFirstChild(), Wnd); child;
+                 child = RT_DYNCAST(child->GetNextSibling(), Wnd))
+            {
+                auto b = child->GetBounds();
+                if (b.x0 + b.width > w)
+                {
+                    w = b.x0 + b.width;
+                }
+                if (b.y0 + b.height > h)
+                {
+                    h = b.y0 + b.height;
+                }
+            }
+            auto bounds = GetBounds();
+            bounds.width = w + cornerSz;
+            bounds.height = h + cornerSz;
+            SetBounds(bounds, true);
         }
 
         PointBase<float> const& Wnd::GetBaseOrigin() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_baseOrigin;
         }
 
         void Wnd::SetOnShowAnimation(AnimationInfo const& info)
@@ -1377,9 +1623,11 @@ namespace m3d
                 m_currentAnimation.m_bEnabled;
         }
 
-        int Wnd::GetPropertiesList(retruxx::set<unsigned>&) const
+        int Wnd::GetPropertiesList(retruxx::set<unsigned>& properties) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // The original does not emit a distinct Wnd override - the vtable slot
+            // resolves to Object::GetPropertiesList.
+            return Object::GetPropertiesList(properties);
         }
 
         void Wnd::SetWrapMode(TextWrapFlags wrap)
@@ -1627,9 +1875,49 @@ namespace m3d
 
         Wnd* Wnd::CreateTooltipWnd()
         {
-            // TODO: implement Wnd::CreateTooltipWnd
-            // RETRUXX_NOT_IMPLEMENTED;
-            return nullptr;
+            auto* wnd = new Wnd;
+            wnd->Create(m_toolTipText, 0xF00u, BoundsBase<float>{}, 0);
+            wnd->m_textWrap = TW_WORD_WRAP;
+            wnd->SetDefaultFont(2);
+            wnd->SetClientEdges(12.0f, 8.0f, 12.0f, 8.0f);
+            wnd->SetPane("PaneTooltip");
+            wnd->SetTextColor(0xFF404040u);
+            wnd->SetFormatMode(TF_CENTER);
+
+            auto textSz = GetGfxServer()->MeasureText(m_toolTipText, wnd->m_defFont, wnd->m_textWrap, 300.0f);
+            float frameW = wnd->GetFrameWidth();
+
+            BoundsBase<float> b;
+            b.width = (frameW + 12.0f) * 2.0f + textSz.x;
+            b.height = (frameW + 8.0f) * 2.0f + textSz.y;
+
+            PointBase<float> org{static_cast<float>(M3D_APP->GetMouseX()), static_cast<float>(M3D_APP->GetMouseY())};
+            M3D_RENDERER->AbsToRel(org.x, org.y);
+            b.x0 = org.x - b.width * 0.5f;
+            b.y0 = org.y;
+
+            Cursor cur;
+            float y0 = b.y0;
+            if (GetCursor(cur))
+            {
+                y0 = cur.m_sz.y + b.y0;
+            }
+
+            float dx = 0.0f;
+            float dy = 0.0f;
+            if (b.width + b.x0 > 1024.0f)
+                dx = 1024.0f - (b.width + b.x0);
+            if (b.height + y0 > 768.0f)
+                dy = 768.0f - (b.height + y0);
+            if (b.x0 < 0.0f)
+                dx = 0.0f - b.x0;
+            if (y0 < 0.0f)
+                dy = 0.0f - y0;
+            b.x0 += dx;
+            b.y0 = y0 + dy;
+
+            wnd->SetBounds(b, true);
+            return wnd;
         }
 
         void Wnd::OnEndAnimation(bool bUrgent)
@@ -1701,7 +1989,10 @@ namespace m3d
 
         Wnd::Wnd(Wnd const&)
         {
-            //RETRUXX_NOT_IMPLEMENTED;
+            // Matches the original: the copy ctor does not copy any Wnd state - it
+            // chains to Object's copy ctor and leaves every Wnd member at its
+            // default-constructed value (empty strings/vectors, invalid textures,
+            // default AnimationInfo). Only used via Clone().
         }
 
         PointBase<float> Wnd::GetOriginPoint() const
@@ -1798,7 +2089,10 @@ namespace m3d
 
         void Wnd::Unregister()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (m_wndStation)
+            {
+                m_wndStation->UnregisterWnd(this);
+            }
         }
 
         void Wnd::Register()
@@ -1827,14 +2121,29 @@ namespace m3d
             return 1;
         }
 
-        void Wnd::FinishDragMove(int, PointBase<float> const&)
+        void Wnd::FinishDragMove(int accept, PointBase<float> const& pt)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            DoDragMove(pt);
+            GetStation()->CaptureMouse(nullptr);
+            if (accept)
+            {
+                m_bounds.x0 = m_dragCurPt.x;
+                m_bounds.y0 = m_dragCurPt.y;
+            }
+            else
+            {
+                m_bounds.x0 = m_dragStartPt.x;
+                m_bounds.y0 = m_dragStartPt.y;
+            }
+            m_dragMode = DRAG_NONE;
         }
 
-        void Wnd::StartDragMove(PointBase<float> const&)
+        void Wnd::StartDragMove(PointBase<float> const& pt)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            GetStation()->CaptureMouse(this);
+            m_dragMode = DRAG_MOVE;
+            m_dragStartPt = ToParent(pt);
+            m_dragStartPtLocal = pt;
         }
 
         int LoadExistingDialog(Wnd* destWnd, CStr const& name)
@@ -2007,9 +2316,13 @@ namespace m3d
             return 1;
         }
 
-        int Wnd::ReflectChildNotifyToParent(Wnd*, unsigned, unsigned, AIParam const&)
+        int Wnd::ReflectChildNotifyToParent(Wnd* from, unsigned id, unsigned msg, AIParam const& data)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (auto* parentWnd = RT_DYNCAST(GetParent(), Wnd))
+            {
+                parentWnd->OnWndNotify(from, id, msg, data);
+            }
+            return 0;
         }
 
         int Wnd::OnMouseIn()
@@ -2045,18 +2358,51 @@ namespace m3d
             return 1;
         }
 
-        int Wnd::OnMouseClick(PointBase<float> const&)
+        int Wnd::OnMouseClick(PointBase<float> const& pt)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if ((m_style & WS_SEND_NOTIFY_MESSAGES) != 0)
+            {
+                AIParam const data(CVector2(pt.x, pt.y));
+                CallParentNotify(1u, data, false);
+            }
+            if ((m_style & WS_REFLECT_MS_AND_KEYS_TO_PARENT) != 0 && GetParent())
+            {
+                // NOTE: the original computes ToParent(pt) but forwards the original
+                // window-space point to the parent.
+                auto* parentWnd = RT_DYNCAST(GetParent(), Wnd);
+                parentWnd->OnMouseClick(pt);
+            }
+            return 1;
         }
 
         void Wnd::OnPaintOverChildren(DrawInfo const& clipToIt)
         {
         }
 
-        int Wnd::OnMouseButton2(unsigned int, PointBase<float> const&)
+        int Wnd::OnMouseButton2(unsigned state, PointBase<float> const& at)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if ((m_style & WS_SEND_NOTIFY_MESSAGES) != 0)
+            {
+                if (state)
+                {
+                    m_mouseDown |= 4u;
+                }
+                else
+                {
+                    if ((m_mouseDown & 4) != 0)
+                    {
+                        AIParam param(CVector2(at.x, at.y));
+                        CallParentNotify(3u, param, false);
+                    }
+                    m_mouseDown &= ~4u;
+                }
+            }
+            if ((m_style & WS_REFLECT_MS_AND_KEYS_TO_PARENT) != 0 && GetParent())
+            {
+                auto* parentWnd = RT_DYNCAST(GetParent(), Wnd);
+                parentWnd->OnMouseButton2(state, ToParent(at));
+            }
+            return 1;
         }
 
         int Wnd::OnMouseButton1(unsigned state, PointBase<float> const& at)
@@ -2157,9 +2503,14 @@ namespace m3d
             return 0;
         }
 
-        int Wnd::OnMouseWheel(int, PointBase<float> const&)
+        int Wnd::OnMouseWheel(int ticks, PointBase<float> const& at)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if ((m_style & WS_REFLECT_MS_AND_KEYS_TO_PARENT) != 0 && GetParent())
+            {
+                auto* parentWnd = RT_DYNCAST(GetParent(), Wnd);
+                parentWnd->OnMouseWheel(ticks, ToParent(at));
+            }
+            return 1;
         }
 
         void Wnd::OnDisplayChanged()
@@ -2307,9 +2658,47 @@ namespace m3d
             }
         }
 
-        void Wnd::DoDragMove(PointBase<float> const&)
+        void Wnd::DoDragMove(PointBase<float> const& pt)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            PointBase<float> local{pt.x - m_dragStartPtLocal.x, pt.y - m_dragStartPtLocal.y};
+            PointBase<float> curPt = ToParent(local);
+
+            float x;
+            float y;
+            if ((m_style & WS_ALWAYS_INSIDE) != 0 && GetParent())
+            {
+                auto* parentWnd = RT_DYNCAST(GetParent(), Wnd);
+                auto pb = parentWnd->GetBounds();
+                x = curPt.x;
+                y = curPt.y;
+                if (pb.x0 > curPt.x)
+                {
+                    x = pb.x0;
+                }
+                if (m_bounds.width + curPt.x > pb.width + pb.x0)
+                {
+                    x -= (m_bounds.width + curPt.x) - (pb.width + pb.x0);
+                }
+                if (pb.y0 > curPt.y)
+                {
+                    y = pb.y0;
+                }
+                if (m_bounds.height + curPt.y > pb.height + pb.y0)
+                {
+                    y -= (m_bounds.height + curPt.y) - (pb.height + pb.y0);
+                }
+            }
+            else
+            {
+                x = curPt.x;
+                y = curPt.y;
+            }
+
+            m_dragCurPtLocal = pt;
+            m_dragCurPt.x = x;
+            m_dragCurPt.y = y;
+            m_bounds.x0 = m_dragCurPt.x;
+            m_bounds.y0 = m_dragCurPt.y;
         }
 
         RT_CLASS_EXPORTS_BEGIN(ModalWnd)
@@ -2328,7 +2717,7 @@ namespace m3d
 
         int ModalWnd::DoModal()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return GetStation()->DoModal(this);
         }
 
         int ModalWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -2351,14 +2740,22 @@ namespace m3d
             return RT_CLASS_LOCAL(ModalWnd);
         }
 
-        Wnd* ModalWnd::GetDlgItem(unsigned)
+        Wnd* ModalWnd::GetDlgItem(unsigned id)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            for (auto* child = RT_DYNCAST(GetFirstChild(), Wnd); child;
+                 child = RT_DYNCAST(child->GetNextSibling(), Wnd))
+            {
+                if (child->GetId() == id)
+                {
+                    return child;
+                }
+            }
+            return nullptr;
         }
 
         Object* ModalWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new ModalWnd(*this);
         }
 
         ModalWnd::~ModalWnd()
@@ -2504,9 +2901,8 @@ namespace m3d
             return 1;
         }
 
-        ModalWnd::ModalWnd(ModalWnd const&)
+        ModalWnd::ModalWnd(ModalWnd const& other) : Wnd(other)
         {
-            RETRUXX_NOT_IMPLEMENTED;
         }
 
         ModalWnd::ModalWnd()

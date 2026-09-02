@@ -86,7 +86,15 @@ namespace help
     // the interface manager's default"; the result is clamped to [0, 10] decimals.
     CStr ftoa(float fVal, int precision);
     void GetGunsForVehicle(int, retruxx::vector<ai::Obj*>&);
-    ActionType GetRandomMoveAnimation(m3d::AnimatedModel*);
+    // Fills the vector with the canonical "move" animation set
+    // {AT_BLOCK1, AT_BLOCK2, AT_DEATH1, AT_DEATH2} / "stand" set
+    // {AT_STAND1, AT_STAND2, AT_MOVE1}. (ExMachina 1.02 NoCD RVA 0x555EE0 / 0x555F60.)
+    void GetAllMoveAnimations(retruxx::vector<ActionType>& moveAnimations);
+    void GetAllStandAnimations(retruxx::vector<ActionType>& standAnimations);
+    // Picks one animation at random from the corresponding set; returns
+    // AT_NUMTYPES when model is null. (RVA 0x555FC0 / 0x556040.)
+    ActionType GetRandomMoveAnimation(m3d::AnimatedModel* model);
+    ActionType GetRandomStandAnimation(m3d::AnimatedModel* model);
     // Re-resolves a font id at a different point size: looks up the pattern font,
     // then asks the GfxServer for a font with the same name/type/style scaled to
     // wantedFontSz. Returns -1 when the pattern font id is unknown.
@@ -117,6 +125,18 @@ namespace help
     // (-1 bad args / no such town or object, -2 when the town has no workshop
     // that deals in it).
     int GetSellPriceByObjId(int objId, int townId);
+
+    // Price the player pays the workshop in `townId` to buy the object `objId`
+    // (-1 bad args / no such town or object, -3 when the town has no workshop
+    // that deals in it). (ExMachina 1.02 NoCD RVA 0x550AA0.)
+    int GetBuyPriceByObjId(int objId, int townId);
+
+    // Repairs a Vehicle or a VehiclePart in place; no-op for anything else.
+    void RepairObj(ai::Obj* o);
+
+    // True when the object `objId` is a VehiclePart or Gadget that is compatible
+    // with the vehicle `vehicleId`.
+    bool IsChildObjCompatibleWithVehicle(int objId, int vehicleId);
 
     ai::Bar* GetBarWithBarmanForTown(ai::Town const*);
     ai::Bar* GetBarWithoutBarmanForTown(ai::Town const*);

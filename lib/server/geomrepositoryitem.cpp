@@ -176,4 +176,19 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
+
+    bool operator==(const ai::GeomRepositoryItem& lhs, const ai::GeomRepositoryItem& rhs)
+    {
+        if (lhs.m_repositoryItemType != rhs.m_repositoryItemType ||
+            lhs.m_parentRepository != rhs.m_parentRepository || lhs.m_origin.x != rhs.m_origin.x ||
+            lhs.m_origin.y != rhs.m_origin.y)
+        {
+            return false;
+        }
+        if (lhs.m_repositoryItemType != GeomRepositoryItem::ITEMTYPE_RESOURCE)
+        {
+            return lhs.m_objId == rhs.m_objId;
+        }
+        return lhs.m_resourceId == rhs.m_resourceId && lhs.m_amount == rhs.m_amount;
+    }
 }  // namespace ai

@@ -394,6 +394,19 @@ namespace m3d
 
             virtual int DeleteItem(int) = 0;
 
+            // Item paint / sort hooks (vtable 0x138 / 0x140 in the shipped game).
+            // The template's own layout code does not call these yet; subclasses
+            // override them.
+            virtual int RenderItem(int /*itemIdx*/, PointBase<float> const& /*org*/, m3d::ui::DrawInfo const& /*di*/)
+            {
+                return 1;
+            }
+
+            virtual int CompareItem(int /*itemIdx0*/, int /*itemIdx1*/)
+            {
+                return 0;
+            }
+
             int GetCurSel() const
             {
                 return m_curSel;

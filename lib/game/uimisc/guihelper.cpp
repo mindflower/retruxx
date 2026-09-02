@@ -269,6 +269,47 @@ namespace help
         return workshop ? static_cast<int>(workshop->GetObjectBuyPrice(obj)) : -2;
     }
 
+    int GetBuyPriceByObjId(int objId, int townId)
+    {
+        if (objId == -1 || townId == -1)
+        {
+            return -1;
+        }
+        auto* townObj = ai::theObjects->GetEntityByObjId(townId);
+        auto* town = (townObj && townObj->IsKindOf(&ai::Town::m_classTown)) ? static_cast<ai::Town*>(townObj)
+                                                                           : nullptr;
+        auto* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (obj && !obj->IsKindOf(&ai::Obj::m_classObj))
+        {
+            obj = nullptr;
+        }
+        if (!town || !obj)
+        {
+            return -1;
+        }
+        ai::Workshop* workshop = town->GetWorkshopByObject(obj);
+        return workshop ? static_cast<int>(workshop->GetObjectSellPrice(obj)) : -3;
+    }
+
+    void RepairObj(ai::Obj* o)
+    {
+        // TODO(RVA 0x556AD0): the shipped helper dispatches to help::RepairVehicle /
+        // help::RepairVehiclePart by kind; neither leaf helper is ported yet, so this
+        // is a no-op for now (objects added back to a shop simply aren't auto-repaired).
+        (void)o;
+    }
+
+    bool IsChildObjCompatibleWithVehicle(int objId, int vehicleId)
+    {
+        // TODO(RVA 0x5544C0): dispatches to help::IsVehiclePartCompatibleWithVehicle /
+        // help::IsGadgetCompatibleWithVehicle by kind - neither leaf helper is ported
+        // yet. Reported as "not compatible" so shop slots simply don't get the
+        // compatible-with-vehicle highlight until those are implemented.
+        (void)objId;
+        (void)vehicleId;
+        return false;
+    }
+
     void GetGunsForVehicle(int vehicleId, retruxx::vector<ai::Obj*>& guns)
     {
         using namespace ai;
@@ -296,9 +337,43 @@ namespace help
             }
         }
     }
-    ActionType GetRandomMoveAnimation(m3d::AnimatedModel*)
+    void GetAllMoveAnimations(retruxx::vector<ActionType>& moveAnimations)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        moveAnimations.clear();
+        moveAnimations.push_back(AT_BLOCK1);
+        moveAnimations.push_back(AT_BLOCK2);
+        moveAnimations.push_back(AT_DEATH1);
+        moveAnimations.push_back(AT_DEATH2);
+    }
+
+    void GetAllStandAnimations(retruxx::vector<ActionType>& standAnimations)
+    {
+        standAnimations.clear();
+        standAnimations.push_back(AT_STAND1);
+        standAnimations.push_back(AT_STAND2);
+        standAnimations.push_back(AT_MOVE1);
+    }
+
+    ActionType GetRandomMoveAnimation(m3d::AnimatedModel* model)
+    {
+        if (!model)
+        {
+            return AT_NUMTYPES;
+        }
+        retruxx::vector<ActionType> moveAnimations;
+        GetAllMoveAnimations(moveAnimations);
+        return moveAnimations[rand() % moveAnimations.size()];
+    }
+
+    ActionType GetRandomStandAnimation(m3d::AnimatedModel* model)
+    {
+        if (!model)
+        {
+            return AT_NUMTYPES;
+        }
+        retruxx::vector<ActionType> standAnimations;
+        GetAllStandAnimations(standAnimations);
+        return standAnimations[rand() % standAnimations.size()];
     }
 
     int GetScaledFontId(int patternFontId, float wantedFontSz)

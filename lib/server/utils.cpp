@@ -74,6 +74,20 @@ namespace ai
         return res;
     }
 
+    CStr FloatVectorToStr(retruxx::vector<float> const& floatVector)
+    {
+        CStr res;
+        for (size_t i = 0; i < floatVector.size(); ++i)
+        {
+            if (i != 0)
+            {
+                res += CStr(" ");
+            }
+            res += CStr(floatVector[i]);
+        }
+        return res;
+    }
+
     bool GetPathItem(Path const* pPath, unsigned int itemNum, CVector& point)
     {
         if (!pPath || pPath->GetSearchStatus())

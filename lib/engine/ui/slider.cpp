@@ -29,7 +29,7 @@ namespace m3d
 
         Object* SliderWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new SliderWnd(*this);
         }
 
         int SliderWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -50,14 +50,15 @@ namespace m3d
             return result;
         }
 
-        int SliderWnd::Create(float, unsigned)
+        int SliderWnd::Create(float width, unsigned id)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            BoundsBase<float> rc{0.0f, 0.0f, width, static_cast<float>(GetGfxServer()->GetSliderHeight())};
+            return Create(CStr(), 0, rc, id);
         }
 
         SliderWnd::~SliderWnd()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // No owned resources; the base Wnd destructor does the work.
         }
 
         int SliderWnd::GetMin() const
@@ -184,7 +185,13 @@ namespace m3d
 
         BoundsBase<float> SliderWnd::GetBodyRect() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto const bounds = GetBounds();
+            BoundsBase<float> result;
+            result.x0 = m_notchWidth * 0.5f;
+            result.y0 = 0.0f;
+            result.width = bounds.width - m_notchWidth;
+            result.height = bounds.height;
+            return result;
         }
 
         int SliderWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
@@ -200,9 +207,17 @@ namespace m3d
             m_style = 274944;
         }
 
-        SliderWnd::SliderWnd(SliderWnd const&)
+        SliderWnd::SliderWnd(SliderWnd const& sw)
+            : Wnd(sw)
+            , m_min(sw.m_min)
+            , m_max(sw.m_max)
+            , m_cur(sw.m_cur)
+            , m_tracking(sw.m_tracking)
+            , m_notchWidth(sw.m_notchWidth)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // NOTE: the shipped copy ctor only chains to the (partial) Wnd copy ctor
+            // and leaves the slider fields indeterminate; we copy them so Clone()
+            // produces a usable slider.
         }
     }
 }

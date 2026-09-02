@@ -9,6 +9,7 @@ class ItemAcceptInfo
 {
     friend class DragDropItemsWnd;
     friend class ItemWnd;
+    friend class RepositoryWnd;
 
 public:
     ItemAcceptInfo(m3d::ui::Wnd* eventSrcWnd, m3d::ui::Wnd* eventDstWnd, ai::GeomRepositoryItem const& item);
@@ -22,6 +23,10 @@ private:
 
 class GeomSlot : public m3d::ui::ImageWnd
 {
+    // RepositoryWnd owns the slots it creates and touches their item / draw-style
+    // fields directly (matches the shipped game).
+    friend class RepositoryWnd;
+
 public:
     struct AuxInfo
     {
@@ -55,6 +60,7 @@ class DragSlot : public GeomSlot
 {
     friend class DragDropItemsWnd;
     friend class ItemWnd;
+    friend class RepositoryWnd;
 
 public:
     DragSlot(DragDropItemsWnd*);
