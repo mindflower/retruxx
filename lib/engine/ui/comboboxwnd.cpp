@@ -103,7 +103,23 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetFullBounds() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            const auto selTextB = GetSelTextBounds();
+            const auto listB = GetListBounds();
+
+            const float x0 = selTextB.x0 <= listB.x0 ? selTextB.x0 : listB.x0;
+            const float y0 = selTextB.y0 <= listB.y0 ? selTextB.y0 : listB.y0;
+            const float right =
+                (listB.x0 + listB.width) <= (selTextB.x0 + selTextB.width) ? selTextB.x0 + selTextB.width : listB.x0 + listB.width;
+            const float bottom = (listB.y0 + listB.height) <= (selTextB.y0 + selTextB.height)
+                                     ? selTextB.y0 + selTextB.height
+                                     : listB.y0 + listB.height;
+
+            BoundsBase<float> result;
+            result.x0 = x0;
+            result.y0 = y0;
+            result.width = right - x0;
+            result.height = bottom - y0;
+            return result;
         }
 
         void ComboBoxWnd::Open()
@@ -189,8 +205,11 @@ namespace m3d
             rc.y0 = 0.0;
             rc.width = 0.0;
             rc.height = 0.0;
-            //TODO: check style
-            if (m_btnToggle->Create({}, 440220, rc, 5) == 0)
+            // Style 0x440220 = WS_REFLECT_MS_AND_KEYS_TO_PARENT | WS_IS_VISIBLE |
+            // WS_SEND_NOTIFY_MESSAGES | WS_NOTIFY_MESSAGES_FORCE_IMMEDIATE. IDA
+            // renders the immediate 0x440220 as "&loc_440220", which was copied
+            // here as the decimal literal 440220 - a different (wrong) value.
+            if (m_btnToggle->Create({}, 0x440220, rc, 5) == 0)
             {
                 return 0;
             }
@@ -334,6 +353,9 @@ namespace m3d
             auto selTextFixedHeight = m_selTextFixedH;
             SafeFloatAttrib(selTextFixedHeight, xmlNode, "selTextFixedHeight");
             SetSelTextFixedHeight(selTextFixedHeight);
+
+            SafeStrAttrib(m_toggleButtonOpenPaneName, xmlNode, "toggleBtnOpenPane");
+            SafeStrAttrib(m_toggleButtonClosePaneName, xmlNode, "toggleBtnClosePane");
             UpdateToggleButtonPane();
             return 1;
         }
@@ -386,7 +408,23 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetFullMaxBounds() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            const auto selTextB = GetSelTextBounds();
+            const auto listB = GetListMaxBounds();
+
+            const float x0 = selTextB.x0 <= listB.x0 ? selTextB.x0 : listB.x0;
+            const float y0 = selTextB.y0 <= listB.y0 ? selTextB.y0 : listB.y0;
+            const float right =
+                (listB.x0 + listB.width) <= (selTextB.x0 + selTextB.width) ? selTextB.x0 + selTextB.width : listB.x0 + listB.width;
+            const float bottom = (listB.y0 + listB.height) <= (selTextB.y0 + selTextB.height)
+                                     ? selTextB.y0 + selTextB.height
+                                     : listB.y0 + listB.height;
+
+            BoundsBase<float> result;
+            result.x0 = x0;
+            result.y0 = y0;
+            result.width = right - x0;
+            result.height = bottom - y0;
+            return result;
         }
 
         void ComboBoxWnd::SetTextColor(unsigned color)
@@ -711,7 +749,9 @@ namespace m3d
 
         int ComboBoxWnd::OnAfterAddToWndStation()
         {
-            auto res = Wnd::OnAfterAddToWndStation();
+            // Faithful to the shipped game: this override calls the *Before* base
+            // handler (RVA 0x720850).
+            auto res = Wnd::OnBeforeAddToWndStation();
             if (m_state != STATE_OPEN)
             {
                 return res;

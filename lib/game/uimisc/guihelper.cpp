@@ -12,8 +12,10 @@
 #include "server/objects/physicbodies/vehiclepart.h"
 #include "ui/ui.h"
 #include "ui/button.h"
+#include "ui/font.h"
 #include "ui/image.h"
 #include "ui/ui_srv.h"
+#include <m3dapp.h>
 
 #include <sstream>
 #include <server/resourcemanager.h>
@@ -251,6 +253,32 @@ namespace help
     ActionType GetRandomMoveAnimation(m3d::AnimatedModel*)
     {
         RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int GetScaledFontId(int patternFontId, float wantedFontSz)
+    {
+        auto* gfx = m3d::ui::Wnd::GetGfxServer();
+        const m3d::ui::Font* patternFont = gfx->GetFontById(patternFontId);
+        if (!patternFont)
+        {
+            return -1;
+        }
+
+        const CStr fontName = patternFont->m_nameShort;
+        const m3d::ui::FontType type = patternFont->m_type;
+
+        m3d::ui::FontParams params;
+        if (type == m3d::ui::FONT_TYPE_SELFMAKING)
+        {
+            params.ttfParams.style = 1;
+        }
+        else
+        {
+            params.ttfParams.style = patternFont->m_style;
+        }
+        params.ttfParams.codePage = M3D_APP->m_codePage.CodePage;
+
+        return gfx->GetFontId(fontName, wantedFontSz, type, params);
     }
 
     bool IsBoss(ai::Obj const*)

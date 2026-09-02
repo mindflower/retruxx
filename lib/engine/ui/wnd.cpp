@@ -930,9 +930,9 @@ namespace m3d
             return 1;
         }
 
-        void Wnd::SetInt(unsigned)
+        void Wnd::SetInt(unsigned ii)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_int = ii;
         }
 
         void Wnd::EnableWindow(bool bEnable)
@@ -2371,7 +2371,7 @@ namespace m3d
 
         int ModalWnd::OnInitDlgItem(Wnd*, unsigned)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return 1;
         }
 
         void ModalWnd::OnCloseModal(int)

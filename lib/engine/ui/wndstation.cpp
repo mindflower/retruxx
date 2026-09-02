@@ -72,7 +72,7 @@ namespace m3d
             float xx = 0.0;
             float yy = 0.0;
 
-            for (Wnd* parent = wnd; parent = nullptr; parent = RT_DYNCAST(parent->GetParent(), Wnd))
+            for (Wnd* parent = wnd; parent != nullptr; parent = RT_DYNCAST(parent->GetParent(), Wnd))
             {
                 BoundsBase<float> const bounds = parent->GetBounds();
                 xx += bounds.x0;

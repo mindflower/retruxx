@@ -83,6 +83,10 @@ namespace help
     CStr Color2Str(unsigned);
     void GetGunsForVehicle(int, retruxx::vector<ai::Obj*>&);
     ActionType GetRandomMoveAnimation(m3d::AnimatedModel*);
+    // Re-resolves a font id at a different point size: looks up the pattern font,
+    // then asks the GfxServer for a font with the same name/type/style scaled to
+    // wantedFontSz. Returns -1 when the pattern font id is unknown.
+    int GetScaledFontId(int patternFontId, float wantedFontSz);
     bool IsBoss(ai::Obj const*);
     CStr GetClanAbbreviationByName(CStr const&);
     CStr GetClanFullNameByName(CStr const&);

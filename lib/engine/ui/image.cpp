@@ -88,9 +88,15 @@ namespace m3d
             RETRUXX_NOT_IMPLEMENTED;
         }
 
-        int ImageWnd::CreateImageWnd(BoundsBase<float> const&, rend::TexHandle)
+        int ImageWnd::CreateImageWnd(BoundsBase<float> const& rc, rend::TexHandle tex)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!Wnd::Create(CStr(), WS_NOFRAME | WS_IS_VISIBLE, rc, 4))  // style 0x240
+            {
+                return 0;
+            }
+            m_texture = tex;
+            M3D_RENDERER->ReferenceTexture(m_texture);
+            return 1;
         }
 
         int ImageWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
