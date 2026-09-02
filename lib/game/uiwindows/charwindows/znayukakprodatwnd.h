@@ -15,8 +15,12 @@ namespace m3d
     }
 }
 
+class MotherPanel;
+
 class ZnayuKakProdatWnd :  public ChildPanel
 {
+    friend class MotherPanel;
+
 public:
     enum TradeType
     {

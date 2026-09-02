@@ -16,63 +16,64 @@ namespace m3d
     {
         class ImageWnd;
     }
-}
+}  // namespace m3d
 
-class ContextModelWnd :  public m3d::ui::Wnd
+class VideoWnd;
+
+class ContextModelWnd : public m3d::ui::Wnd
 {
-public:
-    class AuxInfo
-    {
-    public:
-        AuxInfo();
-
-    private:
-        CStr m_wndModelName;
-    };
+    friend class VideoWnd;
 
 public:
-    int Show2dImage(m3d::rend::TexHandle);
-    int Show2dImage(CStr const &);
-    int Show3dImage(CStr const &,int);
-    int GetObjId() const ;
-    int ShowImageByPrototypeId(int);
-    static m3d::Object * CreateObject();
-    virtual m3d::Class * GetClass() const ;
-    int ShowImageByObjId(int);
-    static m3d::Class * GetBaseClass();
-    int GetPrototypeId() const ;
-    virtual m3d::Object * Clone();
+    int ShowImageByObjId(int objId);
+    int ShowImageByPrototypeId(int prototypeId);
+    int Show2dImage(m3d::rend::TexHandle tex);
+    int Show2dImage(CStr const& fileName);
+    int Show3dImage(CStr const& modelName, int skin);
     int HideImage();
-    virtual int GameDataClear(bool);
-    virtual ~ContextModelWnd();
-    int CreateFromPattern(m3d::ui::Wnd *,bool);
+    int GetObjId() const;
+    int GetPrototypeId() const;
+    int CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc);
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+
+    struct AuxInfo
+    {
+        /* 0x0000 */ CStr m_wndModelName;
+        AuxInfo(ContextModelWnd::AuxInfo const&);
+        AuxInfo();
+    }; /* size: 0x000c */
 
 protected:
-    virtual int OnAfterRemoveFromWndStation();
-    virtual int OnBeforeAddToWndStation();
+    virtual int OnBeforeAddToWndStation() override /* 0x68 */;
+    virtual int OnAfterRemoveFromWndStation() override /* 0x74 */;
+    int SetupForComplexObj(ai::Obj const* o);
+    int SetupForModel(CStr const& modelName, int skin);
+    ref_ptr<m3d::ui::Wnd> CreateModelWnd(CStr const& className);
+    int SetCurrentModelWnd(ref_ptr<m3d::ui::ImageWnd> modelWnd);
     void ClearCurrentModelWnd();
-    int ShowImageByObjId0(int,bool);
-    ref_ptr<m3d::ui::Wnd> CreateModelWnd(CStr const &);
-    ai::Obj * GetObjToShow() const ;
-    int ShowImageByPrototypeId0(int,bool);
-    int SetupForComplexObj(ai::Obj const *);
-    int CreateObjToShow(int);
-    ContextModelWnd(ContextModelWnd const &);
-    ContextModelWnd();
+    int CreateObjToShow(int prototypeId);
     void DestroyObjToShow();
-    int SetupForModel(CStr const &,int);
-    int SetCurrentModelWnd(ref_ptr<m3d::ui::ImageWnd>);
+    int ShowImageByObjId0(int objId, bool bDestroyObjToShow);
+    int ShowImageByPrototypeId0(int prototypeId, bool bDestroyObjToShow);
+    ai::Obj* GetObjToShow() const;
+
+    /* 0x0220 */ ref_ptr<m3d::ui::ImageWnd> m_wndCurrentModel;
+    /* 0x0224 */ ref_ptr<m3d::ui::ImageWnd> m_wnd2dModel;
+    /* 0x0228 */ ref_ptr<ItemModelWnd> m_wnd3dSimpleModel;
+    /* 0x022c */ ref_ptr<ComplexModelWnd> m_wnd3dComplexModel;
+    /* 0x0230 */ ContextModelWnd::AuxInfo m_aif;
+    /* 0x023c */ int m_objId;
+    /* 0x0240 */ int m_prototypeId;
+    /* 0x0244 */ int m_objToShowId;
+
+    ContextModelWnd();
+    ContextModelWnd(ContextModelWnd const& rhs);
 
 public:
-    RT_CLASS_DECLARE(ContextModelWnd);
-
-private:
-    ref_ptr<m3d::ui::ImageWnd> m_wndCurrentModel;
-    ref_ptr<m3d::ui::ImageWnd> m_wnd2dModel;
-    ref_ptr<ItemModelWnd> m_wnd3dSimpleModel;
-    ref_ptr<ComplexModelWnd> m_wnd3dComplexModel;
-    ContextModelWnd::AuxInfo m_aif;
-    int m_objId;
-    int m_prototypeId;
-    int m_objToShowId;
-};
+    virtual ~ContextModelWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classContextModelWnd;
+}; /* size: 0x0248 */

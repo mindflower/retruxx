@@ -1,62 +1,62 @@
 #pragma once
 #include <ui/modelwnd.h>
 
-class ItemModelWnd :  public m3d::ui::ModelWnd
+class ItemModelWnd : public m3d::ui::ModelWnd
 {
 public:
-    bool IsAllowedRotateByHandX() const ;
-    bool IsAllowedRotateByHandY() const ;
-    virtual m3d::Object * Clone();
-    void AllowRotate(bool);
-    static m3d::Class * GetBaseClass();
-    float GetRotationVelocity() const ;
-    virtual ~ItemModelWnd();
-    bool IsAutosized() const ;
-    void SetRotationVelocity(float);
-    static m3d::Object * CreateObject();
-    int SetModelByName(CStr const &,unsigned int,unsigned int);
-    virtual int CreateFromPattern(m3d::ui::Wnd *,bool);
-    void SetRotationByHandVelocity(float);
-    float GetRotationByHandVelocity() const ;
-    void AllowRotateByHandX(bool);
-    CVector const & GetDefaultTranslation() const ;
-    void SetAutosized(bool);
-    void AllowRotateByHandY(bool);
-    virtual m3d::Class * GetClass() const ;
-    void SetDefaultRotationAngleX(float);
-    void SetDefaultTranslation(CVector const &);
-    bool IsAllowedRotate() const ;
-    float GetDefaultRotationAngleX() const ;
+    virtual int CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc) /* 0x12c */;
+    int SetModelByName(CStr const& modelName, unsigned int skinNumber, unsigned int cfgNumber);
+    void AllowRotate(bool bAllow);
+    bool IsAllowedRotate() const;
+    void SetRotationVelocity(float velocity);
+    float GetRotationVelocity() const;
+    void AllowRotateByHandX(bool bAllow);
+    void AllowRotateByHandY(bool bAllow);
+    bool IsAllowedRotateByHandX() const;
+    bool IsAllowedRotateByHandY() const;
+    void SetRotationByHandVelocity(float velocity);
+    float GetRotationByHandVelocity() const;
+    void SetDefaultRotationAngleX(float angle);
+    float GetDefaultRotationAngleX() const;
+    void SetAutosized(bool bAutosized);
+    bool IsAutosized() const;
+    void SetDefaultTranslation(CVector const& translation);
+    CVector const& GetDefaultTranslation() const;
 
 protected:
-    virtual int OnAfterRemoveFromWndStation();
-    virtual void UpdateCamera();
-    bool IsDisabled() const ;
-    ItemModelWnd(ItemModelWnd const &);
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x00 */;
+    virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at) override /* 0x00 */;
+    virtual int OnMouseMove(PointBase<float> const& pt, PointBase<float> const& deltas) override /* 0x00 */;
+    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
+    virtual int OnAfterRemoveFromWndStation() override /* 0x00 */;
+    virtual int OnNewFrame() /* 0x130 */;
+    virtual void UpdateCamera() /* 0x134 */;
+    virtual void UpdateRotationAngle() /* 0x138 */;
+    virtual bool IsValid() const /* 0x13c */;
+    bool IsDisabled() const;
+    void SetRotationByHandMode(bool bState);
+    void CalcAutosizeTranslation(CVector& translation) const;
+
+    /* 0x0294 */ PointBase<float> m_rotationAngle;
+    /* 0x029c */ float m_rotationVelocity;
+    /* 0x02a0 */ float m_rotationByHandVelocity;
+    /* 0x02a4 */ bool m_bAllowRotate;
+    /* 0x02a5 */ bool m_bAllowRotateByHandX;
+    /* 0x02a6 */ bool m_bAllowRotateByHandY;
+    /* 0x02a7 */ bool m_bInRotationByHandMode;
+    /* 0x02a8 */ float m_defaultRotationAngleX;
+    /* 0x02ac */ bool m_bAutosized;
+    /* 0x02ad */ char Padding_227[3];
+    /* 0x02b0 */ CVector m_defaultTranslation;
     ItemModelWnd();
-    virtual int OnMouseButton0(unsigned int, PointBase<float> const &);
-    virtual bool IsValid() const ;
-    void SetRotationByHandMode(bool);
-    void CalcAutosizeTranslation(CVector &) const ;
-    virtual int OnBeforeAddToWndStation();
-    virtual int GameDataUpdate(void *,int);
-    virtual int GameDataClear(bool);
-    virtual int OnMouseMove(PointBase<float> const &, PointBase<float> const &);
-    virtual int OnNewFrame();
-    virtual void UpdateRotationAngle();
+    ItemModelWnd(ItemModelWnd const& rhs);
 
 public:
-    RT_CLASS_DECLARE(ItemModelWnd);
-
-private:
-    PointBase<float> m_rotationAngle{-0.52359879, 0.0};
-    float m_rotationVelocity = 0.17453294;
-    float m_rotationByHandVelocity = 0.017453292;
-    bool m_bAllowRotate = true;
-    bool m_bAllowRotateByHandX = true;
-    bool m_bAllowRotateByHandY = true;
-    bool m_bInRotationByHandMode;
-    float m_defaultRotationAngleX = -0.52359879;
-    bool m_bAutosized = true;
-    CVector m_defaultTranslation{0.0, 0.0, 0.0};
-};
+    virtual ~ItemModelWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classItemModelWnd;
+}; /* size: 0x02bc */

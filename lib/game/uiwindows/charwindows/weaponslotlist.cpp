@@ -1,6 +1,10 @@
 #include "weaponslotlist.h"
 #include "weaponslotwnd.h"
 
+#include <game/m3dgame.h>
+#include <server/objects/vehicle.h>
+#include <server/objects/base/objcontainer.h>
+
 RT_CLASS_EXPORTS_BEGIN(WeaponSlotList)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WeaponSlotList);
@@ -17,12 +21,23 @@ m3d::Class* WeaponSlotList::GetClass() const
 
 WeaponSlotList::~WeaponSlotList()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    ClearItems();
+    // m_items (vector of ref_ptr) releases its remaining references itself.
+    // TODO: the binary also drops the shared WeaponSlotWnd / WeaponGroupButtonList
+    // pattern refs here.
 }
 
-int WeaponSlotList::SetupForVehicle(int)
+int WeaponSlotList::SetupForVehicle(int vehicleId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleId = vehicleId;
+    int result = 1;
+    if (vehicleId != -1 && !GetVehicle())
+    {
+        m_vehicleId = -1;
+        result = 0;
+    }
+    // TODO: rebuild the slot list (CreateItems()) when already parented to the station.
+    return result;
 }
 
 m3d::Class* WeaponSlotList::GetBaseClass()
@@ -37,7 +52,7 @@ m3d::Object* WeaponSlotList::CreateObject()
 
 m3d::Object* WeaponSlotList::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new WeaponSlotList(*this);
 }
 
 void WeaponSlotList::OnVehiclePartChanged(void*)
@@ -55,9 +70,8 @@ WeaponSlotList::WeaponSlotList()
     m_vehicleId = -1;
 }
 
-WeaponSlotList::WeaponSlotList(WeaponSlotList const&)
+WeaponSlotList::WeaponSlotList(WeaponSlotList const&) : WeaponSlotList()
 {
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void WeaponSlotList::GetGunPartNames(int, std::vector<CStr, std::allocator<CStr>>&) const
@@ -67,17 +81,28 @@ void WeaponSlotList::GetGunPartNames(int, std::vector<CStr, std::allocator<CStr>
 
 int WeaponSlotList::GameDataClear(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleId = -1;
+    // TODO: rebuild the slot list (CreateItems()) when parented to the station.
+    return 1;
 }
 
 int WeaponSlotList::OnAfterRemoveFromWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    int const result = m3d::ui::Wnd::OnAfterRemoveFromWndStation();
+    ClearItems();
+    return result;
 }
 
 void WeaponSlotList::ClearItems()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto& item : m_items)
+    {
+        if (item)
+        {
+            M3D_APP->m_pInterfaceManager->RemoveWindow(item->GetGuiId());
+        }
+    }
+    m_items.clear();
 }
 
 int WeaponSlotList::AddItem(CStr const&)
@@ -92,7 +117,16 @@ void WeaponSlotList::CreateItems()
 
 ai::Vehicle const* WeaponSlotList::GetVehicle() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_vehicleId == -1)
+    {
+        return nullptr;
+    }
+    ai::Obj* obj = ai::theObjects->GetEntityByObjId(m_vehicleId);
+    if (obj && obj->IsKindOf(&ai::Vehicle::m_classVehicle))
+    {
+        return static_cast<ai::Vehicle const*>(obj);
+    }
+    return nullptr;
 }
 
 void WeaponSlotList::SortGunPartNames(std::vector<CStr, std::allocator<CStr>>&, ai::Vehicle const*) const
@@ -112,11 +146,17 @@ void WeaponSlotList::FullUpdate()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int WeaponSlotList::GameDataUpdate(void*, int)
+int WeaponSlotList::GameDataUpdate(void* data, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (dataType == 65)
+    {
+        OnVehiclePartChanged(data);
+    }
+    return 1;
 }
 
 void WeaponSlotList::RecalcLayot()

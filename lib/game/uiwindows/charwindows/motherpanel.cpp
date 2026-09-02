@@ -19,10 +19,13 @@
 #include <server/objects/vehicle.h>
 #include <server/objects/bar.h>
 #include <game/m3dgame.h>
+#include "znayukakprodatwnd.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MotherPanel, LeaveTown)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* mp = static_cast<MotherPanel*>(context->asObject(0, "MotherPanel"));
+    mp->LeaveTown(context->asBool(1));
+    return 1;
 }
 
 RT_CLASS_EXPORTS_BEGIN(MotherPanel)
@@ -50,8 +53,8 @@ MotherPanel::AuxInfo::AuxInfo()
 
 void MotherPanel::LeaveTown(bool bQuick)
 {
-    // TODO: check this
-    if (M3D_APP->m_pInterfaceManager->GetCurrentTown() && IsInTownRoot())
+    if (M3D_APP->m_pInterfaceManager->GetCurrentTown() &&
+        (IsInTownRoot() || M3D_APP->m_pInterfaceManager->IsWindowVisible(37)))
     {
         Hide(true, bQuick);
     }
@@ -210,7 +213,61 @@ void MotherPanel::ClearPanels(std::vector<ChildPanelId> const& previousPanelsToR
 
 void MotherPanel::OnEscape()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    bool const hasOnlyBuilding = GetOnlyBuilding() != nullptr;
+
+    if (IsPanelPresent(94))
+    {
+        ref_ptr wnd = M3D_APP->m_pInterfaceManager->GetWindow(94);
+        if (auto* znayu = RT_DYNCAST(wnd.get(), ZnayuKakProdatWnd); znayu && znayu->IsChildOf(M3D_APP))
+        {
+            znayu->Cancel();
+            return;
+        }
+        Hide(false, false);
+        return;
+    }
+
+    if (IsPanelPresent(73))
+    {
+        OnWorkshop();
+        return;
+    }
+
+    int msgArg;
+    if (IsPanelPresent(2))
+    {
+        if (hasOnlyBuilding)
+        {
+            Hide(false, false);
+            return;
+        }
+        msgArg = 2;
+    }
+    else if (IsPanelPresent(3))
+    {
+        if (hasOnlyBuilding)
+        {
+            Hide(false, false);
+            return;
+        }
+        msgArg = 3;
+    }
+    else
+    {
+        if (IsPanelPresent(88))
+        {
+            return;
+        }
+        if (InTown() && m_curTabId != TAB_NUM_TABS && !hasOnlyBuilding)
+        {
+            OnTown();
+            return;
+        }
+        Hide(false, false);
+        return;
+    }
+
+    M3D_APP->EnqueueMessage(65673, msgArg, 0, 0, 0, {}, {});
 }
 
 int MotherPanel::RemoveChildForce(m3d::Object* wnd)
@@ -639,9 +696,32 @@ void MotherPanel::ShowPanels(
     }
 }
 
-ai::Building* MotherPanel::GetBuildingForTab(Tab) const
+ai::Building* MotherPanel::GetBuildingForTab(Tab tabId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    ai::Town const* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+    if (tabId == TAB_BAR)
+    {
+        return help::GetBarWithBarmanForTown(town);
+    }
+    if (tabId == TAB_ADDITIONAL_BUILDING)
+    {
+        return help::GetBarWithoutBarmanForTown(town);
+    }
+    if (!town)
+    {
+        return nullptr;
+    }
+    if (tabId == TAB_INVENTORY_VS_SHOP)
+    {
+        auto const shops = town->GetBuildingByType(ai::SHOP);
+        return shops.empty() ? nullptr : shops.front();
+    }
+    if (tabId == TAB_CHARACTERISTIC_VS_WORKSHOP)
+    {
+        auto const workshops = town->GetBuildingByType(ai::WORKSHOP);
+        return workshops.empty() ? nullptr : workshops.front();
+    }
+    return nullptr;
 }
 
 int MotherPanel::RemoveChild(m3d::Object* w)
@@ -816,9 +896,32 @@ bool MotherPanel::CanChildPanelBeLaunchedNow(ChildPanelId panelId) const
     return true;
 }
 
-MotherPanel::Tab MotherPanel::GetTabForBuilding(ai::Building const*) const
+MotherPanel::Tab MotherPanel::GetTabForBuilding(ai::Building const* building) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!building)
+    {
+        return TAB_INVALID;
+    }
+
+    ai::BuildingPrototypeInfo const* protoInfo = building->GetPrototypeInfo();
+    int const buildingType =
+        protoInfo ? static_cast<int>(protoInfo->m_buildingType) : static_cast<int>(ai::NUM_BUILDINGTYPES);
+
+    switch (buildingType)
+    {
+    case ai::BAR:
+        if (!building->IsKindOf(&ai::Bar::m_classBar))
+        {
+            return TAB_INVALID;
+        }
+        return static_cast<Tab>(6 - (static_cast<ai::Bar const*>(building)->bWithBarman() ? 1 : 0));
+    case ai::SHOP:
+        return TAB_INVENTORY_VS_SHOP;
+    case ai::WORKSHOP:
+        return TAB_CHARACTERISTIC_VS_WORKSHOP;
+    default:
+        return TAB_INVALID;
+    }
 }
 
 void MotherPanel::AdjustAnimationOnHidePanel(m3d::ui::Wnd* panel)
@@ -885,7 +988,18 @@ void MotherPanel::UpdateTabButtonsOnLeaveTown()
 
 void MotherPanel::OnTalkWithNpc()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    std::vector<std::pair<ChildPanelId, int>> panels;
+    if (M3D_APP->m_pInterfaceManager->GetCurrentTown() && !IsPanelPresent(4))
+    {
+        panels.push_back({PANEL_TOWN, 4});
+    }
+    panels.push_back({PANEL_CONVERSATION, 88});
+    ShowPanels(panels, {PANEL_TOWN});
 }
 
 void MotherPanel::OnQuestLog()
@@ -1023,7 +1137,17 @@ void MotherPanel::OnCharacteristics()
 
 ai::Building const* MotherPanel::GetOnlyBuilding() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    ai::Town const* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+    if (!town)
+    {
+        return nullptr;
+    }
+    auto const& buildings = town->GetAllBuildings();
+    if (buildings.size() != 1)
+    {
+        return nullptr;
+    }
+    return buildings.front();
 }
 
 void MotherPanel::AdjustChildOrder()
@@ -1187,9 +1311,8 @@ void MotherPanel::OnTown()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-MotherPanel::MotherPanel(MotherPanel const&)
+MotherPanel::MotherPanel(MotherPanel const&) : MotherPanel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 MotherPanel::MotherPanel()
@@ -1519,5 +1642,9 @@ void MotherPanel::SelectTabButton(Tab tabId)
 
 void MotherPanel::AdjustDecor()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        bool const bNeedShowDecorBar = IsPanelPresent(PANEL_VIDEO) || IsPanelPresent(PANEL_TRADE_RIGHT);
+        m_wndDecorBar->ShowWindow(bNeedShowDecorBar);
+    }
 }
