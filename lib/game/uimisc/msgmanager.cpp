@@ -6,7 +6,11 @@
 #include "core/log.h"
 #include "game/m3dgame.h"
 #include <client.h>
+#include <core/ref_ptr.h>
+#include <core/scoped_ptr.h>
 #include <cstdlib>
+#include <file/fileserver.h>
+#include <file/filestream.h>
 
 #include "level.h"
 #include "world.h"
@@ -301,11 +305,23 @@ int MsgInfo::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xm
     return 1;
 }
 
-int MsgManager::ShowMsgBox(int, bool)
+int MsgManager::ShowMsgBox(int msgId, bool pause)
 {
-    // TODO: implement MsgManager::ShowMsgBox
-    // RETRUXX_NOT_IMPLEMENTED;
-    return 1;
+    // RVA 0x569FA0: looks the id up in the level map then the global map (that
+    // is exactly GetMsgInfo), and additionally treats a stored null entry as
+    // "not found".
+    MsgInfo const* info = GetMsgInfo(msgId);
+    if (!info)
+    {
+        M3D_LOG_INFO(
+            "MsgManager::ShowMsgBox error - MsgInfo for msg with id " + CStr(msgId) + " not found");
+        // The shipped code returns -1; MbRetCodes has no error member, so
+        // callers read any non-positive value as "no dialog shown".
+        return -1;
+    }
+    // Caption is deliberately empty in the binary (it passes ""); the box shows
+    // only the MsgInfo text with its configured button set.
+    return M3D_APP->RunMsgBoxDlg(CStr(), info->GetMsg(), info->GetMbFlags(), pause);
 }
 
 int MsgManager::Init(bool bGlobal)
@@ -376,31 +392,97 @@ m3d::Object* MsgManager::CreateObject()
 
 MsgManager::~MsgManager()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x569510: clears both maps (deleting every owned MsgInfo) before the
+    // std::map members tear their now-empty trees down.
+    Clear(true);
 }
 
 m3d::Object* MsgManager::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x568A20 allocates a MsgManager and runs the copy ctor, which (see
+    // below) yields an empty manager - a clone must be Init()'d again.
+    return new MsgManager(*this);
 }
 
-int MsgManager::AddMsg(MsgInfo*, bool)
+int MsgManager::AddMsg(MsgInfo* msgInfo, bool bGlobal)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x569DD0
+    if (!msgInfo)
+    {
+        return 0;
+    }
+    int const id = msgInfo->GetId();
+    if (id == -1)
+    {
+        return 0;
+    }
+
+    auto& msgs = bGlobal ? m_globalMsgs : m_levelMsgs;
+    auto it = msgs.find(id);
+    if (it != msgs.end())
+    {
+        M3D_LOG_INFO(
+            "MsgManager::AddMsg warning - msg with id " + CStr(id) + " already exists and wiil be replaced");
+        delete it->second;
+        it->second = nullptr;
+        msgs.erase(it);
+    }
+    msgs[id] = msgInfo;
+    return 1;
 }
 
 MsgManager::MsgManager(MsgManager const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5694B0 is byte-identical to the default ctor: it builds the Object
+    // base and two empty maps and never touches the source. Clone() relies on
+    // this - a copied MsgManager carries no messages.
 }
 
 MsgManager::MsgManager()
 {
 }
 
-int MsgManager::LoadFromXml(CStr const&, bool)
+int MsgManager::LoadFromXml(CStr const& fileName, bool bGlobal)
 {
-    // TODO: implement MsgManager::LoadFromXml
-    //RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x5697B0
+    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
+    {
+        M3D_LOG_INFO("Can't open file " + fileName + " for read.");
+        return 0;
+    }
+
+    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    if (!xmlFile->Read(*stream))
+    {
+        M3D_LOG_INFO("Error: cannot parse " + fileName + " (" + CStr(xmlFile->GetError()) + ") ");
+        return 0;
+    }
+    stream->Close();
+
+    ref_ptr rootNode = xmlFile->CreateNode();
+    xmlFile->GetFirstChild(rootNode, "resource");
+    if (rootNode->IsEmpty())
+    {
+        M3D_LOG_INFO("MsgManager::LoadFromXml error - cannot find root node resource");
+        return 0;
+    }
+
+    int res = 1;
+    ref_ptr node = xmlFile->CreateNode();
+    for (rootNode->GetFirstChild(node, "string"); !node->IsEmpty(); node->GetNextSibling(node, "string"))
+    {
+        MsgInfo* info = new MsgInfo();
+        if (!info->LoadFromXml(xmlFile, node) || !AddMsg(info, bGlobal))
+        {
+            // AddMsg took ownership only on success; drop the failed one.
+            delete info;
+            res = 0;
+        }
+    }
+    if (!res)
+    {
+        M3D_LOG_INFO("MsgManager inited with errors");
+    }
+    return res;
 }

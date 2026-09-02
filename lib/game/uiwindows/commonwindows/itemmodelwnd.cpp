@@ -4,6 +4,7 @@
 #include "core/kernel.h"
 #include "core/log.h"
 #include "core/timer.h"
+#include "scene/servers/dataserver.h"
 
 RT_CLASS_EXPORTS_BEGIN(ItemModelWnd)
 RT_CLASS_EXPORTS_END;
@@ -61,35 +62,29 @@ m3d::Object* ItemModelWnd::CreateObject()
 
 int ItemModelWnd::SetModelByName(CStr const& modelName, unsigned skinNumber, unsigned cfgNumber)
 {
-    if (modelName.empty())
+    // RVA 0x514E10
+    auto& server = M3D_APP->GetAnimatedModelsServer();
+    int const itemId = modelName.empty() ? -1 : server.GetItemByName(modelName.c_str(), true);
+    if (itemId == -1)
     {
         GameDataClear(false);
         return 0;
     }
 
-    RETRUXX_NOT_IMPLEMENTED;
-
-    //if ((ItemByName = m3d::DataServer::GetItemByName(m3d::Application::g_pApp->m_serverAnimatedModels, m_charPtr, 1), ItemByName == -1))
-    //{
-    //    this->GameDataClear(this, 0);
-    //    return 0;
-    //}
-    //mdl = 0;
-    //m3d::Application::g_pApp->m_serverAnimatedModels->GetItemProperty(m3d::Application::g_pApp->m_serverAnimatedModels, ItemByName, 16394, &mdl);
-    //v7 = this;
-    //if (mdl)
-    //{
-    //    m3d::ui::ModelWnd::SetModel(this, mdl);
-    //    if (this->m_Model && this->m_Animation)
-    //    {
-    //        m3d::ui::ModelWnd::SetCfgNum(this, cfgNumber);
-    //        this->m_SkinNum = skinNumber;
-    //        return 1;
-    //    }
-    //    v7 = this;
-    //}
-    //this->GameDataClear(v7, 0);
-    //return 0;
+    m3d::AnimatedModel* mdl = nullptr;
+    server.GetItemProperty(itemId, m3d::PROP_INTERNAL_GETMODEL, &mdl);
+    if (mdl)
+    {
+        ModelWnd::SetModel(mdl);
+        if (m_Model && m_Animation)
+        {
+            ModelWnd::SetCfgNum(cfgNumber);
+            m_SkinNum = skinNumber;
+            return 1;
+        }
+    }
+    GameDataClear(false);
+    return 0;
 }
 
 int ItemModelWnd::CreateFromPattern(m3d::ui::Wnd* patterWnd, bool deleteSrc)

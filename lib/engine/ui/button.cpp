@@ -27,14 +27,44 @@ namespace m3d
             return RT_CLASS_LOCAL(Wnd);
         }
 
-        int ButtonWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int ButtonWnd::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!Wnd::WriteToXmlNode(file, writeTo))
+            {
+                return 0;
+            }
+
+            writeTo->SetAttribute("btnIsImaged", CStr(m_isImaged).c_str());
+            if (m_isImaged)
+            {
+                CStr name;
+                if (m_image.IsValid())
+                {
+                    M3D_RENDERER->GetTextureName(m_image, name);
+                    writeTo->SetAttribute("btnImage", name.c_str());
+                }
+                if (m_imageMouseDown.IsValid())
+                {
+                    M3D_RENDERER->GetTextureName(m_imageMouseDown, name);
+                    writeTo->SetAttribute("btnImageDown", name.c_str());
+                }
+                if (m_imageMouseIn.IsValid())
+                {
+                    M3D_RENDERER->GetTextureName(m_imageMouseIn, name);
+                    writeTo->SetAttribute("btnImageIn", name.c_str());
+                }
+                if (m_imageDisabled.IsValid())
+                {
+                    M3D_RENDERER->GetTextureName(m_imageDisabled, name);
+                    writeTo->SetAttribute("btnImageDisabled", name.c_str());
+                }
+            }
+            return 1;
         }
 
         rend::TexHandle ButtonWnd::GetImageDown() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_imageMouseDown;
         }
 
         Class* ButtonWnd::GetClass() const
@@ -84,12 +114,12 @@ namespace m3d
 
         rend::TexHandle ButtonWnd::GetImageRegular() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_image;
         }
 
         Object* ButtonWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new ButtonWnd(*this);
         }
 
         bool ButtonWnd::IsImaged() const
@@ -162,12 +192,12 @@ namespace m3d
 
         rend::TexHandle ButtonWnd::GetImageDisabled() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_imageDisabled;
         }
 
         rend::TexHandle ButtonWnd::GetImageIn() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_imageMouseIn;
         }
 
         float ButtonWnd::GetFrameWidth() const
@@ -186,7 +216,9 @@ namespace m3d
             {
                 return res;
             }
-            m_style |= 4;
+            // The shipped code does BYTE2(m_style) |= 4 == m_style |= 0x40000
+            // (WS_SEND_NOTIFY_MESSAGES), not |= 4.
+            m_style |= 0x40000u;
             return 1;
         }
 
@@ -198,7 +230,10 @@ namespace m3d
 
         int ButtonWnd::OnLoosingFocus()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_isInside = 0;
+            m_gotFocus = 0;
+            m_mouseDown = 0;
+            return 1;
         }
 
         int ButtonWnd::OnMouseIn()
@@ -207,9 +242,11 @@ namespace m3d
             return Wnd::OnMouseIn();
         }
 
-        ButtonWnd::ButtonWnd(ButtonWnd const&)
+        ButtonWnd::ButtonWnd(ButtonWnd const& bw) : Wnd(bw)
         {
-            //RETRUXX_NOT_IMPLEMENTED;
+            // Matches the original: chains to the (partial) Wnd copy ctor and starts
+            // every image invalid - the button images and imaged/inside/sounded
+            // flags are not carried across a copy. Reached only via Clone().
         }
 
         void ButtonWnd::ReleaseTextures()
@@ -322,14 +359,8 @@ namespace m3d
             return 1;
         }
 
-        //RETRUXX_DLL_INJECT_VIRTUAL_FUNCTION(0x006B1670, ButtonWnd::OnMouseButton0)
         int ButtonWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
-            //PointBase<float> firstClick;
-            //if (GetStation()->CheckForMouseDblClick(GetStation(), at, state, firstClick))
-            //{
-            //    return 0;
-            //}
             if (!state || !m_isSounded)
             {
                 return Wnd::OnMouseButton0(state, at);
@@ -342,9 +373,29 @@ namespace m3d
             return Wnd::OnMouseButton0(state, at);
         }
 
-        int ButtonWnd::OnKey(unsigned short, unsigned char, unsigned)
+        int ButtonWnd::OnKey(unsigned short key, unsigned char, unsigned state)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if ((m_style & 2) != 0)
+            {
+                return 1;
+            }
+            unsigned char const k = static_cast<unsigned char>(key);
+            if (k != 4 && k != 32)
+            {
+                return 0;
+            }
+            if (!state)
+            {
+                if ((m_mouseDown & 1) != 0)
+                {
+                    AIParam data;
+                    CallParentNotify(1u, data, false);
+                }
+                m_mouseDown &= ~1u;
+                return 1;
+            }
+            m_mouseDown |= 1u;
+            return 1;
         }
 
         ButtonWnd::ButtonWnd()
@@ -358,7 +409,9 @@ namespace m3d
 
         int ButtonWnd::OnObtainingFocus()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_isInside = 1;
+            m_gotFocus = 1;
+            return 1;
         }
 
         RT_CLASS_EXPORTS_BEGIN(CheckWnd)
@@ -389,17 +442,17 @@ namespace m3d
 
         CheckWnd::~CheckWnd()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // The pane-name strings clean up themselves; ~ButtonWnd releases the textures.
         }
 
         CStr const& CheckWnd::GetCheckedPaneName() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_checkedPaneName;
         }
 
         Object* CheckWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new CheckWnd(*this);
         }
 
         int CheckWnd::GetCheck() const
@@ -407,9 +460,9 @@ namespace m3d
             return m_isChecked;
         }
 
-        void CheckWnd::SetUncheckedPane(CStr const&)
+        void CheckWnd::SetUncheckedPane(CStr const& uncheckedPaneName)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_uncheckedPaneName = uncheckedPaneName;
         }
 
         int CheckWnd::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
@@ -433,17 +486,24 @@ namespace m3d
 
         CStr const& CheckWnd::GetUncheckedPaneName() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_uncheckedPaneName;
         }
 
-        void CheckWnd::SetCheckedPane(CStr const&)
+        void CheckWnd::SetCheckedPane(CStr const& checkedPaneName)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_checkedPaneName = checkedPaneName;
         }
 
-        int CheckWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int CheckWnd::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!ButtonWnd::WriteToXmlNode(file, writeTo))
+            {
+                return 0;
+            }
+            writeTo->SetAttribute("checkedPaneName", m_checkedPaneName.c_str());
+            writeTo->SetAttribute("uncheckedPaneName", m_uncheckedPaneName.c_str());
+            writeTo->SetAttribute("isChecked", CStr(m_isChecked).c_str());
+            return 1;
         }
 
         int CheckWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -455,7 +515,9 @@ namespace m3d
             m_style |= 0x00040000;
             m_textWrap = TW_WORD_WRAP;
             m_isChecked = 0;
-            m_style &= 0xFBFFFFFF;
+            // The shipped code does BYTE1(m_style) &= ~4 == m_style &= ~0x400
+            // (clear WS_TEXT_CENTERED_X), not &= 0xFBFFFFFF.
+            m_style &= ~0x400u;
             m_paneName = m_uncheckedPaneName;
             return 1;
         }
@@ -472,12 +534,22 @@ namespace m3d
 
         void CheckWnd::DrawWndText(DrawInfo const& di)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            DrawInfo fakeDi(di);
+            auto const bounds = GetBounds();
+            fakeDi.m_clientRect.x0 += bounds.height;
+            fakeDi.m_clientRect.width -= (bounds.height + 4.0f);
+            Wnd::DrawWndText(fakeDi);
         }
 
         BoundsBase<float> CheckWnd::GetIcoBounds() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto const bounds = GetBounds();
+            BoundsBase<float> result;
+            result.x0 = bounds.x0;
+            result.y0 = bounds.y0;
+            result.width = bounds.height;
+            result.height = bounds.height;
+            return result;
         }
 
         void CheckWnd::OnNcPaint(DrawInfo const& di, unsigned clr)
@@ -496,9 +568,11 @@ namespace m3d
             m_textFormat = TF_LEFT;
         }
 
-        CheckWnd::CheckWnd(CheckWnd const&)
+        CheckWnd::CheckWnd(CheckWnd const& cw) : ButtonWnd(cw)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // Matches the original: chains to the (partial) base copy ctor; the
+            // check state and pane-name strings are not carried across a copy
+            // (they keep their default-constructed values). Reached only via Clone().
         }
     }  // namespace ui
 }  // namespace m3d
