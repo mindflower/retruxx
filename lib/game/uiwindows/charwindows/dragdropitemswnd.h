@@ -7,7 +7,11 @@ class DragDropItemsWnd;
 
 class ItemAcceptInfo
 {
+    friend class DragDropItemsWnd;
+    friend class ItemWnd;
+
 public:
+    ItemAcceptInfo(m3d::ui::Wnd* eventSrcWnd, m3d::ui::Wnd* eventDstWnd, ai::GeomRepositoryItem const& item);
     ItemAcceptInfo(ItemAcceptInfo const&);
 
 private:
@@ -19,6 +23,15 @@ private:
 class GeomSlot : public m3d::ui::ImageWnd
 {
 public:
+    struct AuxInfo
+    {
+        /* 0x0000 */ CStr m_unsuitableTexName;
+        /* 0x000c */ CStr m_tooRichTexName;
+        /* 0x0018 */ PointBase<float> m_icoSz;
+        /* 0x0020 */ float m_space;
+        AuxInfo();
+    };
+
     GeomSlot();
     void SetDrawStyle(int);
     int GetDrawStyle() const;
@@ -29,6 +42,10 @@ public:
 protected:
     virtual int OnPaint(m3d::ui::DrawInfo const&);
 
+    static GeomSlot::AuxInfo m_aif;
+    static m3d::rend::TexHandle m_unsuitableTex;
+    static m3d::rend::TexHandle m_tooRichTex;
+
 private:
     ai::GeomRepositoryItem m_item;
     int m_gsStyle;
@@ -36,6 +53,9 @@ private:
 
 class DragSlot : public GeomSlot
 {
+    friend class DragDropItemsWnd;
+    friend class ItemWnd;
+
 public:
     DragSlot(DragDropItemsWnd*);
     virtual ~DragSlot();

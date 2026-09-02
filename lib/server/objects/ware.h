@@ -8,6 +8,10 @@ namespace ai
     // Rounds a computed price to an integer, never below 1.
     int GetIntPrice(float price);
 
+    // Like GetIntPrice, but a (near-)zero price stays 0 - used for service costs
+    // (repair / refuel / recharge) that can legitimately be free.
+    int GetIntRepairPrice(float price);
+
     // Fraction of full price a used item fetches: currentDurability / maxDurability (0 when max ~ 0).
     float GetDurabilityPriceCoeff(const ai::NumericInRange<float>& durability);
 

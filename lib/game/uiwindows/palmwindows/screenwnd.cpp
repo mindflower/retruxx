@@ -8,17 +8,17 @@ RT_CLASS_DEFINE(ScreenWnd);
 
 m3d::Class* ScreenWnd::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(ScreenWnd);
 }
 
 m3d::Object* ScreenWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new ScreenWnd();
 }
 
 m3d::Object* ScreenWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new ScreenWnd();
 }
 
 m3d::Class* ScreenWnd::GetBaseClass()
@@ -26,55 +26,50 @@ m3d::Class* ScreenWnd::GetBaseClass()
     return RT_CLASS_LOCAL(ChildPanel);
 }
 
-ScreenWnd::~ScreenWnd()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+ScreenWnd::~ScreenWnd() = default;
 
 ScreenWnd::ScreenWnd() = default;
 
-ScreenWnd::ScreenWnd(ScreenWnd const&)
+ScreenWnd::ScreenWnd(ScreenWnd const&) : ScreenWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int ScreenWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return 1;
 }
 
 int ScreenWnd::AddChild(m3d::Object* w)
 {
     auto res = Wnd::AddChild(w);
-    if (res)
+    if (!res)
     {
-        M3D_ASSERT(IS_KIND_OF(w, Wnd));
+        return res;
+    }
 
-        auto* wnd = RT_DYNCAST(w, Wnd);
-        wnd->SetStyle(wnd->GetStyle() & 0xCFu);
+    M3D_ASSERT(IS_KIND_OF(w, Wnd));
+    auto* wnd = RT_DYNCAST(w, Wnd);
 
-        // Process children using iterative DFS
-        std::vector<m3d::Object*> stack;
-        stack.push_back(dynamic_cast<m3d::Object*>(wnd));
+    // Strip WS_ACTIVATION_CAPTURES_FOCUS | WS_ACTIVATABLE (0x3000) from the added
+    // window itself, then WS_ACTIVATION_CAPTURES_FOCUS (0x1000) from every
+    // descendant (iterative DFS).
+    wnd->SetStyle(wnd->GetStyle() & ~0x3000u);
 
-        while (!stack.empty())
+    std::vector<m3d::Object*> stack;
+    stack.push_back(wnd);
+
+    while (!stack.empty())
+    {
+        m3d::Object* current = stack.back();
+        stack.pop_back();
+
+        for (auto* child = RT_DYNCAST(current->GetFirstChild(), Wnd); child;
+             child = RT_DYNCAST(child->GetNextSibling(), Wnd))
         {
-            m3d::Object* current = stack.back();
-            stack.pop_back();
-
-            // Process all siblings of the current node
-            auto* sibling = dynamic_cast<Wnd*>(current->GetFirstChild());
-            while (sibling)
+            child->SetStyle(child->GetStyle() & ~0x1000u);
+            if (child->GetFirstChild())
             {
-                sibling->SetStyle(sibling->GetStyle() & ~0x10u);
-
-                // If this sibling has children, add to stack for processing
-                if (sibling->GetFirstChild()) {
-                    stack.push_back(sibling->GetFirstChild());
-                }
-
-                // Move to next sibling
-                sibling = dynamic_cast<Wnd*>(sibling->GetNextSibling());
+                stack.push_back(child);
             }
         }
     }

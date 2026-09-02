@@ -12,6 +12,7 @@ namespace ai
     class Obj;
     class Bar;
     class Town;
+    class Building;
 }
 namespace m3d
 {
@@ -81,6 +82,9 @@ namespace help
     int CreateWindowsDir(CStr const&);
     CStr GetMapNameFromFileName(CStr const&);
     CStr Color2Str(unsigned);
+    // Formats a float with a fixed number of decimals. precision == -1 means "use
+    // the interface manager's default"; the result is clamped to [0, 10] decimals.
+    CStr ftoa(float fVal, int precision);
     void GetGunsForVehicle(int, retruxx::vector<ai::Obj*>&);
     ActionType GetRandomMoveAnimation(m3d::AnimatedModel*);
     // Re-resolves a font id at a different point size: looks up the pattern font,
@@ -103,8 +107,19 @@ namespace help
     bool WindowsDirExists(CStr const& dirPath);
     bool WindowsFileExists(CStr const& filePath);
 
+    // True when w is non-null, still a live registered window in the station, and
+    // has finished being created (Wnd::Valid()).
+    bool IsWndValid(m3d::ui::Wnd const* w);
+
     int DestroyVehicle(int);
+
+    // Price the workshop in `townId` pays the player for the object `objId`
+    // (-1 bad args / no such town or object, -2 when the town has no workshop
+    // that deals in it).
+    int GetSellPriceByObjId(int objId, int townId);
 
     ai::Bar* GetBarWithBarmanForTown(ai::Town const*);
     ai::Bar* GetBarWithoutBarmanForTown(ai::Town const*);
+    ai::Building* GetShopForTown(ai::Town const*);
+    ai::Building* GetWorkshopForTown(ai::Town const*);
 }  // namespace help

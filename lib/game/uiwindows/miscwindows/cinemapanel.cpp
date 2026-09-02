@@ -10,6 +10,10 @@
 #include "game/uiwindows/commonwindows/itemmodelwnd.h"
 #include "ui/image.h"
 #include "ui/modelwnd.h"
+#include <iface.h>
+#include <math/matrix.h>
+#include <math/quaternion.h>
+#include <skelmodel.h>
 #include <server/objects/player.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(CinemaPanel, AddMessage)
@@ -65,7 +69,9 @@ m3d::Class* CinemaPanel::GetBaseClass()
 
 m3d::Object* CinemaPanel::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // The shipped game allocates a fresh CinemaPanel and runs the copy
+    // constructor, which is an assert(0) - the panel is not copyable.
+    return new CinemaPanel(*this);
 }
 
 void CinemaPanel::AddMessage(int msgId, float delay)
@@ -76,12 +82,12 @@ void CinemaPanel::AddMessage(int msgId, float delay)
 
 unsigned CinemaPanel::GetTimeToTheEndOfMsg()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_curMessageStartTime + 1000 * m_minTimeToExists - M3D_KERNEL->GetTimer().GetCurTime();
 }
 
 bool CinemaPanel::MessageQueueIsEmpty() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_msgInfos.empty() && !m_bIsShowingMessage;
 }
 
 void CinemaPanel::OnHide()
@@ -108,7 +114,7 @@ void CinemaPanel::OnHide()
 
 void CinemaPanel::SkipMessage()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bSkipMessage = true;
 }
 
 bool CinemaPanel::HasMsg()
@@ -128,7 +134,8 @@ m3d::Object* CinemaPanel::CreateObject()
 
 CinemaPanel::~CinemaPanel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    DeleteAllControls();
+    // m_aif, m_msgInfos and the m3d::ui::Wnd base destroy themselves.
 }
 
 m3d::Class* CinemaPanel::GetClass() const
@@ -266,14 +273,66 @@ int CinemaPanel::_SetMsg(int msgId)
     return 1;
 }
 
-void CinemaPanel::SetupPortrait(MsgInfo const*)
+void CinemaPanel::SetupPortrait(MsgInfo const* msgInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!msgInfo || (m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    if (msgInfo->GetModelName().empty())
+    {
+        return;
+    }
+
+    int slot = msgInfo->GetModelSlot();
+    if (slot < 0)
+    {
+        slot = 0;
+    }
+    else if (slot > 1)
+    {
+        slot = 1;
+    }
+
+    auto* portrait = m_wndsPortraits[slot];
+
+    portrait->SetModelByName(msgInfo->GetModelName(), msgInfo->GetModelSkin(), msgInfo->GetModelCfg());
+
+    if (portrait->GetModel() && portrait->Animation())
+    {
+        const ActionType randomMove = help::GetRandomMoveAnimation(portrait->GetModel());
+        if (!portrait->Animation()->SetAnimation(randomMove))
+        {
+            portrait->Animation()->SetAnimation(AT_MOVE1);
+        }
+    }
+
+    portrait->SetAutosized(msgInfo->IsModelAutosized());
+
+    // Reset the model camera pitch: keep yaw/roll from the current orientation
+    // but force pitch to the autosize default angle (or 0 when not autosized).
+    Quaternion& rotation = portrait->Rotation();
+    CMatrix m;
+    m.rotTranslate(rotation, CVector(0.0f, 0.0f, 0.0f));
+
+    float yaw = 0.0f;
+    float pitch = 0.0f;
+    float roll = 0.0f;
+    m.getYPR(yaw, pitch, roll);
+
+    const float newPitch = msgInfo->IsModelAutosized() ? portrait->GetDefaultRotationAngleX() : 0.0f;
+    m.rotYPR(yaw, newPitch, roll);
+    rotation.FromMatrix(m);
+
+    portrait->ShowWindow(true);
 }
 
 void CinemaPanel::ClearBase()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    StopSound();
+    m_bIsShowingMessage = false;
+    m_curMessageEndTime = M3D_KERNEL->GetTimer().GetCurTime();
 }
 
 void CinemaPanel::HideAllControls()
@@ -323,29 +382,85 @@ void CinemaPanel::GetControlsByPanelType(PanelType panelType, std::vector<m3d::u
     }
 }
 
-void CinemaPanel::SetupTextScroll(MsgInfo const*)
+void CinemaPanel::SetupTextScroll(MsgInfo const* msgInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!msgInfo || (m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    m_wndScrollText->SetText(msgInfo->GetMsg());
+    m_wndScrollText->SetScrollSpeed(msgInfo->GetScrollSpeed());
+
+    if (msgInfo->GetFontSize() == -1.0f)
+    {
+        m_wndScrollText->SetDefaultFont(0);
+    }
+    else
+    {
+        m_wndScrollText->SetDefaultFont(help::GetScaledFontId(0, msgInfo->GetFontSize()));
+    }
+
+    m_wndScrollText->m_bScrollingEnabled = true;
+    const auto clientBounds = m_wndScrollText->GetClientBounds();
+    m_wndScrollText->m_textBounds.y0 = clientBounds.y0 + clientBounds.height;
 }
 
 int CinemaPanel::GameDataClear(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    Clear();
+    return 1;
 }
 
-void CinemaPanel::GetAllControls(std::vector<m3d::ui::Wnd*>&) const
+void CinemaPanel::GetAllControls(std::vector<m3d::ui::Wnd*>& controls) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    controls.clear();
+    for (int i = PANELTYPE_NORMAL; i < PANELTYPE_NUM_PANEL_TYPES; ++i)
+    {
+        GetControlsByPanelType(static_cast<PanelType>(i), controls, true);
+    }
 }
 
-void CinemaPanel::SetupSound(MsgInfo const*)
+void CinemaPanel::SetupSound(MsgInfo const* msgInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!msgInfo || (m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    if (msgInfo->GetSoundFileName().empty())
+    {
+        return;
+    }
+
+    if (!M3D_ENGINE_CFG.m_snd_Enable.GetB())
+    {
+        return;
+    }
+
+    m_soundTableId = M3D_APP->m_sound->AddSound(
+        msgInfo->GetSoundFileName().c_str(), snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_EXTRAHIGH);
+    if (m_soundTableId != -1 && m_soundChannelId == -1)
+    {
+        m_soundChannelId = M3D_APP->m_sound->PlaySound2D(m_soundTableId, false);
+    }
 }
 
 void CinemaPanel::DeleteAllControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    retruxx::vector<Wnd*> controls;
+    for (int i = PANELTYPE_NORMAL; i < PANELTYPE_NUM_PANEL_TYPES; ++i)
+    {
+        GetControlsByPanelType(static_cast<PanelType>(i), controls, true);
+    }
+
+    for (auto* control : controls)
+    {
+        if (control)
+        {
+            control->DecRef();
+        }
+    }
 }
 
 int CinemaPanel::GameDataSetup()
@@ -501,13 +616,26 @@ int CinemaPanel::GameDataSetup()
     return 0;
 }
 
-void CinemaPanel::SetupTextNormal(MsgInfo const*)
+void CinemaPanel::SetupTextNormal(MsgInfo const* msgInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!msgInfo || (m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    if (msgInfo->GetMsg().empty())
+    {
+        return;
+    }
+
+    m_wndText->SetText(msgInfo->GetMsg());
+    m_wndText->ShowWindow(true);
 }
 
-CinemaPanel::CinemaPanel(CinemaPanel const&)
+CinemaPanel::CinemaPanel(CinemaPanel const&) : CinemaPanel()
 {
+    // Matches the shipped game: the copy constructor is an assert(0) - a
+    // CinemaPanel cannot be duplicated.
     RETRUXX_NOT_IMPLEMENTED;
 }
 
@@ -532,14 +660,32 @@ CinemaPanel::CinemaPanel()
     m_wndsPortraits[1] = 0;
 }
 
-void CinemaPanel::InitControlsForMsgScroll(MsgInfo const*)
+void CinemaPanel::InitControlsForMsgScroll(MsgInfo const* msgInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!msgInfo || (m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    SetupTime(msgInfo);
+    SetupSound(msgInfo);
+    m_bIsShowingMessage = true;
+    SetupTextScroll(msgInfo);
+    SetupImagesScroll(msgInfo);
 }
 
-void CinemaPanel::InitControlsForMsgNormal(MsgInfo const*)
+void CinemaPanel::InitControlsForMsgNormal(MsgInfo const* msgInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!msgInfo || (m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    SetupTime(msgInfo);
+    SetupSound(msgInfo);
+    m_bIsShowingMessage = true;
+    SetupTextNormal(msgInfo);
+    SetupPortrait(msgInfo);
 }
 
 void CinemaPanel::UpdateAnimation()
@@ -596,9 +742,16 @@ void CinemaPanel::UpdateAnimation()
     }
 }
 
-void CinemaPanel::SetupTime(MsgInfo const*)
+void CinemaPanel::SetupTime(MsgInfo const* msgInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!msgInfo || (m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    const int time = msgInfo->GetTime();
+    m_minTimeToExists = (time == -1) ? 10 : time;
+    m_curMessageStartTime = M3D_KERNEL->GetTimer().GetCurTime();
 }
 
 void CinemaPanel::ShowControlsForPanelType(PanelType panelType)
@@ -618,22 +771,38 @@ void CinemaPanel::ShowControlsForPanelType(PanelType panelType)
 
 void CinemaPanel::ClearScroll()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    StopSound();
+    m_bIsShowingMessage = false;
+    m_curMessageEndTime = M3D_KERNEL->GetTimer().GetCurTime();
 }
 
-CinemaPanel::PanelType CinemaPanel::GetPanelTypeByMsgType(MsgInfo::MsgType) const
+CinemaPanel::PanelType CinemaPanel::GetPanelTypeByMsgType(MsgInfo::MsgType msgType) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return msgType == MsgInfo::MSGTYPE_SCROLL ? PANELTYPE_SCROLL : PANELTYPE_NORMAL;
 }
 
-void CinemaPanel::InitControlsForMsgBase(MsgInfo const*)
+void CinemaPanel::InitControlsForMsgBase(MsgInfo const* msgInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!msgInfo || (m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    SetupTime(msgInfo);
+    SetupSound(msgInfo);
+    m_bIsShowingMessage = true;
 }
 
-void CinemaPanel::SetupImagesScroll(MsgInfo const*)
+void CinemaPanel::SetupImagesScroll(MsgInfo const* msgInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!msgInfo || (m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    m_wndScrollImage->SetImage(msgInfo->GetImage());
+    m_wndScrollImageUpOverlay->SetImage(msgInfo->GetImageUpOverlay());
+    m_wndScrollImageDownOverlay->SetImage(msgInfo->GetImageDownOverlay());
 }
 
 int CinemaPanel::StopSound()
@@ -651,7 +820,8 @@ int CinemaPanel::StopSound()
     return res;
 }
 
-void CinemaPanel::SetPanelType(PanelType)
+void CinemaPanel::SetPanelType(PanelType panelType)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_panelType = panelType;
+    ShowControlsForPanelType(panelType);
 }

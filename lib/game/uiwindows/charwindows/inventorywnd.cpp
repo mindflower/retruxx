@@ -39,10 +39,7 @@ m3d::Class* InventoryWnd::GetClass() const
     return RT_CLASS_LOCAL(InventoryWnd);
 }
 
-InventoryWnd::~InventoryWnd()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+InventoryWnd::~InventoryWnd() = default;
 
 void InventoryWnd::SetVehicleId(int vehicleId)
 {
@@ -64,14 +61,39 @@ m3d::Object* InventoryWnd::CreateObject()
     return new InventoryWnd;
 }
 
-void InventoryWnd::SetTradeVehicleId(int, ZnayuKakProdatWnd::TradeType)
+void InventoryWnd::SetTradeVehicleId(int vehicleId, ZnayuKakProdatWnd::TradeType tradeType)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0 || m_vehicleType != VEHICLETYPE_WORKSHOP || vehicleId == -1 ||
+        tradeType == ZnayuKakProdatWnd::TRADETYPE_NUM_TRADETYPES)
+    {
+        return;
+    }
+
+    m_tradeType = tradeType;
+    ChildPanel::SetVehicleId(vehicleId);
+
+    switch (tradeType)
+    {
+    case ZnayuKakProdatWnd::TRADETYPE_VEHICLE:
+        m_wndCabin->SetVehicleId(vehicleId);
+        m_wndBasket->SetVehicleId(vehicleId);
+        break;
+    case ZnayuKakProdatWnd::TRADETYPE_CABIN:
+        m_wndCabin->SetVehicleId(vehicleId);
+        m_wndBasket->SetVehicleId(-1);
+        break;
+    case ZnayuKakProdatWnd::TRADETYPE_BASKET:
+        m_wndCabin->SetVehicleId(-1);
+        m_wndBasket->SetVehicleId(vehicleId);
+        break;
+    default:
+        break;
+    }
 }
 
 m3d::Object* InventoryWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new InventoryWnd(*this);
 }
 
 InventoryWnd::InventoryWnd()
@@ -80,9 +102,8 @@ InventoryWnd::InventoryWnd()
     m_tradeType = ZnayuKakProdatWnd::TRADETYPE_NUM_TRADETYPES;
 }
 
-InventoryWnd::InventoryWnd(InventoryWnd const&)
+InventoryWnd::InventoryWnd(InventoryWnd const&) : InventoryWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void InventoryWnd::RemoveCBWindows()
@@ -141,9 +162,17 @@ int InventoryWnd::GameDataUpdate(void*, int dataType)
     return 1;
 }
 
-InventoryWnd::VehicleType InventoryWnd::GetVehicleTypeByGuiId(int) const
+InventoryWnd::VehicleType InventoryWnd::GetVehicleTypeByGuiId(int guiId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    switch (guiId - IW_WND_PLAYER_INVENTORY)
+    {
+    case 0:
+        return VEHICLETYPE_PLAYER;
+    case 1:
+        return VEHICLETYPE_WORKSHOP;
+    default:
+        return VEHICLETYPE_INVALID;
+    }
 }
 
 int InventoryWnd::GameDataSetup()
@@ -260,7 +289,12 @@ int InventoryWnd::OnAfterRemoveFromWndStation()
 
 void InventoryWnd::OnPlayerVehicleChanged()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_vehicleType != VEHICLETYPE_PLAYER)
+    {
+        return;
+    }
+    auto* vehicleControlledByPlayer = m3d::pClient->GetWorld().GetVehicleControlledByPlayer();
+    SetVehicleId(vehicleControlledByPlayer ? vehicleControlledByPlayer->GetId() : -1);
 }
 
 void InventoryWnd::AddCBWindows()

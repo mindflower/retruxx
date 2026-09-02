@@ -14,6 +14,8 @@ class BarDlg : public ChildPanel
 public:
     class AuxInfo
     {
+        friend class BarDlg;
+
     public:
         AuxInfo();
 

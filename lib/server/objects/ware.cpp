@@ -17,6 +17,15 @@ namespace ai
         return price >= 1.0f ? static_cast<int>(price) : 1;
     }
 
+    int GetIntRepairPrice(float price)
+    {
+        if (price < 0.0001f)
+        {
+            return 0;
+        }
+        return price >= 1.0f ? static_cast<int>(price) : 1;
+    }
+
     float GetDurabilityPriceCoeff(ai::NumericInRange<float> const& durability)
     {
         if (durability.maxValue().get() >= 0.001f)

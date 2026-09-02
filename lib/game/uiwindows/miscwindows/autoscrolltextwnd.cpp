@@ -181,9 +181,10 @@ void AutoScrollTextWnd::SetPane(const CStr& name)
     PrecalcTextBounds();
 }
 
-void AutoScrollTextWnd::SetScrollSpeed(float)
+void AutoScrollTextWnd::SetScrollSpeed(float speed)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_scrollLineSpeed = speed;
+    PrecalcScrollPixelSpeed();
 }
 
 m3d::Class* AutoScrollTextWnd::GetBaseClass()

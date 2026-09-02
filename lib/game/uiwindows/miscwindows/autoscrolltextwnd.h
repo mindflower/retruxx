@@ -1,8 +1,14 @@
 #pragma once
 #include <ui/ui.h>
 
+class CinemaPanel;
+
 class AutoScrollTextWnd :  public m3d::ui::Wnd
 {
+    // CinemaPanel::SetupTextScroll pokes m_bScrollingEnabled / m_textBounds
+    // directly, mirroring the shipped game.
+    friend class CinemaPanel;
+
 public:
     virtual int SetBackground(m3d::rend::TexHandle);
     virtual int SetBackground(CStr const &);

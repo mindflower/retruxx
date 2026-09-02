@@ -3,6 +3,10 @@
 
 class CharacteristicsWnd : public m3d::ui::Wnd
 {
+    // VehicleWnd drives the per-tab characteristics sub-panels directly: it
+    // writes m_vehicleId and calls the protected GetVehicle() / ClearCharacteristics().
+    friend class VehicleWnd;
+
 public:
     class CAuxInfo
     {

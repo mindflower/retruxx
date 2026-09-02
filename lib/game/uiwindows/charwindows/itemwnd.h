@@ -6,9 +6,16 @@ class ItemInfoWnd;
 
 class ItemWnd : public DragDropItemsWnd
 {
+    // GadgetWnd reads/writes ItemWnd's item/geom/state/aif fields directly (it
+    // is a lean specialisation that reuses ItemWnd's drawing + item plumbing).
+    friend class GadgetWnd;
+
 public:
     class AuxInfo
     {
+        friend class ItemWnd;
+        friend class GadgetWnd;
+
     public:
         AuxInfo();
 
@@ -48,6 +55,9 @@ protected:
     virtual int HideVideoWnd();
     virtual bool IsEmpty() const;
     virtual int GameDataUpdate(void*, int);
+    virtual int CanAddDragItem(bool) override;
+    virtual int AddItem(ai::GeomRepositoryItem const&) override;
+    virtual int GetResourceId() const;
     bool IsHidden() const;
     class ai::Vehicle* GetVehicle() const;
     virtual void OnUpdateWhileNoDrag( PointBase<float> const&);
@@ -81,6 +91,7 @@ protected:
     bool IsDisabled() const;
     virtual void OnDistantMouseOut();
     virtual int GetItemObjId() const;
+    virtual bool SetItemObjId(int);
     virtual int ShowInfoWnd();
     virtual m3d::rend::TexHandle GetItemIco(int) const;
     virtual void LaunchEventOnItemDeactivation() const;

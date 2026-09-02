@@ -7,7 +7,11 @@
 #include "core/log.h"
 #include "file/fileenum.h"
 #include "file/fileserver.h"
+#include "server/objects/bar.h"
+#include "server/objects/building.h"
+#include "server/objects/town.h"
 #include "server/objects/vehicle.h"
+#include "server/objects/workshop.h"
 #include "server/objects/base/objcontainer.h"
 #include "server/objects/physicbodies/vehiclepart.h"
 #include "ui/ui.h"
@@ -16,6 +20,7 @@
 #include "ui/image.h"
 #include "ui/ui_srv.h"
 #include <m3dapp.h>
+#include "game/m3dgame.h"  // CMiracle3d - M3D_APP->m_pInterfaceManager (help::ftoa)
 
 #include <sstream>
 #include <server/resourcemanager.h>
@@ -223,6 +228,47 @@ namespace help
         return CStr("@") + ss.str().c_str();
     }
 
+    CStr ftoa(float fVal, int precision)
+    {
+        if (precision == -1)
+        {
+            precision = M3D_APP->m_pInterfaceManager->GetDefaultFloatPrecision();
+        }
+        if (precision < 0)
+        {
+            precision = 0;
+        }
+        else if (precision > 10)
+        {
+            precision = 10;
+        }
+        CStr str;
+        str.format("%0.*f", precision, fVal);
+        return str;
+    }
+
+    int GetSellPriceByObjId(int objId, int townId)
+    {
+        if (objId == -1 || townId == -1)
+        {
+            return -1;
+        }
+        auto* townObj = ai::theObjects->GetEntityByObjId(townId);
+        auto* town = (townObj && townObj->IsKindOf(&ai::Town::m_classTown)) ? static_cast<ai::Town*>(townObj)
+                                                                           : nullptr;
+        auto* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (obj && !obj->IsKindOf(&ai::Obj::m_classObj))
+        {
+            obj = nullptr;
+        }
+        if (!town || !obj)
+        {
+            return -1;
+        }
+        ai::Workshop* workshop = town->GetWorkshopByObject(obj);
+        return workshop ? static_cast<int>(workshop->GetObjectBuyPrice(obj)) : -2;
+    }
+
     void GetGunsForVehicle(int vehicleId, retruxx::vector<ai::Obj*>& guns)
     {
         using namespace ai;
@@ -340,18 +386,83 @@ namespace help
         return fileAttributes != -1 && (fileAttributes & 0x10) == 0;
     }
 
+    bool IsWndValid(m3d::ui::Wnd const* w)
+    {
+        return w && M3D_APP->IsWndAlive(w, -1) && w->Valid();
+    }
+
     int DestroyVehicle(int)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    ai::Bar* GetBarWithBarmanForTown(ai::Town const*)
+    ai::Bar* GetBarWithBarmanForTown(ai::Town const* town)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!town)
+        {
+            return nullptr;
+        }
+        for (auto* building : town->GetBuildingByType(ai::BAR))
+        {
+            if (building && building->IsKindOf(&ai::Bar::m_classBar))
+            {
+                auto* bar = static_cast<ai::Bar*>(building);
+                if (bar->bWithBarman())
+                {
+                    return bar;
+                }
+            }
+        }
+        return nullptr;
     }
 
-    ai::Bar* GetBarWithoutBarmanForTown(ai::Town const*)
+    ai::Bar* GetBarWithoutBarmanForTown(ai::Town const* town)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!town)
+        {
+            return nullptr;
+        }
+        for (auto* building : town->GetBuildingByType(ai::BAR))
+        {
+            if (building && building->IsKindOf(&ai::Bar::m_classBar))
+            {
+                auto* bar = static_cast<ai::Bar*>(building);
+                if (!bar->bWithBarman())
+                {
+                    return bar;
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    ai::Building* GetShopForTown(ai::Town const* town)
+    {
+        if (!town)
+        {
+            return nullptr;
+        }
+        // Matches the shipped game (RVA 0x554C20): it fetches the SHOP buildings
+        // but type-checks the first one against ai::Workshop.
+        auto const buildings = town->GetBuildingByType(ai::SHOP);
+        if (!buildings.empty() && buildings.front() && buildings.front()->IsKindOf(&ai::Workshop::m_classWorkshop))
+        {
+            return buildings.front();
+        }
+        return nullptr;
+    }
+
+    ai::Building* GetWorkshopForTown(ai::Town const* town)
+    {
+        if (!town)
+        {
+            return nullptr;
+        }
+        auto const buildings = town->GetBuildingByType(ai::WORKSHOP);
+        if (!buildings.empty() && buildings.front() && buildings.front()->IsKindOf(&ai::Workshop::m_classWorkshop))
+        {
+            return buildings.front();
+        }
+        return nullptr;
     }
 }  // namespace help

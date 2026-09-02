@@ -3,6 +3,9 @@
 
 class VehicleCharacteristicsWnd :  public CharacteristicsWnd
 {
+    // VehicleWnd::SetVehicleId invokes the protected virtual ClearCharacteristics().
+    friend class VehicleWnd;
+
 public:
     class AuxInfo
     {
