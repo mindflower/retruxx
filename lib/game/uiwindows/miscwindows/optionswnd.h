@@ -30,6 +30,7 @@ public:
 public:
     virtual m3d::Class* GetClass() const;
     virtual int GameDataSetup();
+    virtual m3d::Object* Clone();
 
     static m3d::Class* GetBaseClass();
     static m3d::Object* CreateObject();

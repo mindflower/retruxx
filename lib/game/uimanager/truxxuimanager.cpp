@@ -599,7 +599,7 @@ m3d::ui::MbRetCodes TruxxUiManager::RunMsgBoxDlg(CStr const& caption, CStr const
     AddWindow(&*box, guiId, false, false);
 
     int retVal = m3d::ui::MBX_RET_CANCEL;
-    ;
+
     ShowWindow(guiId, true, true, true, bPause, &retVal);
     RemoveWindow(guiId);
     GUI_EndModalDlg();

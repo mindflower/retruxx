@@ -7,7 +7,7 @@
 #include "ui/wndstation.h"
 
 RT_CLASS_EXPORTS_BEGIN(MsgBox)
-    RT_CLASS_EXPORTS_END;
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MsgBox);
 
 int MsgBox::m_ref = 0;
@@ -19,11 +19,8 @@ MsgBox::AuxInfo::AuxInfo()
 
 int MsgBox::CreateMsgBox(CStr const& caption, CStr const& message, unsigned flags)
 {
-    if (Valid()
-        || (m_gameDataFlags & 1) != 0
-        || !m_pattern
-        || !help::CloneWndWithChildren(m_pattern, this)
-        || !GameDataSetup())
+    if (Valid() || (m_gameDataFlags & 1) != 0 || !m_pattern || !help::CloneWndWithChildren(m_pattern, this) ||
+        !GameDataSetup())
     {
         return 0;
     }
@@ -41,7 +38,9 @@ m3d::Class* MsgBox::GetClass() const
 
 m3d::Object* MsgBox::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x516050: allocates a fresh MsgBox and runs the default ctor - the
+    // source is ignored, so a clone starts empty.
+    return new MsgBox();
 }
 
 MsgBox::~MsgBox()
@@ -72,41 +71,33 @@ m3d::Object* MsgBox::CreateObject()
     return new MsgBox;
 }
 
-void MsgBox::SetIdioticEmbossesBounds(PointBase<float> const&)
+void MsgBox::SetIdioticEmbossesBounds(PointBase<float> const& idioticEmbossesSz)
 {
-    // TODO: check this!!!!!!
+    // RVA 0x5189F0. Same shape as SetButtonsBounds (and the same original bug);
+    // reconstructed the same way with the embossName controls.
     if ((m_gameDataFlags & 1) != 0 && (m_msgBoxFlags & 3) != 0)
     {
-        CStr buttonName1 = m_aif.m_buttonName + CStr(1);
-        m3d::ui::Wnd* patternButton1 = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(buttonName1));
-        auto button1Bounds = patternButton1->GetBounds();
-
-        //CStr buttonName0 = m_aif.m_buttonName + CStr(0);
-        //m3d::ui::Wnd* patternButton0 = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(buttonName0));
-        //auto button0Bounds = patternButton0->GetBounds();
+        auto patE1 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_idioticEmbossName + CStr(1)))->GetBounds();
+        auto patE0 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_idioticEmbossName + CStr(0)))->GetBounds();
+        float const gap = patE1.x0 - (patE0.x0 + patE0.width);
 
         auto downLineBounds = m_wndDownLine->GetBounds();
+        auto patDownLine = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndDownLineName))->GetBounds();
+
+        float x = (m_bounds.width - idioticEmbossesSz.x) * 0.5f;
         for (int i = 0; i < 3; ++i)
         {
-            if (IsDirectChild(m_buttons[i]))
+            if (IsDirectChild(m_idioticEmbosses[i]))
             {
-                auto btnBounds = m_buttons[i]->GetBounds();
-                btnBounds.x0 = button1Bounds.x0;
-                button1Bounds.x0 += downLineBounds.x0;
+                auto embossBounds = m_idioticEmbosses[i]->GetBounds();
+                auto patE = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_idioticEmbosses[i]->GetName()))->GetBounds();
+                float const deltaY = patE.y0 - (patDownLine.height + patDownLine.y0);
 
-                m3d::ui::Wnd* buttonWnd = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(m_buttons[i]->GetName()));
-                m3d::ui::Wnd* downLineNameWnd = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(m_aif.m_wndDownLineName));
+                embossBounds.x0 = x;
+                embossBounds.y0 = downLineBounds.y0 + downLineBounds.height + deltaY;
+                m_idioticEmbosses[i]->SetBounds(embossBounds, true);
 
-                auto actualBtnBounds = buttonWnd->GetBounds();
-                auto downLineNameBounds = downLineNameWnd->GetBounds();
-
-                auto y0 = actualBtnBounds.y0;
-                auto v22 = y0 - (float)(downLineNameBounds.height + downLineNameBounds.y0);
-
-                btnBounds.y0 = (downLineBounds.height + btnBounds.y0) + v22;
-
-                m_buttons[i]->SetBounds(btnBounds, true);
-
+                x += embossBounds.width + gap;
             }
         }
     }
@@ -114,7 +105,9 @@ void MsgBox::SetIdioticEmbossesBounds(PointBase<float> const&)
 
 MsgBox::MsgBox(MsgBox const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x516480: default-constructs the ModalWnd base and members and copies
+    // nothing from the source; unlike the default ctor it does NOT bump m_ref.
+    // Clone() does not use this - it default-constructs.
 }
 
 MsgBox::MsgBox()
@@ -126,62 +119,41 @@ void MsgBox::AddTitle()
 {
     if ((m_gameDataFlags & 1) != 0 && !m_title.empty())
     {
-	    if (m_wndTitle)
-	    {
+        if (m_wndTitle)
+        {
             if (!m_wndTitle->GetParent())
             {
                 AddChild(m_wndTitle);
             }
-	    }
+        }
         m_wndTitle->SetText(m_title);
     }
 }
 
 void MsgBox::SetMsgBounds(PointBase<float> const& msgSz)
 {
-    //TODO: check this and refactor!!!!!!!!!
-    m3d::ui::Wnd* v3; // ecx
-    m3d::ui::Wnd* v4; // ebx
-    m3d::Object* v5; // edi
-    m3d::Object* v6; // ebx
-    BoundsBase<float> v7; // eax
-    float v8; // xmm0_4
-    m3d::Object* v9; // eax
-    m3d::ui::Wnd* v10; // ecx
-    float v11; // [esp+Ch] [ebp-44h]
-    BoundsBase<float> msgB; // [esp+10h] [ebp-40h] BYREF
-    BoundsBase<float> lineUpB; // [esp+20h] [ebp-30h] BYREF
-    char v14[16]; // [esp+30h] [ebp-20h] BYREF
-    char v15[16]; // [esp+40h] [ebp-10h] BYREF
-
-    if ((this->m_gameDataFlags & 1) != 0 && IsDirectChild(this->m_wndMsg))
+    // RVA 0x518460
+    if ((m_gameDataFlags & 1) != 0 && IsDirectChild(m_wndMsg))
     {
-        v3 = this->m_wndTitle;
-        msgB.y0 = 0.0;
+        BoundsBase<float> msgB;
         msgB.width = msgSz.x;
         msgB.height = msgSz.y;
-        msgB.x0 = (this->m_bounds.width - msgSz.x) * 0.5;
-        if (IsDirectChild(v3))
-        {
-            IsDirectChild(this->m_wndUpLine);
-            lineUpB = this->m_wndUpLine->GetBounds();
-            v4 = m_pattern;
-            v5 = m_pattern->GetChildByName(this->m_aif.m_wndMsgName);
-            v6 = v4->GetChildByName(this->m_aif.m_wndUpLineName);
+        msgB.x0 = (m_bounds.width - msgSz.x) * 0.5f;
 
-            v11 = dynamic_cast<Wnd*>(v5)->GetBounds().y0;
-            v7 = dynamic_cast<Wnd*>(v6)->GetBounds();
-            v8 = ((v11 - (v7.height + v7.y0)) + lineUpB.height) + lineUpB.y0;
+        float y0;
+        if (IsDirectChild(m_wndTitle))
+        {
+            auto lineUpB = m_wndUpLine->GetBounds();
+            auto patMsg = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndMsgName))->GetBounds();
+            auto patUp = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndUpLineName))->GetBounds();
+            y0 = (patMsg.y0 - (patUp.height + patUp.y0)) + lineUpB.height + lineUpB.y0;
         }
         else
         {
-            IsDirectChild(this->m_wndUpLine);
-            v9 = m_pattern->GetChildByName(this->m_aif.m_wndTitleName);
-            v8 = dynamic_cast<Wnd*>(v9)->GetBounds().y0;
+            y0 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndTitleName))->GetBounds().y0;
         }
-        v10 = this->m_wndMsg;
-        msgB.y0 = v8;
-        v10->SetBounds(msgB, true);
+        msgB.y0 = y0;
+        m_wndMsg->SetBounds(msgB, true);
     }
 }
 
@@ -202,153 +174,85 @@ void MsgBox::AddMsg()
 
 void MsgBox::AddLines()
 {
-    //TODO: check this and refactor!!!
-    int v2; // eax
-    bool v3; // zf
-    int v4; // eax
-    bool v5; // dl
-    bool v6; // bl
-    bool v7; // cl
-    m3d::ui::LineWnd* v8; // eax
-    m3d::ui::LineWnd* v9; // eax
-    bool bHasTitle; // [esp+4h] [ebp-2h]
-    bool bHasButtons; // [esp+5h] [ebp-1h]
-
+    // RVA 0x517B10
     if ((m_gameDataFlags & 1) == 0)
+    {
         return;
-    v2 = m_title.length();
-    v3 = v2 == 0;
-    v5 = !v3;
-    bHasTitle = m_title.length() != 0;
-    v4 = m_msg.length();
-    v6 = v4 != 0;
-    v7 = (m_msgBoxFlags & 3) != 0;
-    bHasButtons = v7;
-    if (!v3)
-    {
-        if (!v4)
-            goto LABEL_13;
-        v8 = m_wndUpLine;
-        if (v8 && !v8->GetParent())
-        {
-            AddChild(m_wndUpLine);
-            v5 = bHasTitle;
-            v7 = bHasButtons;
-        }
     }
-    if (!v6 || !v7)
+    bool const hasTitle = !m_title.empty();
+    bool const hasMsg = !m_msg.empty();
+    bool const hasButtons = (m_msgBoxFlags & 3) != 0;
+
+    if (hasTitle && hasMsg && m_wndUpLine && !m_wndUpLine->GetParent())
     {
-    LABEL_13:
-        if (!v5 || !v7)
-            return;
+        AddChild(m_wndUpLine);
     }
-    v9 = m_wndDownLine;
-    if (v9)
+    if (hasButtons && (hasMsg || hasTitle) && m_wndDownLine && !m_wndDownLine->GetParent())
     {
-        if (!v9->GetParent())
-            AddChild(m_wndDownLine);
+        AddChild(m_wndDownLine);
     }
 }
 
 void MsgBox::SetDownLineBounds()
 {
-    // TODO: generated code
-    // Check if we need to update the down line bounds and if the down line is a direct child
-    if ((m_gameDataFlags & 1) != 0 && m3d::Object::IsDirectChild(m_wndDownLine))
+    // RVA 0x5185B0. NOTE: the shipped body decompiles with corrupt locals;
+    // reconstructed to mirror SetUpLineBounds/SetMsgBounds.
+    if ((m_gameDataFlags & 1) != 0 && IsDirectChild(m_wndDownLine))
     {
-        // Get the pattern reference for the down line
-        m3d::ui::Wnd* patternDownLine = static_cast<m3d::ui::Wnd*>(
-            m_pattern->GetChildByName(m_aif.m_wndDownLineName));
+        auto const patDown = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndDownLineName))->GetBounds();
 
-        // Get the pattern's down line bounds to use as reference
-        BoundsBase<float> patternBounds = patternDownLine->GetBounds();
+        BoundsBase<float> lineB;
+        lineB.x0 = patDown.x0;
+        lineB.width = m_bounds.width - patDown.x0 * 2.0f;
+        lineB.height = m_wndDownLine->GetBounds().height;
 
-        // Calculate the width for the down line (full width minus margins)
-        float downLineWidth = m_bounds.width - (patternBounds.x0 * 2.0f);
-
-        // Get the current down line height from the pattern
-        float downLineHeight = m_wndDownLine->GetBounds().height;
-
-        // Initialize line bounds structure
-        BoundsBase<float> lineBounds;
-        lineBounds.x0 = patternBounds.x0;  // Left margin
-        lineBounds.y0 = 0.0f;              // Will be calculated based on content
-        lineBounds.width = downLineWidth;   // Calculated width
-        lineBounds.height = downLineHeight; // Height from pattern
-
-        // Calculate vertical position based on whether message window is present
-        if (m3d::Object::IsDirectChild(m_wndMsg))
+        if (IsDirectChild(m_wndMsg))
         {
-            // Message window is present - position down line below it
-            BoundsBase<float> msgBounds = m_wndMsg->GetBounds();
-
-            // Get pattern references for positioning
-            m3d::ui::Wnd* patternMsg = static_cast<m3d::ui::Wnd*>(
-                m_pattern->GetChildByName(m_aif.m_wndMsgName));
-
-            // Get pattern positions to calculate proper spacing
-            BoundsBase<float> patternMsgBounds = patternMsg->GetBounds();
-
-            BoundsBase<float> patternDownLinePos = patternDownLine->GetBounds();
-
-            // Calculate Y position: below message with proper spacing from pattern
-            lineBounds.y0 = patternDownLinePos.y0 - (patternMsgBounds.height + patternMsgBounds.y0)
-                + msgBounds.height + patternMsgBounds.height;
+            auto const patMsg = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndMsgName))->GetBounds();
+            auto const msgB = m_wndMsg->GetBounds();
+            lineB.y0 = (patDown.y0 - (patMsg.height + patMsg.y0)) + msgB.height + patMsg.height;
         }
         else
         {
-            // No message window - position down line below title and up line
-            //m3d::Object::IsDirectChild(m_wndTitle);
-            //m3d::Object::IsDirectChild(m_wndUpLine);
-
-            // Get title bounds
-            BoundsBase<float> titleBounds = m_wndTitle->GetBounds();
-
-            // Get pattern references for positioning
-            m3d::ui::Wnd* patternUpLine = static_cast<m3d::ui::Wnd*>(
-                m_pattern->GetChildByName(m_aif.m_wndUpLineName));
-
-            m3d::ui::Wnd* patternTitle = static_cast<m3d::ui::Wnd*>(
-                m_pattern->GetChildByName(m_aif.m_wndTitleName));
-
-            // Get pattern positions to calculate proper spacing
-            BoundsBase<float> patternUpLinePos = patternUpLine->GetBounds();
-
-            BoundsBase<float> patternTitleBounds = patternTitle->GetBounds();
-
-            // Calculate Y position: below title/up-line with proper spacing from pattern
-            lineBounds.y0 = patternUpLinePos.y0 - (patternTitleBounds.height + patternTitleBounds.y0)
-                + titleBounds.height + patternTitleBounds.height;
+            auto const patUp = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndUpLineName))->GetBounds();
+            auto const patTitle = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndTitleName))->GetBounds();
+            auto const titleB = m_wndTitle->GetBounds();
+            lineB.y0 = (patUp.y0 - (patTitle.height + patTitle.y0)) + titleB.height + patTitle.height;
         }
-
-        // Apply the calculated bounds to the down line
-        m_wndDownLine->SetBounds(lineBounds, true);
+        m_wndDownLine->SetBounds(lineB, true);
     }
 }
 
 PointBase<float> MsgBox::CalcSummaryButtonsSize() const
 {
+    // RVA 0x517D50
     if ((m_gameDataFlags & 1) != 0)
     {
-        float buttonsMaxSzX = 0.0;
-        float buttonsMaxSzY = 0.0;
-        for (int i = 0; i<3;++i)
+        float buttonsWidthSum = 0.0f;
+        float buttonsMaxSzY = 0.0f;
+        for (int i = 0; i < 3; ++i)
         {
-	        if (IsDirectChild(m_buttons[i]))
-	        {
+            if (IsDirectChild(m_buttons[i]))
+            {
                 auto bounds = m_buttons[i]->GetBounds();
+                buttonsWidthSum += bounds.width;
                 if (bounds.height > buttonsMaxSzY)
                 {
                     buttonsMaxSzY = bounds.height;
                 }
-	        }
+            }
         }
-        if (m_msgBoxFlags & 3 > 1)
+        float spacing = 0.0f;
+        unsigned const n = m_msgBoxFlags & 3;
+        if (n > 1)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto b1 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_buttonName + CStr(1)))->GetBounds();
+            auto b0 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_buttonName + CStr(0)))->GetBounds();
+            float const gap = b1.x0 - (b0.width + b0.x0);
+            spacing = static_cast<float>(static_cast<int>(n) - 1) * gap;
         }
         PointBase<float> res;
-        res.x = buttonsMaxSzX + buttonsMaxSzY;
+        res.x = spacing + buttonsWidthSum;
         res.y = buttonsMaxSzY;
         return res;
     }
@@ -372,7 +276,8 @@ PointBase<float> MsgBox::CalcTitleSize() const
             auto child = m_pattern->GetChildByName(m_aif.m_wndTitleName);
             auto wnd = dynamic_cast<Wnd*>(child);
             auto bounds = wnd->GetBounds();
-            return GetGfxServer()->MeasureText(m_title, m_wndTitle->GetDefaultFont(), m_wndTitle->GetWrapMode(), bounds.width);
+            return GetGfxServer()->MeasureText(
+                m_title, m_wndTitle->GetDefaultFont(), m_wndTitle->GetWrapMode(), bounds.width);
         }
     }
     return {};
@@ -380,27 +285,34 @@ PointBase<float> MsgBox::CalcTitleSize() const
 
 PointBase<float> MsgBox::CalcSummaryIdioticEmbossesSize() const
 {
+    // RVA 0x517FC0
     if ((m_gameDataFlags & 1) != 0)
     {
-        float embossesMaxSzX = 0.0;
-        float embossesMaxSzY = 0.0;
+        float embossesWidthSum = 0.0f;
+        float embossesMaxSzY = 0.0f;
         for (int i = 0; i < 3; ++i)
         {
             if (IsDirectChild(m_idioticEmbosses[i]))
             {
                 auto bounds = m_idioticEmbosses[i]->GetBounds();
+                embossesWidthSum += bounds.width;
                 if (bounds.height > embossesMaxSzY)
                 {
                     embossesMaxSzY = bounds.height;
                 }
             }
         }
-        if (m_msgBoxFlags & 3 > 1)
+        float spacing = 0.0f;
+        unsigned const n = m_msgBoxFlags & 3;
+        if (n > 1)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto b1 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_idioticEmbossName + CStr(1)))->GetBounds();
+            auto b0 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_idioticEmbossName + CStr(0)))->GetBounds();
+            float const gap = b1.x0 - (b0.width + b0.x0);
+            spacing = static_cast<float>(static_cast<int>(n) - 1) * gap;
         }
         PointBase<float> res;
-        res.x = embossesMaxSzX + embossesMaxSzY;
+        res.x = spacing + embossesWidthSum;
         res.y = embossesMaxSzY;
         return res;
     }
@@ -409,22 +321,19 @@ PointBase<float> MsgBox::CalcSummaryIdioticEmbossesSize() const
 
 void MsgBox::SetUpLineBounds()
 {
+    // RVA 0x518310. NOTE: the shipped body decompiles with corrupt locals;
+    // reconstructed to mirror SetDownLineBounds/SetMsgBounds.
     if ((m_gameDataFlags & 1) != 0 && IsDirectChild(m_wndUpLine))
     {
-        //TODO: check this!!!!!!!!!!!!!!!
-        auto childUpLine = m_pattern->GetChildByName(m_aif.m_wndUpLineName);
-        auto wndUpLine = dynamic_cast<Wnd*>(childUpLine);
-        auto boundsUpLine = wndUpLine->GetBounds();
-        BoundsBase<float> lineB;
-        lineB.y0 = boundsUpLine.x0;
-        lineB.height = 0.0;
-        lineB.width = lineB.y0;
+        auto const patUp = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndUpLineName))->GetBounds();
+        auto const patTitle = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndTitleName))->GetBounds();
+        auto const titleB = m_wndTitle->GetBounds();
 
-        auto childTitle = m_pattern->GetChildByName(m_aif.m_wndTitleName);
-        auto wndUpTitle = dynamic_cast<Wnd*>(childUpLine);
-        auto boundsTitle= wndUpLine->GetBounds();
-        auto spaceX = boundsUpLine.y0;
-        lineB.y0 = ((spaceX - (boundsTitle.height+ boundsTitle.y0)) + boundsTitle.height) + boundsTitle.y0;
+        BoundsBase<float> lineB;
+        lineB.x0 = patUp.x0;
+        lineB.width = m_bounds.width - patUp.x0 * 2.0f;
+        lineB.height = 0.0f;
+        lineB.y0 = (patUp.y0 - (patTitle.height + patTitle.y0)) + titleB.height + titleB.y0;
         m_wndUpLine->SetBounds(lineB, true);
     }
 }
@@ -452,16 +361,14 @@ void MsgBox::AddMiscFignya()
 
 void MsgBox::SetTitleBounds(PointBase<float> const& titleSz)
 {
-    if ((m_gameDataFlags & 1) != 0 &&IsDirectChild(this->m_wndTitle))
+    // RVA 0x518270
+    if ((m_gameDataFlags & 1) != 0 && IsDirectChild(m_wndTitle))
     {
         BoundsBase<float> titleB;
-        titleB.height = 0.0;
         titleB.width = titleSz.x;
-        titleB.x0 = (m_bounds.width - titleSz.x) * 0.5;
-        auto child = m_pattern->GetChildByName(m_aif.m_wndTitleName);
-        auto wnd = dynamic_cast<Wnd*>(child);
-        auto bounds = wnd->GetBounds();
-        titleB.y0 = bounds.y0;
+        titleB.height = titleSz.y;
+        titleB.x0 = (m_bounds.width - titleSz.x) * 0.5f;
+        titleB.y0 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndTitleName))->GetBounds().y0;
         m_wndTitle->SetBounds(titleB, true);
     }
 }
@@ -483,6 +390,7 @@ int MsgBox::CloseModal(int ret)
 
 PointBase<float> MsgBox::CalcMsgSize() const
 {
+    // RVA 0x517CB0 (mirror of CalcTitleSize)
     if ((m_gameDataFlags & 1) != 0)
     {
         if (!m_msg.empty())
@@ -490,7 +398,8 @@ PointBase<float> MsgBox::CalcMsgSize() const
             auto child = m_pattern->GetChildByName(m_aif.m_wndMsgName);
             auto wnd = dynamic_cast<Wnd*>(child);
             auto bounds = wnd->GetBounds();
-            return GetGfxServer()->MeasureText(m_msg, m_wndMsg->GetDefaultFont(), m_wndMsg->GetWrapMode(), bounds.width);
+            return GetGfxServer()->MeasureText(
+                m_msg, m_wndMsg->GetDefaultFont(), m_wndMsg->GetWrapMode(), bounds.width);
         }
     }
     return {};
@@ -498,98 +407,117 @@ PointBase<float> MsgBox::CalcMsgSize() const
 
 void MsgBox::ClearPattern()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x518E70: the last MsgBox alive releases the shared pattern window.
+    if (m_ref == 1)
+    {
+        delete m_pattern;
+        m_pattern = nullptr;
+    }
 }
 
 void MsgBox::RecalcLayot()
 {
-    if ((m_gameDataFlags & 1) != 0)
+    // RVA 0x517350
+    if ((m_gameDataFlags & 1) == 0)
     {
-	    for (auto child = GetFirstChild(); child;)
-	    {
-            auto next = child->GetNextSibling();
-            RemoveChild(child);
-            child = next;
-	    }
-        AddTitle();
-        AddMsg();
-        AddButtonsAndIdioticEmbosses();
-        AddLines();
-        AddMiscFignya();
-        auto titleSz = CalcTitleSize();
-        auto msgSz = CalcMsgSize();
-        auto buttonsSz = CalcSummaryButtonsSize();
-        auto idioticEmbossesSz = CalcSummaryIdioticEmbossesSize();
-        auto maxSizeX = msgSz.x;
-        if (msgSz.x <= titleSz.x)
-            maxSizeX = titleSz.x;
-        if (buttonsSz.x > maxSizeX)
-            maxSizeX = buttonsSz.x;
-        if (idioticEmbossesSz.x > maxSizeX)
-            maxSizeX = idioticEmbossesSz.x;
-        CalcSelfWidthByChildrensMaxWidth(maxSizeX);
-        SetTitleBounds(titleSz);
-        SetUpLineBounds();
-        SetMsgBounds(msgSz);
-        SetDownLineBounds();
-        SetButtonsBounds(buttonsSz);
-        SetIdioticEmbossesBounds(idioticEmbossesSz);
-        CalcSelfHeight();
-        m_bounds.x0 = (1024.0 - m_bounds.width) * 0.5;
-        m_bounds.y0 = (768.0 - m_bounds.height) * 0.5;
-        HackedExpandToScreen();
+        return;
     }
+    for (auto child = GetFirstChild(); child;)
+    {
+        auto next = child->GetNextSibling();
+        RemoveChild(child);
+        child = next;
+    }
+    AddTitle();
+    AddMsg();
+    AddButtonsAndIdioticEmbosses();
+    AddLines();
+    AddMiscFignya();
+
+    auto const titleSz = CalcTitleSize();
+    auto const msgSz = CalcMsgSize();
+    auto const buttonsSz = CalcSummaryButtonsSize();
+    auto const idioticEmbossesSz = CalcSummaryIdioticEmbossesSize();
+
+    float maxChildWidth = msgSz.x;
+    if (msgSz.x <= titleSz.x)
+    {
+        maxChildWidth = titleSz.x;
+    }
+    if (buttonsSz.x > maxChildWidth)
+    {
+        maxChildWidth = buttonsSz.x;
+    }
+    if (idioticEmbossesSz.x > maxChildWidth)
+    {
+        maxChildWidth = idioticEmbossesSz.x;
+    }
+    CalcSelfWidthByChildrensMaxWidth(maxChildWidth);
+
+    SetTitleBounds(titleSz);
+    SetUpLineBounds();
+    SetMsgBounds(msgSz);
+    SetDownLineBounds();
+    SetButtonsBounds(buttonsSz);
+    SetIdioticEmbossesBounds(idioticEmbossesSz);
+    CalcSelfHeight();
+
+    m_bounds.x0 = (1024.0f - m_bounds.width) * 0.5f;
+    m_bounds.y0 = (768.0f - m_bounds.height) * 0.5f;
+    HackedExpandToScreen();
 }
 
 void MsgBox::CenterOnScreen()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x518DE0
+    m_bounds.x0 = (1024.0f - m_bounds.width) * 0.5f;
+    m_bounds.y0 = (768.0f - m_bounds.height) * 0.5f;
 }
 
 void MsgBox::HackedExpandToScreen()
 {
-    //TODO: check this!!
+    // RVA 0x518F20: stretch the frame over the full 1024x768 screen and re-anchor
+    // every other child at its screen-space position.
     if ((m_gameDataFlags & 1) != 0)
     {
-        BoundsBase<float> result;
-        result.x0 = 0;
-        result.y0 = 0;
-        result.width = m_bounds.width;
-        result.height = m_bounds.height;
-        m_wndFrame->SetBounds(result, true);
+        BoundsBase<float> frameB;
+        frameB.x0 = 0.0f;
+        frameB.y0 = 0.0f;
+        frameB.width = m_bounds.width;
+        frameB.height = m_bounds.height;
+        m_wndFrame->SetBounds(frameB, true);
+
         for (auto child = GetFirstChild(); child; child = child->GetNextSibling())
         {
-	        if (child->IsKindOf(RT_CLASS_LOCAL(Wnd)))
-	        {
-		        if (child != m_wndBg)
-		        {
-                    auto wnd = dynamic_cast<Wnd*>(child);
-                    auto bounds = wnd->GetBounds();
-                    auto res = ToScreen(result);
-                    res.width = (bounds.width + res.x0) - res.x0;
-                    res.height = (bounds.height + res.y0) - res.y0;
-                    wnd->SetBounds(res, true);
-		        }
-	        }
+            if (child->IsKindOf(RT_CLASS_LOCAL(Wnd)) && child != m_wndBg)
+            {
+                auto wnd = dynamic_cast<Wnd*>(child);
+                auto bounds = wnd->GetBounds();
+                auto screenPt = ToScreen(PointBase<float>{bounds.x0, bounds.y0});
+                BoundsBase<float> newB;
+                newB.x0 = screenPt.x;
+                newB.y0 = screenPt.y;
+                newB.width = bounds.width;
+                newB.height = bounds.height;
+                wnd->SetBounds(newB, true);
+            }
         }
-        m_bounds.x0 = 0.0;
-        m_bounds.y0 = 0.0;
-        m_bounds.width = 1024.0;
-        m_bounds.height = 768.0;
+
+        m_bounds.x0 = 0.0f;
+        m_bounds.y0 = 0.0f;
+        m_bounds.width = 1024.0f;
+        m_bounds.height = 768.0f;
     }
 }
 
 void MsgBox::CalcSelfWidthByChildrensMaxWidth(float maxChildControlsWidth)
 {
-    //TODO: check this
+    // RVA 0x518230
     if ((m_gameDataFlags & 1) != 0)
     {
-        auto frameWidth = m_wndFrame->GetFrameWidth();
-        m_bounds.width = frameWidth
-            + frameWidth
-            + m_wndFrame->GetClientEdges()[2]
-            + maxChildControlsWidth
-            + m_wndFrame->GetClientEdges()[0];
+        float const frameWidth = m_wndFrame->GetFrameWidth();
+        m_bounds.width = frameWidth + frameWidth + m_wndFrame->GetClientEdges()[2] + maxChildControlsWidth +
+            m_wndFrame->GetClientEdges()[0];
     }
 }
 
@@ -597,9 +525,21 @@ void MsgBox::AddButtonsAndIdioticEmbosses()
 {
     if ((m_gameDataFlags & 1) != 0)
     {
-	    switch (m_msgBoxFlags & 3)
-	    {
-	    case 1: RETRUXX_NOT_IMPLEMENTED;
+        switch (m_msgBoxFlags & 3)
+        {
+        case 1:
+        {
+            if (m_buttons[0] && !m_buttons[0]->GetParent())
+            {
+                AddChild(m_buttons[0]);
+            }
+            if (m_idioticEmbosses[0] && !m_idioticEmbosses[0]->GetParent())
+            {
+                AddChild(m_idioticEmbosses[0]);
+            }
+            m_buttons[0]->SetText(GetStation()->InitializeStringUsingIds("^ok^"));
+            break;
+        }
         case 2:
         {
             if (m_buttons[0] && !m_buttons[0]->GetParent())
@@ -621,87 +561,109 @@ void MsgBox::AddButtonsAndIdioticEmbosses()
             m_buttons[0]->SetText(GetStation()->InitializeStringUsingIds("^yes^"));
             break;
         }
-	    case 3: RETRUXX_NOT_IMPLEMENTED;
-        default: return;
-	    }
+        case 3:
+        {
+            for (int i = 0; i < 3; ++i)
+            {
+                if (m_buttons[i] && !m_buttons[i]->GetParent())
+                {
+                    AddChild(m_buttons[i]);
+                }
+            }
+            for (int i = 0; i < 3; ++i)
+            {
+                if (m_idioticEmbosses[i] && !m_idioticEmbosses[i]->GetParent())
+                {
+                    AddChild(m_idioticEmbosses[i]);
+                }
+            }
+            m_buttons[0]->SetText(GetStation()->InitializeStringUsingIds("^yes^"));
+            break;
+        }
+        default:
+            return;
+        }
     }
 }
 
 void MsgBox::CalcSelfHeight()
 {
-    //TODO: check this!!!!
+    // RVA 0x518C80: height = bottom of the lowest non-frame/bg child plus the
+    // margin the pattern leaves below that same child.
     if ((m_gameDataFlags & 1) != 0)
     {
-        float max = 0.0;
-        float add = 0.0;
+        float maxBottom = 0.0f;
         CStr childName;
-	    for (auto child= GetFirstChild(); child; child = child->GetNextSibling())
-	    {
-		    if (child->IsKindOf(RT_CLASS_LOCAL(Wnd)))
-		    {
-			    if (child != m_wndFrame && child!= m_wndBg)
-			    {
-                    auto wnd = dynamic_cast<Wnd*>(child);
-                    auto bounds = wnd->GetBounds();
-                    if ((bounds.height + bounds.y0)> max)
-                    {
-                        max = bounds.height + bounds.y0;
-                        childName = wnd->GetName();
-                    }
-			    }
-		    }
-	    }
+        for (auto child = GetFirstChild(); child; child = child->GetNextSibling())
+        {
+            if (child->IsKindOf(RT_CLASS_LOCAL(Wnd)) && child != m_wndFrame && child != m_wndBg)
+            {
+                auto bounds = dynamic_cast<Wnd*>(child)->GetBounds();
+                if (bounds.height + bounds.y0 > maxBottom)
+                {
+                    maxBottom = bounds.height + bounds.y0;
+                    childName = child->GetName();
+                }
+            }
+        }
+        float add = 0.0f;
         if (!childName.empty())
         {
             auto wnd = dynamic_cast<Wnd*>(m_pattern->GetChildByName(childName));
-            auto patterBounds = m_pattern->GetBounds();
+            auto patternBounds = m_pattern->GetBounds();
             auto bounds = wnd->GetBounds();
-            add = patterBounds.height - (bounds.height + bounds.y0);
+            add = patternBounds.height - (bounds.height + bounds.y0);
         }
-        m_bounds.height = max + add;
+        m_bounds.height = add + maxBottom;
     }
 }
 
 int MsgBox::LoadPattern()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x518E30
+    if (m_pattern)
+    {
+        return 1;
+    }
+    m_pattern = dynamic_cast<m3d::ui::Wnd*>(m3d::g_Kernel->New("Wnd"));
+    if (m_pattern)
+    {
+        return help::CloneWndWithChildren(this, m_pattern);
+    }
+    return 0;
 }
 
 void MsgBox::SetButtonsBounds(PointBase<float> const& buttonsSz)
 {
-    // TODO: check this!!!!!!
+    // RVA 0x518760. NOTE: the shipped body reads several uninitialized stack slots
+    // for the button pitch (a genuine bug in the original). Reconstructed from the
+    // parts it *does* compute cleanly: a centered start X
+    // ((m_bounds.width - buttonsSz.x) * 0.5), the pattern gap between button_0 and
+    // button_1, and the per-button vertical offset from the down line - stepping
+    // by (buttonWidth + gap), consistent with CalcSummaryButtonsSize.
     if ((m_gameDataFlags & 1) != 0 && (m_msgBoxFlags & 3) != 0)
     {
-        CStr buttonName1 = m_aif.m_buttonName + CStr(1);
-        m3d::ui::Wnd* patternButton1 = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(buttonName1));
-        auto button1Bounds = patternButton1->GetBounds();
-
-        CStr buttonName0 = m_aif.m_buttonName + CStr(0);
-        m3d::ui::Wnd* patternButton0 = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(buttonName0));
-        auto button0Bounds = patternButton0->GetBounds();
+        auto patBtn1 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_buttonName + CStr(1)))->GetBounds();
+        auto patBtn0 = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_buttonName + CStr(0)))->GetBounds();
+        float const gap = patBtn1.x0 - (patBtn0.x0 + patBtn0.width);
 
         auto downLineBounds = m_wndDownLine->GetBounds();
+        auto patDownLine = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_aif.m_wndDownLineName))->GetBounds();
+
+        float x = (m_bounds.width - buttonsSz.x) * 0.5f;
         for (int i = 0; i < 3; ++i)
         {
             if (IsDirectChild(m_buttons[i]))
             {
                 auto btnBounds = m_buttons[i]->GetBounds();
-                btnBounds.x0 = button1Bounds.x0;
-                button1Bounds.x0 += downLineBounds.x0;
+                auto patBtn = dynamic_cast<Wnd*>(m_pattern->GetChildByName(m_buttons[i]->GetName()))->GetBounds();
+                float const deltaY = patBtn.y0 - (patDownLine.height + patDownLine.y0);
 
-                m3d::ui::Wnd* buttonWnd = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(m_buttons[i]->GetName()));
-                m3d::ui::Wnd* downLineNameWnd = static_cast<m3d::ui::Wnd*>(m_pattern->GetChildByName(m_aif.m_wndDownLineName));
-
-                auto actualBtnBounds = buttonWnd->GetBounds();
-                auto downLineNameBounds = downLineNameWnd->GetBounds();
-
-                auto y0 = actualBtnBounds.y0;
-                auto v22 = y0 - (float)(downLineNameBounds.height + downLineNameBounds.y0);
-
-                btnBounds.y0 = (downLineBounds.height + btnBounds.y0) + v22;
-
+                btnBounds.x0 = x;
+                btnBounds.y0 = downLineBounds.y0 + downLineBounds.height + deltaY;
                 m_buttons[i]->SetBounds(btnBounds, true);
 
+                x += btnBounds.width + gap;
             }
         }
     }
@@ -824,14 +786,24 @@ int MsgBox::GameDataSetup()
             m_gameDataFlags |= 1u;
             Clear();
         }
-        if ((m_gameDataFlags & 1) != 0)
-            return 1;
-        M3D_LOG_INFO("MsgBox: error - fail to init because of a bad resource");
-        return 0;
     }
+    // RVA 0x516630: the success/failure check runs unconditionally, not only when
+    // the (m_gameDataFlags & 2) == 0 branch was taken.
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        return 1;
+    }
+    M3D_LOG_INFO("MsgBox: error - fail to init because of a bad resource");
+    return 0;
 }
 
 int MsgBox::CreateFromPattern()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x518EE0: the first half of CreateMsgBox - clone the pattern tree and
+    // resolve the child controls.
+    if (Valid() || (m_gameDataFlags & 1) != 0 || !m_pattern || !help::CloneWndWithChildren(m_pattern, this))
+    {
+        return 0;
+    }
+    return GameDataSetup();
 }

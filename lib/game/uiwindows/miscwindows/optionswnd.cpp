@@ -139,14 +139,25 @@ OptionsWnd::OptionsWnd() :
 
 }
 
-OptionsWnd::OptionsWnd(OptionsWnd const&)
+OptionsWnd::OptionsWnd(OptionsWnd const&) :
+    m_tabButtons(4, nullptr),
+    m_optionWindows(4, nullptr)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped Clone() (RVA 0x4C2CE0) copy-constructs but carries none of
+    // the source's tab buttons / option windows across; a clone must be
+    // GameDataSetup()'d. The vectors are sized to 4 so the tab code can index them.
+}
+
+m3d::Object* OptionsWnd::Clone()
+{
+    // RVA 0x4C2CE0
+    return new OptionsWnd(*this);
 }
 
 void OptionsWnd::UpdateTabButtonsStates()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C3810
+    SelectTabButton(m_curTabId);
 }
 
 int OptionsWnd::SetCurTab(Tab tabId)
@@ -330,9 +341,22 @@ int OptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::
     return 0;
 }
 
-int OptionsWnd::GetOptionWindowGuiIdByTabId(Tab) const
+int OptionsWnd::GetOptionWindowGuiIdByTabId(Tab tabId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C3880
+    switch (tabId)
+    {
+    case TAB_VIDEO:
+        return 149;
+    case TAB_SOUND:
+        return 150;
+    case TAB_CONTROL:
+        return 151;
+    case TAB_GAME:
+        return 152;
+    default:
+        return -1;
+    }
 }
 
 int OptionsWnd::CanClose()
@@ -457,17 +481,20 @@ int OptionTabButton::SetupForTab(OptionsWnd::Tab tab)
 
 m3d::Object* OptionTabButton::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C2D10: allocates raw storage, runs the plain ButtonWnd ctor and
+    // patches the vtable - copies nothing from the source.
+    return new OptionTabButton(*this);
 }
 
 OptionTabButton::~OptionTabButton()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // No owned resources; ~ButtonWnd runs via the compiler-chained base dtor.
 }
 
 bool OptionTabButton::IsSelected() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C3FF0
+    return m_bSelected;
 }
 
 m3d::Class* OptionTabButton::GetBaseClass()
@@ -477,7 +504,8 @@ m3d::Class* OptionTabButton::GetBaseClass()
 
 OptionTabButton::OptionTabButton(OptionTabButton const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // The binary's Clone() runs the default ButtonWnd ctor + a vtable patch and
+    // copies nothing; m_bSelected / m_tabId keep their in-class defaults.
 }
 
 OptionTabButton::OptionTabButton()
@@ -486,5 +514,6 @@ OptionTabButton::OptionTabButton()
 
 void OptionTabButton::UpdatePane()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C4020
+    SetPane(m_bSelected ? m_aif.m_paneNameSel : m_aif.m_paneNameUnsel);
 }

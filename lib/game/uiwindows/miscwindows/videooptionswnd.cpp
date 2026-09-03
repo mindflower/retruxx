@@ -41,12 +41,15 @@ m3d::Class* VideoOptionsWnd::GetBaseClass()
 
 int VideoOptionsWnd::ApplyChanges(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Object* VideoOptionsWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA-less: allocates, runs the plain Wnd ctor + m_aif, copies nothing.
+    return new VideoOptionsWnd(*this);
 }
 
 m3d::Object* VideoOptionsWnd::CreateObject()
@@ -61,12 +64,13 @@ m3d::Class* VideoOptionsWnd::GetClass() const
 
 VideoOptionsWnd::~VideoOptionsWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C9B40: no owned resources (m_aif CStr + ~Wnd chain).
 }
 
-int VideoOptionsWnd::WaterQualityEnum2Val(WaterQuality) const
+int VideoOptionsWnd::WaterQualityEnum2Val(WaterQuality wq) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CDC80
+    return wq == WATER_QUALITY_NUM_WATER_QUALITIES ? 0 : m_waterQualities[wq];
 }
 
 void VideoOptionsWnd::OnCbBlumChange(m3d::AIParam const&)
@@ -144,9 +148,12 @@ void VideoOptionsWnd::UpdateAntialiasingControls(GraphicQuality graphicQuality)
     }
 }
 
-VideoOptionsWnd::ShadowSettings const& VideoOptionsWnd::GetShadowSettings(GraphicQuality) const
+VideoOptionsWnd::ShadowSettings const& VideoOptionsWnd::GetShadowSettings(GraphicQuality graphicQuality) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CD3D0
+    if (graphicQuality == GRAPHIC_QUALITY_MEDIUM) return m_shadowSettings[1];
+    if (graphicQuality == GRAPHIC_QUALITY_MAX) return m_shadowSettings[2];
+    return m_shadowSettings[0];
 }
 
 CStr VideoOptionsWnd::GraphicQuality2Str(GraphicQuality graphicQuality) const
@@ -178,29 +185,37 @@ void VideoOptionsWnd::ApplyGamma()
     }
 }
 
-int VideoOptionsWnd::GetWaterShaderVersionByWaterQualityVal(int) const
+int VideoOptionsWnd::GetWaterShaderVersionByWaterQualityVal(int waterQualityVal) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CDE00
+    if (waterQualityVal == 2) return 14;
+    if (waterQualityVal == 3) return 20;
+    return 11;
 }
 
 int VideoOptionsWnd::GetDefaultAntialiasingForGraphicQuality(GraphicQuality) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CD470
+    return m_antialiasings[0];
 }
 
 void VideoOptionsWnd::InitFarDistanceControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
-int VideoOptionsWnd::BlumQualityEnum2Val(BlumQuality) const
+int VideoOptionsWnd::BlumQualityEnum2Val(BlumQuality bq) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CD8F0
+    return bq == BLUM_QUALITY_NUM_BLUM_QUALITIES ? 0 : m_blumQualities[bq];
 }
 
 int VideoOptionsWnd::GetCurrentBlum() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CD5A0
+    return M3D_KERNEL->GetEngineCfg().m_g_postEffectBloom.GetI();
 }
 
 CStr VideoOptionsWnd::BlumQuality2Str(BlumQuality blumQuality) const
@@ -423,7 +438,9 @@ CStr VideoOptionsWnd::ShadowsQuality2Str(ShadowsQuality shadowsQuality) const
 
 m3d::ui::MbRetCodes VideoOptionsWnd::RunChangeWarningDlg()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateShadowsControls(GraphicQuality graphicQuality)
@@ -552,9 +569,10 @@ void VideoOptionsWnd::OnCbResolutionChange(m3d::AIParam const&)
     }
 }
 
-void VideoOptionsWnd::SetChanged(bool)
+void VideoOptionsWnd::SetChanged(bool bChanged)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CB1A0
+    m_bVideoOptionsChanged = bChanged;
 }
 
 void VideoOptionsWnd::InitShadowsControls()
@@ -574,7 +592,8 @@ void VideoOptionsWnd::InitShadowsControls()
 
 int VideoOptionsWnd::GetCurrentAntialiasing() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CD560
+    return M3D_KERNEL->GetEngineCfg().m_r_multiSamplesNum.GetI();
 }
 
 void VideoOptionsWnd::OnCbShadowsChange(m3d::AIParam const&)
@@ -630,9 +649,13 @@ void VideoOptionsWnd::OnBtnGammaNextClick(m3d::AIParam const&)
     }
 }
 
-VideoOptionsWnd::Filtration VideoOptionsWnd::FiltrationVal2Enum(int) const
+VideoOptionsWnd::Filtration VideoOptionsWnd::FiltrationVal2Enum(int val) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CDA70
+    for (int i = 0; i < FILTRATION_NUM_FILTRATIONS; ++i)
+        if (m_filtrations[i] == val)
+            return static_cast<Filtration>(i);
+    return FILTRATION_NUM_FILTRATIONS;
 }
 
 void VideoOptionsWnd::OnGraphicQualityDependendControlChanged()
@@ -653,7 +676,9 @@ void VideoOptionsWnd::OnGraphicQualityDependendControlChanged()
 
 void VideoOptionsWnd::ApplyFiltration()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateGammaControls()
@@ -731,24 +756,35 @@ void VideoOptionsWnd::OnCbFiltrationChange(m3d::AIParam const&)
         m_cbFiltrationBlocked = blocked - 1;
 }
 
-VideoOptionsWnd::Antialiasing VideoOptionsWnd::AntialiasingVal2Enum(int) const
+VideoOptionsWnd::Antialiasing VideoOptionsWnd::AntialiasingVal2Enum(int val) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CDB60
+    for (int i = 0; i < ANTIALIASING_NUM_ANTIALIASINGS; ++i)
+        if (m_antialiasings[i] == val)
+            return static_cast<Antialiasing>(i);
+    return ANTIALIASING_NUM_ANTIALIASINGS;
 }
 
 int VideoOptionsWnd::GetCurrentFiltration() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CD580
+    return M3D_KERNEL->GetEngineCfg().m_g_texturesFilter.GetI();
 }
 
-VideoOptionsWnd::Resolution VideoOptionsWnd::ScreenWH2Resolution(PointBase<int> const&) const
+VideoOptionsWnd::Resolution VideoOptionsWnd::ScreenWH2Resolution(PointBase<int> const& wh) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CB500
+    for (int i = 0; i < RESOLUTION_NUM_RESOLUTIONS; ++i)
+        if (m_screenWH[i].x == wh.x && m_screenWH[i].y == wh.y)
+            return static_cast<Resolution>(i);
+    return RESOLUTION_NUM_RESOLUTIONS;
 }
 
 float VideoOptionsWnd::GetDefaultGrassForGraphicQuality(GraphicQuality) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::OnBtnFarDistancePrevClick(m3d::AIParam const&)
@@ -759,9 +795,10 @@ void VideoOptionsWnd::OnBtnFarDistancePrevClick(m3d::AIParam const&)
     }
 }
 
-int VideoOptionsWnd::FiltrationEnum2Val(Filtration) const
+int VideoOptionsWnd::FiltrationEnum2Val(Filtration f) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CDA90
+    return f == FILTRATION_NUM_FILTRATIONS ? 1 : m_filtrations[f];
 }
 
 void VideoOptionsWnd::OnSliderGammaChange(m3d::AIParam const&)
@@ -946,12 +983,16 @@ VideoOptionsWnd::GraphicQuality VideoOptionsWnd::DetectCurrentGraphicQuality() c
 
 int VideoOptionsWnd::GetDefaultBlumForGraphicQuality(GraphicQuality) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateFarDistanceControls(GraphicQuality)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::InitGraphicQualityControls()
@@ -971,12 +1012,16 @@ void VideoOptionsWnd::InitGraphicQualityControls()
 
 void VideoOptionsWnd::ApplyResolution()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateGraphicQualityDependendControls(GraphicQuality)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::OnBtnGammaPrevClick(m3d::AIParam const&)
@@ -1011,7 +1056,9 @@ void VideoOptionsWnd::UpdateFarDistancePrevNextButtonsState()
 
 float VideoOptionsWnd::GetCurrentFarDistance() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateBlumControls(GraphicQuality graphicQuality)
@@ -1066,14 +1113,18 @@ void VideoOptionsWnd::OnBtnFarDistanceNextClick(m3d::AIParam const&)
     }
 }
 
-PointBase<int> VideoOptionsWnd::Resolution2ScreenWH(Resolution) const
+PointBase<int> VideoOptionsWnd::Resolution2ScreenWH(Resolution resolution) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CB4D0
+    if (resolution == RESOLUTION_NUM_RESOLUTIONS) return PointBase<int>{0, 0};
+    return m_screenWH[resolution];
 }
 
 void VideoOptionsWnd::ApplyWaterQuality()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::ValidateWaterQualityVal(int& waterQualityVal) const
@@ -1109,9 +1160,12 @@ VideoOptionsWnd::ShadowSettings VideoOptionsWnd::GetCurrentShadowSettings() cons
     };
 }
 
-float VideoOptionsWnd::GetDefaultFarDistanceForGraphicQuality(GraphicQuality) const
+float VideoOptionsWnd::GetDefaultFarDistanceForGraphicQuality(GraphicQuality graphicQuality) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CD370
+    if (graphicQuality == GRAPHIC_QUALITY_LOW) return 0.5f;
+    if (graphicQuality == GRAPHIC_QUALITY_MEDIUM || graphicQuality == GRAPHIC_QUALITY_MAX) return 1.0f;
+    return 0.0f;
 }
 
 void VideoOptionsWnd::UpdateGrassControls(GraphicQuality graphicQuality)
@@ -1160,17 +1214,23 @@ void VideoOptionsWnd::UpdateGrassControls(GraphicQuality graphicQuality)
 
 void VideoOptionsWnd::InitGammaControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::ApplyFarDistance()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::GetDefaultFiltrationForGraphicQuality(GraphicQuality) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateControls()
@@ -1205,7 +1265,8 @@ void VideoOptionsWnd::OnCbWaterQualityChange(m3d::AIParam const&)
 
 int VideoOptionsWnd::GetCurrentWaterQuality() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CD540
+    return M3D_KERNEL->GetEngineCfg().m_r_waterQuality.GetI();
 }
 
 CStr VideoOptionsWnd::ScreenWH2Str(PointBase<int> const& wh) const
@@ -1215,7 +1276,9 @@ CStr VideoOptionsWnd::ScreenWH2Str(PointBase<int> const& wh) const
 
 float VideoOptionsWnd::GetCurrentGrass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::UpdateGraphicQualityControls()
@@ -1257,7 +1320,9 @@ CStr VideoOptionsWnd::Filtration2Str(Filtration filtration) const
 
 void VideoOptionsWnd::SetDefaultParamsForGraphicQuality(GraphicQuality)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::InitWaterQualityControls()
@@ -1281,9 +1346,13 @@ void VideoOptionsWnd::InitWaterQualityControls()
     }
 }
 
-VideoOptionsWnd::BlumQuality VideoOptionsWnd::BlumQualityVal2Enum(int) const
+VideoOptionsWnd::BlumQuality VideoOptionsWnd::BlumQualityVal2Enum(int val) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CD8D0
+    for (int i = 0; i < BLUM_QUALITY_NUM_BLUM_QUALITIES; ++i)
+        if (m_blumQualities[i] == val)
+            return static_cast<BlumQuality>(i);
+    return BLUM_QUALITY_NUM_BLUM_QUALITIES;
 }
 
 void VideoOptionsWnd::InitResolutionControls()
@@ -1313,22 +1382,32 @@ void VideoOptionsWnd::InitResolutionControls()
 
 void VideoOptionsWnd::ApplyAntialiasing()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
-VideoOptionsWnd::WaterQuality VideoOptionsWnd::WaterQualityVal2Enum(int) const
+VideoOptionsWnd::WaterQuality VideoOptionsWnd::WaterQualityVal2Enum(int val) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CDC60
+    for (int i = 0; i < WATER_QUALITY_NUM_WATER_QUALITIES; ++i)
+        if (m_waterQualities[i] == val)
+            return static_cast<WaterQuality>(i);
+    return WATER_QUALITY_NUM_WATER_QUALITIES;
 }
 
 void VideoOptionsWnd::OnBtnApplyClick(m3d::AIParam const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 void VideoOptionsWnd::ApplyBlum()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr VideoOptionsWnd::WaterQuality2Str(WaterQuality waterQuality) const
@@ -1352,12 +1431,18 @@ bool VideoOptionsWnd::IsChanged() const
 
 void VideoOptionsWnd::ApplyGrass()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
-VideoOptionsWnd::GrassDistance VideoOptionsWnd::GrassDistanceVal2Enum(float) const
+VideoOptionsWnd::GrassDistance VideoOptionsWnd::GrassDistanceVal2Enum(float val) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CD5C0
+    for (int i = 0; i < GRASS_DISTANCE_NUM_GRASS_DISTANCES; ++i)
+        if (m_grassDistances[i] == val)
+            return static_cast<GrassDistance>(i);
+    return GRASS_DISTANCE_NUM_GRASS_DISTANCES;
 }
 
 int VideoOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
@@ -1496,17 +1581,22 @@ void VideoOptionsWnd::InitFiltrationControls()
 
 bool VideoOptionsWnd::IsWaterQualitySupported(WaterQuality)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
-float VideoOptionsWnd::GrassDistanceEnum2Val(GrassDistance) const
+float VideoOptionsWnd::GrassDistanceEnum2Val(GrassDistance gd) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CD5F0
+    return gd == GRASS_DISTANCE_NUM_GRASS_DISTANCES ? 0.0f : m_grassDistances[gd];
 }
 
 void VideoOptionsWnd::ApplyShadows()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 CStr VideoOptionsWnd::GrassDistance2Str(GrassDistance grassDistance) const
@@ -1552,9 +1642,10 @@ void VideoOptionsWnd::InitControls()
     InitBlumControls();
 }
 
-int VideoOptionsWnd::AntialiasingEnum2Val(Antialiasing) const
+int VideoOptionsWnd::AntialiasingEnum2Val(Antialiasing aa) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CDB80
+    return aa == ANTIALIASING_NUM_ANTIALIASINGS ? 0 : m_antialiasings[aa];
 }
 
 void VideoOptionsWnd::OnCbGraphicQualityChange(m3d::AIParam const&)
@@ -1588,9 +1679,12 @@ void VideoOptionsWnd::OnCbGraphicQualityChange(m3d::AIParam const&)
     }
 }
 
-int VideoOptionsWnd::GetWaterQualityValByWaterShaderVersion(int) const
+int VideoOptionsWnd::GetWaterQualityValByWaterShaderVersion(int waterShaderVersion) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4CDE30
+    if (waterShaderVersion == 11) return 1;
+    if (waterShaderVersion == 14) return 2;
+    return waterShaderVersion == 20 ? 3 : 1;
 }
 
 int VideoOptionsWnd::OnBeforeAddToWndStation()
@@ -1617,7 +1711,7 @@ VideoOptionsWnd::VideoOptionsWnd()
 
 VideoOptionsWnd::VideoOptionsWnd(VideoOptionsWnd const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA-less: default-constructs the Wnd base + m_aif and copies nothing.
 }
 
 void VideoOptionsWnd::UpdateWaterQualityControls(GraphicQuality graphicQuality)
@@ -1666,7 +1760,9 @@ void VideoOptionsWnd::UpdateWaterQualityControls(GraphicQuality graphicQuality)
 
 void VideoOptionsWnd::ApplyGraphicQuality()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // TODO: deep video-settings apply/update path (engine CVars + renderer
+    // reconfiguration). Left unported to keep the build green.
+        RETRUXX_NOT_IMPLEMENTED;
 }
 
 int VideoOptionsWnd::GetDefaultWaterQualityForGraphicQuality(GraphicQuality graphicQuality) const

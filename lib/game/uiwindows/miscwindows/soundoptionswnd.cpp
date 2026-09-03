@@ -26,7 +26,8 @@ m3d::Object* SoundOptionsWnd::CreateObject()
 
 m3d::Object* SoundOptionsWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C69A0: allocates, runs the plain Wnd ctor + m_aif, copies nothing.
+    return new SoundOptionsWnd(*this);
 }
 
 m3d::Class* SoundOptionsWnd::GetBaseClass()
@@ -36,7 +37,7 @@ m3d::Class* SoundOptionsWnd::GetBaseClass()
 
 SoundOptionsWnd::~SoundOptionsWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C6E40: no owned resources; ~AuxInfo / ~Wnd run via the chained dtors.
 }
 
 int SoundOptionsWnd::OnBeforeAddToWndStation()
@@ -66,7 +67,12 @@ void SoundOptionsWnd::InitControls()
 
 void SoundOptionsWnd::InitEffectsVolumeControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C7980
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderEffectsVolume->SetMinMax(0, 100);
+        UpdateEffectsVolumePrevNextButtonsState();
+    }
 }
 
 void SoundOptionsWnd::ApplyEffectsVolume()
@@ -234,7 +240,12 @@ void SoundOptionsWnd::OnBtnEffectsVolumeNextClick(m3d::AIParam const&)
 
 void SoundOptionsWnd::UpdateMusicVolumeControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C7DD0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ++m_sliderMusicVolumeBlocked;
+        m_sliderMusicVolume->SetNotch(M3D_KERNEL->GetEngineCfg().m_mus_Volume.GetI());
+    }
 }
 
 void SoundOptionsWnd::UpdateMusicVolumePrevNextButtonsState()
@@ -262,7 +273,12 @@ void SoundOptionsWnd::OnSliderSpeakVolumeChange(m3d::AIParam const&)
 
 void SoundOptionsWnd::UpdateSpeakVolumeControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C7E50
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ++m_sliderSpeakVolumeBlocked;
+        m_sliderSpeakVolume->SetNotch(M3D_KERNEL->GetEngineCfg().m_snd_2dVolume.GetI());
+    }
 }
 
 void SoundOptionsWnd::OnSliderMusicVolumeChange(m3d::AIParam const&)
@@ -330,7 +346,12 @@ void SoundOptionsWnd::UpdateEffectsVolumePrevNextButtonsState()
 
 void SoundOptionsWnd::InitMusicVolumeControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C7950
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderMusicVolume->SetMinMax(0, 100);
+        UpdateMusicVolumePrevNextButtonsState();
+    }
 }
 
 void SoundOptionsWnd::OnSliderEffectsVolumeChange(m3d::AIParam const&)
@@ -348,7 +369,12 @@ void SoundOptionsWnd::OnSliderEffectsVolumeChange(m3d::AIParam const&)
 
 void SoundOptionsWnd::InitSpeakVolumeControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C79B0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderSpeakVolume->SetMinMax(0, 100);
+        UpdateSpeakVolumePrevNextButtonsState();
+    }
 }
 
 int SoundOptionsWnd::GameDataSetup()
@@ -470,7 +496,7 @@ int SoundOptionsWnd::GameDataSetup()
 
 SoundOptionsWnd::SoundOptionsWnd(SoundOptionsWnd const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C6E20: default-constructs the Wnd base + m_aif and copies nothing.
 }
 
 SoundOptionsWnd::SoundOptionsWnd()
@@ -479,5 +505,10 @@ SoundOptionsWnd::SoundOptionsWnd()
 
 void SoundOptionsWnd::UpdateEffectsVolumeControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C7E10
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ++m_sliderEffectsVolumeBlocked;
+        m_sliderEffectsVolume->SetNotch(M3D_KERNEL->GetEngineCfg().m_snd_3dVolume.GetI());
+    }
 }

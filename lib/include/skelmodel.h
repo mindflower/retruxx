@@ -88,6 +88,10 @@ namespace m3d
 
     AnimAction* GetAnimActions();
 
+    // Pushes the shared per-frame lighting / fog / time constants into a shader,
+    // skipping any parameter the current technique does not use.
+    void SetShaderParams(m3d::rend::IEffect* pShader);
+
     class AnimatedModel
     {
         friend class AnimatedModelsServer;

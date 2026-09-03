@@ -1,5 +1,7 @@
 #include <ui/modelwnd.h>
 
+#include <cmath>
+
 #include "m3dapp.h"
 #include "core/kernel.h"
 #include "core/timer.h"
@@ -163,19 +165,131 @@ namespace m3d
                 GetGfxServer()->AddFlatAxialPane0(di, paneRect, clr, m_paneFlags, m_paneName, m_bgFlags);
             }
 
-            // TODO(RVA 0x7089C0): the 3D model preview. When m_Model is set and
-            // IRenderer::RenderToTexStart(m_renderTexture, true) succeeds the shipped
-            // code clears the target (M3DCLEAR_CZ), sets one white directional light,
-            // pushes a perspective projection (cot(PI/8) on _11/_22, near/far ~1.001),
-            // advances m_Animation by (curTimeUnscaled - m_LastTimeCalled) and calls
-            // m_Model->Update(m_Animation, false, &m_cfg), clamps the skin index
-            // against m_Model->m_loadSkins / m_Skins, composes
-            // scale * quat(m_Rotation) * translate(m_Translation) and calls
-            // m_Model->Render(matr, m_Animation, m_cfg, skinNum), pops the render
-            // state and blits m_renderTexture into clientB via
-            // GfxServer::AddImagedRectGeneral with aspect-corrected UVs. Left unported:
-            // it inlines a dozen unnamed IRenderer state calls plus a full CMatrix
-            // multiply chain. The 2D parts above keep the window drawing.
+            // The 3D model preview: render the animated model into m_renderTexture
+            // and blit it back over the client rect.
+            if (!m_Model || !M3D_RENDERER->RenderToTexStart(m_renderTexture, true))
+            {
+                return 1;
+            }
+
+            M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, 0);
+
+            // One directional light aimed down (-1, -1, -1). NOTE: the shipped code
+            // leaves the light's colour fields uninitialised; only these are set.
+            CVector const lightDir(-1.0f, -1.0f, -1.0f);
+            rend::LightSource light;
+            light.m_type = rend::M3DLIGHT_DIRECTIONAL;
+            light.m_origin = lightDir;
+            light.m_direction = lightDir;
+            light.m_range = 1000.0f;
+            M3D_RENDERER->LightSet(0, light);
+            M3D_RENDERER->SetLighting(true, false);
+            M3D_RENDERER->LightEnable(0, 1);
+
+            // 45-degree vertical FOV, square aspect, near/far planes at 1 and ~1000.
+            CMatrix matProj;
+            matProj.zero();
+            float const projScale = static_cast<float>(1.0 / std::tan(0.3926990926265717));  // cot(PI/8)
+            matProj._11 = projScale;
+            matProj._22 = projScale;
+            matProj._33 = 1.001001f;
+            matProj._34 = 1.0f;
+            matProj._43 = -1.001001f;
+            M3D_RENDERER->MatPushProj();
+            M3D_RENDERER->MatSetProj(matProj);
+
+            CMatrix world;
+            world.identity();
+            M3D_RENDERER->MatSet(world);
+
+            // Isolate the preview from the scene's render state; each of these is
+            // undone by the matching Pop* after the model is drawn.
+            M3D_RENDERER->PushFog(false);
+            M3D_RENDERER->PushZbState(rend::ZB_ENABLE);
+            M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
+            M3D_RENDERER->SetAlphaTest(1);
+            M3D_RENDERER->PushBlend(rend::BM_NONE);
+            for (int stage = 0; stage < 8; ++stage)
+            {
+                M3D_RENDERER->TgDisable(stage);
+            }
+
+            // Advance the animation by the unscaled wall-clock delta since last paint.
+            unsigned const nowUnscaled = m3d::g_Kernel->GetTimer().GetCurTimeUnscaled();
+            m_Animation->MoveFrame(nowUnscaled - m_LastTimeCalled);
+            m_LastTimeCalled = nowUnscaled;
+            m_Model->Update(m_Animation, false, &m_cfg);
+
+            // Resolve the requested skin against what the model actually has loaded.
+            int skinNum = static_cast<int>(m_SkinNum);
+            LoadSkins const& loaded = m_Model->GetLoadedSkins();
+            if (!loaded.loadAllSkins)
+            {
+                auto const& loadSkins = loaded.loadSkins;
+                if (!loadSkins.empty() && loadSkins.find(skinNum) == loadSkins.end())
+                {
+                    skinNum = *loadSkins.begin();
+                }
+            }
+            else
+            {
+                int const lastSkin = static_cast<int>(m_Model->GetNumSkins()) - 1;
+                if (static_cast<int>(m_SkinNum) < 0)
+                {
+                    m_SkinNum = 0;
+                    skinNum = 0;
+                }
+                if (static_cast<int>(m_SkinNum) > lastSkin)
+                {
+                    skinNum = lastSkin;
+                }
+            }
+
+            // Model transform, applied left to right to a row vector:
+            //   yaw(180) * scale(m_Scale) * quat(m_Rotation) * translate(m_Translation)
+            CMatrix flipY;
+            flipY.identity();
+            flipY._11 = -1.0f;  // cos(PI)
+            flipY._33 = -1.0f;
+
+            CMatrix scale;
+            scale.identity();
+            scale._11 = m_Scale.x;
+            scale._22 = m_Scale.y;
+            scale._33 = m_Scale.z;
+
+            CMatrix translate;
+            translate.identity();
+            translate._41 = m_Translation.x;
+            translate._42 = m_Translation.y;
+            translate._43 = m_Translation.z;
+
+            CMatrix const modelMatr = flipY * scale * m_Rotation.ToMatrix() * translate;
+            m_Model->Render(modelMatr, m_Animation, m_cfg, static_cast<unsigned>(skinNum));
+
+            M3D_RENDERER->PopZbState();
+            M3D_RENDERER->PopFog();
+            M3D_RENDERER->MatPopProj();
+            M3D_RENDERER->PopCull();
+            M3D_RENDERER->PopBlend();
+            M3D_RENDERER->RenderToTexFinish();
+
+            if (m_renderTexture.IsValid())
+            {
+                // Centre the square render target inside the client rect.
+                float u0 = 0.0f;
+                float v0 = 0.0f;
+                if (clientB.width <= clientB.height)
+                {
+                    u0 = (1.0f - clientB.width / clientB.height) * 0.5f;
+                }
+                else
+                {
+                    v0 = (1.0f - clientB.height / clientB.width) * 0.5f;
+                }
+                GetGfxServer()->AddImagedRectGeneral(
+                    di, clientB, m_curClr, m_renderTexture, u0, v0, 1.0f - u0, 1.0f - v0);
+            }
             return 1;
         }
 

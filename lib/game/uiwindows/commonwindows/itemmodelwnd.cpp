@@ -1,5 +1,7 @@
 #include "itemmodelwnd.h"
 
+#include <cmath>
+
 #include "m3dapp.h"
 #include "core/kernel.h"
 #include "core/log.h"
@@ -247,10 +249,53 @@ int ItemModelWnd::OnAfterRemoveFromWndStation()
 
 void ItemModelWnd::UpdateCamera()
 {
-    // TODO: rebuild the view matrix from m_rotationAngle + the (autosize/default)
-    // translation, then feed m_Rotation / m_Translation. The shipped code inlines a
-    // CMatrix x-rot * y-rot * translate chain and Quaternion::FromMatrix.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x514F60
+    if (!IsValid())
+    {
+        return;
+    }
+    if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+    {
+        return;
+    }
+
+    CVector translation;
+    if (m_bAutosized)
+    {
+        CalcAutosizeTranslation(translation);
+    }
+    else
+    {
+        translation = m_defaultTranslation;
+    }
+
+    // Rotation about the X axis by m_rotationAngle.x.
+    CMatrix rotX;
+    rotX.identity();
+    float const cx = std::cos(m_rotationAngle.x);
+    float const sx = std::sin(m_rotationAngle.x);
+    rotX._22 = cx;
+    rotX._23 = sx;
+    rotX._32 = -sx;
+    rotX._33 = cx;
+
+    // Rotation about the Y axis by m_rotationAngle.y.
+    CMatrix rotY;
+    rotY.identity();
+    float const cy = std::cos(m_rotationAngle.y);
+    float const sy = std::sin(m_rotationAngle.y);
+    rotY._11 = cy;
+    rotY._13 = -sy;
+    rotY._31 = sy;
+    rotY._33 = cy;
+
+    // The shipped code composes res = (rotX * rotY) * translate(translation) and
+    // then splits res back into m_Rotation / m_Translation. rotX * rotY is a pure
+    // rotation, so the trailing translate leaves the 3x3 (hence the quaternion)
+    // untouched and simply copies translation into the 4th row.
+    CMatrix const rot = rotX * rotY;
+    m_Rotation.FromMatrix(rot);
+    m_Translation = translation;
 }
 
 bool ItemModelWnd::IsDisabled() const
@@ -305,44 +350,35 @@ void ItemModelWnd::SetRotationByHandMode(bool bState)
 
 void ItemModelWnd::CalcAutosizeTranslation(CVector& translation) const
 {
-    // TODO: check and refactor this
-    if (IsValid())
+    // RVA 0x5157E0: frame the model in front of the camera from its bounding box.
+    if (!IsValid())
     {
-        auto v3 = m_Model->m_box.m_box[1];
-        auto v4 = m_Model->m_box.m_box[3];
-        auto v5 = m_Model->m_box.m_box[0];
-        auto v6 = (float)((float)(v4 - v5) * 0.5) + v5;
-        auto v7 = m_Model->m_box.m_box[4];
-        auto v8 = (float)((float)(v7 - v3) * 0.5) + v3;
-        auto v9 = m_Model->m_box.m_box[5];
-
-        CVector center;
-        center.z = (float)((float)(v9 - m_Model->m_box.m_box[2]) * 0.5) + m_Model->m_box.m_box[2];
-        auto v10 = v7 - v3;
-        auto v11 = v9 - m_Model->m_box.m_box[2];
-        auto v12 = v4 - v5;
-
-        CVector itemSize;
-        itemSize.x = v12;
-        itemSize.y = v10;
-        itemSize.z = v11;
-        auto p_y = (CVector*)&itemSize.y;
-        if (v10 <= v11)
-            p_y = (CVector*)&itemSize.z;
-        if (p_y->x <= v12)
-            p_y = &itemSize;
-        auto x = p_y->x;
-        auto p_itemSize = &itemSize;
-        if (v12 <= v11)
-            p_itemSize = (CVector*)&itemSize.z;
-        auto v16 = 3.0;
-        if (v10 <= p_itemSize->x)
-            v16 = 2.2;
-        auto v17 = (float)(0.0 - center.z) + (float)((float)(v16 * x) + (float)(2.5 / x));
-        translation.x = 0.0 - v6;
-        translation.y = (float)(0.0 - v8) + (float)(v10 * 0.1);
-        translation.z = v17;
+        return;
     }
+
+    // m_box.m_box layout: [minX, minY, minZ, maxX, maxY, maxZ].
+    float const* const box = m_Model->m_box.m_box;
+    float const centerX = (box[3] - box[0]) * 0.5f + box[0];
+    float const centerY = (box[4] - box[1]) * 0.5f + box[1];
+    float const centerZ = (box[5] - box[2]) * 0.5f + box[2];
+    float const sizeX = box[3] - box[0];
+    float const sizeY = box[4] - box[1];
+    float const sizeZ = box[5] - box[2];
+
+    // Largest of the three box dimensions.
+    float maxDim = (sizeY <= sizeZ) ? sizeZ : sizeY;
+    if (maxDim <= sizeX)
+    {
+        maxDim = sizeX;
+    }
+
+    // Pull the model further back (3.0) unless it is no taller than it is wide or
+    // deep, in which case a tighter 2.2 is enough.
+    float const depthScale = (sizeY <= ((sizeX <= sizeZ) ? sizeZ : sizeX)) ? 2.2f : 3.0f;
+
+    translation.x = -centerX;
+    translation.y = -centerY + sizeY * 0.1f;
+    translation.z = -centerZ + (depthScale * maxDim + 2.5f / maxDim);
 }
 
 int ItemModelWnd::OnBeforeAddToWndStation()
@@ -369,11 +405,14 @@ int ItemModelWnd::OnBeforeAddToWndStation()
     return Wnd::OnBeforeAddToWndStation();
 }
 
-int ItemModelWnd::GameDataUpdate(void*, int)
+int ItemModelWnd::GameDataUpdate(void* data, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x514EE0
+    if (dataType == 89)
+    {
+        OnNewFrame();
+    }
+    return 1;
 }
 
 int ItemModelWnd::GameDataClear(bool beforeContinuousLevel)

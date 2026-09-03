@@ -19,9 +19,14 @@ m3d::Class* ControlOptionsWnd::GetBaseClass()
     return RT_CLASS_LOCAL(Wnd);
 }
 
-int ControlOptionsWnd::ApplyChanges(bool)
+int ControlOptionsWnd::ApplyChanges(bool bForce)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0FA0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        return m_wndKeyBindings->ApplyChanges(bForce);
+    }
+    return 1;
 }
 
 m3d::Class* ControlOptionsWnd::GetClass() const
@@ -36,32 +41,42 @@ m3d::Object* ControlOptionsWnd::CreateObject()
 
 ControlOptionsWnd::~ControlOptionsWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // No explicit body in the shipped build; ~ref_ptr / ~AuxInfo / ~Wnd chain.
 }
 
 m3d::Object* ControlOptionsWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4AFFF0: allocates, runs the plain Wnd ctor + m_aif, copies nothing.
+    return new ControlOptionsWnd(*this);
 }
 
 void ControlOptionsWnd::OnCheckMouseFlipYClick(m3d::AIParam const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0D10
+    ApplyMouseFlipY();
 }
 
 void ControlOptionsWnd::OnCheckMouseFlipXClick(m3d::AIParam const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0D40
+    ApplyMouseFlipX();
 }
 
 void ControlOptionsWnd::UpdateControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0D90
+    UpdateMouseSensitivityControls();
+    UpdateMouseFlipYControls();
+    UpdateMouseFlipXControls();
 }
 
 void ControlOptionsWnd::UpdateMouseFlipYControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0EA0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_checkMouseFlipY->SetCheck(M3D_APP->IsMouseYAxisFlipped());
+    }
 }
 
 void ControlOptionsWnd::InitMouseSensitivityControls()
@@ -77,32 +92,45 @@ void ControlOptionsWnd::InitMouseSensitivityControls()
 
 void ControlOptionsWnd::UpdateMouseFlipXControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0ED0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_checkMouseFlipX->SetCheck(M3D_APP->IsMouseXAxisFlipped());
+    }
 }
 
 void ControlOptionsWnd::ApplyMouseFlipY()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0F40
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        M3D_APP->SetMouseYAxisFlipped(m_checkMouseFlipY->GetCheck() != 0);
+    }
 }
 
 void ControlOptionsWnd::ApplyMouseFlipX()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0F70
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        M3D_APP->SetMouseXAxisFlipped(m_checkMouseFlipX->GetCheck() != 0);
+    }
 }
 
 void ControlOptionsWnd::InitMouseFlipXControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0B90: empty in the shipped build.
 }
 
 void ControlOptionsWnd::InitMouseFlipYControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0B80: empty in the shipped build.
 }
 
 ControlOptionsWnd::ControlOptionsWnd(ControlOptionsWnd const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA-less: default-constructs the Wnd base + m_aif + m_wndKeyBindings and
+    // copies nothing from the source.
 }
 
 ControlOptionsWnd::ControlOptionsWnd()
@@ -111,7 +139,11 @@ ControlOptionsWnd::ControlOptionsWnd()
 
 void ControlOptionsWnd::OnBtnMouseSensitivityNextClick(m3d::AIParam const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0CE0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderMouseSensitivity->SetNotch(m_sliderMouseSensitivity->GetNotch() + 1);
+    }
 }
 
 int ControlOptionsWnd::GameDataSetup()
@@ -199,7 +231,11 @@ int ControlOptionsWnd::GameDataSetup()
 
 void ControlOptionsWnd::OnBtnMouseSensitivityPrevClick(m3d::AIParam const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0CB0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderMouseSensitivity->SetNotch(m_sliderMouseSensitivity->GetNotch() - 1);
+    }
 }
 
 int ControlOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
@@ -250,20 +286,28 @@ int ControlOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg
 
 void ControlOptionsWnd::UpdateMouseSensitivityControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0DE0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ++m_sliderMouseSensitivityBlocked;
+        m_sliderMouseSensitivity->SetNotch(static_cast<int>(M3D_APP->GetMouseSensitivity() * 100.0));
+    }
 }
 
 int ControlOptionsWnd::OnBeforeAddToWndStation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    //TODO: implement ControlOptionsWnd::OnBeforeAddToWndStation
-    //ControlOptionsWnd::UpdateControls(this);
+    // RVA 0x4B0D70
+    UpdateControls();
     return Wnd::OnBeforeAddToWndStation();
 }
 
 void ControlOptionsWnd::ApplyMouseSensitivity()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0F00
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        M3D_APP->SetMouseSensitivity(static_cast<float>(m_sliderMouseSensitivity->GetNotch() * 0.0099999998));
+    }
 }
 
 void ControlOptionsWnd::UpdateMouseSensitivityPrevNextButtonsState()
@@ -278,7 +322,8 @@ void ControlOptionsWnd::UpdateMouseSensitivityPrevNextButtonsState()
 
 void ControlOptionsWnd::InitControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B0AC0 (thunk)
+    InitMouseSensitivityControls();
 }
 
 void ControlOptionsWnd::OnSliderMouseSensitivityChange(m3d::AIParam const&)

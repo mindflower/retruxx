@@ -19,7 +19,7 @@ GameOptionsWnd::AuxInfo::AuxInfo()
 
 GameOptionsWnd::~GameOptionsWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B7DE0: no owned resources; ~AuxInfo / ~Wnd run via the chained dtors.
 }
 
 m3d::Class* GameOptionsWnd::GetBaseClass()
@@ -34,7 +34,8 @@ m3d::Object* GameOptionsWnd::CreateObject()
 
 m3d::Object* GameOptionsWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B7AC0: allocates, runs the plain Wnd ctor + m_aif, copies nothing.
+    return new GameOptionsWnd(*this);
 }
 
 m3d::Class* GameOptionsWnd::GetClass() const
@@ -44,7 +45,12 @@ m3d::Class* GameOptionsWnd::GetClass() const
 
 void GameOptionsWnd::InitNumRepliesControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B8480
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_sliderNumReplies->SetMinMax(0, 100);
+        UpdateNumRepliesPrevNextButtonsState();
+    }
 }
 
 void GameOptionsWnd::ApplyNumReplies()
@@ -62,7 +68,10 @@ void GameOptionsWnd::ApplyNumReplies()
 
 void GameOptionsWnd::UpdateControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B8780
+    UpdateAutoHelpControls();
+    UpdateNumRepliesControls();
+    UpdateGameDifficultyControls();
 }
 
 GameOptionsWnd::GameOptionsWnd()
@@ -71,12 +80,12 @@ GameOptionsWnd::GameOptionsWnd()
 
 GameOptionsWnd::GameOptionsWnd(GameOptionsWnd const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B7DC0: default-constructs the Wnd base + m_aif and copies nothing.
 }
 
 void GameOptionsWnd::InitAutoHelpControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B8470: empty in the shipped build.
 }
 
 void GameOptionsWnd::OnSliderNumRepliesChange(m3d::AIParam const&)
@@ -92,7 +101,8 @@ void GameOptionsWnd::OnSliderNumRepliesChange(m3d::AIParam const&)
 
 void GameOptionsWnd::OnCheckAutoHelpClick(m3d::AIParam const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B8660 (thunk)
+    ApplyAutoHelp();
 }
 
 int GameOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
@@ -160,7 +170,21 @@ void GameOptionsWnd::UpdateNumRepliesControls()
 
 void GameOptionsWnd::ApplyGameDifficulty()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B8BB0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto const sel = m_cbGameDifficulty->GetCurSel();
+        if (sel != -1)
+        {
+            int const level = m_cbGameDifficulty->GetItemData(sel);
+            auto profile = M3D_APP->GetProfileManager()->GetCurProfile();
+            if (profile)
+            {
+                m3d::AIParam const param{level};
+                profile->SetParam(PP_DIFFICULTY_LEVEL, param);
+            }
+        }
+    }
 }
 
 void GameOptionsWnd::UpdateNumRepliesPrevNextButtonsState()
@@ -284,11 +308,14 @@ int GameOptionsWnd::GameDataSetup()
             M3D_LOG_INFO("Get control error: control " + m_aif.m_cbGameDifficultyName + " is not found or incorrect type");
             res = 0;
         }
-        if ((this->m_gameDataFlags & 1) != 0)
-            return 1;
-        M3D_LOG_INFO("GameOptionsWnd: error - fail to init because of a bad resource");
-        return 0;
     }
+    // RVA 0x4B7E00: the success/failure check runs unconditionally.
+    if ((this->m_gameDataFlags & 1) != 0)
+    {
+        return 1;
+    }
+    M3D_LOG_INFO("GameOptionsWnd: error - fail to init because of a bad resource");
+    return 0;
 }
 
 void GameOptionsWnd::UpdateAutoHelpControls()
@@ -353,5 +380,7 @@ void GameOptionsWnd::ApplyAutoHelp()
 
 void GameOptionsWnd::InitControls()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B8440
+    InitNumRepliesControls();
+    InitGameDifficultyControls();
 }

@@ -122,6 +122,8 @@ public:
     public:
         class AuxInfo
         {
+            friend class BindKeysItem;
+
         public:
             AuxInfo();
 

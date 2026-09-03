@@ -51,9 +51,10 @@ namespace m3d
         {"ALLFRAMES", AT_ALL_FRAMES},
     };
 
-    AnimatedModel::Bone::Bone(Bone const&)
+    AnimatedModel::Bone::Bone(Bone const& other)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x70D190: a straight memcpy (Bone is trivially copyable).
+        memcpy(this, &other, sizeof(Bone));
     }
 
     AnimatedModel::Bone::Bone()
@@ -62,7 +63,11 @@ namespace m3d
 
     AnimatedModel::Animation::~Animation()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x70B570: frees the two per-animation arrays (new[]'d in LoadGAM).
+        delete[] m_hierChanges;
+        m_hierChanges = nullptr;
+        delete[] m_nodesPositions;
+        m_nodesPositions = nullptr;
     }
 
     AnimatedModel::Animation::Animation()
@@ -79,6 +84,8 @@ namespace m3d
 
     void AnimatedModel::Mesh::ComputeShadowsRelatedStuff()
     {
+        // TODO(RVA 0x70D310): welds duplicate vertices, builds m_trisWelded /
+        // m_vertsWelded and per-face normals used by the shadow-volume extruder.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -169,9 +176,14 @@ namespace m3d
         }
     }
 
-    DRAFT_HierGeom const* AnimatedModel::GetHierGeom(unsigned) const
+    DRAFT_HierGeom const* AnimatedModel::GetHierGeom(unsigned num) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x711C30
+        if (num < m_HierGeoms.size())
+        {
+            return &m_HierGeoms[num];
+        }
+        return nullptr;
     }
 
     AnimatedModel::AnimatedModel()
@@ -769,8 +781,13 @@ namespace m3d
         return true;
     }
 
-    bool AnimatedModel::LoadSAM(CStr const&, bool)
+    bool AnimatedModel::LoadSAM(CStr const& fileName, bool forceNextAnimation)
     {
+        // TODO(RVA 0x789E30): the SAM (uncompiled/source model) loader - ~860 lines
+        // of tagged-chunk parsing that feeds Convert(). GAM loading (LoadGAM) is the
+        // shipped path (EngineCfg m_loadFromGAM defaults true).
+        (void)fileName;
+        (void)forceNextAnimation;
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -786,6 +803,8 @@ namespace m3d
 
     void AnimatedModel::DeleteSkin(unsigned)
     {
+        // TODO(RVA 0x718CF0): releases every texture/shader handle in the skin,
+        // erases it from m_Skins, and rebinds Mesh::m_pModelSkins on every mesh.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -813,6 +832,8 @@ namespace m3d
 
     void AnimatedModel::UpdateTexturesFilter()
     {
+        // TODO(RVA 0x70DD60): walks m_textureFiles and re-applies the anisotropic
+        // filter / mip settings from EngineCfg to each live texture handle.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -826,9 +847,9 @@ namespace m3d
         return m_Skins.size();
     }
     retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial>>& AnimatedModel::GetSkin(
-        unsigned int)
+        unsigned int n)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_Skins[n];
     }
 
     AnimatedModel::~AnimatedModel()
@@ -853,9 +874,18 @@ namespace m3d
         }
     }
 
-    rend::TexHandle AnimatedModel::GetTexHandle(unsigned, unsigned, unsigned) const
+    rend::TexHandle AnimatedModel::GetTexHandle(unsigned SkinNumber, unsigned MatNum, unsigned TexNum) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x70E650
+        if (SkinNumber < m_Skins.size())
+        {
+            auto const& skin = m_Skins[SkinNumber];
+            if (MatNum < skin.size() && TexNum < skin[MatNum].Textures.size())
+            {
+                return skin[MatNum].Textures[TexNum].Handle;
+            }
+        }
+        return rend::TexHandle();
     }
 
     bool AnimatedModel::Load(CStr const& FileName, bool bForceNextAnimation)
@@ -871,18 +901,28 @@ namespace m3d
         return m_MhGroups.size();
     }
 
-    int AnimatedModel::GetFrames(int, int) const
+    int AnimatedModel::GetFrames(int anim, int pol) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x70B5D0
+        int const remapped = m_animRemap[anim];
+        if (remapped >= 0 && remapped < m_header.m_numAnimations && pol)
+        {
+            return m_animations[remapped].m_numFrames - 1;
+        }
+        return 0;
     }
 
     void AnimatedModel::RenderNormals(CMatrix const&, AnimInfo*)
     {
+        // TODO(RVA 0x711020): debug draw of per-vertex normals as short line
+        // segments through the immediate-mode line renderer.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::AddSkin(unsigned)
     {
+        // TODO(RVA 0x718AE0): appends a deep copy of skin[CopyFrom] to m_Skins
+        // (references every texture handle) and rebinds Mesh::m_pModelSkins.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -909,6 +949,8 @@ namespace m3d
 
     int AnimatedModel::ChangeShader(CStr const&, unsigned, unsigned)
     {
+        // TODO(RVA 0x713F80): swaps a material's shader - ~280 lines of effect
+        // creation, parameter/sampler rebind and texture-slot reconciliation.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -917,9 +959,19 @@ namespace m3d
         return this->m_passable;
     }
 
-    void AnimatedModel::FromGroupVariants(Configuration&) const
+    void AnimatedModel::FromGroupVariants(Configuration& cfg) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F7E60: fold the per-group variant indices into a single mixed-radix
+        // cfg.m_num (radix = each group's variant count), clamped to m_cfgSize - 1.
+        unsigned acc = 0;
+        unsigned stride = 1;
+        for (int g = static_cast<int>(cfg.m_groupVariants.size()) - 1; g >= 0; --g)
+        {
+            acc += stride * cfg.m_groupVariants[g];
+            stride *= m_MhGroups[g].m_variants.size();
+        }
+        unsigned const maxNum = m_cfgSize - 1;
+        cfg.m_num = (acc <= maxNum) ? acc : maxNum;
     }
 
     void AnimatedModel::ReloadSkins(LoadSkins const& skinsToLoad)
@@ -979,55 +1031,137 @@ namespace m3d
 
     void AnimatedModel::RenderHierGeoms(CMatrix const&, AnimInfo*, unsigned)
     {
+        // TODO(RVA 0x70ED60): debug wireframe of the hierarchical collision geoms
+        // in animated bone space.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int AnimatedModel::ChangeTexture(CStr const&, unsigned, unsigned, unsigned)
+    int AnimatedModel::ChangeTexture(CStr const& name, unsigned SkinNumber, unsigned MatNum, unsigned TexNum)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x713ED0
+        DTextureInfo& tex = m_Skins[SkinNumber][MatNum].Textures[TexNum];
+        M3D_RENDERER->ReleaseTexture(tex.Handle);
+        SetTexture(name, tex.Type, tex.Handle);
+        tex.FileName = NameFromFileName(name).c_str();
+        return tex.Handle.IsValid();
     }
 
-    int AnimatedModel::Render(CMatrix const&, AnimInfo*, unsigned, bool)
+    int AnimatedModel::Render(CMatrix const& matT, AnimInfo* ai, unsigned SkinNum, bool setShaderParams)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x714EA0: draw every mesh of the model, no configuration filtering.
+        M3D_RENDERER->MatPush(matT);
+        for (unsigned i = 0; i < m_numMeshes; ++i)
+        {
+            Mesh& mesh = m_meshes[i];
+            if (mesh.m_numNode < 0)
+            {
+                continue;
+            }
+            rend::IEffect* shader = ApplyMaterial(mesh.GetMaterial(SkinNum));
+            if (setShaderParams)
+            {
+                SetShaderParams(shader);
+            }
+            RenderMesh(i, ai, shader);
+        }
+        M3D_RENDERER->MatPop(true);
+        return 1;
     }
 
-    int AnimatedModel::Render(CMatrix const&, AnimInfo*, Configuration const&, unsigned)
+    int AnimatedModel::Render(CMatrix const& matT, AnimInfo* ai, Configuration const& cfg, unsigned SkinNum)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x715070: draw only the meshes the configuration selected.
+        M3D_RENDERER->MatPush(matT);
+        for (Mesh* mesh : cfg.m_meshes)
+        {
+            if (mesh->m_numNode < 0)
+            {
+                continue;
+            }
+            DSurfaceMaterial& material = (mesh->m_MaterialNumber < 0) ? m_Skins[0][0] : mesh->GetMaterial(SkinNum);
+            rend::IEffect* shader = ApplyMaterial(material);
+            SetShaderParams(shader);
+            RenderMesh(mesh->meshId, ai, shader);
+        }
+        M3D_RENDERER->MatPop(true);
+        return 1;
     }
 
     int AnimatedModel::Render(
-        CMatrix const&,
-        AnimInfo*,
-        Configuration const&,
-        retruxx::vector<DSurfaceMaterial*, retruxx::allocator<DSurfaceMaterial*>> const&)
+        CMatrix const& matT,
+        AnimInfo* ai,
+        Configuration const& cfg,
+        retruxx::vector<DSurfaceMaterial*, retruxx::allocator<DSurfaceMaterial*>> const& MeshMaterials)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x714FA0: as above, but the caller supplies a per-mesh material
+        // override table (indexed by mesh id) that wins when it is not empty.
+        M3D_RENDERER->MatPush(matT);
+        for (Mesh* mesh : cfg.m_meshes)
+        {
+            unsigned const meshId = mesh->meshId;
+            if (mesh->m_numNode < 0)
+            {
+                continue;
+            }
+            DSurfaceMaterial* material;
+            if (!MeshMaterials.empty())
+            {
+                material = MeshMaterials[meshId];
+            }
+            else if (mesh->m_MaterialNumber < 0)
+            {
+                material = &m_Skins[0][0];
+            }
+            else
+            {
+                material = &mesh->GetMaterial(0);
+            }
+            rend::IEffect* shader = ApplyMaterial(*material);
+            SetShaderParams(shader);
+            RenderMesh(meshId, ai, shader);
+        }
+        M3D_RENDERER->MatPop(true);
+        return 1;
     }
 
-    int AnimatedModel::GetFps(int) const
+    int AnimatedModel::GetFps(int anim) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x76DB30
+        int const remapped = m_animRemap[anim];
+        if (remapped >= 0 && remapped < m_header.m_numAnimations)
+        {
+            return m_animations[remapped].m_fps;
+        }
+        return 0;
     }
 
-    void AnimatedModel::SetFps(int, short)
+    void AnimatedModel::SetFps(int anim, short fps)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x801D60
+        int const remapped = m_animRemap[anim];
+        if (remapped >= 0 && remapped < m_header.m_numAnimations)
+        {
+            m_animations[remapped].m_fps = fps;
+        }
     }
 
     void AnimatedModel::RenderLoadPoints(CMatrix const&, AnimInfo*, Configuration const&)
     {
+        // TODO(RVA 0x70E730): debug draw of load-point axes at their animated
+        // bone matrices.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    DSurfaceMaterial& AnimatedModel::GetMeshMaterial(unsigned, unsigned)
+    DSurfaceMaterial& AnimatedModel::GetMeshMaterial(unsigned MeshNum, unsigned SkinNumber)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B6510
+        return m_Skins[SkinNumber][m_meshes[MeshNum].m_MaterialNumber];
     }
 
     void AnimatedModel::AddTexture(unsigned, unsigned, CStr const&, DRAFT_TextureType, unsigned)
     {
+        // TODO(RVA 0x7171D0): appends a DTextureInfo to a material (loads the file,
+        // records UV set) and grows the shader's sampler binding.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -1233,7 +1367,8 @@ namespace m3d
 
     Aabb& AnimatedModel::GetAabb()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6ABF50
+        return m_box;
     }
 
     int AnimatedModel::Update(AnimInfo* ai, bool notFirstTime, Configuration* cfg)
@@ -1255,6 +1390,8 @@ namespace m3d
     {
         if (m_hasCubemap)
         {
+            // TODO(RVA 0x77F780): (re)binds the shared cubemap texture into every
+            // reflective material's sampler slot.
             RETRUXX_NOT_IMPLEMENTED;
         }
     }
@@ -1345,19 +1482,28 @@ namespace m3d
         return material.Shader.Handle;
     }
 
-    rend::IEffect* AnimatedModel::ApplyMaterial(unsigned)
+    rend::IEffect* AnimatedModel::ApplyMaterial(unsigned meshnumber)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x713E80
+        Mesh& mesh = m_meshes[meshnumber];
+        if (mesh.m_MaterialNumber < 0)
+        {
+            return ApplyMaterial(m_Skins[0][0]);
+        }
+        return ApplyMaterial(mesh.GetMaterial(0));
     }
 
     bool AnimatedModel::Save(CStr const&)
     {
+        // TODO(RVA 0x780180): the SAM writer - ~580 lines emitting the tagged
+        // bone/mesh/animation/material chunks. Editor-only path.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned AnimatedModel::GetNumBones() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CEE60
+        return m_header.m_numNodes;
     }
 
     void AnimatedModel::UpdateVertices(AnimInfo* ai, bool notFirstTime, Configuration* cfg)
@@ -1385,28 +1531,120 @@ namespace m3d
         }
     }
 
-    void AnimatedModel::RenderMesh(unsigned, AnimInfo*, rend::IEffect*)
+    void AnimatedModel::RenderMesh(unsigned cc, AnimInfo* ai, rend::IEffect* Shader)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x713C80: bind the mesh's vertex/index source, then draw it.
+        Mesh& mesh = m_meshes[cc];
+        unsigned baseVertex = 0;
+        bool bindIndices = true;
+
+        if (mesh.m_meshType == 1)
+        {
+            // Rigid mesh riding a single bone - draw it in that bone's animated space.
+            M3D_RENDERER->MatPushWorld();
+            M3D_RENDERER->MatSetWorld(ai->m_bonesAnim[mesh.m_numNode].m_curMatrix);
+            M3D_RENDERER->SetToStream0(mesh.m_VbPoolField);
+            baseVertex = mesh.m_VbPoolField.RealOffset;
+        }
+        else if (mesh.m_meshType == 2)
+        {
+            // Skinned mesh - push the CPU-transformed vertices through the shared
+            // streaming vertex buffer.
+            rend::VbHandle const vb = M3D_RENDERER->GetVbStreaming(mesh.m_VertexType);
+            int firstVertex = 0;
+            void* dest = M3D_RENDERER->LockVbStreaming(vb, mesh.m_numVertices, firstVertex, nullptr);
+            memcpy(dest, ai->m_meshesVerts[cc], mesh.m_numVertices * mesh.m_VertexTypeSize);
+            M3D_RENDERER->UnlockVb(vb);
+            M3D_RENDERER->SetToStream0(vb);
+            baseVertex = static_cast<unsigned>(firstVertex);
+        }
+        else if (mesh.m_meshType == 4)
+        {
+            M3D_RENDERER->SetToStream0(mesh.m_VbPoolField);
+            baseVertex = mesh.m_VbPoolField.RealOffset;
+        }
+        else
+        {
+            // Other mesh types reuse whatever stream and indices are already bound.
+            bindIndices = false;
+        }
+
+        if (bindIndices)
+        {
+            M3D_RENDERER->SetIndices(mesh.m_IbPoolField, static_cast<int>(baseVertex));
+        }
+
+        unsigned const numPrimitives = mesh.m_numDrawIndices / 3;
+        unsigned const startIndex = mesh.m_IbPoolField.RealOffset;
+        unsigned const numVertices = mesh.m_numVertices;
+        if (Shader)
+        {
+            M3D_RENDERER->DrawIndexedPrimitiveEffect(
+                rend::M3DPT_TRIANGLELIST, Shader, 0, numVertices, startIndex, numPrimitives);
+        }
+        else
+        {
+            M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST, 0, numVertices, startIndex, numPrimitives);
+        }
+
+        if (mesh.m_meshType == 1)
+        {
+            M3D_RENDERER->MatPopWorld();
+        }
+    }
+
+    void SetShaderParams(rend::IEffect* pShader)
+    {
+        // RVA 0x70D1F0
+        if (!pShader)
+        {
+            return;
+        }
+        if (pShader->IsParameterUsed(rend::IEffect::LightAmbient))
+        {
+            pShader->SetVector3(rend::IEffect::LightAmbient, CVector(0.5f, 0.5f, 0.5f));
+        }
+        if (pShader->IsParameterUsed(rend::IEffect::LightDiffuse))
+        {
+            pShader->SetVector3(rend::IEffect::LightDiffuse, CVector(0.7f, 0.7f, 0.7f));
+        }
+        if (pShader->IsParameterUsed(rend::IEffect::LightSpecular))
+        {
+            pShader->SetVector3(rend::IEffect::LightSpecular, CVector(1.0f, 1.0f, 1.0f));
+        }
+        if (pShader->IsParameterUsed(rend::IEffect::FogTerm))
+        {
+            pShader->SetVector3(rend::IEffect::FogTerm, CVector(1075.0f, 665.0f, 409.0f));
+        }
+        if (pShader->IsParameterUsed(rend::IEffect::Time_Linear))
+        {
+            pShader->SetFloat(
+                rend::IEffect::Time_Linear, static_cast<float>(g_Kernel->GetTimer().GetFrameStartTimeSec()));
+        }
     }
 
     void AnimatedModel::RenderCollisions(CMatrix const&, unsigned)
     {
+        // TODO(RVA 0x7122D0): debug wireframe of the DRAFT_Geom collision volumes.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     unsigned AnimatedModel::GetNumMaterials() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x712040
+        return m_Skins.empty() ? 0u : m_Skins[0].size();
     }
 
     unsigned AnimatedModel::GetNumHierGeoms() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80F1A0
+        return m_HierGeoms.size();
     }
 
     bool AnimatedModel::SaveGAM(CStr const&)
     {
+        // TODO(RVA 0x8C84E0): the GAM (compiled) writer - ~810 lines. Tool path;
+        // the runtime only ever loads GAM.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -1419,8 +1657,8 @@ namespace m3d
 
     void AnimatedModel::LoadSkin(unsigned)
     {
-        // TODO: implement AnimatedModel::LoadSkin
-        // RETRUXX_NOT_IMPLEMENTED;
+        // TODO(RVA 0x7146C0): (re)loads the deferred textures/shaders for one skin
+        // that ReloadSkins left unloaded. No-op for now (models load all skins).
     }
 
     void AnimatedModel::SetNextForAnimation(ActionType Action, int NextAction)
@@ -1448,7 +1686,18 @@ namespace m3d
 
     void AnimatedModel::CalculateCfgSize()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F7DD0: total configuration count = product of each mesh group's
+        // variant count.
+        if (m_MhGroups.empty())
+        {
+            m_cfgSize = 0;
+            return;
+        }
+        m_cfgSize = m_MhGroups[0].m_variants.size();
+        for (unsigned i = 1; i < m_MhGroups.size(); ++i)
+        {
+            m_cfgSize *= m_MhGroups[i].m_variants.size();
+        }
     }
 
     bool AnimatedModel::Convert(
@@ -1458,6 +1707,10 @@ namespace m3d
         retruxx::vector<DMesh, retruxx::allocator<DMesh>> const&,
         retruxx::vector<DAnimation, retruxx::allocator<DAnimation>> const&)
     {
+        // TODO(RVA 0x783D60): the ~1400-line DRAFT->runtime model compiler
+        // (bone sort/remap, mesh welding, influence packing, animation baking,
+        // geom/skin build). Only reached from LoadSAM/tools; LoadGAM produces the
+        // finished structures directly.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -1576,6 +1829,8 @@ namespace m3d
 
     void AnimatedModel::CreateVariants()
     {
+        // TODO(RVA 0x7F8650): rebuilds each mesh group's m_variants list by
+        // repeatedly calling MeshesGroup::GetNextVariant() until it stops yielding.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -1622,6 +1877,8 @@ namespace m3d
 
     void AnimatedModel::ReadMaterial(DSurfaceMaterial&, unsigned char*&, bool)
     {
+        // TODO(RVA 0x7866F0): deserializes one DSurfaceMaterial (shader name +
+        // params + texture list) from the SAM chunk cursor, advancing it. SAM path.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -1695,12 +1952,22 @@ namespace m3d
 
     void AnimatedModel::DrawBones(AnimInfo*)
     {
+        // TODO(RVA 0x7115E0): debug draw of the skeleton (a line per bone from
+        // parent joint to child joint in animated space).
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimatedModel::CheckConfigurations()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F7F00: stamp each mesh's groupId from the group it belongs to.
+        for (unsigned g = 0; g < m_MhGroups.size(); ++g)
+        {
+            auto const& group = m_MhGroups[g];
+            for (unsigned k = 0; k < group.MeshesId.size(); ++k)
+            {
+                m_meshes[group.MeshesId[k]].groupId = g;
+            }
+        }
     }
 
     CStr AnimatedModel::DefinePathToTexture(CStr const& fileName)
@@ -1720,9 +1987,16 @@ namespace m3d
         return path;
     }
 
-    bool AnimInfo::IsAnimation(ActionType)
+    bool AnimInfo::IsAnimation(ActionType action)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x70CBA0: true when the remapped animation exists and has >1 frame.
+        int const remapped = m_forModel->m_animRemap[action];
+        int frames = 0;
+        if (remapped >= 0 && remapped < m_forModel->m_header.m_numAnimations)
+        {
+            frames = m_forModel->m_animations[remapped].m_numFrames - 1;
+        }
+        return frames != 0;
     }
 
     void AnimInfo::CreateCopyMesh(
@@ -1737,12 +2011,15 @@ namespace m3d
         retruxx::vector<unsigned, retruxx::allocator<unsigned>>&,
         int*)
     {
+        // TODO(RVA 0x716D30): snapshots the current skinned mesh set into freshly
+        // allocated vert/index/matrix arrays (used by the shadow-volume builder).
         RETRUXX_NOT_IMPLEMENTED;
     }
 
     void AnimInfo::SetEmpty()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80EAE0
+        m_Empty = true;
     }
 
     void AnimInfo::InterpolateBones(int curUpdateFrame)
@@ -1930,9 +2207,10 @@ namespace m3d
         return 1;
     }
 
-    AnimatedModel::Mesh const& AnimInfo::GetMesh(unsigned) const
+    AnimatedModel::Mesh const& AnimInfo::GetMesh(unsigned MeshNum) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CEF10
+        return m_forModel->m_meshes[MeshNum];
     }
 
     void AnimInfo::CreateFor(AnimatedModel* am)
@@ -1983,9 +2261,10 @@ namespace m3d
         }
     }
 
-    void AnimInfo::SetBoneCurMatrix(unsigned, CMatrix const&)
+    void AnimInfo::SetBoneCurMatrix(unsigned j, CMatrix const& m)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80EAF0
+        m_bonesAnim[j].m_curMatrix = m;
     }
 
     CMatrix const& AnimInfo::GetCurrentLoadpointMatrix(int lpId) const
@@ -1996,9 +2275,36 @@ namespace m3d
             return this->m_bonesAnim[lpId].m_curMatrix;
     }
 
-    int AnimInfo::SetCurFrame(float)
+    int AnimInfo::SetCurFrame(float progress)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x70CBF0: map a 0..1 progress onto the current clip's frame index.
+        if (m_curAnimation)
+        {
+            float p = progress;
+            if (p < 0.0f)
+            {
+                p = 0.0f;
+            }
+            else if (p > 1.0f)
+            {
+                p = 1.0f;
+            }
+            int const fps = m_curAnimation->m_fps;
+            int const numFrames = m_curAnimation->m_numFrames;
+            int const t = static_cast<int>(static_cast<float>(fps * numFrames) * p);
+            int const maxFrame = numFrames - 2;
+            m_curAnimFrame = t / fps;
+            if (m_curAnimFrame < 0)
+            {
+                m_curAnimFrame = 0;
+            }
+            if (m_curAnimFrame > maxFrame)
+            {
+                m_curAnimFrame = maxFrame;
+            }
+            m_timeOutToNextFrame = fps - t % fps - 1;
+        }
+        return 1;
     }
 
     void AnimInfo::Release()
@@ -2025,9 +2331,20 @@ namespace m3d
         return m_stickToLastFrame;
     }
 
-    void AnimInfo::RemoveCopyMesh(void**&, int*&, unsigned short**&, int*&, CMatrix**&)
+    void
+        AnimInfo::RemoveCopyMesh(void**& verts, int*& numVerts, unsigned short**& indxs, int*& numIndxs, CMatrix**& mat)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x70A730: frees and nulls the arrays CreateCopyMesh handed out.
+        delete[] verts;
+        verts = nullptr;
+        delete[] numVerts;
+        numVerts = nullptr;
+        delete[] indxs;
+        indxs = nullptr;
+        delete[] numIndxs;
+        numIndxs = nullptr;
+        delete[] mat;
+        mat = nullptr;
     }
 
     bool AnimInfo::IsEmpty()
