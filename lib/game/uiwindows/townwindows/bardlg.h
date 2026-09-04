@@ -5,50 +5,44 @@ namespace ai
 {
     class Npc;
     class Bar;
-}
+}  // namespace ai
 
 class NpcList;
 
 class BarDlg : public ChildPanel
 {
 public:
-    class AuxInfo
+    int SetUpForBar(int barId);
+    ai::Bar* GetBar() const;
+
+    struct BarDlg::AuxInfo
     {
-        friend class BarDlg;
-
-    public:
+        /* 0x0000 */ CStr m_lstNPCsPatternName;
+        AuxInfo(BarDlg::AuxInfo const&);
         AuxInfo();
-
-    private:
-        CStr m_lstNPCsPatternName;
-    };
-
-public:
-    virtual m3d::Object * Clone();
-    ai::Bar * GetBar() const ;
-    static m3d::Object * CreateObject();
-    static m3d::Class * GetBaseClass();
-    int SetUpForBar(int);
-    virtual m3d::Class * GetClass() const ;
-    virtual ~BarDlg();
+    }; /* size: 0x000c */
 
 protected:
-    BarDlg(BarDlg const &);
-    BarDlg();
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int,m3d::AIParam const &);
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
+        /* 0xc8 */;
+    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
+    virtual int OnAfterAddToWndStation() override /* 0x00 */;
+    virtual int OnAfterRemoveFromWndStation() override /* 0x00 */;
+    int OnBeginConversation(ai::Npc* npc);
     void FullUpdate();
-    virtual int GameDataSetup();
-    virtual int GameDataClear(bool);
-    virtual int OnAfterRemoveFromWndStation();
-    int OnBeginConversation(ai::Npc *);
-    virtual int OnAfterAddToWndStation();
-    virtual int OnBeforeAddToWndStation();
+    /* 0x0224 */ BarDlg::AuxInfo m_aif;
+    /* 0x0230 */ NpcList* m_lstNPCs;
+    /* 0x0234 */ int m_barId;
+    BarDlg();
+    BarDlg(BarDlg const& rhs);
 
 public:
-    RT_CLASS_DECLARE(BarDlg);
-
-private:
-    AuxInfo m_aif;
-    NpcList *m_lstNPCs;
-    int m_barId;
-};
+    virtual ~BarDlg() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classBarDlg;
+}; /* size: 0x0238 */

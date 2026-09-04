@@ -8,54 +8,46 @@ namespace m3d
     {
         class TextBoxWnd;
     }
-}
+}  // namespace m3d
 
-class HistoryWnd :  public m3d::ui::Wnd
+class HistoryWnd : public m3d::ui::Wnd
 {
 public:
-    class AuxInfo
-    {
-        friend class HistoryWnd;
+    int AddRecord(CStr const& strTextId, m3d::AIParam const& time);
 
-    public:
+    struct AuxInfo
+    {
+        /* 0x0000 */ CStr m_txtName;
+        /* 0x000c */ unsigned int m_timeColor;
+        AuxInfo(HistoryWnd::AuxInfo const&);
         AuxInfo();
+    }; /* size: 0x0010 */
 
-    private:
-        CStr m_txtName;
-        unsigned int m_timeColor;
-    };
-
-    class Record
+    struct Record
     {
-        friend class HistoryWnd;
+        /* 0x0000 */ CStr m_strTextId;
+        /* 0x000c */ m3d::AIParam m_time;
+    }; /* size: 0x0028 */
 
-    private:
-        CStr m_strTextId;
-        m3d::AIParam m_time;
-    };
-
-public:
-    static m3d::Class * GetBaseClass();
-    static m3d::Object * CreateObject();
-    virtual m3d::Object * Clone();
-    int AddRecord(CStr const &,m3d::AIParam const &);
-    virtual m3d::Class * GetClass() const ;
-    virtual ~HistoryWnd();
+    using RecordVector = std::vector<HistoryWnd::Record, std::allocator<HistoryWnd::Record>>;
 
 protected:
-    virtual int GameDataSetup();
+    virtual int GameDataSetup() override /* 0x104 */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int GameDataSave(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode) override /* 0x110 */;
+    virtual int GameDataLoad(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode) override /* 0x114 */;
+    virtual int OnAfterAddToWndStation() override /* 0x6c */;
+    /* 0x0220 */ m3d::ui::TextBoxWnd* m_txt;
+    /* 0x0224 */ HistoryWnd::AuxInfo m_aif;
+    /* 0x0234 */ std::vector<HistoryWnd::Record, std::allocator<HistoryWnd::Record>> m_records;
     HistoryWnd();
-    HistoryWnd(HistoryWnd const &);
-    virtual int GameDataSave(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
-    virtual int OnAfterAddToWndStation();
-    virtual int GameDataLoad(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
-    virtual int GameDataClear(bool);
+    HistoryWnd(HistoryWnd const& rhs);
 
 public:
-    RT_CLASS_DECLARE(HistoryWnd);
-
-private:
-    m3d::ui::TextBoxWnd *m_txt;
-    HistoryWnd::AuxInfo m_aif;
-    std::vector<HistoryWnd::Record> m_records;
-};
+    virtual ~HistoryWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classHistoryWnd;
+}; /* size: 0x0244 */

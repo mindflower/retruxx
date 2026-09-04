@@ -93,7 +93,7 @@ namespace ai
 
 	CStr const& PrototypeInfo::GetParentPrototypeName() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return m_parentPrototypeName;
 	}
 
 	void PrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)

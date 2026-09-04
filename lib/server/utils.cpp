@@ -60,6 +60,21 @@ namespace ai
         }
     }
 
+    CStr StringVectorToStr(retruxx::vector<CStr> const& stringVector)
+    {
+        // The inverse of StrToStringVector: a single space-separated run.
+        CStr res;
+        for (size_t i = 0; i < stringVector.size(); ++i)
+        {
+            if (i != 0)
+            {
+                res += CStr(" ");
+            }
+            res += stringVector[i];
+        }
+        return res;
+    }
+
     CStr IntVectorToStr(retruxx::vector<int> const& intVector)
     {
         CStr res;

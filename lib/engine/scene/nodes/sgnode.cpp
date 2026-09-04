@@ -250,7 +250,8 @@ namespace m3d
 
     Aabb SgNode::GetAabb() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x234400
+        return m_boundingBox;
     }
 
     int SgNode::AddChild(Object* node)
@@ -296,7 +297,8 @@ namespace m3d
 
     TransparencyParams& SgNode::GetTransparencyParams()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x4F1390
+        return m_transparencyParams;
     }
 
     void SgNode::SetBoundingBoxDirty()

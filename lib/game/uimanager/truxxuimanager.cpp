@@ -260,7 +260,7 @@ namespace
 
 CStr TruxxUiManager::GetPathToDialogsFileGlobal() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_cvPathToDialogs.GetS();
 }
 
 QuestInfoManager* TruxxUiManager::GetQuestInfoManager() const
@@ -275,7 +275,7 @@ ref_ptr<m3d::ui::Wnd> TruxxUiManager::GetWindow(int wndId) const
 
 int TruxxUiManager::GetDefaultFloatPrecision() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_cvDefaultFloatPrecision.GetI();
 }
 
 MsgManager* TruxxUiManager::GetMsgManager() const
@@ -359,7 +359,7 @@ bool TruxxUiManager::IsHiddenByUser() const
 
 CStr TruxxUiManager::GetPathToDynamicDialogsFileGlobal() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_cvPathToDynamicDialogs.GetS();
 }
 
 bool TruxxUiManager::IsWindowVisibleAndNotAnimating(int) const
