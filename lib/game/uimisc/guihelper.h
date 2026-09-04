@@ -1,7 +1,11 @@
 #pragma once
 #include "skelmodel.h"
 #include "core/stringm3d.h"
+#include "math/point2d.h"
 #include "retruxx/common.h"
+#include "server/relationship.h"
+
+struct CVector;
 
 namespace m3d
 {
@@ -137,6 +141,27 @@ namespace help
     // True when the object `objId` is a VehiclePart or Gadget that is compatible
     // with the vehicle `vehicleId`.
     bool IsChildObjCompatibleWithVehicle(int objId, int vehicleId);
+
+    // Projects a world-space point into normalized ("relative") screen space,
+    // i.e. the same coordinate space m3d::ui::Wnd bounds live in. (ExMachina
+    // 1.02 NoCD RVA 0x154350.)
+    PointBase<float> GetRelScreenPtByWorldPos(CVector const& worldPos);
+
+    // Tolerance the local player has toward objId (RS_MAX when there is no
+    // local player, or objId does not resolve to a live object).
+    ai::eTolerance GetObjTolerance(int objId);
+
+    // Small dispatchers over the Gun / CompoundGun split: gun may be either
+    // kind (or null), and these forward to the matching accessor, returning
+    // a safe default (0 / false) for anything else.
+    bool CanGunFire(ai::Obj const* gun);
+    bool CanGunShotToSeenObj(ai::Obj const* gun);
+    bool IsGunWithCharging(ai::Obj const* gun);
+    unsigned int GetGunChargeSize(ai::Obj const* gun);
+    unsigned int GetGunShellsInCurrentCharge(ai::Obj const* gun);
+    unsigned int GetGunShellsInPool(ai::Obj const* gun);
+    float GetGunRechargingTime(ai::Obj const* gun);
+    float GetGunCurrentRechargingTime(ai::Obj const* gun);
 
     ai::Bar* GetBarWithBarmanForTown(ai::Town const*);
     ai::Bar* GetBarWithoutBarmanForTown(ai::Town const*);

@@ -2,6 +2,8 @@
 #include "healthindicatorinmaininterfacewnd.h"
 #include <core/log.h>
 #include <game/m3dgame.h>
+#include <i_event.h>
+#include "server/objects/base/complexphysicobj.h"
 #include "server/objects/physicbodies/vehiclepart.h"
 #include "server/objects/vehicle.h"
 
@@ -21,12 +23,12 @@ m3d::Object* DurabilityIndicatorInMainInterfaceWnd::CreateObject()
 
 int DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
-    // TODO: check this!!!
+    // RVA 0x11C2E0
     using namespace m3d::ui;
 
-    if (!patternWnd)
+    if (!patternWnd || !patternWnd->IsKindOf(&ImageWnd::m_classImageWnd))
     {
-        M3D_LOG_INFO("DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern error - null patternWnd");
+        M3D_LOG_INFO("DurabilityIndicatorInMainInterfaceWnd: error to create - invalid pattern wnd");
         return 0;
     }
     auto* parent = patternWnd->GetParent();
@@ -90,20 +92,21 @@ int DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patte
 
 void DurabilityIndicatorInMainInterfaceWnd::SetType(Type type, CStr const& partName)
 {
-    // TODO: generated code DurabilityIndicatorInMainInterfaceWnd::SetType
+    // RVA 0x11CE30
     m_partName = partName;
     m_type = type;
 
-    char const* namePtr = m_partName.c_str();  // Assuming c_str() method exists
+    char const* namePtr = m_partName.c_str();
     if ((CStr::my_strcmp(namePtr, "CABIN") == 0 || CStr::my_strcmp(namePtr, "BASKET") == 0) && type < TYPE_NUM_TYPES)
     {
-        FullUpdate(true);  // Assuming the '1' parameter is a bool for some update flag
+        FullUpdate(true);
     }
 }
 
 m3d::Object* DurabilityIndicatorInMainInterfaceWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x11BFE0
+    return new DurabilityIndicatorInMainInterfaceWnd(*this);
 }
 
 void DurabilityIndicatorInMainInterfaceWnd::SetVehicleId(int vehicleId)
@@ -139,7 +142,8 @@ void DurabilityIndicatorInMainInterfaceWnd::SetVehicleId(int vehicleId)
 
 DurabilityIndicatorInMainInterfaceWnd::~DurabilityIndicatorInMainInterfaceWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x11C240 - m_partName/m_strCabinDurability/m_strBasketDurability
+    // and the ImageWnd base clean up automatically.
 }
 
 m3d::Class* DurabilityIndicatorInMainInterfaceWnd::GetBaseClass()
@@ -179,16 +183,26 @@ unsigned DurabilityIndicatorInMainInterfaceWnd::GetColorByValue(float curVal, fl
     return 0xFF87E400;
 }
 
-int DurabilityIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int)
+int DurabilityIndicatorInMainInterfaceWnd::GameDataUpdate(void* data, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x11C6B0
+    if (dataType == 65)
+    {
+        OnVehiclePartChanged(data);
+    }
+    else if (dataType == 89 && m_vehicleId != -1)
+    {
+        FullUpdate(false);
+        return 1;
+    }
+    return 1;
 }
 
 int DurabilityIndicatorInMainInterfaceWnd::GameDataClear(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x11C690
+    SetVehicleId(-1);
+    return 1;
 }
 
 ai::Vehicle const* DurabilityIndicatorInMainInterfaceWnd::GetVehicle() const
@@ -206,24 +220,60 @@ DurabilityIndicatorInMainInterfaceWnd::DurabilityIndicatorInMainInterfaceWnd()
 }
 
 DurabilityIndicatorInMainInterfaceWnd::DurabilityIndicatorInMainInterfaceWnd(
-    DurabilityIndicatorInMainInterfaceWnd const&)
+    DurabilityIndicatorInMainInterfaceWnd const&) :
+    DurabilityIndicatorInMainInterfaceWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped copy ctor (RVA 0x11C1F0) default-constructs the base
+    // and resets m_partName/m_strCabinDurability/m_strBasketDurability to
+    // empty, but leaves m_vehiclePartId/m_vehicleId/m_type/m_prevCurVal/
+    // m_prevMaxVal uninitialized; delegating to the default ctor here avoids
+    // reading uninitialized ints while still copying nothing from the source.
 }
 
-void DurabilityIndicatorInMainInterfaceWnd::UpdateTooltip(float, float)
+void DurabilityIndicatorInMainInterfaceWnd::UpdateTooltip(float val, float maxVal)
 {
-    // TODO: implement DurabilityIndicatorInMainInterfaceWnd::UpdateTooltip
+    // RVA 0x11C840
+    if (m_partName != "CABIN" && m_partName != "BASKET")
+    {
+        CStr empty;
+        SetProperty(PROP_WND_TOOLTIP, &empty);
+        return;
+    }
+
+    CStr const& label = (m_partName == "CABIN") ? m_strCabinDurability : m_strBasketDurability;
+    CStr text = label + ": " + CStr(static_cast<int>(val)) + "/" + CStr(static_cast<int>(maxVal));
+    SetProperty(PROP_WND_TOOLTIP, &text);
 }
 
-void DurabilityIndicatorInMainInterfaceWnd::OnVehiclePartChanged(void*)
+void DurabilityIndicatorInMainInterfaceWnd::OnVehiclePartChanged(void* data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x11C710
+    if (!data)
+    {
+        return;
+    }
+    auto const* evt = static_cast<m3d::Event const*>(data);
+    if (m_vehicleId == evt->m_intEv[0] && CStr::my_strcmp(m_partName.c_str(), evt->m_strEv.c_str()) == 0)
+    {
+        if (ai::Vehicle const* vehicle = GetVehicle())
+        {
+            ai::VehiclePart const* part = vehicle->GetPartByName(m_partName);
+            m_vehiclePartId = part ? part->GetId() : -1;
+            FullUpdate(true);
+        }
+    }
 }
 
-void DurabilityIndicatorInMainInterfaceWnd::GetValue(float&, float&) const
+void DurabilityIndicatorInMainInterfaceWnd::GetValue(float& curVal, float& maxVal) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x11CE80
+    curVal = 0.0f;
+    maxVal = 0.0f;
+    if (ai::VehiclePart const* part = GetVehiclePart())
+    {
+        curVal = part->Durability().value().get();
+        maxVal = part->Durability().maxValue().get();
+    }
 }
 
 void DurabilityIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
@@ -252,7 +302,11 @@ void DurabilityIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
 
 void DurabilityIndicatorInMainInterfaceWnd::OnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x11C6F0
+    if (m_vehicleId != -1)
+    {
+        FullUpdate(false);
+    }
 }
 
 void DurabilityIndicatorInMainInterfaceWnd::UpdateColor(float curVal, float maxVal)

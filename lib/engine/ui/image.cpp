@@ -7,7 +7,7 @@ namespace m3d
     namespace ui
     {
         RT_CLASS_EXPORTS_BEGIN(ImageWnd)
-    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
 
         RT_CLASS_DEFINE(ImageWnd);
 
@@ -58,7 +58,7 @@ namespace m3d
 
         Object* ImageWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new ImageWnd(*this);
         }
 
         int ImageWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
@@ -129,9 +129,9 @@ namespace m3d
             m_paneFlags = 0;
         }
 
-        ImageWnd::ImageWnd(ImageWnd const&)
+        ImageWnd::ImageWnd(ImageWnd const& rhs) : m_textureName(rhs.m_textureName), m_texture(rhs.m_texture)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            M3D_RENDERER->ReferenceTexture(m_texture);
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

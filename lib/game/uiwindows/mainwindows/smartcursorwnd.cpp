@@ -10,12 +10,30 @@ RT_CLASS_DEFINE(SmartCursorWnd);
 
 SmartCursorWnd::AuxDrawInfo::AuxDrawInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x132D80 - m_tex already defaults to an invalid handle via TexHandle's own ctor.
+    m_sz = PointBase<float>{0.0f, 0.0f};
+    m_angle = 0.0f;
+    m_color = 0xFFFFFFFFu;
+    m_coord = PointBase<float>{0.0f, 0.0f};
 }
 
-void SmartCursorWnd::AuxDrawInfo::SetTexture(m3d::rend::TexHandle)
+SmartCursorWnd::AuxDrawInfo::AuxDrawInfo(SmartCursorWnd::AuxDrawInfo const& rhs) :
+    m_sz(rhs.m_sz),
+    m_angle(rhs.m_angle),
+    m_color(rhs.m_color),
+    m_coord(rhs.m_coord)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: not present in the decompiled binary (never instantiated there);
+    // reconstructed to mirror SetTexture's reference-counting semantics.
+    SetTexture(rhs.m_tex);
+}
+
+void SmartCursorWnd::AuxDrawInfo::SetTexture(m3d::rend::TexHandle tex)
+{
+    // RVA 0x132DD0
+    M3D_RENDERER->ReleaseTexture(m_tex);
+    m_tex = tex;
+    M3D_RENDERER->ReferenceTexture(m_tex);
 }
 
 m3d::rend::TexHandle SmartCursorWnd::AuxDrawInfo::GetTexture() const
@@ -25,17 +43,20 @@ m3d::rend::TexHandle SmartCursorWnd::AuxDrawInfo::GetTexture() const
 
 SmartCursorWnd::AuxDrawInfo::~AuxDrawInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x132DB0
+    M3D_RENDERER->ReleaseTexture(m_tex);
 }
 
 m3d::Object* SmartCursorWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x132870
+    return new SmartCursorWnd(*this);
 }
 
 m3d::Object* SmartCursorWnd::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1328E0
+    return new SmartCursorWnd;
 }
 
 m3d::Class* SmartCursorWnd::GetBaseClass()
@@ -45,7 +66,8 @@ m3d::Class* SmartCursorWnd::GetBaseClass()
 
 SmartCursorWnd::~SmartCursorWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1329C0
+    ClearDrawInfo();
 }
 
 m3d::Class* SmartCursorWnd::GetClass() const
@@ -53,16 +75,18 @@ m3d::Class* SmartCursorWnd::GetClass() const
     return RT_CLASS_LOCAL(SmartCursorWnd);
 }
 
-SmartCursorWnd::SmartCursorWnd(SmartCursorWnd const&)
+SmartCursorWnd::SmartCursorWnd(SmartCursorWnd const&) : SmartCursorWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // Matches the original: the copy ctor default-constructs the base and an
+    // empty draw-info vector; nothing is copied from the source.
 }
 
 SmartCursorWnd::SmartCursorWnd() = default;
 
 void SmartCursorWnd::OnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x132A30
+    ClearDrawInfo();
 }
 
 int SmartCursorWnd::OnPaint(m3d::ui::DrawInfo const& di)
@@ -91,17 +115,24 @@ int SmartCursorWnd::OnPaint(m3d::ui::DrawInfo const& di)
     return 1;
 }
 
-int SmartCursorWnd::GameDataUpdate(void*, int)
+int SmartCursorWnd::GameDataUpdate(void*, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x132A10
+    if (dataType == 89)
+    {
+        OnNewFrame();
+    }
+    return 1;
 }
 
 void SmartCursorWnd::ClearDrawInfo()
 {
-    // TODO: implement SmartCursorWnd::ClearDrawInfo
-    //  RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x132A40 - ~AuxDrawInfo() releases the texture reference.
+    for (auto* info : m_drawInfo)
+    {
+        delete info;
+    }
+    m_drawInfo.clear();
 }
 
 void SmartCursorWnd::DrawTexture(m3d::ui::DrawInfo const& di, AuxDrawInfo const* texInfo) const

@@ -2,6 +2,7 @@
 #include <math/matrix.h>
 #include <math/vector.h>
 #include <stdexcept>
+#include <cmath>
 
 #include "retruxx/common.h"
 
@@ -40,9 +41,27 @@ void Quaternion::Normalize()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void Quaternion::ToAxisAngle(CVector&, float&)
+void Quaternion::ToAxisAngle(CVector& axis, float& radians)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1FFA40
+    float const lSqr = ((x * x) + (y * y)) + (z * z);
+    if (std::fabs(lSqr) <= 0.0f)
+    {
+        radians = 0.0f;
+        axis.x = 1.0f;
+        axis.y = 0.0f;
+        axis.z = 0.0f;
+    }
+    else
+    {
+        double const halfAngle = std::acos(w);
+        radians = static_cast<float>(halfAngle + halfAngle);
+
+        double const invLen = 1.0 / std::sqrt(lSqr);
+        axis.x = static_cast<float>(invLen * x);
+        axis.y = static_cast<float>(invLen * y);
+        axis.z = static_cast<float>(invLen * z);
+    }
 }
 
 void Quaternion::fromYPR(float, float, float)

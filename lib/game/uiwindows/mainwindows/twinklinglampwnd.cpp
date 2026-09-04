@@ -1,5 +1,7 @@
 #include "twinklinglampwnd.h"
+#include <core/kernel.h>
 #include <core/log.h>
+#include <core/timer.h>
 
 RT_CLASS_EXPORTS_BEGIN(TwinklingLampWnd)
 RT_CLASS_EXPORTS_END;
@@ -13,12 +15,14 @@ void TwinklingLampWnd::SetValue(float value, float maxValue)
 
 m3d::Object* TwinklingLampWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x137010
+    return new TwinklingLampWnd(*this);
 }
 
-void TwinklingLampWnd::SetTwinklePeriod(unsigned)
+void TwinklingLampWnd::SetTwinklePeriod(unsigned period)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x137170
+    m_twinklePeriod = period;
 }
 
 m3d::Class* TwinklingLampWnd::GetBaseClass()
@@ -28,12 +32,12 @@ m3d::Class* TwinklingLampWnd::GetBaseClass()
 
 int TwinklingLampWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
-    // TODO: check this!!
+    // RVA 0x137190
     using namespace m3d::ui;
 
-    if (!patternWnd)
+    if (!patternWnd || !patternWnd->IsKindOf(&ImageWnd::m_classImageWnd))
     {
-        M3D_LOG_INFO("TwinklingLampWnd::CreateFromPattern error - null patternWnd");
+        M3D_LOG_INFO("TwinklingLampWnd: error to create - invalid pattern wnd");
         return 0;
     }
 
@@ -96,14 +100,15 @@ m3d::Object* TwinklingLampWnd::CreateObject()
     return new TwinklingLampWnd;
 }
 
-void TwinklingLampWnd::SetThreshold(float)
+void TwinklingLampWnd::SetThreshold(float threshold)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x137180
+    m_threshold = threshold;
 }
 
 TwinklingLampWnd::~TwinklingLampWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x137140 - the ImageWnd base cleans up automatically.
 }
 
 m3d::Class* TwinklingLampWnd::GetClass() const
@@ -111,9 +116,13 @@ m3d::Class* TwinklingLampWnd::GetClass() const
     return RT_CLASS_LOCAL(TwinklingLampWnd);
 }
 
-TwinklingLampWnd::TwinklingLampWnd(TwinklingLampWnd const&)
+TwinklingLampWnd::TwinklingLampWnd(TwinklingLampWnd const&) : TwinklingLampWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped copy ctor (RVA 0x137130) default-constructs the
+    // ImageWnd base only, leaving m_threshold/m_value/m_maxValue/
+    // m_twinklePeriod uninitialized; delegating to the default ctor here
+    // reproduces "nothing copied from source" without relying on garbage
+    // memory for those fields.
 }
 
 TwinklingLampWnd::TwinklingLampWnd()
@@ -163,15 +172,23 @@ void TwinklingLampWnd::UpdateLamp()
 
 bool TwinklingLampWnd::Visible() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x137560
+    return (m_style & 0x200) != 0;
 }
 
-void TwinklingLampWnd::Show(bool)
+void TwinklingLampWnd::Show(bool bShow)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x137540
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        ShowWindow(bShow);
+    }
 }
 
 void TwinklingLampWnd::Twinkle()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x137570
+    unsigned int const t = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+    bool const show = (t / m_twinklePeriod) & 1;
+    ShowWindow(show);
 }

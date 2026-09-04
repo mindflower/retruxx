@@ -16,6 +16,13 @@
 #include <server/objects/base/prototypemanager.h>
 #include <server/objects/player.h>
 #include <server/processmanager.h>
+#include <server/server.h>
+#include <server/statistic/statisticmanager.h>
+#include <server/statistic/intstatistic.h>
+#include <server/statistic/favoritestringstatistic.h>
+#include <server/statistic/intintratiostatistic.h>
+#include <level.h>
+#include <world.h>
 
 extern "C"
 {
@@ -101,7 +108,11 @@ namespace ai
             return res;
         }
 
-        bool PointIsReachable(CVector const& src, CVector const& dir, CVector const& dst, std::vector<int> const& exceptions)
+        bool PointIsReachable(
+            CVector const& src,
+            CVector const& dir,
+            CVector const& dst,
+            std::vector<int> const& exceptions)
         {
             // TODO: check this
             static scoped_ptr Ray = ai::Ray::CreateObject(nullptr, 1000.0, nullptr);
@@ -120,9 +131,10 @@ namespace ai
                                                     (float)(src.z - closestContact.geom.pos[2])) +
                                             (float)((float)(src.y - closestContact.geom.pos[1]) *
                                                     (float)(src.y - closestContact.geom.pos[1]))) +
-                                    (float)((float)(src.x - closestContact.geom.pos[0]) * (float)(src.x - closestContact.geom.pos[0]))) +
-                            0.0099999998) <=
-                    (float)((float)((float)(v10 * v10) + (float)(v9 * v9)) + (float)((float)(src.x - dst.x) * (float)(src.x - dst.x))))
+                                    (float)((float)(src.x - closestContact.geom.pos[0]) *
+                                            (float)(src.x - closestContact.geom.pos[0]))) +
+                            0.0099999998) <= (float)((float)((float)(v10 * v10) + (float)(v9 * v9)) +
+                                                     (float)((float)(src.x - dst.x) * (float)(src.x - dst.x))))
                 {
                     res = false;
                 }
@@ -186,8 +198,8 @@ namespace ai
         while (true)
         {
             CMatrix boneMatrix;
-            auto const res =
-                animatedModelsServer->GetBoneMatrixByNameFromModelName(m_barrelModelName.c_str(), GetFireLp(i), boneMatrix, false);
+            auto const res = animatedModelsServer->GetBoneMatrixByNameFromModelName(
+                m_barrelModelName.c_str(), GetFireLp(i), boneMatrix, false);
             if (!res)
             {
                 break;
@@ -273,9 +285,16 @@ namespace ai
         }
     }
 
-    CStr GunPrototypeInfo::FiringType2Str(FiringTypes)
+    CStr GunPrototypeInfo::FiringType2Str(FiringTypes firingType)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto const& entry : l_firingType2Str)
+        {
+            if (entry.m_type == firingType)
+            {
+                return entry.m_name;
+            }
+        }
+        return {};
     }
 
     FiringTypes GunPrototypeInfo::Str2FiringType(CStr const& firingTypeStr)
@@ -366,7 +385,8 @@ namespace ai
         m_shellPrototypeId = thePrototypeManager->GetPrototypeId(m_shellPrototypeName);
         if (m_shellPrototypeId == -1 && !m_shellPrototypeName.empty())
         {
-            M3D_CRITICAL_ERROR("shell prototype '" + m_shellPrototypeName + "' is invalid for '" + GetDebugDescription());
+            M3D_CRITICAL_ERROR(
+                "shell prototype '" + m_shellPrototypeName + "' is invalid for '" + GetDebugDescription());
         }
 
         if (!m_blastWavePrototypeName.empty())
@@ -410,9 +430,10 @@ namespace ai
         return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), GunPrototypeInfo const);
     }
 
-    void Gun::SetShellsInPool(unsigned)
+    void Gun::SetShellsInPool(unsigned Shells)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE040
+        m_ShellsInPool = Shells;
     }
 
     void Gun::RenderGunDebugInfo() const
@@ -448,24 +469,8 @@ namespace ai
 
     float Gun::GetRechargingTime() const
     {
-        // TODO: generated code Gun::GetRechargingTime
-        GunPrototypeInfo const* prototypeInfo = GetPrototypeInfo();
-        unsigned int shellsNeeded = m_ChargeSize - m_ShellsInCurrentCharge;
-
-        unsigned int shellsToRecharge;
-
-        if (!prototypeInfo->m_WithShellsPoolLimit)
-        {
-            // No shell pool limit - recharge all needed shells
-            shellsToRecharge = shellsNeeded;
-        }
-        else
-        {
-            // With shell pool limit - recharge up to available shells in pool
-            shellsToRecharge = (shellsNeeded < m_ShellsInPool) ? shellsNeeded : m_ShellsInPool;
-        }
-
-        return (shellsToRecharge * m_ReChargingTimePerShell) + m_ReChargingTime;
+        // RVA 0x2DF9A0
+        return (getShellsForRecharge() * m_ReChargingTimePerShell) + m_ReChargingTime;
     }
 
     m3d::Class* Gun::GetClass() const
@@ -499,8 +504,9 @@ namespace ai
         targetDir.z = lookAt.z - gunPosition.z;
 
         // Normalize the target direction vector
-        float invTargetLength =
-            1.0f / std::sqrt(targetDir.x * targetDir.x + targetDir.y * targetDir.y + targetDir.z * targetDir.z + 1.1920929e-7f);
+        float invTargetLength = 1.0f /
+            std::sqrt(targetDir.x * targetDir.x + targetDir.y * targetDir.y + targetDir.z * targetDir.z +
+                      1.1920929e-7f);
         CVector normalizedTargetDir;
         normalizedTargetDir.x = targetDir.x * invTargetLength;
         normalizedTargetDir.y = targetDir.y * invTargetLength;
@@ -518,8 +524,8 @@ namespace ai
 
         // Normalize the gun's forward direction vector
         float invGunLength = 1.0f /
-            std::sqrt(gunForwardDir.x * gunForwardDir.x + gunForwardDir.y * gunForwardDir.y + gunForwardDir.z * gunForwardDir.z +
-                      1.1920929e-7f);
+            std::sqrt(gunForwardDir.x * gunForwardDir.x + gunForwardDir.y * gunForwardDir.y +
+                      gunForwardDir.z * gunForwardDir.z + 1.1920929e-7f);
         CVector normalizedGunForwardDir;
         normalizedGunForwardDir.x = gunForwardDir.x * invGunLength;
         normalizedGunForwardDir.y = gunForwardDir.y * invGunLength;
@@ -528,13 +534,16 @@ namespace ai
         // Calculate the cross product between gun direction and target direction
         // This gives us the "error" vector - its magnitude indicates how misaligned we are
         CVector crossProduct;
-        crossProduct.x = normalizedGunForwardDir.y * normalizedTargetDir.z - normalizedGunForwardDir.z * normalizedTargetDir.y;
-        crossProduct.y = normalizedGunForwardDir.z * normalizedTargetDir.x - normalizedGunForwardDir.x * normalizedTargetDir.z;
-        crossProduct.z = normalizedGunForwardDir.x * normalizedTargetDir.y - normalizedGunForwardDir.y * normalizedTargetDir.x;
+        crossProduct.x =
+            normalizedGunForwardDir.y * normalizedTargetDir.z - normalizedGunForwardDir.z * normalizedTargetDir.y;
+        crossProduct.y =
+            normalizedGunForwardDir.z * normalizedTargetDir.x - normalizedGunForwardDir.x * normalizedTargetDir.z;
+        crossProduct.z =
+            normalizedGunForwardDir.x * normalizedTargetDir.y - normalizedGunForwardDir.y * normalizedTargetDir.x;
 
         // Calculate the magnitude of the cross product (alignment error)
-        float alignmentError =
-            std::sqrt(crossProduct.x * crossProduct.x + crossProduct.y * crossProduct.y + crossProduct.z * crossProduct.z);
+        float alignmentError = std::sqrt(
+            crossProduct.x * crossProduct.x + crossProduct.y * crossProduct.y + crossProduct.z * crossProduct.z);
 
         // Return true if the alignment error is within the epsilon tolerance
         // This means the gun is pointing close enough to the target
@@ -603,7 +612,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Gun::PointIsReachableFromPosition(CVector const&, CVector const&, retruxx::vector<int, retruxx::allocator<int>>) const
+    bool Gun::PointIsReachableFromPosition(
+        CVector const&,
+        CVector const&,
+        retruxx::vector<int, retruxx::allocator<int>>) const
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -615,22 +627,27 @@ namespace ai
 
     unsigned Gun::GetShellsInPool() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE030
+        return m_ShellsInPool;
     }
 
     bool Gun::IsWithCharging() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE2C0
+        return GetPrototypeInfo()->m_WithCharging;
     }
 
     float Gun::GetFiringRate() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DDFD0
+        return m_firingRate;
     }
 
     CMatrix Gun::GetMatrixForShot(unsigned) const
     {
-        // TODO: generated code Gun::GetMatrixForShot
+        // RVA 0x2E15F0
+        // NOTE: the shipped build ignores the barrelIndex argument and always
+        // uses m_curBarrelIndex; every caller passes m_curBarrelIndex anyway.
         // Get the prototype information for this gun
         ai::GunPrototypeInfo const* prototypeInfo = this->GetPrototypeInfo();
 
@@ -661,28 +678,44 @@ namespace ai
             float orig_44 = fireMat._44;
 
             // Transform first row [11, 12, 13, 14]
-            fireMat._11 = barrelXForm._11 * orig_11 + barrelXForm._21 * orig_12 + barrelXForm._31 * orig_13 + barrelXForm._41 * orig_14;
-            fireMat._12 = barrelXForm._12 * orig_11 + barrelXForm._22 * orig_12 + barrelXForm._32 * orig_13 + barrelXForm._42 * orig_14;
-            fireMat._13 = barrelXForm._13 * orig_11 + barrelXForm._23 * orig_12 + barrelXForm._33 * orig_13 + barrelXForm._43 * orig_14;
-            fireMat._14 = barrelXForm._14 * orig_11 + barrelXForm._24 * orig_12 + barrelXForm._34 * orig_13 + barrelXForm._44 * orig_14;
+            fireMat._11 = barrelXForm._11 * orig_11 + barrelXForm._21 * orig_12 + barrelXForm._31 * orig_13 +
+                barrelXForm._41 * orig_14;
+            fireMat._12 = barrelXForm._12 * orig_11 + barrelXForm._22 * orig_12 + barrelXForm._32 * orig_13 +
+                barrelXForm._42 * orig_14;
+            fireMat._13 = barrelXForm._13 * orig_11 + barrelXForm._23 * orig_12 + barrelXForm._33 * orig_13 +
+                barrelXForm._43 * orig_14;
+            fireMat._14 = barrelXForm._14 * orig_11 + barrelXForm._24 * orig_12 + barrelXForm._34 * orig_13 +
+                barrelXForm._44 * orig_14;
 
             // Transform second row [21, 22, 23, 24]
-            fireMat._21 = barrelXForm._11 * orig_21 + barrelXForm._21 * orig_22 + barrelXForm._31 * orig_23 + barrelXForm._41 * orig_24;
-            fireMat._22 = barrelXForm._12 * orig_21 + barrelXForm._22 * orig_22 + barrelXForm._32 * orig_23 + barrelXForm._42 * orig_24;
-            fireMat._23 = barrelXForm._13 * orig_21 + barrelXForm._23 * orig_22 + barrelXForm._33 * orig_23 + barrelXForm._43 * orig_24;
-            fireMat._24 = barrelXForm._14 * orig_21 + barrelXForm._24 * orig_22 + barrelXForm._34 * orig_23 + barrelXForm._44 * orig_24;
+            fireMat._21 = barrelXForm._11 * orig_21 + barrelXForm._21 * orig_22 + barrelXForm._31 * orig_23 +
+                barrelXForm._41 * orig_24;
+            fireMat._22 = barrelXForm._12 * orig_21 + barrelXForm._22 * orig_22 + barrelXForm._32 * orig_23 +
+                barrelXForm._42 * orig_24;
+            fireMat._23 = barrelXForm._13 * orig_21 + barrelXForm._23 * orig_22 + barrelXForm._33 * orig_23 +
+                barrelXForm._43 * orig_24;
+            fireMat._24 = barrelXForm._14 * orig_21 + barrelXForm._24 * orig_22 + barrelXForm._34 * orig_23 +
+                barrelXForm._44 * orig_24;
 
             // Transform third row [31, 32, 33, 34]
-            fireMat._31 = barrelXForm._11 * orig_31 + barrelXForm._21 * orig_32 + barrelXForm._31 * orig_33 + barrelXForm._41 * orig_34;
-            fireMat._32 = barrelXForm._12 * orig_31 + barrelXForm._22 * orig_32 + barrelXForm._32 * orig_33 + barrelXForm._42 * orig_34;
-            fireMat._33 = barrelXForm._13 * orig_31 + barrelXForm._23 * orig_32 + barrelXForm._33 * orig_33 + barrelXForm._43 * orig_34;
-            fireMat._34 = barrelXForm._14 * orig_31 + barrelXForm._24 * orig_32 + barrelXForm._34 * orig_33 + barrelXForm._44 * orig_34;
+            fireMat._31 = barrelXForm._11 * orig_31 + barrelXForm._21 * orig_32 + barrelXForm._31 * orig_33 +
+                barrelXForm._41 * orig_34;
+            fireMat._32 = barrelXForm._12 * orig_31 + barrelXForm._22 * orig_32 + barrelXForm._32 * orig_33 +
+                barrelXForm._42 * orig_34;
+            fireMat._33 = barrelXForm._13 * orig_31 + barrelXForm._23 * orig_32 + barrelXForm._33 * orig_33 +
+                barrelXForm._43 * orig_34;
+            fireMat._34 = barrelXForm._14 * orig_31 + barrelXForm._24 * orig_32 + barrelXForm._34 * orig_33 +
+                barrelXForm._44 * orig_34;
 
             // Transform fourth row [41, 42, 43, 44]
-            fireMat._41 = barrelXForm._11 * orig_41 + barrelXForm._21 * orig_42 + barrelXForm._31 * orig_43 + barrelXForm._41 * orig_44;
-            fireMat._42 = barrelXForm._12 * orig_41 + barrelXForm._22 * orig_42 + barrelXForm._32 * orig_43 + barrelXForm._42 * orig_44;
-            fireMat._43 = barrelXForm._13 * orig_41 + barrelXForm._23 * orig_42 + barrelXForm._33 * orig_43 + barrelXForm._43 * orig_44;
-            fireMat._44 = barrelXForm._14 * orig_41 + barrelXForm._24 * orig_42 + barrelXForm._34 * orig_43 + barrelXForm._44 * orig_44;
+            fireMat._41 = barrelXForm._11 * orig_41 + barrelXForm._21 * orig_42 + barrelXForm._31 * orig_43 +
+                barrelXForm._41 * orig_44;
+            fireMat._42 = barrelXForm._12 * orig_41 + barrelXForm._22 * orig_42 + barrelXForm._32 * orig_43 +
+                barrelXForm._42 * orig_44;
+            fireMat._43 = barrelXForm._13 * orig_41 + barrelXForm._23 * orig_42 + barrelXForm._33 * orig_43 +
+                barrelXForm._43 * orig_44;
+            fireMat._44 = barrelXForm._14 * orig_41 + barrelXForm._24 * orig_42 + barrelXForm._34 * orig_43 +
+                barrelXForm._44 * orig_44;
         }
 
         // Copy the final matrix to the result
@@ -691,12 +724,14 @@ namespace ai
 
     float Gun::GetCurrentRechargingTime() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE2F0
+        return m_CurrentReChargingTime;
     }
 
     unsigned Gun::GetShellsPoolSize() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE050
+        return GetPrototypeInfo()->m_ShellsPoolSize;
     }
 
     int Gun::OnEvent(Event const& evn)
@@ -725,7 +760,8 @@ namespace ai
 
     unsigned Gun::GetChargeSize() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE2E0
+        return m_ChargeSize;
     }
 
     float Gun::GetFiringRange() const
@@ -733,7 +769,10 @@ namespace ai
         return m_firingRange;
     }
 
-    float Gun::EstimateDamageFromPosition(CVector const&, CVector const&, retruxx::vector<int, retruxx::allocator<int>> const&)
+    float Gun::EstimateDamageFromPosition(
+        CVector const&,
+        CVector const&,
+        retruxx::vector<int, retruxx::allocator<int>> const&)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
@@ -786,7 +825,8 @@ namespace ai
 
     unsigned Gun::GetShellsInCurrentCharge() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE020
+        return m_ShellsInCurrentCharge;
     }
 
     void Gun::LookAtPoint(CVector const& lookAt, float elapsedTime)
@@ -820,7 +860,11 @@ namespace ai
 
     void Gun::Recharge()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DFA00
+        if (getShellsForRecharge() && m_ChargeState != csInCharging)
+        {
+            BeginReCharge();
+        }
     }
 
     int Gun::GetPropertyId(char const* propName) const
@@ -871,7 +915,8 @@ namespace ai
 
     Gun::ChargeState Gun::GetChargeState() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE060
+        return m_ChargeState;
     }
 
     float Gun::GetTurningSpeed() const
@@ -921,9 +966,14 @@ namespace ai
         return result;
     }
 
-    void Gun::SetShellsInCurrentCharge(unsigned)
+    void Gun::SetShellsInCurrentCharge(unsigned Value)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DF6F0 - clamped to the charge size.
+        m_ShellsInCurrentCharge = Value;
+        if (m_ShellsInCurrentCharge > m_ChargeSize)
+        {
+            m_ShellsInCurrentCharge = m_ChargeSize;
+        }
     }
 
     DamageType Gun::GetDamageType() const
@@ -944,7 +994,8 @@ namespace ai
 
     bool Gun::IsWithShellsPoolLimit() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE2D0
+        return GetPrototypeInfo()->m_WithShellsPoolLimit;
     }
 
     void Gun::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -999,14 +1050,16 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Gun::SetChargeState(int)
+    void Gun::SetChargeState(int Value)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE5B0
+        m_ChargeState = static_cast<ChargeState>(Value);
     }
 
-    void Gun::SetChargeState(ChargeState)
+    void Gun::SetChargeState(ChargeState Value)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE070
+        m_ChargeState = Value;
     }
 
     void Gun::SetHorizontalStopAngles(float leftStopAngle, float rightStopAngle)
@@ -1054,7 +1107,8 @@ namespace ai
                 rot.FromMatrix(mat);
 
                 CVector fireDir;
-                float angle = 0.0;
+                float angle = 0.0f;
+                rot.ToAxisAngle(fireDir, angle);
 
                 CVector force;
                 force.x = (float)(0.0 - fireDir.x) * m_recoilForce;
@@ -1092,8 +1146,7 @@ namespace ai
         auto const* protoInfo = GetPrototypeInfo();
         ++m_curBarrelIndex;
 
-        // TODO: check this
-        int barrelCount = protoInfo->m_fireLpMatrices.size();
+        unsigned const barrelCount = static_cast<unsigned>(protoInfo->m_fireLpMatrices.size());
         if (m_curBarrelIndex == barrelCount)
         {
             m_curBarrelIndex = 0;
@@ -1125,13 +1178,68 @@ namespace ai
 
     unsigned Gun::GetBarrelsNum()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DF720
+        return static_cast<unsigned>(GetPrototypeInfo()->m_fireLpMatrices.size());
     }
 
     void Gun::_LaunchShells()
     {
-        // TODO: implement Gun::_LaunchShells
-        // RETRUXX_NOT_IMPLEMENTED;
+        // TODO: increace statistics
+        return;
+
+        
+        // RVA 0x2E10C0 - the base implementation only books the shot into the
+        // player's statistics; derived guns override this to spawn the shells.
+        Obj* parentObj = this;
+        while (!IS_KIND_OF(parentObj, Vehicle))
+        {
+            parentObj = parentObj->GetParent();
+            if (!parentObj)
+            {
+                return;
+            }
+        }
+
+        auto* vehicle = RT_DYNCAST(parentObj, Vehicle);
+        if (!vehicle || !vehicle->bIsControlledByPlayer())
+        {
+            return;
+        }
+
+        CStr const& levelName = pServer->GetWorld()->m_level->m_levelName;
+        CStr const& gunName = GetPrototypeInfo()->m_prototypeName;
+
+        auto* shellsEmitted =
+            static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_SHELLS_EMITTED, "IntStatistic"));
+        shellsEmitted->SetGlobalFlag(true);
+        shellsEmitted->Increase(1);
+
+        auto* levelShellsEmitted = static_cast<IntStatistic*>(
+            theStatisticManager->GetStatistic(STATISTIC_SHELLS_EMITTED + levelName, "IntStatistic"));
+        levelShellsEmitted->SetGlobalFlag(false);
+        levelShellsEmitted->Increase(1);
+
+        auto* favoriteGun = static_cast<FavoriteStringStatistic*>(
+            theStatisticManager->GetStatistic(STATISTIC_FAVORITE_GUN, "FavoriteStringStatistic"));
+        favoriteGun->SetGlobalFlag(true);
+        favoriteGun->Increase(gunName);
+
+        auto* levelFavoriteGun = static_cast<FavoriteStringStatistic*>(
+            theStatisticManager->GetStatistic(STATISTIC_FAVORITE_GUN + levelName, "FavoriteStringStatistic"));
+        levelFavoriteGun->SetGlobalFlag(false);
+        levelFavoriteGun->Increase(gunName);
+
+        // Every emitted shell bumps the hit-ratio denominator; the numerator is
+        // raised elsewhere when a shell actually connects.
+        auto* hitRatio = static_cast<IntIntRatioStatistic*>(
+            theStatisticManager->GetStatistic(STATISTIC_HIT_RATIO, "IntIntRatioStatistic"));
+        hitRatio->SetGlobalFlag(true);
+        hitRatio->IncreaseDenominator(1);
+
+        auto* levelHitRatio = static_cast<IntIntRatioStatistic*>(
+            theStatisticManager->GetStatistic(STATISTIC_HIT_RATIO + levelName, "IntIntRatioStatistic"));
+        levelHitRatio->SetGlobalFlag(false);
+        levelHitRatio->IncreaseDenominator(1);
     }
 
     CVector Gun::_CalcDirForNextShot() const
@@ -1149,7 +1257,8 @@ namespace ai
         if (thePlayer)
         {
             // TODO: check IE_EV_SM_OBJECT_CREATED
-            theProcessManager->PostMessageA(GE_SUBSCRIBE, thePlayer->GetId(), GetId(), 0.0, IE_EV_SM_OBJECT_CREATED, {}, 1);
+            theProcessManager->PostMessageA(
+                GE_SUBSCRIBE, thePlayer->GetId(), GetId(), 0.0, IE_EV_SM_OBJECT_CREATED, {}, 1);
         }
     }
 
@@ -1160,7 +1269,8 @@ namespace ai
 
     bool Gun::_bIsVolleyFiring() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE150
+        return false;
     }
 
     Gun::~Gun() = default;
@@ -1195,7 +1305,8 @@ namespace ai
             auto* serverAnimatedModels = static_cast<m3d::AnimatedModelsServer*>(&M3D_APP->GetAnimatedModelsServer());
 
             CMatrix boneMat;
-            auto const boneRes = serverAnimatedModels->GetBoneMatrixByNameFromModelName(m_modelname.c_str(), "LP_GUN", boneMat, false);
+            auto const boneRes =
+                serverAnimatedModels->GetBoneMatrixByNameFromModelName(m_modelname.c_str(), "LP_GUN", boneMat, false);
             if (!boneRes)
             {
                 M3D_LOG_ERR("Error: LoadPoint not found: LP_GUN for " + GetDebugDescription());
@@ -1278,7 +1389,7 @@ namespace ai
 
     unsigned Gun::getShellsForRecharge() const
     {
-        // TODO: generated code Gun::getShellsForRecharge
+        // RVA 0x2DF530
         GunPrototypeInfo const* prototypeInfo = GetPrototypeInfo();
         unsigned int shellsNeeded = m_ChargeSize - m_ShellsInCurrentCharge;
 
@@ -1308,8 +1419,9 @@ namespace ai
 
         // Calculate direction to target and normalize it
         CVector targetDir = lookAt - gunPosition;
-        float invLength =
-            1.0f / std::sqrt(targetDir.x * targetDir.x + targetDir.y * targetDir.y + targetDir.z * targetDir.z + 1.1920929e-7f);
+        float invLength = 1.0f /
+            std::sqrt(targetDir.x * targetDir.x + targetDir.y * targetDir.y + targetDir.z * targetDir.z +
+                      1.1920929e-7f);
         targetDir.x *= invLength;
         targetDir.y *= invLength;
         targetDir.z *= invLength;
@@ -1622,7 +1734,7 @@ namespace ai
 
     void Gun::_UpdateNodeFiringAction()
     {
-        // TODO: check this
+        // RVA 0x2DE1A0
         if (m_Node)
         {
             int action = 0;
@@ -1631,9 +1743,11 @@ namespace ai
             {
                 if (_bIsVolleyFiring())
                 {
-                    if (action == 2)
-                        return;
-                    SetNodeAction(2, 1);
+                    if (action != 2)
+                    {
+                        SetNodeAction(2, 1);
+                    }
+                    return;
                 }
                 if (action)
                     SetNodeAction(0, 1);
@@ -1649,7 +1763,8 @@ namespace ai
                         SetNodeAction(2, 1);
                 }
             }
-            else if (m_bWasShot && (m_timeFromLastShot >= (float)(60.0 / m_firingRate) || m_ChargeState == csInCharging))
+            else if (
+                m_bWasShot && (m_timeFromLastShot >= (float)(60.0 / m_firingRate) || m_ChargeState == csInCharging))
             {
                 m_bWasShot = 0;
                 SetNodeAction(0, 1);

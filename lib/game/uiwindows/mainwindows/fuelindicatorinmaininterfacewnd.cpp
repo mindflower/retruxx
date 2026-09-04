@@ -34,7 +34,8 @@ m3d::Class* FuelIndicatorInMainInterfaceWnd::GetBaseClass()
 
 m3d::Object* FuelIndicatorInMainInterfaceWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1237A0
+    return new FuelIndicatorInMainInterfaceWnd(*this);
 }
 
 void FuelIndicatorInMainInterfaceWnd::SetVehicleId(int id)
@@ -45,7 +46,9 @@ void FuelIndicatorInMainInterfaceWnd::SetVehicleId(int id)
 
 FuelIndicatorInMainInterfaceWnd::~FuelIndicatorInMainInterfaceWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x123B10 - m_strFuel and the Wnd base (which owns/destroys the
+    // child m_wndLowFuelLamp/m_wndProgressBar/m_wndValue windows) clean up
+    // automatically.
 }
 
 int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
@@ -219,26 +222,42 @@ int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd,
     return 1;
 }
 
-void FuelIndicatorInMainInterfaceWnd::UpdateProgressBar(float, float)
+void FuelIndicatorInMainInterfaceWnd::UpdateProgressBar(float curFuel, float maxFuel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x124870
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndProgressBar->SetMaxValue(maxFuel);
+        m_wndProgressBar->SetCurValue(curFuel);
+    }
 }
 
-void FuelIndicatorInMainInterfaceWnd::GetFuel(float&, float&) const
+void FuelIndicatorInMainInterfaceWnd::GetFuel(float& curFuel, float& maxFuel) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x124970
+    curFuel = 0.0f;
+    maxFuel = 0.0f;
+    if (ai::Vehicle const* vehicle = GetVehicle())
+    {
+        curFuel = vehicle->Fuel().value().get();
+        maxFuel = vehicle->Fuel().maxValue().get();
+    }
 }
 
 void FuelIndicatorInMainInterfaceWnd::OnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x124710
+    if (m_vehicleId != -1)
+    {
+        FullUpdate(false);
+    }
 }
 
 void FuelIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
 {
     float curFuel = 0.0;
     float maxFuel = 0.0;
-    
+
     ai::Vehicle const* vehicle = GetVehicle();
     if (vehicle)
     {
@@ -265,12 +284,15 @@ void FuelIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
     }
     m_prevCurVal = curFuel;
     m_prevMaxVal = maxFuel;
-
 }
 
-void FuelIndicatorInMainInterfaceWnd::UpdateValueWnd(float)
+void FuelIndicatorInMainInterfaceWnd::UpdateValueWnd(float curFuel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1248D0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndValue->ShowNumber(static_cast<int>(curFuel), false, 4u, false);
+    }
 }
 
 ai::Vehicle const* FuelIndicatorInMainInterfaceWnd::GetVehicle() const
@@ -278,9 +300,15 @@ ai::Vehicle const* FuelIndicatorInMainInterfaceWnd::GetVehicle() const
     return RT_DYNCAST(ai::theObjects->GetEntityByObjId(m_vehicleId), ai::Vehicle const);
 }
 
-void FuelIndicatorInMainInterfaceWnd::UpdateTooltip(float, float)
+void FuelIndicatorInMainInterfaceWnd::UpdateTooltip(float curFuel, float maxFuel)
 {
-    // TODO: implement FuelIndicatorInMainInterfaceWnd::UpdateTooltip
+    // RVA 0x1249C0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        CStr text = m_strFuel + ": " + CStr(static_cast<int>(curFuel)) + "/" + CStr(static_cast<int>(maxFuel));
+        m_wndProgressBar->SetProperty(PROP_WND_TOOLTIP, &text);
+        m_wndValue->SetProperty(PROP_WND_TOOLTIP, &text);
+    }
 }
 
 FuelIndicatorInMainInterfaceWnd::FuelIndicatorInMainInterfaceWnd()
@@ -294,14 +322,22 @@ FuelIndicatorInMainInterfaceWnd::FuelIndicatorInMainInterfaceWnd()
     m_prevMaxVal = 0.0;
 }
 
-FuelIndicatorInMainInterfaceWnd::FuelIndicatorInMainInterfaceWnd(FuelIndicatorInMainInterfaceWnd const&)
+FuelIndicatorInMainInterfaceWnd::FuelIndicatorInMainInterfaceWnd(FuelIndicatorInMainInterfaceWnd const&) :
+    FuelIndicatorInMainInterfaceWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped copy ctor (RVA 0x123AE0) default-constructs the base
+    // and resets m_strFuel to empty, but leaves m_type/m_wndLowFuelLamp/
+    // m_wndProgressBar/m_wndValue/m_vehicleId/m_prevCurVal/m_prevMaxVal
+    // uninitialized; delegating to the default ctor here avoids reading
+    // uninitialized pointers/ints while still copying nothing from the source.
 }
 
 int FuelIndicatorInMainInterfaceWnd::GameDataClear(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1246C0
+    m_vehicleId = -1;
+    FullUpdate(true);
+    return 1;
 }
 
 int FuelIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int dataType)
@@ -317,7 +353,11 @@ int FuelIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int dataType)
     return 1;
 }
 
-void FuelIndicatorInMainInterfaceWnd::UpdateLowFuelLamp(float, float)
+void FuelIndicatorInMainInterfaceWnd::UpdateLowFuelLamp(float curFuel, float maxFuel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1248A0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndLowFuelLamp->SetValue(curFuel, maxFuel);
+    }
 }

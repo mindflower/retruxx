@@ -22,7 +22,8 @@ DamageInfoWnd::AuxInfo::AuxInfo()
 
 m3d::Object* DamageInfoWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x11A810
+    return new DamageInfoWnd(*this);
 }
 
 m3d::Class* DamageInfoWnd::GetClass() const
@@ -42,7 +43,9 @@ m3d::Class* DamageInfoWnd::GetBaseClass()
 
 DamageInfoWnd::~DamageInfoWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x11ABC0 - m_aif's CStr members, the ref_ptr<...> child-window
+    // members (which release their reference), and the Wnd base all clean up
+    // automatically.
 }
 
 int DamageInfoWnd::UpdateOnPlayerVehicleChanged()
@@ -225,7 +228,6 @@ int DamageInfoWnd::GameDataSetup()
             M3D_APP->m_pInterfaceManager->SetEventsForWindow(basketDurId, {89, 65});
             M3D_APP->m_pInterfaceManager->SetEventsForWindow(fuelId, {89});
 
-            // TODO: check this
             m_wndHealth->SetType(
                 m_guiId == IW_WND_DAMAGEINFO ? HealthIndicatorInMainInterfaceWnd::TYPE_IN_MAIN_INTERFACE :
                                                HealthIndicatorInMainInterfaceWnd::TYPE_IN_CHARACTERISTIC_WND);
@@ -263,7 +265,9 @@ int DamageInfoWnd::GameDataSetup()
 
 DamageInfoWnd::DamageInfoWnd() = default;
 
-DamageInfoWnd::DamageInfoWnd(DamageInfoWnd const&)
+DamageInfoWnd::DamageInfoWnd(DamageInfoWnd const&) : DamageInfoWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // Matches the original (RVA 0x11AB80): the copy ctor default-constructs
+    // the base, the AuxInfo, and null ref_ptrs; nothing is copied from the
+    // source.
 }

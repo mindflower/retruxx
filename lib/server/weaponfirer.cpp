@@ -12,6 +12,7 @@ namespace ai
 {
     void WeaponFirer::AimAndFireFromWeapons(ComplexPhysicObj* obj, bool enable, float elapsedTime, Obj* target)
     {
+        // RVA 0x3C3370
         CVector enemyPos = ZeroVector;
         if (enable)
         {
@@ -44,12 +45,11 @@ namespace ai
 
     void WeaponFirer::FireFromWeaponsIfPossible(ComplexPhysicObj* obj, bool enable, const CVector& targetPoint, Obj* target)
     {
-        // TODO: check this!!!!!
-        Vehicle* vehicle = nullptr;
+        // RVA 0x3C2FC0
         ai::Vehicle* controlledVehicle = nullptr;
         if (IS_KIND_OF(obj, Vehicle))
         {
-            vehicle = RT_DYNCAST(obj, Vehicle);
+            auto* vehicle = RT_DYNCAST(obj, Vehicle);
             if (vehicle && vehicle->GetInSmokeScreenMode() && !vehicle->bIsControlledByPlayer())
             {
                 enable = false;
@@ -63,18 +63,23 @@ namespace ai
             {
                 auto* gun = RT_DYNCAST(vehiclePart, Gun);
 
-                std::vector<int> exceptions;
-                if (enable && target)
+                // NOTE: the reachability gate is keyed on `enable` alone - with no
+                // target the shipped build still probes targetPoint against an
+                // empty exception list before letting the gun fire.
+                if (enable)
                 {
-                    exceptions.push_back(target->GetId());
-                    if (IS_KIND_OF(target, Vehicle))
+                    std::vector<int> exceptions;
+                    if (target)
                     {
-                        auto* targetVehicle = RT_DYNCAST(obj, Vehicle);
-                        for (size_t i = 0; i < targetVehicle->GetNumWheels(); ++i)
+                        exceptions.push_back(target->GetId());
+                        if (auto* targetVehicle = RT_DYNCAST(target, Vehicle))
                         {
-                            if (auto* wheel = targetVehicle->GetWheel(i))
+                            for (unsigned int i = 0; i < targetVehicle->GetNumWheels(); ++i)
                             {
-                                exceptions.push_back(wheel->GetId());
+                                if (auto* wheel = targetVehicle->GetWheel(i))
+                                {
+                                    exceptions.push_back(wheel->GetId());
+                                }
                             }
                         }
                     }
@@ -82,7 +87,7 @@ namespace ai
                     bool isLookAtPoint = gun->PointIsReachable(targetPoint, exceptions);
                     if (isLookAtPoint)
                     {
-                        isLookAtPoint = gun->isLookAtPoint(targetPoint, 0.02);
+                        isLookAtPoint = gun->isLookAtPoint(targetPoint, 0.02f);
                     }
                     if (!isLookAtPoint)
                     {
@@ -91,7 +96,6 @@ namespace ai
                     }
                 }
 
-                // Set target ID for the gun
                 if (target)
                 {
                     gun->SetTargetId(target->GetId());
@@ -100,26 +104,22 @@ namespace ai
                 {
                     gun->SetTargetId(controlledVehicle->GetSeenObjId());
                 }
-
-                // Fire the gun
                 gun->Fire(enable);
             }
             else if (IS_KIND_OF(vehiclePart, CompoundGun))
             {
                 auto* gun = RT_DYNCAST(vehiclePart, CompoundGun);
-                int targetId = -1;
-                int lockedId = -1;
+                // NOTE: an explicit target wins over the carrier's own lock, and
+                // with neither the shipped build leaves the gun's ids untouched
+                // rather than resetting them.
                 if (target)
                 {
-                    targetId = target->GetId();
-                    lockedId = targetId;
+                    gun->SetProperTargetId(target->GetId(), target->GetId());
                 }
-                if (controlledVehicle)
+                else if (controlledVehicle)
                 {
-                    targetId = controlledVehicle->GetSeenObjId();
-                    lockedId = targetId;
+                    gun->SetProperTargetId(controlledVehicle->GetSeenObjId(), controlledVehicle->GetLockedObjId());
                 }
-                gun->SetProperTargetId(targetId, lockedId);
                 gun->Fire(enable);
             }
         }
@@ -127,6 +127,7 @@ namespace ai
 
     void WeaponFirer::WeaponLookAtPoint(ComplexPhysicObj* obj, CVector const& lookAt, float elapsedTime)
     {
+        // RVA 0x3C3210
         const auto gunResourceId = theResourceManager->GetResourceId("GUN");
         const auto specialWeaponResourceId = theResourceManager->GetResourceId("SPECIAL_WEAPON");
 
@@ -139,7 +140,7 @@ namespace ai
                 if (IS_KIND_OF(vehiclePart, Gun))
                 {
                     auto* gun = RT_DYNCAST(vehiclePart, Gun);
-                    gun->LookAtPoint(lookAt, elapsedTime); 
+                    gun->LookAtPoint(lookAt, elapsedTime);
                 }
                 else if (IS_KIND_OF(vehiclePart, CompoundGun))
                 {
@@ -152,9 +153,13 @@ namespace ai
 
     float WeaponFirer::GetMaxFiringRange(ComplexPhysicObj const* obj)
     {
-        // TODO: check this
-        float res = 0.0;
-        for (auto const& [name, vehiclePart] : *obj)
+        // RVA 0x3C2EA0
+        // NOTE: the shipped build tests CompoundGun before Gun here (the other two
+        // entry points test Gun first). Gun and CompoundGun are sibling VehiclePart
+        // subclasses, so the order makes no difference; Gun stays first for
+        // consistency with the rest of the file.
+        float res = 0.0f;
+        for (auto const& [name, vehiclePart] : obj->m_vehicleParts)
         {
             if (IS_KIND_OF(vehiclePart, Gun))
             {

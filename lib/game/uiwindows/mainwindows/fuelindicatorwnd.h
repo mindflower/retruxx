@@ -24,6 +24,9 @@ public:
         AuxInfo();
 
     private:
+        // NOTE: not a friend in the header this class was extracted from,
+        // but FuelIndicatorWnd::CreateFromPattern needs to read these names.
+        friend class FuelIndicatorWnd;
         CStr m_imgLowFuelIcoName;
         CStr m_wndProgressBarName;
     };

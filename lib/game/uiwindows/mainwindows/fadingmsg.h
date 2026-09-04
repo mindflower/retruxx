@@ -16,6 +16,9 @@ public:
         AuxInfo();
 
     private:
+        // NOTE: not a friend in the header this class was extracted from,
+        // but FadingMsgList's own methods need to read these fields.
+        friend class FadingMsgList;
         float m_space;
         float m_unimportantExtraH;
         float m_importantExtraH;
@@ -86,6 +89,25 @@ public:
         STATE_HIDE = 0x2,
     };
 
+    // NOTE: not present in the header this class was extracted from.
+    struct AuxInfo
+    {
+        AuxInfo();
+        unsigned int m_showTime;
+        unsigned int m_fadeTime;
+        unsigned int m_unimportantTextColor;
+        unsigned int m_importantTextColor;
+        float m_importantFontSize;
+        CStr m_texIdBg;
+        unsigned int m_unimportantStyle;
+        unsigned int m_importantStyle;
+        PointBase<float> m_edge;
+        float m_unimportantMinH;
+        float m_importantMinH;
+        unsigned int m_unimportantTextFormat;
+        unsigned int m_importantTextFormat;
+    };
+
 public:
     static m3d::Class * GetBaseClass();
     virtual m3d::Object * Clone();
@@ -105,8 +127,14 @@ public:
     RT_CLASS_DECLARE(FadingMsgItem);
 
 private:
+    // NOTE: not a friend in the header this class was extracted from, but
+    // FadingMsgList::OnNewFrame needs to read m_state to know when a message
+    // has finished hiding and should be popped.
+    friend class FadingMsgList;
     FadingMsgItem::Stage m_state;
     unsigned int m_showTime;
     FadingMsgList::MsgType m_msgType;
+    // NOTE: not present in the header this class was extracted from.
+    static inline FadingMsgItem::AuxInfo m_aif;
 };
 

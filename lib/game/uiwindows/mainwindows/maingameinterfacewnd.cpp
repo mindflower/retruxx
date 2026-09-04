@@ -12,8 +12,13 @@
 #include "game/m3dgame.h"
 #include "core/log.h"
 #include "game/uimanager/uidefs.h"
+#include "game/uimisc/guihelper.h"
+#include "i_event.h"
 #include "server/objects/base/complexphysicobj.h"
+#include "server/objects/base/globalproperties.h"
 #include "server/objects/base/objcontainer.h"
+#include "server/objects/player.h"
+#include "server/objects/vehicle.h"
 #include "ui/image.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MainGameInterfaceWnd, SetupForBoss)
@@ -44,7 +49,8 @@ m3d::Class* MainGameInterfaceWnd::GetClass() const
 
 int MainGameInterfaceWnd::GetBossId() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12B4B0
+    return m_bossId;
 }
 
 void MainGameInterfaceWnd::CheckAndShowTargetInfoWnd(bool bForceRemove)
@@ -78,7 +84,8 @@ void MainGameInterfaceWnd::CheckAndShowTargetInfoWnd(bool bForceRemove)
 
 m3d::Object* MainGameInterfaceWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1292F0
+    return new MainGameInterfaceWnd(*this);
 }
 
 m3d::Object* MainGameInterfaceWnd::CreateObject()
@@ -88,7 +95,21 @@ m3d::Object* MainGameInterfaceWnd::CreateObject()
 
 ai::Obj const* MainGameInterfaceWnd::GetBoss() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12B5E0
+    if (m_bossId == -1)
+    {
+        return nullptr;
+    }
+    ai::Obj* obj = ai::theObjects->GetEntityByObjId(m_bossId);
+    if (obj && help::IsBoss(obj))
+    {
+        unsigned int const flags = obj->GetFlags();
+        if ((flags & 8) == 0 && (flags & 2) == 0 && !obj->GetParentRepository())
+        {
+            return obj;
+        }
+    }
+    return nullptr;
 }
 
 void MainGameInterfaceWnd::CheckAndShowCounterWnd()
@@ -140,14 +161,36 @@ void MainGameInterfaceWnd::CheckAndShowMainCursorWnd()
     }
 }
 
-int MainGameInterfaceWnd::SetupForBoss(int)
+int MainGameInterfaceWnd::SetupForBoss(int bossId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12B4C0
+    m_bossId = bossId;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    bool const result = m_wndBossIndicator->SetupForBoss(bossId) != 0;
+    CheckAndShowNearbyChestsIco();
+    CheckAndShowNearbyTownIco();
+    CheckAndShowBossIndicator();
+    return result;
 }
 
 MainGameInterfaceWnd::~MainGameInterfaceWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1297E0 - m_aif's CStr members and the ref_ptr<...> members
+    // (which release their reference) clean up automatically; the two raw
+    // ImageWnd* icons need an explicit release since they are not always a
+    // current child (CheckAndShowNearby*Ico adds/removes them based on game
+    // state) yet the class still holds an owning reference to them.
+    if (m_wndNearbyChestsIco)
+    {
+        m_wndNearbyChestsIco->DecRef();
+    }
+    if (m_wndNearbyTownIco)
+    {
+        m_wndNearbyTownIco->DecRef();
+    }
 }
 
 MainGameInterfaceWnd::MainGameInterfaceWnd()
@@ -162,9 +205,15 @@ MainGameInterfaceWnd::MainGameInterfaceWnd()
     m_oldInfoObjTolerance = ai::RS_MAX;
 }
 
-MainGameInterfaceWnd::MainGameInterfaceWnd(MainGameInterfaceWnd const&)
+MainGameInterfaceWnd::MainGameInterfaceWnd(MainGameInterfaceWnd const&) : MainGameInterfaceWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped copy ctor (RVA 0x129770) default-constructs the
+    // base, null ref_ptrs, and re-inits the AuxInfo, but leaves
+    // m_contouredInfoObjId/m_contouredCapturedObjId/m_oldInfoObjTolerance/
+    // m_wndNearbyChestsIco/m_wndNearbyTownIco/m_nearbyTownId/
+    // m_bNearbyChests/m_bossId uninitialized; delegating to the default ctor
+    // here avoids reading uninitialized pointers while still copying nothing
+    // from the source.
 }
 
 void MainGameInterfaceWnd::CheckAndShowNearbyTownIco()
@@ -400,7 +449,10 @@ void MainGameInterfaceWnd::CheckAndShowNearbyChestsIco()
 
 void MainGameInterfaceWnd::OnBossModeChanged()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12B5C0
+    CheckAndShowNearbyChestsIco();
+    CheckAndShowNearbyTownIco();
+    CheckAndShowBossIndicator();
 }
 
 int MainGameInterfaceWnd::OnAfterRemoveFromWndStation()
@@ -416,19 +468,66 @@ int MainGameInterfaceWnd::OnAfterRemoveFromWndStation()
     return res;
 }
 
-int MainGameInterfaceWnd::GameDataSave(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
+int MainGameInterfaceWnd::GameDataSave(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12B040
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("MainGameInterfaceWnd::GameDataSave error - MainGameInterfaceWnd has been not properly inited");
+        return 0;
+    }
+    if (!xmlFile || !guiNode)
+    {
+        M3D_LOG_INFO("MainGameInterfaceWnd::GameDataSave error - invalid params");
+        return 0;
+    }
+
+    ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "MainGameInterface");
+    guiNode->AddChild(node);
+    node->SetAttribute("nearTownId", CStr(m_nearbyTownId).c_str());
+    node->SetAttribute("nearChests", CStr(static_cast<int>(m_bNearbyChests)).c_str());
+    node->SetAttribute("bossId", CStr(m_bossId).c_str());
+    return 1;
 }
 
-void MainGameInterfaceWnd::OnTownRuined(void*)
+void MainGameInterfaceWnd::OnTownRuined(void* data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12B470
+    if (data)
+    {
+        auto const* ev = static_cast<m3d::Event const*>(data);
+        if (ev->m_intEv[0] == m_nearbyTownId)
+        {
+            if (ev->m_intEv[1])
+            {
+                m_nearbyTownId = -1;
+            }
+            CheckAndShowNearbyTownIco();
+        }
+    }
 }
 
 void MainGameInterfaceWnd::UpdateInfoContour()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12A6E0
+    int const oldInfoObjId = m_contouredInfoObjId;
+    int const infoObjId = GetInfoObjId();
+    ai::eTolerance const tolerance = help::GetObjTolerance(oldInfoObjId);
+    bool const changed = (oldInfoObjId != infoObjId) || (tolerance != m_oldInfoObjTolerance);
+    m_oldInfoObjTolerance = tolerance;
+    if (changed)
+    {
+        if (oldInfoObjId != -1)
+        {
+            HideContour(oldInfoObjId);
+            m_contouredInfoObjId = -1;
+            m_oldInfoObjTolerance = ai::RS_MAX;
+        }
+        if (infoObjId != -1 && infoObjId != m_contouredCapturedObjId)
+        {
+            ShowInfoContour(infoObjId);
+        }
+    }
 }
 
 void MainGameInterfaceWnd::HideContour(int objId)
@@ -442,49 +541,120 @@ void MainGameInterfaceWnd::HideContour(int objId)
     }
 }
 
-void MainGameInterfaceWnd::ShowContour(int, unsigned, float)
+void MainGameInterfaceWnd::ShowContour(int targetObjId, unsigned int color, float size)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12A860
+    if (targetObjId < 0)
+    {
+        return;
+    }
+    ai::Obj* obj = ai::theObjects->GetEntityByObjId(targetObjId);
+    if (obj && obj->IsKindOf(&ai::ComplexPhysicObj::m_classComplexPhysicObj))
+    {
+        auto* complexObj = static_cast<ai::ComplexPhysicObj*>(obj);
+        complexObj->SetContourColor(color);
+        complexObj->SetContourWidth(size);
+        complexObj->PutContour();
+    }
 }
 
 void MainGameInterfaceWnd::UpdateContours()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12A6C0
+    UpdateCapturedContour();
+    UpdateInfoContour();
 }
 
-unsigned MainGameInterfaceWnd::GetColorForInfoContour(int) const
+unsigned int MainGameInterfaceWnd::GetColorForInfoContour(int infoObjId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12AEF0
+    ai::eTolerance const tolerance = help::GetObjTolerance(infoObjId);
+    if (tolerance == ai::RS_ENEMY)
+    {
+        return ai::theGlobProp.m_colorEnemy;
+    }
+    if (tolerance > ai::RS_ENEMY && tolerance <= ai::RS_OWN)
+    {
+        return ai::theGlobProp.m_colorFriend;
+    }
+    return ai::theGlobProp.m_colorEnemy;
 }
 
-void MainGameInterfaceWnd::ShowCapturedContour(int)
+void MainGameInterfaceWnd::ShowCapturedContour(int capturedObjId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12A830 (decompile unavailable - body inferred from
+    // UpdateCapturedContour's inlined equivalent call to ShowContour).
+    ShowContour(capturedObjId, ai::theGlobProp.m_colorTargetCaptured, ai::theGlobProp.m_targetCapturedContourWidth);
+    m_contouredCapturedObjId = capturedObjId;
 }
 
-void MainGameInterfaceWnd::OnNearbyChests(void*)
+void MainGameInterfaceWnd::OnNearbyChests(void* data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12AFF0
+    if (data)
+    {
+        auto const* ev = static_cast<m3d::Event const*>(data);
+        m_bNearbyChests = ev->m_intEv[0] != 0;
+        CheckAndShowNearbyChestsIco();
+    }
 }
 
 void MainGameInterfaceWnd::ClearCapturedContour()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12A990
+    HideContour(m_contouredCapturedObjId);
+    m_contouredCapturedObjId = -1;
 }
 
-void MainGameInterfaceWnd::OnApproachTown(void*)
+void MainGameInterfaceWnd::OnApproachTown(void* data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12B010
+    if (data)
+    {
+        auto const* ev = static_cast<m3d::Event const*>(data);
+        m_nearbyTownId = ev->m_intEv[1] ? ev->m_intEv[0] : -1;
+        CheckAndShowNearbyTownIco();
+    }
 }
 
 int MainGameInterfaceWnd::GetCapturedObjId() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12AE60
+    if (!ai::thePlayer)
+    {
+        return -1;
+    }
+    ai::Vehicle* vehicle = ai::thePlayer->GetVehicle();
+    if (!vehicle)
+    {
+        return -1;
+    }
+    int const lockedObjId = vehicle->GetLockedObjId();
+    if (lockedObjId == -1)
+    {
+        return -1;
+    }
+    ai::Obj* obj = ai::theObjects->GetEntityByObjId(lockedObjId);
+    if (obj)
+    {
+        unsigned int const flags = obj->GetFlags();
+        if ((flags & 8) == 0 && (flags & 2) == 0 && !obj->GetParentRepository() &&
+            obj->IsKindOf(&ai::ComplexPhysicObj::m_classComplexPhysicObj))
+        {
+            return lockedObjId;
+        }
+    }
+    return -1;
 }
 
 void MainGameInterfaceWnd::ClearContours()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12A930
+    HideContour(m_contouredInfoObjId);
+    m_contouredInfoObjId = -1;
+    m_oldInfoObjTolerance = ai::RS_MAX;
+    HideContour(m_contouredCapturedObjId);
+    m_contouredCapturedObjId = -1;
 }
 
 void MainGameInterfaceWnd::CheckAndShowBossIndicator()
@@ -511,16 +681,61 @@ void MainGameInterfaceWnd::CheckAndShowBossIndicator()
     }
 }
 
-int MainGameInterfaceWnd::GameDataLoad(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
+int MainGameInterfaceWnd::GameDataLoad(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12B240
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("MainGameInterfaceWnd::GameDataLoad error - MainGameInterfaceWnd has been not properly inited");
+        return 0;
+    }
+    GameDataClear(false);
+    if (!xmlFile || !guiNode)
+    {
+        M3D_LOG_INFO("MainGameInterfaceWnd::GameDataLoad error - invalid params");
+        return 0;
+    }
+
+    ref_ptr node = xmlFile->CreateNode();
+    guiNode->GetFirstChild(node, "MainGameInterface");
+    if (node->IsEmpty())
+    {
+        M3D_LOG_INFO("MainGameInterfaceWnd::GameDataLoad error - cannot find journal node");
+        return 0;
+    }
+
+    m3d::SafeIntAttrib(m_nearbyTownId, node, "nearTownId");
+    m3d::SafeBoolAttrib(m_bNearbyChests, node, "nearChests");
+    m3d::SafeIntAttrib(m_bossId, node, "bossId");
+    SetupForBoss(m_bossId);
+    return 1;
 }
 
-int MainGameInterfaceWnd::GameDataUpdate(void*, int)
+int MainGameInterfaceWnd::GameDataUpdate(void* data, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x12A5F0
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    switch (dataType)
+    {
+    case 78:  // 'N' - town ruined
+        OnTownRuined(data);
+        break;
+    case 82:  // 'R' - nearby chests
+        OnNearbyChests(data);
+        break;
+    case 83:  // 'S' - approach town
+        OnApproachTown(data);
+        break;
+    case 89:  // 'Y' - new frame
+        OnNewFrame();
+        break;
+    default:
+        break;
+    }
+    return 1;
 }
 
 int MainGameInterfaceWnd::OnBeforeRemoveFromWndStation()
@@ -534,40 +749,112 @@ int MainGameInterfaceWnd::OnBeforeRemoveFromWndStation()
 
 void MainGameInterfaceWnd::UpdateBossMode()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12B650
+    if (m_bossId != -1 && !GetBoss())
+    {
+        SetupForBoss(-1);
+    }
 }
 
 int MainGameInterfaceWnd::GameDataClear(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12A5B0
+    m_bNearbyChests = false;
+    m_nearbyTownId = -1;
+    m_bossId = -1;
+    CheckAndShowNearbyChestsIco();
+    CheckAndShowNearbyTownIco();
+    CheckAndShowBossIndicator();
+    return 1;
 }
 
 void MainGameInterfaceWnd::UpdateCapturedContour()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12A750
+    int const oldCapturedObjId = m_contouredCapturedObjId;
+    int const capturedObjId = GetCapturedObjId();
+    if (oldCapturedObjId != capturedObjId)
+    {
+        if (oldCapturedObjId != -1)
+        {
+            HideContour(oldCapturedObjId);
+            m_contouredCapturedObjId = -1;
+        }
+        if (capturedObjId != -1)
+        {
+            if (capturedObjId == m_contouredInfoObjId)
+            {
+                HideContour(m_contouredInfoObjId);
+                m_contouredInfoObjId = -1;
+                m_oldInfoObjTolerance = ai::RS_MAX;
+            }
+            ShowContour(
+                capturedObjId, ai::theGlobProp.m_colorTargetCaptured, ai::theGlobProp.m_targetCapturedContourWidth);
+            m_contouredCapturedObjId = capturedObjId;
+        }
+    }
 }
 
 int MainGameInterfaceWnd::GetInfoObjId() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12ADD0
+    if (!ai::thePlayer)
+    {
+        return -1;
+    }
+    ai::Vehicle* vehicle = ai::thePlayer->GetVehicle();
+    if (!vehicle)
+    {
+        return -1;
+    }
+    int const infoObjId = vehicle->GetInfoObjId();
+    if (infoObjId == -1)
+    {
+        return -1;
+    }
+    ai::Obj* obj = ai::theObjects->GetEntityByObjId(infoObjId);
+    if (obj)
+    {
+        unsigned int const flags = obj->GetFlags();
+        if ((flags & 8) == 0 && (flags & 2) == 0 && !obj->GetParentRepository() &&
+            obj->IsKindOf(&ai::ComplexPhysicObj::m_classComplexPhysicObj))
+        {
+            return infoObjId;
+        }
+    }
+    return -1;
 }
 
-void MainGameInterfaceWnd::ShowInfoContour(int)
+void MainGameInterfaceWnd::ShowInfoContour(int infoObjId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12A7D0 (decompile unavailable - body inferred from
+    // UpdateInfoContour's call site: it shows the contour with the
+    // tolerance-based color and marks infoObjId as the contoured info obj).
+    ShowContour(infoObjId, GetColorForInfoContour(infoObjId), ai::theGlobProp.m_targetInfoContourWidth);
+    m_contouredInfoObjId = infoObjId;
 }
 
 void MainGameInterfaceWnd::ClearInfoContour()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12A970
+    HideContour(m_contouredInfoObjId);
+    m_contouredInfoObjId = -1;
+    m_oldInfoObjTolerance = ai::RS_MAX;
 }
 
 bool MainGameInterfaceWnd::IsInBossMode() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12B4A0
+    return m_bossId != -1;
 }
 
 void MainGameInterfaceWnd::OnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x12A680
+    UpdateCapturedContour();
+    UpdateInfoContour();
+    if (m_bossId != -1 && !GetBoss())
+    {
+        SetupForBoss(-1);
+    }
 }

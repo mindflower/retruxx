@@ -7,6 +7,7 @@
 #include "game/uimanager/uidefs.h"
 #include "game/uimisc/guihelper.h"
 #include "server/server.h"
+#include "server/objects/base/physicobj.h"
 #include "server/objects/player.h"
 #include "server/objects/staticautogun.h"
 #include "server/objects/vehicle.h"
@@ -56,7 +57,8 @@ bool TargetInfoWnd::IsObjClassValidForInfo(m3d::Class const* cl)
 
 m3d::Object* TargetInfoWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x135140
+    return new TargetInfoWnd(*this);
 }
 
 int TargetInfoWnd::GetTargetObjId() const
@@ -66,12 +68,14 @@ int TargetInfoWnd::GetTargetObjId() const
 
 bool TargetInfoWnd::NeedShow() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x136F90
+    return m_targetObjId != -1;
 }
 
 TargetInfoWnd::~TargetInfoWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1355E0 - m_aif's CStr members and the Wnd base clean up
+    // automatically.
 }
 
 m3d::Class* TargetInfoWnd::GetBaseClass()
@@ -84,7 +88,7 @@ void TargetInfoWnd::UpdateName()
     if ((m_gameDataFlags & 1) != 0)
     {
         m_wndName->SetText({});
-       
+
         if (auto* targetObj = GetTargetObj())
         {
             auto const objFullName = ai::pServer->GetFullNameByObjID(m_targetObjId);
@@ -206,7 +210,8 @@ int TargetInfoWnd::GameDataSetup()
             }
             else
             {
-                M3D_LOG_INFO("Get control error: control " + m_aif.m_wndResistanceName[i] + " is not found or incorrect type");
+                M3D_LOG_INFO(
+                    "Get control error: control " + m_aif.m_wndResistanceName[i] + " is not found or incorrect type");
                 res = 0;
             }
         }
@@ -259,9 +264,14 @@ TargetInfoWnd::TargetInfoWnd()
     m_wndResistance[2] = 0;
 }
 
-TargetInfoWnd::TargetInfoWnd(TargetInfoWnd const&)
+TargetInfoWnd::TargetInfoWnd(TargetInfoWnd const&) : TargetInfoWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped copy ctor (RVA 0x1355C0) default-constructs the base
+    // and re-inits the AuxInfo, but leaves m_pbHealth/m_lblHealth/
+    // m_pbDurability/m_lblDurability/m_wndDistance/m_wndName/
+    // m_wndResistance/m_targetObjId/m_fadeStartTime uninitialized; delegating
+    // to the default ctor here avoids reading uninitialized pointers while
+    // still copying nothing from the source.
 }
 
 void TargetInfoWnd::StopFade()
@@ -289,43 +299,38 @@ void TargetInfoWnd::SetTargetObj(int objId)
 
 void TargetInfoWnd::UpdateToleranceColor()
 {
-    // TODO: generated code TargetInfoWnd::UpdateToleranceColor
-    // Early returns for invalid states
+    // RVA 0x136B30
     if ((m_gameDataFlags & 1) == 0)
         return;
 
     if (m_targetObjId == -1)
         return;
 
-    // Get the target object
     ai::Obj const* targetObj = GetTargetObj();
     if (!targetObj)
         return;
 
-    // Determine relationship and set appropriate color
-    unsigned int textColor = 5;  // Default to enemy color
+    // NOTE: the shipped code falls back to the literal color value 5 when
+    // there is no local player to evaluate tolerance against (or, in the
+    // unreachable case, a tolerance value outside RS_ENEMY..RS_OWN);
+    // reproduced faithfully rather than guessing at an intended constant.
+    unsigned int textColor = 5;
 
     if (ai::thePlayer)
     {
-        ai::eTolerance tolerance = ai::pServer->CheckTolerance(ai::thePlayer->GetBelong(), targetObj->GetBelong());
+        ai::eTolerance const tolerance =
+            ai::pServer->CheckTolerance(ai::thePlayer->GetBelong(), targetObj->GetBelong());
 
-        switch (tolerance)
+        if (tolerance == ai::RS_ENEMY)
         {
-        case ai::RS_ENEMY:
             textColor = m_aif.m_colorEnemy;
-            break;
-
-        case ai::RS_OWN:
+        }
+        else if (tolerance > ai::RS_ENEMY && tolerance <= ai::RS_OWN)
+        {
             textColor = m_aif.m_colorFriend;
-            break;
-
-        default:
-            textColor = 5;  // Use default enemy color for neutral/unknown
-            break;
         }
     }
 
-    // Apply the color to the name window
     m_wndName->SetTextColor(textColor);
 }
 
@@ -362,7 +367,13 @@ void TargetInfoWnd::UpdateDurability()
 
 void TargetInfoWnd::UpdateOnChangeTargetObj(int, int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x136150
+    CheckAndShow();
+    if (!m_fadeStartTime)
+    {
+        UpdateName();
+        UpdateResistance();
+    }
 }
 
 int TargetInfoWnd::OnAfterRemoveFromWndStation()
@@ -401,7 +412,10 @@ int TargetInfoWnd::OnBeforeAddToWndStation()
 
 void TargetInfoWnd::StartFade()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x136C70
+    m_fadeStartTime = 0;
+    SetAlpha(0xFFu);
+    m_fadeStartTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
 }
 
 ai::Obj const* TargetInfoWnd::GetTargetObj() const
@@ -439,19 +453,22 @@ void TargetInfoWnd::OnNewFrameForce()
 
 unsigned char TargetInfoWnd::CalcAlpha() const
 {
-    // TODO check and refactor
-    if (m_fadeStartTime)
+    // RVA 0x136DA0
+    if (!m_fadeStartTime)
     {
-        auto const alpha = 255.0 - (m3d::g_Kernel->GetTimer().GetCurTimeUnscaled() - m_fadeStartTime) * 0.001 * 254.0;
-        if (alpha >= 1.0)
-        {
-            if (alpha > 255.0)
-                return (unsigned __int64)255.0;
-            return (unsigned __int64)alpha;
-        }
-        return (unsigned __int64)1.0;
+        return 0xFFu;
     }
-    return (__int64)-1;
+    unsigned int const curTimeUnscaled = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+    float const alpha = 255.0f - (curTimeUnscaled - m_fadeStartTime) * 0.001f * 254.0f;
+    if (alpha < 1.0f)
+    {
+        return 1u;
+    }
+    if (alpha > 255.0f)
+    {
+        return 255u;
+    }
+    return static_cast<unsigned char>(alpha);
 }
 
 bool TargetInfoWnd::NeedUpdate() const
@@ -511,7 +528,8 @@ void TargetInfoWnd::UpdateResistance()
     auto* targetVehicle = RT_DYNCAST(target, Vehicle const);
 
     // Update visibility for each damage type based on durability coefficient
-    for (ai::DamageType damageType = DAMAGE_PIERCING; damageType < DAMAGE_WATER; damageType = static_cast<ai::DamageType>(damageType + 1))
+    for (ai::DamageType damageType = DAMAGE_PIERCING; damageType < DAMAGE_WATER;
+         damageType = static_cast<ai::DamageType>(damageType + 1))
     {
         int resistanceIndex = damageType - DAMAGE_PIERCING;
         double durabilityCoeff = targetVehicle->GetFullDurabilityCoeffForDamageType(damageType);
@@ -537,7 +555,8 @@ void TargetInfoWnd::CheckAndShow()
 
 bool TargetInfoWnd::IsFading() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x136C60
+    return m_fadeStartTime != 0;
 }
 
 void TargetInfoWnd::ProcessFade()
@@ -560,12 +579,14 @@ void TargetInfoWnd::ProcessFade()
 
 void TargetInfoWnd::RestoreFromFade()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x136CA0
+    m_fadeStartTime = 0;
+    SetAlpha(0xFFu);
 }
 
 void TargetInfoWnd::SetAlpha(unsigned char alpha)
 {
-    // TODO: check this
+    // RVA 0x136E40
     auto color = alpha << 24;
     auto curColor = GetGfxServer()->GetColor(m_curClr);
     SetColor(color | curColor & 0xFFFFFF);
@@ -657,7 +678,45 @@ void TargetInfoWnd::UpdateHealth()
 
 void TargetInfoWnd::UpdateDistance()
 {
-    // TODO: implement TargetInfoWnd::UpdateDistance
+    // RVA 0x136420
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+    m_wndDistance->SetText(CStr());
+    if (m_targetObjId == -1)
+    {
+        return;
+    }
+    auto const* targetObj = GetTargetObj();
+    if (!targetObj || !targetObj->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
+    {
+        return;
+    }
+    if (!ai::thePlayer)
+    {
+        return;
+    }
+    ai::Vehicle* vehicle = ai::thePlayer->GetVehicle();
+    if (!vehicle)
+    {
+        return;
+    }
+
+    auto const* targetPhysic = static_cast<ai::PhysicObj const*>(targetObj);
+    CVector const diff = targetPhysic->GetPosition() - vehicle->GetPosition();
+    float const dist = diff.length();
+
+    CStr caption;
+    if (dist < 1000.0f)
+    {
+        caption = CStr(static_cast<int>(dist)) + " " + M3D_APP->GetStringByStringId0("m");
+    }
+    else
+    {
+        caption = help::ftoa(dist * 0.001f, 1) + " " + M3D_APP->GetStringByStringId0("Km");
+    }
+    m_wndDistance->SetText(caption);
 }
 
 void TargetInfoWnd::UpdateTargetObj()

@@ -14,7 +14,7 @@ namespace m3d
 
         unsigned ProgressBarWnd::GetBarColor() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_barColor;
         }
 
         float ProgressBarWnd::GetMaxValue() const
@@ -37,17 +37,17 @@ namespace m3d
 
         rend::TexHandle ProgressBarWnd::GetBarTexture() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_barTexture;
         }
 
-        void ProgressBarWnd::SetTextStyle(TextStyle)
+        void ProgressBarWnd::SetTextStyle(TextStyle textStyle)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_textStyle = textStyle;
         }
 
-        void ProgressBarWnd::SetOrientation(Orientation)
+        void ProgressBarWnd::SetOrientation(Orientation orientation)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_orientation = orientation;
         }
 
         int ProgressBarWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
@@ -94,12 +94,12 @@ namespace m3d
 
         int ProgressBarWnd::GetNumOfSteps() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_numOfSteps;
         }
 
-        void ProgressBarWnd::SetBarColor(unsigned)
+        void ProgressBarWnd::SetBarColor(unsigned barColor)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_barColor = barColor;
         }
 
         void ProgressBarWnd::SetMaxValue(float maxValue)
@@ -117,7 +117,7 @@ namespace m3d
 
         Object* ProgressBarWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new ProgressBarWnd(*this);
         }
 
         float ProgressBarWnd::GetCurValue() const
@@ -149,7 +149,7 @@ namespace m3d
 
         ProgressBarWnd::TextStyle ProgressBarWnd::GetTextStyle() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_textStyle;
         }
 
         Class* ProgressBarWnd::GetBaseClass()
@@ -159,7 +159,7 @@ namespace m3d
 
         ProgressBarWnd::Orientation ProgressBarWnd::GetOrientation() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_orientation;
         }
 
         void ProgressBarWnd::SetNumOfSteps(int numOfSteps)
@@ -178,7 +178,7 @@ namespace m3d
 
         ProgressBarWnd::TextureStyle ProgressBarWnd::GetTextureStyle() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_textureStyle;
         }
 
         Object* ProgressBarWnd::CreateObject()
@@ -193,12 +193,15 @@ namespace m3d
 
         ProgressBarWnd::~ProgressBarWnd()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (m_barTexture.IsValid())
+            {
+                M3D_RENDERER->ReleaseTexture(m_barTexture);
+            }
         }
 
-        void ProgressBarWnd::SetTextureStyle(TextureStyle)
+        void ProgressBarWnd::SetTextureStyle(TextureStyle textureStyle)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_textureStyle = textureStyle;
         }
 
         int ProgressBarWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -469,9 +472,9 @@ namespace m3d
             return result;
         }
 
-        ProgressBarWnd::ProgressBarWnd(ProgressBarWnd const&)
+        ProgressBarWnd::ProgressBarWnd(ProgressBarWnd const& rhs)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // ok
         }
 
         ProgressBarWnd::ProgressBarWnd()

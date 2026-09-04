@@ -19,6 +19,17 @@ public:
     };
 
 public:
+    // NOTE: not present in the header this class was extracted from.
+    struct AuxInfo
+    {
+        AuxInfo();
+        /* green/yellow/red/dead durability texture names, one quad per Type */
+        CStr m_cabinDurTexNames[TYPE_NUM_TYPES][4];
+        CStr m_basketDurTexNames[TYPE_NUM_TYPES][4];
+        CStr m_strCabinDurabilityId;
+        CStr m_strBasketDurabilityId;
+    };
+
     static m3d::Class * GetBaseClass();
     static m3d::Object * CreateObject();
     virtual int CreateFromPattern(m3d::ui::Wnd *,bool);
@@ -57,4 +68,6 @@ private:
     CStr m_strBasketDurability;
     float m_prevCurVal;
     float m_prevMaxVal;
+    // NOTE: not present in the header this class was extracted from.
+    static inline DurabilityIndicatorWnd::AuxInfo m_aif;
 };

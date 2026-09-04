@@ -25,7 +25,8 @@ HealthIndicatorInMainInterfaceWnd::AuxInfo::AuxInfo()
 
 m3d::Object* HealthIndicatorInMainInterfaceWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1256E0
+    return new HealthIndicatorInMainInterfaceWnd(*this);
 }
 
 void HealthIndicatorInMainInterfaceWnd::SetType(Type newType)
@@ -222,7 +223,9 @@ m3d::Class* HealthIndicatorInMainInterfaceWnd::GetBaseClass()
 
 HealthIndicatorInMainInterfaceWnd::~HealthIndicatorInMainInterfaceWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x125A50 - m_strHealth and the Wnd base (which owns/destroys the
+    // child m_wndLowHpLamp/m_wndProgressBar/m_wndValue windows) clean up
+    // automatically.
 }
 
 void HealthIndicatorInMainInterfaceWnd::SetVehicleId(int id)
@@ -231,9 +234,15 @@ void HealthIndicatorInMainInterfaceWnd::SetVehicleId(int id)
     FullUpdate(true);
 }
 
-void HealthIndicatorInMainInterfaceWnd::UpdateTooltip(float, float)
+void HealthIndicatorInMainInterfaceWnd::UpdateTooltip(float curHp, float maxHp)
 {
-    // TODO: implement HealthIndicatorInMainInterfaceWnd::UpdateTooltip
+    // RVA 0x126900
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        CStr text = m_strHealth + ": " + CStr(static_cast<int>(curHp)) + "/" + CStr(static_cast<int>(maxHp));
+        m_wndProgressBar->SetProperty(PROP_WND_TOOLTIP, &text);
+        m_wndValue->SetProperty(PROP_WND_TOOLTIP, &text);
+    }
 }
 
 ai::Vehicle const* HealthIndicatorInMainInterfaceWnd::GetVehicle() const
@@ -243,19 +252,29 @@ ai::Vehicle const* HealthIndicatorInMainInterfaceWnd::GetVehicle() const
 
 int HealthIndicatorInMainInterfaceWnd::GameDataClear(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x126600
+    m_vehicleId = -1;
+    FullUpdate(true);
+    return 1;
 }
 
-void HealthIndicatorInMainInterfaceWnd::UpdateLowHpLamp(float, float)
+void HealthIndicatorInMainInterfaceWnd::UpdateLowHpLamp(float curHp, float maxHp)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1267E0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndLowHpLamp->SetValue(curHp, maxHp);
+    }
 }
 
-int HealthIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int)
+int HealthIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x126620
+    if (dataType == 89 && m_vehicleId != -1)
+    {
+        FullUpdate(false);
+    }
+    return 1;
 }
 
 HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd()
@@ -269,36 +288,61 @@ HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd()
     m_prevMaxVal = 0.0;
 }
 
-HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd(HealthIndicatorInMainInterfaceWnd const&)
+HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd(HealthIndicatorInMainInterfaceWnd const&) :
+    HealthIndicatorInMainInterfaceWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped copy ctor (RVA 0x125A20) default-constructs the base
+    // and resets m_strHealth to empty, but leaves m_type/m_wndLowHpLamp/
+    // m_wndProgressBar/m_wndValue/m_vehicleId/m_prevCurVal/m_prevMaxVal
+    // uninitialized; delegating to the default ctor here avoids reading
+    // uninitialized pointers/ints while still copying nothing from the source.
 }
 
-void HealthIndicatorInMainInterfaceWnd::GetHp(float&, float&) const
+void HealthIndicatorInMainInterfaceWnd::GetHp(float& curHp, float& maxHp) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1268B0
+    curHp = 0.0f;
+    maxHp = 0.0f;
+    if (ai::Vehicle const* vehicle = GetVehicle())
+    {
+        curHp = vehicle->Health().value().get();
+        maxHp = vehicle->Health().maxValue().get();
+    }
 }
 
 void HealthIndicatorInMainInterfaceWnd::OnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x126650
+    if (m_vehicleId != -1)
+    {
+        FullUpdate(false);
+    }
 }
 
-void HealthIndicatorInMainInterfaceWnd::UpdateProgressBar(float, float)
+void HealthIndicatorInMainInterfaceWnd::UpdateProgressBar(float curHp, float maxHp)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1267B0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndProgressBar->SetMaxValue(maxHp);
+        m_wndProgressBar->SetCurValue(curHp);
+    }
 }
 
-void HealthIndicatorInMainInterfaceWnd::UpdateValueWnd(float)
+void HealthIndicatorInMainInterfaceWnd::UpdateValueWnd(float curHp)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x126810
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndValue->ShowNumber(static_cast<int>(curHp), false, 4u, false);
+    }
 }
 
 void HealthIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
 {
     float curHp = 0.0;
     float maxHp = 0.0;
-    
+
     ai::Vehicle const* vehicle = GetVehicle();
     if (vehicle)
     {

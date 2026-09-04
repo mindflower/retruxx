@@ -9,11 +9,15 @@
 #include "file/fileserver.h"
 #include "server/objects/bar.h"
 #include "server/objects/building.h"
+#include "server/objects/player.h"
 #include "server/objects/town.h"
 #include "server/objects/vehicle.h"
 #include "server/objects/workshop.h"
 #include "server/objects/base/objcontainer.h"
+#include "server/objects/guns/compoundgun.h"
+#include "server/objects/guns/gun.h"
 #include "server/objects/physicbodies/vehiclepart.h"
+#include "server/server.h"
 #include "ui/ui.h"
 #include "ui/button.h"
 #include "ui/font.h"
@@ -23,6 +27,8 @@
 #include "game/m3dgame.h"  // CMiracle3d - M3D_APP->m_pInterfaceManager (help::ftoa)
 
 #include <sstream>
+#include <math/vector.h>
+#include <renderer/i_renderer.h>
 #include <server/resourcemanager.h>
 
 namespace m3d
@@ -539,5 +545,133 @@ namespace help
             return buildings.front();
         }
         return nullptr;
+    }
+
+    PointBase<float> GetRelScreenPtByWorldPos(CVector const& worldPos)
+    {
+        // RVA 0x154350
+        CVector const orgInv = M3D_RENDERER->MatGetOrgInv();
+        CVector const relToCam{worldPos.x - orgInv.x, worldPos.y - orgInv.y, worldPos.z - orgInv.z};
+        CVector const screenPt = M3D_RENDERER->Project(relToCam);
+
+        PointBase<float> result{screenPt.x, screenPt.y};
+        M3D_RENDERER->AbsToRel(result.x, result.y);
+        return result;
+    }
+
+    ai::eTolerance GetObjTolerance(int objId)
+    {
+        if (!ai::thePlayer)
+        {
+            return ai::RS_MAX;
+        }
+        ai::Obj* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (!obj)
+        {
+            return ai::RS_MAX;
+        }
+        return ai::pServer->CheckTolerance(ai::thePlayer->GetBelong(), obj->GetBelong());
+    }
+
+    bool CanGunFire(ai::Obj const* gun)
+    {
+        // NOTE: this helper's own implementation is not among the functions
+        // decompiled for this pass (only its call sites are, which show it
+        // takes the gun object and returns whether it can currently fire).
+        // A hard RETRUXX_NOT_IMPLEMENTED stub is avoided here because this
+        // runs every frame from WeaponInfoWnd::UpdateOnNewFrame while any
+        // weapon-info UI is visible; as a safe placeholder this reports
+        // "can fire" whenever a gun object exists.
+        return gun != nullptr;
+    }
+
+    bool CanGunShotToSeenObj(ai::Obj const* gun)
+    {
+        // NOTE: same situation as CanGunFire above - this helper's own
+        // implementation is not among the functions decompiled for this
+        // pass, only call sites that show it takes the gun object and
+        // returns whether it can currently hit the player's seen/locked
+        // target. A safe placeholder ("can shoot" whenever a gun exists) is
+        // used instead of a hard RETRUXX_NOT_IMPLEMENTED stub because this
+        // is called every frame while weapon-group UI is visible.
+        return gun != nullptr;
+    }
+
+    bool IsGunWithCharging(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->IsWithCharging();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->IsWithCharging();
+        }
+        return false;
+    }
+
+    unsigned int GetGunChargeSize(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetChargeSize();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetChargeSize();
+        }
+        return 0;
+    }
+
+    unsigned int GetGunShellsInCurrentCharge(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetShellsInCurrentCharge();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetShellsInCurrentCharge();
+        }
+        return 0;
+    }
+
+    unsigned int GetGunShellsInPool(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetShellsInPool();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetShellsInPool();
+        }
+        return 0;
+    }
+
+    float GetGunRechargingTime(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetRechargingTime();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetRechargingTime();
+        }
+        return 0.0f;
+    }
+
+    float GetGunCurrentRechargingTime(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetCurrentRechargingTime();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetCurrentRechargingTime();
+        }
+        return 0.0f;
     }
 }  // namespace help
