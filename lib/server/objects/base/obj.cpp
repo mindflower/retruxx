@@ -627,7 +627,22 @@ namespace ai
 
     void Obj::UnlinkFromParent()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CE550: drop out of the parent's child or component list. With no
+        // parent there is nothing to remove, so just clear the stale id.
+        auto* parent = GetParent();
+        if (parent == nullptr)
+        {
+            m_parentId = -1;
+            return;
+        }
+        if (m_hierarchyType == HIERARCHY_COMPONENT)
+        {
+            parent->RemoveComponent(this);
+        }
+        else
+        {
+            parent->RemoveChild(this);
+        }
     }
 
     void Obj::SetParentInvalid()
@@ -1021,10 +1036,7 @@ namespace ai
     void Obj::SetParentRepository(GeomRepository* parentRepository)
     {
         //TODO: check logic
-        if (!parentRepository || !m_parentRepository || m_parentRepository == parentRepository)
-        {
-            SYS_ERROR("!parentRepository || !m_parentRepository || m_parentRepository == parentRepository");
-        }
+        M3D_ASSERT(!parentRepository || !m_parentRepository || m_parentRepository == parentRepository);
         m_parentRepository = parentRepository;
     }
 
@@ -1129,26 +1141,11 @@ namespace ai
 
     void Obj::LinkToParent(int newParentId, HierarchyType newHierarchyType)
     {
-        auto* parent = GetParent();
-        if (parent != nullptr)
-        {
-            if (m_hierarchyType == HIERARCHY_COMPONENT)
-            {
-                parent->RemoveComponent(this);
-            }
-            else
-            {
-                parent->RemoveChild(this);
-            }
-        }
-        else
-        {
-            m_parentId = -1;
-        }
+        // RVA 0x5D4120: the shipped code inlines UnlinkFromParent here.
+        UnlinkFromParent();
         m_parentId = newParentId;
         m_hierarchyType = newHierarchyType;
-        parent = GetParent();
-        if (parent != nullptr)
+        if (auto* parent = GetParent())
         {
             SetBelong(parent->GetBelong());
         }

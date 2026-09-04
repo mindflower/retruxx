@@ -96,7 +96,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Player, RemoveQuestItem)
 
 namespace ai
 {
-    namespace 
+    namespace
     {
         class TestPlayerVisibility : public m3d::IsNodeTransparent
         {
@@ -117,7 +117,7 @@ namespace ai
             if (!vehicle)
                 return 0.0;
 
-            const auto center = vehicle->GetGeometricCenter();
+            auto const center = vehicle->GetGeometricCenter();
             auto invMat = M3D_RENDERER->MatGetOrgInv();
 
             CVector v9;
@@ -132,23 +132,23 @@ namespace ai
         {
             RETRUXX_NOT_IMPLEMENTED;
         }
-    }
+    }  // namespace
 
     RT_CLASS_EXPORTS_BEGIN(Player)
-        RT_CLASS_EXPORT(Player, m3d::METHOD, GetMoney, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, AddMoney, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, GetHealth, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, GetMaxHealth, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, GetFuel, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, GetMaxFuel, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, GetVehicle, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, AddItemsToRepository, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, RemoveItemsFromRepository, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, HasAmountOfItemsInRepository, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, CanPlaceItemsToRepository, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, IsQuestItemPresent, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, AddQuestItem, "", "", "")
-        RT_CLASS_EXPORT(Player, m3d::METHOD, RemoveQuestItem, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, GetMoney, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, AddMoney, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, GetHealth, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, GetMaxHealth, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, GetFuel, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, GetMaxFuel, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, GetVehicle, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, AddItemsToRepository, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, RemoveItemsFromRepository, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, HasAmountOfItemsInRepository, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, CanPlaceItemsToRepository, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, IsQuestItemPresent, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, AddQuestItem, "", "", "")
+    RT_CLASS_EXPORT(Player, m3d::METHOD, RemoveQuestItem, "", "", "")
     RT_CLASS_EXPORTS_END;
 
     RT_CLASS_DEFINE(Player);
@@ -238,12 +238,14 @@ namespace ai
             if (newFightState != m_prevPlayerFightState)
             {
                 // Send state change message
-                M3D_APP->EnqueueMessage(66555, // Message ID for fight state change
+                M3D_APP->EnqueueMessage(
+                    66555,  // Message ID for fight state change
                     newFightState,
-                    0, 0, 0,
+                    0,
+                    0,
+                    0,
                     {},
-                    {}
-                );
+                    {});
             }
         }
         else if (newFightState == FIGHT_BATTLE_JUST_FINISHED)
@@ -260,12 +262,14 @@ namespace ai
                 if (stateChanged)
                 {
                     // Send state reversion message
-                    M3D_APP->EnqueueMessage(66555, // Message ID for fight state change
+                    M3D_APP->EnqueueMessage(
+                        66555,  // Message ID for fight state change
                         currentFightState,
-                        0, 0, 0,
+                        0,
+                        0,
+                        0,
                         {},
-                        {}
-                    );
+                        {});
                 }
             }
         }
@@ -335,8 +339,8 @@ namespace ai
 
     Player::Player(PlayerPrototypeInfo const& prototypeInfo) :
         Obj(prototypeInfo),
-        m_money{ 0, 0 },
-        m_timeOfNoBattle{ 0.0, 0.0, 7.0, 1.0 }
+        m_money{0, 0},
+        m_timeOfNoBattle{0.0, 0.0, 7.0, 1.0}
     {
         m_radioManager = 0;
         this->m_vehicleObjId = -1;
@@ -344,7 +348,8 @@ namespace ai
         this->m_prevPlayerFightState = NUM_FIGHT_STATES;
         m_lastSaveDir = "saves\\__tmp__save\\";
 
-        m_money.m_AfterValueChange = new ai::MemberFunctionOneArg<ai::Player, int, void>(*this, &Player::_OnMoneyValueAfterChange);
+        m_money.m_AfterValueChange =
+            new ai::MemberFunctionOneArg<ai::Player, int, void>(*this, &Player::_OnMoneyValueAfterChange);
         m_infoObjId = -1;
 
         m_infoCone = new InfoCone;
@@ -440,7 +445,13 @@ namespace ai
 
     IzvratRepository* Player::GetRepository() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (auto* vehicle = GetVehicle())
+        {
+            return vehicle->GetRepository();
+        }
+
+        M3D_LOG_INFO("Warning: cannot get repository cause the player hasn't got any vehicle");
+        return nullptr;
     }
 
     void Player::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -539,8 +550,8 @@ namespace ai
                     CauseEvent(GE_PLAYER_VEHICLE_CHANGED, 0.0, {}, {});
                     if (m_radioManager)
                     {
-                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, { 9 }, {}, 1);
-                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, { 44 }, {}, 1);
+                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, {9}, {}, 1);
+                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, {44}, {}, 1);
                     }
                 }
             }
@@ -555,10 +566,10 @@ namespace ai
                     m_radioManager = dynamic_cast<RadioManager*>(obj);
                     if (m_vehicleObjId != -1)
                     {
-                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, { 9 }, {}, 1);
-                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, { 44 }, {}, 1);
+                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, {9}, {}, 1);
+                        theProcessManager->PostMessageA(2, m_vehicleObjId, m_radioManager->GetId(), 0.0, {44}, {}, 1);
                     }
-                    theProcessManager->PostMessageA(2, GetId(), m_radioManager->GetId(), 0.0, { 65 }, {}, 1);
+                    theProcessManager->PostMessageA(2, GetId(), m_radioManager->GetId(), 0.0, {65}, {}, 1);
                 }
             }
             obj->LinkToParent(GetId(), HIERARCHY_CHILD);
@@ -603,12 +614,11 @@ namespace ai
         }
 
         return false;
-
     }
 
     PlayerPrototypeInfo const* Player::GetPrototypeInfo() const
     {
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const PlayerPrototypeInfo);
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), PlayerPrototypeInfo const);
     }
 
     bool Player::AddItemsToRepository(char const*, int)
@@ -744,7 +754,6 @@ namespace ai
     {
         // TODO: check this
         delete m_infoCone;
-
     }
 
     bool Player::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
@@ -819,4 +828,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

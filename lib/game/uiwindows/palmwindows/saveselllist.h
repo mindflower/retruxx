@@ -5,6 +5,21 @@
 class SaveSellButton : public m3d::ui::ButtonWnd
 {
 public:
+    class AuxInfo
+    {
+        friend class SaveSellButton;
+
+    public:
+        AuxInfo();
+
+    private:
+        CStr m_paneName;
+        CStr m_selectPaneName;
+        float m_space;
+        unsigned int m_textColor;
+    };
+
+public:
     virtual ~SaveSellButton();
     virtual m3d::Object* Clone();
     int SetUp(class ObjectInfo*, float, int);
@@ -22,6 +37,8 @@ protected:
 public:
     RT_CLASS_DECLARE(SaveSellButton);
 
+    static SaveSellButton::AuxInfo m_aif;
+
 private:
     ObjectInfo* m_objectInfo;
     m3d::ui::Wnd* m_lblObjectName;
@@ -34,6 +51,8 @@ class SaveSellList :  public m3d::ui::Wnd
 public:
     class AuxInfo
     {
+        friend class SaveSellList;
+
     public:
         AuxInfo();
 

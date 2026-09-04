@@ -58,21 +58,73 @@ namespace ai
 
     std::vector<int, std::allocator<int>> const& IzvratRepository::GetCells() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E8E90
+        return m_cells;
     }
 
     IzvratRepository::~IzvratRepository()
     {
     }
 
-    int IzvratRepository::CanAddThingToPlace(GeomRepositoryItem const&, PointBase<int> const&, int*) const
+    int IzvratRepository::CanAddThingToPlace(
+        GeomRepositoryItem const& item,
+        PointBase<int> const& origin,
+        int* existingSlot) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E9510
+        if (existingSlot)
+        {
+            *existingSlot = -1;
+        }
+
+        BoundsBase<int> const itemBounds = item.GetBounds();
+
+        // If the item already lives here, find which slot it currently occupies so
+        // GetUnifyCellValueFromPiece can treat those cells as free.
+        int slotByPlace = -1;
+        if (item.m_parentRepository == this)
+        {
+            PointBase<int> const currentPlace(itemBounds.x0, itemBounds.y0);
+            slotByPlace = GetSlotByPlace(currentPlace);
+        }
+
+        BoundsBase<int> piece;
+        piece.x0 = origin.x + (m_maxGeomSize.x - m_geomSize.x) / 2;
+        piece.y0 = origin.y + (m_maxGeomSize.y - m_geomSize.y) / 2;
+        piece.width = itemBounds.width;
+        piece.height = itemBounds.height;
+
+        int const unified = GetUnifyCellValueFromPiece(piece, slotByPlace);
+        if (unified == -1)
+        {
+            // All-free footprint: the whole item fits.
+            if (!item.IsValid())
+            {
+                return 0;
+            }
+            return item.m_repositoryItemType ? 1 : static_cast<int>(item.m_amount);
+        }
+        if (unified < 0)
+        {
+            return 0;
+        }
+        if (unified >= static_cast<int>(m_slots.size()))
+        {
+            return 0;
+        }
+        // The footprint sits exactly on an existing slot - ask it how much it takes.
+        int const result = static_cast<int>(m_slots[unified].GetAcceptedNum(item));
+        if (result > 0 && existingSlot)
+        {
+            *existingSlot = unified;
+        }
+        return result;
     }
 
     m3d::Object* IzvratRepository::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E9A60
+        return new IzvratRepository(*this);
     }
 
     m3d::Class* IzvratRepository::GetBaseClass()
@@ -80,9 +132,34 @@ namespace ai
         return RT_CLASS_LOCAL(GeomRepository);
     }
 
-    bool IzvratRepository::AddThingToPlace(GeomRepositoryItem&, PointBase<int> const&)
+    bool IzvratRepository::AddThingToPlace(GeomRepositoryItem& item, PointBase<int> const& origin)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E9A90
+        if (!item.IsValid() || (item.m_repositoryItemType == GeomRepositoryItem::ITEMTYPE_RESOURCE && !item.m_amount))
+        {
+            return false;
+        }
+
+        int existingSlot = -1;
+        if (CanAddThingToPlace(item, origin, &existingSlot) <= 0)
+        {
+            return false;
+        }
+
+        if (existingSlot >= 0 && existingSlot < static_cast<int>(m_slots.size()))
+        {
+            m_slots[existingSlot].AcceptItem(item);
+            SetChanged();
+            return true;
+        }
+
+        GeomRepositoryItem newThing = item;
+        newThing.AddToRepository(this, origin);
+        m_slots.push_back(newThing);
+        MarkCellPieceByValue(static_cast<int>(m_slots.size()) - 1, ToMaxSzRelative(newThing.GetBounds()));
+        item.Invalidate();
+        SetChanged();
+        return true;
     }
 
     m3d::Object* IzvratRepository::CreateObject()
@@ -120,14 +197,23 @@ namespace ai
         return GeomRepository::SetGeomSize(actualSize);
     }
 
-    BoundsBase<int> IzvratRepository::ToMaxSzRelative(BoundsBase<int>) const
+    BoundsBase<int> IzvratRepository::ToMaxSzRelative(BoundsBase<int> geomSzRelative) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E8F40
+        BoundsBase<int> result(geomSzRelative);
+        result.x0 += (m_maxGeomSize.x - m_geomSize.x) / 2;
+        result.y0 += (m_maxGeomSize.y - m_geomSize.y) / 2;
+        return result;
     }
 
-    PointBase<int> IzvratRepository::ToMaxSzRelative(PointBase<int>) const
+    PointBase<int> IzvratRepository::ToMaxSzRelative(PointBase<int> geomSzRelative) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E8F90
+        // Shift a point from active-area space into the fixed max-size grid.
+        PointBase<int> result(geomSzRelative);
+        result.x += (m_maxGeomSize.x - m_geomSize.x) / 2;
+        result.y += (m_maxGeomSize.y - m_geomSize.y) / 2;
+        return result;
     }
 
     int IzvratRepository::SnapPiece(BoundsBase<int> const& piece)
@@ -202,7 +288,8 @@ namespace ai
 
     m3d::Class* IzvratRepository::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E8E70
+        return RT_CLASS_LOCAL(IzvratRepository);
     }
 
     void IzvratRepository::Clear(bool bUnsafe)
@@ -217,29 +304,54 @@ namespace ai
         MarkCellPieceByValueExcluding(-1, piece, -2);
     }
 
-    IzvratRepository& IzvratRepository::operator=(IzvratRepository const&)
+    IzvratRepository& IzvratRepository::operator=(IzvratRepository const& rhs)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E99B0
+        // RVA 0x6E99B0. NOTE: the shipped code copies only these five members - the
+        // base m_referenceChests / m_vehicleId / m_sortStyle are deliberately left as is.
+        m_Changed = true;
+        m_geomSize = rhs.m_geomSize;
+        m_slots = rhs.m_slots;
+        m_maxGeomSize = rhs.m_maxGeomSize;
+        m_cells = rhs.m_cells;
+        return *this;
     }
 
     PointBase<int> const& IzvratRepository::GetMaxGeomSize() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E8E80
+        return m_maxGeomSize;
     }
 
-    PointBase<int> IzvratRepository::ToGeomSzRelative(PointBase<int>) const
+    PointBase<int> IzvratRepository::ToGeomSzRelative(PointBase<int> maxSzRelative) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E8FD0
+        // The inverse of ToMaxSzRelative.
+        PointBase<int> result(maxSzRelative);
+        result.x -= (m_maxGeomSize.x - m_geomSize.x) / 2;
+        result.y -= (m_maxGeomSize.y - m_geomSize.y) / 2;
+        return result;
     }
 
-    BoundsBase<int> IzvratRepository::ToGeomSzRelative(BoundsBase<int>) const
+    BoundsBase<int> IzvratRepository::ToGeomSzRelative(BoundsBase<int> maxSzRelative) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E9030
+        BoundsBase<int> result(maxSzRelative);
+        result.x0 -= (m_maxGeomSize.x - m_geomSize.x) / 2;
+        result.y0 -= (m_maxGeomSize.y - m_geomSize.y) / 2;
+        return result;
     }
 
-    IzvratRepository::IzvratRepository(IzvratRepository const&)
+    IzvratRepository::IzvratRepository(IzvratRepository const& rhs)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E9A00
+        // RVA 0x6E9A00: default-construct the base, then copy the same five members
+        // operator= handles.
+        m_Changed = true;
+        m_geomSize = rhs.m_geomSize;
+        m_slots = rhs.m_slots;
+        m_maxGeomSize = rhs.m_maxGeomSize;
+        m_cells = rhs.m_cells;
     }
 
     IzvratRepository::IzvratRepository()
@@ -247,9 +359,47 @@ namespace ai
         SetMaxGeomSize(ai::theGlobProp.m_izvratRepositoryMaxSize);
     }
 
-    int IzvratRepository::GetUnifyCellValueFromPiece(BoundsBase<int> const&, int) const
+    int IzvratRepository::GetUnifyCellValueFromPiece(BoundsBase<int> const& piece, int itemId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E9180
+        // Fold every cell the (grid-clipped) piece covers into one value: -3 when the
+        // region is empty or the cells disagree, otherwise the common value. A piece
+        // that only straddles free cells and its own slot's cells (itemId) folds to -1.
+        BoundsBase<int> const grid(0, 0, m_maxGeomSize.x, m_maxGeomSize.y);
+        BoundsBase<int> const region = grid.Intersect(piece);
+
+        int unified = -3;
+        bool haveBaseline = false;
+        int const stride = m_maxGeomSize.x;
+        for (int col = region.x0; col < region.x0 + region.width; ++col)
+        {
+            for (int row = region.y0; row < region.y0 + region.height; ++row)
+            {
+                int const cellIndex = row * stride + col;
+                if (cellIndex < 0 || cellIndex >= static_cast<int>(m_cells.size()))
+                {
+                    continue;
+                }
+                int const cell = m_cells[cellIndex];
+                if (!haveBaseline)
+                {
+                    unified = cell;
+                    haveBaseline = true;
+                    continue;
+                }
+                if (cell == unified)
+                {
+                    continue;
+                }
+                if (itemId != -1 && ((cell == itemId && unified == -1) || (cell == -1 && unified == itemId)))
+                {
+                    unified = -1;
+                    continue;
+                }
+                return -3;
+            }
+        }
+        return unified;
     }
 
     void IzvratRepository::MarkCellPieceByValue(int value, BoundsBase<int> const& piece)
@@ -316,8 +466,15 @@ namespace ai
         }
     }
 
-    bool IzvratRepository::IsValueAnItemId(int) const
+    bool IzvratRepository::IsValueAnItemId(int cellValue) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E8F00
+        // Non-negative cell values below the slot count are slot indices; -1 (free),
+        // -2 (outside the active area) and -3 (mixed) are not.
+        if (cellValue < 0)
+        {
+            return false;
+        }
+        return cellValue < static_cast<int>(m_slots.size());
     }
-}
+}  // namespace ai

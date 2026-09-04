@@ -45,6 +45,7 @@
 #include <server/server.h>
 
 #include "gadget.h"
+#include "ware.h"
 #include "level.h"
 #include "staticautogun.h"
 #include "team.h"
@@ -52,6 +53,7 @@
 #include "core/timer.h"
 #include "engine/ode/sources/joint.h"
 #include "guns/compoundgun.h"
+#include "guns/bullet.h"
 #include "guns/rocketlauncher.h"
 #include "guns/rocketvolleylauncher.h"
 #include "scene/nodes/sgnodesound.h"
@@ -59,6 +61,9 @@
 #include "server/infocone.h"
 #include "server/intersectionmanager.h"
 #include "server/path.h"
+#include "server/geomrepositoryitem.h"
+#include "server/processmanager.h"
+#include "server/resourcemanager.h"
 #include "server/weaponfirer.h"
 #include "server/formations/formation.h"
 #include "server/roles/VehicleRole.h"
@@ -778,12 +783,15 @@ namespace ai
 
     bool Vehicle::WheelRuntimeInfo::IsWheelPresent() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CE880
+        return m_bWheelPresent;
     }
 
-    void Vehicle::WheelRuntimeInfo::SetWheel(Wheel*)
+    void Vehicle::WheelRuntimeInfo::SetWheel(Wheel* wheel)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CE8F0
+        m_wheel = wheel;
+        m_bWheelPresent = wheel != nullptr;
     }
 
     float Vehicle::GetCruisingSpeed() const
@@ -793,12 +801,14 @@ namespace ai
 
     void Vehicle::UnlimitMaxSpeed()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC420
+        m_maxSpeedLimited = false;
     }
 
     void Vehicle::IncStoppageMode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCD10
+        ++m_stoppageMode;
     }
 
     void Vehicle::EnablePhysics()
@@ -821,17 +831,37 @@ namespace ai
 
     bool Vehicle::bRocketLaunchersPresent() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCF20
+        return m_bRocketLaunchersPresent;
     }
 
     void Vehicle::RecalcGadgets()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DCAF0
+        // Detach any gadget whose slot is no longer valid and stow it in the repository.
+        for (auto it = m_gadgets.begin(); it != m_gadgets.end();)
+        {
+            auto* gadget = it->second;
+            if (it->first == GetValidSlotIdForGadget(gadget))
+            {
+                ++it;
+                continue;
+            }
+            ++it;
+            RemoveChild(gadget);
+            if (m_repository)
+            {
+                m_repository->AddThing(GeomRepositoryItem(gadget->GetId()), 0);
+            }
+        }
     }
 
-    void Vehicle::HoldFire(int)
+    void Vehicle::HoldFire(int msc)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBF40
+        m_bIsShooting = false;
+        m_shootTypeChangeTime = m3d::g_Kernel->GetTimer().GetCurTime();
+        m_shootTimeToWait = static_cast<unsigned>(msc);
     }
 
     VehicleRecollection* Vehicle::GetRecollection() const
@@ -860,18 +890,34 @@ namespace ai
 
     Vehicle::CustomWeaponControlType Vehicle::GetCustomControlWeapons() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBBC0
+        return m_customControlWeapons;
     }
 
-    Quaternion Vehicle::GetWheelInitialRotation(unsigned)
+    Quaternion Vehicle::GetWheelInitialRotation(unsigned num)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DA0D0
+        return m_wheels[num].m_initialRot;
     }
 
-    void Vehicle::ActivateHeadLights(bool)
+    void Vehicle::ActivateHeadLights(bool bActivate)
     {
-        // TODO: implement Vehicle::ActivateHeadLights
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DA130: LIGHT_ACTION toggles between AT_RESERVED1 (off) and
+        // AT_RESERVED2 (on); re-push the action list to the basket and cabin.
+        ActionType const wanted = bActivate ? AT_RESERVED2 : AT_RESERVED1;
+        if (m_effectActions[LIGHT_ACTION] == wanted)
+        {
+            return;
+        }
+        m_effectActions[LIGHT_ACTION] = wanted;
+        if (auto* basket = GetBasket())
+        {
+            basket->SetEffectActions(m_effectActions);
+        }
+        if (auto* cabin = GetCabin())
+        {
+            cabin->SetEffectActions(m_effectActions);
+        }
     }
 
     void Vehicle::Flow(Obj*, float)
@@ -881,12 +927,36 @@ namespace ai
 
     void Vehicle::DetachTrailer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E0CF0
+        if (auto* trailer = theObjects->GetEntityByObjId(m_trailerObjId))
+        {
+            dJointDestroy(m_trailerJoint);
+            m_trailerJoint = nullptr;
+            trailer->Remove();
+            m_trailerObjId = -1;
+        }
     }
 
-    void Vehicle::AddChild(Obj*)
+    void Vehicle::AddChild(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E5E00
+        ComplexPhysicObj::AddChild(pObj);
+        if (!pObj)
+        {
+            return;
+        }
+        // Bullets just get parented; gadgets additionally take a slot in m_gadgets.
+        if (!pObj->IsKindOf(RT_CLASS_LOCAL(Bullet)))
+        {
+            auto* gadget = RT_DYNCAST(pObj, Gadget);
+            if (!gadget)
+            {
+                return;
+            }
+            m_gadgets.insert({gadget->GetSlotNum(), gadget});
+            M3D_APP->EnqueueMessage(66551, GetId(), gadget->GetSlotNum(), 0, 0, {}, {});
+        }
+        pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
     }
 
     void Vehicle::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -896,7 +966,8 @@ namespace ai
 
     bool Vehicle::GetHorn() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCCB0
+        return m_bHorn;
     }
 
     bool Vehicle::IsTrailer() const
@@ -911,18 +982,21 @@ namespace ai
 
     int Vehicle::GetLockedObjId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCEF0
+        return m_lockedObjId;
     }
 
-    void Vehicle::setGodMode(bool)
+    void Vehicle::setGodMode(bool bGod)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCCD0
+        m_bGodMode = bGod;
     }
 
     retruxx::map<int, Gadget*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, Gadget*>>> const&
         Vehicle::GetGadgets() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBDF0
+        return m_gadgets;
     }
 
     void Vehicle::SetRandomSkin()
@@ -956,12 +1030,14 @@ namespace ai
 
     float Vehicle::GetDefaultCruisingSpeed() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D14C0
+        return GetMaxSpeed() * 0.60000002f;
     }
 
     float Vehicle::GetMaxEngineRpm() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBC60
+        return m_maxEngineRpm;
     }
 
     int Vehicle::SetExternalPath(retruxx::vector<CVector2, retruxx::allocator<CVector2>> const& path)
@@ -977,12 +1053,14 @@ namespace ai
 
     Chassis const* Vehicle::GetChassis() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBA30
+        return dynamic_cast<Chassis const*>(GetPartByName(CHASSIS));
     }
 
     Chassis* Vehicle::GetChassis()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CB9A0
+        return RT_DYNCAST(GetPartByName(CHASSIS), Chassis);
     }
 
     void Vehicle::Remove()
@@ -1029,9 +1107,14 @@ namespace ai
         ComplexPhysicObj::Remove();
     }
 
-    void Vehicle::FireFromWeaponCustom2(bool, int)
+    void Vehicle::FireFromWeaponCustom2(bool enable, int targetId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DCBF0
+        if (auto* target = theObjects->GetEntityByObjId(targetId))
+        {
+            WeaponFirer::FireFromWeaponsIfPossible(
+                this, enable, getPhysicObjOrPhysicBodyGeometricCenter(target), target);
+        }
     }
 
     float Vehicle::GetCameraMaxDist() const
@@ -1059,7 +1142,8 @@ namespace ai
 
     void Vehicle::DecOnOilMode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCD50
+        --m_onOilMode;
     }
 
     unsigned Vehicle::GetNumWheels() const
@@ -1069,7 +1153,8 @@ namespace ai
 
     void Vehicle::SetHandBrake()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC2B0
+        m_bHandBrake = true;
     }
 
     CVector Vehicle::GetRecollectionPosition(float recollectionRange) const
@@ -1086,7 +1171,8 @@ namespace ai
 
     float Vehicle::GetSteer() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC2C0
+        return m_steerRadians;
     }
 
     void Vehicle::IncNumWheelsTouchingGround()
@@ -1107,7 +1193,8 @@ namespace ai
 
     float Vehicle::GetMaxFiringRangeAI() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC020 (thunk)
+        return WeaponFirer::GetMaxFiringRange(this);
     }
 
     m3d::Class* Vehicle::GetBaseClass()
@@ -1117,22 +1204,39 @@ namespace ai
 
     float Vehicle::GetMaxFuel() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D0C80: unchecked, as shipped.
+        return GetChassis()->Fuel().maxValue().get();
     }
 
     bool Vehicle::getImmortalMode() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCCE0
+        return m_bImmortalMode;
     }
 
     float Vehicle::GetHealth() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D0BC0: the shipped code dereferences GetChassis() unchecked.
+        return GetChassis()->Health().value().get();
     }
 
-    bool Vehicle::AddThing(GeomRepositoryItem const&, bool)
+    bool Vehicle::AddThing(GeomRepositoryItem const& item, bool bFlushInReferenceChests)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCB50: try the vehicle repository first, then the ground one.
+        if (m_repository && m_repository->AddThing(item, 0))
+        {
+            return true;
+        }
+        if (!m_groundRepository)
+        {
+            return false;
+        }
+        bool const added = m_groundRepository->AddThing(item, 0);
+        if (bFlushInReferenceChests)
+        {
+            m_groundRepository->FlushInReferenceChests(GetPosition());
+        }
+        return added;
     }
 
     void Vehicle::EnableSounds(bool bEnable)
@@ -1143,29 +1247,41 @@ namespace ai
             m_engineLowSoundNode->SetProperty(9733u, &bEnable);
     }
 
-    void Vehicle::TransferToSpace(dxSpace*)
+    void Vehicle::TransferToSpace(dxSpace* newSpace)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D9F00
+        ComplexPhysicObj::TransferToSpace(newSpace);
+        for (auto& wheelInfo : m_wheels)
+        {
+            if (auto* wheel = wheelInfo.GetWheel())
+            {
+                wheel->TransferToSpace(newSpace);
+            }
+        }
     }
 
     m3d::AIParam Vehicle::VehicleAIOnAttack(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E4B60: registered AI hook, returns an empty AIParam in the shipped build.
+        return {};
     }
 
-    void Vehicle::SetCanBeDistractedFromMoving(bool)
+    void Vehicle::SetCanBeDistractedFromMoving(bool bCanBeDistracted)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCAB0
+        m_bCanBeDistractedFromMoving = bCanBeDistracted;
     }
 
     int Vehicle::GetCustomControlWeaponsTargetObj() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBC30
+        return m_customControlWeaponsTargetObjId;
     }
 
     int Vehicle::GetToBeLockedObjId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCF00
+        return m_toBeLockedObjId;
     }
 
     void Vehicle::SetSkin(int skin)
@@ -1182,12 +1298,21 @@ namespace ai
 
     void Vehicle::DisablePhysics()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DA820
+        ComplexPhysicObj::DisablePhysics();
+        for (auto& wheelInfo : m_wheels)
+        {
+            if (auto* wheel = wheelInfo.GetWheel())
+            {
+                wheel->DisablePhysics();
+            }
+        }
     }
 
-    void Vehicle::FireFromWeaponCustom(bool, CVector const&, Obj*)
+    void Vehicle::FireFromWeaponCustom(bool enable, CVector const& targetPoint, Obj* target)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBF20
+        WeaponFirer::FireFromWeaponsIfPossible(this, enable, targetPoint, target);
     }
 
     float Vehicle::GetMass() const
@@ -1203,9 +1328,29 @@ namespace ai
         return res;
     }
 
-    unsigned Vehicle::GetPrice(IPriceCoeffProvider const*) const
+    unsigned Vehicle::GetPrice(IPriceCoeffProvider const* priceCoeffProvider) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DA620: the vehicle plus everything it carries.
+        unsigned price = ComplexPhysicObj::GetPrice(priceCoeffProvider);
+        if (m_repository)
+        {
+            unsigned const numItems = m_repository->GetNumItems();
+            for (unsigned i = 0; i < numItems; ++i)
+            {
+                if (auto const* obj = m_repository->GetItem(i).GetObj())
+                {
+                    price += obj->GetPrice(priceCoeffProvider);
+                }
+            }
+        }
+        for (auto const& entry : m_gadgets)
+        {
+            if (entry.second)
+            {
+                price += entry.second->GetPrice(priceCoeffProvider);
+            }
+        }
+        return price;
     }
 
     bool Vehicle::FireFromWeaponByGunId(int, bool)
@@ -1249,9 +1394,11 @@ namespace ai
         m_propertiesMap["GadgetAntiMissileRadius"] = 13;
     }
 
-    eGObjPropertySaveStatus Vehicle::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus Vehicle::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ECFC0
+        auto const it = m_propertiesSaveStatesMap.find(id);
+        return it == m_propertiesSaveStatesMap.end() ? PhysicObj::GetPropertySaveStatus(id) : it->second;
     }
 
     void Vehicle::SetPartByName(CStr const& partName, VehiclePart* vehiclePart, bool bUnsafe)
@@ -1380,7 +1527,8 @@ namespace ai
 
     int Vehicle::GetCurrentGear() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBC40
+        return m_currentGear;
     }
 
     CVector Vehicle::GetLinearVelocity() const
@@ -1393,30 +1541,54 @@ namespace ai
         return m_ownUpdater->GetLinearVelocity();
     }
 
-    void Vehicle::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void Vehicle::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DF8C0: the base state plus the repository contents and any trailer.
+        ComplexPhysicObj::SaveToXML(xmlFile, xmlNode);
+        if (m_repository)
+        {
+            ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Repository");
+            m_repository->SaveToXML(xmlFile, node);
+            xmlNode->AddChild(node);
+        }
+        if (auto* trailer = theObjects->GetEntityByObjId(m_trailerObjId))
+        {
+            ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Trailer");
+            trailer->SaveToXML(xmlFile, node);
+            xmlNode->AddChild(node);
+        }
     }
 
-    void Vehicle::SetCustomControlWeapons(int)
+    void Vehicle::SetCustomControlWeapons(int custom)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D0CE0
+        m_customControlWeapons = static_cast<CustomWeaponControlType>(custom);
     }
 
-    void Vehicle::SetCustomControlWeapons(CustomWeaponControlType)
+    void Vehicle::SetCustomControlWeapons(CustomWeaponControlType custom)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBBB0
+        m_customControlWeapons = custom;
     }
 
     unsigned Vehicle::GetSchwarz() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E0DB0
+        float const price = static_cast<float>(ComplexPhysicObj::GetPrice(nullptr));
+        NumericInRange<float> const durability(GetFullDurability(), 0.0f, GetMaxFullDurability());
+        return static_cast<unsigned>(GetDurabilityPriceCoeff(durability) * price);
     }
 
-    void Vehicle::UnsubscribeRadioManagerFromNearbyObjId(int) const
+    void Vehicle::UnsubscribeRadioManagerFromNearbyObjId(int objId) const
     {
-        // TODO: implement Vehicle::UnsubscribeRadioManagerFromNearbyObjId
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E7010: drop the radio manager's subscriptions on events 9 and 44.
+        if (!thePlayer || thePlayer->GetRadioManagerId() == -1)
+        {
+            return;
+        }
+        int const radioManagerId = thePlayer->GetRadioManagerId();
+        theProcessManager->PostMessageA(3, GetId(), radioManagerId, 0.0f, m3d::AIParam(9), {}, 1);
+        theProcessManager->PostMessageA(3, GetId(), radioManagerId, 0.0f, m3d::AIParam(44), {}, 1);
     }
 
     void Vehicle::Blow(Obj*)
@@ -1438,17 +1610,20 @@ namespace ai
 
     void Vehicle::IncInSmokeScreenMode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCD70
+        ++m_inSmokeScreenMode;
     }
 
     unsigned char Vehicle::GetPriority() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC2F0
+        return m_priority;
     }
 
     bool Vehicle::getGodMode() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCCC0
+        return m_bGodMode;
     }
 
     bool Vehicle::FireFromWeaponByGunPartName(CStr const& gunPartName, bool enable)
@@ -1527,12 +1702,14 @@ namespace ai
 
     void Vehicle::GetOutOfDifficultPlace()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBB00
+        m_bMustGetOutOfDifficultPlace = true;
     }
 
     float Vehicle::GetMaxHealth() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D0C00: unchecked, as shipped.
+        return GetChassis()->Health().maxValue().get();
     }
 
     int Vehicle::GetPropertyId(char const* name) const
@@ -1627,9 +1804,18 @@ namespace ai
         return m_bIsMovingAlongExternalPath;
     }
 
-    void Vehicle::DisableGeometry(bool)
+    void Vehicle::DisableGeometry(bool changePhysicState)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DA8A0
+        // NOTE: the shipped code passes a hard-coded true, ignoring changePhysicState.
+        ComplexPhysicObj::DisableGeometry(true);
+        for (auto& wheelInfo : m_wheels)
+        {
+            if (auto* wheel = wheelInfo.GetWheel())
+            {
+                wheel->DisableGeometry(true);
+            }
+        }
     }
 
     void Vehicle::SetSteer(float radians)
@@ -1639,29 +1825,60 @@ namespace ai
 
     float Vehicle::GetControl() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CD5D0
+        auto const* cabin = GetCabin();
+        return cabin ? cabin->GetControl() : 50.0f;
     }
 
-    bool Vehicle::AddItemsToRepository(char const*, int)
+    bool Vehicle::AddItemsToRepository(char const* prototypeName, int amount)
     {
-        // TODO: implement Vehicle::AddItemsToRepository
-        //RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCBC0
+        if (m_repository && m_repository->AddItems(prototypeName, amount))
+        {
+            return true;
+        }
+        if (!m_groundRepository || !m_groundRepository->AddItems(prototypeName, amount))
+        {
+            return false;
+        }
+        m_groundRepository->FlushInReferenceChests(GetPosition());
         return true;
     }
 
     void Vehicle::ResetForcedMaxTorque()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC450
+        m_maxTorqueForced = false;
     }
 
     void Vehicle::ClearSavedStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCE00
+        ComplexPhysicObj::ClearSavedStatus();
+        if (!m_repository)
+        {
+            return;
+        }
+        unsigned const numItems = m_repository->GetNumItems();
+        for (unsigned i = 0; i < numItems; ++i)
+        {
+            if (auto* obj = m_repository->GetItem(i).GetObj())
+            {
+                obj->ClearSavedStatus();
+            }
+        }
     }
 
     void Vehicle::HealWheels()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DA700
+        for (auto& wheelInfo : m_wheels)
+        {
+            if (auto* wheel = wheelInfo.GetWheel())
+            {
+                wheel->HealModel();
+            }
+        }
     }
 
     void Vehicle::setImmortalMode(bool bImmortal)
@@ -1676,12 +1893,15 @@ namespace ai
 
     m3d::AIParam Vehicle::VehicleAIOnMove(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E4B30: registered AI hook, returns an empty AIParam in the shipped build.
+        return {};
     }
 
     bool Vehicle::IsHealthZero() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D3690
+        auto const* chassis = GetChassis();
+        return !chassis || chassis->Health().value().get() <= 0.001f;
     }
 
     void Vehicle::FireFromWeaponAI(bool enable, float elapsedTime, Obj* target)
@@ -1712,24 +1932,68 @@ namespace ai
             ai::WeaponFirer::AimAndFireFromWeapons(this, 0, elapsedTime, target);
     }
 
-    bool Vehicle::AddGadget(Gadget*)
+    bool Vehicle::AddGadget(Gadget* g)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DCAB0
+        if (!g)
+        {
+            return false;
+        }
+        int const slotId = GetValidSlotIdForGadget(g);
+        if (slotId == -1)
+        {
+            return false;
+        }
+        g->SetSlotNum(slotId);
+        AddChild(g);
+        g->ApplyToVehicle(this, true);
+        return true;
     }
 
-    void Vehicle::SetCustomControlWeaponsTargetObj(int)
+    void Vehicle::SetCustomControlWeaponsTargetObj(int lookAt)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBC20
+        m_customControlWeaponsTargetObjId = lookAt;
     }
 
-    bool Vehicle::AddObjectToRepository(Obj*)
+    bool Vehicle::AddObjectToRepository(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D1530
+        if (!pObj)
+        {
+            return false;
+        }
+        GeomRepositoryItem const item(pObj->GetId());
+        if (m_repository && m_repository->AddThing(item, 0))
+        {
+            return true;
+        }
+        if (!m_groundRepository)
+        {
+            return false;
+        }
+        bool const added = m_groundRepository->AddThing(item, 0);
+        m_groundRepository->FlushInReferenceChests(GetPosition());
+        return added;
     }
 
     void Vehicle::ResetPositionAndRotation()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DA1F0
+        SetPosition(ZeroVector);
+        SetRotation(IdentityQuaternion);
+        SetLinearVelocity(ZeroVector);
+        SetAngularVelocity(ZeroVector);
+        for (auto& wheelInfo : m_wheels)
+        {
+            if (auto* wheel = wheelInfo.GetWheel())
+            {
+                wheel->SetPosition(wheelInfo.m_initialPos);
+                wheel->SetRotation(wheelInfo.m_initialRot);
+                wheel->SetLinearVelocity(ZeroVector);
+                wheel->SetAngularVelocity(ZeroVector);
+            }
+        }
     }
 
     void Vehicle::SetPositionSelf(CVector const& pos)
@@ -1791,14 +2055,16 @@ namespace ai
         }
     }
 
-    void Vehicle::WeaponLookAtPoint(CVector const&, float)
+    void Vehicle::WeaponLookAtPoint(CVector const& lookAt, float elapsedTime)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBF00
+        WeaponFirer::WeaponLookAtPoint(this, lookAt, elapsedTime);
     }
 
-    bool Vehicle::CanPlaceItemsToRepository(char const*, int)
+    bool Vehicle::CanPlaceItemsToRepository(char const* prototypeName, int amount)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCC80
+        return m_repository && m_repository->CanPlaceItems(prototypeName, amount);
     }
 
     void Vehicle::AttachTrailer(char const*)
@@ -1806,19 +2072,25 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Vehicle::SetTurboThrottleValue(float)
+    void Vehicle::SetTurboThrottleValue(float value)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCDE0
+        m_turboThrottleValue = value;
     }
 
-    void Vehicle::SetMaxPower(float)
+    void Vehicle::SetMaxPower(float newMaxPower)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBCD0
+        if (auto* cabin = GetCabin())
+        {
+            cabin->SetMaxPower(newMaxPower);
+        }
     }
 
     bool Vehicle::GetStoppageMode() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCD00
+        return m_stoppageMode != 0;
     }
 
     void Vehicle::GetEnemiesInNeighborhood(float, retruxx::vector<int, retruxx::allocator<int>>&) const
@@ -1831,15 +2103,64 @@ namespace ai
         return RT_DYNCAST(theObjects->GetEntityByObjId(m_roleId), VehicleRole);
     }
 
-    void Vehicle::SubscribeRadioManagerOnNearbyObjId(int) const
+    void Vehicle::SubscribeRadioManagerOnNearbyObjId(int objId) const
     {
-        // TODO: implement Vehicle::SubscribeRadioManagerOnNearbyObjId
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E6E50
+        if (!thePlayer || thePlayer->GetRadioManagerId() == -1)
+        {
+            return;
+        }
+        CauseEvent(GE_NOTICE_SOMEONE, 0.0f, m3d::AIParam(objId), {});
+        int const radioManagerId = thePlayer->GetRadioManagerId();
+        theProcessManager->PostMessageA(2, GetId(), radioManagerId, 0.0f, m3d::AIParam(9), {}, 1);
+        theProcessManager->PostMessageA(2, GetId(), radioManagerId, 0.0f, m3d::AIParam(44), {}, 1);
     }
 
-    int Vehicle::GetValidSlotIdForGadget(Gadget const*) const
+    int Vehicle::GetValidSlotIdForGadget(Gadget const* gadget) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DC950
+        if (!gadget)
+        {
+            return -1;
+        }
+        auto const* cabin = GetCabin();
+        if (!cabin)
+        {
+            return -1;
+        }
+        auto const* cabinProto = cabin->GetPrototypeInfo();
+        auto const* gadgetProto = gadget->GetPrototypeInfo();
+        if (!cabinProto || !gadgetProto)
+        {
+            return -1;
+        }
+        // Find the slot group whose resource kind this gadget matches.
+        for (auto const& slot : cabinProto->m_gadgetSlots)
+        {
+            int const slotResourceId = theResourceManager->GetResourceId(slot.first);
+            if (!theResourceManager->bResourceIsKindOf(gadgetProto->m_resourceId, slotResourceId))
+            {
+                continue;
+            }
+            int const firstSlot = slot.second.x;
+            int const lastSlot = slot.second.y;
+            if (gadget->GetSlotNum() != -1)
+            {
+                // Keep the requested slot if it is free and inside this group.
+                int const wanted = gadget->GetSlotNum();
+                bool const free = m_gadgets.find(wanted) == m_gadgets.end();
+                return (free && wanted >= firstSlot && wanted <= lastSlot) ? wanted : -1;
+            }
+            for (int candidate = firstSlot; candidate <= lastSlot; ++candidate)
+            {
+                if (m_gadgets.find(candidate) == m_gadgets.end())
+                {
+                    return candidate;
+                }
+            }
+            return -1;
+        }
+        return -1;
     }
 
     Wheel const* Vehicle::GetFirstExistingWheel() const
@@ -1856,17 +2177,20 @@ namespace ai
 
     bool Vehicle::TrailerExists() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E0D60
+        return theObjects->GetEntityByObjId(m_trailerObjId) != nullptr;
     }
 
     float Vehicle::GetAverageEngineRpm() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBC70
+        return m_averageEngineRpm;
     }
 
     CVector Vehicle::GetCustomControlWeaponsTarget() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBBF0
+        return m_customControlWeaponsTarget;
     }
 
     float Vehicle::GetMaxTorque() const
@@ -2029,12 +2353,17 @@ namespace ai
 
     void Vehicle::DecInSmokeScreenMode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCD80
+        if (--m_inSmokeScreenMode < 0)
+        {
+            m_inSmokeScreenMode = 0;
+        }
     }
 
     void Vehicle::SetTrailer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCB30
+        m_bIsTrailer = true;
     }
 
     void Vehicle::RenderDebugInfo() const
@@ -2169,12 +2498,35 @@ namespace ai
 
     void Vehicle::SetVisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DD1A0
+        ComplexPhysicObj::SetVisible();
+        for (auto& wheelInfo : m_wheels)
+        {
+            if (auto* wheel = wheelInfo.GetWheel())
+            {
+                wheel->SetVisible();
+            }
+        }
+        EnableGeometry(true);
+        if (auto* trailer = theObjects->GetEntityByObjId(m_trailerObjId))
+        {
+            trailer->SetVisible();
+        }
+        bool enabled = true;
+        if (m_engineHighSoundNode)
+        {
+            m_engineHighSoundNode->SetProperty(9733u, &enabled);
+        }
+        if (m_engineLowSoundNode)
+        {
+            m_engineLowSoundNode->SetProperty(9733u, &enabled);
+        }
     }
 
     int Vehicle::GetNpcMotionControllerId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCEC0
+        return m_npcMotionControllerId;
     }
 
     void Vehicle::SetIndexInTeam(int indexInTeam)
@@ -2208,7 +2560,8 @@ namespace ai
 
     float Vehicle::GetFuel() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D0C40: unchecked, as shipped.
+        return GetChassis()->Fuel().value().get();
     }
 
     int Vehicle::GetSeenObjId() const
@@ -2261,7 +2614,23 @@ namespace ai
 
     m3d::AIParam Vehicle::TakeOffAllGuns()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E7390
+        // Collect first, then detach - SetPartByName mutates m_vehicleParts.
+        retruxx::vector<int> takenOff;
+        retruxx::vector<CStr> partNames;
+        for (auto const& entry : m_vehicleParts)
+        {
+            if (entry.second->IsKindOf(RT_CLASS_LOCAL(Gun)) || entry.second->IsKindOf(RT_CLASS_LOCAL(CompoundGun)))
+            {
+                takenOff.push_back(entry.second->GetId());
+                partNames.push_back(entry.first);
+            }
+        }
+        for (auto const& partName : partNames)
+        {
+            SetPartByName(partName, nullptr, false);
+        }
+        return m3d::AIParam(takenOff);
     }
 
     void Vehicle::SetThrottle(float throttle, bool autoBrake)
@@ -2284,7 +2653,8 @@ namespace ai
 
     float Vehicle::GetBrake() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC280
+        return m_brake;
     }
 
     float Vehicle::GetMaxSpeed() const
@@ -2313,9 +2683,14 @@ namespace ai
         return maxSpeed;
     }
 
-    bool Vehicle::CanChildBeAdded(m3d::Class*) const
+    bool Vehicle::CanChildBeAdded(m3d::Class* pClass) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CB8F0
+        if (Obj::CanChildBeAdded(pClass))
+        {
+            return true;
+        }
+        return pClass->IsKindOf(RT_CLASS_LOCAL(Bullet)) || pClass->IsKindOf(RT_CLASS_LOCAL(Gadget));
     }
 
     float Vehicle::GetTurboThrottleTime() const
@@ -2344,7 +2719,33 @@ namespace ai
 
     Obj* Vehicle::CloneObj()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DA730: re-create the visual parts the base clone did not.
+        auto* clone = RT_DYNCAST(ComplexPhysicObj::CloneObj(), Vehicle);
+        if (!clone)
+        {
+            return nullptr;
+        }
+        if (clone->m_repository)
+        {
+            unsigned const numItems = clone->m_repository->GetNumItems();
+            for (unsigned i = 0; i < numItems; ++i)
+            {
+                if (auto* obj = clone->m_repository->GetItem(i).GetObj())
+                {
+                    obj->PostLoad();
+                    obj->CreateVisualPart();
+                }
+            }
+        }
+        for (auto& wheelInfo : clone->m_wheels)
+        {
+            if (auto* wheel = wheelInfo.GetWheel())
+            {
+                wheel->PostLoad();
+                wheel->CreateVisualPart();
+            }
+        }
+        return clone;
     }
 
     int Vehicle::CheckSkin(int skinNum)
@@ -2391,12 +2792,14 @@ namespace ai
 
     m3d::AIParam Vehicle::VehicleAIOnDefend(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E4B00: registered AI hook, returns an empty AIParam in the shipped build.
+        return {};
     }
 
     float Vehicle::GetEngineRpm() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBC50
+        return m_engineRpm;
     }
 
     void Vehicle::SetBelong(int newBelong)
@@ -2422,7 +2825,8 @@ namespace ai
 
     Team* Vehicle::GetTeam() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC230: the shipped code casts the parent without a type check.
+        return reinterpret_cast<Team*>(GetParent());
     }
 
     void Vehicle::UnsubscribeRadioManagerFromAllNearbyObjIds() const
@@ -2437,9 +2841,10 @@ namespace ai
         }
     }
 
-    void Vehicle::SetBasket(VehiclePart*)
+    void Vehicle::SetBasket(VehiclePart* newBasket)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBAE0
+        SetPartByName(BASKET, newBasket, false);
     }
 
     Cabin const* Vehicle::GetCabin() const
@@ -2454,27 +2859,51 @@ namespace ai
 
     float Vehicle::GetTurboThrottleValue() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCDD0
+        return m_turboThrottleValue;
     }
 
-    int Vehicle::GetMaxGadgets(CStr const&) const
+    int Vehicle::GetMaxGadgets(CStr const& gadgetResourceName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBDB0
+        auto const* cabin = GetCabin();
+        if (!cabin)
+        {
+            return 0;
+        }
+        auto const* protoInfo = cabin->GetPrototypeInfo();
+        return protoInfo ? protoInfo->GetMaxGadgets(gadgetResourceName) : 0;
     }
 
     float Vehicle::GetMaxPower() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBC80
+        auto const* cabin = GetCabin();
+        return cabin ? cabin->GetMaxPower() : 0.0f;
     }
 
     void Vehicle::DecStoppageMode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCD20
+        --m_stoppageMode;
     }
 
-    void Vehicle::ShowVehicle(bool)
+    void Vehicle::ShowVehicle(bool bShow)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCE70
+        if (bShow != m_bHidden)
+        {
+            return;
+        }
+        if (m_bHidden)
+        {
+            SetVisible();
+        }
+        else
+        {
+            SetInvisible();
+        }
+        m_bHidden = !bShow;
     }
 
     void Vehicle::SetRole(VehicleRole* role)
@@ -2496,27 +2925,39 @@ namespace ai
     retruxx::set<ref_ptr<Obstacle>, retruxx::less<ref_ptr<Obstacle>>, retruxx::allocator<ref_ptr<Obstacle>>> const&
         Vehicle::GetNearbyObstacles() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBB70
+        return m_currentNearbyObstacles;
     }
 
-    CStr Vehicle::GetPropertyName(int) const
+    CStr Vehicle::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ED460
+        for (auto const& entry : m_propertiesMap)
+        {
+            if (entry.second == id)
+            {
+                return entry.first;
+            }
+        }
+        return PhysicObj::GetPropertyName(id);
     }
 
-    bool Vehicle::RemoveItemsFromRepository(char const*, int)
+    bool Vehicle::RemoveItemsFromRepository(char const* prototypeName, int amount)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCC40
+        return m_repository && m_repository->RemoveItems(prototypeName, amount);
     }
 
-    void Vehicle::SetCustomControlWeaponsTarget(CVector const&)
+    void Vehicle::SetCustomControlWeaponsTarget(CVector const& lookAt)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBBD0
+        m_customControlWeaponsTarget = lookAt;
     }
 
     float Vehicle::GetTimeToLockTarget() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCF10
+        return m_timeToLockTarget;
     }
 
     void Vehicle::SetGamePositionOnGround(CVector const& pos, bool bWithCollisions, bool bWithWater)
@@ -2630,14 +3071,20 @@ namespace ai
         this->SetPosition(finalPosition);
     }
 
-    void Vehicle::SetMaxTorque(float)
+    void Vehicle::SetMaxTorque(float newMaxTorque)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBD70
+        if (auto* cabin = GetCabin())
+        {
+            cabin->SetMaxTorque(newMaxTorque);
+        }
     }
 
-    void Vehicle::LimitMaxSpeed(float)
+    void Vehicle::LimitMaxSpeed(float maxSpeedLimit)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC400
+        m_maxSpeedLimited = true;
+        m_maxSpeedLimit = maxSpeedLimit;
     }
 
     m3d::Class* Vehicle::GetClass() const
@@ -2652,7 +3099,20 @@ namespace ai
 
     void Vehicle::CollectNearbyObjectsToGroundRepository()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EA7A0: rebuild the ground repository from every chest inside the taking sphere.
+        if (!m_groundRepository)
+        {
+            return;
+        }
+        m_groundRepository->Clear(false);
+        retruxx::set<m3d::Class*> affectedClasses;
+        affectedClasses.insert(RT_CLASS_LOCAL(Chest));
+        retruxx::set<ref_ptr<Obstacle>> found;
+        IntersectionManager::GetIntersectedObjects(found, m_takingSphere, affectedClasses, false, false);
+        for (auto const& obstacle : found)
+        {
+            m_groundRepository->AppendChest(static_cast<Chest*>(obstacle->GetOwner()));
+        }
     }
 
     Vehicle::VehicleAttackStatus Vehicle::GetAttackStatus() const
@@ -2697,12 +3157,15 @@ namespace ai
 
     Vehicle* Vehicle::GetTrailer() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DCF50
+        // NOTE: the shipped code casts without a type check.
+        return static_cast<Vehicle*>(theObjects->GetEntityByObjId(m_trailerObjId));
     }
 
     void Vehicle::IncOnOilMode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCD40
+        ++m_onOilMode;
     }
 
     CVector Vehicle::GetGeometricCenter() const
@@ -2812,9 +3275,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Vehicle::SetNpcMotionControllerId(int)
+    void Vehicle::SetNpcMotionControllerId(int npcMotionControllerId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCED0
+        m_npcMotionControllerId = npcMotionControllerId;
     }
 
     VehiclePrototypeInfo const* Vehicle::GetPrototypeInfo() const
@@ -2855,27 +3319,62 @@ namespace ai
 
     int Vehicle::GetIndexInTeam() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC210
+        return m_indexInTeam;
     }
 
     CVector Vehicle::GetBumperPoint() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC560
+        return m_bumperPoint;
     }
 
     GeomRepository* Vehicle::GetGroundRepository() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBB60
+        return m_groundRepository;
     }
 
-    bool Vehicle::ApplyModifier(Modifier const&)
+    bool Vehicle::ApplyModifier(Modifier const& modifier)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D9F50
+        if (Obj::ApplyModifier(modifier))
+        {
+            return true;
+        }
+        // hp / fuel modifiers are clamped against the corresponding maximum.
+        if (modifier.m_PropertyName == "hp")
+        {
+            Health().value().ApplyModifier(modifier, Health().maxValue().get());
+            return true;
+        }
+        if (modifier.m_PropertyName == "maxhp")
+        {
+            Health().maxValue().ApplyModifier(modifier, Health().maxValue().get());
+            return true;
+        }
+        if (modifier.m_PropertyName == "fuel")
+        {
+            Fuel().value().ApplyModifier(modifier, Fuel().maxValue().get());
+            return true;
+        }
+        if (modifier.m_PropertyName == "maxfuel")
+        {
+            Fuel().maxValue().ApplyModifier(modifier, Fuel().maxValue().get());
+            return true;
+        }
+        return false;
     }
 
-    void Vehicle::SetTurningToGroundForceAndTorque(CVector const&, CVector const&, CVector const&)
+    void Vehicle::SetTurningToGroundForceAndTorque(CVector const& pos, CVector const& force, CVector const& torque)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC460: NOTE: pos is unused by the shipped code.
+        // The inputs are in units of g per unit mass; scale them into real N / N*m.
+        float const mass = GetMass();
+        CVector const realTorque = torque * (mass * 9.8100004f * 4.0f);
+        CVector const realForce = force * (mass * 9.8100004f * 0.83333331f);
+        AddForce(realForce);
+        AddRelTorque(realTorque);
     }
 
     Wheel* Vehicle::GetWheel(unsigned num)
@@ -2890,42 +3389,71 @@ namespace ai
 
     float Vehicle::GetThrottle() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC240
+        return m_throttle;
     }
 
     IzvratRepository const* Vehicle::GetRepository() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBB50
+        return m_repository;
     }
 
     IzvratRepository* Vehicle::GetRepository()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBB40
+        return m_repository;
     }
 
-    bool Vehicle::RemoveChild(Obj*)
+    bool Vehicle::RemoveChild(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E5F10
+        ComplexPhysicObj::RemoveChild(pObj);
+        if (!pObj || pObj->GetParentId() != GetId())
+        {
+            return false;
+        }
+        if (pObj->IsKindOf(RT_CLASS_LOCAL(Bullet)))
+        {
+            pObj->SetParentInvalid();
+            return true;
+        }
+        if (auto* gadget = RT_DYNCAST(pObj, Gadget))
+        {
+            m_gadgets.erase(gadget->GetSlotNum());
+            M3D_APP->ImmediateMessage(66551, GetId(), gadget->GetSlotNum(), 0, 0, {}, {});
+            gadget->ApplyToVehicle(this, false);
+            gadget->SetParentInvalid();
+            return true;
+        }
+        return false;
     }
 
-    void Vehicle::SetBrake(float)
+    void Vehicle::SetBrake(float brake)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC290
+        m_brake = brake;
     }
 
     m3d::AIParam Vehicle::VehicleAIOnDead(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E4B90: registered AI hook, returns an empty AIParam in the shipped build.
+        return {};
     }
 
-    void Vehicle::SetMaxSpeed(float)
+    void Vehicle::SetMaxSpeed(float speed)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC320
+        if (auto* cabin = GetCabin())
+        {
+            cabin->SetMaxSpeed(speed);
+        }
     }
 
-    bool Vehicle::HasAmountOfItemsInRepository(char const*, int) const
+    bool Vehicle::HasAmountOfItemsInRepository(char const* prototypeName, int amount) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCC60
+        return m_repository && m_repository->HasAmountOfItems(prototypeName, amount);
     }
 
     void Vehicle::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
@@ -2933,9 +3461,10 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Vehicle::SetTurboThrottleTime(float)
+    void Vehicle::SetTurboThrottleTime(float time)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCDB0
+        m_turboThrottleTime = time;
     }
 
     namespace
@@ -3217,12 +3746,18 @@ namespace ai
 
     float Vehicle::GetCollisionRadius() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D15B0
+        // NOTE: the shipped code raises an "obsolete" SysError here before returning.
+        float const hx = m_size.x * 0.5f * 0.69999999f;
+        float const hy = m_size.y * 0.5f * 0.69999999f;
+        float const hz = m_size.z * 0.5f * 0.69999999f;
+        return std::sqrt(hz * hz + hy * hy + hx * hx);
     }
 
     float Vehicle::GetDriftCoeff() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCE60
+        return m_driftCoeff;
     }
 
     void Vehicle::SetRotationSelf(Quaternion const& rot)
@@ -3404,7 +3939,29 @@ namespace ai
 
     void Vehicle::SetInvisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DD290
+        ComplexPhysicObj::SetInvisible();
+        for (auto& wheelInfo : m_wheels)
+        {
+            if (auto* wheel = wheelInfo.GetWheel())
+            {
+                wheel->SetInvisible();
+            }
+        }
+        DisableGeometry(true);
+        if (auto* trailer = theObjects->GetEntityByObjId(m_trailerObjId))
+        {
+            trailer->SetInvisible();
+        }
+        bool enabled = false;
+        if (m_engineHighSoundNode)
+        {
+            m_engineHighSoundNode->SetProperty(9733u, &enabled);
+        }
+        if (m_engineLowSoundNode)
+        {
+            m_engineLowSoundNode->SetProperty(9733u, &enabled);
+        }
     }
 
     void Vehicle::SetCustomLinearVelocity(float velocityValue)
@@ -3446,9 +4003,10 @@ namespace ai
         return RT_DYNCAST(GetPartByName(BASKET), Basket const);
     }
 
-    void Vehicle::SetCabin(VehiclePart*)
+    void Vehicle::SetCabin(VehiclePart* newCabin)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBAC0
+        SetPartByName(CABIN, newCabin, false);
     }
 
     void Vehicle::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
@@ -3519,9 +4077,11 @@ namespace ai
         }
     }
 
-    void Vehicle::SetForcedMaxTorque(float)
+    void Vehicle::SetForcedMaxTorque(float forcedMaxTorque)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CC430
+        m_maxTorqueForced = true;
+        m_maxTorqueForcedValue = forcedMaxTorque;
     }
 
     bool Vehicle::DriveToPoint(CVector const&, CVector const&, bool, float)
@@ -3542,14 +4102,37 @@ namespace ai
         }
     }
 
-    bool Vehicle::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool Vehicle::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E5310
+        if (propertyId == 12)
+        {
+            retVal = m3d::AIParam(m_driftCoeff);
+            return true;
+        }
+        if (propertyId == 13)
+        {
+            retVal = m3d::AIParam(m_antiMissileGadgetSavingRadius);
+            return true;
+        }
+        return PhysicObj::_GetPropertyInternal(propertyId, retVal);
     }
 
     void Vehicle::_PutContour()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DB6D0: the base contour plus every wheel body and suspension node.
+        ComplexPhysicObj::_PutContour();
+        auto& graph = m3d::pClient->GetWorld().GetGraph();
+        for (auto& wheelInfo : m_wheels)
+        {
+            auto* wheel = wheelInfo.GetWheel();
+            if (!wheel)
+            {
+                continue;
+            }
+            graph.InsertInContourList(wheel->GetPhysicBody()->m_Node, m_contourColor, m_contourWidth);
+            graph.InsertInContourList(wheel->m_suspensionNode, m_contourColor, m_contourWidth);
+        }
     }
 
     namespace
@@ -3701,9 +4284,20 @@ namespace ai
         }
     }
 
-    bool Vehicle::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool Vehicle::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E53C0
+        if (propertyId == 12)
+        {
+            retVal = m3d::AIParam(GetPrototypeInfo()->m_driftCoeff);
+            return true;
+        }
+        if (propertyId == 13)
+        {
+            retVal = m3d::AIParam(0.0f);
+            return true;
+        }
+        return PhysicObj::_GetPropertyDefaultInternal(propertyId, retVal);
     }
 
     void Vehicle::_InternalPostLoad()
@@ -3920,7 +4514,19 @@ namespace ai
 
     void Vehicle::_RemoveContour()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DB790
+        ComplexPhysicObj::_RemoveContour();
+        auto& graph = m3d::pClient->GetWorld().GetGraph();
+        for (auto& wheelInfo : m_wheels)
+        {
+            auto* wheel = wheelInfo.GetWheel();
+            if (!wheel)
+            {
+                continue;
+            }
+            graph.DeleteFromContourList(wheel->GetPhysicBody()->m_Node);
+            graph.DeleteFromContourList(wheel->m_suspensionNode);
+        }
     }
 
     void Vehicle::_KeepSteer(float elapsedTime)
@@ -4026,7 +4632,8 @@ namespace ai
 
     AI* Vehicle::GetAIPtr()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CCF30
+        return &m_AI;
     }
 
     Vehicle::~Vehicle()
@@ -4045,9 +4652,14 @@ namespace ai
         delete m_trailerJoint;
     }
 
-    void Vehicle::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void Vehicle::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E9AD0
+        m_propertiesMap[CStr(Name)] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
     float Vehicle::_GetTimeOutForNextIntersectionWithWorld() const
@@ -4124,16 +4736,38 @@ namespace ai
 
     void Vehicle::_UpdateAlarmStatus()
     {
-        // TODO: implement Vehicle::_UpdateAlarmStatus
-        for (auto& obstacle : m_currentNearbyObstacles)
+        // RVA 0x5E4540: raise GE_NOTICE_ENEMY once for every hostile vehicle or
+        // turret standing nearby.
+        for (auto const& obstacle : m_currentNearbyObstacles)
         {
-            // RETRUXX_NOT_IMPLEMENTED;
+            auto* owner = obstacle->GetOwnerPhysicObj();
+            if (!owner || owner == this)
+            {
+                continue;
+            }
+            auto* ownerClass = owner->GetClass();
+            if (ownerClass != RT_CLASS_LOCAL(Vehicle) && ownerClass != &StaticAutoGun::m_classStaticAutoGun)
+            {
+                continue;
+            }
+            unsigned const flags = owner->GetFlags();
+            if ((flags & 8) != 0 || (flags & 2) != 0 || owner->GetParentRepository())
+            {
+                continue;
+            }
+            if (theRelationship->CheckTolerance(GetBelong(), owner->GetBelong()) <= RS_ENEMY)
+            {
+                CauseEvent(GE_NOTICE_ENEMY, 0.0f, {}, {});
+            }
         }
     }
 
     m3d::Object* Vehicle::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D52D0
+        // The shipped code raises a SysError ("Object cannot be cloned") and returns
+        // null; CloneObj() is the supported path.
+        return nullptr;
     }
 
     void Vehicle::_AttachExistingTrailer(Vehicle*, bool)
@@ -4141,9 +4775,13 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Vehicle::_InflictDamageToRepository(float)
+    void Vehicle::_InflictDamageToRepository(float damage)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CD500
+        if (m_repository)
+        {
+            m_repository->ApplyDamageToAllItems(damage / m_repository->GetNumItems());
+        }
     }
 
     bool Vehicle::_SetIdleMoveStatus()
@@ -4395,7 +5033,9 @@ namespace ai
 
     CStr Vehicle::_GetTrailerName() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D3190
+        // The shipped code asserts the vehicle has a name before deriving the trailer's.
+        return CStr(GetName()) + "_Trailer";
     }
 
     CVector Vehicle::_CalcRepulsionForObstacle(
@@ -4898,7 +5538,19 @@ namespace ai
 
     CVector Vehicle::_GetCustomWeaponTargetPoint() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DD560
+        if (m_customControlWeapons == CUSTOM_WEAPON_CONTROL_POINT)
+        {
+            return m_customControlWeaponsTarget;
+        }
+        if (m_customControlWeapons == CUSTOM_WEAPON_CONTROL_OBJECT)
+        {
+            if (auto const* target = theObjects->GetEntityByObjId(m_customControlWeaponsTargetObjId))
+            {
+                return getPhysicObjOrPhysicBodyGeometricCenter(target);
+            }
+        }
+        return ZeroVector;
     }
 
     void Vehicle::_EnsureRecollection()
@@ -4926,8 +5578,10 @@ namespace ai
         }
     }
 
-    void Vehicle::_UpdateLockedObj(float)
+    void Vehicle::_UpdateLockedObj(float elapsedTime)
     {
+        // RVA 0x5DDBB0: rocket launchers lock onto whatever the player is looking
+        // at, after theGlobProp.m_lockTimeout seconds of steady aim.
         if (!m_bRocketLaunchersPresent)
         {
             m_toBeLockedObjId = -1;
@@ -4935,12 +5589,61 @@ namespace ai
             m_timeToLockTarget = 0.0;
             return;
         }
-        RETRUXX_NOT_IMPLEMENTED;
+
+        float newTimeToLock = 0.0f;
+        if (m_seenObjId != m_lockedObjId && m_seenObjId != -1)
+        {
+            if (m_toBeLockedObjId != m_seenObjId)
+            {
+                m_toBeLockedObjId = m_seenObjId;
+                m_timeToLockTarget = 0.0f;
+            }
+            if (theGlobProp.m_lockTimeout <= m_timeToLockTarget)
+            {
+                m_lockedObjId = m_seenObjId;
+                m_toBeLockedObjId = -1;
+            }
+            else
+            {
+                newTimeToLock = elapsedTime + m_timeToLockTarget;
+            }
+        }
+        else
+        {
+            m_toBeLockedObjId = -1;
+        }
+        m_timeToLockTarget = newTimeToLock;
+
+        if (m_lockedObjId == -1)
+        {
+            return;
+        }
+
+        // Drop the lock once the target drifts too far from the cursor.
+        auto* locked = RT_DYNCAST(theObjects->GetEntityByObjId(m_lockedObjId), PhysicObj);
+        if (!locked || (locked->GetFlags() & 8) != 0 || (locked->GetFlags() & 2) != 0 || locked->GetParentRepository())
+        {
+            m_lockedObjId = -1;
+            return;
+        }
+
+        CVector const camOrg = M3D_RENDERER->MatGetOrgInv();
+        CVector screenPos = M3D_RENDERER->Project(locked->GetPosition() - camOrg);
+        float mouseX = static_cast<float>(M3D_APP->GetMouseX());
+        float mouseY = static_cast<float>(M3D_APP->GetMouseY());
+        M3D_RENDERER->AbsToRel(screenPos.x, screenPos.y);
+        M3D_RENDERER->AbsToRel(mouseX, mouseY);
+        if (std::fabs(screenPos.x - mouseX) > theGlobProp.m_unlockRegion.x ||
+            std::fabs(screenPos.y - mouseY) > theGlobProp.m_unlockRegion.y)
+        {
+            m_lockedObjId = -1;
+        }
     }
 
-    bool Vehicle::_bPointIsBehind(CVector const&) const
+    bool Vehicle::_bPointIsBehind(CVector const& point) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D3160: more than 30 degrees off the nose.
+        return std::fabs(_GetAngleTo(point)) > 0.52359879f;
     }
 
     void Vehicle::_GetOutOfDifficlultPlaceInternal()
@@ -4965,7 +5668,31 @@ namespace ai
 
     void Vehicle::_ValidateVehicleParts()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E2E00
+        // Drop any attached part the vehicle can no longer carry. The player keeps them
+        // in the repository; the AI just deletes them.
+        auto const attachedParts = GetAttachedPartNames();
+        for (auto const& partName : attachedParts)
+        {
+            if (CanPartBeAttached(partName))
+            {
+                continue;
+            }
+            auto* part = GetPartByName(partName);
+            if (!part)
+            {
+                continue;
+            }
+            SetPartByName(partName, nullptr, false);
+            if (m_bIsControlledByPlayer)
+            {
+                AddThing(GeomRepositoryItem(part->GetId()), true);
+            }
+            else
+            {
+                part->Remove();
+            }
+        }
     }
 
     void Vehicle::_AdjustLookBox(bool bForLooking, CVector const& myPos, CVector const& pathPoint, CVector const& guide)
@@ -5565,12 +6292,20 @@ namespace ai
 
     void Vehicle::_OnChangeBasket()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E3010
+        _ValidateVehicleParts();
+        _UpdateRepositoryOnChangeBasket();
     }
 
     CVector Vehicle::_GetLastPathPoint() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CD150
+        CVector lastPoint = ZeroVector;
+        if (m_pPath)
+        {
+            GetPathItem(m_pPath, m_pPath->GetSize() - 1, lastPoint);
+        }
+        return lastPoint;
     }
 
     float Vehicle::_GetAngleTo(CVector const& point) const
@@ -5868,35 +6603,46 @@ namespace ai
 
     m3d::Object* Vehicle::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D5490
+        // The shipped code raises a SysError ("Object cannot be created directly")
+        // and returns null - a Vehicle only comes from its prototype.
+        return nullptr;
     }
 
     void Vehicle::_CheckForNearbyChests() const
     {
-        if (m_bAllowPickUpMessage)
+        // RVA 0x5E93E0: raise the pick-up hint the first frame chests come into
+        // range, and clear it the first frame they all leave.
+        if (!m_bAllowPickUpMessage)
         {
-            if (m_currentNumNearbyChests)
-            {
-                RETRUXX_NOT_IMPLEMENTED;
-            }
-            else
-            {
-                if (!m_pastNumNearbyChests)
-                {
-                    return;
-                }
-                RETRUXX_NOT_IMPLEMENTED;
-            }
-
-            //M3D_APP->EnqueueMessage()
+            return;
         }
+        if (m_currentNumNearbyChests)
+        {
+            if (m_pastNumNearbyChests)
+            {
+                return;
+            }
+            M3D_APP->EnqueueMessage(66567, 1, 0, 0, 0, {}, {});
+            M3D_APP->EnqueueMessage(66563, 9, 0, 0, 0, {}, {});
+        }
+        else
+        {
+            if (!m_pastNumNearbyChests)
+            {
+                return;
+            }
+            M3D_APP->EnqueueMessage(66567, 0, 0, 0, 0, {}, {});
+        }
+        m_bAllowPickUpMessage = false;
     }
 
     void Vehicle::_AdjustTrailer()
     {
-        if (m_trailerObjId >= 0)
+        // RVA 0x5DDB50: point the trailer's steering back at the towing vehicle.
+        if (auto* trailer = static_cast<Vehicle*>(theObjects->GetEntityByObjId(m_trailerObjId)))
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            trailer->m_steerRadians = -trailer->_GetAngleTo(GetPosition());
         }
     }
 
@@ -6134,6 +6880,7 @@ namespace ai
 
     Vehicle::VehicleMoveStatus Vehicle::GetMoveStatus() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CBB10
+        return m_moveStatus;
     }
 }  // namespace ai

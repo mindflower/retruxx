@@ -509,7 +509,7 @@ void TruxxUiManager::AddFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam, 
 
 NavPointManager* TruxxUiManager::GetNavPointManager() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_navPointManager;
 }
 
 ai::Workshop* TruxxUiManager::GetCurrentWorkshop() const

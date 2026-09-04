@@ -56,13 +56,16 @@ int MapComboBox::CreateFromPattern(m3d::ui::Wnd const* patternWnd, bool deleteSr
     SetOnHideAnimation(pattern->GetOnHideAnimation());
 
     // Take the pattern's place in the window tree, then optionally destroy it.
-    if (m3d::Object* parent = pattern->GetParent())
+    // The shipped build bails out here when the pattern has no parent.
+    m3d::Object* parent = pattern->GetParent();
+    if (!parent)
     {
-        parent->AddChild(this);
-        if (deleteSrc)
-        {
-            delete const_cast<m3d::ui::ComboBoxWnd*>(pattern);
-        }
+        return 0;
+    }
+    parent->AddChild(this);
+    if (deleteSrc)
+    {
+        delete const_cast<m3d::ui::ComboBoxWnd*>(pattern);
     }
 
     m_gameDataFlags |= 1;
