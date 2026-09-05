@@ -379,9 +379,11 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    m3d::AIParam Obj::GetPropertyDefaultById(int) const
+    m3d::AIParam Obj::GetPropertyDefaultById(int propertyId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m3d::AIParam res;
+        _GetPropertyDefaultInternal(propertyId, res);
+        return res;
     }
 
     bool Obj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
@@ -499,7 +501,9 @@ namespace ai
 
     CStr Obj::GetFullDescriptionWithAffixes() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement this function
+        // RETRUXX_NOT_IMPLEMENTED;
+        return {};
     }
 
     bool Obj::bIsEnemyWith(Obj const* pObj) const

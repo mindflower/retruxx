@@ -12,7 +12,6 @@ public:
     public:
         AuxInfo();
 
-    private:
         CStr m_wndMaxHealthValName;
         CStr m_wndMaxFuelValName;
         CStr m_wndPiercingValName;

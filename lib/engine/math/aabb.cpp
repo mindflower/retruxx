@@ -49,7 +49,15 @@ void Aabb::Inflate(float sz)
 
 void Aabb::StartEmbracing()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x512DD0. Seeds an inverted box so the first EmbraceBox/EmbracePoint
+    // snaps it onto real geometry. NOTE: the bounds are the shipped +-10000
+    // literals, not FLT_MAX, so a box larger than that will not be embraced.
+    m_box[0] = 10000.0f;
+    m_box[1] = 10000.0f;
+    m_box[2] = 10000.0f;
+    m_box[3] = -10000.0f;
+    m_box[4] = -10000.0f;
+    m_box[5] = -10000.0f;
 }
 
 void Aabb::EmbracePoint(const CVector& v)

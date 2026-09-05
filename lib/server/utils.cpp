@@ -10,6 +10,12 @@
 #include "math/vector.h"
 #include "server.h"
 #include "world.h"
+#include "dynamicquestmanager.h"
+#include "relationship.h"
+#include "objects/base/objcontainer.h"
+#include "objects/player.h"
+#include "objects/town.h"
+#include "objects/vehicle.h"
 #include "core/kernel.h"
 #include <cmath>
 
@@ -218,5 +224,47 @@ namespace ai
         if (result.y > v5)
             result.y = v5;
         return result;
+    }
+
+    void DecToleranceWhenDamageFromPlayerInflicted(Obj const* victim, float partOfHealth)
+    {
+        // RVA 0x6AB1C0
+        M3D_ASSERT(victim);
+
+        Vehicle* playerVehicle = thePlayer->GetVehicle();
+        if (!playerVehicle)
+        {
+            return;
+        }
+
+        int const victimBelong = victim->GetBelong();
+        int const playerBelong = playerVehicle->GetBelong();
+
+        eTolerance const before = theRelationship->CheckTolerance(victimBelong, playerBelong);
+        theRelationship->IncTolerance(victimBelong, playerBelong, partOfHealth * -4.0f);
+        eTolerance const after = theRelationship->CheckTolerance(victimBelong, playerBelong);
+
+        // Only react on the transition into hostility, and only for a clan that was
+        // not hostile by default to begin with.
+        if (theRelationship->CheckDefaultTolerance(victimBelong, playerBelong) <= RS_ENEMY || before <= RS_ENEMY ||
+            after > RS_ENEMY)
+        {
+            return;
+        }
+
+        victim->CauseEvent(GE_RELATION_CHANGED, 0.0f, m3d::AIParam(playerBelong), m3d::AIParam());
+        thePlayer->CauseEvent(GE_RELATION_CHANGED, 0.0f, m3d::AIParam(victimBelong), m3d::AIParam());
+
+        // Offer a way back: the first town that still tolerates the player hands out
+        // a peace quest for the clan they just turned hostile.
+        for (auto* obj : *theObjects)
+        {
+            if (obj && obj->IsKindOf(&Town::m_classTown) &&
+                theRelationship->CheckTolerance(obj->GetBelong(), playerVehicle->GetBelong()) > RS_ENEMY)
+            {
+                DynamicQuestManager::CreateQuest(DynamicQuestManager::TYPE_PEACE, victim->GetId(), obj->GetId());
+                return;
+            }
+        }
     }
 }  // namespace ai

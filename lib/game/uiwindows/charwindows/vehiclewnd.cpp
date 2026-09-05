@@ -260,16 +260,7 @@ void VehicleWnd::SetVehicleId(int vehicleId)
 
     m_wndVehicleModel->SetObjId(newId);
 
-    VehicleCharacteristicsWnd* vehChar = m_wndVehicleCharacteristics.get();
-    vehChar->m_vehicleId = newId;
-    if (!vehChar->GetVehicle())
-    {
-        vehChar->ClearCharacteristics();
-        if (vehChar->m_vehicleId != -1)
-        {
-            vehChar->m_vehicleId = -1;
-        }
-    }
+    m_wndVehicleCharacteristics->SetupForVehicle(newId);
 
     m_wndCabinCharacteristics->SetupForCabin(cabin ? cabin->GetId() : -1);
     m_wndBasketCharacteristics->SetupForBasket(basket ? basket->GetId() : -1);

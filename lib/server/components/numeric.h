@@ -30,6 +30,16 @@ namespace ai
             }
         }
 
+        // Stores the value without running the BeforeChange guard (which for a
+        // NumericInRange is what clamps to [min, max]) or the AfterChange
+        // notification. Several of the shipped SetPropertyById overrides assign
+        // the current value this way while still routing the matching max value
+        // through set(), so the two paths are not interchangeable.
+        void setUnsafe(T newValue)
+        {
+            m_value = newValue;
+        }
+
         void assign(ai::Numeric<T> const&)
         {
             RETRUXX_NOT_IMPLEMENTED;

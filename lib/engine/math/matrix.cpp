@@ -20,7 +20,28 @@ CVector CMatrix::vecRot(CVector const& v) const
 
 CMatrix CMatrix::getInverseRotTranslate() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x635720. Inverse of a rigid transform (rotation + translation only):
+    // transpose the 3x3 rotation and re-express the translation in that
+    // transposed frame. Only valid when the rotation part is orthonormal -
+    // any scale or shear is not undone.
+    CMatrix res;
+    res._11 = _11;
+    res._12 = _21;
+    res._13 = _31;
+    res._14 = 0.0f;
+    res._21 = _12;
+    res._22 = _22;
+    res._23 = _32;
+    res._24 = 0.0f;
+    res._31 = _13;
+    res._32 = _23;
+    res._33 = _33;
+    res._34 = 0.0f;
+    res._41 = -(_11 * _41) - (_12 * _42) - (_13 * _43);
+    res._42 = -(_21 * _41) - (_22 * _42) - (_23 * _43);
+    res._43 = -(_31 * _41) - (_32 * _42) - (_33 * _43);
+    res._44 = 1.0f;
+    return res;
 }
 
 void CMatrix::zero()
@@ -132,9 +153,17 @@ void CMatrix::shadow(CVector4 const&, CPlane const&)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void CMatrix::GetInvBasis(CVector&, CVector&, CVector&) const
+void CMatrix::GetInvBasis(CVector& x, CVector& y, CVector& z) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    x.x = _11;
+    x.y = _21;
+    x.z = _31;
+    y.x = _12;
+    y.y = _22;
+    y.z = _32;
+    z.x = _13;
+    z.y = _23;
+    z.z = _33;
 }
 
 void CMatrix::composeSRT(CVector const&, CMatrix const&, CVector const&)
@@ -447,14 +476,32 @@ void CMatrix::rotZ(float)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void CMatrix::rotY(float)
+void CMatrix::rotY(float a)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4068F0
+    float const s = std::sin(a);
+    float const c = std::cos(a);
+    zero();
+    _11 = c;
+    _13 = -s;
+    _22 = 1.0f;
+    _31 = s;
+    _33 = c;
+    _44 = 1.0f;
 }
 
-void CMatrix::rotX(float)
+void CMatrix::rotX(float a)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x406960
+    float const s = std::sin(a);
+    float const c = std::cos(a);
+    zero();
+    _11 = 1.0f;
+    _22 = c;
+    _23 = s;
+    _32 = -s;
+    _33 = c;
+    _44 = 1.0f;
 }
 
 void CMatrix::orthoLH(float, float, float, float)

@@ -6,6 +6,14 @@
 namespace ai
 {
     class Path;
+    class Obj;
+
+    // Drops the victim's clan's tolerance toward the player in proportion to the
+    // fraction of health the player just destroyed. If that pushes a previously
+    // non-hostile clan over into hostility, both sides are told the relationship
+    // changed and a "make peace" quest is offered by a town that still tolerates
+    // the player.
+    void DecToleranceWhenDamageFromPlayerInflicted(Obj const* victim, float partOfHealth);
 
     void StrToStringVector(CStr const&, retruxx::vector<CStr>&);
     void StrToFloatVector(CStr const&, retruxx::vector<float>&);

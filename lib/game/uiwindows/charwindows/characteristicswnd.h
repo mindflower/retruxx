@@ -3,43 +3,39 @@
 
 class CharacteristicsWnd : public m3d::ui::Wnd
 {
-    // VehicleWnd drives the per-tab characteristics sub-panels directly: it
-    // writes m_vehicleId and calls the protected GetVehicle() / ClearCharacteristics().
-    friend class VehicleWnd;
-
 public:
-    class CAuxInfo
+    void SetupForVehicle(int vehicleId);
+    void SetVehicleType(VehicleWnd::VehicleType vehicleType);
+
+    struct CAuxInfo
     {
-    public:
+        /* 0x0000 */ CStr m_redColor;
+        /* 0x000c */ CStr m_greenColor;
+        CAuxInfo(const CharacteristicsWnd::CAuxInfo&);
         CAuxInfo();
-
-    private:
-        CStr m_redColor;
-        CStr m_greenColor;
-    };
-
-public:
-    virtual ~CharacteristicsWnd(void);
-    virtual m3d::Class* GetRtClass(void) const;
-    void SetVehicleType(VehicleWnd::VehicleType);
+    }; /* size: 0x0018 */
 
 protected:
-    CStr GetDiffValPrefix(int, bool) const;
-    CharacteristicsWnd(void);
-    void UpdateValue(m3d::ui::Wnd*, int, int, bool);
-    virtual int GameDataClear(bool);
-    CStr GetColorByVal(int, int, bool) const;
-    virtual int GameDataUpdate(void*, int);
-    virtual void OnNewFrame(void);
-    void UpdateValueHacked(m3d::ui::Wnd*, int, int, bool);
-    void UpdateValueNormal(m3d::ui::Wnd*, int, int, bool);
-    ai::Vehicle const* GetVehicle(void) const;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual void OnNewFrame() /* 0x11c */;
+    virtual void UpdateCharacteristics() = 0 /* 0x120 */;
+    virtual void ClearCharacteristics() = 0 /* 0x124 */;
+    const ai::Vehicle* GetVehicle() const;
+    CStr GetColorByVal(int val, int baseVal, bool bInverted) const;
+    CStr GetDiffValPrefix(int diff, bool bColorInverted) const;
+    void UpdateValue(m3d::ui::Wnd* ctrl, int val, int baseVal, bool bColorInverted);
+    void UpdateValueNormal(m3d::ui::Wnd* ctrl, int val, int baseVal, bool bColorInverted);
+    void UpdateValueHacked(m3d::ui::Wnd* ctrl, int val, int baseVal, bool bColorInverted);
+    /* 0x0220 */ CharacteristicsWnd::CAuxInfo m_caif;
+    /* 0x0238 */ VehicleWnd::VehicleType m_vehicleType;
+    /* 0x023c */ int m_vehicleId;
+    CharacteristicsWnd(const CharacteristicsWnd&);
+    CharacteristicsWnd();
 
 public:
-    RT_CLASS_DECLARE(CharacteristicsWnd);
-   
-private:
-    CharacteristicsWnd::CAuxInfo m_caif;
-    VehicleWnd::VehicleType m_vehicleType;
-    int m_vehicleId;
-};
+    virtual ~CharacteristicsWnd() override /* 0x00 */;
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetRtClass() const /* 0x128 */;
+    static m3d::Class m_classCharacteristicsWnd;
+}; /* size: 0x0240 */

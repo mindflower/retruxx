@@ -4,6 +4,7 @@
 #include "math/point2d.h"
 #include "retruxx/common.h"
 #include "server/relationship.h"
+#include "server/objects/guns/gun.h"
 
 struct CVector;
 
@@ -17,6 +18,7 @@ namespace ai
     class Bar;
     class Town;
     class Building;
+    class Vehicle;
 }
 namespace m3d
 {
@@ -123,7 +125,18 @@ namespace help
     // has finished being created (Wnd::Valid()).
     bool IsWndValid(m3d::ui::Wnd const* w);
 
-    int DestroyVehicle(int);
+    // Removes the vehicle `vehicleId` from the world. Returns 1 when there was
+    // nothing to do (id == -1) or the vehicle was removed, 0 when the id does
+    // not resolve to a live Vehicle.
+    int DestroyVehicle(int vehicleId);
+
+    // Spawns a fresh, unowned vehicle from `prototypeId` (named "VehicleToSell";
+    // used to build the throwaway "hacked" vehicle the workshop/trade UI previews
+    // parts on). Null when the prototype is unset or does not produce a Vehicle.
+    ai::Vehicle* CreateVehicleFromPrototype(int prototypeId);
+
+    // Detaches and removes every part of the vehicle except its chassis.
+    void RemoveAllPartsFromVehicle(ai::Vehicle* vehicle);
 
     // Price the workshop in `townId` pays the player for the object `objId`
     // (-1 bad args / no such town or object, -2 when the town has no workshop
@@ -167,4 +180,24 @@ namespace help
     ai::Bar* GetBarWithoutBarmanForTown(ai::Town const*);
     ai::Building* GetShopForTown(ai::Town const*);
     ai::Building* GetWorkshopForTown(ai::Town const*);
+
+    ai::FiringTypes GetGunFiringType(ai::Obj const* gun);
+
+    // Normalizes an angle (radians) to [0, 2*pi).
+    float Angle0To2Pi(float angle);
+    // Normalizes an angle (radians) to [-pi, pi].
+    float AngleMinusPiToPi(float angle);
+
+    // Sum of obj's own property value across every object the given vehicle
+    // property is sourced from (e.g. MaxSpeed/Torque/Control come from the
+    // cabin; Piercing/Blast/Energy/MaxDurability come from the chassis),
+    // reversing any installed gadget's modification of that property so the
+    // result is the vehicle's pre-upgrade baseline. Returns 0 if the property
+    // does not resolve or is not numeric.
+    float GetBasePropertyValFromVehicle(ai::Vehicle const* vehicle, int propertyId);
+
+    // As above but for a single object rather than a whole vehicle - obj's own
+    // current property value with every applicable installed gadget
+    // modification on vehicle undone.
+    float GetBasePropertyValFromObj(ai::Obj const* obj, ai::Vehicle const* vehicle, int propertyId);
 }  // namespace help

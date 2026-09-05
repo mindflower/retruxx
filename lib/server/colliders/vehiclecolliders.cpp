@@ -32,7 +32,9 @@ namespace ai
 
 	int CollideVehicleAndRoad(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// TODO: implement CollideVehicleAndRoad
+        // RETRUXX_NOT_IMPLEMENTED;
+        return 1;
 	}
 
 	int CollideVehicleAndWater(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)

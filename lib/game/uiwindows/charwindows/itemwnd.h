@@ -6,15 +6,18 @@ class ItemInfoWnd;
 
 class ItemWnd : public DragDropItemsWnd
 {
-    // GadgetWnd reads/writes ItemWnd's item/geom/state/aif fields directly (it
-    // is a lean specialisation that reuses ItemWnd's drawing + item plumbing).
+    // GadgetWnd and VehiclePartWnd read/write ItemWnd's item/geom/state/aif
+    // fields directly (both are lean specialisations that reuse ItemWnd's
+    // drawing + item plumbing).
     friend class GadgetWnd;
+    friend class VehiclePartWnd;
 
 public:
     class AuxInfo
     {
         friend class ItemWnd;
         friend class GadgetWnd;
+        friend class VehiclePartWnd;
 
     public:
         AuxInfo();

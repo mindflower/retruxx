@@ -18,8 +18,20 @@
 #include <server/objects/player.h>
 #include <server/objects/vehicle.h>
 #include <server/objects/bar.h>
+#include <server/objects/basket.h>
+#include <server/objects/cabin.h>
+#include <server/objects/workshop.h>
+#include <server/objects/base/objcontainer.h>
+#include <server/objects/physicbodies/vehiclepart.h>
 #include <game/m3dgame.h>
+#include <game/uiwindows/townwindows/bardlg.h>
+#include <impulses/i_impulses.h>
+#include <ui/ui_srv.h>
 #include "znayukakprodatwnd.h"
+#include "garagewnd.h"
+#include "inventorywnd.h"
+#include "salewnd.h"
+#include "workshopvehiclewnd.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MotherPanel, LeaveTown)
 {
@@ -467,7 +479,43 @@ void MotherPanel::OnMap()
 
 void MotherPanel::OnAdditionalBuilding()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x45FDB0. The "additional building" tab is the town's second bar - the
+    // one that has no barman - reusing the very same BarDlg window class.
+    // NOTE: this and its sibling handlers below test the whole m_gameDataFlags
+    // word rather than bit 1 as the rest of this file does; preserved as shipped.
+    if (m_gameDataFlags == 0)
+    {
+        return;
+    }
+
+    ai::Town const* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+    if (!town)
+    {
+        return;
+    }
+
+    ai::Bar* bar = help::GetBarWithoutBarmanForTown(town);
+    if (!bar)
+    {
+        return;
+    }
+
+    ref_ptr barWnd = M3D_APP->m_pInterfaceManager->GetWindow(3);
+    auto* barDlg = RT_DYNCAST(barWnd.get(), BarDlg);
+    if (!barDlg || !barDlg->SetUpForBar(bar->GetId()))
+    {
+        return;
+    }
+
+    RemoveChildPanelById(PANEL_RIGHT);
+
+    std::vector<std::pair<ChildPanelId, int>> panels;
+    if (!IsPanelPresent(4))
+    {
+        panels.push_back({PANEL_TOWN, 4});
+    }
+    panels.push_back({PANEL_RIGHT, 3});
+    ShowPanels(panels, {PANEL_TOWN});
 }
 
 int MotherPanel::OnWndNotify(m3d::ui::Wnd* from, unsigned idFrom, unsigned message, m3d::AIParam const& data)
@@ -588,7 +636,43 @@ int MotherPanel::AddChildPanel(ref_ptr<ChildPanel> childPanel, ChildPanelId pane
 
 void MotherPanel::OnShop()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x45E490
+    if (m_gameDataFlags == 0)
+    {
+        return;
+    }
+
+    ai::Town const* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+    if (!town)
+    {
+        return;
+    }
+
+    ai::Building* shop = help::GetShopForTown(town);
+    if (!shop)
+    {
+        return;
+    }
+
+    ref_ptr shopWnd = M3D_APP->m_pInterfaceManager->GetWindow(66);
+    auto* saleWnd = RT_DYNCAST(shopWnd.get(), SaleWnd);
+    if (!saleWnd || !saleWnd->SetUpForWorkshop(shop->GetId()))
+    {
+        return;
+    }
+
+    std::vector<std::pair<ChildPanelId, int>> panels;
+    if (!IsPanelPresent(4))
+    {
+        panels.push_back({PANEL_TOWN, 4});
+    }
+    panels.push_back({PANEL_RIGHT, 66});
+    panels.push_back({PANEL_LEFT, 64});
+    panels.push_back({PANEL_VIDEO, 77});
+
+    ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_SHOP);
+    ShowPanels(panels, {PANEL_TOWN});
+    M3D_APP->GetTownMusicManager()->LaunchAmbientShop();
 }
 
 void MotherPanel::OnPickUpAll()
@@ -629,14 +713,73 @@ void MotherPanel::OnLeaveTown(bool bQuick)
 
 bool MotherPanel::PickUpItemsFromGround()
 {
-    // TODO: implement MotherPanel::PickUpItemsFromGround
-    // RETRUXX_NOT_IMPLEMENTED;
-    return false;
+    // RVA 0x461340
+    if (!ai::thePlayer)
+    {
+        return false;
+    }
+
+    ai::Vehicle* vehicle = ai::thePlayer->GetVehicle();
+    if (!vehicle)
+    {
+        return false;
+    }
+
+    unsigned int originalNumItems = 0;
+    retruxx::vector<int> addedObjIds;
+    vehicle->PickUpNearbyObjects(true, originalNumItems, addedObjIds);
+    if (originalNumItems == 0 || addedObjIds.empty())
+    {
+        return false;
+    }
+
+    // Name every item that made it into the repository.
+    for (int objId : addedObjIds)
+    {
+        if (ai::Obj const* obj = ai::theObjects->GetEntityByObjId(objId))
+        {
+            M3D_APP->EnqueueMessage(66563, 7, 0, 0, 0, obj->GetFullDescriptionWithAffixes(), {});
+        }
+    }
+
+    bool bLooped = false;
+    m_gfx->PlayControlSound(m_aif.m_pickUpSoundName, &bLooped);
+
+    if (originalNumItems != addedObjIds.size())
+    {
+        // Some of what was lying there did not fit - tell the player which key
+        // opens the repository so they can make room.
+        M3D_APP->EnqueueMessage(66563, 14, 0, 0, 0, M3D_APP->m_pImpulses->GetImpulseNameById(42), {});
+    }
+    return true;
 }
 
 void MotherPanel::OnBuyVehicle()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x45E950. Unlike its siblings this one has no m_gameDataFlags guard.
+    ai::Workshop* workshop = M3D_APP->m_pInterfaceManager->GetCurrentWorkshop();
+    if (!workshop)
+    {
+        return;
+    }
+
+    ref_ptr wshVehicleWnd = M3D_APP->m_pInterfaceManager->GetWindow(73);
+    auto* vehicleWnd = RT_DYNCAST(wshVehicleWnd.get(), WorkshopVehicleWnd);
+    if (!vehicleWnd)
+    {
+        return;
+    }
+
+    vehicleWnd->SetupForWorkshop(workshop->GetId());
+    RemoveChildPanelById(PANEL_RIGHT);
+
+    std::vector<std::pair<ChildPanelId, int>> panels;
+    panels.push_back({PANEL_RIGHT, 73});
+    if (!IsPanelPresent(68))
+    {
+        panels.push_back({PANEL_LEFT, 68});
+    }
+    ShowPanels(panels, {PANEL_TOWN, PANEL_LEFT});
 }
 
 void MotherPanel::ShowPanels(
@@ -1308,7 +1451,52 @@ int MotherPanel::GameDataSetup()
 
 void MotherPanel::OnTown()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x45F980 - drops back to the town's root view.
+    if (m_gameDataFlags == 0)
+    {
+        return;
+    }
+
+    ai::Building const* onlyBuilding = nullptr;
+    ai::Town* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+    if (!town)
+    {
+        // Not in a town yet: the town dialog itself knows which one we just
+        // walked into, so enter it now.
+        ref_ptr wndTown = M3D_APP->m_pInterfaceManager->GetWindow(4);
+        if (auto* townDlg = RT_DYNCAST(wndTown.get(), TownDlg))
+        {
+            town = townDlg->GetTown();
+            if (town)
+            {
+                OnEnterTown(town);
+                onlyBuilding = GetOnlyBuilding();
+            }
+        }
+    }
+
+    ClearPanels({PANEL_TOWN});
+    m_curTabId = TAB_INVALID;
+    SelectTabButton(TAB_INVALID);
+    M3D_APP->GetTownMusicManager()->StopAmbient();
+
+    if (town)
+    {
+        ai::thePlayer->CauseEvent(ai::GE_TUTORIAL_TOWN, 0.0f, m3d::AIParam(town->GetId()), m3d::AIParam());
+        town->CauseEvent(ai::GE_TUTORIAL_TOWN, 0.0f, m3d::AIParam(), m3d::AIParam());
+    }
+
+    if (onlyBuilding)
+    {
+        // A town with a single building opens straight into that building's tab.
+        SetCurTab(GetTabForBuilding(onlyBuilding), true);
+    }
+    else
+    {
+        std::vector<std::pair<ChildPanelId, int>> panels;
+        panels.push_back({PANEL_TOWN, 4});
+        ShowPanels(panels, {PANEL_TOWN});
+    }
 }
 
 MotherPanel::MotherPanel(MotherPanel const&) : MotherPanel()
@@ -1511,9 +1699,112 @@ int MotherPanel::OnKey(unsigned short key, unsigned char scanCode, unsigned stat
     return 1;
 }
 
-void MotherPanel::OnStartTrade(void*)
+void MotherPanel::OnStartTrade(void* data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x45EEE0 - swaps the panel layout over to the trade triptych and points
+    // it at the object being haggled over.
+    if (!GetStation()->IsModal(this) || !M3D_APP->m_pInterfaceManager->IsInSaleMode())
+    {
+        return;
+    }
+
+    auto const* evt = static_cast<m3d::Event const*>(data);
+    if (!evt)
+    {
+        return;
+    }
+
+    int const workshopId = evt->m_intEv[2];
+    if (workshopId == -1)
+    {
+        return;
+    }
+
+    int tradeVehicleId = evt->m_intEv[0];
+    if (tradeVehicleId == -1)
+    {
+        // No vehicle supplied: preview the goods on a scratch copy of the
+        // player's own vehicle instead.
+        if (!CreateHackedWorkshopVehicle())
+        {
+            return;
+        }
+        tradeVehicleId = m_hackedWorkshopVehicleId;
+    }
+
+    int const objToTradeId = evt->m_intEv[1];
+    ai::Obj* objToTrade = ai::theObjects->GetEntityByObjId(objToTradeId);
+    if (!objToTrade || !objToTrade->IsKindOf(&ai::Obj::m_classObj))
+    {
+        return;
+    }
+
+    ref_ptr inventoryWnd = M3D_APP->m_pInterfaceManager->GetWindow(65);
+    auto* inventory = RT_DYNCAST(inventoryWnd.get(), InventoryWnd);
+    if (!inventory)
+    {
+        return;
+    }
+
+    // NOTE: the cabin/basket branches below test the m_hackedWorkshopVehicleId
+    // member rather than the tradeVehicleId local computed above, so when the
+    // event carried its own vehicle id and no scratch vehicle was ever created,
+    // the part swap is skipped entirely. Preserved as shipped.
+    ZnayuKakProdatWnd::TradeType tradeType;
+    if (objToTrade->IsKindOf(&ai::Vehicle::m_classVehicle))
+    {
+        tradeType = ZnayuKakProdatWnd::TRADETYPE_VEHICLE;
+    }
+    else if (objToTrade->IsKindOf(&ai::Cabin::m_classCabin))
+    {
+        if (m_hackedWorkshopVehicleId != -1)
+        {
+            ai::Obj* hacked = ai::theObjects->GetEntityByObjId(m_hackedWorkshopVehicleId);
+            auto* hackedVehicle = RT_DYNCAST(hacked, ai::Vehicle);
+            if (!hackedVehicle)
+            {
+                return;
+            }
+            help::RemoveAllPartsFromVehicle(hackedVehicle);
+            hackedVehicle->SetCabin(static_cast<ai::VehiclePart*>(objToTrade));
+        }
+        tradeType = ZnayuKakProdatWnd::TRADETYPE_CABIN;
+    }
+    else if (objToTrade->IsKindOf(&ai::Basket::m_classBasket))
+    {
+        if (m_hackedWorkshopVehicleId != -1)
+        {
+            ai::Obj* hacked = ai::theObjects->GetEntityByObjId(m_hackedWorkshopVehicleId);
+            auto* hackedVehicle = RT_DYNCAST(hacked, ai::Vehicle);
+            if (!hackedVehicle)
+            {
+                return;
+            }
+            help::RemoveAllPartsFromVehicle(hackedVehicle);
+            hackedVehicle->SetBasket(static_cast<ai::VehiclePart*>(objToTrade));
+        }
+        tradeType = ZnayuKakProdatWnd::TRADETYPE_BASKET;
+    }
+    else
+    {
+        return;
+    }
+
+    inventory->SetTradeVehicleId(tradeVehicleId, tradeType);
+
+    ref_ptr znayuWnd = M3D_APP->m_pInterfaceManager->GetWindow(94);
+    auto* znayu = RT_DYNCAST(znayuWnd.get(), ZnayuKakProdatWnd);
+    if (!znayu)
+    {
+        return;
+    }
+    znayu->SetupForTrade(workshopId, objToTradeId, tradeVehicleId);
+
+    std::vector<std::pair<ChildPanelId, int>> panels;
+    panels.push_back({PANEL_TRADE_RIGHT, 65});
+    panels.push_back({PANEL_TRADE_LEFT, 64});
+    panels.push_back({PANEL_TRADE_COMMON, 94});
+    ShowPanels(panels, {PANEL_TOWN, PANEL_LEFT, PANEL_RIGHT, PANEL_VIDEO});
 }
 
 void MotherPanel::OnTabBtnClick(m3d::ui::Wnd* wndFrom, int)
@@ -1526,12 +1817,92 @@ void MotherPanel::OnTabBtnClick(m3d::ui::Wnd* wndFrom, int)
 
 int MotherPanel::CreateHackedWorkshopVehicle()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4607C0 - builds a throwaway clone of the player's vehicle that the
+    // trade UI can mount candidate parts on without touching the real one. It is
+    // spawned invisible and lives only until the trade finishes.
+    DestroyHackedWorkshopVehicle();
+
+    if (!ai::thePlayer)
+    {
+        return 0;
+    }
+
+    ai::Vehicle* playerVehicle = ai::thePlayer->GetVehicle();
+    if (!playerVehicle)
+    {
+        return 0;
+    }
+
+    if (ai::Vehicle* vehicle = help::CreateVehicleFromPrototype(playerVehicle->GetPrototypeId()))
+    {
+        vehicle->SetInvisible();
+        m_hackedWorkshopVehicleId = vehicle->GetId();
+    }
+    return m_hackedWorkshopVehicleId != -1;
 }
 
 void MotherPanel::OnWorkshop()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x45E650
+    if (m_gameDataFlags == 0)
+    {
+        return;
+    }
+
+    ai::Town const* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+    if (!town)
+    {
+        return;
+    }
+
+    ai::Building* workshop = help::GetWorkshopForTown(town);
+    if (!workshop)
+    {
+        return;
+    }
+
+    ref_ptr wshWnd = M3D_APP->m_pInterfaceManager->GetWindow(67);
+    auto* garageWnd = RT_DYNCAST(wshWnd.get(), GarageWnd);
+    if (!garageWnd || !garageWnd->SetupForWorkshop(workshop->GetId()))
+    {
+        return;
+    }
+
+    std::vector<std::pair<ChildPanelId, int>> panels;
+    if (!IsPanelPresent(4))
+    {
+        panels.push_back({PANEL_TOWN, 4});
+    }
+    panels.push_back({PANEL_RIGHT, 67});
+
+    ai::thePlayer->CauseEvent(ai::GE_TUTORIAL_WORKSHOP, 0.0f, m3d::AIParam(workshop->GetId()), m3d::AIParam());
+    workshop->CauseEvent(ai::GE_TUTORIAL_WORKSHOP, 0.0f, m3d::AIParam(), m3d::AIParam());
+
+    std::vector<ChildPanelId> panelsToRemain;
+    panelsToRemain.push_back(PANEL_TOWN);
+
+    // Coming back from the buy-vehicle panel, that panel occupies the right slot.
+    if (IsPanelPresent(73))
+    {
+        RemoveChildPanelById(PANEL_RIGHT);
+    }
+
+    ref_ptr wndCharacteristic = M3D_APP->m_pInterfaceManager->GetWindow(68);
+    if (wndCharacteristic)
+    {
+        // Already up and settled? Leave it be rather than re-showing it.
+        if (!wndCharacteristic->IsChildOf(M3D_APP) || wndCharacteristic->IsAnimatingNow())
+        {
+            panels.push_back({PANEL_LEFT, 68});
+        }
+        else
+        {
+            panelsToRemain.push_back(PANEL_LEFT);
+        }
+    }
+
+    ShowPanels(panels, panelsToRemain);
+    M3D_APP->GetTownMusicManager()->LaunchAmbientWorkshop();
 }
 
 void MotherPanel::SetCurTab(Tab tabId, bool bUpdatePanels)
@@ -1614,7 +1985,42 @@ void MotherPanel::OnEnterTown(ai::Town const* town)
 
 void MotherPanel::OnBar()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x45FC20 - the bar tab proper, i.e. the town bar that has a barman.
+    if (m_gameDataFlags == 0)
+    {
+        return;
+    }
+
+    ai::Town const* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+    if (!town)
+    {
+        return;
+    }
+
+    ai::Bar* bar = help::GetBarWithBarmanForTown(town);
+    if (!bar)
+    {
+        return;
+    }
+
+    ref_ptr barWnd = M3D_APP->m_pInterfaceManager->GetWindow(2);
+    auto* barDlg = RT_DYNCAST(barWnd.get(), BarDlg);
+    if (!barDlg || !barDlg->SetUpForBar(bar->GetId()))
+    {
+        return;
+    }
+
+    RemoveChildPanelById(PANEL_RIGHT);
+
+    std::vector<std::pair<ChildPanelId, int>> panels;
+    if (!IsPanelPresent(4))
+    {
+        panels.push_back({PANEL_TOWN, 4});
+    }
+    panels.push_back({PANEL_RIGHT, 2});
+
+    ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_BAR);
+    ShowPanels(panels, {PANEL_TOWN});
 }
 
 void MotherPanel::SelectTabButton(Tab tabId)

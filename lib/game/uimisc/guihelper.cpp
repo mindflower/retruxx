@@ -8,7 +8,11 @@
 #include "file/fileenum.h"
 #include "file/fileserver.h"
 #include "server/objects/bar.h"
+#include "server/objects/basket.h"
 #include "server/objects/building.h"
+#include "server/objects/cabin.h"
+#include "server/objects/chassis.h"
+#include "server/objects/gadget.h"
 #include "server/objects/player.h"
 #include "server/objects/town.h"
 #include "server/objects/vehicle.h"
@@ -472,9 +476,52 @@ namespace help
         return w && M3D_APP->IsWndAlive(w, -1) && w->Valid();
     }
 
-    int DestroyVehicle(int)
+    int DestroyVehicle(int vehicleId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x553F40. An unset id counts as success - there was nothing to destroy.
+        if (vehicleId == -1)
+        {
+            return 1;
+        }
+        ai::Obj* obj = ai::theObjects->GetEntityByObjId(vehicleId);
+        if (!obj || !obj->IsKindOf(&ai::Vehicle::m_classVehicle))
+        {
+            return 0;
+        }
+        obj->Remove();
+        return 1;
+    }
+
+    ai::Vehicle* CreateVehicleFromPrototype(int prototypeId)
+    {
+        // RVA 0x553ED0
+        if (prototypeId == -1)
+        {
+            return nullptr;
+        }
+        int const objId = ai::theObjects->CreateNewObject(prototypeId, "VehicleToSell", -1, -1);
+        ai::Obj* obj = ai::theObjects->GetEntityByObjId(objId);
+        return (obj && obj->IsKindOf(&ai::Vehicle::m_classVehicle)) ? static_cast<ai::Vehicle*>(obj) : nullptr;
+    }
+
+    void RemoveAllPartsFromVehicle(ai::Vehicle* vehicle)
+    {
+        // RVA 0x553FA0 - strips every part except the chassis, which the vehicle
+        // cannot exist without.
+        for (auto it = vehicle->begin(); it != vehicle->end();)
+        {
+            // Advance before touching the part: both calls below can erase the
+            // entry we are standing on.
+            auto const cur = it++;
+            ai::VehiclePart* part = cur->second;
+            if (!part || part->GetPartName() == CStr("CHASSIS"))
+            {
+                continue;
+            }
+            CStr const partName = cur->first;
+            vehicle->SetPartByName(partName, nullptr, true);
+            part->Remove();
+        }
     }
 
     ai::Bar* GetBarWithBarmanForTown(ai::Town const* town)
@@ -673,5 +720,257 @@ namespace help
             return cg->GetCurrentRechargingTime();
         }
         return 0.0f;
+    }
+
+    ai::FiringTypes GetGunFiringType(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            if (auto const* pi = g->GetPrototypeInfo())
+            {
+                return pi->m_firingType;
+            }
+        }
+        else if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            if (auto const* pi = cg->GetPrototypeInfo())
+            {
+                return pi->GetFiringType();
+            }
+        }
+        return ai::FT_NUM_FIRING_TYPES;
+    }
+
+    float Angle0To2Pi(float angle)
+    {
+        float const turns = static_cast<float>(static_cast<int>(angle * 0.15915494f));
+        if (angle >= 0.0f)
+        {
+            return angle - turns * 6.2831855f;
+        }
+        return angle - turns * 6.2831855f + 6.2831855f;
+    }
+
+    float AngleMinusPiToPi(float angle)
+    {
+        float const turns = static_cast<float>(static_cast<int>(angle * 0.15915494f));
+        if (angle > 3.1415927f)
+        {
+            return angle - turns * 6.2831855f - 6.2831855f;
+        }
+        if (angle < -3.1415927f)
+        {
+            return angle - turns * 6.2831855f + 6.2831855f;
+        }
+        return angle;
+    }
+
+    namespace
+    {
+        bool GetPropertyValFromObj(float& propertyVal, ai::Obj const* obj, int propertyId)
+        {
+            propertyVal = 0.0f;
+            if (!obj || propertyId == -1)
+            {
+                return false;
+            }
+            m3d::AIParam const prop = obj->GetPropertyById(propertyId);
+            if (prop.GetType() != m3d::AIPARAM_FLOAT)
+            {
+                return false;
+            }
+            propertyVal = prop.GetAsFloat();
+            return true;
+        }
+
+        bool GetDefaultPropertyValFromObj(float& propertyVal, ai::Obj const* obj, int propertyId)
+        {
+            propertyVal = 0.0f;
+            if (!obj || propertyId == -1)
+            {
+                return false;
+            }
+            m3d::AIParam const prop = obj->GetPropertyDefaultById(propertyId);
+            if (prop.GetType() != m3d::AIPARAM_FLOAT)
+            {
+                return false;
+            }
+            propertyVal = prop.GetAsFloat();
+            return true;
+        }
+
+        bool IsGadgetModificationApplicableToObjProperty(
+            ai::GadgetPrototypeInfo::ModificationInfo const& modification,
+            ai::Obj const* obj,
+            int propertyId)
+        {
+            if (!obj || propertyId == -1 || modification.m_propertyName.empty())
+            {
+                return false;
+            }
+            if (!(obj->GetPropertyName(propertyId) == modification.m_propertyName))
+            {
+                return false;
+            }
+            ai::PrototypeInfo const* protoInfo = obj->GetPrototypeInfo();
+            if (!protoInfo)
+            {
+                return false;
+            }
+
+            switch (modification.m_applierInfo.applierType)
+            {
+            case ai::GadgetPrototypeInfo::GA_VEHICLE:
+                return obj->IsKindOf(&ai::Vehicle::m_classVehicle);
+            case ai::GadgetPrototypeInfo::GA_OBJECT_BY_RESOURCE:
+                return ai::theResourceManager->bResourceIsKindOf(
+                    protoInfo->m_resourceId, modification.m_applierInfo.targetResourceId);
+            case ai::GadgetPrototypeInfo::GA_GUN_BY_TYPE:
+                if (ai::theResourceManager->bResourceIsKindOf(
+                        protoInfo->m_resourceId, ai::theResourceManager->GetResourceId("GUN")))
+                {
+                    return GetGunFiringType(obj) == modification.m_applierInfo.targetFiringType;
+                }
+                return false;
+            default:
+                return false;
+            }
+        }
+
+        // The objects a given vehicle property is actually stored on: most
+        // chassis stats live on the chassis part, cabin-driven stats (speed,
+        // torque, control) on the cabin, and the two "storage capacity"
+        // properties are shared between the cabin and basket.
+        void GetVehicleObjectsForProperty(
+            ai::Vehicle const* vehicle,
+            int propertyId,
+            std::vector<ai::Obj const*>& objects)
+        {
+            objects.clear();
+            if (!vehicle)
+            {
+                return;
+            }
+            switch (propertyId)
+            {
+            case 9:
+            case 10:
+            case 26:
+            case 27:
+                if (auto const* chassis = vehicle->GetChassis())
+                {
+                    objects.push_back(chassis);
+                }
+                break;
+            case 12:
+                objects.push_back(vehicle);
+                break;
+            case 19:
+            case 20:
+                if (auto const* cabin = vehicle->GetCabin())
+                {
+                    objects.push_back(cabin);
+                    if (auto const* basket = vehicle->GetBasket())
+                    {
+                        objects.push_back(basket);
+                    }
+                }
+                break;
+            case 22:
+            case 23:
+            case 25:
+                if (auto const* cabin = vehicle->GetCabin())
+                {
+                    objects.push_back(cabin);
+                }
+                break;
+            default:
+                break;
+            }
+        }
+        bool GetBasePropertyValFromObjImpl(
+            float& basePropertyVal,
+            ai::Obj const* obj,
+            ai::Vehicle const* vehicle,
+            int propertyId)
+        {
+            basePropertyVal = 0.0f;
+            if (!obj || !vehicle || propertyId == -1)
+            {
+                return false;
+            }
+            float value = 0.0f;
+            if (!GetPropertyValFromObj(value, obj, propertyId))
+            {
+                return false;
+            }
+            float defaultValue = 0.0f;
+            if (!GetDefaultPropertyValFromObj(defaultValue, obj, propertyId))
+            {
+                return false;
+            }
+
+            // Undo every installed gadget modification that applies to this
+            // property, recovering the value the object would have without them.
+            for (auto const& entry : vehicle->GetGadgets())
+            {
+                ai::Gadget const* gadget = entry.second;
+                if (!gadget)
+                {
+                    continue;
+                }
+                auto const* gadgetPi = gadget->GetPrototypeInfo();
+                if (!gadgetPi)
+                {
+                    continue;
+                }
+                for (auto const& modification : gadgetPi->GetModifications())
+                {
+                    if (!IsGadgetModificationApplicableToObjProperty(modification, obj, propertyId))
+                    {
+                        continue;
+                    }
+                    if (modification.m_modificationType == ai::GadgetPrototypeInfo::ModificationInfo::MULTIPLY)
+                    {
+                        value -= modification.m_value.GetAsFloat() * defaultValue;
+                    }
+                    else
+                    {
+                        value -= modification.m_value.GetAsFloat();
+                    }
+                }
+            }
+            basePropertyVal = value;
+            return true;
+        }
+    }  // namespace
+
+    float GetBasePropertyValFromObj(ai::Obj const* obj, ai::Vehicle const* vehicle, int propertyId)
+    {
+        float value = 0.0f;
+        GetBasePropertyValFromObjImpl(value, obj, vehicle, propertyId);
+        return value;
+    }
+
+    float GetBasePropertyValFromVehicle(ai::Vehicle const* vehicle, int propertyId)
+    {
+        if (!vehicle || propertyId == -1)
+        {
+            return 0.0f;
+        }
+        std::vector<ai::Obj const*> objects;
+        GetVehicleObjectsForProperty(vehicle, propertyId, objects);
+
+        float total = 0.0f;
+        for (ai::Obj const* obj : objects)
+        {
+            float value = 0.0f;
+            if (!obj || !GetBasePropertyValFromObjImpl(value, obj, vehicle, propertyId))
+            {
+                return 0.0f;
+            }
+            total += value;
+        }
+        return total;
     }
 }  // namespace help

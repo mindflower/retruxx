@@ -250,9 +250,16 @@ int CBWnd::OnAfterRemoveFromWndStation()
 
 int CBWnd::CreateChildVehiclePartWindow(CStr const&, PointBase<float> const&)
 {
-    // TODO(RVA 0x440990): spawns a VehiclePartWnd per child vehicle part via the
-    // ResourceManager and m_pInterfaceManager. Dead code in the shipped game
-    // (SetupChildVehicleParts, its only caller, is empty) and blocked on the
-    // unported VehiclePartWnd; left as a stub.
+    // RVA 0x440990: spawns a VehiclePartWnd for a child vehicle part - resolves
+    // its resource via the ResourceManager, sizes it against the player
+    // repository's cell size, Creates it, then wires it up through several
+    // more virtual calls on the new VehiclePartWnd (matching offsets in
+    // ItemWnd/VehiclePartWnd's combined vtable, but with argument types Hex-Rays
+    // cannot recover reliably here) before inserting it into
+    // m_wndChildVehicleParts and registering it with the interface manager.
+    // Left unimplemented rather than guessed: it is confirmed dead code in the
+    // shipped game (SetupChildVehicleParts, its only caller, is an empty
+    // function), so there is no observable behaviour to verify a
+    // reconstruction against.
     RETRUXX_NOT_IMPLEMENTED;
 }

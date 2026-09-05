@@ -8,12 +8,18 @@
 #include <math/aabb.h>
 
 class Obb;
+class ComplexModelWnd;
 
 namespace m3d
 {
     class GraphItemsForSgNode;
     class DataServer;
     class SceneGraph;
+
+    namespace ui
+    {
+        class SgNodeArrayWnd;
+    }
 
     enum TransparencyType
     {
@@ -40,6 +46,13 @@ namespace m3d
     class SgNode : public m3d::Object
     {
         friend class SceneGraph;
+        // SgNodeArrayWnd renders a set of nodes (and their children) into a
+        // texture, and needs each node's current world transform to place the
+        // children relative to the node it was handed. ComplexModelWnd, which
+        // builds that set out of a vehicle or gun, reads the same transform plus
+        // each node's own bounding box to frame the model.
+        friend class m3d::ui::SgNodeArrayWnd;
+        friend class ::ComplexModelWnd;
 
     protected:
         SgNode();

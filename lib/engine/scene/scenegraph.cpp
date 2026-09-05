@@ -1110,9 +1110,67 @@ namespace m3d
         return (this->m_enableVisSpaceMask & this->m_enableMap[256 * y + x]) != 0;
     }
 
-    void SceneGraph::RenderNode(SgNode*, CMatrix const&, bool)
+    void SceneGraph::RenderNode(SgNode* n, CMatrix const& curMatr, bool fullInv)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        DataServer* server = n->GetServer();
+        if (!server)
+        {
+            return;
+        }
+
+        CMatrix vv;
+        if (fullInv)
+        {
+            CMatrix invMat = n->m_currentXForm.getInverse();
+            vv = invMat * curMatr;
+        }
+        else
+        {
+            CVector x, y, z;
+            n->m_currentXForm.GetInvBasis(x, y, z);
+
+            CMatrix invMat;
+            invMat.identity();
+            invMat._11 = x.x;
+            invMat._12 = x.y;
+            invMat._13 = x.z;
+            invMat._21 = y.x;
+            invMat._22 = y.y;
+            invMat._23 = y.z;
+            invMat._31 = z.x;
+            invMat._32 = z.y;
+            invMat._33 = z.z;
+
+            CVector pos = n->m_currentXForm.getOrg();
+            invMat._41 = -(pos.x * x.x + pos.y * y.x + pos.z * z.x);
+            invMat._42 = -(pos.x * x.y + pos.y * y.y + pos.z * z.y);
+            invMat._43 = -(pos.x * x.z + pos.y * y.z + pos.z * z.z);
+            invMat._44 = 1.0f;
+
+            vv = invMat * curMatr;
+        }
+
+        M3D_RENDERER->MatPush(vv);
+
+        if (IS_KIND_OF(n, SgAnimatedModelNode) || IS_KIND_OF(n, SgParticlesNode))
+        {
+            SgNode* nodes[1] = {n};
+            RenderNodeInfo rni;
+            rni.isUseImpostors = true;
+            server->RenderNodeSet(nodes, 1, rni);
+        }
+        else
+        {
+            server->RenderItem(-2, nullptr);
+
+            uint32_t curTime = M3D_KERNEL->GetTimer().GetCurTime();
+
+            n->Render(NRF_DEFAULT, nullptr, 10, curTime);
+
+            server->RenderItem(-3, nullptr);
+        }
+
+        M3D_RENDERER->MatPop(false);
     }
 
     void SceneGraph::Render(SgRenderFlags flags)

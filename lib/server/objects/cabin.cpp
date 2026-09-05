@@ -45,7 +45,8 @@ namespace ai
             if (!gadgetNode->IsEmpty() && gadgetNode->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
             {
                 ref_ptr slotNode = xmlFile->CreateNode();
-                for (gadgetNode->GetFirstChild(slotNode, "Slot"); !slotNode->IsEmpty(); slotNode->GetNextSibling(slotNode, "Slot"))
+                for (gadgetNode->GetFirstChild(slotNode, "Slot"); !slotNode->IsEmpty();
+                     slotNode->GetNextSibling(slotNode, "Slot"))
                 {
                     CStr resourceType;
                     m3d::SafeStrAttrib(resourceType, slotNode, "ResourceType");
@@ -55,7 +56,7 @@ namespace ai
 
                     // TOOD: check this!!
                     int slot = -1;
-                    for (const auto& gadgetSlot : this->m_gadgetSlots)
+                    for (auto const& gadgetSlot : this->m_gadgetSlots)
                     {
                         if (gadgetSlot.second.y > slot)
                         {
@@ -151,7 +152,7 @@ namespace ai
 
     CabinPrototypeInfo const* Cabin::GetPrototypeInfo() const
     {
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const CabinPrototypeInfo);
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), CabinPrototypeInfo const);
     }
 
     m3d::Class* Cabin::GetBaseClass()
@@ -187,14 +188,53 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Cabin::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool Cabin::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        switch (propertyId)
+        {
+        case 22:
+            retVal = m_maxTorque;
+            return true;
+        case 23:
+            retVal = m_maxSpeed;
+            return true;
+        case 24:
+            retVal = m_fuelConsumption;
+            return true;
+        case 25:
+            retVal = m_control;
+            return true;
+        default:
+            return ai::VehiclePart::_GetPropertyInternal(propertyId, retVal);
+        }
+        return false;
     }
 
-    bool Cabin::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool Cabin::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto prototypeInfo = (ai::CabinPrototypeInfo const*)GetPrototypeInfo();
+        switch (propertyId)
+        {
+        case 22:
+            retVal = prototypeInfo->m_maxTorque;
+            return true;
+
+        case 23:
+            retVal = prototypeInfo->m_maxSpeed;
+            return true;
+
+        case 24:
+            retVal = prototypeInfo->m_fuelConsumption;
+            return true;
+
+        case 25:
+            retVal = prototypeInfo->m_control;
+            return true;
+
+        default:
+            return ai::VehiclePart::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
+        return false;
     }
 
     Cabin::~Cabin() = default;
@@ -208,4 +248,4 @@ namespace ai
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace ai

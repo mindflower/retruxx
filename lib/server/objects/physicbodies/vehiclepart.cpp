@@ -143,7 +143,13 @@ namespace ai
                         }
 
                         auto trimesh = TriMesh::CreateObject(
-                            0, mesh.m_verts, mesh.m_numVertices, trimeshIndices, trisCount, nullptr, mesh.m_VertexTypeSize);
+                            0,
+                            mesh.m_verts,
+                            mesh.m_numVertices,
+                            trimeshIndices,
+                            trisCount,
+                            nullptr,
+                            mesh.m_VertexTypeSize);
 
                         auto const bound = trimesh->GetAabb();
                         CVector size;
@@ -531,7 +537,8 @@ namespace ai
         m_price(prototypeInfo.m_price),
         m_durability(prototypeInfo.m_durability, 0.0, prototypeInfo.m_durability, 0.0)
     {
-        m_durability.m_AfterValueChange = new AfterChangeFloatCallback(*this, &VehiclePart::_OnDurabilityValueAfterChange);
+        m_durability.m_AfterValueChange =
+            new AfterChangeFloatCallback(*this, &VehiclePart::_OnDurabilityValueAfterChange);
         m_durability.m_BeforeValueApplyModifier =
             new BeforeApplyModifierFloatCallback(*this, &VehiclePart::_OnDurabilityValueBeforeApplyModifier);
 
@@ -581,9 +588,26 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool VehiclePart::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool VehiclePart::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        float val = 0.0;
+        switch (propertyId)
+        {
+        case 19:
+            val = m_durability.value().get();
+            break;
+        case 20:
+            val = m_durability.maxValue().get();
+            break;
+        case 21:
+            val = m_price.get();
+            break;
+        default:
+            return ai::Obj::_GetPropertyInternal(propertyId, retVal);
+        }
+
+        retVal = val;
+        return true;
     }
 
     float VehiclePart::_GetModelPartHealth(int) const
@@ -646,9 +670,27 @@ namespace ai
         m_passToAnotherMapData = nullptr;
     }
 
-    bool VehiclePart::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool VehiclePart::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto prototypeInfo = (ai::VehiclePartPrototypeInfo const*)GetPrototypeInfo();
+        switch (propertyId)
+        {
+        case 19:
+            retVal = prototypeInfo->m_durability;
+            return true;
+
+        case 20:
+            retVal = prototypeInfo->m_durability;
+            return true;
+
+        case 21:
+            retVal = prototypeInfo->m_price;
+            return true;
+
+        default:
+            return ai::Obj::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
+        return false;
     }
 
     VehiclePart::~VehiclePart()
