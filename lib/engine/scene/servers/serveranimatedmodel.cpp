@@ -278,8 +278,18 @@ namespace m3d
 
         struct MeshImposteredSortPred
         {
-            MeshImposteredSortPred(const ImpostoredMeshInfo*);
-            bool operator()(unsigned int, unsigned int) const;
+            MeshImposteredSortPred(const ImpostoredMeshInfo* meshes) : m_meshes(meshes)
+            {
+            }
+
+            // Grouping the draw calls only needs entries that share a model to
+            // end up adjacent, and every node with the same server handle
+            // resolves to the same DynamicModel.
+            bool operator()(unsigned int meshIdx1, unsigned int meshIdx2) const
+            {
+                return m_meshes[meshIdx1].nodeLookup->GetServerHandle() <
+                       m_meshes[meshIdx2].nodeLookup->GetServerHandle();
+            }
             /* 0x0000 */ const ImpostoredMeshInfo* m_meshes;
         }; /* size: 0x0004 */
 
@@ -315,6 +325,29 @@ namespace m3d
             }
             /* 0x0000 */ const MeshInfo* m_meshes;
         }; /* size: 0x0004 */
+
+        // A material contributes an alpha-tested diffuse texture when it has any
+        // texture at all and either carries no shader or its first technique is
+        // flagged as alpha-using.
+        bool HasAlphaTestedTexture(const m3d::DSurfaceMaterial& material)
+        {
+            return !material.Textures.empty() &&
+                   (!material.Shader.Handle || material.Shader.Handle->GetTechniqueDesc(0).useAlpha);
+        }
+
+        void BindAlphaTestedTexture(const m3d::DSurfaceMaterial& material, int stage, int alphaTest)
+        {
+            if (HasAlphaTestedTexture(material))
+            {
+                M3D_RENDERER->SetAlphaTest(alphaTest);
+                M3D_RENDERER->SetTexture(stage, material.Textures.front().Handle, -1.0);
+            }
+            else
+            {
+                M3D_RENDERER->SetAlphaTest(0);
+                M3D_RENDERER->SetWhiteTexture(stage);
+            }
+        }
     }  // namespace
 
     int AnimatedModelsServer::RenderNodeSet(SgNode** nodes, unsigned numNodes, RenderNodeInfo rni)
@@ -381,10 +414,6 @@ namespace m3d
         for (unsigned int nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
             m3d::SgNode* currentNode = nodes[nodeIndex];
-            if (currentNode->GetServerHandle() > 50 && currentNode->GetServerHandle() < 76)
-            {
-                bool asd = true;
-            }
             DynamicModel* modelData = (DynamicModel*)this->m_models[currentNode->GetServerHandle()].m_ptr;
 
             // Calculate distance squared to view position
@@ -473,28 +502,200 @@ namespace m3d
             M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("meshes = " + CStr(numMeshes)).c_str());
         }
 
+        SceneGraph* graph = nodes[0]->GetGraph();
+        rend::IEffect* const contourShader = graph->GetContourShader();
+
         for (int i = 0; i < numMeshes; i++)
         {
-            auto& mesh = meshes[meshesShifts[i]];
+            auto& mi = meshes[meshesShifts[i]];
+            SgAnimatedModelNode* node = mi.nodeLookup;
+            AnimatedModel::Mesh& mh = *mi.mesh;
+            DSurfaceMaterial& material = *mi.material;
+            CMatrix const& xform = node->GetCurrentMatrix();
+            rend::IEffect* shader = nullptr;
 
-            if (rni.rnt == RNT_SIMPLE)
+            switch (rni.rnt)
             {
-                nodes[0]->GetGraph()->LightSetupLightsForNode(mesh.nodeLookup);
-                auto shader = mesh.modelLookup->ApplyMaterial(*mesh.material);
-                M3D_RENDERER->MatPush(mesh.nodeLookup->GetCurrentMatrix());
-                RenderMesh(mesh.nodeLookup, *mesh.mesh, shader);
-                M3D_RENDERER->MatPop(1);
-            }
-            else
+            case RNT_SIMPLE:
+                graph->LightSetupLightsForNode(node);
+                shader = mi.modelLookup->ApplyMaterial(material);
+                break;
+
+            case RNT_FOR_SHADOW:
+                BindAlphaTestedTexture(material, 0, M3D_ENGINE_CFG.m_g_shadowAlphaTest.GetI());
+                break;
+
+            case RNT_FOR_PROJECTOR:
             {
-                RETRUXX_NOT_IMPLEMENTED;
+                shader = graph->GetObjProjectorShader(material.Shader.Handle);
+                CMatrix inv = xform.getInverse();
+                CMatrix proj = xform * rni.projTansform;
+                if (mh.m_meshType == 1)
+                {
+                    AnimInfo* anim = nullptr;
+                    node->GetProperty(1, &anim);
+                    CMatrix const& bone = anim->m_bonesAnim[mh.m_numNode].m_curMatrix;
+                    inv = inv * bone.getInverse();
+                    proj = bone * proj;
+                }
+                shader->SetMatrix(rend::IEffect::User_float4x4_param, proj);
+                shader->SetVector3(rend::IEffect::User_float4_param, inv.vecMul(rni.projOrg));
+                shader->SetVector3(rend::IEffect::User_float3_param, inv.vecRot(rni.projDir));
+                BindAlphaTestedTexture(material, 1, M3D_ENGINE_CFG.m_alphaTestWorld.GetI());
+                break;
             }
+
+            case RNT_FOR_POINTLIGHT:
+            {
+                shader = graph->GetObjectLightShader(material.Shader.Handle);
+                CMatrix inv = xform.getInverse();
+                if (mh.m_meshType == 1)
+                {
+                    AnimInfo* anim = nullptr;
+                    node->GetProperty(1, &anim);
+                    inv = inv * anim->m_bonesAnim[mh.m_numNode].m_curMatrix.getInverse();
+                }
+                shader->SetVector3(rend::IEffect::User_float4_param, inv.vecMul(rni.projOrg));
+                BindAlphaTestedTexture(material, 0, M3D_ENGINE_CFG.m_alphaTestWorld.GetI());
+                break;
+            }
+
+            case RNT_FOR_CONTOUR:
+                if (HasAlphaTestedTexture(material))
+                {
+                    M3D_RENDERER->SetTexture(0, material.Textures.front().Handle, -1.0);
+                }
+                else
+                {
+                    M3D_RENDERER->SetWhiteTexture(0);
+                }
+                M3D_RENDERER->SetTFactor(node->GetContourColor(), false);
+                shader = contourShader;
+                shader->SetFloat(rend::IEffect::User_float_param, node->GetContourWidth());
+                break;
+            }
+
+            M3D_RENDERER->MatPush(xform);
+            RenderMesh(node, mh, shader);
+            M3D_RENDERER->MatPop(1);
         }
 
         if (!rni.rnt && numMeshesImpostered != 0)
         {
-            // RETRUXX_NOT_IMPLEMENTED;
-            // TODO: implement impostored mesh rendering
+            std::stable_sort(
+                meshesShiftsImpostered,
+                meshesShiftsImpostered + numMeshesImpostered,
+                MeshImposteredSortPred(meshesImpostered));
+
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(
+                ("impostors = " + CStr(numMeshesImpostered)).c_str());
+
+            M3D_RENDERER->SetCull(rend::M3DCULL_NONE, 0);
+
+            CMatrix const viewProj = M3D_RENDERER->GetViewMatrix() * M3D_RENDERER->MatGetProj();
+            m_impostorVs->SetMatrix(m_impostorVs->GetParamHandleByName("mViewProj"), viewProj);
+            m_impostorVs->SetVector3(m_impostorVs->GetParamHandleByName("g_FogTerm"), m_fogTerm);
+
+            // The shipped code also builds a pitch term here from the view
+            // matrix, but rotYPR() calls identity() first and discards it, so
+            // the billboard ends up as a pure yaw rotation.
+            CMatrix const& view = M3D_RENDERER->GetViewMatrix();
+            float yaw = 0.0f;
+            float pitch = 0.0f;
+            float roll = 0.0f;
+            view.getYPR(yaw, pitch, roll);
+            CMatrix billboard;
+            billboard.rotYPR(-yaw, 0.0f, 0.0f);
+            m_impostorVs->SetMatrix(m_impostorVs->GetParamHandleByName("mBillboard"), billboard);
+
+            m_impostorVs->Apply();
+            m_impostorPs->Apply();
+
+            M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
+            M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
+            M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
+            M3D_RENDERER->SetAlphaTest(5);
+
+            int impostorTris = 0;
+            int impostorDips = 0;
+
+            // Impostors are drawn in runs that share one model, then split into
+            // batches of at most MAX_INSTANCES_PER_BATCH so each instance's
+            // placement fits in the vertex shader constant registers.
+            int const MAX_INSTANCES_PER_BATCH = 60;
+            float instanceConsts[4 * MAX_INSTANCES_PER_BATCH];
+
+            int cursor = 0;
+            int remaining = numMeshesImpostered;
+            while (remaining > 0)
+            {
+                auto const& firstEntry = meshesImpostered[meshesShiftsImpostered[cursor]];
+                AnimatedModel* const groupModel = firstEntry.modelLookup;
+                DynamicModel* const dm = firstEntry.dmLookup;
+
+                int groupCount = 0;
+                while (groupCount < remaining &&
+                       meshesImpostered[meshesShiftsImpostered[cursor + groupCount]].modelLookup == groupModel)
+                {
+                    ++groupCount;
+                }
+                remaining -= groupCount;
+
+                M3D_RENDERER->SetTexture(0, dm->m_impostorTex, -1.0);
+                M3D_RENDERER->SetToStream0(dm->m_impostorVb);
+                M3D_RENDERER->SetIndices(dm->m_impostorIb, 0);
+
+                while (groupCount > 0)
+                {
+                    int const batch = groupCount < MAX_INSTANCES_PER_BATCH ? groupCount : MAX_INSTANCES_PER_BATCH;
+                    for (int b = 0; b < batch; ++b)
+                    {
+                        SgAnimatedModelNode* node = meshesImpostered[meshesShiftsImpostered[cursor + b]].nodeLookup;
+                        CVector const& org = node->GetOriginWorldAbs();
+                        float const scale = node->GetScale().x;
+
+                        CVector const& camera = M3D_RENDERER->GetViewOrigin();
+                        float const dx = camera.x - org.x;
+                        float const dz = camera.z - org.z;
+
+                        CMatrix const& xform = node->GetCurrentMatrix();
+                        float angle = atan2f(dx, -dz) - atan2f(xform._13, xform._33);
+                        if (angle < 0.0f)
+                        {
+                            angle += 6.2831855f;
+                        }
+                        if (angle >= 6.2831855f)
+                        {
+                            angle -= 6.2831855f;
+                        }
+                        angle = std::clamp(angle, 0.0f, 6.2831855f);
+
+                        // x/z are the world position, y is nudged along the
+                        // model's impostor displacement, and w packs the
+                        // billboard frame index together with the node scale.
+                        float* dst = instanceConsts + 4 * b;
+                        dst[0] = org.x;
+                        dst[1] = dm->m_impostorDisplacement * scale + org.y;
+                        dst[2] = org.z;
+                        dst[3] = static_cast<float>(
+                            (1 - static_cast<int>(angle * -3.9788735f)) % 25 -
+                            100 * static_cast<int>(scale * -100.0f));
+                    }
+
+                    M3D_RENDERER->SetVsFloatConst(20, instanceConsts, batch);
+                    M3D_RENDERER->DrawIndexedPrimitiveShader(rend::M3DPT_TRIANGLELIST, 0, 4 * batch, 0, 2 * batch);
+
+                    impostorTris += 2 * batch;
+                    ++impostorDips;
+                    cursor += batch;
+                    groupCount -= batch;
+                }
+            }
+
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(
+                ("impostors tris = " + CStr(impostorTris)).c_str());
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(
+                ("impostors dips = " + CStr(impostorDips)).c_str());
         }
 
         m_profiler->EndCountdown();

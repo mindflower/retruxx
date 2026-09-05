@@ -22,6 +22,10 @@
 #include "scene/nodes/sgnodestaticmodel.h"
 #include "scene/servers/dataserver.h"
 
+#include "server/relationship.h"
+#include "server/objects/physicbodies/physicbody.h"
+#include "server/objects/vehicle.h"
+
 namespace
 {
     float const VISCELL_EDGE_LENGTH_6 = 128.0;
@@ -37,6 +41,143 @@ namespace
     {
         // TODO: implement CheckNodeValidity
         // RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    m3d::SgNode* GetNodeByNameNode(CStr const& name, m3d::SgNode* node)
+    {
+        // RVA 0x2356C0
+        if (!node)
+        {
+            return nullptr;
+        }
+        if (name == node->GetName())
+        {
+            return node;
+        }
+        for (auto* child = dynamic_cast<m3d::SgNode*>(node->GetFirstChild()); child != nullptr;
+             child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling()))
+        {
+            if (auto* found = GetNodeByNameNode(name, child))
+            {
+                return found;
+            }
+        }
+        return nullptr;
+    }
+
+    bool isSpheresTouches(CVector const& c0, float r0, CVector const& c1, float r1)
+    {
+        // RVA 0x36B9C0
+        return r0 + r1 > (c1 - c0).length();
+    }
+
+    // Visits every game-unit / animated-model node linked directly in a cell and
+    // each node beneath it. `visitRoot` returns false to skip a top-level node's
+    // subtree. Shared by CollectNodesProjector and CollectNodesLight, which
+    // differ only in how they range-test a node.
+    template<typename VisitRoot, typename VisitChild>
+    void ForEachCellNodeTree(m3d::ObjectsContainer& container, VisitRoot const& visitRoot, VisitChild const& visitChild)
+    {
+        m3d::Class* const classes[] = {
+            &m3d::SgGameUnitNode::m_classSgGameUnitNode, &m3d::SgAnimatedModelNode::m_classSgAnimatedModelNode};
+
+        for (m3d::Class* cls : classes)
+        {
+            auto* list = container.GetObjectsByClass(cls);
+            if (!list)
+            {
+                continue;
+            }
+            for (m3d::Object* obj : *list)
+            {
+                auto* root = static_cast<m3d::SgNode*>(obj);
+                if (!visitRoot(root))
+                {
+                    continue;
+                }
+
+                std::vector<m3d::Object*> stack;
+                stack.push_back(root);
+                while (!stack.empty())
+                {
+                    m3d::Object* current = stack.back();
+                    stack.pop_back();
+
+                    auto* child = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
+                    while (child)
+                    {
+                        visitChild(child);
+                        if (child->GetFirstChild())
+                        {
+                            stack.push_back(child);
+                        }
+                        child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
+                    }
+                }
+            }
+        }
+    }
+
+    // Adds one node's mesh count and triangle count to the running totals.
+    void AddNodesTris(unsigned int& trisStats, unsigned short& meshStats, m3d::SgNode* node)
+    {
+        // RVA 0x239440
+        m3d::Configuration* cfg = nullptr;
+        node->GetProperty(m3d::PROP_DM_CFG, &cfg);
+        if (!cfg)
+        {
+            return;
+        }
+        meshStats += static_cast<unsigned short>(cfg->m_meshes.size());
+        for (auto const* mesh : cfg->m_meshes)
+        {
+            trisStats += mesh->m_numDrawIndices / 3;
+        }
+    }
+
+    // Applies AddNodesTris to `node` and every node below it.
+    void AddNodesTrisRecursive(unsigned int& trisStats, unsigned short& meshStats, m3d::SgNode* node)
+    {
+        AddNodesTris(trisStats, meshStats, node);
+
+        std::vector<m3d::Object*> stack;
+        stack.push_back(node);
+        while (!stack.empty())
+        {
+            m3d::Object* current = stack.back();
+            stack.pop_back();
+
+            auto* child = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
+            while (child)
+            {
+                AddNodesTris(trisStats, meshStats, child);
+                if (child->GetFirstChild())
+                {
+                    stack.push_back(child);
+                }
+                child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
+            }
+        }
+    }
+
+    void DumpToFileNode(FILE* fOut, m3d::SgNode const* node)
+    {
+        // RVA 0x2355D0
+        if (!node)
+        {
+            return;
+        }
+        fprintf(
+            fOut,
+            "%s pos(%s) rot(%s) \n",
+            node->GetName(),
+            CStr(node->GetOrigin()).c_str(),
+            CStr(node->GetRotation()).c_str());
+        for (auto const* child = dynamic_cast<m3d::SgNode const*>(node->GetFirstChild()); child != nullptr;
+             child = dynamic_cast<m3d::SgNode const*>(child->GetNextSibling()))
+        {
+            DumpToFileNode(fOut, child);
+        }
     }
 }  // namespace
 
@@ -171,10 +312,8 @@ namespace m3d
 
             for (int z = 0; z < levelSize; ++z)
             {
-                int index = x * levelSize + z;
-
-                // Mark cell as not visible in current frame
-                this->m_cellItems[index].m_bVisibleInCurrentFrame = false;
+                // Cells are addressed on a fixed 64-wide stride, not on land_size.
+                this->m_cellItems[64 * z + x].m_bVisibleInCurrentFrame = false;
 
                 int relZ = currentZ - z;  // Calculate relative Z position
 
@@ -334,9 +473,47 @@ namespace m3d
         }
     }
 
-    void SceneGraph::CollectNodesLight(retruxx::set<SgNode*>&, unsigned, unsigned, CVector const&, float)
+    void SceneGraph::CollectNodesLight(
+        retruxx::set<SgNode*>& nodes,
+        unsigned x,
+        unsigned z,
+        CVector const& lightPos,
+        float lightRadius)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        unsigned const landSize = m_owner->m_level->land_size;
+        if (x >= landSize || z >= landSize || (m_enableMap[256 * z + x] & m_enableVisSpaceMask) == 0)
+        {
+            return;
+        }
+
+        int const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        auto inRange = [&lightPos, lightRadius](SgNode* n)
+        {
+            return isSpheresTouches(n->m_originWorldAbsForSphere, n->m_boundingRadius, lightPos, lightRadius);
+        };
+
+        ForEachCellNodeTree(
+            m_cellItems[64 * z + x].m_nodesLinkedDirect,
+            [&](SgNode* n)
+            {
+                if (n->m_frameVisible != curFrame || !inRange(n))
+                {
+                    return false;
+                }
+                if (IS_KIND_OF(n, SgAnimatedModelNode) && n->m_frameTransparent != curFrame)
+                {
+                    nodes.insert(n);
+                }
+                return true;
+            },
+            [&](SgNode* n)
+            {
+                if (IS_KIND_OF(n, SgAnimatedModelNode) && n->m_frameVisible == curFrame && inRange(n) &&
+                    n->m_frameTransparent != curFrame)
+                {
+                    nodes.insert(n);
+                }
+            });
     }
 
     void SceneGraph::InsertInRemoveIfFree(SgNode* toInsert)
@@ -392,9 +569,40 @@ namespace m3d
         return this->m_cellsPrepared;
     }
 
-    void SceneGraph::RefreshObjectsInRect(int, int, int, int)
+    void SceneGraph::RefreshObjectsInRect(int cx0, int cy0, int cx1, int cy1)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (cx1 < 0 || cy1 < 0)
+        {
+            return;
+        }
+        int const landSize = m_owner->m_level->land_size;
+        if (cx0 >= landSize || cy0 >= landSize)
+        {
+            return;
+        }
+
+        int const maxIdx = landSize - 1;
+        cx0 = std::clamp(cx0, 0, maxIdx);
+        cx1 = std::min(cx1, maxIdx);
+        cy0 = std::clamp(cy0, 0, maxIdx);
+        cy1 = std::min(cy1, maxIdx);
+
+        for (int z = cy0; z <= cy1; ++z)
+        {
+            for (int x = cx0; x <= cx1; ++x)
+            {
+                auto* lists = m_cellItems[64 * z + x].m_nodesLinkedDirect.GetObjects();
+                for (int cls = 0; cls < 64; ++cls)
+                {
+                    for (m3d::Object* obj : lists[cls])
+                    {
+                        auto* node = static_cast<SgNode*>(obj);
+                        node->m_isXFormDirty = 7;
+                        node->UpdateXForm(false, true);
+                    }
+                }
+            }
+        }
     }
 
     int SceneGraph::SortedCellsFetch(int& cellX, int& cellY, int& vis, int& radius)
@@ -434,14 +642,19 @@ namespace m3d
         return result;
     }
 
-    int SceneGraph::SortedCellsFetch(int&, int&, int&)
+    int SceneGraph::SortedCellsFetch(int& cellX, int& cellY, int& vis)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int radius = 0;
+        return SortedCellsFetch(cellX, cellY, vis, radius);
     }
 
     void SceneGraph::LightSwitchOffAllLights()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* renderer = Application::g_pApp->m_renderer;
+        for (int i = 0; i < renderer->GetMaxLights(); ++i)
+        {
+            renderer->LightEnable(i, 0);
+        }
     }
 
     void SceneGraph::UnlinkNode(SgNode* toUnlink)
@@ -526,9 +739,9 @@ namespace m3d
         delete graphItems;
     }
 
-    SgNode* SceneGraph::GetNodeByName(CStr const&)
+    SgNode* SceneGraph::GetNodeByName(CStr const& name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return GetNodeByNameNode(name, &m_rootNode);
     }
 
     bool SceneGraph::IsLinkedNode(SgNode* toCheck)
@@ -538,78 +751,111 @@ namespace m3d
             forGraph->m_cellsCoveredPoint0.y <= forGraph->m_cellsCoveredPoint1.y;
     }
 
-    bool SceneGraph::IsCellVisible(int, int) const
+    bool SceneGraph::IsCellVisible(int x, int z) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_cellItems[64 * z + x].m_bVisibleInCurrentFrame;
     }
     m3d::rend::IEffect* SceneGraph::GetRoadProjectorShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_roadProjectorShader;
     }
     m3d::rend::IEffect* SceneGraph::GetLsProjectorShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_lsProjectorShader;
     }
     m3d::rend::IEffect* SceneGraph::GetObjProjectorShader(m3d::rend::IEffect* objShader)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (objShader && objShader->GetTechniqueDesc(0).name == "TreeTech")
+        {
+            return m_treeProjectorShader;
+        }
+        return m_objProjectorShader;
     }
     m3d::rend::IEffect* SceneGraph::GetObjProjectorShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_objProjectorShader;
     }
     m3d::rend::IEffect* SceneGraph::GetTreeProjectorShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_treeProjectorShader;
     }
     m3d::rend::IEffect* SceneGraph::GetLsLightShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_lsLightShader;
     }
     m3d::rend::IEffect* SceneGraph::GetRoadLightShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_roadLightShader;
     }
     m3d::rend::IEffect* SceneGraph::GetObjectLightShader(m3d::rend::IEffect* objShader)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (objShader && objShader->GetTechniqueDesc(0).name == "TreeTech")
+        {
+            return m_treeLightShader;
+        }
+        return m_objectLightShader;
     }
     m3d::rend::IEffect* SceneGraph::GetObjectLightShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_objectLightShader;
     }
     m3d::rend::IEffect* SceneGraph::GetTreeLightShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_treeLightShader;
     }
     m3d::rend::IEffect* SceneGraph::GetRoadSpriteShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_roadSpriteShader;
     }
     m3d::rend::IEffect* SceneGraph::GetShadowShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_shadowShader;
     }
     m3d::rend::IEffect* SceneGraph::GetRoadShadowShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_roadShadowShader;
     }
     m3d::rend::IEffect* SceneGraph::GetLsDetShadowShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // NOTE: the shipped build never emits this accessor (every caller
+        // inlines it), so the member is inferred from the naming symmetry with
+        // GetRoadDetShadowShader / m_roadDetailShadowShader.
+        return m_lsDetailShadowShader;
     }
     m3d::rend::IEffect* SceneGraph::GetRoadDetShadowShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_roadDetailShadowShader;
     }
     m3d::rend::IEffect* SceneGraph::GetContourShader()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_contourShader;
     }
 
-    void SceneGraph::DeleteFromRemoveIfFree(SgNode*)
+    void SceneGraph::DeleteFromRemoveIfFree(SgNode* toDelete)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_RemoveIfFreeList.erase(toDelete);
+        toDelete->m_isInRemoveIfFree = 0;
+        toDelete->m_isRemoveIfFree = 0;
+
+        std::vector<m3d::Object*> stack;
+        stack.push_back(toDelete);
+
+        while (!stack.empty())
+        {
+            m3d::Object* current = stack.back();
+            stack.pop_back();
+
+            auto* childNode = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
+            while (childNode)
+            {
+                childNode->m_isRemoveIfFree = 0;
+                if (childNode->GetFirstChild())
+                {
+                    stack.push_back(childNode);
+                }
+                childNode = dynamic_cast<m3d::SgNode*>(childNode->GetNextSibling());
+            }
+        }
     }
 
     SgNode* SceneGraph::TraceLine(CVector&, CVector const&, CVector const&, retruxx::set<Class*> const&, unsigned)
@@ -763,8 +1009,86 @@ namespace m3d
 
     void SceneGraph::RenderContouredNodes()
     {
-        // TODO: implement SceneGraph::RenderContouredNodes
-        // RETRUXX_NOT_IMPLEMENTED;
+        if (m_contourList.empty())
+        {
+            return;
+        }
+
+        int const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        DataServer& serverAnimatedModels = M3D_APP->GetAnimatedModelsServer();
+
+        std::vector<SgNode*> nodesToRender;
+        for (SgNode* node : m_contourList)
+        {
+            if (node->m_frameVisible == curFrame && node->GetServer() == &serverAnimatedModels)
+            {
+                nodesToRender.push_back(node);
+            }
+        }
+
+        if (nodesToRender.empty())
+        {
+            return;
+        }
+
+        M3D_RENDERER->PushZbState(rend::ZB_DISABLE);
+        M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
+        M3D_RENDERER->SetAlphaTest(0);
+        M3D_RENDERER->PushLighting(false);
+        M3D_RENDERER->PushBlend(rend::BM_0_1);
+        M3D_RENDERER->PushFog(false);
+
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_NONE);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_NONE);
+        M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+        M3D_RENDERER->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+
+        M3D_RENDERER->SingleLayerStencilStart();
+        {
+            RenderNodeInfo rni;
+            rni.rnt = RNT_FOR_SHADOW;
+            rni.isUseImpostors = true;
+            serverAnimatedModels.RenderNodeSet(&nodesToRender.front(), nodesToRender.size(), rni);
+        }
+
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopCull();
+        M3D_RENDERER->PopLighting();
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopFog();
+
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
+
+        M3D_RENDERER->PushZbState(rend::ZB_ENABLE);
+        M3D_RENDERER->PushCull(rend::Cull::M3DCULL_NONE);
+        M3D_RENDERER->SetAlphaTest(0);
+        M3D_RENDERER->PushLighting(false);
+        M3D_RENDERER->PushBlend(rend::BM_ALPHA);
+        M3D_RENDERER->PushFog(false);
+
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_TFACTOR);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_TFACTOR);
+        M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+        M3D_RENDERER->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+
+        {
+            RenderNodeInfo rni;
+            rni.rnt = RNT_FOR_CONTOUR;
+            rni.isUseImpostors = true;
+            serverAnimatedModels.RenderNodeSet(&nodesToRender.front(), nodesToRender.size(), rni);
+        }
+
+        M3D_RENDERER->SingleLayerStencilFinish();
+
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopCull();
+        M3D_RENDERER->PopLighting();
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopFog();
+
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
     }
 
     void SceneGraph::UpdateAllXForms()
@@ -776,9 +1100,9 @@ namespace m3d
         m_updateXFormList.clear();
     }
 
-    void SceneGraph::DeleteFromTtlList(SgNode*)
+    void SceneGraph::DeleteFromTtlList(SgNode* toDelete)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_ttledList.erase(toDelete);
     }
 
     int SceneGraph::IsCellEnabled(int x, int y)
@@ -899,9 +1223,13 @@ namespace m3d
         }
     }
 
-    void SceneGraph::GetNodeNamesHierarchy(SgNode*, retruxx::vector<CStr>&)
+    void SceneGraph::GetNodeNamesHierarchy(SgNode* node, retruxx::vector<CStr>& hierarchy)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        hierarchy.clear();
+        for (m3d::Object* cur = node; cur && cur != &m_rootNode; cur = cur->GetParent())
+        {
+            hierarchy.insert(hierarchy.begin(), CStr(cur->GetName()));
+        }
     }
 
     SceneGraph::SceneGraph()
@@ -1077,14 +1405,28 @@ namespace m3d
         }
     }
 
-    void SceneGraph::DeleteFromContourList(SgNode*)
+    void SceneGraph::DeleteFromContourList(SgNode* toDelete)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (toDelete)
+        {
+            m_contourList.erase(toDelete);
+            toDelete->m_isContoured = false;
+        }
     }
 
-    SgNode* SceneGraph::GetNodeByNamesHierarchy(retruxx::vector<CStr> const&)
+    SgNode* SceneGraph::GetNodeByNamesHierarchy(retruxx::vector<CStr> const& hierarchy)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        SgNode* node = &m_rootNode;
+        for (size_t i = 0; i < hierarchy.size() && node; ++i)
+        {
+            auto* child = dynamic_cast<SgNode*>(node->GetFirstChild());
+            while (child && !(CStr(child->GetName()) == hierarchy[i]))
+            {
+                child = dynamic_cast<SgNode*>(child->GetNextSibling());
+            }
+            node = child;
+        }
+        return node;
     }
 
     void SceneGraph::InsertInUpdateXFormList(SgNode* toInsert)
@@ -1127,19 +1469,56 @@ namespace m3d
         m_ttledList.clear();
     }
 
-    void SceneGraph::SetModelForceNoCull(bool)
+    void SceneGraph::SetModelForceNoCull(bool t)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_noModelCull = t;
     }
 
-    ObjectsContainer const& SceneGraph::GetCellObjs(int, int) const
+    ObjectsContainer const& SceneGraph::GetCellObjs(int x, int z) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_cellItems[64 * z + x].m_nodesLinkedDirect;
     }
 
-    void SceneGraph::CollectNodesProjector(retruxx::set<SgNode*>&, unsigned, unsigned, CClipper const&)
+    void SceneGraph::CollectNodesProjector(
+        retruxx::set<SgNode*>& nodes,
+        unsigned x,
+        unsigned z,
+        CClipper const& projectorFrusta)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        unsigned const landSize = m_owner->m_level->land_size;
+        if (x >= landSize || z >= landSize || (m_enableMap[256 * z + x] & m_enableVisSpaceMask) == 0)
+        {
+            return;
+        }
+
+        int const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        auto inRange = [&projectorFrusta](SgNode* n)
+        {
+            return projectorFrusta.testSphere(n->m_originWorldAbsForSphere, n->m_boundingRadius) != 0;
+        };
+
+        ForEachCellNodeTree(
+            m_cellItems[64 * z + x].m_nodesLinkedDirect,
+            [&](SgNode* n)
+            {
+                if (n->m_frameVisible != curFrame || !inRange(n))
+                {
+                    return false;
+                }
+                if (IS_KIND_OF(n, SgAnimatedModelNode) && n->m_frameTransparent != curFrame)
+                {
+                    nodes.insert(n);
+                }
+                return true;
+            },
+            [&](SgNode* n)
+            {
+                if (IS_KIND_OF(n, SgAnimatedModelNode) && n->m_frameVisible == curFrame && inRange(n) &&
+                    n->m_frameTransparent != curFrame)
+                {
+                    nodes.insert(n);
+                }
+            });
     }
 
     void SceneGraph::EnableVisibleCells(CClipper& frusta, unsigned or)
@@ -1175,9 +1554,14 @@ namespace m3d
         m_RemoveIfFreeList.clear();
     }
 
-    void SceneGraph::DumpToFile(CStr const&) const
+    void SceneGraph::DumpToFile(CStr const& filename) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        FILE* fOut = fopen(filename.c_str(), "w");
+        if (fOut)
+        {
+            DumpToFileNode(fOut, &m_rootNode);
+            fclose(fOut);
+        }
     }
 
     void SceneGraph::LightSetupSunForWorld()
@@ -1198,7 +1582,27 @@ namespace m3d
 
     void SceneGraph::UpdateTexShadowSizes()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* renderer = Application::g_pApp->m_renderer;
+
+        int oldSzX = 0;
+        int oldSzY = 0;
+        renderer->GetDims(m_texShadow, oldSzX, oldSzY);
+        int const lgtSz = M3D_ENGINE_CFG.m_lgtShadowTexSz.GetI();
+        if (lgtSz != oldSzX)
+        {
+            renderer->ReleaseTexture(m_texShadow);
+            m_texShadow = renderer->AddDynamicTexture("$TexShadow", lgtSz, lgtSz, 6);
+        }
+
+        renderer->GetDims(m_detTexShadow, oldSzX, oldSzY);
+        int const detSz = M3D_ENGINE_CFG.m_detShadowTexSz.GetI();
+        if (detSz != oldSzX)
+        {
+            renderer->ReleaseTexture(m_detTexShadow);
+            m_detTexShadow = renderer->AddDynamicTexture("$DetTexShadow", detSz, detSz, 6);
+            renderer->ReleaseTexture(m_texBlurShadow);
+            m_texBlurShadow = renderer->AddDynamicTexture("$TexBlurShadow", detSz, detSz, 6);
+        }
     }
 
     void SceneGraph::SetOwner(CWorld* world)
@@ -1208,7 +1612,62 @@ namespace m3d
 
     SceneGraph::~SceneGraph()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        UnlinkAndDeleteAll();
+
+        delete[] m_visSlots;
+        m_visSlots = nullptr;
+        delete[] m_visNumSlots;
+        m_visNumSlots = nullptr;
+        delete[] m_visSlotsUnderwater;
+        m_visSlotsUnderwater = nullptr;
+        delete[] m_visNumSlotsUnderwater;
+        m_visNumSlotsUnderwater = nullptr;
+        delete[] m_transparentNodes;
+        m_transparentNodes = nullptr;
+
+        auto release = [](auto*& resource)
+        {
+            if (resource)
+            {
+                resource->Release();
+                resource = nullptr;
+            }
+        };
+
+        release(m_lsProjectorShader);
+        release(m_roadProjectorShader);
+        release(m_objProjectorShader);
+        release(m_treeProjectorShader);
+        release(m_lsLightShader);
+        release(m_roadLightShader);
+        release(m_objectLightShader);
+        release(m_treeLightShader);
+        release(m_roadSpriteShader);
+
+        auto* renderer = Application::g_pApp->m_renderer;
+        renderer->ReleaseTexture(m_texShadow);
+        renderer->ReleaseTexture(m_detTexShadow);
+        renderer->ReleaseTexture(m_texBlurShadow);
+        for (auto& tex : m_texShadows)
+        {
+            if (tex.IsValid())
+            {
+                renderer->ReleaseTexture(tex);
+            }
+        }
+
+        release(m_lsShadowShader);
+        release(m_blurShadowShader);
+        release(m_roadShadowShader);
+        release(m_lsDetailShadowShader);
+        release(m_roadDetailShadowShader);
+        release(m_shadowShader);
+        release(m_grassShadowVs);
+        release(m_grassShadowPs);
+        release(m_contourShader);
+
+        delete m_transparencyTest;
+        m_transparencyTest = nullptr;
     }
 
     void SceneGraph::SetTransparencyTest(IsNodeTransparent* t)
@@ -1220,19 +1679,42 @@ namespace m3d
         }
     }
 
-    void SceneGraph::InsertInContourList(SgNode*, unsigned, float)
+    void SceneGraph::InsertInContourList(SgNode* toInsert, unsigned color, float width)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (toInsert)
+        {
+            m_contourList.insert(toInsert);
+            toInsert->m_isContoured = true;
+            toInsert->m_contourColor = color;
+            toInsert->m_contourWidth = width;
+        }
     }
 
-    void SceneGraph::CheckNodeIsNotInAnyList(SgNode*) const
+    void SceneGraph::CheckNodeIsNotInAnyList(SgNode* sgNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto describe = [sgNode](char const* what)
+        {
+            M3D_LOG_ERR(CStr(what) + CStr(sgNode->GetName()) + "', class = '" + CStr(sgNode->GetClassNameA()));
+        };
+
+        if (m_ttledList.find(sgNode) != m_ttledList.end())
+        {
+            describe("Error: node is in TtledList, name = '");
+        }
+        if (m_RemoveIfFreeList.find(sgNode) != m_RemoveIfFreeList.end())
+        {
+            describe("Error: node is in RemoveIfFreeList, name = '");
+        }
+        if (m_updateXFormList.find(sgNode) != m_updateXFormList.end())
+        {
+            describe("Error: node is in UpdateXFormList, name = '");
+        }
     }
 
-    void SceneGraph::InsertInTtlList(SgNode*, int)
+    void SceneGraph::InsertInTtlList(SgNode* toInsert, int frameToDie)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        toInsert->m_ttl = frameToDie;
+        m_ttledList.insert(toInsert);
     }
 
     void SceneGraph::LinkThinkNode(SgNode* toThink)
@@ -1271,29 +1753,163 @@ namespace m3d
         }
     }
 
-    void SceneGraph::GetCellsStatistic(retruxx::vector<CellInfo>*)
+    void SceneGraph::GetCellsStatistic(retruxx::vector<CellInfo>* cellStats)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int const sizeInCells = m_owner->m_level->land_size;
+        for (int x = 0; x < sizeInCells; ++x)
+        {
+            for (int z = 0; z < sizeInCells; ++z)
+            {
+                CellInfo& info = (*cellStats)[x * sizeInCells + z];
+                info.trisCount = 0;
+                info.objCount = 0;
+                info.meshesCount = 0;
+
+                CellItems& cell = m_cellItems[64 * z + x];
+                cell.m_bVisibleInCurrentFrame = true;
+                auto* lists = cell.m_nodesLinkedDirect.GetObjects();
+
+                auto& animModels = lists[SgAnimatedModelNode::m_classSgAnimatedModelNode.m_index];
+                info.animModelCount = static_cast<unsigned short>(animModels.size());
+                for (m3d::Object* obj : animModels)
+                {
+                    AddNodesTrisRecursive(info.trisCount, info.meshesCount, static_cast<SgNode*>(obj));
+                }
+
+                auto& gameUnits = lists[SgGameUnitNode::m_classSgGameUnitNode.m_index];
+                info.animModelCount += static_cast<unsigned short>(gameUnits.size());
+                for (m3d::Object* obj : gameUnits)
+                {
+                    AddNodesTrisRecursive(info.trisCount, info.meshesCount, static_cast<SgNode*>(obj));
+                }
+
+                for (int cls = 0; cls < 64; ++cls)
+                {
+                    info.objCount += static_cast<unsigned short>(lists[cls].size());
+                }
+            }
+        }
     }
 
-    SceneGraph::CellItems& SceneGraph::GetCellItems(int, int)
+    SceneGraph::CellItems& SceneGraph::GetCellItems(int x, int z)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_cellItems[64 * z + x];
     }
 
-    SceneGraph::CellItems const& SceneGraph::GetCellItems(int, int) const
+    SceneGraph::CellItems const& SceneGraph::GetCellItems(int x, int z) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_cellItems[64 * z + x];
     }
 
-    void SceneGraph::CollectShadowingNodesStencil(retruxx::set<SgNode*>&, Class*, int, int, unsigned, int)
+    void SceneGraph::CollectShadowingNodesStencil(
+        retruxx::set<SgNode*>& nodes,
+        Class* clazz,
+        int x,
+        int z,
+        unsigned ls,
+        int /*curFrame*/)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (static_cast<unsigned>(x) >= ls || static_cast<unsigned>(z) >= ls ||
+            (m_enableMap[256 * z + x] & m_enableVisSpaceMask) == 0)
+        {
+            return;
+        }
+
+        auto collect = [&nodes, clazz](SgNode* node)
+        {
+            if (node->GetClass() != clazz)
+            {
+                return;
+            }
+            int shadowing = 0;
+            node->GetServerItemProperty(6, &shadowing);
+            if (shadowing)
+            {
+                nodes.insert(node);
+            }
+        };
+
+        for (m3d::Object* obj : m_cellItems[64 * z + x].m_nodesShadowingDirect)
+        {
+            auto* root = static_cast<SgNode*>(obj);
+            collect(root);
+
+            std::vector<m3d::Object*> stack;
+            stack.push_back(root);
+            while (!stack.empty())
+            {
+                m3d::Object* current = stack.back();
+                stack.pop_back();
+
+                auto* child = dynamic_cast<SgNode*>(current->GetFirstChild());
+                while (child)
+                {
+                    collect(child);
+                    if (child->GetFirstChild())
+                    {
+                        stack.push_back(child);
+                    }
+                    child = dynamic_cast<SgNode*>(child->GetNextSibling());
+                }
+            }
+        }
     }
 
-    void SceneGraph::CollectShadowingNodes(retruxx::set<SgNode*>&, Class*, int, int, int, unsigned, int)
+    void SceneGraph::CollectShadowingNodes(
+        retruxx::set<SgNode*>& nodes,
+        Class* clazz,
+        int x,
+        int z,
+        int size,
+        unsigned ls,
+        int curFrame)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (int cx = x; cx < x + size; ++cx)
+        {
+            for (int cz = z; cz < z + size; ++cz)
+            {
+                if (static_cast<unsigned>(cx) >= ls || static_cast<unsigned>(cz) >= ls ||
+                    (m_enableVisSpaceMask & m_enableMap[256 * cz + cx]) == 0)
+                {
+                    continue;
+                }
+
+                for (m3d::Object* obj : m_cellItems[64 * cz + cx].m_nodesShadowingDirect)
+                {
+                    auto* root = static_cast<SgNode*>(obj);
+                    if (root->m_frameVisible2 != curFrame)
+                    {
+                        continue;
+                    }
+                    if (root->GetClass() == clazz)
+                    {
+                        nodes.insert(root);
+                    }
+
+                    std::vector<m3d::Object*> stack;
+                    stack.push_back(root);
+                    while (!stack.empty())
+                    {
+                        m3d::Object* current = stack.back();
+                        stack.pop_back();
+
+                        auto* child = dynamic_cast<SgNode*>(current->GetFirstChild());
+                        while (child)
+                        {
+                            if (child->GetClass() == clazz)
+                            {
+                                nodes.insert(child);
+                            }
+                            if (child->GetFirstChild())
+                            {
+                                stack.push_back(child);
+                            }
+                            child = dynamic_cast<SgNode*>(child->GetNextSibling());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     int SceneGraph::AddOneNodeToRender(SgNode* n, CClipper const& frusta, int curFrame)
@@ -1375,14 +1991,15 @@ namespace m3d
         toRemove = nullptr;
     }
 
-    int SceneGraph::getYOfs(int)
+    int SceneGraph::getYOfs(int y)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return y * (6 * y + 2);
     }
 
     void SceneGraph::EnsureEverythingIsUnlinked() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // The shipped release build compiles this to an empty body - it is a
+        // debug-only consistency check.
     }
 
     void SceneGraph::DrawShadows()
@@ -1439,16 +2056,70 @@ namespace m3d
     }
 
     SgNode* SceneGraph::TraceLineThruCellNodesForClass(
-        float&,
-        int,
-        int,
-        CVector const&,
-        CVector const&,
-        Class*,
-        retruxx::set<SgNode*>&,
-        unsigned)
+        float& tt,
+        int cx,
+        int cz,
+        CVector const& v0,
+        CVector const& dir,
+        Class* wantClazz,
+        retruxx::set<SgNode*>& dontCheckTwice,
+        unsigned traceMode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (wantClazz->m_index >= 64)
+        {
+            return nullptr;
+        }
+
+        SgNode* toRet = nullptr;
+        float bestT = 100000.0f;
+
+        auto& objs = m_cellItems[64 * cz + cx].m_nodesLinkedDirect.GetObjects()[wantClazz->m_index];
+        for (m3d::Object* obj : objs)
+        {
+            auto* node = static_cast<SgNode*>(obj);
+            if (dontCheckTwice.find(node) != dontCheckTwice.end())
+            {
+                continue;
+            }
+            dontCheckTwice.insert(node);
+
+            // traceMode bit 1 skips allies, bit 2 skips enemies - both relative
+            // to whoever the player is currently driving.
+            if ((traceMode & 6) != 0)
+            {
+                ai::Vehicle* playerVehicle = m_owner->GetVehicleControlledByPlayer();
+                if (playerVehicle)
+                {
+                    ai::PhysicBody* physicBody = nullptr;
+                    node->GetProperty(PROP_NODE_PHYSICBODY, &physicBody);
+                    if (physicBody)
+                    {
+                        ai::eTolerance const tolerance =
+                            ai::theRelationship->CheckTolerance(playerVehicle->GetBelong(), physicBody->GetBelong());
+                        bool const allyOk = (traceMode & 4) == 0 || tolerance < ai::RS_ALLY;
+                        bool const enemyOk = (traceMode & 2) == 0 || tolerance > ai::RS_ENEMY;
+                        if (!allyOk || !enemyOk)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            SgNode* exactHitNode = nullptr;
+            float const t = node->IntersectRay(v0, dir, exactHitNode, wantClazz);
+            if (t >= 0.0f && bestT > t)
+            {
+                bestT = t;
+                toRet = exactHitNode;
+            }
+        }
+
+        if (bestT != 100000.0f)
+        {
+            tt = bestT;
+        }
+        return toRet;
     }
 
     int SceneGraph::AddNodeAndItsChildrenToRender(SgNode* n, CClipper const& frusta, int curFrame)
@@ -1635,12 +2306,16 @@ namespace m3d
 
     retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* ObjectsContainer::GetObjectsByClass(m3d::Class* cl)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (cl->m_index >= 64)
+        {
+            return nullptr;
+        }
+        return &m_objectsByClassIdx[cl->m_index];
     }
 
     retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>> const* ObjectsContainer::GetObjects() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_objectsByClassIdx;
     }
 
     retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* ObjectsContainer::GetObjects()
@@ -1650,6 +2325,15 @@ namespace m3d
 
     bool ObjectsContainer::empty() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // NOTE: the shipped build inlines this everywhere, so no standalone
+        // body survives to transcribe; reconstructed as the obvious meaning.
+        for (auto const& objs : m_objectsByClassIdx)
+        {
+            if (!objs.empty())
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }  // namespace m3d

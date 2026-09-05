@@ -3667,33 +3667,29 @@ namespace m3d
             M3D_RENDERER->PushFillMode(rend::FillMode::M3DFILL_SOLID);
         }
 
-        // TODO: check this (m3d::g_Kernel->GetEngineCfg(m3d::g_Kernel)->m_r_waterQuality.m_i)
+        int const waterQuality = M3D_ENGINE_CFG.m_r_waterQuality.GetI();
+
         m_waterPlane.m_normal.x = 0.0;
         m_waterPlane.m_normal.y = 1.0;
         m_waterPlane.m_normal.z = 0.0;
         m_waterPlane.m_dist = this->m_owner->m_level->waterlevel;
-        
 
-        // TODO: save divider
         m_bindDevider = ((1.1 - M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF()) * 0.44999999) + 0.55000001;
 
-        auto saveDistDivider = ((M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF() * 8.0) + 4.0);
-        if (saveDistDivider >= 4)
-        {
-            if (saveDistDivider <= 12)
-            {
-
-            }
-            else
-            {
-                saveDistDivider = 12;
-            }
-        }
-        else
+        // The draw radius is truncated to a whole number of cells before it is
+        // clamped, so the clip distances derived from it below stay on cell
+        // boundaries.
+        int saveDistDivider =
+            static_cast<int>((M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF() * 8.0f) + 4.0f);
+        if (saveDistDivider < 4)
         {
             saveDistDivider = 4;
         }
-        
+        else if (saveDistDivider > 12)
+        {
+            saveDistDivider = 12;
+        }
+
         M3D_RENDERER->SetLighting(false, false);
         M3D_RENDERER->PushZFunc(rend::CmpFunc::M3DCMP_LESS);
         M3D_RENDERER->PushBlend(rend::BlendMode::BM_NONE);
@@ -3782,13 +3778,14 @@ namespace m3d
                 M3D_RENDERER->PushZbState(rend::ZB_ENABLE);
 
                 // Render terrain and models to reflection (for advanced shaders)
-                if (m_waterShaderVersion != 11 && (drawReflectedTerrain || drawReflectedModels))
+                if (m_waterShaderVersion != 11 && (drawReflectedTerrain || drawReflectedModels) &&
+                    (waterQuality == 3 || waterQuality == 2))
                 {
                     // Calculate reflection draw distance
                     float viewDistanceDivider = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
 
                     int originalDrawRadius = this->m_drawRadius;
-                    float saveDistDivider = viewDistanceDivider;
+                    float savedViewDistanceDivider = viewDistanceDivider;
 
                     float reflectionModifier = M3D_ENGINE_CFG.m_g_reflectionDrawDistModifier.GetF();
 
@@ -3807,7 +3804,7 @@ namespace m3d
                     float clipPlaneHeight = level->waterlevel - averageWaterHeight - 0.5f;
 
                     CPlane waterClipPlane;
-                    waterClipPlane.m_normal = CVector(0.0f, 0.0f, 1.0f);  // Z-up
+                    waterClipPlane.m_normal = CVector(0.0f, 1.0f, 0.0f);
                     waterClipPlane.m_dist = clipPlaneHeight;
 
                     // Enable clipping plane if supported
@@ -3839,7 +3836,7 @@ namespace m3d
                     M3D_RENDERER->SetCull(rend::M3DCULL_CW, false);
 
                     // Render models to reflection
-                    if (drawReflectedModels)
+                    if (drawReflectedModels && waterQuality != 2)
                     {
                         m_owner->m_sceneGraph.UpdateVis(false, this->m_reflectedFrustum, false);
                         m_owner->m_sceneGraph.Render(SGRF_LOW_DETAIL);
@@ -3852,7 +3849,7 @@ namespace m3d
                     }
 
                     // Restore original view distance settings
-                    M3D_ENGINE_CFG.m_lsViewDistanceDivider.SetF(saveDistDivider, false);
+                    M3D_ENGINE_CFG.m_lsViewDistanceDivider.SetF(savedViewDistanceDivider, false);
                     m_drawRadius = originalDrawRadius;
                 }
 
@@ -3982,10 +3979,10 @@ namespace m3d
                 M3D_RENDERER->PushBlend(rend::BM_NONE);
 
                 DrawSolidLandscape(LRM_DEEPMAP, 0);
-
+   
+                M3D_RENDERER->PopBlend();
                 M3D_RENDERER->PopZbState();
                 M3D_RENDERER->PopCull();
-                M3D_RENDERER->PopBlend();
                 M3D_RENDERER->RenderToTexFinish();
             }
             else
@@ -4033,15 +4030,43 @@ namespace m3d
 
         if ((M3D_KERNEL->GetEngineCfg().m_g_showReflRefrMaps.GetB()))
         {
-            // TODO: implement reflections rendering
-            RETRUXX_NOT_IMPLEMENTED;
+            // Debug overlay: the reflection and refraction render targets drawn
+            // as two stacked quads in the top-left corner.
+            M3D_RENDERER->SetBlend(rend::BlendMode::BM_NONE, false);
+            M3D_RENDERER->SetAlphaTest(0);
+            M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
+            M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
+            M3D_RENDERER->DisableTextureStages(1);
+
+            float x0 = 0.0f;
+            float y0 = 0.0f;
+            float x1 = 255.0f;
+            float y1 = 255.0f;
+            M3D_RENDERER->SetTexture(0, m_texRtReflection, -1.0);
+            M3D_RENDERER->RelToAbs(x0, y0);
+            M3D_RENDERER->RelToAbs(x1, y1);
+            M3D_APP->PutSprite2Abs(x0, y0, 0.0f, 0.0f, x1, y1, 1.0f, 1.0f, 0xFFFFFFFF);
+
+            x0 = 0.0f;
+            y0 = 255.0f;
+            x1 = 255.0f;
+            y1 = 512.0f;
+            M3D_RENDERER->SetTexture(0, m_texRtRefraction, -1.0);
+            M3D_RENDERER->RelToAbs(x0, y0);
+            M3D_RENDERER->RelToAbs(x1, y1);
+            M3D_APP->PutSprite2Abs(x0, y0, 0.0f, 0.0f, x1, y1, 1.0f, 1.0f, 0xFFFFFFFF);
         }
         m_profilerDraw->EndCountdown();
     }
 
     int Landscape::Render(SgNodeRenderFlags, void*, int, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // The landscape is driven by the parameterless Render(); the shipped
+        // build implements this SgNode override as a fatal error so that
+        // reaching it through the node interface is reported rather than
+        // silently drawing nothing.
+        SYS_ERROR("0");
+        return 0;
     }
 
     void Landscape::ReadGrassFromXmlFile(char const*)

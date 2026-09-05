@@ -29,7 +29,7 @@ namespace m3d
     RT_CLASS_DEFINE(GeomObjectPassCell);
 
     RT_CLASS_EXPORTS_BEGIN(GeomObjectWater)
-	RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(GeomObjectWater);
 
     void GeomObject::IncEnabledCellsCount()
@@ -116,7 +116,7 @@ namespace m3d
 
         delete[] m_Vertices;
         m_Vertices = nullptr;
-        
+
         delete[] m_Indices;
         m_Indices = nullptr;
     }
@@ -206,29 +206,26 @@ namespace m3d
 
     GeomObjectStatics::GeomObjectStatics() = default;
 
-    GeomObjectRoad::~GeomObjectRoad()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    GeomObjectRoad::~GeomObjectRoad() = default;
 
     Object* GeomObjectRoad::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new GeomObjectRoad;
     }
 
-    void GeomObjectRoad::SetRoadNode(RoadNode*)
+    void GeomObjectRoad::SetRoadNode(RoadNode* roadNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        this->m_roadNode = roadNode;
     }
 
     Class* GeomObjectRoad::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(GeomObjectRoad);
     }
 
     RoadNode* GeomObjectRoad::GetRoadNode() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return this->m_roadNode;
     }
 
     Class* GeomObjectRoad::GetBaseClass()
@@ -246,9 +243,8 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    GeomObjectRoad::GeomObjectRoad()
+    GeomObjectRoad::GeomObjectRoad() : m_roadNode(nullptr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     GeomObjectWater::~GeomObjectWater() = default;
@@ -316,4 +312,4 @@ namespace m3d
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
-}
+}  // namespace m3d

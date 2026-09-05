@@ -9,6 +9,8 @@
 #include <stdexcept>
 
 #include "retruxx/common.h"
+#include "engine/landscape/roads/road.h"
+#include "geomobject.h"
 #include "server/server.h"
 #include "server/objects/vehicle.h"
 #include "server/objects/wheel.h"
@@ -19,7 +21,12 @@
 
 namespace ai
 {
-    int CollideWheelDefault(m3d::Object* objWheel, m3d::Object* surface, dContact* contact, unsigned& numContacts, bool reverse)
+    int CollideWheelDefault(
+        m3d::Object* objWheel,
+        m3d::Object* surface,
+        dContact* contact,
+        unsigned& numContacts,
+        bool reverse)
     {
         // TODO: generated code
         if (M3D_ENGINE_CFG.m_ai_tweak_wheel_normals.GetB() && numContacts)
@@ -36,7 +43,8 @@ namespace ai
                     int expectedDirection = 2 * !reverse - 1;  // 1 if not reverse, -1 if reverse
 
                     // Check if we need to flip the normal
-                    if (directionMultiplier != expectedDirection && std::fabs(contactGeom.normal[0]) < 0.1f && std::fabs(contactGeom.normal[2]) < 0.1f)
+                    if (directionMultiplier != expectedDirection && std::fabs(contactGeom.normal[0]) < 0.1f &&
+                        std::fabs(contactGeom.normal[2]) < 0.1f)
                     {
                         // Flip the normal
                         contactGeom.normal[0] = -contactGeom.normal[0];
@@ -66,13 +74,13 @@ namespace ai
             CVector wheelAxis = wheel->GetDirection();
 
             // Calculate contact tangent directions
-            const float& nx = geom.normal[0];
-            const float& ny = geom.normal[1];
-            const float& nz = geom.normal[2];
+            float const& nx = geom.normal[0];
+            float const& ny = geom.normal[1];
+            float const& nz = geom.normal[2];
 
-            const float& wx = wheelAxis.x;
-            const float& wy = wheelAxis.y;
-            const float& wz = wheelAxis.z;
+            float const& wx = wheelAxis.x;
+            float const& wy = wheelAxis.y;
+            float const& wz = wheelAxis.z;
 
             // Calculate tangent vector (cross product of wheel axis and normal)
             float tx = (wz * ny) - (wy * nz);
@@ -98,16 +106,134 @@ namespace ai
         }
 
         return 1;
-	}
+    }
 
-	int CollideWheelAndAsphalt(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
+    int CollideWheelAndAsphalt(
+        m3d::Object* obj1,
+        m3d::Object* asphalt,
+        dContact* contacts,
+        unsigned& numContacts,
+        bool reverse)
+    {
+        auto* objWheel = RT_DYNCAST(obj1, Wheel);
+        CollideWheelDefault(objWheel, asphalt, contacts, numContacts, reverse);
 
-	int CollideWheelAndLandscape(m3d::Object* obj1, m3d::Object* objLsCollision, dContact* contacts, unsigned& numContacts, bool reverse)
-	{
-		// TODO: generated code CollideWheelAndLandscape
+        m3d::RoadNode* roadNode = static_cast<m3d::GeomObjectRoad*>(asphalt)->GetRoadNode();
+
+        // Angular velocity into the wheel's own frame, so its magnitude is the
+        // spin rate regardless of how the wheel is oriented in the world.
+        auto const* bodyAngular = dBodyGetAngularVel(objWheel->GetBody()->id());
+        CVector angularVel(bodyAngular[0], bodyAngular[1], bodyAngular[2]);
+
+        CMatrix const rotMatrix = objWheel->GetRotation().getInversed().ToMatrix();
+        CVector localAngularVel;
+        localAngularVel.x = rotMatrix._11 * angularVel.x + rotMatrix._31 * angularVel.z + rotMatrix._21 * angularVel.y;
+        localAngularVel.y = rotMatrix._12 * angularVel.x + rotMatrix._32 * angularVel.z + rotMatrix._22 * angularVel.y;
+        localAngularVel.z = rotMatrix._13 * angularVel.x + rotMatrix._33 * angularVel.z + rotMatrix._23 * angularVel.y;
+
+        float const wheelRadius = objWheel->GetRadius();
+        float const rollingSpeed = wheelRadius * localAngularVel.length();
+
+        CVector const wheelLinearVel = objWheel->GetLinearVelocity();
+        float const actualSpeed = wheelLinearVel.length();
+
+        Vehicle* vehicle = objWheel->GetVehicle();
+        if (!vehicle)
+        {
+            return 1;
+        }
+
+        m3d::WheelTraceMgr& traceMgr = pServer->GetWorld()->GetWheelTracesMgr();
+        float const skidDeltaSpeed = M3D_ENGINE_CFG.m_skidDeltaSpeed.GetF();
+
+        // Rolling speed drifting away from ground speed means the tyre is
+        // sliding rather than rolling.
+        if (fabs(rollingSpeed - actualSpeed) > skidDeltaSpeed)
+        {
+            CVector const contactPos(contacts->geom.pos[0], contacts->geom.pos[1], contacts->geom.pos[2]);
+
+            if (traceMgr.IsSkiddingStarted(objWheel))
+            {
+                CVector const contactNormal(
+                    contacts->geom.normal[0], contacts->geom.normal[1], contacts->geom.normal[2]);
+                float const traceOffset = std::min(wheelRadius * 0.1f, 0.1f);
+                CVector const tracePos = contactPos + contactNormal * traceOffset;
+                traceMgr.AddTrace(
+                    tracePos, objWheel->GetRotation(), objWheel->GetWidth(), objWheel, roadNode->GetSoilType(), 1);
+            }
+            else
+            {
+                traceMgr.StartSkidding(objWheel, roadNode->GetSoilType());
+            }
+
+            // Asphalt always uses splash type 1000; a splash left over from a
+            // different surface has to be retired first.
+            if (objWheel->m_SplashType != 1000 && objWheel->m_SplashEffect)
+            {
+                std::vector<m3d::Object*> stack;
+                stack.push_back(objWheel->m_SplashEffect);
+                while (!stack.empty())
+                {
+                    m3d::Object* current = stack.back();
+                    stack.pop_back();
+                    for (m3d::Object* child = current->GetFirstChild(); child; child = child->GetNextSibling())
+                    {
+                        static_cast<m3d::SgNode*>(child)->CanBeFree();
+                        if (child->GetFirstChild())
+                        {
+                            stack.push_back(child);
+                        }
+                    }
+                }
+                objWheel->m_SplashEffect->GetGraph()->InsertInRemoveIfFree(objWheel->m_SplashEffect);
+                objWheel->m_SplashEffect = nullptr;
+            }
+
+            if (!objWheel->m_SplashEffect)
+            {
+                CStr const& effectName =
+                    ai::gDynamicScene->GetRoadEffectName(objWheel->m_wheelType, vehicle->bIsBraking());
+                objWheel->m_SplashEffect =
+                    PhysicBody::CreateEffectNode(effectName, contactPos, IdentityQuaternion, false, 1.0f);
+            }
+
+            objWheel->m_SplashEffect->SetOriginAbs(contactPos);
+            objWheel->m_SplashType = 1000;
+            objWheel->m_MakeSplash = true;
+
+            float const nx = contacts->geom.normal[0];
+            float const ny = contacts->geom.normal[1];
+            float const nz = contacts->geom.normal[2];
+            float const invLen = 1.0f / sqrt(nx * nx + ny * ny + nz * nz + 0.00000011920929f);
+            float const impactSpeed =
+                (nx * invLen) * wheelLinearVel.x + (ny * invLen) * wheelLinearVel.y + (nz * invLen) * wheelLinearVel.z;
+            if (fabs(impactSpeed) > 2.0f && objWheel->CanCreateCollisionEffect())
+            {
+                objWheel->SetCollisionEffectCreated();
+                PhysicBody::CreateEffectNode("ET_PS_WHEEL_HIT", contactPos, IdentityQuaternion, true, 1.0f);
+            }
+        }
+
+        if (vehicle->GetOnOilMode())
+        {
+            for (unsigned i = 0; i < numContacts; ++i)
+            {
+                contacts[i].surface.mu = 0.0f;
+                contacts[i].surface.mu2 = 0.0f;
+            }
+        }
+
+        return 1;
+    }
+
+    int CollideWheelAndLandscape(
+        m3d::Object* obj1,
+        m3d::Object* objLsCollision,
+        dContact* contacts,
+        unsigned& numContacts,
+        bool reverse)
+    {
+        // TODO: generated code CollideWheelAndLandscape
         // Call default wheel collision first
 
         auto* objWheel = RT_DYNCAST(obj1, Wheel);
@@ -219,10 +345,12 @@ namespace ai
                 if (!objWheel->m_SplashEffect)
                 {
                     bool isBraking = vehicle->bIsBraking();
-                    CStr const effectName = ai::gDynamicScene->GetSoilEffectName(objWheel->m_wheelType, soilProps.m_splashType, isBraking);
+                    CStr const effectName =
+                        ai::gDynamicScene->GetSoilEffectName(objWheel->m_wheelType, soilProps.m_splashType, isBraking);
 
                     CVector effectPos(contacts->geom.pos);
-                    objWheel->m_SplashEffect = PhysicBody::CreateEffectNode(effectName, effectPos, IdentityQuaternion, false, 1.0f);
+                    objWheel->m_SplashEffect =
+                        PhysicBody::CreateEffectNode(effectName, effectPos, IdentityQuaternion, false, 1.0f);
                 }
 
                 // Update splash effect position
@@ -233,13 +361,15 @@ namespace ai
 
                 // Check for collision effects
                 CVector normal(contacts->geom.normal[0], contacts->geom.normal[1], contacts->geom.normal[2]);
-                float normalLength = sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z + 1.1920929e-7f);
+                float normalLength =
+                    sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z + 1.1920929e-7f);
                 float invNormalLength = 1.0f / normalLength;
                 normal.x *= invNormalLength;
                 normal.y *= invNormalLength;
                 normal.z *= invNormalLength;
 
-                float impactSpeed = normal.x * wheelLinearVel.x + normal.y * wheelLinearVel.y + normal.z * wheelLinearVel.z;
+                float impactSpeed =
+                    normal.x * wheelLinearVel.x + normal.y * wheelLinearVel.y + normal.z * wheelLinearVel.z;
                 if (fabs(impactSpeed) > 2.0f && objWheel->CanCreateCollisionEffect())
                 {
                     objWheel->SetCollisionEffectCreated();
@@ -289,10 +419,10 @@ namespace ai
         objWheel->AddForce(torque);
 
         return 1;
-	}
+    }
 
-	int CollideWheelAndWater(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
-	{
-		RETRUXX_NOT_IMPLEMENTED;
-	}
-}
+    int CollideWheelAndWater(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+}  // namespace ai

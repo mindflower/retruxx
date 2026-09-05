@@ -13,8 +13,56 @@ namespace m3d
 
     namespace
     {
-        constexpr char* const RDL_NAMES[] = {"FwdZLink", "BackZLink", "FwdXLink", "BackXLink"};
-    }
+        char constexpr* const RDL_NAMES[] = {"FwdZLink", "BackZLink", "FwdXLink", "BackXLink"};
+
+        // Where `back` meets `fwd`: its own origin when they join end-to-end,
+        // otherwise the midpoint of the side the junction presents to it.
+        void GetFwdLink(RoadNode* back, RoadNode* fwd, CVector& p)
+        {
+            if (back->m_linkedNodes[0] == fwd)
+            {
+                p = back->m_origin;
+                return;
+            }
+            float xComponent = 0.0f;
+            if (back->m_linkedNodes[3] == fwd)
+            {
+                xComponent = back->m_maxX;
+            }
+            else if (back->m_linkedNodes[2] == fwd)
+            {
+                xComponent = back->m_minX;
+            }
+            else
+            {
+                return;
+            }
+            p = back->GetLinkPoint(0.5f, xComponent);
+        }
+
+        void GetBackLink(RoadNode* fwd, RoadNode* back, CVector& p)
+        {
+            if (fwd->m_linkedNodes[1] == back)
+            {
+                p = fwd->m_origin;
+                return;
+            }
+            float xComponent = 0.0f;
+            if (fwd->m_linkedNodes[3] == back)
+            {
+                xComponent = fwd->m_maxX;
+            }
+            else if (fwd->m_linkedNodes[2] == back)
+            {
+                xComponent = fwd->m_minX;
+            }
+            else
+            {
+                return;
+            }
+            p = fwd->GetLinkPoint(0.5f, xComponent);
+        }
+    }  // namespace
 
     int RoadNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
     {
@@ -33,19 +81,22 @@ namespace m3d
 
     RoadNode::~RoadNode()
     {
+        // These fields are slices of a shared pool buffer, so only the slice may
+        // be handed back - releasing Vb/Ib would destroy the whole pool out from
+        // under every other mesh using it.
         if (m_VbPoolField.Vb.IsValid())
         {
-            M3D_RENDERER->ReleaseVb(m_VbPoolField.Vb);
+            M3D_RENDERER->ReleaseVbPoolField(m_VbPoolField);
         }
         if (m_IbPoolField.Ib.IsValid())
         {
-            M3D_RENDERER->ReleaseIb(m_IbPoolField.Ib);
+            M3D_RENDERER->ReleaseIbPoolField(m_IbPoolField);
         }
     }
 
     int RoadNode::GetSoilType()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_owner->m_roadSets[m_roadSetHandle]->m_soilType;
     }
 
     int RoadNode::ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
@@ -70,8 +121,9 @@ namespace m3d
                 auto* roadSet = roadManager.m_roadSets[roadManager.GetRoadSetHandleByName(m_roadSetName)];
                 auto* model = roadSet->m_roadModels[0][m_modelNum];
 
-                const auto modelHeight = model->m_box.m_box[4] - model->m_box.m_box[1];
-                m_origin.y = pClient->GetWorld().GetLandscape().GetLsHeight(m_origin.x, m_origin.y) - (modelHeight * 0.5);
+                auto const modelHeight = model->m_box.m_box[4] - model->m_box.m_box[1];
+                m_origin.y =
+                    pClient->GetWorld().GetLandscape().GetLsHeight(m_origin.x, m_origin.y) - (modelHeight * 0.5);
             }
         }
         else
@@ -81,24 +133,90 @@ namespace m3d
         return 1;
     }
 
-    void RoadNode::SetOwner(RoadManager*)
+    void RoadNode::SetOwner(RoadManager* owner)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_owner = owner;
     }
 
-    CVector RoadNode::GetLinkPoint(float, float)
+    CVector RoadNode::GetLinkPoint(float t, float xComponent)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Catmull-Rom through the four control points, then offset sideways.
+        CVector const p1 = GetPoint1();
+        CVector const p2 = m_origin;
+        CVector const p3 = GetPoint3();
+        CVector const p4 = GetPoint4();
+
+        auto spline = [&p1, &p2, &p3, &p4](float u)
+        {
+            float const c1 = ((2.0f - u) * u) * u - u;
+            float const c2 = ((u * u) * u) * 3.0f - (u * u) * 5.0f + 2.0f;
+            float const c3 = (((4.0f - u * 3.0f) * u) + 1.0f) * u;
+            float const c4 = ((u * u) * u) - (u * u);
+
+            CVector out;
+            out.x = (p1.x * c1 + p2.x * c2 + p3.x * c3 + p4.x * c4) * 0.5f;
+            out.y = (p1.y * c1 + p2.y * c2 + p3.y * c3 + p4.y * c4) * 0.5f;
+            out.z = (p1.z * c1 + p2.z * c2 + p3.z * c3 + p4.z * c4) * 0.5f;
+            return out;
+        };
+
+        CVector const at = spline(t);
+        CVector const ahead = spline(t + 0.0099999998f);
+
+        float const dx = ahead.x - at.x;
+        float const dy = ahead.y - at.y;
+        float const dz = ahead.z - at.z;
+        float const invLen = 1.0f / sqrtf(dx * dx + dy * dy + dz * dz + 0.00000011920929f);
+        float const tx = dx * invLen;
+        float const tz = dz * invLen;
+
+        // Tangent crossed with the up axis; which way depends on the sign.
+        CVector perp;
+        perp.y = 0.0f;
+        if (xComponent <= 0.0f)
+        {
+            perp.x = -tz;
+            perp.z = tx;
+        }
+        else
+        {
+            perp.x = tz;
+            perp.z = -tx;
+        }
+
+        float const scale = fabsf(xComponent) * 1.05f;
+
+        CVector result;
+        result.x = at.x + perp.x * scale;
+        result.y = at.y + perp.y * scale;
+        result.z = at.z + perp.z * scale;
+        return result;
     }
 
     CVector RoadNode::GetPoint1()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CVector p = m_origin;
+        if (m_linkedNodes[1])
+        {
+            GetFwdLink(m_linkedNodes[1], this, p);
+        }
+        else if (m_friend)
+        {
+            if (m_friend->m_linkedNodes[1])
+            {
+                GetFwdLink(m_friend->m_linkedNodes[1], m_friend, p);
+            }
+            else if (m_friend->m_linkedNodes[0])
+            {
+                GetBackLink(m_friend->m_linkedNodes[0], m_friend, p);
+            }
+        }
+        return p;
     }
 
     CVector RoadNode::GetPoint2()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_origin;
     }
 
     Object* RoadNode::Clone()
@@ -108,12 +226,45 @@ namespace m3d
 
     CVector RoadNode::GetPoint3()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CVector p = m_origin;
+        if (m_linkedNodes[0])
+        {
+            GetBackLink(m_linkedNodes[0], this, p);
+        }
+        else if (m_friend)
+        {
+            if (m_friend->m_linkedNodes[1])
+            {
+                GetFwdLink(m_friend->m_linkedNodes[1], m_friend, p);
+            }
+            else if (m_friend->m_linkedNodes[0])
+            {
+                GetBackLink(m_friend->m_linkedNodes[0], m_friend, p);
+            }
+        }
+        return p;
     }
 
     CVector RoadNode::GetPoint4()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CVector p = m_origin;
+        RoadNode* next = m_linkedNodes[0];
+        if (next)
+        {
+            if (next->m_linkedNodes[1] == this)
+            {
+                p = next->GetPoint3();
+            }
+            else if (next->m_linkedNodes[3] == this)
+            {
+                p = next->GetLinkPoint(0.5f, next->m_minX);
+            }
+            else if (next->m_linkedNodes[2] == this)
+            {
+                p = next->GetLinkPoint(0.5f, next->m_maxX);
+            }
+        }
+        return p;
     }
 
     Class* RoadNode::GetClass() const

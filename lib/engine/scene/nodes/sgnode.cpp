@@ -287,8 +287,8 @@ namespace m3d
             if (!IsKindOf(&m3d::SgSoundSourceNode::m_classSgSoundSourceNode))
             {
                 M3D_LOG_INFO(
-                    "ReadFromXmlNode: GetItemByName for name = " + CStr(idAttr) + " failed for node " + CStr(GetName()) +
-                    ". Taking a 0 model.");
+                    "ReadFromXmlNode: GetItemByName for name = " + CStr(idAttr) + " failed for node " +
+                    CStr(GetName()) + ". Taking a 0 model.");
             }
         }
         this->SetProperty(4360u, &item);
@@ -313,7 +313,7 @@ namespace m3d
 
     unsigned SgNode::GetContourColor()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_contourColor;
     }
 
     Quaternion const& SgNode::GetRotationWorldAbs() const
@@ -394,7 +394,7 @@ namespace m3d
 
     float SgNode::GetContourWidth()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_contourWidth;
     }
 
     int SgNode::SetOriginAbs(CVector const& origin)
@@ -514,17 +514,17 @@ namespace m3d
                 auto _14 = this->m_currentXForm._14;
                 auto _11 = this->m_currentXForm._11;
                 auto _12 = this->m_currentXForm._12;
-                this->m_currentXForm._11 =
-                    (float)((float)((float)(_14 * m_parent->m_currentXForm._41) + (float)(_13 * m_parent->m_currentXForm._31)) +
-                            (float)(m_parent->m_currentXForm._11 * _11)) +
+                this->m_currentXForm._11 = (float)((float)((float)(_14 * m_parent->m_currentXForm._41) +
+                                                           (float)(_13 * m_parent->m_currentXForm._31)) +
+                                                   (float)(m_parent->m_currentXForm._11 * _11)) +
                     (float)(m_parent->m_currentXForm._21 * _12);
-                this->m_currentXForm._12 =
-                    (float)((float)((float)(_11 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _14)) +
-                            (float)(m_parent->m_currentXForm._32 * _13)) +
+                this->m_currentXForm._12 = (float)((float)((float)(_11 * m_parent->m_currentXForm._12) +
+                                                           (float)(m_parent->m_currentXForm._42 * _14)) +
+                                                   (float)(m_parent->m_currentXForm._32 * _13)) +
                     (float)(_12 * m_parent->m_currentXForm._22);
-                this->m_currentXForm._13 =
-                    (float)((float)((float)(m_parent->m_currentXForm._23 * _12) + (float)(_11 * m_parent->m_currentXForm._13)) +
-                            (float)(m_parent->m_currentXForm._43 * _14)) +
+                this->m_currentXForm._13 = (float)((float)((float)(m_parent->m_currentXForm._23 * _12) +
+                                                           (float)(_11 * m_parent->m_currentXForm._13)) +
+                                                   (float)(m_parent->m_currentXForm._43 * _14)) +
                     (float)(m_parent->m_currentXForm._33 * _13);
                 auto v24 = (float)(_14 * m_parent->m_currentXForm._44) + (float)(_13 * m_parent->m_currentXForm._34);
                 auto v25 = m_parent->m_currentXForm._14 * _11;
@@ -536,17 +536,17 @@ namespace m3d
                 auto _23 = this->m_currentXForm._23;
                 this->m_currentXForm._14 = v30;
                 auto _24 = this->m_currentXForm._24;
-                this->m_currentXForm._21 =
-                    (float)((float)((float)(_24 * m_parent->m_currentXForm._41) + (float)(_23 * m_parent->m_currentXForm._31)) +
-                            (float)(m_parent->m_currentXForm._11 * v26)) +
+                this->m_currentXForm._21 = (float)((float)((float)(_24 * m_parent->m_currentXForm._41) +
+                                                           (float)(_23 * m_parent->m_currentXForm._31)) +
+                                                   (float)(m_parent->m_currentXForm._11 * v26)) +
                     (float)(m_parent->m_currentXForm._21 * _22);
-                this->m_currentXForm._22 =
-                    (float)((float)((float)(v26 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _24)) +
-                            (float)(m_parent->m_currentXForm._32 * _23)) +
+                this->m_currentXForm._22 = (float)((float)((float)(v26 * m_parent->m_currentXForm._12) +
+                                                           (float)(m_parent->m_currentXForm._42 * _24)) +
+                                                   (float)(m_parent->m_currentXForm._32 * _23)) +
                     (float)(_22 * m_parent->m_currentXForm._22);
-                this->m_currentXForm._23 =
-                    (float)((float)((float)(m_parent->m_currentXForm._23 * _22) + (float)(v26 * m_parent->m_currentXForm._13)) +
-                            (float)(m_parent->m_currentXForm._43 * _24)) +
+                this->m_currentXForm._23 = (float)((float)((float)(m_parent->m_currentXForm._23 * _22) +
+                                                           (float)(v26 * m_parent->m_currentXForm._13)) +
+                                                   (float)(m_parent->m_currentXForm._43 * _24)) +
                     (float)(m_parent->m_currentXForm._33 * _23);
                 auto v33 = (float)(_24 * m_parent->m_currentXForm._44) + (float)(_23 * m_parent->m_currentXForm._34);
                 auto v34 = m_parent->m_currentXForm._14 * v26;
@@ -558,17 +558,17 @@ namespace m3d
                 auto _33 = this->m_currentXForm._33;
                 this->m_currentXForm._24 = v39;
                 auto _34 = this->m_currentXForm._34;
-                this->m_currentXForm._31 =
-                    (float)((float)((float)(_34 * m_parent->m_currentXForm._41) + (float)(_33 * m_parent->m_currentXForm._31)) +
-                            (float)(m_parent->m_currentXForm._11 * _31)) +
+                this->m_currentXForm._31 = (float)((float)((float)(_34 * m_parent->m_currentXForm._41) +
+                                                           (float)(_33 * m_parent->m_currentXForm._31)) +
+                                                   (float)(m_parent->m_currentXForm._11 * _31)) +
                     (float)(m_parent->m_currentXForm._21 * _32);
-                this->m_currentXForm._32 =
-                    (float)((float)((float)(_31 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _34)) +
-                            (float)(m_parent->m_currentXForm._32 * _33)) +
+                this->m_currentXForm._32 = (float)((float)((float)(_31 * m_parent->m_currentXForm._12) +
+                                                           (float)(m_parent->m_currentXForm._42 * _34)) +
+                                                   (float)(m_parent->m_currentXForm._32 * _33)) +
                     (float)(_32 * m_parent->m_currentXForm._22);
-                this->m_currentXForm._33 =
-                    (float)((float)((float)(m_parent->m_currentXForm._23 * _32) + (float)(_31 * m_parent->m_currentXForm._13)) +
-                            (float)(m_parent->m_currentXForm._43 * _34)) +
+                this->m_currentXForm._33 = (float)((float)((float)(m_parent->m_currentXForm._23 * _32) +
+                                                           (float)(_31 * m_parent->m_currentXForm._13)) +
+                                                   (float)(m_parent->m_currentXForm._43 * _34)) +
                     (float)(m_parent->m_currentXForm._33 * _33);
                 auto v42 = (float)(_34 * m_parent->m_currentXForm._44) + (float)(_33 * m_parent->m_currentXForm._34);
                 auto v43 = m_parent->m_currentXForm._14 * _31;
@@ -580,21 +580,21 @@ namespace m3d
                 auto _43 = this->m_currentXForm._43;
                 this->m_currentXForm._34 = v48;
                 auto _44 = this->m_currentXForm._44;
-                this->m_currentXForm._41 =
-                    (float)((float)((float)(_44 * m_parent->m_currentXForm._41) + (float)(_43 * m_parent->m_currentXForm._31)) +
-                            (float)(m_parent->m_currentXForm._11 * _41)) +
+                this->m_currentXForm._41 = (float)((float)((float)(_44 * m_parent->m_currentXForm._41) +
+                                                           (float)(_43 * m_parent->m_currentXForm._31)) +
+                                                   (float)(m_parent->m_currentXForm._11 * _41)) +
                     (float)(m_parent->m_currentXForm._21 * _42);
-                this->m_currentXForm._42 =
-                    (float)((float)((float)(_41 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _44)) +
-                            (float)(m_parent->m_currentXForm._32 * _43)) +
+                this->m_currentXForm._42 = (float)((float)((float)(_41 * m_parent->m_currentXForm._12) +
+                                                           (float)(m_parent->m_currentXForm._42 * _44)) +
+                                                   (float)(m_parent->m_currentXForm._32 * _43)) +
                     (float)(_42 * m_parent->m_currentXForm._22);
-                this->m_currentXForm._43 =
-                    (float)((float)((float)(m_parent->m_currentXForm._23 * _42) + (float)(_41 * m_parent->m_currentXForm._13)) +
-                            (float)(m_parent->m_currentXForm._43 * _44)) +
+                this->m_currentXForm._43 = (float)((float)((float)(m_parent->m_currentXForm._23 * _42) +
+                                                           (float)(_41 * m_parent->m_currentXForm._13)) +
+                                                   (float)(m_parent->m_currentXForm._43 * _44)) +
                     (float)(m_parent->m_currentXForm._33 * _43);
-                this->m_currentXForm._44 =
-                    (float)((float)((float)(_44 * m_parent->m_currentXForm._44) + (float)(_43 * m_parent->m_currentXForm._34)) +
-                            (float)(m_parent->m_currentXForm._14 * _41)) +
+                this->m_currentXForm._44 = (float)((float)((float)(_44 * m_parent->m_currentXForm._44) +
+                                                           (float)(_43 * m_parent->m_currentXForm._34)) +
+                                                   (float)(m_parent->m_currentXForm._14 * _41)) +
                     (float)(m_parent->m_currentXForm._24 * _42);
             }
 
@@ -622,25 +622,27 @@ namespace m3d
 
                 CMatrix rt;
                 auto v54 = v18 / this->m_scaling.x;
-                rt._11 =
-                    (float)((float)((float)(unScale._21 * this->m_currentXForm._12) + (float)(unScale._31 * this->m_currentXForm._13)) +
-                            (float)(unScale._41 * this->m_currentXForm._14)) +
+                rt._11 = (float)((float)((float)(unScale._21 * this->m_currentXForm._12) +
+                                         (float)(unScale._31 * this->m_currentXForm._13)) +
+                                 (float)(unScale._41 * this->m_currentXForm._14)) +
                     (float)(this->m_currentXForm._11 * v54);
                 auto v55 = v18 / this->m_scaling.y;
                 auto v56 = v18 / this->m_scaling.z;
-                rt._12 = (float)((float)((float)(unScale._32 * this->m_currentXForm._13) + (float)(v55 * this->m_currentXForm._12)) +
+                rt._12 = (float)((float)((float)(unScale._32 * this->m_currentXForm._13) +
+                                         (float)(v55 * this->m_currentXForm._12)) +
                                  (float)(unScale._42 * this->m_currentXForm._14)) +
                     (float)(unScale._12 * this->m_currentXForm._11);
                 auto v57 = unScale._24 * this->m_currentXForm._12;
-                rt._13 = (float)((float)((float)(unScale._23 * this->m_currentXForm._12) + (float)(v56 * this->m_currentXForm._13)) +
+                rt._13 = (float)((float)((float)(unScale._23 * this->m_currentXForm._12) +
+                                         (float)(v56 * this->m_currentXForm._13)) +
                                  (float)(unScale._43 * this->m_currentXForm._14)) +
                     (float)(unScale._13 * this->m_currentXForm._11);
                 auto v58 = unScale._31 * this->m_currentXForm._23;
                 rt._14 = (float)((float)(v57 + (float)(unScale._34 * this->m_currentXForm._13)) +
                                  (float)(unScale._14 * this->m_currentXForm._11)) +
                     this->m_currentXForm._14;
-                auto v59 =
-                    (float)((float)((float)(v54 * this->m_currentXForm._21) + v58) + (float)(unScale._21 * this->m_currentXForm._22)) +
+                auto v59 = (float)((float)((float)(v54 * this->m_currentXForm._21) + v58) +
+                                   (float)(unScale._21 * this->m_currentXForm._22)) +
                     (float)(unScale._41 * this->m_currentXForm._24);
                 auto v60 = unScale._12 * this->m_currentXForm._21;
                 rt._21 = v59;
@@ -648,7 +650,8 @@ namespace m3d
                                  (float)(unScale._42 * this->m_currentXForm._24)) +
                     (float)(v55 * this->m_currentXForm._22);
                 auto v61 = unScale._14 * this->m_currentXForm._21;
-                rt._23 = (float)((float)((float)(v56 * this->m_currentXForm._23) + (float)(unScale._13 * this->m_currentXForm._21)) +
+                rt._23 = (float)((float)((float)(v56 * this->m_currentXForm._23) +
+                                         (float)(unScale._13 * this->m_currentXForm._21)) +
                                  (float)(unScale._23 * this->m_currentXForm._22)) +
                     (float)(unScale._43 * this->m_currentXForm._24);
                 auto v62 = (float)((float)((float)(unScale._34 * this->m_currentXForm._23) + v61) +
@@ -656,8 +659,8 @@ namespace m3d
                     this->m_currentXForm._24;
                 auto v63 = unScale._31 * this->m_currentXForm._33;
                 rt._24 = v62;
-                auto v64 =
-                    (float)((float)((float)(v54 * this->m_currentXForm._31) + v63) + (float)(unScale._21 * this->m_currentXForm._32)) +
+                auto v64 = (float)((float)((float)(v54 * this->m_currentXForm._31) + v63) +
+                                   (float)(unScale._21 * this->m_currentXForm._32)) +
                     (float)(unScale._41 * this->m_currentXForm._34);
                 auto v65 = unScale._12 * this->m_currentXForm._31;
                 rt._31 = v64;
@@ -669,8 +672,8 @@ namespace m3d
                     (float)(v55 * this->m_currentXForm._32);
                 auto v70 = unScale._13 * this->m_currentXForm._31;
                 rt._32 = v69;
-                auto v71 =
-                    (float)((float)((float)(v56 * this->m_currentXForm._33) + v70) + (float)(unScale._23 * this->m_currentXForm._32)) +
+                auto v71 = (float)((float)((float)(v56 * this->m_currentXForm._33) + v70) +
+                                   (float)(unScale._23 * this->m_currentXForm._32)) +
                     (float)(unScale._43 * this->m_currentXForm._34);
                 auto v72 = unScale._14 * this->m_currentXForm._31;
                 rt._33 = v71;
@@ -679,12 +682,13 @@ namespace m3d
                     this->m_currentXForm._34;
                 rt._41 = (float)((float)(v66 + (float)(unScale._31 * this->m_currentXForm._43)) + v67) +
                     (float)(unScale._41 * this->m_currentXForm._44);
-                auto v73 = (float)((float)((float)(v56 * this->m_currentXForm._43) + (float)(unScale._13 * this->m_currentXForm._41)) +
+                auto v73 = (float)((float)((float)(v56 * this->m_currentXForm._43) +
+                                           (float)(unScale._13 * this->m_currentXForm._41)) +
                                    (float)(unScale._23 * this->m_currentXForm._42)) +
                     (float)(unScale._43 * this->m_currentXForm._44);
-                auto v74 =
-                    (float)((float)((float)(unScale._34 * this->m_currentXForm._43) + (float)(unScale._14 * this->m_currentXForm._41)) +
-                            (float)(unScale._24 * this->m_currentXForm._42)) +
+                auto v74 = (float)((float)((float)(unScale._34 * this->m_currentXForm._43) +
+                                           (float)(unScale._14 * this->m_currentXForm._41)) +
+                                   (float)(unScale._24 * this->m_currentXForm._42)) +
                     this->m_currentXForm._44;
                 rt._42 = (float)((float)(v68 + (float)(unScale._12 * this->m_currentXForm._41)) +
                                  (float)(unScale._42 * this->m_currentXForm._44)) +
@@ -792,8 +796,10 @@ namespace m3d
             origin.x = this->m_boundingBox.m_box[3] - this->m_boundingBox.m_box[0];
             origin.z = v91 - v90;
             origin.y = v93 - v92;
-            this->m_boundingRadius =
-                sqrt(origin.x * origin.x + (float)(v91 - v90) * (float)(v91 - v90) + (float)(v93 - v92) * (float)(v93 - v92)) * 0.5;
+            this->m_boundingRadius = sqrt(
+                                         origin.x * origin.x + (float)(v91 - v90) * (float)(v91 - v90) +
+                                         (float)(v93 - v92) * (float)(v93 - v92)) *
+                0.5;
         }
 
         auto v94 = this->m_boundingBox.m_box[5];
@@ -823,15 +829,17 @@ namespace m3d
         rt._31 = (float)(v105 + v103) * 2.0;
         rt._22 = 1.0 - (float)((float)((float)(v104 * v104) + y) * 2.0);
         rt._23 = (float)(v101 + x) * 2.0;
-        auto v108 = (float)((float)((float)((float)(1.0 - (float)((float)((float)(v104 * v104) + v107) * 2.0)) * origin.x) +
-                                    (float)(origin.z * rt._31)) +
-                            (float)(origin.y * rt._21)) +
+        auto v108 =
+            (float)((float)((float)((float)(1.0 - (float)((float)((float)(v104 * v104) + v107) * 2.0)) * origin.x) +
+                            (float)(origin.z * rt._31)) +
+                    (float)(origin.y * rt._21)) +
             this->m_currentWorldOrigin.x;
         auto v109 = (float)((float)((float)((float)(v103 - v105) * 2.0) * origin.x) +
                             (float)(origin.z * (float)(1.0 - (float)((float)(v107 + y) * 2.0)))) +
             (float)(origin.y * rt._23);
         auto v135 = this->m_currentWorldOrigin.y +
-            (float)((float)((float)((float)((float)(v99 + v142) * 2.0) * origin.x) + (float)(origin.z * (float)((float)(x - v101) * 2.0))) +
+            (float)((float)((float)((float)((float)(v99 + v142) * 2.0) * origin.x) +
+                            (float)(origin.z * (float)((float)(x - v101) * 2.0))) +
                     (float)(origin.y * rt._22));
         auto v110 = this->m_currentWorldOrigin.z;
         auto v111 = v135;
@@ -982,8 +990,8 @@ namespace m3d
                 if (child->m_isInRemoveIfFree)
                 {
                     M3D_LOG_WARN(
-                        "Warning: deleting node which is in RemoveIfFree, name = '" + CStr(child->GetName()) + ", parent name = '" +
-                        CStr(GetName()) + "'");
+                        "Warning: deleting node which is in RemoveIfFree, name = '" + CStr(child->GetName()) +
+                        ", parent name = '" + CStr(GetName()) + "'");
                 }
                 // TODO: check this DecRef
                 delete child;  // Calls child's destructor
@@ -1038,8 +1046,8 @@ namespace m3d
                 if (m_isInRemoveIfFree)
                 {
                     M3D_LOG_WARN(
-                        "Adding child in RemoveIfFree in destructor, child name = '" + CStr(child->GetName()) + ", parent name = '" +
-                        CStr(GetName()) + "'");
+                        "Adding child in RemoveIfFree in destructor, child name = '" + CStr(child->GetName()) +
+                        ", parent name = '" + CStr(GetName()) + "'");
                 }
             }
         }

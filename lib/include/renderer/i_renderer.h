@@ -698,8 +698,8 @@ namespace m3d
             virtual void PushLighting(bool) = 0;
             virtual void PopLighting() = 0;
             virtual void SetLighting(bool, bool) = 0;
-            virtual void PushAmbient(unsigned int) = 0;
             virtual void PushAmbient() = 0;
+            virtual void PushAmbient(unsigned int) = 0;
             virtual void PopAmbient() = 0;
             virtual void SetAmbient(unsigned int, bool) = 0;
             virtual void PushFog() = 0;

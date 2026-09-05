@@ -1446,9 +1446,15 @@ namespace ai
         return nullptr;
     }
 
-    CStr const& DynamicScene::GetRoadEffectName(unsigned, bool) const
+    CStr const STANDARD_ROADSMOKE = "ET_PS_ROADSMOKE";
+
+    CStr const& DynamicScene::GetRoadEffectName(unsigned wheelType, bool bVehicleIsBraking) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (2 * wheelType >= m_roadEffectNames.size())
+        {
+            return STANDARD_ROADSMOKE;
+        }
+        return m_roadEffectNames[2 * wheelType + bVehicleIsBraking];
     }
 
     CStr const& DynamicScene::GetShellRoadEffectName(unsigned short) const
