@@ -13,48 +13,42 @@ namespace m3d
 
 class ContextModelWnd;
 
-class QuestItemsWnd :  public m3d::ui::Wnd
+class QuestItemsWnd : public m3d::ui::Wnd
 {
-public:
-    class AuxInfo
+    struct AuxInfo
     {
-    public:
+        /* 0x0000 */ CStr m_wndPictureName;
+        /* 0x000c */ CStr m_wndDizName;
+        /* 0x0018 */ CStr m_wndItemsListName;
+        AuxInfo(const QuestItemsWnd::AuxInfo&);
         AuxInfo();
-
-    private:
-        CStr m_wndPictureName;
-        CStr m_wndDizName;
-        CStr m_wndItemsListName;
-    };
-
-public:
-    static m3d::Class * GetBaseClass();
-    static m3d::Object * CreateObject();
-    virtual m3d::Class * GetClass() const ;
-    virtual ~QuestItemsWnd();
-    virtual m3d::Object * Clone();
+    }; /* size: 0x0024 */
 
 protected:
-    void ClearItems();
-    void CreateItems();
-    virtual int OnAfterAddToWndStation();
+    virtual int GameDataSetup() override /* 0x104 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int idFrom, unsigned int message, m3d::AIParam const& data)
+        override /* 0xc8 */;
+    virtual int OnBeforeAddToWndStation() override /* 0x68 */;
+    virtual int OnAfterAddToWndStation() override /* 0x6c */;
     void FullUpdate();
-    virtual int GameDataSetup();
     void OnQuestItemsChanged();
-    virtual int GameDataUpdate(void *,int);
-    virtual int GameDataClear(bool);
-    QuestItemsWnd(QuestItemsWnd const &);
+    void CreateItems();
+    void ClearItems();
+    void OnItemsListSelChanged(m3d::AIParam const& data);
+    /* 0x0220 */ QuestItemsWnd::AuxInfo m_aif;
+    /* 0x0244 */ ContextModelWnd* m_wndPicture;
+    /* 0x0248 */ m3d::ui::TextBoxWnd* m_wndDiz;
+    /* 0x024c */ CheckList* m_wndItemsList;
     QuestItemsWnd();
-    void OnItemsListSelChanged(m3d::AIParam const &);
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
-    virtual int OnBeforeAddToWndStation();
+    QuestItemsWnd(QuestItemsWnd const& rhs);
 
 public:
+    virtual ~QuestItemsWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
     RT_CLASS_DECLARE(QuestItemsWnd);
-
-private:
-    QuestItemsWnd::AuxInfo m_aif;
-    ContextModelWnd *m_wndPicture;
-    m3d::ui::TextBoxWnd *m_wndDiz;
-    CheckList *m_wndItemsList;
-};
+}; /* size: 0x0250 */

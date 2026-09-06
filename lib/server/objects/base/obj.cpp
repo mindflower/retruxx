@@ -560,7 +560,8 @@ namespace ai
 
     bool Obj::bIsVisible() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x532860 - bit 0 of m_flags, the one SetVisible/SetInvisible toggle.
+        return (m_flags & 1) != 0;
     }
 
     bool Obj::bHasParent() const

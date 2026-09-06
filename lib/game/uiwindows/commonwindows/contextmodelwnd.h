@@ -22,6 +22,11 @@ class VideoWnd;
 
 class ContextModelWnd : public m3d::ui::Wnd
 {
+    // QuestItemsWnd drives the preview directly - clearing it and pushing a
+    // prototype at it as the selected quest item changes, exactly as the shipped
+    // code does.
+    friend class QuestItemsWnd;
+
     friend class VideoWnd;
 
 public:

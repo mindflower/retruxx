@@ -2273,7 +2273,7 @@ namespace m3d
                 return 0;
             }
             //TODO: check this
-            m_toolTipText = *static_cast<CStr*>(prop);
+            m_toolTipText = static_cast<char*>(prop);
             return 1;
         }
 

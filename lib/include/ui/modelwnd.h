@@ -2,12 +2,18 @@
 #include "image.h"
 #include <skelmodel.h>
 
+class ContextModelWnd;
+
 namespace m3d
 {
     namespace ui
     {
         class ModelWnd : public m3d::ui::ImageWnd
         {
+            // ContextModelWnd owns a ModelWnd and re-stamps its skin number
+            // directly after SetModelByName, exactly as the shipped code does.
+            friend class ::ContextModelWnd;
+
         protected:
             ModelWnd();
             ModelWnd(m3d::ui::ModelWnd const& rhs);

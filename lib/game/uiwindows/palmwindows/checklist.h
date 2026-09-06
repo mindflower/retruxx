@@ -41,7 +41,6 @@ public:
 class CheckButton : public m3d::ui::ButtonWnd
 {
 public:
-    /* 0x0000 */ m3d::ui::ButtonWnd m3d::ui::ButtonWnd;
     virtual int SetUp(CStr const& name, PointBase<float> const& origin, float width, CStr const& fullName) /* 0x11c */;
     void Select(bool bSelect);
     CStr const& GetName() const;

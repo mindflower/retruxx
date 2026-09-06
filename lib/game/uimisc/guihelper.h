@@ -4,6 +4,7 @@
 #include "math/point2d.h"
 #include "retruxx/common.h"
 #include "server/relationship.h"
+#include "game/uimisc/navpoint.h"
 #include "server/objects/guns/gun.h"
 
 struct CVector;
@@ -80,9 +81,23 @@ namespace help
 
     void DeleteAllFilesInDirectory(char const*);
     CStr GetCurrentLevelName();
-    // TODO: implement (ExMachina 1.02 NoCD RVA 0x1555b0). Returns the unified completion
-    // status (QUESTSTATUS_*) of the quest identified by (questType, questId).
+    // Unified completion status (QUESTSTATUS_*) of the quest identified by
+    // (questType, questId); QUESTSTATUS_INVALID when it does not resolve.
     UnifyQuestStatus GetQuestUnifyStatusByQuestId(help::QuestType questType, int questId);
+
+    // True when the quest is still in progress and its quest-info knows where
+    // the target sits on the current level - only then is there somewhere for a
+    // navigation point to actually point.
+    bool CanNavPointBeAddedOnQuest(help::QuestType questType, int questId);
+
+    // True when the player is at war with `enemyBelong` and a peace quest for
+    // that clan is on offer (created but not yet finished), so the reputation
+    // screen can advertise that the war can still be ended.
+    bool IsPeaceWithEnemyAvailable(int enemyBelong);
+
+    // Maps a quest kind onto the nav-point object kind used to look navigation
+    // points up; anything that is not a real quest type maps to OBJECT_TYPE_INVALID.
+    NavPoint::ObjectType GetNpObjectTypeByQuestType(help::QuestType questType);
     int CloneWndWithChildren(m3d::ui::Wnd const*, m3d::ui::Wnd*);
     int GetWindowsSubDirs(CStr const&, retruxx::vector<CStr>&, CStr const&);
     int CreateWindowsDir(CStr const&);
@@ -109,7 +124,17 @@ namespace help
     CStr GetClanAbbreviationByName(CStr const&);
     CStr GetClanFullNameByName(CStr const&);
     CStr GetClanNameByBelong(int);
-    CStr GetKeysForImpulse(int);
+    // Human-readable list of the key combinations bound to `impulseId`, e.g.
+    // "Ctrl" + "F1", "F5" - alternatives separated by ", ", keys within one
+    // combination joined with " + ".
+    CStr GetKeysForImpulse(int impulseId);
+    // The above prefixed with the localized "KeySet" caption, ready to be used
+    // as a window tooltip.
+    CStr CreateTooltipForImpulse(int impulseId);
+    // The local player's current vehicle (null when there is no local player or
+    // it is not driving anything), and its object id (-1 in the same cases).
+    ai::Vehicle* GetPlayerVehicle();
+    int GetPlayerVehicleId();
     CStr GetMapNameFromFileName(CStr const&);
     CStr GetServiceSymbols();
     CStr GetServiceSymbolsForVisualisation();

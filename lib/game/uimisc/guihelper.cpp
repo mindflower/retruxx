@@ -12,6 +12,11 @@
 #include "server/objects/building.h"
 #include "server/objects/cabin.h"
 #include "server/objects/chassis.h"
+#include "server/objects/dynamicquest.h"
+#include "server/objects/dynamicquestpeace.h"
+#include "game/uimisc/objectcollection.h"
+#include "server/queststate.h"
+#include "game/uimisc/questinfo.h"
 #include "server/objects/gadget.h"
 #include "server/objects/player.h"
 #include "server/objects/town.h"
@@ -82,10 +87,108 @@ namespace help
         return {};
     }
 
-    UnifyQuestStatus GetQuestUnifyStatusByQuestId(help::QuestType /*questType*/, int /*questId*/)
+    namespace
     {
-        // TODO: implement (ExMachina 1.02 NoCD RVA 0x1555b0).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x555520 - a dynamic quest reports a richer set of states than the
+        // journal cares about; only "in progress", "done" and "failed" map across.
+        UnifyQuestStatus DynamicQuestStatus2UnifyQuestStatus(ai::DynamicQuest::QuestStatus status)
+        {
+            switch (status)
+            {
+            case ai::DynamicQuest::STATUS_PROCESSING:
+                return QUESTSTATUS_NONCOMPLETE;
+            case ai::DynamicQuest::STATUS_COMPLETE:
+                return QUESTSTATUS_COMPLETE;
+            case ai::DynamicQuest::STATUS_FAILED:
+                return QUESTSTATUS_FAILED;
+            default:
+                return QUESTSTATUS_INVALID;
+            }
+        }
+    }  // namespace
+
+    UnifyQuestStatus GetQuestUnifyStatusByQuestId(help::QuestType questType, int questId)
+    {
+        // RVA 0x5555B0 - static and dynamic quests keep their progress in two
+        // completely different places, so both are folded onto one scale here.
+        if (questType == QUESTTYPE_STATIC)
+        {
+            ai::QuestState const* qs = ai::theQuestStateManager->GetQuestStateById(questId);
+            if (qs)
+            {
+                switch (qs->GetCompleteStatus())
+                {
+                case ai::QuestState::NOT_COMPLETE:
+                    return QUESTSTATUS_NONCOMPLETE;
+                case ai::QuestState::COMPLETE:
+                    return QUESTSTATUS_COMPLETE;
+                case ai::QuestState::FAILED:
+                    return QUESTSTATUS_FAILED;
+                default:
+                    break;
+                }
+            }
+        }
+        else if (questType == QUESTTYPE_DYNAMIC)
+        {
+            ai::Obj* obj = ai::theObjects->GetEntityByObjId(questId);
+            if (obj && obj->IsKindOf(&ai::DynamicQuest::m_classDynamicQuest))
+            {
+                return DynamicQuestStatus2UnifyQuestStatus(static_cast<ai::DynamicQuest*>(obj)->GetQuestStatus());
+            }
+        }
+        return QUESTSTATUS_INVALID;
+    }
+
+    bool CanNavPointBeAddedOnQuest(help::QuestType questType, int questId)
+    {
+        // RVA 0x555650
+        if (questType == QUESTTYPE_NUM_QUEST_TYPES || questId == -1 ||
+            GetQuestUnifyStatusByQuestId(questType, questId) != QUESTSTATUS_NONCOMPLETE)
+        {
+            return false;
+        }
+
+        QuestInfoManager* qim = M3D_APP->m_pInterfaceManager->GetQuestInfoManager();
+        QuestInfo const* qi = (questType == QUESTTYPE_STATIC) ? qim->GetQuestInfoForStaticQuest(questId)
+                                                              : qim->GetQuestInfoForDynamicQuest(questId);
+        // Without a coordinate on this level there is nowhere for the point to go.
+        return qi && qi->GetCoordinateForMap(GetCurrentLevelName()) != nullptr;
+    }
+
+    bool IsPeaceWithEnemyAvailable(int enemyBelong)
+    {
+        // RVA 0x555320
+        if (!ai::thePlayer || ai::pServer->CheckTolerance(ai::thePlayer->GetBelong(), enemyBelong) != ai::RS_ENEMY)
+        {
+            return false;
+        }
+
+        std::set<int> const* peaceQuests =
+            M3D_APP->m_pInterfaceManager->GetObjectCollection().GetObjectsByClass(
+                &ai::DynamicQuestPeace::m_classDynamicQuestPeace);
+        if (!peaceQuests)
+        {
+            return false;
+        }
+
+        for (auto it = peaceQuests->begin(); it != peaceQuests->end(); ++it)
+        {
+            ai::Obj* obj = ai::theObjects->GetEntityByObjId(*it);
+            if (!obj || !obj->IsKindOf(&ai::DynamicQuestPeace::m_classDynamicQuestPeace))
+            {
+                continue;
+            }
+            // NOTE: a peace quest stores the clan it settles with in its target
+            // *object* id field, so this compares an objId slot against a belong.
+            auto* quest = static_cast<ai::DynamicQuest*>(obj);
+            if (quest->GetQuestStatus() <= ai::DynamicQuest::STATUS_PROCESSING &&
+                quest->GetTargetObjId() == enemyBelong)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     int CloneWndWithChildren(m3d::ui::Wnd const* srcWnd, m3d::ui::Wnd* dstWnd)
@@ -428,9 +531,48 @@ namespace help
     {
         return "Belong_" + CStr(clanBelong);
     }
-    CStr GetKeysForImpulse(int)
+    CStr GetKeysForImpulse(int impulseId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x555980 - renders every key combination bound to `impulseId` as
+        // ["Key1" + "Key2"], with alternative combinations separated by ", ".
+        CStr strKeys;
+        std::vector<std::vector<int>> const keySets = M3D_APP->m_pImpulses->GetKeysForImpulse(impulseId, 0);
+
+        for (int i = 0; i < static_cast<int>(keySets.size()); ++i)
+        {
+            std::vector<int> const& keySet = keySets[i];
+            for (int j = 0; j < static_cast<int>(keySet.size()); ++j)
+            {
+                CStr const keyName = M3D_APP->m_pImpulses->GetKeyNameById(keySet[j]);
+                CStr const keyFullName = M3D_APP->GetStringByStringId0(keyName);
+                strKeys += CStr("\"") + keyFullName + "\"";
+                if (j < static_cast<int>(keySet.size()) - 1)
+                {
+                    strKeys += " + ";
+                }
+            }
+            if (i < static_cast<int>(keySets.size()) - 1)
+            {
+                strKeys += ", ";
+            }
+        }
+        return strKeys;
+    }
+    CStr CreateTooltipForImpulse(int impulseId)
+    {
+        // RVA 0x555D50
+        return M3D_APP->GetStringByStringId0("KeySet") + ": " + GetKeysForImpulse(impulseId);
+    }
+    ai::Vehicle* GetPlayerVehicle()
+    {
+        // RVA 0x5513B0
+        return ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr;
+    }
+    int GetPlayerVehicleId()
+    {
+        // RVA 0x5513D0
+        ai::Vehicle const* vehicle = GetPlayerVehicle();
+        return vehicle ? vehicle->GetId() : -1;
     }
     CStr GetServiceSymbols()
     {
@@ -490,6 +632,20 @@ namespace help
         }
         obj->Remove();
         return 1;
+    }
+
+    NavPoint::ObjectType GetNpObjectTypeByQuestType(help::QuestType questType)
+    {
+        // RVA 0x5557B0
+        if (questType == QUESTTYPE_STATIC)
+        {
+            return NavPoint::OBJECT_TYPE_STATIC_QUEST;
+        }
+        if (questType == QUESTTYPE_DYNAMIC)
+        {
+            return NavPoint::OBJECT_TYPE_DYNAMIC_QUEST;
+        }
+        return NavPoint::OBJECT_TYPE_INVALID;
     }
 
     ai::Vehicle* CreateVehicleFromPrototype(int prototypeId)

@@ -7,82 +7,88 @@ namespace m3d
     {
         class ButtonWnd;
         class LineWnd;
-    }
-}
+    }  // namespace ui
+}  // namespace m3d
 
-class MsgBox :  public m3d::ui::ModalWnd
+class MsgBox : public m3d::ui::ModalWnd
 {
 public:
-    class AuxInfo
+    int CreateMsgBox(CStr const& msg, CStr const& title, unsigned int flags);
+
+    struct AuxInfo
     {
-    public:
+        /* 0x0000 */ CStr m_wndTitleName;
+        /* 0x000c */ CStr m_wndMsgName;
+        /* 0x0018 */ CStr m_wndUpLineName;
+        /* 0x0024 */ CStr m_wndDownLineName;
+        /* 0x0030 */ CStr m_buttonName;
+        /* 0x003c */ CStr m_idioticEmbossName;
+        /* 0x0048 */ CStr m_wndFrameName;
+        /* 0x0054 */ CStr m_wndBgName;
+        AuxInfo(MsgBox::AuxInfo const&);
         AuxInfo();
-
-    public:
-        CStr m_wndTitleName = "wndTitle";
-        CStr m_wndMsgName = "wndMsg";
-        CStr m_wndUpLineName = "wndUpLine";
-        CStr m_wndDownLineName = "wndDownLine";
-        CStr m_buttonName = "button_";
-        CStr m_idioticEmbossName = "buttonEmboss_";
-        CStr m_wndFrameName = "wndFrame";
-        CStr m_wndBgName = "wndBg";
-    };
-
-public:
-    int CreateMsgBox(CStr const &,CStr const &,unsigned int);
-    virtual m3d::Class * GetClass() const ;
-    virtual m3d::Object * Clone();
-    virtual ~MsgBox();
-    static m3d::Class * GetBaseClass();
-    static m3d::Object * CreateObject();
+    }; /* size: 0x0060 */
 
 protected:
-    void SetIdioticEmbossesBounds(PointBase<float> const &);
-    MsgBox(MsgBox const &);
-    MsgBox();
-    void AddTitle();
-    void SetMsgBounds(PointBase<float> const &);
-    void AddMsg();
-    void AddLines();
-    void SetDownLineBounds();
-    PointBase<float> CalcSummaryButtonsSize() const ;
-    void Clear();
-    PointBase<float> CalcTitleSize() const ;
-    PointBase<float> CalcSummaryIdioticEmbossesSize() const ;
-    void SetUpLineBounds();
-    void AddMiscFignya();
-    void SetTitleBounds(PointBase<float> const &);
-    virtual int CloseModal(int);
-    PointBase<float> CalcMsgSize() const ;
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int CloseModal(int ret) override /* 0x124 */;
+    int LoadPattern();
     void ClearPattern();
+    int CreateFromPattern();
+    void Clear();
     void RecalcLayot();
+    void AddTitle();
+    void AddMsg();
+    void AddButtonsAndIdioticEmbosses();
+    void AddLines();
+    void AddMiscFignya();
+    PointBase<float> CalcTitleSize() const;
+    PointBase<float> CalcMsgSize() const;
+    PointBase<float> CalcSummaryButtonsSize() const;
+    PointBase<float> CalcSummaryIdioticEmbossesSize() const;
+    void CalcSelfWidthByChildrensMaxWidth(float maxChildControlsWidth);
+    void CalcSelfHeight();
+    void SetTitleBounds(PointBase<float> const& titleSz);
+    void SetUpLineBounds();
+    void SetMsgBounds(PointBase<float> const& msgSz);
+    void SetDownLineBounds();
+    void SetButtonsBounds(PointBase<float> const& buttonsSz);
+    void SetIdioticEmbossesBounds(PointBase<float> const& idioticEmbossesSz);
     void CenterOnScreen();
     void HackedExpandToScreen();
-    void CalcSelfWidthByChildrensMaxWidth(float);
-    void AddButtonsAndIdioticEmbosses();
-    void CalcSelfHeight();
-    int LoadPattern();
-    void SetButtonsBounds(PointBase<float> const &);
-    virtual int GameDataSetup();
-    int CreateFromPattern();
+
+    enum Btn
+    {
+        BTN_YES = 0,
+        BTN_NO = 1,
+        BTN_CANCEL = 2,
+        MAX_NUM_BUTTONS = 3,
+    };
+
+    /* 0x0224 */ m3d::ui::Wnd* m_wndTitle;
+    /* 0x0228 */ m3d::ui::Wnd* m_wndMsg;
+    /* 0x022c */ m3d::ui::LineWnd* m_wndUpLine;
+    /* 0x0230 */ m3d::ui::LineWnd* m_wndDownLine;
+    /* 0x0234 */ m3d::ui::ButtonWnd* m_buttons[3];
+    /* 0x0240 */ m3d::ui::Wnd* m_idioticEmbosses[3];
+    /* 0x024c */ m3d::ui::Wnd* m_wndFrame;
+    /* 0x0250 */ m3d::ui::Wnd* m_wndBg;
+
+    static m3d::ui::Wnd* m_pattern;
+    static int m_ref;
+    
+    /* 0x0254 */ unsigned int m_msgBoxFlags;
+    /* 0x0258 */ CStr m_msg;
+    /* 0x0264 */ CStr m_title;
+    /* 0x0270 */ MsgBox::AuxInfo m_aif;
+    MsgBox();
+    MsgBox(MsgBox const& rhs);
 
 public:
-    RT_CLASS_DECLARE(MsgBox);
-    static int m_ref;
-    static Wnd* m_pattern;
-
-private:
-    m3d::ui::Wnd *m_wndTitle = nullptr;
-    m3d::ui::Wnd *m_wndMsg = nullptr;
-    m3d::ui::LineWnd *m_wndUpLine = nullptr;
-    m3d::ui::LineWnd *m_wndDownLine = nullptr;
-    m3d::ui::ButtonWnd *m_buttons[3] = {nullptr};
-    m3d::ui::Wnd *m_idioticEmbosses[3] = {nullptr};
-    m3d::ui::Wnd *m_wndFrame = nullptr;
-    m3d::ui::Wnd *m_wndBg = nullptr;
-    unsigned int m_msgBoxFlags = 0;
-    CStr m_msg;
-    CStr m_title;
-    MsgBox::AuxInfo m_aif;
-};
+    virtual ~MsgBox() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    static m3d::Class m_classMsgBox;
+}; /* size: 0x02d0 */

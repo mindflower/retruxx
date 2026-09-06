@@ -10,6 +10,17 @@
 #include <ui/image.h>
 #include <server/objects/base/obj.h>
 #include <server/objects/base/objcontainer.h>
+#include <server/objects/base/prototypemanager.h>
+#include <server/objects/basket.h>
+#include <server/objects/cabin.h>
+#include <server/objects/gadget.h>
+#include <server/objects/guns/compoundgun.h>
+#include <server/objects/guns/gun.h>
+#include <server/objects/physicbodies/physicbody.h>
+#include <server/objects/vehicle.h>
+#include <server/objects/ware.h>
+#include <server/quest.h>
+#include <server/objects/player.h>
 
 RT_CLASS_EXPORTS_BEGIN(ContextModelWnd)
 RT_CLASS_EXPORTS_END;
@@ -216,11 +227,57 @@ void ContextModelWnd::ClearCurrentModelWnd()
     m_prototypeId = -1;
 }
 
-int ContextModelWnd::ShowImageByObjId0(int, bool)
+int ContextModelWnd::ShowImageByObjId0(int objId, bool bDestroyObjToShow)
 {
-    // TODO: dispatch on the object's class (vehicle/gun -> SetupForComplexObj,
-    // cabin/basket -> SetupForModel, else -> ShowImageByPrototypeId0).
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x513B30
+    if (bDestroyObjToShow)
+    {
+        DestroyObjToShow();
+    }
+    else if (m_objToShowId == -1 || m_objToShowId != objId)
+    {
+        // Showing something else now, so the object we spawned for the previous
+        // preview is no longer needed.
+        DestroyObjToShow();
+    }
+    ClearCurrentModelWnd();
+
+    ai::Obj* obj = ai::theObjects->GetEntityByObjId(objId);
+    if (!obj)
+    {
+        // An explicit "show nothing" counts as success; a bad id does not.
+        return objId == -1;
+    }
+
+    if (obj->IsKindOf(&ai::Vehicle::m_classVehicle) || obj->IsKindOf(&ai::Gun::m_classGun) ||
+        obj->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+    {
+        int const res = SetupForComplexObj(obj);
+        m_objId = objId;
+        return res;
+    }
+
+    if (obj->IsKindOf(&ai::Cabin::m_classCabin) || obj->IsKindOf(&ai::Basket::m_classBasket))
+    {
+        // A cabin or basket is drawn as a plain model, painted to match whatever
+        // vehicle it is mounted on (or the player's, when it is loose).
+        m3d::Object* parent = obj->GetParent();
+        ai::Vehicle* vehicle = (parent && parent->IsKindOf(&ai::Vehicle::m_classVehicle))
+                                   ? static_cast<ai::Vehicle*>(parent)
+                                   : (ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr);
+        auto const* prototype = static_cast<ai::PhysicBodyPrototypeInfo const*>(obj->GetPrototypeInfo());
+        if (!prototype)
+        {
+            return 0;
+        }
+        int const res = SetupForModel(prototype->m_engineModelName, vehicle ? vehicle->m_skinNumber : -1);
+        m_objId = objId;
+        return res;
+    }
+
+    int const res = ShowImageByPrototypeId0(obj->GetPrototypeId(), bDestroyObjToShow);
+    m_objId = objId;
+    return res;
 }
 
 ref_ptr<m3d::ui::Wnd> ContextModelWnd::CreateModelWnd(CStr const& className)
@@ -282,15 +339,88 @@ ai::Obj* ContextModelWnd::GetObjToShow() const
     return ai::theObjects->GetEntityByObjId(m_objToShowId);
 }
 
-int ContextModelWnd::ShowImageByPrototypeId0(int, bool)
+int ContextModelWnd::ShowImageByPrototypeId0(int prototypeId, bool bDestroyObjToShow)
 {
-    // TODO: dispatch on the prototype's class as ShowImageByObjId0 does.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x513CD0
+    if (bDestroyObjToShow)
+    {
+        DestroyObjToShow();
+        ClearCurrentModelWnd();
+    }
+    if (prototypeId == -1)
+    {
+        return 1;
+    }
+
+    ai::PrototypeInfo const* prototype = ai::thePrototypeManager->GetPrototypeInfo(prototypeId);
+    if (!prototype)
+    {
+        return 0;
+    }
+
+    if (prototype->IsPrototypeOf(&ai::Cabin::m_classCabin) || prototype->IsPrototypeOf(&ai::Basket::m_classBasket))
+    {
+        int const res = SetupForModel(static_cast<ai::PhysicBodyPrototypeInfo const*>(prototype)->m_engineModelName, 0);
+        m_prototypeId = prototypeId;
+        return res;
+    }
+
+    if (prototype->IsPrototypeOf(&ai::Vehicle::m_classVehicle) || prototype->IsPrototypeOf(&ai::Gun::m_classGun) ||
+        prototype->IsPrototypeOf(&ai::CompoundGun::m_classCompoundGun))
+    {
+        // These are assembled from parts, so an actual object has to be spawned
+        // before it can be posed and drawn.
+        if (!CreateObjToShow(prototypeId) || !GetObjToShow())
+        {
+            return 0;
+        }
+        int const res = ShowImageByObjId0(m_objToShowId, false);
+        m_prototypeId = prototypeId;
+        return res;
+    }
+
+    if (prototype->IsPrototypeOf(&ai::Gadget::m_classGadget))
+    {
+        auto const* gadget = static_cast<ai::GadgetPrototypeInfo const*>(prototype);
+        int const res = SetupForModel(gadget->GetModelName(), gadget->GetSkinNum());
+        m_prototypeId = prototypeId;
+        return res;
+    }
+
+    if (prototype->IsPrototypeOf(&ai::Ware::m_classWare))
+    {
+        int const res = SetupForModel(static_cast<ai::WarePrototypeInfo const*>(prototype)->GetModelName(), 0);
+        m_prototypeId = prototypeId;
+        return res;
+    }
+
+    // QuestItem has no class object to test against, so it is matched by name.
+    if (CStr::my_strcmp(prototype->m_className.c_str(), "QuestItem") == 0)
+    {
+        int const res = SetupForModel(static_cast<ai::QuestItemPrototypeInfo const*>(prototype)->GetModelName(), 0);
+        m_prototypeId = prototypeId;
+        return res;
+    }
+    return 0;
 }
 
-int ContextModelWnd::SetupForComplexObj(ai::Obj const*)
+int ContextModelWnd::SetupForComplexObj(ai::Obj const* o)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x513EF0
+    if ((m_gameDataFlags & 1) == 0 || !o)
+    {
+        return 0;
+    }
+    if (!o->IsKindOf(&ai::Vehicle::m_classVehicle) && !o->IsKindOf(&ai::Gun::m_classGun) &&
+        !o->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+    {
+        return 0;
+    }
+
+    // SetObjId is exactly the "store the id, and rebuild the node set now if we
+    // are already on screen" pair the shipped code inlines here.
+    m_wnd3dComplexModel->SetObjId(o->GetId());
+    return SetCurrentModelWnd(ref_ptr<m3d::ui::ImageWnd>(m_wnd3dComplexModel.get())) != 0;
 }
 
 int ContextModelWnd::CreateObjToShow(int prototypeId)
@@ -329,10 +459,26 @@ void ContextModelWnd::DestroyObjToShow()
     m_objId = -1;
 }
 
-int ContextModelWnd::SetupForModel(CStr const&, int)
+int ContextModelWnd::SetupForModel(CStr const& modelName, int skin)
 {
-    // TODO: needs ItemModelWnd::SetModelByName plus write access to ModelWnd::m_SkinNum.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x513FD0
+    if ((m_gameDataFlags & 1) == 0 || modelName.empty())
+    {
+        return 0;
+    }
+    if (skin == -1)
+    {
+        skin = 0;
+    }
+    if (!SetCurrentModelWnd(ref_ptr<m3d::ui::ImageWnd>(m_wnd3dSimpleModel.get())))
+    {
+        return 0;
+    }
+    // NOTE: the shipped code loads the model with skin 0 and then stamps the real
+    // skin straight onto m_SkinNum, rather than passing it to SetModelByName.
+    m_wnd3dSimpleModel->SetModelByName(modelName, 0, 0);
+    m_wnd3dSimpleModel->m_SkinNum = skin;
+    return 1;
 }
 
 int ContextModelWnd::SetCurrentModelWnd(ref_ptr<m3d::ui::ImageWnd> modelWnd)

@@ -115,9 +115,13 @@ m3d::Class* TakSebeQuestLogWnd::GetClass() const
     return RT_CLASS_LOCAL(TakSebeQuestLogWnd);
 }
 
-TakSebeQuestLogWnd::TakSebeQuestLogWnd(TakSebeQuestLogWnd const&)
+TakSebeQuestLogWnd::TakSebeQuestLogWnd(TakSebeQuestLogWnd const&) : TakSebeQuestLogWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped copy ctor (RVA 0x50B9D0) builds the base, constructs the
+    // aux info and nulls the four ref_ptrs, but - unlike the default ctor - never
+    // touches m_filter or the five raw child pointers, leaving them uninitialised.
+    // Delegating avoids reading that garbage while copying nothing, which is all
+    // the original does either.
 }
 
 TakSebeQuestLogWnd::TakSebeQuestLogWnd()

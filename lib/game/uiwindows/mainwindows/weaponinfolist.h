@@ -192,41 +192,38 @@ public:
     static m3d::Class m_classWeaponInfoWnd;
 }; /* size: 0x0250 */
 
-class WeaponGroupChoiceDlg :  public m3d::ui::ModalWnd
+class WeaponGroupChoiceDlg : public m3d::ui::ModalWnd
 {
 public:
-    class AuxInfo
+    static CStr __fastcall CreateTooltipForWeaponGroup(int groupId);
+    using ButtonVector = std::vector<m3d::ui::ButtonWnd*, std::allocator<m3d::ui::ButtonWnd*>>;
+
+    struct AuxInfo
     {
-    public:
+        /* 0x0000 */ CStr m_groupButtonName;
+        /* 0x000c */ unsigned int m_selTextColor;
+        AuxInfo(WeaponGroupChoiceDlg::AuxInfo const&);
         AuxInfo();
-
-    private:
-        CStr m_groupButtonName;
-        unsigned int m_selTextColor;
-    };
-
-public:
-    virtual m3d::Object * Clone();
-    static CStr CreateTooltipForWeaponGroup(int);
-    static m3d::Object * CreateObject();
-    static m3d::Class * GetBaseClass();
-    virtual ~WeaponGroupChoiceDlg();
-    virtual m3d::Class * GetClass() const ;
+    }; /* size: 0x0010 */
 
 protected:
-    WeaponGroupChoiceDlg();
-    WeaponGroupChoiceDlg(WeaponGroupChoiceDlg const &);
-    virtual int GameDataSetup();
-    void SelectButton(int);
-    virtual int OnKey(unsigned short,unsigned char,unsigned int);
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int idFrom, unsigned int message, m3d::AIParam const& data)
+        override /* 0x00 */;
+    virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override /* 0x00 */;
     void OnKeyBindingsChanged();
-    virtual int GameDataUpdate(void *,int);
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int,m3d::AIParam const &);
+    void SelectButton(int id);
+    /* 0x0224 */ std::vector<m3d::ui::ButtonWnd*, std::allocator<m3d::ui::ButtonWnd*>> m_groupButons;
+    /* 0x0234 */ WeaponGroupChoiceDlg::AuxInfo m_aif;
+    WeaponGroupChoiceDlg();
+    WeaponGroupChoiceDlg(WeaponGroupChoiceDlg const& rhs);
 
 public:
+    virtual ~WeaponGroupChoiceDlg() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
     RT_CLASS_DECLARE(WeaponGroupChoiceDlg);
-
-private:
-    std::vector<m3d::ui::ButtonWnd *> m_groupButons;
-    WeaponGroupChoiceDlg::AuxInfo m_aif;
-};
+}; /* size: 0x0244 */

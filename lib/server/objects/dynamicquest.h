@@ -76,7 +76,15 @@ namespace ai
     public:
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x98 */;
 
-        enum QuestStatus;
+        enum QuestStatus
+        {
+            STATUS_NOT_TAKEN = 0,
+            STATUS_PROCESSING = 1,
+            STATUS_COMPLETE = 2,
+            STATUS_FAILED = 3,
+            STATUS_FORGOTTEN = 4,
+            STATUS_NUM_STATES = 5,
+        };
 
     public:
         virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xac */;

@@ -7,6 +7,8 @@
 #include <server/objects/physicbodies/geoms/geom.h>
 #include <server/objects/physicbodies/geoms/sphereforintersection.h>
 
+class ContextModelWnd;
+
 namespace m3d
 {
     class DbgCounter;
@@ -34,6 +36,10 @@ namespace ai
     class PhysicObj : public Obj
     {
         friend class IntersectionManager;
+        // ContextModelWnd reads the skin number of the vehicle a cabin or basket
+        // is mounted on, so the preview matches the vehicle's paint job.
+        friend class ::ContextModelWnd;
+
     protected:
         virtual ~PhysicObj() override /* 0x00 */;
 

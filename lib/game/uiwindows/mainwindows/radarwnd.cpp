@@ -5,10 +5,17 @@
 #include "config.h"
 #include "electronicdigitalwnd.h"
 #include "core/kernel.h"
+#include "core/log.h"
 #include "core/console/console.h"
+#include "core/ini.h"
 #include <game/m3dgame.h>
+#include <game/uimanager/truxxuimanager.h>
+#include <game/uimisc/guihelper.h>
+#include <game/uimisc/levelinfo.h>
+#include <game/uimisc/objectcollection.h>
 #include <math/vector.h>
 #include "server/server.h"
+#include "server/objects/base/objcontainer.h"
 #include "server/objects/player.h"
 #include "server/objects/vehicle.h"
 #include "server/objects/staticautogun.h"
@@ -283,7 +290,7 @@ void RadarWnd::RadarItem::Draw(m3d::ui::DrawInfo const& di) const
 
 RadarWnd::AuxInfo::AuxInfo()
 {
-    // TODO: generated code
+    // RVA 0x52BE60 - verified field by field against the shipped constructor.
     // Initialize radar icon names
     char const* iconNames[] = {
         "RadarVehicleOwnSmall",     "RadarVehicleOwnLarge",     "RadarVehicleEnemySmall", "RadarVehicleEnemyLarge",
@@ -426,16 +433,22 @@ void RadarWnd::AllowTurrets(bool bAllow)
 
 void RadarWnd::AllowNavPoints(bool bAllow)
 {
+    // RVA 0x52F8D0 - note the rebuild runs unconditionally, so disallowing nav
+    // points here still repopulates m_navPointItems; as shipped.
     m_bNavPointsAllowed = bAllow;
-    // TODO: the shipped binary rebuilds the nav-point item list here (CreateNavPoints()).
+    CreateNavPoints();
 }
 
 void RadarWnd::AllowDistances(bool bAllow)
 {
+    // RVA 0x52F900
     m_bDistancesAllowed = bAllow;
     if (bAllow)
     {
-        // TODO: the shipped binary walks m_navPointItems calling AddDistance() for each here.
+        for (auto const& [npId, items] : m_navPointItems)
+        {
+            AddDistance(npId);
+        }
         return;
     }
 
@@ -800,203 +813,944 @@ RadarWnd::~RadarWnd()
     M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvDefaultRadarScanRadius);
 }
 
-// ---------------------------------------------------------------------------
-//  Not yet ported: nav-point / scene-graph, per-frame updates and the item
-//  add/remove/update plumbing (RadarWnd::AddObject / RemoveItem / UpdateObject
-//  / DrawItems helpers do not exist yet, and these depend on NavPointManager,
-//  LevelInfoManager and help::GetCurrentLevelName).
-// ---------------------------------------------------------------------------
+// ===========================================================================
+//  Setup / teardown driven by the game data protocol
+// ===========================================================================
 
-int RadarWnd::UpdateWorldsidesOnNewFrame()
+int RadarWnd::GameDataSetup()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x52CE40 - resolves every radar icon plus the three distance digitals
+    // (built from XML pattern windows) and records one NpDistance per nav-point
+    // type in m_distances.
+    if ((m_gameDataFlags & 2) == 0)
+    {
+        for (int i = 0; i < RADARICO_NUM_RADARICOS; ++i)
+        {
+            m_icoTextures[i] = M3D_APP->m_pInterfaceManager->GetIcoByName(m_aif.m_icoNames[i], 0);
+            M3D_RENDERER->ReferenceTexture(m_icoTextures[i]);
+        }
+        m_cameraSightTex = M3D_APP->m_pInterfaceManager->GetIcoByName(m_aif.m_cameraSightTexName, 0);
+        M3D_RENDERER->ReferenceTexture(m_cameraSightTex);
+        m_playerVehicleTex = M3D_APP->m_pInterfaceManager->GetIcoByName(m_aif.m_playerVehicleTexName, 0);
+        M3D_RENDERER->ReferenceTexture(m_playerVehicleTex);
+        m_highlightTex = M3D_APP->m_pInterfaceManager->GetIcoByName(m_aif.m_highlightTexName, 0);
+        M3D_RENDERER->ReferenceTexture(m_highlightTex);
+
+        int res = 1;
+        for (int i = 0; i < NavPoint::NAVPOINT_TYPE_NUM_NAVPOINT_TYPES; ++i)
+        {
+            CStr const& wndName = m_aif.m_wndsDistancesNames[i];
+            ElectronicDigitalWnd* wndDigital = nullptr;
+
+            m3d::Object* child = GetChildByName(wndName);
+            if (child && child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
+            {
+                wndDigital = static_cast<ElectronicDigitalWnd*>(m3d::g_Kernel->New("ElectronicDigitalWnd"));
+                if (!wndDigital)
+                {
+                    M3D_LOG_INFO(
+                        "Make control error: cannot create " + wndName +
+                        " - cannot find rtti class ElectronicDigitalWnd");
+                    res = 0;
+                }
+                else if (!wndDigital->CreateFromPattern(static_cast<m3d::ui::Wnd*>(child), true))
+                {
+                    M3D_LOG_INFO("Make control error: cannot create " + wndName + " from pattern class");
+                    res = 0;
+                }
+            }
+            else
+            {
+                M3D_LOG_INFO("Make control error: control " + wndName + " is not found or incorrect type");
+                res = 0;
+            }
+
+            m_distances.push_back(NpDistance(wndDigital, static_cast<NavPoint::NavPointType>(i)));
+            if (wndDigital)
+            {
+                wndDigital->SetDigitalSize(ElectronicDigitalWnd::DIGITAL_SIZE_SMALL);
+            }
+        }
+
+        if (res)
+        {
+            m_gameDataFlags |= 1u;
+        }
+    }
+
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("RadarWnd: error - fail to init because of a bad resource");
+        return 0;
+    }
+    return 1;
 }
 
-int RadarWnd::UpdateNavPointsOnNewFrame()
+int RadarWnd::GameDataUpdate(void* data, int dataType)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x52D600
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    switch (dataType)
+    {
+    case 28:
+        OnAddNavPoint(data);
+        break;
+    case 29:
+        OnDeleteNavPoint(data);
+        break;
+    case 85:
+        OnStartLevel();
+        break;
+    case 89:
+        UpdateOnNewFrame();
+        break;
+    }
+    return 1;
 }
 
-int RadarWnd::UpdateWorldside(Worldside)
+int RadarWnd::GameDataSave(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x52F9C0
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("RadarWnd::GameDataSave error - journal has been not properly inited");
+        return 0;
+    }
+    if (!xmlFile || !guiNode)
+    {
+        M3D_LOG_INFO("RadarWnd::GameDataSave error - invalid params");
+        return 0;
+    }
+
+    ref_ptr radarNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Radar");
+    guiNode->AddChild(radarNode);
+
+    radarNode->SetAttribute("ScanRadius", CStr(m_scanRadius).c_str());
+    radarNode->SetAttribute("NavPointsAllowed", CStr(m_bNavPointsAllowed).c_str());
+    radarNode->SetAttribute("VehiclesAllowed", CStr(m_bVehiclesAllowed).c_str());
+    radarNode->SetAttribute("TurretsAllowed", CStr(m_bTurretsAllowed).c_str());
+    radarNode->SetAttribute("DistancesAllowed", CStr(m_bDistancesAllowed).c_str());
+    return 1;
 }
 
-void RadarWnd::DrawCameraSight(m3d::ui::DrawInfo const&) const
+int RadarWnd::GameDataLoad(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-}
+    // RVA 0x52FC30
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("RadarWnd::GameDataLoad error - journal has been not properly inited");
+        return 0;
+    }
+    GameDataClear(false);
+    if (!xmlFile || !guiNode)
+    {
+        M3D_LOG_INFO("RadarWnd::GameDataLoad error - invalid params");
+        return 0;
+    }
 
-int RadarWnd::AddWorldside(Worldside)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+    ref_ptr radarNode = xmlFile->CreateNode();
+    guiNode->GetFirstChild(radarNode, "Radar");
+    if (radarNode->IsEmpty())
+    {
+        M3D_LOG_INFO("RadarWnd::GameDataLoad error - cannot find journal node");
+        return 0;
+    }
 
-void RadarWnd::DrawNavPoints(m3d::ui::DrawInfo const&) const
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+    float scanRadius = 0.0f;
+    bool bNavPointsAllowed = true;
+    bool bVehiclesAllowed = false;
+    bool bTurretsAllowed = false;
+    bool bDistancesAllowed = false;
+    m3d::SafeFloatAttrib(scanRadius, radarNode, "ScanRadius");
+    m3d::SafeBoolAttrib(bNavPointsAllowed, radarNode, "NavPointsAllowed");
+    m3d::SafeBoolAttrib(bVehiclesAllowed, radarNode, "VehiclesAllowed");
+    m3d::SafeBoolAttrib(bTurretsAllowed, radarNode, "TurretsAllowed");
+    m3d::SafeBoolAttrib(bDistancesAllowed, radarNode, "DistancesAllowed");
 
-void RadarWnd::CreateWorldSides()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-void RadarWnd::CreateNavPoints()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::RemoveNavPoint(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-void RadarWnd::DrawWorldsides(m3d::ui::DrawInfo const&) const
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::GameDataUpdate(void*, int)
-{
-    // TODO: dispatch on dataType 28/29/85/89 once OnAddNavPoint/OnDeleteNavPoint/
-    // OnStartLevel/UpdateOnNewFrame are ported.
-    return 0;
-}
-
-int RadarWnd::UpdateDistance(NavPoint::NavPointType)
-{
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: nav points go through the AllowNavPoints() sequence (assign, then
+    // rebuild the list) while vehicles and turrets are plain assignments and
+    // distances go through AllowDistances(); as shipped.
+    m_bNavPointsAllowed = bNavPointsAllowed;
+    m_scanRadius = scanRadius;
+    CreateNavPoints();
+    m_bVehiclesAllowed = bVehiclesAllowed;
+    m_bTurretsAllowed = bTurretsAllowed;
+    AllowDistances(bDistancesAllowed);
+    OnStartLevel();
+    return 1;
 }
 
 void RadarWnd::OnStartLevel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x52D6D0
+    CreateWorldSides();
+    if (m_bNavPointsAllowed)
+    {
+        CreateNavPoints();
+    }
 }
 
-int RadarWnd::OnDeleteNavPoint(void*)
+void RadarWnd::CreateWorldSides()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x52D770
+    ClearWorldsideItems();
+    for (int i = 0; i < WORLDSIDE_NUM_WORLDSIDES; ++i)
+    {
+        AddWorldside(static_cast<Worldside>(i));
+    }
 }
 
-int RadarWnd::GameDataLoad(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
+void RadarWnd::CreateNavPoints()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x52D7A0
+    ClearNavPointItems();
+
+    std::vector<int> const nps =
+        M3D_APP->m_pInterfaceManager->GetNavPointManager()->GetNavPointsForLevel(help::GetCurrentLevelName());
+    for (int i = 0; i < static_cast<int>(nps.size()); ++i)
+    {
+        AddNavPoint(nps[i]);
+    }
 }
 
-int RadarWnd::RemoveTurret(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::RemoveVehicle(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::AddTurret(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::AddVehicle(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::AddNavPoint(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::RemoveDistance(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::UpdateNavPoint(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-float RadarWnd::CalculateDistanceToNavPoint(int) const
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::GameDataSave(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::AddDistance(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-void RadarWnd::OnPaintOverChildren(m3d::ui::DrawInfo const&)
-{
-    // TODO: full radar composite draw (camera sight, worldsides, player vehicle,
-    // turrets, vehicles, nav points, highlight).
-}
-
-int RadarWnd::RemoveWorldside(Worldside)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::OnAddNavPoint(void*)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::UpdateDistancesOnNewFrame()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+// ===========================================================================
+//  Per-frame update
+// ===========================================================================
 
 int RadarWnd::UpdateOnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
-}
+    // RVA 0x52DA10
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
 
-int RadarWnd::UpdateTurretsOnNewFrame()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int RadarWnd::GameDataSetup()
-{
-    // TODO: implement RadarWnd::GameDataSetup
+    UpdateWorldsidesOnNewFrame();
+    if (m_bVehiclesAllowed && m_bVehiclesEnabled)
+    {
+        UpdateVehiclesOnNewFrame();
+    }
+    if (m_bTurretsAllowed && m_bTurretsEnabled)
+    {
+        UpdateTurretsOnNewFrame();
+    }
+    if (m_bNavPointsAllowed && m_bNavPointsEnabled)
+    {
+        UpdateNavPointsOnNewFrame();
+    }
+    if (m_bDistancesAllowed && m_bDistancesEnabled)
+    {
+        UpdateDistancesOnNewFrame();
+    }
     return 1;
 }
 
-CVector RadarWnd::GetWorldsideCoords(Worldside) const
+int RadarWnd::UpdateObjectsOnNewFrame(RadarItemMap& items, m3d::Class const* cls)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-}
+    // RVA 0x52DAB0 - syncs `items` with every live object of class `cls`: adds or
+    // refreshes the ones inside the scan radius, drops the rest, then removes the
+    // entries whose object no longer exists at all.
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (!cls || !cls->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
+    {
+        return 0;
+    }
 
-int RadarWnd::UpdateTurret(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+    std::set<int> const* os = M3D_APP->m_pInterfaceManager->GetObjectCollection().GetObjectsByClass(cls);
+    if (!os)
+    {
+        return 0;
+    }
 
-int RadarWnd::UpdateVehicle(int)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+    for (auto vIt = os->begin(); vIt != os->end(); ++vIt)
+    {
+        ai::Obj* o = ai::theObjects->GetEntityByObjId(*vIt);
+        if (!o || !o->IsKindOf(cls))
+        {
+            continue;
+        }
 
-void RadarWnd::DrawTurrets(m3d::ui::DrawInfo const&) const
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+        bool const known = items.find(o->GetId()) != items.end();
+        if (o->bIsVisible())
+        {
+            CVector const coord = FixCoord(static_cast<ai::PhysicObj*>(o)->GetPosition());
+            if (!IsPositionOutsideScanRadius(coord) && o != help::GetPlayerVehicle())
+            {
+                if (known)
+                {
+                    UpdateObject(o->GetId(), items);
+                }
+                else
+                {
+                    AddObject(o->GetId(), items);
+                }
+                continue;
+            }
+        }
+        if (known)
+        {
+            RemoveItem(items, o->GetId());
+        }
+    }
 
-void RadarWnd::DrawVehicles(m3d::ui::DrawInfo const&) const
-{
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto mIt = items.begin(); mIt != items.end();)
+    {
+        int const objId = mIt->first;
+        ++mIt;
+        if (os->find(objId) == os->end())
+        {
+            RemoveItem(items, objId);
+        }
+    }
+    return 1;
 }
 
 int RadarWnd::UpdateVehiclesOnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x52DFC0
+    return UpdateObjectsOnNewFrame(m_vehicleItems, &ai::Vehicle::m_classVehicle);
+}
+
+int RadarWnd::UpdateTurretsOnNewFrame()
+{
+    // RVA 0x52E010
+    return UpdateObjectsOnNewFrame(m_turretItems, &ai::StaticAutoGun::m_classStaticAutoGun);
+}
+
+int RadarWnd::UpdateNavPointsOnNewFrame()
+{
+    // RVA 0x52E880
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    int res = 1;
+    for (auto const& [npId, items] : m_navPointItems)
+    {
+        res &= UpdateNavPoint(npId);
+    }
+    return res;
+}
+
+int RadarWnd::UpdateWorldsidesOnNewFrame()
+{
+    // RVA 0x52EE90
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    int res = 1;
+    for (auto const& [side, items] : m_worldsideItems)
+    {
+        res &= UpdateWorldside(static_cast<Worldside>(side));
+    }
+    return res;
+}
+
+int RadarWnd::UpdateDistancesOnNewFrame()
+{
+    // RVA 0x52ECC0
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    int res = 1;
+    for (int i = NavPoint::NAVPOINT_TYPE_MAIN_QUEST; i < NavPoint::NAVPOINT_TYPE_NUM_NAVPOINT_TYPES; ++i)
+    {
+        res &= UpdateDistance(static_cast<NavPoint::NavPointType>(i));
+    }
+    return res;
+}
+
+// ===========================================================================
+//  Generic object items
+// ===========================================================================
+
+int RadarWnd::AddObject(int objId, RadarItemMap& items)
+{
+    // RVA 0x52DC70
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    ai::Obj* o = ai::theObjects->GetEntityByObjId(objId);
+    if (!o || !o->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
+    {
+        return 0;
+    }
+    if (items.find(objId) != items.end())
+    {
+        return 0;
+    }
+
+    PointBase<float> const radarCoord =
+        WorldToRadarCoords(FixCoord(static_cast<ai::PhysicObj*>(o)->GetPosition()), ITEMTYPE_OBJECT);
+
+    m3d::rend::TexHandle tex;
+    PointBase<float> icoSz{0.0f, 0.0f};
+    GetIcoForObject(o, tex, icoSz);
+
+    RadarItemVector itemsVector;
+    itemsVector.push_back(new RadarItem(tex, icoSz, radarCoord, 0.0f));
+    items.insert(RadarItemMap::value_type(objId, itemsVector));
+    return 1;
+}
+
+int RadarWnd::UpdateObject(int objId, RadarItemMap const& items)
+{
+    // RVA 0x52DE60
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    ai::Obj* o = ai::theObjects->GetEntityByObjId(objId);
+    if (!o || !o->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
+    {
+        return 0;
+    }
+
+    auto const mIt = items.find(objId);
+    if (mIt == items.end() || mIt->second.size() != 1 || !mIt->second[0])
+    {
+        return 0;
+    }
+    RadarItem* item = mIt->second[0];
+
+    item->m_coords = WorldToRadarCoords(FixCoord(static_cast<ai::PhysicObj*>(o)->GetPosition()), ITEMTYPE_OBJECT);
+
+    m3d::rend::TexHandle tex;
+    PointBase<float> icoSz{0.0f, 0.0f};
+    GetIcoForObject(o, tex, icoSz);
+    item->SetTexture(tex);
+    item->m_size = icoSz;
+    return 1;
+}
+
+int RadarWnd::RemoveObject(int objId, RadarItemMap& items)
+{
+    // RVA 0x52DFB0
+    return RemoveItem(items, objId);
+}
+
+int RadarWnd::RemoveItem(RadarItemMap& itemMap, int itemId)
+{
+    // RVA 0x52E060
+    auto const mIt = itemMap.find(itemId);
+    if (mIt == itemMap.end())
+    {
+        return 0;
+    }
+
+    for (auto*& item : mIt->second)
+    {
+        delete item;
+        item = nullptr;
+    }
+    itemMap.erase(mIt);
+    return 1;
+}
+
+int RadarWnd::AddVehicle(int vehicleId)
+{
+    // RVA 0x52DFE0
+    return AddObject(vehicleId, m_vehicleItems);
+}
+
+int RadarWnd::UpdateVehicle(int vehicleId)
+{
+    // RVA 0x52DFF0
+    return UpdateObject(vehicleId, m_vehicleItems);
+}
+
+int RadarWnd::RemoveVehicle(int vehicleId)
+{
+    // RVA 0x52E000
+    return RemoveItem(m_vehicleItems, vehicleId);
+}
+
+int RadarWnd::AddTurret(int turretId)
+{
+    // RVA 0x52E030
+    return AddObject(turretId, m_turretItems);
+}
+
+int RadarWnd::UpdateTurret(int turretId)
+{
+    // RVA 0x52E040
+    return UpdateObject(turretId, m_turretItems);
+}
+
+int RadarWnd::RemoveTurret(int turretId)
+{
+    // RVA 0x52E050
+    return RemoveItem(m_turretItems, turretId);
+}
+
+// ===========================================================================
+//  Nav points
+// ===========================================================================
+
+int RadarWnd::AddNavPoint(int npId)
+{
+    // RVA 0x52EA70
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    NavPoint const* np = M3D_APP->m_pInterfaceManager->GetNavPointManager()->GetNavPointById(npId);
+    if (!np)
+    {
+        return 0;
+    }
+    if (m_navPointItems.find(npId) != m_navPointItems.end())
+    {
+        return 0;
+    }
+    if (np->GetLevelName() != help::GetCurrentLevelName())
+    {
+        return 0;
+    }
+
+    CVector const* coordinate = np->GetCoordinate();
+    if (!coordinate)
+    {
+        return 0;
+    }
+
+    CVector const worldCoord = FixCoord(*coordinate);
+    PointBase<float> const radarCoord = WorldToRadarCoords(worldCoord, ITEMTYPE_NAVPOINT);
+
+    m3d::rend::TexHandle tex;
+    PointBase<float> icoSize{0.0f, 0.0f};
+    GetIcoForNavPoint(np->GetNavPointType(), worldCoord, tex, icoSize);
+
+    RadarItemVector items;
+    items.push_back(new RadarItem(tex, icoSize, radarCoord, 0.0f));
+    m_navPointItems.insert(RadarItemMap::value_type(npId, items));
+
+    if (m_bDistancesAllowed && m_bDistancesEnabled)
+    {
+        return AddDistance(npId);
+    }
+    return 1;
+}
+
+int RadarWnd::UpdateNavPoint(int npId)
+{
+    // RVA 0x52E8D0
+    auto const npIt = m_navPointItems.find(npId);
+    if (npIt == m_navPointItems.end())
+    {
+        return 0;
+    }
+
+    NavPoint const* np = M3D_APP->m_pInterfaceManager->GetNavPointManager()->GetNavPointById(npId);
+    if (!np)
+    {
+        return 0;
+    }
+
+    CVector const* coordinate = np->GetCoordinate();
+    if (!coordinate)
+    {
+        return 0;
+    }
+    CVector const worldCoord = FixCoord(*coordinate);
+
+    for (auto* item : npIt->second)
+    {
+        if (!item)
+        {
+            continue;
+        }
+
+        item->m_coords = WorldToRadarCoords(worldCoord, ITEMTYPE_NAVPOINT);
+        item->m_angle = GetIcoRotationAngle(item->m_coords);
+
+        m3d::rend::TexHandle tex;
+        PointBase<float> size{0.0f, 0.0f};
+        GetIcoForNavPoint(np->GetNavPointType(), worldCoord, tex, size);
+        item->SetTexture(tex);
+        item->m_size = size;
+    }
+    return 1;
+}
+
+int RadarWnd::RemoveNavPoint(int npId)
+{
+    // RVA 0x52EC80
+    int const res = RemoveItem(m_navPointItems, npId) & 1;
+    if (m_bDistancesAllowed && m_bDistancesEnabled)
+    {
+        return RemoveDistance(npId) & res;
+    }
+    return res;
+}
+
+int RadarWnd::OnAddNavPoint(void* data)
+{
+    // RVA 0x52F870 - the nav-point id lives at offset 52 of the message payload.
+    if (!data)
+    {
+        return 0;
+    }
+    if (!m_bNavPointsAllowed)
+    {
+        return 1;
+    }
+    return AddNavPoint(static_cast<int*>(data)[13]);
+}
+
+int RadarWnd::OnDeleteNavPoint(void* data)
+{
+    // RVA 0x52F890 - note this repeats RemoveNavPoint()'s body rather than
+    // calling it; behaviour is identical.
+    if (!data)
+    {
+        return 0;
+    }
+
+    int const npId = static_cast<int*>(data)[13];
+    int const res = RemoveItem(m_navPointItems, npId) & 1;
+    if (m_bDistancesAllowed && m_bDistancesEnabled)
+    {
+        return RemoveDistance(npId) & res;
+    }
+    return res;
+}
+
+// ===========================================================================
+//  Distance readouts
+// ===========================================================================
+
+int RadarWnd::AddDistance(int npId)
+{
+    // RVA 0x52ED70 - one digital readout per nav-point type, so adding a distance
+    // means pointing that type's readout at this nav point.
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (npId == -1)
+    {
+        return 0;
+    }
+
+    NavPoint const* np = M3D_APP->m_pInterfaceManager->GetNavPointManager()->GetNavPointById(npId);
+    if (!np)
+    {
+        return 0;
+    }
+
+    NavPoint::NavPointType const npType = np->GetNavPointType();
+    if (npType == NavPoint::NAVPOINT_TYPE_NUM_NAVPOINT_TYPES)
+    {
+        return 0;
+    }
+    return m_distances[npType].SetNavPointId(npId);
+}
+
+int RadarWnd::RemoveDistance(int npId)
+{
+    // RVA 0x52EDF0
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    for (int i = 0; i < static_cast<int>(m_distances.size()); ++i)
+    {
+        NpDistance& distance = m_distances[i];
+        if (distance.m_navPointId != npId)
+        {
+            continue;
+        }
+        if (distance.IsValid())
+        {
+            distance.m_navPointId = -1;
+            distance.m_wndDigital->Clear();
+            distance.Show(false);
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int RadarWnd::UpdateDistance(NavPoint::NavPointType npType)
+{
+    // RVA 0x52ED00
+    if ((m_gameDataFlags & 1) == 0 || npType < 0 || npType >= static_cast<int>(m_distances.size()))
+    {
+        return 0;
+    }
+
+    NpDistance& distance = m_distances[npType];
+    if (distance.m_navPointId == -1)
+    {
+        return 1;
+    }
+    return distance.SetDistance(CalculateDistanceToNavPoint(distance.m_navPointId));
+}
+
+float RadarWnd::CalculateDistanceToNavPoint(int npId) const
+{
+    // RVA 0x52F600
+    if (npId == -1)
+    {
+        return -1.0f;
+    }
+
+    NavPoint const* np = M3D_APP->m_pInterfaceManager->GetNavPointManager()->GetNavPointById(npId);
+    if (!np)
+    {
+        return -1.0f;
+    }
+
+    CVector const* coordinate = np->GetCoordinate();
+    if (!coordinate)
+    {
+        return -1.0f;
+    }
+    CVector const npPos = FixCoord(*coordinate);
+
+    ai::Vehicle const* vehicle = help::GetPlayerVehicle();
+    if (!vehicle)
+    {
+        return -1.0f;
+    }
+
+    CVector const playerPos = vehicle->GetPosition();
+    float const dx = npPos.x - playerPos.x;
+    float const dy = npPos.y - playerPos.y;
+    float const dz = npPos.z - playerPos.z;
+    return std::sqrt(dz * dz + dy * dy + dx * dx);
+}
+
+// ===========================================================================
+//  World sides
+// ===========================================================================
+
+int RadarWnd::AddWorldside(Worldside side)
+{
+    // RVA 0x52EF90
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (side >= WORLDSIDE_NUM_WORLDSIDES)
+    {
+        return 0;
+    }
+
+    PointBase<float> const radarCoord = WorldToRadarCoords(GetWorldsideCoords(side), ITEMTYPE_WORLDSIDE);
+
+    RadarItemVector items;
+    items.push_back(new RadarItem(GetIcoForWorldside(side), m_aif.m_icoSizeWorldside, radarCoord, 0.0f));
+    m_worldsideItems.insert(RadarItemMap::value_type(side, items));
+    return 1;
+}
+
+int RadarWnd::UpdateWorldside(Worldside side)
+{
+    // RVA 0x52EEE0
+    auto const wsIt = m_worldsideItems.find(side);
+    if (wsIt == m_worldsideItems.end())
+    {
+        return 0;
+    }
+    if (wsIt->second.size() != 1 || !wsIt->second[0])
+    {
+        return 0;
+    }
+
+    RadarItem* item = wsIt->second[0];
+    item->m_coords = WorldToRadarCoords(GetWorldsideCoords(side), ITEMTYPE_WORLDSIDE);
+    item->m_angle = GetIcoRotationAngle(item->m_coords);
+    return 1;
+}
+
+int RadarWnd::RemoveWorldside(Worldside side)
+{
+    // RVA 0x52F0C0
+    return RemoveItem(m_worldsideItems, side);
+}
+
+CVector RadarWnd::GetWorldsideCoords(Worldside side) const
+{
+    // RVA 0x52F0D0 - north comes from the level info; south is north turned by
+    // pi around the vertical axis. Both are reported relative to the player.
+    CVector north{0.0f, 0.0f, -1.0f};
+
+    LevelInfo const* levelInfo =
+        M3D_APP->m_pInterfaceManager->GetLevelInfoManager()->GetLevelInfoByName(help::GetCurrentLevelName());
+    if (levelInfo)
+    {
+        north = levelInfo->GetNorth();
+    }
+
+    float const s = std::sin(3.141592741012573f);
+    float const c = std::cos(3.141592741012573f);
+
+    CVector worldDirs[WORLDSIDE_NUM_WORLDSIDES];
+    worldDirs[WORLDSIDE_NORD] = north;
+    worldDirs[WORLDSIDE_SOUTH].x = c * north.x - north.z * s;
+    worldDirs[WORLDSIDE_SOUTH].y = north.y;
+    worldDirs[WORLDSIDE_SOUTH].z = north.z * c + s * north.x;
+
+    ai::Vehicle const* vehicle = help::GetPlayerVehicle();
+    if (side >= WORLDSIDE_NUM_WORLDSIDES || !vehicle)
+    {
+        return CVector{0.0f, 0.0f, 0.0f};
+    }
+
+    CVector const playerPos = vehicle->GetPosition();
+    return CVector{
+        worldDirs[side].x + playerPos.x, worldDirs[side].y + playerPos.y, worldDirs[side].z + playerPos.z};
+}
+
+// ===========================================================================
+//  Painting
+// ===========================================================================
+
+void RadarWnd::DrawItems(m3d::ui::DrawInfo const& di, RadarItemMap const& items) const
+{
+    // RVA 0x52F2C0
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    for (auto const& [itemId, itemVector] : items)
+    {
+        for (auto* item : itemVector)
+        {
+            if (item)
+            {
+                item->Draw(di);
+            }
+        }
+    }
+}
+
+void RadarWnd::DrawVehicles(m3d::ui::DrawInfo const& di) const
+{
+    // RVA 0x52F370
+    DrawItems(di, m_vehicleItems);
+}
+
+void RadarWnd::DrawTurrets(m3d::ui::DrawInfo const& di) const
+{
+    // RVA 0x52F380
+    DrawItems(di, m_turretItems);
+}
+
+void RadarWnd::DrawNavPoints(m3d::ui::DrawInfo const& di) const
+{
+    // RVA 0x52F390
+    DrawItems(di, m_navPointItems);
+}
+
+void RadarWnd::DrawWorldsides(m3d::ui::DrawInfo const& di) const
+{
+    // RVA 0x52F3A0
+    DrawItems(di, m_worldsideItems);
+}
+
+void RadarWnd::DrawCameraSight(m3d::ui::DrawInfo const& di) const
+{
+    // RVA 0x52F3C0 - the cone showing where the camera looks, rotated so that it
+    // trails the vehicle heading; hidden in fly-camera mode.
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    ai::Vehicle const* vehicle = help::GetPlayerVehicle();
+    if (!vehicle)
+    {
+        return;
+    }
+    if (M3D_APP->m_player.m_cameraMode == CM_FLYCAMERA)
+    {
+        return;
+    }
+
+    PointBase<float> const coord = m_aif.m_rotationCenter;
+    CVector const vehicleDir = vehicle->GetDirection();
+
+    float const halfW = m_aif.m_cameraSightSz.x * 0.5f;
+    float const halfH = m_aif.m_cameraSightSz.y * 0.5f;
+    float const xEdge = di.m_originalRect.x0;
+    float const yEdge = di.m_originalRect.y0;
+    float const cameraAngle = -std::atan2(vehicleDir.x, vehicleDir.z) - M3D_APP->m_curCamera.m_rotYaw;
+
+    if (!m_cameraSightTex.IsValid())
+    {
+        M3D_RENDERER->SetWhiteTexture(0);
+    }
+    else
+    {
+        M3D_RENDERER->SetTexture(0, m_cameraSightTex, -1.0);
+    }
+
+    M3D_APP->PutSpriteRelRot(
+        coord.x + xEdge,
+        (coord.y + yEdge) - halfH,
+        halfW,
+        halfH,
+        0xFFFFFFFF,
+        cameraAngle,
+        0.0,
+        halfH,
+        0.0,
+        0.0,
+        0.0);
+}
+
+void RadarWnd::OnPaintOverChildren(m3d::ui::DrawInfo const& di)
+{
+    // RVA 0x52F6D0
+    M3D_RENDERER->SetAlphaTest(M3D_ENGINE_CFG.m_alphaTestInterface.GetI());
+    M3D_RENDERER->SetStageState(0, m3d::rend::BM_COLOR, m3d::rend::TS_MODULATE);
+    M3D_RENDERER->SetStageState(0, m3d::rend::BM_ALPHA, m3d::rend::TS_MODULATE);
+    M3D_RENDERER->SetStageState(1, m3d::rend::BM_COLOR, m3d::rend::TS_NONE);
+    // NOTE: the shipped build repeats the previous call verbatim here (the second
+    // one was presumably meant to be BM_ALPHA); reproduced as-is.
+    M3D_RENDERER->SetStageState(1, m3d::rend::BM_COLOR, m3d::rend::TS_NONE);
+    M3D_RENDERER->PushBlend(m3d::rend::BM_ALPHA);
+    M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
+
+    DrawCameraSight(di);
+    DrawWorldsides(di);
+    DrawPlayerVehicle(di);
+    if (m_bTurretsAllowed && m_bTurretsEnabled)
+    {
+        DrawTurrets(di);
+    }
+    if (m_bVehiclesAllowed && m_bVehiclesEnabled)
+    {
+        DrawVehicles(di);
+    }
+    if (m_bNavPointsAllowed && m_bNavPointsEnabled)
+    {
+        DrawNavPoints(di);
+    }
+    DrawHighlight(di);
+
+    M3D_RENDERER->SetAlphaTest(0);
+    M3D_RENDERER->PopBlend();
+    M3D_RENDERER->PopZbState();
 }

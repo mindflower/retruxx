@@ -22,41 +22,6 @@
 #include "server/objects/base/objcontainer.h"
 #include "server/quest.h"
 
-namespace
-{
-    // ExMachina 1.02 NoCD: help::CanNavPointBeAddedOnQuest @ 0x555650. A nav point can be placed on
-    // a quest only while it is still active and its QuestInfo carries a coordinate for the level the
-    // player is currently on.
-    bool CanNavPointBeAddedOnQuest(help::QuestType questType, int questId)
-    {
-        if (questType == help::QUESTTYPE_NUM_QUEST_TYPES || questId == -1)
-        {
-            return false;
-        }
-        if (help::GetQuestUnifyStatusByQuestId(questType, questId) != help::QUESTSTATUS_NONCOMPLETE)
-        {
-            return false;
-        }
-
-        QuestInfoManager* qim = M3D_APP->m_pInterfaceManager->GetQuestInfoManager();
-        QuestInfo const* questInfo = nullptr;
-        if (questType == help::QUESTTYPE_STATIC)
-        {
-            questInfo = qim->GetQuestInfoForStaticQuest(questId);
-        }
-        else if (questType == help::QUESTTYPE_DYNAMIC)
-        {
-            questInfo = qim->GetQuestInfoForDynamicQuest(questId);
-        }
-        else
-        {
-            return false;
-        }
-
-        return questInfo && questInfo->GetCoordinateForMap(help::GetCurrentLevelName()) != nullptr;
-    }
-}  // namespace
-
 RT_CLASS_EXPORTS_BEGIN(QuestDizWnd)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(QuestDizWnd);
@@ -243,7 +208,7 @@ int QuestDizWnd::SetupNavPointBtn(help::QuestType questType, int questId)
 
 bool QuestDizWnd::NeedNavPointBtnBeAdded(help::QuestType questType, int questId) const
 {
-    if (!CanNavPointBeAddedOnQuest(questType, questId))
+    if (!help::CanNavPointBeAddedOnQuest(questType, questId))
     {
         return false;
     }

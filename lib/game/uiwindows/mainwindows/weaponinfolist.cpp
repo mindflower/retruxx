@@ -1375,19 +1375,50 @@ RT_CLASS_EXPORTS_BEGIN(WeaponGroupChoiceDlg)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WeaponGroupChoiceDlg);
 
+namespace
+{
+    // Group buttons are named btnGroup00 .. btnGroup04 and carry the ids
+    // GROUP_BTN_ID_BASE + groupId.
+    int const GROUP_BTN_ID_BASE = 600000;
+    int const NUM_WEAPON_GROUPS = 5;
+}  // namespace
+
 WeaponGroupChoiceDlg::AuxInfo::AuxInfo()
 {
+    // RVA 0x53E2C0
     m_groupButtonName = "btnGroup";
+    // NOTE: the shipped default really is 0x00000001, not an opaque ARGB colour;
+    // preserved as-is.
+    m_selTextColor = 1;
+}
+
+WeaponGroupChoiceDlg::AuxInfo::AuxInfo(WeaponGroupChoiceDlg::AuxInfo const& rhs) :
+    m_groupButtonName(rhs.m_groupButtonName),
+    m_selTextColor(rhs.m_selTextColor)
+{
 }
 
 m3d::Object* WeaponGroupChoiceDlg::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x537F50
+    return new WeaponGroupChoiceDlg(*this);
 }
 
-CStr WeaponGroupChoiceDlg::CreateTooltipForWeaponGroup(int)
+CStr WeaponGroupChoiceDlg::CreateTooltipForWeaponGroup(int groupId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x53E9C0
+    WeaponGroupManager* weaponGroupManager = M3D_APP->m_pInterfaceManager->GetWeaponGroupManager();
+    if (groupId == -1)
+    {
+        return {};
+    }
+
+    WeaponGroup const* group = weaponGroupManager->GetWeaponGroupById(groupId);
+    if (!group)
+    {
+        return {};
+    }
+    return help::CreateTooltipForImpulse(group->GetImpulseId());
 }
 
 m3d::Object* WeaponGroupChoiceDlg::CreateObject()
@@ -1400,10 +1431,7 @@ m3d::Class* WeaponGroupChoiceDlg::GetBaseClass()
     return RT_CLASS_LOCAL(ModalWnd);
 }
 
-WeaponGroupChoiceDlg::~WeaponGroupChoiceDlg()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+WeaponGroupChoiceDlg::~WeaponGroupChoiceDlg() = default;
 
 m3d::Class* WeaponGroupChoiceDlg::GetClass() const
 {
@@ -1412,41 +1440,144 @@ m3d::Class* WeaponGroupChoiceDlg::GetClass() const
 
 WeaponGroupChoiceDlg::WeaponGroupChoiceDlg() = default;
 
-WeaponGroupChoiceDlg::WeaponGroupChoiceDlg(WeaponGroupChoiceDlg const&)
+WeaponGroupChoiceDlg::WeaponGroupChoiceDlg(WeaponGroupChoiceDlg const&) : WeaponGroupChoiceDlg()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped copy ctor (RVA 0x53E440) is byte-identical to the default
+    // one - it builds a default ModalWnd, empties m_groupButons and default-builds
+    // the aux info, copying nothing from rhs.
 }
 
 int WeaponGroupChoiceDlg::GameDataSetup()
 {
-    // TODO: implement WeaponGroupChoiceDlg::GameDataSetup
-    // RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x53E480 - collects the five group buttons laid out in the XML.
+    int res = 1;
+    if ((m_gameDataFlags & 2) == 0)
+    {
+        for (int i = 0; i < NUM_WEAPON_GROUPS; ++i)
+        {
+            CStr strGroupNum;
+            strGroupNum.format("%02d", i);
+
+            m3d::Object* child = GetChildByName(m_aif.m_groupButtonName + strGroupNum);
+            if (child && child->IsKindOf(&m3d::ui::ButtonWnd::m_classButtonWnd))
+            {
+                m_groupButons.push_back(static_cast<m3d::ui::ButtonWnd*>(child));
+            }
+            else
+            {
+                M3D_LOG_INFO(
+                    "Get control error: control " + m_aif.m_groupButtonName + strGroupNum +
+                    " is not found or incorrect type");
+                res = 0;
+            }
+        }
+
+        if (res)
+        {
+            m_gameDataFlags |= 1u;
+        }
+    }
+
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        M3D_LOG_INFO("WeaponGroupChoiceDlg: error - fail to init because of a bad resource");
+        return 0;
+    }
     return 1;
 }
 
-void WeaponGroupChoiceDlg::SelectButton(int)
+void WeaponGroupChoiceDlg::SelectButton(int id)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x53E940
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    for (int i = 0; i < static_cast<int>(m_groupButons.size()); ++i)
+    {
+        m_groupButons[i]->SetTextColor(i == id ? m_aif.m_selTextColor : m_textColor);
+    }
 }
 
-int WeaponGroupChoiceDlg::OnKey(unsigned short, unsigned char, unsigned)
+int WeaponGroupChoiceDlg::OnKey(unsigned short key, unsigned char scanCode, unsigned state)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x53EA30 - Escape closes the dialog by re-showing it with "no group".
+    if (!state || !GetStation()->IsModal(this) || key != 1)
+    {
+        return m3d::ui::ModalWnd::OnKey(key, scanCode, state);
+    }
+
+    int groupId = -1;
+    M3D_APP->m_pInterfaceManager->ShowWindow(IW_DLG_WEAPON_GROUP_CHOICE, false, false, false, false, &groupId);
+    return 1;
 }
 
 void WeaponGroupChoiceDlg::OnKeyBindingsChanged()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x53E7E0
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+
+    for (int i = 0; i < static_cast<int>(m_groupButons.size()); ++i)
+    {
+        CStr tooltip = CreateTooltipForWeaponGroup(m_groupButons[i]->GetId() - GROUP_BTN_ID_BASE);
+        m_groupButons[i]->SetProperty(PROP_WND_TOOLTIP, &tooltip);
+    }
 }
 
-int WeaponGroupChoiceDlg::GameDataUpdate(void*, int)
+int WeaponGroupChoiceDlg::GameDataUpdate(void*, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x53E7B0
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (dataType == 17)
+    {
+        OnKeyBindingsChanged();
+    }
+    return 1;
+}
+
+int WeaponGroupChoiceDlg::OnWndNotify(
+    m3d::ui::Wnd* from,
+    unsigned idFrom,
+    unsigned message,
+    m3d::AIParam const& data)
+{
+    // RVA 0x53E8A0
+    if (m3d::ui::ModalWnd::OnWndNotify(from, idFrom, message, data))
+    {
+        return 1;
+    }
+
+    if (idFrom < static_cast<unsigned>(GROUP_BTN_ID_BASE) ||
+        idFrom >= static_cast<unsigned>(GROUP_BTN_ID_BASE + NUM_WEAPON_GROUPS))
+    {
+        return 0;
+    }
+
+    // NOTE: the group is taken from the sender window rather than from idFrom,
+    // even though the range test above used idFrom; preserved as shipped.
+    int const groupId = from->GetId() - GROUP_BTN_ID_BASE;
+    switch (message)
+    {
+    case 1:
+    {
+        int chosenGroupId = groupId;
+        M3D_APP->m_pInterfaceManager->ShowWindow(
+            IW_DLG_WEAPON_GROUP_CHOICE, false, false, false, false, &chosenGroupId);
+        return 1;
+    }
+    case 7:
+        SelectButton(groupId);
+        return 1;
+    case 8:
+        SelectButton(-1);
+        return 1;
+    }
     return 0;
-}
-
-int WeaponGroupChoiceDlg::OnWndNotify(m3d::ui::Wnd*, unsigned, unsigned, m3d::AIParam const&)
-{
-    RETRUXX_NOT_IMPLEMENTED;
 }
