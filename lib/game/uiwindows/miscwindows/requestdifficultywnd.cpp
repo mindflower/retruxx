@@ -12,6 +12,13 @@ RT_CLASS_DEFINE(RequestDifficultyWnd);
 
 RequestDifficultyWnd::AuxInfo::AuxInfo()
 {
+    // RVA 0x4C53B0
+    m_cbDifficultyLevelsName = "cbDifficultyLevels";
+}
+
+RequestDifficultyWnd::AuxInfo::AuxInfo(RequestDifficultyWnd::AuxInfo const& rhs) :
+    m_cbDifficultyLevelsName(rhs.m_cbDifficultyLevelsName)
+{
 }
 
 m3d::Class* RequestDifficultyWnd::GetClass() const
@@ -21,13 +28,11 @@ m3d::Class* RequestDifficultyWnd::GetClass() const
 
 m3d::Object* RequestDifficultyWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C5300
+    return new RequestDifficultyWnd(*this);
 }
 
-RequestDifficultyWnd::~RequestDifficultyWnd()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+RequestDifficultyWnd::~RequestDifficultyWnd() = default;
 
 m3d::Object* RequestDifficultyWnd::CreateObject()
 {
@@ -39,13 +44,17 @@ m3d::Class* RequestDifficultyWnd::GetBaseClass()
     return RT_CLASS_LOCAL(ModalWnd);
 }
 
-RequestDifficultyWnd::RequestDifficultyWnd(RequestDifficultyWnd const&)
+RequestDifficultyWnd::RequestDifficultyWnd() : m_cbDifficultyLevels(nullptr)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C5400
 }
 
-RequestDifficultyWnd::RequestDifficultyWnd()
+RequestDifficultyWnd::RequestDifficultyWnd(RequestDifficultyWnd const&) : RequestDifficultyWnd()
 {
+    // NOTE: the shipped copy ctor (RVA 0x4C54C0) builds the base and the aux info
+    // but - unlike the default ctor - never nulls m_cbDifficultyLevels, and copies
+    // nothing from rhs. Delegating avoids leaving that pointer uninitialised while
+    // copying just as little.
 }
 
 void RequestDifficultyWnd::FillDifficultyLevelsList()
@@ -64,21 +73,33 @@ void RequestDifficultyWnd::FillDifficultyLevelsList()
 
         m_cbDifficultyLevels->SetCurSel(-1);
         const auto level = M3D_APP->GetCurDifficultyLevel();
-        for (int i = 0; i < m_cbDifficultyLevels->GetCount(); ++i)
+        int const count = m_cbDifficultyLevels->GetCount();
+        for (int i = 0; i < count; ++i)
         {
             if (m_cbDifficultyLevels->GetItemData(i) == level)
             {
                 m_cbDifficultyLevels->SetCurSel(i);
-                return;
+                break;
             }
         }
-        m_cbDifficultyLevels->SetCurSel(0);
+        // RVA 0x4C5760: the fallback to the first row only fires when there is
+        // one - an empty list is left with no selection rather than selecting 0.
+        if (m_cbDifficultyLevels->GetCurSel() == -1 && count != 0)
+        {
+            m_cbDifficultyLevels->SetCurSel(0);
+        }
     }
 }
 
-int RequestDifficultyWnd::OnKey(unsigned short, unsigned char, unsigned)
+int RequestDifficultyWnd::OnKey(unsigned short key, unsigned char scanCode, unsigned state)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C5990 - Escape is swallowed so the difficulty prompt cannot be
+    // dismissed without answering it.
+    if (key == 1)
+    {
+        return 1;
+    }
+    return m3d::ui::ModalWnd::OnKey(key, scanCode, state);
 }
 
 int RequestDifficultyWnd::OnBeforeRemoveFromWndStation()

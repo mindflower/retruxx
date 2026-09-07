@@ -19,9 +19,11 @@ m3d::Class* RepositoryItemWnd::GetClass() const
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void RepositoryItemWnd::SetUpForRepositoryItem(ai::GeomRepositoryItem const&)
+void RepositoryItemWnd::SetUpForRepositoryItem(ai::GeomRepositoryItem const& item)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x46A260
+    m_repository = item.m_parentRepository;
+    SetItemObjId(item.GetObjId());
 }
 
 m3d::Class* RepositoryItemWnd::GetBaseClass()

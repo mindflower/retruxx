@@ -830,6 +830,7 @@ void TruxxUiManager::GUI_EndModalDlg()
 
 int TruxxUiManager::GUI_BindWindowsToEvents()
 {
+    // TODO: check this if some events not working
     int res = 1;
 
     res &= GUI_SetEventsForWindow(IW_DLG_BINDKEYS, {IE_EV_EV_KEYBINDINGS_CHANGED});
@@ -1061,9 +1062,9 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
     res &= GUI_SetEventsForWindow(IW_WND_PLAYER_VEHICLE_MODEL_LEFT, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
     res &=
-        GUI_SetEventsForWindow(IW_WND_PLAYER_VEHICLE_MODEL_RIGHT, {IE_EV_SM_PLAYER_MONEY_CHANGED, IE_CUST_START_LEVEL});
+        GUI_SetEventsForWindow(IW_WND_PLAYER_VEHICLE_MODEL_RIGHT, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_WORKSHOP_VEHICLE_MODEL, {IE_EV_SM_PLAYER_MONEY_CHANGED, IE_CUST_START_LEVEL});
+    res &= GUI_SetEventsForWindow(IW_WND_WORKSHOP_VEHICLE_MODEL, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
     res &= GUI_SetEventsForWindow(
         IW_WND_QUEST_LIST,

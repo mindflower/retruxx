@@ -22,9 +22,18 @@
 #include "server/objects/town.h"
 #include "server/objects/vehicle.h"
 #include "server/objects/workshop.h"
+#include "server/geomrepository.h"
+#include "server/geomrepositoryitem.h"
+#include "server/objects/base/complexphysicobj.h"
+#include "server/objects/base/prototypemanager.h"
 #include "server/objects/base/objcontainer.h"
 #include "server/objects/guns/compoundgun.h"
 #include "server/objects/guns/gun.h"
+#include "server/izvratrepository.h"
+#include "server/objects/guns/bulletlauncher.h"
+#include "server/objects/ware.h"
+#include "game/uimanager/uidefs.h"
+#include "game/uiwindows/charwindows/znayukakprodatwnd.h"
 #include "server/objects/physicbodies/vehiclepart.h"
 #include "server/server.h"
 #include "ui/ui.h"
@@ -415,12 +424,148 @@ namespace help
     bool IsChildObjCompatibleWithVehicle(int objId, int vehicleId)
     {
         // TODO(RVA 0x5544C0): dispatches to help::IsVehiclePartCompatibleWithVehicle /
-        // help::IsGadgetCompatibleWithVehicle by kind - neither leaf helper is ported
+        // help::IsGadgetCompatibleWithVehicle by kind - the gadget leaf is not ported
         // yet. Reported as "not compatible" so shop slots simply don't get the
-        // compatible-with-vehicle highlight until those are implemented.
+        // compatible-with-vehicle highlight until that is implemented.
         (void)objId;
         (void)vehicleId;
         return false;
+    }
+
+    void GetObjetsInRepositoryByResourceType(
+        ai::GeomRepository const* repository,
+        int resourceId,
+        std::vector<int, std::allocator<int>>& objIds)
+    {
+        // RVA 0x5530B0
+        objIds.clear();
+        if (!repository || resourceId == -1)
+        {
+            return;
+        }
+
+        int const numItems = static_cast<int>(repository->GetNumItems());
+        for (int i = 0; i < numItems; ++i)
+        {
+            ai::GeomRepositoryItem const item = repository->GetItem(i);
+            ai::Obj* obj = ai::theObjects->GetEntityByObjId(item.GetObjId());
+            if (!obj || !obj->IsKindOf(&ai::Obj::m_classObj))
+            {
+                continue;
+            }
+
+            ai::PrototypeInfo const* prototypeInfo = obj->GetPrototypeInfo();
+            if (prototypeInfo && ai::theResourceManager->bResourceIsKindOf(prototypeInfo->m_resourceId, resourceId))
+            {
+                objIds.push_back(obj->GetId());
+            }
+        }
+    }
+
+    bool IsVehiclePartCompatibleWithVehicle(int vpId, int vehicleId)
+    {
+        // RVA 0x5531B0 - walks the vehicle prototype's part slots and reports
+        // whether any still-attachable one accepts the part's resource.
+        if (vpId == -1 || vehicleId == -1)
+        {
+            return false;
+        }
+
+        ai::Obj* vehicleObj = ai::theObjects->GetEntityByObjId(vehicleId);
+        ai::Vehicle* vehicle = (vehicleObj && vehicleObj->IsKindOf(&ai::Vehicle::m_classVehicle))
+                                   ? static_cast<ai::Vehicle*>(vehicleObj)
+                                   : nullptr;
+
+        ai::Obj* vpObj = ai::theObjects->GetEntityByObjId(vpId);
+        ai::VehiclePart* vp = (vpObj && vpObj->IsKindOf(&ai::VehiclePart::m_classVehiclePart))
+                                  ? static_cast<ai::VehiclePart*>(vpObj)
+                                  : nullptr;
+
+        if (!vehicle || !vp)
+        {
+            return false;
+        }
+
+        ai::PrototypeInfo const* vpPrototypeInfo = ai::thePrototypeManager->GetPrototypeInfo(vp->GetPrototypeId());
+        if (!vpPrototypeInfo)
+        {
+            return false;
+        }
+        int const vpResourceId = vpPrototypeInfo->m_resourceId;
+
+        auto const* vehiclePrototypeInfo =
+            static_cast<ai::ComplexPhysicObjPrototypeInfo const*>(vehicle->GetPrototypeInfo());
+        if (!vehiclePrototypeInfo)
+        {
+            return false;
+        }
+
+        auto const& allPartNames = vehiclePrototypeInfo->GetAllPartNames();
+        for (int i = 0; i < static_cast<int>(allPartNames.size()); ++i)
+        {
+            CStr const& partName = allPartNames[i];
+            if (!vehicle->CanPartBeAttached(partName))
+            {
+                continue;
+            }
+            auto const* partDescription = vehiclePrototypeInfo->GetPartDescriptionByName(partName);
+            if (partDescription &&
+                ai::theResourceManager->bResourceIsKindOf(vpResourceId, partDescription->GetPartResourceId()))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void GetCompatibleVehiclePartsFromWorkshop(
+        int workshopId,
+        int vpResourceId,
+        int vehicleId,
+        std::vector<int, std::allocator<int>>& ids)
+    {
+        // RVA 0x553D70
+        ids.clear();
+        if (workshopId == -1 || vpResourceId == -1 || vehicleId == -1)
+        {
+            return;
+        }
+
+        ai::Obj* workshopObj = ai::theObjects->GetEntityByObjId(workshopId);
+        if (!workshopObj || !workshopObj->IsKindOf(&ai::Workshop::m_classWorkshop))
+        {
+            return;
+        }
+        auto* workshop = static_cast<ai::Workshop*>(workshopObj);
+
+        ai::Obj* vehicleObj = ai::theObjects->GetEntityByObjId(vehicleId);
+        if (!vehicleObj || !vehicleObj->IsKindOf(&ai::Vehicle::m_classVehicle))
+        {
+            return;
+        }
+
+        if (!ai::theResourceManager->bResourceIsKindOf(
+                vpResourceId, ai::theResourceManager->GetResourceId(CStr("VEHICLE_PART"))))
+        {
+            return;
+        }
+
+        ai::GeomRepository const* repository =
+            workshop->GetRepositoryByType(ai::Workshop::GetRepositoryTypeByResourceId(vpResourceId));
+        if (!repository)
+        {
+            return;
+        }
+
+        std::vector<int> allIds;
+        GetObjetsInRepositoryByResourceType(repository, vpResourceId, allIds);
+        for (int i = 0; i < static_cast<int>(allIds.size()); ++i)
+        {
+            if (IsVehiclePartCompatibleWithVehicle(allIds[i], vehicleId))
+            {
+                ids.push_back(allIds[i]);
+            }
+        }
     }
 
     void GetGunsForVehicle(int vehicleId, retruxx::vector<ai::Obj*>& guns)
@@ -895,6 +1040,300 @@ namespace help
             }
         }
         return ai::FT_NUM_FIRING_TYPES;
+    }
+
+    bool IsGunWithShellsPoolLimit(ai::Obj const* gun)
+    {
+        // RVA 0x5514A0
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->IsWithShellsPoolLimit();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->IsWithShellsPoolLimit();
+        }
+        return false;
+    }
+
+    bool CanGunBeReloaded(ai::Obj const* gun)
+    {
+        // RVA 0x5538B0
+        return IsGunWithCharging(gun) && IsGunWithShellsPoolLimit(gun);
+    }
+
+    int GetFuelPriceForOneUnit(int vehicleId, int townId)
+    {
+        // RVA 0x553940 - NOTE: the shipped body only checks that both ids resolve
+        // and then returns a flat 1; there is no per-town fuel pricing.
+        ai::Obj* vehicle = ai::theObjects->GetEntityByObjId(vehicleId);
+        ai::Obj* town = ai::theObjects->GetEntityByObjId(townId);
+        bool const bVehicle = vehicle && vehicle->IsKindOf(&ai::Vehicle::m_classVehicle);
+        bool const bTown = town && town->IsKindOf(&ai::Town::m_classTown);
+        return (bVehicle && bTown) ? 1 : -1;
+    }
+
+    unsigned int GetGunShellsPoolSize(ai::Obj const* gun)
+    {
+        // RVA 0x5516A0
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetShellsPoolSize();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetShellsPoolSize();
+        }
+        return 0;
+    }
+
+    ai::DamageType GetGunDamageType(ai::Obj const* gun)
+    {
+        // RVA 0x5516E0
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetDamageType();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetDamageType();
+        }
+        return ai::DAMAGE_NUM_TYPES;
+    }
+
+    float GetGunDamage(ai::Obj const* gun)
+    {
+        // RVA 0x551720
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetDamage();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetDamage();
+        }
+        return 0.0f;
+    }
+
+    float GetGunDurability(ai::Obj const* gun)
+    {
+        // RVA 0x554EA0 - a plain gun reads the durability component directly,
+        // a compound one asks the base class.
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->Durability().value().get();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetDurability();
+        }
+        return 0.0f;
+    }
+
+    float GetGunMaxDurability(ai::Obj const* gun)
+    {
+        // RVA 0x554EE0
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->Durability().maxValue().get();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetMaxDurability();
+        }
+        return 0.0f;
+    }
+
+    bool IsGunDurabilityEnoughForFiring(ai::Obj const* gun)
+    {
+        // RVA 0x554F20
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->IsDurabilityEnoughForFiring();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->IsDurabilityEnoughForFiring();
+        }
+        return false;
+    }
+
+    float GetGunAccuracy(ai::Obj const* gun)
+    {
+        // RVA 0x5517B0 - compound guns are followed down to their first sub-part
+        // until a bullet launcher turns up.
+        ai::Obj const* current = gun;
+        while (current)
+        {
+            if (auto const* bl = RT_DYNCAST(current, ai::BulletLauncher const))
+            {
+                return bl->GetAccuracyClamped();
+            }
+            auto const* cg = RT_DYNCAST(current, ai::CompoundGun const);
+            if (!cg)
+            {
+                // A gun that is not a bullet launcher has no spread to report.
+                return 100.0f;
+            }
+            current = cg->begin()->second.vp;
+        }
+        return 0.0f;
+    }
+
+    CStr DamageType2Str(ai::DamageType damageType)
+    {
+        // RVA 0x5513F0
+        struct DamageType2StrEntry
+        {
+            ai::DamageType m_damageType;
+            char const* m_damageName;
+        };
+        static DamageType2StrEntry const l_damageType2Str[] = {
+            {ai::DAMAGE_PIERCING, "Piercing"},
+            {ai::DAMAGE_BLAST, "Blast"},
+            {ai::DAMAGE_ENERGY, "Energy"},
+            {ai::DAMAGE_WATER, "Water"},
+        };
+
+        for (auto const& entry : l_damageType2Str)
+        {
+            if (entry.m_damageType == damageType)
+            {
+                return entry.m_damageName;
+            }
+        }
+        return {};
+    }
+
+    int GetBaseBuyPriceByObjId(int objId)
+    {
+        // RVA 0x550D70 - the list price, with no town or workshop coefficients
+        // applied.
+        if (objId == -1)
+        {
+            return -1;
+        }
+        ai::Obj const* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (!obj || !obj->IsKindOf(&ai::Obj::m_classObj))
+        {
+            return -1;
+        }
+        return static_cast<int>(obj->GetPrice(nullptr));
+    }
+
+    ObjectOwnerType GetObjectOwnerType(int objId)
+    {
+        // RVA 0x550EA0 - while the trade window is up it is the authority on who
+        // owns what; otherwise ownership follows the repository the object is in.
+        if (objId == -1)
+        {
+            return OWNER_INVALID;
+        }
+        ai::Obj* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (!obj)
+        {
+            return OWNER_INVALID;
+        }
+
+        ref_ptr<m3d::ui::Wnd> const wndZnayuKakProdat =
+            M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_ZNAYU_KAK_PRODAT);
+        if (wndZnayuKakProdat && wndZnayuKakProdat->IsKindOf(&ZnayuKakProdatWnd::m_classZnayuKakProdatWnd) &&
+            wndZnayuKakProdat->IsChildOf(M3D_APP))
+        {
+            switch (static_cast<ZnayuKakProdatWnd const*>(wndZnayuKakProdat.get())->GetItemBelong(objId))
+            {
+            case ZnayuKakProdatWnd::BELONG_PLAYER:
+                return OWNER_PLAYER;
+            case ZnayuKakProdatWnd::BELONG_WORKSHOP:
+                return OWNER_TOWN;
+            default:
+                return OWNER_INVALID;
+            }
+        }
+
+        ai::Vehicle* playerVehicle = GetPlayerVehicle();
+        ai::Vehicle* workshopVehicle = M3D_APP->m_pInterfaceManager->GetVehicleSellingInWorkshop();
+        ai::Town* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+
+        ai::GeomRepository const* parentRepository = obj->GetParentRepository();
+        if (parentRepository)
+        {
+            if (playerVehicle && parentRepository == playerVehicle->GetRepository())
+            {
+                return OWNER_PLAYER;
+            }
+            if (town)
+            {
+                auto const& buildings = town->GetAllBuildings();
+                for (int i = 0; i < static_cast<int>(buildings.size()); ++i)
+                {
+                    auto* building = buildings[i];
+                    if (!building || !building->IsKindOf(&ai::Workshop::m_classWorkshop))
+                    {
+                        continue;
+                    }
+                    auto* workshop = static_cast<ai::Workshop*>(building);
+                    for (int type = ai::WORKSHOP_GOODS; type < ai::WORKSHOP_NUM_TYPES; ++type)
+                    {
+                        if (parentRepository ==
+                            workshop->GetRepositoryByType(static_cast<ai::WorkshopRepositoryType>(type)))
+                        {
+                            return OWNER_TOWN;
+                        }
+                    }
+                }
+                if (workshopVehicle && parentRepository == workshopVehicle->GetRepository())
+                {
+                    return OWNER_TOWN;
+                }
+                return OWNER_INVALID;
+            }
+            return OWNER_OTHER;
+        }
+
+        // Loose objects: a vehicle, part or gadget still counts as "other",
+        // anything else has no owner at all.
+        if (obj->IsKindOf(&ai::Vehicle::m_classVehicle) || obj->IsKindOf(&ai::VehiclePart::m_classVehiclePart) ||
+            obj->IsKindOf(&ai::Gadget::m_classGadget))
+        {
+            return OWNER_OTHER;
+        }
+        return OWNER_INVALID;
+    }
+
+    int GetPriceSmart(int objId)
+    {
+        // RVA 0x551180
+        if (objId == -1)
+        {
+            return -1;
+        }
+
+        ref_ptr<m3d::ui::Wnd> const wndZnayuKakProdat =
+            M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_ZNAYU_KAK_PRODAT);
+        if (wndZnayuKakProdat && wndZnayuKakProdat->IsKindOf(&ZnayuKakProdatWnd::m_classZnayuKakProdatWnd) &&
+            wndZnayuKakProdat->IsChildOf(M3D_APP))
+        {
+            return static_cast<ZnayuKakProdatWnd const*>(wndZnayuKakProdat.get())->GetItemCost(objId);
+        }
+
+        ai::Town* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+        switch (GetObjectOwnerType(objId))
+        {
+        case OWNER_PLAYER:
+            if (town)
+            {
+                return GetSellPriceByObjId(objId, town->GetId());
+            }
+            break;
+        case OWNER_TOWN:
+            return town ? GetBuyPriceByObjId(objId, town->GetId()) : GetBaseBuyPriceByObjId(objId);
+        case OWNER_OTHER:
+            break;
+        default:
+            return -1;
+        }
+        return ai::GetIntPrice(static_cast<float>(GetBaseBuyPriceByObjId(objId)) * 0.5f);
     }
 
     float Angle0To2Pi(float angle)

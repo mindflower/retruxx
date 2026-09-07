@@ -1,11 +1,16 @@
 #include "cbwnd.h"
+#include "izvratrepositorywnd.h"
 #include "vehiclepartwnd.h"
+#include "core/kernel.h"
 #include "core/log.h"
 #include <game/m3dgame.h>
+#include <game/uimanager/truxxuimanager.h>
+#include <game/uimanager/uidefs.h>
 #include <i_event.h>
 #include <ui/image.h>
 #include <server/objects/base/objcontainer.h>
 #include <server/objects/physicbodies/vehiclepart.h>
+#include <server/resourcemanager.h>
 
 RT_CLASS_EXPORTS_BEGIN(CBWnd)
 RT_CLASS_EXPORTS_END;
@@ -101,8 +106,9 @@ void CBWnd::UpdateOnMainPartChanged()
 
 void CBWnd::SetupChildVehicleParts()
 {
-    // Empty in the shipped game (RVA 0x4408C0) - the per-part child window
-    // subsystem (CreateChildVehiclePartWindow) is never actually driven.
+    // Empty in the shipped game (RVA 0x4408C0): the base class has no child
+    // parts of its own. BasketWnd and CabinWnd override this and do drive
+    // CreateChildVehiclePartWindow.
 }
 
 void CBWnd::ClearChildVehicleParts()
@@ -248,18 +254,73 @@ int CBWnd::OnAfterRemoveFromWndStation()
     return m3d::ui::Wnd::OnAfterRemoveFromWndStation();
 }
 
-int CBWnd::CreateChildVehiclePartWindow(CStr const&, PointBase<float> const&)
+int CBWnd::CreateChildVehiclePartWindow(CStr const& partName, PointBase<float> const& origin)
 {
-    // RVA 0x440990: spawns a VehiclePartWnd for a child vehicle part - resolves
-    // its resource via the ResourceManager, sizes it against the player
-    // repository's cell size, Creates it, then wires it up through several
-    // more virtual calls on the new VehiclePartWnd (matching offsets in
-    // ItemWnd/VehiclePartWnd's combined vtable, but with argument types Hex-Rays
-    // cannot recover reliably here) before inserting it into
-    // m_wndChildVehicleParts and registering it with the interface manager.
-    // Left unimplemented rather than guessed: it is confirmed dead code in the
-    // shipped game (SetupChildVehicleParts, its only caller, is an empty
-    // function), so there is no observable behaviour to verify a
-    // reconstruction against.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x440990 - builds the little VehiclePartWnd that sits on top of the
+    // cabin/basket picture for one of its child parts (a gun, a cargo slot).
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    int const resourceId =
+        ai::theResourceManager->GetResourceId(ai::theResourceManager->GetResourceNameByVehiclePartName(partName));
+    if (resourceId == -1)
+    {
+        return 0;
+    }
+
+    auto* wnd = static_cast<VehiclePartWnd*>(M3D_KERNEL->New("VehiclePartWnd"));
+    if (!wnd)
+    {
+        return 0;
+    }
+
+    // The window is sized in repository cells, so the cell size comes from the
+    // player's inventory window rather than from anything local.
+    PointBase<int> const geomSize = ai::theResourceManager->GetResource(resourceId)->GetGeomSize();
+
+    ref_ptr<m3d::ui::Wnd> const wndPlayerRepository =
+        M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_PLAYERVEHICLE_INVENTORY);
+
+    PointBase<float> cellSz{0.0f, 0.0f};
+    if (wndPlayerRepository && wndPlayerRepository->IsKindOf(&IzvratRepositoryWnd::m_classIzvratRepositoryWnd))
+    {
+        cellSz = static_cast<RepositoryWnd const*>(wndPlayerRepository.get())->GetCellSize();
+    }
+
+    BoundsBase<float> b;
+    b.x0 = origin.x;
+    b.y0 = origin.y;
+    b.width = static_cast<float>(geomSize.x) * cellSz.x;
+    b.height = static_cast<float>(geomSize.y) * cellSz.y;
+
+    if (!wnd->Create(CStr(), 0x200u, b, 0))
+    {
+        wnd->DecRef();
+        return 0;
+    }
+
+    wnd->SetPane(m_cbAif.m_vehiclePartPaneName);
+    wnd->SetPaneFlags(6);
+    wnd->SetVehicleId(m_vehicleId);
+    wnd->SetPartName(partName);
+
+    AddChild(wnd);
+    MoveChildToFirstPosition(wnd);
+    m_wndChildVehicleParts.insert(VehiclePartPair(partName, wnd));
+
+    int guiId = -1;
+    M3D_APP->m_pInterfaceManager->AddWindow(wnd, guiId, false, false);
+
+    // The part window listens for the vehicle/repository events the character
+    // screen raises while parts are moved around.
+    std::vector<int> events;
+    for (int event = 91; event <= 98; ++event)
+    {
+        events.push_back(event);
+    }
+    events.push_back(65);
+    M3D_APP->m_pInterfaceManager->SetEventsForWindow(guiId, events);
+    return 1;
 }

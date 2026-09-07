@@ -20,6 +20,7 @@ namespace ai
     class Town;
     class Building;
     class Vehicle;
+    class GeomRepository;
 }
 namespace m3d
 {
@@ -46,6 +47,14 @@ namespace help
         QUESTSTATUS_FAILED = 0x2,
         QUESTSTATUS_NUM_QUESTSTATUSES = 0x3,
         QUESTSTATUS_INVALID = 0x3,
+    };
+
+    enum ObjectOwnerType
+    {
+        OWNER_PLAYER = 0,
+        OWNER_TOWN = 1,
+        OWNER_OTHER = 2,
+        OWNER_INVALID = 3,
     };
 
     enum BlackWightTolerance
@@ -180,6 +189,27 @@ namespace help
     // with the vehicle `vehicleId`.
     bool IsChildObjCompatibleWithVehicle(int objId, int vehicleId);
 
+    // Object ids of everything sitting in `repository` whose prototype resource
+    // is a kind of `resourceId`. `objIds` is cleared first.
+    void GetObjetsInRepositoryByResourceType(
+        ai::GeomRepository const* repository,
+        int resourceId,
+        std::vector<int, std::allocator<int>>& objIds);
+
+    // True when the vehicle has at least one attachable part slot whose resource
+    // the vehicle part `vpId` is a kind of.
+    bool IsVehiclePartCompatibleWithVehicle(int vpId, int vehicleId);
+
+    // Object ids of the vehicle parts on sale in `workshopId` (in the repository
+    // that deals in `vpResourceId`) that fit the vehicle `vehicleId`. `ids` is
+    // cleared first, and stays empty for anything that is not a workshop, not a
+    // vehicle, or a resource that is not a VEHICLE_PART.
+    void GetCompatibleVehiclePartsFromWorkshop(
+        int workshopId,
+        int vpResourceId,
+        int vehicleId,
+        std::vector<int, std::allocator<int>>& ids);
+
     // Projects a world-space point into normalized ("relative") screen space,
     // i.e. the same coordinate space m3d::ui::Wnd bounds live in. (ExMachina
     // 1.02 NoCD RVA 0x154350.)
@@ -207,6 +237,43 @@ namespace help
     ai::Building* GetWorkshopForTown(ai::Town const*);
 
     ai::FiringTypes GetGunFiringType(ai::Obj const* gun);
+
+    // More of the same Gun / CompoundGun dispatchers.
+    bool IsGunWithShellsPoolLimit(ai::Obj const* gun);
+    // True for a gun that both charges and draws from a limited shell pool, i.e.
+    // one the workshop can actually reload.
+    bool CanGunBeReloaded(ai::Obj const* gun);
+    // Price of one unit of fuel for `vehicleId` in `townId`; -1 when either does
+    // not resolve.
+    int GetFuelPriceForOneUnit(int vehicleId, int townId);
+    unsigned int GetGunShellsPoolSize(ai::Obj const* gun);
+    ai::DamageType GetGunDamageType(ai::Obj const* gun);
+    float GetGunDamage(ai::Obj const* gun);
+    float GetGunDurability(ai::Obj const* gun);
+    float GetGunMaxDurability(ai::Obj const* gun);
+    bool IsGunDurabilityEnoughForFiring(ai::Obj const* gun);
+    // Descends through compound guns to the first bullet launcher and reports its
+    // clamped accuracy; 100 for a gun that is not a bullet launcher at all, 0 for
+    // null or a compound with nothing in it.
+    float GetGunAccuracy(ai::Obj const* gun);
+
+    // Localizable name of a damage type ("Piercing", "Blast", "Energy",
+    // "Water"); empty for anything else.
+    CStr DamageType2Str(ai::DamageType damageType);
+
+    // Who the object currently belongs to, used to decide whether a price is a
+    // buy price or a sell price.
+    ObjectOwnerType GetObjectOwnerType(int objId);
+
+    // The object's undiscounted list price (Obj::GetPrice with no coefficient
+    // provider); -1 when objId does not resolve.
+    int GetBaseBuyPriceByObjId(int objId);
+
+    // The price to show for `objId` in whatever context it is being looked at:
+    // the trade window's own valuation when that window is up, otherwise the
+    // town's sell price for the player's goods, its buy price for the town's, and
+    // half the list price for anything else.
+    int GetPriceSmart(int objId);
 
     // Normalizes an angle (radians) to [0, 2*pi).
     float Angle0To2Pi(float angle);

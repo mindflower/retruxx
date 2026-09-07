@@ -65,19 +65,19 @@ protected:
         MAX_NUM_BUTTONS = 3,
     };
 
-    /* 0x0224 */ m3d::ui::Wnd* m_wndTitle;
-    /* 0x0228 */ m3d::ui::Wnd* m_wndMsg;
-    /* 0x022c */ m3d::ui::LineWnd* m_wndUpLine;
-    /* 0x0230 */ m3d::ui::LineWnd* m_wndDownLine;
-    /* 0x0234 */ m3d::ui::ButtonWnd* m_buttons[3];
-    /* 0x0240 */ m3d::ui::Wnd* m_idioticEmbosses[3];
-    /* 0x024c */ m3d::ui::Wnd* m_wndFrame;
-    /* 0x0250 */ m3d::ui::Wnd* m_wndBg;
+    /* 0x0224 */ m3d::ui::Wnd* m_wndTitle = nullptr;
+    /* 0x0228 */ m3d::ui::Wnd* m_wndMsg = nullptr;
+    /* 0x022c */ m3d::ui::LineWnd* m_wndUpLine = nullptr;
+    /* 0x0230 */ m3d::ui::LineWnd* m_wndDownLine = nullptr;
+    /* 0x0234 */ m3d::ui::ButtonWnd* m_buttons[3] = {};
+    /* 0x0240 */ m3d::ui::Wnd* m_idioticEmbosses[3] = {};
+    /* 0x024c */ m3d::ui::Wnd* m_wndFrame = nullptr;
+    /* 0x0250 */ m3d::ui::Wnd* m_wndBg = nullptr;
 
     static m3d::ui::Wnd* m_pattern;
     static int m_ref;
     
-    /* 0x0254 */ unsigned int m_msgBoxFlags;
+    /* 0x0254 */ unsigned int m_msgBoxFlags = 0;
     /* 0x0258 */ CStr m_msg;
     /* 0x0264 */ CStr m_title;
     /* 0x0270 */ MsgBox::AuxInfo m_aif;

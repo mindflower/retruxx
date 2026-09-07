@@ -346,13 +346,11 @@ namespace m3d
             {
                 res &= wnd->OnAfterAddToWndStation();
             }
-            if (IsAnimatingNow() && m_currentAnimation.m_purpose == AnimationInfo::PURPOSE_SHOW ||
-                !m_wndStation->IsAnimationEnabled() || !m_onShowAnimation.CanAnimate())
+            if ((!IsAnimatingNow() || m_currentAnimation.m_purpose != AnimationInfo::PURPOSE_SHOW) &&
+                GetStation()->IsAnimationEnabled() && m_onShowAnimation.CanAnimate())
             {
-                return res;
+                Wnd::StartAnimation(m_onShowAnimation, IsAnimatingNow());
             }
-
-            StartAnimation(m_onShowAnimation, IsAnimatingNow());
             return res;
         }
 
