@@ -1,5 +1,7 @@
 #include "izvratrepositorywnd.h"
 
+#include <algorithm>
+
 #include <m3dapp.h>
 #include <ui/frame.h>
 #include <ui/ui_srv.h>
@@ -164,23 +166,222 @@ void IzvratRepositoryWnd::FindPerimeter(
     }
 }
 
+namespace
+{
+    // RVA 0x45A590. The name is the shipped one, but this is a unary predicate
+    // rather than a comparator: it answers "is this one of the four straight
+    // bars?", which is all std::partition needs to bring the bars in front of
+    // the corners.
+    bool LessByTexId(IzvratRepositoryWnd::FrameSegment const& segment)
+    {
+        return segment.m_frameTexId == 0 || segment.m_frameTexId == 1 || segment.m_frameTexId == 2 ||
+               segment.m_frameTexId == 3;
+    }
+}  // namespace
+
 void IzvratRepositoryWnd::CalculateSegmentsBounds(
-    std::map<int, int, std::less<int>, std::allocator<std::pair<int const, int>>> const& /*perimeterCells*/,
+    std::map<int, int, std::less<int>, std::allocator<std::pair<int const, int>>> const& perimeterCells,
     std::vector<IzvratRepositoryWnd::FrameSegment, std::allocator<IzvratRepositoryWnd::FrameSegment>>& frameSegments)
 {
-    // TODO(RVA 0x45A5B0): the shipped IzvratRepositoryWnd::CalculateSegmentsBounds walks
-    // every perimeter cell and, from its 8-neighbour perimeter bitmask, emits 1..3
-    // decorative FrameSegment{texId, rect} entries (12 border tiles: 0 = left, 1 = top,
-    // 2 = right, 3 = bottom, 4..7 = corners) laid out from the pane Frame metrics
-    // (m_barTexWidth / m_barUsedWidth / m_cornerSize), then offsets every rect by
-    // m_barTexWidth and std::partition's the edge tiles ahead of the corner tiles
-    // (LessByTexId). The Hex-Rays output for this ~400-line float-geometry routine has
-    // corrupted register/stack tracking (dozens of aliased float temporaries, terms
-    // like "cellB.x0 - cellB.width"), so it cannot be reproduced faithfully from the
-    // decompile. Clearing the list keeps the window fully functional - the grid, the
-    // drag "bunch" and the items all render; only the cosmetic irregular border is
-    // absent until this is reconstructed from the game's pane definitions.
+    // RVA 0x45A5B0. Turns the perimeter bitmask FindPerimeter recorded for each
+    // cell into the decorative border tiles DrawFrame later draws. The bit
+    // numbering is FindPerimeter's neighbour order:
+    //
+    //     0 = NW   1 = N   2 = NE
+    //     7 = W            3 = E
+    //     6 = SW   5 = S   4 = SE
+    //
+    // and a set bit means that neighbour is missing, i.e. the frame has to run
+    // along that side. Tile ids index Frame::m_textures: 0 = left bar, 1 = top
+    // bar, 2 = right bar, 3 = bottom bar, 4 = top-left corner, 5 = top-right,
+    // 6 = bottom-left, 7 = bottom-right.
     frameSegments.clear();
+
+    auto* rep = RT_DYNCAST(m_repository, ai::IzvratRepository);
+    if (!rep)
+    {
+        return;
+    }
+    m3d::ui::Pane* pane = GetGfxServer()->GetPane(m_paneName);
+    if (!pane)
+    {
+        return;
+    }
+    m3d::ui::Frame* frame = pane->m_frame[0];
+    if (!frame)
+    {
+        return;
+    }
+
+    float const frameW = static_cast<float>(frame->m_barTexWidth);
+    float const frameUsedW = static_cast<float>(frame->m_barUsedWidth);
+    float const cornerSz = static_cast<float>(frame->m_cornerSize);
+
+    for (PerimeterCellsMap::const_iterator pIt = perimeterCells.begin(); pIt != perimeterCells.end(); ++pIt)
+    {
+        int const maxX = rep->GetMaxGeomSize().x;
+        int const cx = pIt->first % maxX;
+        int const cy = pIt->first / maxX;
+        BoundsBase<float> const cellB = GeomToWndBounds(rep->ToGeomSzRelative(BoundsBase<int>(cx, cy, cx + 1, cy + 1)));
+
+        float const cellRight = cellB.x0 + cellB.width;
+        float const cellBottom = cellB.y0 + cellB.height;
+        int const perimeterSide = pIt->second;
+
+        // The four straight edges: three neighbours in a row are missing.
+        if (perimeterSide == 7)  // NW | N | NE
+        {
+            float const y0 = cellB.y0 - frameUsedW;
+            BoundsBase<float> const topB(cellB.x0, y0, cellRight, y0 + frameW);
+            frameSegments.push_back(FrameSegment(1, topB));
+        }
+        else if (perimeterSide == 0x1C)  // NE | E | SE
+        {
+            float const x0 = cellRight + frameUsedW - frameW;
+            BoundsBase<float> const rightB(x0, cellB.y0, x0 + frameW, cellBottom);
+            frameSegments.push_back(FrameSegment(2, rightB));
+        }
+        else if (perimeterSide == 0x70)  // SE | S | SW
+        {
+            float const y0 = cellBottom + frameUsedW - frameW;
+            BoundsBase<float> const bottomB(cellB.x0, y0, cellRight, y0 + frameW);
+            frameSegments.push_back(FrameSegment(3, bottomB));
+        }
+        else if (perimeterSide == 0xC1)  // NW | W | SW
+        {
+            float const x0 = cellB.x0 - frameUsedW;
+            BoundsBase<float> const leftB(x0, cellB.y0, x0 + frameW, cellBottom);
+            frameSegments.push_back(FrameSegment(0, leftB));
+        }
+        // Concave corners: exactly one diagonal neighbour is missing, so a
+        // corner tile plus the two short bars that reach into the neighbouring
+        // cells are emitted.
+        else if (perimeterSide == 0x10)  // SE
+        {
+            float const cornerX0 = cellRight;
+            float const cornerY0 = cellBottom;
+            BoundsBase<float> const cornerB(cornerX0, cornerY0, cornerX0 + cornerSz, cornerY0 + cornerSz);
+            frameSegments.push_back(FrameSegment(4, cornerB));
+            frameSegments.push_back(FrameSegment(
+                3,
+                BoundsBase<float>(cornerX0 + cornerB.width, cellBottom, cornerX0 + cellB.width, cellBottom + frameW)));
+            frameSegments.push_back(FrameSegment(
+                2,
+                BoundsBase<float>(cellRight, cornerY0 + cornerB.height, cellRight + frameW, cornerY0 + cellB.height)));
+        }
+        else if (perimeterSide == 0x40)  // SW
+        {
+            float const cornerX0 = cellB.x0 - cornerSz;
+            float const cornerY0 = cellBottom;
+            BoundsBase<float> const cornerB(cornerX0, cornerY0, cornerX0 + cornerSz, cornerY0 + cornerSz);
+            frameSegments.push_back(FrameSegment(5, cornerB));
+            frameSegments.push_back(FrameSegment(
+                3, BoundsBase<float>(cellB.x0 - cellB.width, cellBottom, cornerX0, cellBottom + frameW)));
+            // NOTE: the three mirrored cases extend this bar by the cell's
+            // height; the shipped code (RVA 0x45AD32) adds cellB.width here
+            // instead, so on a grid whose cells are not square the bottom-left
+            // notch comes out the wrong length. Kept as shipped.
+            float const x0 = cellB.x0 - frameUsedW;
+            frameSegments.push_back(FrameSegment(
+                0, BoundsBase<float>(x0, cornerY0 + cornerB.height, x0 + frameW, cornerY0 + cellB.width)));
+        }
+        else if (perimeterSide == 1)  // NW
+        {
+            float const cornerX0 = cellB.x0 - cornerSz;
+            float const cornerY0 = cellB.y0 - cornerSz;
+            BoundsBase<float> const cornerB(cornerX0, cornerY0, cornerX0 + cornerSz, cornerY0 + cornerSz);
+            frameSegments.push_back(FrameSegment(7, cornerB));
+            // NOTE: alone among the twelve cases these two bars are inset by
+            // frameW rather than frameUsedW (RVA 0x45AE78 and 0x45AF3E).
+            frameSegments.push_back(FrameSegment(
+                0,
+                BoundsBase<float>(cellB.x0 - frameW, cellB.y0 - cellB.height, cellB.x0 - frameW + frameW, cornerY0)));
+            frameSegments.push_back(FrameSegment(
+                1,
+                BoundsBase<float>(cellB.x0 - cellB.width, cellB.y0 - frameW, cornerX0, cellB.y0 - frameW + frameW)));
+        }
+        else if (perimeterSide == 4)  // NE
+        {
+            float const cornerX0 = cellRight;
+            float const cornerY0 = cellB.y0 - cornerSz;
+            BoundsBase<float> const cornerB(cornerX0, cornerY0, cornerX0 + cornerSz, cornerY0 + cornerSz);
+            frameSegments.push_back(FrameSegment(6, cornerB));
+            frameSegments.push_back(FrameSegment(
+                1,
+                BoundsBase<float>(
+                    cornerX0 + cornerB.width,
+                    cellB.y0 - frameW,
+                    cellB.x0 + cellB.width * 2.0f,
+                    cellB.y0 - frameW + frameW)));
+            frameSegments.push_back(FrameSegment(
+                2, BoundsBase<float>(cellRight, cellB.y0 - cellB.height, cellRight + frameW, cornerY0)));
+        }
+        // Convex corners: a whole quadrant is missing. These are tested with
+        // masks rather than for equality, so the order they run in matters.
+        else if ((perimeterSide & 0x83) == 0x83)  // NW | N | W
+        {
+            float const cornerX0 = cellB.x0 - frameUsedW;
+            float const cornerY0 = cellB.y0 - frameUsedW;
+            BoundsBase<float> const cornerB(cornerX0, cornerY0, cornerX0 + cornerSz, cornerY0 + cornerSz);
+            frameSegments.push_back(FrameSegment(4, cornerB));
+            float const leftY0 = cornerB.y0 + cornerB.height;
+            frameSegments.push_back(FrameSegment(
+                0, BoundsBase<float>(cornerB.x0, leftY0, cornerB.x0 + frameW, leftY0 + cellB.height)));
+            float const topX0 = cornerB.x0 + cornerB.width;
+            frameSegments.push_back(FrameSegment(
+                1, BoundsBase<float>(topX0, cornerB.y0, topX0 + cellB.width, cornerB.y0 + frameW)));
+        }
+        else if ((perimeterSide & 0x0E) == 0x0E)  // N | NE | E
+        {
+            float const cornerX0 = cellRight + frameUsedW - cornerSz;
+            float const cornerY0 = cellB.y0 - frameUsedW;
+            BoundsBase<float> const cornerB(cornerX0, cornerY0, cornerX0 + cornerSz, cornerY0 + cornerSz);
+            frameSegments.push_back(FrameSegment(5, cornerB));
+            frameSegments.push_back(
+                FrameSegment(1, BoundsBase<float>(cellB.x0, cornerY0, cornerB.x0, cornerY0 + frameW)));
+            float const rightX0 = cellRight + frameUsedW - frameW;
+            frameSegments.push_back(FrameSegment(
+                2, BoundsBase<float>(rightX0, cornerB.y0 + cornerB.height, rightX0 + frameW, cellBottom)));
+        }
+        else if ((perimeterSide & 0x38) == 0x38)  // E | SE | S
+        {
+            float const cornerX0 = cellRight + frameUsedW - cornerSz;
+            float const cornerY0 = cellBottom + frameUsedW - cornerSz;
+            BoundsBase<float> const cornerB(cornerX0, cornerY0, cornerX0 + cornerSz, cornerY0 + cornerSz);
+            frameSegments.push_back(FrameSegment(7, cornerB));
+            float const rightX0 = cellRight + frameUsedW - frameW;
+            frameSegments.push_back(
+                FrameSegment(2, BoundsBase<float>(rightX0, cellB.y0, rightX0 + frameW, cornerB.y0)));
+            float const bottomY0 = cellBottom + frameUsedW - frameW;
+            frameSegments.push_back(
+                FrameSegment(3, BoundsBase<float>(cellB.x0, bottomY0, cornerB.x0, bottomY0 + frameW)));
+        }
+        else if ((perimeterSide & 0xE0) == 0xE0)  // S | SW | W
+        {
+            float const cornerX0 = cellB.x0 - frameUsedW;
+            float const cornerY0 = cellBottom + frameUsedW - cornerSz;
+            BoundsBase<float> const cornerB(cornerX0, cornerY0, cornerX0 + cornerSz, cornerY0 + cornerSz);
+            frameSegments.push_back(FrameSegment(6, cornerB));
+            float const bottomY0 = cellBottom + frameUsedW - frameW;
+            frameSegments.push_back(FrameSegment(
+                3, BoundsBase<float>(cornerB.x0 + cornerB.width, bottomY0, cellRight, bottomY0 + frameW)));
+            frameSegments.push_back(
+                FrameSegment(0, BoundsBase<float>(cornerX0, cellB.y0, cornerX0 + frameW, cornerB.y0)));
+        }
+    }
+
+    // Every tile was laid out in unshifted window space; DrawFrame draws them
+    // through a DrawInfo whose rect has been grown by the bar width, so they all
+    // get shifted to match.
+    for (int i = 0; i < static_cast<int>(frameSegments.size()); ++i)
+    {
+        frameSegments[i].m_rect.x0 += frameW;
+        frameSegments[i].m_rect.y0 += frameW;
+    }
+
+    // Bars first, corners last, so the corner art always draws over the ends of
+    // the bars running into it.
+    std::partition(frameSegments.begin(), frameSegments.end(), LessByTexId);
 }
 
 void IzvratRepositoryWnd::DrawGrid(m3d::ui::DrawInfo const& di)

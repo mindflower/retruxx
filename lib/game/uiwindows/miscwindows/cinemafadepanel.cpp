@@ -72,19 +72,19 @@ float CinemaFadePanel::GetAlpha()
         playTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
     }
 
-    // Calculate time difference
-    int timeDiff = playTime - fadeStartTime;
+    unsigned int const timeDiff = static_cast<unsigned int>(playTime) - static_cast<unsigned int>(fadeStartTime);
 
-    // Convert to float and handle negative values
-    float timeDiffFloat = (float)timeDiff;
-    if (timeDiff < 0)
+    float const duration = m_fadePeriod;
+    if (duration <= 0.0f)
     {
-        timeDiffFloat += 4294967296.0f;
+        if (m_isCinematicRelated)
+        {
+            return (M3D_APP->m_cinematic->m_state == 1 || M3D_APP->m_cinematic->m_state == 4) ? 0.0f : 255.0f;
+        }
+        return m_state == FS_FADING_UP ? 0.0f : 255.0f;
     }
 
-    // Calculate alpha based on duration
-    float duration = m_fadePeriod;
-    float calculatedAlpha = (timeDiffFloat) / (duration * 1000.0f);
+    float calculatedAlpha = static_cast<float>(timeDiff) / (duration * 1000.0f);
 
     calculatedAlpha *= 255.0f;
 
@@ -124,20 +124,12 @@ float CinemaFadePanel::GetAlpha()
 int CinemaFadePanel::OnPaint(m3d::ui::DrawInfo const& di)
 {
     // TODO: check this!!!
-    int fadeStartTime = 0;
-    if (m_isCinematicRelated)
-    {
-        fadeStartTime = M3D_APP->m_cinematic->m_fadeStartTime;
-    }
-    else
-    {
-        fadeStartTime = m_fadeStart;
-    }
-
-    auto curTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
-
     m_curAlpha = GetAlpha();
-    if (m_curAlpha <= 1.0f && m_curAlpha >= 255.0 && curTime != fadeStartTime && !m_isCinematicRelated)
+    auto const curTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+    auto const fadeStartTime = static_cast<unsigned int>(m_fadeStart);
+    auto const fadeDuration = static_cast<double>(m_fadePeriod) * 1000.0;
+    auto const fadeComplete = m_fadePeriod <= 0.0f || static_cast<double>(curTime - fadeStartTime) >= fadeDuration;
+    if (fadeComplete && m_isFading && !m_isCinematicRelated)
     {
         m_isFading = false;
         M3D_APP->m_pInterfaceManager->ShowWindow(19, false, false, false, false, nullptr);

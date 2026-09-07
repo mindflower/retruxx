@@ -485,9 +485,9 @@ int TruxxUiManager::Show(bool needShow, bool enabeleAnimation)
     return GUI_ShowInterface(needShow, enabeleAnimation);
 }
 
-int TruxxUiManager::CreateAndAddWindow(int)
+int TruxxUiManager::CreateAndAddWindow(int wndId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return GUI_LoadWindowFromResourceInfo(GUI_GetResourceInfoByWndGuiId(wndId));
 }
 
 StringParser const& TruxxUiManager::GetStringParser() const
@@ -854,16 +854,14 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
         {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_UM_GLOBAL_MAP, IE_EV_UM_GADGET_DEACTIVATE, IE_EV_UM_FINISH_TRADE});
 
     res &= GUI_SetEventsForWindow(
-        IW_WND_WORKSHOP_BASKET,
-        {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_UM_GLOBAL_MAP, IE_EV_UM_GADGET_DEACTIVATE, IE_EV_UM_FINISH_TRADE});
-
-    res &= GUI_SetEventsForWindow(
         IW_WND_PLAYERVEHICLE_INVENTORY,
         {IE_CUST_DD_DRAGITEM_MOVE,
          IE_EV_SM_REPOSITORY_CHANGED,
          IE_CUST_DD_DROP,
          IE_CUST_DD_ITEM_QUICK_DROP,
          IE_CUST_DD_DRAGITEM_ACCEPTED,
+         IE_CUST_DD_ITEM_WANT_ADD,
+         IE_CUST_DD_ITEM_ALLOW_ADD,
          IE_EV_SM_VEHICLEPART_CHANGED,
          IE_EV_SM_PLAYER_MONEY_CHANGED,
          IE_CUST_NEW_FRAME});
@@ -875,6 +873,8 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
          IE_CUST_DD_DROP,
          IE_CUST_DD_ITEM_QUICK_DROP,
          IE_CUST_DD_DRAGITEM_ACCEPTED,
+         IE_CUST_DD_ITEM_WANT_ADD,
+         IE_CUST_DD_ITEM_ALLOW_ADD,
          IE_EV_SM_VEHICLEPART_CHANGED,
          IE_EV_SM_PLAYER_MONEY_CHANGED,
          IE_CUST_NEW_FRAME});
@@ -886,6 +886,8 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
          IE_CUST_DD_DROP,
          IE_CUST_DD_ITEM_QUICK_DROP,
          IE_CUST_DD_DRAGITEM_ACCEPTED,
+         IE_CUST_DD_ITEM_WANT_ADD,
+         IE_CUST_DD_ITEM_ALLOW_ADD,
          IE_EV_SM_VEHICLEPART_CHANGED,
          IE_EV_SM_PLAYER_MONEY_CHANGED,
          IE_CUST_NEW_FRAME});
@@ -897,6 +899,8 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
          IE_CUST_DD_DROP,
          IE_CUST_DD_ITEM_QUICK_DROP,
          IE_CUST_DD_DRAGITEM_ACCEPTED,
+         IE_CUST_DD_ITEM_WANT_ADD,
+         IE_CUST_DD_ITEM_ALLOW_ADD,
          IE_EV_SM_VEHICLEPART_CHANGED,
          IE_EV_SM_PLAYER_MONEY_CHANGED,
          IE_CUST_NEW_FRAME});
@@ -909,6 +913,8 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
          IE_CUST_DD_MOUSE_IN,
          IE_CUST_DD_MOUSE_OUT,
          IE_CUST_DD_DRAGITEM_ACCEPTED,
+         IE_CUST_DD_ITEM_WANT_ADD,
+         IE_CUST_DD_ITEM_ALLOW_ADD,
          IE_CUST_DD_ITEM_QUICK_DROP,
          IE_CUST_DD_DROP,
          IE_EV_SM_VEHICLEPART_CHANGED});
@@ -980,6 +986,8 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
          IE_CUST_DD_DRAGITEM_MOVE,
          IE_CUST_DD_MOUSE_OUT,
          IE_CUST_DD_MOUSE_IN,
+         IE_CUST_DD_ITEM_WANT_ADD,
+         IE_CUST_DD_ITEM_ALLOW_ADD,
          IE_EV_UM_CUR_PROFILE_CHANGED,
          IE_EV_UM_CUR_PROFILE_PARAM_CHANGED});
 
@@ -1010,6 +1018,25 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
              IE_CUST_DD_MOUSE_IN,
              IE_CUST_DD_MOUSE_OUT,
              IE_CUST_DD_DRAGITEM_ACCEPTED,
+             IE_CUST_DD_ITEM_WANT_ADD,
+             IE_CUST_DD_ITEM_ALLOW_ADD,
+             IE_CUST_DD_ITEM_QUICK_DROP,
+             IE_CUST_DD_DROP,
+             IE_EV_SM_GADGET_CHANGED});
+    }
+
+    for (int i = IW_WND_WORKSHOP_GADGET_MIN; i <= IW_WND_WORKSHOP_GADGET_MAX; ++i)
+    {
+        res &= GUI_SetEventsForWindow(
+            i,
+            {IE_CUST_DD_DRAGITEM_MOVE,
+             IE_CUST_DD_START_DRAG,
+             IE_CUST_DD_END_DRAG,
+             IE_CUST_DD_MOUSE_IN,
+             IE_CUST_DD_MOUSE_OUT,
+             IE_CUST_DD_DRAGITEM_ACCEPTED,
+             IE_CUST_DD_ITEM_WANT_ADD,
+             IE_CUST_DD_ITEM_ALLOW_ADD,
              IE_CUST_DD_ITEM_QUICK_DROP,
              IE_CUST_DD_DROP,
              IE_EV_SM_GADGET_CHANGED});
@@ -1026,12 +1053,12 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
          IE_IMP_IM_UI_MAP,
          IE_IMP_IM_UI_JOURNAL,
          IE_IMP_IM_UI_MENUBOOK,
-         IE_IMP_IM_UI_QUESTLOG,
-         IE_IMP_IM_UI_JOURNAL,
+         IE_IMP_IM_UI_BAR,
+         IE_IMP_IM_UI_ADDITIONAL_BUILDING,
          IE_EV_UM_WORKSHOP,
          IE_EV_UM_SHOP,
          IE_EV_UM_BAR,
-         IE_EV_UM_END_CONVERSATION,
+         IE_EV_EV_UI_END_WND_ANIMATION,
          IE_EV_UM_START_TRADE,
          IE_EV_UM_FINISH_TRADE,
          IE_EV_UM_SHOW_PANEL,
@@ -1077,6 +1104,8 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
     res &= GUI_SetEventsForWindow(IW_WND_MAP_LIST_IN_QUESTS, {IE_CUST_START_LEVEL});
 
     res &= GUI_SetEventsForWindow(IW_WND_MAP_LIST_IN_MAP, {IE_CUST_START_LEVEL});
+
+    res &= GUI_SetEventsForWindow(IW_DLG_TALK_WITH_NPC, {IE_EV_UM_BAR_NPC, IE_EV_SM_LOCATION_NPC});
 
     res &= GUI_SetEventsForWindow(IW_DLG_WEAPON_GROUP_CHOICE, {IE_EV_UM_BAR_NPC, IE_EV_SM_LOCATION_NPC});
 
@@ -1170,6 +1199,9 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
     res &= GUI_SetEventsForWindow(IW_WND_QUESTLOG, {IE_EV_UM_CUR_PROFILE_PARAM_CHANGED, IE_EV_UM_CUR_PROFILE_CHANGED});
 
     res &= GUI_SetEventsForWindow(IW_WND_LOCAL_MAP, {IE_EV_UM_NAVPOINT_ADDED, IE_EV_UM_NAVPOINT_DELETED});
+
+    res &= GUI_SetEventsForWindow(
+        IW_WND_GARAGE, {IE_EV_UM_FINISH_TRADE, IE_EV_SM_REPOSITORY_CHANGED, IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_NEW_FRAME});
 
     res &= GUI_SetEventsForWindow(
         IW_WND_WORKSHOP,

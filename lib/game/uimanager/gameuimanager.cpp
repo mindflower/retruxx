@@ -279,10 +279,10 @@ int GameUiManager::GUI_SetMinDynamicId(int)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int GameUiManager::GUI_SetEventsForWindow(int wndId, const retruxx::vector<int>& events)
+int GameUiManager::GUI_SetEventsForWindow(int wndId, retruxx::vector<int> const& events)
 {
     //TODO: check this
-    for (const auto ev : events)
+    for (auto const ev : events)
     {
         m_eventMap[ev].insert(wndId);
     }
@@ -298,16 +298,16 @@ int GameUiManager::GUI_UpdateWindowsOnEvent(int eventId, m3d::ui::Wnd* forceWnd,
     }
 
     bool valid = m_isEventMapValide;
-    const auto evIt = m_eventMap.find(eventId);
+    auto const evIt = m_eventMap.find(eventId);
     if (evIt == m_eventMap.end())
     {
         --entries;
         return 0;
     }
     auto res = 1;
-    for (const auto& ev : evIt->second)
+    for (auto const& ev : evIt->second)
     {
-        const auto it = m_windows.find(ev);
+        auto const it = m_windows.find(ev);
         if (it != m_windows.end())
         {
             auto wnd = it->second;
@@ -341,7 +341,10 @@ int GameUiManager::GUI_UpdateWindowsOnEvent(int eventId, m3d::ui::Wnd* forceWnd,
     return res;
 }
 
-int GameUiManager::GUI_LoadResourceInfosFromFile(CStr const& fileName, retruxx::vector<ResourceInfo*>& resourceInfos, CStr const& className)
+int GameUiManager::GUI_LoadResourceInfosFromFile(
+    CStr const& fileName,
+    retruxx::vector<ResourceInfo*>& resourceInfos,
+    CStr const& className)
 {
     if (m_isInited)
     {
@@ -423,7 +426,7 @@ int GameUiManager::GUI_Save(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNod
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-int GameUiManager::GUI_CreateWindow(int wndId, const CStr& className, bool needShow, const CStr& fileName)
+int GameUiManager::GUI_CreateWindow(int wndId, CStr const& className, bool needShow, CStr const& fileName)
 {
     if (wndId >= m_minDynamicId)
     {
@@ -437,7 +440,8 @@ int GameUiManager::GUI_CreateWindow(int wndId, const CStr& className, bool needS
     }
     if (GUI_GetWindow(wndId))
     {
-        M3D_LOG_INFO("Interface: fail to create window " + CStr(wndId) + " - a window with specified Id already exists");
+        M3D_LOG_INFO(
+            "Interface: fail to create window " + CStr(wndId) + " - a window with specified Id already exists");
         return 0;
     }
     auto wnd = dynamic_cast<m3d::ui::Wnd*>(m3d::g_Kernel->New(className.c_str()));
@@ -485,9 +489,16 @@ int GameUiManager::GUI_LoadStringsFromResourceInfo(ResourceInfo const* info)
     return res;
 }
 
-WindowResourceInfo* GameUiManager::GUI_GetResourceInfoByWndGuiId(int) const
+WindowResourceInfo* GameUiManager::GUI_GetResourceInfoByWndGuiId(int wndGuiId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto* info : m_resourceInfoWindows)
+    {
+        if (auto* windowInfo = RT_DYNCAST(info, WindowResourceInfo); windowInfo && windowInfo->m_wndGuiId == wndGuiId)
+        {
+            return windowInfo;
+        }
+    }
+    return nullptr;
 }
 
 bool GameUiManager::GUI_IsModalEqualWndRunning() const
@@ -496,7 +507,7 @@ bool GameUiManager::GUI_IsModalEqualWndRunning() const
     {
         return true;
     }
-    for (const auto id : m_onScreenWindows)
+    for (auto const id : m_onScreenWindows)
     {
         auto wnd = GUI_GetWindow(id);
         if (wnd && GUI_IsWndModalEqual(wnd))
@@ -547,7 +558,8 @@ int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void
         id = appEventId;
         break;
     }
-    default: return 0;
+    default:
+        return 0;
     }
     if (id != -1)
     {
@@ -559,11 +571,12 @@ int GameUiManager::GUI_ProcessEvent(GuiEventType eventType, int appEventId, void
     return 0;
 }
 
-void GameUiManager::GUI_GetIconsResourceInfoByLevel(CStr const& levelName, retruxx::vector<ResourceInfo*, retruxx::allocator<ResourceInfo*>>& dstResourceInfos)
-    const
+void GameUiManager::GUI_GetIconsResourceInfoByLevel(
+    CStr const& levelName,
+    retruxx::vector<ResourceInfo*, retruxx::allocator<ResourceInfo*>>& dstResourceInfos) const
 {
     dstResourceInfos.clear();
-    for (const auto& info : m_resourceInfoIcons)
+    for (auto const& info : m_resourceInfoIcons)
     {
         if (info && IS_KIND_OF(info, IcoResourceInfo))
         {
@@ -856,8 +869,8 @@ int GameUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void*
     }
     if (data)
     {
-        const auto ev = static_cast<m3d::Event*>(data);
-        for (const auto& window : m_windows)
+        auto const ev = static_cast<m3d::Event*>(data);
+        for (auto const& window : m_windows)
         {
             if (ev->m_void[0] == window.second.get())
             {
@@ -877,9 +890,12 @@ GameUiManager::~GameUiManager()
 
 void GameUiManager::GUI_RegisterCVars()
 {
-    m_cvPathToUiWindows.Init("pathToUiWindows", "data\\if\\dialogs\\UiWindows.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE);
-    m_cvPathToUiStrings.Init("pathToUiStrings", "data\\if\\strings\\UiStrings.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE);
-    m_cvPathToUiIcons.Init("pathToUiIcons", "data\\if\\ico\\UiIcons.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE);
+    m_cvPathToUiWindows.Init(
+        "pathToUiWindows", "data\\if\\dialogs\\UiWindows.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE);
+    m_cvPathToUiStrings.Init(
+        "pathToUiStrings", "data\\if\\strings\\UiStrings.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE);
+    m_cvPathToUiIcons.Init(
+        "pathToUiIcons", "data\\if\\ico\\UiIcons.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE);
 
     m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToUiWindows, nullptr);
     m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToUiStrings, nullptr);
@@ -988,7 +1004,8 @@ ref_ptr<m3d::ui::Wnd> GameUiManager::GUI_GetWindow(int wndId) const
 
 bool GameUiManager::GUI_IsCurrentLevelMainMenuLevel() const
 {
-    return CStr(M3D_KERNEL->GetEngineCfg().m_mainMenuLevelName.GetS()) == M3D_KERNEL->GetEngineCfg().m_levFileName.GetS();
+    return CStr(M3D_KERNEL->GetEngineCfg().m_mainMenuLevelName.GetS()) ==
+        M3D_KERNEL->GetEngineCfg().m_levFileName.GetS();
 }
 
 int GameUiManager::GUI_LoadIconsFromResourceInfo(IcoResourceInfo const* info)

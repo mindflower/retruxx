@@ -2549,7 +2549,7 @@ namespace m3d
                 float scaledCurrentWidth = totalWidth / (font->m_heightScaled / font->m_heightUnscaled);
                 if (csz->x0 > scaledCurrentWidth)
                 {
-                    *minc = i;
+                    *minc = i + 1;
                     if (leftInvisibleSubstr)
                     {
                         CStr temp(&text[i], 1);
@@ -3604,7 +3604,7 @@ namespace m3d
         case TF_CENTER:
             textBounds.x0 = fl.m_origin.x - (sz.x * 0.5f);
             textBounds.y0 = fl.m_origin.y;
-            textBounds.width = ((sz.x * 0.5f) + fl.m_origin.x) - fl.m_origin.x - (sz.x * 0.5);
+            textBounds.width = sz.x;
             textBounds.height = fl.m_origin.y + sz.y - fl.m_origin.y;
             break;
 

@@ -17,14 +17,14 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_wndTitleName;
-        /* 0x000c */ CStr m_wndMsgName;
-        /* 0x0018 */ CStr m_wndUpLineName;
-        /* 0x0024 */ CStr m_wndDownLineName;
-        /* 0x0030 */ CStr m_buttonName;
-        /* 0x003c */ CStr m_idioticEmbossName;
-        /* 0x0048 */ CStr m_wndFrameName;
-        /* 0x0054 */ CStr m_wndBgName;
+        /* 0x0000 */ CStr m_wndTitleName = "wndTitle";
+        /* 0x000c */ CStr m_wndMsgName = "wndMsg";
+        /* 0x0018 */ CStr m_wndUpLineName = "wndUpLine";
+        /* 0x0024 */ CStr m_wndDownLineName = "wndDownLine";
+        /* 0x0030 */ CStr m_buttonName = "button_";
+        /* 0x003c */ CStr m_idioticEmbossName = "buttonEmboss_";
+        /* 0x0048 */ CStr m_wndFrameName = "wndFrame";
+        /* 0x0054 */ CStr m_wndBgName = "wndBg";
         AuxInfo(MsgBox::AuxInfo const&);
         AuxInfo();
     }; /* size: 0x0060 */
